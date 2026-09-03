@@ -78,23 +78,47 @@ async function openTrainerAdmin() {
     rows.length ? list : el('p', { class: 'empty' }, '아직 없습니다.')));
 
   const ta = el('textarea', { class: 'trainer-bulk', rows: '6', placeholder: '한 줄에 하나씩\n이름 0000 0000 0000\n이름2 1111 2222 3333' });
-  const msg = el('p', { class: 'd-foot' }, '이름과 12자리 코드를 한 줄에 하나씩. 같은 이름이 있으면 덮어씁니다.');
-  const save = el('button', { class: 'sched-more', onclick: async () => {
+  const msg = el('p', { class: 'trainer-msg' }, '이름과 12자리 코드를 한 줄에 하나씩. 같은 이름이 있으면 덮어씁니다.');
+  // 2026-09-03 저장 결과를 눈에 보이게: 진행 표시 + 실패 사유(규칙 미게시 등)를 그대로 노출
+  const save = el('button', { class: 'sched-more' }, '일괄 저장');
+  save.addEventListener('click', async () => {
     const lines = ta.value.split('\n').map((l) => l.trim()).filter(Boolean);
-    let n = 0, bad = 0;
+    if (!lines.length) { msg.textContent = '입력된 줄이 없어요.'; return; }
+    save.disabled = true;
+    msg.textContent = '저장 중…';
+    let saved = 0;
+    const badLines = [], errors = [];
     for (const [i, line] of lines.entries()) {
       const digits = (line.match(/[\d\s-]{12,}/)?.[0] ?? '').replace(/\D/g, '');
-      const name = line.replace(/[\d\s-]{12,}.*$/, '').trim();
-      if (digits.length !== 12 || !name) { bad++; continue; }
-      await AUTH.db.collection('trainers').doc(name).set({ name, code: digits, order: i }).catch(() => { bad++; });
-      n++;
+      const name = line.replace(/[\d\s-]{12,}.*$/, '').trim().replace(/\//g, ' ');
+      if (digits.length !== 12 || !name) { badLines.push(line); continue; }
+      try {
+        // 응답이 없을 때(오프라인·규칙 대기) 화면이 멈추지 않도록 10초 제한
+        await Promise.race([
+          AUTH.db.collection('trainers').doc(name).set({ name, code: digits, order: i }),
+          new Promise((_, rej) => setTimeout(() => rej(new Error('응답 없음(네트워크 확인)')), 10000)),
+        ]);
+        saved++;
+      } catch (e) {
+        errors.push(`${name}: ${e.code || e.message || e}`);
+      }
     }
-    msg.textContent = `${n}개 저장${bad ? ` · ${bad}줄은 형식이 안 맞아 건너뜀` : ''}`;
-    ta.value = '';
-    TRAINERS_CACHE = null;
-    renderTrainers();
-    if (n) openTrainerAdmin();
-  } }, '일괄 저장');
-  body.append(el('section', { class: 'd-sec' }, el('h3', {}, '붙여넣어 추가'), ta, save, msg));
+    save.disabled = false;
+    const parts = [`${saved}개 저장`];
+    if (badLines.length) parts.push(`형식이 안 맞는 줄 ${badLines.length}개`);
+    if (errors.length) parts.push(`실패 ${errors.length}개 — ${errors[0]}`);
+    msg.textContent = parts.join(' · ');
+    // permission-denied면 규칙에 trainers 블록이 아직 없다는 뜻
+    if (errors.some((e) => /permission-denied/.test(e))) {
+      msg.textContent += ' → Firebase 콘솔 > Firestore > 규칙에 trainers 블록을 게시했는지 확인하세요.';
+    }
+    if (saved) {
+      ta.value = '';
+      TRAINERS_CACHE = null;
+      renderTrainers();
+      setTimeout(openTrainerAdmin, 400);
+    }
+  });
+  body.append(el('section', { class: 'd-sec' }, el('h3', {}, '붙여넣어 추가'), ta, msg, save));
 }
 renderTrainers();

@@ -55,3 +55,5 @@ header { display: flex; justify-content: space-between; align-items: flex-start;
 .admin-act.danger { color: #c0392b; border-color: #c0392b; }
 /* 2026-09-03 v2.2.0 트레이너 코드 관리(관리자) 입력 */
 .trainer-bulk { width: 100%; box-sizing: border-box; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--bg); color: var(--fg); font-size: 16px; line-height: 1.5; font-family: inherit; resize: vertical; }
+/* 2026-09-03 코드 관리 결과 메시지 — 버튼 위에서 눈에 띄게 */
+.trainer-msg { margin: 8px 2px 10px; font-size: 12.5px; line-height: 1.6; color: var(--muted); word-break: keep-all; }
