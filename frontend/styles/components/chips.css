@@ -1,0 +1,9 @@
+/* 속성 필터 칩 (가로 스크롤) */
+.chips { display: flex; gap: 6px; overflow-x: auto; padding: 2px 0 6px; margin: 0 -20px; padding-left: 20px; padding-right: 20px; scrollbar-width: none; }
+.chips::-webkit-scrollbar { display: none; }
+.chip { flex: 0 0 auto; display: inline-flex; align-items: center; gap: 6px; padding: 5px 11px; border: 1px solid var(--line); border-radius: 999px; font-size: 13px; color: var(--muted); white-space: nowrap; }
+.chip .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--c, var(--muted)); }
+.chip[aria-pressed="true"] { color: var(--fg); border-color: var(--fg); }
+@media (prefers-reduced-motion: no-preference) {
+  .chip { transition: color .12s, border-color .12s, background .12s; }
+}

@@ -1,0 +1,56 @@
+/* 2026-09-03 전체 페이지 뷰 (패치노트 · 일정표) */
+#page { max-width: 760px; margin: 0 auto; padding: 0 20px 80px; }
+.page-bar { position: sticky; top: 0; z-index: 10; display: flex; align-items: center; gap: 12px; padding: 14px 0; margin-bottom: 12px; background: var(--bg); border-bottom: 1px solid var(--line); font-size: 16px; }
+.page-sec { margin: 26px 0 4px; font-size: 15px; font-weight: 600; }
+.rel-sec h2 { display: flex; align-items: center; gap: 8px; margin: 22px 0 8px; font-size: 15px; }
+.rel-sec ul { margin: 0; padding-left: 18px; font-size: 13.5px; line-height: 1.8; }
+.sched-date { font-weight: 600; margin-right: 2px; }
+
+/* 새 패치노트 알림 점 (☰ 버튼 · 메뉴 항목) */
+.dot-badge { position: relative; }
+.dot-badge::after { content: ''; position: absolute; top: 6px; right: 6px; width: 7px; height: 7px; border-radius: 50%; background: #d84a5f; }
+.drawer-item.dot-badge::after { top: 50%; transform: translateY(-50%); right: 14px; }
+
+/* 드로어 안 "자세히 보기" */
+.sched-more { display: block; width: 100%; text-align: center; padding: 9px 0 11px; font-size: 12.5px; color: var(--fg); text-decoration: underline; }
+
+/* 2026-09-03 CP 계산기 */
+.cp-picked { margin: 10px 0; }
+.cp-slider { display: grid; grid-template-columns: 60px 1fr 40px; gap: 12px; align-items: center; margin: 14px 0; font-size: 13px; }
+.cp-slider em { font-style: normal; color: var(--muted); font-size: 12px; }
+.cp-slider b { text-align: right; font-variant-numeric: tabular-nums; }
+.cp-slider input[type="range"] { width: 100%; accent-color: var(--fg); }
+.cp-result { margin-top: 20px; padding: 16px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); }
+.cp-result:empty { display: none; }
+.cp-big { margin: 0; font-size: 26px; font-weight: 700; }
+
+/* 2026-09-03 도감 페이지 */
+.dex-list { display: flex; flex-direction: column; margin-top: 16px; }
+.dex-row { display: flex; align-items: center; gap: 10px; padding: 7px 2px; border-bottom: 1px solid var(--line); text-align: left; font-size: 14px; }
+.dex-row:hover { background: var(--hover); }
+.dex-row .sprite { width: 34px; height: 34px; flex: none; }
+.dex-no { color: var(--muted); font-size: 12px; width: 46px; flex: none; }
+.dex-row b { font-weight: 500; }
+.dex-types { display: flex; gap: 4px; margin-left: auto; }
+.dex-types .dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+
+/* 2026-09-03 도감 상단 간격 */
+.page-body > .boss-search { margin-bottom: 12px; }
+.page-body > .tchips { gap: 6px; }
+
+/* 2026-09-03 도감 [미구현] 태그 */
+.dex-unrel { flex: none; font-size: 10.5px; color: var(--muted); border-color: var(--line); }
+.dex-row.unrel { opacity: .55; }
+
+/* 2026-09-03 도감 2열 격자 토글 */
+.dex-list.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0 12px; }
+.dex-list.grid2 .dex-row { font-size: 13px; gap: 7px; padding: 6px 0; min-width: 0; }
+.dex-list.grid2 .dex-row b { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.dex-list.grid2 .dex-no { width: 40px; font-size: 11px; }
+.dex-list.grid2 .dex-row .sprite { width: 30px; height: 30px; }
+.dex-layout { cursor: pointer; }
+
+/* 2026-09-03 v2.2.0 도감 즐겨찾기 ★ · 로그인 안내 · 즐겨찾기 칩 */
+.dex-row .dex-fav { margin-left: 6px; }
+.dex-hint { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 0 0 12px; font-size: 12.5px; color: var(--muted); line-height: 1.5; }
+.fav-chip { color: #e8a80c; border-color: #e8a80c; }

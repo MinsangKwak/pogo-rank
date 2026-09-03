@@ -1,0 +1,11 @@
+/* 디자인 토큰: 색상 변수와 라이트/다크 팔레트 */
+:root {
+  --bg: #ffffff; --fg: #17181a; --muted: #7a7c80; --line: #e8e9eb; --surface: #f4f4f5; --hover: #f8f8f9;
+  --t-normal:#a8a77a; --t-fire:#ee8130; --t-water:#6390f0; --t-grass:#7ac74c; --t-electric:#f7d02c; --t-ice:#96d9d6;
+  --t-fighting:#c22e28; --t-poison:#a33ea1; --t-ground:#e2bf65; --t-flying:#a98ff3; --t-psychic:#f95587; --t-bug:#a6b91a;
+  --t-rock:#b6a136; --t-ghost:#735797; --t-dragon:#6f35fc; --t-dark:#705746; --t-steel:#b7b7ce; --t-fairy:#d685ad;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) { --bg:#121315; --fg:#ecedee; --muted:#8c8f94; --line:#26282b; --surface:#1b1c1f; --hover:#18191c; }
+}
+:root[data-theme="dark"] { --bg:#121315; --fg:#ecedee; --muted:#8c8f94; --line:#26282b; --surface:#1b1c1f; --hover:#18191c; }

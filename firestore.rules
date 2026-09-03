@@ -1,0 +1,43 @@
+// 2026-09-03 v2.2.0 Firestore 보안 규칙 — Firebase 콘솔 > Firestore Database > 규칙 탭에 붙여넣고 "게시"
+// 구조
+//   allowlist/{email}  승인된 친구 목록 (관리자만 쓰기, 본인 문서는 읽기 가능 → 승인 여부 확인용)
+//   requests/{email}   가입(승인) 요청 (본인만 생성·갱신, 관리자만 열람·삭제)
+//   users/{uid}        개인 데이터 — 즐겨찾기 favs 등 (본인만, 승인된 경우만)
+//   trainers/{name}    트레이너 코드 (승인된 사용자만 읽기, 관리자만 쓰기) — 공개 저장소에 코드를 두지 않기 위함
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // ── 관리자 판정 ──
+    // 지금은 이메일 기준. 배포 후 사이트 ☰ → 🔑 가입 승인에서 "내 uid 복사"로 uid를 받아
+    // 아래 두 줄을 교체하면 공개 저장소에서 이메일이 사라진다:
+    //   return request.auth != null && request.auth.uid == '복사한_uid';
+    function isAdmin() {
+      return request.auth != null && request.auth.token.email == 'admin@example.com';
+    }
+    function myEmail() {
+      return request.auth.token.email.lower();
+    }
+    function isApproved() {
+      return isAdmin() || (request.auth != null && exists(/databases/$(database)/documents/allowlist/$(myEmail())));
+    }
+
+    match /allowlist/{mail} {
+      allow read: if request.auth != null && (isAdmin() || mail == myEmail());
+      allow write: if isAdmin();
+    }
+
+    match /requests/{mail} {
+      allow read, delete: if isAdmin();
+      allow create, update: if request.auth != null && mail == myEmail() && request.resource.data.email == myEmail();
+    }
+
+    match /users/{uid} {
+      allow read, write: if request.auth != null && request.auth.uid == uid && isApproved();
+    }
+
+    match /trainers/{name} {
+      allow read: if isApproved();
+      allow write: if isAdmin();
+    }
+  }
+}

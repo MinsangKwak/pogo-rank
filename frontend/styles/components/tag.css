@@ -1,0 +1,4 @@
+/* 이름 위 뱃지 줄 (G-MAX · 다이맥스 · 이벤트) */
+.badges { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 3px; }
+.tag { flex: 0 0 auto; display: inline-block; font-size: 10.5px; font-weight: 600; letter-spacing: .02em; padding: 1px 6px; border-radius: 4px; border: 1px solid var(--line); color: var(--muted); }
+.tag.gmax { color: var(--fg); border-color: var(--fg); }

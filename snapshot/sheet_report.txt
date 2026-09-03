@@ -1,0 +1,5 @@
+# data/sheet_pve.csv: 760 rows
+row 9: header cols {'name': 6, 'fast_type': 7, 'fast': 9, 'charged_type': 10, 'charged': 12, 'dps': 13, 'tdo': 14, 'er': 16, 'dps_pct': 17, 'tdo_pct': 18, 'score': 19, 'tier': 20, 'cp': 1, 'flag': 3}
+skipped gamepress overall block (104 rows)
+sections: fighting:38, dark:30, rock:31, ground:33, water:34, fire:38, grass:34, ghost:34, bug:28, steel:33, flying:35, poison:29, electric:38, dragon:44, psychic:40, fairy:25, ice:33
+name not matched (5): {"섀도우 에이펙스 칠색조": "그림자 칠색조(APEX)", "에이펙스 칠색조": "정화 칠색조(APEX)", "블레이드폼 킬가르도": "킬가르도(블레이드폼)", "섀도우 에이펙스 루기아": "그림자 루기아(APEX)", "에이펙스 루기아": "정화 루기아(APEX)"}

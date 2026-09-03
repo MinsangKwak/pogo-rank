@@ -1,0 +1,6 @@
+/* 2026-09-02 전역 포켓몬 검색 */
+.psearch { margin: 4px 0 14px; display: flex; flex-direction: column; gap: 8px; }
+.sugg-item { display: inline-flex; align-items: center; gap: 6px; padding: 4px 12px 4px 6px; border: 1px solid var(--line); border-radius: 999px; font-size: 13px; }
+.sugg-item:hover { background: var(--hover); border-color: var(--fg); }
+.sugg-item .sprite { width: 28px; height: 28px; }
+.sugg-none { font-size: 12.5px; color: var(--muted); padding: 2px 4px; }

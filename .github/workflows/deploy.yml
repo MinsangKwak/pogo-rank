@@ -1,0 +1,59 @@
+name: Build and deploy to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  schedule:
+    - cron: '0 15 * * *'   # 매일 00:00 KST (15:00 UTC)
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      # 2026-09-03 v2.0.0: 스프라이트 캐시 — 매 배포 1,100여 개 재다운로드 제거
+      - uses: actions/cache@v4
+        with:
+          path: data/sprites
+          key: sprites-v1-${{ github.run_id }}
+          restore-keys: sprites-v1-
+      - name: Build site
+        run: bash scripts/build.sh
+      # 2026-09-03 보조 기록용 커밋 — 실패해도 배포는 계속되도록 (예: 푸시 거부·권한 변경)
+      - name: Commit sheet snapshot (원본 CSV와 파싱 리포트를 저장소에 남김)
+        if: github.event_name != 'pull_request'
+        continue-on-error: true
+        run: |
+          mkdir -p snapshot
+          cp data/sheet_*.csv data/sheet_report.txt snapshot/ 2>/dev/null || true
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add snapshot
+          git diff --cached --quiet || git commit -m "chore: sheet snapshot [skip ci]"
+          git pull --rebase --autostash || true
+          git push || echo "snapshot push 생략 (배포에는 영향 없음)"
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
