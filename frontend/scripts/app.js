@@ -33,6 +33,15 @@ function render() {
 }
 
 render();
+// 2026-09-03 v2.2.1 첫 화면이 그려졌으니 로딩 가림막 제거 (페이드 후 DOM에서 삭제)
+(() => {
+  const sp = document.getElementById('splash');
+  if (!sp) return;
+  requestAnimationFrame(() => {
+    sp.classList.add('done');
+    setTimeout(() => sp.remove(), 300);
+  });
+})();
 // 2026-09-03 GA4: 접속 시 처음 보이는 탭은 클릭이 없어 tab_* 에 안 잡히므로 별도 이벤트로 기록
 // (tab_* 는 "일부러 눌러서 간" 횟수, tab_start 는 "접속하면 보이는" 횟수 — 섞이지 않게 분리)
 track('tab_start', { tab: state.tab });

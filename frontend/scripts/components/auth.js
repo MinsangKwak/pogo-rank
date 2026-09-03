@@ -59,7 +59,7 @@ async function onAuthChange(user) {
     // ADMIN_UID가 채워져 있으면 uid로 판정(공개 저장소에 이메일을 남기지 않기 위함), 없으면 이메일로 폴백
     AUTH.admin = (typeof ADMIN_UID !== 'undefined' && ADMIN_UID)
       ? user.uid === ADMIN_UID
-      : email === ADMIN_EMAIL.toLowerCase();
+      : !!(typeof ADMIN_EMAIL !== 'undefined' && ADMIN_EMAIL && email === ADMIN_EMAIL.toLowerCase());
     let approved = AUTH.admin;
     if (!approved) {
       const snap = await AUTH.db.collection('allowlist').doc(email).get().catch(() => null);
@@ -215,7 +215,7 @@ async function openAdminPanel() {
     try { await navigator.clipboard.writeText(AUTH.user.uid); uidBtn.textContent = '복사됨 ✓'; }
     catch { uidBtn.textContent = AUTH.user.uid; }
   });
-  body.append(el('p', { class: 'd-foot' }, `관리자 uid: ${AUTH.user.uid} `, uidBtn));
+  body.append(el('p', { class: 'd-foot' }, `내 uid: ${AUTH.user.uid} `, uidBtn));
 }
 function adminRow(email, data, label, onclick) {
   return el('div', { class: 'admin-row' },

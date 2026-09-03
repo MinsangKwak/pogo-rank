@@ -20,11 +20,30 @@
 <meta name="apple-mobile-web-app-title" content="POGO SEARCH">
 <!-- 2026-09-03 GA4 사용 통계: backend/build.py의 GA_ID가 채워진 빌드에만 삽입됨 -->
 __GA_SNIPPET__
+<!-- 2026-09-03 v2.2.1 첫 화면 로딩 가림막: 번들 CSS보다 먼저 적용되도록 여기에 최소 스타일만 -->
+<style>
+  #splash { position: fixed; inset: 0; z-index: 999; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px;
+            background: #fff; color: #17181a; font-family: 'IBM Plex Sans KR', -apple-system, BlinkMacSystemFont, system-ui, sans-serif; transition: opacity .25s ease; }
+  #splash .sp-title { font-size: 20px; font-weight: 600; letter-spacing: -0.01em; }
+  #splash .sp-sub { font-size: 13px; opacity: .55; }
+  #splash .sp-bar { width: 128px; height: 3px; border-radius: 2px; background: rgba(0,0,0,.1); overflow: hidden; }
+  #splash .sp-bar i { display: block; width: 40%; height: 100%; border-radius: 2px; background: currentColor; opacity: .5; animation: sp-slide 1s ease-in-out infinite; }
+  @keyframes sp-slide { 0% { transform: translateX(-110%); } 100% { transform: translateX(360%); } }
+  #splash.done { opacity: 0; pointer-events: none; }
+  @media (prefers-color-scheme: dark) { #splash { background: #121315; color: #e8e9ea; } #splash .sp-bar { background: rgba(255,255,255,.14); } }
+  @media (prefers-reduced-motion: reduce) { #splash .sp-bar i { animation: none; width: 100%; } }
+</style>
 <style>
 __STYLES__
 </style>
 </head>
 <body>
+<!-- 2026-09-03 v2.2.1 로딩 화면 — 첫 렌더가 끝나면 app.js가 제거 -->
+<div id="splash">
+  <div class="sp-title">POGO SEARCH</div>
+  <div class="sp-bar"><i></i></div>
+  <div class="sp-sub">불러오는 중…</div>
+</div>
 <div class="wrap">
   <header>
     <!-- 2026-09-02 서비스명 POGO NOTE로 변경, 부제 추가 · 검색/메뉴 버튼 -->
@@ -84,7 +103,8 @@ __STYLES__
       <summary>ℹ️ 기준 안내 (지금 보는 화면)</summary>
       <p class="note" id="note"></p>
     </details>
-    <details class="schedule">
+    <!-- 2026-09-03 v2.2.1 트레이너 코드: 승인된 로그인 사용자에게만 항목 자체를 노출 -->
+    <details class="schedule" id="trainer-acc" hidden>
       <summary>👥 트레이너 코드</summary>
       <div class="schedule-body" id="trainer-list"></div>
     </details>

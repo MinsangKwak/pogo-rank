@@ -7,12 +7,9 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // ── 관리자 판정 ──
-    // 지금은 이메일 기준. 배포 후 사이트 ☰ → 🔑 가입 승인에서 "내 uid 복사"로 uid를 받아
-    // 아래 두 줄을 교체하면 공개 저장소에서 이메일이 사라진다:
-    //   return request.auth != null && request.auth.uid == '복사한_uid';
+    // ── 관리자 판정 ── uid 기준 (backend/build.py의 ADMIN_UID와 같은 값)
     function isAdmin() {
-      return request.auth != null && request.auth.token.email == 'admin@example.com';
+      return request.auth != null && request.auth.uid == 'ADMIN_UID_REDACTED';
     }
     function myEmail() {
       return request.auth.token.email.lower();

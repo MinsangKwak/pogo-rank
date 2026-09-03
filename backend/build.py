@@ -46,7 +46,7 @@ json.dump(pvp_all, open('data/pvp_all.json', 'w', encoding='utf-8'), ensure_asci
 
 # ── frontend/ 의 CSS·JS를 순서대로 인라인해 단일 dist/index.html 조립 ──
 # 순서가 곧 캐스케이드(CSS)·실행 순서(JS)이므로 새 파일은 여기 목록에 추가
-APP_VERSION = 'v2.2.0'  # 2026-09-03 화면 표시용 버전 — 릴리스 때 여기만 올리면 됨
+APP_VERSION = 'v2.2.1'  # 2026-09-03 화면 표시용 버전 — 릴리스 때 여기만 올리면 됨
 # 2026-09-03 GA4 측정 ID (G-XXXXXXXXXX) — 채우면 배포 빌드에 gtag가 삽입되고, 비우면 추적 코드 자체가 안 들어감
 GA_ID = 'G-XXXXXXXXXX'
 # 2026-09-03 v2.2.0 Firebase (Google 로그인 + 즐겨찾기 동기화)
@@ -60,10 +60,10 @@ FIREBASE_CONFIG = {
     'messagingSenderId': '000000000000',
     'appId': 'FIREBASE_APP_ID_REDACTED',
 }
-ADMIN_EMAIL = 'admin@example.com'  # ADMIN_UID가 비어 있을 때만 쓰는 폴백(최초 1회 로그인용)
+ADMIN_EMAIL = ''  # ADMIN_UID를 쓰므로 비움 (예전 폴백 자리)
 # 2026-09-03 관리자 식별을 uid로 — 배포 후 ☰ → 🔑 가입 승인에서 "내 uid 복사"로 받아 여기에 넣으면
 # 공개 저장소에서 이메일이 사라진다. firestore.rules의 isAdmin()도 같은 값으로 바꿀 것
-ADMIN_UID = ''
+ADMIN_UID = 'ADMIN_UID_REDACTED'
 GA_SNIPPET = '''<script>
 // GA4: 배포 도메인(github.io)에서만 로드 — 로컬 미리보기·개발 중엔 집계 안 됨
 if (location.hostname.endsWith('github.io')) {

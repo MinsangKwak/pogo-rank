@@ -37,15 +37,13 @@ async function loadTrainers(force) {
 
 async function renderTrainers() {
   const box = document.getElementById('trainer-list');
+  const acc = document.getElementById('trainer-acc');
   if (!box) return;
   box.textContent = '';
-  if (!authEnabled()) { box.append(el('p', { class: 'd-foot' }, '로그인 기능이 꺼진 빌드입니다.')); return; }
-  if (AUTH.status !== 'ok') {
-    box.append(el('p', { class: 'd-foot' }, AUTH.status === 'pending'
-      ? '⏳ 승인 대기 중 — 승인되면 트레이너 코드가 보입니다.'
-      : '🔐 로그인한 친구에게만 보입니다. 위 계정 영역에서 로그인해 주세요.'));
-    return;
-  }
+  // 2026-09-03 v2.2.1 승인된 사용자가 아니면 메뉴에서 항목 자체를 감춘다 (안내문도 노출 안 함)
+  const visible = authEnabled() && AUTH.status === 'ok';
+  if (acc) { acc.hidden = !visible; if (!visible) acc.open = false; }
+  if (!visible) return;
   const rows = await loadTrainers();
   if (!rows.length) {
     box.append(el('p', { class: 'd-foot' }, AUTH.admin ? '아직 등록된 코드가 없어요. 아래 “코드 관리”에서 추가하세요.' : '아직 등록된 코드가 없어요.'));
