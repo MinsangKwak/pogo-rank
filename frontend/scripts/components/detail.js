@@ -30,16 +30,32 @@ function openDetailByDex(d, isDex) {
   openDetail({ sprite: d, name: DEX_DATA.names[d] ?? String(d), en: '', types: DEX_DATA.forms[d]?.types ?? [] }, isDex);
 }
 
-function evoNode(dex, isDex) {
+// 2026-09-04 메가/원시 진화 가능 종만 해당 — DEX_DATA.megas[dex] = [{sprite, label}, ...]
+function megaMonNode(dex, entry, curSprite, isDex) {
+  const sid = entry.sprite;
+  const name = `${entry.label} ${DEX_DATA.names[dex] ?? dex}`;
+  return el('button', { class: `evo-mon mega${sid === curSprite ? ' now' : ''}`,
+    onclick: () => openDetail({ sprite: sid, name, en: '', types: DEX_DATA.forms[sid]?.types ?? [] }, isDex) },
+    sprite(sid), el('span', {}, entry.label));
+}
+
+function evoNode(dex, isDex, curSprite) {
   const family = DEX_DATA.evo[dex];
-  if (!family || family.length < 2) return el('p', { class: 'd-none-text' }, '진화가 없는 포켓몬입니다.');
+  const megas = DEX_DATA.megas?.[dex];
+  const hasFamily = family && family.length >= 2;
+  if (!hasFamily && !megas?.length) return el('p', { class: 'd-none-text' }, '진화가 없는 포켓몬입니다.');
   const wrap = el('div', { class: 'evo' });
-  family.forEach((stage, i) => {
+  if (hasFamily) family.forEach((stage, i) => {
     if (i > 0) wrap.append(el('span', { class: 'evo-arrow' }, '→'));
-    wrap.append(el('div', { class: 'evo-stage' }, ...stage.map((d) => el('button', { class: `evo-mon${d === dex ? ' now' : ''}`, onclick: () => openDetailByDex(d, isDex) },
+    wrap.append(el('div', { class: 'evo-stage' }, ...stage.map((d) => el('button', { class: `evo-mon${d === dex && d === curSprite ? ' now' : ''}`, onclick: () => openDetailByDex(d, isDex) },
       sprite(d), el('span', {}, DEX_DATA.names[d] ?? d)))));
   });
-  wrap.append(el('p', { class: 'd-foot' }, '진화형을 누르면 그 포켓몬의 정보를 볼 수 있습니다'));
+  if (megas?.length) {
+    if (hasFamily) wrap.append(el('span', { class: 'evo-arrow' }, '⚡'));
+    wrap.append(el('div', { class: 'evo-stage' }, ...megas.map((e) => megaMonNode(dex, e, curSprite, isDex))));
+  }
+  const foot = [hasFamily && '진화형을 누르면 그 포켓몬의 정보를 볼 수 있습니다', megas?.length && '⚡ 메가 진화 가능 — 누르면 메가 진화 스탯을 볼 수 있습니다'].filter(Boolean);
+  wrap.append(el('p', { class: 'd-foot' }, foot.join(' · ')));
   return wrap;
 }
 
@@ -73,7 +89,8 @@ function statsNode(form) {
   return el('div', {}, bar('공격', form.atk), bar('방어', form.def), bar('체력', form.hp));
 }
 
-// 2026-09-02 최대 CP: 만렙(Lv50) · 야생 최대(Lv30) · 날씨부스트(Lv35), 개체값 100% 기준
+// 2026-09-04 최대 CP: 만렙(Lv50) · 레이드 보상(Lv20/날씨부스트 Lv25) · 야생 최대(Lv30/날씨부스트 Lv35), 개체값 100% 기준
+// 실제 게임 레벨 캡: 레이드 보상은 평시 20·부스트 25, 야생 스폰은 평시 30·부스트 35 (backend/dex_build.py cpm 참고)
 function cpOf(form, mult) {
   const a = form.atk + 15, d = form.def + 15, h = form.hp + 15;
   return Math.max(10, Math.floor(a * Math.sqrt(d) * Math.sqrt(h) * mult * mult / 10));
@@ -83,9 +100,42 @@ function cpNode(form) {
   if (!c) return null;
   const chip = (label, m) => el('span', { class: 'uchip' }, label, el('b', {}, `CP ${cpOf(form, m).toLocaleString()}`));
   return el('div', {},
-    el('div', { class: 'tchips' },
-      chip('만렙 Lv50', c.l50), chip('야생 최대 Lv30', c.l30), chip('날씨부스트 Lv35', c.l35)),
-    el('p', { class: 'd-foot' }, '개체값 100% 기준. 야생 최대는 필드에서 잡을 때 나오는 만렙(Lv30), 날씨부스트 시 Lv35까지 등장'));
+    el('div', { class: 'tchips' }, chip('만렙 Lv50', c.l50)),
+    el('div', { class: 'cp-ctx' },
+      el('em', {}, '레이드 보상'),
+      el('div', { class: 'tchips' }, chip('평시 Lv20', c.l20), chip('날씨부스트 Lv25', c.l25))),
+    el('div', { class: 'cp-ctx' },
+      el('em', {}, '야생 스폰'),
+      el('div', { class: 'tchips' }, chip('평시 Lv30', c.l30), chip('날씨부스트 Lv35', c.l35))),
+    el('p', { class: 'd-foot' }, '개체값 100% 기준. 레이드 보상은 잡을 때 CP(평시 Lv20 · 날씨부스트 Lv25), 야생 스폰은 필드에서 나오는 만렙(평시 Lv30 · 날씨부스트 Lv35)'));
+}
+
+// 2026-09-04 메가X/메가Y가 둘 다 있는 종(현재 뮤츠·리자몽 등)만 — 좌우 비교 + 차이 자동 요약
+function megaCompareNode(dex) {
+  const megas = DEX_DATA.megas?.[dex];
+  const x = megas?.find((e) => e.label === '메가X'), y = megas?.find((e) => e.label === '메가Y');
+  if (!x || !y) return null;
+  const fx = DEX_DATA.forms[x.sprite], fy = DEX_DATA.forms[y.sprite];
+  if (!fx || !fy) return null;
+  const c = DEX_DATA.cpm;
+  const row = (label, a, b, fmt = String) => el('div', { class: 'mega-cmp-row' },
+    el('em', {}, label),
+    el('b', { class: a > b ? 'hi' : '' }, fmt(a)), el('b', { class: b > a ? 'hi' : '' }, fmt(b)));
+  const typeChips = (types) => el('div', { class: 'tchips' }, ...types.map((t) => typeChipEl(t)));
+
+  const diffs = [];
+  const onlyX = fx.types.filter((t) => !fy.types.includes(t)), onlyY = fy.types.filter((t) => !fx.types.includes(t));
+  if (onlyX.length || onlyY.length) diffs.push(`타입: 메가X ${fx.types.map((t) => TYPE_KO[t]).join('/')} ↔ 메가Y ${fy.types.map((t) => TYPE_KO[t]).join('/')}`);
+  for (const [label, key] of [['공격', 'atk'], ['방어', 'def'], ['체력', 'hp']]) {
+    if (fx[key] !== fy[key]) diffs.push(`${label} 종족값 ${fx[key] > fy[key] ? '메가X' : '메가Y'}가 ${Math.abs(fx[key] - fy[key])} 더 높음`);
+  }
+
+  return el('div', { class: 'mega-cmp' },
+    el('div', { class: 'mega-cmp-row mega-cmp-head' }, el('em', {}), el('b', {}, '메가X'), el('b', {}, '메가Y')),
+    el('div', { class: 'mega-cmp-row' }, el('em', {}, '타입'), typeChips(fx.types), typeChips(fy.types)),
+    row('공격', fx.atk, fy.atk), row('방어', fx.def, fy.def), row('체력', fx.hp, fy.hp),
+    c ? row('CP 만렙', cpOf(fx, c.l50), cpOf(fy, c.l50), (n) => n.toLocaleString()) : '',
+    diffs.length ? el('p', { class: 'd-foot' }, diffs.join(' · ')) : '');
 }
 
 // 활용처를 PvP · 레이드 · 맥스 그룹으로 나눠 순위 칩으로 표시
@@ -221,7 +271,9 @@ function openDetail(p, isDex = false) {
   const c = DEX_DATA.cpm;
   const cpLine = form && c
     ? el('p', { class: 'd-cpline' },
-        `CP 만렙 `, el('b', {}, cpOf(form, c.l50).toLocaleString()), ` | 야생 ${cpOf(form, c.l30).toLocaleString()}, 부스트 ${cpOf(form, c.l35).toLocaleString()}`)
+        `CP 만렙 `, el('b', {}, cpOf(form, c.l50).toLocaleString()),
+        ` | 레이드 보상 ${cpOf(form, c.l20).toLocaleString()}, 부스트 ${cpOf(form, c.l25).toLocaleString()}`,
+        ` | 야생 ${cpOf(form, c.l30).toLocaleString()}, 부스트 ${cpOf(form, c.l35).toLocaleString()}`)
     : '';
   // 2026-09-03 v3 헤더: 타입 → 팬텀(Gengar) → CP 만렙 | 야생, 부스트 (유저 지정 순서)
   const head = el('div', { class: 'd-head' },
@@ -250,7 +302,9 @@ function openDetail(p, isDex = false) {
   if (types.length) body.append(detailSection('타입 상성', matchupCols(types)));
   const usage = usageNode(p.name);
   if (usage) body.append(detailSection('이 도감에서의 활용처 (상위 30위 내)', usage));
-  if (dex != null) body.append(detailSection('진화 단계', evoNode(dex, isDex)));
+  const megaCmp = dex != null ? megaCompareNode(dex) : null;
+  if (megaCmp) body.append(detailSection('⚡ 메가X vs 메가Y 비교', megaCmp));
+  if (dex != null) body.append(detailSection('진화 단계', evoNode(dex, isDex, p.sprite)));
   const counter = types.length ? counterNode(types) : null;
   if (counter) body.append(detailSection(`${p.name}가 보스로 나오면? (${TYPE_KO[types[0]]} 보스 공략 딜러)`, counter));
   openModal(body);

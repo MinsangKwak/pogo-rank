@@ -14,7 +14,9 @@ if os.path.exists('backend/config/dex_released_extra.txt'):
 # - dex: 스프라이트 id → 도감번호 (폼 스프라이트 포함)
 # - names: 도감번호 → 한글 이름 (진화 계보 표시용)
 # - evo: 도감번호 → 진화 단계 [[1단계 dex...], [2단계...], ...] (랭킹 등장 종의 가족만)
-# - forms: 스프라이트 id → { types, atk, def, hp, fast[[한글, 엘리트]], charged[[한글, 엘리트]] }
+# - forms: 스프라이트 id → { name, types, atk, def, hp, fast[[한글, 엘리트]], charged[[한글, 엘리트]] }
+# - megas: 도감번호 → [{ sprite, label }, ...] 메가/원시 진화 폼 (label: 메가/메가X/메가Y/원시) — 랭킹 등장 여부와 무관하게 항상 채움
+# - cpm: CP 계산용 배율 — l20/l25 레이드 보상(평시/날씨부스트), l30/l35 야생 최대(평시/날씨부스트), l50 만렙
 
 TYPES = ['NORMAL','FIGHTING','FLYING','POISON','GROUND','ROCK','BUG','GHOST','STEEL','FIRE','WATER','GRASS','ELECTRIC','PSYCHIC','ICE','DRAGON','DARK','FAIRY']
 TYPE_KO = {'normal':'노말','fire':'불꽃','water':'물','grass':'풀','electric':'전기','ice':'얼음','fighting':'격투','poison':'독','ground':'땅','flying':'비행','psychic':'에스퍼','bug':'벌레','rock':'바위','ghost':'고스트','dragon':'드래곤','dark':'악','steel':'강철','fairy':'페어리'}
@@ -53,6 +55,24 @@ def collect(v):
 for f in ('data/pvp.json', 'data/pve.json', 'data/pve_easy.json', 'data/dynamax.json', 'data/dynamax_tier.json', 'data/value.json', 'data/sheet.json'):
     if os.path.exists(f): collect(json.load(open(f, encoding='utf-8')))
 
+# 2026-09-03 메가/원시 진화: 랭킹에 없어도 항상 폼 데이터·진화 계보 연결이 되도록 스프라이트 id를 먼저 전부 수집
+megas_map = {}  # 도감번호(문자열) → [{sprite, label}, ...]
+for x in gm:
+    ps = x['data'].get('pokemonSettings')
+    if not ps or 'stats' not in ps or not ps.get('tempEvoOverrides'): continue
+    mdex = int(x['templateId'][1:5])
+    mform = ps.get('form','')
+    if any(k in mform for k in ('COPY','COSTUME','FALL_2019','_2020','_2021','_2022','_2023','_2024','_2025','NOEVOLVE','GOFEST','ADVENTURE','FASHION','HOLIDAY','SPRING','SUMMER','WINTER')): continue
+    mlabel = label_from_gm(ps['pokemonId'], mform)
+    if mlabel is None: continue
+    for te in ps['tempEvoOverrides']:
+        if 'stats' not in te or 'tempEvoId' not in te: continue
+        mega = te['tempEvoId'].replace('TEMP_EVOLUTION_','').replace('MEGA_','메가').replace('MEGA','메가').replace('PRIMAL','원시')
+        sid = sprite_id(mdex, f'{mega} {mlabel}'.strip())
+        entries = megas_map.setdefault(str(mdex), [])
+        if not any(e['sprite'] == sid for e in entries): entries.append({'sprite': sid, 'label': mega})
+ids |= {e['sprite'] for lst in megas_map.values() for e in lst}
+
 # 스프라이트 id → 도감번호 (PokeAPI pokemon.csv)
 sprite_dex = {}
 for r in csv.DictReader(open('data/pokemon.csv', encoding='utf-8')):
@@ -88,9 +108,10 @@ for chain, members in chain_members.items():
 
 # 폼별 상세 (랭킹에 등장하는 스프라이트만): 타입·종족값·배울 수 있는 기술
 forms = {}
-def put(sid, types, st, quick, elite_q, charged, elite_c):
+def put(sid, name, types, st, quick, elite_q, charged, elite_c):
     if sid not in ids or sid in forms: return
     forms[sid] = {
+        'name': name,
         'types': [t.lower() for t in types],
         'atk': st['baseAttack'], 'def': st['baseDefense'], 'hp': st['baseStamina'],
         'fast': [[move_ko(m), 1 if m in elite_q else 0] for m in quick],
@@ -109,12 +130,13 @@ for x in gm:
     quick = [m for m in ps.get('quickMoves',[]) + ps.get('eliteQuickMove',[]) if isinstance(m,str)]
     charged = [c for c in ps.get('cinematicMoves',[]) + ps.get('eliteCinematicMove',[]) if isinstance(c,str) and c not in ('FRUSTRATION','RETURN')]
     if not quick or not charged: continue
-    put(sprite_id(dex, label), types, ps['stats'], quick, elite_q, charged, elite_c)
+    put(sprite_id(dex, label), label, types, ps['stats'], quick, elite_q, charged, elite_c)
     for te in ps.get('tempEvoOverrides',[]):
         if 'stats' not in te or 'tempEvoId' not in te: continue
         mega = te['tempEvoId'].replace('TEMP_EVOLUTION_','').replace('MEGA_','메가').replace('MEGA','메가').replace('PRIMAL','원시')
         mtypes = [t.replace('POKEMON_TYPE_','') for t in (te.get('typeOverride1'), te.get('typeOverride2')) if t] or types
-        put(sprite_id(dex, f'{mega} {label}'.strip()), mtypes, te['stats'], quick, elite_q, charged, elite_c)
+        mname = f'{mega} {label}'.strip()
+        put(sprite_id(dex, mname), mname, mtypes, te['stats'], quick, elite_q, charged, elite_c)
 
 # 2026-09-03 도감 페이지용: 전 종 이름 보강 (진화 계보에 없던 종 포함)
 for d in all_dex:
@@ -129,13 +151,14 @@ for x in gm:
     m = re.match(r'^V(\d{4})_POKEMON_', x['templateId'])
     if m: cls_map[str(int(m.group(1)))] = {'POKEMON_CLASS_LEGENDARY': 'L', 'POKEMON_CLASS_MYTHIC': 'M', 'POKEMON_CLASS_ULTRA_BEAST': 'U'}[pc]
 
-# 2026-09-02 CP 계산용 CP 배율 (만렙 50 · 야생 최대 30 · 날씨부스트 최대 35)
+# 2026-09-03 CP 계산용 CP 배율 — 만렙 50, 레이드 보상 20/날씨부스트 25, 야생 최대 30/날씨부스트 35 (실제 게임 레벨 캡 기준)
 cpm_arr = [x for x in gm if 'playerLevel' in x['data']][0]['data']['playerLevel']['cpMultiplier']
-cpm = {'l30': cpm_arr[29], 'l35': cpm_arr[34], 'l50': cpm_arr[49]}
+cpm = {'l20': cpm_arr[19], 'l25': cpm_arr[24], 'l30': cpm_arr[29], 'l35': cpm_arr[34], 'l50': cpm_arr[49]}
 cpms = [round(x, 6) for x in cpm_arr[:51]]  # CP 계산기: 레벨 n = 인덱스 n-1, 반레벨은 프론트에서 보간
 
 out = {'chart': chart, 'cpm': cpm, 'cpms': cpms, 'dex': {str(i): sprite_dex[i] for i in ids if i in sprite_dex and sprite_dex[i] != i},
        'names': names, 'evo': {str(k): v for k, v in evo.items()}, 'forms': {str(k): v for k, v in forms.items()},
+       'megas': {k: v for k, v in megas_map.items() if any(e['sprite'] in forms for e in v)},
        'cls': cls_map,
        'rel': sorted(released_dex | extra_rel)}  # 2026-09-03 도감 [미구현] 태그용 — PvPoke released + 수동 보정
 json.dump(out, open('data/dex.json', 'w', encoding='utf-8'), ensure_ascii=False)
