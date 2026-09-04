@@ -39,15 +39,20 @@ FRESH_DAYS = 14
 MIN_MOVE = 2
 
 
+def row_key(row):
+    # 섀도우와 일반은 스프라이트 그림이 같아 id 도 같다. 스프라이트만으로 묶으면
+    # "섀도우 뮤츠"의 변동이 "뮤츠"의 것으로 잘못 붙으므로 이름까지 합쳐 구분한다.
+    return f"{row.get('sprite')}|{row.get('name')}"
+
+
 def collect_ranks(tables):
-    # tables: {표키: [행...]} — 행은 순위 순서대로 들어온 dict 이고 'sprite' 키를 가진다
-    # 같은 스프라이트가 한 표에 두 번 나오면(폼 중복) 먼저 나온 쪽이 그 표에서의 순위다
+    # tables: {표키: [행...]} — 행은 순위 순서대로 들어온 dict 이고 sprite·name 을 가진다
+    # 같은 키가 한 표에 두 번 나오면(시트에 변형이 중복 등재된 경우) 먼저 나온 쪽이 그 표에서의 순위다
     ranks = {}
     for table_key, rows in tables.items():
         table = {}
         for index, row in enumerate(rows):
-            sprite_key = str(row.get('sprite'))
-            table.setdefault(sprite_key, index + 1)
+            table.setdefault(row_key(row), index + 1)
         ranks[table_key] = table
     return ranks
 
@@ -79,10 +84,10 @@ def apply(tables):
     for table_key, table in ranks.items():
         previous_table = previous.get(table_key, {})
         moved = {}
-        for sprite_key, rank in table.items():
-            previous_rank = previous_table.get(sprite_key)
+        for key, rank in table.items():
+            previous_rank = previous_table.get(key)
             if previous_rank is not None and abs(previous_rank - rank) >= MIN_MOVE:
-                moved[sprite_key] = previous_rank - rank   # 양수 = 상승
+                moved[key] = previous_rank - rank   # 양수 = 상승
         if moved:
             delta[table_key] = moved
 
@@ -102,6 +107,6 @@ def _attach(tables, delta):
         if not moved:
             continue
         for row in rows:
-            change = moved.get(str(row.get('sprite')))
+            change = moved.get(row_key(row))
             if change:
                 row['d'] = change

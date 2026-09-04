@@ -84,3 +84,6 @@
 .chg-new li { display: flex; align-items: center; gap: 8px; padding: 6px 8px; border: 1px solid var(--line); border-radius: 8px; cursor: pointer; }
 .chg-new li img { width: 36px; height: 36px; }
 .chg-new li b { font-size: 12.5px; }
+.chg-scope { margin: 8px 0 0; font-size: 12px; line-height: 1.5; color: var(--muted);
+  border-left: 3px solid var(--line); padding-left: 10px; }
+.chg-scope b { color: var(--fg); }

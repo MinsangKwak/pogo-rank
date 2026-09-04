@@ -145,9 +145,14 @@ function renderMoveChangesPage() {
     el('div', { class: `chg-head ${daysLeft > 0 ? 'soon' : 'done'}` },
       el('b', {}, data.season),
       el('span', {}, daysLeft > 0 ? `${data.date} 적용 · D-${daysLeft}` : `${data.date} 적용됨`)),
+    // 어디에 적용되는 수치인지부터 밝힌다.
+    // 포켓몬 GO는 같은 기술이라도 레이드·체육관용 위력과 트레이너 배틀용 위력을 따로 갖고 있고,
+    // 시즌 조정은 보통 배틀 쪽만 바꾼다. 이걸 적어 두지 않으면 "아이언헤드 85인데 왜 레이드 순위가 그대로냐"가 된다.
+    el('p', { class: 'chg-scope' },
+      '아래 위력 수치는 ', el('b', {}, '트레이너 배틀(PvP) 기준'), '입니다. 같은 기술이라도 레이드·체육관용 위력은 따로 관리되고, 이번 조정은 대부분 PvP에만 적용됩니다.'),
     el('p', { class: 'd-foot' },
       daysLeft > 0
-        ? '적용 전이라 순위표에는 아직 반영돼 있지 않습니다. 적용 다음 날 자동 갱신되면 순위가 움직인 포켓몬에 ▲▼ 표시가 붙습니다.'
+        ? '적용 전이라 순위표에는 아직 반영돼 있지 않습니다. 적용 다음 날 자동 갱신되면 순위가 움직인 포켓몬에 ▲▼ 표시가 붙습니다. 레이드 티어표를 움직이는 것은 사이코부스트(체육관·레이드 70 → 130)와 새로 배우는 기술 쪽입니다.'
         : '순위표는 이미 이 값으로 계산돼 있습니다. 최근 움직인 포켓몬에는 ▲▼ 표시가 붙어 있어요.'),
     upMoves.length ? section('위력이 오른 기술', '', el('ul', { class: 'chg-list' }, ...upMoves.map(moveChangeRow))) : '',
     downMoves.length ? section('위력이 내린 기술', '', el('ul', { class: 'chg-list' }, ...downMoves.map(moveChangeRow))) : '',

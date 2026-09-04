@@ -451,7 +451,7 @@ function openDetail(pokemon, isDex = false) {
         el('div', { class: 'chg-list' },
           bucket('▲', moveChange.up, 'up'), bucket('▼', moveChange.down, 'down'),
           bucket('·', moveChange.energy, ''), bucket('＋', moveChange.new, 'up')),
-        el('p', { class: 'd-foot' }, '자세한 수치는 메뉴 → ⚔️ 기술 변경'))));
+        el('p', { class: 'd-foot' }, '위력 수치는 트레이너 배틀 기준 · 자세한 내용은 메뉴 → ⚔️ 기술 변경'))));
   }
   if (types.length) body.append(detailSection('타입 상성', matchupCols(types)));
   // 아래 섹션들은 해당 데이터가 있을 때만 붙는다 (활용처 미등재·메가 없음·진화 없음 등)
