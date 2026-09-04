@@ -25,6 +25,10 @@ footer p { margin: 0; }
 .schedule[open] summary::after { transform: rotate(180deg); }
 .schedule-today { display: block; margin-top: 2px; font-weight: 400; font-size: 12px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .schedule-body { padding: 0 12px 14px; }
+
+/* 2026-09-05 로그인 전용 즐겨찾기 순위 변동 카드 — .schedule과 같은 카드 톤, 아코디언은 아니라 항상 펼쳐짐 */
+.fav-digest { margin: 4px 0 20px; padding-top: 10px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); font-size: 13px; }
+.fav-digest .schedule-sec { margin-top: 0; padding: 0 4px; }
 .schedule-cal { display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px; }
 .cal-head { text-align: center; font-size: 11px; color: var(--muted); padding: 4px 0; }
 .cal-day { min-height: 40px; padding: 3px 4px; border-radius: 8px; background: var(--bg); text-align: left; display: flex; flex-direction: column; gap: 2px; }

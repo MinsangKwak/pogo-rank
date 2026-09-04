@@ -148,7 +148,7 @@ SCRIPTS = [
     'components/type-dots.js', 'components/sprite.js', 'components/changes.js', 'components/row.js',  # 2026-09-04 changes: 기술 변경·순위 변동 뱃지 (row가 사용)
     'components/list.js', 'components/chips.js', 'components/seg.js',
     'components/modal.js', 'components/auth.js', 'components/detail.js',  # 2026-09-03 v2.2.0 auth: 로그인·즐겨찾기 (detail보다 먼저)
-    'components/schedule.js', 'components/release.js', 'components/privacy.js', 'components/search.js', 'components/drawer.js', 'components/pages.js', 'components/trainers.js', 'components/totop.js',  # 2026-09-02 9월 일정표 달력 · 업데이트 팝업
+    'components/schedule.js', 'components/release.js', 'components/privacy.js', 'components/search.js', 'components/drawer.js', 'components/pages.js', 'components/trainers.js', 'components/favdigest.js', 'components/totop.js',  # 2026-09-02 9월 일정표 달력 · 업데이트 팝업
     'views/pvp.js', 'views/pve.js', 'views/max.js', 'views/tier.js', 'views/usage.js', 'views/ifsolo.js',  # 2026-09-02 if 탭
     'app.js',
 ]

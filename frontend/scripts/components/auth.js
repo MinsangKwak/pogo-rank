@@ -119,6 +119,7 @@ async function onAuthChange(user) {
   }
   renderAccount();
   refreshFavUi();
+  if (typeof renderFavDigest === 'function') renderFavDigest();
   TRAINERS_CACHE = null;  // 계정이 바뀌면 트레이너 코드도 다시 조회
   if (typeof renderTrainers === 'function') renderTrainers();
   // 도감이 열려 있으면 ★ 표시를 다시 그린다
@@ -194,6 +195,7 @@ async function toggleFav(dex) {
   else AUTH.favs.delete(dex);
   refreshFavUi(dex);
   renderAccount();
+  if (typeof renderFavDigest === 'function') renderFavDigest();
   const fieldValue = firebase.firestore.FieldValue;
   await AUTH.db.collection('users').doc(AUTH.user.uid).set({
     email: authEmail(), favs: on ? fieldValue.arrayUnion(dex) : fieldValue.arrayRemove(dex), updatedAt: fieldValue.serverTimestamp(),
