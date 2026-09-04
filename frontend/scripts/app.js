@@ -12,7 +12,7 @@
 // 의존하는 전역
 //   el (dom.js) · seg (components/seg.js) · track (track.js)
 //   renderMax · renderPve · renderPveEasy · renderPvp · renderUsage · renderIfTab (views/*)
-//   initReleaseBadge (components/release.js) · initAuth (components/auth.js)
+//   initReleaseBadge (components/release.js) · initMoveChangesMenu (components/changes.js) · initAuth (components/auth.js)
 //
 // 렌더링 흐름: 이 앱은 부분 갱신을 하지 않는다. 어떤 버튼이든 state를 고치고 render()를 부르면
 // $controls·$content를 비우고 현재 탭 렌더러가 전부 새로 그린다. 그래서 각 뷰는 "지금 state로
@@ -113,6 +113,8 @@ render();
 track('tab_start', { tab: state.tab });
 // 2026-09-03 자동 팝업 대신 새 패치노트 뱃지 (☰에 빨간 점)
 initReleaseBadge();
+// 2026-09-04 시즌 기술 변경 안내: 변경 데이터가 있을 때만 메뉴에 항목이 뜬다
+initMoveChangesMenu();
 // 2026-09-03 v2.2.0 로그인: 첫 화면이 그려진 뒤에 Firebase SDK를 받는다 (초기 로딩 영향 없음)
 // 이미 load가 끝났으면 곧바로, 아니면 load 이벤트를 기다렸다가 initAuth를 부른다
 (document.readyState === 'complete'

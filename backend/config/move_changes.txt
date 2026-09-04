@@ -1,0 +1,105 @@
+# 시즌 기술 변경 목록 — 이 파일만 손으로 관리한다
+#
+# 출처: 포켓몬 GO 공식 공지 "GO 배틀리그: 황혼의 발자취" (pokemongo.com, 2026-09-04 확인)
+#       교차 확인: pokemongohub.net 같은 시즌 기술 변경 정리 글
+# 새 시즌이 오면 이 파일 내용을 통째로 갈아끼운다. 지난 시즌 내용을 남겨 두지 않는다
+# (사이트에는 "다가오는/방금 적용된 변경" 하나만 보이면 되기 때문).
+#
+# '#' 뒤는 주석. 빈 줄은 무시한다.
+#
+# ── 형식 ──────────────────────────────────────────────────────────────────
+# SEASON <시즌 이름>
+# DATE   <적용일 YYYY-MM-DD>      이 날짜가 지나면 사이트의 "예고" 표시가 저절로 사라진다
+#
+# M <up|down> <기술ID> <이전위력> <이후위력> [| 비고]
+#     위력이 바뀐 기술. up/down 은 "위력" 기준으로만 판단한다.
+#     에너지가 같이 움직였으면 비고에 적는다 (위력은 올랐는데 에너지 비용도 오른 경우가 많다).
+# E <기술ID> [| 비고]
+#     위력은 그대로고 에너지만 바뀐 기술.
+# N <포켓몬ID> <폼|-> <기술ID>
+#     새로 배우게 되는 기술. 폼이 없으면 '-' (기본 폼).
+#
+# 기술ID·포켓몬ID는 게임마스터 표기를 그대로 쓴다. 빠른 기술의 _FAST 접미사는 붙여도 되고
+# 빼도 된다 (빌더가 알아서 맞춘다). 한글 기술명·포켓몬명은 빌더가 자동으로 붙인다.
+# ──────────────────────────────────────────────────────────────────────────
+
+SEASON 황혼의 발자취
+DATE 2026-09-08
+
+# ── 위력이 오른 기술 ──
+M up IRON_HEAD        70  85
+M up DRAINING_KISS    60  80  | 자신 방어 상승 확정
+M up DOUBLE_IRON_BASH 55  70
+M up LUNGE            60  70
+M up POISON_FANG      45  50
+M up BRINE            60 100  | 에너지 비용 증가
+M up BUBBLE_BEAM      25  50  | 에너지 비용 증가
+M up BULLDOZE         45  80  | 상대 방어 하락 확정, 에너지 비용 증가
+M up AIR_CUTTER       45  60  | 능력 상승 확률 감소, 에너지 비용 증가
+M up BODY_SLAM        55  65  | 에너지 비용 증가
+M up SAND_TOMB        40  55  | 에너지 비용 증가
+M up MIRROR_COAT      60  75  | 에너지 비용 감소
+M up RAGE_FIST        50  55  | 에너지 비용 증가
+M up PSYCHO_BOOST     70  85  | 트레이너 배틀 기준 · 체육관·레이드는 70 → 130
+M up TAKE_DOWN         5  14  | 에너지 생성 증가
+M up INFESTATION       6  10
+M up CHARGE_BEAM       5   6
+M up LOW_KICK          5   6
+
+# ── 위력이 내린 기술 ──
+M down SHADOW_BALL   100  90
+M down MOONBLAST     110  90  | 에너지 비용 감소
+M down BITE            4   2  | 에너지 생성 증가
+M down SCRATCH         4   3  | 에너지 생성 증가
+
+# ── 에너지만 바뀐 기술 ──
+E HIGH_HORSEPOWER  | 에너지 비용 감소
+E BLAZE_KICK       | 에너지 비용 감소
+E MAGNET_BOMB      | 에너지 비용 감소
+E SHADOW_FORCE     | 에너지 비용 감소
+E DARK_PULSE       | 에너지 비용 감소
+
+# ── 새로 배우는 기술 ──
+N RAICHU      -                  VOLT_TACKLE
+N RAICHU      RAICHU_ALOLA       VOLT_TACKLE
+N GALLADE     -                  SACRED_SWORD
+N SKARMORY    -                  DRILL_RUN
+N BOMBIRDIER  -                  DRILL_RUN
+N LUGIA       -                  EARTH_POWER
+N DARKRAI     -                  SUCKER_PUNCH
+N DARKRAI     -                  FOUL_PLAY
+N GRENINJA    -                  BRUTAL_SWING
+N AERODACTYL  -                  BRUTAL_SWING
+N MUK         MUK_ALOLA          BRUTAL_SWING
+N MUK         MUK_ALOLA          ICE_PUNCH
+N ARBOK       -                  BRUTAL_SWING
+N ARBOK       -                  FOUL_PLAY
+N ARBOK       -                  WRAP
+N ARIADOS     -                  FOUL_PLAY
+N GRAFAIAI    -                  FOUL_PLAY
+N GRAFAIAI    -                  SCRATCH
+N VICTREEBEL  -                  SUCKER_PUNCH
+N AUDINO      -                  CHARGE_BEAM
+N VOLBEAT     -                  INFESTATION
+N VOLBEAT     -                  LUNGE
+N ILLUMISE    -                  INFESTATION
+N ILLUMISE    -                  SHADOW_BALL
+N GRIMMSNARL  -                  DRAINING_KISS
+N AGGRON      -                  BRICK_BREAK
+N ZERAORA     -                  DYNAMIC_PUNCH
+N DEOXYS      DEOXYS_DEFENSE     LOW_KICK
+N KINGAMBIT   -                  LOW_KICK
+N HOUNDOOM    -                  INCINERATE
+N HOUNDOOM    -                  TRAILBLAZE
+N MISMAGIUS   -                  MYSTICAL_FIRE
+N CROBAT      -                  GUST
+N FLAMIGO     -                  PECK
+N CHANDELURE  -                  ASTONISH
+N COFAGRIGUS  -                  ENERGY_BALL
+N MILTANK     -                  HIGH_HORSEPOWER
+N NIDOKING    -                  AVALANCHE
+N URSALUNA    -                  SCRATCH
+N ZOROARK     ZOROARK_HISUIAN    SWIFT
+N TOXTRICITY  TOXTRICITY_AMPED   SWIFT
+N TOXTRICITY  TOXTRICITY_LOW_KEY SWIFT
+N SNORLAX     -                  PSYWAVE

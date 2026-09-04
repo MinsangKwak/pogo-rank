@@ -433,6 +433,26 @@ function openDetail(pokemon, isDex = false) {
           el('div', { class: 'd-moves' }, el('h3', {}, '배울 수 있는 기술'), movesNode(form)))
       : detailSection('배울 수 있는 기술', el('div', { class: 'd-moves' }, movesNode(form))));
   }
+  // 2026-09-04 이 포켓몬에 걸린 시즌 기술 변경 (적용 전후 모두 표시 — 적용 뒤에도 "왜 순위가 움직였나"의 답이 된다)
+  const moveChange = moveChangeFor(pokemon.sprite);
+  if (moveChange) {
+    const data = moveChangeData();
+    const daysLeft = moveChangeDaysLeft();
+    const bucket = (label, names, className) => (names?.length
+      ? el('div', { class: `chg-row ${className}` }, el('span', { class: 'chg-mark' }, label),
+          el('div', {}, el('b', {}, names.join(' · ')),
+            // 레거시(지금은 못 배우는 전용 기술)가 섞여 있으면 오해하지 않게 표시한다
+            names.some((name) => moveChange.legacy?.includes(name))
+              ? el('div', { class: 'chg-sub' }, '※ 일부는 지금 배울 수 없는 레거시 기술입니다') : ''))
+      : '');
+    body.append(detailSection(
+      daysLeft > 0 ? `⚔️ ${data.date} 기술 변경 예정 (D-${daysLeft})` : `⚔️ ${data.date} 기술 변경 적용됨`,
+      el('div', {},
+        el('div', { class: 'chg-list' },
+          bucket('▲', moveChange.up, 'up'), bucket('▼', moveChange.down, 'down'),
+          bucket('·', moveChange.energy, ''), bucket('＋', moveChange.new, 'up')),
+        el('p', { class: 'd-foot' }, '자세한 수치는 메뉴 → ⚔️ 기술 변경'))));
+  }
   if (types.length) body.append(detailSection('타입 상성', matchupCols(types)));
   // 아래 섹션들은 해당 데이터가 있을 때만 붙는다 (활용처 미등재·메가 없음·진화 없음 등)
   const usage = usageNode(pokemon.name);

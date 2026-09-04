@@ -19,6 +19,11 @@
 //              이미 만들어 둔 노드를 넘기면 그 노드를 그대로 쓴다. 생략하면 기술 두 개를 쓴다
 //   tagNode    이름 위에 붙는 뱃지 노드 (없으면 생략)
 //   반환값     누르면 상세 팝업이 열리는 <li class="row">
+//
+// 2026-09-04 변동 ▲▼ · 기술 변경 예고 뱃지는 뷰가 넘기지 않아도 여기서 자동으로 붙인다.
+//   - 변동 폭은 빌드가 행에 심어 둔 pokemon.d (backend/rank_diff.py)
+//   - 기술 변경 여부는 스프라이트 id 로 조회 (components/changes.js)
+//   모든 순위표가 이 함수를 거치므로, 뷰를 하나도 고치지 않고 전 표에 같은 표시가 붙는다.
 function row(pokemon, rankText, scoreNode, subNode, lineParts, tagNode) {
   const stats = el('div', { class: 'stats' }, scoreNode);
   if (subNode) stats.append(subNode);
@@ -31,12 +36,15 @@ function row(pokemon, rankText, scoreNode, subNode, lineParts, tagNode) {
       .filter(Boolean)
       .map((text) => el('span', {}, text)));
   const main = el('div', { class: 'main' });
-  // 뱃지는 이름보다 위에 와야 하므로 name·line보다 먼저 붙인다
-  if (tagNode) main.append(el('div', { class: 'badges' }, tagNode));
+  // 뱃지는 이름보다 위에 와야 하므로 name·line보다 먼저 붙인다.
+  // 뷰가 넘긴 뱃지(tagNode)와 기술 변경 예고 뱃지를 한 줄에 모은다 — 둘 다 없으면 줄 자체를 만들지 않는다
+  const moveBadge = changeBadge(pokemon.sprite);
+  if (tagNode || moveBadge) main.append(el('div', { class: 'badges' }, tagNode ?? '', moveBadge));
   main.append(name, line);
   // 줄 전체가 상세 팝업 버튼이다 (안쪽에 따로 버튼을 두지 않아 클릭 영역이 넓다)
   return el('li', { class: 'row', onclick: () => openDetail(pokemon) },
-    el('span', { class: 'rank' }, rankText),
+    // 순위 칸: 숫자 아래에 최근 변동 ▲▼ (변동이 없거나 오래됐으면 아무것도 안 붙는다)
+    el('span', { class: 'rank' }, rankText, rankDeltaBadge(pokemon.d)),
     sprite(pokemon.sprite),
     main,
     stats,

@@ -106,7 +106,7 @@ json.dump(pvp_all, open('data/pvp_all.json', 'w', encoding='utf-8'), ensure_asci
 
 # ── frontend/ 의 CSS·JS를 순서대로 인라인해 단일 dist/index.html 조립 ──
 # 순서가 곧 캐스케이드(CSS)·실행 순서(JS)이므로 새 파일은 여기 목록에 추가
-APP_VERSION = 'v2.4.1'  # 2026-09-03 화면 표시용 버전 — 릴리스 때 여기만 올리면 됨
+APP_VERSION = 'v2.5.0'  # 2026-09-03 화면 표시용 버전 — 릴리스 때 여기만 올리면 됨
 # 2026-09-03 GA4 측정 ID (G-XXXXXXXXXX) — 채우면 배포 빌드에 gtag가 삽입되고, 비우면 추적 코드 자체가 안 들어감
 GA_ID = 'G-XXXXXXXXXX'
 # 2026-09-03 v2.2.0 Firebase (Google 로그인 + 즐겨찾기 동기화)
@@ -145,7 +145,7 @@ STYLES = [
 ]
 SCRIPTS = [
     'data.js', 'dom.js', 'track.js',  # 2026-09-03 track: GA4 이벤트 헬퍼 (가장 먼저 정의)
-    'components/type-dots.js', 'components/sprite.js', 'components/row.js',  # 2026-09-03 v2.2.0 owned.js(보유 ☆) 제거 → auth.js 즐겨찾기로 대체
+    'components/type-dots.js', 'components/sprite.js', 'components/changes.js', 'components/row.js',  # 2026-09-04 changes: 기술 변경·순위 변동 뱃지 (row가 사용)
     'components/list.js', 'components/chips.js', 'components/seg.js',
     'components/modal.js', 'components/auth.js', 'components/detail.js',  # 2026-09-03 v2.2.0 auth: 로그인·즐겨찾기 (detail보다 먼저)
     'components/schedule.js', 'components/release.js', 'components/search.js', 'components/drawer.js', 'components/pages.js', 'components/trainers.js', 'components/totop.js',  # 2026-09-02 9월 일정표 달력 · 업데이트 팝업
@@ -183,18 +183,55 @@ if os.path.exists('data/sprites'):
             if not INLINE:
                 shutil_copy = __import__('shutil').copy(source_path, f'dist/sprites/{filename}')
 
+# ── 순위 변동(▲▼) 계산 ────────────────────────────────────────────────────
+# 직전 빌드의 순위와 비교해 각 행에 'd'(변동 폭)를 심는다. 자세한 규칙은 backend/rank_diff.py 참고.
+# PvE·D-MAX 표가 아직 없는 1차 실행에서는 건너뛴다 (그때 비교하면 잘못된 기준이 남는다).
+rank_delta_date, changed_table_count, rank_fresh_days = '', 0, 14
+
+def load_table_file(path):
+    return json.load(open(path, encoding='utf-8')) if os.path.exists(path) else None
+
+# 화면에 실제로 순위가 보이는 표를 전부 넣는다.
+# 같은 PvE 탭이라도 시트 데이터가 있으면 시트를, 없으면 자체 계산을 그리므로 둘 다 대상이다.
+pve_tables = load_table_file('data/pve.json')
+pve_easy_tables = load_table_file('data/pve_easy.json')
+dmax_tables = load_table_file('data/dynamax_tier.json')
+sheet_tables = load_table_file('data/sheet.json')
+value_tables = load_table_file('data/value.json')
+if pve_tables and dmax_tables:
+    import rank_diff
+    all_tables = {}
+    for league_id, rows in pvp.items():
+        all_tables[f'pvp:{league_id}'] = rows
+    for type_key, rows in pve_tables.items():
+        all_tables[f'pve:{type_key}'] = rows
+    for type_key, rows in (pve_easy_tables or {}).items():
+        all_tables[f'pveEasy:{type_key}'] = rows
+    for type_key, rows in dmax_tables.items():
+        all_tables[f'dmax:{type_key}'] = rows
+    for type_key, rows in ((sheet_tables or {}).get('pve') or {}).items():
+        all_tables[f'sheet:{type_key}'] = rows
+    if value_tables and value_tables.get('usage'):
+        all_tables['usage'] = value_tables['usage']
+    rank_delta_date, changed_table_count = rank_diff.apply(all_tables)
+    rank_fresh_days = rank_diff.FRESH_DAYS
+    print(f'순위 변동: 기준일 {rank_delta_date or "없음"} · 움직인 표 {changed_table_count}개')
+
 # 프론트가 읽는 전역 데이터. 각 상수는 대응하는 뷰가 그대로 참조한다
 # (없는 파일은 optional_json이 '{}'로 채우므로 1차 실행에서도 문법 오류가 나지 않는다)
 data_js = f'''// 빌드 생성 데이터 (backend/build.py) — 기준일 {game_master['timestamp']}
 const TYPE_KO = {json.dumps(TYPE_KO, ensure_ascii=False)};
 const PVP_DATA = {json.dumps(pvp, ensure_ascii=False)};
-const PVE_DATA = {open('data/pve.json', encoding='utf-8').read()};
-const PVE_EASY = {optional_json('data/pve_easy.json')};
+const PVE_DATA = {json.dumps(pve_tables, ensure_ascii=False) if pve_tables else optional_json('data/pve.json')};
+const PVE_EASY = {json.dumps(pve_easy_tables, ensure_ascii=False) if pve_easy_tables else optional_json('data/pve_easy.json')};
 const DMAX_DATA = {optional_json('data/dynamax.json')};
 const MAX_POOL = {optional_json('data/max_pool.json')};   // 2026-09-04 맥스 배틀 포획 가능 종 (스프라이트 id → 'G'|'D')
-const DMAX_TIER = {optional_json('data/dynamax_tier.json')};
-const VALUE_DATA = {optional_json('data/value.json')};
-const SHEET_DATA = {optional_json('data/sheet.json')};
+const MOVE_CHANGES = {optional_json('data/move_changes.json')};   // 2026-09-04 시즌 기술 변경 안내 (backend/change_build.py)
+const RANK_DELTA_DATE = {json.dumps(rank_delta_date)};            // 2026-09-04 순위 변동을 기록한 날 (뱃지 유효기간 계산용)
+const RANK_FRESH_DAYS = {rank_fresh_days};                        // 이 일수가 지나면 변동 뱃지를 감춘다
+const DMAX_TIER = {json.dumps(dmax_tables, ensure_ascii=False) if dmax_tables else optional_json('data/dynamax_tier.json')};
+const VALUE_DATA = {json.dumps(value_tables, ensure_ascii=False) if value_tables else optional_json('data/value.json')};
+const SHEET_DATA = {json.dumps(sheet_tables, ensure_ascii=False) if sheet_tables else optional_json('data/sheet.json')};
 const DEX_DATA = {optional_json('data/dex.json')};
 const BOSS_LIST = {optional_json('data/bosses.json') or '[]'};
 const SPRITE_IDS = {json.dumps(sorted(sprite_ids))};

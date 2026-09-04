@@ -167,6 +167,7 @@ const PAGES = {
   release: { title: '🎉 패치노트', render: renderReleasePage },
   schedule: { title: `📅 ${SCHEDULE_YM.m}월 일정표`, render: renderSchedulePage },
   dex: { title: '📕 도감', render: renderDexPage },  // 2026-09-03 CP 계산기 페이지 대체
+  changes: { title: '⚔️ 기술 변경', render: renderMoveChangesPage },  // 2026-09-04 시즌 기술 조정 안내
 };
 
 // 현재 해시(#/dex, #/schedule?… 등)에서 페이지 id 만 뽑는다. PAGES 에 없으면 null = 메인 화면.

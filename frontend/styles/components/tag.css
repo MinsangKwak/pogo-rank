@@ -2,3 +2,14 @@
 .badges { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 3px; }
 .tag { flex: 0 0 auto; display: inline-block; font-size: 10.5px; font-weight: 600; letter-spacing: .02em; padding: 1px 6px; border-radius: 4px; border: 1px solid var(--line); color: var(--muted); }
 .tag.gmax { color: var(--fg); border-color: var(--fg); }
+
+/* 2026-09-04 시즌 기술 변경 예고 뱃지 — 적용일 전에만 붙는다 */
+.tag.chg { border-style: dashed; }
+.tag.chg.up { color: #2f8f5b; border-color: color-mix(in srgb, #2f8f5b 55%, var(--line)); }
+.tag.chg.down { color: #d84a5f; border-color: color-mix(in srgb, #d84a5f 55%, var(--line)); }
+.tag.chg.mix { color: var(--fg); border-color: var(--fg); }
+
+/* 2026-09-04 순위 변동 ▲▼ — 순위 숫자 아래 한 줄 */
+.rank-delta { display: block; font-size: 10px; font-weight: 700; line-height: 1.3; letter-spacing: -.02em; }
+.rank-delta.up { color: #2f8f5b; }
+.rank-delta.down { color: #d84a5f; }

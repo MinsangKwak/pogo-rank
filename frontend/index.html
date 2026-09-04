@@ -111,6 +111,8 @@ __STYLES__
     </details>
     <!-- 2026-09-03 CP 계산기는 상세 팝업 안으로 이동, 자리에 도감 신설 -->
     <button class="drawer-item" onclick="openPage('dex')">📕 도감</button>
+    <!-- 2026-09-04 시즌 기술 변경 안내: 변경 데이터가 있을 때만 initMoveChangesMenu()가 연다 -->
+    <button class="drawer-item" id="menu-changes" onclick="openPage('changes')" hidden>⚔️ 기술 변경</button>
     <button class="drawer-item" id="menu-release" onclick="openPage('release')">🎉 패치노트</button>
     <a class="drawer-item" href="https://www.notion.so/a0472984122d4f25b9b445b57465568f" target="_blank" rel="noopener">🛠 QA·버그 제보 (노션)</a>
     <p class="drawer-meta">PvPoke · PokeMiners 데이터<br>기준일 __TIMESTAMP__ · 매일 00시 자동 갱신</p>
