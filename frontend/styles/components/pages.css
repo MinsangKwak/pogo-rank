@@ -6,6 +6,11 @@
 .rel-sec ul { margin: 0; padding-left: 18px; font-size: 13.5px; line-height: 1.8; }
 .sched-date { font-weight: 600; margin-right: 2px; }
 
+/* 2026-09-04 개인정보처리방침 페이지 */
+.priv-sec { margin-top: 4px; }
+.priv-sec p { font-size: 13.5px; line-height: 1.7; color: var(--fg); }
+.priv-list { margin: 6px 0 0; padding-left: 18px; font-size: 13.5px; line-height: 1.8; color: var(--fg); }
+
 /* 새 패치노트 알림 점 (☰ 버튼 · 메뉴 항목) */
 .dot-badge { position: relative; }
 .dot-badge::after { content: ''; position: absolute; top: 6px; right: 6px; width: 7px; height: 7px; border-radius: 50%; background: #d84a5f; }

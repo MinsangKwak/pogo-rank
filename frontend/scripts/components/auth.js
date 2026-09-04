@@ -254,7 +254,8 @@ function renderAccount(message) {
   if (!AUTH.user) {
     accountBox.append(
       el('button', { class: 'drawer-item acct-login', onclick: signIn }, '🔐 Google로 로그인'),
-      el('p', { class: 'acct-sub' }, '승인된 친구만 사용할 수 있어요. 로그인하면 즐겨찾기 ★를 내 계정에 저장합니다.'),
+      el('p', { class: 'acct-sub' }, '승인된 친구만 사용할 수 있어요. 로그인하면 즐겨찾기 ★를 내 계정에 저장합니다. ',
+        el('a', { href: '#/privacy' }, '수집하는 개인정보 보기')),
       note);
     return;
   }
