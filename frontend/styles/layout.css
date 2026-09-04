@@ -57,3 +57,5 @@ footer a { color: var(--muted); text-decoration: underline; }
 .release-actions button { flex: 1; padding: 9px 0; border: 1px solid var(--line); border-radius: 10px; font-size: 13px; }
 .release-actions .release-mute { color: var(--muted); }
 .release-actions .release-ok { background: var(--fg); color: var(--bg); border-color: var(--fg); font-weight: 500; }
+/* 2026-09-04 고지 첫 줄 — 서비스 성격을 한 줄로 강조 */
+footer .notice-lead { font-size: 13px; font-weight: 500; color: var(--fg); }

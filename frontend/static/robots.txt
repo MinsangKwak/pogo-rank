@@ -1,0 +1,40 @@
+# POGO SEARCH — https://minsangkwak.github.io/pogo-rank/
+# 2026-09-04 신설. 정적 사이트(GitHub Pages)라 서버 차단 수단이 없어,
+# 크롤러에게 "여기까지만" 하고 알려 주는 예의 수준의 문서다.
+# 규칙을 지키는 것은 착한 봇뿐이며 강제력은 없다 — 실제 차단은 CDN(Cloudflare) 단계에서만 가능하다.
+# 자세한 배경과 대응 단계: docs/INFRA.md
+
+# 일반 검색 엔진: 전체 허용 (친구들이 검색으로 찾아올 수 있게)
+User-agent: *
+Allow: /
+# 해시 라우팅(#/dex 등)은 크롤러가 색인하지 않는다. 별도 차단 경로가 필요 없음
+Crawl-delay: 10
+
+# AI 학습 크롤러: 차단 (원 저작권이 Nintendo/Niantic에 있는 이미지·명칭이 포함된 페이지)
+User-agent: GPTBot
+Disallow: /
+
+User-agent: ClaudeBot
+Disallow: /
+
+User-agent: Google-Extended
+Disallow: /
+
+User-agent: CCBot
+Disallow: /
+
+User-agent: Bytespider
+Disallow: /
+
+# 공격적으로 전체를 긁어가는 상용 SEO 크롤러: 차단 (대역폭 절약 목적)
+User-agent: AhrefsBot
+Disallow: /
+
+User-agent: SemrushBot
+Disallow: /
+
+User-agent: MJ12bot
+Disallow: /
+
+User-agent: DotBot
+Disallow: /
