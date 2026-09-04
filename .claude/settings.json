@@ -1,0 +1,22 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python3 backend/build.py)",
+      "Bash(python3 backend/pve_build.py)",
+      "Bash(python3 backend/value_build.py)",
+      "Bash(python3 backend/sheet_build.py)",
+      "Bash(python3 backend/dex_build.py)",
+      "Bash(python3 backend/sprites.py)",
+      "Bash(python3 backend/icon_gen.py)",
+      "Bash(python3 -m py_compile:*)",
+      "Bash(python3 -m http.server:*)",
+      "Bash(bash scripts/build.sh)",
+      "Bash(bash scripts/fetch_data.sh)",
+      "Bash(node --check:*)",
+      "Bash(git status:*)",
+      "Bash(git diff:*)",
+      "Bash(git log:*)",
+      "Bash(rg:*)"
+    ]
+  }
+}

@@ -8,6 +8,8 @@
 ## [Unreleased]
 
 ### 추가
+- `.vscode/` 신설 — Codespaces 세션마다 편집기 설정을 다시 잡지 않도록 저장소에 커밋. `settings.json`(기본 2칸·파이썬 4칸 들여쓰기, 자바스크립트·파이썬·마크다운은 저장 시 자동 서식 해제, `data`·`dist`·`snapshot` 검색 제외, `*.rules` 문법 강조), `tasks.json`(Ctrl+Shift+B 빌드 5종 + 미리보기 서버), `extensions.json`(권장·비권장 확장)
+- `.claude/settings.json` 신설 — 빌드·검사 명령의 공용 허용 목록. 개인 설정(`settings.local.json`)은 계속 커밋 제외
 - `robots.txt` 신설 — 일반 검색 엔진 허용(Crawl-delay 10) · AI 학습 크롤러(GPTBot·ClaudeBot·Google-Extended·CCBot·Bytespider) 차단 · 공격적 SEO 크롤러 차단. 빌드가 `dist/robots.txt`로 배포
 - `docs/INFRA.md` 신설 — 트래픽·남용 대응 문서. 정적 호스팅에서 쓰로틀링·IP 차단이 불가능한 이유, 지금 규모의 수치(첫 방문 1.4MB → 월 100GB로 약 7만 회분), 운영자가 할 조치와 사이트에 적용한 조치, 트리거 기반 로드맵(도메인 → Cloudflare → App Check), 하지 않기로 한 것과 이유
 

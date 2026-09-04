@@ -1,0 +1,13 @@
+{
+  // 2026-09-04 Codespace를 새로 만들면 VS Code가 이 확장들을 설치하라고 안내한다.
+  // 이 저장소는 프레임워크·빌드 도구가 없어 꼭 필요한 것만 담았다.
+  "recommendations": [
+    "ms-python.python",            // 파이썬 실행·디버그 (backend/)
+    "ms-python.vscode-pylance",    // 파이썬 자동완성·타입 힌트
+    "toba.vsfire"                  // firestore.rules 문법 강조
+  ],
+  // 이 저장소에서는 도움이 되지 않는 확장 (자동 포맷이 우리 규칙과 충돌)
+  "unwantedRecommendations": [
+    "esbenp.prettier-vscode"
+  ]
+}

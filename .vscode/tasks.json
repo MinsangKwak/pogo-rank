@@ -1,0 +1,56 @@
+{
+  // 2026-09-04 자주 쓰는 빌드 명령을 작업(Task)으로 등록.
+  // 실행: Ctrl+Shift+B(기본 빌드) 또는 Ctrl+Shift+P → "Tasks: Run Task"
+  "version": "2.0.0",
+  "tasks": [
+    {
+      // 화면(frontend/)만 고쳤을 때 — 데이터를 다시 받지 않아 몇 초면 끝난다
+      "label": "빌드: 화면만 (frontend 수정 후)",
+      "type": "shell",
+      "command": "python3 backend/build.py",
+      "options": { "cwd": "${workspaceFolder}" },
+      "group": { "kind": "build", "isDefault": true },
+      "presentation": { "reveal": "always", "panel": "dedicated" },
+      "problemMatcher": []
+    },
+    {
+      // 원본 데이터부터 전부 — 처음 받았거나 데이터를 갱신할 때 (몇 분)
+      "label": "빌드: 전체 (원본 다운로드부터)",
+      "type": "shell",
+      "command": "bash scripts/build.sh",
+      "options": { "cwd": "${workspaceFolder}" },
+      "group": "build",
+      "presentation": { "reveal": "always", "panel": "dedicated" },
+      "problemMatcher": []
+    },
+    {
+      // 도감·메가 폼 데이터(dex.json)를 고쳤을 때
+      "label": "빌드: 도감 갱신 (dex_build → build)",
+      "type": "shell",
+      "command": "python3 backend/dex_build.py && python3 backend/build.py",
+      "options": { "cwd": "${workspaceFolder}" },
+      "group": "build",
+      "problemMatcher": []
+    },
+    {
+      // 채팅·메신저로 공유할 단일 HTML (이미지까지 한 파일에 인라인)
+      "label": "빌드: 미리보기용 단일 HTML (SPRITE_INLINE)",
+      "type": "shell",
+      "command": "SPRITE_INLINE=1 python3 backend/build.py",
+      "options": { "cwd": "${workspaceFolder}" },
+      "group": "build",
+      "problemMatcher": []
+    },
+    {
+      // dist/를 로컬 서버로 띄운다. Codespaces가 포트를 자동 전달해 브라우저로 열린다.
+      // file://로 열면 서비스워커·로그인이 동작하지 않으므로 확인은 이 방법으로.
+      "label": "미리보기 서버 (dist, 8000 포트)",
+      "type": "shell",
+      "command": "python3 -m http.server 8000 --directory dist",
+      "options": { "cwd": "${workspaceFolder}" },
+      "isBackground": true,
+      "presentation": { "reveal": "always", "panel": "dedicated" },
+      "problemMatcher": []
+    }
+  ]
+}

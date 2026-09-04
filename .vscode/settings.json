@@ -1,0 +1,86 @@
+{
+  // ───────────────────────────────────────────────────────────────────────────
+  // POGO SEARCH — Codespaces / VS Code 공통 설정 (2026-09-04 신설)
+  // 저장소에 커밋되므로 Codespace를 새로 만들어도 이 설정이 그대로 적용된다.
+  // 개인 취향(테마·폰트 등)은 여기 말고 사용자 설정에 두세요.
+  // ───────────────────────────────────────────────────────────────────────────
+
+  // 이 저장소의 들여쓰기 규칙: 프론트(HTML·CSS·JS) 2칸, 백엔드(파이썬) 4칸
+  "editor.tabSize": 2,
+  "editor.insertSpaces": true,
+  "editor.detectIndentation": false,   // 파일 내용을 보고 멋대로 바꾸지 않게 고정
+  "editor.formatOnPaste": true,
+  "editor.formatOnSave": true,
+  "editor.rulers": [120],              // 이 저장소는 한 줄이 길어지는 편 — 넘으면 눈에 보이게만
+
+  // 줄바꿈·공백 규칙 (윈도우에서 편집해도 저장소에는 LF로 들어가게)
+  "files.eol": "\n",
+  "files.trimTrailingWhitespace": true,
+  "files.insertFinalNewline": true,
+  "files.trimFinalNewlines": true,
+
+  // ── 언어별 ──────────────────────────────────────────────────────────────────
+
+  // 파이썬: 4칸. 저장 시 자동 포맷은 끈다 — 포매터(black 등)를 쓰지 않는 저장소라
+  // 켜 두면 사람마다 다른 결과가 나와 diff가 지저분해진다
+  "[python]": {
+    "editor.tabSize": 4,
+    "editor.formatOnSave": false
+  },
+  // backend/ 안의 모듈끼리 `from names import ...` 처럼 부르므로 검색 경로에 추가해야
+  // 편집기가 "임포트를 찾을 수 없음"으로 잘못 표시하지 않는다 (실행은 저장소 루트에서)
+  "python.analysis.extraPaths": ["./backend"],
+
+  // 자바스크립트: 2칸. 저장 시 자동 포맷은 끈다 — el() 중첩 호출을 읽기 좋게 손으로
+  // 줄바꿈해 둔 곳이 많아, 기본 포매터를 돌리면 그 의도가 지워지고 diff가 커진다
+  "[javascript]": {
+    "editor.formatOnSave": false
+  },
+
+  // HTML: index.html은 __STYLES__ 같은 자리표시자가 있는 템플릿이라
+  // 속성·줄바꿈을 최대한 원본 그대로 보존하도록 맞춘다
+  "[html]": {
+    "editor.defaultFormatter": "vscode.html-language-features"
+  },
+  "html.format.enable": true,
+  "html.format.indentInnerHtml": true,
+  "html.format.unformatted": "",
+  "html.format.contentUnformatted": "pre,code,textarea",
+  "html.format.preserveNewLines": true,
+  "html.format.maxPreserveNewLines": 1,
+  "html.format.wrapLineLength": 0,
+  "html.format.wrapAttributes": "preserve",
+  "html.format.extraLiners": "",
+  "html.format.endWithNewline": true,
+
+  // 마크다운: 문서는 표가 많아 자동 포맷이 오히려 표를 흐트러뜨린다
+  "[markdown]": {
+    "editor.formatOnSave": false,
+    "editor.wordWrap": "on",
+    "files.trimTrailingWhitespace": false
+  },
+
+  // Firestore 보안 규칙 파일: 전용 문법이 없으므로 주석·중괄호 색만 얻어 온다
+  "files.associations": {
+    "*.rules": "javascript"
+  },
+
+  // ── 빌드 산출물 감추기 ──────────────────────────────────────────────────────
+  // data/ 는 20MB 원본 JSON, dist/ 는 스프라이트 1,100여 개.
+  // 검색 결과와 파일 감시에서 빼면 Codespace가 눈에 띄게 가벼워진다.
+  // (탐색기에서는 보이게 둬서 결과물을 직접 열어볼 수 있다)
+  "search.exclude": {
+    "**/data": true,
+    "**/dist": true,
+    "**/snapshot": true,
+    "**/__pycache__": true
+  },
+  "files.watcherExclude": {
+    "**/data/**": true,
+    "**/dist/**": true,
+    "**/__pycache__/**": true
+  },
+
+  // 터미널 기본 위치를 저장소 루트로 — 파이썬 스크립트는 루트에서 실행해야 data/ 경로가 맞는다
+  "terminal.integrated.cwd": "${workspaceFolder}"
+}

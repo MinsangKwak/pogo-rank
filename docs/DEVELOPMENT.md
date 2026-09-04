@@ -286,6 +286,8 @@ backend/build.py (2차)         [최종 조립]
 ├── snapshot/                     빌드가 남기는 시트 원본·리포트 (자동 커밋)
 ├── firestore.rules               Firestore 보안 규칙 (콘솔에 붙여넣어 게시)
 ├── data/ · dist/                 빌드 산출물 (커밋 안 함)
+├── .vscode/                      편집기 공통 설정 (settings·tasks·extensions)
+├── .claude/settings.json         Claude Code 공용 권한 설정
 └── .github/workflows/deploy.yml  자동 배포
 ```
 
@@ -308,6 +310,26 @@ open dist/index.html       # 정적 파일이라 서버 불필요
 | 원본부터 다시 | `bash scripts/build.sh` |
 
 파이썬 스크립트는 저장소 루트에서 실행합니다(셸 스크립트는 어디서든 가능).
+
+### 편집기 설정 (`.vscode/`)
+
+주 작업 환경이 GitHub Codespaces라 세션을 새로 열 때마다 편집기 설정이 초기화됩니다. 그래서 설정을 저장소에 함께 커밋해 코드 컨벤션이 사람·기기와 무관하게 유지되도록 했습니다.
+
+| 파일 | 역할 |
+|---|---|
+| `.vscode/settings.json` | 들여쓰기·저장 시 서식·제외 경로 등 편집 규칙 |
+| `.vscode/tasks.json` | `Ctrl+Shift+B`로 빌드, 미리보기 서버 실행 |
+| `.vscode/extensions.json` | 권장 확장(파이썬·Pylance·Firestore 규칙), 비권장 확장(Prettier) |
+
+정한 규칙과 이유:
+
+- **들여쓰기는 기본 2칸, 파이썬만 4칸.** `editor.detectIndentation`을 꺼서 파일 내용으로 추측하지 않고 항상 이 값을 씁니다.
+- **저장 시 서식(`formatOnSave`)은 켜되 자바스크립트·파이썬·마크다운은 끔.** 이 세 곳은 손으로 맞춘 줄바꿈 자체가 가독성 장치입니다. 특히 `el(...)` 호출은 DOM 구조가 보이도록 줄을 나눠 뒀는데 자동 서식이 이를 한 줄로 붙입니다. 마크다운은 표 정렬과 줄 끝 공백이 깨집니다. HTML·CSS·JSON은 켠 채로 둡니다.
+- **Prettier는 비권장 확장으로 명시.** 설치되어 있으면 위 규칙과 충돌합니다.
+- **줄바꿈 문자는 `\n` 고정.** 윈도우에서 열어도 Codespaces와 같은 diff가 나오도록.
+- **`data/`·`dist/`·`snapshot/`·`__pycache__/`는 검색·파일 감시에서 제외.** 원본 JSON이 20MB대이고 스프라이트가 1,100장이 넘어 검색이 느려집니다.
+- **`python.analysis.extraPaths: ["./backend"]`** — `from names import ...` 같은 파이프라인 내부 import를 편집기가 해석하도록.
+- **`*.rules`는 자바스크립트로 인식.** `firestore.rules` 문법 강조용.
 
 ---
 
