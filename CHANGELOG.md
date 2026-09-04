@@ -8,6 +8,8 @@
 ## [Unreleased]
 
 ### 추가
+- 상세 팝업 🎯 포획 CP 표 — 잡은 개체가 100%인지 바로 대조하도록 포획 경로별 CP를 정리. 레이드 보상(평시 Lv20 · 날씨부스트 Lv25), 맥스 배틀(Lv20 고정 · 날씨부스트 없음), 야생 스폰(Lv30 · Lv35), 만렙(Lv50). 개체값 하한이 있는 레이드·맥스 배틀은 100% CP와 최저 CP(10/10/10)를 함께 표시
+- `data/max_pool.json` 신설 — 맥스 배틀 포획 가능 종 168건(스프라이트 id → `G` 거다이맥스 · `D` 다이맥스). 기존 `dynamax.json`은 상위 30만 담아 포획 안내에 쓸 수 없어 전체 목록을 따로 산출. 전역 `MAX_POOL`로 주입
 - `.vscode/` 신설 — Codespaces 세션마다 편집기 설정을 다시 잡지 않도록 저장소에 커밋. `settings.json`(기본 2칸·파이썬 4칸 들여쓰기, 자바스크립트·파이썬·마크다운은 저장 시 자동 서식 해제, `data`·`dist`·`snapshot` 검색 제외, `*.rules` 문법 강조), `tasks.json`(Ctrl+Shift+B 빌드 5종 + 미리보기 서버), `extensions.json`(권장·비권장 확장)
 - `.claude/settings.json` 신설 — 빌드·검사 명령의 공용 허용 목록. 개인 설정(`settings.local.json`)은 계속 커밋 제외
 - `robots.txt` 신설 — 일반 검색 엔진 허용(Crawl-delay 10) · AI 학습 크롤러(GPTBot·ClaudeBot·Google-Extended·CCBot·Bytespider) 차단 · 공격적 SEO 크롤러 차단. 빌드가 `dist/robots.txt`로 배포

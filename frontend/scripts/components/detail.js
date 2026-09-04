@@ -23,6 +23,7 @@
 // - VALUE_DATA.usage (data.js): 각 순위표 상위 30위 등재 내역
 // - TYPE_KO · LEAGUE_KO (data.js): 타입·리그 한글 이름
 // - DMAX_DATA (data.js, 선택): 맥스 보스별 추천 카운터 (없는 빌드도 있어 typeof 로 방어)
+// - MAX_POOL (data.js, 선택): 맥스 배틀에서 잡을 수 있는 종 (스프라이트 id → 'G' 거다이맥스 · 'D' 다이맥스)
 
 // 스프라이트 id → 도감번호 (기본 폼은 id가 곧 도감번호)
 // 메가·리전 폼 등은 10000 이상의 별도 id를 쓰므로 DEX_DATA.dex 매핑으로 원종 번호를 찾는다.
@@ -129,29 +130,66 @@ function statsNode(form) {
   return el('div', {}, bar('공격', form.atk), bar('방어', form.def), bar('체력', form.hp));
 }
 
-// 2026-09-04 최대 CP: 만렙(Lv50) · 레이드 보상(Lv20/날씨부스트 Lv25) · 야생 최대(Lv30/날씨부스트 Lv35), 개체값 100% 기준
-// 실제 게임 레벨 캡: 레이드 보상은 평시 20·부스트 25, 야생 스폰은 평시 30·부스트 35 (backend/dex_build.py cpm 참고)
-// 개체값 100%(15/15/15) 고정 CP 공식: floor(공격 × √방어 × √체력 × CPM² / 10), 최소 10
-function cpOf(form, cpMultiplier) {
-  const attack = form.atk + 15;
-  const defense = form.def + 15;
-  const hp = form.hp + 15;
+// 2026-09-04 포획 CP: "지금 잡은 개체가 최고인가"를 바로 확인할 수 있게 만든 블록
+//
+// 게임의 포획 개체 규칙 (레벨과 개체값 하한이 잡는 경로마다 정해져 있다)
+//   레이드 보상   Lv20, 날씨부스트를 받으면 Lv25. 개체값 하한 10/10/10
+//   맥스 배틀     Lv20 고정. 개체값 하한 10/10/10.
+//                 다이맥스·거다이맥스 포획에는 날씨부스트가 없다 = Lv25가 존재하지 않는다
+//   야생 스폰     Lv1~30, 날씨부스트 Lv6~35. 개체값 하한 0/0/0이라 "최저 CP"가 의미 없다
+//   만렙          Lv50 (사탕·모래로 강화한 뒤의 상한)
+// 그래서 레이드·맥스 배틀만 "최저(10/10/10) ~ 최고(15/15/15)" 구간을 함께 보여준다.
+// 잡은 개체 CP가 굵은 숫자와 같으면 100%, 최저보다 낮을 수 없다.
+// 실제 게임 레벨 캡의 CP 배율은 backend/dex_build.py 의 cpm 참고
+// 2026-09-04 개체값을 지정해 CP 계산: floor(공격 × √방어 × √체력 × CPM² / 10), 최소 10
+function cpAtIv(form, cpMultiplier, iv) {
+  const attack = form.atk + iv;
+  const defense = form.def + iv;
+  const hp = form.hp + iv;
   return Math.max(10, Math.floor(attack * Math.sqrt(defense) * Math.sqrt(hp) * cpMultiplier * cpMultiplier / 10));
 }
-// 최대 CP 블록: 만렙 한 줄 + "레이드 보상"(잡을 때 CP) · "야생 스폰"(필드 만렙) 두 그룹
-function cpNode(form) {
+// 개체값 100%(15/15/15) CP — 기존 호출부가 그대로 쓰는 이름이라 유지한다
+function cpOf(form, cpMultiplier) {
+  return cpAtIv(form, cpMultiplier, 15);
+}
+
+// 이 종을 맥스 배틀에서 잡을 수 있는지 → 'G'(거다이맥스) · 'D'(다이맥스) · null
+// MAX_POOL 이 없는 빌드(구버전 data.js)에서도 죽지 않도록 typeof 로 막는다
+function maxPoolKind(spriteId) {
+  if (typeof MAX_POOL === 'undefined' || !MAX_POOL) return null;
+  return MAX_POOL[String(spriteId)] ?? null;
+}
+
+// 최대 CP 블록: 포획 경로별로 "100% CP(굵게) + 최저 CP" 를 묶어 보여준다
+// spriteId 를 받는 이유는 맥스 배틀 가능 여부에 따라 라벨과 안내 문구가 달라지기 때문이다
+function cpNode(form, spriteId) {
   const cpm = DEX_DATA.cpm;
   if (!cpm) return null;
+  // 개체값 하한이 있는 경로: 100%를 굵게, 그 아래 "최저 N" 을 작게
+  const rangeChip = (label, multiplier, floorIv) => el('span', { class: 'uchip top' }, label,
+    el('b', {}, `CP ${cpOf(form, multiplier).toLocaleString()}`),
+    el('i', {}, `최저 ${cpAtIv(form, multiplier, floorIv).toLocaleString()}`));
+  // 하한이 없는 경로(야생·만렙): 100% 값만
   const chip = (label, multiplier) => el('span', { class: 'uchip' }, label, el('b', {}, `CP ${cpOf(form, multiplier).toLocaleString()}`));
+  const maxKind = maxPoolKind(spriteId);
+  const maxLabel = maxKind === 'G' ? '거다이맥스·다이맥스' : '다이맥스';
   return el('div', {},
-    el('div', { class: 'tchips' }, chip('만렙 Lv50', cpm.l50)),
     el('div', { class: 'cp-ctx' },
-      el('em', {}, '레이드 보상'),
-      el('div', { class: 'tchips' }, chip('평시 Lv20', cpm.l20), chip('날씨부스트 Lv25', cpm.l25))),
+      el('em', {}, '레이드 보상 — 개체값 10 이상 확정'),
+      el('div', { class: 'tchips' }, rangeChip('평시 Lv20', cpm.l20, 10), rangeChip('날씨부스트 Lv25', cpm.l25, 10))),
+    // 맥스 배틀에 나오지 않는 종이면 이 줄 자체를 만들지 않는다
+    maxKind
+      ? el('div', { class: 'cp-ctx' },
+          el('em', {}, `맥스 배틀 (${maxLabel}) — Lv20 고정, 날씨부스트 없음`),
+          el('div', { class: 'tchips' }, rangeChip('포획 Lv20', cpm.l20, 10)))
+      : '',
     el('div', { class: 'cp-ctx' },
-      el('em', {}, '야생 스폰'),
+      el('em', {}, '야생 스폰 — 개체값 하한 없음'),
       el('div', { class: 'tchips' }, chip('평시 Lv30', cpm.l30), chip('날씨부스트 Lv35', cpm.l35))),
-    el('p', { class: 'd-foot' }, '개체값 100% 기준. 레이드 보상은 잡을 때 CP(평시 Lv20 · 날씨부스트 Lv25), 야생 스폰은 필드에서 나오는 만렙(평시 Lv30 · 날씨부스트 Lv35)'));
+    el('div', { class: 'cp-ctx' },
+      el('em', {}, '강화 상한'),
+      el('div', { class: 'tchips' }, chip('만렙 Lv50', cpm.l50))),
+    el('p', { class: 'd-foot' }, `굵은 숫자가 개체값 100%(15/15/15) CP입니다. 잡은 개체가 이 값이면 100%. ${maxKind ? '맥스 배틀은 날씨부스트가 없어 항상 Lv20이라 레이드 평시와 같은 CP가 나옵니다. ' : ''}야생은 레벨 하한이 없어 최저 CP를 적지 않습니다.`));
 }
 
 // 2026-09-04 메가X/메가Y가 둘 다 있는 종(현재 뮤츠·리자몽 등)만 — 좌우 비교 + 차이 자동 요약
@@ -363,8 +401,8 @@ function openDetail(pokemon, isDex = false) {
   const cpm = DEX_DATA.cpm;
   const cpLine = form && cpm
     ? el('p', { class: 'd-cpline' },
-        `CP 만렙 `, el('b', {}, cpOf(form, cpm.l50).toLocaleString()),
-        ` | 레이드 보상 ${cpOf(form, cpm.l20).toLocaleString()}, 부스트 ${cpOf(form, cpm.l25).toLocaleString()}`,
+        `CP 100% 기준 · 만렙 `, el('b', {}, cpOf(form, cpm.l50).toLocaleString()),
+        ` | ${maxPoolKind(pokemon.sprite) ? '레이드·맥스' : '레이드'} ${cpOf(form, cpm.l20).toLocaleString()}, 부스트 ${cpOf(form, cpm.l25).toLocaleString()}`,
         ` | 야생 ${cpOf(form, cpm.l30).toLocaleString()}, 부스트 ${cpOf(form, cpm.l35).toLocaleString()}`)
     : '';
   // 2026-09-03 v3 헤더: 타입 → 팬텀(Gengar) → CP 만렙 | 야생, 부스트 (유저 지정 순서)
@@ -378,6 +416,10 @@ function openDetail(pokemon, isDex = false) {
     authEnabled() && dex != null ? favBtn(dex, 'd-fav') : '');
 
   const body = el('div', { class: 'detail' }, head);
+  // 2026-09-04 포획 CP: "지금 잡은 개체가 100%인가"를 확인하는 표. 계산기보다 자주 보므로 위에 둔다
+  if (form) body.append(el('details', { class: 'd-acc' },
+    el('summary', {}, '🎯 포획 CP — 이 숫자면 100%'),
+    el('div', { class: 'd-acc-body' }, cpNode(form, pokemon.sprite))));
   // 2026-09-03 v4: 내 개체 CP 계산기를 상성 위로, 접이식 아코디언으로
   // 2026-09-03 도감형 재배치: 계산기 아코디언 → [능력치 육각형 | 배울 수 있는 기술] → 상성 → 활용처 → 진화, "보스로 나오면"은 맨 아래
   if (form) body.append(el('details', { class: 'd-acc' },

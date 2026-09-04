@@ -139,6 +139,20 @@ dynamax_ranking = {'overall': dyna_rank([])}
 for type_name in TYPES: dynamax_ranking[type_name.lower()] = dyna_rank([type_name])
 json.dump(dynamax_ranking, open('data/dynamax.json','w'), ensure_ascii=False)
 
+# 2026-09-04 맥스 배틀 포획 풀: "이 종을 맥스 배틀에서 잡을 수 있나"만 담은 별도 표
+# 랭킹(dynamax.json)은 상위 30만 남기므로 포획 CP 안내에는 쓸 수 없어 전체 목록을 따로 낸다.
+# 값은 'G'(거다이맥스까지 가능) 또는 'D'(다이맥스만) — 상세 팝업의 포획 CP 라벨에 쓴다.
+# 거다이맥스는 스프라이트 id가 따로 있어(gmax_sprite_id) 원종·거다이 두 키 모두에 넣는다.
+max_pool = {}
+for entry in base_meta.values():
+    if entry['form'] and entry['form'].endswith('_S'): continue   # 에이펙스 폼은 맥스 배틀 대상이 아니다
+    is_gmax = gmax_type(entry['pid'], entry['form']) is not None
+    if not is_dynamax(entry['pid'], entry['form']) and not is_gmax: continue
+    max_pool[str(entry['sprite'])] = 'G' if is_gmax else 'D'
+    if is_gmax:
+        max_pool[str(gmax_sprite_id(entry['dex'], entry['form']))] = 'G'
+json.dump(max_pool, open('data/max_pool.json', 'w', encoding='utf-8'), ensure_ascii=False)
+
 # ---------- 다이맥스 티어표: 속성 탭 = 그 속성 포켓몬만 ----------
 # 2026-09-02 pogomate 기준으로 변경: 공격 종족값 × 맥스무브 위력(거다이 450·다이 350) × 자속 1.2
 # 내구 미반영, 같은 종의 다이맥스/거다이맥스는 별도 행 (pogomate 수치 역산으로 검증)

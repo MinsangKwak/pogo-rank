@@ -106,7 +106,7 @@ json.dump(pvp_all, open('data/pvp_all.json', 'w', encoding='utf-8'), ensure_asci
 
 # ── frontend/ 의 CSS·JS를 순서대로 인라인해 단일 dist/index.html 조립 ──
 # 순서가 곧 캐스케이드(CSS)·실행 순서(JS)이므로 새 파일은 여기 목록에 추가
-APP_VERSION = 'v2.4.0'  # 2026-09-03 화면 표시용 버전 — 릴리스 때 여기만 올리면 됨
+APP_VERSION = 'v2.4.1'  # 2026-09-03 화면 표시용 버전 — 릴리스 때 여기만 올리면 됨
 # 2026-09-03 GA4 측정 ID (G-XXXXXXXXXX) — 채우면 배포 빌드에 gtag가 삽입되고, 비우면 추적 코드 자체가 안 들어감
 GA_ID = 'G-XXXXXXXXXX'
 # 2026-09-03 v2.2.0 Firebase (Google 로그인 + 즐겨찾기 동기화)
@@ -191,6 +191,7 @@ const PVP_DATA = {json.dumps(pvp, ensure_ascii=False)};
 const PVE_DATA = {open('data/pve.json', encoding='utf-8').read()};
 const PVE_EASY = {optional_json('data/pve_easy.json')};
 const DMAX_DATA = {optional_json('data/dynamax.json')};
+const MAX_POOL = {optional_json('data/max_pool.json')};   // 2026-09-04 맥스 배틀 포획 가능 종 (스프라이트 id → 'G'|'D')
 const DMAX_TIER = {optional_json('data/dynamax_tier.json')};
 const VALUE_DATA = {optional_json('data/value.json')};
 const SHEET_DATA = {optional_json('data/sheet.json')};
