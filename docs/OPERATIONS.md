@@ -19,22 +19,44 @@
 
 ## 1. 릴리스 절차
 
-배포는 GitHub Actions가 전부 합니다. 사람이 하는 일은 **버전 올리고 기록 남기고 푸시**뿐입니다.
+배포는 GitHub Actions가 전부 합니다. 사람이 하는 일은 **브랜치 옮기고, 버전 올리고, 기록 남기고, 푸시**뿐입니다.
 
-1. **기능 작업** → 로컬에서 `python3 backend/build.py`로 확인
-2. **버전 올리기** — `backend/build.py`의 `APP_VERSION` (화면 우측 상단 배지에 표시됨)
-3. **기록 3곳 갱신**
+### 브랜치 전략 (2026-09-05, v2.7.3부터)
+
+| 브랜치 | 역할 | 푸시하면 | 확인 주소 |
+|---|---|---|---|
+| `dev` | 작업·미리보기. 기능은 여기서 만든다 | `deploy-dev.yml` → **pogo-rank-dev** 저장소의 `gh-pages`로 배포 | **https://minsangkwak.github.io/pogo-rank-dev/** |
+| `main` | 통합. `dev`가 검증되면 머지 | 배포 없음 | — |
+| `deploy` | 실서비스. `main`을 머지한 것만 | `deploy.yml` → GitHub Pages 배포 | **https://minsangkwak.github.io/pogo-rank/** |
+
+- GitHub Pages는 저장소당 사이트 하나라서, `pogo-rank-dev` 주소는 **같은 이름의 별도 저장소**(MinsangKwak/pogo-rank-dev)가 서빙합니다. 그 저장소에는 소스가 없고 빌드 결과(`gh-pages`)만 실립니다.
+- dev 빌드는 `BUILD_CHANNEL=dev`로 만들어져 화면 버전 배지에 `-dev`가 붙고, GA 통계가 꺼지고, `robots.txt`·`noindex`로 검색 색인을 막습니다. 로그인·즐겨찾기는 실서비스와 **같은 Firebase 프로젝트**를 씁니다(별도 데이터 아님).
+- 매일 00:00 KST 자동 재빌드는 `deploy` 브랜치만 대상입니다. 순위 스냅샷(`snapshot/`) 자동 커밋도 `deploy`에 쌓이므로, `main → deploy` 머지는 fast-forward가 아닌 **머지 커밋**이 됩니다(정상).
+
+### 순서
+
+1. **기능 작업** — `dev`에서. 로컬은 `python3 backend/build.py`, 로그인 뒤 화면은 `localhost:5503/?mock=1`
+2. **dev 푸시** → 2~3분 뒤 **pogo-rank-dev** 주소에서 친구들과 함께 확인
+3. **버전 올리기** — `backend/build.py`의 `APP_VERSION` (화면 우측 상단 배지)
+4. **기록 3곳 갱신**
    - `CHANGELOG.md` — 새 버전 섹션 추가 (추가/변경/수정/제거)
    - `frontend/scripts/components/release.js` — 사용자용 패치노트 항목 + `RELEASE_VER` 갱신(바뀌면 ☰에 빨간 점이 뜸)
    - `README.md` 버전 이력 표 (한 줄)
-4. **푸시** — `main`에 푸시하면 Actions가 빌드·배포 (2~3분)
-5. **노션 정리** — QA 트래커에서 해당 이슈를 `완료`로 바꾸고 `버전` 속성을 지정
+5. **main으로 머지** — `git checkout main && git merge dev && git push`
+6. **deploy로 머지** — `git checkout deploy && git merge main && git push` → Actions가 빌드·배포 (2~3분)
+7. **노션 정리** — QA 트래커에서 해당 이슈를 `완료`로 바꾸고 `버전` 속성을 지정
 
-> 푸시가 없어도 **매일 00:00 KST**에 원본 데이터를 다시 받아 자동 재빌드합니다. 급하면 GitHub → Actions → "Build and deploy to GitHub Pages" → **Run workflow**.
+> 급하면 GitHub → Actions → "Build and deploy to GitHub Pages" → **Run workflow** (deploy 브랜치를 다시 빌드). dev 쪽은 "Build and deploy dev preview".
 
-**최초 1회 설정**: 저장소 Settings → Pages → Source를 **GitHub Actions**로.
+### 최초 1회 설정
 
----
+- 저장소 Settings → Pages → Source를 **GitHub Actions**로 (이미 됨).
+- Settings → Environments → `github-pages` → Deployment branches에 **`deploy`** 허용 (이미 됨 — 없으면 `deploy`에서 배포가 "environment protection rules"로 거부된다).
+- **dev 배포 키** — 아래를 한 번 실행하면 키 생성 → pogo-rank-dev에 쓰기 deploy key 등록 → pogo-rank 시크릿 `DEV_DEPLOY_KEY` 저장까지 끝난다. 이게 없으면 dev 워크플로 첫 단계가 안내 메시지와 함께 실패한다.
+
+```bash
+bash scripts/setup_dev_deploy_key.sh
+```
 
 ## 2. 버전 규칙과 패치노트
 

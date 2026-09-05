@@ -1,0 +1,59 @@
+name: Build and deploy dev preview
+
+# 2026-09-05 v2.7.3 dev 브랜치 미리보기 배포 — https://minsangkwak.github.io/pogo-rank-dev/
+# GitHub Pages 는 저장소당 사이트 하나라서, 별도 URL(pogo-rank-dev)은 같은 이름의 별도 저장소가 필요하다.
+# 이 워크플로는 dev 브랜치를 BUILD_CHANNEL=dev 로 빌드해 MinsangKwak/pogo-rank-dev 의 gh-pages 브랜치에 밀어 넣고,
+# 그 저장소의 Pages(소스: gh-pages)가 그대로 서빙한다. 실서비스 저장소 자체의 Pages 는 건드리지 않는다.
+#
+# 필요한 시크릿: DEV_DEPLOY_KEY — pogo-rank-dev 에 쓰기 권한이 있는 deploy key 의 개인키.
+#   최초 1회 scripts/setup_dev_deploy_key.sh 를 실행하면 키 생성·등록·시크릿 저장이 한 번에 된다.
+# dev 빌드는 GA 를 넣지 않고 robots/noindex 로 색인을 막는다 (backend/build.py BUILD_CHANNEL 참고).
+# 순위 스냅샷(snapshot/) 커밋은 하지 않는다 — ▲▼ 기준은 main 에서 머지된 스냅샷을 그대로 쓴다.
+
+on:
+  push:
+    branches: [dev]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pages-dev
+  cancel-in-progress: true
+
+jobs:
+  build-deploy:
+    runs-on: ubuntu-latest
+    env:
+      HAS_DEPLOY_KEY: ${{ secrets.DEV_DEPLOY_KEY != '' }}
+    steps:
+      - name: 배포 키 확인
+        run: |
+          if [ "$HAS_DEPLOY_KEY" != "true" ]; then
+            echo "::error::시크릿 DEV_DEPLOY_KEY 가 없습니다. 저장소 루트에서 bash scripts/setup_dev_deploy_key.sh 를 한 번 실행하세요 (docs/OPERATIONS.md 1장)."
+            exit 1
+          fi
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      # 스프라이트 캐시는 실서비스 워크플로와 같은 키 계열을 써서 서로 재사용한다
+      - uses: actions/cache@v4
+        with:
+          path: data/sprites
+          key: sprites-v1-${{ github.run_id }}
+          restore-keys: sprites-v1-
+      - name: Build site (dev channel)
+        env:
+          BUILD_CHANNEL: dev
+        run: bash scripts/build.sh
+      - name: Publish to pogo-rank-dev (gh-pages)
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          deploy_key: ${{ secrets.DEV_DEPLOY_KEY }}
+          external_repository: MinsangKwak/pogo-rank-dev
+          publish_branch: gh-pages
+          publish_dir: ./dist
+          force_orphan: true   # 미리보기 저장소에 히스토리를 쌓지 않는다 (매번 한 커밋)
+          commit_message: "dev preview ${{ github.sha }}"

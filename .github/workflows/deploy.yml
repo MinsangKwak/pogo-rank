@@ -1,8 +1,13 @@
 name: Build and deploy to GitHub Pages
 
+# 2026-09-05 v2.7.3 브랜치 전략 — 이 워크플로는 **deploy 브랜치만** 배포한다 (https://minsangkwak.github.io/pogo-rank/).
+#   dev    → deploy-dev.yml 이 pogo-rank-dev 저장소로 배포 (미리보기)
+#   main   → 통합만, 배포 없음
+#   deploy → 여기. main 을 deploy 에 머지하면 배포된다
+# 일일 스케줄은 기본 브랜치(main)의 워크플로 정의로 돌지만, checkout 은 항상 deploy 를 받는다
 on:
   push:
-    branches: [main]
+    branches: [deploy]
   schedule:
     - cron: '0 15 * * *'   # 매일 00:00 KST (15:00 UTC)
   workflow_dispatch:
@@ -21,6 +26,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: deploy   # 스케줄·수동 실행이 main 에서 시작되더라도 배포 대상은 항상 deploy 브랜치
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'

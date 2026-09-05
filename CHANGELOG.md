@@ -5,6 +5,13 @@
 버전 규칙: `vMAJOR.MINOR.PATCH` — 큰 기능은 MINOR(두 번째 자리), 상세 기능·버그 수정은 PATCH(세 번째 자리) 증가.
 항목 종류: `추가` 새 기능 · `변경` 기존 동작 변경 · `수정` 버그 수정 · `데이터` 수동 데이터 갱신
 
+## v2.7.3 — 2026-09-05
+
+### 변경
+- 브랜치 전략 개편 — `dev`(작업·미리보기) → `main`(통합) → `deploy`(실서비스). `deploy.yml`은 이제 **`deploy` 브랜치만** 배포하고(스케줄 실행도 `ref: deploy`로 체크아웃), `main` 푸시는 배포를 일으키지 않는다. GitHub Pages 환경 `github-pages`의 허용 브랜치에 `deploy` 추가
+- `deploy-dev.yml` 신설 — `dev` 푸시 시 `BUILD_CHANNEL=dev`로 빌드해 별도 저장소 **MinsangKwak/pogo-rank-dev**의 `gh-pages`로 밀어 넣는다(Pages는 저장소당 하나라 URL `…/pogo-rank-dev/`는 별도 저장소가 필요). 쓰기용 deploy key는 `scripts/setup_dev_deploy_key.sh`가 생성·등록·시크릿(`DEV_DEPLOY_KEY`) 저장까지 한 번에 처리
+- `build.py`에 `BUILD_CHANNEL` 도입 — `dev`면 화면 버전 배지에 `-dev`, GA 스니펫 미삽입, `robots.txt` 전체 차단 + `<meta name="robots" content="noindex">`
+
 ## v2.7.2 — 2026-09-05
 
 ### 추가
