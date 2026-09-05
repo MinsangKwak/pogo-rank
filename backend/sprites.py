@@ -19,7 +19,7 @@ import os
 import shutil
 import subprocess
 
-from sprite import LOCAL_SPRITE_BASE   # 2026-09-05 저장소 배정 번호 → 그림을 빌려올 원본 번호
+from sprite import LOCAL_SPRITE_BASE, LOCAL_SPRITE_URL   # 2026-09-05 저장소 배정 번호 → 원본 번호 / 전용 그림 주소
 
 # 시트 목록(sheet.json)처럼 중첩 구조도 있으므로 'sprite' 키를 재귀로 수집한다
 sprite_ids = set()
@@ -67,10 +67,9 @@ def download_sprite(sprite_identifier):
     subprocess.run(['curl', '-sSL', '-o', f'data/sprites/{sprite_identifier}.png', f'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/{sprite_identifier}.png'])
 
 
-# 2026-09-05 저장소가 직접 배정한 번호(90000번대)는 PokeAPI 에 없으므로 내려받지 않는다.
-# 그림은 원본 폼 png 를 복사해 쓴다 — 아머드 뮤츠처럼 "전용 일러스트는 없지만 별개로 세야 하는" 폼용.
-# 전용 그림을 넣고 싶으면 data/sprites/<번호>.png 를 직접 채워 두면 이 복사가 건너뛰어진다.
-local_ids = [sprite_identifier for sprite_identifier in missing_ids if sprite_identifier in LOCAL_SPRITE_BASE]
+# 2026-09-05 저장소가 직접 배정한 번호(90000번대)는 PokeAPI 에 없으므로 일반 다운로드 목록에서 뺀다.
+# 그림은 (1) LOCAL_SPRITE_URL 에 전용 주소가 있으면 거기서 받고, (2) 없거나 실패하면 원본 폼 png 를 복사한다.
+local_ids = [sprite_identifier for sprite_identifier in sprite_ids if sprite_identifier in LOCAL_SPRITE_BASE]
 missing_ids = [sprite_identifier for sprite_identifier in missing_ids if sprite_identifier not in LOCAL_SPRITE_BASE]
 
 if missing_ids:
@@ -78,13 +77,35 @@ if missing_ids:
         # map 은 지연 평가라서 list() 로 감싸 모든 다운로드가 끝나게 한다
         list(executor.map(download_sprite, missing_ids))
     print(f'downloaded {len(missing_ids)} new sprites')
+
+
+# 파일이 진짜 PNG 인지 (curl 이 404 본문을 저장한 경우를 걸러 낸다)
+def is_png(path):
+    return os.path.exists(path) and open(path, 'rb').read(4) == b'\x89PNG'
+
+
 for sprite_identifier in local_ids:
-    # 원본이 아직 없으면(순서 문제) 먼저 받아 둔다
     base_identifier = LOCAL_SPRITE_BASE[sprite_identifier]
-    if not os.path.exists(f'data/sprites/{base_identifier}.png'):
+    base_path = f'data/sprites/{base_identifier}.png'
+    local_path = f'data/sprites/{sprite_identifier}.png'
+    # 원본이 아직 없으면(순서 문제) 먼저 받아 둔다 — 폴백 복사에 필요하다
+    if not os.path.exists(base_path):
         download_sprite(base_identifier)
-    if os.path.exists(f'data/sprites/{base_identifier}.png'):
-        shutil.copy(f'data/sprites/{base_identifier}.png', f'data/sprites/{sprite_identifier}.png')
+    # 캐시에 있는 파일이 원본의 복사본(v2.7.0 방식)이면 전용 그림이 아니므로 다시 받을 대상으로 본다.
+    # CI 의 actions/cache 가 예전 복사본을 그대로 되살리기 때문에 "파일이 있으면 통과"로는 부족하다
+    is_copy_of_base = is_png(local_path) and is_png(base_path) and open(local_path, 'rb').read() == open(base_path, 'rb').read()
+    needs_fetch = sprite_identifier in LOCAL_SPRITE_URL and (not is_png(local_path) or is_copy_of_base)
+    if needs_fetch:
+        subprocess.run(['curl', '-fsSL', '--retry', '3', '-o', local_path, LOCAL_SPRITE_URL[sprite_identifier]])
+        if is_png(local_path):
+            print(f'local sprite {sprite_identifier} ← 전용 그림 다운로드')
+            continue
+        # 실패하면 깨진 파일을 남기지 않는다 (다음 빌드에서 다시 시도되도록)
+        if os.path.exists(local_path):
+            os.remove(local_path)
+        print(f'local sprite {sprite_identifier} 전용 그림 다운로드 실패 — 원본 복사로 대체')
+    if not is_png(local_path) and is_png(base_path):
+        shutil.copy(base_path, local_path)
         print(f'local sprite {sprite_identifier} ← {base_identifier} 복사')
 encoded_sprites = {}
 failed_ids = []

@@ -25,6 +25,7 @@
 .rank { font-size: 13px; color: var(--muted); text-align: right; }
 .row:nth-child(-n+3) .rank { color: var(--fg); font-weight: 600; }
 .sprite { width: 40px; height: 40px; image-rendering: pixelated; display: block; }
+.sprite.sprite-hd { image-rendering: auto; object-fit: contain; }  /* 2026-09-05 v2.7.2 게임 에셋 아이콘(아머드 뮤츠 등)은 부드럽게 축소 */
 .sprite.empty { background: var(--surface); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: var(--muted); opacity: .45; }
 .main { min-width: 0; }
 .name { display: flex; align-items: center; flex-wrap: wrap; gap: 4px 8px; min-width: 0; }

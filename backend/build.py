@@ -108,7 +108,7 @@ json.dump(pvp_all, open('data/pvp_all.json', 'w', encoding='utf-8'), ensure_asci
 
 # ── frontend/ 의 CSS·JS를 순서대로 인라인해 단일 dist/index.html 조립 ──
 # 순서가 곧 캐스케이드(CSS)·실행 순서(JS)이므로 새 파일은 여기 목록에 추가
-APP_VERSION = 'v2.7.1'  # 2026-09-03 화면 표시용 버전 — 릴리스 때 여기만 올리면 됨
+APP_VERSION = 'v2.7.2'  # 2026-09-03 화면 표시용 버전 — 릴리스 때 여기만 올리면 됨
 # 2026-09-03 GA4 측정 ID (G-XXXXXXXXXX) — 채우면 배포 빌드에 gtag가 삽입되고, 비우면 추적 코드 자체가 안 들어감
 GA_ID = 'G-XXXXXXXXXX'
 # 2026-09-03 v2.2.0 Firebase (Google 로그인 + 즐겨찾기 동기화)

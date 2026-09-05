@@ -38,7 +38,10 @@ function sprite(spriteId) {
   // 목록이 길어 스크롤로 내려가야 보이는 이미지가 많으므로 lazy·async로 받는다.
   // 이름은 옆 텍스트에 이미 있으니 alt는 빈 문자열(장식 이미지)로 둔다
   if (spriteUrl) {
-    return el('img', { class: 'sprite', src: spriteUrl, alt: '', loading: 'lazy', decoding: 'async' });
+    // 2026-09-05 v2.7.2 저장소 배정 번호(90000번대, sprite.py LOCAL_FORMS)는 픽셀 스프라이트가 아니라
+    // 게임 내 3D 렌더 아이콘이라 pixelated 로 축소하면 계단이 진다 — sprite-hd 로 부드럽게 그린다
+    const hd = Number(spriteId) >= 90000;
+    return el('img', { class: hd ? 'sprite sprite-hd' : 'sprite', src: spriteUrl, alt: '', loading: 'lazy', decoding: 'async' });
   }
   // 자리표시용 몬스터볼. currentColor로 그려 두면 테마 색을 그대로 따라간다
   const placeholder = el('span', { class: 'sprite empty' });

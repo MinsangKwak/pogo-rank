@@ -43,8 +43,8 @@ SUFFIX = {'메가':'-mega','메가X':'-mega-x','메가Y':'-mega-y','원시':'-pr
 # 도감 폼 표·기술 변경 영향 표·맥스 배틀 표가 서로를 덮어쓴다. 그림이 없다는 것과
 # "같은 포켓몬으로 취급된다"는 것은 다른 문제라서, 번호부터 갈라 놓는다.
 #
-# 그림은 LOCAL_SPRITE_BASE 가 가리키는 기본 폼 png 를 그대로 복사해 쓴다(backend/sprites.py).
-# 전용 일러스트가 생기면 그 파일만 갈아 끼우면 되고, 번호 체계는 그대로 둔다.
+# 그림은 LOCAL_SPRITE_URL 에 적힌 주소에서 받고(backend/sprites.py), 주소가 없거나 다운로드가
+# 실패하면 LOCAL_SPRITE_BASE 가 가리키는 기본 폼 png 를 복사해 임시로 쓴다.
 # 90000번대를 쓰는 이유: PokeAPI id 는 10000번대까지라 겹칠 일이 없다.
 LOCAL_FORMS = {
     (150, '아머드'): 90150,
@@ -52,6 +52,14 @@ LOCAL_FORMS = {
 # 저장소 배정 번호 → 그림을 빌려올 원본 번호
 LOCAL_SPRITE_BASE = {
     90150: 150,
+}
+# 2026-09-05 v2.7.2 저장소 배정 번호 → 전용 그림 주소.
+# PokeAPI 에는 없지만 포켓몬 GO 게임 에셋(PokeMiners/pogo_assets)에는 있는 폼용.
+# 파일명 규칙은 pm<도감번호>.f<게임마스터 폼 접미사>.icon.png — 아머드 뮤츠는 MEWTWO_A 라 'fA'.
+# 이 그림은 PokeAPI 픽셀 스프라이트(96px)와 달리 게임 내 3D 렌더 아이콘(≈185px)이라
+# 프런트(sprite.js)가 90000번대에는 pixelated 렌더링을 끄고 부드럽게 축소한다.
+LOCAL_SPRITE_URL = {
+    90150: 'https://raw.githubusercontent.com/PokeMiners/pogo_assets/master/Images/Pokemon/Addressable%20Assets/pm150.fA.icon.png',
 }
 
 
