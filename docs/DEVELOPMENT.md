@@ -423,6 +423,22 @@ open dist/index.html       # 정적 파일이라 서버 불필요
 
 파이썬 스크립트는 저장소 루트에서 실행합니다(셸 스크립트는 어디서든 가능).
 
+### 로그인 뒤 화면을 로컬에서 확인하기 (`?mock`)
+
+로컬에서는 Google 로그인 팝업이 자주 막힙니다(앱 내장 브라우저, 인증 도메인 미등록 등). 그래서 즐겨찾기 페이지(`#/favs`)·역할 보정·관리자 패널처럼 로그인 뒤에만 보이는 화면은 실제 Firebase 대신 **같은 모양의 목(mock)** 으로 확인합니다.
+
+```bash
+python3 -m http.server 5503 --directory dist
+# 브라우저에서
+#   http://localhost:5503/?mock=1          관리자(ADMIN_UID)로 로그인된 상태 — 모든 기능
+#   http://localhost:5503/?mock=friend     승인된 일반 친구 — 관리자 패널 없음
+#   http://localhost:5503/?mock=pending    승인 대기 — 즐겨찾기 저장 불가 안내
+#   http://localhost:5503/?mock=1#/favs    해시 라우트는 뒤에 그대로 붙인다
+#   http://localhost:5503/?mock=reset      가짜 DB 초기화
+```
+
+동작 원리 — `frontend/static/dev-mock.js`가 `window.firebase`에 `auth()`·`firestore()`·`FieldValue`의 가짜를 심습니다. `components/auth.js`의 `initAuth()`는 원래 "`window.firebase`가 이미 있으면 SDK를 받지 않는다"는 분기를 갖고 있었고, 그 앞에 **hostname이 `localhost`/`127.0.0.1`이고 주소에 `?mock`이 있을 때만** 이 파일을 먼저 받는 조건을 하나 더 두었습니다. 배포(github.io)에서는 두 조건이 성립하지 않아 이 파일은 복사만 되고 절대 로드되지 않습니다. 가짜 Firestore 데이터는 `localStorage`(`pogo_mock_db`)에 남아 새로 고쳐도 유지되고, 첫 실행 시 즐겨찾기 몇 종(PvE·PvP·기타가 섞이도록)과 트레이너 코드 하나를 미리 넣어 둡니다.
+
 ### 편집기 설정 (`.vscode/`)
 
 주 작업 환경이 GitHub Codespaces라 세션을 새로 열 때마다 편집기 설정이 초기화됩니다. 그래서 설정을 저장소에 함께 커밋해 코드 컨벤션이 사람·기기와 무관하게 유지되도록 했습니다.

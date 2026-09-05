@@ -42,6 +42,11 @@ function authEnabled() {
   return typeof FIREBASE_CONFIG !== 'undefined' && !!(FIREBASE_CONFIG && FIREBASE_CONFIG.apiKey);
 }
 
+// 로컬 테스트 목 모드 여부 — localhost/127.0.0.1 에서 주소에 ?mock 이 있을 때만 (자세한 사용법은 static/dev-mock.js 머리말)
+function mockAuthWanted() {
+  return ['localhost', '127.0.0.1'].includes(location.hostname) && new URLSearchParams(location.search).has('mock');
+}
+
 // allowlist·requests 문서 id로 쓰는 값. 보안 규칙(myEmail())도 소문자로 비교하므로 반드시 소문자
 function authEmail() {
   return (AUTH.user?.email || '').toLowerCase();
@@ -62,6 +67,17 @@ async function initAuth() {
   // SDK를 받기 전에 계정 영역을 먼저 그려 둔다 — 비로그인 상태의 로그인 버튼은 즉시 보인다
   renderAccount();
   if (!authEnabled()) return;
+  // 2026-09-05 v2.7.1 로컬 테스트: localhost에서 ?mock 이 붙어 있으면 실제 SDK 대신 목(static/dev-mock.js)을 쓴다.
+  // 로컬에서는 Google 팝업이 막히는 일이 잦아 로그인 뒤 화면(즐겨찾기 페이지·역할 보정·관리자 패널)을 볼 수 없었다.
+  // hostname 조건 때문에 배포(github.io)에서는 이 분기가 절대 타지 않는다
+  if (mockAuthWanted() && typeof window.firebase === 'undefined') {
+    try {
+      await loadScript('dev-mock.js');
+    } catch {
+      renderAccount('테스트 목(dev-mock.js) 로드 실패 — dist/ 를 다시 빌드하세요');
+      return;
+    }
+  }
   // 테스트용 목(mock)이 이미 있으면 SDK를 안 받는다
   if (typeof window.firebase === 'undefined') {
     try {

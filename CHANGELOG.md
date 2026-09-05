@@ -5,6 +5,11 @@
 버전 규칙: `vMAJOR.MINOR.PATCH` — 큰 기능은 MINOR(두 번째 자리), 상세 기능·버그 수정은 PATCH(세 번째 자리) 증가.
 항목 종류: `추가` 새 기능 · `변경` 기존 동작 변경 · `수정` 버그 수정 · `데이터` 수동 데이터 갱신
 
+## v2.7.1 — 2026-09-05
+
+### 추가
+- 로컬 테스트용 로그인 목(mock) 모드 — `frontend/static/dev-mock.js` 신설. `localhost`에서 `?mock=1`(관리자) · `?mock=friend`(승인된 친구) · `?mock=pending`(승인 대기)으로 열면 Google 팝업 없이 로그인된 상태로 즐겨찾기 페이지·역할 보정·관리자 패널·트레이너 코드를 확인할 수 있다. 가짜 Firestore는 `localStorage`(`pogo_mock_db`)에 남고 `?mock=reset`으로 초기화. `auth.js`의 `initAuth()`가 hostname·쿼리 조건을 모두 만족할 때만 이 파일을 받으므로 배포 환경에는 영향이 없다
+
 ## v2.7.0 — 2026-09-05
 
 ### 추가
