@@ -36,10 +36,32 @@ SUFFIX = {'메가':'-mega','메가X':'-mega-x','메가Y':'-mega-y','원시':'-pr
  '화덕의가면':'-hearthflame-mask','주춧돌의가면':'-cornerstone-mask','벽록의가면':'','혈월':'-bloodmoon','한밤':'-midnight','황혼':'-dusk'}
 
 
+# 2026-09-05 PokeAPI 에 아예 그림이 없는 폼: 저장소가 90000번대 번호를 직접 배정한다
+#
+# 왜 필요한가 — 아머드 뮤츠는 PokeAPI pokemon.csv 에 행 자체가 없다(mega-x·mega-y 만 있다).
+# 번호를 안 주면 sprite_id() 가 기본 폼 번호(150)를 돌려주는데, 그러면 일반 뮤츠와 키가 겹쳐
+# 도감 폼 표·기술 변경 영향 표·맥스 배틀 표가 서로를 덮어쓴다. 그림이 없다는 것과
+# "같은 포켓몬으로 취급된다"는 것은 다른 문제라서, 번호부터 갈라 놓는다.
+#
+# 그림은 LOCAL_SPRITE_BASE 가 가리키는 기본 폼 png 를 그대로 복사해 쓴다(backend/sprites.py).
+# 전용 일러스트가 생기면 그 파일만 갈아 끼우면 되고, 번호 체계는 그대로 둔다.
+# 90000번대를 쓰는 이유: PokeAPI id 는 10000번대까지라 겹칠 일이 없다.
+LOCAL_FORMS = {
+    (150, '아머드'): 90150,
+}
+# 저장소 배정 번호 → 그림을 빌려올 원본 번호
+LOCAL_SPRITE_BASE = {
+    90150: 150,
+}
+
+
 # (도감번호, 한글 폼 라벨) → PokeAPI 스프라이트 id. 맞는 스프라이트가 없으면 도감번호를 그대로 돌려준다
 def sprite_id(dex_number, label):
     # 섀도우는 그림이 따로 없으므로 라벨에서 떼어 낸다
     label = label.replace('섀도우', '').strip()
+    # PokeAPI 에 없는 폼은 저장소가 배정한 번호를 쓴다 (섀도우를 뗀 뒤에 보므로 섀도우 아머드도 같은 번호)
+    if (dex_number, label) in LOCAL_FORMS:
+        return LOCAL_FORMS[(dex_number, label)]
     base_identifier = default_identifier_by_species.get(dex_number)
     if not base_identifier:
         # PokeAPI 표에 없는 종(미출시 등)은 도감번호를 스프라이트 id 로 쓴다

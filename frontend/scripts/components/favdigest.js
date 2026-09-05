@@ -17,6 +17,7 @@
 //
 // 의존하는 전역
 //   AUTH · authEnabled() (auth.js) · dexOf() · openDetailByDex() (detail.js) · rankDeltaBadge() (changes.js)
+//   openPage() (pages.js) — 제목을 누르면 ★ 즐겨찾기 전용 페이지로
 //   el() (dom.js) · sprite() (components/sprite.js) · DEX_DATA (data.js)
 //   PVP_DATA · PVE_DATA · PVE_EASY · DMAX_TIER · SHEET_DATA · VALUE_DATA (data.js, 뱃지 계산용)
 
@@ -63,7 +64,9 @@ function renderFavDigest() {
   box.hidden = false;
   const shown = rows.slice(0, favDigestShowCount);
   box.append(
-    el('p', { class: 'schedule-sec' }, `★ 내 즐겨찾기 (${rows.length})`),
+    // 2026-09-05 v2.7.0 제목을 누르면 PvE/PvP 갈래로 나눠 보는 전용 페이지(#/favs)로 — 이 카드는 요약, 페이지는 전체
+    el('p', { class: 'schedule-sec fav-digest-title', onclick: () => openPage('favs') },
+      `★ 내 즐겨찾기 (${rows.length})`, el('span', { class: 'fav-digest-more' }, 'PvE · PvP 나눠 보기 →')),
     el('div', { class: 'boss-recs wrap-recs' }, ...shown.map(({ dex, name, badge }) =>
       el('button', { class: 'boss-rec', onclick: () => openDetailByDex(dex, false) }, sprite(dex), el('span', {}, name), badge))),
     rows.length > shown.length

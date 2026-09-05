@@ -85,7 +85,9 @@ for cp_cap, league_id in [(500,'little'),(1500,'great'),(2500,'ultra'),(10000,'m
     for index, entry in enumerate(rankings):
         pokemon = species[entry['speciesId']]
         korean_name, form_label = name_ko(entry['speciesId'])
+        # 2026-09-05 form(폼 라벨)·dex 를 함께 남긴다 — roles_build.py 가 '도감번호|폼라벨' 키를 만들 때 쓴다
         all_rows.append({'rank': index+1, 'name': korean_name, 'sprite': sprite_id(pokemon['dex'], form_label),
+                         'dex': pokemon['dex'], 'form': form_label,
                          'types': [type_name for type_name in pokemon['types'] if type_name != 'none'], 'en': pokemon['speciesName']})
     pvp_all[league_id] = all_rows
     # 상위 TOP위: 추천 기술 구성과 점수까지 붙인 상세 표
@@ -106,7 +108,7 @@ json.dump(pvp_all, open('data/pvp_all.json', 'w', encoding='utf-8'), ensure_asci
 
 # ── frontend/ 의 CSS·JS를 순서대로 인라인해 단일 dist/index.html 조립 ──
 # 순서가 곧 캐스케이드(CSS)·실행 순서(JS)이므로 새 파일은 여기 목록에 추가
-APP_VERSION = 'v2.6.1'  # 2026-09-03 화면 표시용 버전 — 릴리스 때 여기만 올리면 됨
+APP_VERSION = 'v2.7.0'  # 2026-09-03 화면 표시용 버전 — 릴리스 때 여기만 올리면 됨
 # 2026-09-03 GA4 측정 ID (G-XXXXXXXXXX) — 채우면 배포 빌드에 gtag가 삽입되고, 비우면 추적 코드 자체가 안 들어감
 GA_ID = 'G-XXXXXXXXXX'
 # 2026-09-03 v2.2.0 Firebase (Google 로그인 + 즐겨찾기 동기화)
@@ -148,7 +150,9 @@ SCRIPTS = [
     'components/type-dots.js', 'components/sprite.js', 'components/changes.js', 'components/row.js',  # 2026-09-04 changes: 기술 변경·순위 변동 뱃지 (row가 사용)
     'components/list.js', 'components/chips.js', 'components/seg.js',
     'components/modal.js', 'components/auth.js', 'components/detail.js',  # 2026-09-03 v2.2.0 auth: 로그인·즐겨찾기 (detail보다 먼저)
-    'components/schedule.js', 'components/release.js', 'components/privacy.js', 'components/search.js', 'components/drawer.js', 'components/pages.js', 'components/trainers.js', 'components/favdigest.js', 'components/totop.js',  # 2026-09-02 9월 일정표 달력 · 업데이트 팝업
+    'components/schedule.js', 'components/release.js', 'components/privacy.js', 'components/search.js', 'components/drawer.js',  # 2026-09-02 9월 일정표 달력 · 업데이트 팝업
+    'components/favs.js', 'components/pages.js',  # 2026-09-05 favs: ★ 즐겨찾기 페이지 (pages가 PAGES에 등록하므로 그 앞)
+    'components/trainers.js', 'components/favdigest.js', 'components/totop.js',  # 2026-09-05 favdigest: 메인 즐겨찾기 카드
     'views/pvp.js', 'views/pve.js', 'views/max.js', 'views/tier.js', 'views/usage.js', 'views/ifsolo.js',  # 2026-09-02 if 탭
     'app.js',
 ]
@@ -227,6 +231,7 @@ const PVE_EASY = {json.dumps(pve_easy_tables, ensure_ascii=False) if pve_easy_ta
 const DMAX_DATA = {optional_json('data/dynamax.json')};
 const MAX_POOL = {optional_json('data/max_pool.json')};   // 2026-09-04 맥스 배틀 포획 가능 종 (스프라이트 id → 'G'|'D')
 const MOVE_CHANGES = {optional_json('data/move_changes.json')};   // 2026-09-04 시즌 기술 변경 안내 (backend/change_build.py)
+const ROLES = {optional_json('data/roles.json')};                 // 2026-09-05 PvE/PvP 역할 자동 분류 근거 (backend/roles_build.py)
 const RANK_DELTA_DATE = {json.dumps(rank_delta_date)};            // 2026-09-04 순위 변동을 기록한 날 (뱃지 유효기간 계산용)
 const RANK_FRESH_DAYS = {rank_fresh_days};                        // 이 일수가 지나면 변동 뱃지를 감춘다
 const DMAX_TIER = {json.dumps(dmax_tables, ensure_ascii=False) if dmax_tables else optional_json('data/dynamax_tier.json')};

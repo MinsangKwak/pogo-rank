@@ -199,6 +199,8 @@ GO 배틀리그 시즌이 바뀔 때(보통 3개월마다) 하는 유일한 수�
 
 - [ ] 월 일정표 갱신 (`frontend/scripts/components/schedule.js`의 `SCHEDULE_YM`·`SCHEDULE_ITEMS`) — 안 하면 달력이 빈 화면
 - [ ] 새 다이맥스·거다이맥스 출시분을 `backend/config/max_released.txt`에 추가
+- [ ] 새 폼이 나왔는데 화면에 안 보이면: 게임마스터 폼 접미사가 `FORM_KO`에 있는지 확인 (없으면 `names.py`의 `GM_FORM_EXCEPTIONS`, PokeAPI에 그림이 없으면 `sprite.py`의 `LOCAL_FORMS`)
+- [ ] ★ 즐겨찾기에서 '기타'로 떨어지는 비율이 높으면 `roles_build.py`의 `PVE_CUT`·`PVP_CUT` 완화 검토
 - [ ] 새 GO 배틀리그 시즌이 시작됐으면 [9장](#9-시즌-기술-변경-갱신)대로 `move_changes.txt` 교체
 
 **수시**

@@ -114,6 +114,8 @@ __STYLES__
     </details>
     <!-- 2026-09-03 CP 계산기는 상세 팝업 안으로 이동, 자리에 도감 신설 -->
     <button class="drawer-item" onclick="openPage('dex')">📕 도감</button>
+    <!-- 2026-09-05 즐겨찾기: 로그인·승인된 사용자에게만 initFavsMenu()가 연다 -->
+    <button class="drawer-item" id="menu-favs" onclick="openPage('favs')" hidden>★ 즐겨찾기</button>
     <!-- 2026-09-04 시즌 기술 변경 안내: 변경 데이터가 있을 때만 initMoveChangesMenu()가 연다 -->
     <button class="drawer-item" id="menu-changes" onclick="openPage('changes')" hidden>⚔️ 기술 변경</button>
     <button class="drawer-item" id="menu-release" onclick="openPage('release')">🎉 패치노트</button>

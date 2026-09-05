@@ -136,13 +136,9 @@ function renderDexPage() {
     } catch { /* 저장 불가 환경 */ }
   } }, cols2 ? '☰ 1열' : '⊞ 2열');
   // 2026-09-03 v2.2.0 즐겨찾기만 보기 칩 (승인된 사용자) / 비로그인 안내
+  // 2026-09-05 즐겨찾기는 전용 페이지로 이동 — PvE/PvP 갈래와 근거 순위를 함께 보여 준다
   const favChip = AUTH.status === 'ok'
-    ? el('button', { class: 'uchip fav-chip', onclick: () => {
-        $input.value = '';
-        list = all.filter((entry) => isFav(entry.dex));
-        shown = 999;
-        draw();
-      } }, `★ 즐겨찾기 ${AUTH.favs.size}`)
+    ? el('button', { class: 'uchip fav-chip', onclick: () => openPage('favs') }, `★ 즐겨찾기 ${AUTH.favs.size}`)
     : '';
   // 칩 줄: [레이아웃 토글] [즐겨찾기] [1세대] … [9세대]
   const genChips = el('div', { class: 'tchips' }, $layout, favChip, ...DEX_GENS.map(([genStart, genEnd], genIndex) =>
@@ -169,6 +165,7 @@ const PAGES = {
   dex: { title: '📕 도감', render: renderDexPage },  // 2026-09-03 CP 계산기 페이지 대체
   changes: { title: '⚔️ 기술 변경', render: renderMoveChangesPage },  // 2026-09-04 시즌 기술 조정 안내
   privacy: { title: '🔒 개인정보처리방침', render: renderPrivacyPage },  // 2026-09-04 로그인 시 수집하는 개인정보 안내
+  favs: { title: '★ 즐겨찾기', render: renderFavsPage },  // 2026-09-05 PvE/PvP 나눠 보기
 };
 
 // 현재 해시(#/dex, #/schedule?… 등)에서 페이지 id 만 뽑는다. PAGES 에 없으면 null = 메인 화면.

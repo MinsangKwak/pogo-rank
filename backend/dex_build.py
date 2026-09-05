@@ -35,7 +35,7 @@
 #   반드시 그 뒤에 실행돼야 하고, 결과 dex.json은 build.py 2차가 data.js에 실어 보낸다.
 # ─────────────────────────────────────────────────────────────────────────────
 import json, csv, re, os
-from sprite import sprite_id
+from sprite import sprite_id, LOCAL_FORMS
 from names import label_from_gm, released_dex
 
 # 2026-09-03 PvPoke released는 PvP 사용 가능 기준이라 실출시 종(메타몽 등)이 빠짐 → 수동 보정 파일로 보완
@@ -148,6 +148,9 @@ referenced_sprite_ids |= ranked_dex  # 폼 스프라이트의 기본 폼도 포�
 all_dex = {int(template['templateId'][1:5]) for template in game_master
            if template['data'].get('pokemonSettings', {}).get('stats', {}).get('baseAttack')}
 referenced_sprite_ids |= all_dex
+# 2026-09-05 저장소가 직접 번호를 배정한 폼(아머드 뮤츠 등)은 순위표에 안 걸려도 반드시 포함한다.
+# 이 번호를 빠뜨리면 상세 팝업이 forms 폴백으로 기본 폼(일반 뮤츠)의 종족값·기술을 보여 준다 — 오정보.
+referenced_sprite_ids |= set(LOCAL_FORMS.values())
 
 # 진화 계보: evolution_chain_id 로 가족을 묶고 evolves_from 로 단계를 계산
 chain_members, parent = {}, {}
@@ -254,7 +257,11 @@ dex_output = {
     'cpm': cpm,
     'cpms': cpms,
     # dex: 폼 스프라이트만 담는다 (스프라이트 id와 도감번호가 같은 기본 폼은 넣을 필요가 없음)
-    'dex': {str(referenced_id): sprite_dex[referenced_id] for referenced_id in referenced_sprite_ids if referenced_id in sprite_dex and sprite_dex[referenced_id] != referenced_id},
+    # 저장소 배정 번호(아머드 뮤츠 등)는 PokeAPI 표에 없으므로 여기서 직접 원종 번호를 붙인다 —
+    # 이게 없으면 프런트 dexOf()가 원종을 못 찾아 진화 단계·즐겨찾기 ★·활용처가 통째로 사라진다.
+    'dex': {**{str(referenced_id): sprite_dex[referenced_id] for referenced_id in referenced_sprite_ids
+               if referenced_id in sprite_dex and sprite_dex[referenced_id] != referenced_id},
+            **{str(local_sprite): local_dex for (local_dex, _label), local_sprite in LOCAL_FORMS.items()}},
     'names': names,
     'evo': {str(dex_number): family for dex_number, family in evo.items()},
     'forms': {str(sprite_identifier): form_data for sprite_identifier, form_data in forms.items()},

@@ -24,6 +24,7 @@
 // - TYPE_KO · LEAGUE_KO (data.js): 타입·리그 한글 이름
 // - DMAX_DATA (data.js, 선택): 맥스 보스별 추천 카운터 (없는 빌드도 있어 typeof 로 방어)
 // - MAX_POOL (data.js, 선택): 맥스 배틀에서 잡을 수 있는 종 (스프라이트 id → 'G' 거다이맥스 · 'D' 다이맥스)
+// - roleToggleNode() (components/favs.js): ★ 즐겨찾기 PvE/PvP 분류 보정 토글
 
 // 스프라이트 id → 도감번호 (기본 폼은 id가 곧 도감번호)
 // 메가·리전 폼 등은 10000 이상의 별도 id를 쓰므로 DEX_DATA.dex 매핑으로 원종 번호를 찾는다.
@@ -457,6 +458,9 @@ function openDetail(pokemon, isDex = false) {
   // 아래 섹션들은 해당 데이터가 있을 때만 붙는다 (활용처 미등재·메가 없음·진화 없음 등)
   const usage = usageNode(pokemon.name);
   if (usage) body.append(detailSection('이 도감에서의 활용처 (상위 30위 내)', usage));
+  // 2026-09-05 역할 보정: ★ 즐겨찾기 목록에서 PvE/PvP 어느 갈래로 묶일지 직접 지정
+  const roleToggle = roleToggleNode(pokemon.sprite);
+  if (roleToggle) body.append(detailSection('★ 즐겨찾기 분류', roleToggle));
   const megaCmp = dex != null ? megaCompareNode(dex) : null;
   if (megaCmp) body.append(detailSection('⚡ 메가X vs 메가Y 비교', megaCmp));
   if (dex != null) body.append(detailSection('진화 단계', evoNode(dex, isDex, pokemon.sprite)));

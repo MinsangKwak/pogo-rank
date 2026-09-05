@@ -95,12 +95,23 @@ def name_ko(species_id):
     return (f'섀도우 {full_name}' if is_shadow else full_name, label)
 
 
+# 2026-09-05 접미사만으로는 못 가리는 폼: (pokemonId, form) 쌍으로만 판정한다
+# 아머드 뮤츠의 게임마스터 표기는 'MEWTWO_A' 인데, 접미사 'A' 는 안농의 A 모양('UNOWN_A')과 같다.
+# FORM_KO 에 'a' 를 넣으면 안농이 전부 "아머드 안농"이 되므로, 종까지 함께 보는 이 표에서 처리한다.
+GM_FORM_EXCEPTIONS = {
+    ('MEWTWO', 'MEWTWO_A'): '아머드',
+}
+
+
 # 게임마스터 (pokemonId, form) → 폼 라벨. 라벨 표에 없는 폼(코스튬 등)은 None
 # 라벨이 없는 기본 폼은 '' 을, 표에서 못 찾은 폼은 None 을 돌려주므로 호출부가 둘을 구분할 수 있다.
 def label_from_gm(pokemon_id, form):
     # form 이 비었거나 pokemonId 와 같거나 '<POKEMON_ID>_NORMAL' 이면 기본 폼이다
     if not form or form == pokemon_id or form == f'{pokemon_id}_NORMAL':
         return ''
+    # 종까지 봐야 구분되는 폼을 먼저 확인한다 (접미사 표보다 우선)
+    if (pokemon_id, form) in GM_FORM_EXCEPTIONS:
+        return GM_FORM_EXCEPTIONS[(pokemon_id, form)]
     # 보통 form 은 'CHARIZARD_MEGA_X' 처럼 pokemonId 로 시작하므로 그 뒤(밑줄 하나 포함)만 잘라 낸다
     form_suffix = form[len(pokemon_id) + 1:] if form.startswith(pokemon_id + '_') else form
     return FORM_KO.get(normalize_form_token(form_suffix))

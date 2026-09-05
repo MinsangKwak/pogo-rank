@@ -33,6 +33,7 @@ const AUTH = {
   status: 'anon',    // anon(비로그인) | pending(승인 대기) | ok(승인됨)
   admin: false,
   favs: new Set(),   // 즐겨찾기 도감번호
+  roles: {},         // 2026-09-05 역할 수동 보정 — '도감번호|폼라벨' → ['pve'] / ['pvp'] / []
   db: null,
 };
 
@@ -91,6 +92,7 @@ async function onAuthChange(user) {
   AUTH.status = 'anon';
   AUTH.admin = false;
   AUTH.favs = new Set();
+  AUTH.roles = {};
   if (user) {
     const email = authEmail();
     // ADMIN_UID가 채워져 있으면 uid로 판정(공개 저장소에 이메일을 남기지 않기 위함), 없으면 이메일로 폴백
@@ -122,8 +124,10 @@ async function onAuthChange(user) {
   if (typeof renderFavDigest === 'function') renderFavDigest();
   TRAINERS_CACHE = null;  // 계정이 바뀌면 트레이너 코드도 다시 조회
   if (typeof renderTrainers === 'function') renderTrainers();
-  // 도감이 열려 있으면 ★ 표시를 다시 그린다
-  if (typeof currentPageId === 'function' && currentPageId() === 'dex') renderPage();
+  // 2026-09-05 로그인 상태에 따라 ★ 즐겨찾기 메뉴 항목을 열고 닫는다
+  if (typeof initFavsMenu === 'function') initFavsMenu();
+  // 도감·즐겨찾기 페이지가 열려 있으면 ★ 표시를 다시 그린다
+  if (typeof currentPageId === 'function' && ['dex', 'favs'].includes(currentPageId())) renderPage();
 }
 
 async function signIn() {
@@ -167,6 +171,8 @@ async function loadFavs() {
   const snapshot = await docRef.get().catch(() => null);
   const favs = snapshot && snapshot.exists ? (snapshot.data().favs || []) : [];
   AUTH.favs = new Set(favs.map(Number));
+  // 2026-09-05 역할 보정: 자동 분류와 다를 때만 저장되므로 보통 비어 있다
+  AUTH.roles = (snapshot && snapshot.exists ? snapshot.data().roles : null) || {};
   if (!snapshot || !snapshot.exists) {
     // 첫 로그인이면 빈 문서를 만들어 둔다 — 이후 즐겨찾기 갱신이 merge로 항상 성공하도록
     docRef.set({ email: authEmail(), name: AUTH.user.displayName || '', favs: [], updatedAt: firebase.firestore.FieldValue.serverTimestamp() }, { merge: true }).catch(() => {});
@@ -196,9 +202,31 @@ async function toggleFav(dex) {
   refreshFavUi(dex);
   renderAccount();
   if (typeof renderFavDigest === 'function') renderFavDigest();
+  if (typeof initFavsMenu === 'function') initFavsMenu();   // 메뉴의 즐겨찾기 개수 갱신
   const fieldValue = firebase.firestore.FieldValue;
   await AUTH.db.collection('users').doc(AUTH.user.uid).set({
     email: authEmail(), favs: on ? fieldValue.arrayUnion(dex) : fieldValue.arrayRemove(dex), updatedAt: fieldValue.serverTimestamp(),
+  }, { merge: true }).catch(() => {});
+}
+
+// 2026-09-05 역할 수동 보정 저장.
+// 자동 분류(ROLES)가 맞으면 아무것도 저장하지 않고, 다를 때만 이 표에 예외로 남긴다.
+// 그래서 대부분의 사용자 문서에는 roles 필드가 아예 없거나 몇 줄뿐이다.
+//
+// 키는 '도감번호|폼라벨' — backend/roles_build.py·pve_full.json과 같은 형식이라
+// 아머드 뮤츠('150|아머드')와 일반 뮤츠('150|')가 갈린다.
+// (섀도우는 상세 팝업이 기본 폼으로 열리므로 일반 폼과 보정을 공유한다)
+async function setRole(formKey, roleList) {
+  if (AUTH.status !== 'ok') {
+    if (AUTH.status === 'anon') signIn();
+    return;
+  }
+  // 낙관적 갱신 — 저장 응답을 기다리지 않고 화면부터 바꾼다
+  if (roleList && roleList.length) AUTH.roles[formKey] = roleList;
+  else delete AUTH.roles[formKey];
+  const fieldValue = firebase.firestore.FieldValue;
+  await AUTH.db.collection('users').doc(AUTH.user.uid).set({
+    email: authEmail(), roles: AUTH.roles, updatedAt: fieldValue.serverTimestamp(),
   }, { merge: true }).catch(() => {});
 }
 

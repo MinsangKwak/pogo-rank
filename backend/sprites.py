@@ -16,7 +16,10 @@
 import json
 import base64
 import os
+import shutil
 import subprocess
+
+from sprite import LOCAL_SPRITE_BASE   # 2026-09-05 저장소 배정 번호 → 그림을 빌려올 원본 번호
 
 # 시트 목록(sheet.json)처럼 중첩 구조도 있으므로 'sprite' 키를 재귀로 수집한다
 sprite_ids = set()
@@ -50,6 +53,8 @@ if os.path.exists('data/dex.json'):
             sprite_ids |= set(stage)
     # 2026-09-03 도감 페이지: 전 종 기본 스프라이트 포함
     sprite_ids |= {int(dex_number) for dex_number in dex_data.get('names', {})}
+# 2026-09-05 저장소가 번호를 배정한 폼은 어느 랭킹에도 안 걸릴 수 있으므로 항상 포함한다
+sprite_ids |= set(LOCAL_SPRITE_BASE)
 os.makedirs('data/sprites', exist_ok=True)
 # 2026-09-03 v2.0.0: 없는 것만 16개씩 병렬 다운로드 (CI는 actions/cache로 대부분 재사용)
 from concurrent.futures import ThreadPoolExecutor
@@ -62,11 +67,25 @@ def download_sprite(sprite_identifier):
     subprocess.run(['curl', '-sSL', '-o', f'data/sprites/{sprite_identifier}.png', f'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/{sprite_identifier}.png'])
 
 
+# 2026-09-05 저장소가 직접 배정한 번호(90000번대)는 PokeAPI 에 없으므로 내려받지 않는다.
+# 그림은 원본 폼 png 를 복사해 쓴다 — 아머드 뮤츠처럼 "전용 일러스트는 없지만 별개로 세야 하는" 폼용.
+# 전용 그림을 넣고 싶으면 data/sprites/<번호>.png 를 직접 채워 두면 이 복사가 건너뛰어진다.
+local_ids = [sprite_identifier for sprite_identifier in missing_ids if sprite_identifier in LOCAL_SPRITE_BASE]
+missing_ids = [sprite_identifier for sprite_identifier in missing_ids if sprite_identifier not in LOCAL_SPRITE_BASE]
+
 if missing_ids:
     with ThreadPoolExecutor(16) as executor:
         # map 은 지연 평가라서 list() 로 감싸 모든 다운로드가 끝나게 한다
         list(executor.map(download_sprite, missing_ids))
     print(f'downloaded {len(missing_ids)} new sprites')
+for sprite_identifier in local_ids:
+    # 원본이 아직 없으면(순서 문제) 먼저 받아 둔다
+    base_identifier = LOCAL_SPRITE_BASE[sprite_identifier]
+    if not os.path.exists(f'data/sprites/{base_identifier}.png'):
+        download_sprite(base_identifier)
+    if os.path.exists(f'data/sprites/{base_identifier}.png'):
+        shutil.copy(f'data/sprites/{base_identifier}.png', f'data/sprites/{sprite_identifier}.png')
+        print(f'local sprite {sprite_identifier} ← {base_identifier} 복사')
 encoded_sprites = {}
 failed_ids = []
 for sprite_identifier in sprite_ids:

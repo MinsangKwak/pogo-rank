@@ -9,6 +9,7 @@ python3 backend/value_build.py
 python3 backend/sheet_build.py
 python3 backend/dex_build.py
 python3 backend/change_build.py
+python3 backend/roles_build.py
 python3 backend/sprites.py
 python3 backend/build.py
 echo "built dist/index.html"
