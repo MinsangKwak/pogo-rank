@@ -6,3 +6,9 @@
 @media (prefers-reduced-motion: no-preference) {
   .tab { transition: color .12s, border-color .12s, background .12s; }
 }
+
+/* 2026-09-06 v2.9.0 탭 줄 오른쪽 바로가기 (도감·즐겨찾기) — 탭이 아니라 페이지 링크라 선택 표시가 없다 */
+.tab-quick { margin-left: auto; display: flex; gap: 12px; padding-left: 12px; }
+.tab.quick { color: var(--muted); }
+.tab.quick:hover { color: var(--fg); }
+@media (max-width: 480px) { .tab.quick .lbl { display: none; } }

@@ -173,8 +173,8 @@ function currentPageId() {
   const match = location.hash.match(/^#\/(\w+)/);
   return match && PAGES[match[1]] ? match[1] : null;
 }
-function openPage(id) {
-  track('page_open', { page: id });  // 2026-09-03 GA4: 도감·일정표·패치노트 사용량
+function openPage(id, from = 'menu') {
+  track('page_open', { page: id, from });  // 2026-09-03 GA4: 도감·일정표·패치노트 사용량 · 2026-09-06 from: menu/tabbar/card 진입 경로
   // 이미 그 페이지면 해시가 안 바뀌어 hashchange 가 안 뜨므로 직접 다시 그린다
   if (currentPageId() === id) renderPage();
   else location.hash = `#/${id}`;
@@ -188,6 +188,17 @@ function renderPage() {
   const id = currentPageId();
   const $page = document.getElementById('page');
   const $wrap = document.querySelector('.wrap');
+  // 2026-09-06 v2.9.0 상세 딥링크 #/mon/<스프라이트 id> — 메인 화면을 보인 채 그 포켓몬 상세 팝업을 연다.
+  // 상세 팝업은 GA에서 1순위 상호작용(detail_open)인데 링크가 없어 친구에게 "이거 봐"를 못 했다.
+  // 팝업을 여닫을 때 해시는 replaceState로만 바꾸므로(detail.js·modal.js) 뒤로가기 동작은 그대로다
+  const monMatch = location.hash.match(/^#\/mon\/(\d+)$/);
+  if (monMatch) {
+    $page.hidden = true;
+    $page.replaceChildren();
+    $wrap.hidden = false;
+    if (typeof openDetailBySprite === 'function') openDetailBySprite(+monMatch[1], 'link');
+    return;
+  }
   // 페이지가 아니면: 페이지 영역을 비우고 감춘 뒤 메인 화면 복귀
   if (!id) {
     $page.hidden = true;

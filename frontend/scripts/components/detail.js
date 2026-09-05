@@ -54,6 +54,43 @@ function typeMultAgainst(atkType, defTypes) {
   return multiplier;
 }
 
+// 2026-09-06 v2.9.0 공유 링크 — 이 포켓몬 상세로 바로 열리는 주소 (#/mon/<스프라이트 id>)
+function monShareUrl(spriteId) {
+  return `${location.origin}${location.pathname}#/mon/${spriteId}`;
+}
+
+// 🔗 공유 버튼: Web Share가 되는 기기(대부분의 폰)는 공유 시트, 아니면 클립보드 복사 후 "복사됨 ✓" 표시
+function shareBtn(pokemon) {
+  const button = el('button', { class: 'd-share', 'aria-label': '링크 공유', title: '이 포켓몬 링크 공유' }, '🔗');
+  const copied = () => { button.textContent = '복사됨 ✓'; setTimeout(() => { button.textContent = '🔗'; }, 1500); };
+  button.addEventListener('click', async (event) => {
+    event.stopPropagation();
+    const url = monShareUrl(pokemon.sprite);
+    track('share', { mon: pokemon.name });  // GA4: 공유 시도 — 링크로 들어온 detail_open(from=link)과 짝을 이룬다
+    try {
+      if (navigator.share) await navigator.share({ title: `${pokemon.name} — POGO SEARCH`, url });
+      else { await navigator.clipboard.writeText(url); copied(); }
+    } catch (error) {
+      // 공유 시트를 취소한 경우는 조용히, 그 외(권한 등)는 클립보드로 한 번 더
+      if (error?.name === 'AbortError') return;
+      try { await navigator.clipboard.writeText(url); copied(); } catch {}
+    }
+  });
+  return button;
+}
+
+// 2026-09-06 v2.9.0 스프라이트 id만으로 상세를 연다 (딥링크 #/mon/<id> 진입용).
+// 검색 색인에 있으면 그 항목(폼 포함 이름·타입)을 쓰고, 없으면 도감 이름표로 만든다
+function openDetailBySprite(spriteId, from) {
+  const found = typeof buildSearchIndex === 'function' ? buildSearchIndex().find((pokemon) => Number(pokemon.sprite) === Number(spriteId)) : null;
+  if (found) return openDetail(found, false, from);
+  const dex = dexOf(spriteId);
+  const baseName = DEX_DATA.names?.[dex ?? spriteId];
+  if (!baseName) return;  // 모르는 번호면 조용히 무시 (메인 화면만 보인다)
+  const label = DEX_DATA.forms?.[spriteId]?.name ?? '';
+  openDetail({ sprite: spriteId, name: label ? `${label} ${baseName}` : baseName, en: '', types: DEX_DATA.forms?.[spriteId]?.types ?? [] }, false, from);
+}
+
 // 2026-09-02 진화형을 누르면 그 포켓몬의 상세로 이동
 // 2026-09-03 isDex: 도감에서 열면 능력치 육각형 포함, 일반(순위표·검색)에서는 기술만
 function openDetailByDex(dexNumber, isDex) {
@@ -390,8 +427,9 @@ function hexNode(form, name, types) {
 // isDex = true (도감에서 열었을 때): 능력치 육각형 + 기술을 2열로 — "이 종이 어떤 포켓몬인가"를 본다
 // isDex = false (순위표·검색에서 열었을 때): 육각형 없이 기술만 전체 폭으로 — "지금 쓸 기술"을 본다
 // 섹션 순서: 헤더 → CP 계산기(아코디언) → 능력치/기술 → 타입 상성 → 활용처 → 메가 비교 → 진화 단계 → 보스 카운터
-function openDetail(pokemon, isDex = false) {
-  track('detail_open', { mon: pokemon.name, from: isDex ? 'dex' : 'list' });  // 2026-09-03 GA4: 상세 팝업 사용량
+function openDetail(pokemon, isDex = false, from = null) {
+  track('detail_open', { mon: pokemon.name, from: from ?? (isDex ? 'dex' : 'list') });  // 2026-09-03 GA4: 상세 팝업 사용량 · 2026-09-06 from: list/dex/link(공유 링크)
+
   const dex = dexOf(pokemon.sprite);
   // 폼 데이터는 스프라이트 id 로 먼저 찾고(메가·리전 폼), 없으면 원종 도감번호로 되돌아간다
   const form = DEX_DATA.forms[pokemon.sprite] ?? (dex != null ? DEX_DATA.forms[dex] : null);
@@ -414,7 +452,9 @@ function openDetail(pokemon, isDex = false) {
       el('h2', {}, pokemon.name, pokemon.en ? el('span', { class: 'd-en-inline' }, ` (${pokemon.en})`) : ''),
       cpLine),
     // 2026-09-03 v2.2.0 즐겨찾기 ★ (로그인 기능이 켜진 빌드에서만, 종 단위 = 도감번호)
-    authEnabled() && dex != null ? favBtn(dex, 'd-fav') : '');
+    el('div', { class: 'd-actions' },
+      authEnabled() && dex != null ? favBtn(dex, 'd-fav') : '',
+      shareBtn(pokemon)));  // 2026-09-06 v2.9.0 🔗 공유
 
   const body = el('div', { class: 'detail' }, head);
   // 2026-09-04 포획 CP: "지금 잡은 개체가 100%인가"를 확인하는 표. 계산기보다 자주 보므로 위에 둔다
@@ -467,4 +507,10 @@ function openDetail(pokemon, isDex = false) {
   const counter = types.length ? counterNode(types) : null;
   if (counter) body.append(detailSection(`${pokemon.name}가 보스로 나오면? (${TYPE_KO[types[0]]} 보스 공략 딜러)`, counter));
   openModal(body);
+  // 2026-09-06 v2.9.0 메인 화면에서 열었을 때만 주소를 #/mon/<id>로 바꿔 둔다 — 그대로 복사하면 공유 링크가 된다.
+  // openModal이 먼저 closeModal을 불러 기존 #/mon 해시를 지우므로, 반드시 그 뒤에 넣는다.
+  // 페이지(#/dex 등) 위에서 열 때는 그 페이지 주소를 지우지 않도록 건드리지 않는다. replaceState라 히스토리는 안 쌓인다
+  if (typeof currentPageId === 'function' && !currentPageId()) {
+    try { history.replaceState(null, '', `#/mon/${pokemon.sprite}`); } catch {}
+  }
 }

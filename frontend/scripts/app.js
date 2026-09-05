@@ -45,6 +45,33 @@ const state = {
 // 펼쳐진 목록 키 저장
 const expanded = new Set();
 
+// ── 2026-09-06 v2.9.0 마지막 보기 기억 ─────────────────────────────────────
+// GA 첫 3일: 시작 탭(tab_start)은 100% D-MAX인데 실제 클릭은 PvP·PvE로 몰렸고 세션당 3.5회를 다시 열었다.
+// 열 때마다 같은 탭·리그·칩으로 옮기는 클릭을 없애기 위해 마지막 보기를 localStorage에 남긴다.
+// 값은 전부 문자열 id라서 허용 목록으로 검증한 뒤에만 state에 넣는다 (옛 버전 값·손상 대비).
+const LAST_VIEW_KEY = 'pogo_last_view';
+const LAST_VIEW_FIELDS = ['tab', 'league', 'pvpType', 'boss', 'easyBoss', 'maxBoss', 'pveMode', 'ifWho', 'deckLeague'];
+function restoreLastView() {
+  let saved;
+  try { saved = JSON.parse(localStorage.getItem(LAST_VIEW_KEY) || 'null'); } catch { return; }
+  if (!saved || typeof saved !== 'object') return;
+  const typeKeys = typeof TYPE_KO !== 'undefined' ? Object.keys(TYPE_KO) : [];
+  const leagues = typeof LEAGUE_KO !== 'undefined' ? Object.keys(LEAGUE_KO) : ['little', 'great', 'ultra', 'master'];
+  const allowed = {
+    tab: ['max', 'pve', 'pvp', 'usage', 'if'],
+    league: leagues, deckLeague: leagues,
+    pvpType: ['all', ...typeKeys],
+    boss: ['overall', ...typeKeys], easyBoss: ['overall', ...typeKeys], maxBoss: ['overall', ...typeKeys],
+    pveMode: ['easy', 'all'], ifWho: ['solo', 'pvpdeck'],
+  };
+  for (const key of LAST_VIEW_FIELDS) {
+    if (typeof saved[key] === 'string' && allowed[key].includes(saved[key])) state[key] = saved[key];
+  }
+}
+function saveLastView() {
+  try { localStorage.setItem(LAST_VIEW_KEY, JSON.stringify(Object.fromEntries(LAST_VIEW_FIELDS.map((key) => [key, state[key]])))); } catch {}
+}
+
 const $tabs = document.getElementById('tabs');
 const $controls = document.getElementById('controls');
 const $content = document.getElementById('content');
@@ -70,6 +97,14 @@ function renderTabs() {
       },
     }, label));
   }
+  // 2026-09-06 v2.9.0 도감·즐겨찾기 바로가기 — ☰ 안에만 있을 때 page_open(14)이 탭 클릭(~100)의 1/7이었다.
+  // 탭이 아니라 "페이지로 가는 버튼"이라 aria-selected 없이 오른쪽 끝에 붙인다. 좁은 화면에서는 아이콘만 남는다(tabs.css)
+  const quick = el('div', { class: 'tab-quick' },
+    el('button', { class: 'tab quick', title: '도감', onclick: () => openPage('dex', 'tabbar') }, '📕', el('span', { class: 'lbl' }, ' 도감')));
+  if (typeof authEnabled === 'function' && authEnabled() && AUTH.status === 'ok') {
+    quick.append(el('button', { class: 'tab quick', title: '즐겨찾기', onclick: () => openPage('favs', 'tabbar') }, '★', el('span', { class: 'lbl' }, ` 즐겨찾기 ${AUTH.favs.size}`)));
+  }
+  $tabs.append(quick);
 }
 
 // 2026-09-02 PvE 탭: 일반/전체 세부 토글 (PvP 리그 토글과 같은 seg)
@@ -94,9 +129,11 @@ function render() {
   $content.textContent = '';
   // 탭 id → 그 탭을 그리는 함수. 찾아서 바로 호출한다
   ({ max: renderMax, pve: renderPveTab, pvp: renderPvp, usage: renderUsage, if: renderIfTab })[state.tab]();
+  saveLastView();  // 2026-09-06 v2.9.0 상태가 바뀌어 다시 그릴 때마다 마지막 보기를 남긴다
 }
 
 // ── 최초 실행 (여기부터는 페이지가 열릴 때 한 번만 지나간다) ──
+restoreLastView();  // 2026-09-06 v2.9.0 첫 렌더 전에 마지막 보기 복원
 render();
 // 2026-09-03 v2.2.1 첫 화면이 그려졌으니 로딩 가림막 제거 (페이드 후 DOM에서 삭제)
 (() => {
@@ -110,7 +147,11 @@ render();
 })();
 // 2026-09-03 GA4: 접속 시 처음 보이는 탭은 클릭이 없어 tab_* 에 안 잡히므로 별도 이벤트로 기록
 // (tab_* 는 "일부러 눌러서 간" 횟수, tab_start 는 "접속하면 보이는" 횟수 — 섞이지 않게 분리)
-track('tab_start', { tab: state.tab });
+// 2026-09-06 v2.9.0 standalone: 홈 화면 설치(PWA)로 열었는지 — 설치 사용자 비율을 본다. 복원된 탭이 들어가므로 이제 "시작 탭 분포 = 실제 선호"가 된다
+const startedStandalone = window.matchMedia?.('(display-mode: standalone)').matches || navigator.standalone ? 1 : 0;
+track('tab_start', { tab: state.tab, standalone: startedStandalone });
+// 2026-09-06 v2.9.0 GA4: 홈 화면 설치 완료 — 브라우저가 설치를 마쳤을 때 한 번 뜬다
+window.addEventListener('appinstalled', () => track('pwa_install'));
 // 2026-09-03 자동 팝업 대신 새 패치노트 뱃지 (☰에 빨간 점)
 initReleaseBadge();
 // 2026-09-04 시즌 기술 변경 안내: 변경 데이터가 있을 때만 메뉴에 항목이 뜬다

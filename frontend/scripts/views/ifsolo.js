@@ -373,7 +373,25 @@ function renderSoloCalc() {
         }
         if (!hits.length) deckSuggestionBox.append(el('p', { class: 'empty' }, '이 보스 상대 상위 목록에 없어 평가할 수 없는 포켓몬이에요.'));
       });
-      $content.append(el('div', { class: 'list-head' }, el('h2', {}, '내 덱'), el('span', { class: 'meta' }, `${state.soloMyDeck.length}/6 · 넣는 순서대로 출전`)), deckSearchInput, deckSuggestionBox);
+      // 2026-09-06 v2.9.0 ★ 즐겨찾기(= 내가 가진 종)에서 덱 채우기 — 즐겨찾기와 IF 탭을 잇는다.
+      // 이 보스 상대 평가 가능한 풀(pool, 효율순) 중 즐겨찾기한 종만 골라 빈 자리(최대 6)만큼 넣는다
+      const favFill = (typeof authEnabled === 'function' && authEnabled() && AUTH.status === 'ok')
+        ? el('button', { class: 'uchip', onclick: () => {
+            const room = 6 - state.soloMyDeck.length;
+            const owned = pool.filter((attacker) => AUTH.favs.has(Number(dexOf(attacker.sprite)))
+              && !state.soloMyDeck.some((deckMember) => deckMember.name === attacker.name));
+            const picked = owned.slice(0, Math.max(room, 0));
+            track('solo_fill_favs', { n: picked.length });  // GA4: 즐겨찾기 → 덱 연결이 쓰이는지
+            if (!picked.length) {
+              deckSuggestionBox.replaceChildren(el('p', { class: 'empty' }, room > 0 ? '즐겨찾기 중 이 보스 상대 상위 목록에 든 포켓몬이 없어요.' : '덱이 이미 6마리예요.'));
+              return;
+            }
+            state.soloMyDeck.push(...picked);
+            render();
+          } }, `★ 즐겨찾기에서 채우기 (${AUTH.favs.size})`)
+        : el('span', { class: 'meta' }, '로그인하면 ★ 즐겨찾기로 덱을 바로 채울 수 있어요');
+      $content.append(el('div', { class: 'list-head' }, el('h2', {}, '내 덱'), el('span', { class: 'meta' }, `${state.soloMyDeck.length}/6 · 넣는 순서대로 출전`)),
+        el('div', { class: 'solo-fill' }, favFill), deckSearchInput, deckSuggestionBox);
       if (state.soloMyDeck.length) {
         $content.append(list('solo-mydeck', state.soloMyDeck, (member, index) => {
           // row()가 붙여둔 기본 클릭(상세 열기)을 떼기 위해 복제한 뒤 "덱에서 제거"를 다시 붙인다

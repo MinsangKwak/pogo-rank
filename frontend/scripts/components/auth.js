@@ -135,9 +135,11 @@ async function onAuthChange(user) {
       }, { merge: true }).catch(() => {});
     }
   }
+  if (user) track('login', { status: AUTH.status });  // 2026-09-06 v2.9.0 GA4: 로그인 세션 수와 승인 상태(ok/pending)
   renderAccount();
   refreshFavUi();
   if (typeof renderFavDigest === 'function') renderFavDigest();
+  if (typeof renderTabs === 'function') renderTabs();  // 2026-09-06 v2.9.0 탭 줄의 ★ 즐겨찾기 바로가기 표시/숨김
   TRAINERS_CACHE = null;  // 계정이 바뀌면 트레이너 코드도 다시 조회
   if (typeof renderTrainers === 'function') renderTrainers();
   // 2026-09-05 로그인 상태에 따라 ★ 즐겨찾기 메뉴 항목을 열고 닫는다
@@ -212,6 +214,7 @@ async function toggleFav(dex) {
   }
   dex = Number(dex);
   const on = !AUTH.favs.has(dex);
+  track('fav_toggle', { on: on ? 1 : 0, dex });  // 2026-09-06 v2.9.0 GA4: ★ 사용량 — 즐겨찾기 기능이 실제로 쓰이는지
   // 서버 응답을 기다리지 않고 화면을 먼저 바꾼다(낙관적 갱신) — 별을 눌렀을 때 즉시 반응하도록
   if (on) AUTH.favs.add(dex);
   else AUTH.favs.delete(dex);
@@ -219,6 +222,7 @@ async function toggleFav(dex) {
   renderAccount();
   if (typeof renderFavDigest === 'function') renderFavDigest();
   if (typeof initFavsMenu === 'function') initFavsMenu();   // 메뉴의 즐겨찾기 개수 갱신
+  if (typeof renderTabs === 'function') renderTabs();       // 2026-09-06 v2.9.0 탭 줄 바로가기의 개수 갱신
   const fieldValue = firebase.firestore.FieldValue;
   await AUTH.db.collection('users').doc(AUTH.user.uid).set({
     email: authEmail(), favs: on ? fieldValue.arrayUnion(dex) : fieldValue.arrayRemove(dex), updatedAt: fieldValue.serverTimestamp(),

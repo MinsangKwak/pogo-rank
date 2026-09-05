@@ -92,6 +92,22 @@ function monSearch(candidates, query, limit = 8) {
   return hits.slice(0, limit);
 }
 
+// 2026-09-06 v2.9.0 검색 후보 옆 "어디 몇 위" 한 줄 — 즐겨찾기 페이지와 같은 근거(ROLES).
+// 폼 단위 키('도감번호|폼라벨')를 먼저 보고, 없으면 종 단위 최고 순위(autoRoleOf)로 되돌아간다
+function searchRankText(spriteId) {
+  if (typeof ROLES === 'undefined' || !ROLES || typeof roleWhereLabel !== 'function') return '';
+  const dex = dexOf(spriteId);
+  if (dex == null) return '';
+  const label = DEX_DATA.forms?.[spriteId]?.name ?? '';
+  const formKey = `${dex}|${label}`;
+  const pve = ROLES.pve?.[formKey] ?? ROLES.dexPve?.[String(dex)] ?? null;
+  const pvp = ROLES.pvp?.[formKey] ?? ROLES.dexPvp?.[String(dex)] ?? null;
+  const parts = [];
+  if (pve) parts.push(`${roleWhereLabel('pve', pve[0])} ${pve[1]}위`);
+  if (pvp) parts.push(`${roleWhereLabel('pvp', pvp[0])} ${pvp[1]}위`);
+  return parts.join(' · ');
+}
+
 // 헤더 검색창(#psearch)에 입력 → 후보 목록(#psearch-sugg) 갱신 동작을 붙인다
 function initSearch() {
   const $input = document.getElementById('psearch');
@@ -108,13 +124,18 @@ function initSearch() {
       $sugg.append(el('button', {
         class: 'sugg-item',
         onclick: () => {
+          track('search_pick', { mon: pokemon.name });  // 2026-09-06 v2.9.0 GA4: 검색으로 고른 포켓몬
           $input.value = '';
           $sugg.textContent = '';
-          openDetail(pokemon);
+          openDetail(pokemon, false, 'search');
         },
-      }, sprite(pokemon.sprite), el('span', {}, pokemon.name)));
+      }, sprite(pokemon.sprite), el('span', {}, pokemon.name),
+        (() => { const rank = searchRankText(pokemon.sprite); return rank ? el('span', { class: 'sugg-rank' }, rank) : ''; })()));
     }
-    if (!hits.length) $sugg.append(el('span', { class: 'sugg-none' }, '검색 결과가 없어요'));
+    if (!hits.length) {
+      $sugg.append(el('span', { class: 'sugg-none' }, '검색 결과가 없어요'));
+      track('search_none', { q: $input.value.trim().slice(0, 20) });  // 2026-09-06 v2.9.0 GA4: 못 찾은 검색어 — 별칭·표기 보강 근거
+    }
   });
 }
 initSearch();

@@ -4,3 +4,4 @@
 .sugg-item:hover { background: var(--hover); border-color: var(--fg); }
 .sugg-item .sprite { width: 28px; height: 28px; }
 .sugg-none { font-size: 12.5px; color: var(--muted); padding: 2px 4px; }
+.sugg-rank { font-size: 11.5px; color: var(--muted); margin-left: 2px; }  /* 2026-09-06 v2.9.0 검색 후보 옆 순위 근거 */

@@ -108,4 +108,10 @@
 @media (max-width: 359px) { .d-hexmoves { grid-template-columns: 1fr; } }
 
 /* 2026-09-03 v2.2.0 상세 팝업 헤더 즐겨찾기 ★ */
-.d-head .d-fav { margin-left: auto; align-self: flex-start; }
+.d-head .d-fav { align-self: center; }  /* 2026-09-06 v2.9.0 .d-actions 안으로 이동 — 오른쪽 정렬은 .d-actions 가 맡는다 */
+.d-head .d-actions { margin-left: auto; align-self: flex-start; }
+/* 2026-09-06 v2.9.0 상세 헤더 오른쪽 버튼 묶음: ★ 즐겨찾기 + 🔗 공유 */
+.d-actions { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.d-share { font-size: 17px; line-height: 1; padding: 4px 6px; border-radius: 8px; color: var(--muted); white-space: nowrap; }
+.d-share:hover { background: var(--hover); color: var(--fg); }
+.solo-fill { display: flex; align-items: center; gap: 8px; margin: 0 0 8px; font-size: 12.5px; }

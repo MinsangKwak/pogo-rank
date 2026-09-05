@@ -37,6 +37,10 @@ function openModal(content) {
 function closeModal() {
   document.querySelector('.overlay')?.remove();
   document.body.style.overflow = '';
+  // 2026-09-06 v2.9.0 상세 딥링크(#/mon/…)를 열어 둔 채 닫으면 주소에서 해시만 지운다 (히스토리 항목 추가 없음)
+  if (/^#\/mon\//.test(location.hash)) {
+    try { history.replaceState(null, '', location.pathname + location.search); } catch {}
+  }
 }
 
 // Esc로 닫기. 팝업마다 리스너를 달고 떼는 대신 문서에 하나만 달아 둔다
