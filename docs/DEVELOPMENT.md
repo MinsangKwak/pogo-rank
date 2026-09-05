@@ -395,7 +395,7 @@ CP = `floor((공격+IV) × √(방어+IV) × √(체력+IV) × CPM² / 10)`, 최
 │   ├── roles_build.py            즐겨찾기 PvE/PvP 자동 분류 근거
 │   ├── sprites.py                스프라이트 다운로드
 │   └── config/                   sheets.conf · max_released.txt · dex_released_extra.txt · move_changes.txt
-├── scripts/                      build.sh · fetch_data.sh · setup_dev_deploy_key.sh(dev 배포 키 1회 설정)
+├── scripts/                      build.sh · fetch_data.sh · setup_dev_deploy_key.sh(dev 배포 키) · verify_deploy.sh(배포 검증)
 ├── docs/                         DEVELOPMENT.md(이 문서) · OPERATIONS.md
 ├── snapshot/                     빌드가 남기는 시트 원본·리포트·직전 순위 (자동 커밋)
 ├── firestore.rules               Firestore 보안 규칙 (콘솔에 붙여넣어 게시)

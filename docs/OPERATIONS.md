@@ -36,14 +36,14 @@
 ### 순서
 
 1. **기능 작업** — `dev`에서. 로컬은 `python3 backend/build.py`, 로그인 뒤 화면은 `localhost:5503/?mock=1`
-2. **dev 푸시** → 2~3분 뒤 **pogo-rank-dev** 주소에서 친구들과 함께 확인
+2. **dev 푸시** → 2~3분 뒤 **pogo-rank-dev** 주소에서 친구들과 함께 확인. 기계 검증은 `bash scripts/verify_deploy.sh https://minsangkwak.github.io/pogo-rank-dev/ dev`
 3. **버전 올리기** — `backend/build.py`의 `APP_VERSION` (화면 우측 상단 배지)
 4. **기록 3곳 갱신**
    - `CHANGELOG.md` — 새 버전 섹션 추가 (추가/변경/수정/제거)
    - `frontend/scripts/components/release.js` — 사용자용 패치노트 항목 + `RELEASE_VER` 갱신(바뀌면 ☰에 빨간 점이 뜸)
    - `README.md` 버전 이력 표 (한 줄)
 5. **main으로 머지** — `git checkout main && git merge dev && git push`
-6. **deploy로 머지** — `git checkout deploy && git merge main && git push` → Actions가 빌드·배포 (2~3분)
+6. **deploy로 머지** — `git checkout deploy && git merge main && git push` → Actions가 빌드·배포 (2~3분) → `bash scripts/verify_deploy.sh https://minsangkwak.github.io/pogo-rank/ prod`
 7. **노션 정리** — QA 트래커에서 해당 이슈를 `완료`로 바꾸고 `버전` 속성을 지정
 
 > 급하면 GitHub → Actions → "Build and deploy to GitHub Pages" → **Run workflow** (deploy 브랜치를 다시 빌드). dev 쪽은 "Build and deploy dev preview".
