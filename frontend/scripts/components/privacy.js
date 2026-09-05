@@ -49,7 +49,7 @@ function renderPrivacyPage() {
       p('로그인한 계정의 정보 열람·수정·삭제를 언제든 요청할 수 있습니다. 헤더 👤 → 계정 메뉴에서 즐겨찾기를 직접 지울 수 있고, 계정 자체(로그인 기록·승인 정보) 삭제는 아래 문의처로 이메일 주소를 알려주시면 처리합니다.')),
 
     sec('문의처',
-      p('개인정보 관련 문의·삭제 요청: ', el('a', { href: 'mailto:contact@example.com' }, 'contact@example.com'))),
+      p('개인정보 관련 문의·삭제 요청: ', (CONTACT_EMAIL ? el('a', { href: 'mailto:' + CONTACT_EMAIL }, CONTACT_EMAIL) : '사이트 운영자'))),
 
     // 2026-09-04 이 요약본의 원본 — 표·콜아웃 등 더 자세한 형태는 노션에 둔다
     el('p', { class: 'd-foot' }, '더 자세한 내용은 ',

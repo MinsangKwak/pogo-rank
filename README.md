@@ -41,6 +41,7 @@
 
 | 버전 | 날짜 | 내용 |
 |---|---|---|
+| **v2.8.0** | 2026-09-05 | 저장소 공개 전환 — 운영 식별자를 `.env`/Actions variables로 분리, 규칙 파일 자리표시자, 개인 이름 일반화, 히스토리 치환 |
 | **v2.7.4** | 2026-09-05 | 배포 검증 스크립트 `scripts/verify_deploy.sh` (채널·버전·스프라이트·PWA 파일 점검) |
 | **v2.7.3** | 2026-09-05 | 브랜치 전략 개편 — `dev`(미리보기 pogo-rank-dev) → `main`(통합) → `deploy`(실서비스). dev 빌드는 `-dev` 배지·GA 끔·noindex |
 | **v2.7.2** | 2026-09-05 | 아머드 뮤츠 전용 그림 (포켓몬 GO 게임 에셋에서 자동 다운로드, 실패 시 원본 복사 폴백) |
@@ -79,4 +80,4 @@ PvPoke(랭킹·출시 여부) · PokeMiners(게임마스터) · PokeAPI(한글 �
 
 Pokémon 및 관련 명칭·이미지의 저작권은 Nintendo / Creatures Inc. / GAME FREAK inc. / Niantic에 있으며, 이 프로젝트는 원 저작자와 무관합니다. 데이터는 PvPoke · PokeMiners · PokeAPI의 공개 자료를 사용합니다.
 
-문의·건의: contact@example.com
+문의·건의: 사이트 푸터의 이메일 링크 (빌드 설정 `CONTACT_EMAIL`)

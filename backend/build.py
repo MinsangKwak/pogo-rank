@@ -108,30 +108,36 @@ json.dump(pvp_all, open('data/pvp_all.json', 'w', encoding='utf-8'), ensure_asci
 
 # ── frontend/ 의 CSS·JS를 순서대로 인라인해 단일 dist/index.html 조립 ──
 # 순서가 곧 캐스케이드(CSS)·실행 순서(JS)이므로 새 파일은 여기 목록에 추가
-APP_VERSION = 'v2.7.4'  # 2026-09-03 화면 표시용 버전 — 릴리스 때 여기만 올리면 됨
+APP_VERSION = 'v2.8.0'  # 2026-09-03 화면 표시용 버전 — 릴리스 때 여기만 올리면 됨
 # 2026-09-05 v2.7.3 빌드 채널 — 'prod'(기본) / 'dev'. dev 브랜치 워크플로(.github/workflows/deploy-dev.yml)가 BUILD_CHANNEL=dev 로 부른다.
 # dev 빌드는 (1) 버전 배지에 -dev 를 붙여 화면에서 구분되고 (2) GA 스니펫을 넣지 않아 통계가 섞이지 않고
 # (3) robots.txt 를 전부 차단 + <meta name="robots" content="noindex"> 로 검색 색인을 막는다. 나머지는 prod 와 동일
 BUILD_CHANNEL = os.environ.get('BUILD_CHANNEL', 'prod')
 if BUILD_CHANNEL == 'dev':
     APP_VERSION += '-dev'
-# 2026-09-03 GA4 측정 ID (G-XXXXXXXXXX) — 채우면 배포 빌드에 gtag가 삽입되고, 비우면 추적 코드 자체가 안 들어감
-GA_ID = 'G-XXXXXXXXXX'
-# 2026-09-03 v2.2.0 Firebase (Google 로그인 + 즐겨찾기 동기화)
-# Firebase 콘솔 > 프로젝트 설정 > 내 앱 > firebaseConfig 값을 그대로 옮겨 적는다. 비우면 로그인 UI가 안 뜬다
-# apiKey는 공개돼도 되는 식별자 — 접근 제어는 firestore.rules가 담당
-FIREBASE_CONFIG = {
-    'apiKey': 'FIREBASE_API_KEY_REDACTED',
-    'authDomain': 'pogo-note.firebaseapp.com',
-    'projectId': 'pogo-note',
-    'storageBucket': 'pogo-note.firebasestorage.app',
-    'messagingSenderId': '000000000000',
-    'appId': 'FIREBASE_APP_ID_REDACTED',
-}
-ADMIN_EMAIL = ''  # ADMIN_UID를 쓰므로 비움 (예전 폴백 자리)
-# 2026-09-03 관리자 식별을 uid로 — 배포 후 ☰ → 🔑 가입 승인에서 "내 uid 복사"로 받아 여기에 넣으면
-# 공개 저장소에서 이메일이 사라진다. firestore.rules의 isAdmin()도 같은 값으로 바꿀 것
-ADMIN_UID = 'ADMIN_UID_REDACTED'
+# ── 운영 설정값은 코드에 두지 않는다 (2026-09-05 v2.8.0) ──
+# 로컬은 저장소 루트의 .env, GitHub Actions 는 Repository variables 에서 같은 이름으로 읽는다. 키 설명은 .env.example.
+# 이 값들은 전부 dist/index.html 에 그대로 들어가 방문자에게 보이는 공개 식별자다 — 비밀이라서가 아니라
+# 공개 저장소 코드에 운영 식별자를 남기지 않기 위해 분리했다. 접근 제어는 firestore.rules 가 담당한다.
+def load_dotenv(path='.env'):
+    # 표준 라이브러리만 쓰는 원칙에 맞춘 최소 파서: KEY=VALUE 한 줄씩, # 주석·빈 줄 무시, 따옴표 벗김.
+    # 이미 있는 환경변수(CI 가 넣어 준 값)는 덮어쓰지 않는다
+    if not os.path.exists(path):
+        return
+    for line in open(path, encoding='utf-8'):
+        line = line.strip()
+        if not line or line.startswith('#') or '=' not in line:
+            continue
+        key, value = line.split('=', 1)
+        os.environ.setdefault(key.strip(), value.strip().strip('"').strip("'"))
+load_dotenv()
+GA_ID = os.environ.get('GA_ID', '')                    # GA4 측정 ID. 비우면 추적 코드가 안 들어감
+FIREBASE_CONFIG = json.loads(os.environ.get('FIREBASE_CONFIG_JSON') or '{}')   # 비우면 로그인 UI 가 안 뜬다
+ADMIN_EMAIL = os.environ.get('ADMIN_EMAIL', '')        # ADMIN_UID 가 없을 때의 폴백 (보통 비움)
+ADMIN_UID = os.environ.get('ADMIN_UID', '')            # firestore.rules 의 __ADMIN_UID__ 와 같은 값 (scripts/render_rules.sh)
+CONTACT_EMAIL = os.environ.get('CONTACT_EMAIL', '')    # 푸터·개인정보처리방침 문의 이메일. 비우면 문구가 빠진다
+if not FIREBASE_CONFIG:
+    print('경고: FIREBASE_CONFIG_JSON 이 비어 있어 로그인 UI 없이 빌드됩니다 (.env.example 참고)')
 GA_SNIPPET = '''<script>
 // GA4: 배포 도메인(github.io)에서만 로드 — 로컬 미리보기·개발 중엔 집계 안 됨
 if (location.hostname.endsWith('github.io')) {
@@ -260,7 +266,10 @@ html = html.replace('__GA_SNIPPET__', GA_SNIPPET.replace('__GA_ID__', GA_ID) if 
 if BUILD_CHANNEL == 'dev':
     html = html.replace('</title>', '</title>\n<meta name="robots" content="noindex, nofollow">', 1)
 # 2026-09-03 v2.2.0 앱 설정 주입
-html = html.replace('__APP_CONFIG__', f"const FIREBASE_CONFIG = {json.dumps(FIREBASE_CONFIG)};\nconst ADMIN_EMAIL = {json.dumps(ADMIN_EMAIL)};\nconst ADMIN_UID = {json.dumps(ADMIN_UID)};")
+html = html.replace('__APP_CONFIG__', f"const FIREBASE_CONFIG = {json.dumps(FIREBASE_CONFIG)};\nconst ADMIN_EMAIL = {json.dumps(ADMIN_EMAIL)};\nconst ADMIN_UID = {json.dumps(ADMIN_UID)};\nconst CONTACT_EMAIL = {json.dumps(CONTACT_EMAIL)};")
+# 2026-09-05 v2.8.0 푸터 문의 이메일 — CONTACT_EMAIL 이 비어 있으면 문구 자체를 뺀다
+contact_html = f'문의·건의: <a href="mailto:{CONTACT_EMAIL}">{CONTACT_EMAIL}</a> · ' if CONTACT_EMAIL else ''
+html = html.replace('__CONTACT__', contact_html)
 if INLINE:
     # 미리보기: data.js 내용을 그대로 인라인해 단일 파일 유지
     html = html.replace('<script src="data.js"></script>', '<script>\n' + data_js + '\n</script>')

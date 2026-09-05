@@ -38,6 +38,12 @@ jobs:
           key: sprites-v1-${{ github.run_id }}
           restore-keys: sprites-v1-
       - name: Build site
+        # 2026-09-05 v2.8.0 운영 설정값은 Repository variables 에서 (Settings → Secrets and variables → Actions → Variables). 키 설명은 .env.example
+        env:
+          GA_ID: ${{ vars.GA_ID }}
+          ADMIN_UID: ${{ vars.ADMIN_UID }}
+          CONTACT_EMAIL: ${{ vars.CONTACT_EMAIL }}
+          FIREBASE_CONFIG_JSON: ${{ vars.FIREBASE_CONFIG_JSON }}
         run: bash scripts/build.sh
       # 2026-09-03 보조 기록용 커밋 — 실패해도 배포는 계속되도록 (예: 푸시 거부·권한 변경)
       # snapshot/ranks.json·rank_delta.json 은 빌드가 직접 쓴다 — 이 커밋이 없으면

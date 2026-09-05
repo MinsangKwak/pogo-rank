@@ -398,7 +398,8 @@ CP = `floor((공격+IV) × √(방어+IV) × √(체력+IV) × CPM² / 10)`, 최
 ├── scripts/                      build.sh · fetch_data.sh · setup_dev_deploy_key.sh(dev 배포 키) · verify_deploy.sh(배포 검증)
 ├── docs/                         DEVELOPMENT.md(이 문서) · OPERATIONS.md
 ├── snapshot/                     빌드가 남기는 시트 원본·리포트·직전 순위 (자동 커밋)
-├── firestore.rules               Firestore 보안 규칙 (콘솔에 붙여넣어 게시)
+├── firestore.rules               Firestore 보안 규칙 템플릿 (__ADMIN_UID__ → scripts/render_rules.sh 로 채워 콘솔에 게시)
+├── .env.example                  빌드 설정 템플릿 (.env 로 복사, .env 는 커밋 안 함)
 ├── data/ · dist/                 빌드 산출물 (커밋 안 함)
 ├── .vscode/                      편집기 공통 설정 (settings·tasks·extensions)
 ├── .claude/settings.json         Claude Code 공용 권한 설정

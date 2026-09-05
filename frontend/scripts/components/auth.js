@@ -311,7 +311,7 @@ function renderAccount(message) {
   // (2) 승인 대기 — 쓸 수 있는 기능이 없으므로 안내와 로그아웃만
   if (AUTH.status === 'pending') {
     accountBox.append(who,
-      el('p', { class: 'acct-sub acct-pending' }, '⏳ 승인 대기 중 — 관리자가 승인하면 즐겨찾기를 쓸 수 있어요. 카톡으로 알려주세요!'),
+      el('p', { class: 'acct-sub acct-pending' }, '⏳ 승인 대기 중 — 관리자가 승인하면 즐겨찾기를 쓸 수 있어요. 관리자에게 알려주세요!'),
       note,
       el('button', { class: 'drawer-item', onclick: signOut }, '로그아웃'));
     return;

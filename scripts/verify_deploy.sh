@@ -26,6 +26,9 @@ ok "index.html 200 ($(echo -n "$html" | wc -c | tr -d ' ') bytes)"
 if grep -q -- "$EXPECT" <<<"$html"; then ok "버전 $EXPECT"; else bad "버전 $EXPECT 없음 (실제: $(grep -o 'v2\.[0-9]*\.[0-9]*\(-dev\)\?' <<<"$html" | sort -u | tr '\n' ' '))"; fi
 if [[ $CHANNEL == prod ]] && grep -q -- "${EXPECT}-dev" <<<"$html"; then bad "prod 인데 -dev 배지가 있음"; fi
 
+# 1b) 문의 이메일 주입 (CONTACT_EMAIL) — 두 채널 모두 mailto 링크가 있어야 한다 (비워 둔 빌드라면 이 항목은 경고만)
+grep -q 'href="mailto:' <<<"$html" && ok "문의 이메일(mailto) 링크 있음" || echo "  ! mailto 링크 없음 — CONTACT_EMAIL 이 비어 있는 빌드인지 확인"
+
 # 2) 채널 표식
 has_noindex=$(grep -c 'name="robots" content="noindex' <<<"$html" || true)
 has_ga=$(grep -c 'googletagmanager.com/gtag' <<<"$html" || true)

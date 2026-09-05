@@ -27,7 +27,7 @@
 
 // ── 솔플 레이드 계산기 ──────────────────────────────────────────────────────
 
-// 2026-09-02 if 탭 > 실측 제공자: 솔플 레이드 계산기
+// 2026-09-02 if 탭 > 솔플 레이드 계산기 (실측 제공자 협업)
 // v4: 타입이 아니라 실제 보스(예: 메가거북왕)를 검색해 고르면 그 보스 상대 덱을 추천
 // 부활 운용(기절→부활약→재진입) 사이클 시뮬레이션으로 정예 1~6마리 중 최속 구성 선택
 // 2026-09-02 난이도는 선택이 아니라 보스별 절대값: 클래스/진화 단계로 자동 판정
@@ -208,7 +208,7 @@ function simulateRevive(squad, tier) {
   };
 }
 
-// 2026-09-02 실측 제공자식 운용: 제일 잘난 애 1~2마리를 부활시켜 돌려쓴다
+// 2026-09-02 실측 운용: 제일 잘난 애 1~2마리를 부활시켜 돌려쓴다
 // DPS 상위 2마리만 후보로 두고 1마리 덱 / 2마리 덱을 각각 시뮬레이션해 더 빠른 쪽을 고른다.
 function buildSoloPlan(candidates, tier) {
   const pool = [...candidates].sort((left, right) => right.dps - left.dps).slice(0, 2);
@@ -348,7 +348,7 @@ function renderSoloCalc() {
   if (pickedBossCard) $controls.append(pickedBossCard);
 
   $content.append(el('div', { class: 'list-head' },
-    el('h2', {}, '실측 제공자-솔플 레이드 계산기'),  // 2026-09-02 표기 변경
+    el('h2', {}, '솔플 레이드 계산기'),  // 2026-09-02 표기 변경
     el('span', { class: 'meta' }, '프로토타입 · 부활 운용')));
 
   if (!state.soloBossMon) {
