@@ -72,13 +72,13 @@ function renderTypeSearchPage() {
         el('div', {},
           el('h2', {}, nameNode(pokemon.name)),
           el('div', { class: 'tchips' }, ...selected.map((typeName) => typeChipEl(typeName)))),
-        el('button', { class: 'ts-clear', 'aria-label': '지우기', onclick: () => { pokemon = null; selected = []; update(); } }, '✕')));
+        el('button', { class: 'ts-clear', 'aria-label': '지우기', onclick: () => { pokemon = null; selected = []; update('clear'); } }, '✕')));
     } else if (selected.length) {
       $head.replaceChildren(el('div', { class: 'ts-head' },
         el('div', {},
           el('h2', {}, `${selected.map((typeName) => TYPE_KO[typeName]).join(' · ')} 타입`),
           el('p', { class: 'ts-hint' }, '타입 칩을 눌러 바꾸거나 위에서 포켓몬을 검색하세요')),
-        el('button', { class: 'ts-clear', 'aria-label': '지우기', onclick: () => { selected = []; update(); } }, '✕')));
+        el('button', { class: 'ts-clear', 'aria-label': '지우기', onclick: () => { selected = []; update('clear'); } }, '✕')));
     } else {
       $head.replaceChildren(el('p', { class: 'ts-hint' }, '상대 타입을 1~2개 고르거나 포켓몬 이름을 검색하면 약점·이중약점과 추천 딜러가 나옵니다.'));
     }
@@ -92,18 +92,22 @@ function renderTypeSearchPage() {
         if (selected.includes(typeName)) selected = selected.filter((entry) => entry !== typeName);
         else selected = [...selected, typeName].slice(-2);
         if (pokemon && (selected.length !== pokemon.types.length || !selected.every((entry) => pokemon.types.includes(entry)))) pokemon = null;
-        update();
+        update('chip');
       },
     }, el('span', { class: 'dot', style: `--c: var(--t-${typeName})` }), TYPE_KO[typeName])));
   };
 
   // 추천 딜러 5마리 (레이드 표 또는 맥스 표) — 누르면 상세 팝업
-  const recRow = (label, rows, goto) => {
+  // list: 'raid' | 'max' · bossType: 표의 보스 속성 — 어느 표의 몇 위를 눌렀는지 GA 에 남긴다 (v2.10.1 types_rec_click)
+  const recRow = (label, rows, goto, list, bossType) => {
     if (!rows?.length) return '';
     return el('div', { class: 'ts-recs' },
       el('p', { class: 'schedule-sec' }, label),
       el('div', { class: 'boss-recs wrap-recs' }, ...rows.slice(0, 5).map((entry, index) => el('button', {
-        class: 'boss-rec', onclick: () => openDetail(entry, false, 'types'),
+        class: 'boss-rec', onclick: () => {
+          track('types_rec_click', { list, boss: bossType, rank: index + 1, mon: entry.name });
+          openDetail(entry, false, 'types');
+        },
       }, sprite(entry.sprite), el('span', {}, `${index + 1} `, nameNode(entry.name))))),
       goto ? el('button', { class: 'boss-more', onclick: goto }, '전체 순위 보기 ▸') : '');
   };
@@ -151,8 +155,8 @@ function renderTypeSearchPage() {
     for (const typeName of selected) {
       const raid = typeof PVE_DATA !== 'undefined' ? PVE_DATA[typeName] : null;
       const max = typeof DMAX_DATA !== 'undefined' ? DMAX_DATA[typeName] : null;
-      if (raid?.length) { hasRec = true; recSection.append(recRow(`레이드 — ${TYPE_KO[typeName]} 보스 기준 (DPS·TDO 자체 계산)`, raid, gotoTab('pve', { pveMode: 'all', boss: typeName }))); }
-      if (max?.length) { hasRec = true; recSection.append(recRow(`맥스 배틀 — ${TYPE_KO[typeName]} 보스 기준`, max, gotoTab('max', { maxBoss: typeName }))); }
+      if (raid?.length) { hasRec = true; recSection.append(recRow(`레이드 — ${TYPE_KO[typeName]} 보스 기준 (DPS·TDO 자체 계산)`, raid, gotoTab('pve', { pveMode: 'all', boss: typeName }), 'raid', typeName)); }
+      if (max?.length) { hasRec = true; recSection.append(recRow(`맥스 배틀 — ${TYPE_KO[typeName]} 보스 기준`, max, gotoTab('max', { maxBoss: typeName }), 'max', typeName)); }
     }
     if (hasRec) {
       recSection.append(el('p', { class: 'd-foot' }, selected.length === 2
@@ -178,9 +182,10 @@ function renderTypeSearchPage() {
     $result.append(offenseSection);
   };
 
-  const update = () => {
+  // how: 타입을 어떻게 골랐나 — 'chip'(칩 클릭) · 'search'(포켓몬 검색) · 'preset'(상세 팝업 링크·공유 주소로 미리 채워짐). v2.10.1
+  const update = (how) => {
     drawHead(); drawChips(); drawResult(); syncHash();
-    if (selected.length) track('type_search', { t: selected.join(','), mon: pokemon?.name ?? '' });
+    if (selected.length) track('type_search', { t: selected.join(','), mon: pokemon?.name ?? '', how });
   };
 
   // 포켓몬 검색 → 고르면 그 포켓몬의 타입으로 채운다
@@ -194,13 +199,14 @@ function renderTypeSearchPage() {
         selected = (hit.types ?? []).slice(0, 2);
         $input.value = '';
         $sugg.textContent = '';
-        update();
+        update('search');
       } }, sprite(hit.sprite), el('span', {}, nameNode(hit.name))));
     }
     if (!$sugg.childElementCount) $sugg.append(el('span', { class: 'sugg-none' }, '검색 결과가 없어요'));
   });
 
   drawHead(); drawChips(); drawResult();
+  if (selected.length) track('type_search', { t: selected.join(','), mon: pokemon?.name ?? '', how: 'preset' });  // 링크·상세 팝업으로 미리 채워진 채 열림
   return el('div', { class: 'page-body' }, $input, $sugg, $chips, $head, $result,
     el('p', { class: 'd-foot' }, '배율은 게임마스터 상성표 기준 (굉장 ×1.6 · 별로 ×0.625 · 무효 ×0.39). 상세 팝업의 타입 상성에서도 이 페이지로 올 수 있어요.'));
 }
