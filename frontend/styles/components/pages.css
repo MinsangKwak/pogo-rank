@@ -120,3 +120,6 @@
 .ts-recs { margin: 4px 0 10px; }
 .ts-recs .schedule-sec { margin: 8px 0 4px; }
 .ts-hint { margin: 6px 0 0; font-size: 12.5px; color: var(--muted); line-height: 1.55; }
+/* 2026-09-06 v2.11.1 상성 검색: 타입 조합 포켓몬 목록 — 미구현은 흐리게 */
+.ts-mons .boss-rec.unrel { opacity: .55; }
+.ts-mons .boss-rec .tag { font-size: 9.5px; padding: 0 4px; }
