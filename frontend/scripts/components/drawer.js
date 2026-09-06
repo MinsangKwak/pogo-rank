@@ -42,12 +42,7 @@ function initDrawer() {
   $backdrop.addEventListener('click', (event) => { if (event.target === $backdrop) closeDrawer(); });
   // Esc로 닫기. 드로어가 닫혀 있을 때 눌린 Esc까지 처리하지 않도록 hidden을 함께 본다
   document.addEventListener('keydown', (event) => { if (event.key === 'Escape' && !$backdrop.hidden) closeDrawer(); });
-  // 검색창 토글: 평소엔 접어두고 🔍 로 열기
-  const $search = document.querySelector('.psearch');
-  document.getElementById('search-toggle').addEventListener('click', () => {
-    $search.hidden = !$search.hidden;
-    // 열자마자 바로 타이핑할 수 있게 입력칸으로 초점을 옮긴다 (닫을 때는 하지 않는다)
-    if (!$search.hidden) document.getElementById('psearch').focus();
-  });
+  // 검색 패널 토글: 평소엔 접어두고 🔍 로 열기 (v2.12.1 열기·닫기·비우기는 search.js toggleSearchPanel)
+  document.getElementById('search-toggle').addEventListener('click', () => toggleSearchPanel());
 }
 initDrawer();

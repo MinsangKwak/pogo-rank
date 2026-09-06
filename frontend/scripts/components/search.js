@@ -114,7 +114,7 @@ function searchRankText(spriteId) {
 //   (2) 타입:            칩 [물][풀] 또는 "물 풀" → 그 조합의 포켓몬 목록 (typesearch.js typeMonList)
 //   (3) 이름 + 타입:     칩 [물] + "메가"        → 물 타입 중 이름에 '메가'가 든 것
 // 타입은 칩으로 골라도 되고 글자로 쳐도 된다 — "물 풀", "물·풀", "물타입" 전부 같다. 최대 2개.
-// 타입만 고른 목록은 12마리까지 보여 주고, 전부 보려면 "상성 검색 ▸" 로 넘긴다.
+// 타입만 고른 목록은 8마리까지 보여 주고, 전부 보려면 "상성 검색 ▸" 로 넘긴다.
 
 const SEARCH_TYPES = [];          // 칩으로 고른 타입 (최대 2)
 let _searchTrackKey = '';         // 같은 타입 조합을 입력할 때마다 GA 를 찍지 않기 위한 마지막 기록
@@ -158,18 +158,24 @@ function renderSearchResults() {
   $sugg.textContent = '';
   const { types: typedTypes, query } = parseSearchQuery($input.value);
   const types = activeSearchTypes(typedTypes);
-  if (!query && !types.length) return;
+  if (!query && !types.length) {
+    $sugg.append(el('p', { class: 'sugg-hint' }, '예: "메타그로스" · 타입 칩 [물][풀] · 칩 [물] + "메가"'));  // v2.12.1 빈 상태 안내
+    return;
+  }
   // 후보군: 타입이 있으면 그 조합의 포켓몬(출시 → 미출시, 도감번호순), 없으면 전체 색인
   const candidates = types.length && typeof typeMonList === 'function' ? typeMonList(types) : buildSearchIndex();
-  const hits = query ? monSearch(candidates, query, 8) : candidates.slice(0, 12);
+  const hits = query ? monSearch(candidates, query, 8) : candidates.slice(0, 8);  // 타입만 골랐을 때도 8마리 — 패널이 화면을 다 덮지 않게
   if (types.length) {
     const label = types.map((typeKey) => TYPE_KO[typeKey]).join('·');
     const key = types.join(',');
     if (key !== _searchTrackKey) { _searchTrackKey = key; track('search_type', { t: key }); }
     $sugg.append(el('div', { class: 'sugg-head' },
       el('b', {}, `${label} 타입 ${candidates.length}마리`),
-      query ? el('span', {}, `중 "${query}"`) : '',
-      el('button', { class: 'row-why-more', onclick: () => { openTypeSearch(types, null, 'search'); } }, '상성 검색에서 전부 보기 ▸')));
+      query ? el('span', {}, `중 "${query}" ${hits.length}마리`) : (hits.length < candidates.length ? el('span', {}, `중 앞 ${hits.length}마리`) : ''),
+      // v2.12.1 칩을 다 풀어 주는 지우기 — 글자로 친 타입은 입력창을 지우면 된다
+      el('button', { class: 'row-why-more', onclick: () => { SEARCH_TYPES.length = 0; renderSearchTypeChips(); renderSearchResults(); } }, '타입 지우기')));
+  } else {
+    $sugg.append(el('div', { class: 'sugg-head' }, el('b', {}, `"${query}" ${hits.length}마리`)));
   }
   for (const pokemon of hits) {
     // 후보를 고르면 검색창과 목록을 함께 비우고 상세 팝업을 띄운다
@@ -190,6 +196,29 @@ function renderSearchResults() {
     $sugg.append(el('span', { class: 'sugg-none' }, types.length ? '이 타입 조합에 맞는 포켓몬이 없어요' : '검색 결과가 없어요'));
     if (query) track('search_none', { q: query.slice(0, 20), t: types.join(',') });  // 2026-09-06 v2.9.0 GA4: 못 찾은 검색어 — 별칭·표기 보강 근거
   }
+  // 타입만 골라 잘린 목록은 상성 검색 페이지(전체 목록 + 배율표)로 이어 준다
+  if (types.length && hits.length < candidates.length) {
+    $sugg.append(el('button', { class: 'sugg-more', onclick: () => openTypeSearch(types, null, 'search') }, `${label(types)} 타입 ${candidates.length}마리 전부 보기 · 상성 검색 ▸`));
+  }
+}
+function label(types) { return types.map((typeKey) => TYPE_KO[typeKey]).join('·'); }
+
+// 검색 패널 열기/닫기 (헤더 🔍 · 패널 ✕). 닫을 때 입력과 칩을 비워 다음에 깨끗하게 연다
+function toggleSearchPanel(open) {
+  const $panel = document.querySelector('.psearch');
+  const $toggle = document.getElementById('search-toggle');
+  const willOpen = open ?? $panel.hidden;
+  $panel.hidden = !willOpen;
+  $toggle?.setAttribute('aria-pressed', String(willOpen));
+  if (willOpen) {
+    renderSearchResults();  // 빈 상태 안내
+    document.getElementById('psearch').focus();
+  } else {
+    document.getElementById('psearch').value = '';
+    SEARCH_TYPES.length = 0;
+    renderSearchTypeChips();
+    document.getElementById('psearch-sugg').textContent = '';
+  }
 }
 
 // 헤더 검색창(#psearch)에 입력 → 후보 목록(#psearch-sugg) 갱신 동작을 붙인다
@@ -198,5 +227,6 @@ function initSearch() {
   if (!$input) return;
   renderSearchTypeChips();
   $input.addEventListener('input', renderSearchResults);
+  document.getElementById('psearch-close')?.addEventListener('click', () => toggleSearchPanel(false));
 }
 initSearch();
