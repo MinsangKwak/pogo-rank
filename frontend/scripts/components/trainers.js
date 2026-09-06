@@ -95,7 +95,7 @@ async function renderTrainers() {
 // 한 명씩 입력받는 폼 대신 붙여넣기를 택한 이유: 코드는 보통 카톡 등에서 여러 줄로 한꺼번에 온다
 async function openTrainerAdmin() {
   if (!AUTH.admin) return;
-  closeDrawer();
+  closeDrawer({ silent: true });  // 히스토리 항목은 팝업이 이어받는다 (v2.11.0)
   const body = el('div', { class: 'detail admin' }, el('h2', {}, '🛠 트레이너 코드 관리'));
   openModal(body);
   // 관리 화면은 항상 최신 목록이어야 하므로 캐시를 무시하고 다시 읽는다

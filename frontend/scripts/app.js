@@ -134,9 +134,24 @@ function render() {
   saveLastView();  // 2026-09-06 v2.9.0 상태가 바뀌어 다시 그릴 때마다 마지막 보기를 남긴다
 }
 
+// 2026-09-06 v2.11.0 홈: 헤더의 POGO SEARCH 를 누르면 열린 것을 다 닫고 첫 화면(D-MAX 탭 전체)으로 돌아간다
+function goHome() {
+  track('home');
+  closeDrawer({ silent: true });
+  closeModal({ silent: true });
+  NAV.open = false;
+  state.tab = 'max';
+  state.maxBoss = 'overall';
+  // 페이지(#/dex 등)나 딥링크 위였다면 해시를 지워 메인으로 (hashchange → renderPage 가 메인을 되살린다)
+  if (location.hash) location.hash = '';
+  render();
+  window.scrollTo(0, 0);
+}
+
 // ── 최초 실행 (여기부터는 페이지가 열릴 때 한 번만 지나간다) ──
 restoreLastView();  // 2026-09-06 v2.9.0 첫 렌더 전에 마지막 보기 복원
 render();
+document.querySelector('header h1')?.addEventListener('click', goHome);  // 2026-09-06 v2.11.0 로고 = 홈 버튼
 // 2026-09-03 v2.2.1 첫 화면이 그려졌으니 로딩 가림막 제거 (페이드 후 DOM에서 삭제)
 (() => {
   const splash = document.getElementById('splash');

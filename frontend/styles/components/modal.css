@@ -13,6 +13,10 @@
 .d-head { display: flex; align-items: center; gap: 16px; padding-right: 32px; }
 .d-sprite { flex: 0 0 auto; width: 96px; height: 96px; display: flex; align-items: center; justify-content: center; background: var(--surface); border-radius: 14px; }
 .d-sprite .sprite { width: 80px; height: 80px; }
+/* 2026-09-06 v2.11.0 폼별 그림 테두리 — 메가·맥스는 뱃지와 같은 색, 은은한 바깥 광택 */
+.d-sprite.form-max { border: 2px solid var(--c-max); box-shadow: 0 0 0 3px color-mix(in srgb, var(--c-max) 22%, transparent); }
+.d-sprite.form-mega { border: 2px solid var(--c-mega); box-shadow: 0 0 0 3px color-mix(in srgb, var(--c-mega) 22%, transparent); }
+.d-sprite.form-shadow { border: 2px solid var(--c-shadow); box-shadow: 0 0 0 3px color-mix(in srgb, var(--c-shadow) 18%, transparent); }
 .d-head h2 { margin: 0; font-size: 18px; font-weight: 600; }
 .d-en { margin: 1px 0 6px; font-size: 12px; color: var(--muted); }
 
@@ -29,8 +33,8 @@
 .evo-mon .sprite { width: 40px; height: 40px; }
 .evo-mon.now { border-color: var(--line); background: var(--surface); color: var(--fg); font-weight: 500; }
 /* 2026-09-04 메가/원시 진화 칩 — 일반 진화형과 구분되게 살짝 강조 */
-.evo-mon.mega { border-color: color-mix(in srgb, #b8860b 35%, var(--line)); color: color-mix(in srgb, #b8860b 65%, var(--muted)); }
-.evo-mon.mega.now { background: color-mix(in srgb, #b8860b 12%, var(--surface)); color: #b8860b; }
+.evo-mon.mega { border-color: color-mix(in srgb, var(--c-mega) 40%, var(--line)); color: color-mix(in srgb, var(--c-mega) 70%, var(--muted)); }  /* v2.11.0 메가 색으로 통일 */
+.evo-mon.mega.now { background: color-mix(in srgb, var(--c-mega) 12%, var(--surface)); color: var(--c-mega); }
 
 /* 기술 · 상성 목록 */
 .mv-row { display: flex; align-items: baseline; gap: 10px; margin-bottom: 6px; }

@@ -479,8 +479,10 @@ function openDetail(pokemon, isDex = false, from = null) {
         ` | 야생 ${cpOf(form, cpm.l30).toLocaleString()}, 부스트 ${cpOf(form, cpm.l35).toLocaleString()}`)
     : '';
   // 2026-09-03 v3 헤더: 타입 → 팬텀(Gengar) → CP 만렙 | 야생, 부스트 (유저 지정 순서)
+  // 2026-09-06 v2.11.0 그림 테두리를 폼 색으로 — 메가·다이맥스/거다이맥스·섀도우 (components/name.js formLabelKind, 색은 tokens.css)
+  const formKind = typeof splitFormName === 'function' ? (splitFormName(pokemon.name).labels.map(formLabelKind)[0] ?? '') : '';
   const head = el('div', { class: 'd-head' },
-    el('div', { class: 'd-sprite' }, sprite(pokemon.sprite)),
+    el('div', { class: `d-sprite${formKind ? ' form-' + formKind : ''}` }, sprite(pokemon.sprite)),
     el('div', {},
       el('div', { class: 'tchips' }, ...types.map((typeName) => typeChipEl(typeName))),
       el('h2', {}, nameNode(pokemon.name), pokemon.en ? el('span', { class: 'd-en-inline' }, ` (${pokemon.en})`) : ''),  // 2026-09-06 v2.10.0 폼 라벨 뱃지

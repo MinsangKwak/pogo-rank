@@ -14,14 +14,20 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 // 2026-09-02 오른쪽 드로어 메뉴 + 검색창 토글
+// 2026-09-06 v2.11.0 뒤로가기: 열 때 히스토리 항목을 넣어 폰의 뒤로가기가 드로어를 닫게 한다 (components/history.js)
 function openDrawer() {
   document.getElementById('drawer-backdrop').hidden = false;
   // 드로어가 떠 있는 동안 뒤쪽 본문이 같이 스크롤되지 않게 잠근다
   document.body.style.overflow = 'hidden';
+  pushOverlayEntry();
 }
-function closeDrawer() {
-  document.getElementById('drawer-backdrop').hidden = true;
-  document.body.style.overflow = '';
+//   silent  히스토리 항목을 되돌리지 않는다 (popstate 로 닫히는 중 · 팝업으로 넘어가며 항목을 재사용 · 페이지 이동)
+function closeDrawer({ silent = false } = {}) {
+  const $backdrop = document.getElementById('drawer-backdrop');
+  const wasOpen = !$backdrop.hidden;
+  $backdrop.hidden = true;
+  if (!overlayVisible()) document.body.style.overflow = '';
+  if (wasOpen && !silent && !overlayVisible()) releaseOverlayEntry(false);
 }
 
 // 헤더의 ☰·계정·🔍 버튼과 드로어 닫기 동작을 한 번에 연결한다
@@ -30,7 +36,7 @@ function initDrawer() {
   document.getElementById('menu-toggle').addEventListener('click', openDrawer);
   // 2026-09-03 v2.2.0 계정 버튼: 비로그인 → 바로 Google 로그인, 로그인 상태 → 드로어(계정 영역)
   document.getElementById('account-toggle').addEventListener('click', () => { AUTH.user ? openDrawer() : signIn(); });
-  document.getElementById('drawer-close').addEventListener('click', closeDrawer);
+  document.getElementById('drawer-close').addEventListener('click', () => closeDrawer());
   // 어두운 배경만 눌렀을 때 닫는다. 드로어 안쪽 클릭도 배경까지 올라오므로(이벤트 버블링)
   // event.target이 배경 자신인지 확인해야 한다
   $backdrop.addEventListener('click', (event) => { if (event.target === $backdrop) closeDrawer(); });
