@@ -108,34 +108,95 @@ function searchRankText(spriteId) {
   return parts.join(' · ');
 }
 
+// ── 2026-09-06 v2.12.0 전역 검색 = 이름 + 타입 ────────────────────────────────
+// 상성 검색 페이지의 "타입 칩 → 그 조합의 포켓몬" 이 쓸 만해서 헤더 검색에도 붙였다. 한 입력창으로 셋을 처리한다.
+//   (1) 이름:            "메타그로스"          → 지금까지처럼 이름 후보
+//   (2) 타입:            칩 [물][풀] 또는 "물 풀" → 그 조합의 포켓몬 목록 (typesearch.js typeMonList)
+//   (3) 이름 + 타입:     칩 [물] + "메가"        → 물 타입 중 이름에 '메가'가 든 것
+// 타입은 칩으로 골라도 되고 글자로 쳐도 된다 — "물 풀", "물·풀", "물타입" 전부 같다. 최대 2개.
+// 타입만 고른 목록은 12마리까지 보여 주고, 전부 보려면 "상성 검색 ▸" 로 넘긴다.
+
+const SEARCH_TYPES = [];          // 칩으로 고른 타입 (최대 2)
+let _searchTrackKey = '';         // 같은 타입 조합을 입력할 때마다 GA 를 찍지 않기 위한 마지막 기록
+
+// 검색어에서 타입 이름 토큰을 떼어 낸다. "물 풀 메가" → { types: ['water','grass'], query: '메가' }
+function parseSearchQuery(text) {
+  const koToType = Object.fromEntries(Object.entries(TYPE_KO).map(([typeKey, korean]) => [korean, typeKey]));
+  const types = [];
+  const words = [];
+  for (const token of text.trim().split(/[\s·,/]+/).filter(Boolean)) {
+    const typeKey = koToType[token.replace(/타입$/, '')];
+    if (typeKey && !types.includes(typeKey) && types.length < 2) types.push(typeKey);
+    else words.push(token);
+  }
+  return { types, query: words.join(' ') };
+}
+
+// 칩 선택 + 글자로 친 타입을 합쳐 최대 2개
+function activeSearchTypes(parsedTypes) {
+  return [...new Set([...SEARCH_TYPES, ...parsedTypes])].slice(0, 2);
+}
+
+function renderSearchTypeChips() {
+  const $chips = document.getElementById('psearch-types');
+  if (!$chips) return;
+  $chips.replaceChildren(...Object.keys(TYPE_KO).map((typeKey) => el('button', {
+    class: 'chip', 'aria-pressed': String(SEARCH_TYPES.includes(typeKey)),
+    onclick: () => {
+      const index = SEARCH_TYPES.indexOf(typeKey);
+      if (index >= 0) SEARCH_TYPES.splice(index, 1);
+      else { SEARCH_TYPES.push(typeKey); if (SEARCH_TYPES.length > 2) SEARCH_TYPES.shift(); }
+      renderSearchTypeChips();
+      renderSearchResults();
+    },
+  }, el('span', { class: 'dot', style: `--c: var(--t-${typeKey})` }), TYPE_KO[typeKey])));
+}
+
+function renderSearchResults() {
+  const $input = document.getElementById('psearch');
+  const $sugg = document.getElementById('psearch-sugg');
+  $sugg.textContent = '';
+  const { types: typedTypes, query } = parseSearchQuery($input.value);
+  const types = activeSearchTypes(typedTypes);
+  if (!query && !types.length) return;
+  // 후보군: 타입이 있으면 그 조합의 포켓몬(출시 → 미출시, 도감번호순), 없으면 전체 색인
+  const candidates = types.length && typeof typeMonList === 'function' ? typeMonList(types) : buildSearchIndex();
+  const hits = query ? monSearch(candidates, query, 8) : candidates.slice(0, 12);
+  if (types.length) {
+    const label = types.map((typeKey) => TYPE_KO[typeKey]).join('·');
+    const key = types.join(',');
+    if (key !== _searchTrackKey) { _searchTrackKey = key; track('search_type', { t: key }); }
+    $sugg.append(el('div', { class: 'sugg-head' },
+      el('b', {}, `${label} 타입 ${candidates.length}마리`),
+      query ? el('span', {}, `중 "${query}"`) : '',
+      el('button', { class: 'row-why-more', onclick: () => { openTypeSearch(types, null, 'search'); } }, '상성 검색에서 전부 보기 ▸')));
+  }
+  for (const pokemon of hits) {
+    // 후보를 고르면 검색창과 목록을 함께 비우고 상세 팝업을 띄운다
+    // (팝업 뒤에 후보 목록이 남아 있으면 닫았을 때 지저분해 보인다)
+    $sugg.append(el('button', {
+      class: `sugg-item${pokemon.unrel ? ' unrel' : ''}`,
+      onclick: () => {
+        track('search_pick', { mon: pokemon.name, t: types.join(',') });  // 2026-09-06 v2.9.0 GA4: 검색으로 고른 포켓몬 · v2.12.0 t: 타입 필터
+        $input.value = '';
+        $sugg.textContent = '';
+        openDetail(pokemon, false, 'search');
+      },
+    }, sprite(pokemon.sprite), el('span', {}, nameNode(pokemon.name)),  // 2026-09-06 v2.10.0 폼 라벨 뱃지
+      pokemon.unrel ? el('span', { class: 'tag dex-unrel' }, '미구현') : '',
+      (() => { const rank = searchRankText(pokemon.sprite); return rank ? el('span', { class: 'sugg-rank' }, rank) : ''; })()));
+  }
+  if (!hits.length) {
+    $sugg.append(el('span', { class: 'sugg-none' }, types.length ? '이 타입 조합에 맞는 포켓몬이 없어요' : '검색 결과가 없어요'));
+    if (query) track('search_none', { q: query.slice(0, 20), t: types.join(',') });  // 2026-09-06 v2.9.0 GA4: 못 찾은 검색어 — 별칭·표기 보강 근거
+  }
+}
+
 // 헤더 검색창(#psearch)에 입력 → 후보 목록(#psearch-sugg) 갱신 동작을 붙인다
 function initSearch() {
   const $input = document.getElementById('psearch');
-  const $sugg = document.getElementById('psearch-sugg');
   if (!$input) return;
-  $input.addEventListener('input', () => {
-    // 입력이 바뀔 때마다 후보 목록을 비우고 처음부터 다시 만든다
-    $sugg.textContent = '';
-    if (!$input.value.trim()) return;
-    const hits = monSearch(buildSearchIndex(), $input.value);  // 2026-09-03 공용 필터
-    for (const pokemon of hits) {
-      // 후보를 고르면 검색창과 목록을 함께 비우고 상세 팝업을 띄운다
-      // (팝업 뒤에 후보 목록이 남아 있으면 닫았을 때 지저분해 보인다)
-      $sugg.append(el('button', {
-        class: 'sugg-item',
-        onclick: () => {
-          track('search_pick', { mon: pokemon.name });  // 2026-09-06 v2.9.0 GA4: 검색으로 고른 포켓몬
-          $input.value = '';
-          $sugg.textContent = '';
-          openDetail(pokemon, false, 'search');
-        },
-      }, sprite(pokemon.sprite), el('span', {}, nameNode(pokemon.name)),  // 2026-09-06 v2.10.0 폼 라벨 뱃지
-        (() => { const rank = searchRankText(pokemon.sprite); return rank ? el('span', { class: 'sugg-rank' }, rank) : ''; })()));
-    }
-    if (!hits.length) {
-      $sugg.append(el('span', { class: 'sugg-none' }, '검색 결과가 없어요'));
-      track('search_none', { q: $input.value.trim().slice(0, 20) });  // 2026-09-06 v2.9.0 GA4: 못 찾은 검색어 — 별칭·표기 보강 근거
-    }
-  });
+  renderSearchTypeChips();
+  $input.addEventListener('input', renderSearchResults);
 }
 initSearch();

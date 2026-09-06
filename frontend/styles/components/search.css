@@ -5,3 +5,10 @@
 .sugg-item .sprite { width: 28px; height: 28px; }
 .sugg-none { font-size: 12.5px; color: var(--muted); padding: 2px 4px; }
 .sugg-rank { font-size: 11.5px; color: var(--muted); margin-left: 2px; }  /* 2026-09-06 v2.9.0 검색 후보 옆 순위 근거 */
+/* 2026-09-06 v2.12.0 전역 검색 타입 칩 줄 + 타입 결과 머리말 */
+.psearch-types { padding-top: 0; padding-bottom: 2px; }
+.psearch-types .chip { padding: 4px 10px; font-size: 12.5px; }
+.sugg-head { width: 100%; display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 10px; font-size: 12.5px; color: var(--muted); }
+.sugg-head b { color: var(--fg); font-weight: 600; }
+.sugg-item.unrel { opacity: .55; }
+.sugg-item .tag { font-size: 9.5px; padding: 0 4px; }

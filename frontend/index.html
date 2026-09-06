@@ -62,7 +62,9 @@ __STYLES__
 
   <!-- 2026-09-02 전역 포켓몬 검색 (components/search.js) -->
   <div class="psearch" hidden>
-    <input class="boss-search" id="psearch" placeholder="🔍 포켓몬 검색 (예: 메타그로스, 섀도우 뮤츠)" autocomplete="off">
+    <input class="boss-search" id="psearch" placeholder="🔍 이름 또는 타입 (예: 메타그로스, 물 풀, 물 메가)" autocomplete="off">
+    <!-- 2026-09-06 v2.12.0 타입 칩: 최대 2개, 이름 검색과 교집합 (components/search.js) -->
+    <div class="chips psearch-types" id="psearch-types"></div>
     <div class="boss-sugg" id="psearch-sugg"></div>
   </div>
 
