@@ -44,6 +44,52 @@ function matchupBucket(multiplier) {
   return 'neutral';
 }
 
+// 타입 조합에 해당하는 포켓몬 목록 섹션 (v2.11.1)
+//   types  선택한 타입 1~2개. 2개면 타입 집합이 정확히 같은 폼만, 1개면 그 타입을 포함하는 폼 전부
+// 출시 여부(DEX_DATA.rel)로 출시 → 미출시 순, 그 안에서 도감번호순. 처음 24마리만 보이고 더보기로 펼친다
+function typeMonList(types) {
+  const forms = DEX_DATA.forms ?? {};
+  const names = DEX_DATA.names ?? {};
+  const released = new Set(DEX_DATA.rel ?? []);
+  const wanted = [...types].sort().join('|');
+  const out = [];
+  for (const [spriteKey, form] of Object.entries(forms)) {
+    const formTypes = form.types ?? [];
+    const match = types.length === 2 ? [...formTypes].sort().join('|') === wanted : formTypes.includes(types[0]);
+    if (!match) continue;
+    const spriteId = Number(spriteKey);
+    const dex = dexOf(spriteId);
+    const base = names[dex] ?? names[spriteId];
+    if (!base) continue;
+    out.push({ sprite: spriteId, dex, name: form.name ? `${form.name} ${base}` : base, en: '', types: formTypes, unrel: released.size > 0 && !released.has(dex) });
+  }
+  out.sort((a, b) => (a.unrel - b.unrel) || (a.dex - b.dex) || (a.sprite - b.sprite));
+  return out;
+}
+function monListSection(types) {
+  const label = types.map((typeName) => TYPE_KO[typeName]).join('·');
+  const mons = typeMonList(types);
+  const section = el('section', { class: 'ts-sec' }, el('h3', {}, `${label} 타입 포켓몬 (${mons.length})`));
+  if (!mons.length) {
+    section.append(el('p', { class: 'd-none-text' }, `${label} 타입 조합의 포켓몬은 없습니다.`));
+    return section;
+  }
+  let shown = 24;
+  const $grid = el('div', { class: 'boss-recs wrap-recs ts-mons' });
+  const $more = el('button', { class: 'boss-more', onclick: () => { shown += 48; draw(); } });
+  const draw = () => {
+    $grid.replaceChildren(...mons.slice(0, shown).map((mon) => el('button', {
+      class: `boss-rec${mon.unrel ? ' unrel' : ''}`, onclick: () => openDetail(mon, false, 'types'),
+    }, sprite(mon.sprite), el('span', {}, nameNode(mon.name)), mon.unrel ? el('span', { class: 'tag dex-unrel' }, '미구현') : '')));
+    $more.hidden = shown >= mons.length;
+    $more.textContent = `더보기 (${Math.min(shown, mons.length)}/${mons.length})`;
+  };
+  draw();
+  section.append($grid, $more,
+    el('p', { class: 'd-foot' }, types.length === 2 ? '두 타입을 정확히 이 조합으로 가진 폼(메가·리전 폼 포함). 누르면 상세' : '이 타입을 가진 폼 전부(복합 타입 포함). 두 번째 칩을 고르면 조합으로 좁혀집니다'));
+  return section;
+}
+
 function renderTypeSearchPage() {
   const { types: initialTypes, mon } = typeSearchParams();
   let pokemon = mon && typeof buildSearchIndex === 'function'
@@ -145,6 +191,10 @@ function renderTypeSearchPage() {
       bucketRow('내성', buckets.resist),
       bucketRow('이중내성', buckets.r2, 'r2'),
       el('p', { class: 'd-foot' }, '이중약점 = 두 타입 모두에 약해 ×2.56 · 이중내성 = 두 타입 모두 반감(×0.39). 본가의 무효 타입도 GO 에서는 같은 ×0.39 로 피해가 들어갑니다')));
+
+    // 1b) 2026-09-06 v2.11.1 이 타입 조합의 포켓몬 — "이 타입이 누구지?"에 답한다. 도감 폼 데이터(DEX_DATA.forms, 메가·리전 폼 포함)에서
+    //     타입 2개면 정확히 그 조합, 1개면 그 타입을 가진 전부. 없으면 없다고 분명히 적는다
+    $result.append(monListSection(selected));
 
     // 2) 추천 딜러 — 이 상대의 타입을 "보스 속성"으로 보고, 속성별 레이드/맥스 순위표 상위 5
     //    복합 타입은 두 표를 다 보여 준다 (표는 단일 속성 보스 기준이라 근사치 — 각주로 밝힌다)
