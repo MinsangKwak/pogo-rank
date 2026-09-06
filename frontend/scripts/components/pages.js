@@ -176,9 +176,9 @@ function currentPageId() {
 }
 function openPage(id, from = 'menu') {
   track('page_open', { page: id, from });  // 2026-09-03 GA4: 도감·일정표·패치노트 사용량 · 2026-09-06 from: menu/tabbar/card 진입 경로
-  // 이미 그 페이지면 해시가 안 바뀌어 hashchange 가 안 뜨므로 직접 다시 그린다
-  if (currentPageId() === id) renderPage();
-  else location.hash = `#/${id}`;
+  // 2026-09-06 v2.11.0 navigateHash: 팝업·드로어가 열려 있으면 닫고 그 히스토리 항목을 대체한다(뒤로가기 한 번에 원래 화면).
+  // 이미 그 페이지면 hashchange 를 직접 쏴서 다시 그린다
+  navigateHash(`#/${id}`);
 }
 function goBack() {
   // 히스토리가 있으면 브라우저 뒤로가기와 동일하게, 링크로 바로 들어왔으면 메인으로
@@ -207,9 +207,10 @@ function renderPage() {
     $wrap.hidden = false;
     return;
   }
-  // 페이지로 넘어갈 때는 열려 있던 서랍·모달을 먼저 닫는다
-  closeDrawer();
-  closeModal();
+  // 페이지로 넘어갈 때는 열려 있던 서랍·모달을 먼저 닫는다 (히스토리는 해시 이동이 이미 처리했으므로 silent)
+  closeDrawer({ silent: true });
+  closeModal({ silent: true });
+  NAV.open = false;
   $wrap.hidden = true;
   $page.hidden = false;
   $page.replaceChildren(

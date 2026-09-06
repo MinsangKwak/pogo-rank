@@ -329,7 +329,7 @@ function renderAccount(message) {
     el('p', { class: 'acct-sub' }, `★ 즐겨찾기 ${AUTH.favs.size}마리 · 도감에서 별을 눌러 채워보세요`),
     note,
     el('div', { class: 'acct-actions' },
-      el('button', { class: 'drawer-item', onclick: () => { closeDrawer(); openPage('dex'); } }, '📕 도감에서 채우기'),
+      el('button', { class: 'drawer-item', onclick: () => openPage('dex') }, '📕 도감에서 채우기'),  // v2.11.0 openPage 가 드로어를 닫는다
       AUTH.admin ? el('button', { class: 'drawer-item', onclick: openAdminPanel }, '🔑 가입 승인') : '',
       el('button', { class: 'drawer-item', onclick: signOut }, '로그아웃')));
 }
@@ -340,7 +340,7 @@ function renderAccount(message) {
 // 이 패널은 관리자에게만 보이지만, 실제 쓰기 권한은 firestore.rules의 isAdmin()이 통제한다
 async function openAdminPanel() {
   if (!AUTH.admin) return;
-  closeDrawer();  // 드로어가 팝업 위에 겹치지 않게
+  closeDrawer({ silent: true });  // 드로어가 팝업 위에 겹치지 않게. 히스토리 항목은 팝업이 이어받는다 (v2.11.0)
   // 조회를 기다리기 전에 팝업 틀을 먼저 띄운다 — 누른 즉시 반응이 보이도록
   const body = el('div', { class: 'detail admin' }, el('h2', {}, '🔑 가입 승인'));
   openModal(body);

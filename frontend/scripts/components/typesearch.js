@@ -31,10 +31,8 @@ function typeSearchParams() {
 function openTypeSearch(types, spriteId, from = 'link') {
   track('page_open', { page: 'types', from });
   const query = `t=${(types ?? []).slice(0, 2).join(',')}${spriteId ? `&mon=${spriteId}` : ''}`;
-  const target = `#/types?${query}`;
-  // 이미 그 페이지에 같은 조합으로 있으면 hashchange 가 안 뜨므로 직접 다시 그린다
-  if (location.hash === target) renderPage();
-  else location.hash = target;
+  // 2026-09-06 v2.11.0 navigateHash: 상세 팝업에서 열면 팝업을 닫고 그 히스토리 항목을 대체한다. 같은 주소면 다시 그린다
+  navigateHash(`#/types?${query}`);
 }
 
 // 배율 → 묶음 키. 이중약점 ≥2.5 · 약점 ≥1.5 · 내성 ≤0.7 · 이중내성/무효 ≤0.4 (GO 는 무효도 0.39 = 0.625²)
