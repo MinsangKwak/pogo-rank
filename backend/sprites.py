@@ -41,7 +41,11 @@ def collect_sprite_ids(value):
 
 
 # 랭킹 결과 파일들. 아직 만들지 않은 파일이 있을 수 있으므로 존재하는 것만 읽는다
-for data_path in ('data/pvp.json', 'data/pve.json', 'data/pve_easy.json', 'data/dynamax.json', 'data/dynamax_tier.json', 'data/value.json', 'data/sheet.json'):
+# 2026-09-06 v2.10.0 (QA-44) bosses.json · pve_full.json · pvp_all.json 추가 — 순위표 상위권에는 없지만
+# 화면에 나오는 폼(IF 탭 보스 목록의 메가 샤크니아, 도감 진화 줄의 ⚡메가 버튼, PvP 전체 순위의 리전 폼)이
+# 수집 대상에서 빠져 몬스터볼 자리표시로 보이던 문제. "어디에든 sprite 로 적힌 번호는 전부 받는다"가 원칙
+for data_path in ('data/pvp.json', 'data/pve.json', 'data/pve_easy.json', 'data/dynamax.json', 'data/dynamax_tier.json', 'data/value.json', 'data/sheet.json',
+                  'data/bosses.json', 'data/pve_full.json', 'data/pvp_all.json'):
     if os.path.exists(data_path):
         collect_sprite_ids(json.load(open(data_path, encoding='utf-8')))
 # 상세 팝업의 진화 계보에 나오는 종의 기본 스프라이트도 포함
@@ -53,6 +57,10 @@ if os.path.exists('data/dex.json'):
             sprite_ids |= set(stage)
     # 2026-09-03 도감 페이지: 전 종 기본 스프라이트 포함
     sprite_ids |= {int(dex_number) for dex_number in dex_data.get('names', {})}
+    # 2026-09-06 v2.10.0 상세 팝업 폼 데이터(forms)와 ⚡메가 버튼(megas)에 실린 스프라이트도 전부 —
+    # 메가 샤크니아(10070)처럼 랭킹엔 없지만 도감에서 열리는 폼이 여기서만 잡힌다
+    sprite_ids |= {int(sprite_key) for sprite_key in dex_data.get('forms', {})}
+    sprite_ids |= {entry['sprite'] for entries in dex_data.get('megas', {}).values() for entry in entries}
 # 2026-09-05 저장소가 번호를 배정한 폼은 어느 랭킹에도 안 걸릴 수 있으므로 항상 포함한다
 sprite_ids |= set(LOCAL_SPRITE_BASE)
 os.makedirs('data/sprites', exist_ok=True)

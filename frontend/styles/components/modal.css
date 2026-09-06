@@ -115,3 +115,9 @@
 .d-share { font-size: 17px; line-height: 1; padding: 4px 6px; border-radius: 8px; color: var(--muted); white-space: nowrap; }
 .d-share:hover { background: var(--hover); color: var(--fg); }
 .solo-fill { display: flex; align-items: center; gap: 8px; margin: 0 0 8px; font-size: 12.5px; }
+
+/* 2026-09-06 v2.10.0 (QA-44) 이중약점(×2.56) · 이중내성/무효(×0.39) 칩 강조 */
+.tchip.x2 { border-color: color-mix(in srgb, #d84a5f 60%, var(--line)); font-weight: 600; }
+.tchip.x2 small { color: #d84a5f; font-weight: 700; }
+.tchip.r2 { border-color: color-mix(in srgb, #2f8f5b 60%, var(--line)); font-weight: 600; }
+.tchip.r2 small { color: #2f8f5b; font-weight: 700; }

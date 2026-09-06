@@ -30,7 +30,7 @@ function maxRow(pokemon, rankText) {
     pokemon, rankText, el('span', { class: 'score' }, String(pokemon.dmg)),
     el('span', { class: 'sub' }, `맥스 피해 · 내구 ${pokemon.bulk}`),
     [pokemon.fast, `${TYPE_KO[pokemon.charged]} 타입`],
-    el('span', { class: `tag${pokemon.gmax ? ' gmax' : ''}` }, pokemon.gmax ? 'G-MAX' : 'D-MAX'  /* 2026-09-02 영문 라벨 */),
+    // 2026-09-06 v2.10.0 (QA-44) G-MAX/D-MAX 뱃지 제거 — 이름 자체가 '거다이맥스 X'/'다이맥스 X' 가 되어 폼 라벨 뱃지로 보인다
   );
 }
 
@@ -53,8 +53,7 @@ function tierRowNode(pokemon, rankText, topScore) {
   return row(pokemon, rankText,
     el('span', { class: 'score' }, `${Math.round(pokemon.score / topScore * 100)}%`),
     el('span', { class: 'sub' }, `공격 ${pokemon.atk} · 위력 ${pokemon.power}${pokemon.stab ? ' · 자속' : ''}`),
-    [pokemon.fast, `${TYPE_KO[pokemon.charged]} 타입`],
-    el('span', { class: `tag${pokemon.gmax ? ' gmax' : ''}` }, pokemon.gmax ? 'G-MAX' : 'D-MAX'));
+    [pokemon.fast, `${TYPE_KO[pokemon.charged]} 타입`]);  // 2026-09-06 v2.10.0 G-MAX/D-MAX 뱃지는 이름의 폼 라벨로 대체
 }
 
 // 티어표 행 + 그 아래 접혀 있는 "선정 근거" 줄을 한 묶음(fragment)으로 만든다.
@@ -101,7 +100,7 @@ function bossRecNodes(typeKey, count) {
         event.stopPropagation();  // 아코디언이 접히지 않게
         openDetail(pokemon);
       }
-    }, sprite(pokemon.sprite), el('span', {}, `${index + 1} ${pokemon.name}`)));
+    }, sprite(pokemon.sprite), el('span', {}, `${index + 1} `, nameNode(pokemon.name))));  // 2026-09-06 v2.10.0 폼 라벨 뱃지
 }
 
 // 이번 주 보스 아코디언을 채운다.

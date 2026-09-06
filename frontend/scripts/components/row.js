@@ -28,7 +28,8 @@ function row(pokemon, rankText, scoreNode, subNode, lineParts, tagNode) {
   const stats = el('div', { class: 'stats' }, scoreNode);
   if (subNode) stats.append(subNode);
   // 영문 이름은 title로만 달아 둔다 (좁은 화면에서 줄이 길어지지 않게)
-  const name = el('div', { class: 'name' }, el('b', { title: pokemon.en }, pokemon.name), typeDots(pokemon.types));
+  // 2026-09-06 v2.10.0 (QA-44) 메가·원시·섀도우 같은 폼 라벨은 작은 뱃지로 떼고 종 이름만 굵게 (components/name.js)
+  const name = el('div', { class: 'name' }, nameNode(pokemon.name, { title: pokemon.en }), typeDots(pokemon.types));
   // 뷰가 직접 만든 노드를 넘겼는지, 문자열 조각들을 넘겼는지에 따라 갈린다.
   // 문자열일 때는 빈 값(기술이 없는 종 등)을 걸러낸 뒤 <span>으로 감싼다
   const line = lineParts instanceof Node ? lineParts

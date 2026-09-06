@@ -62,6 +62,11 @@ else
   bad "sprites/90150.png 없음 또는 PNG 아님"
 fi
 
+# 4b) 2026-09-06 v2.10.0 (QA-44) 순위표 밖에서만 쓰이는 스프라이트 — 메가 샤크니아(10070)가 대표. 이게 없으면 sprites.py 수집 범위가 다시 좁아진 것
+code=$(curl -s -o /dev/null -w '%{http_code}' "${URL}sprites/10070.png$bust")
+[[ $code == 200 ]] && ok "sprites/10070.png (메가 샤크니아) 200" || bad "sprites/10070.png $code — sprites.py 수집 범위 확인"
+grep -q 'renderTypeSearchPage' <<<"$html" && ok "🧭 상성 검색 페이지 번들 포함" || bad "index.html 에 상성 검색 페이지(typesearch.js) 없음"
+
 # 5) PWA 정적 파일
 for f in manifest.webmanifest sw.js icon-192.png; do
   code=$(curl -s -o /dev/null -w '%{http_code}' "${URL}$f$bust")

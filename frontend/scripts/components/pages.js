@@ -166,6 +166,7 @@ const PAGES = {
   changes: { title: '⚔️ 기술 변경', render: renderMoveChangesPage },  // 2026-09-04 시즌 기술 조정 안내
   privacy: { title: '🔒 개인정보처리방침', render: renderPrivacyPage },  // 2026-09-04 로그인 시 수집하는 개인정보 안내
   favs: { title: '★ 즐겨찾기', render: renderFavsPage },  // 2026-09-05 PvE/PvP 나눠 보기
+  types: { title: '🧭 상성 검색', render: renderTypeSearchPage },  // 2026-09-06 v2.10.0 (QA-44) 타입 조합 → 약점·이중약점·추천 딜러
 };
 
 // 현재 해시(#/dex, #/schedule?… 등)에서 페이지 id 만 뽑는다. PAGES 에 없으면 null = 메인 화면.

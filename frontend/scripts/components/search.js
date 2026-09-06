@@ -129,7 +129,7 @@ function initSearch() {
           $sugg.textContent = '';
           openDetail(pokemon, false, 'search');
         },
-      }, sprite(pokemon.sprite), el('span', {}, pokemon.name),
+      }, sprite(pokemon.sprite), el('span', {}, nameNode(pokemon.name)),  // 2026-09-06 v2.10.0 폼 라벨 뱃지
         (() => { const rank = searchRankText(pokemon.sprite); return rank ? el('span', { class: 'sugg-rank' }, rank) : ''; })()));
     }
     if (!hits.length) {

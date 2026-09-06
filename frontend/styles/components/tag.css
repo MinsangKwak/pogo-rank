@@ -13,3 +13,15 @@
 .rank-delta { display: block; font-size: 10px; font-weight: 700; line-height: 1.3; letter-spacing: -.02em; }
 .rank-delta.up { color: #2f8f5b; }
 .rank-delta.down { color: #d84a5f; }
+
+/* 2026-09-06 v2.10.0 (QA-44) 폼 라벨 뱃지 — 이름 앞의 메가·원시·섀도우·다이맥스·리전 폼 (components/name.js)
+   종 이름은 <b>로 남기고 라벨만 작은 알약으로 떼어, 목록을 훑을 때 "메가"가 눈에 걸리게 한다 */
+.form-tag { display: inline-block; flex: 0 0 auto; font-size: 10px; font-weight: 700; line-height: 1.5; padding: 0 5px; border-radius: 4px; letter-spacing: -.01em; vertical-align: 1px; white-space: nowrap;
+            color: var(--muted); background: var(--surface); border: 1px solid var(--line); }
+.form-tag.mega { color: #b8860b; border-color: color-mix(in srgb, #b8860b 45%, var(--line)); background: color-mix(in srgb, #b8860b 10%, var(--surface)); }
+.form-tag.shadow { color: #7b4fbf; border-color: color-mix(in srgb, #7b4fbf 45%, var(--line)); background: color-mix(in srgb, #7b4fbf 10%, var(--surface)); }
+.form-tag.max { color: #d84a5f; border-color: color-mix(in srgb, #d84a5f 45%, var(--line)); background: color-mix(in srgb, #d84a5f 10%, var(--surface)); }
+.name .form-tag { margin-right: -4px; }            /* .name 의 가로 gap(8px)을 라벨-이름 사이에서만 좁힌다 */
+.d-head h2 .form-tag { font-size: 11.5px; vertical-align: 3px; margin-right: 5px; }
+.sugg-item .form-tag, .boss-rec .form-tag { margin-right: 2px; }
+.boss-rec b { font-weight: 500; }

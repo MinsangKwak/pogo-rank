@@ -1,0 +1,206 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// components/typesearch.js — 🧭 상성 검색 페이지 (#/types) (2026-09-06 v2.10.0, QA-44)
+//
+// 무엇을 하나
+//   "이 보스(타입 조합)는 뭘로 때리지?"를 한 화면에서 답한다.
+//   타입 칩을 최대 2개 고르거나 포켓몬 이름으로 타입을 채우면
+//     1) 이 상대를 때릴 때 기술 타입별 배율 — 이중약점(×2.56) / 약점 / 내성 / 이중내성·무효
+//     2) 그 약점 타입 보스 기준 추천 딜러(레이드 PVE_DATA · 맥스 DMAX_DATA 상위 5) + 해당 탭 바로가기
+//     3) 반대로 이 타입의 자속 기술이 잘 통하는 상대 타입
+//   주소는 #/types?t=water,dark&mon=10070 처럼 남겨 공유·북마크가 된다 (replaceState — 히스토리는 안 쌓인다).
+//
+// 제공하는 전역
+//   renderTypeSearchPage()                pages.js PAGES.types 가 부른다
+//   openTypeSearch(types, spriteId, from) 상세 팝업 등에서 타입을 미리 채운 채 연다
+//
+// 의존하는 전역
+//   el (dom.js) · sprite (sprite.js) · nameNode (name.js) · typeChipEl · typeMultAgainst · openDetail (detail.js)
+//   buildSearchIndex · monSearch (search.js) · chips (chips.js) · track (track.js) · state · render (app.js)
+//   TYPE_KO · DEX_DATA.chart · PVE_DATA · DMAX_DATA (data.js)
+// ─────────────────────────────────────────────────────────────────────────────
+
+// 현재 해시의 쿼리(t=타입,타입 · mon=스프라이트 id)를 읽는다. 모르는 타입은 버린다
+function typeSearchParams() {
+  const match = location.hash.match(/^#\/types\?(.*)$/);
+  const params = new URLSearchParams(match ? match[1] : '');
+  const types = (params.get('t') || '').split(',').filter((typeName) => TYPE_KO[typeName]).slice(0, 2);
+  return { types, mon: params.get('mon') };
+}
+
+// 타입(과 포켓몬)을 미리 채운 채 상성 검색 페이지를 연다
+function openTypeSearch(types, spriteId, from = 'link') {
+  track('page_open', { page: 'types', from });
+  const query = `t=${(types ?? []).slice(0, 2).join(',')}${spriteId ? `&mon=${spriteId}` : ''}`;
+  const target = `#/types?${query}`;
+  // 이미 그 페이지에 같은 조합으로 있으면 hashchange 가 안 뜨므로 직접 다시 그린다
+  if (location.hash === target) renderPage();
+  else location.hash = target;
+}
+
+// 배율 → 묶음 키. 이중약점 ≥2.5 · 약점 ≥1.5 · 내성 ≤0.7 · 이중내성/무효 ≤0.4 (GO 는 무효도 0.39 = 0.625²)
+function matchupBucket(multiplier) {
+  if (multiplier >= 2.5) return 'x2';
+  if (multiplier >= 1.5) return 'weak';
+  if (multiplier <= 0.4) return 'r2';
+  if (multiplier <= 0.7) return 'resist';
+  return 'neutral';
+}
+
+function renderTypeSearchPage() {
+  const { types: initialTypes, mon } = typeSearchParams();
+  let pokemon = mon && typeof buildSearchIndex === 'function'
+    ? buildSearchIndex().find((entry) => Number(entry.sprite) === Number(mon)) ?? null : null;
+  let selected = initialTypes.length ? [...initialTypes] : (pokemon?.types ?? []).slice(0, 2);
+
+  const $head = el('div', {});
+  const $chips = el('div', { class: 'ts-pick' });
+  const $result = el('div', {});
+  const $input = el('input', { class: 'boss-search', placeholder: '포켓몬 이름으로 타입 채우기 (예: 메가 샤크니아, 가이오가)', autocomplete: 'off' });
+  const $sugg = el('div', { class: 'boss-sugg' });
+
+  // 주소에 현재 선택을 남긴다 (공유용). replaceState 라 뒤로가기에는 영향이 없다
+  const syncHash = () => {
+    const query = selected.length ? `?t=${selected.join(',')}${pokemon ? `&mon=${pokemon.sprite}` : ''}` : '';
+    try { history.replaceState(null, '', `#/types${query}`); } catch {}
+  };
+
+  // 상단: 고른 포켓몬(있으면) 또는 고른 타입 조합
+  const drawHead = () => {
+    if (pokemon) {
+      $head.replaceChildren(el('div', { class: 'ts-head' },
+        sprite(pokemon.sprite),
+        el('div', {},
+          el('h2', {}, nameNode(pokemon.name)),
+          el('div', { class: 'tchips' }, ...selected.map((typeName) => typeChipEl(typeName)))),
+        el('button', { class: 'ts-clear', 'aria-label': '지우기', onclick: () => { pokemon = null; selected = []; update(); } }, '✕')));
+    } else if (selected.length) {
+      $head.replaceChildren(el('div', { class: 'ts-head' },
+        el('div', {},
+          el('h2', {}, `${selected.map((typeName) => TYPE_KO[typeName]).join(' · ')} 타입`),
+          el('p', { class: 'ts-hint' }, '타입 칩을 눌러 바꾸거나 위에서 포켓몬을 검색하세요')),
+        el('button', { class: 'ts-clear', 'aria-label': '지우기', onclick: () => { selected = []; update(); } }, '✕')));
+    } else {
+      $head.replaceChildren(el('p', { class: 'ts-hint' }, '상대 타입을 1~2개 고르거나 포켓몬 이름을 검색하면 약점·이중약점과 추천 딜러가 나옵니다.'));
+    }
+  };
+
+  // 타입 칩 18개. 최대 2개 — 셋째를 누르면 먼저 고른 것이 빠진다. 손으로 바꾸면 포켓몬 선택은 푼다
+  const drawChips = () => {
+    $chips.replaceChildren(...Object.keys(TYPE_KO).map((typeName) => el('button', {
+      class: 'chip', 'aria-pressed': String(selected.includes(typeName)),
+      onclick: () => {
+        if (selected.includes(typeName)) selected = selected.filter((entry) => entry !== typeName);
+        else selected = [...selected, typeName].slice(-2);
+        if (pokemon && (selected.length !== pokemon.types.length || !selected.every((entry) => pokemon.types.includes(entry)))) pokemon = null;
+        update();
+      },
+    }, el('span', { class: 'dot', style: `--c: var(--t-${typeName})` }), TYPE_KO[typeName])));
+  };
+
+  // 추천 딜러 5마리 (레이드 표 또는 맥스 표) — 누르면 상세 팝업
+  const recRow = (label, rows, goto) => {
+    if (!rows?.length) return '';
+    return el('div', { class: 'ts-recs' },
+      el('p', { class: 'schedule-sec' }, label),
+      el('div', { class: 'boss-recs wrap-recs' }, ...rows.slice(0, 5).map((entry, index) => el('button', {
+        class: 'boss-rec', onclick: () => openDetail(entry, false, 'types'),
+      }, sprite(entry.sprite), el('span', {}, `${index + 1} `, nameNode(entry.name))))),
+      goto ? el('button', { class: 'boss-more', onclick: goto }, '전체 순위 보기 ▸') : '');
+  };
+  // 메인 화면의 특정 탭·칩으로 이동 (페이지를 닫고 해당 탭을 그 속성으로 맞춘다)
+  const gotoTab = (tab, patch) => () => {
+    Object.assign(state, patch, { tab });
+    track('tab_' + tab, { tab, from: 'types' });
+    location.hash = '';
+    render();
+  };
+
+  const drawResult = () => {
+    $result.replaceChildren();
+    if (!selected.length) return;
+    // 1) 이 상대를 때릴 때 — 공격 타입 18개의 배율을 묶음별로
+    const buckets = { x2: [], weak: [], resist: [], r2: [] };
+    for (const attackType of Object.keys(TYPE_KO)) {
+      const multiplier = typeMultAgainst(attackType, selected);
+      const bucket = matchupBucket(multiplier);
+      if (bucket !== 'neutral') buckets[bucket].push([attackType, multiplier]);
+    }
+    buckets.x2.sort((a, b) => b[1] - a[1]); buckets.weak.sort((a, b) => b[1] - a[1]);
+    buckets.resist.sort((a, b) => a[1] - b[1]); buckets.r2.sort((a, b) => a[1] - b[1]);
+    const chipsOf = (entries, className) => el('div', { class: 'tchips' }, ...entries.map(([typeName, multiplier]) => {
+      const chip = typeChipEl(typeName, `×${+multiplier.toFixed(2)}`);
+      if (className) chip.classList.add(className);
+      return chip;
+    }));
+    const bucketRow = (label, entries, className) => entries.length
+      ? el('div', { class: 'ts-row' }, el('em', { class: className ?? '' }, label), chipsOf(entries, className)) : '';
+    const targetLabel = pokemon ? pokemon.name : `${selected.map((typeName) => TYPE_KO[typeName]).join('·')} 타입`;
+    $result.append(el('section', { class: 'ts-sec' },
+      el('h3', {}, `⚔️ ${targetLabel}을(를) 때릴 때 — 기술 타입별 배율`),
+      bucketRow('이중약점', buckets.x2, 'x2'),
+      bucketRow('약점', buckets.weak),
+      buckets.x2.length + buckets.weak.length === 0 ? el('p', { class: 'd-none-text' }, '효과가 굉장한 타입이 없습니다') : '',
+      bucketRow('내성', buckets.resist),
+      bucketRow('이중내성', buckets.r2, 'r2'),
+      el('p', { class: 'd-foot' }, '이중약점 = 두 타입 모두에 약해 ×2.56 · 이중내성 = 두 타입 모두 반감(×0.39). 본가의 무효 타입도 GO 에서는 같은 ×0.39 로 피해가 들어갑니다')));
+
+    // 2) 추천 딜러 — 이 상대의 타입을 "보스 속성"으로 보고, 속성별 레이드/맥스 순위표 상위 5
+    //    복합 타입은 두 표를 다 보여 준다 (표는 단일 속성 보스 기준이라 근사치 — 각주로 밝힌다)
+    const recSection = el('section', { class: 'ts-sec' }, el('h3', {}, `🎯 ${targetLabel} 상대 추천 딜러`));
+    let hasRec = false;
+    for (const typeName of selected) {
+      const raid = typeof PVE_DATA !== 'undefined' ? PVE_DATA[typeName] : null;
+      const max = typeof DMAX_DATA !== 'undefined' ? DMAX_DATA[typeName] : null;
+      if (raid?.length) { hasRec = true; recSection.append(recRow(`레이드 — ${TYPE_KO[typeName]} 보스 기준 (DPS·TDO 자체 계산)`, raid, gotoTab('pve', { pveMode: 'all', boss: typeName }))); }
+      if (max?.length) { hasRec = true; recSection.append(recRow(`맥스 배틀 — ${TYPE_KO[typeName]} 보스 기준`, max, gotoTab('max', { maxBoss: typeName }))); }
+    }
+    if (hasRec) {
+      recSection.append(el('p', { class: 'd-foot' }, selected.length === 2
+        ? '순위표는 단일 속성 보스 기준이라 복합 타입 상대에서는 위 배율표와 함께 보세요 (이중약점 타입 기술이 최우선).'
+        : '순위표는 그 속성 보스를 상대할 때의 DPS·TDO 기준입니다.'));
+      $result.append(recSection);
+    }
+
+    // 3) 반대로 — 이 타입의 자속 기술은 어디에 잘 통하나 (단일 방어 타입 기준)
+    const chart = DEX_DATA.chart ?? {};
+    const offenseSection = el('section', { class: 'ts-sec' }, el('h3', {}, `🛡 반대로, ${selected.map((typeName) => TYPE_KO[typeName]).join('·')} 타입 기술이 잘 통하는 상대`));
+    for (const attackType of selected) {
+      const row = Object.keys(TYPE_KO).map((defType) => [defType, chart[attackType]?.[defType] ?? 1]);
+      const strong = row.filter(([, multiplier]) => multiplier >= 1.5);
+      const weakTo = row.filter(([, multiplier]) => multiplier <= 0.7 && multiplier > 0.4);
+      const none = row.filter(([, multiplier]) => multiplier <= 0.4);
+      offenseSection.append(el('div', { class: 'ts-row' }, el('em', {}, `${TYPE_KO[attackType]} 기술`),
+        el('div', {},
+          strong.length ? el('div', { class: 'tchips' }, el('small', { class: 'sub' }, '굉장 '), ...strong.map(([defType]) => typeChipEl(defType, '×1.6'))) : '',
+          weakTo.length ? el('div', { class: 'tchips', style: 'margin-top:4px' }, el('small', { class: 'sub' }, '별로 '), ...weakTo.map(([defType]) => typeChipEl(defType, '×0.63'))) : '',
+          none.length ? el('div', { class: 'tchips', style: 'margin-top:4px' }, el('small', { class: 'sub' }, '거의 안 통함 '), ...none.map(([defType]) => typeChipEl(defType, '×0.39'))) : '')));
+    }
+    $result.append(offenseSection);
+  };
+
+  const update = () => {
+    drawHead(); drawChips(); drawResult(); syncHash();
+    if (selected.length) track('type_search', { t: selected.join(','), mon: pokemon?.name ?? '' });
+  };
+
+  // 포켓몬 검색 → 고르면 그 포켓몬의 타입으로 채운다
+  $input.addEventListener('input', () => {
+    $sugg.textContent = '';
+    const query = $input.value.trim();
+    if (!query) return;
+    for (const hit of monSearch(buildSearchIndex(), query, 8)) {
+      $sugg.append(el('button', { class: 'sugg-item', onclick: () => {
+        pokemon = hit;
+        selected = (hit.types ?? []).slice(0, 2);
+        $input.value = '';
+        $sugg.textContent = '';
+        update();
+      } }, sprite(hit.sprite), el('span', {}, nameNode(hit.name))));
+    }
+    if (!$sugg.childElementCount) $sugg.append(el('span', { class: 'sugg-none' }, '검색 결과가 없어요'));
+  });
+
+  drawHead(); drawChips(); drawResult();
+  return el('div', { class: 'page-body' }, $input, $sugg, $chips, $head, $result,
+    el('p', { class: 'd-foot' }, '배율은 게임마스터 상성표 기준 (굉장 ×1.6 · 별로 ×0.625 · 무효 ×0.39). 상세 팝업의 타입 상성에서도 이 페이지로 올 수 있어요.'));
+}

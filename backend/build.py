@@ -31,7 +31,7 @@
 # ─────────────────────────────────────────────────────────────────────────────
 import json, csv, re, os
 from sprite import sprite_id
-from names import name_ko, species, ko_species
+from names import name_ko, species, ko_species, FORM_KO
 
 # PvPoke 게임마스터: 종 목록(pokemon) · 기술 목록(moves) · 데이터 기준일(timestamp)
 game_master = json.load(open('data/gm.json'))
@@ -108,7 +108,7 @@ json.dump(pvp_all, open('data/pvp_all.json', 'w', encoding='utf-8'), ensure_asci
 
 # ── frontend/ 의 CSS·JS를 순서대로 인라인해 단일 dist/index.html 조립 ──
 # 순서가 곧 캐스케이드(CSS)·실행 순서(JS)이므로 새 파일은 여기 목록에 추가
-APP_VERSION = 'v2.9.0'  # 2026-09-03 화면 표시용 버전 — 릴리스 때 여기만 올리면 됨
+APP_VERSION = 'v2.10.0'  # 2026-09-03 화면 표시용 버전 — 릴리스 때 여기만 올리면 됨
 # 2026-09-05 v2.7.3 빌드 채널 — 'prod'(기본) / 'dev'. dev 브랜치 워크플로(.github/workflows/deploy-dev.yml)가 BUILD_CHANNEL=dev 로 부른다.
 # dev 빌드는 (1) 버전 배지에 -dev 를 붙여 화면에서 구분되고 (2) GA 스니펫을 넣지 않아 통계가 섞이지 않고
 # (3) robots.txt 를 전부 차단 + <meta name="robots" content="noindex"> 로 검색 색인을 막는다. 나머지는 prod 와 동일
@@ -159,11 +159,11 @@ STYLES = [
 ]
 SCRIPTS = [
     'data.js', 'dom.js', 'track.js',  # 2026-09-03 track: GA4 이벤트 헬퍼 (가장 먼저 정의)
-    'components/type-dots.js', 'components/sprite.js', 'components/changes.js', 'components/row.js',  # 2026-09-04 changes: 기술 변경·순위 변동 뱃지 (row가 사용)
+    'components/type-dots.js', 'components/sprite.js', 'components/name.js', 'components/changes.js', 'components/row.js',  # 2026-09-04 changes: 기술 변경·순위 변동 뱃지 (row가 사용) · 2026-09-06 name: 폼 라벨 뱃지 (row·detail·search 가 사용)
     'components/list.js', 'components/chips.js', 'components/seg.js',
     'components/modal.js', 'components/auth.js', 'components/detail.js',  # 2026-09-03 v2.2.0 auth: 로그인·즐겨찾기 (detail보다 먼저)
     'components/schedule.js', 'components/release.js', 'components/privacy.js', 'components/search.js', 'components/drawer.js',  # 2026-09-02 9월 일정표 달력 · 업데이트 팝업
-    'components/favs.js', 'components/pages.js',  # 2026-09-05 favs: ★ 즐겨찾기 페이지 (pages가 PAGES에 등록하므로 그 앞)
+    'components/favs.js', 'components/typesearch.js', 'components/pages.js',  # 2026-09-05 favs: ★ 즐겨찾기 페이지 · 2026-09-06 typesearch: 🧭 상성 검색 페이지 (pages가 PAGES에 등록하므로 그 앞)
     'components/trainers.js', 'components/favdigest.js', 'components/totop.js',  # 2026-09-05 favdigest: 메인 즐겨찾기 카드
     'views/pvp.js', 'views/pve.js', 'views/max.js', 'views/tier.js', 'views/usage.js', 'views/ifsolo.js',  # 2026-09-02 if 탭
     'app.js',
@@ -237,6 +237,8 @@ if pve_tables and dmax_tables:
 # (없는 파일은 optional_json이 '{}'로 채우므로 1차 실행에서도 문법 오류가 나지 않는다)
 data_js = f'''// 빌드 생성 데이터 (backend/build.py) — 기준일 {game_master['timestamp']}
 const TYPE_KO = {json.dumps(TYPE_KO, ensure_ascii=False)};
+// 2026-09-06 v2.10.0 이름 앞에 붙는 폼 라벨 목록 (backend/names.py FORM_KO 값 + 섀도우·다이맥스·거다이맥스) — components/name.js 가 이름을 [라벨 뱃지 + 종 이름]으로 가른다
+const FORM_LABELS = {json.dumps(sorted({label for label in FORM_KO.values() if label} | {'섀도우', '다이맥스', '거다이맥스'}, key=len, reverse=True), ensure_ascii=False)};
 const PVP_DATA = {json.dumps(pvp, ensure_ascii=False)};
 const PVE_DATA = {json.dumps(pve_tables, ensure_ascii=False) if pve_tables else optional_json('data/pve.json')};
 const PVE_EASY = {json.dumps(pve_easy_tables, ensure_ascii=False) if pve_easy_tables else optional_json('data/pve_easy.json')};

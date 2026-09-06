@@ -102,7 +102,11 @@ def collect_sprite_ids(value):
             referenced_sprite_ids.add(int(sprite_value))
         for item in value.values():
             collect_sprite_ids(item)
-for path in ('data/pvp.json', 'data/pve.json', 'data/pve_easy.json', 'data/dynamax.json', 'data/dynamax_tier.json', 'data/value.json', 'data/sheet.json'):
+# 2026-09-06 v2.10.0 (QA-44) bosses.json · pve_full.json · pvp_all.json 추가 — IF 탭 보스 목록·PvP 전체 순위에만 나오는
+# 폼(알로라 꼬렛 등)은 forms 에 없어서 상세 팝업이 기본 폼의 종족값·기술로 되돌아갔다(오정보). 화면에 sprite 로
+# 등장하는 번호는 전부 forms 를 만들어 둔다 (약 45폼 추가, dex.json +10KB 안팎)
+for path in ('data/pvp.json', 'data/pve.json', 'data/pve_easy.json', 'data/dynamax.json', 'data/dynamax_tier.json', 'data/value.json', 'data/sheet.json',
+             'data/bosses.json', 'data/pve_full.json', 'data/pvp_all.json'):
     if os.path.exists(path):
         collect_sprite_ids(json.load(open(path, encoding='utf-8')))
 

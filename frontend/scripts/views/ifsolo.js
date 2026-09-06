@@ -98,6 +98,8 @@ function bossIndex() {
   if (BOSS_INDEX) return BOSS_INDEX;
   const byName = new Map();
   const add = (pokemon) => {
+    // 2026-09-06 v2.10.0 맥스 배틀 행('다이맥스 X'·'거다이맥스 X')은 레이드 보스가 아니다 — 같은 종이 BOSS_LIST 에 이미 있으므로 건너뛴다
+    if (/^(거다이맥스|다이맥스) /.test(pokemon?.name ?? '')) return;
     if (pokemon?.name && pokemon.types?.length && !byName.has(pokemon.name)) {
       byName.set(pokemon.name, {
         name: pokemon.name,

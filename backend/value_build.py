@@ -99,6 +99,10 @@ def gmax_type(pokemon_id, form):
     if not in_release_set(gmax_released, pokemon_id, form): return None
     return gmax_move_types.get((pokemon_id, form or None)) or gmax_move_types.get((pokemon_id, None)) or gmax_move_types.get((pokemon_id, f'{pokemon_id}_NORMAL')) or next((move_type for (candidate_id, _), move_type in gmax_move_types.items() if candidate_id == pokemon_id), None)
 
+# 2026-09-06 v2.10.0 (QA-44) 맥스 배틀 행의 표시 이름: 거다이맥스/다이맥스 접두어를 붙여 일반 폼과 구분한다
+def max_name(name, is_gmax):
+    return f"{'거다이맥스' if is_gmax else '다이맥스'} {name}"
+
 def damage(power, attack, multiplier):
     # 포켓몬고 피해 공식: floor(0.5 x 위력 x 공격/보스방어 x 배율) + 1
     return int(0.5 * power * (attack / BOSS_DEFENSE) * multiplier) + 1
@@ -131,7 +135,11 @@ def dyna_rank(boss_types, limit=TOP):
         # 내구 지표 = 방어력 x HP / 1000, 점수에는 제곱근으로 완화해 반영(딜 비중을 크게 둔다)
         bulk = entry['def'] * entry['hp'] / 1000
         score = best[0] * bulk ** 0.5
-        out.append({'sprite': gmax_sprite_id(entry['dex'], entry['form']) if best[2] == '거다이맥스' else entry['sprite'], 'name': entry['name'], 'en': entry['en'], 'types': entry['types'],
+        # 2026-09-06 v2.10.0 (QA-44) 이름에 맥스 종류를 붙인다 — '거다이맥스 에이스번' / '다이맥스 에이스번'.
+        # 일반 에이스번(PvE·PvP 표)과 이름이 같으면 검색 색인(이름 기준 중복 제거)·활용처(이름 기준 합산)에서
+        # 서로 다른 세 항목이 하나로 뭉개졌다. 이름 자체를 갈라 두면 화면 어디서든 자연히 분리된다.
+        # (rank_diff 비교 키가 '스프라이트|이름'이라 이번 빌드 한 번은 맥스 표의 ▲▼ 가 비어 있다가 다음 갱신부터 다시 붙는다)
+        out.append({'sprite': gmax_sprite_id(entry['dex'], entry['form']) if best[2] == '거다이맥스' else entry['sprite'], 'name': max_name(entry['name'], best[2] == '거다이맥스'), 'en': entry['en'], 'types': entry['types'],
                     'fast': best[2], 'charged': f"{best[1].lower()}", 'dmg': best[0], 'bulk': round(bulk), 'score': round(score), 'gmax': best[2] == '거다이맥스'})
     out.sort(key=lambda row: -row['score'])
     return out[:limit] if limit else out
@@ -184,14 +192,14 @@ def tier_rows():
             for move_type in targets:
                 # 350 = MAX_ATTACK_POWER(다이맥스 맥스무브 위력), 1.2 = 자속 보정
                 score = attack * 350 * (1.2 if move_type in own_types else 1)
-                out.append({'sprite': entry['sprite'], 'name': entry['name'], 'en': entry['en'], 'types': entry['types'],
+                out.append({'sprite': entry['sprite'], 'name': max_name(entry['name'], False), 'en': entry['en'], 'types': entry['types'],
                             'fast': '맥스어택', 'charged': move_type.lower(), 'atk': attack, 'power': 350,
                             'stab': move_type in own_types, 'score': round(score), 'gmax': False})
         if gmax_move_type:
             attack = round(entry['atk'])
             # 450 = GMAX_POWER(거다이맥스 전용 기술 위력), 1.2 = 자속 보정
             score = attack * 450 * (1.2 if gmax_move_type in own_types else 1)
-            out.append({'sprite': gmax_sprite_id(entry['dex'], entry['form']), 'name': entry['name'], 'en': entry['en'], 'types': entry['types'],
+            out.append({'sprite': gmax_sprite_id(entry['dex'], entry['form']), 'name': max_name(entry['name'], True), 'en': entry['en'], 'types': entry['types'],
                         'fast': '거다이맥스', 'charged': gmax_move_type.lower(), 'atk': attack, 'power': 450,
                         'stab': gmax_move_type in own_types, 'score': round(score), 'gmax': True})
     out.sort(key=lambda row: -row['score'])

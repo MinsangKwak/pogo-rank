@@ -102,3 +102,21 @@
 .fav-where.pvp::before { content: 'PvP '; font-weight: 700; color: #3b6fb0; }
 /* 상세 팝업의 역할 보정 칩 */
 .role-chip.on { border-color: var(--fg); color: var(--fg); font-weight: 600; }
+
+/* 2026-09-06 v2.10.0 (QA-44) 🧭 상성 검색 페이지 (components/typesearch.js) */
+.ts-pick { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0 14px; }
+.ts-pick .chip { padding: 6px 12px; }
+.ts-head { display: flex; align-items: center; gap: 12px; padding: 12px 14px; margin: 0 0 6px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); }
+.ts-head .sprite { width: 48px; height: 48px; }
+.ts-head h2 { margin: 0 0 4px; font-size: 16px; font-weight: 600; }
+.ts-head .ts-clear { margin-left: auto; width: 28px; height: 28px; border-radius: 7px; color: var(--muted); }
+.ts-head .ts-clear:hover { background: var(--hover); color: var(--fg); }
+.ts-sec { margin-top: 18px; }
+.ts-sec h3 { margin: 0 0 8px; font-size: 13px; font-weight: 600; }
+.ts-row { display: flex; align-items: baseline; gap: 10px; margin-bottom: 8px; }
+.ts-row em { flex: 0 0 64px; font-style: normal; font-size: 11.5px; color: var(--muted); }
+.ts-row em.x2 { color: #d84a5f; font-weight: 600; }
+.ts-row em.r2 { color: #2f8f5b; font-weight: 600; }
+.ts-recs { margin: 4px 0 10px; }
+.ts-recs .schedule-sec { margin: 8px 0 4px; }
+.ts-hint { margin: 6px 0 0; font-size: 12.5px; color: var(--muted); line-height: 1.55; }

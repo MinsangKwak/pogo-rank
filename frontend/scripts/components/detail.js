@@ -82,7 +82,10 @@ function shareBtn(pokemon) {
 // 2026-09-06 v2.9.0 스프라이트 id만으로 상세를 연다 (딥링크 #/mon/<id> 진입용).
 // 검색 색인에 있으면 그 항목(폼 포함 이름·타입)을 쓰고, 없으면 도감 이름표로 만든다
 function openDetailBySprite(spriteId, from) {
-  const found = typeof buildSearchIndex === 'function' ? buildSearchIndex().find((pokemon) => Number(pokemon.sprite) === Number(spriteId)) : null;
+  // 2026-09-06 v2.10.0 섀도우·다이맥스는 일반 폼과 스프라이트 id 가 같다 — 색인에서 먼저 만난 항목(섀도우 갸라도스)이 아니라
+  // 그 접두어가 없는 항목을 우선한다. 없으면(섀도우만 등재된 종) 첫 항목을 쓴다
+  const candidates = typeof buildSearchIndex === 'function' ? buildSearchIndex().filter((pokemon) => Number(pokemon.sprite) === Number(spriteId)) : [];
+  const found = candidates.find((pokemon) => !/^(섀도우|다이맥스|거다이맥스) /.test(pokemon.name)) ?? candidates[0] ?? null;
   if (found) return openDetail(found, false, from);
   const dex = dexOf(spriteId);
   const baseName = DEX_DATA.names?.[dex ?? spriteId];
@@ -267,17 +270,30 @@ function megaCompareNode(dex) {
 // 활용처를 PvP · 레이드 · 맥스 그룹으로 나눠 순위 칩으로 표시
 // VALUE_DATA.usage[].places 의 place 는 'pvp:great' / 'pve:fire' / 'max:overall' 처럼
 // '그룹:세부항목' 형식이라 ':' 앞을 그룹 키로, 뒤를 리그명·타입명으로 읽는다.
+// 2026-09-06 v2.10.0 (QA-44) 활용처는 이름 단위로 합산되는데, 맥스 배틀 행의 이름이 '다이맥스 X'·'거다이맥스 X'로 갈리면서
+// 일반 X 의 활용처에서 맥스 순위가 빠지게 됐다. 그래서 같은 종의 세 이름(X · 다이맥스 X · 거다이맥스 X)을 한꺼번에 모아
+// 보여 주되, 맥스 칩에는 어느 쪽 순위인지 D/G 표시를 남긴다. 반대로 '거다이맥스 X' 로 열었을 때도 일반 X 의 PvP·레이드가 함께 보인다
+function usagePlacesFor(name) {
+  const base = name.replace(/^(거다이맥스|다이맥스)\s+/, '');
+  const variants = [[base, ''], [`다이맥스 ${base}`, 'D'], [`거다이맥스 ${base}`, 'G']];
+  const places = [];
+  for (const [variantName, mark] of variants) {
+    const entry = (VALUE_DATA.usage ?? []).find((usageEntry) => usageEntry.name === variantName);
+    if (entry) places.push(...entry.places.map((placement) => ({ ...placement, mark })));
+  }
+  return places;
+}
 function usageNode(name) {
-  const usageEntry = (VALUE_DATA.usage ?? []).find((entry) => entry.name === name);
-  if (!usageEntry) return null;
+  const places = usagePlacesFor(name);
+  if (!places.length) return null;
   const groups = { pvp: [], pve: [], max: [] };
-  for (const placement of usageEntry.places) groups[placement.place.split(':')[0]]?.push(placement);
+  for (const placement of places) groups[placement.place.split(':')[0]]?.push(placement);
   const GROUP_KO = { pvp: 'PvP', pve: '레이드', max: '맥스' };
-  const chip = ({ place, rank }) => {
+  const chip = ({ place, rank, mark }) => {
     const key = place.split(':')[1];
-    // PvP 는 리그 이름, 레이드·맥스는 타입 이름 (overall 은 '전체')
+    // PvP 는 리그 이름, 레이드·맥스는 타입 이름 (overall 은 '전체'). 맥스는 D(다이맥스)/G(거다이맥스) 표시
     const where = place.startsWith('pvp') ? LEAGUE_KO[key] : (key === 'overall' ? '전체' : TYPE_KO[key]);
-    return el('span', { class: `uchip${rank <= 3 ? ' top' : ''}` }, where, el('b', {}, `${rank}위`));
+    return el('span', { class: `uchip${rank <= 3 ? ' top' : ''}` }, mark ? `${mark}·${where}` : where, el('b', {}, `${rank}위`));
   };
   const wrap = el('div', {});
   for (const groupKey of ['pvp', 'pve', 'max']) {
@@ -286,7 +302,7 @@ function usageNode(name) {
     wrap.append(el('div', { class: 'mv-row' }, el('em', {}, GROUP_KO[groupKey]),
       el('div', { class: 'tchips' }, ...groups[groupKey].map(chip))));
   }
-  wrap.append(el('p', { class: 'd-foot' }, '각 순위표 상위 30위 기준 · 3위 안은 강조 표시'));
+  wrap.append(el('p', { class: 'd-foot' }, `각 순위표 상위 30위 기준 · 3위 안은 강조 표시${groups.max.length ? ' · D = 다이맥스, G = 거다이맥스' : ''}`));
   return wrap;
 }
 
@@ -298,23 +314,41 @@ function counterNode(types) {
   return el('div', { class: 'boss-recs' }, ...recs.map((counter, index) =>
     // 팝업 안의 버튼이라 클릭이 바깥 모달로 새지 않게 stopPropagation
     el('button', { class: 'boss-rec', onclick: (event) => { event.stopPropagation(); openDetail(counter); } },
-      sprite(counter.sprite), el('span', {}, `${index + 1} ${counter.name}`))));
+      sprite(counter.sprite), el('span', {}, `${index + 1} `, nameNode(counter.name)))));  // 2026-09-06 v2.10.0 폼 라벨 뱃지
 }
 
 
 // 2026-09-03 타입 상성: 약점 위 · 내성 아래, 뱃지 중첩 없이 평평한 칩(점+타입+배율)
 // 표시 기준: 배율 1.5 이상이면 약점(큰 순 정렬), 0.7 이하면 내성(작은 순 정렬).
 // 1.6 / 0.625 같은 값만 나오므로 그 사이(≈1)는 어느 쪽에도 넣지 않는다.
-function matchupCols(types) {
+// 2026-09-06 v2.10.0 (QA-44) 이중약점(×2.56 — 두 타입 모두에 약함)은 '이중' 표시와 빨간 테두리로 구분하고,
+// 이중내성·무효(×0.39)도 같은 방식으로 표시한다. 복합 타입 포켓몬에서 "뭘 들고 가야 하나"의 답이 바로 보이게.
+function matchupChip(typeName, multiplier) {
+  const double = multiplier >= 2.5 ? '이중' : multiplier <= 0.4 ? '이중' : '';
+  const chip = typeChipEl(typeName, `×${+multiplier.toFixed(2)}${double ? ' ' + double : ''}`);
+  if (multiplier >= 2.5) chip.classList.add('x2');
+  if (multiplier <= 0.4) chip.classList.add('r2');
+  return chip;
+}
+function matchupCols(types, spriteId) {
   const rows = Object.keys(TYPE_KO).map((typeName) => [typeName, typeMultAgainst(typeName, types)]);
   const chipList = (entries) => entries.length
-    ? el('div', { class: 'tchips' }, ...entries.map(([typeName, multiplier]) => typeChipEl(typeName, `×${+multiplier.toFixed(2)}`)))
+    ? el('div', { class: 'tchips' }, ...entries.map(([typeName, multiplier]) => matchupChip(typeName, multiplier)))
     : el('p', { class: 'd-none-text' }, '없음');
   const weak = rows.filter(([, multiplier]) => multiplier >= 1.5).sort((a, b) => b[1] - a[1]);
   const resist = rows.filter(([, multiplier]) => multiplier <= 0.7).sort((a, b) => a[1] - b[1]);
-  return el('div', { class: 'd-matchrows' },
-    el('div', {}, el('h3', {}, '약점'), chipList(weak)),
-    el('div', {}, el('h3', {}, '내성'), chipList(resist)));
+  const hasDouble = weak.some(([, multiplier]) => multiplier >= 2.5) || resist.some(([, multiplier]) => multiplier <= 0.4);
+  const wrap = el('div', {},
+    el('div', { class: 'd-matchrows' },
+      el('div', {}, el('h3', {}, '약점'), chipList(weak)),
+      el('div', {}, el('h3', {}, '내성'), chipList(resist))),
+    el('p', { class: 'd-foot' },
+      hasDouble ? '이중 = 두 타입 모두에 걸려 ×2.56(약점) / ×0.39(내성·무효) · ' : '',
+      // 2026-09-06 v2.10.0 🧭 상성 검색 페이지로 — 같은 타입 조합을 미리 채운 채 열린다
+      typeof openTypeSearch === 'function'
+        ? el('button', { class: 'row-why-more', onclick: (event) => { event.stopPropagation(); openTypeSearch(types, spriteId, 'detail'); } }, '🧭 상성 검색에서 딜러까지 보기 ▸')
+        : ''));
+  return wrap;
 }
 
 // 2026-09-03 능력치 육각형 대신 내 개체 CP 계산기: 이 포켓몬 고정, 레벨·IV만 조절
@@ -362,10 +396,10 @@ function svgEl(tag, attrs = {}, ...children) {
 // 각 축의 0~1 비율 기준: 종족값은 320, CP 는 5,500 을 만점으로 보고,
 // 레이드·PvP 는 순위표 최고 순위를 rankScore() 로 점수화한다(1위=1.0, 33위 이하≈0.15, 미등재=0.08).
 function hexNode(form, name, types) {
-  const usageEntry = (VALUE_DATA.usage ?? []).find((entry) => entry.name === name);
+  const places = usagePlacesFor(name);  // 2026-09-06 v2.10.0 다이맥스·거다이맥스 이름 변형까지 합산
   // 'pvp' / 'pve' / 'max' 로 시작하는 등재 항목 중 가장 높은(숫자가 작은) 순위
   const bestRank = (prefix) => {
-    const ranks = (usageEntry?.places ?? []).filter((placement) => placement.place.startsWith(prefix)).map((placement) => placement.rank);
+    const ranks = places.filter((placement) => placement.place.startsWith(prefix)).map((placement) => placement.rank);
     return ranks.length ? Math.min(...ranks) : null;
   };
   const rankScore = (rank) => (rank == null ? 0.08 : Math.max(0.15, 1 - (rank - 1) / 32));
@@ -449,7 +483,7 @@ function openDetail(pokemon, isDex = false, from = null) {
     el('div', { class: 'd-sprite' }, sprite(pokemon.sprite)),
     el('div', {},
       el('div', { class: 'tchips' }, ...types.map((typeName) => typeChipEl(typeName))),
-      el('h2', {}, pokemon.name, pokemon.en ? el('span', { class: 'd-en-inline' }, ` (${pokemon.en})`) : ''),
+      el('h2', {}, nameNode(pokemon.name), pokemon.en ? el('span', { class: 'd-en-inline' }, ` (${pokemon.en})`) : ''),  // 2026-09-06 v2.10.0 폼 라벨 뱃지
       cpLine),
     // 2026-09-03 v2.2.0 즐겨찾기 ★ (로그인 기능이 켜진 빌드에서만, 종 단위 = 도감번호)
     el('div', { class: 'd-actions' },
@@ -494,7 +528,7 @@ function openDetail(pokemon, isDex = false, from = null) {
           bucket('·', moveChange.energy, ''), bucket('＋', moveChange.new, 'up')),
         el('p', { class: 'd-foot' }, '위력 수치는 트레이너 배틀 기준 · 자세한 내용은 메뉴 → ⚔️ 기술 변경'))));
   }
-  if (types.length) body.append(detailSection('타입 상성', matchupCols(types)));
+  if (types.length) body.append(detailSection('타입 상성', matchupCols(types, pokemon.sprite)));
   // 아래 섹션들은 해당 데이터가 있을 때만 붙는다 (활용처 미등재·메가 없음·진화 없음 등)
   const usage = usageNode(pokemon.name);
   if (usage) body.append(detailSection('이 도감에서의 활용처 (상위 30위 내)', usage));
