@@ -5,6 +5,18 @@
 버전 규칙: `vMAJOR.MINOR.PATCH` — 큰 기능은 MINOR(두 번째 자리), 상세 기능·버그 수정은 PATCH(세 번째 자리) 증가.
 항목 종류: `추가` 새 기능 · `변경` 기존 동작 변경 · `수정` 버그 수정 · `데이터` 수동 데이터 갱신
 
+## v2.10.1 — 2026-09-06
+
+"누가 어떤 버튼을 눌렀나"를 사람 단위로 보기 위한 계측 보강. 노션 QA-44 후속.
+
+### 추가
+- **GA User-ID** — 로그인하면 `track.js setTrackingUser()`가 Firebase uid를 GA `user_id`로, 승인 상태를 사용자 속성 `login_status`(ok/pending/anon)로 보낸다. 로그아웃하면 null로 되돌린다. `login` 이벤트보다 먼저 붙여 그 이벤트부터 사람 단위로 잡힌다. GA 스니펫이 `window.GA_MEASUREMENT_ID`를 노출해 config 재호출에 쓴다(`send_page_view:false`로 page_view 중복 방지). GA 콘솔에서 보고 ID를 "혼합/관측"으로 바꾸고 사용자 속성 `login_status`를 맞춤 정의에 등록해야 보인다 — 운영 문서 7장
+- **상성 검색 계측** — `type_search`에 `how`(chip/search/preset/clear), 추천 딜러 클릭에 `types_rec_click`(list=raid/max · boss · rank · mon). 미리 채워진 채 열린 경우(상세 팝업·공유 링크)도 `how=preset`으로 1건 남긴다
+- **계정 카드에 uid** — `requests/{email}` 문서를 승인 뒤에도 지우지 않고 로그인마다 `uid`·`status`를 갱신한다. 승인 시 allowlist에도 uid를 복사. 관리자 패널 "승인된 친구" 줄에 uid를 표시해 GA 사용자 탐색기의 User-ID와 대조한다. 규칙 변경 없음(본인 이메일 문서는 승인 여부와 무관하게 쓸 수 있다)
+
+### 변경
+- 개인정보처리방침(`#/privacy`·노션) 개정 — GA에 uid·승인 상태를 보낸다는 항목, 계정 카드가 로그인마다 갱신된다는 문구
+
 ## v2.10.0 — 2026-09-06
 
 노션 QA 트래커 QA-44("오류") 묶음. 스크린샷·요청 5건 + 차별화 제안.

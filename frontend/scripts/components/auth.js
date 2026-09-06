@@ -128,13 +128,17 @@ async function onAuthChange(user) {
       await loadFavs();
     } else {
       AUTH.status = 'pending';
-      // 승인 요청 문서(본인 이메일)를 남긴다 — 관리자 패널에서 승인
-      await AUTH.db.collection('requests').doc(email).set({
-        email, name: user.displayName || '', photo: user.photoURL || '',
-        at: firebase.firestore.FieldValue.serverTimestamp(),
-      }, { merge: true }).catch(() => {});
     }
+    // 계정 카드(본인 이메일 문서)를 로그인마다 갱신한다 — 승인 전에는 관리자 패널의 "승인 대기" 줄이 되고,
+    // 승인 뒤에도 남겨 두어 관리자가 이메일 ↔ uid 를 대조할 수 있게 한다 (2026-09-06 v2.10.1: uid·status 추가).
+    // GA 보고서는 uid 만 보여 주므로 "누가 눌렀나"는 이 대조표로 읽는다. 규칙상 본인 이메일 문서는 승인 여부와 무관하게 쓸 수 있다
+    await AUTH.db.collection('requests').doc(email).set({
+      email, name: user.displayName || '', photo: user.photoURL || '', uid: user.uid, status: AUTH.status,
+      at: firebase.firestore.FieldValue.serverTimestamp(),
+    }, { merge: true }).catch(() => {});
   }
+  // 2026-09-06 v2.10.1 GA User-ID: login 이벤트보다 먼저 붙여야 그 이벤트부터 사람 단위로 잡힌다
+  if (typeof setTrackingUser === 'function') setTrackingUser(user ? user.uid : null, AUTH.status);
   if (user) track('login', { status: AUTH.status });  // 2026-09-06 v2.9.0 GA4: 로그인 세션 수와 승인 상태(ok/pending)
   renderAccount();
   refreshFavUi();
@@ -346,16 +350,19 @@ async function openAdminPanel() {
   ]);
   // 두 컬렉션 모두 문서 id가 이메일이라 id 비교로 "이미 승인된 요청"을 걸러낼 수 있다
   const allowed = new Set((allow?.docs || []).map((doc) => doc.id));
-  const pending = (requests?.docs || []).filter((doc) => !allowed.has(doc.id));
+  // 관리자 본인의 계정 카드도 requests 에 있으므로(v2.10.1) 승인 대기에서는 뺀다 — allowlist 에 없어도 관리자는 이미 승인된 사람이다
+  const pending = (requests?.docs || []).filter((doc) => !allowed.has(doc.id) && doc.data().uid !== AUTH.user.uid);
+  // 2026-09-06 v2.10.1 이메일 → 계정 카드(uid 포함). 승인된 친구 줄에 uid 를 적어 GA User-ID 와 대조한다
+  const cardByEmail = new Map((requests?.docs || []).map((doc) => [doc.id, doc.data()]));
   const renderSection = (title, rows, emptyText) => el('section', { class: 'd-sec' }, el('h3', {}, title),
     rows.length ? el('div', { class: 'admin-rows' }, ...rows) : el('p', { class: 'empty' }, emptyText));
   body.append(renderSection('승인 대기', pending.map((doc) => adminRow(doc.id, doc.data(), '승인', async () => {
-    await AUTH.db.collection('allowlist').doc(doc.id).set({ approved: true, name: doc.data().name || '', at: firebase.firestore.FieldValue.serverTimestamp() });
-    await AUTH.db.collection('requests').doc(doc.id).delete().catch(() => {});
+    await AUTH.db.collection('allowlist').doc(doc.id).set({ approved: true, name: doc.data().name || '', uid: doc.data().uid || '', at: firebase.firestore.FieldValue.serverTimestamp() });
+    // 2026-09-06 v2.10.1 계정 카드는 지우지 않는다 — 승인 뒤에도 이메일 ↔ uid 대조에 쓴다 (다음 로그인에 status 가 ok 로 갱신된다)
     // 목록을 부분 수정하지 않고 패널을 다시 열어 최신 상태로 그린다
     openAdminPanel();
   })), '대기 중인 요청이 없어요.'));
-  body.append(renderSection('승인된 친구', (allow?.docs || []).map((doc) => adminRow(doc.id, doc.data(), '해제', async () => {
+  body.append(renderSection('승인된 친구', (allow?.docs || []).map((doc) => adminRow(doc.id, { ...doc.data(), uid: doc.data().uid || cardByEmail.get(doc.id)?.uid || '' }, '해제', async () => {
     if (!confirm(`${doc.id} 승인을 해제할까요?`)) return;
     await AUTH.db.collection('allowlist').doc(doc.id).delete();
     openAdminPanel();
@@ -378,6 +385,8 @@ async function openAdminPanel() {
 function adminRow(email, data, label, onclick) {
   return el('div', { class: 'admin-row' },
     data.photo ? el('img', { class: 'avatar', src: data.photo, alt: '' }) : el('span', { class: 'avatar' }, '👤'),
-    el('div', { class: 'admin-who' }, el('b', {}, data.name || '(이름 없음)'), el('span', { class: 'acct-email' }, email)),
+    el('div', { class: 'admin-who' }, el('b', {}, data.name || '(이름 없음)'), el('span', { class: 'acct-email' }, email),
+      // 2026-09-06 v2.10.1 GA 사용자 탐색기의 User-ID 와 대조할 uid (아직 한 번도 로그인 안 한 옛 승인자는 비어 있다)
+      data.uid ? el('span', { class: 'acct-email', title: 'GA User-ID' }, `uid ${data.uid}`) : ''),
     el('button', { class: `uchip admin-act${label === '해제' ? ' danger' : ''}`, onclick }, label));
 }
