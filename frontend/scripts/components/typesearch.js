@@ -99,7 +99,7 @@ function renderTypeSearchPage() {
   const $head = el('div', {});
   const $chips = el('div', { class: 'ts-pick' });
   const $result = el('div', {});
-  const $input = el('input', { class: 'boss-search', placeholder: '포켓몬 이름으로 타입 채우기 (예: 메가 샤크니아, 가이오가)', autocomplete: 'off' });
+  const $input = el('input', { class: 'boss-search', placeholder: '이름으로 타입 채우기 (예: 가이오가)', autocomplete: 'off' });
   const $sugg = el('div', { class: 'boss-sugg' });
 
   // 주소에 현재 선택을 남긴다 (공유용). replaceState 라 뒤로가기에는 영향이 없다
@@ -204,7 +204,7 @@ function renderTypeSearchPage() {
       const raid = typeof PVE_DATA !== 'undefined' ? PVE_DATA[typeName] : null;
       const max = typeof DMAX_DATA !== 'undefined' ? DMAX_DATA[typeName] : null;
       if (raid?.length) { hasRec = true; recSection.append(recRow(`레이드 — ${TYPE_KO[typeName]} 보스 기준 (DPS·TDO 자체 계산)`, raid, gotoTab('pve', { pveMode: 'all', boss: typeName }), 'raid', typeName)); }
-      if (max?.length) { hasRec = true; recSection.append(recRow(`맥스 배틀 — ${TYPE_KO[typeName]} 보스 기준`, max, gotoTab('max', { maxBoss: typeName }), 'max', typeName)); }
+      if (max?.length) { hasRec = true; recSection.append(recRow(`맥스 배틀 — ${TYPE_KO[typeName]} 보스 기준`, max, gotoTab('max', { maxBoss: typeName, maxAxis: 'dealer' }), 'max', typeName)); }  // v2.14.0 보스 상대 딜러 표는 [딜러] 축
     }
     if (hasRec) {
       recSection.append(el('p', { class: 'd-foot' }, selected.length === 2
