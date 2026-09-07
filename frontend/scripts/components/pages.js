@@ -224,6 +224,23 @@ function renderPage() {
   // 2026-09-06 v2.9.0 상세 딥링크 #/mon/<스프라이트 id> — 메인 화면을 보인 채 그 포켓몬 상세 팝업을 연다.
   // 상세 팝업은 GA에서 1순위 상호작용(detail_open)인데 링크가 없어 친구에게 "이거 봐"를 못 했다.
   // 팝업을 여닫을 때 해시는 replaceState로만 바꾸므로(detail.js·modal.js) 뒤로가기 동작은 그대로다
+  // 2026-09-07 v2.15.0 (QA-53) #/plan · #/plan/<탭> — 전체 페이지가 아니라 메인 셸(.wrap)의 플래너 모드다.
+  // 해시가 곧 모드라서 딥링크·뒤로가기가 그대로 동작한다. 첫 로드에서는 app.js 가 applyPlanRoute → render 를 직접 부르므로
+  // 그 전에 도착한 hashchange(없음)만 아니면 여기서 다시 그린다
+  if (typeof planRouteFromHash === 'function' && planRouteFromHash()) {
+    $page.hidden = true;
+    $page.replaceChildren();
+    $wrap.hidden = false;
+    if (typeof _planShellReady !== 'undefined' && _planShellReady) {  // 첫 로드는 app.js 가 직접 그린다
+      closeDrawer({ silent: true });
+      closeModal({ silent: true });
+      NAV.open = false;
+      applyPlanRoute();
+      render();
+      window.scrollTo(0, 0);
+    }
+    return;
+  }
   const monMatch = location.hash.match(/^#\/mon\/(\d+)$/);
   if (monMatch) {
     $page.hidden = true;
@@ -237,6 +254,12 @@ function renderPage() {
     $page.hidden = true;
     $page.replaceChildren();
     $wrap.hidden = false;
+    // 2026-09-07 v2.15.0 (QA-53) 플래너(#/plan)에서 뒤로가기로 해시가 비면 도감 모드로 되돌린다
+    // 첫 로드(app.js 실행 전)에는 state 가 TDZ 라 만질 수 없다 — 셸 준비 플래그로 거른다 (planner/shell.js)
+    if (typeof _planShellReady !== 'undefined' && _planShellReady && state.appMode === 'plan') {
+      applyPlanRoute();
+      render();
+    }
     return;
   }
   // 페이지로 넘어갈 때는 열려 있던 서랍·모달을 먼저 닫는다 (히스토리는 해시 이동이 이미 처리했으므로 silent)

@@ -5,6 +5,28 @@
 버전 규칙: `vMAJOR.MINOR.PATCH` — 큰 기능은 MINOR(두 번째 자리), 상세 기능·버그 수정은 PATCH(세 번째 자리) 증가.
 항목 종류: `추가` 새 기능 · `변경` 기존 동작 변경 · `수정` 버그 수정 · `데이터` 수동 데이터 갱신
 
+## v2.16.0 — 2026-09-07
+
+### 변경
+- **IF 탭·활용처 탭 해체 — 기능을 제자리로** (dev 피드백) — 탭은 D-MAX · PvE · PvP 셋. (1) **솔플 레이드 계산기**는 PvE 탭 세그먼트 오른쪽 `🧮` 도구 버튼(`toolButton`, `state.pveTool = 'solo'`)으로 — 누르면 티어표 자리에 `renderSoloCalc()`가 펼쳐지고 다시 누르면 접힌다(서브탭을 고르면 접힘). (2) **PvP 덱 짜기**는 PvP 탭 리그 세그먼트 오른쪽 `🃏` 버튼(`state.pvpTool = 'deck'`) — 덱 리그는 `state.league`를 그대로 써 `deckLeague`와 덱 안의 리그 세그먼트를 없앴다. (3) **활용처**는 🔍 검색 패널로 — 비어 있을 때 "🏆 활용처 순위"(`usageTopNodes`, 8마리 + 더보기, 누르면 상세) 를 보여 주고, 검색 후보 줄마다 "활용 N곳" 뱃지(`usageBadge`)를 붙인다. `renderIfTab`·`renderUsage`·`state.ifWho`·`deckLeague` 제거, `pogo_last_view`의 옛 `usage`/`if` 탭 값은 허용 목록에서 걸러져 D-MAX로. 새 줄 `.ctrl-row`(세그먼트 + 도구 버튼), `.tool-btn`(aria-pressed). GA `tool_solo`·`tool_pvpdeck`(on)·`usage_pick`
+
+## v2.15.1 — 2026-09-07
+
+### 변경
+- **중복 진입 버튼 정리 — 화면 하나에 버튼 하나** — dev 미리보기 피드백: 같은 화면을 가리키는 버튼이 여럿("도감", "도감 모드로 전환", "도감에서 채우기"…)이라 기능 위주로 병합·삭제. 남긴 것 / 지운 것: 모드 전환 = 헤더 배지 / ☰ `#menu-mode`·플래너 홈 "🔎 도감 모드로" · 📕 도감 = 탭 줄 📕 / ☰ "📕 도감"·계정 카드 "📕 도감에서 채우기"·플래너 홈 "📕 도감에서 찾기" · 🧭 상성 = 탭 줄 🧭 / ☰ "🧭 상성 검색" · ★ 즐겨찾기 페이지 = 탭 줄 ★ / ☰ `#menu-favs`·즐겨찾기 카드 "PvE · PvP 나눠 보기 ▸" · 🎒 내 포켓몬 = 플래너 탭 / 홈의 "내 포켓몬 열기"·"전체 보기 · 비교"·"첫 개체 저장하기" · 로그인 = 헤더 👤 / 플래너 홈·내 포켓몬의 "Google로 로그인" 버튼(안내 문구로). 플래너 홈은 소개 + 요약 + 후속 안내만. 계정 카드 요약에 🎒 내 포켓몬 마릿수 추가. 도감 페이지 안의 "★ 즐겨찾기 N" 칩은 탭 줄이 보이지 않는 전체 페이지라 유지(`initFavsMenu`는 대상 요소가 없으면 조용히 끝난다)
+
+## v2.15.0 — 2026-09-07
+
+노션 QA 트래커 [플래너] v2.15.0 MVP — QA-53(모드 전환 셸) · QA-54(내 포켓몬). 배경: 개발 → 🌱 육성 플래너 통합 방향 / 🚀 v2.15.0 MVP 작업 명세.
+
+### 추가
+- **🌱 플래너 모드 셸 (QA-53)** — 한 앱에 두 모드. 헤더 서문 옆 모드 배지(`#mode-toggle`, `🌱 플래너` ↔ `🔎 도감`)와 ☰ 메뉴 맨 위 항목(`#menu-mode`)으로 전환하면 탭 줄이 통째로 바뀐다(도감 = 기존 그대로 / 플래너 = [🏠 홈 | 🎒 내 포켓몬]). **모드는 해시가 정한다**: `#/plan`(홈)·`#/plan/collection`(내 포켓몬)만 플래너, 그 밖(없음·`#/dex` 등)은 전부 도감 — 그래서 딥링크·뒤로가기(history.js)가 그대로 동작하고 탭 이동도 뒤로가기로 되돌아간다. 해시 없이 처음 열 때만 마지막 모드(`localStorage pogo_plan_last`)가 플래너면 `#/plan`으로(replaceState), 기본은 도감 모드. `state.appMode`·`planTab`·`planParams` 추가(기존 `pogo_last_view` 키·필드 불변). 로고 탭 = 현재 모드의 홈. 플래너 모드에서는 ★ 즐겨찾기 요약 카드를 감춘다(`body[data-mode]`). GA `mode_switch`(to·from)·`plan_view`·`plan_tab`. 새 폴더 `frontend/scripts/planner/`(shell · home · collection) + `styles/components/planner.css`. 번들이 한 `<script>`라 `const state`가 TDZ인 첫 로드에 `renderPage()`가 먼저 도는 문제는 `_planShellReady` 플래그로 거른다
+- **🎒 내 포켓몬 — 개체 단위 저장·비교 (QA-54)** — Firestore `users/{uid}.mons` 배열(`{ id, sprite, shadow, level, ivs:[atk,def,hp], fast, charged, status, memo, at }`), 즐겨찾기 `favs`(종 단위)와 별개 필드라 ★ 의 의미는 그대로. 규칙 변경 없음(`users/{uid}` 본인·승인 조건 그대로). 목록 = 상태 칩(전체·육성 중·완료·교환 후보) + 개체 카드(그림·이름·뱃지·Lv/IV/CP·기술·맥스 자격·메모, [☐ 비교]·수정·삭제). 추가/수정 팝업: 기존 검색 색인 재사용해 종 선택(다이맥스/거다이맥스 항목 제외, "섀도우 X"를 고르면 섀도우 체크) → 섀도우·레벨(1~50, 0.5)·개체값·**CP로 레벨 추정**(`planLevelFromCp`, 안 맞으면 가장 가까운 레벨과 차이 안내)·기술(`form.fast/charged` 목록, 모름 허용)·상태·메모. CP는 저장하지 않고 `calcCp`로 계산. 같은 종 2개체 [☐ 비교] → `openPlanCompare`: 지금 레벨·CP·개체값·만렙 CP·리틀/슈퍼/하이퍼 도달 CP(`planLeagueReach`, 상한 아래 최대 레벨)·기술·섀도우, 큰 쪽 강조, "순위 평가 아님" 명시. 비로그인·승인 대기는 계산만 되고 저장 버튼이 로그인/승인 안내. 상세 팝업 `.d-actions`에 ➕(`planAddFromDetail`) → `#/plan/collection?add=<sprite>&shadow=1`로 프리필. `AUTH.mons`(auth.js loadFavs가 읽고 onAuthChange가 초기화). GA `plan_mon_save`(add/edit)·`plan_mon_delete`·`plan_compare`·`plan_add_from_detail`
+- **플래너 홈** — 소개 카드 + 내 포켓몬 요약(마릿수·상태별·최근 6마리) + 도감 모드 복귀 + 후속 기능 안내(육성 판단·목표 계산기·검색식·파티·일정 연결은 백로그)
+
+### 변경
+- 개인정보처리방침에 플래너 개체 정보 저장 항목·로컬 저장소(마지막 모드) 명시 (2026-09-07 개정)
+
 ## v2.14.0 — 2026-09-07
 
 노션 QA-52 "개선사항" 묶음.

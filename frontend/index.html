@@ -53,7 +53,11 @@ __STYLES__
     <div>
       <!-- 2026-09-03 v2.1.0 헤더 단순화: POGO SEARCH + 버전 / 편하게 검색하세요 (To. 줄 제거, 헌정은 푸터 유지) -->
       <h1>POGO SEARCH <span class="app-ver">__VERSION__</span></h1>
-      <p class="tagline">편하게 검색하세요</p>
+      <!-- 2026-09-07 v2.15.0 (QA-53) 모드 배지: 🔎 도감 ↔ 🌱 플래너 한 번 탭으로 전환 (planner/shell.js) -->
+      <div class="tagline-row">
+        <p class="tagline">편하게 검색하세요</p>
+        <button class="mode-badge" id="mode-toggle" aria-label="모드 전환">🌱 플래너</button>
+      </div>
     </div>
     <div class="header-actions">
       <button class="icon-btn" id="search-toggle" aria-label="포켓몬 검색">🔍</button>
@@ -67,7 +71,7 @@ __STYLES__
   <!-- 2026-09-06 v2.12.1 검색 패널: 카드로 묶어 "여기부터가 검색"임이 보이게. 제목 줄 · 입력 · 타입 칩 줄 · 결과 목록 (components/search.js) -->
   <section class="psearch" role="search" aria-label="포켓몬 검색" hidden>
     <div class="psearch-head">
-      <b>검색</b><span class="meta">이름을 치거나 타입을 고르세요 · 둘 다 되면 교집합</span>
+      <b>검색</b><span class="meta">이름·타입으로 찾기 · 비워 두면 활용처 순위</span>  <!-- 2026-09-07 v2.16.0 활용처 탭을 검색 패널로 -->
       <button class="icon-btn psearch-close" id="psearch-close" aria-label="검색 닫기">✕</button>
     </div>
     <input class="boss-search" id="psearch" placeholder="이름 (예: 메타그로스, 섀도우 뮤츠)" autocomplete="off">
@@ -128,12 +132,7 @@ __STYLES__
       <summary>👥 트레이너 코드</summary>
       <div class="schedule-body" id="trainer-list"></div>
     </details>
-    <!-- 2026-09-03 CP 계산기는 상세 팝업 안으로 이동, 자리에 도감 신설 -->
-    <button class="drawer-item" onclick="openPage('dex')">📕 도감</button>
-    <!-- 2026-09-06 v2.10.0 (QA-44) 상성 검색: 타입 조합 → 약점·이중약점·추천 딜러 (components/typesearch.js) -->
-    <button class="drawer-item" onclick="openPage('types')">🧭 상성 검색</button>
-    <!-- 2026-09-05 즐겨찾기: 로그인·승인된 사용자에게만 initFavsMenu()가 연다 -->
-    <button class="drawer-item" id="menu-favs" onclick="openPage('favs')" hidden>★ 즐겨찾기</button>
+    <!-- 2026-09-07 v2.15.1 도감·상성 검색·★ 즐겨찾기·모드 전환 항목 제거 — 탭 줄(📕 🧭 ★)·헤더 배지와 같은 화면을 가리키는 중복 버튼이었다. 화면 하나에 진입 버튼 하나 -->
     <!-- 2026-09-04 시즌 기술 변경 안내: 변경 데이터가 있을 때만 initMoveChangesMenu()가 연다 -->
     <button class="drawer-item" id="menu-changes" onclick="openPage('changes')" hidden>⚔️ 기술 변경</button>
     <button class="drawer-item" id="menu-release" onclick="openPage('release')">🎉 패치노트</button>
