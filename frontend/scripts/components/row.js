@@ -53,7 +53,9 @@ function row(pokemon, rankText, scoreNode, subNode, lineParts, tagNode) {
   if (tagNode || moveBadge || useBadge) main.append(el('div', { class: 'badges' }, tagNode ?? '', moveBadge, useBadge));
   main.append(name, line);
   // 줄 전체가 상세 팝업 버튼이다 (안쪽에 따로 버튼을 두지 않아 클릭 영역이 넓다)
-  return el('li', { class: 'row', onclick: () => openDetail(pokemon) },
+  return el('li', { class: 'row', tabindex: '0', role: 'button', 'aria-label': pokemon.name + ' 상세 보기',
+    onkeydown: (event) => { if (event.target === event.currentTarget && (event.key === 'Enter' || event.key === ' ')) { event.preventDefault(); openDetail(pokemon); } },
+    onclick: () => openDetail(pokemon) },
     // 순위 칸: 숫자 아래에 최근 변동 ▲▼ (변동이 없거나 오래됐으면 아무것도 안 붙는다)
     el('span', { class: 'rank' }, rankText, rankDeltaBadge(pokemon.d)),
     sprite(pokemon.sprite),

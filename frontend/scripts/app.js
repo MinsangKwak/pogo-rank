@@ -85,38 +85,8 @@ const $note = document.getElementById('note');
 // 선택 표시는 CSS 클래스가 아니라 aria-selected로 하기 때문에(스타일과 스크린리더가 같은 값을 본다)
 // 탭이 바뀔 때마다 줄 전체를 다시 그린다.
 function renderTabs() {
-  $tabs.textContent = '';
-  const isHome = state.appMode === 'dex' && state.tab === 'home';
-  $tabs.hidden = isHome;
-  document.getElementById('mode-toggle').hidden = isHome;
-  if (isHome) return;
-  $tabs.append(el('button', { class: 'tab', onclick: () => navigateHash('') }, '⌂ 홈'));
-  // 2026-09-07 v2.15.0 (QA-53) 플래너 모드는 탭 줄이 통째로 바뀐다 — [홈 | 내 포켓몬] (planner/shell.js)
-  if (state.appMode === 'plan') renderPlanTabs();
-  // 2026-09-02 PvE 일반·전체를 한 탭으로 통합해 메뉴 축소
-  // [탭 id, 버튼에 보이는 이름] 쌍. 배열 순서가 곧 화면에 보이는 탭 순서다
-  else for (const [id, label] of [['max', 'D-MAX'], ['pve', 'PvE'], ['pvp', 'PvP']]) {  // 2026-09-07 v2.16.0 활용처·IF 탭 제거 (검색 패널 · PvE/PvP 도구 버튼으로)
-    // 2026-09-03 GA4: 탭 이름을 이벤트명에 포함(tab_max 등) — GA 이벤트 목록에서 설정 없이 탭별 순위가 바로 보임, 누를 때마다 1회씩 기록
-    $tabs.append(el('button', {
-      class: 'tab',
-      role: 'tab',
-      'aria-selected': String(state.tab === id),
-      onclick: () => {
-        track('tab_' + id, { tab: id });
-        navigateHash('#/rank/' + id);
-      },
-    }, label));
-  }
-  // 2026-09-06 v2.9.0 도감·즐겨찾기 바로가기 — ☰ 안에만 있을 때 page_open(14)이 탭 클릭(~100)의 1/7이었다.
-  // 탭이 아니라 "페이지로 가는 버튼"이라 aria-selected 없이 오른쪽 끝에 붙인다. 좁은 화면에서는 아이콘만 남는다(tabs.css)
-  const quick = el('div', { class: 'tab-quick' },
-    el('button', { class: 'tab quick', title: '도감', onclick: () => openPage('dex', 'tabbar') }, '📕', el('span', { class: 'lbl' }, ' 도감')),
-    // 2026-09-06 v2.10.0 (QA-44) 🧭 상성 검색 — 게임 중 "이 보스 뭘로 잡지"를 한 화면에서
-    el('button', { class: 'tab quick', title: '상성 검색', onclick: () => openPage('types', 'tabbar') }, '🧭', el('span', { class: 'lbl' }, ' 상성')));
-  if (typeof authEnabled === 'function' && authEnabled() && AUTH.status === 'ok') {
-    quick.append(el('button', { class: 'tab quick', title: '즐겨찾기', onclick: () => openPage('favs', 'tabbar') }, '★', el('span', { class: 'lbl' }, ` 즐겨찾기 ${AUTH.favs.size}`)));
-  }
-  $tabs.append(quick);
+  $tabs.replaceChildren();
+  $tabs.hidden = true;
 }
 
 // 2026-09-02 PvE 탭: 일반/전체 세부 토글 (PvP 리그 토글과 같은 seg)
@@ -158,6 +128,7 @@ function render() {
   if (state.appMode === 'plan') return renderPlan();
   // 탭 id → 그 탭을 그리는 함수. 찾아서 바로 호출한다
   ({ max: renderMax, pve: renderPveTab, pvp: renderPvp })[state.tab]();  // v2.16.0 usage·if 제거
+  compactScreenFilters();
   saveLastView();  // 2026-09-06 v2.9.0 상태가 바뀌어 다시 그릴 때마다 마지막 보기를 남긴다
 }
 

@@ -620,7 +620,7 @@ function openDetail(pokemon, isDex = false, from = null) {
   // 2026-09-06 v2.9.0 메인 화면에서 열었을 때만 주소를 #/mon/<id>로 바꿔 둔다 — 그대로 복사하면 공유 링크가 된다.
   // openModal이 먼저 closeModal을 불러 기존 #/mon 해시를 지우므로, 반드시 그 뒤에 넣는다.
   // 페이지(#/dex 등) 위에서 열 때는 그 페이지 주소를 지우지 않도록 건드리지 않는다. replaceState라 히스토리는 안 쌓인다
-  if (typeof currentPageId === 'function' && !currentPageId()) {
-    try { history.replaceState(null, '', `#/mon/${pokemon.sprite}`); } catch {}
+  if (!location.hash || location.hash === '#' || /^#\/mon\//.test(location.hash)) {
+    try { history.replaceState(history.state, '', `#/mon/${pokemon.sprite}`); } catch {}
   }
 }

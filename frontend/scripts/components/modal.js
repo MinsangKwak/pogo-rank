@@ -19,18 +19,22 @@ function openModal(content) {
   closeModal({ silent: true, keepEntry: true });
   // 드로어 위에서 팝업을 열면 드로어는 닫는다 — 히스토리 항목은 팝업이 이어받는다
   if (typeof closeDrawer === 'function') closeDrawer({ silent: true });
-  const overlay = el('div', {
+  const overlay = el('dialog', {
     class: 'overlay',
+    'aria-label': content.querySelector('h2')?.textContent || '상세 정보',
     // 배경만 눌렀을 때 닫는다. 팝업 안쪽을 눌러도 클릭이 여기까지 올라오므로(이벤트 버블링)
     // event.target이 배경 자신인지 확인해야 한다
     onclick: (event) => { if (event.target === overlay) closeModal(); },
   },
-    el('div', { class: 'modal', role: 'dialog', 'aria-modal': 'true' },
+    el('div', { class: 'modal' },
       // 2026-09-02 X버튼을 sticky 바에 넣어 스크롤해도 항상 보이게
       el('div', { class: 'modal-close-bar' },
-        el('button', { class: 'modal-close', 'aria-label': '닫기', onclick: () => closeModal() }, '✕')),
+        el('button', { class: 'modal-close', 'aria-label': '상세 닫고 이전 화면으로', onclick: () => closeModal() }, '←'),
+        el('span', {}, '상세 정보')),
       content));
   document.body.append(overlay);
+  overlay.addEventListener('cancel', (event) => { event.preventDefault(); closeModal(); });
+  overlay.showModal();
   // 팝업 뒤의 본문이 같이 스크롤되지 않게 잠근다 (닫을 때 closeModal이 되돌린다)
   document.body.style.overflow = 'hidden';
   pushOverlayEntry();
@@ -41,7 +45,7 @@ function openModal(content) {
 //   keepEntry  다른 오버레이가 곧 열리므로 항목을 유지한다 (openModal 내부용)
 function closeModal({ silent = false, keepEntry = false } = {}) {
   const overlay = document.querySelector('.overlay');
-  if (overlay) overlay.remove();
+  if (overlay) { overlay.close(); overlay.remove(); }
   // 드로어가 아직 열려 있으면 스크롤 잠금은 유지한다
   if (!overlayVisible()) document.body.style.overflow = '';
   // 2026-09-06 v2.9.0 상세 딥링크(#/mon/…)를 열어 둔 채 닫으면 주소에서 해시만 지운다 (히스토리 항목 추가 없음)
@@ -52,4 +56,4 @@ function closeModal({ silent = false, keepEntry = false } = {}) {
 }
 
 // Esc로 닫기. 팝업마다 리스너를 달고 떼는 대신 문서에 하나만 달아 둔다
-document.addEventListener('keydown', (event) => { if (event.key === 'Escape' && document.querySelector('.overlay')) closeModal(); });
+document.addEventListener('keydown', (event) => { if (event.key === 'Escape' && document.querySelector('.overlay')) { event.preventDefault(); closeModal(); } });

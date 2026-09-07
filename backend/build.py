@@ -108,7 +108,7 @@ json.dump(pvp_all, open('data/pvp_all.json', 'w', encoding='utf-8'), ensure_asci
 
 # ── frontend/ 의 CSS·JS를 순서대로 인라인해 단일 dist/index.html 조립 ──
 # 순서가 곧 캐스케이드(CSS)·실행 순서(JS)이므로 새 파일은 여기 목록에 추가
-APP_VERSION = 'v2.20.0'  # 서비스 홈 · 중복 모바일 UI 제거
+APP_VERSION = 'v2.21.0'  # PWA 앱 셸 · 독립 화면 · 접근성
 # 2026-09-05 v2.7.3 빌드 채널 — 'prod'(기본) / 'dev'. dev 브랜치 워크플로(.github/workflows/deploy-dev.yml)가 BUILD_CHANNEL=dev 로 부른다.
 # dev 빌드는 (1) 버전 배지에 -dev 를 붙여 화면에서 구분되고 (2) GA 스니펫을 넣지 않아 통계가 섞이지 않고
 # (3) robots.txt 를 전부 차단 + <meta name="robots" content="noindex"> 로 검색 색인을 막는다. 나머지는 prod 와 동일
@@ -151,7 +151,8 @@ STYLES = [
     'components/tabs.css', 'components/seg.css', 'components/chips.css',
     'components/list.css', 'components/tag.css', 'components/modal.css', 'components/search.css', 'components/drawer.css', 'components/pages.css',
     'components/planner.css',  # 2026-09-07 v2.15.0 🌱 플래너 모드 (QA-53·54)
-    'components/consent.css',  # 2026-09-07 v2.18.0 동의 배너 · 약관 · 방침 표 · IP 고지
+    'components/consent.css',
+    'components/app-shell.css',
 ]
 SCRIPTS = [
     'data.js', 'dom.js', 'track.js',  # 2026-09-03 track: GA4 이벤트 헬퍼 (가장 먼저 정의)
@@ -165,7 +166,7 @@ SCRIPTS = [
     'components/pages.js',
     'components/trainers.js', 'components/favdigest.js', 'components/totop.js',  # 2026-09-05 favdigest: 메인 즐겨찾기 카드
     'views/pvp.js', 'views/pve.js', 'views/max.js', 'views/tier.js', 'views/usage.js', 'views/ifsolo.js',  # 2026-09-02 if 탭
-    'app.js',
+    'app.js', 'components/app-shell.js',
 ]
 def bundle(folder, files, mark):
     # frontend/<folder>/ 의 파일들을 목록 순서 그대로 이어붙인다.

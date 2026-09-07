@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <!-- 2026-09-03 입력 포커스 시 화면 확대 방지 -->
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="color-scheme" content="light dark">
 <!-- 2026-09-02 서비스명 POGO NOTE → 2026-09-03 POGO SEARCH → 2026-09-07 v2.17.0 POGO PLAN(포고플랜)으로 확정. 저장소명·배포 URL·localStorage 키·GA 이벤트명은 그대로 -->
 <title>POGO PLAN — 뭘 키우고, 뭘 잡을지</title>
@@ -95,7 +95,7 @@ __STYLES__
     <div class="schedule-body" id="fav-digest-body"></div>
   </details>
 
-  <div class="tabs" role="tablist" id="tabs"></div>
+  <div id="tabs" hidden></div>
   <div class="controls" id="controls"></div>
   <div id="content"></div>
   <footer>
@@ -115,8 +115,8 @@ __STYLES__
 <div id="page" hidden></div>
 
 <!-- 2026-09-02 오른쪽 드로어 메뉴: 자주 안 보는 정보를 모아둠 (components/drawer.js) -->
-<div class="drawer-backdrop" id="drawer-backdrop" hidden>
-  <aside class="drawer" role="dialog" aria-modal="true" aria-label="메뉴">
+<dialog class="drawer-backdrop" id="drawer-backdrop" aria-label="전체 메뉴" hidden>
+  <aside class="drawer">
     <div class="drawer-head"><b>메뉴</b><button class="icon-btn" id="drawer-close" aria-label="닫기">✕</button></div>
     <!-- 2026-09-03 v2.2.0 계정 영역 (components/auth.js) — FIREBASE_CONFIG 없으면 숨김 -->
     <div class="account" id="account" hidden></div>
@@ -145,7 +145,7 @@ __STYLES__
     <button class="drawer-item" id="menu-consent">🍪 통계·저장소 설정</button>
     <p class="drawer-meta">PvPoke · PokeMiners 데이터<br>기준일 __TIMESTAMP__ · 매일 00시 자동 갱신</p>
   </aside>
-</div>
+</dialog>
 
 <!-- 2026-09-03 v2.0.0: 데이터를 별도 파일로 분리해 HTML 파싱을 가볍게 -->
 <script src="data.js"></script>

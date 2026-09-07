@@ -186,8 +186,6 @@ function renderSearchResults() {
       class: `sugg-item${pokemon.unrel ? ' unrel' : ''}`,
       onclick: () => {
         track('search_pick', { mon: pokemon.name, t: types.join(',') });  // 2026-09-06 v2.9.0 GA4: 검색으로 고른 포켓몬 · v2.12.0 t: 타입 필터
-        $input.value = '';
-        $sugg.textContent = '';
         openDetail(pokemon, false, 'search');
       },
     }, sprite(pokemon.sprite), el('span', {}, nameNode(pokemon.name)),  // 2026-09-06 v2.10.0 폼 라벨 뱃지
@@ -208,20 +206,28 @@ function label(types) { return types.map((typeKey) => TYPE_KO[typeKey]).join('·
 
 // 검색 패널 열기/닫기 (헤더 🔍 · 패널 ✕). 닫을 때 입력과 칩을 비워 다음에 깨끗하게 연다
 function toggleSearchPanel(open) {
-  const $panel = document.querySelector('.psearch');
-  const $toggle = document.getElementById('search-toggle');
-  const willOpen = open ?? $panel.hidden;
-  $panel.hidden = !willOpen;
-  $toggle?.setAttribute('aria-pressed', String(willOpen));
-  if (willOpen) {
-    renderSearchResults();  // 빈 상태 안내
-    document.getElementById('psearch').focus();
-  } else {
-    document.getElementById('psearch').value = '';
-    SEARCH_TYPES.length = 0;
-    renderSearchTypeChips();
-    document.getElementById('psearch-sugg').textContent = '';
-  }
+  const dialog = document.getElementById('search-dialog');
+  if (!dialog) return;
+  const willOpen = open ?? !dialog.open;
+  if (!willOpen) { closeSearchDialog(); return; }
+  closeDrawer({ silent: true });
+  closeModal({ silent: true });
+  document.querySelector('.psearch').hidden = false;
+  if (!dialog.open) dialog.showModal();
+  document.body.style.overflow = 'hidden';
+  document.getElementById('search-toggle').setAttribute('aria-expanded', 'true');
+  renderSearchResults();
+  document.getElementById('psearch').focus();
+  pushOverlayEntry();
+}
+
+function closeSearchDialog(silent = false) {
+  const dialog = document.getElementById('search-dialog');
+  if (!dialog?.open) return;
+  dialog.close();
+  document.getElementById('search-toggle').setAttribute('aria-expanded', 'false');
+  if (!overlayVisible()) document.body.style.overflow = '';
+  if (!silent) releaseOverlayEntry(false);
 }
 
 // 헤더 검색창(#psearch)에 입력 → 후보 목록(#psearch-sugg) 갱신 동작을 붙인다
