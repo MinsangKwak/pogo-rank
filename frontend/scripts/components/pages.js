@@ -257,7 +257,7 @@ function renderPage() {
     $wrap.hidden = false;
     // 2026-09-07 v2.15.0 (QA-53) 플래너(#/plan)에서 뒤로가기로 해시가 비면 도감 모드로 되돌린다
     // 첫 로드(app.js 실행 전)에는 state 가 TDZ 라 만질 수 없다 — 셸 준비 플래그로 거른다 (planner/shell.js)
-    if (typeof _planShellReady !== 'undefined' && _planShellReady && state.appMode === 'plan') {
+    if (typeof _planShellReady !== 'undefined' && _planShellReady) {
       applyPlanRoute();
       render();
     }
@@ -273,7 +273,8 @@ function renderPage() {
     // 상단 바: ← 뒤로 + 페이지 제목
     el('div', { class: 'page-bar' },
       el('button', { class: 'icon-btn', onclick: goBack, 'aria-label': '뒤로' }, '←'),
-      el('b', {}, PAGES[id].title)),
+      el('b', {}, PAGES[id].title),
+      el('button', { class: 'uchip', onclick: () => navigateHash(''), 'aria-label': '서비스 홈' }, '홈')),
     PAGES[id].render(),
     // 2026-09-07 v2.18.0 IP 고지문은 전체 페이지에서도 상시 노출 (.wrap 의 푸터가 숨겨지므로)
     id === 'terms' || id === 'privacy' ? '' : ipNoticeNode());

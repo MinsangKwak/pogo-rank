@@ -86,6 +86,11 @@ const $note = document.getElementById('note');
 // 탭이 바뀔 때마다 줄 전체를 다시 그린다.
 function renderTabs() {
   $tabs.textContent = '';
+  const isHome = state.appMode === 'dex' && state.tab === 'home';
+  $tabs.hidden = isHome;
+  document.getElementById('mode-toggle').hidden = isHome;
+  if (isHome) return;
+  $tabs.append(el('button', { class: 'tab', onclick: () => navigateHash('') }, '⌂ 홈'));
   // 2026-09-07 v2.15.0 (QA-53) 플래너 모드는 탭 줄이 통째로 바뀐다 — [홈 | 내 포켓몬] (planner/shell.js)
   if (state.appMode === 'plan') renderPlanTabs();
   // 2026-09-02 PvE 일반·전체를 한 탭으로 통합해 메뉴 축소
@@ -97,9 +102,8 @@ function renderTabs() {
       role: 'tab',
       'aria-selected': String(state.tab === id),
       onclick: () => {
-        state.tab = id;
         track('tab_' + id, { tab: id });
-        render();
+        navigateHash('#/rank/' + id);
       },
     }, label));
   }
@@ -148,6 +152,8 @@ function render() {
   document.getElementById('boss-acc').style.display = 'none';  // 2026-09-02 D-MAX 탭에서만 renderBossAcc가 다시 켬
   $controls.textContent = '';
   $content.textContent = '';
+  document.body.dataset.home = String(state.appMode === 'dex' && state.tab === 'home');
+  if (state.appMode === 'dex' && state.tab === 'home') return renderServiceHome();
   // 2026-09-07 v2.15.0 (QA-53) 플래너 모드면 플래너 렌더러로 (도감 탭 상태는 건드리지 않는다)
   if (state.appMode === 'plan') return renderPlan();
   // 탭 id → 그 탭을 그리는 함수. 찾아서 바로 호출한다
@@ -158,26 +164,13 @@ function render() {
 // 2026-09-06 v2.11.0 홈: 헤더의 서비스명(POGO PLAN)을 누르면 열린 것을 다 닫고 첫 화면(D-MAX 탭 전체)으로 돌아간다
 function goHome() {
   track('home');
-  // 2026-09-07 v2.15.0 (QA-53) 로고 = 현재 모드의 홈. 플래너 모드면 플래너 홈(#/plan)으로
-  if (state.appMode === 'plan') {
-    navigateHash('#/plan');  // 팝업·드로어가 열려 있으면 닫고 그 항목을 대체한다. 같은 주소면 다시 그린다
-    window.scrollTo(0, 0);
-    return;
-  }
-  closeDrawer({ silent: true });
-  closeModal({ silent: true });
-  NAV.open = false;
-  state.tab = 'max';
-  state.maxBoss = 'overall';
-  // 페이지(#/dex 등)나 딥링크 위였다면 해시를 지워 메인으로 (hashchange → renderPage 가 메인을 되살린다)
-  if (location.hash) location.hash = '';
-  render();
+  navigateHash('');
   window.scrollTo(0, 0);
 }
 
 // ── 최초 실행 (여기부터는 페이지가 열릴 때 한 번만 지나간다) ──
 restoreLastView();  // 2026-09-06 v2.9.0 첫 렌더 전에 마지막 보기 복원
-applyPlanRoute({ initial: true });  // 2026-09-07 v2.15.0 (QA-53) 해시(또는 마지막 모드)로 도감/플래너 모드 결정 — render() 보다 먼저
+applyPlanRoute();  // 해시 없는 첫 방문은 서비스 홈으로 시작한다.
 initPlanShell();
 render();
 document.querySelector('header h1')?.addEventListener('click', goHome);  // 2026-09-06 v2.11.0 로고 = 홈 버튼
