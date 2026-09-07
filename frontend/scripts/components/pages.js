@@ -23,7 +23,8 @@
 // - closeDrawer() (components/drawer.js) · closeModal() (components/modal.js)
 // - openDetailByDex() (components/detail.js) · monSearch() (components/search.js)
 // - RELEASE_NOTES · markReleaseSeen() (components/release.js)
-// - SCHEDULE_CATS · SCHEDULE_ITEMS · SCHEDULE_YM · buildScheduleCal() (components/schedule.js)
+// - SCHEDULE_CATS · SCHEDULE_ITEMS · SCHEDULE_YM · buildScheduleCal(cat) · buildScheduleTimeline(cat) (components/schedule.js)
+// - chips() (components/chips.js) — 일정 분류 칩 (v2.13.1)
 // - AUTH · authEnabled() · favBtn() · isFav() · signIn() (components/auth.js)
 // - DEX_DATA (data.js): names / forms / cpms / rel
 
@@ -37,12 +38,13 @@ function renderReleasePage() {
       el('ul', {}, ...group.items.map((item) => el('li', {}, item))))));
 }
 
-// 일정표 페이지: 달력 + 이번 달 전체 일정 목록 (분류별)
+// 일정표 페이지: 분류 칩 + 달력 + 기간 막대 타임라인 + 이번 달 전체 일정 목록 (분류별)
 // SCHEDULE_CATS 에 정의된 분류 순서대로 묶고, 그 분류에 일정이 없으면 소제목도 만들지 않는다.
 // 날짜는 '9/12' 처럼, 여러 날 이어지는 일정은 '9/12–15' 처럼 표시한다 (달은 SCHEDULE_YM 기준).
-function scheduleMonthList() {
+function scheduleMonthList(cat) {
   const sections = [];
   for (const [catKey, category] of Object.entries(SCHEDULE_CATS)) {
+    if (cat && cat !== 'all' && cat !== catKey) continue;  // 2026-09-07 v2.13.1 분류 필터
     const items = SCHEDULE_ITEMS.filter((item) => item.cat === catKey);
     if (!items.length) continue;
     sections.push(el('p', { class: 'schedule-sec' }, category.name));
@@ -52,11 +54,41 @@ function scheduleMonthList() {
   }
   return el('div', {}, ...sections);
 }
+// 2026-09-07 v2.13.1 일정표 가독성 — 달력 점만으로는 "무엇이 언제부터 언제까지"가 안 읽혔다.
+//   (1) 분류 칩(전체·이벤트·5성·메가·D-MAX·아워·섀도우)으로 달력 점·타임라인·목록을 한꺼번에 거른다
+//   (2) 기간 막대 타임라인(buildScheduleTimeline) — 한 줄에 일정 하나, 시작~종료를 분류 색 막대로 잇는다
+//   드로어(좁은 폭)는 그대로 달력 점만 두고, 이 페이지("자세히 보기")에서만 구현한다. 고른 분류는 기억한다(localStorage)
+const SCHED_CAT_KEY = 'pogo_sched_cat';
 function renderSchedulePage() {
-  return el('div', { class: 'page-body' },
-    buildScheduleCal(),
+  let cat = 'all';
+  try { cat = localStorage.getItem(SCHED_CAT_KEY) || 'all'; } catch {}
+  if (cat !== 'all' && !SCHEDULE_CATS[cat]) cat = 'all';
+  const $cal = el('div', {});
+  const $timeline = el('div', {});
+  const $list = el('div', {});
+  const $chips = el('div', {});
+  const draw = () => {
+    $chips.replaceChildren(chips(
+      [{ id: 'all', label: '전체' }, ...Object.entries(SCHEDULE_CATS).map(([id, category]) => ({ id, label: category.name, color: category.type }))],
+      cat,
+      (id) => {
+        cat = id;
+        try { localStorage.setItem(SCHED_CAT_KEY, cat); } catch {}
+        track('sched_cat', { cat });  // GA4: 어떤 분류를 따로 보는지
+        draw();
+      }));
+    $cal.replaceChildren(buildScheduleCal(cat));
+    $timeline.replaceChildren(buildScheduleTimeline(cat));
+    $list.replaceChildren(scheduleMonthList(cat));
+  };
+  draw();
+  return el('div', { class: 'page-body sched-page' },
+    $chips,
+    $cal,
+    el('h2', { class: 'page-sec' }, '기간 한눈에'),
+    $timeline,
     el('h2', { class: 'page-sec' }, '이번 달 전체 일정'),
-    scheduleMonthList());
+    $list);
 }
 
 // 2026-09-03 CP 계산기: 포켓몬 + 레벨 + 개체값 → CP (게임마스터 CPM 사용)
