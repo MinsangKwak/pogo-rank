@@ -12,8 +12,9 @@
 // 기존 시스템(스프라이트=폼 단위)을 그대로 재사용한다.
 //
 // 제공하는 전역
-//   renderFavDigest() : #fav-digest 컨테이너를 다시 그린다
+//   renderFavDigest() : #fav-digest 아코디언(<details>)의 제목·본문을 다시 그린다
 //                        (로그인 상태가 바뀔 때, 즐겨찾기를 토글할 때 auth.js에서 호출)
+//   2026-09-07 v2.14.0 (QA-52) 카드 → 접었다 펼 수 있는 아코디언. 펼침 여부는 localStorage(pogo_fav_acc)에 기억
 //
 // 의존하는 전역
 //   AUTH · authEnabled() (auth.js) · dexOf() · openDetailByDex() (detail.js) · rankDeltaBadge() (changes.js)
@@ -49,27 +50,50 @@ function favDigestDeltaByDex() {
   return best;
 }
 
+// 2026-09-07 v2.14.0 (QA-52) 아코디언 펼침 여부 — 기본은 펼침, 접으면 다음에도 접힌 채로 (localStorage)
+const FAV_ACC_KEY = 'pogo_fav_acc';
+function favDigestOpen() {
+  try { return localStorage.getItem(FAV_ACC_KEY) !== '0'; } catch { return true; }
+}
+function saveFavDigestOpen(isOpen) {
+  try { localStorage.setItem(FAV_ACC_KEY, isOpen ? '1' : '0'); } catch {}
+}
+
 function renderFavDigest() {
   const box = document.getElementById('fav-digest');
-  if (!box) return;
+  const titleEl = document.getElementById('fav-digest-title');
+  const bodyEl = document.getElementById('fav-digest-body');
+  if (!box || !titleEl || !bodyEl) return;
   box.hidden = true;
-  box.replaceChildren();
+  titleEl.replaceChildren();
+  bodyEl.replaceChildren();
   if (!authEnabled() || AUTH.status !== 'ok' || !AUTH.favs.size) return;
 
   const deltaByDex = favDigestDeltaByDex();
   const rows = [...AUTH.favs]
     .map((dex) => ({ dex, name: DEX_DATA.names?.[dex] ?? String(dex), badge: deltaByDex.has(dex) ? rankDeltaBadge(deltaByDex.get(dex)) : '' }))
     .sort((a, b) => a.name.localeCompare(b.name, 'ko'));
+  const movedCount = rows.filter((row) => row.badge).length;
 
   box.hidden = false;
+  // 2026-09-07 v2.14.0 (QA-52) <details> 아코디언 — 제목 줄(summary)을 누르면 접히고 펼쳐진다. 펼침 여부는 기억.
+  // 전용 페이지(#/favs) 링크는 summary 안에 두되 클릭이 접기/펼치기로 번지지 않게 막는다
+  if (!box.dataset.accReady) {
+    box.open = favDigestOpen();
+    box.addEventListener('toggle', () => saveFavDigestOpen(box.open));
+    box.dataset.accReady = '1';
+  }
+  titleEl.append(
+    el('span', {}, `★ 내 즐겨찾기 (${rows.length})`),
+    el('span', { class: 'schedule-today' }, movedCount ? `최근 순위가 움직인 포켓몬 ${movedCount}마리 ▲▼` : '누르면 접거나 펼칩니다'));
   const shown = rows.slice(0, favDigestShowCount);
-  box.append(
-    // 2026-09-05 v2.7.0 제목을 누르면 PvE/PvP 갈래로 나눠 보는 전용 페이지(#/favs)로 — 이 카드는 요약, 페이지는 전체
-    el('p', { class: 'schedule-sec fav-digest-title', onclick: () => openPage('favs') },
-      `★ 내 즐겨찾기 (${rows.length})`, el('span', { class: 'fav-digest-more' }, 'PvE · PvP 나눠 보기 →')),
+  bodyEl.append(
     el('div', { class: 'boss-recs wrap-recs' }, ...shown.map(({ dex, name, badge }) =>
       el('button', { class: 'boss-rec', onclick: () => openDetailByDex(dex, false) }, sprite(dex), el('span', {}, name), badge))),
-    rows.length > shown.length
-      ? el('button', { class: 'boss-more', onclick: () => { favDigestShowCount += 12; renderFavDigest(); } }, `더보기 +${Math.min(12, rows.length - shown.length)} (${shown.length}/${rows.length})`)
-      : '');
+    el('div', { class: 'boss-foot' },
+      rows.length > shown.length
+        ? el('button', { class: 'boss-more', onclick: () => { favDigestShowCount += 12; renderFavDigest(); } }, `더보기 +${Math.min(12, rows.length - shown.length)} (${shown.length}/${rows.length})`)
+        : el('span', { class: 'meta' }, `전체 ${rows.length}마리 표시됨`),
+      // 2026-09-05 v2.7.0 PvE/PvP 갈래로 나눠 보는 전용 페이지(#/favs)로 — 이 카드는 요약, 페이지는 전체
+      el('button', { class: 'boss-more', onclick: () => openPage('favs') }, 'PvE · PvP 나눠 보기 ▸')));
 }

@@ -3,7 +3,8 @@
 html { -webkit-text-size-adjust: 100%; }
 body {
   margin: 0; background: var(--bg); color: var(--fg);
-  font-family: "IBM Plex Sans KR", "Pretendard", "Apple SD Gothic Neo", "Noto Sans KR", system-ui, sans-serif;
+  /* 2026-09-07 v2.14.0 (QA-52) 영문·숫자는 Montserrat, 한글은 Pretendard — Montserrat 에 한글 글리프가 없어 자연스럽게 다음 폰트로 넘어간다 */
+  font-family: "Montserrat", "Pretendard Variable", "Pretendard", "Apple SD Gothic Neo", "Noto Sans KR", system-ui, sans-serif;
   font-size: 15px; line-height: 1.5; font-feature-settings: "tnum" 1;
 }
 button { font: inherit; color: inherit; background: none; border: 0; padding: 0; cursor: pointer; }

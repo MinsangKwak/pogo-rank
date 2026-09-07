@@ -7,3 +7,8 @@
 @media (prefers-reduced-motion: no-preference) {
   .chip { transition: color .12s, border-color .12s, background .12s; }
 }
+
+/* 2026-09-07 v2.14.0 (QA-52) 하위 메뉴 줄: 세그먼트 아래 "라벨 + 가로 스크롤 칩" (D-MAX 탭). .chips 의 가장자리 밀착(-20px)은 오른쪽만 남긴다 */
+.submenu { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.submenu-label { flex: 0 0 auto; font-size: 11.5px; font-weight: 600; color: var(--muted); white-space: nowrap; }
+.submenu .chips { flex: 1 1 auto; min-width: 0; margin: 0 -20px 0 0; padding: 2px 20px 2px 6px; mask-image: linear-gradient(to right, transparent, #000 14px); -webkit-mask-image: linear-gradient(to right, transparent, #000 14px); }  /* 선택 칩을 가운데로 스크롤하면 왼쪽 칩이 라벨 옆에서 잘려 보여 흐려지게 */

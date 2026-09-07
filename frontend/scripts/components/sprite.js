@@ -3,7 +3,8 @@
 //
 // 제공하는 전역
 //   spriteSrc(spriteId)   스프라이트 이미지 경로(또는 data URL). 없으면 null
-//   sprite(spriteId)      화면에 넣을 이미지 요소. 이미지가 없으면 몬스터볼 자리표시
+//   sprite(spriteId)      화면에 넣을 이미지 요소. 이미지가 없으면 몬스터볼 자리표시. 받는 동안은 스켈레톤(.loading)
+//   spritePlaceholder()   몬스터볼 자리표시 요소 (이미지가 없거나 받기 실패했을 때)
 //   _spriteIds            SPRITE_IDS를 Set으로 바꿔 둔 캐시 (이 파일 내부용)
 //
 // 의존하는 전역
@@ -41,9 +42,22 @@ function sprite(spriteId) {
     // 2026-09-05 v2.7.2 저장소 배정 번호(90000번대, sprite.py LOCAL_FORMS)는 픽셀 스프라이트가 아니라
     // 게임 내 3D 렌더 아이콘이라 pixelated 로 축소하면 계단이 진다 — sprite-hd 로 부드럽게 그린다
     const hd = Number(spriteId) >= 90000;
-    return el('img', { class: hd ? 'sprite sprite-hd' : 'sprite', src: spriteUrl, alt: '', loading: 'lazy', decoding: 'async' });
+    // 2026-09-07 v2.14.0 (QA-52) 스켈레톤: 받는 동안 회색 반짝임(.loading)을 그리고, 다 받으면 뗀다.
+    // 실패하면 아래 몬스터볼 자리표시와 같은 모양(.empty)으로 바꿔 빈 칸이 남지 않게 한다
+    const image = el('img', {
+      class: hd ? 'sprite sprite-hd loading' : 'sprite loading', src: spriteUrl, alt: '', loading: 'lazy', decoding: 'async',
+      onload: () => image.classList.remove('loading'),
+      onerror: () => image.replaceWith(spritePlaceholder()),
+    });
+    // 캐시에 이미 있으면 load 이벤트가 붙기 전에 끝나 있을 수 있다 — 그 경우엔 바로 뗀다
+    if (image.complete && image.naturalWidth > 0) image.classList.remove('loading');
+    return image;
   }
-  // 자리표시용 몬스터볼. currentColor로 그려 두면 테마 색을 그대로 따라간다
+  return spritePlaceholder();
+}
+
+// 자리표시용 몬스터볼. currentColor로 그려 두면 테마 색을 그대로 따라간다
+function spritePlaceholder() {
   const placeholder = el('span', { class: 'sprite empty' });
   placeholder.innerHTML = '<svg viewBox="0 0 40 40" width="24" height="24" aria-hidden="true">'
     + '<circle cx="20" cy="20" r="14" fill="none" stroke="currentColor" stroke-width="2.5"/>'
