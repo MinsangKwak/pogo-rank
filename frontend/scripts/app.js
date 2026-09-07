@@ -182,14 +182,15 @@ initPlanShell();
 render();
 document.querySelector('header h1')?.addEventListener('click', goHome);  // 2026-09-06 v2.11.0 로고 = 홈 버튼
 // 2026-09-03 v2.2.1 첫 화면이 그려졌으니 로딩 가림막 제거 (페이드 후 DOM에서 삭제)
+// 2026-09-07 v2.16.1 첫 화면의 스프라이트가 다 받아진 뒤에 걷는다(최대 2.5초) — 그림 없는 첫 화면이 보이지 않게 (components/sprite.js waitForSprites)
 (() => {
   const splash = document.getElementById('splash');
   if (!splash) return;
-  // 클래스를 붙이기 전에 한 프레임 기다린다 — 같은 프레임에 붙이면 CSS 전환이 생략된다
-  requestAnimationFrame(() => {
+  const hide = () => requestAnimationFrame(() => {  // 클래스를 붙이기 전에 한 프레임 기다린다 — 같은 프레임에 붙이면 CSS 전환이 생략된다
     splash.classList.add('done');
     setTimeout(() => splash.remove(), 300);  // 300ms = 페이드 시간
   });
+  (typeof waitForSprites === 'function' ? waitForSprites(2500) : Promise.resolve()).then(hide, hide);
 })();
 // 2026-09-03 GA4: 접속 시 처음 보이는 탭은 클릭이 없어 tab_* 에 안 잡히므로 별도 이벤트로 기록
 // (tab_* 는 "일부러 눌러서 간" 횟수, tab_start 는 "접속하면 보이는" 횟수 — 섞이지 않게 분리)
