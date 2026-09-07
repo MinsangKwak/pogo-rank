@@ -18,7 +18,6 @@
 //
 // 의존하는 전역
 //   AUTH · authEnabled() (auth.js) · dexOf() · openDetailByDex() (detail.js) · rankDeltaBadge() (changes.js)
-//   openPage() (pages.js) — 제목을 누르면 ★ 즐겨찾기 전용 페이지로
 //   el() (dom.js) · sprite() (components/sprite.js) · DEX_DATA (data.js)
 //   PVP_DATA · PVE_DATA · PVE_EASY · DMAX_TIER · SHEET_DATA · VALUE_DATA (data.js, 뱃지 계산용)
 
@@ -90,10 +89,10 @@ function renderFavDigest() {
   bodyEl.append(
     el('div', { class: 'boss-recs wrap-recs' }, ...shown.map(({ dex, name, badge }) =>
       el('button', { class: 'boss-rec', onclick: () => openDetailByDex(dex, false) }, sprite(dex), el('span', {}, name), badge))),
+    // 2026-09-07 v2.15.1 "PvE · PvP 나눠 보기" 링크 제거 — 바로 아래 탭 줄의 ★ 와 같은 화면(#/favs). 카드는 요약과 더보기만
     el('div', { class: 'boss-foot' },
       rows.length > shown.length
         ? el('button', { class: 'boss-more', onclick: () => { favDigestShowCount += 12; renderFavDigest(); } }, `더보기 +${Math.min(12, rows.length - shown.length)} (${shown.length}/${rows.length})`)
         : el('span', { class: 'meta' }, `전체 ${rows.length}마리 표시됨`),
-      // 2026-09-05 v2.7.0 PvE/PvP 갈래로 나눠 보는 전용 페이지(#/favs)로 — 이 카드는 요약, 페이지는 전체
-      el('button', { class: 'boss-more', onclick: () => openPage('favs') }, 'PvE · PvP 나눠 보기 ▸')));
+      el('span', { class: 'meta' }, 'PvE · PvP 갈래는 탭 줄 ★ 에서')));
 }

@@ -380,8 +380,7 @@ function renderPlanCollection() {
       el('p', { class: 'dex-hint' },
         !authEnabled() ? '이 빌드는 로그인 기능이 꺼져 있어 저장이 안 됩니다. 개체 추가를 눌러 CP 계산만 해 볼 수 있어요.'
           : AUTH.status === 'pending' ? '⏳ 승인 대기 중 — 승인되면 개체를 계정에 저장할 수 있어요. 계산은 지금도 됩니다.'
-          : '로그인하면 개체를 계정에 저장하고 어느 기기에서든 같은 목록을 봅니다. 계산은 로그인 없이도 됩니다. ',
-        AUTH.status === 'anon' && authEnabled() ? el('button', { class: 'uchip', onclick: signIn }, 'Google로 로그인') : ''),
+          : '헤더의 👤 로 로그인하면 개체를 계정에 저장하고 어느 기기에서든 같은 목록을 봅니다. 계산은 로그인 없이도 됩니다.'),  // v2.15.1 로그인 버튼은 헤더 👤 하나
       addButton);
   } else {
     $controls.append(chips([{ id: 'all', label: `전체 ${mons.length}` }, ...PLAN_STATUSES.map((status) => ({ id: status, label: `${status} ${counts[status]}` }))], _planFilter, (id) => {

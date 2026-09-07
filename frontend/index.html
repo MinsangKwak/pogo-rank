@@ -118,8 +118,6 @@ __STYLES__
     <div class="drawer-head"><b>메뉴</b><button class="icon-btn" id="drawer-close" aria-label="닫기">✕</button></div>
     <!-- 2026-09-03 v2.2.0 계정 영역 (components/auth.js) — FIREBASE_CONFIG 없으면 숨김 -->
     <div class="account" id="account" hidden></div>
-    <!-- 2026-09-07 v2.15.0 (QA-53) 메뉴 맨 위 모드 전환 (문구는 planner/shell.js updateModeBadge 가 맞춘다) -->
-    <button class="drawer-item" id="menu-mode">🌱 플래너 모드로 전환</button>
     <details class="schedule" open>
       <summary><span id="schedule-title">📅 일정표</span><span class="schedule-today" id="schedule-today"></span></summary>
       <div class="schedule-body" id="schedule-body"></div>
@@ -134,12 +132,7 @@ __STYLES__
       <summary>👥 트레이너 코드</summary>
       <div class="schedule-body" id="trainer-list"></div>
     </details>
-    <!-- 2026-09-03 CP 계산기는 상세 팝업 안으로 이동, 자리에 도감 신설 -->
-    <button class="drawer-item" onclick="openPage('dex')">📕 도감</button>
-    <!-- 2026-09-06 v2.10.0 (QA-44) 상성 검색: 타입 조합 → 약점·이중약점·추천 딜러 (components/typesearch.js) -->
-    <button class="drawer-item" onclick="openPage('types')">🧭 상성 검색</button>
-    <!-- 2026-09-05 즐겨찾기: 로그인·승인된 사용자에게만 initFavsMenu()가 연다 -->
-    <button class="drawer-item" id="menu-favs" onclick="openPage('favs')" hidden>★ 즐겨찾기</button>
+    <!-- 2026-09-07 v2.15.1 도감·상성 검색·★ 즐겨찾기·모드 전환 항목 제거 — 탭 줄(📕 🧭 ★)·헤더 배지와 같은 화면을 가리키는 중복 버튼이었다. 화면 하나에 진입 버튼 하나 -->
     <!-- 2026-09-04 시즌 기술 변경 안내: 변경 데이터가 있을 때만 initMoveChangesMenu()가 연다 -->
     <button class="drawer-item" id="menu-changes" onclick="openPage('changes')" hidden>⚔️ 기술 변경</button>
     <button class="drawer-item" id="menu-release" onclick="openPage('release')">🎉 패치노트</button>

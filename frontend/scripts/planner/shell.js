@@ -3,7 +3,7 @@
 //
 // 무엇을 하나
 //   한 앱에 두 모드를 둔다. 🔎 도감 모드(기존 화면 전부)와 🌱 플래너 모드(내 개체를 키우는 계획).
-//   헤더의 모드 배지(#mode-toggle)나 ☰ 메뉴의 항목(#menu-mode)을 누르면 전환되고, 탭 줄이 통째로 바뀐다.
+//   헤더의 모드 배지(#mode-toggle)를 누르면 전환되고, 탭 줄이 통째로 바뀐다. 전환 버튼은 이것 하나뿐이다 (v2.15.1).
 //
 // 모드는 해시가 정한다 (딥링크·뒤로가기가 그대로 동작하도록)
 //   #/plan              플래너 홈            → state.appMode = 'plan', state.planTab = 'home'
@@ -89,8 +89,6 @@ function updateModeBadge() {
   }
   const tagline = document.querySelector('.tagline');
   if (tagline) tagline.textContent = isPlan ? '내 개체 키우기 계획' : '편하게 검색하세요';  // 배지와 한 줄에 들어가게 짧게
-  const menuItem = document.getElementById('menu-mode');
-  if (menuItem) menuItem.textContent = isPlan ? '🔎 도감 모드로 전환' : '🌱 플래너 모드로 전환';
 }
 
 // 플래너 탭 줄 — 도감 모드의 D-MAX·PvE… 자리에 [홈 | 내 포켓몬] 이 들어간다. 탭 = 해시 이동이라 뒤로가기가 탭도 되돌린다
@@ -114,6 +112,6 @@ function renderPlan() {
 
 function initPlanShell() {
   _planShellReady = true;
+  // 2026-09-07 v2.15.1 모드 전환 버튼은 헤더 배지 하나뿐 (드로어 항목·플래너 홈 카드의 중복 버튼 제거)
   document.getElementById('mode-toggle')?.addEventListener('click', () => switchMode(undefined, 'badge'));
-  document.getElementById('menu-mode')?.addEventListener('click', () => switchMode(undefined, 'menu'));
 }

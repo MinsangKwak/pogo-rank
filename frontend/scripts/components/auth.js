@@ -332,11 +332,12 @@ function renderAccount(message) {
     return;
   }
   // (3) 승인됨 — 즐겨찾기 개수와 바로가기, 관리자에게만 승인 패널 버튼
+  // 2026-09-07 v2.15.1 "📕 도감에서 채우기" 버튼 제거 — 탭 줄 📕 와 같은 화면. 요약 한 줄만 남긴다
+  const monCount = Array.isArray(AUTH.mons) ? AUTH.mons.length : 0;
   accountBox.append(who,
-    el('p', { class: 'acct-sub' }, `★ 즐겨찾기 ${AUTH.favs.size}마리 · 도감에서 별을 눌러 채워보세요`),
+    el('p', { class: 'acct-sub' }, `★ 즐겨찾기 ${AUTH.favs.size}마리 · 🎒 내 포켓몬 ${monCount}마리`),
     note,
     el('div', { class: 'acct-actions' },
-      el('button', { class: 'drawer-item', onclick: () => openPage('dex') }, '📕 도감에서 채우기'),  // v2.11.0 openPage 가 드로어를 닫는다
       AUTH.admin ? el('button', { class: 'drawer-item', onclick: openAdminPanel }, '🔑 가입 승인') : '',
       el('button', { class: 'drawer-item', onclick: signOut }, '로그아웃')));
 }
