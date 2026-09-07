@@ -31,7 +31,8 @@ const PLAN_MAX_MONS = 300;  // 문서 1MB 한도 안에서 넉넉한 상한 — 
 const PLAN_LEAGUES = [['little', 500], ['great', 1500], ['ultra', 2500], ['master', null]];
 
 function planMons() {
-  return Array.isArray(AUTH.mons) ? AUTH.mons : [];
+  if (Array.isArray(AUTH.mons) && AUTH.mons.length) return AUTH.mons;
+  try { const raw = localStorage.getItem('plan_guest_mons'); return raw ? JSON.parse(raw) : []; } catch { return []; }
 }
 
 // 개체가 가리키는 폼 데이터 — 폼 id 로 먼저, 없으면 원종 도감번호로
@@ -94,7 +95,7 @@ function planLevelFromCp(form, ivs, cp) {
 // ── 저장 ──────────────────────────────────────────────────────────────────────
 // 낙관적 갱신: AUTH.mons 를 먼저 바꾸고 화면을 그린 뒤 Firestore 에 쓴다. 실패는 조용히(규칙이 막는 경우 등)
 async function planPersist() {
-  if (!authEnabled() || AUTH.status !== 'ok' || !AUTH.db || !AUTH.user) return;
+  if (!authEnabled() || AUTH.status !== 'ok' || !AUTH.db || !AUTH.user) { try { localStorage.setItem('plan_guest_mons', JSON.stringify(planMons())); } catch {} return; }
   const fieldValue = firebase.firestore.FieldValue;
   await AUTH.db.collection('users').doc(AUTH.user.uid).set({
     email: authEmail(), mons: planMons(), updatedAt: fieldValue.serverTimestamp(),
@@ -242,7 +243,7 @@ function openPlanMonEditor(mon = null, prefill = null) {
 
     const $msg = el('p', { class: 'acct-msg' });
     const save = () => {
-      if (!canSave) { if (AUTH.status === 'anon') signIn(); return; }
+      // 비로그인도 브라우저 체험 저장을 허용하고, 로그인 시 auth.js가 계정으로 이전한다.
       if (!planSaveMon({ ...draft, memo: (draft.memo ?? '').trim() })) { $msg.textContent = `개체는 ${PLAN_MAX_MONS}마리까지 저장할 수 있어요.`; return; }
       closeModal();
       if (state.appMode === 'plan') render();
@@ -262,7 +263,7 @@ function openPlanMonEditor(mon = null, prefill = null) {
       $msg,
       el('div', { class: 'release-actions' },
         el('button', { class: 'release-mute', onclick: () => closeModal() }, '취소'),
-        el('button', { class: 'release-ok', onclick: save }, canSave ? (mon ? '저장' : '내 포켓몬에 추가') : AUTH.status === 'pending' ? '승인 후 저장 가능' : '로그인하면 저장')),
+        el('button', { class: 'release-ok', onclick: save }, mon ? '저장' : '내 포켓몬에 추가')),
       el('p', { class: 'd-foot' }, 'CP 는 저장하지 않고 종족값 × 레벨 × 개체값으로 계산합니다. * 는 레거시 기술. 섀도우는 CP 가 같고 배틀에서만 공격 ×1.2 · 방어 ×0.83.'));
   };
   drawPick();
@@ -369,7 +370,7 @@ function renderPlanCollection() {
     setTimeout(() => openPlanMonEditor(null, prefill), 0);
   }
 
-  const mons = loggedIn ? planMons() : [];
+  const mons = planMons();
   const counts = Object.fromEntries(PLAN_STATUSES.map((status) => [status, mons.filter((mon) => mon.status === status).length]));
   const shown = (_planFilter === 'all' ? mons : mons.filter((mon) => mon.status === _planFilter))
     .slice().sort((a, b) => planMonName(a).localeCompare(planMonName(b), 'ko') || planMonCp(b) - planMonCp(a));

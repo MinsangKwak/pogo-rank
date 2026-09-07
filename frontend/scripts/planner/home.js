@@ -14,7 +14,7 @@
 
 function renderPlanHome() {
   const loggedIn = authEnabled() && AUTH.status === 'ok';
-  const mons = loggedIn ? planMons() : [];
+  const mons = planMons();
   const countBy = (status) => mons.filter((mon) => mon.status === status).length;
 
   const intro = el('div', { class: 'plan-card plan-intro' },

@@ -9,6 +9,8 @@ h1 { margin: 0; font-size: 22px; font-weight: 600; letter-spacing: -0.01em; curs
 header .meta { margin: 0; }
 
 .controls { display: flex; flex-direction: column; gap: 12px; padding: 20px 0 8px; }
+.mobile-quick { display:none; }
+@media (max-width:600px) { .mobile-quick{display:block;margin:0 0 10px}.mobile-search{display:flex;gap:6px}.mobile-search input{flex:1;min-width:0;padding:11px 13px;border:1px solid var(--line);border-radius:11px;background:var(--surface);color:var(--fg);font:inherit}.mobile-search button{width:44px;border:1px solid var(--line);border-radius:11px;background:var(--fg);color:var(--bg)}.quick-links{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:8px}.quick-links button{padding:9px 3px;border:1px solid var(--line);border-radius:9px;background:var(--surface);color:var(--fg);font-size:12px}.home-search-results{display:flex;flex-direction:column;gap:3px;margin-top:5px;padding:5px;border:1px solid var(--line);border-radius:10px;background:var(--surface)}.home-search-item{display:flex;align-items:center;gap:8px;padding:7px;border:0;background:transparent;color:var(--fg);text-align:left;font:inherit}.home-search-item .sprite{width:32px;height:32px} }
 /* 2026-09-07 v2.16.0 세그먼트 + 오른쪽 도구 버튼 한 줄 (PvE 🧮 솔플 계산기 · PvP 🃏 덱 짜기) */
 .ctrl-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
 .ctrl-row .seg button { padding: 6px 11px; }  /* 리그 4개 + 도구 버튼이 390px 한 줄에 들어가게 */

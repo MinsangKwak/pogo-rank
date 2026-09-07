@@ -233,3 +233,11 @@ function initSearch() {
   document.getElementById('psearch-close')?.addEventListener('click', () => toggleSearchPanel(false));
 }
 initSearch();
+function initHomeQuick() {
+  const input = document.getElementById('home-search'), results = document.getElementById('home-search-results');
+  if (!input || !results) return;
+  const draw = () => { const q=input.value.trim(); results.replaceChildren(); results.hidden=!q; if (!q) return; for (const hit of monSearch(buildSearchIndex(),q,6)) results.append(el('button',{class:'home-search-item',onclick:()=>{results.hidden=true;input.value='';openDetail(hit);}},sprite(hit.sprite),nameNode(hit.name))); if (!results.childElementCount) results.append(el('span',{class:'meta'},'검색 결과가 없어요')); };
+  input.addEventListener('input',draw); input.addEventListener('keydown',e=>{if(e.key==='Enter')results.querySelector('button')?.click()}); document.getElementById('home-search-btn')?.addEventListener('click',draw);
+  document.querySelectorAll('.quick-links [data-route]').forEach(btn=>btn.addEventListener('click',()=>{const r=btn.dataset.route;if(r==='dex'){state.tab='max';location.hash='';}else if(r==='plan')navigateHash('#/plan');else openPage(r,'quick')}));
+}
+initHomeQuick();

@@ -265,6 +265,17 @@ async function loadFavs() {
   // 2026-09-07 v2.15.0 (QA-54) 내 포켓몬 개체 목록 — 배열이 아니면(옛 문서·손상) 빈 목록
   const mons = snapshot && snapshot.exists ? snapshot.data().mons : null;
   AUTH.mons = Array.isArray(mons) ? mons.filter((mon) => mon && mon.id && mon.sprite != null) : [];
+  // v2.19.0 게스트 플래너 데이터는 승인 로그인 직후 계정으로 한 번 이전한다.
+  try {
+    const guest = JSON.parse(localStorage.getItem('plan_guest_mons') || '[]');
+    if (guest.length) {
+      const merged = [...AUTH.mons];
+      for (const mon of guest) if (!merged.some((m) => m.id === mon.id)) merged.push(mon);
+      AUTH.mons = merged;
+      await docRef.set({ mons: merged, updatedAt: firebase.firestore.FieldValue.serverTimestamp() }, { merge: true });
+      localStorage.removeItem('plan_guest_mons');
+    }
+  } catch {}
   if (!snapshot || !snapshot.exists) {
     // 첫 로그인이면 빈 문서를 만들어 둔다 — 이후 즐겨찾기 갱신이 merge로 항상 성공하도록
     docRef.set({ email: authEmail(), name: AUTH.user.displayName || '', favs: [], updatedAt: firebase.firestore.FieldValue.serverTimestamp() }, { merge: true }).catch(() => {});
