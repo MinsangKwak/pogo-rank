@@ -125,19 +125,27 @@
 .ts-pick { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0 14px; }
 .ts-pick .chip { padding: 6px 12px; }
 .ts-head { display: flex; align-items: center; gap: 12px; padding: 12px 14px; margin: 0 0 6px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); }
-.ts-head .sprite { width: 48px; height: 48px; }
-.ts-head h2 { margin: 0 0 4px; font-size: 16px; font-weight: 600; }
-.ts-head .ts-clear { margin-left: auto; width: 28px; height: 28px; border-radius: 7px; color: var(--muted); }
+.ts-head .sprite { width: 48px; height: 48px; flex: none; }
+.ts-head > div { flex: 1 1 auto; min-width: 0; }
+/* 2026-09-07 v2.14.0 (QA-52) 긴 이름("거다이맥스 에이스번")이 폼 뱃지와 붙어 깨지던 것 — 뱃지·이름을 flex 로 나란히 두고 줄바꿈 허용, 줄 간격 확보 */
+.ts-head h2 { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; margin: 0 0 6px; font-size: 16px; font-weight: 600; line-height: 1.35; word-break: keep-all; }
+.ts-head h2 .form-tag { font-size: 11px; line-height: 1.7; }
+.ts-head .ts-clear { margin-left: auto; width: 28px; height: 28px; border-radius: 7px; color: var(--muted); flex: none; }
 .ts-head .ts-clear:hover { background: var(--hover); color: var(--fg); }
-.ts-sec { margin-top: 18px; }
-.ts-sec h3 { margin: 0 0 8px; font-size: 13px; font-weight: 600; }
-.ts-row { display: flex; align-items: baseline; gap: 10px; margin-bottom: 8px; }
-.ts-row em { flex: 0 0 64px; font-style: normal; font-size: 11.5px; color: var(--muted); }
+.ts-sec { margin-top: 22px; }
+.ts-sec h3 { margin: 0 0 10px; font-size: 13px; font-weight: 600; line-height: 1.45; word-break: keep-all; }
+.ts-sec .d-foot { line-height: 1.6; word-break: keep-all; }
+/* 배율 줄: 라벨을 첫 줄 칩에 맞추고(baseline 대신 상단 정렬 + 패딩), 칩이 여러 줄로 감길 때 줄 간격을 넓힌다 */
+.ts-row { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 10px; }
+.ts-row em { flex: 0 0 56px; padding-top: 4px; font-style: normal; font-size: 11.5px; color: var(--muted); line-height: 1.5; }
+.ts-row .tchips { gap: 6px; flex: 1 1 auto; min-width: 0; }
+.ts-row > div { flex: 1 1 auto; min-width: 0; }
+@media (max-width: 400px) { .ts-row { flex-direction: column; gap: 4px; } .ts-row em { flex: none; padding-top: 0; } }
 .ts-row em.x2 { color: #d84a5f; font-weight: 600; }
 .ts-row em.r2 { color: #2f8f5b; font-weight: 600; }
 .ts-recs { margin: 4px 0 10px; }
 .ts-recs .schedule-sec { margin: 8px 0 4px; }
-.ts-hint { margin: 6px 0 0; font-size: 12.5px; color: var(--muted); line-height: 1.55; }
+.ts-hint { margin: 6px 0 0; font-size: 12.5px; color: var(--muted); line-height: 1.6; word-break: keep-all; }
 /* 2026-09-06 v2.11.1 상성 검색: 타입 조합 포켓몬 목록 — 미구현은 흐리게 */
 .ts-mons .boss-rec.unrel { opacity: .55; }
 .ts-mons .boss-rec .tag { font-size: 9.5px; padding: 0 4px; }

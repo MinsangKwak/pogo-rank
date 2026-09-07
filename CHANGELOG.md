@@ -5,6 +5,19 @@
 버전 규칙: `vMAJOR.MINOR.PATCH` — 큰 기능은 MINOR(두 번째 자리), 상세 기능·버그 수정은 PATCH(세 번째 자리) 증가.
 항목 종류: `추가` 새 기능 · `변경` 기존 동작 변경 · `수정` 버그 수정 · `데이터` 수동 데이터 갱신
 
+## v2.14.0 — 2026-09-07
+
+노션 QA-52 "개선사항" 묶음.
+
+### 변경
+- **D-MAX 탭 [전체 | 딜러 | 탱커] + 하위 메뉴** — v2.13.0의 [딜러 | 탱커] 두 축에서 '딜러' 화면이 티어표와 보스 어태커 표를 함께 실어 길었다. 세 축으로 나눠 축마다 표 하나: 전체 = D-MAX 티어표(`renderMaxTier`, 칩은 맥스무브 속성), 딜러 = 보스 속성 상대 맥스 어태커(`renderMaxDealer`, `DMAX_DATA`, 전체는 중립), 탱커 = EHP(`renderMaxTank`). 세그먼트 아래에 "맥스무브 속성 / 보스 속성" 라벨이 붙은 속성 칩 줄(`maxSubmenu`, `.submenu`)을 하위 메뉴로 둔다. `state.maxAxis` 허용값 `all`·`dealer`·`tank`(기본 `all`). 티어표에서 속성을 고르면 "[딜러] · [탱커]에서" 안내, 보스 아코디언의 "칩으로 이동"과 상성 검색의 "전체 순위 보기"는 딜러 축으로 간다
+- **★ 즐겨찾기 카드 → 아코디언** — `#fav-digest`를 일정표와 같은 `<details class="schedule">`로 바꿨다(`favdigest.js`). 제목 줄에 개수와 최근 순위 변동 마릿수, 본문에 그림 격자 + 더보기 + "PvE · PvP 나눠 보기". 펼침 여부는 `localStorage`(`pogo_fav_acc`)에 기억
+- **웹폰트** — IBM Plex Sans KR → 영문·숫자 **Montserrat**(Google Fonts) + 한글 **Pretendard Variable**(jsdelivr 동적 서브셋). `index.html` 링크·스플래시, `base.css` 폰트 스택
+- **상성 검색 화면 가독성** — 긴 이름("거다이맥스 에이스번")이 폼 뱃지와 붙어 깨지던 머리 카드(`.ts-head h2`를 flex-wrap + 줄 간격), 배율 줄(`.ts-row`)의 라벨을 상단 정렬하고 칩 줄 간격을 넓힘, 400px 미만에서는 라벨을 칩 위로. 추천 카드(`.boss-rec`)의 긴 이름은 카드 폭 안에서 가운데 줄바꿈. 입력창 안내문을 짧게
+
+### 추가
+- **스프라이트 스켈레톤** — `sprite()`가 `<img>`에 `.loading`(회색 반짝임)을 붙이고 `load`에서 뗀다. 받기 실패하면 몬스터볼 자리표시(`spritePlaceholder`)로 교체. `prefers-reduced-motion`이면 반짝임 없이 회색 판만
+
 ## v2.13.1 — 2026-09-07
 
 ### 추가

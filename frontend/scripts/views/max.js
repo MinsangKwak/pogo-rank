@@ -1,14 +1,17 @@
 // ─────────────────────────────────────────────────────────────────────────────
 // D-MAX 탭
 //
-// 화면 구성 (위 → 아래)
+// 화면 구성 (위 → 아래) — 2026-09-07 v2.14.0 (QA-52) [전체 | 딜러 | 탱커] 세그먼트 + 하위 메뉴(속성 칩) 구조
 //   1) 이번 주 보스 아코디언 (#boss-acc) — 탭 컨트롤 위에 붙는다. 일정표에서 이번 주 D-MAX
 //      보스를 찾아, 그 보스 속성을 상대할 추천 딜러를 딜량순으로 5개씩 "더보기" 하며 보여준다.
-//   2) 속성 칩 (전체 + 18타입)
-//   3) D-MAX 티어표 — 속성 칩이 '전체'가 아니면 "그 타입 맥스무브를 쓰는 딜러"만 모은 표다.
-//      즉 포켓몬의 자체 속성이 아니라 charged(맥스무브) 속성 기준으로 묶인다.
-//      행을 누르면 그 아래로 "선정 근거"(점수 분해 + 1위 대비 %) 가 펼쳐진다.
-//   4) (속성 칩 선택 시) 그 속성 보스를 상대할 맥스 어태커 순위 — 티어표와 달리 내구를 반영한다.
+//   2) [전체 | 딜러 | 탱커] 세그먼트 (state.maxAxis)
+//   3) 하위 메뉴: 라벨(맥스무브 속성 / 보스 속성) + 속성 칩 (전체 + 18타입, state.maxBoss)
+//   4) 축별 표 하나
+//      전체 → D-MAX 티어표. 칩이 '전체'가 아니면 "그 타입 맥스무브를 쓰는 딜러"만 모은 표다.
+//             즉 포켓몬의 자체 속성이 아니라 charged(맥스무브) 속성 기준으로 묶인다.
+//             행을 누르면 그 아래로 "선정 근거"(점수 분해 + 1위 대비 %) 가 펼쳐진다.
+//      딜러 → 그 속성 보스를 상대할 맥스 어태커 순위 — 티어표와 달리 상성·내구를 반영한다.
+//      탱커 → 그 속성 보스 앞에서 오래 버티는 순위 (EHP).
 //
 // 어떤 데이터를 읽나
 //   - DMAX_TIER[타입] : 티어표용 목록. pogomate와 같은 기준으로 계산된 score/tier를 갖는다.
@@ -19,7 +22,7 @@
 //   - TYPE_KO, state.maxBoss(선택한 속성 칩), state.bossShow(추천 딜러 표시 개수)
 //
 // 제공하는 전역: maxRow · tankRow · whyText · tierRowNode · expandableRow · bossRecNodes · partyCardNode ·
-//                renderBossAcc · renderMaxTank · renderMax (app.js가 탭 렌더러로 호출)
+//                MAX_AXES · maxSubmenu · renderBossAcc · renderMaxTier · renderMaxDealer · renderMaxTank · renderMax (app.js가 탭 렌더러로 호출)
 // ※ 티어별로 묶어 그리는 renderTierList는 views/tier.js에 있다.
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -175,10 +178,11 @@ function renderBossAcc() {
       el('button', {
         class: 'boss-more',
         onclick: () => {
-          state.maxBoss = bossItem.t;  // 아래 티어표를 이 보스 속성으로 맞춘다
+          state.maxBoss = bossItem.t;  // 아래 표를 이 보스 속성으로 맞춘다
+          state.maxAxis = 'dealer';    // 2026-09-07 v2.14.0 (QA-52) 보스 상대 딜러 표는 [딜러] 축에 있다
           render();
         }
-      }, `${TYPE_KO[bossItem.t]} 칩으로 이동 ▸`)));
+      }, `${TYPE_KO[bossItem.t]} 보스 딜러 순위 ▸`)));
 }
 
 // 2026-09-07 v2.13.0 (QA-43) 탱커 한 행: 점수 칸에 EHP, 보조줄에 받는 배율과 체력·방어
@@ -200,42 +204,70 @@ function renderMaxTank(selectedType) {
   $note.textContent = '탱커 순위: EHP = 체력 × 방어 ÷ 1000 ÷ (보스 타입 기술을 받는 배율). 레벨 40 실전 능력치 기준이고, 보스는 자기 타입 자속 기술로 때린다고 가정합니다(복합 타입 보스는 상세 팝업의 타입 상성을 함께 보세요). 출시된 다이맥스·거다이맥스만 포함. 포켓몬을 누르면 상세 정보가 열립니다.';
 }
 
-function renderMax() {
+// 2026-09-07 v2.14.0 (QA-52) D-MAX 탭 = [전체 | 딜러 | 탱커] 세그먼트 + 그 아래 하위 메뉴(속성 칩).
+//   전체 : D-MAX 티어표 — pogomate 기준, 칩은 "맥스무브 속성"으로 묶는다 (행을 누르면 근거)
+//   딜러 : 보스 속성 상대 맥스 어태커 — 맥스 피해 × √내구, 칩은 "보스 속성"
+//   탱커 : 보스 속성 앞에서 오래 버티는 개체 — EHP, 칩은 "보스 속성"
+// 예전엔 [딜러 | 탱커] 둘뿐이고 딜러 화면에 티어표와 어태커 표가 같이 실려 길었다 — 축마다 표 하나씩으로 나눴다
+const MAX_AXES = [
+  { id: 'all', label: '전체', chipLabel: '맥스무브 속성' },
+  { id: 'dealer', label: '딜러', chipLabel: '보스 속성' },
+  { id: 'tank', label: '탱커', chipLabel: '보스 속성' },
+];
+
+// 하위 메뉴 한 줄: 왼쪽 라벨 + 가로 스크롤 속성 칩 (chips 재사용)
+function maxSubmenu(axis) {
   const bossItems = [{ id: 'overall', label: '전체' }, ...Object.keys(TYPE_KO).map((typeKey) => ({ id: typeKey, label: TYPE_KO[typeKey], color: typeKey }))];
-  renderBossAcc();  // 2026-09-02 탭 위 보스 아코디언
-  // 2026-09-07 v2.13.0 (QA-43) [딜러 | 탱커] 세그먼트 — pogomate 처럼 딜러 표와 탱커(EHP) 표를 따로 본다 (PvE 탭의 일반/전체 토글과 같은 seg)
-  if (typeof DMAX_TANK !== 'undefined' && Object.keys(DMAX_TANK ?? {}).length) {
-    $controls.append(seg([{ id: 'dealer', label: '딜러' }, { id: 'tank', label: '탱커' }], state.maxAxis, (id) => {
-      state.maxAxis = id;
-      track('sub_max_' + id);  // GA4: 서브탭 사용량 (sub_pve_* 와 같은 규칙)
-      render();
-    }));
-  }
   const bossChips = chips(bossItems, state.maxBoss, (id) => {
     state.maxBoss = id;
     render();
   });
-  $controls.append(bossChips);
-  const selectedType = state.maxBoss;
-  if (state.maxAxis === 'tank') return renderMaxTank(selectedType);
+  return el('div', { class: 'submenu' }, el('span', { class: 'submenu-label' }, axis.chipLabel), bossChips);
+}
 
-  // 티어별 포켓몬 (속성 탭 = 그 속성 다이맥스 포켓몬만)
+// 전체: 티어표 (맥스무브 속성 기준)
+function renderMaxTier(selectedType) {
   // 여기서 "그 속성"은 맥스무브(charged) 속성 기준이다 — 그 타입 맥스무브를 쓰는 딜러 목록.
   // 점수 칸의 %는 이 목록 1위(tierItems[0].score) 대비 값이고, 행을 누르면 근거가 펼쳐진다.
   const tierItems = DMAX_TIER[selectedType] ?? [];
-  const tierTitle = selectedType === 'overall' ? 'D-MAX 티어표 (전체)' : `${TYPE_KO[selectedType]} 타입 D-MAX 티어표`;
+  const tierTitle = selectedType === 'overall' ? 'D-MAX 티어표 (전체)' : `${TYPE_KO[selectedType]} 맥스무브 D-MAX 티어표`;
   $content.append(el('div', { class: 'list-head' },
     el('h2', {}, tierTitle), el('span', { class: 'meta' }, `${tierItems.length}종`)));
   if (tierItems.length) renderTierList(tierItems, (pokemon, index) => expandableRow(pokemon, String(index + 1), tierItems[0].score));  // 2026-09-02 1B·pogomate %
-
-  // 하단: 보스 속성 상대 맥스 어태커
-  // 위 티어표와 목적이 다르다 — 이쪽은 "그 속성 보스를 때릴 때" 기준이라 상성과 내구가 반영된다.
+  // 속성을 골랐으면 "이 속성 보스를 상대할" 표는 딜러 탭에 있다고 안내 — 예전엔 같은 화면 아래에 붙어 있었다
   if (selectedType !== 'overall') {
-    const attackers = DMAX_DATA[selectedType] ?? [];
-    $content.append(
-      el('div', { class: 'list-head' }, el('h2', {}, `${TYPE_KO[selectedType]} 보스 상대 맥스 어태커`), el('span', { class: 'meta' }, `상위 ${attackers.length}`)),
-      list(`max-${selectedType}`, attackers, (pokemon, index) => maxRow(pokemon, String(index + 1))),
-    );
+    $content.append(el('p', { class: 'd-foot axis-hint' }, `${TYPE_KO[selectedType]} 보스를 상대할 딜러·탱커 순위는 `,
+      el('button', { class: 'row-why-more', onclick: () => { state.maxAxis = 'dealer'; track('sub_max_dealer'); render(); } }, '[딜러]'), ' · ',
+      el('button', { class: 'row-why-more', onclick: () => { state.maxAxis = 'tank'; track('sub_max_tank'); render(); } }, '[탱커]'), ' 에서'));
   }
-  $note.textContent = '티어표 행을 누르면 선정 근거가 펼쳐집니다. 티어표는 pogomate와 같은 기준: 공격 종족값 × 맥스무브 위력(거다이 450 · 다이 350) × 자속 1.2, 내구 미반영, 다이맥스·거다이맥스는 별도 항목이며 %는 그 목록 1위 대비입니다. 위는 그 속성 다이맥스 포켓몬의 티어표(중립 기준, 목록 안 상대 등급), 아래는 그 속성 보스를 상대할 때 강한 맥스 어태커 순위입니다. 맥스어택 3레벨(위력 350) 또는 거다이맥스 3레벨(위력 450) 1회 피해 × √내구 기준. 출시된 다이맥스 139종 · 거다이맥스 17종만 포함(미출시 리전 폼 제외). 포켓몬을 누르면 상세 정보가 열립니다.';
+  $note.textContent = '티어표 행을 누르면 선정 근거가 펼쳐집니다. 티어표는 pogomate와 같은 기준: 공격 종족값 × 맥스무브 위력(거다이 450 · 다이 350) × 자속 1.2, 내구 미반영, 다이맥스·거다이맥스는 별도 항목이며 %는 그 목록 1위 대비입니다. 속성 칩은 그 타입 맥스무브를 쓰는 개체를 모읍니다(포켓몬 자체 타입이 아님). 출시된 다이맥스 139종 · 거다이맥스 17종만 포함(미출시 리전 폼 제외). 포켓몬을 누르면 상세 정보가 열립니다.';
+}
+
+// 딜러: 보스 속성 상대 맥스 어태커 (상성·내구 반영)
+function renderMaxDealer(selectedType) {
+  const attackers = DMAX_DATA[selectedType] ?? [];
+  const title = selectedType === 'overall' ? 'D-MAX 딜러 (중립 · 맥스 피해 × √내구)' : `${TYPE_KO[selectedType]} 보스 상대 D-MAX 딜러`;
+  $content.append(
+    el('div', { class: 'list-head' }, el('h2', {}, title), el('span', { class: 'meta' }, `상위 ${attackers.length}`)),
+    list(`max-${selectedType}`, attackers, (pokemon, index) => maxRow(pokemon, String(index + 1))));
+  $note.textContent = '딜러 순위: 맥스어택 3레벨(위력 350) 또는 거다이맥스 3레벨(위력 450) 1회 피해 × √내구 기준. 보스 속성을 고르면 그 속성 보스를 때릴 때의 상성이 반영됩니다(전체는 중립). 출시된 다이맥스·거다이맥스만 포함. 포켓몬을 누르면 상세 정보가 열립니다.';
+}
+
+function renderMax() {
+  renderBossAcc();  // 2026-09-02 탭 위 보스 아코디언
+  // 2026-09-07 v2.14.0 (QA-52) [전체 | 딜러 | 탱커] 세그먼트 — 탱커 데이터가 없는 빌드에서는 탱커 버튼을 뺀다
+  const hasTank = typeof DMAX_TANK !== 'undefined' && Object.keys(DMAX_TANK ?? {}).length > 0;
+  const axes = hasTank ? MAX_AXES : MAX_AXES.filter((axis) => axis.id !== 'tank');
+  if (!axes.some((axis) => axis.id === state.maxAxis)) state.maxAxis = 'all';
+  $controls.append(seg(axes.map(({ id, label }) => ({ id, label })), state.maxAxis, (id) => {
+    state.maxAxis = id;
+    track('sub_max_' + id);  // GA4: 서브탭 사용량 (sub_pve_* 와 같은 규칙)
+    render();
+  }));
+  const axis = axes.find((entry) => entry.id === state.maxAxis);
+  $controls.append(maxSubmenu(axis));
+  const selectedType = state.maxBoss;
+  if (axis.id === 'tank') return renderMaxTank(selectedType);
+  if (axis.id === 'dealer') return renderMaxDealer(selectedType);
+  return renderMaxTier(selectedType);
 }
