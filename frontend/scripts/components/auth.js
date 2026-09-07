@@ -15,6 +15,10 @@
 // 누구나 읽고 고칠 수 있다 — 화면 조건문을 우회해도 규칙이 막아 준다는 전제로 짜여 있다.
 // 그래서 실패 처리는 대체로 조용히 무시(.catch(() => {}))하거나 안내 문구만 띄운다.
 //
+// ── 첫 로그인 동의 · 계정 삭제 (2026-09-07 v2.18.0) ────────────────────────
+// signIn() 은 약관 동의(components/terms.js termsAccepted)가 없으면 동의 팝업을 먼저 띄운다.
+// deleteAccount() 는 본인 문서 3개를 지운 뒤 인증 계정을 지운다 — 규칙(firestore.rules) 의 본인 delete 허용이 전제.
+//
 // ── SDK를 지연 로드하는 이유 ────────────────────────────────────────────────
 // firebase compat SDK 3개(app·auth·firestore)는 용량이 커서 첫 화면을 늦춘다.
 // 로그인은 티어표를 보는 데 꼭 필요한 기능이 아니므로, 첫 렌더가 끝난 뒤
@@ -134,9 +138,11 @@ async function onAuthChange(user) {
     // 계정 카드(본인 이메일 문서)를 로그인마다 갱신한다 — 승인 전에는 관리자 패널의 "승인 대기" 줄이 되고,
     // 승인 뒤에도 남겨 두어 관리자가 이메일 ↔ uid 를 대조할 수 있게 한다 (2026-09-06 v2.10.1: uid·status 추가).
     // GA 보고서는 uid 만 보여 주므로 "누가 눌렀나"는 이 대조표로 읽는다. 규칙상 본인 이메일 문서는 승인 여부와 무관하게 쓸 수 있다
+    // 2026-09-07 v2.18.0 약관 동의 증빙 — 이 기기에서 동의한 버전을 함께 남긴다 (components/terms.js). 없으면 필드를 건드리지 않는다
+    const consent = typeof termsAccepted === 'function' && termsAccepted() ? { consent: TERMS_VER, consentAt: firebase.firestore.FieldValue.serverTimestamp() } : {};
     await AUTH.db.collection('requests').doc(email).set({
       email, name: user.displayName || '', photo: user.photoURL || '', uid: user.uid, status: AUTH.status,
-      at: firebase.firestore.FieldValue.serverTimestamp(),
+      at: firebase.firestore.FieldValue.serverTimestamp(), ...consent,
     }, { merge: true }).catch(() => {});
   }
   // 2026-09-06 v2.10.1 GA User-ID: login 이벤트보다 먼저 붙여야 그 이벤트부터 사람 단위로 잡힌다
@@ -163,6 +169,11 @@ async function signIn() {
     renderAccount('로그인 준비 중… 잠시 후 다시 눌러주세요');
     return;
   }
+  // 2026-09-07 v2.18.0 (공개 준비 2) 첫 로그인(또는 약관 개정 뒤)은 약관·방침 동의 + 만 14세 확인을 먼저 받는다 (components/terms.js)
+  if (typeof termsAccepted === 'function' && !termsAccepted()) {
+    openTermsConsent(() => signIn());
+    return;
+  }
   const provider = new firebase.auth.GoogleAuthProvider();
   provider.setCustomParameters({ prompt: 'select_account' });
   // 홈 화면 설치(PWA) 환경은 팝업이 막히므로 리다이렉트 방식
@@ -185,6 +196,58 @@ async function signIn() {
 
 function signOut() {
   if (AUTH.ready) firebase.auth().signOut();
+}
+
+// ── 계정 삭제 셀프서비스 (2026-09-07 v2.18.0, 공개 준비 3) ──────────────────
+// 개인정보처리방침 7장 "계정 삭제"의 실제 동작. 순서가 중요하다 — 인증 계정을 먼저 지우면 규칙상 문서를 못 지운다.
+//   (1) users/{uid}(즐겨찾기·내 포켓몬) → (2) allowlist/{email}(승인) → (3) requests/{email}(가입 요청·동의 기록) → (4) Firebase 인증 계정
+//   규칙: allowlist·requests 의 본인 문서 delete 는 firestore.rules 가 v2.18.0 부터 허용한다 (콘솔에 다시 게시해야 적용)
+//   (4) 는 로그인이 오래됐으면 auth/requires-recent-login 이 나므로 Google 재인증 뒤 한 번 더 시도한다
+// 관리자 계정은 지우지 않는다 — 규칙의 isAdmin() 이 그 uid 를 가리키고 있어 서비스가 관리자를 잃는다
+async function deleteAccount() {
+  if (!AUTH.ready || !AUTH.user) return;
+  if (AUTH.admin) {
+    renderAccount('관리자 계정은 여기서 지울 수 없어요 — 먼저 ADMIN_UID 를 다른 계정으로 옮기세요');
+    return;
+  }
+  const user = AUTH.user;
+  const email = authEmail();
+  const status = AUTH.status;
+  track('account_delete', { status });
+  renderAccount('계정을 지우는 중…');
+  try {
+    if (status === 'ok') await AUTH.db.collection('users').doc(user.uid).delete();
+    if (status === 'ok') await AUTH.db.collection('allowlist').doc(email).delete().catch(() => {});
+    await AUTH.db.collection('requests').doc(email).delete().catch(() => {});
+    try {
+      await user.delete();
+    } catch (error) {
+      if (error.code !== 'auth/requires-recent-login') throw error;
+      const provider = new firebase.auth.GoogleAuthProvider();
+      await user.reauthenticateWithPopup(provider);
+      await user.delete();
+    }
+    // user.delete() 가 onAuthStateChanged(null) 을 부르므로 화면은 거기서 비로그인으로 돌아간다
+    setTimeout(() => renderAccount('계정과 저장 데이터를 지웠어요. 다시 로그인하면 새 계정(승인 대기)으로 시작합니다'), 0);
+  } catch (error) {
+    renderAccount('계정 삭제 실패: ' + (error.code || error.message) + ' — 문의처로 알려 주시면 지워 드릴게요');
+  }
+}
+
+// 삭제 확인 팝업 — 되돌릴 수 없으므로 무엇이 지워지는지 먼저 보여 준다
+function confirmDeleteAccount() {
+  const items = [
+    `★ 즐겨찾기 ${AUTH.favs.size}마리 · 🎒 내 포켓몬 ${Array.isArray(AUTH.mons) ? AUTH.mons.length : 0}마리`,
+    '승인 정보와 가입 요청(이메일·이름·사진·약관 동의 기록)',
+    'Google 로그인 연결(Firebase 인증 계정)',
+  ];
+  const go = el('button', { class: 'drawer-item acct-danger', onclick: () => { closeModal({ silent: true }); deleteAccount(); } }, '🗑 지우기 (되돌릴 수 없음)');
+  openModal(el('div', { class: 'consent-modal' },
+    el('h2', { class: 'd-name' }, '계정을 삭제할까요?'),
+    el('p', { class: 'plan-desc' }, '아래가 즉시 지워지고 복구되지 않습니다. 브라우저에 남은 설정값(마지막 탭 등)은 개인정보가 아니라 그대로 둡니다.'),
+    el('ul', { class: 'priv-list' }, ...items.map((text) => el('li', {}, text))),
+    el('div', { class: 'acct-actions' }, go,
+      el('button', { class: 'drawer-item', onclick: () => closeModal() }, '취소'))));
 }
 
 // ── 즐겨찾기 ────────────────────────────────────────────
@@ -315,8 +378,8 @@ function renderAccount(message) {
   if (!AUTH.user) {
     accountBox.append(
       el('button', { class: 'drawer-item acct-login', onclick: signIn }, '🔐 Google로 로그인'),
-      el('p', { class: 'acct-sub' }, '승인된 친구만 사용할 수 있어요. 로그인하면 즐겨찾기 ★를 내 계정에 저장합니다. ',
-        el('a', { href: '#/privacy' }, '수집하는 개인정보 보기')),
+      el('p', { class: 'acct-sub' }, '승인된 친구만 사용할 수 있어요. 로그인하면 즐겨찾기 ★와 내 포켓몬을 내 계정에 저장합니다. 첫 로그인 때 ',
+        el('a', { href: '#/terms' }, '이용약관'), '·', el('a', { href: '#/privacy' }, '개인정보처리방침'), ' 동의를 받아요'),
       note);
     return;
   }
@@ -328,7 +391,9 @@ function renderAccount(message) {
     accountBox.append(who,
       el('p', { class: 'acct-sub acct-pending' }, '⏳ 승인 대기 중 — 관리자가 승인하면 즐겨찾기를 쓸 수 있어요. 관리자에게 알려주세요!'),
       note,
-      el('button', { class: 'drawer-item', onclick: signOut }, '로그아웃'));
+      el('div', { class: 'acct-actions' },
+        el('button', { class: 'drawer-item', onclick: signOut }, '로그아웃'),
+        el('button', { class: 'drawer-item acct-danger', onclick: confirmDeleteAccount }, '계정 삭제')));  // 2026-09-07 v2.18.0 가입 요청만 남은 상태도 스스로 지울 수 있게
     return;
   }
   // (3) 승인됨 — 즐겨찾기 개수와 바로가기, 관리자에게만 승인 패널 버튼
@@ -339,7 +404,9 @@ function renderAccount(message) {
     note,
     el('div', { class: 'acct-actions' },
       AUTH.admin ? el('button', { class: 'drawer-item', onclick: openAdminPanel }, '🔑 가입 승인') : '',
-      el('button', { class: 'drawer-item', onclick: signOut }, '로그아웃')));
+      el('button', { class: 'drawer-item', onclick: signOut }, '로그아웃'),
+      // 2026-09-07 v2.18.0 (공개 준비 3) 계정 삭제 셀프서비스 — 관리자는 제외 (deleteAccount 참고)
+      AUTH.admin ? '' : el('button', { class: 'drawer-item acct-danger', onclick: confirmDeleteAccount }, '계정 삭제')));
 }
 
 // ── 관리자 패널: 승인 요청 → 허용 목록 ───────────────────

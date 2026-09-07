@@ -5,6 +5,21 @@
 버전 규칙: `vMAJOR.MINOR.PATCH` — 큰 기능은 MINOR(두 번째 자리), 상세 기능·버그 수정은 PATCH(세 번째 자리) 증가.
 항목 종류: `추가` 새 기능 · `변경` 기존 동작 변경 · `수정` 버그 수정 · `데이터` 수동 데이터 갱신
 
+## v2.18.0 — 2026-09-07
+
+노션 "🚀 상용·오픈소스 전환 점검" Phase 0 + 인수인계 문서 4-C **공개 준비 1·2·3**. 결정 근거: 수익화 없음 → 후원(단계적) · 코드 MIT · 스프라이트 고지 후 유지 · 승인제 유지 · 위치 기능 없음.
+
+### 추가
+- **공개 준비 1 — 라이선스·고지** — `LICENSE`(MIT, 코드만) · `NOTICE.md`(경로별 범위 표, 포켓몬 IP 고지, 출처별 라이선스 표 11건, 포크 시 조건, takedown 72시간 정책) · `CONTRIBUTING.md`(dev 브랜치 PR, DCO 서명, 불변 규칙 요약, 행동 규범) · `SECURITY.md`(제보 창구, 범위, 90일 공개 원칙). README에 라이선스 표와 고지 갱신(권리자 The Pokémon Company · Nintendo · Creatures · GAME FREAK, Pokémon GO 는 **Scopely Explore, Inc.**). 선행 확인 2건 통과: 배포 스프라이트는 96×96 축소본(평균 0.5KB)만, 게임마스터 원본(`gm.json`·`pm.json`)은 `dist/`에 미포함(`data/`는 미커밋). 하와이 시트 작성자 허락은 사람 액션으로 남김(NOTICE에 "확인 진행 중")
+- **공개 준비 2 — 약관·방침** — `components/terms.js`: 📜 이용약관 페이지(`#/terms`, PAGES 등록, 7장: 서비스·계정과 승인·금지 행위·면책·지식재산·개인정보·준거법) + **첫 로그인 동의 팝업**(`openTermsConsent`: 약관·방침 동의 + 만 14세 체크 둘 다 켜져야 [동의하고 로그인], `localStorage pogo_terms_ok = TERMS_VER`, `requests` 문서에 `consent`·`consentAt` 기록, 약관 개정 시 재동의) + `IP_NOTICE` 한 곳 관리(`ipNoticeNode`, 푸터 `#ip-notice`와 전체 페이지 하단에 상시 노출). `privacy.js` 전면 개정: 수집 항목 표, 자동수집(GA 동의 조건·localStorage 키·SW 캐시·쿠키), 처리위탁·국외이전 표(Google LLC 미국, Firestore 서울 리전, GA 14개월), 보유기간·파기, 만 14세 미만 불허, 이용자 권리(셀프 삭제 안내), 안전성, 보호책임자(10일 회신), 고지(7일 전), 위치정보 미수집 명시
+- **공개 준비 3 — 통계 동의·계정 삭제** — `components/consent.js`: 첫 방문 하단 배너(`#consent`, 스플래시 뒤에 표시: 저장소 안내 + 위치 미수집 + [통계 거부] [통계 동의]), `localStorage pogo_consent`, **동의 전 gtag 미삽입** — build.py `GA_SNIPPET`은 `window.GA_PENDING_ID`만 남기고 `loadAnalytics()`가 동의 시 Consent Mode v2 기본값(analytics granted · ad 전부 denied)과 함께 붙인다. 철회하면 `consent update denied` + `window.gtag` 제거로 `track()` 무력화. ☰ "🍪 통계·저장소 설정" 팝업(현재 선택 표시·변경, 저장된 것 목록, 🧹 캐시 비우고 새로고침 = `caches.delete` + SW unregister). **계정 삭제 셀프서비스** `auth.js deleteAccount()`: 확인 팝업(지워지는 것 3항목) → `users/{uid}` → `allowlist/{email}` → `requests/{email}` → `user.delete()`, `auth/requires-recent-login`이면 `reauthenticateWithPopup` 뒤 재시도, 관리자 제외, 승인 대기 상태도 가능. GA `consent`(value·from)·`terms_accept`·`account_delete`·`cache_clear`
+- `firestore.rules`: `allowlist`·`requests` 본인 이메일 문서 **delete 허용** (관리자 권한은 그대로). ⚠️ 콘솔에 다시 게시해야 적용 — 게시 전에는 삭제 버튼이 permission-denied 안내
+- `dev-mock.js`: `user.delete()`·`reauthenticateWithPopup()` 목. 새 파일 `styles/components/consent.css`(배너·팝업·방침 표·IP 고지·위험 버튼)
+
+### 변경
+- 푸터: 고지 두 줄 + 링크 줄(개인정보처리방침 · 이용약관 · 통계·저장소 설정 · GitHub). ☰ 메뉴에 📜 이용약관 · 🍪 통계·저장소 설정 항목. 계정 카드 비로그인 안내에 약관·방침 링크, 승인됨·대기 상태에 "계정 삭제" 버튼
+- docs: DEVELOPMENT 7장(규칙 표·삭제 순서·동의 흐름), OPERATIONS 4장(계정 삭제·규칙 재게시)·7장(동의 뒤 집계). Playwright 35항목 통과(배너·설정·약관·방침·동의 팝업·재로그인·삭제·대기/관리자 분기)
+
 ## v2.17.0 — 2026-09-07
 
 노션 "서비스명 변경 검토"에서 **POGO PLAN(포고플랜)** 확정 (인수인계 문서 3-1).

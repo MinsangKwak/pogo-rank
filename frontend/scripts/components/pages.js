@@ -197,6 +197,7 @@ const PAGES = {
   dex: { title: '📕 도감', render: renderDexPage },  // 2026-09-03 CP 계산기 페이지 대체
   changes: { title: '⚔️ 기술 변경', render: renderMoveChangesPage },  // 2026-09-04 시즌 기술 조정 안내
   privacy: { title: '🔒 개인정보처리방침', render: renderPrivacyPage },  // 2026-09-04 로그인 시 수집하는 개인정보 안내
+  terms: { title: '📜 이용약관', render: renderTermsPage },  // 2026-09-07 v2.18.0 (공개 준비 2)
   favs: { title: '★ 즐겨찾기', render: renderFavsPage },  // 2026-09-05 PvE/PvP 나눠 보기
   types: { title: '🧭 상성 검색', render: renderTypeSearchPage },  // 2026-09-06 v2.10.0 (QA-44) 타입 조합 → 약점·이중약점·추천 딜러
 };
@@ -273,7 +274,9 @@ function renderPage() {
     el('div', { class: 'page-bar' },
       el('button', { class: 'icon-btn', onclick: goBack, 'aria-label': '뒤로' }, '←'),
       el('b', {}, PAGES[id].title)),
-    PAGES[id].render());
+    PAGES[id].render(),
+    // 2026-09-07 v2.18.0 IP 고지문은 전체 페이지에서도 상시 노출 (.wrap 의 푸터가 숨겨지므로)
+    id === 'terms' || id === 'privacy' ? '' : ipNoticeNode());
   window.scrollTo(0, 0);
 }
 window.addEventListener('hashchange', renderPage);
