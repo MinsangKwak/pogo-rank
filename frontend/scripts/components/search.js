@@ -160,6 +160,8 @@ function renderSearchResults() {
   const types = activeSearchTypes(typedTypes);
   if (!query && !types.length) {
     $sugg.append(el('p', { class: 'sugg-hint' }, '예: "메타그로스" · 타입 칩 [물][풀] · 칩 [물] + "메가"'));  // v2.12.1 빈 상태 안내
+    // 2026-09-07 v2.16.0 활용처 탭을 검색에 녹임 — 비어 있을 때 "어디서나 잘하는 포켓몬" 순위를 보여 준다 (views/usage.js)
+    if (typeof usageTopNodes === 'function') $sugg.append(...usageTopNodes());
     return;
   }
   // 후보군: 타입이 있으면 그 조합의 포켓몬(출시 → 미출시, 도감번호순), 없으면 전체 색인
@@ -190,6 +192,7 @@ function renderSearchResults() {
       },
     }, sprite(pokemon.sprite), el('span', {}, nameNode(pokemon.name)),  // 2026-09-06 v2.10.0 폼 라벨 뱃지
       pokemon.unrel ? el('span', { class: 'tag dex-unrel' }, '미구현') : '',
+      typeof usageBadge === 'function' ? usageBadge(pokemon.name) : '',  // 2026-09-07 v2.16.0 활용 N곳 (옛 활용처 탭의 요약)
       (() => { const rank = searchRankText(pokemon.sprite); return rank ? el('span', { class: 'sugg-rank' }, rank) : ''; })()));
   }
   if (!hits.length) {

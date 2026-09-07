@@ -11,7 +11,7 @@
 //
 // 의존하는 전역
 //   el (dom.js) · seg (components/seg.js) · track (track.js)
-//   renderMax · renderPve · renderPveEasy · renderPvp · renderUsage · renderIfTab (views/*)
+//   renderMax · renderPve · renderPveEasy · renderPvp · renderSoloCalc · renderPvpDeck (views/*)
 //   initReleaseBadge (components/release.js) · initMoveChangesMenu (components/changes.js) · initAuth (components/auth.js)
 //
 // 렌더링 흐름: 이 앱은 부분 갱신을 하지 않는다. 어떤 버튼이든 state를 고치고 render()를 부르면
@@ -34,9 +34,9 @@ const state = {
   maxAxis: 'all',            // 2026-09-07 v2.13.0 (QA-43) D-MAX 탭 세그먼트 — v2.14.0 (QA-52) [전체(티어표) | 딜러 | 탱커]
   pveMode: 'easy',           // 2026-09-02 pveMode: PvE 탭 통합 — 'easy'(일반) / 'all'(전체)
   bossShow: 5,               // 2026-09-02 bossShow: 보스 추천 표시 개수
-  // 2026-09-02 if 탭(솔플 계산기) 상태
-  ifWho: 'solo',             // IF 탭 서브탭 — 'solo'(솔플 계산기) / 'pvpdeck'(PvP 덱 짜기)
-  deckLeague: 'great',       // PvP 덱 짜기에서 고른 리그
+  // 2026-09-07 v2.16.0 IF 탭 해체 — 솔플 계산기는 PvE 탭, PvP 덱 짜기는 PvP 탭의 오른쪽 도구 버튼으로 (활용처 탭은 검색 패널로)
+  pveTool: null,             // PvE 탭 도구 — 'solo'(솔플 레이드 계산기 펼침) / null
+  pvpTool: null,             // PvP 탭 도구 — 'deck'(PvP 덱 짜기 펼침) / null. 덱 리그는 state.league 를 그대로 쓴다
   deckFoes: [],              // 상대할 포켓몬 (최대 3칸)
   deckAccOpen: true,         // 덱 추천 아코디언 펼침 여부
   soloBossMon: null,         // 솔플 계산기에서 고른 보스. null이면 아직 고르기 전
@@ -54,7 +54,7 @@ const expanded = new Set();
 // 열 때마다 같은 탭·리그·칩으로 옮기는 클릭을 없애기 위해 마지막 보기를 localStorage에 남긴다.
 // 값은 전부 문자열 id라서 허용 목록으로 검증한 뒤에만 state에 넣는다 (옛 버전 값·손상 대비).
 const LAST_VIEW_KEY = 'pogo_last_view';
-const LAST_VIEW_FIELDS = ['tab', 'league', 'pvpType', 'boss', 'easyBoss', 'maxBoss', 'maxAxis', 'pveMode', 'ifWho', 'deckLeague'];
+const LAST_VIEW_FIELDS = ['tab', 'league', 'pvpType', 'boss', 'easyBoss', 'maxBoss', 'maxAxis', 'pveMode'];  // v2.16.0 ifWho·deckLeague 제거 (옛 값은 무시된다)
 function restoreLastView() {
   let saved;
   try { saved = JSON.parse(localStorage.getItem(LAST_VIEW_KEY) || 'null'); } catch { return; }
@@ -62,11 +62,11 @@ function restoreLastView() {
   const typeKeys = typeof TYPE_KO !== 'undefined' ? Object.keys(TYPE_KO) : [];
   const leagues = typeof LEAGUE_KO !== 'undefined' ? Object.keys(LEAGUE_KO) : ['little', 'great', 'ultra', 'master'];
   const allowed = {
-    tab: ['max', 'pve', 'pvp', 'usage', 'if'],
-    league: leagues, deckLeague: leagues,
+    tab: ['max', 'pve', 'pvp'],  // v2.16.0 usage·if 탭 제거 — 옛 저장값은 허용 목록에서 걸러져 기본(max)으로
+    league: leagues,
     pvpType: ['all', ...typeKeys],
     boss: ['overall', ...typeKeys], easyBoss: ['overall', ...typeKeys], maxBoss: ['overall', ...typeKeys],
-    pveMode: ['easy', 'all'], ifWho: ['solo', 'pvpdeck'], maxAxis: ['all', 'dealer', 'tank'],
+    pveMode: ['easy', 'all'], maxAxis: ['all', 'dealer', 'tank'],
   };
   for (const key of LAST_VIEW_FIELDS) {
     if (typeof saved[key] === 'string' && allowed[key].includes(saved[key])) state[key] = saved[key];
@@ -90,7 +90,7 @@ function renderTabs() {
   if (state.appMode === 'plan') renderPlanTabs();
   // 2026-09-02 PvE 일반·전체를 한 탭으로 통합해 메뉴 축소
   // [탭 id, 버튼에 보이는 이름] 쌍. 배열 순서가 곧 화면에 보이는 탭 순서다
-  else for (const [id, label] of [['max', 'D-MAX'], ['pve', 'PvE'], ['pvp', 'PvP'], ['usage', '활용처'], ['if', 'IF']]) {  // 2026-09-02 if 탭 추가
+  else for (const [id, label] of [['max', 'D-MAX'], ['pve', 'PvE'], ['pvp', 'PvP']]) {  // 2026-09-07 v2.16.0 활용처·IF 탭 제거 (검색 패널 · PvE/PvP 도구 버튼으로)
     // 2026-09-03 GA4: 탭 이름을 이벤트명에 포함(tab_max 등) — GA 이벤트 목록에서 설정 없이 탭별 순위가 바로 보임, 누를 때마다 1회씩 기록
     $tabs.append(el('button', {
       class: 'tab',
@@ -118,13 +118,26 @@ function renderTabs() {
 // 2026-09-02 PvE 탭: 일반/전체 세부 토글 (PvP 리그 토글과 같은 seg)
 // 토글만 직접 그리고, 실제 목록은 고른 모드에 맞는 뷰 함수에 넘긴다
 function renderPveTab() {
-  $controls.append(seg([{ id: 'easy', label: '일반' }, { id: 'all', label: '전체' }], state.pveMode,
+  const modeSeg = seg([{ id: 'easy', label: '일반' }, { id: 'all', label: '전체' }], state.pveMode,
     (id) => {
       state.pveMode = id;
+      state.pveTool = null;    // 서브탭을 고르면 도구는 접는다
       track('sub_pve_' + id);  // 2026-09-03 GA4: 서브탭 사용량
       render();
-    }));
+    });
+  // 2026-09-07 v2.16.0 오른쪽 도구 버튼: 🧮 솔플 레이드 계산기 (옛 IF 탭). 누르면 티어표 자리에 계산기가 펼쳐지고, 다시 누르면 접힌다
+  $controls.append(el('div', { class: 'ctrl-row' }, modeSeg, toolButton('🧮 솔플 계산기', state.pveTool === 'solo', () => {
+    state.pveTool = state.pveTool === 'solo' ? null : 'solo';
+    track('tool_solo', { on: state.pveTool ? 1 : 0 });
+    render();
+  })));
+  if (state.pveTool === 'solo') return renderSoloCalc();
   (state.pveMode === 'easy' ? renderPveEasy : renderPve)();
+}
+
+// 2026-09-07 v2.16.0 탭 안 도구 버튼 — 세그먼트 오른쪽에 붙는 알약 버튼. 눌린 상태는 aria-pressed (seg·chip 과 같은 규칙)
+function toolButton(label, pressed, onClick) {
+  return el('button', { class: 'tool-btn', 'aria-pressed': String(pressed), onclick: onClick }, label);
 }
 
 // 현재 state를 화면에 반영한다. 상태를 바꾼 곳은 어디든 마지막에 이 함수를 부른다.
@@ -138,7 +151,7 @@ function render() {
   // 2026-09-07 v2.15.0 (QA-53) 플래너 모드면 플래너 렌더러로 (도감 탭 상태는 건드리지 않는다)
   if (state.appMode === 'plan') return renderPlan();
   // 탭 id → 그 탭을 그리는 함수. 찾아서 바로 호출한다
-  ({ max: renderMax, pve: renderPveTab, pvp: renderPvp, usage: renderUsage, if: renderIfTab })[state.tab]();
+  ({ max: renderMax, pve: renderPveTab, pvp: renderPvp })[state.tab]();  // v2.16.0 usage·if 제거
   saveLastView();  // 2026-09-06 v2.9.0 상태가 바뀌어 다시 그릴 때마다 마지막 보기를 남긴다
 }
 

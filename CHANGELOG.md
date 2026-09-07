@@ -5,6 +5,11 @@
 버전 규칙: `vMAJOR.MINOR.PATCH` — 큰 기능은 MINOR(두 번째 자리), 상세 기능·버그 수정은 PATCH(세 번째 자리) 증가.
 항목 종류: `추가` 새 기능 · `변경` 기존 동작 변경 · `수정` 버그 수정 · `데이터` 수동 데이터 갱신
 
+## v2.16.0 — 2026-09-07
+
+### 변경
+- **IF 탭·활용처 탭 해체 — 기능을 제자리로** (dev 피드백) — 탭은 D-MAX · PvE · PvP 셋. (1) **솔플 레이드 계산기**는 PvE 탭 세그먼트 오른쪽 `🧮` 도구 버튼(`toolButton`, `state.pveTool = 'solo'`)으로 — 누르면 티어표 자리에 `renderSoloCalc()`가 펼쳐지고 다시 누르면 접힌다(서브탭을 고르면 접힘). (2) **PvP 덱 짜기**는 PvP 탭 리그 세그먼트 오른쪽 `🃏` 버튼(`state.pvpTool = 'deck'`) — 덱 리그는 `state.league`를 그대로 써 `deckLeague`와 덱 안의 리그 세그먼트를 없앴다. (3) **활용처**는 🔍 검색 패널로 — 비어 있을 때 "🏆 활용처 순위"(`usageTopNodes`, 8마리 + 더보기, 누르면 상세) 를 보여 주고, 검색 후보 줄마다 "활용 N곳" 뱃지(`usageBadge`)를 붙인다. `renderIfTab`·`renderUsage`·`state.ifWho`·`deckLeague` 제거, `pogo_last_view`의 옛 `usage`/`if` 탭 값은 허용 목록에서 걸러져 D-MAX로. 새 줄 `.ctrl-row`(세그먼트 + 도구 버튼), `.tool-btn`(aria-pressed). GA `tool_solo`·`tool_pvpdeck`(on)·`usage_pick`
+
 ## v2.15.1 — 2026-09-07
 
 ### 변경

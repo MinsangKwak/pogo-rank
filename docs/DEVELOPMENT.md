@@ -361,7 +361,7 @@ CP = `floor((공격+IV) × √(방어+IV) × √(체력+IV) × CPM² / 10)`, 최
 
 "이 종을 맥스 배틀에서 잡을 수 있나"는 `backend/config/max_released.txt`(Bulbapedia 기준 수동 관리)에서 `data/max_pool.json`으로 뽑아 전역 `MAX_POOL`로 주입합니다. 랭킹용 `dynamax.json`은 상위 30만 담고 있어 이 용도로 쓸 수 없습니다.
 
-### 솔플 레이드 계산기 (IF 탭)
+### 솔플 레이드 계산기 (PvE 탭 🧮 버튼 — v2.16.0 전에는 IF 탭)
 
 | 항목 | 값 |
 |---|---|
@@ -372,7 +372,7 @@ CP = `floor((공격+IV) × √(방어+IV) × √(체력+IV) × CPM² / 10)`, 최
 | 토글 | 풀강50(딜 ×1.063, TDO ×1.2), 버프(메가 1.3 / 풀버프 1.6) |
 | 레이드 CP | `floor((공격+15) × √(방어+15) × √(티어 체력) / 10)` — 뮤츠 5성 54,148로 검증 |
 
-### PvP 덱 짜기 (IF 탭, 실험)
+### PvP 덱 짜기 (PvP 탭 🃏 버튼, 실험 — v2.16.0 전에는 IF 탭)
 
 - 상성 계수 `fit = max(내 자속이 상대를 때리는 배율) ÷ max(상대 타입이 나를 때리는 배율)`
 - 커스텀 덱: 리그 점수 × 상대별 fit의 기하평균 순
@@ -388,7 +388,7 @@ CP = `floor((공격+IV) × √(방어+IV) × √(체력+IV) × CPM² / 10)`, 최
 - `scripts/dom.js` — `el(tag, attrs, ...children)` 하나가 렌더링의 기반.
 - `scripts/app.js` — 전역 `state` + `render()`. 탭 전환 = state 변경 후 전체 리렌더.
 - `components/` — row · list · modal · detail · schedule · search · drawer · pages(해시 라우팅 `#/dex`·`#/schedule`·`#/release`) · auth(로그인·즐겨찾기) · trainers · release · track(GA) · totop.
-- `views/` — 탭별 화면 (max · pve · tier · pvp · usage · ifsolo).
+- `views/` — 탭별 화면 (max · pve · tier · pvp) + 탭 안 도구(ifsolo: 솔플 계산기·PvP 덱, 각각 PvE·PvP 탭의 오른쪽 버튼이 펼친다) + usage(검색 패널의 활용처 순위). v2.16.0 부터 탭은 D-MAX·PvE·PvP 셋.
 - `planner/` — 🌱 플래너 모드 (v2.15.0): `shell.js`(모드 전환·`#/plan/*` 라우트·플래너 탭 줄) · `home.js`(플래너 홈) · `collection.js`(내 포켓몬 CRUD·비교). 모드는 해시가 정하고 `app.js render()`가 `state.appMode === 'plan'`이면 `renderPlan()`으로 분기한다. 신규 전역·localStorage 키·GA 이벤트는 전부 `plan` 접두사.
 - 상세 팝업은 **여는 곳에 따라** 구성이 다르다: 도감에서 열면 능력치 육각형 포함, 순위표·검색에서는 기술 중심(`openDetail(p, isDex)`).
 - 새 CSS/JS 파일은 `backend/build.py`의 `STYLES` / `SCRIPTS` 목록에 등록해야 번들에 포함된다.
