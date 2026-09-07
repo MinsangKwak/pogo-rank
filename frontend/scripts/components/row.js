@@ -7,8 +7,15 @@
 //
 // 의존하는 전역
 //   el (dom.js) · typeDots (components/type-dots.js) · sprite (components/sprite.js)
-//   openDetail (components/detail.js — 줄을 누르면 열리는 상세 팝업)
+//   openDetail · usageCountFor (components/detail.js — 줄을 누르면 열리는 상세 팝업 · 활용 곳 수)
 // ─────────────────────────────────────────────────────────────────────────────
+
+// 2026-09-07 v2.13.0 (QA-42) 활용 N곳 뱃지. 2곳 이상일 때만, 5곳 이상이면 강조(.many)
+function usageBadge(name) {
+  const count = typeof usageCountFor === 'function' ? usageCountFor(name) : 0;
+  if (count < 2) return '';
+  return el('span', { class: `tag use${count >= 5 ? ' many' : ''}`, title: '이 포켓몬이 상위 30위에 드는 순위표 수 (PvE 19표 · PvP 4리그 · D-MAX 19표)' }, `활용 ${count}곳`);
+}
 
 // 공통 행: rank·sprite·이름·보조줄·점수 (lineParts는 보조줄 문자열 배열, tagNode는 이름 위 뱃지)
 //   pokemon    한 줄에 담을 포켓몬. name·en·types·sprite를 쓰고, 기술은 fast·charged를 기본값으로 쓴다
@@ -40,7 +47,10 @@ function row(pokemon, rankText, scoreNode, subNode, lineParts, tagNode) {
   // 뱃지는 이름보다 위에 와야 하므로 name·line보다 먼저 붙인다.
   // 뷰가 넘긴 뱃지(tagNode)와 기술 변경 예고 뱃지를 한 줄에 모은다 — 둘 다 없으면 줄 자체를 만들지 않는다
   const moveBadge = changeBadge(pokemon.sprite);
-  if (tagNode || moveBadge) main.append(el('div', { class: 'badges' }, tagNode ?? '', moveBadge));
+  // 2026-09-07 v2.13.0 (QA-42) "활용 N곳" — PvE 19표·PvP 4리그·D-MAX 상위 30 에 몇 곳 등장하는지 (pogomate ★N 에 해당하는 우리 식 범용성 표시).
+  // 어느 탭에서 보든 같은 칩이라 "여기서만 좋은가, 다재다능인가"가 바로 보인다. 1곳뿐이면 붙이지 않는다(모든 행에 붙으면 뜻이 없다)
+  const useBadge = usageBadge(pokemon.name);
+  if (tagNode || moveBadge || useBadge) main.append(el('div', { class: 'badges' }, tagNode ?? '', moveBadge, useBadge));
   main.append(name, line);
   // 줄 전체가 상세 팝업 버튼이다 (안쪽에 따로 버튼을 두지 않아 클릭 영역이 넓다)
   return el('li', { class: 'row', onclick: () => openDetail(pokemon) },

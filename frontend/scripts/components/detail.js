@@ -20,9 +20,10 @@
 // - authEnabled() · favBtn() (components/auth.js) — 로그인 기능이 켜진 빌드에서만 즐겨찾기 ★ 표시
 // - calcCp() (components/pages.js) — 내 개체 CP 계산기에서 사용
 // - DEX_DATA (data.js): names / forms / evo / megas / chart / dex / cpm
-// - VALUE_DATA.usage (data.js): 각 순위표 상위 30위 등재 내역
+// - VALUE_DATA.usage_places · usage (data.js): 이름별 등재 내역(전 항목, 압축) · 활용처 탭용 상위 80 (v2.13.0 QA-42)
 // - TYPE_KO · LEAGUE_KO (data.js): 타입·리그 한글 이름
 // - DMAX_DATA (data.js, 선택): 맥스 보스별 추천 카운터 (없는 빌드도 있어 typeof 로 방어)
+// - SHEET_DATA.pve · PVE_DATA (data.js): 레이드 보스 카운터 — 공격 타입별 레이드 성능표 (v2.13.0 QA-49)
 // - MAX_POOL (data.js, 선택): 맥스 배틀에서 잡을 수 있는 종 (스프라이트 id → 'G' 거다이맥스 · 'D' 다이맥스)
 // - roleToggleNode() (components/favs.js): ★ 즐겨찾기 PvE/PvP 분류 보정 토글
 
@@ -273,15 +274,23 @@ function megaCompareNode(dex) {
 // 2026-09-06 v2.10.0 (QA-44) 활용처는 이름 단위로 합산되는데, 맥스 배틀 행의 이름이 '다이맥스 X'·'거다이맥스 X'로 갈리면서
 // 일반 X 의 활용처에서 맥스 순위가 빠지게 됐다. 그래서 같은 종의 세 이름(X · 다이맥스 X · 거다이맥스 X)을 한꺼번에 모아
 // 보여 주되, 맥스 칩에는 어느 쪽 순위인지 D/G 표시를 남긴다. 반대로 '거다이맥스 X' 로 열었을 때도 일반 X 의 PvP·레이드가 함께 보인다
+// 2026-09-07 v2.13.0 (QA-42) 등재 내역은 빌드가 전 항목을 압축해 실은 VALUE_DATA.usage_places(이름 → [[곳, 순위]])에서 읽는다.
+// usage(상위 80)만 보던 예전에는 81위 밖 포켓몬의 활용처가 팝업에서 통째로 빠졌다. 옛 빌드(usage_places 없음)에서는 usage 로 되돌아간다
+function usagePlacesOf(name) {
+  const compact = VALUE_DATA.usage_places;
+  if (compact) return (compact[name] ?? []).map(([place, rank]) => ({ place, rank }));
+  return (VALUE_DATA.usage ?? []).find((usageEntry) => usageEntry.name === name)?.places ?? [];
+}
 function usagePlacesFor(name) {
   const base = name.replace(/^(거다이맥스|다이맥스)\s+/, '');
   const variants = [[base, ''], [`다이맥스 ${base}`, 'D'], [`거다이맥스 ${base}`, 'G']];
   const places = [];
-  for (const [variantName, mark] of variants) {
-    const entry = (VALUE_DATA.usage ?? []).find((usageEntry) => usageEntry.name === variantName);
-    if (entry) places.push(...entry.places.map((placement) => ({ ...placement, mark })));
-  }
+  for (const [variantName, mark] of variants) places.push(...usagePlacesOf(variantName).map((placement) => ({ ...placement, mark })));
   return places;
+}
+// 2026-09-07 v2.13.0 (QA-42) 순위표 행 "활용 N곳" 배지용 등장 횟수 — 상세 팝업 활용처 칩과 같은 목록의 길이라 숫자가 항상 일치한다
+function usageCountFor(name) {
+  return usagePlacesFor(name).length;
 }
 function usageNode(name) {
   const places = usagePlacesFor(name);
@@ -307,14 +316,73 @@ function usageNode(name) {
 }
 
 // 2026-09-02 가안 A: 이 포켓몬이 보스로 나올 때 추천 카운터
-// 대표 타입(types[0]) 의 맥스 배틀 딜러 상위 5마리. DMAX_DATA 가 없는 빌드면 null.
-function counterNode(types) {
-  const recs = (typeof DMAX_DATA !== 'undefined' ? DMAX_DATA[types[0]] : null)?.slice(0, 5);
-  if (!recs?.length) return null;
+// 2026-09-07 v2.13.0 (QA-49) 배틀 유형별 참전 풀 구분.
+//   맥스 배틀(다이맥스·거다이맥스 보스)에는 다이맥스·거다이맥스 가능 포켓몬만 들어갈 수 있고,
+//   일반·전설·메가 레이드에는 전체 포켓몬(메가·섀도우 포함)이 들어간다.
+//   예전에는 보스 종류와 무관하게 맥스 배틀 딜러(DMAX_DATA)만 보여줘 원시 가이오가 같은 레이드 보스에도
+//   "맥스 배틀 수치" 기반 추천이 나왔다. 이제 보스 이름이 다이맥스/거다이맥스로 시작할 때만 맥스 딜러를 보여 주고,
+//   그 밖의 보스는 레이드 성능표(시트, 없으면 자체 계산)에서 효과가 굉장한 공격 타입의 딜러를 고른다.
+function bossBattleKind(name) {
+  return /^(거다이맥스|다이맥스)\s/.test(name ?? '') ? 'max' : 'raid';
+}
+// 이 보스 타입 조합에 효과가 굉장한(×1.6 이상) 공격 타입을 배율 내림차순으로 최대 count개
+function raidCounterTypes(bossTypes, count = 2) {
+  return Object.keys(TYPE_KO)
+    .map((typeName) => [typeName, typeMultAgainst(typeName, bossTypes)])
+    .filter(([, multiplier]) => multiplier >= 1.5)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, count)
+    .map(([typeName]) => typeName);
+}
+// 공격 타입별 레이드 성능표 상위 행을 모아 점수순으로 합치고 종(도감번호) 중복을 없앤다
+//   시트(SHEET_DATA.pve)는 그 속성 최강 대비 %(score)라 타입이 달라도 견줄 수 있고,
+//   자체 계산(PVE_DATA)은 같은 보스 가정의 절대 점수라 역시 타입 사이 비교가 된다. 둘을 섞지는 않는다
+function raidDealerRows(attackTypes, count = 5) {
+  const sheet = typeof SHEET_DATA !== 'undefined' ? SHEET_DATA?.pve : null;
+  const useSheet = attackTypes.every((typeName) => Array.isArray(sheet?.[typeName]) && sheet[typeName].length);
+  const source = useSheet ? sheet : (typeof PVE_DATA !== 'undefined' ? PVE_DATA : null);
+  if (!source) return [];
+  const merged = attackTypes.flatMap((typeName) => (source[typeName] ?? []).slice(0, 15).map((pokemon) => ({ ...pokemon, viaType: typeName })));
+  merged.sort((a, b) => (b.score ?? 0) - (a.score ?? 0));
+  const seen = new Set();
+  const picked = [];
+  for (const pokemon of merged) {
+    const speciesKey = dexOf(pokemon.sprite) ?? pokemon.name;
+    if (seen.has(speciesKey)) continue;
+    seen.add(speciesKey);
+    picked.push(pokemon);
+    if (picked.length >= count) break;
+  }
+  return picked;
+}
+// 추천 딜러 버튼 줄 (팝업 안의 버튼이라 클릭이 바깥 모달로 새지 않게 stopPropagation)
+function counterRecsNode(recs) {
   return el('div', { class: 'boss-recs' }, ...recs.map((counter, index) =>
-    // 팝업 안의 버튼이라 클릭이 바깥 모달로 새지 않게 stopPropagation
     el('button', { class: 'boss-rec', onclick: (event) => { event.stopPropagation(); openDetail(counter); } },
       sprite(counter.sprite), el('span', {}, `${index + 1} `, nameNode(counter.name)))));  // 2026-09-06 v2.10.0 폼 라벨 뱃지
+}
+// 반환값: { title, node } — 섹션 제목까지 보스 종류에 따라 달라지므로 함께 돌려준다. 추천이 없으면 null
+function counterNode(types, name) {
+  if (bossBattleKind(name) === 'max') {
+    // 맥스 배틀: 대표 타입(types[0]) 의 맥스 배틀 딜러 상위 5마리. DMAX_DATA 가 없는 빌드면 null
+    const recs = (typeof DMAX_DATA !== 'undefined' ? DMAX_DATA[types[0]] : null)?.slice(0, 5);
+    if (!recs?.length) return null;
+    return {
+      title: `${name}가 보스로 나오면? (맥스 배틀 — 다이맥스·거다이맥스만 참전 가능)`,
+      node: el('div', {}, counterRecsNode(recs),
+        el('p', { class: 'd-foot' }, `${TYPE_KO[types[0]]} 속성 맥스 배틀 보스 기준 · 메가·원시·섀도우는 맥스 배틀에 참전할 수 없어 제외`)),
+    };
+  }
+  const attackTypes = raidCounterTypes(types);
+  if (!attackTypes.length) return null;
+  const recs = raidDealerRows(attackTypes);
+  if (!recs.length) return null;
+  const typeLabel = attackTypes.map((typeName) => TYPE_KO[typeName]).join('·');
+  return {
+    title: `${name}가 보스로 나오면? (레이드 — ${typeLabel} 딜러 추천)`,
+    node: el('div', {}, counterRecsNode(recs),
+      el('p', { class: 'd-foot' }, `일반·전설·메가 레이드는 전체 포켓몬 참전 · ${typeLabel} 타입 레이드 성능표 상위 (종 중복 제거)`)),
+  };
 }
 
 
@@ -540,8 +608,9 @@ function openDetail(pokemon, isDex = false, from = null) {
   const megaCmp = dex != null ? megaCompareNode(dex) : null;
   if (megaCmp) body.append(detailSection('⚡ 메가X vs 메가Y 비교', megaCmp));
   if (dex != null) body.append(detailSection('진화 단계', evoNode(dex, isDex, pokemon.sprite)));
-  const counter = types.length ? counterNode(types) : null;
-  if (counter) body.append(detailSection(`${pokemon.name}가 보스로 나오면? (${TYPE_KO[types[0]]} 보스 공략 딜러)`, counter));
+  // 2026-09-07 v2.13.0 (QA-49) 보스 종류(맥스 배틀 / 레이드)에 따라 참전 가능한 풀과 제목이 달라진다
+  const counter = types.length ? counterNode(types, pokemon.name) : null;
+  if (counter) body.append(detailSection(counter.title, counter.node));
   openModal(body);
   // 2026-09-06 v2.9.0 메인 화면에서 열었을 때만 주소를 #/mon/<id>로 바꿔 둔다 — 그대로 복사하면 공유 링크가 된다.
   // openModal이 먼저 closeModal을 불러 기존 #/mon 해시를 지우므로, 반드시 그 뒤에 넣는다.

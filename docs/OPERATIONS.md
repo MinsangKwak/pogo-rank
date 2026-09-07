@@ -242,7 +242,7 @@ GO 배틀리그 시즌이 바뀔 때(보통 3개월마다) 하는 유일한 수�
 
 **매달 초**
 
-- [ ] 월 일정표 갱신 (`frontend/scripts/components/schedule.js`의 `SCHEDULE_YM`·`SCHEDULE_ITEMS`) — 안 하면 달력이 빈 화면
+- [ ] 월 일정표 갱신 (`frontend/scripts/components/schedule.js`의 `SCHEDULE_MONTHS`에 새 달 키 `'YYYY-MM'` 추가 + 확정 일정 기입, 지난 달은 그대로 둔다) — 새 달 데이터가 없으면 지난 달 달력이 폴백으로 보이고 이번 주 보스 카드는 숨는다 (v2.13.0 QA-20). 수집 기준: 현지시간=KST, 스포트라이트=목요일, 한국 전용 이벤트 별도 확인, 메가·5성·D-MAX·섀도우 분류. 로테이션은 대략 전달 말 발표
 - [ ] 새 다이맥스·거다이맥스 출시분을 `backend/config/max_released.txt`에 추가
 - [ ] 새 폼이 나왔는데 화면에 안 보이면: 게임마스터 폼 접미사가 `FORM_KO`에 있는지 확인 (없으면 `names.py`의 `GM_FORM_EXCEPTIONS`, PokeAPI에 그림이 없으면 `sprite.py`의 `LOCAL_FORMS`)
 - [ ] ★ 즐겨찾기에서 '기타'로 떨어지는 비율이 높으면 `roles_build.py`의 `PVE_CUT`·`PVP_CUT` 완화 검토

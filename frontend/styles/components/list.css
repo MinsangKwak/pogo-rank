@@ -74,6 +74,10 @@
 /* 2026-09-02 보스 아코디언 */
 .boss-acc { margin: 0 0 12px; }
 .wrap-recs { flex-wrap: wrap; overflow-x: visible; }
+/* 2026-09-07 v2.13.0 (QA-43) 이번 주 보스 파티 카드 — 딜러 2 + 탱커 1 */
+.party-card { margin-bottom: 10px; padding: 8px 10px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); }
+.party-card .boss-rec { background: var(--bg); }
+.party-card .boss-rec .sub { font-size: 10.5px; }
 .boss-foot { display: flex; justify-content: space-between; align-items: center; margin-top: 10px; gap: 8px; }
 
 /* 2026-09-02 솔플 계산기 판정 카드 */
