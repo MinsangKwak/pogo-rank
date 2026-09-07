@@ -44,7 +44,7 @@ def collect_sprite_ids(value):
 # 2026-09-06 v2.10.0 (QA-44) bosses.json · pve_full.json · pvp_all.json 추가 — 순위표 상위권에는 없지만
 # 화면에 나오는 폼(IF 탭 보스 목록의 메가 샤크니아, 도감 진화 줄의 ⚡메가 버튼, PvP 전체 순위의 리전 폼)이
 # 수집 대상에서 빠져 몬스터볼 자리표시로 보이던 문제. "어디에든 sprite 로 적힌 번호는 전부 받는다"가 원칙
-for data_path in ('data/pvp.json', 'data/pve.json', 'data/pve_easy.json', 'data/dynamax.json', 'data/dynamax_tier.json', 'data/value.json', 'data/sheet.json',
+for data_path in ('data/pvp.json', 'data/pve.json', 'data/pve_easy.json', 'data/dynamax.json', 'data/dynamax_tier.json', 'data/dynamax_tank.json', 'data/value.json', 'data/sheet.json',
                   'data/bosses.json', 'data/pve_full.json', 'data/pvp_all.json'):
     if os.path.exists(data_path):
         collect_sprite_ids(json.load(open(data_path, encoding='utf-8')))
