@@ -34,6 +34,7 @@ const AUTH = {
   admin: false,
   favs: new Set(),   // 즐겨찾기 도감번호
   roles: {},         // 2026-09-05 역할 수동 보정 — '도감번호|폼라벨' → ['pve'] / ['pvp'] / []
+  mons: [],          // 2026-09-07 v2.15.0 (QA-54) 🌱 플래너 내 포켓몬 — 개체 단위 배열 (planner/collection.js 가 읽고 쓴다)
   db: null,
 };
 
@@ -109,6 +110,7 @@ async function onAuthChange(user) {
   AUTH.admin = false;
   AUTH.favs = new Set();
   AUTH.roles = {};
+  AUTH.mons = [];
   if (user) {
     const email = authEmail();
     // ADMIN_UID가 채워져 있으면 uid로 판정(공개 저장소에 이메일을 남기지 않기 위함), 없으면 이메일로 폴백
@@ -150,6 +152,8 @@ async function onAuthChange(user) {
   if (typeof initFavsMenu === 'function') initFavsMenu();
   // 도감·즐겨찾기 페이지가 열려 있으면 ★ 표시를 다시 그린다
   if (typeof currentPageId === 'function' && ['dex', 'favs'].includes(currentPageId())) renderPage();
+  // 2026-09-07 v2.15.0 (QA-54) 플래너 화면(내 포켓몬 목록·홈 요약)은 로그인 상태에 따라 내용이 다르다
+  if (typeof _planShellReady !== 'undefined' && _planShellReady && state.appMode === 'plan') render();
 }
 
 async function signIn() {
@@ -195,6 +199,9 @@ async function loadFavs() {
   AUTH.favs = new Set(favs.map(Number));
   // 2026-09-05 역할 보정: 자동 분류와 다를 때만 저장되므로 보통 비어 있다
   AUTH.roles = (snapshot && snapshot.exists ? snapshot.data().roles : null) || {};
+  // 2026-09-07 v2.15.0 (QA-54) 내 포켓몬 개체 목록 — 배열이 아니면(옛 문서·손상) 빈 목록
+  const mons = snapshot && snapshot.exists ? snapshot.data().mons : null;
+  AUTH.mons = Array.isArray(mons) ? mons.filter((mon) => mon && mon.id && mon.sprite != null) : [];
   if (!snapshot || !snapshot.exists) {
     // 첫 로그인이면 빈 문서를 만들어 둔다 — 이후 즐겨찾기 갱신이 merge로 항상 성공하도록
     docRef.set({ email: authEmail(), name: AUTH.user.displayName || '', favs: [], updatedAt: firebase.firestore.FieldValue.serverTimestamp() }, { merge: true }).catch(() => {});

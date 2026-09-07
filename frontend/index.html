@@ -53,7 +53,11 @@ __STYLES__
     <div>
       <!-- 2026-09-03 v2.1.0 헤더 단순화: POGO SEARCH + 버전 / 편하게 검색하세요 (To. 줄 제거, 헌정은 푸터 유지) -->
       <h1>POGO SEARCH <span class="app-ver">__VERSION__</span></h1>
-      <p class="tagline">편하게 검색하세요</p>
+      <!-- 2026-09-07 v2.15.0 (QA-53) 모드 배지: 🔎 도감 ↔ 🌱 플래너 한 번 탭으로 전환 (planner/shell.js) -->
+      <div class="tagline-row">
+        <p class="tagline">편하게 검색하세요</p>
+        <button class="mode-badge" id="mode-toggle" aria-label="모드 전환">🌱 플래너</button>
+      </div>
     </div>
     <div class="header-actions">
       <button class="icon-btn" id="search-toggle" aria-label="포켓몬 검색">🔍</button>
@@ -114,6 +118,8 @@ __STYLES__
     <div class="drawer-head"><b>메뉴</b><button class="icon-btn" id="drawer-close" aria-label="닫기">✕</button></div>
     <!-- 2026-09-03 v2.2.0 계정 영역 (components/auth.js) — FIREBASE_CONFIG 없으면 숨김 -->
     <div class="account" id="account" hidden></div>
+    <!-- 2026-09-07 v2.15.0 (QA-53) 메뉴 맨 위 모드 전환 (문구는 planner/shell.js updateModeBadge 가 맞춘다) -->
+    <button class="drawer-item" id="menu-mode">🌱 플래너 모드로 전환</button>
     <details class="schedule" open>
       <summary><span id="schedule-title">📅 일정표</span><span class="schedule-today" id="schedule-today"></span></summary>
       <div class="schedule-body" id="schedule-body"></div>

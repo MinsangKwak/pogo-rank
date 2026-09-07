@@ -5,6 +5,18 @@
 버전 규칙: `vMAJOR.MINOR.PATCH` — 큰 기능은 MINOR(두 번째 자리), 상세 기능·버그 수정은 PATCH(세 번째 자리) 증가.
 항목 종류: `추가` 새 기능 · `변경` 기존 동작 변경 · `수정` 버그 수정 · `데이터` 수동 데이터 갱신
 
+## v2.15.0 — 2026-09-07
+
+노션 QA 트래커 [플래너] v2.15.0 MVP — QA-53(모드 전환 셸) · QA-54(내 포켓몬). 배경: 개발 → 🌱 육성 플래너 통합 방향 / 🚀 v2.15.0 MVP 작업 명세.
+
+### 추가
+- **🌱 플래너 모드 셸 (QA-53)** — 한 앱에 두 모드. 헤더 서문 옆 모드 배지(`#mode-toggle`, `🌱 플래너` ↔ `🔎 도감`)와 ☰ 메뉴 맨 위 항목(`#menu-mode`)으로 전환하면 탭 줄이 통째로 바뀐다(도감 = 기존 그대로 / 플래너 = [🏠 홈 | 🎒 내 포켓몬]). **모드는 해시가 정한다**: `#/plan`(홈)·`#/plan/collection`(내 포켓몬)만 플래너, 그 밖(없음·`#/dex` 등)은 전부 도감 — 그래서 딥링크·뒤로가기(history.js)가 그대로 동작하고 탭 이동도 뒤로가기로 되돌아간다. 해시 없이 처음 열 때만 마지막 모드(`localStorage pogo_plan_last`)가 플래너면 `#/plan`으로(replaceState), 기본은 도감 모드. `state.appMode`·`planTab`·`planParams` 추가(기존 `pogo_last_view` 키·필드 불변). 로고 탭 = 현재 모드의 홈. 플래너 모드에서는 ★ 즐겨찾기 요약 카드를 감춘다(`body[data-mode]`). GA `mode_switch`(to·from)·`plan_view`·`plan_tab`. 새 폴더 `frontend/scripts/planner/`(shell · home · collection) + `styles/components/planner.css`. 번들이 한 `<script>`라 `const state`가 TDZ인 첫 로드에 `renderPage()`가 먼저 도는 문제는 `_planShellReady` 플래그로 거른다
+- **🎒 내 포켓몬 — 개체 단위 저장·비교 (QA-54)** — Firestore `users/{uid}.mons` 배열(`{ id, sprite, shadow, level, ivs:[atk,def,hp], fast, charged, status, memo, at }`), 즐겨찾기 `favs`(종 단위)와 별개 필드라 ★ 의 의미는 그대로. 규칙 변경 없음(`users/{uid}` 본인·승인 조건 그대로). 목록 = 상태 칩(전체·육성 중·완료·교환 후보) + 개체 카드(그림·이름·뱃지·Lv/IV/CP·기술·맥스 자격·메모, [☐ 비교]·수정·삭제). 추가/수정 팝업: 기존 검색 색인 재사용해 종 선택(다이맥스/거다이맥스 항목 제외, "섀도우 X"를 고르면 섀도우 체크) → 섀도우·레벨(1~50, 0.5)·개체값·**CP로 레벨 추정**(`planLevelFromCp`, 안 맞으면 가장 가까운 레벨과 차이 안내)·기술(`form.fast/charged` 목록, 모름 허용)·상태·메모. CP는 저장하지 않고 `calcCp`로 계산. 같은 종 2개체 [☐ 비교] → `openPlanCompare`: 지금 레벨·CP·개체값·만렙 CP·리틀/슈퍼/하이퍼 도달 CP(`planLeagueReach`, 상한 아래 최대 레벨)·기술·섀도우, 큰 쪽 강조, "순위 평가 아님" 명시. 비로그인·승인 대기는 계산만 되고 저장 버튼이 로그인/승인 안내. 상세 팝업 `.d-actions`에 ➕(`planAddFromDetail`) → `#/plan/collection?add=<sprite>&shadow=1`로 프리필. `AUTH.mons`(auth.js loadFavs가 읽고 onAuthChange가 초기화). GA `plan_mon_save`(add/edit)·`plan_mon_delete`·`plan_compare`·`plan_add_from_detail`
+- **플래너 홈** — 소개 카드 + 내 포켓몬 요약(마릿수·상태별·최근 6마리) + 도감 모드 복귀 + 후속 기능 안내(육성 판단·목표 계산기·검색식·파티·일정 연결은 백로그)
+
+### 변경
+- 개인정보처리방침에 플래너 개체 정보 저장 항목·로컬 저장소(마지막 모드) 명시 (2026-09-07 개정)
+
 ## v2.14.0 — 2026-09-07
 
 노션 QA-52 "개선사항" 묶음.
