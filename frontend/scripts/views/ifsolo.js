@@ -1,5 +1,5 @@
 // ============================================================================
-// IF 탭 (실험 기능 모음) — 두 개의 서브 기능을 한 탭에 담는다.
+// 도구 두 개 — 2026-09-07 v2.16.0 부터 IF 탭이 아니라 PvE 탭(🧮 솔플 레이드 계산기)·PvP 탭(🃏 PvP 덱 짜기)의 오른쪽 버튼으로 펼친다.
 //
 //  ① 솔플 레이드 계산기 (renderSoloCalc)
 //     입력: 잡고 싶은 레이드 보스 1마리(검색해서 선택) + 옵션(추천 덱 / 내 덱 검증,
@@ -414,15 +414,9 @@ function renderSoloCalc() {
   $note.textContent = '프로토타입 가정: 자체 계산 PvE 수치(개체값 15/15/15) 기반에 선택 보스의 실제 방어·공격 종족값을 반영해 보정. 운용은 실측 제공자식 — 최정예 1~2마리를 기절 직전 이탈 → 부활(5~6초) → 재진입으로 돌려쓰는 방식 기준. 풀강50 토글은 딜 +6.3%·TDO +20%, 버프는 메가부스트 +30% / 풀버프(메가+날씨+친구) +60%. 실측 보정: 생존 3배 · DPS +20%. 기절 → 부활약 → 재진입 운용을 반영해 정예 1~6마리 중 가장 빨리 깎는 구성을 고릅니다 (교체 1초 · 전멸 후 재진입 13초). 난이도는 보스별로 자동 판정(메가·원시 → 메가, 전설·환상·울트라비스트 → 4성, 최종 진화 → 3성, 그 외 1성)이며 선택된 보스의 난이도 배지를 탭하면 수동 변경됩니다. 레이드 표시 CP는 개체 종족값 기반 계산값(공식 검증: 뮤츠 5성 54,148), 전투 체력은 게임 구조상 티어 고정 — 1성 600 · 3성 3,600 · 4성 9,000 · 5성/메가 15,000, 제한 1·3성 180초 / 그 외 300초. 복합 타입 보스의 두 번째 타입은 어태커 자속 타입 기준 근사 보정. 포켓몬을 누르면 상세 정보가 열립니다.';
 }
 
-// ── IF 탭 진입점 ────────────────────────────────────────────────────────────
-
-// 2026-09-03 v2.1.0 IF 탭 = 실험 기능 모음: [솔플 레이드 계산기 | PvP 덱 짜기]
-// app.js가 호출하는 유일한 진입점. 서브탭 선택(state.ifWho)에 따라 두 렌더러 중 하나를 실행.
-function renderIfTab() {
-  $controls.append(seg([{ id: 'solo', label: '솔플 레이드 계산기' }, { id: 'pvpdeck', label: 'PvP 덱 짜기' }], state.ifWho,
-    (id) => { state.ifWho = id; track('sub_if_' + id); render(); }));  // 2026-09-03 GA4: 서브탭 사용량
-  (state.ifWho === 'pvpdeck' ? renderPvpDeck : renderSoloCalc)();
-}
+// ── 진입점 ────────────────────────────────────────────────────────────────
+// 2026-09-07 v2.16.0 IF 탭 해체: renderSoloCalc 는 PvE 탭의 🧮 버튼(app.js renderPveTab), renderPvpDeck 는 PvP 탭의 🃏 버튼(views/pvp.js)이 부른다.
+// 두 함수 모두 $controls·$content 에 덧붙이기만 하므로 호출한 탭이 먼저 세그먼트·버튼 줄을 그려 둔 뒤 부른다.
 
 // ── PvP 덱 짜기 ─────────────────────────────────────────────────────────────
 
@@ -637,14 +631,13 @@ function recReason(deck, intro) {
 }
 
 function renderPvpDeck() {
-  $controls.append(seg(LEAGUES.map((league) => ({ id: league.id, label: league.name })), state.deckLeague,
-    (id) => { state.deckLeague = id; render(); }));
+  // 2026-09-07 v2.16.0 리그 세그먼트는 PvP 탭이 그린다 — 덱 리그 = state.league (예전 state.league 제거)
 
   // 2026-09-03 개편: ① 진짜 추천 덱 3종(각 3마리, 이유 포함) → ② PvP 커스텀 덱 짜기(상대 슬롯 기반)
   $content.append(el('div', { class: 'list-head' },
     el('h2', {}, 'PvP 덱 짜기'), el('span', { class: 'meta' }, '실험 기능')));
 
-  const pool = PVP_DATA[state.deckLeague] ?? [];
+  const pool = PVP_DATA[state.league] ?? [];
   const top = topBySpecies(pool, 20);   // 종 단위 중복을 뺀 리그 점수 상위 20
   const meta = top.slice(0, 10);        // 그중 상위 10 = "지금 메타"
   const balancedDeck = buildBalanced(top);
@@ -652,7 +645,7 @@ function renderPvpDeck() {
   const spreadDeck = buildSpread(top, [...balancedDeck, ...antiMetaDeck]);
   const recommendations = [
     { title: '정석 코어', tag: '점수 상위 + 약점 상호 보완', deck: balancedDeck,
-      reason: recReason(balancedDeck, `${LEAGUE_KO[state.deckLeague]}리그 점수 1위 ${josa(balancedDeck[0].name, '을', '를')} 중심으로, 서로 약점을 반감해주는 조합을 골랐어요`) },
+      reason: recReason(balancedDeck, `${LEAGUE_KO[state.league]}리그 점수 1위 ${josa(balancedDeck[0].name, '을', '를')} 중심으로, 서로 약점을 반감해주는 조합을 골랐어요`) },
     { title: '안티 메타', tag: '리그 상위 10마리 저격', deck: antiMetaDeck,
       reason: recReason(antiMetaDeck, `지금 메타 상위 10마리(${meta.slice(0, 3).map((member) => member.name).join('·')} 등) 상대 평균 상성이 가장 좋은 조합이에요`) },
     { title: '타입 분산', tag: '방어 타입 안 겹침', deck: spreadDeck,
@@ -660,7 +653,7 @@ function renderPvpDeck() {
   ];
   recommendations.forEach((recommendation, index) => {
     const body = el('div', { class: 'schedule-body no-star' },
-      list(`pvprec-${state.deckLeague}-${index}`, recommendation.deck, (candidate, slotIndex) => row(
+      list(`pvprec-${state.league}-${index}`, recommendation.deck, (candidate, slotIndex) => row(
         candidate, String(slotIndex + 1),
         el('span', { class: 'score' }, candidate.score.toFixed(1)),
         el('span', { class: 'sub' }, '리그 점수'))),

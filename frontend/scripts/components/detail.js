@@ -558,7 +558,12 @@ function openDetail(pokemon, isDex = false, from = null) {
     // 2026-09-03 v2.2.0 즐겨찾기 ★ (로그인 기능이 켜진 빌드에서만, 종 단위 = 도감번호)
     el('div', { class: 'd-actions' },
       authEnabled() && dex != null ? favBtn(dex, 'd-fav') : '',
-      shareBtn(pokemon)));  // 2026-09-06 v2.9.0 🔗 공유
+      shareBtn(pokemon),  // 2026-09-06 v2.9.0 🔗 공유
+      // 2026-09-07 v2.15.0 (QA-54) ➕ 내 개체로 저장 — 도감 → 플래너 교차 동선. 승인된 로그인 사용자에게만
+      authEnabled() && AUTH.status === 'ok' && form && typeof planAddFromDetail === 'function'
+        ? el('button', { class: 'd-share d-plan', title: '🌱 플래너 내 포켓몬에 이 개체 저장', 'aria-label': '내 개체로 저장',
+            onclick: (event) => { event.stopPropagation(); planAddFromDetail(pokemon); } }, '➕')
+        : ''));
 
   const body = el('div', { class: 'detail' }, head);
   // 2026-09-04 포획 CP: "지금 잡은 개체가 100%인가"를 확인하는 표. 계산기보다 자주 보므로 위에 둔다

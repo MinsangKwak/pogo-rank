@@ -14,6 +14,7 @@
 //   - state.league(선택 리그) · state.pvpType(선택 속성, 'all' = 전체)
 //
 // 제공하는 전역: renderPvp (app.js가 탭 렌더러로 호출)
+//   2026-09-07 v2.16.0 리그 세그먼트 오른쪽 🃏 PvP 덱 짜기 버튼(state.pvpTool) → views/ifsolo.js renderPvpDeck
 // ─────────────────────────────────────────────────────────────────────────────
 
 // PvP 탭: 리그별 PvPoke 랭킹 + 속성 필터
@@ -23,6 +24,13 @@ function renderPvp() {
       state.league = id;
       render();
     });
+  // 2026-09-07 v2.16.0 오른쪽 도구 버튼: 🃏 PvP 덱 짜기 (옛 IF 탭). 리그는 위 세그먼트를 그대로 쓴다
+  $controls.append(el('div', { class: 'ctrl-row' }, leagueSeg, toolButton('🃏 덱 짜기', state.pvpTool === 'deck', () => {
+    state.pvpTool = state.pvpTool === 'deck' ? null : 'deck';
+    track('tool_pvpdeck', { on: state.pvpTool ? 1 : 0 });
+    render();
+  })));
+  if (state.pvpTool === 'deck') return renderPvpDeck();
   const leagueRanking = PVP_DATA[state.league];
   // 이 리그 랭킹에 한 마리라도 있는 속성만 칩으로 만든다
   const presentTypes = new Set(leagueRanking.flatMap((pokemon) => pokemon.types));
@@ -31,7 +39,7 @@ function renderPvp() {
     state.pvpType = id;
     render();
   });
-  $controls.append(leagueSeg, typeChips);
+  $controls.append(typeChips);
 
   const league = LEAGUES.find((leagueOption) => leagueOption.id === state.league);
   const items = state.pvpType === 'all' ? leagueRanking : leagueRanking.filter((pokemon) => pokemon.types.includes(state.pvpType));  // 2026-09-03 v2.2.0 보유만 필터 제거

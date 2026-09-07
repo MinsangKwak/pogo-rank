@@ -9,6 +9,12 @@ h1 { margin: 0; font-size: 22px; font-weight: 600; letter-spacing: -0.01em; curs
 header .meta { margin: 0; }
 
 .controls { display: flex; flex-direction: column; gap: 12px; padding: 20px 0 8px; }
+/* 2026-09-07 v2.16.0 세그먼트 + 오른쪽 도구 버튼 한 줄 (PvE 🧮 솔플 계산기 · PvP 🃏 덱 짜기) */
+.ctrl-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
+.ctrl-row .seg button { padding: 6px 11px; }  /* 리그 4개 + 도구 버튼이 390px 한 줄에 들어가게 */
+.tool-btn { flex: none; display: inline-flex; align-items: center; gap: 4px; padding: 6px 12px; border: 1px solid var(--line); border-radius: 999px; font-size: 13px; font-weight: 500; color: var(--muted); background: var(--surface); white-space: nowrap; }
+.tool-btn:hover { color: var(--fg); }
+.tool-btn[aria-pressed="true"] { color: var(--bg); background: var(--fg); border-color: var(--fg); }
 
 .note { font-size: 12.5px; color: var(--muted); margin: 20px 0 0; line-height: 1.6; }
 .empty { padding: 32px 0; color: var(--muted); font-size: 14px; }
