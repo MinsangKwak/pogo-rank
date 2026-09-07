@@ -28,6 +28,7 @@ const state = {
   boss: 'overall',           // PvE '전체' 탭에서 고른 보스/속성 칩
   easyBoss: 'overall',       // PvE '일반' 탭에서 고른 칩 (전체 탭과 따로 기억한다)
   maxBoss: 'overall',        // D-MAX 탭에서 고른 칩
+  maxAxis: 'dealer',         // 2026-09-07 v2.13.0 (QA-43) D-MAX 탭 [딜러 | 탱커] 세그먼트
   pveMode: 'easy',           // 2026-09-02 pveMode: PvE 탭 통합 — 'easy'(일반) / 'all'(전체)
   bossShow: 5,               // 2026-09-02 bossShow: 보스 추천 표시 개수
   // 2026-09-02 if 탭(솔플 계산기) 상태
@@ -50,7 +51,7 @@ const expanded = new Set();
 // 열 때마다 같은 탭·리그·칩으로 옮기는 클릭을 없애기 위해 마지막 보기를 localStorage에 남긴다.
 // 값은 전부 문자열 id라서 허용 목록으로 검증한 뒤에만 state에 넣는다 (옛 버전 값·손상 대비).
 const LAST_VIEW_KEY = 'pogo_last_view';
-const LAST_VIEW_FIELDS = ['tab', 'league', 'pvpType', 'boss', 'easyBoss', 'maxBoss', 'pveMode', 'ifWho', 'deckLeague'];
+const LAST_VIEW_FIELDS = ['tab', 'league', 'pvpType', 'boss', 'easyBoss', 'maxBoss', 'maxAxis', 'pveMode', 'ifWho', 'deckLeague'];
 function restoreLastView() {
   let saved;
   try { saved = JSON.parse(localStorage.getItem(LAST_VIEW_KEY) || 'null'); } catch { return; }
@@ -62,7 +63,7 @@ function restoreLastView() {
     league: leagues, deckLeague: leagues,
     pvpType: ['all', ...typeKeys],
     boss: ['overall', ...typeKeys], easyBoss: ['overall', ...typeKeys], maxBoss: ['overall', ...typeKeys],
-    pveMode: ['easy', 'all'], ifWho: ['solo', 'pvpdeck'],
+    pveMode: ['easy', 'all'], ifWho: ['solo', 'pvpdeck'], maxAxis: ['dealer', 'tank'],
   };
   for (const key of LAST_VIEW_FIELDS) {
     if (typeof saved[key] === 'string' && allowed[key].includes(saved[key])) state[key] = saved[key];

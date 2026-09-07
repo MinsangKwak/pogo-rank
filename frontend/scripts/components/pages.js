@@ -39,7 +39,7 @@ function renderReleasePage() {
 
 // 일정표 페이지: 달력 + 이번 달 전체 일정 목록 (분류별)
 // SCHEDULE_CATS 에 정의된 분류 순서대로 묶고, 그 분류에 일정이 없으면 소제목도 만들지 않는다.
-// 날짜는 '9/12' 처럼, 여러 날 이어지는 일정은 '9/12–15' 처럼 표시한다.
+// 날짜는 '9/12' 처럼, 여러 날 이어지는 일정은 '9/12–15' 처럼 표시한다 (달은 SCHEDULE_YM 기준).
 function scheduleMonthList() {
   const sections = [];
   for (const [catKey, category] of Object.entries(SCHEDULE_CATS)) {
@@ -48,7 +48,7 @@ function scheduleMonthList() {
     sections.push(el('p', { class: 'schedule-sec' }, category.name));
     sections.push(...items.map((item) => el('p', { class: 'schedule-item' },
       el('span', { class: 'dot', style: `background:${category.color}` }),
-      el('b', { class: 'sched-date' }, `9/${item.s}${item.e !== item.s ? `–${item.e}` : ''}`), ` ${item.label}`)));
+      el('b', { class: 'sched-date' }, `${SCHEDULE_YM.m}/${item.s}${item.e !== item.s ? `–${item.e}` : ''}`), ` ${item.label}`)));  // 2026-09-07 v2.13.0 (QA-20) 달 하드코딩 제거
   }
   return el('div', {}, ...sections);
 }

@@ -26,7 +26,8 @@
 #   data/dynamax.json       {'overall' | 보스속성: [행]} — sprite/name/en/types/fast/charged/
 #                           dmg/bulk/score/gmax
 #   data/dynamax_tier.json  {'overall' | 맥스무브속성: [행]} — ... /atk/power/stab/score/gmax/tier
-#   data/value.json         {'pvp': [...], 'pve': [...], 'both': [...], 'usage': [...]}
+#   data/value.json         {'pvp': [...], 'pve': [...], 'both': [...], 'usage': [...], 'usage_places': {이름: [[곳, 순위], ...]}}
+#   data/dynamax_tank.json  {'overall' | 보스속성: [행]} — 탱커(EHP) 순위 (v2.13.0 QA-43)
 #                           (앞 세 개를 먼저 쓴 뒤, 파일을 다시 읽어 usage 를 덧붙인다)
 #
 # 파이프라인 위치 (scripts/build.sh)
@@ -87,17 +88,36 @@ gmax_move_types = {}
 for mapping in templates_by_id['SOURDOUGH_MOVE_MAPPING_SETTINGS']['sourdoughMoveMappingSettings']['mappings']:
     gmax_move_types[(mapping['pokemonId'], mapping.get('form'))] = moves[mapping['move']]['pokemonType'].replace('POKEMON_TYPE_','')
 
+def is_base_form(pokemon_id, form):
+    # 기본 폼 표기는 소스마다 다르다: 빈 문자열 / None / 'PIKACHU_NORMAL'. 이 셋만 "원종 줄"과 같은 것으로 본다
+    return not form or form == f'{pokemon_id}_NORMAL'
+# 우리 데이터(pve_full meta)가 따로 갈라 둔 폼 집합. 여기 없는 폼은 기본 폼 항목이 대표한다
+# (예: 스트린더는 하이한모습/로우한모습을 갈라 두지 않아 '스트린더' 한 항목이 두 폼을 대표한다)
+split_forms = {(entry['pid'], entry['form']) for entry in meta.values() if entry['form']}
+def base_form_matches(pokemon_id, form):
+    # 기본 폼 항목이 등재 줄 (pokemon_id, form)에 해당하는가
+    #   - 폼 없음 / X_NORMAL 줄 → 그대로 기본 폼
+    #   - 폼이 적혀 있지만 우리 데이터에 그 폼 항목이 따로 없는 줄 → 기본 폼 항목이 그 폼을 대표하므로 인정
+    #     ('D DARMANITAN DARMANITAN_STANDARD' → 불비달마, 'D TOXTRICITY TOXTRICITY_AMPED' → 스트린더)
+    #   - 우리 데이터에 따로 있는 폼(MOLTRES_GALARIAN 등)의 줄 → 기본 폼과 무관
+    return is_base_form(pokemon_id, form) or (pokemon_id, form) not in split_forms
 def in_release_set(release_set, pokemon_id, form):
-    # 폼 표기가 소스마다 달라(빈 문자열 / None / 'PIKACHU_NORMAL') 네 가지 형태를 모두 시도한다.
-    # 마지막 항은 폼 정보가 없을 때 "그 종이 어떤 폼으로든 등재돼 있으면 인정"하는 느슨한 매칭.
-    form = form or None
-    return (pokemon_id, form) in release_set or (pokemon_id, None) in release_set or (pokemon_id, f'{pokemon_id}_NORMAL') in release_set or (form is None and any(candidate_id == pokemon_id for candidate_id, _ in release_set))
+    # 2026-09-07 v2.13.0 (QA-50) 폼 매칭을 엄격하게.
+    # 예전에는 (pokemon_id, None)이 등재돼 있으면 폼과 무관하게 통과시켜서 'D MOLTRES'(관동) 한 줄로
+    # 가라르 파이어까지 자격을 얻었다 — 가라르 삼조·히스이 윈디·알로라 라이츄 등 미출시 리전 폼 9건이 티어표에 올랐다.
+    # 규칙: 기본 폼 항목은 base_form_matches 로 판정하고, 그 밖의 폼(리전·태세 등)은 파일에 폼까지 적힌 줄만 인정한다.
+    if is_base_form(pokemon_id, form):
+        return any(candidate_id == pokemon_id and base_form_matches(candidate_id, candidate_form) for candidate_id, candidate_form in release_set)
+    return (pokemon_id, form) in release_set
 def is_dynamax(pokemon_id, form):
     return in_release_set(dynamax_released, pokemon_id, form)
 def gmax_type(pokemon_id, form):
     # 거다이맥스 가능하면 그 전용 기술의 타입, 아니면 None
     if not in_release_set(gmax_released, pokemon_id, form): return None
-    return gmax_move_types.get((pokemon_id, form or None)) or gmax_move_types.get((pokemon_id, None)) or gmax_move_types.get((pokemon_id, f'{pokemon_id}_NORMAL')) or next((move_type for (candidate_id, _), move_type in gmax_move_types.items() if candidate_id == pokemon_id), None)
+    # 기술 타입 조회도 같은 규칙 — 기본 폼은 자신이 대표하는 폼의 키를, 그 밖의 폼은 그 폼 키만 본다
+    if is_base_form(pokemon_id, form):
+        return next((move_type for (candidate_id, candidate_form), move_type in gmax_move_types.items() if candidate_id == pokemon_id and base_form_matches(candidate_id, candidate_form)), None)
+    return gmax_move_types.get((pokemon_id, form))
 
 # 2026-09-06 v2.10.0 (QA-44) 맥스 배틀 행의 표시 이름: 거다이맥스/다이맥스 접두어를 붙여 일반 폼과 구분한다
 def max_name(name, is_gmax):
@@ -146,6 +166,30 @@ def dyna_rank(boss_types, limit=TOP):
 dynamax_ranking = {'overall': dyna_rank([])}
 for type_name in TYPES: dynamax_ranking[type_name.lower()] = dyna_rank([type_name])
 json.dump(dynamax_ranking, open('data/dynamax.json','w'), ensure_ascii=False)
+
+# ---------- 2026-09-07 v2.13.0 (QA-43) 다이맥스 탱커 랭킹 (data/dynamax_tank.json) ----------
+# pogomate 가 딜러 표와 탱커(EHP) 표를 따로 두듯, "이 보스 앞에서 오래 버티는 다이맥스 포켓몬"을 따로 뽑는다.
+# 탱커 지표 EHP = 체력 × 방어 ÷ 1000 ÷ (보스 타입 기술이 이 포켓몬에게 주는 배율).
+#   체력·방어는 pve_build 가 만든 레벨 40 실전 능력치, 배율은 보스가 자기 타입 자속 기술로 때린다고 가정한다.
+#   'overall' 은 중립(배율 1) — 순수 내구 순위. 후보는 딜러 랭킹과 같은 다이맥스·거다이맥스 출시 개체뿐이다.
+def tank_rank(boss_types, limit=TOP):
+    out = []
+    for key, entry in base_meta.items():
+        if entry['form'] and entry['form'].endswith('_S'): continue   # 에이펙스 폼은 맥스 배틀 대상이 아니다
+        gmax_move_type = gmax_type(entry['pid'], entry['form'])
+        if not is_dynamax(entry['pid'], entry['form']) and not gmax_move_type: continue
+        own_types = [type_name.upper() for type_name in entry['types']]
+        multiplier = max(type_mult(boss_type, own_types) for boss_type in boss_types) if boss_types else 1.0
+        bulk = entry['def'] * entry['hp'] / 1000
+        is_gmax = gmax_move_type is not None
+        out.append({'sprite': gmax_sprite_id(entry['dex'], entry['form']) if is_gmax else entry['sprite'], 'name': max_name(entry['name'], is_gmax), 'en': entry['en'], 'types': entry['types'],
+                    'fast': '', 'charged': '', 'ehp': round(bulk / multiplier), 'mult': round(multiplier, 2), 'hp': round(entry['hp']), 'def': round(entry['def']), 'gmax': is_gmax})
+    out.sort(key=lambda row: -row['ehp'])
+    return out[:limit] if limit else out
+dynamax_tank = {'overall': tank_rank([])}
+for type_name in TYPES: dynamax_tank[type_name.lower()] = tank_rank([type_name])
+json.dump(dynamax_tank, open('data/dynamax_tank.json', 'w', encoding='utf-8'), ensure_ascii=False)
+print('tank:', [(row['name'], row['ehp'], row['mult']) for row in dynamax_tank['overall'][:5]])
 
 # 2026-09-04 맥스 배틀 포획 풀: "이 종을 맥스 배틀에서 잡을 수 있나"만 담은 별도 표
 # 랭킹(dynamax.json)은 상위 30만 남기므로 포획 CP 안내에는 쓸 수 없어 전체 목록을 따로 낸다.
@@ -350,5 +394,8 @@ use_list.sort(key=lambda usage_entry: (-usage_entry['score'], -usage_entry['coun
 # 위에서 쓴 value.json 을 다시 읽어 usage 키만 덧붙인다 (pvp/pve/both 는 그대로 보존)
 value_data = json.load(open('data/value.json', encoding='utf-8'))
 value_data['usage'] = use_list[:80]
+# 2026-09-07 v2.13.0 (QA-42) 순위표 행의 "활용 N곳" 배지와 상세 팝업 활용처용 — 상위 80에 못 든 항목도 어디서 몇 위인지 알아야 하므로
+# 전 항목의 등재 내역을 압축 형태(이름 → [[곳, 순위], ...])로 따로 싣는다. usage(상위 80, 스프라이트·점수 포함)는 활용처 탭 전용으로 그대로 둔다
+value_data['usage_places'] = {usage_entry['name']: [[place['place'], place['rank']] for place in usage_entry['places']] for usage_entry in use_list}
 json.dump(value_data, open('data/value.json', 'w', encoding='utf-8'), ensure_ascii=False)
 print('usage:', len(use_list), [(usage_entry['name'], usage_entry['count']) for usage_entry in use_list[:6]])

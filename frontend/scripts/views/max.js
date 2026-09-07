@@ -14,11 +14,12 @@
 //   - DMAX_TIER[타입] : 티어표용 목록. pogomate와 같은 기준으로 계산된 score/tier를 갖는다.
 //                       (공격 종족값 × 맥스무브 위력 × 자속 보정, 내구 미반영)
 //   - DMAX_DATA[타입] : 그 속성 보스를 상대할 때 강한 맥스 어태커 목록 (맥스 피해 dmg·내구 bulk 포함)
+//   - DMAX_TANK[타입] : 그 속성 보스 앞에서 오래 버티는 탱커 목록 (EHP·받는 배율 mult) — v2.13.0 QA-43, [탱커] 세그먼트·파티 카드
 //   - SCHEDULE_ITEMS / SCHEDULE_YM (components/schedule.js) : 이번 주 D-MAX 보스 주차를 찾는 데 쓴다
 //   - TYPE_KO, state.maxBoss(선택한 속성 칩), state.bossShow(추천 딜러 표시 개수)
 //
-// 제공하는 전역: maxRow · whyText · tierRowNode · expandableRow · bossRecNodes ·
-//                renderBossAcc · renderMax (app.js가 탭 렌더러로 호출)
+// 제공하는 전역: maxRow · tankRow · whyText · tierRowNode · expandableRow · bossRecNodes · partyCardNode ·
+//                renderBossAcc · renderMaxTank · renderMax (app.js가 탭 렌더러로 호출)
 // ※ 티어별로 묶어 그리는 renderTierList는 views/tier.js에 있다.
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -103,6 +104,24 @@ function bossRecNodes(typeKey, count) {
     }, sprite(pokemon.sprite), el('span', {}, `${index + 1} `, nameNode(pokemon.name))));  // 2026-09-06 v2.10.0 폼 라벨 뱃지
 }
 
+// 2026-09-07 v2.13.0 (QA-43) 파티 카드: 이 보스에 "딜러 상위 2 + 탱커 상위 1" — 친구들 질문("뭘 데려가?")에 가장 가까운 답.
+// 탱커는 딜러와 같은 종이 겹치지 않게 고른다. 탱커 데이터가 없는 빌드에서는 빈 문자열(카드 없음)
+function partyCardNode(typeKey) {
+  const dealers = (DMAX_DATA[typeKey] ?? []).slice(0, 2);
+  const tanks = typeof DMAX_TANK !== 'undefined' ? (DMAX_TANK?.[typeKey] ?? []) : [];
+  const dealerNames = new Set(dealers.map((pokemon) => pokemon.name));
+  const tank = tanks.find((pokemon) => !dealerNames.has(pokemon.name));
+  if (!dealers.length || !tank) return '';
+  const member = (pokemon, role, why) => el('button', { class: 'boss-rec', onclick: (event) => { event.stopPropagation(); openDetail(pokemon); } },
+    sprite(pokemon.sprite), el('span', {}, nameNode(pokemon.name)), el('small', { class: 'sub' }, `${role} · ${why}`));
+  return el('div', { class: 'party-card' },
+    el('p', { class: 'schedule-sec' }, `🧩 추천 파티 — 딜러 2 + 탱커 1`),
+    el('div', { class: 'boss-recs wrap-recs' },
+      ...dealers.map((pokemon) => member(pokemon, '딜러', `맥스 피해 ${pokemon.dmg}`)),
+      member(tank, '탱커', `EHP ${tank.ehp}${typeKey === 'overall' ? '' : ` · 받는 배율 ×${tank.mult}`}`)),
+    el('p', { class: 'd-foot' }, '딜러는 맥스 피해 × √내구 순위, 탱커는 체력 × 방어 ÷ 받는 배율(EHP) 순위의 1위. 탱커 전체 순위는 [탱커] 세그먼트에서'));
+}
+
 // 이번 주 보스 아코디언을 채운다.
 // 보스를 고르는 순서
 //   1) 오늘이 걸쳐 있는 dmax 일정 (= 이번 주 보스)
@@ -113,9 +132,14 @@ function renderBossAcc() {
   const titleEl = document.getElementById('boss-acc-title');
   const bodyEl = document.getElementById('boss-acc-body');
   const now = new Date();
-  // 일정표가 다루는 달이 아니면 todayDayOfMonth가 0이 되고, 자연히 "다음 보스" 쪽으로 넘어간다
+  // 2026-09-07 v2.13.0 (QA-20) 일정표가 다루는 달이 오늘 달이 아니면(다음 달 데이터 미등재로 지난 달에 폴백한 상태)
+  // 지난 달 보스를 "이번 주"로 내밀지 않고 아코디언을 숨긴다
   const isCurrentMonth = now.getFullYear() === SCHEDULE_YM.y && now.getMonth() + 1 === SCHEDULE_YM.m;
-  const todayDayOfMonth = isCurrentMonth ? now.getDate() : 0;
+  if (!isCurrentMonth) {
+    accordion.style.display = 'none';
+    return;
+  }
+  const todayDayOfMonth = now.getDate();
   let bossItem = SCHEDULE_ITEMS.find(item => item.cat === 'dmax' && item.t && todayDayOfMonth >= item.s && todayDayOfMonth <= item.e);
   let prefix = '⚔️ 이번 주 보스 · ';
   if (!bossItem) {
@@ -129,10 +153,11 @@ function renderBossAcc() {
   accordion.style.display = '';
   // 일정 label에서 보스 이름만 뽑는다: 괄호 설명을 떼고 'D-MAX ' 접두어도 지운다
   const bossName = bossItem.label.split(' (')[0].replace('D-MAX ', '');
-  titleEl.textContent = `${prefix}${bossName} (${TYPE_KO[bossItem.t]}) · 9/${bossItem.s}–${bossItem.e}`;
+  titleEl.textContent = `${prefix}${bossName} (${TYPE_KO[bossItem.t]}) · ${SCHEDULE_YM.m}/${bossItem.s}–${bossItem.e}`;  // 2026-09-07 v2.13.0 (QA-20) 달 하드코딩 제거
   const total = (DMAX_DATA[bossItem.t] ?? []).length;
   const grid = el('div', { class: 'boss-recs wrap-recs' }, ...bossRecNodes(bossItem.t, state.bossShow));
   bodyEl.replaceChildren(
+    partyCardNode(bossItem.t),  // 2026-09-07 v2.13.0 (QA-43) "딜러 2 + 탱커 1" 파티 카드
     el('p', { class: 'schedule-sec' }, `${TYPE_KO[bossItem.t]} 보스 추천 딜러 (딜량순)`),
     grid,
     // 아래 줄: 5개씩 더보기(전부 나왔으면 안내 문구로 대체) + 그 속성 칩으로 이동
@@ -156,15 +181,43 @@ function renderBossAcc() {
       }, `${TYPE_KO[bossItem.t]} 칩으로 이동 ▸`)));
 }
 
+// 2026-09-07 v2.13.0 (QA-43) 탱커 한 행: 점수 칸에 EHP, 보조줄에 받는 배율과 체력·방어
+//   EHP = 체력 × 방어 ÷ 1000 ÷ 받는 배율 (backend/value_build.py tank_rank). 배율은 보스가 자기 타입 자속 기술로 때린다고 가정
+function tankRow(pokemon, rankText, bossType) {
+  return row(
+    pokemon, rankText, el('span', { class: 'score' }, String(pokemon.ehp)),
+    el('span', { class: 'sub' }, bossType === 'overall' ? `EHP · 체력 ${pokemon.hp} × 방어 ${pokemon.def}` : `EHP · 받는 배율 ×${pokemon.mult} · 체력 ${pokemon.hp} × 방어 ${pokemon.def}`),
+    pokemon.types.map((typeName) => `${TYPE_KO[typeName]} 타입`));
+}
+
+// 2026-09-07 v2.13.0 (QA-43) 보스 속성별 탱커 목록 (탭 세그먼트 '탱커')
+function renderMaxTank(selectedType) {
+  const tanks = (typeof DMAX_TANK !== 'undefined' ? DMAX_TANK[selectedType] : null) ?? [];
+  const title = selectedType === 'overall' ? 'D-MAX 탱커 (중립 · 순수 내구)' : `${TYPE_KO[selectedType]} 보스 상대 D-MAX 탱커`;
+  $content.append(
+    el('div', { class: 'list-head' }, el('h2', {}, title), el('span', { class: 'meta' }, `상위 ${tanks.length}`)),
+    list(`maxtank-${selectedType}`, tanks, (pokemon, index) => tankRow(pokemon, String(index + 1), selectedType)));
+  $note.textContent = '탱커 순위: EHP = 체력 × 방어 ÷ 1000 ÷ (보스 타입 기술을 받는 배율). 레벨 40 실전 능력치 기준이고, 보스는 자기 타입 자속 기술로 때린다고 가정합니다(복합 타입 보스는 상세 팝업의 타입 상성을 함께 보세요). 출시된 다이맥스·거다이맥스만 포함. 포켓몬을 누르면 상세 정보가 열립니다.';
+}
+
 function renderMax() {
   const bossItems = [{ id: 'overall', label: '전체' }, ...Object.keys(TYPE_KO).map((typeKey) => ({ id: typeKey, label: TYPE_KO[typeKey], color: typeKey }))];
   renderBossAcc();  // 2026-09-02 탭 위 보스 아코디언
+  // 2026-09-07 v2.13.0 (QA-43) [딜러 | 탱커] 세그먼트 — pogomate 처럼 딜러 표와 탱커(EHP) 표를 따로 본다 (PvE 탭의 일반/전체 토글과 같은 seg)
+  if (typeof DMAX_TANK !== 'undefined' && Object.keys(DMAX_TANK ?? {}).length) {
+    $controls.append(seg([{ id: 'dealer', label: '딜러' }, { id: 'tank', label: '탱커' }], state.maxAxis, (id) => {
+      state.maxAxis = id;
+      track('sub_max_' + id);  // GA4: 서브탭 사용량 (sub_pve_* 와 같은 규칙)
+      render();
+    }));
+  }
   const bossChips = chips(bossItems, state.maxBoss, (id) => {
     state.maxBoss = id;
     render();
   });
   $controls.append(bossChips);
   const selectedType = state.maxBoss;
+  if (state.maxAxis === 'tank') return renderMaxTank(selectedType);
 
   // 티어별 포켓몬 (속성 탭 = 그 속성 다이맥스 포켓몬만)
   // 여기서 "그 속성"은 맥스무브(charged) 속성 기준이다 — 그 타입 맥스무브를 쓰는 딜러 목록.
@@ -184,5 +237,5 @@ function renderMax() {
       list(`max-${selectedType}`, attackers, (pokemon, index) => maxRow(pokemon, String(index + 1))),
     );
   }
-  $note.textContent = '티어표 행을 누르면 선정 근거가 펼쳐집니다. 티어표는 pogomate와 같은 기준: 공격 종족값 × 맥스무브 위력(거다이 450 · 다이 350) × 자속 1.2, 내구 미반영, 다이맥스·거다이맥스는 별도 항목이며 %는 그 목록 1위 대비입니다. 위는 그 속성 다이맥스 포켓몬의 티어표(중립 기준, 목록 안 상대 등급), 아래는 그 속성 보스를 상대할 때 강한 맥스 어태커 순위입니다. 맥스어택 3레벨(위력 350) 또는 거다이맥스 3레벨(위력 450) 1회 피해 × √내구 기준. 출시된 다이맥스 138종 · 거다이맥스 17종만 포함. 포켓몬을 누르면 상세 정보가 열립니다.';
+  $note.textContent = '티어표 행을 누르면 선정 근거가 펼쳐집니다. 티어표는 pogomate와 같은 기준: 공격 종족값 × 맥스무브 위력(거다이 450 · 다이 350) × 자속 1.2, 내구 미반영, 다이맥스·거다이맥스는 별도 항목이며 %는 그 목록 1위 대비입니다. 위는 그 속성 다이맥스 포켓몬의 티어표(중립 기준, 목록 안 상대 등급), 아래는 그 속성 보스를 상대할 때 강한 맥스 어태커 순위입니다. 맥스어택 3레벨(위력 350) 또는 거다이맥스 3레벨(위력 450) 1회 피해 × √내구 기준. 출시된 다이맥스 139종 · 거다이맥스 17종만 포함(미출시 리전 폼 제외). 포켓몬을 누르면 상세 정보가 열립니다.';
 }

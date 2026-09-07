@@ -3,6 +3,10 @@
 .tag { flex: 0 0 auto; display: inline-block; font-size: 10.5px; font-weight: 600; letter-spacing: .02em; padding: 1px 6px; border-radius: 4px; border: 1px solid var(--line); color: var(--muted); }
 .tag.gmax { color: var(--fg); border-color: var(--fg); }
 
+/* 2026-09-07 v2.13.0 (QA-42) 활용 N곳 — 2곳 이상만, 5곳 이상은 강조 */
+.tag.use { color: var(--muted); }
+.tag.use.many { color: #2f6fd8; border-color: color-mix(in srgb, #2f6fd8 55%, var(--line)); }
+
 /* 2026-09-04 시즌 기술 변경 예고 뱃지 — 적용일 전에만 붙는다 */
 .tag.chg { border-style: dashed; }
 .tag.chg.up { color: #2f8f5b; border-color: color-mix(in srgb, #2f8f5b 55%, var(--line)); }
