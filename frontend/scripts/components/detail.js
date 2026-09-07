@@ -69,7 +69,7 @@ function shareBtn(pokemon) {
     const url = monShareUrl(pokemon.sprite);
     track('share', { mon: pokemon.name });  // GA4: 공유 시도 — 링크로 들어온 detail_open(from=link)과 짝을 이룬다
     try {
-      if (navigator.share) await navigator.share({ title: `${pokemon.name} — POGO SEARCH`, url });
+      if (navigator.share) await navigator.share({ title: `${pokemon.name} — POGO PLAN`, url });
       else { await navigator.clipboard.writeText(url); copied(); }
     } catch (error) {
       // 공유 시트를 취소한 경우는 조용히, 그 외(권한 등)는 클립보드로 한 번 더

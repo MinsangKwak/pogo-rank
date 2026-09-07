@@ -5,6 +5,13 @@
 버전 규칙: `vMAJOR.MINOR.PATCH` — 큰 기능은 MINOR(두 번째 자리), 상세 기능·버그 수정은 PATCH(세 번째 자리) 증가.
 항목 종류: `추가` 새 기능 · `변경` 기존 동작 변경 · `수정` 버그 수정 · `데이터` 수동 데이터 갱신
 
+## v2.17.0 — 2026-09-07
+
+노션 "서비스명 변경 검토"에서 **POGO PLAN(포고플랜)** 확정 (인수인계 문서 3-1).
+
+### 변경
+- **서비스명 POGO SEARCH → POGO PLAN** — 화면 `<title>`("POGO PLAN — 뭘 키우고, 뭘 잡을지")·헤더 `<h1>`·스플래시·`apple-mobile-web-app-title`, `manifest.webmanifest`(이름 "POGO NOTE" 잔재 → "POGO PLAN — 포켓몬GO 육성 플래너", short_name "POGO PLAN"), 상세 팝업 공유 제목, 개인정보처리방침 서비스명, `robots.txt`·dev robots 머리말, README·docs 제목, `.env.example`·`.vscode` 주석. 서비스워커 캐시 접두사 `pogonote-v3` → `pogoplan-v4`(activate 가 옛 캐시를 지우므로 사용자 조치 없음). **유지**: 저장소명·배포 URL(PWA 설치·공유 링크 보호), 전역 이름·`state` 키·localStorage 키(`pogo_*`)·GA 이벤트명·Firestore 필드명(불변 규칙). 패치노트의 지난 항목에 남은 "POGO SEARCH" 표기는 기록이라 그대로 둔다
+
 ## v2.16.1 — 2026-09-07
 
 ### 수정

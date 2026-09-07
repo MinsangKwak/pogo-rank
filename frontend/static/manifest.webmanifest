@@ -1,6 +1,6 @@
 {
-  "name": "POGO NOTE — 울애들을 위한 포켓몬 노트",
-  "short_name": "POGO NOTE",
+  "name": "POGO PLAN — 포켓몬GO 육성 플래너",
+  "short_name": "POGO PLAN",
   "description": "뭘 키우고, 뭘 잡을지. 여기서 끝.",
   "start_url": "./",
   "scope": "./",
