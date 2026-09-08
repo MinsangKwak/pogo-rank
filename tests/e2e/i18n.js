@@ -94,6 +94,16 @@ const hangul = (text) => /[가-힣]/.test(text || '');
   await page.click('#lang-toggle');
   await page.waitForTimeout(500);
 
+  // ── 보기 방식 버튼: 눌러서 바뀐 라벨·설명도 영어로 따라오는가
+  //     (속성은 childList 관찰자가 못 본다 — 토글이 직접 번역을 부르는지 확인한다)
+  await go('#/dex');
+  const layout = page.locator('.dex__layout');
+  await layout.click();
+  await page.waitForTimeout(400);
+  const after = { text: (await layout.textContent()).trim(), aria: await layout.getAttribute('aria-label') };
+  ok('보기 방식 라벨이 영어', /^(⊞ Grid|☰ List)$/.test(after.text), after.text);
+  ok('보기 방식 설명도 영어', !hangul(after.aria) && /View:/.test(after.aria), after.aria);
+
   // ── 되돌리기
   await go('#/dex');
   await page.click('#lang-toggle');
