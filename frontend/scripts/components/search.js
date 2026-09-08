@@ -214,7 +214,7 @@ function toggleSearchPanel(open) {
   closeModal({ silent: true });
   document.querySelector('.search').hidden = false;
   if (!dialog.open) dialog.showModal();
-  document.body.style.overflow = 'hidden';
+  syncScrollLock();
   document.getElementById('search-toggle').setAttribute('aria-expanded', 'true');
   renderSearchResults();
   document.getElementById('psearch').focus();
@@ -226,7 +226,7 @@ function closeSearchDialog(silent = false) {
   if (!dialog?.open) return;
   dialog.close();
   document.getElementById('search-toggle').setAttribute('aria-expanded', 'false');
-  if (!overlayVisible()) document.body.style.overflow = '';
+  syncScrollLock();
   if (!silent) releaseOverlayEntry(false);
 }
 

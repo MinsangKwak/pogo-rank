@@ -1,5 +1,7 @@
 /* 속성 필터 칩 (가로 스크롤) */
-.chips { display: flex; gap: 6px; overflow-x: auto; padding: 2px 0 6px; margin: 0 -20px; padding-left: 20px; padding-right: 20px; scrollbar-width: none; }
+/* overflow-y 를 함께 적는다 — 빠뜨리면 세로도 스크롤 컨테이너가 되어 커서가 이 줄 위에 있을 때
+   휠을 가로챈다 (v2.26.0 탭 줄에서 실제로 났던 버그). 위아래 여백은 포커스 링이 잘리지 않을 만큼 둔다 */
+.chips { display: flex; gap: 6px; overflow-x: auto; overflow-y: hidden; padding: 4px 0 6px; margin: 0 -20px; padding-left: 20px; padding-right: 20px; scrollbar-width: none; }
 .chips::-webkit-scrollbar { display: none; }
 .chips__item { flex: 0 0 auto; display: inline-flex; align-items: center; gap: 6px; padding: 5px 11px; border: 1px solid var(--line); border-radius: 999px; font-size: 13px; color: var(--muted); white-space: nowrap; }
 .chips__item .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--c, var(--muted)); }

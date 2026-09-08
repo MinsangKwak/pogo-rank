@@ -51,3 +51,15 @@ while read -r name gid; do
   fi
 done < backend/config/sheets.conf
 echo "sheets fetched"
+
+# 2026-09-08 v2.25.0 ScrapedDuck(LeekDuck 스크랩) — 레이드 보스·알 부화 풀·이벤트.
+# 손으로 적던 일정표를 대신하려는 게 아니라, 손이 닿지 않는 달과 화면을 자동으로 채우기 위한 것이다.
+# 보조 데이터라 실패해도 배포를 막지 않는다 (없으면 gameday_build.py 가 그 화면을 통째로 비운다).
+SD=https://raw.githubusercontent.com/bigfoott/ScrapedDuck/data
+for name in raids eggs events; do
+  if ! "${CURL[@]}" -o "data/sd_$name.json" "$SD/$name.min.json"; then
+    echo "scrapedduck $name download failed (건너뜀)" >&2
+    rm -f "data/sd_$name.json"
+  fi
+done
+echo "scrapedduck fetched"

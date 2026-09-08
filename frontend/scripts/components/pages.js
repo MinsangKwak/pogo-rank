@@ -26,6 +26,7 @@
 // - SCHEDULE_CATS · SCHEDULE_ITEMS · SCHEDULE_YM · buildScheduleCal(cat) · buildScheduleTimeline(cat) (components/schedule.js)
 // - chips() (components/chips.js) — 일정 분류 칩 (v2.13.1)
 // - AUTH · authEnabled() · favBtn() · isFav() · signIn() (components/auth.js)
+// - renderRaidsPage() · renderEggsPage() (components/gameday.js) — v2.25.0 레이드 보스 · 알 부화
 // - DEX_DATA (data.js): names / forms / cpms / rel
 
 // 패치노트 페이지: 팝업 대신 전체 화면, 날짜별 전부 펼침
@@ -200,6 +201,8 @@ const PAGES = {
   terms: { title: '📜 이용약관', render: renderTermsPage },  // 2026-09-07 v2.18.0 (공개 준비 2)
   favs: { title: '★ 즐겨찾기', render: renderFavsPage },  // 2026-09-05 PvE/PvP 나눠 보기
   types: { title: '🧭 상성 검색', render: renderTypeSearchPage },  // 2026-09-06 v2.10.0 (QA-44) 타입 조합 → 약점·이중약점·추천 딜러
+  raids: { title: '⚔️ 레이드 보스', render: renderRaidsPage },  // 2026-09-08 v2.25.0 지금 도는 티어별 보스 (components/gameday.js)
+  eggs: { title: '🥚 알 부화', render: renderEggsPage },        // 2026-09-08 v2.25.0 거리별 부화 풀 (components/gameday.js)
 };
 
 // 현재 해시(#/dex, #/schedule?… 등)에서 페이지 id 만 뽑는다. PAGES 에 없으면 null = 메인 화면.

@@ -27,7 +27,7 @@
 .consent__modal .priv__list { margin-bottom: 12px; }
 
 /* 개인정보처리방침 표 — 좁은 폭은 가로 스크롤 */
-.priv__table-wrap { overflow-x: auto; margin: 8px 0; }
+.priv__table-wrap { overflow-x: auto; overflow-y: hidden; margin: 8px 0; }   /* overflow-y 를 함께 (v2.26.0) */
 .priv__table { width: 100%; min-width: 460px; border-collapse: collapse; font-size: 12.5px; line-height: 1.5; }
 .priv__table th, .priv__table td { padding: 6px 8px; border: 1px solid var(--line); text-align: left; vertical-align: top; word-break: keep-all; }
 .priv__table th { background: var(--surface); font-weight: 600; }

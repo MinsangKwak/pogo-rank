@@ -66,11 +66,29 @@
 .dex__row.is-unreleased { opacity: .55; }
 
 /* 2026-09-03 도감 2열 격자 토글 */
-.dex__list.is-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0 12px; }
-.dex__list.is-grid .dex__row { font-size: 13px; gap: 7px; padding: 6px 0; min-width: 0; }
-.dex__list.is-grid .dex__row b { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.dex__list.is-grid .dex__no { width: 40px; font-size: 11px; }
-.dex__list.is-grid .dex__row .sprite { width: 30px; height: 30px; }
+/* 2026-09-08 v2.26.0 2열은 카드로 — 한 줄에 둘을 욱여넣으니 이름이 잘리고 밑줄만 촘촘해
+   무엇을 고르는 화면인지 읽히지 않았다. 2열로 바꾸는 이유가 "한눈에 훑기" 라면
+   줄이 아니라 카드가 맞다. 그림을 키우고 세로로 세워 고르는 대상이 그림이 되게 한다 */
+.dex__list.is-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.dex__list.is-grid .dex__row {
+  position: relative; flex-direction: column; align-items: center; gap: 4px;
+  min-width: 0; padding: 14px 10px 12px; text-align: center;
+  border: 1px solid var(--line); border-bottom: 1px solid var(--line); border-radius: 12px; background: var(--surface);
+}
+.dex__list.is-grid .dex__row:hover { border-color: var(--fg); background: var(--hover); }
+.dex__list.is-grid .dex__row .sprite { width: 64px; height: 64px; }
+.dex__list.is-grid .dex__row b { font-size: 13.5px; font-weight: 600; line-height: 1.35; word-break: keep-all; }
+/* 번호는 카드 왼쪽 위 모서리로 — 이름 앞에 두면 가운데 정렬이 흐트러진다 */
+.dex__list.is-grid .dex__no { position: absolute; top: 8px; left: 10px; width: auto; font-size: 10.5px; }
+/* ★ 는 오른쪽 위 모서리 */
+.dex__list.is-grid .dex__fav { position: absolute; top: 4px; right: 4px; }
+.dex__list.is-grid .dex__types { margin-left: 0; justify-content: center; }
+.dex__list.is-grid .dex__unrel { position: absolute; top: 8px; right: 34px; }
+/* 조건 문구(레이드·알)는 이름 아래로 내려 가운데 정렬 */
+.dex__list.is-grid .gameday__note { margin-left: 0; padding-left: 0; text-align: center; }
+
+@media (min-width: 560px) { .dex__list.is-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+@media (min-width: 1024px) { .dex__list.is-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; } }
 .dex__layout { cursor: pointer; }
 
 /* 2026-09-03 v2.2.0 도감 즐겨찾기 ★ · 로그인 안내 · 즐겨찾기 칩 */
@@ -149,3 +167,10 @@
 /* 2026-09-06 v2.11.1 상성 검색: 타입 조합 포켓몬 목록 — 미구현은 흐리게 */
 .types__mons .boss__rec.is-unreleased { opacity: .55; }
 .types__mons .boss__rec .tag { font-size: 9.5px; padding: 0 4px; }
+
+/* 2026-09-08 v2.25.0 ⚔️ 레이드 보스 · 🥚 알 부화 — 도감 줄(.dex__row)을 그대로 쓰고 조건 문구만 덧붙인다 */
+.gameday__sec { margin-top: 22px; }
+.gameday__sec:first-of-type { margin-top: 8px; }
+.gameday__sec .dex__list { margin-top: 8px; }
+.gameday__note { margin-left: auto; padding-left: 10px; text-align: right; font-size: 11.5px; word-break: keep-all; }
+@media (max-width: 420px) { .gameday__note { font-size: 11px; } }
