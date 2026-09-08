@@ -5,6 +5,81 @@
 버전 규칙: `vMAJOR.MINOR.PATCH` — 큰 기능은 MINOR(두 번째 자리), 상세 기능·버그 수정은 PATCH(세 번째 자리) 증가.
 항목 종류: `추가` 새 기능 · `변경` 기존 동작 변경 · `수정` 버그 수정 · `데이터` 수동 데이터 갱신
 
+## v2.24.0 — 2026-09-08
+
+클래스 이름 리팩토링. 화면·기능은 바뀌지 않는다 (순수 이름 변경).
+
+### 변경
+- **CSS 클래스 이름을 BEM 으로 통일** — `block-name__element--modifier` 꼴, 단어 구분은 `-`, 이름은 최대 3단어. 332개 클래스를 한 번에 바꿨다. 예: `service-tile` → `home__tile` · `psearch-head` → `search__head` · `modal-close` → `modal__close` · `acct-danger` → `account__danger` · `d-sprite` → `sprite-box`
+- **겹치던 이름을 블록으로 갈랐다** — `overlay`/`modal` 이 각각 바깥 `<dialog>` 과 안쪽 카드였던 것을 `modal`/`modal__box` 로, `drawer-backdrop`/`drawer` 를 `drawer`/`drawer__panel` 로. 블록 이름만 보면 어디에 붙는지 알 수 있다
+- **여러 블록이 함께 쓰는 상태는 `is-*` 유틸리티로** — `on` → `is-on` · `unrel` → `is-unreleased` · `x2`/`r2` → `is-weak2`/`is-resist2` · `hi` → `is-high`. 한 블록에만 붙는 상태는 `--modifier` 로 남겼다
+- **코드에서 만들던 동적 클래스도 정리** — 티어 등급 글자는 `g-S` → `grade-mark--s`, 플래너 상태는 `s-0`/`s-1`/`s-2` → `plan__status--a`/`--b`/`--c`. 대소문자·숫자가 CSS 와 어긋날 여지를 없앴다
+
+### 참고
+- 불변 규칙은 그대로 지켰다 — 전역 이름 · `state` 키 · DOM id · localStorage 키 · GA 이벤트명 · Firestore 필드명은 하나도 건드리지 않았다. 바뀐 것은 `class` 속성과 CSS 선택자뿐
+- 계산된 스타일 지문(22개 화면 × 모바일·PC 두 폭, 클래스 이름을 뺀 태그·구조·44개 계산 속성)을 리팩토링 전후로 떠서 렌더 결과가 같은지 확인했다
+
+## v2.23.0 — 2026-09-08
+
+### 추가
+- **PC 레이아웃** — 1024px 이상에서 왼쪽 고정 사이드바(서비스 이동 9항목) + 넓은 본문. 컨테이너 760px → 1100px, 사이드바 210px + 32px 간격. 서비스 홈 타일 4열(560px~ 3열 · 그 아래 2열), 팝업·검색 시트 520px. 하단 기준 안내도 같은 열에 정렬. **좁은 화면(~1023px)은 기존 배치 그대로** — 서비스 이동은 ☰ 드로어 안
+- 사이드바는 `position: fixed` 라 DOM 구조를 바꾸지 않는다(본문에 왼쪽 여백만). 목록은 복제하지 않고 `matchMedia('(min-width: 1024px)')` 로 드로어 ↔ 사이드바를 **옮긴다** — 랜드마크와 `aria-current` 가 두 벌이 되지 않게
+
+## v2.22.0 — 2026-09-08
+
+디자인 통일. v2.19.0–v2.21.0 이 새 화면(서비스 홈·앱 셸)을 얹으면서 `components/app-shell.css` 가 **오버레이처럼 기존 체계를 덮어써서** 한 화면 안에 두 가지 디자인이 겹쳐 보였다. 새 기능은 그대로 두고 겉모습만 원래 체계로 되돌린다.
+
+### 변경
+- **덮어쓰기 제거** — `app-shell.css` 가 다시 정의하던 `:root` 토큰(`--muted`·`--line`·`--surface`·`--hover`)·`body` 글꼴·기본 글자 크기(16px)·컨테이너 폭(1040px)·모서리 반경(18/24/28px)을 전부 뺐다. 이것 때문에 `tokens.css` 의 무채색 팔레트가 푸른 회색(#edf2fa 계열)으로 덮이고 **Montserrat 이 빠졌으며**(숫자·영문이 Pretendard 로 렌더), 같은 카드가 화면마다 회색/파랑으로 달라 보였다. 이제 색·글꼴·크기·폭의 원본은 `tokens.css`·`base.css`·`layout.css` 하나뿐이다
+- **원칙: 오버레이로 덮지 말고 원본을 고친다** — 기존 컴포넌트 모양을 바꿔야 하면 그 컴포넌트 CSS 를 직접 고친다. 이번에 그렇게 옮긴 것: 아이콘 버튼 크기 → `drawer.css`, `<dialog>` 기본값 정리 → `modal.css`·`drawer.css`·`search.css`. `app-shell.css` 에는 v2.21.0 이 새로 만든 것(고정 상단 바·건너뛰기 링크·필터 아코디언)과 화면 전체 접근성 기본값만 남았다
+- **서비스 홈** — 타일 정의가 `app-shell.css`·`home.css` 두 곳에 서로 다른 값으로 있던 것을 `home.css` 한 곳으로 합쳤다. 색은 직접 쓴 파랑(`#4679ad`·`#5281b8`·`#6b9bdb`) 대신 토큰으로, 카드 모양은 다른 카드(`.schedule`·`.account`·`.plan-card`)와 같게(1px 테두리 · 12px 반경 · `--surface`). 인사말 42px→26px 로 낮춰 `h1`(22px) 바로 위 단계에 맞췄다
+- **아이콘 언어 통일** — 홈 타일이 혼자 기하 기호(◒ ▤ ◇ ✦ ⚔ ◈ ↗ ▦)를 쓰던 것을 앱이 이미 쓰던 이모지로(🎒 📕 🧭 ✨ ⚔️ 🃏 🌱 📅). 헤더 버튼도 텍스트("검색"·"메뉴"·"홈")에서 원래 아이콘(🔍 👤 ☰)으로 되돌렸다 — 옆의 `←` 아이콘 버튼과 생김새가 달라 따로 놀았다. 접근성 이름은 `aria-label` 로 그대로
+- **탭 줄 복구** — v2.21.0 이 `#tabs` 를 통째로 감춰 D-MAX ↔ PvE ↔ PvP 를 오가려면 매번 메뉴를 열거나 홈으로 가야 했다. 셋은 형제 화면이라 탭 줄을 되살리고, 이동은 v2.21.0 의 주소 체계(`#/rank/…`)를 그대로 쓴다(상단 바 제목·뒤로가기가 같이 맞는다). 오른쪽 바로가기(📕 🧭 ★)도 함께. 서비스 홈에서는 숨김. 플래너 탭 라벨도 텍스트로 통일(`육성 현황` · `내 포켓몬`)
+- **헤더 진입점 정리** — '홈' 버튼 제거. 드로어 맨 위 "서비스 홈" 과 같은 곳으로 가는 중복 진입점이라 v2.15.1 "화면 하나에 버튼 하나" 원칙에 맞춰 하나만 남겼다(그 링크가 `goHome()` 을 부르므로 GA `home` 이벤트도 유지). 계정 버튼 👤 은 헤더에 되돌렸다 — 승인 대기 상태를 여기서 보여 준다(v2.2.0)
+- **상세 팝업** — 전체 화면 페이지에서 원래의 가운데 카드(좁은 화면은 바텀시트)로. 닫기 버튼도 `←` + "상세 정보" 줄에서 오른쪽 위 `✕` 하나로. 검색도 같은 시트 기하로 통일(제목·입력은 스크롤해도 고정)
+- **손가락 대상** — `.icon-btn` 38px → 44px(`--tap` 토큰). v2.21.0 은 모든 버튼에 `min-height: 48px` 를 걸어 칩·세그먼트·목록까지 부풀렸는데, 대상 크기와 글자 크기를 분리해 **글자 크기 체계는 그대로** 두고 대상만 키웠다
+- 토큰 추가: `--accent`(v2.15.0 플래너 배지 초록을 올린 값 — 드로어 현재 위치 표시에만 쓴다) · `--tap`. 원칙은 그대로 "색은 의미에만"(타입·폼·순위)
+- 개인정보처리방침: v2.19.0 게스트 플래너가 브라우저에 저장하는 개체 정보(`plan_guest_mons`)를 자동수집 항목에 명시
+- 기록 정리: `README` 버전 이력에 v2.19.0–v2.22.0 추가(v2.19.0–v2.21.0 이 빠져 있었다), `CHANGELOG` 머리말이 v2.20.0 아래로 밀려 있던 것 복구
+
+
+## v2.21.0 — 2026-09-08
+
+- 기능 간 상단 탭 제거. 공통 앱 바와 홈에서 기능별 독립 화면으로 이동.
+- 메뉴를 서비스 링크 중심으로 단순화하고 검색·상세를 전체 화면으로 변경.
+- native dialog, Tab 순환, Escape·뒤로가기, 포커스 복귀, 검색 결과 보존.
+- 화면 확대 허용, 건너뛰기 링크, 랭킹 키보드 접근, 큰 터치 영역, 대비·간격 및 모바일 필터 개선.
+- 기준: Material Design app bar 및 WAI-ARIA dialog pattern. 전체 WCAG 인증을 의미하지 않음.
+
+## v2.20.0 — 2026-09-08
+
+- 서비스 홈 신설: 모바일 2열·PC 3열 기능 카드. 해시 없는 첫 진입과 로고는 홈으로 연결.
+- D-MAX 밑 중복 검색창·도감·상성·플래너·일정 줄 제거. 헤더 검색 유지.
+- 랭킹 주소 `#/rank/max`, `#/rank/pve`, `#/rank/pvp` 추가. 전체 페이지와 랭킹에서 홈 복귀 지원.
+
+
+## v2.18.0 — 2026-09-07
+
+노션 "🚀 상용·오픈소스 전환 점검" Phase 0 + 인수인계 문서 4-C **공개 준비 1·2·3**. 결정 근거: 수익화 없음 → 후원(단계적) · 코드 MIT · 스프라이트 고지 후 유지 · 승인제 유지 · 위치 기능 없음.
+
+### 추가
+- **공개 준비 1 — 라이선스·고지** — `LICENSE`(MIT, 코드만) · `NOTICE.md`(경로별 범위 표, 포켓몬 IP 고지, 출처별 라이선스 표 11건, 포크 시 조건, takedown 72시간 정책) · `CONTRIBUTING.md`(dev 브랜치 PR, DCO 서명, 불변 규칙 요약, 행동 규범) · `SECURITY.md`(제보 창구, 범위, 90일 공개 원칙). README에 라이선스 표와 고지 갱신(권리자 The Pokémon Company · Nintendo · Creatures · GAME FREAK, Pokémon GO 는 **Scopely Explore, Inc.**). 선행 확인 2건 통과: 배포 스프라이트는 96×96 축소본(평균 0.5KB)만, 게임마스터 원본(`gm.json`·`pm.json`)은 `dist/`에 미포함(`data/`는 미커밋). 하와이 시트 작성자 허락은 사람 액션으로 남김(NOTICE에 "확인 진행 중")
+- **공개 준비 2 — 약관·방침** — `components/terms.js`: 📜 이용약관 페이지(`#/terms`, PAGES 등록, 7장: 서비스·계정과 승인·금지 행위·면책·지식재산·개인정보·준거법) + **첫 로그인 동의 팝업**(`openTermsConsent`: 약관·방침 동의 + 만 14세 체크 둘 다 켜져야 [동의하고 로그인], `localStorage pogo_terms_ok = TERMS_VER`, `requests` 문서에 `consent`·`consentAt` 기록, 약관 개정 시 재동의) + `IP_NOTICE` 한 곳 관리(`ipNoticeNode`, 푸터 `#ip-notice`와 전체 페이지 하단에 상시 노출). `privacy.js` 전면 개정: 수집 항목 표, 자동수집(GA 동의 조건·localStorage 키·SW 캐시·쿠키), 처리위탁·국외이전 표(Google LLC 미국, Firestore 서울 리전, GA 14개월), 보유기간·파기, 만 14세 미만 불허, 이용자 권리(셀프 삭제 안내), 안전성, 보호책임자(10일 회신), 고지(7일 전), 위치정보 미수집 명시
+- **공개 준비 3 — 통계 동의·계정 삭제** — `components/consent.js`: 첫 방문 하단 배너(`#consent`, 스플래시 뒤에 표시: 저장소 안내 + 위치 미수집 + [통계 거부] [통계 동의]), `localStorage pogo_consent`, **동의 전 gtag 미삽입** — build.py `GA_SNIPPET`은 `window.GA_PENDING_ID`만 남기고 `loadAnalytics()`가 동의 시 Consent Mode v2 기본값(analytics granted · ad 전부 denied)과 함께 붙인다. 철회하면 `consent update denied` + `window.gtag` 제거로 `track()` 무력화. ☰ "🍪 통계·저장소 설정" 팝업(현재 선택 표시·변경, 저장된 것 목록, 🧹 캐시 비우고 새로고침 = `caches.delete` + SW unregister). **계정 삭제 셀프서비스** `auth.js deleteAccount()`: 확인 팝업(지워지는 것 3항목) → `users/{uid}` → `allowlist/{email}` → `requests/{email}` → `user.delete()`, `auth/requires-recent-login`이면 `reauthenticateWithPopup` 뒤 재시도, 관리자 제외, 승인 대기 상태도 가능. GA `consent`(value·from)·`terms_accept`·`account_delete`·`cache_clear`
+- `firestore.rules`: `allowlist`·`requests` 본인 이메일 문서 **delete 허용** (관리자 권한은 그대로). ⚠️ 콘솔에 다시 게시해야 적용 — 게시 전에는 삭제 버튼이 permission-denied 안내
+- `dev-mock.js`: `user.delete()`·`reauthenticateWithPopup()` 목. 새 파일 `styles/components/consent.css`(배너·팝업·방침 표·IP 고지·위험 버튼)
+
+### 변경
+- 푸터: 고지 두 줄 + 링크 줄(개인정보처리방침 · 이용약관 · 통계·저장소 설정 · GitHub). ☰ 메뉴에 📜 이용약관 · 🍪 통계·저장소 설정 항목. 계정 카드 비로그인 안내에 약관·방침 링크, 승인됨·대기 상태에 "계정 삭제" 버튼
+- docs: DEVELOPMENT 7장(규칙 표·삭제 순서·동의 흐름), OPERATIONS 4장(계정 삭제·규칙 재게시)·7장(동의 뒤 집계). Playwright 35항목 통과(배너·설정·약관·방침·동의 팝업·재로그인·삭제·대기/관리자 분기)
+
+## v2.17.0 — 2026-09-07
+
+노션 "서비스명 변경 검토"에서 **POGO PLAN(포고플랜)** 확정 (인수인계 문서 3-1).
+
+### 변경
+- **서비스명 POGO SEARCH → POGO PLAN** — 화면 `<title>`("POGO PLAN — 뭘 키우고, 뭘 잡을지")·헤더 `<h1>`·스플래시·`apple-mobile-web-app-title`, `manifest.webmanifest`(이름 "POGO NOTE" 잔재 → "POGO PLAN — 포켓몬GO 육성 플래너", short_name "POGO PLAN"), 상세 팝업 공유 제목, 개인정보처리방침 서비스명, `robots.txt`·dev robots 머리말, README·docs 제목, `.env.example`·`.vscode` 주석. 서비스워커 캐시 접두사 `pogonote-v3` → `pogoplan-v4`(activate 가 옛 캐시를 지우므로 사용자 조치 없음). **유지**: 저장소명·배포 URL(PWA 설치·공유 링크 보호), 전역 이름·`state` 키·localStorage 키(`pogo_*`)·GA 이벤트명·Firestore 필드명(불변 규칙). 패치노트의 지난 항목에 남은 "POGO SEARCH" 표기는 기록이라 그대로 둔다
+
 ## v2.16.1 — 2026-09-07
 
 ### 수정

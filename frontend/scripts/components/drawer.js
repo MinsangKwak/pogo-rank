@@ -16,7 +16,13 @@
 // 2026-09-02 오른쪽 드로어 메뉴 + 검색창 토글
 // 2026-09-06 v2.11.0 뒤로가기: 열 때 히스토리 항목을 넣어 폰의 뒤로가기가 드로어를 닫게 한다 (components/history.js)
 function openDrawer() {
-  document.getElementById('drawer-backdrop').hidden = false;
+  closeModal({ silent: true });
+  closeSearchDialog(true);
+  const drawer = document.getElementById('drawer-backdrop');
+  drawer.hidden = false;
+  if (!drawer.open) drawer.showModal();
+  document.getElementById('menu-toggle').setAttribute('aria-expanded', 'true');
+  document.getElementById('drawer-close').focus();
   // 드로어가 떠 있는 동안 뒤쪽 본문이 같이 스크롤되지 않게 잠근다
   document.body.style.overflow = 'hidden';
   pushOverlayEntry();
@@ -25,7 +31,9 @@ function openDrawer() {
 function closeDrawer({ silent = false } = {}) {
   const $backdrop = document.getElementById('drawer-backdrop');
   const wasOpen = !$backdrop.hidden;
+  if ($backdrop.open) $backdrop.close();
   $backdrop.hidden = true;
+  document.getElementById('menu-toggle').setAttribute('aria-expanded', 'false');
   if (!overlayVisible()) document.body.style.overflow = '';
   if (wasOpen && !silent && !overlayVisible()) releaseOverlayEntry(false);
 }
@@ -33,6 +41,7 @@ function closeDrawer({ silent = false } = {}) {
 // 헤더의 ☰·계정·🔍 버튼과 드로어 닫기 동작을 한 번에 연결한다
 function initDrawer() {
   const $backdrop = document.getElementById('drawer-backdrop');
+  $backdrop.addEventListener('cancel', (event) => { event.preventDefault(); closeDrawer(); });
   document.getElementById('menu-toggle').addEventListener('click', openDrawer);
   // 2026-09-03 v2.2.0 계정 버튼: 비로그인 → 바로 Google 로그인, 로그인 상태 → 드로어(계정 영역)
   document.getElementById('account-toggle').addEventListener('click', () => { AUTH.user ? openDrawer() : signIn(); });

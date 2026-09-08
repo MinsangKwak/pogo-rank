@@ -21,7 +21,7 @@
 // "SAS" 같은 평가 등급을 글자별 색상으로 (DPS·TDO·종합 순)
 // 등급 문자열을 한 글자씩 쪼개 각각 g-S / g-A … 클래스를 입힌다.
 function gradeNode(tier) {
-  return el('span', { class: 'grade' }, ...[...tier].map((letter) => el('b', { class: `g-${letter}` }, letter)));
+  return el('span', { class: 'row__grade' }, ...[...tier].map((letter) => el('b', { class: `grade-mark grade-mark--${letter.toLowerCase()}` }, letter)));
 }
 
 // 이벤트 메모를 뱃지 문구로: "2026년 9월 5일 메가피날레" → "메가피날레(2026한정)"
@@ -52,19 +52,19 @@ function renderPve() {
   const items = useSheet ? sheet[state.boss] : PVE_DATA[state.boss];
   const title = state.boss === 'overall' ? (useSheet ? '레이드 어태커 전체' : '레이드 어태커 전체 (자체 계산)') : `${TYPE_KO[state.boss]} 타입 레이드 성능`;
   $content.append(
-    el('div', { class: 'list-head' }, el('h2', {}, title), el('span', { class: 'meta' }, useSheet ? '속성별 레이드 성능표 기준' : `자체 계산 · 상위 ${items.length}`)),
+    el('div', { class: 'row-head' }, el('h2', {}, title), el('span', { class: 'meta' }, useSheet ? '속성별 레이드 성능표 기준' : `자체 계산 · 상위 ${items.length}`)),
     list(`pve-${state.boss}-${useSheet ? 's' : 'c'}`, items, (pokemon, index) => useSheet
       // 시트 행: 순위는 시트가 준 rank를 우선하고, 점수 칸은 score가 없으면 평가 등급으로 대신한다.
       // 보조줄에는 등급 뱃지 + 있는 지표(ER·DPS·TDO)만 골라 이어 붙인다.
       ? row(pokemon, String(pokemon.rank ?? index + 1),
-          el('span', { class: 'score' }, pokemon.score != null ? pokemon.score.toFixed(1) : (pokemon.tier || '')),
-          el('span', { class: 'sub' },
+          el('span', { class: 'row__score' }, pokemon.score != null ? pokemon.score.toFixed(1) : (pokemon.tier || '')),
+          el('span', { class: 'row__sub' },
             ...(pokemon.tier ? [gradeNode(pokemon.tier), ' · '] : []),
             [pokemon.er != null ? `ER ${pokemon.er.toFixed(1)}` : '', pokemon.dps != null ? `DPS ${pokemon.dps}` : '', pokemon.tdo != null ? `TDO ${Math.round(pokemon.tdo)}` : ''].filter(Boolean).join(' · ')),
           [pokemon.fast, pokemon.charged, state.boss === 'overall' && pokemon.type ? `${TYPE_KO[pokemon.type]} 타입` : ''],
           pokemon.note ? el('span', { class: 'tag' }, eventLabel(pokemon.note)) : null)
       // 자체 계산 행: DPS만 점수 칸에 쓰고 TDO는 보조줄로 내린다
-      : row(pokemon, String(index + 1), el('span', { class: 'score' }, pokemon.dps.toFixed(1)), el('span', { class: 'sub' }, `DPS · TDO ${pokemon.tdo}`))),
+      : row(pokemon, String(index + 1), el('span', { class: 'row__score' }, pokemon.dps.toFixed(1)), el('span', { class: 'row__sub' }, `DPS · TDO ${pokemon.tdo}`))),
   );
   // 시트 지표는 이름만 보면 뜻을 알기 어려워 아래에 용어 범례를 붙인다 (자체 계산에는 없는 지표들)
   if (useSheet) {
@@ -76,7 +76,7 @@ function renderPve() {
         ['점수', '종합(%) — 최강 어태커 대비 백분위'],
         ['평가', 'DPS·TDO·종합 순서의 등급, S > A > B > C (예: SAS)'],
         ['*', '레거시 기술 — 대단한 기술머신 또는 이벤트로만 습득'],
-      ].map(([term, meaning]) => el('span', { class: 'legend-item' }, el('b', {}, term), `: ${meaning}`))));
+      ].map(([term, meaning]) => el('span', { class: 'legend__item' }, el('b', {}, term), `: ${meaning}`))));
   }
   $note.textContent = useSheet
     ? '출처: hawaii 「속성별 레이드 성능표」(구글 시트, 매일 00시 자동 수집). 같은 포켓몬이 두 번 나오면 기술 조합이 다른 것. 포켓몬을 누르면 상세 정보가 열립니다.'

@@ -1,7 +1,8 @@
 // 2026-09-03 v2.2.0 Firestore 보안 규칙 — Firebase 콘솔 > Firestore Database > 규칙 탭에 붙여넣고 "게시"
 // 구조
-//   allowlist/{email}  승인된 친구 목록 (관리자만 쓰기, 본인 문서는 읽기 가능 → 승인 여부 확인용)
-//   requests/{email}   가입(승인) 요청 (본인만 생성·갱신, 관리자만 열람·삭제)
+//   allowlist/{email}  승인된 친구 목록 (관리자만 쓰기, 본인 문서는 읽기·삭제 가능 → 승인 여부 확인 · 계정 삭제)
+//   requests/{email}   가입(승인) 요청 (본인만 생성·갱신·삭제, 관리자만 열람·삭제)
+// 2026-09-07 v2.18.0 계정 삭제 셀프서비스 — 본인 이메일 문서의 delete 를 allowlist·requests 에서 허용 (auth.js deleteAccount). 콘솔에 다시 게시할 것
 //   users/{uid}        개인 데이터 — 즐겨찾기 favs 등 (본인만, 승인된 경우만)
 //   trainers/{name}    트레이너 코드 (승인된 사용자만 읽기, 관리자만 쓰기) — 공개 저장소에 코드를 두지 않기 위함
 rules_version = '2';
@@ -20,11 +21,13 @@ service cloud.firestore {
 
     match /allowlist/{mail} {
       allow read: if request.auth != null && (isAdmin() || mail == myEmail());
-      allow write: if isAdmin();
+      allow create, update: if isAdmin();
+      allow delete: if isAdmin() || (request.auth != null && mail == myEmail());  // v2.18.0 본인 승인 해제 = 계정 삭제 절차
     }
 
     match /requests/{mail} {
-      allow read, delete: if isAdmin();
+      allow read: if isAdmin();
+      allow delete: if isAdmin() || (request.auth != null && mail == myEmail());  // v2.18.0 본인 가입 요청 삭제 = 계정 삭제 절차
       allow create, update: if request.auth != null && mail == myEmail() && request.resource.data.email == myEmail();
     }
 

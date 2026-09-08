@@ -269,28 +269,28 @@ function soloResultNodes(boss, tier) {
   const typeLabel = boss.types.map((typeName) => TYPE_KO[typeName]).join('·');
   const bossLabel = `${boss.name} (${typeLabel}) ${tier.label} 기준 (체력 ${tier.hp.toLocaleString()} — 티어 고정값)`;
   const card = plan.possible
-    ? el('div', { class: 'solo-card solo-ok' },
-        el('p', { class: 'solo-verdict' }, `💪 솔플 가능 — 정예 ${plan.squad.length}마리, 약 ${plan.time}초`),
-        el('p', { class: 'solo-why' }, `${bossLabel} · 기절 직전 이탈 → 부활(5~6초) → 같은 덱 재진입 · 총 ${plan.cycles}사이클${plan.revives ? ` · 부활 ${plan.revives}회 (부활약·회복약 챙기세요)` : ' · 부활 없이 한 번에'}`),
-        el('p', { class: 'solo-stats' }, `${marginText(plan, tier)} (제한 ${tier.time}초 중 약 ${plan.time}초) · 아래 순서 그대로 내보내면 됩니다.`))
-    : el('div', { class: 'solo-card solo-no' },
-        el('p', { class: 'solo-verdict' }, '🙅 이건 사람 손으로는 무리예요'),
-        el('p', { class: 'solo-why' }, `${bossLabel} — ${state.soloMode === 'mine' ? '이 덱으로는' : '최정예를 부활시켜 가며 무한정 갈아넣어도'} 약 ${plan.time}초 (${marginText(plan, tier)}). 친구를 부르거나 풀강·버프로 마진을 채워보세요.`),
-        el('p', { class: 'solo-stats' }, '아래는 그래도 가장 빨리 깎는 구성입니다.'));
+    ? el('div', { class: 'solo__card solo__ok' },
+        el('p', { class: 'solo__verdict' }, `💪 솔플 가능 — 정예 ${plan.squad.length}마리, 약 ${plan.time}초`),
+        el('p', { class: 'solo__why' }, `${bossLabel} · 기절 직전 이탈 → 부활(5~6초) → 같은 덱 재진입 · 총 ${plan.cycles}사이클${plan.revives ? ` · 부활 ${plan.revives}회 (부활약·회복약 챙기세요)` : ' · 부활 없이 한 번에'}`),
+        el('p', { class: 'solo__stats' }, `${marginText(plan, tier)} (제한 ${tier.time}초 중 약 ${plan.time}초) · 아래 순서 그대로 내보내면 됩니다.`))
+    : el('div', { class: 'solo__card solo__no' },
+        el('p', { class: 'solo__verdict' }, '🙅 이건 사람 손으로는 무리예요'),
+        el('p', { class: 'solo__why' }, `${bossLabel} — ${state.soloMode === 'mine' ? '이 덱으로는' : '최정예를 부활시켜 가며 무한정 갈아넣어도'} 약 ${plan.time}초 (${marginText(plan, tier)}). 친구를 부르거나 풀강·버프로 마진을 채워보세요.`),
+        el('p', { class: 'solo__stats' }, '아래는 그래도 가장 빨리 깎는 구성입니다.'));
   // 2026-09-02 딜 총량 결론 줄: 제한 시간 내 최대 딜 vs 보스 체력
   const dealtDamage = damageInTime(plan.squad, tier);
   const damageGap = dealtDamage - tier.hp;
-  card.append(el('p', { class: 'solo-stats' }, damageGap >= 0
+  card.append(el('p', { class: 'solo__stats' }, damageGap >= 0
     ? `제한 시간 내 이 덱의 총 딜 약 ${dealtDamage.toLocaleString()} / 보스 체력 ${tier.hp.toLocaleString()} → 딜 여유 ${damageGap.toLocaleString()} (+${Math.round(damageGap / tier.hp * 100)}%)`
     : `제한 시간 내 이 덱의 최대 딜 약 ${dealtDamage.toLocaleString()} / 보스 체력 ${tier.hp.toLocaleString()} → ${(-damageGap).toLocaleString()} (${Math.round(-damageGap / tier.hp * 100)}%) 모자라서 못 잡음`));
   return [card,
-    el('div', { class: 'list-head' },
+    el('div', { class: 'row-head' },
       el('h2', {}, `필요 개체 ${plan.squad.length}마리 (이 순서로)`),
       el('span', { class: 'meta' }, `${boss.name} 상대 DPS순`)),
     list(`solo-${boss.name}-${tier.id}`, plan.squad, (member, index) => row(
       member, String(index + 1),
-      el('span', { class: 'score' }, member.dps.toFixed(1)),
-      el('span', { class: 'sub' }, `DPS · TDO ${member.tdo}`)))];
+      el('span', { class: 'row__score' }, member.dps.toFixed(1)),
+      el('span', { class: 'row__sub' }, `DPS · TDO ${member.tdo}`)))];
 }
 
 function renderSoloCalc() {
@@ -299,15 +299,15 @@ function renderSoloCalc() {
   const tier = SOLO_TIERS.find((candidateTier) => candidateTier.id === tierId);
 
   // 보스 검색: 이름 일부 입력 → 후보 목록 → 선택
-  const bossSuggestionBox = el('div', { class: 'boss-sugg' });
-  const bossSearchInput = el('input', { class: 'boss-search', type: 'search', placeholder: '보스 이름 검색 (예: 메가거북왕, 자시안)', value: '' });
+  const bossSuggestionBox = el('div', { class: 'boss__sugg' });
+  const bossSearchInput = el('input', { class: 'boss__search', type: 'search', placeholder: '보스 이름 검색 (예: 메가거북왕, 자시안)', value: '' });
   bossSearchInput.addEventListener('input', () => {
     const query = bossSearchInput.value.trim();
     bossSuggestionBox.textContent = '';
     if (query.length < 1) return;
     const hits = monSearch(bossIndex(), query);  // 2026-09-03 전역 검색과 같은 필터(공백 무시·영문·정확도순)
     for (const boss of hits) {
-      bossSuggestionBox.append(el('button', { class: 'boss-rec', onclick: () => {
+      bossSuggestionBox.append(el('button', { class: 'boss__rec', onclick: () => {
         state.soloBossMon = boss;
         state.soloTierOverride = null;  // 새 보스면 자동 판정으로 리셋
         track('solo_calc_boss', { boss: boss.name });  // 2026-09-03 GA4: 솔플 계산기 사용량
@@ -317,7 +317,7 @@ function renderSoloCalc() {
     if (!hits.length) bossSuggestionBox.append(el('p', { class: 'empty' }, '검색 결과가 없습니다.'));
   });
   // 2026-09-02 v5: 추천 덱 / 내 덱 검증 모드 + 풀강·버프 토글
-  $controls.append(el('div', { class: 'solo-opts' },
+  $controls.append(el('div', { class: 'solo__opts' },
     seg([{ id: 'auto', label: '추천 덱' }, { id: 'mine', label: '내 덱 검증' }], state.soloMode,
       (id) => { state.soloMode = id; render(); }),
     seg([{ id: 'off', label: '레벨40' }, { id: 'on', label: '풀강50' }], state.soloLv50 ? 'on' : 'off',
@@ -327,10 +327,10 @@ function renderSoloCalc() {
 
   // 2026-09-02 선택된 보스를 검색창 아래에 유지 표시 (✕로 해제)
   const pickedBossCard = state.soloBossMon
-    ? el('div', { class: 'boss-selected' },
+    ? el('div', { class: 'boss__selected' },
         sprite(state.soloBossMon.sprite),
         el('b', {}, state.soloBossMon.name),
-        el('div', { class: 'boss-cp' },
+        el('div', { class: 'boss__cp' },
           el('span', { class: 'meta' }, state.soloBossMon.types.map((typeName) => TYPE_KO[typeName]).join('·')),
           // 2026-09-02 개체별 레이드 CP · 최대 CP 표시
           el('span', { class: 'meta' }, (() => {
@@ -339,17 +339,17 @@ function renderSoloCalc() {
             return [raidCpValue ? `레이드 CP ${raidCpValue.toLocaleString()}` : '', maxCpValue ? `풀강 최대 CP ${maxCpValue.toLocaleString()}` : ''].filter(Boolean).join(' · ');
           })())),
         // 2026-09-02 자동 판정된 난이도 배지: 탭하면 수동으로 한 단계씩 변경
-        el('button', { class: 'tag boss-tier', title: '탭하면 난이도 수동 변경', onclick: () => {
+        el('button', { class: 'tag boss__tier', title: '탭하면 난이도 수동 변경', onclick: () => {
           const currentTierIndex = SOLO_TIERS.findIndex((candidateTier) => candidateTier.id === tierId);
           state.soloTierOverride = SOLO_TIERS[(currentTierIndex + 1) % SOLO_TIERS.length].id;
           render();
         } }, `${tier.label}${state.soloTierOverride ? '' : ' 자동'}`),
-        el('button', { class: 'boss-clear', 'aria-label': '선택 해제', onclick: () => { state.soloBossMon = null; state.soloTierOverride = null; render(); } }, '✕'))
+        el('button', { class: 'boss__clear', 'aria-label': '선택 해제', onclick: () => { state.soloBossMon = null; state.soloTierOverride = null; render(); } }, '✕'))
     : null;
   $controls.append(bossSearchInput, bossSuggestionBox);
   if (pickedBossCard) $controls.append(pickedBossCard);
 
-  $content.append(el('div', { class: 'list-head' },
+  $content.append(el('div', { class: 'row-head' },
     el('h2', {}, '솔플 레이드 계산기'),  // 2026-09-02 표기 변경
     el('span', { class: 'meta' }, '프로토타입 · 부활 운용')));
 
@@ -360,8 +360,8 @@ function renderSoloCalc() {
     if (state.soloMode === 'mine') {
       // 평가 가능한 어태커 = 이 보스 상대 카운터 풀에 있는 포켓몬(수치가 있어야 시뮬레이션이 된다)
       const pool = scaledPool(state.soloBossMon);
-      const deckSuggestionBox = el('div', { class: 'boss-sugg' });
-      const deckSearchInput = el('input', { class: 'boss-search', type: 'search', placeholder: '내 어태커 검색해서 추가 (예: 자시안, 메가Y 뮤츠)' });
+      const deckSuggestionBox = el('div', { class: 'boss__sugg' });
+      const deckSearchInput = el('input', { class: 'boss__search', type: 'search', placeholder: '내 어태커 검색해서 추가 (예: 자시안, 메가Y 뮤츠)' });
       deckSearchInput.addEventListener('input', () => {
         const query = deckSearchInput.value.trim();
         deckSuggestionBox.textContent = '';
@@ -369,7 +369,7 @@ function renderSoloCalc() {
         // 이미 덱에 넣은 포켓몬은 후보에서 뺀다
         const hits = monSearch(pool.filter((attacker) => !state.soloMyDeck.some((deckMember) => deckMember.name === attacker.name)), query, 6);  // 2026-09-03 공용 필터
         for (const attacker of hits) {
-          deckSuggestionBox.append(el('button', { class: 'boss-rec', onclick: () => {
+          deckSuggestionBox.append(el('button', { class: 'boss__rec', onclick: () => {
             if (state.soloMyDeck.length < 6) { state.soloMyDeck.push(attacker); render(); }
           } }, sprite(attacker.sprite), el('span', {}, attacker.name)));
         }
@@ -392,14 +392,14 @@ function renderSoloCalc() {
             render();
           } }, `★ 즐겨찾기에서 채우기 (${AUTH.favs.size})`)
         : el('span', { class: 'meta' }, '로그인하면 ★ 즐겨찾기로 덱을 바로 채울 수 있어요');
-      $content.append(el('div', { class: 'list-head' }, el('h2', {}, '내 덱'), el('span', { class: 'meta' }, `${state.soloMyDeck.length}/6 · 넣는 순서대로 출전`)),
-        el('div', { class: 'solo-fill' }, favFill), deckSearchInput, deckSuggestionBox);
+      $content.append(el('div', { class: 'row-head' }, el('h2', {}, '내 덱'), el('span', { class: 'meta' }, `${state.soloMyDeck.length}/6 · 넣는 순서대로 출전`)),
+        el('div', { class: 'solo__fill' }, favFill), deckSearchInput, deckSuggestionBox);
       if (state.soloMyDeck.length) {
         $content.append(list('solo-mydeck', state.soloMyDeck, (member, index) => {
           // row()가 붙여둔 기본 클릭(상세 열기)을 떼기 위해 복제한 뒤 "덱에서 제거"를 다시 붙인다
           const listItem = row(member, String(index + 1),
-            el('span', { class: 'score' }, member.dps.toFixed(1)),
-            el('span', { class: 'sub' }, `DPS · TDO ${member.tdo}`)).cloneNode(true);
+            el('span', { class: 'row__score' }, member.dps.toFixed(1)),
+            el('span', { class: 'row__sub' }, `DPS · TDO ${member.tdo}`)).cloneNode(true);
           listItem.addEventListener('click', () => { state.soloMyDeck.splice(index, 1); render(); });
           listItem.title = '누르면 덱에서 제거';
           return listItem;
@@ -482,9 +482,9 @@ function topAtkType(foe) {
 // 2026-09-03 슬롯 3칸을 다 채우면: 추천 덱 vs 상대 덱 차이 분석 + 타입·기술 구성 가이드
 // deck은 맞춤 추천 덱 엔트리 배열({ candidate, fit, total }), foes는 사용자가 넣은 상대 3마리.
 function deckAnalysis(deck, foes) {
-  const box = el('div', { class: 'solo-card' });
-  box.append(el('p', { class: 'solo-verdict' }, '🧠 상대 덱 분석 & 구성 가이드'));
-  box.append(el('p', { class: 'solo-why' }, '상대: ' + foes.map((foe) => `${foe.name}(${foe.types.map((typeName) => TYPE_KO[typeName]).join('·')})`).join(' / ')));
+  const box = el('div', { class: 'solo__card' });
+  box.append(el('p', { class: 'solo__verdict' }, '🧠 상대 덱 분석 & 구성 가이드'));
+  box.append(el('p', { class: 'solo__why' }, '상대: ' + foes.map((foe) => `${foe.name}(${foe.types.map((typeName) => TYPE_KO[typeName]).join('·')})`).join(' / ')));
   // 공격 타입 추천: 상대 몇 마리에게 효과가 굉장한지 빈도순 (1.6배 이상을 "약점"으로 본다)
   const weaknessHitCount = {};
   for (const typeName of Object.keys(TYPE_KO)) {
@@ -493,25 +493,25 @@ function deckAnalysis(deck, foes) {
     }
   }
   const bestAtkTypes = Object.entries(weaknessHitCount).sort((left, right) => right[1] - left[1]).slice(0, 3);
-  if (bestAtkTypes.length) box.append(el('p', { class: 'solo-stats' },
+  if (bestAtkTypes.length) box.append(el('p', { class: 'solo__stats' },
     '공격 기술 추천: ' + bestAtkTypes.map(([typeName, count]) => `${TYPE_KO[typeName]}(${count}마리 약점)`).join(' · ') + ' — 이 타입 기술을 가진 픽 위주로.'));
   // 받이 타입 추천: 상대 자속 공격을 2종 이상 반감하는 타입
   const foeStabTypes = [...new Set(foes.flatMap((foe) => foe.types))];
   const guardTypes = Object.keys(TYPE_KO)
     .map((typeName) => [typeName, foeStabTypes.filter((stabType) => (DEX_DATA.chart[stabType]?.[typeName] ?? 1) < 1).length])
     .filter(([, count]) => count >= 2).sort((left, right) => right[1] - left[1]).slice(0, 3);
-  if (guardTypes.length) box.append(el('p', { class: 'solo-stats' },
+  if (guardTypes.length) box.append(el('p', { class: 'solo__stats' },
     '몸으로 받기 좋은 타입: ' + guardTypes.map(([typeName, count]) => `${TYPE_KO[typeName]}(자속 ${count}종 반감)`).join(' · ')));
   // 추천 덱 vs 상대 덱: 누가 누굴 맡는지 → 두 덱의 차이가 한눈에
-  box.append(el('p', { class: 'solo-stats' }, '역할 분담: ' + deck.map(({ candidate }) => {
+  box.append(el('p', { class: 'solo__stats' }, '역할 분담: ' + deck.map(({ candidate }) => {
     const favorableFoes = foes.filter((foe) => foeFit(candidate, foe) > 1).map((foe) => foe.name);
     return `${candidate.name} → ${favorableFoes.length ? favorableFoes.join('·') : '확실한 우위 없음'}`;
   }).join(' / ')));
   // 구멍: 추천 덱 누구도 상성 우위가 없는 상대 → 보완 방향 제시
   const holes = foes.filter((foe) => !deck.some(({ candidate }) => foeFit(candidate, foe) > 1));
-  if (holes.length) box.append(el('p', { class: 'solo-why' },
+  if (holes.length) box.append(el('p', { class: 'solo__why' },
     `⚠️ ${holes.map((foe) => foe.name).join('·')}를 확실히 이기는 픽이 없어요 — 아래 카운터 목록에서 ${holes.map((foe) => `${topAtkType(foe)} 기술`).join('·')} 픽으로 한 자리 바꿔보세요.`));
-  else box.append(el('p', { class: 'solo-why' }, '✅ 상대 3마리 모두 상성 우위 픽이 있는 구성입니다.'));
+  else box.append(el('p', { class: 'solo__why' }, '✅ 상대 3마리 모두 상성 우위 픽이 있는 구성입니다.'));
   return box;
 }
 
@@ -634,7 +634,7 @@ function renderPvpDeck() {
   // 2026-09-07 v2.16.0 리그 세그먼트는 PvP 탭이 그린다 — 덱 리그 = state.league (예전 state.league 제거)
 
   // 2026-09-03 개편: ① 진짜 추천 덱 3종(각 3마리, 이유 포함) → ② PvP 커스텀 덱 짜기(상대 슬롯 기반)
-  $content.append(el('div', { class: 'list-head' },
+  $content.append(el('div', { class: 'row-head' },
     el('h2', {}, 'PvP 덱 짜기'), el('span', { class: 'meta' }, '실험 기능')));
 
   const pool = PVP_DATA[state.league] ?? [];
@@ -652,14 +652,14 @@ function renderPvpDeck() {
       reason: recReason(spreadDeck, '방어 타입이 겹치지 않아 상대가 한 타입 기술로 셋을 다 뚫지 못해요') },
   ];
   recommendations.forEach((recommendation, index) => {
-    const body = el('div', { class: 'schedule-body no-star' },
+    const body = el('div', { class: 'schedule__body is-starless' },
       list(`pvprec-${state.league}-${index}`, recommendation.deck, (candidate, slotIndex) => row(
         candidate, String(slotIndex + 1),
-        el('span', { class: 'score' }, candidate.score.toFixed(1)),
-        el('span', { class: 'sub' }, '리그 점수'))),
-      el('p', { class: 'deck-reason' }, `💬 ${recommendation.reason}`));
-    const accordion = el('details', { class: 'schedule deck-acc' },
-      el('summary', {}, `🃏 추천 덱 ${index + 1} — ${recommendation.title}`, el('span', { class: 'schedule-today' }, recommendation.tag)),
+        el('span', { class: 'row__score' }, candidate.score.toFixed(1)),
+        el('span', { class: 'row__sub' }, '리그 점수'))),
+      el('p', { class: 'deck__reason' }, `💬 ${recommendation.reason}`));
+    const accordion = el('details', { class: 'schedule deck__acc' },
+      el('summary', {}, `🃏 추천 덱 ${index + 1} — ${recommendation.title}`, el('span', { class: 'schedule__today' }, recommendation.tag)),
       body);
     // 첫 번째만 기본으로 펼치고, 사용자가 접었다 펼친 상태는 state.recAccOpen에 기억
     if (state.recAccOpen?.[index] ?? (index === 0)) accordion.setAttribute('open', '');
@@ -668,7 +668,7 @@ function renderPvpDeck() {
   });
 
   // ② PvP 커스텀 덱 짜기 — 자주 만나는 상대를 슬롯에 넣으면 맞춤 추천
-  $content.append(el('div', { class: 'list-head' },
+  $content.append(el('div', { class: 'row-head' },
     el('h2', {}, 'PvP 커스텀 덱 짜기'), el('span', { class: 'meta' }, '상대 기준 맞춤 추천')));
 
   // 맞춤 덱: 리그 점수 × 상대별 fit의 기하평균, 종 단위 중복 제거
@@ -690,14 +690,14 @@ function renderPvpDeck() {
   }
 
   // [+][+][+] 슬롯 + 검색창
-  const foeSuggestionBox = el('div', { class: 'boss-sugg' });
-  const foeSearchInput = el('input', { class: 'boss-search', type: 'search', placeholder: '상대 포켓몬 검색해서 슬롯 채우기' });
-  const slots = el('div', { class: 'deck-slots' }, ...[0, 1, 2].map((slotIndex) => {
+  const foeSuggestionBox = el('div', { class: 'boss__sugg' });
+  const foeSearchInput = el('input', { class: 'boss__search', type: 'search', placeholder: '상대 포켓몬 검색해서 슬롯 채우기' });
+  const slots = el('div', { class: 'deck__slots' }, ...[0, 1, 2].map((slotIndex) => {
     const foe = state.deckFoes[slotIndex];
     return foe
-      ? el('button', { class: 'deck-slot filled', title: '누르면 제거', onclick: () => { state.deckFoes.splice(slotIndex, 1); render(); } },
-          sprite(foe.sprite), el('span', { class: 'slot-name' }, foe.name), el('span', { class: 'slot-x' }, '✕'))
-      : el('button', { class: 'deck-slot', 'aria-label': '상대 추가', onclick: () => foeSearchInput.focus() }, el('span', { class: 'slot-plus' }, '+'));
+      ? el('button', { class: 'deck__slot is-filled', title: '누르면 제거', onclick: () => { state.deckFoes.splice(slotIndex, 1); render(); } },
+          sprite(foe.sprite), el('span', { class: 'slot__name' }, foe.name), el('span', { class: 'slot__close' }, '✕'))
+      : el('button', { class: 'deck__slot', 'aria-label': '상대 추가', onclick: () => foeSearchInput.focus() }, el('span', { class: 'slot__plus' }, '+'));
   }));
   foeSearchInput.addEventListener('input', () => {
     foeSuggestionBox.textContent = '';
@@ -705,7 +705,7 @@ function renderPvpDeck() {
     if (!query) return;
     // 이미 슬롯에 넣은 포켓몬은 후보에서 제외
     for (const foeCandidate of monSearch(bossIndex().filter((bossEntry) => !state.deckFoes.some((foe) => foe.name === bossEntry.name)), query, 6)) {
-      foeSuggestionBox.append(el('button', { class: 'boss-rec', onclick: () => {
+      foeSuggestionBox.append(el('button', { class: 'boss__rec', onclick: () => {
         if (state.deckFoes.length < 3) { state.deckFoes.push(foeCandidate); track('pvp_deck_foe', { mon: foeCandidate.name }); render(); }  // 2026-09-03 GA4: 커스텀 덱 사용량
       } }, sprite(foeCandidate.sprite), el('span', {}, foeCandidate.name)));
     }
@@ -717,11 +717,11 @@ function renderPvpDeck() {
     $content.append(el('p', { class: 'empty' }, '자주 만나는 상대를 [+]에 1~3마리 채우면, 걔들을 두루 잘 받아치는 맞춤 덱을 짜줍니다.'));
   } else if (deck.length) {
     $content.append(
-      el('div', { class: 'list-head' }, el('h2', {}, '맞춤 추천 덱'), el('span', { class: 'meta' }, `상대 ${state.deckFoes.length}마리 기준`)),
-      el('div', { class: 'no-star' }, list('pvpdeck', deck, ({ candidate, fit }, index) => row(
+      el('div', { class: 'row-head' }, el('h2', {}, '맞춤 추천 덱'), el('span', { class: 'meta' }, `상대 ${state.deckFoes.length}마리 기준`)),
+      el('div', { class: 'is-starless' }, list('pvpdeck', deck, ({ candidate, fit }, index) => row(
         candidate, String(index + 1),
-        el('span', { class: 'score' }, candidate.score.toFixed(1)),
-        el('span', { class: 'sub' }, `상성 계수 ×${fit.toFixed(2)}`)))));
+        el('span', { class: 'row__score' }, candidate.score.toFixed(1)),
+        el('span', { class: 'row__sub' }, `상성 계수 ×${fit.toFixed(2)}`)))));
   }
 
   // 3칸 다 채우면 분석 카드
@@ -739,12 +739,12 @@ function renderPvpDeck() {
       if (counters.length === 3) break;
     }
     $content.append(
-      el('div', { class: 'list-head' }, el('h2', {}, `${foe.name} 카운터`), el('span', { class: 'meta' }, '상위 3')),
-      el('div', { class: 'no-star' }, list(`pvpdeck-counter-${foe.name}`, counters, ({ candidate, fit }, index) => row(
+      el('div', { class: 'row-head' }, el('h2', {}, `${foe.name} 카운터`), el('span', { class: 'meta' }, '상위 3')),
+      el('div', { class: 'is-starless' }, list(`pvpdeck-counter-${foe.name}`, counters, ({ candidate, fit }, index) => row(
         candidate, String(index + 1),
-        el('span', { class: 'score' }, `×${fit.toFixed(2)}`),
-        el('span', { class: 'sub' }, '상성 계수'),
-        el('div', { class: 'moves counter-why' }, el('span', {}, counterWhy(candidate, foe)))))));
+        el('span', { class: 'row__score' }, `×${fit.toFixed(2)}`),
+        el('span', { class: 'row__sub' }, '상성 계수'),
+        el('div', { class: 'row__moves row__counter' }, el('span', {}, counterWhy(candidate, foe)))))));
   }
   $note.textContent = '실험 기능. 추천 덱 3종은 상대 입력 없이 리그 메타 기준으로 뽑습니다 — 정석 코어(점수 + 약점 상호 보완 그리디), 안티 메타(상위 10마리 상대 평균 상성순), 타입 분산(방어 타입 안 겹치게). 커스텀 덱 짜기는 PvPoke 리그 순위 × 타입 상성(공격 최대 배율 ÷ 피격 최대 배율)의 근사 추천 — 실드·기술 사이클·CP 최적화는 반영하지 않습니다. GO배틀리그 규칙상 같은 종은 파티에 1마리만(섀도우·일반도 같은 종)이라 모든 추천이 종 단위로 중복을 제거합니다. 슬롯 3칸을 다 채우면 상대 덱 분석과 구성 가이드가 나옵니다.';
 }

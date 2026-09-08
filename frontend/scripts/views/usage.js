@@ -31,23 +31,23 @@ let _usageShown = 8;
 function usageTopNodes() {
   const items = (typeof VALUE_DATA !== 'undefined' ? VALUE_DATA.usage : null) ?? [];
   if (!items.length) return [];
-  const box = el('div', { class: 'psearch-results usage-top' });
+  const box = el('div', { class: 'search__results usage__top' });
   const draw = () => {
     box.replaceChildren(
-      el('div', { class: 'sugg-head' }, el('b', {}, '🏆 활용처 순위'), el('span', {}, `여러 순위표에서 상위권 · ${items.length}종 · 각 표 상위 30 기준`)),
+      el('div', { class: 'sugg__head' }, el('b', {}, '🏆 활용처 순위'), el('span', {}, `여러 순위표에서 상위권 · ${items.length}종 · 각 표 상위 30 기준`)),
       ...items.slice(0, _usageShown).map((pokemon, index) => {
         const bestPlaces = [...pokemon.places].sort((first, second) => first.rank - second.rank).slice(0, 2);
-        return el('button', { class: 'sugg-item usage-item', onclick: () => {
+        return el('button', { class: 'sugg__item usage__item', onclick: () => {
           track('usage_pick', { mon: pokemon.name, rank: index + 1 });
           openDetail(pokemon, false, 'usage');
         } },
-          el('span', { class: 'usage-rank' }, String(index + 1)),
+          el('span', { class: 'usage__rank' }, String(index + 1)),
           sprite(pokemon.sprite), el('span', {}, nameNode(pokemon.name)),
-          el('span', { class: 'sugg-rank' }, el('b', {}, `${pokemon.count}곳`), ' · ', ...bestPlaces.flatMap((place, placeIndex) => [placeLabel(place), placeIndex < bestPlaces.length - 1 ? ' · ' : ''])));
+          el('span', { class: 'sugg__rank' }, el('b', {}, `${pokemon.count}곳`), ' · ', ...bestPlaces.flatMap((place, placeIndex) => [placeLabel(place), placeIndex < bestPlaces.length - 1 ? ' · ' : ''])));
       }),
       _usageShown < items.length
-        ? el('button', { class: 'sugg-more', onclick: () => { _usageShown += 16; draw(); } }, `더보기 (${Math.min(_usageShown, items.length)}/${items.length})`)
-        : el('span', { class: 'sugg-hint' }, '활용 점수 = Σ(31 − 순위). 포켓몬을 누르면 전체 활용처가 열립니다'));
+        ? el('button', { class: 'sugg__more', onclick: () => { _usageShown += 16; draw(); } }, `더보기 (${Math.min(_usageShown, items.length)}/${items.length})`)
+        : el('span', { class: 'sugg__hint' }, '활용 점수 = Σ(31 − 순위). 포켓몬을 누르면 전체 활용처가 열립니다'));
   };
   draw();
   return [box];

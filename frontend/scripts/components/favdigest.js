@@ -84,15 +84,15 @@ function renderFavDigest() {
   }
   titleEl.append(
     el('span', {}, `★ 내 즐겨찾기 (${rows.length})`),
-    el('span', { class: 'schedule-today' }, movedCount ? `최근 순위가 움직인 포켓몬 ${movedCount}마리 ▲▼` : '누르면 접거나 펼칩니다'));
+    el('span', { class: 'schedule__today' }, movedCount ? `최근 순위가 움직인 포켓몬 ${movedCount}마리 ▲▼` : '누르면 접거나 펼칩니다'));
   const shown = rows.slice(0, favDigestShowCount);
   bodyEl.append(
-    el('div', { class: 'boss-recs wrap-recs' }, ...shown.map(({ dex, name, badge }) =>
-      el('button', { class: 'boss-rec', onclick: () => openDetailByDex(dex, false) }, sprite(dex), el('span', {}, name), badge))),
+    el('div', { class: 'boss__recs recs-wrap' }, ...shown.map(({ dex, name, badge }) =>
+      el('button', { class: 'boss__rec', onclick: () => openDetailByDex(dex, false) }, sprite(dex), el('span', {}, name), badge))),
     // 2026-09-07 v2.15.1 "PvE · PvP 나눠 보기" 링크 제거 — 바로 아래 탭 줄의 ★ 와 같은 화면(#/favs). 카드는 요약과 더보기만
-    el('div', { class: 'boss-foot' },
+    el('div', { class: 'boss__foot' },
       rows.length > shown.length
-        ? el('button', { class: 'boss-more', onclick: () => { favDigestShowCount += 12; renderFavDigest(); } }, `더보기 +${Math.min(12, rows.length - shown.length)} (${shown.length}/${rows.length})`)
+        ? el('button', { class: 'boss__more', onclick: () => { favDigestShowCount += 12; renderFavDigest(); } }, `더보기 +${Math.min(12, rows.length - shown.length)} (${shown.length}/${rows.length})`)
         : el('span', { class: 'meta' }, `전체 ${rows.length}마리 표시됨`),
       el('span', { class: 'meta' }, 'PvE · PvP 갈래는 탭 줄 ★ 에서')));
 }

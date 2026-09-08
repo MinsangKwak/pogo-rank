@@ -39,24 +39,24 @@ function sprite(spriteId) {
   const spriteUrl = spriteSrc(spriteId);
   if (!spriteUrl) return spritePlaceholder();
   // 2026-09-05 v2.7.2 저장소 배정 번호(90000번대, sprite.py LOCAL_FORMS)는 픽셀 스프라이트가 아니라
-  // 게임 내 3D 렌더 아이콘이라 pixelated 로 축소하면 계단이 진다 — sprite-hd 로 부드럽게 그린다
+  // 게임 내 3D 렌더 아이콘이라 pixelated 로 축소하면 계단이 진다 — sprite--hd 로 부드럽게 그린다
   const hd = Number(spriteId) >= 90000;
   // 2026-09-07 v2.16.1 첫 화면에서 그림이 안 뜨고 새로고침해야 나오던 문제 — 원인은 cloneNode.
   //   D-MAX 티어표 행(views/max.js expandableRow)과 내 덱(ifsolo.js)은 row() 결과를 cloneNode 로 복제하는데, 복제본에는
-  //   이미지의 load 리스너가 없어 v2.14.0 스켈레톤(.loading)이 영영 안 벗겨졌다. 새로고침하면 캐시된 이미지가 생성 시점에
+  //   이미지의 load 리스너가 없어 v2.14.0 스켈레톤(.is-loading)이 영영 안 벗겨졌다. 새로고침하면 캐시된 이미지가 생성 시점에
   //   이미 완료 상태라 아래 complete 검사로 벗겨져 정상처럼 보였다. 그래서 load/error 처리를 요소가 아니라 문서 캡처 리스너로
   //   옮겼다(아래) — 복제돼도 동작한다. 함께 (1) loading="lazy" 제거(평균 1KB, 동적 lazy 이미지가 안 받아지는 브라우저 회피),
   //   (2) 실패 시 캐시 우회 주소(?r=n)로 2회 재시도, (3) app.js 가 첫 화면 이미지가 다 뜰 때까지 가림막 유지(waitForSprites)
-  const image = el('img', { class: hd ? 'sprite sprite-hd loading' : 'sprite loading', alt: '', decoding: 'async', 'data-src': spriteUrl });
+  const image = el('img', { class: hd ? 'sprite sprite--hd is-loading' : 'sprite is-loading', alt: '', decoding: 'async', 'data-src': spriteUrl });
   image.src = spriteUrl;
-  if (image.complete && image.naturalWidth > 0) image.classList.remove('loading');
+  if (image.complete && image.naturalWidth > 0) image.classList.remove('is-loading');
   return image;
 }
 
 // 문서 캡처 리스너 — load/error 는 버블링하지 않지만 캡처 단계에서는 문서에서 받을 수 있다. 복제된 이미지에도 적용된다
 document.addEventListener('load', (event) => {
   const image = event.target;
-  if (image instanceof HTMLImageElement && image.classList.contains('sprite')) image.classList.remove('loading');
+  if (image instanceof HTMLImageElement && image.classList.contains('sprite')) image.classList.remove('is-loading');
 }, true);
 document.addEventListener('error', (event) => {
   const image = event.target;
@@ -76,7 +76,7 @@ function waitForSprites(maxMs = 2500) {
   const started = Date.now();
   return new Promise((resolve) => {
     const tick = () => {
-      const pending = document.querySelectorAll('img.sprite.loading').length;
+      const pending = document.querySelectorAll('img.sprite.is-loading').length;
       if (!pending || Date.now() - started >= maxMs) return resolve(pending);
       setTimeout(tick, 80);
     };

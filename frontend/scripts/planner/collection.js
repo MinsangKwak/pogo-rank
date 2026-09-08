@@ -25,13 +25,16 @@
 //   state · $content · $note · render (app.js)
 // ─────────────────────────────────────────────────────────────────────────────
 
+// 상태 뱃지 색 수식자 — PLAN_STATUSES 와 같은 순서 (a 육성 중 · b 완료 · c 교환 후보)
+const PLAN_STATUS_MODS = ['a', 'b', 'c'];
 const PLAN_STATUSES = ['육성 중', '완료', '교환 후보'];
 const PLAN_MAX_MONS = 300;  // 문서 1MB 한도 안에서 넉넉한 상한 — 친구 규모에서는 닿을 일이 없다
 // 리그 CP 상한 (마스터는 상한 없음 = 만렙)
 const PLAN_LEAGUES = [['little', 500], ['great', 1500], ['ultra', 2500], ['master', null]];
 
 function planMons() {
-  return Array.isArray(AUTH.mons) ? AUTH.mons : [];
+  if (Array.isArray(AUTH.mons) && AUTH.mons.length) return AUTH.mons;
+  try { const raw = localStorage.getItem('plan_guest_mons'); return raw ? JSON.parse(raw) : []; } catch { return []; }
 }
 
 // 개체가 가리키는 폼 데이터 — 폼 id 로 먼저, 없으면 원종 도감번호로
@@ -94,7 +97,7 @@ function planLevelFromCp(form, ivs, cp) {
 // ── 저장 ──────────────────────────────────────────────────────────────────────
 // 낙관적 갱신: AUTH.mons 를 먼저 바꾸고 화면을 그린 뒤 Firestore 에 쓴다. 실패는 조용히(규칙이 막는 경우 등)
 async function planPersist() {
-  if (!authEnabled() || AUTH.status !== 'ok' || !AUTH.db || !AUTH.user) return;
+  if (!authEnabled() || AUTH.status !== 'ok' || !AUTH.db || !AUTH.user) { try { localStorage.setItem('plan_guest_mons', JSON.stringify(planMons())); } catch {} return; }
   const fieldValue = firebase.firestore.FieldValue;
   await AUTH.db.collection('users').doc(AUTH.user.uid).set({
     email: authEmail(), mons: planMons(), updatedAt: fieldValue.serverTimestamp(),
@@ -135,7 +138,7 @@ function openPlanMonEditor(mon = null, prefill = null) {
     ? { ...mon, ivs: [...(mon.ivs ?? [15, 15, 15])] }
     : { id: planNewId(), sprite: prefill?.sprite ?? null, shadow: !!prefill?.shadow, level: 20, ivs: [15, 15, 15], fast: '', charged: '', status: '육성 중', memo: '' };
 
-  const body = el('div', { class: 'detail plan-editor' }, el('h2', {}, mon ? '✏️ 개체 수정' : '➕ 개체 추가'));
+  const body = el('div', { class: 'detail plan__editor' }, el('h2', {}, mon ? '✏️ 개체 수정' : '➕ 개체 추가'));
   const $pick = el('div', {});
   const $form = el('div', {});
   body.append($pick, $form);
@@ -146,29 +149,29 @@ function openPlanMonEditor(mon = null, prefill = null) {
     $pick.replaceChildren();
     if (draft.sprite != null) {
       const form = planMonForm(draft);
-      $pick.append(el('div', { class: 'boss-selected' },
+      $pick.append(el('div', { class: 'boss__selected' },
         sprite(draft.sprite),
-        el('div', { class: 'boss-cp' }, el('b', {}, nameNode(planMonName(draft))),
+        el('div', { class: 'boss__cp' }, el('b', {}, nameNode(planMonName(draft))),
           el('span', { class: 'meta' }, form ? `공격 ${form.atk} · 방어 ${form.def} · 체력 ${form.hp}${maxPoolKind(draft.sprite) ? ` · 맥스 배틀 ${maxPoolKind(draft.sprite) === 'G' ? '거다이맥스' : '다이맥스'} 가능` : ''}` : '폼 데이터 없음')),
-        mon ? '' : el('button', { class: 'boss-clear', 'aria-label': '다른 종 고르기', onclick: () => { draft.sprite = null; drawPick(); drawForm(); } }, '✕')));
+        mon ? '' : el('button', { class: 'boss__clear', 'aria-label': '다른 종 고르기', onclick: () => { draft.sprite = null; drawPick(); drawForm(); } }, '✕')));
       return;
     }
-    const $input = el('input', { class: 'boss-search', placeholder: '종 이름 검색 (예: 메가 리자몽, 섀도우 뮤츠)', autocomplete: 'off' });
-    const $sugg = el('div', { class: 'boss-sugg' });
+    const $input = el('input', { class: 'boss__search', placeholder: '종 이름 검색 (예: 메가 리자몽, 섀도우 뮤츠)', autocomplete: 'off' });
+    const $sugg = el('div', { class: 'boss__sugg' });
     $input.addEventListener('input', () => {
       $sugg.textContent = '';
       const query = $input.value.trim();
       if (!query) return;
       const candidates = buildSearchIndex().filter((entry) => !/^(다이맥스|거다이맥스) /.test(entry.name));
       for (const hit of monSearch(candidates, query, 8)) {
-        $sugg.append(el('button', { class: 'sugg-item', onclick: () => {
+        $sugg.append(el('button', { class: 'sugg__item', onclick: () => {
           draft.sprite = hit.sprite;
           draft.shadow = /^섀도우 /.test(hit.name);
           draft.fast = ''; draft.charged = '';
           drawPick(); drawForm();
         } }, sprite(hit.sprite), el('span', {}, nameNode(hit.name))));
       }
-      if (!$sugg.childElementCount) $sugg.append(el('span', { class: 'sugg-none' }, '검색 결과가 없어요'));
+      if (!$sugg.childElementCount) $sugg.append(el('span', { class: 'sugg__none' }, '검색 결과가 없어요'));
     });
     $pick.append($input, $sugg);
     setTimeout(() => $input.focus(), 50);
@@ -178,9 +181,9 @@ function openPlanMonEditor(mon = null, prefill = null) {
     $form.replaceChildren();
     if (draft.sprite == null) return;
     const form = planMonForm(draft);
-    if (!form) { $form.append(el('p', { class: 'd-none-text' }, '이 폼은 능력치 데이터가 없어 저장할 수 없어요.')); return; }
+    if (!form) { $form.append(el('p', { class: 'detail__none-text' }, '이 폼은 능력치 데이터가 없어 저장할 수 없어요.')); return; }
 
-    const $cpLine = el('p', { class: 'cp-inline-result' });
+    const $cpLine = el('p', { class: 'cp__inline' });
     const refreshCp = () => {
       const cp = planMonCp(draft);
       const maxCp = planMonCp(draft, 50);
@@ -188,7 +191,7 @@ function openPlanMonEditor(mon = null, prefill = null) {
         ` · 개체값 ${planIvPercent(draft.ivs)}% · 만렙 CP ${maxCp.toLocaleString()} (${Math.round(cp / maxCp * 100)}%)`);
     };
     const numberInput = (value, min, max, step, onChange) => {
-      const input = el('input', { class: 'plan-num', type: 'number', inputmode: 'decimal', min: String(min), max: String(max), step: String(step), value: String(value) });
+      const input = el('input', { class: 'plan__num', type: 'number', inputmode: 'decimal', min: String(min), max: String(max), step: String(step), value: String(value) });
       input.addEventListener('input', () => {
         const parsed = Number(input.value);
         if (Number.isFinite(parsed)) onChange(Math.min(max, Math.max(min, parsed)));
@@ -196,7 +199,7 @@ function openPlanMonEditor(mon = null, prefill = null) {
       });
       return input;
     };
-    const rowOf = (label, ...nodes) => el('div', { class: 'plan-row' }, el('em', {}, label), el('div', { class: 'plan-row-body' }, ...nodes));
+    const rowOf = (label, ...nodes) => el('div', { class: 'plan__row' }, el('em', {}, label), el('div', { class: 'plan__row-body' }, ...nodes));
 
     // 섀도우
     const $shadow = el('input', { type: 'checkbox' });
@@ -205,11 +208,11 @@ function openPlanMonEditor(mon = null, prefill = null) {
 
     // 레벨 · 개체값
     const $level = numberInput(draft.level, 1, 50, 0.5, (value) => { draft.level = value; });
-    const ivInputs = ['공격', '방어', '체력'].map((label, index) => el('label', { class: 'plan-iv' }, label,
+    const ivInputs = ['공격', '방어', '체력'].map((label, index) => el('label', { class: 'plan__iv' }, label,
       numberInput(draft.ivs[index], 0, 15, 1, (value) => { draft.ivs[index] = value; })));
 
     // CP 로 레벨 추정 — 게임 화면의 CP 를 그대로 넣으면 레벨을 맞춰 준다 (개체값을 먼저 맞춰야 정확)
-    const $cpInput = el('input', { class: 'plan-num', type: 'number', inputmode: 'numeric', placeholder: 'CP' });
+    const $cpInput = el('input', { class: 'plan__num', type: 'number', inputmode: 'numeric', placeholder: 'CP' });
     const $cpHint = el('span', { class: 'meta' });
     const $cpButton = el('button', { class: 'uchip', onclick: () => {
       const cp = Number($cpInput.value);
@@ -223,7 +226,7 @@ function openPlanMonEditor(mon = null, prefill = null) {
 
     // 기술 — 이 폼이 배울 수 있는 목록에서 고른다. 모르면 비워 둔다
     const moveSelect = (moves, current, onChange) => {
-      const select = el('select', { class: 'plan-select' }, el('option', { value: '' }, '모름 / 아직'));
+      const select = el('select', { class: 'plan__select' }, el('option', { value: '' }, '모름 / 아직'));
       for (const [name, elite] of moves) select.append(el('option', { value: name }, name + (elite ? ' *' : '')));
       if (current && !moves.some(([name]) => name === current)) select.append(el('option', { value: current }, current));
       select.value = current || '';
@@ -234,15 +237,15 @@ function openPlanMonEditor(mon = null, prefill = null) {
     const $charged = moveSelect(form.charged ?? [], draft.charged, (value) => { draft.charged = value; });
 
     // 상태 · 메모
-    const $status = el('select', { class: 'plan-select' }, ...PLAN_STATUSES.map((status) => el('option', { value: status }, status)));
+    const $status = el('select', { class: 'plan__select' }, ...PLAN_STATUSES.map((status) => el('option', { value: status }, status)));
     $status.value = draft.status;
     $status.addEventListener('change', () => { draft.status = $status.value; });
-    const $memo = el('input', { class: 'boss-search plan-memo', placeholder: '메모 (예: 레이드용 2호기, 교환 받은 것)', value: draft.memo ?? '', maxlength: '80' });
+    const $memo = el('input', { class: 'boss__search plan__memo', placeholder: '메모 (예: 레이드용 2호기, 교환 받은 것)', value: draft.memo ?? '', maxlength: '80' });
     $memo.addEventListener('input', () => { draft.memo = $memo.value; });
 
-    const $msg = el('p', { class: 'acct-msg' });
+    const $msg = el('p', { class: 'account__msg' });
     const save = () => {
-      if (!canSave) { if (AUTH.status === 'anon') signIn(); return; }
+      // 비로그인도 브라우저 체험 저장을 허용하고, 로그인 시 auth.js가 계정으로 이전한다.
       if (!planSaveMon({ ...draft, memo: (draft.memo ?? '').trim() })) { $msg.textContent = `개체는 ${PLAN_MAX_MONS}마리까지 저장할 수 있어요.`; return; }
       closeModal();
       if (state.appMode === 'plan') render();
@@ -250,9 +253,9 @@ function openPlanMonEditor(mon = null, prefill = null) {
     };
     refreshCp();
     $form.append(
-      rowOf('섀도우', el('label', { class: 'plan-check' }, $shadow, ' 섀도우 개체')),
+      rowOf('섀도우', el('label', { class: 'plan__check' }, $shadow, ' 섀도우 개체')),
       rowOf('레벨', $level, el('span', { class: 'meta' }, '1 ~ 50, 0.5 단위')),
-      rowOf('개체값', el('div', { class: 'plan-ivs' }, ...ivInputs)),
+      rowOf('개체값', el('div', { class: 'plan__ivs' }, ...ivInputs)),
       rowOf('CP 로 맞추기', $cpInput, $cpButton, $cpHint),
       $cpLine,
       rowOf('스피드', $fast),
@@ -260,10 +263,10 @@ function openPlanMonEditor(mon = null, prefill = null) {
       rowOf('상태', $status),
       rowOf('메모', $memo),
       $msg,
-      el('div', { class: 'release-actions' },
-        el('button', { class: 'release-mute', onclick: () => closeModal() }, '취소'),
-        el('button', { class: 'release-ok', onclick: save }, canSave ? (mon ? '저장' : '내 포켓몬에 추가') : AUTH.status === 'pending' ? '승인 후 저장 가능' : '로그인하면 저장')),
-      el('p', { class: 'd-foot' }, 'CP 는 저장하지 않고 종족값 × 레벨 × 개체값으로 계산합니다. * 는 레거시 기술. 섀도우는 CP 가 같고 배틀에서만 공격 ×1.2 · 방어 ×0.83.'));
+      el('div', { class: 'release__actions' },
+        el('button', { class: 'release__mute', onclick: () => closeModal() }, '취소'),
+        el('button', { class: 'release__ok', onclick: save }, mon ? '저장' : '내 포켓몬에 추가')),
+      el('p', { class: 'detail__foot' }, 'CP 는 저장하지 않고 종족값 × 레벨 × 개체값으로 계산합니다. * 는 레거시 기술. 섀도우는 CP 가 같고 배틀에서만 공격 ×1.2 · 방어 ×0.83.'));
   };
   drawPick();
   drawForm();
@@ -277,22 +280,22 @@ function openPlanCompare(first, second) {
   const form = planMonForm(first);
   const reachA = planLeagueReach(form, first.ivs);
   const reachB = planLeagueReach(form, second.ivs);
-  const cell = (text, hi) => el('b', { class: hi ? 'hi' : '' }, text);
+  const cell = (text, hi) => el('b', { class: hi ? 'is-high' : '' }, text);
   const row = (label, a, b, higherIsBetter = true) => {
     const numA = typeof a === 'number' ? a : null;
     const numB = typeof b === 'number' ? b : null;
     const hiA = numA != null && numB != null && (higherIsBetter ? numA > numB : numA < numB);
     const hiB = numA != null && numB != null && (higherIsBetter ? numB > numA : numB < numA);
     const text = (value) => value == null ? '—' : typeof value === 'number' ? value.toLocaleString() : value;
-    return el('div', { class: 'mega-cmp-row' }, el('em', {}, label), cell(text(a), hiA), cell(text(b), hiB));
+    return el('div', { class: 'cmp__row' }, el('em', {}, label), cell(text(a), hiA), cell(text(b), hiB));
   };
   const reachText = (reach) => reach ? `${reach.cp.toLocaleString()} (Lv ${reach.level})` : null;
   const reachNum = (reach) => reach ? reach.cp : null;
-  const head = (mon) => el('div', { class: 'plan-cmp-head' }, sprite(mon.sprite), el('b', {}, nameNode(planMonName(mon))), el('span', { class: 'meta' }, mon.memo || mon.status));
+  const head = (mon) => el('div', { class: 'plan__cmp-head' }, sprite(mon.sprite), el('b', {}, nameNode(planMonName(mon))), el('span', { class: 'meta' }, mon.memo || mon.status));
   const body = el('div', { class: 'detail' },
     el('h2', {}, '⚖️ 같은 종 개체 비교'),
-    el('div', { class: 'mega-cmp plan-cmp' },
-      el('div', { class: 'mega-cmp-row mega-cmp-head' }, el('em', {}, ''), head(first), head(second)),
+    el('div', { class: 'cmp plan__cmp' },
+      el('div', { class: 'cmp__row cmp__head' }, el('em', {}, ''), head(first), head(second)),
       row('지금 레벨', first.level, second.level),
       row('지금 CP', planMonCp(first), planMonCp(second)),
       row('개체값 공/방/체', first.ivs.join('/'), second.ivs.join('/')),
@@ -310,7 +313,7 @@ function openPlanCompare(first, second) {
       row('스피드 기술', first.fast || '—', second.fast || '—'),
       row('차지 기술', first.charged || '—', second.charged || '—'),
       row('섀도우', first.shadow ? '섀도우' : '일반', second.shadow ? '섀도우' : '일반')),
-    el('p', { class: 'd-foot' }, '굵은 값이 더 큰 쪽입니다. 리그 도달 = CP 상한을 넘지 않는 가장 높은 레벨의 CP. 이 표는 같은 종 안에서의 숫자 비교일 뿐 순위표 평가가 아니며, PvP 에서는 개체값이 낮아도 상한에 딱 맞는 개체가 유리할 수 있습니다.'));
+    el('p', { class: 'detail__foot' }, '굵은 값이 더 큰 쪽입니다. 리그 도달 = CP 상한을 넘지 않는 가장 높은 레벨의 CP. 이 표는 같은 종 안에서의 숫자 비교일 뿐 순위표 평가가 아니며, PvP 에서는 개체값이 낮아도 상한에 딱 맞는 개체가 유리할 수 있습니다.'));
   openModal(body);
 }
 
@@ -323,19 +326,19 @@ function planMonCard(mon) {
   const picked = _planCompare.includes(mon.id);
   const cp = planMonCp(mon);
   const maxKind = maxPoolKind(mon.sprite);
-  return el('div', { class: `plan-mon${picked ? ' picked' : ''}` },
+  return el('div', { class: `plan__mon${picked ? ' is-picked' : ''}` },
     sprite(mon.sprite),
-    el('div', { class: 'plan-mon-main' },
-      el('div', { class: 'name' }, nameNode(planMonName(mon)), el('span', { class: `tag plan-status s-${PLAN_STATUSES.indexOf(mon.status)}` }, mon.status)),
-      el('div', { class: 'moves' }, el('span', {}, `Lv ${mon.level}`), el('span', {}, `개체값 ${(mon.ivs ?? []).join('/')} (${planIvPercent(mon.ivs)}%)`), el('span', {}, `CP ${cp.toLocaleString()}`)),
-      el('div', { class: 'moves' }, el('span', {}, mon.fast || '스피드 모름'), el('span', {}, mon.charged || '차지 모름'),
+    el('div', { class: 'plan__mon-main' },
+      el('div', { class: 'row__name' }, nameNode(planMonName(mon)), el('span', { class: `tag plan__status plan__status--${PLAN_STATUS_MODS[PLAN_STATUSES.indexOf(mon.status)] || 'a'}` }, mon.status)),
+      el('div', { class: 'row__moves' }, el('span', {}, `Lv ${mon.level}`), el('span', {}, `개체값 ${(mon.ivs ?? []).join('/')} (${planIvPercent(mon.ivs)}%)`), el('span', {}, `CP ${cp.toLocaleString()}`)),
+      el('div', { class: 'row__moves' }, el('span', {}, mon.fast || '스피드 모름'), el('span', {}, mon.charged || '차지 모름'),
         maxKind ? el('span', {}, maxKind === 'G' ? '거다이맥스 가능' : '다이맥스 가능') : ''),
-      mon.memo ? el('div', { class: 'plan-memo-line' }, mon.memo) : '',
-      form ? '' : el('div', { class: 'acct-msg' }, '폼 데이터가 없어 CP 를 계산할 수 없어요')),
-    el('div', { class: 'plan-mon-actions' },
-      el('button', { class: `uchip${picked ? ' on' : ''}`, onclick: () => togglePlanCompare(mon) }, picked ? '☑ 비교' : '☐ 비교'),
+      mon.memo ? el('div', { class: 'plan__memo-line' }, mon.memo) : '',
+      form ? '' : el('div', { class: 'account__msg' }, '폼 데이터가 없어 CP 를 계산할 수 없어요')),
+    el('div', { class: 'plan__mon-actions' },
+      el('button', { class: `uchip${picked ? ' is-on' : ''}`, onclick: () => togglePlanCompare(mon) }, picked ? '☑ 비교' : '☐ 비교'),
       el('button', { class: 'uchip', onclick: () => openPlanMonEditor(mon) }, '수정'),
-      el('button', { class: 'uchip admin-act danger', onclick: () => {
+      el('button', { class: 'uchip admin__act is-danger', onclick: () => {
         if (!confirm(`${planMonName(mon)} (Lv ${mon.level}) 를 지울까요?`)) return;
         planDeleteMon(mon.id);
         _planCompare = _planCompare.filter((id) => id !== mon.id);
@@ -369,15 +372,15 @@ function renderPlanCollection() {
     setTimeout(() => openPlanMonEditor(null, prefill), 0);
   }
 
-  const mons = loggedIn ? planMons() : [];
+  const mons = planMons();
   const counts = Object.fromEntries(PLAN_STATUSES.map((status) => [status, mons.filter((mon) => mon.status === status).length]));
   const shown = (_planFilter === 'all' ? mons : mons.filter((mon) => mon.status === _planFilter))
     .slice().sort((a, b) => planMonName(a).localeCompare(planMonName(b), 'ko') || planMonCp(b) - planMonCp(a));
 
-  const addButton = el('button', { class: 'drawer-item plan-add', onclick: () => openPlanMonEditor(null) }, '➕ 개체 추가');
+  const addButton = el('button', { class: 'drawer__item plan__add', onclick: () => openPlanMonEditor(null) }, '➕ 개체 추가');
   if (!loggedIn) {
     $content.append(
-      el('p', { class: 'dex-hint' },
+      el('p', { class: 'dex__hint' },
         !authEnabled() ? '이 빌드는 로그인 기능이 꺼져 있어 저장이 안 됩니다. 개체 추가를 눌러 CP 계산만 해 볼 수 있어요.'
           : AUTH.status === 'pending' ? '⏳ 승인 대기 중 — 승인되면 개체를 계정에 저장할 수 있어요. 계산은 지금도 됩니다.'
           : '헤더의 👤 로 로그인하면 개체를 계정에 저장하고 어느 기기에서든 같은 목록을 봅니다. 계산은 로그인 없이도 됩니다.'),  // v2.15.1 로그인 버튼은 헤더 👤 하나
@@ -389,19 +392,19 @@ function renderPlanCollection() {
     }));
     $content.append(addButton);
     if (!mons.length) {
-      $content.append(el('p', { class: 'dex-hint' }, '아직 저장한 개체가 없어요. 도감 상세 팝업의 "➕ 내 개체로 저장"을 누르거나 위 버튼으로 종을 검색해 추가하세요.'));
+      $content.append(el('p', { class: 'dex__hint' }, '아직 저장한 개체가 없어요. 도감 상세 팝업의 "➕ 내 개체로 저장"을 누르거나 위 버튼으로 종을 검색해 추가하세요.'));
     } else if (!shown.length) {
-      $content.append(el('p', { class: 'dex-hint' }, '이 상태의 개체가 없어요.'));
+      $content.append(el('p', { class: 'dex__hint' }, '이 상태의 개체가 없어요.'));
     } else {
-      $content.append(el('div', { class: 'plan-mons' }, ...shown.map(planMonCard)));
+      $content.append(el('div', { class: 'plan__mons' }, ...shown.map(planMonCard)));
     }
     if (_planCompare.length === 1) {
       const picked = mons.find((mon) => mon.id === _planCompare[0]);
-      if (picked) $content.append(el('p', { class: 'dex-hint' }, `⚖️ ${planMonName(picked)} 와 비교할 같은 종 개체의 [☐ 비교] 를 누르세요. `,
+      if (picked) $content.append(el('p', { class: 'dex__hint' }, `⚖️ ${planMonName(picked)} 와 비교할 같은 종 개체의 [☐ 비교] 를 누르세요. `,
         el('button', { class: 'uchip', onclick: () => { _planCompare = []; render(); } }, '선택 해제')));
     }
   }
-  $content.append(el('p', { class: 'd-foot' }, '개체 = 실제로 가진 한 마리. 같은 종을 여러 마리 저장할 수 있고, [☐ 비교] 를 같은 종 두 마리에 누르면 CP·개체값·리그 도달을 나란히 봅니다. ★ 즐겨찾기(종 단위)와는 별개로 저장됩니다.'));
+  $content.append(el('p', { class: 'detail__foot' }, '개체 = 실제로 가진 한 마리. 같은 종을 여러 마리 저장할 수 있고, [☐ 비교] 를 같은 종 두 마리에 누르면 CP·개체값·리그 도달을 나란히 봅니다. ★ 즐겨찾기(종 단위)와는 별개로 저장됩니다.'));
   $note.textContent = '내 포켓몬은 개체 단위(레벨 · 개체값 · 기술 · 상태)로 계정(Firestore users/{uid}.mons)에 저장됩니다. CP 는 종족값 × 레벨 × 개체값으로 계산하고, 리그 도달은 CP 상한을 넘지 않는 가장 높은 레벨입니다.';
 }
 

@@ -5,70 +5,70 @@
 .tagline-row .tagline { margin: 0; white-space: nowrap; }
 .mode-badge { flex: none; display: inline-flex; align-items: center; gap: 4px; padding: 3px 10px; border: 1px solid color-mix(in srgb, #2f8f5b 50%, var(--line)); border-radius: 999px;
               font-size: 12px; font-weight: 600; color: #2f8f5b; background: color-mix(in srgb, #2f8f5b 10%, var(--surface)); white-space: nowrap; }
-.mode-badge.plan { color: var(--fg); border-color: var(--line); background: var(--surface); }
+.mode-badge.is-plan { color: var(--fg); border-color: var(--line); background: var(--surface); }
 .mode-badge:hover { filter: brightness(.96); }
 
 /* 플래너 모드에서는 도감 전용 카드(즐겨찾기 요약)를 감춘다 */
 body[data-mode="plan"] #fav-digest { display: none; }
 
 /* 플래너 홈 카드 */
-.plan-card { margin: 12px 0 0; padding: 14px 16px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); }
-.plan-card.plan-intro { border-color: color-mix(in srgb, #2f8f5b 40%, var(--line)); background: color-mix(in srgb, #2f8f5b 7%, var(--surface)); }
-.plan-title { margin: 0 0 6px; font-size: 15px; font-weight: 600; }
-.plan-desc { margin: 0 0 10px; font-size: 13px; line-height: 1.6; color: var(--muted); word-break: keep-all; }
-.plan-card .acct-actions { margin-top: 6px; }
-.plan-card .boss-recs { margin: 4px 0 8px; }
-.plan-roadmap { margin-top: 14px; line-height: 1.6; word-break: keep-all; }
+.plan__card { margin: 12px 0 0; padding: 14px 16px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); }
+.plan__card.plan__intro { border-color: color-mix(in srgb, #2f8f5b 40%, var(--line)); background: color-mix(in srgb, #2f8f5b 7%, var(--surface)); }
+.plan__title { margin: 0 0 6px; font-size: 15px; font-weight: 600; }
+.plan__desc { margin: 0 0 10px; font-size: 13px; line-height: 1.6; color: var(--muted); word-break: keep-all; }
+.plan__card .account__actions { margin-top: 6px; }
+.plan__card .boss__recs { margin: 4px 0 8px; }
+.plan__roadmap { margin-top: 14px; line-height: 1.6; word-break: keep-all; }
 
 /* 내 포켓몬 목록 */
-.plan-add { margin: 4px 0 12px; justify-content: center; }
-.plan-mons { display: flex; flex-direction: column; gap: 8px; }
-.plan-mon { display: grid; grid-template-columns: 44px 1fr auto; gap: 10px; align-items: start; padding: 10px 12px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); }
-.plan-mon.picked { border-color: var(--fg); }
-.plan-mon .sprite { width: 44px; height: 44px; }
-.plan-mon-main { min-width: 0; }
-.plan-mon-main .name { gap: 4px 6px; }
-.plan-mon-main .moves { margin-top: 2px; word-break: keep-all; }
-.plan-memo-line { margin-top: 3px; font-size: 12px; color: var(--fg); opacity: .8; word-break: keep-all; }
-.plan-mon-actions { display: flex; flex-direction: column; gap: 4px; align-items: stretch; }
-.plan-mon-actions .uchip { justify-content: center; white-space: nowrap; }
-.plan-mon-actions .uchip.on { border-color: var(--fg); color: var(--fg); font-weight: 600; }
-.tag.plan-status { font-weight: 600; }
-.tag.plan-status.s-0 { color: #2f6fd8; border-color: color-mix(in srgb, #2f6fd8 55%, var(--line)); }
-.tag.plan-status.s-1 { color: #2f8f5b; border-color: color-mix(in srgb, #2f8f5b 55%, var(--line)); }
-.tag.plan-status.s-2 { color: #b06a2c; border-color: color-mix(in srgb, #b06a2c 55%, var(--line)); }
+.plan__add { margin: 4px 0 12px; justify-content: center; }
+.plan__mons { display: flex; flex-direction: column; gap: 8px; }
+.plan__mon { display: grid; grid-template-columns: 44px 1fr auto; gap: 10px; align-items: start; padding: 10px 12px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); }
+.plan__mon.is-picked { border-color: var(--fg); }
+.plan__mon .sprite { width: 44px; height: 44px; }
+.plan__mon-main { min-width: 0; }
+.plan__mon-main .row__name { gap: 4px 6px; }
+.plan__mon-main .row__moves { margin-top: 2px; word-break: keep-all; }
+.plan__memo-line { margin-top: 3px; font-size: 12px; color: var(--fg); opacity: .8; word-break: keep-all; }
+.plan__mon-actions { display: flex; flex-direction: column; gap: 4px; align-items: stretch; }
+.plan__mon-actions .uchip { justify-content: center; white-space: nowrap; }
+.plan__mon-actions .uchip.is-on { border-color: var(--fg); color: var(--fg); font-weight: 600; }
+.tag.plan__status { font-weight: 600; }
+.tag.plan__status.plan__status--a { color: #2f6fd8; border-color: color-mix(in srgb, #2f6fd8 55%, var(--line)); }
+.tag.plan__status.plan__status--b { color: #2f8f5b; border-color: color-mix(in srgb, #2f8f5b 55%, var(--line)); }
+.tag.plan__status.plan__status--c { color: #b06a2c; border-color: color-mix(in srgb, #b06a2c 55%, var(--line)); }
 @media (max-width: 420px) {
-  .plan-mon { grid-template-columns: 40px 1fr; }
-  .plan-mon .sprite { width: 40px; height: 40px; }
-  .plan-mon-actions { grid-column: 1 / -1; flex-direction: row; }
-  .plan-mon-actions .uchip { flex: 1; }
+  .plan__mon { grid-template-columns: 40px 1fr; }
+  .plan__mon .sprite { width: 40px; height: 40px; }
+  .plan__mon-actions { grid-column: 1 / -1; flex-direction: row; }
+  .plan__mon-actions .uchip { flex: 1; }
 }
 
 /* 편집 팝업 */
-.plan-editor .boss-search { margin: 8px 0; }
-.plan-editor .boss-selected { margin: 8px 0 4px; }
-.plan-row { display: flex; align-items: center; gap: 10px; margin: 10px 0; }
-.plan-row > em { flex: 0 0 76px; font-style: normal; font-size: 12px; font-weight: 600; color: var(--muted); }
-.plan-row-body { flex: 1 1 auto; min-width: 0; display: flex; align-items: center; flex-wrap: wrap; gap: 6px 8px; }
-.plan-num { width: 76px; padding: 7px 8px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); color: var(--fg); font: inherit; font-size: 16px; }
-.plan-select { max-width: 100%; padding: 7px 8px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); color: var(--fg); font: inherit; font-size: 15px; }
-.plan-ivs { display: flex; gap: 8px; flex-wrap: wrap; }
-.plan-iv { display: flex; flex-direction: column; gap: 2px; font-size: 11.5px; color: var(--muted); }
-.plan-iv .plan-num { width: 64px; }
-.plan-check { display: inline-flex; align-items: center; gap: 6px; font-size: 14px; }
-.plan-check input { width: 18px; height: 18px; accent-color: var(--fg); }
-.plan-memo { font-size: 15px; }
-.plan-editor .cp-inline-result { margin: 4px 0 4px 86px; }
+.plan__editor .boss__search { margin: 8px 0; }
+.plan__editor .boss__selected { margin: 8px 0 4px; }
+.plan__row { display: flex; align-items: center; gap: 10px; margin: 10px 0; }
+.plan__row > em { flex: 0 0 76px; font-style: normal; font-size: 12px; font-weight: 600; color: var(--muted); }
+.plan__row-body { flex: 1 1 auto; min-width: 0; display: flex; align-items: center; flex-wrap: wrap; gap: 6px 8px; }
+.plan__num { width: 76px; padding: 7px 8px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); color: var(--fg); font: inherit; font-size: 16px; }
+.plan__select { max-width: 100%; padding: 7px 8px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); color: var(--fg); font: inherit; font-size: 15px; }
+.plan__ivs { display: flex; gap: 8px; flex-wrap: wrap; }
+.plan__iv { display: flex; flex-direction: column; gap: 2px; font-size: 11.5px; color: var(--muted); }
+.plan__iv .plan__num { width: 64px; }
+.plan__check { display: inline-flex; align-items: center; gap: 6px; font-size: 14px; }
+.plan__check input { width: 18px; height: 18px; accent-color: var(--fg); }
+.plan__memo { font-size: 15px; }
+.plan__editor .cp__inline { margin: 4px 0 4px 86px; }
 @media (max-width: 420px) {
-  .plan-row { flex-direction: column; align-items: flex-start; gap: 4px; }
-  .plan-row > em { flex: none; }
-  .plan-editor .cp-inline-result { margin-left: 0; }
+  .plan__row { flex-direction: column; align-items: flex-start; gap: 4px; }
+  .plan__row > em { flex: none; }
+  .plan__editor .cp__inline { margin-left: 0; }
 }
 
 /* 비교 팝업: 라벨 칸을 넓혀 '지금 레벨' 같은 라벨이 한 줄에 */
-.plan-cmp .mega-cmp-row { grid-template-columns: 78px 1fr 1fr; }
+.plan__cmp .cmp__row { grid-template-columns: 78px 1fr 1fr; }
 /* 비교 팝업 머리 칸 */
-.plan-cmp-head { display: flex; flex-direction: column; align-items: center; gap: 2px; text-align: center; font-size: 12px; }
-.plan-cmp-head .sprite { width: 40px; height: 40px; }
-.plan-cmp-head b { font-size: 12.5px; }
-.plan-cmp-head .meta { font-size: 10.5px; }
+.plan__cmp-head { display: flex; flex-direction: column; align-items: center; gap: 2px; text-align: center; font-size: 12px; }
+.plan__cmp-head .sprite { width: 40px; height: 40px; }
+.plan__cmp-head b { font-size: 12.5px; }
+.plan__cmp-head .meta { font-size: 10.5px; }

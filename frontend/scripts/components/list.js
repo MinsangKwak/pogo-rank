@@ -1,5 +1,5 @@
 // ─────────────────────────────────────────────────────────────────────────────
-// components/list.js — 더보기/접기가 달린 목록(<ul class="rows">)
+// components/list.js — 더보기/접기가 달린 목록(<ul class="row-list">)
 //
 // 제공하는 전역
 //   list(key, items, toRow)   목록 노드를 만든다. 모든 랭킹 목록이 이걸 쓴다
@@ -14,16 +14,16 @@
 //            그래서 목록마다 서로 겹치지 않는 키를 넘겨야 한다 (예: `pvp-${리그}-${속성}`)
 //   items    목록에 넣을 항목 배열
 //   toRow    항목 하나를 <li>로 바꾸는 함수. (항목, 인덱스)를 받는다
-//   반환값   <ul class="rows">. 항목이 SHOW개를 넘으면 마지막에 더보기/접기 버튼이 붙는다
+//   반환값   <ul class="row-list">. 항목이 SHOW개를 넘으면 마지막에 더보기/접기 버튼이 붙는다
 function list(key, items, toRow) {
-  const listNode = el('ul', { class: 'rows' });
+  const listNode = el('ul', { class: 'row-list' });
   const isExpanded = expanded.has(key);
   const visibleItems = isExpanded ? items : items.slice(0, SHOW);
   visibleItems.forEach((item, index) => listNode.append(toRow(item, index)));
   if (items.length > SHOW) {
     // 버튼은 펼침 여부를 뒤집고 render()를 부른다 — 목록만 손보는 게 아니라 화면 전체가 다시 그려진다
     listNode.append(el('button', {
-      class: 'more',
+      class: 'row__more',
       onclick: () => {
         isExpanded ? expanded.delete(key) : expanded.add(key);
         render();

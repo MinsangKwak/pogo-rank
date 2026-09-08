@@ -14,7 +14,7 @@
 function usageBadge(name) {
   const count = typeof usageCountFor === 'function' ? usageCountFor(name) : 0;
   if (count < 2) return '';
-  return el('span', { class: `tag use${count >= 5 ? ' many' : ''}`, title: '이 포켓몬이 상위 30위에 드는 순위표 수 (PvE 19표 · PvP 4리그 · D-MAX 19표)' }, `활용 ${count}곳`);
+  return el('span', { class: `tag tag--use${count >= 5 ? ' tag--many' : ''}`, title: '이 포켓몬이 상위 30위에 드는 순위표 수 (PvE 19표 · PvP 4리그 · D-MAX 19표)' }, `활용 ${count}곳`);
 }
 
 // 공통 행: rank·sprite·이름·보조줄·점수 (lineParts는 보조줄 문자열 배열, tagNode는 이름 위 뱃지)
@@ -32,30 +32,32 @@ function usageBadge(name) {
 //   - 기술 변경 여부는 스프라이트 id 로 조회 (components/changes.js)
 //   모든 순위표가 이 함수를 거치므로, 뷰를 하나도 고치지 않고 전 표에 같은 표시가 붙는다.
 function row(pokemon, rankText, scoreNode, subNode, lineParts, tagNode) {
-  const stats = el('div', { class: 'stats' }, scoreNode);
+  const stats = el('div', { class: 'row__stats' }, scoreNode);
   if (subNode) stats.append(subNode);
   // 영문 이름은 title로만 달아 둔다 (좁은 화면에서 줄이 길어지지 않게)
   // 2026-09-06 v2.10.0 (QA-44) 메가·원시·섀도우 같은 폼 라벨은 작은 뱃지로 떼고 종 이름만 굵게 (components/name.js)
-  const name = el('div', { class: 'name' }, nameNode(pokemon.name, { title: pokemon.en }), typeDots(pokemon.types));
+  const name = el('div', { class: 'row__name' }, nameNode(pokemon.name, { title: pokemon.en }), typeDots(pokemon.types));
   // 뷰가 직접 만든 노드를 넘겼는지, 문자열 조각들을 넘겼는지에 따라 갈린다.
   // 문자열일 때는 빈 값(기술이 없는 종 등)을 걸러낸 뒤 <span>으로 감싼다
   const line = lineParts instanceof Node ? lineParts
-    : el('div', { class: 'moves' }, ...(lineParts ?? [pokemon.fast, pokemon.charged])
+    : el('div', { class: 'row__moves' }, ...(lineParts ?? [pokemon.fast, pokemon.charged])
       .filter(Boolean)
       .map((text) => el('span', {}, text)));
-  const main = el('div', { class: 'main' });
+  const main = el('div', { class: 'row__main' });
   // 뱃지는 이름보다 위에 와야 하므로 name·line보다 먼저 붙인다.
   // 뷰가 넘긴 뱃지(tagNode)와 기술 변경 예고 뱃지를 한 줄에 모은다 — 둘 다 없으면 줄 자체를 만들지 않는다
   const moveBadge = changeBadge(pokemon.sprite);
   // 2026-09-07 v2.13.0 (QA-42) "활용 N곳" — PvE 19표·PvP 4리그·D-MAX 상위 30 에 몇 곳 등장하는지 (pogomate ★N 에 해당하는 우리 식 범용성 표시).
   // 어느 탭에서 보든 같은 칩이라 "여기서만 좋은가, 다재다능인가"가 바로 보인다. 1곳뿐이면 붙이지 않는다(모든 행에 붙으면 뜻이 없다)
   const useBadge = usageBadge(pokemon.name);
-  if (tagNode || moveBadge || useBadge) main.append(el('div', { class: 'badges' }, tagNode ?? '', moveBadge, useBadge));
+  if (tagNode || moveBadge || useBadge) main.append(el('div', { class: 'row__badges' }, tagNode ?? '', moveBadge, useBadge));
   main.append(name, line);
   // 줄 전체가 상세 팝업 버튼이다 (안쪽에 따로 버튼을 두지 않아 클릭 영역이 넓다)
-  return el('li', { class: 'row', onclick: () => openDetail(pokemon) },
+  return el('li', { class: 'row', tabindex: '0', role: 'button', 'aria-label': pokemon.name + ' 상세 보기',
+    onkeydown: (event) => { if (event.target === event.currentTarget && (event.key === 'Enter' || event.key === ' ')) { event.preventDefault(); openDetail(pokemon); } },
+    onclick: () => openDetail(pokemon) },
     // 순위 칸: 숫자 아래에 최근 변동 ▲▼ (변동이 없거나 오래됐으면 아무것도 안 붙는다)
-    el('span', { class: 'rank' }, rankText, rankDeltaBadge(pokemon.d)),
+    el('span', { class: 'row__rank' }, rankText, rankDeltaBadge(pokemon.d)),
     sprite(pokemon.sprite),
     main,
     stats,

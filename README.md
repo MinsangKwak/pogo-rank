@@ -1,4 +1,4 @@
-# POGO SEARCH — 편하게 검색하세요
+# POGO PLAN — 뭘 키우고, 뭘 잡을지
 
 포켓몬고 랭킹(D-MAX · PvE · PvP · 활용처), 도감, 월 일정표, 솔플 레이드 계산기, 🌱 육성 플래너를 한 페이지에서 보는 **포켓몬고 응애 친구들을 위한 정적 사이트**입니다.
 서버 없이 GitHub Actions가 매일 데이터를 다시 받아 빌드·배포하며, 홈 화면에 설치(PWA)해 앱처럼 쓸 수 있습니다.
@@ -15,6 +15,7 @@
 | 🛡 [인프라 문서](docs/INFRA.md) | 트래픽·남용 대응 — 정적 사이트에서 되는 것/안 되는 것, 커졌을 때 로드맵(도메인 → Cloudflare → App Check) |
 | 🗒 [변경 이력](CHANGELOG.md) | 버전별 상세 변경 기록 |
 | 🛠 [QA 트래커 (노션)](https://www.notion.so/a0472984122d4f25b9b445b57465568f) | 버그·요청 관리 |
+| 📄 [NOTICE](NOTICE.md) · [CONTRIBUTING](CONTRIBUTING.md) · [SECURITY](SECURITY.md) | 라이선스 범위와 데이터 출처 조건 · 기여 방법(DCO) · 취약점 제보 창구 (v2.18.0) |
 
 ## 기능
 
@@ -37,7 +38,7 @@
 
 **공통**
 
-- 🔐 Google 로그인(관리자 승인제) · 즐겨찾기 ★를 계정에 저장 → 어느 기기에서든 같은 도감
+- 🔐 Google 로그인(관리자 승인제) · 즐겨찾기 ★를 계정에 저장 → 어느 기기에서든 같은 도감. 첫 로그인 때 약관·개인정보처리방침 동의(만 14세 이상), 계정 삭제 셀프서비스, 통계(GA) 동의 배너 (v2.18.0)
 - 📅 월 일정표 달력(LeekDuck + 한국 공식 발표) + 분류 칩·기간 막대 타임라인, 전역 검색, 트레이너 코드(승인자 전용), 패치노트
 - PWA 설치·오프라인 열람, 다크 모드, 첫 화면 로딩 표시, 그림 스켈레톤, 웹폰트(Montserrat + Pretendard), 프레임워크·의존성 없는 바닐라 JS
 
@@ -45,6 +46,14 @@
 
 | 버전 | 날짜 | 내용 |
 |---|---|---|
+| **v2.24.0** | 2026-09-08 | CSS 클래스 이름 BEM 통일 — `block__element--modifier`, 최대 3단어. 화면·기능 변화 없는 순수 리팩토링 |
+| **v2.23.0** | 2026-09-08 | PC 레이아웃 — 1024px~ 왼쪽 고정 사이드바 + 본문 1100px, 홈 타일 4열. 좁은 화면은 기존 배치 유지 |
+| **v2.22.0** | 2026-09-08 | 디자인 통일 — `app-shell.css` 의 토큰·글꼴·크기 덮어쓰기 제거(무채색 팔레트·Montserrat 복구), 서비스 홈 타일 정의 일원화, 아이콘 언어 이모지로 통일, D-MAX·PvE·PvP 탭 줄 복구(`#/rank/…` 주소 유지), 상세 팝업 카드/바텀시트 복귀, 손가락 대상 44px(`--tap`) |
+| **v2.21.0** | 2026-09-08 | PWA 앱 셸 — 모든 화면에 고정 상단 바, 네이티브 `<dialog>`(포커스·Esc), 건너뛰기 링크, 화면 확대 허용 |
+| **v2.20.0** | 2026-09-08 | 서비스 홈 신설(기능 카드 8개) + 랭킹 주소 `#/rank/max·pve·pvp` |
+| v2.19.0 | 2026-09-07 | 모바일 빠른 검색·이동, 게스트 플래너(로그인 없이 브라우저에 개체 저장) |
+| **v2.18.0** | 2026-09-07 | 공개 준비 Phase 0 — LICENSE(MIT)·NOTICE·CONTRIBUTING(DCO)·SECURITY 신설, 개인정보처리방침 개정(처리위탁·국외이전·보유기간·14세·보호책임자), 📜 이용약관(`#/terms`) + 첫 로그인 동의 팝업, 🍪 통계(GA) 동의 배너(동의 전 gtag 미삽입)·캐시 비우기, 계정 삭제 셀프서비스(`firestore.rules` 본인 delete 허용 — 콘솔 재게시 필요), IP 고지문 상시 노출 |
+| **v2.17.0** | 2026-09-07 | 서비스명 **POGO PLAN**(포고플랜) 확정 — 화면 제목·헤더·스플래시·manifest("POGO NOTE" 잔재 정리)·문서 표기 교체, sw 캐시 접두사 `pogoplan-v4`. 저장소명·URL·localStorage 키·GA 이벤트명은 불변 |
 | v2.16.1 | 2026-09-07 | 첫 화면 스프라이트 미표시 수정 — lazy 제거·실패 재시도·이미지 로드까지 가림막 유지, sw 캐시 v3 |
 | **v2.16.0** | 2026-09-07 | IF·활용처 탭 해체 — 솔플 계산기는 PvE 탭 🧮 버튼, PvP 덱 짜기는 PvP 탭 🃏 버튼(리그 공유), 활용처는 검색 패널(빈 상태 순위 + 활용 N곳 뱃지). 탭은 D-MAX·PvE·PvP 셋 |
 | v2.15.1 | 2026-09-07 | 중복 진입 버튼 정리 — 같은 화면은 버튼 하나(도감·상성·즐겨찾기 = 탭 줄, 모드 전환 = 헤더 배지, 로그인 = 헤더 👤). ☰ 메뉴·계정 카드·즐겨찾기 카드·플래너 홈의 중복 항목 제거 |
@@ -92,10 +101,21 @@ open dist/index.html     # 정적 파일이라 서버 없이 열림
 PvPoke(랭킹·출시 여부) · PokeMiners(게임마스터) · PokeAPI(한글 이름·스프라이트) · hawaii 성능표(구글 시트) · LeekDuck ScrapedDuck(일정) · Bulbapedia(다이맥스 출시 목록).
 상세 표와 병합 방식은 [개발 문서](docs/DEVELOPMENT.md#3-데이터-소스)에 있습니다.
 
+## 라이선스
+
+**코드는 MIT, 데이터·이미지는 아닙니다.** 경로별 범위와 출처별 조건은 [NOTICE.md](NOTICE.md)에 있습니다.
+
+| 경로 | 라이선스 |
+|---|---|
+| `backend/` · `frontend/` · `scripts/` · `docs/` · `.github/` | MIT ([LICENSE](LICENSE)) |
+| `snapshot/` · `data/`(빌드 산출) · 스프라이트 | 각 원 출처의 조건 — PvPoke(MIT) · PokeMiners · PokeAPI · ScrapedDuck(MIT) · 커뮤니티 시트 |
+
+기여는 DCO 서명(`git commit -s`)으로 받습니다 — [CONTRIBUTING.md](CONTRIBUTING.md). 취약점 제보는 [SECURITY.md](SECURITY.md).
+
 ## 고지
 
-포켓몬고 응애 친구들을 위해 만들어진 서비스입니다.
+포켓몬고 응애 친구들을 위해 만들어진 비공식 팬 프로젝트이며, 수익을 목적으로 하지 않습니다.
 
-Pokémon 및 관련 명칭·이미지의 저작권은 Nintendo / Creatures Inc. / GAME FREAK inc. / Niantic에 있으며, 이 프로젝트는 원 저작자와 무관합니다. 데이터는 PvPoke · PokeMiners · PokeAPI의 공개 자료를 사용합니다.
+Pokémon 및 관련 명칭·이미지의 권리는 The Pokémon Company · Nintendo · Creatures Inc. · GAME FREAK inc. 에, Pokémon GO 는 Scopely Explore, Inc. 에 있으며 이 프로젝트는 권리자와 무관합니다. 데이터는 PvPoke · PokeMiners · PokeAPI · LeekDuck 의 공개 자료를 사용합니다. 권리자의 삭제 요청은 72시간 안에 처리합니다 (NOTICE.md 5장).
 
 문의·건의: 사이트 푸터의 이메일 링크 (빌드 설정 `CONTACT_EMAIL`)

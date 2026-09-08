@@ -84,33 +84,38 @@ const $note = document.getElementById('note');
 // 상단 탭 버튼 줄을 처음부터 다시 만든다.
 // 선택 표시는 CSS 클래스가 아니라 aria-selected로 하기 때문에(스타일과 스크린리더가 같은 값을 본다)
 // 탭이 바뀔 때마다 줄 전체를 다시 그린다.
+//
+// 2026-09-08 v2.22.0 탭 줄 복구 — v2.21.0 에서 통째로 감췄더니 D-MAX ↔ PvE ↔ PvP 를 오가려면
+// 매번 메뉴를 열거나 홈으로 돌아가야 했다. 셋은 형제 화면이라 한 번에 옮겨 다니는 줄이 맞다.
+// 대신 이동은 v2.21.0 의 주소 체계(#/rank/…)를 그대로 쓴다 — 상단 바 제목·뒤로가기가 같이 맞춰진다.
+// 서비스 홈에는 탭 줄이 없다 (홈 타일이 그 자리를 대신한다)
 function renderTabs() {
-  $tabs.textContent = '';
-  // 2026-09-07 v2.15.0 (QA-53) 플래너 모드는 탭 줄이 통째로 바뀐다 — [홈 | 내 포켓몬] (planner/shell.js)
-  if (state.appMode === 'plan') renderPlanTabs();
-  // 2026-09-02 PvE 일반·전체를 한 탭으로 통합해 메뉴 축소
+  $tabs.replaceChildren();
+  const onHome = state.appMode === 'dex' && state.tab === 'home';
+  $tabs.hidden = onHome;
+  if (onHome) return;
+  // 2026-09-07 v2.15.0 (QA-53) 플래너 모드는 탭 줄이 통째로 바뀐다 — [육성 현황 | 🎒 내 포켓몬] (planner/shell.js)
+  if (state.appMode === 'plan') return renderPlanTabs();
   // [탭 id, 버튼에 보이는 이름] 쌍. 배열 순서가 곧 화면에 보이는 탭 순서다
-  else for (const [id, label] of [['max', 'D-MAX'], ['pve', 'PvE'], ['pvp', 'PvP']]) {  // 2026-09-07 v2.16.0 활용처·IF 탭 제거 (검색 패널 · PvE/PvP 도구 버튼으로)
-    // 2026-09-03 GA4: 탭 이름을 이벤트명에 포함(tab_max 등) — GA 이벤트 목록에서 설정 없이 탭별 순위가 바로 보임, 누를 때마다 1회씩 기록
+  for (const [id, label] of [['max', 'D-MAX'], ['pve', 'PvE'], ['pvp', 'PvP']]) {
+    // 2026-09-03 GA4: 탭 이름을 이벤트명에 포함(tab_max 등) — 누를 때마다 1회씩 기록
     $tabs.append(el('button', {
-      class: 'tab',
+      class: 'tabs__item',
       role: 'tab',
       'aria-selected': String(state.tab === id),
       onclick: () => {
-        state.tab = id;
         track('tab_' + id, { tab: id });
-        render();
+        navigateHash('#/rank/' + id);  // 주소가 바뀌면 applyPlanRoute → render 가 돌고 상단 바 제목도 맞춰진다
       },
     }, label));
   }
-  // 2026-09-06 v2.9.0 도감·즐겨찾기 바로가기 — ☰ 안에만 있을 때 page_open(14)이 탭 클릭(~100)의 1/7이었다.
-  // 탭이 아니라 "페이지로 가는 버튼"이라 aria-selected 없이 오른쪽 끝에 붙인다. 좁은 화면에서는 아이콘만 남는다(tabs.css)
-  const quick = el('div', { class: 'tab-quick' },
-    el('button', { class: 'tab quick', title: '도감', onclick: () => openPage('dex', 'tabbar') }, '📕', el('span', { class: 'lbl' }, ' 도감')),
-    // 2026-09-06 v2.10.0 (QA-44) 🧭 상성 검색 — 게임 중 "이 보스 뭘로 잡지"를 한 화면에서
-    el('button', { class: 'tab quick', title: '상성 검색', onclick: () => openPage('types', 'tabbar') }, '🧭', el('span', { class: 'lbl' }, ' 상성')));
+  // 2026-09-06 v2.9.0 도감·상성·즐겨찾기 바로가기 — 탭이 아니라 "페이지로 가는 버튼"이라
+  // aria-selected 없이 오른쪽 끝에 붙인다. 좁은 화면에서는 아이콘만 남는다(tabs.css)
+  const quick = el('div', { class: 'tabs__quick' },
+    el('button', { class: 'tabs__item tabs__item--quick', title: '도감', onclick: () => openPage('dex', 'tabbar') }, '📕', el('span', { class: 'tabs__label' }, ' 도감')),
+    el('button', { class: 'tabs__item tabs__item--quick', title: '상성 검색', onclick: () => openPage('types', 'tabbar') }, '🧭', el('span', { class: 'tabs__label' }, ' 상성')));
   if (typeof authEnabled === 'function' && authEnabled() && AUTH.status === 'ok') {
-    quick.append(el('button', { class: 'tab quick', title: '즐겨찾기', onclick: () => openPage('favs', 'tabbar') }, '★', el('span', { class: 'lbl' }, ` 즐겨찾기 ${AUTH.favs.size}`)));
+    quick.append(el('button', { class: 'tabs__item tabs__item--quick', title: '즐겨찾기', onclick: () => openPage('favs', 'tabbar') }, '★', el('span', { class: 'tabs__label' }, ` 즐겨찾기 ${AUTH.favs.size}`)));
   }
   $tabs.append(quick);
 }
@@ -126,7 +131,7 @@ function renderPveTab() {
       render();
     });
   // 2026-09-07 v2.16.0 오른쪽 도구 버튼: 🧮 솔플 레이드 계산기 (옛 IF 탭). 누르면 티어표 자리에 계산기가 펼쳐지고, 다시 누르면 접힌다
-  $controls.append(el('div', { class: 'ctrl-row' }, modeSeg, toolButton('🧮 솔플 계산기', state.pveTool === 'solo', () => {
+  $controls.append(el('div', { class: 'controls__row' }, modeSeg, toolButton('🧮 솔플 계산기', state.pveTool === 'solo', () => {
     state.pveTool = state.pveTool === 'solo' ? null : 'solo';
     track('tool_solo', { on: state.pveTool ? 1 : 0 });
     render();
@@ -148,46 +153,37 @@ function render() {
   document.getElementById('boss-acc').style.display = 'none';  // 2026-09-02 D-MAX 탭에서만 renderBossAcc가 다시 켬
   $controls.textContent = '';
   $content.textContent = '';
+  document.body.dataset.home = String(state.appMode === 'dex' && state.tab === 'home');
+  if (state.appMode === 'dex' && state.tab === 'home') return renderServiceHome();
   // 2026-09-07 v2.15.0 (QA-53) 플래너 모드면 플래너 렌더러로 (도감 탭 상태는 건드리지 않는다)
   if (state.appMode === 'plan') return renderPlan();
   // 탭 id → 그 탭을 그리는 함수. 찾아서 바로 호출한다
   ({ max: renderMax, pve: renderPveTab, pvp: renderPvp })[state.tab]();  // v2.16.0 usage·if 제거
+  compactScreenFilters();
   saveLastView();  // 2026-09-06 v2.9.0 상태가 바뀌어 다시 그릴 때마다 마지막 보기를 남긴다
 }
 
-// 2026-09-06 v2.11.0 홈: 헤더의 POGO SEARCH 를 누르면 열린 것을 다 닫고 첫 화면(D-MAX 탭 전체)으로 돌아간다
+// 2026-09-06 v2.11.0 홈 — 열린 팝업·드로어를 닫고 서비스 홈으로.
+// 2026-09-08 v2.22.0 진입점은 드로어 맨 위 "서비스 홈" 하나 (components/app-shell.js 가 여기로 연결).
+// 상단 바의 제목은 이제 로고가 아니라 "지금 보는 화면 이름" 이라 누르는 버튼이 아니다
 function goHome() {
   track('home');
-  // 2026-09-07 v2.15.0 (QA-53) 로고 = 현재 모드의 홈. 플래너 모드면 플래너 홈(#/plan)으로
-  if (state.appMode === 'plan') {
-    navigateHash('#/plan');  // 팝업·드로어가 열려 있으면 닫고 그 항목을 대체한다. 같은 주소면 다시 그린다
-    window.scrollTo(0, 0);
-    return;
-  }
-  closeDrawer({ silent: true });
-  closeModal({ silent: true });
-  NAV.open = false;
-  state.tab = 'max';
-  state.maxBoss = 'overall';
-  // 페이지(#/dex 등)나 딥링크 위였다면 해시를 지워 메인으로 (hashchange → renderPage 가 메인을 되살린다)
-  if (location.hash) location.hash = '';
-  render();
+  navigateHash('');
   window.scrollTo(0, 0);
 }
 
 // ── 최초 실행 (여기부터는 페이지가 열릴 때 한 번만 지나간다) ──
 restoreLastView();  // 2026-09-06 v2.9.0 첫 렌더 전에 마지막 보기 복원
-applyPlanRoute({ initial: true });  // 2026-09-07 v2.15.0 (QA-53) 해시(또는 마지막 모드)로 도감/플래너 모드 결정 — render() 보다 먼저
+applyPlanRoute();  // 해시 없는 첫 방문은 서비스 홈으로 시작한다.
 initPlanShell();
 render();
-document.querySelector('header h1')?.addEventListener('click', goHome);  // 2026-09-06 v2.11.0 로고 = 홈 버튼
 // 2026-09-03 v2.2.1 첫 화면이 그려졌으니 로딩 가림막 제거 (페이드 후 DOM에서 삭제)
 // 2026-09-07 v2.16.1 첫 화면의 스프라이트가 다 받아진 뒤에 걷는다(최대 2.5초) — 그림 없는 첫 화면이 보이지 않게 (components/sprite.js waitForSprites)
 (() => {
   const splash = document.getElementById('splash');
   if (!splash) return;
   const hide = () => requestAnimationFrame(() => {  // 클래스를 붙이기 전에 한 프레임 기다린다 — 같은 프레임에 붙이면 CSS 전환이 생략된다
-    splash.classList.add('done');
+    splash.classList.add('is-done');
     setTimeout(() => splash.remove(), 300);  // 300ms = 페이드 시간
   });
   (typeof waitForSprites === 'function' ? waitForSprites(2500) : Promise.resolve()).then(hide, hide);
@@ -199,6 +195,8 @@ const startedStandalone = window.matchMedia?.('(display-mode: standalone)').matc
 track('tab_start', { tab: state.tab, standalone: startedStandalone });
 // 2026-09-06 v2.9.0 GA4: 홈 화면 설치 완료 — 브라우저가 설치를 마쳤을 때 한 번 뜬다
 window.addEventListener('appinstalled', () => track('pwa_install'));
+// 2026-09-07 v2.18.0 통계 동의 배너 — 동의가 저장돼 있으면 GA 를 붙이고, 없으면 첫 화면에 배너 (components/consent.js)
+initConsent();
 // 2026-09-03 자동 팝업 대신 새 패치노트 뱃지 (☰에 빨간 점)
 initReleaseBadge();
 // 2026-09-04 시즌 기술 변경 안내: 변경 데이터가 있을 때만 메뉴에 항목이 뜬다

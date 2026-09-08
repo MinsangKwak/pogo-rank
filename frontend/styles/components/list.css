@@ -1,132 +1,136 @@
 /* 랭킹 리스트: 제목줄 · 행(순위/스프라이트/이름/기술/점수) · 더보기 */
-.list-head { display: flex; align-items: baseline; justify-content: space-between; padding: 14px 0 6px; }
-.list-head h2 { margin: 0; font-size: 14px; font-weight: 500; }
-.list-head .meta { font-size: 12px; }
+.row-head { display: flex; align-items: baseline; justify-content: space-between; padding: 14px 0 6px; }
+.row-head h2 { margin: 0; font-size: 14px; font-weight: 500; }
+.row-head .meta { font-size: 12px; }
 
-.rows { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--line); }
+.row-list { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--line); }
 .row { display: grid; grid-template-columns: 28px 40px 1fr auto;  /* 2026-09-03 v2.2.0 보유 ☆ 열 제거 */ align-items: center; gap: 12px; padding: 9px 0; border-bottom: 1px solid var(--line); cursor: pointer; }
 .row:hover { background: var(--hover); }
 
-/* 등급 색상 (PvE 평가 글자, 티어표 뱃지 공용) */
-.grade b { font-weight: 600; }
-.g-S { color: #d84a5f; }
-.g-A { color: #d98b0b; }
-.g-B { color: #4f9e57; }
-.g-C { color: #8c8f94; }
+/* 등급 색상 — PvE 평가 글자(.grade-mark)와 티어표 뱃지(.tier__badge)가 같은 색을 쓴다 */
+.grade-mark { font-weight: 600; }
+.grade-mark--s { color: #d84a5f; }
+.grade-mark--a { color: #d98b0b; }
+.grade-mark--b { color: #4f9e57; }
+.grade-mark--c { color: #8c8f94; }
 
 /* 티어표: S/A/B/C 그룹 머리글 */
-.tier-head { display: flex; align-items: center; gap: 10px; padding: 20px 0 8px; }
-.tier-badge { width: 28px; height: 28px; border-radius: 9px; display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 700; background: var(--surface); }
+.tier__head { display: flex; align-items: center; gap: 10px; padding: 20px 0 8px; }
+.tier__badge { width: 28px; height: 28px; border-radius: 9px; display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 700; background: var(--surface); }
+.tier__badge--s { color: #d84a5f; }
+.tier__badge--a { color: #d98b0b; }
+.tier__badge--b { color: #4f9e57; }
+.tier__badge--c { color: #8c8f94; }
 
 /* 목록 하단 용어 설명 */
 .legend { display: flex; flex-direction: column; gap: 3px; margin-top: 16px; padding: 12px 14px; background: var(--surface); border-radius: 10px; font-size: 12px; color: var(--muted); line-height: 1.55; }
-.legend-item::before { content: "●"; font-size: 7px; vertical-align: 2px; margin-right: 7px; }
-.legend-item b { font-weight: 600; color: var(--fg); }
-.rank { font-size: 13px; color: var(--muted); text-align: right; }
-.row:nth-child(-n+3) .rank { color: var(--fg); font-weight: 600; }
+.legend__item::before { content: "●"; font-size: 7px; vertical-align: 2px; margin-right: 7px; }
+.legend__item b { font-weight: 600; color: var(--fg); }
+.row__rank { font-size: 13px; color: var(--muted); text-align: right; }
+.row:nth-child(-n+3) .row__rank { color: var(--fg); font-weight: 600; }
 .sprite { width: 40px; height: 40px; image-rendering: pixelated; display: block; }
-.sprite.sprite-hd { image-rendering: auto; object-fit: contain; }  /* 2026-09-05 v2.7.2 게임 에셋 아이콘(아머드 뮤츠 등)은 부드럽게 축소 */
+.sprite.sprite--hd { image-rendering: auto; object-fit: contain; }  /* 2026-09-05 v2.7.2 게임 에셋 아이콘(아머드 뮤츠 등)은 부드럽게 축소 */
 .sprite.empty { background: var(--surface); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: var(--muted); opacity: .45; }
-/* 2026-09-07 v2.14.0 (QA-52) 스프라이트 스켈레톤 — 이미지를 받는 동안 회색 판이 좌→우로 반짝인다. 받고 나면 sprite.js 가 .loading 을 뗀다 */
-.sprite.loading { border-radius: 8px; background: linear-gradient(90deg, var(--surface) 25%, color-mix(in srgb, var(--muted) 18%, var(--surface)) 50%, var(--surface) 75%); background-size: 200% 100%; animation: sprite-shimmer 1.2s ease-in-out infinite; }
+/* 2026-09-07 v2.14.0 (QA-52) 스프라이트 스켈레톤 — 이미지를 받는 동안 회색 판이 좌→우로 반짝인다. 받고 나면 sprite.js 가 .is-loading 을 뗀다 */
+.sprite.is-loading { border-radius: 8px; background: linear-gradient(90deg, var(--surface) 25%, color-mix(in srgb, var(--muted) 18%, var(--surface)) 50%, var(--surface) 75%); background-size: 200% 100%; animation: sprite-shimmer 1.2s ease-in-out infinite; }
 @keyframes sprite-shimmer { from { background-position: 100% 0; } to { background-position: -100% 0; } }
-@media (prefers-reduced-motion: reduce) { .sprite.loading { animation: none; background: var(--surface); } }
-.main { min-width: 0; }
-.name { display: flex; align-items: center; flex-wrap: wrap; gap: 4px 8px; min-width: 0; }
-.name b { font-weight: 500; }
-.types { display: inline-flex; gap: 3px; flex: 0 0 auto; }
-.types i { width: 7px; height: 7px; border-radius: 50%; background: var(--c); display: inline-block; }
-.moves { font-size: 12.5px; color: var(--muted); margin-top: 1px; }
-.moves span { display: inline; }
-.moves span + span::before { content: "·"; margin: 0 6px; }
+@media (prefers-reduced-motion: reduce) { .sprite.is-loading { animation: none; background: var(--surface); } }
+.row__main { min-width: 0; }
+.row__name { display: flex; align-items: center; flex-wrap: wrap; gap: 4px 8px; min-width: 0; }
+.row__name b { font-weight: 500; }
+.row__types { display: inline-flex; gap: 3px; flex: 0 0 auto; }
+.row__types i { width: 7px; height: 7px; border-radius: 50%; background: var(--c); display: inline-block; }
+.row__moves { font-size: 12.5px; color: var(--muted); margin-top: 1px; }
+.row__moves span { display: inline; }
+.row__moves span + span::before { content: "·"; margin: 0 6px; }
 /* 2026-09-03 PvP 카운터 이유 줄: 길어도 줄바꿈으로 다 보이게 */
-.counter-why { line-height: 1.45; word-break: keep-all; }
+.row__counter { line-height: 1.45; word-break: keep-all; }
 /* 2026-09-03 추천 덱 카드: 이유 문장 · 덱 목록에선 보유 별 숨김(보유 체크는 PvP 탭에서) */
-.deck-reason { margin: 8px 2px 2px; font-size: 12.5px; color: var(--muted); line-height: 1.6; word-break: keep-all; }
-.schedule-body.no-star .row { padding-right: 4px; }
-.stats { text-align: right; }
-.score { font-size: 15px; font-weight: 500; }
-.sub { font-size: 11.5px; color: var(--muted); display: block; }
+.deck__reason { margin: 8px 2px 2px; font-size: 12.5px; color: var(--muted); line-height: 1.6; word-break: keep-all; }
+.schedule__body.is-starless .row { padding-right: 4px; }
+.row__stats { text-align: right; }
+.row__score { font-size: 15px; font-weight: 500; }
+.row__sub { font-size: 11.5px; color: var(--muted); display: block; }
 
-.more { width: 100%; padding: 12px 0; font-size: 13.5px; color: var(--muted); border-bottom: 1px solid var(--line); }
-.more:hover { color: var(--fg); }
+.row__more { width: 100%; padding: 12px 0; font-size: 13.5px; color: var(--muted); border-bottom: 1px solid var(--line); }
+.row__more:hover { color: var(--fg); }
 
 .places { display: flex; flex-wrap: wrap; gap: 4px 10px; font-size: 12.5px; color: var(--muted); margin-top: 2px; }
 .places span b { font-weight: 500; color: var(--fg); }
-.places-more { color: var(--muted); opacity: .8; }
+.places__more { color: var(--muted); opacity: .8; }
 
 /* 640px 미만: 점수를 이름 아래로 내려 세로 배치. 말줄임 없이 전부 표시 */
 @media (max-width: 640px) {
   .row { grid-template-columns: 24px 36px minmax(0, 1fr); gap: 2px 10px; align-items: start; padding: 11px 0; }
-  .rank { grid-row: 1 / span 2; padding-top: 2px; }
+  .row__rank { grid-row: 1 / span 2; padding-top: 2px; }
   .sprite { grid-row: 1 / span 2; width: 36px; height: 36px; }
-  .stats { grid-column: 3; display: flex; align-items: baseline; gap: 8px; text-align: left; }
-  .sub { display: inline; }
+  .row__stats { grid-column: 3; display: flex; align-items: baseline; gap: 8px; text-align: left; }
+  .row__sub { display: inline; }
 }
 
 /* 2026-09-02 티어 근거 인라인(1B) · 이번 주 보스 카드(2A) */
-.row-why { display: none; padding: 6px 12px 10px 44px; font-size: 12.5px; color: var(--muted); line-height: 1.5; border-bottom: 1px solid var(--line); }
-.row-why.open { display: block; }
-.row-why-more { color: var(--fg); font-size: 12px; text-decoration: underline; }
-.boss-card { margin: 4px 0 16px; padding: 14px 16px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); }
-.boss-title { margin: 0 0 10px; font-size: 13.5px; font-weight: 600; }
-.boss-recs { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px; }
-.boss-rec { flex: none; display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 8px 10px; border-radius: 10px; background: var(--bg); font-size: 11.5px; line-height: 1.35; }
-.boss-rec .sprite { width: 40px; height: 40px; }
+.row__why { display: none; padding: 6px 12px 10px 44px; font-size: 12.5px; color: var(--muted); line-height: 1.5; border-bottom: 1px solid var(--line); }
+.row__why.is-open { display: block; }
+.row__why-more { color: var(--fg); font-size: 12px; text-decoration: underline; }
+.boss__card { margin: 4px 0 16px; padding: 14px 16px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); }
+.boss__title { margin: 0 0 10px; font-size: 13.5px; font-weight: 600; }
+.boss__recs { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px; }
+.boss__rec { flex: none; display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 8px 10px; border-radius: 10px; background: var(--bg); font-size: 11.5px; line-height: 1.35; }
+.boss__rec .sprite { width: 40px; height: 40px; }
 /* 2026-09-07 v2.14.0 (QA-52) 긴 이름(거다이맥스 ○○○)은 카드 폭 안에서 가운데 정렬로 줄바꿈 — 한 줄로 늘어져 격자가 깨지지 않게 */
-.boss-rec > span { max-width: 104px; text-align: center; word-break: keep-all; overflow-wrap: anywhere; }
-.boss-rec .form-tag { display: inline-block; margin-bottom: 1px; }
-.boss-more { margin-top: 8px; font-size: 12.5px; color: var(--muted); text-decoration: underline; }
+.boss__rec > span { max-width: 104px; text-align: center; word-break: keep-all; overflow-wrap: anywhere; }
+.boss__rec .form-tag { display: inline-block; margin-bottom: 1px; }
+.boss__more { margin-top: 8px; font-size: 12.5px; color: var(--muted); text-decoration: underline; }
 
 /* 2026-09-02 보스 아코디언 */
-.boss-acc { margin: 0 0 12px; }
-.wrap-recs { flex-wrap: wrap; overflow-x: visible; }
+.boss__acc { margin: 0 0 12px; }
+.recs-wrap { flex-wrap: wrap; overflow-x: visible; }
 /* 2026-09-07 v2.13.0 (QA-43) 이번 주 보스 파티 카드 — 딜러 2 + 탱커 1 */
 .party-card { margin-bottom: 10px; padding: 8px 10px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); }
-.party-card .boss-rec { background: var(--bg); }
-.party-card .boss-rec .sub { font-size: 10.5px; }
-.boss-foot { display: flex; justify-content: space-between; align-items: center; margin-top: 10px; gap: 8px; }
+.party-card .boss__rec { background: var(--bg); }
+.party-card .boss__rec .row__sub { font-size: 10.5px; }
+.boss__foot { display: flex; justify-content: space-between; align-items: center; margin-top: 10px; gap: 8px; }
 
 /* 2026-09-02 솔플 계산기 판정 카드 */
-.solo-card { margin: 4px 0 20px; padding: 16px; border-radius: 12px; border: 1px solid var(--line); background: var(--surface); }
-.solo-card.solo-ok { border-color: var(--t-grass); }
-.solo-card.solo-tight { border-color: var(--t-ground); }
-.solo-card.solo-no { border-color: var(--t-fighting); }
-.solo-verdict { margin: 0; font-size: 18px; font-weight: 700; }
-.solo-why { margin: 6px 0 0; font-size: 13px; line-height: 1.5; }
-.solo-stats { margin: 8px 0 0; font-size: 12px; color: var(--muted); line-height: 1.5; }
+.solo__card { margin: 4px 0 20px; padding: 16px; border-radius: 12px; border: 1px solid var(--line); background: var(--surface); }
+.solo__card.solo__ok { border-color: var(--t-grass); }
+.solo__card.solo__tight { border-color: var(--t-ground); }
+.solo__card.solo__no { border-color: var(--t-fighting); }
+.solo__verdict { margin: 0; font-size: 18px; font-weight: 700; }
+.solo__why { margin: 6px 0 0; font-size: 13px; line-height: 1.5; }
+.solo__stats { margin: 8px 0 0; font-size: 12px; color: var(--muted); line-height: 1.5; }
 
 /* 2026-09-02 솔플 계산기 보스 검색 */
-.boss-search { width: 100%; padding: 10px 14px; border: 1px solid var(--line); border-radius: 10px; background: var(--bg); color: var(--fg); font: inherit; font-size: 16px; }  /* 2026-09-03 16px 미만이면 iOS가 포커스 시 자동 확대 */
-.boss-search:focus { outline: 2px solid var(--fg); outline-offset: 1px; }
-.boss-sugg { display: flex; flex-wrap: wrap; gap: 8px; }
-.boss-sugg:empty { display: none; }
+.boss__search { width: 100%; padding: 10px 14px; border: 1px solid var(--line); border-radius: 10px; background: var(--bg); color: var(--fg); font: inherit; font-size: 16px; }  /* 2026-09-03 16px 미만이면 iOS가 포커스 시 자동 확대 */
+.boss__search:focus { outline: 2px solid var(--fg); outline-offset: 1px; }
+.boss__sugg { display: flex; flex-wrap: wrap; gap: 8px; }
+.boss__sugg:empty { display: none; }
 
 /* 2026-09-02 선택된 보스 유지 표시 */
-.boss-selected { display: flex; align-items: center; gap: 10px; padding: 8px 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); font-size: 14px; }
-.boss-selected .sprite { width: 36px; height: 36px; }
-.boss-clear { margin-left: auto; width: 28px; height: 28px; border-radius: 7px; color: var(--muted); }
-.boss-clear:hover { background: var(--hover); color: var(--fg); }
+.boss__selected { display: flex; align-items: center; gap: 10px; padding: 8px 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); font-size: 14px; }
+.boss__selected .sprite { width: 36px; height: 36px; }
+.boss__clear { margin-left: auto; width: 28px; height: 28px; border-radius: 7px; color: var(--muted); }
+.boss__clear:hover { background: var(--hover); color: var(--fg); }
 
 /* 2026-09-02 보스 CP 표기 */
-.boss-cp { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
-.boss-cp .meta { font-size: 11.5px; }
+.boss__cp { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+.boss__cp .meta { font-size: 11.5px; }
 
 /* 2026-09-02 솔플 계산기 옵션 줄 */
-.solo-opts { display: flex; flex-wrap: wrap; gap: 8px; }
+.solo__opts { display: flex; flex-wrap: wrap; gap: 8px; }
 
 /* 2026-09-03 v2.2.0 즐겨찾기 ★ (로그인 계정에 저장) — 도감 행·상세 팝업 */
 .fav { width: 30px; height: 30px; font-size: 17px; color: var(--muted); opacity: .6; border-radius: 8px; flex: none; }
 .fav:hover { opacity: 1; background: var(--hover); }
-.fav.on { color: #e8a80c; opacity: 1; }
+.fav.is-on { color: #e8a80c; opacity: 1; }
 
 /* 2026-09-03 PvP 덱 짜기 슬롯 UI */
-.deck-slots { display: flex; gap: 10px; margin: 12px 0 10px; }
+.deck__slots { display: flex; gap: 10px; margin: 12px 0 10px; }
 /* 2026-09-03 추천 덱 3 아코디언: 일정표 아코디언 스타일 재사용, 위 간격만 */
-.deck-acc { margin: 8px 0 0; }
-.deck-slot { flex: 1; min-height: 86px; border: 1.5px dashed var(--line); border-radius: 12px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; color: var(--muted); position: relative; }
-.deck-slot .slot-plus { font-size: 26px; line-height: 1; }
-.deck-slot.filled { border-style: solid; background: var(--surface); color: var(--fg); }
-.deck-slot .sprite { width: 40px; height: 40px; }
-.deck-slot .slot-name { font-size: 11.5px; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding: 0 6px; }
-.deck-slot .slot-x { position: absolute; top: 5px; right: 8px; font-size: 11px; color: var(--muted); }
+.deck__acc { margin: 8px 0 0; }
+.deck__slot { flex: 1; min-height: 86px; border: 1.5px dashed var(--line); border-radius: 12px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; color: var(--muted); position: relative; }
+.deck__slot .slot__plus { font-size: 26px; line-height: 1; }
+.deck__slot.is-filled { border-style: solid; background: var(--surface); color: var(--fg); }
+.deck__slot .sprite { width: 40px; height: 40px; }
+.deck__slot .slot__name { font-size: 11.5px; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding: 0 6px; }
+.deck__slot .slot__close { position: absolute; top: 5px; right: 8px; font-size: 11px; color: var(--muted); }
