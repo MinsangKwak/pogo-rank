@@ -1,7 +1,17 @@
 /* 상단 탭 (PvP · PvE · 맥스 · 가성비) */
-.tabs { display: flex; gap: 20px; border-bottom: 1px solid var(--line); overflow-x: auto; scrollbar-width: none; }
+/* 2026-09-08 v2.26.0 (스크롤 버그) overflow-y 를 반드시 함께 적는다.
+   CSS 규칙상 한 축이 visible 이 아니면 나머지 축의 visible 은 auto 로 계산된다 —
+   즉 `overflow-x: auto` 만 쓰면 세로도 스크롤 컨테이너가 된다.
+   여기에 탭 밑줄이 컨테이너 테두리를 덮으려고 margin-bottom: -1px 로 1px 삐져나와 있었다.
+   그 1px 때문에 탭 줄이 "세로로 스크롤할 게 있는 영역"이 되어, 커서가 탭 줄 위에 있으면
+   휠이 페이지가 아니라 탭 줄로 먹혔다. PC 에서 즐겨찾기 카드가 커 탭 줄이 화면 한가운데
+   오는 바람에 "스크롤이 아예 안 된다"로 보였다.
+   고치는 방법: 세로 넘침을 없앤다 — 컨테이너 테두리를 inset 그림자로 바꿔 안쪽에 그리고,
+   탭의 음수 여백을 뺀다. 겉모습은 그대로다 */
+.tabs { display: flex; gap: 20px; overflow-x: auto; overflow-y: hidden; scrollbar-width: none;
+        box-shadow: inset 0 -1px 0 var(--line); }
 .tabs::-webkit-scrollbar { display: none; }
-.tabs__item { flex: 0 0 auto; white-space: nowrap; padding: 10px 0 12px; font-size: 15px; font-weight: 500; color: var(--muted); border-bottom: 2px solid transparent; margin-bottom: -1px; }
+.tabs__item { flex: 0 0 auto; white-space: nowrap; padding: 10px 0 12px; font-size: 15px; font-weight: 500; color: var(--muted); border-bottom: 2px solid transparent; }
 .tabs__item[aria-selected="true"] { color: var(--fg); border-bottom-color: var(--fg); }
 @media (prefers-reduced-motion: no-preference) {
   .tabs__item { transition: color .12s, border-color .12s, background .12s; }

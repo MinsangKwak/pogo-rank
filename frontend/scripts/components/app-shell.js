@@ -67,12 +67,17 @@ destinations.addEventListener('click', (event) => {
 // 목록을 복제하지 않고 옮기기만 한다 (랜드마크·aria-current 가 두 벌이 되지 않게)
 const sideNav = el('aside', { class: 'app-nav', id: 'app-nav' });
 document.querySelector('.layout').before(sideNav);
+// 2026-09-08 v2.26.0 화면별 헤더 — 넓은 화면에서는 상단 바가 서비스 이름(로고) 자리를 지키고,
+// 지금 보고 있는 화면의 이름은 본문 맨 위 헤더가 맡는다. 좁은 화면은 지금까지처럼 상단 바가 겸한다.
+// .layout 과 #page 중 하나만 보이므로 헤더도 하나만 두고 글자만 바꾼다.
+const pageHead = el('header', { class: 'page-head', id: 'page-head', hidden: true }, el('h2', {}, ''));
+document.querySelector('.layout').before(pageHead);
 const wideScreen = window.matchMedia('(min-width: 1024px)');
 function placeDestinations() {
   if (wideScreen.matches) sideNav.append(destinations);
   else drawer.querySelector('.drawer__head').after(destinations);
 }
-wideScreen.addEventListener('change', placeDestinations);
+wideScreen.addEventListener('change', () => { placeDestinations(); syncAppShell(); });
 placeDestinations();
 drawer.append(el('p', { class: 'drawer__meta' }, 'POGO PLAN · ' + version));
 const skip = el('a', { class: 'skip-link', href: '#content', onclick: (event) => {
@@ -93,7 +98,11 @@ function syncAppShell(moveFocus = false) {
   const pageId = currentPageId();
   const title = APP_DESTINATIONS.find(([route]) => route === hash.split('?')[0])?.[1]
     || (pageId ? PAGES[pageId].title.replace(/^[^가-힣A-Za-z]+/, '') : 'POGO PLAN');
-  appTitle.textContent = home ? 'POGO PLAN' : title;
+  // 넓은 화면: 상단 바는 늘 서비스 이름, 화면 이름은 본문 헤더로 내린다
+  const wide = wideScreen.matches;
+  appTitle.textContent = home || wide ? 'POGO PLAN' : title;
+  pageHead.hidden = home || !wide;
+  pageHead.firstChild.textContent = home ? '' : title;
   document.title = (home ? 'POGO PLAN' : title + ' — POGO PLAN');
   backButton.hidden = home;
   document.body.dataset.screen = home ? 'home' : 'detail';

@@ -334,6 +334,64 @@ https://cdn.leekduck.com/assets/img/pokemon_icons/pm130.fMEGA.icon.png
 97% 미만에 뱃지를 안 다는 건 의도다. 모든 개체에 등급이 붙으면 등급이 정보가 아니라 장식이 된다.
 정확한 수치(백개체 CP·차이 CP)는 뱃지 툴팁에 둔다 — 결론이 먼저, 근거는 물어볼 때.
 
+### 2.22 `overflow-x: auto` 는 세로축도 함께 적는다 (v2.26.0)
+
+**증상.** PC 에서 순위 화면이 스크롤되지 않는다는 제보. 그런데 주소로 바로 들어가면 잘 굴러가고,
+자동화로 훑어도 멀쩡했다. 재현 조건은 **커서 위치**였다 — 커서가 탭 줄 위에 있을 때만 막혔다.
+
+**원인.** CSS 규칙상 한 축이 `visible` 이 아니면 **나머지 축의 `visible` 은 `auto` 로 계산된다.**
+
+```css
+.tabs { overflow-x: auto; }   /* → overflow-y 도 auto. 세로 스크롤 컨테이너가 된다 */
+.tabs__item { border-bottom: 2px solid transparent; margin-bottom: -1px; }  /* 1px 삐져나옴 */
+```
+
+선택된 탭의 밑줄이 컨테이너 테두리를 덮으려고 1px 위로 올라와 있었다. 그 1px 때문에 탭 줄은
+"세로로 스크롤할 게 있는 영역"이 되고, 브라우저는 커서 아래 스크롤 컨테이너를 먼저 소비한 뒤
+남는 만큼만 페이지로 넘긴다. 1px 은 순식간에 끝나지만 **그 뒤로도 페이지로 넘어가지 않는다.**
+
+PC 에서만 드러난 이유는 배치다. 즐겨찾기 카드가 커서 탭 줄이 화면 한가운데로 내려왔고,
+마우스 커서가 자연히 그 위에 놓였다. 모바일은 손가락으로 본문을 직접 굴려 드러나지 않았다.
+
+**규칙.** 가로 스크롤 줄에는 **`overflow-y: hidden` 을 반드시 함께 적는다.** 세로로 넘칠 일이
+없어 보여도 그렇다 — 테두리·그림자·포커스 링·음수 여백이 1px 을 만든다.
+
+이번에 함께 고친 곳: `.tabs` · `.chips` · `.boss__recs` · `.priv__table-wrap`.
+`.tabs` 는 음수 여백 대신 컨테이너 테두리를 `inset` 그림자로 바꿔 넘침 자체를 없앴다(겉모습 동일).
+
+**검사 방법.** `tests/e2e/shell.js` 가 화면마다 모든 요소를 훑어 `overflow-y` 가 `auto`/`scroll`
+이면서 넘침이 **24px 이하**인 것을 찾는다. 일부러 긴 상자(팝업 본문·드로어·사이드바)는 넘침이
+크므로 걸리지 않고, 이런 사고성 1~2px 만 잡힌다.
+
+---
+
+### 2.23 스크롤 잠금은 상태에서 끌어낸다 (v2.26.0)
+
+**문제.** 오버레이를 열 때 `document.body.style.overflow = 'hidden'`, 닫을 때 되돌리는 방식이었다.
+여는 자리 3곳 · 닫는 자리 3곳에 흩어져 있었고, 닫는 경로를 **하나라도 놓치면 잠금이 남는다.**
+남으면 페이지가 영영 스크롤되지 않고 사용자가 되돌릴 방법이 없다 — 새로고침뿐이다.
+
+**해결.** 잠금을 명령이 아니라 **상태의 결과**로 만든다.
+
+```js
+function overlayVisible() { return !!document.querySelector('dialog[open]'); }
+function syncScrollLock() { document.body.style.overflow = overlayVisible() ? 'hidden' : ''; }
+window.addEventListener('hashchange', syncScrollLock);
+window.addEventListener('popstate', syncScrollLock);
+window.addEventListener('pageshow', syncScrollLock);
+```
+
+- 팝업·드로어·검색이 모두 `<dialog>` 라 **브라우저가 관리하는 `open` 하나**만 보면 된다.
+  우리 쪽 표시(`hidden` 속성 등)를 믿으면 갱신을 놓칠 때 어긋난다
+- 화면이 바뀔 때마다 다시 맞추므로 **놓쳐도 다음 이동에서 저절로 풀린다**(자가 복구).
+  버그가 나도 사용자가 갇히지 않는다는 것이 이 구조의 요점이다
+
+**곁다리로 드러난 것.** `drawer.css` 가 `header { display: flex }` 로 모든 `<header>` 를 잡고 있었다.
+작성자 규칙은 브라우저 기본값 `[hidden] { display: none }` 을 **이긴다.** 그래서 `hidden` 을 붙여도
+감춰지지 않았다(v2.26.0 화면별 헤더가 여기 걸려 모바일에서도 보였다). 선택자를 좁히고,
+`base.css` 에 `[hidden] { display: none !important }` 안전망을 뒀다. 태그 선택자로 `display` 를
+거는 규칙은 언제든 이 사고를 다시 만든다.
+
 ---
 
 ### 2.16 배틀 유형별 참전 풀 · 리전 폼 자격 · 탱커 축 (v2.13.0)
