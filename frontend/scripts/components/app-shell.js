@@ -62,7 +62,17 @@ destinations.addEventListener('click', (event) => {
   if (href === '#') goHome();  // 열린 것을 닫고 서비스 홈으로 (app.js) — GA 'home' 이벤트도 여기서
   else navigateHash(href);
 });
-drawer.querySelector('.drawer-head').after(destinations);
+// 2026-09-08 v2.23.0 PC 레이아웃 — 넓은 화면에서는 같은 목록을 드로어가 아니라 왼쪽 고정 사이드바에 둔다.
+// 목록을 복제하지 않고 옮기기만 한다 (랜드마크·aria-current 가 두 벌이 되지 않게)
+const sideNav = el('aside', { class: 'app-nav', id: 'app-nav' });
+document.querySelector('.wrap').before(sideNav);
+const wideScreen = window.matchMedia('(min-width: 1024px)');
+function placeDestinations() {
+  if (wideScreen.matches) sideNav.append(destinations);
+  else drawer.querySelector('.drawer-head').after(destinations);
+}
+wideScreen.addEventListener('change', placeDestinations);
+placeDestinations();
 drawer.append(el('p', { class: 'drawer-meta' }, 'POGO PLAN · ' + version));
 const skip = el('a', { class: 'skip-link', href: '#content', onclick: (event) => {
   event.preventDefault();

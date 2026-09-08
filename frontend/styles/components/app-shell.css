@@ -82,3 +82,45 @@ button { touch-action: manipulation; }
   .app-bar { padding-left: 16px; padding-right: 16px; gap: 8px; }
   .app-bar h1 { font-size: 16px; }
 }
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   PC 레이아웃 (2026-09-08 v2.23.0)
+
+   모바일은 그대로 두고, 넓은 화면에서만 배치를 바꾼다.
+     ~1023px  지금까지와 같은 한 줄 배치 (서비스 이동은 ☰ 드로어 안)
+     1024px~  왼쪽 고정 사이드바(서비스 이동) + 오른쪽 본문. 컨테이너 760 → 1100px
+
+   사이드바는 `position: fixed` 라 DOM 구조를 바꾸지 않는다 — 본문(.wrap · #page)에
+   왼쪽 여백만 준다. 목록 자체는 app-shell.js 가 화면 폭에 따라 드로어 ↔ 사이드바로 옮긴다.
+   ───────────────────────────────────────────────────────────────────────────── */
+
+.app-nav { display: none; }
+
+@media (min-width: 1024px) {
+  /* 컨테이너를 넓히고, 사이드바 자리(210px + 32px 간격)만큼 본문을 민다 */
+  .app-bar { max-width: 1100px; }
+  .wrap, #page { max-width: 1100px; padding-left: 262px; }
+
+  /* 왼쪽 고정 사이드바 — 컨테이너 왼쪽 끝(.wrap 의 20px 여백 자리)에 맞춘다.
+     상단 바 높이(10 + 44 + 10 + 1) 아래에서 시작 */
+  .app-nav { display: block; position: fixed; z-index: 20; top: 81px; bottom: 0; width: 210px;
+             left: max(20px, calc(50vw - 530px)); overflow-y: auto; overscroll-behavior: contain; padding-bottom: 24px; }
+  .app-nav .service-menu { padding: 0; margin: 0; border-bottom: 0; }
+  .app-nav .drawer-item { font-size: 13.5px; }
+
+  /* 하단 고정 기준 안내도 같은 열에 맞춘다 */
+  .crit summary, .crit .note { max-width: 1100px; padding-left: 262px; }
+
+  /* 서비스 홈: 넓은 화면은 4열 */
+  .service-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .service-intro { padding: 36px 0 32px; }
+
+  /* 팝업·검색 시트는 본문 폭 안에서 조금 더 여유 있게 */
+  .modal { max-width: 520px; }
+  #search-dialog .psearch { max-width: 520px; }
+}
+
+/* 아주 넓은 화면에서 홈 인사말이 한없이 늘어지지 않게 */
+@media (min-width: 1440px) {
+  .service-intro p { max-width: 42em; }
+}
