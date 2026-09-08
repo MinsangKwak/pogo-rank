@@ -29,7 +29,7 @@
 // ── FIREBASE_CONFIG가 비면 로그인 UI가 아예 안 뜬다 ─────────────────────────
 // build.py는 로컬/공개 빌드에 따라 FIREBASE_CONFIG를 비워 둘 수 있다.
 // 설정이 없으면 SDK를 받아도 로그인이 불가능하므로, authEnabled()가 false일 때는
-// 계정 영역과 헤더 👤 버튼을 감춰서 눌러도 안 되는 버튼을 노출하지 않는다.
+// 계정 영역(☰ 메뉴 맨 위 마이페이지)을 감춰서 눌러도 안 되는 버튼을 노출하지 않는다.
 const FIREBASE_VER = '12.18.0';
 const AUTH = {
   ready: false,      // SDK 로드·초기화 완료
@@ -377,23 +377,18 @@ function refreshFavUi(onlyDex) {
 // 상태가 바뀔 때마다 영역 전체를 비우고 다시 그리는 방식 — 세 상태의 UI가 서로 많이 달라서다
 function renderAccount(message) {
   const accountBox = document.getElementById('account');
-  const headerButton = document.getElementById('account-toggle');
+  // 2026-09-08 v2.29.0 헤더 👤 버튼을 없앴다 — 로그인 상태는 ☰ 메뉴 맨 위 "마이페이지" 카드 한 곳에서만 보인다.
+  // 같은 곳으로 가는 버튼이 헤더와 메뉴에 하나씩 있던 중복을 지우고, 그 자리를 언어 전환에 내줬다
+  const accountTitle = document.getElementById('account-title');
   if (!accountBox) return;
-  // 로그인을 쓸 수 없는 빌드에서는 계정 영역과 헤더 👤 버튼을 둘 다 감춘다
+  // 로그인을 쓸 수 없는 빌드에서는 계정 영역과 제목을 둘 다 감춘다
   if (!authEnabled()) {
     accountBox.hidden = true;
-    if (headerButton) headerButton.hidden = true;
+    if (accountTitle) accountTitle.hidden = true;
     return;
   }
   accountBox.hidden = false;
-  if (headerButton) {
-    headerButton.hidden = false;
-    headerButton.textContent = '';
-    if (AUTH.user?.photoURL) headerButton.append(el('img', { class: 'avatar', src: AUTH.user.photoURL, alt: '' }));
-    else headerButton.textContent = '👤';
-    // 승인 대기 중임을 헤더 버튼에서도 알 수 있게 표시(드로어를 열지 않아도 보이도록)
-    headerButton.classList.toggle('is-pending', AUTH.status === 'is-pending');
-  }
+  if (accountTitle) accountTitle.hidden = false;
   accountBox.textContent = '';
   const note = message ? el('p', { class: 'account__msg' }, message) : '';
   // (1) 비로그인

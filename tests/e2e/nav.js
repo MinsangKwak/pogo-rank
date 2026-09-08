@@ -58,7 +58,8 @@ const ok = (name, cond, extra = '') => results.push([cond ? 'PASS' : 'FAIL', nam
   // 3. 헤더 버튼이 이모지 아이콘 · 44px 정사각 통일
   const btns = await page.locator('.app-bar .app-bar__actions .icon-btn').evaluateAll((ns) =>
     ns.filter(n => !n.hidden).map(n => ({ t: n.textContent.trim(), w: n.getBoundingClientRect().width, h: n.getBoundingClientRect().height })));
-  ok('헤더 아이콘 3개 (🔍 👤 ☰)', btns.map(b => b.t).join('') === '🔍👤☰', JSON.stringify(btns.map(b => b.t)));
+  // v2.29.0 계정(👤)을 빼고 그 자리에 KR/EN 토글 — 로그인·마이페이지는 ☰ 메뉴 한 곳으로 모았다
+  ok('헤더 아이콘 3개 (🔍 EN ☰)', btns.map(b => b.t).join('') === '🔍EN☰', JSON.stringify(btns.map(b => b.t)));
   ok('헤더 버튼 44×44 통일', btns.every(b => Math.round(b.w) === 44 && Math.round(b.h) === 44), JSON.stringify(btns));
   ok('헤더에 텍스트 버튼 없음', !(await page.locator('.app-bar').textContent()).includes('메뉴'));
 
@@ -131,6 +132,18 @@ const ok = (name, cond, extra = '') => results.push([cond ? 'PASS' : 'FAIL', nam
   await settle();
   ok('플래너 탭 = 텍스트', (await page.locator('#tabs .tabs__item').allTextContents()).join('|') === '육성 현황|내 포켓몬',
     (await page.locator('#tabs .tabs__item').allTextContents()).join('|'));
+
+  // 8b. 타입 & 상성 — 칩을 누르면 결과가 바로 나오는가 (v2.28.0 회귀)
+  //     matchupBucket 이 묶음 키가 아니라 CSS 클래스를 돌려주는 바람에 buckets[...] 가 undefined 가 되어
+  //     .push 에서 예외가 났고, 결과 영역이 통째로 비었다. 예외는 콘솔에만 남아 화면은 조용히 아무것도 안 했다
+  await page.goto(BASE + '?mock=1#/types', { waitUntil: 'domcontentloaded' });
+  await settle();
+  await page.locator('.types__pick .chips__item').first().click();
+  await page.waitForTimeout(400);
+  const typeSecs = await page.locator('.types__sec h3').allTextContents();
+  ok('타입 칩 → 배율표', typeSecs.some((text) => text.includes('때릴 때')), typeSecs.join(' | ').slice(0, 80));
+  ok('타입 칩 → 그 타입 포켓몬 목록', (await page.locator('.types__mons .boss__rec').count()) > 0);
+  ok('타입 칩 → 추천 딜러·반대로 절', typeSecs.length >= 3, String(typeSecs.length));
 
   // 9. 다크 모드에서도 토큰 한 벌
   const dark = await browser.newContext({ viewport: { width: 390, height: 844 }, colorScheme: 'dark' });
