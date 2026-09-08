@@ -77,7 +77,8 @@ function placeDestinations() {
   if (wideScreen.matches) sideNav.append(destinations);
   else drawer.querySelector('.drawer__head').after(destinations);
 }
-wideScreen.addEventListener('change', () => { placeDestinations(); syncAppShell(); });
+// 2026-09-08 v2.28.0 폭이 바뀌면 화면도 다시 그린다 — 목록이 줄이 될지 카드가 될지가 폭에 달렸다(wideCards)
+wideScreen.addEventListener('change', () => { placeDestinations(); syncAppShell(); if (typeof render === 'function') render(); });
 placeDestinations();
 drawer.append(el('p', { class: 'drawer__meta' }, 'POGO PLAN · ' + version));
 const skip = el('a', { class: 'skip-link', href: '#content', onclick: (event) => {

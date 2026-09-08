@@ -29,3 +29,11 @@ function el(tag, attrs = {}, ...children) {
   for (const child of children) node.append(child);
   return node;
 }
+
+// 넓은 화면인지 (PC 카드 기준선). 목록을 줄로 둘지 카드로 둘지 가르는 한 곳이다.
+// 도감(#/dex) · 즐겨찾기(#/favs) · 레이드 보스(#/raids) · 알 부화(#/eggs) 가 모두 이 함수를 본다 —
+// 기준선을 바꿀 일이 생기면 여기 한 줄만 고치면 된다. app-shell.css 의 PC 분기와 같은 1024px.
+// 랭킹 목록(.row-list)은 CSS 미디어 쿼리만으로 카드가 되므로 이 함수를 쓰지 않는다
+function wideCards() {
+  return window.matchMedia('(min-width: 1024px)').matches;
+}

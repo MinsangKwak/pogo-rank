@@ -128,9 +128,12 @@ function renderDexPage() {
   let shown = 100;
   // 2026-09-03 레이아웃 토글: 1열 목록 ↔ 2열 격자 (선택 기억)
   // localStorage 키 'pogo_dex_cols' 에 '2' 면 2열. 저장이 막힌 브라우저(사생활 모드 등)도 있어 try 로 감싼다.
-  let cols2 = false;
+  // 2026-09-08 v2.28.0 PC 는 카드가 기본. 저장된 선택이 있으면 그쪽이 이긴다 —
+  // 넓은 화면에서 굳이 1열을 골라 둔 사람의 뜻을 기본값이 덮지 않게
+  let cols2 = wideCards();
   try {
-    cols2 = localStorage.getItem('pogo_dex_cols') === '2';
+    const saved = localStorage.getItem('pogo_dex_cols');
+    if (saved) cols2 = saved === '2';
   } catch { /* 저장 불가 환경 */ }
   const $list = el('div', { class: `dex__list${cols2 ? ' is-grid' : ''}` });
   const $more = el('button', { class: 'boss__more', onclick: () => {

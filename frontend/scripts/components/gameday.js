@@ -46,7 +46,7 @@ function gamedayRow(entry, notes) {
 function gamedaySection(heading, list, toNotes) {
   return el('section', { class: 'gameday__sec' },
     el('h2', { class: 'page__sec' }, heading, el('span', { class: 'meta' }, ` ${list.length}종`)),
-    el('div', { class: 'dex__list' }, ...list.map((entry) => gamedayRow(entry, toNotes(entry)))));
+    el('div', { class: `dex__list${wideCards() ? ' is-grid' : ''}` }, ...list.map((entry) => gamedayRow(entry, toNotes(entry)))));
 }
 
 function gamedayEmpty(what) {
