@@ -65,22 +65,24 @@ const ok = (name, cond, extra = '') => results.push([cond ? 'PASS' : 'FAIL', nam
 
   // 4. 탭 줄 복구 — 홈 타일 → D-MAX → 탭으로 PvE → PvP
   await page.click('.home__tile:has-text("D-MAX")');
-  await page.waitForFunction(() => location.hash === '#/rank/max', null, { timeout: 5000 });
+  await page.waitForFunction(() => location.hash === '#/dmax', null, { timeout: 5000 });
   await page.waitForTimeout(300);
   ok('D-MAX 진입 시 탭 줄 표시', await page.locator('#tabs').isVisible());
   ok('탭 3개 + 바로가기', (await page.locator('#tabs .tabs__item:not(.tabs__item--quick)').allTextContents()).join('|') === 'D-MAX|PvE|PvP');
   ok('현재 탭 aria-selected', await page.locator('#tabs .tabs__item[aria-selected="true"]').textContent() === 'D-MAX');
-  ok('상단 바 제목 = D-MAX', (await page.locator('#app-title').textContent()) === 'D-MAX');
+  // v2.30.0 상단 바는 늘 로고, 화면 이름은 본문 헤더로 (좁은 화면도 PC 와 같은 규칙)
+  ok('상단 바는 로고', (await page.locator('#app-title').textContent()).trim() === 'POGO PLAN');
+  ok('화면 헤더 = D-MAX', (await page.locator('#page-head h2').textContent()) === 'D-MAX');
   await page.click('#tabs .tabs__item:has-text("PvE")');
-  await page.waitForFunction(() => location.hash === '#/rank/pve', null, { timeout: 5000 });
+  await page.waitForFunction(() => location.hash === '#/pve', null, { timeout: 5000 });
   await page.waitForTimeout(300);
-  ok('탭으로 PvE 이동 (주소·제목 동기화)', (await page.locator('#app-title').textContent()) === '레이드 · PvE');
+  ok('탭으로 PvE 이동 (주소·제목 동기화)', (await page.locator('#page-head h2').textContent()) === '레이드 · PvE');
   ok('PvE 탭 선택 표시', await page.locator('#tabs .tabs__item[aria-selected="true"]').textContent() === 'PvE');
   const quick = await page.locator('#tabs .tabs__item--quick').allTextContents();
   ok('바로가기 📕 🧭 ★', quick.join('|') === '📕 도감|🧭 상성|★ 즐겨찾기 9', JSON.stringify(quick));
   await page.goBack();
   await page.waitForTimeout(300);
-  ok('뒤로가기로 D-MAX 복귀', (await page.locator('#app-title').textContent()) === 'D-MAX');
+  ok('뒤로가기로 D-MAX 복귀', (await page.locator('#page-head h2').textContent()) === 'D-MAX');
 
   // 5. 상세 팝업이 카드/시트로 (전체 화면 아님) — 도감 목록에서 여는 일반 경로
   await page.goto(BASE + '?mock=1#/dex', { waitUntil: 'domcontentloaded' });
@@ -128,7 +130,7 @@ const ok = (name, cond, extra = '') => results.push([cond ? 'PASS' : 'FAIL', nam
   ok('서비스 홈으로 이동', (await page.locator('.home__tile').count()) === 10 && !(await page.evaluate(() => location.hash)));
 
   // 8. 플래너 탭 라벨 텍스트 통일
-  await page.goto(BASE + '?mock=1#/plan/collection', { waitUntil: 'domcontentloaded' });
+  await page.goto(BASE + '?mock=1#/planner/collection', { waitUntil: 'domcontentloaded' });
   await settle();
   ok('플래너 탭 = 텍스트', (await page.locator('#tabs .tabs__item').allTextContents()).join('|') === '육성 현황|내 포켓몬',
     (await page.locator('#tabs .tabs__item').allTextContents()).join('|'));
