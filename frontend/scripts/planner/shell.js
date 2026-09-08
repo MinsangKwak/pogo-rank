@@ -27,7 +27,9 @@ const PLAN_LAST_KEY = 'pogo_plan_last';
 // pages.js 가 로드 직후 부르는 renderPage() 는 이 플래그로 "앱이 준비됐는지"를 판단한다 (initPlanShell 이 켠다)
 let _planShellReady = false;
 // [탭 id, 라벨] — 배열 순서가 곧 탭 줄 순서. 후속 버전(배틀·도구·일정)은 여기에 줄을 더한다
-const PLAN_TABS = [['home', '🏠 홈'], ['collection', '🎒 내 포켓몬']];
+// 2026-09-08 v2.22.0 탭 라벨은 텍스트로 통일 — 도감 쪽 탭(D-MAX·PvE·PvP)과 같은 언어.
+// 아이콘은 탭 줄 오른쪽 바로가기(📕 🧭 ★)에만 쓴다
+const PLAN_TABS = [['home', '육성 현황'], ['collection', '내 포켓몬']];
 
 // 현재 해시가 플래너 주소면 { tab, params }, 아니면 null
 function planRouteFromHash() {
@@ -44,14 +46,12 @@ function planLastMode() {
   try { return localStorage.getItem(PLAN_LAST_KEY) === 'plan' ? 'plan' : 'dex'; } catch { return 'dex'; }
 }
 
-// 해시를 읽어 state.appMode·planTab·planParams 를 맞춘다. initial 은 첫 로드 한 번만 — 마지막 모드 복원용
-function applyPlanRoute({ initial = false } = {}) {
-  let route = planRouteFromHash();
-  if (!route && initial && !location.hash && planLastMode() === 'plan') {
-    try { history.replaceState(null, '', '#/plan'); } catch {}
-    route = planRouteFromHash();
-  }
+// 해시를 읽어 서비스 홈·랭킹·플래너 상태를 맞춘다.
+function applyPlanRoute() {
+  const route = planRouteFromHash();
+  // 해시 없는 첫 진입은 서비스 홈. 저장된 마지막 모드로 홈을 건너뛰지 않는다.
   state.appMode = route ? 'plan' : 'dex';
+  if (!route) state.tab = location.hash.match(/^#\/rank\/(max|pve|pvp)$/)?.[1] || 'home';
   state.planTab = route ? route.tab : 'home';
   state.planParams = route ? route.params : null;
   document.body.dataset.mode = state.appMode;  // CSS 가 모드별로 숨길 것(즐겨찾기 카드 등)을 고른다
@@ -72,7 +72,7 @@ function switchMode(to, from = 'badge') {
   closeDrawer({ silent: true });
   closeModal({ silent: true });
   NAV.open = false;
-  state.tab = 'max';
+  state.tab = 'home';
   if (location.hash) location.hash = '';
   else { applyPlanRoute(); render(); }
   window.scrollTo(0, 0);
@@ -85,7 +85,7 @@ function updateModeBadge() {
   if (badge) {
     badge.textContent = isPlan ? '🔎 도감' : '🌱 플래너';
     badge.title = isPlan ? '도감 모드로 전환' : '플래너 모드로 전환';
-    badge.classList.toggle('plan', isPlan);
+    badge.classList.toggle('is-plan', isPlan);
   }
   const tagline = document.querySelector('.tagline');
   if (tagline) tagline.textContent = isPlan ? '내 개체 키우기 계획' : '편하게 검색하세요';  // 배지와 한 줄에 들어가게 짧게
@@ -95,7 +95,7 @@ function updateModeBadge() {
 function renderPlanTabs() {
   for (const [id, label] of PLAN_TABS) {
     $tabs.append(el('button', {
-      class: 'tab', role: 'tab', 'aria-selected': String(state.planTab === id),
+      class: 'tabs__item', role: 'tab', 'aria-selected': String(state.planTab === id),
       onclick: () => {
         track('plan_tab', { tab: id });
         navigateHash(id === 'home' ? '#/plan' : `#/plan/${id}`);

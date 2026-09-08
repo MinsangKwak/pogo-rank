@@ -70,7 +70,7 @@ function changeBadge(spriteId) {
   const hasDown = (change.down?.length ?? 0) > 0;
   // 위력이 오른 기술과 내린 기술이 함께 걸리면 방향을 단정하지 않는다
   const arrow = hasUp && hasDown ? '↕' : hasUp ? '↑' : hasDown ? '↓' : '';
-  const climate = hasUp && hasDown ? 'mix' : hasUp ? 'up' : hasDown ? 'down' : 'flat';
+  const climate = hasUp && hasDown ? 'tag--mix' : hasUp ? 'is-up' : hasDown ? 'is-down' : '';  // 뱃지에 붙는 수식자 클래스
   // 위력은 그대로고 에너지만 바뀐 경우는 화살표로 방향을 말할 수 없으므로 문구를 따로 쓴다
   const what = arrow ? `기술${arrow}` : '에너지';
   const data = moveChangeData();
@@ -82,7 +82,7 @@ function changeBadge(spriteId) {
     change.energy?.length ? `에너지 ${change.energy.join(' · ')}` : '',
     change.new?.length ? `신규 ${change.new.join(' · ')}` : '',
   ].filter(Boolean).join('\n');
-  return el('span', { class: `tag chg ${climate}`, title: detail }, `${Number(month)}/${Number(day)} ${what}`);
+  return el('span', { class: `tag tag--chg ${climate}`, title: detail }, `${Number(month)}/${Number(day)} ${what}`);
 }
 
 // 순위 변동 ▲▼. 값은 빌드가 행에 심어 둔 d (양수 = 상승).
@@ -96,7 +96,7 @@ function rankDeltaBadge(delta) {
   if (daysSince < 0 || daysSince > freshDays) return '';
   const isUp = delta > 0;
   return el('span', {
-    class: `rank-delta ${isUp ? 'up' : 'down'}`,
+    class: `delta ${isUp ? 'is-up' : 'is-down'}`,
     title: `${RANK_DELTA_DATE} 갱신에서 ${Math.abs(delta)}계단 ${isUp ? '상승' : '하락'}`,
   }, `${isUp ? '▲' : '▼'}${Math.abs(delta)}`);
 }
@@ -124,44 +124,46 @@ function moveChangeRow(move) {
   const amount = move.kind === 'energy'
     ? '에너지만 변경'
     : `위력 ${move.from} → ${move.to}`;
-  return el('li', { class: `chg-row ${move.kind}` },
-    el('span', { class: 'chg-mark' }, arrow),
+  // 방향만 클래스로 — 'energy' 는 색을 쓰지 않으므로 수식자를 붙이지 않는다
+  const dirClass = move.kind === 'up' ? 'is-up' : move.kind === 'down' ? 'is-down' : '';
+  return el('li', { class: `changes__row ${dirClass}`.trim() },
+    el('span', { class: 'changes__mark' }, arrow),
     el('div', {},
       el('b', {}, move.ko),
-      el('div', { class: 'chg-sub' }, amount, move.note ? el('em', {}, ` · ${move.note}`) : '')));
+      el('div', { class: 'changes__sub' }, amount, move.note ? el('em', {}, ` · ${move.note}`) : '')));
 }
 
 // ⚔️ 기술 변경 페이지: 위력이 오른 기술 → 내린 기술 → 에너지만 → 새로 배우는 기술
 function renderMoveChangesPage() {
   const data = moveChangeData();
-  if (!data) return el('p', { class: 'page-body' }, '지금은 예정된 기술 변경이 없습니다.');
+  if (!data) return el('p', { class: 'page__body' }, '지금은 예정된 기술 변경이 없습니다.');
   const daysLeft = moveChangeDaysLeft();
   const upMoves = data.moves.filter((move) => move.kind === 'up');
   const downMoves = data.moves.filter((move) => move.kind === 'down');
   const energyMoves = data.moves.filter((move) => move.kind === 'energy');
-  const section = (title, note, node) => el('section', { class: 'chg-sec' },
-    el('h3', {}, title), note ? el('p', { class: 'd-foot' }, note) : '', node);
-  return el('div', { class: 'page-body' },
-    el('div', { class: `chg-head ${daysLeft > 0 ? 'soon' : 'done'}` },
+  const section = (title, note, node) => el('section', { class: 'changes__sec' },
+    el('h3', {}, title), note ? el('p', { class: 'detail__foot' }, note) : '', node);
+  return el('div', { class: 'page__body' },
+    el('div', { class: `changes__head ${daysLeft > 0 ? 'is-soon' : 'is-done'}` },
       el('b', {}, data.season),
       el('span', {}, daysLeft > 0 ? `${data.date} 적용 · D-${daysLeft}` : `${data.date} 적용됨`)),
     // 어디에 적용되는 수치인지부터 밝힌다.
     // 포켓몬 GO는 같은 기술이라도 레이드·체육관용 위력과 트레이너 배틀용 위력을 따로 갖고 있고,
     // 시즌 조정은 보통 배틀 쪽만 바꾼다. 이걸 적어 두지 않으면 "아이언헤드 85인데 왜 레이드 순위가 그대로냐"가 된다.
-    el('p', { class: 'chg-scope' },
+    el('p', { class: 'changes__scope' },
       '아래 위력 수치는 ', el('b', {}, '트레이너 배틀(PvP) 기준'), '입니다. 같은 기술이라도 레이드·체육관용 위력은 따로 관리되고, 이번 조정은 대부분 PvP에만 적용됩니다.'),
-    el('p', { class: 'd-foot' },
+    el('p', { class: 'detail__foot' },
       daysLeft > 0
         ? '적용 전이라 순위표에는 아직 반영돼 있지 않습니다. 적용 다음 날 자동 갱신되면 순위가 움직인 포켓몬에 ▲▼ 표시가 붙습니다. 레이드 티어표를 움직이는 것은 사이코부스트(체육관·레이드 70 → 130)와 새로 배우는 기술 쪽입니다.'
         : '순위표는 이미 이 값으로 계산돼 있습니다. 최근 움직인 포켓몬에는 ▲▼ 표시가 붙어 있어요.'),
-    upMoves.length ? section('위력이 오른 기술', '', el('ul', { class: 'chg-list' }, ...upMoves.map(moveChangeRow))) : '',
-    downMoves.length ? section('위력이 내린 기술', '', el('ul', { class: 'chg-list' }, ...downMoves.map(moveChangeRow))) : '',
-    energyMoves.length ? section('에너지만 바뀐 기술', '위력은 그대로라 레이드 DPS는 거의 그대로지만, PvP에서는 기술을 쓰는 빈도가 달라집니다.', el('ul', { class: 'chg-list' }, ...energyMoves.map(moveChangeRow))) : '',
+    upMoves.length ? section('위력이 오른 기술', '', el('ul', { class: 'changes__list' }, ...upMoves.map(moveChangeRow))) : '',
+    downMoves.length ? section('위력이 내린 기술', '', el('ul', { class: 'changes__list' }, ...downMoves.map(moveChangeRow))) : '',
+    energyMoves.length ? section('에너지만 바뀐 기술', '위력은 그대로라 레이드 DPS는 거의 그대로지만, PvP에서는 기술을 쓰는 빈도가 달라집니다.', el('ul', { class: 'changes__list' }, ...energyMoves.map(moveChangeRow))) : '',
     data.newMoves.length
       ? section(`새로 배우는 기술 · ${data.newMoves.length}건`, '누르면 그 포켓몬의 상세 정보가 열립니다.',
-          el('ul', { class: 'chg-new' }, ...data.newMoves.map((item) => el('li', {
+          el('ul', { class: 'changes__new' }, ...data.newMoves.map((item) => el('li', {
             onclick: () => openDetail({ sprite: item.sprite, name: item.name, en: '', types: DEX_DATA.forms[item.sprite]?.types ?? [] }),
-          }, sprite(item.sprite), el('div', {}, el('b', {}, item.name), el('div', { class: 'chg-sub' }, item.move))))))
+          }, sprite(item.sprite), el('div', {}, el('b', {}, item.name), el('div', { class: 'changes__sub' }, item.move))))))
       : '',
-    el('p', { class: 'd-foot' }, '출처: 포켓몬 GO 공식 GO 배틀리그 시즌 공지. 위력·에너지 값은 공지 표기를 그대로 옮겼고, 한글 기술명은 게임 내 표기로 자동 변환했습니다.'));
+    el('p', { class: 'detail__foot' }, '출처: 포켓몬 GO 공식 GO 배틀리그 시즌 공지. 위력·에너지 값은 공지 표기를 그대로 옮겼고, 한글 기술명은 게임 내 표기로 자동 변환했습니다.'));
 }

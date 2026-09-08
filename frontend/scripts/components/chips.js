@@ -19,7 +19,7 @@ function chips(items, current, onPick) {
   let selected;
   for (const { id, label, color } of items) {
     // 선택 표시는 aria-pressed로 한다 (스타일과 스크린리더가 같은 값을 본다)
-    const chip = el('button', { class: 'chip', 'aria-pressed': String(current === id), onclick: () => onPick(id) });
+    const chip = el('button', { class: 'chips__item', 'aria-pressed': String(current === id), onclick: () => onPick(id) });
     if (color) chip.append(el('span', { class: 'dot', style: `--c: var(--t-${color})` }));
     chip.append(label);
     wrap.append(chip);

@@ -108,7 +108,7 @@ json.dump(pvp_all, open('data/pvp_all.json', 'w', encoding='utf-8'), ensure_asci
 
 # ── frontend/ 의 CSS·JS를 순서대로 인라인해 단일 dist/index.html 조립 ──
 # 순서가 곧 캐스케이드(CSS)·실행 순서(JS)이므로 새 파일은 여기 목록에 추가
-APP_VERSION = 'v2.16.1'  # 2026-09-03 화면 표시용 버전 — 릴리스 때 여기만 올리면 됨
+APP_VERSION = 'v2.24.0'  # BEM 클래스 이름 리팩토링
 # 2026-09-05 v2.7.3 빌드 채널 — 'prod'(기본) / 'dev'. dev 브랜치 워크플로(.github/workflows/deploy-dev.yml)가 BUILD_CHANNEL=dev 로 부른다.
 # dev 빌드는 (1) 버전 배지에 -dev 를 붙여 화면에서 구분되고 (2) GA 스니펫을 넣지 않아 통계가 섞이지 않고
 # (3) robots.txt 를 전부 차단 + <meta name="robots" content="noindex"> 로 검색 색인을 막는다. 나머지는 prod 와 동일
@@ -138,39 +138,35 @@ ADMIN_UID = os.environ.get('ADMIN_UID', '')            # firestore.rules 의 __A
 CONTACT_EMAIL = os.environ.get('CONTACT_EMAIL', '')    # 푸터·개인정보처리방침 문의 이메일. 비우면 문구가 빠진다
 if not FIREBASE_CONFIG:
     print('경고: FIREBASE_CONFIG_JSON 이 비어 있어 로그인 UI 없이 빌드됩니다 (.env.example 참고)')
+# 2026-09-07 v2.18.0 (공개 준비 3) GA 는 동의 뒤에만 붙는다 — 여기서는 측정 ID 만 남기고, 실제 gtag 삽입은
+# frontend/scripts/components/consent.js loadAnalytics() 가 localStorage pogo_consent 가 'granted' 일 때 한다.
+# 배포 도메인(github.io)에서만 ID 를 노출해 로컬 미리보기·개발 중엔 동의해도 집계되지 않는다
 GA_SNIPPET = '''<script>
-// GA4: 배포 도메인(github.io)에서만 로드 — 로컬 미리보기·개발 중엔 집계 안 됨
-if (location.hostname.endsWith('github.io')) {
-  var gs = document.createElement('script');
-  gs.async = true;
-  gs.src = 'https://www.googletagmanager.com/gtag/js?id=__GA_ID__';
-  document.head.appendChild(gs);
-  window.dataLayer = window.dataLayer || [];
-  window.gtag = function () { dataLayer.push(arguments); };
-  gtag('js', new Date());
-  gtag('config', '__GA_ID__');
-  window.GA_MEASUREMENT_ID = '__GA_ID__';  // 2026-09-06 v2.10.1 track.js setTrackingUser 가 user_id 를 붙여 config 를 다시 부를 때 쓴다
-}
+if (location.hostname.endsWith('github.io')) window.GA_PENDING_ID = '__GA_ID__';
 </script>'''
 
 STYLES = [
     'tokens.css', 'base.css', 'layout.css',
+    'components/home.css',
     'components/tabs.css', 'components/seg.css', 'components/chips.css',
     'components/list.css', 'components/tag.css', 'components/modal.css', 'components/search.css', 'components/drawer.css', 'components/pages.css',
     'components/planner.css',  # 2026-09-07 v2.15.0 🌱 플래너 모드 (QA-53·54)
+    'components/consent.css',
+    'components/app-shell.css',
 ]
 SCRIPTS = [
     'data.js', 'dom.js', 'track.js',  # 2026-09-03 track: GA4 이벤트 헬퍼 (가장 먼저 정의)
+    'components/home.js',
     'components/type-dots.js', 'components/sprite.js', 'components/name.js', 'components/changes.js', 'components/row.js',  # 2026-09-04 changes: 기술 변경·순위 변동 뱃지 (row가 사용) · 2026-09-06 name: 폼 라벨 뱃지 (row·detail·search 가 사용)
     'components/list.js', 'components/chips.js', 'components/seg.js',
     'components/history.js', 'components/modal.js', 'components/auth.js', 'components/detail.js',  # 2026-09-03 v2.2.0 auth: 로그인·즐겨찾기 (detail보다 먼저) · 2026-09-06 v2.11.0 history: 뒤로가기가 팝업·드로어를 닫게 (modal·drawer 가 사용)
-    'components/schedule.js', 'components/release.js', 'components/privacy.js', 'components/search.js', 'components/drawer.js',  # 2026-09-02 9월 일정표 달력 · 업데이트 팝업
+    'components/schedule.js', 'components/release.js', 'components/terms.js', 'components/privacy.js', 'components/consent.js', 'components/search.js', 'components/drawer.js',  # 2026-09-07 v2.18.0 terms: 약관·동의 팝업·IP 고지 (privacy·auth 가 사용) · consent: GA 동의 배너  # 2026-09-02 9월 일정표 달력 · 업데이트 팝업
     'components/favs.js', 'components/typesearch.js',  # 2026-09-05 favs: ★ 즐겨찾기 페이지 · 2026-09-06 typesearch: 🧭 상성 검색 페이지 (pages가 PAGES에 등록하므로 그 앞)
     'planner/shell.js', 'planner/home.js', 'planner/collection.js',  # 2026-09-07 v2.15.0 🌱 플래너 모드 (QA-53 셸 · QA-54 내 포켓몬) — pages.js 가 #/plan 라우팅에 쓰므로 그 앞
     'components/pages.js',
     'components/trainers.js', 'components/favdigest.js', 'components/totop.js',  # 2026-09-05 favdigest: 메인 즐겨찾기 카드
     'views/pvp.js', 'views/pve.js', 'views/max.js', 'views/tier.js', 'views/usage.js', 'views/ifsolo.js',  # 2026-09-02 if 탭
-    'app.js',
+    'app.js', 'components/app-shell.js',
 ]
 def bundle(folder, files, mark):
     # frontend/<folder>/ 의 파일들을 목록 순서 그대로 이어붙인다.
@@ -290,6 +286,6 @@ if os.path.isdir('frontend/static'):
         shutil.copy(f'frontend/static/{filename}', 'dist/')
 if BUILD_CHANNEL == 'dev':
     # dev 미리보기는 검색에 잡히면 안 된다 — 정적 robots.txt 를 전부 차단으로 덮어쓴다
-    open('dist/robots.txt', 'w', encoding='utf-8').write('# POGO SEARCH dev 미리보기 — 색인 금지\nUser-agent: *\nDisallow: /\n')
+    open('dist/robots.txt', 'w', encoding='utf-8').write('# POGO PLAN dev 미리보기 — 색인 금지\nUser-agent: *\nDisallow: /\n')
 # 리그별로 몇 줄이 실렸는지 요약 출력 (빌드 로그 확인용)
 print('ok', {league_id: len(league_rows) for league_id, league_rows in pvp.items()})

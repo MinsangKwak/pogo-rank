@@ -1,8 +1,8 @@
 /* 페이지 골격: 헤더 · 컨트롤 영역 · 안내문 · 푸터 */
 header { padding: 36px 0 20px; }
-h1 { margin: 0; font-size: 22px; font-weight: 600; letter-spacing: -0.01em; cursor: pointer; }  /* 2026-09-06 v2.11.0 로고 = 홈 버튼 (app.js goHome) */
+h1 { margin: 0; font-size: 22px; font-weight: 600; letter-spacing: -0.01em; }  /* 2026-09-08 v2.22.0 상단 바에서는 화면 이름을 보여 준다 — 누르는 버튼이 아니다 (components/app-shell.css .app-bar h1) */
 /* 2026-09-03 타이틀 옆 버전 뱃지 */
-.app-ver { font-size: 11.5px; font-weight: 500; color: var(--muted); vertical-align: 3px; margin-left: 2px; }
+.app-bar__version { font-size: 11.5px; font-weight: 500; color: var(--muted); vertical-align: 3px; margin-left: 2px; }
 .meta { font-size: 12.5px; color: var(--muted); }
 /* 2026-09-03 헤더 서문 한 줄 */
 .tagline { margin: 3px 0 0; font-size: 13.5px; font-weight: 500; color: var(--muted); }
@@ -10,8 +10,8 @@ header .meta { margin: 0; }
 
 .controls { display: flex; flex-direction: column; gap: 12px; padding: 20px 0 8px; }
 /* 2026-09-07 v2.16.0 세그먼트 + 오른쪽 도구 버튼 한 줄 (PvE 🧮 솔플 계산기 · PvP 🃏 덱 짜기) */
-.ctrl-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
-.ctrl-row .seg button { padding: 6px 11px; }  /* 리그 4개 + 도구 버튼이 390px 한 줄에 들어가게 */
+.controls__row { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
+.controls__row .seg button { padding: 6px 11px; }  /* 리그 4개 + 도구 버튼이 390px 한 줄에 들어가게 */
 .tool-btn { flex: none; display: inline-flex; align-items: center; gap: 4px; padding: 6px 12px; border: 1px solid var(--line); border-radius: 999px; font-size: 13px; font-weight: 500; color: var(--muted); background: var(--surface); white-space: nowrap; }
 .tool-btn:hover { color: var(--fg); }
 .tool-btn[aria-pressed="true"] { color: var(--bg); background: var(--fg); border-color: var(--fg); }
@@ -29,44 +29,44 @@ footer p { margin: 0; }
 .schedule summary::-webkit-details-marker { display: none; }
 .schedule summary::after { content: '▾'; position: absolute; top: 12px; right: 16px; color: var(--muted); transition: transform .15s; }
 .schedule[open] summary::after { transform: rotate(180deg); }
-.schedule-today { display: block; margin-top: 2px; font-weight: 400; font-size: 12px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.schedule-body { padding: 0 12px 14px; }
+.schedule__today { display: block; margin-top: 2px; font-weight: 400; font-size: 12px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.schedule__body { padding: 0 12px 14px; }
 
 /* 2026-09-05 로그인 전용 즐겨찾기 카드 — 2026-09-07 v2.14.0 (QA-52) .schedule 아코디언과 같은 <details> 로 통일 (접기/펼치기, 펼침 기억) */
 .fav-digest { margin: 0 0 12px; }
 .fav-digest[hidden] { display: none; }
-.fav-digest .boss-foot { margin-top: 6px; }
-.schedule-cal { display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px; }
-.cal-head { text-align: center; font-size: 11px; color: var(--muted); padding: 4px 0; }
-.cal-day { min-height: 40px; padding: 3px 4px; border-radius: 8px; background: var(--bg); text-align: left; display: flex; flex-direction: column; gap: 2px; }
-.cal-day .d { font-size: 11.5px; color: var(--muted); }
-.cal-day.today { font-weight: 600; }
-.cal-day.today .d { color: var(--fg); }
-.cal-day.sel { outline: 2px solid var(--fg); outline-offset: -1px; }
-.cal-dots { display: flex; flex-wrap: wrap; gap: 2px; }
+.fav-digest .boss__foot { margin-top: 6px; }
+.schedule__cal { display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px; }
+.cal__head { text-align: center; font-size: 11px; color: var(--muted); padding: 4px 0; }
+.cal__day { min-height: 40px; padding: 3px 4px; border-radius: 8px; background: var(--bg); text-align: left; display: flex; flex-direction: column; gap: 2px; }
+.cal__day .cal__num { font-size: 11.5px; color: var(--muted); }
+.cal__day.is-today { font-weight: 600; }
+.cal__day.is-today .cal__num { color: var(--fg); }
+.cal__day.is-selected { outline: 2px solid var(--fg); outline-offset: -1px; }
+.cal__dots { display: flex; flex-wrap: wrap; gap: 2px; }
 .dot { display: inline-block; width: 5px; height: 5px; border-radius: 50%; margin-right: 4px; flex: none; }
-.schedule-legend { margin: 10px 2px 0; font-size: 11px; color: var(--muted); }
-.schedule-sec { margin: 12px 2px 4px; font-weight: 600; font-size: 12.5px; color: var(--muted); }
-.schedule-item { margin: 4px 2px; line-height: 1.5; }
-.schedule-note { margin: 12px 2px 0; font-size: 11.5px; color: var(--muted); }
+.schedule__legend { margin: 10px 2px 0; font-size: 11px; color: var(--muted); }
+.schedule__sec { margin: 12px 2px 4px; font-weight: 600; font-size: 12.5px; color: var(--muted); }
+.schedule__item { margin: 4px 2px; line-height: 1.5; }
+.schedule__note { margin: 12px 2px 0; font-size: 11.5px; color: var(--muted); }
 footer a { color: var(--muted); text-decoration: underline; }
 
 /* 2026-09-02 기준 안내: 화면 하단 고정 아코디언 */
-.crit { position: fixed; bottom: 0; left: 0; right: 0; background: var(--bg); border-top: 1px solid var(--line); z-index: 50; }
-.crit summary { max-width: 760px; margin: 0 auto; padding: 9px 20px; cursor: pointer; font-size: 12.5px; font-weight: 500; color: var(--muted); list-style: none; }
-.crit summary::-webkit-details-marker { display: none; }
-.crit summary::after { content: '▴'; float: right; }
-.crit[open] summary::after { content: '▾'; }
-.crit .note { max-width: 760px; margin: 0 auto; padding: 0 20px 14px; }
-.wrap { padding-bottom: 120px; }
+.crit-bar { position: fixed; bottom: 0; left: 0; right: 0; background: var(--bg); border-top: 1px solid var(--line); z-index: 50; }
+.crit-bar summary { max-width: 760px; margin: 0 auto; padding: 9px 20px; cursor: pointer; font-size: 12.5px; font-weight: 500; color: var(--muted); list-style: none; }
+.crit-bar summary::-webkit-details-marker { display: none; }
+.crit-bar summary::after { content: '▴'; float: right; }
+.crit-bar[open] summary::after { content: '▾'; }
+.crit-bar .note { max-width: 760px; margin: 0 auto; padding: 0 20px 14px; }
+.layout { padding-bottom: 120px; }
 
 /* 2026-09-02 업데이트 소식 팝업 */
 .release h2 { margin: 0 0 4px; font-size: 17px; }
 .release ul { margin: 4px 0 10px; padding-left: 18px; }
 .release li { margin: 3px 0; font-size: 13.5px; line-height: 1.5; }
-.release-actions { display: flex; gap: 8px; margin-top: 14px; }
-.release-actions button { flex: 1; padding: 9px 0; border: 1px solid var(--line); border-radius: 10px; font-size: 13px; }
-.release-actions .release-mute { color: var(--muted); }
-.release-actions .release-ok { background: var(--fg); color: var(--bg); border-color: var(--fg); font-weight: 500; }
+.release__actions { display: flex; gap: 8px; margin-top: 14px; }
+.release__actions button { flex: 1; padding: 9px 0; border: 1px solid var(--line); border-radius: 10px; font-size: 13px; }
+.release__actions .release__mute { color: var(--muted); }
+.release__actions .release__ok { background: var(--fg); color: var(--bg); border-color: var(--fg); font-weight: 500; }
 /* 2026-09-04 고지 첫 줄 — 서비스 성격을 한 줄로 강조 */
-footer .notice-lead { font-size: 13px; font-weight: 500; color: var(--fg); }
+footer .foot-lead { font-size: 13px; font-weight: 500; color: var(--fg); }

@@ -31,7 +31,8 @@ grep -q 'href="mailto:' <<<"$html" && ok "문의 이메일(mailto) 링크 있음
 
 # 2) 채널 표식
 has_noindex=$(grep -c 'name="robots" content="noindex' <<<"$html" || true)
-has_ga=$(grep -c 'googletagmanager.com/gtag' <<<"$html" || true)
+# 2026-09-07 v2.18.0 GA 는 동의 뒤에만 붙는다 — 번들(consent.js)에 gtag 주소 문자열이 항상 있으므로, 채널 표식은 build.py 가 넣는 측정 ID 자리(window.GA_PENDING_ID = 'G-…')로 본다
+has_ga=$(grep -c "window.GA_PENDING_ID = 'G-" <<<"$html" || true)
 if [[ $CHANNEL == dev ]]; then
   [[ $has_noindex -ge 1 ]] && ok "noindex 메타 있음" || bad "dev 인데 noindex 메타 없음"
   [[ $has_ga -eq 0 ]] && ok "GA 스니펫 없음" || bad "dev 인데 GA 스니펫이 들어 있음"

@@ -24,7 +24,7 @@
 const NAV = { open: false };
 
 function overlayVisible() {
-  return !!document.querySelector('.overlay') || document.getElementById('drawer-backdrop')?.hidden === false;
+  return !!document.querySelector('.modal') || document.getElementById('drawer-backdrop')?.hidden === false || !!document.getElementById('search-dialog')?.open;
 }
 
 function pushOverlayEntry() {
@@ -49,6 +49,7 @@ function navigateHash(hash) {
     NAV.open = false;
     if (typeof closeDrawer === 'function') closeDrawer({ silent: true });
     if (typeof closeModal === 'function') closeModal({ silent: true });
+    if (typeof closeSearchDialog === 'function') closeSearchDialog(true);
     location.replace(target);  // hashchange 는 그대로 발생한다
     return;
   }
@@ -62,4 +63,5 @@ window.addEventListener('popstate', () => {
   NAV.open = false;
   if (typeof closeDrawer === 'function') closeDrawer({ silent: true });
   if (typeof closeModal === 'function') closeModal({ silent: true });
+  if (typeof closeSearchDialog === 'function') closeSearchDialog(true);
 });

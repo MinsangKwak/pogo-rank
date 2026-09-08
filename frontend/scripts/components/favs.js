@@ -71,11 +71,11 @@ function roleSummaryNode(dex) {
   for (const [kind, entry] of [['pve', auto.pve], ['pvp', auto.pvp]]) {
     if (!entry) continue;
     const [whereKey, rank, formLabel] = entry;
-    parts.push(el('span', { class: `fav-where ${kind}` },
+    parts.push(el('span', { class: `fav__where fav__where--${kind}` },
       `${roleWhereLabel(kind, whereKey)} `, el('b', {}, `${rank}위`),
       formLabel ? el('em', {}, ` ${formLabel}`) : ''));
   }
-  return parts.length ? el('div', { class: 'fav-wheres' }, ...parts) : el('div', { class: 'fav-wheres none' }, '순위권 밖');
+  return parts.length ? el('div', { class: 'fav__wheres' }, ...parts) : el('div', { class: 'fav__wheres is-empty' }, '순위권 밖');
 }
 
 // 정렬용 점수: 더 앞선 순위를 위로. 아무 데도 없으면 맨 뒤
@@ -87,8 +87,8 @@ function bestRankOf(dex) {
 // ★ 즐겨찾기 페이지
 function renderFavsPage() {
   if (!authEnabled() || AUTH.status !== 'ok') {
-    return el('div', { class: 'page-body' },
-      el('p', { class: 'dex-hint' },
+    return el('div', { class: 'page__body' },
+      el('p', { class: 'dex__hint' },
         AUTH.status === 'pending'
           ? '⏳ 승인 대기 중 — 승인되면 ★로 담은 포켓몬이 여기 모입니다.'
           : '로그인하면 ★로 담은 포켓몬을 PvE·PvP로 나눠 볼 수 있어요. ',
@@ -109,18 +109,18 @@ function renderFavsPage() {
   };
   // 세그먼트 선택 상태는 화면 전체 재렌더 없이 이 페이지 안에서만 바꾼다
   let current = 'all';
-  const $list = el('div', { class: 'dex-list' });
+  const $list = el('div', { class: 'dex__list' });
   const draw = () => {
     const rows = groups[current];
     $list.replaceChildren(...(rows.length
-      ? rows.map((entry) => el('button', { class: 'dex-row fav-row', onclick: () => openDetailByDex(entry.dex, true) },
-          el('span', { class: 'dex-no' }, `#${String(entry.dex).padStart(4, '0')}`),
+      ? rows.map((entry) => el('button', { class: 'dex__row fav__row', onclick: () => openDetailByDex(entry.dex, true) },
+          el('span', { class: 'dex__no' }, `#${String(entry.dex).padStart(4, '0')}`),
           sprite(entry.dex),
-          el('div', { class: 'fav-main' },
+          el('div', { class: 'fav__main' },
             el('b', {}, entry.name),
             roleSummaryNode(entry.dex)),
-          favBtn(entry.dex, 'dex-fav')))
-      : [el('p', { class: 'dex-hint' }, current === 'etc' ? '순위권 밖인 즐겨찾기가 없어요.' : '이 분류에 해당하는 즐겨찾기가 아직 없어요.')]));
+          favBtn(entry.dex, 'dex__fav')))
+      : [el('p', { class: 'dex__hint' }, current === 'etc' ? '순위권 밖인 즐겨찾기가 없어요.' : '이 분류에 해당하는 즐겨찾기가 아직 없어요.')]));
   };
   const $seg = seg([
     { id: 'all', label: `전체 ${groups.all.length}` },
@@ -137,8 +137,8 @@ function renderFavsPage() {
   });
   draw();
   const cut = (typeof ROLES !== 'undefined' && ROLES?.cut) || { pve: 60, pvp: 100 };
-  return el('div', { class: 'page-body' }, $seg, $list,
-    el('p', { class: 'd-foot' },
+  return el('div', { class: 'page__body' }, $seg, $list,
+    el('p', { class: 'detail__foot' },
       `분류는 순위표에서 자동으로 정합니다 — PvE는 19개 표 상위 ${cut.pve}위, PvP는 4리그 상위 ${cut.pvp}위 안에 들면 해당 갈래로 봅니다. `
       + '메가·섀도우 같은 폼 중 하나라도 들면 그 종이 포함되고, 괄호 없이 붙은 이름이 그 순위를 낸 폼입니다. '
       + '분류가 안 맞으면 포켓몬을 눌러 상세에서 직접 바꿀 수 있어요.'));
@@ -160,7 +160,7 @@ function roleToggleNode(spriteId) {
     openDetailByDex(dex, true);   // 팝업을 다시 그려 버튼 상태를 반영
   };
   const button = (kind, label) => el('button', {
-    class: `uchip role-chip${active.has(kind) ? ' on' : ''}`,
+    class: `uchip role-chip${active.has(kind) ? ' is-on' : ''}`,
     onclick: (event) => {
       event.stopPropagation();
       toggle(kind);
@@ -175,7 +175,7 @@ function roleToggleNode(spriteId) {
             openDetailByDex(dex, true);
           } }, '자동으로 되돌리기')
         : ''),
-    el('p', { class: 'd-foot' }, isOverridden
+    el('p', { class: 'detail__foot' }, isOverridden
       ? '직접 지정한 값입니다. ★ 즐겨찾기 목록에서 이 분류로 묶입니다.'
       : '순위표에서 자동으로 정한 값입니다. 눌러서 바꾸면 이 포켓몬만 예외로 저장됩니다.'));
 }

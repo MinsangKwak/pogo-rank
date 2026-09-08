@@ -10,6 +10,7 @@
 
 // 2026-09-03 GA4 사용 추적 헬퍼: 어떤 기능을 얼마나 쓰는지 이벤트로 기록
 // 측정 ID가 없거나(GA_ID 미설정 빌드) 로컬 미리보기면 gtag가 없어 전부 무시된다
+// 2026-09-07 v2.18.0 통계 동의 전에도 gtag 가 없다 — components/consent.js 가 동의 뒤에만 붙인다
 //   name    GA 이벤트 목록에 그대로 뜨는 이름 ('tab_max' · 'sub_pve_easy' …)
 //   params  이벤트에 딸려 보낼 값. 없으면 빈 객체를 보낸다 (gtag는 인자 생략을 싫어한다)
 function track(name, params) {

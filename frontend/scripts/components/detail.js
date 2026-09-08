@@ -35,14 +35,14 @@ function dexOf(spriteId) {
   return DEX_DATA.dex[parsedId] ?? (parsedId < 10000 ? parsedId : null);
 }
 
-// 팝업 안의 한 블록: <section class="d-sec"><h3>제목</h3>내용</section>
+// 팝업 안의 한 블록: <section class="detail__sec"><h3>제목</h3>내용</section>
 function detailSection(title, node) {
-  return el('section', { class: 'd-sec' }, el('h3', {}, title), node);
+  return el('section', { class: 'detail__sec' }, el('h3', {}, title), node);
 }
 
 // 타입 칩: 타입 색 점 + 한글 타입명 (+ 배율 같은 부가 텍스트는 <small> 로 뒤에 붙인다)
 function typeChipEl(typeName, extraText) {
-  const chip = el('span', { class: 'tchip' }, el('span', { class: 'dot', style: `--c: var(--t-${typeName})` }), TYPE_KO[typeName] ?? typeName);
+  const chip = el('span', { class: 'tchips__item' }, el('span', { class: 'dot', style: `--c: var(--t-${typeName})` }), TYPE_KO[typeName] ?? typeName);
   if (extraText) chip.append(el('small', {}, extraText));
   return chip;
 }
@@ -62,14 +62,14 @@ function monShareUrl(spriteId) {
 
 // 🔗 공유 버튼: Web Share가 되는 기기(대부분의 폰)는 공유 시트, 아니면 클립보드 복사 후 "복사됨 ✓" 표시
 function shareBtn(pokemon) {
-  const button = el('button', { class: 'd-share', 'aria-label': '링크 공유', title: '이 포켓몬 링크 공유' }, '🔗');
+  const button = el('button', { class: 'detail__share', 'aria-label': '링크 공유', title: '이 포켓몬 링크 공유' }, '🔗');
   const copied = () => { button.textContent = '복사됨 ✓'; setTimeout(() => { button.textContent = '🔗'; }, 1500); };
   button.addEventListener('click', async (event) => {
     event.stopPropagation();
     const url = monShareUrl(pokemon.sprite);
     track('share', { mon: pokemon.name });  // GA4: 공유 시도 — 링크로 들어온 detail_open(from=link)과 짝을 이룬다
     try {
-      if (navigator.share) await navigator.share({ title: `${pokemon.name} — POGO SEARCH`, url });
+      if (navigator.share) await navigator.share({ title: `${pokemon.name} — POGO PLAN`, url });
       else { await navigator.clipboard.writeText(url); copied(); }
     } catch (error) {
       // 공유 시트를 취소한 경우는 조용히, 그 외(권한 등)는 클립보드로 한 번 더
@@ -106,7 +106,7 @@ function openDetailByDex(dexNumber, isDex) {
 function megaMonNode(dex, entry, curSprite, isDex) {
   const spriteId = entry.sprite;
   const name = `${entry.label} ${DEX_DATA.names[dex] ?? dex}`;
-  return el('button', { class: `evo-mon mega${spriteId === curSprite ? ' now' : ''}`,
+  return el('button', { class: `evo__mon form-tag--mega${spriteId === curSprite ? ' is-now' : ''}`,
     onclick: () => openDetail({ sprite: spriteId, name, en: '', types: DEX_DATA.forms[spriteId]?.types ?? [] }, isDex) },
     sprite(spriteId), el('span', {}, entry.label));
 }
@@ -117,34 +117,34 @@ function evoNode(dex, isDex, curSprite) {
   const family = DEX_DATA.evo[dex];
   const megas = DEX_DATA.megas?.[dex];
   const hasFamily = family && family.length >= 2;
-  if (!hasFamily && !megas?.length) return el('p', { class: 'd-none-text' }, '진화가 없는 포켓몬입니다.');
+  if (!hasFamily && !megas?.length) return el('p', { class: 'detail__none-text' }, '진화가 없는 포켓몬입니다.');
   const wrap = el('div', { class: 'evo' });
   if (hasFamily) family.forEach((stage, stageIndex) => {
     // 첫 단계 앞에는 화살표를 넣지 않는다
-    if (stageIndex > 0) wrap.append(el('span', { class: 'evo-arrow' }, '→'));
-    wrap.append(el('div', { class: 'evo-stage' }, ...stage.map((stageDex) => el('button', { class: `evo-mon${stageDex === dex && stageDex === curSprite ? ' now' : ''}`, onclick: () => openDetailByDex(stageDex, isDex) },
+    if (stageIndex > 0) wrap.append(el('span', { class: 'evo__arrow' }, '→'));
+    wrap.append(el('div', { class: 'evo__stage' }, ...stage.map((stageDex) => el('button', { class: `evo__mon${stageDex === dex && stageDex === curSprite ? ' is-now' : ''}`, onclick: () => openDetailByDex(stageDex, isDex) },
       sprite(stageDex), el('span', {}, DEX_DATA.names[stageDex] ?? stageDex)))));
   });
   if (megas?.length) {
-    if (hasFamily) wrap.append(el('span', { class: 'evo-arrow' }, '⚡'));
-    wrap.append(el('div', { class: 'evo-stage' }, ...megas.map((megaEntry) => megaMonNode(dex, megaEntry, curSprite, isDex))));
+    if (hasFamily) wrap.append(el('span', { class: 'evo__arrow' }, '⚡'));
+    wrap.append(el('div', { class: 'evo__stage' }, ...megas.map((megaEntry) => megaMonNode(dex, megaEntry, curSprite, isDex))));
   }
   // 아래 안내 문구는 실제로 있는 것만 ' · ' 로 이어 붙인다
   const foot = [hasFamily && '진화형을 누르면 그 포켓몬의 정보를 볼 수 있습니다', megas?.length && '⚡ 메가 진화 가능 — 누르면 메가 진화 스탯을 볼 수 있습니다'].filter(Boolean);
-  wrap.append(el('p', { class: 'd-foot' }, foot.join(' · ')));
+  wrap.append(el('p', { class: 'detail__foot' }, foot.join(' · ')));
   return wrap;
 }
 
 // 배울 수 있는 기술: 스피드(빠른 기술) / 차지(차지 기술) 두 줄
 // form.fast · form.charged 는 [기술명, 레거시여부] 쌍의 배열이라 레거시면 이름 뒤에 ' *' 를 붙인다.
 function movesNode(form) {
-  const moveChip = ([name, elite]) => el('span', { class: 'mv' }, name + (elite ? ' *' : ''));
+  const moveChip = ([name, elite]) => el('span', { class: 'move-chip' }, name + (elite ? ' *' : ''));
   return el('div', {},
-    el('div', { class: 'mv-row' }, el('em', {}, '스피드'), el('div', { class: 'mv-list' }, ...form.fast.map(moveChip))),
-    el('div', { class: 'mv-row' }, el('em', {}, '차지'), el('div', { class: 'mv-list' }, ...form.charged.map(moveChip))),
+    el('div', { class: 'move-list__row' }, el('em', {}, '스피드'), el('div', { class: 'move-list' }, ...form.fast.map(moveChip))),
+    el('div', { class: 'move-list__row' }, el('em', {}, '차지'), el('div', { class: 'move-list' }, ...form.charged.map(moveChip))),
     // 레거시 기술이 하나라도 있을 때만 각주를 붙인다
     (form.fast.some((move) => move[1]) || form.charged.some((move) => move[1]))
-      ? el('p', { class: 'd-foot' }, '* 레거시 기술 — 대단한 기술머신 또는 이벤트로만 습득') : '',
+      ? el('p', { class: 'detail__foot' }, '* 레거시 기술 — 대단한 기술머신 또는 이벤트로만 습득') : '',
   );
 }
 
@@ -157,8 +157,8 @@ function matchupNode(types) {
   // ×2.56 / ×1.6 처럼 보이도록 소수 둘째 자리까지 쓰되 끝의 0 은 지운다
   const chipList = (entries) => el('div', { class: 'tchips' }, ...entries.map(([typeName, multiplier]) => typeChipEl(typeName, `×${multiplier.toFixed(2).replace(/0$/, '')}`)));
   return el('div', {},
-    el('div', { class: 'mv-row' }, el('em', {}, '약점'), weak.length ? chipList(weak) : el('span', { class: 'd-none-text' }, '없음')),
-    el('div', { class: 'mv-row' }, el('em', {}, '내성'), resist.length ? chipList(resist) : el('span', { class: 'd-none-text' }, '없음')),
+    el('div', { class: 'move-list__row' }, el('em', {}, '약점'), weak.length ? chipList(weak) : el('span', { class: 'detail__none-text' }, '없음')),
+    el('div', { class: 'move-list__row' }, el('em', {}, '내성'), resist.length ? chipList(resist) : el('span', { class: 'detail__none-text' }, '없음')),
   );
 }
 
@@ -167,8 +167,8 @@ function matchupNode(types) {
 // 종족값 막대 3개(공격·방어·체력). 320 을 100% 로 보고 막대 길이를 정한다.
 function statsNode(form) {
   const MAX_STAT = 320;
-  const bar = (label, value) => el('div', { class: 'statbar' },
-    el('em', {}, label), el('span', { class: 'bar' }, el('i', { style: `width:${Math.min(100, value / MAX_STAT * 100)}%` })), el('b', {}, String(value)));
+  const bar = (label, value) => el('div', { class: 'stat-bar' },
+    el('em', {}, label), el('span', { class: 'score-bar' }, el('i', { style: `width:${Math.min(100, value / MAX_STAT * 100)}%` })), el('b', {}, String(value)));
   return el('div', {}, bar('공격', form.atk), bar('방어', form.def), bar('체력', form.hp));
 }
 
@@ -208,7 +208,7 @@ function cpNode(form, spriteId) {
   const cpm = DEX_DATA.cpm;
   if (!cpm) return null;
   // 개체값 하한이 있는 경로: 100%를 굵게, 그 아래 "최저 N" 을 작게
-  const rangeChip = (label, multiplier, floorIv) => el('span', { class: 'uchip top' }, label,
+  const rangeChip = (label, multiplier, floorIv) => el('span', { class: 'uchip is-top' }, label,
     el('b', {}, `CP ${cpOf(form, multiplier).toLocaleString()}`),
     el('i', {}, `최저 ${cpAtIv(form, multiplier, floorIv).toLocaleString()}`));
   // 하한이 없는 경로(야생·만렙): 100% 값만
@@ -216,22 +216,22 @@ function cpNode(form, spriteId) {
   const maxKind = maxPoolKind(spriteId);
   const maxLabel = maxKind === 'G' ? '거다이맥스·다이맥스' : '다이맥스';
   return el('div', {},
-    el('div', { class: 'cp-ctx' },
+    el('div', { class: 'cp__ctx' },
       el('em', {}, '레이드 보상 — 개체값 10 이상 확정'),
       el('div', { class: 'tchips' }, rangeChip('평시 Lv20', cpm.l20, 10), rangeChip('날씨부스트 Lv25', cpm.l25, 10))),
     // 맥스 배틀에 나오지 않는 종이면 이 줄 자체를 만들지 않는다
     maxKind
-      ? el('div', { class: 'cp-ctx' },
+      ? el('div', { class: 'cp__ctx' },
           el('em', {}, `맥스 배틀 (${maxLabel}) — Lv20 고정, 날씨부스트 없음`),
           el('div', { class: 'tchips' }, rangeChip('포획 Lv20', cpm.l20, 10)))
       : '',
-    el('div', { class: 'cp-ctx' },
+    el('div', { class: 'cp__ctx' },
       el('em', {}, '야생 스폰 — 개체값 하한 없음'),
       el('div', { class: 'tchips' }, chip('평시 Lv30', cpm.l30), chip('날씨부스트 Lv35', cpm.l35))),
-    el('div', { class: 'cp-ctx' },
+    el('div', { class: 'cp__ctx' },
       el('em', {}, '강화 상한'),
       el('div', { class: 'tchips' }, chip('만렙 Lv50', cpm.l50))),
-    el('p', { class: 'd-foot' }, `굵은 숫자가 개체값 100%(15/15/15) CP입니다. 잡은 개체가 이 값이면 100%. ${maxKind ? '맥스 배틀은 날씨부스트가 없어 항상 Lv20이라 레이드 평시와 같은 CP가 나옵니다. ' : ''}야생은 레벨 하한이 없어 최저 CP를 적지 않습니다.`));
+    el('p', { class: 'detail__foot' }, `굵은 숫자가 개체값 100%(15/15/15) CP입니다. 잡은 개체가 이 값이면 100%. ${maxKind ? '맥스 배틀은 날씨부스트가 없어 항상 Lv20이라 레이드 평시와 같은 CP가 나옵니다. ' : ''}야생은 레벨 하한이 없어 최저 CP를 적지 않습니다.`));
 }
 
 // 2026-09-04 메가X/메가Y가 둘 다 있는 종(현재 뮤츠·리자몽 등)만 — 좌우 비교 + 차이 자동 요약
@@ -246,9 +246,9 @@ function megaCompareNode(dex) {
   const formY = DEX_DATA.forms[megaY.sprite];
   if (!formX || !formY) return null;
   const cpm = DEX_DATA.cpm;
-  const row = (label, valueX, valueY, format = String) => el('div', { class: 'mega-cmp-row' },
+  const row = (label, valueX, valueY, format = String) => el('div', { class: 'cmp__row' },
     el('em', {}, label),
-    el('b', { class: valueX > valueY ? 'hi' : '' }, format(valueX)), el('b', { class: valueY > valueX ? 'hi' : '' }, format(valueY)));
+    el('b', { class: valueX > valueY ? 'is-high' : '' }, format(valueX)), el('b', { class: valueY > valueX ? 'is-high' : '' }, format(valueY)));
   const typeChips = (types) => el('div', { class: 'tchips' }, ...types.map((typeName) => typeChipEl(typeName)));
 
   // 차이 자동 요약: 타입이 다르면 한 줄, 종족값은 항목별로 어느 쪽이 얼마나 높은지
@@ -260,12 +260,12 @@ function megaCompareNode(dex) {
     if (formX[key] !== formY[key]) diffs.push(`${label} 종족값 ${formX[key] > formY[key] ? '메가X' : '메가Y'}가 ${Math.abs(formX[key] - formY[key])} 더 높음`);
   }
 
-  return el('div', { class: 'mega-cmp' },
-    el('div', { class: 'mega-cmp-row mega-cmp-head' }, el('em', {}), el('b', {}, '메가X'), el('b', {}, '메가Y')),
-    el('div', { class: 'mega-cmp-row' }, el('em', {}, '타입'), typeChips(formX.types), typeChips(formY.types)),
+  return el('div', { class: 'cmp' },
+    el('div', { class: 'cmp__row cmp__head' }, el('em', {}), el('b', {}, '메가X'), el('b', {}, '메가Y')),
+    el('div', { class: 'cmp__row' }, el('em', {}, '타입'), typeChips(formX.types), typeChips(formY.types)),
     row('공격', formX.atk, formY.atk), row('방어', formX.def, formY.def), row('체력', formX.hp, formY.hp),
     cpm ? row('CP 만렙', cpOf(formX, cpm.l50), cpOf(formY, cpm.l50), (cp) => cp.toLocaleString()) : '',
-    diffs.length ? el('p', { class: 'd-foot' }, diffs.join(' · ')) : '');
+    diffs.length ? el('p', { class: 'detail__foot' }, diffs.join(' · ')) : '');
 }
 
 // 활용처를 PvP · 레이드 · 맥스 그룹으로 나눠 순위 칩으로 표시
@@ -302,16 +302,16 @@ function usageNode(name) {
     const key = place.split(':')[1];
     // PvP 는 리그 이름, 레이드·맥스는 타입 이름 (overall 은 '전체'). 맥스는 D(다이맥스)/G(거다이맥스) 표시
     const where = place.startsWith('pvp') ? LEAGUE_KO[key] : (key === 'overall' ? '전체' : TYPE_KO[key]);
-    return el('span', { class: `uchip${rank <= 3 ? ' top' : ''}` }, mark ? `${mark}·${where}` : where, el('b', {}, `${rank}위`));
+    return el('span', { class: `uchip${rank <= 3 ? ' is-top' : ''}` }, mark ? `${mark}·${where}` : where, el('b', {}, `${rank}위`));
   };
   const wrap = el('div', {});
   for (const groupKey of ['pvp', 'pve', 'max']) {
     if (!groups[groupKey].length) continue;
     groups[groupKey].sort((a, b) => a.rank - b.rank);
-    wrap.append(el('div', { class: 'mv-row' }, el('em', {}, GROUP_KO[groupKey]),
+    wrap.append(el('div', { class: 'move-list__row' }, el('em', {}, GROUP_KO[groupKey]),
       el('div', { class: 'tchips' }, ...groups[groupKey].map(chip))));
   }
-  wrap.append(el('p', { class: 'd-foot' }, `각 순위표 상위 30위 기준 · 3위 안은 강조 표시${groups.max.length ? ' · D = 다이맥스, G = 거다이맥스' : ''}`));
+  wrap.append(el('p', { class: 'detail__foot' }, `각 순위표 상위 30위 기준 · 3위 안은 강조 표시${groups.max.length ? ' · D = 다이맥스, G = 거다이맥스' : ''}`));
   return wrap;
 }
 
@@ -357,8 +357,8 @@ function raidDealerRows(attackTypes, count = 5) {
 }
 // 추천 딜러 버튼 줄 (팝업 안의 버튼이라 클릭이 바깥 모달로 새지 않게 stopPropagation)
 function counterRecsNode(recs) {
-  return el('div', { class: 'boss-recs' }, ...recs.map((counter, index) =>
-    el('button', { class: 'boss-rec', onclick: (event) => { event.stopPropagation(); openDetail(counter); } },
+  return el('div', { class: 'boss__recs' }, ...recs.map((counter, index) =>
+    el('button', { class: 'boss__rec', onclick: (event) => { event.stopPropagation(); openDetail(counter); } },
       sprite(counter.sprite), el('span', {}, `${index + 1} `, nameNode(counter.name)))));  // 2026-09-06 v2.10.0 폼 라벨 뱃지
 }
 // 반환값: { title, node } — 섹션 제목까지 보스 종류에 따라 달라지므로 함께 돌려준다. 추천이 없으면 null
@@ -370,7 +370,7 @@ function counterNode(types, name) {
     return {
       title: `${name}가 보스로 나오면? (맥스 배틀 — 다이맥스·거다이맥스만 참전 가능)`,
       node: el('div', {}, counterRecsNode(recs),
-        el('p', { class: 'd-foot' }, `${TYPE_KO[types[0]]} 속성 맥스 배틀 보스 기준 · 메가·원시·섀도우는 맥스 배틀에 참전할 수 없어 제외`)),
+        el('p', { class: 'detail__foot' }, `${TYPE_KO[types[0]]} 속성 맥스 배틀 보스 기준 · 메가·원시·섀도우는 맥스 배틀에 참전할 수 없어 제외`)),
     };
   }
   const attackTypes = raidCounterTypes(types);
@@ -381,7 +381,7 @@ function counterNode(types, name) {
   return {
     title: `${name}가 보스로 나오면? (레이드 — ${typeLabel} 딜러 추천)`,
     node: el('div', {}, counterRecsNode(recs),
-      el('p', { class: 'd-foot' }, `일반·전설·메가 레이드는 전체 포켓몬 참전 · ${typeLabel} 타입 레이드 성능표 상위 (종 중복 제거)`)),
+      el('p', { class: 'detail__foot' }, `일반·전설·메가 레이드는 전체 포켓몬 참전 · ${typeLabel} 타입 레이드 성능표 상위 (종 중복 제거)`)),
   };
 }
 
@@ -394,27 +394,27 @@ function counterNode(types, name) {
 function matchupChip(typeName, multiplier) {
   const double = multiplier >= 2.5 ? '이중' : multiplier <= 0.4 ? '이중' : '';
   const chip = typeChipEl(typeName, `×${+multiplier.toFixed(2)}${double ? ' ' + double : ''}`);
-  if (multiplier >= 2.5) chip.classList.add('x2');
-  if (multiplier <= 0.4) chip.classList.add('r2');
+  if (multiplier >= 2.5) chip.classList.add('is-weak2');
+  if (multiplier <= 0.4) chip.classList.add('is-resist2');
   return chip;
 }
 function matchupCols(types, spriteId) {
   const rows = Object.keys(TYPE_KO).map((typeName) => [typeName, typeMultAgainst(typeName, types)]);
   const chipList = (entries) => entries.length
     ? el('div', { class: 'tchips' }, ...entries.map(([typeName, multiplier]) => matchupChip(typeName, multiplier)))
-    : el('p', { class: 'd-none-text' }, '없음');
+    : el('p', { class: 'detail__none-text' }, '없음');
   const weak = rows.filter(([, multiplier]) => multiplier >= 1.5).sort((a, b) => b[1] - a[1]);
   const resist = rows.filter(([, multiplier]) => multiplier <= 0.7).sort((a, b) => a[1] - b[1]);
   const hasDouble = weak.some(([, multiplier]) => multiplier >= 2.5) || resist.some(([, multiplier]) => multiplier <= 0.4);
   const wrap = el('div', {},
-    el('div', { class: 'd-matchrows' },
+    el('div', { class: 'detail__matchrows' },
       el('div', {}, el('h3', {}, '약점'), chipList(weak)),
       el('div', {}, el('h3', {}, '내성'), chipList(resist))),
-    el('p', { class: 'd-foot' },
+    el('p', { class: 'detail__foot' },
       hasDouble ? '이중 = 두 타입 모두에 걸려 ×2.56(약점) / ×0.39(내성·무효) · ' : '',
       // 2026-09-06 v2.10.0 🧭 상성 검색 페이지로 — 같은 타입 조합을 미리 채운 채 열린다
       typeof openTypeSearch === 'function'
-        ? el('button', { class: 'row-why-more', onclick: (event) => { event.stopPropagation(); openTypeSearch(types, spriteId, 'detail'); } }, '🧭 상성 검색에서 딜러까지 보기 ▸')
+        ? el('button', { class: 'row__why-more', onclick: (event) => { event.stopPropagation(); openTypeSearch(types, spriteId, 'detail'); } }, '🧭 상성 검색에서 딜러까지 보기 ▸')
         : ''));
   return wrap;
 }
@@ -424,7 +424,7 @@ function matchupCols(types, spriteId) {
 function detailCpCalc(form) {
   // 슬라이더 현재값 저장소 — 각 키가 sliderRow 의 key 인자와 짝을 이룬다
   const inputs = { level: 30, attackIv: 15, defenseIv: 15, hpIv: 15 };
-  const $result = el('p', { class: 'cp-inline-result' });
+  const $result = el('p', { class: 'cp__inline' });
   const update = () => {
     const cp = calcCp(form, inputs.level, inputs.attackIv, inputs.defenseIv, inputs.hpIv);
     // 같은 개체값으로 Lv50 까지 올렸을 때의 CP — 지금 CP가 그 몇 %인지 보여준다
@@ -440,14 +440,14 @@ function detailCpCalc(form) {
       $value.textContent = $slider.value;
       update();
     });
-    return el('div', { class: 'cp-slider' }, el('em', {}, label), $slider, $value);
+    return el('div', { class: 'cp__slider' }, el('em', {}, label), $slider, $value);
   };
   update();
   return el('div', {},
     sliderRow('레벨', 'level', 1, 50, 0.5), sliderRow('공격 IV', 'attackIv', 0, 15, 1),
     sliderRow('방어 IV', 'defenseIv', 0, 15, 1), sliderRow('체력 IV', 'hpIv', 0, 15, 1),
     $result,
-    el('p', { class: 'd-foot' }, '내 개체의 레벨·개체값을 맞추면 지금 CP와 만렙까지의 여지가 보입니다'));
+    el('p', { class: 'detail__foot' }, '내 개체의 레벨·개체값을 맞추면 지금 CP와 만렙까지의 여지가 보입니다'));
 }
 
 
@@ -499,7 +499,7 @@ function hexNode(form, name, types) {
     fill: 'none', stroke: 'var(--line)', 'stroke-width': ratio === 1 ? 1.2 : 0.7 });
   // 채우기 색은 대표 타입(첫 번째 타입) 색
   const color = `var(--t-${types[0] ?? 'normal'})`;
-  const svg = svgEl('svg', { viewBox: '0 0 300 236', class: 'hex-svg', role: 'img', 'aria-label': '능력치 육각형' },
+  const svg = svgEl('svg', { viewBox: '0 0 300 236', class: 'hex__svg', role: 'img', 'aria-label': '능력치 육각형' },
     // 1/3 · 2/3 · 1 눈금 육각형
     ring(1 / 3), ring(2 / 3), ring(1),
     // 중심에서 각 꼭짓점으로 뻗는 축선
@@ -516,12 +516,12 @@ function hexNode(form, name, types) {
     ...axes.map((axis, axisIndex) => {
       const [x, y] = pointAt(axisIndex, 1.24);
       const anchor = Math.abs(x - CENTER_X) < 8 ? 'middle' : x > CENTER_X ? 'start' : 'end';
-      return svgEl('text', { x, y: y - 2, 'text-anchor': anchor, class: 'hex-label' },
-        svgEl('tspan', { class: 'hex-name' }, axis[0]),
-        svgEl('tspan', { x, dy: 13, class: 'hex-val' }, axis[1]));
+      return svgEl('text', { x, y: y - 2, 'text-anchor': anchor, class: 'hex__label' },
+        svgEl('tspan', { class: 'hex__name' }, axis[0]),
+        svgEl('tspan', { x, dy: 13, class: 'hex__val' }, axis[1]));
     }));
   svg.append(svgEl('title', {}, '종족값 320 · CP 5,500 기준 비율. 레이드/PvP는 도감 순위표 최고 순위'));
-  return el('div', { class: 'hex-wrap' }, svg);
+  return el('div', { class: 'hex' }, svg);
 }
 
 // 상세 팝업 본체.
@@ -541,7 +541,7 @@ function openDetail(pokemon, isDex = false, from = null) {
   // 만렙(Lv50) / 레이드 보상(Lv20·부스트 Lv25) / 야생(Lv30·부스트 Lv35) 을 한 줄로 압축
   const cpm = DEX_DATA.cpm;
   const cpLine = form && cpm
-    ? el('p', { class: 'd-cpline' },
+    ? el('p', { class: 'detail__cpline' },
         `CP 100% 기준 · 만렙 `, el('b', {}, cpOf(form, cpm.l50).toLocaleString()),
         ` | ${maxPoolKind(pokemon.sprite) ? '레이드·맥스' : '레이드'} ${cpOf(form, cpm.l20).toLocaleString()}, 부스트 ${cpOf(form, cpm.l25).toLocaleString()}`,
         ` | 야생 ${cpOf(form, cpm.l30).toLocaleString()}, 부스트 ${cpOf(form, cpm.l35).toLocaleString()}`)
@@ -549,39 +549,39 @@ function openDetail(pokemon, isDex = false, from = null) {
   // 2026-09-03 v3 헤더: 타입 → 팬텀(Gengar) → CP 만렙 | 야생, 부스트 (유저 지정 순서)
   // 2026-09-06 v2.11.0 그림 테두리를 폼 색으로 — 메가·다이맥스/거다이맥스·섀도우 (components/name.js formLabelKind, 색은 tokens.css)
   const formKind = typeof splitFormName === 'function' ? (splitFormName(pokemon.name).labels.map(formLabelKind)[0] ?? '') : '';
-  const head = el('div', { class: 'd-head' },
-    el('div', { class: `d-sprite${formKind ? ' form-' + formKind : ''}` }, sprite(pokemon.sprite)),
+  const head = el('div', { class: 'detail__head' },
+    el('div', { class: `sprite-box${formKind ? ' sprite-box--' + formKind : ''}` }, sprite(pokemon.sprite)),
     el('div', {},
       el('div', { class: 'tchips' }, ...types.map((typeName) => typeChipEl(typeName))),
-      el('h2', {}, nameNode(pokemon.name), pokemon.en ? el('span', { class: 'd-en-inline' }, ` (${pokemon.en})`) : ''),  // 2026-09-06 v2.10.0 폼 라벨 뱃지
+      el('h2', {}, nameNode(pokemon.name), pokemon.en ? el('span', { class: 'detail__en-inline' }, ` (${pokemon.en})`) : ''),  // 2026-09-06 v2.10.0 폼 라벨 뱃지
       cpLine),
     // 2026-09-03 v2.2.0 즐겨찾기 ★ (로그인 기능이 켜진 빌드에서만, 종 단위 = 도감번호)
-    el('div', { class: 'd-actions' },
-      authEnabled() && dex != null ? favBtn(dex, 'd-fav') : '',
+    el('div', { class: 'detail__actions' },
+      authEnabled() && dex != null ? favBtn(dex, 'detail__fav') : '',
       shareBtn(pokemon),  // 2026-09-06 v2.9.0 🔗 공유
       // 2026-09-07 v2.15.0 (QA-54) ➕ 내 개체로 저장 — 도감 → 플래너 교차 동선. 승인된 로그인 사용자에게만
       authEnabled() && AUTH.status === 'ok' && form && typeof planAddFromDetail === 'function'
-        ? el('button', { class: 'd-share d-plan', title: '🌱 플래너 내 포켓몬에 이 개체 저장', 'aria-label': '내 개체로 저장',
+        ? el('button', { class: 'detail__share detail__plan', title: '🌱 플래너 내 포켓몬에 이 개체 저장', 'aria-label': '내 개체로 저장',
             onclick: (event) => { event.stopPropagation(); planAddFromDetail(pokemon); } }, '➕')
         : ''));
 
   const body = el('div', { class: 'detail' }, head);
   // 2026-09-04 포획 CP: "지금 잡은 개체가 100%인가"를 확인하는 표. 계산기보다 자주 보므로 위에 둔다
-  if (form) body.append(el('details', { class: 'd-acc' },
+  if (form) body.append(el('details', { class: 'detail__acc' },
     el('summary', {}, '🎯 포획 CP — 이 숫자면 100%'),
-    el('div', { class: 'd-acc-body' }, cpNode(form, pokemon.sprite))));
+    el('div', { class: 'detail__acc-body' }, cpNode(form, pokemon.sprite))));
   // 2026-09-03 v4: 내 개체 CP 계산기를 상성 위로, 접이식 아코디언으로
   // 2026-09-03 도감형 재배치: 계산기 아코디언 → [능력치 육각형 | 배울 수 있는 기술] → 상성 → 활용처 → 진화, "보스로 나오면"은 맨 아래
-  if (form) body.append(el('details', { class: 'd-acc' },
+  if (form) body.append(el('details', { class: 'detail__acc' },
     el('summary', {}, '🧮 내 개체 CP 계산기'),
-    el('div', { class: 'd-acc-body' }, detailCpCalc(form))));
+    el('div', { class: 'detail__acc-body' }, detailCpCalc(form))));
   // 2026-09-03 일반 팝업: 능력치 없이 기술만 전체 폭 / 도감 팝업: [능력치 육각형 | 기술] 2열
   if (form) {
     body.append(isDex
-      ? el('div', { class: 'd-hexmoves' },
+      ? el('div', { class: 'detail__hexmoves' },
           el('div', {}, el('h3', {}, '능력치'), hexNode(form, pokemon.name, types)),
-          el('div', { class: 'd-moves' }, el('h3', {}, '배울 수 있는 기술'), movesNode(form)))
-      : detailSection('배울 수 있는 기술', el('div', { class: 'd-moves' }, movesNode(form))));
+          el('div', { class: 'detail__moves' }, el('h3', {}, '배울 수 있는 기술'), movesNode(form)))
+      : detailSection('배울 수 있는 기술', el('div', { class: 'detail__moves' }, movesNode(form))));
   }
   // 2026-09-04 이 포켓몬에 걸린 시즌 기술 변경 (적용 전후 모두 표시 — 적용 뒤에도 "왜 순위가 움직였나"의 답이 된다)
   const moveChange = moveChangeFor(pokemon.sprite);
@@ -589,19 +589,19 @@ function openDetail(pokemon, isDex = false, from = null) {
     const data = moveChangeData();
     const daysLeft = moveChangeDaysLeft();
     const bucket = (label, names, className) => (names?.length
-      ? el('div', { class: `chg-row ${className}` }, el('span', { class: 'chg-mark' }, label),
+      ? el('div', { class: `changes__row ${className}` }, el('span', { class: 'changes__mark' }, label),
           el('div', {}, el('b', {}, names.join(' · ')),
             // 레거시(지금은 못 배우는 전용 기술)가 섞여 있으면 오해하지 않게 표시한다
             names.some((name) => moveChange.legacy?.includes(name))
-              ? el('div', { class: 'chg-sub' }, '※ 일부는 지금 배울 수 없는 레거시 기술입니다') : ''))
+              ? el('div', { class: 'changes__sub' }, '※ 일부는 지금 배울 수 없는 레거시 기술입니다') : ''))
       : '');
     body.append(detailSection(
       daysLeft > 0 ? `⚔️ ${data.date} 기술 변경 예정 (D-${daysLeft})` : `⚔️ ${data.date} 기술 변경 적용됨`,
       el('div', {},
-        el('div', { class: 'chg-list' },
-          bucket('▲', moveChange.up, 'up'), bucket('▼', moveChange.down, 'down'),
-          bucket('·', moveChange.energy, ''), bucket('＋', moveChange.new, 'up')),
-        el('p', { class: 'd-foot' }, '위력 수치는 트레이너 배틀 기준 · 자세한 내용은 메뉴 → ⚔️ 기술 변경'))));
+        el('div', { class: 'changes__list' },
+          bucket('▲', moveChange.up, 'is-up'), bucket('▼', moveChange.down, 'is-down'),
+          bucket('·', moveChange.energy, ''), bucket('＋', moveChange.new, 'is-up')),
+        el('p', { class: 'detail__foot' }, '위력 수치는 트레이너 배틀 기준 · 자세한 내용은 메뉴 → ⚔️ 기술 변경'))));
   }
   if (types.length) body.append(detailSection('타입 상성', matchupCols(types, pokemon.sprite)));
   // 아래 섹션들은 해당 데이터가 있을 때만 붙는다 (활용처 미등재·메가 없음·진화 없음 등)
@@ -620,7 +620,7 @@ function openDetail(pokemon, isDex = false, from = null) {
   // 2026-09-06 v2.9.0 메인 화면에서 열었을 때만 주소를 #/mon/<id>로 바꿔 둔다 — 그대로 복사하면 공유 링크가 된다.
   // openModal이 먼저 closeModal을 불러 기존 #/mon 해시를 지우므로, 반드시 그 뒤에 넣는다.
   // 페이지(#/dex 등) 위에서 열 때는 그 페이지 주소를 지우지 않도록 건드리지 않는다. replaceState라 히스토리는 안 쌓인다
-  if (typeof currentPageId === 'function' && !currentPageId()) {
-    try { history.replaceState(null, '', `#/mon/${pokemon.sprite}`); } catch {}
+  if (!location.hash || location.hash === '#' || /^#\/mon\//.test(location.hash)) {
+    try { history.replaceState(history.state, '', `#/mon/${pokemon.sprite}`); } catch {}
   }
 }

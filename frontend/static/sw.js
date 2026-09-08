@@ -1,5 +1,5 @@
 // 2026-09-03 v2.0.0 오프라인 캐시: 페이지·데이터는 네트워크 우선, 스프라이트는 캐시 우선(불변)
-const CACHE = 'pogonote-v3';  // 2026-09-07 v2.16.1 스프라이트 재시도 추가하며 캐시 세대 교체
+const CACHE = 'pogoplan-v4';  // 2026-09-07 v2.17.0 서비스명 POGO PLAN — 캐시 접두사도 교체(옛 pogonote-* 는 activate 가 지운다) · v2.16.1 스프라이트 재시도
 self.addEventListener('install', () => self.skipWaiting());
 self.addEventListener('activate', (e) => e.waitUntil(
   caches.keys().then((ks) => Promise.all(ks.filter((k) => k !== CACHE).map((k) => caches.delete(k)))).then(() => self.clients.claim())));

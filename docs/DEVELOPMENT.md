@@ -1,4 +1,4 @@
-# 개발 문서 — POGO SEARCH
+# 개발 문서 — POGO PLAN
 
 무엇을 하는 서비스인지는 [README](../README.md), 배포·운영 방법은 [운영 문서](OPERATIONS.md)에 있습니다.
 이 문서는 **어떻게 만들어져 있고, 왜 그렇게 만들었는가**를 기록합니다.
@@ -218,6 +218,76 @@
 
 **남긴 것** — 육성 판단 카드·목표 계산기·검색식 생성기·보유 기반 파티·일정 연결은 QA 트래커 [플래너] 백로그(QA-55~59). 프로토타입 원본(`labs/planner-prototype/`, `docs/product_plan.md`)은 zip 이 저장소에 없어 아직 커밋하지 못했다.
 
+### 2.18 디자인 체계는 한 벌 — 오버레이로 덮지 않는다 (v2.22.0)
+
+**문제.** v2.19.0–v2.21.0 이 서비스 홈과 고정 앱 셸을 얹으면서, 새 파일 `components/app-shell.css` 가
+기존 체계를 *덮어쓰는 방식*으로 붙었다. 그 파일 안에서 `:root` 토큰(`--muted`·`--line`·`--surface`·`--hover`)과
+`body` 글꼴·기본 글자 크기(15px→16px)·컨테이너 폭(760→1040px)·모서리 반경을 다시 정의했다.
+결과는 "두 사람이 만든 화면": `tokens.css` 의 무채색 팔레트가 푸른 회색으로 덮여 같은 카드가 화면마다
+회색/파랑으로 갈렸고, Montserrat 이 빠져 숫자·영문이 다른 글꼴로 나왔고, `min-height: 48px` 가 칩·세그먼트까지
+부풀렸다. 홈 타일은 `app-shell.css`·`home.css` 두 곳에 서로 다른 값으로 정의돼 있었다.
+
+**규칙.** 화면이 늘어도 디자인 체계의 **원본은 한 곳**이다.
+
+| 무엇 | 원본 파일 | 비고 |
+|---|---|---|
+| 색 토큰 · 타입/폼 색 · `--accent` · `--tap` | `styles/tokens.css` | 다른 파일에서 `:root` 를 다시 열지 않는다 |
+| 글꼴 · 기본 글자 크기 · 리셋 | `styles/base.css` | Montserrat(영문·숫자) + Pretendard(한글) |
+| 컨테이너 폭 · 헤더 · 푸터 · 아코디언 | `styles/layout.css` | `.wrap` 760px |
+| 컴포넌트 모양 | 그 컴포넌트의 CSS | 아이콘 버튼 → `drawer.css`, 팝업 → `modal.css`, 검색 → `search.css` |
+
+기존 컴포넌트 모양을 바꿔야 하면 **덮는 파일을 새로 만들지 말고 그 컴포넌트 CSS 를 고친다.**
+`app-shell.css` 에는 v2.21.0 이 새로 만든 것(고정 상단 바 · 건너뛰기 링크 · 필터 아코디언)과
+화면 전체 접근성 기본값만 남긴다.
+
+**색 원칙.** 색은 *의미*에만 쓴다 — 타입(`--t-*`) · 폼(`--c-max`·`--c-mega`·`--c-shadow`) ·
+활용 5곳 이상(`.tag.use.many`) · 즐겨찾기(`.fav-chip`) · 위험(`.acct-danger`). 나머지 강조는 무채색 +
+굵기/테두리로 한다(`.tab[aria-selected]` · `.chip[aria-pressed]` · `.tool-btn[aria-pressed]`).
+`--accent`(v2.22.0 추가)는 예외적으로 "지금 여기" 한 곳에만 쓴다(드로어 현재 항목).
+
+**접근성과 크기는 분리한다.** 손가락 대상은 `--tap`(44px)로 키우되 글자 크기 체계는 건드리지 않는다.
+v2.21.0 은 둘을 묶어 `min-height: 48px` 를 전 버튼에 걸었고, 그래서 12–13px 짜리 칩·세그먼트까지 커졌다.
+
+**아이콘 언어.** 이모지 한 벌을 앱 전체가 공유한다 — 🔍 검색 · 👤 계정 · ☰ 메뉴 · ← 뒤로 · ✕ 닫기 ·
+📕 도감 · 🧭 상성 · ★ 즐겨찾기 · 🌱 플래너 · 🎒 내 포켓몬 · 📅 일정 · ⚔️ 보스 · 🧮 솔플 · 🃏 덱 ·
+🏆 활용처 · 🎉 패치노트 · 🔒 방침 · 📜 약관 · 🍪 설정 · 🔑 승인.
+탭 라벨은 텍스트, 아이콘은 탭 줄 오른쪽 바로가기와 버튼에만.
+
+---
+
+### 2.19 클래스 이름 규칙 — BEM, 최대 3단어 (v2.24.0)
+
+**문제.** 클래스 이름이 세 시기의 규칙을 섞어 쓰고 있었다. 축약(`d-head` · `psearch` · `acct-danger` ·
+`lbl` · `crit`), 의미 없는 접두사(`g-S` · `s-0` · `x2` · `r2`), 그리고 같은 단어가 두 층을 동시에
+가리키는 경우(`overlay` = 바깥 `<dialog>`, `modal` = 안쪽 카드)까지. 이름만 봐서는 어느 컴포넌트에
+붙는지, 블록인지 요소인지 알 수 없었다.
+
+**규칙.** `block-name__element--modifier`.
+
+| 자리 | 뜻 | 예 |
+| --- | --- | --- |
+| `block` | 혼자 설 수 있는 덩어리 | `home` · `search` · `drawer` · `plan` |
+| `__element` | 그 블록 안에서만 뜻이 있는 부분 | `home__tile` · `search__head` · `modal__close` |
+| `--modifier` | 같은 블록·요소의 변형 | `tabs__item--quick` · `filter-box--search` · `plan__status--a` |
+
+- 단어 구분은 `-` 하나만. `_`(단독)·camelCase 를 쓰지 않는다
+- 이름 전체는 **최대 3단어** (`badge-main__prev` 가 상한). 넘으면 블록을 새로 판다
+- 여러 블록이 함께 쓰는 상태는 요소가 아니라 **`is-*` 유틸리티** — `is-on` · `is-high` ·
+  `is-unreleased` · `is-weak2` · `is-resist2` · `is-up` · `is-down`. 한 블록에만 붙는 상태는 `--modifier`
+- **코드가 문자열로 만드는 클래스도 같은 규칙**을 따른다. 대소문자·숫자를 그대로 이어 붙이면
+  CSS 와 어긋난다 (`` `g-${letter}` `` 는 `g-S`, CSS 는 `.g-s` 였다). 지금은 매핑 배열을 거친다 —
+  `grade-mark--s` · `plan__status--a`
+
+**바꾸지 않은 것.** 전역 이름 · `state` 키 · **DOM id** · localStorage 키 · GA 이벤트명 · Firestore
+필드명은 불변 규칙이라 그대로다. `#tabs` · `#page` · `#search-dialog` 같은 id 선택자는 리팩토링
+전후가 같다.
+
+**확인 방법.** 순수 이름 변경은 "테스트가 통과한다"로는 부족하다. 22개 화면 × 두 폭(390 · 1440)에서
+`getComputedStyle` 지문을 뜨되 **클래스 이름을 지문에서 뺐다** — 태그·깊이·44개 계산 속성만 남긴다.
+리팩토링 전후 지문이 같으면 이름만 바뀌고 렌더는 그대로라는 뜻이다.
+
+---
+
 ### 2.16 배틀 유형별 참전 풀 · 리전 폼 자격 · 탱커 축 (v2.13.0)
 
 **참전 풀(QA-49)** — "원시 가이오가 보스에 다이맥스 추천이 나온다"는 보고. 조사해 보니 D-MAX 티어표와 보스 딜러 목록(`DMAX_DATA`)은 이미 `max_released` 기준으로 걸러져 있었고, 실제 누수 지점은 **상세 팝업의 "보스로 나오면?"** 이었다. 이 섹션은 보스 종류와 무관하게 대표 타입의 맥스 배틀 딜러만 보여 줬다. 맥스 배틀에는 다이맥스·거다이맥스 가능 포켓몬만, 일반·전설·메가 레이드에는 전체가 들어간다는 자격 규칙을 여기서 갈랐다: 보스 이름이 다이맥스/거다이맥스로 시작하면 맥스 딜러, 아니면 상성표에서 배율 1.6 이상인 공격 타입(최대 2개)의 레이드 성능표 상위 5(종 중복 제거). 계획했던 `maxEligible` 플래그 주입은 필요 없었다 — 데이터가 아니라 화면 조립 경로의 문제였다.
@@ -389,6 +459,7 @@ CP = `floor((공격+IV) × √(방어+IV) × √(체력+IV) × CPM² / 10)`, 최
 - `scripts/app.js` — 전역 `state` + `render()`. 탭 전환 = state 변경 후 전체 리렌더.
 - `components/` — row · list · modal · detail · schedule · search · drawer · pages(해시 라우팅 `#/dex`·`#/schedule`·`#/release`) · auth(로그인·즐겨찾기) · trainers · release · track(GA) · totop.
 - `views/` — 탭별 화면 (max · pve · tier · pvp) + 탭 안 도구(ifsolo: 솔플 계산기·PvP 덱, 각각 PvE·PvP 탭의 오른쪽 버튼이 펼친다) + usage(검색 패널의 활용처 순위). v2.16.0 부터 탭은 D-MAX·PvE·PvP 셋.
+- `components/terms.js` · `privacy.js` · `consent.js` — 법·정책 화면 (v2.18.0): 이용약관(`#/terms`)·동의 팝업·IP 고지문(`IP_NOTICE` 한 곳) / 개인정보처리방침(`#/privacy`) / 통계 동의 배너·설정 팝업·캐시 비우기. 저장소 루트의 LICENSE·NOTICE·CONTRIBUTING·SECURITY 와 짝을 이룬다.
 - `planner/` — 🌱 플래너 모드 (v2.15.0): `shell.js`(모드 전환·`#/plan/*` 라우트·플래너 탭 줄) · `home.js`(플래너 홈) · `collection.js`(내 포켓몬 CRUD·비교). 모드는 해시가 정하고 `app.js render()`가 `state.appMode === 'plan'`이면 `renderPlan()`으로 분기한다. 신규 전역·localStorage 키·GA 이벤트는 전부 `plan` 접두사.
 - 상세 팝업은 **여는 곳에 따라** 구성이 다르다: 도감에서 열면 능력치 육각형 포함, 순위표·검색에서는 기술 중심(`openDetail(p, isDex)`).
 - 새 CSS/JS 파일은 `backend/build.py`의 `STYLES` / `SCRIPTS` 목록에 등록해야 번들에 포함된다.
@@ -403,14 +474,17 @@ CP = `floor((공격+IV) × √(방어+IV) × √(체력+IV) × CPM² / 10)`, 최
 
 | 컬렉션 | 문서 ID | 내용 | 규칙 |
 |---|---|---|---|
-| `allowlist` | 이메일(소문자) | 승인된 사용자 | 관리자만 쓰기, 본인 문서 읽기 |
-| `requests` | 이메일(소문자) | 가입 요청 | 본인 생성·갱신, 관리자 열람·삭제 |
+| `allowlist` | 이메일(소문자) | 승인된 사용자 | 관리자 생성·갱신, 본인 문서 읽기·**삭제**(v2.18.0 계정 삭제) |
+| `requests` | 이메일(소문자) | 가입 요청 + 약관 동의 버전·시각(`consent`·`consentAt`, v2.18.0) | 본인 생성·갱신·**삭제**, 관리자 열람·삭제 |
 | `users` | Firebase uid | 즐겨찾기 `favs` · 역할 보정 `roles` · 🌱 내 포켓몬 `mons`(개체 배열, v2.15.0) | 본인 + 승인된 경우만 |
 | `trainers` | 이름 | 트레이너 코드 | 승인자 읽기, 관리자만 쓰기 |
 
 - 상태는 `anon` / `pending`(승인 대기) / `ok` 셋. 화면 요소는 상태에 따라 **숨기고**, 실제 차단은 규칙이 한다.
 - 관리자 판정은 `ADMIN_UID`(빌드 설정) ↔ `firestore.rules`의 `isAdmin()` 두 곳이 같은 uid일 때만 성립한다. 규칙은 **콘솔에서 다시 게시**해야 적용된다 — 코드만 배포하면 `permission-denied`.
 - 즐겨찾기는 종 단위(도감번호)로 저장해 폼이 달라도 한 마리로 센다.
+- **계정 삭제 셀프서비스(v2.18.0)** — `auth.js deleteAccount()`: `users/{uid}` → `allowlist/{email}` → `requests/{email}` → `user.delete()` 순. 인증 계정을 먼저 지우면 규칙이 문서 삭제를 막으므로 순서가 고정이다. `auth/requires-recent-login`이면 Google 재인증 뒤 재시도. 관리자 uid는 지우지 않는다.
+- **첫 로그인 동의(v2.18.0)** — `terms.js openTermsConsent()`: 약관·방침 동의 + 만 14세 체크가 모두 켜져야 로그인. 동의 버전은 `localStorage pogo_terms_ok`와 `requests` 문서에 남고, `TERMS_VER`를 올리면 다시 묻는다.
+- **통계 동의(v2.18.0)** — `consent.js`: build.py의 GA 스니펫은 `window.GA_PENDING_ID`만 남기고, `localStorage pogo_consent === 'granted'`일 때 `loadAnalytics()`가 gtag를 붙인다. 거부하면 `window.gtag`가 없어 `track()`이 전부 무시된다.
 - 내 포켓몬(`mons`)은 개체 단위 — `{ id, sprite(폼 id), shadow, level, ivs, fast, charged, status, memo, at }`. CP는 저장하지 않고 화면에서 계산한다. 배열 전체를 `set({ merge: true })`로 덮어쓴다(원소 수정이 있어 arrayUnion 부적합). 문서 1MB 한도 안에서 300마리 상한.
 
 설정 절차와 운영(승인·해제·코드 등록)은 [운영 문서](OPERATIONS.md)에 있습니다.

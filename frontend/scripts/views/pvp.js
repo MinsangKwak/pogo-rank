@@ -25,7 +25,7 @@ function renderPvp() {
       render();
     });
   // 2026-09-07 v2.16.0 오른쪽 도구 버튼: 🃏 PvP 덱 짜기 (옛 IF 탭). 리그는 위 세그먼트를 그대로 쓴다
-  $controls.append(el('div', { class: 'ctrl-row' }, leagueSeg, toolButton('🃏 덱 짜기', state.pvpTool === 'deck', () => {
+  $controls.append(el('div', { class: 'controls__row' }, leagueSeg, toolButton('🃏 덱 짜기', state.pvpTool === 'deck', () => {
     state.pvpTool = state.pvpTool === 'deck' ? null : 'deck';
     track('tool_pvpdeck', { on: state.pvpTool ? 1 : 0 });
     render();
@@ -45,11 +45,11 @@ function renderPvp() {
   const items = state.pvpType === 'all' ? leagueRanking : leagueRanking.filter((pokemon) => pokemon.types.includes(state.pvpType));  // 2026-09-03 v2.2.0 보유만 필터 제거
   const title = state.pvpType === 'all' ? `${league.name}리그 전체 순위` : `${league.name}리그 · ${TYPE_KO[state.pvpType]} 타입`;
   $content.append(
-    el('div', { class: 'list-head' }, el('h2', {}, title), el('span', { class: 'meta' }, `CP ${league.cp} · 상위 ${leagueRanking.length} 기준`)),
+    el('div', { class: 'row-head' }, el('h2', {}, title), el('span', { class: 'meta' }, `CP ${league.cp} · 상위 ${leagueRanking.length} 기준`)),
     // 속성으로 걸렀을 때만 보조줄에 원래 전체 순위를 덧붙인다 (앞 번호는 속성 내 순위이므로)
     list(`pvp-${state.league}-${state.pvpType}`, items, (pokemon, index) => row(
-      pokemon, String(index + 1), el('span', { class: 'score' }, pokemon.score.toFixed(1)),
-      state.pvpType === 'all' ? null : el('span', { class: 'sub' }, `전체 ${pokemon.rank}위`),
+      pokemon, String(index + 1), el('span', { class: 'row__score' }, pokemon.score.toFixed(1)),
+      state.pvpType === 'all' ? null : el('span', { class: 'row__sub' }, `전체 ${pokemon.rank}위`),
     )),
   );
   $note.textContent = 'PvPoke 시뮬레이션 점수(100점 만점). 속성 필터 안의 순위는 해당 속성 내 순위이며 전체 순위를 함께 표시합니다.';

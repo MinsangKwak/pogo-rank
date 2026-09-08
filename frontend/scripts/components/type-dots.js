@@ -14,7 +14,7 @@
 // 점 색은 CSS 변수 --t-<속성>을 --c에 넘겨 스타일 쪽에서 칠하게 하고,
 // 한글 속성명은 title로 달아 마우스를 올리면 보이게 한다
 function typeDots(types) {
-  return el('span', { class: 'types' }, ...types.map((typeName) => el('i', {
+  return el('span', { class: 'row__types' }, ...types.map((typeName) => el('i', {
     style: `--c: var(--t-${typeName})`,
     title: TYPE_KO[typeName],
   })));

@@ -18,7 +18,7 @@
 //
 // 흉내 내는 범위 — auth.js·trainers.js가 실제로 부르는 것만
 //   firebase.apps · initializeApp · auth() { onAuthStateChanged, getRedirectResult, signInWithPopup,
-//   signInWithRedirect, signOut } · auth.GoogleAuthProvider · firestore() { collection().doc().get/set/delete,
+//   signInWithRedirect, signOut } · user.delete/reauthenticateWithPopup (v2.18.0) · auth.GoogleAuthProvider · firestore() { collection().doc().get/set/delete,
 //   collection().get() } · firestore.FieldValue { serverTimestamp, arrayUnion, arrayRemove }
 //   데이터는 localStorage(pogo_mock_db)에 남아 새로 고쳐도 유지된다. 지우려면 ?mock=reset 으로 한 번 열면 된다.
 // ─────────────────────────────────────────────────────────────────────────────
@@ -115,6 +115,11 @@
     async signInWithRedirect() { return this.signInWithPopup(); },
     async signOut() { currentUser = null; try { localStorage.setItem(OUT_KEY, '1'); } catch {} notify(); },
   };
+  // 2026-09-07 v2.18.0 계정 삭제 셀프서비스 (auth.js deleteAccount): 삭제 = 로그아웃과 같게, 재인증은 항상 성공
+  Object.assign(mockUser, {
+    async delete() { await auth.signOut(); },
+    async reauthenticateWithPopup() { return { user: mockUser }; },
+  });
   const authFn = () => auth;
   authFn.GoogleAuthProvider = class { setCustomParameters() {} };
 

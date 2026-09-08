@@ -141,7 +141,7 @@ function renderSearchTypeChips() {
   const $chips = document.getElementById('psearch-types');
   if (!$chips) return;
   $chips.replaceChildren(...Object.keys(TYPE_KO).map((typeKey) => el('button', {
-    class: 'chip', 'aria-pressed': String(SEARCH_TYPES.includes(typeKey)),
+    class: 'chips__item', 'aria-pressed': String(SEARCH_TYPES.includes(typeKey)),
     onclick: () => {
       const index = SEARCH_TYPES.indexOf(typeKey);
       if (index >= 0) SEARCH_TYPES.splice(index, 1);
@@ -159,7 +159,7 @@ function renderSearchResults() {
   const { types: typedTypes, query } = parseSearchQuery($input.value);
   const types = activeSearchTypes(typedTypes);
   if (!query && !types.length) {
-    $sugg.append(el('p', { class: 'sugg-hint' }, '예: "메타그로스" · 타입 칩 [물][풀] · 칩 [물] + "메가"'));  // v2.12.1 빈 상태 안내
+    $sugg.append(el('p', { class: 'sugg__hint' }, '예: "메타그로스" · 타입 칩 [물][풀] · 칩 [물] + "메가"'));  // v2.12.1 빈 상태 안내
     // 2026-09-07 v2.16.0 활용처 탭을 검색에 녹임 — 비어 있을 때 "어디서나 잘하는 포켓몬" 순위를 보여 준다 (views/usage.js)
     if (typeof usageTopNodes === 'function') $sugg.append(...usageTopNodes());
     return;
@@ -171,57 +171,63 @@ function renderSearchResults() {
     const label = types.map((typeKey) => TYPE_KO[typeKey]).join('·');
     const key = types.join(',');
     if (key !== _searchTrackKey) { _searchTrackKey = key; track('search_type', { t: key }); }
-    $sugg.append(el('div', { class: 'sugg-head' },
+    $sugg.append(el('div', { class: 'sugg__head' },
       el('b', {}, `${label} 타입 ${candidates.length}마리`),
       query ? el('span', {}, `중 "${query}" ${hits.length}마리`) : (hits.length < candidates.length ? el('span', {}, `중 앞 ${hits.length}마리`) : ''),
       // v2.12.1 칩을 다 풀어 주는 지우기 — 글자로 친 타입은 입력창을 지우면 된다
-      el('button', { class: 'row-why-more', onclick: () => { SEARCH_TYPES.length = 0; renderSearchTypeChips(); renderSearchResults(); } }, '타입 지우기')));
+      el('button', { class: 'row__why-more', onclick: () => { SEARCH_TYPES.length = 0; renderSearchTypeChips(); renderSearchResults(); } }, '타입 지우기')));
   } else {
-    $sugg.append(el('div', { class: 'sugg-head' }, el('b', {}, `"${query}" ${hits.length}마리`)));
+    $sugg.append(el('div', { class: 'sugg__head' }, el('b', {}, `"${query}" ${hits.length}마리`)));
   }
   for (const pokemon of hits) {
     // 후보를 고르면 검색창과 목록을 함께 비우고 상세 팝업을 띄운다
     // (팝업 뒤에 후보 목록이 남아 있으면 닫았을 때 지저분해 보인다)
     $sugg.append(el('button', {
-      class: `sugg-item${pokemon.unrel ? ' unrel' : ''}`,
+      class: `sugg__item${pokemon.unrel ? ' is-unreleased' : ''}`,
       onclick: () => {
         track('search_pick', { mon: pokemon.name, t: types.join(',') });  // 2026-09-06 v2.9.0 GA4: 검색으로 고른 포켓몬 · v2.12.0 t: 타입 필터
-        $input.value = '';
-        $sugg.textContent = '';
         openDetail(pokemon, false, 'search');
       },
     }, sprite(pokemon.sprite), el('span', {}, nameNode(pokemon.name)),  // 2026-09-06 v2.10.0 폼 라벨 뱃지
-      pokemon.unrel ? el('span', { class: 'tag dex-unrel' }, '미구현') : '',
+      pokemon.unrel ? el('span', { class: 'tag dex__unrel' }, '미구현') : '',
       typeof usageBadge === 'function' ? usageBadge(pokemon.name) : '',  // 2026-09-07 v2.16.0 활용 N곳 (옛 활용처 탭의 요약)
-      (() => { const rank = searchRankText(pokemon.sprite); return rank ? el('span', { class: 'sugg-rank' }, rank) : ''; })()));
+      (() => { const rank = searchRankText(pokemon.sprite); return rank ? el('span', { class: 'sugg__rank' }, rank) : ''; })()));
   }
   if (!hits.length) {
-    $sugg.append(el('span', { class: 'sugg-none' }, types.length ? '이 타입 조합에 맞는 포켓몬이 없어요' : '검색 결과가 없어요'));
+    $sugg.append(el('span', { class: 'sugg__none' }, types.length ? '이 타입 조합에 맞는 포켓몬이 없어요' : '검색 결과가 없어요'));
     if (query) track('search_none', { q: query.slice(0, 20), t: types.join(',') });  // 2026-09-06 v2.9.0 GA4: 못 찾은 검색어 — 별칭·표기 보강 근거
   }
   // 타입만 골라 잘린 목록은 상성 검색 페이지(전체 목록 + 배율표)로 이어 준다
   if (types.length && hits.length < candidates.length) {
-    $sugg.append(el('button', { class: 'sugg-more', onclick: () => openTypeSearch(types, null, 'search') }, `${label(types)} 타입 ${candidates.length}마리 전부 보기 · 상성 검색 ▸`));
+    $sugg.append(el('button', { class: 'sugg__more', onclick: () => openTypeSearch(types, null, 'search') }, `${label(types)} 타입 ${candidates.length}마리 전부 보기 · 상성 검색 ▸`));
   }
 }
 function label(types) { return types.map((typeKey) => TYPE_KO[typeKey]).join('·'); }
 
 // 검색 패널 열기/닫기 (헤더 🔍 · 패널 ✕). 닫을 때 입력과 칩을 비워 다음에 깨끗하게 연다
 function toggleSearchPanel(open) {
-  const $panel = document.querySelector('.psearch');
-  const $toggle = document.getElementById('search-toggle');
-  const willOpen = open ?? $panel.hidden;
-  $panel.hidden = !willOpen;
-  $toggle?.setAttribute('aria-pressed', String(willOpen));
-  if (willOpen) {
-    renderSearchResults();  // 빈 상태 안내
-    document.getElementById('psearch').focus();
-  } else {
-    document.getElementById('psearch').value = '';
-    SEARCH_TYPES.length = 0;
-    renderSearchTypeChips();
-    document.getElementById('psearch-sugg').textContent = '';
-  }
+  const dialog = document.getElementById('search-dialog');
+  if (!dialog) return;
+  const willOpen = open ?? !dialog.open;
+  if (!willOpen) { closeSearchDialog(); return; }
+  closeDrawer({ silent: true });
+  closeModal({ silent: true });
+  document.querySelector('.search').hidden = false;
+  if (!dialog.open) dialog.showModal();
+  document.body.style.overflow = 'hidden';
+  document.getElementById('search-toggle').setAttribute('aria-expanded', 'true');
+  renderSearchResults();
+  document.getElementById('psearch').focus();
+  pushOverlayEntry();
+}
+
+function closeSearchDialog(silent = false) {
+  const dialog = document.getElementById('search-dialog');
+  if (!dialog?.open) return;
+  dialog.close();
+  document.getElementById('search-toggle').setAttribute('aria-expanded', 'false');
+  if (!overlayVisible()) document.body.style.overflow = '';
+  if (!silent) releaseOverlayEntry(false);
 }
 
 // 헤더 검색창(#psearch)에 입력 → 후보 목록(#psearch-sugg) 갱신 동작을 붙인다
