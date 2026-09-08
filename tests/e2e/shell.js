@@ -43,8 +43,8 @@ const ok = (n, c, x = '') => { console.log((c ? 'PASS' : 'FAIL') + ' ' + n + ' '
     //   `overflow-x: auto` 만 적으면 CSS 규칙상 세로도 auto 가 되어 스크롤 컨테이너가 된다.
     //   거기에 1px 이라도 세로 넘침이 있으면 커서가 그 위에 있는 동안 휠이 페이지로 가지 않는다
     //   (v2.26.0 탭 줄에서 실제로 났던 버그 — PC 에서 탭 줄이 화면 한가운데 와 더 잘 걸렸다).
-    const screens = ['', '#/rank/max', '#/rank/pve', '#/rank/pvp', '#/dex', '#/types', '#/favs',
-      '#/plan', '#/plan/collection', '#/schedule', '#/raids', '#/eggs', '#/release', '#/privacy', '#/terms'];
+    const screens = ['', '#/dmax', '#/pve', '#/pvp', '#/dex', '#/types', '#/favs',
+      '#/planner', '#/planner/collection', '#/schedule', '#/raids', '#/eggs', '#/release', '#/privacy', '#/terms'];
     const stuck = [];
     const traps = [];
     for (const hash of screens) {
@@ -82,7 +82,7 @@ const ok = (n, c, x = '') => { console.log((c ? 'PASS' : 'FAIL') + ' ' + n + ' '
     const leaks = [];
     for (const [openName, open] of opens) {
       for (const [closeName, close] of closes) {
-        await go('#/rank/pve');
+        await go('#/pve');
         await open().catch(() => {});
         await page.waitForTimeout(400);
         await close().catch(() => {});
@@ -100,20 +100,20 @@ const ok = (n, c, x = '') => { console.log((c ? 'PASS' : 'FAIL') + ' ' + n + ' '
     ok(`${label} 잠금이 남아도 이동하면 풀린다`, (await page.evaluate(() => document.body.style.overflow)) === '');
 
     // ── 헤더 배치
-    await go('#/rank/pve');
+    await go('#/pve');
     const bar = await page.locator('#app-title').textContent();
     const headVisible = await page.locator('#page-head').isVisible();
-    if (wide) {
-      ok('PC 상단 바는 로고', bar === 'POGO PLAN', bar);
-      ok('PC 화면 헤더 보임', headVisible && (await page.locator('#page-head h2').textContent()) === '레이드 · PvE');
-      const headTop = (await page.locator('#page-head').boundingBox()).y;
-      const contentTop = (await page.locator('#content').boundingBox()).y;
-      ok('PC 헤더가 컨텐츠보다 위', headTop < contentTop, `${Math.round(headTop)} < ${Math.round(contentTop)}`);
-      ok('PC 뒤로가기 버튼 유지', await page.locator('.app-bar__head .icon-btn').isVisible());
-    } else {
-      ok('모바일 상단 바는 화면 이름 (기존 유지)', bar === '레이드 · PvE', bar);
-      ok('모바일 화면 헤더 숨김', !headVisible);
-    }
+    // v2.30.0 좁은 화면도 같은 규칙 — 상단 바는 로고, 화면 이름은 본문 헤더
+    ok(`${label} 상단 바는 로고`, bar === 'POGO PLAN', bar);
+    ok(`${label} 화면 헤더 보임`, headVisible && (await page.locator('#page-head h2').textContent()) === '레이드 · PvE');
+    const headTop = (await page.locator('#page-head').boundingBox()).y;
+    const contentTop = (await page.locator('#content').boundingBox()).y;
+    ok(`${label} 헤더가 컨텐츠보다 위`, headTop < contentTop, `${Math.round(headTop)} < ${Math.round(contentTop)}`);
+    ok(`${label} 뒤로가기 버튼 유지`, await page.locator('.app-bar__head .icon-btn').isVisible());
+    // 로고를 누르면 서비스 홈
+    await page.click('#app-logo');
+    await page.waitForTimeout(500);
+    ok(`${label} 로고 → 서비스 홈`, (await page.evaluate(() => location.hash)) === '' && (await page.evaluate(() => document.body.dataset.route)) === 'home');
 
     // ── 드로어 중복
     await page.click('#menu-toggle');
@@ -149,7 +149,7 @@ const ok = (n, c, x = '') => { console.log((c ? 'PASS' : 'FAIL') + ' ' + n + ' '
     ok(`${label} 카드 그림이 크다 (리스트보다)`, spriteSize >= 56, `${spriteSize}px`);
 
     // ── v2.28.0 PC 카드 뷰 — 랭킹 목록도 카드인가 (모바일은 줄 그대로여야 한다)
-    for (const hash of ['#/rank/max', '#/rank/pve', '#/rank/pvp']) {
+    for (const hash of ['#/dmax', '#/pve', '#/pvp']) {
       await go(hash);
       const shape = await page.locator('#content .row').first().evaluate((n) => {
         const s = getComputedStyle(n);

@@ -131,7 +131,7 @@ function evoNode(dex, isDex, curSprite) {
   }
   // 아래 안내 문구는 실제로 있는 것만 ' · ' 로 이어 붙인다
   const foot = [hasFamily && '진화형을 누르면 그 포켓몬의 정보를 볼 수 있습니다', megas?.length && '⚡ 메가 진화 가능 — 누르면 메가 진화 스탯을 볼 수 있습니다'].filter(Boolean);
-  wrap.append(el('p', { class: 'detail__foot' }, foot.join(' · ')));
+  wrap.append(footNote(foot.join(' · ')));
   return wrap;
 }
 
@@ -144,7 +144,7 @@ function movesNode(form) {
     el('div', { class: 'move-list__row' }, el('em', {}, '차지'), el('div', { class: 'move-list' }, ...form.charged.map(moveChip))),
     // 레거시 기술이 하나라도 있을 때만 각주를 붙인다
     (form.fast.some((move) => move[1]) || form.charged.some((move) => move[1]))
-      ? el('p', { class: 'detail__foot' }, '* 레거시 기술 — 대단한 기술머신 또는 이벤트로만 습득') : '',
+      ? footNote('* 레거시 기술 — 대단한 기술머신 또는 이벤트로만 습득') : '',
   );
 }
 
@@ -231,7 +231,7 @@ function cpNode(form, spriteId) {
     el('div', { class: 'cp__ctx' },
       el('em', {}, '강화 상한'),
       el('div', { class: 'tchips' }, chip('만렙 Lv50', cpm.l50))),
-    el('p', { class: 'detail__foot' }, `굵은 숫자가 개체값 100%(15/15/15) CP입니다. 잡은 개체가 이 값이면 100%. ${maxKind ? '맥스 배틀은 날씨부스트가 없어 항상 Lv20이라 레이드 평시와 같은 CP가 나옵니다. ' : ''}야생은 레벨 하한이 없어 최저 CP를 적지 않습니다.`));
+    footNote(`굵은 숫자가 개체값 100%(15/15/15) CP입니다. 잡은 개체가 이 값이면 100%. ${maxKind ? '맥스 배틀은 날씨부스트가 없어 항상 Lv20이라 레이드 평시와 같은 CP가 나옵니다. ' : ''}야생은 레벨 하한이 없어 최저 CP를 적지 않습니다.`));
 }
 
 // 2026-09-04 메가X/메가Y가 둘 다 있는 종(현재 뮤츠·리자몽 등)만 — 좌우 비교 + 차이 자동 요약
@@ -265,7 +265,7 @@ function megaCompareNode(dex) {
     el('div', { class: 'cmp__row' }, el('em', {}, '타입'), typeChips(formX.types), typeChips(formY.types)),
     row('공격', formX.atk, formY.atk), row('방어', formX.def, formY.def), row('체력', formX.hp, formY.hp),
     cpm ? row('CP 만렙', cpOf(formX, cpm.l50), cpOf(formY, cpm.l50), (cp) => cp.toLocaleString()) : '',
-    diffs.length ? el('p', { class: 'detail__foot' }, diffs.join(' · ')) : '');
+    diffs.length ? footNote(diffs.join(' · ')) : '');
 }
 
 // 활용처를 PvP · 레이드 · 맥스 그룹으로 나눠 순위 칩으로 표시
@@ -311,7 +311,7 @@ function usageNode(name) {
     wrap.append(el('div', { class: 'move-list__row' }, el('em', {}, GROUP_KO[groupKey]),
       el('div', { class: 'tchips' }, ...groups[groupKey].map(chip))));
   }
-  wrap.append(el('p', { class: 'detail__foot' }, `각 순위표 상위 30위 기준 · 3위 안은 강조 표시${groups.max.length ? ' · D = 다이맥스, G = 거다이맥스' : ''}`));
+  wrap.append(footNote(`각 순위표 상위 30위 기준 · 3위 안은 강조 표시${groups.max.length ? ' · D = 다이맥스, G = 거다이맥스' : ''}`));
   return wrap;
 }
 
@@ -370,7 +370,7 @@ function counterNode(types, name) {
     return {
       title: `${name}가 보스로 나오면? (맥스 배틀 — 다이맥스·거다이맥스만 참전 가능)`,
       node: el('div', {}, counterRecsNode(recs),
-        el('p', { class: 'detail__foot' }, `${TYPE_KO[types[0]]} 속성 맥스 배틀 보스 기준 · 메가·원시·섀도우는 맥스 배틀에 참전할 수 없어 제외`)),
+        footNote(`${TYPE_KO[types[0]]} 속성 맥스 배틀 보스 기준 · 메가·원시·섀도우는 맥스 배틀에 참전할 수 없어 제외`)),
     };
   }
   const attackTypes = raidCounterTypes(types);
@@ -381,7 +381,7 @@ function counterNode(types, name) {
   return {
     title: `${name}가 보스로 나오면? (레이드 — ${typeLabel} 딜러 추천)`,
     node: el('div', {}, counterRecsNode(recs),
-      el('p', { class: 'detail__foot' }, `일반·전설·메가 레이드는 전체 포켓몬 참전 · ${typeLabel} 타입 레이드 성능표 상위 (종 중복 제거)`)),
+      footNote(`일반·전설·메가 레이드는 전체 포켓몬 참전 · ${typeLabel} 타입 레이드 성능표 상위 (종 중복 제거)`)),
   };
 }
 
@@ -447,7 +447,7 @@ function detailCpCalc(form) {
     sliderRow('레벨', 'level', 1, 50, 0.5), sliderRow('공격 IV', 'attackIv', 0, 15, 1),
     sliderRow('방어 IV', 'defenseIv', 0, 15, 1), sliderRow('체력 IV', 'hpIv', 0, 15, 1),
     $result,
-    el('p', { class: 'detail__foot' }, '내 개체의 레벨·개체값을 맞추면 지금 CP와 만렙까지의 여지가 보입니다'));
+    footNote('내 개체의 레벨·개체값을 맞추면 지금 CP와 만렙까지의 여지가 보입니다'));
 }
 
 
@@ -601,7 +601,7 @@ function openDetail(pokemon, isDex = false, from = null) {
         el('div', { class: 'changes__list' },
           bucket('▲', moveChange.up, 'is-up'), bucket('▼', moveChange.down, 'is-down'),
           bucket('·', moveChange.energy, ''), bucket('＋', moveChange.new, 'is-up')),
-        el('p', { class: 'detail__foot' }, '위력 수치는 트레이너 배틀 기준 · 자세한 내용은 메뉴 → ⚔️ 기술 변경'))));
+        footNote('위력 수치는 트레이너 배틀 기준 · 자세한 내용은 메뉴 → ⚔️ 기술 변경'))));
   }
   if (types.length) body.append(detailSection('타입 상성', matchupCols(types, pokemon.sprite)));
   // 아래 섹션들은 해당 데이터가 있을 때만 붙는다 (활용처 미등재·메가 없음·진화 없음 등)
@@ -616,11 +616,23 @@ function openDetail(pokemon, isDex = false, from = null) {
   // 2026-09-07 v2.13.0 (QA-49) 보스 종류(맥스 배틀 / 레이드)에 따라 참전 가능한 풀과 제목이 달라진다
   const counter = types.length ? counterNode(types, pokemon.name) : null;
   if (counter) body.append(detailSection(counter.title, counter.node));
+  // 2026-09-08 v2.30.0 상세는 주소가 #/mon/<스프라이트 id> 하나뿐이라, DOM 만 보고는 "무엇의 상세인지" 를
+  // 알 수 없었다 (GA·히트맵에서 상세 화면이 전부 한 덩어리로 뭉쳤다). 식별자를 종·폼 단위까지 쪼개 붙인다
+  body.id = `detail-${pokemon.sprite}`;
+  Object.assign(body.dataset, {
+    route: 'mon',
+    sprite: String(pokemon.sprite),
+    dex: dex != null ? String(dex) : '',
+    mon: pokemon.name,
+    form: formKind || 'base',
+    view: isDex ? 'dex' : 'list',
+  });
   openModal(body);
   // 2026-09-06 v2.9.0 메인 화면에서 열었을 때만 주소를 #/mon/<id>로 바꿔 둔다 — 그대로 복사하면 공유 링크가 된다.
   // openModal이 먼저 closeModal을 불러 기존 #/mon 해시를 지우므로, 반드시 그 뒤에 넣는다.
   // 페이지(#/dex 등) 위에서 열 때는 그 페이지 주소를 지우지 않도록 건드리지 않는다. replaceState라 히스토리는 안 쌓인다
-  if (!location.hash || location.hash === '#' || /^#\/mon\//.test(location.hash)) {
-    try { history.replaceState(history.state, '', `#/mon/${pokemon.sprite}`); } catch {}
+  const onShell = routeIdOf() === 'home' || routeIdOf() === 'mon';
+  if (onShell) {
+    try { history.replaceState(history.state, '', routeHash('mon', String(pokemon.sprite))); } catch {}
   }
 }

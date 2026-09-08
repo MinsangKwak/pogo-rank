@@ -17,6 +17,7 @@ node tests/e2e/nav.js       # 탐색·디자인 (홈 타일 · 탭 줄 · 팝업
 node tests/e2e/legal.js     # 약관·동의 배너·개인정보처리방침·계정 삭제
 node tests/e2e/gameday.js   # ⚔️ 레이드 보스 · 🥚 알 부화 · 유사백 판정
 node tests/e2e/shell.js     # 앱 셸 — 스크롤·헤더 배치·드로어 중복·카드 보기·버튼 반응
+node tests/e2e/router.js   # 주소 체계 — 라우트 표·옛 주소 이전·측정용 식별자
 node tests/e2e/hardening.js # 보안(CSP·출처 검사)·공유 카드(OG)·검색 부속 파일
 ```
 

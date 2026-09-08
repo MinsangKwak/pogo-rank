@@ -460,7 +460,7 @@ async function openAdminPanel() {
     openAdminPanel();
   })), '아직 승인된 친구가 없어요.'));
   // 내 uid — firestore.rules와 build.py의 ADMIN_UID를 이메일 대신 uid로 바꿀 때 사용
-  const uidButton = el('button', { class: 'uchip' }, '내 uid 복사');
+  const uidButton = uchip('내 uid 복사');
   uidButton.addEventListener('click', async () => {
     try {
       await navigator.clipboard.writeText(AUTH.user.uid);
@@ -470,7 +470,7 @@ async function openAdminPanel() {
       uidButton.textContent = AUTH.user.uid;
     }
   });
-  body.append(el('p', { class: 'detail__foot' }, `내 uid: ${AUTH.user.uid} `, uidButton));
+  body.append(footNote(`내 uid: ${AUTH.user.uid} `, uidButton));
 }
 
 // 승인 대기·승인된 친구 목록의 한 줄. label에 따라 버튼 색만 달라진다('해제'는 위험 동작이라 danger)
@@ -480,5 +480,5 @@ function adminRow(email, data, label, onclick) {
     el('div', { class: 'admin__who' }, el('b', {}, data.name || '(이름 없음)'), el('span', { class: 'account__email' }, email),
       // 2026-09-06 v2.10.1 GA 사용자 탐색기의 User-ID 와 대조할 uid (아직 한 번도 로그인 안 한 옛 승인자는 비어 있다)
       data.uid ? el('span', { class: 'account__email', title: 'GA User-ID' }, `uid ${data.uid}`) : ''),
-    el('button', { class: `uchip admin__act${label === '해제' ? ' is-danger' : ''}`, onclick }, label));
+    uchip(label, onclick, { class: `admin__act${label === '해제' ? ' is-danger' : ''}` }));
 }

@@ -204,11 +204,11 @@ function renderDexPage() {
   const loginHint = authEnabled() && AUTH.status !== 'ok'
     ? el('p', { class: 'dex__hint' },
         AUTH.status === 'pending' ? '⏳ 승인 대기 중 — 승인되면 ★로 내 포켓몬을 도감에 채울 수 있어요.' : '로그인하면 ★를 눌러 내 포켓몬을 도감에 채울 수 있어요. ',
-        AUTH.status === 'anon' ? el('button', { class: 'uchip', onclick: signIn }, 'Google로 로그인') : '')
+        AUTH.status === 'anon' ? uchip('Google로 로그인', signIn) : '')
     : '';
   draw();
   return el('div', { class: 'page__body' }, loginHint, $input, genChips, $list, $more,
-    el('p', { class: 'detail__foot' }, '미구현 = 포켓몬 GO에 아직 출시되지 않은 종 (PvPoke 출시 목록 기준, 데이터는 게임마스터 선등록분). 메가·섀도우·리전 폼은 🔍 전역 검색으로 찾을 수 있어요.'));
+    footNote('미구현 = 포켓몬 GO에 아직 출시되지 않은 종 (PvPoke 출시 목록 기준, 데이터는 게임마스터 선등록분). 메가·섀도우·리전 폼은 🔍 전역 검색으로 찾을 수 있어요.'));
 }
 
 // 해시 라우팅 대상 페이지들. 여기 없는 id 는 유효한 페이지로 보지 않는다.
@@ -225,10 +225,11 @@ const PAGES = {
   eggs: { title: '🥚 알 부화', render: renderEggsPage },        // 2026-09-08 v2.25.0 거리별 부화 풀 (components/gameday.js)
 };
 
-// 현재 해시(#/dex, #/schedule?… 등)에서 페이지 id 만 뽑는다. PAGES 에 없으면 null = 메인 화면.
+// 현재 해시가 가리키는 전체 페이지 id. 페이지가 아니면 null = 메인 화면.
+// 2026-09-08 v2.30.0 주소 해석은 router.js 한 곳이 한다 — 여기서 정규식을 또 쓰지 않는다
 function currentPageId() {
-  const match = location.hash.match(/^#\/(\w+)/);
-  return match && PAGES[match[1]] ? match[1] : null;
+  const found = routeOf();
+  return found && found.route.kind === 'page' && PAGES[found.route.id] ? found.route.id : null;
 }
 function openPage(id, from = 'menu') {
   track('page_open', { page: id, from });  // 2026-09-03 GA4: 도감·일정표·패치노트 사용량 · 2026-09-06 from: menu/tabbar/card 진입 경로
@@ -265,12 +266,12 @@ function renderPage() {
     }
     return;
   }
-  const monMatch = location.hash.match(/^#\/mon\/(\d+)$/);
-  if (monMatch) {
+  const monRoute = routeOf();
+  if (monRoute?.route.kind === 'detail' && /^\d+$/.test(monRoute.rest)) {
     $page.hidden = true;
     $page.replaceChildren();
     $wrap.hidden = false;
-    if (typeof openDetailBySprite === 'function') openDetailBySprite(+monMatch[1], 'link');
+    if (typeof openDetailBySprite === 'function') openDetailBySprite(+monRoute.rest, 'link');
     return;
   }
   // 페이지가 아니면: 페이지 영역을 비우고 감춘 뒤 메인 화면 복귀
@@ -292,13 +293,21 @@ function renderPage() {
   NAV.open = false;
   $wrap.hidden = true;
   $page.hidden = false;
+  // 2026-09-08 v2.30.0 측정용 표식 — 어느 화면인지 DOM 만 보고 알 수 있게 (GA·히트맵)
+  $page.dataset.route = id;
+  const body = PAGES[id].render();
+  // 화면마다 본문에 id 를 단다. 이미 pageBody(id) 로 단 화면은 그대로 둔다
+  if (body && body.nodeType === 1 && !body.id) {
+    body.id = `page-${id}`;
+    body.dataset.route = id;
+  }
   $page.replaceChildren(
-    // 상단 바: ← 뒤로 + 페이지 제목
+    // 상단 바: ← 뒤로 + 페이지 제목 (넓은 화면에서는 .page-head 가 대신하므로 CSS 가 감춘다)
     el('div', { class: 'page__bar' },
-      el('button', { class: 'icon-btn', onclick: goBack, 'aria-label': '뒤로' }, '←'),
+      iconBtn('←', '뒤로', goBack),
       el('b', {}, PAGES[id].title),
-      el('button', { class: 'uchip', onclick: () => navigateHash(''), 'aria-label': '서비스 홈' }, '홈')),
-    PAGES[id].render(),
+      uchip('홈', () => navigateHash(''), { label: '서비스 홈' })),
+    body,
     // 2026-09-07 v2.18.0 IP 고지문은 전체 페이지에서도 상시 노출 (.wrap 의 푸터가 숨겨지므로)
     id === 'terms' || id === 'privacy' ? '' : ipNoticeNode());
   window.scrollTo(0, 0);
