@@ -60,7 +60,9 @@ function releaseOverlayEntry(silent) {
 
 // 페이지 해시로 이동. 오버레이 항목이 있으면 replace 로 덮어써 뒤로가기 한 번에 원래 화면으로 돌아가게 한다
 function navigateHash(hash) {
-  const target = hash.startsWith('#') ? hash : `#${hash}`;
+  let target = hash.startsWith('#') ? hash : `#${hash}`;
+  // 2026-09-08 v2.30.0 옛 주소(#/rank/pve · #/plan)로 부르는 곳이 남아 있어도 새 주소로 간다 (router.js)
+  if (typeof routeCanonical === 'function') target = routeCanonical(target) ?? target;
   if (NAV.open) {
     NAV.open = false;
     if (typeof closeDrawer === 'function') closeDrawer({ silent: true });

@@ -122,7 +122,7 @@ function partyCardNode(typeKey) {
     el('div', { class: 'boss__recs recs-wrap' },
       ...dealers.map((pokemon) => member(pokemon, '딜러', `맥스 피해 ${pokemon.dmg}`)),
       member(tank, '탱커', `EHP ${tank.ehp}${typeKey === 'overall' ? '' : ` · 받는 배율 ×${tank.mult}`}`)),
-    el('p', { class: 'detail__foot' }, '딜러는 맥스 피해 × √내구 순위, 탱커는 체력 × 방어 ÷ 받는 배율(EHP) 순위의 1위. 탱커 전체 순위는 [탱커] 세그먼트에서'));
+    footNote('딜러는 맥스 피해 × √내구 순위, 탱커는 체력 × 방어 ÷ 받는 배율(EHP) 순위의 1위. 탱커 전체 순위는 [탱커] 세그먼트에서'));
 }
 
 // 이번 주 보스 아코디언을 채운다.

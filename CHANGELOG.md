@@ -5,6 +5,32 @@
 버전 규칙: `vMAJOR.MINOR.PATCH` — 큰 기능은 MINOR(두 번째 자리), 상세 기능·버그 수정은 PATCH(세 번째 자리) 증가.
 항목 종류: `추가` 새 기능 · `변경` 기존 동작 변경 · `수정` 버그 수정 · `데이터` 수동 데이터 갱신
 
+## v2.30.0 — 2026-09-08
+
+주소가 곧 메뉴 구조가 되고, 그 주소를 읽는 곳이 한 곳이 된다.
+
+### 추가
+- **`frontend/scripts/router.js` — 라우트 표 한 곳** — 같은 주소를 네 곳이 각자 정규식으로 읽고 있었다(`pages.js` `/^#\/(\w+)/` · `planner/shell.js` `/^#\/plan…/` · `app.js` `'#/rank/'+id` · `app-shell.js` `APP_DESTINATIONS`). 주소 체계를 한 줄 바꾸면 네 곳을 같이 고쳐야 했고, 한 곳을 놓치면 "화면은 바뀌는데 제목만 안 맞는" 식으로 어긋났다. 이제 `ROUTES` 가 원본이고 나머지는 전부 이 표를 본다
+  - 메뉴(`ROUTE_NAV`)·페이지 판정(`currentPageId`)·플래너 판정(`planRouteFromHash`)·탭 이동(`routeHash`)·상세 딥링크가 모두 같은 표에서 나온다
+- **`frontend/scripts/components/ui.js` — 재사용 조각** — `uchip` · `iconBtn` · `pageBody` · `sectionTitle` · `footNote` · `hintNote` · `metaText`. 두 곳 이상에서 똑같이 쓰이고 모양이 클래스 하나로 끝나는 것만 올린다
+- `tests/e2e/router.js` — 주소·옛 주소·식별자 회귀 44항목
+
+### 변경
+- **주소가 메뉴 이름과 1:1** — `#/rank/max`→`#/dmax` · `#/rank/pve`→`#/pve` · `#/rank/pvp`→`#/pvp` · `#/plan`→`#/planner` · `#/plan/collection`→`#/planner/collection`
+  - **옛 주소는 버리지 않는다.** 이미 공유·북마크된 링크라 `legacy` 로 남겨 두고 새 주소로 돌린다. 돌리는 것은 `location.replace` 라 **뒤로가기 기록에 옛 주소가 쌓이지 않는다** — 한 번 눌러 원래 화면으로 돌아간다
+  - `navigateHash` 도 옛 주소를 정규화한다. 내부 호출을 하나 놓쳐도 새 주소로 간다
+- **좁은 화면도 넓은 화면과 같은 헤더 규칙** — 상단 바 = 로고 + 뒤로가기, 화면 이름 = 본문 맨 위 헤더(`.page-head`). 상단 바가 화면 이름을 겸하면 로고가 사라져 "지금 어느 서비스인지"와 "처음으로 가는 길"이 함께 없어졌다
+- **로고를 누르면 서비스 홈** — 웹의 오랜 약속을 그대로 쓴다. `h1#app-title` 은 화면 이름을 읽어 주는 포커스 자리라 그대로 두고 안쪽에 버튼(`#app-logo`)을 넣었다
+- **화면·상세에 측정용 식별자** — `body[data-route]` · `#page[data-route]` · `#page-<id>` · 상세는 `#detail-<스프라이트>` + `data-mon`·`data-form`·`data-view`(도감에서 열었나 목록에서 열었나). 상세는 주소가 `#/mon/<id>` 하나뿐이라 GA·히트맵에서 전부 한 덩어리로 뭉쳐 있었다. 라우트 전환마다 `route_view` 이벤트도 남긴다(기존 이벤트명은 그대로)
+
+### 수정
+- 재사용 조각의 이름을 `foot`·`hint` → `footNote`·`hintNote` 로. 짧게 뒀더니 `detail.js` 의 지역 변수 `const foot = [...]` 이 그대로 가려 상세 팝업이 열리지 않았다
+  - 교훈: **번들이 한 `<script>` 라 전역 함수는 어디서든 보이지만, 같은 이름의 지역 변수가 있으면 그 함수 안에서는 진다.** 전역에 흔한 낱말을 두지 않는다
+
+### 불변
+- `state` 키 · DOM id · GA 이벤트명 · Firestore 필드명 · localStorage 키 그대로 (`route_view` 만 신규)
+- 옛 주소로 들어오는 링크는 전부 살아 있다
+
 ## v2.29.2 — 2026-09-08
 
 ### 변경

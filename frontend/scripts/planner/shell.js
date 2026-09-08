@@ -32,11 +32,12 @@ let _planShellReady = false;
 const PLAN_TABS = [['home', '육성 현황'], ['collection', '내 포켓몬']];
 
 // 현재 해시가 플래너 주소면 { tab, params }, 아니면 null
+// 2026-09-08 v2.30.0 주소 해석은 router.js 가 한다 — 여기서 정규식을 또 쓰지 않는다
 function planRouteFromHash() {
-  const match = location.hash.match(/^#\/plan(?:\/(\w+))?(?:\?([^#]*))?\/?$/);
-  if (!match) return null;
-  const tab = PLAN_TABS.some(([id]) => id === match[1]) ? match[1] : 'home';
-  return { tab, params: new URLSearchParams(match[2] || '') };
+  const found = routeOf();
+  if (!found || found.route.kind !== 'plan') return null;
+  const tab = PLAN_TABS.some(([id]) => id === found.route.tab) ? found.route.tab : 'home';
+  return { tab, params: found.params };
 }
 
 function savePlanLast(mode) {
@@ -51,7 +52,7 @@ function applyPlanRoute() {
   const route = planRouteFromHash();
   // 해시 없는 첫 진입은 서비스 홈. 저장된 마지막 모드로 홈을 건너뛰지 않는다.
   state.appMode = route ? 'plan' : 'dex';
-  if (!route) state.tab = location.hash.match(/^#\/rank\/(max|pve|pvp)$/)?.[1] || 'home';
+  if (!route) state.tab = routeOf()?.route.tab ?? 'home';   // v2.30.0 셸 라우트(#/dmax·#/pve·#/pvp)가 탭을 정한다
   state.planTab = route ? route.tab : 'home';
   state.planParams = route ? route.params : null;
   document.body.dataset.mode = state.appMode;  // CSS 가 모드별로 숨길 것(즐겨찾기 카드 등)을 고른다
@@ -65,7 +66,7 @@ function switchMode(to, from = 'badge') {
   track('mode_switch', { to: target, from });
   savePlanLast(target);
   if (target === 'plan') {
-    navigateHash('#/plan');
+    navigateHash(routeHash('planner'));
     return;
   }
   // 도감 모드 = 해시 없음. 열린 팝업·드로어는 닫고 메인으로 (goHome 과 같은 규칙)

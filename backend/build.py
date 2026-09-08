@@ -110,7 +110,7 @@ json.dump(pvp_all, open('data/pvp_all.json', 'w', encoding='utf-8'), ensure_asci
 
 # ── frontend/ 의 CSS·JS를 순서대로 인라인해 단일 dist/index.html 조립 ──
 # 순서가 곧 캐스케이드(CSS)·실행 순서(JS)이므로 새 파일은 여기 목록에 추가
-APP_VERSION = 'v2.29.2'  # 도감 보기 방식 버튼 라벨 (그리드/리스트)
+APP_VERSION = 'v2.30.0'  # 주소 = 메뉴 구조 · 모바일 화면 헤더 · 재사용 조각
 # 2026-09-05 v2.7.3 빌드 채널 — 'prod'(기본) / 'dev'. dev 브랜치 워크플로(.github/workflows/deploy-dev.yml)가 BUILD_CHANNEL=dev 로 부른다.
 # dev 빌드는 (1) 버전 배지에 -dev 를 붙여 화면에서 구분되고 (2) GA 스니펫을 넣지 않아 통계가 섞이지 않고
 # (3) robots.txt 를 전부 차단 + <meta name="robots" content="noindex"> 로 검색 색인을 막는다. 나머지는 prod 와 동일
@@ -161,8 +161,10 @@ STYLES = [
     'components/app-shell.css',
 ]
 SCRIPTS = [
-    'data.js', 'dom.js', 'track.js',
-    'i18n-en.js', 'i18n.js',  # 2026-09-08 v2.29.0 다국어 — 사전이 엔진보다 먼저 (엔진이 I18N_EN 을 참조)  # 2026-09-03 track: GA4 이벤트 헬퍼 (가장 먼저 정의)
+    'data.js', 'dom.js', 'track.js',  # 2026-09-03 track: GA4 이벤트 헬퍼 (가장 먼저 정의)
+    'i18n-en.js', 'i18n.js',  # 2026-09-08 v2.29.0 다국어 — 사전이 엔진보다 먼저 (엔진이 I18N_EN 을 참조)
+    'router.js',              # 2026-09-08 v2.30.0 주소 표 — pages·planner·app-shell 이 모두 이 표를 본다
+    'components/ui.js',       # 2026-09-08 v2.30.0 재사용 조각 (uchip · iconBtn · pageBody · footNote · hintNote)
     'components/home.js',
     'components/type-dots.js', 'components/sprite.js', 'components/name.js', 'components/changes.js', 'components/row.js',  # 2026-09-04 changes: 기술 변경·순위 변동 뱃지 (row가 사용) · 2026-09-06 name: 폼 라벨 뱃지 (row·detail·search 가 사용)
     'components/list.js', 'components/chips.js', 'components/seg.js',

@@ -97,7 +97,8 @@ function renderTabs() {
   // 2026-09-07 v2.15.0 (QA-53) 플래너 모드는 탭 줄이 통째로 바뀐다 — [육성 현황 | 🎒 내 포켓몬] (planner/shell.js)
   if (state.appMode === 'plan') return renderPlanTabs();
   // [탭 id, 버튼에 보이는 이름] 쌍. 배열 순서가 곧 화면에 보이는 탭 순서다
-  for (const [id, label] of [['max', 'D-MAX'], ['pve', 'PvE'], ['pvp', 'PvP']]) {
+  // 2026-09-08 v2.30.0 [탭 id, 라벨, 라우트 id] — 주소는 router.js 의 표가 정한다
+  for (const [id, label, routeId] of [['max', 'D-MAX', 'dmax'], ['pve', 'PvE', 'pve'], ['pvp', 'PvP', 'pvp']]) {
     // 2026-09-03 GA4: 탭 이름을 이벤트명에 포함(tab_max 등) — 누를 때마다 1회씩 기록
     $tabs.append(el('button', {
       class: 'tabs__item',
@@ -105,7 +106,7 @@ function renderTabs() {
       'aria-selected': String(state.tab === id),
       onclick: () => {
         track('tab_' + id, { tab: id });
-        navigateHash('#/rank/' + id);  // 주소가 바뀌면 applyPlanRoute → render 가 돌고 상단 바 제목도 맞춰진다
+        navigateHash(routeHash(routeId));  // 주소가 바뀌면 applyPlanRoute → render 가 돌고 상단 바 제목도 맞춰진다
       },
     }, label));
   }

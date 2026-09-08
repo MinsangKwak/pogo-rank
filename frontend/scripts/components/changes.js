@@ -142,7 +142,7 @@ function renderMoveChangesPage() {
   const downMoves = data.moves.filter((move) => move.kind === 'down');
   const energyMoves = data.moves.filter((move) => move.kind === 'energy');
   const section = (title, note, node) => el('section', { class: 'changes__sec' },
-    el('h3', {}, title), note ? el('p', { class: 'detail__foot' }, note) : '', node);
+    el('h3', {}, title), note ? footNote(note) : '', node);
   return el('div', { class: 'page__body' },
     el('div', { class: `changes__head ${daysLeft > 0 ? 'is-soon' : 'is-done'}` },
       el('b', {}, data.season),
@@ -165,5 +165,5 @@ function renderMoveChangesPage() {
             onclick: () => openDetail({ sprite: item.sprite, name: item.name, en: '', types: DEX_DATA.forms[item.sprite]?.types ?? [] }),
           }, sprite(item.sprite), el('div', {}, el('b', {}, item.name), el('div', { class: 'changes__sub' }, item.move))))))
       : '',
-    el('p', { class: 'detail__foot' }, '출처: 포켓몬 GO 공식 GO 배틀리그 시즌 공지. 위력·에너지 값은 공지 표기를 그대로 옮겼고, 한글 기술명은 게임 내 표기로 자동 변환했습니다.'));
+    footNote('출처: 포켓몬 GO 공식 GO 배틀리그 시즌 공지. 위력·에너지 값은 공지 표기를 그대로 옮겼고, 한글 기술명은 게임 내 표기로 자동 변환했습니다.'));
 }

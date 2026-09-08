@@ -12,23 +12,25 @@
 //   '홈' 버튼은 뺐다 — 드로어 맨 위 "서비스 홈" 과 같은 곳으로 가는 중복 진입점이라
 //   v2.15.1 "화면 하나에 버튼 하나" 원칙에 맞춰 하나만 남긴다.
 // ─────────────────────────────────────────────────────────────────────────────
-const APP_DESTINATIONS = [
-  ['#/plan/collection', '내 포켓몬'], ['#/dex', '포켓몬 도감'],
-  ['#/types', '타입 & 상성'], ['#/rank/max', 'D-MAX'],
-  ['#/rank/pve', '레이드 · PvE'], ['#/rank/pvp', '배틀 · PvP'],
-  ['#/plan', '육성 플래너'], ['#/schedule', '이벤트 일정'],
-  ['#/raids', '레이드 보스'], ['#/eggs', '알 부화'],   // 2026-09-08 v2.25.0
-];
+// 2026-09-08 v2.30.0 이동 목록은 라우터 표(router.js ROUTE_NAV)가 원본이다 —
+// 메뉴에 화면을 하나 더 올리려면 ROUTES 에 nav 를 달면 되고, 여기는 손대지 않는다
+const APP_DESTINATIONS = ROUTE_NAV;
 const appHeader = document.querySelector('header');
 document.body.insertBefore(appHeader, document.querySelector('.layout'));
 appHeader.className = 'app-bar';
 const oldHeading = appHeader.querySelector('h1');
 const version = oldHeading.querySelector('.app-bar__version').textContent;
-const appTitle = el('h1', { id: 'app-title', tabindex: '-1' }, 'POGO PLAN');
-const backButton = el('button', { class: 'icon-btn', 'aria-label': '이전 화면', onclick: () => {
+// 2026-09-08 v2.30.0 로고를 누르면 서비스 홈. 좁은 화면에서도 상단 바는 늘 로고 자리이므로
+// "여기가 처음으로 가는 곳" 이라는 웹의 오랜 약속을 그대로 쓴다.
+// h1 은 화면 이름을 읽어 주는 자리(포커스 대상)라 그대로 두고 안쪽에 버튼을 넣는다 —
+// #app-title 의 textContent 는 여전히 'POGO PLAN' 이다
+const appLogo = el('button', { type: 'button', id: 'app-logo', class: 'app-bar__logo',
+  onclick: () => goHome() }, 'POGO PLAN');
+const appTitle = el('h1', { id: 'app-title', tabindex: '-1' }, appLogo);
+const backButton = iconBtn('←', '이전 화면', () => {
   if (history.state?.appEntry) history.back();
   else navigateHash('');
-}}, '←');
+});
 const actions = appHeader.querySelector('.app-bar__actions');
 appHeader.replaceChildren(el('div', { class: 'app-bar__head' }, backButton, appTitle), actions);
 // 🔍 · 👤 · ☰ 아이콘은 index.html 의 것을 그대로 쓴다 (aria-label 이 이미 붙어 있다)
@@ -109,21 +111,33 @@ for (const id of ['content', 'page']) {
   main.setAttribute('tabindex', '-1');
   main.setAttribute('role', 'main');
 }
+// 화면 이름. 메뉴에 오른 화면은 메뉴 라벨을, 그렇지 않은 전체 페이지는 PAGES 제목(이모지 제외)을 쓴다.
+// 이름이 없는 주소(홈 · 상세 딥링크)는 null — 그때는 화면 헤더를 띄우지 않는다
+function screenTitle(found) {
+  if (!found || found.route.id === 'home') return null;
+  if (found.route.nav) return found.route.nav;
+  if (found.route.kind === 'page' && PAGES[found.route.id]) return PAGES[found.route.id].title.replace(/^[^가-힣A-Za-z]+/, '');
+  return null;
+}
+
 let previousRoute = location.hash;
 function syncAppShell(moveFocus = false) {
   const hash = location.hash;
-  const home = !hash || hash === '#';
-  const pageId = currentPageId();
-  const title = APP_DESTINATIONS.find(([route]) => route === hash.split('?')[0])?.[1]
-    || (pageId ? PAGES[pageId].title.replace(/^[^가-힣A-Za-z]+/, '') : 'POGO PLAN');
-  // 넓은 화면: 상단 바는 늘 서비스 이름, 화면 이름은 본문 헤더로 내린다
-  const wide = wideScreen.matches;
-  appTitle.textContent = home || wide ? 'POGO PLAN' : title;
-  pageHead.hidden = home || !wide;
-  pageHead.firstChild.textContent = home ? '' : title;
-  document.title = (home ? 'POGO PLAN' : title + ' — POGO PLAN');
+  const found = routeOf();
+  const routeId = found?.route.id ?? 'unknown';
+  const home = routeId === 'home';
+  const title = screenTitle(found);
+  // 2026-09-08 v2.30.0 좁은 화면도 넓은 화면과 같은 규칙 —
+  //   상단 바 = 로고(누르면 홈) + 뒤로가기, 화면 이름 = 본문 맨 위 헤더.
+  // 상단 바가 화면 이름을 겸하면 로고가 사라져 "지금 어느 서비스인지" 와 "처음으로 가는 길" 이 함께 없어졌다
+  pageHead.hidden = !title;
+  pageHead.firstChild.textContent = title ?? '';
+  document.title = title ? `${title} — POGO PLAN` : 'POGO PLAN';
   backButton.hidden = home;
   document.body.dataset.screen = home ? 'home' : 'detail';
+  // 측정용 표식 — 어느 화면인지 DOM 만 보고 알 수 있게 (GA · 히트맵 · 자동화 검사)
+  document.body.dataset.route = routeId;
+  pageHead.dataset.route = routeId;
   destinations.querySelectorAll('a').forEach(a => {
     if (a.getAttribute('href') === (home ? '#' : hash)) a.setAttribute('aria-current', 'page');
     else a.removeAttribute('aria-current');
@@ -140,6 +154,8 @@ window.addEventListener('hashchange', () => {
   }
   previousRoute = location.hash;
   syncAppShell(true);
+  // 2026-09-08 v2.30.0 화면 단위 측정 — 주소를 GA 에서 다시 파싱하지 않도록 라우트 id 를 그대로 보낸다
+  if (typeof track === 'function') track('route_view', { route: routeIdOf(), path: location.hash.replace(/^#\/?/, '') || 'home' });
 });
 syncAppShell();
 

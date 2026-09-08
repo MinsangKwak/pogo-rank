@@ -31,6 +31,13 @@ function openModal(content) {
       el('div', { class: 'modal__bar' },
         el('button', { class: 'modal__close', 'aria-label': '닫기', onclick: () => closeModal() }, '✕')),
       content));
+  // 2026-09-08 v2.30.0 안쪽 내용이 식별자를 달았으면 껍데기도 같이 단다 —
+  // 측정 도구는 열려 있는 dialog 를 먼저 보므로, 거기서 바로 "무엇의 상세인지" 가 읽혀야 한다
+  if (content.dataset?.route) {
+    overlay.dataset.route = content.dataset.route;
+    if (content.dataset.mon) overlay.dataset.mon = content.dataset.mon;
+    if (content.dataset.sprite) overlay.dataset.sprite = content.dataset.sprite;
+  }
   document.body.append(overlay);
   overlay.addEventListener('cancel', (event) => { event.preventDefault(); closeModal(); });
   overlay.showModal();

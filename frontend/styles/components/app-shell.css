@@ -40,8 +40,13 @@
 
 /* 2026-09-08 v2.26.0 화면별 헤더 — 넓은 화면에서만 쓴다 (좁은 화면은 상단 바가 제목을 겸한다).
    [hidden] 로 감추므로 여기서는 보일 때의 모양만 정의한다 */
-.page-head { max-width: 760px; margin: 0 auto; padding: 20px 20px 0; }
-.page-head h2 { margin: 0; font-size: 24px; font-weight: 600; letter-spacing: -0.01em; }
+/* 2026-09-08 v2.30.0 화면 헤더는 좁은 화면에서도 뜬다 — 상단 바는 로고 자리를 지킨다.
+   좁은 폭에서는 글자를 조금 줄여 두 줄로 접히지 않게 */
+.page-head { max-width: 760px; margin: 0 auto; padding: 14px 20px 0; }
+.page-head h2 { margin: 0; font-size: 21px; font-weight: 600; letter-spacing: -0.01em; word-break: keep-all; }
+/* 로고: h1 안의 버튼이라 글꼴·크기를 h1 에서 물려받게 하고 버튼 티를 지운다 */
+.app-bar__logo { padding: 0; font: inherit; color: inherit; letter-spacing: inherit; }
+.app-bar__logo:hover { color: var(--accent); }
 
 /* ── 화면 안 필터 아코디언 ──
    타입 칩이 18개까지 늘어나는 줄은 app-shell.js compactScreenFilters() 가 <details> 로 접는다.
@@ -108,6 +113,7 @@ button { touch-action: manipulation; }
 
   /* 상단 바가 로고 자리를 지키므로 본문 첫 요소는 헤더 아래로 내려온다 */
   .page-head { padding-top: 28px; padding-bottom: 4px; }
+  .page-head h2 { font-size: 24px; }
   .page-head + .layout, .page-head ~ #page { padding-top: 8px; }
 
   /* 왼쪽 고정 사이드바 — 컨테이너 왼쪽 끝(.layout 의 20px 여백 자리)에 맞춘다.
