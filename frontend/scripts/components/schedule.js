@@ -226,7 +226,9 @@ function renderSchedule() {
   // 2026-09-07 v2.13.0 (QA-20) 드로어 제목의 달도 데이터에서 — index.html 에 '9월'이 박혀 있었다
   const $title = document.getElementById('schedule-title');
   if ($title) $title.textContent = `📅 ${SCHEDULE_YM.m}월 일정표`;
-  document.getElementById('schedule-body').replaceChildren(buildScheduleCal());
+  // 2026-09-08 v2.29.1 드로어 미리보기에도 같은 안내를 단다 — 좁은 화면에서는 이쪽이 일정표의 첫 화면이다.
+  // 영어로 볼 때만 보이고(base.css .i18n-note), 한국어에는 이미 아래 각주에 "한국 시간 기준"이 있다
+  document.getElementById('schedule-body').replaceChildren(i18nKoOnlyNote('kst'), buildScheduleCal());
 }
 
 // 2026-09-03 달력+범례+상세를 노드로 생성 (드로어 미리보기 · 전체 페이지 공용)

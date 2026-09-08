@@ -29,7 +29,7 @@
 // ── FIREBASE_CONFIG가 비면 로그인 UI가 아예 안 뜬다 ─────────────────────────
 // build.py는 로컬/공개 빌드에 따라 FIREBASE_CONFIG를 비워 둘 수 있다.
 // 설정이 없으면 SDK를 받아도 로그인이 불가능하므로, authEnabled()가 false일 때는
-// 계정 영역과 헤더 👤 버튼을 감춰서 눌러도 안 되는 버튼을 노출하지 않는다.
+// 계정 영역(☰ 메뉴 맨 위 마이페이지)을 감춰서 눌러도 안 되는 버튼을 노출하지 않는다.
 const FIREBASE_VER = '12.18.0';
 const AUTH = {
   ready: false,      // SDK 로드·초기화 완료

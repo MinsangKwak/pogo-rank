@@ -80,6 +80,20 @@ const hangul = (text) => /[가-힣]/.test(text || '');
     ok(`${label} 화면에 한국어 안내 표시`, await note.isVisible().catch(() => false));
   }
 
+  // ── 일정표는 "한국 서버(KST) 기준" 을 먼저 밝힌다 (이벤트 날짜는 지역마다 다르다)
+  await go('#/schedule');
+  const kst = await page.locator('.schedule__page .i18n-note').first().textContent();
+  ok('일정표 안내가 한국 기준을 밝힘', /Korean server/.test(kst) && /KST/.test(kst), kst.slice(0, 70));
+  ok('드로어 미리보기에도 같은 안내', (await page.locator('#schedule-body .i18n-note').count()) === 1);
+  // 한국어로 볼 때는 뜨지 않는다 (한국어 각주가 이미 "한국 시간 기준"이라고 적는다)
+  const shownIn = async () => page.locator('.schedule__page .i18n-note').first().evaluate((n) => getComputedStyle(n).display);
+  ok('영어일 때 안내 보임', (await shownIn()) === 'block');
+  await page.click('#lang-toggle');
+  await page.waitForTimeout(500);
+  ok('한국어일 때 안내 숨김', (await shownIn()) === 'none');
+  await page.click('#lang-toggle');
+  await page.waitForTimeout(500);
+
   // ── 되돌리기
   await go('#/dex');
   await page.click('#lang-toggle');
