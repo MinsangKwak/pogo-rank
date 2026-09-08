@@ -63,7 +63,10 @@ const ok = (name, cond, extra = '') => { results.push([cond ? 'PASS' : 'FAIL', n
   await page.goto(BASE + '?mock=friend', { waitUntil: 'domcontentloaded' });
   await page.waitForSelector('#splash', { state: 'detached', timeout: 15000 }).catch(() => {});
   await page.waitForFunction(() => typeof AUTH !== 'undefined' && AUTH.ready, null, { timeout: 10000 });
-  await page.click('#account-toggle');
+  // v2.29.0 헤더 👤 제거 — 로그인은 ☰ 메뉴 안 계정 카드에서 시작한다
+  await page.click('#menu-toggle');
+  await page.waitForSelector('#account .account__login');
+  await page.click('#account .account__login');
   await page.waitForSelector('.consent__modal');
   ok('동의 팝업 열림', await page.locator('.consent__modal .consent__go').isVisible());
   ok('버튼 비활성(체크 전)', await page.locator('.consent__go').isDisabled());
@@ -83,13 +86,11 @@ const ok = (name, cond, extra = '') => { results.push([cond ? 'PASS' : 'FAIL', n
   await page.click('#menu-toggle');
   await page.click('.drawer__panel button:has-text("로그아웃")');
   await page.waitForFunction(() => AUTH.status === 'anon');
-  await page.click('#drawer-close').catch(() => {});
-  await page.click('#account-toggle');
+  await page.click('#account .account__login');
   await page.waitForFunction(() => AUTH.status === 'ok', null, { timeout: 5000 });
   ok('동의 뒤 재로그인은 팝업 없음', (await page.locator('.consent__modal').count()) === 0);
 
-  // 7. 계정 삭제
-  await page.click('#menu-toggle');
+  // 7. 계정 삭제 — 드로어는 6번에서 이미 열려 있다 (v2.29.0 계정은 드로어 안에만 있다)
   ok('계정 삭제 버튼', await page.locator('.drawer__panel .account__danger').isVisible());
   await page.click('.drawer__panel .account__danger');
   await page.waitForSelector('.consent__modal');
@@ -107,13 +108,13 @@ const ok = (name, cond, extra = '') => { results.push([cond ? 'PASS' : 'FAIL', n
   await page.evaluate(() => { localStorage.removeItem('pogo_mock_signed_out'); });
   await page.goto(BASE + '?mock=pending', { waitUntil: 'domcontentloaded' });
   await page.waitForFunction(() => typeof AUTH !== 'undefined' && AUTH.status === 'pending', null, { timeout: 10000 });
-  await page.click('#account-toggle');
+  await page.click('#menu-toggle');
   ok('대기 상태 계정 삭제 버튼', await page.locator('.drawer__panel .account__danger').isVisible());
 
   // 9. 관리자는 삭제 버튼 없음
   await page.goto(BASE + '?mock=1', { waitUntil: 'domcontentloaded' });
   await page.waitForFunction(() => typeof AUTH !== 'undefined' && AUTH.status === 'ok' && AUTH.admin, null, { timeout: 10000 });
-  await page.click('#account-toggle');
+  await page.click('#menu-toggle');
   ok('관리자 삭제 버튼 없음', (await page.locator('.drawer__panel .account__danger').count()) === 0);
 
   // 10. 캐시 비우기 버튼 존재 (reload 까지는 안 누름)

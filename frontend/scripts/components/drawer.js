@@ -43,7 +43,7 @@ function initDrawer() {
   $backdrop.addEventListener('cancel', (event) => { event.preventDefault(); closeDrawer(); });
   document.getElementById('menu-toggle').addEventListener('click', openDrawer);
   // 2026-09-03 v2.2.0 계정 버튼: 비로그인 → 바로 Google 로그인, 로그인 상태 → 드로어(계정 영역)
-  document.getElementById('account-toggle').addEventListener('click', () => { AUTH.user ? openDrawer() : signIn(); });
+  // 2026-09-08 v2.29.0 헤더 👤 제거 — 로그인·마이페이지는 이 드로어 맨 위 계정 카드가 맡는다 (components/auth.js)
   document.getElementById('drawer-close').addEventListener('click', () => closeDrawer());
   // 어두운 배경만 눌렀을 때 닫는다. 드로어 안쪽 클릭도 배경까지 올라오므로(이벤트 버블링)
   // event.target이 배경 자신인지 확인해야 한다

@@ -74,6 +74,7 @@ def move_ko(move_id):
     return f"{korean_move_name}({TYPE_KO.get(paren.group(1).lower(), paren.group(1))})" if paren else korean_move_name
 
 TYPE_KO = {'normal':'노말','fire':'불꽃','water':'물','grass':'풀','electric':'전기','ice':'얼음','fighting':'격투','poison':'독','ground':'땅','flying':'비행','psychic':'에스퍼','bug':'벌레','rock':'바위','ghost':'고스트','dragon':'드래곤','dark':'악','steel':'강철','fairy':'페어리'}
+TYPE_EN = {english_type: english_type.capitalize() for english_type in TYPE_KO}  # 2026-09-08 v2.29.0 다국어 — 게임 표기가 곧 대문자 한 글자 차이라 표를 따로 적지 않는다
 
 TOP = 40
 pvp, pvp_all = {}, {}
@@ -109,7 +110,7 @@ json.dump(pvp_all, open('data/pvp_all.json', 'w', encoding='utf-8'), ensure_asci
 
 # ── frontend/ 의 CSS·JS를 순서대로 인라인해 단일 dist/index.html 조립 ──
 # 순서가 곧 캐스케이드(CSS)·실행 순서(JS)이므로 새 파일은 여기 목록에 추가
-APP_VERSION = 'v2.28.0'  # PC 카드 뷰 — 목록 화면 전체
+APP_VERSION = 'v2.29.0'  # 다국어(KR/EN) · 헤더 개편
 # 2026-09-05 v2.7.3 빌드 채널 — 'prod'(기본) / 'dev'. dev 브랜치 워크플로(.github/workflows/deploy-dev.yml)가 BUILD_CHANNEL=dev 로 부른다.
 # dev 빌드는 (1) 버전 배지에 -dev 를 붙여 화면에서 구분되고 (2) GA 스니펫을 넣지 않아 통계가 섞이지 않고
 # (3) robots.txt 를 전부 차단 + <meta name="robots" content="noindex"> 로 검색 색인을 막는다. 나머지는 prod 와 동일
@@ -160,7 +161,8 @@ STYLES = [
     'components/app-shell.css',
 ]
 SCRIPTS = [
-    'data.js', 'dom.js', 'track.js',  # 2026-09-03 track: GA4 이벤트 헬퍼 (가장 먼저 정의)
+    'data.js', 'dom.js', 'track.js',
+    'i18n-en.js', 'i18n.js',  # 2026-09-08 v2.29.0 다국어 — 사전이 엔진보다 먼저 (엔진이 I18N_EN 을 참조)  # 2026-09-03 track: GA4 이벤트 헬퍼 (가장 먼저 정의)
     'components/home.js',
     'components/type-dots.js', 'components/sprite.js', 'components/name.js', 'components/changes.js', 'components/row.js',  # 2026-09-04 changes: 기술 변경·순위 변동 뱃지 (row가 사용) · 2026-09-06 name: 폼 라벨 뱃지 (row·detail·search 가 사용)
     'components/list.js', 'components/chips.js', 'components/seg.js',
@@ -242,6 +244,8 @@ if pve_tables and dmax_tables:
 # (없는 파일은 optional_json이 '{}'로 채우므로 1차 실행에서도 문법 오류가 나지 않는다)
 data_js = f'''// 빌드 생성 데이터 (backend/build.py) — 기준일 {game_master['timestamp']}
 const TYPE_KO = {json.dumps(TYPE_KO, ensure_ascii=False)};
+// 2026-09-08 v2.29.0 다국어 — 타입 이름 영문. TYPE_KO 와 키가 같아야 typeName(t) 이 한 줄로 갈린다
+const TYPE_EN = {json.dumps(TYPE_EN, ensure_ascii=False)};
 // 2026-09-06 v2.10.0 이름 앞에 붙는 폼 라벨 목록 (backend/names.py FORM_KO 값 + 섀도우·다이맥스·거다이맥스) — components/name.js 가 이름을 [라벨 뱃지 + 종 이름]으로 가른다
 const FORM_LABELS = {json.dumps(sorted({label for label in FORM_KO.values() if label} | {'섀도우', '다이맥스', '거다이맥스'}, key=len, reverse=True), ensure_ascii=False)};
 const PVP_DATA = {json.dumps(pvp, ensure_ascii=False)};

@@ -98,8 +98,9 @@ __STYLES__
     </div>
     <div class="app-bar__actions">
       <button class="icon-btn" id="search-toggle" aria-label="포켓몬 검색">🔍</button>
-      <!-- 2026-09-03 v2.2.0 계정 버튼: 비로그인이면 Google 로그인, 로그인 후엔 아바타 → 메뉴 -->
-      <button class="icon-btn" id="account-toggle" aria-label="계정" hidden>👤</button>
+      <!-- 2026-09-08 v2.29.0 계정 버튼(👤)을 뺐다 — 로그인·마이페이지는 ☰ 메뉴 맨 위 계정 카드 한 곳으로 모은다.
+           비운 자리에 KR/EN 전환을 둔다 (i18n.js) -->
+      <button class="icon-btn lang-toggle" id="lang-toggle" aria-label="언어 전환" aria-live="polite">EN</button>
       <button class="icon-btn" id="menu-toggle" aria-label="메뉴">☰</button>
     </div>
   </header>
@@ -157,6 +158,8 @@ __STYLES__
   <aside class="drawer__panel">
     <div class="drawer__head"><b>메뉴</b><button class="icon-btn" id="drawer-close" aria-label="닫기">✕</button></div>
     <!-- 2026-09-03 v2.2.0 계정 영역 (components/auth.js) — FIREBASE_CONFIG 없으면 숨김 -->
+    <!-- 2026-09-08 v2.29.0 헤더 👤 를 없애고 여기로 모았다. 제목을 달아 "여기가 마이페이지"임을 밝힌다 -->
+    <h2 class="drawer__sec" id="account-title" hidden>👤 마이페이지</h2>
     <div class="account" id="account" hidden></div>
     <details class="schedule" open>
       <summary><span id="schedule-title">📅 일정표</span><span class="schedule__today" id="schedule-today"></span></summary>

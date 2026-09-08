@@ -67,7 +67,9 @@ function renderTermsPage() {
   const ul = (...items) => el('ul', { class: 'priv__list' }, ...items.map((t) => el('li', {}, t)));
   const contact = typeof CONTACT_EMAIL !== 'undefined' && CONTACT_EMAIL ? el('a', { href: 'mailto:' + CONTACT_EMAIL }, CONTACT_EMAIL) : '사이트 운영자';
 
+  // 2026-09-08 v2.29.0 한국어 원문이 효력을 갖는 문서라 번역하지 않는다 (영어 안내만 위에 단다)
   return el('div', { class: 'page__body' },
+    i18nKoOnlyNote(),
     p('POGO PLAN(이하 "서비스")을 이용하기 전에 읽어 주세요. 서비스는 개인이 무료로 운영하는 비공식 팬 프로젝트이며, 이 약관은 서비스가 실제로 하는 것과 하지 않는 것을 정합니다.'),
     el('p', { class: 'detail__foot' }, `시행일 ${TERMS_VER} (v2.18.0 신설). 개정하면 시행 7일 전에 패치노트로 알리고, 다음 로그인 때 다시 동의를 받습니다.`),
 
