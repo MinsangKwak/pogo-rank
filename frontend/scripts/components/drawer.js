@@ -23,8 +23,7 @@ function openDrawer() {
   if (!drawer.open) drawer.showModal();
   document.getElementById('menu-toggle').setAttribute('aria-expanded', 'true');
   document.getElementById('drawer-close').focus();
-  // 드로어가 떠 있는 동안 뒤쪽 본문이 같이 스크롤되지 않게 잠근다
-  document.body.style.overflow = 'hidden';
+  syncScrollLock();   // 드로어가 떠 있는 동안 뒤쪽 본문이 같이 스크롤되지 않게 잠근다
   pushOverlayEntry();
 }
 //   silent  히스토리 항목을 되돌리지 않는다 (popstate 로 닫히는 중 · 팝업으로 넘어가며 항목을 재사용 · 페이지 이동)
@@ -34,7 +33,7 @@ function closeDrawer({ silent = false } = {}) {
   if ($backdrop.open) $backdrop.close();
   $backdrop.hidden = true;
   document.getElementById('menu-toggle').setAttribute('aria-expanded', 'false');
-  if (!overlayVisible()) document.body.style.overflow = '';
+  syncScrollLock();
   if (wasOpen && !silent && !overlayVisible()) releaseOverlayEntry(false);
 }
 

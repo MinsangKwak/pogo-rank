@@ -30,6 +30,7 @@
 #        최종 dist/index.html · dist/data.js가 만들어진다.
 # ─────────────────────────────────────────────────────────────────────────────
 import json, csv, re, os
+from datetime import date
 from sprite import sprite_id
 from names import name_ko, species, ko_species, FORM_KO
 
@@ -108,11 +109,15 @@ json.dump(pvp_all, open('data/pvp_all.json', 'w', encoding='utf-8'), ensure_asci
 
 # ── frontend/ 의 CSS·JS를 순서대로 인라인해 단일 dist/index.html 조립 ──
 # 순서가 곧 캐스케이드(CSS)·실행 순서(JS)이므로 새 파일은 여기 목록에 추가
-APP_VERSION = 'v2.24.0'  # BEM 클래스 이름 리팩토링
+APP_VERSION = 'v2.27.0'  # 보안 강화 · 공유 카드(OG) · 검색 최적화
 # 2026-09-05 v2.7.3 빌드 채널 — 'prod'(기본) / 'dev'. dev 브랜치 워크플로(.github/workflows/deploy-dev.yml)가 BUILD_CHANNEL=dev 로 부른다.
 # dev 빌드는 (1) 버전 배지에 -dev 를 붙여 화면에서 구분되고 (2) GA 스니펫을 넣지 않아 통계가 섞이지 않고
 # (3) robots.txt 를 전부 차단 + <meta name="robots" content="noindex"> 로 검색 색인을 막는다. 나머지는 prod 와 동일
 BUILD_CHANNEL = os.environ.get('BUILD_CHANNEL', 'prod')
+# 2026-09-08 v2.27.0 정식 주소 — canonical · og:url · og:image · sitemap 이 모두 여기서 나온다.
+# 커스텀 도메인을 붙이면 이 두 줄만 고치면 된다 (index.html 에 흩어 두지 않은 이유)
+SITE_URL = 'https://minsangkwak.github.io/pogo-rank/'
+DEV_SITE_URL = 'https://minsangkwak.github.io/pogo-rank-dev/'
 if BUILD_CHANNEL == 'dev':
     APP_VERSION += '-dev'
 # ── 운영 설정값은 코드에 두지 않는다 (2026-09-05 v2.8.0) ──
@@ -161,7 +166,7 @@ SCRIPTS = [
     'components/list.js', 'components/chips.js', 'components/seg.js',
     'components/history.js', 'components/modal.js', 'components/auth.js', 'components/detail.js',  # 2026-09-03 v2.2.0 auth: 로그인·즐겨찾기 (detail보다 먼저) · 2026-09-06 v2.11.0 history: 뒤로가기가 팝업·드로어를 닫게 (modal·drawer 가 사용)
     'components/schedule.js', 'components/release.js', 'components/terms.js', 'components/privacy.js', 'components/consent.js', 'components/search.js', 'components/drawer.js',  # 2026-09-07 v2.18.0 terms: 약관·동의 팝업·IP 고지 (privacy·auth 가 사용) · consent: GA 동의 배너  # 2026-09-02 9월 일정표 달력 · 업데이트 팝업
-    'components/favs.js', 'components/typesearch.js',  # 2026-09-05 favs: ★ 즐겨찾기 페이지 · 2026-09-06 typesearch: 🧭 상성 검색 페이지 (pages가 PAGES에 등록하므로 그 앞)
+    'components/favs.js', 'components/typesearch.js', 'components/gameday.js',  # 2026-09-05 favs: ★ 즐겨찾기 페이지 · 2026-09-06 typesearch: 🧭 상성 검색 페이지 · 2026-09-08 gameday: ⚔️ 레이드 보스 · 🥚 알 부화 (pages가 PAGES에 등록하므로 그 앞)
     'planner/shell.js', 'planner/home.js', 'planner/collection.js',  # 2026-09-07 v2.15.0 🌱 플래너 모드 (QA-53 셸 · QA-54 내 포켓몬) — pages.js 가 #/plan 라우팅에 쓰므로 그 앞
     'components/pages.js',
     'components/trainers.js', 'components/favdigest.js', 'components/totop.js',  # 2026-09-05 favdigest: 메인 즐겨찾기 카드
@@ -254,6 +259,7 @@ const VALUE_DATA = {json.dumps(value_tables, ensure_ascii=False) if value_tables
 const SHEET_DATA = {json.dumps(sheet_tables, ensure_ascii=False) if sheet_tables else optional_json('data/sheet.json')};
 const DEX_DATA = {optional_json('data/dex.json')};
 const BOSS_LIST = {optional_json('data/bosses.json') or '[]'};
+const GAMEDAY = {optional_json('data/gameday.json')};              // 2026-09-08 v2.25.0 레이드 보스·알 부화 풀·이벤트 원본 (backend/gameday_build.py)
 const SPRITE_IDS = {json.dumps(sorted(sprite_ids))};
 const SPRITES = {(open('data/sprites.json').read() if INLINE and os.path.exists('data/sprites.json') else 'null')};
 '''
@@ -268,6 +274,9 @@ html = html.replace('__TIMESTAMP__', game_master['timestamp']).replace('__VERSIO
 html = html.replace('__GA_SNIPPET__', GA_SNIPPET.replace('__GA_ID__', GA_ID) if GA_ID and BUILD_CHANNEL != 'dev' else '')
 if BUILD_CHANNEL == 'dev':
     html = html.replace('</title>', '</title>\n<meta name="robots" content="noindex, nofollow">', 1)
+    # 2026-09-08 v2.27.0 미리보기의 공유 카드가 실서비스를 가리키면 안 된다 — 주소를 dev 로 바꾼다.
+    # (색인은 어차피 막지만, 링크를 붙였을 때 엉뚱한 곳으로 가는 것을 막으려는 것)
+    html = html.replace(SITE_URL, DEV_SITE_URL)
 # 2026-09-03 v2.2.0 앱 설정 주입
 html = html.replace('__APP_CONFIG__', f"const FIREBASE_CONFIG = {json.dumps(FIREBASE_CONFIG)};\nconst ADMIN_EMAIL = {json.dumps(ADMIN_EMAIL)};\nconst ADMIN_UID = {json.dumps(ADMIN_UID)};\nconst CONTACT_EMAIL = {json.dumps(CONTACT_EMAIL)};")
 # 2026-09-05 v2.8.0 푸터 문의 이메일 — CONTACT_EMAIL 이 비어 있으면 문구 자체를 뺀다
@@ -284,8 +293,45 @@ import shutil
 if os.path.isdir('frontend/static'):
     for filename in os.listdir('frontend/static'):
         shutil.copy(f'frontend/static/{filename}', 'dist/')
+# 2026-09-08 v2.27.0 검색·보안 부속 파일 — 빌드가 만든다(주소·날짜가 들어가 손으로 두면 낡는다)
+site_url = DEV_SITE_URL if BUILD_CHANNEL == 'dev' else SITE_URL
+# sitemap: 해시 라우팅이라 색인되는 주소는 사실상 첫 화면 하나뿐이다. 있는 것만 정직하게 적는다
+open('dist/sitemap.xml', 'w', encoding='utf-8').write(
+    '<?xml version="1.0" encoding="UTF-8"?>\n'
+    '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
+    f'  <url><loc>{site_url}</loc><lastmod>{date.today().isoformat()}</lastmod><changefreq>daily</changefreq><priority>1.0</priority></url>\n'
+    '</urlset>\n')
+# security.txt: 취약점을 발견한 사람이 어디로 알릴지 찾는 표준 위치 (RFC 9116).
+# 공개 저장소라 누구나 코드를 읽는다 — 제보 창구를 눈에 띄게 두는 편이 안전하다
+if CONTACT_EMAIL:
+    os.makedirs('dist/.well-known', exist_ok=True)
+    expires = date.today().replace(year=date.today().year + 1).isoformat()
+    open('dist/.well-known/security.txt', 'w', encoding='utf-8').write(
+        f'Contact: mailto:{CONTACT_EMAIL}\n'
+        f'Expires: {expires}T00:00:00.000Z\n'
+        'Preferred-Languages: ko, en\n'
+        'Policy: https://github.com/minsangkwak/pogo-rank/blob/main/SECURITY.md\n')
 if BUILD_CHANNEL == 'dev':
     # dev 미리보기는 검색에 잡히면 안 된다 — 정적 robots.txt 를 전부 차단으로 덮어쓴다
     open('dist/robots.txt', 'w', encoding='utf-8').write('# POGO PLAN dev 미리보기 — 색인 금지\nUser-agent: *\nDisallow: /\n')
+else:
+    # robots.txt 끝에 sitemap 위치를 알린다 (정적 파일에 주소를 박아 두지 않으려고 여기서 붙인다)
+    with open('dist/robots.txt', 'a', encoding='utf-8') as robots:
+        robots.write(f'\n# 사이트맵\nSitemap: {site_url}sitemap.xml\n')
+# 404: GitHub Pages 는 없는 주소에 기본 404 를 보여 준다. 해시 라우팅이라 오타 하나로도 여기 온다 —
+# 서비스 안으로 돌려보내는 문을 만들어 둔다
+open('dist/404.html', 'w', encoding='utf-8').write(f'''<!DOCTYPE html>
+<html lang="ko"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex"><title>페이지를 찾을 수 없어요 — POGO PLAN</title>
+<style>body{{margin:0;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;
+background:#fff;color:#17181a;font-family:system-ui,-apple-system,sans-serif;text-align:center;padding:24px}}
+a{{color:inherit}}p{{margin:0;color:#7a7c80;font-size:14px;line-height:1.6}}
+@media(prefers-color-scheme:dark){{body{{background:#121315;color:#ecedee}}p{{color:#8c8f94}}}}</style>
+</head><body>
+<strong style="font-size:20px">페이지를 찾을 수 없어요</strong>
+<p>주소가 바뀌었거나 없는 페이지입니다.</p>
+<p><a href="{site_url}">POGO PLAN 첫 화면으로 →</a></p>
+</body></html>
+''')
 # 리그별로 몇 줄이 실렸는지 요약 출력 (빌드 로그 확인용)
 print('ok', {league_id: len(league_rows) for league_id, league_rows in pvp.items()})

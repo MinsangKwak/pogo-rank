@@ -1,5 +1,8 @@
 /* 리셋과 문서 기본 스타일 */
 * { box-sizing: border-box; }
+/* 2026-09-08 v2.26.0 hidden 은 어떤 작성자 규칙보다 세게 감춘다 — 브라우저 기본값은
+   `header { display: flex }` 같은 흔한 규칙에 지고, 그러면 hidden 이 조용히 무시된다 */
+[hidden] { display: none !important; }
 html { -webkit-text-size-adjust: 100%; }
 body {
   margin: 0; background: var(--bg); color: var(--fg);
@@ -10,3 +13,47 @@ body {
 button { font: inherit; color: inherit; background: none; border: 0; padding: 0; cursor: pointer; }
 button:focus-visible { outline: 2px solid var(--fg); outline-offset: 2px; border-radius: 4px; }
 .layout { max-width: 760px; margin: 0 auto; padding: 0 20px 80px; }
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   2026-09-08 v2.26.0 버튼 반응 — 누를 수 있다는 것을 손보다 눈이 먼저 알게 한다.
+
+   원칙 세 가지
+     1) 상시로 움직이는 것은 두지 않는다. 목록이 긴 화면에서 상시 애니메이션은 시선을 뺏고
+        배터리를 먹는다. 움직임은 **가리키거나 누를 때만**.
+     2) 레이아웃을 흔들지 않는다. width·height·margin 대신 transform·색만 바꾼다.
+        그래야 줄이 밀리지 않고, 브라우저도 다시 계산하지 않는다.
+     3) `prefers-reduced-motion` 을 존중한다. 움직임에 민감한 사용자에게는 색만 바뀐다.
+
+   움직임은 색·크기만 건드리고 **위치는 옮기지 않는다**. hover 로 버튼이 이동하면
+   가리키는 순간 목표가 달아나 조준이 어긋난다.
+
+   딱 하나 상시 움직이는 것: 새 소식 점(.dot-badge) — 알리는 게 목적이라 예외를 둔다.
+   점은 버튼 안에 있고 버튼 자체는 움직이지 않으므로 클릭을 방해하지 않는다.
+   ───────────────────────────────────────────────────────────────────────────── */
+@media (prefers-reduced-motion: no-preference) {
+  button, .drawer__item, .uchip, .icon-btn, .tool-btn, .chips__item, .tchips__item,
+  .tabs__item, .seg__item, .home__tile, .dex__row, .row, .fav {
+    transition: background-color .14s ease, border-color .14s ease, color .14s ease, transform .12s ease, box-shadow .14s ease;
+  }
+  /* 누르는 순간 살짝 눌린다 — 터치에서 "먹었나?" 하는 순간을 없앤다 */
+  button:active, .drawer__item:active, .home__tile:active { transform: scale(.97); }
+  .row:active, .dex__row:active { transform: scale(.995); }
+  /* 아이콘 버튼은 누를 때만 반응한다. hover 로 위치를 옮기면 가리키는 순간 버튼이
+     달아나 조준이 어긋난다 — 마우스에도, 자동화 테스트에도 나쁘다 */
+  .icon-btn:active { transform: scale(.92); }
+  /* 새 소식 점만 상시 — 알림이 목적이라 멈춰 있으면 뜻이 없다 */
+  /* 점(::after)만 깜박인다 — 버튼 자체에 걸면 ☰ 버튼이 통째로 늘었다 줄었다 해
+     가리키는 순간 목표가 흔들린다 (.dot-badge 는 버튼 자신에 붙는 클래스다) */
+  .dot-badge::after { animation: pulse-dot 2.4s ease-in-out infinite; }
+}
+/* 드로어 항목의 점은 transform 으로 세로 가운데를 잡고 있어(pages.css) 크기를 건드리면
+   자리가 틀어진다. 그래서 깜박임은 투명도만 쓴다 */
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; }
+  50% { opacity: .4; }
+}
+
+/* 움직임 없이도 상태는 보여야 한다 — 아래는 모션 설정과 무관하게 늘 적용된다 */
+.tool-btn:hover, .uchip:hover, .chips__item:hover, .tchips__item:hover { background: var(--hover); border-color: var(--fg); }
+.tabs__item:hover { color: var(--fg); }
+button:disabled, .drawer__item:disabled { cursor: not-allowed; transform: none; }

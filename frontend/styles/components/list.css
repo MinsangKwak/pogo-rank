@@ -74,7 +74,8 @@
 .row__why-more { color: var(--fg); font-size: 12px; text-decoration: underline; }
 .boss__card { margin: 4px 0 16px; padding: 14px 16px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); }
 .boss__title { margin: 0 0 10px; font-size: 13.5px; font-weight: 600; }
-.boss__recs { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px; }
+/* overflow-y 를 함께 적는다 (v2.26.0) — 가로 스크롤만 의도한 줄이 세로 휠까지 먹지 않게 */
+.boss__recs { display: flex; gap: 8px; overflow-x: auto; overflow-y: hidden; padding: 4px 0; }
 .boss__rec { flex: none; display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 8px 10px; border-radius: 10px; background: var(--bg); font-size: 11.5px; line-height: 1.35; }
 .boss__rec .sprite { width: 40px; height: 40px; }
 /* 2026-09-07 v2.14.0 (QA-52) 긴 이름(거다이맥스 ○○○)은 카드 폭 안에서 가운데 정렬로 줄바꿈 — 한 줄로 늘어져 격자가 깨지지 않게 */

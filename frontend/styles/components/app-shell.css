@@ -38,6 +38,11 @@
 /* 전체 페이지(#/dex 등)의 자체 제목 줄은 상단 바가 대신한다 — 제목이 두 번 보이지 않게 */
 .page__bar { display: none; }
 
+/* 2026-09-08 v2.26.0 화면별 헤더 — 넓은 화면에서만 쓴다 (좁은 화면은 상단 바가 제목을 겸한다).
+   [hidden] 로 감추므로 여기서는 보일 때의 모양만 정의한다 */
+.page-head { max-width: 760px; margin: 0 auto; padding: 20px 20px 0; }
+.page-head h2 { margin: 0; font-size: 24px; font-weight: 600; letter-spacing: -0.01em; }
+
 /* ── 화면 안 필터 아코디언 ──
    타입 칩이 18개까지 늘어나는 줄은 app-shell.js compactScreenFilters() 가 <details> 로 접는다.
    생김새는 layout.css 의 .schedule 아코디언과 같은 언어로 (같은 테두리·반경·화살표) */
@@ -99,7 +104,11 @@ button { touch-action: manipulation; }
 @media (min-width: 1024px) {
   /* 컨테이너를 넓히고, 사이드바 자리(210px + 32px 간격)만큼 본문을 민다 */
   .app-bar { max-width: 1100px; }
-  .layout, #page { max-width: 1100px; padding-left: 262px; }
+  .layout, #page, .page-head { max-width: 1100px; padding-left: 262px; }
+
+  /* 상단 바가 로고 자리를 지키므로 본문 첫 요소는 헤더 아래로 내려온다 */
+  .page-head { padding-top: 28px; padding-bottom: 4px; }
+  .page-head + .layout, .page-head ~ #page { padding-top: 8px; }
 
   /* 왼쪽 고정 사이드바 — 컨테이너 왼쪽 끝(.layout 의 20px 여백 자리)에 맞춘다.
      상단 바 높이(10 + 44 + 10 + 1) 아래에서 시작 */
@@ -108,8 +117,6 @@ button { touch-action: manipulation; }
   .app-nav .nav-menu { padding: 0; margin: 0; border-bottom: 0; }
   .app-nav .drawer__item { font-size: 13.5px; }
 
-  /* 하단 고정 기준 안내도 같은 열에 맞춘다 */
-  .crit-bar summary, .crit-bar .note { max-width: 1100px; padding-left: 262px; }
 
   /* 서비스 홈: 넓은 화면은 4열 */
   .home__grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }

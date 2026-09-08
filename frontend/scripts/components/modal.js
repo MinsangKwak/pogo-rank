@@ -34,8 +34,7 @@ function openModal(content) {
   document.body.append(overlay);
   overlay.addEventListener('cancel', (event) => { event.preventDefault(); closeModal(); });
   overlay.showModal();
-  // 팝업 뒤의 본문이 같이 스크롤되지 않게 잠근다 (닫을 때 closeModal이 되돌린다)
-  document.body.style.overflow = 'hidden';
+  syncScrollLock();   // 팝업 뒤의 본문이 같이 스크롤되지 않게 잠근다
   pushOverlayEntry();
 }
 
@@ -45,8 +44,7 @@ function openModal(content) {
 function closeModal({ silent = false, keepEntry = false } = {}) {
   const overlay = document.querySelector('.modal');
   if (overlay) { overlay.close(); overlay.remove(); }
-  // 드로어가 아직 열려 있으면 스크롤 잠금은 유지한다
-  if (!overlayVisible()) document.body.style.overflow = '';
+  syncScrollLock();   // 드로어가 아직 열려 있으면 잠금은 그대로 유지된다
   // 2026-09-06 v2.9.0 상세 딥링크(#/mon/…)를 열어 둔 채 닫으면 주소에서 해시만 지운다 (히스토리 항목 추가 없음)
   if (overlay && /^#\/mon\//.test(location.hash) && !keepEntry) {
     try { history.replaceState(history.state, '', location.pathname + location.search); } catch {}

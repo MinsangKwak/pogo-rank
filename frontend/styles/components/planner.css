@@ -72,3 +72,10 @@ body[data-mode="plan"] #fav-digest { display: none; }
 .plan__cmp-head .sprite { width: 40px; height: 40px; }
 .plan__cmp-head b { font-size: 12.5px; }
 .plan__cmp-head .meta { font-size: 10.5px; }
+
+/* 2026-09-08 v2.25.0 유사백 판정 — 개체값 퍼센트 옆에 결론 한 단어.
+   색은 뜻이 있을 때만 쓴다는 원칙(docs 2.18)에 따라 세 등급만 구분하고, 그 밖은 뱃지를 아예 안 붙인다 */
+.plan__hundo { font-weight: 600; }
+.plan__hundo--hundo { color: #fff; border-color: transparent; background: linear-gradient(135deg, var(--c-max), var(--c-max-2)); }
+.plan__hundo--near { color: var(--accent); border-color: color-mix(in srgb, var(--accent) 55%, var(--line)); }
+.plan__hundo--good { color: var(--muted); border-color: var(--line); }

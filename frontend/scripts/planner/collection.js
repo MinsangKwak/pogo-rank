@@ -15,6 +15,7 @@
 //
 // 제공하는 전역
 //   planMons() · planMonName(mon) · planMonForm(mon) · planMonCp(mon, level?) · planLeagueReach(form, ivs)
+//   planHundoGap(mon, level?) · planHundoLabel(mon)   2026-09-08 v2.25.0 유사백 판정
 //   renderPlanCollection() · openPlanMonEditor(mon, prefill) · openPlanCompare(a, b) · planAddFromDetail(pokemon)
 //
 // 의존하는 전역
@@ -80,6 +81,35 @@ function planLeagueReach(form, ivs) {
     out[league] = best;
   }
   return out;
+}
+
+// 유사백 판정 (2026-09-08 v2.25.0) — "이 개체가 백개체와 얼마나 차이 나나"를 CP 로 답한다.
+//   개체값 퍼센트(15/15/15 대비 합)만으로는 실전 차이가 안 보인다. 공격 15 짜리 14/15/15 와
+//   방어 15 짜리 15/14/15 는 같은 98% 지만 CP 도 쓰임새도 다르다. 그래서 같은 레벨에서
+//   백개체 CP 와 내 CP 를 견줘 몇 % 인지, 몇 CP 모자란지를 함께 낸다.
+//   레벨은 만렙(50)과 지금 레벨 둘 다 본다 — "지금 얼마나 아쉬운가"와 "다 키우면 어떤가"가 다른 질문이라서다.
+//   반환값 { perfect, ratio, gap, level } · 폼 데이터가 없으면 null
+function planHundoGap(mon, level) {
+  const form = planMonForm(mon);
+  if (!form) return null;
+  const at = level ?? mon.level ?? 1;
+  const [atk = 0, def = 0, hp = 0] = mon.ivs ?? [];
+  const mine = calcCp(form, at, atk, def, hp);
+  const perfect = calcCp(form, at, 15, 15, 15);
+  if (!perfect) return null;
+  return { perfect, mine, ratio: mine / perfect, gap: perfect - mine, level: at };
+}
+
+// 판정 문구 — 숫자만 주면 읽는 사람이 다시 계산해야 한다. 한 단어로 결론을 먼저 준다.
+//   백개체(15/15/15) · 유사백(만렙 CP 가 백개체의 99% 이상) · 준수(97% 이상) · 그 밖
+function planHundoLabel(mon) {
+  const [atk = 0, def = 0, hp = 0] = mon.ivs ?? [];
+  if (atk === 15 && def === 15 && hp === 15) return { kind: 'hundo', text: '백개체' };
+  const top = planHundoGap(mon, 50);
+  if (!top) return null;
+  if (top.ratio >= 0.99) return { kind: 'near', text: '유사백' };
+  if (top.ratio >= 0.97) return { kind: 'good', text: '준수' };
+  return null;
 }
 
 // CP 로 레벨 추정 — 같은 개체값에서 그 CP 가 나오는 레벨. 정확히 맞는 레벨이 없으면 가장 가까운 레벨과 차이를 함께 돌려준다
@@ -326,11 +356,14 @@ function planMonCard(mon) {
   const picked = _planCompare.includes(mon.id);
   const cp = planMonCp(mon);
   const maxKind = maxPoolKind(mon.sprite);
+  const hundo = planHundoLabel(mon);     // v2.25.0 백개체 · 유사백 · 준수
+  const gap = hundo ? planHundoGap(mon, 50) : null;
   return el('div', { class: `plan__mon${picked ? ' is-picked' : ''}` },
     sprite(mon.sprite),
     el('div', { class: 'plan__mon-main' },
       el('div', { class: 'row__name' }, nameNode(planMonName(mon)), el('span', { class: `tag plan__status plan__status--${PLAN_STATUS_MODS[PLAN_STATUSES.indexOf(mon.status)] || 'a'}` }, mon.status)),
-      el('div', { class: 'row__moves' }, el('span', {}, `Lv ${mon.level}`), el('span', {}, `개체값 ${(mon.ivs ?? []).join('/')} (${planIvPercent(mon.ivs)}%)`), el('span', {}, `CP ${cp.toLocaleString()}`)),
+      el('div', { class: 'row__moves' }, el('span', {}, `Lv ${mon.level}`), el('span', {}, `개체값 ${(mon.ivs ?? []).join('/')} (${planIvPercent(mon.ivs)}%)`), el('span', {}, `CP ${cp.toLocaleString()}`),
+        hundo ? el('span', { class: `tag plan__hundo plan__hundo--${hundo.kind}`, title: gap ? `만렙 기준 백개체 CP ${gap.perfect.toLocaleString()} 의 ${Math.round(gap.ratio * 100)}% (${gap.gap.toLocaleString()} 차이)` : '' }, hundo.text) : ''),
       el('div', { class: 'row__moves' }, el('span', {}, mon.fast || '스피드 모름'), el('span', {}, mon.charged || '차지 모름'),
         maxKind ? el('span', {}, maxKind === 'G' ? '거다이맥스 가능' : '다이맥스 가능') : ''),
       mon.memo ? el('div', { class: 'plan__memo-line' }, mon.memo) : '',
