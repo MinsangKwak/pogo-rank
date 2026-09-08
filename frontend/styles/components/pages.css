@@ -149,3 +149,10 @@
 /* 2026-09-06 v2.11.1 상성 검색: 타입 조합 포켓몬 목록 — 미구현은 흐리게 */
 .types__mons .boss__rec.is-unreleased { opacity: .55; }
 .types__mons .boss__rec .tag { font-size: 9.5px; padding: 0 4px; }
+
+/* 2026-09-08 v2.25.0 ⚔️ 레이드 보스 · 🥚 알 부화 — 도감 줄(.dex__row)을 그대로 쓰고 조건 문구만 덧붙인다 */
+.gameday__sec { margin-top: 22px; }
+.gameday__sec:first-of-type { margin-top: 8px; }
+.gameday__sec .dex__list { margin-top: 8px; }
+.gameday__note { margin-left: auto; padding-left: 10px; text-align: right; font-size: 11.5px; word-break: keep-all; }
+@media (max-width: 420px) { .gameday__note { font-size: 11px; } }

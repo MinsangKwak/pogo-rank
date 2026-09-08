@@ -45,7 +45,8 @@ def collect_sprite_ids(value):
 # 화면에 나오는 폼(IF 탭 보스 목록의 메가 샤크니아, 도감 진화 줄의 ⚡메가 버튼, PvP 전체 순위의 리전 폼)이
 # 수집 대상에서 빠져 몬스터볼 자리표시로 보이던 문제. "어디에든 sprite 로 적힌 번호는 전부 받는다"가 원칙
 for data_path in ('data/pvp.json', 'data/pve.json', 'data/pve_easy.json', 'data/dynamax.json', 'data/dynamax_tier.json', 'data/dynamax_tank.json', 'data/value.json', 'data/sheet.json',
-                  'data/bosses.json', 'data/pve_full.json', 'data/pvp_all.json'):
+                  'data/bosses.json', 'data/pve_full.json', 'data/pvp_all.json',
+                  'data/gameday.json'):   # 2026-09-08 v2.25.0 레이드 보스·알 부화 목록도 그림이 필요하다
     if os.path.exists(data_path):
         collect_sprite_ids(json.load(open(data_path, encoding='utf-8')))
 # 상세 팝업의 진화 계보에 나오는 종의 기본 스프라이트도 포함
