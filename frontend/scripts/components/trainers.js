@@ -80,14 +80,14 @@ async function renderTrainers() {
   const rows = await loadTrainers();
   if (!rows.length) {
     // 비어 있을 때의 안내는 관리자에게만 등록 방법까지 알려 준다
-    listBox.append(el('p', { class: 'detail__foot' }, AUTH.admin ? '아직 등록된 코드가 없어요. 아래 “코드 관리”에서 추가하세요.' : '아직 등록된 코드가 없어요.'));
+    listBox.append(footNote(AUTH.admin ? '아직 등록된 코드가 없어요. 아래 “코드 관리”에서 추가하세요.' : '아직 등록된 코드가 없어요.'));
   }
   for (const trainer of rows) {
     const copyButton = el('button', { class: 'copy-btn' }, '복사');
     copyButton.addEventListener('click', copyDigits(copyButton, trainer.code));
     listBox.append(el('div', { class: 'trainer__row' }, el('b', {}, trainer.name), el('code', {}, fmtCode(trainer.code)), copyButton));
   }
-  if (rows.length) listBox.append(el('p', { class: 'detail__foot' }, '복사하면 공백 없는 12자리로 복사됩니다 — 게임의 친구 추가 화면에 바로 붙여넣으세요.'));
+  if (rows.length) listBox.append(footNote('복사하면 공백 없는 12자리로 복사됩니다 — 게임의 친구 추가 화면에 바로 붙여넣으세요.'));
   if (AUTH.admin) listBox.append(el('button', { class: 'schedule__more', onclick: openTrainerAdmin }, '🛠 코드 관리 (추가·삭제) →'));
 }
 

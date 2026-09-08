@@ -90,7 +90,7 @@ function monListSection(types) {
   };
   draw();
   section.append($grid, $more,
-    el('p', { class: 'detail__foot' }, types.length === 2 ? '두 타입을 정확히 이 조합으로 가진 폼(메가·리전 폼 포함). 누르면 상세' : '이 타입을 가진 폼 전부(복합 타입 포함). 두 번째 칩을 고르면 조합으로 좁혀집니다'));
+    footNote(types.length === 2 ? '두 타입을 정확히 이 조합으로 가진 폼(메가·리전 폼 포함). 누르면 상세' : '이 타입을 가진 폼 전부(복합 타입 포함). 두 번째 칩을 고르면 조합으로 좁혀집니다'));
   return section;
 }
 
@@ -194,7 +194,7 @@ function renderTypeSearchPage() {
       buckets.x2.length + buckets.weak.length === 0 ? el('p', { class: 'detail__none-text' }, '효과가 굉장한 타입이 없습니다') : '',
       bucketRow('내성', buckets.resist),
       bucketRow('이중내성', buckets.r2, 'is-resist2'),
-      el('p', { class: 'detail__foot' }, '이중약점 = 두 타입 모두에 약해 ×2.56 · 이중내성 = 두 타입 모두 반감(×0.39). 본가의 무효 타입도 GO 에서는 같은 ×0.39 로 피해가 들어갑니다')));
+      footNote('이중약점 = 두 타입 모두에 약해 ×2.56 · 이중내성 = 두 타입 모두 반감(×0.39). 본가의 무효 타입도 GO 에서는 같은 ×0.39 로 피해가 들어갑니다')));
 
     // 1b) 2026-09-06 v2.11.1 이 타입 조합의 포켓몬 — "이 타입이 누구지?"에 답한다. 도감 폼 데이터(DEX_DATA.forms, 메가·리전 폼 포함)에서
     //     타입 2개면 정확히 그 조합, 1개면 그 타입을 가진 전부. 없으면 없다고 분명히 적는다
@@ -211,7 +211,7 @@ function renderTypeSearchPage() {
       if (max?.length) { hasRec = true; recSection.append(recRow(`맥스 배틀 — ${TYPE_KO[typeName]} 보스 기준`, max, gotoTab('max', { maxBoss: typeName, maxAxis: 'dealer' }), 'max', typeName)); }  // v2.14.0 보스 상대 딜러 표는 [딜러] 축
     }
     if (hasRec) {
-      recSection.append(el('p', { class: 'detail__foot' }, selected.length === 2
+      recSection.append(footNote(selected.length === 2
         ? '순위표는 단일 속성 보스 기준이라 복합 타입 상대에서는 위 배율표와 함께 보세요 (이중약점 타입 기술이 최우선).'
         : '순위표는 그 속성 보스를 상대할 때의 DPS·TDO 기준입니다.'));
       $result.append(recSection);
@@ -260,5 +260,5 @@ function renderTypeSearchPage() {
   drawHead(); drawChips(); drawResult();
   if (selected.length) track('type_search', { t: selected.join(','), mon: pokemon?.name ?? '', how: 'preset' });  // 링크·상세 팝업으로 미리 채워진 채 열림
   return el('div', { class: 'page__body' }, $input, $sugg, $chips, $head, $result,
-    el('p', { class: 'detail__foot' }, '배율은 게임마스터 상성표 기준 (굉장 ×1.6 · 별로 ×0.625 · 무효 ×0.39). 상세 팝업의 타입 상성에서도 이 페이지로 올 수 있어요.'));
+    footNote('배율은 게임마스터 상성표 기준 (굉장 ×1.6 · 별로 ×0.625 · 무효 ×0.39). 상세 팝업의 타입 상성에서도 이 페이지로 올 수 있어요.'));
 }

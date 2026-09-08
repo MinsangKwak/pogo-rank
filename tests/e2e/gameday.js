@@ -26,7 +26,8 @@ const ok = (n, c, x = '') => { console.log((c ? 'PASS' : 'FAIL') + ' ' + n + ' '
   await page.click('.home__tile:has-text("레이드 보스")');
   await page.waitForTimeout(500);
   ok('#/raids 라우팅', (await page.evaluate(() => location.hash)) === '#/raids');
-  ok('상단 바 제목', (await page.locator('#app-title').textContent()).includes('레이드 보스'));
+  // v2.30.0 상단 바는 늘 로고, 화면 이름은 본문 헤더로 내려왔다
+  ok('화면 헤더 제목', (await page.locator('#page-head h2').textContent()).includes('레이드 보스'));
   const raidSecs = await page.locator('.gameday__sec .page__sec').allTextContents();
   ok('티어 구역 있음', raidSecs.length > 0, raidSecs.join('|').slice(0, 80));
   const raidRows = await page.locator('.gameday__sec .dex__row').count();

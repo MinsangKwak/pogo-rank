@@ -118,7 +118,7 @@ function openConsentSettings() {
       el('li', {}, '위치정보는 수집하지 않습니다')),
     el('div', { class: 'account__actions' },
       el('button', { class: 'drawer__item', onclick: clearAppCache }, '🧹 캐시 비우고 새로고침')),
-    el('p', { class: 'detail__foot' }, '설정값까지 지우려면 브라우저의 "사이트 데이터 삭제"를 쓰세요. 계정에 저장한 즐겨찾기·내 포켓몬은 여기서 지워지지 않습니다 (계정 카드 → 계정 삭제).')));
+    footNote('설정값까지 지우려면 브라우저의 "사이트 데이터 삭제"를 쓰세요. 계정에 저장한 즐겨찾기·내 포켓몬은 여기서 지워지지 않습니다 (계정 카드 → 계정 삭제).')));
 }
 
 // app.js 첫 렌더 뒤 한 번 — 이미 동의했으면 GA 를 붙이고, 아니면 배너를 띄운다

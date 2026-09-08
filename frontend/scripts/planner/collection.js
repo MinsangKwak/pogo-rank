@@ -296,7 +296,7 @@ function openPlanMonEditor(mon = null, prefill = null) {
       el('div', { class: 'release__actions' },
         el('button', { class: 'release__mute', onclick: () => closeModal() }, '취소'),
         el('button', { class: 'release__ok', onclick: save }, mon ? '저장' : '내 포켓몬에 추가')),
-      el('p', { class: 'detail__foot' }, 'CP 는 저장하지 않고 종족값 × 레벨 × 개체값으로 계산합니다. * 는 레거시 기술. 섀도우는 CP 가 같고 배틀에서만 공격 ×1.2 · 방어 ×0.83.'));
+      footNote('CP 는 저장하지 않고 종족값 × 레벨 × 개체값으로 계산합니다. * 는 레거시 기술. 섀도우는 CP 가 같고 배틀에서만 공격 ×1.2 · 방어 ×0.83.'));
   };
   drawPick();
   drawForm();
@@ -343,7 +343,7 @@ function openPlanCompare(first, second) {
       row('스피드 기술', first.fast || '—', second.fast || '—'),
       row('차지 기술', first.charged || '—', second.charged || '—'),
       row('섀도우', first.shadow ? '섀도우' : '일반', second.shadow ? '섀도우' : '일반')),
-    el('p', { class: 'detail__foot' }, '굵은 값이 더 큰 쪽입니다. 리그 도달 = CP 상한을 넘지 않는 가장 높은 레벨의 CP. 이 표는 같은 종 안에서의 숫자 비교일 뿐 순위표 평가가 아니며, PvP 에서는 개체값이 낮아도 상한에 딱 맞는 개체가 유리할 수 있습니다.'));
+    footNote('굵은 값이 더 큰 쪽입니다. 리그 도달 = CP 상한을 넘지 않는 가장 높은 레벨의 CP. 이 표는 같은 종 안에서의 숫자 비교일 뿐 순위표 평가가 아니며, PvP 에서는 개체값이 낮아도 상한에 딱 맞는 개체가 유리할 수 있습니다.'));
   openModal(body);
 }
 
@@ -369,8 +369,8 @@ function planMonCard(mon) {
       mon.memo ? el('div', { class: 'plan__memo-line' }, mon.memo) : '',
       form ? '' : el('div', { class: 'account__msg' }, '폼 데이터가 없어 CP 를 계산할 수 없어요')),
     el('div', { class: 'plan__mon-actions' },
-      el('button', { class: `uchip${picked ? ' is-on' : ''}`, onclick: () => togglePlanCompare(mon) }, picked ? '☑ 비교' : '☐ 비교'),
-      el('button', { class: 'uchip', onclick: () => openPlanMonEditor(mon) }, '수정'),
+      uchip(picked ? '☑ 비교' : '☐ 비교', () => togglePlanCompare(mon), { on: picked }),
+      uchip('수정', () => openPlanMonEditor(mon)),
       el('button', { class: 'uchip admin__act is-danger', onclick: () => {
         if (!confirm(`${planMonName(mon)} (Lv ${mon.level}) 를 지울까요?`)) return;
         planDeleteMon(mon.id);
@@ -425,19 +425,19 @@ function renderPlanCollection() {
     }));
     $content.append(addButton);
     if (!mons.length) {
-      $content.append(el('p', { class: 'dex__hint' }, '아직 저장한 개체가 없어요. 도감 상세 팝업의 "➕ 내 개체로 저장"을 누르거나 위 버튼으로 종을 검색해 추가하세요.'));
+      $content.append(hintNote('아직 저장한 개체가 없어요. 도감 상세 팝업의 "➕ 내 개체로 저장"을 누르거나 위 버튼으로 종을 검색해 추가하세요.'));
     } else if (!shown.length) {
-      $content.append(el('p', { class: 'dex__hint' }, '이 상태의 개체가 없어요.'));
+      $content.append(hintNote('이 상태의 개체가 없어요.'));
     } else {
       $content.append(el('div', { class: 'plan__mons' }, ...shown.map(planMonCard)));
     }
     if (_planCompare.length === 1) {
       const picked = mons.find((mon) => mon.id === _planCompare[0]);
-      if (picked) $content.append(el('p', { class: 'dex__hint' }, `⚖️ ${planMonName(picked)} 와 비교할 같은 종 개체의 [☐ 비교] 를 누르세요. `,
-        el('button', { class: 'uchip', onclick: () => { _planCompare = []; render(); } }, '선택 해제')));
+      if (picked) $content.append(hintNote(`⚖️ ${planMonName(picked)} 와 비교할 같은 종 개체의 [☐ 비교] 를 누르세요. `,
+        uchip('선택 해제', () => { _planCompare = []; render(); })));
     }
   }
-  $content.append(el('p', { class: 'detail__foot' }, '개체 = 실제로 가진 한 마리. 같은 종을 여러 마리 저장할 수 있고, [☐ 비교] 를 같은 종 두 마리에 누르면 CP·개체값·리그 도달을 나란히 봅니다. ★ 즐겨찾기(종 단위)와는 별개로 저장됩니다.'));
+  $content.append(footNote('개체 = 실제로 가진 한 마리. 같은 종을 여러 마리 저장할 수 있고, [☐ 비교] 를 같은 종 두 마리에 누르면 CP·개체값·리그 도달을 나란히 봅니다. ★ 즐겨찾기(종 단위)와는 별개로 저장됩니다.'));
   $note.textContent = '내 포켓몬은 개체 단위(레벨 · 개체값 · 기술 · 상태)로 계정(Firestore users/{uid}.mons)에 저장됩니다. CP 는 종족값 × 레벨 × 개체값으로 계산하고, 리그 도달은 CP 상한을 넘지 않는 가장 높은 레벨입니다.';
 }
 

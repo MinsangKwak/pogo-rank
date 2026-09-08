@@ -92,7 +92,7 @@ function renderFavsPage() {
         AUTH.status === 'pending'
           ? '⏳ 승인 대기 중 — 승인되면 ★로 담은 포켓몬이 여기 모입니다.'
           : '로그인하면 ★로 담은 포켓몬을 PvE·PvP로 나눠 볼 수 있어요. ',
-        AUTH.status === 'anon' ? el('button', { class: 'uchip', onclick: signIn }, 'Google로 로그인') : ''));
+        AUTH.status === 'anon' ? uchip('Google로 로그인', signIn) : ''));
   }
   // 즐겨찾기한 도감번호를 화면에 쓸 항목으로 바꾼다 (이름이 없는 번호는 건너뛴다)
   const items = [...AUTH.favs]
@@ -121,7 +121,7 @@ function renderFavsPage() {
             el('b', {}, entry.name),
             roleSummaryNode(entry.dex)),
           favBtn(entry.dex, 'dex__fav')))
-      : [el('p', { class: 'dex__hint' }, current === 'etc' ? '순위권 밖인 즐겨찾기가 없어요.' : '이 분류에 해당하는 즐겨찾기가 아직 없어요.')]));
+      : [hintNote(current === 'etc' ? '순위권 밖인 즐겨찾기가 없어요.' : '이 분류에 해당하는 즐겨찾기가 아직 없어요.')]));
   };
   const $seg = seg([
     { id: 'all', label: `전체 ${groups.all.length}` },
@@ -176,7 +176,7 @@ function roleToggleNode(spriteId) {
             openDetailByDex(dex, true);
           } }, '자동으로 되돌리기')
         : ''),
-    el('p', { class: 'detail__foot' }, isOverridden
+    footNote(isOverridden
       ? '직접 지정한 값입니다. ★ 즐겨찾기 목록에서 이 분류로 묶입니다.'
       : '순위표에서 자동으로 정한 값입니다. 눌러서 바꾸면 이 포켓몬만 예외로 저장됩니다.'));
 }
