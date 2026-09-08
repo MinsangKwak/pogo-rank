@@ -16,7 +16,19 @@ FIREBASE_CONFIG_JSON='{"apiKey":"local-test","projectId":"local-test"}' ADMIN_UI
 node tests/e2e/nav.js       # 탐색·디자인 (홈 타일 · 탭 줄 · 팝업 기하 · 드로어 · 토큰 색)
 node tests/e2e/legal.js     # 약관·동의 배너·개인정보처리방침·계정 삭제
 node tests/e2e/gameday.js   # ⚔️ 레이드 보스 · 🥚 알 부화 · 유사백 판정
+node tests/e2e/shell.js     # 앱 셸 — 스크롤·헤더 배치·드로어 중복·2열 카드·버튼 반응
 ```
+
+## shell.js — 스크롤이 막히는 원인을 직접 잡는다
+
+"스크롤이 안 된다"는 제보는 재현 조건이 커서 위치·화면 폭·직전 동작에 달려 있어 눈으로 쫓기 어렵다.
+그래서 결과(굴러가는가)와 **원인**(휠을 가로채는 요소가 있는가)을 함께 본다.
+
+- 화면 15개 × 두 폭에서 실제로 휠을 굴려 문서가 움직이는지
+- `overflow-y` 가 `auto`/`scroll` 이면서 넘침이 24px 이하인 요소 — 가로 스크롤만 의도했는데
+  세로로 1~2px 넘쳐 휠을 먹는 덫이다 (docs/DEVELOPMENT.md 2.22)
+- 오버레이 여닫기 9가지 조합(검색·드로어·상세 × Esc·뒤로가기·해시이동) 뒤 잠금이 남는지
+- 잠금이 남아도 화면을 옮기면 풀리는지 (자가 복구, 2.23)
 
 ## fingerprint.js — 이름만 바꾸는 리팩토링을 검증할 때
 

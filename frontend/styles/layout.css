@@ -52,13 +52,9 @@ footer p { margin: 0; }
 footer a { color: var(--muted); text-decoration: underline; }
 
 /* 2026-09-02 기준 안내: 화면 하단 고정 아코디언 */
-.crit-bar { position: fixed; bottom: 0; left: 0; right: 0; background: var(--bg); border-top: 1px solid var(--line); z-index: 50; }
-.crit-bar summary { max-width: 760px; margin: 0 auto; padding: 9px 20px; cursor: pointer; font-size: 12.5px; font-weight: 500; color: var(--muted); list-style: none; }
-.crit-bar summary::-webkit-details-marker { display: none; }
-.crit-bar summary::after { content: '▴'; float: right; }
-.crit-bar[open] summary::after { content: '▾'; }
-.crit-bar .note { max-width: 760px; margin: 0 auto; padding: 0 20px 14px; }
-.layout { padding-bottom: 120px; }
+/* 2026-09-08 v2.26.0 하단 고정 '기준 안내' 막대는 v2.21.0 앱 셸 개편에서 사라졌다(드로어로 이동).
+   그 자리를 비워 두던 120px 여백도 함께 뺀다 — 화면 끝에 이유 없는 빈 칸이 남아 있었다 */
+.layout { padding-bottom: 40px; }
 
 /* 2026-09-02 업데이트 소식 팝업 */
 .release h2 { margin: 0 0 4px; font-size: 17px; }
