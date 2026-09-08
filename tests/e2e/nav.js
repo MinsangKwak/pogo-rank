@@ -58,7 +58,8 @@ const ok = (name, cond, extra = '') => results.push([cond ? 'PASS' : 'FAIL', nam
   // 3. 헤더 버튼이 이모지 아이콘 · 44px 정사각 통일
   const btns = await page.locator('.app-bar .app-bar__actions .icon-btn').evaluateAll((ns) =>
     ns.filter(n => !n.hidden).map(n => ({ t: n.textContent.trim(), w: n.getBoundingClientRect().width, h: n.getBoundingClientRect().height })));
-  ok('헤더 아이콘 3개 (🔍 👤 ☰)', btns.map(b => b.t).join('') === '🔍👤☰', JSON.stringify(btns.map(b => b.t)));
+  // v2.29.0 계정(👤)을 빼고 그 자리에 KR/EN 토글 — 로그인·마이페이지는 ☰ 메뉴 한 곳으로 모았다
+  ok('헤더 아이콘 3개 (🔍 EN ☰)', btns.map(b => b.t).join('') === '🔍EN☰', JSON.stringify(btns.map(b => b.t)));
   ok('헤더 버튼 44×44 통일', btns.every(b => Math.round(b.w) === 44 && Math.round(b.h) === 44), JSON.stringify(btns));
   ok('헤더에 텍스트 버튼 없음', !(await page.locator('.app-bar').textContent()).includes('메뉴'));
 

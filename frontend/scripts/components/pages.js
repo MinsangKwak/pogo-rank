@@ -33,7 +33,9 @@
 // 맨 위(가장 최신) 날짜에만 NEW 태그를 달고, 들어온 순간 "읽음" 처리한다.
 function renderReleasePage() {
   markReleaseSeen();
+  // 2026-09-08 v2.29.0 패치노트는 한국어로 둔다 — 그동안 쌓인 기록을 번역하면 원문과 어긋난 채로 굳는다
   return el('div', { class: 'page__body' },
+    i18nKoOnlyNote(),
     ...RELEASE_NOTES.map((group, groupIndex) => el('section', { class: 'release__sec' },
       el('h2', {}, group.date, groupIndex === 0 ? el('span', { class: 'tag tag--gmax' }, 'NEW') : ''),
       el('ul', {}, ...group.items.map((item) => el('li', {}, item))))));
@@ -83,7 +85,8 @@ function renderSchedulePage() {
     $list.replaceChildren(scheduleMonthList(cat));
   };
   draw();
-  return el('div', { class: 'page__body schedule__page' },
+  // 2026-09-08 v2.29.0 일정표는 한국 서버 공지를 그대로 옮긴 콘텐츠라 한국어로 둔다
+  return el('div', { class: 'page__body schedule__page' }, i18nKoOnlyNote(),
     $chips,
     $cal,
     el('h2', { class: 'page__sec' }, '기간 한눈에'),

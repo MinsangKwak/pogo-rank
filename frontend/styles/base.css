@@ -57,3 +57,7 @@ button:focus-visible { outline: 2px solid var(--fg); outline-offset: 2px; border
 .tool-btn:hover, .uchip:hover, .chips__item:hover, .tchips__item:hover { background: var(--hover); border-color: var(--fg); }
 .tabs__item:hover { color: var(--fg); }
 button:disabled, .drawer__item:disabled { cursor: not-allowed; transform: none; }
+
+/* 2026-09-08 v2.29.0 "이 화면은 한국어로만 둡니다" 안내 — 영어로 볼 때만 뜬다 (i18n.js setLang 이 lang 을 바꾼다) */
+.i18n-note { display: none; }
+:root[lang="en"] .i18n-note { display: block; margin: 0 0 12px; }
