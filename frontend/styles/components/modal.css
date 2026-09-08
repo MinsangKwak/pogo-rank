@@ -34,12 +34,14 @@ dialog.modal::backdrop { background: transparent; }
 .evo { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
 .evo__arrow { color: var(--muted); }
 .evo__stage { display: flex; flex-wrap: wrap; gap: 6px; }
-.evo__mon { display: flex; flex-direction: column; align-items: center; gap: 2px; width: 64px; padding: 6px 2px 4px; border-radius: 10px; border: 1px solid transparent; font-size: 11px; color: var(--muted); text-align: center; }
+/* 2026-09-08 v2.31.0 진화 전 단계는 테두리가 아예 없어(border: transparent) 그림이 붕 떠 보였다.
+   모든 단계에 같은 상자를 주고, "지금 보는 이 포켓몬"(is-now)만 테두리 색·굵기로 구분한다 */
+.evo__mon { display: flex; flex-direction: column; align-items: center; gap: 2px; width: 64px; padding: 6px 2px 4px; border-radius: 10px; border: 1px solid var(--line); background: var(--surface); font-size: 11px; color: var(--muted); text-align: center; }
 .evo__mon .sprite { width: 40px; height: 40px; }
-.evo__mon.is-now { border-color: var(--line); background: var(--surface); color: var(--fg); font-weight: 500; }
+.evo__mon.is-now { border-color: var(--fg); color: var(--fg); font-weight: 600; }
 /* 2026-09-04 메가/원시 진화 칩 — 일반 진화형과 구분되게 살짝 강조 */
 .evo__mon.form-tag--mega { border-color: color-mix(in srgb, var(--c-mega) 40%, var(--line)); color: color-mix(in srgb, var(--c-mega) 70%, var(--muted)); }  /* v2.11.0 메가 색으로 통일 */
-.evo__mon.form-tag--mega.is-now { background: color-mix(in srgb, var(--c-mega) 12%, var(--surface)); color: var(--c-mega); }
+.evo__mon.form-tag--mega.is-now { border-color: var(--c-mega); background: color-mix(in srgb, var(--c-mega) 12%, var(--surface)); color: var(--c-mega); }
 
 /* 기술 · 상성 목록 */
 .move-list__row { display: flex; align-items: baseline; gap: 10px; margin-bottom: 6px; }
