@@ -17,6 +17,7 @@ const APP_DESTINATIONS = [
   ['#/types', '타입 & 상성'], ['#/rank/max', 'D-MAX'],
   ['#/rank/pve', '레이드 · PvE'], ['#/rank/pvp', '배틀 · PvP'],
   ['#/plan', '육성 플래너'], ['#/schedule', '이벤트 일정'],
+  ['#/raids', '레이드 보스'], ['#/eggs', '알 부화'],   // 2026-09-08 v2.25.0
 ];
 const appHeader = document.querySelector('header');
 document.body.insertBefore(appHeader, document.querySelector('.layout'));

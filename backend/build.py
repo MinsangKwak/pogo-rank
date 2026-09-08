@@ -108,7 +108,7 @@ json.dump(pvp_all, open('data/pvp_all.json', 'w', encoding='utf-8'), ensure_asci
 
 # ── frontend/ 의 CSS·JS를 순서대로 인라인해 단일 dist/index.html 조립 ──
 # 순서가 곧 캐스케이드(CSS)·실행 순서(JS)이므로 새 파일은 여기 목록에 추가
-APP_VERSION = 'v2.24.0'  # BEM 클래스 이름 리팩토링
+APP_VERSION = 'v2.25.0'  # ⚔️ 레이드 보스 · 🥚 알 부화 · 유사백 판정
 # 2026-09-05 v2.7.3 빌드 채널 — 'prod'(기본) / 'dev'. dev 브랜치 워크플로(.github/workflows/deploy-dev.yml)가 BUILD_CHANNEL=dev 로 부른다.
 # dev 빌드는 (1) 버전 배지에 -dev 를 붙여 화면에서 구분되고 (2) GA 스니펫을 넣지 않아 통계가 섞이지 않고
 # (3) robots.txt 를 전부 차단 + <meta name="robots" content="noindex"> 로 검색 색인을 막는다. 나머지는 prod 와 동일
@@ -161,7 +161,7 @@ SCRIPTS = [
     'components/list.js', 'components/chips.js', 'components/seg.js',
     'components/history.js', 'components/modal.js', 'components/auth.js', 'components/detail.js',  # 2026-09-03 v2.2.0 auth: 로그인·즐겨찾기 (detail보다 먼저) · 2026-09-06 v2.11.0 history: 뒤로가기가 팝업·드로어를 닫게 (modal·drawer 가 사용)
     'components/schedule.js', 'components/release.js', 'components/terms.js', 'components/privacy.js', 'components/consent.js', 'components/search.js', 'components/drawer.js',  # 2026-09-07 v2.18.0 terms: 약관·동의 팝업·IP 고지 (privacy·auth 가 사용) · consent: GA 동의 배너  # 2026-09-02 9월 일정표 달력 · 업데이트 팝업
-    'components/favs.js', 'components/typesearch.js',  # 2026-09-05 favs: ★ 즐겨찾기 페이지 · 2026-09-06 typesearch: 🧭 상성 검색 페이지 (pages가 PAGES에 등록하므로 그 앞)
+    'components/favs.js', 'components/typesearch.js', 'components/gameday.js',  # 2026-09-05 favs: ★ 즐겨찾기 페이지 · 2026-09-06 typesearch: 🧭 상성 검색 페이지 · 2026-09-08 gameday: ⚔️ 레이드 보스 · 🥚 알 부화 (pages가 PAGES에 등록하므로 그 앞)
     'planner/shell.js', 'planner/home.js', 'planner/collection.js',  # 2026-09-07 v2.15.0 🌱 플래너 모드 (QA-53 셸 · QA-54 내 포켓몬) — pages.js 가 #/plan 라우팅에 쓰므로 그 앞
     'components/pages.js',
     'components/trainers.js', 'components/favdigest.js', 'components/totop.js',  # 2026-09-05 favdigest: 메인 즐겨찾기 카드
@@ -254,6 +254,7 @@ const VALUE_DATA = {json.dumps(value_tables, ensure_ascii=False) if value_tables
 const SHEET_DATA = {json.dumps(sheet_tables, ensure_ascii=False) if sheet_tables else optional_json('data/sheet.json')};
 const DEX_DATA = {optional_json('data/dex.json')};
 const BOSS_LIST = {optional_json('data/bosses.json') or '[]'};
+const GAMEDAY = {optional_json('data/gameday.json')};              // 2026-09-08 v2.25.0 레이드 보스·알 부화 풀·이벤트 원본 (backend/gameday_build.py)
 const SPRITE_IDS = {json.dumps(sorted(sprite_ids))};
 const SPRITES = {(open('data/sprites.json').read() if INLINE and os.path.exists('data/sprites.json') else 'null')};
 '''
