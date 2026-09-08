@@ -18,11 +18,13 @@
 const _formLabelSet = new Set(typeof FORM_LABELS !== 'undefined' ? FORM_LABELS : []);
 
 // 뱃지 색 갈래: 메가·원시 / 섀도우 / 맥스(다이맥스·거다이맥스) / 그 밖(리전·폼)
+// 블록 이름을 붙이지 않은 '갈래' 만 돌려준다 — 쓰는 쪽이 자기 블록의 수식어로 만든다
+// (form-tag--mega · sprite-box--mega 처럼 같은 갈래를 두 블록이 쓴다)
 function formLabelKind(label) {
   if (/^(메가|원시)/.test(label)) return 'mega';
   if (label === '섀도우') return 'shadow';
   if (label === '다이맥스' || label === '거다이맥스') return 'max';
-  return 'form';
+  return '';  // 리전·그 밖의 폼은 기본 뱃지 색 그대로
 }
 
 function splitFormName(name) {
@@ -43,7 +45,7 @@ function splitFormName(name) {
 function nameNode(name, attrs = {}) {
   const { labels, base } = splitFormName(name);
   const fragment = document.createDocumentFragment();
-  for (const label of labels) fragment.append(el('span', { class: `form-tag ${formLabelKind(label)}` }, label));
+  for (const label of labels) fragment.append(el('span', { class: `form-tag${formLabelKind(label) ? ' form-tag--' + formLabelKind(label) : ''}` }, label));
   fragment.append(el('b', attrs, base));
   return fragment;
 }

@@ -85,7 +85,7 @@ function updateModeBadge() {
   if (badge) {
     badge.textContent = isPlan ? '🔎 도감' : '🌱 플래너';
     badge.title = isPlan ? '도감 모드로 전환' : '플래너 모드로 전환';
-    badge.classList.toggle('plan', isPlan);
+    badge.classList.toggle('is-plan', isPlan);
   }
   const tagline = document.querySelector('.tagline');
   if (tagline) tagline.textContent = isPlan ? '내 개체 키우기 계획' : '편하게 검색하세요';  // 배지와 한 줄에 들어가게 짧게
@@ -95,7 +95,7 @@ function updateModeBadge() {
 function renderPlanTabs() {
   for (const [id, label] of PLAN_TABS) {
     $tabs.append(el('button', {
-      class: 'tab', role: 'tab', 'aria-selected': String(state.planTab === id),
+      class: 'tabs__item', role: 'tab', 'aria-selected': String(state.planTab === id),
       onclick: () => {
         track('plan_tab', { tab: id });
         navigateHash(id === 'home' ? '#/plan' : `#/plan/${id}`);

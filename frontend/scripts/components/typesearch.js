@@ -37,9 +37,9 @@ function openTypeSearch(types, spriteId, from = 'link') {
 
 // 배율 → 묶음 키. 이중약점 ≥2.5 · 약점 ≥1.5 · 내성 ≤0.7 · 이중내성/무효 ≤0.4 (GO 는 무효도 0.39 = 0.625²)
 function matchupBucket(multiplier) {
-  if (multiplier >= 2.5) return 'x2';
+  if (multiplier >= 2.5) return 'is-weak2';
   if (multiplier >= 1.5) return 'weak';
-  if (multiplier <= 0.4) return 'r2';
+  if (multiplier <= 0.4) return 'is-resist2';
   if (multiplier <= 0.7) return 'resist';
   return 'neutral';
 }
@@ -69,24 +69,24 @@ function typeMonList(types) {
 function monListSection(types) {
   const label = types.map((typeName) => TYPE_KO[typeName]).join('·');
   const mons = typeMonList(types);
-  const section = el('section', { class: 'ts-sec' }, el('h3', {}, `${label} 타입 포켓몬 (${mons.length})`));
+  const section = el('section', { class: 'types__sec' }, el('h3', {}, `${label} 타입 포켓몬 (${mons.length})`));
   if (!mons.length) {
-    section.append(el('p', { class: 'd-none-text' }, `${label} 타입 조합의 포켓몬은 없습니다.`));
+    section.append(el('p', { class: 'detail__none-text' }, `${label} 타입 조합의 포켓몬은 없습니다.`));
     return section;
   }
   let shown = 24;
-  const $grid = el('div', { class: 'boss-recs wrap-recs ts-mons' });
-  const $more = el('button', { class: 'boss-more', onclick: () => { shown += 48; draw(); } });
+  const $grid = el('div', { class: 'boss__recs recs-wrap types__mons' });
+  const $more = el('button', { class: 'boss__more', onclick: () => { shown += 48; draw(); } });
   const draw = () => {
     $grid.replaceChildren(...mons.slice(0, shown).map((mon) => el('button', {
-      class: `boss-rec${mon.unrel ? ' unrel' : ''}`, onclick: () => openDetail(mon, false, 'types'),
-    }, sprite(mon.sprite), el('span', {}, nameNode(mon.name)), mon.unrel ? el('span', { class: 'tag dex-unrel' }, '미구현') : '')));
+      class: `boss__rec${mon.unrel ? ' is-unreleased' : ''}`, onclick: () => openDetail(mon, false, 'types'),
+    }, sprite(mon.sprite), el('span', {}, nameNode(mon.name)), mon.unrel ? el('span', { class: 'tag dex__unrel' }, '미구현') : '')));
     $more.hidden = shown >= mons.length;
     $more.textContent = `더보기 (${Math.min(shown, mons.length)}/${mons.length})`;
   };
   draw();
   section.append($grid, $more,
-    el('p', { class: 'd-foot' }, types.length === 2 ? '두 타입을 정확히 이 조합으로 가진 폼(메가·리전 폼 포함). 누르면 상세' : '이 타입을 가진 폼 전부(복합 타입 포함). 두 번째 칩을 고르면 조합으로 좁혀집니다'));
+    el('p', { class: 'detail__foot' }, types.length === 2 ? '두 타입을 정확히 이 조합으로 가진 폼(메가·리전 폼 포함). 누르면 상세' : '이 타입을 가진 폼 전부(복합 타입 포함). 두 번째 칩을 고르면 조합으로 좁혀집니다'));
   return section;
 }
 
@@ -97,10 +97,10 @@ function renderTypeSearchPage() {
   let selected = initialTypes.length ? [...initialTypes] : (pokemon?.types ?? []).slice(0, 2);
 
   const $head = el('div', {});
-  const $chips = el('div', { class: 'ts-pick' });
+  const $chips = el('div', { class: 'types__pick' });
   const $result = el('div', {});
-  const $input = el('input', { class: 'boss-search', placeholder: '이름으로 타입 채우기 (예: 가이오가)', autocomplete: 'off' });
-  const $sugg = el('div', { class: 'boss-sugg' });
+  const $input = el('input', { class: 'boss__search', placeholder: '이름으로 타입 채우기 (예: 가이오가)', autocomplete: 'off' });
+  const $sugg = el('div', { class: 'boss__sugg' });
 
   // 주소에 현재 선택을 남긴다 (공유용). replaceState 라 뒤로가기에는 영향이 없다
   const syncHash = () => {
@@ -111,27 +111,27 @@ function renderTypeSearchPage() {
   // 상단: 고른 포켓몬(있으면) 또는 고른 타입 조합
   const drawHead = () => {
     if (pokemon) {
-      $head.replaceChildren(el('div', { class: 'ts-head' },
+      $head.replaceChildren(el('div', { class: 'types__head' },
         sprite(pokemon.sprite),
         el('div', {},
           el('h2', {}, nameNode(pokemon.name)),
           el('div', { class: 'tchips' }, ...selected.map((typeName) => typeChipEl(typeName)))),
-        el('button', { class: 'ts-clear', 'aria-label': '지우기', onclick: () => { pokemon = null; selected = []; update('clear'); } }, '✕')));
+        el('button', { class: 'types__clear', 'aria-label': '지우기', onclick: () => { pokemon = null; selected = []; update('clear'); } }, '✕')));
     } else if (selected.length) {
-      $head.replaceChildren(el('div', { class: 'ts-head' },
+      $head.replaceChildren(el('div', { class: 'types__head' },
         el('div', {},
           el('h2', {}, `${selected.map((typeName) => TYPE_KO[typeName]).join(' · ')} 타입`),
-          el('p', { class: 'ts-hint' }, '타입 칩을 눌러 바꾸거나 위에서 포켓몬을 검색하세요')),
-        el('button', { class: 'ts-clear', 'aria-label': '지우기', onclick: () => { selected = []; update('clear'); } }, '✕')));
+          el('p', { class: 'types__hint' }, '타입 칩을 눌러 바꾸거나 위에서 포켓몬을 검색하세요')),
+        el('button', { class: 'types__clear', 'aria-label': '지우기', onclick: () => { selected = []; update('clear'); } }, '✕')));
     } else {
-      $head.replaceChildren(el('p', { class: 'ts-hint' }, '상대 타입을 1~2개 고르거나 포켓몬 이름을 검색하면 약점·이중약점과 추천 딜러가 나옵니다.'));
+      $head.replaceChildren(el('p', { class: 'types__hint' }, '상대 타입을 1~2개 고르거나 포켓몬 이름을 검색하면 약점·이중약점과 추천 딜러가 나옵니다.'));
     }
   };
 
   // 타입 칩 18개. 최대 2개 — 셋째를 누르면 먼저 고른 것이 빠진다. 손으로 바꾸면 포켓몬 선택은 푼다
   const drawChips = () => {
     $chips.replaceChildren(...Object.keys(TYPE_KO).map((typeName) => el('button', {
-      class: 'chip', 'aria-pressed': String(selected.includes(typeName)),
+      class: 'chips__item', 'aria-pressed': String(selected.includes(typeName)),
       onclick: () => {
         if (selected.includes(typeName)) selected = selected.filter((entry) => entry !== typeName);
         else selected = [...selected, typeName].slice(-2);
@@ -145,15 +145,15 @@ function renderTypeSearchPage() {
   // list: 'raid' | 'max' · bossType: 표의 보스 속성 — 어느 표의 몇 위를 눌렀는지 GA 에 남긴다 (v2.10.1 types_rec_click)
   const recRow = (label, rows, goto, list, bossType) => {
     if (!rows?.length) return '';
-    return el('div', { class: 'ts-recs' },
-      el('p', { class: 'schedule-sec' }, label),
-      el('div', { class: 'boss-recs wrap-recs' }, ...rows.slice(0, 5).map((entry, index) => el('button', {
-        class: 'boss-rec', onclick: () => {
+    return el('div', { class: 'types__recs' },
+      el('p', { class: 'schedule__sec' }, label),
+      el('div', { class: 'boss__recs recs-wrap' }, ...rows.slice(0, 5).map((entry, index) => el('button', {
+        class: 'boss__rec', onclick: () => {
           track('types_rec_click', { list, boss: bossType, rank: index + 1, mon: entry.name });
           openDetail(entry, false, 'types');
         },
       }, sprite(entry.sprite), el('span', {}, `${index + 1} `, nameNode(entry.name))))),
-      goto ? el('button', { class: 'boss-more', onclick: goto }, '전체 순위 보기 ▸') : '');
+      goto ? el('button', { class: 'boss__more', onclick: goto }, '전체 순위 보기 ▸') : '');
   };
   // 메인 화면의 특정 탭·칩으로 이동 (페이지를 닫고 해당 탭을 그 속성으로 맞춘다)
   const gotoTab = (tab, patch) => () => {
@@ -181,16 +181,16 @@ function renderTypeSearchPage() {
       return chip;
     }));
     const bucketRow = (label, entries, className) => entries.length
-      ? el('div', { class: 'ts-row' }, el('em', { class: className ?? '' }, label), chipsOf(entries, className)) : '';
+      ? el('div', { class: 'types__row' }, el('em', { class: className ?? '' }, label), chipsOf(entries, className)) : '';
     const targetLabel = pokemon ? pokemon.name : `${selected.map((typeName) => TYPE_KO[typeName]).join('·')} 타입`;
-    $result.append(el('section', { class: 'ts-sec' },
+    $result.append(el('section', { class: 'types__sec' },
       el('h3', {}, `⚔️ ${targetLabel}을(를) 때릴 때 — 기술 타입별 배율`),
-      bucketRow('이중약점', buckets.x2, 'x2'),
+      bucketRow('이중약점', buckets.x2, 'is-weak2'),
       bucketRow('약점', buckets.weak),
-      buckets.x2.length + buckets.weak.length === 0 ? el('p', { class: 'd-none-text' }, '효과가 굉장한 타입이 없습니다') : '',
+      buckets.x2.length + buckets.weak.length === 0 ? el('p', { class: 'detail__none-text' }, '효과가 굉장한 타입이 없습니다') : '',
       bucketRow('내성', buckets.resist),
-      bucketRow('이중내성', buckets.r2, 'r2'),
-      el('p', { class: 'd-foot' }, '이중약점 = 두 타입 모두에 약해 ×2.56 · 이중내성 = 두 타입 모두 반감(×0.39). 본가의 무효 타입도 GO 에서는 같은 ×0.39 로 피해가 들어갑니다')));
+      bucketRow('이중내성', buckets.r2, 'is-resist2'),
+      el('p', { class: 'detail__foot' }, '이중약점 = 두 타입 모두에 약해 ×2.56 · 이중내성 = 두 타입 모두 반감(×0.39). 본가의 무효 타입도 GO 에서는 같은 ×0.39 로 피해가 들어갑니다')));
 
     // 1b) 2026-09-06 v2.11.1 이 타입 조합의 포켓몬 — "이 타입이 누구지?"에 답한다. 도감 폼 데이터(DEX_DATA.forms, 메가·리전 폼 포함)에서
     //     타입 2개면 정확히 그 조합, 1개면 그 타입을 가진 전부. 없으면 없다고 분명히 적는다
@@ -198,7 +198,7 @@ function renderTypeSearchPage() {
 
     // 2) 추천 딜러 — 이 상대의 타입을 "보스 속성"으로 보고, 속성별 레이드/맥스 순위표 상위 5
     //    복합 타입은 두 표를 다 보여 준다 (표는 단일 속성 보스 기준이라 근사치 — 각주로 밝힌다)
-    const recSection = el('section', { class: 'ts-sec' }, el('h3', {}, `🎯 ${targetLabel} 상대 추천 딜러`));
+    const recSection = el('section', { class: 'types__sec' }, el('h3', {}, `🎯 ${targetLabel} 상대 추천 딜러`));
     let hasRec = false;
     for (const typeName of selected) {
       const raid = typeof PVE_DATA !== 'undefined' ? PVE_DATA[typeName] : null;
@@ -207,7 +207,7 @@ function renderTypeSearchPage() {
       if (max?.length) { hasRec = true; recSection.append(recRow(`맥스 배틀 — ${TYPE_KO[typeName]} 보스 기준`, max, gotoTab('max', { maxBoss: typeName, maxAxis: 'dealer' }), 'max', typeName)); }  // v2.14.0 보스 상대 딜러 표는 [딜러] 축
     }
     if (hasRec) {
-      recSection.append(el('p', { class: 'd-foot' }, selected.length === 2
+      recSection.append(el('p', { class: 'detail__foot' }, selected.length === 2
         ? '순위표는 단일 속성 보스 기준이라 복합 타입 상대에서는 위 배율표와 함께 보세요 (이중약점 타입 기술이 최우선).'
         : '순위표는 그 속성 보스를 상대할 때의 DPS·TDO 기준입니다.'));
       $result.append(recSection);
@@ -215,17 +215,17 @@ function renderTypeSearchPage() {
 
     // 3) 반대로 — 이 타입의 자속 기술은 어디에 잘 통하나 (단일 방어 타입 기준)
     const chart = DEX_DATA.chart ?? {};
-    const offenseSection = el('section', { class: 'ts-sec' }, el('h3', {}, `🛡 반대로, ${selected.map((typeName) => TYPE_KO[typeName]).join('·')} 타입 기술이 잘 통하는 상대`));
+    const offenseSection = el('section', { class: 'types__sec' }, el('h3', {}, `🛡 반대로, ${selected.map((typeName) => TYPE_KO[typeName]).join('·')} 타입 기술이 잘 통하는 상대`));
     for (const attackType of selected) {
       const row = Object.keys(TYPE_KO).map((defType) => [defType, chart[attackType]?.[defType] ?? 1]);
       const strong = row.filter(([, multiplier]) => multiplier >= 1.5);
       const weakTo = row.filter(([, multiplier]) => multiplier <= 0.7 && multiplier > 0.4);
       const none = row.filter(([, multiplier]) => multiplier <= 0.4);
-      offenseSection.append(el('div', { class: 'ts-row' }, el('em', {}, `${TYPE_KO[attackType]} 기술`),
+      offenseSection.append(el('div', { class: 'types__row' }, el('em', {}, `${TYPE_KO[attackType]} 기술`),
         el('div', {},
-          strong.length ? el('div', { class: 'tchips' }, el('small', { class: 'sub' }, '굉장 '), ...strong.map(([defType]) => typeChipEl(defType, '×1.6'))) : '',
-          weakTo.length ? el('div', { class: 'tchips', style: 'margin-top:4px' }, el('small', { class: 'sub' }, '별로 '), ...weakTo.map(([defType]) => typeChipEl(defType, '×0.63'))) : '',
-          none.length ? el('div', { class: 'tchips', style: 'margin-top:4px' }, el('small', { class: 'sub' }, '거의 안 통함 '), ...none.map(([defType]) => typeChipEl(defType, '×0.39'))) : '')));
+          strong.length ? el('div', { class: 'tchips' }, el('small', { class: 'row__sub' }, '굉장 '), ...strong.map(([defType]) => typeChipEl(defType, '×1.6'))) : '',
+          weakTo.length ? el('div', { class: 'tchips', style: 'margin-top:4px' }, el('small', { class: 'row__sub' }, '별로 '), ...weakTo.map(([defType]) => typeChipEl(defType, '×0.63'))) : '',
+          none.length ? el('div', { class: 'tchips', style: 'margin-top:4px' }, el('small', { class: 'row__sub' }, '거의 안 통함 '), ...none.map(([defType]) => typeChipEl(defType, '×0.39'))) : '')));
     }
     $result.append(offenseSection);
   };
@@ -242,7 +242,7 @@ function renderTypeSearchPage() {
     const query = $input.value.trim();
     if (!query) return;
     for (const hit of monSearch(buildSearchIndex(), query, 8)) {
-      $sugg.append(el('button', { class: 'sugg-item', onclick: () => {
+      $sugg.append(el('button', { class: 'sugg__item', onclick: () => {
         pokemon = hit;
         selected = (hit.types ?? []).slice(0, 2);
         $input.value = '';
@@ -250,11 +250,11 @@ function renderTypeSearchPage() {
         update('search');
       } }, sprite(hit.sprite), el('span', {}, nameNode(hit.name))));
     }
-    if (!$sugg.childElementCount) $sugg.append(el('span', { class: 'sugg-none' }, '검색 결과가 없어요'));
+    if (!$sugg.childElementCount) $sugg.append(el('span', { class: 'sugg__none' }, '검색 결과가 없어요'));
   });
 
   drawHead(); drawChips(); drawResult();
   if (selected.length) track('type_search', { t: selected.join(','), mon: pokemon?.name ?? '', how: 'preset' });  // 링크·상세 팝업으로 미리 채워진 채 열림
-  return el('div', { class: 'page-body' }, $input, $sugg, $chips, $head, $result,
-    el('p', { class: 'd-foot' }, '배율은 게임마스터 상성표 기준 (굉장 ×1.6 · 별로 ×0.625 · 무효 ×0.39). 상세 팝업의 타입 상성에서도 이 페이지로 올 수 있어요.'));
+  return el('div', { class: 'page__body' }, $input, $sugg, $chips, $head, $result,
+    el('p', { class: 'detail__foot' }, '배율은 게임마스터 상성표 기준 (굉장 ×1.6 · 별로 ×0.625 · 무효 ×0.39). 상세 팝업의 타입 상성에서도 이 페이지로 올 수 있어요.'));
 }

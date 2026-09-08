@@ -241,13 +241,13 @@ function confirmDeleteAccount() {
     '승인 정보와 가입 요청(이메일·이름·사진·약관 동의 기록)',
     'Google 로그인 연결(Firebase 인증 계정)',
   ];
-  const go = el('button', { class: 'drawer-item acct-danger', onclick: () => { closeModal({ silent: true }); deleteAccount(); } }, '🗑 지우기 (되돌릴 수 없음)');
-  openModal(el('div', { class: 'consent-modal' },
-    el('h2', { class: 'd-name' }, '계정을 삭제할까요?'),
-    el('p', { class: 'plan-desc' }, '아래가 즉시 지워지고 복구되지 않습니다. 브라우저에 남은 설정값(마지막 탭 등)은 개인정보가 아니라 그대로 둡니다.'),
-    el('ul', { class: 'priv-list' }, ...items.map((text) => el('li', {}, text))),
-    el('div', { class: 'acct-actions' }, go,
-      el('button', { class: 'drawer-item', onclick: () => closeModal() }, '취소'))));
+  const go = el('button', { class: 'drawer__item account__danger', onclick: () => { closeModal({ silent: true }); deleteAccount(); } }, '🗑 지우기 (되돌릴 수 없음)');
+  openModal(el('div', { class: 'consent__modal' },
+    el('h2', { class: 'detail__name' }, '계정을 삭제할까요?'),
+    el('p', { class: 'plan__desc' }, '아래가 즉시 지워지고 복구되지 않습니다. 브라우저에 남은 설정값(마지막 탭 등)은 개인정보가 아니라 그대로 둡니다.'),
+    el('ul', { class: 'priv__list' }, ...items.map((text) => el('li', {}, text))),
+    el('div', { class: 'account__actions' }, go,
+      el('button', { class: 'drawer__item', onclick: () => closeModal() }, '취소'))));
 }
 
 // ── 즐겨찾기 ────────────────────────────────────────────
@@ -339,7 +339,7 @@ async function setRole(formKey, roleList) {
 // 그래서 버튼은 상태를 스스로 들고 있지 않고 data-dex만 남기며, 실제 표시는 AUTH.favs를 보고 정한다
 function favBtn(dex, extraClass = '') {
   const on = isFav(dex);
-  return el('button', { class: `fav${on ? ' on' : ''}${extraClass ? ' ' + extraClass : ''}`, 'data-dex': String(dex), 'aria-label': '즐겨찾기',
+  return el('button', { class: `fav${on ? ' is-on' : ''}${extraClass ? ' ' + extraClass : ''}`, 'data-dex': String(dex), 'aria-label': '즐겨찾기',
     title: AUTH.status === 'ok' ? '즐겨찾기 토글' : '로그인하면 즐겨찾기 저장',
     onclick: (event) => {
       // 카드 전체가 상세 팝업을 여는 클릭 대상이므로, ★는 팝업이 뜨지 않게 전파를 막는다
@@ -354,7 +354,7 @@ function refreshFavUi(onlyDex) {
   for (const button of document.querySelectorAll('.fav[data-dex]')) {
     if (onlyDex != null && Number(button.dataset.dex) !== Number(onlyDex)) continue;
     const on = isFav(button.dataset.dex);
-    button.classList.toggle('on', on);
+    button.classList.toggle('is-on', on);
     button.textContent = on ? '★' : '☆';
   }
   // 도감의 "★ 즐겨찾기 N" 칩 카운트도 갱신
@@ -381,43 +381,43 @@ function renderAccount(message) {
     if (AUTH.user?.photoURL) headerButton.append(el('img', { class: 'avatar', src: AUTH.user.photoURL, alt: '' }));
     else headerButton.textContent = '👤';
     // 승인 대기 중임을 헤더 버튼에서도 알 수 있게 표시(드로어를 열지 않아도 보이도록)
-    headerButton.classList.toggle('pending', AUTH.status === 'pending');
+    headerButton.classList.toggle('is-pending', AUTH.status === 'is-pending');
   }
   accountBox.textContent = '';
-  const note = message ? el('p', { class: 'acct-msg' }, message) : '';
+  const note = message ? el('p', { class: 'account__msg' }, message) : '';
   // (1) 비로그인
   if (!AUTH.user) {
     accountBox.append(
-      el('button', { class: 'drawer-item acct-login', onclick: signIn }, '🔐 Google로 로그인'),
-      el('p', { class: 'acct-sub' }, '승인된 친구만 사용할 수 있어요. 로그인하면 즐겨찾기 ★와 내 포켓몬을 내 계정에 저장합니다. 첫 로그인 때 ',
+      el('button', { class: 'drawer__item account__login', onclick: signIn }, '🔐 Google로 로그인'),
+      el('p', { class: 'account__sub' }, '승인된 친구만 사용할 수 있어요. 로그인하면 즐겨찾기 ★와 내 포켓몬을 내 계정에 저장합니다. 첫 로그인 때 ',
         el('a', { href: '#/terms' }, '이용약관'), '·', el('a', { href: '#/privacy' }, '개인정보처리방침'), ' 동의를 받아요'),
       note);
     return;
   }
-  const who = el('div', { class: 'acct-who' },
+  const who = el('div', { class: 'account__who' },
     AUTH.user.photoURL ? el('img', { class: 'avatar', src: AUTH.user.photoURL, alt: '' }) : el('span', { class: 'avatar' }, '👤'),
-    el('div', {}, el('b', {}, AUTH.user.displayName || '(이름 없음)'), el('span', { class: 'acct-email' }, authEmail())));
+    el('div', {}, el('b', {}, AUTH.user.displayName || '(이름 없음)'), el('span', { class: 'account__email' }, authEmail())));
   // (2) 승인 대기 — 쓸 수 있는 기능이 없으므로 안내와 로그아웃만
   if (AUTH.status === 'pending') {
     accountBox.append(who,
-      el('p', { class: 'acct-sub acct-pending' }, '⏳ 승인 대기 중 — 관리자가 승인하면 즐겨찾기를 쓸 수 있어요. 관리자에게 알려주세요!'),
+      el('p', { class: 'account__sub account__pending' }, '⏳ 승인 대기 중 — 관리자가 승인하면 즐겨찾기를 쓸 수 있어요. 관리자에게 알려주세요!'),
       note,
-      el('div', { class: 'acct-actions' },
-        el('button', { class: 'drawer-item', onclick: signOut }, '로그아웃'),
-        el('button', { class: 'drawer-item acct-danger', onclick: confirmDeleteAccount }, '계정 삭제')));  // 2026-09-07 v2.18.0 가입 요청만 남은 상태도 스스로 지울 수 있게
+      el('div', { class: 'account__actions' },
+        el('button', { class: 'drawer__item', onclick: signOut }, '로그아웃'),
+        el('button', { class: 'drawer__item account__danger', onclick: confirmDeleteAccount }, '계정 삭제')));  // 2026-09-07 v2.18.0 가입 요청만 남은 상태도 스스로 지울 수 있게
     return;
   }
   // (3) 승인됨 — 즐겨찾기 개수와 바로가기, 관리자에게만 승인 패널 버튼
   // 2026-09-07 v2.15.1 "📕 도감에서 채우기" 버튼 제거 — 탭 줄 📕 와 같은 화면. 요약 한 줄만 남긴다
   const monCount = Array.isArray(AUTH.mons) ? AUTH.mons.length : 0;
   accountBox.append(who,
-    el('p', { class: 'acct-sub' }, `★ 즐겨찾기 ${AUTH.favs.size}마리 · 🎒 내 포켓몬 ${monCount}마리`),
+    el('p', { class: 'account__sub' }, `★ 즐겨찾기 ${AUTH.favs.size}마리 · 🎒 내 포켓몬 ${monCount}마리`),
     note,
-    el('div', { class: 'acct-actions' },
-      AUTH.admin ? el('button', { class: 'drawer-item', onclick: openAdminPanel }, '🔑 가입 승인') : '',
-      el('button', { class: 'drawer-item', onclick: signOut }, '로그아웃'),
+    el('div', { class: 'account__actions' },
+      AUTH.admin ? el('button', { class: 'drawer__item', onclick: openAdminPanel }, '🔑 가입 승인') : '',
+      el('button', { class: 'drawer__item', onclick: signOut }, '로그아웃'),
       // 2026-09-07 v2.18.0 (공개 준비 3) 계정 삭제 셀프서비스 — 관리자는 제외 (deleteAccount 참고)
-      AUTH.admin ? '' : el('button', { class: 'drawer-item acct-danger', onclick: confirmDeleteAccount }, '계정 삭제')));
+      AUTH.admin ? '' : el('button', { class: 'drawer__item account__danger', onclick: confirmDeleteAccount }, '계정 삭제')));
 }
 
 // ── 관리자 패널: 승인 요청 → 허용 목록 ───────────────────
@@ -440,8 +440,8 @@ async function openAdminPanel() {
   const pending = (requests?.docs || []).filter((doc) => !allowed.has(doc.id) && doc.data().uid !== AUTH.user.uid);
   // 2026-09-06 v2.10.1 이메일 → 계정 카드(uid 포함). 승인된 친구 줄에 uid 를 적어 GA User-ID 와 대조한다
   const cardByEmail = new Map((requests?.docs || []).map((doc) => [doc.id, doc.data()]));
-  const renderSection = (title, rows, emptyText) => el('section', { class: 'd-sec' }, el('h3', {}, title),
-    rows.length ? el('div', { class: 'admin-rows' }, ...rows) : el('p', { class: 'empty' }, emptyText));
+  const renderSection = (title, rows, emptyText) => el('section', { class: 'detail__sec' }, el('h3', {}, title),
+    rows.length ? el('div', { class: 'admin__rows' }, ...rows) : el('p', { class: 'empty' }, emptyText));
   body.append(renderSection('승인 대기', pending.map((doc) => adminRow(doc.id, doc.data(), '승인', async () => {
     await AUTH.db.collection('allowlist').doc(doc.id).set({ approved: true, name: doc.data().name || '', uid: doc.data().uid || '', at: firebase.firestore.FieldValue.serverTimestamp() });
     // 2026-09-06 v2.10.1 계정 카드는 지우지 않는다 — 승인 뒤에도 이메일 ↔ uid 대조에 쓴다 (다음 로그인에 status 가 ok 로 갱신된다)
@@ -464,15 +464,15 @@ async function openAdminPanel() {
       uidButton.textContent = AUTH.user.uid;
     }
   });
-  body.append(el('p', { class: 'd-foot' }, `내 uid: ${AUTH.user.uid} `, uidButton));
+  body.append(el('p', { class: 'detail__foot' }, `내 uid: ${AUTH.user.uid} `, uidButton));
 }
 
 // 승인 대기·승인된 친구 목록의 한 줄. label에 따라 버튼 색만 달라진다('해제'는 위험 동작이라 danger)
 function adminRow(email, data, label, onclick) {
-  return el('div', { class: 'admin-row' },
+  return el('div', { class: 'admin__row' },
     data.photo ? el('img', { class: 'avatar', src: data.photo, alt: '' }) : el('span', { class: 'avatar' }, '👤'),
-    el('div', { class: 'admin-who' }, el('b', {}, data.name || '(이름 없음)'), el('span', { class: 'acct-email' }, email),
+    el('div', { class: 'admin__who' }, el('b', {}, data.name || '(이름 없음)'), el('span', { class: 'account__email' }, email),
       // 2026-09-06 v2.10.1 GA 사용자 탐색기의 User-ID 와 대조할 uid (아직 한 번도 로그인 안 한 옛 승인자는 비어 있다)
-      data.uid ? el('span', { class: 'acct-email', title: 'GA User-ID' }, `uid ${data.uid}`) : ''),
-    el('button', { class: `uchip admin-act${label === '해제' ? ' danger' : ''}`, onclick }, label));
+      data.uid ? el('span', { class: 'account__email', title: 'GA User-ID' }, `uid ${data.uid}`) : ''),
+    el('button', { class: `uchip admin__act${label === '해제' ? ' is-danger' : ''}`, onclick }, label));
 }

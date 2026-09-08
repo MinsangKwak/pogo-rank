@@ -8,7 +8,7 @@
 //   없음 (document 말고는 아무것도 쓰지 않는다 — 그래서 build.py의 SCRIPTS에서 앞줄에 놓인다)
 // ─────────────────────────────────────────────────────────────────────────────
 
-// DOM 생성 헬퍼: el('div', { class: 'x', onclick: fn }, ...children)
+// DOM 생성 헬퍼: el('div', { class: 'is-x', onclick: fn }, ...children)
 //   tag       만들 태그 이름 ('div' · 'button' · 'img' …)
 //   attrs     속성 맵. 키 모양에 따라 처리 방식이 갈린다
 //             (class → className, style → cssText, on* → addEventListener, 나머지 → setAttribute)

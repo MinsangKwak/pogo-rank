@@ -30,10 +30,10 @@ function renderTierList(items, toRow) {
   for (const tier of TIER_ORDER) {
     const group = items.filter((pokemon) => pokemon.tier === tier);
     if (!group.length) continue;  // 그 티어에 아무도 없으면 머리글도 만들지 않는다
-    $content.append(el('div', { class: 'tier-head' },
-      el('b', { class: `tier-badge g-${tier}` }, tier),
+    $content.append(el('div', { class: 'tier__head' },
+      el('b', { class: `tier__badge tier__badge--${tier.toLowerCase()}` }, tier),
       el('span', { class: 'meta' }, `${group.length}종`)));
-    const rowsList = el('ul', { class: 'rows' });
+    const rowsList = el('ul', { class: 'row-list' });
     group.forEach((pokemon, index) => rowsList.append(toRow(pokemon, index)));
     $content.append(rowsList);
   }
@@ -50,13 +50,13 @@ function renderPveEasy() {
   $controls.append(bossChips);
   const items = PVE_EASY[state.easyBoss] ?? [];
   const title = state.easyBoss === 'overall' ? '레이드 일반 티어표 (전체)' : `${TYPE_KO[state.easyBoss]} 타입 일반 티어표`;
-  $content.append(el('div', { class: 'list-head' },
+  $content.append(el('div', { class: 'row-head' },
     el('h2', {}, title),
     el('span', { class: 'meta' }, `${items.length}종 · 전설·환상·메가·섀도우 제외`)));
   // 점수 칸의 ratio는 같은 속성 최강 어태커(전설·메가 포함) 대비 % 값이다
   renderTierList(items, (pokemon, index) => row(
     pokemon, String(index + 1),
-    el('span', { class: 'score' }, `${pokemon.ratio}점`),
-    el('span', { class: 'sub' }, `DPS ${pokemon.dps} · TDO ${pokemon.tdo}`)));
+    el('span', { class: 'row__score' }, `${pokemon.ratio}점`),
+    el('span', { class: 'row__sub' }, `DPS ${pokemon.dps} · TDO ${pokemon.tdo}`)));
   $note.textContent = '구하기 쉬운 일반 개체만 모은 레이드 티어표 (자체 계산). 속성 탭은 그 속성 포켓몬만 표시. 점수는 같은 속성 최강 어태커(전설·메가 포함) 대비 %, 티어는 목록 안 상대 등급. 포켓몬을 누르면 상세 정보가 열립니다.';
 }

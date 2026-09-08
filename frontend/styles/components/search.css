@@ -1,52 +1,52 @@
 /* 2026-09-02 전역 포켓몬 검색 · 2026-09-06 v2.12.1 카드형 검색 패널 — 페이지의 속성 칩과 구분되게 배경·테두리·제목을 준다 */
-.psearch { margin: 4px 0 16px; padding: 12px 14px 14px; display: flex; flex-direction: column; gap: 10px; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; }
-.psearch-head { display: flex; align-items: center; gap: 8px; }
-.psearch-head b { flex: 0 0 auto; white-space: nowrap; font-size: 14px; font-weight: 600; }
-.psearch-head .meta { flex: 1 1 auto; min-width: 0; font-size: 11.5px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.psearch-close { width: 30px; height: 30px; font-size: 13px; color: var(--muted); }
-.psearch .boss-search { background: var(--bg); }
+.search { margin: 4px 0 16px; padding: 12px 14px 14px; display: flex; flex-direction: column; gap: 10px; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; }
+.search__head { display: flex; align-items: center; gap: 8px; }
+.search__head b { flex: 0 0 auto; white-space: nowrap; font-size: 14px; font-weight: 600; }
+.search__head .meta { flex: 1 1 auto; min-width: 0; font-size: 11.5px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.search__close { width: 30px; height: 30px; font-size: 13px; color: var(--muted); }
+.search .boss__search { background: var(--bg); }
 /* 타입 칩 줄: 왼쪽 라벨 + 가로 스크롤 칩. .chips 의 페이지 가장자리 밀착(-20px)은 카드 안에서 쓰지 않는다 */
-.psearch-row { display: flex; align-items: center; gap: 8px; min-width: 0; }
-.psearch-label { flex: 0 0 auto; font-size: 11.5px; font-weight: 600; color: var(--muted); }
-.psearch .chips { margin: 0; padding: 2px 0; flex: 1 1 auto; min-width: 0; }
-.psearch-types .chip { padding: 4px 10px; font-size: 12.5px; background: var(--bg); }
-.psearch-types .chip[aria-pressed="true"] { background: var(--fg); color: var(--bg); border-color: var(--fg); }
-.psearch-types .chip[aria-pressed="true"] .dot { outline: 1.5px solid var(--bg); }
+.search__row { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.search__label { flex: 0 0 auto; font-size: 11.5px; font-weight: 600; color: var(--muted); }
+.search .chips { margin: 0; padding: 2px 0; flex: 1 1 auto; min-width: 0; }
+.search__types .chips__item { padding: 4px 10px; font-size: 12.5px; background: var(--bg); }
+.search__types .chips__item[aria-pressed="true"] { background: var(--fg); color: var(--bg); border-color: var(--fg); }
+.search__types .chips__item[aria-pressed="true"] .dot { outline: 1.5px solid var(--bg); }
 /* 결과: 카드 안의 세로 목록. 이름·순위 근거가 한 줄로 읽히게 */
-.psearch-results { display: flex; flex-direction: column; gap: 4px; }
-.psearch-results:empty { display: none; }
-.sugg-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 10px; padding: 4px 2px 2px; font-size: 12.5px; color: var(--muted); }
-.sugg-head b { color: var(--fg); font-weight: 600; }
-.sugg-hint { font-size: 12.5px; color: var(--muted); padding: 2px 2px; }
-.sugg-item { display: flex; align-items: center; gap: 8px; width: 100%; padding: 6px 10px 6px 6px; border: 1px solid var(--line); border-radius: 10px; background: var(--bg); font-size: 13.5px; text-align: left; }
-.sugg-item:hover { border-color: var(--fg); }
-.sugg-item .sprite { width: 30px; height: 30px; flex: 0 0 auto; }
-.sugg-item > span:first-of-type { flex: 0 0 auto; }
-.sugg-item.unrel { opacity: .55; }
-.sugg-item .tag { font-size: 9.5px; padding: 0 4px; }
-.sugg-none { font-size: 12.5px; color: var(--muted); padding: 2px 4px; }
-.sugg-rank { margin-left: auto; font-size: 11.5px; color: var(--muted); text-align: right; }  /* 2026-09-06 v2.9.0 검색 후보 옆 순위 근거 */
-.sugg-more { align-self: flex-start; font-size: 12.5px; color: var(--fg); text-decoration: underline; padding: 4px 2px; }
+.search__results { display: flex; flex-direction: column; gap: 4px; }
+.search__results:empty { display: none; }
+.sugg__head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 10px; padding: 4px 2px 2px; font-size: 12.5px; color: var(--muted); }
+.sugg__head b { color: var(--fg); font-weight: 600; }
+.sugg__hint { font-size: 12.5px; color: var(--muted); padding: 2px 2px; }
+.sugg__item { display: flex; align-items: center; gap: 8px; width: 100%; padding: 6px 10px 6px 6px; border: 1px solid var(--line); border-radius: 10px; background: var(--bg); font-size: 13.5px; text-align: left; }
+.sugg__item:hover { border-color: var(--fg); }
+.sugg__item .sprite { width: 30px; height: 30px; flex: 0 0 auto; }
+.sugg__item > span:first-of-type { flex: 0 0 auto; }
+.sugg__item.is-unreleased { opacity: .55; }
+.sugg__item .tag { font-size: 9.5px; padding: 0 4px; }
+.sugg__none { font-size: 12.5px; color: var(--muted); padding: 2px 4px; }
+.sugg__rank { margin-left: auto; font-size: 11.5px; color: var(--muted); text-align: right; }  /* 2026-09-06 v2.9.0 검색 후보 옆 순위 근거 */
+.sugg__more { align-self: flex-start; font-size: 12.5px; color: var(--fg); text-decoration: underline; padding: 4px 2px; }
 /* 2026-09-07 v2.16.0 검색 패널 빈 상태의 활용처 순위 (views/usage.js) */
-.usage-top { margin-top: 4px; }
-.usage-rank { flex: 0 0 18px; font-size: 12px; font-weight: 600; color: var(--muted); text-align: right; }
-.usage-item > span:nth-of-type(2) { flex: 0 0 auto; white-space: nowrap; }  /* 이름은 한 줄, 오른쪽 활용처 텍스트가 줄바꿈 */
-.usage-item .sugg-rank { flex: 1 1 0; min-width: 0; line-height: 1.4; }
-.usage-item .sugg-rank b { color: var(--fg); font-weight: 600; }
-.sugg-item .tag.use { flex: none; font-size: 9.5px; padding: 0 4px; }
+.usage__top { margin-top: 4px; }
+.usage__rank { flex: 0 0 18px; font-size: 12px; font-weight: 600; color: var(--muted); text-align: right; }
+.usage__item > span:nth-of-type(2) { flex: 0 0 auto; white-space: nowrap; }  /* 이름은 한 줄, 오른쪽 활용처 텍스트가 줄바꿈 */
+.usage__item .sugg__rank { flex: 1 1 0; min-width: 0; line-height: 1.4; }
+.usage__item .sugg__rank b { color: var(--fg); font-weight: 600; }
+.sugg__item .tag.tag--use { flex: none; font-size: 9.5px; padding: 0 4px; }
 /* 헤더 🔍 버튼: 검색 시트가 열려 있으면 눌린 상태로 (v2.21.0 aria-expanded 로 바뀜) */
 #search-toggle[aria-expanded="true"] { background: var(--fg); color: var(--bg); }
 
-/* 2026-09-07 v2.21.0 검색은 <dialog> 시트로 연다 — 상세 팝업(.overlay)과 같은 기하·같은 카드 모양 */
+/* 2026-09-07 v2.21.0 검색은 <dialog> 시트로 연다 — 상세 팝업(.modal)과 같은 기하·같은 카드 모양 */
 #search-dialog { position: fixed; inset: 0; z-index: 50; display: flex; align-items: center; justify-content: center;
                  width: 100%; max-width: none; height: 100%; max-height: none; margin: 0; border: 0; padding: 20px;
                  background: rgba(0,0,0,.45); color: var(--fg); }
 #search-dialog:not([open]) { display: none; }
 #search-dialog::backdrop { background: transparent; }
-#search-dialog .psearch { width: 100%; max-width: 440px; max-height: 85vh; margin: 0; overflow-y: auto; }
+#search-dialog .search { width: 100%; max-width: 440px; max-height: 85vh; margin: 0; overflow-y: auto; }
 /* 결과를 내려도 제목·입력은 계속 보이게 */
-#search-dialog .psearch-head { position: sticky; top: -2px; z-index: 2; padding-top: 2px; background: var(--surface); }
+#search-dialog .search__head { position: sticky; top: -2px; z-index: 2; padding-top: 2px; background: var(--surface); }
 @media (max-width: 640px) {
   #search-dialog { padding: 0; align-items: flex-end; }
-  #search-dialog .psearch { max-width: none; max-height: 88vh; border-radius: 14px 14px 0 0; border-bottom: 0; }
+  #search-dialog .search { max-width: none; max-height: 88vh; border-radius: 14px 14px 0 0; border-bottom: 0; }
 }

@@ -21,17 +21,17 @@
 const PRIVACY_VER = '2026-09-07';
 
 function renderPrivacyPage() {
-  const sec = (title, ...body) => el('section', { class: 'priv-sec' }, el('h2', { class: 'page-sec' }, title), ...body);
+  const sec = (title, ...body) => el('section', { class: 'priv__sec' }, el('h2', { class: 'page__sec' }, title), ...body);
   const p = (...text) => el('p', {}, ...text);
-  const ul = (...items) => el('ul', { class: 'priv-list' }, ...items.map((t) => el('li', {}, t)));
-  const table = (head, rows) => el('div', { class: 'priv-table-wrap' }, el('table', { class: 'priv-table' },
+  const ul = (...items) => el('ul', { class: 'priv__list' }, ...items.map((t) => el('li', {}, t)));
+  const table = (head, rows) => el('div', { class: 'priv__table-wrap' }, el('table', { class: 'priv__table' },
     el('thead', {}, el('tr', {}, ...head.map((h) => el('th', {}, h)))),
     el('tbody', {}, ...rows.map((row) => el('tr', {}, ...row.map((cell) => el('td', {}, cell)))))));
   const contact = typeof CONTACT_EMAIL !== 'undefined' && CONTACT_EMAIL ? el('a', { href: 'mailto:' + CONTACT_EMAIL }, CONTACT_EMAIL) : '사이트 운영자';
 
-  return el('div', { class: 'page-body' },
+  return el('div', { class: 'page__body' },
     p('POGO PLAN(이하 "서비스")은 로그인하지 않으면 개인정보를 수집하지 않습니다. Google 로그인으로 승인된 사용자에게만 즐겨찾기·내 포켓몬 저장 기능을 제공하며, 이 문서는 그 과정에서 무엇을 어디에 얼마나 보관하는지 설명합니다.'),
-    el('p', { class: 'd-foot' }, `시행일 2026-09-04 · 개정 2026-09-06 (이용 통계에 계정 식별자 연결) · 2026-09-07 (플래너 개체 정보 항목) · ${PRIVACY_VER} v2.18.0 (처리위탁·국외이전·보유기간·14세·보호책임자·자동수집·셀프 삭제 명시). 서비스는 개인이 무료로 운영하며 상업적 목적이 없습니다.`),
+    el('p', { class: 'detail__foot' }, `시행일 2026-09-04 · 개정 2026-09-06 (이용 통계에 계정 식별자 연결) · 2026-09-07 (플래너 개체 정보 항목) · ${PRIVACY_VER} v2.18.0 (처리위탁·국외이전·보유기간·14세·보호책임자·자동수집·셀프 삭제 명시). 서비스는 개인이 무료로 운영하며 상업적 목적이 없습니다.`),
 
     sec('1. 수집하는 개인정보',
       p('로그인하지 않고 도감·순위표·계산기·플래너 계산을 쓰는 경우 개인정보를 전혀 수집하지 않습니다. 아래 항목은 헤더 👤 버튼으로 Google 로그인을 했을 때만 발생합니다.'),
@@ -93,8 +93,8 @@ function renderPrivacyPage() {
       p('방침을 바꾸면 시행 7일 전에 패치노트(☰ 메뉴 → 🎉 패치노트)에 알립니다. 수집 항목이 늘어나는 변경은 다음 로그인 때 다시 동의를 받습니다.')),
 
     // 2026-09-04 이 요약본의 원본 — 표·콜아웃 등 더 자세한 형태는 노션에 둔다
-    el('p', { class: 'd-foot' }, '더 자세한 내용은 ',
+    el('p', { class: 'detail__foot' }, '더 자세한 내용은 ',
       el('a', { href: 'https://app.notion.com/p/3d1cbbdd109b81a9b5dcf344e4432ae2', target: '_blank', rel: 'noopener' }, '노션 상세 페이지'),
       '에서도 확인할 수 있습니다. 이용약관은 ', el('a', { href: '#/terms' }, '#/terms'), '.'),
-    typeof ipNoticeNode === 'function' ? ipNoticeNode('d-foot') : '');
+    typeof ipNoticeNode === 'function' ? ipNoticeNode('detail__foot') : '');
 }

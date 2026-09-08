@@ -4,33 +4,33 @@
 .consent { position: fixed; left: 12px; right: 12px; bottom: 12px; z-index: 40; display: flex; align-items: center; gap: 10px 14px; flex-wrap: wrap;
            max-width: 720px; margin: 0 auto; padding: 12px 14px; border: 1px solid var(--line); border-radius: 14px; background: var(--bg);
            box-shadow: 0 8px 24px rgba(0,0,0,.14); font-size: 12.5px; line-height: 1.55; color: var(--fg); }
-.consent-text { flex: 1 1 260px; margin: 0; word-break: keep-all; }
-.consent-text a { color: var(--fg); text-decoration: underline; }
-.consent-btns { display: flex; gap: 6px; margin-left: auto; }
-.consent-btns .uchip { padding: 6px 12px; font-size: 12.5px; font-weight: 600; color: var(--fg); background: var(--surface); }
-.consent-btns .consent-allow { border-color: var(--fg); }
-.consent-btns .uchip:hover { background: var(--hover); }
-@media (max-width: 480px) { .consent-btns { width: 100%; } .consent-btns .uchip { flex: 1; text-align: center; justify-content: center; } }
+.consent__text { flex: 1 1 260px; margin: 0; word-break: keep-all; }
+.consent__text a { color: var(--fg); text-decoration: underline; }
+.consent__btns { display: flex; gap: 6px; margin-left: auto; }
+.consent__btns .uchip { padding: 6px 12px; font-size: 12.5px; font-weight: 600; color: var(--fg); background: var(--surface); }
+.consent__btns .consent__allow { border-color: var(--fg); }
+.consent__btns .uchip:hover { background: var(--hover); }
+@media (max-width: 480px) { .consent__btns { width: 100%; } .consent__btns .uchip { flex: 1; text-align: center; justify-content: center; } }
 
 /* 동의 팝업 · 설정 팝업 */
-.consent-modal .plan-desc { margin-bottom: 12px; }
-.consent-check { display: flex; align-items: flex-start; gap: 10px; margin: 10px 0; font-size: 13.5px; line-height: 1.55; word-break: keep-all; }
-.consent-check input { flex: none; width: 20px; height: 20px; margin-top: 1px; accent-color: var(--fg); }
-.consent-check a { color: var(--fg); text-decoration: underline; }
-.consent-go { justify-content: center; margin-top: 8px; }
-.consent-go:disabled { opacity: .45; cursor: not-allowed; }
-.consent-opt { justify-content: flex-start; }
-.consent-opt.on { border-color: var(--fg); }
-.consent-opt span { display: flex; flex-direction: column; gap: 2px; }
-.consent-opt small { font-size: 11.5px; font-weight: 400; color: var(--muted); }
-.consent-modal .page-sec { margin-top: 18px; }
-.consent-modal .priv-list { margin-bottom: 12px; }
+.consent__modal .plan__desc { margin-bottom: 12px; }
+.consent__check { display: flex; align-items: flex-start; gap: 10px; margin: 10px 0; font-size: 13.5px; line-height: 1.55; word-break: keep-all; }
+.consent__check input { flex: none; width: 20px; height: 20px; margin-top: 1px; accent-color: var(--fg); }
+.consent__check a { color: var(--fg); text-decoration: underline; }
+.consent__go { justify-content: center; margin-top: 8px; }
+.consent__go:disabled { opacity: .45; cursor: not-allowed; }
+.consent__opt { justify-content: flex-start; }
+.consent__opt.is-on { border-color: var(--fg); }
+.consent__opt span { display: flex; flex-direction: column; gap: 2px; }
+.consent__opt small { font-size: 11.5px; font-weight: 400; color: var(--muted); }
+.consent__modal .page__sec { margin-top: 18px; }
+.consent__modal .priv__list { margin-bottom: 12px; }
 
 /* 개인정보처리방침 표 — 좁은 폭은 가로 스크롤 */
-.priv-table-wrap { overflow-x: auto; margin: 8px 0; }
-.priv-table { width: 100%; min-width: 460px; border-collapse: collapse; font-size: 12.5px; line-height: 1.5; }
-.priv-table th, .priv-table td { padding: 6px 8px; border: 1px solid var(--line); text-align: left; vertical-align: top; word-break: keep-all; }
-.priv-table th { background: var(--surface); font-weight: 600; }
+.priv__table-wrap { overflow-x: auto; margin: 8px 0; }
+.priv__table { width: 100%; min-width: 460px; border-collapse: collapse; font-size: 12.5px; line-height: 1.5; }
+.priv__table th, .priv__table td { padding: 6px 8px; border: 1px solid var(--line); text-align: left; vertical-align: top; word-break: keep-all; }
+.priv__table th { background: var(--surface); font-weight: 600; }
 
 /* IP 고지문: 푸터와 전체 페이지 하단 공통 */
 .ip-notice { font-size: 11.5px; line-height: 1.6; color: var(--muted); word-break: keep-all; }
@@ -38,5 +38,5 @@
 footer .foot-links a, footer .foot-links button { color: var(--muted); text-decoration: underline; background: none; border: 0; padding: 0; font: inherit; cursor: pointer; }
 
 /* 계정 삭제 버튼: 위험 동작이라 색으로 구분 */
-.acct-danger { color: #c0392b; }
-.acct-danger:hover { border-color: #c0392b; }
+.account__danger { color: #c0392b; }
+.account__danger:hover { border-color: #c0392b; }

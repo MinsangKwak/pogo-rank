@@ -20,16 +20,16 @@ function openModal(content) {
   // 드로어 위에서 팝업을 열면 드로어는 닫는다 — 히스토리 항목은 팝업이 이어받는다
   if (typeof closeDrawer === 'function') closeDrawer({ silent: true });
   const overlay = el('dialog', {
-    class: 'overlay',
+    class: 'modal',
     'aria-label': content.querySelector('h2')?.textContent || '상세 정보',
     // 배경만 눌렀을 때 닫는다. 팝업 안쪽을 눌러도 클릭이 여기까지 올라오므로(이벤트 버블링)
     // event.target이 배경 자신인지 확인해야 한다
     onclick: (event) => { if (event.target === overlay) closeModal(); },
   },
-    el('div', { class: 'modal' },
+    el('div', { class: 'modal__box' },
       // 2026-09-02 X버튼을 sticky 바에 넣어 스크롤해도 항상 보이게
-      el('div', { class: 'modal-close-bar' },
-        el('button', { class: 'modal-close', 'aria-label': '닫기', onclick: () => closeModal() }, '✕')),
+      el('div', { class: 'modal__bar' },
+        el('button', { class: 'modal__close', 'aria-label': '닫기', onclick: () => closeModal() }, '✕')),
       content));
   document.body.append(overlay);
   overlay.addEventListener('cancel', (event) => { event.preventDefault(); closeModal(); });
@@ -43,7 +43,7 @@ function openModal(content) {
 //   silent     히스토리 항목을 되돌리지 않는다 (popstate 로 닫히는 중 · 페이지 이동이 항목을 대체할 때)
 //   keepEntry  다른 오버레이가 곧 열리므로 항목을 유지한다 (openModal 내부용)
 function closeModal({ silent = false, keepEntry = false } = {}) {
-  const overlay = document.querySelector('.overlay');
+  const overlay = document.querySelector('.modal');
   if (overlay) { overlay.close(); overlay.remove(); }
   // 드로어가 아직 열려 있으면 스크롤 잠금은 유지한다
   if (!overlayVisible()) document.body.style.overflow = '';
@@ -55,4 +55,4 @@ function closeModal({ silent = false, keepEntry = false } = {}) {
 }
 
 // Esc로 닫기. 팝업마다 리스너를 달고 떼는 대신 문서에 하나만 달아 둔다
-document.addEventListener('keydown', (event) => { if (event.key === 'Escape' && document.querySelector('.overlay')) { event.preventDefault(); closeModal(); } });
+document.addEventListener('keydown', (event) => { if (event.key === 'Escape' && document.querySelector('.modal')) { event.preventDefault(); closeModal(); } });

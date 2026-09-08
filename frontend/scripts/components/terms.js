@@ -38,7 +38,7 @@ function ipNoticeNode(extraClass = '') {
 function openTermsConsent(onAccept) {
   const agree = el('input', { type: 'checkbox' });
   const age = el('input', { type: 'checkbox' });
-  const go = el('button', { class: 'drawer-item acct-login consent-go', disabled: true }, '동의하고 로그인');
+  const go = el('button', { class: 'drawer__item account__login consent__go', disabled: true }, '동의하고 로그인');
   const sync = () => { go.disabled = !(agree.checked && age.checked); };
   agree.addEventListener('change', sync);
   age.addEventListener('change', sync);
@@ -49,27 +49,27 @@ function openTermsConsent(onAccept) {
     closeModal({ silent: true });
     onAccept?.();
   });
-  openModal(el('div', { class: 'consent-modal' },
-    el('h2', { class: 'd-name' }, '로그인 전에 확인해 주세요'),
-    el('p', { class: 'plan-desc' }, '로그인하면 Google 계정의 이메일·이름·프로필 사진이 서비스에 저장되고, 즐겨찾기와 내 포켓몬을 계정에 보관합니다. 로그인 없이도 도감·순위·계산기는 그대로 쓸 수 있어요.'),
-    el('label', { class: 'consent-check' }, agree, el('span', {},
+  openModal(el('div', { class: 'consent__modal' },
+    el('h2', { class: 'detail__name' }, '로그인 전에 확인해 주세요'),
+    el('p', { class: 'plan__desc' }, '로그인하면 Google 계정의 이메일·이름·프로필 사진이 서비스에 저장되고, 즐겨찾기와 내 포켓몬을 계정에 보관합니다. 로그인 없이도 도감·순위·계산기는 그대로 쓸 수 있어요.'),
+    el('label', { class: 'consent__check' }, agree, el('span', {},
       el('a', { href: '#/terms', onclick: () => closeModal({ silent: true }) }, '이용약관'), '과 ',
       el('a', { href: '#/privacy', onclick: () => closeModal({ silent: true }) }, '개인정보처리방침'), '을 읽었고 동의합니다')),
-    el('label', { class: 'consent-check' }, age, el('span', {}, '만 14세 이상입니다 (14세 미만은 가입할 수 없어요)')),
+    el('label', { class: 'consent__check' }, age, el('span', {}, '만 14세 이상입니다 (14세 미만은 가입할 수 없어요)')),
     go,
-    el('p', { class: 'd-foot' }, `약관 버전 ${TERMS_VER} · 동의 여부는 이 기기와 계정 카드(가입 요청)에 기록됩니다`)));
+    el('p', { class: 'detail__foot' }, `약관 버전 ${TERMS_VER} · 동의 여부는 이 기기와 계정 카드(가입 요청)에 기록됩니다`)));
 }
 
 // 이용약관 전문 — 실제로 하는 것만 적는다. 표준 약관 복붙 금지 (privacy.js 와 같은 원칙)
 function renderTermsPage() {
-  const sec = (title, ...body) => el('section', { class: 'priv-sec' }, el('h2', { class: 'page-sec' }, title), ...body);
+  const sec = (title, ...body) => el('section', { class: 'priv__sec' }, el('h2', { class: 'page__sec' }, title), ...body);
   const p = (...text) => el('p', {}, ...text);
-  const ul = (...items) => el('ul', { class: 'priv-list' }, ...items.map((t) => el('li', {}, t)));
+  const ul = (...items) => el('ul', { class: 'priv__list' }, ...items.map((t) => el('li', {}, t)));
   const contact = typeof CONTACT_EMAIL !== 'undefined' && CONTACT_EMAIL ? el('a', { href: 'mailto:' + CONTACT_EMAIL }, CONTACT_EMAIL) : '사이트 운영자';
 
-  return el('div', { class: 'page-body' },
+  return el('div', { class: 'page__body' },
     p('POGO PLAN(이하 "서비스")을 이용하기 전에 읽어 주세요. 서비스는 개인이 무료로 운영하는 비공식 팬 프로젝트이며, 이 약관은 서비스가 실제로 하는 것과 하지 않는 것을 정합니다.'),
-    el('p', { class: 'd-foot' }, `시행일 ${TERMS_VER} (v2.18.0 신설). 개정하면 시행 7일 전에 패치노트로 알리고, 다음 로그인 때 다시 동의를 받습니다.`),
+    el('p', { class: 'detail__foot' }, `시행일 ${TERMS_VER} (v2.18.0 신설). 개정하면 시행 7일 전에 패치노트로 알리고, 다음 로그인 때 다시 동의를 받습니다.`),
 
     sec('1. 서비스란',
       p('포켓몬 GO 의 순위표(D-MAX · PvE · PvP), 도감, 일정표, 계산기와 🌱 플래너(내 개체 저장·비교)를 한 화면에서 보는 웹앱입니다. 홈 화면에 설치(PWA)해 앱처럼 쓸 수 있습니다.'),
@@ -108,5 +108,5 @@ function renderTermsPage() {
 
     sec('문의처',
       p('약관 관련 문의: ', contact)),
-    ipNoticeNode('d-foot'));
+    ipNoticeNode('detail__foot'));
 }

@@ -80,15 +80,15 @@ async function renderTrainers() {
   const rows = await loadTrainers();
   if (!rows.length) {
     // 비어 있을 때의 안내는 관리자에게만 등록 방법까지 알려 준다
-    listBox.append(el('p', { class: 'd-foot' }, AUTH.admin ? '아직 등록된 코드가 없어요. 아래 “코드 관리”에서 추가하세요.' : '아직 등록된 코드가 없어요.'));
+    listBox.append(el('p', { class: 'detail__foot' }, AUTH.admin ? '아직 등록된 코드가 없어요. 아래 “코드 관리”에서 추가하세요.' : '아직 등록된 코드가 없어요.'));
   }
   for (const trainer of rows) {
     const copyButton = el('button', { class: 'copy-btn' }, '복사');
     copyButton.addEventListener('click', copyDigits(copyButton, trainer.code));
-    listBox.append(el('div', { class: 'trainer-row' }, el('b', {}, trainer.name), el('code', {}, fmtCode(trainer.code)), copyButton));
+    listBox.append(el('div', { class: 'trainer__row' }, el('b', {}, trainer.name), el('code', {}, fmtCode(trainer.code)), copyButton));
   }
-  if (rows.length) listBox.append(el('p', { class: 'd-foot' }, '복사하면 공백 없는 12자리로 복사됩니다 — 게임의 친구 추가 화면에 바로 붙여넣으세요.'));
-  if (AUTH.admin) listBox.append(el('button', { class: 'sched-more', onclick: openTrainerAdmin }, '🛠 코드 관리 (추가·삭제) →'));
+  if (rows.length) listBox.append(el('p', { class: 'detail__foot' }, '복사하면 공백 없는 12자리로 복사됩니다 — 게임의 친구 추가 화면에 바로 붙여넣으세요.'));
+  if (AUTH.admin) listBox.append(el('button', { class: 'schedule__more', onclick: openTrainerAdmin }, '🛠 코드 관리 (추가·삭제) →'));
 }
 
 // 관리자 전용: 한 줄에 "이름 코드" 형식으로 붙여넣어 일괄 등록 + 개별 삭제
@@ -100,22 +100,22 @@ async function openTrainerAdmin() {
   openModal(body);
   // 관리 화면은 항상 최신 목록이어야 하므로 캐시를 무시하고 다시 읽는다
   const rows = await loadTrainers(true);
-  const list = el('div', { class: 'admin-rows' }, ...rows.map((trainer) => el('div', { class: 'admin-row' },
-    el('div', { class: 'admin-who' }, el('b', {}, trainer.name), el('span', { class: 'acct-email' }, fmtCode(trainer.code))),
-    el('button', { class: 'uchip admin-act danger', onclick: async () => {
+  const list = el('div', { class: 'admin__rows' }, ...rows.map((trainer) => el('div', { class: 'admin__row' },
+    el('div', { class: 'admin__who' }, el('b', {}, trainer.name), el('span', { class: 'account__email' }, fmtCode(trainer.code))),
+    el('button', { class: 'uchip admin__act is-danger', onclick: async () => {
       if (!confirm(`${trainer.name} 코드를 삭제할까요?`)) return;
       await AUTH.db.collection('trainers').doc(trainer.id).delete().catch(() => {});
       // 관리 팝업과 드로어의 목록을 둘 다 다시 그린다
       openTrainerAdmin();
       renderTrainers();
     } }, '삭제'))));
-  body.append(el('section', { class: 'd-sec' }, el('h3', {}, `등록된 코드 ${rows.length}개`),
+  body.append(el('section', { class: 'detail__sec' }, el('h3', {}, `등록된 코드 ${rows.length}개`),
     rows.length ? list : el('p', { class: 'empty' }, '아직 없습니다.')));
 
-  const textarea = el('textarea', { class: 'trainer-bulk', rows: '6', placeholder: '한 줄에 하나씩\n이름 0000 0000 0000\n이름2 1111 2222 3333' });
-  const message = el('p', { class: 'trainer-msg' }, '이름과 12자리 코드를 한 줄에 하나씩. 같은 이름이 있으면 덮어씁니다.');
+  const textarea = el('textarea', { class: 'trainer__bulk', rows: '6', placeholder: '한 줄에 하나씩\n이름 0000 0000 0000\n이름2 1111 2222 3333' });
+  const message = el('p', { class: 'trainer__msg' }, '이름과 12자리 코드를 한 줄에 하나씩. 같은 이름이 있으면 덮어씁니다.');
   // 2026-09-03 저장 결과를 눈에 보이게: 진행 표시 + 실패 사유(규칙 미게시 등)를 그대로 노출
-  const saveButton = el('button', { class: 'sched-more' }, '일괄 저장');
+  const saveButton = el('button', { class: 'schedule__more' }, '일괄 저장');
   saveButton.addEventListener('click', async () => {
     const lines = textarea.value.split('\n').map((line) => line.trim()).filter(Boolean);
     if (!lines.length) {
@@ -175,7 +175,7 @@ async function openTrainerAdmin() {
       setTimeout(openTrainerAdmin, 400);
     }
   });
-  body.append(el('section', { class: 'd-sec' }, el('h3', {}, '붙여넣어 추가'), textarea, message, saveButton));
+  body.append(el('section', { class: 'detail__sec' }, el('h3', {}, '붙여넣어 추가'), textarea, message, saveButton));
 }
 // 파일이 로드되는 시점에 한 번 그려 둔다(로그인 상태가 확정되면 onAuthChange가 다시 호출한다)
 renderTrainers();

@@ -1,151 +1,151 @@
 /* 2026-09-03 전체 페이지 뷰 (패치노트 · 일정표) */
 #page { max-width: 760px; margin: 0 auto; padding: 0 20px 80px; }
-.page-bar { position: sticky; top: 0; z-index: 10; display: flex; align-items: center; gap: 12px; padding: 14px 0; margin-bottom: 12px; background: var(--bg); border-bottom: 1px solid var(--line); font-size: 16px; }
-.page-sec { margin: 26px 0 4px; font-size: 15px; font-weight: 600; }
-.rel-sec h2 { display: flex; align-items: center; gap: 8px; margin: 22px 0 8px; font-size: 15px; }
-.rel-sec ul { margin: 0; padding-left: 18px; font-size: 13.5px; line-height: 1.8; }
-.sched-date { font-weight: 600; margin-right: 2px; }
+.page__bar { position: sticky; top: 0; z-index: 10; display: flex; align-items: center; gap: 12px; padding: 14px 0; margin-bottom: 12px; background: var(--bg); border-bottom: 1px solid var(--line); font-size: 16px; }
+.page__sec { margin: 26px 0 4px; font-size: 15px; font-weight: 600; }
+.release__sec h2 { display: flex; align-items: center; gap: 8px; margin: 22px 0 8px; font-size: 15px; }
+.release__sec ul { margin: 0; padding-left: 18px; font-size: 13.5px; line-height: 1.8; }
+.schedule__date { font-weight: 600; margin-right: 2px; }
 /* 2026-09-07 v2.13.1 일정 페이지: 분류 칩 + 기간 막대 타임라인 */
-.sched-page > .chips { margin: 0 -20px 12px; padding-left: 20px; padding-right: 20px; }
+.schedule__page > .chips { margin: 0 -20px 12px; padding-left: 20px; padding-right: 20px; }
 .timeline { border: 1px solid var(--line); border-radius: 12px; background: var(--surface); padding: 8px 10px 10px; overflow: hidden; }
-.tl-ruler { position: relative; height: 18px; border-bottom: 1px solid var(--line); margin-bottom: 4px; }
-.tl-tick { position: absolute; top: 0; height: 100%; }
-.tl-tick i { position: absolute; left: 0; top: 0; font-style: normal; font-size: 10px; line-height: 18px; color: var(--muted); transform: translateX(-30%); }
-.tl-tick.today i { color: var(--fg); font-weight: 700; }
-.tl-body { position: relative; }
-.tl-grid { position: absolute; inset: 0; pointer-events: none; }
-.tl-col { position: absolute; top: 0; bottom: 0; }
-.tl-col.wk { background: color-mix(in srgb, var(--muted) 9%, transparent); }
-.tl-col.today { border-left: 2px solid var(--fg); }
-.tl-row { position: relative; height: 22px; margin: 3px 0; }
-.tl-bar { position: absolute; top: 3px; height: 16px; border-radius: 4px; opacity: .85; }
-.tl-label { position: absolute; top: 0; max-width: 100%; padding: 0 4px; font-size: 11px; line-height: 22px; color: var(--fg); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+.timeline__ruler { position: relative; height: 18px; border-bottom: 1px solid var(--line); margin-bottom: 4px; }
+.timeline__tick { position: absolute; top: 0; height: 100%; }
+.timeline__tick i { position: absolute; left: 0; top: 0; font-style: normal; font-size: 10px; line-height: 18px; color: var(--muted); transform: translateX(-30%); }
+.timeline__tick.is-today i { color: var(--fg); font-weight: 700; }
+.timeline__body { position: relative; }
+.timeline__grid { position: absolute; inset: 0; pointer-events: none; }
+.timeline__col { position: absolute; top: 0; bottom: 0; }
+.timeline__col.is-weekend { background: color-mix(in srgb, var(--muted) 9%, transparent); }
+.timeline__col.is-today { border-left: 2px solid var(--fg); }
+.timeline__row { position: relative; height: 22px; margin: 3px 0; }
+.timeline__bar { position: absolute; top: 3px; height: 16px; border-radius: 4px; opacity: .85; }
+.timeline__label { position: absolute; top: 0; max-width: 100%; padding: 0 4px; font-size: 11px; line-height: 22px; color: var(--fg); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
             text-shadow: 0 0 3px var(--surface), 0 0 3px var(--surface); }
-.tl-label.end { text-align: right; }
-.timeline .schedule-item { margin: 6px 2px 0; color: var(--muted); }
+.timeline__label.is-end { text-align: right; }
+.timeline .schedule__item { margin: 6px 2px 0; color: var(--muted); }
 
 /* 2026-09-04 개인정보처리방침 페이지 */
-.priv-sec { margin-top: 4px; }
-.priv-sec p { font-size: 13.5px; line-height: 1.7; color: var(--fg); }
-.priv-list { margin: 6px 0 0; padding-left: 18px; font-size: 13.5px; line-height: 1.8; color: var(--fg); }
+.priv__sec { margin-top: 4px; }
+.priv__sec p { font-size: 13.5px; line-height: 1.7; color: var(--fg); }
+.priv__list { margin: 6px 0 0; padding-left: 18px; font-size: 13.5px; line-height: 1.8; color: var(--fg); }
 
 /* 새 패치노트 알림 점 (☰ 버튼 · 메뉴 항목) */
 .dot-badge { position: relative; }
 .dot-badge::after { content: ''; position: absolute; top: 6px; right: 6px; width: 7px; height: 7px; border-radius: 50%; background: #d84a5f; }
-.drawer-item.dot-badge::after { top: 50%; transform: translateY(-50%); right: 14px; }
+.drawer__item.dot-badge::after { top: 50%; transform: translateY(-50%); right: 14px; }
 
 /* 드로어 안 "자세히 보기" */
-.sched-more { display: block; width: 100%; text-align: center; padding: 9px 0 11px; font-size: 12.5px; color: var(--fg); text-decoration: underline; }
+.schedule__more { display: block; width: 100%; text-align: center; padding: 9px 0 11px; font-size: 12.5px; color: var(--fg); text-decoration: underline; }
 
 /* 2026-09-03 CP 계산기 */
-.cp-picked { margin: 10px 0; }
-.cp-slider { display: grid; grid-template-columns: 60px 1fr 40px; gap: 12px; align-items: center; margin: 14px 0; font-size: 13px; }
-.cp-slider em { font-style: normal; color: var(--muted); font-size: 12px; }
-.cp-slider b { text-align: right; font-variant-numeric: tabular-nums; }
-.cp-slider input[type="range"] { width: 100%; accent-color: var(--fg); }
-.cp-result { margin-top: 20px; padding: 16px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); }
-.cp-result:empty { display: none; }
-.cp-big { margin: 0; font-size: 26px; font-weight: 700; }
+.cp__picked { margin: 10px 0; }
+.cp__slider { display: grid; grid-template-columns: 60px 1fr 40px; gap: 12px; align-items: center; margin: 14px 0; font-size: 13px; }
+.cp__slider em { font-style: normal; color: var(--muted); font-size: 12px; }
+.cp__slider b { text-align: right; font-variant-numeric: tabular-nums; }
+.cp__slider input[type="range"] { width: 100%; accent-color: var(--fg); }
+.cp__result { margin-top: 20px; padding: 16px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); }
+.cp__result:empty { display: none; }
+.cp__big { margin: 0; font-size: 26px; font-weight: 700; }
 
 /* 2026-09-03 도감 페이지 */
-.dex-list { display: flex; flex-direction: column; margin-top: 16px; }
-.dex-row { display: flex; align-items: center; gap: 10px; padding: 7px 2px; border-bottom: 1px solid var(--line); text-align: left; font-size: 14px; }
-.dex-row:hover { background: var(--hover); }
-.dex-row .sprite { width: 34px; height: 34px; flex: none; }
-.dex-no { color: var(--muted); font-size: 12px; width: 46px; flex: none; }
-.dex-row b { font-weight: 500; }
-.dex-types { display: flex; gap: 4px; margin-left: auto; }
-.dex-types .dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+.dex__list { display: flex; flex-direction: column; margin-top: 16px; }
+.dex__row { display: flex; align-items: center; gap: 10px; padding: 7px 2px; border-bottom: 1px solid var(--line); text-align: left; font-size: 14px; }
+.dex__row:hover { background: var(--hover); }
+.dex__row .sprite { width: 34px; height: 34px; flex: none; }
+.dex__no { color: var(--muted); font-size: 12px; width: 46px; flex: none; }
+.dex__row b { font-weight: 500; }
+.dex__types { display: flex; gap: 4px; margin-left: auto; }
+.dex__types .dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
 
 /* 2026-09-03 도감 상단 간격 */
-.page-body > .boss-search { margin-bottom: 12px; }
-.page-body > .tchips { gap: 6px; }
+.page__body > .boss__search { margin-bottom: 12px; }
+.page__body > .tchips { gap: 6px; }
 
 /* 2026-09-03 도감 [미구현] 태그 */
-.dex-unrel { flex: none; font-size: 10.5px; color: var(--muted); border-color: var(--line); }
-.dex-row.unrel { opacity: .55; }
+.dex__unrel { flex: none; font-size: 10.5px; color: var(--muted); border-color: var(--line); }
+.dex__row.is-unreleased { opacity: .55; }
 
 /* 2026-09-03 도감 2열 격자 토글 */
-.dex-list.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0 12px; }
-.dex-list.grid2 .dex-row { font-size: 13px; gap: 7px; padding: 6px 0; min-width: 0; }
-.dex-list.grid2 .dex-row b { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.dex-list.grid2 .dex-no { width: 40px; font-size: 11px; }
-.dex-list.grid2 .dex-row .sprite { width: 30px; height: 30px; }
-.dex-layout { cursor: pointer; }
+.dex__list.is-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0 12px; }
+.dex__list.is-grid .dex__row { font-size: 13px; gap: 7px; padding: 6px 0; min-width: 0; }
+.dex__list.is-grid .dex__row b { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.dex__list.is-grid .dex__no { width: 40px; font-size: 11px; }
+.dex__list.is-grid .dex__row .sprite { width: 30px; height: 30px; }
+.dex__layout { cursor: pointer; }
 
 /* 2026-09-03 v2.2.0 도감 즐겨찾기 ★ · 로그인 안내 · 즐겨찾기 칩 */
-.dex-row .dex-fav { margin-left: 6px; }
-.dex-hint { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 0 0 12px; font-size: 12.5px; color: var(--muted); line-height: 1.5; }
+.dex__row .dex__fav { margin-left: 6px; }
+.dex__hint { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 0 0 12px; font-size: 12.5px; color: var(--muted); line-height: 1.5; }
 .fav-chip { color: #e8a80c; border-color: #e8a80c; }
 
 /* 2026-09-04 ⚔️ 기술 변경 페이지 */
 /* 머리말: 시즌 이름 + 적용일. 적용 전(soon)은 강조, 적용 후(done)는 차분하게 */
-.chg-head { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; flex-wrap: wrap;
+.changes__head { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; flex-wrap: wrap;
   border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; margin-bottom: 8px; }
-.chg-head.soon { border-color: color-mix(in srgb, #d84a5f 45%, var(--line)); }
-.chg-head b { font-size: 15px; }
-.chg-head span { font-size: 12px; color: var(--muted); }
-.chg-head.soon span { color: #d84a5f; font-weight: 600; }
-.chg-sec { margin-top: 16px; }
-.chg-sec h3 { margin: 0 0 6px; font-size: 13.5px; }
-.chg-list { list-style: none; margin: 0; padding: 0; }
+.changes__head.is-soon { border-color: color-mix(in srgb, #d84a5f 45%, var(--line)); }
+.changes__head b { font-size: 15px; }
+.changes__head span { font-size: 12px; color: var(--muted); }
+.changes__head.is-soon span { color: #d84a5f; font-weight: 600; }
+.changes__sec { margin-top: 16px; }
+.changes__sec h3 { margin: 0 0 6px; font-size: 13.5px; }
+.changes__list { list-style: none; margin: 0; padding: 0; }
 /* 기술 한 줄: [▲] 기술명 / 위력 70 → 85 */
-.chg-row { display: flex; gap: 8px; align-items: flex-start; padding: 7px 0; border-top: 1px solid var(--line); }
-.chg-row:first-child { border-top: 0; }
-.chg-mark { flex: 0 0 16px; text-align: center; font-size: 11px; line-height: 1.5; color: var(--muted); }
-.chg-row.up .chg-mark { color: #2f8f5b; }
-.chg-row.down .chg-mark { color: #d84a5f; }
-.chg-sub { font-size: 11.5px; color: var(--muted); margin-top: 1px; }
-.chg-sub em { font-style: normal; }
+.changes__row { display: flex; gap: 8px; align-items: flex-start; padding: 7px 0; border-top: 1px solid var(--line); }
+.changes__row:first-child { border-top: 0; }
+.changes__mark { flex: 0 0 16px; text-align: center; font-size: 11px; line-height: 1.5; color: var(--muted); }
+.changes__row.is-up .changes__mark { color: #2f8f5b; }
+.changes__row.is-down .changes__mark { color: #d84a5f; }
+.changes__sub { font-size: 11.5px; color: var(--muted); margin-top: 1px; }
+.changes__sub em { font-style: normal; }
 /* 새로 배우는 기술: 스프라이트 + 이름 + 기술명, 누르면 상세 팝업 */
-.chg-new { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 6px; }
-.chg-new li { display: flex; align-items: center; gap: 8px; padding: 6px 8px; border: 1px solid var(--line); border-radius: 8px; cursor: pointer; }
-.chg-new li img { width: 36px; height: 36px; }
-.chg-new li b { font-size: 12.5px; }
-.chg-scope { margin: 8px 0 0; font-size: 12px; line-height: 1.5; color: var(--muted);
+.changes__new { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 6px; }
+.changes__new li { display: flex; align-items: center; gap: 8px; padding: 6px 8px; border: 1px solid var(--line); border-radius: 8px; cursor: pointer; }
+.changes__new li img { width: 36px; height: 36px; }
+.changes__new li b { font-size: 12.5px; }
+.changes__scope { margin: 8px 0 0; font-size: 12px; line-height: 1.5; color: var(--muted);
   border-left: 3px solid var(--line); padding-left: 10px; }
-.chg-scope b { color: var(--fg); }
+.changes__scope b { color: var(--fg); }
 
 /* 2026-09-05 ★ 즐겨찾기 페이지 */
-.page-body > .seg { margin-bottom: 10px; }
-.fav-row { align-items: flex-start; }
-.fav-main { flex: 1 1 auto; min-width: 0; }
-.fav-main > b { display: block; }
-.fav-wheres { display: flex; flex-wrap: wrap; gap: 4px 10px; margin-top: 2px; font-size: 11.5px; color: var(--muted); }
-.fav-wheres.none { color: var(--muted); opacity: .7; }
-.fav-where b { color: var(--fg); font-weight: 600; }
-.fav-where em { font-style: normal; opacity: .75; }
+.page__body > .seg { margin-bottom: 10px; }
+.fav__row { align-items: flex-start; }
+.fav__main { flex: 1 1 auto; min-width: 0; }
+.fav__main > b { display: block; }
+.fav__wheres { display: flex; flex-wrap: wrap; gap: 4px 10px; margin-top: 2px; font-size: 11.5px; color: var(--muted); }
+.fav__wheres.is-empty { color: var(--muted); opacity: .7; }
+.fav__where b { color: var(--fg); font-weight: 600; }
+.fav__where em { font-style: normal; opacity: .75; }
 /* PvE·PvP를 색으로도 구분 — 목록을 훑을 때 갈래가 눈에 들어오게 */
-.fav-where.pve::before { content: 'PvE '; font-weight: 700; color: #b06a2c; }
-.fav-where.pvp::before { content: 'PvP '; font-weight: 700; color: #3b6fb0; }
+.fav__where--pve::before { content: 'PvE '; font-weight: 700; color: #b06a2c; }
+.fav__where--pvp::before { content: 'PvP '; font-weight: 700; color: #3b6fb0; }
 /* 상세 팝업의 역할 보정 칩 */
-.role-chip.on { border-color: var(--fg); color: var(--fg); font-weight: 600; }
+.role-chip.is-on { border-color: var(--fg); color: var(--fg); font-weight: 600; }
 
 /* 2026-09-06 v2.10.0 (QA-44) 🧭 상성 검색 페이지 (components/typesearch.js) */
-.ts-pick { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0 14px; }
-.ts-pick .chip { padding: 6px 12px; }
-.ts-head { display: flex; align-items: center; gap: 12px; padding: 12px 14px; margin: 0 0 6px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); }
-.ts-head .sprite { width: 48px; height: 48px; flex: none; }
-.ts-head > div { flex: 1 1 auto; min-width: 0; }
+.types__pick { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0 14px; }
+.types__pick .chips__item { padding: 6px 12px; }
+.types__head { display: flex; align-items: center; gap: 12px; padding: 12px 14px; margin: 0 0 6px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); }
+.types__head .sprite { width: 48px; height: 48px; flex: none; }
+.types__head > div { flex: 1 1 auto; min-width: 0; }
 /* 2026-09-07 v2.14.0 (QA-52) 긴 이름("거다이맥스 에이스번")이 폼 뱃지와 붙어 깨지던 것 — 뱃지·이름을 flex 로 나란히 두고 줄바꿈 허용, 줄 간격 확보 */
-.ts-head h2 { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; margin: 0 0 6px; font-size: 16px; font-weight: 600; line-height: 1.35; word-break: keep-all; }
-.ts-head h2 .form-tag { font-size: 11px; line-height: 1.7; }
-.ts-head .ts-clear { margin-left: auto; width: 28px; height: 28px; border-radius: 7px; color: var(--muted); flex: none; }
-.ts-head .ts-clear:hover { background: var(--hover); color: var(--fg); }
-.ts-sec { margin-top: 22px; }
-.ts-sec h3 { margin: 0 0 10px; font-size: 13px; font-weight: 600; line-height: 1.45; word-break: keep-all; }
-.ts-sec .d-foot { line-height: 1.6; word-break: keep-all; }
+.types__head h2 { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; margin: 0 0 6px; font-size: 16px; font-weight: 600; line-height: 1.35; word-break: keep-all; }
+.types__head h2 .form-tag { font-size: 11px; line-height: 1.7; }
+.types__head .types__clear { margin-left: auto; width: 28px; height: 28px; border-radius: 7px; color: var(--muted); flex: none; }
+.types__head .types__clear:hover { background: var(--hover); color: var(--fg); }
+.types__sec { margin-top: 22px; }
+.types__sec h3 { margin: 0 0 10px; font-size: 13px; font-weight: 600; line-height: 1.45; word-break: keep-all; }
+.types__sec .detail__foot { line-height: 1.6; word-break: keep-all; }
 /* 배율 줄: 라벨을 첫 줄 칩에 맞추고(baseline 대신 상단 정렬 + 패딩), 칩이 여러 줄로 감길 때 줄 간격을 넓힌다 */
-.ts-row { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 10px; }
-.ts-row em { flex: 0 0 56px; padding-top: 4px; font-style: normal; font-size: 11.5px; color: var(--muted); line-height: 1.5; }
-.ts-row .tchips { gap: 6px; flex: 1 1 auto; min-width: 0; }
-.ts-row > div { flex: 1 1 auto; min-width: 0; }
-@media (max-width: 400px) { .ts-row { flex-direction: column; gap: 4px; } .ts-row em { flex: none; padding-top: 0; } }
-.ts-row em.x2 { color: #d84a5f; font-weight: 600; }
-.ts-row em.r2 { color: #2f8f5b; font-weight: 600; }
-.ts-recs { margin: 4px 0 10px; }
-.ts-recs .schedule-sec { margin: 8px 0 4px; }
-.ts-hint { margin: 6px 0 0; font-size: 12.5px; color: var(--muted); line-height: 1.6; word-break: keep-all; }
+.types__row { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 10px; }
+.types__row em { flex: 0 0 56px; padding-top: 4px; font-style: normal; font-size: 11.5px; color: var(--muted); line-height: 1.5; }
+.types__row .tchips { gap: 6px; flex: 1 1 auto; min-width: 0; }
+.types__row > div { flex: 1 1 auto; min-width: 0; }
+@media (max-width: 400px) { .types__row { flex-direction: column; gap: 4px; } .types__row em { flex: none; padding-top: 0; } }
+.types__row em.is-weak2 { color: #d84a5f; font-weight: 600; }
+.types__row em.is-resist2 { color: #2f8f5b; font-weight: 600; }
+.types__recs { margin: 4px 0 10px; }
+.types__recs .schedule__sec { margin: 8px 0 4px; }
+.types__hint { margin: 6px 0 0; font-size: 12.5px; color: var(--muted); line-height: 1.6; word-break: keep-all; }
 /* 2026-09-06 v2.11.1 상성 검색: 타입 조합 포켓몬 목록 — 미구현은 흐리게 */
-.ts-mons .boss-rec.unrel { opacity: .55; }
-.ts-mons .boss-rec .tag { font-size: 9.5px; padding: 0 4px; }
+.types__mons .boss__rec.is-unreleased { opacity: .55; }
+.types__mons .boss__rec .tag { font-size: 9.5px; padding: 0 4px; }

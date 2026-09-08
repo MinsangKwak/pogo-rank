@@ -158,12 +158,12 @@ function buildScheduleTimeline(cat) {
   const pct = (day) => `${(day - 1) / lastDayOfMonth * 100}%`;
   const width = (from, to) => `${(to - from + 1) / lastDayOfMonth * 100}%`;
   // 눈금: 1·5·10·15·20·25·30일 숫자, 주말은 옅은 음영, 오늘은 세로선
-  const ruler = el('div', { class: 'tl-ruler' },
+  const ruler = el('div', { class: 'timeline__ruler' },
     ...Array.from({ length: lastDayOfMonth }, (_, index) => {
       const day = index + 1;
       const weekday = new Date(SCHEDULE_YM.y, SCHEDULE_YM.m - 1, day).getDay();
       const showNumber = day === 1 || day % 5 === 0;
-      return el('span', { class: `tl-tick${weekday === 0 || weekday === 6 ? ' wk' : ''}${day === todayDayOfMonth ? ' today' : ''}`, style: `left:${pct(day)};width:${width(day, day)}` },
+      return el('span', { class: `timeline__tick${weekday === 0 || weekday === 6 ? ' is-weekend' : ''}${day === todayDayOfMonth ? ' is-today' : ''}`, style: `left:${pct(day)};width:${width(day, day)}` },
         showNumber ? el('i', {}, String(day)) : '');
     }));
   // 같은 분류끼리 모으고, 그 안에서 시작일 → 긴 기간 순
@@ -176,20 +176,20 @@ function buildScheduleTimeline(cat) {
       ? `right:${100 - (item.e / lastDayOfMonth * 100)}%;max-width:${item.e / lastDayOfMonth * 100}%`
       : `left:${pct(item.s)};max-width:${100 - (item.s - 1) / lastDayOfMonth * 100}%`;
     // 괄호 안 설명(기간·시간·지역)은 막대와 아래 목록이 이미 말해 주므로 타임라인 라벨에서는 뗀다. 전체 문구는 title 로
-    const label = el('span', { class: `tl-label${late ? ' end' : ''}`, style: labelStyle }, item.label.split(' (')[0]);
-    return el('div', { class: 'tl-row', title: `${SCHEDULE_YM.m}/${item.s}${item.e !== item.s ? `–${item.e}` : ''} ${item.label}` },
-      el('span', { class: 'tl-bar', style: `left:${pct(item.s)};width:${width(item.s, item.e)};background:${SCHEDULE_CATS[item.cat].color}` }),
+    const label = el('span', { class: `timeline__label${late ? ' is-end' : ''}`, style: labelStyle }, item.label.split(' (')[0]);
+    return el('div', { class: 'timeline__row', title: `${SCHEDULE_YM.m}/${item.s}${item.e !== item.s ? `–${item.e}` : ''} ${item.label}` },
+      el('span', { class: 'timeline__bar', style: `left:${pct(item.s)};width:${width(item.s, item.e)};background:${SCHEDULE_CATS[item.cat].color}` }),
       label);
   });
-  const body = el('div', { class: 'tl-body' },
+  const body = el('div', { class: 'timeline__body' },
     // 주말 음영·오늘 선을 행 전체 높이로 깔기 위해 눈금과 같은 좌표의 배경 칸을 한 번 더 둔다
-    el('div', { class: 'tl-grid' }, ...Array.from({ length: lastDayOfMonth }, (_, index) => {
+    el('div', { class: 'timeline__grid' }, ...Array.from({ length: lastDayOfMonth }, (_, index) => {
       const day = index + 1;
       const weekday = new Date(SCHEDULE_YM.y, SCHEDULE_YM.m - 1, day).getDay();
-      return el('span', { class: `tl-col${weekday === 0 || weekday === 6 ? ' wk' : ''}${day === todayDayOfMonth ? ' today' : ''}`, style: `left:${pct(day)};width:${width(day, day)}` });
+      return el('span', { class: `timeline__col${weekday === 0 || weekday === 6 ? ' is-weekend' : ''}${day === todayDayOfMonth ? ' is-today' : ''}`, style: `left:${pct(day)};width:${width(day, day)}` });
     })),
     ...rows);
-  if (!rows.length) body.append(el('p', { class: 'schedule-item' }, '이 분류의 일정이 없습니다.'));
+  if (!rows.length) body.append(el('p', { class: 'schedule__item' }, '이 분류의 일정이 없습니다.'));
   return el('div', { class: 'timeline' }, ruler, body);
 }
 
@@ -197,13 +197,13 @@ function buildScheduleTimeline(cat) {
 // 각 줄 앞의 점은 그 일정 분류(cat)의 색을 그대로 쓴다 — 달력 칸의 점과 같은 색 규칙.
 function renderScheduleDetail(detailBox, day, cat) {
   detailBox.replaceChildren(
-    el('p', { class: 'schedule-sec' }, `${SCHEDULE_YM.m}/${day} 일정`),  // 2026-09-07 v2.13.0 (QA-20) 달 하드코딩 제거
+    el('p', { class: 'schedule__sec' }, `${SCHEDULE_YM.m}/${day} 일정`),  // 2026-09-07 v2.13.0 (QA-20) 달 하드코딩 제거
     ...scheduleItemsOn(day, cat).map(item =>
-      el('p', { class: 'schedule-item' },
+      el('p', { class: 'schedule__item' },
         el('span', { class: 'dot', style: `background:${SCHEDULE_CATS[item.cat].color}` }), item.label)),
   );
   // 제목 줄만 남았다면(= 그날 일정 0건) 안내 문구를 덧붙인다.
-  if (detailBox.children.length === 1) detailBox.append(el('p', { class: 'schedule-item' }, '등록된 일정이 없습니다.'));
+  if (detailBox.children.length === 1) detailBox.append(el('p', { class: 'schedule__item' }, '등록된 일정이 없습니다.'));
 }
 
 // 드로어 안의 일정표를 채운다: 접힘 상태용 한 줄 요약 + 달력 본문.
@@ -238,42 +238,42 @@ function buildScheduleCal(cat) {
   const today = new Date();
   const isCurrentMonth = today.getFullYear() === SCHEDULE_YM.y && today.getMonth() + 1 === SCHEDULE_YM.m;
   const todayDayOfMonth = isCurrentMonth ? today.getDate() : 0;
-  const detail = el('div', { class: 'schedule-detail' });
+  const detail = el('div', { class: 'schedule__detail' });
   const firstWeekdayOffset = new Date(SCHEDULE_YM.y, SCHEDULE_YM.m - 1, 1).getDay();
   const lastDayOfMonth = new Date(SCHEDULE_YM.y, SCHEDULE_YM.m, 0).getDate();
   let selectedCell = null;  // 현재 선택된 날짜 칸 (다시 누를 때 .sel을 떼기 위해 붙들어 둔다)
 
-  const grid = el('div', { class: 'schedule-cal' },
+  const grid = el('div', { class: 'schedule__cal' },
     // 1행: 요일 머리글
-    ...['일', '월', '화', '수', '목', '금', '토'].map(weekdayName => el('span', { class: 'cal-head' }, weekdayName)),
+    ...['일', '월', '화', '수', '목', '금', '토'].map(weekdayName => el('span', { class: 'cal__head' }, weekdayName)),
     // 1일 앞의 빈 칸 (요일 오프셋만큼)
     ...Array.from({ length: firstWeekdayOffset }, () => el('span')),
     // 날짜 칸: 그날 걸친 일정의 분류를 중복 없이 모아 점으로 찍는다
     ...Array.from({ length: lastDayOfMonth }, (_, index) => {
       const day = index + 1;
       const categoryKeys = [...new Set(scheduleItemsOn(day, cat).map(item => item.cat))];
-      const cell = el('button', { class: `cal-day${day === todayDayOfMonth ? ' today' : ''}`, onclick: () => {
+      const cell = el('button', { class: `cal__day${day === todayDayOfMonth ? ' is-today' : ''}`, onclick: () => {
         // 날짜를 누르면 선택 표시를 옮기고 상세 영역을 그날 일정으로 다시 그린다
-        if (selectedCell) selectedCell.classList.remove('sel');
+        if (selectedCell) selectedCell.classList.remove('is-selected');
         selectedCell = cell;
-        cell.classList.add('sel');
+        cell.classList.add('is-selected');
         renderScheduleDetail(detail, day, cat);
       } },
-        el('span', { class: 'd' }, String(day)),
-        el('span', { class: 'cal-dots' }, ...categoryKeys.map(categoryKey => el('span', { class: 'dot', style: `background:${SCHEDULE_CATS[categoryKey].color}` }))));
+        el('span', { class: 'cal__num' }, String(day)),
+        el('span', { class: 'cal__dots' }, ...categoryKeys.map(categoryKey => el('span', { class: 'dot', style: `background:${SCHEDULE_CATS[categoryKey].color}` }))));
       return cell;
     }));
 
   const container = el('div', {},
     grid,
     // 범례: 분류별 점 색이 무엇을 뜻하는지 (달력 점과 같은 색)
-    el('p', { class: 'schedule-legend' },
+    el('p', { class: 'schedule__legend' },
       ...Object.values(SCHEDULE_CATS).flatMap(category => [el('span', { class: 'dot', style: `background:${category.color}` }), category.name + '  '])),
     detail,
-    el('p', { class: 'schedule-note' }, `${SCHEDULE_NOTE} 날짜를 누르면 그날 일정이 보입니다.`),  // 2026-09-07 v2.13.0 (QA-20) 달별 각주
+    el('p', { class: 'schedule__note' }, `${SCHEDULE_NOTE} 날짜를 누르면 그날 일정이 보입니다.`),  // 2026-09-07 v2.13.0 (QA-20) 달별 각주
   );
   // 초기 선택: 이 달이면 오늘 칸을 눌러 둔 상태로, 아니면 1일 상세를 그려 둔다.
-  if (todayDayOfMonth) { grid.querySelector('.today').click(); }
+  if (todayDayOfMonth) { grid.querySelector('.is-today').click(); }
   else { renderScheduleDetail(detail, 1, cat); }
   return container;
 }

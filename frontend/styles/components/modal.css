@@ -1,132 +1,132 @@
 /* 포켓몬 상세 팝업 */
-.overlay { position: fixed; inset: 0; z-index: 50; background: rgba(0,0,0,.45); display: flex; align-items: center; justify-content: center; padding: 20px; }
+.modal { position: fixed; inset: 0; z-index: 50; background: rgba(0,0,0,.45); display: flex; align-items: center; justify-content: center; padding: 20px; }
 /* 2026-09-07 v2.21.0 <dialog> 로 열린다. 생김새(가운데 카드 · 좁은 화면은 바텀시트)는 그대로 두고
    브라우저 기본값만 지운다. 닫혀 있을 때 위의 display:flex 가 UA 의 display:none 을 이기므로 따로 감춘다 */
-dialog.overlay { width: 100%; max-width: none; height: 100%; max-height: none; margin: 0; border: 0; color: var(--fg); }
-dialog.overlay:not([open]) { display: none; }
-dialog.overlay::backdrop { background: transparent; }
-.modal { position: relative; background: var(--bg); border: 1px solid var(--line); border-radius: 16px; width: 100%; max-width: 440px; max-height: 85vh; overflow-y: auto; padding: 20px; }
+dialog.modal { width: 100%; max-width: none; height: 100%; max-height: none; margin: 0; border: 0; color: var(--fg); }
+dialog.modal:not([open]) { display: none; }
+dialog.modal::backdrop { background: transparent; }
+.modal__box { position: relative; background: var(--bg); border: 1px solid var(--line); border-radius: 16px; width: 100%; max-width: 440px; max-height: 85vh; overflow-y: auto; padding: 20px; }
 /* 2026-09-02 X버튼 sticky 고정: 스크롤 내려도 항상 우상단에 보임 */
-.modal-close-bar { position: sticky; top: -12px; z-index: 5; display: flex; justify-content: flex-end; height: 0; }
-.modal-close { width: 32px; height: 32px; border-radius: 8px; color: var(--muted); font-size: 15px; background: var(--surface); border: 1px solid var(--line); transform: translate(8px, -8px); }
-.modal-close:hover { background: var(--surface); color: var(--fg); }
+.modal__bar { position: sticky; top: -12px; z-index: 5; display: flex; justify-content: flex-end; height: 0; }
+.modal__close { width: 32px; height: 32px; border-radius: 8px; color: var(--muted); font-size: 15px; background: var(--surface); border: 1px solid var(--line); transform: translate(8px, -8px); }
+.modal__close:hover { background: var(--surface); color: var(--fg); }
 @media (max-width: 640px) {
-  .overlay { padding: 0; align-items: flex-end; }
-  .modal { max-width: none; max-height: 88vh; border-radius: 16px 16px 0 0; border-bottom: 0; }
+  .modal { padding: 0; align-items: flex-end; }
+  .modal__box { max-width: none; max-height: 88vh; border-radius: 16px 16px 0 0; border-bottom: 0; }
 }
 
-.d-head { display: flex; align-items: center; gap: 16px; padding-right: 32px; }
-.d-sprite { flex: 0 0 auto; width: 96px; height: 96px; display: flex; align-items: center; justify-content: center; background: var(--surface); border-radius: 14px; }
-.d-sprite .sprite { width: 80px; height: 80px; }
+.detail__head { display: flex; align-items: center; gap: 16px; padding-right: 32px; }
+.sprite-box { flex: 0 0 auto; width: 96px; height: 96px; display: flex; align-items: center; justify-content: center; background: var(--surface); border-radius: 14px; }
+.sprite-box .sprite { width: 80px; height: 80px; }
 /* 2026-09-06 v2.11.0 폼별 그림 테두리 — 메가·맥스는 뱃지와 같은 색, 은은한 바깥 광택 */
-.d-sprite.form-max { border: 2px solid var(--c-max); box-shadow: 0 0 0 3px color-mix(in srgb, var(--c-max) 22%, transparent); }
-.d-sprite.form-mega { border: 2px solid var(--c-mega); box-shadow: 0 0 0 3px color-mix(in srgb, var(--c-mega) 22%, transparent); }
-.d-sprite.form-shadow { border: 2px solid var(--c-shadow); box-shadow: 0 0 0 3px color-mix(in srgb, var(--c-shadow) 18%, transparent); }
-.d-head h2 { margin: 0; font-size: 18px; font-weight: 600; }
-.d-en { margin: 1px 0 6px; font-size: 12px; color: var(--muted); }
+.sprite-box.sprite-box--max { border: 2px solid var(--c-max); box-shadow: 0 0 0 3px color-mix(in srgb, var(--c-max) 22%, transparent); }
+.sprite-box.sprite-box--mega { border: 2px solid var(--c-mega); box-shadow: 0 0 0 3px color-mix(in srgb, var(--c-mega) 22%, transparent); }
+.sprite-box.sprite-box--shadow { border: 2px solid var(--c-shadow); box-shadow: 0 0 0 3px color-mix(in srgb, var(--c-shadow) 18%, transparent); }
+.detail__head h2 { margin: 0; font-size: 18px; font-weight: 600; }
+.detail__en { margin: 1px 0 6px; font-size: 12px; color: var(--muted); }
 
-.d-sec { margin-top: 18px; }
-.d-sec h3 { margin: 0 0 8px; font-size: 12px; font-weight: 600; color: var(--muted); letter-spacing: .02em; }
-.d-none-text { margin: 0; font-size: 12.5px; color: var(--muted); }
-.d-foot { margin: 6px 0 0; font-size: 11.5px; color: var(--muted); }
+.detail__sec { margin-top: 18px; }
+.detail__sec h3 { margin: 0 0 8px; font-size: 12px; font-weight: 600; color: var(--muted); letter-spacing: .02em; }
+.detail__none-text { margin: 0; font-size: 12.5px; color: var(--muted); }
+.detail__foot { margin: 6px 0 0; font-size: 11.5px; color: var(--muted); }
 
 /* 진화 단계 */
 .evo { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
-.evo-arrow { color: var(--muted); }
-.evo-stage { display: flex; flex-wrap: wrap; gap: 6px; }
-.evo-mon { display: flex; flex-direction: column; align-items: center; gap: 2px; width: 64px; padding: 6px 2px 4px; border-radius: 10px; border: 1px solid transparent; font-size: 11px; color: var(--muted); text-align: center; }
-.evo-mon .sprite { width: 40px; height: 40px; }
-.evo-mon.now { border-color: var(--line); background: var(--surface); color: var(--fg); font-weight: 500; }
+.evo__arrow { color: var(--muted); }
+.evo__stage { display: flex; flex-wrap: wrap; gap: 6px; }
+.evo__mon { display: flex; flex-direction: column; align-items: center; gap: 2px; width: 64px; padding: 6px 2px 4px; border-radius: 10px; border: 1px solid transparent; font-size: 11px; color: var(--muted); text-align: center; }
+.evo__mon .sprite { width: 40px; height: 40px; }
+.evo__mon.is-now { border-color: var(--line); background: var(--surface); color: var(--fg); font-weight: 500; }
 /* 2026-09-04 메가/원시 진화 칩 — 일반 진화형과 구분되게 살짝 강조 */
-.evo-mon.mega { border-color: color-mix(in srgb, var(--c-mega) 40%, var(--line)); color: color-mix(in srgb, var(--c-mega) 70%, var(--muted)); }  /* v2.11.0 메가 색으로 통일 */
-.evo-mon.mega.now { background: color-mix(in srgb, var(--c-mega) 12%, var(--surface)); color: var(--c-mega); }
+.evo__mon.form-tag--mega { border-color: color-mix(in srgb, var(--c-mega) 40%, var(--line)); color: color-mix(in srgb, var(--c-mega) 70%, var(--muted)); }  /* v2.11.0 메가 색으로 통일 */
+.evo__mon.form-tag--mega.is-now { background: color-mix(in srgb, var(--c-mega) 12%, var(--surface)); color: var(--c-mega); }
 
 /* 기술 · 상성 목록 */
-.mv-row { display: flex; align-items: baseline; gap: 10px; margin-bottom: 6px; }
-.mv-row em { flex: 0 0 44px; font-style: normal; font-size: 11.5px; color: var(--muted); }
-.mv-list, .tchips { display: flex; flex-wrap: wrap; gap: 4px; }
-.mv { border: 1px solid var(--line); border-radius: 6px; padding: 2px 8px; font-size: 12px; }
-.tchip { display: inline-flex; align-items: center; gap: 5px; border: 1px solid var(--line); border-radius: 999px; padding: 2px 9px; font-size: 12px; }
-.tchip .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--c, var(--muted)); }
-.tchip small { font-size: 10.5px; color: var(--muted); }
+.move-list__row { display: flex; align-items: baseline; gap: 10px; margin-bottom: 6px; }
+.move-list__row em { flex: 0 0 44px; font-style: normal; font-size: 11.5px; color: var(--muted); }
+.move-list, .tchips { display: flex; flex-wrap: wrap; gap: 4px; }
+.move-chip { border: 1px solid var(--line); border-radius: 6px; padding: 2px 8px; font-size: 12px; }
+.tchips__item { display: inline-flex; align-items: center; gap: 5px; border: 1px solid var(--line); border-radius: 999px; padding: 2px 9px; font-size: 12px; }
+.tchips__item .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--c, var(--muted)); }
+.tchips__item small { font-size: 10.5px; color: var(--muted); }
 
 /* 활용처 순위 칩 */
 .uchip { display: inline-flex; align-items: baseline; gap: 4px; border: 1px solid var(--line); border-radius: 6px; padding: 2px 8px; font-size: 12px; color: var(--muted); }
 .uchip b { font-weight: 600; color: var(--fg); }
 /* 2026-09-04 포획 CP 칩의 보조 숫자(개체값 하한 CP) */
 .uchip i { font-style: normal; font-size: 11px; color: var(--muted); }
-.uchip.top { border-color: color-mix(in srgb, #d84a5f 45%, var(--line)); color: var(--fg); }
-.uchip.top b { color: #d84a5f; }
+.uchip.is-top { border-color: color-mix(in srgb, #d84a5f 45%, var(--line)); color: var(--fg); }
+.uchip.is-top b { color: #d84a5f; }
 
 /* 종족값 */
-.statbar { display: grid; grid-template-columns: 34px 1fr 40px; gap: 10px; align-items: center; font-size: 12px; margin-bottom: 5px; }
-.statbar em { font-style: normal; color: var(--muted); font-size: 11.5px; }
-.statbar .bar { height: 6px; background: var(--surface); border-radius: 3px; overflow: hidden; }
-.statbar .bar i { display: block; height: 100%; background: var(--fg); opacity: .55; border-radius: 3px; }
-.statbar b { font-weight: 500; text-align: right; }
+.stat-bar { display: grid; grid-template-columns: 34px 1fr 40px; gap: 10px; align-items: center; font-size: 12px; margin-bottom: 5px; }
+.stat-bar em { font-style: normal; color: var(--muted); font-size: 11.5px; }
+.stat-bar .score-bar { height: 6px; background: var(--surface); border-radius: 3px; overflow: hidden; }
+.stat-bar .score-bar i { display: block; height: 100%; background: var(--fg); opacity: .55; border-radius: 3px; }
+.stat-bar b { font-weight: 500; text-align: right; }
 
 /* 2026-09-02 업데이트 모달 날짜별 아코디언 */
-.rel-acc { border: 1px solid var(--line); border-radius: 10px; margin: 8px 0; }
-.rel-acc summary { padding: 10px 14px; cursor: pointer; font-weight: 600; font-size: 13.5px; list-style: none; }
-.rel-acc summary::-webkit-details-marker { display: none; }
-.rel-acc summary::after { content: '▾'; float: right; color: var(--muted); }
-.rel-acc[open] summary::after { content: '▴'; }
-.rel-acc ul { margin: 0 0 10px; }
+.detail__rel-acc { border: 1px solid var(--line); border-radius: 10px; margin: 8px 0; }
+.detail__rel-acc summary { padding: 10px 14px; cursor: pointer; font-weight: 600; font-size: 13.5px; list-style: none; }
+.detail__rel-acc summary::-webkit-details-marker { display: none; }
+.detail__rel-acc summary::after { content: '▾'; float: right; color: var(--muted); }
+.detail__rel-acc[open] summary::after { content: '▴'; }
+.detail__rel-acc ul { margin: 0 0 10px; }
 
 /* 2026-09-03 v3: 상성 2열 · 헤더 CP 한 줄 · 인라인 CP 계산기 */
-.d-cpline { margin: 6px 0 0; font-size: 12.5px; color: var(--muted); }
-.d-cpline b { color: var(--fg); font-size: 14px; }
+.detail__cpline { margin: 6px 0 0; font-size: 12.5px; color: var(--muted); }
+.detail__cpline b { color: var(--fg); font-size: 14px; }
 
 /* 2026-09-04 레이드 보상/야생 스폰 CP 구분 */
-.cp-ctx { margin-top: 8px; }
-.cp-ctx em { display: block; font-style: normal; font-size: 11.5px; color: var(--muted); margin-bottom: 4px; }
+.cp__ctx { margin-top: 8px; }
+.cp__ctx em { display: block; font-style: normal; font-size: 11.5px; color: var(--muted); margin-bottom: 4px; }
 
 /* 2026-09-04 메가X vs 메가Y 좌우 비교 */
-.mega-cmp { border: 1px solid var(--line); border-radius: 10px; padding: 4px 12px; }
-.mega-cmp-row { display: grid; grid-template-columns: 44px 1fr 1fr; gap: 8px; align-items: center; padding: 6px 0; font-size: 12.5px; border-top: 1px solid var(--line); }
-.mega-cmp-row:first-child { border-top: none; }
-.mega-cmp-row em { font-style: normal; color: var(--muted); font-size: 11.5px; }
-.mega-cmp-row b { font-weight: 500; }
-.mega-cmp-row b.hi { color: #b8860b; font-weight: 700; }
-.mega-cmp-head b { color: var(--muted); font-size: 11.5px; font-weight: 600; }
-.d-en-inline { font-weight: 400; font-size: 13px; color: var(--muted); }
+.cmp { border: 1px solid var(--line); border-radius: 10px; padding: 4px 12px; }
+.cmp__row { display: grid; grid-template-columns: 44px 1fr 1fr; gap: 8px; align-items: center; padding: 6px 0; font-size: 12.5px; border-top: 1px solid var(--line); }
+.cmp__row:first-child { border-top: none; }
+.cmp__row em { font-style: normal; color: var(--muted); font-size: 11.5px; }
+.cmp__row b { font-weight: 500; }
+.cmp__row b.is-high { color: #b8860b; font-weight: 700; }
+.cmp__head b { color: var(--muted); font-size: 11.5px; font-weight: 600; }
+.detail__en-inline { font-weight: 400; font-size: 13px; color: var(--muted); }
 /* 2026-09-03 v4: 약점/내성 위아래 + CP 계산기 아코디언 */
-.d-matchrows { display: flex; flex-direction: column; gap: 12px; }
-.d-matchrows h3 { margin: 0 0 6px; font-size: 12.5px; font-weight: 600; color: var(--muted); }
-.d-acc { margin-top: 18px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); }
-.d-acc summary { padding: 11px 14px; cursor: pointer; font-size: 13.5px; font-weight: 600; list-style: none; }
-.d-acc summary::-webkit-details-marker { display: none; }
-.d-acc summary::after { content: '▾'; float: right; color: var(--muted); }
-.d-acc[open] summary::after { content: '▴'; }
-.d-acc-body { padding: 0 14px 12px; }
-.cp-inline-result { margin: 10px 0 0; font-size: 13.5px; }
-.cp-inline-result b { font-size: 16px; }
+.detail__matchrows { display: flex; flex-direction: column; gap: 12px; }
+.detail__matchrows h3 { margin: 0 0 6px; font-size: 12.5px; font-weight: 600; color: var(--muted); }
+.detail__acc { margin-top: 18px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); }
+.detail__acc summary { padding: 11px 14px; cursor: pointer; font-size: 13.5px; font-weight: 600; list-style: none; }
+.detail__acc summary::-webkit-details-marker { display: none; }
+.detail__acc summary::after { content: '▾'; float: right; color: var(--muted); }
+.detail__acc[open] summary::after { content: '▴'; }
+.detail__acc-body { padding: 0 14px 12px; }
+.cp__inline { margin: 10px 0 0; font-size: 13.5px; }
+.cp__inline b { font-size: 16px; }
 
 /* 2026-09-03 도감형: 육각형 | 기술 2열 */
-.hex-wrap { display: flex; flex-direction: column; align-items: center; }
-.hex-svg { width: 100%; max-width: 200px; height: auto; }
-.hex-name { font-size: 13px; fill: var(--muted); }
-.hex-val { font-size: 14.5px; font-weight: 600; fill: var(--fg); }
-.d-hexmoves { display: grid; grid-template-columns: 46% 1fr; gap: 4px 14px; margin-top: 18px; align-items: start; }
-.d-hexmoves h3 { margin: 0 0 6px; font-size: 12.5px; font-weight: 600; color: var(--muted); }
+.hex { display: flex; flex-direction: column; align-items: center; }
+.hex__svg { width: 100%; max-width: 200px; height: auto; }
+.hex__name { font-size: 13px; fill: var(--muted); }
+.hex__val { font-size: 14.5px; font-weight: 600; fill: var(--fg); }
+.detail__hexmoves { display: grid; grid-template-columns: 46% 1fr; gap: 4px 14px; margin-top: 18px; align-items: start; }
+.detail__hexmoves h3 { margin: 0 0 6px; font-size: 12.5px; font-weight: 600; color: var(--muted); }
 /* 2026-09-03 기술 간격: 라벨(스피드/차지) 바로 아래 칩, 그룹 사이 10px */
-.d-moves .mv-row { flex-direction: column; align-items: flex-start; gap: 4px; margin: 0 0 10px; }
-.d-moves .mv-row:last-of-type { margin-bottom: 0; }
+.detail__moves .move-list__row { flex-direction: column; align-items: flex-start; gap: 4px; margin: 0 0 10px; }
+.detail__moves .move-list__row:last-of-type { margin-bottom: 0; }
 /* 세로 배치에서는 em의 flex-basis 44px가 '높이'가 돼 간격이 벌어짐 → 해제 */
-.d-moves .mv-row em { flex: none; font-size: 12px; color: var(--muted); font-style: normal; font-weight: 600; }
-@media (max-width: 359px) { .d-hexmoves { grid-template-columns: 1fr; } }
+.detail__moves .move-list__row em { flex: none; font-size: 12px; color: var(--muted); font-style: normal; font-weight: 600; }
+@media (max-width: 359px) { .detail__hexmoves { grid-template-columns: 1fr; } }
 
 /* 2026-09-03 v2.2.0 상세 팝업 헤더 즐겨찾기 ★ */
-.d-head .d-fav { align-self: center; }  /* 2026-09-06 v2.9.0 .d-actions 안으로 이동 — 오른쪽 정렬은 .d-actions 가 맡는다 */
-.d-head .d-actions { margin-left: auto; align-self: flex-start; }
+.detail__head .detail__fav { align-self: center; }  /* 2026-09-06 v2.9.0 .detail__actions 안으로 이동 — 오른쪽 정렬은 .detail__actions 가 맡는다 */
+.detail__head .detail__actions { margin-left: auto; align-self: flex-start; }
 /* 2026-09-06 v2.9.0 상세 헤더 오른쪽 버튼 묶음: ★ 즐겨찾기 + 🔗 공유 */
-.d-actions { display: flex; flex-direction: column; align-items: center; gap: 6px; }
-.d-share { font-size: 17px; line-height: 1; padding: 4px 6px; border-radius: 8px; color: var(--muted); white-space: nowrap; }
-.d-share:hover { background: var(--hover); color: var(--fg); }
-.solo-fill { display: flex; align-items: center; gap: 8px; margin: 0 0 8px; font-size: 12.5px; }
+.detail__actions { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.detail__share { font-size: 17px; line-height: 1; padding: 4px 6px; border-radius: 8px; color: var(--muted); white-space: nowrap; }
+.detail__share:hover { background: var(--hover); color: var(--fg); }
+.solo__fill { display: flex; align-items: center; gap: 8px; margin: 0 0 8px; font-size: 12.5px; }
 
 /* 2026-09-06 v2.10.0 (QA-44) 이중약점(×2.56) · 이중내성/무효(×0.39) 칩 강조 */
-.tchip.x2 { border-color: color-mix(in srgb, #d84a5f 60%, var(--line)); font-weight: 600; }
-.tchip.x2 small { color: #d84a5f; font-weight: 700; }
-.tchip.r2 { border-color: color-mix(in srgb, #2f8f5b 60%, var(--line)); font-weight: 600; }
-.tchip.r2 small { color: #2f8f5b; font-weight: 700; }
+.tchips__item.is-weak2 { border-color: color-mix(in srgb, #d84a5f 60%, var(--line)); font-weight: 600; }
+.tchips__item.is-weak2 small { color: #d84a5f; font-weight: 700; }
+.tchips__item.is-resist2 { border-color: color-mix(in srgb, #2f8f5b 60%, var(--line)); font-weight: 600; }
+.tchips__item.is-resist2 small { color: #2f8f5b; font-weight: 700; }

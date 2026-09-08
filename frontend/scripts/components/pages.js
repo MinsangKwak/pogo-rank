@@ -32,9 +32,9 @@
 // 맨 위(가장 최신) 날짜에만 NEW 태그를 달고, 들어온 순간 "읽음" 처리한다.
 function renderReleasePage() {
   markReleaseSeen();
-  return el('div', { class: 'page-body' },
-    ...RELEASE_NOTES.map((group, groupIndex) => el('section', { class: 'rel-sec' },
-      el('h2', {}, group.date, groupIndex === 0 ? el('span', { class: 'tag gmax' }, 'NEW') : ''),
+  return el('div', { class: 'page__body' },
+    ...RELEASE_NOTES.map((group, groupIndex) => el('section', { class: 'release__sec' },
+      el('h2', {}, group.date, groupIndex === 0 ? el('span', { class: 'tag tag--gmax' }, 'NEW') : ''),
       el('ul', {}, ...group.items.map((item) => el('li', {}, item))))));
 }
 
@@ -47,10 +47,10 @@ function scheduleMonthList(cat) {
     if (cat && cat !== 'all' && cat !== catKey) continue;  // 2026-09-07 v2.13.1 분류 필터
     const items = SCHEDULE_ITEMS.filter((item) => item.cat === catKey);
     if (!items.length) continue;
-    sections.push(el('p', { class: 'schedule-sec' }, category.name));
-    sections.push(...items.map((item) => el('p', { class: 'schedule-item' },
+    sections.push(el('p', { class: 'schedule__sec' }, category.name));
+    sections.push(...items.map((item) => el('p', { class: 'schedule__item' },
       el('span', { class: 'dot', style: `background:${category.color}` }),
-      el('b', { class: 'sched-date' }, `${SCHEDULE_YM.m}/${item.s}${item.e !== item.s ? `–${item.e}` : ''}`), ` ${item.label}`)));  // 2026-09-07 v2.13.0 (QA-20) 달 하드코딩 제거
+      el('b', { class: 'schedule__date' }, `${SCHEDULE_YM.m}/${item.s}${item.e !== item.s ? `–${item.e}` : ''}`), ` ${item.label}`)));  // 2026-09-07 v2.13.0 (QA-20) 달 하드코딩 제거
   }
   return el('div', {}, ...sections);
 }
@@ -82,12 +82,12 @@ function renderSchedulePage() {
     $list.replaceChildren(scheduleMonthList(cat));
   };
   draw();
-  return el('div', { class: 'page-body sched-page' },
+  return el('div', { class: 'page__body schedule__page' },
     $chips,
     $cal,
-    el('h2', { class: 'page-sec' }, '기간 한눈에'),
+    el('h2', { class: 'page__sec' }, '기간 한눈에'),
     $timeline,
-    el('h2', { class: 'page-sec' }, '이번 달 전체 일정'),
+    el('h2', { class: 'page__sec' }, '이번 달 전체 일정'),
     $list);
 }
 
@@ -131,37 +131,37 @@ function renderDexPage() {
   try {
     cols2 = localStorage.getItem('pogo_dex_cols') === '2';
   } catch { /* 저장 불가 환경 */ }
-  const $list = el('div', { class: `dex-list${cols2 ? ' grid2' : ''}` });
-  const $more = el('button', { class: 'boss-more', onclick: () => {
+  const $list = el('div', { class: `dex__list${cols2 ? ' is-grid' : ''}` });
+  const $more = el('button', { class: 'boss__more', onclick: () => {
     shown += 200;
     draw();
   } });
   // 현재 list · shown 상태로 목록과 [더보기] 버튼 문구를 다시 그린다
   const draw = () => {
     $list.replaceChildren(...list.slice(0, shown).map((entry) =>
-      el('button', { class: `dex-row${entry.unrel ? ' unrel' : ''}`, onclick: () => openDetailByDex(entry.dex, true) },  // 2026-09-03 도감 모드
-        el('span', { class: 'dex-no' }, `#${String(entry.dex).padStart(4, '0')}`),
+      el('button', { class: `dex__row${entry.unrel ? ' is-unreleased' : ''}`, onclick: () => openDetailByDex(entry.dex, true) },  // 2026-09-03 도감 모드
+        el('span', { class: 'dex__no' }, `#${String(entry.dex).padStart(4, '0')}`),
         sprite(entry.sprite),
-        entry.unrel ? el('span', { class: 'tag dex-unrel' }, '미구현') : '',
+        entry.unrel ? el('span', { class: 'tag dex__unrel' }, '미구현') : '',
         el('b', {}, entry.name),
-        el('span', { class: 'dex-types' }, ...entry.types.map((typeName) => el('span', { class: 'dot', style: `background: var(--t-${typeName})` }))),
+        el('span', { class: 'dex__types' }, ...entry.types.map((typeName) => el('span', { class: 'dot', style: `background: var(--t-${typeName})` }))),
         // 2026-09-03 v2.2.0 즐겨찾기 ★ — 로그인·승인된 사용자만 저장됨 (비로그인 클릭 시 로그인 유도)
-        authEnabled() ? favBtn(entry.dex, 'dex-fav') : '')));
+        authEnabled() ? favBtn(entry.dex, 'dex__fav') : '')));
     // 남은 종이 있으면 "더보기 (지금까지/전체)", 다 봤으면 총 개수를 보여주고 버튼을 잠근다
     $more.textContent = shown < list.length ? `더보기 (${Math.min(shown, list.length)}/${list.length})` : `전체 ${list.length}종`;
     $more.disabled = shown >= list.length;
   };
   // 검색: 숫자만 입력하면 도감번호 부분일치, 그 외에는 이름(한글/영문) 검색
-  const $input = el('input', { class: 'boss-search', placeholder: '이름 검색 또는 번호 (예: 팬텀, 94)' });
+  const $input = el('input', { class: 'boss__search', placeholder: '이름 검색 또는 번호 (예: 팬텀, 94)' });
   $input.addEventListener('input', () => {
     const query = $input.value.trim();
     list = !query ? all : /^\d+$/.test(query) ? all.filter((entry) => String(entry.dex).includes(query)) : monSearch(all, query, 999);
     shown = 100;
     draw();
   });
-  const $layout = el('button', { class: 'uchip dex-layout', onclick: () => {
+  const $layout = el('button', { class: 'uchip dex__layout', onclick: () => {
     cols2 = !cols2;
-    $list.classList.toggle('grid2', cols2);
+    $list.classList.toggle('is-grid', cols2);
     $layout.textContent = cols2 ? '☰ 1열' : '⊞ 2열';
     try {
       localStorage.setItem('pogo_dex_cols', cols2 ? '2' : '1');
@@ -181,13 +181,13 @@ function renderDexPage() {
       draw();
     } }, `${genIndex + 1}세대`)));
   const loginHint = authEnabled() && AUTH.status !== 'ok'
-    ? el('p', { class: 'dex-hint' },
+    ? el('p', { class: 'dex__hint' },
         AUTH.status === 'pending' ? '⏳ 승인 대기 중 — 승인되면 ★로 내 포켓몬을 도감에 채울 수 있어요.' : '로그인하면 ★를 눌러 내 포켓몬을 도감에 채울 수 있어요. ',
         AUTH.status === 'anon' ? el('button', { class: 'uchip', onclick: signIn }, 'Google로 로그인') : '')
     : '';
   draw();
-  return el('div', { class: 'page-body' }, loginHint, $input, genChips, $list, $more,
-    el('p', { class: 'd-foot' }, '미구현 = 포켓몬 GO에 아직 출시되지 않은 종 (PvPoke 출시 목록 기준, 데이터는 게임마스터 선등록분). 메가·섀도우·리전 폼은 🔍 전역 검색으로 찾을 수 있어요.'));
+  return el('div', { class: 'page__body' }, loginHint, $input, genChips, $list, $more,
+    el('p', { class: 'detail__foot' }, '미구현 = 포켓몬 GO에 아직 출시되지 않은 종 (PvPoke 출시 목록 기준, 데이터는 게임마스터 선등록분). 메가·섀도우·리전 폼은 🔍 전역 검색으로 찾을 수 있어요.'));
 }
 
 // 해시 라우팅 대상 페이지들. 여기 없는 id 는 유효한 페이지로 보지 않는다.
@@ -221,7 +221,7 @@ function goBack() {
 function renderPage() {
   const id = currentPageId();
   const $page = document.getElementById('page');
-  const $wrap = document.querySelector('.wrap');
+  const $wrap = document.querySelector('.layout');
   // 2026-09-06 v2.9.0 상세 딥링크 #/mon/<스프라이트 id> — 메인 화면을 보인 채 그 포켓몬 상세 팝업을 연다.
   // 상세 팝업은 GA에서 1순위 상호작용(detail_open)인데 링크가 없어 친구에게 "이거 봐"를 못 했다.
   // 팝업을 여닫을 때 해시는 replaceState로만 바꾸므로(detail.js·modal.js) 뒤로가기 동작은 그대로다
@@ -271,7 +271,7 @@ function renderPage() {
   $page.hidden = false;
   $page.replaceChildren(
     // 상단 바: ← 뒤로 + 페이지 제목
-    el('div', { class: 'page-bar' },
+    el('div', { class: 'page__bar' },
       el('button', { class: 'icon-btn', onclick: goBack, 'aria-label': '뒤로' }, '←'),
       el('b', {}, PAGES[id].title),
       el('button', { class: 'uchip', onclick: () => navigateHash(''), 'aria-label': '서비스 홈' }, '홈')),

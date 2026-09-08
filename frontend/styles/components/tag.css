@@ -1,32 +1,32 @@
 /* 이름 위 뱃지 줄 (G-MAX · 다이맥스 · 이벤트) */
-.badges { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 3px; }
+.row__badges { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 3px; }
 .tag { flex: 0 0 auto; display: inline-block; font-size: 10.5px; font-weight: 600; letter-spacing: .02em; padding: 1px 6px; border-radius: 4px; border: 1px solid var(--line); color: var(--muted); }
-.tag.gmax { color: var(--fg); border-color: var(--fg); }
+.tag.tag--gmax { color: var(--fg); border-color: var(--fg); }
 
 /* 2026-09-07 v2.13.0 (QA-42) 활용 N곳 — 2곳 이상만, 5곳 이상은 강조 */
-.tag.use { color: var(--muted); }
-.tag.use.many { color: #2f6fd8; border-color: color-mix(in srgb, #2f6fd8 55%, var(--line)); }
+.tag.tag--use { color: var(--muted); }
+.tag.tag--use.tag--many { color: #2f6fd8; border-color: color-mix(in srgb, #2f6fd8 55%, var(--line)); }
 
 /* 2026-09-04 시즌 기술 변경 예고 뱃지 — 적용일 전에만 붙는다 */
-.tag.chg { border-style: dashed; }
-.tag.chg.up { color: #2f8f5b; border-color: color-mix(in srgb, #2f8f5b 55%, var(--line)); }
-.tag.chg.down { color: #d84a5f; border-color: color-mix(in srgb, #d84a5f 55%, var(--line)); }
-.tag.chg.mix { color: var(--fg); border-color: var(--fg); }
+.tag.tag--chg { border-style: dashed; }
+.tag.tag--chg.is-up { color: #2f8f5b; border-color: color-mix(in srgb, #2f8f5b 55%, var(--line)); }
+.tag.tag--chg.is-down { color: #d84a5f; border-color: color-mix(in srgb, #d84a5f 55%, var(--line)); }
+.tag.tag--chg.tag--mix { color: var(--fg); border-color: var(--fg); }
 
 /* 2026-09-04 순위 변동 ▲▼ — 순위 숫자 아래 한 줄 */
-.rank-delta { display: block; font-size: 10px; font-weight: 700; line-height: 1.3; letter-spacing: -.02em; }
-.rank-delta.up { color: #2f8f5b; }
-.rank-delta.down { color: #d84a5f; }
+.delta { display: block; font-size: 10px; font-weight: 700; line-height: 1.3; letter-spacing: -.02em; }
+.delta.is-up { color: #2f8f5b; }
+.delta.is-down { color: #d84a5f; }
 
 /* 2026-09-06 v2.10.0 (QA-44) 폼 라벨 뱃지 — 이름 앞의 메가·원시·섀도우·다이맥스·리전 폼 (components/name.js)
    종 이름은 <b>로 남기고 라벨만 작은 알약으로 떼어, 목록을 훑을 때 "메가"가 눈에 걸리게 한다 */
 .form-tag { display: inline-block; flex: 0 0 auto; font-size: 10px; font-weight: 700; line-height: 1.5; padding: 0 5px; border-radius: 4px; letter-spacing: -.01em; vertical-align: 1px; white-space: nowrap;
             color: var(--muted); background: var(--surface); border: 1px solid var(--line); }
 /* 2026-09-06 v2.11.0 메가·맥스는 게임 아이콘 색의 채움 뱃지(흰 글씨), 섀도우는 자주 테두리 (색 토큰은 tokens.css) */
-.form-tag.mega { color: #fff; border-color: transparent; background: linear-gradient(135deg, var(--c-mega), var(--c-mega-2)); }
-.form-tag.max { color: #fff; border-color: transparent; background: linear-gradient(135deg, var(--c-max), var(--c-max-2)); }
-.form-tag.shadow { color: var(--c-shadow); border-color: color-mix(in srgb, var(--c-shadow) 50%, var(--line)); background: color-mix(in srgb, var(--c-shadow) 10%, var(--surface)); }
-.name .form-tag { margin-right: -4px; }            /* .name 의 가로 gap(8px)을 라벨-이름 사이에서만 좁힌다 */
-.d-head h2 .form-tag { font-size: 11.5px; vertical-align: 3px; margin-right: 5px; }
-.sugg-item .form-tag, .boss-rec .form-tag { margin-right: 2px; }
-.boss-rec b { font-weight: 500; }
+.form-tag.form-tag--mega { color: #fff; border-color: transparent; background: linear-gradient(135deg, var(--c-mega), var(--c-mega-2)); }
+.form-tag.form-tag--max { color: #fff; border-color: transparent; background: linear-gradient(135deg, var(--c-max), var(--c-max-2)); }
+.form-tag.form-tag--shadow { color: var(--c-shadow); border-color: color-mix(in srgb, var(--c-shadow) 50%, var(--line)); background: color-mix(in srgb, var(--c-shadow) 10%, var(--surface)); }
+.row__name .form-tag { margin-right: -4px; }            /* .row__name 의 가로 gap(8px)을 라벨-이름 사이에서만 좁힌다 */
+.detail__head h2 .form-tag { font-size: 11.5px; vertical-align: 3px; margin-right: 5px; }
+.sugg__item .form-tag, .boss__rec .form-tag { margin-right: 2px; }
+.boss__rec b { font-weight: 500; }

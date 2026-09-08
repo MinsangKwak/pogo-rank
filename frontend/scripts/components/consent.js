@@ -70,14 +70,14 @@ function renderConsentBanner() {
   if (consentValue() || document.getElementById('consent')) return;
   // 첫 화면 가림막(#splash)이 걷힌 뒤에 띄운다 — 로딩 중에 배너부터 보이지 않게
   const splash = document.getElementById('splash');
-  if (splash && !splash.classList.contains('done')) { setTimeout(renderConsentBanner, 300); return; }
+  if (splash && !splash.classList.contains('is-done')) { setTimeout(renderConsentBanner, 300); return; }
   const banner = el('div', { id: 'consent', class: 'consent', role: 'dialog', 'aria-label': '저장소·통계 안내' },
-    el('p', { class: 'consent-text' },
+    el('p', { class: 'consent__text' },
       '이 사이트는 오프라인용 파일과 설정을 브라우저에 저장합니다(개인정보 아님). 방문 통계(Google Analytics)는 동의할 때만 켜지고, 위치정보는 수집하지 않습니다. ',
       el('a', { href: '#/privacy' }, '자세히')),
-    el('div', { class: 'consent-btns' },
-      el('button', { class: 'uchip consent-deny', onclick: () => setConsent('denied', 'banner') }, '통계 거부'),
-      el('button', { class: 'uchip consent-allow', onclick: () => setConsent('granted', 'banner') }, '통계 동의')));
+    el('div', { class: 'consent__btns' },
+      el('button', { class: 'uchip consent__deny', onclick: () => setConsent('denied', 'banner') }, '통계 거부'),
+      el('button', { class: 'uchip consent__allow', onclick: () => setConsent('granted', 'banner') }, '통계 동의')));
   document.body.appendChild(banner);
 }
 
@@ -101,24 +101,24 @@ async function clearAppCache() {
 function openConsentSettings() {
   const current = consentValue();
   const row = (value, label, desc) => el('button', {
-    class: `drawer-item consent-opt${current === value ? ' on' : ''}`,
+    class: `drawer__item consent__opt${current === value ? ' is-on' : ''}`,
     'aria-pressed': String(current === value),
     onclick: () => { setConsent(value, 'settings'); closeModal(); },
   }, el('span', {}, el('b', {}, label), el('small', {}, desc)));
-  openModal(el('div', { class: 'consent-modal' },
-    el('h2', { class: 'd-name' }, '통계 · 저장소 설정'),
-    el('p', { class: 'plan-desc' }, '방문 통계(Google Analytics)는 어떤 기능이 쓰이는지 보고 화면을 고치는 데만 씁니다. 이메일·이름은 보내지 않습니다.'),
-    el('div', { class: 'acct-actions' },
+  openModal(el('div', { class: 'consent__modal' },
+    el('h2', { class: 'detail__name' }, '통계 · 저장소 설정'),
+    el('p', { class: 'plan__desc' }, '방문 통계(Google Analytics)는 어떤 기능이 쓰이는지 보고 화면을 고치는 데만 씁니다. 이메일·이름은 보내지 않습니다.'),
+    el('div', { class: 'account__actions' },
       row('granted', '통계 동의', typeof window.GA_PENDING_ID === 'string' && window.GA_PENDING_ID ? '이용 패턴을 기록합니다' : '이 빌드(미리보기·로컬)는 통계가 꺼져 있어 선택만 저장됩니다'),
       row('denied', '통계 거부', '통계 스크립트를 불러오지 않습니다')),
-    el('h2', { class: 'page-sec' }, '브라우저에 저장된 것'),
-    el('ul', { class: 'priv-list' },
+    el('h2', { class: 'page__sec' }, '브라우저에 저장된 것'),
+    el('ul', { class: 'priv__list' },
       el('li', {}, '오프라인용 파일 캐시(화면·데이터·포켓몬 그림) — 서비스워커'),
       el('li', {}, '설정값(마지막 탭·모드, 패치노트 읽음, 동의 여부 등) — localStorage, pogo_ 접두사'),
       el('li', {}, '위치정보는 수집하지 않습니다')),
-    el('div', { class: 'acct-actions' },
-      el('button', { class: 'drawer-item', onclick: clearAppCache }, '🧹 캐시 비우고 새로고침')),
-    el('p', { class: 'd-foot' }, '설정값까지 지우려면 브라우저의 "사이트 데이터 삭제"를 쓰세요. 계정에 저장한 즐겨찾기·내 포켓몬은 여기서 지워지지 않습니다 (계정 카드 → 계정 삭제).')));
+    el('div', { class: 'account__actions' },
+      el('button', { class: 'drawer__item', onclick: clearAppCache }, '🧹 캐시 비우고 새로고침')),
+    el('p', { class: 'detail__foot' }, '설정값까지 지우려면 브라우저의 "사이트 데이터 삭제"를 쓰세요. 계정에 저장한 즐겨찾기·내 포켓몬은 여기서 지워지지 않습니다 (계정 카드 → 계정 삭제).')));
 }
 
 // app.js 첫 렌더 뒤 한 번 — 이미 동의했으면 GA 를 붙이고, 아니면 배너를 띄운다

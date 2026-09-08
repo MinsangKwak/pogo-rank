@@ -24,7 +24,7 @@
 const NAV = { open: false };
 
 function overlayVisible() {
-  return !!document.querySelector('.overlay') || document.getElementById('drawer-backdrop')?.hidden === false || !!document.getElementById('search-dialog')?.open;
+  return !!document.querySelector('.modal') || document.getElementById('drawer-backdrop')?.hidden === false || !!document.getElementById('search-dialog')?.open;
 }
 
 function pushOverlayEntry() {

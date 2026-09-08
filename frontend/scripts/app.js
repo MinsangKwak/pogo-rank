@@ -100,7 +100,7 @@ function renderTabs() {
   for (const [id, label] of [['max', 'D-MAX'], ['pve', 'PvE'], ['pvp', 'PvP']]) {
     // 2026-09-03 GA4: 탭 이름을 이벤트명에 포함(tab_max 등) — 누를 때마다 1회씩 기록
     $tabs.append(el('button', {
-      class: 'tab',
+      class: 'tabs__item',
       role: 'tab',
       'aria-selected': String(state.tab === id),
       onclick: () => {
@@ -111,11 +111,11 @@ function renderTabs() {
   }
   // 2026-09-06 v2.9.0 도감·상성·즐겨찾기 바로가기 — 탭이 아니라 "페이지로 가는 버튼"이라
   // aria-selected 없이 오른쪽 끝에 붙인다. 좁은 화면에서는 아이콘만 남는다(tabs.css)
-  const quick = el('div', { class: 'tab-quick' },
-    el('button', { class: 'tab quick', title: '도감', onclick: () => openPage('dex', 'tabbar') }, '📕', el('span', { class: 'lbl' }, ' 도감')),
-    el('button', { class: 'tab quick', title: '상성 검색', onclick: () => openPage('types', 'tabbar') }, '🧭', el('span', { class: 'lbl' }, ' 상성')));
+  const quick = el('div', { class: 'tabs__quick' },
+    el('button', { class: 'tabs__item tabs__item--quick', title: '도감', onclick: () => openPage('dex', 'tabbar') }, '📕', el('span', { class: 'tabs__label' }, ' 도감')),
+    el('button', { class: 'tabs__item tabs__item--quick', title: '상성 검색', onclick: () => openPage('types', 'tabbar') }, '🧭', el('span', { class: 'tabs__label' }, ' 상성')));
   if (typeof authEnabled === 'function' && authEnabled() && AUTH.status === 'ok') {
-    quick.append(el('button', { class: 'tab quick', title: '즐겨찾기', onclick: () => openPage('favs', 'tabbar') }, '★', el('span', { class: 'lbl' }, ` 즐겨찾기 ${AUTH.favs.size}`)));
+    quick.append(el('button', { class: 'tabs__item tabs__item--quick', title: '즐겨찾기', onclick: () => openPage('favs', 'tabbar') }, '★', el('span', { class: 'tabs__label' }, ` 즐겨찾기 ${AUTH.favs.size}`)));
   }
   $tabs.append(quick);
 }
@@ -131,7 +131,7 @@ function renderPveTab() {
       render();
     });
   // 2026-09-07 v2.16.0 오른쪽 도구 버튼: 🧮 솔플 레이드 계산기 (옛 IF 탭). 누르면 티어표 자리에 계산기가 펼쳐지고, 다시 누르면 접힌다
-  $controls.append(el('div', { class: 'ctrl-row' }, modeSeg, toolButton('🧮 솔플 계산기', state.pveTool === 'solo', () => {
+  $controls.append(el('div', { class: 'controls__row' }, modeSeg, toolButton('🧮 솔플 계산기', state.pveTool === 'solo', () => {
     state.pveTool = state.pveTool === 'solo' ? null : 'solo';
     track('tool_solo', { on: state.pveTool ? 1 : 0 });
     render();
@@ -183,7 +183,7 @@ render();
   const splash = document.getElementById('splash');
   if (!splash) return;
   const hide = () => requestAnimationFrame(() => {  // 클래스를 붙이기 전에 한 프레임 기다린다 — 같은 프레임에 붙이면 CSS 전환이 생략된다
-    splash.classList.add('done');
+    splash.classList.add('is-done');
     setTimeout(() => splash.remove(), 300);  // 300ms = 페이드 시간
   });
   (typeof waitForSprites === 'function' ? waitForSprites(2500) : Promise.resolve()).then(hide, hide);

@@ -5,6 +5,20 @@
 버전 규칙: `vMAJOR.MINOR.PATCH` — 큰 기능은 MINOR(두 번째 자리), 상세 기능·버그 수정은 PATCH(세 번째 자리) 증가.
 항목 종류: `추가` 새 기능 · `변경` 기존 동작 변경 · `수정` 버그 수정 · `데이터` 수동 데이터 갱신
 
+## v2.24.0 — 2026-09-08
+
+클래스 이름 리팩토링. 화면·기능은 바뀌지 않는다 (순수 이름 변경).
+
+### 변경
+- **CSS 클래스 이름을 BEM 으로 통일** — `block-name__element--modifier` 꼴, 단어 구분은 `-`, 이름은 최대 3단어. 332개 클래스를 한 번에 바꿨다. 예: `service-tile` → `home__tile` · `psearch-head` → `search__head` · `modal-close` → `modal__close` · `acct-danger` → `account__danger` · `d-sprite` → `sprite-box`
+- **겹치던 이름을 블록으로 갈랐다** — `overlay`/`modal` 이 각각 바깥 `<dialog>` 과 안쪽 카드였던 것을 `modal`/`modal__box` 로, `drawer-backdrop`/`drawer` 를 `drawer`/`drawer__panel` 로. 블록 이름만 보면 어디에 붙는지 알 수 있다
+- **여러 블록이 함께 쓰는 상태는 `is-*` 유틸리티로** — `on` → `is-on` · `unrel` → `is-unreleased` · `x2`/`r2` → `is-weak2`/`is-resist2` · `hi` → `is-high`. 한 블록에만 붙는 상태는 `--modifier` 로 남겼다
+- **코드에서 만들던 동적 클래스도 정리** — 티어 등급 글자는 `g-S` → `grade-mark--s`, 플래너 상태는 `s-0`/`s-1`/`s-2` → `plan__status--a`/`--b`/`--c`. 대소문자·숫자가 CSS 와 어긋날 여지를 없앴다
+
+### 참고
+- 불변 규칙은 그대로 지켰다 — 전역 이름 · `state` 키 · DOM id · localStorage 키 · GA 이벤트명 · Firestore 필드명은 하나도 건드리지 않았다. 바뀐 것은 `class` 속성과 CSS 선택자뿐
+- 계산된 스타일 지문(22개 화면 × 모바일·PC 두 폭, 클래스 이름을 뺀 태그·구조·44개 계산 속성)을 리팩토링 전후로 떠서 렌더 결과가 같은지 확인했다
+
 ## v2.23.0 — 2026-09-08
 
 ### 추가

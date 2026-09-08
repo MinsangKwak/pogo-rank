@@ -5,7 +5,7 @@
      타일이 app-shell.css 와 이 파일 두 곳에서 서로 다른 값(반경 24px/18px, 여백 24px/18px,
      테두리 있음/없음)으로 정의돼 있었고, 색도 토큰 대신 파랑(#4679ad·#5281b8·#6b9bdb)을 직접
      썼다. 정의를 이 파일 한 곳으로 모으고 색·반경·글자 크기를 tokens.css 와 다른 카드
-     (.schedule · .account · .plan-card = 1px 테두리 · 12px 반경 · --surface)에 맞췄다.
+     (.schedule · .account · .plan__card = 1px 테두리 · 12px 반경 · --surface)에 맞췄다.
    ───────────────────────────────────────────────────────────────────────────── */
 
 /* 홈에서는 탭 줄·모드 배지·필터·즐겨찾기 요약·하단 기준 안내를 감춘다 — 타일이 유일한 진입점 */
@@ -13,42 +13,42 @@ body[data-home="true"] .tabs,
 body[data-home="true"] #mode-toggle,
 body[data-home="true"] .controls,
 body[data-home="true"] #fav-digest,
-body[data-home="true"] .crit { display: none; }
-body[data-home="true"] .wrap { padding-bottom: 80px; }
+body[data-home="true"] .crit-bar { display: none; }
+body[data-home="true"] .layout { padding-bottom: 80px; }
 
 /* 인사말 — layout.css 의 h1(22px)보다 한 단계만 크게. 큰 글씨로 튀지 않게 */
-.service-intro { padding: 24px 0 28px; }
-.service-eyebrow { display: block; font-size: 11px; font-weight: 600; letter-spacing: .16em; color: var(--muted); }
-.service-intro h2 { margin: 10px 0 0; font-size: 26px; font-weight: 600; line-height: 1.4; letter-spacing: -0.01em; }
-.service-intro p { margin: 10px 0 0; max-width: 34em; font-size: 13.5px; line-height: 1.7; color: var(--muted); word-break: keep-all; }
+.home__intro { padding: 24px 0 28px; }
+.home__eyebrow { display: block; font-size: 11px; font-weight: 600; letter-spacing: .16em; color: var(--muted); }
+.home__intro h2 { margin: 10px 0 0; font-size: 26px; font-weight: 600; line-height: 1.4; letter-spacing: -0.01em; }
+.home__intro p { margin: 10px 0 0; max-width: 34em; font-size: 13.5px; line-height: 1.7; color: var(--muted); word-break: keep-all; }
 
-/* 구역 제목 — .page-sec(15px/600) 와 같은 단계 */
-.service-section-title { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; padding: 18px 0 10px; border-top: 1px solid var(--line); }
-.service-section-title h3 { margin: 0; font-size: 15px; font-weight: 600; }
-.service-section-title > span { font-size: 11px; font-weight: 600; letter-spacing: .16em; color: var(--muted); }
+/* 구역 제목 — .page__sec(15px/600) 와 같은 단계 */
+.home__section { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; padding: 18px 0 10px; border-top: 1px solid var(--line); }
+.home__section h3 { margin: 0; font-size: 15px; font-weight: 600; }
+.home__section > span { font-size: 11px; font-weight: 600; letter-spacing: .16em; color: var(--muted); }
 
 /* 타일 — 다른 카드와 같은 언어: 1px 테두리 · 12px 반경 · --surface 배경 */
-.service-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
-.service-tile {
+.home__grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.home__tile {
   position: relative; display: flex; flex-direction: column;
   min-height: 116px; padding: 12px 14px 14px;
   border: 1px solid var(--line); border-radius: 12px; background: var(--surface);
   color: var(--fg); text-decoration: none;
 }
-.service-tile:hover { border-color: var(--fg); background: var(--hover); }
-.service-tile-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 8px; }
-.service-icon { font-size: 19px; line-height: 1; }
-.service-number { font-size: 11px; font-weight: 600; color: var(--muted); font-variant-numeric: tabular-nums; }
-.service-tile strong { font-size: 14px; font-weight: 600; }
-.service-desc { margin-top: 3px; padding-right: 14px; font-size: 12px; line-height: 1.5; color: var(--muted); word-break: keep-all; }
-.service-arrow { position: absolute; right: 12px; bottom: 11px; font-size: 12px; color: var(--muted); }
-.service-tile:hover .service-arrow { color: var(--fg); }
+.home__tile:hover { border-color: var(--fg); background: var(--hover); }
+.home__tile-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 8px; }
+.home__icon { font-size: 19px; line-height: 1; }
+.home__number { font-size: 11px; font-weight: 600; color: var(--muted); font-variant-numeric: tabular-nums; }
+.home__tile strong { font-size: 14px; font-weight: 600; }
+.home__desc { margin-top: 3px; padding-right: 14px; font-size: 12px; line-height: 1.5; color: var(--muted); word-break: keep-all; }
+.home__arrow { position: absolute; right: 12px; bottom: 11px; font-size: 12px; color: var(--muted); }
+.home__tile:hover .home__arrow { color: var(--fg); }
 @media (prefers-reduced-motion: no-preference) {
-  .service-tile { transition: border-color .12s, background .12s; }
+  .home__tile { transition: border-color .12s, background .12s; }
 }
 
 @media (min-width: 560px) {
-  .service-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
-  .service-intro { padding: 28px 0 32px; }
-  .service-intro h2 { font-size: 28px; }
+  .home__grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+  .home__intro { padding: 28px 0 32px; }
+  .home__intro h2 { font-size: 28px; }
 }

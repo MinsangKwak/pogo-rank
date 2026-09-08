@@ -19,17 +19,17 @@ const APP_DESTINATIONS = [
   ['#/plan', '육성 플래너'], ['#/schedule', '이벤트 일정'],
 ];
 const appHeader = document.querySelector('header');
-document.body.insertBefore(appHeader, document.querySelector('.wrap'));
+document.body.insertBefore(appHeader, document.querySelector('.layout'));
 appHeader.className = 'app-bar';
 const oldHeading = appHeader.querySelector('h1');
-const version = oldHeading.querySelector('.app-ver').textContent;
+const version = oldHeading.querySelector('.app-bar__version').textContent;
 const appTitle = el('h1', { id: 'app-title', tabindex: '-1' }, 'POGO PLAN');
 const backButton = el('button', { class: 'icon-btn', 'aria-label': '이전 화면', onclick: () => {
   if (history.state?.appEntry) history.back();
   else navigateHash('');
 }}, '←');
-const actions = appHeader.querySelector('.header-actions');
-appHeader.replaceChildren(el('div', { class: 'app-heading' }, backButton, appTitle), actions);
+const actions = appHeader.querySelector('.app-bar__actions');
+appHeader.replaceChildren(el('div', { class: 'app-bar__head' }, backButton, appTitle), actions);
 // 🔍 · 👤 · ☰ 아이콘은 index.html 의 것을 그대로 쓴다 (aria-label 이 이미 붙어 있다)
 const searchButton = document.getElementById('search-toggle');
 searchButton.setAttribute('aria-haspopup', 'dialog');
@@ -39,9 +39,9 @@ const menuButton = document.getElementById('menu-toggle');
 menuButton.setAttribute('aria-haspopup', 'dialog');
 menuButton.setAttribute('aria-expanded', 'false');
 menuButton.setAttribute('aria-controls', 'drawer-backdrop');
-const panel = document.querySelector('.psearch');
-const typeRow = panel.querySelector('.psearch-row');
-const typeFilters = el('details', { class: 'screen-filters search-filters' }, el('summary', {}, '타입으로 좁히기'));
+const panel = document.querySelector('.search');
+const typeRow = panel.querySelector('.search__row');
+const typeFilters = el('details', { class: 'filter-box filter-box--search' }, el('summary', {}, '타입으로 좁히기'));
 typeRow.before(typeFilters);
 typeFilters.append(typeRow);
 const searchDialog = el('dialog', { id: 'search-dialog', 'aria-label': '포켓몬 검색' }, panel);
@@ -49,11 +49,11 @@ document.body.append(searchDialog);
 searchDialog.addEventListener('cancel', (event) => { event.preventDefault(); closeSearchDialog(); });
 searchDialog.addEventListener('click', (event) => { if (event.target === searchDialog) closeSearchDialog(); });
 document.getElementById('psearch').setAttribute('aria-label', '포켓몬 이름 또는 타입');
-const drawer = document.querySelector('.drawer');
+const drawer = document.querySelector('.drawer__panel');
 drawer.querySelector('#schedule-body').closest('details').hidden = true;
-const destinations = el('nav', { class: 'service-menu', 'aria-label': '서비스 이동' },
-  el('a', { href: '#', class: 'drawer-item' }, '서비스 홈'),
-  ...APP_DESTINATIONS.map(([href, title]) => el('a', { href, class: 'drawer-item' }, title)));
+const destinations = el('nav', { class: 'nav-menu', 'aria-label': '서비스 이동' },
+  el('a', { href: '#', class: 'drawer__item' }, '서비스 홈'),
+  ...APP_DESTINATIONS.map(([href, title]) => el('a', { href, class: 'drawer__item' }, title)));
 destinations.addEventListener('click', (event) => {
   const link = event.target.closest('a');
   if (!link) return;
@@ -65,15 +65,15 @@ destinations.addEventListener('click', (event) => {
 // 2026-09-08 v2.23.0 PC 레이아웃 — 넓은 화면에서는 같은 목록을 드로어가 아니라 왼쪽 고정 사이드바에 둔다.
 // 목록을 복제하지 않고 옮기기만 한다 (랜드마크·aria-current 가 두 벌이 되지 않게)
 const sideNav = el('aside', { class: 'app-nav', id: 'app-nav' });
-document.querySelector('.wrap').before(sideNav);
+document.querySelector('.layout').before(sideNav);
 const wideScreen = window.matchMedia('(min-width: 1024px)');
 function placeDestinations() {
   if (wideScreen.matches) sideNav.append(destinations);
-  else drawer.querySelector('.drawer-head').after(destinations);
+  else drawer.querySelector('.drawer__head').after(destinations);
 }
 wideScreen.addEventListener('change', placeDestinations);
 placeDestinations();
-drawer.append(el('p', { class: 'drawer-meta' }, 'POGO PLAN · ' + version));
+drawer.append(el('p', { class: 'drawer__meta' }, 'POGO PLAN · ' + version));
 const skip = el('a', { class: 'skip-link', href: '#content', onclick: (event) => {
   event.preventDefault();
   const main = document.getElementById('page').hidden ? document.getElementById('content') : document.getElementById('page');
@@ -134,8 +134,8 @@ document.addEventListener('keydown', (event) => {
 function compactScreenFilters() {
   const controls = document.getElementById('controls');
   for (const group of [...controls.children]) {
-    if (group.querySelectorAll('.chip').length < 8) continue;
-    const details = el('details', { class: 'screen-filters' },
+    if (group.querySelectorAll('.chips__item').length < 8) continue;
+    const details = el('details', { class: 'filter-box' },
       el('summary', {}, '타입 필터 · 선택하기'));
     details.open = !!state.filtersOpen;
     details.addEventListener('toggle', () => { state.filtersOpen = details.open; });
