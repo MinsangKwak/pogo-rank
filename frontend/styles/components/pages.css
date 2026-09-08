@@ -174,3 +174,25 @@
 .gameday__sec .dex__list { margin-top: 8px; }
 .gameday__note { margin-left: auto; padding-left: 10px; text-align: right; font-size: 11.5px; word-break: keep-all; }
 @media (max-width: 420px) { .gameday__note { font-size: 11px; } }
+
+/* 2026-09-08 v2.28.0 카드 격자에 얹히는 화면별 보정
+   도감 2열(is-grid)에서 쓰던 카드를 즐겨찾기·레이드 보스·알 부화가 PC 에서 그대로 쓴다(dom.js wideCards).
+   줄일 때는 왼쪽 정렬이던 보조 정보들을 카드 안에서는 가운데로 모은다 */
+.dex__list.is-grid .fav__row { align-items: center; }
+.dex__list.is-grid .fav__main { width: 100%; }
+.dex__list.is-grid .fav__wheres { justify-content: center; }
+
+/* 2026-09-08 v2.28.0 카드를 그림 칸과 글 칸으로 나눈다
+   그림과 이름이 그냥 붙어 있으면 어디까지가 그림 자리인지 눈이 잡지 못해 카드가 한 덩어리로 뭉갠다.
+   상세 팝업의 회색 그림 상자(.sprite-box, modal.css)와 같은 뜻 — 그림에 판을 깔고 아래에 얇은 선 하나.
+   스켈레톤(.is-loading)이 도는 동안에는 판 색을 덮지 않는다(반짝임이 사라진다) */
+.dex__list.is-grid .dex__row .sprite,
+.dex__list.is-grid .fav__row .sprite { box-sizing: content-box; padding: 8px; border-radius: 12px; }
+.dex__list.is-grid .dex__row .sprite:not(.is-loading),
+.dex__list.is-grid .fav__row .sprite:not(.is-loading) { background: var(--bg); }
+.dex__list.is-grid .dex__row > b,
+.dex__list.is-grid .fav__main { width: 100%; padding-top: 9px; border-top: 1px solid var(--line); }
+@media (min-width: 1024px) {
+  /* 레이드·알 카드에는 타입·CP·날씨·✨ 가 한 줄로 붙어 4열이면 글자가 계단처럼 접힌다 */
+  .gameday__sec .dex__list.is-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}

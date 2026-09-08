@@ -109,7 +109,8 @@ function renderFavsPage() {
   };
   // 세그먼트 선택 상태는 화면 전체 재렌더 없이 이 페이지 안에서만 바꾼다
   let current = 'all';
-  const $list = el('div', { class: 'dex__list' });
+  // 2026-09-08 v2.28.0 PC 는 카드 격자 (wideCards, dom.js)
+  const $list = el('div', { class: `dex__list${wideCards() ? ' is-grid' : ''}` });
   const draw = () => {
     const rows = groups[current];
     $list.replaceChildren(...(rows.length

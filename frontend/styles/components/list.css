@@ -135,3 +135,44 @@
 .deck__slot .sprite { width: 40px; height: 40px; }
 .deck__slot .slot__name { font-size: 11.5px; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding: 0 6px; }
 .deck__slot .slot__close { position: absolute; top: 5px; right: 8px; font-size: 11px; color: var(--muted); }
+
+/* 2026-09-08 v2.28.0 PC 는 카드 격자 — 줄이 아니라 카드로 훑는다
+   왜 바꾸나
+     넓은 화면에서 한 줄짜리 목록은 가운데 760px 만 쓰고 좌우가 텅 빈다.
+     그 폭에 순위·그림·이름·기술·점수를 한 줄로 늘어놓으면 눈이 가로로 길게 움직이는데,
+     정작 고르는 대상(그림·이름)은 40px 짜리 그림 하나뿐이라 훑기가 안 됐다.
+     도감 2열에서 이미 쓰던 카드(pages.css .dex__list.is-grid)와 같은 규칙을 여기에도 적용해
+     "고르는 화면은 카드" 라는 한 가지 문법으로 맞춘다.
+   왜 CSS 만으로 하나
+     랭킹 목록은 모두 list.js 의 <ul class="row-list"> 를 거친다.
+     한 곳의 미디어 쿼리로 전부(D-MAX · 레이드 PvE · 배틀 PvP · 솔플 스쿼드 · 추천 덱) 바뀐다.
+     모바일은 손대지 않는다 — 1024px 미만은 기존 줄 그대로다 */
+@media (min-width: 1024px) {
+  .row-list { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; padding-top: 4px; border-top: 0; }
+  .row {
+    position: relative; display: flex; flex-direction: column; align-items: center; gap: 6px;
+    padding: 18px 12px 14px; text-align: center;
+    border: 1px solid var(--line); border-radius: 12px; background: var(--surface);
+  }
+  .row:hover { border-color: var(--fg); background: var(--hover); }
+  /* 순위는 카드 모서리로 — 세로로 세운 카드에서 순위가 한 칸을 차지하면 그림이 밀린다 */
+  .row__rank { position: absolute; top: 8px; left: 10px; text-align: left; font-size: 12px; }
+  /* 그림 칸을 회색 판으로 떼고 아래에 얇은 선 — 도감 카드(pages.css)·상세 팝업(.sprite-box)과 같은 뜻 */
+  .row .sprite { box-sizing: content-box; width: 64px; height: 64px; padding: 8px; border-radius: 12px; }
+  .row .sprite:not(.is-loading) { background: var(--bg); }
+  .row__main { width: 100%; min-width: 0; padding-top: 9px; border-top: 1px solid var(--line); }
+  .row__badges { justify-content: center; margin-bottom: 4px; }
+  .row__name { justify-content: center; }
+  .row__name b { font-size: 14px; font-weight: 600; line-height: 1.35; word-break: keep-all; }
+  .row__moves { margin-top: 3px; line-height: 1.5; word-break: keep-all; }
+  /* 점수는 카드 바닥에 붙인다 — 기술 줄 길이가 종마다 달라도 점수 높이가 가지런하다 */
+  .row__stats { display: flex; flex-direction: column; align-items: center; gap: 1px; margin-top: auto; padding-top: 8px; text-align: center; }
+  .row__score { font-size: 17px; font-weight: 600; }
+  .row__sub { display: block; }
+  /* 격자 폭을 다 쓰는 항목들 — 더보기 버튼과 티어표의 "선정 근거" 줄 */
+  .row__more { grid-column: 1 / -1; border: 1px solid var(--line); border-radius: 10px; }
+  .row__more:hover { border-color: var(--fg); background: var(--hover); }
+  .row__why { grid-column: 1 / -1; padding: 12px 14px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); }
+  /* 순위가 없는 목록(덱 슬롯 등)은 3열이면 카드가 너무 홀쭉하다 */
+  .is-starless .row-list { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
