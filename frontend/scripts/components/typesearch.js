@@ -36,10 +36,14 @@ function openTypeSearch(types, spriteId, from = 'link') {
 }
 
 // 배율 → 묶음 키. 이중약점 ≥2.5 · 약점 ≥1.5 · 내성 ≤0.7 · 이중내성/무효 ≤0.4 (GO 는 무효도 0.39 = 0.625²)
+// 2026-09-08 v2.28.0 (버그) 이 값은 drawResult 의 buckets 객체 키다 — CSS 클래스가 아니다.
+// v2.24.0 BEM 리네이밍 때 'x2' → 'is-weak2', 'r2' → 'is-resist2' 로 바뀌면서 buckets['is-weak2'] 가
+// undefined 가 됐고, .push 에서 예외가 나 결과 영역이 통째로 그려지지 않았다(타입을 눌러도 아무것도 안 나옴).
+// 클래스 이름은 bucketRow 의 세 번째 인자로 따로 넘긴다 — 두 값을 하나로 쓰지 않는다
 function matchupBucket(multiplier) {
-  if (multiplier >= 2.5) return 'is-weak2';
+  if (multiplier >= 2.5) return 'x2';
   if (multiplier >= 1.5) return 'weak';
-  if (multiplier <= 0.4) return 'is-resist2';
+  if (multiplier <= 0.4) return 'r2';
   if (multiplier <= 0.7) return 'resist';
   return 'neutral';
 }

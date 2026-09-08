@@ -1,5 +1,6 @@
 'use strict';
-// v2.26.0 앱 셸 회귀 — 스크롤 잠금 · PC 헤더 분리 · 드로어 중복 · 2열 카드 · 버튼 반응
+// v2.26.0 앱 셸 회귀 — 스크롤 잠금 · PC 헤더 분리 · 드로어 중복 · 카드 보기 · 버튼 반응
+// v2.28.0 PC 카드 뷰 — 랭킹·도감·레이드 보스·즐겨찾기가 넓은 화면에서 카드로 서는가 (모바일은 줄 그대로)
 //
 // 스크롤 잠금이 남는 버그는 재현 경로가 다양해서(브라우저가 dialog 를 직접 닫는 경우 등)
 // "여는 방법 × 닫는 방법" 을 조합으로 훑는다. 하나라도 잠금이 남으면 그 화면은 영영 못 움직인다.
@@ -133,17 +134,44 @@ const ok = (n, c, x = '') => { console.log((c ? 'PASS' : 'FAIL') + ' ' + n + ' '
     await page.keyboard.press('Escape');
     await page.waitForTimeout(400);
 
-    // ── 2열 카드
+    // ── 그리드 보기는 카드 (v2.29.2 라벨: 열 개수가 아니라 보기 방식)
     await go('#/dex');
-    await page.getByRole('button', { name: /2열/ }).click().catch(() => {});
+    // 넓은 화면은 그리드가 기본, 좁은 화면은 리스트가 기본이다 — 라벨을 보고 필요할 때만 누른다
+    const layoutBtn = page.locator('.dex__layout');
+    if (!(await page.locator('.dex__list.is-grid').count())) await layoutBtn.click().catch(() => {});
     await page.waitForTimeout(500);
     const card = await page.locator('.dex__list.is-grid .dex__row').first().evaluate((n) => {
       const s = getComputedStyle(n);
       return { dir: s.flexDirection, radius: s.borderRadius, border: s.borderTopWidth, w: Math.round(n.getBoundingClientRect().width) };
     }).catch(() => null);
-    ok(`${label} 2열은 카드`, !!card && card.dir === 'column' && parseFloat(card.radius) >= 8 && parseFloat(card.border) >= 1, JSON.stringify(card));
+    ok(`${label} 그리드는 카드`, !!card && card.dir === 'column' && parseFloat(card.radius) >= 8 && parseFloat(card.border) >= 1, JSON.stringify(card));
     const spriteSize = await page.locator('.dex__list.is-grid .sprite').first().evaluate((n) => Math.round(n.getBoundingClientRect().width)).catch(() => 0);
-    ok(`${label} 카드 그림이 크다 (1열보다)`, spriteSize >= 56, `${spriteSize}px`);
+    ok(`${label} 카드 그림이 크다 (리스트보다)`, spriteSize >= 56, `${spriteSize}px`);
+
+    // ── v2.28.0 PC 카드 뷰 — 랭킹 목록도 카드인가 (모바일은 줄 그대로여야 한다)
+    for (const hash of ['#/rank/max', '#/rank/pve', '#/rank/pvp']) {
+      await go(hash);
+      const shape = await page.locator('#content .row').first().evaluate((n) => {
+        const s = getComputedStyle(n);
+        const list = getComputedStyle(n.parentElement);
+        return { dir: s.flexDirection, display: s.display, radius: parseFloat(s.borderRadius),
+                 border: parseFloat(s.borderTopWidth), cols: list.gridTemplateColumns.split(' ').length };
+      });
+      if (wide) {
+        ok(`PC ${hash} 랭킹이 카드`, shape.display === 'flex' && shape.dir === 'column' && shape.radius >= 8 && shape.border >= 1, JSON.stringify(shape));
+        ok(`PC ${hash} 여러 열로 놓임`, shape.cols >= 2, String(shape.cols));
+      } else {
+        ok(`모바일 ${hash} 랭킹은 줄 (기존 유지)`, shape.display === 'grid' && shape.radius < 1, JSON.stringify(shape));
+      }
+    }
+    // 도감·레이드 보스·즐겨찾기는 PC 에서 카드가 기본 (wideCards, dom.js)
+    for (const hash of ['#/dex', '#/raids', '#/favs']) {
+      // 앞 검사에서 보기 방식 토글을 눌러 저장된 선택이 남아 있다 — 기본값을 보려면 지우고 들어간다
+      await page.evaluate(() => { try { localStorage.removeItem('pogo_dex_cols'); } catch { /* 저장 불가 환경 */ } });
+      await go(hash);
+      const grid = await page.locator('#page .dex__list').first().evaluate((n) => n.classList.contains('is-grid'));
+      ok(`${label} ${hash} 카드 기본값`, grid === wide, String(grid));
+    }
 
     // ── 버튼 반응: 가리켜도 자리가 움직이지 않아야 한다
     const btn = page.locator('#menu-toggle');

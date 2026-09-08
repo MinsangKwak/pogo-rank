@@ -36,7 +36,7 @@
 # ─────────────────────────────────────────────────────────────────────────────
 import json, csv, re, os
 from sprite import sprite_id, LOCAL_FORMS
-from names import label_from_gm, released_dex
+from names import label_from_gm, released_dex, en_species, FORM_KO, FORM_EN  # 2026-09-08 v2.29.0 다국어: 영문 종 이름·폼 라벨
 
 # 2026-09-03 PvPoke released는 PvP 사용 가능 기준이라 실출시 종(메타몽 등)이 빠짐 → 수동 보정 파일로 보완
 # 파일 형식: 한 줄에 도감번호 하나, '#' 뒤는 주석
@@ -71,6 +71,11 @@ for row in csv.DictReader(open('data/move_names.csv', encoding='utf-8')):
         en_move[re.sub(r'[^a-z0-9]','',row['name'].lower())] = row['move_id']
     if row['local_language_id']=='3':
         ko_move[row['move_id']] = row['name']
+# 2026-09-08 v2.29.0 다국어 — 기술 id → 영문명. 위 두 표와 같은 원본이라 한 번 더 훑지 않는다
+en_move_name = {}
+for row in csv.DictReader(open('data/move_names.csv', encoding='utf-8')):
+    if row['local_language_id'] == '9':
+        en_move_name[row['move_id']] = row['name']
 
 def move_ko(move_id):
     # 게임마스터 기술 id(예: 'MUD_SLAP_FAST') → 한글 기술명.
@@ -255,6 +260,21 @@ cpm_arr = [template for template in game_master if 'playerLevel' in template['da
 cpm = {'l20': cpm_arr[19], 'l25': cpm_arr[24], 'l30': cpm_arr[29], 'l35': cpm_arr[34], 'l50': cpm_arr[49]}
 cpms = [round(multiplier, 6) for multiplier in cpm_arr[:51]]  # CP 계산기: 레벨 n = 인덱스 n-1, 반레벨은 프론트에서 보간
 
+# 2026-09-08 v2.29.0 다국어 — 한글 이름 → 영문 이름 짝짓기.
+# 프론트가 들고 있는 값이 한글 이름(기술명·폼 라벨)이라 한글을 키로 잡는다. 짝이 없으면 넣지 않는다 —
+# 없는 영문을 지어내지 않고, 사전에 없으면 화면이 한글을 그대로 보여 준다(읽을 수는 있게)
+ko_to_en_move = {}
+for move_identifier, korean_move in ko_move.items():
+    english_move = en_move_name.get(move_identifier)
+    if english_move and korean_move not in ko_to_en_move:
+        ko_to_en_move[korean_move] = english_move
+# 다이맥스·거다이맥스는 폼 토큰이 아니라 화면이 붙이는 라벨이라(build.py FORM_LABELS) 여기서 채운다
+ko_to_en_form = {'다이맥스': 'Dynamax', '거다이맥스': 'Gigantamax'}
+for form_token, korean_form in FORM_KO.items():
+    english_form = FORM_EN.get(form_token)
+    if korean_form and english_form:
+        ko_to_en_form.setdefault(korean_form, english_form)
+
 # 최종 산출물. 키 순서·이름은 프론트(components/detail.js · views/*.js)가 그대로 참조한다
 dex_output = {
     'chart': chart,
@@ -273,6 +293,13 @@ dex_output = {
     'megas': {dex_key: entries for dex_key, entries in megas_map.items() if any(entry['sprite'] in forms for entry in entries)},
     'cls': cls_map,
     'rel': sorted(released_dex | extra_rel),  # 2026-09-03 도감 [미구현] 태그용 — PvPoke released + 수동 보정
+    # ── 2026-09-08 v2.29.0 다국어(EN) 이름표 ─────────────────────────────────
+    # 화면 문구는 사전(frontend/scripts/i18n-en.js)이 맡고, **이름은 데이터가 맡는다.**
+    # 포켓몬·기술·폼 이름을 사전에 손으로 적으면 1,000종이 넘는 데다 새 종이 나올 때마다 사람이 따라 적어야 한다 —
+    # 원본 표(PokeAPI species_names.csv · move_names.csv)에 이미 영문이 있으므로 그대로 굽는다.
+    'en': {str(dex_number): en_species[dex_number] for dex_number in names if dex_number in en_species},
+    'moveKo': ko_to_en_move,     # 한글 기술명 → 영문 기술명 (화면이 들고 있는 값이 한글이라 그쪽을 키로 잡는다)
+    'formKo': ko_to_en_form,     # 한글 폼 라벨 → 영문 폼 라벨
 }
 json.dump(dex_output, open('data/dex.json', 'w', encoding='utf-8'), ensure_ascii=False)
 print('dex.json:', len(evo), 'evo species /', len(forms), 'forms /', len(referenced_sprite_ids), 'sprites referenced')

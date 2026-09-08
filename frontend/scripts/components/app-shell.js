@@ -36,6 +36,23 @@ const searchButton = document.getElementById('search-toggle');
 searchButton.setAttribute('aria-haspopup', 'dialog');
 searchButton.setAttribute('aria-expanded', 'false');
 searchButton.setAttribute('aria-controls', 'search-dialog');
+// 2026-09-08 v2.29.0 KR/EN 전환 — 헤더 👤 를 비운 자리. 버튼 글자는 "지금 누르면 갈 언어"다
+// (한국어로 보고 있으면 EN, 영어로 보고 있으면 KR). 상태 표시가 아니라 행동 표시라 눌러야 할 것이 분명하다
+const langButton = document.getElementById('lang-toggle');
+// 이 버튼의 글자는 사전을 타지 않는다 (data-i18n="off") — 두 언어 표기를 여기서 직접 정한다.
+// 사전에 맡기면 '한국어로 보기' 가 다시 영어로 번역돼 뜻이 뒤집힌다
+langButton.dataset.i18n = 'off';
+function syncLangButton() {
+  langButton.textContent = LANG === 'en' ? 'KR' : 'EN';
+  langButton.setAttribute('aria-label', LANG === 'en' ? 'View in Korean (한국어로 보기)' : 'View in English (영어로 보기)');
+}
+langButton.addEventListener('click', () => {
+  setLang(LANG === 'en' ? 'ko' : 'en');
+  syncLangButton();
+});
+syncLangButton();
+i18nWatch();   // 그려지는 것을 지켜보다 자동으로 번역한다 (i18n.js)
+
 const menuButton = document.getElementById('menu-toggle');
 menuButton.setAttribute('aria-haspopup', 'dialog');
 menuButton.setAttribute('aria-expanded', 'false');
@@ -77,7 +94,8 @@ function placeDestinations() {
   if (wideScreen.matches) sideNav.append(destinations);
   else drawer.querySelector('.drawer__head').after(destinations);
 }
-wideScreen.addEventListener('change', () => { placeDestinations(); syncAppShell(); });
+// 2026-09-08 v2.28.0 폭이 바뀌면 화면도 다시 그린다 — 목록이 줄이 될지 카드가 될지가 폭에 달렸다(wideCards)
+wideScreen.addEventListener('change', () => { placeDestinations(); syncAppShell(); if (typeof render === 'function') render(); });
 placeDestinations();
 drawer.append(el('p', { class: 'drawer__meta' }, 'POGO PLAN · ' + version));
 const skip = el('a', { class: 'skip-link', href: '#content', onclick: (event) => {

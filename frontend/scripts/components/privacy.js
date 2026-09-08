@@ -29,12 +29,14 @@ function renderPrivacyPage() {
     el('tbody', {}, ...rows.map((row) => el('tr', {}, ...row.map((cell) => el('td', {}, cell)))))));
   const contact = typeof CONTACT_EMAIL !== 'undefined' && CONTACT_EMAIL ? el('a', { href: 'mailto:' + CONTACT_EMAIL }, CONTACT_EMAIL) : '사이트 운영자';
 
+  // 2026-09-08 v2.29.0 한국어 원문이 효력을 갖는 문서라 번역하지 않는다 (영어 안내만 위에 단다)
   return el('div', { class: 'page__body' },
+    i18nKoOnlyNote(),
     p('POGO PLAN(이하 "서비스")은 로그인하지 않으면 개인정보를 수집하지 않습니다. Google 로그인으로 승인된 사용자에게만 즐겨찾기·내 포켓몬 저장 기능을 제공하며, 이 문서는 그 과정에서 무엇을 어디에 얼마나 보관하는지 설명합니다.'),
     el('p', { class: 'detail__foot' }, `시행일 2026-09-04 · 개정 2026-09-06 (이용 통계에 계정 식별자 연결) · 2026-09-07 (플래너 개체 정보 항목) · ${PRIVACY_VER} v2.18.0 (처리위탁·국외이전·보유기간·14세·보호책임자·자동수집·셀프 삭제 명시). 서비스는 개인이 무료로 운영하며 상업적 목적이 없습니다.`),
 
     sec('1. 수집하는 개인정보',
-      p('로그인하지 않고 도감·순위표·계산기·플래너 계산을 쓰는 경우 개인정보를 전혀 수집하지 않습니다. 아래 항목은 헤더 👤 버튼으로 Google 로그인을 했을 때만 발생합니다.'),
+      p('로그인하지 않고 도감·순위표·계산기·플래너 계산을 쓰는 경우 개인정보를 전혀 수집하지 않습니다. 아래 항목은 ☰ 메뉴의 "👤 마이페이지" 에서 Google 로그인을 했을 때만 발생합니다.'),
       table(['항목', '어디서', '왜'], [
         ['이메일 주소, 이름, 프로필 사진 URL', 'Google 계정 (로그인 시)', '승인제 운영(승인 대기 목록), 계정 카드 표시'],
         ['Firebase 인증 uid', 'Firebase Authentication', '계정 식별, 관리자 판정, 이용 통계 User-ID'],

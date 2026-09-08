@@ -34,6 +34,14 @@ ko_species = {
     if row['local_language_id'] == '3'
 }
 
+# 도감번호 → 영문 종 이름. 언어 코드 9 번이 영어다 (2026-09-08 v2.29.0 다국어)
+# 한글과 같은 표에서 같은 방식으로 뽑는다 — 영문 이름도 실데이터만 쓰고 지어내지 않는다
+en_species = {
+    int(row['pokemon_species_id']): row['name']
+    for row in csv.DictReader(open('data/species_names.csv', encoding='utf-8'))
+    if row['local_language_id'] == '9'
+}
+
 # 폼 라벨: 키는 정규화(소문자, 공백·밑줄 제거)한 영문 토큰. PvPoke speciesName의 괄호와 게임마스터 form 접미사 모두 여기로 온다
 # 값이 빈 문자열인 키는 "표시할 라벨이 없는 기본 폼"이라는 뜻이다(Normal, Standard, 성별 표기 등).
 FORM_KO = {
@@ -64,6 +72,39 @@ FORM_KO = {
     'female':'','male':'','jr':'','s':'에이펙스','wellspring':'우물의가면','hearthflame':'화덕의가면','cornerstone':'주춧돌의가면','teal':'벽록의가면','bloodmoon':'혈월',
     # 게노세크트 카세트(번·칠·다우즈·쇼크) · 팔데아 켄타로스 3종 · 아머드 뮤츠
     'burn':'번','chill':'칠','douse':'다우즈','shock':'쇼크','aqua':'아쿠아','blaze':'블레이즈','combat':'컴뱃','armored':'아머드',
+}
+
+# 2026-09-08 v2.29.0 다국어 — FORM_KO 와 같은 토큰 키를 쓰는 영문 라벨표.
+# 한 토큰이 두 표에 다 있어야 프론트가 "한글 라벨 ↔ 영문 라벨"을 짝지을 수 있다(dex_build.py formEn).
+# 값은 게임이 실제로 쓰는 영문 표기다 — 토큰을 기계적으로 대문자화하지 않는다(megax → 'Mega X')
+FORM_EN = {
+    'shadow': 'Shadow', 'mega': 'Mega', 'megax': 'Mega X', 'megay': 'Mega Y', 'primal': 'Primal',
+    'alolan': 'Alolan', 'alola': 'Alolan', 'galarian': 'Galarian', 'galar': 'Galarian',
+    'hisuian': 'Hisuian', 'hisui': 'Hisuian', 'paldean': 'Paldean', 'paldea': 'Paldean',
+    'altered': 'Altered', 'origin': 'Origin', 'incarnate': 'Incarnate', 'therian': 'Therian',
+    'attack': 'Attack', 'defense': 'Defense', 'speed': 'Speed',
+    'crownedsword': 'Crowned Sword', 'crownedshield': 'Crowned Shield', 'hero': 'Hero',
+    'icerider': 'Ice Rider', 'shadowrider': 'Shadow Rider', 'white': 'White', 'black': 'Black',
+    'dawnwings': 'Dawn Wings', 'duskmane': 'Dusk Mane', 'ultra': 'Ultra',
+    'complete': 'Complete', 'completeforme': 'Complete', '10': '10%', 'tenpercent': '10%',
+    '50': '50%', 'fiftypercent': '50%',
+    'sunny': 'Sunny', 'rainy': 'Rainy', 'snowy': 'Snowy', 'sky': 'Sky', 'land': 'Land',
+    'zen': 'Zen Mode', 'galarianzen': 'Galarian Zen Mode', 'galarianstandard': 'Galarian',
+    'aria': 'Aria', 'pirouette': 'Pirouette', 'resolute': 'Resolute',
+    'super': 'Super Size', 'large': 'Large', 'average': 'Average', 'small': 'Small',
+    'blade': 'Blade', 'shield': 'Shield', 'unbound': 'Unbound',
+    'midday': 'Midday', 'midnight': 'Midnight', 'dusk': 'Dusk', 'dawn': 'Dawn',
+    'heat': 'Heat', 'wash': 'Wash', 'frost': 'Frost', 'fan': 'Fan', 'mow': 'Mow',
+    'amped': 'Amped', 'lowkey': 'Low Key',
+    'rapidstrike': 'Rapid Strike', 'singlestrike': 'Single Strike',
+    'plant': 'Plant Cloak', 'sandy': 'Sandy Cloak', 'trash': 'Trash Cloak',
+    'overcast': 'Overcast', 'sunshine': 'Sunshine',
+    'baile': 'Baile Style', 'pompom': 'Pom-Pom Style', 'pau': "Pa'u Style", 'sensu': 'Sensu Style',
+    's': 'Apex',
+    'wellspring': 'Wellspring Mask', 'hearthflame': 'Hearthflame Mask',
+    'cornerstone': 'Cornerstone Mask', 'teal': 'Teal Mask', 'bloodmoon': 'Bloodmoon',
+    'burn': 'Burn', 'chill': 'Chill', 'douse': 'Douse', 'shock': 'Shock',
+    'aqua': 'Aqua Breed', 'blaze': 'Blaze Breed', 'combat': 'Combat Breed', 'armored': 'Armored',
 }
 
 # 폼 토큰을 FORM_KO 키 형태로 정규화한다: 소문자로 바꾸고 공백·밑줄·하이픈을 지운다.
