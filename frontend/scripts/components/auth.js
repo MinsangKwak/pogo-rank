@@ -58,9 +58,20 @@ function authEmail() {
 }
 
 // <script>를 붙여 외부 스크립트를 받아온다. 로드 완료/실패를 await로 기다리기 위한 래퍼
+// 2026-09-08 v2.27.0 외부 스크립트는 출처를 못 박고 자격증명을 함께 보내지 않는다.
+//   crossOrigin='anonymous'  쿠키를 실어 보내지 않는다(보낼 이유가 없다)
+//   referrerPolicy           어느 화면에서 불렀는지(해시)를 CDN 에 흘리지 않는다
+//   허용 출처 검사            CSP 가 이미 막지만, 코드에서도 한 번 더 본다 —
+//                            나중에 누가 loadScript 에 임의 주소를 넘기는 실수를 하면 여기서 걸린다
+const SCRIPT_ALLOWED = ['https://www.gstatic.com/firebasejs/'];
 function loadScript(src) {
+  const external = /^https?:/.test(src);
+  if (external && !SCRIPT_ALLOWED.some((prefix) => src.startsWith(prefix))) {
+    return Promise.reject(new Error(`허용하지 않은 스크립트 출처: ${src}`));
+  }
   return new Promise((resolve, reject) => {
     const script = document.createElement('script');
+    if (external) { script.crossOrigin = 'anonymous'; script.referrerPolicy = 'no-referrer'; }
     script.src = src;
     script.onload = resolve;
     script.onerror = reject;
