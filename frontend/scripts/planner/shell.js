@@ -99,7 +99,7 @@ function renderPlanTabs() {
       class: 'tabs__item', role: 'tab', 'aria-selected': String(state.planTab === id),
       onclick: () => {
         track('plan_tab', { tab: id });
-        navigateHash(id === 'home' ? '#/plan' : `#/plan/${id}`);
+        navigateHash(routeHash(id === 'home' ? 'planner' : `planner-${id}`));   // v2.30.0 주소는 router.js 표에서
       },
     }, label));
   }
