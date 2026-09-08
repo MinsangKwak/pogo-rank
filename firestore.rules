@@ -2,6 +2,7 @@
 // 구조
 //   allowlist/{email}  승인된 친구 목록 (관리자만 쓰기, 본인 문서는 읽기·삭제 가능 → 승인 여부 확인 · 계정 삭제)
 //   requests/{email}   가입(승인) 요청 (본인만 생성·갱신·삭제, 관리자만 열람·삭제)
+// 2026-09-08 v2.27.0 쓰기 한도 — users·requests 문서의 필드 개수와 목록 길이를 규칙에서 제한 (아래 smallDoc)
 // 2026-09-07 v2.18.0 계정 삭제 셀프서비스 — 본인 이메일 문서의 delete 를 allowlist·requests 에서 허용 (auth.js deleteAccount). 콘솔에 다시 게시할 것
 //   users/{uid}        개인 데이터 — 즐겨찾기 favs 등 (본인만, 승인된 경우만)
 //   trainers/{name}    트레이너 코드 (승인된 사용자만 읽기, 관리자만 쓰기) — 공개 저장소에 코드를 두지 않기 위함
@@ -19,6 +20,23 @@ service cloud.firestore {
       return isAdmin() || (request.auth != null && exists(/databases/$(database)/documents/allowlist/$(myEmail())));
     }
 
+    // ── 2026-09-08 v2.27.0 쓰기 한도 ──────────────────────────────────────────
+    // 지금까지는 본인이면 무엇이든 얼마든지 쓸 수 있었다. 승인된 사용자가 실수하거나
+    // 계정이 털리면 문서 하나로 Firestore 무료 한도(Spark)를 태울 수 있다.
+    // 클라이언트의 PLAN_MAX_MONS 검사는 우회되므로 규칙에서 막아야 의미가 있다.
+    //
+    // ★ 필드 이름을 hasOnly 로 못 박지 않는다. set({merge:true}) 는 request.resource.data 가
+    //   **합쳐진 결과**라, 예전 버전이 남긴 필드가 하나라도 목록에 없으면 그 사용자는
+    //   그때부터 아무것도 저장하지 못한다. 이름 대신 **개수와 크기**로 막는다.
+    function smallDoc(maxKeys, maxListItems) {
+      let data = request.resource.data;
+      return data.keys().size() <= maxKeys
+             && (!('mons' in data) || (data.mons is list && data.mons.size() <= maxListItems))
+             && (!('favs' in data) || (data.favs is list && data.favs.size() <= 1000))
+             && (!('email' in data) || (data.email is string && data.email.size() <= 320))
+             && (!('name' in data) || (data.name is string && data.name.size() <= 200));
+    }
+
     match /allowlist/{mail} {
       allow read: if request.auth != null && (isAdmin() || mail == myEmail());
       allow create, update: if isAdmin();
@@ -28,11 +46,16 @@ service cloud.firestore {
     match /requests/{mail} {
       allow read: if isAdmin();
       allow delete: if isAdmin() || (request.auth != null && mail == myEmail());  // v2.18.0 본인 가입 요청 삭제 = 계정 삭제 절차
-      allow create, update: if request.auth != null && mail == myEmail() && request.resource.data.email == myEmail();
+      // 승인 대기 상태에서 쓸 수 있는 유일한 문서라 여기가 가장 무르다 — 크기를 규칙에서 제한한다
+      allow create, update: if request.auth != null && mail == myEmail()
+                            && request.resource.data.email == myEmail()
+                            && smallDoc(12, 400);
     }
 
     match /users/{uid} {
-      allow read, write: if request.auth != null && request.auth.uid == uid && isApproved();
+      allow read: if request.auth != null && request.auth.uid == uid && isApproved();
+      // 개체 300마리는 클라이언트 상한(PLAN_MAX_MONS)과 같은 값이다
+      allow write: if request.auth != null && request.auth.uid == uid && isApproved() && smallDoc(12, 300);
     }
 
     match /trainers/{name} {

@@ -13,6 +13,43 @@
 <!-- 2026-09-07 v2.14.0 (QA-52) 웹폰트 교체: 영문·숫자 Montserrat (Google Fonts) + 한글 Pretendard (jsdelivr, 동적 서브셋) -->
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" rel="stylesheet">
+<!-- ── 2026-09-08 v2.27.0 보안 · 공유 미리보기 · 검색 ──────────────────────────
+     [보안] GitHub Pages 는 응답 헤더를 못 바꾼다. meta 로 걸 수 있는 것만 건다.
+       CSP: 스크립트·연결처를 실제로 쓰는 곳으로 못 박는다. 번들이 인라인 <script> 라
+            'unsafe-inline' 이 필요하지만, 그래도 **외부 도메인 주입은 막힌다** —
+            공격자가 <script src="악성.com"> 을 심어도 브라우저가 거부한다.
+            object-src 'none' 은 플러그인, base-uri 'none' 은 <base> 로 상대경로를
+            통째로 돌리는 수법을 막는다. form-action 'none' 은 폼이 없는 사이트라 전부 차단.
+       Referrer: 다른 사이트로 나갈 때 경로를 흘리지 않는다 (해시에 화면 정보가 있다)
+     ───────────────────────────────────────────────────────────────────────────── -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://www.gstatic.com https://www.googletagmanager.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.jsdelivr.net; font-src 'self' https://fonts.gstatic.com https://cdn.jsdelivr.net; img-src 'self' data: https://raw.githubusercontent.com; connect-src 'self' https://*.googleapis.com https://*.firebaseio.com https://securetoken.googleapis.com https://www.google-analytics.com https://*.google-analytics.com https://raw.githubusercontent.com; frame-src https://*.firebaseapp.com https://accounts.google.com; object-src 'none'; base-uri 'none'; form-action 'none'">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+
+<!-- 공유 미리보기(OG) — 카카오톡·디스코드·X 에 링크를 붙였을 때 뜨는 카드.
+     그림은 도트로 직접 그린다 (backend/og_gen.py) — 도감 스프라이트가 픽셀인데
+     미리보기만 매끈하면 눌러 들어온 화면과 결이 어긋난다 -->
+<link rel="canonical" href="https://minsangkwak.github.io/pogo-rank/">
+<meta name="description" content="포켓몬 GO 의 D-MAX · 레이드 · PvP 순위와 도감, 타입 상성, 이벤트 일정, 레이드 보스와 알 부화까지. 내 개체를 저장해 뭘 키울지 정하는 비공식 팬 도구입니다.">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="POGO PLAN">
+<meta property="og:title" content="POGO PLAN — 뭘 키우고, 뭘 잡을지">
+<meta property="og:description" content="순위·도감·상성·일정을 한 화면에서. 내 포켓몬을 저장해 육성 우선순위를 정하세요.">
+<meta property="og:url" content="https://minsangkwak.github.io/pogo-rank/">
+<meta property="og:image" content="https://minsangkwak.github.io/pogo-rank/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="POGO PLAN — 도트로 그린 몬스터볼과 서비스 이름">
+<meta property="og:locale" content="ko_KR">
+<meta name="twitter:card" content="summary_large_image">
+<!-- 구조화 데이터 — 검색 결과에 서비스 이름과 설명이 제대로 붙게. 해시 라우팅이라 색인되는 주소가
+     첫 화면 하나뿐이므로 WebSite 하나만 적는다 (없는 하위 페이지를 지어내지 않는다) -->
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"WebSite","name":"POGO PLAN","alternateName":"포고플랜",
+"url":"https://minsangkwak.github.io/pogo-rank/","inLanguage":"ko-KR",
+"description":"포켓몬 GO 의 순위·도감·상성·일정을 한 화면에서 보고, 내 개체를 저장해 육성 우선순위를 정하는 비공식 팬 도구",
+"isAccessibleForFree":true}
+</script>
+
 <!-- 2026-09-03 PWA: 홈 화면 설치 -->
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon-192.png">
