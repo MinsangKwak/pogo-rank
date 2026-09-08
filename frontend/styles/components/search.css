@@ -34,5 +34,19 @@
 .usage-item .sugg-rank { flex: 1 1 0; min-width: 0; line-height: 1.4; }
 .usage-item .sugg-rank b { color: var(--fg); font-weight: 600; }
 .sugg-item .tag.use { flex: none; font-size: 9.5px; padding: 0 4px; }
-/* 헤더 🔍 버튼: 패널이 열려 있으면 눌린 상태로 */
-#search-toggle[aria-pressed="true"] { background: var(--fg); color: var(--bg); }
+/* 헤더 🔍 버튼: 검색 시트가 열려 있으면 눌린 상태로 (v2.21.0 aria-expanded 로 바뀜) */
+#search-toggle[aria-expanded="true"] { background: var(--fg); color: var(--bg); }
+
+/* 2026-09-07 v2.21.0 검색은 <dialog> 시트로 연다 — 상세 팝업(.overlay)과 같은 기하·같은 카드 모양 */
+#search-dialog { position: fixed; inset: 0; z-index: 50; display: flex; align-items: center; justify-content: center;
+                 width: 100%; max-width: none; height: 100%; max-height: none; margin: 0; border: 0; padding: 20px;
+                 background: rgba(0,0,0,.45); color: var(--fg); }
+#search-dialog:not([open]) { display: none; }
+#search-dialog::backdrop { background: transparent; }
+#search-dialog .psearch { width: 100%; max-width: 440px; max-height: 85vh; margin: 0; overflow-y: auto; }
+/* 결과를 내려도 제목·입력은 계속 보이게 */
+#search-dialog .psearch-head { position: sticky; top: -2px; z-index: 2; padding-top: 2px; background: var(--surface); }
+@media (max-width: 640px) {
+  #search-dialog { padding: 0; align-items: flex-end; }
+  #search-dialog .psearch { max-width: none; max-height: 88vh; border-radius: 14px 14px 0 0; border-bottom: 0; }
+}

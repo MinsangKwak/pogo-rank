@@ -29,8 +29,7 @@ function openModal(content) {
     el('div', { class: 'modal' },
       // 2026-09-02 X버튼을 sticky 바에 넣어 스크롤해도 항상 보이게
       el('div', { class: 'modal-close-bar' },
-        el('button', { class: 'modal-close', 'aria-label': '상세 닫고 이전 화면으로', onclick: () => closeModal() }, '←'),
-        el('span', {}, '상세 정보')),
+        el('button', { class: 'modal-close', 'aria-label': '닫기', onclick: () => closeModal() }, '✕')),
       content));
   document.body.append(overlay);
   overlay.addEventListener('cancel', (event) => { event.preventDefault(); closeModal(); });

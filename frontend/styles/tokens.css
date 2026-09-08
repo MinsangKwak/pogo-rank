@@ -8,8 +8,13 @@
   --c-max: #e2398f; --c-max-2: #8f2bb8;
   --c-mega: #6a5cff; --c-mega-2: #b04cff;
   --c-shadow: #6b3fa0;
+  /* 2026-09-08 v2.22.0 강조색 — 서비스 홈 타일·현재 위치 표시·포커스 링에만 쓴다.
+     원칙은 그대로: 색은 "의미"에만(타입·폼·순위), 나머지는 무채색 + 굵기/테두리로 강조한다.
+     값은 v2.15.0 플래너 배지에서 쓰던 초록을 그대로 올린 것 */
+  --accent: #2f8f5b;
+  --tap: 44px;  /* 손가락 대상 최소 크기 (헤더 아이콘 버튼·메뉴 항목) */
 }
 @media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) { --bg:#121315; --fg:#ecedee; --muted:#8c8f94; --line:#26282b; --surface:#1b1c1f; --hover:#18191c; }
+  :root:not([data-theme="light"]) { --bg:#121315; --fg:#ecedee; --muted:#8c8f94; --line:#26282b; --surface:#1b1c1f; --hover:#18191c; --accent:#4fb37c; }
 }
-:root[data-theme="dark"] { --bg:#121315; --fg:#ecedee; --muted:#8c8f94; --line:#26282b; --surface:#1b1c1f; --hover:#18191c; }
+:root[data-theme="dark"] { --bg:#121315; --fg:#ecedee; --muted:#8c8f94; --line:#26282b; --surface:#1b1c1f; --hover:#18191c; --accent:#4fb37c; }

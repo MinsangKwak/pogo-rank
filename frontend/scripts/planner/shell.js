@@ -27,7 +27,9 @@ const PLAN_LAST_KEY = 'pogo_plan_last';
 // pages.js 가 로드 직후 부르는 renderPage() 는 이 플래그로 "앱이 준비됐는지"를 판단한다 (initPlanShell 이 켠다)
 let _planShellReady = false;
 // [탭 id, 라벨] — 배열 순서가 곧 탭 줄 순서. 후속 버전(배틀·도구·일정)은 여기에 줄을 더한다
-const PLAN_TABS = [['home', '육성 현황'], ['collection', '🎒 내 포켓몬']];
+// 2026-09-08 v2.22.0 탭 라벨은 텍스트로 통일 — 도감 쪽 탭(D-MAX·PvE·PvP)과 같은 언어.
+// 아이콘은 탭 줄 오른쪽 바로가기(📕 🧭 ★)에만 쓴다
+const PLAN_TABS = [['home', '육성 현황'], ['collection', '내 포켓몬']];
 
 // 현재 해시가 플래너 주소면 { tab, params }, 아니면 null
 function planRouteFromHash() {

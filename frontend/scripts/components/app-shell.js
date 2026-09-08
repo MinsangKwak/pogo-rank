@@ -1,4 +1,17 @@
-// One persistent app bar for every route. Native dialogs own focus and Escape.
+// ─────────────────────────────────────────────────────────────────────────────
+// components/app-shell.js — 모든 화면에 계속 떠 있는 상단 바 (2026-09-07 v2.21.0)
+//
+// 화면 전환마다 헤더를 다시 만들지 않는다. <header> 를 .wrap 밖으로 꺼내 고정 막대로 쓰고,
+// 제목·뒤로가기만 해시에 맞춰 갱신한다. 팝업·검색·메뉴는 네이티브 <dialog> 라 포커스와
+// Esc 를 브라우저가 맡는다.
+//
+// 2026-09-08 v2.22.0 디자인 통일
+//   헤더 버튼을 텍스트("홈"·"검색"·"메뉴")에서 앱이 원래 쓰던 이모지 아이콘(🔍 👤 ☰)으로
+//   되돌렸다. 텍스트 버튼만 파란 글씨·테두리 없음이라 옆의 ← 아이콘 버튼과 따로 놀았다.
+//   접근성은 aria-label 로 유지된다 (이름은 스크린리더에 그대로 읽힌다).
+//   '홈' 버튼은 뺐다 — 드로어 맨 위 "서비스 홈" 과 같은 곳으로 가는 중복 진입점이라
+//   v2.15.1 "화면 하나에 버튼 하나" 원칙에 맞춰 하나만 남긴다.
+// ─────────────────────────────────────────────────────────────────────────────
 const APP_DESTINATIONS = [
   ['#/plan/collection', '내 포켓몬'], ['#/dex', '포켓몬 도감'],
   ['#/types', '타입 & 상성'], ['#/rank/max', 'D-MAX'],
@@ -15,23 +28,17 @@ const backButton = el('button', { class: 'icon-btn', 'aria-label': '이전 화�
   if (history.state?.appEntry) history.back();
   else navigateHash('');
 }}, '←');
-const homeButton = el('a', { class: 'app-home', href: '#', 'aria-label': '서비스 홈' }, '홈');
 const actions = appHeader.querySelector('.header-actions');
 appHeader.replaceChildren(el('div', { class: 'app-heading' }, backButton, appTitle), actions);
-actions.prepend(homeButton);
+// 🔍 · 👤 · ☰ 아이콘은 index.html 의 것을 그대로 쓴다 (aria-label 이 이미 붙어 있다)
 const searchButton = document.getElementById('search-toggle');
-searchButton.textContent = '검색';
 searchButton.setAttribute('aria-haspopup', 'dialog');
 searchButton.setAttribute('aria-expanded', 'false');
 searchButton.setAttribute('aria-controls', 'search-dialog');
 const menuButton = document.getElementById('menu-toggle');
-menuButton.textContent = '메뉴';
 menuButton.setAttribute('aria-haspopup', 'dialog');
 menuButton.setAttribute('aria-expanded', 'false');
 menuButton.setAttribute('aria-controls', 'drawer-backdrop');
-// Account actions remain in the menu, so the app bar has stable geometry.
-const accountButton = document.getElementById('account-toggle');
-accountButton.classList.add('shell-account');
 const panel = document.querySelector('.psearch');
 const typeRow = panel.querySelector('.psearch-row');
 const typeFilters = el('details', { class: 'screen-filters search-filters' }, el('summary', {}, '타입으로 좁히기'));
@@ -51,7 +58,9 @@ destinations.addEventListener('click', (event) => {
   const link = event.target.closest('a');
   if (!link) return;
   event.preventDefault();
-  navigateHash(link.getAttribute('href'));
+  const href = link.getAttribute('href');
+  if (href === '#') goHome();  // 열린 것을 닫고 서비스 홈으로 (app.js) — GA 'home' 이벤트도 여기서
+  else navigateHash(href);
 });
 drawer.querySelector('.drawer-head').after(destinations);
 drawer.append(el('p', { class: 'drawer-meta' }, 'POGO PLAN · ' + version));
@@ -76,7 +85,6 @@ function syncAppShell(moveFocus = false) {
   appTitle.textContent = home ? 'POGO PLAN' : title;
   document.title = (home ? 'POGO PLAN' : title + ' — POGO PLAN');
   backButton.hidden = home;
-  homeButton.hidden = home;
   document.body.dataset.screen = home ? 'home' : 'detail';
   destinations.querySelectorAll('a').forEach(a => {
     if (a.getAttribute('href') === (home ? '#' : hash)) a.setAttribute('aria-current', 'page');

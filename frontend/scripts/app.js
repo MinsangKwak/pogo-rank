@@ -84,9 +84,40 @@ const $note = document.getElementById('note');
 // 상단 탭 버튼 줄을 처음부터 다시 만든다.
 // 선택 표시는 CSS 클래스가 아니라 aria-selected로 하기 때문에(스타일과 스크린리더가 같은 값을 본다)
 // 탭이 바뀔 때마다 줄 전체를 다시 그린다.
+//
+// 2026-09-08 v2.22.0 탭 줄 복구 — v2.21.0 에서 통째로 감췄더니 D-MAX ↔ PvE ↔ PvP 를 오가려면
+// 매번 메뉴를 열거나 홈으로 돌아가야 했다. 셋은 형제 화면이라 한 번에 옮겨 다니는 줄이 맞다.
+// 대신 이동은 v2.21.0 의 주소 체계(#/rank/…)를 그대로 쓴다 — 상단 바 제목·뒤로가기가 같이 맞춰진다.
+// 서비스 홈에는 탭 줄이 없다 (홈 타일이 그 자리를 대신한다)
 function renderTabs() {
   $tabs.replaceChildren();
-  $tabs.hidden = true;
+  const onHome = state.appMode === 'dex' && state.tab === 'home';
+  $tabs.hidden = onHome;
+  if (onHome) return;
+  // 2026-09-07 v2.15.0 (QA-53) 플래너 모드는 탭 줄이 통째로 바뀐다 — [육성 현황 | 🎒 내 포켓몬] (planner/shell.js)
+  if (state.appMode === 'plan') return renderPlanTabs();
+  // [탭 id, 버튼에 보이는 이름] 쌍. 배열 순서가 곧 화면에 보이는 탭 순서다
+  for (const [id, label] of [['max', 'D-MAX'], ['pve', 'PvE'], ['pvp', 'PvP']]) {
+    // 2026-09-03 GA4: 탭 이름을 이벤트명에 포함(tab_max 등) — 누를 때마다 1회씩 기록
+    $tabs.append(el('button', {
+      class: 'tab',
+      role: 'tab',
+      'aria-selected': String(state.tab === id),
+      onclick: () => {
+        track('tab_' + id, { tab: id });
+        navigateHash('#/rank/' + id);  // 주소가 바뀌면 applyPlanRoute → render 가 돌고 상단 바 제목도 맞춰진다
+      },
+    }, label));
+  }
+  // 2026-09-06 v2.9.0 도감·상성·즐겨찾기 바로가기 — 탭이 아니라 "페이지로 가는 버튼"이라
+  // aria-selected 없이 오른쪽 끝에 붙인다. 좁은 화면에서는 아이콘만 남는다(tabs.css)
+  const quick = el('div', { class: 'tab-quick' },
+    el('button', { class: 'tab quick', title: '도감', onclick: () => openPage('dex', 'tabbar') }, '📕', el('span', { class: 'lbl' }, ' 도감')),
+    el('button', { class: 'tab quick', title: '상성 검색', onclick: () => openPage('types', 'tabbar') }, '🧭', el('span', { class: 'lbl' }, ' 상성')));
+  if (typeof authEnabled === 'function' && authEnabled() && AUTH.status === 'ok') {
+    quick.append(el('button', { class: 'tab quick', title: '즐겨찾기', onclick: () => openPage('favs', 'tabbar') }, '★', el('span', { class: 'lbl' }, ` 즐겨찾기 ${AUTH.favs.size}`)));
+  }
+  $tabs.append(quick);
 }
 
 // 2026-09-02 PvE 탭: 일반/전체 세부 토글 (PvP 리그 토글과 같은 seg)
@@ -132,7 +163,9 @@ function render() {
   saveLastView();  // 2026-09-06 v2.9.0 상태가 바뀌어 다시 그릴 때마다 마지막 보기를 남긴다
 }
 
-// 2026-09-06 v2.11.0 홈: 헤더의 서비스명(POGO PLAN)을 누르면 열린 것을 다 닫고 첫 화면(D-MAX 탭 전체)으로 돌아간다
+// 2026-09-06 v2.11.0 홈 — 열린 팝업·드로어를 닫고 서비스 홈으로.
+// 2026-09-08 v2.22.0 진입점은 드로어 맨 위 "서비스 홈" 하나 (components/app-shell.js 가 여기로 연결).
+// 상단 바의 제목은 이제 로고가 아니라 "지금 보는 화면 이름" 이라 누르는 버튼이 아니다
 function goHome() {
   track('home');
   navigateHash('');
@@ -144,7 +177,6 @@ restoreLastView();  // 2026-09-06 v2.9.0 첫 렌더 전에 마지막 보기 복�
 applyPlanRoute();  // 해시 없는 첫 방문은 서비스 홈으로 시작한다.
 initPlanShell();
 render();
-document.querySelector('header h1')?.addEventListener('click', goHome);  // 2026-09-06 v2.11.0 로고 = 홈 버튼
 // 2026-09-03 v2.2.1 첫 화면이 그려졌으니 로딩 가림막 제거 (페이드 후 DOM에서 삭제)
 // 2026-09-07 v2.16.1 첫 화면의 스프라이트가 다 받아진 뒤에 걷는다(최대 2.5초) — 그림 없는 첫 화면이 보이지 않게 (components/sprite.js waitForSprites)
 (() => {
