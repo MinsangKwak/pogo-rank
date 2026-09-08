@@ -20,7 +20,7 @@
 //   setLang(lang)   언어를 바꾸고 화면 전체를 다시 훑는다 (localStorage 'pogo_lang' 에 기억)
 //   t(text)         문자열 하나를 번역한다 (코드에서 직접 부를 때)
 //   translateTree(root)  DOM 가지 하나를 훑어 텍스트·속성을 바꾼다
-//   i18nKoOnlyNote()     "이 화면은 한국어로만 둡니다" 안내 노드 (영어일 때만 보인다)
+//   i18nKoOnlyNote(kind) "이 화면은 한국어로만 둡니다" 안내 노드 (영어일 때만 보인다). kind='kst' 는 일정표용
 //   i18nWatch()     그려지는 것을 지켜보다 자동으로 번역한다 (app-shell.js 가 한 번 부른다)
 //
 // 의존하는 전역
@@ -191,8 +191,9 @@ function i18nWatch() {
 
 // 한국어로만 두는 화면(패치노트·일정표·개인정보처리방침·이용약관)에 다는 안내 한 줄.
 // 영어일 때만 보인다 — CSS 가 :root[lang="en"] 로 가른다(base.css). 사전을 타지 않게 data-i18n="off"
-function i18nKoOnlyNote() {
-  return el('p', { class: 'note i18n-note', 'data-i18n': 'off' }, I18N_KO_ONLY_NOTE);
+//   kind 'kst' 는 일정표용 — 한국 서버 기준임을 함께 밝힌다 (지역마다 이벤트 날짜가 다르다)
+function i18nKoOnlyNote(kind) {
+  return el('p', { class: 'note i18n-note', 'data-i18n': 'off' }, kind === 'kst' ? I18N_KST_NOTE : I18N_KO_ONLY_NOTE);
 }
 
 // 언어 전환. 화면 전체를 원문으로 되돌린 뒤 새 언어로 다시 훑는다

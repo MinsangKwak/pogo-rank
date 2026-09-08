@@ -85,8 +85,10 @@ function renderSchedulePage() {
     $list.replaceChildren(scheduleMonthList(cat));
   };
   draw();
-  // 2026-09-08 v2.29.0 일정표는 한국 서버 공지를 그대로 옮긴 콘텐츠라 한국어로 둔다
-  return el('div', { class: 'page__body schedule__page' }, i18nKoOnlyNote(),
+  // 2026-09-08 v2.29.0 일정표는 한국 서버 공지를 그대로 옮긴 콘텐츠라 한국어로 둔다.
+  // 영어로 볼 때는 "한국 서버(KST) 기준" 을 먼저 밝힌다 — 이벤트 날짜는 지역마다 다르고,
+  // 자기 지역 일정으로 오해하면 실제로 이벤트를 놓친다
+  return el('div', { class: 'page__body schedule__page' }, i18nKoOnlyNote('kst'),
     $chips,
     $cal,
     el('h2', { class: 'page__sec' }, '기간 한눈에'),

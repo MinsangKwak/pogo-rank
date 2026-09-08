@@ -51,8 +51,12 @@ const I18N_PATTERNS = [
   [/^(.+) 리그$/, '$1 League'],
 ];
 
-// 법률·콘텐츠 화면에 띄우는 안내 (privacy.js · terms.js · release.js · schedule.js)
+// 법률·콘텐츠 화면에 띄우는 안내 (privacy.js · terms.js · release.js)
 const I18N_KO_ONLY_NOTE = 'This section is kept in Korean. The Korean text is the authoritative version.';
+// 일정표 전용 — 번역 여부보다 **어느 지역 일정인지**가 먼저다.
+// 포켓몬 GO 이벤트는 지역마다 날짜·시간이 다르다. 이 표는 한국 서버 공지를 옮긴 것이므로
+// 영어로 보는 사람이 자기 지역 일정으로 오해하면 실제로 이벤트를 놓친다
+const I18N_KST_NOTE = 'Dates and times follow the Korean server schedule (KST, UTC+9) and may differ in your region. This section is kept in Korean.';
 
 const I18N_EN = {
   // ── 서비스 · 이동 ──────────────────────────────────────────────────────────
