@@ -26,11 +26,13 @@ function openModal(content) {
     // event.target이 배경 자신인지 확인해야 한다
     onclick: (event) => { if (event.target === overlay) closeModal(); },
   },
-    el('div', { class: 'modal__box' },
-      // 2026-09-02 X버튼을 sticky 바에 넣어 스크롤해도 항상 보이게
-      el('div', { class: 'modal__bar' },
-        el('button', { class: 'modal__close', 'aria-label': '닫기', onclick: () => closeModal() }, '✕')),
-      content));
+    el('div', { class: 'modal__wrap' },
+      // 2026-09-09 v2.34.0 ✕를 카드 안이 아니라 밖(오른쪽 위, 카드 테두리 바깥)에 둔다.
+      // 안에 있으면 카드 내용(예: 상세 팝업의 공유·저장 아이콘)과 자리를 다툴 여지가 늘 있었는데,
+      // 밖으로 빼면 카드 안에서 뭘 어떻게 배치하든 겹칠 자리 자체가 없다. 스크롤에도 카드가 움직이지 않으니
+      // sticky 트릭도 필요 없다
+      el('button', { class: 'modal__close', 'aria-label': '닫기', onclick: () => closeModal() }, '✕'),
+      el('div', { class: 'modal__box' }, content)));
   // 2026-09-08 v2.30.0 안쪽 내용이 식별자를 달았으면 껍데기도 같이 단다 —
   // 측정 도구는 열려 있는 dialog 를 먼저 보므로, 거기서 바로 "무엇의 상세인지" 가 읽혀야 한다
   if (content.dataset?.route) {
