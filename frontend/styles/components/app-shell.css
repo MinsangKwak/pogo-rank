@@ -123,6 +123,19 @@ button { touch-action: manipulation; }
   .app-nav .nav-menu { padding: 0; margin: 0; border-bottom: 0; }
   .app-nav .drawer__item { font-size: 13.5px; }
 
+  /* 2026-09-09 v2.37.0 사이드바가 늘 있으니 ← 뒤로가기는 필요 없다 — 어디든 왼쪽 목록 한 번으로 간다 */
+  .app-bar__head .icon-btn { display: none; }
+
+  /* ☰ 메뉴의 잡다한 항목(패치노트·QA 제보·약관·통계 설정 등, index.html #drawer-extra)을
+     이동 목록 아래로 옮긴 자리 — 위 목록과 성격이 달라(자주 안 씀) 구분선 하나로 갈라내고
+     글자를 한 단 낮춰(뮤트 색·작은 글자) "보조 항목" 임을 보이게 한다 */
+  .app-nav__extra { margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--line); }
+  /* :not([hidden]) 필수 — #menu-changes 는 데이터가 있을 때만 보이는 항목이다(hidden 속성으로 감춤).
+     여기서 [hidden] 을 빼먹으면 v2.26.0 에서 겪은 것처럼 display 규칙이 그 속성을 그냥 이긴다 */
+  .app-nav__extra .drawer__item:not([hidden]) { display: block; width: 100%; text-align: left; padding: 7px 10px;
+    border-radius: 8px; font-size: 12px; color: var(--muted); }
+  .app-nav__extra .drawer__item:hover { background: var(--hover); color: var(--fg); }
+  .app-nav__extra .drawer__meta { margin: 6px 0 0; padding: 8px 10px 0; font-size: 10.5px; line-height: 1.5; color: var(--muted); }
 
   /* 서비스 홈: 넓은 화면은 4열 */
   .home__grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
@@ -137,7 +150,7 @@ button { touch-action: manipulation; }
      패널이 열려 있을 때(body.has-detail-panel)만 본문 오른쪽에 여백을 내 자리를 비켜 준다.
      본문의 카드 격자(.row-list 등)는 전부 1fr 기반이라 폭이 좁아지면 카드가 그만큼 좁아질 뿐
      넘치지 않는다 — 컨테이너 자체를 넓히는 대신 이 방법을 쓴 이유 */
-  .detail-panel { display: none; position: fixed; z-index: 15; top: 81px; bottom: 0; width: 400px;
+  .detail-panel { display: none; position: fixed; z-index: 15; top: 81px; bottom: 0; width: 420px;
     right: max(20px, calc(50vw - 530px)); flex-direction: column;
     border: 1px solid var(--line); border-radius: 12px; background: var(--bg); box-shadow: 0 4px 16px rgba(0,0,0,.18); }
   .detail-panel:not([hidden]) { display: flex; }
@@ -145,8 +158,10 @@ button { touch-action: manipulation; }
   .detail-panel__close { width: 32px; height: 32px; border-radius: 999px; border: 1px solid var(--line);
     background: var(--surface); color: var(--muted); }
   .detail-panel__close:hover { background: var(--hover); color: var(--fg); }
-  .detail-panel__body { flex: 1 1 auto; overflow-y: auto; overscroll-behavior: contain; padding: 4px 20px 20px; }
-  body.has-detail-panel .layout, body.has-detail-panel #page, body.has-detail-panel .page-head { padding-right: 424px; }
+  /* 2026-09-09 v2.37.0 여백이 부족하다는 지적 — 사방 10px 씩 늘렸다(위 4→14, 좌우·아래 20→30).
+     그만큼 패널 폭도 400→420 으로 늘려 안쪽 실제 내용 폭(칩·표가 줄바꿈되는 실제 너비)은 그대로다 */
+  .detail-panel__body { flex: 1 1 auto; overflow-y: auto; overscroll-behavior: contain; padding: 14px 30px 30px; }
+  body.has-detail-panel .layout, body.has-detail-panel #page, body.has-detail-panel .page-head { padding-right: 444px; }
 }
 @media (max-width: 1023px) {
   /* 좁은 화면은 패널 개념 자체가 없다 — 폭이 줄며 패널이 열린 채로 남았어도 확실히 감춘다 */

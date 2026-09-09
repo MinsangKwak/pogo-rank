@@ -109,8 +109,11 @@ function renderFavsPage() {
   };
   // 세그먼트 선택 상태는 화면 전체 재렌더 없이 이 페이지 안에서만 바꾼다
   let current = 'all';
-  // 2026-09-08 v2.28.0 PC 는 카드 격자 (wideCards, dom.js)
-  const $list = el('div', { class: `dex__list${wideCards() ? ' is-grid' : ''}` });
+  // 2026-09-08 v2.28.0 PC 는 카드 격자가 기본 (wideCards, dom.js)
+  // 2026-09-09 v2.37.0 도감처럼 리스트로 되돌릴 수 있는 토글 추가(components/ui.js, localStorage 'pogo_favs_cols')
+  const gridFavs = layoutInitial('pogo_favs_cols');
+  const $list = el('div', { class: `dex__list${gridFavs ? ' is-grid' : ''}` });
+  const $layout = layoutToggle('pogo_favs_cols', gridFavs, (grid) => $list.classList.toggle('is-grid', grid));
   const draw = () => {
     const rows = groups[current];
     $list.replaceChildren(...(rows.length
@@ -138,7 +141,7 @@ function renderFavsPage() {
   });
   draw();
   const cut = (typeof ROLES !== 'undefined' && ROLES?.cut) || { pve: 60, pvp: 100 };
-  return el('div', { class: 'page__body' }, $seg, $list,
+  return el('div', { class: 'page__body' }, el('div', { class: 'tchips' }, $seg, $layout), $list,
     el('p', { class: 'detail__foot' },
       `분류는 순위표에서 자동으로 정합니다 — PvE는 19개 표 상위 ${cut.pve}위, PvP는 4리그 상위 ${cut.pvp}위 안에 들면 해당 갈래로 봅니다. `
       + '메가·섀도우 같은 폼 중 하나라도 들면 그 종이 포함되고, 괄호 없이 붙은 이름이 그 순위를 낸 폼입니다. '

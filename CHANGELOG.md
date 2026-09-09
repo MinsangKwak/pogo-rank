@@ -5,6 +5,34 @@
 버전 규칙: `vMAJOR.MINOR.PATCH` — 큰 기능은 MINOR(두 번째 자리), 상세 기능·버그 수정은 PATCH(세 번째 자리) 증가.
 항목 종류: `추가` 새 기능 · `변경` 기존 동작 변경 · `수정` 버그 수정 · `데이터` 수동 데이터 갱신
 
+## v2.37.0 — 2026-09-09
+
+GA4 데이터에서 헤드리스 브라우저 신호를 확인해 집계에서 뺐고, PC 레이아웃을 두 차례 더 다듬었다.
+
+### 추가
+- **봇 트래픽 집계 제외** (`track.js`)
+  - 최근 28일 GA4 활성 사용자 26명 중 9명이 화면 정확히 800×600(헤드리스 기본 뷰포트) · 구글 데이터센터 소재지(Council Bluffs·Boardman·Frankfurt)에서 잡혔다. 실사용자 17명은 한국 여러 도시·실기기 해상도(393×852 등)로 분산 — 뚜렷이 갈린다
+  - `IS_BOT_LIKE` — `navigator.webdriver` · 화면 정확히 800×600 · UA 에 headless/puppeteer/playwright/bot/crawler/spider 포함(대소문자 무시), 셋 중 하나만 있어도 참(OR). GA4 초기화(gtag 로드)보다 먼저 확인해야 해 번들 맨 앞(track.js)에 둔다. 콘솔에 남기지 않는다 — 남기면 봇이 우회를 학습할 수 있다
+  - `track()`·`setTrackingUser()` 가 이 플래그면 gtag 를 안 부른다 — 집계만 빠지고 사이트 기능은 그대로 동작한다(차단이 아니다)
+  - **범위를 의도적으로 좁혔다**: 원 지침은 "Firestore 쓰기(로그인, favs 저장 등)도 no-op" 을 제안했지만, 이 저장소의 실제 Firestore 쓰기(즐겨찾기·내 포켓몬·가입 요청)는 전부 사용자가 저장한 실 데이터이지 "트래킹 로그"가 따로 있는 게 아니다. 그걸 no-op 하면 "사이트 기능은 봇에게도 정상 동작해야 한다"는 지침의 대전제와 정면으로 부딪히고, 이 저장소의 e2e 스위트 자체가 Playwright(늘 `navigator.webdriver=true`)로 돈다 — 즉 우리 자신의 회귀 검사가 즐겨찾기 저장을 검증할 때마다 "봇"으로 잡혀 죽은 코드를 검증하게 된다. 그래서 Firestore 쓰기는 건드리지 않고 GA4 신호(track/setTrackingUser)만 막았다
+  - `tests/e2e/bot-filter.js`(9항목) 추가 — webdriver·화면·UA 각 신호 단독으로도 판정되는지, 판정이어도 기능은 살아있는지, 콘솔에 안 새는지 확인. 이 스위트 자체가 Playwright 라 "정상 브라우저"는 `navigator.webdriver` 를 일부러 덮어써 흉내 낸다
+- **그리드 ↔ 리스트 토글 확장** (`components/ui.js` `layoutInitial`/`layoutToggle`, `components/pages.js`·`favs.js`·`gameday.js`)
+  - 도감에만 있던 보기 전환 버튼을 즐겨찾기·레이드 보스·알 부화로 뗐다. 화면마다 localStorage 키를 따로 써 선택이 안 섞인다(`pogo_favs_cols`·`pogo_raids_cols`·`pogo_eggs_cols`, 도감의 `pogo_dex_cols` 는 값·이름 불변)
+  - 레이드 보스·알 부화는 티어·거리별로 목록이 여러 묶음이라, `gamedaySection()` 이 각자 `wideCards()` 를 묻던 것을 그만두고 그리드 여부를 인자로 받아 토글 버튼 하나가 전부를 같이 바꾸게 했다
+  - `tests/e2e/layout-toggle.js`(19항목) 추가
+- **PC 메뉴 재구성** (`index.html`, `components/app-shell.js` `placeDrawerExtra`, `styles/components/app-shell.css`)
+  - PC(1024px~)에서 ☰ 메뉴엔 마이페이지·기준 안내·트레이너 코드만 남는다. 패치노트·QA 제보·개인정보처리방침·이용약관·통계 설정(`index.html` `#drawer-extra`)은 왼쪽 사이드바로, 이동 목록(알 부화가 마지막) 아래에 통째로 옮긴다 — 복제가 아니라 이동이라 `onclick`·`id` 등 기존 연결이 그대로 간다(`destinations` 이동과 같은 방식)
+  - 옮긴 자리는 구분선 하나로 위 이동 목록과 갈라내고 글자를 한 단 낮춰(뮤트 색·작은 글자) "보조 항목" 임을 보이게 했다(`.app-nav__extra`)
+  - PC 는 왼쪽 사이드바가 늘 있어 상단 바의 ← 뒤로가기가 필요 없다 — `.app-bar__head .icon-btn` 를 PC 에서 숨겼다. 좁은 화면은 그대로
+  - `tests/e2e/shell.js` 에 관련 검사 6항목 추가(PC 는 3항목만 보임·사이드바 보조 구역 존재·뒤로가기 숨김, 모바일은 회귀 없음)
+
+### 변경
+- **상세 패널 여백 확대** (`styles/components/app-shell.css`) — 타입 상성 칩 등이 테두리에 닿을 만큼 좁다는 지적으로 `.detail-panel__body` 패딩을 사방 10px 씩 늘렸다(위 4→14px, 좌우·아래 20→30px). 안쪽 실제 내용 폭이 좁아지지 않도록 패널 폭도 400→420px 로 같이 늘렸다
+
+### 불변
+- 즐겨찾기·내 포켓몬 저장, 로그인 등 실제 Firestore 쓰기는 봇 판정과 무관하게 그대로 동작한다
+- 도감의 `.dex__layout` 클래스·`pogo_dex_cols` 키는 그대로. 좁은 화면의 ☰ 메뉴 구성·뒤로가기 버튼은 그대로
+
 ## v2.36.0 — 2026-09-09
 
 PC 는 오른쪽에 남는 자리가 많다는 지적 — 상세를 화면을 덮는 팝업 대신 목록 옆 패널로 열어 본다.
