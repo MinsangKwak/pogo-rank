@@ -97,15 +97,17 @@ const LEGACY = [
     ok(`${hash} 식별자`, marks.pageRoute === id && marks.bodyId === `page-${id}` && marks.bodyRoute === id, JSON.stringify(marks));
   }
 
-  // ── 측정용 식별자: 상세 팝업 (종·폼·어디서 열었나까지)
+  // ── 측정용 식별자: 상세 (종·폼·어디서 열었나까지)
+  // 2026-09-09 v2.36.0 이 스위트는 PC 폭(1440px)이라 상세는 팝업이 아니라 오른쪽 패널(#detail-panel)로 뜬다
+  // (useDetailPanel(), components/modal.js). 껍데기 식별자는 패널 쪽에, 본문 식별자는 지금까지와 같다
   await go('#/dex');
   await page.locator('#page .dex__row').first().click();
-  await page.waitForSelector('dialog.modal[open]', { timeout: 8000 });
+  await page.waitForSelector('#detail-panel:not([hidden])', { timeout: 8000 });
   await page.waitForTimeout(400);
   const detail = await page.evaluate(() => {
-    const dialog = document.querySelector('dialog.modal');
-    const body = dialog.querySelector('[data-route="mon"]');
-    return { dialogRoute: dialog.dataset.route, dialogMon: dialog.dataset.mon, id: body?.id, ...body?.dataset };
+    const panel = document.getElementById('detail-panel');
+    const body = panel.querySelector('[data-route="mon"]');
+    return { dialogRoute: panel.dataset.route, dialogMon: panel.dataset.mon, id: body?.id, ...body?.dataset };
   });
   ok('상세 껍데기도 식별자', detail.dialogRoute === 'mon' && !!detail.dialogMon, JSON.stringify(detail).slice(0, 90));
   ok('상세 본문 id = detail-<스프라이트>', /^detail-\d+$/.test(detail.id || ''), detail.id);
@@ -114,20 +116,20 @@ const LEGACY = [
   // 랭킹에서 연 상세는 진입 경로가 다르다 (같은 종이라도 어디서 봤는지 갈린다)
   await go('#/pve');
   await page.locator('#content .row').first().click();
-  await page.waitForSelector('dialog.modal[open]', { timeout: 8000 });
+  await page.waitForSelector('#detail-panel:not([hidden])', { timeout: 8000 });
   await page.waitForTimeout(400);
-  ok('랭킹에서 연 상세는 view=list', (await page.evaluate(() => document.querySelector('dialog.modal [data-route="mon"]')?.dataset.view)) === 'list');
+  ok('랭킹에서 연 상세는 view=list', (await page.evaluate(() => document.querySelector('#detail-panel [data-route="mon"]')?.dataset.view)) === 'list');
 
   // ── 상세 딥링크
-  // 앞 단계에서 열어 둔 팝업을 닫고, 해시만 다른 goto 는 새로고침이 아니므로 reload 로 찬 시작을 만든다
+  // 앞 단계에서 열어 둔 패널을 닫고, 해시만 다른 goto 는 새로고침이 아니므로 reload 로 찬 시작을 만든다
   // (공유 링크를 처음 여는 상황이 바로 이것이다)
   await page.keyboard.press('Escape');
   await page.waitForTimeout(300);
   await page.goto(BASE + '#/mon/6', { waitUntil: 'domcontentloaded' });
   await page.reload({ waitUntil: 'domcontentloaded' });
   await page.waitForSelector('#splash', { state: 'detached', timeout: 15000 }).catch(() => {});
-  await page.waitForSelector('dialog.modal[open]', { timeout: 8000 }).catch(() => {});
-  ok('상세 딥링크가 팝업을 연다', (await page.locator('dialog.modal[open]').count()) === 1);
+  await page.waitForSelector('#detail-panel:not([hidden])', { timeout: 8000 }).catch(() => {});
+  ok('상세 딥링크가 패널을 연다', await page.locator('#detail-panel').isVisible());
   ok('딥링크 라우트 id = mon', (await page.evaluate(() => document.body.dataset.route)) === 'mon');
 
   ok('페이지 오류 없음', errs.length === 0, errs.join(' | ').slice(0, 200));

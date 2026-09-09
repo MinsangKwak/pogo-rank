@@ -46,6 +46,7 @@
 
 | 버전 | 날짜 | 내용 |
 |---|---|---|
+| **v2.36.0** | 2026-09-09 | **PC 오른쪽 상세 패널** — 넓은 화면(1024px~)에서 상세를 `openModal()` 대신 `openDetailPanel()`(`components/modal.js`)로 연다. 패널(`#detail-panel`)은 `index.html` 정적 마크업(딥링크 첫 렌더가 스크립트보다 먼저 이 조각을 찾을 수 있어서), 위치는 왼쪽 사이드바(`.app-nav`)와 같은 530px 반폭 상수로 거울 대칭(`right: max(20px, calc(50vw - 530px))`). 열려 있을 때만 `body.has-detail-panel` 로 본문(`#page`)에 `padding-right`를 줘 자리를 낸다 — 컨테이너 폭은 그대로라 카드 격자(`1fr` 기반)가 넘치지 않고 좁아지기만 한다. 다른 화면으로 이동하면(hashchange) 자동으로 닫힘. 좁은 화면은 지금까지처럼 팝업 |
 | **v2.35.0** | 2026-09-09 | **상세 팝업 타입 배지·아이콘 줄 재배치** — 타입 알약을 이름 줄에서 그림(`.sprite-box`) 왼쪽 위 모서리에 겹치는 배지(`.detail__types`, `position:absolute`)로. ★ 즐겨찾기를 `favBtn()` 그대로 재사용해 공유·저장과 같은 `.detail__top-actions` 줄로(스코프 선택자 `.detail__top-actions .fav` 로 원 모양 덧입힘). 폼 라벨(`splitFormName().labels`)을 이름과의 결합(`nameNode()`)에서 떼어 `.detail__form-row` 로 이름 위 자기 줄에, 영문명(`.detail__en-inline`)도 괄호 인라인 대신 자기 줄로 |
 | **v2.34.0** | 2026-09-09 | **✕ 닫기를 카드 밖으로** — `.modal__close` 를 카드(`.modal__box`) 안이 아니라 그 부모 `.modal__wrap` 의 절대 위치로 옮겨 카드 오른쪽 위 모서리 바깥에 띄운다. 카드 안 배치와 영영 겹칠 일이 없어 v2.33.0 의 자리 예약 트릭(`.modal__bar`)이 필요 없어졌다. 배경 어둡기 `.45`→`.64`. **CP 카드를 아코디언으로** — `.detail__cp-card` 를 `<details>` 로 바꿔 큰 숫자(summary)는 항상 보이고 2×2 표만 접힌다(기본 닫힘) |
 | **v2.33.0** | 2026-09-09 | **수정**: 상세 팝업 ✕ 닫기(`.modal__close`)가 sticky 바에서 `height:0` + `transform` 으로 떠 있어, v2.32.0 에서 새로 생긴 공유·저장 아이콘(`.detail__top-actions`)과 우상단 자리를 다투다 겹쳐 눌리지 않던 문제 — `.modal__bar` 가 padding 으로 실제 높이를 갖게 해 아래 내용을 자연스레 밀어내도록 수정, 헤더 위 여백도 함께 늘림 |
