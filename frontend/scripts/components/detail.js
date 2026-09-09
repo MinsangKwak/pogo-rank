@@ -565,11 +565,13 @@ function openDetail(pokemon, isDex = false, from = null) {
 
   const body = el('div', { class: 'detail' }, head);
   // 2026-09-08 v2.32.0 CP 를 헤더 밖 카드로 뗐다 — 만렙 큰 숫자 + 레이드·부스트·야생·부스트 2×2 표.
-  // 한 줄 문장으로 압축했던 것보다 숫자 넷이 바로 눈에 들어온다
+  // 2026-09-09 v2.34.0 표 네 칸이 자리를 너무 차지해 <details> 로 접을 수 있게 했다.
+  // 큰 숫자(summary)는 접혀도 항상 보이고, 2×2 표만 접힌다 — "CP 100% 기준"이 이 팝업에서 가장 먼저 찾는 값이라
+  // 접었을 때도 남아 있어야 한다. 기본은 접힌 상태(다른 아코디언들과 같은 규칙)
   if (form && cpm) {
     const raidLabel = maxPoolKind(pokemon.sprite) ? '레이드·맥스' : '레이드';
-    body.append(el('div', { class: 'detail__cp-card' },
-      el('div', { class: 'detail__cp-big' }, metaText('CP 100% 기준'), el('b', {}, cpOf(form, cpm.l50).toLocaleString())),
+    body.append(el('details', { class: 'detail__cp-card' },
+      el('summary', {}, el('div', { class: 'detail__cp-big' }, metaText('CP 100% 기준'), el('b', {}, cpOf(form, cpm.l50).toLocaleString()))),
       el('div', { class: 'detail__cp-grid' },
         el('div', { class: 'detail__cp-tile' }, metaText(raidLabel), el('b', {}, cpOf(form, cpm.l20).toLocaleString())),
         el('div', { class: 'detail__cp-tile' }, metaText('부스트'), el('b', {}, cpOf(form, cpm.l25).toLocaleString())),

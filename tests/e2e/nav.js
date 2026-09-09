@@ -96,7 +96,8 @@ const ok = (name, cond, extra = '') => results.push([cond ? 'PASS' : 'FAIL', nam
   ok('상세 = 바텀시트 (화면 아래에서)', modal.top > 60, JSON.stringify(modal));
   ok('상세 모서리 둥근 카드', modal.radius === '16px', modal.radius);
   ok('닫기 버튼 ✕', (await page.locator('.modal__close').textContent()) === '✕');
-  ok('"상세 정보" 군더더기 줄 없음', !(await page.locator('.modal__bar').textContent()).includes('상세 정보'));
+  // 2026-09-09 v2.34.0 ✕ 를 .modal__bar(카드 안) 대신 .modal__wrap(카드 밖, 카드의 부모)에 둔다
+  ok('"상세 정보" 군더더기 줄 없음', !(await page.locator('.modal__wrap').textContent()).includes('상세 정보'));
   await page.click('.modal__close');
   await page.waitForTimeout(300);
   ok('닫으면 팝업 사라짐', (await page.locator('dialog.modal[open]').count()) === 0);
