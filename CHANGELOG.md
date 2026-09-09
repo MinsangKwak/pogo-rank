@@ -5,6 +5,26 @@
 버전 규칙: `vMAJOR.MINOR.PATCH` — 큰 기능은 MINOR(두 번째 자리), 상세 기능·버그 수정은 PATCH(세 번째 자리) 증가.
 항목 종류: `추가` 새 기능 · `변경` 기존 동작 변경 · `수정` 버그 수정 · `데이터` 수동 데이터 갱신
 
+## v2.36.0 — 2026-09-09
+
+PC 는 오른쪽에 남는 자리가 많다는 지적 — 상세를 화면을 덮는 팝업 대신 목록 옆 패널로 열어 본다.
+
+### 추가
+- **PC 오른쪽 상세 패널** (`components/modal.js` `openDetailPanel`/`closeDetailPanel`/`useDetailPanel`, `components/detail.js`, `index.html`, `styles/components/app-shell.css`)
+  - 넓은 화면(1024px~)에서 `openDetail()` 이 `openModal()` 대신 목록 오른쪽 고정 패널(`#detail-panel`)에 내용을 채운다. 모달과 달리 화면을 덮지 않아 목록을 계속 보고 누를 수 있다 — 그래서 스크롤 잠금·히스토리 오버레이 항목을 쓰지 않는다
+  - 패널 자리는 왼쪽 고정 사이드바(`.app-nav`)와 같은 530px 반폭 상수로 거울 대칭(`right: max(20px, calc(50vw - 530px))`) — 사이드바·컨테이너 폭 공식은 손대지 않았다. 패널이 열려 있을 때만 `body.has-detail-panel` 클래스로 본문에 `padding-right`를 줘 자리를 비킨다. 카드 격자(`.row-list` 등)는 전부 `1fr` 기반이라 폭이 좁아지면 카드가 그만큼 좁아질 뿐 넘치지 않는다 — 그래서 컨테이너 자체를 넓히는 대신 이 방법을 썼다
+  - 닫기(✕)는 스크롤 영역 밖의 자기 줄(`.detail-panel__bar`)에 둔다 — 안에 두면 v2.32~2.34.0 에서 겪은 "닫기가 내용과 자리를 다투는" 문제가 되풀이된다
+  - 다른 화면으로 이동하면(hashchange) 패널을 자동으로 닫는다 — 다른 화면 옆에 이전 포켓몬이 남아 있으면 헷갈린다. 같은 화면에서 다른 포켓몬을 열 때는 내용만 바뀐다(패널이 여러 개로 쌓이지 않는다)
+  - `#detail-panel` 은 스크립트가 만들지 않고 `index.html` 에 처음부터 있다(`#page`·`#drawer-backdrop` 과 같은 자리) — `#/mon/<id>` 딥링크 첫 렌더가 `app-shell.js` 보다 먼저 실행돼, 스크립트가 그때 막 조각을 만들면 자리가 없어 상세가 조용히 사라지는 문제가 있었다
+  - 좁은 화면(1024px 미만)은 지금까지처럼 팝업(다이얼로그) — 패널 CSS 자체가 그 폭에서 안 먹는다
+
+### 수정 (구현 중 발견)
+- `useDetailPanel()` 을 처음엔 `app-shell.js` 의 `wideScreen`(같은 `matchMedia`, `const`)을 재사용하게 짰는데, `#/mon/id` 딥링크로 처음 들어오면 `pages.js` 의 첫 렌더가 `app-shell.js` 보다 먼저 이 함수를 불러 `wideScreen` 이 선언되기 전(TDZ)이라 `ReferenceError` 가 났다. `typeof` 로도 못 피한다 — TDZ 인 `let`/`const` 는 `typeof` 도 던진다. `matchMedia` 를 그때그때 직접 불러 외부 변수 의존을 아예 없앴다
+- 위 딥링크 경로에서 `#detail-panel` 이 아직 없어 상세가 열리지 않고 사라지던 문제 — 정적 HTML 로 옮겨 해결(위 항목)
+
+### 불변
+- 모달(`openModal`)·기존 상세 내용·이벤트명은 그대로. 넓은 화면에서 "어디에 뜨는지"만 바뀌었다
+
 ## v2.35.0 — 2026-09-09
 
 사용자가 준 참고 배치대로 상세 팝업 헤더를 한 번 더 다듬었다 — 타입은 그림 위 배지로, ★는 아이콘 줄로, 폼 라벨은 이름 위 자기 줄로.

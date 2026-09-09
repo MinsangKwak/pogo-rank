@@ -1,8 +1,10 @@
 // 포켓몬 상세 팝업: 도트 스프라이트 · 진화 단계 · 기술 · 약점/내성 · 종족값 · 활용처
 //
 // [역할]
-// 순위표·검색·도감 어디서든 포켓몬 하나를 눌렀을 때 뜨는 모달의 내용을 조립한다.
+// 순위표·검색·도감 어디서든 포켓몬 하나를 눌렀을 때 뜨는 상세의 내용을 조립한다.
 // 팝업은 "어디서 열었는지"에 따라 구성이 달라진다 — openDetail(pokemon, isDex) 의 isDex 참고.
+// 2026-09-09 v2.36.0 넓은 화면(PC)에서는 팝업 대신 목록 오른쪽 고정 패널에 뜬다 —
+// useDetailPanel()/openDetailPanel() (components/modal.js) 이 갈래를 정한다
 //
 // [이 파일이 제공하는 전역]
 // - openDetail(pokemon, isDex)  : 상세 팝업을 연다 (row.js · search.js · views/max.js 에서 호출)
@@ -643,7 +645,11 @@ function openDetail(pokemon, isDex = false, from = null) {
     form: formKind || 'base',
     view: isDex ? 'dex' : 'list',
   });
-  openModal(body);
+  // 2026-09-09 v2.36.0 넓은 화면(PC)에서는 목록 오른쪽 고정 패널로 — 목록을 보면서 이어서 확인할 수 있다.
+  // 좁은 화면은 지금까지처럼 팝업(다이얼로그). components/modal.js
+  // openDetailPanel 은 패널이 아직 없으면(예: #/mon/id 딥링크 첫 로드 — pages.js 가 app-shell.js 보다
+  // 먼저 실행돼 그 시점엔 #detail-panel 이 아직 안 만들어졌다) false 를 돌려주고, 그러면 팝업으로 되돌아간다
+  if (!useDetailPanel() || !openDetailPanel(body)) openModal(body);
   // 2026-09-06 v2.9.0 메인 화면에서 열었을 때만 주소를 #/mon/<id>로 바꿔 둔다 — 그대로 복사하면 공유 링크가 된다.
   // openModal이 먼저 closeModal을 불러 기존 #/mon 해시를 지우므로, 반드시 그 뒤에 넣는다.
   // 페이지(#/dex 등) 위에서 열 때는 그 페이지 주소를 지우지 않도록 건드리지 않는다. replaceState라 히스토리는 안 쌓인다
