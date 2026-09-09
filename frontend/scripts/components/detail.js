@@ -537,37 +537,47 @@ function openDetail(pokemon, isDex = false, from = null) {
   const form = DEX_DATA.forms[pokemon.sprite] ?? (dex != null ? DEX_DATA.forms[dex] : null);
   const types = (pokemon.types?.length ? pokemon.types : form?.types) ?? [];
 
-  // 2026-09-03 최대 CP를 헤더로 — 제일 먼저 보이는 정보
-  // 만렙(Lv50) / 레이드 보상(Lv20·부스트 Lv25) / 야생(Lv30·부스트 Lv35) 을 한 줄로 압축
+  // 2026-09-08 v2.32.0 헤더를 카드형으로 다시 짰다 — 그림 · 이름 · 타입은 위 칸에,
+  // CP 는 큰 숫자 + 2×2 표로 따로 뗀 카드에. 공유·저장은 오른쪽 위 동그란 아이콘 두 개로,
+  // ★ 즐겨찾기는 이름 옆으로 옮겨 "이 종을 즐겨찾기에 담는다"는 동작이 이름과 붙어 읽힌다
   const cpm = DEX_DATA.cpm;
-  const cpLine = form && cpm
-    ? el('p', { class: 'detail__cpline' },
-        `CP 100% 기준 · 만렙 `, el('b', {}, cpOf(form, cpm.l50).toLocaleString()),
-        ` | ${maxPoolKind(pokemon.sprite) ? '레이드·맥스' : '레이드'} ${cpOf(form, cpm.l20).toLocaleString()}, 부스트 ${cpOf(form, cpm.l25).toLocaleString()}`,
-        ` | 야생 ${cpOf(form, cpm.l30).toLocaleString()}, 부스트 ${cpOf(form, cpm.l35).toLocaleString()}`)
-    : '';
   // 2026-09-03 v3 헤더: 타입 → 팬텀(Gengar) → CP 만렙 | 야생, 부스트 (유저 지정 순서)
   // 2026-09-06 v2.11.0 그림 테두리를 폼 색으로 — 메가·다이맥스/거다이맥스·섀도우 (components/name.js formLabelKind, 색은 tokens.css)
   const formKind = typeof splitFormName === 'function' ? (splitFormName(pokemon.name).labels.map(formLabelKind)[0] ?? '') : '';
   const head = el('div', { class: 'detail__head' },
     el('div', { class: `sprite-box${formKind ? ' sprite-box--' + formKind : ''}` }, sprite(pokemon.sprite)),
-    el('div', {},
-      el('div', { class: 'tchips' }, ...types.map((typeName) => typeChipEl(typeName))),
-      el('h2', {}, nameNode(pokemon.name), pokemon.en ? el('span', { class: 'detail__en-inline' }, ` (${pokemon.en})`) : ''),  // 2026-09-06 v2.10.0 폼 라벨 뱃지
-      cpLine),
-    // 2026-09-03 v2.2.0 즐겨찾기 ★ (로그인 기능이 켜진 빌드에서만, 종 단위 = 도감번호)
-    el('div', { class: 'detail__actions' },
-      authEnabled() && dex != null ? favBtn(dex, 'detail__fav') : '',
-      shareBtn(pokemon),  // 2026-09-06 v2.9.0 🔗 공유
-      // 2026-09-07 v2.15.0 (QA-54) ➕ 내 개체로 저장 — 도감 → 플래너 교차 동선. 승인된 로그인 사용자에게만
+    // 2026-09-03 v2.2.0 즐겨찾기 ★ · 2026-09-06 v2.9.0 🔗 공유 · 2026-09-07 v2.15.0 (QA-54) ➕ 내 개체로 저장.
+    // 오른쪽 위 동그란 아이콘 두 자리 — ★ 는 이름 옆으로 옮겼으니 여기는 공유·저장만 남는다
+    el('div', { class: 'detail__top-actions' },
+      shareBtn(pokemon),
       authEnabled() && AUTH.status === 'ok' && form && typeof planAddFromDetail === 'function'
         ? el('button', { class: 'detail__share detail__plan', title: '🌱 플래너 내 포켓몬에 이 개체 저장', 'aria-label': '내 개체로 저장',
             onclick: (event) => { event.stopPropagation(); planAddFromDetail(pokemon); } }, '➕')
-        : ''));
+        : ''),
+    el('div', { class: 'detail__info' },
+      dex != null ? el('span', { class: 'tag detail__dexno' }, `#${String(dex).padStart(4, '0')}`) : '',
+      el('div', { class: 'detail__name-row' },
+        el('h2', {}, nameNode(pokemon.name), pokemon.en ? el('span', { class: 'detail__en-inline' }, ` (${pokemon.en})`) : ''),  // 2026-09-06 v2.10.0 폼 라벨 뱃지
+        authEnabled() && dex != null ? favBtn(dex, 'detail__fav') : ''),
+      // 2026-09-08 v2.32.0 헤더 타입은 타입 그 자체가 색이라 굵은 알약으로 — 상성표의 작은 점 칩(tchips__item)과는
+      // 다른 자리다. 상성표를 건드리면 이중약점 강조 같은 다른 뜻이 같이 흔들린다
+      el('div', { class: 'detail__types' }, ...types.map((typeName) => el('span', { class: 'detail__type-pill', style: `--c: var(--t-${typeName})` }, TYPE_KO[typeName] ?? typeName)))));
 
   const body = el('div', { class: 'detail' }, head);
+  // 2026-09-08 v2.32.0 CP 를 헤더 밖 카드로 뗐다 — 만렙 큰 숫자 + 레이드·부스트·야생·부스트 2×2 표.
+  // 한 줄 문장으로 압축했던 것보다 숫자 넷이 바로 눈에 들어온다
+  if (form && cpm) {
+    const raidLabel = maxPoolKind(pokemon.sprite) ? '레이드·맥스' : '레이드';
+    body.append(el('div', { class: 'detail__cp-card' },
+      el('div', { class: 'detail__cp-big' }, metaText('CP 100% 기준'), el('b', {}, cpOf(form, cpm.l50).toLocaleString())),
+      el('div', { class: 'detail__cp-grid' },
+        el('div', { class: 'detail__cp-tile' }, metaText(raidLabel), el('b', {}, cpOf(form, cpm.l20).toLocaleString())),
+        el('div', { class: 'detail__cp-tile' }, metaText('부스트'), el('b', {}, cpOf(form, cpm.l25).toLocaleString())),
+        el('div', { class: 'detail__cp-tile' }, metaText('야생'), el('b', {}, cpOf(form, cpm.l30).toLocaleString())),
+        el('div', { class: 'detail__cp-tile' }, metaText('부스트'), el('b', {}, cpOf(form, cpm.l35).toLocaleString())))));
+  }
   // 2026-09-04 포획 CP: "지금 잡은 개체가 100%인가"를 확인하는 표. 계산기보다 자주 보므로 위에 둔다
-  if (form) body.append(el('details', { class: 'detail__acc' },
+  if (form) body.append(el('details', { class: 'detail__acc detail__acc--catch' },
     el('summary', {}, '🎯 포획 CP — 이 숫자면 100%'),
     el('div', { class: 'detail__acc-body' }, cpNode(form, pokemon.sprite))));
   // 2026-09-03 v4: 내 개체 CP 계산기를 상성 위로, 접이식 아코디언으로
