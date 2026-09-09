@@ -19,7 +19,7 @@ const ok = (n, c, x = '') => { console.log((c ? 'PASS' : 'FAIL') + ' ' + n + ' '
     const page = await ctx.newPage();
     const errs = [];
     page.on('pageerror', (e) => errs.push(String(e)));
-    const wide = w >= 1024;
+    const wide = w >= 1100;  // 2026-09-09 v2.38.0 태블릿·PC 공통 임계값(1100px) — PC 는 1440px~ 이 더 넓을 뿐 갈래는 같다
 
     const go = async (hash = '') => {
       await page.goto(BASE + hash, { waitUntil: 'domcontentloaded' });
@@ -109,7 +109,9 @@ const ok = (n, c, x = '') => { console.log((c ? 'PASS' : 'FAIL') + ' ' + n + ' '
     const headTop = (await page.locator('#page-head').boundingBox()).y;
     const contentTop = (await page.locator('#content').boundingBox()).y;
     ok(`${label} 헤더가 컨텐츠보다 위`, headTop < contentTop, `${Math.round(headTop)} < ${Math.round(contentTop)}`);
-    ok(`${label} 뒤로가기 버튼 유지`, await page.locator('.app-bar__head .icon-btn').isVisible());
+    // 2026-09-09 v2.37.0 PC 는 사이드바가 늘 있어 ← 뒤로가기가 필요 없다 — 그래서 숨긴다. 좁은 화면은 그대로 있다
+    if (wide) ok('PC 뒤로가기 버튼 숨김 (사이드바로 충분)', !(await page.locator('.app-bar__head .icon-btn').isVisible()));
+    else ok('모바일 뒤로가기 버튼 유지', await page.locator('.app-bar__head .icon-btn').isVisible());
     // 로고를 누르면 서비스 홈
     await page.click('#app-logo');
     await page.waitForTimeout(500);
@@ -131,6 +133,20 @@ const ok = (n, c, x = '') => { console.log((c ? 'PASS' : 'FAIL') + ' ' + n + ' '
         .filter((t) => nav.has(t));
     });
     if (wide) ok('PC 드로어와 사이드바에 같은 항목 없음', dup.length === 0, dup.join(' '));
+    // 2026-09-09 v2.37.0 PC 는 ☰ 메뉴에 마이페이지·기준 안내·트레이너 코드만 남고,
+    // 패치노트·QA 제보·약관·통계 설정 등은 사이드바(알 부화 아래, .app-nav__extra)로 옮긴다.
+    // 좁은 화면은 전부 그대로 드로어 안에 있다(회귀 없음)
+    if (wide) {
+      ok('PC 사이드바에 보조 항목 구역 있음', await page.locator('.app-nav .app-nav__extra').count() === 1);
+      ok('PC 사이드바 보조 항목에 패치노트', await page.locator('.app-nav__extra #menu-release').isVisible());
+      ok('PC 드로어엔 패치노트 등이 없음', (await page.locator('#drawer-backdrop #menu-release').count()) === 0);
+      const drawerKids = await page.evaluate(() =>
+        [...document.querySelectorAll('#drawer-backdrop .drawer__panel > *')].map((n) => n.id).filter(Boolean));
+      ok('PC 드로어에 잡다한 항목 없음(마이페이지·기준안내·트레이너코드만)', !drawerKids.includes('drawer-extra'), drawerKids.join(' '));
+    } else {
+      ok('모바일 드로어에 패치노트 그대로', await page.locator('#drawer-backdrop #menu-release').count() === 1);
+      ok('모바일은 사이드바 보조 구역 없음(사이드바 자체가 없다)', (await page.locator('.app-nav__extra').count()) === 0);
+    }
     await page.keyboard.press('Escape');
     await page.waitForTimeout(400);
 

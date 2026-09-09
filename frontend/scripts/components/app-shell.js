@@ -14,6 +14,8 @@
 // ─────────────────────────────────────────────────────────────────────────────
 // 2026-09-08 v2.30.0 이동 목록은 라우터 표(router.js ROUTE_NAV)가 원본이다 —
 // 메뉴에 화면을 하나 더 올리려면 ROUTES 에 nav 를 달면 되고, 여기는 손대지 않는다
+// 2026-09-09 v2.37.0 PC 는 사이드바가 늘 보이므로 ← 뒤로가기(styles/components/app-shell.css)와
+// ☰ 메뉴의 잡다한 항목(placeDrawerExtra, 아래)이 필요 없다 — 사이드바 링크 하나로 어디든 갈 수 있다
 const APP_DESTINATIONS = ROUTE_NAV;
 const appHeader = document.querySelector('header');
 document.body.insertBefore(appHeader, document.querySelector('.layout'));
@@ -91,14 +93,28 @@ document.querySelector('.layout').before(sideNav);
 // .layout 과 #page 중 하나만 보이므로 헤더도 하나만 두고 글자만 바꾼다.
 const pageHead = el('header', { class: 'page-head', id: 'page-head', hidden: true }, el('h2', {}, ''));
 document.querySelector('.layout').before(pageHead);
-const wideScreen = window.matchMedia('(min-width: 1024px)');
+// 2026-09-09 v2.38.0 태블릿 1100px~ · PC 1440px~ 두 단계(styles/components/app-shell.css) —
+// 사이드바 유무·카드/줄 갈래는 두 단계가 같으므로(크기만 다르다) 이 임계값 하나로 충분하다
+const wideScreen = window.matchMedia('(min-width: 1100px)');
 function placeDestinations() {
   if (wideScreen.matches) sideNav.append(destinations);
   else drawer.querySelector('.drawer__head').after(destinations);
 }
+// 2026-09-09 v2.37.0 PC 에서는 ☰ 메뉴에 마이페이지·기준 안내·트레이너 코드만 남긴다 — 나머지(패치노트·
+// QA 제보·약관·통계 설정 등, index.html #drawer-extra)는 왼쪽 사이드바로, 알 부화(마지막 이동 항목) 아래에
+// 통째로 옮긴다. 복제가 아니라 이동이라 onclick·id 등 기존 연결이 그대로 간다(destinations 와 같은 방식).
+// 좁은 화면으로 되돌아가면 원래 있던 자리(트레이너 코드 바로 뒤)로 되돌린다
+const drawerExtra = document.getElementById('drawer-extra');
+const trainerAcc = document.getElementById('trainer-acc');
+const sideExtra = el('div', { class: 'app-nav__extra' });
+function placeDrawerExtra() {
+  if (wideScreen.matches) { sideExtra.append(drawerExtra); sideNav.append(sideExtra); }
+  else trainerAcc.after(drawerExtra);
+}
 // 2026-09-08 v2.28.0 폭이 바뀌면 화면도 다시 그린다 — 목록이 줄이 될지 카드가 될지가 폭에 달렸다(wideCards)
-wideScreen.addEventListener('change', () => { placeDestinations(); syncAppShell(); if (typeof render === 'function') render(); });
+wideScreen.addEventListener('change', () => { placeDestinations(); placeDrawerExtra(); syncAppShell(); if (typeof render === 'function') render(); });
 placeDestinations();
+placeDrawerExtra();
 drawer.append(el('p', { class: 'drawer__meta' }, 'POGO PLAN · ' + version));
 const skip = el('a', { class: 'skip-link', href: '#content', onclick: (event) => {
   event.preventDefault();

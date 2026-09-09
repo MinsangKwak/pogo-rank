@@ -5,6 +5,71 @@
 버전 규칙: `vMAJOR.MINOR.PATCH` — 큰 기능은 MINOR(두 번째 자리), 상세 기능·버그 수정은 PATCH(세 번째 자리) 증가.
 항목 종류: `추가` 새 기능 · `변경` 기존 동작 변경 · `수정` 버그 수정 · `데이터` 수동 데이터 갱신
 
+## v2.38.0 — 2026-09-09
+
+"PC 는 1440 기준으로, 대신 태블릿 1100 을 넣어 달라"는 요청 — 한 단계였던 넓은 화면을 둘로 나눴다.
+그 과정에서 상세 패널 여백 버그도 함께 잡혔다.
+
+### 변경
+- **태블릿(1100px~)·PC(1440px~) 2단계 레이아웃** (`styles/components/app-shell.css`, `dom.js`, `components/app-shell.js`, `components/modal.js`)
+  - 컨테이너 반폭·패널 폭·패널 간격을 `--shell-half`·`--panel-w`·`--panel-gap` 세 CSS 변수로 뺐다. `@media (min-width:1100px)` 블록이 태블릿 값(550/420/24)을 정의하고 그 안의 사이드바·패널·패딩 계산식이 전부 이 변수를 참조한다. `@media (min-width:1440px)` 블록은 PC 값(720/480/32)으로 **변수만 다시 정의** — 계산식은 CSS 커스텀 프로퍼티라 값이 바뀌면 자동으로 다시 계산되므로, 규칙을 또 적을 필요가 없다
+  - 사이드바 유무·목록의 줄/카드 갈래는 두 단계가 같다(태블릿이 곧 지금까지의 "PC" 배치) — 임계값 하나(`wideCards()`·`wideScreen`·`useDetailPanel()`, 전부 1024→1100)로 충분해 새 JS 분기는 만들지 않았다
+  - 1024~1099px 는 이제 모바일 배치로 넘어간다(예전엔 "PC"였다) — 아주 좁은 태블릿·접이식 기기 화면 폭이 이 구간이라면 배치가 달라진다
+
+### 수정
+- **상세 패널이 목록에 거의 닿아 보이던 버그** — `body.has-detail-panel` 의 `padding-right` 를 "패널 폭 + 간격"으로만 계산했는데, 패널의 `right` 위치 공식(`max(20px, calc(50vw - 반폭 + 20px))`) 자체가 컨테이너 진짜 오른쪽 끝보다 20px 안쪽에서 시작한다 — 왼쪽 사이드바가 컨테이너 왼쪽 끝보다 20px 안쪽에서 시작하는 것과 거울 대칭이라 생기는 값인데, 이 20px 을 빼먹어 실제 간격이 의도한 24px 이 아니라 4px 였다. `padding-right: panel-w + gap + 20px` 로 고쳤다. `tests/e2e/breakpoints.js`(신규 27항목)가 태블릿·PC 각 폭에서 실측 간격·좌우 대칭까지 확인한다
+
+### 불변
+- 모바일(1099px 이하는 새로 이 폭까지 확장) 배치는 그대로. 태블릿 값(550/420/24)은 이전 "PC" 수치와 동일 — 1100~1439px 사용자는 크기 변화를 못 느낀다
+
+## v2.37.0 — 2026-09-09
+
+GA4 데이터에서 헤드리스 브라우저 신호를 확인해 집계에서 뺐고, PC 레이아웃을 두 차례 더 다듬었다.
+
+### 추가
+- **봇 트래픽 집계 제외** (`track.js`)
+  - 최근 28일 GA4 활성 사용자 26명 중 9명이 화면 정확히 800×600(헤드리스 기본 뷰포트) · 구글 데이터센터 소재지(Council Bluffs·Boardman·Frankfurt)에서 잡혔다. 실사용자 17명은 한국 여러 도시·실기기 해상도(393×852 등)로 분산 — 뚜렷이 갈린다
+  - `IS_BOT_LIKE` — `navigator.webdriver` · 화면 정확히 800×600 · UA 에 headless/puppeteer/playwright/bot/crawler/spider 포함(대소문자 무시), 셋 중 하나만 있어도 참(OR). GA4 초기화(gtag 로드)보다 먼저 확인해야 해 번들 맨 앞(track.js)에 둔다. 콘솔에 남기지 않는다 — 남기면 봇이 우회를 학습할 수 있다
+  - `track()`·`setTrackingUser()` 가 이 플래그면 gtag 를 안 부른다 — 집계만 빠지고 사이트 기능은 그대로 동작한다(차단이 아니다)
+  - **범위를 의도적으로 좁혔다**: 원 지침은 "Firestore 쓰기(로그인, favs 저장 등)도 no-op" 을 제안했지만, 이 저장소의 실제 Firestore 쓰기(즐겨찾기·내 포켓몬·가입 요청)는 전부 사용자가 저장한 실 데이터이지 "트래킹 로그"가 따로 있는 게 아니다. 그걸 no-op 하면 "사이트 기능은 봇에게도 정상 동작해야 한다"는 지침의 대전제와 정면으로 부딪히고, 이 저장소의 e2e 스위트 자체가 Playwright(늘 `navigator.webdriver=true`)로 돈다 — 즉 우리 자신의 회귀 검사가 즐겨찾기 저장을 검증할 때마다 "봇"으로 잡혀 죽은 코드를 검증하게 된다. 그래서 Firestore 쓰기는 건드리지 않고 GA4 신호(track/setTrackingUser)만 막았다
+  - `tests/e2e/bot-filter.js`(9항목) 추가 — webdriver·화면·UA 각 신호 단독으로도 판정되는지, 판정이어도 기능은 살아있는지, 콘솔에 안 새는지 확인. 이 스위트 자체가 Playwright 라 "정상 브라우저"는 `navigator.webdriver` 를 일부러 덮어써 흉내 낸다
+- **그리드 ↔ 리스트 토글 확장** (`components/ui.js` `layoutInitial`/`layoutToggle`, `components/pages.js`·`favs.js`·`gameday.js`)
+  - 도감에만 있던 보기 전환 버튼을 즐겨찾기·레이드 보스·알 부화로 뗐다. 화면마다 localStorage 키를 따로 써 선택이 안 섞인다(`pogo_favs_cols`·`pogo_raids_cols`·`pogo_eggs_cols`, 도감의 `pogo_dex_cols` 는 값·이름 불변)
+  - 레이드 보스·알 부화는 티어·거리별로 목록이 여러 묶음이라, `gamedaySection()` 이 각자 `wideCards()` 를 묻던 것을 그만두고 그리드 여부를 인자로 받아 토글 버튼 하나가 전부를 같이 바꾸게 했다
+  - `tests/e2e/layout-toggle.js`(19항목) 추가
+- **PC 메뉴 재구성** (`index.html`, `components/app-shell.js` `placeDrawerExtra`, `styles/components/app-shell.css`)
+  - PC(1024px~)에서 ☰ 메뉴엔 마이페이지·기준 안내·트레이너 코드만 남는다. 패치노트·QA 제보·개인정보처리방침·이용약관·통계 설정(`index.html` `#drawer-extra`)은 왼쪽 사이드바로, 이동 목록(알 부화가 마지막) 아래에 통째로 옮긴다 — 복제가 아니라 이동이라 `onclick`·`id` 등 기존 연결이 그대로 간다(`destinations` 이동과 같은 방식)
+  - 옮긴 자리는 구분선 하나로 위 이동 목록과 갈라내고 글자를 한 단 낮춰(뮤트 색·작은 글자) "보조 항목" 임을 보이게 했다(`.app-nav__extra`)
+  - PC 는 왼쪽 사이드바가 늘 있어 상단 바의 ← 뒤로가기가 필요 없다 — `.app-bar__head .icon-btn` 를 PC 에서 숨겼다. 좁은 화면은 그대로
+  - `tests/e2e/shell.js` 에 관련 검사 6항목 추가(PC 는 3항목만 보임·사이드바 보조 구역 존재·뒤로가기 숨김, 모바일은 회귀 없음)
+
+### 변경
+- **상세 패널 여백 확대** (`styles/components/app-shell.css`) — 타입 상성 칩 등이 테두리에 닿을 만큼 좁다는 지적으로 `.detail-panel__body` 패딩을 사방 10px 씩 늘렸다(위 4→14px, 좌우·아래 20→30px). 안쪽 실제 내용 폭이 좁아지지 않도록 패널 폭도 400→420px 로 같이 늘렸다
+
+### 불변
+- 즐겨찾기·내 포켓몬 저장, 로그인 등 실제 Firestore 쓰기는 봇 판정과 무관하게 그대로 동작한다
+- 도감의 `.dex__layout` 클래스·`pogo_dex_cols` 키는 그대로. 좁은 화면의 ☰ 메뉴 구성·뒤로가기 버튼은 그대로
+
+## v2.36.0 — 2026-09-09
+
+PC 는 오른쪽에 남는 자리가 많다는 지적 — 상세를 화면을 덮는 팝업 대신 목록 옆 패널로 열어 본다.
+
+### 추가
+- **PC 오른쪽 상세 패널** (`components/modal.js` `openDetailPanel`/`closeDetailPanel`/`useDetailPanel`, `components/detail.js`, `index.html`, `styles/components/app-shell.css`)
+  - 넓은 화면(1024px~)에서 `openDetail()` 이 `openModal()` 대신 목록 오른쪽 고정 패널(`#detail-panel`)에 내용을 채운다. 모달과 달리 화면을 덮지 않아 목록을 계속 보고 누를 수 있다 — 그래서 스크롤 잠금·히스토리 오버레이 항목을 쓰지 않는다
+  - 패널 자리는 왼쪽 고정 사이드바(`.app-nav`)와 같은 530px 반폭 상수로 거울 대칭(`right: max(20px, calc(50vw - 530px))`) — 사이드바·컨테이너 폭 공식은 손대지 않았다. 패널이 열려 있을 때만 `body.has-detail-panel` 클래스로 본문에 `padding-right`를 줘 자리를 비킨다. 카드 격자(`.row-list` 등)는 전부 `1fr` 기반이라 폭이 좁아지면 카드가 그만큼 좁아질 뿐 넘치지 않는다 — 그래서 컨테이너 자체를 넓히는 대신 이 방법을 썼다
+  - 닫기(✕)는 스크롤 영역 밖의 자기 줄(`.detail-panel__bar`)에 둔다 — 안에 두면 v2.32~2.34.0 에서 겪은 "닫기가 내용과 자리를 다투는" 문제가 되풀이된다
+  - 다른 화면으로 이동하면(hashchange) 패널을 자동으로 닫는다 — 다른 화면 옆에 이전 포켓몬이 남아 있으면 헷갈린다. 같은 화면에서 다른 포켓몬을 열 때는 내용만 바뀐다(패널이 여러 개로 쌓이지 않는다)
+  - `#detail-panel` 은 스크립트가 만들지 않고 `index.html` 에 처음부터 있다(`#page`·`#drawer-backdrop` 과 같은 자리) — `#/mon/<id>` 딥링크 첫 렌더가 `app-shell.js` 보다 먼저 실행돼, 스크립트가 그때 막 조각을 만들면 자리가 없어 상세가 조용히 사라지는 문제가 있었다
+  - 좁은 화면(1024px 미만)은 지금까지처럼 팝업(다이얼로그) — 패널 CSS 자체가 그 폭에서 안 먹는다
+
+### 수정 (구현 중 발견)
+- `useDetailPanel()` 을 처음엔 `app-shell.js` 의 `wideScreen`(같은 `matchMedia`, `const`)을 재사용하게 짰는데, `#/mon/id` 딥링크로 처음 들어오면 `pages.js` 의 첫 렌더가 `app-shell.js` 보다 먼저 이 함수를 불러 `wideScreen` 이 선언되기 전(TDZ)이라 `ReferenceError` 가 났다. `typeof` 로도 못 피한다 — TDZ 인 `let`/`const` 는 `typeof` 도 던진다. `matchMedia` 를 그때그때 직접 불러 외부 변수 의존을 아예 없앴다
+- 위 딥링크 경로에서 `#detail-panel` 이 아직 없어 상세가 열리지 않고 사라지던 문제 — 정적 HTML 로 옮겨 해결(위 항목)
+
+### 불변
+- 모달(`openModal`)·기존 상세 내용·이벤트명은 그대로. 넓은 화면에서 "어디에 뜨는지"만 바뀌었다
+
 ## v2.35.0 — 2026-09-09
 
 사용자가 준 참고 배치대로 상세 팝업 헤더를 한 번 더 다듬었다 — 타입은 그림 위 배지로, ★는 아이콘 줄로, 폼 라벨은 이름 위 자기 줄로.

@@ -131,16 +131,10 @@ function renderDexPage() {
   const all = dexEntries();
   let list = all;
   let shown = 100;
-  // 2026-09-03 레이아웃 토글: 리스트 ↔ 그리드 (선택 기억)
-  // localStorage 키 'pogo_dex_cols' 에 '2' 면 그리드. 이미 나간 키라 이름·값은 그대로 두고 뜻만 읽는다.
-  // 저장이 막힌 브라우저(사생활 모드 등)도 있어 try 로 감싼다.
-  // 2026-09-08 v2.28.0 PC 는 카드가 기본. 저장된 선택이 있으면 그쪽이 이긴다 —
-  // 넓은 화면에서 굳이 리스트를 골라 둔 사람의 뜻을 기본값이 덮지 않게
-  let cols2 = wideCards();
-  try {
-    const saved = localStorage.getItem('pogo_dex_cols');
-    if (saved) cols2 = saved === '2';
-  } catch { /* 저장 불가 환경 */ }
+  // 2026-09-03 레이아웃 토글: 리스트 ↔ 그리드 (선택 기억, localStorage 'pogo_dex_cols')
+  // 2026-09-09 v2.37.0 즐겨찾기·레이드 보스·알 부화도 같은 토글을 쓰게 되며 components/ui.js 로 뺐다 —
+  // 키 이름·값('1'|'2')은 이미 나간 값이라 그대로 잇는다(layoutInitial/layoutToggle)
+  const cols2 = layoutInitial('pogo_dex_cols');
   const $list = el('div', { class: `dex__list${cols2 ? ' is-grid' : ''}` });
   const $more = el('button', { class: 'boss__more', onclick: () => {
     shown += 200;
@@ -172,22 +166,8 @@ function renderDexPage() {
   // 2026-09-08 v2.29.2 라벨을 "열 개수"에서 "보기 방식"으로 바꿨다.
   //   - 열 개수는 화면 폭에 따라 2·3·4열로 달라져 "2열" 이 넓은 화면에서는 그냥 틀린 말이었다
   //   - 버튼은 **지금 어떤 보기인지**를 말한다 (그리드 ↔ 리스트). 누르면 무엇이 되는지는 aria-label 로 밝힌다
-  // 저장 값은 그대로 '1'|'2' 다 — pogo_dex_cols 는 이미 나간 키라 뜻만 바뀌고 값은 불변
-  const layoutLabel = () => (cols2 ? '⊞ 그리드' : '☰ 리스트');
-  const layoutHint = () => (cols2 ? '보기 방식: 그리드 · 누르면 리스트' : '보기 방식: 리스트 · 누르면 그리드');
-  const $layout = el('button', { class: 'uchip dex__layout', 'aria-label': layoutHint(), onclick: () => {
-    cols2 = !cols2;
-    $list.classList.toggle('is-grid', cols2);
-    $layout.textContent = layoutLabel();
-    // 라벨은 원문(한국어)으로 다시 적고 번역은 엔진에 맡긴다. 속성은 childList 관찰자가 못 보므로
-    // 직접 부르고, 캐시해 둔 옛 원문(__ko)을 지워야 새 문구가 번역된다 (i18n.js translateTree)
-    $layout.setAttribute('aria-label', layoutHint());
-    delete $layout.__ko;
-    if (typeof translateTree === 'function') translateTree($layout);
-    try {
-      localStorage.setItem('pogo_dex_cols', cols2 ? '2' : '1');
-    } catch { /* 저장 불가 환경 */ }
-  } }, layoutLabel());
+  // .dex__layout 클래스는 그대로 둔다 — 회귀 검사(tests/e2e/shell.js)가 이 클래스로 버튼을 찾는다
+  const $layout = layoutToggle('pogo_dex_cols', cols2, (grid) => $list.classList.toggle('is-grid', grid), 'dex__layout');
   // 2026-09-03 v2.2.0 즐겨찾기만 보기 칩 (승인된 사용자) / 비로그인 안내
   // 2026-09-05 즐겨찾기는 전용 페이지로 이동 — PvE/PvP 갈래와 근거 순위를 함께 보여 준다
   const favChip = AUTH.status === 'ok'
