@@ -46,11 +46,16 @@ function gamedayRow(entry, notes) {
     authEnabled() ? favBtn(entry.sprite, 'dex__fav') : '');
 }
 
-// 티어·거리 묶음 하나 = 소제목 + 줄 목록
-function gamedaySection(heading, list, toNotes) {
-  return el('section', { class: 'gameday__sec' },
+// 티어·거리 묶음 하나 = 소제목 + 줄 목록.
+// 2026-09-09 v2.37.0 그리드 여부를 인자로 받는다 — 화면 하나(레이드 보스 전체)에 이 묶음이 여러 개
+// 생기는데(티어별), 토글 버튼 하나가 전부를 같이 바꿔야 해서 각 묶음이 wideCards() 를 따로 묻지 않는다.
+// $list 를 함께 돌려줘야 호출부가 그 목록들을 모아 토글 콜백에서 한꺼번에 바꿀 수 있다
+function gamedaySection(heading, list, toNotes, grid) {
+  const $list = el('div', { class: `dex__list${grid ? ' is-grid' : ''}` }, ...list.map((entry) => gamedayRow(entry, toNotes(entry))));
+  const node = el('section', { class: 'gameday__sec' },
     el('h2', { class: 'page__sec' }, heading, el('span', { class: 'meta' }, ` ${list.length}종`)),
-    el('div', { class: `dex__list${wideCards() ? ' is-grid' : ''}` }, ...list.map((entry) => gamedayRow(entry, toNotes(entry)))));
+    $list);
+  return { node, $list };
 }
 
 function gamedayEmpty(what) {
@@ -70,9 +75,15 @@ function renderRaidsPage() {
     if (boss.shiny) parts.push('✨');
     return parts;
   };
+  // 2026-09-09 v2.37.0 도감·즐겨찾기처럼 리스트로 되돌릴 수 있는 토글 (localStorage 'pogo_raids_cols').
+  // 티어마다 목록이 따로 있어(sections) 토글 하나가 전부를 같이 바꾼다
+  const grid = layoutInitial('pogo_raids_cols');
+  const sections = Object.entries(GAMEDAY.raids).map(([tier, list]) => gamedaySection(`${tier} 레이드`, list, notes, grid));
+  const $layout = layoutToggle('pogo_raids_cols', grid, (next) => sections.forEach(({ $list }) => $list.classList.toggle('is-grid', next)));
   return el('div', { class: 'page__body' },
     el('p', { class: 'note' }, '보스를 누르면 약점과 추천 딜러가 열려요. 혼자 잡을 수 있는지는 ⚔️ 레이드 · PvE 의 🧮 솔플 계산기에서 확인하세요.'),
-    ...Object.entries(GAMEDAY.raids).map(([tier, list]) => gamedaySection(`${tier} 레이드`, list, notes)),
+    el('div', { class: 'tchips' }, $layout),
+    ...sections.map(({ node }) => node),
     gamedayFoot('지금 도는 레이드 로테이션.'));
 }
 
@@ -89,8 +100,13 @@ function renderEggsPage() {
     if (egg.gift) parts.push('선물 알');
     return parts;
   };
+  // 2026-09-09 v2.37.0 도감·즐겨찾기처럼 리스트로 되돌릴 수 있는 토글 (localStorage 'pogo_eggs_cols')
+  const grid = layoutInitial('pogo_eggs_cols');
+  const sections = Object.entries(GAMEDAY.eggs).map(([distance, list]) => gamedaySection(`${distance} 알`, list, notes, grid));
+  const $layout = layoutToggle('pogo_eggs_cols', grid, (next) => sections.forEach(({ $list }) => $list.classList.toggle('is-grid', next)));
   return el('div', { class: 'page__body' },
     el('p', { class: 'note' }, '★ 를 누르면 즐겨찾기에 담깁니다. 이름을 누르면 종족값과 상성을 볼 수 있어요.'),
-    ...Object.entries(GAMEDAY.eggs).map(([distance, list]) => gamedaySection(`${distance} 알`, list, notes)),
+    el('div', { class: 'tchips' }, $layout),
+    ...sections.map(({ node }) => node),
     gamedayFoot('지금 도는 알 부화 풀.'));
 }
