@@ -148,13 +148,13 @@
    왜 CSS 만으로 하나
      랭킹 목록은 모두 list.js 의 <ul class="row-list"> 를 거친다.
      한 곳의 미디어 쿼리로 전부(D-MAX · 레이드 PvE · 배틀 PvP · 솔플 스쿼드 · 추천 덱) 바뀐다.
-     모바일은 손대지 않는다 — 1024px 미만은 기존 줄 그대로다
+     모바일은 손대지 않는다 — 1100px 미만은 기존 줄 그대로다
    왜 선택자마다 .row 를 앞에 다나 (2026-09-08 v2.29.1 수정)
      row__name · row__moves · row__sub 같은 조각은 랭킹 줄만 쓰는 게 아니다.
      플래너 내 포켓몬(.plan__mon-main)과 보스 추천 카드(.boss__rec)가 같은 클래스를 빌려 쓴다.
      맨 클래스로 적었더니 "이름 가운데 정렬" 같은 카드 전용 규칙이 그쪽 화면까지 끌려가 레이아웃이 깨졌다.
      카드 규칙은 카드 안(.row / .row-list 자식)에서만 살아야 한다 */
-@media (min-width: 1024px) {
+@media (min-width: 1100px) {
   .row-list { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; padding-top: 4px; border-top: 0; }
   .row-list > .row {
     position: relative; display: flex; flex-direction: column; align-items: center; gap: 6px;

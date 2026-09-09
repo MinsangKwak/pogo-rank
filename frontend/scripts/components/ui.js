@@ -26,9 +26,11 @@
 //   footNote(...parts)            각주 (출처·계산 기준)
 //   hintNote(...parts)            안내·빈 상태 문구
 //   metaText(...parts)            보조 문구 한 조각
+//   layoutInitial(storageKey)     그리드/리스트 초기값(저장된 선택 → 없으면 wideCards() 기본값)
+//   layoutToggle(storageKey, grid, onToggle)   그리드 ↔ 리스트 전환 버튼 (2026-09-09 v2.37.0)
 //
 // 의존하는 전역
-//   el (dom.js)
+//   el (dom.js) · wideCards (dom.js) · translateTree (i18n.js, 선택)
 // ─────────────────────────────────────────────────────────────────────────────
 
 // 테두리 칩 버튼. opts.on 이면 눌린 표시(aria-pressed + is-on), opts.label 은 스크린리더용 이름
@@ -70,4 +72,38 @@ function hintNote(...parts) {
 
 function metaText(...parts) {
   return el('span', { class: 'meta' }, ...parts);
+}
+
+// 2026-09-09 v2.37.0 그리드 ↔ 리스트 보기 전환 — 도감(#/dex)에서만 쓰던 것을 즐겨찾기·레이드 보스·
+// 알 부화에도 쓸 수 있게 뗐다. storageKey 를 화면마다 다르게 줘서 선택이 서로 안 섞이게 한다.
+// 저장 값은 도감이 쓰던 관례 그대로 '1'(리스트)|'2'(그리드) — 이미 나간 키(pogo_dex_cols)의 뜻을 그대로 잇는다
+
+// 초기 그리드 여부 — 저장된 선택이 있으면 그쪽, 없으면 wideCards() 기본값(PC=그리드)
+function layoutInitial(storageKey) {
+  let grid = wideCards();
+  try {
+    const saved = localStorage.getItem(storageKey);
+    if (saved) grid = saved === '2';
+  } catch { /* 저장 불가 환경(사생활 모드 등) */ }
+  return grid;
+}
+// 버튼은 **지금 어떤 보기인지**를 말한다 — 열 개수는 화면 폭에 따라 2·3·4열로 달라져 뜻이 없다(v2.29.2)
+//   storageKey   localStorage 키
+//   grid         지금 그리드인지 (초기값)
+//   onToggle(grid)  누를 때마다 불린다 — 호출부가 목록 class(is-grid)를 이 값으로 맞춘다
+//   extraClass   도감의 .dex__layout 처럼 화면별로 더 붙일 클래스 (회귀 검사가 이 클래스로 버튼을 찾는다)
+function layoutToggle(storageKey, grid, onToggle, extraClass = '') {
+  const label = () => (grid ? '⊞ 그리드' : '☰ 리스트');
+  const hint = () => (grid ? '보기 방식: 그리드 · 누르면 리스트' : '보기 방식: 리스트 · 누르면 그리드');
+  const $btn = el('button', { class: `uchip${extraClass ? ' ' + extraClass : ''}`, 'aria-label': hint(), onclick: () => {
+    grid = !grid;
+    $btn.textContent = label();
+    $btn.setAttribute('aria-label', hint());
+    // 라벨은 원문(한국어)으로 다시 적고 번역은 엔진에 맡긴다 — 캐시해 둔 옛 원문(__ko)을 지워야 새 문구가 번역된다
+    delete $btn.__ko;
+    if (typeof translateTree === 'function') translateTree($btn);
+    try { localStorage.setItem(storageKey, grid ? '2' : '1'); } catch { /* 저장 불가 환경 */ }
+    onToggle(grid);
+  } }, label());
+  return $btn;
 }

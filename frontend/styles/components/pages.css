@@ -91,7 +91,7 @@
 .dex__list.is-grid .gameday__note { text-align: center; }
 
 @media (min-width: 560px) { .dex__list.is-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
-@media (min-width: 1024px) { .dex__list.is-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; } }
+@media (min-width: 1100px) { .dex__list.is-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; } }
 .dex__layout { cursor: pointer; }
 
 /* 2026-09-03 v2.2.0 도감 즐겨찾기 ★ · 로그인 안내 · 즐겨찾기 칩 */
@@ -201,7 +201,7 @@
 .dex__list.is-grid .dex__row > b,
 .dex__list.is-grid .fav__main,
 .dex__list.is-grid .gameday__main { width: 100%; padding-top: 9px; border-top: 1px solid var(--line); }
-@media (min-width: 1024px) {
+@media (min-width: 1100px) {
   /* 레이드·알 카드에는 타입·CP·날씨·✨ 가 한 줄로 붙어 4열이면 글자가 계단처럼 접힌다 */
   .gameday__sec .dex__list.is-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 }
