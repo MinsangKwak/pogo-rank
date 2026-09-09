@@ -201,7 +201,22 @@ async function signIn() {
       return;
     }
     // 사용자가 연달아 눌러 앞선 팝업 요청이 취소된 경우는 오류가 아니므로 안내하지 않는다
-    if (error.code !== 'auth/cancelled-popup-request') renderAccount('로그인 실패: ' + (error.code || error.message));
+    if (error.code === 'auth/cancelled-popup-request') return;
+    // 2026-09-09 v2.39.0 로그아웃 직후 곧바로 로그인하면 auth/internal-error 로 실패하는 사례 보고됨.
+    // SDK 내부에서 signOut() 이 지우는 저장소(IndexedDB) 정리가 끝나기 전에 팝업이 뜨는 드문 경쟁 상태다 —
+    // 실제 계정·설정 문제가 아니라 타이밍 문제라 잠깐 쉬고 한 번 더 시도하면 대개 된다
+    if (error.code === 'auth/internal-error') {
+      await new Promise((resolve) => setTimeout(resolve, 400));
+      try {
+        if (standalone) await firebase.auth().signInWithRedirect(provider);
+        else await firebase.auth().signInWithPopup(provider);
+        return;
+      } catch (retryError) {
+        renderAccount('로그인 실패: ' + (retryError.code || retryError.message) + ' — 새로고침 후 다시 시도해 주세요');
+        return;
+      }
+    }
+    renderAccount('로그인 실패: ' + (error.code || error.message));
   }
 }
 
