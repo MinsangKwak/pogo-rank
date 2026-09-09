@@ -41,16 +41,19 @@ const ROUTES = [
   { id: 'home', path: '', kind: 'shell', tab: 'home', title: '서비스 홈' },
 
   // ── 이동 목록(메뉴)에 오르는 순서 그대로 ────────────────────────────────
-  { id: 'planner-collection', path: 'planner/collection', kind: 'plan', tab: 'collection', nav: '내 포켓몬', legacy: ['plan/collection'] },
-  { id: 'dex', path: 'dex', kind: 'page', nav: '포켓몬 도감' },
-  { id: 'types', path: 'types', kind: 'page', nav: '타입 & 상성' },
-  { id: 'dmax', path: 'dmax', kind: 'shell', tab: 'max', nav: 'D-MAX', legacy: ['rank/max'] },
-  { id: 'pve', path: 'pve', kind: 'shell', tab: 'pve', nav: '레이드 · PvE', legacy: ['rank/pve'] },
-  { id: 'pvp', path: 'pvp', kind: 'shell', tab: 'pvp', nav: '배틀 · PvP', legacy: ['rank/pvp'] },
-  { id: 'planner', path: 'planner', kind: 'plan', tab: 'home', nav: '육성 플래너', legacy: ['plan'] },
-  { id: 'schedule', path: 'schedule', kind: 'page', nav: '이벤트 일정' },
-  { id: 'raids', path: 'raids', kind: 'page', nav: '레이드 보스' },
-  { id: 'eggs', path: 'eggs', kind: 'page', nav: '알 부화' },
+  // 2026-09-09 v2.40.0 icon: 화면을 가리키는 이모지. 서비스 홈 타일(components/home.js)과 ☰ 메뉴가
+  // 같은 그림을 써야 해서(같은 화면인데 그림이 다르면 다른 곳으로 읽힌다) 표 한 곳에 둔다 — 예전엔
+  // home.js 안에만 있어 메뉴에는 아이콘을 못 붙였다
+  { id: 'planner-collection', path: 'planner/collection', kind: 'plan', tab: 'collection', nav: '내 포켓몬', icon: '🎒', legacy: ['plan/collection'] },
+  { id: 'dex', path: 'dex', kind: 'page', nav: '포켓몬 도감', icon: '📕' },
+  { id: 'types', path: 'types', kind: 'page', nav: '타입 & 상성', icon: '🧭' },
+  { id: 'dmax', path: 'dmax', kind: 'shell', tab: 'max', nav: 'D-MAX', icon: '✨', legacy: ['rank/max'] },
+  { id: 'pve', path: 'pve', kind: 'shell', tab: 'pve', nav: '레이드 · PvE', icon: '⚔️', legacy: ['rank/pve'] },
+  { id: 'pvp', path: 'pvp', kind: 'shell', tab: 'pvp', nav: '배틀 · PvP', icon: '🃏', legacy: ['rank/pvp'] },
+  { id: 'planner', path: 'planner', kind: 'plan', tab: 'home', nav: '육성 플래너', icon: '🌱', legacy: ['plan'] },
+  { id: 'schedule', path: 'schedule', kind: 'page', nav: '이벤트 일정', icon: '📅' },
+  { id: 'raids', path: 'raids', kind: 'page', nav: '레이드 보스', icon: '⚔️' },
+  { id: 'eggs', path: 'eggs', kind: 'page', nav: '알 부화', icon: '🥚' },
 
   // ── 메뉴에는 없지만 주소가 있는 화면 ──────────────────────────────────────
   { id: 'favs', path: 'favs', kind: 'page' },
@@ -61,8 +64,13 @@ const ROUTES = [
   { id: 'mon', path: 'mon', kind: 'detail' },
 ];
 
-// 메뉴에 오르는 것만 [해시, 라벨] 로 (app-shell.js 이동 목록 · PC 사이드바)
-const ROUTE_NAV = ROUTES.filter((route) => route.nav).map((route) => [`#/${route.path}`, route.nav]);
+// 메뉴에 오르는 것만 [해시, 라벨, 아이콘] 로 (app-shell.js 이동 목록 · PC 사이드바)
+const ROUTE_NAV = ROUTES.filter((route) => route.nav).map((route) => [`#/${route.path}`, route.nav, route.icon || '']);
+
+// 화면 아이콘 — 서비스 홈 타일(components/home.js)이 이 표를 읽는다. 모르는 id 면 빈 문자열
+function routeIcon(id) {
+  return (ROUTES.find((route) => route.id === id) || {}).icon || '';
+}
 
 // 옛 경로 → 새 경로. 표를 손으로 두 번 적지 않도록 legacy 에서 뒤집어 만든다
 const ROUTE_LEGACY = new Map();

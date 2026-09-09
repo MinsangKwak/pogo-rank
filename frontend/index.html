@@ -178,13 +178,15 @@ __STYLES__
       <div class="schedule__body" id="schedule-body"></div>
       <button class="schedule__more" onclick="openPage('schedule')">자세히 보기 (전체 화면) →</button>
     </details>
-    <details class="schedule">
-      <summary>ℹ️ 기준 안내 (지금 보는 화면)</summary>
+    <!-- 2026-09-09 v2.40.0 이모지를 라벨 글자에서 떼어 span 으로 둔다 — 아이콘이 한 칸에 가지런히 서고,
+         번역 사전(i18n-en.js)은 텍스트 노드 단위라 라벨만 남겨야 키가 맞는다 -->
+    <details class="schedule" id="note-acc">
+      <summary><span class="drawer__ico" aria-hidden="true">ℹ️</span><span class="drawer__label">기준 안내 (지금 보는 화면)</span></summary>
       <p class="note" id="note"></p>
     </details>
     <!-- 2026-09-03 v2.2.1 트레이너 코드: 승인된 로그인 사용자에게만 항목 자체를 노출 -->
     <details class="schedule" id="trainer-acc" hidden>
-      <summary>👥 트레이너 코드</summary>
+      <summary><span class="drawer__ico" aria-hidden="true">👥</span><span class="drawer__label">트레이너 코드</span></summary>
       <div class="schedule__body" id="trainer-list"></div>
     </details>
     <!-- 2026-09-07 v2.15.1 도감·상성 검색·★ 즐겨찾기·모드 전환 항목 제거 — 탭 줄(📕 🧭 ★)·헤더 배지와 같은 화면을 가리키는 중복 버튼이었다. 화면 하나에 진입 버튼 하나 -->
@@ -192,13 +194,13 @@ __STYLES__
          왼쪽 사이드바(알 부화 아래)로 옮긴다(components/app-shell.js placeDrawerExtra). 좁은 화면은 그대로 여기 있다 -->
     <div id="drawer-extra">
       <!-- 2026-09-04 시즌 기술 변경 안내: 변경 데이터가 있을 때만 initMoveChangesMenu()가 연다 -->
-      <button class="drawer__item" id="menu-changes" onclick="openPage('changes')" hidden>⚔️ 기술 변경</button>
-      <button class="drawer__item" id="menu-release" onclick="openPage('release')">🎉 패치노트</button>
-      <a class="drawer__item" href="https://www.notion.so/a0472984122d4f25b9b445b57465568f" target="_blank" rel="noopener">🛠 QA·버그 제보 (노션)</a>
-      <button class="drawer__item" onclick="openPage('privacy')">🔒 개인정보처리방침</button>
+      <button class="drawer__item" id="menu-changes" onclick="openPage('changes')" hidden><span class="drawer__ico" aria-hidden="true">⚔️</span><span class="drawer__label">기술 변경</span></button>
+      <button class="drawer__item" id="menu-release" onclick="openPage('release')"><span class="drawer__ico" aria-hidden="true">🎉</span><span class="drawer__label">패치노트</span></button>
+      <a class="drawer__item" href="https://www.notion.so/a0472984122d4f25b9b445b57465568f" target="_blank" rel="noopener"><span class="drawer__ico" aria-hidden="true">🛠</span><span class="drawer__label">QA·버그 제보 (노션)</span></a>
+      <button class="drawer__item" onclick="openPage('privacy')"><span class="drawer__ico" aria-hidden="true">🔒</span><span class="drawer__label">개인정보처리방침</span></button>
       <!-- 2026-09-07 v2.18.0 공개 준비: 이용약관 페이지 · 통계(GA) 동의와 캐시 비우기 (components/consent.js) -->
-      <button class="drawer__item" onclick="openPage('terms')">📜 이용약관</button>
-      <button class="drawer__item" id="menu-consent">🍪 통계·저장소 설정</button>
+      <button class="drawer__item" onclick="openPage('terms')"><span class="drawer__ico" aria-hidden="true">📜</span><span class="drawer__label">이용약관</span></button>
+      <button class="drawer__item" id="menu-consent"><span class="drawer__ico" aria-hidden="true">🍪</span><span class="drawer__label">통계·저장소 설정</span></button>
       <p class="drawer__meta">PvPoke · PokeMiners 데이터<br>기준일 __TIMESTAMP__ · 매일 00시 자동 갱신</p>
     </div>
   </aside>

@@ -73,9 +73,18 @@ searchDialog.addEventListener('click', (event) => { if (event.target === searchD
 document.getElementById('psearch').setAttribute('aria-label', '포켓몬 이름 또는 타입');
 const drawer = document.querySelector('.drawer__panel');
 drawer.querySelector('#schedule-body').closest('details').hidden = true;
+// 2026-09-09 v2.40.0 항목 한 줄 = [아이콘] 이름 [›]. 아이콘은 라우터 표(ROUTES)가 들고 있고 서비스 홈
+// 타일과 같은 그림이다 — 같은 화면을 두 곳에서 다르게 그리면 다른 데로 가는 줄 안다.
+// 이모지를 라벨 글자에 섞지 않고 span 으로 뗀 이유: 번역 사전(i18n-en.js)이 텍스트 노드 단위로 찾아서
+// '내 포켓몬' 같은 라벨은 그대로 맞아떨어져야 한다 (이모지가 섞이면 키가 달라진다)
+function navItem(href, title, icon) {
+  return el('a', { href, class: 'drawer__item' },
+    el('span', { class: 'drawer__ico', 'aria-hidden': 'true' }, icon),
+    el('span', { class: 'drawer__label' }, title));
+}
 const destinations = el('nav', { class: 'nav-menu', 'aria-label': '서비스 이동' },
-  el('a', { href: '#', class: 'drawer__item' }, '서비스 홈'),
-  ...APP_DESTINATIONS.map(([href, title]) => el('a', { href, class: 'drawer__item' }, title)));
+  navItem('#', '서비스 홈', '🏠'),
+  ...APP_DESTINATIONS.map(([href, title, icon]) => navItem(href, title, icon)));
 destinations.addEventListener('click', (event) => {
   const link = event.target.closest('a');
   if (!link) return;
@@ -96,9 +105,14 @@ document.querySelector('.layout').before(pageHead);
 // 2026-09-09 v2.38.0 태블릿 1100px~ · PC 1440px~ 두 단계(styles/components/app-shell.css) —
 // 사이드바 유무·카드/줄 갈래는 두 단계가 같으므로(크기만 다르다) 이 임계값 하나로 충분하다
 const wideScreen = window.matchMedia('(min-width: 1100px)');
+// 2026-09-09 v2.40.0 ☰ 메뉴는 세 덩이로 읽힌다 — 👤 마이페이지(계정) · 서비스(화면 이동) · 정보(그 밖).
+// 제목은 좁은 화면에서만 단다: PC 사이드바는 이동 목록만 있는 자리라 "서비스"라고 또 적을 이유가 없다.
+// 계정 카드 다음에 넣는 이유 — 메뉴를 열면 "내가 누구인지" 가 먼저고 그 다음이 갈 곳이다
+const navSec = el('h2', { class: 'drawer__sec' }, '서비스');
+const extraSec = el('h2', { class: 'drawer__sec' }, '정보');
 function placeDestinations() {
-  if (wideScreen.matches) sideNav.append(destinations);
-  else drawer.querySelector('.drawer__head').after(destinations);
+  if (wideScreen.matches) { navSec.remove(); sideNav.append(destinations); }
+  else { document.getElementById('account').after(navSec); navSec.after(destinations); }
 }
 // 2026-09-09 v2.37.0 PC 에서는 ☰ 메뉴에 마이페이지·기준 안내·트레이너 코드만 남긴다 — 나머지(패치노트·
 // QA 제보·약관·통계 설정 등, index.html #drawer-extra)는 왼쪽 사이드바로, 알 부화(마지막 이동 항목) 아래에
@@ -106,16 +120,32 @@ function placeDestinations() {
 // 좁은 화면으로 되돌아가면 원래 있던 자리(트레이너 코드 바로 뒤)로 되돌린다
 const drawerExtra = document.getElementById('drawer-extra');
 const trainerAcc = document.getElementById('trainer-acc');
+const scheduleAcc = document.getElementById('schedule-acc');
+const noteAcc = document.getElementById('note-acc');
 const sideExtra = el('div', { class: 'app-nav__extra' });
+// 2026-09-09 v2.40.0 정보 덩이는 카드 한 장으로 묶는다 — 아코디언 둘(기준 안내·트레이너 코드)과 바깥
+// 링크들이 원래 따로 놀던 형제라, 묶지 않으면 항목마다 테두리가 따로 생겨 "목록"이 아니라 "버튼 무더기"로
+// 읽힌다. 버전 문구(drawer__meta)는 카드 밖 맨 아래에 남는다
+const infoGroup = el('div', { class: 'drawer__group' });
+const versionMeta = el('p', { class: 'drawer__meta' }, 'POGO PLAN · ' + version);
 function placeDrawerExtra() {
-  if (wideScreen.matches) { sideExtra.append(drawerExtra); sideNav.append(sideExtra); }
-  else trainerAcc.after(drawerExtra);
+  if (wideScreen.matches) {
+    extraSec.remove();
+    infoGroup.remove();
+    sideExtra.append(drawerExtra);
+    sideNav.append(sideExtra);
+  } else {
+    // 버전 문구 앞에 끼워 넣는다 — drawer.append 로 붙이면 넓은 화면에서 돌아왔을 때 버전 뒤로 밀린다
+    versionMeta.before(extraSec, infoGroup);
+    // 순서를 바꾸지 않는다 — 원래 있던 차례 그대로 카드 안으로 옮겨 담기만 한다
+    infoGroup.append(scheduleAcc, noteAcc, trainerAcc, drawerExtra);
+  }
 }
 // 2026-09-08 v2.28.0 폭이 바뀌면 화면도 다시 그린다 — 목록이 줄이 될지 카드가 될지가 폭에 달렸다(wideCards)
 wideScreen.addEventListener('change', () => { placeDestinations(); placeDrawerExtra(); syncAppShell(); if (typeof render === 'function') render(); });
+drawer.append(versionMeta);   // 자리를 먼저 잡아 둔다 — placeDrawerExtra 가 이 앞에 카드를 끼운다
 placeDestinations();
 placeDrawerExtra();
-drawer.append(el('p', { class: 'drawer__meta' }, 'POGO PLAN · ' + version));
 const skip = el('a', { class: 'skip-link', href: '#content', onclick: (event) => {
   event.preventDefault();
   const main = document.getElementById('page').hidden ? document.getElementById('content') : document.getElementById('page');

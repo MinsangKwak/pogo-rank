@@ -133,6 +133,11 @@ const I18N_EN = {
   '탱커': 'Tank',
   '순위권 밖': 'Unranked',
   '활용 #곳': 'Used in #',
+  // 2026-09-09 v2.40.0 보기 방식은 버튼 하나에서 두 칸 세그먼트 컨트롤로 바뀌었다 — 아이콘은 span 으로
+  // 떼어 냈으므로 라벨만 남은 키를 쓴다 (아래 옛 키들은 더 안 쓰지만 지우지 않는다: 캐시된 화면이 남아 있다)
+  '리스트': 'List',
+  '그리드': 'Grid',
+  '보기 방식': 'View',
   '☰ 리스트': '☰ List',
   '⊞ 그리드': '⊞ Grid',
   '보기 방식: 그리드 · 누르면 리스트': 'View: grid · tap for list',
@@ -351,6 +356,15 @@ const I18N_EN = {
   '📜 이용약관': '📜 Terms of use',
   '🍪 통계·저장소 설정': '🍪 Analytics and storage',
   '🛠 QA·버그 제보 (노션)': '🛠 QA and bug reports (Notion)',
+  // 2026-09-09 v2.40.0 ☰ 메뉴 항목은 이모지를 아이콘 칸(span)으로 뗐다 — 라벨만 남은 키가 따로 필요하다.
+  // 이모지가 붙은 위 키들은 화면 제목(PAGES) 쪽에서 아직 그대로 쓰인다
+  '기준 안내 (지금 보는 화면)': 'How this screen is calculated',
+  '트레이너 코드': 'Trainer codes',
+  '패치노트': 'Release notes',
+  '기술 변경': 'Move changes',
+  'QA·버그 제보 (노션)': 'QA and bug reports (Notion)',
+  '서비스': 'Screens',
+  '정보': 'About',
   '개인정보처리방침': 'Privacy policy',
   '이용약관': 'Terms of use',
   '저장소·통계 안내': 'Storage and analytics',

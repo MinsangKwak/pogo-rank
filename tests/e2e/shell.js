@@ -125,11 +125,14 @@ const ok = (n, c, x = '') => { console.log((c ? 'PASS' : 'FAIL') + ' ' + n + ' '
     const scheduleInDrawer = await page.locator('#drawer-backdrop details:has(#schedule-body)').isVisible();
     ok(`${label} 드로어에 일정표 중복 없음`, !scheduleInDrawer);
     // 좁은 화면에서는 이동 목록 자체가 드로어 안에 있으므로(설계) PC 에서만 본다
+    // 2026-09-09 v2.40.0 아이콘이 라벨 글자에서 span 으로 떨어져 나왔다 — 이름만 꺼내 비교한다
+    // (예전처럼 textContent 를 통째로 쓰면 "🏠서비스 홈" 과 "서비스 홈" 이 서로 달라 중복을 놓친다)
     const dup = await page.evaluate(() => {
-      const nav = new Set([...document.querySelectorAll('.nav-menu a')].map((a) => a.textContent.trim()));
+      const nameOf = (node) => (node.querySelector('.drawer__label') || node).textContent.replace(/^[^가-힣A-Za-z]+/, '').trim();
+      const nav = new Set([...document.querySelectorAll('.nav-menu a')].map(nameOf));
       return [...document.querySelectorAll('#drawer-backdrop .drawer__item')]
         .filter((n) => !n.closest('.nav-menu'))
-        .map((n) => n.textContent.replace(/^[^가-힣A-Za-z]+/, '').trim())
+        .map(nameOf)
         .filter((t) => nav.has(t));
     });
     if (wide) ok('PC 드로어와 사이드바에 같은 항목 없음', dup.length === 0, dup.join(' '));
@@ -146,14 +149,29 @@ const ok = (n, c, x = '') => { console.log((c ? 'PASS' : 'FAIL') + ' ' + n + ' '
     } else {
       ok('모바일 드로어에 패치노트 그대로', await page.locator('#drawer-backdrop #menu-release').count() === 1);
       ok('모바일은 사이드바 보조 구역 없음(사이드바 자체가 없다)', (await page.locator('.app-nav__extra').count()) === 0);
+      // 2026-09-09 v2.40.0 좁은 화면 ☰ 메뉴는 세 덩이 — 마이페이지(계정) · 서비스(이동) · 정보(그 밖)
+      const secs = await page.locator('#drawer-backdrop .drawer__sec').allTextContents();
+      ok('모바일 메뉴에 서비스·정보 구역 제목', secs.some((t) => t.includes('서비스')) && secs.some((t) => t.includes('정보')), secs.join(' / '));
+      ok('정보 항목이 카드 한 장으로 묶임', (await page.locator('#drawer-backdrop .drawer__group #menu-release').count()) === 1);
+      ok('계정 카드가 이동 목록보다 위', await page.evaluate(() => {
+        const account = document.getElementById('account');
+        const nav = document.querySelector('#drawer-backdrop .nav-menu');
+        return !!(account && nav) && (account.compareDocumentPosition(nav) & Node.DOCUMENT_POSITION_FOLLOWING) !== 0;
+      }));
     }
+    // 항목 한 줄 = 아이콘 + 이름 (아이콘은 서비스 홈 타일과 같은 그림 — router.js ROUTES 한 곳에서 온다)
+    ok(`${label} 메뉴 항목에 아이콘 칸`, await page.evaluate(() => {
+      const rows = [...document.querySelectorAll('.nav-menu .drawer__item')];
+      return rows.length > 0 && rows.every((n) => n.querySelector('.drawer__ico')?.textContent.trim() && n.querySelector('.drawer__label'));
+    }));
     await page.keyboard.press('Escape');
     await page.waitForTimeout(400);
 
     // ── 그리드 보기는 카드 (v2.29.2 라벨: 열 개수가 아니라 보기 방식)
     await go('#/dex');
-    // 넓은 화면은 그리드가 기본, 좁은 화면은 리스트가 기본이다 — 라벨을 보고 필요할 때만 누른다
-    const layoutBtn = page.locator('.dex__layout');
+    // 넓은 화면은 그리드가 기본, 좁은 화면은 리스트가 기본이다 — 그리드가 아니면 그리드 칸을 누른다
+    // 2026-09-09 v2.40.0 .dex__layout 은 이제 두 칸짜리 세그먼트 컨트롤(묶음)이다 — 칸을 눌러야 한다
+    const layoutBtn = page.locator('.dex__layout button').last();
     if (!(await page.locator('.dex__list.is-grid').count())) await layoutBtn.click().catch(() => {});
     await page.waitForTimeout(500);
     const card = await page.locator('.dex__list.is-grid .dex__row').first().evaluate((n) => {
