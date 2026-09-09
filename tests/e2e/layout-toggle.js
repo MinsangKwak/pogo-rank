@@ -73,6 +73,76 @@ const ok = (n, c, x = '') => { console.log((c ? 'PASS' : 'FAIL') + ' ' + n + ' '
   await page.waitForTimeout(300);
   ok('토글 하나로 모든 묶음이 같이 리스트로', (await page.locator('#page .dex__list').evaluateAll((nodes) => nodes.every((n) => !n.classList.contains('is-grid')))));
 
+  // ── v2.39.0 auto-fill 그리드: 디바이스 폭에 따라 열 개수가 저절로 바뀐다 (미디어 쿼리 고정값 아님)
+  // 뷰포트마다 새 컨텍스트로 열어서 확인
+  for (const [w, hash, sel, label, expect] of [
+    [1280, '#/raids', '#page .dex__list', '태블릿 레이드 보스', 3],
+    [1440, '#/raids', '#page .dex__list', 'PC 레이드 보스', 4],
+    [1280, '#/dmax', '#content .row-list', '태블릿 D-MAX', 3],
+    [1440, '#/dmax', '#content .row-list', 'PC D-MAX', 4],
+    [1280, '#/pve', '#content .row-list', '태블릿 레이드·PvE', 3],
+    [1440, '#/pve', '#content .row-list', 'PC 레이드·PvE', 4],
+  ]) {
+    const gctx = await browser.newContext({ viewport: { width: w, height: 900 } });
+    await gctx.route(/^https?:\/\/(?!localhost)/, (r) => r.abort());
+    const gpage = await gctx.newPage();
+    gpage.on('pageerror', (e) => errs.push(`${label}:` + e));
+    await gpage.goto(BASE + hash, { waitUntil: 'domcontentloaded' });
+    await gpage.waitForSelector('#splash', { state: 'detached', timeout: 15000 }).catch(() => {});
+    await gpage.locator('#consent .consent__deny').click().catch(() => {});
+    await gpage.waitForTimeout(500);
+    const cols = await gpage.evaluate((s) => {
+      const node = document.querySelector(s);
+      return node ? getComputedStyle(node).gridTemplateColumns.split(' ').length : null;
+    }, sel);
+    ok(`${label} (w=${w}) ${expect}열`, cols === expect, String(cols));
+    await gctx.close();
+  }
+
+  // 상세 패널이 열려 본문이 좁아지면 자동으로 열이 줄어드는가 (레이드 보스 기준)
+  for (const [w, expect] of [[1280, 1], [1440, 2]]) {
+    const sctx = await browser.newContext({ viewport: { width: w, height: 900 } });
+    await sctx.route(/^https?:\/\/(?!localhost)/, (r) => r.abort());
+    const spage = await sctx.newPage();
+    spage.on('pageerror', (e) => errs.push(`squeeze ${w}:` + e));
+    await spage.goto(BASE + '#/raids', { waitUntil: 'domcontentloaded' });
+    await spage.waitForSelector('#splash', { state: 'detached', timeout: 15000 }).catch(() => {});
+    await spage.locator('#consent .consent__deny').click().catch(() => {});
+    await spage.waitForTimeout(500);
+    await spage.locator('#page .dex__row').first().click();
+    await spage.waitForTimeout(400);
+    const cols = await spage.evaluate(() => {
+      const node = document.querySelector('#page .dex__list');
+      return node ? getComputedStyle(node).gridTemplateColumns.split(' ').length : null;
+    });
+    ok(`상세 패널 열림(w=${w}) 레이드 보스 ${expect}열로 줄어듦`, cols === expect, String(cols));
+    await sctx.close();
+  }
+
+  // ── v2.39.0 그리드·리스트 토글 버튼이 안내 문구와 같은 줄, 오른쪽 끝에 있는가 (가독성 문제로 재배치)
+  {
+    const pctx = await browser.newContext({ viewport: { width: 1440, height: 900 } });
+    await pctx.route(/^https?:\/\/(?!localhost)/, (r) => r.abort());
+    const ppage = await pctx.newPage();
+    ppage.on('pageerror', (e) => errs.push('intro-pos:' + e));
+    await ppage.goto(BASE + '#/raids', { waitUntil: 'domcontentloaded' });
+    await ppage.waitForSelector('#splash', { state: 'detached', timeout: 15000 }).catch(() => {});
+    await ppage.locator('#consent .consent__deny').click().catch(() => {});
+    await ppage.waitForTimeout(500);
+    const rects = await ppage.evaluate(() => {
+      const intro = document.querySelector('#page .gameday__intro');
+      const note = intro?.querySelector('.note');
+      const btn = intro?.querySelector('.uchip');
+      return {
+        sameRow: note && btn ? Math.abs(note.getBoundingClientRect().top - btn.getBoundingClientRect().top) < 4 : false,
+        btnIsRightmost: note && btn ? btn.getBoundingClientRect().right > note.getBoundingClientRect().right : false,
+      };
+    });
+    ok('레이드 보스: 토글 버튼이 안내문과 같은 줄', rects.sameRow);
+    ok('레이드 보스: 토글 버튼이 오른쪽 끝', rects.btnIsRightmost);
+    await pctx.close();
+  }
+
   ok('페이지 오류 없음', errs.length === 0, errs.join(' | ').slice(0, 200));
   await browser.close();
   console.log(`${pass}/${pass + fail} passed`);
