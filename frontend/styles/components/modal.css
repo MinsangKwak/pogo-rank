@@ -6,9 +6,14 @@ dialog.modal { width: 100%; max-width: none; height: 100%; max-height: none; mar
 dialog.modal:not([open]) { display: none; }
 dialog.modal::backdrop { background: transparent; }
 .modal__box { position: relative; background: var(--bg); border: 1px solid var(--line); border-radius: 16px; width: 100%; max-width: 440px; max-height: 85vh; overflow-y: auto; padding: 20px; }
-/* 2026-09-02 X버튼 sticky 고정: 스크롤 내려도 항상 우상단에 보임 */
-.modal__bar { position: sticky; top: -12px; z-index: 5; display: flex; justify-content: flex-end; height: 0; }
-.modal__close { width: 32px; height: 32px; border-radius: 8px; color: var(--muted); font-size: 15px; background: var(--surface); border: 1px solid var(--line); transform: translate(8px, -8px); }
+/* 2026-09-02 X버튼 sticky 고정: 스크롤 내려도 항상 우상단에 보임
+   2026-09-09 v2.33.0 이전엔 height:0 에 transform 으로 띄워 자리 위로 겹쳐 왔다 —
+   v2.32.0 에서 detail__top-actions(공유·저장)가 같은 우상단에 생기며 X와 맞물려 눌리지 않는 문제가 났다.
+   바가 실제 높이를 가져 뒤 내용을 자연스레 밀어내게 하면 겹칠 자리 자체가 없다.
+   background 는 스크롤로 sticky 가 붙었을 때 아래 내용이 비쳐 보이지 않게 막는다 */
+.modal__bar { position: sticky; top: 0; z-index: 5; display: flex; justify-content: flex-end;
+  margin: -20px -20px 18px; padding: 12px 12px; background: var(--bg); }
+.modal__close { width: 32px; height: 32px; border-radius: 8px; color: var(--muted); font-size: 15px; background: var(--surface); border: 1px solid var(--line); flex: none; }
 .modal__close:hover { background: var(--surface); color: var(--fg); }
 @media (max-width: 640px) {
   .modal { padding: 0; align-items: flex-end; }
