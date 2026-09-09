@@ -34,11 +34,15 @@ function gamedayFoot(lead) {
 }
 
 // 한 줄: 그림 + 이름 + 조건 뱃지 + ★. 누르면 상세가 열린다
+// 2026-09-08 v2.31.0 이름과 조건 문구를 한 줄에 나란히 뒀더니 좁은 화면에서 "레지락" 같은
+// 짧은 이름도 중간에서 줄바꿈됐다 — fav__main(favs.js)과 같은 모양으로 이름 아래에 문구를
+// 내려 세로로 쌓는다 (pages.css .gameday__main)
 function gamedayRow(entry, notes) {
-  return el('button', { class: 'dex__row', onclick: () => openDetailByDex(entry.sprite, true) },
+  return el('button', { class: 'dex__row gameday__row', onclick: () => openDetailByDex(entry.sprite, true) },
     sprite(entry.sprite),
-    el('b', {}, typeof nameNode === 'function' ? nameNode(entry.name) : entry.name),
-    el('span', { class: 'meta gameday__note' }, notes.join(' · ')),
+    el('div', { class: 'gameday__main' },
+      el('b', {}, typeof nameNode === 'function' ? nameNode(entry.name) : entry.name),
+      notes.length ? el('span', { class: 'meta gameday__note' }, notes.join(' · ')) : ''),
     authEnabled() ? favBtn(entry.sprite, 'dex__fav') : '');
 }
 
