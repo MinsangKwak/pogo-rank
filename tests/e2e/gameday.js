@@ -59,7 +59,8 @@ const ok = (n, c, x = '') => { console.log((c ? 'PASS' : 'FAIL') + ' ' + n + ' '
   // ── 드로어 이동 항목
   await page.click('#menu-toggle');
   await page.waitForTimeout(400);
-  const nav = await page.locator('.nav-menu a').allTextContents();
+  // 2026-09-09 v2.40.0 항목이 [아이콘][이름] 두 조각이라 이름 칸(.drawer__label)만 본다
+  const nav = await page.locator('.nav-menu a .drawer__label').allTextContents();
   ok('드로어에 두 항목', nav.includes('레이드 보스') && nav.includes('알 부화'), String(nav.length));
   await page.keyboard.press('Escape');
   await page.waitForTimeout(300);

@@ -27,7 +27,7 @@
 //   hintNote(...parts)            안내·빈 상태 문구
 //   metaText(...parts)            보조 문구 한 조각
 //   layoutInitial(storageKey)     그리드/리스트 초기값(저장된 선택 → 없으면 wideCards() 기본값)
-//   layoutToggle(storageKey, grid, onToggle)   그리드 ↔ 리스트 전환 버튼 (2026-09-09 v2.37.0)
+//   layoutToggle(storageKey, grid, onToggle)   그리드 ↔ 리스트 보기 세그먼트 컨트롤 (2026-09-09 v2.40.0)
 //
 // 의존하는 전역
 //   el (dom.js) · wideCards (dom.js) · translateTree (i18n.js, 선택)
@@ -87,23 +87,29 @@ function layoutInitial(storageKey) {
   } catch { /* 저장 불가 환경(사생활 모드 등) */ }
   return grid;
 }
-// 버튼은 **지금 어떤 보기인지**를 말한다 — 열 개수는 화면 폭에 따라 2·3·4열로 달라져 뜻이 없다(v2.29.2)
+// 2026-09-09 v2.40.0 누를 때마다 뜻이 뒤집히는 버튼 하나 → 두 보기를 나란히 놓고 고르는 세그먼트 컨트롤.
+// 버튼 하나였을 때는 라벨이 "지금 보기"인지 "누르면 될 보기"인지가 글자만으로 안 갈렸고(v2.29.2 에서
+// 한 번 고쳐 쓴 문제), 좁은 화면에서 안내문 아래 홀로 떠 있어 눈에도 안 띄었다. 둘 다 보이면 고를 것이
+// 무엇이고 지금 어느 쪽인지가 한눈에 읽힌다.
 //   storageKey   localStorage 키
 //   grid         지금 그리드인지 (초기값)
-//   onToggle(grid)  누를 때마다 불린다 — 호출부가 목록 class(is-grid)를 이 값으로 맞춘다
-//   extraClass   도감의 .dex__layout 처럼 화면별로 더 붙일 클래스 (회귀 검사가 이 클래스로 버튼을 찾는다)
+//   onToggle(grid)  보기가 바뀔 때 불린다 — 호출부가 목록 class(is-grid)를 이 값으로 맞춘다
+//   extraClass   도감의 .dex__layout 처럼 화면별로 더 붙일 클래스 (회귀 검사가 이 클래스로 찾는다)
 function layoutToggle(storageKey, grid, onToggle, extraClass = '') {
-  const label = () => (grid ? '⊞ 그리드' : '☰ 리스트');
-  const hint = () => (grid ? '보기 방식: 그리드 · 누르면 리스트' : '보기 방식: 리스트 · 누르면 그리드');
-  const $btn = el('button', { class: `uchip${extraClass ? ' ' + extraClass : ''}`, 'aria-label': hint(), onclick: () => {
-    grid = !grid;
-    $btn.textContent = label();
-    $btn.setAttribute('aria-label', hint());
-    // 라벨은 원문(한국어)으로 다시 적고 번역은 엔진에 맡긴다 — 캐시해 둔 옛 원문(__ko)을 지워야 새 문구가 번역된다
-    delete $btn.__ko;
-    if (typeof translateTree === 'function') translateTree($btn);
+  const $wrap = el('div', { class: `seg-view${extraClass ? ' ' + extraClass : ''}`, role: 'group', 'aria-label': '보기 방식' });
+  // [이 칸이 그리드인가, 아이콘, 라벨] — 순서가 곧 화면 순서다
+  const views = [[false, '☰', '리스트'], [true, '⊞', '그리드']];
+  const buttons = views.map(([isGrid, icon, label]) => el('button', {
+    'aria-pressed': String(grid === isGrid),
+    onclick: () => pick(isGrid),
+  }, el('span', { class: 'seg-view__ico', 'aria-hidden': 'true' }, icon), label));
+  function pick(next) {
+    if (next === grid) return;   // 이미 그 보기다 — 저장도 다시 그리기도 하지 않는다
+    grid = next;
+    buttons.forEach(($button, index) => $button.setAttribute('aria-pressed', String(views[index][0] === grid)));
     try { localStorage.setItem(storageKey, grid ? '2' : '1'); } catch { /* 저장 불가 환경 */ }
     onToggle(grid);
-  } }, label());
-  return $btn;
+  }
+  $wrap.append(...buttons);
+  return $wrap;
 }

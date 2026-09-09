@@ -16,19 +16,20 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 function renderServiceHome() {
-  // [번호, 제목, 한 줄 설명, 주소, 아이콘]
+  // [번호, 제목, 한 줄 설명, 라우트 id] — 주소와 아이콘은 라우터 표(router.js ROUTES)에서 가져온다.
+  // 2026-09-09 v2.40.0 아이콘을 여기 적어 두지 않는다: ☰ 메뉴도 같은 그림을 쓰게 되면서 표가 두 벌이 됐다
   const features = [
-    ['01', '내 포켓몬', '내 개체를 기록하고 비교해요', routeHash('planner-collection'), '🎒'],
-    ['02', '포켓몬 도감', '능력치부터 기술·진화까지', routeHash('dex'), '📕'],
-    ['03', '타입 & 상성', '약점과 추천 타입을 찾아요', routeHash('types'), '🧭'],
-    ['04', 'D-MAX', '맥스 배틀의 딜러와 탱커', routeHash('dmax'), '✨'],
-    ['05', '레이드 · PvE', '추천 딜러와 솔플 계산기', routeHash('pve'), '⚔️'],
-    ['06', '배틀 · PvP', '리그별 순위와 덱 구성', routeHash('pvp'), '🃏'],
-    ['07', '육성 플래너', '내 포켓몬의 육성 현황', routeHash('planner'), '🌱'],
-    ['08', '이벤트 일정', '다가오는 레이드와 이벤트', routeHash('schedule'), '📅'],
-    ['09', '레이드 보스', '지금 도는 보스와 약점', routeHash('raids'), '⚔️'],
-    ['10', '알 부화', '거리별로 뭐가 나오나', routeHash('eggs'), '🥚'],
-  ];
+    ['01', '내 포켓몬', '내 개체를 기록하고 비교해요', 'planner-collection'],
+    ['02', '포켓몬 도감', '능력치부터 기술·진화까지', 'dex'],
+    ['03', '타입 & 상성', '약점과 추천 타입을 찾아요', 'types'],
+    ['04', 'D-MAX', '맥스 배틀의 딜러와 탱커', 'dmax'],
+    ['05', '레이드 · PvE', '추천 딜러와 솔플 계산기', 'pve'],
+    ['06', '배틀 · PvP', '리그별 순위와 덱 구성', 'pvp'],
+    ['07', '육성 플래너', '내 포켓몬의 육성 현황', 'planner'],
+    ['08', '이벤트 일정', '다가오는 레이드와 이벤트', 'schedule'],
+    ['09', '레이드 보스', '지금 도는 보스와 약점', 'raids'],
+    ['10', '알 부화', '거리별로 뭐가 나오나', 'eggs'],
+  ].map(([number, title, desc, id]) => [number, title, desc, routeHash(id), routeIcon(id)]);
   const grid = el('div', { class: 'home__grid' }, ...features.map(([number, title, desc, route, icon]) =>
     el('a', { class: 'home__tile', href: route },
       el('div', { class: 'home__tile-top' },
