@@ -173,8 +173,10 @@ function renderDexPage() {
   const favChip = AUTH.status === 'ok'
     ? el('button', { class: 'uchip fav-chip', onclick: () => openPage('favs') }, `★ 즐겨찾기 ${AUTH.favs.size}`)
     : '';
-  // 칩 줄: [레이아웃 토글] [즐겨찾기] [1세대] … [9세대]
-  const genChips = el('div', { class: 'tchips' }, $layout, favChip, ...DEX_GENS.map(([genStart, genEnd], genIndex) =>
+  // 칩 줄: [즐겨찾기] [1세대] … [9세대]
+  // 2026-09-09 v2.40.0 보기 방식(리스트/그리드)은 이 줄에서 뺐다 — 세대·즐겨찾기는 "무엇을 보여줄지"(거르기)고
+  // 보기 방식은 "그걸 어떻게 보여줄지"라 성격이 다르다. 둘을 한 줄에 섞으니 토글이 칩 하나로 묻혔다
+  const genChips = el('div', { class: 'tchips' }, favChip, ...DEX_GENS.map(([genStart, genEnd], genIndex) =>
     el('button', { class: 'uchip', onclick: () => {
       $input.value = '';
       list = all.filter((entry) => entry.dex >= genStart && entry.dex <= genEnd);
@@ -187,7 +189,7 @@ function renderDexPage() {
         AUTH.status === 'anon' ? uchip('Google로 로그인', signIn) : '')
     : '';
   draw();
-  return el('div', { class: 'page__body' }, loginHint, $input, genChips, $list, $more,
+  return el('div', { class: 'page__body' }, loginHint, $input, genChips, $layout, $list, $more,
     footNote('미구현 = 포켓몬 GO에 아직 출시되지 않은 종 (PvPoke 출시 목록 기준, 데이터는 게임마스터 선등록분). 메가·섀도우·리전 폼은 🔍 전역 검색으로 찾을 수 있어요.'));
 }
 

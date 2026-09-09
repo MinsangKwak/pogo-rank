@@ -180,10 +180,12 @@
    태블릿·PC(1100px~)에서만 한 줄로 갈라 왼쪽은 설명, 오른쪽은 "이 화면을 어떻게 볼지" 로 나눈다.
    토글 버튼이 안내문 아래 혼자 떠 있어 가독성이 떨어지던 문제 수정 */
 .gameday__intro { margin-bottom: 4px; }
+/* 2026-09-09 v2.40.0 좁은 화면은 안내문 아래에 보기 방식 줄이 목록 폭만큼 깔린다 (seg.css .seg-view) */
+.gameday__intro .note { margin-bottom: 10px; }
 @media (min-width: 1100px) {
   .gameday__intro { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
   .gameday__intro .note { flex: 1 1 auto; margin: 0; }
-  .gameday__intro .uchip { flex: none; }
+  .gameday__intro .seg-view { flex: none; }
 }
 .gameday__sec { margin-top: 22px; }
 .gameday__sec:first-of-type { margin-top: 8px; }
