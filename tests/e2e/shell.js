@@ -19,7 +19,7 @@ const ok = (n, c, x = '') => { console.log((c ? 'PASS' : 'FAIL') + ' ' + n + ' '
     const page = await ctx.newPage();
     const errs = [];
     page.on('pageerror', (e) => errs.push(String(e)));
-    const wide = w >= 1024;
+    const wide = w >= 1100;  // 2026-09-09 v2.38.0 태블릿·PC 공통 임계값(1100px) — PC 는 1440px~ 이 더 넓을 뿐 갈래는 같다
 
     const go = async (hash = '') => {
       await page.goto(BASE + hash, { waitUntil: 'domcontentloaded' });

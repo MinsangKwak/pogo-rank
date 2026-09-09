@@ -84,8 +84,9 @@ document.addEventListener('keydown', (event) => { if (event.key === 'Escape' && 
 // wideScreen(components/app-shell.js) 을 재사용하지 않고 matchMedia 를 직접 부른다 — 딥링크(#/mon/id)
 // 로 처음 들어오면 pages.js 가 app-shell.js 보다 먼저 이 함수를 부르는데, wideScreen 은 const 라
 // 선언되기 전에 참조하면(TDZ) typeof 로도 못 피하고 ReferenceError 가 난다. matchMedia 는 어디서 불러도 안전하다
+// 2026-09-09 v2.38.0 태블릿 1100px~ 부터 패널 — app-shell.css 의 같은 임계값(태블릿·PC 두 단계 공통)
 function useDetailPanel() {
-  return window.matchMedia('(min-width: 1024px)').matches;
+  return window.matchMedia('(min-width: 1100px)').matches;
 }
 function openDetailPanel(content) {
   const panel = document.getElementById('detail-panel');

@@ -30,10 +30,12 @@ function el(tag, attrs = {}, ...children) {
   return node;
 }
 
-// 넓은 화면인지 (PC 카드 기준선). 목록을 줄로 둘지 카드로 둘지 가르는 한 곳이다.
+// 넓은 화면인지 (태블릿·PC 카드 기준선). 목록을 줄로 둘지 카드로 둘지 가르는 한 곳이다.
 // 도감(#/dex) · 즐겨찾기(#/favs) · 레이드 보스(#/raids) · 알 부화(#/eggs) 가 모두 이 함수를 본다 —
-// 기준선을 바꿀 일이 생기면 여기 한 줄만 고치면 된다. app-shell.css 의 PC 분기와 같은 1024px.
+// 기준선을 바꿀 일이 생기면 여기 한 줄만 고치면 된다. app-shell.css 의 태블릿 분기와 같은 1100px
+// (2026-09-09 v2.38.0 태블릿 1100px~ · PC 1440px~ 두 단계로 나뉘었지만, 줄이냐 카드냐는 둘 다 같다 —
+// 카드 자체의 크기·간격만 폭에 따라 달라진다).
 // 랭킹 목록(.row-list)은 CSS 미디어 쿼리만으로 카드가 되므로 이 함수를 쓰지 않는다
 function wideCards() {
-  return window.matchMedia('(min-width: 1024px)').matches;
+  return window.matchMedia('(min-width: 1100px)').matches;
 }

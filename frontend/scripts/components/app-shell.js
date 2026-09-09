@@ -93,7 +93,9 @@ document.querySelector('.layout').before(sideNav);
 // .layout 과 #page 중 하나만 보이므로 헤더도 하나만 두고 글자만 바꾼다.
 const pageHead = el('header', { class: 'page-head', id: 'page-head', hidden: true }, el('h2', {}, ''));
 document.querySelector('.layout').before(pageHead);
-const wideScreen = window.matchMedia('(min-width: 1024px)');
+// 2026-09-09 v2.38.0 태블릿 1100px~ · PC 1440px~ 두 단계(styles/components/app-shell.css) —
+// 사이드바 유무·카드/줄 갈래는 두 단계가 같으므로(크기만 다르다) 이 임계값 하나로 충분하다
+const wideScreen = window.matchMedia('(min-width: 1100px)');
 function placeDestinations() {
   if (wideScreen.matches) sideNav.append(destinations);
   else drawer.querySelector('.drawer__head').after(destinations);
