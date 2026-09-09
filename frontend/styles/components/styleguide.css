@@ -1,0 +1,41 @@
+/* 2026-09-09 v2.41.0 UI 목록(#/styleguide) 전용 — dev 미리보기 빌드에만 실린다 (backend/build.py)
+   여기 있는 규칙은 "늘어놓는 판"만 만든다. 조각 자체의 모양은 각자의 파일이 그대로 갖는다 —
+   이 파일이 조각을 예쁘게 고치기 시작하면 이 화면과 실제 화면이 어긋난다 */
+.sg__sec { margin: 26px 0 0; }
+.sg__note { margin: 2px 0 12px; font-size: 12.5px; line-height: 1.6; color: var(--muted); }
+.sg__sub { margin: 16px 0 8px; font-size: 12.5px; font-weight: 600; color: var(--muted); }
+
+/* 한 칸: 이름표(클래스) 위, 실물 아래 */
+.sg__stack { display: flex; flex-direction: column; gap: 14px; }
+.sg__item { display: flex; flex-direction: column; gap: 6px; }
+.sg__name { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 11px; color: var(--muted); letter-spacing: -.01em; }
+.sg__demo { padding: 12px; border: 1px dashed var(--line); border-radius: 12px; background: var(--bg); }
+.sg__row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+
+/* 색 견본 */
+.sg__grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 10px; }
+.sg__swatch { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); }
+.sg__chip-color { flex: none; width: 30px; height: 30px; border-radius: 8px; border: 1px solid var(--line); }
+.sg__val { display: block; font-size: 11px; color: var(--muted); }
+.sg__types { display: flex; flex-wrap: wrap; gap: 6px; }
+
+/* 메뉴 조각은 드로어 안에서만 제 모양이 난다 — 그 폭을 흉내 낸 판을 깔아 준다
+   (.drawer__panel 을 그대로 쓰면 위치 고정·애니메이션까지 딸려 온다) */
+.sg__drawer { max-width: 320px; display: flex; flex-direction: column; gap: 10px; padding: 12px; border: 1px solid var(--line); border-radius: 12px; background: var(--bg); }
+.sg__drawer .drawer__sec { margin: 0 0 2px; }
+.sg__drawer .nav-menu { gap: 0; padding: 0; margin: 0; border: 1px solid var(--line); border-radius: 14px; background: var(--surface); overflow: hidden; }
+.sg__drawer .nav-menu .drawer__item,
+.sg__drawer .drawer__group .drawer__item { min-height: var(--tap); box-sizing: border-box; gap: 10px; border: 0; border-bottom: 1px solid var(--line); border-radius: 0; background: transparent; }
+.sg__drawer .nav-menu .drawer__item:last-child,
+.sg__drawer .drawer__group > .sg__extra > .drawer__item:last-of-type { border-bottom: 0; }
+.sg__drawer .nav-menu [aria-current="page"] { background: color-mix(in srgb, var(--accent) 10%, var(--bg)); color: var(--accent); font-weight: 600; }
+.sg__drawer .nav-menu .drawer__item::after,
+.sg__drawer .drawer__group > .sg__extra > .drawer__item::after { content: '›'; margin-left: auto; padding-left: 6px; color: var(--muted); font-size: 15px; }
+.sg__drawer .drawer__group > .sg__extra { display: contents; }
+.sg__drawer .drawer__group .schedule { margin: 0; border: 0; border-bottom: 1px solid var(--line); border-radius: 0; background: transparent; }
+.sg__drawer .drawer__group .schedule summary { display: flex; align-items: center; gap: 10px; min-height: var(--tap); box-sizing: border-box; padding: 10px 40px 10px 14px; font-size: 13.5px; font-weight: 500; }
+.sg__drawer .drawer__group .drawer__meta { margin: 0; padding: 10px 14px 12px; border-top: 1px solid var(--line); }
+.sg__drawer .account__actions .account__primary { border-color: color-mix(in srgb, var(--accent) 45%, var(--line)); background: color-mix(in srgb, var(--accent) 10%, var(--bg)); color: var(--accent); }
+
+/* 홈 타일은 한 칸만 보여 준다 — 격자 전체를 깔면 이 화면이 홈처럼 보인다 */
+.sg__tiles { grid-template-columns: minmax(0, 240px); }
