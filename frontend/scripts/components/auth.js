@@ -423,11 +423,15 @@ function renderAccount(message) {
   // (3) 승인됨 — 즐겨찾기 개수와 바로가기, 관리자에게만 승인 패널 버튼
   // 2026-09-07 v2.15.1 "📕 도감에서 채우기" 버튼 제거 — 탭 줄 📕 와 같은 화면. 요약 한 줄만 남긴다
   const monCount = Array.isArray(AUTH.mons) ? AUTH.mons.length : 0;
+  // 2026-09-09 v2.40.0 두 숫자를 한 문장에 가운뎃점으로 이어 붙이던 줄을 두 칸으로 나눴다 — 세는 대상이
+  // 다른 숫자(즐겨찾기 · 내 포켓몬)라 나란히 놓아야 각각 눈에 들어온다
   accountBox.append(who,
-    el('p', { class: 'account__sub' }, `★ 즐겨찾기 ${AUTH.favs.size}마리 · 🎒 내 포켓몬 ${monCount}마리`),
+    el('div', { class: 'account__stats' },
+      el('span', {}, '★ 즐겨찾기 ', el('b', {}, `${AUTH.favs.size}마리`)),
+      el('span', {}, '🎒 내 포켓몬 ', el('b', {}, `${monCount}마리`))),
     note,
     el('div', { class: 'account__actions' },
-      AUTH.admin ? el('button', { class: 'drawer__item', onclick: openAdminPanel }, '🔑 가입 승인') : '',
+      AUTH.admin ? el('button', { class: 'drawer__item account__primary', onclick: openAdminPanel }, '🔑 가입 승인') : '',
       el('button', { class: 'drawer__item', onclick: signOut }, '로그아웃'),
       // 2026-09-07 v2.18.0 (공개 준비 3) 계정 삭제 셀프서비스 — 관리자는 제외 (deleteAccount 참고)
       AUTH.admin ? '' : el('button', { class: 'drawer__item account__danger', onclick: confirmDeleteAccount }, '계정 삭제')));

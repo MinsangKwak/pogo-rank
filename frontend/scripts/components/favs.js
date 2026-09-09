@@ -141,7 +141,8 @@ function renderFavsPage() {
   });
   draw();
   const cut = (typeof ROLES !== 'undefined' && ROLES?.cut) || { pve: 60, pvp: 100 };
-  return el('div', { class: 'page__body' }, el('div', { class: 'tchips' }, $seg, $layout), $list,
+  // 2026-09-09 v2.40.0 갈래 고르기($seg)와 보기 방식($layout)은 성격이 다르다 — 줄을 나눈다 (도감과 같은 배치)
+  return el('div', { class: 'page__body' }, el('div', { class: 'tchips' }, $seg), $layout, $list,
     el('p', { class: 'detail__foot' },
       `분류는 순위표에서 자동으로 정합니다 — PvE는 19개 표 상위 ${cut.pve}위, PvP는 4리그 상위 ${cut.pvp}위 안에 들면 해당 갈래로 봅니다. `
       + '메가·섀도우 같은 폼 중 하나라도 들면 그 종이 포함되고, 괄호 없이 붙은 이름이 그 순위를 낸 폼입니다. '

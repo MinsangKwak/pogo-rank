@@ -122,10 +122,11 @@ const ok = (name, cond, extra = '') => results.push([cond ? 'PASS' : 'FAIL', nam
   await settle();
   await page.click('#menu-toggle');
   await page.waitForTimeout(350);
-  ok('드로어 현재 항목 표시', (await page.locator('.nav-menu [aria-current="page"]').textContent()) === '배틀 · PvP');
+  // 2026-09-09 v2.40.0 항목이 [아이콘][이름] 두 조각이라 이름 칸(.drawer__label)만 본다
+  ok('드로어 현재 항목 표시', (await page.locator('.nav-menu [aria-current="page"] .drawer__label').textContent()) === '배틀 · PvP');
   const cur = await page.locator('.nav-menu [aria-current="page"]').evaluate((n) => getComputedStyle(n).color);
   ok('현재 항목 = --accent', cur === 'rgb(47, 143, 91)', cur);
-  ok('드로어 서비스 홈 항목', (await page.locator('.nav-menu a').first().textContent()) === '서비스 홈');
+  ok('드로어 서비스 홈 항목', (await page.locator('.nav-menu a .drawer__label').first().textContent()) === '서비스 홈');
   await page.click('.nav-menu a:has-text("서비스 홈")');
   await page.waitForTimeout(400);
   ok('서비스 홈으로 이동', (await page.locator('.home__tile').count()) === 10 && !(await page.evaluate(() => location.hash)));

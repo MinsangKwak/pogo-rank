@@ -94,22 +94,20 @@ const hangul = (text) => /[가-힣]/.test(text || '');
   await page.click('#lang-toggle');
   await page.waitForTimeout(500);
 
-  // ── 보기 방식 버튼: 눌러서 바뀐 라벨·설명도 영어로 따라오는가
-  //     (속성은 childList 관찰자가 못 본다 — 토글이 직접 번역을 부르는지 확인한다)
+  // ── 보기 방식 세그먼트 컨트롤(v2.40.0): 두 칸 라벨과 묶음 이름이 영어로 나오는가
   await go('#/dex');
   const layout = page.locator('.dex__layout');
-  await layout.click();
-  await page.waitForTimeout(400);
-  const after = { text: (await layout.textContent()).trim(), aria: await layout.getAttribute('aria-label') };
-  ok('보기 방식 라벨이 영어', /^(⊞ Grid|☰ List)$/.test(after.text), after.text);
-  ok('보기 방식 설명도 영어', !hangul(after.aria) && /View:/.test(after.aria), after.aria);
+  const segLabels = (await layout.locator('button').allTextContents()).map((text) => text.trim());
+  ok('보기 방식 두 칸이 영어', segLabels.length === 2 && segLabels.every((text) => !hangul(text)) && /List/.test(segLabels[0]) && /Grid/.test(segLabels[1]), segLabels.join(' | '));
+  ok('보기 방식 묶음 이름도 영어', !hangul(await layout.getAttribute('aria-label')), await layout.getAttribute('aria-label'));
 
   // ── 되돌리기
   await go('#/dex');
   await page.click('#lang-toggle');
   await page.waitForTimeout(600);
   ok('되돌리면 한국어', (await page.locator('#page-head h2').textContent()) === koTitle.replace('레이드 · PvE', '포켓몬 도감') || (await page.locator('#page-head h2').textContent()) === '포켓몬 도감');
-  ok('되돌린 뒤 이동 목록도 한국어', (await page.locator('.nav-menu a').first().textContent()) === '서비스 홈');
+  // 2026-09-09 v2.40.0 항목이 [아이콘][이름] 두 조각이라 이름 칸만 본다 (아이콘은 번역 대상이 아니다)
+  ok('되돌린 뒤 이동 목록도 한국어', (await page.locator('.nav-menu a .drawer__label').first().textContent()) === '서비스 홈');
   ok('html lang=ko', (await page.evaluate(() => document.documentElement.lang)) === 'ko');
 
   ok('페이지 오류 없음', errs.length === 0, errs.join(' | ').slice(0, 200));
