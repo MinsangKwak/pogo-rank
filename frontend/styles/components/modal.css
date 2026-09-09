@@ -25,16 +25,19 @@ dialog.modal::backdrop { background: transparent; }
   .modal__close { top: -44px; right: 4px; }
 }
 
-/* 2026-09-08 v2.32.0 헤더 카드형 재배치 — 그림(왼쪽) · 정보(오른쪽, #번호·이름+★·타입 알약)
-   · 오른쪽 위 동그란 아이콘 두 개(공유·저장). CP 는 detail__cp-card 로 헤더 밖에 따로 뗐다 */
-/* padding-right 는 detail__top-actions 두 자리(원 34px × 2 + 간격) 만큼 미리 비워 둔다 —
-   버튼이 하나만 뜰 때(저장 버튼은 로그인 사용자만)도 이름·타입 줄이 자리를 다투지 않게 늘 넉넉히 잡는다 */
-.detail__head { position: relative; display: flex; align-items: flex-start; gap: 16px; padding-right: 88px; }
+/* 2026-09-08 v2.32.0 헤더 카드형 재배치 — 그림(왼쪽) · 정보(오른쪽). CP 는 detail__cp-card 로 헤더 밖에 따로 뗐다
+   2026-09-09 v2.35.0 재배치 — 타입은 이름 줄이 아니라 그림 위 모서리 배지로, ★ 는 공유·저장과 한 줄로.
+   "이 포켓몬에 대한 동작"(공유·저장·즐겨찾기)을 오른쪽 위 아이콘 한 줄에 모으고, 정보 칸은
+   #번호 → 폼 라벨(거다이맥스 등) → 이름 → 영문명 순서로 세로로 쌓는다 */
+/* padding-right 는 detail__top-actions 세 자리(원 34px × 3 + 간격) 만큼 미리 비워 둔다 —
+   즐겨찾기·저장 버튼이 빠질 때(비로그인 등)도 정보 칸이 자리를 다투지 않게 늘 넉넉히 잡는다 */
+.detail__head { position: relative; display: flex; align-items: flex-start; gap: 16px; padding-right: 120px; }
 .detail__info { flex: 1 1 auto; min-width: 0; padding-top: 2px; }
 /* 그림 상자 뒤에 옅은 동심원 — 도트 스프라이트가 판 위에 그냥 놓인 것보다 자리가 또렷하다.
-   var(--fg) 를 낮은 비율로만 섞어서 라이트·다크 어디서나 따로 값을 안 적어도 된다 */
+   var(--fg) 를 낮은 비율로만 섞어서 라이트·다크 어디서나 따로 값을 안 적어도 된다.
+   position: relative 는 .detail__types 모서리 배지의 기준점 */
 .sprite-box {
-  flex: 0 0 auto; width: 96px; height: 96px; display: flex; align-items: center; justify-content: center;
+  position: relative; flex: 0 0 auto; width: 96px; height: 96px; display: flex; align-items: center; justify-content: center;
   border-radius: 14px; background:
     repeating-radial-gradient(circle at 50% 50%, color-mix(in srgb, var(--fg) 7%, transparent) 0 2px, transparent 2px 20px),
     var(--surface);
@@ -46,14 +49,17 @@ dialog.modal::backdrop { background: transparent; }
 .sprite-box.sprite-box--shadow { border: 2px solid var(--c-shadow); box-shadow: 0 0 0 3px color-mix(in srgb, var(--c-shadow) 18%, transparent); }
 /* #도감번호 — 목록 줄의 dex__no 와 같은 뜻이라 .tag 를 그대로 쓴다(새 색을 안 만든다) */
 .detail__dexno { display: inline-block; margin-bottom: 4px; }
-/* 이름 + ★ 즐겨찾기를 한 줄에 — ★ 는 "이 이름의 종을 담는다" 는 동작이라 이름 옆이 맞다 */
-.detail__name-row { display: flex; align-items: center; gap: 6px; }
+/* 2026-09-09 v2.35.0 폼 라벨(거다이맥스 등)을 이름과 한 줄에서 떼어 이름 위 줄로 — 오른쪽 위
+   아이콘 줄과 같은 높이에서 시작해, "이 개체가 어떤 폼인지"가 아이콘 줄과 나란히 먼저 읽힌다 */
+.detail__form-row { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 2px; }
 .detail__head h2 { margin: 0; font-size: 18px; font-weight: 600; }
-.detail__en { margin: 1px 0 6px; font-size: 12px; color: var(--muted); }
-/* 타입 알약 — 타입 자체가 색이므로 상성표의 작은 점 칩과 다르게 배경을 채운 굵은 알약으로 둔다.
-   글자는 항상 흰색 + 옅은 그림자 — 타입 색이 밝든 어둡든(전기·강철 등) 한 규칙으로 읽힌다 */
-.detail__types { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
-.detail__type-pill { display: inline-flex; align-items: center; padding: 4px 14px; border-radius: 999px; font-size: 12.5px; font-weight: 700; color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,.35); background: var(--c, var(--muted)); }
+/* 영문명 — 이름 옆 괄호가 아니라 그 아래 자기 줄로 */
+.detail__en-inline { display: block; margin-top: 2px; font-weight: 400; font-size: 13px; color: var(--muted); }
+/* 타입 배지 — 이름 줄의 알약이 아니라 그림 왼쪽 위 모서리에 살짝 겹치는 작은 뱃지.
+   여러 타입이면 세로로 쌓는다. 그림 색이 다양해 늘 또렷하도록 그림자를 준다 */
+.detail__types { position: absolute; top: -6px; left: -6px; display: flex; flex-direction: column; align-items: flex-start; gap: 3px; z-index: 1; }
+.detail__type-pill { display: inline-flex; align-items: center; padding: 2px 9px; border-radius: 999px; font-size: 10.5px; font-weight: 700; color: #fff;
+  text-shadow: 0 1px 2px rgba(0,0,0,.35); background: var(--c, var(--muted)); box-shadow: 0 1px 4px rgba(0,0,0,.35); }
 
 .detail__sec { margin-top: 18px; }
 .detail__sec h3 { margin: 0 0 8px; font-size: 12px; font-weight: 600; color: var(--muted); letter-spacing: .02em; }
@@ -166,14 +172,20 @@ dialog.modal::backdrop { background: transparent; }
 .detail__moves .move-list__row em { flex: none; font-size: 12px; color: var(--muted); font-style: normal; font-weight: 600; }
 @media (max-width: 359px) { .detail__hexmoves { grid-template-columns: 1fr; } }
 
-/* 2026-09-08 v2.32.0 헤더 오른쪽 위 동그란 아이콘 두 자리(공유 · 저장) — ★ 는 이름 옆으로 옮겼다(위 .detail__name-row).
-   modal.css 의 ✕ 닫기(.modal__close)가 sticky 바에서 살짝 위로 겹쳐 오므로, 이 줄은 head 안에서
-   position: absolute 로 같은 우상단 자리를 쓰되 ✕ 보다 한 단 아래(head 상단)에 놓인다 */
+/* 2026-09-08 v2.32.0 헤더 오른쪽 위 동그란 아이콘 자리(공유 · 저장 · 즐겨찾기) — ✕ 닫기(.modal__close)는
+   이제 카드 밖에 있어(v2.34.0) 자리를 다투지 않는다.
+   2026-09-09 v2.35.0 ★ 즐겨찾기도 이 줄로 옮겼다 — 공유·저장과 같은 "이 포켓몬에 대한 동작"이라 한 줄이 낫다 */
 .detail__top-actions { position: absolute; top: 0; right: 0; display: flex; gap: 6px; }
 /* min-width(고정 width 아님) — 공유를 누르면 "복사됨 ✓" 로 글자가 길어지는데 폭을 고정하면 글자가 밖으로 샌다 */
 .detail__share { min-width: 34px; height: 34px; padding: 0 9px; display: flex; align-items: center; justify-content: center; flex: none;
   font-size: 15px; line-height: 1; border-radius: 999px; border: 1px solid var(--line); background: var(--surface); color: var(--muted); white-space: nowrap; }
 .detail__share:hover { background: var(--hover); color: var(--fg); }
+/* .fav 는 원래 목록 줄(list.css)의 민무늬 별 버튼 — 여기서는 공유·저장과 같은 동그란 칩으로 덧입힌다.
+   부모 클래스를 겹친 선택자라 list.css 의 기본 .fav 보다 구체적이어서 파일 순서와 무관하게 이긴다 */
+.detail__top-actions .fav { width: 34px; height: 34px; font-size: 16px; opacity: 1; border-radius: 999px;
+  border: 1px solid var(--line); background: var(--surface); }
+.detail__top-actions .fav:hover { background: var(--hover); }
+.detail__top-actions .fav.is-on { border-color: color-mix(in srgb, #e8a80c 45%, var(--line)); }
 .solo__fill { display: flex; align-items: center; gap: 8px; margin: 0 0 8px; font-size: 12.5px; }
 
 /* 2026-09-06 v2.10.0 (QA-44) 이중약점(×2.56) · 이중내성/무효(×0.39) 칩 강조 */

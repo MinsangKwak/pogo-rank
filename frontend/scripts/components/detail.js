@@ -538,30 +538,34 @@ function openDetail(pokemon, isDex = false, from = null) {
   const types = (pokemon.types?.length ? pokemon.types : form?.types) ?? [];
 
   // 2026-09-08 v2.32.0 헤더를 카드형으로 다시 짰다 — 그림 · 이름 · 타입은 위 칸에,
-  // CP 는 큰 숫자 + 2×2 표로 따로 뗀 카드에. 공유·저장은 오른쪽 위 동그란 아이콘 두 개로,
-  // ★ 즐겨찾기는 이름 옆으로 옮겨 "이 종을 즐겨찾기에 담는다"는 동작이 이름과 붙어 읽힌다
+  // CP 는 큰 숫자 + 2×2 표로 따로 뗀 카드에.
+  // 2026-09-09 v2.35.0 재배치 — 타입은 이름 줄이 아니라 그림 위 왼쪽 위 모서리에 겹치는 작은 배지로
+  // (여러 개면 세로로 쌓는다). ★ 즐겨찾기는 이름 옆이 아니라 공유·저장과 같은 오른쪽 위 아이콘 줄로 —
+  // "이 포켓몬에 대한 동작"(공유·저장·즐겨찾기)을 한 줄에 모으는 게 더 일관적이다.
+  // 폼 라벨(거다이맥스 등)은 이름과 한 줄에 있던 것을 이름 위 줄로 떼어, 아이콘 줄과 같은 높이에서 시작한다
   const cpm = DEX_DATA.cpm;
-  // 2026-09-03 v3 헤더: 타입 → 팬텀(Gengar) → CP 만렙 | 야생, 부스트 (유저 지정 순서)
+  const { labels: formLabels, base: baseName } = typeof splitFormName === 'function' ? splitFormName(pokemon.name) : { labels: [], base: pokemon.name };
   // 2026-09-06 v2.11.0 그림 테두리를 폼 색으로 — 메가·다이맥스/거다이맥스·섀도우 (components/name.js formLabelKind, 색은 tokens.css)
-  const formKind = typeof splitFormName === 'function' ? (splitFormName(pokemon.name).labels.map(formLabelKind)[0] ?? '') : '';
+  const formKind = formLabels.map(formLabelKind)[0] ?? '';
   const head = el('div', { class: 'detail__head' },
-    el('div', { class: `sprite-box${formKind ? ' sprite-box--' + formKind : ''}` }, sprite(pokemon.sprite)),
+    el('div', { class: `sprite-box${formKind ? ' sprite-box--' + formKind : ''}` },
+      sprite(pokemon.sprite),
+      // 상성표의 작은 점 칩(tchips__item)과는 다른 자리라 건드려도 이중약점 강조 같은 다른 뜻이 흔들리지 않는다
+      types.length ? el('div', { class: 'detail__types' }, ...types.map((typeName) => el('span', { class: 'detail__type-pill', style: `--c: var(--t-${typeName})` }, TYPE_KO[typeName] ?? typeName))) : ''),
     // 2026-09-03 v2.2.0 즐겨찾기 ★ · 2026-09-06 v2.9.0 🔗 공유 · 2026-09-07 v2.15.0 (QA-54) ➕ 내 개체로 저장.
-    // 오른쪽 위 동그란 아이콘 두 자리 — ★ 는 이름 옆으로 옮겼으니 여기는 공유·저장만 남는다
+    // 오른쪽 위 동그란 아이콘 세 자리 — 이 포켓몬에 대한 동작을 한 줄에
     el('div', { class: 'detail__top-actions' },
       shareBtn(pokemon),
       authEnabled() && AUTH.status === 'ok' && form && typeof planAddFromDetail === 'function'
         ? el('button', { class: 'detail__share detail__plan', title: '🌱 플래너 내 포켓몬에 이 개체 저장', 'aria-label': '내 개체로 저장',
             onclick: (event) => { event.stopPropagation(); planAddFromDetail(pokemon); } }, '➕')
-        : ''),
+        : '',
+      authEnabled() && dex != null ? favBtn(dex) : ''),
     el('div', { class: 'detail__info' },
       dex != null ? el('span', { class: 'tag detail__dexno' }, `#${String(dex).padStart(4, '0')}`) : '',
-      el('div', { class: 'detail__name-row' },
-        el('h2', {}, nameNode(pokemon.name), pokemon.en ? el('span', { class: 'detail__en-inline' }, ` (${pokemon.en})`) : ''),  // 2026-09-06 v2.10.0 폼 라벨 뱃지
-        authEnabled() && dex != null ? favBtn(dex, 'detail__fav') : ''),
-      // 2026-09-08 v2.32.0 헤더 타입은 타입 그 자체가 색이라 굵은 알약으로 — 상성표의 작은 점 칩(tchips__item)과는
-      // 다른 자리다. 상성표를 건드리면 이중약점 강조 같은 다른 뜻이 같이 흔들린다
-      el('div', { class: 'detail__types' }, ...types.map((typeName) => el('span', { class: 'detail__type-pill', style: `--c: var(--t-${typeName})` }, TYPE_KO[typeName] ?? typeName)))));
+      formLabels.length ? el('div', { class: 'detail__form-row' }, ...formLabels.map((label) => el('span', { class: `form-tag${formLabelKind(label) ? ' form-tag--' + formLabelKind(label) : ''}` }, label))) : '',
+      el('h2', {}, baseName),
+      pokemon.en ? el('div', { class: 'detail__en-inline' }, `(${pokemon.en})`) : ''));
 
   const body = el('div', { class: 'detail' }, head);
   // 2026-09-08 v2.32.0 CP 를 헤더 밖 카드로 뗐다 — 만렙 큰 숫자 + 레이드·부스트·야생·부스트 2×2 표.
