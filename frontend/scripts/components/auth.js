@@ -195,13 +195,20 @@ async function signIn() {
     if (standalone) await firebase.auth().signInWithRedirect(provider);
     else await firebase.auth().signInWithPopup(provider);
   } catch (error) {
-    // 브라우저가 팝업을 막은 경우(popup-blocked·popup-closed 등)도 리다이렉트로 한 번 더 시도
-    if (/popup/i.test(error.code || '')) {
-      await firebase.auth().signInWithRedirect(provider).catch(() => {});
+    // 사용자가 연달아 눌러 앞선 팝업 요청이 취소된 경우는 오류가 아니므로 안내하지 않는다
+    if (error.code === 'auth/cancelled-popup-request') return;
+    // 2026-09-09 v2.39.1 로그아웃 직후 로그인하면 매번 auth/internal-error 로 실패하는 사례 보고됨.
+    // 잠깐 쉬고 같은 팝업 방식으로 재시도(v2.39.0)해도 똑같이 실패해 타이밍 문제는 아니었다 —
+    // 이 오류는 브라우저가 팝업 창과 주고받는 내부 통신이 막혔을 때 SDK가 흔히 내는 값이라(원인은
+    // 서드파티 저장소 차단·확장 프로그램 등 기기마다 다를 수 있어 여기서 특정하지 않는다), 팝업 자체를
+    // 포기하고 리다이렉트로 넘긴다 — 팝업이 막힌 경우(popup-blocked 등)와 같은 처방이다. 리다이렉트는
+    // 창 사이 통신 없이 같은 창에서 그냥 이동했다 돌아오므로 이 종류의 문제를 안 탄다
+    if (/popup/i.test(error.code || '') || error.code === 'auth/internal-error') {
+      await firebase.auth().signInWithRedirect(provider)
+        .catch((redirectError) => renderAccount('로그인 실패: ' + (redirectError.code || redirectError.message)));
       return;
     }
-    // 사용자가 연달아 눌러 앞선 팝업 요청이 취소된 경우는 오류가 아니므로 안내하지 않는다
-    if (error.code !== 'auth/cancelled-popup-request') renderAccount('로그인 실패: ' + (error.code || error.message));
+    renderAccount('로그인 실패: ' + (error.code || error.message));
   }
 }
 
