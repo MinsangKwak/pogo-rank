@@ -221,6 +221,38 @@ const ok = (n, c, x = '') => { console.log((c ? 'PASS' : 'FAIL') + ' ' + n + ' '
     await ctx.close();
   }
 
+  // ── v2.40.1 폭을 오가도 메뉴 항목이 사라지지 않는가 (창 크기 조절 · 태블릿 회전 · 폴더블)
+  // 좁은 화면에서 정보 카드에 담아 둔 아코디언을, 넓은 화면으로 돌아갈 때 카드째 들어내면서
+  // 함께 잃어버리던 버그가 있었다 — 첫 로딩만으로는 안 드러나고 왕복해야 나온다
+  {
+    const ctx = await browser.newContext({ viewport: { width: 1440, height: 900 } });
+    await ctx.route(/^https?:\/\/(?!localhost)/, (r) => r.abort());
+    const page = await ctx.newPage();
+    const errs = [];
+    page.on('pageerror', (e) => errs.push(String(e)));
+    await page.goto(BASE + '#/dex', { waitUntil: 'domcontentloaded' });
+    await page.waitForSelector('#splash', { state: 'detached', timeout: 15000 }).catch(() => {});
+    await page.locator('#consent .consent__deny').click().catch(() => {});
+    await page.waitForTimeout(500);
+    const menuState = () => page.evaluate(() => ({
+      note: !!document.querySelector('.drawer__panel #note-acc'),
+      trainer: !!document.querySelector('.drawer__panel #trainer-acc'),
+      nav: document.querySelectorAll('.nav-menu .drawer__item').length,
+      navMenus: document.querySelectorAll('.nav-menu').length,
+      extras: document.querySelectorAll('#drawer-extra').length,
+    }));
+    for (const [w, wLabel] of [[390, '모바일'], [1440, 'PC 복귀'], [390, '모바일 재방문'], [1440, 'PC 재복귀']]) {
+      await page.setViewportSize({ width: w, height: 900 });
+      await page.waitForTimeout(450);
+      const s = await menuState();
+      ok(`폭 왕복 ${wLabel}(${w}) 기준 안내·트레이너 코드 유지`, s.note && s.trainer, JSON.stringify(s));
+      ok(`폭 왕복 ${wLabel}(${w}) 이동 목록 11개·한 벌`, s.nav === 11 && s.navMenus === 1, JSON.stringify(s));
+      ok(`폭 왕복 ${wLabel}(${w}) #drawer-extra 한 벌(복제 아님)`, s.extras === 1, JSON.stringify(s));
+    }
+    ok('폭 왕복 중 오류 없음', errs.length === 0, errs.join(' | ').slice(0, 160));
+    await ctx.close();
+  }
+
   await browser.close();
   console.log(`${pass}/${pass + fail} passed`);
   process.exit(fail ? 1 : 0);

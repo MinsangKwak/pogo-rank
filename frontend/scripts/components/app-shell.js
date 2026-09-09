@@ -130,10 +130,14 @@ const infoGroup = el('div', { class: 'drawer__group' });
 const versionMeta = el('p', { class: 'drawer__meta' }, 'POGO PLAN · ' + version);
 function placeDrawerExtra() {
   if (wideScreen.matches) {
-    extraSec.remove();
-    infoGroup.remove();
+    // 2026-09-09 v2.40.1 카드에 담아 뒀던 것들을 먼저 꺼내 제자리로 되돌린다 — 이 줄이 없으면
+    // 좁은 화면을 거쳐 온 경우 카드(infoGroup)를 들어낼 때 그 안의 기준 안내·트레이너 코드까지
+    // 딸려 나가 PC ☰ 메뉴에서 사라진다 (첫 PC 로딩에서는 카드가 빈 채라 드러나지 않던 버그)
+    versionMeta.before(scheduleAcc, noteAcc, trainerAcc);
     sideExtra.append(drawerExtra);
     sideNav.append(sideExtra);
+    extraSec.remove();
+    infoGroup.remove();
   } else {
     // 버전 문구 앞에 끼워 넣는다 — drawer.append 로 붙이면 넓은 화면에서 돌아왔을 때 버전 뒤로 밀린다
     versionMeta.before(extraSec, infoGroup);
