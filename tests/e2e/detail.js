@@ -1,13 +1,14 @@
 'use strict';
-// v2.32.0 상세 팝업 헤더 카드형 재배치 회귀
+// v2.32.0 상세 팝업 헤더 카드형 재배치 회귀 · v2.35.0 아이콘 줄·타입 배지 재배치 포함
 //
 // 이 스위트가 지키려는 것
-//   - #도감번호 · 이름+★ · 타입 알약이 새 자리(.detail__info)에 다 있는가
-//   - 공유·저장 아이콘이 오른쪽 위(.detail__top-actions)에 있고 이름 줄과 겹치지 않는가
+//   - #도감번호 · 폼 라벨 · 이름 · 영문명이 정보 칸(.detail__info)에 순서대로 있는가
+//   - 타입이 이름 줄이 아니라 그림(.sprite-box) 왼쪽 위 모서리 배지(.detail__types)로 겹쳐 있는가
+//   - 공유·저장·★ 즐겨찾기가 모두 오른쪽 위 한 줄(.detail__top-actions)에 있고 정보 칸과 겹치지 않는가
 //   - CP 가 문장이 아니라 카드(큰 숫자 + 2×2 표)로 나오는가, 숫자가 실제로 맞는가
 //   - 포획 CP · CP 계산기 행이 여전히 열리고 닫히는가 (모양만 바뀌고 동작은 그대로)
 //   - 공유를 누르면 "복사됨" 으로 바뀌어도 원 밖으로 글자가 새지 않는가
-//   - 메가 폼처럼 색 테두리가 있는 그림도 새 배경(동심원)과 같이 깨지지 않는가
+//   - 메가 폼처럼 색 테두리가 있는 그림도 새 배경(동심원)·폼 라벨 줄과 같이 깨지지 않는가
 const { chromium } = require('/opt/node22/lib/node_modules/playwright');
 const BASE = 'http://localhost:5503/?mock=1';
 let pass = 0, fail = 0;
@@ -36,18 +37,27 @@ const ok = (n, c, x = '') => { console.log((c ? 'PASS' : 'FAIL') + ' ' + n + ' '
   await page.waitForSelector('dialog.modal[open]', { timeout: 8000 });
   await page.waitForTimeout(400);
 
-  // ── 정보 칸: 도감번호 · 이름+★ · 타입 알약
+  // ── 정보 칸: 도감번호 · 타입 배지(그림 위) · 아이콘 줄의 ★
   ok('도감번호 배지', (await page.locator('.detail__dexno').textContent()) === '#0016');
-  ok('이름 옆에 ★', await page.locator('.detail__name-row .fav').isVisible());
+  ok('★ 즐겨찾기가 공유·저장과 같은 아이콘 줄에', await page.locator('.detail__top-actions .fav').isVisible());
   const pills = await page.locator('.detail__type-pill').allTextContents();
   ok('타입 알약 2개', pills.join('·') === '노말·비행', pills.join('·'));
   const pillColor = await page.locator('.detail__type-pill').first().evaluate((n) => getComputedStyle(n).backgroundColor);
   ok('타입 알약이 배경색을 채움 (투명 아님)', pillColor !== 'rgba(0, 0, 0, 0)', pillColor);
 
-  // ── 오른쪽 위 아이콘: 이름 줄과 안 겹치는가
-  const nameBox = await page.locator('.detail__name-row').boundingBox();
+  // ── 타입 배지: 이름 줄이 아니라 그림 왼쪽 위 모서리에 겹쳐 있는가
+  const typesBox = await page.locator('.detail__types').boundingBox();
+  const spriteBox = await page.locator('.sprite-box').boundingBox();
+  ok('타입 배지가 그림 왼쪽 위 모서리에 겹침', typesBox.x <= spriteBox.x + 2 && typesBox.y <= spriteBox.y + 2,
+    `types ${typesBox.x},${typesBox.y} vs sprite ${spriteBox.x},${spriteBox.y}`);
+
+  // ── 오른쪽 위 아이콘: 정보 칸(이름)과 안 겹치는가, ★ 는 공유보다 오른쪽에
+  const infoBox = await page.locator('.detail__info').boundingBox();
   const actionsBox = await page.locator('.detail__top-actions').boundingBox();
-  ok('공유 버튼이 이름 줄 오른쪽에 (안 겹침)', actionsBox.x >= nameBox.x + nameBox.width - 4, `${actionsBox.x} vs ${nameBox.x + nameBox.width}`);
+  ok('아이콘 줄이 정보 칸 오른쪽에 (안 겹침)', actionsBox.x >= infoBox.x + infoBox.width - 4, `${actionsBox.x} vs ${infoBox.x + infoBox.width}`);
+  const shareX = (await page.locator('.detail__share:not(.detail__plan)').boundingBox()).x;
+  const favX = (await page.locator('.detail__top-actions .fav').boundingBox()).x;
+  ok('★ 즐겨찾기가 공유 아이콘보다 오른쪽', favX > shareX, `fav ${favX} vs share ${shareX}`);
 
   // ── CP 카드
   const cpBig = await page.locator('.detail__cp-big b').textContent();
@@ -96,6 +106,8 @@ const ok = (n, c, x = '') => { console.log((c ? 'PASS' : 'FAIL') + ' ' + n + ' '
   ok('메가 폼 그림 테두리 색 유지', megaBorder !== 'rgba(0, 0, 0, 0)' && megaBorder !== 'rgb(232, 233, 235)', megaBorder);
   const cpBigMega = await page.locator('.detail__cp-big b').textContent();
   ok('메가 폼 CP 카드도 정상 표시', /^[\d,]+$/.test(cpBigMega), cpBigMega);
+  const formRow = await page.locator('.detail__form-row').textContent();
+  ok('폼 라벨이 이름 위 자기 줄에', /^메가/.test(formRow ?? ''), formRow);
 
   ok('페이지 오류 없음', errs.length === 0, errs.join(' | ').slice(0, 200));
   await browser.close();
