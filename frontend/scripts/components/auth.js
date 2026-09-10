@@ -40,6 +40,7 @@ const AUTH = {
   roles: {},         // 2026-09-05 역할 수동 보정 — '도감번호|폼라벨' → ['pve'] / ['pvp'] / []
   mons: [],          // 2026-09-07 v2.15.0 (QA-54) 🌱 플래너 내 포켓몬 — 개체 단위 배열 (planner/collection.js 가 읽고 쓴다)
   db: null,
+  requestError: '',  // 2026-09-10 v2.44.0 가입 요청(requests 문서) 쓰기가 실패했을 때의 오류 코드
 };
 
 // 로그인 기능을 켤 수 있는 빌드인지 — FIREBASE_CONFIG.apiKey가 있어야 의미가 있다
@@ -110,8 +111,12 @@ async function initAuth() {
     if (!firebase.apps.length) firebase.initializeApp(FIREBASE_CONFIG);
     AUTH.db = firebase.firestore();
     AUTH.ready = true;
-    // PWA 리다이렉트 로그인으로 돌아온 경우의 결과 수거. 실패해도 onAuthStateChanged가 처리한다
-    firebase.auth().getRedirectResult().catch(() => {});
+    // PWA·팝업 대체 경로(리다이렉트)로 돌아온 경우의 결과 수거.
+    // 2026-09-10 v2.44.0 여기서 오류를 통째로 버리던 것을 화면에 띄운다 — 리다이렉트가 실패하면
+    // 사용자는 아무 안내 없이 비로그인 화면으로 돌아왔고(CSP 로 로그인이 막혀 있던 동안이 그랬다),
+    // 무엇이 잘못됐는지 물어볼 단서조차 남지 않았다. 성공 경로는 onAuthStateChanged 가 이어받는다
+    firebase.auth().getRedirectResult()
+      .catch((error) => renderAccount('로그인 실패(리다이렉트): ' + (error.code || error.message)));
     firebase.auth().onAuthStateChanged(onAuthChange);
   } catch (error) {
     renderAccount('초기화 실패: ' + (error.message || error));
@@ -126,6 +131,7 @@ async function onAuthChange(user) {
   AUTH.favs = new Set();
   AUTH.roles = {};
   AUTH.mons = [];
+  AUTH.requestError = '';
   if (user) {
     const email = authEmail();
     // ADMIN_UID가 채워져 있으면 uid로 판정(공개 저장소에 이메일을 남기지 않기 위함), 없으면 이메일로 폴백
@@ -151,10 +157,15 @@ async function onAuthChange(user) {
     // GA 보고서는 uid 만 보여 주므로 "누가 눌렀나"는 이 대조표로 읽는다. 규칙상 본인 이메일 문서는 승인 여부와 무관하게 쓸 수 있다
     // 2026-09-07 v2.18.0 약관 동의 증빙 — 이 기기에서 동의한 버전을 함께 남긴다 (components/terms.js). 없으면 필드를 건드리지 않는다
     const consent = typeof termsAccepted === 'function' && termsAccepted() ? { consent: TERMS_VER, consentAt: firebase.firestore.FieldValue.serverTimestamp() } : {};
+    // 2026-09-10 v2.44.0 이 쓰기가 실패하면 조용히 넘기지 않는다 — 이 문서가 곧 **가입 요청**이라,
+    // 실패하면 본인은 "승인 대기 중" 화면을 보는데 관리자 패널에는 줄이 아예 안 뜬다.
+    // 규칙(firestore.rules requests)이 막는 경우가 대표적이고, 그때 기다리는 쪽만 계속 기다리게 된다
+    let requestError = '';
     await AUTH.db.collection('requests').doc(email).set({
       email, name: user.displayName || '', photo: user.photoURL || '', uid: user.uid, status: AUTH.status,
       at: firebase.firestore.FieldValue.serverTimestamp(), ...consent,
-    }, { merge: true }).catch(() => {});
+    }, { merge: true }).catch((error) => { requestError = error.code || error.message; });
+    AUTH.requestError = requestError;
   }
   // 2026-09-06 v2.10.1 GA User-ID: login 이벤트보다 먼저 붙여야 그 이벤트부터 사람 단위로 잡힌다
   if (typeof setTrackingUser === 'function') setTrackingUser(user ? user.uid : null, AUTH.status);
@@ -197,12 +208,15 @@ async function signIn() {
   } catch (error) {
     // 사용자가 연달아 눌러 앞선 팝업 요청이 취소된 경우는 오류가 아니므로 안내하지 않는다
     if (error.code === 'auth/cancelled-popup-request') return;
-    // 2026-09-09 v2.39.1 로그아웃 직후 로그인하면 매번 auth/internal-error 로 실패하는 사례 보고됨.
-    // 잠깐 쉬고 같은 팝업 방식으로 재시도(v2.39.0)해도 똑같이 실패해 타이밍 문제는 아니었다 —
-    // 이 오류는 브라우저가 팝업 창과 주고받는 내부 통신이 막혔을 때 SDK가 흔히 내는 값이라(원인은
-    // 서드파티 저장소 차단·확장 프로그램 등 기기마다 다를 수 있어 여기서 특정하지 않는다), 팝업 자체를
-    // 포기하고 리다이렉트로 넘긴다 — 팝업이 막힌 경우(popup-blocked 등)와 같은 처방이다. 리다이렉트는
-    // 창 사이 통신 없이 같은 창에서 그냥 이동했다 돌아오므로 이 종류의 문제를 안 탄다
+    // 2026-09-10 v2.44.0 auth/internal-error 의 진짜 원인을 찾았다 — 기기 문제가 아니라 우리 CSP였다.
+    // v2.27.0 에서 script-src 에 https://apis.google.com 을 빠뜨렸고, firebase-auth-compat 는
+    // 로그인할 때 그 주소의 api.js 를 먼저 받는다. CSP 가 거부하면 SDK 의 loadJS onerror 가
+    // auth/internal-error 로 바뀌어 올라온다 (frontend/index.html 의 CSP 주석 참고).
+    // 리다이렉트로 넘겨도 같은 파일이 필요해 v2.39.0(재시도)·v2.39.1(리다이렉트) 둘 다 못 고쳤다.
+    //
+    // 그래도 이 분기는 남긴다 — 팝업이 브라우저·확장 프로그램에 막히는 경우(popup-blocked 등)는
+    // 여전히 있고, 그때 리다이렉트가 유일한 길이다. 다만 리다이렉트 결과의 오류는 이제
+    // initAuth 의 getRedirectResult 가 화면에 띄운다(전에는 버렸다)
     if (/popup/i.test(error.code || '') || error.code === 'auth/internal-error') {
       await firebase.auth().signInWithRedirect(provider)
         .catch((redirectError) => renderAccount('로그인 실패: ' + (redirectError.code || redirectError.message)));
@@ -413,7 +427,11 @@ function renderAccount(message) {
   // (2) 승인 대기 — 쓸 수 있는 기능이 없으므로 안내와 로그아웃만
   if (AUTH.status === 'pending') {
     accountBox.append(who,
-      el('p', { class: 'account__sub account__pending' }, '⏳ 승인 대기 중 — 관리자가 승인하면 즐겨찾기를 쓸 수 있어요. 관리자에게 알려주세요!'),
+      // 2026-09-10 v2.44.0 가입 요청이 저장되지 못했으면 "기다리세요" 라고 말하면 안 된다 —
+      // 관리자 화면에는 이 사람이 아예 안 보이므로 기다려도 승인이 오지 않는다
+      AUTH.requestError
+        ? el('p', { class: 'account__sub account__pending' }, `⚠ 가입 요청을 저장하지 못했어요 (${AUTH.requestError}) — 다시 로그인해 보고, 그래도 안 되면 관리자에게 알려주세요`)
+        : el('p', { class: 'account__sub account__pending' }, '⏳ 승인 대기 중 — 관리자가 승인하면 즐겨찾기를 쓸 수 있어요. 관리자에게 알려주세요!'),
       note,
       el('div', { class: 'account__actions' },
         el('button', { class: 'drawer__item', onclick: signOut }, '로그아웃'),
