@@ -149,6 +149,34 @@ const ok = (n, c, x = '') => { console.log((c ? 'PASS' : 'FAIL') + ' ' + n + ' '
   });
   ok('JSON-LD 파싱됨', !!ld && ld['@type'] === 'WebSite', ld && ld['@type']);
 
+  // ── 2026-09-10 v2.50.0 최신 여부 확인 (components/freshness.js)
+  // 설치형 앱은 한 번 띄우면 그대로 살아 있어, 며칠이 지나도 처음 받은 data.js 를 보여 준다.
+  // 서버는 매일 새로 빌드하는데 사용자는 옛 알 부화 풀을 보고 "반영이 안 된다" 고 겪는다.
+  // 그걸 알아채는 장치가 실제로 도는지 본다
+  const buildMark = await page.evaluate(async () => {
+    const res = await fetch('build.json?t=' + Date.now(), { cache: 'no-store' });
+    return res.ok ? await res.json() : null;
+  });
+  ok('build.json 이 나온다', !!buildMark, JSON.stringify(buildMark));
+  ok('build.json 에 버전과 데이터 날짜', !!(buildMark?.version && buildMark?.fetched), JSON.stringify(buildMark));
+  ok('build.json 은 작다 (확인 비용)', JSON.stringify(buildMark).length < 200, `${JSON.stringify(buildMark).length}B`);
+  ok('띄워 둔 버전과 표식이 일치', await page.evaluate((v) => currentBuildMark().version === v, buildMark.version), buildMark.version);
+  ok('같은 빌드면 알림이 안 뜬다', (await page.evaluate(() => checkFreshness(true))) === null);
+  ok('같은 빌드면 알림 줄도 없다', (await page.locator('.fresh-bar').count()) === 0);
+  // 서버가 새 빌드를 낸 척 — 알림이 떠야 한다
+  await page.route('**/build.json*', (r) => r.fulfill({ status: 200, contentType: 'application/json',
+    body: JSON.stringify({ version: 'v9.99.0', fetched: '2099-01-01', timestamp: 'x' }) }));
+  await page.evaluate(() => checkFreshness(true));
+  await page.waitForTimeout(300);
+  ok('새 빌드면 알림 줄이 뜬다', await page.locator('.fresh-bar').isVisible());
+  ok('알림에 데이터 날짜를 적는다', /2099-01-01/.test(await page.locator('.fresh-bar__text').textContent()));
+  // 자동으로 새로고침하지 않는다 — 보던 화면이 통째로 날아가면 안 된다
+  ok('자동 새로고침은 하지 않는다', await page.locator('.fresh-bar__go').isVisible());
+  await page.locator('.fresh-bar__close').click();
+  await page.waitForTimeout(200);
+  ok('닫으면 사라진다', (await page.locator('.fresh-bar').count()) === 0);
+  await page.unroute('**/build.json*');
+
   ok('페이지 오류 없음', errs.length === 0, errs.join(' | ').slice(0, 200));
   await ctx.close();
 

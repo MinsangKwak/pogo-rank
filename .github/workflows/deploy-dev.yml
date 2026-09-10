@@ -13,6 +13,12 @@ name: Build and deploy dev preview
 on:
   push:
     branches: [dev]
+  # 2026-09-10 v2.50.0 dev 도 매일 다시 빌드한다 — 알 부화 풀·레이드 보스는 게임 쪽에서 수시로 바뀌는데,
+  # 푸시가 없으면 dev 미리보기는 마지막 푸시 날짜의 데이터에 머문다. 확인하러 들어온 사람이
+  # "데이터가 안 바뀐다" 를 보게 되는데, 실제로는 배포가 아니라 빌드가 안 돈 것이다.
+  # 실서비스(deploy.yml)보다 30분 늦게 돌려 같은 시각에 겹치지 않게 한다
+  schedule:
+    - cron: '30 15 * * *'   # 매일 00:30 KST (15:30 UTC)
   workflow_dispatch:
 
 permissions:

@@ -43,13 +43,12 @@ function renderServiceHome() {
       el('span', { class: 'home__arrow', 'aria-hidden': 'true' }, '↗'))));
   // 타일을 만든 직후 잠금 표시를 한 번 맞춘다 (로그인 상태는 이미 정해져 있다)
   if (typeof syncLockedNav === 'function') queueMicrotask(syncLockedNav);
-  // 잠긴 타일은 그 화면으로 보내지 않고 계정 카드를 연다 — ☰ 메뉴의 잠긴 줄과 같은 처방
+  // 잠긴 타일은 그 화면으로 보내지 않고 로그인 유도 팝업을 연다 — ☰ 메뉴의 잠긴 줄과 같은 처방
   grid.addEventListener('click', (event) => {
     const tile = event.target.closest('a');
     if (!tile || tile.getAttribute('aria-disabled') !== 'true') return;
     event.preventDefault();
-    openDrawer();
-    document.getElementById('account')?.scrollIntoView({ block: 'center' });
+    openLoginInvite(tile.querySelector('strong')?.textContent || '');
   });
   $content.append(
     el('section', { class: 'home__intro' },

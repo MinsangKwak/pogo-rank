@@ -54,7 +54,16 @@ const ok = (n, c, x = '') => { console.log((c ? 'PASS' : 'FAIL') + ' ' + n + ' '
   await page.locator('#home-tile-planner').click({ force: true });
   await settle(600);
   ok('잠긴 타일은 이동하지 않는다', !(await page.evaluate(() => location.hash)), await page.evaluate(() => location.hash));
-  ok('잠긴 타일을 누르면 계정 카드가 열린다', await page.locator('#drawer-backdrop').isVisible().catch(() => false));
+  // 2026-09-10 v2.51.0 계정 카드(☰ 메뉴)로 데려다주던 것을 로그인 유도 팝업으로 바꿨다 —
+  // 메뉴를 열면 일정표·기준 안내·약관 같은 줄이 함께 있어 정작 할 일이 묻혔다
+  ok('잠긴 타일을 누르면 로그인 유도 팝업', await page.locator('.login-invite').isVisible());
+  ok('메뉴는 열지 않는다', !(await page.locator('#drawer-backdrop').isVisible().catch(() => false)));
+  ok('팝업이 가려던 화면 이름을 말한다', /육성 플래너/.test(await page.locator('.login-invite .plan__desc').textContent()));
+  // 승인제라는 걸 누르기 전에 알려야 "로그인했는데 왜 안 되지" 를 겪지 않는다
+  ok('승인 단계를 미리 알린다', (await page.locator('.login-invite__steps li').count()) === 3);
+  ok('승인 대기 단계가 있다', /승인/.test(await page.locator('.login-invite__steps').textContent()));
+  // 조사는 받침을 따른다 — "육성 플래너은(는)" 같은 말을 쓰지 않는다
+  ok('조사가 받침을 따른다', !/은\(는\)|을\(를\)/.test(await page.locator('.login-invite').textContent()));
   await page.keyboard.press('Escape');
   await settle(400);
 
@@ -79,6 +88,12 @@ const ok = (n, c, x = '') => { console.log((c ? 'PASS' : 'FAIL') + ' ' + n + ' '
   await settle(1200);
   ok('잠긴 화면에는 탭 줄이 없다', (await page.locator('#tabs .tabs__item').count()) === 0);
   ok('잠긴 화면에 로그인 버튼', await page.locator('.plan__lock-go').isVisible());
+  // 잠긴 화면의 버튼도 곧바로 로그인 창을 띄우지 않고 안내 팝업을 먼저 연다
+  await page.locator('.plan__lock-go').click();
+  await settle(700);
+  ok('잠긴 화면 버튼도 안내 팝업을 연다', await page.locator('.login-invite').isVisible());
+  await page.keyboard.press('Escape');
+  await settle(400);
   ok('잠긴 화면에 목록이 없다', (await page.locator('.plan__mon').count()) === 0);
 
   // ── 3. 로그인 상태 = 열림 ─────────────────────────────────────────────────

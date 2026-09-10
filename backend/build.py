@@ -110,7 +110,7 @@ json.dump(pvp_all, open('data/pvp_all.json', 'w', encoding='utf-8'), ensure_asci
 
 # ── frontend/ 의 CSS·JS를 순서대로 인라인해 단일 dist/index.html 조립 ──
 # 순서가 곧 캐스케이드(CSS)·실행 순서(JS)이므로 새 파일은 여기 목록에 추가
-APP_VERSION = 'v2.49.1'  # 버그 제보 링크 못 박기 (WBS 주소로 교체 금지)
+APP_VERSION = 'v2.51.0'  # 로그인 유도 팝업 (잠긴 화면을 누르면 메뉴 대신 안내)
 # 2026-09-05 v2.7.3 빌드 채널 — 'prod'(기본) / 'dev'. dev 브랜치 워크플로(.github/workflows/deploy-dev.yml)가 BUILD_CHANNEL=dev 로 부른다.
 # dev 빌드는 (1) 버전 배지에 -dev 를 붙여 화면에서 구분되고 (2) GA 스니펫을 넣지 않아 통계가 섞이지 않고
 # (3) robots.txt 를 전부 차단 + <meta name="robots" content="noindex"> 로 검색 색인을 막는다. 나머지는 prod 와 동일
@@ -178,6 +178,7 @@ SCRIPTS = [
     'components/trainers.js', 'components/favdigest.js', 'components/totop.js',  # 2026-09-05 favdigest: 메인 즐겨찾기 카드
     'views/pvp.js', 'views/pve.js', 'views/max.js', 'views/tier.js', 'views/usage.js', 'views/ifsolo.js',  # 2026-09-02 if 탭
     'components/theme.js',  # 2026-09-10 v2.47.0 밝게/어둡게 전환 (헤더 버튼 · 계정 저장)
+    'components/freshness.js',  # 2026-09-10 v2.50.0 새 데이터·새 버전 알림 (설치형 앱이 옛 데이터를 붙들지 않게)
     'app.js', 'components/app-shell.js',
 ]
 # 2026-09-09 v2.41.0 UI 목록(#/styleguide)은 dev 미리보기에만 — 방문자에게는 쓸모가 없고 번들만 키운다.
@@ -294,7 +295,10 @@ if BUILD_CHANNEL == 'dev':
     # (색인은 어차피 막지만, 링크를 붙였을 때 엉뚱한 곳으로 가는 것을 막으려는 것)
     html = html.replace(SITE_URL, DEV_SITE_URL)
 # 2026-09-03 v2.2.0 앱 설정 주입
-html = html.replace('__APP_CONFIG__', f"const FIREBASE_CONFIG = {json.dumps(FIREBASE_CONFIG)};\nconst ADMIN_EMAIL = {json.dumps(ADMIN_EMAIL)};\nconst ADMIN_UID = {json.dumps(ADMIN_UID)};\nconst CONTACT_EMAIL = {json.dumps(CONTACT_EMAIL)};")
+# 2026-09-10 v2.50.0 BUILD_VERSION — 지금 띄운 것이 어느 빌드인지 코드가 알아야 한다.
+# 헤더에 글자로 박아 두던 것(__VERSION__)은 app-shell.js 가 헤더를 통째로 갈아 끼우면서 사라진다.
+# 화면에서 긁어 오는 대신 값으로 넣는다 (components/freshness.js 가 build.json 과 견준다)
+html = html.replace('__APP_CONFIG__', f"const FIREBASE_CONFIG = {json.dumps(FIREBASE_CONFIG)};\nconst ADMIN_EMAIL = {json.dumps(ADMIN_EMAIL)};\nconst ADMIN_UID = {json.dumps(ADMIN_UID)};\nconst CONTACT_EMAIL = {json.dumps(CONTACT_EMAIL)};\nconst BUILD_VERSION = {json.dumps(APP_VERSION)};")
 # 2026-09-05 v2.8.0 푸터 문의 이메일 — CONTACT_EMAIL 이 비어 있으면 문구 자체를 뺀다
 contact_html = f'문의·건의: <a href="mailto:{CONTACT_EMAIL}">{CONTACT_EMAIL}</a> · ' if CONTACT_EMAIL else ''
 html = html.replace('__CONTACT__', contact_html)
@@ -304,6 +308,17 @@ if INLINE:
 else:
     open('dist/data.js', 'w', encoding='utf-8').write(data_js)
 open('dist/index.html', 'w', encoding='utf-8').write(html)
+# 2026-09-10 v2.50.0 아주 작은 빌드 표식 — 앱이 "지금 보고 있는 것이 최신인가" 를 물을 때 받는 파일.
+# data.js 는 1.5MB 라 확인용으로 매번 받을 수 없다. 이 파일은 100바이트도 안 된다.
+#   version  앱 버전 (patch 포함)
+#   fetched  데이터를 받은 날짜 (gameday.json 의 그 값 — 알 부화·레이드 보스가 이 날짜 기준이다)
+_gameday_fetched = ''
+try:
+    _gameday_fetched = json.load(open('data/gameday.json', encoding='utf-8')).get('fetched', '')
+except Exception:
+    pass
+json.dump({'version': APP_VERSION, 'fetched': _gameday_fetched, 'timestamp': game_master['timestamp']},
+          open('dist/build.json', 'w', encoding='utf-8'), ensure_ascii=False)
 # 2026-09-03 PWA 정적 파일(manifest·아이콘·서비스워커) 복사
 import shutil
 if os.path.isdir('frontend/static'):

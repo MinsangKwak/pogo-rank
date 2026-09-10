@@ -124,10 +124,13 @@ function lockedCardNode(screenName, why) {
   return el('section', { class: 'plan__lock' },
     el('span', { class: 'plan__lock-ico', 'aria-hidden': 'true' }, pending ? '⏳' : '🔒'),
     el('h2', {}, pending ? '승인 대기 중이에요' : '로그인하면 열립니다'),
+    // 조사는 받침을 보고 고른다 (components/name.js koParticle)
     el('p', {}, pending
-      ? `관리자가 승인하면 ${screenName}을(를) 쓸 수 있어요.`
-      : `${screenName}은(는) ${why} 로그인이 필요합니다. 도감 · 타입 & 상성 · D-MAX 는 로그인 없이도 그대로 쓸 수 있어요.`),
-    pending ? '' : el('button', { class: 'drawer__item account__login plan__lock-go', onclick: () => signIn() }, '🔐 Google로 로그인'),
+      ? `관리자가 승인하면 ${screenName}${koParticle(screenName, 'eul')} 쓸 수 있어요.`
+      : `${screenName}${koParticle(screenName, 'eun')} ${why} 로그인이 필요합니다. 도감 · 타입 & 상성 · D-MAX 는 로그인 없이도 그대로 쓸 수 있어요.`),
+    // 2026-09-10 v2.51.0 여기서도 바로 로그인 창을 띄우지 않고 안내 팝업을 먼저 연다 —
+    // 승인제라는 사실을 누르기 전에 알려야 "로그인했는데 왜 안 되지" 를 겪지 않는다
+    pending ? '' : el('button', { class: 'drawer__item account__login plan__lock-go', onclick: () => openLoginInvite(screenName) }, '🔐 Google로 로그인'),
     el('p', { class: 'detail__foot' }, '승인된 친구만 사용할 수 있어요. 첫 로그인 때 이용약관·개인정보처리방침 동의를 받습니다.'));
 }
 

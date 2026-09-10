@@ -56,6 +56,7 @@ function nameNode(name, attrs = {}) {
 //   kind 'ro'   로 / 으로    (받침 없거나 ㄹ 이면 로)
 //   kind 'i'    이 / 가      (받침 없으면 가)
 //   kind 'eun'  은 / 는      (받침 없으면 는)
+//   kind 'eul'  을 / 를      (받침 없으면 를)
 // 한글이 아닌 글자로 끝나면(영문·숫자) 받침이 있는 것으로 친다 — 이 앱의 이름은 사실상 전부 한글이라
 // 예외를 정교하게 다룰 이유가 없고, 틀렸을 때 덜 어색한 쪽이 그쪽이다
 function koParticle(word, kind) {
@@ -68,5 +69,6 @@ function koParticle(word, kind) {
   if (kind === 'ro') return !hasBatchim || isRieul ? '로' : '으로';
   if (kind === 'i') return hasBatchim ? '이' : '가';
   if (kind === 'eun') return hasBatchim ? '은' : '는';
+  if (kind === 'eul') return hasBatchim ? '을' : '를';
   return hasBatchim ? '과' : '와';
 }
