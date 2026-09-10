@@ -200,8 +200,15 @@ const ok = (n, c, x = '') => { console.log((c ? 'PASS' : 'FAIL') + ' ' + n + ' '
     }
     // 도감·레이드 보스·즐겨찾기는 PC 에서 카드가 기본 (wideCards, dom.js)
     for (const hash of ['#/dex', '#/raids', '#/favs']) {
-      // 앞 검사에서 보기 방식 토글을 눌러 저장된 선택이 남아 있다 — 기본값을 보려면 지우고 들어간다
-      await page.evaluate(() => { try { localStorage.removeItem('pogo_dex_cols'); } catch { /* 저장 불가 환경 */ } });
+      // 앞 검사에서 보기 방식 토글을 눌러 저장된 선택이 남아 있다 — 기본값을 보려면 지우고 들어간다.
+      // 2026-09-10 v2.53.0 화면마다 키가 따로다 (pogo_dex_cols · pogo_raids_cols · pogo_favs_cols).
+      // 전에는 도감 키 하나만 지워서, 레이드 보스는 앞 검사가 남긴 선택을 그대로 읽었다 —
+      // 좁은 화면인데 카드로 잡혀 실패했다. 셋을 다 지운다
+      await page.evaluate(() => {
+        for (const k of ['pogo_dex_cols', 'pogo_raids_cols', 'pogo_favs_cols']) {
+          try { localStorage.removeItem(k); } catch { /* 저장 불가 환경 */ }
+        }
+      });
       await go(hash);
       const grid = await page.locator('#page .dex__list').first().evaluate((n) => n.classList.contains('is-grid'));
       ok(`${label} ${hash} 카드 기본값`, grid === wide, String(grid));
