@@ -12,7 +12,12 @@ const ok = (n, c, x = '') => { console.log((c ? 'PASS' : 'FAIL') + ' ' + n + ' '
 (async () => {
   const browser = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium' });
 
-  for (const [w, h, label] of [[1440, 900, 'PC'], [390, 844, '모바일']]) {
+  // 2026-09-10 v2.54.0 두 화면 폭을 **동시에** 돈다. 전에는 PC 15화면을 다 돈 뒤에야 모바일을
+  // 시작해서 이 스위트 하나가 회귀 전체를 붙잡았다 (실측 450초 — 두 번째로 느린 것의 두 배).
+  // 두 폭은 각자 제 컨텍스트를 쓰므로 저장소도 쿠키도 섞이지 않는다.
+  // 화면을 옮길 때마다 페이지를 통째로 다시 읽고(1.5MB data.js) 그게 비용의 대부분이라,
+  // 줄일 방법은 "덜 읽기" 아니면 "같이 읽기" 인데 검사 자체는 그대로 둬야 하니 후자를 골랐다
+  const sweep = async ([w, h, label]) => {
     const ctx = await browser.newContext({ viewport: { width: w, height: h } });
     await ctx.route(/^https?:\/\/(?!localhost)/, (r) => r.abort());
     ctx.setDefaultTimeout(6000);
@@ -228,7 +233,8 @@ const ok = (n, c, x = '') => { console.log((c ? 'PASS' : 'FAIL') + ' ' + n + ' '
 
     ok(`${label} 페이지 오류 없음`, errs.length === 0, errs.join(' | ').slice(0, 160));
     await ctx.close();
-  }
+  };
+  await Promise.all([[1440, 900, 'PC'], [390, 844, '모바일']].map(sweep));
 
   // ── v2.40.1 폭을 오가도 메뉴 항목이 사라지지 않는가 (창 크기 조절 · 태블릿 회전 · 폴더블)
   // 좁은 화면에서 정보 카드에 담아 둔 아코디언을, 넓은 화면으로 돌아갈 때 카드째 들어내면서

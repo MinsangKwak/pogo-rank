@@ -60,8 +60,11 @@ cleanup() { [[ $OWN_SERVER -eq 1 ]] && kill "$SERVER_PID" 2>/dev/null; }
 trap cleanup EXIT
 
 # 3. 실행 순서 — 느린 것부터. 일꾼이 넷인데 느린 것이 맨 뒤에 남으면 셋이 놀면서 그 하나를 기다린다.
-#    (실측: fingerprint 183s · breakpoints 75s · i18n 70s · layout-toggle 70s · bot-filter 60s · 나머지 15s 미만)
-SLOW="fingerprint breakpoints i18n layout-toggle bot-filter"
+#    순서는 짐작이 아니라 병렬로 한 바퀴 돌려 잰 값이다 (혼자 돌 때보다 느려지므로 따로 재야 한다):
+#      shell 450s · nav 253s · router 212s · fingerprint 98s · breakpoints 85s
+#      layout-toggle 74s · i18n 73s · bot-filter 64s · 나머지 30s 미만
+#    새 스위트가 생기면 이 목록 뒤에 붙어 돌 뿐, 순서를 몰라도 깨지지 않는다
+SLOW="shell nav router fingerprint breakpoints layout-toggle i18n bot-filter"
 ORDER=()
 for name in $SLOW; do [[ -f "tests/e2e/$name.js" ]] && ORDER+=("tests/e2e/$name.js"); done
 for f in tests/e2e/*.js; do
