@@ -194,12 +194,14 @@ function openPlanMonEditor(mon = null, prefill = null) {
       if (!query) return;
       const candidates = buildSearchIndex().filter((entry) => !/^(다이맥스|거다이맥스) /.test(entry.name));
       for (const hit of monSearch(candidates, query, 8)) {
-        $sugg.append(el('button', { class: 'sugg__item', onclick: () => {
+        // 2026-09-10 v2.47.0 헤더 검색 패널과 같은 줄(components/search.js monSuggestRow) —
+        // 그림 · 이름 · 타입 알약 · 도감번호. 이름만 있던 줄은 물짱이 / 새도우 물짱이를 구분해 주지 못했다
+        $sugg.append(monSuggestRow(hit, () => {
           draft.sprite = hit.sprite;
           draft.shadow = /^섀도우 /.test(hit.name);
           draft.fast = ''; draft.charged = '';
           drawPick(); drawForm();
-        } }, sprite(hit.sprite), el('span', {}, nameNode(hit.name))));
+        }));
       }
       if (!$sugg.childElementCount) $sugg.append(el('span', { class: 'sugg__none' }, '검색 결과가 없어요'));
     });
@@ -305,6 +307,42 @@ function openPlanMonEditor(mon = null, prefill = null) {
 
 // ── 비교 팝업 ─────────────────────────────────────────────────────────────────
 // 같은 종 두 개체. 순위 평가가 아니라 "이 둘 중 어느 쪽을 키우나"의 숫자 근거만 나란히 둔다
+// 2026-09-10 v2.47.0 표 아래 결론 한 줄. 숫자를 다 읽고 스스로 판단하라고 두는 대신 먼저 답한다.
+//
+// 무엇을 근거로 하나 — 순서대로 본다
+//   (1) 섀도우가 한쪽만이면 **승자를 정하지 않는다**. 섀도우는 CP 에 안 잡히는 배틀 보정(공격 ↑ 방어 ↓)이
+//       따로 있어서, 이 표의 숫자만으로 "더 강하다" 라고 말하면 틀린 말이 된다
+//   (2) 만렙(Lv50) CP — 다 키웠을 때의 값. 육성 대상 고르기에는 이게 먼저다
+//   (3) 지금 CP — 만렙이 같으면 지금 더 센 쪽이 즉시 전력이다
+//   (4) 둘 다 같으면 같다고 말한다 (억지로 승자를 만들지 않는다)
+function planCompareVerdict(first, second) {
+  const name = (mon) => planMonName(mon);
+  const line = (title, desc, kind = 'even') => el('div', { class: `plan__cmp-verdict plan__cmp-verdict--${kind}` },
+    el('span', { class: 'plan__cmp-verdict-ico', 'aria-hidden': 'true' }, kind === 'even' ? '⚖️' : '🌱'),
+    el('div', {}, el('b', {}, title), el('span', {}, desc)));
+  if (!!first.shadow !== !!second.shadow) {
+    return line('섀도우와 일반은 이 표만으로 못 고릅니다',
+      '섀도우는 CP 에 안 잡히는 배틀 보정(공격 ↑ · 방어 ↓)이 따로 있어요. 레이드 딜러라면 섀도우가, 오래 버텨야 하면 일반이 유리한 편입니다.');
+  }
+  const topA = planMonCp(first, 50);
+  const topB = planMonCp(second, 50);
+  if (topA !== topB) {
+    const win = topA > topB ? first : second;
+    const side = topA > topB ? '왼쪽' : '오른쪽';
+    return line(`${side}의 ${name(win)} 가 더 강한 개체예요!`,
+      `다 키웠을 때(Lv 50) CP 가 ${Math.abs(topA - topB).toLocaleString()} 더 높습니다. 육성 대상을 하나만 고른다면 이쪽입니다.`, 'win');
+  }
+  const nowA = planMonCp(first);
+  const nowB = planMonCp(second);
+  if (nowA !== nowB) {
+    const side = nowA > nowB ? '왼쪽' : '오른쪽';
+    const win = nowA > nowB ? first : second;
+    return line(`${side}의 ${name(win)} 가 지금 더 강해요`,
+      '다 키우면 같은 CP 가 되지만, 지금 CP 가 더 높아 즉시 전력으로 쓰기 좋습니다. 강화 비용도 그만큼 덜 듭니다.', 'win');
+  }
+  return line('두 개체가 같습니다', '개체값도 도달 CP 도 같아요. 기술이나 메모처럼 표 밖의 기준으로 고르세요.');
+}
+
 function openPlanCompare(first, second) {
   track('plan_compare', { mon: planMonName(first) });
   const form = planMonForm(first);
@@ -321,9 +359,27 @@ function openPlanCompare(first, second) {
   };
   const reachText = (reach) => reach ? `${reach.cp.toLocaleString()} (Lv ${reach.level})` : null;
   const reachNum = (reach) => reach ? reach.cp : null;
-  const head = (mon) => el('div', { class: 'plan__cmp-head' }, sprite(mon.sprite), el('b', {}, nameNode(planMonName(mon))), el('span', { class: 'meta' }, mon.memo || mon.status));
-  const body = el('div', { class: 'detail' },
-    el('h2', {}, '⚖️ 같은 종 개체 비교'),
+  // 2026-09-10 v2.47.0 표 머리는 이름만 남긴다 — 바로 위 카드 두 장이 그림·상태·개체값을 이미 보여 준다.
+  // 같은 것을 두 번 그리면 표가 시작되는 자리가 어디인지 흐려진다. 메모는 카드에 없으므로 여기 남긴다
+  const head = (mon) => el('div', { class: 'plan__cmp-head' }, el('b', {}, nameNode(planMonName(mon))), mon.memo ? el('span', { class: 'meta' }, mon.memo) : '');
+  // 2026-09-10 v2.47.0 표 위에 카드 두 장 — 목업의 개체 비교 창. 표는 숫자를 견주는 자리고,
+  // 카드는 "지금 무엇과 무엇을 견주고 있나"를 한눈에 준다. 왼쪽/오른쪽 색을 다르게 해 표의 두 칸과 짝지운다
+  const cmpCard = (mon, side) => {
+    const statusMod = PLAN_STATUS_MODS[PLAN_STATUSES.indexOf(mon.status)] || 'a';
+    const hundo = planHundoLabel(mon);
+    return el('div', { class: `plan__cmp-card plan__cmp-card--${side}` },
+      sprite(mon.sprite),
+      el('span', { class: `tag plan__status plan__status--${statusMod}` }, mon.status),
+      el('b', { class: 'plan__cmp-name' }, nameNode(planMonName(mon))),
+      el('span', { class: 'plan__cmp-sub' }, `Lv ${mon.level} · CP ${planMonCp(mon).toLocaleString()}`),
+      el('span', { class: `plan__cmp-iv${hundo ? ' plan__cmp-iv--' + hundo.kind : ''}` },
+        `개체값 ${(mon.ivs ?? []).join('/')} (${planIvPercent(mon.ivs)}%)`));
+  };
+  const body = el('div', { class: 'detail plan__cmp-body' },
+    el('div', { class: 'plan__cmp-title' },
+      el('h2', {}, '⚖️ 같은 종 개체 비교'),
+      el('p', { class: 'plan__cmp-lead' }, '같은 종의 포켓몬을 나란히 비교하여, 더 좋은 개체를 확인하세요.')),
+    el('div', { class: 'plan__cmp-cards' }, cmpCard(first, 'a'), cmpCard(second, 'b')),
     el('div', { class: 'cmp plan__cmp' },
       el('div', { class: 'cmp__row cmp__head' }, el('em', {}, ''), head(first), head(second)),
       row('지금 레벨', first.level, second.level),
@@ -343,6 +399,7 @@ function openPlanCompare(first, second) {
       row('스피드 기술', first.fast || '—', second.fast || '—'),
       row('차지 기술', first.charged || '—', second.charged || '—'),
       row('섀도우', first.shadow ? '섀도우' : '일반', second.shadow ? '섀도우' : '일반')),
+    planCompareVerdict(first, second),
     footNote('굵은 값이 더 큰 쪽입니다. 리그 도달 = CP 상한을 넘지 않는 가장 높은 레벨의 CP. 이 표는 같은 종 안에서의 숫자 비교일 뿐 순위표 평가가 아니며, PvP 에서는 개체값이 낮아도 상한에 딱 맞는 개체가 유리할 수 있습니다.'));
   openModal(body);
 }
@@ -350,26 +407,68 @@ function openPlanCompare(first, second) {
 // ── 목록 화면 ─────────────────────────────────────────────────────────────────
 let _planFilter = 'all';        // 상태 칩
 let _planCompare = [];          // 비교로 고른 개체 id (최대 2)
+// 2026-09-10 v2.47.0 비교를 눌렀는데 아무 일도 안 일어난 것처럼 보이던 문제 —
+// 안내문을 목록 **아래**(문서 3,000px 지점)에 그려 화면 밖이었다. 이제 목록 위에 띄우고,
+// 다른 종을 골라 짝이 깨진 경우에는 그 이유를 말한다
+let _planCompareMsg = '';
 
-function planMonCard(mon) {
+// 2026-09-10 v2.47.0 목업(내 포켓몬 목록)대로 한 줄을 **정보 묶음 네 덩이**로 다시 짰다.
+//   [순번] [그림] [이름·상태·타입·레벨/개체값] [CP] [주요 기술] [동작]
+// 예전에는 Lv · 개체값 · CP · 기술이 한 문장으로 이어져 있어, 찾으려는 값을 눈이 매번 훑어야 했다.
+// index 는 지금 보이는 목록 안의 순번이다(전체 통산 순위가 아니다) — 목업의 왼쪽 번호 배지와 같은 뜻
+// 지금 고른 개체가 있고, 그 개체와 종이 다르면 true (짝이 될 수 없는 줄)
+function planCompareBlocked(mon) {
+  if (_planCompare.length !== 1 || _planCompare.includes(mon.id)) return false;
+  const other = planMons().find((entry) => entry.id === _planCompare[0]);
+  return !!other && dexOf(other.sprite) !== dexOf(mon.sprite);
+}
+
+function planMonCard(mon, index = 0) {
   const form = planMonForm(mon);
   const picked = _planCompare.includes(mon.id);
   const cp = planMonCp(mon);
   const maxKind = maxPoolKind(mon.sprite);
   const hundo = planHundoLabel(mon);     // v2.25.0 백개체 · 유사백 · 준수
   const gap = hundo ? planHundoGap(mon, 50) : null;
+  const ivPercent = planIvPercent(mon.ivs);
+  const types = form?.types ?? [];
   return el('div', { class: `plan__mon${picked ? ' is-picked' : ''}` },
+    el('span', { class: 'plan__mon-no' }, String(index + 1)),
     sprite(mon.sprite),
     el('div', { class: 'plan__mon-main' },
-      el('div', { class: 'row__name' }, nameNode(planMonName(mon)), el('span', { class: `tag plan__status plan__status--${PLAN_STATUS_MODS[PLAN_STATUSES.indexOf(mon.status)] || 'a'}` }, mon.status)),
-      el('div', { class: 'row__moves' }, el('span', {}, `Lv ${mon.level}`), el('span', {}, `개체값 ${(mon.ivs ?? []).join('/')} (${planIvPercent(mon.ivs)}%)`), el('span', {}, `CP ${cp.toLocaleString()}`),
+      el('div', { class: 'row__name' }, nameNode(planMonName(mon)),
+        el('span', { class: `tag plan__status plan__status--${PLAN_STATUS_MODS[PLAN_STATUSES.indexOf(mon.status)] || 'a'}` }, mon.status),
         hundo ? el('span', { class: `tag plan__hundo plan__hundo--${hundo.kind}`, title: gap ? `만렙 기준 백개체 CP ${gap.perfect.toLocaleString()} 의 ${Math.round(gap.ratio * 100)}% (${gap.gap.toLocaleString()} 차이)` : '' }, hundo.text) : ''),
-      el('div', { class: 'row__moves' }, el('span', {}, mon.fast || '스피드 모름'), el('span', {}, mon.charged || '차지 모름'),
-        maxKind ? el('span', {}, maxKind === 'G' ? '거다이맥스 가능' : '다이맥스 가능') : ''),
+      // 타입과 맥스 여부 — 목업의 이름 아래 한 줄. 타입 알약은 도감에서 쓰는 조각 그대로다
+      types.length || maxKind
+        ? el('div', { class: 'plan__mon-types' },
+            ...types.map((typeName) => el('span', { class: 'dex__type', style: `--c: var(--t-${typeName})` },
+              el('i', { class: 'dot', 'aria-hidden': 'true' }),
+              el('b', {}, TYPE_KO[typeName] ?? typeName))),
+            maxKind ? el('span', { class: 'plan__mon-max' }, maxKind === 'G' ? '✨ 거다이맥스 가능' : '✨ 다이맥스 가능') : '')
+        : '',
+      // 레벨과 개체값 — 개체값은 막대로도 그린다. 숫자 세 개보다 길이 하나가 먼저 읽힌다
+      el('div', { class: 'plan__mon-lv' },
+        el('b', {}, `Lv ${mon.level}`),
+        el('span', { class: 'plan__mon-iv' }, `${(mon.ivs ?? []).join(' / ')} (${ivPercent}%)`)),
+      el('div', { class: 'plan__mon-bar', role: 'img', 'aria-label': `개체값 ${ivPercent}%` },
+        el('span', { style: `width: ${ivPercent}%` })),
       mon.memo ? el('div', { class: 'plan__memo-line' }, mon.memo) : '',
       form ? '' : el('div', { class: 'account__msg' }, '폼 데이터가 없어 CP 를 계산할 수 없어요')),
+    el('div', { class: 'plan__mon-cp' }, el('em', {}, 'CP'), el('b', {}, cp.toLocaleString())),
+    el('div', { class: 'plan__mon-moves' },
+      el('em', {}, '주요 기술'),
+      el('div', { class: 'plan__mon-move-list' },
+        el('span', { class: 'plan__move' }, el('b', {}, mon.fast || '스피드 모름'), el('i', {}, '노말')),
+        el('span', { class: 'plan__move' }, el('b', {}, mon.charged || '차지 모름'), el('i', {}, '스페셜')))),
     el('div', { class: 'plan__mon-actions' },
-      uchip(picked ? '☑ 비교' : '☐ 비교', () => togglePlanCompare(mon), { on: picked }),
+      // 한 마리를 고른 상태에서 다른 종의 [비교] 는 짝이 될 수 없다 — 눌러도 되지만(새로 시작한다)
+      // 지금 짝이 되는 줄이 어느 것인지 보이도록 흐리게 둔다
+      uchip(picked ? '☑ 비교' : '☐ 비교', () => togglePlanCompare(mon), {
+        on: picked,
+        class: planCompareBlocked(mon) ? 'is-offpair' : '',
+        title: planCompareBlocked(mon) ? '다른 종이라 지금 고른 개체와는 비교할 수 없어요' : '같은 종 두 마리를 골라 나란히 비교',
+      }),
       uchip('수정', () => openPlanMonEditor(mon)),
       el('button', { class: 'uchip admin__act is-danger', onclick: () => {
         if (!confirm(`${planMonName(mon)} (Lv ${mon.level}) 를 지울까요?`)) return;
@@ -381,13 +480,25 @@ function planMonCard(mon) {
 
 // 비교 선택: 같은 종(도감번호)끼리만 두 개까지. 둘이 모이면 바로 비교 팝업
 function togglePlanCompare(mon) {
+  _planCompareMsg = '';
   if (_planCompare.includes(mon.id)) _planCompare = _planCompare.filter((id) => id !== mon.id);
   else {
     const other = planMons().find((entry) => entry.id === _planCompare[0]);
-    if (other && dexOf(other.sprite) !== dexOf(mon.sprite)) _planCompare = [mon.id];  // 다른 종을 고르면 새로 시작
-    else _planCompare = [..._planCompare.slice(-1), mon.id];
+    if (other && dexOf(other.sprite) !== dexOf(mon.sprite)) {
+      // 비교표는 앞 개체의 종족값으로 두 칸을 다 계산한다(openPlanCompare 의 form) — 다른 종을 나란히 놓으면
+      // 숫자가 통째로 틀린다. 그래서 새로 시작하되, **왜 짝이 풀렸는지**를 말한다.
+      // 예전에는 조용히 새로 시작해서, 누른 사람에게는 "눌렀는데 아무 일도 안 일어난" 화면이었다
+      const [nameA, nameB] = [planMonName(other), planMonName(mon)];
+      _planCompareMsg = `${nameA}${koParticle(nameA, 'wa')} ${nameB}${koParticle(nameB, 'eun')} 다른 종이라 나란히 비교할 수 없어요. ${nameB}${koParticle(nameB, 'ro')} 다시 시작합니다.`;
+      _planCompare = [mon.id];
+    } else {
+      _planCompare = [..._planCompare.slice(-1), mon.id];
+    }
   }
   render();
+  // 다시 그린 뒤 안내 바를 화면 안으로 — 목록을 스크롤해 내려간 상태에서 눌렀다면 바는 위쪽에 있다.
+  // 이 스크롤이 없으면 "눌렀는데 아무 반응이 없다" 로 보인다 (v2.47.0 이전의 실제 증상)
+  requestAnimationFrame(() => document.querySelector('.plan__cmp-bar')?.scrollIntoView({ block: 'center', behavior: 'smooth' }));
   if (_planCompare.length === 2) {
     const [a, b] = _planCompare.map((id) => planMons().find((entry) => entry.id === id));
     if (a && b) openPlanCompare(a, b);
@@ -424,17 +535,30 @@ function renderPlanCollection() {
       render();
     }));
     $content.append(addButton);
+    // 2026-09-10 v2.47.0 비교 안내는 **목록 위**에 둔다. 목록 아래에 있던 예전 자리는
+    // 개체가 몇 마리만 넘어도 화면 밖이라, 누른 사람에게는 아무 반응이 없는 것과 같았다
+    if (_planCompareMsg || _planCompare.length === 1) {
+      const picked = mons.find((mon) => mon.id === _planCompare[0]);
+      const bar = el('div', { class: `plan__cmp-bar${_planCompareMsg ? ' is-warn' : ''}` },
+        el('span', { class: 'plan__cmp-bar-ico', 'aria-hidden': 'true' }, _planCompareMsg ? '⚠' : '⚖️'),
+        el('span', { class: 'plan__cmp-bar-text' }, _planCompareMsg
+          ? _planCompareMsg
+          : picked ? `${planMonName(picked)}${koParticle(planMonName(picked), 'wa')} 비교할 **같은 종** 개체의 [☐ 비교] 를 누르세요.` : ''),
+        uchip('선택 해제', () => { _planCompare = []; _planCompareMsg = ''; render(); }));
+      // 별표 두 개는 강조 표시라 그대로 두면 글자로 보인다 — 노드로 바꿔 굵게 만든다
+      const $text = bar.querySelector('.plan__cmp-bar-text');
+      if ($text.textContent.includes('**')) {
+        const [before, strong, after] = $text.textContent.split('**');
+        $text.replaceChildren(before, el('b', {}, strong), after);
+      }
+      $content.append(bar);
+    }
     if (!mons.length) {
       $content.append(hintNote('아직 저장한 개체가 없어요. 도감 상세 팝업의 "➕ 내 개체로 저장"을 누르거나 위 버튼으로 종을 검색해 추가하세요.'));
     } else if (!shown.length) {
       $content.append(hintNote('이 상태의 개체가 없어요.'));
     } else {
-      $content.append(el('div', { class: 'plan__mons' }, ...shown.map(planMonCard)));
-    }
-    if (_planCompare.length === 1) {
-      const picked = mons.find((mon) => mon.id === _planCompare[0]);
-      if (picked) $content.append(hintNote(`⚖️ ${planMonName(picked)} 와 비교할 같은 종 개체의 [☐ 비교] 를 누르세요. `,
-        uchip('선택 해제', () => { _planCompare = []; render(); })));
+      $content.append(el('div', { class: 'plan__mons' }, ...shown.map((mon, index) => planMonCard(mon, index))));
     }
   }
   $content.append(footNote('개체 = 실제로 가진 한 마리. 같은 종을 여러 마리 저장할 수 있고, [☐ 비교] 를 같은 종 두 마리에 누르면 CP·개체값·리그 도달을 나란히 봅니다. ★ 즐겨찾기(종 단위)와는 별개로 저장됩니다.'));

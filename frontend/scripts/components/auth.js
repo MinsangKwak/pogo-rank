@@ -31,6 +31,9 @@
 // 설정이 없으면 SDK를 받아도 로그인이 불가능하므로, authEnabled()가 false일 때는
 // 계정 영역(☰ 메뉴 맨 위 마이페이지)을 감춰서 눌러도 안 되는 버튼을 노출하지 않는다.
 const FIREBASE_VER = '12.18.0';
+// 2026-09-10 v2.48.0 리다이렉트 로그인으로 나갔다는 표시. 돌아와서 결과가 비었으면
+// "브라우저가 사이트 간 저장소를 막았다" 는 뜻이라, 그때만 안내를 띄운다 (signIn · initAuth)
+const REDIRECT_TRY_KEY = 'pogo_auth_redirect';
 const AUTH = {
   ready: false,      // SDK 로드·초기화 완료
   user: null,        // firebase user
@@ -41,6 +44,10 @@ const AUTH = {
   mons: [],          // 2026-09-07 v2.15.0 (QA-54) 🌱 플래너 내 포켓몬 — 개체 단위 배열 (planner/collection.js 가 읽고 쓴다)
   db: null,
   requestError: '',  // 2026-09-10 v2.44.0 가입 요청(requests 문서) 쓰기가 실패했을 때의 오류 코드
+  // 2026-09-10 v2.48.0 리다이렉트 로그인이 자격 없이 돌아왔을 때의 안내.
+  // 한 번짜리 문구로 두면 곧바로 뒤따르는 onAuthStateChanged 의 다시 그리기에 지워진다 — 상태로 둔다.
+  // 다시 로그인을 누르거나(signIn) 실제로 로그인되면(onAuthChange) 지워진다
+  redirectMsg: '',
 };
 
 // 로그인 기능을 켤 수 있는 빌드인지 — FIREBASE_CONFIG.apiKey가 있어야 의미가 있다
@@ -111,12 +118,30 @@ async function initAuth() {
     if (!firebase.apps.length) firebase.initializeApp(FIREBASE_CONFIG);
     AUTH.db = firebase.firestore();
     AUTH.ready = true;
-    // PWA·팝업 대체 경로(리다이렉트)로 돌아온 경우의 결과 수거.
+    // 팝업 대체 경로(리다이렉트)로 돌아온 경우의 결과 수거.
     // 2026-09-10 v2.44.0 여기서 오류를 통째로 버리던 것을 화면에 띄운다 — 리다이렉트가 실패하면
     // 사용자는 아무 안내 없이 비로그인 화면으로 돌아왔고(CSP 로 로그인이 막혀 있던 동안이 그랬다),
-    // 무엇이 잘못됐는지 물어볼 단서조차 남지 않았다. 성공 경로는 onAuthStateChanged 가 이어받는다
+    // 무엇이 잘못됐는지 물어볼 단서조차 남지 않았다. 성공 경로는 onAuthStateChanged 가 이어받는다.
+    //
+    // 2026-09-10 v2.48.0 **오류 없이 빈손으로 돌아오는 경우**도 잡는다 — 이게 더 흔하다.
+    // 리다이렉트 로그인은 자격을 authDomain(다른 출처) 쪽에 두고 오는데, 브라우저가 그 저장소를
+    // 최상위 사이트별로 갈라 두면 앱이 못 읽는다. 그때 SDK 는 오류를 던지지 않고 null 을 준다.
+    // 나갈 때 남겨 둔 표시(REDIRECT_TRY_KEY)가 있는데 결과가 비었으면 그 경우다
     firebase.auth().getRedirectResult()
-      .catch((error) => renderAccount('로그인 실패(리다이렉트): ' + (error.code || error.message)));
+      .then((result) => {
+        let tried = null;
+        try { tried = localStorage.getItem(REDIRECT_TRY_KEY); localStorage.removeItem(REDIRECT_TRY_KEY); } catch {}
+        if (tried && !result?.user) {
+          // 곧바로 그리면 지워진다 — onAuthStateChanged(null) 이 바로 뒤따라와 계정 영역을 다시 그린다.
+          // 그래서 "다음에 그릴 때 함께 띄울 말" 로 맡겨 둔다 (renderAccount 가 한 번만 쓰고 비운다)
+          AUTH.redirectMsg = '로그인이 끝까지 가지 못했어요 — 이 브라우저가 사이트 간 저장소를 막고 있습니다. [Google로 로그인] 을 한 번 더 눌러 팝업으로 시도해 주세요.';
+          renderAccount();
+        }
+      })
+      .catch((error) => {
+        try { localStorage.removeItem(REDIRECT_TRY_KEY); } catch {}
+        renderAccount('로그인 실패(리다이렉트): ' + (error.code || error.message));
+      });
     firebase.auth().onAuthStateChanged(onAuthChange);
   } catch (error) {
     renderAccount('초기화 실패: ' + (error.message || error));
@@ -132,6 +157,7 @@ async function onAuthChange(user) {
   AUTH.roles = {};
   AUTH.mons = [];
   AUTH.requestError = '';
+  if (user) AUTH.redirectMsg = '';   // 로그인됐으면 지난 실패 안내는 더 볼 이유가 없다
   if (user) {
     const email = authEmail();
     // ADMIN_UID가 채워져 있으면 uid로 판정(공개 저장소에 이메일을 남기지 않기 위함), 없으면 이메일로 폴백
@@ -178,6 +204,8 @@ async function onAuthChange(user) {
   if (typeof renderTrainers === 'function') renderTrainers();
   // 2026-09-05 로그인 상태에 따라 ★ 즐겨찾기 메뉴 항목을 열고 닫는다
   if (typeof initFavsMenu === 'function') initFavsMenu();
+  // 2026-09-10 v2.47.0 로그인해야 쓰는 항목(육성 플래너)의 잠금 표시 갱신
+  if (typeof syncLockedNav === 'function') syncLockedNav();
   // 도감·즐겨찾기 페이지가 열려 있으면 ★ 표시를 다시 그린다
   if (typeof currentPageId === 'function' && ['dex', 'favs'].includes(currentPageId())) renderPage();
   // 2026-09-07 v2.15.0 (QA-54) 플래너 화면(내 포켓몬 목록·홈 요약)은 로그인 상태에 따라 내용이 다르다
@@ -186,6 +214,7 @@ async function onAuthChange(user) {
 
 async function signIn() {
   if (!authEnabled()) return;
+  AUTH.redirectMsg = '';   // 다시 눌렀으니 지난 안내는 지운다
   // SDK 지연 로드가 아직 안 끝난 경우 — 버튼을 없애는 대신 잠시 후 다시 누르라고 안내
   if (!AUTH.ready) {
     renderAccount('로그인 준비 중… 잠시 후 다시 눌러주세요');
@@ -198,13 +227,21 @@ async function signIn() {
   }
   const provider = new firebase.auth.GoogleAuthProvider();
   provider.setCustomParameters({ prompt: 'select_account' });
-  // 홈 화면 설치(PWA) 환경은 팝업이 막히므로 리다이렉트 방식
-  // 설치된 앱은 별도 창을 띄울 수 없어 팝업이 즉시 닫히거나 아예 열리지 않는다.
-  // 리다이렉트는 같은 창에서 구글 로그인 화면으로 이동한 뒤 돌아오므로 PWA에서도 동작한다
-  const standalone = window.matchMedia?.('(display-mode: standalone)').matches || navigator.standalone;
+  // 2026-09-10 v2.48.0 (긴급) **PWA 도 팝업을 먼저 쓴다.** 전에는 홈 화면에 설치한 앱이면
+  // 무조건 리다이렉트로 보냈는데, 이 서비스에서는 리다이렉트가 구조적으로 못 돌아온다:
+  //
+  //   우리 authDomain 은 pogo-note.firebaseapp.com 이고 앱은 minsangkwak.github.io 다 — 다른 출처다.
+  //   리다이렉트로 로그인하면 자격 증명이 authDomain 쪽에 저장되고, 앱은 그것을 authDomain 의
+  //   iframe 을 통해 읽어야 한다. 요즘 브라우저는 그 iframe 의 저장소를 **최상위 사이트별로 갈라 두므로**
+  //   (서드파티 저장소 차단·파티셔닝) 앱이 그 값을 못 읽는다. getRedirectResult() 는 오류도 아니고
+  //   그냥 빈손(null)으로 돌아오고, 화면은 조용히 비로그인으로 남는다 — 사용자가 겪은 그 증상이다.
+  //   설치형 앱은 브라우저와 저장소를 따로 쓰는 경우도 있어 더 자주 깨진다.
+  //
+  //   팝업은 창 사이 postMessage 로 자격을 건네므로 그 저장소를 타지 않는다. v2.44.0 에서 CSP 를
+  //   고쳐 apis.google.com 이 열린 뒤로는 팝업이 실제로 뜬다. 그래서 기본을 팝업으로 되돌린다.
+  //   ("설치된 앱은 창을 못 띄운다" 는 옛 iOS 제약이라 지금 브라우저에는 해당하지 않는다)
   try {
-    if (standalone) await firebase.auth().signInWithRedirect(provider);
-    else await firebase.auth().signInWithPopup(provider);
+    await firebase.auth().signInWithPopup(provider);
   } catch (error) {
     // 사용자가 연달아 눌러 앞선 팝업 요청이 취소된 경우는 오류가 아니므로 안내하지 않는다
     if (error.code === 'auth/cancelled-popup-request') return;
@@ -218,8 +255,14 @@ async function signIn() {
     // 여전히 있고, 그때 리다이렉트가 유일한 길이다. 다만 리다이렉트 결과의 오류는 이제
     // initAuth 의 getRedirectResult 가 화면에 띄운다(전에는 버렸다)
     if (/popup/i.test(error.code || '') || error.code === 'auth/internal-error') {
+      // 리다이렉트로 넘어간다는 표시를 남긴다 — 돌아왔는데 결과가 없으면 위에 적은 저장소 문제라,
+      // initAuth 가 그때 "왜 안 됐는지"를 말해 준다. 표시가 없으면 그냥 조용히 비로그인으로 끝난다
+      try { localStorage.setItem(REDIRECT_TRY_KEY, String(Date.now())); } catch {}
       await firebase.auth().signInWithRedirect(provider)
-        .catch((redirectError) => renderAccount('로그인 실패: ' + (redirectError.code || redirectError.message)));
+        .catch((redirectError) => {
+          try { localStorage.removeItem(REDIRECT_TRY_KEY); } catch {}
+          renderAccount('로그인 실패: ' + (redirectError.code || redirectError.message));
+        });
       return;
     }
     renderAccount('로그인 실패: ' + (error.code || error.message));
@@ -297,6 +340,10 @@ async function loadFavs() {
   // 2026-09-07 v2.15.0 (QA-54) 내 포켓몬 개체 목록 — 배열이 아니면(옛 문서·손상) 빈 목록
   const mons = snapshot && snapshot.exists ? snapshot.data().mons : null;
   AUTH.mons = Array.isArray(mons) ? mons.filter((mon) => mon && mon.id && mon.sprite != null) : [];
+  // 2026-09-10 v2.47.0 화면 테마 — 계정에 저장해 둔 값이 있으면 이 기기의 값보다 우선한다.
+  // 마지막으로 고른 값이 계정에 있기 때문이다. 되받아 쓰지 않도록 sync: false (components/theme.js)
+  const savedTheme = snapshot && snapshot.exists ? snapshot.data().theme : null;
+  if (savedTheme && typeof applyTheme === 'function') applyTheme(savedTheme, { sync: false });
   // v2.19.0 게스트 플래너 데이터는 승인 로그인 직후 계정으로 한 번 이전한다.
   try {
     const guest = JSON.parse(localStorage.getItem('plan_guest_mons') || '[]');
@@ -411,7 +458,9 @@ function renderAccount(message) {
   accountBox.hidden = false;
   if (accountTitle) accountTitle.hidden = false;
   accountBox.textContent = '';
-  const note = message ? el('p', { class: 'account__msg' }, message) : '';
+  // 직접 넘긴 문구가 우선, 없으면 리다이렉트 안내(AUTH.redirectMsg)를 얹는다
+  const shown = message || AUTH.redirectMsg;
+  const note = shown ? el('p', { class: 'account__msg' }, shown) : '';
   // (1) 비로그인
   if (!AUTH.user) {
     accountBox.append(

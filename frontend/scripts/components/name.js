@@ -49,3 +49,24 @@ function nameNode(name, attrs = {}) {
   fragment.append(el('b', attrs, base));
   return fragment;
 }
+
+// 2026-09-10 v2.47.0 한국어 조사 — 앞 글자의 받침을 보고 고른다.
+// 안내 문구에 포켓몬 이름을 끼워 넣을 때 "거북왕 와" · "리자몽 로" 처럼 틀린 말이 나오고 있었다.
+//   kind 'wa'   와 / 과      (받침 없으면 와)
+//   kind 'ro'   로 / 으로    (받침 없거나 ㄹ 이면 로)
+//   kind 'i'    이 / 가      (받침 없으면 가)
+//   kind 'eun'  은 / 는      (받침 없으면 는)
+// 한글이 아닌 글자로 끝나면(영문·숫자) 받침이 있는 것으로 친다 — 이 앱의 이름은 사실상 전부 한글이라
+// 예외를 정교하게 다룰 이유가 없고, 틀렸을 때 덜 어색한 쪽이 그쪽이다
+function koParticle(word, kind) {
+  const last = String(word ?? '').trim().slice(-1);
+  const code = last.charCodeAt(0);
+  const isHangul = code >= 0xac00 && code <= 0xd7a3;
+  const jong = isHangul ? (code - 0xac00) % 28 : -1;      // 0 = 받침 없음
+  const hasBatchim = isHangul ? jong !== 0 : true;
+  const isRieul = jong === 8;                              // ㄹ 받침
+  if (kind === 'ro') return !hasBatchim || isRieul ? '로' : '으로';
+  if (kind === 'i') return hasBatchim ? '이' : '가';
+  if (kind === 'eun') return hasBatchim ? '은' : '는';
+  return hasBatchim ? '과' : '와';
+}

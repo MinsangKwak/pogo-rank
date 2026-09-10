@@ -46,7 +46,20 @@
       allowlist: { 'friend@mock.local': { approved: true, name: '로컬 테스트 (친구)', at: new Date().toISOString() } },
       requests: {},
       users: {
-        [adminUid]:    { email: 'admin@mock.local',  name: '로컬 테스트 (관리자)', favs: [150, 384, 383, 149, 68, 143, 302, 227, 25], roles: {} },
+        // 2026-09-10 v2.47.0 mons 도 시드한다 — 육성 플래너 화면(육성 현황 · 내 포켓몬)이
+        // 개체가 없으면 통째로 빈 상태만 보여 줘 배치를 확인할 수 없었다.
+        // 종·기술 이름은 전부 실제 데이터에서 가져온 값이다 (지어낸 이름 금지)
+        [adminUid]:    { email: 'admin@mock.local',  name: '로컬 테스트 (관리자)', favs: [150, 384, 383, 149, 68, 143, 302, 227, 25], roles: {},
+          mons: [
+            { id: 'mock-1', sprite: 6,   shadow: false, level: 43, ivs: [15, 15, 15], fast: '용의숨결', charged: '블러스트번', status: '육성 중',   memo: '', at: 1757400000000 },
+            { id: 'mock-2', sprite: 9,   shadow: false, level: 28, ivs: [14, 15, 13], fast: '물대포',   charged: '하이드로캐논', status: '육성 중',   memo: '', at: 1757300000000 },
+            { id: 'mock-3', sprite: 94,  shadow: true,  level: 20, ivs: [15, 15, 15], fast: '섀도크루', charged: '섀도볼',     status: '완료',     memo: '', at: 1757200000000 },
+            { id: 'mock-4', sprite: 3,   shadow: false, level: 25, ivs: [15, 14, 12], fast: '덩굴채찍', charged: '하드플랜트', status: '교환 후보', memo: '', at: 1757100000000 },
+            { id: 'mock-5', sprite: 149, shadow: false, level: 20, ivs: [15, 15, 15], fast: '드래곤테일', charged: '역린',     status: '육성 중',   memo: '', at: 1757000000000 },
+            // 같은 종 두 마리 — [비교] 창을 로컬에서 열어 보려면 같은 도감번호가 둘 있어야 한다
+            { id: 'mock-6', sprite: 258, shadow: false, level: 20, ivs: [15, 15, 15], fast: '물대포',     charged: '머드숏',   status: '육성 중',   memo: '', at: 1756900000000 },
+            { id: 'mock-7', sprite: 258, shadow: true,  level: 20, ivs: [15, 15, 15], fast: '물대포',     charged: '머드숏',   status: '교환 후보', memo: '', at: 1756800000000 },
+          ] },
         'mock-friend': { email: 'friend@mock.local', name: '로컬 테스트 (친구)',   favs: [150, 6, 302], roles: {} },
       },
       trainers: { '테스트 트레이너': { name: '테스트 트레이너', code: '000000000000', order: 0 } },

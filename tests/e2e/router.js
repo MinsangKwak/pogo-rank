@@ -84,7 +84,10 @@ const LEGACY = [
   await go('#/dex');
   const navHrefs = await page.locator('.nav-menu a').evaluateAll((ns) => ns.map((n) => n.getAttribute('href')));
   ok('이동 목록에 옛 주소 없음', !navHrefs.some((href) => /#\/(rank|plan)(\/|$)/.test(href)), navHrefs.filter((h) => /rank|\/plan\b/.test(h)).join(' '));
-  ok('이동 목록에 새 주소', navHrefs.includes('#/pve') && navHrefs.includes('#/planner/collection'), navHrefs.join(' '));
+  // v2.47.0 '내 포켓몬' 은 메뉴에서 내렸다 — 육성 플래너 한 줄 안의 탭이 그 자리를 대신한다.
+  // 주소 자체는 살아 있어야 하므로 위 ROUTES 표가 따로 확인한다
+  ok('이동 목록에 새 주소', navHrefs.includes('#/pve') && navHrefs.includes('#/planner'), navHrefs.join(' '));
+  ok('이동 목록에 내 포켓몬 줄은 없다', !navHrefs.includes('#/planner/collection'), navHrefs.join(' '));
 
   // ── 측정용 식별자: 전체 페이지
   for (const [hash, id] of [['#/dex', 'dex'], ['#/raids', 'raids'], ['#/schedule', 'schedule'], ['#/favs', 'favs']]) {

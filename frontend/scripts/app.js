@@ -204,6 +204,9 @@ initReleaseBadge();
 initMoveChangesMenu();
 // 2026-09-05 즐겨찾기 메뉴는 로그인 뒤에 열리지만, 초기 상태(숨김)를 여기서 확정해 둔다
 initFavsMenu();
+// 2026-09-10 v2.47.0 화면 테마 버튼(해·달). 저장된 값은 index.html 의 head 스크립트가 이미 붙였고,
+// 여기서는 버튼을 달고 얼굴을 맞춘다 (components/theme.js)
+initTheme();
 // 2026-09-03 v2.2.0 로그인: 첫 화면이 그려진 뒤에 Firebase SDK를 받는다 (초기 로딩 영향 없음)
 // 이미 load가 끝났으면 곧바로, 아니면 load 이벤트를 기다렸다가 initAuth를 부른다
 (document.readyState === 'complete'

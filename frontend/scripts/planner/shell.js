@@ -94,6 +94,7 @@ function updateModeBadge() {
 
 // 플래너 탭 줄 — 도감 모드의 D-MAX·PvE… 자리에 [홈 | 내 포켓몬] 이 들어간다. 탭 = 해시 이동이라 뒤로가기가 탭도 되돌린다
 function renderPlanTabs() {
+  if (planLocked()) return;  // v2.47.0 잠긴 화면에서는 탭도 그리지 않는다 (못 가는 곳으로 가는 버튼)
   for (const [id, label] of PLAN_TABS) {
     $tabs.append(el('button', {
       class: 'tabs__item', role: 'tab', 'aria-selected': String(state.planTab === id),
@@ -105,9 +106,34 @@ function renderPlanTabs() {
   }
 }
 
+// ── 2026-09-10 v2.47.0 로그인 잠금 ────────────────────────────────────────────
+// 육성 플래너는 **로그인한 사용자만** 쓴다. 개체를 계정에 저장하는 화면이라, 로그인 전에는
+// 저장이 되지 않는데도 화면은 다 열려 있어 "적었는데 사라졌다" 로 끝나는 길이 있었다.
+//
+// 로그인 기능이 꺼진 빌드(FIREBASE_CONFIG 비어 있음)에서는 잠그지 않는다 —
+// 로그인할 방법이 없는데 잠그면 그 빌드에서는 영영 못 여는 화면이 된다.
+function planLocked() {
+  return authEnabled() && AUTH.status !== 'ok';
+}
+
+// 잠긴 화면 — 왜 못 쓰는지와 어떻게 열지를 한 카드에 담는다. 목록·탭 대신 이것만 보여 준다
+function renderPlanLocked() {
+  const pending = AUTH.status === 'pending';
+  $content.append(el('section', { class: 'plan__lock' },
+    el('span', { class: 'plan__lock-ico', 'aria-hidden': 'true' }, pending ? '⏳' : '🔒'),
+    el('h2', {}, pending ? '승인 대기 중이에요' : '로그인하면 열립니다'),
+    el('p', {}, pending
+      ? '관리자가 승인하면 내 개체를 계정에 저장하고 어느 기기에서든 같은 목록을 볼 수 있어요.'
+      : '육성 플래너는 내 개체(레벨 · 개체값 · 기술)를 계정에 저장하는 화면이라 로그인이 필요합니다. 도감 · 순위표 · 계산기는 로그인 없이도 그대로 쓸 수 있어요.'),
+    pending ? '' : el('button', { class: 'drawer__item account__login plan__lock-go', onclick: () => signIn() }, '🔐 Google로 로그인'),
+    el('p', { class: 'detail__foot' }, '승인된 친구만 사용할 수 있어요. 첫 로그인 때 이용약관·개인정보처리방침 동의를 받습니다.')));
+  $note.textContent = '육성 플래너는 승인된 로그인 사용자 전용입니다. 로그인하면 내 개체를 계정에 저장하고 같은 종끼리 비교할 수 있습니다.';
+}
+
 // 플래너 화면 렌더러 — app.js render() 가 appMode === 'plan' 일 때 부른다
 function renderPlan() {
   track('plan_view', { tab: state.planTab });
+  if (planLocked()) { renderPlanLocked(); return; }
   ({ home: renderPlanHome, collection: renderPlanCollection })[state.planTab]();
 }
 
