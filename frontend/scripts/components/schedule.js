@@ -253,7 +253,8 @@ function buildScheduleCal(cat) {
     // 날짜 칸: 그날 걸친 일정의 분류를 중복 없이 모아 점으로 찍는다
     ...Array.from({ length: lastDayOfMonth }, (_, index) => {
       const day = index + 1;
-      const categoryKeys = [...new Set(scheduleItemsOn(day, cat).map(item => item.cat))];
+      const dayItems = scheduleItemsOn(day, cat);
+      const categoryKeys = [...new Set(dayItems.map(item => item.cat))];
       const cell = el('button', { class: `cal__day${day === todayDayOfMonth ? ' is-today' : ''}`, onclick: () => {
         // 날짜를 누르면 선택 표시를 옮기고 상세 영역을 그날 일정으로 다시 그린다
         if (selectedCell) selectedCell.classList.remove('is-selected');
@@ -263,6 +264,16 @@ function buildScheduleCal(cat) {
       } },
         el('span', { class: 'cal__num' }, String(day)),
         el('span', { class: 'cal__dots' }, ...categoryKeys.map(categoryKey => el('span', { class: 'dot', style: `background:${SCHEDULE_CATS[categoryKey].color}` }))));
+      // 넓은 일정 페이지는 날짜 안에서 일정 이름을 최대 3개까지 읽는다.
+      // 나머지 건수는 상세 영역으로 안내하고, 모바일·드로어는 기존 점 표시를 유지한다.
+      cell.setAttribute('aria-label', `${SCHEDULE_YM.m}월 ${day}일, 일정 ${dayItems.length}개`);
+      cell.append(el('span', { class: 'cal__events', 'aria-hidden': 'true' },
+        ...dayItems.slice(0, 3).map(item => el('span', {
+          class: 'cal__event', title: item.label,
+          style: `--event-color:${SCHEDULE_CATS[item.cat].color}`
+        }, item.label.split(' (')[0])),
+        ...(dayItems.length > 3 ? [el('span', { class: 'cal__more' }, `+${dayItems.length - 3}개 더 보기`)] : [])
+      ));
       return cell;
     }));
 

@@ -94,6 +94,7 @@ function openDetailPanel(content) {
   document.getElementById('detail-panel-body').replaceChildren(content);
   panel.hidden = false;
   document.body.classList.add('has-detail-panel');
+  requestAnimationFrame(syncDexDetailPanel);
   if (content.dataset?.route) {
     panel.dataset.route = content.dataset.route;
     if (content.dataset.mon) panel.dataset.mon = content.dataset.mon;
@@ -105,7 +106,8 @@ function closeDetailPanel() {
   const panel = document.getElementById('detail-panel');
   if (!panel || panel.hidden) return;
   panel.hidden = true;
-  document.body.classList.remove('has-detail-panel');
+  document.body.classList.remove('has-detail-panel', 'has-dex-detail');
+  panel.style.removeProperty('top');
   document.getElementById('detail-panel-body').replaceChildren();
   delete panel.dataset.route; delete panel.dataset.mon; delete panel.dataset.sprite;
   // 딥링크(#/mon/…)를 열어 둔 채 닫으면 주소에서 해시만 지운다 — closeModal 과 같은 규칙
@@ -129,3 +131,22 @@ window.addEventListener('hashchange', () => {
   const onShell = routeIdOf() === 'home' || routeIdOf() === 'mon';
   if (!onShell) closeDetailPanel();
 });
+
+// 도감 상세는 필터/보기 전환 아래에서 시작한다. 줄바꿈·창 크기·스크롤에도
+// 실제 도구 모음의 위치를 따라가므로 고정 숫자로 상단 컨트롤을 덮지 않는다.
+function syncDexDetailPanel() {
+  const panel = document.getElementById('detail-panel');
+  const toolbar = document.querySelector('.dex-page .dex__toolbar');
+  if (!panel || panel.hidden) return;
+  const onDex = toolbar && toolbar.getClientRects().length && useDetailPanel();
+  document.body.classList.toggle('has-dex-detail', Boolean(onDex));
+  if (onDex) {
+    const bar = document.querySelector('.app-bar');
+    const rem = parseFloat(getComputedStyle(document.documentElement).fontSize);
+    const top = Math.max((bar?.getBoundingClientRect().bottom || 8 * rem) + 2.4 * rem,
+      toolbar.getBoundingClientRect().bottom + 1.6 * rem);
+    panel.style.top = `${top / rem}rem`;
+  } else panel.style.removeProperty('top');
+}
+window.addEventListener('resize', syncDexDetailPanel);
+window.addEventListener('scroll', syncDexDetailPanel, { passive: true });

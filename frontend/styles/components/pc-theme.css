@@ -17,7 +17,7 @@
   .app-bar {
     position: sticky; top: 0; z-index: 30;
     align-items: center; gap: 2rem;
-    padding: 1.2rem 0; margin-bottom: 0;
+    padding: 1.8rem 2rem; margin-bottom: 0;
     background: var(--bg); border-bottom: 1px solid var(--line);
   }
   .app-bar__head { display: flex; align-items: center; gap: 1rem; }
@@ -48,7 +48,7 @@
 
   /* ── 화면 머리 ───────────────────────────────────────────────────────────── */
   /* padding 축약형을 쓰지 않는다 — app-shell.css 가 사이드바 자리로 잡아 둔 padding-left(262px)를 지운다 */
-  .page-head { padding-top: 2.6rem; padding-bottom: 1.8rem; }
+  .page-head { padding-top: 4.8rem; padding-bottom: 2.8rem; }
   .page-head__crumb { display: flex;   /* 좁은 화면에서는 감춰져 있다 (app-shell.css) */ align-items: center; gap: 0.7rem; font-size: var(--fs-sub); color: var(--muted); }
   .page-head__crumb a { color: var(--muted); text-decoration: none; }
   .page-head__crumb a:hover { color: var(--fg); }
@@ -57,10 +57,12 @@
   .page-head__desc { display: block; margin: 0.8rem 0 0; max-width: 46em; font-size: var(--fs-body); line-height: 1.7; color: var(--muted); word-break: keep-all; }
 
   /* ── 사이드바 ────────────────────────────────────────────────────────────── */
-  .app-nav { top: 7.4rem; }
-  .app-nav .nav-menu { display: flex; flex-direction: column; gap: 0.2rem; }
+  .app-nav { top: 12.9rem; }
+  .detail-panel { top: 12.9rem; }
+  body[data-home="true"] .layout { padding-top: 4.8rem; }
+  .app-nav .nav-menu { display: flex; flex-direction: column; gap: 0.6rem; }
   .app-nav .nav-menu .drawer__item {
-    min-height: 4.2rem; gap: 1rem; padding: 0 1.2rem;
+    min-height: 4.6rem; gap: 1.2rem; padding: 0 1.4rem;
     border: 0; border-radius: 1rem; background: transparent; font-size: var(--fs-body); font-weight: 500;
   }
   .app-nav .nav-menu .drawer__item:hover { background: var(--hover); }
@@ -69,13 +71,13 @@
     color: var(--brand); font-weight: 600;
     box-shadow: inset 0.2rem 0 0 var(--brand);
   }
-  .app-nav__extra { margin-top: 1.6rem; padding-top: 1.2rem; }
+  .app-nav__extra { margin-top: 2.8rem; padding-top: 2rem; display: flex; flex-direction: column; gap: 0.4rem; }
   /* 넓은 화면 — 헤더 버튼이 맡고, 메뉴 줄은 감춘다 (같은 일을 하는 문이 둘이면 안 된다) */
   #theme-toggle { display: inline-flex; }
   #menu-theme { display: none !important; }
 
   .app-nav__extra .drawer__item:not([hidden]) {
-    min-height: 3.6rem; border-radius: 1rem; border: 1px solid var(--line); background: var(--surface);
+    min-height: 3.8rem; border-radius: 0.6rem; border: 0; background: transparent;
     font-size: var(--fs-sub);
   }
 
@@ -90,7 +92,7 @@
      (공식 아트워크는 이 저장소에 없다 — 있는 것으로만 만든다) */
   .home__intro {
     position: relative; overflow: hidden;
-    margin-top: 0.8rem; padding: 4rem 4.4rem 4.4rem;
+    margin-top: 0; padding: 4.8rem 4.8rem 5.2rem;
     border: 1px solid color-mix(in srgb, var(--brand) 28%, var(--line));
     border-radius: var(--r-card);
     background:
@@ -572,4 +574,103 @@
   /* 동작 버튼 — 오른쪽 끝에 세로로 셋. 카드 높이 안에서 가지런히 서도록 폭을 못 박는다 */
   .plan__mon-actions { gap: 0.4rem; width: 7.8rem; }
   .plan__mon-actions .uchip { min-height: 2.6rem; padding: 0 0.8rem; border-radius: 0.8rem; font-size: 1.15rem; }
+}
+
+/* 임시 간격 시안: 헤더와 본문이 같은 유동형 외곽선을 공유한다. */
+@media (min-width: 1100px) {
+  :root { --shell-half: min(90rem, calc(50vw - 3.2rem)); }
+  .app-bar { padding-left: 0; padding-right: 0; }
+  .app-nav { left: max(2.4rem, calc(50vw - var(--shell-half))); }
+  .layout, #page, .page-head { padding-left: 25.8rem; padding-right: 0; }
+  .app-nav__extra .drawer__ico { font-size: 1.2rem; opacity: .65; }
+  .app-nav__extra .drawer__item:hover { background: var(--hover); }
+  .home__section { padding-top: 4rem; padding-bottom: 2rem; }
+}
+
+/* 일정 이름은 넓은 전체 페이지에서만 표시한다. 모바일·드로어의 7열 폭을 보호한다. */
+.cal__events { display: none; }
+@media (min-width: 1100px) {
+  /* 1920px에서 외곽 60px, 달력은 날짜별 일정 3줄과 추가 건수가 보이는 높이. */
+  #page .schedule__cal { gap: 0.8rem; margin-top: 1.6rem; }
+  #page .cal__head { padding: 1rem 0; font-size: 1.2rem; }
+  #page .cal__day {
+    min-width: 0; min-height: 15.4rem; padding: 1.2rem; gap: 0.9rem;
+    border: 1px solid var(--line); border-radius: 1rem; background: var(--surface);
+  }
+  #page .cal__day:hover { background: var(--hover); }
+  #page .cal__num { font-size: 1.3rem; font-weight: 600; }
+  #page .cal__dots { display: none; }
+  #page .cal__events { display: flex; flex-direction: column; gap: 0.6rem; width: 100%; min-width: 0; }
+  #page .cal__event {
+    display: block; padding: 0.3rem 0.6rem; border-left: 0.3rem solid var(--event-color);
+    background: color-mix(in srgb, var(--event-color) 8%, transparent);
+    font-size: 1.15rem; line-height: 1.5; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  #page .cal__more { font-size: 1.1rem; color: var(--muted); }
+  #page .schedule__detail { margin-top: 2.4rem; padding: 1.6rem 2rem; border: 1px solid var(--line); border-radius: 1.2rem; }
+  #page .schedule__detail .schedule__sec { margin-top: 0; }
+}
+
+/* 도감 필터를 보기 전환과 같은 40px 버튼·50px 컨테이너로 맞춘다.
+   좁은 폭에서는 필터가 자연스럽게 줄바꿈되며 보기 전환은 다음 줄에 놓인다. */
+.dex__toolbar { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 1.2rem; margin: 1.6rem 0; }
+.dex__toolbar .tchips {
+  display: flex; flex-wrap: wrap; gap: 0.4rem; padding: 0.4rem;
+  border: 1px solid var(--line); border-radius: 1.4rem; background: var(--surface);
+}
+.dex__toolbar .tchips .uchip {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-height: 4rem; padding: 0 1.4rem; border: 0; border-radius: 1rem;
+  background: transparent; font-size: 1.35rem; font-weight: 500; color: var(--muted);
+}
+.dex__toolbar .tchips .uchip:hover { background: var(--hover); color: var(--fg); }
+.dex__toolbar .tchips .fav-chip {
+  background: color-mix(in srgb, var(--caution) 10%, var(--bg)); color: var(--caution);
+}
+@media (min-width: 1100px) {
+  .dex__toolbar .tchips { flex: 0 1 auto; }
+  .dex__toolbar .seg-view { margin-left: auto; }
+}
+
+/* 도감 카드 시안: 큰 포켓몬 → 이름 → 타입 → 보조 CP 순서.
+   공용 dex__row를 쓰는 레이드·알·즐겨찾기에는 적용하지 않는다. */
+.dex-catalog.is-grid .dex__row { padding: 3.6rem 1.4rem 1.8rem; gap: 1rem; overflow: hidden; }
+.dex-catalog.is-grid .dex__row .sprite {
+  order: 0; box-sizing: border-box; width: 12.8rem; height: 12.8rem; padding: 0;
+  max-width: 100%; border-radius: 2.4rem; object-fit: contain;
+}
+.dex-catalog.is-grid .dex__row .sprite:not(.is-loading) {
+  background: radial-gradient(ellipse at 50% 80%, color-mix(in srgb, var(--brand) 14%, transparent), transparent 66%);
+}
+.dex-catalog.is-grid .dex__row > b { order: 1; padding: 0; border: 0; font-size: 1.7rem; font-weight: 700; }
+.dex-catalog.is-grid .dex__types { order: 2; margin: 0; gap: 0.6rem; }
+.dex-catalog.is-grid .dex__type { display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.3rem 0.7rem; border-radius: 0.7rem; background: color-mix(in srgb, var(--c) 12%, transparent); }
+.dex-catalog.is-grid .dex__type b { display: inline; font-size: 1.1rem; font-weight: 500; }
+.dex-catalog.is-grid .dex__stats { order: 3; display: flex; justify-content: center; width: 100%; margin-top: 0.4rem; padding-top: 1rem; border-top: 1px solid var(--line); }
+.dex-catalog.is-grid .dex__stats .dex__stat--gen { display: none; }
+.dex-catalog.is-grid .dex__stat { display: flex; align-items: baseline; gap: 0.6rem; }
+.dex-catalog.is-grid .dex__stat em { font-size: 1rem; font-style: normal; color: var(--muted); }
+.dex-catalog.is-grid .dex__stat b { font-size: 1.3rem; font-weight: 600; color: var(--muted); }
+@media (min-width: 1100px) {
+  .dex-catalog.is-grid { gap: 1.8rem; }
+  .dex-catalog.is-grid .dex__row { padding: 4.2rem 2.2rem 2rem; gap: 1.2rem; }
+  .dex-catalog.is-grid .dex__row .sprite { width: 18rem; height: 18rem; }
+  .dex-catalog.is-grid .dex__row > b { font-size: 2.1rem; }
+  .dex-catalog.is-grid .dex__type { padding: 0.4rem 1rem; }
+  .dex-catalog.is-grid .dex__type b { font-size: 1.2rem; }
+}
+
+/* 검색과 보기 전환은 전체 폭의 상단 도구 영역, 상세는 그 아래 목록 옆에 배치. */
+@media (min-width: 1100px) {
+  .dex-page > .boss__search { display: block; width: min(52rem, 100%); margin-left: auto; }
+  body.has-detail-panel:has(.dex-page) #page,
+  body.has-detail-panel:has(.dex-page) .page-head { padding-right: 0; }
+  body.has-detail-panel .dex-page .dex-catalog,
+  body.has-detail-panel .dex-page > .more {
+    margin-right: calc(var(--panel-w) + var(--panel-gap));
+  }
+  body.has-dex-detail .detail-panel {
+    right: max(3.2rem, calc(50vw - var(--shell-half))); bottom: 2.4rem;
+    box-shadow: none;
+  }
 }
