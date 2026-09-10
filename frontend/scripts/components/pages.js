@@ -150,7 +150,7 @@ function renderDexPage() {
   // 2026-09-09 v2.37.0 즐겨찾기·레이드 보스·알 부화도 같은 토글을 쓰게 되며 components/ui.js 로 뺐다 —
   // 키 이름·값('1'|'2')은 이미 나간 값이라 그대로 잇는다(layoutInitial/layoutToggle)
   const cols2 = layoutInitial('pogo_dex_cols');
-  const $list = el('div', { class: `dex__list${cols2 ? ' is-grid' : ''}` });
+  const $list = el('div', { class: `dex__list dex-catalog${cols2 ? ' is-grid' : ''}` });
   const $more = el('button', { class: 'boss__more', onclick: () => {
     shown += 200;
     draw();
@@ -217,7 +217,7 @@ function renderDexPage() {
   // 2026-09-10 v2.42.0 거르기(세대·즐겨찾기)와 보기 방식을 한 줄에 좌우로 — 성격은 달라도 둘 다
   // "목록을 어떻게 볼지" 라 목록 바로 위 한 줄에 모아 두는 편이 눈이 덜 움직인다.
   // 좁은 화면은 CSS 가 위아래로 쌓는다 (한 줄에 넣으면 칩이 잘린다)
-  return el('div', { class: 'page__body' }, loginHint, $input,
+  return el('div', { class: 'page__body dex-page' }, loginHint, $input,
     el('div', { class: 'dex__toolbar' }, genChips, $layout), $list, $more,
     footNote('미구현 = 포켓몬 GO에 아직 출시되지 않은 종 (PvPoke 출시 목록 기준, 데이터는 게임마스터 선등록분). 메가·섀도우·리전 폼은 🔍 전역 검색으로 찾을 수 있어요.'));
 }
