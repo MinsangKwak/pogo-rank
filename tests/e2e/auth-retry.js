@@ -109,6 +109,42 @@ const ok = (n, c, x = '') => { console.log((c ? 'PASS' : 'FAIL') + ' ' + n + ' '
   ok('취소된 팝업 요청은 리다이렉트를 안 탐(회귀)', (await page.evaluate(() => window.__redirectCalls)) === 0);
   ok('취소된 팝업 요청은 오류 문구 없음(회귀)', (await page.locator('#account .account__msg').count()) === 0);
 
+  // ── 2026-09-10 v2.48.0 (긴급) 홈 화면에 설치한 앱(PWA)도 **팝업을 먼저 쓴다**
+  // 전에는 display-mode: standalone 이면 무조건 리다이렉트로 보냈는데, 이 서비스는 authDomain 이
+  // 앱과 다른 출처라 리다이렉트가 자격을 들고 돌아오지 못한다(브라우저의 사이트 간 저장소 차단).
+  // 그래서 설치형 앱에서 로그인이 통째로 안 됐다. 이 검사는 그 분기가 되살아나는 것을 막는다
+  // 앞 검사(취소된 팝업)가 비로그인 상태로 끝나므로 여기서 따로 로그아웃하지 않는다
+  await page.evaluate(() => { firebase.auth().signInWithPopup = window.__origSignInWithPopup; });
+  await page.evaluate(() => {
+    // 설치형 앱인 척한다 — 예전 코드는 이 값을 보고 리다이렉트로 갈랐다
+    const realMatchMedia = window.matchMedia.bind(window);
+    window.matchMedia = (query) => /display-mode:\s*standalone/.test(query)
+      ? { matches: true, addEventListener() {}, removeEventListener() {}, addListener() {}, removeListener() {} }
+      : realMatchMedia(query);
+    const auth = firebase.auth();
+    window.__redirectCalls = 0;
+    window.__popupCalls = 0;
+    auth.signInWithPopup = async (...args) => { window.__popupCalls += 1; return window.__origSignInWithPopup(...args); };
+    auth.signInWithRedirect = async () => { window.__redirectCalls += 1; };
+  });
+  await page.locator('#account .account__login').click();
+  await page.waitForTimeout(1200);
+  ok('설치형 앱(PWA)도 팝업을 쓴다', (await page.evaluate(() => window.__popupCalls)) === 1, String(await page.evaluate(() => window.__popupCalls)));
+  ok('설치형 앱에서 리다이렉트로 새지 않는다', (await page.evaluate(() => window.__redirectCalls)) === 0);
+  ok('설치형 앱에서 로그인 성공', (await page.evaluate(() => AUTH.status)) !== 'anon', await page.evaluate(() => AUTH.status));
+
+  // ── 리다이렉트가 **오류 없이 빈손으로** 돌아온 경우 — 가장 흔한 실패 모양이라 말로 알려 준다
+  await logOut();
+  await page.evaluate(() => {
+    localStorage.setItem('pogo_auth_redirect', String(Date.now()));   // 리다이렉트로 나갔던 표시
+    firebase.auth().getRedirectResult = async () => ({ user: null }); // 자격 없이 돌아옴
+  });
+  await page.evaluate(() => initAuth());
+  await page.waitForTimeout(1200);
+  const emptyMsg = await page.locator('#account .account__msg').textContent().catch(() => '');
+  ok('빈손 리다이렉트를 말로 알려 준다', /끝까지 가지 못했어요/.test(emptyMsg || ''), (emptyMsg || '').slice(0, 40));
+  ok('안내 뒤에는 표시를 지운다', !(await page.evaluate(() => localStorage.getItem('pogo_auth_redirect'))));
+
   ok('페이지 오류 없음', errs.length === 0, errs.join(' | ').slice(0, 200));
   await browser.close();
   console.log(`${pass}/${pass + fail} passed`);

@@ -70,6 +70,10 @@
     box-shadow: inset 2px 0 0 var(--brand);
   }
   .app-nav__extra { margin-top: 16px; padding-top: 12px; }
+  /* 넓은 화면 — 헤더 버튼이 맡고, 메뉴 줄은 감춘다 (같은 일을 하는 문이 둘이면 안 된다) */
+  #theme-toggle { display: inline-flex; }
+  #menu-theme { display: none !important; }
+
   .app-nav__extra .drawer__item:not([hidden]) {
     min-height: 36px; border-radius: 10px; border: 1px solid var(--line); background: var(--surface);
     font-size: var(--fs-sub);
@@ -186,7 +190,11 @@
   .dex__toolbar { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; margin: 14px 0 4px; }
   .dex__toolbar .tchips { flex: 1 1 auto; min-width: 0; }
   .dex__toolbar .seg-view { flex: none; margin-left: 0; }
-  .tchips .uchip { min-height: 34px; padding: 0 14px; border-radius: var(--r-chip); font-size: var(--fs-sub); }
+  /* 2026-09-10 v2.46.0 칩 높이를 34px → 22px 로 낮췄다. 두 줄로 접히면 줄 사이가 벌어져 보였는데,
+     원인은 여백이 아니라 **속이 빈 알약**이었다 — .uchip 은 align-items: baseline(modal.css)이라
+     글자가 아래에 붙고 위쪽 12px 이 그대로 빈다. 높이를 글자에 맞추고 가운데 정렬로 바꾼다.
+     손가락 대상(--tap 44px)은 좁은 화면 규칙이라 여기서 낮춰도 영향이 없다 */
+  .tchips .uchip { align-items: center; min-height: 22px; padding: 3px 14px; border-radius: var(--r-chip); font-size: var(--fs-sub); }
   .tchips .uchip[aria-pressed="true"], .tchips .uchip.is-on {
     border-color: transparent; background: color-mix(in srgb, var(--brand) 16%, transparent); color: var(--brand); font-weight: 600;
   }
@@ -293,7 +301,17 @@
   }
   .row__why-chip:hover { border-color: var(--brand); color: var(--brand); }
 
-  /* 화면 위 장식 띠 — D-MAX 는 폼 색(자홍)으로. 다른 화면은 붙이지 않는다 */
+  /* 화면 위 장식 띠 — 화면마다 그 화면의 색으로. 아무 데나 붙이지는 않는다 */
+  /* 2026-09-10 v2.46.0 도감도 붙인다 — 목업의 화면 머리마다 오른쪽에 빛 띠가 있다.
+     도감은 그 화면의 색이 따로 없으므로 브랜드 초록. 공식 아트워크가 없어 그림 대신 빛으로 채운다 */
+  .page-head[data-route="dex"] { position: relative; }
+  .page-head[data-route="dex"]::after {
+    content: ''; position: absolute; right: 0; top: 18px; width: 46%; height: 108px; pointer-events: none;
+    border-radius: var(--r-card);
+    background:
+      radial-gradient(70% 100% at 72% 100%, color-mix(in srgb, var(--brand) 22%, transparent), transparent 68%),
+      radial-gradient(50% 90% at 96% 55%, color-mix(in srgb, var(--brand-2) 16%, transparent), transparent 70%);
+  }
   .page-head[data-route="dmax"] { position: relative; }
   .page-head[data-route="dmax"]::after {
     content: ''; position: absolute; right: 0; top: 18px; width: 46%; height: 108px; pointer-events: none;
@@ -374,4 +392,174 @@
     font-size: 11px; font-weight: 700; color: var(--muted);
   }
   .dex__list:not(.is-grid) .dex__row b { font-weight: 700; }
+  /* 이름과 타입 사이의 빈 칸에 읽을 값을 넣는다 — 세대 · CP 100% 기준 (components/pages.js dexRowStats).
+     줄 모드에서만. 카드 모드는 세로로 세운 카드라 이 줄이 들어갈 자리가 없다 */
+  .dex__list:not(.is-grid) .dex__stats { display: flex; align-items: center; gap: 22px; margin-left: auto; }
+  /* 타입 칸에 최소 너비를 준다 — 한 타입인 줄과 두 타입인 줄이 섞여도 위 칸(세대·CP)이 어긋나지 않는다 */
+  .dex__list:not(.is-grid) .dex__types { flex: none; justify-content: flex-end; min-width: 124px; margin-left: 22px; }
+  .dex__stat { display: flex; flex-direction: column; gap: 1px; min-width: 62px; text-align: right; }
+  .dex__stat em { font-style: normal; font-size: 10.5px; letter-spacing: 0.02em; color: var(--muted); }
+  .dex__stat b { font-size: var(--fs-body); font-weight: 700; color: var(--fg); }
+
+  /* 카드 모드에도 CP 한 줄 — 목업(내 포켓몬 카드)이 카드마다 CP 를 크게 달고 있다.
+     세대는 뺀다: 카드 위에서는 번호 배지가 이미 그 자리를 말해 주고, 세대 칩이 목록 바로 위에 있다 */
+  .dex__list.is-grid .dex__stats { display: flex; justify-content: center; margin-top: 2px; }
+  .dex__list.is-grid .dex__stat--gen { display: none; }
+  .dex__list.is-grid .dex__stat { flex-direction: row; align-items: baseline; gap: 6px; min-width: 0; text-align: center; }
+  .dex__list.is-grid .dex__stat b { font-size: var(--fs-lead); letter-spacing: -0.02em; color: var(--brand); }
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   2026-09-10 v2.46.0 검색 결과 줄 · 상세 팝업 머리 — 목업(개체 추가 창 · 개체 비교 창) 문법
+
+   두 곳 다 "이 포켓몬이 내가 찾던 그건가"를 답하는 자리인데, 지금까지는 이름 한 줄뿐이었다.
+   그림을 키우고 타입·번호를 붙여 **고르기 전에** 판단할 수 있게 한다.
+   ───────────────────────────────────────────────────────────────────────────── */
+@media (min-width: 1100px) {
+  /* ── 검색 패널 결과 (components/search.js) ────────────────────────────────── */
+  .sugg__item { gap: 12px; padding: 10px 14px 10px 10px; border-radius: 12px; background: var(--surface); }
+  .sugg__item:hover {
+    border-color: color-mix(in srgb, var(--brand) 55%, var(--line));
+    background: var(--hover);
+  }
+  /* 그림 판은 도감 줄 모드와 같은 동그란 판 — 같은 뜻이면 같은 모양 */
+  .sugg__item .sprite { box-sizing: content-box; width: 40px; height: 40px; padding: 6px; border-radius: 50%; }
+  .sugg__item .sprite:not(.is-loading) { background: var(--bg); }
+  .sugg__name { font-size: var(--fs-body); font-weight: 700; }
+  .sugg__meta { gap: 6px; }
+  .sugg__no { padding: 2px 8px; border: 1px solid var(--line); border-radius: var(--r-chip); background: var(--bg); font-size: 11px; font-weight: 700; }
+  .sugg__item:hover .sugg__go { color: var(--brand); }
+
+  /* ── 상세 팝업 머리 (components/detail.js) ────────────────────────────────── */
+  /* 그림을 티어표·도감 카드와 같은 발광 판 위로. 타입 배지는 지금처럼 판 왼쪽 위 모서리에
+     겹쳐 둔다 — 회귀 검사(tests/e2e/detail.js)가 그 자리를 지킨다 */
+  .detail__head .sprite-box { width: 116px; height: 116px; border-radius: 50%; }
+  .detail__head .sprite-box .sprite { width: 84px; height: 84px; }
+  .detail__head .sprite-box:not(.sprite-box--mega):not(.sprite-box--max):not(.sprite-box--shadow) {
+    border-color: color-mix(in srgb, var(--brand) 26%, var(--line));
+    background-image:
+      radial-gradient(60% 40% at 50% 88%, color-mix(in srgb, var(--brand) 34%, transparent), transparent 72%),
+      radial-gradient(70% 70% at 50% 42%, color-mix(in srgb, var(--brand-2) 12%, transparent), transparent 74%);
+  }
+  .detail__info h2 { font-size: 26px; font-weight: 700; letter-spacing: -0.02em; }
+  /* 도감번호는 도감 카드와 같은 알약 배지 */
+  .detail__dexno {
+    padding: 3px 9px; border: 1px solid var(--line); border-radius: var(--r-chip); background: var(--bg);
+    font-size: 11px; font-weight: 700; color: var(--muted);
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   2026-09-10 v2.47.0 육성 플래너 — 목업(육성 현황 · 내 포켓몬) 문법
+
+   메뉴에서 '내 포켓몬' 과 '육성 플래너' 를 한 줄로 합치면서(router.js) 두 화면이
+   한 화면의 두 탭이 됐다. 배치도 한 벌로 맞춘다.
+   좁은 화면은 planner.css 의 세로 쌓기 그대로다 — 여기 있는 것은 전부 넓은 화면 전용이다.
+   ───────────────────────────────────────────────────────────────────────────── */
+@media (min-width: 1100px) {
+  /* ── 히어로 ────────────────────────────────────────────────────────────────
+     목업은 오른쪽 절반이 공식 아트워크다. 이 저장소에 그 그림이 없으므로 빛으로 채운다 */
+  .plan__hero {
+    position: relative; overflow: hidden;
+    padding: 26px 30px 28px;
+    border-radius: var(--r-card);
+    background:
+      radial-gradient(90% 140% at 88% 30%, color-mix(in srgb, var(--brand) 22%, transparent), transparent 62%),
+      radial-gradient(70% 120% at 100% 100%, color-mix(in srgb, var(--brand-2) 14%, transparent), transparent 64%),
+      color-mix(in srgb, var(--brand) 6%, var(--surface));
+  }
+  .plan__hero::after {
+    content: ''; position: absolute; right: -70px; top: 50%; transform: translateY(-50%);
+    width: 260px; height: 260px; border-radius: 50%;
+    border: 28px solid color-mix(in srgb, var(--brand) 14%, transparent);
+    pointer-events: none;
+  }
+  .plan__hero > * { position: relative; z-index: 1; }
+  .plan__hero-ico { font-size: 26px; }
+  .plan__hero h2 { font-size: 26px; letter-spacing: -0.02em; }
+  .plan__hero-desc { max-width: 46em; font-size: var(--fs-body); }
+  .plan__hero-go { min-height: 46px; font-size: var(--fs-body); }
+
+  /* ── 요약 — 한 줄에 [내 포켓몬 N마리] [수치 세 칸] [바로가기] ─────────────── */
+  .plan__card { margin-top: 14px; padding: 20px 24px; border-radius: var(--r-card); }
+  .plan__summary { display: flex; align-items: center; gap: 24px; }
+  .plan__summary-main { flex: 1 1 auto; min-width: 0; }
+  .plan__summary-main b { font-size: var(--fs-sec); }
+  .plan__stats { flex: none; margin-top: 0; gap: 12px; }
+  .plan__stat { flex: none; min-width: 132px; padding: 12px 16px; border-radius: 12px; }
+  .plan__stat b { font-size: 22px; }
+  .plan__summary-go { flex: none; margin-top: 0; min-height: 42px; padding: 0 18px; border-radius: 12px; font-size: var(--fs-body); }
+
+  /* ── 다음 걸음 — 목업처럼 가로 한 줄. 걸음 사이에 화살표를 CSS 로 그린다 ──── */
+  .plan__guide-head b { font-size: var(--fs-sec); }
+  .plan__steps { flex-direction: row; align-items: stretch; gap: 0; margin-top: 16px; }
+  .plan__steps > li { flex: 1 1 0; min-width: 0; display: flex; align-items: stretch; }
+  .plan__steps > li + li::before {
+    content: '›'; flex: none; align-self: center; padding: 0 8px; color: var(--muted); font-size: 18px;
+  }
+  .plan__step { flex: 1 1 auto; flex-direction: column; align-items: flex-start; gap: 8px; padding: 14px; min-width: 0; }
+  .plan__step-no { width: 24px; height: 24px; }
+  .plan__step-ico { font-size: 20px; }
+  .plan__step-main b { font-size: var(--fs-body); }
+
+  /* 번호와 아이콘을 한 줄로 — 세로 카드에서 둘이 위아래로 서면 카드가 너무 길어진다 */
+  .plan__step-no, .plan__step-ico { position: relative; }
+  .plan__step { display: grid; grid-template-columns: 24px auto; grid-template-rows: auto auto; column-gap: 10px; row-gap: 10px; }
+  .plan__step-main { grid-column: 1 / -1; }
+
+  /* ── 최근 추가한 포켓몬 — 가로 넉 장 ──────────────────────────────────────── */
+  .plan__recent-list { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin-top: 16px; }
+  .plan__recent-item { align-items: flex-start; padding: 14px; border-radius: 12px; }
+  .plan__recent-item .sprite {
+    box-sizing: content-box; width: 48px; height: 48px; padding: 6px; border-radius: 50%;
+  }
+  .plan__recent-item .sprite:not(.is-loading) {
+    background-color: transparent;
+    background-image: radial-gradient(60% 40% at 50% 88%, color-mix(in srgb, var(--brand) 34%, transparent), transparent 72%);
+  }
+  .plan__recent-name { font-size: var(--fs-body); font-weight: 700; }
+
+  /* ── 내 포켓몬 목록 — 목업처럼 정보 묶음 여섯 칸 ──────────────────────────── */
+  .plan__mons { gap: 12px; }
+  .plan__mon {
+    grid-template-columns: 34px 96px minmax(0, 1fr) 96px 220px auto;
+    gap: 16px; align-items: center; padding: 16px 18px; border-radius: var(--r-card);
+  }
+  .plan__mon:hover {
+    border-color: color-mix(in srgb, var(--brand) 45%, var(--line));
+    box-shadow: 0 6px 20px -12px color-mix(in srgb, var(--brand) 60%, transparent);
+  }
+  .plan__mon.is-picked { border-color: var(--brand); }
+  /* 순번 — 목업의 왼쪽 번호 배지. 티어표 순위 배지와 같은 문법(둥근 사각) */
+  .plan__mon-no {
+    display: flex; align-items: center; justify-content: center; width: 30px; height: 30px;
+    border: 1px solid var(--line); border-radius: 10px; background: var(--bg);
+    font-size: var(--fs-sub); font-weight: 700; color: var(--muted);
+  }
+  .plan__mon:first-child .plan__mon-no { border-color: var(--brand); color: var(--brand); }
+  /* 그림 판 — 도감·티어표 카드와 같은 발광 판 */
+  .plan__mon > .sprite { box-sizing: content-box; width: 76px; height: 76px; padding: 10px; border-radius: 50%; }
+  .plan__mon > .sprite:not(.is-loading) {
+    background-color: transparent;
+    background-image:
+      radial-gradient(60% 40% at 50% 88%, color-mix(in srgb, var(--brand) 38%, transparent), transparent 70%),
+      radial-gradient(70% 70% at 50% 42%, color-mix(in srgb, var(--brand-2) 12%, transparent), transparent 72%);
+  }
+  .plan__mon-main .row__name b { font-size: var(--fs-lead); font-weight: 700; }
+  .plan__mon-bar { max-width: 320px; height: 6px; }
+  /* CP 한 칸 — 목업처럼 크게. 이 목록에서 제일 자주 견주는 숫자다 */
+  .plan__mon-cp { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; text-align: right; }
+  .plan__mon-cp em { font-style: normal; font-size: 11px; color: var(--muted); }
+  .plan__mon-cp b { font-size: 24px; font-weight: 700; letter-spacing: -0.02em; color: var(--brand); }
+  /* 주요 기술 — 스피드·차지 두 줄 */
+  .plan__mon-moves { display: block; }
+  .plan__mon-moves > em { display: block; font-style: normal; margin-bottom: 6px; font-size: 11px; color: var(--muted); }
+  .plan__mon-move-list { display: flex; flex-direction: column; gap: 6px; }
+  .plan__move {
+    align-items: center; gap: 8px; padding: 6px 10px;
+    border: 1px solid var(--line); border-radius: 10px; background: var(--bg); font-size: var(--fs-sub);
+  }
+  .plan__move b { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .plan__move i { margin-left: auto; flex: none; }
+  .plan__mon-actions { gap: 6px; min-width: 96px; }
 }

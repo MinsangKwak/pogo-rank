@@ -58,6 +58,9 @@
 .dex__no { color: var(--muted); font-size: 12px; width: 46px; flex: none; }
 .dex__row b { font-weight: 500; }
 .dex__types { display: flex; gap: 4px; margin-left: auto; }
+/* 2026-09-10 v2.46.0 줄의 보조 정보(세대 · CP 100%) — 좁은 화면은 자리가 없어 감춘다.
+   넓은 화면 줄 모드에서만 켠다 (components/pc-theme.css) */
+.dex__stats { display: none; }
 .dex__types .dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
 
 /* 2026-09-03 도감 상단 간격 */
