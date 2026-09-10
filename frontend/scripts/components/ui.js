@@ -79,8 +79,8 @@ function metaText(...parts) {
 // 저장 값은 도감이 쓰던 관례 그대로 '1'(리스트)|'2'(그리드) — 이미 나간 키(pogo_dex_cols)의 뜻을 그대로 잇는다
 
 // 초기 그리드 여부 — 저장된 선택이 있으면 그쪽, 없으면 wideCards() 기본값(PC=그리드)
-function layoutInitial(storageKey) {
-  let grid = wideCards();
+function layoutInitial(storageKey, defaultGrid = wideCards()) {
+  let grid = defaultGrid;
   try {
     const saved = localStorage.getItem(storageKey);
     if (saved) grid = saved === '2';

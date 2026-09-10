@@ -77,7 +77,7 @@ function renderRaidsPage() {
   };
   // 2026-09-09 v2.37.0 도감·즐겨찾기처럼 리스트로 되돌릴 수 있는 토글 (localStorage 'pogo_raids_cols').
   // 티어마다 목록이 따로 있어(sections) 토글 하나가 전부를 같이 바꾼다
-  const grid = layoutInitial('pogo_raids_cols');
+  const grid = layoutInitial('pogo_raids_cols', true);
   const sections = Object.entries(GAMEDAY.raids).map(([tier, list]) => gamedaySection(`${tier} 레이드`, list, notes, grid));
   const $layout = layoutToggle('pogo_raids_cols', grid, (next) => sections.forEach(({ $list }) => $list.classList.toggle('is-grid', next)));
   // 2026-09-09 v2.39.0 토글 버튼을 안내 문구 왼쪽 줄과 같은 줄, 오른쪽 끝으로 — 왼쪽에 홀로 떠 있어
@@ -104,7 +104,7 @@ function renderEggsPage() {
     return parts;
   };
   // 2026-09-09 v2.37.0 도감·즐겨찾기처럼 리스트로 되돌릴 수 있는 토글 (localStorage 'pogo_eggs_cols')
-  const grid = layoutInitial('pogo_eggs_cols');
+  const grid = layoutInitial('pogo_eggs_cols', true);
   const sections = Object.entries(GAMEDAY.eggs).map(([distance, list]) => gamedaySection(`${distance} 알`, list, notes, grid));
   const $layout = layoutToggle('pogo_eggs_cols', grid, (next) => sections.forEach(({ $list }) => $list.classList.toggle('is-grid', next)));
   return el('div', { class: 'page__body' },

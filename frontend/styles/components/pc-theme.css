@@ -674,3 +674,50 @@
     box-shadow: none;
   }
 }
+
+/* 도감과 같은 이미지 중심 카드: 순위/기술/조건은 보조 정보로 보존한다. */
+body:is([data-route="dmax"], [data-route="pve"], [data-route="pvp"]) #content .row-list {
+  display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; border-top: 0;
+}
+body:is([data-route="dmax"], [data-route="pve"], [data-route="pvp"]) #content .row-list > .row {
+  position: relative; display: flex; flex-direction: column; align-items: center;
+  min-width: 0; padding: 3.6rem 1.4rem 1.8rem; gap: 1rem; text-align: center;
+  border: 1px solid var(--line); border-radius: 1.2rem; background: var(--surface);
+}
+body:is([data-route="dmax"], [data-route="pve"], [data-route="pvp"]) #content .row > .row__rank {
+  position: absolute; top: 1rem; left: 1.2rem; width: auto; height: auto; padding: 0.3rem 0.6rem;
+}
+body:is([data-route="dmax"], [data-route="pve"], [data-route="pvp"]) #content .row > .sprite,
+.dex__list.is-grid .gameday__row > .sprite {
+  box-sizing: border-box; width: 12.8rem; height: 12.8rem; max-width: 100%; padding: 0;
+  border-radius: 2.4rem; object-fit: contain;
+}
+body:is([data-route="dmax"], [data-route="pve"], [data-route="pvp"]) #content .row > .sprite:not(.is-loading),
+.dex__list.is-grid .gameday__row > .sprite:not(.is-loading) {
+  background: radial-gradient(ellipse at 50% 80%, color-mix(in srgb, var(--brand) 14%, transparent), transparent 66%);
+}
+body:is([data-route="dmax"], [data-route="pve"], [data-route="pvp"]) #content .row__main {
+  display: flex; flex-direction: column; width: 100%; min-width: 0; padding: 0; border: 0; gap: 0.8rem;
+}
+body:is([data-route="dmax"], [data-route="pve"], [data-route="pvp"]) #content .row__name { order: -1; justify-content: center; flex-wrap: wrap; }
+body:is([data-route="dmax"], [data-route="pve"], [data-route="pvp"]) #content .row__name b { font-size: 1.7rem; font-weight: 700; white-space: normal; }
+body:is([data-route="dmax"], [data-route="pve"], [data-route="pvp"]) #content .row__badges { justify-content: center; flex-wrap: wrap; }
+body:is([data-route="dmax"], [data-route="pve"], [data-route="pvp"]) #content .row__moves { white-space: normal; overflow-wrap: anywhere; }
+body:is([data-route="dmax"], [data-route="pve"], [data-route="pvp"]) #content .row__stats {
+  width: 100%; margin-top: auto; padding-top: 1rem; border-top: 1px solid var(--line); text-align: center;
+}
+body:is([data-route="dmax"], [data-route="pve"], [data-route="pvp"]) #content .row__score { font-size: 1.5rem; }
+body:is([data-route="dmax"], [data-route="pve"], [data-route="pvp"]) #content .row-list > :is(.row__more, .row__why) { grid-column: 1 / -1; }
+.dex__list.is-grid .gameday__row { padding: 3.6rem 1.4rem 1.8rem; gap: 1rem; }
+.dex__list.is-grid .gameday__main { padding: 0; border: 0; width: 100%; }
+.dex__list.is-grid .gameday__main > b { font-size: 1.7rem; font-weight: 700; }
+.dex__list.is-grid .gameday__note { display: block; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--line); white-space: normal; }
+@media (min-width: 1100px) {
+  body:is([data-route="dmax"], [data-route="pve"], [data-route="pvp"]) #content .row-list { grid-template-columns: repeat(auto-fill, minmax(26rem, 1fr)); gap: 1.8rem; }
+  body:is([data-route="dmax"], [data-route="pve"], [data-route="pvp"]) #content .row-list > .row,
+  .dex__list.is-grid .gameday__row { padding: 4.2rem 2.2rem 2rem; gap: 1.2rem; }
+  body:is([data-route="dmax"], [data-route="pve"], [data-route="pvp"]) #content .row > .sprite,
+  .dex__list.is-grid .gameday__row > .sprite { width: 18rem; height: 18rem; }
+  body:is([data-route="dmax"], [data-route="pve"], [data-route="pvp"]) #content .row__name b,
+  .dex__list.is-grid .gameday__main > b { font-size: 2.1rem; }
+}
