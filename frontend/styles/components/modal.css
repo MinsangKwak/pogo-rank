@@ -1,6 +1,6 @@
 /* 포켓몬 상세 팝업 */
 /* 2026-09-09 v2.34.0 ✕ 가 카드 밖으로 나가며 카드 영역이 배경과 덜 또렷해질 수 있어 어둡기를 올렸다(.45 → .64) */
-.modal { position: fixed; inset: 0; z-index: 50; background: rgba(0,0,0,.64); display: flex; align-items: center; justify-content: center; padding: 20px; }
+.modal { position: fixed; inset: 0; z-index: 50; background: rgba(0,0,0,.64); display: flex; align-items: center; justify-content: center; padding: 2rem; }
 /* 2026-09-07 v2.21.0 <dialog> 로 열린다. 생김새(가운데 카드 · 좁은 화면은 바텀시트)는 그대로 두고
    브라우저 기본값만 지운다. 닫혀 있을 때 위의 display:flex 가 UA 의 display:none 을 이기므로 따로 감춘다 */
 dialog.modal { width: 100%; max-width: none; height: 100%; max-height: none; margin: 0; border: 0; color: var(--fg); }
@@ -11,18 +11,18 @@ dialog.modal::backdrop { background: transparent; }
    뭘 어떻게 배치하든(v2.32.0 의 공유·저장 아이콘 포함) 겹칠 자리 자체가 없고, 안쪽 여백도 그대로 쓸 수 있다.
    .modal__wrap 이 카드와 같은 폭·최대너비를 갖고, ✕ 는 그 오른쪽 위 모서리에 절반쯤 걸치도록 올려 붙인다.
    카드(.modal__box) 는 스크롤돼도 자신은 움직이지 않으므로 sticky 트릭도 필요 없다 */
-.modal__wrap { position: relative; width: 100%; max-width: 440px; }
-.modal__box { position: relative; background: var(--bg); border: 1px solid var(--line); border-radius: 16px; width: 100%; max-height: 85vh; overflow-y: auto; padding: 20px; }
-.modal__close { position: absolute; top: -36px; right: -4px; width: 32px; height: 32px; border-radius: 999px;
-  color: var(--muted); font-size: 15px; background: var(--surface); border: 1px solid var(--line);
-  box-shadow: 0 2px 6px rgba(0,0,0,.25); }
+.modal__wrap { position: relative; width: 100%; max-width: 44rem; }
+.modal__box { position: relative; background: var(--bg); border: 1px solid var(--line); border-radius: 1.6rem; width: 100%; max-height: 85vh; overflow-y: auto; padding: 2rem; }
+.modal__close { position: absolute; top: -3.6rem; right: -0.4rem; width: 3.2rem; height: 3.2rem; border-radius: 99.9rem;
+  color: var(--muted); font-size: 1.5rem; background: var(--surface); border: 1px solid var(--line);
+  box-shadow: 0 0.2rem 0.6rem rgba(0,0,0,.25); }
 .modal__close:hover { background: var(--surface); color: var(--fg); }
 @media (max-width: 640px) {
   .modal { padding: 0; align-items: flex-end; }
   .modal__wrap { max-width: none; }
-  .modal__box { max-height: 88vh; border-radius: 16px 16px 0 0; border-bottom: 0; }
+  .modal__box { max-height: 88vh; border-radius: 1.6rem 1.6rem 0 0; border-bottom: 0; }
   /* 바텀시트는 카드가 화면 맨 아래까지 붙어 위쪽에만 여유가 있다 — ✕ 를 카드 위 모서리 위로 올린다 */
-  .modal__close { top: -44px; right: 4px; }
+  .modal__close { top: -4.4rem; right: 0.4rem; }
 }
 
 /* 2026-09-08 v2.32.0 헤더 카드형 재배치 — 그림(왼쪽) · 정보(오른쪽). CP 는 detail__cp-card 로 헤더 밖에 따로 뗐다
@@ -31,162 +31,162 @@ dialog.modal::backdrop { background: transparent; }
    #번호 → 폼 라벨(거다이맥스 등) → 이름 → 영문명 순서로 세로로 쌓는다 */
 /* padding-right 는 detail__top-actions 세 자리(원 34px × 3 + 간격) 만큼 미리 비워 둔다 —
    즐겨찾기·저장 버튼이 빠질 때(비로그인 등)도 정보 칸이 자리를 다투지 않게 늘 넉넉히 잡는다 */
-.detail__head { position: relative; display: flex; align-items: flex-start; gap: 16px; padding-right: 120px; }
-.detail__info { flex: 1 1 auto; min-width: 0; padding-top: 2px; }
+.detail__head { position: relative; display: flex; align-items: flex-start; gap: 1.6rem; padding-right: 12rem; }
+.detail__info { flex: 1 1 auto; min-width: 0; padding-top: 0.2rem; }
 /* 그림 상자 뒤에 옅은 동심원 — 도트 스프라이트가 판 위에 그냥 놓인 것보다 자리가 또렷하다.
    var(--fg) 를 낮은 비율로만 섞어서 라이트·다크 어디서나 따로 값을 안 적어도 된다.
    position: relative 는 .detail__types 모서리 배지의 기준점 */
 .sprite-box {
-  position: relative; flex: 0 0 auto; width: 96px; height: 96px; display: flex; align-items: center; justify-content: center;
-  border-radius: 14px; background:
-    repeating-radial-gradient(circle at 50% 50%, color-mix(in srgb, var(--fg) 7%, transparent) 0 2px, transparent 2px 20px),
+  position: relative; flex: 0 0 auto; width: 9.6rem; height: 9.6rem; display: flex; align-items: center; justify-content: center;
+  border-radius: 1.4rem; background:
+    repeating-radial-gradient(circle at 50% 50%, color-mix(in srgb, var(--fg) 7%, transparent) 0 0.2rem, transparent 0.2rem 2rem),
     var(--surface);
 }
-.sprite-box .sprite { width: 80px; height: 80px; }
+.sprite-box .sprite { width: 8rem; height: 8rem; }
 /* 2026-09-06 v2.11.0 폼별 그림 테두리 — 메가·맥스는 뱃지와 같은 색, 은은한 바깥 광택 */
-.sprite-box.sprite-box--max { border: 2px solid var(--c-max); box-shadow: 0 0 0 3px color-mix(in srgb, var(--c-max) 22%, transparent); }
-.sprite-box.sprite-box--mega { border: 2px solid var(--c-mega); box-shadow: 0 0 0 3px color-mix(in srgb, var(--c-mega) 22%, transparent); }
-.sprite-box.sprite-box--shadow { border: 2px solid var(--c-shadow); box-shadow: 0 0 0 3px color-mix(in srgb, var(--c-shadow) 18%, transparent); }
+.sprite-box.sprite-box--max { border: 0.2rem solid var(--c-max); box-shadow: 0 0 0 0.3rem color-mix(in srgb, var(--c-max) 22%, transparent); }
+.sprite-box.sprite-box--mega { border: 0.2rem solid var(--c-mega); box-shadow: 0 0 0 0.3rem color-mix(in srgb, var(--c-mega) 22%, transparent); }
+.sprite-box.sprite-box--shadow { border: 0.2rem solid var(--c-shadow); box-shadow: 0 0 0 0.3rem color-mix(in srgb, var(--c-shadow) 18%, transparent); }
 /* #도감번호 — 목록 줄의 dex__no 와 같은 뜻이라 .tag 를 그대로 쓴다(새 색을 안 만든다) */
-.detail__dexno { display: inline-block; margin-bottom: 4px; }
+.detail__dexno { display: inline-block; margin-bottom: 0.4rem; }
 /* 2026-09-09 v2.35.0 폼 라벨(거다이맥스 등)을 이름과 한 줄에서 떼어 이름 위 줄로 — 오른쪽 위
    아이콘 줄과 같은 높이에서 시작해, "이 개체가 어떤 폼인지"가 아이콘 줄과 나란히 먼저 읽힌다 */
-.detail__form-row { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 2px; }
-.detail__head h2 { margin: 0; font-size: 18px; font-weight: 600; }
+.detail__form-row { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-bottom: 0.2rem; }
+.detail__head h2 { margin: 0; font-size: 1.8rem; font-weight: 600; }
 /* 영문명 — 이름 옆 괄호가 아니라 그 아래 자기 줄로 */
-.detail__en-inline { display: block; margin-top: 2px; font-weight: 400; font-size: 13px; color: var(--muted); }
+.detail__en-inline { display: block; margin-top: 0.2rem; font-weight: 400; font-size: 1.3rem; color: var(--muted); }
 /* 타입 배지 — 이름 줄의 알약이 아니라 그림 왼쪽 위 모서리에 살짝 겹치는 작은 뱃지.
    여러 타입이면 세로로 쌓는다. 그림 색이 다양해 늘 또렷하도록 그림자를 준다 */
-.detail__types { position: absolute; top: -6px; left: -6px; display: flex; flex-direction: column; align-items: flex-start; gap: 3px; z-index: 1; }
-.detail__type-pill { display: inline-flex; align-items: center; padding: 2px 9px; border-radius: 999px; font-size: 10.5px; font-weight: 700; color: #fff;
-  text-shadow: 0 1px 2px rgba(0,0,0,.35); background: var(--c, var(--muted)); box-shadow: 0 1px 4px rgba(0,0,0,.35); }
+.detail__types { position: absolute; top: -0.6rem; left: -0.6rem; display: flex; flex-direction: column; align-items: flex-start; gap: 0.3rem; z-index: 1; }
+.detail__type-pill { display: inline-flex; align-items: center; padding: 0.2rem 0.9rem; border-radius: 99.9rem; font-size: 1.05rem; font-weight: 700; color: #fff;
+  text-shadow: 0 1px 0.2rem rgba(0,0,0,.35); background: var(--c, var(--muted)); box-shadow: 0 1px 0.4rem rgba(0,0,0,.35); }
 
-.detail__sec { margin-top: 18px; }
-.detail__sec h3 { margin: 0 0 8px; font-size: 12px; font-weight: 600; color: var(--muted); letter-spacing: .02em; }
-.detail__none-text { margin: 0; font-size: 12.5px; color: var(--muted); }
-.detail__foot { margin: 6px 0 0; font-size: 11.5px; color: var(--muted); }
+.detail__sec { margin-top: 1.8rem; }
+.detail__sec h3 { margin: 0 0 0.8rem; font-size: 1.2rem; font-weight: 600; color: var(--muted); letter-spacing: .02em; }
+.detail__none-text { margin: 0; font-size: 1.25rem; color: var(--muted); }
+.detail__foot { margin: 0.6rem 0 0; font-size: 1.15rem; color: var(--muted); }
 
 /* 진화 단계 */
-.evo { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.evo { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; }
 .evo__arrow { color: var(--muted); }
-.evo__stage { display: flex; flex-wrap: wrap; gap: 6px; }
+.evo__stage { display: flex; flex-wrap: wrap; gap: 0.6rem; }
 /* 2026-09-08 v2.31.0 진화 전 단계는 테두리가 아예 없어(border: transparent) 그림이 붕 떠 보였다.
    모든 단계에 같은 상자를 주고, "지금 보는 이 포켓몬"(is-now)만 테두리 색·굵기로 구분한다 */
-.evo__mon { display: flex; flex-direction: column; align-items: center; gap: 2px; width: 64px; padding: 6px 2px 4px; border-radius: 10px; border: 1px solid var(--line); background: var(--surface); font-size: 11px; color: var(--muted); text-align: center; }
-.evo__mon .sprite { width: 40px; height: 40px; }
+.evo__mon { display: flex; flex-direction: column; align-items: center; gap: 0.2rem; width: 6.4rem; padding: 0.6rem 0.2rem 0.4rem; border-radius: 1rem; border: 1px solid var(--line); background: var(--surface); font-size: 1.1rem; color: var(--muted); text-align: center; }
+.evo__mon .sprite { width: 4rem; height: 4rem; }
 .evo__mon.is-now { border-color: var(--fg); color: var(--fg); font-weight: 600; }
 /* 2026-09-04 메가/원시 진화 칩 — 일반 진화형과 구분되게 살짝 강조 */
 .evo__mon.form-tag--mega { border-color: color-mix(in srgb, var(--c-mega) 40%, var(--line)); color: color-mix(in srgb, var(--c-mega) 70%, var(--muted)); }  /* v2.11.0 메가 색으로 통일 */
 .evo__mon.form-tag--mega.is-now { border-color: var(--c-mega); background: color-mix(in srgb, var(--c-mega) 12%, var(--surface)); color: var(--c-mega); }
 
 /* 기술 · 상성 목록 */
-.move-list__row { display: flex; align-items: baseline; gap: 10px; margin-bottom: 6px; }
-.move-list__row em { flex: 0 0 44px; font-style: normal; font-size: 11.5px; color: var(--muted); }
-.move-list, .tchips { display: flex; flex-wrap: wrap; gap: 4px; }
-.move-chip { border: 1px solid var(--line); border-radius: 6px; padding: 2px 8px; font-size: 12px; }
-.tchips__item { display: inline-flex; align-items: center; gap: 5px; border: 1px solid var(--line); border-radius: 999px; padding: 2px 9px; font-size: 12px; }
-.tchips__item .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--c, var(--muted)); }
-.tchips__item small { font-size: 10.5px; color: var(--muted); }
+.move-list__row { display: flex; align-items: baseline; gap: 1rem; margin-bottom: 0.6rem; }
+.move-list__row em { flex: 0 0 4.4rem; font-style: normal; font-size: 1.15rem; color: var(--muted); }
+.move-list, .tchips { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+.move-chip { border: 1px solid var(--line); border-radius: 0.6rem; padding: 0.2rem 0.8rem; font-size: 1.2rem; }
+.tchips__item { display: inline-flex; align-items: center; gap: 0.5rem; border: 1px solid var(--line); border-radius: 99.9rem; padding: 0.2rem 0.9rem; font-size: 1.2rem; }
+.tchips__item .dot { width: 0.8rem; height: 0.8rem; border-radius: 50%; background: var(--c, var(--muted)); }
+.tchips__item small { font-size: 1.05rem; color: var(--muted); }
 
 /* 활용처 순위 칩 */
-.uchip { display: inline-flex; align-items: baseline; gap: 4px; border: 1px solid var(--line); border-radius: 6px; padding: 2px 8px; font-size: 12px; color: var(--muted); }
+.uchip { display: inline-flex; align-items: baseline; gap: 0.4rem; border: 1px solid var(--line); border-radius: 0.6rem; padding: 0.2rem 0.8rem; font-size: 1.2rem; color: var(--muted); }
 .uchip b { font-weight: 600; color: var(--fg); }
 /* 2026-09-04 포획 CP 칩의 보조 숫자(개체값 하한 CP) */
-.uchip i { font-style: normal; font-size: 11px; color: var(--muted); }
+.uchip i { font-style: normal; font-size: 1.1rem; color: var(--muted); }
 .uchip.is-top { border-color: color-mix(in srgb, var(--warn) 45%, var(--line)); color: var(--fg); }
 .uchip.is-top b { color: var(--warn); }
 
 /* 종족값 */
-.stat-bar { display: grid; grid-template-columns: 34px 1fr 40px; gap: 10px; align-items: center; font-size: 12px; margin-bottom: 5px; }
-.stat-bar em { font-style: normal; color: var(--muted); font-size: 11.5px; }
-.stat-bar .score-bar { height: 6px; background: var(--surface); border-radius: 3px; overflow: hidden; }
-.stat-bar .score-bar i { display: block; height: 100%; background: var(--fg); opacity: .55; border-radius: 3px; }
+.stat-bar { display: grid; grid-template-columns: 3.4rem 1fr 4rem; gap: 1rem; align-items: center; font-size: 1.2rem; margin-bottom: 0.5rem; }
+.stat-bar em { font-style: normal; color: var(--muted); font-size: 1.15rem; }
+.stat-bar .score-bar { height: 0.6rem; background: var(--surface); border-radius: 0.3rem; overflow: hidden; }
+.stat-bar .score-bar i { display: block; height: 100%; background: var(--fg); opacity: .55; border-radius: 0.3rem; }
 .stat-bar b { font-weight: 500; text-align: right; }
 
 /* 2026-09-02 업데이트 모달 날짜별 아코디언 */
-.detail__rel-acc { border: 1px solid var(--line); border-radius: 10px; margin: 8px 0; }
-.detail__rel-acc summary { padding: 10px 14px; cursor: pointer; font-weight: 600; font-size: 13.5px; list-style: none; }
+.detail__rel-acc { border: 1px solid var(--line); border-radius: 1rem; margin: 0.8rem 0; }
+.detail__rel-acc summary { padding: 1rem 1.4rem; cursor: pointer; font-weight: 600; font-size: 1.35rem; list-style: none; }
 .detail__rel-acc summary::-webkit-details-marker { display: none; }
 .detail__rel-acc summary::after { content: '▾'; float: right; color: var(--muted); }
 .detail__rel-acc[open] summary::after { content: '▴'; }
-.detail__rel-acc ul { margin: 0 0 10px; }
+.detail__rel-acc ul { margin: 0 0 1rem; }
 
 /* 2026-09-08 v2.32.0 헤더 한 줄 문장(.detail__cpline) 대신 카드 — CP 는 detail__cp-card 참고.
    만렙 큰 숫자 하나 + 레이드·부스트·야생·부스트 2×2 표. 문장보다 숫자 넷이 바로 눈에 들어온다
    2026-09-09 v2.34.0 표 네 칸이 자리를 많이 차지해 <details> 로 바꿔 접을 수 있게 했다.
    summary(큰 숫자)는 접혀도 항상 보이고, 2×2 표(detail__cp-grid)만 접힌다.
    다른 아코디언(.detail__acc)과 같은 꺾쇠 규칙을 쓰되, 카드 톤(무채색)은 그대로 둔다 */
-.detail__cp-card { margin-top: 14px; padding: 16px; border: 1px solid var(--line); border-radius: 14px; background: var(--surface); }
-.detail__cp-card > summary { display: flex; align-items: center; justify-content: space-between; gap: 10px; cursor: pointer; list-style: none; }
+.detail__cp-card { margin-top: 1.4rem; padding: 1.6rem; border: 1px solid var(--line); border-radius: 1.4rem; background: var(--surface); }
+.detail__cp-card > summary { display: flex; align-items: center; justify-content: space-between; gap: 1rem; cursor: pointer; list-style: none; }
 .detail__cp-card > summary::-webkit-details-marker { display: none; }
-.detail__cp-card > summary::after { content: '›'; flex: none; font-size: 22px; line-height: 1; color: var(--muted); transition: transform .15s ease; }
+.detail__cp-card > summary::after { content: '›'; flex: none; font-size: 2.2rem; line-height: 1; color: var(--muted); transition: transform .15s ease; }
 .detail__cp-card[open] > summary::after { transform: rotate(90deg); }
-.detail__cp-big { display: flex; flex-direction: column; gap: 3px; }
-.detail__cp-big b { font-size: 30px; font-weight: 700; line-height: 1.1; }
-.detail__cp-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 14px; }
+.detail__cp-big { display: flex; flex-direction: column; gap: 0.3rem; }
+.detail__cp-big b { font-size: 3rem; font-weight: 700; line-height: 1.1; }
+.detail__cp-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.8rem; margin-top: 1.4rem; }
 /* 안쪽 칸은 카드보다 한 단 깊은 색(--bg) — party-card·boss__rec 과 같은 "카드 위 카드" 규칙 */
-.detail__cp-tile { padding: 10px 12px; border-radius: 10px; background: var(--bg); }
-.detail__cp-tile b { display: block; margin-top: 2px; font-size: 16px; font-weight: 700; }
+.detail__cp-tile { padding: 1rem 1.2rem; border-radius: 1rem; background: var(--bg); }
+.detail__cp-tile b { display: block; margin-top: 0.2rem; font-size: 1.6rem; font-weight: 700; }
 
 /* 2026-09-04 레이드 보상/야생 스폰 CP 구분 */
-.cp__ctx { margin-top: 8px; }
-.cp__ctx em { display: block; font-style: normal; font-size: 11.5px; color: var(--muted); margin-bottom: 4px; }
+.cp__ctx { margin-top: 0.8rem; }
+.cp__ctx em { display: block; font-style: normal; font-size: 1.15rem; color: var(--muted); margin-bottom: 0.4rem; }
 
 /* 2026-09-04 메가X vs 메가Y 좌우 비교 */
-.cmp { border: 1px solid var(--line); border-radius: 10px; padding: 4px 12px; }
-.cmp__row { display: grid; grid-template-columns: 44px 1fr 1fr; gap: 8px; align-items: center; padding: 6px 0; font-size: 12.5px; border-top: 1px solid var(--line); }
+.cmp { border: 1px solid var(--line); border-radius: 1rem; padding: 0.4rem 1.2rem; }
+.cmp__row { display: grid; grid-template-columns: 4.4rem 1fr 1fr; gap: 0.8rem; align-items: center; padding: 0.6rem 0; font-size: 1.25rem; border-top: 1px solid var(--line); }
 .cmp__row:first-child { border-top: none; }
-.cmp__row em { font-style: normal; color: var(--muted); font-size: 11.5px; }
+.cmp__row em { font-style: normal; color: var(--muted); font-size: 1.15rem; }
 .cmp__row b { font-weight: 500; }
 .cmp__row b.is-high { color: var(--caution); font-weight: 700; }
-.cmp__head b { color: var(--muted); font-size: 11.5px; font-weight: 600; }
-.detail__en-inline { font-weight: 400; font-size: 13px; color: var(--muted); }
+.cmp__head b { color: var(--muted); font-size: 1.15rem; font-weight: 600; }
+.detail__en-inline { font-weight: 400; font-size: 1.3rem; color: var(--muted); }
 /* 2026-09-03 v4: 약점/내성 위아래 + CP 계산기 아코디언 */
-.detail__matchrows { display: flex; flex-direction: column; gap: 12px; }
-.detail__matchrows h3 { margin: 0 0 6px; font-size: 12.5px; font-weight: 600; color: var(--muted); }
+.detail__matchrows { display: flex; flex-direction: column; gap: 1.2rem; }
+.detail__matchrows h3 { margin: 0 0 0.6rem; font-size: 1.25rem; font-weight: 600; color: var(--muted); }
 /* 2026-09-08 v2.32.0 아코디언을 "누르면 열리는 줄" 모양으로 — 아이콘 + 굵은 이름 + 오른쪽 꺾쇠.
    꺾쇠는 열리면 아래를 가리키게 90도 돈다(펼쳐진 내용이 그 아래 있다는 뜻) */
-.detail__acc { margin-top: 14px; border: 1px solid var(--line); border-radius: 14px; background: var(--surface); overflow: hidden; }
-.detail__acc summary { display: flex; align-items: center; padding: 13px 14px; cursor: pointer; font-size: 14px; font-weight: 600; list-style: none; }
+.detail__acc { margin-top: 1.4rem; border: 1px solid var(--line); border-radius: 1.4rem; background: var(--surface); overflow: hidden; }
+.detail__acc summary { display: flex; align-items: center; padding: 1.3rem 1.4rem; cursor: pointer; font-size: 1.4rem; font-weight: 600; list-style: none; }
 .detail__acc summary::-webkit-details-marker { display: none; }
-.detail__acc summary::after { content: '›'; margin-left: auto; padding-left: 10px; font-size: 19px; line-height: 1; color: var(--muted); transition: transform .15s ease; }
+.detail__acc summary::after { content: '›'; margin-left: auto; padding-left: 1rem; font-size: 1.9rem; line-height: 1; color: var(--muted); transition: transform .15s ease; }
 .detail__acc[open] summary::after { transform: rotate(90deg); }
-.detail__acc-body { padding: 0 14px 14px; }
+.detail__acc-body { padding: 0 1.4rem 1.4rem; }
 /* 🎯 포획 CP — 가장 먼저 확인하는 표라 살짝 강조한다 */
 .detail__acc--catch { background: color-mix(in srgb, var(--warn) 8%, var(--surface)); border-color: color-mix(in srgb, var(--warn) 30%, var(--line)); }
 .detail__acc--catch summary { color: var(--warn); }
-.cp__inline { margin: 10px 0 0; font-size: 13.5px; }
-.cp__inline b { font-size: 16px; }
+.cp__inline { margin: 1rem 0 0; font-size: 1.35rem; }
+.cp__inline b { font-size: 1.6rem; }
 
 /* 2026-09-03 도감형: 육각형 | 기술 2열 */
 .hex { display: flex; flex-direction: column; align-items: center; }
-.hex__svg { width: 100%; max-width: 200px; height: auto; }
-.hex__name { font-size: 13px; fill: var(--muted); }
-.hex__val { font-size: 14.5px; font-weight: 600; fill: var(--fg); }
-.detail__hexmoves { display: grid; grid-template-columns: 46% 1fr; gap: 4px 14px; margin-top: 18px; align-items: start; }
-.detail__hexmoves h3 { margin: 0 0 6px; font-size: 12.5px; font-weight: 600; color: var(--muted); }
+.hex__svg { width: 100%; max-width: 20rem; height: auto; }
+.hex__name { font-size: 1.3rem; fill: var(--muted); }
+.hex__val { font-size: 1.45rem; font-weight: 600; fill: var(--fg); }
+.detail__hexmoves { display: grid; grid-template-columns: 46% 1fr; gap: 0.4rem 1.4rem; margin-top: 1.8rem; align-items: start; }
+.detail__hexmoves h3 { margin: 0 0 0.6rem; font-size: 1.25rem; font-weight: 600; color: var(--muted); }
 /* 2026-09-03 기술 간격: 라벨(스피드/차지) 바로 아래 칩, 그룹 사이 10px */
-.detail__moves .move-list__row { flex-direction: column; align-items: flex-start; gap: 4px; margin: 0 0 10px; }
+.detail__moves .move-list__row { flex-direction: column; align-items: flex-start; gap: 0.4rem; margin: 0 0 1rem; }
 .detail__moves .move-list__row:last-of-type { margin-bottom: 0; }
 /* 세로 배치에서는 em의 flex-basis 44px가 '높이'가 돼 간격이 벌어짐 → 해제 */
-.detail__moves .move-list__row em { flex: none; font-size: 12px; color: var(--muted); font-style: normal; font-weight: 600; }
+.detail__moves .move-list__row em { flex: none; font-size: 1.2rem; color: var(--muted); font-style: normal; font-weight: 600; }
 @media (max-width: 359px) { .detail__hexmoves { grid-template-columns: 1fr; } }
 
 /* 2026-09-08 v2.32.0 헤더 오른쪽 위 동그란 아이콘 자리(공유 · 저장 · 즐겨찾기) — ✕ 닫기(.modal__close)는
    이제 카드 밖에 있어(v2.34.0) 자리를 다투지 않는다.
    2026-09-09 v2.35.0 ★ 즐겨찾기도 이 줄로 옮겼다 — 공유·저장과 같은 "이 포켓몬에 대한 동작"이라 한 줄이 낫다 */
-.detail__top-actions { position: absolute; top: 0; right: 0; display: flex; gap: 6px; }
+.detail__top-actions { position: absolute; top: 0; right: 0; display: flex; gap: 0.6rem; }
 /* min-width(고정 width 아님) — 공유를 누르면 "복사됨 ✓" 로 글자가 길어지는데 폭을 고정하면 글자가 밖으로 샌다 */
-.detail__share { min-width: 34px; height: 34px; padding: 0 9px; display: flex; align-items: center; justify-content: center; flex: none;
-  font-size: 15px; line-height: 1; border-radius: 999px; border: 1px solid var(--line); background: var(--surface); color: var(--muted); white-space: nowrap; }
+.detail__share { min-width: 3.4rem; height: 3.4rem; padding: 0 0.9rem; display: flex; align-items: center; justify-content: center; flex: none;
+  font-size: 1.5rem; line-height: 1; border-radius: 99.9rem; border: 1px solid var(--line); background: var(--surface); color: var(--muted); white-space: nowrap; }
 .detail__share:hover { background: var(--hover); color: var(--fg); }
 /* .fav 는 원래 목록 줄(list.css)의 민무늬 별 버튼 — 여기서는 공유·저장과 같은 동그란 칩으로 덧입힌다.
    부모 클래스를 겹친 선택자라 list.css 의 기본 .fav 보다 구체적이어서 파일 순서와 무관하게 이긴다 */
-.detail__top-actions .fav { width: 34px; height: 34px; font-size: 16px; opacity: 1; border-radius: 999px;
+.detail__top-actions .fav { width: 3.4rem; height: 3.4rem; font-size: 1.6rem; opacity: 1; border-radius: 99.9rem;
   border: 1px solid var(--line); background: var(--surface); }
 .detail__top-actions .fav:hover { background: var(--hover); }
 .detail__top-actions .fav.is-on { border-color: color-mix(in srgb, var(--caution) 45%, var(--line)); }
-.solo__fill { display: flex; align-items: center; gap: 8px; margin: 0 0 8px; font-size: 12.5px; }
+.solo__fill { display: flex; align-items: center; gap: 0.8rem; margin: 0 0 0.8rem; font-size: 1.25rem; }
 
 /* 2026-09-06 v2.10.0 (QA-44) 이중약점(×2.56) · 이중내성/무효(×0.39) 칩 강조 */
 .tchips__item.is-weak2 { border-color: color-mix(in srgb, var(--warn) 60%, var(--line)); font-weight: 600; }
