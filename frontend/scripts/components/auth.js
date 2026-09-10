@@ -208,6 +208,15 @@ async function onAuthChange(user) {
   if (typeof syncLockedNav === 'function') syncLockedNav();
   // 도감·즐겨찾기 페이지가 열려 있으면 ★ 표시를 다시 그린다
   if (typeof currentPageId === 'function' && ['dex', 'favs'].includes(currentPageId())) renderPage();
+  // 2026-09-10 v2.49.0 (버그) 잠긴 화면은 로그인이 끝나면 다시 그려야 한다.
+  // Firebase SDK 는 첫 화면이 그려진 뒤에 로드된다(initAuth). 그래서 #/raids 같은 주소로 바로 들어오면
+  // 그 순간에는 아직 비로그인이라 잠금 카드가 그려지고, 잠시 뒤 로그인이 끝나도 화면은 그대로 잠긴 채였다.
+  // 로그인한 사람이 자기 화면을 못 보는 상태라 그냥 두면 안 된다
+  const nowRoute = typeof routeOf === 'function' ? routeOf()?.route : null;
+  if (nowRoute?.locked) {
+    if (nowRoute.kind === 'page') renderPage();
+    else if (typeof render === 'function' && typeof _planShellReady !== 'undefined' && _planShellReady) render();
+  }
   // 2026-09-07 v2.15.0 (QA-54) 플래너 화면(내 포켓몬 목록·홈 요약)은 로그인 상태에 따라 내용이 다르다
   if (typeof _planShellReady !== 'undefined' && _planShellReady && state.appMode === 'plan') render();
 }

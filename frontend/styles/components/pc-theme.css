@@ -520,11 +520,16 @@
   .plan__recent-name { font-size: var(--fs-body); font-weight: 700; }
 
   /* ── 내 포켓몬 목록 — 목업처럼 정보 묶음 여섯 칸 ──────────────────────────── */
-  .plan__mons { gap: 12px; }
+  .plan__mons { gap: 10px; }
   .plan__mon {
-    grid-template-columns: 34px 96px minmax(0, 1fr) 96px 220px auto;
-    gap: 16px; align-items: center; padding: 16px 18px; border-radius: var(--r-card);
+    grid-template-columns: 28px 60px minmax(0, 1fr) 84px 200px auto;
+    gap: 14px; align-items: center; padding: 12px 16px; border-radius: var(--r-card);
   }
+  /* (버그) 좁은 화면용 규칙이 여기까지 따라와 칸을 다 차지하고 있었다 —
+     planner.css 가 CP·기술 묶음에 grid-column: 1 / -1 을 주는데(좁은 화면은 아래로 눕히려고),
+     넓은 화면에서는 그 값이 남아 묶음마다 한 줄씩 차지해 카드가 세로로 길어졌다.
+     격자를 다시 쓰는 여기서 제자리로 되돌린다 */
+  .plan__mon-cp, .plan__mon-moves { grid-column: auto; }
   .plan__mon:hover {
     border-color: color-mix(in srgb, var(--brand) 45%, var(--line));
     box-shadow: 0 6px 20px -12px color-mix(in srgb, var(--brand) 60%, transparent);
@@ -532,34 +537,39 @@
   .plan__mon.is-picked { border-color: var(--brand); }
   /* 순번 — 목업의 왼쪽 번호 배지. 티어표 순위 배지와 같은 문법(둥근 사각) */
   .plan__mon-no {
-    display: flex; align-items: center; justify-content: center; width: 30px; height: 30px;
-    border: 1px solid var(--line); border-radius: 10px; background: var(--bg);
-    font-size: var(--fs-sub); font-weight: 700; color: var(--muted);
+    display: flex; align-items: center; justify-content: center; width: 26px; height: 26px;
+    border: 1px solid var(--line); border-radius: 9px; background: var(--bg);
+    font-size: 11px; font-weight: 700; color: var(--muted);
   }
   .plan__mon:first-child .plan__mon-no { border-color: var(--brand); color: var(--brand); }
   /* 그림 판 — 도감·티어표 카드와 같은 발광 판 */
-  .plan__mon > .sprite { box-sizing: content-box; width: 76px; height: 76px; padding: 10px; border-radius: 50%; }
+  .plan__mon > .sprite { box-sizing: content-box; width: 48px; height: 48px; padding: 6px; border-radius: 50%; }
   .plan__mon > .sprite:not(.is-loading) {
     background-color: transparent;
     background-image:
       radial-gradient(60% 40% at 50% 88%, color-mix(in srgb, var(--brand) 38%, transparent), transparent 70%),
       radial-gradient(70% 70% at 50% 42%, color-mix(in srgb, var(--brand-2) 12%, transparent), transparent 72%);
   }
-  .plan__mon-main .row__name b { font-size: var(--fs-lead); font-weight: 700; }
-  .plan__mon-bar { max-width: 320px; height: 6px; }
-  /* CP 한 칸 — 목업처럼 크게. 이 목록에서 제일 자주 견주는 숫자다 */
-  .plan__mon-cp { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; text-align: right; }
-  .plan__mon-cp em { font-style: normal; font-size: 11px; color: var(--muted); }
-  .plan__mon-cp b { font-size: 24px; font-weight: 700; letter-spacing: -0.02em; color: var(--brand); }
+  .plan__mon-main .row__name b { font-size: var(--fs-body); font-weight: 700; }
+  .plan__mon-types { margin-top: 3px; }
+  .plan__mon-lv { margin-top: 3px; }
+  .plan__mon-lv b { font-size: var(--fs-body); }
+  .plan__mon-bar { max-width: 260px; height: 5px; margin-top: 3px; }
+  /* CP 한 칸 — 이 목록에서 제일 자주 견주는 숫자라 크게. 다만 카드 높이를 밀지 않는 선까지만 */
+  .plan__mon-cp { display: flex; flex-direction: column; align-items: flex-end; gap: 0; text-align: right; }
+  .plan__mon-cp em { font-style: normal; font-size: 10px; color: var(--muted); }
+  .plan__mon-cp b { font-size: 19px; font-weight: 700; letter-spacing: -0.02em; color: var(--brand); }
   /* 주요 기술 — 스피드·차지 두 줄 */
   .plan__mon-moves { display: block; }
-  .plan__mon-moves > em { display: block; font-style: normal; margin-bottom: 6px; font-size: 11px; color: var(--muted); }
-  .plan__mon-move-list { display: flex; flex-direction: column; gap: 6px; }
+  .plan__mon-moves > em { display: block; font-style: normal; margin-bottom: 4px; font-size: 10px; color: var(--muted); }
+  .plan__mon-move-list { display: flex; flex-direction: column; gap: 4px; }
   .plan__move {
-    align-items: center; gap: 8px; padding: 6px 10px;
-    border: 1px solid var(--line); border-radius: 10px; background: var(--bg); font-size: var(--fs-sub);
+    align-items: center; gap: 8px; padding: 4px 9px;
+    border: 1px solid var(--line); border-radius: 8px; background: var(--bg); font-size: 11.5px;
   }
   .plan__move b { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .plan__move i { margin-left: auto; flex: none; }
-  .plan__mon-actions { gap: 6px; min-width: 96px; }
+  .plan__move i { margin-left: auto; flex: none; font-size: 10px; }
+  /* 동작 버튼 — 오른쪽 끝에 세로로 셋. 카드 높이 안에서 가지런히 서도록 폭을 못 박는다 */
+  .plan__mon-actions { gap: 4px; width: 78px; }
+  .plan__mon-actions .uchip { min-height: 26px; padding: 0 8px; border-radius: 8px; font-size: 11.5px; }
 }

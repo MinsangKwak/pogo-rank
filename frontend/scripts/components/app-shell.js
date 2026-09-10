@@ -97,10 +97,14 @@ drawer.querySelector('#schedule-body').closest('details').hidden = true;
 // 이모지를 라벨 글자에 섞지 않고 span 으로 뗀 이유: 번역 사전(i18n-en.js)이 텍스트 노드 단위로 찾아서
 // '내 포켓몬' 같은 라벨은 그대로 맞아떨어져야 한다 (이모지가 섞이면 키가 달라진다)
 function navItem(href, title, icon) {
-  // 2026-09-10 v2.47.0 잠글 수 있는 항목은 id 를 달아 둔다 — 로그인 상태가 바뀔 때마다
-  // syncLockedNav() 가 이 줄의 잠금 표시를 갱신한다 (육성 플래너)
+  // 2026-09-10 v2.47.0 잠글 수 있는 항목은 라우트 id 를 달아 둔다 — 로그인 상태가 바뀔 때마다
+  // syncLockedNav() 가 그 줄의 잠금 표시를 갱신한다.
+  // v2.48.1 대상이 육성 플래너 하나에서 여럿(배틀 PvP · 이벤트 일정 · 레이드 보스 · 알 부화)으로
+  // 늘어, id 를 하나씩 박지 않고 data-route 로 표를 따라간다
   const attrs = { href, class: 'drawer__item' };
-  if (href === routeHash('planner')) attrs.id = 'menu-planner';
+  const route = ROUTES.find((entry) => `#/${entry.path}` === href);
+  if (route) attrs['data-route'] = route.id;
+  if (route?.id === 'planner') attrs.id = 'menu-planner';   // 기존 검사·선택자 유지
   return el('a', attrs,
     el('span', { class: 'drawer__ico', 'aria-hidden': 'true' }, icon),
     el('span', { class: 'drawer__label' }, title));
@@ -110,14 +114,16 @@ function navItem(href, title, icon) {
 // 실제 차단은 클릭 처리(destinations)와 화면 자체(planner/shell.js renderPlan)가 한다 —
 // 여기서 하는 것은 "지금 못 쓴다"를 보여 주는 일뿐이다
 function syncLockedNav() {
-  const locked = typeof planLocked === 'function' && planLocked();
-  for (const $item of [document.getElementById('menu-planner'), document.getElementById('home-tile-planner')]) {
-    if (!$item) continue;
+  if (typeof routeLocked !== 'function') return;
+  // ☰ 메뉴 줄 · PC 사이드바 줄 · 서비스 홈 타일 — 전부 data-route 를 달고 있다
+  for (const $item of document.querySelectorAll('.nav-menu a[data-route], .home__tile[data-route]')) {
+    const locked = routeLocked($item.dataset.route);
     $item.classList.toggle('is-locked', locked);
     if (locked) $item.setAttribute('aria-disabled', 'true');
     else $item.removeAttribute('aria-disabled');
-    $item.title = locked ? '로그인하면 열립니다 — 내 개체를 계정에 저장하는 화면이에요' : '';
+    $item.title = locked ? '로그인하면 열립니다' : '';
   }
+  // 셸 탭 줄의 배틀 PvP — 탭은 매번 다시 그려지므로 renderTabs 가 직접 표시한다(여기서는 건드리지 않는다)
 }
 const destinations = el('nav', { class: 'nav-menu', 'aria-label': '서비스 이동' },
   navItem('#', '서비스 홈', '🏠'),

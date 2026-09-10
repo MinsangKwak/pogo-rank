@@ -31,10 +31,10 @@ function renderServiceHome() {
     ['07', '이벤트 일정', '다가오는 레이드와 이벤트', 'schedule'],
     ['08', '레이드 보스', '지금 도는 보스와 약점', 'raids'],
     ['09', '알 부화', '거리별로 뭐가 나오나', 'eggs'],
-  ].map(([number, title, desc, id]) => [number, title, desc, routeHash(id), routeIcon(id)]);
-  const grid = el('div', { class: 'home__grid' }, ...features.map(([number, title, desc, route, icon]) =>
+  ].map(([number, title, desc, id]) => [number, title, desc, routeHash(id), routeIcon(id), id]);
+  const grid = el('div', { class: 'home__grid' }, ...features.map(([number, title, desc, route, icon, id]) =>
     // 2026-09-10 v2.47.0 육성 플래너 타일은 로그인해야 열린다 — id 를 달아 두면 syncLockedNav 가 갱신한다
-    el('a', { class: 'home__tile', href: route, ...(route === routeHash('planner') ? { id: 'home-tile-planner' } : {}) },
+    el('a', { class: 'home__tile', href: route, 'data-route': id, ...(id === 'planner' ? { id: 'home-tile-planner' } : {}) },
       el('div', { class: 'home__tile-top' },
         el('span', { class: 'home__icon', 'aria-hidden': 'true' }, icon),
         el('span', { class: 'home__number' }, number)),
