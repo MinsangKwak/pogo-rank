@@ -409,9 +409,11 @@ function matchupCols(types, spriteId) {
   const resist = rows.filter(([, multiplier]) => multiplier <= 0.7).sort((a, b) => a[1] - b[1]);
   const hasDouble = weak.some(([, multiplier]) => multiplier >= 2.5) || resist.some(([, multiplier]) => multiplier <= 0.4);
   const wrap = el('div', {},
+    // 2026-09-10 v2.42.0 약점·내성을 각각 카드 한 장으로 — 칩만 두 줄로 늘어놓으면 어디까지가 약점이고
+    // 어디부터 내성인지 훑을 때 섞였다. 카드에 옅은 색(경고/브랜드)을 깔아 덩이가 먼저 읽히게 한다
     el('div', { class: 'detail__matchrows' },
-      el('div', {}, el('h3', {}, '약점'), chipList(weak)),
-      el('div', {}, el('h3', {}, '내성'), chipList(resist))),
+      el('div', { class: 'detail__match detail__match--weak' }, el('h3', {}, '약점 (더 큰 데미지)'), chipList(weak)),
+      el('div', { class: 'detail__match detail__match--resist' }, el('h3', {}, '내성 (덜 받는 데미지)'), chipList(resist))),
     el('p', { class: 'detail__foot' },
       hasDouble ? '이중 = 두 타입 모두에 걸려 ×2.56(약점) / ×0.39(내성·무효) · ' : '',
       // 2026-09-06 v2.10.0 🧭 상성 검색 페이지로 — 같은 타입 조합을 미리 채운 채 열린다

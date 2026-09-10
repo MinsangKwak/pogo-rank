@@ -31,7 +31,7 @@
 
 /* 새 패치노트 알림 점 (☰ 버튼 · 메뉴 항목) */
 .dot-badge { position: relative; }
-.dot-badge::after { content: ''; position: absolute; top: 6px; right: 6px; width: 7px; height: 7px; border-radius: 50%; background: #d84a5f; }
+.dot-badge::after { content: ''; position: absolute; top: 6px; right: 6px; width: 7px; height: 7px; border-radius: 50%; background: var(--warn); }
 .drawer__item.dot-badge::after { top: 50%; transform: translateY(-50%); right: 14px; }
 
 /* 드로어 안 "자세히 보기" */
@@ -101,16 +101,16 @@
 /* 2026-09-03 v2.2.0 도감 즐겨찾기 ★ · 로그인 안내 · 즐겨찾기 칩 */
 .dex__row .dex__fav { margin-left: 6px; }
 .dex__hint { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 0 0 12px; font-size: 12.5px; color: var(--muted); line-height: 1.5; }
-.fav-chip { color: #e8a80c; border-color: #e8a80c; }
+.fav-chip { color: var(--caution); border-color: var(--caution); }
 
 /* 2026-09-04 ⚔️ 기술 변경 페이지 */
 /* 머리말: 시즌 이름 + 적용일. 적용 전(soon)은 강조, 적용 후(done)는 차분하게 */
 .changes__head { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; flex-wrap: wrap;
   border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; margin-bottom: 8px; }
-.changes__head.is-soon { border-color: color-mix(in srgb, #d84a5f 45%, var(--line)); }
+.changes__head.is-soon { border-color: color-mix(in srgb, var(--warn) 45%, var(--line)); }
 .changes__head b { font-size: 15px; }
 .changes__head span { font-size: 12px; color: var(--muted); }
-.changes__head.is-soon span { color: #d84a5f; font-weight: 600; }
+.changes__head.is-soon span { color: var(--warn); font-weight: 600; }
 .changes__sec { margin-top: 16px; }
 .changes__sec h3 { margin: 0 0 6px; font-size: 13.5px; }
 .changes__list { list-style: none; margin: 0; padding: 0; }
@@ -118,8 +118,8 @@
 .changes__row { display: flex; gap: 8px; align-items: flex-start; padding: 7px 0; border-top: 1px solid var(--line); }
 .changes__row:first-child { border-top: 0; }
 .changes__mark { flex: 0 0 16px; text-align: center; font-size: 11px; line-height: 1.5; color: var(--muted); }
-.changes__row.is-up .changes__mark { color: #2f8f5b; }
-.changes__row.is-down .changes__mark { color: #d84a5f; }
+.changes__row.is-up .changes__mark { color: var(--brand); }
+.changes__row.is-down .changes__mark { color: var(--warn); }
 .changes__sub { font-size: 11.5px; color: var(--muted); margin-top: 1px; }
 .changes__sub em { font-style: normal; }
 /* 새로 배우는 기술: 스프라이트 + 이름 + 기술명, 누르면 상세 팝업 */
@@ -166,8 +166,8 @@
 .types__row .tchips { gap: 6px; flex: 1 1 auto; min-width: 0; }
 .types__row > div { flex: 1 1 auto; min-width: 0; }
 @media (max-width: 400px) { .types__row { flex-direction: column; gap: 4px; } .types__row em { flex: none; padding-top: 0; } }
-.types__row em.is-weak2 { color: #d84a5f; font-weight: 600; }
-.types__row em.is-resist2 { color: #2f8f5b; font-weight: 600; }
+.types__row em.is-weak2 { color: var(--warn); font-weight: 600; }
+.types__row em.is-resist2 { color: var(--brand); font-weight: 600; }
 .types__recs { margin: 4px 0 10px; }
 .types__recs .schedule__sec { margin: 8px 0 4px; }
 .types__hint { margin: 6px 0 0; font-size: 12.5px; color: var(--muted); line-height: 1.6; word-break: keep-all; }
@@ -219,3 +219,9 @@
 /* 2026-09-09 v2.39.0 레이드·알 카드도 이제 위 auto-fill 규칙을 그대로 따른다 — 3열로 고정해 두던
    예전 규칙(타입·CP·날씨·✨ 가 한 줄로 붙어 4열이면 계단처럼 접혔었다)은 지웠다. min 260px 가
    조건 문구 한 줄이 들어갈 만큼 넉넉해 넓은 화면(4열)에서도 크게 깨지지 않는다 */
+
+/* 2026-09-10 v2.42.0 타입 표시 — 좁은 화면은 지금까지처럼 점 하나, 넓은 화면은 이름이 적힌 알약
+   (components/pc-theme.css 가 글자를 켠다). 점만으로는 18색을 외운 사람만 읽을 수 있었다 */
+.dex__type { display: inline-flex; align-items: center; gap: 4px; }
+.dex__type .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--c); flex: none; }
+.dex__type b { display: none; }

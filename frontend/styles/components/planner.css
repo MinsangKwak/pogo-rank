@@ -3,8 +3,8 @@
 /* 헤더 서문 줄: 서문 + 모드 배지. 배지 한 번 탭으로 모드 전환 */
 .tagline-row { display: flex; align-items: center; flex-wrap: wrap; gap: 6px 10px; margin-top: 3px; }
 .tagline-row .tagline { margin: 0; white-space: nowrap; }
-.mode-badge { flex: none; display: inline-flex; align-items: center; gap: 4px; padding: 3px 10px; border: 1px solid color-mix(in srgb, #2f8f5b 50%, var(--line)); border-radius: 999px;
-              font-size: 12px; font-weight: 600; color: #2f8f5b; background: color-mix(in srgb, #2f8f5b 10%, var(--surface)); white-space: nowrap; }
+.mode-badge { flex: none; display: inline-flex; align-items: center; gap: 4px; padding: 3px 10px; border: 1px solid color-mix(in srgb, var(--brand) 50%, var(--line)); border-radius: 999px;
+              font-size: 12px; font-weight: 600; color: var(--brand); background: color-mix(in srgb, var(--brand) 10%, var(--surface)); white-space: nowrap; }
 .mode-badge.is-plan { color: var(--fg); border-color: var(--line); background: var(--surface); }
 .mode-badge:hover { filter: brightness(.96); }
 
@@ -13,7 +13,7 @@ body[data-mode="plan"] #fav-digest { display: none; }
 
 /* 플래너 홈 카드 */
 .plan__card { margin: 12px 0 0; padding: 14px 16px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); }
-.plan__card.plan__intro { border-color: color-mix(in srgb, #2f8f5b 40%, var(--line)); background: color-mix(in srgb, #2f8f5b 7%, var(--surface)); }
+.plan__card.plan__intro { border-color: color-mix(in srgb, var(--brand) 40%, var(--line)); background: color-mix(in srgb, var(--brand) 7%, var(--surface)); }
 .plan__title { margin: 0 0 6px; font-size: 15px; font-weight: 600; }
 .plan__desc { margin: 0 0 10px; font-size: 13px; line-height: 1.6; color: var(--muted); word-break: keep-all; }
 .plan__card .account__actions { margin-top: 6px; }
@@ -34,8 +34,8 @@ body[data-mode="plan"] #fav-digest { display: none; }
 .plan__mon-actions .uchip { justify-content: center; white-space: nowrap; }
 .plan__mon-actions .uchip.is-on { border-color: var(--fg); color: var(--fg); font-weight: 600; }
 .tag.plan__status { font-weight: 600; }
-.tag.plan__status.plan__status--a { color: #2f6fd8; border-color: color-mix(in srgb, #2f6fd8 55%, var(--line)); }
-.tag.plan__status.plan__status--b { color: #2f8f5b; border-color: color-mix(in srgb, #2f8f5b 55%, var(--line)); }
+.tag.plan__status.plan__status--a { color: var(--brand-2); border-color: color-mix(in srgb, var(--brand-2) 55%, var(--line)); }
+.tag.plan__status.plan__status--b { color: var(--brand); border-color: color-mix(in srgb, var(--brand) 55%, var(--line)); }
 .tag.plan__status.plan__status--c { color: #b06a2c; border-color: color-mix(in srgb, #b06a2c 55%, var(--line)); }
 @media (max-width: 420px) {
   .plan__mon { grid-template-columns: 40px 1fr; }
