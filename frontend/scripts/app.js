@@ -100,15 +100,19 @@ function renderTabs() {
   // 2026-09-08 v2.30.0 [탭 id, 라벨, 라우트 id] — 주소는 router.js 의 표가 정한다
   for (const [id, label, routeId] of [['max', 'D-MAX', 'dmax'], ['pve', 'PvE', 'pve'], ['pvp', 'PvP', 'pvp']]) {
     // 2026-09-03 GA4: 탭 이름을 이벤트명에 포함(tab_max 등) — 누를 때마다 1회씩 기록
+    // 2026-09-10 v2.48.1 로그인해야 쓰는 탭에는 자물쇠를 붙인다 — 눌러 보고 알게 하지 않는다.
+    // 막지는 않는다: 눌러야 "왜 잠겼는지"와 로그인 버튼이 있는 화면으로 갈 수 있다
+    const locked = typeof routeLocked === 'function' && routeLocked(routeId);
     $tabs.append(el('button', {
-      class: 'tabs__item',
+      class: `tabs__item${locked ? ' is-locked' : ''}`,
       role: 'tab',
       'aria-selected': String(state.tab === id),
+      title: locked ? '로그인하면 열립니다' : '',
       onclick: () => {
         track('tab_' + id, { tab: id });
         navigateHash(routeHash(routeId));  // 주소가 바뀌면 applyPlanRoute → render 가 돌고 상단 바 제목도 맞춰진다
       },
-    }, label));
+    }, label, locked ? el('span', { class: 'tabs__lock', 'aria-hidden': 'true' }, '🔒') : ''));
   }
   // 2026-09-06 v2.9.0 도감·상성·즐겨찾기 바로가기 — 탭이 아니라 "페이지로 가는 버튼"이라
   // aria-selected 없이 오른쪽 끝에 붙인다. 좁은 화면에서는 아이콘만 남는다(tabs.css)
@@ -158,6 +162,16 @@ function render() {
   if (state.appMode === 'dex' && state.tab === 'home') return renderServiceHome();
   // 2026-09-07 v2.15.0 (QA-53) 플래너 모드면 플래너 렌더러로 (도감 탭 상태는 건드리지 않는다)
   if (state.appMode === 'plan') return renderPlan();
+  // 2026-09-10 v2.48.1 로그인해야 쓰는 탭(배틀 PvP)은 본문 대신 잠금 카드 (router.js ROUTES.locked)
+  const tabRouteId = { max: 'dmax', pve: 'pve', pvp: 'pvp' }[state.tab];
+  if (tabRouteId && routeLocked(tabRouteId)) {
+    const [name, why] = tabRouteId === 'pve'
+      ? ['레이드 · PvE', '추천 딜러를 내 보유 개체와 견줘 보여 주는 화면이라']
+      : ['배틀 · PvP', '리그별 순위를 내 보유 개체와 견줘 보여 주는 화면이라'];
+    $content.append(lockedCardNode(name, why));
+    $note.textContent = `${name} 는 승인된 로그인 사용자 전용입니다.`;
+    return;
+  }
   // 탭 id → 그 탭을 그리는 함수. 찾아서 바로 호출한다
   ({ max: renderMax, pve: renderPveTab, pvp: renderPvp })[state.tab]();  // v2.16.0 usage·if 제거
   compactScreenFilters();

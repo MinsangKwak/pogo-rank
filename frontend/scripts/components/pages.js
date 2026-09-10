@@ -253,6 +253,13 @@ function goBack() {
   if (currentPageId()) (history.length > 1 ? history.back() : (location.hash = ''));
 }
 // 현재 해시에 맞춰 #page(전체 페이지)와 .wrap(메인 화면) 중 하나만 보이게 한다
+// 잠긴 화면마다 "왜 로그인이 필요한가" 한 줄. 이유를 못 적는 화면은 애초에 잠그지 않는다
+const LOCK_WHY = {
+  raids: '내 즐겨찾기·보유 개체와 함께 보여 주는 화면이라',
+  eggs: '내 즐겨찾기·보유 개체와 함께 보여 주는 화면이라',
+  schedule: '내 계정의 일정 분류와 알림 설정을 쓰는 화면이라',
+};
+
 function renderPage() {
   const id = currentPageId();
   const $page = document.getElementById('page');
@@ -306,7 +313,11 @@ function renderPage() {
   $page.hidden = false;
   // 2026-09-08 v2.30.0 측정용 표식 — 어느 화면인지 DOM 만 보고 알 수 있게 (GA·히트맵)
   $page.dataset.route = id;
-  const body = PAGES[id].render();
+  // 2026-09-10 v2.48.1 로그인해야 쓰는 화면은 본문 대신 잠금 카드를 그린다 (router.js ROUTES.locked).
+  // 메뉴에서 잠가 두는 것만으로는 주소로 들어오는 길이 열려 있다 — 화면 자체가 막혀야 잠근 것이다
+  const body = routeLocked(id)
+    ? lockedCardNode(PAGES[id].title.replace(/^[^가-힣A-Za-z]+/, ''), LOCK_WHY[id] || '로그인한 사용자에게만 여는 화면이라')
+    : PAGES[id].render();
   // 화면마다 본문에 id 를 단다. 이미 pageBody(id) 로 단 화면은 그대로 둔다
   if (body && body.nodeType === 1 && !body.id) {
     body.id = `page-${id}`;
