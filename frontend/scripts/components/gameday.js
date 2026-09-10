@@ -91,7 +91,24 @@ function renderRaidsPage() {
 }
 
 // ── 🥚 알 부화 ────────────────────────────────────────────────────────────────
-// 거리별로 묶는다. 지역한정·어드벤처 싱크·선물 알은 조건이 붙는 종이라 따로 표시한다.
+// 2026-09-10 v2.53.0 거리만으로 묶지 않는다 — 같은 거리라도 알을 어디서 얻었는지에 따라
+// 나오는 종이 아예 다르기 때문이다. 전에는 거리로만 여섯 칸을 만들어서, 걸어서 깐 5km 알에
+// 절대 나올 수 없는 어드벤처 싱크 전용 5종이 같은 칸에 섞여 있었다 (3종인데 8종처럼 보였다).
+// 10km 도 같고(7종인데 12종), 7km 는 친구 선물과 루트 선물 풀이 서로 다른데 한 칸이었다.
+// 그래서 "지금 나오는 애들과 다르다" 가 된다 — 목록이 틀린 게 아니라 남의 칸이 섞여 있었다.
+const EGG_SOURCES = [
+  // [칸 이름 꼬리표, 이 칸에 들어갈 조건]
+  ['어드벤처 싱크 보상', (egg) => egg.sync],
+  // 7km 는 둘로 갈린다. 업스트림의 gift 표시가 루트 선물 쪽이다 (원본 구획과 9칸 모두 대조해 확인)
+  ['루트 선물', (egg, distance) => distance === '7km' && egg.gift],
+  ['친구 선물', (egg, distance) => distance === '7km'],
+];
+
+// 거리는 숫자로 센다 — 글자로 세면 '10km' 가 '2km' 앞에 서고, 원본이 준 순서대로 두면 1km 가 맨 뒤로 간다
+function eggDistanceOrder(distance) {
+  return parseInt(distance, 10) || 0;
+}
+
 function renderEggsPage() {
   if (!gamedayHas('eggs')) return gamedayEmpty('알 부화');
   const notes = (egg) => {
@@ -99,13 +116,29 @@ function renderEggsPage() {
     if (egg.cp && egg.cp.min) parts.push(egg.cp.min === egg.cp.max ? `CP ${egg.cp.min}` : `CP ${egg.cp.min}–${egg.cp.max}`);
     if (egg.shiny) parts.push('✨');
     if (egg.regional) parts.push('지역한정');
-    if (egg.sync) parts.push('어드벤처 싱크');
-    if (egg.gift) parts.push('선물 알');
+    // 어드벤처 싱크·선물 표시는 이제 칸 이름이 말해 준다 — 줄마다 또 적으면 같은 말을 두 번 한다
     return parts;
   };
   // 2026-09-09 v2.37.0 도감·즐겨찾기처럼 리스트로 되돌릴 수 있는 토글 (localStorage 'pogo_eggs_cols')
   const grid = layoutInitial('pogo_eggs_cols', true);
-  const sections = Object.entries(GAMEDAY.eggs).map(([distance, list]) => gamedaySection(`${distance} 알`, list, notes, grid));
+  const buckets = [];
+  for (const [distance, list] of Object.entries(GAMEDAY.eggs)) {
+    // 한 마리는 한 칸에만 들어간다 — 위에서부터 먼저 맞는 조건을 쓰고, 아무 데도 안 걸리면 기본 칸이다
+    const rest = [];
+    for (const egg of list) {
+      const hit = EGG_SOURCES.find(([, match]) => match(egg, distance));
+      if (hit) {
+        const found = buckets.find((b) => b.distance === distance && b.tail === hit[0]);
+        if (found) found.list.push(egg);
+        else buckets.push({ distance, tail: hit[0], list: [egg] });
+      } else rest.push(egg);
+    }
+    if (rest.length) buckets.unshift({ distance, tail: '', list: rest });
+  }
+  buckets.sort((a, b) => eggDistanceOrder(a.distance) - eggDistanceOrder(b.distance)
+    || (a.tail ? 1 : 0) - (b.tail ? 1 : 0));
+  const sections = buckets.map(({ distance, tail, list }) =>
+    gamedaySection(tail ? `${distance} 알 · ${tail}` : `${distance} 알`, list, notes, grid));
   const $layout = layoutToggle('pogo_eggs_cols', grid, (next) => sections.forEach(({ $list }) => $list.classList.toggle('is-grid', next)));
   return el('div', { class: 'page__body' },
     el('div', { class: 'gameday__intro' },
