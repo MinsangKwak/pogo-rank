@@ -221,6 +221,9 @@ initFavsMenu();
 // 2026-09-10 v2.47.0 화면 테마 버튼(해·달). 저장된 값은 index.html 의 head 스크립트가 이미 붙였고,
 // 여기서는 버튼을 달고 얼굴을 맞춘다 (components/theme.js)
 initTheme();
+// 2026-09-10 v2.50.0 설치형 앱은 한 번 띄우면 그대로 살아 있어, 며칠 지나도 처음 받은 데이터를 보여 준다.
+// 다시 보일 때 작은 표식 파일로 새 빌드가 있는지 확인한다 (components/freshness.js)
+initFreshness();
 // 2026-09-03 v2.2.0 로그인: 첫 화면이 그려진 뒤에 Firebase SDK를 받는다 (초기 로딩 영향 없음)
 // 이미 load가 끝났으면 곧바로, 아니면 load 이벤트를 기다렸다가 initAuth를 부른다
 (document.readyState === 'complete'
