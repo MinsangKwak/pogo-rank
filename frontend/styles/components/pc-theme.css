@@ -247,14 +247,19 @@
   }
   /* 그 티어의 1위만 브랜드색 — "이 칸의 대표" 라는 뜻 */
   .row-list > .row:first-child > .row__rank { border-color: var(--brand); color: var(--brand); }
-  /* 그림 아래 빛나는 판 — 목업의 발광 스테이지. 공식 아트워크가 없으므로 빛으로 자리를 만든다 */
-  .row-list > .row > .sprite {
-    width: 84px; height: 84px; padding: 10px; border-radius: 50%;
-    background:
+  /* 그림 아래 빛나는 판 — 목업의 발광 스테이지. 공식 아트워크가 없으므로 빛으로 자리를 만든다.
+     2026-09-10 v2.45.0 (버그) v2.43.0 에서 이 그라데이션은 실제로는 한 번도 안 나왔다 —
+     list.css 의 `.row-list > .row > .sprite:not(.is-loading) { background: var(--bg) }` 가
+     **단축 속성**이라 background-image 까지 none 으로 되돌리는데, `:not()` 이 붙어 있어
+     특정도까지 더 높았다. 그래서 같은 선택자(:not 포함)로 받고 image·color 를 따로 적는다.
+     스켈레톤(.is-loading)이 도는 동안에는 판을 덮지 않는다(반짝임이 사라진다) */
+  .row-list > .row > .sprite { width: 84px; height: 84px; padding: 10px; border-radius: 50%; }
+  .row-list > .row > .sprite:not(.is-loading) {
+    background-color: transparent;
+    background-image:
       radial-gradient(60% 40% at 50% 88%, color-mix(in srgb, var(--brand) 40%, transparent), transparent 70%),
       radial-gradient(70% 70% at 50% 42%, color-mix(in srgb, var(--brand-2) 12%, transparent), transparent 72%);
   }
-  .row-list > .row > .sprite:not(.is-loading) { background-color: transparent; }
   .row-list > .row .row__badges { margin-bottom: 6px; }
   .row-list > .row .row__name b { font-size: var(--fs-lead); }
   .row-list > .row .row__moves { font-size: var(--fs-sub); color: var(--muted); }
@@ -297,4 +302,76 @@
       radial-gradient(70% 100% at 70% 100%, color-mix(in srgb, var(--c-max) 26%, transparent), transparent 68%),
       radial-gradient(50% 90% at 96% 60%, color-mix(in srgb, var(--c-max-2) 20%, transparent), transparent 70%);
   }
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   2026-09-10 v2.45.0 도감 카드 — 티어표 카드(v2.43.0)와 같은 문법으로
+
+   왜 여기서 또 손대나
+     .dex__row 는 도감만의 것이 아니다 — ★ 즐겨찾기 · ⚔️ 레이드 보스 · 🥚 알 부화가
+     같은 조각을 빌려 쓴다(components/favs.js · gameday.js). 그래서 이 블록 하나로
+     네 화면이 같이 바뀐다. 티어표(D-MAX · 레이드 PvE · 배틀 PvP · 일반)만 새 옷을 입고
+     도감이 옛 옷으로 남아 있으면, 같은 앱 안에서 카드가 두 종류가 된다.
+
+   무엇을 맞췄나 (.row-list > .row 와 같은 값)
+     · 번호는 카드 왼쪽 위 모서리의 배지 — 티어표의 동그란 순위 배지와 같은 자리·같은 테두리.
+       다만 도감 번호는 #0001 처럼 다섯 자라 원이 아니라 알약이다
+     · 그림은 빛나는 판 위에 — 회색 네모 상자를 걷어냈다
+     · 이름은 var(--fs-lead), 굵게. 카드에서 제일 먼저 읽혀야 하는 글자다
+     · ★ 는 동그란 버튼 — 홈 타일의 화살표(.home__arrow)와 같은 문법
+   ───────────────────────────────────────────────────────────────────────────── */
+@media (min-width: 1100px) {
+  /* ── 카드 모드 ─────────────────────────────────────────────────────────────── */
+  .dex__list.is-grid .dex__row { gap: 8px; padding: 20px 14px 16px; }
+
+  /* 번호 배지 — 티어표 .row__rank 와 같은 테두리·바탕. 자릿수 때문에 알약 모양만 다르다 */
+  .dex__list.is-grid .dex__no {
+    top: 12px; left: 12px; padding: 3px 9px;
+    border: 1px solid var(--line); border-radius: var(--r-chip); background: var(--bg);
+    font-size: 11px; font-weight: 700; letter-spacing: 0.02em; color: var(--muted);
+  }
+
+  /* 그림 판 — 티어표 카드와 같은 발광 그라데이션. 공식 아트워크가 없으므로 빛으로 자리를 만든다.
+     스켈레톤(.is-loading)이 도는 동안에는 판 색을 덮지 않는다(반짝임이 사라진다) */
+  .dex__list.is-grid .dex__row .sprite,
+  .dex__list.is-grid .fav__row .sprite { box-sizing: content-box; width: 84px; height: 84px; padding: 10px; border-radius: 50%; }
+  /* :not(.is-loading) 을 함께 달아야 pages.css 의 단축 속성(background: var(--bg))을 이긴다 — 위 티어표 주석 참고 */
+  .dex__list.is-grid .dex__row .sprite:not(.is-loading),
+  .dex__list.is-grid .fav__row .sprite:not(.is-loading) {
+    background-color: transparent;
+    background-image:
+      radial-gradient(60% 40% at 50% 88%, color-mix(in srgb, var(--brand) 40%, transparent), transparent 70%),
+      radial-gradient(70% 70% at 50% 42%, color-mix(in srgb, var(--brand-2) 12%, transparent), transparent 72%);
+  }
+
+  /* 글 칸 — 그림과 글 사이의 얇은 선은 티어표 카드와 같다 */
+  .dex__list.is-grid .dex__row > b,
+  .dex__list.is-grid .fav__main,
+  .dex__list.is-grid .gameday__main { padding-top: 12px; }
+  .dex__list.is-grid .dex__row b { font-size: var(--fs-lead); font-weight: 700; letter-spacing: -0.01em; }
+  .dex__list.is-grid .dex__types { gap: 6px; margin-top: 2px; }
+
+  /* ★ — 홈 타입의 화살표와 같은 동그란 버튼. 켜지면 브랜드가 아니라 '주의'색(금색)이다 */
+  .dex__list.is-grid .dex__fav {
+    top: 10px; right: 10px;
+    display: flex; align-items: center; justify-content: center; width: 28px; height: 28px;
+    border: 1px solid var(--line); border-radius: 50%; background: var(--bg); font-size: 13px;
+  }
+  .dex__list.is-grid .dex__fav:hover { border-color: var(--caution); color: var(--caution); }
+  .dex__list.is-grid .dex__fav.is-on { border-color: var(--caution); color: var(--caution); }
+  /* [미구현] 태그는 ★ 왼쪽으로 — 배지가 커진 만큼 자리를 비켜 준다 */
+  .dex__list.is-grid .dex__unrel { top: 14px; right: 46px; }
+
+  /* ── 줄 모드 ───────────────────────────────────────────────────────────────── */
+  /* 줄에서도 같은 조각을 쓴다 — 보기 방식만 바뀌었는데 그림·번호가 달라 보이면 안 된다 */
+  /* 줄 모드의 그림은 44px 뿐이라 발광 판을 그대로 줄이면 빛이 그림 밑에 고인 얼룩처럼 보인다.
+     여기서는 모양만 잇는다 — 네모 상자를 동그란 판으로 (카드 모드의 원과 같은 문법) */
+  .dex__list:not(.is-grid) .dex__row .sprite { box-sizing: content-box; width: 44px; height: 44px; padding: 6px; border-radius: 50%; }
+  .dex__list:not(.is-grid) .dex__row .sprite:not(.is-loading) { background: var(--bg); }
+  .dex__list:not(.is-grid) .dex__no {
+    width: auto; flex: none; padding: 3px 9px;
+    border: 1px solid var(--line); border-radius: var(--r-chip); background: var(--bg);
+    font-size: 11px; font-weight: 700; color: var(--muted);
+  }
+  .dex__list:not(.is-grid) .dex__row b { font-weight: 700; }
 }
