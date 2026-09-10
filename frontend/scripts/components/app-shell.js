@@ -133,11 +133,11 @@ destinations.addEventListener('click', (event) => {
   if (!link) return;
   event.preventDefault();
   const href = link.getAttribute('href');
-  // v2.47.0 잠긴 항목은 그 화면으로 보내지 않고 계정 카드를 연다 — 눌렀는데 아무 일도 안 일어나면
-  // 잠긴 건지 고장 난 건지 알 수 없다. "여기서 로그인하면 된다"까지 데려다준다
+  // 잠긴 항목은 그 화면으로 보내지 않는다 — 눌렀는데 아무 일도 안 일어나면 잠긴 건지 고장 난 건지 모른다.
+  // 2026-09-10 v2.51.0 계정 카드로 데려다주던 것을 팝업으로 바꿨다 (components/auth.js openLoginInvite) —
+  // 메뉴를 열면 일정표·기준 안내·약관 같은 줄이 함께 있어 정작 할 일이 묻혔다
   if (link.getAttribute('aria-disabled') === 'true') {
-    openDrawer();
-    document.getElementById('account')?.scrollIntoView({ block: 'center' });
+    openLoginInvite(link.querySelector('.drawer__label')?.textContent || '');
     return;
   }
   if (href === '#') goHome();  // 열린 것을 닫고 서비스 홈으로 (app.js) — GA 'home' 이벤트도 여기서

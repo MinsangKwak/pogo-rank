@@ -221,6 +221,46 @@ async function onAuthChange(user) {
   if (typeof _planShellReady !== 'undefined' && _planShellReady && state.appMode === 'plan') render();
 }
 
+// ── 2026-09-10 v2.51.0 로그인 유도 팝업 ─────────────────────────────────────
+// 잠긴 화면을 누르면 ☰ 메뉴를 열어 계정 카드로 데려다주던 것을 팝업으로 바꿨다.
+// 메뉴가 열리면 그 안에 일정표·기준 안내·약관 같은 줄이 함께 있어, 정작 무엇을 하라는 건지가 묻혔다.
+// 팝업은 화면 하나에 할 일 하나다 — "왜 막혔고, 무엇을 누르면 되는가".
+//
+// 이 서비스는 그냥 가입이 아니라 **승인제**다. 로그인하면 곧바로 열리는 게 아니라 승인 대기가 된다.
+// 그걸 누르기 전에 말해 주지 않으면, 로그인하고 나서 "왜 아직도 안 되지" 를 다시 겪는다.
+//   screenName  가려던 화면 이름 (없으면 일반 문구)
+function openLoginInvite(screenName) {
+  const pending = AUTH.status === 'pending';
+  track('login_invite', { screen: screenName || '', status: AUTH.status });  // GA4: 어느 화면이 로그인을 부르나
+  const goButton = el('button', { class: 'drawer__item account__login login-invite__go', onclick: () => {
+    closeModal({ silent: true });
+    signIn();
+  } }, '🔐 Google로 로그인');
+  const steps = [
+    ['1', 'Google 계정으로 로그인', '이메일·이름·프로필 사진만 받습니다.'],
+    ['2', '관리자 승인 대기', '승인은 바로 되지 않을 수 있어요. 관리자에게 알려 주세요.'],
+    ['3', '승인되면 열립니다', '내 개체 저장·순위표·일정이 계정에 묶여 어느 기기에서든 같습니다.'],
+  ];
+  openModal(el('div', { class: 'consent__modal login-invite' },
+    el('div', { class: 'login-invite__head' },
+      el('span', { class: 'login-invite__ico', 'aria-hidden': 'true' }, pending ? '⏳' : '🔒'),
+      el('h2', { class: 'detail__name' }, pending ? '승인 대기 중이에요' : '로그인이 필요한 화면이에요')),
+    // 조사는 받침을 보고 고른다 (components/name.js koParticle) — "육성 플래너은(는)" 같은 말을 쓰지 않는다
+    el('p', { class: 'plan__desc' }, pending
+      ? `${screenName ? screenName + koParticle(screenName, 'eun') + ' ' : ''}관리자가 승인하면 바로 열립니다. 지금은 기다리는 중이에요.`
+      : `${screenName ? screenName + koParticle(screenName, 'eun') + ' ' : '이 화면은 '}계정에 묶인 정보를 쓰기 때문에 로그인이 필요합니다. 도감 · 타입 & 상성 · D-MAX 는 로그인 없이도 그대로 쓸 수 있어요.`),
+    // 승인제라는 걸 누르기 **전에** 말한다 — 로그인하고 나서 "왜 아직도 안 되지" 를 겪지 않게
+    pending ? '' : el('ol', { class: 'login-invite__steps' }, ...steps.map(([no, title, desc]) =>
+      el('li', {},
+        el('span', { class: 'login-invite__no' }, no),
+        el('div', {}, el('b', {}, title), el('span', {}, desc))))),
+    pending ? '' : goButton,
+    el('button', { class: 'drawer__item login-invite__later', onclick: () => closeModal() }, pending ? '확인' : '나중에'),
+    footNote('승인된 친구만 사용할 수 있어요. 첫 로그인 때 ',
+      el('a', { href: '#/terms', onclick: () => closeModal({ silent: true }) }, '이용약관'), '·',
+      el('a', { href: '#/privacy', onclick: () => closeModal({ silent: true }) }, '개인정보처리방침'), ' 동의를 받습니다.')));
+}
+
 async function signIn() {
   if (!authEnabled()) return;
   AUTH.redirectMsg = '';   // 다시 눌렀으니 지난 안내는 지운다
