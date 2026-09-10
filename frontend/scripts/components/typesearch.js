@@ -228,8 +228,8 @@ function renderTypeSearchPage() {
       offenseSection.append(el('div', { class: 'types__row' }, el('em', {}, `${TYPE_KO[attackType]} 기술`),
         el('div', {},
           strong.length ? el('div', { class: 'tchips' }, el('small', { class: 'row__sub' }, '굉장 '), ...strong.map(([defType]) => typeChipEl(defType, '×1.6'))) : '',
-          weakTo.length ? el('div', { class: 'tchips', style: 'margin-top:4px' }, el('small', { class: 'row__sub' }, '별로 '), ...weakTo.map(([defType]) => typeChipEl(defType, '×0.63'))) : '',
-          none.length ? el('div', { class: 'tchips', style: 'margin-top:4px' }, el('small', { class: 'row__sub' }, '거의 안 통함 '), ...none.map(([defType]) => typeChipEl(defType, '×0.39'))) : '')));
+          weakTo.length ? el('div', { class: 'tchips', style: 'margin-top:0.4rem' }, el('small', { class: 'row__sub' }, '별로 '), ...weakTo.map(([defType]) => typeChipEl(defType, '×0.63'))) : '',
+          none.length ? el('div', { class: 'tchips', style: 'margin-top:0.4rem' }, el('small', { class: 'row__sub' }, '거의 안 통함 '), ...none.map(([defType]) => typeChipEl(defType, '×0.39'))) : '')));
     }
     $result.append(offenseSection);
   };

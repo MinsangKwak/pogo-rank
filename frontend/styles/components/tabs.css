@@ -8,17 +8,17 @@
    오는 바람에 "스크롤이 아예 안 된다"로 보였다.
    고치는 방법: 세로 넘침을 없앤다 — 컨테이너 테두리를 inset 그림자로 바꿔 안쪽에 그리고,
    탭의 음수 여백을 뺀다. 겉모습은 그대로다 */
-.tabs { display: flex; gap: 20px; overflow-x: auto; overflow-y: hidden; scrollbar-width: none;
+.tabs { display: flex; gap: 2rem; overflow-x: auto; overflow-y: hidden; scrollbar-width: none;
         box-shadow: inset 0 -1px 0 var(--line); }
 .tabs::-webkit-scrollbar { display: none; }
-.tabs__item { flex: 0 0 auto; white-space: nowrap; padding: 10px 0 12px; font-size: 15px; font-weight: 500; color: var(--muted); border-bottom: 2px solid transparent; }
+.tabs__item { flex: 0 0 auto; white-space: nowrap; padding: 1rem 0 1.2rem; font-size: 1.5rem; font-weight: 500; color: var(--muted); border-bottom: 0.2rem solid transparent; }
 .tabs__item[aria-selected="true"] { color: var(--fg); border-bottom-color: var(--fg); }
 @media (prefers-reduced-motion: no-preference) {
   .tabs__item { transition: color .12s, border-color .12s, background .12s; }
 }
 
 /* 2026-09-06 v2.9.0 탭 줄 오른쪽 바로가기 (도감·즐겨찾기) — 탭이 아니라 페이지 링크라 선택 표시가 없다 */
-.tabs__quick { margin-left: auto; display: flex; gap: 12px; padding-left: 12px; }
+.tabs__quick { margin-left: auto; display: flex; gap: 1.2rem; padding-left: 1.2rem; }
 .tabs__item.tabs__item--quick { color: var(--muted); }
 .tabs__item.tabs__item--quick:hover { color: var(--fg); }
 @media (max-width: 480px) { .tabs__item.tabs__item--quick .tabs__label { display: none; } }
@@ -26,4 +26,4 @@
 /* 2026-09-10 v2.48.1 로그인해야 쓰는 탭 — 흐리게 + 자물쇠. 누르는 것 자체는 막지 않는다
    (누르면 왜 잠겼는지와 로그인 버튼이 있는 화면으로 간다) */
 .tabs__item.is-locked { opacity: .55; }
-.tabs__lock { margin-left: 4px; font-size: .85em; }
+.tabs__lock { margin-left: 0.4rem; font-size: .85em; }

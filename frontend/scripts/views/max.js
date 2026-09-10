@@ -93,7 +93,19 @@ function expandableRow(pokemon, rankText, topScore) {
             openDetail(counter);
           }
         }, counter.name)))) : '');
-  rowNode.addEventListener('click', () => whyNode.classList.toggle('is-open'));
+  // 2026-09-10 v2.52.0 한 번에 하나만 연다 (아코디언).
+  // 전에는 카드마다 따로 토글해서, 넷을 차례로 누르면 근거 넷이 한꺼번에 펼쳐진 채 쌓였다.
+  // 근거는 카드 뒤에 가로폭을 다 쓰고 붙으므로(order, pc-theme.css) 여러 개가 열리면
+  // 어느 카드의 근거인지 짝지을 수 없다 — 화면에 근거가 하나면 그 질문 자체가 없다.
+  // 같은 카드를 다시 누르면 닫힌다(끄는 길을 남긴다)
+  rowNode.addEventListener('click', () => {
+    const willOpen = !whyNode.classList.contains('is-open');
+    for (const other of document.querySelectorAll('.row__why.is-open')) other.classList.remove('is-open');
+    if (!willOpen) return;
+    whyNode.classList.add('is-open');
+    // 열린 근거가 화면 밖이면 끌어온다. block: 'nearest' 라 이미 보이면 화면이 움직이지 않는다
+    whyNode.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+  });
   const fragment = document.createDocumentFragment();
   fragment.append(rowNode, whyNode);
   return fragment;

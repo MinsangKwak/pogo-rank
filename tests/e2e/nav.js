@@ -165,7 +165,60 @@ const ok = (name, cond, extra = '') => results.push([cond ? 'PASS' : 'FAIL', nam
   ok('타입 칩 → 그 타입 포켓몬 목록', (await page.locator('.types__mons .boss__rec').count()) > 0);
   ok('타입 칩 → 추천 딜러·반대로 절', typeSecs.length >= 3, String(typeSecs.length));
 
-  // 9. 다크 모드에서도 토큰 한 벌
+  // 9. 길이 단위가 rem 인가 (2026-09-10 v2.52.0)
+  // html 62.5% 기준이라 1rem = 10px 이고, 기본 설정에서는 지금까지와 같은 크기로 그려진다.
+  // 확인해야 하는 것은 "픽셀이 같은가" 가 아니라 **사용자가 글자를 키우면 같이 커지는가** 다 —
+  // px 로 박아 두면 글자만 커지고 상자는 그대로라 글자가 상자를 넘친다.
+  // 그래서 기준을 100% 로 바꿔 "기본 글자가 1.6배인 사용자" 를 흉내 내고 배율을 잰다
+  await page.goto(BASE + '?mock=1#/dex', { waitUntil: 'domcontentloaded' });
+  await settle();
+  ok('html 기준이 62.5% (1rem = 10px)', (await page.evaluate(() => getComputedStyle(document.documentElement).fontSize)) === '10px',
+    await page.evaluate(() => getComputedStyle(document.documentElement).fontSize));
+  // 좁은 화면에는 사이드바(.nav-menu)도 카드 격자(.is-grid)도 없다 — 어느 폭에서나 있는 것으로 잰다
+  const measure = () => page.evaluate(() => {
+    const card = document.querySelector('.dex__row');
+    const chip = document.querySelector('.tchips .uchip');
+    const cs = card && getComputedStyle(card);
+    return {
+      body: parseFloat(getComputedStyle(document.body).fontSize),
+      pad: cs ? parseFloat(cs.paddingTop) : null,
+      radius: cs ? parseFloat(cs.borderRadius) : null,
+      border: cs ? parseFloat(cs.borderTopWidth) : null,
+      tap: chip ? parseFloat(getComputedStyle(chip).minHeight) : null,
+    };
+  });
+  const base = await measure();
+  ok('본문 15px 유지 (rem 으로 옮겨도 같은 크기)', base.body === 15, String(base.body));
+  await page.addStyleTag({ content: 'html { font-size: 100% !important; }' });
+  await page.waitForTimeout(300);
+  const big = await measure();
+  const scaled = (a, b) => Math.abs(b / a - 1.6) < 0.02;
+  ok('글자를 키우면 본문도 같이', scaled(base.body, big.body), `${base.body} → ${big.body}`);
+  ok('글자를 키우면 줄 여백도 같이', scaled(base.pad, big.pad), `${base.pad} → ${big.pad}`);
+  if (base.tap) ok('글자를 키우면 칩 높이도 같이', scaled(base.tap, big.tap), `${base.tap} → ${big.tap}`);
+  // 1px 선만 고정 — 선은 굵기가 아니라 '있다/없다' 를 말한다
+  ok('1px 선은 굵어지지 않는다', big.border === 1, String(big.border));
+  await page.reload({ waitUntil: 'domcontentloaded' });
+  await settle();
+
+  // 10. 티어표 "선정 근거" 는 한 번에 하나만 열린다 (2026-09-10 v2.52.0)
+  // 전에는 카드마다 따로 토글해서, 넷을 차례로 누르면 근거 넷이 한꺼번에 펼쳐진 채 쌓였다.
+  // 근거는 카드 뒤에 가로폭을 다 쓰고 붙으므로, 여러 개가 열리면 어느 카드의 것인지 짝지을 수 없다
+  await page.goto(BASE + '?mock=1#/dmax', { waitUntil: 'domcontentloaded' });
+  await settle();
+  const openWhy = () => page.locator('.row__why.is-open').count();
+  ok('처음엔 근거가 닫혀 있다', (await openWhy()) === 0);
+  for (let i = 0; i < 4; i++) {
+    await page.locator('.row-list > .row').nth(i).click();
+    await page.waitForTimeout(300);
+    ok(`${i + 1}번째까지 눌러도 열린 근거는 하나`, (await openWhy()) === 1, String(await openWhy()));
+  }
+  // 같은 카드를 다시 누르면 닫힌다 — 끄는 길도 있어야 한다
+  await page.locator('.row-list > .row').nth(3).click();
+  await page.waitForTimeout(300);
+  ok('같은 카드를 다시 누르면 닫힌다', (await openWhy()) === 0);
+
+  // 11. 다크 모드에서도 토큰 한 벌
   const dark = await browser.newContext({ viewport: { width: 390, height: 844 }, colorScheme: 'dark' });
   await dark.route(/fonts\.googleapis|fonts\.gstatic|cdn\.jsdelivr/, (r) => r.abort());
   const dp = await dark.newPage();
