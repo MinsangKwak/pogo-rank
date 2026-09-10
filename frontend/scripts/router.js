@@ -44,18 +44,21 @@ const ROUTES = [
   // 2026-09-09 v2.40.0 icon: 화면을 가리키는 이모지. 서비스 홈 타일(components/home.js)과 ☰ 메뉴가
   // 같은 그림을 써야 해서(같은 화면인데 그림이 다르면 다른 곳으로 읽힌다) 표 한 곳에 둔다 — 예전엔
   // home.js 안에만 있어 메뉴에는 아이콘을 못 붙였다
-  { id: 'planner-collection', path: 'planner/collection', kind: 'plan', tab: 'collection', nav: '내 포켓몬', icon: '🎒', legacy: ['plan/collection'] },
+  { id: 'planner', path: 'planner', kind: 'plan', tab: 'home', nav: '육성 플래너', icon: '🌱', legacy: ['plan'] },
   { id: 'dex', path: 'dex', kind: 'page', nav: '포켓몬 도감', icon: '📕' },
   { id: 'types', path: 'types', kind: 'page', nav: '타입 & 상성', icon: '🧭' },
   { id: 'dmax', path: 'dmax', kind: 'shell', tab: 'max', nav: 'D-MAX', icon: '✨', legacy: ['rank/max'] },
   { id: 'pve', path: 'pve', kind: 'shell', tab: 'pve', nav: '레이드 · PvE', icon: '⚔️', legacy: ['rank/pve'] },
   { id: 'pvp', path: 'pvp', kind: 'shell', tab: 'pvp', nav: '배틀 · PvP', icon: '🃏', legacy: ['rank/pvp'] },
-  { id: 'planner', path: 'planner', kind: 'plan', tab: 'home', nav: '육성 플래너', icon: '🌱', legacy: ['plan'] },
   { id: 'schedule', path: 'schedule', kind: 'page', nav: '이벤트 일정', icon: '📅' },
   { id: 'raids', path: 'raids', kind: 'page', nav: '레이드 보스', icon: '⚔️' },
   { id: 'eggs', path: 'eggs', kind: 'page', nav: '알 부화', icon: '🥚' },
 
   // ── 메뉴에는 없지만 주소가 있는 화면 ──────────────────────────────────────
+  // 2026-09-10 v2.47.0 메뉴에서 내렸다 — '내 포켓몬' 과 '육성 플래너' 가 메뉴에 따로 있어
+  // 같은 곳으로 가는 문이 둘로 보였다. 지금은 육성 플래너 한 줄이고, 두 화면은 그 안의 탭 줄이 가른다.
+  // 주소는 그대로 살려 둔다 — 저장해 둔 링크·상세 팝업의 ➕(planAddFromDetail)가 이 주소를 쓴다
+  { id: 'planner-collection', path: 'planner/collection', kind: 'plan', tab: 'collection', title: '내 포켓몬', legacy: ['plan/collection'] },
   { id: 'favs', path: 'favs', kind: 'page' },
   { id: 'release', path: 'release', kind: 'page' },
   { id: 'changes', path: 'changes', kind: 'page' },

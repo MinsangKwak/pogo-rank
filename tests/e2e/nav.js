@@ -53,10 +53,11 @@ const ok = (name, cond, extra = '') => results.push([cond ? 'PASS' : 'FAIL', nam
   ok('본문 글꼴 Montserrat 우선', /Montserrat/.test(design.font), design.font.slice(0, 40));
   ok('본문 15px 유지', design.size === '15px', design.size);
 
-  // 2. 서비스 홈 — 타일 8개 · 이모지 아이콘 · 탭 줄 숨김
-  ok('홈 타일 10개', (await page.locator('.home__tile').count()) === 10);
+  // 2. 서비스 홈 — 타일 · 이모지 아이콘 · 탭 줄 숨김
+  // 2026-09-10 v2.47.0 '내 포켓몬' 타일과 '육성 플래너' 타일을 하나로 합쳐 10 → 9 가 됐다
+  ok('홈 타일 9개', (await page.locator('.home__tile').count()) === 9);
   const icons = await page.locator('.home__icon').allTextContents();
-  ok('홈 아이콘이 이모지', icons.join('') === '🎒📕🧭✨⚔️🃏🌱📅⚔️🥚', icons.join(''));
+  ok('홈 아이콘이 이모지', icons.join('') === '🌱📕🧭✨⚔️🃏📅⚔️🥚', icons.join(''));
   ok('홈에서 탭 줄 숨김', await page.locator('#tabs').isHidden());
   const tile = await page.locator('.home__tile').first().evaluate((n) => {
     const s = getComputedStyle(n);
@@ -66,10 +67,15 @@ const ok = (name, cond, extra = '') => results.push([cond ? 'PASS' : 'FAIL', nam
   ok('홈에서 뒤로가기 버튼 숨김', await page.locator('.app-bar__head .icon-btn').isHidden());
 
   // 3. 헤더 버튼이 이모지 아이콘 · 44px 정사각 통일
+  // 2026-09-10 v2.47.0 화면 테마 버튼이 늘었다. 좁은 화면에서는 CSS 가 감추므로(로고가 잘려서)
+  // **보이는 것만** 센다 — hidden 속성이 아니라 실제 크기로 걸러야 그 규칙까지 함께 지킨다
   const btns = await page.locator('.app-bar .app-bar__actions .icon-btn').evaluateAll((ns) =>
-    ns.filter(n => !n.hidden).map(n => ({ t: n.textContent.trim(), w: n.getBoundingClientRect().width, h: n.getBoundingClientRect().height })));
+    ns.filter((n) => !n.hidden && n.getBoundingClientRect().width > 0)
+      .map(n => ({ t: n.textContent.trim(), w: n.getBoundingClientRect().width, h: n.getBoundingClientRect().height })));
   // v2.29.0 계정(👤)을 빼고 그 자리에 KR/EN 토글 — 로그인·마이페이지는 ☰ 메뉴 한 곳으로 모았다
-  ok('헤더 아이콘 3개 (🔍 EN ☰)', btns.map(b => b.t).join('') === '🔍EN☰', JSON.stringify(btns.map(b => b.t)));
+  const wide = page.viewportSize().width >= 1100;
+  ok(`헤더 아이콘 ${wide ? '4개 (🔍 🌗 EN ☰)' : '3개 (🔍 EN ☰)'}`,
+    btns.map(b => b.t).join('') === (wide ? '🔍🌗EN☰' : '🔍EN☰'), JSON.stringify(btns.map(b => b.t)));
   ok('헤더 버튼 44×44 통일', btns.every(b => Math.round(b.w) === 44 && Math.round(b.h) === 44), JSON.stringify(btns));
   ok('헤더에 텍스트 버튼 없음', !(await page.locator('.app-bar').textContent()).includes('메뉴'));
 
@@ -139,7 +145,7 @@ const ok = (name, cond, extra = '') => results.push([cond ? 'PASS' : 'FAIL', nam
   ok('드로어 서비스 홈 항목', (await page.locator('.nav-menu a .drawer__label').first().textContent()) === '서비스 홈');
   await page.click('.nav-menu a:has-text("서비스 홈")');
   await page.waitForTimeout(400);
-  ok('서비스 홈으로 이동', (await page.locator('.home__tile').count()) === 10 && !(await page.evaluate(() => location.hash)));
+  ok('서비스 홈으로 이동', (await page.locator('.home__tile').count()) === 9 && !(await page.evaluate(() => location.hash)));
 
   // 8. 플래너 탭 라벨 텍스트 통일
   await page.goto(BASE + '?mock=1#/planner/collection', { waitUntil: 'domcontentloaded' });

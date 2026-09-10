@@ -16,6 +16,82 @@ body[data-mode="plan"] #fav-digest { display: none; }
 .plan__card.plan__intro { border-color: color-mix(in srgb, var(--brand) 40%, var(--line)); background: color-mix(in srgb, var(--brand) 7%, var(--surface)); }
 .plan__title { margin: 0 0 6px; font-size: 15px; font-weight: 600; }
 .plan__desc { margin: 0 0 10px; font-size: 13px; line-height: 1.6; color: var(--muted); word-break: keep-all; }
+
+/* ── 2026-09-10 v2.47.0 육성 현황 탭 (planner/home.js) ────────────────────────
+   좁은 화면 기본값은 "한 칸씩 세로로" 다. 넓은 화면의 배치(히어로 · 수치 세 칸 ·
+   다섯 걸음 가로줄)는 components/pc-theme.css 가 따로 그린다 */
+.plan__hero {
+  margin: 12px 0 0; padding: 16px; border-radius: 12px;
+  border: 1px solid color-mix(in srgb, var(--brand) 40%, var(--line));
+  background: color-mix(in srgb, var(--brand) 7%, var(--surface));
+}
+.plan__hero-head { display: flex; align-items: center; gap: 8px; }
+.plan__hero-ico { font-size: 20px; line-height: 1; }
+.plan__hero h2 { margin: 0; font-size: 17px; font-weight: 700; word-break: keep-all; }
+.plan__hero-desc { margin: 8px 0 0; font-size: 13px; line-height: 1.7; color: var(--muted); word-break: keep-all; }
+.plan__hero-go {
+  display: inline-flex; align-items: center; gap: 8px; margin-top: 12px;
+  min-height: var(--tap); padding: 0 16px; border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--brand) 55%, var(--line));
+  background: color-mix(in srgb, var(--brand) 12%, transparent);
+  color: var(--brand); font-size: 13px; font-weight: 600; text-decoration: none;
+}
+.plan__hero-go:hover { background: color-mix(in srgb, var(--brand) 20%, transparent); }
+.plan__hero-go-arrow { margin-left: auto; }
+
+.plan__summary-main { display: flex; align-items: flex-start; gap: 10px; }
+.plan__summary-ico { font-size: 20px; line-height: 1.2; flex: none; }
+.plan__summary-main b { display: block; font-size: 15px; font-weight: 700; }
+.plan__summary-desc { display: block; margin-top: 3px; font-size: 12.5px; line-height: 1.6; color: var(--muted); word-break: keep-all; }
+.plan__stats { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+.plan__stat {
+  flex: 1 1 96px; display: flex; align-items: center; gap: 8px;
+  padding: 10px 12px; border: 1px solid var(--line); border-radius: 12px; background: var(--bg);
+}
+.plan__stat-ico { font-size: 16px; line-height: 1; flex: none; }
+.plan__stat em { display: block; font-style: normal; font-size: 11px; color: var(--muted); }
+.plan__stat b { display: block; font-size: 18px; font-weight: 700; line-height: 1.2; }
+.plan__stat--a { border-color: color-mix(in srgb, var(--brand) 40%, var(--line)); }
+.plan__stat--b { border-color: color-mix(in srgb, var(--brand-2) 40%, var(--line)); }
+.plan__stat--c { border-color: color-mix(in srgb, var(--point) 40%, var(--line)); }
+.plan__summary-go {
+  display: inline-flex; align-items: center; gap: 6px; margin-top: 12px;
+  min-height: 36px; padding: 0 14px; border: 1px solid var(--line); border-radius: 10px;
+  background: var(--bg); font-size: 12.5px; font-weight: 600; color: var(--fg); text-decoration: none;
+}
+.plan__summary-go:hover { border-color: var(--brand); color: var(--brand); }
+
+.plan__guide-head { display: flex; align-items: flex-start; gap: 10px; }
+.plan__guide-ico { font-size: 18px; line-height: 1.2; flex: none; }
+.plan__guide-head b { display: block; font-size: 15px; font-weight: 700; }
+.plan__more { margin-left: auto; flex: none; display: inline-flex; align-items: center; gap: 4px; font-size: 12.5px; font-weight: 600; color: var(--fg); text-decoration: none; white-space: nowrap; }
+.plan__more:hover { color: var(--brand); }
+.plan__steps { display: flex; flex-direction: column; gap: 8px; margin: 12px 0 0; padding: 0; list-style: none; counter-reset: none; }
+.plan__step {
+  display: flex; align-items: center; gap: 10px; padding: 10px 12px;
+  border: 1px solid var(--line); border-radius: 12px; background: var(--bg); text-decoration: none; color: inherit;
+}
+.plan__step:hover { border-color: var(--brand); }
+.plan__step-no {
+  flex: none; display: flex; align-items: center; justify-content: center; width: 22px; height: 22px;
+  border-radius: 50%; border: 1px solid color-mix(in srgb, var(--brand) 50%, var(--line));
+  color: var(--brand); font-size: 11px; font-weight: 700;
+}
+.plan__step-ico { flex: none; font-size: 16px; line-height: 1; }
+.plan__step-main { min-width: 0; }
+.plan__step-main b { display: block; font-size: 13.5px; font-weight: 600; }
+.plan__step-desc { display: block; margin-top: 2px; font-size: 12px; line-height: 1.5; color: var(--muted); word-break: keep-all; }
+
+.plan__recent-list { display: flex; flex-direction: column; gap: 8px; margin-top: 12px; }
+.plan__recent-item {
+  display: flex; align-items: center; gap: 10px; padding: 10px 12px;
+  border: 1px solid var(--line); border-radius: 12px; background: var(--bg); text-decoration: none; color: inherit;
+}
+.plan__recent-item:hover { border-color: var(--brand); }
+.plan__recent-item .sprite { width: 40px; height: 40px; flex: none; }
+.plan__recent-main { min-width: 0; }
+.plan__recent-name { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; font-size: 13.5px; font-weight: 600; }
+.plan__recent-sub { display: block; margin-top: 2px; font-size: 11.5px; line-height: 1.5; color: var(--muted); word-break: keep-all; }
 .plan__card .account__actions { margin-top: 6px; }
 .plan__card .boss__recs { margin: 4px 0 8px; }
 .plan__roadmap { margin-top: 14px; line-height: 1.6; word-break: keep-all; }
@@ -24,6 +100,29 @@ body[data-mode="plan"] #fav-digest { display: none; }
 .plan__add { margin: 4px 0 12px; justify-content: center; }
 .plan__mons { display: flex; flex-direction: column; gap: 8px; }
 .plan__mon { display: grid; grid-template-columns: 44px 1fr auto; gap: 10px; align-items: start; padding: 10px 12px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); }
+/* 2026-09-10 v2.47.0 목업대로 줄을 정보 묶음으로 나눴다.
+   좁은 화면에서는 묶음을 옆에 세우지 않는다 — 44px 그림 옆 좁은 칸에 칸을 더 만들면 이름이 잘린다.
+   대신 **줄 아래로 내려** 한 줄씩 눕힌다. 감추지는 않는다: CP 와 기술은 v2.47.0 이전에도
+   좁은 화면에서 보이던 값이라, 여기서 지우면 휴대폰 사용자만 정보를 잃는다.
+   순번 배지만 감춘다 (좁은 화면 목록은 세로로 길어 번호가 자리값을 못 한다). 넓은 화면 배치는 pc-theme.css */
+.plan__mon-no { display: none; }
+.plan__mon-cp, .plan__mon-moves { grid-column: 1 / -1; }
+.plan__mon-cp { display: flex; align-items: baseline; gap: 6px; margin-top: 2px; }
+.plan__mon-cp em { font-style: normal; font-size: 11px; color: var(--muted); }
+.plan__mon-cp b { font-size: 15px; font-weight: 700; color: var(--brand); }
+.plan__mon-moves { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; font-size: 12px; }
+.plan__mon-moves > em { font-style: normal; font-size: 11px; color: var(--muted); }
+.plan__mon-move-list { display: flex; flex-wrap: wrap; gap: 4px 10px; }
+.plan__mon-types { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-top: 4px; }
+.plan__mon-max { font-size: 11px; color: var(--muted); }
+.plan__mon-lv { display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px; margin-top: 5px; }
+.plan__mon-lv b { font-size: 13.5px; font-weight: 700; }
+.plan__mon-iv { font-size: 11.5px; color: var(--muted); }
+.plan__mon-bar { display: block; height: 4px; margin-top: 4px; border-radius: 999px; background: var(--hover); overflow: hidden; }
+.plan__mon-bar span { display: block; height: 100%; border-radius: 999px; background: var(--brand); }
+.plan__move { display: inline-flex; align-items: baseline; gap: 5px; }
+.plan__move b { font-weight: 600; }
+.plan__move i { font-style: normal; font-size: 10.5px; color: var(--muted); }
 .plan__mon.is-picked { border-color: var(--fg); }
 .plan__mon .sprite { width: 44px; height: 44px; }
 .plan__mon-main { min-width: 0; }
@@ -72,6 +171,66 @@ body[data-mode="plan"] #fav-digest { display: none; }
 .plan__cmp-head .sprite { width: 40px; height: 40px; }
 .plan__cmp-head b { font-size: 12.5px; }
 .plan__cmp-head .meta { font-size: 10.5px; }
+
+/* 2026-09-10 v2.47.0 로그인 잠금 — ☰ 메뉴 줄 · 서비스 홈 타일 · 화면 자체 */
+/* 잠긴 줄은 지우지 않는다. 있다는 것과 지금은 못 쓴다는 것을 함께 보여 줘야
+   "왜 없지" 가 아니라 "로그인하면 되겠구나" 로 읽힌다 */
+.drawer__item.is-locked, .home__tile.is-locked { opacity: .5; }
+.drawer__item.is-locked .drawer__label::after,
+.home__tile.is-locked strong::after { content: ' 🔒'; font-size: .9em; }
+.home__tile.is-locked:hover { border-color: var(--line); background: var(--surface); box-shadow: none; }
+
+.plan__lock {
+  display: flex; flex-direction: column; align-items: center; gap: 10px;
+  margin: 16px 0 0; padding: 32px 20px; text-align: center;
+  border: 1px solid var(--line); border-radius: 14px; background: var(--surface);
+}
+.plan__lock-ico { font-size: 30px; line-height: 1; }
+.plan__lock h2 { margin: 0; font-size: 18px; font-weight: 700; }
+.plan__lock p { margin: 0; max-width: 34em; font-size: 13px; line-height: 1.7; color: var(--muted); word-break: keep-all; }
+.plan__lock-go { margin-top: 4px; }
+
+/* 2026-09-10 v2.47.0 비교 안내 바 — 목록 **위**에 붙는다 (예전엔 목록 아래라 화면 밖이었다) */
+.plan__cmp-bar {
+  display: flex; align-items: center; flex-wrap: wrap; gap: 8px 10px; margin: 0 0 12px;
+  padding: 10px 14px; border: 1px solid color-mix(in srgb, var(--brand) 45%, var(--line));
+  border-radius: 12px; background: color-mix(in srgb, var(--brand) 8%, var(--surface));
+  font-size: 12.5px; line-height: 1.6;
+}
+.plan__cmp-bar.is-warn { border-color: color-mix(in srgb, var(--caution) 55%, var(--line)); background: color-mix(in srgb, var(--caution) 9%, var(--surface)); }
+.plan__cmp-bar-ico { flex: none; font-size: 14px; line-height: 1; }
+.plan__cmp-bar-text { flex: 1 1 auto; min-width: 0; word-break: keep-all; }
+.plan__cmp-bar .uchip { flex: none; }
+/* 짝이 될 수 없는 줄의 [비교] — 눌러도 되지만(새로 시작한다) 지금 짝인 줄이 어느 것인지 보이게 흐린다 */
+.uchip.is-offpair { opacity: .45; }
+
+/* 2026-09-10 v2.47.0 비교 창 — 표 위 카드 두 장 + 표 아래 결론 한 줄 (planner/collection.js) */
+.plan__cmp-title h2 { margin: 0; }
+.plan__cmp-lead { margin: 4px 0 0; font-size: 12.5px; line-height: 1.6; color: var(--muted); word-break: keep-all; }
+.plan__cmp-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 14px 0 4px; }
+.plan__cmp-card {
+  display: flex; flex-direction: column; align-items: center; gap: 6px;
+  padding: 14px 10px; border: 1px solid var(--line); border-radius: 14px; background: var(--bg); text-align: center;
+}
+/* 왼쪽·오른쪽 색을 갈라 둔다 — 표의 두 칸과 짝지어 읽힌다 */
+.plan__cmp-card--a { border-color: color-mix(in srgb, var(--brand) 45%, var(--line)); background: color-mix(in srgb, var(--brand) 6%, var(--bg)); }
+.plan__cmp-card--b { border-color: color-mix(in srgb, var(--point) 45%, var(--line)); background: color-mix(in srgb, var(--point) 6%, var(--bg)); }
+.plan__cmp-card .sprite { box-sizing: content-box; width: 64px; height: 64px; padding: 8px; border-radius: 50%; }
+.plan__cmp-card--a .sprite:not(.is-loading) { background-color: transparent; background-image: radial-gradient(60% 40% at 50% 88%, color-mix(in srgb, var(--brand) 38%, transparent), transparent 72%); }
+.plan__cmp-card--b .sprite:not(.is-loading) { background-color: transparent; background-image: radial-gradient(60% 40% at 50% 88%, color-mix(in srgb, var(--point) 38%, transparent), transparent 72%); }
+.plan__cmp-name { font-size: 14px; font-weight: 700; word-break: keep-all; }
+.plan__cmp-sub { font-size: 12px; color: var(--muted); }
+.plan__cmp-iv { padding: 3px 10px; border: 1px solid var(--line); border-radius: 999px; font-size: 11.5px; font-weight: 600; }
+.plan__cmp-iv--hundo { border-color: color-mix(in srgb, var(--point) 55%, var(--line)); color: var(--point); }
+.plan__cmp-iv--near { border-color: color-mix(in srgb, var(--brand) 55%, var(--line)); color: var(--brand); }
+.plan__cmp-verdict {
+  display: flex; align-items: flex-start; gap: 10px; margin: 14px 0 0;
+  padding: 12px 14px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface);
+}
+.plan__cmp-verdict--win { border-color: color-mix(in srgb, var(--brand) 45%, var(--line)); background: color-mix(in srgb, var(--brand) 7%, var(--surface)); }
+.plan__cmp-verdict-ico { flex: none; font-size: 16px; line-height: 1.3; }
+.plan__cmp-verdict b { display: block; font-size: 13.5px; font-weight: 700; }
+.plan__cmp-verdict span { display: block; margin-top: 3px; font-size: 12.5px; line-height: 1.6; color: var(--muted); word-break: keep-all; }
 
 /* 2026-09-08 v2.25.0 유사백 판정 — 개체값 퍼센트 옆에 결론 한 단어.
    색은 뜻이 있을 때만 쓴다는 원칙(docs 2.18)에 따라 세 등급만 구분하고, 그 밖은 뱃지를 아예 안 붙인다 */

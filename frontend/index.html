@@ -64,6 +64,16 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon-192.png">
 <link rel="icon" type="image/png" href="icon-192.png">
+<!-- 2026-09-10 v2.47.0 고른 화면 테마를 번들보다 **먼저** 붙인다 — 번들은 body 끝의 인라인
+     <script> 라, 여기서 안 붙이면 어둡게 골라 둔 사람이 매번 흰 화면을 한 번 보고 지나간다.
+     값은 components/theme.js 와 같은 키(pogo_theme)를 읽는다 -->
+<script>
+  'use strict';
+  try {
+    var t = localStorage.getItem('pogo_theme');
+    if (t === 'light' || t === 'dark') document.documentElement.setAttribute('data-theme', t);
+  } catch (e) {}
+</script>
 <meta name="theme-color" media="(prefers-color-scheme: light)" content="#ffffff">
 <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#121315">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -110,6 +120,7 @@ __STYLES__
       <button class="icon-btn" id="search-toggle" aria-label="포켓몬 검색">🔍</button>
       <!-- 2026-09-08 v2.29.0 계정 버튼(👤)을 뺐다 — 로그인·마이페이지는 ☰ 메뉴 맨 위 계정 카드 한 곳으로 모은다.
            비운 자리에 KR/EN 전환을 둔다 (i18n.js) -->
+      <button class="icon-btn" id="theme-toggle" aria-label="화면 테마" aria-live="polite">🌗</button>
       <button class="icon-btn lang-toggle" id="lang-toggle" aria-label="언어 전환" aria-live="polite">EN</button>
       <button class="icon-btn" id="menu-toggle" aria-label="메뉴">☰</button>
     </div>
@@ -210,6 +221,9 @@ __STYLES__
       <button class="drawer__item" onclick="openPage('privacy')"><span class="drawer__ico" aria-hidden="true">🔒</span><span class="drawer__label">개인정보처리방침</span></button>
       <!-- 2026-09-07 v2.18.0 공개 준비: 이용약관 페이지 · 통계(GA) 동의와 캐시 비우기 (components/consent.js) -->
       <button class="drawer__item" onclick="openPage('terms')"><span class="drawer__ico" aria-hidden="true">📜</span><span class="drawer__label">이용약관</span></button>
+      <!-- 2026-09-10 v2.47.0 화면 테마 — 좁은 화면에서는 헤더에 자리가 없다(로고가 잘렸다).
+           헤더 버튼은 넓은 화면에서만 보이고, 좁은 화면은 이 줄이 그 일을 한다 (components/theme.js) -->
+      <button class="drawer__item" id="menu-theme"><span class="drawer__ico" aria-hidden="true">🌗</span><span class="drawer__label">화면 테마</span><span class="drawer__value" id="menu-theme-value"></span></button>
       <button class="drawer__item" id="menu-consent"><span class="drawer__ico" aria-hidden="true">🍪</span><span class="drawer__label">통계·저장소 설정</span></button>
       <p class="drawer__meta">PvPoke · PokeMiners 데이터<br>기준일 __TIMESTAMP__ · 매일 00시 자동 갱신</p>
     </div>
