@@ -16,6 +16,11 @@ const ok = (n, c, x = '') => { console.log((c ? 'PASS' : 'FAIL') + ' ' + n + ' '
   const ctx = await browser.newContext({ viewport: { width: 1280, height: 800 } });
   // 폰트·스프라이트 CDN 만 막는다. CSP 위반 여부를 보려면 페이지 자체는 정상으로 굴려야 한다
   await ctx.route(/^https?:\/\/(?!localhost)/, (r) => r.abort());
+  // 2026-09-10 v2.44.0 Firebase 로그인이 받는 파일은 막지 않고 **가짜 응답**으로 바꿔 둔다 —
+  // 이 검사는 네트워크가 아니라 CSP 를 보는 것이라, 밖으로 못 나가는 환경에서도 답이 같아야 한다.
+  // 위 전면 차단보다 **뒤에** 등록해야 한다 — Playwright 는 나중에 건 route 가 이긴다
+  await ctx.route('https://apis.google.com/js/api.js*', (r) =>
+    r.fulfill({ status: 200, contentType: 'text/javascript', body: 'window.__gapiProbe = true;' }));
   ctx.setDefaultTimeout(6000);
   const page = await ctx.newPage();
   const errs = [];
@@ -34,6 +39,33 @@ const ok = (n, c, x = '') => { console.log((c ? 'PASS' : 'FAIL') + ' ' + n + ' '
   }
   ok('CSP object-src 차단', /object-src\s+'none'/.test(csp));
   ok('CSP base-uri 차단', /base-uri\s+'none'/.test(csp));
+  // 2026-09-10 v2.44.0 조이기만 세던 검사에 **우리가 쓰는 출처**를 더한다.
+  // v2.27.0 에서 apis.google.com 을 빠뜨려 Google 로그인이 통째로 막혔는데(auth/internal-error),
+  // 위 단언들은 전부 통과했다 — "빡빡한가" 만 묻고 "우리 것이 지나가는가" 는 안 물었기 때문이다.
+  // 출처는 실제로 그 파일을 받는 코드에서 따온다:
+  //   apis.google.com/js/api.js   firebase-auth-compat 가 인증 iframe 을 띄우기 전에 받는다
+  //   www.gstatic.com/firebasejs  SDK 본체 (components/auth.js loadScript)
+  //   googletagmanager.com        GA4 (scripts/track.js)
+  //   fonts.*·cdn.jsdelivr.net    웹폰트 (index.html)
+  //   raw.githubusercontent.com   스프라이트·데이터 (scripts/sprite.js)
+  const needed = [
+    ['script-src', 'https://apis.google.com', 'Firebase 로그인 iframe 로더'],
+    ['script-src', 'https://www.gstatic.com', 'Firebase SDK'],
+    ['script-src', 'https://www.googletagmanager.com', 'GA4'],
+    ['frame-src', 'https://apis.google.com', 'Firebase 로그인 iframe'],
+    ['frame-src', 'https://*.firebaseapp.com', 'Firebase 인증 핸들러'],
+    ['frame-src', 'https://accounts.google.com', 'Google 로그인'],
+    ['connect-src', 'https://*.googleapis.com', 'Firestore·Identity Toolkit'],
+    ['style-src', 'https://fonts.googleapis.com', '웹폰트'],
+    ['font-src', 'https://fonts.gstatic.com', '웹폰트'],
+    ['img-src', 'https://raw.githubusercontent.com', '스프라이트'],
+    ['img-src', 'https://*.googleusercontent.com', '계정 프로필 사진'],
+  ];
+  for (const [directive, origin, why] of needed) {
+    // 해당 지시어의 값 구간만 잘라서 본다 — 다른 지시어에 있는 걸 있다고 세면 안 된다
+    const section = (csp.split(';').find((part) => part.trim().startsWith(directive + ' ')) || '');
+    ok(`CSP ${directive} 에 ${origin} (${why})`, section.includes(origin), section.trim());
+  }
   // 실제로 막히는가 — 허용 목록에 없는 출처의 스크립트를 심어 본다
   const injected = await page.evaluate(() => new Promise((resolve) => {
     const s = document.createElement('script');
@@ -44,6 +76,18 @@ const ok = (n, c, x = '') => { console.log((c ? 'PASS' : 'FAIL') + ' ' + n + ' '
     setTimeout(() => resolve('blocked'), 1500);
   }));
   ok('허용하지 않은 출처의 스크립트 차단', injected === 'blocked', injected);
+  // 2026-09-10 v2.44.0 문자열 검사만으로는 부족해 실제로 받아 본다.
+  // firebase-auth-compat 는 로그인할 때 이 파일을 받고, 실패하면 그 onerror 를 auth/internal-error 로
+  // 바꿔 던진다 — v2.27.0~v2.43.0 동안 Google 로그인이 막혀 있던 경로가 정확히 여기다
+  const gapi = await page.evaluate(() => new Promise((resolve) => {
+    const s = document.createElement('script');
+    s.src = 'https://apis.google.com/js/api.js?onload=probe';
+    s.onload = () => resolve('loaded');
+    s.onerror = () => resolve('blocked');
+    document.head.appendChild(s);
+    setTimeout(() => resolve('timeout'), 4000);
+  }));
+  ok('Firebase 로그인용 api.js 가 CSP 를 통과', gapi === 'loaded', gapi);
   // loadScript 자체도 출처를 본다 (CSP 가 없는 환경에서도 한 겹 더)
   const guarded = await page.evaluate(() => loadScript('https://example.com/evil.js').then(() => 'allowed', (e) => String(e.message).includes('허용하지 않은') ? 'rejected' : 'other'));
   ok('loadScript 가 출처를 검사', guarded === 'rejected', guarded);
