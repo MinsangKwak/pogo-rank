@@ -76,6 +76,23 @@ const ok = (n, c, x = '') => { console.log((c ? 'PASS' : 'FAIL') + ' ' + n + ' '
     setTimeout(() => resolve('blocked'), 1500);
   }));
   ok('허용하지 않은 출처의 스크립트 차단', injected === 'blocked', injected);
+
+  // ── 2026-09-10 v2.49.1 버그 제보 링크가 그 주소인가
+  // 노션 정리 중에 관리용 WBS 문서가 따로 생겼다. 둘은 쓰는 사람이 다르다 —
+  // 제보자는 외부 사용자고 WBS 는 내부용이라 권한도 내용도 다르다.
+  // 바뀌면 제보가 엉뚱한 곳으로 가거나 아예 못 쓰게 되는데, 주소만 봐서는 티가 안 난다.
+  // 그래서 "맞는 주소인가" 가 아니라 **정확히 이 주소인가** 를 못 박는다
+  const BUG_REPORT_URL = 'https://www.notion.so/a0472984122d4f25b9b445b57465568f';
+  const reportHref = await page.evaluate(() => {
+    const link = [...document.querySelectorAll('a.drawer__item')]
+      .find((a) => (a.textContent || '').includes('버그 제보'));
+    return link ? link.getAttribute('href') : null;
+  });
+  ok('버그 제보 링크가 사용자 트래커 주소', reportHref === BUG_REPORT_URL, String(reportHref));
+  ok('버그 제보 링크가 새 창으로 (rel=noopener)', await page.evaluate(() => {
+    const link = [...document.querySelectorAll('a.drawer__item')].find((a) => (a.textContent || '').includes('버그 제보'));
+    return link?.target === '_blank' && /noopener/.test(link?.rel || '');
+  }));
   // 2026-09-10 v2.44.0 문자열 검사만으로는 부족해 실제로 받아 본다.
   // firebase-auth-compat 는 로그인할 때 이 파일을 받고, 실패하면 그 onerror 를 auth/internal-error 로
   // 바꿔 던진다 — v2.27.0~v2.43.0 동안 Google 로그인이 막혀 있던 경로가 정확히 여기다
