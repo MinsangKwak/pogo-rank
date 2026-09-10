@@ -215,3 +215,86 @@
   /* 상세 패널 안에서는 한 칸이 좁아 두 카드를 위아래로 쌓는다 */
   .detail-panel .detail__matchrows { grid-template-columns: 1fr; }
 }
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   2026-09-10 v2.43.0 티어표 (D-MAX · PvE · PvP 가 같은 조각을 쓴다)
+
+   목업의 D-MAX 화면을 기준으로 잡았지만, 여기 있는 것은 전부 **공용 조각**이다 —
+   티어 머리글(.tier__head)·랭킹 카드(.row-list > .row)·선정 근거(.row__why)는 세 화면이
+   같이 쓰므로, D-MAX 만 예쁘게 만들 수는 없고 그럴 이유도 없다.
+   ───────────────────────────────────────────────────────────────────────────── */
+@media (min-width: 1100px) {
+  /* 티어 머리글 — [S] S 티어 · 4종 · 한 줄 설명 */
+  .tier__head { align-items: center; gap: 10px; padding: 28px 0 12px; flex-wrap: wrap; }
+  .tier__badge { width: 32px; height: 32px; border-radius: 10px; font-size: 16px; }
+  .tier__badge--s { color: var(--point); background: color-mix(in srgb, var(--point) 16%, transparent); }
+  .tier__badge--a { color: var(--caution); background: color-mix(in srgb, var(--caution) 16%, transparent); }
+  .tier__badge--b { color: var(--brand); background: color-mix(in srgb, var(--brand) 16%, transparent); }
+  .tier__badge--c { color: var(--off); background: color-mix(in srgb, var(--off) 16%, transparent); }
+  .tier__name { font-size: var(--fs-lead); font-weight: 700; }
+  .tier__desc { flex: 1 1 100%; margin-left: 42px; font-size: var(--fs-sub); color: var(--muted); }
+  .row-head { align-items: center; padding: 4px 0 2px; }
+  .row-head h2 { font-size: var(--fs-sec); font-weight: 700; }
+  .row-head .meta { font-size: var(--fs-sub); }
+
+  /* 랭킹 카드 — 순위는 동그란 배지, 그림은 빛나는 판 위, 점수는 크게 */
+  .row-list > .row { padding: 20px 14px 16px; gap: 8px; }
+  .row-list > .row > .row__rank {
+    top: 12px; left: 12px;
+    display: flex; align-items: center; justify-content: center; width: 26px; height: 26px;
+    border-radius: 50%; border: 1px solid var(--line); background: var(--bg);
+    font-size: var(--fs-sub); font-weight: 700; text-align: center;
+  }
+  /* 그 티어의 1위만 브랜드색 — "이 칸의 대표" 라는 뜻 */
+  .row-list > .row:first-child > .row__rank { border-color: var(--brand); color: var(--brand); }
+  /* 그림 아래 빛나는 판 — 목업의 발광 스테이지. 공식 아트워크가 없으므로 빛으로 자리를 만든다 */
+  .row-list > .row > .sprite {
+    width: 84px; height: 84px; padding: 10px; border-radius: 50%;
+    background:
+      radial-gradient(60% 40% at 50% 88%, color-mix(in srgb, var(--brand) 40%, transparent), transparent 70%),
+      radial-gradient(70% 70% at 50% 42%, color-mix(in srgb, var(--brand-2) 12%, transparent), transparent 72%);
+  }
+  .row-list > .row > .sprite:not(.is-loading) { background-color: transparent; }
+  .row-list > .row .row__badges { margin-bottom: 6px; }
+  .row-list > .row .row__name b { font-size: var(--fs-lead); }
+  .row-list > .row .row__moves { font-size: var(--fs-sub); color: var(--muted); }
+  .row-list > .row > .row__stats { padding-top: 10px; }
+  .row-list > .row .row__score { font-size: 26px; font-weight: 700; letter-spacing: -0.02em; }
+  .row-list > .row .row__sub { font-size: var(--fs-sub); color: var(--muted); }
+  /* 활용 N곳 — 카드 위에서는 알약 하나로 또렷하게 */
+  .row-list > .row .tag--use {
+    padding: 3px 10px; border-radius: var(--r-chip);
+    border-color: transparent; background: color-mix(in srgb, var(--brand-2) 16%, transparent);
+    color: color-mix(in srgb, var(--brand-2) 75%, var(--fg)); font-size: 11px;
+  }
+  .row-list > .row .tag--use.tag--many { background: color-mix(in srgb, var(--brand) 18%, transparent); color: var(--brand); }
+
+  /* 선정 근거 — 격자를 가로지르는 카드 한 장, 안은 두 칸 (views/max.js expandableRow).
+     order 로 카드 뒤로 보낸다: DOM 은 [카드][근거][카드][근거]… 순서라 그대로 두면 근거가 열릴 때마다
+     그 자리에서 줄이 끊겨 뒤 카드들이 아래로 밀린다. 목업처럼 그 티어의 카드가 다 놓인 **뒤에** 붙는다 */
+  .row-list > .row { order: 0; }
+  .row-list > .row__why { order: 1; padding: 16px 18px; border-radius: var(--r-card); }
+  .row-list > .row__more { order: 2; }
+  .row-list > .row__why.is-open { display: grid; grid-template-columns: 1.4fr 1fr; gap: 20px; }
+  .row__why-col { min-width: 0; }
+  .row__why-title { display: block; margin-bottom: 6px; font-size: var(--fs-body); font-weight: 700; color: var(--fg); }
+  .row__why-line { margin: 0 0 8px; line-height: 1.7; }
+  .row__why-more { color: var(--brand); text-decoration: none; font-weight: 600; }
+  .row__why-more:hover { text-decoration: underline; }
+  .row__why-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+  .row__why-chip {
+    padding: 5px 11px; border: 1px solid var(--line); border-radius: var(--r-chip);
+    background: var(--bg); font-size: var(--fs-sub); color: var(--fg);
+  }
+  .row__why-chip:hover { border-color: var(--brand); color: var(--brand); }
+
+  /* 화면 위 장식 띠 — D-MAX 는 폼 색(자홍)으로. 다른 화면은 붙이지 않는다 */
+  .page-head[data-route="dmax"] { position: relative; }
+  .page-head[data-route="dmax"]::after {
+    content: ''; position: absolute; right: 0; top: 18px; width: 46%; height: 108px; pointer-events: none;
+    border-radius: var(--r-card);
+    background:
+      radial-gradient(70% 100% at 70% 100%, color-mix(in srgb, var(--c-max) 26%, transparent), transparent 68%),
+      radial-gradient(50% 90% at 96% 60%, color-mix(in srgb, var(--c-max-2) 20%, transparent), transparent 70%);
+  }
+}
