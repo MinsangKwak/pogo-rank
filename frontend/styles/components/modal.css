@@ -20,7 +20,10 @@ dialog.modal::backdrop { background: transparent; }
 @media (max-width: 640px) {
   .modal { padding: 0; align-items: flex-end; }
   .modal__wrap { max-width: none; }
-  .modal__box { max-height: 88vh; border-radius: 1.6rem 1.6rem 0 0; border-bottom: 0; }
+  /* 2026-09-10 v2.53.0 88vh → 75vh. 바텀시트가 화면을 거의 다 덮어서, 뒤에 무엇이 열려 있었는지
+     보이지 않았다 — 그러면 팝업이 아니라 새 화면으로 읽힌다. 게다가 모바일 주소창이 접히고 펴질 때
+     vh 기준이 흔들려 카드 아래가 잘리기도 했다. 75vh 는 뒤 화면을 한 뼘 남긴다 */
+  .modal__box { max-height: 75vh; border-radius: 1.6rem 1.6rem 0 0; border-bottom: 0; }
   /* 바텀시트는 카드가 화면 맨 아래까지 붙어 위쪽에만 여유가 있다 — ✕ 를 카드 위 모서리 위로 올린다 */
   .modal__close { top: -4.4rem; right: 0.4rem; }
 }
