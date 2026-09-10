@@ -217,6 +217,11 @@ __STYLES__
       <!-- 2026-09-04 시즌 기술 변경 안내: 변경 데이터가 있을 때만 initMoveChangesMenu()가 연다 -->
       <button class="drawer__item" id="menu-changes" onclick="openPage('changes')" hidden><span class="drawer__ico" aria-hidden="true">⚔️</span><span class="drawer__label">기술 변경</span></button>
       <button class="drawer__item" id="menu-release" onclick="openPage('release')"><span class="drawer__ico" aria-hidden="true">🎉</span><span class="drawer__label">패치노트</span></button>
+      <!-- ⚠️ 2026-09-10 이 주소는 **사용자 버그 제보용 트래커**다. 관리용 WBS 주소로 바꾸지 말 것.
+           노션 쪽을 정리하면서 WBS(내부 개발·버전 관리) 문서가 따로 생겼는데, 둘은 쓰는 사람이 다르다 —
+           제보자는 외부 사용자고, WBS 는 내부용이라 권한도 내용도 다른 문서다.
+           바뀌면 제보가 엉뚱한 곳으로 가거나 아예 못 쓰게 된다.
+           tests/e2e/hardening.js 가 이 주소를 확인한다 -->
       <a class="drawer__item" href="https://www.notion.so/a0472984122d4f25b9b445b57465568f" target="_blank" rel="noopener"><span class="drawer__ico" aria-hidden="true">🛠</span><span class="drawer__label">QA·버그 제보 (노션)</span></a>
       <button class="drawer__item" onclick="openPage('privacy')"><span class="drawer__ico" aria-hidden="true">🔒</span><span class="drawer__label">개인정보처리방침</span></button>
       <!-- 2026-09-07 v2.18.0 공개 준비: 이용약관 페이지 · 통계(GA) 동의와 캐시 비우기 (components/consent.js) -->
