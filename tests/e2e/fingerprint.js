@@ -28,7 +28,10 @@ const PROPS = ['display','position','color','background-color','border-top-width
 (async () => {
   const browser = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium' });
   const errors = [];
-  for (const [w, h, wname] of [[390, 844, 'm'], [1440, 900, 'd']]) {
+  // 2026-09-10 v2.54.0 두 화면 폭을 **동시에** 잰다. 전에는 좁은 폭 22화면을 다 돈 뒤에야
+  // 넓은 폭을 시작해서, 이 스위트 하나가 회귀 전체에서 가장 오래 걸렸다 (실측 183초).
+  // 둘은 서로의 결과를 쓰지 않는다 — 각자 제 컨텍스트에서 제 파일에 쓴다
+  const sweep = async ([w, h, wname]) => {
     const ctx = await browser.newContext({ viewport: { width: w, height: h } });
     await ctx.route(/^https?:\/\/(?!localhost)/, (r) => r.abort());
     ctx.setDefaultTimeout(4000);
@@ -65,7 +68,8 @@ const PROPS = ['display','position','color','background-color','border-top-width
       fs.writeFileSync(`${OUT}/${wname}-${name}.txt`, fp.join('\n'));
     }
     await ctx.close();
-  }
+  };
+  await Promise.all([[390, 844, 'm'], [1440, 900, 'd']].map(sweep));
   console.log('errors:', errors.length ? errors.join(' | ') : 'none');
   await browser.close();
 })().catch((e) => { console.error('CRASH', e); process.exit(1); });
