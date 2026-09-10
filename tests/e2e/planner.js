@@ -40,6 +40,14 @@ const ok = (n, c, x = '') => { console.log((c ? 'PASS' : 'FAIL') + ' ' + n + ' '
   ok('로그아웃 확인', (await page.evaluate(() => AUTH.status)) === 'anon');
   ok('메뉴 줄 잠김', (await page.locator('#menu-planner').getAttribute('aria-disabled')) === 'true');
   ok('홈 타일 잠김', (await page.locator('#home-tile-planner').getAttribute('aria-disabled')) === 'true');
+  // 2026-09-10 v2.48.1 잠그는 화면이 늘었다 — 육성 플래너 · 배틀 PvP · 이벤트 일정 · 레이드 보스 · 알 부화.
+  // 도감 · 타입 & 상성 · D-MAX · 레이드 PvE 는 로그인 없이 쓰는 화면이라 잠기면 안 된다
+  const lockedLabels = await page.locator('.nav-menu a[aria-disabled="true"] .drawer__label').allTextContents();
+  ok('잠긴 메뉴 줄이 정확히 여섯', lockedLabels.join('|') === '육성 플래너|레이드 · PvE|배틀 · PvP|이벤트 일정|레이드 보스|알 부화', lockedLabels.join('|'));
+  const openLabels = await page.locator('.nav-menu a:not([aria-disabled]) .drawer__label').allTextContents();
+  ok('로그인 없이 쓰는 화면은 안 잠긴다', ['포켓몬 도감', '타입 & 상성', 'D-MAX'].every((t) => openLabels.includes(t)), openLabels.join('|'));
+  const lockedTiles = await page.locator('.home__tile[aria-disabled="true"] strong').allTextContents();
+  ok('잠긴 홈 타일도 여섯', lockedTiles.length === 6, lockedTiles.join('|'));
   // 잠긴 타일을 눌러도 그 화면으로 가지 않는다 (대신 계정 카드가 열린다)
   // force: true — Playwright 는 aria-disabled 를 "누를 수 없음" 으로 보고 클릭을 거절하지만,
   // 실제 브라우저에서는 눌린다. 우리는 그 눌림을 받아 계정 카드를 여는 쪽을 택했으므로 강제로 누른다
@@ -54,6 +62,21 @@ const ok = (n, c, x = '') => { console.log((c ? 'PASS' : 'FAIL') + ' ' + n + ' '
   await page.goto(BASE + '#/planner', { waitUntil: 'domcontentloaded' });
   await settle(1200);
   ok('주소로 들어가도 잠긴 화면', (await page.locator('.plan__lock').count()) === 1);
+  // 다른 잠긴 화면들도 주소로 들어가면 막힌다 — 메뉴만 흐리게 하고 주소로 들어가지면 잠근 게 아니다
+  for (const [hash, name] of [['#/raids', '레이드 보스'], ['#/eggs', '알 부화'], ['#/schedule', '이벤트 일정'], ['#/pvp', '배틀 PvP'], ['#/pve', '레이드 PvE']]) {
+    await page.goto(BASE + hash, { waitUntil: 'domcontentloaded' });
+    await settle(1400);
+    // .first() 를 쓰면 안 된다 — 앞 화면(플래너)이 남긴 잠금 카드가 감춰진 채 .wrap 안에 남아 있어
+    // 그쪽이 먼저 잡힌다. **보이는 것**만 센다
+    ok(`${name} 주소도 잠긴 화면`, (await page.locator('.plan__lock:visible').count()) > 0);
+  }
+  for (const [hash, name] of [['#/dex', '포켓몬 도감'], ['#/types', '타입 & 상성'], ['#/dmax', 'D-MAX']]) {
+    await page.goto(BASE + hash, { waitUntil: 'domcontentloaded' });
+    await settle(1400);
+    ok(`${name} 는 잠기지 않는다`, (await page.locator('.plan__lock:visible').count()) === 0);
+  }
+  await page.goto(BASE + '#/planner', { waitUntil: 'domcontentloaded' });
+  await settle(1200);
   ok('잠긴 화면에는 탭 줄이 없다', (await page.locator('#tabs .tabs__item').count()) === 0);
   ok('잠긴 화면에 로그인 버튼', await page.locator('.plan__lock-go').isVisible());
   ok('잠긴 화면에 목록이 없다', (await page.locator('.plan__mon').count()) === 0);
@@ -89,6 +112,17 @@ const ok = (n, c, x = '') => { console.log((c ? 'PASS' : 'FAIL') + ' ' + n + ' '
   ok('CP 묶음', /\d/.test(await first.locator('.plan__mon-cp b').textContent()));
   ok('주요 기술 두 줄', (await first.locator('.plan__move').count()) === 2);
   ok('개체값 막대', (await first.locator('.plan__mon-bar span').count()) === 1);
+  // 2026-09-10 v2.48.1 (버그) 넓은 화면에서 묶음들이 한 줄에 서는가.
+  // planner.css 가 좁은 화면용으로 주는 grid-column: 1 / -1 이 넓은 화면까지 따라와,
+  // CP·기술·동작이 각각 한 줄씩 차지하며 카드가 400px 넘게 늘어져 있었다.
+  // 높이만 재면 글자 크기 조정에도 걸리므로 **같은 줄에 있는지**를 좌표로 본다
+  const cols = await first.evaluate((n) => {
+    const box = (sel) => { const e = n.querySelector(sel); const r = e && e.getBoundingClientRect(); return r && { x: Math.round(r.x), y: Math.round(r.y) }; };
+    return { no: box('.plan__mon-no'), cp: box('.plan__mon-cp'), moves: box('.plan__mon-moves'), acts: box('.plan__mon-actions'), h: Math.round(n.getBoundingClientRect().height) };
+  });
+  ok('넓은 화면: 번호 → CP → 기술 → 동작 이 가로로 선다',
+    cols.no.x < cols.cp.x && cols.cp.x < cols.moves.x && cols.moves.x < cols.acts.x, JSON.stringify(cols));
+  ok('넓은 화면: 카드가 한 줄 높이 (200px 미만)', cols.h < 200, `${cols.h}px`);
   // 좁은 화면에서도 CP·기술은 남아 있어야 한다 (v2.47.0 에서 감췄다가 되살린 값)
   await page.setViewportSize({ width: 390, height: 844 });
   await settle(700);
