@@ -57,6 +57,17 @@ const ok = (n, c, x = '') => { console.log((c ? 'PASS' : 'FAIL') + ' ' + n + ' '
   ok('알 줄 렌더', eggRows > 20, String(eggRows));
   ok('알 한글 이름', /[가-힣]/.test(await page.locator('.gameday__sec .dex__row b').first().textContent()));
 
+  // 2026-09-10 v2.53.0 거리로만 묶으면 안 된다 — 같은 거리라도 알을 어디서 얻었는지에 따라
+  // 나오는 종이 아예 다르다. 걸어서 깐 5km 에 어드벤처 싱크 전용이 섞여 있으면 "안 나오는 애" 를
+  // 나온다고 말하는 셈이다. 그래서 칸 이름이 얻는 곳까지 말하는지, 순서가 거리순인지를 못 박는다
+  ok('얻는 곳까지 나눈 칸이 있다', eggSecs.some((t) => /어드벤처 싱크|선물/.test(t)), eggSecs.join(' | ').slice(0, 120));
+  ok('7km 은 친구 선물과 루트 선물이 따로', eggSecs.some((t) => /친구 선물/.test(t)) && eggSecs.some((t) => /루트 선물/.test(t)));
+  const eggOrder = eggSecs.map((t) => parseInt(t, 10)).filter((n) => n > 0);
+  ok('거리는 숫자 오름차순 (1km 이 맨 앞)', eggOrder.every((n, i) => i === 0 || eggOrder[i - 1] <= n), eggOrder.join(','));
+  // 한 마리가 두 칸에 겹쳐 들어가면 합계가 원본보다 커진다 — 칸만 나누고 종은 늘지 않아야 한다
+  const eggTotal = await page.locator('.gameday__sec .dex__row').count();
+  ok('칸을 나눠도 종 수는 그대로', eggTotal === eggRows, `${eggTotal} vs ${eggRows}`);
+
   // ── 드로어 이동 항목
   await page.click('#menu-toggle');
   await page.waitForTimeout(400);
