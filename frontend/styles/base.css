@@ -1,3 +1,20 @@
+/* ─────────────────────────────────────────────────────────────────────────────
+   2026-09-10 v2.52.0 길이 단위를 px 에서 rem 으로 옮겼다.
+
+   html 을 62.5% 로 두면 1rem = 10px 이 된다 (브라우저 기본 16px × 0.625).
+   그래서 16px 은 1.6rem, 13.5px 은 1.35rem — 값을 읽을 때 머릿속 환산이 10으로 나누기 하나다.
+   기본 설정에서는 지금까지와 **똑같은 크기**로 그려지고, 브라우저 글자 크기를 키운 사람에게는
+   글자만이 아니라 여백·버튼·카드가 함께 커진다. px 로 박아 두면 글자만 커지고 상자는 그대로라
+   글자가 상자를 넘친다 — 그걸 없애려고 옮겼다.
+
+   px 로 남겨 둔 것 (각각 이유가 있다)
+     · @media 조건 — rem 이면 중단점이 사용자 글자 크기에 따라 움직인다. "모바일(1100px 미만)은
+       손대지 않는다" 는 약속이 깨지고, 폭을 못 박은 회귀 검사도 뜻이 달라진다
+     · 1px 선 — 테두리·구분선·포커스 링. 선은 굵기가 아니라 '있다/없다' 를 말한다.
+       0.1rem 으로 두면 글자를 키운 사람 화면에서 선까지 굵어진다
+   ───────────────────────────────────────────────────────────────────────────── */
+html { font-size: 62.5%; }
+
 /* 리셋과 문서 기본 스타일 */
 * { box-sizing: border-box; }
 /* 2026-09-08 v2.26.0 hidden 은 어떤 작성자 규칙보다 세게 감춘다 — 브라우저 기본값은
@@ -8,11 +25,11 @@ body {
   margin: 0; background: var(--bg); color: var(--fg);
   /* 2026-09-07 v2.14.0 (QA-52) 영문·숫자는 Montserrat, 한글은 Pretendard — Montserrat 에 한글 글리프가 없어 자연스럽게 다음 폰트로 넘어간다 */
   font-family: "Montserrat", "Pretendard Variable", "Pretendard", "Apple SD Gothic Neo", "Noto Sans KR", system-ui, sans-serif;
-  font-size: 15px; line-height: 1.5; font-feature-settings: "tnum" 1;
+  font-size: 1.5rem; line-height: 1.5; font-feature-settings: "tnum" 1;
 }
 button { font: inherit; color: inherit; background: none; border: 0; padding: 0; cursor: pointer; }
-button:focus-visible { outline: 2px solid var(--fg); outline-offset: 2px; border-radius: 4px; }
-.layout { max-width: 760px; margin: 0 auto; padding: 0 20px 80px; }
+button:focus-visible { outline: 0.2rem solid var(--fg); outline-offset: 0.2rem; border-radius: 0.4rem; }
+.layout { max-width: 76rem; margin: 0 auto; padding: 0 2rem 8rem; }
 
 /* ─────────────────────────────────────────────────────────────────────────────
    2026-09-08 v2.26.0 버튼 반응 — 누를 수 있다는 것을 손보다 눈이 먼저 알게 한다.
@@ -61,4 +78,4 @@ button:disabled, .drawer__item:disabled { cursor: not-allowed; transform: none; 
 /* 2026-09-08 v2.29.0 "이 화면은 한국어로만 둡니다" 안내 — 영어로 볼 때만 뜬다 (i18n.js setLang 이 lang 을 바꾼다) */
 /* :root 를 붙여 특정도를 올린다 — 뒤 파일의 .note(단일 클래스)와 같은 값이면 순서로 지고 만다 */
 :root:not([lang="en"]) .i18n-note { display: none; }
-:root[lang="en"] .i18n-note { display: block; margin: 0 0 12px; }
+:root[lang="en"] .i18n-note { display: block; margin: 0 0 1.2rem; }
