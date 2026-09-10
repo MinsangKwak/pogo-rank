@@ -37,6 +37,16 @@ const ok = (name, cond, extra = '') => results.push([cond ? 'PASS' : 'FAIL', nam
       caution: cs.getPropertyValue('--caution').trim(),
       off: cs.getPropertyValue('--off').trim(),
       tap: cs.getPropertyValue('--tap').trim(),
+      // 2026-09-10 v2.52.0 토큰이 rem 으로 바뀌어 글자로는 '4.4rem' 이다.
+      // 지켜야 할 것은 글자가 아니라 손가락이 닿는 실제 크기라서, 재어서 본다
+      tapPx: (() => {
+        const probe = document.createElement('div');
+        probe.style.cssText = 'position:absolute;visibility:hidden;height:var(--tap)';
+        document.body.append(probe);
+        const h = probe.getBoundingClientRect().height;
+        probe.remove();
+        return h;
+      })(),
       font: body.fontFamily,
       size: body.fontSize,
     };
@@ -49,7 +59,7 @@ const ok = (name, cond, extra = '') => results.push([cond ? 'PASS' : 'FAIL', nam
   ok('토큰 --accent = 브랜드 초록 (#16a34a)', design.accent === '#16a34a', design.accent);
   ok('의미 색 여섯 벌 있음', ['brand', 'brand-2', 'point', 'warn', 'caution', 'off'].every((k) => design[k]),
     JSON.stringify({ brand: design.brand, warn: design.warn }));
-  ok('토큰 --tap 44px', design.tap === '44px', design.tap);
+  ok('토큰 --tap 이 손가락 크기 44px', design.tapPx === 44, `${design.tap} = ${design.tapPx}px`);
   ok('본문 글꼴 Montserrat 우선', /Montserrat/.test(design.font), design.font.slice(0, 40));
   ok('본문 15px 유지', design.size === '15px', design.size);
 
@@ -183,11 +193,26 @@ const ok = (name, cond, extra = '') => results.push([cond ? 'PASS' : 'FAIL', nam
       body: parseFloat(getComputedStyle(document.body).fontSize),
       pad: cs ? parseFloat(cs.paddingTop) : null,
       radius: cs ? parseFloat(cs.borderRadius) : null,
-      border: cs ? parseFloat(cs.borderTopWidth) : null,
       tap: chip ? parseFloat(getComputedStyle(chip).minHeight) : null,
     };
   });
+  // 2026-09-10 v2.52.0 1px 선은 화면마다 붙는 곳이 달라서, 선택자 하나를 못 박으면
+  // 그 화면이 바뀌는 순간 잴 것이 없어져 0 이 잡힌다 (통과처럼 보이지도 않고, 그냥 헛것을 잰다).
+  // 그래서 기준 배율에서 1px 이던 것을 **모두** 모아 두고, 키운 뒤 같은 것들을 다시 본다
+  // 자리(인덱스)로 기억하면 안 된다 — 배율을 올릴 때 <style> 하나가 <head> 에 끼어들어
+  // 그 뒤 요소가 통째로 한 칸씩 밀린다. 요소에 표식을 달아 두면 밀려도 같은 것을 다시 찾는다
+  const onePxLines = () => page.evaluate(() => {
+    let n = 0;
+    for (const node of document.querySelectorAll('*')) {
+      if (getComputedStyle(node).borderTopWidth === '1px') { node.dataset.onepx = '1'; n++; }
+    }
+    return n;
+  });
+  const stillOnePx = () => page.evaluate(() =>
+    [...document.querySelectorAll('[data-onepx]')]
+      .filter((node) => getComputedStyle(node).borderTopWidth === '1px').length);
   const base = await measure();
+  const baseLines = await onePxLines();
   ok('본문 15px 유지 (rem 으로 옮겨도 같은 크기)', base.body === 15, String(base.body));
   await page.addStyleTag({ content: 'html { font-size: 100% !important; }' });
   await page.waitForTimeout(300);
@@ -197,7 +222,9 @@ const ok = (name, cond, extra = '') => results.push([cond ? 'PASS' : 'FAIL', nam
   ok('글자를 키우면 줄 여백도 같이', scaled(base.pad, big.pad), `${base.pad} → ${big.pad}`);
   if (base.tap) ok('글자를 키우면 칩 높이도 같이', scaled(base.tap, big.tap), `${base.tap} → ${big.tap}`);
   // 1px 선만 고정 — 선은 굵기가 아니라 '있다/없다' 를 말한다
-  ok('1px 선은 굵어지지 않는다', big.border === 1, String(big.border));
+  ok('잴 1px 선이 실제로 있다', baseLines > 0, `${baseLines}개`);
+  const keptLines = await stillOnePx();
+  ok('1px 선은 굵어지지 않는다', keptLines === baseLines, `${keptLines}/${baseLines}`);
   await page.reload({ waitUntil: 'domcontentloaded' });
   await settle();
 
