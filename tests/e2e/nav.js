@@ -30,15 +30,25 @@ const ok = (name, cond, extra = '') => results.push([cond ? 'PASS' : 'FAIL', nam
       line: cs.getPropertyValue('--line').trim(),
       muted: cs.getPropertyValue('--muted').trim(),
       accent: cs.getPropertyValue('--accent').trim(),
+      brand: cs.getPropertyValue('--brand').trim(),
+      'brand-2': cs.getPropertyValue('--brand-2').trim(),
+      point: cs.getPropertyValue('--point').trim(),
+      warn: cs.getPropertyValue('--warn').trim(),
+      caution: cs.getPropertyValue('--caution').trim(),
+      off: cs.getPropertyValue('--off').trim(),
       tap: cs.getPropertyValue('--tap').trim(),
       font: body.fontFamily,
       size: body.fontSize,
     };
   });
-  ok('토큰 --surface 원본(#f4f4f5)', design.surface === '#f4f4f5', design.surface);
-  ok('토큰 --line 원본(#e8e9eb)', design.line === '#e8e9eb', design.line);
-  ok('토큰 --muted 원본(#7a7c80)', design.muted === '#7a7c80', design.muted);
-  ok('토큰 --accent 추가', design.accent === '#2f8f5b', design.accent);
+  // 2026-09-10 v2.42.0 디자인 시스템 개편 — 목업 팔레트로 갈아끼웠다 (tokens.css).
+  // 값을 여기 못 박아 두는 이유는 그대로다: 화면마다 색을 직접 적는 습관이 되살아나면 바로 걸린다
+  ok('토큰 --surface (#f5f7fa)', design.surface === '#f5f7fa', design.surface);
+  ok('토큰 --line (#e4e8ee)', design.line === '#e4e8ee', design.line);
+  ok('토큰 --muted (#64748b)', design.muted === '#64748b', design.muted);
+  ok('토큰 --accent = 브랜드 초록 (#16a34a)', design.accent === '#16a34a', design.accent);
+  ok('의미 색 여섯 벌 있음', ['brand', 'brand-2', 'point', 'warn', 'caution', 'off'].every((k) => design[k]),
+    JSON.stringify({ brand: design.brand, warn: design.warn }));
   ok('토큰 --tap 44px', design.tap === '44px', design.tap);
   ok('본문 글꼴 Montserrat 우선', /Montserrat/.test(design.font), design.font.slice(0, 40));
   ok('본문 15px 유지', design.size === '15px', design.size);
@@ -111,7 +121,7 @@ const ok = (name, cond, extra = '') => results.push([cond ? 'PASS' : 'FAIL', nam
     return { top: Math.round(r.top), bg: s.backgroundColor, radius: s.borderTopLeftRadius };
   });
   ok('검색 = 같은 시트 기하', sheet.top > 60, JSON.stringify(sheet));
-  ok('검색 카드 배경 = --surface', sheet.bg === 'rgb(244, 244, 245)', sheet.bg);
+  ok('검색 카드 배경 = --surface', sheet.bg === 'rgb(245, 247, 250)', sheet.bg);
   ok('검색 안내문 보임', (await page.locator('.search__head .meta').isVisible()));
   await page.keyboard.press('Escape');
   await page.waitForTimeout(300);
@@ -125,7 +135,7 @@ const ok = (name, cond, extra = '') => results.push([cond ? 'PASS' : 'FAIL', nam
   // 2026-09-09 v2.40.0 항목이 [아이콘][이름] 두 조각이라 이름 칸(.drawer__label)만 본다
   ok('드로어 현재 항목 표시', (await page.locator('.nav-menu [aria-current="page"] .drawer__label').textContent()) === '배틀 · PvP');
   const cur = await page.locator('.nav-menu [aria-current="page"]').evaluate((n) => getComputedStyle(n).color);
-  ok('현재 항목 = --accent', cur === 'rgb(47, 143, 91)', cur);
+  ok('현재 항목 = --accent (브랜드 초록)', cur === 'rgb(22, 163, 74)', cur);
   ok('드로어 서비스 홈 항목', (await page.locator('.nav-menu a .drawer__label').first().textContent()) === '서비스 홈');
   await page.click('.nav-menu a:has-text("서비스 홈")');
   await page.waitForTimeout(400);
@@ -159,8 +169,8 @@ const ok = (name, cond, extra = '') => results.push([cond ? 'PASS' : 'FAIL', nam
     const cs = getComputedStyle(document.documentElement);
     return { bg: cs.getPropertyValue('--bg').trim(), accent: cs.getPropertyValue('--accent').trim() };
   });
-  ok('다크 --bg', dtok.bg === '#121315', dtok.bg);
-  ok('다크 --accent', dtok.accent === '#4fb37c', dtok.accent);
+  ok('다크 --bg (딥네이비 #0b0f15)', dtok.bg === '#0b0f15', dtok.bg);
+  ok('다크 --accent (#22c55e)', dtok.accent === '#22c55e', dtok.accent);
   await dark.close();
 
   ok('페이지 오류 없음', errors.length === 0, errors.join(' | ').slice(0, 200));

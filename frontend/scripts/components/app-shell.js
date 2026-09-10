@@ -34,7 +34,26 @@ const backButton = iconBtn('←', '이전 화면', () => {
   else navigateHash('');
 });
 const actions = appHeader.querySelector('.app-bar__actions');
-appHeader.replaceChildren(el('div', { class: 'app-bar__head' }, backButton, appTitle), actions);
+// 2026-09-10 v2.42.0 넓은 화면 상단 바의 검색 칸 — 돋보기 아이콘 하나였을 때는 "여기서 검색한다"가
+// 안 읽혔다. 입력처럼 생겼지만 실제로는 버튼이다: 누르면 늘 쓰던 검색 팝업(toggleSearchPanel)이 열린다.
+// 입력을 두 벌 두면 어느 쪽에 친 글자가 진짜인지가 흐려지고, 결과 목록도 두 곳에 그려야 한다.
+// 좁은 화면에서는 CSS 가 감춘다 (돋보기 버튼은 그대로 남는다)
+const appSearch = el('button', { class: 'app-search', id: 'app-search', 'aria-label': '포켓몬 검색' },
+  el('span', { class: 'app-search__ico', 'aria-hidden': 'true' }, '🔍'),
+  el('span', { class: 'app-search__ph' }, '포켓몬, 기술, 가이드를 검색하세요…'),
+  el('kbd', { class: 'app-search__key', 'aria-hidden': 'true' }, '/'));
+appSearch.addEventListener('click', () => toggleSearchPanel(true));
+// 슬래시 한 번으로 검색 — 글자를 치고 있던 중이면 가로채지 않는다
+document.addEventListener('keydown', (event) => {
+  if (event.key !== '/' || event.metaKey || event.ctrlKey || event.altKey) return;
+  const tag = document.activeElement?.tagName;
+  if (tag === 'INPUT' || tag === 'TEXTAREA' || document.activeElement?.isContentEditable) return;
+  if (document.querySelector('dialog[open]')) return;
+  event.preventDefault();
+  toggleSearchPanel(true);
+});
+// 검색 칸은 로고와 액션 사이 — 넓은 화면에서 가운데를 채운다 (좁은 화면은 CSS 가 감춘다)
+appHeader.replaceChildren(el('div', { class: 'app-bar__head' }, backButton, appTitle), appSearch, actions);
 // 🔍 · 👤 · ☰ 아이콘은 index.html 의 것을 그대로 쓴다 (aria-label 이 이미 붙어 있다)
 const searchButton = document.getElementById('search-toggle');
 searchButton.setAttribute('aria-haspopup', 'dialog');
@@ -100,7 +119,17 @@ document.querySelector('.layout').before(sideNav);
 // 2026-09-08 v2.26.0 화면별 헤더 — 넓은 화면에서는 상단 바가 서비스 이름(로고) 자리를 지키고,
 // 지금 보고 있는 화면의 이름은 본문 맨 위 헤더가 맡는다. 좁은 화면은 지금까지처럼 상단 바가 겸한다.
 // .layout 과 #page 중 하나만 보이므로 헤더도 하나만 두고 글자만 바꾼다.
-const pageHead = el('header', { class: 'page-head', id: 'page-head', hidden: true }, el('h2', {}, ''));
+// 2026-09-10 v2.42.0 화면 머리 = [브레드크럼] 제목 [한 줄 설명]. 브레드크럼과 설명은 넓은 화면에서만
+// 보인다(CSS) — 좁은 화면은 상단 바 한 줄로 충분하고, 제목 위아래로 줄이 늘면 본문이 밀린다.
+// 조각을 만들어만 두고 보이고 감추는 일은 CSS 에 맡긴다: JS 에 폭 분기를 하나 더 만들지 않는다
+const pageCrumb = el('nav', { class: 'page-head__crumb', 'aria-label': '위치' },
+  el('a', { class: 'page-head__crumb-home', href: '#' }, '🏠'),
+  el('span', { class: 'page-head__crumb-sep', 'aria-hidden': 'true' }, '›'),
+  el('span', { class: 'page-head__crumb-now' }, ''));
+const pageDesc = el('p', { class: 'page-head__desc' }, '');
+const pageHead = el('header', { class: 'page-head', id: 'page-head', hidden: true },
+  pageCrumb, el('h2', {}, ''), pageDesc);
+pageCrumb.querySelector('a').addEventListener('click', (event) => { event.preventDefault(); goHome(); });
 document.querySelector('.layout').before(pageHead);
 // 2026-09-09 v2.38.0 태블릿 1100px~ · PC 1440px~ 두 단계(styles/components/app-shell.css) —
 // 사이드바 유무·카드/줄 갈래는 두 단계가 같으므로(크기만 다르다) 이 임계값 하나로 충분하다
@@ -181,7 +210,12 @@ function syncAppShell(moveFocus = false) {
   //   상단 바 = 로고(누르면 홈) + 뒤로가기, 화면 이름 = 본문 맨 위 헤더.
   // 상단 바가 화면 이름을 겸하면 로고가 사라져 "지금 어느 서비스인지" 와 "처음으로 가는 길" 이 함께 없어졌다
   pageHead.hidden = !title;
-  pageHead.firstChild.textContent = title ?? '';
+  // firstChild 가 아니라 h2 를 집는다 — v2.42.0 에서 앞에 브레드크럼이 붙어 첫 자식이 바뀌었다
+  pageHead.querySelector('h2').textContent = title ?? '';
+  pageCrumb.querySelector('.page-head__crumb-now').textContent = title ?? '';
+  const desc = typeof routeDesc === 'function' ? routeDesc(routeId) : '';
+  pageDesc.textContent = desc;
+  pageDesc.hidden = !desc;
   document.title = title ? `${title} — POGO PLAN` : 'POGO PLAN';
   backButton.hidden = home;
   document.body.dataset.screen = home ? 'home' : 'detail';

@@ -72,6 +72,28 @@ function routeIcon(id) {
   return (ROUTES.find((route) => route.id === id) || {}).icon || '';
 }
 
+// 2026-09-10 v2.42.0 화면 한 줄 설명 — 넓은 화면의 제목 아래에 붙는다(components/app-shell.js).
+// 홈 타일 설명(components/home.js)과 뜻이 겹치지만 자리가 달라 문장 길이가 다르다 — 타일은 한 줄 요약,
+// 여기는 "이 화면에서 무엇을 하는지". 표를 한 곳에 둬 화면이 늘 때 빠뜨리지 않게 한다
+const ROUTE_DESC = {
+  home: '찾고, 비교하고, 키우는 즐거움. 필요한 기능으로 바로 시작하세요.',
+  'planner-collection': '내 개체를 기록하고 같은 종끼리 비교해 보세요.',
+  dex: '포켓몬을 검색하고, 상세 정보를 확인해 보세요.',
+  types: '타입 조합의 약점과 추천 딜러를 한눈에 봅니다.',
+  dmax: '맥스 배틀의 딜러와 탱커 순위입니다.',
+  pve: '레이드 추천 딜러와 솔플 가능 여부를 계산합니다.',
+  pvp: '리그별 순위와 덱 구성을 봅니다.',
+  planner: '내 포켓몬의 육성 현황을 한눈에 정리합니다.',
+  schedule: '다가오는 레이드와 이벤트 일정입니다.',
+  raids: '지금 도는 레이드 보스와 약점입니다.',
+  eggs: '거리별로 무엇이 부화하는지 봅니다.',
+  favs: '★ 로 담은 포켓몬을 갈래별로 봅니다.',
+  styleguide: 'POGO PLAN의 디자인 시스템을 구성하는 컴포넌트를 확인하고, 일관된 UI로 더 좋은 경험을 만들어보세요.',
+};
+function routeDesc(id) {
+  return ROUTE_DESC[id] || '';
+}
+
 // 옛 경로 → 새 경로. 표를 손으로 두 번 적지 않도록 legacy 에서 뒤집어 만든다
 const ROUTE_LEGACY = new Map();
 for (const route of ROUTES) for (const old of route.legacy ?? []) ROUTE_LEGACY.set(old, route.path);

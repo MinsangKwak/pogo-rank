@@ -9,7 +9,7 @@
 
 /* 등급 색상 — PvE 평가 글자(.grade-mark)와 티어표 뱃지(.tier__badge)가 같은 색을 쓴다 */
 .grade-mark { font-weight: 600; }
-.grade-mark--s { color: #d84a5f; }
+.grade-mark--s { color: var(--warn); }
 .grade-mark--a { color: #d98b0b; }
 .grade-mark--b { color: #4f9e57; }
 .grade-mark--c { color: #8c8f94; }
@@ -17,7 +17,7 @@
 /* 티어표: S/A/B/C 그룹 머리글 */
 .tier__head { display: flex; align-items: center; gap: 10px; padding: 20px 0 8px; }
 .tier__badge { width: 28px; height: 28px; border-radius: 9px; display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 700; background: var(--surface); }
-.tier__badge--s { color: #d84a5f; }
+.tier__badge--s { color: var(--warn); }
 .tier__badge--a { color: #d98b0b; }
 .tier__badge--b { color: #4f9e57; }
 .tier__badge--c { color: #8c8f94; }
@@ -125,7 +125,7 @@
 /* 2026-09-03 v2.2.0 즐겨찾기 ★ (로그인 계정에 저장) — 도감 행·상세 팝업 */
 .fav { width: 30px; height: 30px; font-size: 17px; color: var(--muted); opacity: .6; border-radius: 8px; flex: none; }
 .fav:hover { opacity: 1; background: var(--hover); }
-.fav.is-on { color: #e8a80c; opacity: 1; }
+.fav.is-on { color: var(--caution); opacity: 1; }
 
 /* 2026-09-03 PvP 덱 짜기 슬롯 UI */
 .deck__slots { display: flex; gap: 10px; margin: 12px 0 10px; }
