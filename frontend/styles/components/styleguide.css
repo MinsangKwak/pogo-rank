@@ -9,7 +9,8 @@
 .sg__stack { display: flex; flex-direction: column; gap: 14px; }
 .sg__item { display: flex; flex-direction: column; gap: 6px; }
 .sg__name { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 11px; color: var(--muted); letter-spacing: -.01em; }
-.sg__demo { padding: 12px; border: 1px dashed var(--line); border-radius: 12px; background: var(--bg); }
+/* position: relative — 절대 배치를 쓰는 조각(.detail__types 같은)이 페이지가 아니라 이 상자를 기준으로 서게 한다 */
+.sg__demo { position: relative; padding: 12px; border: 1px dashed var(--line); border-radius: 12px; background: var(--bg); }
 .sg__row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
 
 /* 색 견본 */
@@ -39,3 +40,28 @@
 
 /* 홈 타일은 한 칸만 보여 준다 — 격자 전체를 깔면 이 화면이 홈처럼 보인다 */
 .sg__tiles { grid-template-columns: minmax(0, 240px); }
+
+/* ── 2026-09-10 v2.42.0 번호 카드 그리드 (목업) ────────────────────────────────
+   구역을 위에서 아래로 길게 늘어놓으면 스크롤만 길어져 "우리가 가진 조각이 이만큼" 이라는 감이
+   안 온다. 카드로 깔면 한 화면에 전체가 들어오고, 번호가 있어 "몇 번 카드" 로 부를 수 있다.
+   넓은 화면에서만 격자다 — 좁은 화면은 지금처럼 한 줄씩 쌓인다 */
+.sg__sec-title { display: flex; align-items: baseline; gap: 8px; margin: 0; font-size: var(--fs-lead); font-weight: 700; }
+.sg__sec-no { color: var(--brand); font-variant-numeric: tabular-nums; }
+
+@media (min-width: 1100px) {
+  #page-styleguide { display: grid; grid-template-columns: repeat(auto-fill, minmax(360px, 1fr)); gap: 16px; align-items: start; }
+  /* 각주는 격자를 가로지른다 */
+  #page-styleguide > .detail__foot { grid-column: 1 / -1; }
+  .sg__sec {
+    margin: 0; padding: 18px 20px 20px;
+    border: 1px solid var(--line); border-radius: var(--r-card); background: var(--surface);
+  }
+  .sg__note { margin: 6px 0 14px; font-size: var(--fs-sub); }
+  .sg__demo { background: var(--bg); border-style: solid; border-radius: 12px; }
+  /* 색 견본은 카드 안이라 한 줄에 두 칸이면 충분하다 */
+  .sg__grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; }
+  .sg__swatch { flex-direction: column; align-items: flex-start; gap: 6px; background: var(--bg); }
+  .sg__chip-color { width: 100%; height: 34px; }
+  /* 조각이 많은 카드는 두 칸을 쓴다 — 목록·메뉴는 좁은 칸에서 제 모양이 안 난다 */
+  .sg__sec:has(.sg__drawer), .sg__sec:has(.row-list), .sg__sec:has(.dex__list) { grid-column: span 2; }
+}

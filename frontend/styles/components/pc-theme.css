@@ -1,0 +1,300 @@
+/* ─────────────────────────────────────────────────────────────────────────────
+   components/pc-theme.css — 넓은 화면(1100px~) 전용 디자인 (2026-09-10 v2.42.0)
+
+   왜 파일을 따로 두나
+     이 개편은 **넓은 화면에만** 입힌다. 좁은 화면(휴대폰)은 지금까지 쓰던 배치 그대로다 —
+     한 파일에 섞으면 "이 규칙이 모바일에도 가나?" 를 매번 되짚어야 한다. 여기 있는 모든 규칙은
+     통째로 @media (min-width: 1100px) 안에 있고, 밖에는 아무것도 두지 않는다.
+
+   무엇을 바꾸나 (목업 기준)
+     상단 바   로고 + 검색 칸 + 액션. 검색이 아이콘 하나가 아니라 "칸" 으로 보인다
+     화면 머리 브레드크럼 · 큰 제목(32px) · 한 줄 설명
+     사이드바  항목이 카드 한 장의 줄로, 지금 화면은 브랜드색 칠
+     본문      카드 한 장이 기본 단위. 테두리 1px · 반경 --r-card · --surface 배경
+   ───────────────────────────────────────────────────────────────────────────── */
+@media (min-width: 1100px) {
+  /* ── 상단 바 ─────────────────────────────────────────────────────────────── */
+  .app-bar {
+    position: sticky; top: 0; z-index: 30;
+    align-items: center; gap: 20px;
+    padding: 12px 0; margin-bottom: 0;
+    background: var(--bg); border-bottom: 1px solid var(--line);
+  }
+  .app-bar__head { display: flex; align-items: center; gap: 10px; }
+  .app-bar__logo, .app-bar h1 { font-size: 19px; font-weight: 700; letter-spacing: -0.01em; }
+  /* 로고 아래 한 줄 — 목업의 YOUR POKÉMON COMPANION */
+  .app-bar__head::after {
+    content: 'YOUR POKÉMON COMPANION';
+    position: absolute; margin-top: 34px; margin-left: 2px;
+    font-size: 9px; font-weight: 600; letter-spacing: .14em; color: var(--muted); white-space: nowrap;
+  }
+  .app-bar__actions { padding-top: 0; }
+
+  /* 검색 칸 — 입력처럼 생긴 버튼 (components/app-shell.js appSearch) */
+  .app-search {
+    display: flex;   /* app-shell.css 가 좁은 화면에서 감춰 둔 것을 여기서 켠다 */
+    flex: 1 1 auto; max-width: 460px; margin-left: auto;
+    display: flex; align-items: center; gap: 10px;
+    min-height: 42px; padding: 0 12px;
+    border: 1px solid var(--line); border-radius: var(--r-chip); background: var(--surface);
+    color: var(--muted); font-size: var(--fs-body); text-align: left;
+  }
+  .app-search:hover { border-color: color-mix(in srgb, var(--brand) 45%, var(--line)); background: var(--hover); }
+  .app-search__ph { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .app-search__key {
+    flex: none; min-width: 22px; padding: 1px 6px; border: 1px solid var(--line); border-radius: 6px;
+    background: var(--bg); font-family: inherit; font-size: 11px; color: var(--muted); text-align: center;
+  }
+
+  /* ── 화면 머리 ───────────────────────────────────────────────────────────── */
+  /* padding 축약형을 쓰지 않는다 — app-shell.css 가 사이드바 자리로 잡아 둔 padding-left(262px)를 지운다 */
+  .page-head { padding-top: 26px; padding-bottom: 18px; }
+  .page-head__crumb { display: flex;   /* 좁은 화면에서는 감춰져 있다 (app-shell.css) */ align-items: center; gap: 7px; font-size: var(--fs-sub); color: var(--muted); }
+  .page-head__crumb a { color: var(--muted); text-decoration: none; }
+  .page-head__crumb a:hover { color: var(--fg); }
+  .page-head__crumb-now { color: var(--fg); font-weight: 500; }
+  .page-head h2 { margin: 10px 0 0; font-size: var(--fs-title); font-weight: 700; letter-spacing: -0.02em; line-height: 1.25; }
+  .page-head__desc { display: block; margin: 8px 0 0; max-width: 46em; font-size: var(--fs-body); line-height: 1.7; color: var(--muted); word-break: keep-all; }
+
+  /* ── 사이드바 ────────────────────────────────────────────────────────────── */
+  .app-nav { top: 74px; }
+  .app-nav .nav-menu { display: flex; flex-direction: column; gap: 2px; }
+  .app-nav .nav-menu .drawer__item {
+    min-height: 42px; gap: 10px; padding: 0 12px;
+    border: 0; border-radius: 10px; background: transparent; font-size: var(--fs-body); font-weight: 500;
+  }
+  .app-nav .nav-menu .drawer__item:hover { background: var(--hover); }
+  .app-nav .nav-menu [aria-current="page"] {
+    background: color-mix(in srgb, var(--brand) 13%, transparent);
+    color: var(--brand); font-weight: 600;
+    box-shadow: inset 2px 0 0 var(--brand);
+  }
+  .app-nav__extra { margin-top: 16px; padding-top: 12px; }
+  .app-nav__extra .drawer__item:not([hidden]) {
+    min-height: 36px; border-radius: 10px; border: 1px solid var(--line); background: var(--surface);
+    font-size: var(--fs-sub);
+  }
+
+  /* ── 카드 한 장 — 본문의 기본 단위 ───────────────────────────────────────── */
+  .home__tile, .plan__card, .schedule, .timeline, .cp__result, .account,
+  .dex__list.is-grid .dex__row, .row-list > .row, .detail-panel {
+    border-radius: var(--r-card);
+  }
+
+  /* ── 서비스 홈 ───────────────────────────────────────────────────────────── */
+  /* 히어로 — 목업의 초록 그라데이션 배너. 그림 대신 몬스터볼 원과 빛으로 깊이를 낸다
+     (공식 아트워크는 이 저장소에 없다 — 있는 것으로만 만든다) */
+  .home__intro {
+    position: relative; overflow: hidden;
+    margin-top: 8px; padding: 40px 44px 44px;
+    border: 1px solid color-mix(in srgb, var(--brand) 28%, var(--line));
+    border-radius: var(--r-card);
+    background:
+      radial-gradient(120% 150% at 88% 20%, color-mix(in srgb, var(--brand) 30%, transparent), transparent 60%),
+      radial-gradient(80% 120% at 100% 100%, color-mix(in srgb, var(--brand-2) 16%, transparent), transparent 62%),
+      var(--surface);
+  }
+  .home__intro::after {
+    content: ''; position: absolute; right: -60px; top: 50%; transform: translateY(-50%);
+    width: 320px; height: 320px; border-radius: 50%;
+    border: 34px solid color-mix(in srgb, var(--brand) 16%, transparent);
+    pointer-events: none;
+  }
+  .home__intro > * { position: relative; z-index: 1; }
+  .home__eyebrow { color: var(--brand); letter-spacing: .2em; font-size: 11px; }
+  .home__intro h2 { margin-top: 14px; font-size: 38px; font-weight: 700; letter-spacing: -0.03em; line-height: 1.3; }
+  .home__intro p { margin-top: 14px; max-width: 30em; font-size: var(--fs-lead); color: var(--muted); }
+
+  .home__section { border-top: 0; padding: 34px 0 14px; }
+  .home__section h3 { font-size: var(--fs-sec); font-weight: 700; letter-spacing: -0.01em; }
+  .home__section > span { font-size: var(--fs-sub); letter-spacing: 0; font-weight: 500; }
+
+  /* 타일 — 목업의 5열. 번호는 오른쪽 위, 화살표는 오른쪽 아래 동그란 버튼 */
+  .home__grid { grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 14px; }
+  .home__tile { min-height: 168px; padding: 18px 18px 20px; }
+  .home__tile:hover {
+    border-color: color-mix(in srgb, var(--brand) 50%, var(--line));
+    background: var(--surface);
+    box-shadow: 0 6px 20px -12px color-mix(in srgb, var(--brand) 60%, transparent);
+  }
+  .home__tile-top { margin-bottom: auto; }
+  .home__icon { font-size: 24px; }
+  .home__number { font-size: var(--fs-sub); }
+  .home__tile strong { margin-top: 14px; font-size: var(--fs-lead); font-weight: 700; }
+  .home__desc { margin-top: 6px; padding-right: 42px; font-size: var(--fs-sub); }
+  .home__arrow {
+    right: 16px; bottom: 16px;
+    display: flex; align-items: center; justify-content: center; width: 28px; height: 28px;
+    border-radius: 50%; border: 1px solid var(--line); background: var(--bg); font-size: 13px;
+  }
+  .home__tile:hover .home__arrow { border-color: var(--brand); color: var(--brand); }
+
+  /* 홈 푸터 — 목업의 카드 한 장 */
+  body[data-home="true"] footer {
+    margin-top: 34px; padding: 28px 32px;
+    border: 1px solid var(--line); border-radius: var(--r-card); background: var(--surface);
+  }
+  body[data-home="true"] .foot-lead { font-size: var(--fs-sec); font-weight: 700; color: var(--fg); }
+
+  /* ── 목록 ────────────────────────────────────────────────────────────────── */
+  /* 줄 모드를 표처럼 — 목업 2의 도감 목록. 줄마다 카드 한 장이고 사이에 여백이 있다 */
+  .dex__list:not(.is-grid) { gap: 8px; }
+  .dex__list:not(.is-grid) .dex__row {
+    gap: 14px; padding: 12px 16px;
+    border: 1px solid var(--line); border-radius: 12px; background: var(--surface);
+    font-size: var(--fs-body);
+  }
+  .dex__list:not(.is-grid) .dex__row:hover {
+    border-color: color-mix(in srgb, var(--brand) 45%, var(--line)); background: var(--hover);
+  }
+  .dex__list:not(.is-grid) .dex__row .sprite { width: 44px; height: 44px; }
+  .dex__list:not(.is-grid) .dex__no { width: 58px; font-size: var(--fs-sub); font-weight: 600; }
+  .dex__list:not(.is-grid) .dex__row b { font-size: var(--fs-lead); font-weight: 600; }
+  /* 눌러서 열리는 줄에는 화살표 — 메뉴와 같은 문법 */
+  .dex__list:not(.is-grid) .dex__row::after {
+    content: '›'; margin-left: 8px; color: var(--muted); font-size: 16px; flex: none;
+  }
+
+  /* 카드 모드 */
+  .dex__list.is-grid .dex__row { padding: 18px 12px 16px; background: var(--surface); }
+  .dex__list.is-grid .dex__row:hover {
+    border-color: color-mix(in srgb, var(--brand) 55%, var(--line));
+    box-shadow: 0 6px 20px -12px color-mix(in srgb, var(--brand) 60%, transparent);
+  }
+  .dex__list.is-grid .dex__row .sprite { width: 76px; height: 76px; }
+  .dex__list.is-grid .dex__row b { font-size: var(--fs-body); }
+
+  /* 랭킹 카드 */
+  .row-list > .row { background: var(--surface); }
+  .row-list > .row:hover {
+    border-color: color-mix(in srgb, var(--brand) 55%, var(--line));
+    box-shadow: 0 6px 20px -12px color-mix(in srgb, var(--brand) 60%, transparent);
+  }
+  .row-list > .row .row__score { color: var(--brand); }
+
+  /* ── 상세 패널 ───────────────────────────────────────────────────────────── */
+  .detail-panel { box-shadow: 0 10px 40px -18px rgba(0,0,0,.5); }
+  .detail-panel__close { border-radius: 10px; }
+
+  /* ── 검색·필터 칸 ────────────────────────────────────────────────────────── */
+  .boss__search {
+    min-height: 48px; padding: 0 16px;
+    border-radius: var(--r-chip); background: var(--surface); font-size: var(--fs-body);
+  }
+  .boss__search:focus { border-color: var(--brand); outline: none; }
+  /* 거르기 칩 줄 + 보기 방식을 한 줄 좌우로 (components/pages.js .dex__toolbar) */
+  .dex__toolbar { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; margin: 14px 0 4px; }
+  .dex__toolbar .tchips { flex: 1 1 auto; min-width: 0; }
+  .dex__toolbar .seg-view { flex: none; margin-left: 0; }
+  .tchips .uchip { min-height: 34px; padding: 0 14px; border-radius: var(--r-chip); font-size: var(--fs-sub); }
+  .tchips .uchip[aria-pressed="true"], .tchips .uchip.is-on {
+    border-color: transparent; background: color-mix(in srgb, var(--brand) 16%, transparent); color: var(--brand); font-weight: 600;
+  }
+}
+
+/* 타입 알약 — 이름을 켜고 타입색으로 옅게 칠한다 (pages.css .dex__type 의 넓은 화면판) */
+@media (min-width: 1100px) {
+  .dex__types { gap: 6px; }
+  .dex__type {
+    gap: 5px; padding: 3px 10px 3px 8px; border-radius: var(--r-chip);
+    background: color-mix(in srgb, var(--c) 18%, transparent);
+    color: color-mix(in srgb, var(--c) 72%, var(--fg));
+  }
+  .dex__type b { display: inline; font-size: 11.5px; font-weight: 600; }
+}
+
+/* 약점·내성 카드 (components/detail.js matchupCols) — 뜻이 반대인 두 덩이를 색으로 가른다 */
+@media (min-width: 1100px) {
+  .detail__matchrows { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .detail__match { padding: 12px; border: 1px solid var(--line); border-radius: 12px; }
+  .detail__match h3 { margin: 0 0 8px; font-size: var(--fs-sub); font-weight: 600; }
+  .detail__match--weak { border-color: color-mix(in srgb, var(--warn) 32%, var(--line)); background: color-mix(in srgb, var(--warn) 7%, transparent); }
+  .detail__match--weak h3 { color: var(--warn); }
+  .detail__match--resist { border-color: color-mix(in srgb, var(--brand) 32%, var(--line)); background: color-mix(in srgb, var(--brand) 7%, transparent); }
+  .detail__match--resist h3 { color: var(--brand); }
+  /* 상세 패널 안에서는 한 칸이 좁아 두 카드를 위아래로 쌓는다 */
+  .detail-panel .detail__matchrows { grid-template-columns: 1fr; }
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   2026-09-10 v2.43.0 티어표 (D-MAX · PvE · PvP 가 같은 조각을 쓴다)
+
+   목업의 D-MAX 화면을 기준으로 잡았지만, 여기 있는 것은 전부 **공용 조각**이다 —
+   티어 머리글(.tier__head)·랭킹 카드(.row-list > .row)·선정 근거(.row__why)는 세 화면이
+   같이 쓰므로, D-MAX 만 예쁘게 만들 수는 없고 그럴 이유도 없다.
+   ───────────────────────────────────────────────────────────────────────────── */
+@media (min-width: 1100px) {
+  /* 티어 머리글 — [S] S 티어 · 4종 · 한 줄 설명 */
+  .tier__head { align-items: center; gap: 10px; padding: 28px 0 12px; flex-wrap: wrap; }
+  .tier__badge { width: 32px; height: 32px; border-radius: 10px; font-size: 16px; }
+  .tier__badge--s { color: var(--point); background: color-mix(in srgb, var(--point) 16%, transparent); }
+  .tier__badge--a { color: var(--caution); background: color-mix(in srgb, var(--caution) 16%, transparent); }
+  .tier__badge--b { color: var(--brand); background: color-mix(in srgb, var(--brand) 16%, transparent); }
+  .tier__badge--c { color: var(--off); background: color-mix(in srgb, var(--off) 16%, transparent); }
+  .tier__name { font-size: var(--fs-lead); font-weight: 700; }
+  .tier__desc { flex: 1 1 100%; margin-left: 42px; font-size: var(--fs-sub); color: var(--muted); }
+  .row-head { align-items: center; padding: 4px 0 2px; }
+  .row-head h2 { font-size: var(--fs-sec); font-weight: 700; }
+  .row-head .meta { font-size: var(--fs-sub); }
+
+  /* 랭킹 카드 — 순위는 동그란 배지, 그림은 빛나는 판 위, 점수는 크게 */
+  .row-list > .row { padding: 20px 14px 16px; gap: 8px; }
+  .row-list > .row > .row__rank {
+    top: 12px; left: 12px;
+    display: flex; align-items: center; justify-content: center; width: 26px; height: 26px;
+    border-radius: 50%; border: 1px solid var(--line); background: var(--bg);
+    font-size: var(--fs-sub); font-weight: 700; text-align: center;
+  }
+  /* 그 티어의 1위만 브랜드색 — "이 칸의 대표" 라는 뜻 */
+  .row-list > .row:first-child > .row__rank { border-color: var(--brand); color: var(--brand); }
+  /* 그림 아래 빛나는 판 — 목업의 발광 스테이지. 공식 아트워크가 없으므로 빛으로 자리를 만든다 */
+  .row-list > .row > .sprite {
+    width: 84px; height: 84px; padding: 10px; border-radius: 50%;
+    background:
+      radial-gradient(60% 40% at 50% 88%, color-mix(in srgb, var(--brand) 40%, transparent), transparent 70%),
+      radial-gradient(70% 70% at 50% 42%, color-mix(in srgb, var(--brand-2) 12%, transparent), transparent 72%);
+  }
+  .row-list > .row > .sprite:not(.is-loading) { background-color: transparent; }
+  .row-list > .row .row__badges { margin-bottom: 6px; }
+  .row-list > .row .row__name b { font-size: var(--fs-lead); }
+  .row-list > .row .row__moves { font-size: var(--fs-sub); color: var(--muted); }
+  .row-list > .row > .row__stats { padding-top: 10px; }
+  .row-list > .row .row__score { font-size: 26px; font-weight: 700; letter-spacing: -0.02em; }
+  .row-list > .row .row__sub { font-size: var(--fs-sub); color: var(--muted); }
+  /* 활용 N곳 — 카드 위에서는 알약 하나로 또렷하게 */
+  .row-list > .row .tag--use {
+    padding: 3px 10px; border-radius: var(--r-chip);
+    border-color: transparent; background: color-mix(in srgb, var(--brand-2) 16%, transparent);
+    color: color-mix(in srgb, var(--brand-2) 75%, var(--fg)); font-size: 11px;
+  }
+  .row-list > .row .tag--use.tag--many { background: color-mix(in srgb, var(--brand) 18%, transparent); color: var(--brand); }
+
+  /* 선정 근거 — 격자를 가로지르는 카드 한 장, 안은 두 칸 (views/max.js expandableRow).
+     order 로 카드 뒤로 보낸다: DOM 은 [카드][근거][카드][근거]… 순서라 그대로 두면 근거가 열릴 때마다
+     그 자리에서 줄이 끊겨 뒤 카드들이 아래로 밀린다. 목업처럼 그 티어의 카드가 다 놓인 **뒤에** 붙는다 */
+  .row-list > .row { order: 0; }
+  .row-list > .row__why { order: 1; padding: 16px 18px; border-radius: var(--r-card); }
+  .row-list > .row__more { order: 2; }
+  .row-list > .row__why.is-open { display: grid; grid-template-columns: 1.4fr 1fr; gap: 20px; }
+  .row__why-col { min-width: 0; }
+  .row__why-title { display: block; margin-bottom: 6px; font-size: var(--fs-body); font-weight: 700; color: var(--fg); }
+  .row__why-line { margin: 0 0 8px; line-height: 1.7; }
+  .row__why-more { color: var(--brand); text-decoration: none; font-weight: 600; }
+  .row__why-more:hover { text-decoration: underline; }
+  .row__why-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+  .row__why-chip {
+    padding: 5px 11px; border: 1px solid var(--line); border-radius: var(--r-chip);
+    background: var(--bg); font-size: var(--fs-sub); color: var(--fg);
+  }
+  .row__why-chip:hover { border-color: var(--brand); color: var(--brand); }
+
+  /* 화면 위 장식 띠 — D-MAX 는 폼 색(자홍)으로. 다른 화면은 붙이지 않는다 */
+  .page-head[data-route="dmax"] { position: relative; }
+  .page-head[data-route="dmax"]::after {
+    content: ''; position: absolute; right: 0; top: 18px; width: 46%; height: 108px; pointer-events: none;
+    border-radius: var(--r-card);
+    background:
+      radial-gradient(70% 100% at 70% 100%, color-mix(in srgb, var(--c-max) 26%, transparent), transparent 68%),
+      radial-gradient(50% 90% at 96% 60%, color-mix(in srgb, var(--c-max-2) 20%, transparent), transparent 70%);
+  }
+}

@@ -1,6 +1,20 @@
-/* 디자인 토큰: 색상 변수와 라이트/다크 팔레트 */
+/* 디자인 토큰: 색상 변수와 라이트/다크 팔레트
+   2026-09-10 v2.42.0 디자인 시스템 개편 — 목업의 팔레트로 갈아끼웠다.
+     브랜드(초록)가 "이 서비스"이자 "지금 여기"를 뜻하고, 나머지 다섯은 의미가 정해진 색이다.
+     색은 여전히 **의미에만** 쓴다 — 타입·폼·순위·상태. 장식으로 칠하지 않는다.
+     다크는 목업 그대로 딥네이비 계열, 라이트는 같은 팔레트를 흰 바탕에 맞춰 한 단 진하게 잡았다
+     (초록은 흰 바탕에서 #22c55e 로는 글자 대비가 모자란다). */
 :root {
-  --bg: #ffffff; --fg: #17181a; --muted: #7a7c80; --line: #e8e9eb; --surface: #f4f4f5; --hover: #f8f8f9;
+  --bg: #ffffff; --fg: #14181f; --muted: #64748b; --line: #e4e8ee; --surface: #f5f7fa; --hover: #eef1f6;
+  /* 의미 색 — 이름이 곧 쓰임새다 */
+  --brand: #16a34a;     /* 브랜드 · 지금 보고 있는 곳 · 좋음(상향·내성) */
+  --brand-2: #0891b2;   /* 보조 — 다른 갈래를 구분할 때 (PvP 등) */
+  --point: #9333ea;     /* 포인트 — 특별한 것 (메가·전설) */
+  --warn: #dc2626;      /* 경고 — 나쁨(하향·약점)·삭제 */
+  --caution: #d97706;   /* 주의 — 대기·즐겨찾기 ★ */
+  --off: #64748b;       /* 비활성 */
+  --accent: #16a34a;    /* = --brand. 예전부터 쓰던 이름이라 그대로 둔다 */
+
   --t-normal:#a8a77a; --t-fire:#ee8130; --t-water:#6390f0; --t-grass:#7ac74c; --t-electric:#f7d02c; --t-ice:#96d9d6;
   --t-fighting:#c22e28; --t-poison:#a33ea1; --t-ground:#e2bf65; --t-flying:#a98ff3; --t-psychic:#f95587; --t-bug:#a6b91a;
   --t-rock:#b6a136; --t-ghost:#735797; --t-dragon:#6f35fc; --t-dark:#705746; --t-steel:#b7b7ce; --t-fairy:#d685ad;
@@ -8,13 +22,28 @@
   --c-max: #e2398f; --c-max-2: #8f2bb8;
   --c-mega: #6a5cff; --c-mega-2: #b04cff;
   --c-shadow: #6b3fa0;
-  /* 2026-09-08 v2.22.0 강조색 — 서비스 홈 타일·현재 위치 표시·포커스 링에만 쓴다.
-     원칙은 그대로: 색은 "의미"에만(타입·폼·순위), 나머지는 무채색 + 굵기/테두리로 강조한다.
-     값은 v2.15.0 플래너 배지에서 쓰던 초록을 그대로 올린 것 */
-  --accent: #2f8f5b;
   --tap: 44px;  /* 손가락 대상 최소 크기 (헤더 아이콘 버튼·메뉴 항목) */
+
+  /* 2026-09-10 v2.42.0 글자 크기 — 목업의 다섯 단. 여기 없는 크기는 새로 만들지 않는다 */
+  --fs-title: 32px;   /* 화면 제목 */
+  --fs-sec: 20px;     /* 구역 제목 */
+  --fs-lead: 16px;    /* 본문 강조 */
+  --fs-body: 14px;    /* 본문 */
+  --fs-sub: 12px;     /* 보조 */
+  /* 카드 — 한 서비스에 반경이 여러 벌 생기지 않게 두 단으로만 */
+  --r-card: 14px;
+  --r-chip: 999px;
 }
+/* 다크 — 목업 기준. 배경은 완전한 검정이 아니라 푸른 기가 도는 딥네이비다(눈이 덜 피로하고 초록이 산다) */
 @media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) { --bg:#121315; --fg:#ecedee; --muted:#8c8f94; --line:#26282b; --surface:#1b1c1f; --hover:#18191c; --accent:#4fb37c; }
+  :root:not([data-theme="light"]) {
+    --bg:#0b0f15; --fg:#e9eef5; --muted:#8b97a8; --line:#222a35; --surface:#131a23; --hover:#182029;
+    --brand:#22c55e; --brand-2:#06b6d4; --point:#a855f7; --warn:#ef4444; --caution:#f59e0b; --off:#64748b;
+    --accent:#22c55e;
+  }
 }
-:root[data-theme="dark"] { --bg:#121315; --fg:#ecedee; --muted:#8c8f94; --line:#26282b; --surface:#1b1c1f; --hover:#18191c; --accent:#4fb37c; }
+:root[data-theme="dark"] {
+  --bg:#0b0f15; --fg:#e9eef5; --muted:#8b97a8; --line:#222a35; --surface:#131a23; --hover:#182029;
+  --brand:#22c55e; --brand-2:#06b6d4; --point:#a855f7; --warn:#ef4444; --caution:#f59e0b; --off:#64748b;
+  --accent:#22c55e;
+}
