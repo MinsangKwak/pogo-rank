@@ -82,12 +82,15 @@
 __GA_SNIPPET__
 <!-- 2026-09-03 v2.2.1 첫 화면 로딩 가림막: 번들 CSS보다 먼저 적용되도록 여기에 최소 스타일만 -->
 <style>
-  #splash { position: fixed; inset: 0; z-index: 999; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px;
+  /* 2026-09-10 v2.52.0 기준을 여기서도 먼저 세운다 — 이 블록은 번들 스타일(__STYLES__)보다
+     앞에서 그려지므로, base.css 의 62.5% 를 기다리면 첫 프레임에서 로딩 화면만 커 보인다 */
+  html { font-size: 62.5%; }
+  #splash { position: fixed; inset: 0; z-index: 999; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1.4rem;
             background: #fff; color: #17181a; font-family: 'Montserrat', 'Pretendard Variable', 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, sans-serif; transition: opacity .25s ease; }
-  #splash .splash__title { font-size: 20px; font-weight: 600; letter-spacing: -0.01em; }
-  #splash .splash__sub { font-size: 13px; opacity: .55; }
-  #splash .splash__bar { width: 128px; height: 3px; border-radius: 2px; background: rgba(0,0,0,.1); overflow: hidden; }
-  #splash .splash__bar i { display: block; width: 40%; height: 100%; border-radius: 2px; background: currentColor; opacity: .5; animation: sp-slide 1s ease-in-out infinite; }
+  #splash .splash__title { font-size: 2rem; font-weight: 600; letter-spacing: -0.01em; }
+  #splash .splash__sub { font-size: 1.3rem; opacity: .55; }
+  #splash .splash__bar { width: 12.8rem; height: 0.3rem; border-radius: 0.2rem; background: rgba(0,0,0,.1); overflow: hidden; }
+  #splash .splash__bar i { display: block; width: 40%; height: 100%; border-radius: 0.2rem; background: currentColor; opacity: .5; animation: sp-slide 1s ease-in-out infinite; }
   @keyframes sp-slide { 0% { transform: translateX(-110%); } 100% { transform: translateX(360%); } }
   #splash.is-done { opacity: 0; pointer-events: none; }
   @media (prefers-color-scheme: dark) { #splash { background: #121315; color: #e8e9ea; } #splash .splash__bar { background: rgba(255,255,255,.14); } }

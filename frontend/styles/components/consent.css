@@ -1,40 +1,45 @@
 /* 2026-09-07 v2.18.0 공개 준비 — 통계 동의 배너 · 동의/설정 팝업 · 약관 페이지 표 · IP 고지문 */
 
 /* 하단 고정 배너: 본문을 가리지 않게 얇게, 좁은 폭에서는 버튼 줄이 아래로 */
-.consent { position: fixed; left: 12px; right: 12px; bottom: 12px; z-index: 40; display: flex; align-items: center; gap: 10px 14px; flex-wrap: wrap;
-           max-width: 720px; margin: 0 auto; padding: 12px 14px; border: 1px solid var(--line); border-radius: 14px; background: var(--bg);
-           box-shadow: 0 8px 24px rgba(0,0,0,.14); font-size: 12.5px; line-height: 1.55; color: var(--fg); }
-.consent__text { flex: 1 1 260px; margin: 0; word-break: keep-all; }
+.consent { position: fixed; left: 1.2rem; right: 1.2rem; bottom: 1.2rem; z-index: 40; display: flex; align-items: center; gap: 1rem 1.4rem; flex-wrap: wrap;
+           max-width: 72rem; margin: 0 auto; padding: 1.2rem 1.4rem; border: 1px solid var(--line); border-radius: 1.4rem; background: var(--bg);
+           box-shadow: 0 0.8rem 2.4rem rgba(0,0,0,.14); font-size: 1.25rem; line-height: 1.55; color: var(--fg); }
+.consent__text { flex: 1 1 26rem; margin: 0; word-break: keep-all; }
 .consent__text a { color: var(--fg); text-decoration: underline; }
-.consent__btns { display: flex; gap: 6px; margin-left: auto; }
-.consent__btns .uchip { padding: 6px 12px; font-size: 12.5px; font-weight: 600; color: var(--fg); background: var(--surface); }
+.consent__btns { display: flex; gap: 0.6rem; margin-left: auto; }
+.consent__btns .uchip { padding: 0.6rem 1.2rem; font-size: 1.25rem; font-weight: 600; color: var(--fg); background: var(--surface); }
 .consent__btns .consent__allow { border-color: var(--fg); }
 .consent__btns .uchip:hover { background: var(--hover); }
 @media (max-width: 480px) { .consent__btns { width: 100%; } .consent__btns .uchip { flex: 1; text-align: center; justify-content: center; } }
 
 /* 동의 팝업 · 설정 팝업 */
-.consent__modal .plan__desc { margin-bottom: 12px; }
-.consent__check { display: flex; align-items: flex-start; gap: 10px; margin: 10px 0; font-size: 13.5px; line-height: 1.55; word-break: keep-all; }
-.consent__check input { flex: none; width: 20px; height: 20px; margin-top: 1px; accent-color: var(--fg); }
+.consent__modal .plan__desc { margin-bottom: 1.2rem; }
+.consent__check { display: flex; align-items: flex-start; gap: 1rem; margin: 1rem 0; font-size: 1.35rem; line-height: 1.55; word-break: keep-all; }
+.consent__check input { flex: none; width: 2rem; height: 2rem; margin-top: 1px; accent-color: var(--fg); }
 .consent__check a { color: var(--fg); text-decoration: underline; }
-.consent__go { justify-content: center; margin-top: 8px; }
+/* 2026-09-10 v2.52.0 [동의하고 로그인] — 체크 두 줄 바로 밑에 왼쪽으로 붙어 있어, 마지막 체크의
+   연장선처럼 보이고 "이제 이걸 누르면 된다" 가 안 읽혔다. 가운데로 세우고 위아래를 띄운다 */
+.consent__go {
+  display: flex; justify-content: center; align-self: center;
+  min-width: 20rem; margin: 2rem auto 1.6rem;
+}
 .consent__go:disabled { opacity: .45; cursor: not-allowed; }
 .consent__opt { justify-content: flex-start; }
 .consent__opt.is-on { border-color: var(--fg); }
-.consent__opt span { display: flex; flex-direction: column; gap: 2px; }
-.consent__opt small { font-size: 11.5px; font-weight: 400; color: var(--muted); }
-.consent__modal .page__sec { margin-top: 18px; }
-.consent__modal .priv__list { margin-bottom: 12px; }
+.consent__opt span { display: flex; flex-direction: column; gap: 0.2rem; }
+.consent__opt small { font-size: 1.15rem; font-weight: 400; color: var(--muted); }
+.consent__modal .page__sec { margin-top: 1.8rem; }
+.consent__modal .priv__list { margin-bottom: 1.2rem; }
 
 /* 개인정보처리방침 표 — 좁은 폭은 가로 스크롤 */
-.priv__table-wrap { overflow-x: auto; overflow-y: hidden; margin: 8px 0; }   /* overflow-y 를 함께 (v2.26.0) */
-.priv__table { width: 100%; min-width: 460px; border-collapse: collapse; font-size: 12.5px; line-height: 1.5; }
-.priv__table th, .priv__table td { padding: 6px 8px; border: 1px solid var(--line); text-align: left; vertical-align: top; word-break: keep-all; }
+.priv__table-wrap { overflow-x: auto; overflow-y: hidden; margin: 0.8rem 0; }   /* overflow-y 를 함께 (v2.26.0) */
+.priv__table { width: 100%; min-width: 46rem; border-collapse: collapse; font-size: 1.25rem; line-height: 1.5; }
+.priv__table th, .priv__table td { padding: 0.6rem 0.8rem; border: 1px solid var(--line); text-align: left; vertical-align: top; word-break: keep-all; }
 .priv__table th { background: var(--surface); font-weight: 600; }
 
 /* IP 고지문: 푸터와 전체 페이지 하단 공통 */
-.ip-notice { font-size: 11.5px; line-height: 1.6; color: var(--muted); word-break: keep-all; }
-#page .ip-notice { margin: 32px 0 0; padding-top: 14px; border-top: 1px solid var(--line); }
+.ip-notice { font-size: 1.15rem; line-height: 1.6; color: var(--muted); word-break: keep-all; }
+#page .ip-notice { margin: 3.2rem 0 0; padding-top: 1.4rem; border-top: 1px solid var(--line); }
 footer .foot-links a, footer .foot-links button { color: var(--muted); text-decoration: underline; background: none; border: 0; padding: 0; font: inherit; cursor: pointer; }
 
 /* 계정 삭제 버튼: 위험 동작이라 색으로 구분 */
@@ -43,18 +48,18 @@ footer .foot-links a, footer .foot-links button { color: var(--muted); text-deco
 
 /* 2026-09-10 v2.51.0 로그인 유도 팝업 (components/auth.js openLoginInvite).
    화면 하나에 할 일 하나 — 왜 막혔고 무엇을 누르면 되는지만 담는다 */
-.login-invite__head { display: flex; align-items: center; gap: 10px; }
-.login-invite__ico { font-size: 26px; line-height: 1; }
+.login-invite__head { display: flex; align-items: center; gap: 1rem; }
+.login-invite__ico { font-size: 2.6rem; line-height: 1; }
 .login-invite .detail__name { margin: 0; }
 /* 승인제라는 걸 누르기 전에 보여 준다 — 로그인하고 나서 "왜 아직도 안 되지" 를 겪지 않게 */
-.login-invite__steps { display: flex; flex-direction: column; gap: 10px; margin: 14px 0; padding: 0; list-style: none; }
-.login-invite__steps li { display: flex; align-items: flex-start; gap: 10px; }
+.login-invite__steps { display: flex; flex-direction: column; gap: 1rem; margin: 1.4rem 0; padding: 0; list-style: none; }
+.login-invite__steps li { display: flex; align-items: flex-start; gap: 1rem; }
 .login-invite__no {
-  flex: none; display: flex; align-items: center; justify-content: center; width: 22px; height: 22px;
+  flex: none; display: flex; align-items: center; justify-content: center; width: 2.2rem; height: 2.2rem;
   border-radius: 50%; border: 1px solid color-mix(in srgb, var(--brand) 50%, var(--line));
-  color: var(--brand); font-size: 11px; font-weight: 700;
+  color: var(--brand); font-size: 1.1rem; font-weight: 700;
 }
-.login-invite__steps b { display: block; font-size: 13.5px; font-weight: 600; }
-.login-invite__steps span:not(.login-invite__no) { display: block; margin-top: 2px; font-size: 12px; line-height: 1.55; color: var(--muted); word-break: keep-all; }
-.login-invite__go { justify-content: center; margin-top: 4px; }
-.login-invite__later { justify-content: center; margin-top: 8px; color: var(--muted); }
+.login-invite__steps b { display: block; font-size: 1.35rem; font-weight: 600; }
+.login-invite__steps span:not(.login-invite__no) { display: block; margin-top: 0.2rem; font-size: 1.2rem; line-height: 1.55; color: var(--muted); word-break: keep-all; }
+.login-invite__go { justify-content: center; margin-top: 0.4rem; }
+.login-invite__later { justify-content: center; margin-top: 0.8rem; color: var(--muted); }
