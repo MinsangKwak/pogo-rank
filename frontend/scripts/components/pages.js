@@ -127,6 +127,21 @@ function dexEntries() {
 // (전 1,025종을 한 번에 렌더하면 스프라이트 img 가 너무 많아져 첫 화면이 느려진다)
 // 검색·세대 칩·즐겨찾기 칩은 표시할 목록(list)과 청크 개수(shown)를 바꾼 뒤 draw() 를 다시 부른다.
 // 필터를 걸 때는 shown = 999 로 두어 결과를 한 번에 다 보여준다.
+// 2026-09-10 v2.46.0 도감 줄의 보조 정보 — 몇 세대인지, 100% 개체의 만렙 CP 가 얼마인지.
+// 둘 다 이미 있는 데이터로 계산한다(도감번호 구간 · 게임마스터 CPM). 값이 없으면 그 칸을 아예 안 만든다 —
+// 빈 칸을 남겨 두면 "없는 것"과 "0" 이 같아 보인다
+function dexRowStats(dexNumber) {
+  const genIndex = DEX_GENS.findIndex(([genStart, genEnd]) => dexNumber >= genStart && dexNumber <= genEnd);
+  const form = DEX_DATA.forms?.[dexNumber];
+  const cpm = DEX_DATA.cpm;
+  const cp = form && cpm && typeof cpOf === 'function' ? cpOf(form, cpm.l50) : null;
+  const cells = [];
+  // 값에 '세대' 를 또 붙이지 않는다 — 제목이 이미 '세대' 라 "세대 / 1세대" 가 된다
+  if (genIndex >= 0) cells.push(el('span', { class: 'dex__stat dex__stat--gen' }, el('em', {}, '세대'), el('b', {}, String(genIndex + 1))));
+  if (cp) cells.push(el('span', { class: 'dex__stat dex__stat--cp' }, el('em', {}, 'CP 100%'), el('b', {}, cp.toLocaleString())));
+  return cells.length ? el('span', { class: 'dex__stats' }, ...cells) : '';
+}
+
 function renderDexPage() {
   const all = dexEntries();
   let list = all;
@@ -150,6 +165,11 @@ function renderDexPage() {
         el('b', {}, entry.name),
         // 2026-09-10 v2.42.0 점 대신 이름이 적힌 알약 — 점만으로는 색을 외운 사람만 읽을 수 있었다.
         // 좁은 화면은 자리가 없어 지금처럼 점으로 둔다(CSS 가 글자를 감춘다, components/pc-theme.css)
+        // 2026-09-10 v2.46.0 줄 모드는 이름과 타입 사이가 텅 비어 있었다 — 목업(내 포켓몬 목록)처럼
+        // 그 자리에 **읽을 값**을 넣는다. 세대와 CP 100% 기준 둘 다 이미 가진 데이터로 계산한다:
+        // 세대는 도감번호 구간(DEX_GENS), CP 는 상세 팝업이 맨 위에 보여 주는 그 값(cpOf · DEX_DATA.cpm.l50).
+        // 지어낸 값은 하나도 없다. 카드 모드에서는 자리가 없어 CSS 가 감춘다 (pc-theme.css)
+        dexRowStats(entry.dex),
         el('span', { class: 'dex__types' }, ...entry.types.map((typeName) =>
           el('span', { class: 'dex__type', style: `--c: var(--t-${typeName})` },
             el('i', { class: 'dot', 'aria-hidden': 'true' }),

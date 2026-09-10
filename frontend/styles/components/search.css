@@ -21,7 +21,13 @@
 .sugg__item { display: flex; align-items: center; gap: 8px; width: 100%; padding: 6px 10px 6px 6px; border: 1px solid var(--line); border-radius: 10px; background: var(--bg); font-size: 13.5px; text-align: left; }
 .sugg__item:hover { border-color: var(--fg); }
 .sugg__item .sprite { width: 30px; height: 30px; flex: 0 0 auto; }
-.sugg__item > span:first-of-type { flex: 0 0 auto; }
+/* 2026-09-10 v2.46.0 결과 한 줄이 카드 한 장이 됐다 — 이름 줄 아래에 타입·도감번호가 붙는다 (components/search.js) */
+.sugg__main { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.sugg__name { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; }
+.sugg__meta { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; font-size: 11.5px; color: var(--muted); }
+.sugg__no { width: auto; flex: none; }
+/* 눌러서 열리는 줄에는 화살표 — 도감 줄(pages.css)·메뉴(drawer.css)와 같은 문법 */
+.sugg__go { flex: none; margin-left: 2px; color: var(--muted); font-size: 15px; line-height: 1; }
 .sugg__item.is-unreleased { opacity: .55; }
 .sugg__item .tag { font-size: 9.5px; padding: 0 4px; }
 .sugg__none { font-size: 12.5px; color: var(--muted); padding: 2px 4px; }
