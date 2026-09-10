@@ -22,6 +22,14 @@
 
 // PvP 일반 · PvE 일반: 전설·환상·울트라비스트·메가·섀도우를 뺀 일반 개체 티어표
 const TIER_ORDER = ['S', 'A', 'B', 'C'];
+// 2026-09-10 v2.43.0 티어가 무슨 뜻인지 한 줄로. 점수 경계는 각 표가 정하고(여기는 이름만),
+// 문구는 "이 칸에 있으면 어떤 포켓몬인가"를 말한다 — 등급 글자만으로는 처음 보는 사람이 못 읽는다
+const TIER_DESC = {
+  S: '메타를 지배하는 최상위 포켓몬입니다.',
+  A: '뛰어난 성능을 가진 상위권 포켓몬입니다.',
+  B: '상황에 따라 충분히 쓸 만한 중위권입니다.',
+  C: '대체할 개체가 없을 때 쓰는 하위권입니다.',
+};
 
 // items를 티어별로 묶어 $content에 붙인다.
 // toRow(pokemon, index)는 호출한 쪽이 넘기는 행 생성 함수이고, index는 "그 티어 그룹 안의 번호"다.
@@ -30,9 +38,13 @@ function renderTierList(items, toRow) {
   for (const tier of TIER_ORDER) {
     const group = items.filter((pokemon) => pokemon.tier === tier);
     if (!group.length) continue;  // 그 티어에 아무도 없으면 머리글도 만들지 않는다
+    // 2026-09-10 v2.43.0 뱃지 한 글자만으로는 "S 가 위인지 아래인지"를 처음 보는 사람이 모른다 —
+    // 티어 이름과 한 줄 설명을 함께 단다 (TIER_DESC)
     $content.append(el('div', { class: 'tier__head' },
       el('b', { class: `tier__badge tier__badge--${tier.toLowerCase()}` }, tier),
-      el('span', { class: 'meta' }, `${group.length}종`)));
+      el('span', { class: 'tier__name' }, `${tier} 티어`),
+      el('span', { class: 'meta' }, `${group.length}종`),
+      el('span', { class: 'tier__desc' }, TIER_DESC[tier] || '')));
     const rowsList = el('ul', { class: 'row-list' });
     group.forEach((pokemon, index) => rowsList.append(toRow(pokemon, index)));
     $content.append(rowsList);

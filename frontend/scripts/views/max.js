@@ -69,25 +69,30 @@ function expandableRow(pokemon, rankText, topScore) {
   // 이 포켓몬의 첫 번째 속성을 보스 속성으로 보고, 그 보스를 잡을 딜러 상위 5마리를 곁들인다.
   const counterType = pokemon.types?.[0];
   const counters = counterType ? (DMAX_DATA[counterType] ?? []).slice(0, 5) : [];
+  // 2026-09-10 v2.43.0 근거 줄을 두 칸으로 나눴다 — 왼쪽은 "왜 이 티어인가"(계산식), 오른쪽은
+  // "이 포켓몬이 보스로 나오면 누구를 데려가나". 성격이 다른 두 정보가 한 문단에 이어져 있어
+  // 어디까지가 계산식인지 눈이 못 잘랐다. 칸마다 제목을 달아 무엇을 읽는 중인지 밝힌다
   const whyNode = el('li', { class: 'row__why' },
-    el('p', { class: 'row__why-line' }, whyText(pokemon) + '  ',
+    el('div', { class: 'row__why-col' },
+      el('b', { class: 'row__why-title' }, '📊 티어 점수 산정 방식'),
+      el('p', { class: 'row__why-line' }, whyText(pokemon)),
       el('button', {
         class: 'row__why-more',
         onclick: (event) => {
           event.stopPropagation();  // 행 클릭(= 근거 접기)까지 번지지 않게 막는다
           openDetail(pokemon);
         }
-      }, '포켓몬 상세 ▸')),
-    counters.length ? el('p', { class: 'row__why-line' }, '🛡 얘가 보스면 → ',
-      ...counters.flatMap((counter, index) => [
-        el('button', {
-          class: 'row__why-more',
+      }, '포켓몬 상세 보기 →')),
+    counters.length ? el('div', { class: 'row__why-col' },
+      el('b', { class: 'row__why-title' }, '🛡 얘가 보스라면 데려갈 딜러'),
+      el('div', { class: 'row__why-chips' },
+        ...counters.map((counter) => el('button', {
+          class: 'row__why-chip',
           onclick: (event) => {
             event.stopPropagation();
             openDetail(counter);
           }
-        }, counter.name),
-        index < counters.length - 1 ? ' · ' : ''])) : '');
+        }, counter.name)))) : '');
   rowNode.addEventListener('click', () => whyNode.classList.toggle('is-open'));
   const fragment = document.createDocumentFragment();
   fragment.append(rowNode, whyNode);
