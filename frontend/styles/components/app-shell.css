@@ -44,6 +44,10 @@
    좁은 폭에서는 글자를 조금 줄여 두 줄로 접히지 않게 */
 .page-head { max-width: 760px; margin: 0 auto; padding: 14px 20px 0; }
 .page-head h2 { margin: 0; font-size: 21px; font-weight: 600; letter-spacing: -0.01em; word-break: keep-all; }
+/* 2026-09-10 v2.42.0 브레드크럼·화면 설명·상단 검색 칸은 **넓은 화면 전용**이다 (components/pc-theme.css 가 켠다).
+   좁은 화면은 상단 바 한 줄과 제목만으로 충분하고, 줄이 늘면 목록이 그만큼 아래로 밀린다.
+   조각은 늘 만들어 두고(JS 에 폭 분기를 만들지 않는다) 보이고 감추는 일만 여기서 가른다 */
+.page-head__crumb, .page-head__desc, .app-search { display: none; }
 /* 로고: h1 안의 버튼이라 글꼴·크기를 h1 에서 물려받게 하고 버튼 티를 지운다 */
 .app-bar__logo { padding: 0; font: inherit; color: inherit; letter-spacing: inherit; }
 .app-bar__logo:hover { color: var(--accent); }

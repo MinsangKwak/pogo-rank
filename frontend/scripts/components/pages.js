@@ -148,7 +148,12 @@ function renderDexPage() {
         sprite(entry.sprite),
         entry.unrel ? el('span', { class: 'tag dex__unrel' }, '미구현') : '',
         el('b', {}, entry.name),
-        el('span', { class: 'dex__types' }, ...entry.types.map((typeName) => el('span', { class: 'dot', style: `background: var(--t-${typeName})` }))),
+        // 2026-09-10 v2.42.0 점 대신 이름이 적힌 알약 — 점만으로는 색을 외운 사람만 읽을 수 있었다.
+        // 좁은 화면은 자리가 없어 지금처럼 점으로 둔다(CSS 가 글자를 감춘다, components/pc-theme.css)
+        el('span', { class: 'dex__types' }, ...entry.types.map((typeName) =>
+          el('span', { class: 'dex__type', style: `--c: var(--t-${typeName})` },
+            el('i', { class: 'dot', 'aria-hidden': 'true' }),
+            el('b', {}, TYPE_KO[typeName] || typeName)))),
         // 2026-09-03 v2.2.0 즐겨찾기 ★ — 로그인·승인된 사용자만 저장됨 (비로그인 클릭 시 로그인 유도)
         authEnabled() ? favBtn(entry.dex, 'dex__fav') : '')));
     // 남은 종이 있으면 "더보기 (지금까지/전체)", 다 봤으면 총 개수를 보여주고 버튼을 잠근다
@@ -189,7 +194,11 @@ function renderDexPage() {
         AUTH.status === 'anon' ? uchip('Google로 로그인', signIn) : '')
     : '';
   draw();
-  return el('div', { class: 'page__body' }, loginHint, $input, genChips, $layout, $list, $more,
+  // 2026-09-10 v2.42.0 거르기(세대·즐겨찾기)와 보기 방식을 한 줄에 좌우로 — 성격은 달라도 둘 다
+  // "목록을 어떻게 볼지" 라 목록 바로 위 한 줄에 모아 두는 편이 눈이 덜 움직인다.
+  // 좁은 화면은 CSS 가 위아래로 쌓는다 (한 줄에 넣으면 칩이 잘린다)
+  return el('div', { class: 'page__body' }, loginHint, $input,
+    el('div', { class: 'dex__toolbar' }, genChips, $layout), $list, $more,
     footNote('미구현 = 포켓몬 GO에 아직 출시되지 않은 종 (PvPoke 출시 목록 기준, 데이터는 게임마스터 선등록분). 메가·섀도우·리전 폼은 🔍 전역 검색으로 찾을 수 있어요.'));
 }
 

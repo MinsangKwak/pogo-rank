@@ -38,5 +38,5 @@
 footer .foot-links a, footer .foot-links button { color: var(--muted); text-decoration: underline; background: none; border: 0; padding: 0; font: inherit; cursor: pointer; }
 
 /* 계정 삭제 버튼: 위험 동작이라 색으로 구분 */
-.account__danger { color: #c0392b; }
-.account__danger:hover { border-color: #c0392b; }
+.account__danger { color: var(--warn); }
+.account__danger:hover { border-color: var(--warn); }

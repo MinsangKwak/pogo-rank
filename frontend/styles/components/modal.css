@@ -93,8 +93,8 @@ dialog.modal::backdrop { background: transparent; }
 .uchip b { font-weight: 600; color: var(--fg); }
 /* 2026-09-04 포획 CP 칩의 보조 숫자(개체값 하한 CP) */
 .uchip i { font-style: normal; font-size: 11px; color: var(--muted); }
-.uchip.is-top { border-color: color-mix(in srgb, #d84a5f 45%, var(--line)); color: var(--fg); }
-.uchip.is-top b { color: #d84a5f; }
+.uchip.is-top { border-color: color-mix(in srgb, var(--warn) 45%, var(--line)); color: var(--fg); }
+.uchip.is-top b { color: var(--warn); }
 
 /* 종족값 */
 .stat-bar { display: grid; grid-template-columns: 34px 1fr 40px; gap: 10px; align-items: center; font-size: 12px; margin-bottom: 5px; }
@@ -138,7 +138,7 @@ dialog.modal::backdrop { background: transparent; }
 .cmp__row:first-child { border-top: none; }
 .cmp__row em { font-style: normal; color: var(--muted); font-size: 11.5px; }
 .cmp__row b { font-weight: 500; }
-.cmp__row b.is-high { color: #b8860b; font-weight: 700; }
+.cmp__row b.is-high { color: var(--caution); font-weight: 700; }
 .cmp__head b { color: var(--muted); font-size: 11.5px; font-weight: 600; }
 .detail__en-inline { font-weight: 400; font-size: 13px; color: var(--muted); }
 /* 2026-09-03 v4: 약점/내성 위아래 + CP 계산기 아코디언 */
@@ -153,8 +153,8 @@ dialog.modal::backdrop { background: transparent; }
 .detail__acc[open] summary::after { transform: rotate(90deg); }
 .detail__acc-body { padding: 0 14px 14px; }
 /* 🎯 포획 CP — 가장 먼저 확인하는 표라 살짝 강조한다 */
-.detail__acc--catch { background: color-mix(in srgb, #d84a5f 8%, var(--surface)); border-color: color-mix(in srgb, #d84a5f 30%, var(--line)); }
-.detail__acc--catch summary { color: #d84a5f; }
+.detail__acc--catch { background: color-mix(in srgb, var(--warn) 8%, var(--surface)); border-color: color-mix(in srgb, var(--warn) 30%, var(--line)); }
+.detail__acc--catch summary { color: var(--warn); }
 .cp__inline { margin: 10px 0 0; font-size: 13.5px; }
 .cp__inline b { font-size: 16px; }
 
@@ -185,11 +185,11 @@ dialog.modal::backdrop { background: transparent; }
 .detail__top-actions .fav { width: 34px; height: 34px; font-size: 16px; opacity: 1; border-radius: 999px;
   border: 1px solid var(--line); background: var(--surface); }
 .detail__top-actions .fav:hover { background: var(--hover); }
-.detail__top-actions .fav.is-on { border-color: color-mix(in srgb, #e8a80c 45%, var(--line)); }
+.detail__top-actions .fav.is-on { border-color: color-mix(in srgb, var(--caution) 45%, var(--line)); }
 .solo__fill { display: flex; align-items: center; gap: 8px; margin: 0 0 8px; font-size: 12.5px; }
 
 /* 2026-09-06 v2.10.0 (QA-44) 이중약점(×2.56) · 이중내성/무효(×0.39) 칩 강조 */
-.tchips__item.is-weak2 { border-color: color-mix(in srgb, #d84a5f 60%, var(--line)); font-weight: 600; }
-.tchips__item.is-weak2 small { color: #d84a5f; font-weight: 700; }
-.tchips__item.is-resist2 { border-color: color-mix(in srgb, #2f8f5b 60%, var(--line)); font-weight: 600; }
-.tchips__item.is-resist2 small { color: #2f8f5b; font-weight: 700; }
+.tchips__item.is-weak2 { border-color: color-mix(in srgb, var(--warn) 60%, var(--line)); font-weight: 600; }
+.tchips__item.is-weak2 small { color: var(--warn); font-weight: 700; }
+.tchips__item.is-resist2 { border-color: color-mix(in srgb, var(--brand) 60%, var(--line)); font-weight: 600; }
+.tchips__item.is-resist2 small { color: var(--brand); font-weight: 700; }

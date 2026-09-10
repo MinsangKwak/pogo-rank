@@ -24,8 +24,19 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 // 라우트·페이지를 스스로 등록한다 — 이 파일이 없는 빌드(실서비스)에는 주소 자체가 없다.
-// nav 를 달지 않아 메뉴에는 오르지 않는다 (주소를 아는 사람만 들어온다)
-ROUTES.push({ id: 'styleguide', path: 'styleguide', kind: 'page' });
+ROUTES.push({ id: 'styleguide', path: 'styleguide', kind: 'page', nav: 'UI 목록', icon: '🧩' });
+// 2026-09-10 v2.42.0 이동 목록에도 올린다. ROUTE_NAV 는 router.js 가 읽는 즉시 굳는 표라 여기서 다시
+// 만들 수 없고, 목록 DOM 은 app-shell.js 가 이 파일보다 뒤에 만든다 — 그래서 그 뒤로 미뤄 붙인다.
+// 실서비스에는 이 파일이 없으니 항목도 없다 (메뉴에 죽은 링크가 남지 않는다)
+queueMicrotask(() => {
+  const nav = document.querySelector('.nav-menu');
+  if (!nav || nav.querySelector('[href="#/styleguide"]')) return;
+  const item = el('a', { href: '#/styleguide', class: 'drawer__item' },
+    el('span', { class: 'drawer__ico', 'aria-hidden': 'true' }, '🧩'),
+    el('span', { class: 'drawer__label' }, 'UI 목록'));
+  nav.append(item);
+  if (typeof syncAppShell === 'function') syncAppShell();
+});
 
 // 한 칸 = [조각 이름] + 실제로 그려진 조각. 이름은 CSS 에서 찾을 때 쓰는 클래스 그대로 적는다
 function sgItem(name, ...nodes) {
@@ -39,9 +50,15 @@ function sgRow(...items) {
   return el('div', { class: 'sg__row' }, ...items);
 }
 
+// 2026-09-10 v2.42.0 구역 하나 = 번호가 붙은 카드 한 장. 위에서 아래로 길게 늘어놓으면 스크롤만 길어져
+// "우리가 가진 조각이 이만큼" 이라는 감이 안 온다 — 카드로 깔면 한 화면에 전체가 들어온다
+let sgNo = 0;
 function sgSection(title, note, ...children) {
+  sgNo += 1;
   return el('section', { class: 'sg__sec' },
-    el('h2', { class: 'page__sec' }, title),
+    el('h2', { class: 'sg__sec-title' },
+      el('span', { class: 'sg__sec-no' }, String(sgNo).padStart(2, '0') + '.'),
+      title),
     note ? el('p', { class: 'sg__note' }, note) : '',
     ...children);
 }
@@ -57,6 +74,7 @@ function sgSwatch(varName, label) {
 }
 
 function renderStyleguidePage() {
+  sgNo = 0;   // 다시 그릴 때마다 번호를 처음부터 (언어 전환·뒤로가기로 두 번 그려질 수 있다)
   const body = pageBody('styleguide');
 
   // ── 색 ──────────────────────────────────────────────────────────────────
@@ -255,10 +273,12 @@ function renderStyleguidePage() {
           el('h2', { class: 'detail__name' }, '팝업 예시'),
           el('p', {}, '✕ 는 카드 밖 오른쪽 위에 뜬다 (v2.34.0).'),
           footNote('닫기: ✕ · Esc · 배경 누르기'))))),
-      sgItem('.detail__type-pill (상세 타입)',
-        el('div', { class: 'detail__types' },
-          el('span', { class: 'detail__type-pill', style: '--c: var(--t-fire)' }, '불꽃'),
-          el('span', { class: 'detail__type-pill', style: '--c: var(--t-flying)' }, '비행'))))));
+      // 타입 배지는 실제로 그림 상자 왼쪽 위에 겹쳐 붙는 조각이라(v2.35.0), 상자와 함께 보여야 뜻이 맞다
+      sgItem('.detail__type-pill (그림 위 타입 배지)',
+        el('div', { class: 'sprite-box' }, sprite(6),
+          el('div', { class: 'detail__types' },
+            el('span', { class: 'detail__type-pill', style: '--c: var(--t-fire)' }, '불꽃'),
+            el('span', { class: 'detail__type-pill', style: '--c: var(--t-flying)' }, '비행')))))));
 
   body.append(footNote('이 화면은 dev 미리보기 빌드에만 있습니다 (실서비스 번들에는 들어가지 않습니다). ',
     '조각은 실제 CSS·실제 함수를 그대로 부르므로, 여기 보이는 모양이 곧 실제 화면의 모양입니다.'));
