@@ -22,3 +22,8 @@
 .tabs__item.tabs__item--quick { color: var(--muted); }
 .tabs__item.tabs__item--quick:hover { color: var(--fg); }
 @media (max-width: 480px) { .tabs__item.tabs__item--quick .tabs__label { display: none; } }
+
+/* 2026-09-10 v2.48.1 로그인해야 쓰는 탭 — 흐리게 + 자물쇠. 누르는 것 자체는 막지 않는다
+   (누르면 왜 잠겼는지와 로그인 버튼이 있는 화면으로 간다) */
+.tabs__item.is-locked { opacity: .55; }
+.tabs__lock { margin-left: 4px; font-size: .85em; }

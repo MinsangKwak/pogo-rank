@@ -113,20 +113,26 @@ function renderPlanTabs() {
 // 로그인 기능이 꺼진 빌드(FIREBASE_CONFIG 비어 있음)에서는 잠그지 않는다 —
 // 로그인할 방법이 없는데 잠그면 그 빌드에서는 영영 못 여는 화면이 된다.
 function planLocked() {
-  return authEnabled() && AUTH.status !== 'ok';
+  return routeLocked('planner');
 }
 
-// 잠긴 화면 — 왜 못 쓰는지와 어떻게 열지를 한 카드에 담는다. 목록·탭 대신 이것만 보여 준다
-function renderPlanLocked() {
+// 잠긴 화면 — 왜 못 쓰는지와 어떻게 열지를 한 카드에 담는다. 목록·탭 대신 이것만 보여 준다.
+// 2026-09-10 v2.48.1 플래너 전용이던 것을 공용으로 뺐다 — 배틀 PvP · 이벤트 일정 · 레이드 보스 ·
+// 알 부화도 같은 카드를 쓴다 (components/pages.js · app.js). 화면 이름만 갈아 끼운다
+function lockedCardNode(screenName, why) {
   const pending = AUTH.status === 'pending';
-  $content.append(el('section', { class: 'plan__lock' },
+  return el('section', { class: 'plan__lock' },
     el('span', { class: 'plan__lock-ico', 'aria-hidden': 'true' }, pending ? '⏳' : '🔒'),
     el('h2', {}, pending ? '승인 대기 중이에요' : '로그인하면 열립니다'),
     el('p', {}, pending
-      ? '관리자가 승인하면 내 개체를 계정에 저장하고 어느 기기에서든 같은 목록을 볼 수 있어요.'
-      : '육성 플래너는 내 개체(레벨 · 개체값 · 기술)를 계정에 저장하는 화면이라 로그인이 필요합니다. 도감 · 순위표 · 계산기는 로그인 없이도 그대로 쓸 수 있어요.'),
+      ? `관리자가 승인하면 ${screenName}을(를) 쓸 수 있어요.`
+      : `${screenName}은(는) ${why} 로그인이 필요합니다. 도감 · 타입 & 상성 · D-MAX 는 로그인 없이도 그대로 쓸 수 있어요.`),
     pending ? '' : el('button', { class: 'drawer__item account__login plan__lock-go', onclick: () => signIn() }, '🔐 Google로 로그인'),
-    el('p', { class: 'detail__foot' }, '승인된 친구만 사용할 수 있어요. 첫 로그인 때 이용약관·개인정보처리방침 동의를 받습니다.')));
+    el('p', { class: 'detail__foot' }, '승인된 친구만 사용할 수 있어요. 첫 로그인 때 이용약관·개인정보처리방침 동의를 받습니다.'));
+}
+
+function renderPlanLocked() {
+  $content.append(lockedCardNode('육성 플래너', '내 개체(레벨 · 개체값 · 기술)를 계정에 저장하는 화면이라'));
   $note.textContent = '육성 플래너는 승인된 로그인 사용자 전용입니다. 로그인하면 내 개체를 계정에 저장하고 같은 종끼리 비교할 수 있습니다.';
 }
 
