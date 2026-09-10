@@ -48,6 +48,10 @@
    좁은 화면은 상단 바 한 줄과 제목만으로 충분하고, 줄이 늘면 목록이 그만큼 아래로 밀린다.
    조각은 늘 만들어 두고(JS 에 폭 분기를 만들지 않는다) 보이고 감추는 일만 여기서 가른다 */
 .page-head__crumb, .page-head__desc, .app-search { display: none; }
+/* 2026-09-10 v2.47.0 화면 테마 — 좁은 화면 헤더에는 자리가 없다(버튼을 하나 더 넣었더니 로고가 잘렸다).
+   좁은 화면은 ☰ 메뉴 줄이, 넓은 화면은 헤더 버튼이 맡는다 */
+#theme-toggle { display: none; }
+.drawer__value { margin-left: auto; font-size: 12px; color: var(--muted); }
 /* 로고: h1 안의 버튼이라 글꼴·크기를 h1 에서 물려받게 하고 버튼 티를 지운다 */
 .app-bar__logo { padding: 0; font: inherit; color: inherit; letter-spacing: inherit; }
 .app-bar__logo:hover { color: var(--accent); }

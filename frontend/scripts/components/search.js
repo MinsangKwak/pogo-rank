@@ -152,6 +152,28 @@ function renderSearchTypeChips() {
   }, el('span', { class: 'dot', style: `--c: var(--t-${typeKey})` }), TYPE_KO[typeKey])));
 }
 
+// 2026-09-10 v2.47.0 결과 한 줄을 함수로 뺐다 — 헤더 검색 패널과 플래너의 [개체 추가] 창이
+// 같은 줄을 쓴다. 두 곳에 같은 마크업을 따로 두면 한쪽만 고쳐지는 날이 온다.
+//   pokemon  { sprite, name, types?, unrel? }
+//   onclick  줄을 눌렀을 때
+//   extras   이름 오른쪽에 덧붙일 것 (활용 뱃지 · 순위 등). 없으면 안 붙는다
+function monSuggestRow(pokemon, onclick, ...extras) {
+  return el('button', {
+    class: `sugg__item${pokemon.unrel ? ' is-unreleased' : ''}`,
+    onclick,
+  }, sprite(pokemon.sprite),
+    el('span', { class: 'sugg__main' },
+      el('span', { class: 'sugg__name' }, nameNode(pokemon.name),  // 2026-09-06 v2.10.0 폼 라벨 뱃지
+        pokemon.unrel ? el('span', { class: 'tag dex__unrel' }, '미구현') : ''),
+      el('span', { class: 'sugg__meta' },
+        ...(pokemon.types ?? []).map((typeName) => el('span', { class: 'dex__type', style: `--c: var(--t-${typeName})` },
+          el('i', { class: 'dot', 'aria-hidden': 'true' }),
+          el('b', {}, TYPE_KO[typeName] ?? typeName))),
+        pokemon.sprite != null ? el('span', { class: 'dex__no sugg__no' }, `#${String(pokemon.sprite).padStart(4, '0')}`) : '')),
+    ...extras,
+    el('span', { class: 'sugg__go', 'aria-hidden': 'true' }, '›'));
+}
+
 function renderSearchResults() {
   const $input = document.getElementById('psearch');
   const $sugg = document.getElementById('psearch-sugg');
@@ -182,30 +204,15 @@ function renderSearchResults() {
   for (const pokemon of hits) {
     // 후보를 고르면 검색창과 목록을 함께 비우고 상세 팝업을 띄운다
     // (팝업 뒤에 후보 목록이 남아 있으면 닫았을 때 지저분해 보인다)
-    // 2026-09-10 v2.46.0 결과 한 줄을 이름 하나에서 **카드 한 장**으로 —
-    // 목업(개체 추가 창)처럼 그림 · 이름 · 타입 알약 · 도감번호를 함께 준다.
-    // 이름만 있던 줄은 동명이인 같은 폼(물짱이 / 새도우 물짱이)이나 처음 보는 이름 앞에서
-    // "이게 내가 찾던 그건가"를 답해 주지 못했다. 타입과 번호가 그 답이다.
-    // 조각은 도감 목록에서 쓰던 것을 그대로 빌린다(.dex__type · .dex__no) — 같은 뜻이면 같은 모양이어야 한다
+    // 줄 마크업은 monSuggestRow 하나로 — 플래너의 [개체 추가] 창도 같은 줄을 쓴다.
+    // 여기만 덧붙이는 것: 활용 뱃지(v2.16.0)와 순위 근거(v2.9.0)
     const rankText = searchRankText(pokemon.sprite);
-    $sugg.append(el('button', {
-      class: `sugg__item${pokemon.unrel ? ' is-unreleased' : ''}`,
-      onclick: () => {
-        track('search_pick', { mon: pokemon.name, t: types.join(',') });  // 2026-09-06 v2.9.0 GA4: 검색으로 고른 포켓몬 · v2.12.0 t: 타입 필터
-        openDetail(pokemon, false, 'search');
-      },
-    }, sprite(pokemon.sprite),
-      el('span', { class: 'sugg__main' },
-        el('span', { class: 'sugg__name' }, nameNode(pokemon.name),  // 2026-09-06 v2.10.0 폼 라벨 뱃지
-          pokemon.unrel ? el('span', { class: 'tag dex__unrel' }, '미구현') : '',
-          typeof usageBadge === 'function' ? usageBadge(pokemon.name) : ''),  // 2026-09-07 v2.16.0 활용 N곳 (옛 활용처 탭의 요약)
-        el('span', { class: 'sugg__meta' },
-          ...(pokemon.types ?? []).map((typeName) => el('span', { class: 'dex__type', style: `--c: var(--t-${typeName})` },
-            el('i', { class: 'dot', 'aria-hidden': 'true' }),
-            el('b', {}, TYPE_KO[typeName] ?? typeName))),
-          pokemon.sprite != null ? el('span', { class: 'dex__no sugg__no' }, `#${String(pokemon.sprite).padStart(4, '0')}`) : '')),
-      rankText ? el('span', { class: 'sugg__rank' }, rankText) : '',
-      el('span', { class: 'sugg__go', 'aria-hidden': 'true' }, '›')));
+    $sugg.append(monSuggestRow(pokemon, () => {
+      track('search_pick', { mon: pokemon.name, t: types.join(',') });  // 2026-09-06 v2.9.0 GA4: 검색으로 고른 포켓몬 · v2.12.0 t: 타입 필터
+      openDetail(pokemon, false, 'search');
+    },
+      typeof usageBadge === 'function' ? usageBadge(pokemon.name) : '',  // 2026-09-07 v2.16.0 활용 N곳 (옛 활용처 탭의 요약)
+      rankText ? el('span', { class: 'sugg__rank' }, rankText) : ''));
   }
   if (!hits.length) {
     $sugg.append(el('span', { class: 'sugg__none' }, types.length ? '이 타입 조합에 맞는 포켓몬이 없어요' : '검색 결과가 없어요'));

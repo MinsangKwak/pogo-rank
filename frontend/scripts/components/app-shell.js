@@ -97,9 +97,27 @@ drawer.querySelector('#schedule-body').closest('details').hidden = true;
 // 이모지를 라벨 글자에 섞지 않고 span 으로 뗀 이유: 번역 사전(i18n-en.js)이 텍스트 노드 단위로 찾아서
 // '내 포켓몬' 같은 라벨은 그대로 맞아떨어져야 한다 (이모지가 섞이면 키가 달라진다)
 function navItem(href, title, icon) {
-  return el('a', { href, class: 'drawer__item' },
+  // 2026-09-10 v2.47.0 잠글 수 있는 항목은 id 를 달아 둔다 — 로그인 상태가 바뀔 때마다
+  // syncLockedNav() 가 이 줄의 잠금 표시를 갱신한다 (육성 플래너)
+  const attrs = { href, class: 'drawer__item' };
+  if (href === routeHash('planner')) attrs.id = 'menu-planner';
+  return el('a', attrs,
     el('span', { class: 'drawer__ico', 'aria-hidden': 'true' }, icon),
     el('span', { class: 'drawer__label' }, title));
+}
+
+// 로그인해야 쓰는 항목의 잠금 표시. onAuthChange(components/auth.js)가 로그인·로그아웃마다 부른다.
+// 실제 차단은 클릭 처리(destinations)와 화면 자체(planner/shell.js renderPlan)가 한다 —
+// 여기서 하는 것은 "지금 못 쓴다"를 보여 주는 일뿐이다
+function syncLockedNav() {
+  const locked = typeof planLocked === 'function' && planLocked();
+  for (const $item of [document.getElementById('menu-planner'), document.getElementById('home-tile-planner')]) {
+    if (!$item) continue;
+    $item.classList.toggle('is-locked', locked);
+    if (locked) $item.setAttribute('aria-disabled', 'true');
+    else $item.removeAttribute('aria-disabled');
+    $item.title = locked ? '로그인하면 열립니다 — 내 개체를 계정에 저장하는 화면이에요' : '';
+  }
 }
 const destinations = el('nav', { class: 'nav-menu', 'aria-label': '서비스 이동' },
   navItem('#', '서비스 홈', '🏠'),
@@ -109,6 +127,13 @@ destinations.addEventListener('click', (event) => {
   if (!link) return;
   event.preventDefault();
   const href = link.getAttribute('href');
+  // v2.47.0 잠긴 항목은 그 화면으로 보내지 않고 계정 카드를 연다 — 눌렀는데 아무 일도 안 일어나면
+  // 잠긴 건지 고장 난 건지 알 수 없다. "여기서 로그인하면 된다"까지 데려다준다
+  if (link.getAttribute('aria-disabled') === 'true') {
+    openDrawer();
+    document.getElementById('account')?.scrollIntoView({ block: 'center' });
+    return;
+  }
   if (href === '#') goHome();  // 열린 것을 닫고 서비스 홈으로 (app.js) — GA 'home' 이벤트도 여기서
   else navigateHash(href);
 });
@@ -195,6 +220,9 @@ for (const id of ['content', 'page']) {
 function screenTitle(found) {
   if (!found || found.route.id === 'home') return null;
   if (found.route.nav) return found.route.nav;
+  // 2026-09-10 v2.47.0 메뉴에 없는 화면도 이름은 있다 — '내 포켓몬' 은 메뉴에서 내렸지만
+  // 주소로 들어오면 화면 머리에 이름이 떠야 한다 (router.js 의 title)
+  if (found.route.title) return found.route.title;
   if (found.route.kind === 'page' && PAGES[found.route.id]) return PAGES[found.route.id].title.replace(/^[^가-힣A-Za-z]+/, '');
   return null;
 }
