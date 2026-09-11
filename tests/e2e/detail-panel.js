@@ -28,7 +28,7 @@ const ok = (n, c, x = '') => { console.log((c ? 'PASS' : 'FAIL') + ' ' + n + ' '
     const go = async (hash) => {
       await page.goto(BASE + hash, { waitUntil: 'domcontentloaded' });
       await page.waitForSelector('#splash', { state: 'detached', timeout: 15000 }).catch(() => {});
-      await page.locator('#consent .consent__deny').click().catch(() => {});
+      await page.locator('#consent .consent__deny').click({ timeout: 1500 }).catch(() => {});
       await page.waitForTimeout(500);
     };
 
@@ -77,7 +77,7 @@ const ok = (n, c, x = '') => { console.log((c ? 'PASS' : 'FAIL') + ' ' + n + ' '
 
     await page.goto(BASE + '#/dex', { waitUntil: 'domcontentloaded' });
     await page.waitForSelector('#splash', { state: 'detached', timeout: 15000 }).catch(() => {});
-    await page.locator('#consent .consent__deny').click().catch(() => {});
+    await page.locator('#consent .consent__deny').click({ timeout: 1500 }).catch(() => {});
     await page.waitForTimeout(500);
     await page.locator('#page .dex__row').first().click();
     await page.waitForTimeout(500);

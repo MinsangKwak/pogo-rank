@@ -26,7 +26,7 @@ const ok = (n, c, x = '') => { console.log((c ? 'PASS' : 'FAIL') + ' ' + n + ' '
   // ── 1. 메뉴는 한 줄 ────────────────────────────────────────────────────────
   await page.goto(BASE, { waitUntil: 'domcontentloaded' });
   await page.waitForSelector('#splash', { state: 'detached', timeout: 15000 }).catch(() => {});
-  await page.locator('#consent .consent__deny').click().catch(() => {});
+  await page.locator('#consent .consent__deny').click({ timeout: 1500 }).catch(() => {});
   await settle();
 
   const navLabels = await page.locator('.nav-menu .drawer__label').allTextContents();

@@ -29,7 +29,7 @@ const ok = (n, c, x = '') => { console.log((c ? 'PASS' : 'FAIL') + ' ' + n + ' '
     const go = async (hash = '') => {
       await page.goto(BASE + hash, { waitUntil: 'domcontentloaded' });
       await page.waitForSelector('#splash', { state: 'detached', timeout: 15000 }).catch(() => {});
-      await page.locator('#consent .consent__deny').click().catch(() => {});
+      await page.locator('#consent .consent__deny').click({ timeout: 1500 }).catch(() => {});
       await page.waitForTimeout(350);
     };
     // 실제로 굴려 본다 — style 만 보면 다른 원인(가로 넘침·덮개)을 놓친다
@@ -177,7 +177,7 @@ const ok = (n, c, x = '') => { console.log((c ? 'PASS' : 'FAIL') + ' ' + n + ' '
     // 넓은 화면은 그리드가 기본, 좁은 화면은 리스트가 기본이다 — 그리드가 아니면 그리드 칸을 누른다
     // 2026-09-09 v2.40.0 .dex__layout 은 이제 두 칸짜리 세그먼트 컨트롤(묶음)이다 — 칸을 눌러야 한다
     const layoutBtn = page.locator('.dex__layout button').last();
-    if (!(await page.locator('.dex__list.is-grid').count())) await layoutBtn.click().catch(() => {});
+    if (!(await page.locator('.dex__list.is-grid').count())) await layoutBtn.click({ timeout: 1500 }).catch(() => {});
     await page.waitForTimeout(500);
     const card = await page.locator('.dex__list.is-grid .dex__row').first().evaluate((n) => {
       const s = getComputedStyle(n);
@@ -247,7 +247,7 @@ const ok = (n, c, x = '') => { console.log((c ? 'PASS' : 'FAIL') + ' ' + n + ' '
     page.on('pageerror', (e) => errs.push(String(e)));
     await page.goto(BASE + '#/dex', { waitUntil: 'domcontentloaded' });
     await page.waitForSelector('#splash', { state: 'detached', timeout: 15000 }).catch(() => {});
-    await page.locator('#consent .consent__deny').click().catch(() => {});
+    await page.locator('#consent .consent__deny').click({ timeout: 1500 }).catch(() => {});
     await page.waitForTimeout(500);
     const menuState = () => page.evaluate(() => ({
       note: !!document.querySelector('.drawer__panel #note-acc'),
