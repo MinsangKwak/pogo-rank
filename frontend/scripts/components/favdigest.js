@@ -94,5 +94,5 @@ function renderFavDigest() {
       rows.length > shown.length
         ? el('button', { class: 'boss__more', onclick: () => { favDigestShowCount += 12; renderFavDigest(); } }, `더보기 +${Math.min(12, rows.length - shown.length)} (${shown.length}/${rows.length})`)
         : el('span', { class: 'meta' }, `전체 ${rows.length}마리 표시됨`),
-      el('span', { class: 'meta' }, 'PvE · PvP 갈래는 탭 줄 ★ 에서')));
+      el('span', { class: 'meta' }, 'PvE · PvP 갈래는 메뉴 ★ 즐겨찾기 에서')));
 }

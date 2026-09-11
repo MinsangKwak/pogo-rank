@@ -586,6 +586,9 @@ function openDetail(pokemon, isDex = false, from = null) {
         el('div', { class: 'detail__cp-tile' }, metaText('야생'), el('b', {}, cpOf(form, cpm.l30).toLocaleString())),
         el('div', { class: 'detail__cp-tile' }, metaText('부스트'), el('b', {}, cpOf(form, cpm.l35).toLocaleString())))));
   }
+  // 2026-09-11 v2.61.0 PvP 순위에 오른 종은 "그 리그에서는 어떤 개체값이 1위인가" 를 덧붙인다.
+  // 위의 CP 100% 는 PvE 기준(15/15/15 만렙)이라 PvP 에서는 쓸 데가 없다 — 두 기준이 정반대다
+  if (form && typeof ivrankDetailNode === 'function') body.append(ivrankDetailNode(form, pokemon.sprite));
   // 2026-09-04 포획 CP: "지금 잡은 개체가 100%인가"를 확인하는 표. 계산기보다 자주 보므로 위에 둔다
   if (form) body.append(el('details', { class: 'detail__acc detail__acc--catch' },
     el('summary', {}, '🎯 포획 CP — 이 숫자면 100%'),

@@ -85,44 +85,22 @@ const $note = document.getElementById('note');
 // 선택 표시는 CSS 클래스가 아니라 aria-selected로 하기 때문에(스타일과 스크린리더가 같은 값을 본다)
 // 탭이 바뀔 때마다 줄 전체를 다시 그린다.
 //
-// 2026-09-08 v2.22.0 탭 줄 복구 — v2.21.0 에서 통째로 감췄더니 D-MAX ↔ PvE ↔ PvP 를 오가려면
-// 매번 메뉴를 열거나 홈으로 돌아가야 했다. 셋은 형제 화면이라 한 번에 옮겨 다니는 줄이 맞다.
-// 대신 이동은 v2.21.0 의 주소 체계(#/rank/…)를 그대로 쓴다 — 상단 바 제목·뒤로가기가 같이 맞춰진다.
-// 서비스 홈에는 탭 줄이 없다 (홈 타일이 그 자리를 대신한다)
+// 2026-09-11 v2.61.0 랭킹 탭 줄(D-MAX · PvE · PvP)과 바로가기(📕 🧭 ★)를 걷어냈다.
+// v2.22.0 에 이 줄을 되살린 이유는 "셋을 오가려면 매번 메뉴를 열어야 한다" 였는데,
+// v2.42.0 PC 셸에서 왼쪽 메뉴가 **늘 펼쳐져** 있게 되면서 그 이유가 사라졌다.
+// 도감 · 상성 · 즐겨찾기도 메뉴에 같은 줄이 있어, 같은 곳으로 가는 길이 화면에 두 벌이었다.
+// 좁은 화면도 같다 — 화면마다 주소가 따로라(#/dmax · #/pve · #/rank/pvp) 뒤로가기로 오간다.
+// 플래너의 [육성 현황 | 내 포켓몬] 은 남긴다: 그것은 메뉴 중복이 아니라 한 화면 안의 갈래다
 function renderTabs() {
   $tabs.replaceChildren();
-  const onHome = state.appMode === 'dex' && state.tab === 'home';
-  $tabs.hidden = onHome;
-  if (onHome) return;
-  // 2026-09-07 v2.15.0 (QA-53) 플래너 모드는 탭 줄이 통째로 바뀐다 — [육성 현황 | 🎒 내 포켓몬] (planner/shell.js)
-  if (state.appMode === 'plan') return renderPlanTabs();
-  // [탭 id, 버튼에 보이는 이름] 쌍. 배열 순서가 곧 화면에 보이는 탭 순서다
-  // 2026-09-08 v2.30.0 [탭 id, 라벨, 라우트 id] — 주소는 router.js 의 표가 정한다
-  for (const [id, label, routeId] of [['max', 'D-MAX', 'dmax'], ['pve', 'PvE', 'pve'], ['pvp', 'PvP', 'pvp']]) {
-    // 2026-09-03 GA4: 탭 이름을 이벤트명에 포함(tab_max 등) — 누를 때마다 1회씩 기록
-    // 2026-09-10 v2.48.1 로그인해야 쓰는 탭에는 자물쇠를 붙인다 — 눌러 보고 알게 하지 않는다.
-    // 막지는 않는다: 눌러야 "왜 잠겼는지"와 로그인 버튼이 있는 화면으로 갈 수 있다
-    const locked = typeof routeLocked === 'function' && routeLocked(routeId);
-    $tabs.append(el('button', {
-      class: `tabs__item${locked ? ' is-locked' : ''}`,
-      role: 'tab',
-      'aria-selected': String(state.tab === id),
-      title: locked ? '로그인하면 열려요' : '',
-      onclick: () => {
-        track('tab_' + id, { tab: id });
-        navigateHash(routeHash(routeId));  // 주소가 바뀌면 applyPlanRoute → render 가 돌고 상단 바 제목도 맞춰진다
-      },
-    }, label, locked ? el('span', { class: 'tabs__lock', 'aria-hidden': 'true' }, '🔒') : ''));
+  if (state.appMode === 'plan') {
+    $tabs.hidden = false;
+    renderPlanTabs();
+    // 잠긴 플래너는 탭도 안 그린다 — 빈 줄만 남으면 자리만 먹는다
+    $tabs.hidden = !$tabs.childElementCount;
+    return;
   }
-  // 2026-09-06 v2.9.0 도감·상성·즐겨찾기 바로가기 — 탭이 아니라 "페이지로 가는 버튼"이라
-  // aria-selected 없이 오른쪽 끝에 붙인다. 좁은 화면에서는 아이콘만 남는다(tabs.css)
-  const quick = el('div', { class: 'tabs__quick' },
-    el('button', { class: 'tabs__item tabs__item--quick', title: '도감', onclick: () => openPage('dex', 'tabbar') }, '📕', el('span', { class: 'tabs__label' }, ' 도감')),
-    el('button', { class: 'tabs__item tabs__item--quick', title: '상성 검색', onclick: () => openPage('types', 'tabbar') }, '🧭', el('span', { class: 'tabs__label' }, ' 상성')));
-  if (typeof authEnabled === 'function' && authEnabled() && AUTH.status === 'ok') {
-    quick.append(el('button', { class: 'tabs__item tabs__item--quick', title: '즐겨찾기', onclick: () => openPage('favs', 'tabbar') }, '★', el('span', { class: 'tabs__label' }, ` 즐겨찾기 ${AUTH.favs.size}`)));
-  }
-  $tabs.append(quick);
+  $tabs.hidden = true;
 }
 
 // 2026-09-02 PvE 탭: 일반/전체 세부 토글 (PvP 리그 토글과 같은 seg)

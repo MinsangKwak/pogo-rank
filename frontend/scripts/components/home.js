@@ -34,6 +34,7 @@ function renderServiceHome() {
     // 2026-09-11 v2.58.0 ☰ 메뉴에도 같은 줄이 있다 — 같은 화면인데 문이 한쪽에만 있으면
     // 메뉴를 안 여는 사람은 이 화면이 있는 줄도 모른다
     ['10', '검색식 만들기', '게임 검색창에 붙여 넣을 식', 'finder'],
+    ['11', 'PvP 개체값 순위', '내 개체가 그 리그에서 몇 위인지', 'ivrank'],
   ].map(([number, title, desc, id]) => [number, title, desc, routeHash(id), routeIcon(id), id]);
   const grid = el('div', { class: 'home__grid' }, ...features.map(([number, title, desc, route, icon, id]) =>
     // 2026-09-10 v2.47.0 육성 플래너 타일은 로그인해야 열린다 — id 를 달아 두면 syncLockedNav 가 갱신한다
