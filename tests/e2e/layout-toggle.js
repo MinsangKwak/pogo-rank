@@ -106,7 +106,9 @@ const ok = (n, c, x = '') => { console.log((c ? 'PASS' : 'FAIL') + ' ' + n + ' '
     await gpage.goto(BASE + hash, { waitUntil: 'domcontentloaded' });
     await gpage.waitForSelector('#splash', { state: 'detached', timeout: 15000 }).catch(() => {});
     await gpage.locator('#consent .consent__deny').click({ timeout: 1500 }).catch(() => {});
-    await gpage.waitForTimeout(500);
+    // 고정 대기는 병렬로 돌 때 모자란다 — 재려는 목록이 실제로 붙을 때까지 기다린다
+    // (2026-09-11 v2.59.0: 500ms 뒤에 재다가 아직 안 그려진 화면에서 null 을 집었다)
+    await gpage.waitForSelector(sel, { timeout: 15000 }).catch(() => {});
     const cols = await gpage.evaluate((s) => {
       const node = document.querySelector(s);
       return node ? getComputedStyle(node).gridTemplateColumns.split(' ').length : null;
@@ -124,7 +126,7 @@ const ok = (n, c, x = '') => { console.log((c ? 'PASS' : 'FAIL') + ' ' + n + ' '
     await spage.goto(BASE + '#/raids', { waitUntil: 'domcontentloaded' });
     await spage.waitForSelector('#splash', { state: 'detached', timeout: 15000 }).catch(() => {});
     await spage.locator('#consent .consent__deny').click({ timeout: 1500 }).catch(() => {});
-    await spage.waitForTimeout(500);
+    await spage.waitForSelector('#page .dex__row', { timeout: 15000 }).catch(() => {});
     await spage.locator('#page .dex__row').first().click();
     await spage.waitForTimeout(400);
     const cols = await spage.evaluate(() => {

@@ -64,7 +64,7 @@ trap cleanup EXIT
 #      shell 450s · nav 253s · router 212s · fingerprint 98s · breakpoints 85s
 #      layout-toggle 74s · i18n 73s · bot-filter 64s · 나머지 30s 미만
 #    새 스위트가 생기면 이 목록 뒤에 붙어 돌 뿐, 순서를 몰라도 깨지지 않는다
-SLOW="shell nav router fingerprint breakpoints layout-toggle i18n bot-filter"
+SLOW="shell nav router fingerprint breakpoints layout-toggle list-cols i18n bot-filter"
 ORDER=()
 for name in $SLOW; do [[ -f "tests/e2e/$name.js" ]] && ORDER+=("tests/e2e/$name.js"); done
 for f in tests/e2e/*.js; do
