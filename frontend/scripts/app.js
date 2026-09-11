@@ -147,7 +147,7 @@ function renderPveTab() {
 // 도감(pogo_dex_cols)·즐겨찾기(pogo_favs_cols)와 같은 규칙의 별도 키다
 const PVE_COLS_KEY = 'pogo_pve_cols';
 function applyPveLayout(grid) {
-  for (const node of document.querySelectorAll('#content .row-list')) node.classList.toggle('is-list', !grid);
+  rowListLayout(grid);   // 2026-09-12 v3.9.1 D-MAX 와 같은 일이라 components/ui.js 한 곳으로 뺐다
 }
 
 // 2026-09-12 v3.2.0 메인 셸의 화면 머리 동작 슬롯 — 뷰가 $controls 에 달아 둔 .js-head-action 을 옮긴다.
