@@ -8,6 +8,11 @@ const ok = (name, cond, extra = '') => { results.push([cond ? 'PASS' : 'FAIL', n
 (async () => {
   const browser = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium' });
   const ctx = await browser.newContext({ viewport: { width: 390, height: 844 } });
+  // 2026-09-11 v2.57.0 바깥 주소(웹폰트·Firebase)를 끊는다. 이 방(샌드박스)에는 바깥이 없어서
+  // 그 요청들이 타임아웃까지 매달리고, 그동안 첫 렌더가 끝나지 않는다 — 실측 한 번 여는 데 13.7초.
+  // 끊으면 1.2초다(11.5배). 앱은 바깥 것 없이도 돌게 만들어 뒀으니(대체 글꼴·?mock) 검사 내용은 그대로다.
+  // 다른 스위트 열넷은 이미 이렇게 하고 있었다 — 빠진 곳만 맞춘다
+  await ctx.route(/^https?:\/\/(?!localhost)/, (r) => r.abort());
   // 폰트 CDN 차단 (샌드박스 대기 방지)
   await ctx.route(/fonts\.googleapis|fonts\.gstatic|cdn\.jsdelivr/, (r) => r.abort());
   const page = await ctx.newPage();

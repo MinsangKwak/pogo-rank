@@ -27,7 +27,7 @@ const ok = (n, c, x = '') => { console.log((c ? 'PASS' : 'FAIL') + ' ' + n + ' '
   const go = async (hash) => {
     await page.goto(BASE + hash, { waitUntil: 'domcontentloaded' });
     await page.waitForSelector('#splash', { state: 'detached', timeout: 15000 }).catch(() => {});
-    await page.locator('#consent .consent__deny').click().catch(() => {});
+    await page.locator('#consent .consent__deny').click({ timeout: 1500 }).catch(() => {});
     await page.waitForTimeout(500);
   };
   const clearKeys = () => page.evaluate(() => {
@@ -105,7 +105,7 @@ const ok = (n, c, x = '') => { console.log((c ? 'PASS' : 'FAIL') + ' ' + n + ' '
     gpage.on('pageerror', (e) => errs.push(`${label}:` + e));
     await gpage.goto(BASE + hash, { waitUntil: 'domcontentloaded' });
     await gpage.waitForSelector('#splash', { state: 'detached', timeout: 15000 }).catch(() => {});
-    await gpage.locator('#consent .consent__deny').click().catch(() => {});
+    await gpage.locator('#consent .consent__deny').click({ timeout: 1500 }).catch(() => {});
     await gpage.waitForTimeout(500);
     const cols = await gpage.evaluate((s) => {
       const node = document.querySelector(s);
@@ -123,7 +123,7 @@ const ok = (n, c, x = '') => { console.log((c ? 'PASS' : 'FAIL') + ' ' + n + ' '
     spage.on('pageerror', (e) => errs.push(`squeeze ${w}:` + e));
     await spage.goto(BASE + '#/raids', { waitUntil: 'domcontentloaded' });
     await spage.waitForSelector('#splash', { state: 'detached', timeout: 15000 }).catch(() => {});
-    await spage.locator('#consent .consent__deny').click().catch(() => {});
+    await spage.locator('#consent .consent__deny').click({ timeout: 1500 }).catch(() => {});
     await spage.waitForTimeout(500);
     await spage.locator('#page .dex__row').first().click();
     await spage.waitForTimeout(400);
@@ -143,7 +143,7 @@ const ok = (n, c, x = '') => { console.log((c ? 'PASS' : 'FAIL') + ' ' + n + ' '
     ppage.on('pageerror', (e) => errs.push('intro-pos:' + e));
     await ppage.goto(BASE + '#/raids', { waitUntil: 'domcontentloaded' });
     await ppage.waitForSelector('#splash', { state: 'detached', timeout: 15000 }).catch(() => {});
-    await ppage.locator('#consent .consent__deny').click().catch(() => {});
+    await ppage.locator('#consent .consent__deny').click({ timeout: 1500 }).catch(() => {});
     await ppage.waitForTimeout(500);
     const rects = await ppage.evaluate(() => {
       const intro = document.querySelector('#page .gameday__intro');

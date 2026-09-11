@@ -48,7 +48,7 @@ const LEGACY = [
   const go = async (hash) => {
     await page.goto(BASE + hash, { waitUntil: 'domcontentloaded' });
     await page.waitForSelector('#splash', { state: 'detached', timeout: 15000 }).catch(() => {});
-    await page.locator('#consent .consent__deny').click().catch(() => {});
+    await page.locator('#consent .consent__deny').click({ timeout: 1500 }).catch(() => {});
     await page.waitForTimeout(500);
   };
   const seen = async () => page.evaluate(() => ({
@@ -150,7 +150,7 @@ const LEGACY = [
     await narrow.reload({ waitUntil: 'domcontentloaded' });   // 찬 시작 — 공유 링크를 처음 여는 상황
     await narrow.waitForSelector('#splash', { state: 'detached', timeout: 15000 }).catch(() => {});
     await narrow.waitForTimeout(700);
-    await narrow.locator('#consent .consent__deny').click().catch(() => {});
+    await narrow.locator('#consent .consent__deny').click({ timeout: 1500 }).catch(() => {});
     await narrow.waitForTimeout(400);
     const shown = () => narrow.evaluate(() => !!document.querySelector('dialog.modal[open]'));
     ok('좁은 화면: 공유 링크가 팝업을 연다', await shown());
