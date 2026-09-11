@@ -31,8 +31,13 @@ const ok = (n, c, x = '') => { console.log((c ? 'PASS' : 'FAIL') + ' ' + n + ' '
 
   const navLabels = await page.locator('.nav-menu .drawer__label').allTextContents();
   ok('메뉴에 육성 플래너 한 줄', navLabels.filter((t) => t === '육성 플래너').length === 1, navLabels.join('|'));
-  ok('메뉴에서 내 포켓몬 줄은 없어짐', !navLabels.includes('내 포켓몬'), navLabels.join('|'));
-  ok('홈 타일 10개', (await page.locator('.home__tile').count()) === 10);
+  // 2026-09-12 v2.66.0 '내 포켓몬' 을 메뉴로 되돌렸다 — 나란한 형제가 아니라 육성 플래너 아래 자식으로.
+  // v2.47.0 이 지적한 "문이 둘" 은 같은 층에 둘이던 것이 문제였지 화면이 둘인 것이 아니었다
+  ok('메뉴에 내 포켓몬 한 줄', navLabels.filter((t) => t === '내 포켓몬').length === 1, navLabels.join('|'));
+  ok('내 포켓몬은 들여쓴 자식 줄',
+    (await page.locator('.nav-menu .drawer__item--sub .drawer__label').allTextContents()).join('|') === '내 포켓몬',
+    (await page.locator('.nav-menu .drawer__item--sub .drawer__label').allTextContents()).join('|'));
+  ok('홈 타일 9개', (await page.locator('.home__tile').count()) === 9);
 
   // ── 2. 로그아웃 상태 = 잠김 ────────────────────────────────────────────────
   await page.evaluate(() => { try { firebase.auth().signOut(); } catch {} });
@@ -43,10 +48,10 @@ const ok = (n, c, x = '') => { console.log((c ? 'PASS' : 'FAIL') + ' ' + n + ' '
   // 2026-09-10 v2.48.1 잠그는 화면이 늘었다 — 육성 플래너 · 배틀 PvP · 이벤트 일정 · 레이드 보스 · 알 부화.
   // 도감 · 타입 & 상성 · D-MAX · 레이드 PvE 는 로그인 없이 쓰는 화면이라 잠기면 안 된다
   const lockedLabels = await page.locator('.nav-menu a[aria-disabled="true"] .drawer__label').allTextContents();
-  // 2026-09-11 v2.58.0 🔎 검색식 만들기가 늘어 일곱이다
-  ok('잠긴 메뉴 줄이 정확히 일곱', lockedLabels.join('|') === '육성 플래너|레이드 · PvE|배틀 · PvP|이벤트 일정|레이드 보스|알 부화|검색식 만들기', lockedLabels.join('|'));
+  // 2026-09-11 v2.58.0 🔎 검색식 만들기가 늘어 일곱 · 2026-09-12 v2.66.0 내 포켓몬이 돌아와 여덟이다
+  ok('잠긴 메뉴 줄이 정확히 여덟', lockedLabels.join('|') === '이벤트 일정|레이드 보스|알 부화|레이드 · PvE|배틀 · PvP|육성 플래너|내 포켓몬|검색식 만들기', lockedLabels.join('|'));
   const openLabels = await page.locator('.nav-menu a:not([aria-disabled]) .drawer__label').allTextContents();
-  ok('로그인 없이 쓰는 화면은 안 잠긴다', ['포켓몬 도감', '타입 & 상성', 'D-MAX'].every((t) => openLabels.includes(t)), openLabels.join('|'));
+  ok('로그인 없이 쓰는 화면은 안 잠긴다', ['포켓몬 도감', 'D-MAX'].every((t) => openLabels.includes(t)), openLabels.join('|'));
   const lockedTiles = await page.locator('.home__tile[aria-disabled="true"] strong').allTextContents();
   ok('잠긴 홈 타일도 일곱', lockedTiles.length === 7, lockedTiles.join('|'));
   // 잠긴 타일을 눌러도 그 화면으로 가지 않는다 (대신 계정 카드가 열린다)
@@ -97,7 +102,7 @@ const ok = (n, c, x = '') => { console.log((c ? 'PASS' : 'FAIL') + ' ' + n + ' '
     // 그쪽이 먼저 잡힌다. **보이는 것**만 센다
     ok(`${name} 주소도 잠긴 화면`, (await page.locator('.plan__lock:visible').count()) > 0);
   }
-  for (const [hash, name] of [['#/dex', '포켓몬 도감'], ['#/types', '타입 & 상성'], ['#/dmax', 'D-MAX']]) {
+  for (const [hash, name] of [['#/dex', '포켓몬 도감'], ['#/dmax', 'D-MAX']]) {
     await page.goto(BASE + hash, { waitUntil: 'domcontentloaded' });
     await settle(1400);
     ok(`${name} 는 잠기지 않는다`, (await page.locator('.plan__lock:visible').count()) === 0);
@@ -122,7 +127,8 @@ const ok = (n, c, x = '') => { console.log((c ? 'PASS' : 'FAIL') + ' ' + n + ' '
   await page.goto(BASE + '#/planner', { waitUntil: 'domcontentloaded' });
   await settle(1500);
   ok('로그인 상태 복구', (await page.evaluate(() => AUTH.status)) === 'ok', await page.evaluate(() => AUTH.status));
-  ok('잠금 해제 — 탭 줄 2개', (await page.locator('#tabs .tabs__item').count()) === 2);
+  // 2026-09-12 v2.66.0 탭 줄은 걷어냈다 — 잠금이 풀렸는지는 메뉴 줄과 본문으로 확인한다
+  ok('잠금 해제 — 탭 줄은 없다', (await page.locator('#tabs .tabs__item').count()) === 0);
   ok('메뉴 줄 잠금 해제', (await page.locator('#menu-planner').getAttribute('aria-disabled')) === null);
 
   // 육성 현황 — 목업의 카드 넉 장

@@ -14,7 +14,7 @@
 //
 // 제공하는 전역
 //   PLAN_TABS · planRouteFromHash() · applyPlanRoute({ initial }) · switchMode(to, from)
-//   updateModeBadge() · renderPlanTabs() · renderPlan() · initPlanShell()
+//   updateModeBadge() · renderPlan() · initPlanShell()
 //
 // 의존하는 전역
 //   el (dom.js) · track (track.js) · navigateHash · NAV (components/history.js) · closeDrawer · closeModal
@@ -26,9 +26,9 @@ const PLAN_LAST_KEY = 'pogo_plan_last';
 // 번들은 파일 전체가 한 <script> 라 app.js 의 함수들은 호이스팅되지만 const state 는 초기화 전(TDZ)이다.
 // pages.js 가 로드 직후 부르는 renderPage() 는 이 플래그로 "앱이 준비됐는지"를 판단한다 (initPlanShell 이 켠다)
 let _planShellReady = false;
-// [탭 id, 라벨] — 배열 순서가 곧 탭 줄 순서. 후속 버전(배틀·도구·일정)은 여기에 줄을 더한다
-// 2026-09-08 v2.22.0 탭 라벨은 텍스트로 통일 — 도감 쪽 탭(D-MAX·PvE·PvP)과 같은 언어.
-// 아이콘은 탭 줄 오른쪽 바로가기(📕 🧭 ★)에만 쓴다
+// [탭 id, 라벨] — 주소가 어느 화면을 뜻하는지 가리는 허용 목록.
+// 2026-09-12 v2.66.0 탭 줄은 걷어냈다(이동은 왼쪽 메뉴가 맡는다). 이 표는 남는다 —
+// planRouteFromHash() 가 "아는 플래너 화면인가" 를 이 목록으로 판별한다
 const PLAN_TABS = [['home', '육성 현황'], ['collection', '내 포켓몬']];
 
 // 현재 해시가 플래너 주소면 { tab, params }, 아니면 null
@@ -53,6 +53,12 @@ function applyPlanRoute() {
   // 해시 없는 첫 진입은 서비스 홈. 저장된 마지막 모드로 홈을 건너뛰지 않는다.
   state.appMode = route ? 'plan' : 'dex';
   if (!route) state.tab = routeOf()?.route.tab ?? 'home';   // v2.30.0 셸 라우트(#/dmax·#/pve·#/pvp)가 탭을 정한다
+  // 2026-09-12 v2.66.0 도구도 주소가 정한다 (router.js 의 tool). 화면을 그리는 쪽은 지금까지처럼
+  // state.pvpTool·state.pveTool 만 읽는다 — 바뀐 것은 "누가 그 값을 쓰는가" 하나뿐이다.
+  // 탭이 다르면 반드시 null 로 되돌린다: PvP 도구를 켜 둔 채 PvE 로 가면 그 값이 남는다
+  const shell = route ? null : routeOf()?.route;
+  state.pvpTool = shell?.tab === 'pvp' ? (shell.tool ?? null) : null;
+  state.pveTool = shell?.tab === 'pve' ? (shell.tool ?? null) : null;
   state.planTab = route ? route.tab : 'home';
   state.planParams = route ? route.params : null;
   document.body.dataset.mode = state.appMode;  // CSS 가 모드별로 숨길 것(즐겨찾기 카드 등)을 고른다
@@ -90,20 +96,6 @@ function updateModeBadge() {
   }
   const tagline = document.querySelector('.tagline');
   if (tagline) tagline.textContent = isPlan ? '내 개체 키우기 계획' : '편하게 검색하세요';  // 배지와 한 줄에 들어가게 짧게
-}
-
-// 플래너 탭 줄 — 도감 모드의 D-MAX·PvE… 자리에 [홈 | 내 포켓몬] 이 들어간다. 탭 = 해시 이동이라 뒤로가기가 탭도 되돌린다
-function renderPlanTabs() {
-  if (planLocked()) return;  // v2.47.0 잠긴 화면에서는 탭도 그리지 않는다 (못 가는 곳으로 가는 버튼)
-  for (const [id, label] of PLAN_TABS) {
-    $tabs.append(el('button', {
-      class: 'tabs__item', role: 'tab', 'aria-selected': String(state.planTab === id),
-      onclick: () => {
-        track('plan_tab', { tab: id });
-        navigateHash(routeHash(id === 'home' ? 'planner' : `planner-${id}`));   // v2.30.0 주소는 router.js 표에서
-      },
-    }, label));
-  }
 }
 
 // ── 2026-09-10 v2.47.0 로그인 잠금 ────────────────────────────────────────────

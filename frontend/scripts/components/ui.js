@@ -99,10 +99,14 @@ function layoutToggle(storageKey, grid, onToggle, extraClass = '') {
   const $wrap = el('div', { class: `seg-view${extraClass ? ' ' + extraClass : ''}`, role: 'group', 'aria-label': '보기 방식' });
   // [이 칸이 그리드인가, 아이콘, 라벨] — 순서가 곧 화면 순서다
   const views = [[false, '☰', '리스트'], [true, '⊞', '그리드']];
+  // 2026-09-12 v2.67.0 글자를 span 으로 감싼다 — 좁은 화면에서 아이콘만 남기려면 CSS 가 집을
+  // 요소가 있어야 한다(맨 텍스트 노드는 감출 수 없다). 글자를 감춰도 이름은 aria-label 로 남는다
   const buttons = views.map(([isGrid, icon, label]) => el('button', {
     'aria-pressed': String(grid === isGrid),
+    'aria-label': label,
     onclick: () => pick(isGrid),
-  }, el('span', { class: 'seg-view__ico', 'aria-hidden': 'true' }, icon), label));
+  }, el('span', { class: 'seg-view__ico', 'aria-hidden': 'true' }, icon),
+     el('span', { class: 'seg-view__label' }, label)));
   function pick(next) {
     if (next === grid) return;   // 이미 그 보기다 — 저장도 다시 그리기도 하지 않는다
     grid = next;

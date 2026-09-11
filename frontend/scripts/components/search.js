@@ -218,9 +218,10 @@ function renderSearchResults() {
     $sugg.append(el('span', { class: 'sugg__none' }, types.length ? '이 타입 조합에 맞는 포켓몬이 없어요' : '검색 결과가 없어요'));
     if (query) track('search_none', { q: query.slice(0, 20), t: types.join(',') });  // 2026-09-06 v2.9.0 GA4: 못 찾은 검색어 — 별칭·표기 보강 근거
   }
-  // 타입만 골라 잘린 목록은 상성 검색 페이지(전체 목록 + 배율표)로 이어 준다
+  // 2026-09-12 v2.63.0 '상성 검색에서 전부 보기' 로 이어 주던 줄을 뗐다 — 그 화면을 접었다.
+  // 잘렸다는 사실만 알린다 (검색어를 더 좁히면 원하는 것이 올라온다)
   if (types.length && hits.length < candidates.length) {
-    $sugg.append(el('button', { class: 'sugg__more', onclick: () => openTypeSearch(types, null, 'search') }, `${label(types)} 타입 ${candidates.length}마리 전부 보기 · 상성 검색 ▸`));
+    $sugg.append(el('span', { class: 'sugg__none' }, `${label(types)} 타입은 ${candidates.length}마리 — 이름을 더 넣어 좁혀 보세요`));
   }
 }
 function label(types) { return types.map((typeKey) => TYPE_KO[typeKey]).join('·'); }

@@ -25,12 +25,38 @@ function renderPvp() {
       render();
     });
   // 2026-09-07 v2.16.0 오른쪽 도구 버튼: 🃏 PvP 덱 짜기 (옛 IF 탭). 리그는 위 세그먼트를 그대로 쓴다
-  $controls.append(el('div', { class: 'controls__row' }, leagueSeg, toolButton('🃏 덱 짜기', state.pvpTool === 'deck', () => {
-    state.pvpTool = state.pvpTool === 'deck' ? null : 'deck';
-    track('tool_pvpdeck', { on: state.pvpTool ? 1 : 0 });
-    render();
-  })));
-  if (state.pvpTool === 'deck') return renderPvpDeck();
+  // 2026-09-12 v2.63.0 🧬 개체값 순위를 그 옆에 붙였다 — 메뉴에 따로 두지 않는다.
+  // "이 리그에서 뭐가 센가" 를 보다가 "그럼 내 개체는 몇 위지" 가 떠오르는 자리라,
+  // 화면을 옮기지 않고 그 자리에서 펼치는 것이 맞다 (덱 짜기와 같은 문법)
+  // 2026-09-12 v2.66.0 도구를 켜는 일이 곧 화면 이동이다 — 주소가 바뀌므로 뒤로가기로 랭킹에
+  // 돌아오고, 링크를 보내면 상대도 같은 도구를 본다. 전에는 셋 다 #/pvp 한 주소였다
+  const tool = (id) => () => {
+    track(id === 'deck' ? 'tool_pvpdeck' : 'tool_ivrank', { on: state.pvpTool === id ? 0 : 1 });
+    navigateHash(state.pvpTool === id ? routeHash('pvp') : routeHash(id === 'deck' ? 'pvp-deck' : 'ivrank'));
+  };
+  // 2026-09-12 v2.64.0 읽는 순서대로 놓는다. 이 화면에 온 사람은
+  //   ① 리그를 고르고 → ② 타입으로 좁히고 → ③ 덱을 짜거나 내 개체 순위를 본다.
+  // 전에는 도구 버튼이 리그 줄에 얹혀 있어, 리그를 고르기도 전에 "덱 짜기" 가 먼저 눈에 띄고
+  // 좁은 화면에서는 그 줄이 두 줄로 접혀 타입 필터를 아래로 밀어냈다
+  // 2026-09-12 v2.67.0 리그 세그먼트를 도구 줄 안으로 넣는다 — 줄 하나를 통째로 쓰고 있었다.
+  // 한 줄의 문법: [지금 무엇을 보는 중인가] [그 안에서 어느 리그인가] ……… [다른 걸 해 볼까].
+  // 켜 둔 도구 버튼이 그 줄의 제목 노릇을 하고, 리그 탭이 바로 그 옆에서 범위를 좁힌다.
+  // 랭킹 화면은 켜 둔 도구가 없으니 리그 탭이 맨 앞에 서고 도구 둘이 오른쪽으로 간다
+  const buttons = {
+    ivrank: () => toolButton('🧬 개체값 순위', state.pvpTool === 'ivrank', tool('ivrank')),
+    deck: () => toolButton('🃏 덱 짜기', state.pvpTool === 'deck', tool('deck')),
+  };
+  const controlRow = (activeId) => {
+    const others = Object.keys(buttons).filter((id) => id !== activeId);
+    return el('div', { class: 'controls__row controls__row--tools' },
+      activeId ? buttons[activeId]() : '',
+      leagueSeg,
+      el('div', { class: 'controls__rest' }, ...others.map((id) => buttons[id]())));
+  };
+  if (state.pvpTool === 'deck') { $controls.append(controlRow('deck')); return renderPvpDeck(); }
+  // 페이지 렌더러가 돌려주는 본문을 그대로 얹는다 (#/ivrank 주소로도 같은 화면이 열린다)
+  if (state.pvpTool === 'ivrank') { $controls.append(controlRow('ivrank')); $content.append(renderIvRankPage()); return; }
+  $controls.append(controlRow(null));
   const leagueRanking = PVP_DATA[state.league];
   // 이 리그 랭킹에 한 마리라도 있는 속성만 칩으로 만든다
   const presentTypes = new Set(leagueRanking.flatMap((pokemon) => pokemon.types));

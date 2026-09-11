@@ -21,7 +21,6 @@ const ROUTES = [
   ['#/planner', '#/planner', 'planner', '육성 플래너'],
   ['#/planner/collection', '#/planner/collection', 'planner-collection', '내 포켓몬'],
   ['#/dex', '#/dex', 'dex', '포켓몬 도감'],
-  ['#/types', '#/types', 'types', '타입 & 상성'],
   ['#/schedule', '#/schedule', 'schedule', '이벤트 일정'],
   ['#/raids', '#/raids', 'raids', '레이드 보스'],
   ['#/eggs', '#/eggs', 'eggs', '알 부화'],
@@ -84,10 +83,14 @@ const LEGACY = [
   await go('#/dex');
   const navHrefs = await page.locator('.nav-menu a').evaluateAll((ns) => ns.map((n) => n.getAttribute('href')));
   ok('이동 목록에 옛 주소 없음', !navHrefs.some((href) => /#\/(rank|plan)(\/|$)/.test(href)), navHrefs.filter((h) => /rank|\/plan\b/.test(h)).join(' '));
-  // v2.47.0 '내 포켓몬' 은 메뉴에서 내렸다 — 육성 플래너 한 줄 안의 탭이 그 자리를 대신한다.
-  // 주소 자체는 살아 있어야 하므로 위 ROUTES 표가 따로 확인한다
   ok('이동 목록에 새 주소', navHrefs.includes('#/pve') && navHrefs.includes('#/planner'), navHrefs.join(' '));
-  ok('이동 목록에 내 포켓몬 줄은 없다', !navHrefs.includes('#/planner/collection'), navHrefs.join(' '));
+  // 2026-09-12 v2.66.0 '내 포켓몬' 이 메뉴로 돌아왔다 — 육성 플래너 **바로 뒤**에 선다.
+  // 표에 적은 순서가 아니라 소속 순서로 정렬한다 (router.js ROUTE_NAV)
+  ok('이동 목록에 내 포켓몬 줄', navHrefs.includes('#/planner/collection'), navHrefs.join(' '));
+  ok('내 포켓몬이 육성 플래너 바로 뒤',
+    navHrefs.indexOf('#/planner/collection') === navHrefs.indexOf('#/planner') + 1, navHrefs.join(' '));
+  // 도구 화면(#/pvp/deck 등)은 메뉴에 두지 않는다 — 부모 화면의 버튼 하나가 유일한 길이다
+  ok('도구 화면은 메뉴에 없다', !navHrefs.some((href) => /#\/(pvp\/(deck|ivrank)|pve\/solo)$/.test(href)), navHrefs.join(' '));
 
   // ── 측정용 식별자: 전체 페이지
   for (const [hash, id] of [['#/dex', 'dex'], ['#/raids', 'raids'], ['#/schedule', 'schedule'], ['#/favs', 'favs']]) {
