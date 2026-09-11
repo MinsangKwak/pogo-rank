@@ -45,9 +45,13 @@ jobs:
         with:
           python-version: '3.12'
       # 스프라이트 캐시는 실서비스 워크플로와 같은 키 계열을 써서 서로 재사용한다
+      # 2026-09-12 v2.67.0 움직이는 그림(data/sprites-anim, 949장 51MB)도 같은 캐시에 —
+      # 빼 두면 매 빌드가 51MB 를 다시 받고 없는 223종에 404 를 다시 묻는다
       - uses: actions/cache@v4
         with:
-          path: data/sprites
+          path: |
+            data/sprites
+            data/sprites-anim
           key: sprites-v1-${{ github.run_id }}
           restore-keys: sprites-v1-
       - name: Build site (dev channel)

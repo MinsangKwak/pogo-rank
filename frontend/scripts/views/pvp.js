@@ -38,15 +38,25 @@ function renderPvp() {
   //   ① 리그를 고르고 → ② 타입으로 좁히고 → ③ 덱을 짜거나 내 개체 순위를 본다.
   // 전에는 도구 버튼이 리그 줄에 얹혀 있어, 리그를 고르기도 전에 "덱 짜기" 가 먼저 눈에 띄고
   // 좁은 화면에서는 그 줄이 두 줄로 접혀 타입 필터를 아래로 밀어냈다
-  // 2026-09-12 v2.66.0 개체값 순위는 왼쪽(리그에 딸린 정보), 덱 짜기는 오른쪽(리그와 상관없는 다른 일).
-  // 둘을 나란히 붙여 두니 "리그를 고른 다음 무엇을 볼까" 와 "이제 다른 걸 해 볼까" 가 한 덩이로 읽혔다
-  const toolRow = el('div', { class: 'controls__row controls__row--tools' },
-    toolButton('🧬 개체값 순위', state.pvpTool === 'ivrank', tool('ivrank')),
-    toolButton('🃏 덱 짜기', state.pvpTool === 'deck', tool('deck')));
-  $controls.append(el('div', { class: 'controls__row' }, leagueSeg));
-  if (state.pvpTool === 'deck') { $controls.append(toolRow); return renderPvpDeck(); }
+  // 2026-09-12 v2.67.0 리그 세그먼트를 도구 줄 안으로 넣는다 — 줄 하나를 통째로 쓰고 있었다.
+  // 한 줄의 문법: [지금 무엇을 보는 중인가] [그 안에서 어느 리그인가] ……… [다른 걸 해 볼까].
+  // 켜 둔 도구 버튼이 그 줄의 제목 노릇을 하고, 리그 탭이 바로 그 옆에서 범위를 좁힌다.
+  // 랭킹 화면은 켜 둔 도구가 없으니 리그 탭이 맨 앞에 서고 도구 둘이 오른쪽으로 간다
+  const buttons = {
+    ivrank: () => toolButton('🧬 개체값 순위', state.pvpTool === 'ivrank', tool('ivrank')),
+    deck: () => toolButton('🃏 덱 짜기', state.pvpTool === 'deck', tool('deck')),
+  };
+  const controlRow = (activeId) => {
+    const others = Object.keys(buttons).filter((id) => id !== activeId);
+    return el('div', { class: 'controls__row controls__row--tools' },
+      activeId ? buttons[activeId]() : '',
+      leagueSeg,
+      el('div', { class: 'controls__rest' }, ...others.map((id) => buttons[id]())));
+  };
+  if (state.pvpTool === 'deck') { $controls.append(controlRow('deck')); return renderPvpDeck(); }
   // 페이지 렌더러가 돌려주는 본문을 그대로 얹는다 (#/ivrank 주소로도 같은 화면이 열린다)
-  if (state.pvpTool === 'ivrank') { $controls.append(toolRow); $content.append(renderIvRankPage()); return; }
+  if (state.pvpTool === 'ivrank') { $controls.append(controlRow('ivrank')); $content.append(renderIvRankPage()); return; }
+  $controls.append(controlRow(null));
   const leagueRanking = PVP_DATA[state.league];
   // 이 리그 랭킹에 한 마리라도 있는 속성만 칩으로 만든다
   const presentTypes = new Set(leagueRanking.flatMap((pokemon) => pokemon.types));
@@ -55,7 +65,7 @@ function renderPvp() {
     state.pvpType = id;
     render();
   });
-  $controls.append(typeChips, toolRow);
+  $controls.append(typeChips);
 
   const league = LEAGUES.find((leagueOption) => leagueOption.id === state.league);
   const items = state.pvpType === 'all' ? leagueRanking : leagueRanking.filter((pokemon) => pokemon.types.includes(state.pvpType));  // 2026-09-03 v2.2.0 보유만 필터 제거

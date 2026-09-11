@@ -192,9 +192,16 @@ const ok = (name, cond, extra = '') => results.push([cond ? 'PASS' : 'FAIL', nam
   await page.goto(BASE + '?mock=1#/pvp', { waitUntil: 'domcontentloaded' });
   await settle();
   const pvpTools = await page.locator('.controls__row .tool-btn').allTextContents();
-  ok('개체값 순위가 왼쪽, 덱 짜기가 오른쪽', pvpTools.join('|') === '🧬 개체값 순위|🃏 덱 짜기', pvpTools.join('|'));
-  const toolBoxes = await page.locator('.controls__row--tools .tool-btn').evaluateAll((ns) => ns.map((n) => n.getBoundingClientRect().left));
-  ok('덱 짜기가 실제로 오른쪽 끝', toolBoxes.length === 2 && toolBoxes[1] > toolBoxes[0] + 200, JSON.stringify(toolBoxes.map(Math.round)));
+  ok('개체값 순위가 앞, 덱 짜기가 뒤', pvpTools.join('|') === '🧬 개체값 순위|🃏 덱 짜기', pvpTools.join('|'));
+  // 2026-09-12 v2.67.0 오른쪽 덩이(.controls__rest)가 줄의 마지막이고 margin-left:auto 로 밀린다.
+  // 좁은 화면(이 검사는 390px)에서는 줄이 접혀 자리가 달라지므로 기하가 아니라 구조로 확인한다
+  ok('도구는 줄의 오른쪽 덩이에 있다', await page.evaluate(() => {
+    const row = document.querySelector('.controls__row--tools');
+    const rest = row && row.querySelector(':scope > .controls__rest');
+    if (!rest || row.lastElementChild !== rest) return false;
+    // margin-left:auto 는 computed 로 읽으면 px 로 풀리므로, 실제로 오른쪽 끝에 붙었는지로 본다
+    return Math.abs(rest.getBoundingClientRect().right - row.getBoundingClientRect().right) < 2;
+  }));
   await page.click('.tool-btn:has-text("개체값 순위")');
   await settle();
   ok('주소가 바뀐다', (await page.evaluate(() => location.hash)) === '#/pvp/ivrank', await page.evaluate(() => location.hash));
@@ -232,16 +239,20 @@ const ok = (name, cond, extra = '') => results.push([cond ? 'PASS' : 'FAIL', nam
       (await page.locator('.nav-menu .drawer__item--sub').allTextContents()).join('|'));
   }
 
-  // 8e. 배틀 PvP 는 읽는 순서대로 놓인다 — ① 리그 ② 타입 ③ 도구
+  // 8e. 배틀 PvP 의 컨트롤 — 2026-09-12 v2.67.0 리그 세그먼트를 도구 줄 안으로 넣어 줄 하나를 줄였다.
+  // 한 줄의 문법: [지금 보는 도구] [리그] ……… [다른 도구]. 그 아래가 타입 필터다
   {
     await page.goto(BASE + '?mock=1#/pvp', { waitUntil: 'domcontentloaded' });
     await settle();
     const order = await page.evaluate(() => [...document.querySelectorAll('#controls > *')].map((n) => {
-      if (n.querySelector('.seg')) return '리그';
-      if (n.classList.contains('controls__row--tools')) return '도구';
-      return '타입';
+      const parts = [];
+      if (n.querySelector(':scope > .seg')) parts.push('리그');
+      if (n.querySelector('.tool-btn')) parts.push('도구');
+      return parts.length ? parts.join('+') : '타입';
     }));
-    ok('컨트롤이 리그 → 타입 → 도구 순서', order.join(' → ') === '리그 → 타입 → 도구', order.join(' → '));
+    ok('컨트롤이 [리그+도구] → 타입 두 줄', order.join(' → ') === '리그+도구 → 타입', order.join(' → '));
+    // 리그가 도구 줄 **안**에 있어야 한다 (따로 줄을 쓰지 않는다)
+    ok('리그 세그먼트가 도구 줄 안에', (await page.locator('.controls__row--tools > .seg').count()) === 1);
   }
 
   // 8f. ★ 즐겨찾기는 헤더 버튼을 눌러 팝업으로 연다 (화면 맨 위 카드였던 것)

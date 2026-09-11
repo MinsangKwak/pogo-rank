@@ -110,7 +110,7 @@ json.dump(pvp_all, open('data/pvp_all.json', 'w', encoding='utf-8'), ensure_asci
 
 # ── frontend/ 의 CSS·JS를 순서대로 인라인해 단일 dist/index.html 조립 ──
 # 순서가 곧 캐스케이드(CSS)·실행 순서(JS)이므로 새 파일은 여기 목록에 추가
-APP_VERSION = 'v2.66.0'  # 한 화면 한 기능 — 도구마다 주소 · 입구 하나로 · 구분선을 필터 아래로
+APP_VERSION = 'v2.67.0'  # 움직이는 상세 그림 · 컨트롤 한 줄로 · 검색 엔진 메타
 # 2026-09-05 v2.7.3 빌드 채널 — 'prod'(기본) / 'dev'. dev 브랜치 워크플로(.github/workflows/deploy-dev.yml)가 BUILD_CHANNEL=dev 로 부른다.
 # dev 빌드는 (1) 버전 배지에 -dev 를 붙여 화면에서 구분되고 (2) GA 스니펫을 넣지 않아 통계가 섞이지 않고
 # (3) robots.txt 를 전부 차단 + <meta name="robots" content="noindex"> 로 검색 색인을 막는다. 나머지는 prod 와 동일
@@ -328,6 +328,18 @@ if os.path.exists('data/sprites'):
             if not INLINE:
                 shutil_copy = __import__('shutil').copy(source_path, f'dist/sprites/{filename}')
 
+# 2026-09-12 v2.67.0 움직이는 그림 — 상세 화면에서만 쓴다 (backend/sprites.py 참고).
+# 목록은 정지 png 그대로다: GIF 는 png 의 13배라 100장을 한 번에 그리는 도감이 감당하지 못한다.
+# 인라인 미리보기 빌드(SPRITE_INLINE)에는 넣지 않는다 — 단일 HTML 이 수십 MB 가 된다
+sprite_anim_ids = []
+if not INLINE and os.path.exists('data/sprites-anim'):
+    os.makedirs('dist/sprites-anim', exist_ok=True)
+    for filename in os.listdir('data/sprites-anim'):
+        source_path = f'data/sprites-anim/{filename}'
+        if filename.endswith('.gif') and open(source_path, 'rb').read(6) in (b'GIF87a', b'GIF89a'):
+            sprite_anim_ids.append(int(filename[:-4]))
+            __import__('shutil').copy(source_path, f'dist/sprites-anim/{filename}')
+
 # ── 순위 변동(▲▼) 계산 ────────────────────────────────────────────────────
 # 직전 빌드의 순위와 비교해 각 행에 'd'(변동 폭)를 심는다. 자세한 규칙은 backend/rank_diff.py 참고.
 # PvE·D-MAX 표가 아직 없는 1차 실행에서는 건너뛴다 (그때 비교하면 잘못된 기준이 남는다).
@@ -387,6 +399,7 @@ const DEX_DATA = {optional_json('data/dex.json')};
 const BOSS_LIST = {optional_json('data/bosses.json') or '[]'};
 const GAMEDAY = {optional_json('data/gameday.json')};              // 2026-09-08 v2.25.0 레이드 보스·알 부화 풀·이벤트 원본 (backend/gameday_build.py)
 const SPRITE_IDS = {json.dumps(sorted(sprite_ids))};
+const SPRITE_ANIM_IDS = {json.dumps(sorted(sprite_anim_ids))};
 const SPRITES = {(open('data/sprites.json').read() if INLINE and os.path.exists('data/sprites.json') else 'null')};
 '''
 # index.html 템플릿의 자리표시자를 차례로 실제 내용으로 치환한다
@@ -407,6 +420,13 @@ if BUILD_CHANNEL == 'dev':
     # 2026-09-08 v2.27.0 미리보기의 공유 카드가 실서비스를 가리키면 안 된다 — 주소를 dev 로 바꾼다.
     # (색인은 어차피 막지만, 링크를 붙였을 때 엉뚱한 곳으로 가는 것을 막으려는 것)
     html = html.replace(SITE_URL, DEV_SITE_URL)
+else:
+    # 2026-09-12 v2.67.0 실서비스는 색인을 명시한다. robots 를 안 적으면 기본이 index 라 동작은 같지만,
+    # max-image-preview:large 가 있어야 구글이 검색 결과에 공유 카드 그림(og.png)을 크게 띄우고,
+    # max-snippet:-1 이 있어야 발췌를 자르지 않는다. dev 의 noindex 와 같은 자리에 넣어
+    # 한 빌드에 robots 줄이 정확히 하나만 있게 한다
+    html = html.replace('</title>',
+                        '</title>\n<meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">', 1)
 # 2026-09-03 v2.2.0 앱 설정 주입
 # 2026-09-10 v2.50.0 BUILD_VERSION — 지금 띄운 것이 어느 빌드인지 코드가 알아야 한다.
 # 헤더에 글자로 박아 두던 것(__VERSION__)은 app-shell.js 가 헤더를 통째로 갈아 끼우면서 사라진다.
