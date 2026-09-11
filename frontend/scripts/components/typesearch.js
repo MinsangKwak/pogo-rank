@@ -98,7 +98,12 @@ function renderTypeSearchPage() {
   const { types: initialTypes, mon } = typeSearchParams();
   let pokemon = mon && typeof buildSearchIndex === 'function'
     ? buildSearchIndex().find((entry) => Number(entry.sprite) === Number(mon)) ?? null : null;
+  // 2026-09-11 v2.61.0 아무것도 안 고른 첫 화면은 칩 줄만 덩그러니 남아 휑했다.
+  // 노말을 기본으로 켜 두면 이 화면이 무엇을 보여 주는 곳인지 한눈에 읽힌다 —
+  // 노말은 약점이 격투 하나뿐이라 표가 가장 짧아, 본보기로 놓기에 알맞다.
+  // 주소로 들어온 선택(?t=)이나 포켓몬(&mon=)이 있으면 그쪽이 먼저다
   let selected = initialTypes.length ? [...initialTypes] : (pokemon?.types ?? []).slice(0, 2);
+  if (!selected.length && !pokemon) selected = ['normal'];
 
   const $head = el('div', {});
   const $chips = el('div', { class: 'types__pick' });

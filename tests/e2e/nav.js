@@ -76,9 +76,9 @@ const ok = (name, cond, extra = '') => results.push([cond ? 'PASS' : 'FAIL', nam
   // 2026-09-10 v2.47.0 '내 포켓몬' 타일과 '육성 플래너' 타일을 하나로 합쳐 10 → 9 가 됐다
   // 2026-09-11 v2.58.0 🔎 검색식 만들기가 늘어 10 이다. ☰ 메뉴와 홈 타일은 **같은 수**여야 한다 —
   // 같은 화면인데 문이 한쪽에만 있으면 메뉴를 안 여는 사람은 그 화면이 있는 줄도 모른다
-  ok('홈 타일 10개', (await page.locator('.home__tile').count()) === 10);
+  ok('홈 타일 11개', (await page.locator('.home__tile').count()) === 11);
   const icons = await page.locator('.home__icon').allTextContents();
-  ok('홈 아이콘이 이모지', icons.join('') === '🌱📕🧭✨⚔️🃏📅⚔️🥚🔎', icons.join(''));
+  ok('홈 아이콘이 이모지', icons.join('') === '🌱📕🧭✨⚔️🃏📅⚔️🥚🔎🧬', icons.join(''));
   ok('홈에서 탭 줄 숨김', await page.locator('#tabs').isHidden());
   const tile = await page.locator('.home__tile').first().evaluate((n) => {
     const s = getComputedStyle(n);
@@ -104,19 +104,20 @@ const ok = (name, cond, extra = '') => results.push([cond ? 'PASS' : 'FAIL', nam
   await page.click('.home__tile:has-text("D-MAX")');
   await page.waitForFunction(() => location.hash === '#/dmax', null, { timeout: 5000 });
   await page.waitForTimeout(300);
-  ok('D-MAX 진입 시 탭 줄 표시', await page.locator('#tabs').isVisible());
-  ok('탭 3개 + 바로가기', (await page.locator('#tabs .tabs__item:not(.tabs__item--quick)').allTextContents()).join('|') === 'D-MAX|PvE|PvP');
-  ok('현재 탭 aria-selected', await page.locator('#tabs .tabs__item[aria-selected="true"]').textContent() === 'D-MAX');
+  // 2026-09-11 v2.61.0 랭킹 탭 줄과 바로가기(📕 🧭 ★)를 걷어냈다 — 왼쪽 메뉴가 늘 펼쳐져 있어
+  // 같은 곳으로 가는 길이 화면에 두 벌이었다. 이동은 메뉴와 주소가 맡는다
+  ok('랭킹 화면에 탭 줄이 없다', await page.locator('#tabs').isHidden());
+  ok('바로가기도 없다', (await page.locator('#tabs .tabs__item--quick').count()) === 0);
   // v2.30.0 상단 바는 늘 로고, 화면 이름은 본문 헤더로 (좁은 화면도 PC 와 같은 규칙)
   ok('상단 바는 로고', (await page.locator('#app-title').textContent()).trim() === 'POGO PLAN');
   ok('화면 헤더 = D-MAX', (await page.locator('#page-head h2').textContent()) === 'D-MAX');
-  await page.click('#tabs .tabs__item:has-text("PvE")');
+  // 메뉴로 옮겨 다닌다 (탭 줄이 하던 일). 좁은 화면은 메뉴가 드로어 안이라 먼저 연다
+  if (!wide) { await page.click('#menu-toggle'); await page.waitForTimeout(350); }
+  await page.click('.nav-menu a:has-text("레이드 · PvE")');
   await page.waitForFunction(() => location.hash === '#/pve', null, { timeout: 5000 });
-  await page.waitForTimeout(300);
-  ok('탭으로 PvE 이동 (주소·제목 동기화)', (await page.locator('#page-head h2').textContent()) === '레이드 · PvE');
-  ok('PvE 탭 선택 표시', await page.locator('#tabs .tabs__item[aria-selected="true"]').textContent() === 'PvE');
-  const quick = await page.locator('#tabs .tabs__item--quick').allTextContents();
-  ok('바로가기 📕 🧭 ★', quick.join('|') === '📕 도감|🧭 상성|★ 즐겨찾기 9', JSON.stringify(quick));
+  await page.waitForTimeout(400);
+  ok('메뉴로 PvE 이동 (주소·제목 동기화)', (await page.locator('#page-head h2').textContent()) === '레이드 · PvE');
+  ok('메뉴에서 현재 위치 표시', (await page.locator('.nav-menu [aria-current="page"] .drawer__label').first().textContent()) === '레이드 · PvE');
   await page.goBack();
   await page.waitForTimeout(300);
   ok('뒤로가기로 D-MAX 복귀', (await page.locator('#page-head h2').textContent()) === 'D-MAX');
@@ -166,7 +167,7 @@ const ok = (name, cond, extra = '') => results.push([cond ? 'PASS' : 'FAIL', nam
   ok('드로어 서비스 홈 항목', (await page.locator('.nav-menu a .drawer__label').first().textContent()) === '서비스 홈');
   await page.click('.nav-menu a:has-text("서비스 홈")');
   await page.waitForTimeout(400);
-  ok('서비스 홈으로 이동', (await page.locator('.home__tile').count()) === 10 && !(await page.evaluate(() => location.hash)));
+  ok('서비스 홈으로 이동', (await page.locator('.home__tile').count()) === 11 && !(await page.evaluate(() => location.hash)));
 
   // 8. 플래너 탭 라벨 텍스트 통일
   await page.goto(BASE + '?mock=1#/planner/collection', { waitUntil: 'domcontentloaded' });
@@ -179,8 +180,14 @@ const ok = (name, cond, extra = '') => results.push([cond ? 'PASS' : 'FAIL', nam
   //     .push 에서 예외가 났고, 결과 영역이 통째로 비었다. 예외는 콘솔에만 남아 화면은 조용히 아무것도 안 했다
   await page.goto(BASE + '?mock=1#/types', { waitUntil: 'domcontentloaded' });
   await settle();
-  await page.locator('.types__pick .chips__item').first().click();
-  await page.waitForTimeout(400);
+  // 2026-09-11 v2.61.0 첫 화면이 노말로 켜져 있다 (빈 화면이 휑해서) — 이미 결과가 있어야 한다
+  const typeSecsFirst = await page.locator('.types__sec h3').allTextContents();
+  ok('타입 화면 첫 진입에 이미 결과', typeSecsFirst.length > 0, typeSecsFirst.join(' | ').slice(0, 60));
+  ok('기본은 노말', (await page.locator('.types__pick .chips__item[aria-pressed="true"]').allTextContents()).join('|') === '노말',
+    (await page.locator('.types__pick .chips__item[aria-pressed="true"]').allTextContents()).join('|'));
+  // 아직 안 켜진 칩을 눌러 다시 그려지는지 본다
+  await page.locator('.types__pick .chips__item[aria-pressed="false"]').first().click();
+  await page.waitForTimeout(500);
   const typeSecs = await page.locator('.types__sec h3').allTextContents();
   ok('타입 칩 → 배율표', typeSecs.some((text) => text.includes('때릴 때')), typeSecs.join(' | ').slice(0, 80));
   ok('타입 칩 → 그 타입 포켓몬 목록', (await page.locator('.types__mons .boss__rec').count()) > 0);

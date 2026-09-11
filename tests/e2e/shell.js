@@ -262,7 +262,7 @@ const ok = (n, c, x = '') => { console.log((c ? 'PASS' : 'FAIL') + ' ' + n + ' '
       const s = await menuState();
       ok(`폭 왕복 ${wLabel}(${w}) 기준 안내·트레이너 코드 유지`, s.note && s.trainer, JSON.stringify(s));
       // v2.47.0 '내 포켓몬'·'육성 플래너' 를 한 줄로 합쳐 11 → 10 (서비스 홈 + 화면 9개)
-      ok(`폭 왕복 ${wLabel}(${w}) 이동 목록 11개·한 벌`, s.nav === 11 && s.navMenus === 1, JSON.stringify(s));
+      ok(`폭 왕복 ${wLabel}(${w}) 이동 목록 12개·한 벌`, s.nav === 12 && s.navMenus === 1, JSON.stringify(s));
       ok(`폭 왕복 ${wLabel}(${w}) #drawer-extra 한 벌(복제 아님)`, s.extras === 1, JSON.stringify(s));
     }
     ok('폭 왕복 중 오류 없음', errs.length === 0, errs.join(' | ').slice(0, 160));

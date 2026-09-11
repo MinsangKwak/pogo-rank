@@ -1,0 +1,68 @@
+/* 🧬 PvP 개체값 순위 (v2.61.0 실험 기능) — components/ivrank.js */
+
+/* 개체값 세 칸: 공격 · 방어 · 체력. 숫자만 넣는 칸이라 넓을 이유가 없다 */
+.ivrank__ivs { display: flex; gap: 0.8rem; margin: 0.6rem 0 0.4rem; }
+.ivrank__ivbox { display: flex; flex-direction: column; gap: 0.3rem; flex: 1 1 0; min-width: 0; }
+.ivrank__iv {
+  width: 100%; padding: 0.9rem 1rem; text-align: center;
+  font-size: var(--fs-lead); font-weight: 700; color: var(--fg);
+  border: 1px solid var(--line); border-radius: 1rem; background: var(--surface);
+}
+.ivrank__iv:focus { outline: none; border-color: var(--brand); }
+/* 숫자 화살표를 지운다 — 0~15 는 직접 치는 게 빠르다 */
+.ivrank__iv::-webkit-outer-spin-button, .ivrank__iv::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+.ivrank__iv { -moz-appearance: textfield; }
+
+.ivrank__floors { margin: 0.6rem 0 0.4rem; }
+
+/* 판정 한 줄 — 이 개체를 어디에 쓸지 */
+.ivrank__verdict {
+  margin: 1.6rem 0 1rem; padding: 1.2rem 1.4rem; line-height: 1.6;
+  border: 1px solid var(--line); border-left: 3px solid var(--brand-2);
+  border-radius: 1rem; background: var(--surface);
+}
+.ivrank__verdict b { color: var(--brand-2); }
+
+/* 리그 카드 넷 — 좁은 화면은 둘씩, 넓으면 한 줄에 넷 */
+.ivrank__cards { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; }
+@media (min-width: 700px) { .ivrank__cards { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+.ivrank__card {
+  display: flex; flex-direction: column; gap: 0.2rem; min-width: 0;
+  padding: 1.4rem 1.2rem; text-align: center;
+  border: 1px solid var(--line); border-radius: 1.2rem; background: var(--surface);
+}
+.ivrank__card.is-top { border-color: var(--brand); }
+.ivrank__card.is-out, .ivrank__card--master { opacity: .72; }
+.ivrank__lg { display: flex; flex-direction: column; gap: 1px; font-size: var(--fs-sub); font-weight: 700; }
+.ivrank__rank { font-size: 2rem; font-weight: 700; letter-spacing: -0.02em; margin-top: 0.6rem; }
+.ivrank__card.is-top .ivrank__rank { color: var(--brand); }
+.ivrank__total { font-size: var(--fs-sub); font-weight: 500; color: var(--muted); letter-spacing: 0; }
+.ivrank__pct { font-size: var(--fs-sub); font-weight: 600; color: var(--brand-2); }
+.ivrank__best { margin-top: 0.4rem; padding-top: 0.6rem; border-top: 1px solid var(--line); }
+
+/* 상위 열 줄 — 그럼 뭘 노려야 하나 */
+.ivrank__top { margin-top: 0.8rem; }
+.ivrank__list { list-style: none; margin: 0; padding: 0; }
+.ivrank__list li {
+  display: flex; align-items: center; gap: 1rem;
+  padding: 0.8rem 1.2rem; border-bottom: 1px solid var(--line);
+}
+.ivrank__list li.is-mine { background: color-mix(in srgb, var(--brand) 10%, transparent); border-radius: 0.8rem; }
+.ivrank__no { flex: none; width: 2.2rem; font-size: var(--fs-sub); color: var(--muted); text-align: right; }
+.ivrank__list li b { font-size: var(--fs-lead); font-weight: 700; letter-spacing: 0.02em; }
+.ivrank__list li .meta { margin-left: auto; }
+
+/* 상세 팝업·패널의 PvP 블록 — 위의 "CP 100% 기준" 은 PvE 값이라 그 아래에 따로 붙는다 */
+.ivrank__badge {
+  margin-left: 0.6rem; padding: 0.2rem 0.6rem; border-radius: var(--r-chip);
+  font-size: 1rem; font-weight: 700; letter-spacing: 0.02em;
+}
+.ivrank__badge--pvp { color: var(--brand-2); background: color-mix(in srgb, var(--brand-2) 14%, transparent); }
+.ivrank__why { margin: 0 0 1rem; line-height: 1.55; }
+.ivrank__pick-row {
+  display: flex; align-items: baseline; gap: 0.8rem;
+  padding: 0.7rem 0; border-top: 1px solid var(--line);
+}
+.ivrank__pick-lg { flex: 1 1 auto; min-width: 0; font-size: var(--fs-sub); font-weight: 600; }
+.ivrank__pick-row b { font-size: var(--fs-lead); font-weight: 700; letter-spacing: 0.02em; color: var(--brand-2); }
+.ivrank__more { margin: 1rem 0 0; padding-top: 0.8rem; border-top: 1px solid var(--line); }

@@ -71,11 +71,13 @@ const I18N_EN = {
   '레이드 보스': 'Raid Bosses',
   '알 부화': 'Egg Hatches',
   '검색식 만들기': 'Search Builder',
+  'PvP 개체값 순위': 'PvP IV Ranking',
   '즐겨찾기': 'Favorites',
   '★ 즐겨찾기': '★ Favorites',
   '⚔️ 레이드 보스': '⚔️ Raid Bosses',
   '🥚 알 부화': '🥚 Egg Hatches',
   '🔎 검색식 만들기': '🔎 Search Builder',
+  '🧬 PvP 개체값 순위': '🧬 PvP IV Ranking',
   '메뉴': 'Menu',
   '전체 메뉴': 'Full menu',
   '본문으로 건너뛰기': 'Skip to content',
@@ -169,7 +171,7 @@ const I18N_EN = {
   '★ 내 즐겨찾기 (#)': '★ My favorites (#)',
   '★ 즐겨찾기 #마리 · 🎒 내 포켓몬 #마리': '★ # favorites · 🎒 # of my Pokémon',
   '🎒 내 포켓몬 #마리': '🎒 # of my Pokémon',
-  'PvE · PvP 갈래는 탭 줄 ★ 에서': 'PvE · PvP breakdown lives under ★ in the tab row',
+  'PvE · PvP 갈래는 메뉴 ★ 즐겨찾기 에서': 'PvE · PvP breakdown lives under ★ Favorites in the menu',
   '★ 즐겨찾기 분류': 'Favorite categories',
 
   // ── 랭킹 · 티어표 ─────────────────────────────────────────────────────────

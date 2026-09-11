@@ -66,8 +66,10 @@ const hangul = (text) => /[가-힣]/.test(text || '');
 
   // ── 부분 렌더도 번역되는가 (상성 검색 결과는 칩을 눌러야 그려진다)
   await go('#/types');
-  await page.locator('.types__pick .chips__item').first().click();
-  await page.waitForTimeout(500);
+  // 2026-09-11 v2.61.0 첫 화면이 노말로 켜져 있다 — 첫 칩을 누르면 꺼져 결과가 사라진다.
+  // 아직 안 켜진 칩(불꽃)을 눌러 "나중에 그려진 것" 을 만든다
+  await page.locator('.types__pick .chips__item[aria-pressed="false"]').first().click();
+  await page.waitForTimeout(600);
   const sections = await page.locator('.types__sec h3').allTextContents();
   ok('나중에 그려진 절 제목도 영어', sections.length > 0 && !sections.some(hangul), sections.join(' | ').slice(0, 90));
   const monNames = await page.locator('.types__mons .boss__rec > span').allTextContents();
