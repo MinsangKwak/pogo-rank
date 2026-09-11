@@ -125,10 +125,8 @@ function syncLockedNav() {
   }
   // 셸 탭 줄의 배틀 PvP — 탭은 매번 다시 그려지므로 renderTabs 가 직접 표시한다(여기서는 건드리지 않는다)
 }
-// 2026-09-12 v2.64.0 이동 목록을 두 덩이로 나눈다 — 열 줄이 한 덩이로 붙어 있어
-// "늘 쓰는 것" 을 찾으려면 매번 처음부터 훑어야 했다.
-//   주요 기능  육성 플래너 · 포켓몬 도감 · D-MAX · 레이드 PvE · 배틀 PvP (router.js group:'main')
-//   부가 기능  그 밖 (이벤트 일정 · 레이드 보스 · 알 부화 · 검색식 만들기 · UI 목록)
+// 이동 목록은 덩이로 읽는다 — 열 줄이 한 덩이로 붙어 있으면 매번 처음부터 훑어야 한다.
+// 덩이 이름과 순서는 router.js ROUTE_GROUPS 가 정한다 (기능의 종류가 아니라 하려는 일로 가른다).
 // 서비스 홈은 어느 덩이도 아니다 — 목록의 출발점이라 맨 위에 혼자 둔다.
 // 한 나눔(nav) 안에서 <h3> 로 가르므로 랜드마크는 지금처럼 하나다
 const navGroup = (label, rows) => rows.length
@@ -136,8 +134,8 @@ const navGroup = (label, rows) => rows.length
   : [];
 const destinations = el('nav', { class: 'nav-menu', 'aria-label': '서비스 이동' },
   navItem('#', '서비스 홈', '🏠'),
-  ...navGroup('주요 기능', APP_DESTINATIONS.filter(([, , , group]) => group === 'main')),
-  ...navGroup('부가 기능', APP_DESTINATIONS.filter(([, , , group]) => group !== 'main')));
+  ...ROUTE_GROUPS.flatMap(([id, label]) =>
+    navGroup(label, APP_DESTINATIONS.filter(([, , , group]) => group === id))));
 destinations.addEventListener('click', (event) => {
   const link = event.target.closest('a');
   if (!link) return;

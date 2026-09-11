@@ -33,7 +33,11 @@
 .app-bar .icon-btn[hidden] { display: none; }
 
 /* 상단 바가 고정이라 본문 첫 카드가 막대에 붙는다 — layout.css 의 header 여백(36px) 자리를 대신할 만큼만 */
+/* 화면 머리(.page-head)가 아래 여백 3.2rem 을 이미 내므로 본문은 0 에서 시작한다.
+   머리가 없는 화면(서비스 홈)에서는 머리 대신 이 값이 위 여백이 되어야 하므로 :has 로 가른다 */
 .layout, #page { padding-top: 2.4rem; }
+body:has(#page-head:not([hidden])) .layout,
+body:has(#page-head:not([hidden])) #page { padding-top: 0; }
 
 /* 전체 페이지(#/dex 등)의 자체 제목 줄은 상단 바가 대신한다 — 제목이 두 번 보이지 않게 */
 .page__bar { display: none; }
@@ -42,7 +46,26 @@
    [hidden] 로 감추므로 여기서는 보일 때의 모양만 정의한다 */
 /* 2026-09-08 v2.30.0 화면 헤더는 좁은 화면에서도 뜬다 — 상단 바는 로고 자리를 지킨다.
    좁은 폭에서는 글자를 조금 줄여 두 줄로 접히지 않게 */
-.page-head { max-width: 76rem; margin: 0 auto; padding: 2.4rem 2rem 0.8rem; }
+/* 2026-09-12 v2.65.0 화면 머리의 위아래 여백을 1.2rem / 3.2rem 로 잡는다.
+   전에는 위 2.4rem · 아래 0.8rem 이라 제목이 상단 바에서 멀고 본문에는 붙어 있었다 —
+   제목·부제 묶음이 본문 첫 줄과 한 덩이로 읽혀 "머리" 구실을 못 했다.
+   위를 좁히면 상단 바와 제목이 한 묶음이 되고, 아래를 넓히면 머리와 본문이 갈린다 */
+/* 2026-09-12 v2.65.0 화면 머리와 본문 사이에 구분선을 긋는다.
+   여백만으로는 위계가 서지 않았다 — 제목·부제와 본문 첫 줄이 다 같은 바탕 위 글자라,
+   여백이 넓어도 "머리 / 본문" 으로 갈려 읽히지 않고 한 덩이로 보였다.
+   선은 배경으로 그린다. 테두리(border-bottom)로 그으면 패딩까지 포함한 상자 폭 전체에 깔려
+   왼쪽 사이드바(투명·고정) 자리를 가로지른다. 배경은 origin 을 content-box 로 두면
+   화면마다 다른 좌우 패딩(사이드바 210px · 상세 패널 폭)을 따로 적을 필요 없이 저절로 따라간다.
+   clip 은 padding-box 라야 선을 패딩 안쪽(글 아래 1.6rem)까지 내려 그릴 수 있다 */
+.page-head { max-width: 76rem; margin: 0 auto; padding: 1.2rem 2rem 4rem; }
+.page-head {
+  background-image: linear-gradient(to right, var(--line), var(--line));
+  background-repeat: no-repeat;
+  background-size: 100% 1px;
+  background-position: left calc(100% + 1.6rem);
+  background-origin: content-box;
+  background-clip: padding-box;
+}
 .page-head h2 { margin: 0; font-size: 2.1rem; font-weight: 600; letter-spacing: -0.01em; word-break: keep-all; }
 /* 2026-09-10 v2.42.0 브레드크럼·상단 검색 칸은 **넓은 화면 전용**이다 (components/pc-theme.css 가 켠다).
    조각은 늘 만들어 두고(JS 에 폭 분기를 만들지 않는다) 보이고 감추는 일만 여기서 가른다.
@@ -129,9 +152,9 @@ button { touch-action: manipulation; }
   .layout, #page, .page-head { max-width: calc(var(--shell-half) * 2); padding-left: 27.8rem; }
 
   /* 상단 바가 로고 자리를 지키므로 본문 첫 요소는 헤더 아래로 내려온다 */
-  .page-head { padding-top: 2.8rem; padding-bottom: 0.4rem; }
+  .page-head { padding-top: 1.2rem; padding-bottom: 3.2rem; }
   .page-head h2 { font-size: 2.4rem; }
-  .page-head + .layout, .page-head ~ #page { padding-top: 0.8rem; }
+  .page-head + .layout, .page-head ~ #page { padding-top: 0; }
 
   /* 왼쪽 고정 사이드바 — 컨테이너 왼쪽 끝(.layout 의 20px 여백 자리)에 맞춘다.
      상단 바 높이(10 + 44 + 10 + 1) 아래에서 시작 */
