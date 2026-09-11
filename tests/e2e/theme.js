@@ -68,9 +68,17 @@ const ok = (n, c, x = '') => { console.log((c ? 'PASS' : 'FAIL') + ' ' + n + ' '
   await page.locator('#theme-toggle').click();   // → light
   await page.waitForTimeout(300);
   await page.goto(BASE, { waitUntil: 'commit' });
-  // 'commit' 직후 = 번들이 돌기 전. 이때 이미 붙어 있어야 한다
+  // 2026-09-11 v2.56.0 전에는 'commit' 직후 한 번 들여다보고 "번들 전인데 이미 붙었다" 를 확인했다.
+  // 그런데 그 순간에는 **head 스크립트조차 아직 안 돌았을 수** 있어(스위트를 여럿 같이 돌릴 때 특히)
+  // 부하에 따라 통과와 실패가 갈렸다. "언제 보느냐" 를 재면 재는 쪽이 흔들린다.
+  // 흔들리지 않는 두 가지로 나눠 본다 — (1) 값이 실제로 붙는가 (2) 붙이는 코드가 번들보다 앞에 있는가.
+  // (2) 는 문서 순서라 부하와 무관하다: head 안의 <script> 는 body 끝의 번들보다 반드시 먼저 돈다
+  await page.waitForFunction(() => document.documentElement.getAttribute('data-theme') === 'light',
+    null, { timeout: 10000 }).catch(() => {});
   const early = await page.evaluate(() => document.documentElement.getAttribute('data-theme')).catch(() => null);
-  ok('새로고침 직후(번들 전) 이미 적용', early === 'light', String(early));
+  ok('새로고침해도 고른 테마가 유지된다', early === 'light', String(early));
+  const themeInHead = await page.evaluate(() => /pogo_theme/.test(document.head.innerHTML));
+  ok('테마를 head 에서 붙인다 (번들보다 앞 — 흰 화면 깜빡임 없음)', themeInHead);
   await page.waitForTimeout(2000);
   ok('새로고침 뒤에도 밝게', (await state()).attr === 'light');
 
