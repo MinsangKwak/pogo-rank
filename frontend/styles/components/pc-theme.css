@@ -207,7 +207,7 @@
   /* 거르기 칩 줄 + 보기 방식을 한 줄 좌우로 (components/pages.js .dex__toolbar) */
   .dex__toolbar { display: flex; align-items: flex-start; justify-content: space-between; gap: 1.6rem; margin: 1.4rem 0 0.4rem; }
   .dex__toolbar .tchips { flex: 1 1 auto; min-width: 0; }
-  .dex__toolbar .seg-view { flex: none; margin-left: 0; }
+  .dex__toolbar .view-toggle { flex: none; margin-left: 0; }
   /* 2026-09-10 v2.46.0 칩 높이를 34px → 22px 로 낮췄다. 두 줄로 접히면 줄 사이가 벌어져 보였는데,
      원인은 여백이 아니라 **속이 빈 알약**이었다 — .uchip 은 align-items: baseline(modal.css)이라
      글자가 아래에 붙고 위쪽 12px 이 그대로 빈다. 높이를 글자에 맞추고 가운데 정렬로 바꾼다.
@@ -642,7 +642,7 @@
 .dex__toolbar .tchips .uchip:hover { background: var(--hover); color: var(--fg); }
 @media (min-width: 1100px) {
   .dex__toolbar .tchips { flex: 0 1 auto; }
-  .dex__toolbar .seg-view { margin-left: auto; }
+  .dex__toolbar .view-toggle { margin-left: auto; }
 }
 
 /* 도감 카드 시안: 큰 포켓몬 → 이름 → 타입 → 보조 CP 순서.

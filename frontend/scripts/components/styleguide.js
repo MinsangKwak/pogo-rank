@@ -123,7 +123,7 @@ function renderStyleguidePage() {
   body.append(sgSection('고르기', '누르는 즉시 뜻이 바뀌는 것은 세그먼트로 — 지금 무엇인지와 고를 수 있는 것이 함께 보여야 한다.',
     el('div', { class: 'sg__stack' },
       sgItem('.seg (리그·갈래 토글)', $segDemo),
-      sgItem('.seg-view (보기 방식, v2.40.0)', $viewDemo),
+      sgItem('.view-toggle (보기 방식, v2.40.0)', $viewDemo),
       sgItem('.chips / .chips__item',
         el('div', { class: 'chips' },
           el('button', { class: 'chips__item' }, '불꽃'),

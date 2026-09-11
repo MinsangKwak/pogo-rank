@@ -27,7 +27,7 @@
 //   hintNote(...parts)            안내·빈 상태 문구
 //   metaText(...parts)            보조 문구 한 조각
 //   layoutInitial(storageKey)     그리드/리스트 초기값(저장된 선택 → 없으면 wideCards() 기본값)
-//   layoutToggle(storageKey, grid, onToggle)   그리드 ↔ 리스트 보기 세그먼트 컨트롤 (2026-09-09 v2.40.0)
+//   layoutToggle(storageKey, grid, onToggle)   그리드 ↔ 리스트 보기 전환 버튼 (2026-09-12 v3.8.0)
 //
 // 의존하는 전역
 //   el (dom.js) · wideCards (dom.js) · translateTree (i18n.js, 선택)
@@ -88,33 +88,46 @@ function layoutInitial(storageKey, defaultGrid = wideCards()) {
   } catch { /* 저장 불가 환경(사생활 모드 등) */ }
   return grid;
 }
-// 2026-09-09 v2.40.0 누를 때마다 뜻이 뒤집히는 버튼 하나 → 두 보기를 나란히 놓고 고르는 세그먼트 컨트롤.
-// 버튼 하나였을 때는 라벨이 "지금 보기"인지 "누르면 될 보기"인지가 글자만으로 안 갈렸고(v2.29.2 에서
-// 한 번 고쳐 쓴 문제), 좁은 화면에서 안내문 아래 홀로 떠 있어 눈에도 안 띄었다. 둘 다 보이면 고를 것이
-// 무엇이고 지금 어느 쪽인지가 한눈에 읽힌다.
+// 보기 전환 — 버튼 하나. 누르면 리스트 ↔ 그리드가 뒤집힌다.
 //   storageKey   localStorage 키
 //   grid         지금 그리드인지 (초기값)
 //   onToggle(grid)  보기가 바뀔 때 불린다 — 호출부가 목록 class(is-grid)를 이 값으로 맞춘다
 //   extraClass   도감의 .dex__layout 처럼 화면별로 더 붙일 클래스 (회귀 검사가 이 클래스로 찾는다)
+//
+// 모양이 두 번 바뀌었다. 왜 다시 버튼 하나인지 남겨 둔다.
+//   ~v2.39   버튼 하나. 라벨이 "지금 보기" 인지 "누르면 될 보기" 인지가 글자만으로 안 갈렸다
+//   v2.40.0  두 보기를 나란히 놓는 세그먼트 컨트롤. 지금 어느 쪽인지는 또렷해졌지만
+//            자리를 두 배로 먹어, v3.1.0 에서 화면 머리로 올린 뒤에는 제목을 밀어냈다.
+//            좁은 화면에서는 글자를 떼고 아이콘만 남겨야 겨우 들어갔다
+//   v3.8.0   다시 버튼 하나. 옛 문제(글자가 애매하다)는 **화면 테마 버튼**(components/theme.js)이
+//            이미 푼 방식으로 푼다 — 아이콘은 지금 상태를 보여 주고, 이름에 "지금 이것 ·
+//            누르면 저것" 을 그대로 적는다. 상태가 둘뿐인데 칸을 둘 둘 이유가 없다
+const LAYOUT_FACE = {
+  list: ['☰', '보기 방식: 리스트 · 누르면 그리드'],
+  grid: ['⊞', '보기 방식: 그리드 · 누르면 리스트'],
+};
+
 function layoutToggle(storageKey, grid, onToggle, extraClass = '') {
-  const $wrap = el('div', { class: `seg-view${extraClass ? ' ' + extraClass : ''}`, role: 'group', 'aria-label': '보기 방식' });
-  // [이 칸이 그리드인가, 아이콘, 라벨] — 순서가 곧 화면 순서다
-  const views = [[false, '☰', '리스트'], [true, '⊞', '그리드']];
-  // 2026-09-12 v2.67.0 글자를 span 으로 감싼다 — 좁은 화면에서 아이콘만 남기려면 CSS 가 집을
-  // 요소가 있어야 한다(맨 텍스트 노드는 감출 수 없다). 글자를 감춰도 이름은 aria-label 로 남는다
-  const buttons = views.map(([isGrid, icon, label]) => el('button', {
-    'aria-pressed': String(grid === isGrid),
-    'aria-label': label,
-    onclick: () => pick(isGrid),
-  }, el('span', { class: 'seg-view__ico', 'aria-hidden': 'true' }, icon),
-     el('span', { class: 'seg-view__label' }, label)));
-  function pick(next) {
-    if (next === grid) return;   // 이미 그 보기다 — 저장도 다시 그리기도 하지 않는다
-    grid = next;
-    buttons.forEach(($button, index) => $button.setAttribute('aria-pressed', String(views[index][0] === grid)));
+  const $button = el('button', {
+    class: `icon-btn view-toggle${extraClass ? ' ' + extraClass : ''}`,
+    'aria-live': 'polite',
+    onclick: () => flip(),
+  });
+  // 얼굴 맞추기 — 아이콘·이름·상태를 한 곳에서 갈아 끼운다.
+  // 그림이 SVG 라 글자로 상태를 읽을 수 없어 data-view 에도 남긴다 (화면 테마의 data-icon 과 같은 뜻)
+  function face() {
+    const [icon, label] = LAYOUT_FACE[grid ? 'grid' : 'list'];
+    pxIconLabel($button, icon);
+    $button.dataset.view = grid ? 'grid' : 'list';
+    $button.setAttribute('aria-label', label);
+    $button.title = label;
+  }
+  function flip() {
+    grid = !grid;
+    face();
     try { localStorage.setItem(storageKey, grid ? '2' : '1'); } catch { /* 저장 불가 환경 */ }
     onToggle(grid);
   }
-  $wrap.append(...buttons);
-  return $wrap;
+  face();
+  return $button;
 }

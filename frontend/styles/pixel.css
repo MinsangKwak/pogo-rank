@@ -45,7 +45,7 @@ html:not(#_):not(#__) .px-ball::after {
    밑줄 하나라 상자가 아니다 — 거기에 2px 사방 테두리를 두르면 목록이 격자무늬가 된다.
    줄이 카드가 되는 것은 격자 모드(.is-grid)뿐이라 그때만 세운다 */
 .home__tile, .filter-box, .modal__box, .detail-panel, .ivrank__card,
-.app-search, .boss__search, .seg, .seg-view, input, select, textarea,
+.app-search, .boss__search, .seg, .view-toggle, input, select, textarea,
 .dex__list.is-grid .dex__row, .row-list:not(.is-list) > .row {
   border-width: var(--px);
   border-style: solid;
@@ -68,7 +68,7 @@ html:not(#_):not(#__) .row-list:not(.is-list) > .row { border-width: var(--px); 
 
 /* ── 4. 움직임은 칸칸이 ───────────────────────────────────────────────────── */
 @media (prefers-reduced-motion: no-preference) {
-  .uchip, .tool-btn, .seg button, .seg-view button, .chips__item, .drawer__item,
+  .uchip, .tool-btn, .seg button, .view-toggle, .chips__item, .drawer__item,
   .dex__row, .row-list > .row, .home__tile, .icon-btn {
     transition: background 0.12s steps(3), color 0.12s steps(3),
                 border-color 0.12s steps(3), box-shadow 0.12s steps(3), transform 0.12s steps(2);
@@ -137,7 +137,7 @@ html:not(#_) .release__sec b, html:not(#_) .release__sec strong { font-weight: 7
       읽는 글(산문)에는 걸지 않는다. 거기는 Pretendard 라 진짜 굵은 획이 있다 */
 h1, h2, h3, b, strong, th,
 .page-head h2, .page__sec, .detail__name, .home__intro h2, .app-bar__logo,
-.drawer__label, .seg button, .seg-view button, .uchip, .tool-btn, .tier__badge,
+.drawer__label, .seg button, .view-toggle, .uchip, .tool-btn, .tier__badge,
 .num, .row__score, .ivrank__rank, .dex__no {
   text-shadow: 0.1rem 0 0 currentColor;
 }
@@ -183,18 +183,11 @@ h1, h2, .page-head h2, .detail__name, .home__intro h2, .page__sec { line-height:
 @media (max-width: 699px) {
   .home__section { display: block; }
   .home__section > span { display: block; margin-top: 0.4rem; }
-  /* 구역 제목의 꼬리말도 같은 처방 — "레이드 일반 티어표 (전 / 체)" 와
-     "30종 · 전설·환상·메가·섀도우 제 / 외" 가 양쪽에서 동시에 접히고 있었다 */
-  .page__sec .meta { display: block; margin-top: 0.2rem; }
+  /* 티어표 제목 줄(.row-head)도 같은 처방 — "레이드 일반 티어표 (전 / 체)" 와
+     "30종 · 전설·환상·메가·섀도우 제 / 외" 가 양쪽에서 동시에 접히고 있었다.
+     구역 제목(.page__sec)의 꼬리말은 건드리지 않는다 — "5성 레이드 2종" 처럼 짧아 한 줄에 든다 */
   .row-head { display: block; }
   .row-head > .meta { display: block; margin-top: 0.2rem; }
-}
-
-/* 보기 전환(☰ ⊞) — 겹테두리(바깥 판 + 칸마다 한 겹)에 높이 36px 이라
-   좁은 화면에서 화면 제목보다 덩치가 커 보였다. 한 단 낮춘다 */
-@media (max-width: 699px) {
-  .seg-view { padding: 0.2rem; }
-  .seg-view button { min-height: 3rem; padding: 0 1rem; }
 }
 
 /* 좁은 화면의 격자 칸 — 한 칸이 170px 라 꼬리 글씨가 석 줄로 깨졌다.
@@ -225,7 +218,7 @@ html:not(#_):not(#__) .sprite:not(.is-loading):not(.empty) { background: var(--b
 
 /* ── 선택 표시 ────────────────────────────────────────────────────────────── */
 /* 도트 UI 는 "눌린 칸" 을 그림자를 없애고 안쪽으로 밀어 표현한다 */
-.seg button[aria-pressed="true"], .seg-view button[aria-pressed="true"], .uchip.is-on {
+.seg button[aria-pressed="true"], .view-toggle[data-view="grid"], .uchip.is-on {
   box-shadow: inset var(--px) var(--px) 0 0 color-mix(in srgb, var(--brand) 45%, transparent);
 }
 

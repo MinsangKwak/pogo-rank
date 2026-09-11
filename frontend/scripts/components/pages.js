@@ -330,13 +330,13 @@ function renderPage() {
   liftViewToggle(id);
   window.scrollTo(0, 0);
 }
-// 2026-09-12 v3.1.0 보기 전환(.seg-view)을 본문에서 화면 머리로 **옮긴다**.
+// 2026-09-12 v3.1.0 보기 전환(.view-toggle)을 본문에서 화면 머리로 **옮긴다**.
 // 복제가 아니라 이동이라 onclick·aria-pressed·저장 키가 붙어 있는 그 노드가 그대로 간다 —
 // 화면마다 토글을 따로 만들 필요도, 각 화면 렌더러가 머리를 알 필요도 없다.
-// 스타일 가이드는 예외다: 거기 있는 .seg-view 는 "이렇게 생겼다" 를 보여 주는 견본이라 옮기면 안 된다
+// 스타일 가이드는 예외다: 거기 있는 .view-toggle 는 "이렇게 생겼다" 를 보여 주는 견본이라 옮기면 안 된다
 function liftViewToggle(id) {
-  // 스타일 가이드의 .seg-view 는 "이렇게 생겼다" 를 보여 주는 견본이라 옮기지 않는다
-  const toggle = id === 'styleguide' ? null : document.querySelector('#page .page__body .seg-view');
+  // 스타일 가이드의 .view-toggle 는 "이렇게 생겼다" 를 보여 주는 견본이라 옮기지 않는다
+  const toggle = id === 'styleguide' ? null : document.querySelector('#page .page__body .view-toggle');
   setPageHeadAction(toggle);
 }
 window.addEventListener('hashchange', renderPage);
