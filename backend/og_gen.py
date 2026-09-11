@@ -26,11 +26,14 @@ WIDTH, HEIGHT = 1200, 630
 CELL = 6                      # 도트 한 칸 = 6px. 200 × 105 칸짜리 격자가 된다
 
 # 다크 테마 토큰과 같은 값 (frontend/styles/tokens.css)
-BG = (18, 19, 21)
-FG = (236, 237, 238)
-MUTED = (140, 143, 148)
-ACCENT = (79, 179, 124)       # --accent 다크
-LINE = (38, 40, 43)
+# 2026-09-12 v3.7.0 팔레트가 두 번 바뀌는 동안(v3.0.0 인디고 · v3.7.0 몬스터볼 빨강)
+# 이 파일만 v2 시절 초록에 멈춰 있었다. 공유 카드가 서비스와 다른 색이면 눌러 들어온 순간 어긋난다
+BG = (10, 10, 15)             # --bg 다크 (잉크블랙)
+FG = (245, 245, 250)          # --fg 다크
+MUTED = (139, 139, 163)       # --muted 다크
+ACCENT = (255, 95, 82)        # --accent 다크 — 몬스터볼 빨강
+LINE = (38, 38, 58)           # --line 다크
+BALL_RED = (229, 55, 46)      # --brand 라이트 (#e5372e) — 공의 위 절반은 원작 그대로
 
 # 5×7 픽셀 글꼴 — 필요한 글자만 직접 찍는다. 각 줄의 '#' 이 켜진 픽셀
 FONT = {
@@ -77,7 +80,9 @@ def draw_text(canvas, text, cx, cy, scale, color, spacing=1):
 
 
 # 몬스터볼 — icon_gen.py 와 같은 모양이되 도트 격자에 맞춰 계단지게 그린다.
-# 매끈한 원을 그리면 이 이미지 안에서 그것만 튄다
+# 매끈한 원을 그리면 이 이미지 안에서 그것만 튄다.
+# 2026-09-12 v3.7.0 선으로만 그리던 것을 **채운다** — 위 빨강 · 아래 흰색 · 가운데 검은 띠.
+# 카카오톡·디스코드 미리보기는 작게 뜨는데, 선으로만 그린 공은 그 크기에서 그냥 동그라미다
 def draw_ball(canvas, center_cx, center_cy, radius_cells):
     stroke = max(2, radius_cells // 7)
     button = max(2, radius_cells // 3)
@@ -85,11 +90,18 @@ def draw_ball(canvas, center_cx, center_cy, radius_cells):
         for cx in range(center_cx - radius_cells - 1, center_cx + radius_cells + 2):
             dx, dy = cx - center_cx + 0.5, cy - center_cy + 0.5
             dist = (dx * dx + dy * dy) ** 0.5
+            if dist > radius_cells + stroke / 2:
+                continue
+            # 안쪽부터 바깥으로 한 겹씩 — 나중에 칠한 것이 위로 온다
+            color = BALL_RED if dy < 0 else FG
             on_ring = abs(dist - radius_cells) < stroke / 2
-            on_band = abs(dy) < stroke / 2 and dist < radius_cells and abs(dx) > button + stroke
-            on_button = abs(dist - button) < stroke / 2
-            if on_ring or on_band or on_button:
-                cell_rect(canvas, cx, cy, 1, 1, FG)
+            on_band = abs(dy) < stroke / 2 and dist < radius_cells and abs(dx) > button + stroke * 0.4
+            on_button_ring = abs(dist - button) < stroke / 2
+            if on_ring or on_band or on_button_ring:
+                color = BG            # 테두리·띠는 바탕색 — 공만 떠 보인다
+            elif dist < button:
+                color = FG            # 단추 속은 흰색
+            cell_rect(canvas, cx, cy, 1, 1, color)
 
 
 def write_png(canvas, path):

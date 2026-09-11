@@ -10,8 +10,13 @@ import zlib
 import os
 
 # 프런트 다크 테마의 CSS 변수와 같은 값을 쓴다 (RGBA)
-BACKGROUND_COLOR = (18, 19, 21, 255)       # --bg 다크
-FOREGROUND_COLOR = (236, 237, 238, 255)    # --fg 다크
+# 2026-09-12 v3.7.0 키 컬러를 몬스터볼 빨강으로 옮기면서 아이콘도 **채운 몬스터볼**로 바꿨다.
+# 선으로만 그린 흰 공은 어느 서비스인지 말해 주지 않는다 — 홈 화면에 놓이는 그림이라
+# 한눈에 "포켓몬" 으로 읽혀야 한다. 위 빨강 · 아래 흰색 · 가운데 검은 띠, 원작 그대로다
+BACKGROUND_COLOR = (10, 10, 15, 255)       # --bg 다크 (v3.0.0 잉크블랙)
+FOREGROUND_COLOR = (245, 245, 250, 255)    # --fg 다크 — 공의 아래 절반
+BRAND_COLOR = (229, 55, 46, 255)           # --brand 몬스터볼 빨강 (#e5372e) — 공의 위 절반
+STROKE_COLOR = (10, 10, 15, 255)           # 테두리·띠. 바탕과 같은 값이라 공만 떠 보인다
 
 
 # size × size 몬스터볼 아이콘을 그려 PNG 원본 스캔라인 바이트를 돌려준다.
@@ -30,13 +35,22 @@ def render_raw_scanlines(size):
             delta_y = y - center_y + 0.5
             distance = (delta_x * delta_x + delta_y * delta_y) ** 0.5
             color = BACKGROUND_COLOR
-            # 바깥 원: 반지름에서 선 두께의 절반 안쪽까지
+            # 안쪽부터 바깥으로 한 겹씩 얹는다 — 나중에 칠한 것이 위로 온다
+            if distance < outer_radius + stroke_width / 2:
+                # 공의 몸통: 가운데 띠를 기준으로 위는 빨강, 아래는 흰색
+                color = BRAND_COLOR if delta_y < 0 else FOREGROUND_COLOR
+            # 바깥 테두리: 반지름에서 선 두께의 절반 안쪽까지
             on_outer_ring = abs(distance - outer_radius) < stroke_width / 2
-            # 가운데 가로줄: 원 안쪽에서만 그리고, 버튼 주변은 살짝 여유(0.9)를 두고 비운다
-            on_center_band = abs(delta_y) < stroke_width / 2 and distance < outer_radius and abs(delta_x) > button_radius + stroke_width * 0.9
+            # 가운데 가로줄: 원 안쪽에서만 그리고, 버튼 자리는 비운다 —
+            # 띠가 단추를 가로지르면 단추가 반으로 잘려 몬스터볼로 안 읽힌다
+            on_center_band = (abs(delta_y) < stroke_width / 2 and distance < outer_radius
+                              and abs(delta_x) > button_radius + stroke_width * 0.4)
             # 가운데 버튼 테두리
-            on_button = abs(distance - button_radius) < stroke_width / 2
-            if on_outer_ring or on_center_band or on_button:
+            on_button_ring = abs(distance - button_radius) < stroke_width / 2
+            if on_outer_ring or on_center_band or on_button_ring:
+                color = STROKE_COLOR
+            # 버튼 속은 흰색 — 띠가 지나가도 단추가 뚫려 보여야 몬스터볼로 읽힌다
+            elif distance < button_radius:
                 color = FOREGROUND_COLOR
             scanline.extend(color)
         raw_scanlines.extend(scanline)

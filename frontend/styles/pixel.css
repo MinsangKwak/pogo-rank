@@ -88,6 +88,8 @@ html:not(#_) .px-ball::after {
 .note .pxi, .prose .pxi, .detail__foot .pxi, .dex__hint .pxi { width: 1.4rem; height: 1.4rem; }
 /* 접이줄 머리는 flex 라 아이콘 뒤 빈칸이 통째로 사라진다 — 사이를 여기서 벌린다 */
 .detail__acc summary .pxi { margin-right: 0.6rem; }
+/* 빨강 칸(1)은 브랜드(몬스터볼 빨강)를 따른다 — 도감 기기·카드 무늬가 키 컬러와 같아야 한다 */
+:root { --pxi-1: var(--brand); }
 /* 흰 칸(3)은 판 색에 글자색을 한 스푼 섞는다. 판 색 그대로면 흰 카드 위에서 알(🥚)의
    속이 통째로 사라져 테두리만 남는다 — 어두운 화면에서도 같은 식으로 한 단 밝아진다 */
 :root { --pxi-3: color-mix(in srgb, var(--fg) 12%, var(--surface)); }
@@ -229,12 +231,12 @@ h1, h2, .page-head h2, .detail__name, .home__intro h2, .page__sec { line-height:
 .px-ball {
   position: absolute;
   border-radius: 50%;
-  opacity: .1;
+  opacity: .08;
   box-sizing: border-box;
   filter: blur(0.6rem);
-  /* 위 빨강 · 아래 흰색 · 테두리는 글자색 */
+  /* 위 빨강 · 아래 흰색 · 테두리는 글자색 — 빨강은 브랜드(=몬스터볼 빨강) 그 색이다 */
   border: var(--ball-w) solid var(--fg);
-  background: linear-gradient(var(--point) 0 50%, var(--surface) 50% 100%);
+  background: linear-gradient(var(--brand) 0 50%, var(--surface) 50% 100%);
 }
 /* 가운데 띠 — 테두리 두께만큼 밖으로 빼야 공이 한 줄로 이어진다 */
 .px-ball::before {
@@ -283,7 +285,7 @@ h1, h2, .page-head h2, .detail__name, .home__intro h2, .page__sec { line-height:
   .home__intro {
     border-width: var(--px);
     background:
-      radial-gradient(color-mix(in srgb, var(--brand) 24%, transparent) var(--px), transparent var(--px))
+      radial-gradient(color-mix(in srgb, var(--brand) 16%, transparent) var(--px), transparent var(--px))
         0 0 / 0.8rem 0.8rem,
       var(--surface);
   }

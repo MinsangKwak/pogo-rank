@@ -66,9 +66,12 @@ const ok = (name, cond, extra = '') => results.push([cond ? 'PASS' : 'FAIL', nam
   ok('토큰 --surface (흰 카드 #ffffff)', design.surface === '#ffffff', design.surface);
   ok('토큰 --line (#e5e5eb)', design.line === '#e5e5eb', design.line);
   ok('토큰 --muted (보라 기 도는 회색 #64647a)', design.muted === '#64647a', design.muted);
-  // 2026-09-12 v3.0.0 스타일 레퍼런스(yceffort.kr)의 인디고로 갈아끼웠다.
-  // 초록은 --t-grass(풀 타입)로만 남는다 — 브랜드색과 타입색이 같아 생기던 혼동도 같이 사라졌다
-  ok('토큰 --accent = 브랜드 인디고 (#6366f1)', design.accent === '#6366f1', design.accent);
+  // 2026-09-12 v3.7.0 키 컬러를 원작의 몬스터볼 빨강으로 (#e5372e). 스플래시 공·앱 아이콘·
+  // 공유 카드가 모두 이 값이라, 브랜드만 다른 색이면 같은 서비스로 안 읽힌다.
+  // 빨강이 브랜드를 가져가면서 --warn 은 자주빛 진홍으로, --point 는 파랑으로 반 칸씩 옮겼다
+  ok('토큰 --accent = 몬스터볼 빨강 (#d63024)', design.accent === '#d63024', design.accent);
+  ok('토큰 --warn 은 브랜드와 다른 빨강 (#9f1239)', design.warn === '#9f1239', design.warn);
+  ok('토큰 --point 는 빨강의 반대쪽 (#2f6fd0)', design.point === '#2f6fd0', design.point);
   ok('의미 색 여섯 벌 있음', ['brand', 'brand-2', 'point', 'warn', 'caution', 'off'].every((k) => design[k]),
     JSON.stringify({ brand: design.brand, warn: design.warn }));
   ok('토큰 --tap 이 손가락 크기 44px', design.tapPx === 44, `${design.tap} = ${design.tapPx}px`);
@@ -199,7 +202,7 @@ const ok = (name, cond, extra = '') => results.push([cond ? 'PASS' : 'FAIL', nam
   // 2026-09-09 v2.40.0 항목이 [아이콘][이름] 두 조각이라 이름 칸(.drawer__label)만 본다
   ok('드로어 현재 항목 표시', (await page.locator('.nav-menu [aria-current="page"] .drawer__label').textContent()) === '배틀 · PvP');
   const cur = await page.locator('.nav-menu [aria-current="page"]').evaluate((n) => getComputedStyle(n).color);
-  ok('현재 항목 = --accent (브랜드 인디고)', cur === 'rgb(99, 102, 241)', cur);
+  ok('현재 항목 = --accent (몬스터볼 빨강)', cur === 'rgb(214, 48, 36)', cur);
   ok('드로어 서비스 홈 항목', (await page.locator('.nav-menu a .drawer__label').first().textContent()) === '서비스 홈');
   await page.click('.nav-menu a:has-text("서비스 홈")');
   await page.waitForTimeout(400);
@@ -447,7 +450,8 @@ const ok = (name, cond, extra = '') => results.push([cond ? 'PASS' : 'FAIL', nam
     return { bg: cs.getPropertyValue('--bg').trim(), accent: cs.getPropertyValue('--accent').trim() };
   });
   ok('다크 --bg (잉크블랙 #0a0a0f)', dtok.bg === '#0a0a0f', dtok.bg);
-  ok('다크 --accent (#818cf8)', dtok.accent === '#818cf8', dtok.accent);
+  // 어두운 바탕에서는 #e5372e 가 무거워 보여 한 단 밝은 빨강을 쓴다
+  ok('다크 --accent (#ff5f52)', dtok.accent === '#ff5f52', dtok.accent);
   await dark.close();
 
   ok('페이지 오류 없음', errors.length === 0, errors.join(' | ').slice(0, 200));
