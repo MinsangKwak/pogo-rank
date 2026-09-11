@@ -30,7 +30,7 @@ const ok = (n, c, x = '') => { console.log((c ? 'PASS' : 'FAIL') + ' ' + n + ' '
     await page.waitForTimeout(500);
   };
 
-  await go('#/ivrank');
+  await go('#/pvp/ivrank');
   await page.waitForSelector('.ivrank__pick', { timeout: 10000 }).catch(() => {});
   ok('화면이 열린다', (await page.locator('.ivrank__pick').count()) === 1);
 
@@ -72,16 +72,21 @@ const ok = (n, c, x = '') => { console.log((c ? 'PASS' : 'FAIL') + ' ' + n + ' '
   ok('마스터리그는 순위 없음', /순위 없음/.test(cards[3]), cards[3].slice(0, 40));
   ok('상한 있는 리그는 순위가 보인다', /\d+위/.test(cards[1]), cards[1].slice(0, 40));
   ok('판정 한 줄이 있다', (await page.locator('.ivrank__verdict').count()) === 1);
-  // ── 2026-09-12 v2.65.0 세 리그를 늘 그려 둔다. 넓은 화면은 나란히, 좁은 화면은 탭으로 하나씩
-  ok('리그 칸 셋을 다 그린다 (마스터는 순위가 없어 뺀다)', (await page.locator('.ivrank__top-col').count()) === 3,
-    (await page.locator('.ivrank__top-col').evaluateAll((ns) => ns.map((n) => n.dataset.lg))).join('|'));
-  ok('넓은 화면은 셋이 다 보인다', (await page.locator('.ivrank__top-col:visible').count()) === 3);
-  ok('넓은 화면에는 탭이 없다', !(await page.locator('.ivrank__top > .seg').isVisible()));
-  ok('칸마다 상위 10', (await page.locator('.ivrank__top-col[data-lg="great"] .ivrank__list li').count()) === 10);
-  const tops = await page.locator('.ivrank__top-col .ivrank__list li:first-child b').allTextContents();
-  ok('리그마다 1위가 다르다', new Set(tops).size > 1, tops.join(' | '));
-  ok('칸마다 리그 이름과 CP', (await page.locator('.ivrank__col-head').allTextContents()).join('|').includes('하이퍼리그'),
-    (await page.locator('.ivrank__col-head').allTextContents()).join('|'));
+  // ── 2026-09-12 v2.66.0 상위 10 은 화면 맨 위에서 고른 리그 하나. 이 블록은 리그 컨트롤을 갖지 않는다
+  ok('상위 10 은 한 리그만', (await page.locator('.ivrank__top .ivrank__list').count()) === 1);
+  ok('상위 10 이 열 줄', (await page.locator('.ivrank__top .ivrank__list li').count()) === 10);
+  ok('제목이 고른 리그를 말한다', (await page.locator('.ivrank__top h2').textContent()).trim() === '슈퍼리그 상위 10',
+    (await page.locator('.ivrank__top h2').textContent()).trim());
+  // 리그를 바꾸면 1위 조합도 바뀐다 — 상한이 다르면 최적 개체값이 달라진다
+  const greatTop = await page.locator('.ivrank__top .ivrank__list li:first-child b').textContent();
+  await page.locator('#controls .seg button:has-text("리틀")').click();
+  await page.waitForTimeout(600);
+  const littleTop = await page.locator('.ivrank__top .ivrank__list li:first-child b').textContent();
+  ok('리그가 바뀌면 1위도 바뀐다', greatTop !== littleTop, `${greatTop} → ${littleTop}`);
+  await page.locator('#controls .seg button:has-text("슈퍼")').click();
+  await page.waitForTimeout(600);
+  // 지금 고른 리그 카드에 표시가 붙는가 (위 세그먼트와 눈이 이어지게)
+  ok('고른 리그 카드에 표시', (await page.locator('.ivrank__card.is-on').count()) === 1);
 
   // 고른 종 카드 — 이름과 종족값이 따로 놓이는가 (전에는 스타일 없는 클래스라 한 줄에 붙었다)
   const pickedBox = await page.evaluate(() => {
@@ -104,7 +109,7 @@ const ok = (n, c, x = '') => { console.log((c ? 'PASS' : 'FAIL') + ' ' + n + ' '
   // ── 새로고침해도 고른 값이 남는다
   await page.fill('.ivrank__ivs input >> nth=0', '3');
   await page.waitForTimeout(400);
-  await go('#/ivrank');
+  await go('#/pvp/ivrank');
   await page.waitForSelector('.ivrank__cards', { timeout: 10000 }).catch(() => {});
   const kept = await page.evaluate(() => {
     try { return JSON.parse(localStorage.getItem('pogo_ivrank') || '{}'); } catch { return {}; }
@@ -130,26 +135,32 @@ const ok = (n, c, x = '') => { console.log((c ? 'PASS' : 'FAIL') + ' ' + n + ' '
   await page.keyboard.press('Escape');
   await ctx.close();
 
-  // ── 좁은 화면은 탭으로 한 리그씩 (넓은 화면은 셋이 나란해 탭이 필요 없다)
+  // ── 2026-09-12 v2.66.0 리그는 화면 맨 위 세그먼트 하나가 정한다.
+  // 전에는 이 블록이 자기 리그 탭을 따로 가져 같은 화면에 리그 컨트롤이 둘이었다 —
+  // 위에서 '슈퍼' 를 골라도 아래 상위 10 은 '리틀' 인 일이 생겼다
   {
     const nctx = await browser.newContext({ viewport: { width: 430, height: 900 } });
     await nctx.route(/^https?:\/\/(?!localhost)/, (r) => r.abort());
     await nctx.addInitScript(() => { try { localStorage.setItem('pogo_ivrank', JSON.stringify({ sprite: 379, ivs: [0, 15, 15], floor: 0 })); } catch {} });
     const p3 = await nctx.newPage();
     p3.on('pageerror', (e) => errs.push('좁은 화면: ' + e));
-    await p3.goto(BASE + '#/ivrank', { waitUntil: 'domcontentloaded' });
+    await p3.goto(BASE + '#/pvp/ivrank', { waitUntil: 'domcontentloaded' });
     await p3.waitForSelector('#splash', { state: 'detached', timeout: 15000 }).catch(() => {});
     await p3.locator('#consent .consent__deny').click({ timeout: 1500 }).catch(() => {});
     await p3.waitForSelector('.ivrank__top', { timeout: 10000 }).catch(() => {});
     await p3.waitForTimeout(400);
-    ok('좁은 화면은 한 칸만 보인다', (await p3.locator('.ivrank__top-col:visible').count()) === 1);
-    const tabs = await p3.locator('.ivrank__top .seg button').allTextContents();
-    ok('좁은 화면에는 탭이 있다', tabs.join('|') === '리틀리그|슈퍼리그|하이퍼리그', tabs.join('|'));
-    const before = await p3.locator('.ivrank__top-col:visible').getAttribute('data-lg');
-    await p3.locator('.ivrank__top .seg button:has-text("하이퍼리그")').click();
-    await p3.waitForTimeout(500);
-    const after = await p3.locator('.ivrank__top-col:visible').getAttribute('data-lg');
-    ok('탭을 바꾸면 보이는 칸이 바뀐다', before !== after && after === 'ultra', `${before} → ${after}`);
+    ok('블록 안에 리그 탭이 없다', (await p3.locator('.ivrank__top .seg').count()) === 0);
+    const before = await p3.locator('.ivrank__top h2').textContent();
+    ok('상위 10 제목이 고른 리그다', /리그 상위 10$/.test(before.trim()), before.trim());
+    // 화면 맨 위 리그 세그먼트를 바꾸면 상위 10 도 따라온다
+    await p3.locator('#controls .seg button:has-text("하이퍼")').click();
+    await p3.waitForTimeout(600);
+    const after = await p3.locator('.ivrank__top h2').textContent();
+    ok('위 세그먼트가 상위 10 을 바꾼다', after.trim().startsWith('하이퍼리그') && after !== before, `${before.trim()} → ${after.trim()}`);
+    // 마스터리그는 CP 상한이 없어 순위 자체가 없다
+    await p3.locator('#controls .seg button:has-text("마스터")').click();
+    await p3.waitForTimeout(600);
+    ok('마스터는 순위 대신 설명', /상한이 없어요/.test(await p3.locator('.ivrank__top').innerText()));
     await nctx.close();
   }
 

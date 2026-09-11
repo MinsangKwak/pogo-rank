@@ -66,6 +66,23 @@ body:has(#page-head:not([hidden])) #page { padding-top: 0; }
   background-origin: content-box;
   background-clip: padding-box;
 }
+/* 2026-09-12 v2.66.0 필터 줄이 있으면 선은 **그 아래**로 내려간다.
+   제목 바로 밑에 그으면 필터 줄이 본문 쪽으로 넘어가 "무엇을 거르는 줄인지" 가 흐려졌다 —
+   제목 · 부제 · 필터가 한 덩이(화면 머리)고, 선 아래가 그 결과다.
+   필터 줄은 화면마다 다른 자리에 있어 공통 클래스 하나(.page__filters)로 표시하고,
+   메인 셸(#/pvp 등)은 필터가 늘 #controls 한 곳이라 그 상자에 바로 긋는다 */
+.layout #controls:not(:empty),
+#page .page__filters {
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 2rem;
+  margin-bottom: 2.4rem;
+}
+/* 선이 아래로 내려갔으면 머리에는 긋지 않는다 (한 화면에 선은 하나) */
+body:has(.layout:not([hidden]) #controls > *) .page-head,
+body:has(#page:not([hidden]) .page__filters) .page-head {
+  background-image: none;
+  padding-bottom: 2rem;
+}
 .page-head h2 { margin: 0; font-size: 2.1rem; font-weight: 600; letter-spacing: -0.01em; word-break: keep-all; }
 /* 2026-09-10 v2.42.0 브레드크럼·상단 검색 칸은 **넓은 화면 전용**이다 (components/pc-theme.css 가 켠다).
    조각은 늘 만들어 두고(JS 에 폭 분기를 만들지 않는다) 보이고 감추는 일만 여기서 가른다.
@@ -77,6 +94,9 @@ body:has(#page-head:not([hidden])) #page { padding-top: 0; }
 /* 2026-09-10 v2.47.0 화면 테마 — 좁은 화면 헤더에는 자리가 없다(버튼을 하나 더 넣었더니 로고가 잘렸다).
    좁은 화면은 ☰ 메뉴 줄이, 넓은 화면은 헤더 버튼이 맡는다 */
 #theme-toggle { display: none; }
+/* 2026-09-12 v2.66.0 자식 화면 줄 — 부모 아래 한 칸 들여 쓴다 (내 포켓몬 ⊂ 육성 플래너) */
+.nav-menu .drawer__item--sub { padding-left: 2.6rem; }
+.nav-menu .drawer__item--sub .drawer__label { font-size: 0.95em; }
 .drawer__value { margin-left: auto; font-size: 1.2rem; color: var(--muted); }
 /* 로고: h1 안의 버튼이라 글꼴·크기를 h1 에서 물려받게 하고 버튼 티를 지운다 */
 .app-bar__logo { padding: 0; font: inherit; color: inherit; letter-spacing: inherit; }
@@ -150,6 +170,11 @@ button { touch-action: manipulation; }
   /* 컨테이너를 넓히고, 사이드바 자리(210px + 32px 간격)만큼 본문을 민다 */
   .app-bar { max-width: calc(var(--shell-half) * 2); }
   .layout, #page, .page-head { max-width: calc(var(--shell-half) * 2); padding-left: 27.8rem; }
+
+  /* 2026-09-12 v2.66.0 넓은 화면에서는 🔍 버튼을 감춘다 — 바로 왼쪽의 상단 검색바가 같은 패널을
+     여는데, 둘이 나란히 떠 있어 "둘은 다른 검색인가" 로 읽혔다. 좁은 화면은 검색바가 없어 버튼이 맡는다.
+     요소는 남긴다 — search.js 가 aria-expanded 를 이 id 에 적고, / 단축키도 같은 길을 쓴다 */
+  #search-toggle { display: none; }
 
   /* 상단 바가 로고 자리를 지키므로 본문 첫 요소는 헤더 아래로 내려온다 */
   .page-head { padding-top: 1.2rem; padding-bottom: 3.2rem; }

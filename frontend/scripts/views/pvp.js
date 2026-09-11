@@ -28,18 +28,21 @@ function renderPvp() {
   // 2026-09-12 v2.63.0 🧬 개체값 순위를 그 옆에 붙였다 — 메뉴에 따로 두지 않는다.
   // "이 리그에서 뭐가 센가" 를 보다가 "그럼 내 개체는 몇 위지" 가 떠오르는 자리라,
   // 화면을 옮기지 않고 그 자리에서 펼치는 것이 맞다 (덱 짜기와 같은 문법)
+  // 2026-09-12 v2.66.0 도구를 켜는 일이 곧 화면 이동이다 — 주소가 바뀌므로 뒤로가기로 랭킹에
+  // 돌아오고, 링크를 보내면 상대도 같은 도구를 본다. 전에는 셋 다 #/pvp 한 주소였다
   const tool = (id) => () => {
-    state.pvpTool = state.pvpTool === id ? null : id;
-    track(id === 'deck' ? 'tool_pvpdeck' : 'tool_ivrank', { on: state.pvpTool ? 1 : 0 });
-    render();
+    track(id === 'deck' ? 'tool_pvpdeck' : 'tool_ivrank', { on: state.pvpTool === id ? 0 : 1 });
+    navigateHash(state.pvpTool === id ? routeHash('pvp') : routeHash(id === 'deck' ? 'pvp-deck' : 'ivrank'));
   };
   // 2026-09-12 v2.64.0 읽는 순서대로 놓는다. 이 화면에 온 사람은
   //   ① 리그를 고르고 → ② 타입으로 좁히고 → ③ 덱을 짜거나 내 개체 순위를 본다.
   // 전에는 도구 버튼이 리그 줄에 얹혀 있어, 리그를 고르기도 전에 "덱 짜기" 가 먼저 눈에 띄고
   // 좁은 화면에서는 그 줄이 두 줄로 접혀 타입 필터를 아래로 밀어냈다
+  // 2026-09-12 v2.66.0 개체값 순위는 왼쪽(리그에 딸린 정보), 덱 짜기는 오른쪽(리그와 상관없는 다른 일).
+  // 둘을 나란히 붙여 두니 "리그를 고른 다음 무엇을 볼까" 와 "이제 다른 걸 해 볼까" 가 한 덩이로 읽혔다
   const toolRow = el('div', { class: 'controls__row controls__row--tools' },
-    toolButton('🃏 덱 짜기', state.pvpTool === 'deck', tool('deck')),
-    toolButton('🧬 개체값 순위', state.pvpTool === 'ivrank', tool('ivrank')));
+    toolButton('🧬 개체값 순위', state.pvpTool === 'ivrank', tool('ivrank')),
+    toolButton('🃏 덱 짜기', state.pvpTool === 'deck', tool('deck')));
   $controls.append(el('div', { class: 'controls__row' }, leagueSeg));
   if (state.pvpTool === 'deck') { $controls.append(toolRow); return renderPvpDeck(); }
   // 페이지 렌더러가 돌려주는 본문을 그대로 얹는다 (#/ivrank 주소로도 같은 화면이 열린다)

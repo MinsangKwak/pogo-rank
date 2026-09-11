@@ -104,10 +104,14 @@
 @media (min-width: 1100px) { .dex__list.is-grid { grid-template-columns: repeat(var(--list-cols), minmax(0, 1fr)); gap: 1.2rem; } }
 .dex__layout { cursor: pointer; }
 
-/* 2026-09-03 v2.2.0 도감 즐겨찾기 ★ · 로그인 안내 · 즐겨찾기 칩 */
+/* 2026-09-03 v2.2.0 도감 즐겨찾기 ★ · 로그인 안내 */
+/* 2026-09-12 v2.66.0 .fav-chip 은 지웠다 — 즐겨찾기 입구를 헤더 ★ 하나로 모았다 */
 .dex__row .dex__fav { margin-left: 0.6rem; }
 .dex__hint { display: flex; flex-wrap: wrap; align-items: center; gap: 0.8rem; margin: 0 0 1.2rem; font-size: 1.25rem; color: var(--muted); line-height: 1.5; }
-.fav-chip { color: var(--caution); border-color: var(--caution); }
+
+/* 2026-09-12 v2.66.0 달력 ↔ 레이드 보스 역할 안내 — 칩 줄과 달력 사이 한 줄 */
+.schedule__bridge { margin: 0 0 1.2rem; }
+.schedule__bridge a { color: var(--accent); }
 
 /* 2026-09-04 ⚔️ 기술 변경 페이지 */
 /* 머리말: 시즌 이름 + 적용일. 적용 전(soon)은 강조, 적용 후(done)는 차분하게 */

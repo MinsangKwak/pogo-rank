@@ -35,8 +35,8 @@ const state = {
   pveMode: 'easy',           // 2026-09-02 pveMode: PvE 탭 통합 — 'easy'(일반) / 'all'(전체)
   bossShow: 5,               // 2026-09-02 bossShow: 보스 추천 표시 개수
   // 2026-09-07 v2.16.0 IF 탭 해체 — 솔플 계산기는 PvE 탭, PvP 덱 짜기는 PvP 탭의 오른쪽 도구 버튼으로 (활용처 탭은 검색 패널로)
-  pveTool: null,             // PvE 탭 도구 — 'solo'(솔플 레이드 계산기 펼침) / null
-  pvpTool: null,             // PvP 탭 도구 — 'deck'(덱 짜기) / 'ivrank'(개체값 순위) / null. 덱 리그는 state.league 를 그대로 쓴다
+  pveTool: null,             // PvE 도구 — 'solo'(솔플 계산기) / null. v2.66.0 부터 주소(#/pve/solo)가 정한다 — planner/shell.js applyPlanRoute
+  pvpTool: null,             // PvP 도구 — 'deck' / 'ivrank' / null. v2.66.0 부터 주소(#/pvp/deck·#/pvp/ivrank)가 정한다. 덱 리그는 state.league 를 그대로 쓴다
   deckFoes: [],              // 상대할 포켓몬 (최대 3칸)
   deckAccOpen: true,         // 덱 추천 아코디언 펼침 여부
   soloBossMon: null,         // 솔플 계산기에서 고른 보스. null이면 아직 고르기 전
@@ -91,35 +91,39 @@ const $note = document.getElementById('note');
 // 도감 · 상성 · 즐겨찾기도 메뉴에 같은 줄이 있어, 같은 곳으로 가는 길이 화면에 두 벌이었다.
 // 좁은 화면도 같다 — 화면마다 주소가 따로라(#/dmax · #/pve · #/rank/pvp) 뒤로가기로 오간다.
 // 플래너의 [육성 현황 | 내 포켓몬] 은 남긴다: 그것은 메뉴 중복이 아니라 한 화면 안의 갈래다
+// 2026-09-12 v2.66.0 마지막 탭 줄(플래너의 [육성 현황 | 내 포켓몬])도 걷어냈다.
+// v2.61.0 에 랭킹 탭 줄을 걷으며 "플래너의 것은 메뉴 중복이 아니라 한 화면 안의 갈래" 라고
+// 남겨 뒀는데, 둘은 사실 다른 질문에 답하는 다른 화면이었다 — '지금 뭘 키우는 중인가' 와
+// '내 상자에 뭐가 있나'. 다른 화면이면 이동은 왼쪽 메뉴가 맡는다(이 서비스의 유일한 규칙).
+// $tabs 는 비워 둔 채 남긴다: 뷰가 append 하는 고정 컨테이너라 지우면 참조가 끊긴다
 function renderTabs() {
   $tabs.replaceChildren();
-  if (state.appMode === 'plan') {
-    $tabs.hidden = false;
-    renderPlanTabs();
-    // 잠긴 플래너는 탭도 안 그린다 — 빈 줄만 남으면 자리만 먹는다
-    $tabs.hidden = !$tabs.childElementCount;
-    return;
-  }
   $tabs.hidden = true;
 }
 
 // 2026-09-02 PvE 탭: 일반/전체 세부 토글 (PvP 리그 토글과 같은 seg)
 // 토글만 직접 그리고, 실제 목록은 고른 모드에 맞는 뷰 함수에 넘긴다
 function renderPveTab() {
+  // 2026-09-07 v2.16.0 오른쪽 도구 버튼: 🧮 솔플 레이드 계산기 (옛 IF 탭)
+  // 2026-09-12 v2.66.0 계산기는 #/pve/solo 로 뗐다 — 한 화면이 "거르기(티어표)" 와
+  // "값을 넣고 답을 받는 도구" 를 겸하고 있었다. 계산기를 켜면 티어표가 통째로 사라지는데도
+  // [일반|전체] 세그먼트는 그대로 남아, 눌러도 아무 일이 없는 컨트롤이 화면에 떠 있었다.
+  // 이제 계산기 화면에는 그 줄을 아예 그리지 않는다
+  const soloButton = toolButton('🧮 솔플 계산기', state.pveTool === 'solo', () => {
+    track('tool_solo', { on: state.pveTool === 'solo' ? 0 : 1 });
+    navigateHash(state.pveTool === 'solo' ? routeHash('pve') : routeHash('pve-solo'));
+  });
+  if (state.pveTool === 'solo') {
+    $controls.append(el('div', { class: 'controls__row controls__row--tools' }, soloButton));
+    return renderSoloCalc();
+  }
   const modeSeg = seg([{ id: 'easy', label: '일반' }, { id: 'all', label: '전체' }], state.pveMode,
     (id) => {
       state.pveMode = id;
-      state.pveTool = null;    // 서브탭을 고르면 도구는 접는다
       track('sub_pve_' + id);  // 2026-09-03 GA4: 서브탭 사용량
       render();
     });
-  // 2026-09-07 v2.16.0 오른쪽 도구 버튼: 🧮 솔플 레이드 계산기 (옛 IF 탭). 누르면 티어표 자리에 계산기가 펼쳐지고, 다시 누르면 접힌다
-  $controls.append(el('div', { class: 'controls__row' }, modeSeg, toolButton('🧮 솔플 계산기', state.pveTool === 'solo', () => {
-    state.pveTool = state.pveTool === 'solo' ? null : 'solo';
-    track('tool_solo', { on: state.pveTool ? 1 : 0 });
-    render();
-  })));
-  if (state.pveTool === 'solo') return renderSoloCalc();
+  $controls.append(el('div', { class: 'controls__row' }, modeSeg, soloButton));
   (state.pveMode === 'easy' ? renderPveEasy : renderPve)();
 }
 

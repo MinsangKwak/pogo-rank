@@ -96,12 +96,13 @@ drawer.querySelector('#schedule-body').closest('details').hidden = true;
 // 타일과 같은 그림이다 — 같은 화면을 두 곳에서 다르게 그리면 다른 데로 가는 줄 안다.
 // 이모지를 라벨 글자에 섞지 않고 span 으로 뗀 이유: 번역 사전(i18n-en.js)이 텍스트 노드 단위로 찾아서
 // '내 포켓몬' 같은 라벨은 그대로 맞아떨어져야 한다 (이모지가 섞이면 키가 달라진다)
-function navItem(href, title, icon) {
+function navItem(href, title, icon, parent = '') {
   // 2026-09-10 v2.47.0 잠글 수 있는 항목은 라우트 id 를 달아 둔다 — 로그인 상태가 바뀔 때마다
   // syncLockedNav() 가 그 줄의 잠금 표시를 갱신한다.
   // v2.48.1 대상이 육성 플래너 하나에서 여럿(배틀 PvP · 이벤트 일정 · 레이드 보스 · 알 부화)으로
   // 늘어, id 를 하나씩 박지 않고 data-route 로 표를 따라간다
-  const attrs = { href, class: 'drawer__item' };
+  // 2026-09-12 v2.66.0 부모가 있는 화면은 한 칸 들여 쓴다 — 나란히 두면 형제로 보인다
+  const attrs = { href, class: `drawer__item${parent ? ' drawer__item--sub' : ''}` };
   const route = ROUTES.find((entry) => `#/${entry.path}` === href);
   if (route) attrs['data-route'] = route.id;
   if (route?.id === 'planner') attrs.id = 'menu-planner';   // 기존 검사·선택자 유지
@@ -130,7 +131,7 @@ function syncLockedNav() {
 // 서비스 홈은 어느 덩이도 아니다 — 목록의 출발점이라 맨 위에 혼자 둔다.
 // 한 나눔(nav) 안에서 <h3> 로 가르므로 랜드마크는 지금처럼 하나다
 const navGroup = (label, rows) => rows.length
-  ? [el('h3', { class: 'nav-menu__sec' }, label), ...rows.map(([href, title, icon]) => navItem(href, title, icon))]
+  ? [el('h3', { class: 'nav-menu__sec' }, label), ...rows.map(([href, title, icon, , parent]) => navItem(href, title, icon, parent))]
   : [];
 const destinations = el('nav', { class: 'nav-menu', 'aria-label': '서비스 이동' },
   navItem('#', '서비스 홈', '🏠'),
@@ -161,9 +162,14 @@ document.querySelector('.layout').before(sideNav);
 // 2026-09-10 v2.42.0 화면 머리 = [브레드크럼] 제목 [한 줄 설명]. 브레드크럼과 설명은 넓은 화면에서만
 // 보인다(CSS) — 좁은 화면은 상단 바 한 줄로 충분하고, 제목 위아래로 줄이 늘면 본문이 밀린다.
 // 조각을 만들어만 두고 보이고 감추는 일은 CSS 에 맡긴다: JS 에 폭 분기를 하나 더 만들지 않는다
+// 2026-09-12 v2.66.0 브레드크럼에 가운데 한 칸 — 화면 아래 화면(#/pvp/ivrank 등)은
+// 부모 화면 이름을 거쳐 읽혀야 "어디서 들어왔는지" 가 남는다. 부모가 없는 화면에서는 감춘다
+const pageCrumbUp = el('a', { class: 'page-head__crumb-up', href: '#' }, '');
+const pageCrumbUpSep = el('span', { class: 'page-head__crumb-sep', 'aria-hidden': 'true' }, '›');
 const pageCrumb = el('nav', { class: 'page-head__crumb', 'aria-label': '위치' },
   el('a', { class: 'page-head__crumb-home', href: '#' }, '🏠'),
   el('span', { class: 'page-head__crumb-sep', 'aria-hidden': 'true' }, '›'),
+  pageCrumbUp, pageCrumbUpSep,
   el('span', { class: 'page-head__crumb-now' }, ''));
 const pageDesc = el('p', { class: 'page-head__desc' }, '');
 const pageHead = el('header', { class: 'page-head', id: 'page-head', hidden: true },
@@ -255,6 +261,12 @@ function syncAppShell(moveFocus = false) {
   // firstChild 가 아니라 h2 를 집는다 — v2.42.0 에서 앞에 브레드크럼이 붙어 첫 자식이 바뀌었다
   pageHead.querySelector('h2').textContent = title ?? '';
   pageCrumb.querySelector('.page-head__crumb-now').textContent = title ?? '';
+  // 부모 화면이 있으면 그 이름을 가운데에 끼워 넣는다 (🏠 › 배틀 · PvP › 개체값 순위)
+  const parent = found?.route.parent ? ROUTES.find((entry) => entry.id === found.route.parent) : null;
+  pageCrumbUp.textContent = parent ? (parent.nav || parent.title || '') : '';
+  pageCrumbUp.href = parent ? routeHash(parent.id) : '#';
+  pageCrumbUp.hidden = !parent;
+  pageCrumbUpSep.hidden = !parent;
   const desc = typeof routeDesc === 'function' ? routeDesc(routeId) : '';
   pageDesc.textContent = desc;
   pageDesc.hidden = !desc;

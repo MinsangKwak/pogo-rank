@@ -21,20 +21,17 @@ function renderServiceHome() {
   // 2026-09-10 v2.47.0 '내 포켓몬' 타일과 '육성 플래너' 타일을 하나로 합쳤다 —
   // 둘은 같은 화면의 두 탭인데 홈에도 ☰ 메뉴에도 문이 두 개씩 있어, 어느 쪽을 눌러야 하는지가
   // 매번 질문이 됐다. 문은 하나로 두고, 안에서 탭이 가른다
-  const features = [
-    // 2026-09-12 v2.65.0 ☰ 메뉴와 **같은 차례**로 놓는다 (router.js ROUTE_GROUPS).
-    // 홈 타일과 메뉴가 서로 다른 순서면 같은 서비스의 같은 목록으로 읽히지 않는다.
-    //   ① 지금 뭐 하지 — 시간에 매인 것   ② 뭘 데려갈까 — 고르려고 보는 것   ③ 내 포켓몬 — 내 박스
-    ['01', '이벤트 일정', '다가오는 레이드와 이벤트', 'schedule'],
-    ['02', '레이드 보스', '지금 도는 보스와 약점', 'raids'],
-    ['03', '알 부화', '거리별로 뭐가 나오나', 'eggs'],
-    ['04', '포켓몬 도감', '능력치부터 기술·진화까지', 'dex'],
-    ['05', 'D-MAX', '맥스 배틀의 딜러와 탱커', 'dmax'],
-    ['06', '레이드 · PvE', '추천 딜러와 솔플 계산기', 'pve'],
-    ['07', '배틀 · PvP', '리그별 순위와 덱 구성', 'pvp'],
-    ['08', '육성 플래너', '내 개체를 기록하고 비교해요', 'planner'],
-    ['09', '검색식 만들기', '게임 검색창에 붙여 넣을 식', 'finder'],
-  ].map(([number, title, desc, id]) => [number, title, desc, routeHash(id), routeIcon(id), id]);
+  // 2026-09-12 v2.65.0 ☰ 메뉴와 **같은 차례**로 놓는다 (router.js ROUTE_GROUPS).
+  // 홈 타일과 메뉴가 서로 다른 순서면 같은 서비스의 같은 목록으로 읽히지 않는다.
+  //   ① 지금 뭐 하지 — 시간에 매인 것   ② 뭘 데려갈까 — 고르려고 보는 것   ③ 내 포켓몬 — 내 박스
+  //
+  // 2026-09-12 v2.66.0 이름·설명을 여기 적지 않는다. 아이콘과 순서는 이미 표(ROUTES) 한 곳에서
+  // 가져오면서 글만 두 벌이었다 — 홈 타일에 한 벌, routeDesc 에 또 한 벌. 그래서 말투를 정리한
+  // v2.60.0 에서 화면 머리만 바뀌고 홈 타일은 옛 문장 그대로 남았다. 이제 표가 유일한 원본이다.
+  // 부모가 있는 화면(내 포켓몬)은 홈에 올리지 않는다 — 홈은 "어디로 갈까" 의 첫 갈림길이다
+  const features = ROUTE_GROUPS
+    .flatMap(([group]) => ROUTES.filter((route) => route.nav && !route.parent && (route.group || 'mine') === group))
+    .map((route, index) => [String(index + 1).padStart(2, '0'), route.nav, routeDesc(route.id), routeHash(route.id), routeIcon(route.id), route.id]);
   const grid = el('div', { class: 'home__grid' }, ...features.map(([number, title, desc, route, icon, id]) =>
     // 2026-09-10 v2.47.0 육성 플래너 타일은 로그인해야 열린다 — id 를 달아 두면 syncLockedNav 가 갱신한다
     el('a', { class: 'home__tile', href: route, 'data-route': id, ...(id === 'planner' ? { id: 'home-tile-planner' } : {}) },

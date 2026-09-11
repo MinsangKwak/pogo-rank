@@ -58,15 +58,27 @@ const ROUTES = [
   // 만든 검색식이 이 브라우저에 남는 개인 설정이라, 계정을 가진 사람의 것으로 다룬다
   { id: 'finder', path: 'finder', kind: 'page', nav: '검색식 만들기', icon: '🔎', group: 'mine', locked: true },
 
-  // ── 메뉴에는 없지만 주소가 있는 화면 ──────────────────────────────────────
-  // 2026-09-12 v2.63.0 PvP 개체값 순위 — 배틀 · PvP 의 [🧬 개체값 순위] 버튼으로 연다.
-  // 메뉴에 따로 두지 않는 이유: PvP 순위를 보다가 "이 개체가 몇 위지" 가 떠오르는 화면이라,
-  // 그 자리에서 이어지는 것이 맞다 (nav 없이 path 만 두면 메뉴에는 안 뜨고 주소는 산다)
-  { id: 'ivrank', path: 'ivrank', kind: 'page', icon: '🧬', locked: true },
+  // ── 화면 아래 화면 ───────────────────────────────────────────────────────
+  // 2026-09-12 v2.66.0 한 화면이 여러 기능을 겸하지 않는다.
+  // 전에는 배틀 · PvP 하나가 랭킹 · 덱 짜기 · 개체값 순위 셋을 겸했고(state.pvpTool),
+  // 레이드 · PvE 는 티어표와 솔플 계산기를 겸했다(state.pveTool). 도구를 켜도 주소는
+  // 그대로라 뒤로가기로 못 돌아오고, 링크를 보내면 상대는 랭킹 화면만 봤다.
+  //
+  // 이제 도구마다 주소가 있다. tool 값은 applyPlanRoute() 가 state.pvpTool·state.pveTool 에
+  // 그대로 옮기므로, 화면을 그리는 쪽은 지금까지와 똑같이 state 만 읽으면 된다.
+  // parent 는 화면 머리 브레드크럼에 한 칸을 더한다 (🏠 › 배틀 · PvP › 개체값 순위).
+  // nav 가 없으니 메뉴에는 뜨지 않는다 — 갈 길은 부모 화면의 버튼 하나뿐이다
+  { id: 'pvp-deck', path: 'pvp/deck', kind: 'shell', tab: 'pvp', tool: 'deck', parent: 'pvp', title: '덱 짜기', icon: '🃏', locked: true },
+  { id: 'ivrank', path: 'pvp/ivrank', kind: 'shell', tab: 'pvp', tool: 'ivrank', parent: 'pvp', title: 'PvP 개체값 순위', icon: '🧬', locked: true, legacy: ['ivrank'] },
+  { id: 'pve-solo', path: 'pve/solo', kind: 'shell', tab: 'pve', tool: 'solo', parent: 'pve', title: '솔플 계산기', icon: '🧮', locked: true },
   // 2026-09-10 v2.47.0 메뉴에서 내렸다 — '내 포켓몬' 과 '육성 플래너' 가 메뉴에 따로 있어
-  // 같은 곳으로 가는 문이 둘로 보였다. 지금은 육성 플래너 한 줄이고, 두 화면은 그 안의 탭 줄이 가른다.
-  // 주소는 그대로 살려 둔다 — 저장해 둔 링크·상세 팝업의 ➕(planAddFromDetail)가 이 주소를 쓴다
-  { id: 'planner-collection', path: 'planner/collection', kind: 'plan', tab: 'collection', title: '내 포켓몬', locked: true, legacy: ['plan/collection'] },
+  // 같은 곳으로 가는 문이 둘로 보였다.
+  // 2026-09-12 v2.66.0 다시 올린다. 문이 둘이던 것이 문제였지 화면이 둘인 것이 문제가 아니었다 —
+  // '육성 현황'(지금 뭘 키우는 중인가)과 '내 포켓몬'(내 상자에 뭐가 있나)은 다른 질문이다.
+  // 이번에는 나란한 두 줄이 아니라 **부모와 자식**으로 둔다: 메뉴에서는 육성 플래너 아래 한 칸
+  // 들여 쓰고(group 은 같게, parent 로 소속을 밝힌다), 화면 안 탭 줄은 걷어냈다.
+  // 다른 화면은 모두 왼쪽 메뉴가 이동을 맡는데(v2.61.0) 플래너만 화면 안에 탭이 남아 있었다
+  { id: 'planner-collection', path: 'planner/collection', kind: 'plan', tab: 'collection', nav: '내 포켓몬', icon: '🎒', group: 'mine', parent: 'planner', title: '내 포켓몬', locked: true, legacy: ['plan/collection'] },
   { id: 'favs', path: 'favs', kind: 'page' },
   { id: 'release', path: 'release', kind: 'page' },
   { id: 'changes', path: 'changes', kind: 'page' },
@@ -83,13 +95,26 @@ const ROUTES = [
 //   뭘 데려갈까     순위·티어·능력치 — 고르기 위해 본다 (도감 · D-MAX · PvE · PvP)
 //   내 포켓몬       내 박스를 다루는 것 — 계정/브라우저에 쌓인다 (플래너 · 검색식)
 // 순서도 이 차례다: 시간에 쫓기는 것이 먼저, 오래 두고 보는 것이 나중
+// 2026-09-12 v2.66.0 세 번째 덩이 이름을 '내 포켓몬' 에서 바꿨다 — 같은 이름의 화면이
+// 그 덩이 안에 생기면서 제목과 항목이 똑같은 글자가 됐다 (덩이 제목인지 갈 곳인지 구별이 안 된다)
 const ROUTE_GROUPS = [
   ['today', '지금 뭐 하지'],
   ['pick', '뭘 데려갈까'],
-  ['mine', '내 포켓몬'],
+  ['mine', '뭘 키울까'],
 ];
-const ROUTE_NAV = ROUTES.filter((route) => route.nav)
-  .map((route) => [`#/${route.path}`, route.nav, route.icon || '', route.group || 'mine']);
+// 2026-09-12 v2.66.0 자식 화면은 부모 바로 뒤에 선다 — 표에 적은 순서가 아니라 소속 순서다.
+// [해시, 라벨, 아이콘, 덩이, 부모 id] — 부모 id 가 있으면 메뉴에서 한 칸 들여 쓴다
+const ROUTE_NAV = (() => {
+  const rows = ROUTES.filter((route) => route.nav);
+  const ordered = [];
+  for (const route of rows) {
+    if (route.parent) continue;
+    ordered.push(route, ...rows.filter((child) => child.parent === route.id));
+  }
+  // 부모가 메뉴에 없는 자식은 제 순서대로 뒤에 붙인다 (표를 잘못 적어도 줄이 사라지지 않게)
+  for (const route of rows) if (!ordered.includes(route)) ordered.push(route);
+  return ordered.map((route) => [`#/${route.path}`, route.nav, route.icon || '', route.group || 'mine', route.parent || '']);
+})();
 
 // 화면 아이콘 — 서비스 홈 타일(components/home.js)이 이 표를 읽는다. 모르는 id 면 빈 문자열
 // 2026-09-10 v2.48.1 로그인해야 쓰는 화면인가 (ROUTES 의 locked).
@@ -121,6 +146,8 @@ const ROUTE_DESC = {
   raids: '지금 도는 레이드 보스와 약점이에요.',
   eggs: '거리별로 무엇이 부화하는지 봐요.',
   ivrank: '내 개체가 그 리그에서 몇 위인지 봐요.',
+  'pvp-deck': '상대할 셋을 넣으면 맞설 덱을 골라 드려요.',
+  'pve-solo': '이 보스를 혼자 잡을 수 있는지 계산해요.',
   finder: '조건을 눌러 게임 검색창에 붙여 넣을 식을 만들어요.',
   // 2026-09-12 v2.64.0 메뉴에 없는 화면에도 부제를 단다 — 제목만 있는 화면은
   // 주소로 바로 들어온 사람에게 "여기가 어디인지" 를 말해 주지 않는다
