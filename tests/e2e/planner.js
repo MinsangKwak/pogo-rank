@@ -64,6 +64,23 @@ const ok = (n, c, x = '') => { console.log((c ? 'PASS' : 'FAIL') + ' ' + n + ' '
   ok('승인 대기 단계가 있다', /승인/.test(await page.locator('.login-invite__steps').textContent()));
   // 조사는 받침을 따른다 — "육성 플래너은(는)" 같은 말을 쓰지 않는다
   ok('조사가 받침을 따른다', !/은\(는\)|을\(를\)/.test(await page.locator('.login-invite').textContent()));
+
+  // 2026-09-11 v2.56.0 두 버튼은 가운데. 내용 폭에 맞춰 줄어드는 버튼을 그냥 두면 왼쪽 모서리에 붙어
+  // 위의 세 단계 설명과 같은 줄에 서고, 설명의 네 번째 줄처럼 읽힌다 —
+  // 이 둘은 읽는 것이 아니라 고르는 것이라 줄에서 떨어져야 한다
+  const centered = await page.evaluate(() => {
+    const box = document.querySelector('.modal__box');
+    if (!box) return null;
+    const mid = (n) => { const r = n.getBoundingClientRect(); return r.left + r.width / 2; };
+    const go = document.querySelector('.login-invite__go');
+    const later = document.querySelector('.login-invite__later');
+    if (!go || !later) return null;
+    return { box: mid(box), go: mid(go), later: mid(later) };
+  });
+  ok('로그인 버튼이 팝업 가운데', centered && Math.abs(centered.go - centered.box) < 1,
+    centered ? `${Math.round(centered.go)} vs ${Math.round(centered.box)}` : '(못 찾음)');
+  ok('[나중에] 도 팝업 가운데', centered && Math.abs(centered.later - centered.box) < 1,
+    centered ? `${Math.round(centered.later)} vs ${Math.round(centered.box)}` : '(못 찾음)');
   await page.keyboard.press('Escape');
   await settle(400);
 

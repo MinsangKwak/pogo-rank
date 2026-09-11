@@ -245,6 +245,28 @@ const ok = (name, cond, extra = '') => results.push([cond ? 'PASS' : 'FAIL', nam
   await page.waitForTimeout(300);
   ok('같은 카드를 다시 누르면 닫힌다', (await openWhy()) === 0);
 
+  // 2026-09-11 v2.55.0 [딜러] 탭은 티어표가 위, 딜러가 아래다.
+  // 타입을 고르고 들어오면 "이 타입으로 뭘 키우나" 와 "이 타입 보스를 뭘로 때리나" 둘 다 궁금한데,
+  // 전에는 뒤엣것만 보여 주고 앞엣것은 [전체] 탭으로 되돌아가야 했다.
+  // 순서가 뒤집히면 화면의 뜻이 바뀌므로 순서 자체를 못 박는다
+  await page.locator('.seg button, .seg .uchip').filter({ hasText: /^딜러$/ }).first().click({ force: true });
+  await page.waitForTimeout(500);
+  const headsOf = () => page.locator('#content .row-head h2').allTextContents();
+  let heads = await headsOf();
+  ok('딜러 탭: 티어표가 위, 딜러가 아래', /티어표/.test(heads[0]) && /딜러/.test(heads[heads.length - 1]), heads.join(' → '));
+
+  // 타입을 고르면 두 표가 **같은 타입의 서로 다른 각도**를 말한다 —
+  // 위는 그 타입 맥스무브를 쓰는 개체, 아래는 그 타입 보스를 상대할 개체다.
+  // 머리글이 그 차이를 글자로 말하지 않으면 같은 것의 두 벌로 읽힌다
+  await page.evaluate(() => { state.maxBoss = 'psychic'; render(); });
+  await page.waitForTimeout(500);
+  heads = await headsOf();
+  ok('타입 고르면 위는 "맥스무브 티어표"', /에스퍼.*맥스무브.*티어표/.test(heads[0]), heads[0] || '(없음)');
+  ok('타입 고르면 아래는 "보스 상대 딜러"', /에스퍼.*보스 상대.*딜러/.test(heads[heads.length - 1]), heads[heads.length - 1] || '(없음)');
+  ok('두 머리글이 서로 다르다', heads[0] !== heads[heads.length - 1]);
+  await page.evaluate(() => { state.maxBoss = 'overall'; state.maxAxis = 'all'; render(); });
+  await page.waitForTimeout(300);
+
   // 11. 다크 모드에서도 토큰 한 벌
   const dark = await browser.newContext({ viewport: { width: 390, height: 844 }, colorScheme: 'dark' });
   await dark.route(/fonts\.googleapis|fonts\.gstatic|cdn\.jsdelivr/, (r) => r.abort());

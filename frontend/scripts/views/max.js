@@ -243,14 +243,23 @@ function maxSubmenu(axis) {
 }
 
 // 전체: 티어표 (맥스무브 속성 기준)
-function renderMaxTier(selectedType) {
-  // 여기서 "그 속성"은 맥스무브(charged) 속성 기준이다 — 그 타입 맥스무브를 쓰는 딜러 목록.
-  // 점수 칸의 %는 이 목록 1위(tierItems[0].score) 대비 값이고, 행을 누르면 근거가 펼쳐진다.
+// 티어표 한 덩이(머리글 + 티어별 목록)를 $content 에 붙인다.
+// 2026-09-11 v2.55.0 [전체] 탭과 [딜러] 탭이 같이 쓰므로 따로 뗐다 — 두 곳에 같은 코드를 두면
+// 한쪽만 고쳐 놓고 다른 쪽이 옛 모양으로 남는다
+//
+// 여기서 "그 속성"은 맥스무브(charged) 속성 기준이다 — 그 타입 맥스무브를 쓰는 개체 목록.
+// 점수 칸의 %는 이 목록 1위(tierItems[0].score) 대비 값이고, 행을 누르면 근거가 펼쳐진다.
+function maxTierBlock(selectedType) {
   const tierItems = DMAX_TIER[selectedType] ?? [];
   const tierTitle = selectedType === 'overall' ? 'D-MAX 티어표 (전체)' : `${TYPE_KO[selectedType]} 맥스무브 D-MAX 티어표`;
   $content.append(el('div', { class: 'row-head' },
     el('h2', {}, tierTitle), el('span', { class: 'meta' }, `${tierItems.length}종`)));
   if (tierItems.length) renderTierList(tierItems, (pokemon, index) => expandableRow(pokemon, String(index + 1), tierItems[0].score));  // 2026-09-02 1B·pogomate %
+  return tierItems.length;
+}
+
+function renderMaxTier(selectedType) {
+  maxTierBlock(selectedType);
   // 속성을 골랐으면 "이 속성 보스를 상대할" 표는 딜러 탭에 있다고 안내 — 예전엔 같은 화면 아래에 붙어 있었다
   if (selectedType !== 'overall') {
     $content.append(el('p', { class: 'detail__foot axis-hint' }, `${TYPE_KO[selectedType]} 보스를 상대할 딜러·탱커 순위는 `,
@@ -261,13 +270,24 @@ function renderMaxTier(selectedType) {
 }
 
 // 딜러: 보스 속성 상대 맥스 어태커 (상성·내구 반영)
+//
+// 2026-09-11 v2.55.0 티어표를 위, 딜러를 아래로 쌓는다.
+// 타입을 고르고 [딜러] 로 들어오면 "이 타입으로 뭘 키워야 하나" 와 "이 타입 보스를 뭘로 때리나"
+// 둘 다 궁금한데, 전에는 뒤엣것만 보여 주고 앞엣것은 [전체] 탭으로 되돌아가야 했다.
+//
+// **두 표에서 고른 타입의 뜻이 다르다** — 위(티어표)는 *그 타입 맥스무브를 쓰는* 개체이고,
+// 아래(딜러)는 *그 타입 보스를 상대할* 개체다. 같은 '에스퍼' 라도 위는 에스퍼 맥스무브를 쓰는 쪽,
+// 아래는 에스퍼 보스에게 강한 쪽이라 명단이 겹치지 않는 게 정상이다.
+// 그래서 두 머리글이 그 차이를 글자로 말한다 ("… 맥스무브 티어표" / "… 보스 상대 딜러").
+// 머리글을 짧게 줄이면 두 표가 같은 것의 두 벌처럼 읽히므로 줄이지 않는다.
 function renderMaxDealer(selectedType) {
+  maxTierBlock(selectedType);
   const attackers = DMAX_DATA[selectedType] ?? [];
   const title = selectedType === 'overall' ? 'D-MAX 딜러 (중립 · 맥스 피해 × √내구)' : `${TYPE_KO[selectedType]} 보스 상대 D-MAX 딜러`;
   $content.append(
     el('div', { class: 'row-head' }, el('h2', {}, title), el('span', { class: 'meta' }, `상위 ${attackers.length}`)),
     list(`max-${selectedType}`, attackers, (pokemon, index) => maxRow(pokemon, String(index + 1))));
-  $note.textContent = '딜러 순위: 맥스어택 3레벨(위력 350) 또는 거다이맥스 3레벨(위력 450) 1회 피해 × √내구 기준. 보스 속성을 고르면 그 속성 보스를 때릴 때의 상성이 반영됩니다(전체는 중립). 출시된 다이맥스·거다이맥스만 포함. 포켓몬을 누르면 상세 정보가 열립니다.';
+  $note.textContent = '위는 티어표(그 타입 맥스무브를 쓰는 개체), 아래는 딜러(그 타입 보스를 상대할 개체) — 같은 타입을 골라도 보는 각도가 달라 명단이 다릅니다. 티어표는 공격 종족값 × 맥스무브 위력(거다이 450 · 다이 350) × 자속 1.2, 내구 미반영이고 행을 누르면 근거가 펼쳐집니다. 딜러 순위는 맥스어택 3레벨(위력 350) 또는 거다이맥스 3레벨(위력 450) 1회 피해 × √내구 기준이며, 보스 속성을 고르면 그 속성 보스를 때릴 때의 상성이 반영됩니다(전체는 중립). 출시된 다이맥스·거다이맥스만 포함. 포켓몬을 누르면 상세 정보가 열립니다.';
 }
 
 function renderMax() {
