@@ -198,12 +198,10 @@ async function onAuthChange(user) {
   if (user) track('login', { status: AUTH.status });  // 2026-09-06 v2.9.0 GA4: 로그인 세션 수와 승인 상태(ok/pending)
   renderAccount();
   refreshFavUi();
-  if (typeof renderFavDigest === 'function') renderFavDigest();
   if (typeof renderTabs === 'function') renderTabs();  // 2026-09-06 v2.9.0 탭 줄의 ★ 즐겨찾기 바로가기 표시/숨김
   TRAINERS_CACHE = null;  // 계정이 바뀌면 트레이너 코드도 다시 조회
   if (typeof renderTrainers === 'function') renderTrainers();
   // 2026-09-05 로그인 상태에 따라 ★ 즐겨찾기 메뉴 항목을 열고 닫는다
-  if (typeof initFavsMenu === 'function') initFavsMenu();
   // 2026-09-10 v2.47.0 로그인해야 쓰는 항목(육성 플래너)의 잠금 표시 갱신
   if (typeof syncLockedNav === 'function') syncLockedNav();
   // 도감·즐겨찾기 페이지가 열려 있으면 ★ 표시를 다시 그린다
@@ -435,8 +433,6 @@ async function toggleFav(dex) {
   else AUTH.favs.delete(dex);
   refreshFavUi(dex);
   renderAccount();
-  if (typeof renderFavDigest === 'function') renderFavDigest();
-  if (typeof initFavsMenu === 'function') initFavsMenu();   // 메뉴의 즐겨찾기 개수 갱신
   if (typeof renderTabs === 'function') renderTabs();       // 2026-09-06 v2.9.0 탭 줄 바로가기의 개수 갱신
   const fieldValue = firebase.firestore.FieldValue;
   await AUTH.db.collection('users').doc(AUTH.user.uid).set({
@@ -542,10 +538,12 @@ function renderAccount(message) {
   // 2026-09-07 v2.15.1 "📕 도감에서 채우기" 버튼 제거 — 탭 줄 📕 와 같은 화면. 요약 한 줄만 남긴다
   const monCount = Array.isArray(AUTH.mons) ? AUTH.mons.length : 0;
   // 2026-09-09 v2.40.0 두 숫자를 한 문장에 가운뎃점으로 이어 붙이던 줄을 두 칸으로 나눴다 — 세는 대상이
-  // 다른 숫자(즐겨찾기 · 내 포켓몬)라 나란히 놓아야 각각 눈에 들어온다
+  // 다른 숫자라 나란히 놓아야 각각 눈에 들어온다
+  // 2026-09-12 v3.6.0 ★ 즐겨찾기 수를 뺐다 — v3.4.0 에 기능을 걷어냈는데 숫자만 남아 있었다.
+  // 담을 길도 볼 길도 없는 수를 보여 주면 "어디서 보지" 만 남는다 (계정에 저장된 값 자체는 그대로다 —
+  // 계정 삭제 확인 팝업은 지워지는 것을 있는 그대로 적어야 하므로 거기에는 남겨 둔다)
   accountBox.append(who,
     el('div', { class: 'account__stats' },
-      el('span', {}, '★ 즐겨찾기 ', el('b', {}, `${AUTH.favs.size}마리`)),
       el('span', {}, '🎒 내 포켓몬 ', el('b', {}, `${monCount}마리`))),
     note,
     el('div', { class: 'account__actions' },

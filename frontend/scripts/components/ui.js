@@ -48,7 +48,8 @@ function iconBtn(icon, label, onclick, opts = {}) {
   const attrs = { class: `icon-btn${opts.class ? ` ${opts.class}` : ''}`, 'aria-label': label };
   if (onclick) attrs.onclick = onclick;
   if (opts.id) attrs.id = opts.id;
-  return el('button', attrs, icon);
+  // 2026-09-12 v3.6.0 도트 아이콘 (components/pxicon.js) — 표에 없으면 이모지 그대로
+  return el('button', attrs, pxIcon(icon) ?? icon);
 }
 
 // 전체 페이지 본문. id 는 측정용이다 — GA·히트맵에서 화면을 셀 때 주소를 다시 파싱하지 않아도 된다

@@ -4,7 +4,8 @@
 // 이 스위트가 지키려는 것
 //   - #도감번호 · 폼 라벨 · 이름 · 영문명이 정보 칸(.detail__info)에 순서대로 있는가
 //   - 타입이 이름 줄이 아니라 그림(.sprite-box) 왼쪽 위 모서리 배지(.detail__types)로 겹쳐 있는가
-//   - 공유·저장·★ 즐겨찾기가 모두 오른쪽 위 한 줄(.detail__top-actions)에 있고 정보 칸과 겹치지 않는가
+//   - 공유·저장이 오른쪽 위 한 줄(.detail__top-actions)에 있고 정보 칸과 겹치지 않는가
+//     (★ 즐겨찾기는 v3.4.0 에서 걷어냈다 — components/favs.js 머리말)
 //   - CP 가 문장이 아니라 카드(큰 숫자 + 2×2 표)로 나오는가, 숫자가 실제로 맞는가
 //   - 포획 CP · CP 계산기 행이 여전히 열리고 닫히는가 (모양만 바뀌고 동작은 그대로)
 //   - 공유를 누르면 "복사됨" 으로 바뀌어도 원 밖으로 글자가 새지 않는가
@@ -30,16 +31,14 @@ const ok = (n, c, x = '') => { console.log((c ? 'PASS' : 'FAIL') + ' ' + n + ' '
     await page.waitForTimeout(500);
   };
 
-  await go('#/dex');
-  await page.fill('#page .boss__search', '구구');
-  await page.waitForTimeout(400);
-  await page.locator('#page .dex__row').first().click();
-  await page.waitForSelector('dialog.modal[open]', { timeout: 8000 });
+  // 2026-09-12 v3.5.0 도감 안 검색 칸을 뺐다(헤더 검색과 같은 일이라) — 상세 주소로 바로 연다
+  await go('#/mon/16');   // 구구
+  await page.waitForSelector('.detail__info', { timeout: 8000 });
   await page.waitForTimeout(400);
 
   // ── 정보 칸: 도감번호 · 타입 배지(그림 위) · 아이콘 줄의 ★
   ok('도감번호 배지', (await page.locator('.detail__dexno').textContent()) === '#0016');
-  ok('★ 즐겨찾기가 공유·저장과 같은 아이콘 줄에', await page.locator('.detail__top-actions .fav').isVisible());
+  ok('★ 즐겨찾기 버튼이 없다 (v3.4.0 에서 걷어냈다)', (await page.locator('.detail__top-actions .fav').count()) === 0);
   const pills = await page.locator('.detail__type-pill').allTextContents();
   ok('타입 알약 2개', pills.join('·') === '노말·비행', pills.join('·'));
   const pillColor = await page.locator('.detail__type-pill').first().evaluate((n) => getComputedStyle(n).backgroundColor);
@@ -56,8 +55,6 @@ const ok = (n, c, x = '') => { console.log((c ? 'PASS' : 'FAIL') + ' ' + n + ' '
   const actionsBox = await page.locator('.detail__top-actions').boundingBox();
   ok('아이콘 줄이 정보 칸 오른쪽에 (안 겹침)', actionsBox.x >= infoBox.x + infoBox.width - 4, `${actionsBox.x} vs ${infoBox.x + infoBox.width}`);
   const shareX = (await page.locator('.detail__share:not(.detail__plan)').boundingBox()).x;
-  const favX = (await page.locator('.detail__top-actions .fav').boundingBox()).x;
-  ok('★ 즐겨찾기가 공유 아이콘보다 오른쪽', favX > shareX, `fav ${favX} vs share ${shareX}`);
 
   // ── CP 카드
   const cpBig = await page.locator('.detail__cp-big b').textContent();
@@ -88,11 +85,8 @@ const ok = (n, c, x = '') => { console.log((c ? 'PASS' : 'FAIL') + ' ' + n + ' '
   await page.waitForTimeout(300);
 
   // ── 메가 폼: 색 테두리 + 새 동심원 배경이 같이 있어도 안 깨지는가
-  await go('#/dex');
-  await page.fill('#page .boss__search', '리자몽');
-  await page.waitForTimeout(400);
-  await page.locator('#page .dex__row').first().click();
-  await page.waitForSelector('dialog.modal[open]', { timeout: 8000 });
+  await go('#/mon/6');   // 리자몽
+  await page.waitForSelector('.detail__info', { timeout: 8000 });
   await page.waitForTimeout(400);
   await page.evaluate(() => {
     const box = document.querySelector('.modal__box');

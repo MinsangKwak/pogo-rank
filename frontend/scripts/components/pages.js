@@ -185,21 +185,15 @@ function renderDexPage() {
             el('i', { class: 'dot', 'aria-hidden': 'true' }),
             el('b', {}, TYPE_KO[typeName] || typeName)))),
         // 2026-09-03 v2.2.0 즐겨찾기 ★ — 로그인·승인된 사용자만 저장됨 (비로그인 클릭 시 로그인 유도)
-        authEnabled() ? favBtn(entry.dex, 'dex__fav') : '')));
+        '')));   // 2026-09-12 v3.4.0 ★ 자리 — 즐겨찾기를 걷어내며 비웠다 (다시 만들 때 여기로 돌아온다)
     // 남은 종이 있으면 "더보기 (지금까지/전체)", 다 봤으면 총 개수를 보여주고 버튼을 잠근다
     $more.textContent = shown < list.length ? `더보기 (${Math.min(shown, list.length)}/${list.length})` : `전체 ${list.length}종`;
     $more.disabled = shown >= list.length;
   };
-  // 검색: 숫자만 입력하면 도감번호 부분일치, 그 외에는 이름(한글/영문) 검색
-  // 2026-09-12 v2.66.0 안내 문구로 성격을 밝힌다 — 헤더 검색은 "서비스 어디로든 데려가는" 검색이고
-  // 이 칸은 "이 목록을 그 자리에서 거르는" 칸이다. 생김새가 비슷해 둘을 같은 것으로 읽었다
-  const $input = el('input', { class: 'boss__search', placeholder: '이 목록에서 찾기 (예: 팬텀, 94)' });
-  $input.addEventListener('input', () => {
-    const query = $input.value.trim();
-    list = !query ? all : /^\d+$/.test(query) ? all.filter((entry) => String(entry.dex).includes(query)) : monSearch(all, query, 999);
-    shown = 100;
-    draw();
-  });
+  // 2026-09-12 v3.5.0 화면 안 검색 칸을 뺐다. v2.66.0 에 안내 문구로 성격을 갈라 놓았지만
+  // (헤더는 "어디로든 데려가는" 검색, 이 칸은 "이 목록을 거르는" 칸) 생김새가 같은 입력칸 둘이
+  // 한 화면에 있는 것 자체가 문제였다 — 헤더 검색은 어차피 포켓몬을 찾아 상세로 데려간다.
+  // 세대 칩은 그대로 남아 목록을 거른다
   // 2026-09-08 v2.29.2 라벨을 "열 개수"에서 "보기 방식"으로 바꿨다.
   //   - 열 개수는 화면 폭에 따라 2·3·4열로 달라져 "2열" 이 넓은 화면에서는 그냥 틀린 말이었다
   //   - 버튼은 **지금 어떤 보기인지**를 말한다 (그리드 ↔ 리스트). 누르면 무엇이 되는지는 aria-label 로 밝힌다
@@ -210,10 +204,9 @@ function renderDexPage() {
   // 보기 방식은 "그걸 어떻게 보여줄지"라 성격이 다르다. 둘을 한 줄에 섞으니 토글이 칩 하나로 묻혔다
   // 2026-09-12 v2.66.0 [★ 즐겨찾기 N] 칩을 뺐다 — 같은 줄의 세대 칩은 그 자리에서 목록을 거르는데
   // 이 칩만 다른 화면(#/favs)으로 보냈다. 모양이 같으면 하는 일도 같아야 한다.
-  // 즐겨찾기를 보는 길은 헤더 ★ 하나로 모은다 (어느 화면에서나 같은 자리 — components/favdigest.js)
+  // 2026-09-12 v3.4.0 즐겨찾기 기능을 통째로 걷어냈다 (components/favs.js 머리말)
   const genChips = el('div', { class: 'tchips' }, ...DEX_GENS.map(([genStart, genEnd], genIndex) =>
     el('button', { class: 'uchip', onclick: () => {
-      $input.value = '';
       list = all.filter((entry) => entry.dex >= genStart && entry.dex <= genEnd);
       shown = 999;
       draw();
@@ -227,7 +220,7 @@ function renderDexPage() {
   // 2026-09-10 v2.42.0 거르기(세대·즐겨찾기)와 보기 방식을 한 줄에 좌우로 — 성격은 달라도 둘 다
   // "목록을 어떻게 볼지" 라 목록 바로 위 한 줄에 모아 두는 편이 눈이 덜 움직인다.
   // 좁은 화면은 CSS 가 위아래로 쌓는다 (한 줄에 넣으면 칩이 잘린다)
-  return el('div', { class: 'page__body dex-page' }, loginHint, $input,
+  return el('div', { class: 'page__body dex-page' }, loginHint,
     el('div', { class: 'dex__toolbar page__filters' }, genChips, $layout), $list, $more,
     footNote('미구현 = 포켓몬 GO에 아직 출시되지 않은 종 (PvPoke 출시 목록 기준, 데이터는 게임마스터 선등록분). 메가·섀도우·리전 폼은 🔍 전역 검색으로 찾을 수 있어요.'));
 }
@@ -240,7 +233,6 @@ const PAGES = {
   changes: { title: '⚔️ 기술 변경', render: renderMoveChangesPage },  // 2026-09-04 시즌 기술 조정 안내
   privacy: { title: '🔒 개인정보처리방침', render: renderPrivacyPage },  // 2026-09-04 로그인 시 수집하는 개인정보 안내
   terms: { title: '📜 이용약관', render: renderTermsPage },  // 2026-09-07 v2.18.0 (공개 준비 2)
-  favs: { title: '★ 즐겨찾기', render: renderFavsPage },  // 2026-09-05 PvE/PvP 나눠 보기
   raids: { title: '⚔️ 레이드 보스', render: renderRaidsPage },  // 2026-09-08 v2.25.0 지금 도는 티어별 보스 (components/gameday.js)
   eggs: { title: '🥚 알 부화', render: renderEggsPage },                 // 2026-09-08 v2.25.0 거리별 부화 풀 (components/gameday.js)
   finder: { title: '🔎 검색식 만들기', render: renderFinderPage },        // 2026-09-11 v2.58.0 게임 검색창에 붙여 넣을 식 (백로그 QA-57)

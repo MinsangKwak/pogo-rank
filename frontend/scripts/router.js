@@ -46,8 +46,9 @@ const ROUTES = [
   // home.js 안에만 있어 메뉴에는 아이콘을 못 붙였다
   { id: 'planner', path: 'planner', kind: 'plan', tab: 'home', nav: '육성 플래너', icon: '🌱', group: 'mine', locked: true, legacy: ['plan'] },
   // 2026-09-12 v2.63.0 '타입 & 상성' 화면을 접고 도감으로 넘긴다 — 타입 상성은 상세 팝업이
-  // 이미 같은 표를 보여 준다. 공유된 #/types?t=… 링크가 죽지 않게 legacy 로 잇는다
-  { id: 'dex', path: 'dex', kind: 'page', nav: '포켓몬 도감', icon: '📕', group: 'pick', legacy: ['types'] },
+  // 이미 같은 표를 보여 준다. 공유된 #/types?t=… 링크가 죽지 않게 legacy 로 잇는다.
+  // 2026-09-12 v3.4.0 접힌 ★ 즐겨찾기(#/favs)도 여기로 — 저장해 둔 링크가 모르는 주소로 떨어지지 않게
+  { id: 'dex', path: 'dex', kind: 'page', nav: '포켓몬 도감', icon: '📕', group: 'pick', legacy: ['types', 'favs'] },
   { id: 'dmax', path: 'dmax', kind: 'shell', tab: 'max', nav: 'D-MAX', icon: '✨', group: 'pick', legacy: ['rank/max'] },
   { id: 'pve', path: 'pve', kind: 'shell', tab: 'pve', nav: '레이드 · PvE', icon: '⚔️', group: 'pick', locked: true, legacy: ['rank/pve'] },
   { id: 'pvp', path: 'pvp', kind: 'shell', tab: 'pvp', nav: '배틀 · PvP', icon: '🃏', group: 'pick', locked: true, legacy: ['rank/pvp'] },
@@ -79,7 +80,6 @@ const ROUTES = [
   // 들여 쓰고(group 은 같게, parent 로 소속을 밝힌다), 화면 안 탭 줄은 걷어냈다.
   // 다른 화면은 모두 왼쪽 메뉴가 이동을 맡는데(v2.61.0) 플래너만 화면 안에 탭이 남아 있었다
   { id: 'planner-collection', path: 'planner/collection', kind: 'plan', tab: 'collection', nav: '내 포켓몬', icon: '🎒', group: 'mine', parent: 'planner', title: '내 포켓몬', locked: true, legacy: ['plan/collection'] },
-  { id: 'favs', path: 'favs', kind: 'page' },
   { id: 'release', path: 'release', kind: 'page' },
   { id: 'changes', path: 'changes', kind: 'page' },
   { id: 'privacy', path: 'privacy', kind: 'page' },
@@ -156,7 +156,6 @@ const ROUTE_DESC = {
   privacy: '어떤 정보를 받고 어떻게 다루는지 알려 드려요.',
   terms: '이 서비스를 쓸 때의 약속이에요.',
   // mon 은 적지 않는다 — kind:'detail' 이라 화면 머리가 아니라 팝업 안에 이름이 뜬다
-  favs: '★ 로 담은 포켓몬을 갈래별로 봐요.',
   styleguide: 'POGO PLAN 을 이루는 조각을 한자리에서 봐요. 화면을 새로 만들 때 여기서 가져다 써요.',
 };
 function routeDesc(id) {

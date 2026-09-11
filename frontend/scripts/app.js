@@ -230,8 +230,6 @@ initConsent();
 initReleaseBadge();
 // 2026-09-04 시즌 기술 변경 안내: 변경 데이터가 있을 때만 메뉴에 항목이 뜬다
 initMoveChangesMenu();
-// 2026-09-05 즐겨찾기 메뉴는 로그인 뒤에 열리지만, 초기 상태(숨김)를 여기서 확정해 둔다
-initFavsMenu();
 // 2026-09-10 v2.47.0 화면 테마 버튼(해·달). 저장된 값은 index.html 의 head 스크립트가 이미 붙였고,
 // 여기서는 버튼을 달고 얼굴을 맞춘다 (components/theme.js)
 initTheme();

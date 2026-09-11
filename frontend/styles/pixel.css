@@ -1,0 +1,214 @@
+/* ─────────────────────────────────────────────────────────────────────────────
+   도트(픽셀) 디자인 — 2026-09-12 v3.6.0
+//
+   왜 도트인가
+     이 서비스가 보여 주는 그림이 전부 96px 픽셀 스프라이트다. 그림은 도트인데 껍데기만
+     매끈하면 둘이 따로 논다. 껍데기를 그림 쪽으로 맞춘다.
+
+   규칙 넷 — 이 파일이 하는 일은 사실상 이 넷뿐이다
+     1) 곡선을 없앤다        : border-radius 0 (tokens.css --r-card · --r-chip)
+     2) 선을 세운다          : 테두리 2px(--px) — 1px 는 화면 배율에 따라 사라진다
+     3) 그림자는 계단으로    : blur 0 의 오프셋 그림자 (--shadow-hard)
+     4) 움직임은 칸칸이      : transition·animation 에 steps() — 부드러우면 도트가 아니다
+
+   건드리지 않는 것
+     레이아웃(폭·격자·순서)과 색 토큰. 이 파일은 **생김새만** 바꾼다 —
+     그래서 되돌리려면 build.py 의 STYLES 에서 이 줄 하나만 빼면 된다.
+   ───────────────────────────────────────────────────────────────────────────── */
+
+/* ── 1. 곡선 제거 ─────────────────────────────────────────────────────────── */
+/* 토큰을 안 쓰고 직접 반경을 적어 둔 자리가 아직 많아 한 번에 눌러 준다.
+   스프라이트(원형 배경)와 프로필 사진은 예외 — 그건 그림이지 상자가 아니다 */
+.uchip, .tool-btn, .seg, .seg button, .seg-view, .seg-view button, .chips__item, .tchips__item,
+.drawer__item, .icon-btn, .app-search, .boss__search, .filter-box, .filter-box > summary,
+.row, .dex__row, .home__tile, .card, .modal__box, .detail-panel, .fav-pop,
+.tag, .form-tag, .plan__status, .ivrank__card, .boss__rec, .row__more, .boss__more,
+input, select, textarea, button {
+  border-radius: 0;
+}
+
+/* ── 2. 선을 세운다 ───────────────────────────────────────────────────────── */
+/* **상자**만 두껍게 한다. 목록 줄(.dex__row · .row-list > .row)은 줄 사이를 가르는
+   밑줄 하나라 상자가 아니다 — 거기에 2px 사방 테두리를 두르면 목록이 격자무늬가 된다.
+   줄이 카드가 되는 것은 격자 모드(.is-grid)뿐이라 그때만 세운다 */
+.home__tile, .filter-box, .modal__box, .detail-panel, .ivrank__card,
+.app-search, .boss__search, .seg, .seg-view, input, select, textarea,
+.dex__list.is-grid .dex__row, .row-list:not(.is-list) > .row {
+  border-width: var(--px);
+  border-style: solid;
+}
+/* 목록 줄의 밑줄은 한 칸으로 또렷하게 */
+.dex__list:not(.is-grid) .dex__row, .row-list.is-list > .row { border-bottom-width: var(--px); }
+
+/* ── 3. 그림자는 계단으로 ─────────────────────────────────────────────────── */
+.home__tile, .modal__box, .detail-panel, .fav-pop {
+  box-shadow: var(--shadow-hard) var(--line);
+}
+.home__tile:hover, .dex__list.is-grid .dex__row:hover, .row-list:not(.is-list) > .row:hover {
+  box-shadow: var(--shadow-hard) var(--brand);
+  transform: translate(calc(var(--px) * -1), calc(var(--px) * -1));
+}
+
+/* ── 4. 움직임은 칸칸이 ───────────────────────────────────────────────────── */
+@media (prefers-reduced-motion: no-preference) {
+  .uchip, .tool-btn, .seg button, .seg-view button, .chips__item, .drawer__item,
+  .dex__row, .row-list > .row, .home__tile, .icon-btn {
+    transition: background 0.12s steps(3), color 0.12s steps(3),
+                border-color 0.12s steps(3), box-shadow 0.12s steps(3), transform 0.12s steps(2);
+  }
+}
+
+/* ── 도트 아이콘 ──────────────────────────────────────────────────────────────
+   scripts/components/pxicon.js 가 12칸 격자를 SVG 로 찍어 넣는다.
+   크기는 12의 배수로만 준다 — 1.2rem·1.8rem·2.4rem. 그 사이 값(예: 1.9rem)을 주면
+   한 칸이 1.58px 이 되어 칸마다 굵기가 달라진다(도트가 흔들린다) */
+.pxi {
+  display: block;
+  width: 1.8rem;
+  height: 1.8rem;
+  flex: none;
+  shape-rendering: crispEdges;
+}
+/* 흰 칸(3)은 판 색에 글자색을 한 스푼 섞는다. 판 색 그대로면 흰 카드 위에서 알(🥚)의
+   속이 통째로 사라져 테두리만 남는다 — 어두운 화면에서도 같은 식으로 한 단 밝아진다 */
+:root { --pxi-3: color-mix(in srgb, var(--fg) 12%, var(--surface)); }
+
+/* 자리마다 크기 — 아이콘이 들어가는 세 곳 */
+.icon-btn .pxi { width: 2.4rem; height: 2.4rem; }
+.drawer__ico { display: flex; align-items: center; justify-content: center; }
+.drawer__ico .pxi { width: 1.8rem; height: 1.8rem; }
+.home__icon .pxi { width: 2.4rem; height: 2.4rem; }
+.home__arrow .pxi { width: 1.2rem; height: 1.2rem; }
+.mode-badge .pxi { display: inline-block; width: 1.2rem; height: 1.2rem; vertical-align: -0.1rem; }
+.totop .pxi { width: 1.8rem; height: 1.8rem; }
+@media (min-width: 1100px) {
+  .home__icon .pxi { width: 3.6rem; height: 3.6rem; }
+  .app-nav__extra .drawer__ico .pxi { width: 1.2rem; height: 1.2rem; }
+}
+
+/* ── 픽셀 그림 ────────────────────────────────────────────────────────────── */
+/* 스프라이트는 원래 픽셀이다 — 축소·확대할 때 뭉개지 않게 격자를 지킨다.
+   90000번대(게임 3D 렌더 아이콘)와 움직이는 그림은 픽셀 아트가 아니라 그대로 둔다 (list.css) */
+.sprite { image-rendering: pixelated; }
+
+/* ── 선택 표시 ────────────────────────────────────────────────────────────── */
+/* 도트 UI 는 "눌린 칸" 을 그림자를 없애고 안쪽으로 밀어 표현한다 */
+.seg button[aria-pressed="true"], .seg-view button[aria-pressed="true"], .uchip.is-on {
+  box-shadow: inset var(--px) var(--px) 0 0 color-mix(in srgb, var(--brand) 45%, transparent);
+}
+
+/* ── 포커스 ───────────────────────────────────────────────────────────────── */
+/* 둥근 포커스 링 대신 두 칸짜리 네모 테두리 — 키보드로 옮겨 다닐 때 어디인지가 또렷하다 */
+:focus-visible {
+  outline: var(--px) solid var(--brand);
+  outline-offset: var(--px);
+  border-radius: 0;
+}
+
+
+/* ── 바탕의 도트 격자 ─────────────────────────────────────────────────────────
+   레퍼런스 포스터(짙은 남색 바탕 + 점 격자 + 큰 원)의 문법을 배경으로 가져왔다.
+   그림 파일을 쓰지 않는다 — radial-gradient 점 하나를 8px 간격으로 반복하면 그만이다.
+   점은 아주 흐리다(--fg 4%): 바탕이지 내용이 아니라서, 카드(--surface, 불투명) 아래에서만 보인다 */
+body {
+  background-image: radial-gradient(var(--dot) var(--px), transparent var(--px));
+  background-size: 0.8rem 0.8rem;
+  background-attachment: fixed;
+}
+:root { --dot: color-mix(in srgb, var(--fg) 7%, transparent); }
+
+/* 큰 몬스터볼 둘 — 포스터의 그 원 자리에 몬스터볼을 놓았다. 원 하나로는 어느 서비스인지
+   알 수 없지만, 띠와 가운데 단추가 붙는 순간 무엇을 다루는 곳인지가 그림 하나로 읽힌다.
+   그림 파일이 아니라 요소 하나 + ::before(띠) + ::after(단추) 뿐이다 —
+   pointer-events 없음 · z-index 0 이라 누르는 것을 가리지 않는다 */
+.px-ball {
+  position: fixed;
+  z-index: 0;
+  pointer-events: none;
+  border-radius: 50%;
+  opacity: .12;
+  box-sizing: border-box;
+  /* 위 빨강 · 아래 흰색 · 테두리는 글자색 */
+  border: var(--ball-w) solid var(--fg);
+  background: linear-gradient(var(--point) 0 50%, var(--surface) 50% 100%);
+}
+/* 가운데 띠 — 테두리 두께만큼 밖으로 빼야 공이 한 줄로 이어진다 */
+.px-ball::before {
+  content: '';
+  position: absolute;
+  left: calc(var(--ball-w) * -1);
+  right: calc(var(--ball-w) * -1);
+  top: 50%;
+  height: var(--ball-w);
+  transform: translateY(-50%);
+  background: var(--fg);
+}
+/* 가운데 단추 */
+.px-ball::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 22%;
+  height: 22%;
+  transform: translate(-50%, -50%);
+  box-sizing: border-box;
+  border: var(--ball-w) solid var(--fg);
+  border-radius: 50%;
+  background: var(--surface);
+}
+.px-ball--1 { --ball-w: 1.2rem; width: 34rem; height: 34rem; right: -8rem; top: 6rem; }
+.px-ball--2 { --ball-w: 0.8rem; width: 22rem; height: 22rem; left: -9rem; bottom: -5rem; }
+/* 몬스터볼 위로 본문을 올린다. position 은 **본문 두 덩이에만** 준다 —
+   상단 바(sticky)와 사이드바(fixed)는 이미 자기 자리 잡는 방식이 있어서,
+   여기서 relative 로 덮으면 사이드바가 흘러내리고 본문이 그 아래로 밀린다 */
+.layout, #page { position: relative; z-index: 1; }
+
+@media (prefers-reduced-motion: no-preference) {
+  /* steps() 로 칸칸이 떠다닌다 — 매끄럽게 흐르면 도트 결이 깨진다.
+     20초에 여덟 칸이라 눈에 거슬리지 않고, 화면이 살아 있다는 느낌만 남는다 */
+  .px-ball--1 { animation: px-drift-a 20s steps(8) infinite alternate; }
+  .px-ball--2 { animation: px-drift-b 26s steps(8) infinite alternate; }
+}
+@keyframes px-drift-a { to { transform: translate(-4rem, 3rem); } }
+@keyframes px-drift-b { to { transform: translate(3rem, -4rem); } }
+
+/* 구역 제목 줄 — 좁은 화면에서는 꼬리말을 아랫줄로 내린다.
+   갈무리는 Inter 보다 글자폭이 넓어 [제목] … [꼬리말] 한 줄이 양쪽 다 접히면서
+   "무엇을 해볼까 / 요?" 처럼 잘렸다. 둘 다 줄바꿈하느니 하나씩 온전히 놓는 편이 낫다 */
+@media (max-width: 699px) {
+  .home__section { display: block; }
+  .home__section > span { display: block; margin-top: 0.4rem; }
+}
+
+/* ── 서비스 홈 히어로 ─────────────────────────────────────────────────────────
+   부드러운 빛 번짐(radial-gradient 두 장)을 도트 격자 한 장으로 바꾸고,
+   원래 있던 흐릿한 링(::after)을 또렷한 몬스터볼로 세운다. 띠는 ::before 로 긋는다 */
+@media (min-width: 1100px) {
+  .home__intro {
+    border-width: var(--px);
+    background:
+      radial-gradient(color-mix(in srgb, var(--brand) 24%, transparent) var(--px), transparent var(--px))
+        0 0 / 0.8rem 0.8rem,
+      var(--surface);
+  }
+  .home__intro::after {
+    width: 32rem; height: 32rem;
+    box-sizing: border-box;
+    border: 0.8rem solid color-mix(in srgb, var(--brand) 34%, transparent);
+  }
+  .home__intro::before {
+    content: '';
+    position: absolute;
+    right: -6rem;
+    top: 50%;
+    width: 32rem;
+    height: 0.8rem;
+    transform: translateY(-50%);
+    background: color-mix(in srgb, var(--brand) 34%, transparent);
+    pointer-events: none;
+  }
+}
+
+/* 좁은 화면에서는 원을 뺀다 — 폭이 좁아 내용 뒤로 크게 번져 글이 읽히기 어려워진다 */
+@media (max-width: 699px) { .px-ball { display: none; } }

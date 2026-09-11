@@ -165,9 +165,13 @@ const ok = (n, c, x = '') => { console.log((c ? 'PASS' : 'FAIL') + ' ' + n + ' '
       }));
     }
     // 항목 한 줄 = 아이콘 + 이름 (아이콘은 서비스 홈 타일과 같은 그림 — router.js ROUTES 한 곳에서 온다)
+    // 2026-09-12 v3.6.0 아이콘 칸에 도트 그림(svg.pxi)이 들어간다 — 표에 없는 이모지는 글자로 남으므로 둘 다 인정한다
     ok(`${label} 메뉴 항목에 아이콘 칸`, await page.evaluate(() => {
       const rows = [...document.querySelectorAll('.nav-menu .drawer__item')];
-      return rows.length > 0 && rows.every((n) => n.querySelector('.drawer__ico')?.textContent.trim() && n.querySelector('.drawer__label'));
+      return rows.length > 0 && rows.every((n) => {
+        const ico = n.querySelector('.drawer__ico');
+        return !!ico && (ico.querySelector('svg.pxi') || ico.textContent.trim()) && n.querySelector('.drawer__label');
+      });
     }));
     await page.keyboard.press('Escape');
     await page.waitForTimeout(400);
@@ -183,7 +187,9 @@ const ok = (n, c, x = '') => { console.log((c ? 'PASS' : 'FAIL') + ' ' + n + ' '
       const s = getComputedStyle(n);
       return { dir: s.flexDirection, radius: s.borderRadius, border: s.borderTopWidth, w: Math.round(n.getBoundingClientRect().width) };
     }).catch(() => null);
-    ok(`${label} 그리드는 카드`, !!card && card.dir === 'column' && parseFloat(card.radius) >= 8 && parseFloat(card.border) >= 1, JSON.stringify(card));
+    // 2026-09-12 v3.6.0 도트 디자인 — 곡선을 없애고 테두리를 2px 로 세웠다.
+    // "카드냐" 를 가르는 것은 이제 모서리가 아니라 세로 쌓임 + 또렷한 테두리다
+    ok(`${label} 그리드는 카드`, !!card && card.dir === 'column' && parseFloat(card.border) >= 2, JSON.stringify(card));
     const spriteSize = await page.locator('.dex__list.is-grid .sprite').first().evaluate((n) => Math.round(n.getBoundingClientRect().width)).catch(() => 0);
     ok(`${label} 카드 그림이 크다 (리스트보다)`, spriteSize >= 56, `${spriteSize}px`);
 

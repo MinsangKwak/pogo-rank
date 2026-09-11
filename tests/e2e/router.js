@@ -24,7 +24,8 @@ const ROUTES = [
   ['#/schedule', '#/schedule', 'schedule', '이벤트 일정'],
   ['#/raids', '#/raids', 'raids', '레이드 보스'],
   ['#/eggs', '#/eggs', 'eggs', '알 부화'],
-  ['#/favs', '#/favs', 'favs', '즐겨찾기'],
+  // v3.4.0 ★ 즐겨찾기를 걷어냈다 — 저장해 둔 옛 주소는 도감으로 잇는다 (모르는 주소로 떨어지지 않게)
+  ['#/favs', '#/dex', 'dex', '포켓몬 도감'],
 ];
 // 옛 주소 → 새 주소 (v2.29.x 이전에 공유된 링크)
 const LEGACY = [
@@ -93,7 +94,7 @@ const LEGACY = [
   ok('도구 화면은 메뉴에 없다', !navHrefs.some((href) => /#\/(pvp\/(deck|ivrank)|pve\/solo)$/.test(href)), navHrefs.join(' '));
 
   // ── 측정용 식별자: 전체 페이지
-  for (const [hash, id] of [['#/dex', 'dex'], ['#/raids', 'raids'], ['#/schedule', 'schedule'], ['#/favs', 'favs']]) {
+  for (const [hash, id] of [['#/dex', 'dex'], ['#/raids', 'raids'], ['#/schedule', 'schedule'], ['#/finder', 'finder']]) {
     await go(hash);
     const marks = await page.evaluate(() => {
       const page = document.getElementById('page');

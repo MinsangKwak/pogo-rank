@@ -36,11 +36,12 @@ function renderServiceHome() {
     // 2026-09-10 v2.47.0 육성 플래너 타일은 로그인해야 열린다 — id 를 달아 두면 syncLockedNav 가 갱신한다
     el('a', { class: 'home__tile', href: route, 'data-route': id, ...(id === 'planner' ? { id: 'home-tile-planner' } : {}) },
       el('div', { class: 'home__tile-top' },
-        el('span', { class: 'home__icon', 'aria-hidden': 'true' }, icon),
+        // 2026-09-12 v3.6.0 도트 아이콘 (components/pxicon.js)
+        el('span', { class: 'home__icon', 'aria-hidden': 'true' }, pxIcon(icon) ?? icon),
         el('span', { class: 'home__number' }, number)),
       el('strong', {}, title),
       el('span', { class: 'home__desc' }, desc),
-      el('span', { class: 'home__arrow', 'aria-hidden': 'true' }, '↗'))));
+      el('span', { class: 'home__arrow', 'aria-hidden': 'true' }, pxIcon('↗') ?? '↗'))));
   // 타일을 만든 직후 잠금 표시를 한 번 맞춘다 (로그인 상태는 이미 정해져 있다)
   if (typeof syncLockedNav === 'function') queueMicrotask(syncLockedNav);
   // 잠긴 타일은 그 화면으로 보내지 않고 로그인 유도 팝업을 연다 — ☰ 메뉴의 잠긴 줄과 같은 처방
