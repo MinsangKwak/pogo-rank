@@ -74,6 +74,31 @@ const ok = (n, c, x = '') => { console.log((c ? 'PASS' : 'FAIL') + ' ' + n + ' '
   ok('판정 한 줄이 있다', (await page.locator('.ivrank__verdict').count()) === 1);
   ok('상위 10 목록', (await page.locator('.ivrank__list li').count()) === 10);
 
+  // ── 2026-09-11 v2.62.0 리그를 탭으로 골라 본다 (전에는 "가장 쓸 만한" 한 리그만 나왔다)
+  const lgTabs = await page.locator('.ivrank__top .seg button').allTextContents();
+  ok('리그 탭 셋 (마스터는 순위가 없어 뺀다)', lgTabs.join('|') === '리틀리그|슈퍼리그|하이퍼리그', lgTabs.join('|'));
+  const littleTop = await page.locator('.ivrank__list li b').first().textContent();
+  await page.locator('.ivrank__top .seg button:has-text("하이퍼리그")').click();
+  await page.waitForTimeout(500);
+  const ultraTop = await page.locator('.ivrank__list li b').first().textContent();
+  ok('탭을 바꾸면 표가 바뀐다', littleTop !== ultraTop, `${littleTop} → ${ultraTop}`);
+  ok('고른 탭이 눌린 표시', (await page.locator('.ivrank__top .seg button[aria-pressed="true"]').textContent()) === '하이퍼리그');
+  ok('머리말 CP 가 고른 리그를 따른다', /2500/.test(await page.locator('.ivrank__top .row-head').innerText()),
+    await page.locator('.ivrank__top .row-head').innerText());
+
+  // 고른 종 카드 — 이름과 종족값이 따로 놓이는가 (전에는 스타일 없는 클래스라 한 줄에 붙었다)
+  const pickedBox = await page.evaluate(() => {
+    const card = document.querySelector('.ivrank__picked');
+    const main = document.querySelector('.ivrank__picked-main');
+    if (!card || !main) return null;
+    const name = main.querySelector('b').getBoundingClientRect();
+    const stats = main.querySelector('.meta').getBoundingClientRect();
+    return { display: getComputedStyle(card).display, stacked: stats.top >= name.bottom - 1, overflow: card.scrollWidth - card.clientWidth };
+  });
+  ok('고른 종 카드가 한 줄 배치', pickedBox && pickedBox.display === 'flex', JSON.stringify(pickedBox));
+  ok('이름 아래에 종족값', pickedBox && pickedBox.stacked, JSON.stringify(pickedBox));
+  ok('카드가 넘치지 않는다', pickedBox && pickedBox.overflow === 0, JSON.stringify(pickedBox));
+
   // ── 획득 경로 하한을 올리면 후보가 줄어든다
   const before = await page.evaluate(() => ivRankTable(DEX_DATA.forms[379], 1500, 0).length);
   const after = await page.evaluate(() => ivRankTable(DEX_DATA.forms[379], 1500, 10).length);
