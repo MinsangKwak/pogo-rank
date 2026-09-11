@@ -21,7 +21,6 @@ const ROUTES = [
   ['#/planner', '#/planner', 'planner', '육성 플래너'],
   ['#/planner/collection', '#/planner/collection', 'planner-collection', '내 포켓몬'],
   ['#/dex', '#/dex', 'dex', '포켓몬 도감'],
-  ['#/types', '#/types', 'types', '타입 & 상성'],
   ['#/schedule', '#/schedule', 'schedule', '이벤트 일정'],
   ['#/raids', '#/raids', 'raids', '레이드 보스'],
   ['#/eggs', '#/eggs', 'eggs', '알 부화'],

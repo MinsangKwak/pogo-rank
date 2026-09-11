@@ -36,7 +36,7 @@ const state = {
   bossShow: 5,               // 2026-09-02 bossShow: 보스 추천 표시 개수
   // 2026-09-07 v2.16.0 IF 탭 해체 — 솔플 계산기는 PvE 탭, PvP 덱 짜기는 PvP 탭의 오른쪽 도구 버튼으로 (활용처 탭은 검색 패널로)
   pveTool: null,             // PvE 탭 도구 — 'solo'(솔플 레이드 계산기 펼침) / null
-  pvpTool: null,             // PvP 탭 도구 — 'deck'(PvP 덱 짜기 펼침) / null. 덱 리그는 state.league 를 그대로 쓴다
+  pvpTool: null,             // PvP 탭 도구 — 'deck'(덱 짜기) / 'ivrank'(개체값 순위) / null. 덱 리그는 state.league 를 그대로 쓴다
   deckFoes: [],              // 상대할 포켓몬 (최대 3칸)
   deckAccOpen: true,         // 덱 추천 아코디언 펼침 여부
   soloBossMon: null,         // 솔플 계산기에서 고른 보스. null이면 아직 고르기 전

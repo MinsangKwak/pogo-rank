@@ -414,12 +414,10 @@ function matchupCols(types, spriteId) {
     el('div', { class: 'detail__matchrows' },
       el('div', { class: 'detail__match detail__match--weak' }, el('h3', {}, '약점 (더 큰 데미지)'), chipList(weak)),
       el('div', { class: 'detail__match detail__match--resist' }, el('h3', {}, '내성 (덜 받는 데미지)'), chipList(resist))),
+    // 2026-09-12 v2.63.0 '🧭 상성 검색에서 딜러까지 보기' 버튼을 뗐다 — 그 화면을 접었다.
+    // 위의 약점·내성 표가 곧 그 화면이 보여 주던 것이라, 여기서 더 갈 곳이 없다
     el('p', { class: 'detail__foot' },
-      hasDouble ? '이중 = 두 타입 모두에 걸려 ×2.56(약점) / ×0.39(내성·무효) · ' : '',
-      // 2026-09-06 v2.10.0 🧭 상성 검색 페이지로 — 같은 타입 조합을 미리 채운 채 열린다
-      typeof openTypeSearch === 'function'
-        ? el('button', { class: 'row__why-more', onclick: (event) => { event.stopPropagation(); openTypeSearch(types, spriteId, 'detail'); } }, '🧭 상성 검색에서 딜러까지 보기 ▸')
-        : ''));
+      hasDouble ? '이중 = 두 타입 모두에 걸려 ×2.56(약점) / ×0.39(내성·무효)' : ''));
   return wrap;
 }
 

@@ -119,7 +119,7 @@ const ok = (n, c, x = '') => { console.log((c ? 'PASS' : 'FAIL') + ' ' + n + ' '
     ok('서비스 홈으로 가면 패널이 닫힌다', home.hidden === true && home.cls === false, JSON.stringify(home));
 
     await open();
-    await page.click('.nav-menu a:has-text("타입 & 상성")');
+    await page.click('.nav-menu a:has-text("알 부화")');
     await page.waitForTimeout(700);
     const other = await shut();
     ok('다른 화면으로 가도 패널이 닫힌다', other.hidden === true && other.cls === false, JSON.stringify(other));

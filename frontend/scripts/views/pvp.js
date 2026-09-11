@@ -25,12 +25,20 @@ function renderPvp() {
       render();
     });
   // 2026-09-07 v2.16.0 오른쪽 도구 버튼: 🃏 PvP 덱 짜기 (옛 IF 탭). 리그는 위 세그먼트를 그대로 쓴다
-  $controls.append(el('div', { class: 'controls__row' }, leagueSeg, toolButton('🃏 덱 짜기', state.pvpTool === 'deck', () => {
-    state.pvpTool = state.pvpTool === 'deck' ? null : 'deck';
-    track('tool_pvpdeck', { on: state.pvpTool ? 1 : 0 });
+  // 2026-09-12 v2.63.0 🧬 개체값 순위를 그 옆에 붙였다 — 메뉴에 따로 두지 않는다.
+  // "이 리그에서 뭐가 센가" 를 보다가 "그럼 내 개체는 몇 위지" 가 떠오르는 자리라,
+  // 화면을 옮기지 않고 그 자리에서 펼치는 것이 맞다 (덱 짜기와 같은 문법)
+  const tool = (id) => () => {
+    state.pvpTool = state.pvpTool === id ? null : id;
+    track(id === 'deck' ? 'tool_pvpdeck' : 'tool_ivrank', { on: state.pvpTool ? 1 : 0 });
     render();
-  })));
+  };
+  $controls.append(el('div', { class: 'controls__row' }, leagueSeg,
+    toolButton('🃏 덱 짜기', state.pvpTool === 'deck', tool('deck')),
+    toolButton('🧬 개체값 순위', state.pvpTool === 'ivrank', tool('ivrank'))));
   if (state.pvpTool === 'deck') return renderPvpDeck();
+  // 페이지 렌더러가 돌려주는 본문을 그대로 얹는다 (#/ivrank 주소로도 같은 화면이 열린다)
+  if (state.pvpTool === 'ivrank') { $content.append(renderIvRankPage()); return; }
   const leagueRanking = PVP_DATA[state.league];
   // 이 리그 랭킹에 한 마리라도 있는 속성만 칩으로 만든다
   const presentTypes = new Set(leagueRanking.flatMap((pokemon) => pokemon.types));
