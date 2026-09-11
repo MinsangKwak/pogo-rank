@@ -17,14 +17,26 @@
    ───────────────────────────────────────────────────────────────────────────── */
 
 /* ── 1. 곡선 제거 ─────────────────────────────────────────────────────────── */
-/* 토큰을 안 쓰고 직접 반경을 적어 둔 자리가 아직 많아 한 번에 눌러 준다.
-   스프라이트(원형 배경)와 프로필 사진은 예외 — 그건 그림이지 상자가 아니다 */
-.uchip, .tool-btn, .seg, .seg button, .seg-view, .seg-view button, .chips__item, .tchips__item,
-.drawer__item, .icon-btn, .app-search, .boss__search, .filter-box, .filter-box > summary,
-.row, .dex__row, .home__tile, .card, .modal__box, .detail-panel, .fav-pop,
-.tag, .form-tag, .plan__status, .ivrank__card, .boss__rec, .row__more, .boss__more,
-input, select, textarea, button {
+/* 2026-09-12 v3.6.1 — v3.6.0 은 둥근 자리의 **이름을 하나씩 적어** 눌렀다. 그래서 목록에
+   없던 자리가 그대로 둥글게 남았다: 상세 화면의 카드와 알약 배지, 그림 받침(넓은 화면에서는
+   아예 정원이었다), 일정표 날짜 칸, 검색식 입력칸, 티어 배지, 진화 칸, 맨 위로 버튼 …
+   이름을 더 적어 봐야 다음에 또 빠진다. 뿌리에서 한 번에 누르고, 진짜 동그래야 하는 것만 되돌린다.
+
+   :not(#_) 는 우선순위를 id 한 칸만큼 올리려는 장치다 (#_ 라는 id 는 이 서비스에 없다).
+   화면마다 흩어진 반경 규칙 중에는 클래스를 넷까지 겹친 것도 있어, 그냥 `body *` 로는 못 덮는다 */
+html:not(#_) body *,
+html:not(#_) body *::before,
+html:not(#_) body *::after {
   border-radius: 0;
+}
+/* 되돌리는 것 — 진짜 동그란 것들.
+   프로필 사진은 사람 얼굴이고, 알림 점은 점이고, 바탕 몬스터볼은 공이다.
+   타입 색 점(.dot)은 되돌리지 않는다 — 도트 디자인에서 한 칸짜리 네모가 곧 점이다 */
+html:not(#_) .avatar,
+html:not(#_) .dot-badge::after,
+html:not(#_) .px-ball,
+html:not(#_) .px-ball::after {
+  border-radius: 50%;
 }
 
 /* ── 2. 선을 세운다 ───────────────────────────────────────────────────────── */
@@ -63,12 +75,19 @@ input, select, textarea, button {
    크기는 12의 배수로만 준다 — 1.2rem·1.8rem·2.4rem. 그 사이 값(예: 1.9rem)을 주면
    한 칸이 1.58px 이 되어 칸마다 굵기가 달라진다(도트가 흔들린다) */
 .pxi {
-  display: block;
+  /* 2026-09-12 v3.6.1 inline-block — block 이면 문단 한가운데 놓인 아이콘이 줄을 끊는다.
+     (버튼·메뉴 칸은 flex 라 어차피 블록으로 다뤄지므로 이 값 하나로 두 쓰임을 다 덮는다) */
+  display: inline-block;
+  vertical-align: -0.15em;
   width: 1.8rem;
   height: 1.8rem;
   flex: none;
   shape-rendering: crispEdges;
 }
+/* 글 속의 아이콘은 그 줄 글자와 같은 크기로 — 크면 줄 높이를 혼자 밀어 올린다 */
+.note .pxi, .prose .pxi, .detail__foot .pxi, .dex__hint .pxi { width: 1.4rem; height: 1.4rem; }
+/* 접이줄 머리는 flex 라 아이콘 뒤 빈칸이 통째로 사라진다 — 사이를 여기서 벌린다 */
+.detail__acc summary .pxi { margin-right: 0.6rem; }
 /* 흰 칸(3)은 판 색에 글자색을 한 스푼 섞는다. 판 색 그대로면 흰 카드 위에서 알(🥚)의
    속이 통째로 사라져 테두리만 남는다 — 어두운 화면에서도 같은 식으로 한 단 밝아진다 */
 :root { --pxi-3: color-mix(in srgb, var(--fg) 12%, var(--surface)); }
@@ -86,10 +105,89 @@ input, select, textarea, button {
   .app-nav__extra .drawer__ico .pxi { width: 1.2rem; height: 1.2rem; }
 }
 
+/* ── 읽기 (글씨·여백) ─────────────────────────────────────────────────────────
+   2026-09-12 v3.6.1 — v3.6.0 은 글꼴만 갈아끼우고 크기·줄간은 옛 값을 그대로 뒀다.
+   도트 글꼴은 획이 얇고 글자가 작아, 같은 수치라도 훨씬 작고 빽빽해 보인다.
+   여기서 고치는 것은 **읽는 글**의 크기·줄간과 덩이 사이 여백 넷뿐이다 */
+
+/* 0) 가짜 굵기 제거 — 이게 제일 크다.
+      갈무리에는 굵은 획(Bold)이 없다. font-weight: 700 을 주면 브라우저가 획을 옆으로
+      한 겹 덧그려 흉내를 내는데(synthesized bold), 그 순간 도트가 번져 **그냥 흐린 고딕**이 된다.
+      v3.6.0 의 화면 제목·포켓몬 이름이 도트로 안 보였던 진짜 이유가 이것이다.
+      굵기는 색(--fg ↔ --muted)과 크기로 낸다.
+      긴 산문은 Pretendard 로 빠지고 그쪽은 진짜 굵은 획이 있으니, 거기서만 되살린다 */
+html:not(#_) body * { font-weight: 400; }
+html:not(#_) .prose b, html:not(#_) .prose strong,
+html:not(#_) .note b, html:not(#_) .note strong,
+html:not(#_) .legal b, html:not(#_) .legal strong,
+html:not(#_) .release__sec b, html:not(#_) .release__sec strong { font-weight: 700; }
+
+/* 1) 제목 줄간 — 본문 줄간(2.2rem)을 그대로 물려받아 21px 글자에 22px 이었다(1.05배).
+      한 줄일 때는 몰랐지만 제목이 두 줄로 넘어가면 위아래가 맞붙었다 */
+h1, h2, .page-head h2, .detail__name, .home__intro h2, .page__sec { line-height: 1.35; }
+
+/* 2) 부제 · 안내문 — 11~12.5px 이라 한눈에 안 들어왔다. 어차피 Pretendard 로 빠지는
+      산문이라 한 단 키워도 도트 결이 깨지지 않는다 */
+.page-head__desc, .note, .detail__foot, .dex__hint {
+  font-size: 1.3rem;
+  line-height: 2rem;
+}
+
+/* 3) 꼬리 글씨 — 본문 줄간 22px 을 그대로 물려받아 11px 글자에 두 배였다.
+      줄끼리 흩어져 한 덩이로 안 읽힌다. 작은 글씨일수록 줄을 붙여야 묶여 보인다 */
+.meta, .gameday__note, .row__sub, .dex__row .meta, .form-tag { line-height: 1.7rem; }
+
+/* 4) 덩이 사이 — 구역 제목 위가 40px(구역 22px + 제목 26px)이었다.
+      아래(12px)와의 차이는 지켜야 제목이 아래 내용에 붙지만, 위가 과했다 */
+.page__sec { margin-top: 2rem; }
+.layout #controls:not(:empty), #page .page__filters { margin-bottom: 1.6rem; }
+
+/* 빈 컨트롤 줄 — 서비스 홈처럼 걸 것이 없는 화면에서도 위아래 여백(20 + 40px)만으로
+   60px 짜리 빈 줄이 제목 앞에 서 있었다. 비어 있으면 자리도 없애야 한다 */
+.layout #controls:empty { display: none; }
+
+/* 구역 제목 줄 — 좁은 화면에서는 꼬리말을 아랫줄로 내린다.
+   갈무리는 Inter 보다 글자폭이 넓어 [제목] … [꼬리말] 한 줄이 양쪽 다 접히면서
+   "무엇을 해볼까 / 요?" 처럼 잘렸다. 둘 다 줄바꿈하느니 하나씩 온전히 놓는 편이 낫다 */
+@media (max-width: 699px) {
+  .home__section { display: block; }
+  .home__section > span { display: block; margin-top: 0.4rem; }
+}
+
+/* 보기 전환(☰ ⊞) — 겹테두리(바깥 판 + 칸마다 한 겹)에 높이 36px 이라
+   좁은 화면에서 화면 제목보다 덩치가 커 보였다. 한 단 낮춘다 */
+@media (max-width: 699px) {
+  .seg-view { padding: 0.2rem; }
+  .seg-view button { min-height: 3rem; padding: 0 1rem; }
+}
+
+/* 좁은 화면의 격자 칸 — 한 칸이 170px 라 꼬리 글씨가 석 줄로 깨졌다.
+   글자를 한 단 줄이고 줄을 붙여 두 줄 안에 들어오게 한다 */
+@media (max-width: 559px) {
+  .dex__list.is-grid .gameday__note { font-size: 1.05rem; line-height: 1.6rem; }
+  .dex__list.is-grid .gameday__main { padding-top: 0.8rem; }
+}
+
 /* ── 픽셀 그림 ────────────────────────────────────────────────────────────── */
 /* 스프라이트는 원래 픽셀이다 — 축소·확대할 때 뭉개지 않게 격자를 지킨다.
    90000번대(게임 3D 렌더 아이콘)와 움직이는 그림은 픽셀 아트가 아니라 그대로 둔다 (list.css) */
 .sprite { image-rendering: pixelated; }
+/* 그림 뒤에 깔리는 받침 색은 평면으로 — 브랜드색이 아래에서 번지는 타원(pc-theme.css)을 깔면
+   도트 그림의 계단이 안개 속에 놓인 것처럼 흐려 보인다 */
+.dex__list.is-grid .gameday__row > .sprite:not(.is-loading),
+.dex__list.is-grid .dex__row .sprite:not(.is-loading),
+.dex__list.is-grid .fav__row .sprite:not(.is-loading),
+.dex-catalog.is-grid .dex__row .sprite:not(.is-loading),
+.row-list > .row > .sprite:not(.is-loading) { background: var(--bg); }
+
+/* 상세 화면의 그림 받침 — 동심원 무늬(modal.css)가 도트 그림 뒤에서 물결처럼 돌았다.
+   바탕과 같은 점 격자로 바꾼다. 한 화면 안에서 바탕 무늬가 두 종류일 이유가 없다 */
+.sprite-box {
+  background:
+    radial-gradient(circle at center, color-mix(in srgb, var(--fg) 9%, transparent) 0, transparent 65%)
+      0 0 / 0.8rem 0.8rem,
+    var(--surface);
+}
 
 /* ── 선택 표시 ────────────────────────────────────────────────────────────── */
 /* 도트 UI 는 "눌린 칸" 을 그림자를 없애고 안쪽으로 밀어 표현한다 */
@@ -106,28 +204,34 @@ input, select, textarea, button {
 }
 
 
-/* ── 바탕의 도트 격자 ─────────────────────────────────────────────────────────
-   레퍼런스 포스터(짙은 남색 바탕 + 점 격자 + 큰 원)의 문법을 배경으로 가져왔다.
-   그림 파일을 쓰지 않는다 — radial-gradient 점 하나를 8px 간격으로 반복하면 그만이다.
-   점은 아주 흐리다(--fg 4%): 바탕이지 내용이 아니라서, 카드(--surface, 불투명) 아래에서만 보인다 */
-body {
-  background-image: radial-gradient(var(--dot) var(--px), transparent var(--px));
-  background-size: 0.8rem 0.8rem;
-  background-attachment: fixed;
-}
-:root { --dot: color-mix(in srgb, var(--fg) 7%, transparent); }
+/* ── 바탕 ─────────────────────────────────────────────────────────────────────
+   레퍼런스 포스터(짙은 바탕 + 점 격자 + 큰 원)의 문법을 가져왔다.
+   그림 파일을 쓰지 않는다 — 점 하나를 8px 간격으로 반복하고, 원 자리에 몬스터볼을 놓는다.
 
-/* 큰 몬스터볼 둘 — 포스터의 그 원 자리에 몬스터볼을 놓았다. 원 하나로는 어느 서비스인지
-   알 수 없지만, 띠와 가운데 단추가 붙는 순간 무엇을 다루는 곳인지가 그림 하나로 읽힌다.
-   그림 파일이 아니라 요소 하나 + ::before(띠) + ::after(단추) 뿐이다 —
-   pointer-events 없음 · z-index 0 이라 누르는 것을 가리지 않는다 */
-.px-ball {
+   2026-09-12 v3.6.1 **흐리게** — 또렷한 점 격자가 글자 뒤에서 그대로 비쳐 읽기가 힘들었다.
+   점은 가장자리를 흐린 원(transparent 65%)으로 바꾸고 농도를 7% → 4.5% 로 낮췄다.
+   몬스터볼은 blur 를 직접 건다. 배경을 본문과 한 층에 두지 않고 #px-bg 한 겹으로 뺀 이유가 이것이다 —
+   흐리기를 걸 자리가 한 곳이어야 본문이 같이 흐려지지 않는다 */
+#px-bg {
   position: fixed;
+  inset: 0;
   z-index: 0;
   pointer-events: none;
+  overflow: hidden;
+  background-image: radial-gradient(circle at center, var(--dot) 0, transparent 65%);
+  background-size: 0.8rem 0.8rem;
+}
+:root { --dot: color-mix(in srgb, var(--fg) 4.5%, transparent); }
+
+/* 큰 몬스터볼 둘. 원 하나로는 어느 서비스인지 알 수 없지만, 띠와 가운데 단추가 붙는 순간
+   무엇을 다루는 곳인지가 그림 하나로 읽힌다. 그림 파일이 아니라
+   요소 하나 + ::before(띠) + ::after(단추) 뿐이다 */
+.px-ball {
+  position: absolute;
   border-radius: 50%;
-  opacity: .12;
+  opacity: .1;
   box-sizing: border-box;
+  filter: blur(0.6rem);
   /* 위 빨강 · 아래 흰색 · 테두리는 글자색 */
   border: var(--ball-w) solid var(--fg);
   background: linear-gradient(var(--point) 0 50%, var(--surface) 50% 100%);
@@ -159,9 +263,8 @@ body {
 }
 .px-ball--1 { --ball-w: 1.2rem; width: 34rem; height: 34rem; right: -8rem; top: 6rem; }
 .px-ball--2 { --ball-w: 0.8rem; width: 22rem; height: 22rem; left: -9rem; bottom: -5rem; }
-/* 몬스터볼 위로 본문을 올린다. position 은 **본문 두 덩이에만** 준다 —
-   상단 바(sticky)와 사이드바(fixed)는 이미 자기 자리 잡는 방식이 있어서,
-   여기서 relative 로 덮으면 사이드바가 흘러내리고 본문이 그 아래로 밀린다 */
+/* 본문을 바탕 위로. position 은 **본문 두 덩이에만** 준다 — 상단 바(sticky)와 사이드바(fixed)는
+   이미 자기 자리 잡는 방식이 있어서, 여기서 relative 로 덮으면 사이드바가 흘러내린다 */
 .layout, #page { position: relative; z-index: 1; }
 
 @media (prefers-reduced-motion: no-preference) {
@@ -172,14 +275,6 @@ body {
 }
 @keyframes px-drift-a { to { transform: translate(-4rem, 3rem); } }
 @keyframes px-drift-b { to { transform: translate(3rem, -4rem); } }
-
-/* 구역 제목 줄 — 좁은 화면에서는 꼬리말을 아랫줄로 내린다.
-   갈무리는 Inter 보다 글자폭이 넓어 [제목] … [꼬리말] 한 줄이 양쪽 다 접히면서
-   "무엇을 해볼까 / 요?" 처럼 잘렸다. 둘 다 줄바꿈하느니 하나씩 온전히 놓는 편이 낫다 */
-@media (max-width: 699px) {
-  .home__section { display: block; }
-  .home__section > span { display: block; margin-top: 0.4rem; }
-}
 
 /* ── 서비스 홈 히어로 ─────────────────────────────────────────────────────────
    부드러운 빛 번짐(radial-gradient 두 장)을 도트 격자 한 장으로 바꾸고,
@@ -210,5 +305,6 @@ body {
   }
 }
 
-/* 좁은 화면에서는 원을 뺀다 — 폭이 좁아 내용 뒤로 크게 번져 글이 읽히기 어려워진다 */
+/* 좁은 화면에서는 몬스터볼을 뺀다 — 폭이 좁아 내용 뒤로 크게 번져 글이 읽히기 어려워진다.
+   점 격자는 남는다 (흐려서 글을 가리지 않는다) */
 @media (max-width: 699px) { .px-ball { display: none; } }

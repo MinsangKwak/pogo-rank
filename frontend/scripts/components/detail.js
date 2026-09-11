@@ -590,12 +590,13 @@ function openDetail(pokemon, isDex = false, from = null) {
   if (form && typeof ivrankDetailNode === 'function') body.append(ivrankDetailNode(form, pokemon.sprite));
   // 2026-09-04 포획 CP: "지금 잡은 개체가 100%인가"를 확인하는 표. 계산기보다 자주 보므로 위에 둔다
   if (form) body.append(el('details', { class: 'detail__acc detail__acc--catch' },
-    el('summary', {}, '🎯 포획 CP — 이 숫자면 100%'),
+    // 2026-09-12 v3.6.1 이모지를 도트 아이콘으로 (components/pxicon.js). 글자는 그대로 둬야 사전(i18n-en.js)이 찾는다
+    el('summary', {}, pxIcon('🎯') ?? '🎯', ' 포획 CP — 이 숫자면 100%'),
     el('div', { class: 'detail__acc-body' }, cpNode(form, pokemon.sprite))));
   // 2026-09-03 v4: 내 개체 CP 계산기를 상성 위로, 접이식 아코디언으로
   // 2026-09-03 도감형 재배치: 계산기 아코디언 → [능력치 육각형 | 배울 수 있는 기술] → 상성 → 활용처 → 진화, "보스로 나오면"은 맨 아래
   if (form) body.append(el('details', { class: 'detail__acc' },
-    el('summary', {}, '🧮 내 개체 CP 계산기'),
+    el('summary', {}, pxIcon('🧮') ?? '🧮', ' 내 개체 CP 계산기'),
     el('div', { class: 'detail__acc-body' }, detailCpCalc(form))));
   // 2026-09-03 일반 팝업: 능력치 없이 기술만 전체 폭 / 도감 팝업: [능력치 육각형 | 기술] 2열
   if (form) {
