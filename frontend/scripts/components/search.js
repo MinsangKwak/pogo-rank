@@ -6,6 +6,8 @@
 //   monNorm(text)                  검색용 정규화 (공백 제거 + 소문자)
 //   monSearch(candidates, query, limit)  후보 목록에서 이름으로 걸러 정확도순으로 돌려준다
 //   initSearch()                   헤더 검색창에 동작을 붙인다 (파일 끝에서 바로 한 번 실행)
+//   searchTypePool(types)          검색 색인에서 그 타입 조합만 골라 돌려준다
+//   searchSubmit()                 지금 입력한 조건으로 도감(#/dex?q=…&t=…) 으로 간다
 //   _searchIndex                   buildSearchIndex의 캐시 (이 파일 내부용)
 //
 // 의존하는 전역
@@ -111,13 +113,40 @@ function searchRankText(spriteId) {
 // ── 2026-09-06 v2.12.0 전역 검색 = 이름 + 타입 ────────────────────────────────
 // 상성 검색 페이지의 "타입 칩 → 그 조합의 포켓몬" 이 쓸 만해서 헤더 검색에도 붙였다. 한 입력창으로 셋을 처리한다.
 //   (1) 이름:            "메타그로스"          → 지금까지처럼 이름 후보
-//   (2) 타입:            칩 [물][풀] 또는 "물 풀" → 그 조합의 포켓몬 목록 (typesearch.js typeMonList)
+//   (2) 타입:            칩 [물][풀] 또는 "물 풀" → 그 조합의 포켓몬 목록 (searchTypePool)
 //   (3) 이름 + 타입:     칩 [물] + "메가"        → 물 타입 중 이름에 '메가'가 든 것
 // 타입은 칩으로 골라도 되고 글자로 쳐도 된다 — "물 풀", "물·풀", "물타입" 전부 같다. 최대 2개.
-// 타입만 고른 목록은 8마리까지 보여 주고, 전부 보려면 "상성 검색 ▸" 로 넘긴다.
+// 패널은 여덟 줄까지만 보여 준다. 전부는 도감에서 본다 (2026-09-12 v3.9.0, searchSubmit).
 
 const SEARCH_TYPES = [];          // 칩으로 고른 타입 (최대 2)
 let _searchTrackKey = '';         // 같은 타입 조합을 입력할 때마다 GA 를 찍지 않기 위한 마지막 기록
+
+// 2026-09-12 v3.9.0 (버그) 타입 칩이 목록을 거르지 않았다.
+// 후보를 고르는 자리가 `typeMonList(types)` 를 부르고 있었는데, 그 함수를 들고 있던 상성 검색 화면을
+// v2.63.0 에 접으면서 함수도 같이 사라졌다. `typeof … === 'function'` 으로 감싸 둔 탓에 오류도 안 나고
+// 조용히 색인 전체로 되돌아갔다 — 칩을 눌러도 목록은 그대로였고 "물 타입 2,614마리" 라고 적혔다.
+// 색인 항목이 이미 types 를 들고 있으니 여기서 직접 거른다. 고른 타입을 **모두** 가진 것만 남긴다
+// (물+비행 = 물이면서 비행, 둘 중 하나가 아니다 — 상성 검색이 쓰던 규칙 그대로다)
+function searchTypePool(types) {
+  if (!types.length) return buildSearchIndex();
+  return buildSearchIndex().filter((pokemon) => types.every((typeKey) => pokemon.types?.includes(typeKey)));
+}
+
+// 2026-09-12 v3.9.0 검색 결과는 도감에서 본다.
+// 패널은 여덟 줄까지만 보여 주는 자리다 — 그 아래를 보려면 검색어를 더 좁히는 수밖에 없었다.
+// 조건을 주소에 실어 도감으로 넘기면 전부가 도감의 목록·그리드 보기로 그려진다 (pages.js renderDexPage)
+function searchSubmit() {
+  const $input = document.getElementById('psearch');
+  const { types: typedTypes, query } = parseSearchQuery($input.value);
+  const types = activeSearchTypes(typedTypes);
+  if (!query && !types.length) return;
+  const params = new URLSearchParams();
+  if (query) params.set('q', query);
+  if (types.length) params.set('t', types.join(','));
+  track('search_submit', { q: query.slice(0, 20), t: types.join(',') });  // GA4: 도감까지 간 검색
+  // navigateHash 가 열려 있는 검색 패널을 닫고 그 히스토리 항목을 대체한다 (components/history.js)
+  navigateHash(`#/dex?${params}`);
+}
 
 // 검색어에서 타입 이름 토큰을 떼어 낸다. "물 풀 메가" → { types: ['water','grass'], query: '메가' }
 function parseSearchQuery(text) {
@@ -186,20 +215,25 @@ function renderSearchResults() {
     if (typeof usageTopNodes === 'function') $sugg.append(...usageTopNodes());
     return;
   }
-  // 후보군: 타입이 있으면 그 조합의 포켓몬(출시 → 미출시, 도감번호순), 없으면 전체 색인
-  const candidates = types.length && typeof typeMonList === 'function' ? typeMonList(types) : buildSearchIndex();
-  const hits = query ? monSearch(candidates, query, 8) : candidates.slice(0, 8);  // 타입만 골랐을 때도 8마리 — 패널이 화면을 다 덮지 않게
+  // 후보군: 타입이 있으면 그 조합의 포켓몬, 없으면 전체 색인
+  const candidates = searchTypePool(types);
+  // 2026-09-12 v3.9.0 먼저 **전부** 찾고 나서 여덟 줄을 자른다.
+  // 전에는 monSearch(…, 8) 로 여덟 개만 받아 와 `"메타" 8마리` 처럼 잘린 수를 진짜 수인 양 적었다.
+  // 색인은 수천 줄이라 전부 훑어도 한 번의 입력에서 티가 나지 않는다
+  const found = query ? monSearch(candidates, query, Infinity) : candidates;
+  const hits = found.slice(0, 8);  // 패널이 화면을 다 덮지 않게 여덟 줄까지만
   if (types.length) {
     const label = types.map((typeKey) => TYPE_KO[typeKey]).join('·');
     const key = types.join(',');
     if (key !== _searchTrackKey) { _searchTrackKey = key; track('search_type', { t: key }); }
     $sugg.append(el('div', { class: 'sugg__head' },
       el('b', {}, `${label} 타입 ${candidates.length}마리`),
-      query ? el('span', {}, `중 "${query}" ${hits.length}마리`) : (hits.length < candidates.length ? el('span', {}, `중 앞 ${hits.length}마리`) : ''),
+      query ? el('span', {}, `중 "${query}" ${found.length}마리`) : '',
+      searchAllChip(found.length),
       // v2.12.1 칩을 다 풀어 주는 지우기 — 글자로 친 타입은 입력창을 지우면 된다
       el('button', { class: 'row__why-more', onclick: () => { SEARCH_TYPES.length = 0; renderSearchTypeChips(); renderSearchResults(); } }, '타입 지우기')));
   } else {
-    $sugg.append(el('div', { class: 'sugg__head' }, el('b', {}, `"${query}" ${hits.length}마리`)));
+    $sugg.append(el('div', { class: 'sugg__head' }, el('b', {}, `"${query}" ${found.length}마리`), searchAllChip(found.length)));
   }
   for (const pokemon of hits) {
     // 후보를 고르면 검색창과 목록을 함께 비우고 상세 팝업을 띄운다
@@ -218,13 +252,19 @@ function renderSearchResults() {
     $sugg.append(el('span', { class: 'sugg__none' }, types.length ? '이 타입 조합에 맞는 포켓몬이 없어요' : '검색 결과가 없어요'));
     if (query) track('search_none', { q: query.slice(0, 20), t: types.join(',') });  // 2026-09-06 v2.9.0 GA4: 못 찾은 검색어 — 별칭·표기 보강 근거
   }
-  // 2026-09-12 v2.63.0 '상성 검색에서 전부 보기' 로 이어 주던 줄을 뗐다 — 그 화면을 접었다.
-  // 잘렸다는 사실만 알린다 (검색어를 더 좁히면 원하는 것이 올라온다)
-  if (types.length && hits.length < candidates.length) {
-    $sugg.append(el('span', { class: 'sugg__none' }, `${label(types)} 타입은 ${candidates.length}마리 — 이름을 더 넣어 좁혀 보세요`));
+  // 2026-09-12 v3.9.0 여덟 줄에서 잘렸으면 나머지가 어디 있는지 알린다 — 도감이다.
+  // (v2.63.0 에 '상성 검색에서 전부 보기' 를 뗀 뒤로는 잘렸다는 사실만 적어 두고 갈 곳이 없었다)
+  if (hits.length < found.length) {
+    $sugg.append(el('button', { class: 'sugg__all-row', onclick: searchSubmit },
+      `나머지 ${found.length - hits.length}마리는 도감에서 보기 ›`));
   }
 }
-function label(types) { return types.map((typeKey) => TYPE_KO[typeKey]).join('·'); }
+
+// 결과 머리의 [도감에서 보기] — 검색의 기본 행동이다 (입력칸에서 Enter 를 쳐도 같은 곳으로 간다).
+// 한 마리도 없으면 데려갈 곳이 없으므로 만들지 않는다
+function searchAllChip(total) {
+  return total ? uchip('도감에서 보기', searchSubmit, { class: 'sugg__all' }) : '';
+}
 
 // 검색 패널 열기/닫기 (헤더 🔍 · 패널 ✕). 닫을 때 입력과 칩을 비워 다음에 깨끗하게 연다
 function toggleSearchPanel(open) {
@@ -258,6 +298,13 @@ function initSearch() {
   if (!$input) return;
   renderSearchTypeChips();
   $input.addEventListener('input', renderSearchResults);
+  // 2026-09-12 v3.9.0 Enter = 도감으로. 검색창에서 Enter 는 "이 검색을 실행해라" 라는 오랜 약속인데
+  // 여기서는 아무 일도 일어나지 않았다 (입력 이벤트로만 돌던 패널이라 칠 때마다 이미 갱신돼 있었다)
+  $input.addEventListener('keydown', (event) => {
+    if (event.key !== 'Enter' || event.isComposing) return;   // 한글 조합 중의 Enter 는 글자를 확정하는 키다
+    event.preventDefault();
+    searchSubmit();
+  });
   document.getElementById('psearch-close')?.addEventListener('click', () => toggleSearchPanel(false));
 }
 initSearch();
