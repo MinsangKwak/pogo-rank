@@ -88,6 +88,54 @@ const ok = (n, c, x = '') => { console.log((c ? 'PASS' : 'FAIL') + ' ' + n + ' '
     await ctx.close();
   }
 
+  // ── 2026-09-11 v2.60.1 화면을 옮기면 패널이 따라오지 않는다
+  // 전에는 홈을 예외로 둬서, 도감에서 포켓몬을 연 채 [서비스 홈] 으로 가면
+  // 홈 오른쪽에 이전 포켓몬 패널이 그대로 남아 본문이 눌렸다.
+  // 남겨야 하는 것은 "홈" 이 아니라 상세를 가리키는 주소(#/mon/…) 하나뿐이다
+  {
+    const ctx = await browser.newContext({ viewport: { width: 1440, height: 900 } });
+    await ctx.route(/^https?:\/\/(?!localhost)/, (r) => r.abort());
+    const page = await ctx.newPage();
+    page.on('pageerror', (e) => errs.push('이동: ' + e));
+    const open = async () => {
+      await page.goto(BASE + '#/dex', { waitUntil: 'domcontentloaded' });
+      await page.waitForSelector('#splash', { state: 'detached', timeout: 15000 }).catch(() => {});
+      await page.locator('#consent .consent__deny').click({ timeout: 1500 }).catch(() => {});
+      await page.waitForSelector('#page .dex__row', { timeout: 15000 }).catch(() => {});
+      await page.locator('#page .dex__row').first().click();
+      await page.waitForTimeout(500);
+    };
+    const shut = () => page.evaluate(() => ({
+      hidden: document.getElementById('detail-panel')?.hidden,
+      cls: document.body.classList.contains('has-detail-panel'),
+      hash: location.hash,
+    }));
+
+    await open();
+    ok('패널이 열렸다', (await shut()).hidden === false);
+    await page.click('.nav-menu a:has-text("서비스 홈")');
+    await page.waitForTimeout(700);
+    const home = await shut();
+    ok('서비스 홈으로 가면 패널이 닫힌다', home.hidden === true && home.cls === false, JSON.stringify(home));
+
+    await open();
+    await page.click('.nav-menu a:has-text("타입 & 상성")');
+    await page.waitForTimeout(700);
+    const other = await shut();
+    ok('다른 화면으로 가도 패널이 닫힌다', other.hidden === true && other.cls === false, JSON.stringify(other));
+
+    // 상세를 가리키는 주소로 들어오면 패널이 곧 그 화면이라 열려 있어야 한다
+    await page.goto(BASE + '#/mon/1', { waitUntil: 'domcontentloaded' });
+    await page.waitForSelector('#splash', { state: 'detached', timeout: 15000 }).catch(() => {});
+    await page.locator('#consent .consent__deny').click({ timeout: 1500 }).catch(() => {});
+    await page.waitForTimeout(800);
+    const deep = await shut();
+    ok('딥링크(#/mon/…)로 들어오면 패널이 열린다', deep.hidden === false, JSON.stringify(deep));
+
+    ok('이동 중 페이지 오류 없음', errs.filter((e) => e.startsWith('이동:')).length === 0, errs.filter((e) => e.startsWith('이동:')).join(' | '));
+    await ctx.close();
+  }
+
   await browser.close();
   console.log(`${pass}/${pass + fail} passed`);
   process.exit(fail ? 1 : 0);
