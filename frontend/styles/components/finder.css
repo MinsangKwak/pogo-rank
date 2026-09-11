@@ -1,0 +1,46 @@
+/* 🔎 검색식 만들기 (2026-09-11 v2.58.0)
+   만들어진 식이 화면 맨 위에 붙어 있어야 한다 — 조건을 고르는 내내 결과가 눈에 있어야
+   무엇이 달라지는지 보인다. 그래서 결과 칸은 sticky 다 */
+.finder__result {
+  position: sticky; top: 0; z-index: 2;
+  margin: 0 0 1.6rem; padding: 1.4rem 1.6rem;
+  border: 1px solid var(--line); border-radius: 1.2rem; background: var(--surface);
+}
+.finder__out {
+  display: block; width: 100%; padding: 1rem 1.2rem;
+  border: 1px solid var(--line); border-radius: 0.8rem; background: var(--bg);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 1.4rem;
+  line-height: 1.5; color: var(--fg); word-break: break-all; user-select: all;
+}
+.finder__out.is-empty { color: var(--muted); user-select: none; }
+.finder__actions { display: flex; gap: 0.8rem; margin-top: 1rem; }
+.finder__copy:disabled { opacity: .5; cursor: default; }
+.finder__hint { margin: 0.8rem 0 0; }
+
+.finder__chips { display: flex; flex-wrap: wrap; gap: 0.6rem; margin: 0.4rem 0 0.4rem; }
+
+/* 포함(＋)은 브랜드색, 제외(－)는 주의색 — 같은 칸이 세 상태를 도니 색으로도 갈라 준다.
+   글자만으로 가르면 ＋ 와 － 가 작아서 빠르게 훑을 때 안 읽힌다 */
+.finder__flag.is-on {
+  border-color: var(--brand); color: var(--brand);
+  background: color-mix(in srgb, var(--brand) 10%, transparent);
+}
+.finder__flag.is-off {
+  border-color: var(--warn); color: var(--warn);
+  background: color-mix(in srgb, var(--warn) 10%, transparent);
+  text-decoration: line-through;
+}
+.finder__type.is-on {
+  border-color: var(--brand-2); color: var(--brand-2);
+  background: color-mix(in srgb, var(--brand-2) 12%, transparent);
+}
+
+.finder__row { display: flex; flex-wrap: wrap; align-items: center; gap: 0.8rem; margin: 0.4rem 0 0.8rem; }
+.finder__num, .finder__name {
+  min-height: var(--tap); padding: 0 1.2rem;
+  border: 1px solid var(--line); border-radius: 0.8rem;
+  background: var(--bg); color: var(--fg); font-size: 1.4rem;
+}
+.finder__num { width: 11rem; }
+.finder__name { flex: 1 1 18rem; min-width: 0; }
+.finder__dash { color: var(--muted); }

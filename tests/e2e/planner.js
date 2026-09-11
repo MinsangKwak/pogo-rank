@@ -32,7 +32,7 @@ const ok = (n, c, x = '') => { console.log((c ? 'PASS' : 'FAIL') + ' ' + n + ' '
   const navLabels = await page.locator('.nav-menu .drawer__label').allTextContents();
   ok('메뉴에 육성 플래너 한 줄', navLabels.filter((t) => t === '육성 플래너').length === 1, navLabels.join('|'));
   ok('메뉴에서 내 포켓몬 줄은 없어짐', !navLabels.includes('내 포켓몬'), navLabels.join('|'));
-  ok('홈 타일 9개', (await page.locator('.home__tile').count()) === 9);
+  ok('홈 타일 10개', (await page.locator('.home__tile').count()) === 10);
 
   // ── 2. 로그아웃 상태 = 잠김 ────────────────────────────────────────────────
   await page.evaluate(() => { try { firebase.auth().signOut(); } catch {} });
@@ -43,11 +43,12 @@ const ok = (n, c, x = '') => { console.log((c ? 'PASS' : 'FAIL') + ' ' + n + ' '
   // 2026-09-10 v2.48.1 잠그는 화면이 늘었다 — 육성 플래너 · 배틀 PvP · 이벤트 일정 · 레이드 보스 · 알 부화.
   // 도감 · 타입 & 상성 · D-MAX · 레이드 PvE 는 로그인 없이 쓰는 화면이라 잠기면 안 된다
   const lockedLabels = await page.locator('.nav-menu a[aria-disabled="true"] .drawer__label').allTextContents();
-  ok('잠긴 메뉴 줄이 정확히 여섯', lockedLabels.join('|') === '육성 플래너|레이드 · PvE|배틀 · PvP|이벤트 일정|레이드 보스|알 부화', lockedLabels.join('|'));
+  // 2026-09-11 v2.58.0 🔎 검색식 만들기가 늘어 일곱이다
+  ok('잠긴 메뉴 줄이 정확히 일곱', lockedLabels.join('|') === '육성 플래너|레이드 · PvE|배틀 · PvP|이벤트 일정|레이드 보스|알 부화|검색식 만들기', lockedLabels.join('|'));
   const openLabels = await page.locator('.nav-menu a:not([aria-disabled]) .drawer__label').allTextContents();
   ok('로그인 없이 쓰는 화면은 안 잠긴다', ['포켓몬 도감', '타입 & 상성', 'D-MAX'].every((t) => openLabels.includes(t)), openLabels.join('|'));
   const lockedTiles = await page.locator('.home__tile[aria-disabled="true"] strong').allTextContents();
-  ok('잠긴 홈 타일도 여섯', lockedTiles.length === 6, lockedTiles.join('|'));
+  ok('잠긴 홈 타일도 일곱', lockedTiles.length === 7, lockedTiles.join('|'));
   // 잠긴 타일을 눌러도 그 화면으로 가지 않는다 (대신 계정 카드가 열린다)
   // force: true — Playwright 는 aria-disabled 를 "누를 수 없음" 으로 보고 클릭을 거절하지만,
   // 실제 브라우저에서는 눌린다. 우리는 그 눌림을 받아 계정 카드를 여는 쪽을 택했으므로 강제로 누른다
