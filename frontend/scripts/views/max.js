@@ -296,11 +296,17 @@ function renderMax() {
   const hasTank = typeof DMAX_TANK !== 'undefined' && Object.keys(DMAX_TANK ?? {}).length > 0;
   const axes = hasTank ? MAX_AXES : MAX_AXES.filter((axis) => axis.id !== 'tank');
   if (!axes.some((axis) => axis.id === state.maxAxis)) state.maxAxis = 'all';
-  $controls.append(seg(axes.map(({ id, label }) => ({ id, label })), state.maxAxis, (id) => {
+  // 2026-09-12 v3.2.0 이 세그먼트는 화면 머리 오른쪽으로 간다 (app.js render → setPageHeadAction).
+  // [전체 | 딜러 | 탱커] 는 목록 하나를 거르는 값이 아니라 **이 화면이 무엇을 보여 주는가** 자체다 —
+  // 셋은 서로 다른 순위표다. 그래서 필터 줄이 아니라 제목과 같은 높이에 놓는다.
+  // 표식만 달아 두고 옮기는 일은 render() 가 한다: 뷰는 지금까지처럼 $controls 에 붙이기만 하면 된다
+  const axisSeg = seg(axes.map(({ id, label }) => ({ id, label })), state.maxAxis, (id) => {
     state.maxAxis = id;
     track('sub_max_' + id);  // GA4: 서브탭 사용량 (sub_pve_* 와 같은 규칙)
     render();
-  }));
+  });
+  axisSeg.classList.add('js-head-action');
+  $controls.append(axisSeg);
   const axis = axes.find((entry) => entry.id === state.maxAxis);
   $controls.append(maxSubmenu(axis));
   const selectedType = state.maxBoss;

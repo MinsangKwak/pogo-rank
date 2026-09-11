@@ -178,6 +178,15 @@
   .dex__list.is-grid .dex__row b { font-size: var(--fs-body); }
 
   /* 랭킹 카드 */
+  /* 2026-09-12 v3.3.0 보기 전환으로 줄로 되돌릴 수 있다 (.is-list) — 넓은 화면에서 카드 격자가
+     기본이지만, 순위를 위에서 아래로 훑고 싶을 때는 줄이 낫다. 격자를 켤 때 준 값들을
+     하나씩 되돌린다 (도감의 .dex__list 는 반대로 줄이 기본이고 .is-grid 가 격자다) */
+  .row-list.is-list { display: block; gap: 0; padding-top: 0; border-top: 1px solid var(--line); }
+  .row-list.is-list > .row { position: static; flex-direction: row; align-items: center; text-align: left;
+                             padding: 1rem 0.4rem; border: 0; border-bottom: 1px solid var(--line);
+                             border-radius: 0; background: transparent; box-shadow: none; }
+  .row-list.is-list > .row > .row__rank { position: static; width: 2.4rem; text-align: right; }
+  .row-list.is-list > .row > .sprite { width: 4rem; height: 4rem; padding: 0; border-radius: 0; }
   .row-list > .row { background: var(--surface); }
   .row-list > .row:hover {
     border-color: color-mix(in srgb, var(--brand) 55%, var(--line));

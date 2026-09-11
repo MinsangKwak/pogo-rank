@@ -173,12 +173,26 @@ const pageCrumb = el('nav', { class: 'page-head__crumb', 'aria-label': '위치' 
   el('span', { class: 'page-head__crumb-now' }, ''));
 const pageDesc = el('p', { class: 'page-head__desc' }, '');
 // 2026-09-12 v3.1.0 화면 머리의 동작 슬롯 — 그 화면을 "어떻게 볼지" 를 정하는 컨트롤 자리다.
-// 리스트 · 그리드 전환이 여기로 온다 (components/pages.js renderPage 가 본문에서 옮겨 담는다).
+// 리스트 · 그리드 전환(전체 페이지)과 D-MAX 의 [전체|딜러|탱커](메인 셸)가 여기로 온다.
 // 왜 본문이 아니라 머리인가 — 보기 방식은 목록 하나가 아니라 **이 화면 전체**에 걸리는 설정이라,
 // 목록 위 한 줄을 먹기보다 제목과 같은 높이에서 화면의 손잡이처럼 놓이는 편이 맞다
 const pageHeadActions = el('div', { class: 'page-head__actions', id: 'page-head-actions' });
 const pageHead = el('header', { class: 'page-head', id: 'page-head', hidden: true },
   pageCrumb, el('h2', {}, ''), pageDesc, pageHeadActions);
+// 슬롯에 컨트롤 하나를 **옮겨** 담는다 (복제가 아니다 — onclick·저장 키가 붙은 그 노드가 간다).
+// 인자가 없으면 비운다. 화면이 바뀔 때마다 반드시 한 번 불러야 앞 화면 컨트롤이 남지 않는다:
+//   전체 페이지는 components/pages.js renderPage, 메인 셸은 app.js render 가 부른다
+// 슬롯을 const 로 잡지 않고 **id 로 찾는다**. 번들에서 함수 선언은 앞으로 끌어올려지지만
+// const 는 그렇지 않아(TDZ), 앞줄의 components/pages.js 가 로드 직후 renderPage() 를 부르면
+// 아직 초기화되지 않은 pageHeadActions 를 건드려 화면 전체가 죽는다.
+// id 로 찾으면 셸이 만들어지기 전 호출은 조용히 아무 일도 하지 않는다 — 그 뒤 render 가 다시 맞춘다
+function setPageHeadAction(...nodes) {
+  const slot = document.getElementById('page-head-actions');
+  if (!slot) return;
+  slot.replaceChildren();
+  // 2026-09-12 v3.3.0 여럿을 받는다 — 레이드 · PvE 는 [일반|전체]와 보기 전환 둘을 나란히 올린다
+  for (const node of nodes.flat()) if (node) slot.append(node);
+}
 pageCrumb.querySelector('a').addEventListener('click', (event) => { event.preventDefault(); goHome(); });
 document.querySelector('.layout').before(pageHead);
 // 2026-09-09 v2.38.0 태블릿 1100px~ · PC 1440px~ 두 단계(styles/components/app-shell.css) —
@@ -304,6 +318,11 @@ window.addEventListener('hashchange', () => {
   if (typeof track === 'function') track('route_view', { route: routeIdOf(), path: location.hash.replace(/^#\/?/, '') || 'home' });
 });
 syncAppShell();
+// 2026-09-12 v3.2.0 첫 로드 보정 — 이 파일은 SCRIPTS 의 **맨 끝**이라(app.js 다음) app.js 가
+// 바닥에서 부른 첫 render() 때는 아직 #page-head-actions 가 없었다. 그래서 D-MAX 로 바로
+// 들어온 첫 화면만 축 세그먼트가 본문에 남아 있었다 (화면을 한 번 옮기면 정상이 됐다).
+// 셸을 다 만든 지금 한 번 맞춰 준다 — 함수 선언은 번들 전체에서 끌어올려지므로 app.js 것을 부를 수 있다
+if (typeof liftShellHeadAction === 'function') liftShellHeadAction();
 
 document.addEventListener('keydown', (event) => {
   if (event.key !== 'Tab') return;

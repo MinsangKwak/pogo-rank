@@ -79,11 +79,11 @@ const ok = (n, c, x = '') => { console.log((c ? 'PASS' : 'FAIL') + ' ' + n + ' '
     (await page.locator('.ivrank__top h2').textContent()).trim());
   // 리그를 바꾸면 1위 조합도 바뀐다 — 상한이 다르면 최적 개체값이 달라진다
   const greatTop = await page.locator('.ivrank__top .ivrank__list li:first-child b').textContent();
-  await page.locator('#controls .seg button:has-text("리틀")').click();
+  await page.locator('#page-head-actions .seg button:has-text("리틀")').click();
   await page.waitForTimeout(600);
   const littleTop = await page.locator('.ivrank__top .ivrank__list li:first-child b').textContent();
   ok('리그가 바뀌면 1위도 바뀐다', greatTop !== littleTop, `${greatTop} → ${littleTop}`);
-  await page.locator('#controls .seg button:has-text("슈퍼")').click();
+  await page.locator('#page-head-actions .seg button:has-text("슈퍼")').click();
   await page.waitForTimeout(600);
   // 지금 고른 리그 카드에 표시가 붙는가 (위 세그먼트와 눈이 이어지게)
   ok('고른 리그 카드에 표시', (await page.locator('.ivrank__card.is-on').count()) === 1);
@@ -152,13 +152,13 @@ const ok = (n, c, x = '') => { console.log((c ? 'PASS' : 'FAIL') + ' ' + n + ' '
     ok('블록 안에 리그 탭이 없다', (await p3.locator('.ivrank__top .seg').count()) === 0);
     const before = await p3.locator('.ivrank__top h2').textContent();
     ok('상위 10 제목이 고른 리그다', /리그 상위 10$/.test(before.trim()), before.trim());
-    // 화면 맨 위 리그 세그먼트를 바꾸면 상위 10 도 따라온다
-    await p3.locator('#controls .seg button:has-text("하이퍼")').click();
+    // 화면 머리의 리그 세그먼트를 바꾸면 상위 10 도 따라온다 (v3.2.0 부터 제목 옆에 있다)
+    await p3.locator('#page-head-actions .seg button:has-text("하이퍼")').click();
     await p3.waitForTimeout(600);
     const after = await p3.locator('.ivrank__top h2').textContent();
     ok('위 세그먼트가 상위 10 을 바꾼다', after.trim().startsWith('하이퍼리그') && after !== before, `${before.trim()} → ${after.trim()}`);
     // 마스터리그는 CP 상한이 없어 순위 자체가 없다
-    await p3.locator('#controls .seg button:has-text("마스터")').click();
+    await p3.locator('#page-head-actions .seg button:has-text("마스터")').click();
     await p3.waitForTimeout(600);
     ok('마스터는 순위 대신 설명', /상한이 없어요/.test(await p3.locator('.ivrank__top').innerText()));
     await nctx.close();
