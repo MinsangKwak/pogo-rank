@@ -35,7 +35,7 @@ const ok = (n, c, x = '') => { console.log((c ? 'PASS' : 'FAIL') + ' ' + n + (x 
     ok('dev 빌드: 조각 칸이 렌더된다', (await page.locator('.sg__item').count()) > 20, String(await page.locator('.sg__item').count()));
     ok('dev 빌드: 화면 제목', /UI 목록/.test(await page.locator('#page-head h2, .page__bar b').first().textContent()));
     // 실제 조각을 그대로 부르는지 — 실제 화면과 같은 클래스가 나와야 한다
-    for (const sel of ['.seg-view', '.nav-menu .drawer__item', '.drawer__group', '.account__stats',
+    for (const sel of ['.view-toggle', '.nav-menu .drawer__item', '.drawer__group', '.account__stats',
                        '.form-tag', '.tier__badge', '.dex__list.is-grid', '.row-list > .row', '.home__tile']) {
       ok(`dev 빌드: ${sel} 조각 있음`, (await page.locator(`#page ${sel}`).count()) > 0);
     }

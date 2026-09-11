@@ -178,10 +178,11 @@ const ok = (n, c, x = '') => { console.log((c ? 'PASS' : 'FAIL') + ' ' + n + ' '
 
     // ── 그리드 보기는 카드 (v2.29.2 라벨: 열 개수가 아니라 보기 방식)
     await go('#/dex');
-    // 넓은 화면은 그리드가 기본, 좁은 화면은 리스트가 기본이다 — 그리드가 아니면 그리드 칸을 누른다
-    // 2026-09-09 v2.40.0 .dex__layout 은 이제 두 칸짜리 세그먼트 컨트롤(묶음)이다 — 칸을 눌러야 한다
-    const layoutBtn = page.locator('.dex__layout button').last();
-    if (!(await page.locator('.dex__list.is-grid').count())) await layoutBtn.click({ timeout: 1500 }).catch(() => {});
+    // 넓은 화면은 그리드가 기본, 좁은 화면은 리스트가 기본이다 — 그리드가 아니면 버튼을 눌러 뒤집는다
+    // 2026-09-12 v3.8.0 .dex__layout 은 버튼 하나다 — 누를 때마다 리스트 ↔ 그리드가 뒤집힌다
+    if (!(await page.locator('.dex__list.is-grid').count())) {
+      await page.locator('.dex__layout').click({ timeout: 1500 }).catch(() => {});
+    }
     await page.waitForTimeout(500);
     const card = await page.locator('.dex__list.is-grid .dex__row').first().evaluate((n) => {
       const s = getComputedStyle(n);
