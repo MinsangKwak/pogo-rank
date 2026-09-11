@@ -47,7 +47,8 @@ const PROPS = ['display','position','color','background-color','border-top-width
       await page.waitForTimeout(150);
       try {
         if (action === 'detail') { await page.locator('#page button').nth(3).click(); await page.waitForTimeout(350); }
-        if (action === 'search') { await page.click('#search-toggle'); await page.waitForTimeout(350); }
+        // v2.66.0 넓은 화면은 🔍 버튼을 감추고 상단 검색바가 같은 패널을 연다 — 보이는 쪽을 누른다
+        if (action === 'search') { await page.locator('#search-toggle:visible, .app-search:visible').first().click(); await page.waitForTimeout(350); }
         if (action === 'drawer') { await page.click('#menu-toggle'); await page.waitForTimeout(350); }
         if (action === 'solo') { await page.getByRole('button', { name: /솔플/ }).click(); await page.waitForTimeout(350); }
         if (action === 'deck') { await page.getByRole('button', { name: /덱 짜기/ }).click(); await page.waitForTimeout(350); }

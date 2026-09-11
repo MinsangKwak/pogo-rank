@@ -1,5 +1,5 @@
 // ─────────────────────────────────────────────────────────────────────────────
-// planner/home.js — 🌱 육성 플래너 · 육성 현황 탭 (2026-09-07 v2.15.0, QA-53)
+// planner/home.js — 🌱 육성 플래너 · 육성 현황 (2026-09-07 v2.15.0, QA-53)
 //
 // 2026-09-10 v2.47.0 목업을 받아 화면을 다시 짰다. 카드 넉 장이 위에서 아래로:
 //   (1) 히어로   이 화면이 무엇인지 + 주 동작 하나(개체 등록하기)
@@ -40,7 +40,7 @@ function planSteps() {
   if (typeof routeLocked !== 'function' || !routeLocked('finder')) {
     steps.push(['🔎', '박스 정리하기', '조건을 눌러 게임 검색창에 붙여 넣을 식을 만들어요.', routeHash('finder')]);
   }
-  steps.push(['🧬', 'PvP 에서 몇 위인지', '배틀 · PvP 의 [개체값 순위] 에서 내 개체가 몇 위인지 봐요.', routeHash('pvp')]);
+  steps.push(['🧬', 'PvP 에서 몇 위인지', '리그마다 몇 위짜리 개체인지 봐요. PvP 는 0/15/15 처럼 기준이 다르거든요.', routeHash('ivrank')]);
   return steps;
 }
 
@@ -70,7 +70,7 @@ function renderPlanHome() {
     el('div', { class: 'plan__hero-head' },
       el('span', { class: 'plan__hero-ico', 'aria-hidden': 'true' }, '🌱'),
       el('h2', {}, '플래너 — 내 개체를 어떻게 키울까')),
-    el('p', { class: 'plan__hero-desc' }, '도감이 "뭐가 세나"에 답한다면, 플래너는 "내가 가진 이 개체를 지금 키워도 되나"에 답해요. 위 탭의 내 포켓몬에서 개체를 레벨·개체값·기술 단위로 저장하면 같은 종끼리 비교할 수 있어요.'),
+    el('p', { class: 'plan__hero-desc' }, '도감이 "뭐가 세나"에 답한다면, 플래너는 "내가 가진 이 개체를 지금 키워도 되나"에 답해요. 메뉴의 내 포켓몬에서 개체를 레벨·개체값·기술 단위로 저장하면 같은 종끼리 비교할 수 있어요.'),
     el('a', { class: 'plan__hero-go', href: routeHash('planner-collection') },
       el('span', { class: 'plan__hero-go-ico', 'aria-hidden': 'true' }, '＋'),
       '내 포켓몬에서 개체 등록하기',
@@ -136,5 +136,5 @@ function renderPlanHome() {
   }
 
   $content.append(el('p', { class: 'detail__foot plan__roadmap' }, '다음에 붙을 것: 육성 판단 카드(키울 가치·다음 행동) · 목표 자원 계산기 · 게임 검색식 생성기 · 보유 개체 기반 파티 · 내 목표 × 일정 연결'));
-  $note.textContent = '내 개체(레벨 · 개체값 · 기술)를 계정에 저장하고 같은 종끼리 비교해요. 위 탭에서 육성 현황과 내 포켓몬 목록을 오가요. 계산은 누구나, 저장은 승인된 분만.';
+  $note.textContent = '내 개체(레벨 · 개체값 · 기술)를 계정에 저장하고 같은 종끼리 비교해요. 메뉴에서 육성 현황과 내 포켓몬 목록을 오가요. 계산은 누구나, 저장은 승인된 분만.';
 }

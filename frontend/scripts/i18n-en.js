@@ -160,7 +160,7 @@ const I18N_EN = {
   '타입 필터 · 선택하기': 'Type filter · choose',
   '타입으로 좁히기': 'Narrow by type',
   '포켓몬 이름 또는 타입': 'Pokémon name or type',
-  '이름 검색 또는 번호 (예: 팬텀, #)': 'Search by name or number (e.g. Gengar, #)',
+  '이 목록에서 찾기 (예: 팬텀, #)': 'Filter this list (e.g. Gengar, #)',
   '이름·타입으로 찾기 · 비워 두면 활용처 순위': 'Search by name or type · leave empty for usage rankings',
   '이름으로 타입 채우기 (예: 가이오가)': 'Fill types from a name (e.g. Kyogre)',
   '이름 (예: 메타그로스, 섀도우 뮤츠)': 'Name (e.g. Metagross, Shadow Mewtwo)',

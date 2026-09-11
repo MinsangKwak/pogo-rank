@@ -170,11 +170,13 @@ const ok = (name, cond, extra = '') => results.push([cond ? 'PASS' : 'FAIL', nam
   await page.waitForTimeout(400);
   ok('서비스 홈으로 이동', (await page.locator('.home__tile').count()) === 9 && !(await page.evaluate(() => location.hash)));
 
-  // 8. 플래너 탭 라벨 텍스트 통일
+  // 8. 2026-09-12 v2.66.0 마지막 탭 줄(플래너)도 걷어냈다 — 이동은 왼쪽 메뉴 하나가 맡는다.
+  // 주소와 화면 이름은 그대로 산다
   await page.goto(BASE + '?mock=1#/planner/collection', { waitUntil: 'domcontentloaded' });
   await settle();
-  ok('플래너 탭 = 텍스트', (await page.locator('#tabs .tabs__item').allTextContents()).join('|') === '육성 현황|내 포켓몬',
-    (await page.locator('#tabs .tabs__item').allTextContents()).join('|'));
+  ok('화면 안 탭 줄이 없다', (await page.locator('#tabs .tabs__item').count()) === 0);
+  ok('내 포켓몬 화면 이름', (await page.locator('#page-head h2').textContent()) === '내 포켓몬');
+  ok('브레드크럼에 부모(육성 플래너)', (await page.locator('.page-head__crumb-up').textContent()) === '육성 플래너');
 
   // 8b. 2026-09-12 v2.63.0 타입 & 상성 화면을 접었다 — 상세 팝업이 같은 표를 이미 보여 준다.
   //     공유된 옛 주소(#/types?t=…)가 죽지 않고 도감으로 넘어가는지 본다
@@ -184,24 +186,34 @@ const ok = (name, cond, extra = '') => results.push([cond ? 'PASS' : 'FAIL', nam
     await page.evaluate(() => location.hash));
   ok('메뉴에 타입 & 상성이 없다', !(await page.locator('.nav-menu .drawer__label').allTextContents()).includes('타입 & 상성'));
 
-  // 8c. PvP 개체값 순위는 배틀 · PvP 안의 도구 버튼으로 연다 (메뉴에 따로 두지 않는다)
+  // 8c. 2026-09-12 v2.66.0 도구는 각자 주소를 가진다 — 버튼을 누르는 일이 곧 화면 이동이라
+  // 뒤로가기로 랭킹에 돌아오고, 링크를 보내면 상대도 같은 도구를 본다.
+  // 개체값 순위는 리그에 딸린 정보라 왼쪽, 덱 짜기는 리그와 상관없는 다른 일이라 오른쪽
   await page.goto(BASE + '?mock=1#/pvp', { waitUntil: 'domcontentloaded' });
   await settle();
   const pvpTools = await page.locator('.controls__row .tool-btn').allTextContents();
-  ok('덱 짜기 옆에 개체값 순위', pvpTools.join('|') === '🃏 덱 짜기|🧬 개체값 순위', pvpTools.join('|'));
+  ok('개체값 순위가 왼쪽, 덱 짜기가 오른쪽', pvpTools.join('|') === '🧬 개체값 순위|🃏 덱 짜기', pvpTools.join('|'));
+  const toolBoxes = await page.locator('.controls__row--tools .tool-btn').evaluateAll((ns) => ns.map((n) => n.getBoundingClientRect().left));
+  ok('덱 짜기가 실제로 오른쪽 끝', toolBoxes.length === 2 && toolBoxes[1] > toolBoxes[0] + 200, JSON.stringify(toolBoxes.map(Math.round)));
   await page.click('.tool-btn:has-text("개체값 순위")');
   await settle();
-  ok('누르면 그 자리에 펼쳐진다', (await page.locator('.ivrank__pick').count()) === 1);
+  ok('주소가 바뀐다', (await page.evaluate(() => location.hash)) === '#/pvp/ivrank', await page.evaluate(() => location.hash));
+  ok('개체값 순위 화면이 열린다', (await page.locator('.ivrank__pick').count()) === 1);
   ok('눌린 표시', (await page.locator('.tool-btn[aria-pressed="true"]').textContent()) === '🧬 개체값 순위');
-  await page.click('.tool-btn:has-text("개체값 순위")');
+  await page.goBack();
   await settle();
-  ok('다시 누르면 접힌다', (await page.locator('.ivrank__pick').count()) === 0);
+  ok('뒤로가기로 랭킹 복귀', (await page.evaluate(() => location.hash)) === '#/pvp' && (await page.locator('.ivrank__pick').count()) === 0);
+  // 솔플 계산기도 같은 규칙 — 계산기 화면에는 아무 일도 안 하던 [일반|전체] 세그먼트를 그리지 않는다
+  await page.goto(BASE + '?mock=1#/pve/solo', { waitUntil: 'domcontentloaded' });
+  await settle();
+  ok('솔플 계산기 화면 이름', (await page.locator('#page-head h2').textContent()) === '솔플 계산기');
+  ok('일반·전체 세그먼트는 없다', !(await page.locator('#controls .seg button').allTextContents()).includes('일반'));
 
   // 8d. 2026-09-12 v2.64.0 이동 목록이 두 덩이로 읽히는가 (주요 기능 · 부가 기능)
   {
     // 2026-09-12 v2.65.0 덩이 이름을 '주요/부가' 에서 **하려는 일** 로 바꿨다
     const secs = await page.locator('.nav-menu__sec').allTextContents();
-    ok('메뉴가 세 덩이', secs.join('|') === '지금 뭐 하지|뭘 데려갈까|내 포켓몬', secs.join('|'));
+    ok('메뉴가 세 덩이', secs.join('|') === '지금 뭐 하지|뭘 데려갈까|뭘 키울까', secs.join('|'));
     const groups = await page.evaluate(() => {
       const out = {};
       let key = null;
@@ -213,7 +225,11 @@ const ok = (name, cond, extra = '') => results.push([cond ? 'PASS' : 'FAIL', nam
     });
     ok('지금 뭐 하지 = 시간에 매인 것', groups['지금 뭐 하지'].join('|') === '이벤트 일정|레이드 보스|알 부화', groups['지금 뭐 하지'].join('|'));
     ok('뭘 데려갈까 = 고르려고 보는 것', groups['뭘 데려갈까'].join('|') === '포켓몬 도감|D-MAX|레이드 · PvE|배틀 · PvP', groups['뭘 데려갈까'].join('|'));
-    ok('내 포켓몬 = 내 박스', groups['내 포켓몬'].join('|') === '육성 플래너|검색식 만들기', groups['내 포켓몬'].join('|'));
+    // v2.66.0 덩이 이름을 '뭘 키울까' 로 바꿨다 — 같은 이름의 화면(내 포켓몬)이 그 안에 생겨
+    // 덩이 제목과 항목이 똑같은 글자가 됐다. 내 포켓몬은 육성 플래너 아래 한 칸 들여쓴 자식이다
+    ok('뭘 키울까 = 내 박스', groups['뭘 키울까'].join('|') === '육성 플래너|내 포켓몬|검색식 만들기', groups['뭘 키울까'].join('|'));
+    ok('내 포켓몬은 육성 플래너의 자식', (await page.locator('.nav-menu .drawer__item--sub').allTextContents()).join('|').includes('내 포켓몬'),
+      (await page.locator('.nav-menu .drawer__item--sub').allTextContents()).join('|'));
   }
 
   // 8e. 배틀 PvP 는 읽는 순서대로 놓인다 — ① 리그 ② 타입 ③ 도구
@@ -258,16 +274,20 @@ const ok = (name, cond, extra = '') => results.push([cond ? 'PASS' : 'FAIL', nam
     });
     ok(`${hash} 제목·부제`, head.title.length > 0 && head.desc.length > 0, JSON.stringify(head));
     // 2026-09-12 v2.65.0 머리와 본문 사이에 선이 있는가 — 여백만으로는 위계가 서지 않았다.
-    // 선은 화면 머리의 배경으로 긋는다. 도감만 예외로 도구줄 위에 긋는다(검색창이 머리 위로 올라와 있어
-    // 머리 안쪽 선이 가려진다) — 어느 쪽이든 "머리 바로 아래에 선이 하나" 라는 사실은 같다
+    // v2.66.0 선은 **필터 줄 아래**로 내려간다: 제목 · 부제 · 필터가 한 덩이(화면 머리)고 그 아래가 결과다.
+    // 필터가 없는 화면만 머리 자체에 긋는다. 어느 쪽이든 "한 화면에 선은 정확히 하나" 여야 한다
     const ruled = await page.evaluate(() => {
+      const found = [];
       const head = document.getElementById('page-head');
-      if (head && !head.hidden && getComputedStyle(head).backgroundImage !== 'none') return 'head';
-      const bar = document.querySelector('.dex-page > .dex__toolbar');
-      if (bar && parseFloat(getComputedStyle(bar).borderTopWidth) > 0) return 'toolbar';
-      return '';
+      if (head && !head.hidden && getComputedStyle(head).backgroundImage !== 'none') found.push('head');
+      const controls = document.querySelector('.layout:not([hidden]) #controls');
+      if (controls && controls.childElementCount && parseFloat(getComputedStyle(controls).borderBottomWidth) > 0) found.push('controls');
+      for (const row of document.querySelectorAll('#page:not([hidden]) .page__filters')) {
+        if (parseFloat(getComputedStyle(row).borderBottomWidth) > 0) found.push('filters');
+      }
+      return found.join('+');
     });
-    ok(`${hash} 머리·본문 구분선`, ruled !== '', ruled);
+    ok(`${hash} 머리·본문 구분선 하나`, ruled.split('+').filter(Boolean).length === 1, ruled || '없음');
   }
 
   // 9. 길이 단위가 rem 인가 (2026-09-10 v2.52.0)

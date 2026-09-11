@@ -49,10 +49,15 @@
   /* ── 화면 머리 ───────────────────────────────────────────────────────────── */
   /* padding 축약형을 쓰지 않는다 — app-shell.css 가 사이드바 자리로 잡아 둔 padding-left(262px)를 지운다 */
   /* 2026-09-12 v2.65.0 아래 여백을 넓힌다 — 구분선(app-shell.css)이 글 아래 1.6rem 에 놓이므로,
-     선과 본문 사이 간격은 여기서 그만큼 뺀 만큼만 남는다 (선 위 1.6rem · 선 아래 2.8rem) */
+     선과 본문 사이 간격은 여기서 그만큼 뺀 만큼만 남는다 (선 위 1.6rem · 선 아래 2.8rem).
+     2026-09-12 v2.66.0 필터 줄이 있는 화면은 선이 그 아래로 내려가므로 여백을 도로 줄인다 */
   .page-head { padding-top: 4.8rem; padding-bottom: 4.4rem; }
+  body:has(.layout:not([hidden]) #controls > *) .page-head,
+  body:has(#page:not([hidden]) .page__filters) .page-head { padding-bottom: 2.4rem; }
   .page-head__crumb { display: flex;   /* 좁은 화면에서는 감춰져 있다 (app-shell.css) */ align-items: center; gap: 0.7rem; font-size: var(--fs-sub); color: var(--muted); }
   .page-head__crumb a { color: var(--muted); text-decoration: none; }
+  .page-head__crumb a:hover { text-decoration: underline; }
+  .page-head__crumb [hidden] { display: none; }
   .page-head__crumb a:hover { color: var(--fg); }
   .page-head__crumb-now { color: var(--fg); font-weight: 500; }
   .page-head h2 { margin: 1rem 0 0; font-size: var(--fs-title); font-weight: 700; letter-spacing: -0.02em; line-height: 1.25; }
@@ -626,9 +631,6 @@
   background: transparent; font-size: 1.35rem; font-weight: 500; color: var(--muted);
 }
 .dex__toolbar .tchips .uchip:hover { background: var(--hover); color: var(--fg); }
-.dex__toolbar .tchips .fav-chip {
-  background: color-mix(in srgb, var(--caution) 10%, var(--bg)); color: var(--caution);
-}
 @media (min-width: 1100px) {
   .dex__toolbar .tchips { flex: 0 1 auto; }
   .dex__toolbar .seg-view { margin-left: auto; }
@@ -667,10 +669,8 @@
   /* 2026-09-12 v2.65.0 검색창을 화면 머리(제목·부제) 옆으로 끌어올린다.
      제목 아래 한 줄을 통째로 쓰고 있어, 정작 목록이 첫 화면에서 그만큼 밀려 있었다.
      page-head 는 화면마다 같은 조각이라 그 안에 넣을 수 없어, 음수 마진으로 같은 높이에 올린다.
-     2026-09-12 v2.65.0 도감만 구분선을 화면 머리가 아니라 도구줄 위에 긋는다 — 검색창이
-     음수 마진으로 머리 영역까지 올라와 있어, 머리 안쪽에 그은 선이 검색창·칩줄에 가려진다 */
-  .page-head[data-route="dex"] { background-image: none; }
-  .dex-page > .dex__toolbar { border-top: 1px solid var(--line); padding-top: 2rem; }
+     2026-09-12 v2.66.0 구분선이 필터(도구줄) **아래**로 내려가면서(app-shell.css .page__filters)
+     검색창과 겹칠 일이 없어졌다 — 도감만 두던 예외 규칙을 지운다 */
   .dex-page > .boss__search { display: block; width: min(44rem, 100%); margin-left: auto; margin-top: -7.6rem; position: relative; z-index: 1; }
   body.has-detail-panel:has(.dex-page) #page,
   body.has-detail-panel:has(.dex-page) .page-head { padding-right: 0; }

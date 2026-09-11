@@ -174,27 +174,30 @@ function ivrankVerdict(form, floorIv, ivs) {
 // 2026-09-12 v2.65.0 세 리그를 **다 그린다.** 넓은 화면은 나란히 보여 주고(탭 없이),
 // 좁은 화면은 CSS 가 고른 탭 하나만 남긴다 — JS 는 화면 폭을 모른다(기존 원칙).
 // 전에는 탭으로 한 리그만 그려서, 넓은 화면에서도 나머지 둘을 보려면 눌러 가며 비교해야 했다
-function ivrankTopList(form, floorIv, ivs, league, onPick) {
+// 2026-09-12 v2.66.0 리그는 화면 맨 위 세그먼트(state.league) 하나가 정한다.
+// 전에는 이 블록이 자기 리그 탭을 따로 가졌고, 넓은 화면에서는 세 리그를 나란히 폈다 —
+// 같은 화면에 리그를 고르는 컨트롤이 두 개라, 위에서 '슈퍼' 를 골라도 아래는 '리틀' 이었다.
+// 이제 위에서 고른 리그의 상위 10 만 보여 준다
+function ivrankTopList(form, floorIv, ivs, league) {
   const mineKey = ivs.join('/');
-  const capped = IVRANK_LEAGUES.filter(([, cap]) => cap != null);
-  const column = ([id, cap]) => {
-    const rows = ivRankTable(form, cap, floorIv).slice(0, 10);
-    return el('div', { class: 'ivrank__top-col', 'data-lg': id },
-      el('div', { class: 'row-head ivrank__col-head' }, el('h3', {}, `${LEAGUE_KO[id]}리그`),
-        el('span', { class: 'meta' }, `CP ${cap}`)),
-      rows.length
-        ? el('ol', { class: 'ivrank__list' }, ...rows.map((row, i) => el('li',
-            { class: row.ivs.join('/') === mineKey ? 'is-mine' : '' },
-            el('span', { class: 'ivrank__no' }, String(i + 1)),
-            el('b', {}, row.ivs.join('/')),
-            el('span', { class: 'meta' }, `Lv${row.level} · CP ${row.cp.toLocaleString()}`))))
-        : el('p', { class: 'empty' }, '이 리그에는 들어갈 수 없어요 — Lv1 CP 가 이미 상한을 넘어요.'));
-  };
-  return el('div', { class: 'ivrank__top', 'data-league': league },
-    el('div', { class: 'row-head' }, el('h2', {}, '리그별 상위 10'),
-      el('span', { class: 'meta' }, '개체값 조합 4,096개 중')),
-    seg(capped.map(([id]) => ({ id, label: `${LEAGUE_KO[id]}리그` })), league, onPick),
-    el('div', { class: 'ivrank__tops' }, ...capped.map(column)));
+  const cap = IVRANK_LEAGUES.find(([id]) => id === league)?.[1] ?? null;
+  const head = el('div', { class: 'row-head' },
+    el('h2', {}, `${LEAGUE_KO[league] ?? league}리그 상위 10`),
+    el('span', { class: 'meta' }, cap == null ? '상한 없음' : `CP ${cap} · 개체값 조합 4,096개 중`));
+  // 마스터리그는 CP 상한이 없어 순위 자체가 없다 — 높을수록 좋다는 한 줄로 끝난다
+  if (cap == null) {
+    return el('div', { class: 'ivrank__top' }, head,
+      el('p', { class: 'empty' }, '마스터리그는 CP 상한이 없어요 — 개체값이 높을수록 좋아서 순위를 매기지 않아요.'));
+  }
+  const rows = ivRankTable(form, cap, floorIv).slice(0, 10);
+  return el('div', { class: 'ivrank__top' }, head,
+    rows.length
+      ? el('ol', { class: 'ivrank__list' }, ...rows.map((row, i) => el('li',
+          { class: row.ivs.join('/') === mineKey ? 'is-mine' : '' },
+          el('span', { class: 'ivrank__no' }, String(i + 1)),
+          el('b', {}, row.ivs.join('/')),
+          el('span', { class: 'meta' }, `Lv${row.level} · CP ${row.cp.toLocaleString()}`))))
+      : el('p', { class: 'empty' }, '이 리그에는 들어갈 수 없어요 — Lv1 CP 가 이미 상한을 넘어요.'));
 }
 
 function renderIvRankPage() {
@@ -208,27 +211,21 @@ function renderIvRankPage() {
   const drawOut = () => {
     $out.replaceChildren();
     if (picked.sprite == null) {
-      $out.append(el('p', { class: 'empty' }, '위에서 종을 고르면 리그별 순위가 나와요.'));
+      $out.append(el('p', { class: 'empty' }, '왼쪽에서 종을 고르면 지금 고른 리그의 순위가 나와요.'));
       return;
     }
     const form = DEX_DATA.forms?.[picked.sprite] ?? DEX_DATA.forms?.[dexOf(picked.sprite)] ?? null;
     if (!form) { $out.append(el('p', { class: 'empty' }, '이 종의 종족값이 아직 없어요.')); return; }
     $out.append(ivrankVerdict(form, picked.floor, picked.ivs));
+    // 네 장의 리그 카드는 남긴다 — "이 개체가 어느 리그용인가" 는 리그를 고르기 전에 답해야 하는 질문이다.
+    // 지금 고른 리그에만 표시를 달아 위 세그먼트와 눈이 이어지게 한다
     $out.append(el('div', { class: 'ivrank__cards' },
-      ...IVRANK_LEAGUES.map(([league, cap]) => ivrankLeagueCard(form, league, cap, picked.floor, picked.ivs))));
-    // 처음 보여 줄 탭은 "가장 쓸 만한" 리그 — 고른 뒤에는 사람이 고른 것을 따른다
-    if (!picked.league) {
-      const scored = IVRANK_LEAGUES.filter(([, cap]) => cap != null)
-        .map(([league, cap]) => ({ league, got: ivRankOf(form, cap, picked.floor, picked.ivs) }))
-        .filter((entry) => entry.got);
-      scored.sort((a, b) => a.got.rank - b.got.rank);
-      picked.league = scored.length ? scored[0].league : 'great';
-    }
-    $out.append(ivrankTopList(form, picked.floor, picked.ivs, picked.league, (id) => {
-      picked.league = id;
-      ivrankSave(picked);
-      drawOut();
-    }));
+      ...IVRANK_LEAGUES.map(([league, cap]) => {
+        const card = ivrankLeagueCard(form, league, cap, picked.floor, picked.ivs);
+        if (league === state.league) card.classList.add('is-on');
+        return card;
+      })));
+    $out.append(ivrankTopList(form, picked.floor, picked.ivs, state.league));
   };
 
   // ── 종 고르기 (플래너 개체 추가와 같은 줄 — components/search.js monSuggestRow)

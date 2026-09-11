@@ -31,3 +31,6 @@
 /* 2026-09-12 v2.64.0 PvP 도구 줄(🃏 덱 짜기 · 🧬 개체값 순위) — 리그·타입을 고른 **뒤에** 오는 줄이라
    리그 세그먼트와 같은 줄에 얹지 않는다. 읽는 순서가 곧 화면 순서다 */
 .controls__row--tools { gap: 0.6rem; margin-top: 0.2rem; }
+/* 2026-09-12 v2.66.0 마지막 도구 버튼은 오른쪽 끝으로 — 덱 짜기는 리그와 상관없는 다른 일이다.
+   버튼이 하나뿐인 화면(솔플 계산기)에서는 :last-child 가 곧 첫 버튼이라 왼쪽에 그대로 선다 */
+.controls__row--tools > .tool-btn:last-child:not(:first-child) { margin-left: auto; }

@@ -83,11 +83,13 @@ function renderRaidsPage() {
   // 2026-09-09 v2.39.0 토글 버튼을 안내 문구 왼쪽 줄과 같은 줄, 오른쪽 끝으로 — 왼쪽에 홀로 떠 있어
   // 안내문과 순서가 뒤섞여 읽히던 것을 "설명은 왼쪽, 이 화면을 어떻게 볼지는 오른쪽"으로 gameday__intro 에서 가른다
   return el('div', { class: 'page__body' },
-    el('div', { class: 'gameday__intro' },
-      el('p', { class: 'note' }, '보스를 누르면 약점과 추천 딜러가 열려요. 혼자 잡을 수 있는지는 ⚔️ 레이드 · PvE 의 🧮 솔플 계산기에서 봐요.'),
+    el('div', { class: 'gameday__intro page__filters' },
+      el('p', { class: 'note' }, '보스를 누르면 약점과 추천 딜러가 열려요. 혼자 잡을 수 있는지는 ',
+        el('a', { href: routeHash('pve-solo') }, '🧮 솔플 계산기'), ' 에서, 앞으로의 일정은 ',
+        el('a', { href: routeHash('schedule') }, '📅 이벤트 일정'), ' 에서 봐요.'),
       $layout),
     ...sections.map(({ node }) => node),
-    gamedayFoot('지금 도는 레이드 로테이션.'));
+    gamedayFoot('이 화면은 지금 도는 로테이션만 말해요 — 앞으로의 일정은 달력이 맡아요.'));
 }
 
 // ── 🥚 알 부화 ────────────────────────────────────────────────────────────────
@@ -141,7 +143,7 @@ function renderEggsPage() {
     gamedaySection(tail ? `${distance} 알 · ${tail}` : `${distance} 알`, list, notes, grid));
   const $layout = layoutToggle('pogo_eggs_cols', grid, (next) => sections.forEach(({ $list }) => $list.classList.toggle('is-grid', next)));
   return el('div', { class: 'page__body' },
-    el('div', { class: 'gameday__intro' },
+    el('div', { class: 'gameday__intro page__filters' },
       el('p', { class: 'note' }, '★ 를 누르면 즐겨찾기에 담겨요. 이름을 누르면 종족값과 상성을 볼 수 있어요.'),
       $layout),
     ...sections.map(({ node }) => node),
