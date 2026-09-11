@@ -63,7 +63,10 @@ body:has(#page-head:not([hidden])) #page { padding-top: 0; }
 .page-head { max-width: 76rem; margin: 0 auto; padding: 1.2rem 2rem 4rem;
              display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: start; column-gap: 1.6rem; }
 .page-head > :not(.page-head__actions) { grid-column: 1; }
-.page-head__actions { grid-column: 2; grid-row: 1 / -1; align-self: center; justify-self: end; }
+.page-head__actions { grid-column: 2; grid-row: 1 / -1; align-self: center; justify-self: end;
+                      display: flex; align-items: center; justify-content: flex-end; gap: 0.8rem; flex-wrap: wrap; }
+/* 슬롯 안에서는 오른쪽 밀기를 끈다 — 컨트롤이 둘이면(레이드 · PvE) 둘 사이가 벌어진다 */
+.page-head__actions .seg-view { margin-left: 0; }
 .page-head__actions:empty { display: none; }
 .page-head {
   background-image: linear-gradient(to right, var(--line), var(--line));

@@ -243,20 +243,18 @@ const ok = (name, cond, extra = '') => results.push([cond ? 'PASS' : 'FAIL', nam
       (await page.locator('.nav-menu .drawer__item--sub').allTextContents()).join('|'));
   }
 
-  // 8e. 배틀 PvP 의 컨트롤 — 2026-09-12 v2.67.0 리그 세그먼트를 도구 줄 안으로 넣어 줄 하나를 줄였다.
-  // 한 줄의 문법: [지금 보는 도구] [리그] ……… [다른 도구]. 그 아래가 타입 필터다
+  // 8e. 배틀 PvP 의 컨트롤 — 2026-09-12 v3.2.0 리그 세그먼트가 화면 머리 오른쪽으로 올라갔다
+  // (D-MAX 의 [전체|딜러|탱커]와 같은 자리). 리그는 목록을 거르는 값이 아니라 이 화면이 어느
+  // 리그를 말하는가 자체라, 필터 줄이 아니라 제목과 같은 높이다. 본문에는 도구 줄과 타입 필터만 남는다
   {
     await page.goto(BASE + '?mock=1#/pvp', { waitUntil: 'domcontentloaded' });
     await settle();
-    const order = await page.evaluate(() => [...document.querySelectorAll('#controls > *')].map((n) => {
-      const parts = [];
-      if (n.querySelector(':scope > .seg')) parts.push('리그');
-      if (n.querySelector('.tool-btn')) parts.push('도구');
-      return parts.length ? parts.join('+') : '타입';
-    }));
-    ok('컨트롤이 [리그+도구] → 타입 두 줄', order.join(' → ') === '리그+도구 → 타입', order.join(' → '));
-    // 리그가 도구 줄 **안**에 있어야 한다 (따로 줄을 쓰지 않는다)
-    ok('리그 세그먼트가 도구 줄 안에', (await page.locator('.controls__row--tools > .seg').count()) === 1);
+    const order = await page.evaluate(() => [...document.querySelectorAll('#controls > *')].map((n) =>
+      n.querySelector('.tool-btn') ? '도구' : '타입'));
+    ok('본문 컨트롤은 도구 → 타입 두 줄', order.join(' → ') === '도구 → 타입', order.join(' → '));
+    const headSeg = (await page.locator('#page-head-actions .seg button').allTextContents()).join('|');
+    ok('리그 세그먼트가 화면 머리에', headSeg === '리틀|슈퍼|하이퍼|마스터', headSeg);
+    ok('본문에 남은 리그 줄이 없다', (await page.locator('#controls .seg').count()) === 0);
   }
 
   // 8f. ★ 즐겨찾기는 헤더 버튼을 눌러 팝업으로 연다 (화면 맨 위 카드였던 것)

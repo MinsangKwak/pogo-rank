@@ -343,12 +343,9 @@ function renderPage() {
 // 화면마다 토글을 따로 만들 필요도, 각 화면 렌더러가 머리를 알 필요도 없다.
 // 스타일 가이드는 예외다: 거기 있는 .seg-view 는 "이렇게 생겼다" 를 보여 주는 견본이라 옮기면 안 된다
 function liftViewToggle(id) {
-  const slot = document.getElementById('page-head-actions');
-  if (!slot) return;
-  slot.replaceChildren();
-  if (id === 'styleguide') return;
-  const toggle = document.querySelector('#page .page__body .seg-view');
-  if (toggle) slot.append(toggle);
+  // 스타일 가이드의 .seg-view 는 "이렇게 생겼다" 를 보여 주는 견본이라 옮기지 않는다
+  const toggle = id === 'styleguide' ? null : document.querySelector('#page .page__body .seg-view');
+  setPageHeadAction(toggle);
 }
 window.addEventListener('hashchange', renderPage);
 renderPage();  // #/schedule 같은 링크로 바로 들어온 경우
