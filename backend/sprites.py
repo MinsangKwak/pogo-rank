@@ -116,6 +116,52 @@ for sprite_identifier in local_ids:
     if not is_png(local_path) and is_png(base_path):
         shutil.copy(base_path, local_path)
         print(f'local sprite {sprite_identifier} ← {base_identifier} 복사')
+# ── 2026-09-12 v2.67.0 움직이는 그림 (상세 화면 전용) ────────────────────────
+#
+# 무엇을
+#   같은 PokeAPI 저장소의 B/W 애니메이션 GIF. 정지 png 와 같은 스프라이트 id 를 쓴다.
+#
+# 왜 상세 화면에만
+#   GIF 한 장이 평균 54KB 로 정지 png(평균 4KB)의 13배다. 도감 첫 화면은 한 번에
+#   100장을 그리므로 목록까지 바꾸면 화면 한 장이 400KB → 5.4MB 가 된다.
+#   상세는 한 번에 한 마리라 그 값이 그대로 1장이다.
+#
+# 없는 종은
+#   1,172개 중 949개(81%)만 있다 — 6세대 이후와 폼 변형 상당수가 없다.
+#   없으면 프런트가 지금까지처럼 정지 png 를 그린다(sprite.js spriteAnimSrc → null).
+#
+# 없는 것을 매번 다시 묻지 않으려고 <id>.none 빈 파일을 남긴다 —
+# CI 의 actions/cache 가 이 폴더를 통째로 되살리므로 404 요청이 반복되지 않는다
+ANIM_DIR = 'data/sprites-anim'
+ANIM_URL = ('https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon'
+            '/versions/generation-v/black-white/animated/{}.gif')
+os.makedirs(ANIM_DIR, exist_ok=True)
+
+
+def is_gif(path):
+    return os.path.exists(path) and open(path, 'rb').read(6) in (b'GIF87a', b'GIF89a')
+
+
+def download_anim(sprite_identifier):
+    gif_path = f'{ANIM_DIR}/{sprite_identifier}.gif'
+    subprocess.run(['curl', '-fsSL', '--retry', '2', '-o', gif_path, ANIM_URL.format(sprite_identifier)])
+    if is_gif(gif_path):
+        return
+    # 404 거나 깨진 응답이면 파일을 남기지 않고 "없음" 표시만 남긴다
+    if os.path.exists(gif_path):
+        os.remove(gif_path)
+    open(f'{ANIM_DIR}/{sprite_identifier}.none', 'w').close()
+
+
+anim_todo = [sprite_identifier for sprite_identifier in sprite_ids
+             if not is_gif(f'{ANIM_DIR}/{sprite_identifier}.gif')
+             and not os.path.exists(f'{ANIM_DIR}/{sprite_identifier}.none')]
+if anim_todo:
+    with ThreadPoolExecutor(16) as executor:
+        list(executor.map(download_anim, anim_todo))
+    have = sum(1 for sprite_identifier in sprite_ids if is_gif(f'{ANIM_DIR}/{sprite_identifier}.gif'))
+    print(f'animated: {len(anim_todo)} 시도 · 보유 {have}/{len(sprite_ids)}')
+
 encoded_sprites = {}
 failed_ids = []
 for sprite_identifier in sprite_ids:

@@ -109,6 +109,27 @@ const ok = (n, c, x = '') => { console.log((c ? 'PASS' : 'FAIL') + ' ' + n + ' '
   const formRow = await page.locator('.detail__form-row').textContent();
   ok('폼 라벨이 이름 위 자기 줄에', /^메가/.test(formRow ?? ''), formRow);
 
+  // ── 2026-09-12 v2.67.0 상세의 큰 그림만 움직인다 ───────────────────────────
+  // 왜 상세만인가 — GIF 는 정지 png 의 13배(평균 54KB)라, 한 번에 100장을 그리는 도감 목록에
+  // 같은 것을 쓰면 화면 하나가 5MB 를 넘는다. 상세는 한 번에 한 마리라 그 값이 그대로 1장이다.
+  // 정지본을 먼저 띄우고 다 받은 뒤 갈아 끼우므로 기다렸다가 본다
+  await page.keyboard.press('Escape');
+  await page.waitForTimeout(300);
+  await go('#/mon/6');   // 리자몽 — 949종 목록에 있는 종
+  await page.waitForFunction(() => {
+    const img = document.querySelector('.sprite-box .sprite');
+    return img && /sprites-anim\/\d+\.gif$/.test(img.getAttribute('src') || '');
+  }, null, { timeout: 8000 }).catch(() => {});
+  const heroSrc = await page.locator('.sprite-box .sprite').getAttribute('src');
+  ok('상세 큰 그림이 움직이는 그림으로 바뀐다', /sprites-anim\/6\.gif$/.test(heroSrc || ''), heroSrc);
+  ok('바뀐 그림에 표시가 붙는다', (await page.locator('.sprite-box .sprite.sprite--anim').count()) === 1);
+  // 목록은 정지 png 그대로여야 한다 — 여기가 무너지면 도감 첫 화면이 5MB 가 된다
+  await go('#/dex');
+  await page.waitForSelector('#page .dex__row .sprite', { timeout: 8000 });
+  const listAnim = await page.locator('#page .dex__row .sprite').evaluateAll(
+    (ns) => ns.filter((n) => /sprites-anim\//.test(n.getAttribute('src') || '')).length);
+  ok('목록 그림은 정지 png 그대로', listAnim === 0, String(listAnim));
+
   ok('페이지 오류 없음', errs.length === 0, errs.join(' | ').slice(0, 200));
   await browser.close();
   console.log(`${pass}/${pass + fail} passed`);

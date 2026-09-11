@@ -19,7 +19,7 @@ const ok = (n, c, x = '') => { console.log((c ? 'PASS' : 'FAIL') + ' ' + n + ' '
   await page.waitForTimeout(300);
 
   // v2.47.0 '내 포켓몬'·'육성 플래너' 타일 통합으로 10 → 9
-  ok('홈 타일 10개', (await page.locator('.home__tile').count()) === 10);
+  ok('홈 타일 9개', (await page.locator('.home__tile').count()) === 9);
   const tiles = await page.locator('.home__tile strong').allTextContents();
   ok('새 타일 2개', tiles.includes('레이드 보스') && tiles.includes('알 부화'), tiles.slice(-2).join('|'));
 

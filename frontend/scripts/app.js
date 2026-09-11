@@ -35,8 +35,8 @@ const state = {
   pveMode: 'easy',           // 2026-09-02 pveMode: PvE 탭 통합 — 'easy'(일반) / 'all'(전체)
   bossShow: 5,               // 2026-09-02 bossShow: 보스 추천 표시 개수
   // 2026-09-07 v2.16.0 IF 탭 해체 — 솔플 계산기는 PvE 탭, PvP 덱 짜기는 PvP 탭의 오른쪽 도구 버튼으로 (활용처 탭은 검색 패널로)
-  pveTool: null,             // PvE 탭 도구 — 'solo'(솔플 레이드 계산기 펼침) / null
-  pvpTool: null,             // PvP 탭 도구 — 'deck'(PvP 덱 짜기 펼침) / null. 덱 리그는 state.league 를 그대로 쓴다
+  pveTool: null,             // PvE 도구 — 'solo'(솔플 계산기) / null. v2.66.0 부터 주소(#/pve/solo)가 정한다 — planner/shell.js applyPlanRoute
+  pvpTool: null,             // PvP 도구 — 'deck' / 'ivrank' / null. v2.66.0 부터 주소(#/pvp/deck·#/pvp/ivrank)가 정한다. 덱 리그는 state.league 를 그대로 쓴다
   deckFoes: [],              // 상대할 포켓몬 (최대 3칸)
   deckAccOpen: true,         // 덱 추천 아코디언 펼침 여부
   soloBossMon: null,         // 솔플 계산기에서 고른 보스. null이면 아직 고르기 전
@@ -85,63 +85,45 @@ const $note = document.getElementById('note');
 // 선택 표시는 CSS 클래스가 아니라 aria-selected로 하기 때문에(스타일과 스크린리더가 같은 값을 본다)
 // 탭이 바뀔 때마다 줄 전체를 다시 그린다.
 //
-// 2026-09-08 v2.22.0 탭 줄 복구 — v2.21.0 에서 통째로 감췄더니 D-MAX ↔ PvE ↔ PvP 를 오가려면
-// 매번 메뉴를 열거나 홈으로 돌아가야 했다. 셋은 형제 화면이라 한 번에 옮겨 다니는 줄이 맞다.
-// 대신 이동은 v2.21.0 의 주소 체계(#/rank/…)를 그대로 쓴다 — 상단 바 제목·뒤로가기가 같이 맞춰진다.
-// 서비스 홈에는 탭 줄이 없다 (홈 타일이 그 자리를 대신한다)
+// 2026-09-11 v2.61.0 랭킹 탭 줄(D-MAX · PvE · PvP)과 바로가기(📕 🧭 ★)를 걷어냈다.
+// v2.22.0 에 이 줄을 되살린 이유는 "셋을 오가려면 매번 메뉴를 열어야 한다" 였는데,
+// v2.42.0 PC 셸에서 왼쪽 메뉴가 **늘 펼쳐져** 있게 되면서 그 이유가 사라졌다.
+// 도감 · 상성 · 즐겨찾기도 메뉴에 같은 줄이 있어, 같은 곳으로 가는 길이 화면에 두 벌이었다.
+// 좁은 화면도 같다 — 화면마다 주소가 따로라(#/dmax · #/pve · #/rank/pvp) 뒤로가기로 오간다.
+// 플래너의 [육성 현황 | 내 포켓몬] 은 남긴다: 그것은 메뉴 중복이 아니라 한 화면 안의 갈래다
+// 2026-09-12 v2.66.0 마지막 탭 줄(플래너의 [육성 현황 | 내 포켓몬])도 걷어냈다.
+// v2.61.0 에 랭킹 탭 줄을 걷으며 "플래너의 것은 메뉴 중복이 아니라 한 화면 안의 갈래" 라고
+// 남겨 뒀는데, 둘은 사실 다른 질문에 답하는 다른 화면이었다 — '지금 뭘 키우는 중인가' 와
+// '내 상자에 뭐가 있나'. 다른 화면이면 이동은 왼쪽 메뉴가 맡는다(이 서비스의 유일한 규칙).
+// $tabs 는 비워 둔 채 남긴다: 뷰가 append 하는 고정 컨테이너라 지우면 참조가 끊긴다
 function renderTabs() {
   $tabs.replaceChildren();
-  const onHome = state.appMode === 'dex' && state.tab === 'home';
-  $tabs.hidden = onHome;
-  if (onHome) return;
-  // 2026-09-07 v2.15.0 (QA-53) 플래너 모드는 탭 줄이 통째로 바뀐다 — [육성 현황 | 🎒 내 포켓몬] (planner/shell.js)
-  if (state.appMode === 'plan') return renderPlanTabs();
-  // [탭 id, 버튼에 보이는 이름] 쌍. 배열 순서가 곧 화면에 보이는 탭 순서다
-  // 2026-09-08 v2.30.0 [탭 id, 라벨, 라우트 id] — 주소는 router.js 의 표가 정한다
-  for (const [id, label, routeId] of [['max', 'D-MAX', 'dmax'], ['pve', 'PvE', 'pve'], ['pvp', 'PvP', 'pvp']]) {
-    // 2026-09-03 GA4: 탭 이름을 이벤트명에 포함(tab_max 등) — 누를 때마다 1회씩 기록
-    // 2026-09-10 v2.48.1 로그인해야 쓰는 탭에는 자물쇠를 붙인다 — 눌러 보고 알게 하지 않는다.
-    // 막지는 않는다: 눌러야 "왜 잠겼는지"와 로그인 버튼이 있는 화면으로 갈 수 있다
-    const locked = typeof routeLocked === 'function' && routeLocked(routeId);
-    $tabs.append(el('button', {
-      class: `tabs__item${locked ? ' is-locked' : ''}`,
-      role: 'tab',
-      'aria-selected': String(state.tab === id),
-      title: locked ? '로그인하면 열려요' : '',
-      onclick: () => {
-        track('tab_' + id, { tab: id });
-        navigateHash(routeHash(routeId));  // 주소가 바뀌면 applyPlanRoute → render 가 돌고 상단 바 제목도 맞춰진다
-      },
-    }, label, locked ? el('span', { class: 'tabs__lock', 'aria-hidden': 'true' }, '🔒') : ''));
-  }
-  // 2026-09-06 v2.9.0 도감·상성·즐겨찾기 바로가기 — 탭이 아니라 "페이지로 가는 버튼"이라
-  // aria-selected 없이 오른쪽 끝에 붙인다. 좁은 화면에서는 아이콘만 남는다(tabs.css)
-  const quick = el('div', { class: 'tabs__quick' },
-    el('button', { class: 'tabs__item tabs__item--quick', title: '도감', onclick: () => openPage('dex', 'tabbar') }, '📕', el('span', { class: 'tabs__label' }, ' 도감')),
-    el('button', { class: 'tabs__item tabs__item--quick', title: '상성 검색', onclick: () => openPage('types', 'tabbar') }, '🧭', el('span', { class: 'tabs__label' }, ' 상성')));
-  if (typeof authEnabled === 'function' && authEnabled() && AUTH.status === 'ok') {
-    quick.append(el('button', { class: 'tabs__item tabs__item--quick', title: '즐겨찾기', onclick: () => openPage('favs', 'tabbar') }, '★', el('span', { class: 'tabs__label' }, ` 즐겨찾기 ${AUTH.favs.size}`)));
-  }
-  $tabs.append(quick);
+  $tabs.hidden = true;
 }
 
 // 2026-09-02 PvE 탭: 일반/전체 세부 토글 (PvP 리그 토글과 같은 seg)
 // 토글만 직접 그리고, 실제 목록은 고른 모드에 맞는 뷰 함수에 넘긴다
 function renderPveTab() {
+  // 2026-09-07 v2.16.0 오른쪽 도구 버튼: 🧮 솔플 레이드 계산기 (옛 IF 탭)
+  // 2026-09-12 v2.66.0 계산기는 #/pve/solo 로 뗐다 — 한 화면이 "거르기(티어표)" 와
+  // "값을 넣고 답을 받는 도구" 를 겸하고 있었다. 계산기를 켜면 티어표가 통째로 사라지는데도
+  // [일반|전체] 세그먼트는 그대로 남아, 눌러도 아무 일이 없는 컨트롤이 화면에 떠 있었다.
+  // 이제 계산기 화면에는 그 줄을 아예 그리지 않는다
+  const soloButton = toolButton('🧮 솔플 계산기', state.pveTool === 'solo', () => {
+    track('tool_solo', { on: state.pveTool === 'solo' ? 0 : 1 });
+    navigateHash(state.pveTool === 'solo' ? routeHash('pve') : routeHash('pve-solo'));
+  });
+  if (state.pveTool === 'solo') {
+    $controls.append(el('div', { class: 'controls__row controls__row--tools' }, soloButton));
+    return renderSoloCalc();
+  }
   const modeSeg = seg([{ id: 'easy', label: '일반' }, { id: 'all', label: '전체' }], state.pveMode,
     (id) => {
       state.pveMode = id;
-      state.pveTool = null;    // 서브탭을 고르면 도구는 접는다
       track('sub_pve_' + id);  // 2026-09-03 GA4: 서브탭 사용량
       render();
     });
-  // 2026-09-07 v2.16.0 오른쪽 도구 버튼: 🧮 솔플 레이드 계산기 (옛 IF 탭). 누르면 티어표 자리에 계산기가 펼쳐지고, 다시 누르면 접힌다
-  $controls.append(el('div', { class: 'controls__row' }, modeSeg, toolButton('🧮 솔플 계산기', state.pveTool === 'solo', () => {
-    state.pveTool = state.pveTool === 'solo' ? null : 'solo';
-    track('tool_solo', { on: state.pveTool ? 1 : 0 });
-    render();
-  })));
-  if (state.pveTool === 'solo') return renderSoloCalc();
+  $controls.append(el('div', { class: 'controls__row' }, modeSeg, soloButton));
   (state.pveMode === 'easy' ? renderPveEasy : renderPve)();
 }
 

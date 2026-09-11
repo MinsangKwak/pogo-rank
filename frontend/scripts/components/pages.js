@@ -69,7 +69,7 @@ function renderSchedulePage() {
   const $cal = el('div', {});
   const $timeline = el('div', {});
   const $list = el('div', {});
-  const $chips = el('div', {});
+  const $chips = el('div', { class: 'page__filters' });   // v2.66.0 머리·필터와 본문을 가르는 선이 이 줄 아래에 온다
   const draw = () => {
     $chips.replaceChildren(chips(
       [{ id: 'all', label: '전체' }, ...Object.entries(SCHEDULE_CATS).map(([id, category]) => ({ id, label: category.name, color: category.type }))],
@@ -88,8 +88,18 @@ function renderSchedulePage() {
   // 2026-09-08 v2.29.0 일정표는 한국 서버 공지를 그대로 옮긴 콘텐츠라 한국어로 둔다.
   // 영어로 볼 때는 "한국 서버(KST) 기준" 을 먼저 밝힌다 — 이벤트 날짜는 지역마다 다르고,
   // 자기 지역 일정으로 오해하면 실제로 이벤트를 놓친다
+  // 2026-09-12 v2.66.0 달력과 ⚔️ 레이드 보스 화면의 역할을 갈라 적는다.
+  //   달력은 손으로 적은 공지(SCHEDULE_ITEMS)라 "언제" 가 정확하고,
+  //   레이드 보스 화면은 자동 수집(GAMEDAY)이라 "지금 무엇이" 가 정확하다.
+  // 둘 다 5성·메가 보스 이름을 말하므로, 어느 쪽이 무엇을 말하는지 밝히지 않으면
+  // 수집이 하루 늦거나 공지가 갱신되지 않았을 때 두 화면이 서로 다른 보스를 가리킨다
+  const bossBridge = el('p', { class: 'note schedule__bridge' },
+    '이 달력은 ', el('b', {}, '언제'), ' 무엇이 열리는지를 봐요. ',
+    el('b', {}, '지금'), ' 실제로 도는 보스는 ',
+    el('a', { href: routeHash('raids') }, '⚔️ 레이드 보스'), ' 에서 봐요.');
   return el('div', { class: 'page__body schedule__page' }, i18nKoOnlyNote('kst'),
     $chips,
+    bossBridge,
     $cal,
     el('h2', { class: 'page__sec' }, '기간 한눈에'),
     $timeline,
@@ -181,7 +191,9 @@ function renderDexPage() {
     $more.disabled = shown >= list.length;
   };
   // 검색: 숫자만 입력하면 도감번호 부분일치, 그 외에는 이름(한글/영문) 검색
-  const $input = el('input', { class: 'boss__search', placeholder: '이름 검색 또는 번호 (예: 팬텀, 94)' });
+  // 2026-09-12 v2.66.0 안내 문구로 성격을 밝힌다 — 헤더 검색은 "서비스 어디로든 데려가는" 검색이고
+  // 이 칸은 "이 목록을 그 자리에서 거르는" 칸이다. 생김새가 비슷해 둘을 같은 것으로 읽었다
+  const $input = el('input', { class: 'boss__search', placeholder: '이 목록에서 찾기 (예: 팬텀, 94)' });
   $input.addEventListener('input', () => {
     const query = $input.value.trim();
     list = !query ? all : /^\d+$/.test(query) ? all.filter((entry) => String(entry.dex).includes(query)) : monSearch(all, query, 999);
@@ -193,15 +205,13 @@ function renderDexPage() {
   //   - 버튼은 **지금 어떤 보기인지**를 말한다 (그리드 ↔ 리스트). 누르면 무엇이 되는지는 aria-label 로 밝힌다
   // .dex__layout 클래스는 그대로 둔다 — 회귀 검사(tests/e2e/shell.js)가 이 클래스로 버튼을 찾는다
   const $layout = layoutToggle('pogo_dex_cols', cols2, (grid) => $list.classList.toggle('is-grid', grid), 'dex__layout');
-  // 2026-09-03 v2.2.0 즐겨찾기만 보기 칩 (승인된 사용자) / 비로그인 안내
-  // 2026-09-05 즐겨찾기는 전용 페이지로 이동 — PvE/PvP 갈래와 근거 순위를 함께 보여 준다
-  const favChip = AUTH.status === 'ok'
-    ? el('button', { class: 'uchip fav-chip', onclick: () => openPage('favs') }, `★ 즐겨찾기 ${AUTH.favs.size}`)
-    : '';
-  // 칩 줄: [즐겨찾기] [1세대] … [9세대]
-  // 2026-09-09 v2.40.0 보기 방식(리스트/그리드)은 이 줄에서 뺐다 — 세대·즐겨찾기는 "무엇을 보여줄지"(거르기)고
+  // 칩 줄: [1세대] … [9세대]
+  // 2026-09-09 v2.40.0 보기 방식(리스트/그리드)은 이 줄에서 뺐다 — 세대는 "무엇을 보여줄지"(거르기)고
   // 보기 방식은 "그걸 어떻게 보여줄지"라 성격이 다르다. 둘을 한 줄에 섞으니 토글이 칩 하나로 묻혔다
-  const genChips = el('div', { class: 'tchips' }, favChip, ...DEX_GENS.map(([genStart, genEnd], genIndex) =>
+  // 2026-09-12 v2.66.0 [★ 즐겨찾기 N] 칩을 뺐다 — 같은 줄의 세대 칩은 그 자리에서 목록을 거르는데
+  // 이 칩만 다른 화면(#/favs)으로 보냈다. 모양이 같으면 하는 일도 같아야 한다.
+  // 즐겨찾기를 보는 길은 헤더 ★ 하나로 모은다 (어느 화면에서나 같은 자리 — components/favdigest.js)
+  const genChips = el('div', { class: 'tchips' }, ...DEX_GENS.map(([genStart, genEnd], genIndex) =>
     el('button', { class: 'uchip', onclick: () => {
       $input.value = '';
       list = all.filter((entry) => entry.dex >= genStart && entry.dex <= genEnd);
@@ -218,7 +228,7 @@ function renderDexPage() {
   // "목록을 어떻게 볼지" 라 목록 바로 위 한 줄에 모아 두는 편이 눈이 덜 움직인다.
   // 좁은 화면은 CSS 가 위아래로 쌓는다 (한 줄에 넣으면 칩이 잘린다)
   return el('div', { class: 'page__body dex-page' }, loginHint, $input,
-    el('div', { class: 'dex__toolbar' }, genChips, $layout), $list, $more,
+    el('div', { class: 'dex__toolbar page__filters' }, genChips, $layout), $list, $more,
     footNote('미구현 = 포켓몬 GO에 아직 출시되지 않은 종 (PvPoke 출시 목록 기준, 데이터는 게임마스터 선등록분). 메가·섀도우·리전 폼은 🔍 전역 검색으로 찾을 수 있어요.'));
 }
 
@@ -231,10 +241,9 @@ const PAGES = {
   privacy: { title: '🔒 개인정보처리방침', render: renderPrivacyPage },  // 2026-09-04 로그인 시 수집하는 개인정보 안내
   terms: { title: '📜 이용약관', render: renderTermsPage },  // 2026-09-07 v2.18.0 (공개 준비 2)
   favs: { title: '★ 즐겨찾기', render: renderFavsPage },  // 2026-09-05 PvE/PvP 나눠 보기
-  types: { title: '🧭 상성 검색', render: renderTypeSearchPage },  // 2026-09-06 v2.10.0 (QA-44) 타입 조합 → 약점·이중약점·추천 딜러
   raids: { title: '⚔️ 레이드 보스', render: renderRaidsPage },  // 2026-09-08 v2.25.0 지금 도는 티어별 보스 (components/gameday.js)
-  eggs: { title: '🥚 알 부화', render: renderEggsPage },
-  finder: { title: '🔎 검색식 만들기', render: renderFinderPage },  // 2026-09-11 v2.58.0 게임 검색창에 붙여 넣을 식 (백로그 QA-57)        // 2026-09-08 v2.25.0 거리별 부화 풀 (components/gameday.js)
+  eggs: { title: '🥚 알 부화', render: renderEggsPage },                 // 2026-09-08 v2.25.0 거리별 부화 풀 (components/gameday.js)
+  finder: { title: '🔎 검색식 만들기', render: renderFinderPage },        // 2026-09-11 v2.58.0 게임 검색창에 붙여 넣을 식 (백로그 QA-57)
 };
 
 // 현재 해시가 가리키는 전체 페이지 id. 페이지가 아니면 null = 메인 화면.

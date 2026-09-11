@@ -18,7 +18,7 @@
 //   hexNode / svgEl / detailCpCalc : 팝업 각 블록을 만드는 조립 함수들
 //
 // [의존하는 전역 · 데이터]
-// - el() (dom.js) · sprite() (components/sprite.js) · track() (track.js) · openModal() (components/modal.js)
+// - el() (dom.js) · sprite() · spriteAnimate() (components/sprite.js) · track() (track.js) · openModal() (components/modal.js)
 // - authEnabled() · favBtn() (components/auth.js) — 로그인 기능이 켜진 빌드에서만 즐겨찾기 ★ 표시
 // - calcCp() (components/pages.js) — 내 개체 CP 계산기에서 사용
 // - DEX_DATA (data.js): names / forms / evo / megas / chart / dex / cpm
@@ -414,12 +414,10 @@ function matchupCols(types, spriteId) {
     el('div', { class: 'detail__matchrows' },
       el('div', { class: 'detail__match detail__match--weak' }, el('h3', {}, '약점 (더 큰 데미지)'), chipList(weak)),
       el('div', { class: 'detail__match detail__match--resist' }, el('h3', {}, '내성 (덜 받는 데미지)'), chipList(resist))),
+    // 2026-09-12 v2.63.0 '🧭 상성 검색에서 딜러까지 보기' 버튼을 뗐다 — 그 화면을 접었다.
+    // 위의 약점·내성 표가 곧 그 화면이 보여 주던 것이라, 여기서 더 갈 곳이 없다
     el('p', { class: 'detail__foot' },
-      hasDouble ? '이중 = 두 타입 모두에 걸려 ×2.56(약점) / ×0.39(내성·무효) · ' : '',
-      // 2026-09-06 v2.10.0 🧭 상성 검색 페이지로 — 같은 타입 조합을 미리 채운 채 열린다
-      typeof openTypeSearch === 'function'
-        ? el('button', { class: 'row__why-more', onclick: (event) => { event.stopPropagation(); openTypeSearch(types, spriteId, 'detail'); } }, '🧭 상성 검색에서 딜러까지 보기 ▸')
-        : ''));
+      hasDouble ? '이중 = 두 타입 모두에 걸려 ×2.56(약점) / ×0.39(내성·무효)' : ''));
   return wrap;
 }
 
@@ -553,7 +551,9 @@ function openDetail(pokemon, isDex = false, from = null) {
   const formKind = formLabels.map(formLabelKind)[0] ?? '';
   const head = el('div', { class: 'detail__head' },
     el('div', { class: `sprite-box${formKind ? ' sprite-box--' + formKind : ''}` },
-      sprite(pokemon.sprite),
+      // 2026-09-12 v2.67.0 상세 화면의 큰 그림만 움직인다 — 한 번에 한 마리라 GIF 한 장이면 된다.
+      // 정지본을 먼저 띄우고 다 받은 뒤 갈아 끼우므로, 없는 종(6세대 이후 다수)은 그대로 정지본이다
+      spriteAnimate(sprite(pokemon.sprite), pokemon.sprite),
       // 상성표의 작은 점 칩(tchips__item)과는 다른 자리라 건드려도 이중약점 강조 같은 다른 뜻이 흔들리지 않는다
       types.length ? el('div', { class: 'detail__types' }, ...types.map((typeName) => el('span', { class: 'detail__type-pill', style: `--c: var(--t-${typeName})` }, TYPE_KO[typeName] ?? typeName))) : ''),
     // 2026-09-03 v2.2.0 즐겨찾기 ★ · 2026-09-06 v2.9.0 🔗 공유 · 2026-09-07 v2.15.0 (QA-54) ➕ 내 개체로 저장.
@@ -586,6 +586,9 @@ function openDetail(pokemon, isDex = false, from = null) {
         el('div', { class: 'detail__cp-tile' }, metaText('야생'), el('b', {}, cpOf(form, cpm.l30).toLocaleString())),
         el('div', { class: 'detail__cp-tile' }, metaText('부스트'), el('b', {}, cpOf(form, cpm.l35).toLocaleString())))));
   }
+  // 2026-09-11 v2.61.0 PvP 순위에 오른 종은 "그 리그에서는 어떤 개체값이 1위인가" 를 덧붙인다.
+  // 위의 CP 100% 는 PvE 기준(15/15/15 만렙)이라 PvP 에서는 쓸 데가 없다 — 두 기준이 정반대다
+  if (form && typeof ivrankDetailNode === 'function') body.append(ivrankDetailNode(form, pokemon.sprite));
   // 2026-09-04 포획 CP: "지금 잡은 개체가 100%인가"를 확인하는 표. 계산기보다 자주 보므로 위에 둔다
   if (form) body.append(el('details', { class: 'detail__acc detail__acc--catch' },
     el('summary', {}, '🎯 포획 CP — 이 숫자면 100%'),

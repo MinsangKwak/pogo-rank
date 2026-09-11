@@ -76,9 +76,9 @@ const ok = (name, cond, extra = '') => results.push([cond ? 'PASS' : 'FAIL', nam
   // 2026-09-10 v2.47.0 '내 포켓몬' 타일과 '육성 플래너' 타일을 하나로 합쳐 10 → 9 가 됐다
   // 2026-09-11 v2.58.0 🔎 검색식 만들기가 늘어 10 이다. ☰ 메뉴와 홈 타일은 **같은 수**여야 한다 —
   // 같은 화면인데 문이 한쪽에만 있으면 메뉴를 안 여는 사람은 그 화면이 있는 줄도 모른다
-  ok('홈 타일 10개', (await page.locator('.home__tile').count()) === 10);
+  ok('홈 타일 9개', (await page.locator('.home__tile').count()) === 9);
   const icons = await page.locator('.home__icon').allTextContents();
-  ok('홈 아이콘이 이모지', icons.join('') === '🌱📕🧭✨⚔️🃏📅⚔️🥚🔎', icons.join(''));
+  ok('홈 아이콘이 이모지', icons.join('') === '📅⚔️🥚📕✨⚔️🃏🌱🔎', icons.join(''));
   ok('홈에서 탭 줄 숨김', await page.locator('#tabs').isHidden());
   const tile = await page.locator('.home__tile').first().evaluate((n) => {
     const s = getComputedStyle(n);
@@ -95,8 +95,9 @@ const ok = (name, cond, extra = '') => results.push([cond ? 'PASS' : 'FAIL', nam
       .map(n => ({ t: n.textContent.trim(), w: n.getBoundingClientRect().width, h: n.getBoundingClientRect().height })));
   // v2.29.0 계정(👤)을 빼고 그 자리에 KR/EN 토글 — 로그인·마이페이지는 ☰ 메뉴 한 곳으로 모았다
   const wide = page.viewportSize().width >= 1100;
-  ok(`헤더 아이콘 ${wide ? '4개 (🔍 🌗 EN ☰)' : '3개 (🔍 EN ☰)'}`,
-    btns.map(b => b.t).join('') === (wide ? '🔍🌗EN☰' : '🔍EN☰'), JSON.stringify(btns.map(b => b.t)));
+  // 2026-09-12 v2.64.0 ★ 즐겨찾기가 헤더로 왔다 — 로그인 + 즐겨찾기가 있을 때만 보인다(mock 은 로그인 상태)
+  ok(`헤더 아이콘 ${wide ? '5개 (🔍 ★ 🌗 EN ☰)' : '4개 (🔍 ★ EN ☰)'}`,
+    btns.map(b => b.t).join('') === (wide ? '🔍★🌗EN☰' : '🔍★EN☰'), JSON.stringify(btns.map(b => b.t)));
   ok('헤더 버튼 44×44 통일', btns.every(b => Math.round(b.w) === 44 && Math.round(b.h) === 44), JSON.stringify(btns));
   ok('헤더에 텍스트 버튼 없음', !(await page.locator('.app-bar').textContent()).includes('메뉴'));
 
@@ -104,19 +105,20 @@ const ok = (name, cond, extra = '') => results.push([cond ? 'PASS' : 'FAIL', nam
   await page.click('.home__tile:has-text("D-MAX")');
   await page.waitForFunction(() => location.hash === '#/dmax', null, { timeout: 5000 });
   await page.waitForTimeout(300);
-  ok('D-MAX 진입 시 탭 줄 표시', await page.locator('#tabs').isVisible());
-  ok('탭 3개 + 바로가기', (await page.locator('#tabs .tabs__item:not(.tabs__item--quick)').allTextContents()).join('|') === 'D-MAX|PvE|PvP');
-  ok('현재 탭 aria-selected', await page.locator('#tabs .tabs__item[aria-selected="true"]').textContent() === 'D-MAX');
+  // 2026-09-11 v2.61.0 랭킹 탭 줄과 바로가기(📕 🧭 ★)를 걷어냈다 — 왼쪽 메뉴가 늘 펼쳐져 있어
+  // 같은 곳으로 가는 길이 화면에 두 벌이었다. 이동은 메뉴와 주소가 맡는다
+  ok('랭킹 화면에 탭 줄이 없다', await page.locator('#tabs').isHidden());
+  ok('바로가기도 없다', (await page.locator('#tabs .tabs__item--quick').count()) === 0);
   // v2.30.0 상단 바는 늘 로고, 화면 이름은 본문 헤더로 (좁은 화면도 PC 와 같은 규칙)
   ok('상단 바는 로고', (await page.locator('#app-title').textContent()).trim() === 'POGO PLAN');
   ok('화면 헤더 = D-MAX', (await page.locator('#page-head h2').textContent()) === 'D-MAX');
-  await page.click('#tabs .tabs__item:has-text("PvE")');
+  // 메뉴로 옮겨 다닌다 (탭 줄이 하던 일). 좁은 화면은 메뉴가 드로어 안이라 먼저 연다
+  if (!wide) { await page.click('#menu-toggle'); await page.waitForTimeout(350); }
+  await page.click('.nav-menu a:has-text("레이드 · PvE")');
   await page.waitForFunction(() => location.hash === '#/pve', null, { timeout: 5000 });
-  await page.waitForTimeout(300);
-  ok('탭으로 PvE 이동 (주소·제목 동기화)', (await page.locator('#page-head h2').textContent()) === '레이드 · PvE');
-  ok('PvE 탭 선택 표시', await page.locator('#tabs .tabs__item[aria-selected="true"]').textContent() === 'PvE');
-  const quick = await page.locator('#tabs .tabs__item--quick').allTextContents();
-  ok('바로가기 📕 🧭 ★', quick.join('|') === '📕 도감|🧭 상성|★ 즐겨찾기 9', JSON.stringify(quick));
+  await page.waitForTimeout(400);
+  ok('메뉴로 PvE 이동 (주소·제목 동기화)', (await page.locator('#page-head h2').textContent()) === '레이드 · PvE');
+  ok('메뉴에서 현재 위치 표시', (await page.locator('.nav-menu [aria-current="page"] .drawer__label').first().textContent()) === '레이드 · PvE');
   await page.goBack();
   await page.waitForTimeout(300);
   ok('뒤로가기로 D-MAX 복귀', (await page.locator('#page-head h2').textContent()) === 'D-MAX');
@@ -166,25 +168,138 @@ const ok = (name, cond, extra = '') => results.push([cond ? 'PASS' : 'FAIL', nam
   ok('드로어 서비스 홈 항목', (await page.locator('.nav-menu a .drawer__label').first().textContent()) === '서비스 홈');
   await page.click('.nav-menu a:has-text("서비스 홈")');
   await page.waitForTimeout(400);
-  ok('서비스 홈으로 이동', (await page.locator('.home__tile').count()) === 10 && !(await page.evaluate(() => location.hash)));
+  ok('서비스 홈으로 이동', (await page.locator('.home__tile').count()) === 9 && !(await page.evaluate(() => location.hash)));
 
-  // 8. 플래너 탭 라벨 텍스트 통일
+  // 8. 2026-09-12 v2.66.0 마지막 탭 줄(플래너)도 걷어냈다 — 이동은 왼쪽 메뉴 하나가 맡는다.
+  // 주소와 화면 이름은 그대로 산다
   await page.goto(BASE + '?mock=1#/planner/collection', { waitUntil: 'domcontentloaded' });
   await settle();
-  ok('플래너 탭 = 텍스트', (await page.locator('#tabs .tabs__item').allTextContents()).join('|') === '육성 현황|내 포켓몬',
-    (await page.locator('#tabs .tabs__item').allTextContents()).join('|'));
+  ok('화면 안 탭 줄이 없다', (await page.locator('#tabs .tabs__item').count()) === 0);
+  ok('내 포켓몬 화면 이름', (await page.locator('#page-head h2').textContent()) === '내 포켓몬');
+  ok('브레드크럼에 부모(육성 플래너)', (await page.locator('.page-head__crumb-up').textContent()) === '육성 플래너');
 
-  // 8b. 타입 & 상성 — 칩을 누르면 결과가 바로 나오는가 (v2.28.0 회귀)
-  //     matchupBucket 이 묶음 키가 아니라 CSS 클래스를 돌려주는 바람에 buckets[...] 가 undefined 가 되어
-  //     .push 에서 예외가 났고, 결과 영역이 통째로 비었다. 예외는 콘솔에만 남아 화면은 조용히 아무것도 안 했다
-  await page.goto(BASE + '?mock=1#/types', { waitUntil: 'domcontentloaded' });
+  // 8b. 2026-09-12 v2.63.0 타입 & 상성 화면을 접었다 — 상세 팝업이 같은 표를 이미 보여 준다.
+  //     공유된 옛 주소(#/types?t=…)가 죽지 않고 도감으로 넘어가는지 본다
+  await page.goto(BASE + '?mock=1#/types?t=water,dark', { waitUntil: 'domcontentloaded' });
   await settle();
-  await page.locator('.types__pick .chips__item').first().click();
-  await page.waitForTimeout(400);
-  const typeSecs = await page.locator('.types__sec h3').allTextContents();
-  ok('타입 칩 → 배율표', typeSecs.some((text) => text.includes('때릴 때')), typeSecs.join(' | ').slice(0, 80));
-  ok('타입 칩 → 그 타입 포켓몬 목록', (await page.locator('.types__mons .boss__rec').count()) > 0);
-  ok('타입 칩 → 추천 딜러·반대로 절', typeSecs.length >= 3, String(typeSecs.length));
+  ok('옛 상성 주소는 도감으로', (await page.evaluate(() => document.body.dataset.route)) === 'dex',
+    await page.evaluate(() => location.hash));
+  ok('메뉴에 타입 & 상성이 없다', !(await page.locator('.nav-menu .drawer__label').allTextContents()).includes('타입 & 상성'));
+
+  // 8c. 2026-09-12 v2.66.0 도구는 각자 주소를 가진다 — 버튼을 누르는 일이 곧 화면 이동이라
+  // 뒤로가기로 랭킹에 돌아오고, 링크를 보내면 상대도 같은 도구를 본다.
+  // 개체값 순위는 리그에 딸린 정보라 왼쪽, 덱 짜기는 리그와 상관없는 다른 일이라 오른쪽
+  await page.goto(BASE + '?mock=1#/pvp', { waitUntil: 'domcontentloaded' });
+  await settle();
+  const pvpTools = await page.locator('.controls__row .tool-btn').allTextContents();
+  ok('개체값 순위가 앞, 덱 짜기가 뒤', pvpTools.join('|') === '🧬 개체값 순위|🃏 덱 짜기', pvpTools.join('|'));
+  // 2026-09-12 v2.67.0 오른쪽 덩이(.controls__rest)가 줄의 마지막이고 margin-left:auto 로 밀린다.
+  // 좁은 화면(이 검사는 390px)에서는 줄이 접혀 자리가 달라지므로 기하가 아니라 구조로 확인한다
+  ok('도구는 줄의 오른쪽 덩이에 있다', await page.evaluate(() => {
+    const row = document.querySelector('.controls__row--tools');
+    const rest = row && row.querySelector(':scope > .controls__rest');
+    if (!rest || row.lastElementChild !== rest) return false;
+    // margin-left:auto 는 computed 로 읽으면 px 로 풀리므로, 실제로 오른쪽 끝에 붙었는지로 본다
+    return Math.abs(rest.getBoundingClientRect().right - row.getBoundingClientRect().right) < 2;
+  }));
+  await page.click('.tool-btn:has-text("개체값 순위")');
+  await settle();
+  ok('주소가 바뀐다', (await page.evaluate(() => location.hash)) === '#/pvp/ivrank', await page.evaluate(() => location.hash));
+  ok('개체값 순위 화면이 열린다', (await page.locator('.ivrank__pick').count()) === 1);
+  ok('눌린 표시', (await page.locator('.tool-btn[aria-pressed="true"]').textContent()) === '🧬 개체값 순위');
+  await page.goBack();
+  await settle();
+  ok('뒤로가기로 랭킹 복귀', (await page.evaluate(() => location.hash)) === '#/pvp' && (await page.locator('.ivrank__pick').count()) === 0);
+  // 솔플 계산기도 같은 규칙 — 계산기 화면에는 아무 일도 안 하던 [일반|전체] 세그먼트를 그리지 않는다
+  await page.goto(BASE + '?mock=1#/pve/solo', { waitUntil: 'domcontentloaded' });
+  await settle();
+  ok('솔플 계산기 화면 이름', (await page.locator('#page-head h2').textContent()) === '솔플 계산기');
+  ok('일반·전체 세그먼트는 없다', !(await page.locator('#controls .seg button').allTextContents()).includes('일반'));
+
+  // 8d. 2026-09-12 v2.64.0 이동 목록이 두 덩이로 읽히는가 (주요 기능 · 부가 기능)
+  {
+    // 2026-09-12 v2.65.0 덩이 이름을 '주요/부가' 에서 **하려는 일** 로 바꿨다
+    const secs = await page.locator('.nav-menu__sec').allTextContents();
+    ok('메뉴가 세 덩이', secs.join('|') === '지금 뭐 하지|뭘 데려갈까|뭘 키울까', secs.join('|'));
+    const groups = await page.evaluate(() => {
+      const out = {};
+      let key = null;
+      for (const n of document.querySelector('.nav-menu').children) {
+        if (n.classList.contains('nav-menu__sec')) { key = n.textContent; out[key] = []; continue; }
+        if (key) out[key].push(n.querySelector('.drawer__label')?.textContent || '');
+      }
+      return out;
+    });
+    ok('지금 뭐 하지 = 시간에 매인 것', groups['지금 뭐 하지'].join('|') === '이벤트 일정|레이드 보스|알 부화', groups['지금 뭐 하지'].join('|'));
+    ok('뭘 데려갈까 = 고르려고 보는 것', groups['뭘 데려갈까'].join('|') === '포켓몬 도감|D-MAX|레이드 · PvE|배틀 · PvP', groups['뭘 데려갈까'].join('|'));
+    // v2.66.0 덩이 이름을 '뭘 키울까' 로 바꿨다 — 같은 이름의 화면(내 포켓몬)이 그 안에 생겨
+    // 덩이 제목과 항목이 똑같은 글자가 됐다. 내 포켓몬은 육성 플래너 아래 한 칸 들여쓴 자식이다
+    ok('뭘 키울까 = 내 박스', groups['뭘 키울까'].join('|') === '육성 플래너|내 포켓몬|검색식 만들기', groups['뭘 키울까'].join('|'));
+    ok('내 포켓몬은 육성 플래너의 자식', (await page.locator('.nav-menu .drawer__item--sub').allTextContents()).join('|').includes('내 포켓몬'),
+      (await page.locator('.nav-menu .drawer__item--sub').allTextContents()).join('|'));
+  }
+
+  // 8e. 배틀 PvP 의 컨트롤 — 2026-09-12 v2.67.0 리그 세그먼트를 도구 줄 안으로 넣어 줄 하나를 줄였다.
+  // 한 줄의 문법: [지금 보는 도구] [리그] ……… [다른 도구]. 그 아래가 타입 필터다
+  {
+    await page.goto(BASE + '?mock=1#/pvp', { waitUntil: 'domcontentloaded' });
+    await settle();
+    const order = await page.evaluate(() => [...document.querySelectorAll('#controls > *')].map((n) => {
+      const parts = [];
+      if (n.querySelector(':scope > .seg')) parts.push('리그');
+      if (n.querySelector('.tool-btn')) parts.push('도구');
+      return parts.length ? parts.join('+') : '타입';
+    }));
+    ok('컨트롤이 [리그+도구] → 타입 두 줄', order.join(' → ') === '리그+도구 → 타입', order.join(' → '));
+    // 리그가 도구 줄 **안**에 있어야 한다 (따로 줄을 쓰지 않는다)
+    ok('리그 세그먼트가 도구 줄 안에', (await page.locator('.controls__row--tools > .seg').count()) === 1);
+  }
+
+  // 8f. ★ 즐겨찾기는 헤더 버튼을 눌러 팝업으로 연다 (화면 맨 위 카드였던 것)
+  {
+    ok('본문 맨 위 즐겨찾기 카드가 없다', (await page.locator('#fav-digest').count()) === 0);
+    await page.click('#fav-toggle');
+    await settle();
+    ok('★ 를 누르면 팝업', (await page.locator('.fav-pop').count()) === 1);
+    ok('팝업이 마릿수를 말한다', /\d+마리/.test(await page.locator('.fav-pop h2').textContent()),
+      await page.locator('.fav-pop h2').textContent());
+    ok('갈래로 보기 링크', (await page.locator('.fav-pop .boss__foot button:has-text("갈래로 보기")').count()) === 1);
+    await page.keyboard.press('Escape');
+    await settle();
+    ok('Esc 로 닫힌다', (await page.locator('.fav-pop').count()) === 0);
+  }
+
+  // 8g. 2026-09-12 v2.64.0 화면마다 제목과 부제가 있는가 — 제목만 있으면 "여기가 어디인지" 는
+  //     알아도 "여기서 무엇을 하는지" 는 모른다. 좁은 화면에서도 보인다(전에는 CSS 가 감췄다)
+  for (const hash of ['#/dex', '#/dmax', '#/pve', '#/pvp', '#/schedule', '#/raids', '#/eggs',
+    '#/finder', '#/ivrank', '#/favs', '#/release', '#/changes', '#/privacy', '#/terms']) {
+    await page.goto(BASE + '?mock=1' + hash, { waitUntil: 'domcontentloaded' });
+    await settle();
+    const head = await page.evaluate(() => {
+      const box = document.getElementById('page-head');
+      const desc = document.querySelector('.page-head__desc');
+      return {
+        title: box && !box.hidden ? (box.querySelector('h2')?.textContent || '').trim() : '',
+        desc: desc && !desc.hidden && desc.offsetHeight > 0 ? desc.textContent.trim() : '',
+      };
+    });
+    ok(`${hash} 제목·부제`, head.title.length > 0 && head.desc.length > 0, JSON.stringify(head));
+    // 2026-09-12 v2.65.0 머리와 본문 사이에 선이 있는가 — 여백만으로는 위계가 서지 않았다.
+    // v2.66.0 선은 **필터 줄 아래**로 내려간다: 제목 · 부제 · 필터가 한 덩이(화면 머리)고 그 아래가 결과다.
+    // 필터가 없는 화면만 머리 자체에 긋는다. 어느 쪽이든 "한 화면에 선은 정확히 하나" 여야 한다
+    const ruled = await page.evaluate(() => {
+      const found = [];
+      const head = document.getElementById('page-head');
+      if (head && !head.hidden && getComputedStyle(head).backgroundImage !== 'none') found.push('head');
+      const controls = document.querySelector('.layout:not([hidden]) #controls');
+      if (controls && controls.childElementCount && parseFloat(getComputedStyle(controls).borderBottomWidth) > 0) found.push('controls');
+      for (const row of document.querySelectorAll('#page:not([hidden]) .page__filters')) {
+        if (parseFloat(getComputedStyle(row).borderBottomWidth) > 0) found.push('filters');
+      }
+      return found.join('+');
+    });
+    ok(`${hash} 머리·본문 구분선 하나`, ruled.split('+').filter(Boolean).length === 1, ruled || '없음');
+  }
 
   // 9. 길이 단위가 rem 인가 (2026-09-10 v2.52.0)
   // html 62.5% 기준이라 1rem = 10px 이고, 기본 설정에서는 지금까지와 같은 크기로 그려진다.

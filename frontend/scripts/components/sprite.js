@@ -2,7 +2,9 @@
 // components/sprite.js — 포켓몬 스프라이트 이미지 조각
 //
 // 제공하는 전역
-//   spriteSrc(spriteId)   스프라이트 이미지 경로(또는 data URL). 없으면 null
+//   spriteSrc(spriteId)     스프라이트 이미지 경로(또는 data URL). 없으면 null
+//   spriteAnimSrc(spriteId) 움직이는 그림 경로. 없으면 null (상세 화면 전용 — 목록에는 쓰지 않는다)
+//   spriteAnimate(img, id)  정지 그림 <img> 를 다 받은 뒤 움직이는 그림으로 갈아 끼운다
 //   sprite(spriteId)      화면에 넣을 이미지 요소. 이미지가 없으면 몬스터볼 자리표시. 받는 동안은 스켈레톤(.loading), 실패 시 2회 재시도
 //   waitForSprites(maxMs) 문서의 받는 중인 스프라이트가 끝날 때까지 기다린다 (첫 화면 가림막용)
 //   spritePlaceholder()   몬스터볼 자리표시 요소 (이미지가 없거나 받기 실패했을 때)
@@ -30,6 +32,35 @@ function spriteSrc(spriteId) {
   if (!_spriteIds) _spriteIds = new Set(SPRITE_IDS);
   // 목록은 숫자로 담겨 있어 문자열 id가 들어와도 맞도록 Number로 맞춘다
   return _spriteIds.has(Number(spriteId)) ? `sprites/${spriteId}.png` : null;
+}
+
+// ── 2026-09-12 v2.67.0 움직이는 그림 (상세 화면 전용) ────────────────────────
+// GIF 한 장이 정지 png 의 13배(평균 54KB)라 목록에는 쓰지 않는다 — 도감 첫 화면은
+// 한 번에 100장을 그리므로 화면 하나가 5MB 를 넘는다. 상세는 한 번에 한 마리다.
+// 1,172종 중 949종에만 있다(6세대 이후·폼 변형 상당수 없음) — 없으면 null 을 돌려주고
+// 부르는 쪽이 지금까지처럼 정지 png 를 쓴다
+let _spriteAnimIds = null;
+function spriteAnimSrc(spriteId) {
+  if (typeof SPRITE_ANIM_IDS === 'undefined') return null;
+  if (!_spriteAnimIds) _spriteAnimIds = new Set(SPRITE_ANIM_IDS);
+  return _spriteAnimIds.has(Number(spriteId)) ? `sprites-anim/${spriteId}.gif` : null;
+}
+
+// 정지 그림으로 만든 <img> 를 움직이는 그림으로 바꿔 끼운다.
+// 정지본을 먼저 띄운 뒤 GIF 를 받아 갈아 끼우는 이유 — GIF 를 바로 src 에 넣으면
+// 받는 동안(54KB) 자리가 비어 상세 화면이 빈 칸으로 열린다. 받기에 실패하면 정지본 그대로 둔다
+function spriteAnimate(image, spriteId) {
+  // 움직임을 줄여 달라고 한 사람에게는 갈아 끼우지 않는다 — GIF 는 재생을 멈출 방법이 없다
+  if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return image;
+  const animUrl = spriteAnimSrc(spriteId);
+  if (!animUrl || !(image instanceof HTMLImageElement)) return image;
+  const loader = new Image();
+  loader.onload = () => {
+    image.src = animUrl;
+    image.classList.add('sprite--anim');
+  };
+  loader.src = animUrl;
+  return image;
 }
 
 // 스프라이트 요소를 만든다.

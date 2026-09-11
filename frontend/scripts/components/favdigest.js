@@ -12,13 +12,14 @@
 // 기존 시스템(스프라이트=폼 단위)을 그대로 재사용한다.
 //
 // 제공하는 전역
-//   renderFavDigest() : #fav-digest 아코디언(<details>)의 제목·본문을 다시 그린다
-//                        (로그인 상태가 바뀔 때, 즐겨찾기를 토글할 때 auth.js에서 호출)
-//   2026-09-07 v2.14.0 (QA-52) 카드 → 접었다 펼 수 있는 아코디언. 펼침 여부는 localStorage(pogo_fav_acc)에 기억
+//   renderFavDigest() : 헤더 ★ 버튼을 상태에 맞춘다 (로그인·즐겨찾기가 바뀔 때 auth.js 가 호출)
+//   openFavDigest()   : 즐겨찾기 목록을 팝업으로 연다
+//   2026-09-12 v2.64.0 화면 맨 위 카드 → 헤더 버튼 + 팝업 (자리를 먹지 않게)
 //
 // 의존하는 전역
 //   AUTH · authEnabled() (auth.js) · dexOf() · openDetailByDex() (detail.js) · rankDeltaBadge() (changes.js)
 //   el() (dom.js) · sprite() (components/sprite.js) · DEX_DATA (data.js)
+//   openModal · closeModal (components/modal.js) · navigateHash · routeHash (router.js) · track (track.js)
 //   PVP_DATA · PVE_DATA · PVE_EASY · DMAX_TIER · SHEET_DATA · VALUE_DATA (data.js, 뱃지 계산용)
 
 // 한 번에 보여줄 즐겨찾기 개수. 그 이상은 "더보기"로 늘린다 (state는 모듈 스코프에 둔다 —
@@ -50,49 +51,63 @@ function favDigestDeltaByDex() {
 }
 
 // 2026-09-07 v2.14.0 (QA-52) 아코디언 펼침 여부 — 기본은 펼침, 접으면 다음에도 접힌 채로 (localStorage)
-const FAV_ACC_KEY = 'pogo_fav_acc';
-function favDigestOpen() {
-  try { return localStorage.getItem(FAV_ACC_KEY) !== '0'; } catch { return true; }
-}
-function saveFavDigestOpen(isOpen) {
-  try { localStorage.setItem(FAV_ACC_KEY, isOpen ? '1' : '0'); } catch {}
-}
 
-function renderFavDigest() {
-  const box = document.getElementById('fav-digest');
-  const titleEl = document.getElementById('fav-digest-title');
-  const bodyEl = document.getElementById('fav-digest-body');
-  if (!box || !titleEl || !bodyEl) return;
-  box.hidden = true;
-  titleEl.replaceChildren();
-  bodyEl.replaceChildren();
-  if (!authEnabled() || AUTH.status !== 'ok' || !AUTH.favs.size) return;
+// 2026-09-12 v2.64.0 화면 맨 위 카드 → 헤더 ★ 버튼 + 팝업.
+// 카드는 접어 둬도 한 뼘을 먹었고, 배틀 PvP 처럼 컨트롤이 많은 화면에서는 리그 세그먼트가
+// 화면 밖으로 밀렸다. 즐겨찾기는 **어느 화면에서나** 보고 싶은 것이라 화면 안 자리가 아니라
+// 헤더에 두는 것이 맞다 — 검색(🔍)과 같은 문법이다.
+//   버튼은 로그인 + 즐겨찾기가 하나라도 있을 때만 보인다 (빈 팝업을 여는 버튼은 두지 않는다)
 
+// 즐겨찾기 목록 한 벌 — 이름 가나다순 + 최근 움직인 종의 ▲▼ 뱃지
+function favDigestRows() {
   const deltaByDex = favDigestDeltaByDex();
-  const rows = [...AUTH.favs]
+  return [...AUTH.favs]
     .map((dex) => ({ dex, name: DEX_DATA.names?.[dex] ?? String(dex), badge: deltaByDex.has(dex) ? rankDeltaBadge(deltaByDex.get(dex)) : '' }))
     .sort((a, b) => a.name.localeCompare(b.name, 'ko'));
-  const movedCount = rows.filter((row) => row.badge).length;
+}
 
-  box.hidden = false;
-  // 2026-09-07 v2.14.0 (QA-52) <details> 아코디언 — 제목 줄(summary)을 누르면 접히고 펼쳐진다. 펼침 여부는 기억.
-  // 전용 페이지(#/favs) 링크는 summary 안에 두되 클릭이 접기/펼치기로 번지지 않게 막는다
-  if (!box.dataset.accReady) {
-    box.open = favDigestOpen();
-    box.addEventListener('toggle', () => saveFavDigestOpen(box.open));
-    box.dataset.accReady = '1';
-  }
-  titleEl.append(
-    el('span', {}, `★ 내 즐겨찾기 (${rows.length})`),
-    el('span', { class: 'schedule__today' }, movedCount ? `최근 순위가 움직인 포켓몬 ${movedCount}마리 ▲▼` : '누르면 접었다 펼쳐요'));
+// 팝업 본문. 더보기를 누르면 이 함수가 다시 그린다
+function favDigestBody() {
+  const rows = favDigestRows();
+  const movedCount = rows.filter((row) => row.badge).length;
   const shown = rows.slice(0, favDigestShowCount);
-  bodyEl.append(
-    el('div', { class: 'boss__recs recs-wrap' }, ...shown.map(({ dex, name, badge }) =>
-      el('button', { class: 'boss__rec', onclick: () => openDetailByDex(dex, false) }, sprite(dex), el('span', {}, name), badge))),
-    // 2026-09-07 v2.15.1 "PvE · PvP 나눠 보기" 링크 제거 — 바로 아래 탭 줄의 ★ 와 같은 화면(#/favs). 카드는 요약과 더보기만
+  const body = el('div', { class: 'fav-pop' },
+    el('div', { class: 'fav-pop__head' },
+      el('h2', { class: 'detail__name' }, `★ 내 즐겨찾기 ${rows.length}마리`),
+      movedCount ? el('span', { class: 'meta' }, `최근 순위가 움직인 포켓몬 ${movedCount}마리 ▲▼`) : ''),
+    el('div', { class: 'boss__recs recs-wrap fav-pop__list' }, ...shown.map(({ dex, name, badge }) =>
+      // 상세를 열기 전에 팝업을 닫는다 — 팝업 위에 팝업이 쌓이면 뒤로가기가 두 번 필요해진다
+      el('button', { class: 'boss__rec', onclick: () => { closeModal({ silent: true }); openDetailByDex(dex, false); } },
+        sprite(dex), el('span', {}, name), badge))),
     el('div', { class: 'boss__foot' },
       rows.length > shown.length
-        ? el('button', { class: 'boss__more', onclick: () => { favDigestShowCount += 12; renderFavDigest(); } }, `더보기 +${Math.min(12, rows.length - shown.length)} (${shown.length}/${rows.length})`)
+        ? el('button', { class: 'boss__more', onclick: () => {
+            favDigestShowCount += 12;
+            document.querySelector('.fav-pop')?.replaceWith(favDigestBody());
+          } }, `더보기 +${Math.min(12, rows.length - shown.length)} (${shown.length}/${rows.length})`)
         : el('span', { class: 'meta' }, `전체 ${rows.length}마리 표시됨`),
-      el('span', { class: 'meta' }, 'PvE · PvP 갈래는 탭 줄 ★ 에서')));
+      el('button', { class: 'boss__more', onclick: () => { closeModal({ silent: true }); navigateHash(routeHash('favs')); } },
+        'PvE · PvP 갈래로 보기 ▸')));
+  return body;
+}
+
+function openFavDigest() {
+  if (!authEnabled() || AUTH.status !== 'ok' || !AUTH.favs.size) return;
+  favDigestShowCount = 12;   // 팝업을 열 때마다 처음부터 — 지난번에 펼친 만큼을 기억할 값이 아니다
+  track('fav_digest_open', { n: AUTH.favs.size });
+  openModal(favDigestBody());
+}
+
+// 헤더 ★ 버튼을 상태에 맞춘다 (로그인·즐겨찾기가 바뀔 때 auth.js 가 부른다)
+function renderFavDigest() {
+  const button = document.getElementById('fav-toggle');
+  if (!button) return;
+  const show = authEnabled() && AUTH.status === 'ok' && AUTH.favs.size > 0;
+  button.hidden = !show;
+  if (!show) return;
+  button.setAttribute('aria-label', `내 즐겨찾기 ${AUTH.favs.size}마리`);
+  if (!button.dataset.ready) {
+    button.addEventListener('click', openFavDigest);
+    button.dataset.ready = '1';
+  }
 }

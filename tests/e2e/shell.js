@@ -48,7 +48,7 @@ const ok = (n, c, x = '') => { console.log((c ? 'PASS' : 'FAIL') + ' ' + n + ' '
     //   `overflow-x: auto` 만 적으면 CSS 규칙상 세로도 auto 가 되어 스크롤 컨테이너가 된다.
     //   거기에 1px 이라도 세로 넘침이 있으면 커서가 그 위에 있는 동안 휠이 페이지로 가지 않는다
     //   (v2.26.0 탭 줄에서 실제로 났던 버그 — PC 에서 탭 줄이 화면 한가운데 와 더 잘 걸렸다).
-    const screens = ['', '#/dmax', '#/pve', '#/pvp', '#/dex', '#/types', '#/favs',
+    const screens = ['', '#/dmax', '#/pve', '#/pvp', '#/dex', '#/favs',
       '#/planner', '#/planner/collection', '#/schedule', '#/raids', '#/eggs', '#/release', '#/privacy', '#/terms'];
     const stuck = [];
     const traps = [];
@@ -100,7 +100,7 @@ const ok = (n, c, x = '') => { console.log((c ? 'PASS' : 'FAIL') + ' ' + n + ' '
     // ── 잠금이 남더라도 다음 화면 이동에서 저절로 풀리는가 (자가 복구)
     await go('#/dex');
     await page.evaluate(() => { document.body.style.overflow = 'hidden'; });
-    await page.evaluate(() => navigateHash('#/types'));
+    await page.evaluate(() => navigateHash('#/eggs'));
     await page.waitForTimeout(400);
     ok(`${label} 잠금이 남아도 이동하면 풀린다`, (await page.evaluate(() => document.body.style.overflow)) === '');
 

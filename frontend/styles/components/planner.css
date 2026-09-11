@@ -9,7 +9,6 @@
 .mode-badge:hover { filter: brightness(.96); }
 
 /* 플래너 모드에서는 도감 전용 카드(즐겨찾기 요약)를 감춘다 */
-body[data-mode="plan"] #fav-digest { display: none; }
 
 /* 플래너 홈 카드 */
 .plan__card { margin: 1.2rem 0 0; padding: 1.4rem 1.6rem; border: 1px solid var(--line); border-radius: 1.2rem; background: var(--surface); }

@@ -33,9 +33,6 @@ footer p { margin: 0; }
 .schedule__body { padding: 0 1.2rem 1.4rem; }
 
 /* 2026-09-05 로그인 전용 즐겨찾기 카드 — 2026-09-07 v2.14.0 (QA-52) .schedule 아코디언과 같은 <details> 로 통일 (접기/펼치기, 펼침 기억) */
-.fav-digest { margin: 0 0 1.2rem; }
-.fav-digest[hidden] { display: none; }
-.fav-digest .boss__foot { margin-top: 0.6rem; }
 .schedule__cal { display: grid; grid-template-columns: repeat(7, 1fr); gap: 0.3rem; }
 .cal__head { text-align: center; font-size: 1.1rem; color: var(--muted); padding: 0.4rem 0; }
 .cal__day { min-height: 4rem; padding: 0.3rem 0.4rem; border-radius: 0.8rem; background: var(--bg); text-align: left; display: flex; flex-direction: column; gap: 0.2rem; }
