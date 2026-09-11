@@ -110,7 +110,7 @@ async function initAuth() {
         await loadScript(`https://www.gstatic.com/firebasejs/${FIREBASE_VER}/firebase-${moduleName}-compat.js`);
       }
     } catch {
-      renderAccount('SDK 로드 실패 — 네트워크를 확인하세요');
+      renderAccount('SDK 를 받지 못했어요 — 네트워크를 확인해 주세요');
       return;
     }
   }
@@ -134,7 +134,7 @@ async function initAuth() {
         if (tried && !result?.user) {
           // 곧바로 그리면 지워진다 — onAuthStateChanged(null) 이 바로 뒤따라와 계정 영역을 다시 그린다.
           // 그래서 "다음에 그릴 때 함께 띄울 말" 로 맡겨 둔다 (renderAccount 가 한 번만 쓰고 비운다)
-          AUTH.redirectMsg = '로그인이 끝까지 가지 못했어요 — 이 브라우저가 사이트 간 저장소를 막고 있습니다. [Google로 로그인] 을 한 번 더 눌러 팝업으로 시도해 주세요.';
+          AUTH.redirectMsg = '로그인이 끝까지 가지 못했어요 — 이 브라우저가 사이트 간 저장소를 막고 있어요. [Google로 로그인] 을 한 번 더 눌러 팝업으로 시도해 주세요.';
           renderAccount();
         }
       })
@@ -237,18 +237,20 @@ function openLoginInvite(screenName) {
     signIn();
   } }, '🔐 Google로 로그인');
   const steps = [
-    ['1', 'Google 계정으로 로그인', '이메일·이름·프로필 사진만 받습니다.'],
-    ['2', '관리자 승인 대기', '승인은 바로 되지 않을 수 있어요. 관리자에게 알려 주세요.'],
-    ['3', '승인되면 열립니다', '내 개체 저장·순위표·일정이 계정에 묶여 어느 기기에서든 같습니다.'],
+    ['1', 'Google 계정으로 로그인', '이메일·이름·프로필 사진만 받아요.'],
+    ['2', '관리자 승인 기다리기', '바로 승인되지 않을 수 있어요. 관리자에게 알려 주세요.'],
+    ['3', '승인되면 열려요', '즐겨찾기·내 개체·일정이 계정에 묶여 어느 기기에서든 같아요.'],
   ];
   openModal(el('div', { class: 'consent__modal login-invite' },
     el('div', { class: 'login-invite__head' },
       el('span', { class: 'login-invite__ico', 'aria-hidden': 'true' }, pending ? '⏳' : '🔒'),
-      el('h2', { class: 'detail__name' }, pending ? '승인 대기 중이에요' : '로그인이 필요한 화면이에요')),
-    // 조사는 받침을 보고 고른다 (components/name.js koParticle) — "육성 플래너은(는)" 같은 말을 쓰지 않는다
+      el('h2', { class: 'detail__name' }, pending ? '승인을 기다리는 중이에요' : '로그인하면 열려요')),
+    // 2026-09-11 v2.60.0 화면 이름 뒤에 조사를 붙이지 않는다 — koParticle 은 한글 받침만 읽어서
+    // "레이드 · PvE" 처럼 라틴 문자로 끝나면 늘 '은' 을 골랐다 ("레이드 · PvE은 …").
+    // 'PvE' 는 "피브이이" 라 '는' 이 맞는데, 라틴 독음 받침표를 들이는 대신 조사가 필요 없는 문장으로 적는다
     el('p', { class: 'plan__desc' }, pending
-      ? `${screenName ? screenName + koParticle(screenName, 'eun') + ' ' : ''}관리자가 승인하면 바로 열립니다. 지금은 기다리는 중이에요.`
-      : `${screenName ? screenName + koParticle(screenName, 'eun') + ' ' : '이 화면은 '}계정에 묶인 정보를 쓰기 때문에 로그인이 필요합니다. 도감 · 타입 & 상성 · D-MAX 는 로그인 없이도 그대로 쓸 수 있어요.`),
+      ? `${screenName ? screenName + ' ' : '이 '}화면은 관리자가 승인하면 바로 열려요.`
+      : `${screenName ? screenName + ' ' : '이 '}화면은 승인된 분만 볼 수 있어요.`),
     // 승인제라는 걸 누르기 **전에** 말한다 — 로그인하고 나서 "왜 아직도 안 되지" 를 겪지 않게
     pending ? '' : el('ol', { class: 'login-invite__steps' }, ...steps.map(([no, title, desc]) =>
       el('li', {},
@@ -256,9 +258,9 @@ function openLoginInvite(screenName) {
         el('div', {}, el('b', {}, title), el('span', {}, desc))))),
     pending ? '' : goButton,
     el('button', { class: 'drawer__item login-invite__later', onclick: () => closeModal() }, pending ? '확인' : '나중에'),
-    footNote('승인된 친구만 사용할 수 있어요. 첫 로그인 때 ',
+    footNote('첫 로그인 때 ',
       el('a', { href: '#/terms', onclick: () => closeModal({ silent: true }) }, '이용약관'), '·',
-      el('a', { href: '#/privacy', onclick: () => closeModal({ silent: true }) }, '개인정보처리방침'), ' 동의를 받습니다.')));
+      el('a', { href: '#/privacy', onclick: () => closeModal({ silent: true }) }, '개인정보처리방침'), ' 동의를 받아요.')));
 }
 
 async function signIn() {
@@ -352,7 +354,7 @@ async function deleteAccount() {
       await user.delete();
     }
     // user.delete() 가 onAuthStateChanged(null) 을 부르므로 화면은 거기서 비로그인으로 돌아간다
-    setTimeout(() => renderAccount('계정과 저장 데이터를 지웠어요. 다시 로그인하면 새 계정(승인 대기)으로 시작합니다'), 0);
+    setTimeout(() => renderAccount('계정과 저장 데이터를 지웠어요. 다시 로그인하면 새 계정(승인 대기)으로 시작해요'), 0);
   } catch (error) {
     renderAccount('계정 삭제 실패: ' + (error.code || error.message) + ' — 문의처로 알려 주시면 지워 드릴게요');
   }
@@ -368,7 +370,7 @@ function confirmDeleteAccount() {
   const go = el('button', { class: 'drawer__item account__danger', onclick: () => { closeModal({ silent: true }); deleteAccount(); } }, '🗑 지우기 (되돌릴 수 없음)');
   openModal(el('div', { class: 'consent__modal' },
     el('h2', { class: 'detail__name' }, '계정을 삭제할까요?'),
-    el('p', { class: 'plan__desc' }, '아래가 즉시 지워지고 복구되지 않습니다. 브라우저에 남은 설정값(마지막 탭 등)은 개인정보가 아니라 그대로 둡니다.'),
+    el('p', { class: 'plan__desc' }, '아래가 바로 지워지고 되돌릴 수 없어요. 브라우저에 남은 설정값(마지막 탭 등)은 개인정보가 아니라 그대로 둬요.'),
     el('ul', { class: 'priv__list' }, ...items.map((text) => el('li', {}, text))),
     el('div', { class: 'account__actions' }, go,
       el('button', { class: 'drawer__item', onclick: () => closeModal() }, '취소'))));
@@ -514,7 +516,7 @@ function renderAccount(message) {
   if (!AUTH.user) {
     accountBox.append(
       el('button', { class: 'drawer__item account__login', onclick: signIn }, '🔐 Google로 로그인'),
-      el('p', { class: 'account__sub' }, '승인된 친구만 사용할 수 있어요. 로그인하면 즐겨찾기 ★와 내 포켓몬을 내 계정에 저장합니다. 첫 로그인 때 ',
+      el('p', { class: 'account__sub' }, '로그인하면 즐겨찾기 ★와 내 포켓몬이 계정에 저장돼요. 승인된 분만 쓸 수 있고, 첫 로그인 때 ',
         el('a', { href: '#/terms' }, '이용약관'), '·', el('a', { href: '#/privacy' }, '개인정보처리방침'), ' 동의를 받아요'),
       note);
     return;

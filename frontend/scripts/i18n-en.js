@@ -96,7 +96,7 @@ const I18N_EN = {
   '무엇을 해볼까요?': 'What would you like to do?',
   '찾고, 비교하고, 키우는 즐거움. 필요한 기능으로 바로 시작해요.':
     'Find, compare, and train. Jump straight to what you need.',
-  '도감과 상성에서 포켓몬을 알아보고, 랭킹에서 추천 개체를 확인하세요. 내 포켓몬과 플래너에서 육성 현황을 관리할 수 있습니다.':
+  '뭘 키울지 여기서 정해요. 도감과 상성으로 포켓몬을 알아보고, 랭킹에서 추천 개체를 고른 뒤, 육성 플래너에 내 개체를 기록하면 돼요.':
     'Look Pokémon up in the Pokédex and matchup pages, check the rankings for picks, then track what you are raising in My Pokémon and the Planner.',
   '능력치부터 기술·진화까지': 'Stats, moves and evolutions',
   '약점과 추천 타입을 찾아요': 'Find weaknesses and the types to bring',
@@ -110,7 +110,7 @@ const I18N_EN = {
   '거리별로 뭐가 나오나': 'What hatches from each distance',
   '기간 한눈에': 'All the dates at a glance',
   '서비스 기능': 'Features',
-  '포켓몬고 응애 친구들을 위해 만들어진 서비스입니다.': 'Made for Pokémon GO beginners.',
+  '포켓몬고 응애 친구들을 위해 만들어진 서비스예요.': 'Made for Pokémon GO beginners.',
   '문의·건의:': 'Contact:',
 
   // ── 목록 · 공통 ───────────────────────────────────────────────────────────
@@ -231,7 +231,7 @@ const I18N_EN = {
   '버프 없음': 'No buff',
   '메가부스트 +#%': 'Mega boost +#%',
   '풀버프 +#%': 'Full buff +#%',
-  '잡고 싶은 보스를 검색해서 골라주세요. 예: 메가거북왕을 고르면 풀·전기 정예 덱이 나옵니다.':
+  '잡고 싶은 보스를 검색해서 골라주세요. 예: 메가거북왕을 고르면 풀·전기 정예 덱이 나와요.':
     'Search for the boss you want to beat. Picking Mega Blastoise, for example, gives you a Grass/Electric elite squad.',
 
   // ── 상세 팝업 ─────────────────────────────────────────────────────────────
@@ -245,12 +245,12 @@ const I18N_EN = {
   '맥스어택': 'Max Attack',
   '배울 수 있는 기술': 'Learnable moves',
   '진화': 'Evolution',
-  '진화가 없는 포켓몬입니다.': 'This Pokémon does not evolve.',
-  '진화형을 누르면 그 포켓몬의 정보를 볼 수 있습니다': 'Tap an evolution to see that Pokémon',
-  '⚡ 메가 진화 가능 — 누르면 메가 진화 스탯을 볼 수 있습니다': '⚡ Can Mega Evolve — tap to see its Mega stats',
+  '진화가 없는 포켓몬이에요.': 'This Pokémon does not evolve.',
+  '진화형을 누르면 그 포켓몬의 정보를 볼 수 있어요': 'Tap an evolution to see that Pokémon',
+  '⚡ 메가 진화 가능 — 누르면 메가 진화 스탯을 볼 수 있어요': '⚡ Can Mega Evolve — tap to see its Mega stats',
   '⚡ 메가X vs 메가Y 비교': '⚡ Mega X vs Mega Y',
-  '누르면 그 포켓몬의 상세 정보가 열립니다.': 'Tap to open that Pokémon.',
-  '※ 일부는 지금 배울 수 없는 레거시 기술입니다': '※ Some are legacy moves you cannot learn right now',
+  '누르면 그 포켓몬의 상세 정보가 열려요.': 'Tap to open that Pokémon.',
+  '※ 일부는 지금 배울 수 없는 레거시 기술이에요': '※ Some are legacy moves you cannot learn right now',
   '* 레거시 기술 — 대단한 기술머신 또는 이벤트로만 습득':
     '* Legacy move — only from an Elite TM or an event',
   '타입 상성': 'Type matchups',
@@ -258,26 +258,26 @@ const I18N_EN = {
   '내성': 'Resists',
   '이중약점': 'Double weak',
   '이중내성': 'Double resist',
-  '효과가 굉장한 타입이 없습니다': 'Nothing is super effective',
+  '효과가 굉장한 타입이 없어요': 'Nothing is super effective',
   '이중 = 두 타입 모두에 걸려 ×#(약점) / ×#(내성·무효) ·': 'Double = both types are hit, ×# (weak) / ×# (resist or immune) ·',
   '×# 이중': '×# double',
   '🧭 상성 검색에서 딜러까지 보기 ▸': '🧭 Open matchup search for attacker picks ▸',
   '🧮 내 개체 CP 계산기': '🧮 CP calculator for my Pokémon',
   '🌱 플래너 내 포켓몬에 이 개체 저장': '🌱 Save this one to Planner → My Pokémon',
   '➕ 내 개체로 저장': '➕ Save as mine',
-  '이중약점 = 두 타입 모두에 약해 ×2.56 · 이중내성 = 두 타입 모두 반감(×0.39). 본가의 무효 타입도 GO 에서는 같은 ×0.39 로 피해가 들어갑니다':
+  '이중약점 = 두 타입 모두에 약해 ×2.56 · 이중내성 = 두 타입 모두 반감(×0.39). 본가의 무효 타입도 GO 에서는 같은 ×0.39 로 피해가 들어가요':
     'Double weakness = both types are weak, ×2.56 · Double resistance = both types resist (×0.39). Immunities in the main series also land at ×0.39 in GO',
   '상대 타입을 #~#개 고르거나 포켓몬 이름을 검색하면 약점·이중약점과 추천 딜러가 나옵니다.':
     'Pick #–# defending types, or search a Pokémon, to see its weaknesses and the attackers to bring.',
   '타입 칩을 눌러 바꾸거나 위에서 포켓몬을 검색하세요': 'Tap a type chip to change it, or search a Pokémon above',
   '배율은 게임마스터 상성표 기준 (굉장 ×# · 별로 ×# · 무효 ×#). 상세 팝업의 타입 상성에서도 이 페이지로 올 수 있어요.':
     'Multipliers come from the Game Master type chart (super effective ×# · not very effective ×# · immune ×#). You can also reach this page from the type matchups in a Pokémon popup.',
-  '순위표는 그 속성 보스를 상대할 때의 DPS·TDO 기준입니다.': 'Rankings are DPS and TDO against a boss of that type.',
+  '순위표는 그 속성 보스를 상대할 때의 DPS·TDO 기준이에요.': 'Rankings are DPS and TDO against a boss of that type.',
   '순위표는 단일 속성 보스 기준이라 복합 타입 상대에서는 위 배율표와 함께 보세요 (이중약점 타입 기술이 최우선).':
     'The rankings assume a single-type boss, so read them alongside the multiplier table above for dual types (double-weakness moves come first).',
   '두 타입을 정확히 이 조합으로 가진 폼(메가·리전 폼 포함). 누르면 상세':
     'Forms whose types are exactly this pair (Mega and regional forms included). Tap for details',
-  '이 타입을 가진 폼 전부(복합 타입 포함). 두 번째 칩을 고르면 조합으로 좁혀집니다':
+  '이 타입을 가진 폼 전부(복합 타입 포함). 두 번째 칩을 고르면 조합으로 좁혀져요':
     'Every form with this type (dual types included). Pick a second chip to narrow it to a pair',
   '굉장 ': 'Super effective ',
   '별로 ': 'Not very effective ',
@@ -318,19 +318,19 @@ const I18N_EN = {
   '유사백': 'Near-hundo',
   '준수': 'Solid',
   '비교': 'Compare',
-  '내 개체의 레벨·개체값을 맞추면 지금 CP와 만렙까지의 여지가 보입니다':
+  '내 개체의 레벨·개체값을 맞추면 지금 CP와 만렙까지의 여지가 보여요':
     'Set the level and IVs of your Pokémon to see its current CP and how much room is left to max',
   '아직 저장한 개체가 없어요. 도감 상세 팝업의 "➕ 내 개체로 저장"을 누르거나 위 버튼으로 종을 검색해 추가하세요.':
     'You have not saved any Pokémon yet. Use "➕ Save as mine" in a Pokédex popup, or the button above to search for a species.',
   '아직 저장한 개체가 없어요. 🎒 내 포켓몬 탭의 ➕ 개체 추가, 또는 도감 상세 팝업의 ➕ 로 시작하세요.':
     'You have not saved any Pokémon yet. Start from ➕ Add a Pokémon in the 🎒 My Pokémon tab, or the ➕ in a Pokédex popup.',
-  '개체 = 실제로 가진 한 마리. 같은 종을 여러 마리 저장할 수 있고, [☐ 비교] 를 같은 종 두 마리에 누르면 CP·개체값·리그 도달을 나란히 봅니다. ★ 즐겨찾기(종 단위)와는 별개로 저장됩니다.':
+  '개체 = 실제로 가진 한 마리. 같은 종을 여러 마리 저장할 수 있고, [☐ 비교] 를 같은 종 두 마리에 누르면 CP·개체값·리그 도달을 나란히 봐요. ★ 즐겨찾기(종 단위)와는 별개로 저장돼요.':
     'An entry is one Pokémon you actually own. You can save several of the same species, and tapping [☐ Compare] on two of the same species puts their CP, IVs and league reach side by side. This is stored separately from ★ Favorites, which are per species.',
   '도감이 "뭐가 세나"에 답한다면, 플래너는 "내가 가진 이 개체를 지금 키워도 되나, 다음에 뭘 하나"에 답합니다. 위 탭의 🎒 내 포켓몬에서 개체를 레벨·개체값·기술 단위로 저장하면 같은 종끼리 비교할 수 있어요. 도감 상세 팝업의 ➕ 로도 바로 저장됩니다.':
     'Where the Pokédex answers "what is strong", the Planner answers "is this one of mine worth raising, and what do I do next". Save your Pokémon with level, IVs and moves in the 🎒 My Pokémon tab above, and you can compare them within a species. The ➕ in a Pokédex popup saves one directly too.',
   '플래너 모드는 내 개체(레벨·개체값·기술)를 계정에 저장하고 같은 종끼리 비교하는 화면입니다. 헤더의 배지를 누르면 도감 모드로 돌아갑니다. 저장은 승인된 로그인 사용자만, 계산은 누구나.':
     'Planner mode saves your own Pokémon (level, IVs, moves) to your account and compares them within a species. Tap the badge in the header to go back to Pokédex mode. Saving needs an approved account; the calculations work for anyone.',
-  '내 포켓몬은 개체 단위(레벨 · 개체값 · 기술 · 상태)로 계정(Firestore users/{uid}.mons)에 저장됩니다. CP 는 종족값 × 레벨 × 개체값으로 계산하고, 리그 도달은 CP 상한을 넘지 않는 가장 높은 레벨입니다.':
+  '내 포켓몬은 개체 단위(레벨 · 개체값 · 기술 · 상태)로 계정(Firestore users/{uid}.mons)에 저장돼요. CP 는 종족값 × 레벨 × 개체값으로 계산하고, 리그 도달은 CP 상한을 넘지 않는 가장 높은 레벨이에요.':
     'My Pokémon are stored per entry (level, IVs, moves, status) on your account (Firestore users/{uid}.mons). CP is base stats × level × IVs, and league reach is the highest level that stays under the CP cap.',
   '다음에 붙을 것: 육성 판단 카드(키울 가치·다음 행동) · 목표 자원 계산기 · 게임 검색식 생성기 · 보유 개체 기반 파티 · 내 목표 × 일정 연결':
     'Coming next: a raise-or-not card (is it worth it, what to do next) · a resource goal calculator · in-game search string builder · parties from what you own · your goals linked to the schedule',
@@ -385,7 +385,7 @@ const I18N_EN = {
   // ── 레이드 보스 · 알 부화 ─────────────────────────────────────────────────
   '보스를 누르면 약점과 추천 딜러가 열려요. 혼자 잡을 수 있는지는 ⚔️ 레이드 · PvE 의 🧮 솔플 계산기에서 확인하세요.':
     'Tap a boss to see its weaknesses and the attackers to bring. To check whether you can solo it, use the 🧮 solo calculator under ⚔️ Raids · PvE.',
-  '★ 를 누르면 즐겨찾기에 담깁니다. 이름을 누르면 종족값과 상성을 볼 수 있어요.':
+  '★ 를 누르면 즐겨찾기에 담겨요. 이름을 누르면 종족값과 상성을 볼 수 있어요.':
     'Tap ★ to add a favorite. Tap the name for base stats and matchups.',
   '지금 도는 레이드 로테이션. 출처 LeekDuck(ScrapedDuck) · #-#-# 수집 · 지역과 이벤트에 따라 실제와 다를 수 있습니다':
     'The raid rotation running now. Source LeekDuck (ScrapedDuck) · collected #-#-# · may differ by region and event',
@@ -416,34 +416,34 @@ const I18N_EN = {
   '· 트레이너 배틀 기준 · 체육관·레이드는 # → #': '· Trainer Battle values · Gyms and raids go # → #',
   '트레이너 배틀(PvP) 기준': 'Trainer Battle (PvP) values',
   '아래 위력 수치는': 'The power values below are',
-  '입니다. 같은 기술이라도 레이드·체육관용 위력은 따로 관리되고, 이번 조정은 대부분 PvP에만 적용됩니다.':
+  '이에요. 같은 기술이라도 레이드·체육관용 위력은 따로 관리되고, 이번 조정은 대부분 PvP에만 적용돼요.':
     '. Raid and Gym power is tracked separately for the same move, and most of this adjustment applies to PvP only.',
-  '위력은 그대로라 레이드 DPS는 거의 그대로지만, PvP에서는 기술을 쓰는 빈도가 달라집니다.':
+  '위력은 그대로라 레이드 DPS는 거의 그대로지만, PvP에서는 기술을 쓰는 빈도가 달라져요.':
     'Power is unchanged, so raid DPS barely moves, but how often you can use the move in PvP does.',
   '위력 수치는 트레이너 배틀 기준 · 자세한 내용은 메뉴 → ⚔️ 기술 변경':
     'Power values are for Trainer Battles · see Menu → ⚔️ Move changes for details',
-  '출처: 포켓몬 GO 공식 GO 배틀리그 시즌 공지. 위력·에너지 값은 공지 표기를 그대로 옮겼고, 한글 기술명은 게임 내 표기로 자동 변환했습니다.':
+  '출처: 포켓몬 GO 공식 GO 배틀리그 시즌 공지. 위력·에너지 값은 공지 표기를 그대로 옮겼고, 한글 기술명은 게임 내 표기로 자동 변환했어요.':
     'Source: the official Pokémon GO Battle League season notes. Power and energy values are copied as announced, and move names are mapped to their in-game spelling.',
   '#-#-# 적용됨': 'Applied #-#-#',
   '⚔️ #-#-# 기술 변경 적용됨': '⚔️ Move changes applied #-#-#',
   '⚔️ #/# 기술 변경': '⚔️ Move changes #/#',
   '#-#-# 갱신에서 #계단 상승': 'Up # places in the #-#-# update',
   '#-#-# 갱신에서 #계단 하락': 'Down # places in the #-#-# update',
-  '순위표는 이미 이 값으로 계산돼 있습니다. 최근 움직인 포켓몬에는 ▲▼ 표시가 붙어 있어요.':
+  '순위표는 이미 이 값으로 계산돼 있어요. 최근 움직인 포켓몬에는 ▲▼ 표시가 붙어요.':
     'The rankings already use these values. Pokémon that moved recently carry a ▲▼ marker.',
 
   // ── 즐겨찾기 페이지 ───────────────────────────────────────────────────────
-  '순위표에서 자동으로 정한 값입니다. 눌러서 바꾸면 이 포켓몬만 예외로 저장됩니다.':
+  '순위표에서 자동으로 정한 값이에요. 눌러서 바꾸면 이 포켓몬만 예외로 저장돼요.':
     'This is set automatically from the rankings. Tap to change it and only this Pokémon is stored as an exception.',
   '분류는 순위표에서 자동으로 정합니다 — PvE는 #개 표 상위 #위, PvP는 #리그 상위 #위 안에 들면 해당 갈래로 봅니다. 메가·섀도우 같은 폼 중 하나라도 들면 그 종이 포함되고, 괄호 없이 붙은 이름이 그 순위를 낸 폼입니다. 분류가 안 맞으면 포켓몬을 눌러 상세에서 직접 바꿀 수 있어요.':
     'Categories come from the rankings — PvE counts the top # across # tables, PvP the top # across # leagues. A species counts if any of its forms (Mega, Shadow and so on) makes it, and the name shown without brackets is the form that earned the rank. If a category looks wrong, tap the Pokémon and change it in the details.',
-  '이 분류에 해당하는 즐겨찾기가 아직 없어요.': 'No favorites in this category yet.',
+  '이 갈래로 담은 즐겨찾기가 아직 없어요.': 'No favorites in this category yet.',
   '순위권 밖인 즐겨찾기가 없어요.': 'None of your favorites are outside the rankings.',
 
   // ── 도감 · 안내 ───────────────────────────────────────────────────────────
   '미구현 = 포켓몬 GO에 아직 출시되지 않은 종 (PvPoke 출시 목록 기준, 데이터는 게임마스터 선등록분). 메가·섀도우·리전 폼은 🔍 전역 검색으로 찾을 수 있어요.':
     '"Not in GO" marks species that have not been released in Pokémon GO (per the PvPoke release list; the data is pre-registered in the Game Master). Mega, Shadow and regional forms are findable through the 🔍 global search.',
-  '구하기 쉬운 일반 개체만 모은 레이드 티어표 (자체 계산). 속성 탭은 그 속성 포켓몬만 표시. 점수는 같은 속성 최강 어태커(전설·메가 포함) 대비 %, 티어는 목록 안 상대 등급. 포켓몬을 누르면 상세 정보가 열립니다.':
+  '구하기 쉬운 일반 개체만 모은 레이드 티어표 (자체 계산). 속성 탭은 그 속성 포켓몬만 표시. 점수는 같은 속성 최강 어태커(전설·메가 포함) 대비 %, 티어는 목록 안 상대 등급. 포켓몬을 누르면 상세 정보가 열려요.':
     'A raid tier list of easy-to-get, ordinary Pokémon (own calculation). Each type tab shows only that type. Scores are a % of the strongest attacker of the same type (Legendary and Mega included), and tiers are relative within this list. Tap a Pokémon for details.',
   'PvPoke 시뮬레이션 점수(#점 만점). 속성 필터 안의 순위는 해당 속성 내 순위이며 전체 순위를 함께 표시합니다.':
     'PvPoke simulation score (out of #). Inside a type filter the rank is within that type, shown alongside the overall rank.',
@@ -514,7 +514,7 @@ const I18N_EN = {
   // ── 검색식 만들기 ─────────────────────────────────────────────────────────
   '게임 검색창에 붙여 넣을 식': 'A string to paste into the in-game search box',
   '만든 검색식을 계정에 이어서 쓰는 화면이라': 'because it keeps the strings you build on your account',
-  '아래에서 조건을 누르면 검색식이 만들어집니다.': 'Tap a condition below to build a string.',
+  '아래에서 조건을 누르면 검색식이 만들어져요.': 'Tap a condition below to build a string.',
   '자주 쓰는 묶음': 'Handy presets',
   '여러 개면 “또는”': 'Multiple types mean "or"',
   'CP 최소': 'Min CP',

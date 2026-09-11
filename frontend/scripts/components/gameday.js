@@ -30,7 +30,7 @@ function gamedayHas(kind) {
 function gamedayFoot(lead) {
   const fetched = (typeof GAMEDAY !== 'undefined' && GAMEDAY && GAMEDAY.fetched) || '';
   return el('p', { class: 'detail__foot' },
-    `${lead} 출처 LeekDuck(ScrapedDuck)${fetched ? ` · ${fetched} 수집` : ''} · 지역과 이벤트에 따라 실제와 다를 수 있습니다`);
+    `${lead} 출처 LeekDuck(ScrapedDuck)${fetched ? ` · ${fetched} 수집` : ''} · 지역과 이벤트에 따라 실제와 다를 수 있어요`);
 }
 
 // 한 줄: 그림 + 이름 + 조건 뱃지 + ★. 누르면 상세가 열린다
@@ -60,7 +60,7 @@ function gamedaySection(heading, list, toNotes, grid) {
 
 function gamedayEmpty(what) {
   return el('div', { class: 'page__body' },
-    el('p', { class: 'empty' }, `${what} 정보를 아직 받지 못했습니다. 다음 빌드에서 채워집니다.`));
+    el('p', { class: 'empty' }, `${what} 정보를 아직 받지 못했어요. 다음 빌드에서 채워져요.`));
 }
 
 // ── ⚔️ 레이드 보스 ────────────────────────────────────────────────────────────
@@ -84,7 +84,7 @@ function renderRaidsPage() {
   // 안내문과 순서가 뒤섞여 읽히던 것을 "설명은 왼쪽, 이 화면을 어떻게 볼지는 오른쪽"으로 gameday__intro 에서 가른다
   return el('div', { class: 'page__body' },
     el('div', { class: 'gameday__intro' },
-      el('p', { class: 'note' }, '보스를 누르면 약점과 추천 딜러가 열려요. 혼자 잡을 수 있는지는 ⚔️ 레이드 · PvE 의 🧮 솔플 계산기에서 확인하세요.'),
+      el('p', { class: 'note' }, '보스를 누르면 약점과 추천 딜러가 열려요. 혼자 잡을 수 있는지는 ⚔️ 레이드 · PvE 의 🧮 솔플 계산기에서 봐요.'),
       $layout),
     ...sections.map(({ node }) => node),
     gamedayFoot('지금 도는 레이드 로테이션.'));
@@ -142,7 +142,7 @@ function renderEggsPage() {
   const $layout = layoutToggle('pogo_eggs_cols', grid, (next) => sections.forEach(({ $list }) => $list.classList.toggle('is-grid', next)));
   return el('div', { class: 'page__body' },
     el('div', { class: 'gameday__intro' },
-      el('p', { class: 'note' }, '★ 를 누르면 즐겨찾기에 담깁니다. 이름을 누르면 종족값과 상성을 볼 수 있어요.'),
+      el('p', { class: 'note' }, '★ 를 누르면 즐겨찾기에 담겨요. 이름을 누르면 종족값과 상성을 볼 수 있어요.'),
       $layout),
     ...sections.map(({ node }) => node),
     gamedayFoot('지금 도는 알 부화 풀.'));

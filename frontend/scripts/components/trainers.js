@@ -87,7 +87,7 @@ async function renderTrainers() {
     copyButton.addEventListener('click', copyDigits(copyButton, trainer.code));
     listBox.append(el('div', { class: 'trainer__row' }, el('b', {}, trainer.name), el('code', {}, fmtCode(trainer.code)), copyButton));
   }
-  if (rows.length) listBox.append(footNote('복사하면 공백 없는 12자리로 복사됩니다 — 게임의 친구 추가 화면에 바로 붙여넣으세요.'));
+  if (rows.length) listBox.append(footNote('공백 없는 12자리로 복사돼요 — 게임의 친구 추가 화면에 바로 붙여넣으면 돼요.'));
   if (AUTH.admin) listBox.append(el('button', { class: 'schedule__more', onclick: openTrainerAdmin }, '🛠 코드 관리 (추가·삭제) →'));
 }
 
@@ -110,10 +110,10 @@ async function openTrainerAdmin() {
       renderTrainers();
     } }, '삭제'))));
   body.append(el('section', { class: 'detail__sec' }, el('h3', {}, `등록된 코드 ${rows.length}개`),
-    rows.length ? list : el('p', { class: 'empty' }, '아직 없습니다.')));
+    rows.length ? list : el('p', { class: 'empty' }, '아직 없어요.')));
 
   const textarea = el('textarea', { class: 'trainer__bulk', rows: '6', placeholder: '한 줄에 하나씩\n이름 0000 0000 0000\n이름2 1111 2222 3333' });
-  const message = el('p', { class: 'trainer__msg' }, '이름과 12자리 코드를 한 줄에 하나씩. 같은 이름이 있으면 덮어씁니다.');
+  const message = el('p', { class: 'trainer__msg' }, '이름과 12자리 코드를 한 줄에 하나씩. 같은 이름이 있으면 덮어써요.');
   // 2026-09-03 저장 결과를 눈에 보이게: 진행 표시 + 실패 사유(규칙 미게시 등)를 그대로 노출
   const saveButton = el('button', { class: 'schedule__more' }, '일괄 저장');
   saveButton.addEventListener('click', async () => {

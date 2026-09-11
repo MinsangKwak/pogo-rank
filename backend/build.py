@@ -110,7 +110,7 @@ json.dump(pvp_all, open('data/pvp_all.json', 'w', encoding='utf-8'), ensure_asci
 
 # ── frontend/ 의 CSS·JS를 순서대로 인라인해 단일 dist/index.html 조립 ──
 # 순서가 곧 캐스케이드(CSS)·실행 순서(JS)이므로 새 파일은 여기 목록에 추가
-APP_VERSION = 'v2.58.0'  # 🔎 검색식 만들기 (백로그 QA-57)
+APP_VERSION = 'v2.60.0'  # 화면 말투를 친근체로 통일 · 화면 이름 뒤 조사 오류 수정
 # 2026-09-05 v2.7.3 빌드 채널 — 'prod'(기본) / 'dev'. dev 브랜치 워크플로(.github/workflows/deploy-dev.yml)가 BUILD_CHANNEL=dev 로 부른다.
 # dev 빌드는 (1) 버전 배지에 -dev 를 붙여 화면에서 구분되고 (2) GA 스니펫을 넣지 않아 통계가 섞이지 않고
 # (3) robots.txt 를 전부 차단 + <meta name="robots" content="noindex"> 로 검색 색인을 막는다. 나머지는 prod 와 동일
@@ -399,6 +399,10 @@ html = html.replace('__TIMESTAMP__', game_master['timestamp']).replace('__VERSIO
 # dev 채널은 GA 를 끈다 (미리보기 트래픽이 실사용 통계에 섞이지 않게)
 html = html.replace('__GA_SNIPPET__', GA_SNIPPET.replace('__GA_ID__', GA_ID) if GA_ID and BUILD_CHANNEL != 'dev' else '')
 if BUILD_CHANNEL == 'dev':
+    # 2026-09-11 v2.59.0 탭 제목 앞에 [dev] — 실서비스 탭과 미리보기 탭이 나란히 떠 있을 때
+    # 둘을 제목만 보고 구분할 수 있어야 한다 (화면 안 버전 배지는 탭 목록에서 안 보인다).
+    # 화면을 옮길 때마다 다시 붙이는 쪽은 components/app-shell.js 가 맡는다
+    html = html.replace('<title>', '<title>[dev] ', 1)
     html = html.replace('</title>', '</title>\n<meta name="robots" content="noindex, nofollow">', 1)
     # 2026-09-08 v2.27.0 미리보기의 공유 카드가 실서비스를 가리키면 안 된다 — 주소를 dev 로 바꾼다.
     # (색인은 어차피 막지만, 링크를 붙였을 때 엉뚱한 곳으로 가는 것을 막으려는 것)

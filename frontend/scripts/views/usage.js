@@ -47,7 +47,7 @@ function usageTopNodes() {
       }),
       _usageShown < items.length
         ? el('button', { class: 'sugg__more', onclick: () => { _usageShown += 16; draw(); } }, `더보기 (${Math.min(_usageShown, items.length)}/${items.length})`)
-        : el('span', { class: 'sugg__hint' }, '활용 점수 = Σ(31 − 순위). 포켓몬을 누르면 전체 활용처가 열립니다'));
+        : el('span', { class: 'sugg__hint' }, '활용 점수 = Σ(31 − 순위). 포켓몬을 누르면 전체 활용처가 열려요'));
   };
   draw();
   return [box];
