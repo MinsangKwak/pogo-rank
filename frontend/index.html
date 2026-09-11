@@ -148,10 +148,13 @@ __STYLES__
   <div class="splash__bar"><i></i></div>
   <div class="splash__sub">불러오는 중…</div>
 </div>
-<!-- 2026-09-12 v3.6.0 바탕의 큰 몬스터볼 둘 (styles/pixel.css .px-ball).
-     내용이 아니라 배경이라 aria-hidden, 누름도 막는다(pointer-events: none) -->
-<div class="px-ball px-ball--1" aria-hidden="true"></div>
-<div class="px-ball px-ball--2" aria-hidden="true"></div>
+<!-- 2026-09-12 v3.6.1 바탕 장식 한 겹 (styles/pixel.css #px-bg) — 점 격자 + 큰 몬스터볼 둘.
+     내용이 아니라 배경이라 aria-hidden, 누름도 막는다(pointer-events: none).
+     본문과 같은 층에 두지 않고 통째로 뒤로 빼 둬야 흐리기(blur)를 한 곳에서 건다 -->
+<div id="px-bg" aria-hidden="true">
+  <div class="px-ball px-ball--1"></div>
+  <div class="px-ball px-ball--2"></div>
+</div>
 <div class="layout">
   <header>
     <!-- 2026-09-02 부제 추가 · 검색/메뉴 버튼 -->

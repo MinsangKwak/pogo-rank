@@ -78,6 +78,28 @@ const ok = (name, cond, extra = '') => results.push([cond ? 'PASS' : 'FAIL', nam
   // 도트 글꼴은 설계 격자의 정수배에서만 또렷하다 — Galmuri11 은 11 · 14 · 22px 이라 14px 로 내렸다
   ok('본문 14px (도트 격자)', design.size === '14px', design.size);
 
+  // 2026-09-12 v3.6.1 도트 디자인이 도트로 안 보이게 만드는 세 가지 — 한 번씩 못 박아 둔다
+  const px = await page.evaluate(() => {
+    const head = document.querySelector('.page-head h2') || document.querySelector('h1');
+    const bg = document.getElementById('px-bg');
+    return {
+      // (1) 갈무리에는 굵은 획이 없다. 700 을 주면 브라우저가 가짜 굵기를 그려 도트가 번진다
+      headWeight: getComputedStyle(head).fontWeight,
+      nameWeight: getComputedStyle(document.querySelector('.home__tile strong') || head).fontWeight,
+      // (2) 바탕 무늬는 본문 뒤 한 겹(#px-bg)에만 — body 에 직접 깔면 흐리기를 걸 자리가 없다
+      bgLayer: !!bg,
+      bodyPattern: getComputedStyle(document.body).backgroundImage,
+      ballBlur: bg && bg.querySelector('.px-ball') ? getComputedStyle(bg.querySelector('.px-ball')).filter : '',
+      // (3) 걸 것이 없는 화면(서비스 홈)에서 컨트롤 줄이 자리를 먹으면 안 된다
+      controlsH: Math.round(document.getElementById('controls').getBoundingClientRect().height),
+    };
+  });
+  ok('제목에 가짜 굵기 없음 (도트 글꼴)', px.headWeight === '400', px.headWeight);
+  ok('타일 이름에도 가짜 굵기 없음', px.nameWeight === '400', px.nameWeight);
+  ok('바탕 무늬는 #px-bg 한 겹에만', px.bgLayer && px.bodyPattern === 'none', `${px.bgLayer} / ${px.bodyPattern.slice(0, 30)}`);
+  ok('바탕 몬스터볼은 흐리게', /blur\(/.test(px.ballBlur), px.ballBlur);
+  ok('빈 컨트롤 줄은 자리를 안 먹는다', px.controlsH === 0, String(px.controlsH));
+
   // 2. 서비스 홈 — 타일 · 이모지 아이콘 · 탭 줄 숨김
   // 2026-09-10 v2.47.0 '내 포켓몬' 타일과 '육성 플래너' 타일을 하나로 합쳐 10 → 9 가 됐다
   // 2026-09-11 v2.58.0 🔎 검색식 만들기가 늘어 10 이다. ☰ 메뉴와 홈 타일은 **같은 수**여야 한다 —

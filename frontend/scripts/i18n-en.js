@@ -211,6 +211,7 @@ const I18N_EN = {
   '🧩 추천 파티 — 딜러 # + 탱커 #': '🧩 Suggested party — # attackers + # tank',
   '⚔️ 이번 주 보스': "⚔️ This week's boss",
   '🧮 솔플 계산기': '🧮 Solo calculator',
+  '솔플 계산기': 'Solo calculator',   // 2026-09-12 v3.6.1 이모지를 도트 아이콘으로 떼면서 글자만 남았다
   '🃏 덱 짜기': '🃏 Team builder',
   '추천 덱 # — 정석 코어': 'Suggested team # — classic core',
   '추천 덱 # — 안티 메타': 'Suggested team # — anti-meta',
@@ -265,6 +266,7 @@ const I18N_EN = {
   '×# 이중': '×# double',
   '🧭 상성 검색에서 딜러까지 보기 ▸': '🧭 Open matchup search for attacker picks ▸',
   '🧮 내 개체 CP 계산기': '🧮 CP calculator for my Pokémon',
+  '내 개체 CP 계산기': 'CP calculator for my Pokémon',   // 2026-09-12 v3.6.1 이모지를 도트 아이콘으로 떼면서 글자만 남았다
   '🌱 플래너 내 포켓몬에 이 개체 저장': '🌱 Save this one to Planner → My Pokémon',
   '➕ 내 개체로 저장': '➕ Save as mine',
   '이중약점 = 두 타입 모두에 약해 ×2.56 · 이중내성 = 두 타입 모두 반감(×0.39). 본가의 무효 타입도 GO 에서는 같은 ×0.39 로 피해가 들어가요':
@@ -298,6 +300,7 @@ const I18N_EN = {
   '체력 IV': 'HP IV',
   'CP #% 기준 · 만렙': 'At #% IVs · max level',
   '🎯 포획 CP — 이 숫자면 #%': '🎯 Catch CP — this number means #%',
+  '포획 CP — 이 숫자면 #%': 'Catch CP — this number means #%',
   '레이드 보상 — 개체값 # 이상 확정': 'Raid reward — guaranteed # IVs or better',
   '야생 스폰 — 개체값 하한 없음': 'Wild spawn — no IV floor',
   '맥스 배틀 (다이맥스) — Lv# 고정, 날씨부스트 없음': 'Max Battle (Dynamax) — fixed Lv#, no weather boost',
