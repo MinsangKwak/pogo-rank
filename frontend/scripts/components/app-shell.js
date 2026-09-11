@@ -250,7 +250,10 @@ function syncAppShell(moveFocus = false) {
   const desc = typeof routeDesc === 'function' ? routeDesc(routeId) : '';
   pageDesc.textContent = desc;
   pageDesc.hidden = !desc;
-  document.title = title ? `${title} — POGO PLAN` : 'POGO PLAN';
+  // 2026-09-11 v2.59.0 dev 미리보기는 제목 앞에 [dev] — 빌드가 붙여 둔 것을 화면 이동 때도 잇는다.
+  // 채널을 따로 주입하지 않고 BUILD_VERSION 끝의 -dev 로 판별한다 (backend/build.py)
+  const devMark = typeof BUILD_VERSION === 'string' && BUILD_VERSION.endsWith('-dev') ? '[dev] ' : '';
+  document.title = devMark + (title ? `${title} — POGO PLAN` : 'POGO PLAN');
   backButton.hidden = home;
   document.body.dataset.screen = home ? 'home' : 'detail';
   // 측정용 표식 — 어느 화면인지 DOM 만 보고 알 수 있게 (GA · 히트맵 · 자동화 검사)
