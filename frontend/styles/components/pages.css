@@ -109,6 +109,12 @@
 .dex__row .dex__fav { margin-left: 0.6rem; }
 .dex__hint { display: flex; flex-wrap: wrap; align-items: center; gap: 0.8rem; margin: 0 0 1.2rem; font-size: 1.25rem; color: var(--muted); line-height: 1.5; }
 
+/* 2026-09-12 v2.67.1 즐겨찾기 도구줄 — 갈래 칩(왼쪽)과 보기 전환(오른쪽)이 한 줄.
+   좁은 화면에서 칩이 길어지면 wrap 이 토글을 아래로 내린다 (도감 도구줄과 같은 규칙) */
+.favs__toolbar { display: flex; align-items: center; justify-content: space-between; gap: 1.2rem; flex-wrap: wrap; }
+.favs__toolbar .tchips { flex: 1 1 auto; min-width: 0; }
+.favs__toolbar .seg-view { flex: none; }
+
 /* 2026-09-12 v2.66.0 달력 ↔ 레이드 보스 역할 안내 — 칩 줄과 달력 사이 한 줄 */
 .schedule__bridge { margin: 0 0 1.2rem; }
 .schedule__bridge a { color: var(--accent); }
