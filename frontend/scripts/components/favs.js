@@ -142,7 +142,10 @@ function renderFavsPage() {
   draw();
   const cut = (typeof ROLES !== 'undefined' && ROLES?.cut) || { pve: 60, pvp: 100 };
   // 2026-09-09 v2.40.0 갈래 고르기($seg)와 보기 방식($layout)은 성격이 다르다 — 줄을 나눈다 (도감과 같은 배치)
-  return el('div', { class: 'page__body' }, el('div', { class: 'tchips' }, $seg), $layout, $list,
+  // 2026-09-12 v2.67.1 갈래 칩과 보기 전환을 한 줄에 — 도감 · 레이드 보스 · 알 부화와 같은 문법이다
+  // (왼쪽 "무엇을 보나" · 오른쪽 "어떻게 보나"). 즐겨찾기만 토글이 제 줄을 혼자 쓰고 있었다
+  return el('div', { class: 'page__body' },
+    el('div', { class: 'page__filters favs__toolbar' }, el('div', { class: 'tchips' }, $seg), $layout), $list,
     el('p', { class: 'detail__foot' },
       `분류는 순위표에서 자동으로 정해요 — PvE는 19개 표 상위 ${cut.pve}위, PvP는 4리그 상위 ${cut.pvp}위 안에 들면 그 갈래로 봐요. `
       + '메가·섀도우 같은 폼 중 하나라도 들면 그 종이 포함되고, 괄호 없이 붙은 이름이 그 순위를 낸 폼이에요. '
