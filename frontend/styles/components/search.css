@@ -56,3 +56,18 @@
   #search-dialog { padding: 0; align-items: flex-end; }
   #search-dialog .search { max-width: none; max-height: 88vh; border-radius: 1.4rem 1.4rem 0 0; border-bottom: 0; }
 }
+
+/* 2026-09-12 v3.9.0 검색의 기본 행동 = 도감으로 가기.
+   패널은 여덟 줄까지만 보여 주는 자리다 — 나머지를 어디서 보는지가 결과 머리와 목록 끝 두 곳에 있다 */
+.sugg__head .sugg__all { margin-left: auto; flex: none; }
+.sugg__all-row {
+  width: 100%;
+  padding: 0.8rem 1rem;
+  border: 1px dashed var(--line);
+  border-radius: 1rem;
+  background: var(--bg);
+  color: var(--fg);
+  font-size: 1.25rem;
+  text-align: center;
+}
+.sugg__all-row:hover { border-color: var(--fg); border-style: solid; }

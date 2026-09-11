@@ -140,9 +140,11 @@ function dexEntries() {
 // 2026-09-10 v2.46.0 도감 줄의 보조 정보 — 몇 세대인지, 100% 개체의 만렙 CP 가 얼마인지.
 // 둘 다 이미 있는 데이터로 계산한다(도감번호 구간 · 게임마스터 CPM). 값이 없으면 그 칸을 아예 안 만든다 —
 // 빈 칸을 남겨 두면 "없는 것"과 "0" 이 같아 보인다
-function dexRowStats(dexNumber) {
+// 2026-09-12 v3.9.0 spriteId 를 따로 받는다 — 검색 결과에는 메가·리전 폼이 섞인다.
+// 세대는 원종 도감번호로 정하고(폼 id 는 10000 번대라 구간에 안 맞는다), CP 는 그 폼의 종족값으로 낸다
+function dexRowStats(dexNumber, spriteId = dexNumber) {
   const genIndex = DEX_GENS.findIndex(([genStart, genEnd]) => dexNumber >= genStart && dexNumber <= genEnd);
-  const form = DEX_DATA.forms?.[dexNumber];
+  const form = DEX_DATA.forms?.[spriteId] ?? DEX_DATA.forms?.[dexNumber];
   const cpm = DEX_DATA.cpm;
   const cp = form && cpm && typeof cpOf === 'function' ? cpOf(form, cpm.l50) : null;
   const cells = [];
@@ -152,10 +154,43 @@ function dexRowStats(dexNumber) {
   return cells.length ? el('span', { class: 'dex__stats' }, ...cells) : '';
 }
 
+// 2026-09-12 v3.9.0 헤더 검색이 주소로 넘겨준 조건(#/dex?q=…&t=…)을 도감 줄로 바꾼다.
+// dexEntries() 가 아니라 **전역 검색 색인**을 쓴다 — 도감번호 목록에는 종만 있어서
+// '메가 리자몽' · '섀도우 뮤츠' 로 찾으면 한 마리도 안 나온다
+function dexSearchEntries(query, types) {
+  const rel = new Set(DEX_DATA.rel ?? []);
+  const pool = typeof searchTypePool === 'function' ? searchTypePool(types) : [];
+  const hits = query && typeof monSearch === 'function' ? monSearch(pool, query, Infinity) : pool;
+  return hits.map((pokemon) => {
+    const dex = typeof dexOf === 'function' ? dexOf(pokemon.sprite) : null;
+    return {
+      dex,
+      sprite: pokemon.sprite,
+      name: pokemon.name,
+      types: pokemon.types?.length ? pokemon.types : (DEX_DATA.forms[pokemon.sprite]?.types ?? []),
+      unrel: dex != null && rel.size > 0 && !rel.has(dex),
+    };
+  });
+}
+
+// 검색 조건을 사람이 읽는 한 줄로. '물·풀 타입' · '"메타"' · '물 타입 중 "메가"'
+function dexSearchLabel(query, types) {
+  const typeText = types.length ? `${types.map((typeKey) => TYPE_KO[typeKey] ?? typeKey).join('·')} 타입` : '';
+  if (typeText && query) return `${typeText} 중 "${query}"`;
+  return typeText || `"${query}"`;
+}
+
 function renderDexPage() {
-  const all = dexEntries();
+  // 2026-09-12 v3.9.0 검색 결과를 여기서 보여 준다. 헤더 검색은 여덟 줄짜리 패널이라
+  // 그 아래를 볼 길이 없었다 — 조건을 주소에 실어 오면 도감의 목록·그리드로 전부 그린다
+  const params = (typeof routeOf === 'function' ? routeOf()?.params : null) ?? new URLSearchParams();
+  const searchQuery = (params.get('q') ?? '').trim();
+  const searchTypes = (params.get('t') ?? '').split(',').filter((typeKey) => TYPE_KO[typeKey]).slice(0, 2);
+  const searching = !!(searchQuery || searchTypes.length);
+  const all = searching ? dexSearchEntries(searchQuery, searchTypes) : dexEntries();
   let list = all;
-  let shown = 100;
+  // 검색해서 들어왔으면 나눠 그리지 않는다 — 찾으러 온 것이 [더보기] 뒤에 숨으면 안 찾은 것과 같다
+  let shown = searching ? Infinity : 100;
   // 2026-09-03 레이아웃 토글: 리스트 ↔ 그리드 (선택 기억, localStorage 'pogo_dex_cols')
   // 2026-09-09 v2.37.0 즐겨찾기·레이드 보스·알 부화도 같은 토글을 쓰게 되며 components/ui.js 로 뺐다 —
   // 키 이름·값('1'|'2')은 이미 나간 값이라 그대로 잇는다(layoutInitial/layoutToggle)
@@ -168,8 +203,11 @@ function renderDexPage() {
   // 현재 list · shown 상태로 목록과 [더보기] 버튼 문구를 다시 그린다
   const draw = () => {
     $list.replaceChildren(...list.slice(0, shown).map((entry) =>
-      el('button', { class: `dex__row${entry.unrel ? ' is-unreleased' : ''}`, onclick: () => openDetailByDex(entry.dex, true) },  // 2026-09-03 도감 모드
-        el('span', { class: 'dex__no' }, `#${String(entry.dex).padStart(4, '0')}`),
+      // 2026-09-12 v3.9.0 openDetailByDex → openDetail. 검색 결과에는 폼(메가·섀도우·리전)이 섞이는데
+      // 도감번호로 열면 전부 원종이 뜬다. entry 가 이미 {sprite, name, types} 를 들고 있으므로
+      // 종이든 폼이든 같은 한 줄로 연다 (종은 sprite === dex 라 전과 똑같이 동작한다)
+      el('button', { class: `dex__row${entry.unrel ? ' is-unreleased' : ''}`, onclick: () => openDetail(entry, true) },  // 2026-09-03 도감 모드
+        el('span', { class: 'dex__no' }, entry.dex != null ? `#${String(entry.dex).padStart(4, '0')}` : ''),
         sprite(entry.sprite),
         entry.unrel ? el('span', { class: 'tag dex__unrel' }, '미구현') : '',
         el('b', {}, entry.name),
@@ -179,7 +217,7 @@ function renderDexPage() {
         // 그 자리에 **읽을 값**을 넣는다. 세대와 CP 100% 기준 둘 다 이미 가진 데이터로 계산한다:
         // 세대는 도감번호 구간(DEX_GENS), CP 는 상세 팝업이 맨 위에 보여 주는 그 값(cpOf · DEX_DATA.cpm.l50).
         // 지어낸 값은 하나도 없다. 카드 모드에서는 자리가 없어 CSS 가 감춘다 (pc-theme.css)
-        dexRowStats(entry.dex),
+        entry.dex != null ? dexRowStats(entry.dex, entry.sprite) : '',
         el('span', { class: 'dex__types' }, ...entry.types.map((typeName) =>
           el('span', { class: 'dex__type', style: `--c: var(--t-${typeName})` },
             el('i', { class: 'dot', 'aria-hidden': 'true' }),
@@ -189,6 +227,13 @@ function renderDexPage() {
     // 남은 종이 있으면 "더보기 (지금까지/전체)", 다 봤으면 총 개수를 보여주고 버튼을 잠근다
     $more.textContent = shown < list.length ? `더보기 (${Math.min(shown, list.length)}/${list.length})` : `전체 ${list.length}종`;
     $more.disabled = shown >= list.length;
+    // 검색 결과는 한 번에 다 그리므로 [전체 N종] 만 남아 누를 데가 없다 — 감추고, 수는 머리 줄이 말한다.
+    // 머리 줄의 수도 여기서 갱신한다 — 세대 칩으로 더 좁히면 "232마리" 가 거짓말이 된다
+    if (searching) {
+      $more.hidden = true;
+      $found.textContent = `${dexSearchLabel(searchQuery, searchTypes)} ${list.length}마리`;
+      $none.hidden = list.length > 0;
+    }
   };
   // 2026-09-12 v3.5.0 화면 안 검색 칸을 뺐다. v2.66.0 에 안내 문구로 성격을 갈라 놓았지만
   // (헤더는 "어디로든 데려가는" 검색, 이 칸은 "이 목록을 거르는" 칸) 생김새가 같은 입력칸 둘이
@@ -205,12 +250,24 @@ function renderDexPage() {
   // 2026-09-12 v2.66.0 [★ 즐겨찾기 N] 칩을 뺐다 — 같은 줄의 세대 칩은 그 자리에서 목록을 거르는데
   // 이 칩만 다른 화면(#/favs)으로 보냈다. 모양이 같으면 하는 일도 같아야 한다.
   // 2026-09-12 v3.4.0 즐겨찾기 기능을 통째로 걷어냈다 (components/favs.js 머리말)
+  // 세대 칩은 **지금 보고 있는 목록** 을 거른다 — 검색해서 들어왔으면 그 결과 안에서 1세대만 남긴다.
+  // (all 이 검색 모드에서는 검색 결과다)
   const genChips = el('div', { class: 'tchips' }, ...DEX_GENS.map(([genStart, genEnd], genIndex) =>
     el('button', { class: 'uchip', onclick: () => {
       list = all.filter((entry) => entry.dex >= genStart && entry.dex <= genEnd);
       shown = 999;
       draw();
     } }, `${genIndex + 1}세대`)));
+  // 검색 결과 머리: 무엇으로 걸렀는지와 몇 마리인지, 그리고 전 종으로 돌아가는 길.
+  // 화면 안에 입력칸을 다시 두지는 않는다 (v3.5.0 에 뺀 이유가 그대로다 — 헤더 검색과 생김새가 같은
+  // 입력칸 둘이 한 화면에 있으면 어느 쪽에 친 글자가 진짜인지가 흐려진다)
+  const $found = el('b', {});
+  const $none = el('p', { class: 'dex__hint' }, '검색 결과가 없어요. 이름 일부만 쳐도 찾아요 — 예: "메타", "리자".');
+  $none.hidden = true;
+  const searchHead = searching
+    ? el('div', { class: 'dex__found' }, $found,
+        uchip('전체 도감 보기', () => navigateHash('#/dex'), { class: 'dex__found-clear' }))
+    : '';
   const loginHint = authEnabled() && AUTH.status !== 'ok'
     ? el('p', { class: 'dex__hint' },
         AUTH.status === 'pending' ? '⏳ 승인 대기 중 — 승인되면 ★로 내 포켓몬을 도감에 채울 수 있어요.' : '로그인하면 ★를 눌러 내 포켓몬을 도감에 채울 수 있어요. ',
@@ -220,9 +277,9 @@ function renderDexPage() {
   // 2026-09-10 v2.42.0 거르기(세대·즐겨찾기)와 보기 방식을 한 줄에 좌우로 — 성격은 달라도 둘 다
   // "목록을 어떻게 볼지" 라 목록 바로 위 한 줄에 모아 두는 편이 눈이 덜 움직인다.
   // 좁은 화면은 CSS 가 위아래로 쌓는다 (한 줄에 넣으면 칩이 잘린다)
-  return el('div', { class: 'page__body dex-page' }, loginHint,
-    el('div', { class: 'dex__toolbar page__filters' }, genChips, $layout), $list, $more,
-    footNote('미구현 = 포켓몬 GO에 아직 출시되지 않은 종 (PvPoke 출시 목록 기준, 데이터는 게임마스터 선등록분). 메가·섀도우·리전 폼은 🔍 전역 검색으로 찾을 수 있어요.'));
+  return el('div', { class: 'page__body dex-page' }, loginHint, searchHead,
+    el('div', { class: 'dex__toolbar page__filters' }, genChips, $layout), $list, searching ? $none : '', $more,
+    footNote('미구현 = 포켓몬 GO에 아직 출시되지 않은 종 (PvPoke 출시 목록 기준, 데이터는 게임마스터 선등록분). 메가·섀도우·리전 폼은 🔍 검색으로 찾으면 이 목록에 함께 나와요.'));
 }
 
 // 해시 라우팅 대상 페이지들. 여기 없는 id 는 유효한 페이지로 보지 않는다.
