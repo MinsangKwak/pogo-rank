@@ -44,7 +44,7 @@ const ok = (n, c, x = '') => { console.log((c ? 'PASS' : 'FAIL') + ' ' + n + ' '
   // 도감 · 타입 & 상성 · D-MAX · 레이드 PvE 는 로그인 없이 쓰는 화면이라 잠기면 안 된다
   const lockedLabels = await page.locator('.nav-menu a[aria-disabled="true"] .drawer__label').allTextContents();
   // 2026-09-11 v2.58.0 🔎 검색식 만들기가 늘어 일곱이다
-  ok('잠긴 메뉴 줄이 정확히 일곱', lockedLabels.join('|') === '육성 플래너|레이드 · PvE|배틀 · PvP|이벤트 일정|레이드 보스|알 부화|검색식 만들기', lockedLabels.join('|'));
+  ok('잠긴 메뉴 줄이 정확히 일곱', lockedLabels.join('|') === '이벤트 일정|레이드 보스|알 부화|레이드 · PvE|배틀 · PvP|육성 플래너|검색식 만들기', lockedLabels.join('|'));
   const openLabels = await page.locator('.nav-menu a:not([aria-disabled]) .drawer__label').allTextContents();
   ok('로그인 없이 쓰는 화면은 안 잠긴다', ['포켓몬 도감', 'D-MAX'].every((t) => openLabels.includes(t)), openLabels.join('|'));
   const lockedTiles = await page.locator('.home__tile[aria-disabled="true"] strong').allTextContents();

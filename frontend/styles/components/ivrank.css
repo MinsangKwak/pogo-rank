@@ -21,7 +21,7 @@
 /* 이름과 종족값을 세로로 쌓는다 — 가로로 붙으면 좁은 화면에서 종족값이 이름을 밀어낸다 */
 .ivrank__picked-main { display: flex; flex-direction: column; gap: 0.2rem; min-width: 0; flex: 1 1 auto; }
 .ivrank__picked-main b { font-size: var(--fs-lead); font-weight: 700; }
-.ivrank__picked-main .meta { font-size: var(--fs-sub); }
+.ivrank__picked-main .meta { font-size: var(--fs-sub); word-break: keep-all; }
 .ivrank__swap {
   flex: none; width: var(--tap); height: var(--tap);
   display: flex; align-items: center; justify-content: center;
@@ -97,6 +97,36 @@
 .ivrank__pick-row b { font-size: var(--fs-lead); font-weight: 700; letter-spacing: 0.02em; color: var(--brand-2); }
 .ivrank__more { margin: 1rem 0 0; padding-top: 0.8rem; border-top: 1px solid var(--line); }
 
-/* 리그 탭 — 상위 10 위에 놓아 어느 리그 표인지 눈이 먼저 닿게 한다 */
+/* 리그별 상위 10 — 세 리그를 늘 그려 두고, 좁은 화면만 고른 하나를 남긴다.
+   JS 는 화면 폭을 모른다: 어느 것을 보일지는 [data-league] 와 이 규칙이 정한다 */
 .ivrank__top .seg { margin: 0.6rem 0 0.4rem; }
 .ivrank__top .empty { margin: 1.6rem 0; }
+.ivrank__top-col { display: none; }
+.ivrank__top[data-league="little"] .ivrank__top-col[data-lg="little"],
+.ivrank__top[data-league="great"] .ivrank__top-col[data-lg="great"],
+.ivrank__top[data-league="ultra"] .ivrank__top-col[data-lg="ultra"] { display: block; }
+/* 좁은 화면에서는 탭이 어느 리그인지 이미 말하므로 칸 머리는 접는다 */
+.ivrank__col-head { display: none; }
+
+@media (min-width: 1100px) {
+  /* 넓은 화면은 탭이 필요 없다 — 셋을 나란히 놓으면 눌러 가며 비교할 일이 없다 */
+  .ivrank__top > .seg { display: none; }
+  .ivrank__tops { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1.6rem; align-items: start; }
+  .ivrank__top-col { display: block; }
+  .ivrank__col-head { display: flex; padding-top: 0.8rem; }
+  .ivrank__col-head h3 { margin: 0; font-size: var(--fs-body); font-weight: 700; }
+  .ivrank__list li { padding: 0.7rem 0.8rem; gap: 0.6rem; }
+  .ivrank__list li .meta { font-size: 1.1rem; }
+
+  /* 왼쪽 '무엇을 넣나' · 오른쪽 '그래서 몇 위인가'.
+     세로로만 쌓으면 개체값을 고친 결과가 화면 밖이라 고칠 때마다 스크롤을 내려야 했다 */
+  .ivrank__split { display: grid; grid-template-columns: minmax(0, 34rem) minmax(0, 1fr); gap: 2.4rem 3.2rem; align-items: start; }
+  /* 왼쪽 칸은 좁다 — 제목 옆에 붙던 보조 문구를 아래로 내려 제목이 두 줄로 접히지 않게 한다 */
+  .ivrank__form .row-head { flex-wrap: wrap; }
+  .ivrank__form .row-head .meta { flex: 1 1 100%; margin-top: 0.2rem; }
+  .ivrank__form { position: sticky; top: 1.6rem; }
+  .ivrank__form .row-head:first-child { padding-top: 0; }
+  /* 오른쪽이 넓어졌으니 리그 카드는 넷을 한 줄에 */
+  .ivrank__cards { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .ivrank__verdict { margin-top: 0; }
+}

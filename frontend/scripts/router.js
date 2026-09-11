@@ -44,19 +44,19 @@ const ROUTES = [
   // 2026-09-09 v2.40.0 icon: 화면을 가리키는 이모지. 서비스 홈 타일(components/home.js)과 ☰ 메뉴가
   // 같은 그림을 써야 해서(같은 화면인데 그림이 다르면 다른 곳으로 읽힌다) 표 한 곳에 둔다 — 예전엔
   // home.js 안에만 있어 메뉴에는 아이콘을 못 붙였다
-  { id: 'planner', path: 'planner', kind: 'plan', tab: 'home', nav: '육성 플래너', icon: '🌱', group: 'main', locked: true, legacy: ['plan'] },
+  { id: 'planner', path: 'planner', kind: 'plan', tab: 'home', nav: '육성 플래너', icon: '🌱', group: 'mine', locked: true, legacy: ['plan'] },
   // 2026-09-12 v2.63.0 '타입 & 상성' 화면을 접고 도감으로 넘긴다 — 타입 상성은 상세 팝업이
   // 이미 같은 표를 보여 준다. 공유된 #/types?t=… 링크가 죽지 않게 legacy 로 잇는다
-  { id: 'dex', path: 'dex', kind: 'page', nav: '포켓몬 도감', icon: '📕', group: 'main', legacy: ['types'] },
-  { id: 'dmax', path: 'dmax', kind: 'shell', tab: 'max', nav: 'D-MAX', icon: '✨', group: 'main', legacy: ['rank/max'] },
-  { id: 'pve', path: 'pve', kind: 'shell', tab: 'pve', nav: '레이드 · PvE', icon: '⚔️', group: 'main', locked: true, legacy: ['rank/pve'] },
-  { id: 'pvp', path: 'pvp', kind: 'shell', tab: 'pvp', nav: '배틀 · PvP', icon: '🃏', group: 'main', locked: true, legacy: ['rank/pvp'] },
-  { id: 'schedule', path: 'schedule', kind: 'page', nav: '이벤트 일정', icon: '📅', locked: true },
-  { id: 'raids', path: 'raids', kind: 'page', nav: '레이드 보스', icon: '⚔️', locked: true },
-  { id: 'eggs', path: 'eggs', kind: 'page', nav: '알 부화', icon: '🥚', locked: true },
+  { id: 'dex', path: 'dex', kind: 'page', nav: '포켓몬 도감', icon: '📕', group: 'pick', legacy: ['types'] },
+  { id: 'dmax', path: 'dmax', kind: 'shell', tab: 'max', nav: 'D-MAX', icon: '✨', group: 'pick', legacy: ['rank/max'] },
+  { id: 'pve', path: 'pve', kind: 'shell', tab: 'pve', nav: '레이드 · PvE', icon: '⚔️', group: 'pick', locked: true, legacy: ['rank/pve'] },
+  { id: 'pvp', path: 'pvp', kind: 'shell', tab: 'pvp', nav: '배틀 · PvP', icon: '🃏', group: 'pick', locked: true, legacy: ['rank/pvp'] },
+  { id: 'schedule', path: 'schedule', kind: 'page', nav: '이벤트 일정', icon: '📅', group: 'today', locked: true },
+  { id: 'raids', path: 'raids', kind: 'page', nav: '레이드 보스', icon: '⚔️', group: 'today', locked: true },
+  { id: 'eggs', path: 'eggs', kind: 'page', nav: '알 부화', icon: '🥚', group: 'today', locked: true },
   // 2026-09-11 v2.58.0 백로그 QA-57. 다른 잠긴 화면과 같은 규칙으로 로그인해야 열린다 —
   // 만든 검색식이 이 브라우저에 남는 개인 설정이라, 계정을 가진 사람의 것으로 다룬다
-  { id: 'finder', path: 'finder', kind: 'page', nav: '검색식 만들기', icon: '🔎', locked: true },
+  { id: 'finder', path: 'finder', kind: 'page', nav: '검색식 만들기', icon: '🔎', group: 'mine', locked: true },
 
   // ── 메뉴에는 없지만 주소가 있는 화면 ──────────────────────────────────────
   // 2026-09-12 v2.63.0 PvP 개체값 순위 — 배틀 · PvP 의 [🧬 개체값 순위] 버튼으로 연다.
@@ -75,12 +75,21 @@ const ROUTES = [
   { id: 'mon', path: 'mon', kind: 'detail' },
 ];
 
-// 메뉴에 오르는 것만 [해시, 라벨, 아이콘, 덩이] 로 (app-shell.js 이동 목록 · PC 사이드바)
-// 2026-09-12 v2.64.0 group — 메뉴가 열 줄을 넘어가며 "늘 쓰는 것" 과 "가끔 쓰는 것" 이 한 덩이에
-// 섞여 눈이 매번 처음부터 훑어야 했다. group: 'main' 인 다섯(육성 플래너 · 도감 · D-MAX ·
-// 레이드 PvE · 배틀 PvP)이 주요 기능이고, 적지 않은 나머지가 부가 기능이다
+// 메뉴 덩이 — 기능의 '종류' 가 아니라 **사람이 하려는 일** 로 가른다.
+// 2026-09-12 v2.65.0 '주요/부가' 는 만든 쪽의 서열이지 쓰는 쪽의 말이 아니었다.
+// 무엇이 주요인지는 그날 하려는 일에 따라 달라진다 — 이벤트가 있는 날엔 일정표가 주요다.
+// 그래서 덩이 이름을 **질문** 으로 적는다: 메뉴를 여는 순간 사람 머릿속에 있는 문장이다.
+//   지금 뭐 하지   시간에 매인 것 — 오늘 지나면 값이 달라진다 (일정 · 레이드 보스 · 알 부화)
+//   뭘 데려갈까     순위·티어·능력치 — 고르기 위해 본다 (도감 · D-MAX · PvE · PvP)
+//   내 포켓몬       내 박스를 다루는 것 — 계정/브라우저에 쌓인다 (플래너 · 검색식)
+// 순서도 이 차례다: 시간에 쫓기는 것이 먼저, 오래 두고 보는 것이 나중
+const ROUTE_GROUPS = [
+  ['today', '지금 뭐 하지'],
+  ['pick', '뭘 데려갈까'],
+  ['mine', '내 포켓몬'],
+];
 const ROUTE_NAV = ROUTES.filter((route) => route.nav)
-  .map((route) => [`#/${route.path}`, route.nav, route.icon || '', route.group || 'extra']);
+  .map((route) => [`#/${route.path}`, route.nav, route.icon || '', route.group || 'mine']);
 
 // 화면 아이콘 — 서비스 홈 타일(components/home.js)이 이 표를 읽는다. 모르는 id 면 빈 문자열
 // 2026-09-10 v2.48.1 로그인해야 쓰는 화면인가 (ROUTES 의 locked).

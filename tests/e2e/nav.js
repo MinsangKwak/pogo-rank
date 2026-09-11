@@ -78,7 +78,7 @@ const ok = (name, cond, extra = '') => results.push([cond ? 'PASS' : 'FAIL', nam
   // 같은 화면인데 문이 한쪽에만 있으면 메뉴를 안 여는 사람은 그 화면이 있는 줄도 모른다
   ok('홈 타일 9개', (await page.locator('.home__tile').count()) === 9);
   const icons = await page.locator('.home__icon').allTextContents();
-  ok('홈 아이콘이 이모지', icons.join('') === '🌱📕✨⚔️🃏📅⚔️🥚🔎', icons.join(''));
+  ok('홈 아이콘이 이모지', icons.join('') === '📅⚔️🥚📕✨⚔️🃏🌱🔎', icons.join(''));
   ok('홈에서 탭 줄 숨김', await page.locator('#tabs').isHidden());
   const tile = await page.locator('.home__tile').first().evaluate((n) => {
     const s = getComputedStyle(n);
@@ -199,17 +199,21 @@ const ok = (name, cond, extra = '') => results.push([cond ? 'PASS' : 'FAIL', nam
 
   // 8d. 2026-09-12 v2.64.0 이동 목록이 두 덩이로 읽히는가 (주요 기능 · 부가 기능)
   {
+    // 2026-09-12 v2.65.0 덩이 이름을 '주요/부가' 에서 **하려는 일** 로 바꿨다
     const secs = await page.locator('.nav-menu__sec').allTextContents();
-    ok('메뉴가 두 덩이', secs.join('|') === '주요 기능|부가 기능', secs.join('|'));
-    const mains = await page.evaluate(() => {
-      const heads = [...document.querySelectorAll('.nav-menu__sec')];
-      const out = [];
-      for (let n = heads[0]?.nextElementSibling; n && !n.classList.contains('nav-menu__sec'); n = n.nextElementSibling) {
-        out.push(n.querySelector('.drawer__label')?.textContent || '');
+    ok('메뉴가 세 덩이', secs.join('|') === '지금 뭐 하지|뭘 데려갈까|내 포켓몬', secs.join('|'));
+    const groups = await page.evaluate(() => {
+      const out = {};
+      let key = null;
+      for (const n of document.querySelector('.nav-menu').children) {
+        if (n.classList.contains('nav-menu__sec')) { key = n.textContent; out[key] = []; continue; }
+        if (key) out[key].push(n.querySelector('.drawer__label')?.textContent || '');
       }
       return out;
     });
-    ok('주요 기능은 다섯', mains.join('|') === '육성 플래너|포켓몬 도감|D-MAX|레이드 · PvE|배틀 · PvP', mains.join('|'));
+    ok('지금 뭐 하지 = 시간에 매인 것', groups['지금 뭐 하지'].join('|') === '이벤트 일정|레이드 보스|알 부화', groups['지금 뭐 하지'].join('|'));
+    ok('뭘 데려갈까 = 고르려고 보는 것', groups['뭘 데려갈까'].join('|') === '포켓몬 도감|D-MAX|레이드 · PvE|배틀 · PvP', groups['뭘 데려갈까'].join('|'));
+    ok('내 포켓몬 = 내 박스', groups['내 포켓몬'].join('|') === '육성 플래너|검색식 만들기', groups['내 포켓몬'].join('|'));
   }
 
   // 8e. 배틀 PvP 는 읽는 순서대로 놓인다 — ① 리그 ② 타입 ③ 도구
@@ -253,6 +257,17 @@ const ok = (name, cond, extra = '') => results.push([cond ? 'PASS' : 'FAIL', nam
       };
     });
     ok(`${hash} 제목·부제`, head.title.length > 0 && head.desc.length > 0, JSON.stringify(head));
+    // 2026-09-12 v2.65.0 머리와 본문 사이에 선이 있는가 — 여백만으로는 위계가 서지 않았다.
+    // 선은 화면 머리의 배경으로 긋는다. 도감만 예외로 도구줄 위에 긋는다(검색창이 머리 위로 올라와 있어
+    // 머리 안쪽 선이 가려진다) — 어느 쪽이든 "머리 바로 아래에 선이 하나" 라는 사실은 같다
+    const ruled = await page.evaluate(() => {
+      const head = document.getElementById('page-head');
+      if (head && !head.hidden && getComputedStyle(head).backgroundImage !== 'none') return 'head';
+      const bar = document.querySelector('.dex-page > .dex__toolbar');
+      if (bar && parseFloat(getComputedStyle(bar).borderTopWidth) > 0) return 'toolbar';
+      return '';
+    });
+    ok(`${hash} 머리·본문 구분선`, ruled !== '', ruled);
   }
 
   // 9. 길이 단위가 rem 인가 (2026-09-10 v2.52.0)

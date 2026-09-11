@@ -171,23 +171,30 @@ function ivrankVerdict(form, floorIv, ivs) {
 // 2026-09-11 v2.62.0 리그를 탭으로 고른다 — 전에는 "가장 쓸 만한" 한 리그만 보여 줘서,
 // 다른 리그에서 이 종을 어떻게 맞춰야 하는지는 볼 길이 없었다.
 // 마스터는 CP 상한이 없어 순위가 없으므로 탭에서 뺀다
+// 2026-09-12 v2.65.0 세 리그를 **다 그린다.** 넓은 화면은 나란히 보여 주고(탭 없이),
+// 좁은 화면은 CSS 가 고른 탭 하나만 남긴다 — JS 는 화면 폭을 모른다(기존 원칙).
+// 전에는 탭으로 한 리그만 그려서, 넓은 화면에서도 나머지 둘을 보려면 눌러 가며 비교해야 했다
 function ivrankTopList(form, floorIv, ivs, league, onPick) {
-  const cap = (IVRANK_LEAGUES.find(([id]) => id === league) ?? [])[1];
   const mineKey = ivs.join('/');
-  const tabs = IVRANK_LEAGUES.filter(([, c]) => c != null)
-    .map(([id]) => ({ id, label: `${LEAGUE_KO[id]}리그` }));
-  const rows = cap == null ? [] : ivRankTable(form, cap, floorIv).slice(0, 10);
-  return el('div', { class: 'ivrank__top' },
+  const capped = IVRANK_LEAGUES.filter(([, cap]) => cap != null);
+  const column = ([id, cap]) => {
+    const rows = ivRankTable(form, cap, floorIv).slice(0, 10);
+    return el('div', { class: 'ivrank__top-col', 'data-lg': id },
+      el('div', { class: 'row-head ivrank__col-head' }, el('h3', {}, `${LEAGUE_KO[id]}리그`),
+        el('span', { class: 'meta' }, `CP ${cap}`)),
+      rows.length
+        ? el('ol', { class: 'ivrank__list' }, ...rows.map((row, i) => el('li',
+            { class: row.ivs.join('/') === mineKey ? 'is-mine' : '' },
+            el('span', { class: 'ivrank__no' }, String(i + 1)),
+            el('b', {}, row.ivs.join('/')),
+            el('span', { class: 'meta' }, `Lv${row.level} · CP ${row.cp.toLocaleString()}`))))
+        : el('p', { class: 'empty' }, '이 리그에는 들어갈 수 없어요 — Lv1 CP 가 이미 상한을 넘어요.'));
+  };
+  return el('div', { class: 'ivrank__top', 'data-league': league },
     el('div', { class: 'row-head' }, el('h2', {}, '리그별 상위 10'),
-      el('span', { class: 'meta' }, cap == null ? '' : `CP ${cap} 기준`)),
-    seg(tabs, league, onPick),
-    rows.length
-      ? el('ol', { class: 'ivrank__list' }, ...rows.map((row, i) => el('li',
-          { class: row.ivs.join('/') === mineKey ? 'is-mine' : '' },
-          el('span', { class: 'ivrank__no' }, String(i + 1)),
-          el('b', {}, row.ivs.join('/')),
-          el('span', { class: 'meta' }, `Lv${row.level} · CP ${row.cp.toLocaleString()}`))))
-      : el('p', { class: 'empty' }, '이 리그에는 들어갈 수 없어요 — Lv1 CP 가 이미 상한을 넘어요.'));
+      el('span', { class: 'meta' }, '개체값 조합 4,096개 중')),
+    seg(capped.map(([id]) => ({ id, label: `${LEAGUE_KO[id]}리그` })), league, onPick),
+    el('div', { class: 'ivrank__tops' }, ...capped.map(column)));
 }
 
 function renderIvRankPage() {
@@ -291,10 +298,10 @@ function renderIvRankPage() {
   const $ivs = el('div', { class: 'ivrank__ivs' });
   const drawIvs = () => $ivs.replaceChildren(ivBox(0, '공격'), ivBox(1, '방어'), ivBox(2, '체력'));
 
-  $body.append(
-    el('p', { class: 'note' }, '실험 기능이에요. ',
-      el('b', {}, 'PvP 는 CP 상한이 있어 공격이 낮을수록 좋은 개체'), '가 돼요 — 같은 CP 안에서 레벨을 더 올릴 수 있어서예요. ',
-      '그래서 0/15/15 같은 조합이 1위가 되는 일이 흔해요.'),
+  // 2026-09-12 v2.65.0 넓은 화면은 왼쪽에 '무엇을 넣나', 오른쪽에 '그래서 몇 위인가' 로 가른다.
+  // 세로로만 쌓으면 개체값을 고친 결과가 화면 밖에 있어, 고칠 때마다 스크롤을 내려야 했다.
+  // 조각은 늘 이 두 덩이로 만들어 두고 가르는 일은 CSS 가 한다 (JS 에 폭 분기를 만들지 않는다)
+  const $form = el('div', { class: 'ivrank__form' },
     el('div', { class: 'row-head' }, el('h2', {}, '어느 포켓몬인가요')),
     $pick,
     el('div', { class: 'row-head' }, el('h2', {}, '개체값'),
@@ -302,8 +309,12 @@ function renderIvRankPage() {
     $ivs,
     el('div', { class: 'row-head' }, el('h2', {}, '어디서 얻었나요'),
       el('span', { class: 'meta' }, '하한이 달라 순위도 달라져요')),
-    $chips,
-    $out,
+    $chips);
+  $body.append(
+    el('p', { class: 'note' }, '실험 기능이에요. ',
+      el('b', {}, 'PvP 는 CP 상한이 있어 공격이 낮을수록 좋은 개체'), '가 돼요 — 같은 CP 안에서 레벨을 더 올릴 수 있어서예요. ',
+      '그래서 0/15/15 같은 조합이 1위가 되는 일이 흔해요.'),
+    el('div', { class: 'ivrank__split' }, $form, $out),
     footNote('순위는 CP 상한 안에서 가장 높은 레벨까지 올렸을 때의 공격 × 방어 × 체력(스탯 곱)으로 매겨요. ',
       '체력만 내림으로 끊는 게임 규칙까지 그대로 반영했고, 종족값과 레벨별 배율은 화면이 이미 쓰는 값 그대로예요. ',
       '베스트 버디(+1레벨)는 빼고 봐요 — 모두가 가질 수 있는 조건이 아니라서예요. ',

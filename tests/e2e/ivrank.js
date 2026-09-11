@@ -72,19 +72,16 @@ const ok = (n, c, x = '') => { console.log((c ? 'PASS' : 'FAIL') + ' ' + n + ' '
   ok('마스터리그는 순위 없음', /순위 없음/.test(cards[3]), cards[3].slice(0, 40));
   ok('상한 있는 리그는 순위가 보인다', /\d+위/.test(cards[1]), cards[1].slice(0, 40));
   ok('판정 한 줄이 있다', (await page.locator('.ivrank__verdict').count()) === 1);
-  ok('상위 10 목록', (await page.locator('.ivrank__list li').count()) === 10);
-
-  // ── 2026-09-11 v2.62.0 리그를 탭으로 골라 본다 (전에는 "가장 쓸 만한" 한 리그만 나왔다)
-  const lgTabs = await page.locator('.ivrank__top .seg button').allTextContents();
-  ok('리그 탭 셋 (마스터는 순위가 없어 뺀다)', lgTabs.join('|') === '리틀리그|슈퍼리그|하이퍼리그', lgTabs.join('|'));
-  const littleTop = await page.locator('.ivrank__list li b').first().textContent();
-  await page.locator('.ivrank__top .seg button:has-text("하이퍼리그")').click();
-  await page.waitForTimeout(500);
-  const ultraTop = await page.locator('.ivrank__list li b').first().textContent();
-  ok('탭을 바꾸면 표가 바뀐다', littleTop !== ultraTop, `${littleTop} → ${ultraTop}`);
-  ok('고른 탭이 눌린 표시', (await page.locator('.ivrank__top .seg button[aria-pressed="true"]').textContent()) === '하이퍼리그');
-  ok('머리말 CP 가 고른 리그를 따른다', /2500/.test(await page.locator('.ivrank__top .row-head').innerText()),
-    await page.locator('.ivrank__top .row-head').innerText());
+  // ── 2026-09-12 v2.65.0 세 리그를 늘 그려 둔다. 넓은 화면은 나란히, 좁은 화면은 탭으로 하나씩
+  ok('리그 칸 셋을 다 그린다 (마스터는 순위가 없어 뺀다)', (await page.locator('.ivrank__top-col').count()) === 3,
+    (await page.locator('.ivrank__top-col').evaluateAll((ns) => ns.map((n) => n.dataset.lg))).join('|'));
+  ok('넓은 화면은 셋이 다 보인다', (await page.locator('.ivrank__top-col:visible').count()) === 3);
+  ok('넓은 화면에는 탭이 없다', !(await page.locator('.ivrank__top > .seg').isVisible()));
+  ok('칸마다 상위 10', (await page.locator('.ivrank__top-col[data-lg="great"] .ivrank__list li').count()) === 10);
+  const tops = await page.locator('.ivrank__top-col .ivrank__list li:first-child b').allTextContents();
+  ok('리그마다 1위가 다르다', new Set(tops).size > 1, tops.join(' | '));
+  ok('칸마다 리그 이름과 CP', (await page.locator('.ivrank__col-head').allTextContents()).join('|').includes('하이퍼리그'),
+    (await page.locator('.ivrank__col-head').allTextContents()).join('|'));
 
   // 고른 종 카드 — 이름과 종족값이 따로 놓이는가 (전에는 스타일 없는 클래스라 한 줄에 붙었다)
   const pickedBox = await page.evaluate(() => {
@@ -132,6 +129,29 @@ const ok = (n, c, x = '') => { console.log((c ? 'PASS' : 'FAIL') + ' ' + n + ' '
   ok('PvP 순위 밖 종에는 안 붙는다', (await page.locator('.ivrank__detail').count()) === 0);
   await page.keyboard.press('Escape');
   await ctx.close();
+
+  // ── 좁은 화면은 탭으로 한 리그씩 (넓은 화면은 셋이 나란해 탭이 필요 없다)
+  {
+    const nctx = await browser.newContext({ viewport: { width: 430, height: 900 } });
+    await nctx.route(/^https?:\/\/(?!localhost)/, (r) => r.abort());
+    await nctx.addInitScript(() => { try { localStorage.setItem('pogo_ivrank', JSON.stringify({ sprite: 379, ivs: [0, 15, 15], floor: 0 })); } catch {} });
+    const p3 = await nctx.newPage();
+    p3.on('pageerror', (e) => errs.push('좁은 화면: ' + e));
+    await p3.goto(BASE + '#/ivrank', { waitUntil: 'domcontentloaded' });
+    await p3.waitForSelector('#splash', { state: 'detached', timeout: 15000 }).catch(() => {});
+    await p3.locator('#consent .consent__deny').click({ timeout: 1500 }).catch(() => {});
+    await p3.waitForSelector('.ivrank__top', { timeout: 10000 }).catch(() => {});
+    await p3.waitForTimeout(400);
+    ok('좁은 화면은 한 칸만 보인다', (await p3.locator('.ivrank__top-col:visible').count()) === 1);
+    const tabs = await p3.locator('.ivrank__top .seg button').allTextContents();
+    ok('좁은 화면에는 탭이 있다', tabs.join('|') === '리틀리그|슈퍼리그|하이퍼리그', tabs.join('|'));
+    const before = await p3.locator('.ivrank__top-col:visible').getAttribute('data-lg');
+    await p3.locator('.ivrank__top .seg button:has-text("하이퍼리그")').click();
+    await p3.waitForTimeout(500);
+    const after = await p3.locator('.ivrank__top-col:visible').getAttribute('data-lg');
+    ok('탭을 바꾸면 보이는 칸이 바뀐다', before !== after && after === 'ultra', `${before} → ${after}`);
+    await nctx.close();
+  }
 
   // ── 로그인 없이는 잠겨 있다
   {
