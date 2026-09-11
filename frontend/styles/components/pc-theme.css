@@ -627,6 +627,17 @@
   #page .schedule__detail .schedule__sec { margin-top: 0; }
 }
 
+/* 2026-09-12 v3.9.0 도감이 검색 결과 화면을 겸한다 (components/pages.js renderDexPage).
+   머리 한 줄로 "무엇을 걸러 몇 마리인지" 와 전 종으로 돌아가는 길을 준다 —
+   화면 안에 입력칸을 다시 두지는 않는다 (v3.5.0 에 뺀 이유가 그대로다) */
+.dex__found {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 0.8rem 1.2rem;
+  margin: 1.6rem 0 0; padding: 1.2rem 1.4rem;
+  border: var(--px) solid var(--line); background: var(--surface);
+}
+.dex__found b { flex: 1 1 auto; min-width: 0; font-size: 1.5rem; }
+.dex__found .dex__found-clear { flex: none; }
+
 /* 도감 필터를 보기 전환과 같은 40px 버튼·50px 컨테이너로 맞춘다.
    좁은 폭에서는 필터가 자연스럽게 줄바꿈되며 보기 전환은 다음 줄에 놓인다. */
 .dex__toolbar { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 1.2rem; margin: 1.6rem 0; }

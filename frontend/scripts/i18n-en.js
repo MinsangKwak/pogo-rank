@@ -156,6 +156,12 @@ const I18N_EN = {
   '포켓몬 상세 ▸': 'Pokémon details ▸',
   '전체 순위 보기 ▸': 'See the full ranking ▸',
   '타입 지우기': 'Clear types',
+  // 2026-09-12 v3.9.0 검색 → 도감 (components/search.js · components/pages.js)
+  '도감에서 보기': 'See in Pokédex',
+  '나머지 #마리는 도감에서 보기 ›': 'See the other # in the Pokédex ›',
+  '전체 도감 보기': 'See the full Pokédex',
+  '검색 결과가 없어요. 이름 일부만 쳐도 찾아요 — 예: "메타", "리자".':
+    'No matches. Part of a name is enough — try "메타" or "리자".',
   '지우기': 'Clear',
   '타입 필터 · 선택하기': 'Type filter · choose',
   '타입으로 좁히기': 'Narrow by type',
@@ -448,8 +454,8 @@ const I18N_EN = {
   '순위권 밖인 즐겨찾기가 없어요.': 'None of your favorites are outside the rankings.',
 
   // ── 도감 · 안내 ───────────────────────────────────────────────────────────
-  '미구현 = 포켓몬 GO에 아직 출시되지 않은 종 (PvPoke 출시 목록 기준, 데이터는 게임마스터 선등록분). 메가·섀도우·리전 폼은 🔍 전역 검색으로 찾을 수 있어요.':
-    '"Not in GO" marks species that have not been released in Pokémon GO (per the PvPoke release list; the data is pre-registered in the Game Master). Mega, Shadow and regional forms are findable through the 🔍 global search.',
+  '미구현 = 포켓몬 GO에 아직 출시되지 않은 종 (PvPoke 출시 목록 기준, 데이터는 게임마스터 선등록분). 메가·섀도우·리전 폼은 🔍 검색으로 찾으면 이 목록에 함께 나와요.':
+    '"Not in GO" marks species that have not been released in Pokémon GO (per the PvPoke release list; the data is pre-registered in the Game Master). Mega, Shadow and regional forms show up in this list when you find them through 🔍 search.',
   '구하기 쉬운 일반 개체만 모은 레이드 티어표 (자체 계산). 속성 탭은 그 속성 포켓몬만 표시. 점수는 같은 속성 최강 어태커(전설·메가 포함) 대비 %, 티어는 목록 안 상대 등급. 포켓몬을 누르면 상세 정보가 열려요.':
     'A raid tier list of easy-to-get, ordinary Pokémon (own calculation). Each type tab shows only that type. Scores are a % of the strongest attacker of the same type (Legendary and Mega included), and tiers are relative within this list. Tap a Pokémon for details.',
   'PvPoke 시뮬레이션 점수(#점 만점). 속성 필터 안의 순위는 해당 속성 내 순위이며 전체 순위를 함께 표시합니다.':
