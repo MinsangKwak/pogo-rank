@@ -179,34 +179,39 @@
      맨 클래스로 적었더니 "이름 가운데 정렬" 같은 카드 전용 규칙이 그쪽 화면까지 끌려가 레이아웃이 깨졌다.
      카드 규칙은 카드 안(.row / .row-list 자식)에서만 살아야 한다 */
 @media (min-width: 1100px) {
+  /* 2026-09-12 v3.9.1 줄 모드(.is-list)에는 이 카드 규칙을 걸지 않는다.
+     전에는 pc-theme.css 에서 속성을 하나씩 되돌리고 있었는데(display · padding · border …),
+     카드 디자인이 바뀔 때마다 되돌릴 목록도 같이 늘어나 결국 어긋났다.
+     아예 안 걸면 list.css 위쪽의 기본 줄 배치가 그대로 남는다 — 휴대폰에서 보는 그 줄이다.
+     PvP 처럼 토글이 없는 화면은 클래스가 안 붙으므로 지금까지와 똑같이 카드다 */
   /* 2026-09-11 v2.59.0 열 개수는 tokens.css 의 --list-cols 한 곳에서 정한다 —
      1920 다섯 · 1440 넷 · 1100 셋. 상세 패널이 열리면 그 값이 두 칸 내려간다.
      (.dex__list 와 같은 값을 본다 — pages.css 참고) */
-  .row-list { display: grid; grid-template-columns: repeat(var(--list-cols), minmax(0, 1fr)); gap: 1.2rem; padding-top: 0.4rem; border-top: 0; }
-  .row-list > .row {
+  .row-list:not(.is-list) { display: grid; grid-template-columns: repeat(var(--list-cols), minmax(0, 1fr)); gap: 1.2rem; padding-top: 0.4rem; border-top: 0; }
+  .row-list:not(.is-list) > .row {
     position: relative; display: flex; flex-direction: column; align-items: center; gap: 0.6rem;
     padding: 1.8rem 1.2rem 1.4rem; text-align: center;
     border: 1px solid var(--line); border-radius: 1.2rem; background: var(--surface);
   }
-  .row-list > .row:hover { border-color: var(--fg); background: var(--hover); }
+  .row-list:not(.is-list) > .row:hover { border-color: var(--fg); background: var(--hover); }
   /* 순위는 카드 모서리로 — 세로로 세운 카드에서 순위가 한 칸을 차지하면 그림이 밀린다 */
-  .row-list > .row > .row__rank { position: absolute; top: 0.8rem; left: 1rem; text-align: left; font-size: 1.2rem; }
+  .row-list:not(.is-list) > .row > .row__rank { position: absolute; top: 0.8rem; left: 1rem; text-align: left; font-size: 1.2rem; }
   /* 그림 칸을 회색 판으로 떼고 아래에 얇은 선 — 도감 카드(pages.css)·상세 팝업(.sprite-box)과 같은 뜻 */
-  .row-list > .row > .sprite { box-sizing: content-box; width: 6.4rem; height: 6.4rem; padding: 0.8rem; border-radius: 1.2rem; }
-  .row-list > .row > .sprite:not(.is-loading) { background: var(--bg); }
-  .row-list > .row > .row__main { width: 100%; min-width: 0; padding-top: 0.9rem; border-top: 1px solid var(--line); }
-  .row-list > .row .row__badges { justify-content: center; margin-bottom: 0.4rem; }
-  .row-list > .row .row__name { justify-content: center; }
-  .row-list > .row .row__name b { font-size: 1.4rem; font-weight: 600; line-height: 1.35; word-break: keep-all; }
-  .row-list > .row .row__moves { margin-top: 0.3rem; line-height: 1.5; word-break: keep-all; }
+  .row-list:not(.is-list) > .row > .sprite { box-sizing: content-box; width: 6.4rem; height: 6.4rem; padding: 0.8rem; border-radius: 1.2rem; }
+  .row-list:not(.is-list) > .row > .sprite:not(.is-loading) { background: var(--bg); }
+  .row-list:not(.is-list) > .row > .row__main { width: 100%; min-width: 0; padding-top: 0.9rem; border-top: 1px solid var(--line); }
+  .row-list:not(.is-list) > .row .row__badges { justify-content: center; margin-bottom: 0.4rem; }
+  .row-list:not(.is-list) > .row .row__name { justify-content: center; }
+  .row-list:not(.is-list) > .row .row__name b { font-size: 1.4rem; font-weight: 600; line-height: 1.35; word-break: keep-all; }
+  .row-list:not(.is-list) > .row .row__moves { margin-top: 0.3rem; line-height: 1.5; word-break: keep-all; }
   /* 점수는 카드 바닥에 붙인다 — 기술 줄 길이가 종마다 달라도 점수 높이가 가지런하다 */
-  .row-list > .row > .row__stats { display: flex; flex-direction: column; align-items: center; gap: 1px; margin-top: auto; padding-top: 0.8rem; text-align: center; }
-  .row-list > .row .row__score { font-size: 1.7rem; font-weight: 600; }
-  .row-list > .row .row__sub { display: block; }
+  .row-list:not(.is-list) > .row > .row__stats { display: flex; flex-direction: column; align-items: center; gap: 1px; margin-top: auto; padding-top: 0.8rem; text-align: center; }
+  .row-list:not(.is-list) > .row .row__score { font-size: 1.7rem; font-weight: 600; }
+  .row-list:not(.is-list) > .row .row__sub { display: block; }
   /* 격자 폭을 다 쓰는 항목들 — 더보기 버튼과 티어표의 "선정 근거" 줄 */
-  .row-list > .row__more { grid-column: 1 / -1; border: 1px solid var(--line); border-radius: 1rem; }
-  .row-list > .row__more:hover { border-color: var(--fg); background: var(--hover); }
-  .row-list > .row__why { grid-column: 1 / -1; padding: 1.2rem 1.4rem; border: 1px solid var(--line); border-radius: 1rem; background: var(--surface); }
+  .row-list:not(.is-list) > .row__more { grid-column: 1 / -1; border: 1px solid var(--line); border-radius: 1rem; }
+  .row-list:not(.is-list) > .row__more:hover { border-color: var(--fg); background: var(--hover); }
+  .row-list:not(.is-list) > .row__why { grid-column: 1 / -1; padding: 1.2rem 1.4rem; border: 1px solid var(--line); border-radius: 1rem; background: var(--surface); }
   /* 순위가 없는 목록(덱 슬롯 등)은 3열이면 카드가 너무 홀쭉하다 */
-  .is-starless .row-list { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .is-starless .row-list:not(.is-list) { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 }
