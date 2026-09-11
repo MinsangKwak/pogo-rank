@@ -27,6 +27,7 @@
 //   hintNote(...parts)            안내·빈 상태 문구
 //   metaText(...parts)            보조 문구 한 조각
 //   layoutInitial(storageKey)     그리드/리스트 초기값(저장된 선택 → 없으면 wideCards() 기본값)
+//   rowListLayout(grid)           랭킹 목록(.row-list)에 is-grid / is-list 를 명시한다
 //   layoutToggle(storageKey, grid, onToggle)   그리드 ↔ 리스트 보기 전환 버튼 (2026-09-12 v3.8.0)
 //
 // 의존하는 전역
@@ -88,6 +89,18 @@ function layoutInitial(storageKey, defaultGrid = wideCards()) {
   } catch { /* 저장 불가 환경(사생활 모드 등) */ }
   return grid;
 }
+// 2026-09-12 v3.9.1 랭킹 목록(.row-list)의 보기를 **두 클래스로 명시**한다.
+// 전에는 is-list 만 켜고 껐다 — "그리드" 가 클래스 없는 상태라서 CSS 가 그것을 "기본" 과 구별하지 못했고,
+// 넓은 화면 기본값(카드)이 미디어 쿼리에 묶여 있어 휴대폰에서는 켤 방법 자체가 없었다.
+// 이제 둘 중 하나가 반드시 붙는다 — CSS 는 .is-grid 만 보면 되고 폭은 몰라도 된다.
+// 도감(.dex__list)은 반대로 줄이 기본이라 .is-grid 하나만 쓴다 (그쪽은 그대로 둔다)
+function rowListLayout(grid) {
+  for (const node of document.querySelectorAll('#content .row-list')) {
+    node.classList.toggle('is-grid', grid);
+    node.classList.toggle('is-list', !grid);
+  }
+}
+
 // 보기 전환 — 버튼 하나. 누르면 리스트 ↔ 그리드가 뒤집힌다.
 //   storageKey   localStorage 키
 //   grid         지금 그리드인지 (초기값)
