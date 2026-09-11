@@ -147,7 +147,15 @@ const ok = (n, c, x = '') => { console.log((c ? 'PASS' : 'FAIL') + ' ' + n + ' '
     const node = document.querySelector('script[type="application/ld+json"]');
     try { return JSON.parse(node.textContent); } catch { return null; }
   });
-  ok('JSON-LD 파싱됨', !!ld && ld['@type'] === 'WebSite', ld && ld['@type']);
+  // 2026-09-12 v2.67.0 @graph 로 바꾸고 WebApplication 을 더했다 — WebSite 하나로는 "이게 도구다" 를 말하지 못한다
+  const ldTypes = ld && Array.isArray(ld['@graph']) ? ld['@graph'].map((node) => node['@type']) : [];
+  ok('JSON-LD 파싱됨', ldTypes.includes('WebSite') && ldTypes.includes('WebApplication'), ldTypes.join('|'));
+  // 없는 기능을 적지 않는다 — 해시 라우팅이라 ?q= 로 결과를 여는 주소가 실제로 없다
+  ok('SearchAction 을 지어내지 않는다', !JSON.stringify(ld || {}).includes('SearchAction'));
+  // 실서비스 빌드는 색인을 명시한다. dev 의 noindex 와 같은 자리라 한 빌드에 robots 줄은 정확히 하나다
+  const robotsMetas = await page.evaluate(() => [...document.querySelectorAll('meta[name="robots"]')].map((n) => n.content));
+  ok('robots 메타가 정확히 하나', robotsMetas.length === 1, robotsMetas.join(' / '));
+  ok('검색 결과에 그림을 크게', /max-image-preview:large/.test(robotsMetas[0] || '') || /noindex/.test(robotsMetas[0] || ''), robotsMetas[0]);
 
   // ── 2026-09-10 v2.50.0 최신 여부 확인 (components/freshness.js)
   // 설치형 앱은 한 번 띄우면 그대로 살아 있어, 며칠이 지나도 처음 받은 data.js 를 보여 준다.

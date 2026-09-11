@@ -18,7 +18,7 @@
 //   hexNode / svgEl / detailCpCalc : 팝업 각 블록을 만드는 조립 함수들
 //
 // [의존하는 전역 · 데이터]
-// - el() (dom.js) · sprite() (components/sprite.js) · track() (track.js) · openModal() (components/modal.js)
+// - el() (dom.js) · sprite() · spriteAnimate() (components/sprite.js) · track() (track.js) · openModal() (components/modal.js)
 // - authEnabled() · favBtn() (components/auth.js) — 로그인 기능이 켜진 빌드에서만 즐겨찾기 ★ 표시
 // - calcCp() (components/pages.js) — 내 개체 CP 계산기에서 사용
 // - DEX_DATA (data.js): names / forms / evo / megas / chart / dex / cpm
@@ -551,7 +551,9 @@ function openDetail(pokemon, isDex = false, from = null) {
   const formKind = formLabels.map(formLabelKind)[0] ?? '';
   const head = el('div', { class: 'detail__head' },
     el('div', { class: `sprite-box${formKind ? ' sprite-box--' + formKind : ''}` },
-      sprite(pokemon.sprite),
+      // 2026-09-12 v2.67.0 상세 화면의 큰 그림만 움직인다 — 한 번에 한 마리라 GIF 한 장이면 된다.
+      // 정지본을 먼저 띄우고 다 받은 뒤 갈아 끼우므로, 없는 종(6세대 이후 다수)은 그대로 정지본이다
+      spriteAnimate(sprite(pokemon.sprite), pokemon.sprite),
       // 상성표의 작은 점 칩(tchips__item)과는 다른 자리라 건드려도 이중약점 강조 같은 다른 뜻이 흔들리지 않는다
       types.length ? el('div', { class: 'detail__types' }, ...types.map((typeName) => el('span', { class: 'detail__type-pill', style: `--c: var(--t-${typeName})` }, TYPE_KO[typeName] ?? typeName))) : ''),
     // 2026-09-03 v2.2.0 즐겨찾기 ★ · 2026-09-06 v2.9.0 🔗 공유 · 2026-09-07 v2.15.0 (QA-54) ➕ 내 개체로 저장.

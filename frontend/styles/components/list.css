@@ -34,6 +34,15 @@
 .row:nth-child(-n+3) .row__rank { color: var(--fg); font-weight: 600; }
 .sprite { width: 4rem; height: 4rem; image-rendering: pixelated; display: block; }
 .sprite.sprite--hd { image-rendering: auto; object-fit: contain; }  /* 2026-09-05 v2.7.2 게임 에셋 아이콘(아머드 뮤츠 등)은 부드럽게 축소 */
+/* 2026-09-12 v2.67.0 움직이는 그림(상세 화면) — 정지본과 화면 비율이 달라(가로 51~119px, 세로 62~105px)
+   상자에 맞춰 늘리면 찌그러진다. 원본 비율을 지키고 바닥에 세운다 — 포켓몬이 서 있는 그림이라
+   위가 아니라 아래를 맞춰야 발이 같은 선에 온다 */
+.sprite.sprite--anim { image-rendering: auto; object-fit: contain; object-position: center bottom; }
+@media (prefers-reduced-motion: reduce) {
+  /* 움직임을 줄이는 설정이면 GIF 를 갈아 끼우지 않는다 — 재생을 CSS 로 멈출 수는 없어
+     sprite.js 가 이 설정을 직접 읽는다. 여기 규칙은 남은 표시만 지운다 */
+  .sprite.sprite--anim { image-rendering: pixelated; }
+}
 .sprite.empty { background: var(--surface); border-radius: 0.8rem; display: flex; align-items: center; justify-content: center; color: var(--muted); opacity: .45; }
 /* 2026-09-07 v2.14.0 (QA-52) 스프라이트 스켈레톤 — 이미지를 받는 동안 회색 판이 좌→우로 반짝인다. 받고 나면 sprite.js 가 .is-loading 을 뗀다 */
 .sprite.is-loading { border-radius: 0.8rem; background: linear-gradient(90deg, var(--surface) 25%, color-mix(in srgb, var(--muted) 18%, var(--surface)) 50%, var(--surface) 75%); background-size: 200% 100%; animation: sprite-shimmer 1.2s ease-in-out infinite; }
