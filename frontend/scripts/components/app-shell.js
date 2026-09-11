@@ -121,7 +121,7 @@ function syncLockedNav() {
     $item.classList.toggle('is-locked', locked);
     if (locked) $item.setAttribute('aria-disabled', 'true');
     else $item.removeAttribute('aria-disabled');
-    $item.title = locked ? '로그인하면 열립니다' : '';
+    $item.title = locked ? '로그인하면 열려요' : '';
   }
   // 셸 탭 줄의 배틀 PvP — 탭은 매번 다시 그려지므로 renderTabs 가 직접 표시한다(여기서는 건드리지 않는다)
 }

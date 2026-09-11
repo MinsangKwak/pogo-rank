@@ -29,11 +29,11 @@ const PLAN_STATUS_ICONS = ['🌱', '✅', '🔄'];
 // 갈 곳이 없는 걸음은 넣지 않는다 — 걸음은 곧 "눌러서 할 수 있는 것" 이다
 function planSteps() {
   return [
-    ['🎒', '개체 등록하기', '가진 포켓몬을 레벨·개체값·기술 단위로 적어 둡니다.', routeHash('planner-collection')],
-    ['📊', '개체값 확인하기', '백개체와 몇 CP 차이인지 목록에서 바로 읽습니다.', routeHash('planner-collection')],
-    ['⚖️', '같은 종 비교하기', '같은 종 두 마리의 [비교] 를 눌러 나란히 봅니다.', routeHash('planner-collection')],
-    ['🃏', '리그 도달 보기', '비교 창에서 리틀·슈퍼·하이퍼 도달 레벨을 확인합니다.', routeHash('planner-collection')],
-    ['📕', '도감에서 더 찾기', '무엇이 센지부터 보고 싶다면 도감으로 갑니다.', routeHash('dex')],
+    ['🎒', '개체 등록하기', '가진 포켓몬을 레벨·개체값·기술 단위로 적어 둬요.', routeHash('planner-collection')],
+    ['📊', '개체값 확인하기', '백개체와 몇 CP 차이인지 목록에서 바로 읽어요.', routeHash('planner-collection')],
+    ['⚖️', '같은 종 비교하기', '같은 종 두 마리의 [비교] 를 눌러 나란히 봐요.', routeHash('planner-collection')],
+    ['🃏', '리그 도달 보기', '비교 창에서 리틀·슈퍼·하이퍼 도달 레벨을 확인해요.', routeHash('planner-collection')],
+    ['📕', '도감에서 더 찾기', '무엇이 센지부터 보고 싶다면 도감으로 가요.', routeHash('dex')],
   ];
 }
 
@@ -63,7 +63,7 @@ function renderPlanHome() {
     el('div', { class: 'plan__hero-head' },
       el('span', { class: 'plan__hero-ico', 'aria-hidden': 'true' }, '🌱'),
       el('h2', {}, '플래너 — 내 개체를 어떻게 키울까')),
-    el('p', { class: 'plan__hero-desc' }, '도감이 "뭐가 세나"에 답한다면, 플래너는 "내가 가진 이 개체를 지금 키워도 되나"에 답합니다. 위 탭의 내 포켓몬에서 개체를 레벨·개체값·기술 단위로 저장하면 같은 종끼리 비교할 수 있어요.'),
+    el('p', { class: 'plan__hero-desc' }, '도감이 "뭐가 세나"에 답한다면, 플래너는 "내가 가진 이 개체를 지금 키워도 되나"에 답해요. 위 탭의 내 포켓몬에서 개체를 레벨·개체값·기술 단위로 저장하면 같은 종끼리 비교할 수 있어요.'),
     el('a', { class: 'plan__hero-go', href: routeHash('planner-collection') },
       el('span', { class: 'plan__hero-go-ico', 'aria-hidden': 'true' }, '＋'),
       '내 포켓몬에서 개체 등록하기',
@@ -75,21 +75,21 @@ function renderPlanHome() {
     summary.append(el('div', { class: 'plan__summary-main' },
       el('span', { class: 'plan__summary-ico', 'aria-hidden': 'true' }, '🎒'),
       el('div', {}, el('b', {}, '내 포켓몬'),
-        el('span', { class: 'plan__summary-desc' }, '이 빌드는 로그인 기능이 꺼져 있어 저장이 안 됩니다. 계산·조회는 할 수 있어요.'))));
+        el('span', { class: 'plan__summary-desc' }, '계산·조회는 할 수 있어요. 이 빌드는 로그인 기능이 꺼져 있어 저장만 안 돼요.'))));
   } else if (!loggedIn) {
     summary.append(el('div', { class: 'plan__summary-main' },
       el('span', { class: 'plan__summary-ico', 'aria-hidden': 'true' }, '🎒'),
       el('div', {}, el('b', {}, '내 포켓몬'),
         el('span', { class: 'plan__summary-desc' }, AUTH.status === 'pending'
-          ? '⏳ 승인 대기 중 — 승인되면 개체를 계정에 저장하고 기기 간에 동기화합니다.'
-          : '☰ 메뉴 맨 위 "👤 마이페이지" 에서 로그인하면 개체를 계정에 저장하고 어느 기기에서든 같은 목록을 봅니다. 로그인 없이도 CP 계산은 해 볼 수 있어요.'))));
+          ? '⏳ 승인 대기 중 — 승인되면 개체를 계정에 저장하고 기기 간에 동기화해요.'
+          : '☰ 메뉴 맨 위 "👤 마이페이지" 에서 로그인하면 개체를 계정에 저장하고 어느 기기에서든 같은 목록을 봐요. 로그인 없이도 CP 계산은 해 볼 수 있어요.'))));
   } else {
     summary.append(
       el('div', { class: 'plan__summary-main' },
         el('span', { class: 'plan__summary-ico', 'aria-hidden': 'true' }, '🎒'),
         el('div', {}, el('b', {}, `내 포켓몬 ${mons.length}마리`),
           el('span', { class: 'plan__summary-desc' }, mons.length
-            ? '육성 중인 포켓몬들의 현황을 한눈에 확인하세요.'
+            ? '육성 중인 포켓몬 현황을 한눈에 봐요.'
             : '아직 저장한 개체가 없어요. 위 버튼으로 첫 개체를 등록해 보세요.'))),
       el('div', { class: 'plan__stats' }, ...PLAN_STATUSES.map((status, index) =>
         el('div', { class: `plan__stat plan__stat--${PLAN_STATUS_MODS[index]}` },
@@ -129,5 +129,5 @@ function renderPlanHome() {
   }
 
   $content.append(el('p', { class: 'detail__foot plan__roadmap' }, '다음에 붙을 것: 육성 판단 카드(키울 가치·다음 행동) · 목표 자원 계산기 · 게임 검색식 생성기 · 보유 개체 기반 파티 · 내 목표 × 일정 연결'));
-  $note.textContent = '육성 플래너는 내 개체(레벨 · 개체값 · 기술)를 계정에 저장하고 같은 종끼리 비교하는 화면입니다. 위 탭에서 육성 현황과 내 포켓몬 목록을 오갑니다. 저장은 승인된 로그인 사용자만, 계산은 누구나.';
+  $note.textContent = '내 개체(레벨 · 개체값 · 기술)를 계정에 저장하고 같은 종끼리 비교해요. 위 탭에서 육성 현황과 내 포켓몬 목록을 오가요. 계산은 누구나, 저장은 승인된 분만.';
 }
