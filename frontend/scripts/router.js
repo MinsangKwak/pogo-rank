@@ -44,13 +44,13 @@ const ROUTES = [
   // 2026-09-09 v2.40.0 icon: 화면을 가리키는 이모지. 서비스 홈 타일(components/home.js)과 ☰ 메뉴가
   // 같은 그림을 써야 해서(같은 화면인데 그림이 다르면 다른 곳으로 읽힌다) 표 한 곳에 둔다 — 예전엔
   // home.js 안에만 있어 메뉴에는 아이콘을 못 붙였다
-  { id: 'planner', path: 'planner', kind: 'plan', tab: 'home', nav: '육성 플래너', icon: '🌱', locked: true, legacy: ['plan'] },
+  { id: 'planner', path: 'planner', kind: 'plan', tab: 'home', nav: '육성 플래너', icon: '🌱', group: 'main', locked: true, legacy: ['plan'] },
   // 2026-09-12 v2.63.0 '타입 & 상성' 화면을 접고 도감으로 넘긴다 — 타입 상성은 상세 팝업이
   // 이미 같은 표를 보여 준다. 공유된 #/types?t=… 링크가 죽지 않게 legacy 로 잇는다
-  { id: 'dex', path: 'dex', kind: 'page', nav: '포켓몬 도감', icon: '📕', legacy: ['types'] },
-  { id: 'dmax', path: 'dmax', kind: 'shell', tab: 'max', nav: 'D-MAX', icon: '✨', legacy: ['rank/max'] },
-  { id: 'pve', path: 'pve', kind: 'shell', tab: 'pve', nav: '레이드 · PvE', icon: '⚔️', locked: true, legacy: ['rank/pve'] },
-  { id: 'pvp', path: 'pvp', kind: 'shell', tab: 'pvp', nav: '배틀 · PvP', icon: '🃏', locked: true, legacy: ['rank/pvp'] },
+  { id: 'dex', path: 'dex', kind: 'page', nav: '포켓몬 도감', icon: '📕', group: 'main', legacy: ['types'] },
+  { id: 'dmax', path: 'dmax', kind: 'shell', tab: 'max', nav: 'D-MAX', icon: '✨', group: 'main', legacy: ['rank/max'] },
+  { id: 'pve', path: 'pve', kind: 'shell', tab: 'pve', nav: '레이드 · PvE', icon: '⚔️', group: 'main', locked: true, legacy: ['rank/pve'] },
+  { id: 'pvp', path: 'pvp', kind: 'shell', tab: 'pvp', nav: '배틀 · PvP', icon: '🃏', group: 'main', locked: true, legacy: ['rank/pvp'] },
   { id: 'schedule', path: 'schedule', kind: 'page', nav: '이벤트 일정', icon: '📅', locked: true },
   { id: 'raids', path: 'raids', kind: 'page', nav: '레이드 보스', icon: '⚔️', locked: true },
   { id: 'eggs', path: 'eggs', kind: 'page', nav: '알 부화', icon: '🥚', locked: true },
@@ -75,8 +75,12 @@ const ROUTES = [
   { id: 'mon', path: 'mon', kind: 'detail' },
 ];
 
-// 메뉴에 오르는 것만 [해시, 라벨, 아이콘] 로 (app-shell.js 이동 목록 · PC 사이드바)
-const ROUTE_NAV = ROUTES.filter((route) => route.nav).map((route) => [`#/${route.path}`, route.nav, route.icon || '']);
+// 메뉴에 오르는 것만 [해시, 라벨, 아이콘, 덩이] 로 (app-shell.js 이동 목록 · PC 사이드바)
+// 2026-09-12 v2.64.0 group — 메뉴가 열 줄을 넘어가며 "늘 쓰는 것" 과 "가끔 쓰는 것" 이 한 덩이에
+// 섞여 눈이 매번 처음부터 훑어야 했다. group: 'main' 인 다섯(육성 플래너 · 도감 · D-MAX ·
+// 레이드 PvE · 배틀 PvP)이 주요 기능이고, 적지 않은 나머지가 부가 기능이다
+const ROUTE_NAV = ROUTES.filter((route) => route.nav)
+  .map((route) => [`#/${route.path}`, route.nav, route.icon || '', route.group || 'extra']);
 
 // 화면 아이콘 — 서비스 홈 타일(components/home.js)이 이 표를 읽는다. 모르는 id 면 빈 문자열
 // 2026-09-10 v2.48.1 로그인해야 쓰는 화면인가 (ROUTES 의 locked).
@@ -108,6 +112,14 @@ const ROUTE_DESC = {
   raids: '지금 도는 레이드 보스와 약점이에요.',
   eggs: '거리별로 무엇이 부화하는지 봐요.',
   ivrank: '내 개체가 그 리그에서 몇 위인지 봐요.',
+  finder: '조건을 눌러 게임 검색창에 붙여 넣을 식을 만들어요.',
+  // 2026-09-12 v2.64.0 메뉴에 없는 화면에도 부제를 단다 — 제목만 있는 화면은
+  // 주소로 바로 들어온 사람에게 "여기가 어디인지" 를 말해 주지 않는다
+  release: '무엇이 언제 바뀌었는지 적어 둬요.',
+  changes: '이번 시즌에 위력·에너지가 바뀌는 기술이에요.',
+  privacy: '어떤 정보를 받고 어떻게 다루는지 알려 드려요.',
+  terms: '이 서비스를 쓸 때의 약속이에요.',
+  // mon 은 적지 않는다 — kind:'detail' 이라 화면 머리가 아니라 팝업 안에 이름이 뜬다
   favs: '★ 로 담은 포켓몬을 갈래별로 봐요.',
   styleguide: 'POGO PLAN 을 이루는 조각을 한자리에서 봐요. 화면을 새로 만들 때 여기서 가져다 써요.',
 };

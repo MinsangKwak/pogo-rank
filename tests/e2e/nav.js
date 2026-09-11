@@ -95,8 +95,9 @@ const ok = (name, cond, extra = '') => results.push([cond ? 'PASS' : 'FAIL', nam
       .map(n => ({ t: n.textContent.trim(), w: n.getBoundingClientRect().width, h: n.getBoundingClientRect().height })));
   // v2.29.0 계정(👤)을 빼고 그 자리에 KR/EN 토글 — 로그인·마이페이지는 ☰ 메뉴 한 곳으로 모았다
   const wide = page.viewportSize().width >= 1100;
-  ok(`헤더 아이콘 ${wide ? '4개 (🔍 🌗 EN ☰)' : '3개 (🔍 EN ☰)'}`,
-    btns.map(b => b.t).join('') === (wide ? '🔍🌗EN☰' : '🔍EN☰'), JSON.stringify(btns.map(b => b.t)));
+  // 2026-09-12 v2.64.0 ★ 즐겨찾기가 헤더로 왔다 — 로그인 + 즐겨찾기가 있을 때만 보인다(mock 은 로그인 상태)
+  ok(`헤더 아이콘 ${wide ? '5개 (🔍 ★ 🌗 EN ☰)' : '4개 (🔍 ★ EN ☰)'}`,
+    btns.map(b => b.t).join('') === (wide ? '🔍★🌗EN☰' : '🔍★EN☰'), JSON.stringify(btns.map(b => b.t)));
   ok('헤더 버튼 44×44 통일', btns.every(b => Math.round(b.w) === 44 && Math.round(b.h) === 44), JSON.stringify(btns));
   ok('헤더에 텍스트 버튼 없음', !(await page.locator('.app-bar').textContent()).includes('메뉴'));
 
@@ -195,6 +196,64 @@ const ok = (name, cond, extra = '') => results.push([cond ? 'PASS' : 'FAIL', nam
   await page.click('.tool-btn:has-text("개체값 순위")');
   await settle();
   ok('다시 누르면 접힌다', (await page.locator('.ivrank__pick').count()) === 0);
+
+  // 8d. 2026-09-12 v2.64.0 이동 목록이 두 덩이로 읽히는가 (주요 기능 · 부가 기능)
+  {
+    const secs = await page.locator('.nav-menu__sec').allTextContents();
+    ok('메뉴가 두 덩이', secs.join('|') === '주요 기능|부가 기능', secs.join('|'));
+    const mains = await page.evaluate(() => {
+      const heads = [...document.querySelectorAll('.nav-menu__sec')];
+      const out = [];
+      for (let n = heads[0]?.nextElementSibling; n && !n.classList.contains('nav-menu__sec'); n = n.nextElementSibling) {
+        out.push(n.querySelector('.drawer__label')?.textContent || '');
+      }
+      return out;
+    });
+    ok('주요 기능은 다섯', mains.join('|') === '육성 플래너|포켓몬 도감|D-MAX|레이드 · PvE|배틀 · PvP', mains.join('|'));
+  }
+
+  // 8e. 배틀 PvP 는 읽는 순서대로 놓인다 — ① 리그 ② 타입 ③ 도구
+  {
+    await page.goto(BASE + '?mock=1#/pvp', { waitUntil: 'domcontentloaded' });
+    await settle();
+    const order = await page.evaluate(() => [...document.querySelectorAll('#controls > *')].map((n) => {
+      if (n.querySelector('.seg')) return '리그';
+      if (n.classList.contains('controls__row--tools')) return '도구';
+      return '타입';
+    }));
+    ok('컨트롤이 리그 → 타입 → 도구 순서', order.join(' → ') === '리그 → 타입 → 도구', order.join(' → '));
+  }
+
+  // 8f. ★ 즐겨찾기는 헤더 버튼을 눌러 팝업으로 연다 (화면 맨 위 카드였던 것)
+  {
+    ok('본문 맨 위 즐겨찾기 카드가 없다', (await page.locator('#fav-digest').count()) === 0);
+    await page.click('#fav-toggle');
+    await settle();
+    ok('★ 를 누르면 팝업', (await page.locator('.fav-pop').count()) === 1);
+    ok('팝업이 마릿수를 말한다', /\d+마리/.test(await page.locator('.fav-pop h2').textContent()),
+      await page.locator('.fav-pop h2').textContent());
+    ok('갈래로 보기 링크', (await page.locator('.fav-pop .boss__foot button:has-text("갈래로 보기")').count()) === 1);
+    await page.keyboard.press('Escape');
+    await settle();
+    ok('Esc 로 닫힌다', (await page.locator('.fav-pop').count()) === 0);
+  }
+
+  // 8g. 2026-09-12 v2.64.0 화면마다 제목과 부제가 있는가 — 제목만 있으면 "여기가 어디인지" 는
+  //     알아도 "여기서 무엇을 하는지" 는 모른다. 좁은 화면에서도 보인다(전에는 CSS 가 감췄다)
+  for (const hash of ['#/dex', '#/dmax', '#/pve', '#/pvp', '#/schedule', '#/raids', '#/eggs',
+    '#/finder', '#/ivrank', '#/favs', '#/release', '#/changes', '#/privacy', '#/terms']) {
+    await page.goto(BASE + '?mock=1' + hash, { waitUntil: 'domcontentloaded' });
+    await settle();
+    const head = await page.evaluate(() => {
+      const box = document.getElementById('page-head');
+      const desc = document.querySelector('.page-head__desc');
+      return {
+        title: box && !box.hidden ? (box.querySelector('h2')?.textContent || '').trim() : '',
+        desc: desc && !desc.hidden && desc.offsetHeight > 0 ? desc.textContent.trim() : '',
+      };
+    });
+    ok(`${hash} 제목·부제`, head.title.length > 0 && head.desc.length > 0, JSON.stringify(head));
+  }
 
   // 9. 길이 단위가 rem 인가 (2026-09-10 v2.52.0)
   // html 62.5% 기준이라 1rem = 10px 이고, 기본 설정에서는 지금까지와 같은 크기로 그려진다.

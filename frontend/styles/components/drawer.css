@@ -131,3 +131,15 @@
     background: transparent; border-radius: 0; transform: none; animation: none;
   }
 }
+
+/* 2026-09-12 v2.64.0 이동 목록 속 덩이 제목 (주요 기능 · 부가 기능) —
+   열 줄이 한 덩이로 붙어 있어 늘 쓰는 것을 찾으려면 매번 처음부터 훑어야 했다.
+   카드(.drawer__group) 안의 줄들을 가르는 얇은 머리글이라, 바깥 섹션 제목(.drawer__sec)보다 작다 */
+.nav-menu__sec {
+  margin: 0; padding: 1.2rem 1.4rem 0.4rem;
+  font-size: 1.1rem; font-weight: 700; letter-spacing: 0.04em;
+  color: var(--muted); text-transform: none;
+}
+/* 서비스 홈 바로 아래에 오는 첫 제목은 줄 사이를 가르는 선을 겸한다 */
+.nav-menu__sec + .drawer__item { border-top: 0; }
+.nav-menu .drawer__item + .nav-menu__sec { border-top: 1px solid var(--line); margin-top: 0.4rem; }
