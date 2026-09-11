@@ -141,11 +141,15 @@ document.addEventListener('keydown', (event) => {
 // 목록 화면을 벗어나면(다른 탭·메뉴로 이동) 패널을 닫는다 — 다른 화면 옆에 이전 포켓몬이 남아 있으면 헷갈린다.
 // 같은 화면 안에서 다른 포켓몬을 열 때는 openDetailPanel 이 내용만 바꿔치므로 이 리스너를 타지 않는다
 // (history.replaceState 는 hashchange 를 일으키지 않는다)
+// 2026-09-11 v2.61.0 홈을 예외로 두고 있었다 — 그래서 도감에서 포켓몬을 연 채
+// [서비스 홈] 으로 가면 홈 오른쪽에 이전 포켓몬 패널이 그대로 남아 본문이 눌렸다.
+// 남겨야 하는 것은 "홈" 이 아니라 **상세를 가리키는 주소(#/mon/…)** 하나뿐이다.
+// 딥링크로 바로 들어왔거나 뒤로가기로 그 주소에 돌아온 경우라 패널이 곧 그 화면이다.
+// (목록에서 포켓몬을 누를 때는 replaceState 라 hashchange 가 안 나 이 리스너를 타지 않는다)
 window.addEventListener('hashchange', () => {
   const panel = document.getElementById('detail-panel');
   if (!panel || panel.hidden) return;
-  const onShell = routeIdOf() === 'home' || routeIdOf() === 'mon';
-  if (!onShell) closeDetailPanel();
+  if (!/^#\/mon\//.test(location.hash)) closeDetailPanel();
 });
 
 // 도감 상세는 필터/보기 전환 아래에서 시작한다. 줄바꿈·창 크기·스크롤에도
