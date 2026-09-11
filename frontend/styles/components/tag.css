@@ -9,13 +9,13 @@
 
 /* 2026-09-04 시즌 기술 변경 예고 뱃지 — 적용일 전에만 붙는다 */
 .tag.tag--chg { border-style: dashed; }
-.tag.tag--chg.is-up { color: var(--brand); border-color: color-mix(in srgb, var(--brand) 55%, var(--line)); }
+.tag.tag--chg.is-up { color: var(--good); border-color: color-mix(in srgb, var(--good) 55%, var(--line)); }
 .tag.tag--chg.is-down { color: var(--warn); border-color: color-mix(in srgb, var(--warn) 55%, var(--line)); }
 .tag.tag--chg.tag--mix { color: var(--fg); border-color: var(--fg); }
 
 /* 2026-09-04 순위 변동 ▲▼ — 순위 숫자 아래 한 줄 */
 .delta { display: block; font-size: 1rem; font-weight: 700; line-height: 1.3; letter-spacing: -.02em; }
-.delta.is-up { color: var(--brand); }
+.delta.is-up { color: var(--good); }
 .delta.is-down { color: var(--warn); }
 
 /* 2026-09-06 v2.10.0 (QA-44) 폼 라벨 뱃지 — 이름 앞의 메가·원시·섀도우·다이맥스·리전 폼 (components/name.js)

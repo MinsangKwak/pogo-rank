@@ -105,7 +105,12 @@
 .boss__more { margin-top: 0.8rem; font-size: 1.25rem; color: var(--muted); text-decoration: underline; }
 
 /* 2026-09-02 보스 아코디언 */
-.boss__acc { margin: 0 0 1.2rem; }
+/* 2026-09-12 v3.5.0 보스 아코디언과 그 아래 필터 줄 사이를 8px 로 좁힌다.
+   전에는 32px 이었다 — 이 마진 12px + .controls 의 위 패딩 20px(layout.css).
+   둘은 "이번 주 무엇이 도나" 와 "그중 무엇을 볼까" 로 이어지는 한 덩이라 멀 이유가 없다.
+   아코디언이 뜨는 화면(D-MAX)에서만 좁힌다 — .is-on 은 renderBossAcc 가 붙인다 */
+.boss__acc { margin: 0 0 0.8rem; }
+.boss__acc.is-on ~ .controls { padding-top: 0; }
 .recs-wrap { flex-wrap: wrap; overflow-x: visible; }
 /* 2026-09-07 v2.13.0 (QA-43) 이번 주 보스 파티 카드 — 딜러 2 + 탱커 1 */
 .party-card { margin-bottom: 1rem; padding: 0.8rem 1rem; border: 1px solid var(--line); border-radius: 1rem; background: var(--surface); }

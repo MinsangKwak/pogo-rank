@@ -165,25 +165,32 @@ const ok = (n, c, x = '') => { console.log((c ? 'PASS' : 'FAIL') + ' ' + n + ' '
       }));
     }
     // 항목 한 줄 = 아이콘 + 이름 (아이콘은 서비스 홈 타일과 같은 그림 — router.js ROUTES 한 곳에서 온다)
+    // 2026-09-12 v3.6.0 아이콘 칸에 도트 그림(svg.pxi)이 들어간다 — 표에 없는 이모지는 글자로 남으므로 둘 다 인정한다
     ok(`${label} 메뉴 항목에 아이콘 칸`, await page.evaluate(() => {
       const rows = [...document.querySelectorAll('.nav-menu .drawer__item')];
-      return rows.length > 0 && rows.every((n) => n.querySelector('.drawer__ico')?.textContent.trim() && n.querySelector('.drawer__label'));
+      return rows.length > 0 && rows.every((n) => {
+        const ico = n.querySelector('.drawer__ico');
+        return !!ico && (ico.querySelector('svg.pxi') || ico.textContent.trim()) && n.querySelector('.drawer__label');
+      });
     }));
     await page.keyboard.press('Escape');
     await page.waitForTimeout(400);
 
     // ── 그리드 보기는 카드 (v2.29.2 라벨: 열 개수가 아니라 보기 방식)
     await go('#/dex');
-    // 넓은 화면은 그리드가 기본, 좁은 화면은 리스트가 기본이다 — 그리드가 아니면 그리드 칸을 누른다
-    // 2026-09-09 v2.40.0 .dex__layout 은 이제 두 칸짜리 세그먼트 컨트롤(묶음)이다 — 칸을 눌러야 한다
-    const layoutBtn = page.locator('.dex__layout button').last();
-    if (!(await page.locator('.dex__list.is-grid').count())) await layoutBtn.click({ timeout: 1500 }).catch(() => {});
+    // 넓은 화면은 그리드가 기본, 좁은 화면은 리스트가 기본이다 — 그리드가 아니면 버튼을 눌러 뒤집는다
+    // 2026-09-12 v3.8.0 .dex__layout 은 버튼 하나다 — 누를 때마다 리스트 ↔ 그리드가 뒤집힌다
+    if (!(await page.locator('.dex__list.is-grid').count())) {
+      await page.locator('.dex__layout').click({ timeout: 1500 }).catch(() => {});
+    }
     await page.waitForTimeout(500);
     const card = await page.locator('.dex__list.is-grid .dex__row').first().evaluate((n) => {
       const s = getComputedStyle(n);
       return { dir: s.flexDirection, radius: s.borderRadius, border: s.borderTopWidth, w: Math.round(n.getBoundingClientRect().width) };
     }).catch(() => null);
-    ok(`${label} 그리드는 카드`, !!card && card.dir === 'column' && parseFloat(card.radius) >= 8 && parseFloat(card.border) >= 1, JSON.stringify(card));
+    // 2026-09-12 v3.6.0 도트 디자인 — 곡선을 없애고 테두리를 2px 로 세웠다.
+    // "카드냐" 를 가르는 것은 이제 모서리가 아니라 세로 쌓임 + 또렷한 테두리다
+    ok(`${label} 그리드는 카드`, !!card && card.dir === 'column' && parseFloat(card.border) >= 2, JSON.stringify(card));
     const spriteSize = await page.locator('.dex__list.is-grid .sprite').first().evaluate((n) => Math.round(n.getBoundingClientRect().width)).catch(() => 0);
     ok(`${label} 카드 그림이 크다 (리스트보다)`, spriteSize >= 56, `${spriteSize}px`);
 
@@ -197,7 +204,8 @@ const ok = (n, c, x = '') => { console.log((c ? 'PASS' : 'FAIL') + ' ' + n + ' '
                  border: parseFloat(s.borderTopWidth), cols: list.gridTemplateColumns.split(' ').length };
       });
       if (wide) {
-        ok(`PC ${hash} 랭킹이 카드`, shape.display === 'flex' && shape.dir === 'column' && shape.radius >= 8 && shape.border >= 1, JSON.stringify(shape));
+        // 2026-09-12 v3.6.0 도트 디자인 — 모서리 대신 2px 테두리가 카드의 표시다
+        ok(`PC ${hash} 랭킹이 카드`, shape.display === 'flex' && shape.dir === 'column' && shape.border >= 2, JSON.stringify(shape));
         ok(`PC ${hash} 여러 열로 놓임`, shape.cols >= 2, String(shape.cols));
       } else {
         ok(`모바일 ${hash} 랭킹은 줄 (기존 유지)`, shape.display === 'grid' && shape.radius < 1, JSON.stringify(shape));

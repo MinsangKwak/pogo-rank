@@ -3,11 +3,11 @@
 // v2.40.0 버튼 하나(누르면 뒤집힘) → 두 칸 세그먼트 컨트롤(리스트 | 그리드, 고른 칸이 눌린 표시)
 //
 // 이 스위트가 지키려는 것
-//   - 도감뿐 아니라 즐겨찾기 · 레이드 보스 · 알 부화에도 같은 컨트롤이 있는가
+//   - 도감뿐 아니라 레이드 보스 · 알 부화에도 같은 컨트롤이 있는가 (즐겨찾기는 v3.4.0 에서 걷어냈다)
 //   - 지금 보기가 어느 칸인지 aria-pressed 로 드러나는가
 //   - 다른 칸을 누르면 실제로 목록의 is-grid 가 바뀌는가, 저장(localStorage)되는가
 //   - 새로고침해도 고른 보기가 유지되는가
-//   - 화면마다 저장 키가 달라 서로 선택이 안 섞이는가 (도감을 리스트로 바꿔도 즐겨찾기는 그대로)
+//   - 화면마다 저장 키가 달라 서로 선택이 안 섞이는가 (도감을 리스트로 바꿔도 알 부화는 그대로)
 //   - 레이드 보스처럼 목록이 여러 묶음(티어별)인 화면은 컨트롤 하나로 전부 같이 바뀌는가
 //   - 도감의 기존 .dex__layout 클래스·localStorage 키('pogo_dex_cols')는 그대로인가 (회귀 없음)
 const { chromium } = require('/opt/node22/lib/node_modules/playwright');
@@ -31,24 +31,35 @@ const ok = (n, c, x = '') => { console.log((c ? 'PASS' : 'FAIL') + ' ' + n + ' '
     await page.waitForTimeout(500);
   };
   const clearKeys = () => page.evaluate(() => {
-    for (const k of ['pogo_dex_cols', 'pogo_favs_cols', 'pogo_raids_cols', 'pogo_eggs_cols']) {
+    for (const k of ['pogo_dex_cols', 'pogo_raids_cols', 'pogo_eggs_cols', 'pogo_pve_cols']) {
       try { localStorage.removeItem(k); } catch { /* 저장 불가 환경 */ }
     }
   });
-  // 두 칸짜리 컨트롤 — 왼쪽이 리스트, 오른쪽이 그리드 (components/ui.js layoutToggle 의 차례)
-  const viewSeg = () => page.locator('#page .seg-view').first();
-  const listBtn = () => viewSeg().locator('button').first();
-  const gridBtn = () => viewSeg().locator('button').last();
-  const pressed = () => viewSeg().locator('button[aria-pressed="true"]').textContent();
+  // 2026-09-12 v3.8.0 컨트롤이 **버튼 하나**다 — 누르면 리스트 ↔ 그리드가 뒤집힌다
+  // (화면 테마 버튼과 같은 문법, components/ui.js layoutToggle 머리말).
+  // 지금 보기는 글자가 아니라 data-view 에 있다. 그림이 SVG 라 글자로는 못 읽는다.
+  // 2026-09-12 v3.1.0 보기 전환은 본문이 아니라 **화면 머리**의 동작 슬롯에 있다 —
+  // 목록 하나가 아니라 이 화면 전체에 걸리는 설정이라 제목과 같은 높이에 놓았다.
+  // 노드는 본문에서 옮겨 온 그것 그대로라(복제가 아니다) onclick·저장 키가 붙어 있다
+  const viewSeg = () => page.locator('#page-head-actions .view-toggle').first();
+  const view = () => viewSeg().getAttribute('data-view');
+  // 지금 보기가 원하는 쪽이 아닐 때만 누른다 — 버튼 하나는 누를 때마다 뒤집히기 때문이다
+  const setView = async (want) => {
+    if ((await view()) !== want) { await viewSeg().click(); await page.waitForTimeout(300); }
+  };
+  const listBtn = () => ({ click: () => setView('list') });
+  const gridBtn = () => ({ click: () => setView('grid') });
 
-  // ── 도감·즐겨찾기·레이드 보스·알 부화 모두 컨트롤이 있고, 기본은 그리드(PC)
-  for (const [hash, label] of [['#/dex', '도감'], ['#/favs', '즐겨찾기'], ['#/raids', '레이드 보스'], ['#/eggs', '알 부화']]) {
+  // ── 도감·레이드 보스·알 부화 모두 컨트롤이 있고, 기본은 그리드(PC)
+  for (const [hash, label] of [['#/dex', '도감'], ['#/raids', '레이드 보스'], ['#/eggs', '알 부화']]) {
     await clearKeys();
     await go(hash);
     ok(`${label} 보기 방식 컨트롤 있음`, await viewSeg().isVisible());
-    ok(`${label} 두 칸(리스트·그리드)이 다 보인다`, (await viewSeg().locator('button').count()) === 2);
+    ok(`${label} 버튼 하나로 전환한다`, (await page.locator('#page-head-actions .view-toggle').count()) === 1);
     ok(`${label} PC 기본은 그리드`, await page.locator('#page .dex__list').first().evaluate((n) => n.classList.contains('is-grid')));
-    ok(`${label} 지금 보기가 눌린 칸으로 드러난다`, /그리드/.test(await pressed()), await pressed());
+    ok(`${label} 지금 보기가 버튼 얼굴로 드러난다`, (await view()) === 'grid', await view());
+    ok(`${label} 이름이 "지금 이것 · 누르면 저것"`, /그리드/.test(await viewSeg().getAttribute('aria-label')) && /누르면/.test(await viewSeg().getAttribute('aria-label')),
+      await viewSeg().getAttribute('aria-label'));
   }
 
   // ── 도감: 리스트 칸을 눌러 리스트로 → 저장 → 새로고침해도 유지, 기존 클래스·키 이름 불변
@@ -57,24 +68,26 @@ const ok = (n, c, x = '') => { console.log((c ? 'PASS' : 'FAIL') + ' ' + n + ' '
   ok('도감 컨트롤에 .dex__layout 유지 (회귀)', await page.locator('.dex__layout').count() === 1);
   await listBtn().click();
   await page.waitForTimeout(300);
-  ok('도감 리스트 칸을 누르면 리스트로', !(await page.locator('#page .dex__list').first().evaluate((n) => n.classList.contains('is-grid'))));
-  ok('도감 눌린 칸도 리스트로 바뀐다', /리스트/.test(await pressed()), await pressed());
+  ok('도감 버튼을 누르면 리스트로', !(await page.locator('#page .dex__list').first().evaluate((n) => n.classList.contains('is-grid'))));
+  ok('도감 버튼 얼굴도 리스트로 바뀐다', (await view()) === 'list', await view());
   ok('도감 저장 키 불변(pogo_dex_cols=1)', (await page.evaluate(() => localStorage.getItem('pogo_dex_cols'))) === '1');
-  // 이미 고른 칸을 다시 눌러도 아무 일이 없어야 한다 (뒤집히던 예전 버튼과 다른 점)
-  await listBtn().click();
-  await page.waitForTimeout(200);
-  ok('이미 고른 칸을 또 눌러도 그대로', !(await page.locator('#page .dex__list').first().evaluate((n) => n.classList.contains('is-grid'))));
+  // 한 번 더 누르면 되돌아온다 — 버튼 하나는 누를 때마다 뒤집힌다
+  await viewSeg().click();
+  await page.waitForTimeout(300);
+  ok('한 번 더 누르면 그리드로 되돌아온다', (await view()) === 'grid' && (await page.evaluate(() => localStorage.getItem('pogo_dex_cols'))) === '2', await view());
+  await viewSeg().click();
+  await page.waitForTimeout(300);
   await page.reload({ waitUntil: 'domcontentloaded' });
   await page.waitForTimeout(500);
   ok('도감 새로고침해도 리스트 유지', !(await page.locator('#page .dex__list').first().evaluate((n) => n.classList.contains('is-grid'))));
 
-  // ── 화면마다 저장 키가 달라 선택이 안 섞인다 (도감을 리스트로 바꿔도 즐겨찾기는 그리드 그대로)
-  await go('#/favs');
-  ok('즐겨찾기는 도감의 선택과 무관 (그리드 유지)', await page.locator('#page .dex__list').first().evaluate((n) => n.classList.contains('is-grid')));
+  // ── 화면마다 저장 키가 달라 선택이 안 섞인다 (도감을 리스트로 바꿔도 알 부화는 그리드 그대로)
+  await go('#/eggs');
+  ok('알 부화는 도감의 선택과 무관 (그리드 유지)', await page.locator('#page .dex__list').first().evaluate((n) => n.classList.contains('is-grid')));
   await listBtn().click();
   await page.waitForTimeout(300);
-  ok('즐겨찾기 저장 키는 따로(pogo_favs_cols)', (await page.evaluate(() => localStorage.getItem('pogo_favs_cols'))) === '1');
-  ok('도감 저장 키는 그대로(즐겨찾기 선택에 안 흔들림)', (await page.evaluate(() => localStorage.getItem('pogo_dex_cols'))) === '1');
+  ok('알 부화 저장 키는 따로(pogo_eggs_cols)', (await page.evaluate(() => localStorage.getItem('pogo_eggs_cols'))) === '1');
+  ok('도감 저장 키는 그대로(다른 화면 선택에 안 흔들림)', (await page.evaluate(() => localStorage.getItem('pogo_dex_cols'))) === '1');
 
   // ── 레이드 보스: 티어별로 목록이 여러 묶음인데, 컨트롤 하나로 전부 같이 바뀌는가
   await clearKeys();
@@ -147,17 +160,24 @@ const ok = (n, c, x = '') => { console.log((c ? 'PASS' : 'FAIL') + ' ' + n + ' '
     await ppage.waitForSelector('#splash', { state: 'detached', timeout: 15000 }).catch(() => {});
     await ppage.locator('#consent .consent__deny').click({ timeout: 1500 }).catch(() => {});
     await ppage.waitForTimeout(500);
+    // 2026-09-12 v3.1.0 안내문 옆이 아니라 화면 머리 오른쪽이다 — 제목과 같은 높이,
+    // 본문(안내문·목록)보다 위. 본문에는 토글이 남아 있으면 안 된다(옮긴 것이지 복제가 아니다)
     const rects = await ppage.evaluate(() => {
-      const intro = document.querySelector('#page .gameday__intro');
-      const note = intro?.querySelector('.note');
-      const btn = intro?.querySelector('.seg-view');
+      const btn = document.querySelector('#page-head-actions .view-toggle');
+      const title = document.querySelector('#page-head h2');
+      const note = document.querySelector('#page .gameday__intro .note');
+      if (!btn || !title) return null;
+      const b = btn.getBoundingClientRect(), t = title.getBoundingClientRect();
       return {
-        sameRow: note && btn ? Math.abs(note.getBoundingClientRect().top - btn.getBoundingClientRect().top) < 4 : false,
-        btnIsRightmost: note && btn ? btn.getBoundingClientRect().right > note.getBoundingClientRect().right : false,
+        inHead: true,
+        rightOfTitle: b.left > t.right,
+        aboveBody: note ? b.bottom <= note.getBoundingClientRect().top + 1 : false,
+        leftInBody: !!document.querySelector('#page .page__body .view-toggle'),
       };
     });
-    ok('레이드 보스: 보기 방식 컨트롤이 안내문과 같은 줄', rects.sameRow);
-    ok('레이드 보스: 보기 방식 컨트롤이 오른쪽 끝', rects.btnIsRightmost);
+    ok('레이드 보스: 보기 방식 컨트롤이 화면 머리에', !!rects && rects.inHead, JSON.stringify(rects));
+    ok('레이드 보스: 제목 오른쪽 · 본문 위', !!rects && rects.rightOfTitle && rects.aboveBody, JSON.stringify(rects));
+    ok('레이드 보스: 본문에 남은 토글이 없다', !!rects && !rects.leftInBody, JSON.stringify(rects));
     await pctx.close();
   }
 

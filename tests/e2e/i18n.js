@@ -95,11 +95,12 @@ const hangul = (text) => /[가-힣]/.test(text || '');
   await page.click('#lang-toggle');
   await page.waitForTimeout(500);
 
-  // ── 보기 방식 세그먼트 컨트롤(v2.40.0): 두 칸 라벨과 묶음 이름이 영어로 나오는가
+  // ── 보기 방식 전환 버튼(v3.8.0): 버튼이 하나라 이름(aria-label)이 곧 라벨이다.
+  // 글자가 아니라 도트 아이콘이라, 번역이 닿는 곳은 aria-label 하나뿐이다
   await go('#/dex');
   const layout = page.locator('.dex__layout');
-  const segLabels = (await layout.locator('button').allTextContents()).map((text) => text.trim());
-  ok('보기 방식 두 칸이 영어', segLabels.length === 2 && segLabels.every((text) => !hangul(text)) && /List/.test(segLabels[0]) && /Grid/.test(segLabels[1]), segLabels.join(' | '));
+  const viewLabel = (await layout.getAttribute('aria-label')) || '';
+  ok('보기 방식 버튼 이름이 영어', !hangul(viewLabel) && /^View:/.test(viewLabel) && /tap for (grid|list)/.test(viewLabel), viewLabel);
   ok('보기 방식 묶음 이름도 영어', !hangul(await layout.getAttribute('aria-label')), await layout.getAttribute('aria-label'));
 
   // ── 되돌리기

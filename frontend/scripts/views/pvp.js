@@ -19,11 +19,16 @@
 
 // PvP 탭: 리그별 PvPoke 랭킹 + 속성 필터
 function renderPvp() {
+  // 2026-09-12 v3.2.0 리그 세그먼트는 화면 머리 오른쪽으로 간다 (D-MAX 의 [전체|딜러|탱커]와 같은 자리).
+  // 리그는 목록을 거르는 값이 아니라 **이 화면이 어느 리그를 말하고 있는가** 자체다 — 리그가 바뀌면
+  // 순위표도 개체값 순위도 덱 추천도 전부 다른 화면이 된다. 그래서 필터 줄이 아니라 제목과 같은 높이다.
+  // 표식만 달아 두고 옮기는 일은 app.js render() 가 한다
   const leagueSeg = seg(LEAGUES.map((leagueOption) => ({ id: leagueOption.id, label: leagueOption.name })), state.league,
     (id) => {
       state.league = id;
       render();
     });
+  leagueSeg.classList.add('js-head-action');
   // 2026-09-07 v2.16.0 오른쪽 도구 버튼: 🃏 PvP 덱 짜기 (옛 IF 탭). 리그는 위 세그먼트를 그대로 쓴다
   // 2026-09-12 v2.63.0 🧬 개체값 순위를 그 옆에 붙였다 — 메뉴에 따로 두지 않는다.
   // "이 리그에서 뭐가 센가" 를 보다가 "그럼 내 개체는 몇 위지" 가 떠오르는 자리라,
@@ -46,6 +51,8 @@ function renderPvp() {
     ivrank: () => toolButton('🧬 개체값 순위', state.pvpTool === 'ivrank', tool('ivrank')),
     deck: () => toolButton('🃏 덱 짜기', state.pvpTool === 'deck', tool('deck')),
   };
+  // 리그가 머리로 올라갔으므로 이 줄에는 도구만 남는다 — 왼쪽은 지금 켠 도구, 오른쪽은 다른 도구.
+  // leagueSeg 는 $controls 안에 있어야 render() 가 찾아 옮길 수 있어 이 줄에 그대로 붙인다
   const controlRow = (activeId) => {
     const others = Object.keys(buttons).filter((id) => id !== activeId);
     return el('div', { class: 'controls__row controls__row--tools' },

@@ -43,7 +43,7 @@ function gamedayRow(entry, notes) {
     el('div', { class: 'gameday__main' },
       el('b', {}, typeof nameNode === 'function' ? nameNode(entry.name) : entry.name),
       notes.length ? el('span', { class: 'meta gameday__note' }, notes.join(' · ')) : ''),
-    authEnabled() ? favBtn(entry.sprite, 'dex__fav') : '');
+    '');   // 2026-09-12 v3.4.0 ★ 자리 — 즐겨찾기를 걷어내며 비웠다
 }
 
 // 티어·거리 묶음 하나 = 소제목 + 줄 목록.
@@ -85,8 +85,10 @@ function renderRaidsPage() {
   return el('div', { class: 'page__body' },
     el('div', { class: 'gameday__intro page__filters' },
       el('p', { class: 'note' }, '보스를 누르면 약점과 추천 딜러가 열려요. 혼자 잡을 수 있는지는 ',
-        el('a', { href: routeHash('pve-solo') }, '🧮 솔플 계산기'), ' 에서, 앞으로의 일정은 ',
-        el('a', { href: routeHash('schedule') }, '📅 이벤트 일정'), ' 에서 봐요.'),
+        // 2026-09-12 v3.6.1 이모지를 도트 아이콘으로 (components/pxicon.js) — 문단 한가운데
+        // 기기가 그린 컬러 이모지가 끼면 그 줄만 결이 튄다. 글자는 이름만 남겨 사전(i18n-en.js)이 찾게 둔다
+        el('a', { href: routeHash('pve-solo') }, pxIcon('🧮') ?? '🧮', ' 솔플 계산기'), ' 에서, 앞으로의 일정은 ',
+        el('a', { href: routeHash('schedule') }, pxIcon('📅') ?? '📅', ' 이벤트 일정'), ' 에서 봐요.'),
       $layout),
     ...sections.map(({ node }) => node),
     gamedayFoot('이 화면은 지금 도는 로테이션만 말해요 — 앞으로의 일정은 달력이 맡아요.'));
