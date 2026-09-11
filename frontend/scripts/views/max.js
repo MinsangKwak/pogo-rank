@@ -218,7 +218,7 @@ function renderMaxTank(selectedType) {
   $content.append(
     el('div', { class: 'row-head' }, el('h2', {}, title), el('span', { class: 'meta' }, `상위 ${tanks.length}`)),
     list(`maxtank-${selectedType}`, tanks, (pokemon, index) => tankRow(pokemon, String(index + 1), selectedType)));
-  $note.textContent = '탱커 순위: EHP = 체력 × 방어 ÷ 1000 ÷ (보스 타입 기술을 받는 배율). 레벨 40 실전 능력치 기준이고, 보스는 자기 타입 자속 기술로 때린다고 가정합니다(복합 타입 보스는 상세 팝업의 타입 상성을 함께 보세요). 출시된 다이맥스·거다이맥스만 포함. 포켓몬을 누르면 상세 정보가 열립니다.';
+  $note.textContent = '탱커 순위: EHP = 체력 × 방어 ÷ 1000 ÷ (보스 타입 기술을 받는 배율). 레벨 40 실전 능력치 기준이고, 보스는 자기 타입 자속 기술로 때린다고 가정해요(복합 타입 보스는 상세 팝업의 타입 상성을 함께 보세요). 출시된 다이맥스·거다이맥스만 포함. 포켓몬을 누르면 상세 정보가 열려요.';
 }
 
 // 2026-09-07 v2.14.0 (QA-52) D-MAX 탭 = [전체 | 딜러 | 탱커] 세그먼트 + 그 아래 하위 메뉴(속성 칩).
@@ -266,7 +266,7 @@ function renderMaxTier(selectedType) {
       el('button', { class: 'row__why-more', onclick: () => { state.maxAxis = 'dealer'; track('sub_max_dealer'); render(); } }, '[딜러]'), ' · ',
       el('button', { class: 'row__why-more', onclick: () => { state.maxAxis = 'tank'; track('sub_max_tank'); render(); } }, '[탱커]'), ' 에서'));
   }
-  $note.textContent = '티어표 행을 누르면 선정 근거가 펼쳐집니다. 티어표는 pogomate와 같은 기준: 공격 종족값 × 맥스무브 위력(거다이 450 · 다이 350) × 자속 1.2, 내구 미반영, 다이맥스·거다이맥스는 별도 항목이며 %는 그 목록 1위 대비입니다. 속성 칩은 그 타입 맥스무브를 쓰는 개체를 모읍니다(포켓몬 자체 타입이 아님). 출시된 다이맥스 139종 · 거다이맥스 17종만 포함(미출시 리전 폼 제외). 포켓몬을 누르면 상세 정보가 열립니다.';
+  $note.textContent = '티어표 행을 누르면 선정 근거가 펼쳐져요. 티어표는 pogomate와 같은 기준: 공격 종족값 × 맥스무브 위력(거다이 450 · 다이 350) × 자속 1.2, 내구 미반영, 다이맥스·거다이맥스는 별도 항목이며 %는 그 목록 1위 대비예요. 속성 칩은 그 타입 맥스무브를 쓰는 개체를 모아요(포켓몬 자체 타입이 아님). 출시된 다이맥스 139종 · 거다이맥스 17종만 포함(미출시 리전 폼 제외). 포켓몬을 누르면 상세 정보가 열려요.';
 }
 
 // 딜러: 보스 속성 상대 맥스 어태커 (상성·내구 반영)
@@ -287,7 +287,7 @@ function renderMaxDealer(selectedType) {
   $content.append(
     el('div', { class: 'row-head' }, el('h2', {}, title), el('span', { class: 'meta' }, `상위 ${attackers.length}`)),
     list(`max-${selectedType}`, attackers, (pokemon, index) => maxRow(pokemon, String(index + 1))));
-  $note.textContent = '위는 티어표(그 타입 맥스무브를 쓰는 개체), 아래는 딜러(그 타입 보스를 상대할 개체) — 같은 타입을 골라도 보는 각도가 달라 명단이 다릅니다. 티어표는 공격 종족값 × 맥스무브 위력(거다이 450 · 다이 350) × 자속 1.2, 내구 미반영이고 행을 누르면 근거가 펼쳐집니다. 딜러 순위는 맥스어택 3레벨(위력 350) 또는 거다이맥스 3레벨(위력 450) 1회 피해 × √내구 기준이며, 보스 속성을 고르면 그 속성 보스를 때릴 때의 상성이 반영됩니다(전체는 중립). 출시된 다이맥스·거다이맥스만 포함. 포켓몬을 누르면 상세 정보가 열립니다.';
+  $note.textContent = '위는 티어표(그 타입 맥스무브를 쓰는 개체), 아래는 딜러(그 타입 보스를 상대할 개체) — 같은 타입을 골라도 보는 각도가 달라 명단이 달라요. 티어표는 공격 종족값 × 맥스무브 위력(거다이 450 · 다이 350) × 자속 1.2, 내구 미반영이고 행을 누르면 근거가 펼쳐져요. 딜러 순위는 맥스어택 3레벨(위력 350) 또는 거다이맥스 3레벨(위력 450) 1회 피해 × √내구 기준이며, 보스 속성을 고르면 그 속성 보스를 때릴 때의 상성이 반영돼요(전체는 중립). 출시된 다이맥스·거다이맥스만 포함. 포켓몬을 누르면 상세 정보가 열려요.';
 }
 
 function renderMax() {

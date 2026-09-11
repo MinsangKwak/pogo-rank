@@ -84,7 +84,7 @@ function renderFavDigest() {
   }
   titleEl.append(
     el('span', {}, `★ 내 즐겨찾기 (${rows.length})`),
-    el('span', { class: 'schedule__today' }, movedCount ? `최근 순위가 움직인 포켓몬 ${movedCount}마리 ▲▼` : '누르면 접거나 펼칩니다'));
+    el('span', { class: 'schedule__today' }, movedCount ? `최근 순위가 움직인 포켓몬 ${movedCount}마리 ▲▼` : '누르면 접었다 펼쳐요'));
   const shown = rows.slice(0, favDigestShowCount);
   bodyEl.append(
     el('div', { class: 'boss__recs recs-wrap' }, ...shown.map(({ dex, name, badge }) =>

@@ -119,24 +119,31 @@ function planLocked() {
 // 잠긴 화면 — 왜 못 쓰는지와 어떻게 열지를 한 카드에 담는다. 목록·탭 대신 이것만 보여 준다.
 // 2026-09-10 v2.48.1 플래너 전용이던 것을 공용으로 뺐다 — 배틀 PvP · 이벤트 일정 · 레이드 보스 ·
 // 알 부화도 같은 카드를 쓴다 (components/pages.js · app.js). 화면 이름만 갈아 끼운다
-function lockedCardNode(screenName, why) {
+// 2026-09-11 v2.60.0 문구를 짧게 줄이고 말투를 하나로 맞췄다.
+// 전에는 화면마다 "왜 로그인이 필요한가" 를 한 문장으로 적고(LOCK_WHY) 거기에
+// "도감·타입&상성·D-MAX 는 그대로 쓸 수 있어요" 까지 붙여 세 줄이었다.
+// 막힌 사람이 그 자리에서 할 수 있는 일은 로그인 하나뿐인데, 읽을 것이 길면 버튼까지 못 간다.
+// 어느 화면인지는 바로 위 화면 제목이 이미 말하고 있어 카드가 다시 말할 필요가 없다.
+// 줄마다 다른 것을 말하게 나눴다 — 제목(결론) · 본문(승인제라는 조건) · 꼬리말(동의).
+function lockedCardNode(screenName) {
   const pending = AUTH.status === 'pending';
   return el('section', { class: 'plan__lock' },
     el('span', { class: 'plan__lock-ico', 'aria-hidden': 'true' }, pending ? '⏳' : '🔒'),
-    el('h2', {}, pending ? '승인 대기 중이에요' : '로그인하면 열립니다'),
-    // 조사는 받침을 보고 고른다 (components/name.js koParticle)
+    // 세 줄이 각각 다른 것을 말한다 — 제목은 결론, 본문은 조건, 꼬리말은 동의.
+    // 같은 말을 두 번 하지 않는다 ("로그인하면 열려요 / 로그인이 필요해요" 처럼)
+    el('h2', {}, pending ? '승인을 기다리는 중이에요' : '로그인하면 열려요'),
     el('p', {}, pending
-      ? `관리자가 승인하면 ${screenName}${koParticle(screenName, 'eul')} 쓸 수 있어요.`
-      : `${screenName}${koParticle(screenName, 'eun')} ${why} 로그인이 필요합니다. 도감 · 타입 & 상성 · D-MAX 는 로그인 없이도 그대로 쓸 수 있어요.`),
+      ? '관리자가 승인하면 바로 열려요.'
+      : '승인된 분만 쓸 수 있어서, 처음이라면 관리자 승인을 기다리게 돼요.'),
     // 2026-09-10 v2.51.0 여기서도 바로 로그인 창을 띄우지 않고 안내 팝업을 먼저 연다 —
     // 승인제라는 사실을 누르기 전에 알려야 "로그인했는데 왜 안 되지" 를 겪지 않는다
     pending ? '' : el('button', { class: 'drawer__item account__login plan__lock-go', onclick: () => openLoginInvite(screenName) }, '🔐 Google로 로그인'),
-    el('p', { class: 'detail__foot' }, '승인된 친구만 사용할 수 있어요. 첫 로그인 때 이용약관·개인정보처리방침 동의를 받습니다.'));
+    el('p', { class: 'detail__foot' }, '첫 로그인 때 이용약관·개인정보처리방침 동의를 받아요.'));
 }
 
 function renderPlanLocked() {
-  $content.append(lockedCardNode('육성 플래너', '내 개체(레벨 · 개체값 · 기술)를 계정에 저장하는 화면이라'));
-  $note.textContent = '육성 플래너는 승인된 로그인 사용자 전용입니다. 로그인하면 내 개체를 계정에 저장하고 같은 종끼리 비교할 수 있습니다.';
+  $content.append(lockedCardNode('육성 플래너'));
+  $note.textContent = '로그인하면 내 개체를 계정에 저장하고 같은 종끼리 비교할 수 있어요. 승인된 분만 쓸 수 있어요.';
 }
 
 // 플래너 화면 렌더러 — app.js render() 가 appMode === 'plan' 일 때 부른다

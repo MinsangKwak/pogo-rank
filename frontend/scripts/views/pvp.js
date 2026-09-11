@@ -52,5 +52,5 @@ function renderPvp() {
       state.pvpType === 'all' ? null : el('span', { class: 'row__sub' }, `전체 ${pokemon.rank}위`),
     )),
   );
-  $note.textContent = 'PvPoke 시뮬레이션 점수(100점 만점). 속성 필터 안의 순위는 해당 속성 내 순위이며 전체 순위를 함께 표시합니다.';
+  $note.textContent = 'PvPoke 시뮬레이션 점수(100점 만점). 속성 필터 안의 순위는 그 속성 안에서의 순위라, 전체 순위를 옆에 같이 적어요.';
 }

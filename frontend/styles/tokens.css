@@ -47,3 +47,20 @@
   --brand:#22c55e; --brand-2:#06b6d4; --point:#a855f7; --warn:#ef4444; --caution:#f59e0b; --off:#64748b;
   --accent:#22c55e;
 }
+
+/* 2026-09-11 v2.59.0 목록 격자 사다리 — 한 줄에 몇 개를 놓을지 여기 한 곳에서만 정한다.
+   1920 에서 다섯, 중단점을 내려갈 때마다 하나씩 줄어 휴대폰에서 하나.
+   도감 · 레이드 보스 · 알 부화 · 즐겨찾기(.dex__list)와
+   D-MAX · 레이드 PvE · 배틀 PvP(.row-list)가 모두 이 값을 본다.
+   전에는 각 파일이 auto-fill minmax(26rem) 로 따로 계산해서, 폭이 같아도 화면마다 열 수가 달랐다 */
+:root { --list-cols: 1; }
+@media (min-width: 700px)  { :root { --list-cols: 2; } }
+@media (min-width: 1100px) { :root { --list-cols: 3; } }
+@media (min-width: 1440px) { :root { --list-cols: 4; } }
+@media (min-width: 1760px) { :root { --list-cols: 5; } }
+
+/* 상세 패널이 열리면 본문이 패널 폭(--panel-w)만큼 좁아진다 — 두 칸 내려 잡아야 카드가 눌리지 않는다.
+   패널은 1100px 이상에서만 열린다 (components/modal.js useDetailPanel) */
+body.has-detail-panel { --list-cols: 1; }
+@media (min-width: 1440px) { body.has-detail-panel { --list-cols: 2; } }
+@media (min-width: 1760px) { body.has-detail-panel { --list-cols: 3; } }

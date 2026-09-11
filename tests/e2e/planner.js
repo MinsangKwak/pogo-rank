@@ -182,7 +182,8 @@ const ok = (n, c, x = '') => { console.log((c ? 'PASS' : 'FAIL') + ' ' + n + ' '
   ok('결론 한 줄', (await page.locator('dialog[open] .plan__cmp-verdict').count()) === 1);
   // 섀도우와 일반을 견줄 때는 승자를 정하지 않는다 (CP 에 안 잡히는 배틀 보정이 있다)
   const verdict = await page.locator('dialog[open] .plan__cmp-verdict b').textContent();
-  ok('섀도우 vs 일반은 승자를 정하지 않는다', /못 고릅니다/.test(verdict), verdict);
+  // 2026-09-11 v2.60.0 말투를 친근체로 바꾸며 '못 고릅니다' 가 '못 골라요' 가 됐다
+  ok('섀도우 vs 일반은 승자를 정하지 않는다', /못 골라요/.test(verdict), verdict);
   await page.keyboard.press('Escape');
   await settle(600);
 

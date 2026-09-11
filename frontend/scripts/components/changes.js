@@ -136,7 +136,7 @@ function moveChangeRow(move) {
 // ⚔️ 기술 변경 페이지: 위력이 오른 기술 → 내린 기술 → 에너지만 → 새로 배우는 기술
 function renderMoveChangesPage() {
   const data = moveChangeData();
-  if (!data) return el('p', { class: 'page__body' }, '지금은 예정된 기술 변경이 없습니다.');
+  if (!data) return el('p', { class: 'page__body' }, '지금은 예정된 기술 변경이 없어요.');
   const daysLeft = moveChangeDaysLeft();
   const upMoves = data.moves.filter((move) => move.kind === 'up');
   const downMoves = data.moves.filter((move) => move.kind === 'down');
@@ -151,19 +151,19 @@ function renderMoveChangesPage() {
     // 포켓몬 GO는 같은 기술이라도 레이드·체육관용 위력과 트레이너 배틀용 위력을 따로 갖고 있고,
     // 시즌 조정은 보통 배틀 쪽만 바꾼다. 이걸 적어 두지 않으면 "아이언헤드 85인데 왜 레이드 순위가 그대로냐"가 된다.
     el('p', { class: 'changes__scope' },
-      '아래 위력 수치는 ', el('b', {}, '트레이너 배틀(PvP) 기준'), '입니다. 같은 기술이라도 레이드·체육관용 위력은 따로 관리되고, 이번 조정은 대부분 PvP에만 적용됩니다.'),
+      '아래 위력 수치는 ', el('b', {}, '트레이너 배틀(PvP) 기준'), '이에요. 같은 기술이라도 레이드·체육관용 위력은 따로 관리되고, 이번 조정은 대부분 PvP에만 적용돼요.'),
     el('p', { class: 'detail__foot' },
       daysLeft > 0
-        ? '적용 전이라 순위표에는 아직 반영돼 있지 않습니다. 적용 다음 날 자동 갱신되면 순위가 움직인 포켓몬에 ▲▼ 표시가 붙습니다. 레이드 티어표를 움직이는 것은 사이코부스트(체육관·레이드 70 → 130)와 새로 배우는 기술 쪽입니다.'
-        : '순위표는 이미 이 값으로 계산돼 있습니다. 최근 움직인 포켓몬에는 ▲▼ 표시가 붙어 있어요.'),
+        ? '적용 전이라 순위표에는 아직 반영돼 있지 않아요. 적용 다음 날 자동 갱신되면 순위가 움직인 포켓몬에 ▲▼ 표시가 붙어요. 레이드 티어표를 움직이는 것은 사이코부스트(체육관·레이드 70 → 130)와 새로 배우는 기술 쪽이에요.'
+        : '순위표는 이미 이 값으로 계산돼 있어요. 최근 움직인 포켓몬에는 ▲▼ 표시가 붙어요.'),
     upMoves.length ? section('위력이 오른 기술', '', el('ul', { class: 'changes__list' }, ...upMoves.map(moveChangeRow))) : '',
     downMoves.length ? section('위력이 내린 기술', '', el('ul', { class: 'changes__list' }, ...downMoves.map(moveChangeRow))) : '',
-    energyMoves.length ? section('에너지만 바뀐 기술', '위력은 그대로라 레이드 DPS는 거의 그대로지만, PvP에서는 기술을 쓰는 빈도가 달라집니다.', el('ul', { class: 'changes__list' }, ...energyMoves.map(moveChangeRow))) : '',
+    energyMoves.length ? section('에너지만 바뀐 기술', '위력은 그대로라 레이드 DPS는 거의 그대로지만, PvP에서는 기술을 쓰는 빈도가 달라져요.', el('ul', { class: 'changes__list' }, ...energyMoves.map(moveChangeRow))) : '',
     data.newMoves.length
-      ? section(`새로 배우는 기술 · ${data.newMoves.length}건`, '누르면 그 포켓몬의 상세 정보가 열립니다.',
+      ? section(`새로 배우는 기술 · ${data.newMoves.length}건`, '누르면 그 포켓몬의 상세 정보가 열려요.',
           el('ul', { class: 'changes__new' }, ...data.newMoves.map((item) => el('li', {
             onclick: () => openDetail({ sprite: item.sprite, name: item.name, en: '', types: DEX_DATA.forms[item.sprite]?.types ?? [] }),
           }, sprite(item.sprite), el('div', {}, el('b', {}, item.name), el('div', { class: 'changes__sub' }, item.move))))))
       : '',
-    footNote('출처: 포켓몬 GO 공식 GO 배틀리그 시즌 공지. 위력·에너지 값은 공지 표기를 그대로 옮겼고, 한글 기술명은 게임 내 표기로 자동 변환했습니다.'));
+    footNote('출처: 포켓몬 GO 공식 GO 배틀리그 시즌 공지. 위력·에너지 값은 공지 표기를 그대로 옮겼고, 한글 기술명은 게임 내 표기로 자동 변환했어요.'));
 }

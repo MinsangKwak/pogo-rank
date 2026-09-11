@@ -696,7 +696,7 @@
 
 @media (min-width: 1100px) {
   body:is([data-route="dmax"], [data-route="pve"], [data-route="pvp"]) #content .row-list {
-    display: grid; grid-template-columns: repeat(auto-fill, minmax(26rem, 1fr)); gap: 1.8rem; border-top: 0;
+    display: grid; grid-template-columns: repeat(var(--list-cols), minmax(0, 1fr)); gap: 1.8rem; border-top: 0;
   }
   body:is([data-route="dmax"], [data-route="pve"], [data-route="pvp"]) #content .row-list > .row {
     position: relative; display: flex; flex-direction: column; align-items: center;
@@ -728,4 +728,46 @@
   .dex__list.is-grid .gameday__row { padding: 4.2rem 2.2rem 2rem; gap: 1.2rem; }
   .dex__list.is-grid .gameday__row > .sprite { width: 18rem; height: 18rem; }
   .dex__list.is-grid .gameday__main > b { font-size: 2.1rem; }
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   2026-09-11 v2.59.0 줄 모드가 여러 열로 흐른 뒤의 도감 줄
+   1100px 이상에서 줄 모드는 한 칸이 아니라 서너 칸(--list-cols)으로 나뉜다.
+   그런데 줄 조각들은 "한 줄이 화면 폭을 다 쓴다"는 전제로 짜여 있었다 —
+   타입 칸 min-width 12.4rem · 세대와 CP 두 칸 · 타입 이름 알약.
+   그대로 두면 한 칸(1920 기준 298px)에 다 들어가지 못해 이름이 한 글자씩 세로로 쪼개졌다.
+   알 부화 줄(.gameday__row)과 같은 두 줄 짜임으로 바꾼다 —
+     1줄: [그림] #0001  이상해씨      ★
+     2줄: [그림] CP 100% 1,260         ●●
+   세대는 뺀다: 목록 바로 위 세대 칩이 이미 그 값을 말하고 있다 */
+@media (min-width: 1100px) {
+  .dex__list:not(.is-grid) .dex__row {
+    position: relative;
+    display: grid; align-items: center;
+    grid-template-columns: auto auto minmax(0, 1fr) auto;
+    grid-template-areas:
+      "sprite no   name fav"
+      "sprite meta meta type";
+    column-gap: 1rem; row-gap: 0.4rem; padding: 1.2rem 1.4rem;
+  }
+  .dex__list:not(.is-grid) .dex__row > .sprite { grid-area: sprite; }
+  .dex__list:not(.is-grid) .dex__row > b { grid-area: name; min-width: 0; word-break: keep-all; }
+  .dex__list:not(.is-grid) .dex__row > .dex__no { grid-area: no; }
+  .dex__list:not(.is-grid) .dex__row > .dex__stats { grid-area: meta; }
+  .dex__list:not(.is-grid) .dex__row > .dex__types { grid-area: type; }
+  .dex__list:not(.is-grid) .dex__row > .dex__fav { grid-area: fav; justify-self: end; }
+  /* [미구현] 태그는 칸을 차지하지 않고 카드 오른쪽 위에 얹는다 */
+  .dex__list:not(.is-grid) .dex__row > .dex__unrel { position: absolute; top: 0.6rem; right: 0.6rem; }
+  /* 화살표(::after)는 이름 자리를 먹기만 한다 — 누를 수 있다는 건 hover 로 이미 보인다 */
+  .dex__list:not(.is-grid) .dex__row::after { content: none; }
+  /* 세대는 접고 CP 만 남긴다 */
+  .dex__list:not(.is-grid) .dex__stat--gen { display: none; }
+  .dex__list:not(.is-grid) .dex__stats { display: flex; gap: 0; margin-left: 0; }
+  /* 'CP 100%' 는 접히면 두 줄이 되어 아래 줄만 키가 커진다 — 한 덩어리로 묶는다 */
+  .dex__list:not(.is-grid) .dex__stat { flex-direction: row; align-items: baseline; gap: 0.5rem; min-width: 0; text-align: left; white-space: nowrap; }
+  .dex__list:not(.is-grid) .dex__stat b { font-size: var(--fs-sub); }
+  /* 타입은 점으로 되돌린다 (pages.css 의 기본형) — 알약 두 개는 이 폭에 들어가지 않는다 */
+  .dex__list:not(.is-grid) .dex__types { min-width: 0; margin-left: 0; gap: 0.3rem; }
+  .dex__list:not(.is-grid) .dex__type { padding: 0; background: none; }
+  .dex__list:not(.is-grid) .dex__type b { display: none; }
 }
