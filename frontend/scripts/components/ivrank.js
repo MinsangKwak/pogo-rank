@@ -167,20 +167,27 @@ function ivrankVerdict(form, floorIv, ivs) {
     ` — 4,096 조합 중 ${best.got.rank.toLocaleString()}위 (1위의 ${best.got.percent}%).`);
 }
 
-// 그 리그의 상위 개체값 열 줄 — "그럼 뭘 노려야 하나" 에 답한다
-function ivrankTopList(form, league, cap, floorIv, ivs) {
-  if (cap == null) return '';
-  const rows = ivRankTable(form, cap, floorIv).slice(0, 10);
-  if (!rows.length) return '';
+// 상위 개체값 열 줄 — "그럼 뭘 노려야 하나" 에 답한다.
+// 2026-09-11 v2.62.0 리그를 탭으로 고른다 — 전에는 "가장 쓸 만한" 한 리그만 보여 줘서,
+// 다른 리그에서 이 종을 어떻게 맞춰야 하는지는 볼 길이 없었다.
+// 마스터는 CP 상한이 없어 순위가 없으므로 탭에서 뺀다
+function ivrankTopList(form, floorIv, ivs, league, onPick) {
+  const cap = (IVRANK_LEAGUES.find(([id]) => id === league) ?? [])[1];
   const mineKey = ivs.join('/');
+  const tabs = IVRANK_LEAGUES.filter(([, c]) => c != null)
+    .map(([id]) => ({ id, label: `${LEAGUE_KO[id]}리그` }));
+  const rows = cap == null ? [] : ivRankTable(form, cap, floorIv).slice(0, 10);
   return el('div', { class: 'ivrank__top' },
-    el('div', { class: 'row-head' }, el('h2', {}, `${LEAGUE_KO[league]}리그 상위 10`),
-      el('span', { class: 'meta' }, `CP ${cap} 기준`)),
-    el('ol', { class: 'ivrank__list' }, ...rows.map((row, i) => el('li',
-      { class: row.ivs.join('/') === mineKey ? 'is-mine' : '' },
-      el('span', { class: 'ivrank__no' }, String(i + 1)),
-      el('b', {}, row.ivs.join('/')),
-      el('span', { class: 'meta' }, `Lv${row.level} · CP ${row.cp.toLocaleString()}`)))));
+    el('div', { class: 'row-head' }, el('h2', {}, '리그별 상위 10'),
+      el('span', { class: 'meta' }, cap == null ? '' : `CP ${cap} 기준`)),
+    seg(tabs, league, onPick),
+    rows.length
+      ? el('ol', { class: 'ivrank__list' }, ...rows.map((row, i) => el('li',
+          { class: row.ivs.join('/') === mineKey ? 'is-mine' : '' },
+          el('span', { class: 'ivrank__no' }, String(i + 1)),
+          el('b', {}, row.ivs.join('/')),
+          el('span', { class: 'meta' }, `Lv${row.level} · CP ${row.cp.toLocaleString()}`))))
+      : el('p', { class: 'empty' }, '이 리그에는 들어갈 수 없어요 — Lv1 CP 가 이미 상한을 넘어요.'));
 }
 
 function renderIvRankPage() {
@@ -202,12 +209,19 @@ function renderIvRankPage() {
     $out.append(ivrankVerdict(form, picked.floor, picked.ivs));
     $out.append(el('div', { class: 'ivrank__cards' },
       ...IVRANK_LEAGUES.map(([league, cap]) => ivrankLeagueCard(form, league, cap, picked.floor, picked.ivs))));
-    // 상위 목록은 "가장 쓸 만한" 리그 것을 보여 준다 — 네 벌을 다 깔면 무엇을 볼지 모른다
-    const scored = IVRANK_LEAGUES.filter(([, cap]) => cap != null)
-      .map(([league, cap]) => ({ league, cap, got: ivRankOf(form, cap, picked.floor, picked.ivs) }))
-      .filter((entry) => entry.got);
-    scored.sort((a, b) => a.got.rank - b.got.rank);
-    if (scored.length) $out.append(ivrankTopList(form, scored[0].league, scored[0].cap, picked.floor, picked.ivs));
+    // 처음 보여 줄 탭은 "가장 쓸 만한" 리그 — 고른 뒤에는 사람이 고른 것을 따른다
+    if (!picked.league) {
+      const scored = IVRANK_LEAGUES.filter(([, cap]) => cap != null)
+        .map(([league, cap]) => ({ league, got: ivRankOf(form, cap, picked.floor, picked.ivs) }))
+        .filter((entry) => entry.got);
+      scored.sort((a, b) => a.got.rank - b.got.rank);
+      picked.league = scored.length ? scored[0].league : 'great';
+    }
+    $out.append(ivrankTopList(form, picked.floor, picked.ivs, picked.league, (id) => {
+      picked.league = id;
+      ivrankSave(picked);
+      drawOut();
+    }));
   };
 
   // ── 종 고르기 (플래너 개체 추가와 같은 줄 — components/search.js monSuggestRow)
@@ -216,12 +230,12 @@ function renderIvRankPage() {
     if (picked.sprite != null) {
       const form = DEX_DATA.forms?.[picked.sprite] ?? null;
       const dex = dexOf(picked.sprite);
-      $pick.append(el('div', { class: 'plan__picked' },
+      $pick.append(el('div', { class: 'ivrank__picked' },
         sprite(picked.sprite),
-        el('div', {},
+        el('div', { class: 'ivrank__picked-main' },
           el('b', {}, DEX_DATA.names?.[dex ?? picked.sprite] ?? String(picked.sprite)),
           el('span', { class: 'meta' }, form ? `공격 ${form.atk} · 방어 ${form.def} · 체력 ${form.hp}` : '폼 데이터 없음')),
-        el('button', { class: 'boss__clear', 'aria-label': '다른 종 고르기', onclick: () => {
+        el('button', { class: 'ivrank__swap', 'aria-label': '다른 종 고르기', onclick: () => {
           picked.sprite = null; ivrankSave(picked); drawPick(); drawOut();
         } }, '✕')));
       return;

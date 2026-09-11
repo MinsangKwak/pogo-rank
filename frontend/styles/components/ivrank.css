@@ -1,5 +1,35 @@
 /* 🧬 PvP 개체값 순위 (v2.61.0 실험 기능) — components/ivrank.js */
 
+/* 2026-09-11 v2.62.0 화면 머리 — 안내 문단과 첫 구역 사이가 너무 벌어져 있었다.
+   본문 첫 줄은 제목 바로 아래에 붙어야 "이 화면이 무엇인가" 가 한 덩어리로 읽힌다 */
+#page-ivrank > .note:first-child { margin: 0 0 1.8rem; line-height: 1.6; }
+#page-ivrank .row-head { padding-top: 1.6rem; }
+#page-ivrank .row-head:first-of-type { padding-top: 0; }
+
+/* 고른 종 카드 — 그림 | 이름·종족값 | ✕ 한 줄.
+   전에는 스타일이 없는 클래스(plan__picked)를 빌려 써서 이름과 종족값이 한 줄에 붙어 나왔다 */
+.ivrank__picked {
+  display: flex; align-items: center; gap: 1.2rem;
+  padding: 1.2rem 1.4rem; margin-bottom: 0.4rem;
+  border: 1px solid var(--line); border-radius: 1.2rem; background: var(--surface);
+}
+.ivrank__picked .sprite {
+  flex: none; box-sizing: content-box; width: 4.8rem; height: 4.8rem;
+  padding: 0.6rem; border-radius: 50%;
+}
+.ivrank__picked .sprite:not(.is-loading) { background: var(--bg); }
+/* 이름과 종족값을 세로로 쌓는다 — 가로로 붙으면 좁은 화면에서 종족값이 이름을 밀어낸다 */
+.ivrank__picked-main { display: flex; flex-direction: column; gap: 0.2rem; min-width: 0; flex: 1 1 auto; }
+.ivrank__picked-main b { font-size: var(--fs-lead); font-weight: 700; }
+.ivrank__picked-main .meta { font-size: var(--fs-sub); }
+.ivrank__swap {
+  flex: none; width: var(--tap); height: var(--tap);
+  display: flex; align-items: center; justify-content: center;
+  border: 1px solid var(--line); border-radius: 1rem; background: var(--bg);
+  font-size: 1.4rem; color: var(--muted);
+}
+.ivrank__swap:hover { border-color: var(--fg); color: var(--fg); }
+
 /* 개체값 세 칸: 공격 · 방어 · 체력. 숫자만 넣는 칸이라 넓을 이유가 없다 */
 .ivrank__ivs { display: flex; gap: 0.8rem; margin: 0.6rem 0 0.4rem; }
 .ivrank__ivbox { display: flex; flex-direction: column; gap: 0.3rem; flex: 1 1 0; min-width: 0; }
@@ -66,3 +96,7 @@
 .ivrank__pick-lg { flex: 1 1 auto; min-width: 0; font-size: var(--fs-sub); font-weight: 600; }
 .ivrank__pick-row b { font-size: var(--fs-lead); font-weight: 700; letter-spacing: 0.02em; color: var(--brand-2); }
 .ivrank__more { margin: 1rem 0 0; padding-top: 0.8rem; border-top: 1px solid var(--line); }
+
+/* 리그 탭 — 상위 10 위에 놓아 어느 리그 표인지 눈이 먼저 닿게 한다 */
+.ivrank__top .seg { margin: 0.6rem 0 0.4rem; }
+.ivrank__top .empty { margin: 1.6rem 0; }
