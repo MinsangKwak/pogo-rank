@@ -23,8 +23,9 @@ html { font-size: 62.5%; }
 html { -webkit-text-size-adjust: 100%; }
 body {
   margin: 0; background: var(--bg); color: var(--fg);
-  /* 2026-09-07 v2.14.0 (QA-52) 영문·숫자는 Montserrat, 한글은 Pretendard — Montserrat 에 한글 글리프가 없어 자연스럽게 다음 폰트로 넘어간다 */
-  font-family: "Montserrat", "Pretendard Variable", "Pretendard", "Apple SD Gothic Neo", "Noto Sans KR", system-ui, sans-serif;
+  /* 2026-09-07 v2.14.0 (QA-52) 영문·숫자가 앞, 한글은 Pretendard — 앞 글꼴에 한글 글리프가 없어 자연스럽게 넘어간다
+     2026-09-12 v3.0.0 Montserrat → Inter (index.html 의 주석 참고) */
+  font-family: "Inter", "Pretendard Variable", "Pretendard", "Apple SD Gothic Neo", "Noto Sans KR", system-ui, sans-serif;
   font-size: 1.5rem; line-height: 1.5; font-feature-settings: "tnum" 1;
 }
 button { font: inherit; color: inherit; background: none; border: 0; padding: 0; cursor: pointer; }
@@ -79,3 +80,23 @@ button:disabled, .drawer__item:disabled { cursor: not-allowed; transform: none; 
 /* :root 를 붙여 특정도를 올린다 — 뒤 파일의 .note(단일 클래스)와 같은 값이면 순서로 지고 만다 */
 :root:not([lang="en"]) .i18n-note { display: none; }
 :root[lang="en"] .i18n-note { display: block; margin: 0 0 1.2rem; }
+
+
+/* ── 2026-09-12 v3.0.0 글꼴 두 조각 (스타일 레퍼런스) ───────────────────────
+   숫자와 강조 한 마디에만 쓴다. 본문까지 바꾸면 한글과 섞였을 때 줄이 울퉁불퉁해진다 */
+
+/* 숫자 — CP · 순위 · 개체값. 자릿수가 세로로 맞아야 목록을 훑을 수 있다.
+   tabular-nums 는 Pretendard 로 넘어간 한글 옆 숫자에도 걸린다 */
+.num, .row__score, .detail__cp-big b, .ivrank__rank, .ivrank__no, .dex__no, .plan__recent-sub {
+  font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-feature-settings: "tnum" 1;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+}
+
+/* 구역 제목 옆 한 마디 — 레퍼런스가 이탤릭 세리프로 숨을 돌리는 자리다 */
+.font-display {
+  font-family: "Fraunces", ui-serif, Georgia, "Times New Roman", serif;
+  font-style: italic; font-weight: 500; font-optical-sizing: auto;
+  color: var(--muted);
+}

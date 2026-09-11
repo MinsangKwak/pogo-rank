@@ -227,8 +227,8 @@
   .detail__match h3 { margin: 0 0 0.8rem; font-size: var(--fs-sub); font-weight: 600; }
   .detail__match--weak { border-color: color-mix(in srgb, var(--warn) 32%, var(--line)); background: color-mix(in srgb, var(--warn) 7%, transparent); }
   .detail__match--weak h3 { color: var(--warn); }
-  .detail__match--resist { border-color: color-mix(in srgb, var(--brand) 32%, var(--line)); background: color-mix(in srgb, var(--brand) 7%, transparent); }
-  .detail__match--resist h3 { color: var(--brand); }
+  .detail__match--resist { border-color: color-mix(in srgb, var(--good) 32%, var(--line)); background: color-mix(in srgb, var(--good) 7%, transparent); }
+  .detail__match--resist h3 { color: var(--good); }
   /* 상세 패널 안에서는 한 칸이 좁아 두 카드를 위아래로 쌓는다 */
   .detail-panel .detail__matchrows { grid-template-columns: 1fr; }
 }

@@ -134,7 +134,7 @@
 .changes__row { display: flex; gap: 0.8rem; align-items: flex-start; padding: 0.7rem 0; border-top: 1px solid var(--line); }
 .changes__row:first-child { border-top: 0; }
 .changes__mark { flex: 0 0 1.6rem; text-align: center; font-size: 1.1rem; line-height: 1.5; color: var(--muted); }
-.changes__row.is-up .changes__mark { color: var(--brand); }
+.changes__row.is-up .changes__mark { color: var(--good); }
 .changes__row.is-down .changes__mark { color: var(--warn); }
 .changes__sub { font-size: 1.15rem; color: var(--muted); margin-top: 1px; }
 .changes__sub em { font-style: normal; }
@@ -183,7 +183,7 @@
 .types__row > div { flex: 1 1 auto; min-width: 0; }
 @media (max-width: 400px) { .types__row { flex-direction: column; gap: 0.4rem; } .types__row em { flex: none; padding-top: 0; } }
 .types__row em.is-weak2 { color: var(--warn); font-weight: 600; }
-.types__row em.is-resist2 { color: var(--brand); font-weight: 600; }
+.types__row em.is-resist2 { color: var(--good); font-weight: 600; }
 .types__recs { margin: 0.4rem 0 1rem; }
 .types__recs .schedule__sec { margin: 0.8rem 0 0.4rem; }
 .types__hint { margin: 0.6rem 0 0; font-size: 1.25rem; color: var(--muted); line-height: 1.6; word-break: keep-all; }
