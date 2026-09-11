@@ -233,7 +233,8 @@ const PAGES = {
   favs: { title: '★ 즐겨찾기', render: renderFavsPage },  // 2026-09-05 PvE/PvP 나눠 보기
   types: { title: '🧭 상성 검색', render: renderTypeSearchPage },  // 2026-09-06 v2.10.0 (QA-44) 타입 조합 → 약점·이중약점·추천 딜러
   raids: { title: '⚔️ 레이드 보스', render: renderRaidsPage },  // 2026-09-08 v2.25.0 지금 도는 티어별 보스 (components/gameday.js)
-  eggs: { title: '🥚 알 부화', render: renderEggsPage },        // 2026-09-08 v2.25.0 거리별 부화 풀 (components/gameday.js)
+  eggs: { title: '🥚 알 부화', render: renderEggsPage },
+  finder: { title: '🔎 검색식 만들기', render: renderFinderPage },  // 2026-09-11 v2.58.0 게임 검색창에 붙여 넣을 식 (백로그 QA-57)        // 2026-09-08 v2.25.0 거리별 부화 풀 (components/gameday.js)
 };
 
 // 현재 해시가 가리키는 전체 페이지 id. 페이지가 아니면 null = 메인 화면.
@@ -258,6 +259,7 @@ const LOCK_WHY = {
   raids: '내 즐겨찾기·보유 개체와 함께 보여 주는 화면이라',
   eggs: '내 즐겨찾기·보유 개체와 함께 보여 주는 화면이라',
   schedule: '내 계정의 일정 분류와 알림 설정을 쓰는 화면이라',
+  finder: '만든 검색식을 계정에 이어서 쓰는 화면이라',
 };
 
 function renderPage() {
