@@ -43,7 +43,7 @@ function gamedayRow(entry, notes) {
     el('div', { class: 'gameday__main' },
       el('b', {}, typeof nameNode === 'function' ? nameNode(entry.name) : entry.name),
       notes.length ? el('span', { class: 'meta gameday__note' }, notes.join(' · ')) : ''),
-    authEnabled() ? favBtn(entry.sprite, 'dex__fav') : '');
+    '');   // 2026-09-12 v3.4.0 ★ 자리 — 즐겨찾기를 걷어내며 비웠다
 }
 
 // 티어·거리 묶음 하나 = 소제목 + 줄 목록.

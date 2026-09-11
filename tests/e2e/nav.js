@@ -72,23 +72,28 @@ const ok = (name, cond, extra = '') => results.push([cond ? 'PASS' : 'FAIL', nam
   ok('의미 색 여섯 벌 있음', ['brand', 'brand-2', 'point', 'warn', 'caution', 'off'].every((k) => design[k]),
     JSON.stringify({ brand: design.brand, warn: design.warn }));
   ok('토큰 --tap 이 손가락 크기 44px', design.tapPx === 44, `${design.tap} = ${design.tapPx}px`);
-  // v3.0.0 Montserrat → Inter. 한글은 지금까지처럼 Pretendard 로 넘어간다
-  ok('본문 글꼴 Inter 우선 · 한글은 Pretendard', /^"?Inter/.test(design.font) && /Pretendard/.test(design.font), design.font.slice(0, 48));
-  ok('본문 15px 유지', design.size === '15px', design.size);
+  // 2026-09-12 v3.6.0 Inter → 갈무리(Galmuri11). 한글까지 한 글꼴이 그리고, Pretendard 는 뒤로 물러나
+  // 긴 산문(약관·안내문·패치노트)에서만 쓰인다 (styles/base.css)
+  ok('본문 글꼴 Galmuri11 우선 · Pretendard 로 폴백', /^"?Galmuri11/.test(design.font) && /Pretendard/.test(design.font), design.font.slice(0, 48));
+  // 도트 글꼴은 설계 격자의 정수배에서만 또렷하다 — Galmuri11 은 11 · 14 · 22px 이라 14px 로 내렸다
+  ok('본문 14px (도트 격자)', design.size === '14px', design.size);
 
   // 2. 서비스 홈 — 타일 · 이모지 아이콘 · 탭 줄 숨김
   // 2026-09-10 v2.47.0 '내 포켓몬' 타일과 '육성 플래너' 타일을 하나로 합쳐 10 → 9 가 됐다
   // 2026-09-11 v2.58.0 🔎 검색식 만들기가 늘어 10 이다. ☰ 메뉴와 홈 타일은 **같은 수**여야 한다 —
   // 같은 화면인데 문이 한쪽에만 있으면 메뉴를 안 여는 사람은 그 화면이 있는 줄도 모른다
   ok('홈 타일 9개', (await page.locator('.home__tile').count()) === 9);
-  const icons = await page.locator('.home__icon').allTextContents();
-  ok('홈 아이콘이 이모지', icons.join('') === '📅⚔️🥚📕✨⚔️🃏🌱🔎', icons.join(''));
+  // 2026-09-12 v3.6.0 이모지 → 도트 아이콘 SVG (scripts/components/pxicon.js).
+  // 아홉 타일 전부 도트 그림이어야 한다 — 하나라도 이모지로 남으면 그 줄만 기기 글꼴로 그려진다
+  const pxIcons = await page.locator('.home__icon svg.pxi').count();
+  ok('홈 아이콘이 도트 그림 9개', pxIcons === 9, String(pxIcons));
   ok('홈에서 탭 줄 숨김', await page.locator('#tabs').isHidden());
   const tile = await page.locator('.home__tile').first().evaluate((n) => {
     const s = getComputedStyle(n);
     return { r: s.borderRadius, bg: s.backgroundColor, bw: s.borderTopWidth };
   });
-  ok('타일 12px 반경 · 1px 테두리', tile.r === '12px' && tile.bw === '1px', JSON.stringify(tile));
+  // 2026-09-12 v3.6.0 도트 디자인 — 모서리 0 · 테두리 2px (styles/pixel.css)
+  ok('타일 모서리 0 · 2px 테두리', tile.r === '0px' && tile.bw === '2px', JSON.stringify(tile));
   ok('홈에서 뒤로가기 버튼 숨김', await page.locator('.app-bar__head .icon-btn').isHidden());
 
   // 3. 헤더 버튼이 이모지 아이콘 · 44px 정사각 통일
@@ -96,12 +101,15 @@ const ok = (name, cond, extra = '') => results.push([cond ? 'PASS' : 'FAIL', nam
   // **보이는 것만** 센다 — hidden 속성이 아니라 실제 크기로 걸러야 그 규칙까지 함께 지킨다
   const btns = await page.locator('.app-bar .app-bar__actions .icon-btn').evaluateAll((ns) =>
     ns.filter((n) => !n.hidden && n.getBoundingClientRect().width > 0)
-      .map(n => ({ t: n.textContent.trim(), w: n.getBoundingClientRect().width, h: n.getBoundingClientRect().height })));
+      .map(n => ({ t: n.textContent.trim(), svg: !!n.querySelector('svg.pxi'), w: n.getBoundingClientRect().width, h: n.getBoundingClientRect().height })));
   // v2.29.0 계정(👤)을 빼고 그 자리에 KR/EN 토글 — 로그인·마이페이지는 ☰ 메뉴 한 곳으로 모았다
   const wide = page.viewportSize().width >= 1100;
-  // 2026-09-12 v2.64.0 ★ 즐겨찾기가 헤더로 왔다 — 로그인 + 즐겨찾기가 있을 때만 보인다(mock 은 로그인 상태)
-  ok(`헤더 아이콘 ${wide ? '5개 (🔍 ★ 🌗 EN ☰)' : '4개 (🔍 ★ EN ☰)'}`,
-    btns.map(b => b.t).join('') === (wide ? '🔍★🌗EN☰' : '🔍★EN☰'), JSON.stringify(btns.map(b => b.t)));
+  // 2026-09-12 v3.4.0 ★ 즐겨찾기 버튼을 뺐다 — 기능을 통째로 걷어냈다 (components/favs.js 머리말).
+  // 넓은 화면은 🔍 도 감춘다(옆 검색바가 같은 일을 한다, v2.66.0)
+  // 2026-09-12 v3.6.0 아이콘 버튼 둘은 도트 그림(svg.pxi)이라 글자가 없다 — 가운데 EN 만 글자다
+  ok(`헤더 아이콘 3개 (${wide ? '🌗' : '🔍'} EN ☰)`,
+    btns.length === 3 && btns.map(b => b.t).join('') === 'EN' && btns[0].svg && btns[2].svg,
+    JSON.stringify(btns.map(b => (b.svg ? 'svg' : b.t))));
   ok('헤더 버튼 44×44 통일', btns.every(b => Math.round(b.w) === 44 && Math.round(b.h) === 44), JSON.stringify(btns));
   ok('헤더에 텍스트 버튼 없음', !(await page.locator('.app-bar').textContent()).includes('메뉴'));
 
@@ -137,7 +145,8 @@ const ok = (name, cond, extra = '') => results.push([cond ? 'PASS' : 'FAIL', nam
     return { top: Math.round(r.top), h: Math.round(r.height), radius: s.borderTopLeftRadius };
   });
   ok('상세 = 바텀시트 (화면 아래에서)', modal.top > 60, JSON.stringify(modal));
-  ok('상세 모서리 둥근 카드', modal.radius === '16px', modal.radius);
+  // 2026-09-12 v3.6.0 도트 디자인 — 곡선을 없앴다 (styles/pixel.css)
+  ok('상세 모서리 각진 카드', modal.radius === '0px', modal.radius);
   ok('닫기 버튼 ✕', (await page.locator('.modal__close').textContent()) === '✕');
   // 2026-09-09 v2.34.0 ✕ 를 .modal__bar(카드 안) 대신 .modal__wrap(카드 밖, 카드의 부모)에 둔다
   ok('"상세 정보" 군더더기 줄 없음', !(await page.locator('.modal__wrap').textContent()).includes('상세 정보'));
@@ -257,24 +266,33 @@ const ok = (name, cond, extra = '') => results.push([cond ? 'PASS' : 'FAIL', nam
     ok('본문에 남은 리그 줄이 없다', (await page.locator('#controls .seg').count()) === 0);
   }
 
-  // 8f. ★ 즐겨찾기는 헤더 버튼을 눌러 팝업으로 연다 (화면 맨 위 카드였던 것)
+  // 8f. 2026-09-12 v3.4.0 ★ 즐겨찾기를 통째로 걷어냈다 — 담을 수는 있는데 담은 뒤에 할 수 있는
+  // 일이 없었다(그 일은 육성 플래너가 한다). 조각이 하나도 남지 않았는지 센다.
+  // 계정에 담아 둔 목록(AUTH.favs)은 건드리지 않았다 — 다시 만들 때 그대로 살아 있어야 한다
   {
-    ok('본문 맨 위 즐겨찾기 카드가 없다', (await page.locator('#fav-digest').count()) === 0);
-    await page.click('#fav-toggle');
+    await page.goto(BASE + '?mock=1#/dex', { waitUntil: 'domcontentloaded' });
     await settle();
-    ok('★ 를 누르면 팝업', (await page.locator('.fav-pop').count()) === 1);
-    ok('팝업이 마릿수를 말한다', /\d+마리/.test(await page.locator('.fav-pop h2').textContent()),
-      await page.locator('.fav-pop h2').textContent());
-    ok('갈래로 보기 링크', (await page.locator('.fav-pop .boss__foot button:has-text("갈래로 보기")').count()) === 1);
-    await page.keyboard.press('Escape');
-    await settle();
-    ok('Esc 로 닫힌다', (await page.locator('.fav-pop').count()) === 0);
+    const favBits = await page.evaluate(() => ({
+      headerButton: !!document.getElementById('fav-toggle'),
+      digestCard: !!document.getElementById('fav-digest'),
+      popup: document.querySelectorAll('.fav-pop').length,
+      stars: document.querySelectorAll('.dex__fav, .detail__fav, .fav').length,
+      menuRow: [...document.querySelectorAll('.nav-menu .drawer__label')].some((n) => n.textContent.includes('즐겨찾기')),
+      favsRoute: typeof ROUTES !== 'undefined' && ROUTES.some((r) => r.id === 'favs'),
+      dataKept: typeof AUTH !== 'undefined' && AUTH.favs instanceof Set,
+    }));
+    ok('헤더 ★ 버튼이 없다', !favBits.headerButton, JSON.stringify(favBits));
+    ok('본문 즐겨찾기 카드·팝업이 없다', !favBits.digestCard && favBits.popup === 0, JSON.stringify(favBits));
+    ok('목록·상세에 ★ 가 없다', favBits.stars === 0, JSON.stringify(favBits));
+    ok('메뉴에 즐겨찾기 줄이 없다', !favBits.menuRow, JSON.stringify(favBits));
+    ok('라우트 표에서도 빠졌다', !favBits.favsRoute, JSON.stringify(favBits));
+    ok('계정에 담아 둔 목록은 그대로 (AUTH.favs)', favBits.dataKept, JSON.stringify(favBits));
   }
 
   // 8g. 2026-09-12 v2.64.0 화면마다 제목과 부제가 있는가 — 제목만 있으면 "여기가 어디인지" 는
   //     알아도 "여기서 무엇을 하는지" 는 모른다. 좁은 화면에서도 보인다(전에는 CSS 가 감췄다)
   for (const hash of ['#/dex', '#/dmax', '#/pve', '#/pvp', '#/schedule', '#/raids', '#/eggs',
-    '#/finder', '#/ivrank', '#/favs', '#/release', '#/changes', '#/privacy', '#/terms']) {
+    '#/finder', '#/ivrank', '#/release', '#/changes', '#/privacy', '#/terms']) {
     await page.goto(BASE + '?mock=1' + hash, { waitUntil: 'domcontentloaded' });
     await settle();
     const head = await page.evaluate(() => {
@@ -341,7 +359,7 @@ const ok = (name, cond, extra = '') => results.push([cond ? 'PASS' : 'FAIL', nam
       .filter((node) => getComputedStyle(node).borderTopWidth === '1px').length);
   const base = await measure();
   const baseLines = await onePxLines();
-  ok('본문 15px 유지 (rem 으로 옮겨도 같은 크기)', base.body === 15, String(base.body));
+  ok('본문 14px 유지 (rem 으로 옮겨도 같은 크기)', base.body === 14, String(base.body));
   await page.addStyleTag({ content: 'html { font-size: 100% !important; }' });
   await page.waitForTimeout(300);
   const big = await measure();

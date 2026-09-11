@@ -107,7 +107,8 @@ function navItem(href, title, icon, parent = '') {
   if (route) attrs['data-route'] = route.id;
   if (route?.id === 'planner') attrs.id = 'menu-planner';   // 기존 검사·선택자 유지
   return el('a', attrs,
-    el('span', { class: 'drawer__ico', 'aria-hidden': 'true' }, icon),
+    // 2026-09-12 v3.6.0 이모지 대신 도트 아이콘 (components/pxicon.js). 표에 없는 이모지는 그대로 둔다
+    el('span', { class: 'drawer__ico', 'aria-hidden': 'true' }, pxIcon(icon) ?? icon),
     el('span', { class: 'drawer__label' }, title));
 }
 

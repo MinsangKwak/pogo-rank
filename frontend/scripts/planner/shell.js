@@ -90,7 +90,8 @@ function updateModeBadge() {
   const isPlan = state.appMode === 'plan';
   const badge = document.getElementById('mode-toggle');
   if (badge) {
-    badge.textContent = isPlan ? '🔎 도감' : '🌱 플래너';
+    // 2026-09-12 v3.6.0 이모지 자리를 도트 아이콘으로 (components/pxicon.js). 글자는 그대로 — 번역 사전이 본다
+    pxIconLabel(badge, isPlan ? '🔎' : '🌱', isPlan ? '도감' : '플래너');
     badge.title = isPlan ? '도감 모드로 전환' : '플래너 모드로 전환';
     badge.classList.toggle('is-plan', isPlan);
   }

@@ -3,11 +3,11 @@
 // v2.40.0 버튼 하나(누르면 뒤집힘) → 두 칸 세그먼트 컨트롤(리스트 | 그리드, 고른 칸이 눌린 표시)
 //
 // 이 스위트가 지키려는 것
-//   - 도감뿐 아니라 즐겨찾기 · 레이드 보스 · 알 부화에도 같은 컨트롤이 있는가
+//   - 도감뿐 아니라 레이드 보스 · 알 부화에도 같은 컨트롤이 있는가 (즐겨찾기는 v3.4.0 에서 걷어냈다)
 //   - 지금 보기가 어느 칸인지 aria-pressed 로 드러나는가
 //   - 다른 칸을 누르면 실제로 목록의 is-grid 가 바뀌는가, 저장(localStorage)되는가
 //   - 새로고침해도 고른 보기가 유지되는가
-//   - 화면마다 저장 키가 달라 서로 선택이 안 섞이는가 (도감을 리스트로 바꿔도 즐겨찾기는 그대로)
+//   - 화면마다 저장 키가 달라 서로 선택이 안 섞이는가 (도감을 리스트로 바꿔도 알 부화는 그대로)
 //   - 레이드 보스처럼 목록이 여러 묶음(티어별)인 화면은 컨트롤 하나로 전부 같이 바뀌는가
 //   - 도감의 기존 .dex__layout 클래스·localStorage 키('pogo_dex_cols')는 그대로인가 (회귀 없음)
 const { chromium } = require('/opt/node22/lib/node_modules/playwright');
@@ -31,7 +31,7 @@ const ok = (n, c, x = '') => { console.log((c ? 'PASS' : 'FAIL') + ' ' + n + ' '
     await page.waitForTimeout(500);
   };
   const clearKeys = () => page.evaluate(() => {
-    for (const k of ['pogo_dex_cols', 'pogo_favs_cols', 'pogo_raids_cols', 'pogo_eggs_cols']) {
+    for (const k of ['pogo_dex_cols', 'pogo_raids_cols', 'pogo_eggs_cols', 'pogo_pve_cols']) {
       try { localStorage.removeItem(k); } catch { /* 저장 불가 환경 */ }
     }
   });
@@ -44,8 +44,8 @@ const ok = (n, c, x = '') => { console.log((c ? 'PASS' : 'FAIL') + ' ' + n + ' '
   const gridBtn = () => viewSeg().locator('button').last();
   const pressed = () => viewSeg().locator('button[aria-pressed="true"]').textContent();
 
-  // ── 도감·즐겨찾기·레이드 보스·알 부화 모두 컨트롤이 있고, 기본은 그리드(PC)
-  for (const [hash, label] of [['#/dex', '도감'], ['#/favs', '즐겨찾기'], ['#/raids', '레이드 보스'], ['#/eggs', '알 부화']]) {
+  // ── 도감·레이드 보스·알 부화 모두 컨트롤이 있고, 기본은 그리드(PC)
+  for (const [hash, label] of [['#/dex', '도감'], ['#/raids', '레이드 보스'], ['#/eggs', '알 부화']]) {
     await clearKeys();
     await go(hash);
     ok(`${label} 보기 방식 컨트롤 있음`, await viewSeg().isVisible());
@@ -71,13 +71,13 @@ const ok = (n, c, x = '') => { console.log((c ? 'PASS' : 'FAIL') + ' ' + n + ' '
   await page.waitForTimeout(500);
   ok('도감 새로고침해도 리스트 유지', !(await page.locator('#page .dex__list').first().evaluate((n) => n.classList.contains('is-grid'))));
 
-  // ── 화면마다 저장 키가 달라 선택이 안 섞인다 (도감을 리스트로 바꿔도 즐겨찾기는 그리드 그대로)
-  await go('#/favs');
-  ok('즐겨찾기는 도감의 선택과 무관 (그리드 유지)', await page.locator('#page .dex__list').first().evaluate((n) => n.classList.contains('is-grid')));
+  // ── 화면마다 저장 키가 달라 선택이 안 섞인다 (도감을 리스트로 바꿔도 알 부화는 그리드 그대로)
+  await go('#/eggs');
+  ok('알 부화는 도감의 선택과 무관 (그리드 유지)', await page.locator('#page .dex__list').first().evaluate((n) => n.classList.contains('is-grid')));
   await listBtn().click();
   await page.waitForTimeout(300);
-  ok('즐겨찾기 저장 키는 따로(pogo_favs_cols)', (await page.evaluate(() => localStorage.getItem('pogo_favs_cols'))) === '1');
-  ok('도감 저장 키는 그대로(즐겨찾기 선택에 안 흔들림)', (await page.evaluate(() => localStorage.getItem('pogo_dex_cols'))) === '1');
+  ok('알 부화 저장 키는 따로(pogo_eggs_cols)', (await page.evaluate(() => localStorage.getItem('pogo_eggs_cols'))) === '1');
+  ok('도감 저장 키는 그대로(다른 화면 선택에 안 흔들림)', (await page.evaluate(() => localStorage.getItem('pogo_dex_cols'))) === '1');
 
   // ── 레이드 보스: 티어별로 목록이 여러 묶음인데, 컨트롤 하나로 전부 같이 바뀌는가
   await clearKeys();

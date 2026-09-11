@@ -23,10 +23,16 @@ html { font-size: 62.5%; }
 html { -webkit-text-size-adjust: 100%; }
 body {
   margin: 0; background: var(--bg); color: var(--fg);
-  /* 2026-09-07 v2.14.0 (QA-52) 영문·숫자가 앞, 한글은 Pretendard — 앞 글꼴에 한글 글리프가 없어 자연스럽게 넘어간다
-     2026-09-12 v3.0.0 Montserrat → Inter (index.html 의 주석 참고) */
-  font-family: "Inter", "Pretendard Variable", "Pretendard", "Apple SD Gothic Neo", "Noto Sans KR", system-ui, sans-serif;
-  font-size: 1.5rem; line-height: 1.5; font-feature-settings: "tnum" 1;
+  /* 2026-09-12 v3.6.0 도트 디자인 — 본문 글꼴이 픽셀 글꼴(Galmuri11)이다. 한글 글리프가 들어 있어
+     영문·한글이 같은 글꼴로 그려진다(지금까지는 앞 글꼴에 한글이 없어 Pretendard 로 넘어갔다).
+     Pretendard 는 Galmuri 에 없는 글리프(드문 한자·기호)를 받는 자리로만 남는다.
+     긴 산문은 .prose 가 Pretendard 로 되돌린다 — 도트로 여러 줄을 읽히면 눈이 빨리 지친다 */
+  font-family: "Galmuri11", "Pretendard Variable", "Pretendard", "Apple SD Gothic Neo", system-ui, sans-serif;
+  /* 픽셀 글꼴은 자간을 건드리면 격자가 깨진다 */
+  letter-spacing: 0;
+  /* 2026-09-12 v3.6.0 15px → 14px. Galmuri14 가 그려진 크기 그대로라야 픽셀이 선명하다.
+     줄 간격도 정수 픽셀로 떨어지게 1.5 → 1.5714(=22/14) 대신 22px 를 직접 준다 */
+  font-size: 1.4rem; line-height: 2.2rem; font-feature-settings: "tnum" 1;
 }
 button { font: inherit; color: inherit; background: none; border: 0; padding: 0; cursor: pointer; }
 button:focus-visible { outline: 0.2rem solid var(--fg); outline-offset: 0.2rem; border-radius: 0.4rem; }
@@ -82,21 +88,30 @@ button:disabled, .drawer__item:disabled { cursor: not-allowed; transform: none; 
 :root[lang="en"] .i18n-note { display: block; margin: 0 0 1.2rem; }
 
 
-/* ── 2026-09-12 v3.0.0 글꼴 두 조각 (스타일 레퍼런스) ───────────────────────
-   숫자와 강조 한 마디에만 쓴다. 본문까지 바꾸면 한글과 섞였을 때 줄이 울퉁불퉁해진다 */
+/* ── 2026-09-12 v3.6.0 도트 글꼴 세 벌 ──────────────────────────────────────
+   Galmuri 는 11px · 14px 격자에 그려진 글꼴이라 **정수배 크기**에서만 선명하다.
+   13px 이나 15px 로 쓰면 픽셀이 뭉개져 도트가 아니라 그냥 흐린 글씨가 된다.
+   그래서 토큰(--fs-*)도 11 · 14 · 22 · 28 · 44 로 다시 잡았다 (tokens.css) */
 
-/* 숫자 — CP · 순위 · 개체값. 자릿수가 세로로 맞아야 목록을 훑을 수 있다.
-   tabular-nums 는 Pretendard 로 넘어간 한글 옆 숫자에도 걸린다 */
+/* 화면 제목 — 한 단 큰 격자(14px)를 22·28·44px 로 키워 쓴다 */
+h1, h2, .page-head h2, .detail__name, .home__intro h2 {
+  font-family: "Galmuri14", "Galmuri11", "Pretendard Variable", "Pretendard", system-ui, sans-serif;
+  font-weight: 400;   /* 픽셀 글꼴에 가짜 굵기를 씌우면 획이 번진다 — 굵기는 색과 크기로 낸다 */
+}
+
+/* 숫자 — CP · 순위 · 개체값. 도트 고정폭이라 자릿수가 세로로 맞는다 */
 .num, .row__score, .detail__cp-big b, .ivrank__rank, .ivrank__no, .dex__no, .plan__recent-sub {
-  font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
-  font-feature-settings: "tnum" 1;
+  font-family: "GalmuriMono11", ui-monospace, SFMono-Regular, Menlo, monospace;
   font-variant-numeric: tabular-nums;
+  letter-spacing: 0;
+}
+
+/* 긴 산문은 도트를 벗는다 — 부제 · 안내문 · 패치노트 · 약관처럼 여러 줄을 읽는 글.
+   도트로 문단을 읽히면 글자마다 계단이 져 눈이 빨리 지친다. 읽는 글은 읽기 쉬워야 한다 */
+.prose, .page-head__desc, .note, .detail__foot, .dex__hint, .release__sec li, .legal p, .legal li, .empty {
+  font-family: "Pretendard Variable", "Pretendard", "Apple SD Gothic Neo", system-ui, sans-serif;
   letter-spacing: -0.01em;
 }
 
-/* 구역 제목 옆 한 마디 — 레퍼런스가 이탤릭 세리프로 숨을 돌리는 자리다 */
-.font-display {
-  font-family: "Fraunces", ui-serif, Georgia, "Times New Roman", serif;
-  font-style: italic; font-weight: 500; font-optical-sizing: auto;
-  color: var(--muted);
-}
+/* 구역 제목 옆 한 마디 — 도트에서는 기울이지 않는다(픽셀은 기울면 깨진다). 흐린 색으로만 물린다 */
+.font-display { color: var(--muted); }

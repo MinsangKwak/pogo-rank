@@ -326,8 +326,8 @@ const I18N_EN = {
     'You have not saved any Pokémon yet. Use "➕ Save as mine" in a Pokédex popup, or the button above to search for a species.',
   '아직 저장한 개체가 없어요. 🎒 내 포켓몬 탭의 ➕ 개체 추가, 또는 도감 상세 팝업의 ➕ 로 시작하세요.':
     'You have not saved any Pokémon yet. Start from ➕ Add a Pokémon in the 🎒 My Pokémon tab, or the ➕ in a Pokédex popup.',
-  '개체 = 실제로 가진 한 마리. 같은 종을 여러 마리 저장할 수 있고, [☐ 비교] 를 같은 종 두 마리에 누르면 CP·개체값·리그 도달을 나란히 봐요. ★ 즐겨찾기(종 단위)와는 별개로 저장돼요.':
-    'An entry is one Pokémon you actually own. You can save several of the same species, and tapping [☐ Compare] on two of the same species puts their CP, IVs and league reach side by side. This is stored separately from ★ Favorites, which are per species.',
+  '개체 = 실제로 가진 한 마리. 같은 종을 여러 마리 저장할 수 있고, [☐ 비교] 를 같은 종 두 마리에 누르면 CP·개체값·리그 도달을 나란히 봐요.':
+    'An entry is one Pokémon you actually own. You can save several of the same species, and tapping [☐ Compare] on two of the same species puts their CP, IVs and league reach side by side.',
   '도감이 "뭐가 세나"에 답한다면, 플래너는 "내가 가진 이 개체를 지금 키워도 되나, 다음에 뭘 하나"에 답합니다. 위 탭의 🎒 내 포켓몬에서 개체를 레벨·개체값·기술 단위로 저장하면 같은 종끼리 비교할 수 있어요. 도감 상세 팝업의 ➕ 로도 바로 저장됩니다.':
     'Where the Pokédex answers "what is strong", the Planner answers "is this one of mine worth raising, and what do I do next". Save your Pokémon with level, IVs and moves in the 🎒 My Pokémon tab above, and you can compare them within a species. The ➕ in a Pokédex popup saves one directly too.',
   '플래너 모드는 내 개체(레벨·개체값·기술)를 계정에 저장하고 같은 종끼리 비교하는 화면입니다. 헤더의 배지를 누르면 도감 모드로 돌아갑니다. 저장은 승인된 로그인 사용자만, 계산은 누구나.':

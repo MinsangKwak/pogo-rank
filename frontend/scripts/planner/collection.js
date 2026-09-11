@@ -561,7 +561,8 @@ function renderPlanCollection() {
       $content.append(el('div', { class: 'plan__mons' }, ...shown.map((mon, index) => planMonCard(mon, index))));
     }
   }
-  $content.append(footNote('개체 = 실제로 가진 한 마리. 같은 종을 여러 마리 저장할 수 있고, [☐ 비교] 를 같은 종 두 마리에 누르면 CP·개체값·리그 도달을 나란히 봐요. ★ 즐겨찾기(종 단위)와는 별개로 저장돼요.'));
+  // 2026-09-12 v3.6.0 ★ 즐겨찾기와의 차이를 설명하던 뒷문장을 뺐다 — v3.4.0 에 그 기능이 없어졌다
+  $content.append(footNote('개체 = 실제로 가진 한 마리. 같은 종을 여러 마리 저장할 수 있고, [☐ 비교] 를 같은 종 두 마리에 누르면 CP·개체값·리그 도달을 나란히 봐요.'));
   $note.textContent = '내 포켓몬은 개체 단위(레벨 · 개체값 · 기술 · 상태)로 계정(Firestore users/{uid}.mons)에 저장돼요. CP 는 종족값 × 레벨 × 개체값으로 계산하고, 리그 도달은 CP 상한을 넘지 않는 가장 높은 레벨이에요.';
 }
 

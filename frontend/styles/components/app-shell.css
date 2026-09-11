@@ -104,9 +104,10 @@ body:has(#page:not([hidden]) .page__filters) .page-head {
 /* 2026-09-10 v2.47.0 화면 테마 — 좁은 화면 헤더에는 자리가 없다(버튼을 하나 더 넣었더니 로고가 잘렸다).
    좁은 화면은 ☰ 메뉴 줄이, 넓은 화면은 헤더 버튼이 맡는다 */
 #theme-toggle { display: none; }
-/* 2026-09-12 v2.66.0 자식 화면 줄 — 부모 아래 한 칸 들여 쓴다 (내 포켓몬 ⊂ 육성 플래너) */
-.nav-menu .drawer__item--sub { padding-left: 2.6rem; }
-.nav-menu .drawer__item--sub .drawer__label { font-size: 0.95em; }
+/* 2026-09-12 v2.66.0 자식 화면 줄 — 부모 아래 한 칸 들여 썼었다 (내 포켓몬 ⊂ 육성 플래너).
+   2026-09-12 v3.4.0 들여쓰기를 걷었다 — 좁은 화면 드로어는 줄마다 › 화살표가 붙는 목록이라
+   한 줄만 안쪽으로 밀리면 목록이 어긋나 보인다. 소속은 순서(부모 바로 뒤)로 이미 읽힌다.
+   클래스는 남긴다 — 회귀가 "자식 줄인가" 를 이 클래스로 확인한다 */
 .drawer__value { margin-left: auto; font-size: 1.2rem; color: var(--muted); }
 /* 로고: h1 안의 버튼이라 글꼴·크기를 h1 에서 물려받게 하고 버튼 티를 지운다 */
 .app-bar__logo { padding: 0; font: inherit; color: inherit; letter-spacing: inherit; }
