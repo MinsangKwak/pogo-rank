@@ -335,7 +335,20 @@ function renderPage() {
     body,
     // 2026-09-07 v2.18.0 IP 고지문은 전체 페이지에서도 상시 노출 (.wrap 의 푸터가 숨겨지므로)
     id === 'terms' || id === 'privacy' ? '' : ipNoticeNode());
+  liftViewToggle(id);
   window.scrollTo(0, 0);
+}
+// 2026-09-12 v3.1.0 보기 전환(.seg-view)을 본문에서 화면 머리로 **옮긴다**.
+// 복제가 아니라 이동이라 onclick·aria-pressed·저장 키가 붙어 있는 그 노드가 그대로 간다 —
+// 화면마다 토글을 따로 만들 필요도, 각 화면 렌더러가 머리를 알 필요도 없다.
+// 스타일 가이드는 예외다: 거기 있는 .seg-view 는 "이렇게 생겼다" 를 보여 주는 견본이라 옮기면 안 된다
+function liftViewToggle(id) {
+  const slot = document.getElementById('page-head-actions');
+  if (!slot) return;
+  slot.replaceChildren();
+  if (id === 'styleguide') return;
+  const toggle = document.querySelector('#page .page__body .seg-view');
+  if (toggle) slot.append(toggle);
 }
 window.addEventListener('hashchange', renderPage);
 renderPage();  // #/schedule 같은 링크로 바로 들어온 경우
