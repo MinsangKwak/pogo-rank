@@ -36,7 +36,10 @@ const ok = (n, c, x = '') => { console.log((c ? 'PASS' : 'FAIL') + ' ' + n + ' '
     }
   });
   // 두 칸짜리 컨트롤 — 왼쪽이 리스트, 오른쪽이 그리드 (components/ui.js layoutToggle 의 차례)
-  const viewSeg = () => page.locator('#page .seg-view').first();
+  // 2026-09-12 v3.1.0 보기 전환은 본문이 아니라 **화면 머리**의 동작 슬롯에 있다 —
+  // 목록 하나가 아니라 이 화면 전체에 걸리는 설정이라 제목과 같은 높이에 놓았다.
+  // 노드는 본문에서 옮겨 온 그것 그대로라(복제가 아니다) onclick·저장 키가 붙어 있다
+  const viewSeg = () => page.locator('#page-head-actions .seg-view').first();
   const listBtn = () => viewSeg().locator('button').first();
   const gridBtn = () => viewSeg().locator('button').last();
   const pressed = () => viewSeg().locator('button[aria-pressed="true"]').textContent();
@@ -147,17 +150,24 @@ const ok = (n, c, x = '') => { console.log((c ? 'PASS' : 'FAIL') + ' ' + n + ' '
     await ppage.waitForSelector('#splash', { state: 'detached', timeout: 15000 }).catch(() => {});
     await ppage.locator('#consent .consent__deny').click({ timeout: 1500 }).catch(() => {});
     await ppage.waitForTimeout(500);
+    // 2026-09-12 v3.1.0 안내문 옆이 아니라 화면 머리 오른쪽이다 — 제목과 같은 높이,
+    // 본문(안내문·목록)보다 위. 본문에는 토글이 남아 있으면 안 된다(옮긴 것이지 복제가 아니다)
     const rects = await ppage.evaluate(() => {
-      const intro = document.querySelector('#page .gameday__intro');
-      const note = intro?.querySelector('.note');
-      const btn = intro?.querySelector('.seg-view');
+      const btn = document.querySelector('#page-head-actions .seg-view');
+      const title = document.querySelector('#page-head h2');
+      const note = document.querySelector('#page .gameday__intro .note');
+      if (!btn || !title) return null;
+      const b = btn.getBoundingClientRect(), t = title.getBoundingClientRect();
       return {
-        sameRow: note && btn ? Math.abs(note.getBoundingClientRect().top - btn.getBoundingClientRect().top) < 4 : false,
-        btnIsRightmost: note && btn ? btn.getBoundingClientRect().right > note.getBoundingClientRect().right : false,
+        inHead: true,
+        rightOfTitle: b.left > t.right,
+        aboveBody: note ? b.bottom <= note.getBoundingClientRect().top + 1 : false,
+        leftInBody: !!document.querySelector('#page .page__body .seg-view'),
       };
     });
-    ok('레이드 보스: 보기 방식 컨트롤이 안내문과 같은 줄', rects.sameRow);
-    ok('레이드 보스: 보기 방식 컨트롤이 오른쪽 끝', rects.btnIsRightmost);
+    ok('레이드 보스: 보기 방식 컨트롤이 화면 머리에', !!rects && rects.inHead, JSON.stringify(rects));
+    ok('레이드 보스: 제목 오른쪽 · 본문 위', !!rects && rects.rightOfTitle && rects.aboveBody, JSON.stringify(rects));
+    ok('레이드 보스: 본문에 남은 토글이 없다', !!rects && !rects.leftInBody, JSON.stringify(rects));
     await pctx.close();
   }
 

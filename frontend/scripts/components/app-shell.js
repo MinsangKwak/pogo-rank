@@ -172,8 +172,13 @@ const pageCrumb = el('nav', { class: 'page-head__crumb', 'aria-label': '위치' 
   pageCrumbUp, pageCrumbUpSep,
   el('span', { class: 'page-head__crumb-now' }, ''));
 const pageDesc = el('p', { class: 'page-head__desc' }, '');
+// 2026-09-12 v3.1.0 화면 머리의 동작 슬롯 — 그 화면을 "어떻게 볼지" 를 정하는 컨트롤 자리다.
+// 리스트 · 그리드 전환이 여기로 온다 (components/pages.js renderPage 가 본문에서 옮겨 담는다).
+// 왜 본문이 아니라 머리인가 — 보기 방식은 목록 하나가 아니라 **이 화면 전체**에 걸리는 설정이라,
+// 목록 위 한 줄을 먹기보다 제목과 같은 높이에서 화면의 손잡이처럼 놓이는 편이 맞다
+const pageHeadActions = el('div', { class: 'page-head__actions', id: 'page-head-actions' });
 const pageHead = el('header', { class: 'page-head', id: 'page-head', hidden: true },
-  pageCrumb, el('h2', {}, ''), pageDesc);
+  pageCrumb, el('h2', {}, ''), pageDesc, pageHeadActions);
 pageCrumb.querySelector('a').addEventListener('click', (event) => { event.preventDefault(); goHome(); });
 document.querySelector('.layout').before(pageHead);
 // 2026-09-09 v2.38.0 태블릿 1100px~ · PC 1440px~ 두 단계(styles/components/app-shell.css) —

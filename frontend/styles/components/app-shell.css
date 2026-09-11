@@ -57,7 +57,14 @@ body:has(#page-head:not([hidden])) #page { padding-top: 0; }
    왼쪽 사이드바(투명·고정) 자리를 가로지른다. 배경은 origin 을 content-box 로 두면
    화면마다 다른 좌우 패딩(사이드바 210px · 상세 패널 폭)을 따로 적을 필요 없이 저절로 따라간다.
    clip 은 padding-box 라야 선을 패딩 안쪽(글 아래 1.6rem)까지 내려 그릴 수 있다 */
-.page-head { max-width: 76rem; margin: 0 auto; padding: 1.2rem 2rem 4rem; }
+/* 2026-09-12 v3.1.0 머리를 두 칸으로 — 왼쪽은 "여기가 어디인가"(브레드크럼 · 제목 · 부제),
+   오른쪽은 "어떻게 볼까"(보기 전환). 오른쪽 칸은 비어 있을 때 폭을 먹지 않는다(auto + :empty).
+   제목과 같은 높이에 놓아 화면의 손잡이처럼 읽히게 한다 */
+.page-head { max-width: 76rem; margin: 0 auto; padding: 1.2rem 2rem 4rem;
+             display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: start; column-gap: 1.6rem; }
+.page-head > :not(.page-head__actions) { grid-column: 1; }
+.page-head__actions { grid-column: 2; grid-row: 1 / -1; align-self: center; justify-self: end; }
+.page-head__actions:empty { display: none; }
 .page-head {
   background-image: linear-gradient(to right, var(--line), var(--line));
   background-repeat: no-repeat;
