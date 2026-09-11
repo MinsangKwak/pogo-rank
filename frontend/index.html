@@ -92,8 +92,9 @@
     if (t === 'light' || t === 'dark') document.documentElement.setAttribute('data-theme', t);
   } catch (e) {}
 </script>
-<meta name="theme-color" media="(prefers-color-scheme: light)" content="#ffffff">
-<meta name="theme-color" media="(prefers-color-scheme: dark)" content="#121315">
+<!-- 2026-09-12 v3.7.0 팔레트가 두 번 바뀌는 동안 이 두 줄만 v2 시절 값에 멈춰 있었다 (tokens.css --bg) -->
+<meta name="theme-color" media="(prefers-color-scheme: light)" content="#fafafa">
+<meta name="theme-color" media="(prefers-color-scheme: dark)" content="#0a0a0f">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="POGO PLAN">
 <!-- 2026-09-03 GA4 사용 통계: backend/build.py의 GA_ID가 채워진 빌드에만 삽입됨 -->
