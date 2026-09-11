@@ -53,6 +53,9 @@ const ROUTES = [
   { id: 'schedule', path: 'schedule', kind: 'page', nav: '이벤트 일정', icon: '📅', locked: true },
   { id: 'raids', path: 'raids', kind: 'page', nav: '레이드 보스', icon: '⚔️', locked: true },
   { id: 'eggs', path: 'eggs', kind: 'page', nav: '알 부화', icon: '🥚', locked: true },
+  // 2026-09-11 v2.58.0 백로그 QA-57. 다른 잠긴 화면과 같은 규칙으로 로그인해야 열린다 —
+  // 만든 검색식이 이 브라우저에 남는 개인 설정이라, 계정을 가진 사람의 것으로 다룬다
+  { id: 'finder', path: 'finder', kind: 'page', nav: '검색식 만들기', icon: '🔎', locked: true },
 
   // ── 메뉴에는 없지만 주소가 있는 화면 ──────────────────────────────────────
   // 2026-09-10 v2.47.0 메뉴에서 내렸다 — '내 포켓몬' 과 '육성 플래너' 가 메뉴에 따로 있어
