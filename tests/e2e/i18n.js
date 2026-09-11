@@ -65,14 +65,13 @@ const hangul = (text) => /[가-힣]/.test(text || '');
   ok('새로고침 후에도 영어', (await page.locator('#page-head h2').textContent()) === 'Raids · PvE');
 
   // ── 부분 렌더도 번역되는가 (상성 검색 결과는 칩을 눌러야 그려진다)
-  await go('#/types');
-  // 2026-09-11 v2.61.0 첫 화면이 노말로 켜져 있다 — 첫 칩을 누르면 꺼져 결과가 사라진다.
-  // 아직 안 켜진 칩(불꽃)을 눌러 "나중에 그려진 것" 을 만든다
-  await page.locator('.types__pick .chips__item[aria-pressed="false"]').first().click();
+  // 2026-09-12 v2.63.0 상성 검색 화면을 접었다 — 세대 칩을 눌러 다시 그려지는 도감 줄로 본다
+  await go('#/dex');
+  await page.locator('.dex__toolbar .tchips > *').nth(2).click();
   await page.waitForTimeout(600);
-  const sections = await page.locator('.types__sec h3').allTextContents();
-  ok('나중에 그려진 절 제목도 영어', sections.length > 0 && !sections.some(hangul), sections.join(' | ').slice(0, 90));
-  const monNames = await page.locator('.types__mons .boss__rec > span').allTextContents();
+  const sections = await page.locator('#page .dex__row b').allTextContents();
+  ok('나중에 그려진 절 제목도 영어', sections.length > 0 && !sections.some(hangul), sections.slice(0, 4).join(' | '));
+  const monNames = await page.locator('#page .dex__types .dex__type b').allTextContents();
   ok('나중에 그려진 이름도 영어', monNames.length > 0 && !monNames.some(hangul), monNames.slice(0, 3).join(' '));
 
   // ── 한국어로 두는 화면에는 영어 안내

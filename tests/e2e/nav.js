@@ -76,9 +76,9 @@ const ok = (name, cond, extra = '') => results.push([cond ? 'PASS' : 'FAIL', nam
   // 2026-09-10 v2.47.0 '내 포켓몬' 타일과 '육성 플래너' 타일을 하나로 합쳐 10 → 9 가 됐다
   // 2026-09-11 v2.58.0 🔎 검색식 만들기가 늘어 10 이다. ☰ 메뉴와 홈 타일은 **같은 수**여야 한다 —
   // 같은 화면인데 문이 한쪽에만 있으면 메뉴를 안 여는 사람은 그 화면이 있는 줄도 모른다
-  ok('홈 타일 11개', (await page.locator('.home__tile').count()) === 11);
+  ok('홈 타일 9개', (await page.locator('.home__tile').count()) === 9);
   const icons = await page.locator('.home__icon').allTextContents();
-  ok('홈 아이콘이 이모지', icons.join('') === '🌱📕🧭✨⚔️🃏📅⚔️🥚🔎🧬', icons.join(''));
+  ok('홈 아이콘이 이모지', icons.join('') === '🌱📕✨⚔️🃏📅⚔️🥚🔎', icons.join(''));
   ok('홈에서 탭 줄 숨김', await page.locator('#tabs').isHidden());
   const tile = await page.locator('.home__tile').first().evaluate((n) => {
     const s = getComputedStyle(n);
@@ -167,7 +167,7 @@ const ok = (name, cond, extra = '') => results.push([cond ? 'PASS' : 'FAIL', nam
   ok('드로어 서비스 홈 항목', (await page.locator('.nav-menu a .drawer__label').first().textContent()) === '서비스 홈');
   await page.click('.nav-menu a:has-text("서비스 홈")');
   await page.waitForTimeout(400);
-  ok('서비스 홈으로 이동', (await page.locator('.home__tile').count()) === 11 && !(await page.evaluate(() => location.hash)));
+  ok('서비스 홈으로 이동', (await page.locator('.home__tile').count()) === 9 && !(await page.evaluate(() => location.hash)));
 
   // 8. 플래너 탭 라벨 텍스트 통일
   await page.goto(BASE + '?mock=1#/planner/collection', { waitUntil: 'domcontentloaded' });
@@ -175,23 +175,26 @@ const ok = (name, cond, extra = '') => results.push([cond ? 'PASS' : 'FAIL', nam
   ok('플래너 탭 = 텍스트', (await page.locator('#tabs .tabs__item').allTextContents()).join('|') === '육성 현황|내 포켓몬',
     (await page.locator('#tabs .tabs__item').allTextContents()).join('|'));
 
-  // 8b. 타입 & 상성 — 칩을 누르면 결과가 바로 나오는가 (v2.28.0 회귀)
-  //     matchupBucket 이 묶음 키가 아니라 CSS 클래스를 돌려주는 바람에 buckets[...] 가 undefined 가 되어
-  //     .push 에서 예외가 났고, 결과 영역이 통째로 비었다. 예외는 콘솔에만 남아 화면은 조용히 아무것도 안 했다
-  await page.goto(BASE + '?mock=1#/types', { waitUntil: 'domcontentloaded' });
+  // 8b. 2026-09-12 v2.63.0 타입 & 상성 화면을 접었다 — 상세 팝업이 같은 표를 이미 보여 준다.
+  //     공유된 옛 주소(#/types?t=…)가 죽지 않고 도감으로 넘어가는지 본다
+  await page.goto(BASE + '?mock=1#/types?t=water,dark', { waitUntil: 'domcontentloaded' });
   await settle();
-  // 2026-09-11 v2.61.0 첫 화면이 노말로 켜져 있다 (빈 화면이 휑해서) — 이미 결과가 있어야 한다
-  const typeSecsFirst = await page.locator('.types__sec h3').allTextContents();
-  ok('타입 화면 첫 진입에 이미 결과', typeSecsFirst.length > 0, typeSecsFirst.join(' | ').slice(0, 60));
-  ok('기본은 노말', (await page.locator('.types__pick .chips__item[aria-pressed="true"]').allTextContents()).join('|') === '노말',
-    (await page.locator('.types__pick .chips__item[aria-pressed="true"]').allTextContents()).join('|'));
-  // 아직 안 켜진 칩을 눌러 다시 그려지는지 본다
-  await page.locator('.types__pick .chips__item[aria-pressed="false"]').first().click();
-  await page.waitForTimeout(500);
-  const typeSecs = await page.locator('.types__sec h3').allTextContents();
-  ok('타입 칩 → 배율표', typeSecs.some((text) => text.includes('때릴 때')), typeSecs.join(' | ').slice(0, 80));
-  ok('타입 칩 → 그 타입 포켓몬 목록', (await page.locator('.types__mons .boss__rec').count()) > 0);
-  ok('타입 칩 → 추천 딜러·반대로 절', typeSecs.length >= 3, String(typeSecs.length));
+  ok('옛 상성 주소는 도감으로', (await page.evaluate(() => document.body.dataset.route)) === 'dex',
+    await page.evaluate(() => location.hash));
+  ok('메뉴에 타입 & 상성이 없다', !(await page.locator('.nav-menu .drawer__label').allTextContents()).includes('타입 & 상성'));
+
+  // 8c. PvP 개체값 순위는 배틀 · PvP 안의 도구 버튼으로 연다 (메뉴에 따로 두지 않는다)
+  await page.goto(BASE + '?mock=1#/pvp', { waitUntil: 'domcontentloaded' });
+  await settle();
+  const pvpTools = await page.locator('.controls__row .tool-btn').allTextContents();
+  ok('덱 짜기 옆에 개체값 순위', pvpTools.join('|') === '🃏 덱 짜기|🧬 개체값 순위', pvpTools.join('|'));
+  await page.click('.tool-btn:has-text("개체값 순위")');
+  await settle();
+  ok('누르면 그 자리에 펼쳐진다', (await page.locator('.ivrank__pick').count()) === 1);
+  ok('눌린 표시', (await page.locator('.tool-btn[aria-pressed="true"]').textContent()) === '🧬 개체값 순위');
+  await page.click('.tool-btn:has-text("개체값 순위")');
+  await settle();
+  ok('다시 누르면 접힌다', (await page.locator('.ivrank__pick').count()) === 0);
 
   // 9. 길이 단위가 rem 인가 (2026-09-10 v2.52.0)
   // html 62.5% 기준이라 1rem = 10px 이고, 기본 설정에서는 지금까지와 같은 크기로 그려진다.

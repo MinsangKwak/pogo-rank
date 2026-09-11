@@ -10,7 +10,7 @@ fs.mkdirSync(OUT, { recursive: true });
 
 const SCREENS = [
   ['home', '', null], ['max', '#/rank/max', null], ['pve', '#/rank/pve', null], ['pvp', '#/rank/pvp', null],
-  ['dex', '#/dex', null], ['types', '#/types', null], ['favs', '#/favs', null],
+  ['dex', '#/dex', null], ['favs', '#/favs', null],
   ['plan', '#/plan', null], ['collection', '#/plan/collection', null],
   ['schedule', '#/schedule', null], ['release', '#/release', null],
   ['privacy', '#/privacy', null], ['terms', '#/terms', null], ['changes', '#/changes', null],

@@ -45,8 +45,9 @@ const ROUTES = [
   // 같은 그림을 써야 해서(같은 화면인데 그림이 다르면 다른 곳으로 읽힌다) 표 한 곳에 둔다 — 예전엔
   // home.js 안에만 있어 메뉴에는 아이콘을 못 붙였다
   { id: 'planner', path: 'planner', kind: 'plan', tab: 'home', nav: '육성 플래너', icon: '🌱', locked: true, legacy: ['plan'] },
-  { id: 'dex', path: 'dex', kind: 'page', nav: '포켓몬 도감', icon: '📕' },
-  { id: 'types', path: 'types', kind: 'page', nav: '타입 & 상성', icon: '🧭' },
+  // 2026-09-12 v2.63.0 '타입 & 상성' 화면을 접고 도감으로 넘긴다 — 타입 상성은 상세 팝업이
+  // 이미 같은 표를 보여 준다. 공유된 #/types?t=… 링크가 죽지 않게 legacy 로 잇는다
+  { id: 'dex', path: 'dex', kind: 'page', nav: '포켓몬 도감', icon: '📕', legacy: ['types'] },
   { id: 'dmax', path: 'dmax', kind: 'shell', tab: 'max', nav: 'D-MAX', icon: '✨', legacy: ['rank/max'] },
   { id: 'pve', path: 'pve', kind: 'shell', tab: 'pve', nav: '레이드 · PvE', icon: '⚔️', locked: true, legacy: ['rank/pve'] },
   { id: 'pvp', path: 'pvp', kind: 'shell', tab: 'pvp', nav: '배틀 · PvP', icon: '🃏', locked: true, legacy: ['rank/pvp'] },
@@ -56,10 +57,12 @@ const ROUTES = [
   // 2026-09-11 v2.58.0 백로그 QA-57. 다른 잠긴 화면과 같은 규칙으로 로그인해야 열린다 —
   // 만든 검색식이 이 브라우저에 남는 개인 설정이라, 계정을 가진 사람의 것으로 다룬다
   { id: 'finder', path: 'finder', kind: 'page', nav: '검색식 만들기', icon: '🔎', locked: true },
-  // 2026-09-11 v2.61.0 실험 기능 — PvP 는 CP 상한 때문에 개체값 기준이 PvE 와 정반대다
-  { id: 'ivrank', path: 'ivrank', kind: 'page', nav: 'PvP 개체값 순위', icon: '🧬', locked: true },
 
   // ── 메뉴에는 없지만 주소가 있는 화면 ──────────────────────────────────────
+  // 2026-09-12 v2.63.0 PvP 개체값 순위 — 배틀 · PvP 의 [🧬 개체값 순위] 버튼으로 연다.
+  // 메뉴에 따로 두지 않는 이유: PvP 순위를 보다가 "이 개체가 몇 위지" 가 떠오르는 화면이라,
+  // 그 자리에서 이어지는 것이 맞다 (nav 없이 path 만 두면 메뉴에는 안 뜨고 주소는 산다)
+  { id: 'ivrank', path: 'ivrank', kind: 'page', icon: '🧬', locked: true },
   // 2026-09-10 v2.47.0 메뉴에서 내렸다 — '내 포켓몬' 과 '육성 플래너' 가 메뉴에 따로 있어
   // 같은 곳으로 가는 문이 둘로 보였다. 지금은 육성 플래너 한 줄이고, 두 화면은 그 안의 탭 줄이 가른다.
   // 주소는 그대로 살려 둔다 — 저장해 둔 링크·상세 팝업의 ➕(planAddFromDetail)가 이 주소를 쓴다
@@ -97,7 +100,6 @@ const ROUTE_DESC = {
   home: '찾고, 비교하고, 키우는 즐거움. 필요한 화면으로 바로 가요.',
   'planner-collection': '내 개체를 기록하고 같은 종끼리 비교해요.',
   dex: '포켓몬을 찾아 종족값과 상성을 봐요.',
-  types: '타입 조합의 약점과 추천 딜러를 한눈에 봐요.',
   dmax: '거대한 힘을 지닌 포켓몬의 티어를 봐요.',
   pve: '레이드 추천 딜러와 솔플 가능 여부를 계산해요.',
   pvp: '리그별 순위와 덱 구성을 봐요.',

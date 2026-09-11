@@ -231,7 +231,6 @@ const PAGES = {
   privacy: { title: '🔒 개인정보처리방침', render: renderPrivacyPage },  // 2026-09-04 로그인 시 수집하는 개인정보 안내
   terms: { title: '📜 이용약관', render: renderTermsPage },  // 2026-09-07 v2.18.0 (공개 준비 2)
   favs: { title: '★ 즐겨찾기', render: renderFavsPage },  // 2026-09-05 PvE/PvP 나눠 보기
-  types: { title: '🧭 상성 검색', render: renderTypeSearchPage },  // 2026-09-06 v2.10.0 (QA-44) 타입 조합 → 약점·이중약점·추천 딜러
   raids: { title: '⚔️ 레이드 보스', render: renderRaidsPage },  // 2026-09-08 v2.25.0 지금 도는 티어별 보스 (components/gameday.js)
   eggs: { title: '🥚 알 부화', render: renderEggsPage },                 // 2026-09-08 v2.25.0 거리별 부화 풀 (components/gameday.js)
   finder: { title: '🔎 검색식 만들기', render: renderFinderPage },        // 2026-09-11 v2.58.0 게임 검색창에 붙여 넣을 식 (백로그 QA-57)
