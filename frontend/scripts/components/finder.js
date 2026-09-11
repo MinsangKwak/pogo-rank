@@ -106,7 +106,9 @@ function renderFinderPage() {
   const picked = finderLoad();
   const $out = el('code', { class: 'finder__out' });
   const $hint = el('p', { class: 'finder__hint note' });
-  const $copy = el('button', { class: 'finder__copy uchip' }, '📋 복사');
+  // 2026-09-12 v3.8.2 라벨 앞 이모지를 도트 아이콘으로 (components/pxicon.js).
+  // 누른 뒤 글자가 바뀌므로(복사됨! …) 되돌릴 때도 같은 함수로 다시 채운다
+  const $copy = el('button', { class: 'finder__copy uchip' }, ...pxIconLabelParts('📋 복사'));
 
   const paint = () => {
     const query = finderQuery(picked);
@@ -162,7 +164,7 @@ function renderFinderPage() {
       track('finder_preset', { id: preset.id });
       render();
     },
-  }, preset.label);
+  }, ...pxIconLabelParts(preset.label));
 
   const numberBox = (key, label) => el('input', {
     class: 'finder__num', type: 'number', min: '0', inputmode: 'numeric',
@@ -174,7 +176,9 @@ function renderFinderPage() {
 
   const render = () => {
     body.replaceChildren(
-      el('p', { class: 'note' }, '게임 검색창에 붙여 넣을 검색식을 만들어요. 조건을 한 번 누르면 ',
+      // 2026-09-12 v3.8.2 첫 문장("게임 검색창에 붙여 넣을 검색식을 만들어요")을 뺐다 —
+      // 바로 위 화면 부제가 같은 말을 한다. 이 줄이 할 일은 세 상태를 도는 규칙을 알리는 것뿐이다
+      el('p', { class: 'note' }, '조건을 한 번 누르면 ',
         el('b', {}, '＋포함'), ', 다시 누르면 ', el('b', {}, '－제외'), ', 또 누르면 해제돼요.'),
 
       // 만들어진 식을 **맨 위에** 둔다 — 조건을 고르는 내내 결과가 눈에 있어야 무엇이 달라지는지 보인다
@@ -224,7 +228,7 @@ function renderFinderPage() {
       $copy.textContent = '길게 눌러 복사';
     }
     track('finder_copy', { len: query.length });
-    setTimeout(() => { $copy.textContent = '📋 복사'; }, 1600);
+    setTimeout(() => { $copy.replaceChildren(...pxIconLabelParts('📋 복사')); }, 1600);
   };
 
   render();

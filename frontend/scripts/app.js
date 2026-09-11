@@ -160,12 +160,10 @@ function liftShellHeadAction() {
 // 2026-09-07 v2.16.0 탭 안 도구 버튼 — 세그먼트 오른쪽에 붙는 알약 버튼. 눌린 상태는 aria-pressed (seg·chip 과 같은 규칙)
 function toolButton(label, pressed, onClick) {
   // 2026-09-12 v3.7.1 글자 앞 이모지를 도트 아이콘으로 (components/pxicon.js).
-  // 도구 버튼은 라벨이 '🧬 개체값 순위' 처럼 한 문자열이라 여기서 한 번에 가른다 —
-  // 글자는 이름만 남겨 사전(i18n-en.js)이 찾게 둔다. 표에 없는 이모지면 라벨을 그대로 쓴다
-  const [, lead, rest] = /^(\S+)\s+(.+)$/.exec(label) ?? [];
-  const art = lead ? pxIcon(lead) : null;
-  const attrs = { class: 'tool-btn', 'aria-pressed': String(pressed), onclick: onClick };
-  return art ? el('button', attrs, art, rest) : el('button', attrs, label);
+  // 도구 버튼은 라벨이 '🧬 개체값 순위' 처럼 한 문자열이라 앞 조각을 갈라 준다 —
+  // 글자는 이름만 남겨 사전(i18n-en.js)이 찾게 둔다
+  return el('button', { class: 'tool-btn', 'aria-pressed': String(pressed), onclick: onClick },
+    ...pxIconLabelParts(label));
 }
 
 // 현재 state를 화면에 반영한다. 상태를 바꾼 곳은 어디든 마지막에 이 함수를 부른다.
