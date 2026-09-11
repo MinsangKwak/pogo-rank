@@ -45,6 +45,9 @@ const state = {
   soloLv50: false,           // 풀강50 기준으로 계산할지 (false면 레벨40)
   soloBuff: 'none',          // 적용할 버프 (BUFFS의 id)
   soloMyDeck: [],            // '내 덱 검증'에 넣은 어태커 (최대 6, 넣은 순서대로 출전)
+  // 2026-09-12 v3.3.0 타입 필터 아코디언 — 기본 펼침. 접힌 채로 두면 이 화면을 쓰는 주된 길
+  // (타입으로 좁히기)이 한 번 더 눌러야 보인다. 접으면 그 상태가 그 세션 동안 유지된다
+  filtersOpen: true,
 };
 // 펼쳐진 목록 키 저장
 const expanded = new Set();
@@ -117,19 +120,50 @@ function renderPveTab() {
     $controls.append(el('div', { class: 'controls__row controls__row--tools' }, soloButton));
     return renderSoloCalc();
   }
+  // 2026-09-12 v3.3.0 [일반 | 전체]는 화면 머리 오른쪽으로 — 목록을 거르는 값이 아니라
+  // **이 화면이 어느 표를 보여 주는가** 다 (D-MAX 의 축 · PvP 의 리그와 같은 성격).
+  // 그 옆에 보기 전환을 나란히 둔다: 넓은 화면에서 랭킹이 카드 격자로 그려지는데(pc-theme.css)
+  // 지금까지 줄로 되돌릴 방법이 없었다 — 도감 · 즐겨찾기에는 있던 선택지가 여기만 없었다
   const modeSeg = seg([{ id: 'easy', label: '일반' }, { id: 'all', label: '전체' }], state.pveMode,
     (id) => {
       state.pveMode = id;
       track('sub_pve_' + id);  // 2026-09-03 GA4: 서브탭 사용량
       render();
     });
-  $controls.append(el('div', { class: 'controls__row' }, modeSeg, soloButton));
+  modeSeg.classList.add('js-head-action');
+  const pveGrid = layoutInitial(PVE_COLS_KEY);
+  const pveLayout = layoutToggle(PVE_COLS_KEY, pveGrid, applyPveLayout);
+  pveLayout.classList.add('js-head-action');
+  // 머리로 옮겨질 둘을 $controls 에 담아 둔다 — 옮기는 일은 render() 의 liftShellHeadAction 이 한다
+  $controls.append(el('div', { class: 'controls__row controls__row--head' }, modeSeg, pveLayout));
   (state.pveMode === 'easy' ? renderPveEasy : renderPve)();
+  // 타입 칩은 위 뷰가 $controls 에 붙였다. 솔플 계산기는 그 **아래** 줄이다 —
+  // "무엇을 볼지" 를 다 고른 다음에 "혼자 잡을 수 있나" 로 넘어가는 차례라서
+  $controls.append(el('div', { class: 'controls__row controls__row--tools' }, soloButton));
+  applyPveLayout(pveGrid);
+}
+
+// 2026-09-12 v3.3.0 레이드 · PvE 보기 전환 — 넓은 화면의 카드 격자(.row-list)를 줄로 되돌린다.
+// 도감(pogo_dex_cols)·즐겨찾기(pogo_favs_cols)와 같은 규칙의 별도 키다
+const PVE_COLS_KEY = 'pogo_pve_cols';
+function applyPveLayout(grid) {
+  for (const node of document.querySelectorAll('#content .row-list')) node.classList.toggle('is-list', !grid);
+}
+
+// 2026-09-12 v3.2.0 메인 셸의 화면 머리 동작 슬롯 — 뷰가 $controls 에 달아 둔 .js-head-action 을 옮긴다.
+// 전체 페이지 쪽은 components/pages.js liftViewToggle 이 같은 일을 한다 (슬롯 함수는 app-shell.js 한 곳)
+function liftShellHeadAction() {
+  if (typeof setPageHeadAction !== 'function') return;
+  setPageHeadAction([...$controls.querySelectorAll('.js-head-action')]);
 }
 
 // 2026-09-07 v2.16.0 탭 안 도구 버튼 — 세그먼트 오른쪽에 붙는 알약 버튼. 눌린 상태는 aria-pressed (seg·chip 과 같은 규칙)
 function toolButton(label, pressed, onClick) {
-  return el('button', { class: 'tool-btn', 'aria-pressed': String(pressed), onclick: onClick }, label);
+  // 2026-09-12 v3.7.1 글자 앞 이모지를 도트 아이콘으로 (components/pxicon.js).
+  // 도구 버튼은 라벨이 '🧬 개체값 순위' 처럼 한 문자열이라 앞 조각을 갈라 준다 —
+  // 글자는 이름만 남겨 사전(i18n-en.js)이 찾게 둔다
+  return el('button', { class: 'tool-btn', 'aria-pressed': String(pressed), onclick: onClick },
+    ...pxIconLabelParts(label));
 }
 
 // 현재 state를 화면에 반영한다. 상태를 바꾼 곳은 어디든 마지막에 이 함수를 부른다.
@@ -141,6 +175,7 @@ function render() {
   $controls.textContent = '';
   $content.textContent = '';
   document.body.dataset.home = String(state.appMode === 'dex' && state.tab === 'home');
+  liftShellHeadAction();   // 먼저 비운다 — 아래 이른 return 들(홈·플래너·잠금)도 앞 화면 컨트롤을 남기지 않게
   if (state.appMode === 'dex' && state.tab === 'home') return renderServiceHome();
   // 2026-09-07 v2.15.0 (QA-53) 플래너 모드면 플래너 렌더러로 (도감 탭 상태는 건드리지 않는다)
   if (state.appMode === 'plan') return renderPlan();
@@ -154,6 +189,9 @@ function render() {
   }
   // 탭 id → 그 탭을 그리는 함수. 찾아서 바로 호출한다
   ({ max: renderMax, pve: renderPveTab, pvp: renderPvp })[state.tab]();  // v2.16.0 usage·if 제거
+  // 2026-09-12 v3.2.0 화면 머리 오른쪽 슬롯 — 뷰가 .js-head-action 을 달아 둔 컨트롤이 있으면 옮긴다.
+  // 없으면 비운다: 앞 화면 컨트롤이 남으면 D-MAX 의 축 세그먼트가 PvP 제목 옆에 떠 있게 된다
+  liftShellHeadAction();
   compactScreenFilters();
   saveLastView();  // 2026-09-06 v2.9.0 상태가 바뀌어 다시 그릴 때마다 마지막 보기를 남긴다
 }
@@ -196,8 +234,6 @@ initConsent();
 initReleaseBadge();
 // 2026-09-04 시즌 기술 변경 안내: 변경 데이터가 있을 때만 메뉴에 항목이 뜬다
 initMoveChangesMenu();
-// 2026-09-05 즐겨찾기 메뉴는 로그인 뒤에 열리지만, 초기 상태(숨김)를 여기서 확정해 둔다
-initFavsMenu();
 // 2026-09-10 v2.47.0 화면 테마 버튼(해·달). 저장된 값은 index.html 의 head 스크립트가 이미 붙였고,
 // 여기서는 버튼을 달고 얼굴을 맞춘다 (components/theme.js)
 initTheme();

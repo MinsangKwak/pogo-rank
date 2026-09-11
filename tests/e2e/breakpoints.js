@@ -99,9 +99,12 @@ const ok = (n, c, x = '') => { console.log((c ? 'PASS' : 'FAIL') + ' ' + n + ' '
         const list = document.querySelector('#content .row-list');
         const row = list && list.querySelector('.row');
         if (!row) return null;
-        return { list: getComputedStyle(list).display, row: getComputedStyle(row).flexDirection, radius: parseFloat(getComputedStyle(row).borderRadius) };
+        const s = getComputedStyle(row);
+        return { list: getComputedStyle(list).display, row: s.flexDirection, border: parseFloat(s.borderTopWidth) };
       });
-      const isCard = !!shape && shape.list === 'grid' && shape.row === 'column' && shape.radius > 0;
+      // 2026-09-12 v3.6.0 도트 디자인은 모서리를 전부 없앴다 (styles/pixel.css).
+      // "카드냐" 를 가르는 것은 이제 반경이 아니라 **세로 쌓임 + 또렷한 테두리**다
+      const isCard = !!shape && shape.list === 'grid' && shape.row === 'column' && shape.border >= 2;
       ok(`${label} #/${route} ${wantCard ? '카드' : '목록'}`, isCard === wantCard, JSON.stringify(shape));
     }
     await ctx.close();

@@ -10,8 +10,24 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
-<!-- 2026-09-07 v2.14.0 (QA-52) 웹폰트 교체: 영문·숫자 Montserrat (Google Fonts) + 한글 Pretendard (jsdelivr, 동적 서브셋) -->
-<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+<!-- 2026-09-07 v2.14.0 (QA-52) 웹폰트: 영문·숫자 + 한글 Pretendard (jsdelivr, 동적 서브셋)
+     2026-09-12 v3.0.0 스타일 레퍼런스(yceffort.kr)의 세 벌로 갈아끼웠다.
+       Inter          본문·UI. Montserrat 은 제목용 기하 산세리프라 작은 글씨(1.2rem 보조줄)에서
+                      글자폭이 들쭉날쭉했다. Inter 는 작은 크기에 맞춰 그린 글꼴이다.
+       Fraunces       구역 제목의 이탤릭 강조 한 조각에만. 레퍼런스의 성격을 만드는 글꼴인데
+                      통째로 쓰면 읽기 힘들어, 제목 옆 한 마디에만 쓴다 (base.css .font-display)
+       JetBrains Mono CP · 순위 · 개체값 같은 숫자. 이 서비스는 숫자를 세로로 줄줄이 세우는데
+                      비례 글꼴이라 자릿수가 어긋나 보였다 (--fs-num, base.css .num)
+     한글 글리프는 셋 다 없어 자연스럽게 Pretendard 로 넘어간다 — 지금까지와 같은 구조다 -->
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<!-- 2026-09-12 v3.6.0 도트 디자인 — 한글이 있는 픽셀 글꼴 Galmuri (jsdelivr, CSP 의 style-src·font-src 에 이미 있다).
+     배포본의 galmuri.css 는 아홉 벌을 한꺼번에 걸어 두므로 쓰지 않고, 쓰는 얼굴 셋만 직접 선언한다.
+     크기를 글꼴이 그려진 격자(11px · 14px)의 정수배로 쓰는 것이 중요하다 — 어중간한 크기는 픽셀이 뭉갠다 -->
+<style>
+  @font-face { font-family: 'Galmuri11'; src: url('https://cdn.jsdelivr.net/npm/galmuri@2.40.3/dist/Galmuri11.woff2') format('woff2'); font-display: swap; }
+  @font-face { font-family: 'Galmuri14'; src: url('https://cdn.jsdelivr.net/npm/galmuri@2.40.3/dist/Galmuri14.woff2') format('woff2'); font-display: swap; }
+  @font-face { font-family: 'GalmuriMono11'; src: url('https://cdn.jsdelivr.net/npm/galmuri@2.40.3/dist/GalmuriMono11.woff2') format('woff2'); font-display: swap; }
+</style>
 <link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" rel="stylesheet">
 <!-- ── 2026-09-08 v2.27.0 보안 · 공유 미리보기 · 검색 ──────────────────────────
      [보안] GitHub Pages 는 응답 헤더를 못 바꾼다. meta 로 걸 수 있는 것만 건다.
@@ -57,26 +73,10 @@
 <meta name="twitter:description" content="순위·도감·상성·일정을 한 화면에서. 내 포켓몬을 저장해 육성 우선순위를 정하세요.">
 <meta name="twitter:image" content="https://minsangkwak.github.io/pogo-rank/og.png">
 <meta name="twitter:image:alt" content="POGO PLAN — 도트로 그린 몬스터볼과 서비스 이름">
-<!-- 2026-09-12 v2.67.0 검색 결과에 미리보기 그림을 크게 띄우고 발췌 길이를 제한하지 않는다.
-     robots 값 자체는 빌드가 채널별로 넣는다 (backend/build.py) — dev 미리보기는 noindex 여야 하므로
-     여기에 index 를 박아 두면 두 줄이 충돌한다 -->
-<!-- 구조화 데이터 — 검색 결과에 서비스 이름과 설명이 제대로 붙게. 해시 라우팅이라 색인되는 주소가
-     첫 화면 하나뿐이므로 WebSite 하나만 적는다 (없는 하위 페이지를 지어내지 않는다) -->
-<script type="application/ld+json">
-{"@context":"https://schema.org","@graph":[
-{"@type":"WebSite","@id":"https://minsangkwak.github.io/pogo-rank/#website",
-"name":"POGO PLAN","alternateName":"포고플랜",
-"url":"https://minsangkwak.github.io/pogo-rank/","inLanguage":"ko-KR",
-"description":"포켓몬 GO 의 순위·도감·상성·일정을 한 화면에서 보고, 내 개체를 저장해 육성 우선순위를 정하는 비공식 팬 도구",
-"isAccessibleForFree":true},
-{"@type":"WebApplication","@id":"https://minsangkwak.github.io/pogo-rank/#app",
-"name":"POGO PLAN","url":"https://minsangkwak.github.io/pogo-rank/","inLanguage":"ko-KR",
-"applicationCategory":"UtilitiesApplication","browserRequirements":"JavaScript",
-"operatingSystem":"Web",
-"description":"포켓몬 GO 육성 플래너 — D-MAX·레이드·PvP 순위, 도감과 타입 상성, 이벤트 일정과 레이드 보스, 내 개체 기록",
-"isAccessibleForFree":true,
-"offers":{"@type":"Offer","price":"0","priceCurrency":"KRW"}}]}
-</script>
+<!-- 2026-09-12 v3.6.0 검색 색인용 표시를 뺐다 — 아직 검색엔진에 올릴 단계가 아니다.
+     남긴 것: og:* · twitter:* (링크를 붙였을 때 뜨는 미리보기 카드) · canonical · description.
+     뺀 것: robots 색인 표시(빌드가 넣던 index, follow …) 와 구조화 데이터(JSON-LD).
+     되살릴 때는 이 주석과 backend/build.py 의 robots 분기를 함께 보면 된다 -->
 
 <!-- 2026-09-03 PWA: 홈 화면 설치 -->
 <link rel="manifest" href="manifest.webmanifest">
@@ -92,8 +92,9 @@
     if (t === 'light' || t === 'dark') document.documentElement.setAttribute('data-theme', t);
   } catch (e) {}
 </script>
-<meta name="theme-color" media="(prefers-color-scheme: light)" content="#ffffff">
-<meta name="theme-color" media="(prefers-color-scheme: dark)" content="#121315">
+<!-- 2026-09-12 v3.7.0 팔레트가 두 번 바뀌는 동안 이 두 줄만 v2 시절 값에 멈춰 있었다 (tokens.css --bg) -->
+<meta name="theme-color" media="(prefers-color-scheme: light)" content="#fafafa">
+<meta name="theme-color" media="(prefers-color-scheme: dark)" content="#0a0a0f">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="POGO PLAN">
 <!-- 2026-09-03 GA4 사용 통계: backend/build.py의 GA_ID가 채워진 빌드에만 삽입됨 -->
@@ -103,16 +104,38 @@ __GA_SNIPPET__
   /* 2026-09-10 v2.52.0 기준을 여기서도 먼저 세운다 — 이 블록은 번들 스타일(__STYLES__)보다
      앞에서 그려지므로, base.css 의 62.5% 를 기다리면 첫 프레임에서 로딩 화면만 커 보인다 */
   html { font-size: 62.5%; }
-  #splash { position: fixed; inset: 0; z-index: 999; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1.4rem;
-            background: #fff; color: #17181a; font-family: 'Montserrat', 'Pretendard Variable', 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, sans-serif; transition: opacity .25s ease; }
-  #splash .splash__title { font-size: 2rem; font-weight: 600; letter-spacing: -0.01em; }
-  #splash .splash__sub { font-size: 1.3rem; opacity: .55; }
-  #splash .splash__bar { width: 12.8rem; height: 0.3rem; border-radius: 0.2rem; background: rgba(0,0,0,.1); overflow: hidden; }
-  #splash .splash__bar i { display: block; width: 40%; height: 100%; border-radius: 0.2rem; background: currentColor; opacity: .5; animation: sp-slide 1s ease-in-out infinite; }
-  @keyframes sp-slide { 0% { transform: translateX(-110%); } 100% { transform: translateX(360%); } }
+  /* 2026-09-12 v3.6.0 도트 로딩 — 그림 파일 없이 CSS 로만 그린다(이 블록은 번들보다 먼저 뜬다).
+     몬스터볼은 conic/radial 이 아니라 **계단진 그라데이션**이라 경계가 픽셀처럼 딱 떨어진다.
+     막대도 steps() 로 칸칸이 찬다 — 부드럽게 흐르면 도트가 아니다 */
+  #splash { position: fixed; inset: 0; z-index: 999; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1.6rem;
+            background: #fafafa; color: #0a0a0f; font-family: 'Galmuri11', 'Pretendard Variable', 'Pretendard', system-ui, sans-serif;
+            image-rendering: pixelated; transition: opacity .25s steps(4); }
+  #splash .splash__ball { width: 6.4rem; height: 6.4rem; position: relative; animation: sp-bob 1.2s steps(4) infinite; }
+  /* 위 빨강 · 아래 흰색 · 가운데 띠 — 네모 세 겹으로 쌓아 올린 몬스터볼 */
+  #splash .splash__ball::before { content: ''; position: absolute; inset: 0;
+    background:
+      linear-gradient(#0a0a0f 0 100%) center/100% 0.8rem no-repeat,
+      linear-gradient(#e5372e 0 50%, #fff 50% 100%);
+    border: 0.4rem solid #0a0a0f; box-sizing: border-box; }
+  #splash .splash__ball::after { content: ''; position: absolute; left: 50%; top: 50%; width: 1.6rem; height: 1.6rem; transform: translate(-50%, -50%);
+    background: #fff; border: 0.4rem solid #0a0a0f; box-sizing: border-box; }
+  #splash .splash__title { font-size: 2.2rem; letter-spacing: 0.02em; }
+  #splash .splash__sub { font-size: 1.1rem; opacity: .6; }
+  #splash .splash__bar { width: 12.8rem; height: 1.2rem; background: transparent; border: 0.2rem solid currentColor; padding: 0.2rem; box-sizing: border-box; }
+  #splash .splash__bar i { display: block; height: 100%; width: 100%;
+    background: repeating-linear-gradient(90deg, currentColor 0 0.8rem, transparent 0.8rem 1.2rem);
+    animation: sp-fill 1.2s steps(8) infinite; transform-origin: left; }
+  @keyframes sp-fill { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+  /* 2026-09-12 v3.6.0 공을 던진 뒤 좌우로 기우뚱하는 그 움직임. steps 로 칸칸이 꺾인다 */
+  @keyframes sp-bob {
+    0%, 100% { transform: translate(0, 0) rotate(0deg); }
+    25%      { transform: translate(-0.4rem, -0.4rem) rotate(-14deg); }
+    50%      { transform: translate(0, 0) rotate(0deg); }
+    75%      { transform: translate(0.4rem, -0.4rem) rotate(14deg); }
+  }
   #splash.is-done { opacity: 0; pointer-events: none; }
-  @media (prefers-color-scheme: dark) { #splash { background: #121315; color: #e8e9ea; } #splash .splash__bar { background: rgba(255,255,255,.14); } }
-  @media (prefers-reduced-motion: reduce) { #splash .splash__bar i { animation: none; width: 100%; } }
+  @media (prefers-color-scheme: dark) { #splash { background: #0a0a0f; color: #f5f5fa; } }
+  @media (prefers-reduced-motion: reduce) { #splash .splash__bar i, #splash .splash__ball { animation: none; } }
 </style>
 <style>
 __STYLES__
@@ -121,9 +144,17 @@ __STYLES__
 <body>
 <!-- 2026-09-03 v2.2.1 로딩 화면 — 첫 렌더가 끝나면 app.js가 제거 -->
 <div id="splash">
+  <div class="splash__ball" aria-hidden="true"></div>
   <div class="splash__title">POGO PLAN</div>
   <div class="splash__bar"><i></i></div>
   <div class="splash__sub">불러오는 중…</div>
+</div>
+<!-- 2026-09-12 v3.6.1 바탕 장식 한 겹 (styles/pixel.css #px-bg) — 점 격자 + 큰 몬스터볼 둘.
+     내용이 아니라 배경이라 aria-hidden, 누름도 막는다(pointer-events: none).
+     본문과 같은 층에 두지 않고 통째로 뒤로 빼 둬야 흐리기(blur)를 한 곳에서 건다 -->
+<div id="px-bg" aria-hidden="true">
+  <div class="px-ball px-ball--1"></div>
+  <div class="px-ball px-ball--2"></div>
 </div>
 <div class="layout">
   <header>
@@ -139,10 +170,7 @@ __STYLES__
     </div>
     <div class="app-bar__actions">
       <button class="icon-btn" id="search-toggle" aria-label="포켓몬 검색">🔍</button>
-      <!-- 2026-09-12 v2.64.0 ★ 즐겨찾기 — 전에는 화면 맨 위 카드라 본문이 한 뼘 밀렸다.
-           즐겨찾기는 어느 화면에서나 보고 싶은 것이라 헤더에 두고 팝업으로 연다.
-           로그인 + 즐겨찾기가 있을 때만 보인다 (components/favdigest.js) -->
-      <button class="icon-btn" id="fav-toggle" aria-label="내 즐겨찾기" hidden>★</button>
+      <!-- 2026-09-12 v3.4.0 ★ 즐겨찾기 버튼을 뺐다 — 기능을 통째로 걷어냈다 (components/favs.js 머리말) -->
       <!-- 2026-09-08 v2.29.0 계정 버튼(👤)을 뺐다 — 로그인·마이페이지는 ☰ 메뉴 맨 위 계정 카드 한 곳으로 모은다.
            비운 자리에 KR/EN 전환을 둔다 (i18n.js) -->
       <button class="icon-btn" id="theme-toggle" aria-label="화면 테마" aria-live="polite">🌗</button>
@@ -171,9 +199,6 @@ __STYLES__
     <summary id="boss-acc-title">⚔️ 이번 주 보스</summary>
     <div class="schedule__body" id="boss-acc-body"></div>
   </details>
-
-  <!-- 2026-09-05 로그인 전용: 내 즐겨찾기 순위 변동 요약 (components/favdigest.js) -->
-  <!-- 2026-09-07 v2.14.0 (QA-52) 접었다 펼 수 있는 아코디언으로 — 펼침 여부는 localStorage 에 기억 -->
 
   <!-- 2026-09-08 v2.22.0 탭 줄 복구: D-MAX·PvE·PvP 형제 화면 이동 + 📕 🧭 ★ 바로가기 (app.js renderTabs). 서비스 홈에서는 hidden -->
   <div class="tabs" role="tablist" id="tabs" hidden></div>

@@ -26,7 +26,9 @@ const ok = (n, c, x = '') => { console.log((c ? 'PASS' : 'FAIL') + ' ' + n + ' '
   const state = () => page.evaluate(() => ({
     attr: document.documentElement.getAttribute('data-theme'),
     saved: localStorage.getItem('pogo_theme'),
-    icon: document.getElementById('theme-toggle')?.textContent,
+    // 2026-09-12 v3.6.0 얼굴은 도트 그림(svg.pxi)이라 글자가 없다 — 어떤 얼굴인지는 data-icon 이 들고 있다
+    icon: document.getElementById('theme-toggle')?.dataset.icon,
+    pxi: !!document.getElementById('theme-toggle')?.querySelector('svg.pxi'),
     label: document.getElementById('theme-toggle')?.getAttribute('aria-label'),
     bg: getComputedStyle(document.body).backgroundColor,
   }));
@@ -40,7 +42,8 @@ const ok = (n, c, x = '') => { console.log((c ? 'PASS' : 'FAIL') + ' ' + n + ' '
   ok('헤더에 테마 버튼', await page.locator('#theme-toggle').isVisible());
   const start = await state();
   ok('처음은 기기 설정 따름 (표시 없음)', start.attr === null, String(start.attr));
-  ok('기기가 어두우면 어두운 배경', start.bg === 'rgb(11, 15, 21)', start.bg);
+  // v3.0.0 딥네이비(#0b0f15) → 잉크블랙(#0a0a0f) · 흰 바탕 → 꺼진 바탕(#fafafa)
+  ok('기기가 어두우면 어두운 배경', start.bg === 'rgb(10, 10, 15)', start.bg);
   ok('버튼에 이름이 있다', /테마/.test(start.label || ''), start.label || '');
 
   // ── 2. 세 상태를 돈다 + 실제로 색이 바뀐다
@@ -48,21 +51,21 @@ const ok = (n, c, x = '') => { console.log((c ? 'PASS' : 'FAIL') + ' ' + n + ' '
   await page.waitForTimeout(300);
   const light = await state();
   ok('1번 → 밝게', light.attr === 'light' && light.saved === 'light', JSON.stringify(light));
-  ok('밝게는 흰 배경', light.bg === 'rgb(255, 255, 255)', light.bg);
-  ok('밝게 아이콘 ☀️', light.icon === '☀️', light.icon);
+  ok('밝게는 밝은 배경', light.bg === 'rgb(250, 250, 250)', light.bg);
+  ok('밝게 아이콘 ☀️ (도트)', light.icon === '☀️' && light.pxi, JSON.stringify(light));
 
   await page.locator('#theme-toggle').click();
   await page.waitForTimeout(300);
   const dark = await state();
   ok('2번 → 어둡게', dark.attr === 'dark' && dark.saved === 'dark', JSON.stringify(dark));
-  ok('어둡게는 어두운 배경', dark.bg === 'rgb(11, 15, 21)', dark.bg);
-  ok('어둡게 아이콘 🌙', dark.icon === '🌙', dark.icon);
+  ok('어둡게는 어두운 배경', dark.bg === 'rgb(10, 10, 15)', dark.bg);
+  ok('어둡게 아이콘 🌙 (도트)', dark.icon === '🌙' && dark.pxi, JSON.stringify(dark));
 
   await page.locator('#theme-toggle').click();
   await page.waitForTimeout(300);
   const sys = await state();
   ok('3번 → 기기 설정 따름', sys.attr === null && sys.saved === 'system', JSON.stringify(sys));
-  ok('기기 설정 아이콘 🌗', sys.icon === '🌗', sys.icon);
+  ok('기기 설정 아이콘 🌗 (도트)', sys.icon === '🌗' && sys.pxi, JSON.stringify(sys));
 
   // ── 3. 새로고침해도 유지되고, head 에서 먼저 붙는다 (깜빡임 없음)
   await page.locator('#theme-toggle').click();   // → light

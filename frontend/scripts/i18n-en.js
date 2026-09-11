@@ -211,7 +211,10 @@ const I18N_EN = {
   '🧩 추천 파티 — 딜러 # + 탱커 #': '🧩 Suggested party — # attackers + # tank',
   '⚔️ 이번 주 보스': "⚔️ This week's boss",
   '🧮 솔플 계산기': '🧮 Solo calculator',
+  '솔플 계산기': 'Solo calculator',   // 2026-09-12 v3.6.1 이모지를 도트 아이콘으로 떼면서 글자만 남았다
   '🃏 덱 짜기': '🃏 Team builder',
+  '덱 짜기': 'Team builder',           // 2026-09-12 v3.7.1 이모지를 도트 아이콘으로 떼면서 글자만 남았다
+  '개체값 순위': 'IV ranking',
   '추천 덱 # — 정석 코어': 'Suggested team # — classic core',
   '추천 덱 # — 안티 메타': 'Suggested team # — anti-meta',
   '추천 덱 # — 타입 분산': 'Suggested team # — type spread',
@@ -265,6 +268,7 @@ const I18N_EN = {
   '×# 이중': '×# double',
   '🧭 상성 검색에서 딜러까지 보기 ▸': '🧭 Open matchup search for attacker picks ▸',
   '🧮 내 개체 CP 계산기': '🧮 CP calculator for my Pokémon',
+  '내 개체 CP 계산기': 'CP calculator for my Pokémon',   // 2026-09-12 v3.6.1 이모지를 도트 아이콘으로 떼면서 글자만 남았다
   '🌱 플래너 내 포켓몬에 이 개체 저장': '🌱 Save this one to Planner → My Pokémon',
   '➕ 내 개체로 저장': '➕ Save as mine',
   '이중약점 = 두 타입 모두에 약해 ×2.56 · 이중내성 = 두 타입 모두 반감(×0.39). 본가의 무효 타입도 GO 에서는 같은 ×0.39 로 피해가 들어가요':
@@ -298,6 +302,7 @@ const I18N_EN = {
   '체력 IV': 'HP IV',
   'CP #% 기준 · 만렙': 'At #% IVs · max level',
   '🎯 포획 CP — 이 숫자면 #%': '🎯 Catch CP — this number means #%',
+  '포획 CP — 이 숫자면 #%': 'Catch CP — this number means #%',
   '레이드 보상 — 개체값 # 이상 확정': 'Raid reward — guaranteed # IVs or better',
   '야생 스폰 — 개체값 하한 없음': 'Wild spawn — no IV floor',
   '맥스 배틀 (다이맥스) — Lv# 고정, 날씨부스트 없음': 'Max Battle (Dynamax) — fixed Lv#, no weather boost',
@@ -326,8 +331,8 @@ const I18N_EN = {
     'You have not saved any Pokémon yet. Use "➕ Save as mine" in a Pokédex popup, or the button above to search for a species.',
   '아직 저장한 개체가 없어요. 🎒 내 포켓몬 탭의 ➕ 개체 추가, 또는 도감 상세 팝업의 ➕ 로 시작하세요.':
     'You have not saved any Pokémon yet. Start from ➕ Add a Pokémon in the 🎒 My Pokémon tab, or the ➕ in a Pokédex popup.',
-  '개체 = 실제로 가진 한 마리. 같은 종을 여러 마리 저장할 수 있고, [☐ 비교] 를 같은 종 두 마리에 누르면 CP·개체값·리그 도달을 나란히 봐요. ★ 즐겨찾기(종 단위)와는 별개로 저장돼요.':
-    'An entry is one Pokémon you actually own. You can save several of the same species, and tapping [☐ Compare] on two of the same species puts their CP, IVs and league reach side by side. This is stored separately from ★ Favorites, which are per species.',
+  '개체 = 실제로 가진 한 마리. 같은 종을 여러 마리 저장할 수 있고, [☐ 비교] 를 같은 종 두 마리에 누르면 CP·개체값·리그 도달을 나란히 봐요.':
+    'An entry is one Pokémon you actually own. You can save several of the same species, and tapping [☐ Compare] on two of the same species puts their CP, IVs and league reach side by side.',
   '도감이 "뭐가 세나"에 답한다면, 플래너는 "내가 가진 이 개체를 지금 키워도 되나, 다음에 뭘 하나"에 답합니다. 위 탭의 🎒 내 포켓몬에서 개체를 레벨·개체값·기술 단위로 저장하면 같은 종끼리 비교할 수 있어요. 도감 상세 팝업의 ➕ 로도 바로 저장됩니다.':
     'Where the Pokédex answers "what is strong", the Planner answers "is this one of mine worth raising, and what do I do next". Save your Pokémon with level, IVs and moves in the 🎒 My Pokémon tab above, and you can compare them within a species. The ➕ in a Pokédex popup saves one directly too.',
   '플래너 모드는 내 개체(레벨·개체값·기술)를 계정에 저장하고 같은 종끼리 비교하는 화면입니다. 헤더의 배지를 누르면 도감 모드로 돌아갑니다. 저장은 승인된 로그인 사용자만, 계산은 누구나.':

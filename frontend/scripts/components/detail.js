@@ -27,7 +27,6 @@
 // - DMAX_DATA (data.js, 선택): 맥스 보스별 추천 카운터 (없는 빌드도 있어 typeof 로 방어)
 // - SHEET_DATA.pve · PVE_DATA (data.js): 레이드 보스 카운터 — 공격 타입별 레이드 성능표 (v2.13.0 QA-49)
 // - MAX_POOL (data.js, 선택): 맥스 배틀에서 잡을 수 있는 종 (스프라이트 id → 'G' 거다이맥스 · 'D' 다이맥스)
-// - roleToggleNode() (components/favs.js): ★ 즐겨찾기 PvE/PvP 분류 보정 토글
 
 // 스프라이트 id → 도감번호 (기본 폼은 id가 곧 도감번호)
 // 메가·리전 폼 등은 10000 이상의 별도 id를 쓰므로 DEX_DATA.dex 매핑으로 원종 번호를 찾는다.
@@ -564,7 +563,7 @@ function openDetail(pokemon, isDex = false, from = null) {
         ? el('button', { class: 'detail__share detail__plan', title: '🌱 플래너 내 포켓몬에 이 개체 저장', 'aria-label': '내 개체로 저장',
             onclick: (event) => { event.stopPropagation(); planAddFromDetail(pokemon); } }, '➕')
         : '',
-      authEnabled() && dex != null ? favBtn(dex) : ''),
+      ''),   // 2026-09-12 v3.4.0 ★ 자리 — 즐겨찾기를 걷어내며 비웠다
     el('div', { class: 'detail__info' },
       dex != null ? el('span', { class: 'tag detail__dexno' }, `#${String(dex).padStart(4, '0')}`) : '',
       formLabels.length ? el('div', { class: 'detail__form-row' }, ...formLabels.map((label) => el('span', { class: `form-tag${formLabelKind(label) ? ' form-tag--' + formLabelKind(label) : ''}` }, label))) : '',
@@ -591,12 +590,13 @@ function openDetail(pokemon, isDex = false, from = null) {
   if (form && typeof ivrankDetailNode === 'function') body.append(ivrankDetailNode(form, pokemon.sprite));
   // 2026-09-04 포획 CP: "지금 잡은 개체가 100%인가"를 확인하는 표. 계산기보다 자주 보므로 위에 둔다
   if (form) body.append(el('details', { class: 'detail__acc detail__acc--catch' },
-    el('summary', {}, '🎯 포획 CP — 이 숫자면 100%'),
+    // 2026-09-12 v3.6.1 이모지를 도트 아이콘으로 (components/pxicon.js). 글자는 그대로 둬야 사전(i18n-en.js)이 찾는다
+    el('summary', {}, pxIcon('🎯') ?? '🎯', ' 포획 CP — 이 숫자면 100%'),
     el('div', { class: 'detail__acc-body' }, cpNode(form, pokemon.sprite))));
   // 2026-09-03 v4: 내 개체 CP 계산기를 상성 위로, 접이식 아코디언으로
   // 2026-09-03 도감형 재배치: 계산기 아코디언 → [능력치 육각형 | 배울 수 있는 기술] → 상성 → 활용처 → 진화, "보스로 나오면"은 맨 아래
   if (form) body.append(el('details', { class: 'detail__acc' },
-    el('summary', {}, '🧮 내 개체 CP 계산기'),
+    el('summary', {}, pxIcon('🧮') ?? '🧮', ' 내 개체 CP 계산기'),
     el('div', { class: 'detail__acc-body' }, detailCpCalc(form))));
   // 2026-09-03 일반 팝업: 능력치 없이 기술만 전체 폭 / 도감 팝업: [능력치 육각형 | 기술] 2열
   if (form) {
@@ -630,9 +630,6 @@ function openDetail(pokemon, isDex = false, from = null) {
   // 아래 섹션들은 해당 데이터가 있을 때만 붙는다 (활용처 미등재·메가 없음·진화 없음 등)
   const usage = usageNode(pokemon.name);
   if (usage) body.append(detailSection('이 도감에서의 활용처 (상위 30위 내)', usage));
-  // 2026-09-05 역할 보정: ★ 즐겨찾기 목록에서 PvE/PvP 어느 갈래로 묶일지 직접 지정
-  const roleToggle = roleToggleNode(pokemon.sprite);
-  if (roleToggle) body.append(detailSection('★ 즐겨찾기 분류', roleToggle));
   const megaCmp = dex != null ? megaCompareNode(dex) : null;
   if (megaCmp) body.append(detailSection('⚡ 메가X vs 메가Y 비교', megaCmp));
   if (dex != null) body.append(detailSection('진화 단계', evoNode(dex, isDex, pokemon.sprite)));

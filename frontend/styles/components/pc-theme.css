@@ -178,6 +178,15 @@
   .dex__list.is-grid .dex__row b { font-size: var(--fs-body); }
 
   /* 랭킹 카드 */
+  /* 2026-09-12 v3.3.0 보기 전환으로 줄로 되돌릴 수 있다 (.is-list) — 넓은 화면에서 카드 격자가
+     기본이지만, 순위를 위에서 아래로 훑고 싶을 때는 줄이 낫다. 격자를 켤 때 준 값들을
+     하나씩 되돌린다 (도감의 .dex__list 는 반대로 줄이 기본이고 .is-grid 가 격자다) */
+  .row-list.is-list { display: block; gap: 0; padding-top: 0; border-top: 1px solid var(--line); }
+  .row-list.is-list > .row { position: static; flex-direction: row; align-items: center; text-align: left;
+                             padding: 1rem 0.4rem; border: 0; border-bottom: 1px solid var(--line);
+                             border-radius: 0; background: transparent; box-shadow: none; }
+  .row-list.is-list > .row > .row__rank { position: static; width: 2.4rem; text-align: right; }
+  .row-list.is-list > .row > .sprite { width: 4rem; height: 4rem; padding: 0; border-radius: 0; }
   .row-list > .row { background: var(--surface); }
   .row-list > .row:hover {
     border-color: color-mix(in srgb, var(--brand) 55%, var(--line));
@@ -198,7 +207,7 @@
   /* 거르기 칩 줄 + 보기 방식을 한 줄 좌우로 (components/pages.js .dex__toolbar) */
   .dex__toolbar { display: flex; align-items: flex-start; justify-content: space-between; gap: 1.6rem; margin: 1.4rem 0 0.4rem; }
   .dex__toolbar .tchips { flex: 1 1 auto; min-width: 0; }
-  .dex__toolbar .seg-view { flex: none; margin-left: 0; }
+  .dex__toolbar .view-toggle { flex: none; margin-left: 0; }
   /* 2026-09-10 v2.46.0 칩 높이를 34px → 22px 로 낮췄다. 두 줄로 접히면 줄 사이가 벌어져 보였는데,
      원인은 여백이 아니라 **속이 빈 알약**이었다 — .uchip 은 align-items: baseline(modal.css)이라
      글자가 아래에 붙고 위쪽 12px 이 그대로 빈다. 높이를 글자에 맞추고 가운데 정렬로 바꾼다.
@@ -227,8 +236,8 @@
   .detail__match h3 { margin: 0 0 0.8rem; font-size: var(--fs-sub); font-weight: 600; }
   .detail__match--weak { border-color: color-mix(in srgb, var(--warn) 32%, var(--line)); background: color-mix(in srgb, var(--warn) 7%, transparent); }
   .detail__match--weak h3 { color: var(--warn); }
-  .detail__match--resist { border-color: color-mix(in srgb, var(--brand) 32%, var(--line)); background: color-mix(in srgb, var(--brand) 7%, transparent); }
-  .detail__match--resist h3 { color: var(--brand); }
+  .detail__match--resist { border-color: color-mix(in srgb, var(--good) 32%, var(--line)); background: color-mix(in srgb, var(--good) 7%, transparent); }
+  .detail__match--resist h3 { color: var(--good); }
   /* 상세 패널 안에서는 한 칸이 좁아 두 카드를 위아래로 쌓는다 */
   .detail-panel .detail__matchrows { grid-template-columns: 1fr; }
 }
@@ -633,7 +642,7 @@
 .dex__toolbar .tchips .uchip:hover { background: var(--hover); color: var(--fg); }
 @media (min-width: 1100px) {
   .dex__toolbar .tchips { flex: 0 1 auto; }
-  .dex__toolbar .seg-view { margin-left: auto; }
+  .dex__toolbar .view-toggle { margin-left: auto; }
 }
 
 /* 도감 카드 시안: 큰 포켓몬 → 이름 → 타입 → 보조 CP 순서.
@@ -666,12 +675,8 @@
 
 /* 검색과 보기 전환은 전체 폭의 상단 도구 영역, 상세는 그 아래 목록 옆에 배치. */
 @media (min-width: 1100px) {
-  /* 2026-09-12 v2.65.0 검색창을 화면 머리(제목·부제) 옆으로 끌어올린다.
-     제목 아래 한 줄을 통째로 쓰고 있어, 정작 목록이 첫 화면에서 그만큼 밀려 있었다.
-     page-head 는 화면마다 같은 조각이라 그 안에 넣을 수 없어, 음수 마진으로 같은 높이에 올린다.
-     2026-09-12 v2.66.0 구분선이 필터(도구줄) **아래**로 내려가면서(app-shell.css .page__filters)
-     검색창과 겹칠 일이 없어졌다 — 도감만 두던 예외 규칙을 지운다 */
-  .dex-page > .boss__search { display: block; width: min(44rem, 100%); margin-left: auto; margin-top: -7.6rem; position: relative; z-index: 1; }
+  /* 2026-09-12 v3.5.0 도감 안 검색 칸을 뺐다 — 헤더 검색과 생김새가 같은 입력칸 둘이
+     한 화면에 있는 것 자체가 문제였다. 그 칸을 제목 옆으로 끌어올리던 규칙도 함께 지운다 */
   body.has-detail-panel:has(.dex-page) #page,
   body.has-detail-panel:has(.dex-page) .page-head { padding-right: 0; }
   body.has-detail-panel .dex-page .dex-catalog,

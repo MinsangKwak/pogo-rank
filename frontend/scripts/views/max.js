@@ -157,6 +157,7 @@ function renderBossAcc() {
   const isCurrentMonth = now.getFullYear() === SCHEDULE_YM.y && now.getMonth() + 1 === SCHEDULE_YM.m;
   if (!isCurrentMonth) {
     accordion.style.display = 'none';
+    accordion.classList.remove('is-on');
     return;
   }
   const todayDayOfMonth = now.getDate();
@@ -168,9 +169,12 @@ function renderBossAcc() {
   }
   if (!bossItem) {
     accordion.style.display = 'none';
+    accordion.classList.remove('is-on');
     return;
   }
   accordion.style.display = '';
+  // 2026-09-12 v3.5.0 보이는 동안만 표식 — 아래 컨트롤 줄을 8px 로 붙이는 규칙이 이걸 본다 (list.css)
+  accordion.classList.add('is-on');
   // 일정 label에서 보스 이름만 뽑는다: 괄호 설명을 떼고 'D-MAX ' 접두어도 지운다
   const bossName = bossItem.label.split(' (')[0].replace('D-MAX ', '');
   titleEl.textContent = `${prefix}${bossName} (${TYPE_KO[bossItem.t]}) · ${SCHEDULE_YM.m}/${bossItem.s}–${bossItem.e}`;  // 2026-09-07 v2.13.0 (QA-20) 달 하드코딩 제거
@@ -296,15 +300,35 @@ function renderMax() {
   const hasTank = typeof DMAX_TANK !== 'undefined' && Object.keys(DMAX_TANK ?? {}).length > 0;
   const axes = hasTank ? MAX_AXES : MAX_AXES.filter((axis) => axis.id !== 'tank');
   if (!axes.some((axis) => axis.id === state.maxAxis)) state.maxAxis = 'all';
-  $controls.append(seg(axes.map(({ id, label }) => ({ id, label })), state.maxAxis, (id) => {
+  // 2026-09-12 v3.2.0 이 세그먼트는 화면 머리 오른쪽으로 간다 (app.js render → setPageHeadAction).
+  // [전체 | 딜러 | 탱커] 는 목록 하나를 거르는 값이 아니라 **이 화면이 무엇을 보여 주는가** 자체다 —
+  // 셋은 서로 다른 순위표다. 그래서 필터 줄이 아니라 제목과 같은 높이에 놓는다.
+  // 표식만 달아 두고 옮기는 일은 render() 가 한다: 뷰는 지금까지처럼 $controls 에 붙이기만 하면 된다
+  const axisSeg = seg(axes.map(({ id, label }) => ({ id, label })), state.maxAxis, (id) => {
     state.maxAxis = id;
     track('sub_max_' + id);  // GA4: 서브탭 사용량 (sub_pve_* 와 같은 규칙)
     render();
-  }));
+  });
+  axisSeg.classList.add('js-head-action');
+  $controls.append(axisSeg);
+  // 2026-09-12 v3.5.0 보기 전환을 축 세그먼트 옆에 나란히 — 넓은 화면에서 티어표가 카드 격자로
+  // 그려지는데(pc-theme.css .row-list) 줄로 되돌릴 방법이 여기만 없었다 (레이드 · PvE 와 같은 규칙)
+  const maxGrid = layoutInitial(MAX_COLS_KEY);
+  const maxLayout = layoutToggle(MAX_COLS_KEY, maxGrid, applyMaxLayout);
+  maxLayout.classList.add('js-head-action');
+  $controls.append(maxLayout);
   const axis = axes.find((entry) => entry.id === state.maxAxis);
   $controls.append(maxSubmenu(axis));
   const selectedType = state.maxBoss;
-  if (axis.id === 'tank') return renderMaxTank(selectedType);
-  if (axis.id === 'dealer') return renderMaxDealer(selectedType);
-  return renderMaxTier(selectedType);
+  if (axis.id === 'tank') { renderMaxTank(selectedType); return applyMaxLayout(maxGrid); }
+  if (axis.id === 'dealer') { renderMaxDealer(selectedType); return applyMaxLayout(maxGrid); }
+  renderMaxTier(selectedType);
+  applyMaxLayout(maxGrid);
+}
+
+// 2026-09-12 v3.5.0 D-MAX 보기 전환 — 넓은 화면의 카드 격자(.row-list)를 줄로 되돌린다.
+// 도감·레이드 PvE 와 같은 규칙의 별도 키다 (화면마다 선택이 섞이지 않게)
+const MAX_COLS_KEY = 'pogo_max_cols';
+function applyMaxLayout(grid) {
+  for (const node of document.querySelectorAll('#content .row-list')) node.classList.toggle('is-list', !grid);
 }

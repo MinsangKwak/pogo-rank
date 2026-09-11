@@ -78,6 +78,40 @@ const ok = (n, c, x = '') => { console.log((c ? 'PASS' : 'FAIL') + ' ' + n + ' '
   ok('버전 타는 문법은 노출하지 않는다', !/countcandy|countcandyxl|count5-/.test(body));
   ok('못 하는 것은 못 한다고 적는다', /지원하지 않아/.test(body));
 
+  // ── 2026-09-12 v3.8.2 만들어진 식 칸은 sticky 다. 상단 바(sticky, z-index 30)보다 아래 층이라
+  // top: 0 이면 바 뒤에 숨어 정작 식이 안 보였다 — 붙어 있게 한 이유가 통째로 사라진다.
+  // 스크롤한 뒤에도 칸 전체가 바 아래에 온전히 보이는지 본다
+  await page.locator('.finder__flag').first().click();
+  await page.waitForTimeout(250);
+  await page.evaluate(() => window.scrollTo(0, 700));
+  await page.waitForTimeout(300);
+  const stick = await page.evaluate(() => {
+    const box = document.querySelector('.finder__result');
+    const bar = document.querySelector('.app-bar');
+    const out = document.querySelector('.finder__out');
+    if (!box || !bar || !out) return null;
+    return {
+      가림: Math.round(bar.getBoundingClientRect().bottom - box.getBoundingClientRect().top),
+      식보임: out.getBoundingClientRect().top >= bar.getBoundingClientRect().bottom - 1,
+      붙어있나: Math.round(box.getBoundingClientRect().top) <= Math.round(bar.getBoundingClientRect().bottom) + 1,
+    };
+  });
+  ok('식 칸이 상단 바에 안 가린다', !!stick && stick.가림 <= 0, JSON.stringify(stick));
+  ok('스크롤해도 만들어진 식이 보인다', !!stick && stick.식보임, JSON.stringify(stick));
+  ok('식 칸이 상단 바 바로 아래에 붙는다', !!stick && stick.붙어있나, JSON.stringify(stick));
+
+  // ── 묶음 리듬: 제목은 제 칩에 붙고, 묶음끼리는 확실히 떨어진다 (v3.8.2)
+  const rhythm = await page.evaluate(() => {
+    const kids = [...document.querySelector('#page .finder').children];
+    const head = kids.findIndex((n) => n.classList.contains('row-head'));
+    const r = (n) => n.getBoundingClientRect();
+    return {
+      제목_칩: Math.round(r(kids[head + 1]).top - r(kids[head]).bottom),
+      칩_다음제목: Math.round(r(kids[head + 2]).top - r(kids[head + 1]).bottom),
+    };
+  });
+  ok('묶음 안(제목↔칩)이 묶음 사이보다 좁다', rhythm.제목_칩 * 2 < rhythm.칩_다음제목, JSON.stringify(rhythm));
+
   // ── 로그인하지 않으면 잠긴다 (2026-09-11 v2.58.0)
   {
     const guest = await browser.newContext({ viewport: { width: 390, height: 844 } });

@@ -110,7 +110,7 @@ json.dump(pvp_all, open('data/pvp_all.json', 'w', encoding='utf-8'), ensure_asci
 
 # ── frontend/ 의 CSS·JS를 순서대로 인라인해 단일 dist/index.html 조립 ──
 # 순서가 곧 캐스케이드(CSS)·실행 순서(JS)이므로 새 파일은 여기 목록에 추가
-APP_VERSION = 'v2.67.0'  # 움직이는 상세 그림 · 컨트롤 한 줄로 · 검색 엔진 메타
+APP_VERSION = 'v3.8.2'  # 검색식 만들기 간격·sticky 수정 · 상세 타입 배지 가로
 # 2026-09-05 v2.7.3 빌드 채널 — 'prod'(기본) / 'dev'. dev 브랜치 워크플로(.github/workflows/deploy-dev.yml)가 BUILD_CHANNEL=dev 로 부른다.
 # dev 빌드는 (1) 버전 배지에 -dev 를 붙여 화면에서 구분되고 (2) GA 스니펫을 넣지 않아 통계가 섞이지 않고
 # (3) robots.txt 를 전부 차단 + <meta name="robots" content="noindex"> 로 검색 색인을 막는다. 나머지는 prod 와 동일
@@ -162,9 +162,11 @@ STYLES = [
     'components/app-shell.css',
     # 2026-09-10 v2.42.0 넓은 화면 전용 디자인 — 앞의 모든 규칙을 덮어써야 하므로 맨 끝
     'components/pc-theme.css',
+    'pixel.css',   # 2026-09-12 v3.6.0 도트 디자인 — 생김새만 덮어쓴다. 되돌리려면 이 줄만 빼면 된다
 ]
 SCRIPTS = [
     'data.js', 'dom.js', 'track.js',  # 2026-09-03 track: GA4 이벤트 헬퍼 (가장 먼저 정의)
+    'components/pxicon.js',           # 2026-09-12 v3.6.0 도트 아이콘 — 라우터 표·홈 타일·버튼이 모두 본다 (dom 다음, 나머지보다 앞)
     'i18n-en.js', 'i18n.js',  # 2026-09-08 v2.29.0 다국어 — 사전이 엔진보다 먼저 (엔진이 I18N_EN 을 참조)
     'router.js',              # 2026-09-08 v2.30.0 주소 표 — pages·planner·app-shell 이 모두 이 표를 본다
     'components/ui.js',       # 2026-09-08 v2.30.0 재사용 조각 (uchip · iconBtn · pageBody · footNote · hintNote)
@@ -176,7 +178,7 @@ SCRIPTS = [
     'components/favs.js', 'components/gameday.js', 'components/finder.js', 'components/ivrank.js',  # 2026-09-11 v2.58.0 finder: 🔎 검색식 만들기 (pages 가 PAGES 에 등록하므로 그 앞) # 2026-09-05 favs: ★ 즐겨찾기 페이지 · 2026-09-08 gameday: ⚔️ 레이드 보스 · 🥚 알 부화 (pages가 PAGES에 등록하므로 그 앞)
     'planner/shell.js', 'planner/home.js', 'planner/collection.js',  # 2026-09-07 v2.15.0 🌱 플래너 모드 (QA-53 셸 · QA-54 내 포켓몬) — pages.js 가 #/plan 라우팅에 쓰므로 그 앞
     'components/pages.js',
-    'components/trainers.js', 'components/favdigest.js', 'components/totop.js',  # 2026-09-05 favdigest: 메인 즐겨찾기 카드
+    'components/trainers.js', 'components/totop.js',  # 2026-09-12 v3.4.0 favdigest 제거 — ★ 즐겨찾기 기능을 걷어냈다
     'views/pvp.js', 'views/pve.js', 'views/max.js', 'views/tier.js', 'views/usage.js', 'views/ifsolo.js',  # 2026-09-02 if 탭
     'components/theme.js',  # 2026-09-10 v2.47.0 밝게/어둡게 전환 (헤더 버튼 · 계정 저장)
     'components/freshness.js',  # 2026-09-10 v2.50.0 새 데이터·새 버전 알림 (설치형 앱이 옛 데이터를 붙들지 않게)
@@ -420,13 +422,8 @@ if BUILD_CHANNEL == 'dev':
     # 2026-09-08 v2.27.0 미리보기의 공유 카드가 실서비스를 가리키면 안 된다 — 주소를 dev 로 바꾼다.
     # (색인은 어차피 막지만, 링크를 붙였을 때 엉뚱한 곳으로 가는 것을 막으려는 것)
     html = html.replace(SITE_URL, DEV_SITE_URL)
-else:
-    # 2026-09-12 v2.67.0 실서비스는 색인을 명시한다. robots 를 안 적으면 기본이 index 라 동작은 같지만,
-    # max-image-preview:large 가 있어야 구글이 검색 결과에 공유 카드 그림(og.png)을 크게 띄우고,
-    # max-snippet:-1 이 있어야 발췌를 자르지 않는다. dev 의 noindex 와 같은 자리에 넣어
-    # 한 빌드에 robots 줄이 정확히 하나만 있게 한다
-    html = html.replace('</title>',
-                        '</title>\n<meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">', 1)
+# 2026-09-12 v3.6.0 실서비스에 넣던 robots 색인 표시를 뺐다 — 아직 검색엔진에 올릴 단계가 아니다.
+# (dev 의 noindex 는 그대로다. 실서비스는 robots 줄 자체가 없다)
 # 2026-09-03 v2.2.0 앱 설정 주입
 # 2026-09-10 v2.50.0 BUILD_VERSION — 지금 띄운 것이 어느 빌드인지 코드가 알아야 한다.
 # 헤더에 글자로 박아 두던 것(__VERSION__)은 app-shell.js 가 헤더를 통째로 갈아 끼우면서 사라진다.

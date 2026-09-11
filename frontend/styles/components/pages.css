@@ -109,6 +109,12 @@
 .dex__row .dex__fav { margin-left: 0.6rem; }
 .dex__hint { display: flex; flex-wrap: wrap; align-items: center; gap: 0.8rem; margin: 0 0 1.2rem; font-size: 1.25rem; color: var(--muted); line-height: 1.5; }
 
+/* 2026-09-12 v2.67.1 즐겨찾기 도구줄 — 갈래 칩(왼쪽)과 보기 전환(오른쪽)이 한 줄.
+   좁은 화면에서 칩이 길어지면 wrap 이 토글을 아래로 내린다 (도감 도구줄과 같은 규칙) */
+.favs__toolbar { display: flex; align-items: center; justify-content: space-between; gap: 1.2rem; flex-wrap: wrap; }
+.favs__toolbar .tchips { flex: 1 1 auto; min-width: 0; }
+.favs__toolbar .view-toggle { flex: none; }
+
 /* 2026-09-12 v2.66.0 달력 ↔ 레이드 보스 역할 안내 — 칩 줄과 달력 사이 한 줄 */
 .schedule__bridge { margin: 0 0 1.2rem; }
 .schedule__bridge a { color: var(--accent); }
@@ -128,7 +134,7 @@
 .changes__row { display: flex; gap: 0.8rem; align-items: flex-start; padding: 0.7rem 0; border-top: 1px solid var(--line); }
 .changes__row:first-child { border-top: 0; }
 .changes__mark { flex: 0 0 1.6rem; text-align: center; font-size: 1.1rem; line-height: 1.5; color: var(--muted); }
-.changes__row.is-up .changes__mark { color: var(--brand); }
+.changes__row.is-up .changes__mark { color: var(--good); }
 .changes__row.is-down .changes__mark { color: var(--warn); }
 .changes__sub { font-size: 1.15rem; color: var(--muted); margin-top: 1px; }
 .changes__sub em { font-style: normal; }
@@ -177,7 +183,7 @@
 .types__row > div { flex: 1 1 auto; min-width: 0; }
 @media (max-width: 400px) { .types__row { flex-direction: column; gap: 0.4rem; } .types__row em { flex: none; padding-top: 0; } }
 .types__row em.is-weak2 { color: var(--warn); font-weight: 600; }
-.types__row em.is-resist2 { color: var(--brand); font-weight: 600; }
+.types__row em.is-resist2 { color: var(--good); font-weight: 600; }
 .types__recs { margin: 0.4rem 0 1rem; }
 .types__recs .schedule__sec { margin: 0.8rem 0 0.4rem; }
 .types__hint { margin: 0.6rem 0 0; font-size: 1.25rem; color: var(--muted); line-height: 1.6; word-break: keep-all; }
@@ -193,7 +199,7 @@
    안내문 옆에 들어간다. 자리가 모자라면 wrap 이 알아서 아래로 내린다 */
 .gameday__intro { display: flex; align-items: flex-start; justify-content: space-between; gap: 1.2rem; flex-wrap: wrap; margin-bottom: 0.4rem; }
 .gameday__intro .note { flex: 1 1 24rem; min-width: 0; margin: 0; }
-.gameday__intro .seg-view { flex: none; }
+.gameday__intro .view-toggle { flex: none; }
 .gameday__sec { margin-top: 2.2rem; }
 .gameday__sec:first-of-type { margin-top: 0.8rem; }
 .gameday__sec .dex__list { margin-top: 0.8rem; }

@@ -71,14 +71,17 @@ function syncThemeButton(choice) {
   const [icon, label] = THEME_FACE[choice] ?? THEME_FACE.system;
   const button = document.getElementById('theme-toggle');
   if (button) {
-    button.textContent = icon;
+    // 2026-09-12 v3.6.0 도트 아이콘 (components/pxicon.js) — 상태가 바뀔 때마다 다시 채운다.
+    // 그림이 SVG 라 글자로 상태를 읽을 수 없다 — 어떤 얼굴인지는 data-icon 에 남긴다
+    pxIconLabel(button, icon);
+    button.dataset.icon = icon;
     button.setAttribute('aria-label', label);
     button.title = label;
   }
   // 좁은 화면의 ☰ 메뉴 줄 — 헤더에 자리가 없어 이쪽이 대신한다
   const menuIcon = document.querySelector('#menu-theme .drawer__ico');
   const menuValue = document.getElementById('menu-theme-value');
-  if (menuIcon) menuIcon.textContent = icon;
+  if (menuIcon) pxIconLabel(menuIcon, icon);
   if (menuValue) menuValue.textContent = THEME_WORD[choice] ?? THEME_WORD.system;
   document.getElementById('menu-theme')?.setAttribute('aria-label', label);
 }

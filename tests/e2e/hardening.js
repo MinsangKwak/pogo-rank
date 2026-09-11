@@ -142,20 +142,13 @@ const ok = (n, c, x = '') => { console.log((c ? 'PASS' : 'FAIL') + ' ' + n + ' '
   }));
   ok('og.png 실제로 받아짐', !!og && og.w === 1200 && og.h === 630, JSON.stringify(og));
 
-  // 구조화 데이터
-  const ld = await page.evaluate(() => {
-    const node = document.querySelector('script[type="application/ld+json"]');
-    try { return JSON.parse(node.textContent); } catch { return null; }
-  });
-  // 2026-09-12 v2.67.0 @graph 로 바꾸고 WebApplication 을 더했다 — WebSite 하나로는 "이게 도구다" 를 말하지 못한다
-  const ldTypes = ld && Array.isArray(ld['@graph']) ? ld['@graph'].map((node) => node['@type']) : [];
-  ok('JSON-LD 파싱됨', ldTypes.includes('WebSite') && ldTypes.includes('WebApplication'), ldTypes.join('|'));
-  // 없는 기능을 적지 않는다 — 해시 라우팅이라 ?q= 로 결과를 여는 주소가 실제로 없다
-  ok('SearchAction 을 지어내지 않는다', !JSON.stringify(ld || {}).includes('SearchAction'));
-  // 실서비스 빌드는 색인을 명시한다. dev 의 noindex 와 같은 자리라 한 빌드에 robots 줄은 정확히 하나다
+  // 2026-09-12 v3.6.0 검색 색인용 표시를 뺐다 — 아직 검색엔진에 올릴 단계가 아니다.
+  // 구조화 데이터(JSON-LD)와 실서비스 robots 줄이 **없음**을 지킨다. 되살릴 때 이 검사 둘을 뒤집으면 된다
+  const ldCount = await page.evaluate(() => document.querySelectorAll('script[type="application/ld+json"]').length);
+  ok('구조화 데이터 없음', ldCount === 0, String(ldCount));
   const robotsMetas = await page.evaluate(() => [...document.querySelectorAll('meta[name="robots"]')].map((n) => n.content));
-  ok('robots 메타가 정확히 하나', robotsMetas.length === 1, robotsMetas.join(' / '));
-  ok('검색 결과에 그림을 크게', /max-image-preview:large/.test(robotsMetas[0] || '') || /noindex/.test(robotsMetas[0] || ''), robotsMetas[0]);
+  // dev 미리보기만 noindex 한 줄을 넣는다. 실서비스는 아예 없다
+  ok('robots 메타는 dev 의 noindex 한 줄뿐', robotsMetas.length === 0 || (robotsMetas.length === 1 && /noindex/.test(robotsMetas[0])), robotsMetas.join(' / '));
 
   // ── 2026-09-10 v2.50.0 최신 여부 확인 (components/freshness.js)
   // 설치형 앱은 한 번 띄우면 그대로 살아 있어, 며칠이 지나도 처음 받은 data.js 를 보여 준다.

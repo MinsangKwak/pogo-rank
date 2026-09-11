@@ -57,7 +57,17 @@ body:has(#page-head:not([hidden])) #page { padding-top: 0; }
    왼쪽 사이드바(투명·고정) 자리를 가로지른다. 배경은 origin 을 content-box 로 두면
    화면마다 다른 좌우 패딩(사이드바 210px · 상세 패널 폭)을 따로 적을 필요 없이 저절로 따라간다.
    clip 은 padding-box 라야 선을 패딩 안쪽(글 아래 1.6rem)까지 내려 그릴 수 있다 */
-.page-head { max-width: 76rem; margin: 0 auto; padding: 1.2rem 2rem 4rem; }
+/* 2026-09-12 v3.1.0 머리를 두 칸으로 — 왼쪽은 "여기가 어디인가"(브레드크럼 · 제목 · 부제),
+   오른쪽은 "어떻게 볼까"(보기 전환). 오른쪽 칸은 비어 있을 때 폭을 먹지 않는다(auto + :empty).
+   제목과 같은 높이에 놓아 화면의 손잡이처럼 읽히게 한다 */
+.page-head { max-width: 76rem; margin: 0 auto; padding: 1.2rem 2rem 4rem;
+             display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: start; column-gap: 1.6rem; }
+.page-head > :not(.page-head__actions) { grid-column: 1; }
+.page-head__actions { grid-column: 2; grid-row: 1 / -1; align-self: center; justify-self: end;
+                      display: flex; align-items: center; justify-content: flex-end; gap: 0.8rem; flex-wrap: wrap; }
+/* 슬롯 안에서는 오른쪽 밀기를 끈다 — 컨트롤이 둘이면(레이드 · PvE) 둘 사이가 벌어진다 */
+.page-head__actions .view-toggle { margin-left: 0; }
+.page-head__actions:empty { display: none; }
 .page-head {
   background-image: linear-gradient(to right, var(--line), var(--line));
   background-repeat: no-repeat;
@@ -94,9 +104,10 @@ body:has(#page:not([hidden]) .page__filters) .page-head {
 /* 2026-09-10 v2.47.0 화면 테마 — 좁은 화면 헤더에는 자리가 없다(버튼을 하나 더 넣었더니 로고가 잘렸다).
    좁은 화면은 ☰ 메뉴 줄이, 넓은 화면은 헤더 버튼이 맡는다 */
 #theme-toggle { display: none; }
-/* 2026-09-12 v2.66.0 자식 화면 줄 — 부모 아래 한 칸 들여 쓴다 (내 포켓몬 ⊂ 육성 플래너) */
-.nav-menu .drawer__item--sub { padding-left: 2.6rem; }
-.nav-menu .drawer__item--sub .drawer__label { font-size: 0.95em; }
+/* 2026-09-12 v2.66.0 자식 화면 줄 — 부모 아래 한 칸 들여 썼었다 (내 포켓몬 ⊂ 육성 플래너).
+   2026-09-12 v3.4.0 들여쓰기를 걷었다 — 좁은 화면 드로어는 줄마다 › 화살표가 붙는 목록이라
+   한 줄만 안쪽으로 밀리면 목록이 어긋나 보인다. 소속은 순서(부모 바로 뒤)로 이미 읽힌다.
+   클래스는 남긴다 — 회귀가 "자식 줄인가" 를 이 클래스로 확인한다 */
 .drawer__value { margin-left: auto; font-size: 1.2rem; color: var(--muted); }
 /* 로고: h1 안의 버튼이라 글꼴·크기를 h1 에서 물려받게 하고 버튼 티를 지운다 */
 .app-bar__logo { padding: 0; font: inherit; color: inherit; letter-spacing: inherit; }
