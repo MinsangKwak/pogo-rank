@@ -40,7 +40,8 @@ const ok = (n, c, x = '') => { console.log((c ? 'PASS' : 'FAIL') + ' ' + n + ' '
   ok('헤더에 테마 버튼', await page.locator('#theme-toggle').isVisible());
   const start = await state();
   ok('처음은 기기 설정 따름 (표시 없음)', start.attr === null, String(start.attr));
-  ok('기기가 어두우면 어두운 배경', start.bg === 'rgb(11, 15, 21)', start.bg);
+  // v3.0.0 딥네이비(#0b0f15) → 잉크블랙(#0a0a0f) · 흰 바탕 → 꺼진 바탕(#fafafa)
+  ok('기기가 어두우면 어두운 배경', start.bg === 'rgb(10, 10, 15)', start.bg);
   ok('버튼에 이름이 있다', /테마/.test(start.label || ''), start.label || '');
 
   // ── 2. 세 상태를 돈다 + 실제로 색이 바뀐다
@@ -48,14 +49,14 @@ const ok = (n, c, x = '') => { console.log((c ? 'PASS' : 'FAIL') + ' ' + n + ' '
   await page.waitForTimeout(300);
   const light = await state();
   ok('1번 → 밝게', light.attr === 'light' && light.saved === 'light', JSON.stringify(light));
-  ok('밝게는 흰 배경', light.bg === 'rgb(255, 255, 255)', light.bg);
+  ok('밝게는 밝은 배경', light.bg === 'rgb(250, 250, 250)', light.bg);
   ok('밝게 아이콘 ☀️', light.icon === '☀️', light.icon);
 
   await page.locator('#theme-toggle').click();
   await page.waitForTimeout(300);
   const dark = await state();
   ok('2번 → 어둡게', dark.attr === 'dark' && dark.saved === 'dark', JSON.stringify(dark));
-  ok('어둡게는 어두운 배경', dark.bg === 'rgb(11, 15, 21)', dark.bg);
+  ok('어둡게는 어두운 배경', dark.bg === 'rgb(10, 10, 15)', dark.bg);
   ok('어둡게 아이콘 🌙', dark.icon === '🌙', dark.icon);
 
   await page.locator('#theme-toggle').click();
