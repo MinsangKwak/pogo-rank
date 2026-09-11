@@ -121,6 +121,10 @@ __STYLES__
     </div>
     <div class="app-bar__actions">
       <button class="icon-btn" id="search-toggle" aria-label="포켓몬 검색">🔍</button>
+      <!-- 2026-09-12 v2.64.0 ★ 즐겨찾기 — 전에는 화면 맨 위 카드라 본문이 한 뼘 밀렸다.
+           즐겨찾기는 어느 화면에서나 보고 싶은 것이라 헤더에 두고 팝업으로 연다.
+           로그인 + 즐겨찾기가 있을 때만 보인다 (components/favdigest.js) -->
+      <button class="icon-btn" id="fav-toggle" aria-label="내 즐겨찾기" hidden>★</button>
       <!-- 2026-09-08 v2.29.0 계정 버튼(👤)을 뺐다 — 로그인·마이페이지는 ☰ 메뉴 맨 위 계정 카드 한 곳으로 모은다.
            비운 자리에 KR/EN 전환을 둔다 (i18n.js) -->
       <button class="icon-btn" id="theme-toggle" aria-label="화면 테마" aria-live="polite">🌗</button>
@@ -152,10 +156,6 @@ __STYLES__
 
   <!-- 2026-09-05 로그인 전용: 내 즐겨찾기 순위 변동 요약 (components/favdigest.js) -->
   <!-- 2026-09-07 v2.14.0 (QA-52) 접었다 펼 수 있는 아코디언으로 — 펼침 여부는 localStorage 에 기억 -->
-  <details class="schedule fav-digest" id="fav-digest" hidden>
-    <summary id="fav-digest-title"></summary>
-    <div class="schedule__body" id="fav-digest-body"></div>
-  </details>
 
   <!-- 2026-09-08 v2.22.0 탭 줄 복구: D-MAX·PvE·PvP 형제 화면 이동 + 📕 🧭 ★ 바로가기 (app.js renderTabs). 서비스 홈에서는 hidden -->
   <div class="tabs" role="tablist" id="tabs" hidden></div>

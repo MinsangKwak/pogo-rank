@@ -33,12 +33,17 @@ function renderPvp() {
     track(id === 'deck' ? 'tool_pvpdeck' : 'tool_ivrank', { on: state.pvpTool ? 1 : 0 });
     render();
   };
-  $controls.append(el('div', { class: 'controls__row' }, leagueSeg,
+  // 2026-09-12 v2.64.0 읽는 순서대로 놓는다. 이 화면에 온 사람은
+  //   ① 리그를 고르고 → ② 타입으로 좁히고 → ③ 덱을 짜거나 내 개체 순위를 본다.
+  // 전에는 도구 버튼이 리그 줄에 얹혀 있어, 리그를 고르기도 전에 "덱 짜기" 가 먼저 눈에 띄고
+  // 좁은 화면에서는 그 줄이 두 줄로 접혀 타입 필터를 아래로 밀어냈다
+  const toolRow = el('div', { class: 'controls__row controls__row--tools' },
     toolButton('🃏 덱 짜기', state.pvpTool === 'deck', tool('deck')),
-    toolButton('🧬 개체값 순위', state.pvpTool === 'ivrank', tool('ivrank'))));
-  if (state.pvpTool === 'deck') return renderPvpDeck();
+    toolButton('🧬 개체값 순위', state.pvpTool === 'ivrank', tool('ivrank')));
+  $controls.append(el('div', { class: 'controls__row' }, leagueSeg));
+  if (state.pvpTool === 'deck') { $controls.append(toolRow); return renderPvpDeck(); }
   // 페이지 렌더러가 돌려주는 본문을 그대로 얹는다 (#/ivrank 주소로도 같은 화면이 열린다)
-  if (state.pvpTool === 'ivrank') { $content.append(renderIvRankPage()); return; }
+  if (state.pvpTool === 'ivrank') { $controls.append(toolRow); $content.append(renderIvRankPage()); return; }
   const leagueRanking = PVP_DATA[state.league];
   // 이 리그 랭킹에 한 마리라도 있는 속성만 칩으로 만든다
   const presentTypes = new Set(leagueRanking.flatMap((pokemon) => pokemon.types));
@@ -47,7 +52,7 @@ function renderPvp() {
     state.pvpType = id;
     render();
   });
-  $controls.append(typeChips);
+  $controls.append(typeChips, toolRow);
 
   const league = LEAGUES.find((leagueOption) => leagueOption.id === state.league);
   const items = state.pvpType === 'all' ? leagueRanking : leagueRanking.filter((pokemon) => pokemon.types.includes(state.pvpType));  // 2026-09-03 v2.2.0 보유만 필터 제거

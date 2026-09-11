@@ -12,7 +12,6 @@
 body[data-home="true"] .tabs,
 body[data-home="true"] #mode-toggle,
 body[data-home="true"] .controls,
-body[data-home="true"] #fav-digest { display: none; }
 body[data-home="true"] .layout { padding-bottom: 4rem; }
 
 /* 인사말 — layout.css 의 h1(22px)보다 한 단계만 크게. 큰 글씨로 튀지 않게 */
