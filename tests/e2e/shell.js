@@ -203,7 +203,8 @@ const ok = (n, c, x = '') => { console.log((c ? 'PASS' : 'FAIL') + ' ' + n + ' '
                  border: parseFloat(s.borderTopWidth), cols: list.gridTemplateColumns.split(' ').length };
       });
       if (wide) {
-        ok(`PC ${hash} 랭킹이 카드`, shape.display === 'flex' && shape.dir === 'column' && shape.radius >= 8 && shape.border >= 1, JSON.stringify(shape));
+        // 2026-09-12 v3.6.0 도트 디자인 — 모서리 대신 2px 테두리가 카드의 표시다
+        ok(`PC ${hash} 랭킹이 카드`, shape.display === 'flex' && shape.dir === 'column' && shape.border >= 2, JSON.stringify(shape));
         ok(`PC ${hash} 여러 열로 놓임`, shape.cols >= 2, String(shape.cols));
       } else {
         ok(`모바일 ${hash} 랭킹은 줄 (기존 유지)`, shape.display === 'grid' && shape.radius < 1, JSON.stringify(shape));

@@ -22,20 +22,21 @@
    아예 정원이었다), 일정표 날짜 칸, 검색식 입력칸, 티어 배지, 진화 칸, 맨 위로 버튼 …
    이름을 더 적어 봐야 다음에 또 빠진다. 뿌리에서 한 번에 누르고, 진짜 동그래야 하는 것만 되돌린다.
 
-   :not(#_) 는 우선순위를 id 한 칸만큼 올리려는 장치다 (#_ 라는 id 는 이 서비스에 없다).
-   화면마다 흩어진 반경 규칙 중에는 클래스를 넷까지 겹친 것도 있어, 그냥 `body *` 로는 못 덮는다 */
-html:not(#_) body *,
-html:not(#_) body *::before,
-html:not(#_) body *::after {
+   :not(#_):not(#__) 는 우선순위를 id 두 칸만큼 올리려는 장치다 (둘 다 이 서비스에 없는 id).
+   두 칸이나 올리는 이유: 넓은 화면 규칙에 `body:is([data-route=…]) #content .row > .sprite` 처럼
+   id 한 칸 + 클래스 셋짜리 선택자가 있어서, 한 칸만으로는 못 덮는다 (v3.7.1 에서 실제로 새어 나왔다) */
+html:not(#_):not(#__) body *,
+html:not(#_):not(#__) body *::before,
+html:not(#_):not(#__) body *::after {
   border-radius: 0;
 }
 /* 되돌리는 것 — 진짜 동그란 것들.
    프로필 사진은 사람 얼굴이고, 알림 점은 점이고, 바탕 몬스터볼은 공이다.
    타입 색 점(.dot)은 되돌리지 않는다 — 도트 디자인에서 한 칸짜리 네모가 곧 점이다 */
-html:not(#_) .avatar,
-html:not(#_) .dot-badge::after,
-html:not(#_) .px-ball,
-html:not(#_) .px-ball::after {
+html:not(#_):not(#__) .avatar,
+html:not(#_):not(#__) .dot-badge::after,
+html:not(#_):not(#__) .px-ball,
+html:not(#_):not(#__) .px-ball::after {
   border-radius: 50%;
 }
 
@@ -51,6 +52,10 @@ html:not(#_) .px-ball::after {
 }
 /* 목록 줄의 밑줄은 한 칸으로 또렷하게 */
 .dex__list:not(.is-grid) .dex__row, .row-list.is-list > .row { border-bottom-width: var(--px); }
+/* 2026-09-12 v3.7.1 넓은 화면(1440~)의 티어표 카드는 `body:is([data-route=…]) #content .row` 로
+   테두리를 1px 로 따로 적고 있었다 — 반경 때 겪은 것과 같은 자리다. 우선순위를 두 칸 올려 덮는다.
+   한 서비스 안에서 카드 테두리가 두께가 둘이면 같은 종류로 안 읽힌다 */
+html:not(#_):not(#__) .row-list:not(.is-list) > .row { border-width: var(--px); border-style: solid; }
 
 /* ── 3. 그림자는 계단으로 ─────────────────────────────────────────────────── */
 .home__tile, .modal__box, .detail-panel, .fav-pop {
@@ -124,6 +129,19 @@ html:not(#_) .note b, html:not(#_) .note strong,
 html:not(#_) .legal b, html:not(#_) .legal strong,
 html:not(#_) .release__sec b, html:not(#_) .release__sec strong { font-weight: 700; }
 
+/* 0-2) 굵기는 **한 칸 옆으로 한 번 더 찍어서** 낸다 (2026-09-12 v3.7.1).
+      400 으로 내리고 나니 이번에는 너무 얇았다. 그렇다고 700 을 되돌리면 다시 번진다 —
+      브라우저의 가짜 굵기는 획을 소수점 단위로 덧그려 도트 격자를 벗어나기 때문이다.
+      1px 짜리 그림자는 격자에 딱 맞아, 획이 정확히 한 도트 두꺼워진다. 도트 글꼴의 원래 방식이다.
+      거는 자리는 v3.6.1 이전에 굵기를 주던 곳 — 제목 · 이름 · 숫자 · 버튼 글자다.
+      읽는 글(산문)에는 걸지 않는다. 거기는 Pretendard 라 진짜 굵은 획이 있다 */
+h1, h2, h3, b, strong, th,
+.page-head h2, .page__sec, .detail__name, .home__intro h2, .app-bar__logo,
+.drawer__label, .seg button, .seg-view button, .uchip, .tool-btn, .tier__badge,
+.num, .row__score, .ivrank__rank, .dex__no {
+  text-shadow: 0.1rem 0 0 currentColor;
+}
+
 /* 1) 제목 줄간 — 본문 줄간(2.2rem)을 그대로 물려받아 21px 글자에 22px 이었다(1.05배).
       한 줄일 때는 몰랐지만 제목이 두 줄로 넘어가면 위아래가 맞붙었다 */
 h1, h2, .page-head h2, .detail__name, .home__intro h2, .page__sec { line-height: 1.35; }
@@ -144,6 +162,17 @@ h1, h2, .page-head h2, .detail__name, .home__intro h2, .page__sec { line-height:
 .page__sec { margin-top: 2rem; }
 .layout #controls:not(:empty), #page .page__filters { margin-bottom: 1.6rem; }
 
+/* 화면 머리의 동작 슬롯 — 좁은 화면에서는 위아래로 쌓는다 (2026-09-12 v3.7.1).
+   레이드 · PvE 는 [일반|전체] 와 [리스트|그리드] 둘이 오른쪽에 나란히 서느라
+   화면 제목이 남은 폭으로 밀려 두 줄이 됐다. 세로로 쌓으면 제목이 한 줄에 들어온다 */
+@media (max-width: 699px) {
+  .page-head__actions { flex-direction: column; align-items: flex-end; gap: 0.6rem; }
+  /* 리그 넷(배틀 · PvP)은 한 줄에 다 못 들어간다 — 두 칸씩 두 줄로.
+     :has 로 칸이 넷 이상일 때만 건다. D-MAX 의 [전체|딜러|탱커] 셋은 2×2 로 만들면
+     마지막 칸이 비어 한 칸이 빠진 것처럼 보인다 */
+  .page-head__actions .seg:has(> button:nth-child(4)) { display: grid; grid-template-columns: 1fr 1fr; }
+}
+
 /* 빈 컨트롤 줄 — 서비스 홈처럼 걸 것이 없는 화면에서도 위아래 여백(20 + 40px)만으로
    60px 짜리 빈 줄이 제목 앞에 서 있었다. 비어 있으면 자리도 없애야 한다 */
 .layout #controls:empty { display: none; }
@@ -154,6 +183,11 @@ h1, h2, .page-head h2, .detail__name, .home__intro h2, .page__sec { line-height:
 @media (max-width: 699px) {
   .home__section { display: block; }
   .home__section > span { display: block; margin-top: 0.4rem; }
+  /* 구역 제목의 꼬리말도 같은 처방 — "레이드 일반 티어표 (전 / 체)" 와
+     "30종 · 전설·환상·메가·섀도우 제 / 외" 가 양쪽에서 동시에 접히고 있었다 */
+  .page__sec .meta { display: block; margin-top: 0.2rem; }
+  .row-head { display: block; }
+  .row-head > .meta { display: block; margin-top: 0.2rem; }
 }
 
 /* 보기 전환(☰ ⊞) — 겹테두리(바깥 판 + 칸마다 한 겹)에 높이 36px 이라
@@ -175,12 +209,10 @@ h1, h2, .page-head h2, .detail__name, .home__intro h2, .page__sec { line-height:
    90000번대(게임 3D 렌더 아이콘)와 움직이는 그림은 픽셀 아트가 아니라 그대로 둔다 (list.css) */
 .sprite { image-rendering: pixelated; }
 /* 그림 뒤에 깔리는 받침 색은 평면으로 — 브랜드색이 아래에서 번지는 타원(pc-theme.css)을 깔면
-   도트 그림의 계단이 안개 속에 놓인 것처럼 흐려 보인다 */
-.dex__list.is-grid .gameday__row > .sprite:not(.is-loading),
-.dex__list.is-grid .dex__row .sprite:not(.is-loading),
-.dex__list.is-grid .fav__row .sprite:not(.is-loading),
-.dex-catalog.is-grid .dex__row .sprite:not(.is-loading),
-.row-list > .row > .sprite:not(.is-loading) { background: var(--bg); }
+   도트 그림의 계단이 안개 속에 놓인 것처럼 흐려 보인다.
+   반경과 같은 이유로 여기도 우선순위를 두 칸 올린다 — 화면마다 자리마다 따로 적힌 발광 판을
+   이름으로 쫓아다니지 않고 한 줄로 덮는다. 스켈레톤(.is-loading)과 빈 칸(.empty)은 뺀다 */
+html:not(#_):not(#__) .sprite:not(.is-loading):not(.empty) { background: var(--bg); }
 
 /* 상세 화면의 그림 받침 — 동심원 무늬(modal.css)가 도트 그림 뒤에서 물결처럼 돌았다.
    바탕과 같은 점 격자로 바꾼다. 한 화면 안에서 바탕 무늬가 두 종류일 이유가 없다 */

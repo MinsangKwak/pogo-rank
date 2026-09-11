@@ -213,6 +213,8 @@ const I18N_EN = {
   '🧮 솔플 계산기': '🧮 Solo calculator',
   '솔플 계산기': 'Solo calculator',   // 2026-09-12 v3.6.1 이모지를 도트 아이콘으로 떼면서 글자만 남았다
   '🃏 덱 짜기': '🃏 Team builder',
+  '덱 짜기': 'Team builder',           // 2026-09-12 v3.7.1 이모지를 도트 아이콘으로 떼면서 글자만 남았다
+  '개체값 순위': 'IV ranking',
   '추천 덱 # — 정석 코어': 'Suggested team # — classic core',
   '추천 덱 # — 안티 메타': 'Suggested team # — anti-meta',
   '추천 덱 # — 타입 분산': 'Suggested team # — type spread',

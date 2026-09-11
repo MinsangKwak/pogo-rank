@@ -230,7 +230,9 @@ const ok = (name, cond, extra = '') => results.push([cond ? 'PASS' : 'FAIL', nam
   await page.goto(BASE + '?mock=1#/pvp', { waitUntil: 'domcontentloaded' });
   await settle();
   const pvpTools = await page.locator('.controls__row .tool-btn').allTextContents();
-  ok('개체값 순위가 앞, 덱 짜기가 뒤', pvpTools.join('|') === '🧬 개체값 순위|🃏 덱 짜기', pvpTools.join('|'));
+  // 2026-09-12 v3.7.1 앞 이모지를 도트 아이콘(svg)으로 뗐다 — 글자에는 이름만 남는다
+  ok('개체값 순위가 앞, 덱 짜기가 뒤', pvpTools.join('|') === '개체값 순위|덱 짜기', pvpTools.join('|'));
+  ok('도구 버튼에 도트 아이콘', (await page.locator('.controls__row .tool-btn svg.pxi').count()) === 2);
   // 2026-09-12 v2.67.0 오른쪽 덩이(.controls__rest)가 줄의 마지막이고 margin-left:auto 로 밀린다.
   // 좁은 화면(이 검사는 390px)에서는 줄이 접혀 자리가 달라지므로 기하가 아니라 구조로 확인한다
   ok('도구는 줄의 오른쪽 덩이에 있다', await page.evaluate(() => {
@@ -244,7 +246,7 @@ const ok = (name, cond, extra = '') => results.push([cond ? 'PASS' : 'FAIL', nam
   await settle();
   ok('주소가 바뀐다', (await page.evaluate(() => location.hash)) === '#/pvp/ivrank', await page.evaluate(() => location.hash));
   ok('개체값 순위 화면이 열린다', (await page.locator('.ivrank__pick').count()) === 1);
-  ok('눌린 표시', (await page.locator('.tool-btn[aria-pressed="true"]').textContent()) === '🧬 개체값 순위');
+  ok('눌린 표시', (await page.locator('.tool-btn[aria-pressed="true"]').textContent()) === '개체값 순위');
   await page.goBack();
   await settle();
   ok('뒤로가기로 랭킹 복귀', (await page.evaluate(() => location.hash)) === '#/pvp' && (await page.locator('.ivrank__pick').count()) === 0);
