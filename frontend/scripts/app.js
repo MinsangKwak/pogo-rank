@@ -107,7 +107,7 @@ function renderTabs() {
       class: `tabs__item${locked ? ' is-locked' : ''}`,
       role: 'tab',
       'aria-selected': String(state.tab === id),
-      title: locked ? '로그인하면 열립니다' : '',
+      title: locked ? '로그인하면 열려요' : '',
       onclick: () => {
         track('tab_' + id, { tab: id });
         navigateHash(routeHash(routeId));  // 주소가 바뀌면 applyPlanRoute → render 가 돌고 상단 바 제목도 맞춰진다
@@ -165,11 +165,9 @@ function render() {
   // 2026-09-10 v2.48.1 로그인해야 쓰는 탭(배틀 PvP)은 본문 대신 잠금 카드 (router.js ROUTES.locked)
   const tabRouteId = { max: 'dmax', pve: 'pve', pvp: 'pvp' }[state.tab];
   if (tabRouteId && routeLocked(tabRouteId)) {
-    const [name, why] = tabRouteId === 'pve'
-      ? ['레이드 · PvE', '추천 딜러를 내 보유 개체와 견줘 보여 주는 화면이라']
-      : ['배틀 · PvP', '리그별 순위를 내 보유 개체와 견줘 보여 주는 화면이라'];
-    $content.append(lockedCardNode(name, why));
-    $note.textContent = `${name} 는 승인된 로그인 사용자 전용입니다.`;
+    const name = tabRouteId === 'pve' ? '레이드 · PvE' : '배틀 · PvP';
+    $content.append(lockedCardNode(name));
+    $note.textContent = `로그인하면 열려요. 이 화면은 승인된 분만 볼 수 있어요.`;
     return;
   }
   // 탭 id → 그 탭을 그리는 함수. 찾아서 바로 호출한다

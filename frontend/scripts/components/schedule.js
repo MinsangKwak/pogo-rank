@@ -107,7 +107,7 @@ const SCHEDULE_MONTHS = {
     ym: { y: 2026, m: 10 },
     // 2026-09-07 v2.13.0 (QA-20) 9월 발표분에서 10월로 넘어가는 확정 일정만 먼저 등재. 10/6 이후 로테이션(5성·메가·D-MAX·스포트라이트)은
     // 대략 9월 말 발표되므로 발표 뒤 이 배열을 채운다
-    note: '출처: 포켓몬고 공식 한국 발표 (2026-09-07 수집, 한국 시간 기준). 10/6 이후 레이드·맥스 배틀 로테이션은 아직 발표 전 — 발표되면 추가됩니다.',
+    note: '출처: 포켓몬고 공식 한국 발표 (2026-09-07 수집, 한국 시간 기준). 10/6 이후 레이드·맥스 배틀 로테이션은 아직 발표 전 — 발표되면 추가돼요.',
     items: [
       { s: 1, e: 5, cat: 'event', label: '수확 축제 (9/29 10시 ~ 10/5 20시)' },
       { s: 1, e: 11, cat: 'event', label: '피카츄의 가을 소풍 (9/18~10/11 · 서울 종로·중구, 인천공항 한정)' },
@@ -189,7 +189,7 @@ function buildScheduleTimeline(cat) {
       return el('span', { class: `timeline__col${weekday === 0 || weekday === 6 ? ' is-weekend' : ''}${day === todayDayOfMonth ? ' is-today' : ''}`, style: `left:${pct(day)};width:${width(day, day)}` });
     })),
     ...rows);
-  if (!rows.length) body.append(el('p', { class: 'schedule__item' }, '이 분류의 일정이 없습니다.'));
+  if (!rows.length) body.append(el('p', { class: 'schedule__item' }, '이 분류의 일정이 없어요.'));
   return el('div', { class: 'timeline' }, ruler, body);
 }
 
@@ -203,7 +203,7 @@ function renderScheduleDetail(detailBox, day, cat) {
         el('span', { class: 'dot', style: `background:${SCHEDULE_CATS[item.cat].color}` }), item.label)),
   );
   // 제목 줄만 남았다면(= 그날 일정 0건) 안내 문구를 덧붙인다.
-  if (detailBox.children.length === 1) detailBox.append(el('p', { class: 'schedule__item' }, '등록된 일정이 없습니다.'));
+  if (detailBox.children.length === 1) detailBox.append(el('p', { class: 'schedule__item' }, '등록된 일정이 없어요.'));
 }
 
 // 드로어 안의 일정표를 채운다: 접힘 상태용 한 줄 요약 + 달력 본문.
@@ -283,7 +283,7 @@ function buildScheduleCal(cat) {
     el('p', { class: 'schedule__legend' },
       ...Object.values(SCHEDULE_CATS).flatMap(category => [el('span', { class: 'dot', style: `background:${category.color}` }), category.name + '  '])),
     detail,
-    el('p', { class: 'schedule__note' }, `${SCHEDULE_NOTE} 날짜를 누르면 그날 일정이 보입니다.`),  // 2026-09-07 v2.13.0 (QA-20) 달별 각주
+    el('p', { class: 'schedule__note' }, `${SCHEDULE_NOTE} 날짜를 누르면 그날 일정이 보여요.`),  // 2026-09-07 v2.13.0 (QA-20) 달별 각주
   );
   // 초기 선택: 이 달이면 오늘 칸을 눌러 둔 상태로, 아니면 1일 상세를 그려 둔다.
   if (todayDayOfMonth) { grid.querySelector('.is-today').click(); }

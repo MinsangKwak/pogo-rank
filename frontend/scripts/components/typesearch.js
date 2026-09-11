@@ -75,7 +75,7 @@ function monListSection(types) {
   const mons = typeMonList(types);
   const section = el('section', { class: 'types__sec' }, el('h3', {}, `${label} 타입 포켓몬 (${mons.length})`));
   if (!mons.length) {
-    section.append(el('p', { class: 'detail__none-text' }, `${label} 타입 조합의 포켓몬은 없습니다.`));
+    section.append(el('p', { class: 'detail__none-text' }, `${label} 타입 조합의 포켓몬은 없어요.`));
     return section;
   }
   let shown = 24;
@@ -90,7 +90,7 @@ function monListSection(types) {
   };
   draw();
   section.append($grid, $more,
-    footNote(types.length === 2 ? '두 타입을 정확히 이 조합으로 가진 폼(메가·리전 폼 포함). 누르면 상세' : '이 타입을 가진 폼 전부(복합 타입 포함). 두 번째 칩을 고르면 조합으로 좁혀집니다'));
+    footNote(types.length === 2 ? '두 타입을 정확히 이 조합으로 가진 폼(메가·리전 폼 포함). 누르면 상세' : '이 타입을 가진 폼 전부(복합 타입 포함). 두 번째 칩을 고르면 조합으로 좁혀져요'));
   return section;
 }
 
@@ -128,7 +128,7 @@ function renderTypeSearchPage() {
           el('p', { class: 'types__hint' }, '타입 칩을 눌러 바꾸거나 위에서 포켓몬을 검색하세요')),
         el('button', { class: 'types__clear', 'aria-label': '지우기', onclick: () => { selected = []; update('clear'); } }, '✕')));
     } else {
-      $head.replaceChildren(el('p', { class: 'types__hint' }, '상대 타입을 1~2개 고르거나 포켓몬 이름을 검색하면 약점·이중약점과 추천 딜러가 나옵니다.'));
+      $head.replaceChildren(el('p', { class: 'types__hint' }, '상대 타입을 1~2개 고르거나 포켓몬 이름을 검색하면 약점·이중약점과 추천 딜러가 나와요.'));
     }
   };
 
@@ -191,10 +191,10 @@ function renderTypeSearchPage() {
       el('h3', {}, `⚔️ ${targetLabel}을(를) 때릴 때 — 기술 타입별 배율`),
       bucketRow('이중약점', buckets.x2, 'is-weak2'),
       bucketRow('약점', buckets.weak),
-      buckets.x2.length + buckets.weak.length === 0 ? el('p', { class: 'detail__none-text' }, '효과가 굉장한 타입이 없습니다') : '',
+      buckets.x2.length + buckets.weak.length === 0 ? el('p', { class: 'detail__none-text' }, '효과가 굉장한 타입이 없어요') : '',
       bucketRow('내성', buckets.resist),
       bucketRow('이중내성', buckets.r2, 'is-resist2'),
-      footNote('이중약점 = 두 타입 모두에 약해 ×2.56 · 이중내성 = 두 타입 모두 반감(×0.39). 본가의 무효 타입도 GO 에서는 같은 ×0.39 로 피해가 들어갑니다')));
+      footNote('이중약점 = 두 타입 모두에 약해 ×2.56 · 이중내성 = 두 타입 모두 반감(×0.39). 본가의 무효 타입도 GO 에서는 같은 ×0.39 로 피해가 들어가요')));
 
     // 1b) 2026-09-06 v2.11.1 이 타입 조합의 포켓몬 — "이 타입이 누구지?"에 답한다. 도감 폼 데이터(DEX_DATA.forms, 메가·리전 폼 포함)에서
     //     타입 2개면 정확히 그 조합, 1개면 그 타입을 가진 전부. 없으면 없다고 분명히 적는다
@@ -213,7 +213,7 @@ function renderTypeSearchPage() {
     if (hasRec) {
       recSection.append(footNote(selected.length === 2
         ? '순위표는 단일 속성 보스 기준이라 복합 타입 상대에서는 위 배율표와 함께 보세요 (이중약점 타입 기술이 최우선).'
-        : '순위표는 그 속성 보스를 상대할 때의 DPS·TDO 기준입니다.'));
+        : '순위표는 그 속성 보스를 상대할 때의 DPS·TDO 기준이에요.'));
       $result.append(recSection);
     }
 

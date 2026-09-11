@@ -252,7 +252,7 @@ function openPlanMonEditor(mon = null, prefill = null) {
       const guess = planLevelFromCp(form, draft.ivs, cp);
       draft.level = guess.level;
       $level.value = String(guess.level);
-      $cpHint.textContent = guess.diff === 0 ? `Lv ${guess.level} 로 맞췄어요` : `정확히 맞는 레벨이 없어요 — 가장 가까운 Lv ${guess.level} (CP 차이 ${guess.diff}). 개체값을 확인하세요`;
+      $cpHint.textContent = guess.diff === 0 ? `Lv ${guess.level} 로 맞췄어요` : `정확히 맞는 레벨이 없어요 — 가장 가까운 Lv ${guess.level} (CP 차이 ${guess.diff}). 개체값을 다시 봐 주세요`;
       refreshCp();
     } }, '레벨 추정');
 
@@ -298,7 +298,7 @@ function openPlanMonEditor(mon = null, prefill = null) {
       el('div', { class: 'release__actions' },
         el('button', { class: 'release__mute', onclick: () => closeModal() }, '취소'),
         el('button', { class: 'release__ok', onclick: save }, mon ? '저장' : '내 포켓몬에 추가')),
-      footNote('CP 는 저장하지 않고 종족값 × 레벨 × 개체값으로 계산합니다. * 는 레거시 기술. 섀도우는 CP 가 같고 배틀에서만 공격 ×1.2 · 방어 ×0.83.'));
+      footNote('CP 는 저장하지 않고 종족값 × 레벨 × 개체값으로 계산해요. * 는 레거시 기술. 섀도우는 CP 가 같고 배틀에서만 공격 ×1.2 · 방어 ×0.83.'));
   };
   drawPick();
   drawForm();
@@ -321,8 +321,8 @@ function planCompareVerdict(first, second) {
     el('span', { class: 'plan__cmp-verdict-ico', 'aria-hidden': 'true' }, kind === 'even' ? '⚖️' : '🌱'),
     el('div', {}, el('b', {}, title), el('span', {}, desc)));
   if (!!first.shadow !== !!second.shadow) {
-    return line('섀도우와 일반은 이 표만으로 못 고릅니다',
-      '섀도우는 CP 에 안 잡히는 배틀 보정(공격 ↑ · 방어 ↓)이 따로 있어요. 레이드 딜러라면 섀도우가, 오래 버텨야 하면 일반이 유리한 편입니다.');
+    return line('섀도우와 일반은 이 표만으로 못 골라요',
+      '섀도우는 CP 에 안 잡히는 배틀 보정(공격 ↑ · 방어 ↓)이 따로 있어요. 레이드 딜러라면 섀도우가, 오래 버텨야 하면 일반이 유리한 편이에요.');
   }
   const topA = planMonCp(first, 50);
   const topB = planMonCp(second, 50);
@@ -330,7 +330,7 @@ function planCompareVerdict(first, second) {
     const win = topA > topB ? first : second;
     const side = topA > topB ? '왼쪽' : '오른쪽';
     return line(`${side}의 ${name(win)} 가 더 강한 개체예요!`,
-      `다 키웠을 때(Lv 50) CP 가 ${Math.abs(topA - topB).toLocaleString()} 더 높습니다. 육성 대상을 하나만 고른다면 이쪽입니다.`, 'win');
+      `다 키웠을 때(Lv 50) CP 가 ${Math.abs(topA - topB).toLocaleString()} 더 높아요. 육성 대상을 하나만 고른다면 이쪽이에요.`, 'win');
   }
   const nowA = planMonCp(first);
   const nowB = planMonCp(second);
@@ -338,9 +338,9 @@ function planCompareVerdict(first, second) {
     const side = nowA > nowB ? '왼쪽' : '오른쪽';
     const win = nowA > nowB ? first : second;
     return line(`${side}의 ${name(win)} 가 지금 더 강해요`,
-      '다 키우면 같은 CP 가 되지만, 지금 CP 가 더 높아 즉시 전력으로 쓰기 좋습니다. 강화 비용도 그만큼 덜 듭니다.', 'win');
+      '다 키우면 같은 CP 가 되지만, 지금 CP 가 더 높아 바로 데려가 쓰기 좋아요. 강화 비용도 그만큼 덜 들어요.', 'win');
   }
-  return line('두 개체가 같습니다', '개체값도 도달 CP 도 같아요. 기술이나 메모처럼 표 밖의 기준으로 고르세요.');
+  return line('두 개체가 같아요', '개체값도 도달 CP 도 같아요. 기술이나 메모처럼 표 밖의 기준으로 고르세요.');
 }
 
 function openPlanCompare(first, second) {
@@ -378,7 +378,7 @@ function openPlanCompare(first, second) {
   const body = el('div', { class: 'detail plan__cmp-body' },
     el('div', { class: 'plan__cmp-title' },
       el('h2', {}, '⚖️ 같은 종 개체 비교'),
-      el('p', { class: 'plan__cmp-lead' }, '같은 종의 포켓몬을 나란히 비교하여, 더 좋은 개체를 확인하세요.')),
+      el('p', { class: 'plan__cmp-lead' }, '같은 종을 나란히 놓고 어느 개체가 더 좋은지 봐요.')),
     el('div', { class: 'plan__cmp-cards' }, cmpCard(first, 'a'), cmpCard(second, 'b')),
     el('div', { class: 'cmp plan__cmp' },
       el('div', { class: 'cmp__row cmp__head' }, el('em', {}, ''), head(first), head(second)),
@@ -400,7 +400,7 @@ function openPlanCompare(first, second) {
       row('차지 기술', first.charged || '—', second.charged || '—'),
       row('섀도우', first.shadow ? '섀도우' : '일반', second.shadow ? '섀도우' : '일반')),
     planCompareVerdict(first, second),
-    footNote('굵은 값이 더 큰 쪽입니다. 리그 도달 = CP 상한을 넘지 않는 가장 높은 레벨의 CP. 이 표는 같은 종 안에서의 숫자 비교일 뿐 순위표 평가가 아니며, PvP 에서는 개체값이 낮아도 상한에 딱 맞는 개체가 유리할 수 있습니다.'));
+    footNote('굵은 값이 더 큰 쪽이에요. 리그 도달 = CP 상한을 넘지 않는 가장 높은 레벨의 CP. 이 표는 같은 종 안에서의 숫자 비교일 뿐 순위표 평가가 아니며, PvP 에서는 개체값이 낮아도 상한에 딱 맞는 개체가 유리할 수 있어요.'));
   openModal(body);
 }
 
@@ -489,7 +489,7 @@ function togglePlanCompare(mon) {
       // 숫자가 통째로 틀린다. 그래서 새로 시작하되, **왜 짝이 풀렸는지**를 말한다.
       // 예전에는 조용히 새로 시작해서, 누른 사람에게는 "눌렀는데 아무 일도 안 일어난" 화면이었다
       const [nameA, nameB] = [planMonName(other), planMonName(mon)];
-      _planCompareMsg = `${nameA}${koParticle(nameA, 'wa')} ${nameB}${koParticle(nameB, 'eun')} 다른 종이라 나란히 비교할 수 없어요. ${nameB}${koParticle(nameB, 'ro')} 다시 시작합니다.`;
+      _planCompareMsg = `${nameA}${koParticle(nameA, 'wa')} ${nameB}${koParticle(nameB, 'eun')} 다른 종이라 나란히 비교할 수 없어요. ${nameB}${koParticle(nameB, 'ro')} 다시 시작해요.`;
       _planCompare = [mon.id];
     } else {
       _planCompare = [..._planCompare.slice(-1), mon.id];
@@ -525,9 +525,9 @@ function renderPlanCollection() {
   if (!loggedIn) {
     $content.append(
       el('p', { class: 'dex__hint' },
-        !authEnabled() ? '이 빌드는 로그인 기능이 꺼져 있어 저장이 안 됩니다. 개체 추가를 눌러 CP 계산만 해 볼 수 있어요.'
-          : AUTH.status === 'pending' ? '⏳ 승인 대기 중 — 승인되면 개체를 계정에 저장할 수 있어요. 계산은 지금도 됩니다.'
-          : '☰ 메뉴 맨 위 "👤 마이페이지" 에서 로그인하면 개체를 계정에 저장하고 어느 기기에서든 같은 목록을 봅니다. 계산은 로그인 없이도 됩니다.'),  // v2.29.0 로그인 진입점은 ☰ 메뉴 계정 카드 하나 (헤더 👤 제거)
+        !authEnabled() ? 'CP 계산만 해 볼 수 있어요. 이 빌드는 로그인 기능이 꺼져 있어 저장이 안 돼요.'
+          : AUTH.status === 'pending' ? '⏳ 승인 대기 중 — 계산은 지금도 돼요. 승인되면 개체를 계정에 저장할 수 있어요.'
+          : '계산은 로그인 없이도 돼요. ☰ 메뉴 맨 위 "👤 마이페이지" 에서 로그인하면 개체를 계정에 저장해 어느 기기에서든 같은 목록을 봐요.'),  // v2.29.0 로그인 진입점은 ☰ 메뉴 계정 카드 하나 (헤더 👤 제거)
       addButton);
   } else {
     $controls.append(chips([{ id: 'all', label: `전체 ${mons.length}` }, ...PLAN_STATUSES.map((status) => ({ id: status, label: `${status} ${counts[status]}` }))], _planFilter, (id) => {
@@ -561,8 +561,8 @@ function renderPlanCollection() {
       $content.append(el('div', { class: 'plan__mons' }, ...shown.map((mon, index) => planMonCard(mon, index))));
     }
   }
-  $content.append(footNote('개체 = 실제로 가진 한 마리. 같은 종을 여러 마리 저장할 수 있고, [☐ 비교] 를 같은 종 두 마리에 누르면 CP·개체값·리그 도달을 나란히 봅니다. ★ 즐겨찾기(종 단위)와는 별개로 저장됩니다.'));
-  $note.textContent = '내 포켓몬은 개체 단위(레벨 · 개체값 · 기술 · 상태)로 계정(Firestore users/{uid}.mons)에 저장됩니다. CP 는 종족값 × 레벨 × 개체값으로 계산하고, 리그 도달은 CP 상한을 넘지 않는 가장 높은 레벨입니다.';
+  $content.append(footNote('개체 = 실제로 가진 한 마리. 같은 종을 여러 마리 저장할 수 있고, [☐ 비교] 를 같은 종 두 마리에 누르면 CP·개체값·리그 도달을 나란히 봐요. ★ 즐겨찾기(종 단위)와는 별개로 저장돼요.'));
+  $note.textContent = '내 포켓몬은 개체 단위(레벨 · 개체값 · 기술 · 상태)로 계정(Firestore users/{uid}.mons)에 저장돼요. CP 는 종족값 × 레벨 × 개체값으로 계산하고, 리그 도달은 CP 상한을 넘지 않는 가장 높은 레벨이에요.';
 }
 
 // 상세 팝업의 "➕ 내 개체로 저장" — 이 폼(과 섀도우 여부)을 채운 채 내 포켓몬 추가 팝업으로

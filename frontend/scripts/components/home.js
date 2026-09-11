@@ -61,5 +61,5 @@ function renderServiceHome() {
     el('section', { class: 'home__features', 'aria-label': '서비스 기능' },
       el('div', { class: 'home__section' }, el('h3', {}, '무엇을 해볼까요?'), el('span', {}, 'POGO PLAN과 함께하는 포켓몬 라이프')),
       grid));
-  $note.textContent = '도감과 상성에서 포켓몬을 알아보고, 랭킹에서 추천 개체를 확인하세요. 육성 플래너에서 내 개체를 기록하고 육성 현황을 관리할 수 있습니다.';
+  $note.textContent = '뭘 키울지 여기서 정해요. 도감과 상성으로 포켓몬을 알아보고, 랭킹에서 추천 개체를 고른 뒤, 육성 플래너에 내 개체를 기록하면 돼요.';
 }

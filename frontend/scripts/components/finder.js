@@ -110,13 +110,13 @@ function renderFinderPage() {
 
   const paint = () => {
     const query = finderQuery(picked);
-    $out.textContent = query || '(조건을 고르면 여기에 검색식이 만들어집니다)';
+    $out.textContent = query || '(조건을 고르면 여기에 검색식이 만들어져요)';
     $out.classList.toggle('is-empty', !query);
     $copy.disabled = !query;
     const count = Object.values(picked.flags).filter(Boolean).length + (picked.types.length ? 1 : 0);
     $hint.textContent = query
       ? `조건 ${count}개 · 게임 검색창에 그대로 붙여 넣으세요.`
-      : '아래에서 조건을 누르면 검색식이 만들어집니다.';
+      : '아래에서 조건을 누르면 검색식이 만들어져요.';
     finderSave(picked);
   };
 
@@ -174,8 +174,8 @@ function renderFinderPage() {
 
   const render = () => {
     body.replaceChildren(
-      el('p', { class: 'note' }, '게임 검색창에 붙여 넣을 검색식을 만듭니다. 조건을 한 번 누르면 ',
-        el('b', {}, '＋포함'), ', 다시 누르면 ', el('b', {}, '－제외'), ', 또 누르면 해제됩니다.'),
+      el('p', { class: 'note' }, '게임 검색창에 붙여 넣을 검색식을 만들어요. 조건을 한 번 누르면 ',
+        el('b', {}, '＋포함'), ', 다시 누르면 ', el('b', {}, '－제외'), ', 또 누르면 해제돼요.'),
 
       // 만들어진 식을 **맨 위에** 둔다 — 조건을 고르는 내내 결과가 눈에 있어야 무엇이 달라지는지 보인다
       el('div', { class: 'finder__result' }, $out,
@@ -207,7 +207,7 @@ function renderFinderPage() {
 
       el('p', { class: 'detail__foot' },
         '게임이 지원하지 않아 넣지 않은 것: 교환 상대 닉네임, 리모트 레이드 전용. ',
-        '버전에 따라 달라지는 문법(사탕 수 등)도 빼 두었습니다 — 틀린 식을 드리지 않기 위해서입니다.'),
+        '버전에 따라 달라지는 문법(사탕 수 등)도 빼 뒀어요 — 틀린 식을 드리지 않기 위해서예요.'),
     );
     paint();
   };

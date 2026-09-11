@@ -265,18 +265,18 @@ function soloResultNodes(boss, tier) {
     ? { ...simulateRevive(state.soloMyDeck, tier), squad: state.soloMyDeck }
     : buildSoloPlan(scaledPool(boss), tier);
   if (plan && plan.possible === undefined) plan.possible = plan.time <= tier.time;
-  if (!plan) return [el('p', { class: 'empty' }, '데이터가 없습니다.')];
+  if (!plan) return [el('p', { class: 'empty' }, '데이터가 없어요.')];
   const typeLabel = boss.types.map((typeName) => TYPE_KO[typeName]).join('·');
   const bossLabel = `${boss.name} (${typeLabel}) ${tier.label} 기준 (체력 ${tier.hp.toLocaleString()} — 티어 고정값)`;
   const card = plan.possible
     ? el('div', { class: 'solo__card solo__ok' },
         el('p', { class: 'solo__verdict' }, `💪 솔플 가능 — 정예 ${plan.squad.length}마리, 약 ${plan.time}초`),
         el('p', { class: 'solo__why' }, `${bossLabel} · 기절 직전 이탈 → 부활(5~6초) → 같은 덱 재진입 · 총 ${plan.cycles}사이클${plan.revives ? ` · 부활 ${plan.revives}회 (부활약·회복약 챙기세요)` : ' · 부활 없이 한 번에'}`),
-        el('p', { class: 'solo__stats' }, `${marginText(plan, tier)} (제한 ${tier.time}초 중 약 ${plan.time}초) · 아래 순서 그대로 내보내면 됩니다.`))
+        el('p', { class: 'solo__stats' }, `${marginText(plan, tier)} (제한 ${tier.time}초 중 약 ${plan.time}초) · 아래 순서 그대로 내보내면 돼요.`))
     : el('div', { class: 'solo__card solo__no' },
         el('p', { class: 'solo__verdict' }, '🙅 이건 사람 손으로는 무리예요'),
         el('p', { class: 'solo__why' }, `${bossLabel} — ${state.soloMode === 'mine' ? '이 덱으로는' : '최정예를 부활시켜 가며 무한정 갈아넣어도'} 약 ${plan.time}초 (${marginText(plan, tier)}). 친구를 부르거나 풀강·버프로 마진을 채워보세요.`),
-        el('p', { class: 'solo__stats' }, '아래는 그래도 가장 빨리 깎는 구성입니다.'));
+        el('p', { class: 'solo__stats' }, '아래는 그래도 가장 빨리 깎는 구성이에요.'));
   // 2026-09-02 딜 총량 결론 줄: 제한 시간 내 최대 딜 vs 보스 체력
   const dealtDamage = damageInTime(plan.squad, tier);
   const damageGap = dealtDamage - tier.hp;
@@ -314,7 +314,7 @@ function renderSoloCalc() {
         render();
       } }, sprite(boss.sprite), el('span', {}, boss.name)));
     }
-    if (!hits.length) bossSuggestionBox.append(el('p', { class: 'empty' }, '검색 결과가 없습니다.'));
+    if (!hits.length) bossSuggestionBox.append(el('p', { class: 'empty' }, '검색 결과가 없어요.'));
   });
   // 2026-09-02 v5: 추천 덱 / 내 덱 검증 모드 + 풀강·버프 토글
   $controls.append(el('div', { class: 'solo__opts' },
@@ -354,7 +354,7 @@ function renderSoloCalc() {
     el('span', { class: 'meta' }, '프로토타입 · 부활 운용')));
 
   if (!state.soloBossMon) {
-    $content.append(el('p', { class: 'empty' }, '잡고 싶은 보스를 검색해서 골라주세요. 예: 메가거북왕을 고르면 풀·전기 정예 덱이 나옵니다.'));
+    $content.append(el('p', { class: 'empty' }, '잡고 싶은 보스를 검색해서 골라주세요. 예: 메가거북왕을 고르면 풀·전기 정예 덱이 나와요.'));
   } else {
     // 2026-09-02 내 덱 검증 모드: 이 보스 상대 평가 가능한 어태커를 골라 조합 구성
     if (state.soloMode === 'mine') {
@@ -405,13 +405,13 @@ function renderSoloCalc() {
           return listItem;
         }));
       }
-      if (!state.soloMyDeck.length) $content.append(el('p', { class: 'empty' }, '어태커를 추가하면 이 조합으로 되는지 판정해줍니다.'));
+      if (!state.soloMyDeck.length) $content.append(el('p', { class: 'empty' }, '어태커를 추가하면 이 조합으로 잡을 수 있는지 알려 줘요.'));
       else $content.append(...soloResultNodes(state.soloBossMon, tier).slice(0, 1));  // 판정 카드만 (목록은 위의 내 덱이 대신함)
     } else {
       $content.append(...soloResultNodes(state.soloBossMon, tier));
     }
   }
-  $note.textContent = '프로토타입 가정: 자체 계산 PvE 수치(개체값 15/15/15) 기반에 선택 보스의 실제 방어·공격 종족값을 반영해 보정. 운용은 실측 제공자식 — 최정예 1~2마리를 기절 직전 이탈 → 부활(5~6초) → 재진입으로 돌려쓰는 방식 기준. 풀강50 토글은 딜 +6.3%·TDO +20%, 버프는 메가부스트 +30% / 풀버프(메가+날씨+친구) +60%. 실측 보정: 생존 3배 · DPS +20%. 기절 → 부활약 → 재진입 운용을 반영해 정예 1~6마리 중 가장 빨리 깎는 구성을 고릅니다 (교체 1초 · 전멸 후 재진입 13초). 난이도는 보스별로 자동 판정(메가·원시 → 메가, 전설·환상·울트라비스트 → 4성, 최종 진화 → 3성, 그 외 1성)이며 선택된 보스의 난이도 배지를 탭하면 수동 변경됩니다. 레이드 표시 CP는 개체 종족값 기반 계산값(공식 검증: 뮤츠 5성 54,148), 전투 체력은 게임 구조상 티어 고정 — 1성 600 · 3성 3,600 · 4성 9,000 · 5성/메가 15,000, 제한 1·3성 180초 / 그 외 300초. 복합 타입 보스의 두 번째 타입은 어태커 자속 타입 기준 근사 보정. 포켓몬을 누르면 상세 정보가 열립니다.';
+  $note.textContent = '프로토타입 가정: 자체 계산 PvE 수치(개체값 15/15/15) 기반에 선택 보스의 실제 방어·공격 종족값을 반영해 보정. 운용은 실측 제공자식 — 최정예 1~2마리를 기절 직전 이탈 → 부활(5~6초) → 재진입으로 돌려쓰는 방식 기준. 풀강50 토글은 딜 +6.3%·TDO +20%, 버프는 메가부스트 +30% / 풀버프(메가+날씨+친구) +60%. 실측 보정: 생존 3배 · DPS +20%. 기절 → 부활약 → 재진입 운용을 반영해 정예 1~6마리 중 가장 빨리 깎는 구성을 골라요 (교체 1초 · 전멸 후 재진입 13초). 난이도는 보스별로 자동 판정(메가·원시 → 메가, 전설·환상·울트라비스트 → 4성, 최종 진화 → 3성, 그 외 1성)이며 선택된 보스의 난이도 배지를 탭하면 수동 변경돼요. 레이드 표시 CP는 개체 종족값 기반 계산값(공식 검증: 뮤츠 5성 54,148), 전투 체력은 게임 구조상 티어 고정 — 1성 600 · 3성 3,600 · 4성 9,000 · 5성/메가 15,000, 제한 1·3성 180초 / 그 외 300초. 복합 타입 보스의 두 번째 타입은 어태커 자속 타입 기준 근사 보정. 포켓몬을 누르면 상세 정보가 열려요.';
 }
 
 // ── 진입점 ────────────────────────────────────────────────────────────────
@@ -511,7 +511,7 @@ function deckAnalysis(deck, foes) {
   const holes = foes.filter((foe) => !deck.some(({ candidate }) => foeFit(candidate, foe) > 1));
   if (holes.length) box.append(el('p', { class: 'solo__why' },
     `⚠️ ${holes.map((foe) => foe.name).join('·')}를 확실히 이기는 픽이 없어요 — 아래 카운터 목록에서 ${holes.map((foe) => `${topAtkType(foe)} 기술`).join('·')} 픽으로 한 자리 바꿔보세요.`));
-  else box.append(el('p', { class: 'solo__why' }, '✅ 상대 3마리 모두 상성 우위 픽이 있는 구성입니다.'));
+  else box.append(el('p', { class: 'solo__why' }, '✅ 상대 3마리 모두 상성 우위 픽이 있는 구성이에요.'));
   return box;
 }
 
@@ -714,7 +714,7 @@ function renderPvpDeck() {
   if (state.deckFoes.length < 3) $content.append(foeSearchInput, foeSuggestionBox);  // 3칸 다 차면 검색창 숨김
 
   if (!state.deckFoes.length) {
-    $content.append(el('p', { class: 'empty' }, '자주 만나는 상대를 [+]에 1~3마리 채우면, 걔들을 두루 잘 받아치는 맞춤 덱을 짜줍니다.'));
+    $content.append(el('p', { class: 'empty' }, '자주 만나는 상대를 [+]에 1~3마리 채우면, 그 셋을 두루 잘 받아치는 맞춤 덱을 짜 줘요.'));
   } else if (deck.length) {
     $content.append(
       el('div', { class: 'row-head' }, el('h2', {}, '맞춤 추천 덱'), el('span', { class: 'meta' }, `상대 ${state.deckFoes.length}마리 기준`)),
@@ -746,5 +746,5 @@ function renderPvpDeck() {
         el('span', { class: 'row__sub' }, '상성 계수'),
         el('div', { class: 'row__moves row__counter' }, el('span', {}, counterWhy(candidate, foe)))))));
   }
-  $note.textContent = '실험 기능. 추천 덱 3종은 상대 입력 없이 리그 메타 기준으로 뽑습니다 — 정석 코어(점수 + 약점 상호 보완 그리디), 안티 메타(상위 10마리 상대 평균 상성순), 타입 분산(방어 타입 안 겹치게). 커스텀 덱 짜기는 PvPoke 리그 순위 × 타입 상성(공격 최대 배율 ÷ 피격 최대 배율)의 근사 추천 — 실드·기술 사이클·CP 최적화는 반영하지 않습니다. GO배틀리그 규칙상 같은 종은 파티에 1마리만(섀도우·일반도 같은 종)이라 모든 추천이 종 단위로 중복을 제거합니다. 슬롯 3칸을 다 채우면 상대 덱 분석과 구성 가이드가 나옵니다.';
+  $note.textContent = '실험 기능. 추천 덱 3종은 상대 입력 없이 리그 메타 기준으로 뽑아요 — 정석 코어(점수 + 약점 상호 보완 그리디), 안티 메타(상위 10마리 상대 평균 상성순), 타입 분산(방어 타입 안 겹치게). 커스텀 덱 짜기는 PvPoke 리그 순위 × 타입 상성(공격 최대 배율 ÷ 피격 최대 배율)의 근사 추천 — 실드·기술 사이클·CP 최적화는 반영하지 않아요. GO배틀리그 규칙상 같은 종은 파티에 1마리만(섀도우·일반도 같은 종)이라 모든 추천이 종 단위로 중복을 제거해요. 슬롯 3칸을 다 채우면 상대 덱 분석과 구성 가이드가 나와요.';
 }

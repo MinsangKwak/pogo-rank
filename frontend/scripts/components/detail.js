@@ -119,7 +119,7 @@ function evoNode(dex, isDex, curSprite) {
   const family = DEX_DATA.evo[dex];
   const megas = DEX_DATA.megas?.[dex];
   const hasFamily = family && family.length >= 2;
-  if (!hasFamily && !megas?.length) return el('p', { class: 'detail__none-text' }, '진화가 없는 포켓몬입니다.');
+  if (!hasFamily && !megas?.length) return el('p', { class: 'detail__none-text' }, '진화가 없는 포켓몬이에요.');
   const wrap = el('div', { class: 'evo' });
   if (hasFamily) family.forEach((stage, stageIndex) => {
     // 첫 단계 앞에는 화살표를 넣지 않는다
@@ -132,7 +132,7 @@ function evoNode(dex, isDex, curSprite) {
     wrap.append(el('div', { class: 'evo__stage' }, ...megas.map((megaEntry) => megaMonNode(dex, megaEntry, curSprite, isDex))));
   }
   // 아래 안내 문구는 실제로 있는 것만 ' · ' 로 이어 붙인다
-  const foot = [hasFamily && '진화형을 누르면 그 포켓몬의 정보를 볼 수 있습니다', megas?.length && '⚡ 메가 진화 가능 — 누르면 메가 진화 스탯을 볼 수 있습니다'].filter(Boolean);
+  const foot = [hasFamily && '진화형을 누르면 그 포켓몬의 정보를 볼 수 있어요', megas?.length && '⚡ 메가 진화 가능 — 누르면 메가 진화 스탯을 볼 수 있어요'].filter(Boolean);
   wrap.append(footNote(foot.join(' · ')));
   return wrap;
 }
@@ -233,7 +233,7 @@ function cpNode(form, spriteId) {
     el('div', { class: 'cp__ctx' },
       el('em', {}, '강화 상한'),
       el('div', { class: 'tchips' }, chip('만렙 Lv50', cpm.l50))),
-    footNote(`굵은 숫자가 개체값 100%(15/15/15) CP입니다. 잡은 개체가 이 값이면 100%. ${maxKind ? '맥스 배틀은 날씨부스트가 없어 항상 Lv20이라 레이드 평시와 같은 CP가 나옵니다. ' : ''}야생은 레벨 하한이 없어 최저 CP를 적지 않습니다.`));
+    footNote(`굵은 숫자가 개체값 100%(15/15/15) CP예요. 잡은 개체가 이 값이면 100%. ${maxKind ? '맥스 배틀은 날씨부스트가 없어 항상 Lv20이라 레이드 평시와 같은 CP가 나와요. ' : ''}야생은 레벨 하한이 없어 최저 CP를 적지 않아요.`));
 }
 
 // 2026-09-04 메가X/메가Y가 둘 다 있는 종(현재 뮤츠·리자몽 등)만 — 좌우 비교 + 차이 자동 요약
@@ -451,7 +451,7 @@ function detailCpCalc(form) {
     sliderRow('레벨', 'level', 1, 50, 0.5), sliderRow('공격 IV', 'attackIv', 0, 15, 1),
     sliderRow('방어 IV', 'defenseIv', 0, 15, 1), sliderRow('체력 IV', 'hpIv', 0, 15, 1),
     $result,
-    footNote('내 개체의 레벨·개체값을 맞추면 지금 CP와 만렙까지의 여지가 보입니다'));
+    footNote('내 개체의 레벨·개체값을 맞추면 지금 CP와 만렙까지의 여지가 보여요'));
 }
 
 
@@ -613,7 +613,7 @@ function openDetail(pokemon, isDex = false, from = null) {
           el('div', {}, el('b', {}, names.join(' · ')),
             // 레거시(지금은 못 배우는 전용 기술)가 섞여 있으면 오해하지 않게 표시한다
             names.some((name) => moveChange.legacy?.includes(name))
-              ? el('div', { class: 'changes__sub' }, '※ 일부는 지금 배울 수 없는 레거시 기술입니다') : ''))
+              ? el('div', { class: 'changes__sub' }, '※ 일부는 지금 배울 수 없는 레거시 기술이에요') : ''))
       : '');
     body.append(detailSection(
       daysLeft > 0 ? `⚔️ ${data.date} 기술 변경 예정 (D-${daysLeft})` : `⚔️ ${data.date} 기술 변경 적용됨`,
