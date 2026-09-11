@@ -89,18 +89,37 @@ const ok = (name, cond, extra = '') => results.push([cond ? 'PASS' : 'FAIL', nam
       // (1) 갈무리에는 굵은 획이 없다. 700 을 주면 브라우저가 가짜 굵기를 그려 도트가 번진다
       headWeight: getComputedStyle(head).fontWeight,
       nameWeight: getComputedStyle(document.querySelector('.home__tile strong') || head).fontWeight,
-      // (2) 바탕 무늬는 본문 뒤 한 겹(#px-bg)에만 — body 에 직접 깔면 흐리기를 걸 자리가 없다
-      bgLayer: !!bg,
+      // (2) 2026-09-12 v3.8.3 점 격자는 body 에 깐다 — 화면을 덮는 **고정 레이어**에 칠하면
+      // 본문이 움직일 때마다 다시 칠해야 해서 휴대폰에서 스크롤이 끊긴다
       bodyPattern: getComputedStyle(document.body).backgroundImage,
-      ballBlur: bg && bg.querySelector('.px-ball') ? getComputedStyle(bg.querySelector('.px-ball')).filter : '',
+      // 좁은 화면에 화면을 덮는 고정 요소가 하나라도 남아 있으면 안 된다
+      덮개: (() => {
+        const bad = [];
+        for (const n of document.querySelectorAll('body *')) {
+          const s = getComputedStyle(n);
+          if (s.position !== 'fixed' || s.display === 'none') continue;
+          const r = n.getBoundingClientRect();
+          if (r.width >= innerWidth * 0.8 && r.height >= innerHeight * 0.5) bad.push(n.id || n.className);
+        }
+        return bad;
+      })(),
+      // (2-2) 도트 아이콘은 그림일 뿐이다 — 탭의 히트 대상이 안쪽 SVG 가 되면 iOS 사파리가 탭을 흘린다
+      아이콘히트: (() => {
+        const btn = document.getElementById('menu-toggle');
+        if (!btn) return '버튼 없음';
+        const r = btn.getBoundingClientRect();
+        const hit = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2);
+        return hit === btn ? 'button' : (hit ? hit.tagName.toLowerCase() : 'null');
+      })(),
       // (3) 걸 것이 없는 화면(서비스 홈)에서 컨트롤 줄이 자리를 먹으면 안 된다
       controlsH: Math.round(document.getElementById('controls').getBoundingClientRect().height),
     };
   });
   ok('제목에 가짜 굵기 없음 (도트 글꼴)', px.headWeight === '400', px.headWeight);
   ok('타일 이름에도 가짜 굵기 없음', px.nameWeight === '400', px.nameWeight);
-  ok('바탕 무늬는 #px-bg 한 겹에만', px.bgLayer && px.bodyPattern === 'none', `${px.bgLayer} / ${px.bodyPattern.slice(0, 30)}`);
-  ok('바탕 몬스터볼은 흐리게', /blur\(/.test(px.ballBlur), px.ballBlur);
+  ok('점 격자는 body 에 (고정 레이어 아님)', /gradient/.test(px.bodyPattern), px.bodyPattern.slice(0, 40));
+  ok('좁은 화면에 화면 덮는 고정 요소 없음', px.덮개.length === 0, JSON.stringify(px.덮개));
+  ok('도트 아이콘이 탭을 가로채지 않는다', px.아이콘히트 === 'button', px.아이콘히트);
   ok('빈 컨트롤 줄은 자리를 안 먹는다', px.controlsH === 0, String(px.controlsH));
 
   // 2. 서비스 홈 — 타일 · 이모지 아이콘 · 탭 줄 숨김
