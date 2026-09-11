@@ -330,5 +330,5 @@ function renderMax() {
 // 도감·레이드 PvE 와 같은 규칙의 별도 키다 (화면마다 선택이 섞이지 않게)
 const MAX_COLS_KEY = 'pogo_max_cols';
 function applyMaxLayout(grid) {
-  for (const node of document.querySelectorAll('#content .row-list')) node.classList.toggle('is-list', !grid);
+  rowListLayout(grid);   // 2026-09-12 v3.9.1 레이드 · PvE 와 같은 일이라 components/ui.js 한 곳으로 뺐다
 }

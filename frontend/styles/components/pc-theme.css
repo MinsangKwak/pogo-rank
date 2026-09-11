@@ -178,21 +178,16 @@
   .dex__list.is-grid .dex__row b { font-size: var(--fs-body); }
 
   /* 랭킹 카드 */
-  /* 2026-09-12 v3.3.0 보기 전환으로 줄로 되돌릴 수 있다 (.is-list) — 넓은 화면에서 카드 격자가
-     기본이지만, 순위를 위에서 아래로 훑고 싶을 때는 줄이 낫다. 격자를 켤 때 준 값들을
-     하나씩 되돌린다 (도감의 .dex__list 는 반대로 줄이 기본이고 .is-grid 가 격자다) */
-  .row-list.is-list { display: block; gap: 0; padding-top: 0; border-top: 1px solid var(--line); }
-  .row-list.is-list > .row { position: static; flex-direction: row; align-items: center; text-align: left;
-                             padding: 1rem 0.4rem; border: 0; border-bottom: 1px solid var(--line);
-                             border-radius: 0; background: transparent; box-shadow: none; }
-  .row-list.is-list > .row > .row__rank { position: static; width: 2.4rem; text-align: right; }
-  .row-list.is-list > .row > .sprite { width: 4rem; height: 4rem; padding: 0; border-radius: 0; }
-  .row-list > .row { background: var(--surface); }
-  .row-list > .row:hover {
+  /* 2026-09-12 v3.9.1 줄 모드(.is-list)로 되돌리는 일은 여기서 속성을 하나씩 지우는 대신
+     list.css 의 카드 블록에 `:not(.is-list)` 를 달아 **아예 안 걸리게** 한다.
+     v3.3.0 에 여기 있던 되돌리기 묶음은 그래서 없앴다 — 카드 디자인이 바뀔 때마다
+     되돌릴 목록을 따라 늘려야 했고, 실제로 어긋나 있었다 */
+  .row-list:not(.is-list) > .row { background: var(--surface); }
+  .row-list:not(.is-list) > .row:hover {
     border-color: color-mix(in srgb, var(--brand) 55%, var(--line));
     box-shadow: 0 0.6rem 2rem -1.2rem color-mix(in srgb, var(--brand) 60%, transparent);
   }
-  .row-list > .row .row__score { color: var(--brand); }
+  .row-list:not(.is-list) > .row .row__score { color: var(--brand); }
 
   /* ── 상세 패널 ───────────────────────────────────────────────────────────── */
   .detail-panel { box-shadow: 0 1rem 4rem -1.8rem rgba(0,0,0,.5); }
@@ -263,50 +258,51 @@
   .row-head h2 { font-size: var(--fs-sec); font-weight: 700; }
   .row-head .meta { font-size: var(--fs-sub); }
 
-  /* 랭킹 카드 — 순위는 동그란 배지, 그림은 빛나는 판 위, 점수는 크게 */
-  .row-list > .row { padding: 2rem 1.4rem 1.6rem; gap: 0.8rem; }
-  .row-list > .row > .row__rank {
+  /* 랭킹 카드 — 순위는 동그란 배지, 그림은 빛나는 판 위, 점수는 크게.
+     2026-09-12 v3.9.1 여기도 줄 모드(.is-list)에는 안 걸린다 — list.css 의 카드 블록과 한 규칙이다 */
+  .row-list:not(.is-list) > .row { padding: 2rem 1.4rem 1.6rem; gap: 0.8rem; }
+  .row-list:not(.is-list) > .row > .row__rank {
     top: 1.2rem; left: 1.2rem;
     display: flex; align-items: center; justify-content: center; width: 2.6rem; height: 2.6rem;
     border-radius: 50%; border: 1px solid var(--line); background: var(--bg);
     font-size: var(--fs-sub); font-weight: 700; text-align: center;
   }
   /* 그 티어의 1위만 브랜드색 — "이 칸의 대표" 라는 뜻 */
-  .row-list > .row:first-child > .row__rank { border-color: var(--brand); color: var(--brand); }
+  .row-list:not(.is-list) > .row:first-child > .row__rank { border-color: var(--brand); color: var(--brand); }
   /* 그림 아래 빛나는 판 — 목업의 발광 스테이지. 공식 아트워크가 없으므로 빛으로 자리를 만든다.
      2026-09-10 v2.45.0 (버그) v2.43.0 에서 이 그라데이션은 실제로는 한 번도 안 나왔다 —
-     list.css 의 `.row-list > .row > .sprite:not(.is-loading) { background: var(--bg) }` 가
+     list.css 의 `.row-list:not(.is-list) > .row > .sprite:not(.is-loading) { background: var(--bg) }` 가
      **단축 속성**이라 background-image 까지 none 으로 되돌리는데, `:not()` 이 붙어 있어
      특정도까지 더 높았다. 그래서 같은 선택자(:not 포함)로 받고 image·color 를 따로 적는다.
      스켈레톤(.is-loading)이 도는 동안에는 판을 덮지 않는다(반짝임이 사라진다) */
-  .row-list > .row > .sprite { width: 8.4rem; height: 8.4rem; padding: 1rem; border-radius: 50%; }
-  .row-list > .row > .sprite:not(.is-loading) {
+  .row-list:not(.is-list) > .row > .sprite { width: 8.4rem; height: 8.4rem; padding: 1rem; border-radius: 50%; }
+  .row-list:not(.is-list) > .row > .sprite:not(.is-loading) {
     background-color: transparent;
     background-image:
       radial-gradient(60% 40% at 50% 88%, color-mix(in srgb, var(--brand) 40%, transparent), transparent 70%),
       radial-gradient(70% 70% at 50% 42%, color-mix(in srgb, var(--brand-2) 12%, transparent), transparent 72%);
   }
-  .row-list > .row .row__badges { margin-bottom: 0.6rem; }
-  .row-list > .row .row__name b { font-size: var(--fs-lead); }
-  .row-list > .row .row__moves { font-size: var(--fs-sub); color: var(--muted); }
-  .row-list > .row > .row__stats { padding-top: 1rem; }
-  .row-list > .row .row__score { font-size: 2.6rem; font-weight: 700; letter-spacing: -0.02em; }
-  .row-list > .row .row__sub { font-size: var(--fs-sub); color: var(--muted); }
+  .row-list:not(.is-list) > .row .row__badges { margin-bottom: 0.6rem; }
+  .row-list:not(.is-list) > .row .row__name b { font-size: var(--fs-lead); }
+  .row-list:not(.is-list) > .row .row__moves { font-size: var(--fs-sub); color: var(--muted); }
+  .row-list:not(.is-list) > .row > .row__stats { padding-top: 1rem; }
+  .row-list:not(.is-list) > .row .row__score { font-size: 2.6rem; font-weight: 700; letter-spacing: -0.02em; }
+  .row-list:not(.is-list) > .row .row__sub { font-size: var(--fs-sub); color: var(--muted); }
   /* 활용 N곳 — 카드 위에서는 알약 하나로 또렷하게 */
-  .row-list > .row .tag--use {
+  .row-list:not(.is-list) > .row .tag--use {
     padding: 0.3rem 1rem; border-radius: var(--r-chip);
     border-color: transparent; background: color-mix(in srgb, var(--brand-2) 16%, transparent);
     color: color-mix(in srgb, var(--brand-2) 75%, var(--fg)); font-size: 1.1rem;
   }
-  .row-list > .row .tag--use.tag--many { background: color-mix(in srgb, var(--brand) 18%, transparent); color: var(--brand); }
+  .row-list:not(.is-list) > .row .tag--use.tag--many { background: color-mix(in srgb, var(--brand) 18%, transparent); color: var(--brand); }
 
   /* 선정 근거 — 격자를 가로지르는 카드 한 장, 안은 두 칸 (views/max.js expandableRow).
      order 로 카드 뒤로 보낸다: DOM 은 [카드][근거][카드][근거]… 순서라 그대로 두면 근거가 열릴 때마다
      그 자리에서 줄이 끊겨 뒤 카드들이 아래로 밀린다. 목업처럼 그 티어의 카드가 다 놓인 **뒤에** 붙는다 */
-  .row-list > .row { order: 0; }
-  .row-list > .row__why { order: 1; padding: 1.6rem 1.8rem; border-radius: var(--r-card); }
-  .row-list > .row__more { order: 2; }
-  .row-list > .row__why.is-open { display: grid; grid-template-columns: 1.4fr 1fr; gap: 2rem; }
+  .row-list:not(.is-list) > .row { order: 0; }
+  .row-list:not(.is-list) > .row__why { order: 1; padding: 1.6rem 1.8rem; border-radius: var(--r-card); }
+  .row-list:not(.is-list) > .row__more { order: 2; }
+  .row-list:not(.is-list) > .row__why.is-open { display: grid; grid-template-columns: 1.4fr 1fr; gap: 2rem; }
   .row__why-col { min-width: 0; }
   .row__why-title { display: block; margin-bottom: 0.6rem; font-size: var(--fs-body); font-weight: 700; color: var(--fg); }
   .row__why-line { margin: 0 0 0.8rem; line-height: 1.7; }
@@ -719,37 +715,48 @@
 .dex__list.is-grid .gameday__main > b { font-size: 1.7rem; font-weight: 700; }
 .dex__list.is-grid .gameday__note { display: block; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--line); white-space: normal; }
 
+/* 2026-09-12 v3.9.1 (버그) 레이드 · PvE · D-MAX 의 보기 전환이 아무 일도 안 했다.
+   이 카드 규칙이 `body:is([data-route=…]) #content .row-list`(1,2,1) 인데, 되돌리려던
+   `.row-list.is-list`(0,2,0) 가 특정도에서 졌다. 클래스를 붙였다 뗐다 하고 있을 뿐
+   화면은 처음부터 끝까지 카드였다 — v3.3.0 · v3.5.0 에 넣은 토글이 나간 적이 없는 셈이다.
+
+   되돌리는 규칙을 더 세게 적는 대신, **카드 쪽에 .is-grid 를 요구**한다.
+   되돌릴 속성을 하나씩 세어 적을 일이 없어지고(카드 디자인이 바뀌어도 따라다닐 필요가 없다),
+   덤으로 미디어 쿼리를 뗄 수 있다 — 이제 "카드냐 줄이냐" 는 폭이 아니라 사용자의 선택이다.
+   두 클래스는 rowListLayout() 이 늘 하나씩 붙인다 (components/ui.js).
+   기본값은 그대로다: layoutInitial() 이 wideCards() 를 보므로 휴대폰은 줄, PC 는 카드로 연다.
+   휴대폰에서 카드를 켜면 --list-cols 가 1 이라 한 줄에 한 장 — 도감 그리드와 같은 모양이다 */
+body:is([data-route="dmax"], [data-route="pve"], [data-route="pvp"]) #content .row-list.is-grid {
+  display: grid; grid-template-columns: repeat(var(--list-cols), minmax(0, 1fr)); gap: 1.8rem; border-top: 0;
+}
+body:is([data-route="dmax"], [data-route="pve"], [data-route="pvp"]) #content .row-list.is-grid > .row {
+  position: relative; display: flex; flex-direction: column; align-items: center;
+  min-width: 0; padding: 4.2rem 2.2rem 2rem; gap: 1.2rem; text-align: center;
+  border: 1px solid var(--line); border-radius: 1.2rem; background: var(--surface);
+}
+body:is([data-route="dmax"], [data-route="pve"], [data-route="pvp"]) #content .row-list.is-grid > .row > .row__rank {
+  position: absolute; top: 1rem; left: 1.2rem; width: auto; height: auto; padding: 0.3rem 0.6rem;
+}
+body:is([data-route="dmax"], [data-route="pve"], [data-route="pvp"]) #content .row-list.is-grid > .row > .sprite {
+  box-sizing: border-box; width: 18rem; height: 18rem; max-width: 100%; padding: 0;
+  border-radius: 2.4rem; object-fit: contain;
+}
+body:is([data-route="dmax"], [data-route="pve"], [data-route="pvp"]) #content .row-list.is-grid > .row > .sprite:not(.is-loading) {
+  background: radial-gradient(ellipse at 50% 80%, color-mix(in srgb, var(--brand) 14%, transparent), transparent 66%);
+}
+body:is([data-route="dmax"], [data-route="pve"], [data-route="pvp"]) #content .row-list.is-grid .row__main {
+  display: flex; flex-direction: column; width: 100%; min-width: 0; padding: 0; border: 0; gap: 0.8rem;
+}
+body:is([data-route="dmax"], [data-route="pve"], [data-route="pvp"]) #content .row-list.is-grid .row__name { order: -1; justify-content: center; flex-wrap: wrap; }
+body:is([data-route="dmax"], [data-route="pve"], [data-route="pvp"]) #content .row-list.is-grid .row__name b { font-size: 2.1rem; font-weight: 700; white-space: normal; }
+body:is([data-route="dmax"], [data-route="pve"], [data-route="pvp"]) #content .row-list.is-grid .row__badges { justify-content: center; flex-wrap: wrap; }
+body:is([data-route="dmax"], [data-route="pve"], [data-route="pvp"]) #content .row-list.is-grid .row__moves { white-space: normal; overflow-wrap: anywhere; }
+body:is([data-route="dmax"], [data-route="pve"], [data-route="pvp"]) #content .row-list.is-grid .row__stats {
+  width: 100%; margin-top: auto; padding-top: 1rem; border-top: 1px solid var(--line); text-align: center;
+}
+body:is([data-route="dmax"], [data-route="pve"], [data-route="pvp"]) #content .row-list.is-grid .row__score { font-size: 1.5rem; }
+body:is([data-route="dmax"], [data-route="pve"], [data-route="pvp"]) #content .row-list.is-grid > :is(.row__more, .row__why) { grid-column: 1 / -1; }
 @media (min-width: 1100px) {
-  body:is([data-route="dmax"], [data-route="pve"], [data-route="pvp"]) #content .row-list {
-    display: grid; grid-template-columns: repeat(var(--list-cols), minmax(0, 1fr)); gap: 1.8rem; border-top: 0;
-  }
-  body:is([data-route="dmax"], [data-route="pve"], [data-route="pvp"]) #content .row-list > .row {
-    position: relative; display: flex; flex-direction: column; align-items: center;
-    min-width: 0; padding: 4.2rem 2.2rem 2rem; gap: 1.2rem; text-align: center;
-    border: 1px solid var(--line); border-radius: 1.2rem; background: var(--surface);
-  }
-  body:is([data-route="dmax"], [data-route="pve"], [data-route="pvp"]) #content .row > .row__rank {
-    position: absolute; top: 1rem; left: 1.2rem; width: auto; height: auto; padding: 0.3rem 0.6rem;
-  }
-  body:is([data-route="dmax"], [data-route="pve"], [data-route="pvp"]) #content .row > .sprite {
-    box-sizing: border-box; width: 18rem; height: 18rem; max-width: 100%; padding: 0;
-    border-radius: 2.4rem; object-fit: contain;
-  }
-  body:is([data-route="dmax"], [data-route="pve"], [data-route="pvp"]) #content .row > .sprite:not(.is-loading) {
-    background: radial-gradient(ellipse at 50% 80%, color-mix(in srgb, var(--brand) 14%, transparent), transparent 66%);
-  }
-  body:is([data-route="dmax"], [data-route="pve"], [data-route="pvp"]) #content .row__main {
-    display: flex; flex-direction: column; width: 100%; min-width: 0; padding: 0; border: 0; gap: 0.8rem;
-  }
-  body:is([data-route="dmax"], [data-route="pve"], [data-route="pvp"]) #content .row__name { order: -1; justify-content: center; flex-wrap: wrap; }
-  body:is([data-route="dmax"], [data-route="pve"], [data-route="pvp"]) #content .row__name b { font-size: 2.1rem; font-weight: 700; white-space: normal; }
-  body:is([data-route="dmax"], [data-route="pve"], [data-route="pvp"]) #content .row__badges { justify-content: center; flex-wrap: wrap; }
-  body:is([data-route="dmax"], [data-route="pve"], [data-route="pvp"]) #content .row__moves { white-space: normal; overflow-wrap: anywhere; }
-  body:is([data-route="dmax"], [data-route="pve"], [data-route="pvp"]) #content .row__stats {
-    width: 100%; margin-top: auto; padding-top: 1rem; border-top: 1px solid var(--line); text-align: center;
-  }
-  body:is([data-route="dmax"], [data-route="pve"], [data-route="pvp"]) #content .row__score { font-size: 1.5rem; }
-  body:is([data-route="dmax"], [data-route="pve"], [data-route="pvp"]) #content .row-list > :is(.row__more, .row__why) { grid-column: 1 / -1; }
   .dex__list.is-grid .gameday__row { padding: 4.2rem 2.2rem 2rem; gap: 1.2rem; }
   .dex__list.is-grid .gameday__row > .sprite { width: 18rem; height: 18rem; }
   .dex__list.is-grid .gameday__main > b { font-size: 2.1rem; }
