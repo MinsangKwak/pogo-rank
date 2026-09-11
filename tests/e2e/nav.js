@@ -8,6 +8,11 @@ const ok = (name, cond, extra = '') => results.push([cond ? 'PASS' : 'FAIL', nam
 (async () => {
   const browser = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium' });
   const ctx = await browser.newContext({ viewport: { width: 390, height: 844 } });
+  // 2026-09-11 v2.57.0 바깥 주소(웹폰트·Firebase)를 끊는다. 이 방(샌드박스)에는 바깥이 없어서
+  // 그 요청들이 타임아웃까지 매달리고, 그동안 첫 렌더가 끝나지 않는다 — 실측 한 번 여는 데 13.7초.
+  // 끊으면 1.2초다(11.5배). 앱은 바깥 것 없이도 돌게 만들어 뒀으니(대체 글꼴·?mock) 검사 내용은 그대로다.
+  // 다른 스위트 열넷은 이미 이렇게 하고 있었다 — 빠진 곳만 맞춘다
+  await ctx.route(/^https?:\/\/(?!localhost)/, (r) => r.abort());
   await ctx.route(/fonts\.googleapis|fonts\.gstatic|cdn\.jsdelivr/, (r) => r.abort());
   const page = await ctx.newPage();
   const errors = [];
@@ -15,7 +20,11 @@ const ok = (name, cond, extra = '') => results.push([cond ? 'PASS' : 'FAIL', nam
   const settle = async () => {
     await page.waitForSelector('#splash', { state: 'detached', timeout: 15000 }).catch(() => {});
     await page.evaluate(() => { try { localStorage.setItem('pogo_consent', 'denied'); } catch {} });
-    await page.locator('#consent .consent-deny').click().catch(() => {});
+    // 2026-09-11 v2.57.0 선택자가 `.consent-deny` 였다 — 실제 클래스는 `.consent__deny` 다(BEM).
+    // 맞는 게 없으니 click() 이 **기본 30초** 를 꽉 기다렸고, .catch() 가 그걸 조용히 삼켰다.
+    // settle() 을 여덟 번 부르므로 이 스위트 혼자 240초를 거기에 썼다 (실측 253초 중).
+    // 없어도 되는 클릭에는 짧은 한도를 둔다 — 선택자가 또 어긋나도 30초가 아니라 1.5초만 잃는다
+    await page.locator('#consent .consent__deny').click({ timeout: 1500 }).catch(() => {});
     await page.waitForTimeout(250);
   };
 
@@ -269,6 +278,7 @@ const ok = (name, cond, extra = '') => results.push([cond ? 'PASS' : 'FAIL', nam
 
   // 11. 다크 모드에서도 토큰 한 벌
   const dark = await browser.newContext({ viewport: { width: 390, height: 844 }, colorScheme: 'dark' });
+  await dark.route(/^https?:\/\/(?!localhost)/, (r) => r.abort());
   await dark.route(/fonts\.googleapis|fonts\.gstatic|cdn\.jsdelivr/, (r) => r.abort());
   const dp = await dark.newPage();
   await dp.goto(BASE + '?mock=1', { waitUntil: 'domcontentloaded' });

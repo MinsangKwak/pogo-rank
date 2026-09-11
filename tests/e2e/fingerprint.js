@@ -42,7 +42,7 @@ const PROPS = ['display','position','color','background-color','border-top-width
       await page.waitForSelector('#splash', { state: 'detached', timeout: 12000 }).catch(() => {});
       if (action !== 'consent') {
         await page.evaluate(() => { try { localStorage.setItem('pogo_consent', 'denied'); } catch {} });
-        await page.locator('#consent .uchip:last-child').click().catch(() => {});
+        await page.locator('#consent .uchip:last-child').click({ timeout: 1500 }).catch(() => {});
       }
       await page.waitForTimeout(150);
       try {

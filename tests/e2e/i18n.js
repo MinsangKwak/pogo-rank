@@ -26,7 +26,7 @@ const hangul = (text) => /[가-힣]/.test(text || '');
   const go = async (hash = '') => {
     await page.goto(BASE + hash, { waitUntil: 'domcontentloaded' });
     await page.waitForSelector('#splash', { state: 'detached', timeout: 15000 }).catch(() => {});
-    await page.locator('#consent .consent__deny').click().catch(() => {});
+    await page.locator('#consent .consent__deny').click({ timeout: 1500 }).catch(() => {});
     await page.waitForTimeout(400);
   };
 

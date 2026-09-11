@@ -60,7 +60,7 @@ const ok = (n, c, x = '') => { console.log((c ? 'PASS' : 'FAIL') + ' ' + n + ' '
 
   await page.goto(BASE, { waitUntil: 'domcontentloaded' });
   await page.waitForSelector('#splash', { state: 'detached', timeout: 15000 }).catch(() => {});
-  await page.locator('#consent .consent__deny').click().catch(() => {});
+  await page.locator('#consent .consent__deny').click({ timeout: 1500 }).catch(() => {});
   await page.waitForTimeout(500);
   // 이 컨텍스트에서 재사용할 정상 동작 signInWithPopup 을 미리 잡아 둔다(뒤에서 여러 번 덮어쓴다)
   await page.evaluate(() => { window.__origSignInWithPopup = firebase.auth().signInWithPopup.bind(firebase.auth()); });

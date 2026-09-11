@@ -23,7 +23,7 @@ const ok = (n, c, x = '') => { console.log((c ? 'PASS' : 'FAIL') + ' ' + n + (x 
 
   await page.goto(BASE + '#/styleguide', { waitUntil: 'domcontentloaded' });
   await page.waitForSelector('#splash', { state: 'detached', timeout: 15000 }).catch(() => {});
-  await page.locator('#consent .consent__deny').click().catch(() => {});
+  await page.locator('#consent .consent__deny').click({ timeout: 1500 }).catch(() => {});
   await page.waitForTimeout(800);
 
   const version = await page.locator('.drawer__meta, .app-bar__version').first().textContent().catch(() => '');

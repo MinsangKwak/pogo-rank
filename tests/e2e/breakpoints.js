@@ -20,7 +20,7 @@ const ok = (n, c, x = '') => { console.log((c ? 'PASS' : 'FAIL') + ' ' + n + ' '
   const openDexDetail = async (page) => {
     await page.goto(BASE + '#/dex', { waitUntil: 'domcontentloaded' });
     await page.waitForSelector('#splash', { state: 'detached', timeout: 15000 }).catch(() => {});
-    await page.locator('#consent .consent__deny').click().catch(() => {});
+    await page.locator('#consent .consent__deny').click({ timeout: 1500 }).catch(() => {});
     await page.waitForTimeout(500);
     await page.locator('#page .dex__row').first().click();
     await page.waitForTimeout(400);
@@ -89,6 +89,7 @@ const ok = (n, c, x = '') => { console.log((c ? 'PASS' : 'FAIL') + ' ' + n + ' '
   // 티어표는 위에서부터 순서대로 훑는 화면이라 좁은 화면에서는 한 줄에 하나여야 한다
   for (const [label, width, wantCard] of [['휴대폰 390', 390, false], ['태블릿 800', 800, false], ['PC 1440', 1440, true]]) {
     const ctx = await browser.newContext({ viewport: { width, height: 900 } });
+    await ctx.route(/^https?:\/\/(?!localhost)/, (r) => r.abort());
     const page = await ctx.newPage();
     for (const route of ['dmax', 'pve', 'pvp']) {
       await page.goto(`${BASE}#/${route}`, { waitUntil: 'domcontentloaded' });
@@ -109,6 +110,7 @@ const ok = (n, c, x = '') => { console.log((c ? 'PASS' : 'FAIL') + ' ' + n + ' '
   // 2026-09-10 v2.53.0 휴대폰 상세 팝업은 화면의 75% 까지만 — 다 덮으면 팝업이 아니라 새 화면으로 읽힌다
   {
     const ctx = await browser.newContext({ viewport: { width: 390, height: 844 } });
+    await ctx.route(/^https?:\/\/(?!localhost)/, (r) => r.abort());
     const page = await ctx.newPage();
     await page.goto(`${BASE}#/dex`, { waitUntil: 'domcontentloaded' });
     await page.waitForSelector('#splash', { state: 'detached', timeout: 15000 }).catch(() => {});

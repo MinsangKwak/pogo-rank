@@ -33,7 +33,7 @@ const ok = (n, c, x = '') => { console.log((c ? 'PASS' : 'FAIL') + ' ' + n + ' '
 
   await page.goto(BASE, { waitUntil: 'domcontentloaded' });
   await page.waitForSelector('#splash', { state: 'detached', timeout: 15000 }).catch(() => {});
-  await page.locator('#consent .consent__deny').click().catch(() => {});
+  await page.locator('#consent .consent__deny').click({ timeout: 1500 }).catch(() => {});
   await page.waitForTimeout(800);
 
   // ── 1. 버튼이 있고, 처음은 기기 설정을 따른다

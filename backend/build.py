@@ -110,7 +110,7 @@ json.dump(pvp_all, open('data/pvp_all.json', 'w', encoding='utf-8'), ensure_asci
 
 # ── frontend/ 의 CSS·JS를 순서대로 인라인해 단일 dist/index.html 조립 ──
 # 순서가 곧 캐스케이드(CSS)·실행 순서(JS)이므로 새 파일은 여기 목록에 추가
-APP_VERSION = 'v2.56.0'  # 공유 링크 팝업이 ✕ 로 안 닫히던 버그 · 로그인 팝업 버튼 가운데
+APP_VERSION = 'v2.57.0'  # 배포본에서 주석·공백을 걷어낸다 (화면 변화 없음)
 # 2026-09-05 v2.7.3 빌드 채널 — 'prod'(기본) / 'dev'. dev 브랜치 워크플로(.github/workflows/deploy-dev.yml)가 BUILD_CHANNEL=dev 로 부른다.
 # dev 빌드는 (1) 버전 배지에 -dev 를 붙여 화면에서 구분되고 (2) GA 스니펫을 넣지 않아 통계가 섞이지 않고
 # (3) robots.txt 를 전부 차단 + <meta name="robots" content="noindex"> 로 검색 색인을 막는다. 나머지는 prod 와 동일
@@ -188,6 +188,101 @@ SCRIPTS = [
 if BUILD_CHANNEL == 'dev':
     STYLES.append('components/styleguide.css')
     SCRIPTS.insert(SCRIPTS.index('components/pages.js') + 1, 'components/styleguide.js')
+# 2026-09-11 v2.57.0 data.js 의 공백을 줄인다. json.dumps 는 기본이 `", "` · `": "` 라
+# 항목마다 공백 두 개가 붙는데, 1,172종 × 필드 수만큼 쌓이면 실측 194KB 다.
+# 값은 한 글자도 바뀌지 않는다 — 사이의 공백만 없앤다.
+JSON_TIGHT = (',', ':')
+
+# ── 배포본에서 주석 걷어내기 (2026-09-11 v2.57.0) ───────────────────────────
+# 이 저장소의 주석은 "왜 이렇게 했는가" 를 길게 적는다 — 그게 이 코드의 값어치다.
+# 다만 그건 **읽는 사람**에게 값어치가 있는 것이고, 브라우저는 매번 그만큼을 더 받아 더 읽는다.
+# 실측: 배포본 752KB 중 주석이 227KB(30%)였다. 원본은 그대로 두고 **나가는 것만** 걷어낸다.
+#
+# 안전선을 분명히 둔다 — 조금 덜 걷어내더라도 절대 깨뜨리지 않는다.
+#   · JS 는 **줄 전체가 주석인 줄만** 지운다. 코드 뒤에 붙은 주석(` // …`)은 문자열 안일 수 있어
+#     손대지 않는다 (실측 5.6KB 뿐이라 아낄 것도 별로 없다).
+#   · 여러 줄 백틱(템플릿 리터럴) 안은 통째로 건너뛴다 — 그 안의 `//` 로 시작하는 줄은 주석이 아니라 글자다.
+#   · CSS 는 문자열(' ")을 건너뛰며 /* */ 만 지운다 — content:"/*" 같은 것을 깨지 않는다.
+#   · @license · @preserve 가 든 줄은 남긴다.
+# 파일 머리말(`── 파일명 ──`)은 bundle() 이 **걷어낸 뒤에** 붙이므로 배포본에도 남는다 —
+# 합쳐진 코드에서 어느 파일에서 왔는지는 배포본에서도 알 수 있어야 한다.
+
+def _keep(line):
+    return '@license' in line or '@preserve' in line
+
+def strip_js_comments(src):
+    out, in_block, in_tpl = [], False, False
+    for line in src.split('\n'):
+        stripped = line.strip()
+        if in_tpl:                       # 템플릿 리터럴 안 — 글자다, 손대지 않는다
+            out.append(line)
+            if _backticks(line) % 2 == 1: in_tpl = False
+            continue
+        if in_block:
+            end = line.find('*/')
+            if end < 0: continue          # 아직 주석 안 — 줄째로 버린다
+            in_block = False
+            rest = line[end + 2:]
+            if rest.strip(): out.append(rest)
+            continue
+        if stripped.startswith('//') and not _keep(line):
+            continue
+        if stripped.startswith('/*') and not _keep(line):
+            end = line.find('*/', stripped.index('/*') + 2)
+            if end < 0:
+                in_block = True
+                continue
+            rest = line[end + 2:]
+            if rest.strip(): out.append(rest)
+            continue
+        out.append(line)
+        if _backticks(line) % 2 == 1: in_tpl = True
+    # 걷어내고 남은 빈 줄이 잇따르면 하나로 줄인다 (읽기에도, 크기에도 낫다)
+    packed, blank = [], False
+    for line in out:
+        if line.strip():
+            packed.append(line); blank = False
+        elif not blank:
+            packed.append(''); blank = True
+    return '\n'.join(packed)
+
+def _backticks(line):
+    # 이스케이프되지 않은 백틱 수 — 홀수면 이 줄에서 템플릿이 열리거나 닫힌다
+    count, i = 0, 0
+    while i < len(line):
+        if line[i] == '\\': i += 2; continue
+        if line[i] == '`': count += 1
+        i += 1
+    return count
+
+def strip_css_comments(src):
+    out, i, n, quote = [], 0, len(src), None
+    while i < n:
+        char = src[i]
+        if quote:
+            out.append(char)
+            if char == '\\' and i + 1 < n: out.append(src[i + 1]); i += 2; continue
+            if char == quote: quote = None
+            i += 1; continue
+        if char in '"\'':
+            quote = char; out.append(char); i += 1; continue
+        if char == '/' and i + 1 < n and src[i + 1] == '*':
+            end = src.find('*/', i + 2)
+            block = src[i:(n if end < 0 else end + 2)]
+            if _keep(block): out.append(block)
+            i = n if end < 0 else end + 2
+            continue
+        out.append(char); i += 1
+    # 주석만 있던 줄이 빈 줄로 남는다 — 잇따른 빈 줄을 하나로
+    lines, packed, blank = ''.join(out).split('\n'), [], False
+    for line in lines:
+        if line.strip():
+            packed.append(line.rstrip()); blank = False
+        elif not blank:
+            packed.append(''); blank = True
+    return '\n'.join(packed)
+
+
 def bundle(folder, files, mark):
     # frontend/<folder>/ 의 파일들을 목록 순서 그대로 이어붙인다.
     # 조각마다 `── 파일명 ──` 머리말을 달아 합쳐진 뒤에도 어느 파일에서 온 코드인지 알 수 있게 한다.
@@ -195,12 +290,25 @@ def bundle(folder, files, mark):
     parts = []
     for filename in files:
         heading = f'{mark} ── {filename} ──{" */" if mark == "/*" else ""}\n'
-        parts.append(heading + open(f'frontend/{folder}/{filename}', encoding='utf-8').read().strip())
+        raw = open(f'frontend/{folder}/{filename}', encoding='utf-8').read().strip()
+        cleaned = strip_css_comments(raw) if mark == '/*' else strip_js_comments(raw)
+        parts.append(heading + cleaned.strip())
     return '\n\n'.join(parts)
 
 # 아직 만들어지지 않은 데이터 파일(build.py 1차 실행 시점)은 빈 객체로 대체한다
 def optional_json(path):
-    return open(path, encoding='utf-8').read() if os.path.exists(path) else '{}'
+    # 2026-09-11 v2.57.0 파일을 그대로 붙이지 않고 한 번 되감아 공백을 줄인다.
+    # 앞 단계(pve_build.py 등)가 만든 json 은 사람이 읽으라고 기본 구분자(`", "` · `": "`)로 저장돼 있는데,
+    # 배포본에 그대로 실리면 항목마다 공백 두 개가 따라간다 — DEX_DATA·BOSS_LIST 처럼 큰 것에서 많이 쌓인다.
+    # json 을 다시 읽어 다시 쓰므로 **값은 그대로고 사이의 공백만** 없어진다.
+    # 깨진 json 이면 되감지 않고 원문을 그대로 넘긴다 — 여기서 배포를 막을 이유가 없다.
+    if not os.path.exists(path):
+        return '{}'
+    raw = open(path, encoding='utf-8').read()
+    try:
+        return json.dumps(json.loads(raw), ensure_ascii=False, separators=JSON_TIGHT)
+    except Exception:
+        return raw
 
 # 2026-09-03 v2.0.0: 데이터는 dist/data.js 별도 파일, 스프라이트는 개별 png + lazy 로딩
 # SPRITE_INLINE=1 환경변수면 옛 방식(단일 HTML, base64 인라인) — 채팅 미리보기용
@@ -256,14 +364,14 @@ if pve_tables and dmax_tables:
 # 프론트가 읽는 전역 데이터. 각 상수는 대응하는 뷰가 그대로 참조한다
 # (없는 파일은 optional_json이 '{}'로 채우므로 1차 실행에서도 문법 오류가 나지 않는다)
 data_js = f'''// 빌드 생성 데이터 (backend/build.py) — 기준일 {game_master['timestamp']}
-const TYPE_KO = {json.dumps(TYPE_KO, ensure_ascii=False)};
+const TYPE_KO = {json.dumps(TYPE_KO, ensure_ascii=False, separators=JSON_TIGHT)};
 // 2026-09-08 v2.29.0 다국어 — 타입 이름 영문. TYPE_KO 와 키가 같아야 typeName(t) 이 한 줄로 갈린다
-const TYPE_EN = {json.dumps(TYPE_EN, ensure_ascii=False)};
+const TYPE_EN = {json.dumps(TYPE_EN, ensure_ascii=False, separators=JSON_TIGHT)};
 // 2026-09-06 v2.10.0 이름 앞에 붙는 폼 라벨 목록 (backend/names.py FORM_KO 값 + 섀도우·다이맥스·거다이맥스) — components/name.js 가 이름을 [라벨 뱃지 + 종 이름]으로 가른다
-const FORM_LABELS = {json.dumps(sorted({label for label in FORM_KO.values() if label} | {'섀도우', '다이맥스', '거다이맥스'}, key=len, reverse=True), ensure_ascii=False)};
-const PVP_DATA = {json.dumps(pvp, ensure_ascii=False)};
-const PVE_DATA = {json.dumps(pve_tables, ensure_ascii=False) if pve_tables else optional_json('data/pve.json')};
-const PVE_EASY = {json.dumps(pve_easy_tables, ensure_ascii=False) if pve_easy_tables else optional_json('data/pve_easy.json')};
+const FORM_LABELS = {json.dumps(sorted({label for label in FORM_KO.values() if label} | {'섀도우', '다이맥스', '거다이맥스'}, key=len, reverse=True), ensure_ascii=False, separators=JSON_TIGHT)};
+const PVP_DATA = {json.dumps(pvp, ensure_ascii=False, separators=JSON_TIGHT)};
+const PVE_DATA = {json.dumps(pve_tables, ensure_ascii=False, separators=JSON_TIGHT) if pve_tables else optional_json('data/pve.json')};
+const PVE_EASY = {json.dumps(pve_easy_tables, ensure_ascii=False, separators=JSON_TIGHT) if pve_easy_tables else optional_json('data/pve_easy.json')};
 const DMAX_DATA = {optional_json('data/dynamax.json')};
 const DMAX_TANK = {optional_json('data/dynamax_tank.json')};   // 2026-09-07 v2.13.0 (QA-43) 보스 속성별 다이맥스 탱커(EHP) 순위
 const MAX_POOL = {optional_json('data/max_pool.json')};   // 2026-09-04 맥스 배틀 포획 가능 종 (스프라이트 id → 'G'|'D')
@@ -271,9 +379,9 @@ const MOVE_CHANGES = {optional_json('data/move_changes.json')};   // 2026-09-04 
 const ROLES = {optional_json('data/roles.json')};                 // 2026-09-05 PvE/PvP 역할 자동 분류 근거 (backend/roles_build.py)
 const RANK_DELTA_DATE = {json.dumps(rank_delta_date)};            // 2026-09-04 순위 변동을 기록한 날 (뱃지 유효기간 계산용)
 const RANK_FRESH_DAYS = {rank_fresh_days};                        // 이 일수가 지나면 변동 뱃지를 감춘다
-const DMAX_TIER = {json.dumps(dmax_tables, ensure_ascii=False) if dmax_tables else optional_json('data/dynamax_tier.json')};
-const VALUE_DATA = {json.dumps(value_tables, ensure_ascii=False) if value_tables else optional_json('data/value.json')};
-const SHEET_DATA = {json.dumps(sheet_tables, ensure_ascii=False) if sheet_tables else optional_json('data/sheet.json')};
+const DMAX_TIER = {json.dumps(dmax_tables, ensure_ascii=False, separators=JSON_TIGHT) if dmax_tables else optional_json('data/dynamax_tier.json')};
+const VALUE_DATA = {json.dumps(value_tables, ensure_ascii=False, separators=JSON_TIGHT) if value_tables else optional_json('data/value.json')};
+const SHEET_DATA = {json.dumps(sheet_tables, ensure_ascii=False, separators=JSON_TIGHT) if sheet_tables else optional_json('data/sheet.json')};
 const DEX_DATA = {optional_json('data/dex.json')};
 const BOSS_LIST = {optional_json('data/bosses.json') or '[]'};
 const GAMEDAY = {optional_json('data/gameday.json')};              // 2026-09-08 v2.25.0 레이드 보스·알 부화 풀·이벤트 원본 (backend/gameday_build.py)
