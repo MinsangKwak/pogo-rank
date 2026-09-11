@@ -34,7 +34,7 @@ const NORMAL_UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 
     page.on('console', (m) => consoleLines.push(m.text()));
     await page.goto(BASE + '#/dex', { waitUntil: 'domcontentloaded' });
     await page.waitForSelector('#splash', { state: 'detached', timeout: 15000 }).catch(() => {});
-    await page.locator(consent === 'allow' ? '#consent .consent__allow' : '#consent .consent__deny').click().catch(() => {});
+    await page.locator(consent === 'allow' ? '#consent .consent__allow' : '#consent .consent__deny').click({ timeout: 1500 }).catch(() => {});
     await page.waitForTimeout(400);
     return page;
   };

@@ -20,7 +20,11 @@ const ok = (name, cond, extra = '') => results.push([cond ? 'PASS' : 'FAIL', nam
   const settle = async () => {
     await page.waitForSelector('#splash', { state: 'detached', timeout: 15000 }).catch(() => {});
     await page.evaluate(() => { try { localStorage.setItem('pogo_consent', 'denied'); } catch {} });
-    await page.locator('#consent .consent-deny').click().catch(() => {});
+    // 2026-09-11 v2.57.0 선택자가 `.consent-deny` 였다 — 실제 클래스는 `.consent__deny` 다(BEM).
+    // 맞는 게 없으니 click() 이 **기본 30초** 를 꽉 기다렸고, .catch() 가 그걸 조용히 삼켰다.
+    // settle() 을 여덟 번 부르므로 이 스위트 혼자 240초를 거기에 썼다 (실측 253초 중).
+    // 없어도 되는 클릭에는 짧은 한도를 둔다 — 선택자가 또 어긋나도 30초가 아니라 1.5초만 잃는다
+    await page.locator('#consent .consent__deny').click({ timeout: 1500 }).catch(() => {});
     await page.waitForTimeout(250);
   };
 
