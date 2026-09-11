@@ -135,6 +135,37 @@ const LEGACY = [
   ok('상세 딥링크가 패널을 연다', await page.locator('#detail-panel').isVisible());
   ok('딥링크 라우트 id = mon', (await page.evaluate(() => document.body.dataset.route)) === 'mon');
 
+  // ── 공유 링크로 바로 들어온 팝업이 ✕ 로 닫히는가 (2026-09-11 v2.56.0)
+  //
+  // 좁은 화면에서는 상세가 팝업이다. 공유 링크로 **바로** 들어오면 히스토리 항목이 하나뿐이고
+  // 그게 #/mon/… 인데, 팝업이 같은 주소로 하나 더 쌓아 위아래가 둘 다 #/mon/… 이 됐다.
+  // 그래서 닫을 때 history.back() 이 아래 항목으로 내려가고 라우터가 그 해시를 읽어 다시 열었다 —
+  // 사용자 눈에는 "✕ 를 눌러도 안 닫힌다" 로 보였다. 목록에서 열 때는 아래 항목이 깨끗해 안 났다.
+  {
+    const ctx = await browser.newContext({ viewport: { width: 390, height: 844 } });
+    await ctx.route(/^https?:\/\/(?!localhost)/, (r) => r.abort());
+    const narrow = await ctx.newPage();
+    narrow.on('pageerror', (e) => errs.push('mobile:' + e));
+    await narrow.goto(BASE + '#/mon/6', { waitUntil: 'domcontentloaded' });
+    await narrow.reload({ waitUntil: 'domcontentloaded' });   // 찬 시작 — 공유 링크를 처음 여는 상황
+    await narrow.waitForSelector('#splash', { state: 'detached', timeout: 15000 }).catch(() => {});
+    await narrow.waitForTimeout(700);
+    await narrow.locator('#consent .consent__deny').click().catch(() => {});
+    await narrow.waitForTimeout(400);
+    const shown = () => narrow.evaluate(() => !!document.querySelector('dialog.modal[open]'));
+    ok('좁은 화면: 공유 링크가 팝업을 연다', await shown());
+    await narrow.locator('.modal__close').first().click({ force: true });
+    await narrow.waitForTimeout(600);
+    ok('좁은 화면: ✕ 로 닫힌다', !(await shown()));
+    ok('닫으면 주소에서 #/mon 이 사라진다', !/^#\/mon\//.test(await narrow.evaluate(() => location.hash)),
+      await narrow.evaluate(() => location.hash) || '(비어 있음)');
+    // 뒤로가기로도 다시 열리지 않아야 한다 — 되살아나면 같은 버그가 다른 길로 난 것이다
+    await narrow.goBack().catch(() => {});
+    await narrow.waitForTimeout(600);
+    ok('뒤로가기로도 되살아나지 않는다', !(await shown()));
+    await ctx.close();
+  }
+
   ok('페이지 오류 없음', errs.length === 0, errs.join(' | ').slice(0, 200));
   await browser.close();
   console.log(`${pass}/${pass + fail} passed`);

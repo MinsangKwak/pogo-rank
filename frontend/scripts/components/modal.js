@@ -47,6 +47,22 @@ function openModal(content) {
   overlay.addEventListener('cancel', (event) => { event.preventDefault(); closeModal(); });
   overlay.showModal();
   syncScrollLock();   // 팝업 뒤의 본문이 같이 스크롤되지 않게 잠근다
+  // 2026-09-11 v2.56.0 공유 링크(#/mon/…)로 **바로** 들어온 경우를 먼저 바로잡는다.
+  //
+  // 그 경우 히스토리에 항목이 하나뿐이고 그게 #/mon/… 이다. 여기서 pushOverlayEntry 가
+  // 같은 주소로 하나 더 쌓으면 위아래가 **둘 다** #/mon/… 이 된다. 그러면 ✕ 를 눌렀을 때
+  // closeModal 의 history.back() 이 아래 항목(#/mon/…)으로 내려가고, 라우터가 그 해시를 읽어
+  // 팝업을 곧바로 다시 연다 — 사용자 눈에는 "✕ 를 눌러도 안 닫힌다" 로 보인다.
+  //
+  // 그래서 쌓기 전에 지금 항목의 해시를 지워 **깨끗한 바탕**을 만든다. 그 위에 오버레이 항목이
+  // 올라가고, 주소의 #/mon/… 은 detail.js 가 이 함수 바로 뒤에서 다시 넣는다(그쪽 replaceState).
+  // 결과는 [아래: 해시 없음][위: #/mon/…] 로, 목록에서 열었을 때와 같은 모양이 된다.
+  //
+  // 목록에서 연 경우는 이 시점에 해시가 아직 #/mon/… 이 아니라(detail.js 가 openModal **뒤에** 넣는다)
+  // 아무 일도 하지 않는다 — 그 경우는 원래부터 아래 항목이 깨끗했다.
+  if (/^#\/mon\//.test(location.hash)) {
+    try { history.replaceState(history.state, '', location.pathname + location.search); } catch {}
+  }
   pushOverlayEntry();
 }
 
