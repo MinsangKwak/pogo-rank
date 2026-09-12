@@ -39,7 +39,7 @@ from sprite import sprite_id
 from names import name_ko, species, FORM_KO
 
 # ── 설정 ─────────────────────────────────────────────────────────────────────
-APP_VERSION = 'v3.15.0'  # 도감 — 누른 줄 표시 · 진화 단계를 누르면 목록이 따라간다
+APP_VERSION = 'v3.16.0'  # 잠시 써보기 — 잠긴 화면을 20초 열어 주고 세 번이면 가입을 권한다
 # 2026-09-05 v2.7.3 빌드 채널 — 'prod'(기본) / 'dev'. dev 브랜치 워크플로(.github/workflows/deploy-dev.yml)가 BUILD_CHANNEL=dev 로 부른다.
 # dev 빌드는 (1) 버전 배지에 -dev 를 붙여 화면에서 구분되고 (2) GA 스니펫을 넣지 않아 통계가 섞이지 않고
 # (3) robots.txt 를 전부 차단 + <meta name="robots" content="noindex"> 로 검색 색인을 막는다. 나머지는 prod 와 동일
@@ -114,6 +114,7 @@ STYLES = [
     'components/finder.css', 'components/ivrank.css', 'components/tag.css', 'components/modal.css', 'components/search.css', 'components/drawer.css', 'components/pages.css',
     'components/planner.css',  # 2026-09-07 v2.15.0 🌱 플래너 모드 (QA-53·54)
     'components/consent.css',
+    'components/trial.css',    # 2026-09-12 v3.16.0 잠시 써보기 배지·버튼
     'components/app-shell.css',
     # 2026-09-10 v2.42.0 넓은 화면 전용 디자인 — 앞의 모든 규칙을 덮어써야 하므로 맨 끝
     'components/pc-theme.css',
@@ -137,6 +138,7 @@ SCRIPTS = [
     # 번들은 <script> 하나라 함수 선언은 위아래로 다 보이지만 const 는 TDZ 라 실행 순서를 탄다
     'components/theme.js',    # 2026-09-10 v2.47.0 밝게/어둡게 전환 (헤더 버튼 · 계정 저장)
     'components/settings.js', # 2026-09-12 v3.11.0 설정 화면 — theme 다음, pages 앞
+    'components/trial.js',    # 2026-09-12 v3.16.0 잠시 써보기 — pages 앞 (첫 렌더의 routeLocked 가 trialActive 를 부른다)
     'components/pages.js',
     'components/trainers.js', 'components/totop.js',  # 2026-09-12 v3.4.0 favdigest 제거 — ★ 즐겨찾기 기능을 걷어냈다
     'views/pvp.js', 'views/pve.js', 'views/max.js', 'views/tier.js', 'views/usage.js', 'views/ifsolo.js',  # 2026-09-02 if 탭

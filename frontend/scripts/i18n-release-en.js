@@ -15,6 +15,10 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 const RELEASE_NOTES_EN = {
+  '2026-09-12 · v3.16.0': [
+    '**Locked screens can be tried for 20 seconds without signing in** — tap [⏱ Try it briefly] on the lock notice and the screen opens while a badge in the top-right counts down. When time is up it locks again and the sign-in notice returns.',
+    '**Three tries** — after the third, the button is replaced by "Time to sign up 🙂". Asking you to sign in to an approval-gated service before you have seen anything was the wrong order, so now we show first and ask after.',
+  ],
   '2026-09-12 · v3.15.0': [
     '**The Pokémon you tapped in the Pokédex stays marked** — on wide screens only the right-hand panel changed and the list kept no trace, so you lost track of what you had opened. The row now keeps the same look as when you hover over it.',
     '**Tapping an evolution stage moves the list along** — open Venusaur from Bulbasaur and the list scrolls to and marks the Venusaur row as the panel changes. If it sits behind [More], the list expands that far.',
