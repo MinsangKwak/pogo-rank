@@ -173,12 +173,21 @@ h1, h2, .page-head h2, .detail__name, .home__intro h2, .page__sec { line-height:
 /* 화면 머리의 동작 슬롯 — 좁은 화면에서는 위아래로 쌓는다 (2026-09-12 v3.7.1).
    레이드 · PvE 는 [일반|전체] 와 [리스트|그리드] 둘이 오른쪽에 나란히 서느라
    화면 제목이 남은 폭으로 밀려 두 줄이 됐다. 세로로 쌓으면 제목이 한 줄에 들어온다 */
+/* 2026-09-12 v3.10.0 동작 버튼은 좁은 화면에서도 **가로 한 줄**이다.
+   v3.7.1 에 위아래로 쌓고 v3.7.1 에 리그 넷을 2×2 로 만든 것을 되돌린다 —
+   쌓아 놓으니 제목 오른쪽에 버튼 탑이 서서 머리가 두 배로 높아졌다.
+   대신 머리를 한 칸으로 바꿔 버튼 줄이 제목 **아래 제 줄**을 쓰게 한다.
+   그러면 제목을 밀지 않으므로 옆으로 늘어놓아도 자리가 넉넉하다 */
 @media (max-width: 699px) {
-  .page-head__actions { flex-direction: column; align-items: flex-end; gap: 0.6rem; }
-  /* 리그 넷(배틀 · PvP)은 한 줄에 다 못 들어간다 — 두 칸씩 두 줄로.
-     :has 로 칸이 넷 이상일 때만 건다. D-MAX 의 [전체|딜러|탱커] 셋은 2×2 로 만들면
-     마지막 칸이 비어 한 칸이 빠진 것처럼 보인다 */
-  .page-head__actions .seg:has(> button:nth-child(4)) { display: grid; grid-template-columns: 1fr 1fr; }
+  .page-head { grid-template-columns: minmax(0, 1fr); }
+  .page-head__actions {
+    grid-column: 1; grid-row: auto; align-self: auto; justify-self: stretch;
+    flex-wrap: nowrap; gap: 0.6rem; margin-top: 1.2rem;
+  }
+  /* 칸이 넷이면(배틀 · PvP 의 리그) 글자를 한 단 줄여 한 줄에 들인다 */
+  .page-head__actions .seg { min-width: 0; }
+  .page-head__actions .seg button { min-width: 0; padding-left: 1rem; padding-right: 1rem; }
+  .page-head__actions .seg:has(> button:nth-child(4)) button { padding-left: 0.7rem; padding-right: 0.7rem; font-size: 1.2rem; }
 }
 
 /* 빈 컨트롤 줄 — 서비스 홈처럼 걸 것이 없는 화면에서도 위아래 여백(20 + 40px)만으로

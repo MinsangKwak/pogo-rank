@@ -94,29 +94,13 @@ function monSearch(candidates, query, limit = 8) {
   return hits.slice(0, limit);
 }
 
-// 2026-09-06 v2.9.0 검색 후보 옆 "어디 몇 위" 한 줄 — 즐겨찾기 페이지와 같은 근거(ROLES).
-// 폼 단위 키('도감번호|폼라벨')를 먼저 보고, 없으면 종 단위 최고 순위(autoRoleOf)로 되돌아간다
-function searchRankText(spriteId) {
-  if (typeof ROLES === 'undefined' || !ROLES || typeof roleWhereLabel !== 'function') return '';
-  const dex = dexOf(spriteId);
-  if (dex == null) return '';
-  const label = DEX_DATA.forms?.[spriteId]?.name ?? '';
-  const formKey = `${dex}|${label}`;
-  const pve = ROLES.pve?.[formKey] ?? ROLES.dexPve?.[String(dex)] ?? null;
-  const pvp = ROLES.pvp?.[formKey] ?? ROLES.dexPvp?.[String(dex)] ?? null;
-  const parts = [];
-  if (pve) parts.push(`${roleWhereLabel('pve', pve[0])} ${pve[1]}위`);
-  if (pvp) parts.push(`${roleWhereLabel('pvp', pvp[0])} ${pvp[1]}위`);
-  return parts.join(' · ');
-}
-
 // ── 2026-09-06 v2.12.0 전역 검색 = 이름 + 타입 ────────────────────────────────
 // 상성 검색 페이지의 "타입 칩 → 그 조합의 포켓몬" 이 쓸 만해서 헤더 검색에도 붙였다. 한 입력창으로 셋을 처리한다.
 //   (1) 이름:            "메타그로스"          → 지금까지처럼 이름 후보
 //   (2) 타입:            칩 [물][풀] 또는 "물 풀" → 그 조합의 포켓몬 목록 (searchTypePool)
 //   (3) 이름 + 타입:     칩 [물] + "메가"        → 물 타입 중 이름에 '메가'가 든 것
 // 타입은 칩으로 골라도 되고 글자로 쳐도 된다 — "물 풀", "물·풀", "물타입" 전부 같다. 최대 2개.
-// 패널은 여덟 줄까지만 보여 준다. 전부는 도감에서 본다 (2026-09-12 v3.9.0, searchSubmit).
+// 패널은 조건을 받는 곳이다. 결과는 도감에서 본다 (2026-09-12 v3.10.0, searchSubmit).
 
 const SEARCH_TYPES = [];          // 칩으로 고른 타입 (최대 2)
 let _searchTrackKey = '';         // 같은 타입 조합을 입력할 때마다 GA 를 찍지 않기 위한 마지막 기록
@@ -132,9 +116,10 @@ function searchTypePool(types) {
   return buildSearchIndex().filter((pokemon) => types.every((typeKey) => pokemon.types?.includes(typeKey)));
 }
 
-// 2026-09-12 v3.9.0 검색 결과는 도감에서 본다.
-// 패널은 여덟 줄까지만 보여 주는 자리다 — 그 아래를 보려면 검색어를 더 좁히는 수밖에 없었다.
-// 조건을 주소에 실어 도감으로 넘기면 전부가 도감의 목록·그리드 보기로 그려진다 (pages.js renderDexPage)
+// 2026-09-12 v3.9.0 검색 결과는 도감에서 본다 · v3.10.0 패널에서는 아예 안 그린다.
+// v3.9.0 은 여덟 줄을 패널에 그리고 나머지를 도감으로 넘겼는데, 그러면 같은 목록을 두 곳에서
+// 그리는 셈이고 정작 패널에 뜬 여덟 줄이 "결과" 처럼 보여 도감까지 가지 않게 된다.
+// 이제 패널은 조건을 받는 곳이고, 결과는 도감 한 곳에서만 그린다 (pages.js renderDexPage)
 function searchSubmit() {
   const $input = document.getElementById('psearch');
   const { types: typedTypes, query } = parseSearchQuery($input.value);
@@ -221,7 +206,7 @@ function renderSearchResults() {
   // 전에는 monSearch(…, 8) 로 여덟 개만 받아 와 `"메타" 8마리` 처럼 잘린 수를 진짜 수인 양 적었다.
   // 색인은 수천 줄이라 전부 훑어도 한 번의 입력에서 티가 나지 않는다
   const found = query ? monSearch(candidates, query, Infinity) : candidates;
-  const hits = found.slice(0, 8);  // 패널이 화면을 다 덮지 않게 여덟 줄까지만
+  const hits = found;   // 2026-09-12 v3.10.0 자를 이유가 없어졌다 — 여기서는 수만 적는다
   if (types.length) {
     const label = types.map((typeKey) => TYPE_KO[typeKey]).join('·');
     const key = types.join(',');
@@ -235,29 +220,14 @@ function renderSearchResults() {
   } else {
     $sugg.append(el('div', { class: 'sugg__head' }, el('b', {}, `"${query}" ${found.length}마리`), searchAllChip(found.length)));
   }
-  for (const pokemon of hits) {
-    // 후보를 고르면 검색창과 목록을 함께 비우고 상세 팝업을 띄운다
-    // (팝업 뒤에 후보 목록이 남아 있으면 닫았을 때 지저분해 보인다)
-    // 줄 마크업은 monSuggestRow 하나로 — 플래너의 [개체 추가] 창도 같은 줄을 쓴다.
-    // 여기만 덧붙이는 것: 활용 뱃지(v2.16.0)와 순위 근거(v2.9.0)
-    const rankText = searchRankText(pokemon.sprite);
-    $sugg.append(monSuggestRow(pokemon, () => {
-      track('search_pick', { mon: pokemon.name, t: types.join(',') });  // 2026-09-06 v2.9.0 GA4: 검색으로 고른 포켓몬 · v2.12.0 t: 타입 필터
-      openDetail(pokemon, false, 'search');
-    },
-      typeof usageBadge === 'function' ? usageBadge(pokemon.name) : '',  // 2026-09-07 v2.16.0 활용 N곳 (옛 활용처 탭의 요약)
-      rankText ? el('span', { class: 'sugg__rank' }, rankText) : ''));
-  }
   if (!hits.length) {
     $sugg.append(el('span', { class: 'sugg__none' }, types.length ? '이 타입 조합에 맞는 포켓몬이 없어요' : '검색 결과가 없어요'));
     if (query) track('search_none', { q: query.slice(0, 20), t: types.join(',') });  // 2026-09-06 v2.9.0 GA4: 못 찾은 검색어 — 별칭·표기 보강 근거
+    return;
   }
-  // 2026-09-12 v3.9.0 여덟 줄에서 잘렸으면 나머지가 어디 있는지 알린다 — 도감이다.
-  // (v2.63.0 에 '상성 검색에서 전부 보기' 를 뗀 뒤로는 잘렸다는 사실만 적어 두고 갈 곳이 없었다)
-  if (hits.length < found.length) {
-    $sugg.append(el('button', { class: 'sugg__all-row', onclick: searchSubmit },
-      `나머지 ${found.length - hits.length}마리는 도감에서 보기 ›`));
-  }
+  // 결과는 도감에서 본다. 여기서는 "몇 마리인지" 와 "보러 가기" 만 준다 —
+  // 좁은 패널 안에 여덟 줄을 그려 봐야 나머지는 못 보고, 같은 목록을 두 곳에서 그릴 이유도 없다
+  $sugg.append(el('button', { class: 'sugg__all-row', onclick: searchSubmit }, '포켓몬 도감에서 보기 ›'));
 }
 
 // 결과 머리의 [도감에서 보기] — 검색의 기본 행동이다 (입력칸에서 Enter 를 쳐도 같은 곳으로 간다).

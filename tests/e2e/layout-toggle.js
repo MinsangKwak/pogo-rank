@@ -11,6 +11,7 @@
 //   - 레이드 보스처럼 목록이 여러 묶음(티어별)인 화면은 컨트롤 하나로 전부 같이 바뀌는가
 //   - 도감의 기존 .dex__layout 클래스·localStorage 키('pogo_dex_cols')는 그대로인가 (회귀 없음)
 //   - **눌렀을 때 화면이 실제로 달라지는가** (v3.9.1) — 클래스만 바뀌고 CSS 가 그걸 안 보던 시절이 있었다
+//   - (v3.10.0) 휴대폰 그리드가 두 칸인가 · 동작 버튼이 한 줄에 서는가 · 리스트 아이콘이 ☰ 메뉴와 다른가
 const { chromium } = require('/opt/node22/lib/node_modules/playwright');
 const BASE = 'http://localhost:5503/?mock=1';
 let pass = 0, fail = 0;
@@ -225,6 +226,53 @@ const ok = (n, c, x = '') => { console.log((c ? 'PASS' : 'FAIL') + ' ' + n + ' '
       ok(`${label}(w=${w}) 그리드가 리스트보다 높다`, card.h > line.h, `grid ${card.h} vs list ${line.h}`);
     }
     await vctx.close();
+  }
+
+  // ── 2026-09-12 v3.10.0 좁은 화면의 티어표 그리드 · 동작 버튼 줄 · 리스트 아이콘
+  {
+    const mctx = await browser.newContext({ viewport: { width: 390, height: 900 }, hasTouch: true, isMobile: true });
+    await mctx.route(/^https?:\/\/(?!localhost)/, (r) => r.abort());
+    const mp = await mctx.newPage();
+    mp.on('pageerror', (e) => errs.push('mobile:' + e));
+    for (const [hash, label] of [['#/pve', '레이드 · PvE'], ['#/dmax', 'D-MAX'], ['#/pvp', '배틀 · PvP']]) {
+      await mp.goto(BASE + hash, { waitUntil: 'domcontentloaded' });
+      await mp.waitForSelector('#splash', { state: 'detached', timeout: 15000 }).catch(() => {});
+      await mp.locator('#consent .consent__deny').click({ timeout: 1500 }).catch(() => {});
+      await mp.waitForTimeout(700);
+      const btn = mp.locator('#page-head-actions .view-toggle').first();
+      ok(`${label} 보기 전환이 있다`, (await btn.count()) === 1);
+      if (!(await btn.count())) continue;
+      if ((await btn.getAttribute('data-view')) !== 'grid') { await btn.click(); await mp.waitForTimeout(450); }
+      // 휴대폰 그리드는 두 칸 — 한 칸이면 스크롤 한 번에 한 마리라 티어표를 훑을 수가 없다
+      const cols = await mp.evaluate(() => {
+        const l = document.querySelector('#content .row-list');
+        return l ? getComputedStyle(l).gridTemplateColumns.split(' ').length : 0;
+      });
+      ok(`${label} 휴대폰 그리드는 두 칸`, cols === 2, String(cols));
+      // 동작 버튼은 가로 한 줄 — 위아래로 쌓으면 화면 머리가 두 배로 높아진다
+      const headRow = await mp.evaluate(() => {
+        const a = document.querySelector('#page-head-actions');
+        if (!a || a.children.length < 2) return { tops: [], ok: true };
+        const tops = [...a.children].map((c) => Math.round(c.getBoundingClientRect().top));
+        return { tops, ok: new Set(tops).size === 1 };
+      });
+      ok(`${label} 동작 버튼이 한 줄에 선다`, headRow.ok, JSON.stringify(headRow.tops));
+      ok(`${label} 가로 넘침 없음`, !(await mp.evaluate(() => document.documentElement.scrollWidth > innerWidth)));
+    }
+    // 리스트 얼굴이 ☰ 메뉴 버튼과 같은 그림이면 안 된다 (v3.10.0)
+    await mp.goto(BASE + '#/dex', { waitUntil: 'domcontentloaded' });
+    await mp.waitForSelector('#splash', { state: 'detached', timeout: 15000 }).catch(() => {});
+    await mp.locator('#consent .consent__deny').click({ timeout: 1500 }).catch(() => {});
+    await mp.waitForTimeout(700);
+    const face = mp.locator('#page-head-actions .view-toggle').first();
+    if ((await face.getAttribute('data-view')) !== 'list') { await face.click(); await mp.waitForTimeout(400); }
+    const art = await mp.evaluate(() => {
+      const pick = (n) => n?.querySelector('.pxi')?.innerHTML ?? '';
+      return { list: pick(document.querySelector('#page-head-actions .view-toggle')), menu: pick(document.getElementById('menu-toggle')) };
+    });
+    ok('리스트 아이콘이 그려져 있다', art.list.length > 0);
+    ok('리스트 아이콘이 ☰ 메뉴와 다른 그림이다', art.list !== art.menu, `${art.list.length} vs ${art.menu.length}`);
+    await mctx.close();
   }
 
   ok('페이지 오류 없음', errs.length === 0, errs.join(' | ').slice(0, 200));

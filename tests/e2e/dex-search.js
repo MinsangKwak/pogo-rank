@@ -8,6 +8,8 @@
 //   - 폼 줄을 누르면 그 폼이 열리는가 — 도감번호로 열면 전부 원종이 뜬다
 //   - 타입 칩이 실제로 목록을 거르는가 (v3.9.0 전에는 조용히 색인 전체로 되돌아갔다)
 //   - 패널이 적는 마리 수가 **잘리기 전의 참 수**인가
+//   - (v3.10.0) 패널은 결과를 한 줄도 안 그리는가 — 결과는 도감 한 곳에서만 그린다
+//   - (v3.10.0) 도감 안 검색 칸이 커서를 안 빼앗기고 목록·주소를 함께 고치는가
 const { chromium } = require('/opt/node22/lib/node_modules/playwright');
 const BASE = 'http://localhost:5503/?mock=1';
 let pass = 0, fail = 0;
@@ -43,12 +45,13 @@ const ok = (n, c, x = '') => { console.log((c ? 'PASS' : 'FAIL') + ' ' + n + ' '
   await page.waitForTimeout(400);
   const head = await page.locator('#psearch-sugg .sugg__head').first().innerText();
   const total = +(/(\d+)마리/.exec(head)?.[1] ?? 0);
-  const shown = await page.locator('#psearch-sugg .sugg__item').count();
-  ok('패널은 여덟 줄까지만 그린다', shown === 8, String(shown));
-  ok('적힌 수는 잘리기 전의 참 수다', total > shown, `${total} > ${shown}`);
+  // 2026-09-12 v3.10.0 패널은 결과를 **한 줄도** 그리지 않는다 — 같은 목록을 두 곳에서 그리면
+  // 패널의 여덟 줄이 "결과" 로 보여 정작 전부가 있는 도감까지 가지 않는다
+  ok('패널에 결과 줄이 없다', (await page.locator('#psearch-sugg .sugg__item').count()) === 0);
+  ok('몇 마리인지는 말해 준다', total > 8, String(total));
   ok('머리에 [도감에서 보기] 가 있다', (await page.locator('#psearch-sugg .sugg__all').count()) === 1);
-  ok('잘린 나머지를 도감으로 이어 준다',
-    /나머지 \d+마리는 도감에서 보기/.test(await page.locator('#psearch-sugg .sugg__all-row').innerText()));
+  ok('도감으로 보내는 줄이 있다',
+    /도감에서 보기/.test(await page.locator('#psearch-sugg .sugg__all-row').innerText()));
 
   // ── 2. Enter = 도감으로 ─────────────────────────────────────────────────────
   await page.press('#psearch', 'Enter');
@@ -101,7 +104,7 @@ const ok = (n, c, x = '') => { console.log((c ? 'PASS' : 'FAIL') + ' ' + n + ' '
   await page.locator('#page .dex__found-clear').click();
   await page.waitForTimeout(600);
   ok('[전체 도감 보기] 로 돌아온다', (await page.evaluate(() => location.hash)) === '#/dex');
-  ok('돌아오면 머리 줄이 사라진다', (await page.locator('#page .dex__found').count()) === 0);
+  ok('돌아오면 머리 줄이 사라진다', await page.evaluate(() => document.querySelector('#page .dex__found')?.hidden === true));
   ok('돌아오면 다시 100종씩 나눠 그린다', (await rows().count()) === 100, String(await rows().count()));
   ok('[더보기] 가 돌아온다', /더보기 \(100\/\d+\)/.test(await page.locator('#page .boss__more').innerText()));
 
@@ -109,6 +112,26 @@ const ok = (n, c, x = '') => { console.log((c ? 'PASS' : 'FAIL') + ' ' + n + ' '
   await page.goto(`${BASE}#/dex?q=${encodeURIComponent('메타')}`, { waitUntil: 'domcontentloaded' });
   await settle();
   ok('검색 주소로 바로 들어와도 그려진다', (await rows().count()) > 0 && /"메타" \d+마리/.test(await banner()), await banner());
+
+  // ── 8. 2026-09-12 v3.10.0 도감 안 검색 칸 ────────────────────────────────────
+  // 결과가 도감 한 곳에 모였으니 그 결과를 좁히는 칸도 그 곁에 있어야 한다.
+  // 한 글자 지우자고 헤더 팝업을 다시 여는 일이 없어야 한다
+  await goHash('#/dex?q=리자');
+  ok('검색해서 오면 칸에 검색어가 들어 있다', (await page.inputValue('#dex-search')) === '리자');
+  const wide = await rows().count();
+  await page.click('#dex-search');
+  await page.type('#dex-search', '몽', { delay: 30 });
+  await page.waitForTimeout(500);
+  const narrow = await rows().count();
+  ok('칸에서 좁히면 목록이 줄어든다', narrow > 0 && narrow < wide, `${wide} → ${narrow}`);
+  ok('좁혀도 커서가 칸에 남아 있다', (await page.evaluate(() => document.activeElement?.id)) === 'dex-search');
+  ok('주소가 결과를 따라온다', /q=리자몽/.test(decodeURIComponent(await page.evaluate(() => location.hash))),
+    decodeURIComponent(await page.evaluate(() => location.hash)));
+  ok('머리 줄의 수도 따라온다', (await banner()).includes(`${narrow}마리`), await banner());
+  await page.fill('#dex-search', '');
+  await page.waitForTimeout(500);
+  ok('칸을 비우면 전 종으로 돌아온다', (await page.evaluate(() => location.hash)) === '#/dex' && (await rows().count()) === 100,
+    `${await page.evaluate(() => location.hash)} / ${await rows().count()}`);
 
   ok('페이지 오류 없음', errs.length === 0, errs.join(' | ').slice(0, 200));
   await browser.close();

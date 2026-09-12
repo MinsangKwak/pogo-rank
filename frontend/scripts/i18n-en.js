@@ -158,7 +158,9 @@ const I18N_EN = {
   '타입 지우기': 'Clear types',
   // 2026-09-12 v3.9.0 검색 → 도감 (components/search.js · components/pages.js)
   '도감에서 보기': 'See in Pokédex',
-  '나머지 #마리는 도감에서 보기 ›': 'See the other # in the Pokédex ›',
+  '포켓몬 도감에서 보기 ›': 'See them in the Pokédex ›',
+  '이 도감에서 찾기 (예: 메타그로스, 섀도우 뮤츠)': 'Search this Pokédex (e.g. Metagross, Shadow Mewtwo)',
+  '포켓몬 이름으로 도감 찾기': 'Search the Pokédex by name',
   '전체 도감 보기': 'See the full Pokédex',
   '검색 결과가 없어요. 이름 일부만 쳐도 찾아요 — 예: "메타", "리자".':
     'No matches. Part of a name is enough — try "메타" or "리자".',
