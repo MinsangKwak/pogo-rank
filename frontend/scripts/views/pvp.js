@@ -53,17 +53,27 @@ function renderPvp() {
   };
   // 리그가 머리로 올라갔으므로 이 줄에는 도구만 남는다 — 왼쪽은 지금 켠 도구, 오른쪽은 다른 도구.
   // leagueSeg 는 $controls 안에 있어야 render() 가 찾아 옮길 수 있어 이 줄에 그대로 붙인다
-  const controlRow = (activeId) => {
+  const controlRow = (activeId, ...head) => {
     const others = Object.keys(buttons).filter((id) => id !== activeId);
     return el('div', { class: 'controls__row controls__row--tools' },
       activeId ? buttons[activeId]() : '',
-      leagueSeg,
+      leagueSeg, ...head,
       el('div', { class: 'controls__rest' }, ...others.map((id) => buttons[id]())));
   };
+  // 2026-09-12 v3.10.0 배틀 · PvP 에도 보기 전환을 붙인다 (도감 · 레이드 · PvE · D-MAX 와 같은 규칙).
+  // 붙이는 이유가 둘이다.
+  //   ① 같은 티어표인데 여기만 줄로 되돌릴 방법이 없었다.
+  //   ② v3.9.1 에서 카드 규칙이 .is-grid 를 요구하게 되면서, 클래스가 안 붙는 이 화면만
+  //      큰 카드(그림 153px)가 아니라 공용 작은 카드(84px)로 그려지고 있었다.
+  //      토글이 붙으면 rowListLayout() 이 늘 클래스를 달아 주므로 셋이 같은 카드가 된다
+  const pvpGrid = layoutInitial(PVP_COLS_KEY);
+  const pvpLayout = layoutToggle(PVP_COLS_KEY, pvpGrid, applyPvpLayout);
+  pvpLayout.classList.add('js-head-action');
   if (state.pvpTool === 'deck') { $controls.append(controlRow('deck')); return renderPvpDeck(); }
   // 페이지 렌더러가 돌려주는 본문을 그대로 얹는다 (#/ivrank 주소로도 같은 화면이 열린다)
   if (state.pvpTool === 'ivrank') { $controls.append(controlRow('ivrank')); $content.append(renderIvRankPage()); return; }
-  $controls.append(controlRow(null));
+  // 보기 전환은 순위표가 있는 화면(랭킹)에서만 쓴다 — 덱 짜기 · 개체값 순위는 .row-list 가 다른 뜻이다
+  $controls.append(controlRow(null, pvpLayout));
   const leagueRanking = PVP_DATA[state.league];
   // 이 리그 랭킹에 한 마리라도 있는 속성만 칩으로 만든다
   const presentTypes = new Set(leagueRanking.flatMap((pokemon) => pokemon.types));
@@ -85,5 +95,13 @@ function renderPvp() {
       state.pvpType === 'all' ? null : el('span', { class: 'row__sub' }, `전체 ${pokemon.rank}위`),
     )),
   );
+  applyPvpLayout(pvpGrid);
   $note.textContent = 'PvPoke 시뮬레이션 점수(100점 만점). 속성 필터 안의 순위는 그 속성 안에서의 순위라, 전체 순위를 옆에 같이 적어요.';
+}
+
+// 2026-09-12 v3.10.0 배틀 · PvP 보기 전환 — 도감 · 레이드 PvE · D-MAX 와 같은 규칙의 별도 키다
+// (화면마다 선택이 섞이지 않게). 저장 값은 '1'(리스트)|'2'(그리드) 관례 그대로다
+const PVP_COLS_KEY = 'pogo_pvp_cols';
+function applyPvpLayout(grid) {
+  rowListLayout(grid);
 }

@@ -184,10 +184,11 @@ function renderDexPage() {
   // 2026-09-12 v3.9.0 검색 결과를 여기서 보여 준다. 헤더 검색은 여덟 줄짜리 패널이라
   // 그 아래를 볼 길이 없었다 — 조건을 주소에 실어 오면 도감의 목록·그리드로 전부 그린다
   const params = (typeof routeOf === 'function' ? routeOf()?.params : null) ?? new URLSearchParams();
-  const searchQuery = (params.get('q') ?? '').trim();
   const searchTypes = (params.get('t') ?? '').split(',').filter((typeKey) => TYPE_KO[typeKey]).slice(0, 2);
-  const searching = !!(searchQuery || searchTypes.length);
-  const all = searching ? dexSearchEntries(searchQuery, searchTypes) : dexEntries();
+  const species = dexEntries();   // 전 종 — 검색을 지웠을 때 돌아올 자리
+  let searchQuery = (params.get('q') ?? '').trim();
+  let searching = !!(searchQuery || searchTypes.length);
+  let all = searching ? dexSearchEntries(searchQuery, searchTypes) : species;
   let list = all;
   // 검색해서 들어왔으면 나눠 그리지 않는다 — 찾으러 온 것이 [더보기] 뒤에 숨으면 안 찾은 것과 같다
   let shown = searching ? Infinity : 100;
@@ -229,11 +230,10 @@ function renderDexPage() {
     $more.disabled = shown >= list.length;
     // 검색 결과는 한 번에 다 그리므로 [전체 N종] 만 남아 누를 데가 없다 — 감추고, 수는 머리 줄이 말한다.
     // 머리 줄의 수도 여기서 갱신한다 — 세대 칩으로 더 좁히면 "232마리" 가 거짓말이 된다
-    if (searching) {
-      $more.hidden = true;
-      $found.textContent = `${dexSearchLabel(searchQuery, searchTypes)} ${list.length}마리`;
-      $none.hidden = list.length > 0;
-    }
+    $more.hidden = searching;
+    $head.hidden = !searching;
+    $none.hidden = !searching || list.length > 0;
+    if (searching) $found.textContent = `${dexSearchLabel(searchQuery, searchTypes)} ${list.length}마리`;
   };
   // 2026-09-12 v3.5.0 화면 안 검색 칸을 뺐다. v2.66.0 에 안내 문구로 성격을 갈라 놓았지만
   // (헤더는 "어디로든 데려가는" 검색, 이 칸은 "이 목록을 거르는" 칸) 생김새가 같은 입력칸 둘이
@@ -263,11 +263,45 @@ function renderDexPage() {
   // 입력칸 둘이 한 화면에 있으면 어느 쪽에 친 글자가 진짜인지가 흐려진다)
   const $found = el('b', {});
   const $none = el('p', { class: 'dex__hint' }, '검색 결과가 없어요. 이름 일부만 쳐도 찾아요 — 예: "메타", "리자".');
-  $none.hidden = true;
-  const searchHead = searching
-    ? el('div', { class: 'dex__found' }, $found,
-        uchip('전체 도감 보기', () => navigateHash('#/dex'), { class: 'dex__found-clear' }))
-    : '';
+  // 2026-09-12 v3.10.0 화면 안 검색 칸을 되살렸다.
+  // v3.5.0 에 뺀 이유는 "헤더 검색과 생김새가 같은 입력칸 둘" 이었는데, 그 헤더 패널이 이제
+  // 결과를 그리지 않는다(조건만 받아 여기로 보낸다). 결과가 한 곳에 모였으니 그 결과를 좁히는
+  // 칸도 그 곁에 있어야 한다 — 한 글자 지우자고 헤더 팝업을 다시 열 수는 없다.
+  // 입력할 때마다 화면을 다시 그리지 않는다: 주소만 replaceState 로 갈아 끼우고(hashchange 가
+  // 안 뜨므로 renderPage 가 안 돈다) 목록만 draw() 로 고쳐 그린다 — 커서가 안 빠진다
+  const $search = el('input', {
+    class: 'boss__search dex__search', id: 'dex-search', type: 'search', autocomplete: 'off',
+    placeholder: '이 도감에서 찾기 (예: 메타그로스, 섀도우 뮤츠)', 'aria-label': '포켓몬 이름으로 도감 찾기',
+  });
+  $search.value = searchQuery;
+  let searchTimer = 0;
+  const runSearch = () => {
+    searchQuery = $search.value.trim();
+    searching = !!(searchQuery || searchTypes.length);
+    all = searching ? dexSearchEntries(searchQuery, searchTypes) : species;
+    list = all;
+    shown = searching ? Infinity : 100;
+    // 주소를 결과에 맞춘다 — 그대로 보내면 상대도 같은 화면을 연다
+    const next = new URLSearchParams();
+    if (searchQuery) next.set('q', searchQuery);
+    if (searchTypes.length) next.set('t', searchTypes.join(','));
+    const query = next.toString();
+    try { history.replaceState(history.state, '', `#/dex${query ? `?${query}` : ''}`); } catch { /* 주소 못 바꾸는 환경 */ }
+    draw();
+  };
+  $search.addEventListener('input', () => {
+    clearTimeout(searchTimer);
+    searchTimer = setTimeout(runSearch, 200);   // 한 글자마다 1,800줄을 훑지 않게 한 박자 쉰다
+  });
+  // Enter 는 기다리지 않고 바로 — 치자마자 결과를 보려는 손이다
+  $search.addEventListener('keydown', (event) => {
+    if (event.key !== 'Enter' || event.isComposing) return;
+    event.preventDefault();
+    clearTimeout(searchTimer);
+    runSearch();
+  });
+  const $head = el('div', { class: 'dex__found' }, $found,
+    uchip('전체 도감 보기', () => { $search.value = ''; runSearch(); }, { class: 'dex__found-clear' }));
   const loginHint = authEnabled() && AUTH.status !== 'ok'
     ? el('p', { class: 'dex__hint' },
         AUTH.status === 'pending' ? '⏳ 승인 대기 중 — 승인되면 ★로 내 포켓몬을 도감에 채울 수 있어요.' : '로그인하면 ★를 눌러 내 포켓몬을 도감에 채울 수 있어요. ',
@@ -277,8 +311,8 @@ function renderDexPage() {
   // 2026-09-10 v2.42.0 거르기(세대·즐겨찾기)와 보기 방식을 한 줄에 좌우로 — 성격은 달라도 둘 다
   // "목록을 어떻게 볼지" 라 목록 바로 위 한 줄에 모아 두는 편이 눈이 덜 움직인다.
   // 좁은 화면은 CSS 가 위아래로 쌓는다 (한 줄에 넣으면 칩이 잘린다)
-  return el('div', { class: 'page__body dex-page' }, loginHint, searchHead,
-    el('div', { class: 'dex__toolbar page__filters' }, genChips, $layout), $list, searching ? $none : '', $more,
+  return el('div', { class: 'page__body dex-page' }, loginHint, $search, $head,
+    el('div', { class: 'dex__toolbar page__filters' }, genChips, $layout), $list, $none, $more,
     footNote('미구현 = 포켓몬 GO에 아직 출시되지 않은 종 (PvPoke 출시 목록 기준, 데이터는 게임마스터 선등록분). 메가·섀도우·리전 폼은 🔍 검색으로 찾으면 이 목록에 함께 나와요.'));
 }
 
