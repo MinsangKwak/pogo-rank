@@ -13,7 +13,7 @@ const BASE = 'http://localhost:5503/';
 suite(async () => {
   const browser = await launch();
   const errs = [];
-  const ctx = await newContext(browser, { viewport: { width: 1440, height: 900 } });
+  const ctx = await newContext(browser, { locks: true, viewport: { width: 1440, height: 900 } });   // v3.18.0 잠금은 임시로 열려 있다 — 여기서는 켠다
   ctx.setDefaultTimeout(6000);
   const page = await ctx.newPage();
   page.on('pageerror', (e) => errs.push(String(e)));
@@ -76,7 +76,7 @@ suite(async () => {
   await page.evaluate(() => setLang('ko'));
 
   // 로그인(목)한 사람에게는 버튼이 없다 — 잠긴 화면 자체가 없다
-  const mctx = await newContext(browser, { viewport: { width: 1440, height: 900 } });
+  const mctx = await newContext(browser, { locks: true, viewport: { width: 1440, height: 900 } });
   const mp = await mctx.newPage();
   mp.on('pageerror', (e) => errs.push('mock: ' + e));
   await mp.goto(BASE + '?mock=1#/raids', { waitUntil: 'domcontentloaded' });

@@ -552,7 +552,8 @@ function openDetail(pokemon, isDex = false, from = null) {
     el('div', { class: `sprite-box${formKind ? ' sprite-box--' + formKind : ''}` },
       // 2026-09-12 v2.67.0 상세 화면의 큰 그림만 움직인다 — 한 번에 한 마리라 GIF 한 장이면 된다.
       // 정지본을 먼저 띄우고 다 받은 뒤 갈아 끼우므로, 없는 종(6세대 이후 다수)은 그대로 정지본이다
-      spriteAnimate(sprite(pokemon.sprite), pokemon.sprite),
+      // 2026-09-12 v3.18.0 sprite() 가 스스로 움직이는 그림으로 갈아 끼운다(설정 따름) — 여기서 따로 부르지 않는다
+      sprite(pokemon.sprite),
       // 상성표의 작은 점 칩(tchips__item)과는 다른 자리라 건드려도 이중약점 강조 같은 다른 뜻이 흔들리지 않는다
       types.length ? el('div', { class: 'detail__types' }, ...types.map((typeName) => el('span', { class: 'detail__type-pill', style: `--c: var(--t-${typeName})` }, TYPE_KO[typeName] ?? typeName))) : ''),
     // 2026-09-03 v2.2.0 즐겨찾기 ★ · 2026-09-06 v2.9.0 🔗 공유 · 2026-09-07 v2.15.0 (QA-54) ➕ 내 개체로 저장.

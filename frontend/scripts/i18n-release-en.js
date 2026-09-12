@@ -15,6 +15,11 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 const RELEASE_NOTES_EN = {
+  '2026-09-12 · v3.18.0': [
+    '**Pokémon now animate** — the animated sprites that lived only on the detail screen are on by default across tier lists, the Pokédex and every list. The still image shows first and swaps in as the GIF arrives. Too heavy? Turn it off under **Settings → Animated sprites**.',
+    '**Everything is open without signing in (for now)** — Events, Raid bosses, Eggs, Raid PvE, Battle PvP, Planner, My Pokémon and the Search builder. My Pokémon is stored in this browser and moves to your account when you sign in.',
+    '**The sign-up invitation popup is gone** — nothing to pitch while everything is open.',
+  ],
   '2026-09-12 · v3.17.1': [
     '**Try it briefly is now 2 hours per try** — 24 hours meant three tries were three days, and the reason to sign up arrived too late. Two hours is plenty for one sitting. Still three tries.',
   ],
