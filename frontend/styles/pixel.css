@@ -360,3 +360,21 @@ body {
 
 /* 몬스터볼을 좁은 화면에서 빼는 규칙은 #px-bg 쪽으로 옮겼다 (v3.8.3) —
    요소를 감추는 것으로는 고정 레이어 자체가 사라지지 않아 스크롤 비용이 그대로 남는다 */
+
+/* ── 손가락이 닿는 넓이 (2026-09-12 v3.12.0) ──────────────────────────────────
+   전 화면을 훑어 재 보니 눌러야 하는 것들이 22~30px 였다. 글자 높이 그대로 서 있어서다.
+   손끝은 대략 9mm(≈44px)라, 그보다 작은 과녁은 옆의 것을 같이 누르게 된다.
+   **글자 크기는 그대로 두고 닿는 넓이만** 넓힌다 — 키우면 목록이 그만큼 아래로 밀린다.
+   문단 속 링크(<a>)는 건드리지 않는다: 글줄 한가운데라 높이를 키우면 줄간이 벌어진다 */
+.boss__more, .plan__more, .sugg__more, .finder__copy, .row__more, .row__why-more {
+  min-height: 4.4rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+/* 칩은 줄마다 여럿이 서므로 44 까지는 안 키운다 — 서로 겹치지 않을 만큼(36)이면 된다 */
+.uchip, .chips__item, .tool-btn { min-height: 3.6rem; min-width: 3.6rem; display: inline-flex; align-items: center; justify-content: center; }
+/* 로고는 "처음으로" 가는 길이다. 글자 높이(22px)로 서 있어 상단 바에서 제일 누르기 어려웠다 */
+.app-bar__logo { display: inline-flex; align-items: center; min-height: 4.4rem; }
+/* 브레드크럼의 🏠 는 14px 짜리 그림 하나였다 */
+.page-head__crumb a, .page-head__crumb-home { display: inline-flex; align-items: center; min-height: 3.2rem; padding: 0 0.2rem; }

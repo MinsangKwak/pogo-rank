@@ -157,8 +157,6 @@ const I18N_EN = {
   '전체 순위 보기 ▸': 'See the full ranking ▸',
   '타입 지우기': 'Clear types',
   // 2026-09-12 v3.9.0 검색 → 도감 (components/search.js · components/pages.js)
-  '도감에서 보기': 'See in Pokédex',
-  '포켓몬 도감에서 보기 ›': 'See them in the Pokédex ›',
   '이 도감에서 찾기 (예: 메타그로스, 섀도우 뮤츠)': 'Search this Pokédex (e.g. Metagross, Shadow Mewtwo)',
   '포켓몬 이름으로 도감 찾기': 'Search the Pokédex by name',
   '전체 도감 보기': 'See the full Pokédex',
@@ -568,6 +566,9 @@ const I18N_EN = {
   '알에서 깬 것': 'Hatched from an egg',
   '레이드에서 잡은 것': 'Caught in a raid',
   '리서치 보상': 'Research reward',
+  '타입으로 좁히기': 'Narrow by type',
+  '포켓몬 검색 — 도감으로': 'Search Pokémon — opens the Pokédex',
+  '🏆 활용처 순위': '🏆 Usage rankings',
   ', 다시 누르면': ', again for',
   '이 화면은 지금 도는 로테이션만 말해요 — 앞으로의 일정은 달력이 맡아요. 출처 LeekDuck(ScrapedDuck) · #-#-# 수집 · 지역과 이벤트에 따라 실제와 다를 수 있어요':
     'This screen only covers what is in rotation right now — the calendar handles what is coming up. Source: LeekDuck (ScrapedDuck), collected #-#-#. Region and events can make the real rotation differ.',

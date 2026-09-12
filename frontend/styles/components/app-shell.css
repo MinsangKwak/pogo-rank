@@ -128,9 +128,8 @@ body:has(#page:not([hidden]) .page__filters) .page-head {
 .filter-box .submenu .chips { margin: 0; padding: 0.2rem 0; mask-image: none; -webkit-mask-image: none; }
 
 /* 검색 시트 안의 타입 줄도 같은 아코디언으로 */
-.filter-box--search { margin: 0; }
-.filter-box--search .search__row { display: block; }
-.filter-box--search .search__label { display: none; }
+/* 2026-09-12 v3.12.0 검색 패널의 타입 상자(.filter-box--search)는 패널과 함께 걷어냈다.
+   타입 칩은 도감 화면의 .dex__type-box 가 들고 있다 (components/pages.js) */
 
 /* ── 드로어 안 서비스 이동 목록 (app-shell.js) ── */
 .nav-menu { display: flex; flex-direction: column; gap: 0.4rem; padding-bottom: 1rem; margin-bottom: 0.4rem; border-bottom: 1px solid var(--line); }

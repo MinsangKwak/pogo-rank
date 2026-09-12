@@ -202,20 +202,14 @@ const ok = (name, cond, extra = '') => results.push([cond ? 'PASS' : 'FAIL', nam
   await page.waitForTimeout(300);
   ok('닫으면 팝업 사라짐', (await page.locator('dialog.modal[open]').count()) === 0);
 
-  // 6. 검색 시트
+  // 6. 검색 — 2026-09-12 v3.12.0 팝업이 아니라 **포켓몬 도감으로 간다**.
+  // 결과를 두 곳에서 그리지 않는다: 입구는 셋(🔍 · 상단 칸 · `/`)이고 도착지는 하나다
   await page.click('#search-toggle');
-  await page.waitForSelector('#search-dialog[open]', { timeout: 5000 });
-  await page.waitForTimeout(250);
-  const sheet = await page.locator('#search-dialog .search').evaluate((n) => {
-    const r = n.getBoundingClientRect(); const s = getComputedStyle(n);
-    return { top: Math.round(r.top), bg: s.backgroundColor, radius: s.borderTopLeftRadius };
-  });
-  ok('검색 = 같은 시트 기하', sheet.top > 60, JSON.stringify(sheet));
-  ok('검색 카드 배경 = --surface', sheet.bg === 'rgb(255, 255, 255)', sheet.bg);
-  ok('검색 안내문 보임', (await page.locator('.search__head .meta').isVisible()));
-  await page.keyboard.press('Escape');
-  await page.waitForTimeout(300);
-  ok('Esc 로 검색 닫힘', (await page.locator('#search-dialog[open]').count()) === 0);
+  await page.waitForTimeout(700);
+  ok('🔍 는 도감으로 간다', (await page.evaluate(() => location.hash)) === '#/dex', await page.evaluate(() => location.hash));
+  ok('검색 팝업은 만들지 않는다', (await page.locator('#search-dialog, section.search').count()) === 0);
+  ok('열린 팝업이 없다', (await page.evaluate(() => document.querySelectorAll('dialog[open]').length)) === 0);
+  ok('도감 검색 칸에 커서가 간다', (await page.evaluate(() => document.activeElement?.id)) === 'dex-search');
 
   // 7. 드로어 현재 위치 표시가 강조색
   await page.goto(BASE + '?mock=1#/rank/pvp', { waitUntil: 'domcontentloaded' });

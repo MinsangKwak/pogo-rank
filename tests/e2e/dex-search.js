@@ -8,7 +8,8 @@
 //   - 폼 줄을 누르면 그 폼이 열리는가 — 도감번호로 열면 전부 원종이 뜬다
 //   - 타입 칩이 실제로 목록을 거르는가 (v3.9.0 전에는 조용히 색인 전체로 되돌아갔다)
 //   - 패널이 적는 마리 수가 **잘리기 전의 참 수**인가
-//   - (v3.10.0) 패널은 결과를 한 줄도 안 그리는가 — 결과는 도감 한 곳에서만 그린다
+//   - (v3.12.0) 검색 팝업이 아예 없는가 — 🔍 · 상단 칸 · `/` 가 전부 도감으로 간다
+//   - (v3.12.0) 타입 칩이 도감 화면에 있는가 — 무엇을 걸렀는지는 목록 옆에서 읽혀야 한다
 //   - (v3.10.0) 도감 안 검색 칸이 커서를 안 빼앗기고 목록·주소를 함께 고치는가
 const { chromium } = require('/opt/node22/lib/node_modules/playwright');
 const BASE = 'http://localhost:5503/?mock=1';
@@ -42,30 +43,32 @@ const ok = (n, c, x = '') => { console.log((c ? 'PASS' : 'FAIL') + ' ' + n + ' '
   await page.goto(BASE, { waitUntil: 'domcontentloaded' });
   await settle();
 
-  // ── 1. 헤더 검색 패널: 참 수 · 도감으로 가는 길 ──────────────────────────────
+  // ── 1. 전역 검색은 **도감으로 간다** (2026-09-12 v3.12.0) ────────────────────
+  // 팝업에서 결과를 보여 주던 시절에는 같은 목록을 두 곳에서 그렸고, 팝업에 뜬 여덟 줄이
+  // "결과" 로 보여 정작 전부가 있는 도감까지 가지 않았다. 입구는 셋, 도착지는 하나다
+  ok('검색 팝업은 아예 없다', (await page.locator('#search-dialog, section.search, #psearch').count()) === 0);
   await page.click('#search-toggle');
-  await page.waitForTimeout(200);
-  await page.fill('#psearch', '리');
-  await page.waitForTimeout(400);
-  const head = await page.locator('#psearch-sugg .sugg__head').first().innerText();
-  const total = +(/(\d+)마리/.exec(head)?.[1] ?? 0);
-  // 2026-09-12 v3.10.0 패널은 결과를 **한 줄도** 그리지 않는다 — 같은 목록을 두 곳에서 그리면
-  // 패널의 여덟 줄이 "결과" 로 보여 정작 전부가 있는 도감까지 가지 않는다
-  ok('패널에 결과 줄이 없다', (await page.locator('#psearch-sugg .sugg__item').count()) === 0);
-  ok('몇 마리인지는 말해 준다', total > 8, String(total));
-  ok('머리에 [도감에서 보기] 가 있다', (await page.locator('#psearch-sugg .sugg__all').count()) === 1);
-  ok('도감으로 보내는 줄이 있다',
-    /도감에서 보기/.test(await page.locator('#psearch-sugg .sugg__all-row').innerText()));
-
-  // ── 2. Enter = 도감으로 ─────────────────────────────────────────────────────
-  await page.press('#psearch', 'Enter');
   await page.waitForTimeout(700);
-  ok('Enter 를 치면 도감으로 간다', /^#\/dex\?/.test(decodeURIComponent(await page.evaluate(() => location.hash))));
+  ok('🔍 를 누르면 도감으로 간다', (await page.evaluate(() => location.hash)) === '#/dex');
+  ok('도감 검색 칸에 커서가 간다', (await page.evaluate(() => document.activeElement?.id)) === 'dex-search');
+  ok('열린 팝업이 없다', (await page.evaluate(() => document.querySelectorAll('dialog[open]').length)) === 0);
+
+  // ── 2. 그 칸에 치면 바로 결과 ───────────────────────────────────────────────
+  await page.type('#dex-search', '리', { delay: 25 });
+  await page.waitForTimeout(500);
+  const total = await rows().count();
+  ok('치는 즉시 목록이 걸러진다', total > 8, String(total));
   ok('검색어가 주소에 실린다', /q=리/.test(decodeURIComponent(await page.evaluate(() => location.hash))));
-  ok('검색 패널은 닫힌다', !(await page.evaluate(() => !!document.querySelector('#search-dialog')?.open)));
-  ok('도감이 결과를 전부 그린다', (await rows().count()) === total, `${await rows().count()} / ${total}`);
   ok('머리 줄이 조건과 수를 말한다', /"리" \d+마리/.test(await banner()), await banner());
+  ok('머리 줄의 수와 실제 줄 수가 같다', (await banner()).includes(`${total}마리`), await banner());
   ok('[더보기] 는 없다 (한 번에 다 그렸다)', await page.evaluate(() => document.querySelector('#page .boss__more')?.hidden === true));
+  // 다른 화면에서 눌러도 같은 곳으로
+  await goHash('#/dmax');
+  await page.click('#search-toggle');
+  await page.waitForTimeout(700);
+  ok('다른 화면에서 눌러도 도감으로', (await page.evaluate(() => location.hash)) === '#/dex');
+  await page.type('#dex-search', '리', { delay: 25 });
+  await page.waitForTimeout(500);
 
   // ── 3. 세대 칩은 결과 안에서 다시 거른다 ─────────────────────────────────────
   await page.locator('#page .dex__toolbar .uchip').first().click();
@@ -87,6 +90,24 @@ const ok = (n, c, x = '') => { console.log((c ? 'PASS' : 'FAIL') + ' ' + n + ' '
   await page.waitForTimeout(300);
 
   // ── 5. 타입으로 거르기 ──────────────────────────────────────────────────────
+  // 칩은 v3.12.0 부터 도감 화면이 들고 있다 — 무엇을 걸렀는지는 목록 옆에서 읽혀야 한다
+  await goHash('#/dex');
+  await page.locator('#page .dex__type-box summary').click();
+  await page.waitForTimeout(300);
+  const typeChips = page.locator('#page .dex__types-filter .chips__item');
+  ok('도감에 타입 칩이 있다', (await typeChips.count()) === 18, String(await typeChips.count()));
+  await typeChips.nth(2).click();
+  await page.waitForTimeout(500);
+  const oneType = await rows().count();
+  ok('칩 하나로 거른다', oneType > 0 && oneType < 1025, String(oneType));
+  ok('고른 타입이 주소에 실린다', /t=/.test(await page.evaluate(() => location.hash)));
+  await typeChips.nth(3).click();
+  await page.waitForTimeout(500);
+  ok('둘을 고르면 더 좁아진다', (await rows().count()) < oneType, `${await rows().count()} < ${oneType}`);
+  await page.click('#page .dex__found-clear');
+  await page.waitForTimeout(500);
+  ok('[전체 도감 보기] 는 칩도 푼다', (await page.locator('#page .dex__types-filter [aria-pressed="true"]').count()) === 0);
+
   await goHash('#/dex?t=water,flying');
   const both = await rows().count();
   await goHash('#/dex?t=water');

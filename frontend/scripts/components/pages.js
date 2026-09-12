@@ -187,7 +187,7 @@ function renderDexPage() {
   // 2026-09-12 v3.9.0 검색 결과를 여기서 보여 준다. 헤더 검색은 여덟 줄짜리 패널이라
   // 그 아래를 볼 길이 없었다 — 조건을 주소에 실어 오면 도감의 목록·그리드로 전부 그린다
   const params = (typeof routeOf === 'function' ? routeOf()?.params : null) ?? new URLSearchParams();
-  const searchTypes = (params.get('t') ?? '').split(',').filter((typeKey) => TYPE_KO[typeKey]).slice(0, 2);
+  let searchTypes = (params.get('t') ?? '').split(',').filter((typeKey) => TYPE_KO[typeKey]).slice(0, 2);
   const species = dexEntries();   // 전 종 — 검색을 지웠을 때 돌아올 자리
   let searchQuery = (params.get('q') ?? '').trim();
   let searching = !!(searchQuery || searchTypes.length);
@@ -296,6 +296,26 @@ function renderDexPage() {
     clearTimeout(searchTimer);
     searchTimer = setTimeout(runSearch, 200);   // 한 글자마다 1,800줄을 훑지 않게 한 박자 쉰다
   });
+  // 2026-09-12 v3.12.0 타입 칩이 헤더 패널에서 여기로 왔다 — 패널을 걷어냈고, 무엇보다
+  // "무엇을 걸러 이 목록이 나왔는지" 는 목록 옆에서 읽혀야 한다. 최대 두 개(두 타입을 다 가진 것).
+  // 평소에는 접어 둔다 — 열여덟 칸이라 펼쳐 두면 목록이 그만큼 아래로 밀린다
+  const $typeChips = el('div', { class: 'chips dex__types-filter' });
+  const drawTypeChips = () => {
+    $typeChips.replaceChildren(...Object.keys(TYPE_KO).map((typeKey) => el('button', {
+      class: 'chips__item', 'aria-pressed': String(searchTypes.includes(typeKey)),
+      onclick: () => {
+        const at = searchTypes.indexOf(typeKey);
+        if (at >= 0) searchTypes.splice(at, 1);
+        else { searchTypes.push(typeKey); if (searchTypes.length > 2) searchTypes.shift(); }
+        drawTypeChips();
+        runSearch();
+      },
+    }, el('span', { class: 'dot', style: `--c: var(--t-${typeKey})` }), TYPE_KO[typeKey])));
+  };
+  drawTypeChips();
+  const $typeBox = el('details', { class: 'filter-box dex__type-box' },
+    el('summary', {}, '타입으로 좁히기'), $typeChips);
+  if (searchTypes.length) $typeBox.open = true;   // 켜 둔 칩이 있으면 접어 두지 않는다
   // Enter 는 기다리지 않고 바로 — 치자마자 결과를 보려는 손이다
   $search.addEventListener('keydown', (event) => {
     if (event.key !== 'Enter' || event.isComposing) return;
@@ -304,7 +324,12 @@ function renderDexPage() {
     runSearch();
   });
   const $head = el('div', { class: 'dex__found' }, $found,
-    uchip('전체 도감 보기', () => { $search.value = ''; runSearch(); }, { class: 'dex__found-clear' }));
+    uchip('전체 도감 보기', () => {
+      $search.value = '';
+      searchTypes.length = 0;   // 칩도 같이 푼다 — "전체" 라고 해 놓고 타입이 남아 있으면 거짓말이다
+      drawTypeChips();
+      runSearch();
+    }, { class: 'dex__found-clear' }));
   const loginHint = authEnabled() && AUTH.status !== 'ok'
     ? el('p', { class: 'dex__hint' },
         AUTH.status === 'pending' ? '⏳ 승인 대기 중 — 승인되면 ★로 내 포켓몬을 도감에 채울 수 있어요.' : '로그인하면 ★를 눌러 내 포켓몬을 도감에 채울 수 있어요. ',
@@ -314,7 +339,7 @@ function renderDexPage() {
   // 2026-09-10 v2.42.0 거르기(세대·즐겨찾기)와 보기 방식을 한 줄에 좌우로 — 성격은 달라도 둘 다
   // "목록을 어떻게 볼지" 라 목록 바로 위 한 줄에 모아 두는 편이 눈이 덜 움직인다.
   // 좁은 화면은 CSS 가 위아래로 쌓는다 (한 줄에 넣으면 칩이 잘린다)
-  return el('div', { class: 'page__body dex-page' }, loginHint, $search, $head,
+  return el('div', { class: 'page__body dex-page' }, loginHint, $search, $typeBox, $head,
     el('div', { class: 'dex__toolbar page__filters' }, genChips, $layout), $list, $none, $more,
     footNote('미구현 = 포켓몬 GO에 아직 출시되지 않은 종 (PvPoke 출시 목록 기준, 데이터는 게임마스터 선등록분). 메가·섀도우·리전 폼은 🔍 검색으로 찾으면 이 목록에 함께 나와요.'));
 }

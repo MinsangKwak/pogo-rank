@@ -42,7 +42,7 @@ const appSearch = el('button', { class: 'app-search', id: 'app-search', 'aria-la
   el('span', { class: 'app-search__ico', 'aria-hidden': 'true' }, '🔍'),
   el('span', { class: 'app-search__ph' }, '포켓몬, 기술, 가이드를 검색하세요…'),
   el('kbd', { class: 'app-search__key', 'aria-hidden': 'true' }, '/'));
-appSearch.addEventListener('click', () => toggleSearchPanel(true));
+appSearch.addEventListener('click', () => openSearch());
 // 슬래시 한 번으로 검색 — 글자를 치고 있던 중이면 가로채지 않는다
 document.addEventListener('keydown', (event) => {
   if (event.key !== '/' || event.metaKey || event.ctrlKey || event.altKey) return;
@@ -50,15 +50,15 @@ document.addEventListener('keydown', (event) => {
   if (tag === 'INPUT' || tag === 'TEXTAREA' || document.activeElement?.isContentEditable) return;
   if (document.querySelector('dialog[open]')) return;
   event.preventDefault();
-  toggleSearchPanel(true);
+  openSearch();
 });
 // 검색 칸은 로고와 액션 사이 — 넓은 화면에서 가운데를 채운다 (좁은 화면은 CSS 가 감춘다)
 appHeader.replaceChildren(el('div', { class: 'app-bar__head' }, backButton, appTitle), appSearch, actions);
 // 🔍 · 👤 · ☰ 아이콘은 index.html 의 것을 그대로 쓴다 (aria-label 이 이미 붙어 있다)
+// 2026-09-12 v3.12.0 🔍 는 팝업을 여는 버튼이 아니라 **도감으로 가는 링크**다 —
+// 팝업을 연다고 말하던 aria(haspopup · expanded · controls)를 뗀다
 const searchButton = document.getElementById('search-toggle');
-searchButton.setAttribute('aria-haspopup', 'dialog');
-searchButton.setAttribute('aria-expanded', 'false');
-searchButton.setAttribute('aria-controls', 'search-dialog');
+searchButton.setAttribute('aria-label', '포켓몬 검색 — 도감으로');
 // 2026-09-08 v2.29.0 KR/EN 전환 — 헤더 👤 를 비운 자리. 버튼 글자는 "지금 누르면 갈 언어"다
 // (한국어로 보고 있으면 EN, 영어로 보고 있으면 KR). 상태 표시가 아니라 행동 표시라 눌러야 할 것이 분명하다
 const langButton = document.getElementById('lang-toggle');
@@ -80,16 +80,6 @@ const menuButton = document.getElementById('menu-toggle');
 menuButton.setAttribute('aria-haspopup', 'dialog');
 menuButton.setAttribute('aria-expanded', 'false');
 menuButton.setAttribute('aria-controls', 'drawer-backdrop');
-const panel = document.querySelector('.search');
-const typeRow = panel.querySelector('.search__row');
-const typeFilters = el('details', { class: 'filter-box filter-box--search' }, el('summary', {}, '타입으로 좁히기'));
-typeRow.before(typeFilters);
-typeFilters.append(typeRow);
-const searchDialog = el('dialog', { id: 'search-dialog', 'aria-label': '포켓몬 검색' }, panel);
-document.body.append(searchDialog);
-searchDialog.addEventListener('cancel', (event) => { event.preventDefault(); closeSearchDialog(); });
-searchDialog.addEventListener('click', (event) => { if (event.target === searchDialog) closeSearchDialog(); });
-document.getElementById('psearch').setAttribute('aria-label', '포켓몬 이름 또는 타입');
 const drawer = document.querySelector('.drawer__panel');
 drawer.querySelector('#schedule-body').closest('details').hidden = true;
 // 2026-09-09 v2.40.0 항목 한 줄 = [아이콘] 이름 [›]. 아이콘은 라우터 표(ROUTES)가 들고 있고 서비스 홈

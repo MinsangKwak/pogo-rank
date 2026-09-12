@@ -339,7 +339,7 @@ function pxIconLabelParts(label) {
 // 이 줄이 돌 때 DOM 은 이미 다 있다. 화면 테마(#theme-toggle)와 모드 배지(#mode-toggle)는
 // 상태에 따라 그림이 바뀌므로 각자의 모듈(theme.js · planner/shell.js)이 갈아 끼운다
 for (const [id, emoji] of [
-  ['search-toggle', '🔍'], ['menu-toggle', '☰'], ['psearch-close', '✕'],
+  ['search-toggle', '🔍'], ['menu-toggle', '☰'],
   ['detail-panel-close', '✕'], ['drawer-close', '✕'], ['totop', '↑'],
 ]) pxIconLabel(document.getElementById(id), emoji);
 // ☰ 메뉴의 아래쪽 줄들(안내·친구 코드·패치노트·약관…)은 id 가 없어 자리로 훑는다.
