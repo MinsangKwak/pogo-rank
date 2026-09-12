@@ -2,8 +2,10 @@
 // v2.47.0 화면 테마 회귀 — 헤더의 해·달 버튼 · 이 브라우저 기억 · 계정 기억
 //
 // 이 스위트가 지키려는 것
-//   1) 세 상태를 도는가 — 기기 설정 따름 → 밝게 → 어둡게 → 기기 설정 따름.
-//      "기기 설정 따름" 을 없애면 기기를 밤에 어둡게 바꿔도 이 사이트만 밝게 남는다
+//   1) 버튼이 둘만 도는가 — 밝게 ↔ 어둡게 (2026-09-12 v3.11.0).
+//      셋을 한 버튼으로 돌리면 누를 때마다 무엇이 될지 예측이 안 된다.
+//      "기기 설정 따름" 은 없애지 않고 설정 화면(#/settings)으로 옮겼다 —
+//      없애면 기기를 밤에 어둡게 바꿔도 이 사이트만 밝게 남는다
 //   2) 실제로 색이 바뀌는가 — data-theme 만 붙고 색이 그대로면 고친 게 아니다. 배경색을 읽어 본다
 //   3) 새로고침해도 **깜빡이지 않는가** — 저장한 값은 번들(body 끝)이 아니라 head 에서 붙어야 한다.
 //      번들이 붙이면 어둡게 골라 둔 사람이 매번 흰 화면을 한 번 보고 지나간다
@@ -17,6 +19,10 @@ const ok = (n, c, x = '') => { console.log((c ? 'PASS' : 'FAIL') + ' ' + n + ' '
   const browser = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium' });
   // 기기 설정은 어둡게 — "기기 설정 따름" 상태가 실제로 기기를 따르는지 보려면 기준이 있어야 한다
   const ctx = await browser.newContext({ viewport: { width: 1440, height: 900 }, colorScheme: 'dark' });
+  // 2026-09-12 v3.11.0 첫 방문 가입 권유 팝업은 '본 적 있음' 으로 표시해 두고 시작한다 —
+  // 안 그러면 3초 뒤 모달이 떠서 그 뒤의 클릭을 전부 가로챈다 (동의 배너를 끄는 것과 같은 처방).
+  // 팝업 자체는 tests/e2e/signup-invite.js 가 따로 검사한다
+  await ctx.addInitScript(() => { try { localStorage.setItem('pogo_signup_invite_seen', '1'); } catch {} });
   await ctx.route(/^https?:\/\/(?!localhost)/, (r) => r.abort());
   ctx.setDefaultTimeout(8000);
   const page = await ctx.newPage();
@@ -61,14 +67,31 @@ const ok = (n, c, x = '') => { console.log((c ? 'PASS' : 'FAIL') + ' ' + n + ' '
   ok('어둡게는 어두운 배경', dark.bg === 'rgb(10, 10, 15)', dark.bg);
   ok('어둡게 아이콘 🌙 (도트)', dark.icon === '🌙' && dark.pxi, JSON.stringify(dark));
 
+  // 2026-09-12 v3.11.0 세 번째 누름은 '기기 설정' 이 아니라 다시 밝게다 — 버튼은 둘만 돈다
   await page.locator('#theme-toggle').click();
   await page.waitForTimeout(300);
+  const again = await state();
+  ok('3번 → 다시 밝게 (셋을 안 돈다)', again.attr === 'light' && again.saved === 'light', JSON.stringify(again));
+  ok('버튼 이름이 다음에 될 것을 말한다', /누르면 어둡게/.test(again.label), again.label);
+
+  // ── 2-2. 기기 설정 따름은 설정 화면에서 고른다 (#/settings)
+  await page.evaluate(() => { location.hash = '#/settings'; });
+  await page.waitForTimeout(700);
+  const choices = await page.locator('#page .settings__choice').count();
+  ok('설정 화면에 세 갈래가 있다', choices === 3, String(choices));
+  await page.locator('#page .settings__choice').first().click();
+  await page.waitForTimeout(400);
   const sys = await state();
-  ok('3번 → 기기 설정 따름', sys.attr === null && sys.saved === 'system', JSON.stringify(sys));
+  ok('기기 설정 따름을 고르면 표시가 없어진다', sys.attr === null && sys.saved === 'system', JSON.stringify(sys));
   ok('기기 설정 아이콘 🌗 (도트)', sys.icon === '🌗' && sys.pxi, JSON.stringify(sys));
+  ok('고른 줄만 눌린 표시', (await page.locator('#page .settings__choice[aria-checked="true"]').count()) === 1);
+  // 기기가 어두운 상태라(colorScheme: dark) '기기 설정' 에서 누르면 그 반대인 밝게로 간다
+  await page.locator('#theme-toggle').click();
+  await page.waitForTimeout(300);
+  const fromSys = await state();
+  ok('기기 설정에서 누르면 지금 보이는 것의 반대', fromSys.saved === 'light', JSON.stringify(fromSys));
 
   // ── 3. 새로고침해도 유지되고, head 에서 먼저 붙는다 (깜빡임 없음)
-  await page.locator('#theme-toggle').click();   // → light
   await page.waitForTimeout(300);
   await page.goto(BASE, { waitUntil: 'commit' });
   // 2026-09-11 v2.56.0 전에는 'commit' 직후 한 번 들여다보고 "번들 전인데 이미 붙었다" 를 확인했다.

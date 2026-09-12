@@ -33,6 +33,10 @@ const PROPS = ['display','position','color','background-color','border-top-width
   // 둘은 서로의 결과를 쓰지 않는다 — 각자 제 컨텍스트에서 제 파일에 쓴다
   const sweep = async ([w, h, wname]) => {
     const ctx = await browser.newContext({ viewport: { width: w, height: h } });
+    // 2026-09-12 v3.11.0 첫 방문 가입 권유 팝업은 '본 적 있음' 으로 표시해 두고 시작한다 —
+    // 안 그러면 3초 뒤 모달이 떠서 그 뒤의 클릭을 전부 가로챈다 (동의 배너를 끄는 것과 같은 처방).
+    // 팝업 자체는 tests/e2e/signup-invite.js 가 따로 검사한다
+    await ctx.addInitScript(() => { try { localStorage.setItem('pogo_signup_invite_seen', '1'); } catch {} });
     await ctx.route(/^https?:\/\/(?!localhost)/, (r) => r.abort());
     ctx.setDefaultTimeout(4000);
     const page = await ctx.newPage();
@@ -46,8 +50,11 @@ const PROPS = ['display','position','color','background-color','border-top-width
       }
       await page.waitForTimeout(150);
       try {
-        if (action === 'detail') { await page.locator('#page button').nth(3).click(); await page.waitForTimeout(350); }
-        // v2.66.0 넓은 화면은 🔍 버튼을 감추고 상단 검색바가 같은 패널을 연다 — 보이는 쪽을 누른다
+        // 2026-09-12 v3.12.0 '#page button' 순번으로 줄을 집던 것을 클래스로 바꿨다 — 도감 위쪽에
+        // 검색 칸·타입 칩이 생기면서 네 번째 버튼이 더는 목록 줄이 아니다. 순번은 화면이 바뀔 때마다 흔들린다
+        if (action === 'detail') { await page.locator('#page .dex__row').first().click(); await page.waitForTimeout(350); }
+        // v2.66.0 넓은 화면은 🔍 버튼을 감추고 상단 검색바가 같은 일을 한다 — 보이는 쪽을 누른다
+        // v3.12.0 누르면 팝업이 아니라 포켓몬 도감으로 간다 (components/search.js openSearch)
         if (action === 'search') { await page.locator('#search-toggle:visible, .app-search:visible').first().click(); await page.waitForTimeout(350); }
         if (action === 'drawer') { await page.click('#menu-toggle'); await page.waitForTimeout(350); }
         if (action === 'solo') { await page.getByRole('button', { name: /솔플/ }).click(); await page.waitForTimeout(350); }

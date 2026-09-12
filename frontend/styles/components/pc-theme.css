@@ -623,6 +623,11 @@
   #page .schedule__detail .schedule__sec { margin-top: 0; }
 }
 
+/* 2026-09-12 v3.10.0 도감 안 검색 칸 — 결과 목록 바로 위. 헤더 검색은 조건을 받아 이리로 보내고,
+   그 결과를 한 글자씩 좁히는 일은 여기서 한다 (components/pages.js renderDexPage) */
+.dex__search { width: 100%; margin: 1.6rem 0 0; }
+.dex__search + .dex__found { margin-top: 0.8rem; }
+
 /* 2026-09-12 v3.9.0 도감이 검색 결과 화면을 겸한다 (components/pages.js renderDexPage).
    머리 한 줄로 "무엇을 걸러 몇 마리인지" 와 전 종으로 돌아가는 길을 준다 —
    화면 안에 입력칸을 다시 두지는 않는다 (v3.5.0 에 뺀 이유가 그대로다) */
@@ -727,34 +732,49 @@
    기본값은 그대로다: layoutInitial() 이 wideCards() 를 보므로 휴대폰은 줄, PC 는 카드로 연다.
    휴대폰에서 카드를 켜면 --list-cols 가 1 이라 한 줄에 한 장 — 도감 그리드와 같은 모양이다 */
 body:is([data-route="dmax"], [data-route="pve"], [data-route="pvp"]) #content .row-list.is-grid {
-  display: grid; grid-template-columns: repeat(var(--list-cols), minmax(0, 1fr)); gap: 1.8rem; border-top: 0;
+  display: grid; grid-template-columns: repeat(var(--list-cols), minmax(0, 1fr)); gap: 1.5rem; border-top: 0;
 }
+/* 2026-09-12 v3.10.0 휴대폰에서도 두 장씩. --list-cols 는 700px 미만이 1 이라 한 줄에 한 장이었는데,
+   그러면 한 화면에 두 마리도 안 들어와 티어표를 훑을 수가 없었다.
+   도감·레이드 보스 그리드(.dex__list.is-grid)가 이미 쓰는 값 그대로 1fr 1fr 이다 */
+@media (max-width: 699px) {
+  body:is([data-route="dmax"], [data-route="pve"], [data-route="pvp"]) #content .row-list.is-grid {
+    grid-template-columns: 1fr 1fr; gap: 1rem;
+  }
+}
+/* 2026-09-12 v3.10.0 카드 속을 85% 로 줄였다 — 1440px 에서 282×420 이 282×357 이 된다.
+   한 장이 화면 높이의 절반을 먹어 스크롤 한 번에 한 줄밖에 못 봤다.
+   그림·여백·글자를 같은 비율로 줄여야 균형이 그대로 남는다 (18 → 15.3rem · 4.2 → 3.6rem · 2.1 → 1.8rem …) */
 body:is([data-route="dmax"], [data-route="pve"], [data-route="pvp"]) #content .row-list.is-grid > .row {
   position: relative; display: flex; flex-direction: column; align-items: center;
-  min-width: 0; padding: 4.2rem 2.2rem 2rem; gap: 1.2rem; text-align: center;
+  min-width: 0; padding: 3.6rem 1.9rem 1.7rem; gap: 1rem; text-align: center;
   border: 1px solid var(--line); border-radius: 1.2rem; background: var(--surface);
 }
 body:is([data-route="dmax"], [data-route="pve"], [data-route="pvp"]) #content .row-list.is-grid > .row > .row__rank {
-  position: absolute; top: 1rem; left: 1.2rem; width: auto; height: auto; padding: 0.3rem 0.6rem;
+  position: absolute; top: 0.85rem; left: 1rem; width: auto; height: auto; padding: 0.25rem 0.5rem;
 }
 body:is([data-route="dmax"], [data-route="pve"], [data-route="pvp"]) #content .row-list.is-grid > .row > .sprite {
-  box-sizing: border-box; width: 18rem; height: 18rem; max-width: 100%; padding: 0;
-  border-radius: 2.4rem; object-fit: contain;
+  box-sizing: border-box; width: 14.2rem; height: 14.2rem; max-width: 100%; padding: 0;
+  border-radius: 2rem; object-fit: contain;
 }
 body:is([data-route="dmax"], [data-route="pve"], [data-route="pvp"]) #content .row-list.is-grid > .row > .sprite:not(.is-loading) {
   background: radial-gradient(ellipse at 50% 80%, color-mix(in srgb, var(--brand) 14%, transparent), transparent 66%);
 }
 body:is([data-route="dmax"], [data-route="pve"], [data-route="pvp"]) #content .row-list.is-grid .row__main {
-  display: flex; flex-direction: column; width: 100%; min-width: 0; padding: 0; border: 0; gap: 0.8rem;
+  display: flex; flex-direction: column; width: 100%; min-width: 0; padding: 0; border: 0; gap: 0.7rem;
 }
 body:is([data-route="dmax"], [data-route="pve"], [data-route="pvp"]) #content .row-list.is-grid .row__name { order: -1; justify-content: center; flex-wrap: wrap; }
-body:is([data-route="dmax"], [data-route="pve"], [data-route="pvp"]) #content .row-list.is-grid .row__name b { font-size: 2.1rem; font-weight: 700; white-space: normal; }
+body:is([data-route="dmax"], [data-route="pve"], [data-route="pvp"]) #content .row-list.is-grid .row__name b { font-size: 1.8rem; font-weight: 700; white-space: normal; }
 body:is([data-route="dmax"], [data-route="pve"], [data-route="pvp"]) #content .row-list.is-grid .row__badges { justify-content: center; flex-wrap: wrap; }
 body:is([data-route="dmax"], [data-route="pve"], [data-route="pvp"]) #content .row-list.is-grid .row__moves { white-space: normal; overflow-wrap: anywhere; }
+/* 점수 칸은 세로로 — 좁은 화면(한 칸 170px)에서 "66점" 과 "DPS 14.3 · TDO 149" 가 나란히 서면
+   앞 칸이 눌려 "66 / 점" 으로 쪼개진다. 카드는 어느 폭에서나 점수 아래 근거다 */
 body:is([data-route="dmax"], [data-route="pve"], [data-route="pvp"]) #content .row-list.is-grid .row__stats {
-  width: 100%; margin-top: auto; padding-top: 1rem; border-top: 1px solid var(--line); text-align: center;
+  display: flex; flex-direction: column; align-items: center; gap: 0.1rem;
+  width: 100%; margin-top: auto; padding-top: 0.85rem; border-top: 1px solid var(--line); text-align: center;
 }
-body:is([data-route="dmax"], [data-route="pve"], [data-route="pvp"]) #content .row-list.is-grid .row__score { font-size: 1.5rem; }
+body:is([data-route="dmax"], [data-route="pve"], [data-route="pvp"]) #content .row-list.is-grid .row__sub { display: block; }
+body:is([data-route="dmax"], [data-route="pve"], [data-route="pvp"]) #content .row-list.is-grid .row__score { font-size: 1.3rem; }
 body:is([data-route="dmax"], [data-route="pve"], [data-route="pvp"]) #content .row-list.is-grid > :is(.row__more, .row__why) { grid-column: 1 / -1; }
 @media (min-width: 1100px) {
   .dex__list.is-grid .gameday__row { padding: 4.2rem 2.2rem 2rem; gap: 1.2rem; }

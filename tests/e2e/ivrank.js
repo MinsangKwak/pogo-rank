@@ -18,6 +18,10 @@ const ok = (n, c, x = '') => { console.log((c ? 'PASS' : 'FAIL') + ' ' + n + ' '
   const browser = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium' });
   const errs = [];
   const ctx = await browser.newContext({ viewport: { width: 1440, height: 1000 } });
+  // 2026-09-12 v3.11.0 첫 방문 가입 권유 팝업은 '본 적 있음' 으로 표시해 두고 시작한다 —
+  // 안 그러면 3초 뒤 모달이 떠서 그 뒤의 클릭을 전부 가로챈다 (동의 배너를 끄는 것과 같은 처방).
+  // 팝업 자체는 tests/e2e/signup-invite.js 가 따로 검사한다
+  await ctx.addInitScript(() => { try { localStorage.setItem('pogo_signup_invite_seen', '1'); } catch {} });
   await ctx.route(/^https?:\/\/(?!localhost)/, (r) => r.abort());
   ctx.setDefaultTimeout(8000);
   const page = await ctx.newPage();
@@ -140,6 +144,7 @@ const ok = (n, c, x = '') => { console.log((c ? 'PASS' : 'FAIL') + ' ' + n + ' '
   // 위에서 '슈퍼' 를 골라도 아래 상위 10 은 '리틀' 인 일이 생겼다
   {
     const nctx = await browser.newContext({ viewport: { width: 430, height: 900 } });
+    await nctx.addInitScript(() => { try { localStorage.setItem('pogo_signup_invite_seen', '1'); } catch {} });
     await nctx.route(/^https?:\/\/(?!localhost)/, (r) => r.abort());
     await nctx.addInitScript(() => { try { localStorage.setItem('pogo_ivrank', JSON.stringify({ sprite: 379, ivs: [0, 15, 15], floor: 0 })); } catch {} });
     const p3 = await nctx.newPage();
@@ -167,6 +172,7 @@ const ok = (n, c, x = '') => { console.log((c ? 'PASS' : 'FAIL') + ' ' + n + ' '
   // ── 로그인 없이는 잠겨 있다
   {
     const anon = await browser.newContext({ viewport: { width: 1440, height: 900 } });
+    await anon.addInitScript(() => { try { localStorage.setItem('pogo_signup_invite_seen', '1'); } catch {} });
     await anon.route(/^https?:\/\/(?!localhost)/, (r) => r.abort());
     const p2 = await anon.newPage();
     p2.on('pageerror', (e) => errs.push('비로그인: ' + e));

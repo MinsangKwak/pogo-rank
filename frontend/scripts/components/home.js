@@ -58,6 +58,13 @@ function renderServiceHome() {
       el('p', {}, '찾고, 비교하고, 키우는 즐거움. 필요한 기능으로 바로 시작해요.')),
     el('section', { class: 'home__features', 'aria-label': '서비스 기능' },
       el('div', { class: 'home__section' }, el('h3', {}, '무엇을 해볼까요?'), el('span', {}, 'POGO PLAN과 함께하는 포켓몬 라이프')),
-      grid));
+      grid),
+    // 2026-09-12 v3.12.0 활용처 순위가 헤더 검색 패널의 빈 상태에 살고 있었다 — 패널을 걷어내며
+    // 갈 곳이 없어졌다. 지우지 않고 홈으로 옮긴다: "여러 순위표에서 두루 상위권" 은 어느 화면을
+    // 열지 정하기 전에 보는 값이라, 갈림길인 홈이 원래 자리에 가깝다 (views/usage.js)
+    ...(typeof usageTopNodes === 'function' ? (() => {
+      const nodes = usageTopNodes();
+      return nodes.length ? [el('section', { class: 'home__usage', 'aria-label': '활용처 순위' }, ...nodes)] : [];
+    })() : []));
   $note.textContent = '뭘 키울지 여기서 정해요. 도감과 상성으로 포켓몬을 알아보고, 랭킹에서 추천 개체를 고른 뒤, 육성 플래너에 내 개체를 기록하면 돼요.';
 }
