@@ -13,7 +13,7 @@ const BASE = 'http://localhost:5503/?mock=1';
 
 (async () => {
   const browser = await launch();
-  const ctx = await newContext(browser, { viewport: { width: 1440, height: 900 } });
+  const ctx = await newContext(browser, { locks: true, viewport: { width: 1440, height: 900 } });   // v3.18.0 잠금 동작을 검사하는 스위트
   ctx.setDefaultTimeout(8000);
   const page = await ctx.newPage();
   const errs = [];

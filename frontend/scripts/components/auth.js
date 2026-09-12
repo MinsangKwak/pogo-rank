@@ -292,8 +292,17 @@ function openSignupInvite() {
   try { localStorage.setItem(SIGNUP_SEEN_KEY, '1'); } catch { /* 저장 불가 환경 */ }
 }
 
+// 2026-09-12 v3.18.0 **임시** — 가입 권유 팝업을 내린다 (잠금을 전부 열어 둔 동안은 권할 것이 없다).
+// 회귀가 팝업을 계속 검사할 수 있도록 localStorage pogo_signup_invite = 'on' 이면 띄운다
+const SIGNUP_INVITE_ENABLED = false;
+function signupInviteEnabled() {
+  if (SIGNUP_INVITE_ENABLED) return true;
+  try { return localStorage.getItem('pogo_signup_invite') === 'on'; } catch { return false; }
+}
+
 // 첫 방문 비로그인이면 한 번 띄운다. 그 외에는 아무 일도 하지 않는다
 function maybeOpenSignupInvite() {
+  if (!signupInviteEnabled()) return;
   if (!authEnabled() || AUTH.status !== 'anon') return;       // 로그인·승인 대기면 볼 이유가 없다
   if (document.querySelector('dialog[open]')) return;          // 동의 배너·다른 팝업이 먼저다
   try { if (localStorage.getItem(SIGNUP_SEEN_KEY)) return; } catch { return; }

@@ -29,6 +29,12 @@ const SETTINGS_THEME = {
   dark: ['어둡게', '기기 설정과 상관없이 늘 어둡게 봐요.'],
 };
 
+// 2026-09-12 v3.18.0 움직이는 그림 — 기본 켬. 끄면 다음에 그리는 화면부터 정지본 (components/sprite.js)
+const SETTINGS_ANIM = [
+  ['on', '켜기', '포켓몬이 움직여요. 그림을 더 받아서 데이터를 조금 더 써요.'],
+  ['off', '끄기', '정지 그림만 써요. 느린 회선이나 데이터를 아낄 때.'],
+];
+
 function renderSettingsPage() {
   const $rows = el('div', { class: 'settings__choices' });
   // 고른 줄을 다시 그린다 — 눌린 표시(aria-checked)는 한 줄에만 있어야 한다
@@ -61,10 +67,31 @@ function renderSettingsPage() {
           ? uchip('로그인하고 계정에 저장하기', () => signIn())
           : '승인되면 계정에 저장돼 어느 기기에서든 같아요.');
 
+  // 움직이는 그림 줄 — 테마 줄과 같은 라디오 문법
+  const $anim = el('div', { class: 'settings__choices' });
+  const drawAnim = () => {
+    const now = typeof spriteAnimEnabled === 'function' && spriteAnimEnabled() ? 'on' : 'off';
+    $anim.replaceChildren(...SETTINGS_ANIM.map(([choice, name, desc]) => el('button', {
+      class: `settings__choice${choice === now ? ' is-on' : ''}`,
+      role: 'radio', 'aria-checked': String(choice === now),
+      onclick: () => {
+        try { if (choice === 'on') localStorage.removeItem(SPRITE_ANIM_KEY); else localStorage.setItem(SPRITE_ANIM_KEY, 'off'); } catch {}
+        track('sprite_anim_set', { to: choice });
+        drawAnim();
+      },
+    },
+      el('span', { class: 'settings__mark', 'aria-hidden': 'true' }),
+      el('span', { class: 'settings__choice-main' }, el('b', {}, name), el('span', {}, desc)))));
+  };
+  drawAnim();
+
   return pageBody('settings',
     sectionTitle('화면 테마'),
     el('p', { class: 'page-head__desc settings__desc' }, `지금 이 기기의 설정은 ${deviceNow}예요.`),
     el('div', { class: 'settings__group', role: 'radiogroup', 'aria-label': '화면 테마' }, $rows),
     savedWhere,
-    footNote('상단 바의 테마 버튼은 밝게 ↔ 어둡게만 한 번에 뒤집어요. 기기 설정을 따르게 하려면 여기서 고르세요.'));
+    footNote('상단 바의 테마 버튼은 밝게 ↔ 어둡게만 한 번에 뒤집어요. 기기 설정을 따르게 하려면 여기서 고르세요.'),
+    sectionTitle('움직이는 그림'),
+    el('div', { class: 'settings__group', role: 'radiogroup', 'aria-label': '움직이는 그림' }, $anim),
+    footNote('바꾸면 다음에 여는 화면부터 적용돼요. 기기의 "동작 줄이기" 설정이 켜져 있으면 늘 정지 그림이에요.'));
 }

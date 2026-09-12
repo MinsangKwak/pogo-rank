@@ -110,7 +110,7 @@ suite(async () => {
 
   // ── 로그인하지 않으면 잠긴다 (2026-09-11 v2.58.0)
   {
-    const guest = await newContext(browser, { viewport: { width: 390, height: 844 } });
+    const guest = await newContext(browser, { locks: true, viewport: { width: 390, height: 844 } });   // v3.18.0 잠금은 임시로 열려 있다 — 여기서는 켠다
     const gp = await guest.newPage();
     await gp.goto('http://localhost:5503/#/finder', { waitUntil: 'domcontentloaded' });
     await gp.waitForSelector('#splash', { state: 'detached', timeout: 15000 }).catch(() => {});

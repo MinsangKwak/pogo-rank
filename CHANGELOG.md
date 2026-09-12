@@ -1,6 +1,6 @@
 # 변경 이력
 
-**버전을 눌러 펼쳐 보세요.** 119개 판이 쌓여 한눈에 훑기 어려워, 각 버전을 접어 두었습니다.
+**버전을 눌러 펼쳐 보세요.** 120개 판이 쌓여 한눈에 훑기 어려워, 각 버전을 접어 두었습니다.
 
 각 줄은 `버전 — 날짜 · 그 판에서 한 일` 순서입니다. 최신이 위로 옵니다.
 형식은 [Keep a Changelog](https://keepachangelog.com/ko/1.1.0/)를 따릅니다.
@@ -11,6 +11,29 @@
 > 사용자가 읽는 패치노트는 서비스 안 [🎉 패치노트](https://minsangkwak.github.io/pogo-rank/#/release) 화면에 있습니다(영문판 포함).
 > 이 파일은 **왜 그렇게 고쳤는지**까지 남기는 개발 기록이라 더 깁니다.
 
+
+<details open>
+<summary><b>v3.18.0</b> — 2026-09-12 · <code>변경</code> 움직이는 그림 기본 · 잠금 전부 임시 개방 · 가입 권유 팝업 내림</summary>
+
+### 변경 — 움직이는 그림이 기본
+
+v2.67.0 에는 GIF 가 png 의 13배(평균 54KB)라 상세 화면에만 썼다. 이제 `sprite()` 가 어디서든 정지본을 먼저 띄우고 `spriteAnimate()` 로 갈아 끼운다 — 화면이 비는 일은 없고, 도감 첫 화면 100장이면 5MB 쯤 더 받는다. 무거운 사람을 위해 **설정 → 움직이는 그림** 켬/끔을 뒀다(`pogo_sprite_anim`, 없으면 켬). `prefers-reduced-motion` 은 설정과 무관하게 정지본이다. detail.js 가 따로 부르던 `spriteAnimate` 는 뺐다 — 한 곳에서 정한다.
+
+### 변경 — 잠긴 화면을 전부 연다 (임시)
+
+가입 유도보다 먼저 쓰게 하는 쪽을 택했다. `router.js LOCK_OPEN_ALL = true` 를 `routeLocked()` 가 먼저 본다 — 잠금을 정하는 자리가 그 하나라 화면·메뉴 자물쇠·홈 타일·잠시 써보기 버튼이 함께 사라진다. `ROUTES.locked` 표는 손대지 않았다. 되돌릴 때는 상수 하나.
+
+내 포켓몬은 게스트 저장(`plan_guest_mons`)으로 이 브라우저에 남고, 로그인하면 계정으로 옮겨진다(기존 동작).
+
+### 변경 — 가입 권유 팝업을 내린다 (임시)
+
+열어 둔 동안은 권할 것이 없다. `auth.js SIGNUP_INVITE_ENABLED = false`.
+
+### 회귀
+
+옛 동작을 검사하던 스위트가 깨지지 않도록 localStorage 스위치를 뒀다 — `pogo_lock_open = 'off'` 면 잠금이 살아나고(`_lib.newContext({ locks: true })` — trial · planner · ivrank), `pogo_signup_invite = 'on'` 이면 팝업이 뜬다(signup-invite). 새 `open-all.js` 13 이 기본값(전부 열림 · 팝업 없음 · GIF 기본 · 설정으로 끄기)을 지킨다. `signup-invite` · `theme` 의 테마 라디오 선택자는 라디오 그룹이 둘이 되어 `[aria-label="화면 테마"]` 로 좁혔고, `detail` 의 "목록은 정지본" 검사는 뒤집었으며, `finder` 의 게스트 잠금 검사는 `{ locks: true }` 로 켠다.
+
+</details>
 
 <details open>
 <summary><b>v3.17.1</b> — 2026-09-12 · <code>변경</code> 잠시 써보기 24시간 → 2시간</summary>

@@ -160,7 +160,7 @@ suite(async () => {
 
   // ── 로그인 없이는 잠겨 있다
   {
-    const anon = await newContext(browser, { viewport: { width: 1440, height: 900 } });
+    const anon = await newContext(browser, { locks: true, viewport: { width: 1440, height: 900 } });
     const p2 = await anon.newPage();
     p2.on('pageerror', (e) => errs.push('비로그인: ' + e));
     await p2.goto('http://localhost:5503/#/ivrank', { waitUntil: 'domcontentloaded' });
