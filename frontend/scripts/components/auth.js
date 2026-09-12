@@ -203,7 +203,6 @@ async function onAuthChange(user) {
   if (user) track('login', { status: AUTH.status });  // 2026-09-06 v2.9.0 GA4: 로그인 세션 수와 승인 상태(ok/pending)
   renderAccount();
   refreshFavUi();
-  if (typeof renderTabs === 'function') renderTabs();  // 2026-09-06 v2.9.0 탭 줄의 ★ 즐겨찾기 바로가기 표시/숨김
   TRAINERS_CACHE = null;  // 계정이 바뀌면 트레이너 코드도 다시 조회
   if (typeof renderTrainers === 'function') renderTrainers();
   // 2026-09-05 로그인 상태에 따라 ★ 즐겨찾기 메뉴 항목을 열고 닫는다
@@ -321,7 +320,7 @@ function openLoginInvite(screenName) {
   const steps = [
     ['1', 'Google 계정으로 로그인', '이메일·이름·프로필 사진만 받아요.'],
     ['2', '관리자 승인 기다리기', '바로 승인되지 않을 수 있어요. 관리자에게 알려 주세요.'],
-    ['3', '승인되면 열려요', '즐겨찾기·내 개체·일정이 계정에 묶여 어느 기기에서든 같아요.'],
+    ['3', '승인되면 열려요', '내 포켓몬·검색식·화면 설정이 계정에 묶여 어느 기기에서든 같아요.'],
   ];
   openModal(el('div', { class: 'consent__modal login-invite' },
     el('div', { class: 'login-invite__head' },
@@ -445,7 +444,7 @@ async function deleteAccount() {
 // 삭제 확인 팝업 — 되돌릴 수 없으므로 무엇이 지워지는지 먼저 보여 준다
 function confirmDeleteAccount() {
   const items = [
-    `★ 즐겨찾기 ${AUTH.favs.size}마리 · 🎒 내 포켓몬 ${Array.isArray(AUTH.mons) ? AUTH.mons.length : 0}마리`,
+    `🎒 내 포켓몬 ${Array.isArray(AUTH.mons) ? AUTH.mons.length : 0}마리 · 화면 설정`,
     '승인 정보와 가입 요청(이메일·이름·사진·약관 동의 기록)',
     'Google 로그인 연결(Firebase 인증 계정)',
   ];
@@ -517,7 +516,6 @@ async function toggleFav(dex) {
   else AUTH.favs.delete(dex);
   refreshFavUi(dex);
   renderAccount();
-  if (typeof renderTabs === 'function') renderTabs();       // 2026-09-06 v2.9.0 탭 줄 바로가기의 개수 갱신
   const fieldValue = firebase.firestore.FieldValue;
   await AUTH.db.collection('users').doc(AUTH.user.uid).set({
     email: authEmail(), favs: on ? fieldValue.arrayUnion(dex) : fieldValue.arrayRemove(dex), updatedAt: fieldValue.serverTimestamp(),
@@ -596,7 +594,7 @@ function renderAccount(message) {
   if (!AUTH.user) {
     accountBox.append(
       el('button', { class: 'drawer__item account__login', onclick: signIn }, '🔐 Google로 로그인'),
-      el('p', { class: 'account__sub' }, '로그인하면 즐겨찾기 ★와 내 포켓몬이 계정에 저장돼요. 승인된 분만 쓸 수 있고, 첫 로그인 때 ',
+      el('p', { class: 'account__sub' }, '로그인하면 내 포켓몬과 화면 설정이 계정에 저장돼요. 승인된 분만 쓸 수 있고, 첫 로그인 때 ',
         el('a', { href: '#/terms' }, '이용약관'), '·', el('a', { href: '#/privacy' }, '개인정보처리방침'), ' 동의를 받아요'),
       note);
     return;
@@ -611,7 +609,7 @@ function renderAccount(message) {
       // 관리자 화면에는 이 사람이 아예 안 보이므로 기다려도 승인이 오지 않는다
       AUTH.requestError
         ? el('p', { class: 'account__sub account__pending' }, `⚠ 가입 요청을 저장하지 못했어요 (${AUTH.requestError}) — 다시 로그인해 보고, 그래도 안 되면 관리자에게 알려주세요`)
-        : el('p', { class: 'account__sub account__pending' }, '⏳ 승인 대기 중 — 관리자가 승인하면 즐겨찾기를 쓸 수 있어요. 관리자에게 알려주세요!'),
+        : el('p', { class: 'account__sub account__pending' }, '⏳ 승인 대기 중 — 관리자가 승인하면 내 포켓몬을 계정에 저장할 수 있어요. 관리자에게 알려주세요!'),
       note,
       el('div', { class: 'account__actions' },
         el('button', { class: 'drawer__item', onclick: signOut }, '로그아웃'),

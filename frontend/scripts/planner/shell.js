@@ -18,7 +18,7 @@
 //
 // 의존하는 전역
 //   el (dom.js) · track (track.js) · navigateHash · NAV (components/history.js) · closeDrawer · closeModal
-//   state · $tabs · $controls · $content · $note · render (app.js — 호출 시점에는 정의돼 있다)
+//   state · $controls · $content · $note · render (app.js — 호출 시점에는 정의돼 있다)
 //   renderPlanHome (planner/home.js) · renderPlanCollection (planner/collection.js)
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -85,19 +85,10 @@ function switchMode(to, from = 'badge') {
   window.scrollTo(0, 0);
 }
 
-// 헤더 배지·서문·메뉴 항목 문구를 현재 모드에 맞춘다
-function updateModeBadge() {
-  const isPlan = state.appMode === 'plan';
-  const badge = document.getElementById('mode-toggle');
-  if (badge) {
-    // 2026-09-12 v3.6.0 이모지 자리를 도트 아이콘으로 (components/pxicon.js). 글자는 그대로 — 번역 사전이 본다
-    pxIconLabel(badge, isPlan ? '🔎' : '🌱', isPlan ? '도감' : '플래너');
-    badge.title = isPlan ? '도감 모드로 전환' : '플래너 모드로 전환';
-    badge.classList.toggle('is-plan', isPlan);
-  }
-  const tagline = document.querySelector('.tagline');
-  if (tagline) tagline.textContent = isPlan ? '내 개체 키우기 계획' : '편하게 검색하세요';  // 배지와 한 줄에 들어가게 짧게
-}
+// 2026-09-12 v3.13.0 헤더 배지(#mode-toggle)·서문(.tagline)은 없다 — v2.21.0 에 app-shell.js 가
+// 헤더를 다시 조립한 뒤로 DOM 에서 떨어져 있었고, 여기서 글자만 갈아 끼우고 있었다.
+// 모드는 주소가 정한다(applyPlanRoute). 이 함수는 부르는 곳이 남아 있어 빈 채로 둔다
+function updateModeBadge() {}
 
 // ── 2026-09-10 v2.47.0 로그인 잠금 ────────────────────────────────────────────
 // 육성 플래너는 **로그인한 사용자만** 쓴다. 개체를 계정에 저장하는 화면이라, 로그인 전에는
@@ -149,5 +140,4 @@ function renderPlan() {
 function initPlanShell() {
   _planShellReady = true;
   // 2026-09-07 v2.15.1 모드 전환 버튼은 헤더 배지 하나뿐 (드로어 항목·플래너 홈 카드의 중복 버튼 제거)
-  document.getElementById('mode-toggle')?.addEventListener('click', () => switchMode(undefined, 'badge'));
 }

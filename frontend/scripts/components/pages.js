@@ -330,11 +330,9 @@ function renderDexPage() {
       drawTypeChips();
       runSearch();
     }, { class: 'dex__found-clear' }));
-  const loginHint = authEnabled() && AUTH.status !== 'ok'
-    ? el('p', { class: 'dex__hint' },
-        AUTH.status === 'pending' ? '⏳ 승인 대기 중 — 승인되면 ★로 내 포켓몬을 도감에 채울 수 있어요.' : '로그인하면 ★를 눌러 내 포켓몬을 도감에 채울 수 있어요. ',
-        AUTH.status === 'anon' ? uchip('Google로 로그인', signIn) : '')
-    : '';
+  // 2026-09-12 v3.13.0 로그인 안내(★ 로 도감을 채우라던 줄)를 뺐다 — ★ 즐겨찾기는 v3.4.0 에 걷어냈는데
+  // 이 줄만 남아 없는 기능을 권하고 있었다. 도감은 로그인 없이 다 쓰는 화면이라 권할 것도 없다
+  const loginHint = '';
   draw();
   // 2026-09-10 v2.42.0 거르기(세대·즐겨찾기)와 보기 방식을 한 줄에 좌우로 — 성격은 달라도 둘 다
   // "목록을 어떻게 볼지" 라 목록 바로 위 한 줄에 모아 두는 편이 눈이 덜 움직인다.

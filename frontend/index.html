@@ -162,11 +162,9 @@ __STYLES__
     <div>
       <!-- 2026-09-03 v2.1.0 헤더 단순화: 서비스명 + 버전 / 서문 (To. 줄 제거, 헌정은 푸터 유지) · 2026-09-07 v2.17.0 POGO PLAN -->
       <h1>POGO PLAN <span class="app-bar__version">__VERSION__</span></h1>
-      <!-- 2026-09-07 v2.15.0 (QA-53) 모드 배지: 🔎 도감 ↔ 🌱 플래너 한 번 탭으로 전환 (planner/shell.js) -->
-      <div class="tagline-row">
-        <p class="tagline">편하게 검색하세요</p>
-        <button class="mode-badge" id="mode-toggle" aria-label="모드 전환">🌱 플래너</button>
-      </div>
+      <!-- 2026-09-12 v3.13.0 모드 배지(#mode-toggle)와 서문(.tagline)을 뺐다. app-shell.js 가 헤더를
+           다시 조립하면서(v2.21.0) 이 덩이는 DOM 에서 떨어져 나가 있었다 — 누를 수도 볼 수도 없는 채로
+           planner/shell.js 가 글자만 갈아 끼우고 있었다. 모드 전환은 왼쪽 메뉴의 화면 이동이 맡는다 -->
     </div>
     <div class="app-bar__actions">
       <button class="icon-btn" id="search-toggle" aria-label="포켓몬 검색">🔍</button>
@@ -189,8 +187,7 @@ __STYLES__
     <div class="schedule__body" id="boss-acc-body"></div>
   </details>
 
-  <!-- 2026-09-08 v2.22.0 탭 줄 복구: D-MAX·PvE·PvP 형제 화면 이동 + 📕 🧭 ★ 바로가기 (app.js renderTabs). 서비스 홈에서는 hidden -->
-  <div class="tabs" role="tablist" id="tabs" hidden></div>
+  <!-- 2026-09-12 v3.13.0 탭 줄(#tabs)을 뺐다 — v2.61.0 에 걷어낸 뒤로 늘 빈 채 hidden 이었다 -->
   <div class="controls" id="controls"></div>
   <div id="content"></div>
   <footer>
