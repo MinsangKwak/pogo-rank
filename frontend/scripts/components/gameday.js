@@ -16,7 +16,7 @@
 //
 // 의존하는 전역
 //   el (dom.js) · sprite (components/sprite.js) · nameNode (components/name.js)
-//   openDetailByDex (components/detail.js) · authEnabled · favBtn (components/auth.js)
+//   openDetailByDex (components/detail.js) · authEnabled (components/auth.js)
 //   GAMEDAY · TYPE_KO (data.js)
 // ─────────────────────────────────────────────────────────────────────────────
 

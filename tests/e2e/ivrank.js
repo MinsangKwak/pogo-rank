@@ -9,20 +9,13 @@
 //   - 고른 값이 새로고침 뒤에도 남는가 (pogo_ivrank)
 //   - PvP 순위에 오른 종의 상세에만 PvP 블록이 붙는가 (도감 아무 종에나 붙지 않는다)
 //   - 로그인 없이는 잠겨 있는가
-const { chromium } = require('/opt/node22/lib/node_modules/playwright');
+const { launch, newContext, ok, finish, suite } = require('./_lib');
 const BASE = 'http://localhost:5503/?mock=1';
-let pass = 0, fail = 0;
-const ok = (n, c, x = '') => { console.log((c ? 'PASS' : 'FAIL') + ' ' + n + ' ' + x); c ? pass++ : fail++; };
 
-(async () => {
-  const browser = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium' });
+suite(async () => {
+  const browser = await launch();
   const errs = [];
-  const ctx = await browser.newContext({ viewport: { width: 1440, height: 1000 } });
-  // 2026-09-12 v3.11.0 첫 방문 가입 권유 팝업은 '본 적 있음' 으로 표시해 두고 시작한다 —
-  // 안 그러면 3초 뒤 모달이 떠서 그 뒤의 클릭을 전부 가로챈다 (동의 배너를 끄는 것과 같은 처방).
-  // 팝업 자체는 tests/e2e/signup-invite.js 가 따로 검사한다
-  await ctx.addInitScript(() => { try { localStorage.setItem('pogo_signup_invite_seen', '1'); } catch {} });
-  await ctx.route(/^https?:\/\/(?!localhost)/, (r) => r.abort());
+  const ctx = await newContext(browser, { viewport: { width: 1440, height: 1000 } });
   ctx.setDefaultTimeout(8000);
   const page = await ctx.newPage();
   page.on('pageerror', (e) => errs.push(String(e)));
@@ -30,7 +23,6 @@ const ok = (n, c, x = '') => { console.log((c ? 'PASS' : 'FAIL') + ' ' + n + ' '
   const go = async (hash) => {
     await page.goto(BASE + hash, { waitUntil: 'domcontentloaded' });
     await page.waitForSelector('#splash', { state: 'detached', timeout: 15000 }).catch(() => {});
-    await page.locator('#consent .consent__deny').click({ timeout: 1500 }).catch(() => {});
     await page.waitForTimeout(500);
   };
 
@@ -143,15 +135,12 @@ const ok = (n, c, x = '') => { console.log((c ? 'PASS' : 'FAIL') + ' ' + n + ' '
   // 전에는 이 블록이 자기 리그 탭을 따로 가져 같은 화면에 리그 컨트롤이 둘이었다 —
   // 위에서 '슈퍼' 를 골라도 아래 상위 10 은 '리틀' 인 일이 생겼다
   {
-    const nctx = await browser.newContext({ viewport: { width: 430, height: 900 } });
-    await nctx.addInitScript(() => { try { localStorage.setItem('pogo_signup_invite_seen', '1'); } catch {} });
-    await nctx.route(/^https?:\/\/(?!localhost)/, (r) => r.abort());
+    const nctx = await newContext(browser, { viewport: { width: 430, height: 900 } });
     await nctx.addInitScript(() => { try { localStorage.setItem('pogo_ivrank', JSON.stringify({ sprite: 379, ivs: [0, 15, 15], floor: 0 })); } catch {} });
     const p3 = await nctx.newPage();
     p3.on('pageerror', (e) => errs.push('좁은 화면: ' + e));
     await p3.goto(BASE + '#/pvp/ivrank', { waitUntil: 'domcontentloaded' });
     await p3.waitForSelector('#splash', { state: 'detached', timeout: 15000 }).catch(() => {});
-    await p3.locator('#consent .consent__deny').click({ timeout: 1500 }).catch(() => {});
     await p3.waitForSelector('.ivrank__top', { timeout: 10000 }).catch(() => {});
     await p3.waitForTimeout(400);
     ok('블록 안에 리그 탭이 없다', (await p3.locator('.ivrank__top .seg').count()) === 0);
@@ -171,14 +160,11 @@ const ok = (n, c, x = '') => { console.log((c ? 'PASS' : 'FAIL') + ' ' + n + ' '
 
   // ── 로그인 없이는 잠겨 있다
   {
-    const anon = await browser.newContext({ viewport: { width: 1440, height: 900 } });
-    await anon.addInitScript(() => { try { localStorage.setItem('pogo_signup_invite_seen', '1'); } catch {} });
-    await anon.route(/^https?:\/\/(?!localhost)/, (r) => r.abort());
+    const anon = await newContext(browser, { viewport: { width: 1440, height: 900 } });
     const p2 = await anon.newPage();
     p2.on('pageerror', (e) => errs.push('비로그인: ' + e));
     await p2.goto('http://localhost:5503/#/ivrank', { waitUntil: 'domcontentloaded' });
     await p2.waitForSelector('#splash', { state: 'detached', timeout: 15000 }).catch(() => {});
-    await p2.locator('#consent .consent__deny').click({ timeout: 1500 }).catch(() => {});
     await p2.waitForTimeout(600);
     ok('로그인 없이는 잠긴 화면', (await p2.locator('.plan__lock').count()) === 1);
     ok('잠겼을 때 본문은 안 그린다', (await p2.locator('.ivrank__pick').count()) === 0);
@@ -186,7 +172,5 @@ const ok = (n, c, x = '') => { console.log((c ? 'PASS' : 'FAIL') + ' ' + n + ' '
   }
 
   ok('콘솔 오류 없음', errs.length === 0, errs.join(' | '));
-  await browser.close();
-  console.log(`${pass}/${pass + fail} passed`);
-  process.exit(fail ? 1 : 0);
-})();
+  await finish(browser);
+});

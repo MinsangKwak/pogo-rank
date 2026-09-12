@@ -10,10 +10,8 @@
 //
 // 주의: 이 스위트 자체가 Playwright(자동화 도구)로 돈다 — navigator.webdriver 가 기본으로 true 라
 // "정상 브라우저" 시나리오는 webdriver·UA 를 일부러 정상값으로 덮어써서 흉내 낸다
-const { chromium } = require('/opt/node22/lib/node_modules/playwright');
+const { launch, newContext, ok, finish, suite } = require('./_lib');
 const BASE = 'http://localhost:5503/?mock=1';
-let pass = 0, fail = 0;
-const ok = (n, c, x = '') => { console.log((c ? 'PASS' : 'FAIL') + ' ' + n + ' ' + x); c ? pass++ : fail++; };
 
 // 페이지가 gtag 를 실제로 불렀는지 세도록, 우리 번들보다 먼저 가짜 gtag 를 심어 둔다
 // (로컬 빌드는 GA_PENDING_ID 가 없어 진짜 gtag 스니펫이 안 실리므로, track() 의 typeof 검사만 통과하면 된다)
@@ -23,8 +21,8 @@ const spoofNormalBrowser = (ctx) => ctx.addInitScript(() => {
 });
 const NORMAL_UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36';
 
-(async () => {
-  const browser = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium' });
+suite(async () => {
+  const browser = await launch();
   const consoleLines = [];
 
   // consent: 'deny' 면 window.gtag 가 아예 undefined 가 된다(기존 동작, legal.js 가 이미 지킨다) —
@@ -41,16 +39,7 @@ const NORMAL_UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 
 
   // ── 1. 기본 Playwright 컨텍스트 — navigator.webdriver 가 true 라 봇으로 잡혀야 한다
   {
-    const ctx = await browser.newContext({ viewport: { width: 1280, height: 800 } });
-    // 2026-09-11 v2.57.0 바깥 주소(웹폰트·Firebase)를 끊는다. 이 방(샌드박스)에는 바깥이 없어서
-    // 그 요청들이 타임아웃까지 매달리고, 그동안 첫 렌더가 끝나지 않는다 — 실측 한 번 여는 데 13.7초.
-    // 끊으면 1.2초다(11.5배). 앱은 바깥 것 없이도 돌게 만들어 뒀으니(대체 글꼴·?mock) 검사 내용은 그대로다.
-    // 다른 스위트 열넷은 이미 이렇게 하고 있었다 — 빠진 곳만 맞춘다
-    // 2026-09-12 v3.11.0 첫 방문 가입 권유 팝업은 '본 적 있음' 으로 표시해 두고 시작한다 —
-    // 안 그러면 3초 뒤 모달이 떠서 그 뒤의 클릭을 전부 가로챈다 (동의 배너를 끄는 것과 같은 처방).
-    // 팝업 자체는 tests/e2e/signup-invite.js 가 따로 검사한다
-    await ctx.addInitScript(() => { try { localStorage.setItem('pogo_signup_invite_seen', '1'); } catch {} });
-    await ctx.route(/^https?:\/\/(?!localhost)/, (r) => r.abort());
+    const ctx = await newContext(browser, { banner: true, viewport: { width: 1280, height: 800 } });
     await installGtagSpy(ctx);
     const page = await openAndCheck(ctx);
     ok('기본 자동화 컨텍스트는 봇으로 판정 (webdriver)', await page.evaluate(() => IS_BOT_LIKE === true));
@@ -71,9 +60,7 @@ const NORMAL_UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 
 
   // ── 2. 정상 브라우저 신호로 덮어쓴 컨텍스트 — 봇이 아니어야 하고, track() 이 실제로 gtag 를 불러야 한다
   {
-    const ctx = await browser.newContext({ viewport: { width: 1280, height: 800 }, userAgent: NORMAL_UA });
-    await ctx.addInitScript(() => { try { localStorage.setItem('pogo_signup_invite_seen', '1'); } catch {} });
-    await ctx.route(/^https?:\/\/(?!localhost)/, (r) => r.abort());
+    const ctx = await newContext(browser, { banner: true, viewport: { width: 1280, height: 800 }, userAgent: NORMAL_UA });
     await installGtagSpy(ctx);
     await spoofNormalBrowser(ctx);
     const page = await openAndCheck(ctx, 'allow');
@@ -89,9 +76,7 @@ const NORMAL_UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 
 
   // ── 3. 화면 정확히 800×600 — webdriver 를 정상으로 덮어써도 이 신호 하나만으로 봇 판정
   {
-    const ctx = await browser.newContext({ viewport: { width: 800, height: 600 }, userAgent: NORMAL_UA });
-    await ctx.addInitScript(() => { try { localStorage.setItem('pogo_signup_invite_seen', '1'); } catch {} });
-    await ctx.route(/^https?:\/\/(?!localhost)/, (r) => r.abort());
+    const ctx = await newContext(browser, { banner: true, viewport: { width: 800, height: 600 }, userAgent: NORMAL_UA });
     await installGtagSpy(ctx);
     await spoofNormalBrowser(ctx);
     const page = await openAndCheck(ctx);
@@ -101,9 +86,7 @@ const NORMAL_UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 
 
   // ── 4. UA 에 봇 키워드 — webdriver·화면을 정상으로 덮어써도 이 신호 하나만으로 봇 판정
   {
-    const ctx = await browser.newContext({ viewport: { width: 1280, height: 800 }, userAgent: 'Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)' });
-    await ctx.addInitScript(() => { try { localStorage.setItem('pogo_signup_invite_seen', '1'); } catch {} });
-    await ctx.route(/^https?:\/\/(?!localhost)/, (r) => r.abort());
+    const ctx = await newContext(browser, { banner: true, viewport: { width: 1280, height: 800 }, userAgent: 'Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)' });
     await installGtagSpy(ctx);
     await spoofNormalBrowser(ctx);
     const page = await openAndCheck(ctx);
@@ -115,7 +98,5 @@ const NORMAL_UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 
   const leaked = consoleLines.filter((line) => /is_?bot|봇\s*판정|bot.?like/i.test(line));
   ok('판정 결과를 콘솔에 남기지 않음', leaked.length === 0, leaked.join(' | ').slice(0, 200));
 
-  await browser.close();
-  console.log(`${pass}/${pass + fail} passed`);
-  process.exit(fail ? 1 : 0);
-})().catch((e) => { console.error('CRASH', e.message); process.exit(1); });
+  await finish(browser);
+});

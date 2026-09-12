@@ -116,6 +116,8 @@ function openDetailPanel(content) {
     if (content.dataset.mon) panel.dataset.mon = content.dataset.mon;
     if (content.dataset.sprite) panel.dataset.sprite = content.dataset.sprite;
   }
+  // 2026-09-12 v3.15.0 도감 목록에 "지금 이 줄" 표시 (components/pages.js dexHighlightRow)
+  if (typeof dexHighlightRow === 'function') dexHighlightRow(content.dataset?.sprite ?? null);
   return true;
 }
 function closeDetailPanel() {
@@ -126,6 +128,7 @@ function closeDetailPanel() {
   panel.style.removeProperty('top');
   document.getElementById('detail-panel-body').replaceChildren();
   delete panel.dataset.route; delete panel.dataset.mon; delete panel.dataset.sprite;
+  if (typeof dexHighlightRow === 'function') dexHighlightRow(null);
   // 딥링크(#/mon/…)를 열어 둔 채 닫으면 주소에서 해시만 지운다 — closeModal 과 같은 규칙
   if (/^#\/mon\//.test(location.hash)) {
     try { history.replaceState(history.state, '', location.pathname + location.search); } catch {}

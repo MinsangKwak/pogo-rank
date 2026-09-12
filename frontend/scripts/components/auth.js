@@ -202,14 +202,11 @@ async function onAuthChange(user) {
   if (typeof setTrackingUser === 'function') setTrackingUser(user ? user.uid : null, AUTH.status);
   if (user) track('login', { status: AUTH.status });  // 2026-09-06 v2.9.0 GA4: 로그인 세션 수와 승인 상태(ok/pending)
   renderAccount();
-  refreshFavUi();
-  if (typeof renderTabs === 'function') renderTabs();  // 2026-09-06 v2.9.0 탭 줄의 ★ 즐겨찾기 바로가기 표시/숨김
   TRAINERS_CACHE = null;  // 계정이 바뀌면 트레이너 코드도 다시 조회
   if (typeof renderTrainers === 'function') renderTrainers();
-  // 2026-09-05 로그인 상태에 따라 ★ 즐겨찾기 메뉴 항목을 열고 닫는다
   // 2026-09-10 v2.47.0 로그인해야 쓰는 항목(육성 플래너)의 잠금 표시 갱신
   if (typeof syncLockedNav === 'function') syncLockedNav();
-  // 도감·즐겨찾기 페이지가 열려 있으면 ★ 표시를 다시 그린다
+  // 도감·내 포켓몬 페이지가 열려 있으면 로그인 상태에 맞춰 다시 그린다
   if (typeof currentPageId === 'function' && ['dex', 'favs'].includes(currentPageId())) renderPage();
   // 2026-09-10 v2.49.0 (버그) 잠긴 화면은 로그인이 끝나면 다시 그려야 한다.
   // Firebase SDK 는 첫 화면이 그려진 뒤에 로드된다(initAuth). 그래서 #/raids 같은 주소로 바로 들어오면
@@ -321,7 +318,7 @@ function openLoginInvite(screenName) {
   const steps = [
     ['1', 'Google 계정으로 로그인', '이메일·이름·프로필 사진만 받아요.'],
     ['2', '관리자 승인 기다리기', '바로 승인되지 않을 수 있어요. 관리자에게 알려 주세요.'],
-    ['3', '승인되면 열려요', '즐겨찾기·내 개체·일정이 계정에 묶여 어느 기기에서든 같아요.'],
+    ['3', '승인되면 열려요', '내 포켓몬·검색식·화면 설정이 계정에 묶여 어느 기기에서든 같아요.'],
   ];
   openModal(el('div', { class: 'consent__modal login-invite' },
     el('div', { class: 'login-invite__head' },
@@ -340,6 +337,9 @@ function openLoginInvite(screenName) {
         el('div', {}, el('b', {}, title), el('span', {}, desc))))),
     pending ? '' : goButton,
     el('button', { class: 'drawer__item login-invite__later', onclick: () => closeModal() }, pending ? '확인' : '나중에'),
+    // 2026-09-12 v3.16.0 [잠시 써보기] — 무엇이 열리는지 먼저 20초 보여 준다. 세 번 다 쓰면 권유 문구 (components/trial.js).
+    // 순서는 로그인 → 나중에 → 잠시 써보기: 권하는 것이 먼저, 빠져나가는 길이 그다음, 맛보기는 맨 끝
+    pending || typeof trialButtonNode !== 'function' ? '' : trialButtonNode(screenName),
     footNote('첫 로그인 때 ',
       el('a', { href: '#/terms', onclick: () => closeModal({ silent: true }) }, '이용약관'), '·',
       el('a', { href: '#/privacy', onclick: () => closeModal({ silent: true }) }, '개인정보처리방침'), ' 동의를 받아요.')));
@@ -445,7 +445,7 @@ async function deleteAccount() {
 // 삭제 확인 팝업 — 되돌릴 수 없으므로 무엇이 지워지는지 먼저 보여 준다
 function confirmDeleteAccount() {
   const items = [
-    `★ 즐겨찾기 ${AUTH.favs.size}마리 · 🎒 내 포켓몬 ${Array.isArray(AUTH.mons) ? AUTH.mons.length : 0}마리`,
+    `🎒 내 포켓몬 ${Array.isArray(AUTH.mons) ? AUTH.mons.length : 0}마리 · 화면 설정`,
     '승인 정보와 가입 요청(이메일·이름·사진·약관 동의 기록)',
     'Google 로그인 연결(Firebase 인증 계정)',
   ];
@@ -494,82 +494,8 @@ async function loadFavs() {
   }
 }
 
-// 승인된 사용자에게만 ★가 채워진다 — 승인 대기 중에는 저장이 안 되므로 표시도 하지 않는다
-function isFav(dex) {
-  return AUTH.status === 'ok' && AUTH.favs.has(Number(dex));
-}
-
-async function toggleFav(dex) {
-  if (AUTH.status === 'anon') {
-    signIn();
-    return;
-  }
-  if (AUTH.status === 'pending') {
-    renderAccount('승인 대기 중이라 아직 즐겨찾기를 저장할 수 없어요');
-    openDrawer();
-    return;
-  }
-  dex = Number(dex);
-  const on = !AUTH.favs.has(dex);
-  track('fav_toggle', { on: on ? 1 : 0, dex });  // 2026-09-06 v2.9.0 GA4: ★ 사용량 — 즐겨찾기 기능이 실제로 쓰이는지
-  // 서버 응답을 기다리지 않고 화면을 먼저 바꾼다(낙관적 갱신) — 별을 눌렀을 때 즉시 반응하도록
-  if (on) AUTH.favs.add(dex);
-  else AUTH.favs.delete(dex);
-  refreshFavUi(dex);
-  renderAccount();
-  if (typeof renderTabs === 'function') renderTabs();       // 2026-09-06 v2.9.0 탭 줄 바로가기의 개수 갱신
-  const fieldValue = firebase.firestore.FieldValue;
-  await AUTH.db.collection('users').doc(AUTH.user.uid).set({
-    email: authEmail(), favs: on ? fieldValue.arrayUnion(dex) : fieldValue.arrayRemove(dex), updatedAt: fieldValue.serverTimestamp(),
-  }, { merge: true }).catch(() => {});
-}
-
-// 2026-09-05 역할 수동 보정 저장.
-// 자동 분류(ROLES)가 맞으면 아무것도 저장하지 않고, 다를 때만 이 표에 예외로 남긴다.
-// 그래서 대부분의 사용자 문서에는 roles 필드가 아예 없거나 몇 줄뿐이다.
-//
-// 키는 '도감번호|폼라벨' — backend/roles_build.py·pve_full.json과 같은 형식이라
-// 아머드 뮤츠('150|아머드')와 일반 뮤츠('150|')가 갈린다.
-// (섀도우는 상세 팝업이 기본 폼으로 열리므로 일반 폼과 보정을 공유한다)
-async function setRole(formKey, roleList) {
-  if (AUTH.status !== 'ok') {
-    if (AUTH.status === 'anon') signIn();
-    return;
-  }
-  // 낙관적 갱신 — 저장 응답을 기다리지 않고 화면부터 바꾼다
-  if (roleList && roleList.length) AUTH.roles[formKey] = roleList;
-  else delete AUTH.roles[formKey];
-  const fieldValue = firebase.firestore.FieldValue;
-  await AUTH.db.collection('users').doc(AUTH.user.uid).set({
-    email: authEmail(), roles: AUTH.roles, updatedAt: fieldValue.serverTimestamp(),
-  }, { merge: true }).catch(() => {});
-}
-
-// ★ 버튼: 같은 도감번호의 버튼이 여러 곳(도감 목록·팝업)에 있어도 refreshFavUi로 동시에 갱신
-// 그래서 버튼은 상태를 스스로 들고 있지 않고 data-dex만 남기며, 실제 표시는 AUTH.favs를 보고 정한다
-function favBtn(dex, extraClass = '') {
-  const on = isFav(dex);
-  return el('button', { class: `fav${on ? ' is-on' : ''}${extraClass ? ' ' + extraClass : ''}`, 'data-dex': String(dex), 'aria-label': '즐겨찾기',
-    title: AUTH.status === 'ok' ? '즐겨찾기 토글' : '로그인하면 즐겨찾기 저장',
-    onclick: (event) => {
-      // 카드 전체가 상세 팝업을 여는 클릭 대상이므로, ★는 팝업이 뜨지 않게 전파를 막는다
-      event.stopPropagation();
-      toggleFav(dex);
-    } }, on ? '★' : '☆');
-}
-
-// onlyDex를 주면 그 도감번호의 버튼만, 없으면 화면의 모든 ★ 버튼을 다시 칠한다
-// (로그인·로그아웃 때는 전체, 별 하나를 토글할 때는 해당 번호만)
-function refreshFavUi(onlyDex) {
-  for (const button of document.querySelectorAll('.fav[data-dex]')) {
-    if (onlyDex != null && Number(button.dataset.dex) !== Number(onlyDex)) continue;
-    const on = isFav(button.dataset.dex);
-    button.classList.toggle('is-on', on);
-    button.textContent = on ? '★' : '☆';
-  }
-  // 도감의 "★ 즐겨찾기 N" 칩 카운트도 갱신
-  for (const chip of document.querySelectorAll('.fav-chip')) chip.textContent = `★ 즐겨찾기 ${AUTH.favs.size}`;
-}
+// 2026-09-12 v3.14.0 ★ 버튼 함수들(isFav · toggleFav · favBtn · refreshFavUi)과 역할 보정 setRole 을 지웠다 —
+// v3.4.0 에 ★ 즐겨찾기 기능을 걷어낸 뒤로 부르는 곳이 없었다. AUTH.favs · AUTH.roles 는 Firestore 필드라 그대로 읽는다
 
 // ── 드로어 계정 영역 ────────────────────────────────────
 // message를 주면 계정 영역 아래에 안내문을 함께 그린다(로그인 실패·승인 대기 안내 등).
@@ -596,7 +522,7 @@ function renderAccount(message) {
   if (!AUTH.user) {
     accountBox.append(
       el('button', { class: 'drawer__item account__login', onclick: signIn }, '🔐 Google로 로그인'),
-      el('p', { class: 'account__sub' }, '로그인하면 즐겨찾기 ★와 내 포켓몬이 계정에 저장돼요. 승인된 분만 쓸 수 있고, 첫 로그인 때 ',
+      el('p', { class: 'account__sub' }, '로그인하면 내 포켓몬과 화면 설정이 계정에 저장돼요. 승인된 분만 쓸 수 있고, 첫 로그인 때 ',
         el('a', { href: '#/terms' }, '이용약관'), '·', el('a', { href: '#/privacy' }, '개인정보처리방침'), ' 동의를 받아요'),
       note);
     return;
@@ -611,7 +537,7 @@ function renderAccount(message) {
       // 관리자 화면에는 이 사람이 아예 안 보이므로 기다려도 승인이 오지 않는다
       AUTH.requestError
         ? el('p', { class: 'account__sub account__pending' }, `⚠ 가입 요청을 저장하지 못했어요 (${AUTH.requestError}) — 다시 로그인해 보고, 그래도 안 되면 관리자에게 알려주세요`)
-        : el('p', { class: 'account__sub account__pending' }, '⏳ 승인 대기 중 — 관리자가 승인하면 즐겨찾기를 쓸 수 있어요. 관리자에게 알려주세요!'),
+        : el('p', { class: 'account__sub account__pending' }, '⏳ 승인 대기 중 — 관리자가 승인하면 내 포켓몬을 계정에 저장할 수 있어요. 관리자에게 알려주세요!'),
       note,
       el('div', { class: 'account__actions' },
         el('button', { class: 'drawer__item', onclick: signOut }, '로그아웃'),

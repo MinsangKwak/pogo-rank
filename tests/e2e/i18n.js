@@ -8,20 +8,13 @@
 //   - 부분 렌더(도감 청크·상성 결과·검색 결과)도 번역되는가 (MutationObserver 가 살아 있는가)
 //   - 한국어로만 두기로 한 화면에 영어 안내가 뜨는가
 //   - 헤더에서 👤 가 사라지고 계정이 메뉴 안 "마이페이지"로 갔는가
-const { chromium } = require('/opt/node22/lib/node_modules/playwright');
+const { launch, newContext, ok, finish, suite } = require('./_lib');
 const BASE = 'http://localhost:5503/?mock=1';
-let pass = 0, fail = 0;
-const ok = (n, c, x = '') => { console.log((c ? 'PASS' : 'FAIL') + ' ' + n + ' ' + x); c ? pass++ : fail++; };
 const hangul = (text) => /[가-힣]/.test(text || '');
 
-(async () => {
-  const browser = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium' });
-  const ctx = await browser.newContext({ viewport: { width: 1440, height: 900 } });
-  // 2026-09-12 v3.11.0 첫 방문 가입 권유 팝업은 '본 적 있음' 으로 표시해 두고 시작한다 —
-  // 안 그러면 3초 뒤 모달이 떠서 그 뒤의 클릭을 전부 가로챈다 (동의 배너를 끄는 것과 같은 처방).
-  // 팝업 자체는 tests/e2e/signup-invite.js 가 따로 검사한다
-  await ctx.addInitScript(() => { try { localStorage.setItem('pogo_signup_invite_seen', '1'); } catch {} });
-  await ctx.route(/^https?:\/\/(?!localhost)/, (r) => r.abort());
+suite(async () => {
+  const browser = await launch();
+  const ctx = await newContext(browser, { viewport: { width: 1440, height: 900 } });
   ctx.setDefaultTimeout(6000);
   const page = await ctx.newPage();
   const errs = [];
@@ -30,7 +23,6 @@ const hangul = (text) => /[가-힣]/.test(text || '');
   const go = async (hash = '') => {
     await page.goto(BASE + hash, { waitUntil: 'domcontentloaded' });
     await page.waitForSelector('#splash', { state: 'detached', timeout: 15000 }).catch(() => {});
-    await page.locator('#consent .consent__deny').click({ timeout: 1500 }).catch(() => {});
     await page.waitForTimeout(400);
   };
 
@@ -128,7 +120,5 @@ const hangul = (text) => /[가-힣]/.test(text || '');
   ok('html lang=ko', (await page.evaluate(() => document.documentElement.lang)) === 'ko');
 
   ok('페이지 오류 없음', errs.length === 0, errs.join(' | ').slice(0, 200));
-  await browser.close();
-  console.log(`${pass}/${pass + fail} passed`);
-  process.exit(fail ? 1 : 0);
-})().catch((e) => { console.error('CRASH', e.message); process.exit(1); });
+  await finish(browser);
+});

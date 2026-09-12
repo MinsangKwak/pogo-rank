@@ -12,19 +12,12 @@
 //   - 도감의 기존 .dex__layout 클래스·localStorage 키('pogo_dex_cols')는 그대로인가 (회귀 없음)
 //   - **눌렀을 때 화면이 실제로 달라지는가** (v3.9.1) — 클래스만 바뀌고 CSS 가 그걸 안 보던 시절이 있었다
 //   - (v3.10.0) 휴대폰 그리드가 두 칸인가 · 동작 버튼이 한 줄에 서는가 · 리스트 아이콘이 ☰ 메뉴와 다른가
-const { chromium } = require('/opt/node22/lib/node_modules/playwright');
+const { launch, newContext, ok, finish, suite } = require('./_lib');
 const BASE = 'http://localhost:5503/?mock=1';
-let pass = 0, fail = 0;
-const ok = (n, c, x = '') => { console.log((c ? 'PASS' : 'FAIL') + ' ' + n + ' ' + x); c ? pass++ : fail++; };
 
-(async () => {
-  const browser = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium' });
-  const ctx = await browser.newContext({ viewport: { width: 1440, height: 900 } });
-  // 2026-09-12 v3.11.0 첫 방문 가입 권유 팝업은 '본 적 있음' 으로 표시해 두고 시작한다 —
-  // 안 그러면 3초 뒤 모달이 떠서 그 뒤의 클릭을 전부 가로챈다 (동의 배너를 끄는 것과 같은 처방).
-  // 팝업 자체는 tests/e2e/signup-invite.js 가 따로 검사한다
-  await ctx.addInitScript(() => { try { localStorage.setItem('pogo_signup_invite_seen', '1'); } catch {} });
-  await ctx.route(/^https?:\/\/(?!localhost)/, (r) => r.abort());
+suite(async () => {
+  const browser = await launch();
+  const ctx = await newContext(browser, { viewport: { width: 1440, height: 900 } });
   ctx.setDefaultTimeout(8000);
   const page = await ctx.newPage();
   const errs = [];
@@ -33,7 +26,6 @@ const ok = (n, c, x = '') => { console.log((c ? 'PASS' : 'FAIL') + ' ' + n + ' '
   const go = async (hash) => {
     await page.goto(BASE + hash, { waitUntil: 'domcontentloaded' });
     await page.waitForSelector('#splash', { state: 'detached', timeout: 15000 }).catch(() => {});
-    await page.locator('#consent .consent__deny').click({ timeout: 1500 }).catch(() => {});
     await page.waitForTimeout(500);
   };
   const clearKeys = () => page.evaluate(() => {
@@ -118,14 +110,11 @@ const ok = (n, c, x = '') => { console.log((c ? 'PASS' : 'FAIL') + ' ' + n + ' '
     [1280, '#/pve', '#content .row-list', '태블릿 레이드·PvE', 3],
     [1440, '#/pve', '#content .row-list', 'PC 레이드·PvE', 4],
   ]) {
-    const gctx = await browser.newContext({ viewport: { width: w, height: 900 } });
-    await gctx.addInitScript(() => { try { localStorage.setItem('pogo_signup_invite_seen', '1'); } catch {} });
-    await gctx.route(/^https?:\/\/(?!localhost)/, (r) => r.abort());
+    const gctx = await newContext(browser, { viewport: { width: w, height: 900 } });
     const gpage = await gctx.newPage();
     gpage.on('pageerror', (e) => errs.push(`${label}:` + e));
     await gpage.goto(BASE + hash, { waitUntil: 'domcontentloaded' });
     await gpage.waitForSelector('#splash', { state: 'detached', timeout: 15000 }).catch(() => {});
-    await gpage.locator('#consent .consent__deny').click({ timeout: 1500 }).catch(() => {});
     // 고정 대기는 병렬로 돌 때 모자란다 — 재려는 목록이 실제로 붙을 때까지 기다린다
     // (2026-09-11 v2.59.0: 500ms 뒤에 재다가 아직 안 그려진 화면에서 null 을 집었다)
     await gpage.waitForSelector(sel, { timeout: 15000 }).catch(() => {});
@@ -139,14 +128,11 @@ const ok = (n, c, x = '') => { console.log((c ? 'PASS' : 'FAIL') + ' ' + n + ' '
 
   // 상세 패널이 열려 본문이 좁아지면 자동으로 열이 줄어드는가 (레이드 보스 기준)
   for (const [w, expect] of [[1280, 1], [1440, 2]]) {
-    const sctx = await browser.newContext({ viewport: { width: w, height: 900 } });
-    await sctx.addInitScript(() => { try { localStorage.setItem('pogo_signup_invite_seen', '1'); } catch {} });
-    await sctx.route(/^https?:\/\/(?!localhost)/, (r) => r.abort());
+    const sctx = await newContext(browser, { viewport: { width: w, height: 900 } });
     const spage = await sctx.newPage();
     spage.on('pageerror', (e) => errs.push(`squeeze ${w}:` + e));
     await spage.goto(BASE + '#/raids', { waitUntil: 'domcontentloaded' });
     await spage.waitForSelector('#splash', { state: 'detached', timeout: 15000 }).catch(() => {});
-    await spage.locator('#consent .consent__deny').click({ timeout: 1500 }).catch(() => {});
     await spage.waitForSelector('#page .dex__row', { timeout: 15000 }).catch(() => {});
     await spage.locator('#page .dex__row').first().click();
     await spage.waitForTimeout(400);
@@ -160,14 +146,11 @@ const ok = (n, c, x = '') => { console.log((c ? 'PASS' : 'FAIL') + ' ' + n + ' '
 
   // ── v2.39.0 보기 방식 컨트롤이 안내 문구와 같은 줄, 오른쪽 끝에 있는가 (가독성 문제로 재배치)
   {
-    const pctx = await browser.newContext({ viewport: { width: 1440, height: 900 } });
-    await pctx.addInitScript(() => { try { localStorage.setItem('pogo_signup_invite_seen', '1'); } catch {} });
-    await pctx.route(/^https?:\/\/(?!localhost)/, (r) => r.abort());
+    const pctx = await newContext(browser, { viewport: { width: 1440, height: 900 } });
     const ppage = await pctx.newPage();
     ppage.on('pageerror', (e) => errs.push('intro-pos:' + e));
     await ppage.goto(BASE + '#/raids', { waitUntil: 'domcontentloaded' });
     await ppage.waitForSelector('#splash', { state: 'detached', timeout: 15000 }).catch(() => {});
-    await ppage.locator('#consent .consent__deny').click({ timeout: 1500 }).catch(() => {});
     await ppage.waitForTimeout(500);
     // 2026-09-12 v3.1.0 안내문 옆이 아니라 화면 머리 오른쪽이다 — 제목과 같은 높이,
     // 본문(안내문·목록)보다 위. 본문에는 토글이 남아 있으면 안 된다(옮긴 것이지 복제가 아니다)
@@ -198,9 +181,7 @@ const ok = (n, c, x = '') => { console.log((c ? 'PASS' : 'FAIL') + ' ' + n + ' '
   // 카드는 그림이 크게 들어가 줄보다 한참 높다. 폭도 둘 다 본다 — 좁은 화면에서는 전환 자체가
   // 미디어 쿼리에 묶여 있어 아무 일도 일어나지 않았다
   for (const w of [390, 1440]) {
-    const vctx = await browser.newContext({ viewport: { width: w, height: 900 }, hasTouch: w < 1000, isMobile: w < 1000 });
-    await vctx.addInitScript(() => { try { localStorage.setItem('pogo_signup_invite_seen', '1'); } catch {} });
-    await vctx.route(/^https?:\/\/(?!localhost)/, (r) => r.abort());
+    const vctx = await newContext(browser, { viewport: { width: w, height: 900 }, hasTouch: w < 1000, isMobile: w < 1000 });
     const vp = await vctx.newPage();
     vp.on('pageerror', (e) => errs.push(`visual(${w}):` + e));
     for (const [hash, label, sel] of [
@@ -212,7 +193,6 @@ const ok = (n, c, x = '') => { console.log((c ? 'PASS' : 'FAIL') + ' ' + n + ' '
     ]) {
       await vp.goto(BASE + hash, { waitUntil: 'domcontentloaded' });
       await vp.waitForSelector('#splash', { state: 'detached', timeout: 15000 }).catch(() => {});
-      await vp.locator('#consent .consent__deny').click({ timeout: 1500 }).catch(() => {});
       await vp.waitForTimeout(600);
       const btn = vp.locator('#page-head-actions .view-toggle').first();
       if (!(await btn.count())) { ok(`${label}(w=${w}) 보기 전환 버튼 있음`, false, '버튼 없음'); continue; }
@@ -238,15 +218,12 @@ const ok = (n, c, x = '') => { console.log((c ? 'PASS' : 'FAIL') + ' ' + n + ' '
 
   // ── 2026-09-12 v3.10.0 좁은 화면의 티어표 그리드 · 동작 버튼 줄 · 리스트 아이콘
   {
-    const mctx = await browser.newContext({ viewport: { width: 390, height: 900 }, hasTouch: true, isMobile: true });
-    await mctx.addInitScript(() => { try { localStorage.setItem('pogo_signup_invite_seen', '1'); } catch {} });
-    await mctx.route(/^https?:\/\/(?!localhost)/, (r) => r.abort());
+    const mctx = await newContext(browser, { viewport: { width: 390, height: 900 }, hasTouch: true, isMobile: true });
     const mp = await mctx.newPage();
     mp.on('pageerror', (e) => errs.push('mobile:' + e));
     for (const [hash, label] of [['#/pve', '레이드 · PvE'], ['#/dmax', 'D-MAX'], ['#/pvp', '배틀 · PvP']]) {
       await mp.goto(BASE + hash, { waitUntil: 'domcontentloaded' });
       await mp.waitForSelector('#splash', { state: 'detached', timeout: 15000 }).catch(() => {});
-      await mp.locator('#consent .consent__deny').click({ timeout: 1500 }).catch(() => {});
       await mp.waitForTimeout(700);
       const btn = mp.locator('#page-head-actions .view-toggle').first();
       ok(`${label} 보기 전환이 있다`, (await btn.count()) === 1);
@@ -271,7 +248,6 @@ const ok = (n, c, x = '') => { console.log((c ? 'PASS' : 'FAIL') + ' ' + n + ' '
     // 리스트 얼굴이 ☰ 메뉴 버튼과 같은 그림이면 안 된다 (v3.10.0)
     await mp.goto(BASE + '#/dex', { waitUntil: 'domcontentloaded' });
     await mp.waitForSelector('#splash', { state: 'detached', timeout: 15000 }).catch(() => {});
-    await mp.locator('#consent .consent__deny').click({ timeout: 1500 }).catch(() => {});
     await mp.waitForTimeout(700);
     const face = mp.locator('#page-head-actions .view-toggle').first();
     if ((await face.getAttribute('data-view')) !== 'list') { await face.click(); await mp.waitForTimeout(400); }
@@ -285,7 +261,5 @@ const ok = (n, c, x = '') => { console.log((c ? 'PASS' : 'FAIL') + ' ' + n + ' '
   }
 
   ok('페이지 오류 없음', errs.length === 0, errs.join(' | ').slice(0, 200));
-  await browser.close();
-  console.log(`${pass}/${pass + fail} passed`);
-  process.exit(fail ? 1 : 0);
-})().catch((e) => { console.error('CRASH', e.message); process.exit(1); });
+  await finish(browser);
+});

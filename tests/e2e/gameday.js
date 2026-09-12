@@ -1,17 +1,10 @@
 'use strict';
 // v2.25.0 신규 화면 회귀 — ⚔️ 레이드 보스 · 🥚 알 부화 · 유사백 판정
-const { chromium } = require('/opt/node22/lib/node_modules/playwright');
+const { launch, newContext, ok, finish, suite } = require('./_lib');
 const BASE = 'http://localhost:5503/?mock=1';
-let pass = 0, fail = 0;
-const ok = (n, c, x = '') => { console.log((c ? 'PASS' : 'FAIL') + ' ' + n + ' ' + x); c ? pass++ : fail++; };
-(async () => {
-  const browser = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium' });
-  const ctx = await browser.newContext({ viewport: { width: 390, height: 844 } });
-  // 2026-09-12 v3.11.0 첫 방문 가입 권유 팝업은 '본 적 있음' 으로 표시해 두고 시작한다 —
-  // 안 그러면 3초 뒤 모달이 떠서 그 뒤의 클릭을 전부 가로챈다 (동의 배너를 끄는 것과 같은 처방).
-  // 팝업 자체는 tests/e2e/signup-invite.js 가 따로 검사한다
-  await ctx.addInitScript(() => { try { localStorage.setItem('pogo_signup_invite_seen', '1'); } catch {} });
-  await ctx.route(/^https?:\/\/(?!localhost)/, (r) => r.abort());
+suite(async () => {
+  const browser = await launch();
+  const ctx = await newContext(browser, { viewport: { width: 390, height: 844 } });
   ctx.setDefaultTimeout(6000);
   const page = await ctx.newPage();
   const errs = [];
@@ -19,7 +12,6 @@ const ok = (n, c, x = '') => { console.log((c ? 'PASS' : 'FAIL') + ' ' + n + ' '
 
   await page.goto(BASE, { waitUntil: 'domcontentloaded' });
   await page.waitForSelector('#splash', { state: 'detached', timeout: 15000 }).catch(() => {});
-  await page.locator('#consent .consent__deny').click({ timeout: 1500 }).catch(() => {});
   await page.waitForTimeout(300);
 
   // v2.47.0 '내 포켓몬'·'육성 플래너' 타일 통합으로 10 → 9
@@ -101,7 +93,5 @@ const ok = (n, c, x = '') => { console.log((c ? 'PASS' : 'FAIL') + ' ' + n + ' '
   ok('gap 반환 형태', hundo.gapKeys.join(',') === 'perfect,mine,ratio,gap,level', hundo.gapKeys.join(','));
 
   ok('페이지 오류 없음', errs.length === 0, errs.join(' | ').slice(0, 200));
-  await browser.close();
-  console.log(`${pass}/${pass + fail} passed`);
-  process.exit(fail ? 1 : 0);
-})().catch((e) => { console.error('CRASH', e.message); process.exit(1); });
+  await finish(browser);
+});

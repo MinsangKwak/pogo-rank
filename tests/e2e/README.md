@@ -3,6 +3,27 @@
 `dist/` 를 로컬 서버로 띄우고 Playwright 로 훑는다. 프레임워크 없이 스크립트 하나에 단언을 나열하는 방식이라
 `node <파일>` 하나로 돌고, 통과 수와 실패 항목만 찍는다.
 
+## 공통 조각 — `_lib.js` (v3.14.0)
+
+스위트마다 반복되던 머리말을 한 벌로 모았다. 새 스위트는 이렇게 시작한다:
+
+```js
+'use strict';
+const { launch, newContext, ok, finish, suite } = require('./_lib');
+const BASE = 'http://localhost:5503/?mock=1';
+suite(async () => {
+  const browser = await launch();                                        // /opt/pw-browsers/chromium
+  const ctx = await newContext(browser, { viewport: { width: 390, height: 844 } });  // 가입 권유 팝업 '본 적 있음' · 동의 배너 '거부' · 바깥 요청 차단
+  const page = await ctx.newPage();
+  // … ok('이름', 조건, 덧붙일 값)
+  await finish(browser);                                                 // 합계 출력 + 종료 코드
+});
+```
+
+- 동의 배너를 검사하는 스위트는 `newContext(browser, { banner: true, … })` — 배너가 그대로 뜬다.
+- 없는 버튼을 `click({ timeout }).catch()` 로 "혹시 있으면 누르기" 하지 않는다 — 없을 때마다 그 시간을 통째로 잃는다 (v3.14.0 에 그 줄 32개가 회귀 45초를 먹고 있었다).
+- 이름이 `_` 로 시작하는 파일은 스위트가 아니다 (`scripts/test.sh` 가 건너뛴다).
+
 ## 돌리는 법
 
 ```bash
@@ -47,6 +68,6 @@ diff -rq tests/e2e/fp-before tests/e2e/fp-after
 
 ## 전제
 
-- Playwright 와 Chromium 이 필요하다. 경로는 각 파일 맨 위 `require`·`executablePath` 에 적혀 있다
+- Playwright 와 Chromium 이 필요하다. 경로는 `_lib.js` 맨 위 한 곳에 있다
 - 서버 주소는 `http://localhost:5503/`, 목 모드는 `?mock=1` (frontend/static/dev-mock.js)
 - 외부 요청은 전부 차단한다 — 폰트·스프라이트 CDN 을 기다리느라 느려지지 않게

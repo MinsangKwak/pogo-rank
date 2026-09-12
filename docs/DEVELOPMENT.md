@@ -671,7 +671,8 @@ CP = `floor((공격+IV) × √(방어+IV) × √(체력+IV) × CPM² / 10)`, 최
 │   ├── roles_build.py            즐겨찾기 PvE/PvP 자동 분류 근거
 │   ├── sprites.py                스프라이트 다운로드
 │   └── config/                   sheets.conf · max_released.txt · dex_released_extra.txt · move_changes.txt
-├── scripts/                      build.sh · fetch_data.sh · setup_dev_deploy_key.sh(dev 배포 키) · verify_deploy.sh(배포 검증)
+├── scripts/                      build.sh · fetch_data.sh · test.sh(회귀) · dev_up.sh(빌드+서버) · ship_dev.sh(dev 머지·미리보기 확인) · setup_dev_deploy_key.sh(dev 배포 키) · verify_deploy.sh(배포 검증)
+├── tests/e2e/                    회귀 스위트 22개 + _lib.js(공통 조각 — 브라우저·컨텍스트·집계)
 ├── docs/                         DEVELOPMENT.md(이 문서) · OPERATIONS.md
 ├── snapshot/                     빌드가 남기는 시트 원본·리포트·직전 순위 (자동 커밋)
 ├── firestore.rules               Firestore 보안 규칙 템플릿 (__ADMIN_UID__ → scripts/render_rules.sh 로 채워 콘솔에 게시)
@@ -721,7 +722,15 @@ bash scripts/test.sh --no-build   # 지금 dist/ 를 그대로 (테스트만 고
 
 출력은 파일에 모았다가 알파벳 순으로 낸다 — 여러 프로세스가 같은 화면에 쓰면 줄이 섞인다. 실패한 스위트는 그 안의 `FAIL` 줄까지 함께 보여 주고, 하나라도 실패하면 종료 코드가 1이다.
 
-2026-09-11 v2.59.0 기준 **19개 스위트 · 124초**.
+2026-09-11 v2.59.0 기준 **19개 스위트 · 124초**. 2026-09-12 v3.14.0 기준 **22개 스위트 · 162초 → 117초**.
+
+**공통 조각은 `tests/e2e/_lib.js` 한 벌** (v3.14.0) — 브라우저 경로 · `ok()` 집계 · `newContext()` · `go()` · `finish()` · `suite()`. 스위트 22개가 같은 머리말을 각자 들고 있어 한 줄을 고치려면 스무 파일을 열어야 했고, 그 사이 조금씩 달라져 있었다(대기 12초/15초, ` :: ` 구분자). 이름이 `_` 로 시작하는 파일은 스위트가 아니며 `test.sh` 가 건너뛴다.
+
+**없는 버튼을 기다리던 1.5초** — 스위트마다 화면을 옮길 때 `#consent .consent__deny` 를 `click({ timeout: 1500 }).catch()` 로 누르고 있었다. 배너는 첫 화면에만 뜨므로 두 번째 이동부터는 없는 버튼을 1.5초씩 기다리다 포기하는 줄이었다 — 화면 이동 30번이면 45초, `shell.js` 100초의 절반. `newContext()` 가 `pogo_consent=denied` 를 미리 넣어 배너 자체가 뜨지 않게 하고, 그 클릭 줄 32개를 지웠다. 배너를 검사하는 `legal.js` · `bot-filter.js` 만 `{ banner: true }` 로 띄운다. 교훈은 하나다 — **없어도 되는 클릭은 짧은 한도가 아니라 아예 하지 않는다**.
+
+**`wait` 가 서버까지 기다리던 버그** — 스크립트가 서버를 직접 띄운 경우 마지막 `wait` 가 그 서버 프로세스도 기다려 스위트가 다 끝나고도 돌아오지 않았다. 일꾼 pid 만 기다린다.
+
+**일꾼 8은 더 빠르지 않다** — 4코어에서 `-j 8` 은 부하 20을 찍으며 세 스위트가 시간 초과로 실패했다. 대기 시간은 애니메이션·디바운스에 맞춘 값이라 CPU 가 밀리면 어긋난다. 기본 4를 유지한다.
 
 ### 로그인 뒤 화면을 로컬에서 확인하기 (`?mock`)
 
@@ -738,6 +747,33 @@ python3 -m http.server 5503 --directory dist
 ```
 
 동작 원리 — `frontend/static/dev-mock.js`가 `window.firebase`에 `auth()`·`firestore()`·`FieldValue`의 가짜를 심습니다. `components/auth.js`의 `initAuth()`는 원래 "`window.firebase`가 이미 있으면 SDK를 받지 않는다"는 분기를 갖고 있었고, 그 앞에 **hostname이 `localhost`/`127.0.0.1`이고 주소에 `?mock`이 있을 때만** 이 파일을 먼저 받는 조건을 하나 더 두었습니다. 배포(github.io)에서는 두 조건이 성립하지 않아 이 파일은 복사만 되고 절대 로드되지 않습니다. 가짜 Firestore 데이터는 `localStorage`(`pogo_mock_db`)에 남아 새로 고쳐도 유지되고, 첫 실행 시 즐겨찾기 몇 종(PvE·PvP·기타가 섞이도록)과 트레이너 코드 하나를 미리 넣어 둡니다.
+
+### 개발 순환 시간 줄이기 — 클라우드 세션 (v3.14.0)
+
+클라우드 세션(Claude Code on the web)은 한 판을 올리는 데 30분 넘게 걸리고 있었다. 회귀 자체는 3분이었고, 나머지는 **사이사이** 였다 — 컨테이너가 새로 뜨면 서버를 다시 띄우고, 머지 여덟 명령을 하나씩 치고, 미리보기에 버전이 뜨기를 손으로 폴링하고, 명령마다 권한을 물었다. 그 사이를 셋으로 줄인다.
+
+| 단계 | 전 | 후 |
+| --- | --- | --- |
+| 세션 시작 | 빌드·서버를 손으로 (컨테이너가 새로 뜰 때마다) | `scripts/dev_up.sh` — 빌드 + `localhost:5503` 서버. SessionStart 훅으로 자동 |
+| 회귀 | 162초 | 117초 (`_lib.js` · 배너 미리 거부) |
+| dev 머지 → 미리보기 확인 | 명령 8개 + 손 폴링 | `scripts/ship_dev.sh` 한 번 — 푸시 · dev 머지 · 배포 대기 · `verify_deploy.sh` |
+| 빌드 | 0.5초 | 0.3초 (바뀌지 않은 스프라이트 2,344장 복사 생략) |
+
+`.claude/settings.json` 에는 아래를 두는 것을 권한다 — 회귀·머지 명령이 매번 권한을 묻지 않고, 세션이 열릴 때 서버가 이미 떠 있다. (에이전트는 이 파일을 스스로 고치지 못한다 — 자기 권한을 넓히는 일이라 사람이 넣어야 한다.)
+
+```json
+{
+  "permissions": { "allow": [
+    "Bash(bash scripts/test.sh:*)", "Bash(bash scripts/dev_up.sh:*)", "Bash(bash scripts/ship_dev.sh:*)",
+    "Bash(bash scripts/verify_deploy.sh:*)", "Bash(node tests/e2e/*)", "Bash(bash -n:*)",
+    "Bash(git add:*)", "Bash(git commit:*)", "Bash(git fetch:*)", "Bash(git checkout:*)", "Bash(git merge:*)",
+    "Bash(git push -u origin claude/*)", "Bash(git push origin dev)", "Bash(curl -s:*)", "Bash(curl -fsS:*)"
+  ] },
+  "hooks": { "SessionStart": [ { "hooks": [ { "type": "command", "command": "bash scripts/dev_up.sh --quiet", "timeout": 60 } ] } ] }
+}
+```
+
+main → deploy 는 여기 넣지 않는다 — PR 과 실서비스 반영은 사람이 결정하는 단계다.
 
 ### 편집기 설정 (`.vscode/`)
 

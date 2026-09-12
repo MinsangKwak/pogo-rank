@@ -186,22 +186,6 @@ dialog.modal::backdrop { background: transparent; }
 .detail__share { min-width: 3.4rem; height: 3.4rem; padding: 0 0.9rem; display: flex; align-items: center; justify-content: center; flex: none;
   font-size: 1.5rem; line-height: 1; border-radius: 99.9rem; border: 1px solid var(--line); background: var(--surface); color: var(--muted); white-space: nowrap; }
 .detail__share:hover { background: var(--hover); color: var(--fg); }
-/* .fav 는 원래 목록 줄(list.css)의 민무늬 별 버튼 — 여기서는 공유·저장과 같은 동그란 칩으로 덧입힌다.
-   부모 클래스를 겹친 선택자라 list.css 의 기본 .fav 보다 구체적이어서 파일 순서와 무관하게 이긴다 */
-.detail__top-actions .fav { width: 3.4rem; height: 3.4rem; font-size: 1.6rem; opacity: 1; border-radius: 99.9rem;
-  border: 1px solid var(--line); background: var(--surface); }
-.detail__top-actions .fav:hover { background: var(--hover); }
-.detail__top-actions .fav.is-on { border-color: color-mix(in srgb, var(--caution) 45%, var(--line)); }
-.solo__fill { display: flex; align-items: center; gap: 0.8rem; margin: 0 0 0.8rem; font-size: 1.25rem; }
-
-/* 2026-09-06 v2.10.0 (QA-44) 이중약점(×2.56) · 이중내성/무효(×0.39) 칩 강조 */
-.tchips__item.is-weak2 { border-color: color-mix(in srgb, var(--warn) 60%, var(--line)); font-weight: 600; }
-.tchips__item.is-weak2 small { color: var(--warn); font-weight: 700; }
-.tchips__item.is-resist2 { border-color: color-mix(in srgb, var(--good) 60%, var(--line)); font-weight: 600; }
-.tchips__item.is-resist2 small { color: var(--good); font-weight: 700; }
-
-/* 2026-09-12 v2.64.0 ★ 즐겨찾기 팝업 — 화면 맨 위 카드였던 것을 헤더 버튼 뒤로 옮겼다.
-   카드는 접어 둬도 한 뼘을 먹었고, 컨트롤이 많은 화면에서는 리그 세그먼트를 밀어냈다 */
 .fav-pop__head { display: flex; flex-direction: column; gap: 0.3rem; margin-bottom: 1.2rem; }
 .fav-pop__list { display: flex; flex-wrap: wrap; gap: 0.8rem; overflow: visible; }
 .fav-pop .boss__foot { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.8rem; margin-top: 1.4rem; padding-top: 1.2rem; border-top: 1px solid var(--line); }
