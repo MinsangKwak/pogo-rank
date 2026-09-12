@@ -20,6 +20,10 @@ const ok = (n, c, x = '') => { console.log((c ? 'PASS' : 'FAIL') + ' ' + n + ' '
   // ── PC (1440px) ──────────────────────────────────────────────
   {
     const ctx = await browser.newContext({ viewport: { width: 1440, height: 900 } });
+    // 2026-09-12 v3.11.0 첫 방문 가입 권유 팝업은 '본 적 있음' 으로 표시해 두고 시작한다 —
+    // 안 그러면 3초 뒤 모달이 떠서 그 뒤의 클릭을 전부 가로챈다 (동의 배너를 끄는 것과 같은 처방).
+    // 팝업 자체는 tests/e2e/signup-invite.js 가 따로 검사한다
+    await ctx.addInitScript(() => { try { localStorage.setItem('pogo_signup_invite_seen', '1'); } catch {} });
     await ctx.route(/^https?:\/\/(?!localhost)/, (r) => r.abort());
     ctx.setDefaultTimeout(8000);
     const page = await ctx.newPage();
@@ -70,6 +74,7 @@ const ok = (n, c, x = '') => { console.log((c ? 'PASS' : 'FAIL') + ' ' + n + ' '
   // ── 모바일 (390px) — 회귀: 지금까지처럼 팝업이어야 한다 ──────────
   {
     const ctx = await browser.newContext({ viewport: { width: 390, height: 844 } });
+    await ctx.addInitScript(() => { try { localStorage.setItem('pogo_signup_invite_seen', '1'); } catch {} });
     await ctx.route(/^https?:\/\/(?!localhost)/, (r) => r.abort());
     ctx.setDefaultTimeout(8000);
     const page = await ctx.newPage();
@@ -94,6 +99,7 @@ const ok = (n, c, x = '') => { console.log((c ? 'PASS' : 'FAIL') + ' ' + n + ' '
   // 남겨야 하는 것은 "홈" 이 아니라 상세를 가리키는 주소(#/mon/…) 하나뿐이다
   {
     const ctx = await browser.newContext({ viewport: { width: 1440, height: 900 } });
+    await ctx.addInitScript(() => { try { localStorage.setItem('pogo_signup_invite_seen', '1'); } catch {} });
     await ctx.route(/^https?:\/\/(?!localhost)/, (r) => r.abort());
     const page = await ctx.newPage();
     page.on('pageerror', (e) => errs.push('이동: ' + e));

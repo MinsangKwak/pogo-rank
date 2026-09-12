@@ -50,7 +50,7 @@ footer .foot-links a, footer .foot-links button { color: var(--muted); text-deco
    화면 하나에 할 일 하나 — 왜 막혔고 무엇을 누르면 되는지만 담는다 */
 .login-invite__head { display: flex; align-items: center; gap: 1rem; }
 .login-invite__ico { font-size: 2.6rem; line-height: 1; }
-.login-invite .detail__name { margin: 0; }
+.login-invite .detail__name, .signup-invite .detail__name { margin: 0; }
 /* 승인제라는 걸 누르기 전에 보여 준다 — 로그인하고 나서 "왜 아직도 안 되지" 를 겪지 않게 */
 .login-invite__steps { display: flex; flex-direction: column; gap: 1rem; margin: 1.4rem 0; padding: 0; list-style: none; }
 .login-invite__steps li { display: flex; align-items: flex-start; gap: 1rem; }

@@ -238,3 +238,26 @@
 .dex__type { display: inline-flex; align-items: center; gap: 0.4rem; }
 .dex__type .dot { width: 0.8rem; height: 0.8rem; border-radius: 50%; background: var(--c); flex: none; }
 .dex__type b { display: none; }
+
+/* 2026-09-12 v3.11.0 설정 화면 (components/settings.js) — 세 갈래를 라디오 줄로.
+   세그먼트로 만들면 칸마다 한 낱말밖에 못 넣는데, 여기서는 "무엇이 달라지는지" 한 줄이 같이 읽혀야 한다 */
+.settings__desc { margin: 0 0 1.2rem; }
+.settings__group { border: 1px solid var(--line); background: var(--surface); }
+.settings__choices { display: flex; flex-direction: column; }
+.settings__choice {
+  display: flex; align-items: flex-start; gap: 1.2rem; width: 100%;
+  padding: 1.4rem 1.6rem; border: 0; border-bottom: 1px solid var(--line);
+  background: transparent; text-align: left; font-size: var(--fs-body);
+}
+.settings__choices > .settings__choice:last-child { border-bottom: 0; }
+.settings__choice:hover { background: var(--hover); }
+/* 고른 표시 — 점 하나. 색만으로 가르지 않는다(채운 원 ↔ 빈 원) */
+.settings__mark {
+  flex: none; box-sizing: border-box; width: 1.8rem; height: 1.8rem; margin-top: 0.2rem;
+  border: 0.2rem solid var(--line); border-radius: 50%;
+}
+.settings__choice.is-on .settings__mark { border-color: var(--brand); border-width: 0.6rem; }
+.settings__choice.is-on { background: color-mix(in srgb, var(--brand) 7%, transparent); }
+.settings__choice-main { display: flex; flex-direction: column; gap: 0.3rem; min-width: 0; }
+.settings__choice-main b { font-weight: 600; }
+.settings__choice-main > span { font-size: var(--fs-sub); color: var(--muted); line-height: 1.5; }

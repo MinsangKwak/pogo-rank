@@ -205,3 +205,13 @@ dialog.modal::backdrop { background: transparent; }
 .fav-pop__head { display: flex; flex-direction: column; gap: 0.3rem; margin-bottom: 1.2rem; }
 .fav-pop__list { display: flex; flex-wrap: wrap; gap: 0.8rem; overflow: visible; }
 .fav-pop .boss__foot { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.8rem; margin-top: 1.4rem; padding-top: 1.2rem; border-top: 1px solid var(--line); }
+
+/* 2026-09-12 v3.11.0 가입 권유 팝업 (components/auth.js openSignupInvite) —
+   로그인 전과 후를 나란히. 표로 두면 "지금 / 로그인하면" 두 칸이 같은 줄에서 맞붙어 차이가 바로 읽힌다 */
+.signup-invite__table { width: 100%; margin: 1.4rem 0 0.8rem; border-collapse: collapse; font-size: var(--fs-sub); }
+.signup-invite__table th, .signup-invite__table td { padding: 0.8rem 0.6rem; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+.signup-invite__table thead th { font-size: 1.1rem; font-weight: 600; color: var(--muted); }
+.signup-invite__table tbody th { font-weight: 600; }
+.signup-invite__before { color: var(--muted); }
+.signup-invite__after { color: var(--brand); font-weight: 600; }
+.signup-invite__list { margin: 0 0 1.2rem; font-size: 1.15rem; color: var(--muted); line-height: 1.6; }

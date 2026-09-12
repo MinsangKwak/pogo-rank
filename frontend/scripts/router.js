@@ -84,6 +84,7 @@ const ROUTES = [
   { id: 'changes', path: 'changes', kind: 'page' },
   { id: 'privacy', path: 'privacy', kind: 'page' },
   { id: 'terms', path: 'terms', kind: 'page' },
+  { id: 'settings', path: 'settings', kind: 'page' },   // 2026-09-12 v3.11.0 화면 테마 · 계정 저장
   { id: 'mon', path: 'mon', kind: 'detail' },
 ];
 
@@ -155,6 +156,7 @@ const ROUTE_DESC = {
   changes: '이번 시즌에 위력·에너지가 바뀌는 기술이에요.',
   privacy: '어떤 정보를 받고 어떻게 다루는지 알려 드려요.',
   terms: '이 서비스를 쓸 때의 약속이에요.',
+  settings: '화면을 어떻게 볼지 정해요. 로그인하면 계정에 저장돼 어느 기기에서든 같아요.',
   // mon 은 적지 않는다 — kind:'detail' 이라 화면 머리가 아니라 팝업 안에 이름이 뜬다
   styleguide: 'POGO PLAN 을 이루는 조각을 한자리에서 봐요. 화면을 새로 만들 때 여기서 가져다 써요.',
 };

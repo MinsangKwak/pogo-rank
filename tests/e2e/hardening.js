@@ -15,6 +15,10 @@ const ok = (n, c, x = '') => { console.log((c ? 'PASS' : 'FAIL') + ' ' + n + ' '
   const browser = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium' });
   const ctx = await browser.newContext({ viewport: { width: 1280, height: 800 } });
   // 폰트·스프라이트 CDN 만 막는다. CSP 위반 여부를 보려면 페이지 자체는 정상으로 굴려야 한다
+  // 2026-09-12 v3.11.0 첫 방문 가입 권유 팝업은 '본 적 있음' 으로 표시해 두고 시작한다 —
+  // 안 그러면 3초 뒤 모달이 떠서 그 뒤의 클릭을 전부 가로챈다 (동의 배너를 끄는 것과 같은 처방).
+  // 팝업 자체는 tests/e2e/signup-invite.js 가 따로 검사한다
+  await ctx.addInitScript(() => { try { localStorage.setItem('pogo_signup_invite_seen', '1'); } catch {} });
   await ctx.route(/^https?:\/\/(?!localhost)/, (r) => r.abort());
   // 2026-09-10 v2.44.0 Firebase 로그인이 받는 파일은 막지 않고 **가짜 응답**으로 바꿔 둔다 —
   // 이 검사는 네트워크가 아니라 CSP 를 보는 것이라, 밖으로 못 나가는 환경에서도 답이 같아야 한다.

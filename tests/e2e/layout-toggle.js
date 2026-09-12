@@ -20,6 +20,10 @@ const ok = (n, c, x = '') => { console.log((c ? 'PASS' : 'FAIL') + ' ' + n + ' '
 (async () => {
   const browser = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium' });
   const ctx = await browser.newContext({ viewport: { width: 1440, height: 900 } });
+  // 2026-09-12 v3.11.0 첫 방문 가입 권유 팝업은 '본 적 있음' 으로 표시해 두고 시작한다 —
+  // 안 그러면 3초 뒤 모달이 떠서 그 뒤의 클릭을 전부 가로챈다 (동의 배너를 끄는 것과 같은 처방).
+  // 팝업 자체는 tests/e2e/signup-invite.js 가 따로 검사한다
+  await ctx.addInitScript(() => { try { localStorage.setItem('pogo_signup_invite_seen', '1'); } catch {} });
   await ctx.route(/^https?:\/\/(?!localhost)/, (r) => r.abort());
   ctx.setDefaultTimeout(8000);
   const page = await ctx.newPage();
@@ -115,6 +119,7 @@ const ok = (n, c, x = '') => { console.log((c ? 'PASS' : 'FAIL') + ' ' + n + ' '
     [1440, '#/pve', '#content .row-list', 'PC 레이드·PvE', 4],
   ]) {
     const gctx = await browser.newContext({ viewport: { width: w, height: 900 } });
+    await gctx.addInitScript(() => { try { localStorage.setItem('pogo_signup_invite_seen', '1'); } catch {} });
     await gctx.route(/^https?:\/\/(?!localhost)/, (r) => r.abort());
     const gpage = await gctx.newPage();
     gpage.on('pageerror', (e) => errs.push(`${label}:` + e));
@@ -135,6 +140,7 @@ const ok = (n, c, x = '') => { console.log((c ? 'PASS' : 'FAIL') + ' ' + n + ' '
   // 상세 패널이 열려 본문이 좁아지면 자동으로 열이 줄어드는가 (레이드 보스 기준)
   for (const [w, expect] of [[1280, 1], [1440, 2]]) {
     const sctx = await browser.newContext({ viewport: { width: w, height: 900 } });
+    await sctx.addInitScript(() => { try { localStorage.setItem('pogo_signup_invite_seen', '1'); } catch {} });
     await sctx.route(/^https?:\/\/(?!localhost)/, (r) => r.abort());
     const spage = await sctx.newPage();
     spage.on('pageerror', (e) => errs.push(`squeeze ${w}:` + e));
@@ -155,6 +161,7 @@ const ok = (n, c, x = '') => { console.log((c ? 'PASS' : 'FAIL') + ' ' + n + ' '
   // ── v2.39.0 보기 방식 컨트롤이 안내 문구와 같은 줄, 오른쪽 끝에 있는가 (가독성 문제로 재배치)
   {
     const pctx = await browser.newContext({ viewport: { width: 1440, height: 900 } });
+    await pctx.addInitScript(() => { try { localStorage.setItem('pogo_signup_invite_seen', '1'); } catch {} });
     await pctx.route(/^https?:\/\/(?!localhost)/, (r) => r.abort());
     const ppage = await pctx.newPage();
     ppage.on('pageerror', (e) => errs.push('intro-pos:' + e));
@@ -192,6 +199,7 @@ const ok = (n, c, x = '') => { console.log((c ? 'PASS' : 'FAIL') + ' ' + n + ' '
   // 미디어 쿼리에 묶여 있어 아무 일도 일어나지 않았다
   for (const w of [390, 1440]) {
     const vctx = await browser.newContext({ viewport: { width: w, height: 900 }, hasTouch: w < 1000, isMobile: w < 1000 });
+    await vctx.addInitScript(() => { try { localStorage.setItem('pogo_signup_invite_seen', '1'); } catch {} });
     await vctx.route(/^https?:\/\/(?!localhost)/, (r) => r.abort());
     const vp = await vctx.newPage();
     vp.on('pageerror', (e) => errs.push(`visual(${w}):` + e));
@@ -231,6 +239,7 @@ const ok = (n, c, x = '') => { console.log((c ? 'PASS' : 'FAIL') + ' ' + n + ' '
   // ── 2026-09-12 v3.10.0 좁은 화면의 티어표 그리드 · 동작 버튼 줄 · 리스트 아이콘
   {
     const mctx = await browser.newContext({ viewport: { width: 390, height: 900 }, hasTouch: true, isMobile: true });
+    await mctx.addInitScript(() => { try { localStorage.setItem('pogo_signup_invite_seen', '1'); } catch {} });
     await mctx.route(/^https?:\/\/(?!localhost)/, (r) => r.abort());
     const mp = await mctx.newPage();
     mp.on('pageerror', (e) => errs.push('mobile:' + e));

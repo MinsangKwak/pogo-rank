@@ -33,12 +33,15 @@
 // 맨 위(가장 최신) 날짜에만 NEW 태그를 달고, 들어온 순간 "읽음" 처리한다.
 function renderReleasePage() {
   markReleaseSeen();
-  // 2026-09-08 v2.29.0 패치노트는 한국어로 둔다 — 그동안 쌓인 기록을 번역하면 원문과 어긋난 채로 굳는다
+  // 2026-09-08 v2.29.0 패치노트는 한국어로 뒀었다 — 쌓인 기록을 번역하면 원문과 어긋난 채로 굳는다는 이유였다.
+  // 2026-09-12 v3.11.0 영어로 볼 때는 영문판을 쓴다 (i18n-release-en.js). 원문과 어긋나는 문제는
+  // 통째로 짝지어 두는 방식으로 푼다 — 날짜 키가 같아야 짝이 맞고, 짝이 없으면 한국어가 그대로 나간다.
+  // 남은 한국어가 하나도 없으면 "여긴 한국어" 안내도 띄우지 않는다
   return el('div', { class: 'page__body' },
-    i18nKoOnlyNote(),
+    releaseHasKoreanLeft() ? i18nKoOnlyNote() : '',
     ...RELEASE_NOTES.map((group, groupIndex) => el('section', { class: 'release__sec' },
       el('h2', {}, group.date, groupIndex === 0 ? el('span', { class: 'tag tag--gmax' }, 'NEW') : ''),
-      el('ul', {}, ...group.items.map((item) => el('li', {}, item))))));
+      el('ul', {}, ...releaseItems(group).map(releaseItemNode)))));
 }
 
 // 일정표 페이지: 분류 칩 + 달력 + 기간 막대 타임라인 + 이번 달 전체 일정 목록 (분류별)
@@ -326,7 +329,8 @@ const PAGES = {
   terms: { title: '📜 이용약관', render: renderTermsPage },  // 2026-09-07 v2.18.0 (공개 준비 2)
   raids: { title: '⚔️ 레이드 보스', render: renderRaidsPage },  // 2026-09-08 v2.25.0 지금 도는 티어별 보스 (components/gameday.js)
   eggs: { title: '🥚 알 부화', render: renderEggsPage },                 // 2026-09-08 v2.25.0 거리별 부화 풀 (components/gameday.js)
-  finder: { title: '🔎 검색식 만들기', render: renderFinderPage },        // 2026-09-11 v2.58.0 게임 검색창에 붙여 넣을 식 (백로그 QA-57)
+  finder: { title: '🔎 검색식 만들기', render: renderFinderPage },
+  settings: { title: '🛠 설정', render: renderSettingsPage },                 // 2026-09-12 v3.11.0 화면 테마 · 계정 저장        // 2026-09-11 v2.58.0 게임 검색창에 붙여 넣을 식 (백로그 QA-57)
 };
 
 // 현재 해시가 가리키는 전체 페이지 id. 페이지가 아니면 null = 메인 화면.
