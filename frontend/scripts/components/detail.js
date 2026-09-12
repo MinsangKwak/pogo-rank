@@ -19,7 +19,7 @@
 //
 // [의존하는 전역 · 데이터]
 // - el() (dom.js) · sprite() · spriteAnimate() (components/sprite.js) · track() (track.js) · openModal() (components/modal.js)
-// - authEnabled() · favBtn() (components/auth.js) — 로그인 기능이 켜진 빌드에서만 즐겨찾기 ★ 표시
+// - authEnabled() (components/auth.js) — 로그인 기능이 켜진 빌드에서만 즐겨찾기 ★ 표시
 // - calcCp() (components/pages.js) — 내 개체 CP 계산기에서 사용
 // - DEX_DATA (data.js): names / forms / evo / megas / chart / dex / cpm
 // - VALUE_DATA.usage_places · usage (data.js): 이름별 등재 내역(전 항목, 압축) · 활용처 탭용 상위 80 (v2.13.0 QA-42)

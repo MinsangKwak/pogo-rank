@@ -68,6 +68,7 @@ SLOW="shell nav router fingerprint breakpoints layout-toggle list-cols i18n bot-
 ORDER=()
 for name in $SLOW; do [[ -f "tests/e2e/$name.js" ]] && ORDER+=("tests/e2e/$name.js"); done
 for f in tests/e2e/*.js; do
+  [[ $(basename "$f") == _* ]] && continue   # 2026-09-12 v3.14.0 _lib.js 같은 공통 조각은 스위트가 아니다
   case " ${ORDER[*]} " in *" $f "*) ;; *) ORDER+=("$f") ;; esac
 done
 
@@ -90,7 +91,11 @@ echo
 
 # 4. 일꾼 풀 — 동시에 JOBS 개까지만 띄운다.
 #    출력은 파일에 모았다가 아래에서 순서대로 낸다 (여러 프로세스가 같은 화면에 쓰면 줄이 섞인다)
+#    2026-09-12 v3.14.0 마지막에는 일꾼 pid 만 기다린다. 전에는 인자 없는 `wait` 가 서버 프로세스까지
+#    기다려서, 이 스크립트가 서버를 직접 띄운 경우 스위트가 다 끝나고도 영영 돌아오지 않았다
+#    (안의 `wait -n` 은 그대로다 — 서버는 끝나지 않으니 먼저 끝나는 것은 늘 일꾼이다)
 running=0
+WORKERS=()
 for f in "${RUN[@]}"; do
   name=$(basename "$f")
   ( s=$(date +%s)
@@ -99,10 +104,11 @@ for f in "${RUN[@]}"; do
     printf '%s\t%s\t%s\n' "$code" "$(( $(date +%s) - s ))" "$(echo "$out" | tail -1)" > "$OUTDIR/$name.res"
     echo "$out" > "$OUTDIR/$name.log"
   ) &
+  WORKERS+=($!)
   running=$((running + 1))
-  if [[ $running -ge $JOBS ]]; then wait -n 2>/dev/null || wait; running=$((running - 1)); fi
+  if [[ $running -ge $JOBS ]]; then wait -n 2>/dev/null || true; running=$((running - 1)); fi
 done
-wait
+wait "${WORKERS[@]}" 2>/dev/null
 
 # 5. 결과 — 알파벳 순으로 가지런히. 실패한 줄은 그 안의 FAIL 도 함께 보여 준다
 fail=0

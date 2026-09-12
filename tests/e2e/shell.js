@@ -4,13 +4,11 @@
 //
 // 스크롤 잠금이 남는 버그는 재현 경로가 다양해서(브라우저가 dialog 를 직접 닫는 경우 등)
 // "여는 방법 × 닫는 방법" 을 조합으로 훑는다. 하나라도 잠금이 남으면 그 화면은 영영 못 움직인다.
-const { chromium } = require('/opt/node22/lib/node_modules/playwright');
+const { launch, newContext, ok, finish, suite } = require('./_lib');
 const BASE = 'http://localhost:5503/?mock=1';
-let pass = 0, fail = 0;
-const ok = (n, c, x = '') => { console.log((c ? 'PASS' : 'FAIL') + ' ' + n + ' ' + x); c ? pass++ : fail++; };
 
-(async () => {
-  const browser = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium' });
+suite(async () => {
+  const browser = await launch();
 
   // 2026-09-10 v2.54.0 두 화면 폭을 **동시에** 돈다. 전에는 PC 15화면을 다 돈 뒤에야 모바일을
   // 시작해서 이 스위트 하나가 회귀 전체를 붙잡았다 (실측 450초 — 두 번째로 느린 것의 두 배).
@@ -18,12 +16,7 @@ const ok = (n, c, x = '') => { console.log((c ? 'PASS' : 'FAIL') + ' ' + n + ' '
   // 화면을 옮길 때마다 페이지를 통째로 다시 읽고(1.5MB data.js) 그게 비용의 대부분이라,
   // 줄일 방법은 "덜 읽기" 아니면 "같이 읽기" 인데 검사 자체는 그대로 둬야 하니 후자를 골랐다
   const sweep = async ([w, h, label]) => {
-    const ctx = await browser.newContext({ viewport: { width: w, height: h } });
-    // 2026-09-12 v3.11.0 첫 방문 가입 권유 팝업은 '본 적 있음' 으로 표시해 두고 시작한다 —
-    // 안 그러면 3초 뒤 모달이 떠서 그 뒤의 클릭을 전부 가로챈다 (동의 배너를 끄는 것과 같은 처방).
-    // 팝업 자체는 tests/e2e/signup-invite.js 가 따로 검사한다
-    await ctx.addInitScript(() => { try { localStorage.setItem('pogo_signup_invite_seen', '1'); } catch {} });
-    await ctx.route(/^https?:\/\/(?!localhost)/, (r) => r.abort());
+    const ctx = await newContext(browser, { viewport: { width: w, height: h } });
     ctx.setDefaultTimeout(6000);
     const page = await ctx.newPage();
     const errs = [];
@@ -33,7 +26,6 @@ const ok = (n, c, x = '') => { console.log((c ? 'PASS' : 'FAIL') + ' ' + n + ' '
     const go = async (hash = '') => {
       await page.goto(BASE + hash, { waitUntil: 'domcontentloaded' });
       await page.waitForSelector('#splash', { state: 'detached', timeout: 15000 }).catch(() => {});
-      await page.locator('#consent .consent__deny').click({ timeout: 1500 }).catch(() => {});
       await page.waitForTimeout(350);
     };
     // 실제로 굴려 본다 — style 만 보면 다른 원인(가로 넘침·덮개)을 놓친다
@@ -252,15 +244,12 @@ const ok = (n, c, x = '') => { console.log((c ? 'PASS' : 'FAIL') + ' ' + n + ' '
   // 좁은 화면에서 정보 카드에 담아 둔 아코디언을, 넓은 화면으로 돌아갈 때 카드째 들어내면서
   // 함께 잃어버리던 버그가 있었다 — 첫 로딩만으로는 안 드러나고 왕복해야 나온다
   {
-    const ctx = await browser.newContext({ viewport: { width: 1440, height: 900 } });
-    await ctx.addInitScript(() => { try { localStorage.setItem('pogo_signup_invite_seen', '1'); } catch {} });
-    await ctx.route(/^https?:\/\/(?!localhost)/, (r) => r.abort());
+    const ctx = await newContext(browser, { viewport: { width: 1440, height: 900 } });
     const page = await ctx.newPage();
     const errs = [];
     page.on('pageerror', (e) => errs.push(String(e)));
     await page.goto(BASE + '#/dex', { waitUntil: 'domcontentloaded' });
     await page.waitForSelector('#splash', { state: 'detached', timeout: 15000 }).catch(() => {});
-    await page.locator('#consent .consent__deny').click({ timeout: 1500 }).catch(() => {});
     await page.waitForTimeout(500);
     const menuState = () => page.evaluate(() => ({
       note: !!document.querySelector('.drawer__panel #note-acc'),
@@ -282,7 +271,5 @@ const ok = (n, c, x = '') => { console.log((c ? 'PASS' : 'FAIL') + ' ' + n + ' '
     await ctx.close();
   }
 
-  await browser.close();
-  console.log(`${pass}/${pass + fail} passed`);
-  process.exit(fail ? 1 : 0);
-})().catch((e) => { console.error('CRASH', e.message); process.exit(1); });
+  await finish(browser);
+});

@@ -25,7 +25,7 @@
 // - RELEASE_NOTES · markReleaseSeen() (components/release.js)
 // - SCHEDULE_CATS · SCHEDULE_ITEMS · SCHEDULE_YM · buildScheduleCal(cat) · buildScheduleTimeline(cat) (components/schedule.js)
 // - chips() (components/chips.js) — 일정 분류 칩 (v2.13.1)
-// - AUTH · authEnabled() · favBtn() · isFav() · signIn() (components/auth.js)
+// - AUTH · authEnabled() · signIn() (components/auth.js)
 // - renderRaidsPage() · renderEggsPage() (components/gameday.js) — v2.25.0 레이드 보스 · 알 부화
 // - DEX_DATA (data.js): names / forms / cpms / rel
 
