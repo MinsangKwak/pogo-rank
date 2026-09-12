@@ -15,6 +15,10 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 const RELEASE_NOTES_EN = {
+  '2026-09-12 · v3.17.0': [
+    '**Try it briefly now lasts 24 hours instead of 20 seconds** — 20 seconds was not enough to read a single screen. A day lets you actually use the tier lists and come back. The badge in the top-right now counts hours and minutes.',
+    '**Still three tries** — three tries is three days. After that: "Time to sign up 🙂".',
+  ],
   '2026-09-12 · v3.16.0': [
     '**Locked screens can be tried for 20 seconds without signing in** — tap [⏱ Try it briefly] on the lock notice and the screen opens while a badge in the top-right counts down. When time is up it locks again and the sign-in notice returns.',
     '**Three tries** — after the third, the button is replaced by "Time to sign up 🙂". Asking you to sign in to an approval-gated service before you have seen anything was the wrong order, so now we show first and ask after.',
