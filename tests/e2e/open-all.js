@@ -35,6 +35,12 @@ suite(async () => {
   await go('');
   ok('홈 타일에 잠김 표시가 없다', (await page.locator('.home__tile[aria-disabled="true"]').count()) === 0);
 
+  // ── 잠시 써보기도 내려가 있다 — 열어 두기 전에 시작한 시간이 남아 있어도 배지가 안 뜬다 ──
+  await page.evaluate(() => { localStorage.setItem('pogo_trial_until', String(Date.now() + 60000)); });
+  await go('#/raids');
+  ok('진행 중이던 잠시 써보기 배지가 뜨지 않는다', (await page.locator('#trial-timer').count()) === 0 && !(await page.evaluate(() => startTrial('x'))));
+  await page.evaluate(() => { localStorage.removeItem('pogo_trial_until'); });
+  await go('');
   // ── 가입 권유 팝업은 내려가 있다 ─────────────────────────────────────────────
   await page.waitForTimeout(4200);   // initAuth 의 3초 타이머보다 넉넉히
   ok('가입 권유 팝업이 뜨지 않는다', (await page.locator('.signup-invite').count()) === 0);

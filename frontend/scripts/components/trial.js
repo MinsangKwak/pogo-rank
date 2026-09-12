@@ -42,6 +42,11 @@ function trialLeft() {
 function trialActive() {
   return Date.now() < trialUntil();
 }
+// 2026-09-12 v3.18.0 잠금이 전부 열려 있으면(router.js lockOpenAll) 잠시 써보기는 할 일이 없다 —
+// 버튼도 배지도 내리고, 열어 두기 전에 시작해 둔 시간이 남아 있어도 끝날 때 로그인 안내를 띄우지 않는다
+function trialOff() {
+  return typeof lockOpenAll === 'function' && lockOpenAll();
+}
 
 // 기간·남은 시간을 사람 말로 — 24시간 · 23시간 59분 · 59분 30초 · 30초 (회귀가 초 단위로 줄이면 초로 나온다)
 function trialSpanLabel(seconds) {
@@ -62,6 +67,7 @@ function trialRerender() {
 }
 
 function startTrial(screenName) {
+  if (trialOff()) return false;
   if (trialActive()) return true;
   if (trialLeft() <= 0) return false;
   const used = trialUsed() + 1;
@@ -113,11 +119,12 @@ function trialEnd(screenName) {
 
 // 새로고침해도 진행 중이던 잠시 써보기는 이어진다 — 배지를 다시 세운다
 function trialResume() {
-  if (trialActive()) trialTimerStart('');
+  if (!trialOff() && trialActive()) trialTimerStart('');
 }
 
 // 잠금 카드·로그인 유도 팝업에 붙는 조각 — 남았으면 버튼, 다 썼으면 권유 문구
 function trialButtonNode(screenName) {
+  if (trialOff()) return '';
   if (typeof authEnabled === 'function' && !authEnabled()) return '';
   if (AUTH.status !== 'anon') return '';
   const left = trialLeft();
