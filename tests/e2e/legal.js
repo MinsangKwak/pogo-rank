@@ -1,22 +1,13 @@
 'use strict';
 // v2.18.0 공개 준비 e2e — 동의 배너 · 약관 동의 팝업 · 계정 삭제 · 약관/방침 페이지 · 푸터 고지 · 드로어 항목
-const { chromium } = require('/opt/node22/lib/node_modules/playwright');
+const { launch, newContext, suite } = require('./_lib');
 const BASE = 'http://localhost:5503/';
 const results = [];
 const ok = (name, cond, extra = '') => { results.push([cond ? 'PASS' : 'FAIL', name, extra]); };
 
-(async () => {
-  const browser = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium' });
-  const ctx = await browser.newContext({ viewport: { width: 390, height: 844 } });
-  // 2026-09-11 v2.57.0 바깥 주소(웹폰트·Firebase)를 끊는다. 이 방(샌드박스)에는 바깥이 없어서
-  // 그 요청들이 타임아웃까지 매달리고, 그동안 첫 렌더가 끝나지 않는다 — 실측 한 번 여는 데 13.7초.
-  // 끊으면 1.2초다(11.5배). 앱은 바깥 것 없이도 돌게 만들어 뒀으니(대체 글꼴·?mock) 검사 내용은 그대로다.
-  // 다른 스위트 열넷은 이미 이렇게 하고 있었다 — 빠진 곳만 맞춘다
-  // 2026-09-12 v3.11.0 첫 방문 가입 권유 팝업은 '본 적 있음' 으로 표시해 두고 시작한다 —
-  // 안 그러면 3초 뒤 모달이 떠서 그 뒤의 클릭을 전부 가로챈다 (동의 배너를 끄는 것과 같은 처방).
-  // 팝업 자체는 tests/e2e/signup-invite.js 가 따로 검사한다
-  await ctx.addInitScript(() => { try { localStorage.setItem('pogo_signup_invite_seen', '1'); } catch {} });
-  await ctx.route(/^https?:\/\/(?!localhost)/, (r) => r.abort());
+suite(async () => {
+  const browser = await launch();
+  const ctx = await newContext(browser, { banner: true, viewport: { width: 390, height: 844 } });
   // 폰트 CDN 차단 (샌드박스 대기 방지)
   await ctx.route(/fonts\.googleapis|fonts\.gstatic|cdn\.jsdelivr/, (r) => r.abort());
   const page = await ctx.newPage();
@@ -145,4 +136,4 @@ const ok = (name, cond, extra = '') => { results.push([cond ? 'PASS' : 'FAIL', n
   for (const [s, n, e] of results) console.log(s, n, e || '');
   console.log(`${results.filter((r) => r[0] === 'PASS').length}/${results.length} passed`);
   await browser.close();
-})().catch((e) => { console.error('CRASH', e); process.exit(1); });
+});

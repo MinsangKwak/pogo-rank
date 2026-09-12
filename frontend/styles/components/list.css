@@ -147,9 +147,7 @@
 .solo__opts { display: flex; flex-wrap: wrap; gap: 0.8rem; }
 
 /* 2026-09-03 v2.2.0 즐겨찾기 ★ (로그인 계정에 저장) — 도감 행·상세 팝업 */
-.fav { width: 3rem; height: 3rem; font-size: 1.7rem; color: var(--muted); opacity: .6; border-radius: 0.8rem; flex: none; }
-.fav:hover { opacity: 1; background: var(--hover); }
-.fav.is-on { color: var(--caution); opacity: 1; }
+/* 2026-09-12 v3.14.0 .fav(★ 버튼) 규칙을 뺐다 — 그 버튼을 만드는 favBtn() 이 v3.4.0 부터 불리지 않았다 */
 
 /* 2026-09-03 PvP 덱 짜기 슬롯 UI */
 .deck__slots { display: flex; gap: 1rem; margin: 1.2rem 0 1rem; }

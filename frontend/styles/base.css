@@ -56,7 +56,7 @@ button:focus-visible { outline: 0.2rem solid var(--fg); outline-offset: 0.2rem; 
    ───────────────────────────────────────────────────────────────────────────── */
 @media (prefers-reduced-motion: no-preference) {
   button, .drawer__item, .uchip, .icon-btn, .tool-btn, .chips__item, .tchips__item,
-  .tabs__item, .seg__item, .home__tile, .dex__row, .row, .fav {
+  .tabs__item, .seg__item, .home__tile, .dex__row, .row {
     transition: background-color .14s ease, border-color .14s ease, color .14s ease, transform .12s ease, box-shadow .14s ease;
   }
   /* 누르는 순간 살짝 눌린다 — 터치에서 "먹었나?" 하는 순간을 없앤다 */

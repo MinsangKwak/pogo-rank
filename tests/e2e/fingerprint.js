@@ -1,7 +1,7 @@
 'use strict';
 // 계산된 스타일 지문 — 클래스 이름만 바꾸는 리팩토링이 렌더 결과를 바꾸지 않았는지 확인한다.
 // 클래스 이름 자체는 지문에 넣지 않는다 (바뀌는 게 정상이므로). 대신 태그·순서·계산된 스타일만 본다.
-const { chromium } = require('/opt/node22/lib/node_modules/playwright');
+const { launch, newContext, suite } = require('./_lib');
 const fs = require('fs');
 const BASE = 'http://localhost:5503/';
 const tag = process.argv[2] || 'a';
@@ -25,29 +25,22 @@ const PROPS = ['display','position','color','background-color','border-top-width
   'grid-template-columns','align-items','justify-content','text-align','opacity','overflow-x','overflow-y','gap',
   'text-decoration-line','letter-spacing','white-space','z-index','top','left','right','bottom','box-shadow','visibility'];
 
-(async () => {
-  const browser = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium' });
+suite(async () => {
+  const browser = await launch();
   const errors = [];
   // 2026-09-10 v2.54.0 두 화면 폭을 **동시에** 잰다. 전에는 좁은 폭 22화면을 다 돈 뒤에야
   // 넓은 폭을 시작해서, 이 스위트 하나가 회귀 전체에서 가장 오래 걸렸다 (실측 183초).
   // 둘은 서로의 결과를 쓰지 않는다 — 각자 제 컨텍스트에서 제 파일에 쓴다
   const sweep = async ([w, h, wname]) => {
-    const ctx = await browser.newContext({ viewport: { width: w, height: h } });
-    // 2026-09-12 v3.11.0 첫 방문 가입 권유 팝업은 '본 적 있음' 으로 표시해 두고 시작한다 —
-    // 안 그러면 3초 뒤 모달이 떠서 그 뒤의 클릭을 전부 가로챈다 (동의 배너를 끄는 것과 같은 처방).
-    // 팝업 자체는 tests/e2e/signup-invite.js 가 따로 검사한다
-    await ctx.addInitScript(() => { try { localStorage.setItem('pogo_signup_invite_seen', '1'); } catch {} });
-    await ctx.route(/^https?:\/\/(?!localhost)/, (r) => r.abort());
+    const ctx = await newContext(browser, { viewport: { width: w, height: h } });
     ctx.setDefaultTimeout(4000);
     const page = await ctx.newPage();
     page.on('pageerror', (e) => errors.push(`${wname}: ${e}`));
     for (const [name, hash, action] of SCREENS) {
       await page.goto(BASE + '?mock=1' + hash, { waitUntil: 'domcontentloaded' });
       await page.waitForSelector('#splash', { state: 'detached', timeout: 12000 }).catch(() => {});
-      if (action !== 'consent') {
-        await page.evaluate(() => { try { localStorage.setItem('pogo_consent', 'denied'); } catch {} });
-        await page.locator('#consent .uchip:last-child').click({ timeout: 1500 }).catch(() => {});
-      }
+      // 2026-09-12 v3.14.0 동의 배너는 _lib.newContext 가 미리 거부해 둔다 — 화면마다 없는 버튼을 1.5초씩
+      // 기다리던 줄을 뺐다 (22화면 × 1.5초). 'consent' 화면은 맨 뒤라 전에도 배너 없이 찍혔다 — 지문은 그대로다
       await page.waitForTimeout(150);
       try {
         // 2026-09-12 v3.12.0 '#page button' 순번으로 줄을 집던 것을 클래스로 바꿨다 — 도감 위쪽에
@@ -80,4 +73,4 @@ const PROPS = ['display','position','color','background-color','border-top-width
   await Promise.all([[390, 844, 'm'], [1440, 900, 'd']].map(sweep));
   console.log('errors:', errors.length ? errors.join(' | ') : 'none');
   await browser.close();
-})().catch((e) => { console.error('CRASH', e); process.exit(1); });
+});

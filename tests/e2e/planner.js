@@ -8,19 +8,12 @@
 //   3) 비교가 눌린 티가 나는가 — v2.47.0 이전에는 안내문을 목록 **아래**(문서 3,000px 지점)에
 //      그려, 다른 종을 고른 사람에게는 "눌렀는데 아무 일도 안 일어난" 화면이었다.
 //      그래서 안내가 **뷰포트 안에** 있는지를 좌표로 확인한다 — 존재만 보면 이 버그를 다시 놓친다
-const { chromium } = require('/opt/node22/lib/node_modules/playwright');
+const { launch, newContext, ok, finish } = require('./_lib');
 const BASE = 'http://localhost:5503/?mock=1';
-let pass = 0, fail = 0;
-const ok = (n, c, x = '') => { console.log((c ? 'PASS' : 'FAIL') + ' ' + n + ' ' + x); c ? pass++ : fail++; };
 
 (async () => {
-  const browser = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium' });
-  const ctx = await browser.newContext({ viewport: { width: 1440, height: 900 } });
-  // 2026-09-12 v3.11.0 첫 방문 가입 권유 팝업은 '본 적 있음' 으로 표시해 두고 시작한다 —
-  // 안 그러면 3초 뒤 모달이 떠서 그 뒤의 클릭을 전부 가로챈다 (동의 배너를 끄는 것과 같은 처방).
-  // 팝업 자체는 tests/e2e/signup-invite.js 가 따로 검사한다
-  await ctx.addInitScript(() => { try { localStorage.setItem('pogo_signup_invite_seen', '1'); } catch {} });
-  await ctx.route(/^https?:\/\/(?!localhost)/, (r) => r.abort());
+  const browser = await launch();
+  const ctx = await newContext(browser, { viewport: { width: 1440, height: 900 } });
   ctx.setDefaultTimeout(8000);
   const page = await ctx.newPage();
   const errs = [];
@@ -30,7 +23,6 @@ const ok = (n, c, x = '') => { console.log((c ? 'PASS' : 'FAIL') + ' ' + n + ' '
   // ── 1. 메뉴는 한 줄 ────────────────────────────────────────────────────────
   await page.goto(BASE, { waitUntil: 'domcontentloaded' });
   await page.waitForSelector('#splash', { state: 'detached', timeout: 15000 }).catch(() => {});
-  await page.locator('#consent .consent__deny').click({ timeout: 1500 }).catch(() => {});
   await settle();
 
   const navLabels = await page.locator('.nav-menu .drawer__label').allTextContents();
@@ -219,7 +211,5 @@ const ok = (n, c, x = '') => { console.log((c ? 'PASS' : 'FAIL') + ' ' + n + ' '
   ok('짝이 안 되는 줄은 흐리게', (await page.locator('.uchip.is-offpair').count()) > 0);
 
   ok('페이지 오류 없음', errs.length === 0, errs.join(' | ').slice(0, 200));
-  console.log(`${pass}/${pass + fail} passed`);
-  await browser.close();
-  process.exit(fail ? 1 : 0);
+  await finish(browser);
 })();

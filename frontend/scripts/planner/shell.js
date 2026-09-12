@@ -22,7 +22,6 @@
 //   renderPlanHome (planner/home.js) · renderPlanCollection (planner/collection.js)
 // ─────────────────────────────────────────────────────────────────────────────
 
-const PLAN_LAST_KEY = 'pogo_plan_last';
 // 번들은 파일 전체가 한 <script> 라 app.js 의 함수들은 호이스팅되지만 const state 는 초기화 전(TDZ)이다.
 // pages.js 가 로드 직후 부르는 renderPage() 는 이 플래그로 "앱이 준비됐는지"를 판단한다 (initPlanShell 이 켠다)
 let _planShellReady = false;
@@ -40,12 +39,8 @@ function planRouteFromHash() {
   return { tab, params: found.params };
 }
 
-function savePlanLast(mode) {
-  try { localStorage.setItem(PLAN_LAST_KEY, mode); } catch {}
-}
-function planLastMode() {
-  try { return localStorage.getItem(PLAN_LAST_KEY) === 'plan' ? 'plan' : 'dex'; } catch { return 'dex'; }
-}
+// 2026-09-12 v3.14.0 savePlanLast · planLastMode 를 지웠다 — 마지막 모드를 저장만 하고 읽는 곳이 없었다
+// (첫 진입은 늘 서비스 홈이다). 브라우저에 남은 pogo_plan_last 값은 아무 일도 하지 않는다
 
 // 해시를 읽어 서비스 홈·랭킹·플래너 상태를 맞춘다.
 function applyPlanRoute() {
@@ -62,7 +57,6 @@ function applyPlanRoute() {
   state.planTab = route ? route.tab : 'home';
   state.planParams = route ? route.params : null;
   document.body.dataset.mode = state.appMode;  // CSS 가 모드별로 숨길 것(즐겨찾기 카드 등)을 고른다
-  savePlanLast(state.appMode);
   updateModeBadge();
 }
 
@@ -70,7 +64,6 @@ function applyPlanRoute() {
 function switchMode(to, from = 'badge') {
   const target = to ?? (state.appMode === 'plan' ? 'dex' : 'plan');
   track('mode_switch', { to: target, from });
-  savePlanLast(target);
   if (target === 'plan') {
     navigateHash(routeHash('planner'));
     return;

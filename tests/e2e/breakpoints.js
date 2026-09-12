@@ -8,19 +8,16 @@
 //   - 상세 패널이 열렸을 때 목록 내용과 패널 사이에 실제로 간격이 있는가 (겹치지 않는가) — 이전에
 //     이 간격이 4px 로 거의 없어 보이던 버그가 있었다(패널 위치 공식의 20px 안쪽 여백을 빼먹었었다)
 //   - 사이드바 왼쪽 끝과 패널 오른쪽 끝이 컨테이너를 기준으로 좌우 대칭인가
-const { chromium } = require('/opt/node22/lib/node_modules/playwright');
+const { launch, newContext, ok, finish, suite } = require('./_lib');
 const BASE = 'http://localhost:5503/?mock=1';
-let pass = 0, fail = 0;
-const ok = (n, c, x = '') => { console.log((c ? 'PASS' : 'FAIL') + ' ' + n + ' ' + x); c ? pass++ : fail++; };
 
-(async () => {
-  const browser = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium' });
+suite(async () => {
+  const browser = await launch();
   const errs = [];
 
   const openDexDetail = async (page) => {
     await page.goto(BASE + '#/dex', { waitUntil: 'domcontentloaded' });
     await page.waitForSelector('#splash', { state: 'detached', timeout: 15000 }).catch(() => {});
-    await page.locator('#consent .consent__deny').click({ timeout: 1500 }).catch(() => {});
     await page.waitForTimeout(500);
     await page.locator('#page .dex__row').first().click();
     await page.waitForTimeout(400);
@@ -28,12 +25,7 @@ const ok = (n, c, x = '') => { console.log((c ? 'PASS' : 'FAIL') + ' ' + n + ' '
 
   // ── 모바일 경계: 1099px 는 아직 사이드바·패널이 없어야 한다
   {
-    const ctx = await browser.newContext({ viewport: { width: 1099, height: 800 } });
-    // 2026-09-12 v3.11.0 첫 방문 가입 권유 팝업은 '본 적 있음' 으로 표시해 두고 시작한다 —
-    // 안 그러면 3초 뒤 모달이 떠서 그 뒤의 클릭을 전부 가로챈다 (동의 배너를 끄는 것과 같은 처방).
-    // 팝업 자체는 tests/e2e/signup-invite.js 가 따로 검사한다
-    await ctx.addInitScript(() => { try { localStorage.setItem('pogo_signup_invite_seen', '1'); } catch {} });
-    await ctx.route(/^https?:\/\/(?!localhost)/, (r) => r.abort());
+    const ctx = await newContext(browser, { viewport: { width: 1099, height: 800 } });
     const page = await ctx.newPage();
     page.on('pageerror', (e) => errs.push('1099:' + e));
     await openDexDetail(page);
@@ -54,9 +46,7 @@ const ok = (n, c, x = '') => { console.log((c ? 'PASS' : 'FAIL') + ' ' + n + ' '
     { w: 1680, label: 'PC 1680', panelW: 480, gap: 32 },
   ].map((t) => ({ ...t, containerW: containerAt(t.w) }));
   for (const tier of tiers) {
-    const ctx = await browser.newContext({ viewport: { width: tier.w, height: 900 } });
-    await ctx.addInitScript(() => { try { localStorage.setItem('pogo_signup_invite_seen', '1'); } catch {} });
-    await ctx.route(/^https?:\/\/(?!localhost)/, (r) => r.abort());
+    const ctx = await newContext(browser, { viewport: { width: tier.w, height: 900 } });
     const page = await ctx.newPage();
     page.on('pageerror', (e) => errs.push(`${tier.w}:` + e));
     await openDexDetail(page);
@@ -93,9 +83,7 @@ const ok = (n, c, x = '') => { console.log((c ? 'PASS' : 'FAIL') + ' ' + n + ' '
   // 그림은 작아지고 이름은 두 줄로 접혀 한 화면에 두 마리밖에 안 들어온다.
   // 티어표는 위에서부터 순서대로 훑는 화면이라 좁은 화면에서는 한 줄에 하나여야 한다
   for (const [label, width, wantCard] of [['휴대폰 390', 390, false], ['태블릿 800', 800, false], ['PC 1440', 1440, true]]) {
-    const ctx = await browser.newContext({ viewport: { width, height: 900 } });
-    await ctx.addInitScript(() => { try { localStorage.setItem('pogo_signup_invite_seen', '1'); } catch {} });
-    await ctx.route(/^https?:\/\/(?!localhost)/, (r) => r.abort());
+    const ctx = await newContext(browser, { viewport: { width, height: 900 } });
     const page = await ctx.newPage();
     for (const route of ['dmax', 'pve', 'pvp']) {
       await page.goto(`${BASE}#/${route}`, { waitUntil: 'domcontentloaded' });
@@ -118,9 +106,7 @@ const ok = (n, c, x = '') => { console.log((c ? 'PASS' : 'FAIL') + ' ' + n + ' '
 
   // 2026-09-10 v2.53.0 휴대폰 상세 팝업은 화면의 75% 까지만 — 다 덮으면 팝업이 아니라 새 화면으로 읽힌다
   {
-    const ctx = await browser.newContext({ viewport: { width: 390, height: 844 } });
-    await ctx.addInitScript(() => { try { localStorage.setItem('pogo_signup_invite_seen', '1'); } catch {} });
-    await ctx.route(/^https?:\/\/(?!localhost)/, (r) => r.abort());
+    const ctx = await newContext(browser, { viewport: { width: 390, height: 844 } });
     const page = await ctx.newPage();
     await page.goto(`${BASE}#/dex`, { waitUntil: 'domcontentloaded' });
     await page.waitForSelector('#splash', { state: 'detached', timeout: 15000 }).catch(() => {});
@@ -137,7 +123,5 @@ const ok = (n, c, x = '') => { console.log((c ? 'PASS' : 'FAIL') + ' ' + n + ' '
   }
 
   ok('페이지 오류 없음', errs.length === 0, errs.join(' | ').slice(0, 200));
-  await browser.close();
-  console.log(`${pass}/${pass + fail} passed`);
-  process.exit(fail ? 1 : 0);
-})().catch((e) => { console.error('CRASH', e.message); process.exit(1); });
+  await finish(browser);
+});

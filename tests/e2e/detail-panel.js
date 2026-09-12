@@ -8,23 +8,16 @@
 //   - 닫기(✕)를 누르면 패널이 닫히고 body.has-detail-panel 도 지워지는가
 //   - 다른 화면(탭)으로 이동하면 패널이 자동으로 닫히는가
 //   - 좁은 화면(모바일)은 지금까지처럼 팝업(dialog)이지 패널이 아닌가 (회귀 없음)
-const { chromium } = require('/opt/node22/lib/node_modules/playwright');
+const { launch, newContext, ok, finish, suite } = require('./_lib');
 const BASE = 'http://localhost:5503/?mock=1';
-let pass = 0, fail = 0;
-const ok = (n, c, x = '') => { console.log((c ? 'PASS' : 'FAIL') + ' ' + n + ' ' + x); c ? pass++ : fail++; };
 
-(async () => {
-  const browser = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium' });
+suite(async () => {
+  const browser = await launch();
   const errs = [];
 
   // ── PC (1440px) ──────────────────────────────────────────────
   {
-    const ctx = await browser.newContext({ viewport: { width: 1440, height: 900 } });
-    // 2026-09-12 v3.11.0 첫 방문 가입 권유 팝업은 '본 적 있음' 으로 표시해 두고 시작한다 —
-    // 안 그러면 3초 뒤 모달이 떠서 그 뒤의 클릭을 전부 가로챈다 (동의 배너를 끄는 것과 같은 처방).
-    // 팝업 자체는 tests/e2e/signup-invite.js 가 따로 검사한다
-    await ctx.addInitScript(() => { try { localStorage.setItem('pogo_signup_invite_seen', '1'); } catch {} });
-    await ctx.route(/^https?:\/\/(?!localhost)/, (r) => r.abort());
+    const ctx = await newContext(browser, { viewport: { width: 1440, height: 900 } });
     ctx.setDefaultTimeout(8000);
     const page = await ctx.newPage();
     page.on('pageerror', (e) => errs.push('PC: ' + e));
@@ -32,7 +25,6 @@ const ok = (n, c, x = '') => { console.log((c ? 'PASS' : 'FAIL') + ' ' + n + ' '
     const go = async (hash) => {
       await page.goto(BASE + hash, { waitUntil: 'domcontentloaded' });
       await page.waitForSelector('#splash', { state: 'detached', timeout: 15000 }).catch(() => {});
-      await page.locator('#consent .consent__deny').click({ timeout: 1500 }).catch(() => {});
       await page.waitForTimeout(500);
     };
 
@@ -73,16 +65,13 @@ const ok = (n, c, x = '') => { console.log((c ? 'PASS' : 'FAIL') + ' ' + n + ' '
 
   // ── 모바일 (390px) — 회귀: 지금까지처럼 팝업이어야 한다 ──────────
   {
-    const ctx = await browser.newContext({ viewport: { width: 390, height: 844 } });
-    await ctx.addInitScript(() => { try { localStorage.setItem('pogo_signup_invite_seen', '1'); } catch {} });
-    await ctx.route(/^https?:\/\/(?!localhost)/, (r) => r.abort());
+    const ctx = await newContext(browser, { viewport: { width: 390, height: 844 } });
     ctx.setDefaultTimeout(8000);
     const page = await ctx.newPage();
     page.on('pageerror', (e) => errs.push('모바일: ' + e));
 
     await page.goto(BASE + '#/dex', { waitUntil: 'domcontentloaded' });
     await page.waitForSelector('#splash', { state: 'detached', timeout: 15000 }).catch(() => {});
-    await page.locator('#consent .consent__deny').click({ timeout: 1500 }).catch(() => {});
     await page.waitForTimeout(500);
     await page.locator('#page .dex__row').first().click();
     await page.waitForTimeout(500);
@@ -98,15 +87,12 @@ const ok = (n, c, x = '') => { console.log((c ? 'PASS' : 'FAIL') + ' ' + n + ' '
   // 홈 오른쪽에 이전 포켓몬 패널이 그대로 남아 본문이 눌렸다.
   // 남겨야 하는 것은 "홈" 이 아니라 상세를 가리키는 주소(#/mon/…) 하나뿐이다
   {
-    const ctx = await browser.newContext({ viewport: { width: 1440, height: 900 } });
-    await ctx.addInitScript(() => { try { localStorage.setItem('pogo_signup_invite_seen', '1'); } catch {} });
-    await ctx.route(/^https?:\/\/(?!localhost)/, (r) => r.abort());
+    const ctx = await newContext(browser, { viewport: { width: 1440, height: 900 } });
     const page = await ctx.newPage();
     page.on('pageerror', (e) => errs.push('이동: ' + e));
     const open = async () => {
       await page.goto(BASE + '#/dex', { waitUntil: 'domcontentloaded' });
       await page.waitForSelector('#splash', { state: 'detached', timeout: 15000 }).catch(() => {});
-      await page.locator('#consent .consent__deny').click({ timeout: 1500 }).catch(() => {});
       await page.waitForSelector('#page .dex__row', { timeout: 15000 }).catch(() => {});
       await page.locator('#page .dex__row').first().click();
       await page.waitForTimeout(500);
@@ -133,7 +119,6 @@ const ok = (n, c, x = '') => { console.log((c ? 'PASS' : 'FAIL') + ' ' + n + ' '
     // 상세를 가리키는 주소로 들어오면 패널이 곧 그 화면이라 열려 있어야 한다
     await page.goto(BASE + '#/mon/1', { waitUntil: 'domcontentloaded' });
     await page.waitForSelector('#splash', { state: 'detached', timeout: 15000 }).catch(() => {});
-    await page.locator('#consent .consent__deny').click({ timeout: 1500 }).catch(() => {});
     await page.waitForTimeout(800);
     const deep = await shut();
     ok('딥링크(#/mon/…)로 들어오면 패널이 열린다', deep.hidden === false, JSON.stringify(deep));
@@ -142,7 +127,5 @@ const ok = (n, c, x = '') => { console.log((c ? 'PASS' : 'FAIL') + ' ' + n + ' '
     await ctx.close();
   }
 
-  await browser.close();
-  console.log(`${pass}/${pass + fail} passed`);
-  process.exit(fail ? 1 : 0);
-})().catch((e) => { console.error('CRASH', e.message); process.exit(1); });
+  await finish(browser);
+});

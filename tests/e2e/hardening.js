@@ -6,20 +6,12 @@
 //   - 공유 카드가 뜨는 데 필요한 값이 다 있고, 그림이 실제로 받아지는가
 //   - dev 미리보기가 실서비스 주소를 가리키지 않는가 (링크를 잘못 퍼뜨리는 사고)
 //   - 검색·보안 부속 파일(sitemap · robots · security.txt · 404)이 나오는가
-const { chromium } = require('/opt/node22/lib/node_modules/playwright');
+const { launch, newContext, ok, finish, suite } = require('./_lib');
 const BASE = 'http://localhost:5503/';
-let pass = 0, fail = 0;
-const ok = (n, c, x = '') => { console.log((c ? 'PASS' : 'FAIL') + ' ' + n + ' ' + x); c ? pass++ : fail++; };
 
-(async () => {
-  const browser = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium' });
-  const ctx = await browser.newContext({ viewport: { width: 1280, height: 800 } });
-  // 폰트·스프라이트 CDN 만 막는다. CSP 위반 여부를 보려면 페이지 자체는 정상으로 굴려야 한다
-  // 2026-09-12 v3.11.0 첫 방문 가입 권유 팝업은 '본 적 있음' 으로 표시해 두고 시작한다 —
-  // 안 그러면 3초 뒤 모달이 떠서 그 뒤의 클릭을 전부 가로챈다 (동의 배너를 끄는 것과 같은 처방).
-  // 팝업 자체는 tests/e2e/signup-invite.js 가 따로 검사한다
-  await ctx.addInitScript(() => { try { localStorage.setItem('pogo_signup_invite_seen', '1'); } catch {} });
-  await ctx.route(/^https?:\/\/(?!localhost)/, (r) => r.abort());
+suite(async () => {
+  const browser = await launch();
+  const ctx = await newContext(browser, { viewport: { width: 1280, height: 800 } });
   // 2026-09-10 v2.44.0 Firebase 로그인이 받는 파일은 막지 않고 **가짜 응답**으로 바꿔 둔다 —
   // 이 검사는 네트워크가 아니라 CSP 를 보는 것이라, 밖으로 못 나가는 환경에서도 답이 같아야 한다.
   // 위 전면 차단보다 **뒤에** 등록해야 한다 — Playwright 는 나중에 건 route 가 이긴다
@@ -32,7 +24,6 @@ const ok = (n, c, x = '') => { console.log((c ? 'PASS' : 'FAIL') + ' ' + n + ' '
 
   await page.goto(BASE + '?mock=1', { waitUntil: 'domcontentloaded' });
   await page.waitForSelector('#splash', { state: 'detached', timeout: 15000 }).catch(() => {});
-  await page.locator('#consent .consent__deny').click({ timeout: 1500 }).catch(() => {});
   await page.waitForTimeout(400);
 
   // ── CSP
@@ -203,7 +194,5 @@ const ok = (n, c, x = '') => { console.log((c ? 'PASS' : 'FAIL') + ' ' + n + ' '
   ok('404.html 있음', !!notFound && notFound.includes('찾을 수 없'));
   ok('404 는 색인 금지', !!notFound && notFound.includes('noindex'));
 
-  await browser.close();
-  console.log(`${pass}/${pass + fail} passed`);
-  process.exit(fail ? 1 : 0);
-})().catch((e) => { console.error('CRASH', e.message); process.exit(1); });
+  await finish(browser);
+});

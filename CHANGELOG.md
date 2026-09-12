@@ -1,6 +1,6 @@
 # 변경 이력
 
-**버전을 눌러 펼쳐 보세요.** 113개 판이 쌓여 한눈에 훑기 어려워, 각 버전을 접어 두었습니다.
+**버전을 눌러 펼쳐 보세요.** 114개 판이 쌓여 한눈에 훑기 어려워, 각 버전을 접어 두었습니다.
 
 각 줄은 `버전 — 날짜 · 그 판에서 한 일` 순서입니다. 최신이 위로 옵니다.
 형식은 [Keep a Changelog](https://keepachangelog.com/ko/1.1.0/)를 따릅니다.
@@ -11,6 +11,58 @@
 > 사용자가 읽는 패치노트는 서비스 안 [🎉 패치노트](https://minsangkwak.github.io/pogo-rank/#/release) 화면에 있습니다(영문판 포함).
 > 이 파일은 **왜 그렇게 고쳤는지**까지 남기는 개발 기록이라 더 깁니다.
 
+
+<details open>
+<summary><b>v3.14.0</b> — 2026-09-12 · <code>변경</code> 개발 순환 시간 단축 — 회귀 162→117초 · 빌드 단계화 · 죽은 코드 정리 · dev_up/ship_dev</summary>
+
+### 왜
+
+클라우드 세션에서 한 판을 올리는 데 30분이 넘게 걸렸다. 회귀는 3분이었고 나머지는 **사이사이** 였다 — 컨테이너가 새로 뜨면 서버를 다시 띄우고, dev 머지 명령 여덟 개를 하나씩 치고, 미리보기에 버전이 뜨기를 손으로 폴링하고, 명령마다 권한을 물었다. 화면은 한 픽셀도 바뀌지 않는 판이라 패치노트(`release.js`)는 올리지 않는다.
+
+### 변경 — 회귀 162초 → 117초
+
+**없는 버튼을 기다리던 1.5초.** 스위트마다 화면을 옮길 때 `#consent .consent__deny` 를 `click({ timeout: 1500 }).catch()` 로 누르고 있었다. 배너는 첫 화면에만 뜨므로 두 번째 이동부터는 **없는 버튼을 1.5초씩 기다리다 포기하는 줄** 이었다. 화면 이동 30번이면 45초 — `shell.js` 100초의 절반이 이것이었다. `newContext()` 가 `pogo_consent=denied` 를 미리 넣어 배너 자체가 뜨지 않게 하고 그 줄 32개를 지웠다. 배너를 검사하는 `legal.js` · `bot-filter.js` 는 `{ banner: true }`.
+
+| 스위트 | 전 | 후 |
+| --- | --- | --- |
+| shell | 101s | 58s |
+| nav | 60s | 25s |
+| router | 61s | 28s |
+| fingerprint | 43s | 19s |
+| i18n | 28s | 12s |
+| 전체 (일꾼 4) | 162s | 117s |
+
+**공통 조각 `tests/e2e/_lib.js`.** 브라우저 경로 · `ok()` 집계 · `newContext()`(가입 권유 팝업 '본 적 있음' · 배너 거부 · 바깥 요청 차단) · `go()` · `finish()` · `suite()`. 스위트 22개가 같은 머리말을 각자 들고 있었다(4,295줄 → 3,608줄). 이름이 `_` 로 시작하는 파일은 `test.sh` 가 건너뛴다.
+
+**`wait` 가 서버까지 기다렸다.** `test.sh` 가 서버를 직접 띄운 경우 마지막 `wait` 가 그 서버 프로세스도 기다려 스위트가 다 끝나고도 돌아오지 않았다. 일꾼 pid 만 기다린다.
+
+**`-j 8` 은 답이 아니다.** 4코어에서 부하 20을 찍으며 세 스위트가 시간 초과로 실패했다. 대기 시간은 애니메이션·디바운스에 맞춘 값이라 CPU 가 밀리면 어긋난다.
+
+### 변경 — 빌드를 단계별 함수로
+
+`backend/build.py` 는 한 덩어리 502줄 스크립트였다. `read_config → build_pvp_tables → copy_sprites → apply_rank_delta → render_data_js → render_index_html → write_site_files` 로 나누고 `main()` 이 그 순서대로 부른다. 산출물은 바이트 단위로 같다(버전 문자열 제외, `index.html` · `data.js` 대조).
+
+- **스프라이트 복사 생략** — 크기·수정 시각이 같은 파일은 건너뛴다. 화면만 고친 빌드에서 2,344장을 매번 다시 쓰고 있었다. 0.5초 → 0.3초.
+- **(수정) `FORM_LABELS` 가 빌드마다 달랐다** — `sorted(set, key=len)` 은 같은 길이 안의 순서를 집합 순서에 맡기는데, 그건 파이썬 해시 무작위화로 실행마다 다르다. `data.js` 가 바뀐 것 없이 바뀌었다. `(-len, label)` 로 재현 가능하게.
+
+### 변경 — 죽은 코드
+
+| 조각 | 왜 죽어 있었나 | 조치 |
+| --- | --- | --- |
+| `isFav` · `toggleFav` · `favBtn` · `refreshFavUi` (auth.js) | v3.4.0 에 ★ 즐겨찾기를 걷어낸 뒤 부르는 곳 없음 | 삭제. `AUTH.favs` 는 Firestore 필드라 그대로 읽는다 |
+| `setRole` (auth.js) | 역할 보정 UI 가 없다 | 삭제. `AUTH.roles` 는 그대로 |
+| `savePlanLast` · `planLastMode` · `PLAN_LAST_KEY` (planner/shell.js) | 저장만 하고 읽는 곳 없음 (첫 진입은 늘 홈) | 삭제. 브라우저에 남은 `pogo_plan_last` 는 아무 일도 하지 않는다 |
+| `.fav*` CSS (list.css · modal.css · base.css) | 그 버튼을 만드는 함수가 위에서 죽었다 | 삭제 |
+
+정의 외 참조가 0인 최상위 함수를 스크립트로 전수 조사한 결과다(주석 속 이름 제외). 회귀 22묶음 통과. 지문(fingerprint)은 이 환경에서 같은 빌드끼리도 그림 로딩 시점에 따라 흔들려 증거로 쓰지 않았다.
+
+### 추가 — 세션 시작 · dev 머지를 한 명령으로
+
+- `scripts/dev_up.sh` — 빌드 + `localhost:5503` 서버 (이미 떠 있으면 그대로). SessionStart 훅에 두면 세션이 열릴 때 이미 준비돼 있다.
+- `scripts/ship_dev.sh` — 현재 브랜치 푸시 · dev `--no-ff` 머지 · 푸시 · 원래 브랜치 복귀 · 미리보기에 그 버전이 뜰 때까지 대기 · `verify_deploy.sh`. main → deploy 는 사람이 정하는 단계라 넣지 않았다.
+- `.claude/settings.json` 권고안은 docs/DEVELOPMENT.md 에 — 에이전트가 제 권한을 넓히는 파일이라 사람이 넣는다.
+
+</details>
 
 <details open>
 <summary><b>v3.13.0</b> — 2026-09-12 · <code>변경</code> UX 흐름 점검 — 죽은 조각 · 낡은 문구 · 겹치는 문을 걷어냈다</summary>

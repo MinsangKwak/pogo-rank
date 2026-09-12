@@ -7,19 +7,12 @@
 //   - 타입 여러 개가 `&` 가 아니라 `,` 로 이어지는가 — `&` 로 이으면 "둘 다인 것" 이 되어 거의 안 걸린다
 //   - 고른 것이 새로고침 뒤에도 남는가 — 검색식은 만들어 놓고 게임과 오가며 여러 번 쓴다
 //   - 로그인해야 열리는가 — 만든 검색식은 계정에 이어서 쓰는 개인 설정이다
-const { chromium } = require('/opt/node22/lib/node_modules/playwright');
+const { launch, newContext, ok, finish, suite } = require('./_lib');
 const BASE = 'http://localhost:5503/?mock=1';
-let pass = 0, fail = 0;
-const ok = (n, c, x = '') => { console.log((c ? 'PASS' : 'FAIL') + ' ' + n + ' ' + x); c ? pass++ : fail++; };
 
-(async () => {
-  const browser = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium' });
-  const ctx = await browser.newContext({ viewport: { width: 390, height: 844 } });
-  // 2026-09-12 v3.11.0 첫 방문 가입 권유 팝업은 '본 적 있음' 으로 표시해 두고 시작한다 —
-  // 안 그러면 3초 뒤 모달이 떠서 그 뒤의 클릭을 전부 가로챈다 (동의 배너를 끄는 것과 같은 처방).
-  // 팝업 자체는 tests/e2e/signup-invite.js 가 따로 검사한다
-  await ctx.addInitScript(() => { try { localStorage.setItem('pogo_signup_invite_seen', '1'); } catch {} });
-  await ctx.route(/^https?:\/\/(?!localhost)/, (r) => r.abort());
+suite(async () => {
+  const browser = await launch();
+  const ctx = await newContext(browser, { viewport: { width: 390, height: 844 } });
   const page = await ctx.newPage();
   const errs = [];
   page.on('pageerror', (e) => errs.push(String(e)));
@@ -27,7 +20,6 @@ const ok = (n, c, x = '') => { console.log((c ? 'PASS' : 'FAIL') + ' ' + n + ' '
   const open = async () => {
     await page.goto(BASE + '#/finder', { waitUntil: 'domcontentloaded' });
     await page.waitForSelector('#splash', { state: 'detached', timeout: 15000 }).catch(() => {});
-    await page.locator('#consent .consent__deny').click({ timeout: 1500 }).catch(() => {});
     await page.waitForTimeout(300);
   };
   const out = () => page.locator('.finder__out').textContent();
@@ -118,13 +110,10 @@ const ok = (n, c, x = '') => { console.log((c ? 'PASS' : 'FAIL') + ' ' + n + ' '
 
   // ── 로그인하지 않으면 잠긴다 (2026-09-11 v2.58.0)
   {
-    const guest = await browser.newContext({ viewport: { width: 390, height: 844 } });
-    await guest.addInitScript(() => { try { localStorage.setItem('pogo_signup_invite_seen', '1'); } catch {} });
-    await guest.route(/^https?:\/\/(?!localhost)/, (r) => r.abort());
+    const guest = await newContext(browser, { viewport: { width: 390, height: 844 } });
     const gp = await guest.newPage();
     await gp.goto('http://localhost:5503/#/finder', { waitUntil: 'domcontentloaded' });
     await gp.waitForSelector('#splash', { state: 'detached', timeout: 15000 }).catch(() => {});
-    await gp.locator('#consent .consent__deny').click({ timeout: 1500 }).catch(() => {});
     await gp.waitForTimeout(500);
     ok('로그인 안 하면 잠긴다', (await gp.locator('.finder').count()) === 0);
     ok('잠금 안내가 왜 막혔는지 말한다', /검색식/.test(await gp.locator('#page').textContent()));
@@ -132,7 +121,5 @@ const ok = (n, c, x = '') => { console.log((c ? 'PASS' : 'FAIL') + ' ' + n + ' '
   }
 
   ok('페이지 오류 없음', errs.length === 0, errs.join(' | ').slice(0, 200));
-  await browser.close();
-  console.log(`${pass}/${pass + fail} passed`);
-  process.exit(fail ? 1 : 0);
-})().catch((e) => { console.error('CRASH', e.message); process.exit(1); });
+  await finish(browser);
+});
