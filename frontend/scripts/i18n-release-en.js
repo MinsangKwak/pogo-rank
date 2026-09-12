@@ -15,6 +15,10 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 const RELEASE_NOTES_EN = {
+  '2026-09-12 · v3.15.0': [
+    '**The Pokémon you tapped in the Pokédex stays marked** — on wide screens only the right-hand panel changed and the list kept no trace, so you lost track of what you had opened. The row now keeps the same look as when you hover over it.',
+    '**Tapping an evolution stage moves the list along** — open Venusaur from Bulbasaur and the list scrolls to and marks the Venusaur row as the panel changes. If it sits behind [More], the list expands that far.',
+  ],
   '2026-09-12 · v3.13.0': [
     '**Stale guidance around the app is gone** — four spots still said "★ favorites are saved to your account", but favorites merged into My Pokémon back in v2.51.0. They now describe only what exists: My Pokémon, search strings and display settings.',
     '**[Go to My Pokémon →] left the planner home** — one screen had five doors to the same place. The summary card is for showing numbers. The "coming next" line at the bottom went too: a to-do list is not for users, and the search-string builder it promised already shipped.',

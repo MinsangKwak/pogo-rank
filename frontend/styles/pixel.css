@@ -61,7 +61,8 @@ html:not(#_):not(#__) .row-list:not(.is-list) > .row { border-width: var(--px); 
 .home__tile, .modal__box, .detail-panel, .fav-pop {
   box-shadow: var(--shadow-hard) var(--line);
 }
-.home__tile:hover, .dex__list.is-grid .dex__row:hover, .row-list:not(.is-list) > .row:hover {
+/* 2026-09-12 v3.15.0 .dex__row.is-selected — 상세 패널이 보여 주는 줄은 가리키고 있을 때와 같은 모양으로 남는다 */
+.home__tile:hover, .dex__list.is-grid .dex__row:hover, .dex__list.is-grid .dex__row.is-selected, .row-list:not(.is-list) > .row:hover {
   box-shadow: var(--shadow-hard) var(--brand);
   transform: translate(calc(var(--px) * -1), calc(var(--px) * -1));
 }

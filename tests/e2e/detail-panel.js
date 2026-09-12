@@ -46,10 +46,25 @@ suite(async () => {
     ok('PC 다른 포켓몬을 누르면 패널 내용만 바뀜', secondDexno === '#0002', secondDexno);
     ok('PC 패널은 하나만 있음 (쌓이지 않음)', (await page.locator('#detail-panel').count()) === 1);
 
+    // 2026-09-12 v3.15.0 누른 줄에 표시가 남는가 · 진화 단계를 누르면 목록이 그 줄로 따라가는가
+    const selectedOf = () => page.evaluate(() => [...document.querySelectorAll('#page .dex__row.is-selected')].map((row) => row.dataset.sprite));
+    ok('PC 누른 줄에 is-selected (하나만)', JSON.stringify(await selectedOf()) === '["2"]', JSON.stringify(await selectedOf()));
+    await page.locator('#detail-panel .evo__mon').nth(2).click();   // 이상해씨 → 이상해풀 → [이상해꽃]
+    await page.waitForTimeout(500);
+    ok('PC 진화 단계를 누르면 패널이 그 포켓몬', (await page.locator('#detail-panel .detail__dexno').textContent()) === '#0003');
+    ok('PC 진화 단계를 누르면 목록 표시도 그 줄로', JSON.stringify(await selectedOf()) === '["3"]', JSON.stringify(await selectedOf()));
+    const inView = await page.evaluate(() => { const r = document.querySelector('#page .dex__row.is-selected').getBoundingClientRect(); return r.top >= 0 && r.bottom <= innerHeight; });
+    ok('PC 선택된 줄이 화면 안에 있음', inView);
+    // [더보기] 뒤(100번째 이후)의 포켓몬으로 옮겨 가면 거기까지 펼쳐서 표시한다
+    await page.evaluate(() => openDetailByDex(150, true));
+    await page.waitForTimeout(600);
+    ok('PC 더보기 뒤 포켓몬으로 가면 목록을 펼쳐 표시', JSON.stringify(await selectedOf()) === '["150"]' && (await page.locator('#page .dex__row').count()) >= 150, JSON.stringify(await selectedOf()));
+
     // 닫기
     await page.locator('.detail-panel__close').click();
     await page.waitForTimeout(300);
     ok('PC 닫기를 누르면 패널이 숨음', await page.locator('#detail-panel').isHidden());
+    ok('PC 닫으면 줄 표시도 지워짐', (await selectedOf()).length === 0);
     ok('PC 닫으면 has-detail-panel 클래스도 지워짐', !(await page.evaluate(() => document.body.classList.contains('has-detail-panel'))));
 
     // 다시 열고 다른 화면으로 이동하면 자동으로 닫히는가

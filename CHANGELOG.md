@@ -1,6 +1,6 @@
 # 변경 이력
 
-**버전을 눌러 펼쳐 보세요.** 114개 판이 쌓여 한눈에 훑기 어려워, 각 버전을 접어 두었습니다.
+**버전을 눌러 펼쳐 보세요.** 115개 판이 쌓여 한눈에 훑기 어려워, 각 버전을 접어 두었습니다.
 
 각 줄은 `버전 — 날짜 · 그 판에서 한 일` 순서입니다. 최신이 위로 옵니다.
 형식은 [Keep a Changelog](https://keepachangelog.com/ko/1.1.0/)를 따릅니다.
@@ -11,6 +11,23 @@
 > 사용자가 읽는 패치노트는 서비스 안 [🎉 패치노트](https://minsangkwak.github.io/pogo-rank/#/release) 화면에 있습니다(영문판 포함).
 > 이 파일은 **왜 그렇게 고쳤는지**까지 남기는 개발 기록이라 더 깁니다.
 
+
+<details open>
+<summary><b>v3.15.0</b> — 2026-09-12 · <code>추가</code> 도감 — 누른 줄 표시 · 진화 단계를 누르면 목록이 그 줄로 따라간다</summary>
+
+### 추가 — 누른 줄이 표시된 채로 남는다
+
+넓은 화면(1100px~)에서 도감 줄을 누르면 오른쪽 패널만 바뀌고 목록에는 아무 자국이 없었다. 몇 마리를 이어서 보다 보면 "지금 패널에 있는 게 어느 줄이지" 를 눈으로 다시 맞춰야 했다. 가리키고 있을 때(hover)와 같은 모양을 `.is-selected` 로 그 줄에 남긴다 — 새 모양을 만들지 않고 hover 규칙에 선택자를 나란히 붙였다(pages.css · pc-theme.css · pixel.css). 이미 아는 모양이 "여기" 를 뜻한다.
+
+`pages.js dexHighlightRow(sprite)` 가 유일한 입구다. `modal.js openDetailPanel` 이 열 때 `content.dataset.sprite` 로 부르고 `closeDetailPanel` 이 `null` 로 지운다. 줄은 `data-sprite` 로 찾는다(폼도 sprite 로 열리므로 도감번호가 아니라 sprite 가 키다). 좁은 화면(팝업)은 목록이 가려져 있으니 표시는 붙되 굴리지 않는다.
+
+### 추가 — 진화 단계를 누르면 목록이 따라간다
+
+패널 안 진화 단계는 `openDetailByDex` 로 다른 포켓몬을 열고, 그러면 같은 경로로 그 줄에 표시가 옮겨 가며 `scrollIntoView({ block: 'nearest' })` 로 목록이 따라간다. [더보기] 뒤(100번째 이후)면 `$list.dexReveal(sprite)` 이 `shown` 을 200 단위로 늘려 다시 그린다 — `shown`·`draw` 는 `renderDexPage` 클로저 안의 것이라 목록 요소에 손잡이로 걸었다. 검색·세대 칩으로 걸러져 목록에 없는 포켓몬이면 표시만 지운다.
+
+회귀: `detail-panel` 18 → 24 (표시 하나만 · 진화 단계 → 표시 이동 · 화면 안 · 더보기 뒤 펼침 · 닫으면 지움).
+
+</details>
 
 <details open>
 <summary><b>v3.14.0</b> — 2026-09-12 · <code>변경</code> 개발 순환 시간 단축 — 회귀 162→117초 · 빌드 단계화 · 죽은 코드 정리 · dev_up/ship_dev</summary>
