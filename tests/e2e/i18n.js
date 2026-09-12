@@ -17,6 +17,10 @@ const hangul = (text) => /[가-힣]/.test(text || '');
 (async () => {
   const browser = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium' });
   const ctx = await browser.newContext({ viewport: { width: 1440, height: 900 } });
+  // 2026-09-12 v3.11.0 첫 방문 가입 권유 팝업은 '본 적 있음' 으로 표시해 두고 시작한다 —
+  // 안 그러면 3초 뒤 모달이 떠서 그 뒤의 클릭을 전부 가로챈다 (동의 배너를 끄는 것과 같은 처방).
+  // 팝업 자체는 tests/e2e/signup-invite.js 가 따로 검사한다
+  await ctx.addInitScript(() => { try { localStorage.setItem('pogo_signup_invite_seen', '1'); } catch {} });
   await ctx.route(/^https?:\/\/(?!localhost)/, (r) => r.abort());
   ctx.setDefaultTimeout(6000);
   const page = await ctx.newPage();
@@ -75,11 +79,22 @@ const hangul = (text) => /[가-힣]/.test(text || '');
   ok('나중에 그려진 이름도 영어', monNames.length > 0 && !monNames.some(hangul), monNames.slice(0, 3).join(' '));
 
   // ── 한국어로 두는 화면에는 영어 안내
-  for (const [hash, label] of [['#/release', '패치노트'], ['#/privacy', '개인정보'], ['#/terms', '약관'], ['#/schedule', '일정표']]) {
+  for (const [hash, label] of [['#/privacy', '개인정보'], ['#/terms', '약관'], ['#/schedule', '일정표']]) {
     await go(hash);
     const note = page.locator('.i18n-note').first();
     ok(`${label} 화면에 한국어 안내 표시`, await note.isVisible().catch(() => false));
   }
+  // 2026-09-12 v3.11.0 패치노트는 영문판이 생겼다 (i18n-release-en.js) — 묶음이 전부 짝지어져 있으면
+  // "여기는 한국어" 안내를 띄우지 않는다. 안내가 보인다면 짝이 빠진 묶음이 있다는 뜻이다
+  await go('#/release');
+  ok('패치노트는 영어로 나온다', (await page.locator('#page .i18n-note').count()) === 0);
+  const relItems = await page.locator('#page .release__sec li').allTextContents();
+  const relKo = relItems.filter((s) => /[가-힣]/.test(s.replace(/"[^"]*"/g, '')));
+  ok('패치노트에 한국어로 남은 줄이 없다', relKo.length === 0, relKo.slice(0, 2).join(' | ').slice(0, 120));
+  ok('패치노트 줄이 전부 그려졌다', relItems.length > 300, String(relItems.length));
+  // `**굵게**` 가 별표로 찍히지 않고 <b> 가 된다
+  ok('굵은 글씨가 별표로 안 찍힌다', !relItems.some((s) => s.includes('**')));
+  ok('굵은 글씨가 실제 <b> 다', (await page.locator('#page .release__sec li b').count()) > 50);
 
   // ── 일정표는 "한국 서버(KST) 기준" 을 먼저 밝힌다 (이벤트 날짜는 지역마다 다르다)
   await go('#/schedule');

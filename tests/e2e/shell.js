@@ -19,6 +19,10 @@ const ok = (n, c, x = '') => { console.log((c ? 'PASS' : 'FAIL') + ' ' + n + ' '
   // 줄일 방법은 "덜 읽기" 아니면 "같이 읽기" 인데 검사 자체는 그대로 둬야 하니 후자를 골랐다
   const sweep = async ([w, h, label]) => {
     const ctx = await browser.newContext({ viewport: { width: w, height: h } });
+    // 2026-09-12 v3.11.0 첫 방문 가입 권유 팝업은 '본 적 있음' 으로 표시해 두고 시작한다 —
+    // 안 그러면 3초 뒤 모달이 떠서 그 뒤의 클릭을 전부 가로챈다 (동의 배너를 끄는 것과 같은 처방).
+    // 팝업 자체는 tests/e2e/signup-invite.js 가 따로 검사한다
+    await ctx.addInitScript(() => { try { localStorage.setItem('pogo_signup_invite_seen', '1'); } catch {} });
     await ctx.route(/^https?:\/\/(?!localhost)/, (r) => r.abort());
     ctx.setDefaultTimeout(6000);
     const page = await ctx.newPage();
@@ -249,6 +253,7 @@ const ok = (n, c, x = '') => { console.log((c ? 'PASS' : 'FAIL') + ' ' + n + ' '
   // 함께 잃어버리던 버그가 있었다 — 첫 로딩만으로는 안 드러나고 왕복해야 나온다
   {
     const ctx = await browser.newContext({ viewport: { width: 1440, height: 900 } });
+    await ctx.addInitScript(() => { try { localStorage.setItem('pogo_signup_invite_seen', '1'); } catch {} });
     await ctx.route(/^https?:\/\/(?!localhost)/, (r) => r.abort());
     const page = await ctx.newPage();
     const errs = [];

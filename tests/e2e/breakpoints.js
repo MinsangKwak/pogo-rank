@@ -29,6 +29,10 @@ const ok = (n, c, x = '') => { console.log((c ? 'PASS' : 'FAIL') + ' ' + n + ' '
   // ── 모바일 경계: 1099px 는 아직 사이드바·패널이 없어야 한다
   {
     const ctx = await browser.newContext({ viewport: { width: 1099, height: 800 } });
+    // 2026-09-12 v3.11.0 첫 방문 가입 권유 팝업은 '본 적 있음' 으로 표시해 두고 시작한다 —
+    // 안 그러면 3초 뒤 모달이 떠서 그 뒤의 클릭을 전부 가로챈다 (동의 배너를 끄는 것과 같은 처방).
+    // 팝업 자체는 tests/e2e/signup-invite.js 가 따로 검사한다
+    await ctx.addInitScript(() => { try { localStorage.setItem('pogo_signup_invite_seen', '1'); } catch {} });
     await ctx.route(/^https?:\/\/(?!localhost)/, (r) => r.abort());
     const page = await ctx.newPage();
     page.on('pageerror', (e) => errs.push('1099:' + e));
@@ -51,6 +55,7 @@ const ok = (n, c, x = '') => { console.log((c ? 'PASS' : 'FAIL') + ' ' + n + ' '
   ].map((t) => ({ ...t, containerW: containerAt(t.w) }));
   for (const tier of tiers) {
     const ctx = await browser.newContext({ viewport: { width: tier.w, height: 900 } });
+    await ctx.addInitScript(() => { try { localStorage.setItem('pogo_signup_invite_seen', '1'); } catch {} });
     await ctx.route(/^https?:\/\/(?!localhost)/, (r) => r.abort());
     const page = await ctx.newPage();
     page.on('pageerror', (e) => errs.push(`${tier.w}:` + e));
@@ -89,6 +94,7 @@ const ok = (n, c, x = '') => { console.log((c ? 'PASS' : 'FAIL') + ' ' + n + ' '
   // 티어표는 위에서부터 순서대로 훑는 화면이라 좁은 화면에서는 한 줄에 하나여야 한다
   for (const [label, width, wantCard] of [['휴대폰 390', 390, false], ['태블릿 800', 800, false], ['PC 1440', 1440, true]]) {
     const ctx = await browser.newContext({ viewport: { width, height: 900 } });
+    await ctx.addInitScript(() => { try { localStorage.setItem('pogo_signup_invite_seen', '1'); } catch {} });
     await ctx.route(/^https?:\/\/(?!localhost)/, (r) => r.abort());
     const page = await ctx.newPage();
     for (const route of ['dmax', 'pve', 'pvp']) {
@@ -113,6 +119,7 @@ const ok = (n, c, x = '') => { console.log((c ? 'PASS' : 'FAIL') + ' ' + n + ' '
   // 2026-09-10 v2.53.0 휴대폰 상세 팝업은 화면의 75% 까지만 — 다 덮으면 팝업이 아니라 새 화면으로 읽힌다
   {
     const ctx = await browser.newContext({ viewport: { width: 390, height: 844 } });
+    await ctx.addInitScript(() => { try { localStorage.setItem('pogo_signup_invite_seen', '1'); } catch {} });
     await ctx.route(/^https?:\/\/(?!localhost)/, (r) => r.abort());
     const page = await ctx.newPage();
     await page.goto(`${BASE}#/dex`, { waitUntil: 'domcontentloaded' });

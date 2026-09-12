@@ -17,7 +17,6 @@
 // 2026-09-06 v2.11.0 뒤로가기: 열 때 히스토리 항목을 넣어 폰의 뒤로가기가 드로어를 닫게 한다 (components/history.js)
 function openDrawer() {
   closeModal({ silent: true });
-  closeSearchDialog(true);
   const drawer = document.getElementById('drawer-backdrop');
   drawer.hidden = false;
   if (!drawer.open) drawer.showModal();
@@ -50,7 +49,7 @@ function initDrawer() {
   $backdrop.addEventListener('click', (event) => { if (event.target === $backdrop) closeDrawer(); });
   // Esc로 닫기. 드로어가 닫혀 있을 때 눌린 Esc까지 처리하지 않도록 hidden을 함께 본다
   document.addEventListener('keydown', (event) => { if (event.key === 'Escape' && !$backdrop.hidden) closeDrawer(); });
-  // 검색 패널 토글: 평소엔 접어두고 🔍 로 열기 (v2.12.1 열기·닫기·비우기는 search.js toggleSearchPanel)
-  document.getElementById('search-toggle').addEventListener('click', () => toggleSearchPanel());
+  // 2026-09-12 v3.12.0 🔍 는 팝업이 아니라 도감으로 간다 (components/search.js openSearch)
+  document.getElementById('search-toggle').addEventListener('click', () => openSearch());
 }
 initDrawer();

@@ -6,9 +6,15 @@
 //   'light'   항상 밝게 — <html data-theme="light">
 //   'dark'    항상 어둡게 — <html data-theme="dark">
 // 기기 설정을 따르는 상태를 없애면 "기기를 밤에 어둡게 바꿔도 이 사이트만 밝은" 일이 생긴다.
-// 그래서 버튼은 세 상태를 돌린다: 시스템 → 밝게 → 어둡게 → 시스템.
 // 색 자체는 styles/tokens.css 가 이미 세 경우를 다 정의해 뒀다 —
 // prefers-color-scheme(시스템) · [data-theme="dark"] · [data-theme="light"].
+//
+// 2026-09-12 v3.11.0 **버튼은 둘만 돈다** — 밝게 ↔ 어둡게.
+// 세 상태를 한 버튼으로 돌리면 누를 때마다 무엇이 될지 예측이 안 된다. 특히 '기기 설정' 은
+// 지금 화면이 밝은지 어두운지와 따로 놀아서, 같은 그림을 눌러도 어떤 날은 밝아지고 어떤 날은
+// 어두워졌다. 버튼은 "지금 보이는 것의 반대" 하나만 한다.
+// '기기 설정 따름' 은 없애지 않고 **설정 화면(#/settings)** 으로 옮겼다 — 한 번 정해 두고
+// 다시 안 건드리는 값이라 늘 손에 닿는 자리를 차지할 이유가 없다.
 //
 // 어디에 기억하나
 //   (1) 이 브라우저 — localStorage THEME_KEY. 로그인하지 않아도 다음 방문에 유지된다
@@ -21,7 +27,8 @@
 //   여기서는 그 뒤에 버튼을 만들고 상태를 맞추기만 한다.
 //
 // 제공하는 전역
-//   THEME_KEY · THEME_ORDER · themeChoice() · applyTheme(choice, opts) · initTheme()
+//   THEME_KEY · THEME_ORDER · THEME_WORD · themeChoice() · themeIsDark() ·
+//   applyTheme(choice, opts) · initTheme()
 //
 // 의존하는 전역
 //   AUTH · authEmail (components/auth.js) · track (track.js)
@@ -33,10 +40,18 @@ const THEME_ORDER = ['system', 'light', 'dark'];
 // 아이콘은 **지금 상태**를 가리킨다 — 언어 버튼(EN)은 "누르면 갈 곳"을 말하지만, 테마는
 // 세 상태를 도는 버튼이라 "다음에 무엇이 되는지"를 한 글자로 못 적는다. 대신 aria-label 로 밝힌다
 const THEME_FACE = {
-  system: ['🌗', '화면 테마: 기기 설정 따름 — 누르면 밝게'],
+  system: ['🌗', '화면 테마: 기기 설정 따름'],
   light: ['☀️', '화면 테마: 밝게 — 누르면 어둡게'],
-  dark: ['🌙', '화면 테마: 어둡게 — 누르면 기기 설정 따름'],
+  dark: ['🌙', '화면 테마: 어둡게 — 누르면 밝게'],
 };
+
+// 지금 실제로 어두운 화면인가 — '기기 설정' 은 기기에 물어봐야 안다.
+// 버튼이 "지금 보이는 것의 반대" 로 가려면 이 값이 필요하다
+function themeIsDark(choice = themeChoice()) {
+  if (choice === 'dark') return true;
+  if (choice === 'light') return false;
+  return !!window.matchMedia?.('(prefers-color-scheme: dark)').matches;
+}
 
 // 이 브라우저에 저장된 선택. 모르는 값이면 기본(system)
 function themeChoice() {
@@ -116,8 +131,11 @@ function saveThemeToAccount(choice) {
 function initTheme() {
   // 저장된 값은 head 인라인 스크립트가 이미 붙였다 — 여기서 다시 쓰지 않는다(save: false)
   applyTheme(themeChoice(), { save: false, sync: false });
+  // 2026-09-12 v3.11.0 버튼은 둘만 돈다 — 지금 보이는 것의 반대로.
+  // '기기 설정 따름' 상태에서 누르면 그 순간 화면의 반대가 된다(어두우면 밝게, 밝으면 어둡게).
+  // 기기 설정으로 되돌리는 길은 설정 화면에 있다 (#/settings)
   const cycle = () => {
-    const next = THEME_ORDER[(THEME_ORDER.indexOf(themeChoice()) + 1) % THEME_ORDER.length];
+    const next = themeIsDark() ? 'light' : 'dark';
     applyTheme(next);
     track('theme_switch', { to: next });  // GA4: 기기 설정 말고 직접 고르는 사람이 얼마나 되나
   };

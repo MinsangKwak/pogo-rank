@@ -18,6 +18,10 @@ const ok = (n, c, x = '') => { console.log((c ? 'PASS' : 'FAIL') + ' ' + n + ' '
 // mode 가 'list' 면 그 화면의 보기 저장 키를 '1'(리스트)로 미리 박아 둔다
 async function measure(browser, { width, hash, selector, storeKey, mode, openDetail }) {
   const ctx = await browser.newContext({ viewport: { width, height: 900 } });
+  // 2026-09-12 v3.11.0 첫 방문 가입 권유 팝업은 '본 적 있음' 으로 표시해 두고 시작한다 —
+  // 안 그러면 3초 뒤 모달이 떠서 그 뒤의 클릭을 전부 가로챈다 (동의 배너를 끄는 것과 같은 처방).
+  // 팝업 자체는 tests/e2e/signup-invite.js 가 따로 검사한다
+  await ctx.addInitScript(() => { try { localStorage.setItem('pogo_signup_invite_seen', '1'); } catch {} });
   await ctx.route(/^https?:\/\/(?!localhost)/, (r) => r.abort());
   if (storeKey) {
     const value = mode === 'list' ? '1' : '2';

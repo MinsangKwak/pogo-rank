@@ -173,12 +173,21 @@ h1, h2, .page-head h2, .detail__name, .home__intro h2, .page__sec { line-height:
 /* 화면 머리의 동작 슬롯 — 좁은 화면에서는 위아래로 쌓는다 (2026-09-12 v3.7.1).
    레이드 · PvE 는 [일반|전체] 와 [리스트|그리드] 둘이 오른쪽에 나란히 서느라
    화면 제목이 남은 폭으로 밀려 두 줄이 됐다. 세로로 쌓으면 제목이 한 줄에 들어온다 */
+/* 2026-09-12 v3.10.0 동작 버튼은 좁은 화면에서도 **가로 한 줄**이다.
+   v3.7.1 에 위아래로 쌓고 v3.7.1 에 리그 넷을 2×2 로 만든 것을 되돌린다 —
+   쌓아 놓으니 제목 오른쪽에 버튼 탑이 서서 머리가 두 배로 높아졌다.
+   대신 머리를 한 칸으로 바꿔 버튼 줄이 제목 **아래 제 줄**을 쓰게 한다.
+   그러면 제목을 밀지 않으므로 옆으로 늘어놓아도 자리가 넉넉하다 */
 @media (max-width: 699px) {
-  .page-head__actions { flex-direction: column; align-items: flex-end; gap: 0.6rem; }
-  /* 리그 넷(배틀 · PvP)은 한 줄에 다 못 들어간다 — 두 칸씩 두 줄로.
-     :has 로 칸이 넷 이상일 때만 건다. D-MAX 의 [전체|딜러|탱커] 셋은 2×2 로 만들면
-     마지막 칸이 비어 한 칸이 빠진 것처럼 보인다 */
-  .page-head__actions .seg:has(> button:nth-child(4)) { display: grid; grid-template-columns: 1fr 1fr; }
+  .page-head { grid-template-columns: minmax(0, 1fr); }
+  .page-head__actions {
+    grid-column: 1; grid-row: auto; align-self: auto; justify-self: stretch;
+    flex-wrap: nowrap; gap: 0.6rem; margin-top: 1.2rem;
+  }
+  /* 칸이 넷이면(배틀 · PvP 의 리그) 글자를 한 단 줄여 한 줄에 들인다 */
+  .page-head__actions .seg { min-width: 0; }
+  .page-head__actions .seg button { min-width: 0; padding-left: 1rem; padding-right: 1rem; }
+  .page-head__actions .seg:has(> button:nth-child(4)) button { padding-left: 0.7rem; padding-right: 0.7rem; font-size: 1.2rem; }
 }
 
 /* 빈 컨트롤 줄 — 서비스 홈처럼 걸 것이 없는 화면에서도 위아래 여백(20 + 40px)만으로
@@ -351,3 +360,21 @@ body {
 
 /* 몬스터볼을 좁은 화면에서 빼는 규칙은 #px-bg 쪽으로 옮겼다 (v3.8.3) —
    요소를 감추는 것으로는 고정 레이어 자체가 사라지지 않아 스크롤 비용이 그대로 남는다 */
+
+/* ── 손가락이 닿는 넓이 (2026-09-12 v3.12.0) ──────────────────────────────────
+   전 화면을 훑어 재 보니 눌러야 하는 것들이 22~30px 였다. 글자 높이 그대로 서 있어서다.
+   손끝은 대략 9mm(≈44px)라, 그보다 작은 과녁은 옆의 것을 같이 누르게 된다.
+   **글자 크기는 그대로 두고 닿는 넓이만** 넓힌다 — 키우면 목록이 그만큼 아래로 밀린다.
+   문단 속 링크(<a>)는 건드리지 않는다: 글줄 한가운데라 높이를 키우면 줄간이 벌어진다 */
+.boss__more, .plan__more, .sugg__more, .finder__copy, .row__more, .row__why-more {
+  min-height: 4.4rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+/* 칩은 줄마다 여럿이 서므로 44 까지는 안 키운다 — 서로 겹치지 않을 만큼(36)이면 된다 */
+.uchip, .chips__item, .tool-btn { min-height: 3.6rem; min-width: 3.6rem; display: inline-flex; align-items: center; justify-content: center; }
+/* 로고는 "처음으로" 가는 길이다. 글자 높이(22px)로 서 있어 상단 바에서 제일 누르기 어려웠다 */
+.app-bar__logo { display: inline-flex; align-items: center; min-height: 4.4rem; }
+/* 브레드크럼의 🏠 는 14px 짜리 그림 하나였다 */
+.page-head__crumb a, .page-head__crumb-home { display: inline-flex; align-items: center; min-height: 3.2rem; padding: 0 0.2rem; }

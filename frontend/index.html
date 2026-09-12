@@ -179,21 +179,10 @@ __STYLES__
     </div>
   </header>
 
-  <!-- 2026-09-02 전역 포켓몬 검색 (components/search.js) -->
-  <!-- 2026-09-06 v2.12.1 검색 패널: 카드로 묶어 "여기부터가 검색"임이 보이게. 제목 줄 · 입력 · 타입 칩 줄 · 결과 목록 (components/search.js) -->
-  <section class="search" role="search" aria-label="포켓몬 검색" hidden>
-    <div class="search__head">
-      <b>검색</b><span class="meta">이름·타입으로 찾기 · 비워 두면 활용처 순위</span>  <!-- 2026-09-07 v2.16.0 활용처 탭을 검색 패널로 -->
-      <button class="icon-btn search__close" id="psearch-close" aria-label="검색 닫기">✕</button>
-    </div>
-    <input class="boss__search" id="psearch" placeholder="이름 (예: 메타그로스, 섀도우 뮤츠)" autocomplete="off">
-    <div class="search__row">
-      <span class="search__label">타입</span>
-      <div class="chips search__types" id="psearch-types"></div>
-    </div>
-    <div class="search__results" id="psearch-sugg"></div>
-  </section>
-
+  <!-- 2026-09-12 v3.12.0 검색 패널(<section class="search">)을 걷어냈다.
+       검색은 팝업에서 끝나는 일이 아니라 **포켓몬 도감으로 가는 일**이다 —
+       🔍 · 상단 검색 칸 · `/` 키가 전부 #/dex 로 데려가고, 입력은 도감 안 칸(#dex-search)에서 한다.
+       결과를 한 곳에서만 그리기 위해서다 (components/search.js 머리말) -->
   <!-- 2026-09-02 이번 주 보스 아코디언: D-MAX 탭에서만 표시, 기본 접힘 -->
   <details class="schedule boss__acc" id="boss-acc">
     <summary id="boss-acc-title">⚔️ 이번 주 보스</summary>
@@ -275,6 +264,9 @@ __STYLES__
       <!-- 2026-09-10 v2.47.0 화면 테마 — 좁은 화면에서는 헤더에 자리가 없다(로고가 잘렸다).
            헤더 버튼은 넓은 화면에서만 보이고, 좁은 화면은 이 줄이 그 일을 한다 (components/theme.js) -->
       <button class="drawer__item" id="menu-theme"><span class="drawer__ico" aria-hidden="true">🌗</span><span class="drawer__label">화면 테마</span><span class="drawer__value" id="menu-theme-value"></span></button>
+      <!-- 2026-09-12 v3.11.0 설정 화면 — 화면 테마 세 갈래(기기 설정 따름 포함)와 계정 저장.
+           위 줄은 밝게 ↔ 어둡게 한 번에 뒤집는 손잡이고, 이 줄은 "한 번 정해 두는" 자리다 -->
+      <button class="drawer__item" id="menu-settings" onclick="openPage('settings')"><span class="drawer__ico" aria-hidden="true">🛠</span><span class="drawer__label">설정</span></button>
       <button class="drawer__item" id="menu-consent"><span class="drawer__ico" aria-hidden="true">🍪</span><span class="drawer__label">통계·저장소 설정</span></button>
       <p class="drawer__meta">PvPoke · PokeMiners 데이터<br>기준일 __TIMESTAMP__ · 매일 00시 자동 갱신</p>
     </div>
