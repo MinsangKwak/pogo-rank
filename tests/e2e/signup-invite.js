@@ -24,6 +24,8 @@ suite(async () => {
   // ── 1. 비로그인 첫 방문 ──────────────────────────────────────────────────────
   const ctx = await browser.newContext({ viewport: { width: 390, height: 900 }, hasTouch: true, isMobile: true });
   await ctx.route(/^https?:\/\/(?!localhost)/, (r) => r.abort());
+  // 2026-09-12 v3.18.0 팝업은 임시로 내려가 있다(auth.js SIGNUP_INVITE_ENABLED) — 검사하려고 켠다
+  await ctx.addInitScript(() => { try { localStorage.setItem('pogo_signup_invite', 'on'); } catch {} });
   const page = await open(ctx, BASE);
   await page.waitForTimeout(4200);   // initAuth 의 3초 타이머보다 넉넉히
   ok('비로그인 첫 방문에 뜬다', (await page.locator('.signup-invite').count()) === 1);
@@ -58,9 +60,9 @@ suite(async () => {
   // ── 4. 설정 화면 ────────────────────────────────────────────────────────────
   await mp.evaluate(() => { location.hash = '#/settings'; });
   await mp.waitForTimeout(800);
-  ok('설정 화면이 열린다', (await mp.locator('#page .settings__choice').count()) === 3);
+  ok('설정 화면이 열린다', (await mp.locator('#page [aria-label="화면 테마"] .settings__choice').count()) === 3);
   ok('메뉴에 설정 줄이 있다', (await mp.locator('#menu-settings').count()) === 1);
-  await mp.locator('#page .settings__choice').nth(2).click();   // 어둡게
+  await mp.locator('#page [aria-label="화면 테마"] .settings__choice').nth(2).click();   // 어둡게
   await mp.waitForTimeout(400);
   ok('고르면 화면이 바뀐다', (await mp.evaluate(() => document.documentElement.dataset.theme)) === 'dark');
   ok('고르면 이 브라우저에 저장된다', (await mp.evaluate(() => localStorage.getItem('pogo_theme'))) === 'dark');
@@ -69,8 +71,8 @@ suite(async () => {
   await mp.goto(BASE + '?mock=1#/settings', { waitUntil: 'domcontentloaded' });
   await mp.waitForSelector('#splash', { state: 'detached', timeout: 15000 }).catch(() => {});
   await mp.waitForTimeout(700);
-  ok('주소로 바로 들어와도 열린다', (await mp.locator('#page .settings__choice').count()) === 3);
-  ok('고른 값이 눌린 채로 열린다', (await mp.locator('#page .settings__choice[aria-checked="true"] b').innerText()) === '어둡게');
+  ok('주소로 바로 들어와도 열린다', (await mp.locator('#page [aria-label="화면 테마"] .settings__choice').count()) === 3);
+  ok('고른 값이 눌린 채로 열린다', (await mp.locator('#page [aria-label="화면 테마"] .settings__choice[aria-checked="true"] b').innerText()) === '어둡게');
   await mctx.close();
 
   // ── 5. 비로그인 설정 화면은 "이 브라우저에만" 이라고 말한다 ────────────────

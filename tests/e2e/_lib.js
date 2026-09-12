@@ -25,14 +25,17 @@ const launch = () => chromium.launch({ executablePath: CHROMIUM });
 //      화면 이동 30번이면 45초다 — shell.js 가 100초 걸리던 절반이 이것이었다.
 //      배너 자체를 검사하는 스위트(legal.js)는 { banner: true } 로 그대로 띄운다
 //   3. localhost 바깥 요청 차단 — 폰트·스프라이트 CDN 을 기다리느라 느려지지 않게
-async function newContext(browser, { banner = false, ...options } = {}) {
+//   4. 2026-09-12 v3.18.0 잠금은 임시로 전부 열려 있다(router.js LOCK_OPEN_ALL). 잠금 동작을 검사하는
+//      스위트는 { locks: true } 로 옛 동작을 켠다 (localStorage pogo_lock_open = 'off')
+async function newContext(browser, { banner = false, locks = false, ...options } = {}) {
   const ctx = await browser.newContext(options);
-  await ctx.addInitScript((keepBanner) => {
+  await ctx.addInitScript(({ keepBanner, locks }) => {
     try {
       localStorage.setItem('pogo_signup_invite_seen', '1');
       if (!keepBanner) localStorage.setItem('pogo_consent', 'denied');
+      if (locks) localStorage.setItem('pogo_lock_open', 'off');
     } catch {}
-  }, banner);
+  }, { keepBanner: banner, locks });
   await ctx.route(/^https?:\/\/(?!localhost)/, (route) => route.abort());
   return ctx;
 }
