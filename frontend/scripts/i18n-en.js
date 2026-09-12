@@ -792,7 +792,12 @@ const I18N_EN = {
   // 2026-09-12 v3.16.0 잠시 써보기 (components/trial.js)
   '잠시 써보기': 'Try it briefly',
   '⏱ 잠시 써보기 ^^ (#초)': '⏱ Try it briefly ^^ (# s)',
+  '⏱ 잠시 써보기 ^^ (#시간)': '⏱ Try it for a day ^^ (# h)',
   '남은 횟수 #번': '# left',
   '#초': '# s',
+  '#분': '# min',
+  '#분 #초': '# min # s',
+  '#시간': '# h',
+  '#시간 #분': '# h # min',
   '잠시 써보기 #번을 다 쓰셨어요. 이젠 가입하셔야죠 🙂': 'You have used all # quick tries. Time to sign up 🙂',
 };
