@@ -3,6 +3,7 @@
 // 2026-09-12 v3.16.0 잠시 써보기 — 잠긴 화면을 로그인 없이 얼마간 열어 준다
 // 2026-09-12 v3.17.0 20초 → 24시간. 20초는 "무엇이 열리는지" 를 보기엔 너무 짧았다 — 화면 하나를 채 못 읽었다.
 //   하루면 티어표를 실제로 써 보고 돌아올 수 있고, 세 번이면 사흘이다. 배지는 초가 아니라 시·분을 센다
+// 2026-09-12 v3.17.1 24시간 → 2시간. 하루는 세 번이면 사흘이라 가입할 이유가 너무 늦게 온다 — 한 번 앉아 쓰기엔 두 시간이면 넉넉하다
 //
 // 왜 만들었나
 //   잠긴 화면 안내(로그인하면 열려요)까지는 보는데, 그 자리에서 로그인·가입 신청까지 가는 사람이 없었다.
@@ -26,7 +27,7 @@
 const TRIAL_USED_KEY = 'pogo_trial_used';
 const TRIAL_UNTIL_KEY = 'pogo_trial_until';
 const TRIAL_MAX = 3;
-let TRIAL_SECONDS = 24 * 60 * 60;   // let — 회귀(tests/e2e/trial.js)가 하루를 기다리지 않도록 줄여 쓴다
+let TRIAL_SECONDS = 2 * 60 * 60;   // let — 회귀(tests/e2e/trial.js)가 두 시간을 기다리지 않도록 줄여 쓴다
 let trialTick = null;
 
 function trialUsed() {
