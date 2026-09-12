@@ -336,6 +336,8 @@ function openLoginInvite(screenName) {
         el('span', { class: 'login-invite__no' }, no),
         el('div', {}, el('b', {}, title), el('span', {}, desc))))),
     pending ? '' : goButton,
+    // 2026-09-12 v3.16.0 [잠시 써보기] — 무엇이 열리는지 먼저 20초 보여 준다. 세 번 다 쓰면 권유 문구 (components/trial.js)
+    pending || typeof trialButtonNode !== 'function' ? '' : trialButtonNode(screenName),
     el('button', { class: 'drawer__item login-invite__later', onclick: () => closeModal() }, pending ? '확인' : '나중에'),
     footNote('첫 로그인 때 ',
       el('a', { href: '#/terms', onclick: () => closeModal({ silent: true }) }, '이용약관'), '·',

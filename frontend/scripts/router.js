@@ -125,6 +125,8 @@ const ROUTE_NAV = (() => {
 function routeLocked(id) {
   const route = ROUTES.find((entry) => entry.id === id);
   if (!route?.locked) return false;
+  // 2026-09-12 v3.16.0 잠시 써보기 중이면 잠그지 않는다 (components/trial.js) — 잠금을 정하는 자리가 여기 하나라 화면·메뉴·홈 타일이 함께 열린다
+  if (typeof trialActive === 'function' && trialActive()) return false;
   return typeof authEnabled === 'function' && authEnabled() && AUTH.status !== 'ok';
 }
 

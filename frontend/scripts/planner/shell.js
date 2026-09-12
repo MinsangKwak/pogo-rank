@@ -115,6 +115,7 @@ function lockedCardNode(screenName) {
     // 2026-09-10 v2.51.0 여기서도 바로 로그인 창을 띄우지 않고 안내 팝업을 먼저 연다 —
     // 승인제라는 사실을 누르기 전에 알려야 "로그인했는데 왜 안 되지" 를 겪지 않는다
     pending ? '' : el('button', { class: 'drawer__item account__login plan__lock-go', onclick: () => openLoginInvite(screenName) }, '🔐 Google로 로그인'),
+    pending || typeof trialButtonNode !== 'function' ? '' : trialButtonNode(screenName),   // 2026-09-12 v3.16.0 잠시 써보기 (components/trial.js)
     el('p', { class: 'detail__foot' }, '첫 로그인 때 이용약관·개인정보처리방침 동의를 받아요.'));
 }
 

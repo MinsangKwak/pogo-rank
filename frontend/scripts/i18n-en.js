@@ -789,4 +789,10 @@ const I18N_EN = {
   '화면 테마: 기기 설정 따름': 'Theme: follow system setting',
   '화면 테마: 밝게 — 누르면 어둡게': 'Theme: light — tap for dark',
   '화면 테마: 어둡게 — 누르면 밝게': 'Theme: dark — tap for light',
+  // 2026-09-12 v3.16.0 잠시 써보기 (components/trial.js)
+  '잠시 써보기': 'Try it briefly',
+  '⏱ 잠시 써보기 (#초)': '⏱ Try it briefly (# s)',
+  '남은 횟수 #번': '# left',
+  '#초': '# s',
+  '잠시 써보기 #번을 다 쓰셨어요. 이젠 가입하셔야죠 🙂': 'You have used all # quick tries. Time to sign up 🙂',
 };
