@@ -15,6 +15,9 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 const RELEASE_NOTES_EN = {
+  '2026-09-12 · v3.17.1': [
+    '**Try it briefly is now 2 hours per try** — 24 hours meant three tries were three days, and the reason to sign up arrived too late. Two hours is plenty for one sitting. Still three tries.',
+  ],
   '2026-09-12 · v3.17.0': [
     '**Try it briefly now lasts 24 hours instead of 20 seconds** — 20 seconds was not enough to read a single screen. A day lets you actually use the tier lists and come back. The badge in the top-right now counts hours and minutes.',
     '**Still three tries** — three tries is three days. After that: "Time to sign up 🙂".',

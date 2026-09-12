@@ -28,7 +28,7 @@ suite(async () => {
   ok('비로그인: 레이드 보스가 잠겨 있다', (await locked()) === 1);
   ok('잠금 카드에 [잠시 써보기]', (await page.locator('.plan__lock .trial-go').count()) === 1);
   ok('남은 횟수 3번', /3/.test(await page.locator('.plan__lock .trial-go__left').innerText()));
-  ok('기본 기간은 24시간', /24시간/.test(await page.locator('.plan__lock .trial-go b').innerText()), await page.locator('.plan__lock .trial-go b').innerText());
+  ok('기본 기간은 2시간', /^⏱ 잠시 써보기 \^\^ \(2시간\)$/.test(await page.locator('.plan__lock .trial-go b').innerText()), await page.locator('.plan__lock .trial-go b').innerText());
   ok('시·분 표기', await page.evaluate(() => trialSpanLabel(24 * 3600) === '24시간' && trialSpanLabel(23 * 3600 + 59 * 60 + 30) === '23시간 59분' && trialSpanLabel(90) === '1분 30초' && trialSpanLabel(30) === '30초'));
 
   // 1회차 — 2초로 줄여 끝까지 본다
