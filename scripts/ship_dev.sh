@@ -14,7 +14,8 @@
 #   2. 현재 브랜치를 origin 에 푸시
 #   3. dev 를 origin/dev 로 맞추고 --no-ff 머지 → 푸시 (main 은 PR 로 가므로 여기서 다루지 않는다)
 #   4. 원래 브랜치로 돌아온다
-#   5. pogo-rank-dev 에 backend/build.py 의 버전(-dev)이 뜰 때까지 최대 6분 기다렸다 verify_deploy.sh 로 검증
+#   5. pogo-rank-dev 에 backend/build.py 의 버전(-dev)이 뜰 때까지 최대 12분 기다렸다 verify_deploy.sh 로 검증
+#      (dev 워크플로는 원본 데이터를 새로 받아 전체 빌드하므로 실측 7~8분이 걸린다)
 set -euo pipefail
 cd "$(dirname "$0")/.."
 WAIT=1; [[ ${1:-} == --no-wait ]] && WAIT=0
@@ -36,14 +37,14 @@ git checkout -q "$branch"
 echo "  ✓ dev 푸시 $(git rev-parse --short origin/dev)"
 
 [[ $WAIT -eq 1 ]] || exit 0
-# GitHub Pages 반영은 보통 1~2분. 버전 문자열이 보일 때까지 20초마다 본다
+# 워크플로(데이터 수집 + 전체 빌드) 7~8분 + Pages 반영 1~2분. 버전 문자열이 보일 때까지 20초마다 본다
 echo "▶ 미리보기 배포 대기 ($DEV_URL · ${version}-dev)"
-for _ in $(seq 1 18); do
+for _ in $(seq 1 36); do
   if curl -fsSL "$DEV_URL?v=$(date +%s)" 2>/dev/null | grep -q "${version}-dev"; then
     bash scripts/verify_deploy.sh "$DEV_URL" dev
     exit $?
   fi
   sleep 20
 done
-echo "  ✗ 6분 안에 ${version}-dev 가 뜨지 않았다 — Actions 를 확인하세요"
+echo "  ✗ 12분 안에 ${version}-dev 가 뜨지 않았다 — Actions 를 확인하세요"
 exit 1
