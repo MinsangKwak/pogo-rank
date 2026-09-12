@@ -1,6 +1,8 @@
 'use strict';
 // ─────────────────────────────────────────────────────────────────────────────
-// 2026-09-12 v3.16.0 잠시 써보기 — 잠긴 화면을 로그인 없이 20초 동안 열어 준다
+// 2026-09-12 v3.16.0 잠시 써보기 — 잠긴 화면을 로그인 없이 얼마간 열어 준다
+// 2026-09-12 v3.17.0 20초 → 24시간. 20초는 "무엇이 열리는지" 를 보기엔 너무 짧았다 — 화면 하나를 채 못 읽었다.
+//   하루면 티어표를 실제로 써 보고 돌아올 수 있고, 세 번이면 사흘이다. 배지는 초가 아니라 시·분을 센다
 //
 // 왜 만들었나
 //   잠긴 화면 안내(로그인하면 열려요)까지는 보는데, 그 자리에서 로그인·가입 신청까지 가는 사람이 없었다.
@@ -24,7 +26,7 @@
 const TRIAL_USED_KEY = 'pogo_trial_used';
 const TRIAL_UNTIL_KEY = 'pogo_trial_until';
 const TRIAL_MAX = 3;
-let TRIAL_SECONDS = 20;   // let — 회귀(tests/e2e/trial.js)가 20초를 기다리지 않도록 줄여 쓴다
+let TRIAL_SECONDS = 24 * 60 * 60;   // let — 회귀(tests/e2e/trial.js)가 하루를 기다리지 않도록 줄여 쓴다
 let trialTick = null;
 
 function trialUsed() {
@@ -38,6 +40,15 @@ function trialLeft() {
 }
 function trialActive() {
   return Date.now() < trialUntil();
+}
+
+// 기간·남은 시간을 사람 말로 — 24시간 · 23시간 59분 · 59분 30초 · 30초 (회귀가 초 단위로 줄이면 초로 나온다)
+function trialSpanLabel(seconds) {
+  const s = Math.max(0, Math.round(seconds));
+  const h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60), sec = s % 60;
+  if (h > 0) return m > 0 ? `${h}시간 ${m}분` : `${h}시간`;
+  if (m > 0) return sec > 0 ? `${m}분 ${sec}초` : `${m}분`;
+  return `${sec}초`;
 }
 
 // 잠금이 바뀐 뒤 화면을 맞춘다 — 메뉴 자물쇠(syncLockedNav)와 지금 보고 있는 화면(auth.js onAuthChange 와 같은 규칙)
@@ -80,14 +91,15 @@ function trialTimerStart(screenName) {
   const badge = trialTimerNode();
   const paint = () => {
     const left = Math.max(0, Math.ceil((trialUntil() - Date.now()) / 1000));
-    badge.querySelector('.trial-timer__left').textContent = `${left}초`;
-    badge.classList.toggle('is-ending', left <= 5);
+    badge.querySelector('.trial-timer__left').textContent = trialSpanLabel(left);
+    // 마지막 5분(짧게 줄인 회귀에서는 5초)부터 빨갛게 — 끝나는 것을 미리 알린다
+    badge.classList.toggle('is-ending', left <= Math.min(300, Math.max(5, TRIAL_SECONDS / 4)));
     if (left > 0) return;
     clearInterval(trialTick); trialTick = null;
     trialEnd(screenName);
   };
   paint();
-  trialTick = setInterval(paint, 250);
+  trialTick = setInterval(paint, TRIAL_SECONDS >= 60 ? 1000 : 250);
 }
 
 function trialEnd(screenName) {
@@ -112,7 +124,7 @@ function trialButtonNode(screenName) {
     return el('p', { class: 'trial-exhausted' }, `잠시 써보기 ${TRIAL_MAX}번을 다 쓰셨어요. 이젠 가입하셔야죠 🙂`);
   }
   return el('button', { class: 'drawer__item trial-go', onclick: () => startTrial(screenName) },
-    el('b', {}, `⏱ 잠시 써보기 ^^ (${TRIAL_SECONDS}초)`),
+    el('b', {}, `⏱ 잠시 써보기 ^^ (${trialSpanLabel(TRIAL_SECONDS)})`),
     el('span', { class: 'trial-go__left' }, `남은 횟수 ${left}번`));
 }
 
