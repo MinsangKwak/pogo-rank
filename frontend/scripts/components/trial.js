@@ -112,7 +112,7 @@ function trialButtonNode(screenName) {
     return el('p', { class: 'trial-exhausted' }, `잠시 써보기 ${TRIAL_MAX}번을 다 쓰셨어요. 이젠 가입하셔야죠 🙂`);
   }
   return el('button', { class: 'drawer__item trial-go', onclick: () => startTrial(screenName) },
-    el('b', {}, `⏱ 잠시 써보기 (${TRIAL_SECONDS}초)`),
+    el('b', {}, `⏱ 잠시 써보기 ^^ (${TRIAL_SECONDS}초)`),
     el('span', { class: 'trial-go__left' }, `남은 횟수 ${left}번`));
 }
 
