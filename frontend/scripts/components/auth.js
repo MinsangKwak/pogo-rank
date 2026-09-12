@@ -336,9 +336,10 @@ function openLoginInvite(screenName) {
         el('span', { class: 'login-invite__no' }, no),
         el('div', {}, el('b', {}, title), el('span', {}, desc))))),
     pending ? '' : goButton,
-    // 2026-09-12 v3.16.0 [잠시 써보기] — 무엇이 열리는지 먼저 20초 보여 준다. 세 번 다 쓰면 권유 문구 (components/trial.js)
-    pending || typeof trialButtonNode !== 'function' ? '' : trialButtonNode(screenName),
     el('button', { class: 'drawer__item login-invite__later', onclick: () => closeModal() }, pending ? '확인' : '나중에'),
+    // 2026-09-12 v3.16.0 [잠시 써보기] — 무엇이 열리는지 먼저 20초 보여 준다. 세 번 다 쓰면 권유 문구 (components/trial.js).
+    // 순서는 로그인 → 나중에 → 잠시 써보기: 권하는 것이 먼저, 빠져나가는 길이 그다음, 맛보기는 맨 끝
+    pending || typeof trialButtonNode !== 'function' ? '' : trialButtonNode(screenName),
     footNote('첫 로그인 때 ',
       el('a', { href: '#/terms', onclick: () => closeModal({ silent: true }) }, '이용약관'), '·',
       el('a', { href: '#/privacy', onclick: () => closeModal({ silent: true }) }, '개인정보처리방침'), ' 동의를 받아요.')));
