@@ -4,8 +4,7 @@
 // 제공하는 전역
 //   state         화면 전체가 공유하는 단 하나의 상태 객체
 //   expanded      list()가 "더보기"로 펼쳐 둔 목록 키 집합
-//   $tabs · $controls · $content · $note   각 뷰가 그려 넣는 고정 컨테이너
-//   renderTabs()  상단 탭 버튼 줄을 다시 그린다
+//   $controls · $content · $note   각 뷰가 그려 넣는 고정 컨테이너
 //   renderPveTab() PvE 탭(일반/전체 서브탭) 렌더러
 //   render()      상태를 화면에 반영하는 유일한 진입점. 상태를 바꾼 쪽은 반드시 이걸 부른다
 //
@@ -25,7 +24,7 @@ const state = {
   appMode: 'dex',            // 2026-09-07 v2.15.0 (QA-53) 'dex'(도감, 기본) | 'plan'(🌱 플래너). 해시(#/plan*)가 정한다 — planner/shell.js applyPlanRoute
   planTab: 'home',           // 플래너 탭 — PLAN_TABS 의 id ('home' | 'collection')
   planParams: null,          // 플래너 해시의 쿼리(URLSearchParams) — 상세 팝업 → 내 개체 저장 프리필 등
-  tab: 'max',                // 현재 탭 id (renderTabs가 만드는 버튼들의 id 중 하나)
+  tab: 'max',                // 현재 화면 id (max · pve · pvp · home — 라우터 표의 tab 값)
   league: 'great',           // PvP 탭에서 고른 리그 (LEAGUES의 id)
   pvpType: 'all',            // PvP 탭 속성 필터. 'all'이면 필터 없음
   boss: 'overall',           // PvE '전체' 탭에서 고른 보스/속성 칩
@@ -79,7 +78,6 @@ function saveLastView() {
   try { localStorage.setItem(LAST_VIEW_KEY, JSON.stringify(Object.fromEntries(LAST_VIEW_FIELDS.map((key) => [key, state[key]])))); } catch {}
 }
 
-const $tabs = document.getElementById('tabs');
 const $controls = document.getElementById('controls');
 const $content = document.getElementById('content');
 const $note = document.getElementById('note');
@@ -97,12 +95,6 @@ const $note = document.getElementById('note');
 // 2026-09-12 v2.66.0 마지막 탭 줄(플래너의 [육성 현황 | 내 포켓몬])도 걷어냈다.
 // v2.61.0 에 랭킹 탭 줄을 걷으며 "플래너의 것은 메뉴 중복이 아니라 한 화면 안의 갈래" 라고
 // 남겨 뒀는데, 둘은 사실 다른 질문에 답하는 다른 화면이었다 — '지금 뭘 키우는 중인가' 와
-// '내 상자에 뭐가 있나'. 다른 화면이면 이동은 왼쪽 메뉴가 맡는다(이 서비스의 유일한 규칙).
-// $tabs 는 비워 둔 채 남긴다: 뷰가 append 하는 고정 컨테이너라 지우면 참조가 끊긴다
-function renderTabs() {
-  $tabs.replaceChildren();
-  $tabs.hidden = true;
-}
 
 // 2026-09-02 PvE 탭: 일반/전체 세부 토글 (PvP 리그 토글과 같은 seg)
 // 토글만 직접 그리고, 실제 목록은 고른 모드에 맞는 뷰 함수에 넘긴다
@@ -170,7 +162,6 @@ function toolButton(label, pressed, onClick) {
 // 순서가 중요하다: 탭 줄 → 보스 아코디언 숨김 → 컨테이너 비우기 → 탭별 렌더러.
 // 컨테이너를 먼저 비운 뒤에 렌더러를 불러야 뷰가 append만으로 화면을 만들 수 있다.
 function render() {
-  renderTabs();
   document.getElementById('boss-acc').style.display = 'none';  // 2026-09-02 D-MAX 탭에서만 renderBossAcc가 다시 켬
   $controls.textContent = '';
   $content.textContent = '';

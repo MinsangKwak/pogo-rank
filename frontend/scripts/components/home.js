@@ -66,5 +66,5 @@ function renderServiceHome() {
       const nodes = usageTopNodes();
       return nodes.length ? [el('section', { class: 'home__usage', 'aria-label': '활용처 순위' }, ...nodes)] : [];
     })() : []));
-  $note.textContent = '뭘 키울지 여기서 정해요. 도감과 상성으로 포켓몬을 알아보고, 랭킹에서 추천 개체를 고른 뒤, 육성 플래너에 내 개체를 기록하면 돼요.';
+  $note.textContent = '뭘 키울지 여기서 정해요. 도감에서 포켓몬을 알아보고, 랭킹에서 추천 개체를 고른 뒤, 육성 플래너에 내 개체를 기록하면 돼요.';   // v3.13.0 '상성' 화면은 v2.63.0 에 접었다
 }

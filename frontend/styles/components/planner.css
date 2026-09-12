@@ -1,12 +1,6 @@
 /* 2026-09-07 v2.15.0 🌱 플래너 모드 (QA-53 셸 · QA-54 내 포켓몬) */
 
-/* 헤더 서문 줄: 서문 + 모드 배지. 배지 한 번 탭으로 모드 전환 */
-.tagline-row { display: flex; align-items: center; flex-wrap: wrap; gap: 0.6rem 1rem; margin-top: 0.3rem; }
-.tagline-row .tagline { margin: 0; white-space: nowrap; }
-.mode-badge { flex: none; display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.3rem 1rem; border: 1px solid color-mix(in srgb, var(--brand) 50%, var(--line)); border-radius: 99.9rem;
-              font-size: 1.2rem; font-weight: 600; color: var(--brand); background: color-mix(in srgb, var(--brand) 10%, var(--surface)); white-space: nowrap; }
-.mode-badge.is-plan { color: var(--fg); border-color: var(--line); background: var(--surface); }
-.mode-badge:hover { filter: brightness(.96); }
+/* 2026-09-12 v3.13.0 헤더 서문 줄(.tagline-row)·모드 배지(.mode-badge) 규칙을 뺐다 — 그 마크업이 사라졌다 */
 
 /* 플래너 모드에서는 도감 전용 카드(즐겨찾기 요약)를 감춘다 */
 

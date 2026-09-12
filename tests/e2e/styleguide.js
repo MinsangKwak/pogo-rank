@@ -8,26 +8,18 @@
 //   - 이 화면이 실제 메뉴를 건드리지 않는다 (같은 id 를 빌리지 않는다 — 중복 id 는 getElementById 를 흔든다)
 //
 // 채널은 화면에 적힌 버전으로 가른다 (dev 빌드는 -dev 가 붙는다) — 어느 쪽으로 구워도 맞는 검사를 한다
-const { chromium } = require('/opt/node22/lib/node_modules/playwright');
+const { launch, newContext, ok, finish, suite } = require('./_lib');
 const BASE = 'http://localhost:5503/?mock=1';
-let pass = 0, fail = 0;
-const ok = (n, c, x = '') => { console.log((c ? 'PASS' : 'FAIL') + ' ' + n + (x ? ' :: ' + x : '')); c ? pass++ : fail++; };
 
-(async () => {
-  const browser = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium' });
-  const ctx = await browser.newContext({ viewport: { width: 1280, height: 1000 } });
-  // 2026-09-12 v3.11.0 첫 방문 가입 권유 팝업은 '본 적 있음' 으로 표시해 두고 시작한다 —
-  // 안 그러면 3초 뒤 모달이 떠서 그 뒤의 클릭을 전부 가로챈다 (동의 배너를 끄는 것과 같은 처방).
-  // 팝업 자체는 tests/e2e/signup-invite.js 가 따로 검사한다
-  await ctx.addInitScript(() => { try { localStorage.setItem('pogo_signup_invite_seen', '1'); } catch {} });
-  await ctx.route(/^https?:\/\/(?!localhost)/, (r) => r.abort());
+suite(async () => {
+  const browser = await launch();
+  const ctx = await newContext(browser, { viewport: { width: 1280, height: 1000 } });
   const page = await ctx.newPage();
   const errs = [];
   page.on('pageerror', (e) => errs.push(String(e)));
 
   await page.goto(BASE + '#/styleguide', { waitUntil: 'domcontentloaded' });
   await page.waitForSelector('#splash', { state: 'detached', timeout: 15000 }).catch(() => {});
-  await page.locator('#consent .consent__deny').click({ timeout: 1500 }).catch(() => {});
   await page.waitForTimeout(800);
 
   const version = await page.locator('.drawer__meta, .app-bar__version').first().textContent().catch(() => '');
@@ -61,7 +53,5 @@ const ok = (n, c, x = '') => { console.log((c ? 'PASS' : 'FAIL') + ' ' + n + (x 
   }
 
   ok('페이지 오류 없음', errs.length === 0, errs.slice(0, 2).join(' | ').slice(0, 200));
-  await browser.close();
-  console.log(`${pass}/${pass + fail} passed`);
-  process.exit(fail ? 1 : 0);
-})().catch((e) => { console.error('CRASH', e.message); process.exit(1); });
+  await finish(browser);
+});

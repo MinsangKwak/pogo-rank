@@ -66,7 +66,9 @@ fi
 # 4b) 2026-09-06 v2.10.0 (QA-44) 순위표 밖에서만 쓰이는 스프라이트 — 메가 샤크니아(10070)가 대표. 이게 없으면 sprites.py 수집 범위가 다시 좁아진 것
 code=$(curl -s -o /dev/null -w '%{http_code}' "${URL}sprites/10070.png$bust")
 [[ $code == 200 ]] && ok "sprites/10070.png (메가 샤크니아) 200" || bad "sprites/10070.png $code — sprites.py 수집 범위 확인"
-grep -q 'renderTypeSearchPage' <<<"$html" && ok "🧭 상성 검색 페이지 번들 포함" || bad "index.html 에 상성 검색 페이지(typesearch.js) 없음"
+# 2026-09-12 v3.14.0 상성 검색 페이지(renderTypeSearchPage)는 v3.9.0 에 도감 검색으로 합쳐져 사라졌다 — 그 뒤로 이 항목이 늘 실패했다.
+# 지금 검색 입구는 openSearch (components/search.js, v3.12.0) 하나다
+grep -q 'function openSearch' <<<"$html" && ok "🔍 검색 입구(openSearch) 번들 포함" || bad "index.html 에 검색 입구(components/search.js openSearch) 없음"
 
 # 5) PWA 정적 파일
 for f in manifest.webmanifest sw.js icon-192.png; do

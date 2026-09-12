@@ -7,10 +7,8 @@
 //   - 옛 주소가 뒤로가기 기록에 쌓이지 않는가 (replace 로 돌린다)
 //   - 화면마다 DOM 에 식별자가 붙는가 — GA·히트맵이 주소를 다시 파싱하지 않아도 되게
 //   - 상세 팝업이 "무엇의 상세인지" 를 종·폼 단위까지 밝히는가
-const { chromium } = require('/opt/node22/lib/node_modules/playwright');
+const { launch, newContext, ok, finish, suite } = require('./_lib');
 const BASE = 'http://localhost:5503/?mock=1';
-let pass = 0, fail = 0;
-const ok = (n, c, x = '') => { console.log((c ? 'PASS' : 'FAIL') + ' ' + n + ' ' + x); c ? pass++ : fail++; };
 
 // [들어간 주소, 닿아야 할 주소, 라우트 id, 화면 헤더]
 const ROUTES = [
@@ -36,14 +34,9 @@ const LEGACY = [
   ['#/plan/collection', '#/planner/collection', 'planner-collection'],
 ];
 
-(async () => {
-  const browser = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium' });
-  const ctx = await browser.newContext({ viewport: { width: 1440, height: 900 } });
-  // 2026-09-12 v3.11.0 첫 방문 가입 권유 팝업은 '본 적 있음' 으로 표시해 두고 시작한다 —
-  // 안 그러면 3초 뒤 모달이 떠서 그 뒤의 클릭을 전부 가로챈다 (동의 배너를 끄는 것과 같은 처방).
-  // 팝업 자체는 tests/e2e/signup-invite.js 가 따로 검사한다
-  await ctx.addInitScript(() => { try { localStorage.setItem('pogo_signup_invite_seen', '1'); } catch {} });
-  await ctx.route(/^https?:\/\/(?!localhost)/, (r) => r.abort());
+suite(async () => {
+  const browser = await launch();
+  const ctx = await newContext(browser, { viewport: { width: 1440, height: 900 } });
   ctx.setDefaultTimeout(8000);
   const page = await ctx.newPage();
   const errs = [];
@@ -52,7 +45,6 @@ const LEGACY = [
   const go = async (hash) => {
     await page.goto(BASE + hash, { waitUntil: 'domcontentloaded' });
     await page.waitForSelector('#splash', { state: 'detached', timeout: 15000 }).catch(() => {});
-    await page.locator('#consent .consent__deny').click({ timeout: 1500 }).catch(() => {});
     await page.waitForTimeout(500);
   };
   const seen = async () => page.evaluate(() => ({
@@ -150,16 +142,13 @@ const LEGACY = [
   // 그래서 닫을 때 history.back() 이 아래 항목으로 내려가고 라우터가 그 해시를 읽어 다시 열었다 —
   // 사용자 눈에는 "✕ 를 눌러도 안 닫힌다" 로 보였다. 목록에서 열 때는 아래 항목이 깨끗해 안 났다.
   {
-    const ctx = await browser.newContext({ viewport: { width: 390, height: 844 } });
-    await ctx.addInitScript(() => { try { localStorage.setItem('pogo_signup_invite_seen', '1'); } catch {} });
-    await ctx.route(/^https?:\/\/(?!localhost)/, (r) => r.abort());
+    const ctx = await newContext(browser, { viewport: { width: 390, height: 844 } });
     const narrow = await ctx.newPage();
     narrow.on('pageerror', (e) => errs.push('mobile:' + e));
     await narrow.goto(BASE + '#/mon/6', { waitUntil: 'domcontentloaded' });
     await narrow.reload({ waitUntil: 'domcontentloaded' });   // 찬 시작 — 공유 링크를 처음 여는 상황
     await narrow.waitForSelector('#splash', { state: 'detached', timeout: 15000 }).catch(() => {});
     await narrow.waitForTimeout(700);
-    await narrow.locator('#consent .consent__deny').click({ timeout: 1500 }).catch(() => {});
     await narrow.waitForTimeout(400);
     const shown = () => narrow.evaluate(() => !!document.querySelector('dialog.modal[open]'));
     ok('좁은 화면: 공유 링크가 팝업을 연다', await shown());
@@ -176,7 +165,5 @@ const LEGACY = [
   }
 
   ok('페이지 오류 없음', errs.length === 0, errs.join(' | ').slice(0, 200));
-  await browser.close();
-  console.log(`${pass}/${pass + fail} passed`);
-  process.exit(fail ? 1 : 0);
-})().catch((e) => { console.error('CRASH', e.message); process.exit(1); });
+  await finish(browser);
+});

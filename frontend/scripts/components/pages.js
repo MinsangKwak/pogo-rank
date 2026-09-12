@@ -25,7 +25,7 @@
 // - RELEASE_NOTES · markReleaseSeen() (components/release.js)
 // - SCHEDULE_CATS · SCHEDULE_ITEMS · SCHEDULE_YM · buildScheduleCal(cat) · buildScheduleTimeline(cat) (components/schedule.js)
 // - chips() (components/chips.js) — 일정 분류 칩 (v2.13.1)
-// - AUTH · authEnabled() · favBtn() · isFav() · signIn() (components/auth.js)
+// - AUTH · authEnabled() · signIn() (components/auth.js)
 // - renderRaidsPage() · renderEggsPage() (components/gameday.js) — v2.25.0 레이드 보스 · 알 부화
 // - DEX_DATA (data.js): names / forms / cpms / rel
 
@@ -183,6 +183,23 @@ function dexSearchLabel(query, types) {
   return typeText || `"${query}"`;
 }
 
+// 2026-09-12 v3.15.0 상세 패널이 보여 주는 포켓몬의 도감 줄을 표시한다 (components/modal.js openDetailPanel · closeDetailPanel 이 부른다).
+// 왜: 넓은 화면에서 줄을 누르면 오른쪽 패널만 바뀌고 목록에는 아무 자국이 없어 "뭘 눌렀더라" 가 됐다.
+// 진화 단계에서 다른 포켓몬으로 옮겨 가면 그 줄로 목록도 따라간다 — [더보기] 뒤에 있으면 거기까지 펼친다.
+// 검색·세대 칩으로 걸러져 목록에 없는 포켓몬이면 표시만 지운다. 좁은 화면(팝업)에서는 목록이 가려져 있어 굴리지 않는다
+let dexSelectedSprite = null;
+function dexHighlightRow(spriteId) {
+  dexSelectedSprite = spriteId == null ? null : String(spriteId);
+  const $list = document.querySelector('#page .dex__list');
+  if (!$list) return;
+  if (dexSelectedSprite != null && typeof $list.dexReveal === 'function') $list.dexReveal(dexSelectedSprite);
+  for (const row of $list.querySelectorAll('.dex__row.is-selected')) row.classList.remove('is-selected');
+  const row = dexSelectedSprite == null ? null : $list.querySelector(`.dex__row[data-sprite="${dexSelectedSprite}"]`);
+  if (!row) return;
+  row.classList.add('is-selected');
+  if (document.body.classList.contains('has-detail-panel')) row.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+}
+
 function renderDexPage() {
   // 2026-09-12 v3.9.0 검색 결과를 여기서 보여 준다. 헤더 검색은 여덟 줄짜리 패널이라
   // 그 아래를 볼 길이 없었다 — 조건을 주소에 실어 오면 도감의 목록·그리드로 전부 그린다
@@ -210,7 +227,8 @@ function renderDexPage() {
       // 2026-09-12 v3.9.0 openDetailByDex → openDetail. 검색 결과에는 폼(메가·섀도우·리전)이 섞이는데
       // 도감번호로 열면 전부 원종이 뜬다. entry 가 이미 {sprite, name, types} 를 들고 있으므로
       // 종이든 폼이든 같은 한 줄로 연다 (종은 sprite === dex 라 전과 똑같이 동작한다)
-      el('button', { class: `dex__row${entry.unrel ? ' is-unreleased' : ''}`, onclick: () => openDetail(entry, true) },  // 2026-09-03 도감 모드
+      // 2026-09-12 v3.15.0 data-sprite · is-selected — 상세 패널이 보여 주는 포켓몬의 줄을 dexHighlightRow 가 찾아 표시한다
+      el('button', { class: `dex__row${entry.unrel ? ' is-unreleased' : ''}${String(entry.sprite) === dexSelectedSprite ? ' is-selected' : ''}`, 'data-sprite': String(entry.sprite), onclick: () => openDetail(entry, true) },  // 2026-09-03 도감 모드
         el('span', { class: 'dex__no' }, entry.dex != null ? `#${String(entry.dex).padStart(4, '0')}` : ''),
         sprite(entry.sprite),
         entry.unrel ? el('span', { class: 'tag dex__unrel' }, '미구현') : '',
@@ -231,6 +249,14 @@ function renderDexPage() {
     // 남은 종이 있으면 "더보기 (지금까지/전체)", 다 봤으면 총 개수를 보여주고 버튼을 잠근다
     $more.textContent = shown < list.length ? `더보기 (${Math.min(shown, list.length)}/${list.length})` : `전체 ${list.length}종`;
     $more.disabled = shown >= list.length;
+    // 2026-09-12 v3.15.0 dexHighlightRow 가 [더보기] 뒤에 숨은 줄까지 펼치게 하는 손잡이 — shown·draw 는 이 함수 안의 것이라 여기서 건다
+    $list.dexReveal = (spriteId) => {
+      const index = list.findIndex((entry) => String(entry.sprite) === String(spriteId));
+      if (index < 0 || index < shown) return index >= 0;
+      shown = Math.ceil((index + 1) / 200) * 200;
+      draw();
+      return true;
+    };
     // 검색 결과는 한 번에 다 그리므로 [전체 N종] 만 남아 누를 데가 없다 — 감추고, 수는 머리 줄이 말한다.
     // 머리 줄의 수도 여기서 갱신한다 — 세대 칩으로 더 좁히면 "232마리" 가 거짓말이 된다
     $more.hidden = searching;
@@ -330,11 +356,9 @@ function renderDexPage() {
       drawTypeChips();
       runSearch();
     }, { class: 'dex__found-clear' }));
-  const loginHint = authEnabled() && AUTH.status !== 'ok'
-    ? el('p', { class: 'dex__hint' },
-        AUTH.status === 'pending' ? '⏳ 승인 대기 중 — 승인되면 ★로 내 포켓몬을 도감에 채울 수 있어요.' : '로그인하면 ★를 눌러 내 포켓몬을 도감에 채울 수 있어요. ',
-        AUTH.status === 'anon' ? uchip('Google로 로그인', signIn) : '')
-    : '';
+  // 2026-09-12 v3.13.0 로그인 안내(★ 로 도감을 채우라던 줄)를 뺐다 — ★ 즐겨찾기는 v3.4.0 에 걷어냈는데
+  // 이 줄만 남아 없는 기능을 권하고 있었다. 도감은 로그인 없이 다 쓰는 화면이라 권할 것도 없다
+  const loginHint = '';
   draw();
   // 2026-09-10 v2.42.0 거르기(세대·즐겨찾기)와 보기 방식을 한 줄에 좌우로 — 성격은 달라도 둘 다
   // "목록을 어떻게 볼지" 라 목록 바로 위 한 줄에 모아 두는 편이 눈이 덜 움직인다.

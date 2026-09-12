@@ -9,20 +9,13 @@
 //   - 좁은 칸에서 줄이 넘치지 않는가 (도감 줄은 조각이 많아 그대로 두면 이름이 세로로 쪼개졌다)
 //   - 상세 패널이 열리면 열이 줄어드는가 (본문이 패널 폭만큼 좁아진다)
 //   - 좁은 화면(<1100px)의 티어표는 v2.53.0 결정대로 한 줄에 하나인가
-const { chromium } = require('/opt/node22/lib/node_modules/playwright');
+const { launch, newContext, ok, finish, suite } = require('./_lib');
 const BASE = 'http://localhost:5503/?mock=1';
-let pass = 0, fail = 0;
-const ok = (n, c, x = '') => { console.log((c ? 'PASS' : 'FAIL') + ' ' + n + ' ' + x); c ? pass++ : fail++; };
 
 // 폭 하나 · 화면 하나를 새 컨텍스트로 열어 재고 닫는다.
 // mode 가 'list' 면 그 화면의 보기 저장 키를 '1'(리스트)로 미리 박아 둔다
 async function measure(browser, { width, hash, selector, storeKey, mode, openDetail }) {
-  const ctx = await browser.newContext({ viewport: { width, height: 900 } });
-  // 2026-09-12 v3.11.0 첫 방문 가입 권유 팝업은 '본 적 있음' 으로 표시해 두고 시작한다 —
-  // 안 그러면 3초 뒤 모달이 떠서 그 뒤의 클릭을 전부 가로챈다 (동의 배너를 끄는 것과 같은 처방).
-  // 팝업 자체는 tests/e2e/signup-invite.js 가 따로 검사한다
-  await ctx.addInitScript(() => { try { localStorage.setItem('pogo_signup_invite_seen', '1'); } catch {} });
-  await ctx.route(/^https?:\/\/(?!localhost)/, (r) => r.abort());
+  const ctx = await newContext(browser, { viewport: { width, height: 900 } });
   if (storeKey) {
     const value = mode === 'list' ? '1' : '2';
     await ctx.addInitScript(([k, v]) => { try { localStorage.setItem(k, v); } catch { /* 저장 불가 환경 */ } }, [storeKey, value]);
@@ -32,7 +25,6 @@ async function measure(browser, { width, hash, selector, storeKey, mode, openDet
   page.on('pageerror', (e) => errs.push(String(e)));
   await page.goto(BASE + hash, { waitUntil: 'domcontentloaded' });
   await page.waitForSelector('#splash', { state: 'detached', timeout: 15000 }).catch(() => {});
-  await page.locator('#consent .consent__deny').click({ timeout: 1500 }).catch(() => {});
   // 고정 대기는 병렬로 돌 때 모자란다 — 재려는 목록이 실제로 붙을 때까지 기다린다
   await page.waitForSelector(selector, { timeout: 15000 }).catch(() => {});
   await page.waitForTimeout(300);
@@ -60,8 +52,8 @@ async function measure(browser, { width, hash, selector, storeKey, mode, openDet
   return out;
 }
 
-(async () => {
-  const browser = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium' });
+suite(async () => {
+  const browser = await launch();
   const errs = [];
 
   // ── 사다리: 폭마다 몇 개가 한 줄에 놓이나
@@ -122,7 +114,5 @@ async function measure(browser, { width, hash, selector, storeKey, mode, openDet
   }
 
   ok('콘솔 오류 없음', errs.length === 0, errs.join(' | '));
-  await browser.close();
-  console.log(`${pass}/${pass + fail} passed`);
-  process.exit(fail ? 1 : 0);
-})();
+  await finish(browser);
+});

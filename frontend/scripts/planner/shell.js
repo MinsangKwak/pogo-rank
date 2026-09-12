@@ -18,11 +18,10 @@
 //
 // 의존하는 전역
 //   el (dom.js) · track (track.js) · navigateHash · NAV (components/history.js) · closeDrawer · closeModal
-//   state · $tabs · $controls · $content · $note · render (app.js — 호출 시점에는 정의돼 있다)
+//   state · $controls · $content · $note · render (app.js — 호출 시점에는 정의돼 있다)
 //   renderPlanHome (planner/home.js) · renderPlanCollection (planner/collection.js)
 // ─────────────────────────────────────────────────────────────────────────────
 
-const PLAN_LAST_KEY = 'pogo_plan_last';
 // 번들은 파일 전체가 한 <script> 라 app.js 의 함수들은 호이스팅되지만 const state 는 초기화 전(TDZ)이다.
 // pages.js 가 로드 직후 부르는 renderPage() 는 이 플래그로 "앱이 준비됐는지"를 판단한다 (initPlanShell 이 켠다)
 let _planShellReady = false;
@@ -40,12 +39,8 @@ function planRouteFromHash() {
   return { tab, params: found.params };
 }
 
-function savePlanLast(mode) {
-  try { localStorage.setItem(PLAN_LAST_KEY, mode); } catch {}
-}
-function planLastMode() {
-  try { return localStorage.getItem(PLAN_LAST_KEY) === 'plan' ? 'plan' : 'dex'; } catch { return 'dex'; }
-}
+// 2026-09-12 v3.14.0 savePlanLast · planLastMode 를 지웠다 — 마지막 모드를 저장만 하고 읽는 곳이 없었다
+// (첫 진입은 늘 서비스 홈이다). 브라우저에 남은 pogo_plan_last 값은 아무 일도 하지 않는다
 
 // 해시를 읽어 서비스 홈·랭킹·플래너 상태를 맞춘다.
 function applyPlanRoute() {
@@ -62,7 +57,6 @@ function applyPlanRoute() {
   state.planTab = route ? route.tab : 'home';
   state.planParams = route ? route.params : null;
   document.body.dataset.mode = state.appMode;  // CSS 가 모드별로 숨길 것(즐겨찾기 카드 등)을 고른다
-  savePlanLast(state.appMode);
   updateModeBadge();
 }
 
@@ -70,7 +64,6 @@ function applyPlanRoute() {
 function switchMode(to, from = 'badge') {
   const target = to ?? (state.appMode === 'plan' ? 'dex' : 'plan');
   track('mode_switch', { to: target, from });
-  savePlanLast(target);
   if (target === 'plan') {
     navigateHash(routeHash('planner'));
     return;
@@ -85,19 +78,10 @@ function switchMode(to, from = 'badge') {
   window.scrollTo(0, 0);
 }
 
-// 헤더 배지·서문·메뉴 항목 문구를 현재 모드에 맞춘다
-function updateModeBadge() {
-  const isPlan = state.appMode === 'plan';
-  const badge = document.getElementById('mode-toggle');
-  if (badge) {
-    // 2026-09-12 v3.6.0 이모지 자리를 도트 아이콘으로 (components/pxicon.js). 글자는 그대로 — 번역 사전이 본다
-    pxIconLabel(badge, isPlan ? '🔎' : '🌱', isPlan ? '도감' : '플래너');
-    badge.title = isPlan ? '도감 모드로 전환' : '플래너 모드로 전환';
-    badge.classList.toggle('is-plan', isPlan);
-  }
-  const tagline = document.querySelector('.tagline');
-  if (tagline) tagline.textContent = isPlan ? '내 개체 키우기 계획' : '편하게 검색하세요';  // 배지와 한 줄에 들어가게 짧게
-}
+// 2026-09-12 v3.13.0 헤더 배지(#mode-toggle)·서문(.tagline)은 없다 — v2.21.0 에 app-shell.js 가
+// 헤더를 다시 조립한 뒤로 DOM 에서 떨어져 있었고, 여기서 글자만 갈아 끼우고 있었다.
+// 모드는 주소가 정한다(applyPlanRoute). 이 함수는 부르는 곳이 남아 있어 빈 채로 둔다
+function updateModeBadge() {}
 
 // ── 2026-09-10 v2.47.0 로그인 잠금 ────────────────────────────────────────────
 // 육성 플래너는 **로그인한 사용자만** 쓴다. 개체를 계정에 저장하는 화면이라, 로그인 전에는
@@ -131,6 +115,7 @@ function lockedCardNode(screenName) {
     // 2026-09-10 v2.51.0 여기서도 바로 로그인 창을 띄우지 않고 안내 팝업을 먼저 연다 —
     // 승인제라는 사실을 누르기 전에 알려야 "로그인했는데 왜 안 되지" 를 겪지 않는다
     pending ? '' : el('button', { class: 'drawer__item account__login plan__lock-go', onclick: () => openLoginInvite(screenName) }, '🔐 Google로 로그인'),
+    pending || typeof trialButtonNode !== 'function' ? '' : trialButtonNode(screenName),   // 2026-09-12 v3.16.0 잠시 써보기 (components/trial.js)
     el('p', { class: 'detail__foot' }, '첫 로그인 때 이용약관·개인정보처리방침 동의를 받아요.'));
 }
 
@@ -149,5 +134,4 @@ function renderPlan() {
 function initPlanShell() {
   _planShellReady = true;
   // 2026-09-07 v2.15.1 모드 전환 버튼은 헤더 배지 하나뿐 (드로어 항목·플래너 홈 카드의 중복 버튼 제거)
-  document.getElementById('mode-toggle')?.addEventListener('click', () => switchMode(undefined, 'badge'));
 }

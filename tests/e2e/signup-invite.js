@@ -6,13 +6,11 @@
 //   - 비교 표가 **라우터 표에서 읽은 실제 잠긴 화면**을 말하는가 (지어낸 수가 아니다)
 //   - 로그인 유도 팝업(.login-invite)과 선택자가 안 겹치는가 — 둘은 생김새만 같고 하는 말이 다르다
 //   - 설정 화면의 세 갈래가 저장되고 안내가 로그인 상태를 따르는가
-const { chromium } = require('/opt/node22/lib/node_modules/playwright');
+const { launch, ok, finish, suite } = require('./_lib');
 const BASE = 'http://localhost:5503/';
-let pass = 0, fail = 0;
-const ok = (n, c, x = '') => { console.log((c ? 'PASS' : 'FAIL') + ' ' + n + ' ' + x); c ? pass++ : fail++; };
 
-(async () => {
-  const browser = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium' });
+suite(async () => {
+  const browser = await launch();
   const errs = [];
   const open = async (ctx, url) => {
     const page = await ctx.newPage();
@@ -85,7 +83,5 @@ const ok = (n, c, x = '') => { console.log((c ? 'PASS' : 'FAIL') + ' ' + n + ' '
   await gctx.close();
 
   ok('페이지 오류 없음', errs.length === 0, errs.join(' | ').slice(0, 200));
-  await browser.close();
-  console.log(`${pass}/${pass + fail} passed`);
-  process.exit(fail ? 1 : 0);
-})().catch((e) => { console.error('CRASH', e.message); process.exit(1); });
+  await finish(browser);
+});

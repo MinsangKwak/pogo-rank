@@ -566,6 +566,12 @@ const I18N_EN = {
   '알에서 깬 것': 'Hatched from an egg',
   '레이드에서 잡은 것': 'Caught in a raid',
   '리서치 보상': 'Research reward',
+  // 2026-09-12 v3.13.0 걷어낸 ★ 즐겨찾기를 아직 말하던 문구를 고쳤다
+  '내 포켓몬·검색식·화면 설정이 계정에 묶여 어느 기기에서든 같아요.': 'Your Pokémon, search strings and display settings follow your account, so every device matches.',
+  '🎒 내 포켓몬 #마리 · 화면 설정': '🎒 # Pokémon · display settings',
+  '로그인하면 내 포켓몬과 화면 설정이 계정에 저장돼요. 승인된 분만 쓸 수 있고, 첫 로그인 때 ': 'Sign in and your Pokémon and display settings are saved to your account. Access is by approval, and on first sign-in we ask you to accept the ',
+  '⏳ 승인 대기 중 — 관리자가 승인하면 내 포켓몬을 계정에 저장할 수 있어요. 관리자에게 알려주세요!': '⏳ Waiting for approval — once approved you can save your Pokémon to your account. Let the admin know!',
+  '뭘 키울지 여기서 정해요. 도감에서 포켓몬을 알아보고, 랭킹에서 추천 개체를 고른 뒤, 육성 플래너에 내 개체를 기록하면 돼요.': 'Decide what to raise here. Look Pokémon up in the Pokédex, pick recommendations from the rankings, then record your own in the planner.',
   '타입으로 좁히기': 'Narrow by type',
   '포켓몬 검색 — 도감으로': 'Search Pokémon — opens the Pokédex',
   '🏆 활용처 순위': '🏆 Usage rankings',
@@ -783,4 +789,10 @@ const I18N_EN = {
   '화면 테마: 기기 설정 따름': 'Theme: follow system setting',
   '화면 테마: 밝게 — 누르면 어둡게': 'Theme: light — tap for dark',
   '화면 테마: 어둡게 — 누르면 밝게': 'Theme: dark — tap for light',
+  // 2026-09-12 v3.16.0 잠시 써보기 (components/trial.js)
+  '잠시 써보기': 'Try it briefly',
+  '⏱ 잠시 써보기 ^^ (#초)': '⏱ Try it briefly ^^ (# s)',
+  '남은 횟수 #번': '# left',
+  '#초': '# s',
+  '잠시 써보기 #번을 다 쓰셨어요. 이젠 가입하셔야죠 🙂': 'You have used all # quick tries. Time to sign up 🙂',
 };
