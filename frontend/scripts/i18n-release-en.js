@@ -15,6 +15,11 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 const RELEASE_NOTES_EN = {
+  '2026-09-12 · v3.13.0': [
+    '**Stale guidance around the app is gone** — four spots still said "★ favorites are saved to your account", but favorites merged into My Pokémon back in v2.51.0. They now describe only what exists: My Pokémon, search strings and display settings.',
+    '**[Go to My Pokémon →] left the planner home** — one screen had five doors to the same place. The summary card is for showing numbers. The "coming next" line at the bottom went too: a to-do list is not for users, and the search-string builder it promised already shipped.',
+    '**Invisible leftovers were cleaned up** — the header tagline row and the old tab row were still in the markup and code. Nothing changes on screen; the first screen just gets that much lighter.',
+  ],
   '2026-09-12 · v3.12.0': [
     '**Searching takes you straight to the Pokédex** — the 🔍 button, the search box up top and the `/` key all lead to the same place, and the popup is gone. When results live inside a popup, the handful of rows showing there read as "the results", so you never reach the Pokédex where all of them are.',
     '**Type chips moved into the Pokédex** — what you filtered by belongs next to the list it produced. Expand [Narrow by type] and pick up to two.',

@@ -98,12 +98,13 @@ function renderPlanHome() {
           el('span', { class: 'plan__summary-desc' }, mons.length
             ? '육성 중인 포켓몬 현황을 한눈에 봐요.'
             : '아직 저장한 개체가 없어요. 위 버튼으로 첫 개체를 등록해 보세요.'))),
+      // 2026-09-12 v3.13.0 [내 포켓몬 바로가기 →] 를 뺐다 — 바로 위 히어로의 [개체 등록하기] 와
+      // 같은 곳(#/planner/collection)으로 가는 문이 한 화면에 다섯이었다. 요약 카드는 숫자를 보여 주는
+      // 자리지 가는 자리가 아니다 (전체 목록은 아래 '최근 추가한 포켓몬' 의 [전체 보기] 가 잇는다)
       el('div', { class: 'plan__stats' }, ...PLAN_STATUSES.map((status, index) =>
         el('div', { class: `plan__stat plan__stat--${PLAN_STATUS_MODS[index]}` },
           el('span', { class: 'plan__stat-ico', 'aria-hidden': 'true' }, PLAN_STATUS_ICONS[index]),
-          el('div', {}, el('em', {}, status), el('b', {}, String(countBy(status))))))),
-      el('a', { class: 'plan__summary-go', href: routeHash('planner-collection') },
-        '내 포켓몬 바로가기', el('span', { 'aria-hidden': 'true' }, '→')));
+          el('div', {}, el('em', {}, status), el('b', {}, String(countBy(status))))))));
   }
 
   // (3) 다음 걸음 — 화살표는 걸음 사이를 잇는 장식이라 CSS 가 그린다
@@ -135,6 +136,7 @@ function renderPlanHome() {
       el('div', { class: 'plan__recent-list' }, ...recent.map(planRecentCard))));
   }
 
-  $content.append(el('p', { class: 'detail__foot plan__roadmap' }, '다음에 붙을 것: 육성 판단 카드(키울 가치·다음 행동) · 목표 자원 계산기 · 게임 검색식 생성기 · 보유 개체 기반 파티 · 내 목표 × 일정 연결'));
+  // 2026-09-12 v3.13.0 화면 아래 "다음에 붙을 것" 로드맵 줄을 뺐다 — 사용자에게 할 일 목록을 보여 줄
+  // 이유가 없고, 그 안의 '게임 검색식 생성기' 는 v2.58.0 에 이미 붙어 있었다. 로드맵은 문서에 둔다
   $note.textContent = '내 개체(레벨 · 개체값 · 기술)를 계정에 저장하고 같은 종끼리 비교해요. 메뉴에서 육성 현황과 내 포켓몬 목록을 오가요. 계산은 누구나, 저장은 승인된 분만.';
 }
