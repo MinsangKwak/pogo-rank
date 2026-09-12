@@ -1,6 +1,6 @@
 # 변경 이력
 
-**버전을 눌러 펼쳐 보세요.** 120개 판이 쌓여 한눈에 훑기 어려워, 각 버전을 접어 두었습니다.
+**버전을 눌러 펼쳐 보세요.** 121개 판이 쌓여 한눈에 훑기 어려워, 각 버전을 접어 두었습니다.
 
 각 줄은 `버전 — 날짜 · 그 판에서 한 일` 순서입니다. 최신이 위로 옵니다.
 형식은 [Keep a Changelog](https://keepachangelog.com/ko/1.1.0/)를 따릅니다.
@@ -11,6 +11,27 @@
 > 사용자가 읽는 패치노트는 서비스 안 [🎉 패치노트](https://minsangkwak.github.io/pogo-rank/#/release) 화면에 있습니다(영문판 포함).
 > 이 파일은 **왜 그렇게 고쳤는지**까지 남기는 개발 기록이라 더 깁니다.
 
+
+<details open>
+<summary><b>v3.19.0</b> — 2026-09-12 · <code>추가</code> 움직이는 그림 949 → 1,151종 · 없는 종은 CSS 로 흔든다</summary>
+
+### 왜
+
+v3.18.0 에서 움직이는 그림을 기본으로 켰더니 멈춰 있는 종이 눈에 띄었다 — PokeAPI 의 B/W 애니메이션은 949종뿐이라 6세대 이후와 메가·리전 폼 223종이 정지본이었다. "없으면 만들어서라도" 가 요청이었다.
+
+### 추가 — 두 번째 출처: Pokémon Showdown
+
+`backend/sprites.py` 가 PokeAPI 에 없으면 `play.pokemonshowdown.com/sprites/ani/<이름표>.gif` 를 묻는다. 이름표는 PvPoke 종 이름에서 만든다(`showdown_slug`): 괄호 앞을 영소문자·숫자만 남기고, 괄호 안 폼은 `Galarian → galar · Alolan → alola · Hisuian → hisui · Paldean → paldea · Mega X → megax` 표로, 나머지는 붙여 쓴다(`Rapid Strike → rapidstrike`). 폼 이름표가 404 면 기본 폼으로 되돌아간다(`Meowstic (Female)` · `Oricorio (Baile)`). 섀도우는 그림이 같으니 폼에서 뺀다. 결과 223 → 21 미보유, 1,151/1,172.
+
+표식 파일을 `.none → .miss` 로 바꿨다 — 옛 표식은 한 출처만 물은 결과라, 스크립트가 시작할 때 지우고 다시 묻는다(CI 캐시가 되살려도 한 번은 다시 묻는다). NOTICE.md 에 출처 줄을 더했다 — 팬 제작 스프라이트라 표시용으로만 쓴다.
+
+### 추가 — 남은 21종은 CSS 로 흔든다
+
+9세대(오거폰·페차런트·아이언 계열)와 일부 폼은 공개된 애니메이션이 없다. `list.css` 의 `sprite-idle`(2.6초, 0.2rem 들썩임 + 살짝 눌림)을 `img.sprite:not(.sprite--anim)` 에 건다 — GIF 로 갈아 끼워진 그림과 몬스터볼 자리표시는 제외. 짝수 줄은 박자를 어긋내 목록이 한 몸처럼 들썩이지 않게 했다. 설정에서 끄면 `body.sprite-anim-off` 로 멈추고(`syncSpriteAnimClass`), `prefers-reduced-motion` 은 애초에 걸지 않는다.
+
+회귀 `open-all` 14 → 16 (오거폰 검색 → `sprite-idle` · 끄면 `none`).
+
+</details>
 
 <details open>
 <summary><b>v3.18.0</b> — 2026-09-12 · <code>변경</code> 움직이는 그림 기본 · 잠금 전부 임시 개방 · 가입 권유 팝업 내림</summary>

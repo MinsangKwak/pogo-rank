@@ -38,6 +38,18 @@
    상자에 맞춰 늘리면 찌그러진다. 원본 비율을 지키고 바닥에 세운다 — 포켓몬이 서 있는 그림이라
    위가 아니라 아래를 맞춰야 발이 같은 선에 온다 */
 .sprite.sprite--anim { image-rendering: auto; object-fit: contain; object-position: center bottom; }
+/* 2026-09-12 v3.19.0 움직이는 그림이 없는 종(9세대 등)은 정지본을 살짝 흔든다 — "전부 움직인다" 를 지키려고.
+   GIF 로 갈아 끼워진 그림(.sprite--anim)과 몬스터볼 자리표시(.empty)는 제외. 설정에서 끄면(body.sprite-anim-off) 멈춘다.
+   두 박자를 어긋나게 둬서 목록 전체가 한 몸처럼 들썩이지 않게 한다 */
+@media (prefers-reduced-motion: no-preference) {
+  body:not(.sprite-anim-off) img.sprite:not(.sprite--anim) { animation: sprite-idle 2.6s ease-in-out infinite; transform-origin: 50% 100%; }
+  body:not(.sprite-anim-off) :nth-child(2n) > img.sprite:not(.sprite--anim),
+  body:not(.sprite-anim-off) :nth-child(2n) img.sprite:not(.sprite--anim) { animation-delay: -1.3s; }
+}
+@keyframes sprite-idle {
+  0%, 100% { transform: translateY(0) scale(1, 1); }
+  50% { transform: translateY(-0.2rem) scale(1.02, 0.98); }
+}
 @media (prefers-reduced-motion: reduce) {
   /* 움직임을 줄이는 설정이면 GIF 를 갈아 끼우지 않는다 — 재생을 CSS 로 멈출 수는 없어
      sprite.js 가 이 설정을 직접 읽는다. 여기 규칙은 남은 표시만 지운다 */

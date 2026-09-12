@@ -47,6 +47,12 @@ const SPRITE_ANIM_KEY = 'pogo_sprite_anim';   // 'off' 면 정지본만. 없으�
 function spriteAnimEnabled() {
   try { return localStorage.getItem(SPRITE_ANIM_KEY) !== 'off'; } catch { return true; }
 }
+// 2026-09-12 v3.19.0 설정을 body.sprite-anim-off 로도 알린다 — 움직이는 그림이 없는 종을 흔드는 CSS(list.css sprite-idle)가 읽는다
+function syncSpriteAnimClass() {
+  document.body?.classList.toggle('sprite-anim-off', !spriteAnimEnabled());
+}
+if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', syncSpriteAnimClass);
+else syncSpriteAnimClass();
 function spriteAnimSrc(spriteId) {
   if (typeof SPRITE_ANIM_IDS === 'undefined') return null;
   if (!_spriteAnimIds) _spriteAnimIds = new Set(SPRITE_ANIM_IDS);
