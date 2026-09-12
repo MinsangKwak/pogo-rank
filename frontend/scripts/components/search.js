@@ -5,9 +5,10 @@
 //   buildSearchIndex()             검색 대상 목록을 만들어 캐시해 두고 돌려준다
 //   monNorm(text)                  검색용 정규화 (공백 제거 + 소문자)
 //   monSearch(candidates, query, limit)  후보 목록에서 이름으로 걸러 정확도순으로 돌려준다
-//   initSearch()                   헤더 검색창에 동작을 붙인다 (파일 끝에서 바로 한 번 실행)
 //   searchTypePool(types)          검색 색인에서 그 타입 조합만 골라 돌려준다
-//   searchSubmit()                 지금 입력한 조건으로 도감(#/dex?q=…&t=…) 으로 간다
+//   openSearch(query)              포켓몬 도감으로 가서 검색 칸을 잡는다 (🔍 · 상단 칸 · `/` 가 부른다)
+//   monSuggestRow(mon, onclick, …) 결과 한 줄 (개체값 순위 · 플래너 개체 추가가 쓴다)
+//   parseSearchQuery(text)         검색어에서 타입 낱말을 떼어 낸다
 //   _searchIndex                   buildSearchIndex의 캐시 (이 파일 내부용)
 //
 // 의존하는 전역
@@ -94,16 +95,14 @@ function monSearch(candidates, query, limit = 8) {
   return hits.slice(0, limit);
 }
 
-// ── 2026-09-06 v2.12.0 전역 검색 = 이름 + 타입 ────────────────────────────────
-// 상성 검색 페이지의 "타입 칩 → 그 조합의 포켓몬" 이 쓸 만해서 헤더 검색에도 붙였다. 한 입력창으로 셋을 처리한다.
-//   (1) 이름:            "메타그로스"          → 지금까지처럼 이름 후보
-//   (2) 타입:            칩 [물][풀] 또는 "물 풀" → 그 조합의 포켓몬 목록 (searchTypePool)
-//   (3) 이름 + 타입:     칩 [물] + "메가"        → 물 타입 중 이름에 '메가'가 든 것
+// ── 2026-09-06 v2.12.0 검색 = 이름 + 타입 ─────────────────────────────────────
+// 한 입력칸으로 셋을 처리한다.
+//   (1) 이름:            "메타그로스"            → 이름으로
+//   (2) 타입:            칩 [물][풀] 또는 "물 풀"  → 그 조합의 포켓몬 (searchTypePool)
+//   (3) 이름 + 타입:     칩 [물] + "메가"         → 물 타입 중 이름에 '메가'가 든 것
 // 타입은 칩으로 골라도 되고 글자로 쳐도 된다 — "물 풀", "물·풀", "물타입" 전부 같다. 최대 2개.
-// 패널은 조건을 받는 곳이다. 결과는 도감에서 본다 (2026-09-12 v3.10.0, searchSubmit).
-
-const SEARCH_TYPES = [];          // 칩으로 고른 타입 (최대 2)
-let _searchTrackKey = '';         // 같은 타입 조합을 입력할 때마다 GA 를 찍지 않기 위한 마지막 기록
+// 2026-09-12 v3.12.0 칩은 도감 화면이 들고 있다 (components/pages.js) — 입력칸 옆에 있어야
+// "무엇을 걸러 이 목록이 나왔는지" 가 한 자리에서 읽힌다.
 
 // 2026-09-12 v3.9.0 (버그) 타입 칩이 목록을 거르지 않았다.
 // 후보를 고르는 자리가 `typeMonList(types)` 를 부르고 있었는데, 그 함수를 들고 있던 상성 검색 화면을
@@ -114,23 +113,6 @@ let _searchTrackKey = '';         // 같은 타입 조합을 입력할 때마다
 function searchTypePool(types) {
   if (!types.length) return buildSearchIndex();
   return buildSearchIndex().filter((pokemon) => types.every((typeKey) => pokemon.types?.includes(typeKey)));
-}
-
-// 2026-09-12 v3.9.0 검색 결과는 도감에서 본다 · v3.10.0 패널에서는 아예 안 그린다.
-// v3.9.0 은 여덟 줄을 패널에 그리고 나머지를 도감으로 넘겼는데, 그러면 같은 목록을 두 곳에서
-// 그리는 셈이고 정작 패널에 뜬 여덟 줄이 "결과" 처럼 보여 도감까지 가지 않게 된다.
-// 이제 패널은 조건을 받는 곳이고, 결과는 도감 한 곳에서만 그린다 (pages.js renderDexPage)
-function searchSubmit() {
-  const $input = document.getElementById('psearch');
-  const { types: typedTypes, query } = parseSearchQuery($input.value);
-  const types = activeSearchTypes(typedTypes);
-  if (!query && !types.length) return;
-  const params = new URLSearchParams();
-  if (query) params.set('q', query);
-  if (types.length) params.set('t', types.join(','));
-  track('search_submit', { q: query.slice(0, 20), t: types.join(',') });  // GA4: 도감까지 간 검색
-  // navigateHash 가 열려 있는 검색 패널을 닫고 그 히스토리 항목을 대체한다 (components/history.js)
-  navigateHash(`#/dex?${params}`);
 }
 
 // 검색어에서 타입 이름 토큰을 떼어 낸다. "물 풀 메가" → { types: ['water','grass'], query: '메가' }
@@ -146,31 +128,12 @@ function parseSearchQuery(text) {
   return { types, query: words.join(' ') };
 }
 
-// 칩 선택 + 글자로 친 타입을 합쳐 최대 2개
-function activeSearchTypes(parsedTypes) {
-  return [...new Set([...SEARCH_TYPES, ...parsedTypes])].slice(0, 2);
-}
-
-function renderSearchTypeChips() {
-  const $chips = document.getElementById('psearch-types');
-  if (!$chips) return;
-  $chips.replaceChildren(...Object.keys(TYPE_KO).map((typeKey) => el('button', {
-    class: 'chips__item', 'aria-pressed': String(SEARCH_TYPES.includes(typeKey)),
-    onclick: () => {
-      const index = SEARCH_TYPES.indexOf(typeKey);
-      if (index >= 0) SEARCH_TYPES.splice(index, 1);
-      else { SEARCH_TYPES.push(typeKey); if (SEARCH_TYPES.length > 2) SEARCH_TYPES.shift(); }
-      renderSearchTypeChips();
-      renderSearchResults();
-    },
-  }, el('span', { class: 'dot', style: `--c: var(--t-${typeKey})` }), TYPE_KO[typeKey])));
-}
-
-// 2026-09-10 v2.47.0 결과 한 줄을 함수로 뺐다 — 헤더 검색 패널과 플래너의 [개체 추가] 창이
-// 같은 줄을 쓴다. 두 곳에 같은 마크업을 따로 두면 한쪽만 고쳐지는 날이 온다.
+// 2026-09-10 v2.47.0 결과 한 줄 — 개체값 순위(components/ivrank.js)와 플래너의 [개체 추가]
+// (planner/collection.js)가 같은 줄을 쓴다. 두 곳에 같은 마크업을 따로 두면 한쪽만 고쳐지는 날이 온다.
+// (헤더 검색 패널도 이 줄을 썼지만 v3.12.0 에 패널 자체를 걷어냈다 — 검색은 도감에서 한다)
 //   pokemon  { sprite, name, types?, unrel? }
 //   onclick  줄을 눌렀을 때
-//   extras   이름 오른쪽에 덧붙일 것 (활용 뱃지 · 순위 등). 없으면 안 붙는다
+//   extras   이름 오른쪽에 덧붙일 것. 없으면 안 붙는다
 function monSuggestRow(pokemon, onclick, ...extras) {
   return el('button', {
     class: `sugg__item${pokemon.unrel ? ' is-unreleased' : ''}`,
@@ -188,93 +151,28 @@ function monSuggestRow(pokemon, onclick, ...extras) {
     el('span', { class: 'sugg__go', 'aria-hidden': 'true' }, '›'));
 }
 
-function renderSearchResults() {
-  const $input = document.getElementById('psearch');
-  const $sugg = document.getElementById('psearch-sugg');
-  $sugg.textContent = '';
-  const { types: typedTypes, query } = parseSearchQuery($input.value);
-  const types = activeSearchTypes(typedTypes);
-  if (!query && !types.length) {
-    $sugg.append(el('p', { class: 'sugg__hint' }, '예: "메타그로스" · 타입 칩 [물][풀] · 칩 [물] + "메가"'));  // v2.12.1 빈 상태 안내
-    // 2026-09-07 v2.16.0 활용처 탭을 검색에 녹임 — 비어 있을 때 "어디서나 잘하는 포켓몬" 순위를 보여 준다 (views/usage.js)
-    if (typeof usageTopNodes === 'function') $sugg.append(...usageTopNodes());
-    return;
-  }
-  // 후보군: 타입이 있으면 그 조합의 포켓몬, 없으면 전체 색인
-  const candidates = searchTypePool(types);
-  // 2026-09-12 v3.9.0 먼저 **전부** 찾고 나서 여덟 줄을 자른다.
-  // 전에는 monSearch(…, 8) 로 여덟 개만 받아 와 `"메타" 8마리` 처럼 잘린 수를 진짜 수인 양 적었다.
-  // 색인은 수천 줄이라 전부 훑어도 한 번의 입력에서 티가 나지 않는다
-  const found = query ? monSearch(candidates, query, Infinity) : candidates;
-  const hits = found;   // 2026-09-12 v3.10.0 자를 이유가 없어졌다 — 여기서는 수만 적는다
-  if (types.length) {
-    const label = types.map((typeKey) => TYPE_KO[typeKey]).join('·');
-    const key = types.join(',');
-    if (key !== _searchTrackKey) { _searchTrackKey = key; track('search_type', { t: key }); }
-    $sugg.append(el('div', { class: 'sugg__head' },
-      el('b', {}, `${label} 타입 ${candidates.length}마리`),
-      query ? el('span', {}, `중 "${query}" ${found.length}마리`) : '',
-      searchAllChip(found.length),
-      // v2.12.1 칩을 다 풀어 주는 지우기 — 글자로 친 타입은 입력창을 지우면 된다
-      el('button', { class: 'row__why-more', onclick: () => { SEARCH_TYPES.length = 0; renderSearchTypeChips(); renderSearchResults(); } }, '타입 지우기')));
+// 2026-09-12 v3.12.0 전역 검색의 유일한 행동 — **포켓몬 도감으로 간다**.
+// 팝업에서 결과를 보여 주던 시절에는 같은 목록을 두 곳에서 그렸고, 팝업에 뜬 여덟 줄이
+// "결과" 로 보여 정작 전부가 있는 도감까지 가지 않았다. 이제 입구는 셋(🔍 · 상단 칸 · `/`)이지만
+// 도착지는 하나다. 이미 도감에 있으면 화면을 다시 그리지 않고 입력칸만 잡는다.
+//   query   미리 채워 둘 검색어 (없으면 지금 도감에 있는 값을 그대로 둔다)
+function openSearch(query) {
+  track('search_open', { from: currentPageId() ?? 'shell' });
+  const focusBox = () => {
+    const box = document.getElementById('dex-search');
+    if (!box) return false;
+    box.focus();
+    box.select?.();
+    return true;
+  };
+  if (typeof query === 'string' && query) {
+    navigateHash(`#/dex?q=${encodeURIComponent(query)}`);
+  } else if (currentPageId() !== 'dex') {
+    navigateHash('#/dex');
   } else {
-    $sugg.append(el('div', { class: 'sugg__head' }, el('b', {}, `"${query}" ${found.length}마리`), searchAllChip(found.length)));
+    return focusBox();   // 이미 도감이다 — 다시 그리면 치던 글자가 날아간다
   }
-  if (!hits.length) {
-    $sugg.append(el('span', { class: 'sugg__none' }, types.length ? '이 타입 조합에 맞는 포켓몬이 없어요' : '검색 결과가 없어요'));
-    if (query) track('search_none', { q: query.slice(0, 20), t: types.join(',') });  // 2026-09-06 v2.9.0 GA4: 못 찾은 검색어 — 별칭·표기 보강 근거
-    return;
-  }
-  // 결과는 도감에서 본다. 여기서는 "몇 마리인지" 와 "보러 가기" 만 준다 —
-  // 좁은 패널 안에 여덟 줄을 그려 봐야 나머지는 못 보고, 같은 목록을 두 곳에서 그릴 이유도 없다
-  $sugg.append(el('button', { class: 'sugg__all-row', onclick: searchSubmit }, '포켓몬 도감에서 보기 ›'));
+  // 화면이 새로 그려진 **뒤에** 잡아야 한다. renderPage 는 hashchange 로 돌므로 한 박자 뒤다
+  setTimeout(focusBox, 60);
+  return true;
 }
-
-// 결과 머리의 [도감에서 보기] — 검색의 기본 행동이다 (입력칸에서 Enter 를 쳐도 같은 곳으로 간다).
-// 한 마리도 없으면 데려갈 곳이 없으므로 만들지 않는다
-function searchAllChip(total) {
-  return total ? uchip('도감에서 보기', searchSubmit, { class: 'sugg__all' }) : '';
-}
-
-// 검색 패널 열기/닫기 (헤더 🔍 · 패널 ✕). 닫을 때 입력과 칩을 비워 다음에 깨끗하게 연다
-function toggleSearchPanel(open) {
-  const dialog = document.getElementById('search-dialog');
-  if (!dialog) return;
-  const willOpen = open ?? !dialog.open;
-  if (!willOpen) { closeSearchDialog(); return; }
-  closeDrawer({ silent: true });
-  closeModal({ silent: true });
-  document.querySelector('.search').hidden = false;
-  if (!dialog.open) dialog.showModal();
-  syncScrollLock();
-  document.getElementById('search-toggle').setAttribute('aria-expanded', 'true');
-  renderSearchResults();
-  document.getElementById('psearch').focus();
-  pushOverlayEntry();
-}
-
-function closeSearchDialog(silent = false) {
-  const dialog = document.getElementById('search-dialog');
-  if (!dialog?.open) return;
-  dialog.close();
-  document.getElementById('search-toggle').setAttribute('aria-expanded', 'false');
-  syncScrollLock();
-  if (!silent) releaseOverlayEntry(false);
-}
-
-// 헤더 검색창(#psearch)에 입력 → 후보 목록(#psearch-sugg) 갱신 동작을 붙인다
-function initSearch() {
-  const $input = document.getElementById('psearch');
-  if (!$input) return;
-  renderSearchTypeChips();
-  $input.addEventListener('input', renderSearchResults);
-  // 2026-09-12 v3.9.0 Enter = 도감으로. 검색창에서 Enter 는 "이 검색을 실행해라" 라는 오랜 약속인데
-  // 여기서는 아무 일도 일어나지 않았다 (입력 이벤트로만 돌던 패널이라 칠 때마다 이미 갱신돼 있었다)
-  $input.addEventListener('keydown', (event) => {
-    if (event.key !== 'Enter' || event.isComposing) return;   // 한글 조합 중의 Enter 는 글자를 확정하는 키다
-    event.preventDefault();
-    searchSubmit();
-  });
-  document.getElementById('psearch-close')?.addEventListener('click', () => toggleSearchPanel(false));
-}
-initSearch();

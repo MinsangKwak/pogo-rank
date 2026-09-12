@@ -50,3 +50,9 @@ body[data-home="true"] .layout { padding-bottom: 4rem; }
   .home__intro { padding: 2.8rem 0 3.2rem; }
   .home__intro h2 { font-size: 2.8rem; }
 }
+
+/* 2026-09-12 v3.12.0 홈의 활용처 순위 — 헤더 검색 패널의 빈 상태에 있던 것을 옮겨 왔다.
+   패널 안 목록이던 줄(.search__results)이 이제 본문에 서므로 카드 한 장으로 감싼다 */
+.home__usage { margin-top: 3.2rem; }
+.home__usage .usage__top { gap: 0.4rem; }
+.home__usage .sugg__head { padding-bottom: 0.8rem; }

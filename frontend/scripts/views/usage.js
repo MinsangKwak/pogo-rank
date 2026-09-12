@@ -13,7 +13,7 @@
 //       places 한 건은 { place: '<종류>:<키>', rank } 꼴이고 종류는 pvp / pve / (그 외 = D-MAX)다.
 //   - LEAGUE_KO · TYPE_KO : place 키를 한국어 이름으로 바꾸는 데 쓴다
 //
-// 제공하는 전역: placeLabel · usageTopNodes (components/search.js 가 빈 상태에서 부른다)
+// 제공하는 전역: placeLabel · usageTopNodes (2026-09-12 v3.12.0 부터 서비스 홈이 부른다)
 // ─────────────────────────────────────────────────────────────────────────────
 
 // 활용처 한 곳을 "슈퍼리그 3위" 같은 노드로
@@ -26,7 +26,7 @@ function placeLabel({ place, rank }) {
   return el('span', {}, `${where} `, el('b', {}, `${rank}위`));
 }
 
-// 검색 패널 빈 상태의 활용처 순위. 처음 shown 마리, [더보기]로 늘린다 (패널이 화면을 다 덮지 않게 8부터)
+// 활용처 순위. 처음 shown 마리, [더보기]로 늘린다 — 홈의 한 구역이라 타일을 밀어내지 않게 8부터 (v3.12.0)
 let _usageShown = 8;
 function usageTopNodes() {
   const items = (typeof VALUE_DATA !== 'undefined' ? VALUE_DATA.usage : null) ?? [];

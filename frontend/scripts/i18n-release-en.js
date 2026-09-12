@@ -15,6 +15,12 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 const RELEASE_NOTES_EN = {
+  '2026-09-12 · v3.12.0': [
+    '**Searching takes you straight to the Pokédex** — the 🔍 button, the search box up top and the `/` key all lead to the same place, and the popup is gone. When results live inside a popup, the handful of rows showing there read as "the results", so you never reach the Pokédex where all of them are.',
+    '**Type chips moved into the Pokédex** — what you filtered by belongs next to the list it produced. Expand [Narrow by type] and pick up to two.',
+    '**🏆 Usage rankings moved to the service home** — they used to live in the empty state of the search popup. "High across several rankings" is something you read before deciding which screen to open, so home is where it belongs.',
+    '**Tap targets grew to finger size** — measuring every screen found buttons like [More] and [Copy] at 22px, about half a fingertip. Text sizes are unchanged; only the area you can hit grew.',
+  ],
   '2026-09-07': [
     '📜 Terms of Service arrived and the Privacy Policy was heavily revised (☰ menu · footer) — what is stored where and for how long, processing by Firebase and Google Analytics and transfers abroad, no sign-ups under 14, the privacy officer, and a statement that location is never collected. On your next sign-in we ask once for consent and an age confirmation.',
     '🍪 On a first visit a bottom banner explains browser storage and asks consent for visit statistics (Google Analytics) — before you consent the analytics script is not even loaded, and you can change it or clear the offline cache any time from ☰ menu → Analytics and storage.',

@@ -50,8 +50,11 @@ const PROPS = ['display','position','color','background-color','border-top-width
       }
       await page.waitForTimeout(150);
       try {
-        if (action === 'detail') { await page.locator('#page button').nth(3).click(); await page.waitForTimeout(350); }
-        // v2.66.0 넓은 화면은 🔍 버튼을 감추고 상단 검색바가 같은 패널을 연다 — 보이는 쪽을 누른다
+        // 2026-09-12 v3.12.0 '#page button' 순번으로 줄을 집던 것을 클래스로 바꿨다 — 도감 위쪽에
+        // 검색 칸·타입 칩이 생기면서 네 번째 버튼이 더는 목록 줄이 아니다. 순번은 화면이 바뀔 때마다 흔들린다
+        if (action === 'detail') { await page.locator('#page .dex__row').first().click(); await page.waitForTimeout(350); }
+        // v2.66.0 넓은 화면은 🔍 버튼을 감추고 상단 검색바가 같은 일을 한다 — 보이는 쪽을 누른다
+        // v3.12.0 누르면 팝업이 아니라 포켓몬 도감으로 간다 (components/search.js openSearch)
         if (action === 'search') { await page.locator('#search-toggle:visible, .app-search:visible').first().click(); await page.waitForTimeout(350); }
         if (action === 'drawer') { await page.click('#menu-toggle'); await page.waitForTimeout(350); }
         if (action === 'solo') { await page.getByRole('button', { name: /솔플/ }).click(); await page.waitForTimeout(350); }
