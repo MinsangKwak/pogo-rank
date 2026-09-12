@@ -275,6 +275,9 @@ __STYLES__
       <!-- 2026-09-10 v2.47.0 화면 테마 — 좁은 화면에서는 헤더에 자리가 없다(로고가 잘렸다).
            헤더 버튼은 넓은 화면에서만 보이고, 좁은 화면은 이 줄이 그 일을 한다 (components/theme.js) -->
       <button class="drawer__item" id="menu-theme"><span class="drawer__ico" aria-hidden="true">🌗</span><span class="drawer__label">화면 테마</span><span class="drawer__value" id="menu-theme-value"></span></button>
+      <!-- 2026-09-12 v3.11.0 설정 화면 — 화면 테마 세 갈래(기기 설정 따름 포함)와 계정 저장.
+           위 줄은 밝게 ↔ 어둡게 한 번에 뒤집는 손잡이고, 이 줄은 "한 번 정해 두는" 자리다 -->
+      <button class="drawer__item" id="menu-settings" onclick="openPage('settings')"><span class="drawer__ico" aria-hidden="true">🛠</span><span class="drawer__label">설정</span></button>
       <button class="drawer__item" id="menu-consent"><span class="drawer__ico" aria-hidden="true">🍪</span><span class="drawer__label">통계·저장소 설정</span></button>
       <p class="drawer__meta">PvPoke · PokeMiners 데이터<br>기준일 __TIMESTAMP__ · 매일 00시 자동 갱신</p>
     </div>

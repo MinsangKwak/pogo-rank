@@ -204,5 +204,9 @@ function setLang(lang) {
   } catch { /* 저장 불가 환경 */ }
   document.documentElement.lang = LANG === 'en' ? 'en' : 'ko';
   translateTree(document.body);
+  // 2026-09-12 v3.11.0 패치노트는 사전이 아니라 **다른 배열**로 갈아 끼운다 (i18n-release-en.js).
+  // 그려진 글자를 옮기는 이 엔진으로는 못 바꾸므로, 그 화면이 열려 있으면 다시 그린다.
+  // 다른 화면은 건드리지 않는다 — 사전이 이미 제자리에서 옮겨 준다
+  if (typeof currentPageId === 'function' && currentPageId() === 'release' && typeof renderPage === 'function') renderPage();
   if (typeof track === 'function') track('lang_switch', { lang: LANG });
 }

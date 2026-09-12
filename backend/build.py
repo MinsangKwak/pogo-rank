@@ -110,7 +110,7 @@ json.dump(pvp_all, open('data/pvp_all.json', 'w', encoding='utf-8'), ensure_asci
 
 # ── frontend/ 의 CSS·JS를 순서대로 인라인해 단일 dist/index.html 조립 ──
 # 순서가 곧 캐스케이드(CSS)·실행 순서(JS)이므로 새 파일은 여기 목록에 추가
-APP_VERSION = 'v3.10.0'  # 도감 안 검색 칸 부활 · 휴대폰 2열 카드 · 동작 버튼 한 줄
+APP_VERSION = 'v3.11.0'  # 패치노트 영문판 · 설정 화면 · 가입 권유 팝업
 # 2026-09-05 v2.7.3 빌드 채널 — 'prod'(기본) / 'dev'. dev 브랜치 워크플로(.github/workflows/deploy-dev.yml)가 BUILD_CHANNEL=dev 로 부른다.
 # dev 빌드는 (1) 버전 배지에 -dev 를 붙여 화면에서 구분되고 (2) GA 스니펫을 넣지 않아 통계가 섞이지 않고
 # (3) robots.txt 를 전부 차단 + <meta name="robots" content="noindex"> 로 검색 색인을 막는다. 나머지는 prod 와 동일
@@ -167,7 +167,7 @@ STYLES = [
 SCRIPTS = [
     'data.js', 'dom.js', 'track.js',  # 2026-09-03 track: GA4 이벤트 헬퍼 (가장 먼저 정의)
     'components/pxicon.js',           # 2026-09-12 v3.6.0 도트 아이콘 — 라우터 표·홈 타일·버튼이 모두 본다 (dom 다음, 나머지보다 앞)
-    'i18n-en.js', 'i18n.js',  # 2026-09-08 v2.29.0 다국어 — 사전이 엔진보다 먼저 (엔진이 I18N_EN 을 참조)
+    'i18n-en.js', 'i18n-release-en.js', 'i18n.js',  # 2026-09-08 v2.29.0 다국어 — 사전이 엔진보다 먼저 (엔진이 I18N_EN 을 참조)
     'router.js',              # 2026-09-08 v2.30.0 주소 표 — pages·planner·app-shell 이 모두 이 표를 본다
     'components/ui.js',       # 2026-09-08 v2.30.0 재사용 조각 (uchip · iconBtn · pageBody · footNote · hintNote)
     'components/home.js',
@@ -177,10 +177,14 @@ SCRIPTS = [
     'components/schedule.js', 'components/release.js', 'components/terms.js', 'components/privacy.js', 'components/consent.js', 'components/search.js', 'components/drawer.js',  # 2026-09-07 v2.18.0 terms: 약관·동의 팝업·IP 고지 (privacy·auth 가 사용) · consent: GA 동의 배너  # 2026-09-02 9월 일정표 달력 · 업데이트 팝업
     'components/favs.js', 'components/gameday.js', 'components/finder.js', 'components/ivrank.js',  # 2026-09-11 v2.58.0 finder: 🔎 검색식 만들기 (pages 가 PAGES 에 등록하므로 그 앞) # 2026-09-05 favs: ★ 즐겨찾기 페이지 · 2026-09-08 gameday: ⚔️ 레이드 보스 · 🥚 알 부화 (pages가 PAGES에 등록하므로 그 앞)
     'planner/shell.js', 'planner/home.js', 'planner/collection.js',  # 2026-09-07 v2.15.0 🌱 플래너 모드 (QA-53 셸 · QA-54 내 포켓몬) — pages.js 가 #/plan 라우팅에 쓰므로 그 앞
+    # 2026-09-12 v3.11.0 theme 는 pages 보다 **앞**이어야 한다. pages.js 는 파일 끝에서 renderPage() 를
+    # 한 번 부르는데, 주소가 #/settings 면 그 순간 settings.js 가 THEME_ORDER(const)를 읽는다.
+    # 번들은 <script> 하나라 함수 선언은 위아래로 다 보이지만 const 는 TDZ 라 실행 순서를 탄다
+    'components/theme.js',    # 2026-09-10 v2.47.0 밝게/어둡게 전환 (헤더 버튼 · 계정 저장)
+    'components/settings.js', # 2026-09-12 v3.11.0 설정 화면 — theme 다음, pages 앞
     'components/pages.js',
     'components/trainers.js', 'components/totop.js',  # 2026-09-12 v3.4.0 favdigest 제거 — ★ 즐겨찾기 기능을 걷어냈다
     'views/pvp.js', 'views/pve.js', 'views/max.js', 'views/tier.js', 'views/usage.js', 'views/ifsolo.js',  # 2026-09-02 if 탭
-    'components/theme.js',  # 2026-09-10 v2.47.0 밝게/어둡게 전환 (헤더 버튼 · 계정 저장)
     'components/freshness.js',  # 2026-09-10 v2.50.0 새 데이터·새 버전 알림 (설치형 앱이 옛 데이터를 붙들지 않게)
     'app.js', 'components/app-shell.js',
 ]

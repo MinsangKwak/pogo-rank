@@ -90,6 +90,11 @@ function loadScript(src) {
 async function initAuth() {
   // SDK를 받기 전에 계정 영역을 먼저 그려 둔다 — 비로그인 상태의 로그인 버튼은 즉시 보인다
   renderAccount();
+  // 2026-09-12 v3.11.0 가입 권유는 어느 길로 와도 한 번 본다.
+  // 아래에는 중간에 return 하는 갈래가 여럿이다(SDK 를 못 받는 경우 등) — 그 경우에도 비로그인인 건
+  // 마찬가지라 권할 이유가 그대로다. 이 함수가 무엇을 하든 3초 뒤에 한 번 물어본다.
+  // 그때 이미 로그인이 끝났으면(status !== 'anon') 아무 일도 하지 않고, 한 번 본 뒤에도 그렇다
+  setTimeout(maybeOpenSignupInvite, 3000);
   if (!authEnabled()) return;
   // 2026-09-05 v2.7.1 로컬 테스트: localhost에서 ?mock 이 붙어 있으면 실제 SDK 대신 목(static/dev-mock.js)을 쓴다.
   // 로컬에서는 Google 팝업이 막히는 일이 잦아 로그인 뒤 화면(즐겨찾기 페이지·역할 보정·관리자 패널)을 볼 수 없었다.
@@ -217,6 +222,85 @@ async function onAuthChange(user) {
   }
   // 2026-09-07 v2.15.0 (QA-54) 플래너 화면(내 포켓몬 목록·홈 요약)은 로그인 상태에 따라 내용이 다르다
   if (typeof _planShellReady !== 'undefined' && _planShellReady && state.appMode === 'plan') render();
+  // 2026-09-12 v3.11.0 로그인 상태가 정해진 지금이 가입을 권할 자리다 — 그 전에는 비로그인인지 알 수 없다.
+  // 동의 배너가 떠 있으면 그것이 먼저라, 조금 기다렸다가 한 번만 본다
+  setTimeout(maybeOpenSignupInvite, 1200);
+}
+
+// ── 2026-09-12 v3.11.0 첫 방문 가입 권유 팝업 ───────────────────────────────
+// 이 팝업은 **가입자를 늘리려고** 띄운다. 다른 목적이 없으므로 그렇게 적는다 —
+// 안내인 척하지 않고, 로그인 전과 후가 무엇이 다른지를 나란히 놓고 보여 준다.
+//
+// 언제 뜨나
+//   비로그인으로 들어온 첫 방문 한 번뿐이다. 로그인했거나 승인 대기 중이면 뜨지 않는다.
+//   매번 띄우면 광고가 되고, 광고가 되면 읽지 않는다. 본 적이 있으면 다시 안 띄운다(SIGNUP_SEEN_KEY).
+//   동의 배너·다른 팝업이 떠 있으면 그것이 먼저다 — 한 화면에 팝업 둘은 둘 다 안 읽힌다.
+//
+// 무엇을 비교하나
+//   지어내지 않는다. 잠긴 화면 목록은 라우터 표(ROUTES.locked)에서 그대로 읽어 온다 —
+//   화면이 늘거나 잠금이 풀리면 이 팝업도 저절로 따라간다.
+const SIGNUP_SEEN_KEY = 'pogo_signup_invite_seen';
+
+// 로그인해야 열리는 화면 이름들 — 표가 원본이다 (router.js ROUTES.locked).
+// 메뉴에 이름이 있는 화면만 센다(nav) — 덱 짜기·솔플 계산기 같은 딸린 도구까지 늘어놓으면
+// 목록이 길어져 정작 "무엇이 잠겼나" 가 안 읽힌다. 그 도구들은 부모 화면이 열리면 같이 열린다
+function lockedScreenNames() {
+  return ROUTES.filter((route) => route.locked && route.nav).map((route) => route.nav);
+}
+
+// 로그인 전 → 후. [무엇이, 지금은, 로그인하면]
+function signupCompareRows() {
+  const locked = lockedScreenNames();
+  return [
+    ['잠긴 화면', `${locked.length}개 잠김`, '전부 열림'],
+    ['내 포켓몬', '기록할 수 없음', '개체별로 계정에 저장'],
+    ['화면 테마 · 보기 방식', '이 브라우저에만', '어느 기기에서든 같음'],
+    ['검색식 · 트레이너 코드', '쓸 수 없음', '만들고 계정에 남김'],
+  ];
+}
+
+function openSignupInvite() {
+  track('signup_invite', { status: AUTH.status });   // GA4: 띄운 수 — 가입 전환을 재는 기준
+  const locked = lockedScreenNames();
+  const go = el('button', { class: 'drawer__item account__login login-invite__go', onclick: () => {
+    track('signup_invite_go', {});
+    closeModal({ silent: true });
+    signIn();
+  } }, '🔐 Google로 로그인');
+  // 뿌리 클래스는 login-invite 와 갈라 둔다 — 둘은 생김새만 같고 하는 말이 다르다.
+  // 같은 클래스를 쓰면 "로그인 유도 팝업" 을 찾는 선택자에 이 팝업까지 걸린다
+  openModal(el('div', { class: 'consent__modal signup-invite' },
+    el('div', { class: 'login-invite__head' },
+      el('span', { class: 'login-invite__ico', 'aria-hidden': 'true' }, '👥'),
+      el('h2', { class: 'detail__name' }, '가입해 주시면 좋겠어요')),
+    // 에두르지 않는다 — 무엇을 원하는지 먼저 말하고, 그 대가로 무엇이 열리는지 보여 준다
+    el('p', { class: 'plan__desc' }, '친구들이 쓰는 작은 서비스예요. 쓰는 사람이 늘어야 데이터를 계속 손볼 이유가 생겨서, 가입을 권하고 있어요.'),
+    el('table', { class: 'signup-invite__table' },
+      el('thead', {}, el('tr', {},
+        el('th', {}, ''), el('th', {}, '지금'), el('th', {}, '로그인하면'))),
+      el('tbody', {}, ...signupCompareRows().map(([what, before, after]) => el('tr', {},
+        el('th', { scope: 'row' }, what),
+        el('td', { class: 'signup-invite__before' }, before),
+        el('td', { class: 'signup-invite__after' }, after))))),
+    el('p', { class: 'signup-invite__list' }, `잠긴 화면: ${locked.join(' · ')}`),
+    go,
+    el('button', { class: 'drawer__item login-invite__later', onclick: () => {
+      track('signup_invite_later', {});
+      closeModal();
+    } }, '괜찮아요, 둘러볼게요'),
+    // 승인제라는 사실을 누르기 전에 말한다 — 로그인하고 나서 "왜 아직도 안 되지" 를 겪지 않게
+    footNote('승인제라 로그인해도 바로 열리지 않을 수 있어요. 받는 정보는 이메일 · 이름 · 프로필 사진뿐이고, 첫 로그인 때 ',
+      el('a', { href: '#/terms', onclick: () => closeModal({ silent: true }) }, '이용약관'), '·',
+      el('a', { href: '#/privacy', onclick: () => closeModal({ silent: true }) }, '개인정보처리방침'), ' 동의를 받아요.')));
+  try { localStorage.setItem(SIGNUP_SEEN_KEY, '1'); } catch { /* 저장 불가 환경 */ }
+}
+
+// 첫 방문 비로그인이면 한 번 띄운다. 그 외에는 아무 일도 하지 않는다
+function maybeOpenSignupInvite() {
+  if (!authEnabled() || AUTH.status !== 'anon') return;       // 로그인·승인 대기면 볼 이유가 없다
+  if (document.querySelector('dialog[open]')) return;          // 동의 배너·다른 팝업이 먼저다
+  try { if (localStorage.getItem(SIGNUP_SEEN_KEY)) return; } catch { return; }
+  openSignupInvite();
 }
 
 // ── 2026-09-10 v2.51.0 로그인 유도 팝업 ─────────────────────────────────────

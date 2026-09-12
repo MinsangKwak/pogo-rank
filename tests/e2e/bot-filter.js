@@ -46,6 +46,10 @@ const NORMAL_UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 
     // 그 요청들이 타임아웃까지 매달리고, 그동안 첫 렌더가 끝나지 않는다 — 실측 한 번 여는 데 13.7초.
     // 끊으면 1.2초다(11.5배). 앱은 바깥 것 없이도 돌게 만들어 뒀으니(대체 글꼴·?mock) 검사 내용은 그대로다.
     // 다른 스위트 열넷은 이미 이렇게 하고 있었다 — 빠진 곳만 맞춘다
+    // 2026-09-12 v3.11.0 첫 방문 가입 권유 팝업은 '본 적 있음' 으로 표시해 두고 시작한다 —
+    // 안 그러면 3초 뒤 모달이 떠서 그 뒤의 클릭을 전부 가로챈다 (동의 배너를 끄는 것과 같은 처방).
+    // 팝업 자체는 tests/e2e/signup-invite.js 가 따로 검사한다
+    await ctx.addInitScript(() => { try { localStorage.setItem('pogo_signup_invite_seen', '1'); } catch {} });
     await ctx.route(/^https?:\/\/(?!localhost)/, (r) => r.abort());
     await installGtagSpy(ctx);
     const page = await openAndCheck(ctx);
@@ -68,6 +72,7 @@ const NORMAL_UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 
   // ── 2. 정상 브라우저 신호로 덮어쓴 컨텍스트 — 봇이 아니어야 하고, track() 이 실제로 gtag 를 불러야 한다
   {
     const ctx = await browser.newContext({ viewport: { width: 1280, height: 800 }, userAgent: NORMAL_UA });
+    await ctx.addInitScript(() => { try { localStorage.setItem('pogo_signup_invite_seen', '1'); } catch {} });
     await ctx.route(/^https?:\/\/(?!localhost)/, (r) => r.abort());
     await installGtagSpy(ctx);
     await spoofNormalBrowser(ctx);
@@ -85,6 +90,7 @@ const NORMAL_UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 
   // ── 3. 화면 정확히 800×600 — webdriver 를 정상으로 덮어써도 이 신호 하나만으로 봇 판정
   {
     const ctx = await browser.newContext({ viewport: { width: 800, height: 600 }, userAgent: NORMAL_UA });
+    await ctx.addInitScript(() => { try { localStorage.setItem('pogo_signup_invite_seen', '1'); } catch {} });
     await ctx.route(/^https?:\/\/(?!localhost)/, (r) => r.abort());
     await installGtagSpy(ctx);
     await spoofNormalBrowser(ctx);
@@ -96,6 +102,7 @@ const NORMAL_UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 
   // ── 4. UA 에 봇 키워드 — webdriver·화면을 정상으로 덮어써도 이 신호 하나만으로 봇 판정
   {
     const ctx = await browser.newContext({ viewport: { width: 1280, height: 800 }, userAgent: 'Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)' });
+    await ctx.addInitScript(() => { try { localStorage.setItem('pogo_signup_invite_seen', '1'); } catch {} });
     await ctx.route(/^https?:\/\/(?!localhost)/, (r) => r.abort());
     await installGtagSpy(ctx);
     await spoofNormalBrowser(ctx);
