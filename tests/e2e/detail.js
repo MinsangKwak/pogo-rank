@@ -113,12 +113,12 @@ suite(async () => {
   const heroSrc = await page.locator('.sprite-box .sprite').getAttribute('src');
   ok('상세 큰 그림이 움직이는 그림으로 바뀐다', /sprites-anim\/6\.gif$/.test(heroSrc || ''), heroSrc);
   ok('바뀐 그림에 표시가 붙는다', (await page.locator('.sprite-box .sprite.sprite--anim').count()) === 1);
-  // 목록은 정지 png 그대로여야 한다 — 여기가 무너지면 도감 첫 화면이 5MB 가 된다
+  // 2026-09-12 v3.18.0 목록도 기본으로 움직인다 (설정으로 끌 수 있다 — open-all.js 가 검사) — 정지본 검사는 뒤집었다
   await go('#/dex');
   await page.waitForSelector('#page .dex__row .sprite', { timeout: 8000 });
   const listAnim = await page.locator('#page .dex__row .sprite').evaluateAll(
     (ns) => ns.filter((n) => /sprites-anim\//.test(n.getAttribute('src') || '')).length);
-  ok('목록 그림은 정지 png 그대로', listAnim === 0, String(listAnim));
+  ok('목록 그림도 움직인다 (v3.18.0 기본)', listAnim > 0, String(listAnim));
 
   ok('페이지 오류 없음', errs.length === 0, errs.join(' | ').slice(0, 200));
   await finish(browser);

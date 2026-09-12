@@ -122,9 +122,19 @@ const ROUTE_NAV = (() => {
 // 로그인 기능이 꺼진 빌드(FIREBASE_CONFIG 비어 있음)에서는 잠그지 않는다 —
 // 로그인할 방법이 없는데 잠그면 그 빌드에서는 영영 못 여는 화면이 된다.
 // 실제 데이터 차단은 Firestore 규칙이 하고, 여기서 하는 것은 화면을 여닫는 일이다
+// 2026-09-12 v3.18.0 **임시** — 잠긴 화면을 전부 연다. 가입 유도보다 먼저 쓰게 하는 쪽을 택했다.
+// ROUTES.locked 표는 그대로 두고 여기서만 가른다 — 되돌릴 때는 아래 상수 하나만 false 로.
+// 회귀가 잠금 동작을 계속 검사할 수 있도록 localStorage pogo_lock_open = 'off' 면 잠금이 살아난다
+const LOCK_OPEN_ALL = true;
+function lockOpenAll() {
+  if (!LOCK_OPEN_ALL) return false;
+  try { return localStorage.getItem('pogo_lock_open') !== 'off'; } catch { return true; }
+}
+
 function routeLocked(id) {
   const route = ROUTES.find((entry) => entry.id === id);
   if (!route?.locked) return false;
+  if (lockOpenAll()) return false;
   // 2026-09-12 v3.16.0 잠시 써보기 중이면 잠그지 않는다 (components/trial.js) — 잠금을 정하는 자리가 여기 하나라 화면·메뉴·홈 타일이 함께 열린다
   if (typeof trialActive === 'function' && trialActive()) return false;
   return typeof authEnabled === 'function' && authEnabled() && AUTH.status !== 'ok';

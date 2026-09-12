@@ -69,14 +69,15 @@ const BASE = 'http://localhost:5503/?mock=1';
   // ── 2-2. 기기 설정 따름은 설정 화면에서 고른다 (#/settings)
   await page.evaluate(() => { location.hash = '#/settings'; });
   await page.waitForTimeout(700);
-  const choices = await page.locator('#page .settings__choice').count();
+  // 2026-09-12 v3.18.0 라디오 그룹이 둘(테마 · 움직이는 그림)이라 테마 그룹으로 좁힌다
+  const choices = await page.locator('#page [aria-label="화면 테마"] .settings__choice').count();
   ok('설정 화면에 세 갈래가 있다', choices === 3, String(choices));
-  await page.locator('#page .settings__choice').first().click();
+  await page.locator('#page [aria-label="화면 테마"] .settings__choice').first().click();
   await page.waitForTimeout(400);
   const sys = await state();
   ok('기기 설정 따름을 고르면 표시가 없어진다', sys.attr === null && sys.saved === 'system', JSON.stringify(sys));
   ok('기기 설정 아이콘 🌗 (도트)', sys.icon === '🌗' && sys.pxi, JSON.stringify(sys));
-  ok('고른 줄만 눌린 표시', (await page.locator('#page .settings__choice[aria-checked="true"]').count()) === 1);
+  ok('고른 줄만 눌린 표시', (await page.locator('#page [aria-label="화면 테마"] .settings__choice[aria-checked="true"]').count()) === 1);
   // 기기가 어두운 상태라(colorScheme: dark) '기기 설정' 에서 누르면 그 반대인 밝게로 간다
   await page.locator('#theme-toggle').click();
   await page.waitForTimeout(300);

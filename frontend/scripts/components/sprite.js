@@ -3,8 +3,9 @@
 //
 // 제공하는 전역
 //   spriteSrc(spriteId)     스프라이트 이미지 경로(또는 data URL). 없으면 null
-//   spriteAnimSrc(spriteId) 움직이는 그림 경로. 없으면 null (상세 화면 전용 — 목록에는 쓰지 않는다)
+//   spriteAnimSrc(spriteId) 움직이는 그림 경로. 없으면 null
 //   spriteAnimate(img, id)  정지 그림 <img> 를 다 받은 뒤 움직이는 그림으로 갈아 끼운다
+//   spriteAnimEnabled()     움직이는 그림을 쓰는가 — 설정 화면(pogo_sprite_anim)이 정한다. 기본 켬 (v3.18.0)
 //   sprite(spriteId)      화면에 넣을 이미지 요소. 이미지가 없으면 몬스터볼 자리표시. 받는 동안은 스켈레톤(.loading), 실패 시 2회 재시도
 //   waitForSprites(maxMs) 문서의 받는 중인 스프라이트가 끝날 때까지 기다린다 (첫 화면 가림막용)
 //   spritePlaceholder()   몬스터볼 자리표시 요소 (이미지가 없거나 받기 실패했을 때)
@@ -34,12 +35,18 @@ function spriteSrc(spriteId) {
   return _spriteIds.has(Number(spriteId)) ? `sprites/${spriteId}.png` : null;
 }
 
-// ── 2026-09-12 v2.67.0 움직이는 그림 (상세 화면 전용) ────────────────────────
-// GIF 한 장이 정지 png 의 13배(평균 54KB)라 목록에는 쓰지 않는다 — 도감 첫 화면은
-// 한 번에 100장을 그리므로 화면 하나가 5MB 를 넘는다. 상세는 한 번에 한 마리다.
+// ── 2026-09-12 v2.67.0 움직이는 그림 ─────────────────────────────────────────
+// GIF 한 장이 정지 png 의 13배(평균 54KB)다. v2.67.0 에는 그래서 상세 화면에만 썼는데,
+// 2026-09-12 v3.18.0 부터 **모든 그림이 기본으로 움직인다** — 정지본을 먼저 띄우고 GIF 를 받은 뒤 갈아 끼우므로
+// 화면이 비는 일은 없고, 무거우면 설정 화면에서 끌 수 있다(pogo_sprite_anim = 'off').
+// 움직임을 줄여 달라고 한 기기(prefers-reduced-motion)에서는 설정과 무관하게 정지본이다.
 // 1,172종 중 949종에만 있다(6세대 이후·폼 변형 상당수 없음) — 없으면 null 을 돌려주고
 // 부르는 쪽이 지금까지처럼 정지 png 를 쓴다
 let _spriteAnimIds = null;
+const SPRITE_ANIM_KEY = 'pogo_sprite_anim';   // 'off' 면 정지본만. 없으면 켬
+function spriteAnimEnabled() {
+  try { return localStorage.getItem(SPRITE_ANIM_KEY) !== 'off'; } catch { return true; }
+}
 function spriteAnimSrc(spriteId) {
   if (typeof SPRITE_ANIM_IDS === 'undefined') return null;
   if (!_spriteAnimIds) _spriteAnimIds = new Set(SPRITE_ANIM_IDS);
@@ -81,6 +88,8 @@ function sprite(spriteId) {
   const image = el('img', { class: hd ? 'sprite sprite--hd is-loading' : 'sprite is-loading', alt: '', decoding: 'async', 'data-src': spriteUrl });
   image.src = spriteUrl;
   if (image.complete && image.naturalWidth > 0) image.classList.remove('is-loading');
+  // 2026-09-12 v3.18.0 기본으로 움직인다 — 정지본이 자리를 잡은 뒤 GIF 로 갈아 끼운다
+  if (spriteAnimEnabled()) spriteAnimate(image, spriteId);
   return image;
 }
 
