@@ -26,15 +26,19 @@ function placeLabel({ place, rank }) {
   return el('span', {}, `${where} `, el('b', {}, `${rank}위`));
 }
 
-// 활용처 순위. 처음 shown 마리, [더보기]로 늘린다 — 홈의 한 구역이라 타일을 밀어내지 않게 8부터 (v3.12.0)
-let _usageShown = 8;
+// 활용처 순위. 홈의 한 구역이라 처음 여섯 마리만 — 그 아래 기능 타일을 밀어내지 않는 선이다 (v3.21.0)
+let _usageShown = 6;
 function usageTopNodes() {
   const items = (typeof VALUE_DATA !== 'undefined' ? VALUE_DATA.usage : null) ?? [];
   if (!items.length) return [];
   const box = el('div', { class: 'search__results usage__top' });
   const draw = () => {
     box.replaceChildren(
-      el('div', { class: 'sugg__head' }, el('b', {}, '🏆 활용처 순위'), el('span', {}, `여러 순위표에서 상위권 · ${items.length}종 · 각 표 상위 30 기준`)),
+      // 2026-09-13 v3.21.0 제목을 "무엇인지" 로 바꿨다 — '활용처 순위' 는 이 서비스 안에서만 통하는 말이라
+      // 처음 온 사람에게는 무슨 값인지 읽히지 않았다. 산식(Σ(31 − 순위))도 홈에서 설명할 값이 아니다
+      el('div', { class: 'sugg__head' },
+        el('b', {}, '🏆 두루 쓰이는 포켓몬'),
+        el('span', {}, `하나 키우면 여러 곳에서 써요 · ${items.length}종`)),
       ...items.slice(0, _usageShown).map((pokemon, index) => {
         const bestPlaces = [...pokemon.places].sort((first, second) => first.rank - second.rank).slice(0, 2);
         return el('button', { class: 'sugg__item usage__item', onclick: () => {
@@ -42,12 +46,17 @@ function usageTopNodes() {
           openDetail(pokemon, false, 'usage');
         } },
           el('span', { class: 'usage__rank' }, String(index + 1)),
-          sprite(pokemon.sprite), el('span', {}, nameNode(pokemon.name)),
-          el('span', { class: 'sugg__rank' }, el('b', {}, `${pokemon.count}곳`), ' · ', ...bestPlaces.flatMap((place, placeIndex) => [placeLabel(place), placeIndex < bestPlaces.length - 1 ? ' · ' : ''])));
+          sprite(pokemon.sprite),
+          // 2026-09-13 v3.21.0 이름과 활용처를 **두 줄**로 가른다 — 한 줄에 몰아 두니 좁은 화면에서
+          // "격투 맥스 2위" 같은 꼬리가 제멋대로 접혔다. 이름이 먼저 읽히고 근거가 그 아래 붙는다
+          el('span', { class: 'usage__body' },
+            el('span', { class: 'usage__name' }, nameNode(pokemon.name)),
+            el('span', { class: 'usage__where' }, ...bestPlaces.flatMap((place, placeIndex) => [placeLabel(place), placeIndex < bestPlaces.length - 1 ? ' · ' : '']))),
+          el('span', { class: 'usage__count' }, `${pokemon.count}곳`));
       }),
       _usageShown < items.length
-        ? el('button', { class: 'sugg__more', onclick: () => { _usageShown += 16; draw(); } }, `더보기 (${Math.min(_usageShown, items.length)}/${items.length})`)
-        : el('span', { class: 'sugg__hint' }, '활용 점수 = Σ(31 − 순위). 포켓몬을 누르면 전체 활용처가 열려요'));
+        ? el('button', { class: 'sugg__more', onclick: () => { _usageShown += 12; draw(); } }, `더보기 (${Math.min(_usageShown, items.length)}/${items.length})`)
+        : el('span', { class: 'sugg__hint' }, '포켓몬을 누르면 어디에 쓰이는지 전부 볼 수 있어요'));
   };
   draw();
   return [box];

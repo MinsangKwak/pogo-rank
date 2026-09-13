@@ -116,23 +116,24 @@
   .home__intro > * { position: relative; z-index: 1; }
   .home__eyebrow { color: var(--brand); letter-spacing: .2em; font-size: 1.1rem; }
   .home__intro h2 { margin-top: 1.4rem; font-size: 3.8rem; font-weight: 700; letter-spacing: -0.03em; line-height: 1.3; }
-  .home__intro p { margin-top: 1.4rem; max-width: 30em; font-size: var(--fs-lead); color: var(--muted); }
 
   .home__section { border-top: 0; padding: 3.4rem 0 1.4rem; }
   .home__section h3 { font-size: var(--fs-sec); font-weight: 700; letter-spacing: -0.01em; }
   .home__section > span { font-size: var(--fs-sub); letter-spacing: 0; font-weight: 500; }
+  /* 2026-09-13 v3.21.0 갈래 소제목 */
+  .home__group { margin: 2.4rem 0 1rem; font-size: var(--fs-sub); font-weight: 600; letter-spacing: .04em; }
+  .home__group:first-of-type { margin-top: 0.6rem; }
 
-  /* 타일 — 목업의 5열. 번호는 오른쪽 위, 화살표는 오른쪽 아래 동그란 버튼 */
-  .home__grid { grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 1.4rem; }
+  /* 타일 — 2026-09-13 v3.21.0 다섯 열에서 네 열로. 갈래가 3·4·2마리라 다섯 열에서는 한 줄도 안 찼다.
+     네 열이면 갈래 하나가 딱 한 줄이다. 화살표는 오른쪽 아래 동그란 버튼 */
+  .home__grid { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1.4rem; }
   .home__tile { min-height: 16.8rem; padding: 1.8rem 1.8rem 2rem; }
   .home__tile:hover {
     border-color: color-mix(in srgb, var(--brand) 50%, var(--line));
     background: var(--surface);
     box-shadow: 0 0.6rem 2rem -1.2rem color-mix(in srgb, var(--brand) 60%, transparent);
   }
-  .home__tile-top { margin-bottom: auto; }
-  .home__icon { font-size: 2.4rem; }
-  .home__number { font-size: var(--fs-sub); }
+  .home__icon { margin-bottom: auto; font-size: 2.4rem; }
   .home__tile strong { margin-top: 1.4rem; font-size: var(--fs-lead); font-weight: 700; }
   .home__desc { margin-top: 0.6rem; padding-right: 4.2rem; font-size: var(--fs-sub); }
   .home__arrow {
@@ -141,6 +142,18 @@
     border-radius: 50%; border: 1px solid var(--line); background: var(--bg); font-size: 1.3rem;
   }
   .home__tile:hover .home__arrow { border-color: var(--brand); color: var(--brand); }
+
+  /* 2026-09-13 v3.21.0 두루 쓰이는 포켓몬 — 넓은 화면에서는 두 열.
+     한 열로 두면 한 줄이 1,000px 넘게 벌어져 이름과 [N곳] 배지가 서로 멀어졌다 */
+  .home__usage .usage__top { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.8rem 1.2rem; align-content: start; }
+  .home__usage .sugg__head,
+  .home__usage .sugg__more,
+  .home__usage .sugg__hint { grid-column: 1 / -1; justify-self: start; }
+  .home__usage .usage__item { gap: 0.2rem 1rem; }
+  .home__usage .usage__rank { font-size: var(--fs-sub); }
+  .home__usage .usage__name { font-size: var(--fs-body); }
+  .home__usage .usage__where { font-size: var(--fs-sub); }
+  .home__usage .usage__count { font-size: var(--fs-sub); padding: 0.2rem 0.9rem; }
 
   /* 홈 푸터 — 목업의 카드 한 장 */
   body[data-home="true"] footer {
