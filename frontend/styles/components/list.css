@@ -37,7 +37,10 @@
 /* 2026-09-12 v2.67.0 움직이는 그림(상세 화면) — 정지본과 화면 비율이 달라(가로 51~119px, 세로 62~105px)
    상자에 맞춰 늘리면 찌그러진다. 원본 비율을 지키고 바닥에 세운다 — 포켓몬이 서 있는 그림이라
    위가 아니라 아래를 맞춰야 발이 같은 선에 온다 */
-.sprite.sprite--anim { image-rendering: auto; object-fit: contain; object-position: center bottom; }
+/* 2026-09-13 v3.20.0 도트 그림이라 확대는 **정수배까지만** — 그 한도는 sprite.js fitAnimZoom 이 padding 으로 정하고
+   여기서는 그 안을 비율대로 채운다. pixelated 로 그려 2배 확대에서도 도트가 뭉개지지 않는다(줄일 때는 JS 가 auto 로 되돌린다).
+   border-box — padding 이 상자를 늘리면 목록 줄 높이가 그림마다 달라진다 */
+.sprite.sprite--anim { image-rendering: pixelated; object-fit: contain; object-position: center bottom; box-sizing: border-box; }
 /* 2026-09-12 v3.19.0 움직이는 그림이 없는 종(9세대 등)은 정지본을 살짝 흔든다 — "전부 움직인다" 를 지키려고.
    GIF 로 갈아 끼워진 그림(.sprite--anim)과 몬스터볼 자리표시(.empty)는 제외. 설정에서 끄면(body.sprite-anim-off) 멈춘다.
    두 박자를 어긋나게 둬서 목록 전체가 한 몸처럼 들썩이지 않게 한다 */
