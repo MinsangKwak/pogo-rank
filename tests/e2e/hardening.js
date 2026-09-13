@@ -6,7 +6,7 @@
 //   - 공유 카드가 뜨는 데 필요한 값이 다 있고, 그림이 실제로 받아지는가
 //   - dev 미리보기가 실서비스 주소를 가리키지 않는가 (링크를 잘못 퍼뜨리는 사고)
 //   - 검색·보안 부속 파일(sitemap · robots · security.txt · 404)이 나오는가
-const { launch, newContext, ok, finish, suite } = require('./_lib');
+const { launch, newContext, waitSplash, ok, finish, suite } = require('./_lib');
 const BASE = 'http://localhost:5503/';
 
 suite(async () => {
@@ -23,7 +23,7 @@ suite(async () => {
   page.on('pageerror', (e) => errs.push(String(e)));
 
   await page.goto(BASE + '?mock=1', { waitUntil: 'domcontentloaded' });
-  await page.waitForSelector('#splash', { state: 'detached', timeout: 15000 }).catch(() => {});
+  await waitSplash(page);
   await page.waitForTimeout(400);
 
   // ── CSP

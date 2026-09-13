@@ -6,7 +6,7 @@
 //   - 비교 표가 **라우터 표에서 읽은 실제 잠긴 화면**을 말하는가 (지어낸 수가 아니다)
 //   - 로그인 유도 팝업(.login-invite)과 선택자가 안 겹치는가 — 둘은 생김새만 같고 하는 말이 다르다
 //   - 설정 화면의 세 갈래가 저장되고 안내가 로그인 상태를 따르는가
-const { launch, ok, finish, suite } = require('./_lib');
+const { launch, ok, finish, suite, waitSplash } = require('./_lib');
 const BASE = 'http://localhost:5503/';
 
 suite(async () => {
@@ -16,7 +16,7 @@ suite(async () => {
     const page = await ctx.newPage();
     page.on('pageerror', (e) => errs.push(String(e)));
     await page.goto(url, { waitUntil: 'domcontentloaded' });
-    await page.waitForSelector('#splash', { state: 'detached', timeout: 15000 }).catch(() => {});
+    await waitSplash(page);
     await page.locator('#consent .consent__deny').click({ timeout: 2000 }).catch(() => {});
     return page;
   };
@@ -44,7 +44,7 @@ suite(async () => {
 
   // ── 2. 한 번 본 뒤에는 안 뜬다 ──────────────────────────────────────────────
   await page.reload({ waitUntil: 'domcontentloaded' });
-  await page.waitForSelector('#splash', { state: 'detached', timeout: 15000 }).catch(() => {});
+  await waitSplash(page);
   await page.waitForTimeout(4200);
   ok('두 번째 방문에는 안 뜬다', (await page.locator('.signup-invite').count()) === 0);
   await ctx.close();
@@ -69,7 +69,7 @@ suite(async () => {
   ok('로그인 상태면 계정에 저장된다고 말한다', /계정/.test(await mp.locator('#page .dex__hint').innerText()));
   // 주소로 바로 들어와도 같다
   await mp.goto(BASE + '?mock=1#/settings', { waitUntil: 'domcontentloaded' });
-  await mp.waitForSelector('#splash', { state: 'detached', timeout: 15000 }).catch(() => {});
+  await waitSplash(mp);
   await mp.waitForTimeout(700);
   ok('주소로 바로 들어와도 열린다', (await mp.locator('#page [aria-label="화면 테마"] .settings__choice').count()) === 3);
   ok('고른 값이 눌린 채로 열린다', (await mp.locator('#page [aria-label="화면 테마"] .settings__choice[aria-checked="true"] b').innerText()) === '어둡게');

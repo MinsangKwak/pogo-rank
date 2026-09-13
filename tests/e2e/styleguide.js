@@ -8,7 +8,7 @@
 //   - 이 화면이 실제 메뉴를 건드리지 않는다 (같은 id 를 빌리지 않는다 — 중복 id 는 getElementById 를 흔든다)
 //
 // 채널은 화면에 적힌 버전으로 가른다 (dev 빌드는 -dev 가 붙는다) — 어느 쪽으로 구워도 맞는 검사를 한다
-const { launch, newContext, ok, finish, suite } = require('./_lib');
+const { launch, newContext, waitSplash, ok, finish, suite } = require('./_lib');
 const BASE = 'http://localhost:5503/?mock=1';
 
 suite(async () => {
@@ -19,7 +19,7 @@ suite(async () => {
   page.on('pageerror', (e) => errs.push(String(e)));
 
   await page.goto(BASE + '#/styleguide', { waitUntil: 'domcontentloaded' });
-  await page.waitForSelector('#splash', { state: 'detached', timeout: 15000 }).catch(() => {});
+  await waitSplash(page);
   await page.waitForTimeout(800);
 
   const version = await page.locator('.drawer__meta, .app-bar__version').first().textContent().catch(() => '');

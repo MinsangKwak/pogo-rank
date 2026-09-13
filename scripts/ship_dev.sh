@@ -37,14 +37,16 @@ git checkout -q "$branch"
 echo "  ✓ dev 푸시 $(git rev-parse --short origin/dev)"
 
 [[ $WAIT -eq 1 ]] || exit 0
-# 워크플로(데이터 수집 + 전체 빌드) 7~8분 + Pages 반영 1~2분. 버전 문자열이 보일 때까지 20초마다 본다
+# 워크플로(데이터 수집 + 전체 빌드) 7~8분 + Pages 반영 1~2분. 버전 문자열이 보일 때까지 20초마다 본다.
+# 2026-09-13 v3.21.0 한도 12 → 18분. v3.21.0 배포가 13분쯤 떠서 루프가 먼저 끝났다 —
+# 배포는 됐는데 실패라고 찍히면 다음부터 이 줄을 안 믿게 된다
 echo "▶ 미리보기 배포 대기 ($DEV_URL · ${version}-dev)"
-for _ in $(seq 1 36); do
+for _ in $(seq 1 54); do
   if curl -fsSL "$DEV_URL?v=$(date +%s)" 2>/dev/null | grep -q "${version}-dev"; then
     bash scripts/verify_deploy.sh "$DEV_URL" dev
     exit $?
   fi
   sleep 20
 done
-echo "  ✗ 12분 안에 ${version}-dev 가 뜨지 않았다 — Actions 를 확인하세요"
+echo "  ✗ 18분 안에 ${version}-dev 가 뜨지 않았다 — Actions 를 확인하세요"
 exit 1

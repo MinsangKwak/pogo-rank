@@ -1,6 +1,6 @@
 'use strict';
 // v2.25.0 신규 화면 회귀 — ⚔️ 레이드 보스 · 🥚 알 부화 · 유사백 판정
-const { launch, newContext, ok, finish, suite } = require('./_lib');
+const { launch, newContext, waitSplash, ok, finish, suite } = require('./_lib');
 const BASE = 'http://localhost:5503/?mock=1';
 suite(async () => {
   const browser = await launch();
@@ -11,7 +11,7 @@ suite(async () => {
   page.on('pageerror', (e) => errs.push(String(e)));
 
   await page.goto(BASE, { waitUntil: 'domcontentloaded' });
-  await page.waitForSelector('#splash', { state: 'detached', timeout: 15000 }).catch(() => {});
+  await waitSplash(page);
   await page.waitForTimeout(300);
 
   // v2.47.0 '내 포켓몬'·'육성 플래너' 타일 통합으로 10 → 9
@@ -44,7 +44,7 @@ suite(async () => {
 
   // ── 알 부화
   await page.goto(BASE + '#/eggs', { waitUntil: 'domcontentloaded' });
-  await page.waitForSelector('#splash', { state: 'detached', timeout: 15000 }).catch(() => {});
+  await waitSplash(page);
   await page.waitForTimeout(600);
   const eggSecs = await page.locator('.gameday__sec .page__sec').allTextContents();
   ok('거리 구역 있음', eggSecs.length > 0, eggSecs.join('|').slice(0, 60));
@@ -75,7 +75,7 @@ suite(async () => {
 
   // ── 유사백 판정 (mock 로그인 = 저장된 개체가 있는 상태)
   await page.goto(BASE + '#/plan/collection', { waitUntil: 'domcontentloaded' });
-  await page.waitForSelector('#splash', { state: 'detached', timeout: 15000 }).catch(() => {});
+  await waitSplash(page);
   await page.waitForFunction(() => typeof AUTH !== 'undefined' && AUTH.ready, null, { timeout: 8000 }).catch(() => {});
   await page.waitForTimeout(800);
   const hundo = await page.evaluate(() => {

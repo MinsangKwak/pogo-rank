@@ -10,7 +10,7 @@
 //   3) 새로고침해도 **깜빡이지 않는가** — 저장한 값은 번들(body 끝)이 아니라 head 에서 붙어야 한다.
 //      번들이 붙이면 어둡게 골라 둔 사람이 매번 흰 화면을 한 번 보고 지나간다
 //   4) 다른 기기에서도 따라오는가 — 이 브라우저 값을 지워도 계정에 적어 둔 값이 살아난다
-const { launch, newContext, ok, finish } = require('./_lib');
+const { launch, newContext, waitSplash, ok, finish } = require('./_lib');
 const BASE = 'http://localhost:5503/?mock=1';
 
 (async () => {
@@ -33,7 +33,7 @@ const BASE = 'http://localhost:5503/?mock=1';
   }));
 
   await page.goto(BASE, { waitUntil: 'domcontentloaded' });
-  await page.waitForSelector('#splash', { state: 'detached', timeout: 15000 }).catch(() => {});
+  await waitSplash(page);
   await page.waitForTimeout(800);
 
   // ── 1. 버튼이 있고, 처음은 기기 설정을 따른다

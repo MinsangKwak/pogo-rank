@@ -575,6 +575,23 @@ const I18N_EN = {
   '타입으로 좁히기': 'Narrow by type',
   '포켓몬 검색 — 도감으로': 'Search Pokémon — opens the Pokédex',
   '🏆 활용처 순위': '🏆 Usage rankings',
+  // 2026-09-13 v3.21.0 홈으로 올라오며 제목을 '무엇인지' 로 바꿨다 (views/usage.js)
+  '🏆 두루 쓰이는 포켓몬': '🏆 Useful all around',
+  // 2026-09-13 v3.22.0 홈 순위 세 덩이 (components/home.js HOME_PICKS)
+  '지금 강한 포켓몬': 'Strong right now',
+  '순위표 세 곳의 상위 3종': 'Top 3 from each of three rankings',
+  'D-MAX 티어표': 'D-MAX tier list',
+  '맥스 배틀에서 가장 센 셋': 'The three strongest in Max Battles',
+  '레이드 어태커': 'Raid attackers',
+  '레이드 전체 딜량 순': 'By overall raid damage',
+  '하나 키우면 여러 곳에서': 'Raise one, use it in many places',
+  '전체 보기': 'See all',
+  'DPS # · 버팀 #': 'DPS # · TDO #',
+  '카드를 누르면 종족값·상성·활용처를 전부 볼 수 있어요': 'Tap a card for base stats, matchups and every place it is used',
+  '두루 쓰이는 포켓몬': 'Useful all around',
+  '하나 키우면 여러 곳에서 써요 · #종': 'Raise one, use it in many places · #',
+  '포켓몬을 누르면 어디에 쓰이는지 전부 볼 수 있어요': 'Tap a Pokémon to see everywhere it is used',
+  '#곳': '# places',
   ', 다시 누르면': ', again for',
   '이 화면은 지금 도는 로테이션만 말해요 — 앞으로의 일정은 달력이 맡아요. 출처 LeekDuck(ScrapedDuck) · #-#-# 수집 · 지역과 이벤트에 따라 실제와 다를 수 있어요':
     'This screen only covers what is in rotation right now — the calendar handles what is coming up. Source: LeekDuck (ScrapedDuck), collected #-#-#. Region and events can make the real rotation differ.',
