@@ -41,7 +41,7 @@ suite(async () => {
   //   apis.google.com/js/api.js   firebase-auth-compat 가 인증 iframe 을 띄우기 전에 받는다
   //   www.gstatic.com/firebasejs  SDK 본체 (components/auth.js loadScript)
   //   googletagmanager.com        GA4 (scripts/track.js)
-  //   fonts.*·cdn.jsdelivr.net    웹폰트 (index.html)
+  //   cdn.jsdelivr.net            웹폰트 (index.html) — v3.23.0 부터 Google Fonts 없음
   //   raw.githubusercontent.com   스프라이트·데이터 (scripts/sprite.js)
   const needed = [
     ['script-src', 'https://apis.google.com', 'Firebase 로그인 iframe 로더'],
@@ -51,11 +51,31 @@ suite(async () => {
     ['frame-src', 'https://*.firebaseapp.com', 'Firebase 인증 핸들러'],
     ['frame-src', 'https://accounts.google.com', 'Google 로그인'],
     ['connect-src', 'https://*.googleapis.com', 'Firestore·Identity Toolkit'],
-    ['style-src', 'https://fonts.googleapis.com', '웹폰트'],
-    ['font-src', 'https://fonts.gstatic.com', '웹폰트'],
+    // 2026-09-13 v3.23.0 Google Fonts(Inter) 를 뗐다 — 웹폰트는 jsdelivr(Pretendard · Galmuri) 하나다
+    ['style-src', 'https://cdn.jsdelivr.net', '웹폰트 CSS (Pretendard)'],
+    ['font-src', 'https://cdn.jsdelivr.net', '웹폰트 파일 (Pretendard · Galmuri)'],
     ['img-src', 'https://raw.githubusercontent.com', '스프라이트'],
     ['img-src', 'https://*.googleusercontent.com', '계정 프로필 사진'],
   ];
+  // 2026-09-13 v3.23.0 번들 CSS·JS 가 문서에 **한 번**만 들어갔는가. 자리표 '__STYLES__' 를 주석에 적어 둔 줄 때문에
+  // build.py 의 str.replace 가 번들을 두 번 끼워 넣어 index.html 이 862KB 였다 (같은 CSS 두 번 파싱)
+  const dup = await page.evaluate(() => ({
+    css: (document.documentElement.innerHTML.match(/\/\* ── tokens\.css ── \*\//g) || []).length,
+    js: (document.documentElement.innerHTML.match(/\/\/ ── data\.js ──/g) || []).length,
+    styles: document.querySelectorAll('style').length,
+  }));
+  ok('번들 CSS 가 문서에 한 번만 (tokens.css 표식 1개)', dup.css === 1, JSON.stringify(dup));
+  ok('번들 JS 가 문서에 한 번만 (data.js 표식 1개)', dup.js === 1, JSON.stringify(dup));
+  // Google Fonts 링크가 없다 — 쓰지 않는 글꼴을 방문마다 받던 것을 뗐다
+  ok('Google Fonts 링크 없음', (await page.locator('link[href*="fonts.googleapis.com"]').count()) === 0);
+  // Pretendard CSS 는 렌더를 막지 않는 preload 로 받아 도착하면 stylesheet 로 승격된다 — 회귀는 바깥 요청을 끊고 돌므로
+  // 승격 결과가 아니라 **구조**를 본다: preload + onload 승격 손잡이 + JS 없는 환경용 noscript 사본
+  const fontLink = await page.evaluate(() => ({
+    preload: document.querySelectorAll('link[rel="preload"][as="style"][href*="pretendard"][onload]').length,
+    blocking: document.querySelectorAll('head > link[rel="stylesheet"][href^="http"]').length,
+    noscript: /<noscript><link rel="stylesheet" href="[^"]*pretendard/.test(document.head.innerHTML),
+  }));
+  ok('Pretendard 는 preload + onload 승격 (렌더 차단 외부 CSS 0개)', fontLink.preload === 1 && fontLink.blocking === 0 && fontLink.noscript, JSON.stringify(fontLink));
   for (const [directive, origin, why] of needed) {
     // 해당 지시어의 값 구간만 잘라서 본다 — 다른 지시어에 있는 걸 있다고 세면 안 된다
     const section = (csp.split(';').find((part) => part.trim().startsWith(directive + ' ')) || '');

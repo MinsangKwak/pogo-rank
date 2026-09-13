@@ -39,7 +39,7 @@ from sprite import sprite_id
 from names import name_ko, species, FORM_KO
 
 # ── 설정 ─────────────────────────────────────────────────────────────────────
-APP_VERSION = 'v3.22.1'  # 홈 대시보드 — 인사·바로가기 한 판, 1위는 큰 그림, 타일은 세 열 카드
+APP_VERSION = 'v3.23.0'  # 첫 화면 가볍게 — CSS 두 번 실리던 것 제거 · 안 쓰는 Inter 웹폰트 제거 · Pretendard CSS 렌더 비차단
 # 2026-09-05 v2.7.3 빌드 채널 — 'prod'(기본) / 'dev'. dev 브랜치 워크플로(.github/workflows/deploy-dev.yml)가 BUILD_CHANNEL=dev 로 부른다.
 # dev 빌드는 (1) 버전 배지에 -dev 를 붙여 화면에서 구분되고 (2) GA 스니펫을 넣지 않아 통계가 섞이지 않고
 # (3) robots.txt 를 전부 차단 + <meta name="robots" content="noindex"> 로 검색 색인을 막는다. 나머지는 prod 와 동일
@@ -456,6 +456,10 @@ def render_index_html(game_master, config, data_js):
     # index.html 템플릿의 자리표시자를 차례로 실제 내용으로 치환한다
     html = open('frontend/index.html', encoding='utf-8').read()
     # CSS·JS 번들 삽입
+    # 2026-09-13 v3.23.0 자리표는 **정확히 한 번**만 있어야 한다. 주석 안에 '__STYLES__' 라고 적어 둔 줄이 있어
+    # str.replace 가 거기에도 155KB 번들을 끼워 넣었다 — v2.52.0(9/10) 부터 사흘, index.html 이 862KB 였다 (같은 CSS 를 두 번 파싱)
+    for mark in ('__STYLES__', '__SCRIPTS__'):
+        assert html.count(mark) == 1, f'{mark} 자리표가 {html.count(mark)}개 — frontend/index.html 에 정확히 하나여야 한다'
     html = html.replace('__STYLES__', bundle('styles', STYLES, '/*')).replace('__SCRIPTS__', bundle('scripts', SCRIPTS, '//'))
     # 데이터 기준일과 앱 버전 표시
     html = html.replace('__TIMESTAMP__', game_master['timestamp']).replace('__VERSION__', APP_VERSION)

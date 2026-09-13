@@ -13,6 +13,58 @@
 
 
 <details open>
+<summary><b>v3.23.0</b> — 2026-09-13 · <code>성능</code> 첫 화면 842 → 690KB — CSS 두 번 실리던 것 제거 · 안 쓰는 Inter 웹폰트 제거 · Pretendard CSS 렌더 비차단</summary>
+
+### 먼저, 빌드는 느리지 않았다
+
+"빌드가 왜 느린지" 를 재 보니 빌드가 아니었다.
+
+| 단계 | 시간 |
+| --- | --- |
+| 로컬 `scripts/build.sh` 전체 (fetch 포함) | **8.0초** — fetch_data 3.1 · pve_build 1.5 · build.py 0.5 · value 0.75 · dex 0.54 · 나머지 각 0.1~0.4 |
+| `backend/build.py` 단독 | 0.37~0.5초 (cProfile: JS 주석 제거 0.13 · JSON 직렬화 0.12 · CSV 읽기 0.10) |
+| CI `deploy-dev.yml` — Build site 단계 | **6초** (작업 전체 28초: 캐시 복원 3 · 빌드 6 · gh-pages 발행 11) |
+
+한 판을 올리고 미리보기에 뜨기까지 길게 느껴진 것은 **GitHub Pages CDN 반영**(수 분, 캐시 max-age 600)이지 빌드가 아니다. 그래서 빌드는 손대지 않았고, 실제 사용자가 받는 쪽을 봤다.
+
+### 무엇이 무거웠나 — 첫 화면 862KB 를 뜯어 보니
+
+`dist/index.html` 862,279 바이트 안에 `<style>` 이 셋이었다: 480B(Galmuri `@font-face`) · **158,691B** · **155,718B**. 뒤의 둘이 같은 번들 CSS 였다.
+
+원인은 `frontend/index.html` 의 로딩 가림막 주석 한 줄 — `이 블록은 번들 스타일(__STYLES__)보다 앞에서 그려지므로`. `build.py` 가 `html.replace('__STYLES__', bundle)` 로 자리표를 채우는데, `str.replace` 는 **모든** 자리표를 채운다. 주석 속 글자에도 155KB 번들이 통째로 들어갔다. v2.52.0(9/10)에 그 주석을 쓰면서 생겼고, 사흘 동안 모든 방문이 같은 CSS 를 두 번 받아 두 번 파싱했다.
+
+- 주석 문구를 `(아래 STYLES 자리)` 로 바꿨다.
+- `render_index_html()` 이 자리표(`__STYLES__` · `__SCRIPTS__`)가 **정확히 하나**인지 `assert` 한다 — 다시 생기면 빌드가 죽는다.
+- 회귀 `hardening.js` 가 문서 안의 `── tokens.css ──` · `── data.js ──` 표식을 세어 번들이 한 번만 들어갔는지 본다.
+
+### 안 쓰는 글꼴을 방문마다 받고 있었다
+
+`<link href="https://fonts.googleapis.com/css2?family=Inter…" rel="stylesheet">` — v3.0.0 에 본문 글꼴로 넣었지만, v3.6.0 도트 디자인이 본문을 Galmuri 로 바꾸면서 **어느 CSS 규칙도 `Inter` 를 부르지 않게 됐다**(`grep font-family` 0건). 그런데 링크는 남아 방문마다 렌더를 막는 CSS 요청 하나 + woff2 네 벌(400·500·600·700)을 받았다. 링크와 `fonts.googleapis`·`fonts.gstatic` 프리커넥트, CSP 의 두 출처를 뗐다. 머리말의 글꼴 주석(Inter · Fraunces · JetBrains Mono)도 현실과 달라 다시 썼다.
+
+### 한글 글꼴 CSS 가 첫 그리기를 세우고 있었다
+
+Pretendard 동적 서브셋 CSS 는 head 의 외부 `<link rel="stylesheet">` 였다 — 브라우저는 이 파일이 올 때까지 첫 그리기를 세운다(jsdelivr 왕복 한 번). `preload` 로 받아 두고 도착하면 `onload` 에서 `stylesheet` 로 승격한다(loadCSS 방식). 글꼴은 어차피 `font-display: swap` 이라 도착 전엔 시스템 글꼴로 그리고 바꿔 끼운다. JS 가 없는 환경은 `<noscript>` 사본이 예전처럼 받는다. CSP 는 `script-src 'unsafe-inline'` 이 이미 있어 `onload` 속성이 허용된다.
+
+### 잰 값
+
+localhost · 바깥 요청 차단 · 5회 중앙값. 외부 요청을 안 재므로 (2)(3) 의 이득은 이 위에 얹힌다.
+
+| | 전 | 후 |
+| --- | --- | --- |
+| index.html | 862,279B (gzip 224KB) | **706,473B (gzip 199KB)** |
+| 첫 화면 받은 바이트 | 2,169KB | **2,017KB** |
+| PC FCP · DCL · load | 136 · 288 · 305ms | **124 · 256 · 266ms** |
+| 휴대폰 CPU×4 FCP · DCL · load | 340 · 1098 · 1119ms | **292 · 958 · 983ms** |
+
+### 보고 넘긴 것 (바꾸지 않은 이유)
+
+- `data.js` 1.36MB(gzip 209KB) — `SHEET_DATA` 의 `null` 필드 30KB 를 빼면 gzip 은 0.9KB 만 준다. 데이터 모양을 바꿀 값이 아니다. 화면별로 쪼개 늦게 받는 것은 전역 이름을 지키며 할 수 있지만 큰 손질이라 다음으로.
+- 긴 작업(50ms+) 0개, DOM 1,765 노드, `waitForSprites` 는 load 뒤 ~140ms 에 걷힌다 — 병목이 아니다.
+- `PVE_DATA[].en` 이 `"메가Y Mewtwo"` 처럼 한글 폼 접두어를 품고 있다 — 성능은 아니고 데이터 정합 문제라 따로 적어 둔다.
+
+</details>
+
+<details open>
 <summary><b>v3.22.1</b> — 2026-09-13 · <code>변경</code> 홈 대시보드 — 인사·바로가기 한 판, 1위는 큰 그림, 타일은 갈래 카드 안의 줄</summary>
 
 ### 무엇이 나갔나
