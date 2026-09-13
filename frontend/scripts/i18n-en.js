@@ -579,6 +579,12 @@ const I18N_EN = {
   '🏆 두루 쓰이는 포켓몬': '🏆 Useful all around',
   // 2026-09-13 v3.22.0 홈 순위 세 덩이 (components/home.js HOME_PICKS)
   '지금 강한 포켓몬': 'Strong right now',
+  // 2026-09-13 v3.22.1 홈 대시보드 인사·바로가기 (components/home.js renderServiceHome)
+  '다음 모험의': 'Find the star of',
+  '주인공을 찾아요.': 'your next adventure.',
+  '지금 강한 포켓몬부터 나만의 육성 계획까지.': 'From what is strong right now to your own raising plan.',
+  '트레이너의 다음 선택을 함께 준비해요.': 'Let us prepare your next move together.',
+  '모험을 시작하는 세 가지 방법': 'Three ways to start',
   '순위표 세 곳의 상위 3종': 'Top 3 from each of three rankings',
   'D-MAX 티어표': 'D-MAX tier list',
   '맥스 배틀에서 가장 센 셋': 'The three strongest in Max Battles',

@@ -125,10 +125,13 @@ suite(async () => {
   ok('홈에서 탭 줄 숨김', await page.locator('#tabs').isHidden());
   const tile = await page.locator('.home__tile').first().evaluate((n) => {
     const s = getComputedStyle(n);
-    return { r: s.borderRadius, bg: s.backgroundColor, bw: s.borderTopWidth };
+    const card = getComputedStyle(n.closest('.home__service-group'));
+    return { r: s.borderRadius, bg: s.backgroundColor, bw: s.borderTopWidth, cardR: card.borderRadius, cardBw: card.borderTopWidth };
   });
-  // 2026-09-12 v3.6.0 도트 디자인 — 모서리 0 · 테두리 2px (styles/pixel.css)
-  ok('타일 모서리 0 · 2px 테두리', tile.r === '0px' && tile.bw === '2px', JSON.stringify(tile));
+  // 2026-09-12 v3.6.0 도트 디자인 — 모서리 0 (styles/pixel.css).
+  // 2026-09-13 v3.22.1 타일은 상자가 아니라 갈래 카드(.home__service-group) 안의 **줄**이다 — 줄 사이 밑줄 1px,
+  // 배경 없음. 상자 테두리는 카드가 진다. 그래서 타일에 2px 사방 테두리를 묻지 않는다
+  ok('타일 모서리 0 · 줄 밑선 1px · 카드 모서리 0', tile.r === '0px' && tile.bw === '1px' && tile.cardR === '0px' && tile.cardBw !== '0px', JSON.stringify(tile));
   ok('홈에서 뒤로가기 버튼 숨김', await page.locator('.app-bar__head .icon-btn').isHidden());
 
   // 3. 헤더 버튼이 이모지 아이콘 · 44px 정사각 통일
