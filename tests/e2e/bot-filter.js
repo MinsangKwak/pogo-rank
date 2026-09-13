@@ -10,7 +10,7 @@
 //
 // 주의: 이 스위트 자체가 Playwright(자동화 도구)로 돈다 — navigator.webdriver 가 기본으로 true 라
 // "정상 브라우저" 시나리오는 webdriver·UA 를 일부러 정상값으로 덮어써서 흉내 낸다
-const { launch, newContext, ok, finish, suite } = require('./_lib');
+const { launch, newContext, waitSplash, ok, finish, suite } = require('./_lib');
 const BASE = 'http://localhost:5503/?mock=1';
 
 // 페이지가 gtag 를 실제로 불렀는지 세도록, 우리 번들보다 먼저 가짜 gtag 를 심어 둔다
@@ -31,7 +31,7 @@ suite(async () => {
     const page = await ctx.newPage();
     page.on('console', (m) => consoleLines.push(m.text()));
     await page.goto(BASE + '#/dex', { waitUntil: 'domcontentloaded' });
-    await page.waitForSelector('#splash', { state: 'detached', timeout: 15000 }).catch(() => {});
+    await waitSplash(page);
     await page.locator(consent === 'allow' ? '#consent .consent__allow' : '#consent .consent__deny').click({ timeout: 1500 }).catch(() => {});
     await page.waitForTimeout(400);
     return page;

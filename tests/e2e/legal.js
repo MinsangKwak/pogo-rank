@@ -1,6 +1,6 @@
 'use strict';
 // v2.18.0 공개 준비 e2e — 동의 배너 · 약관 동의 팝업 · 계정 삭제 · 약관/방침 페이지 · 푸터 고지 · 드로어 항목
-const { launch, newContext, suite } = require('./_lib');
+const { launch, newContext, waitSplash, suite } = require('./_lib');
 const BASE = 'http://localhost:5503/';
 const results = [];
 const ok = (name, cond, extra = '') => { results.push([cond ? 'PASS' : 'FAIL', name, extra]); };
@@ -16,7 +16,7 @@ suite(async () => {
 
   // 1. 첫 방문: 배너가 뜬다 · 거부 → 사라지고 localStorage 저장
   await page.goto(BASE + '?mock=friend', { waitUntil: 'domcontentloaded' });
-  await page.waitForSelector('#splash', { state: 'detached', timeout: 15000 }).catch(() => {});
+  await waitSplash(page);
   ok('배너 표시', await page.locator('#consent').isVisible());
   await page.click('#consent .consent__deny');
   ok('배너 거부 후 제거', (await page.locator('#consent').count()) === 0);
@@ -24,7 +24,7 @@ suite(async () => {
   ok('gtag 없음(거부)', await page.evaluate(() => typeof window.gtag === 'undefined'));
   // 재방문: 배너 안 뜸
   await page.reload({ waitUntil: 'domcontentloaded' });
-  await page.waitForSelector('#splash', { state: 'detached', timeout: 15000 }).catch(() => {});
+  await waitSplash(page);
   ok('재방문 배너 없음', (await page.locator('#consent').count()) === 0);
 
   // 2. 푸터 고지문 · 링크
@@ -61,7 +61,7 @@ suite(async () => {
   // 5. 첫 로그인 동의 팝업: 로그아웃 상태에서 시작 (mock: pogo_mock_signed_out)
   await page.evaluate(() => { localStorage.setItem('pogo_mock_signed_out', '1'); localStorage.removeItem('pogo_terms_ok'); });
   await page.goto(BASE + '?mock=friend', { waitUntil: 'domcontentloaded' });
-  await page.waitForSelector('#splash', { state: 'detached', timeout: 15000 }).catch(() => {});
+  await waitSplash(page);
   await page.waitForFunction(() => typeof AUTH !== 'undefined' && AUTH.ready, null, { timeout: 10000 });
   // v2.29.0 헤더 👤 제거 — 로그인은 ☰ 메뉴 안 계정 카드에서 시작한다
   await page.click('#menu-toggle');
@@ -126,7 +126,7 @@ suite(async () => {
   await page.evaluate(() => localStorage.removeItem('pogo_consent'));
   await page.goto(BASE + '?mock=1', { waitUntil: 'domcontentloaded' });
   await page.waitForSelector('#consent');
-  await page.waitForSelector('#splash', { state: 'detached', timeout: 15000 }).catch(() => {});
+  await waitSplash(page);
   await page.screenshot({ path: __dirname + '/legal-banner.png' });
   await page.goto(BASE + '?mock=1#/privacy', { waitUntil: 'domcontentloaded' });
   await page.waitForSelector('#page:not([hidden])');

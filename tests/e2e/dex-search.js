@@ -11,7 +11,7 @@
 //   - (v3.12.0) 검색 팝업이 아예 없는가 — 🔍 · 상단 칸 · `/` 가 전부 도감으로 간다
 //   - (v3.12.0) 타입 칩이 도감 화면에 있는가 — 무엇을 걸렀는지는 목록 옆에서 읽혀야 한다
 //   - (v3.10.0) 도감 안 검색 칸이 커서를 안 빼앗기고 목록·주소를 함께 고치는가
-const { launch, newContext, ok, finish, suite } = require('./_lib');
+const { launch, newContext, waitSplash, ok, finish, suite } = require('./_lib');
 const BASE = 'http://localhost:5503/?mock=1';
 
 suite(async () => {
@@ -22,7 +22,7 @@ suite(async () => {
   page.on('pageerror', (e) => errs.push(String(e)));
 
   const settle = async () => {
-    await page.waitForSelector('#splash', { state: 'detached', timeout: 15000 }).catch(() => {});
+    await waitSplash(page);
     await page.waitForTimeout(300);
   };
   const goHash = async (hash) => {

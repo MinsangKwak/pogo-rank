@@ -12,7 +12,7 @@
 //   - 도감의 기존 .dex__layout 클래스·localStorage 키('pogo_dex_cols')는 그대로인가 (회귀 없음)
 //   - **눌렀을 때 화면이 실제로 달라지는가** (v3.9.1) — 클래스만 바뀌고 CSS 가 그걸 안 보던 시절이 있었다
 //   - (v3.10.0) 휴대폰 그리드가 두 칸인가 · 동작 버튼이 한 줄에 서는가 · 리스트 아이콘이 ☰ 메뉴와 다른가
-const { launch, newContext, ok, finish, suite } = require('./_lib');
+const { launch, newContext, waitSplash, ok, finish, suite } = require('./_lib');
 const BASE = 'http://localhost:5503/?mock=1';
 
 suite(async () => {
@@ -25,8 +25,10 @@ suite(async () => {
 
   const go = async (hash) => {
     await page.goto(BASE + hash, { waitUntil: 'domcontentloaded' });
-    await page.waitForSelector('#splash', { state: 'detached', timeout: 15000 }).catch(() => {});
-    await page.waitForTimeout(500);
+    await waitSplash(page);
+    // 2026-09-13 v3.22.0 고정 500ms 만으로는 부하가 높을 때 머리 줄이 아직 없다 — 먼저 선택자를 기다린다
+    await page.waitForSelector('#page-head-actions .view-toggle', { timeout: 15000 }).catch(() => {});
+    await page.waitForTimeout(300);
   };
   const clearKeys = () => page.evaluate(() => {
     for (const k of ['pogo_dex_cols', 'pogo_raids_cols', 'pogo_eggs_cols', 'pogo_pve_cols']) {
@@ -114,7 +116,7 @@ suite(async () => {
     const gpage = await gctx.newPage();
     gpage.on('pageerror', (e) => errs.push(`${label}:` + e));
     await gpage.goto(BASE + hash, { waitUntil: 'domcontentloaded' });
-    await gpage.waitForSelector('#splash', { state: 'detached', timeout: 15000 }).catch(() => {});
+    await waitSplash(gpage);
     // 고정 대기는 병렬로 돌 때 모자란다 — 재려는 목록이 실제로 붙을 때까지 기다린다
     // (2026-09-11 v2.59.0: 500ms 뒤에 재다가 아직 안 그려진 화면에서 null 을 집었다)
     await gpage.waitForSelector(sel, { timeout: 15000 }).catch(() => {});
@@ -132,7 +134,7 @@ suite(async () => {
     const spage = await sctx.newPage();
     spage.on('pageerror', (e) => errs.push(`squeeze ${w}:` + e));
     await spage.goto(BASE + '#/raids', { waitUntil: 'domcontentloaded' });
-    await spage.waitForSelector('#splash', { state: 'detached', timeout: 15000 }).catch(() => {});
+    await waitSplash(spage);
     await spage.waitForSelector('#page .dex__row', { timeout: 15000 }).catch(() => {});
     await spage.locator('#page .dex__row').first().click();
     await spage.waitForTimeout(400);
@@ -150,7 +152,7 @@ suite(async () => {
     const ppage = await pctx.newPage();
     ppage.on('pageerror', (e) => errs.push('intro-pos:' + e));
     await ppage.goto(BASE + '#/raids', { waitUntil: 'domcontentloaded' });
-    await ppage.waitForSelector('#splash', { state: 'detached', timeout: 15000 }).catch(() => {});
+    await waitSplash(ppage);
     await ppage.waitForTimeout(500);
     // 2026-09-12 v3.1.0 안내문 옆이 아니라 화면 머리 오른쪽이다 — 제목과 같은 높이,
     // 본문(안내문·목록)보다 위. 본문에는 토글이 남아 있으면 안 된다(옮긴 것이지 복제가 아니다)
@@ -192,8 +194,11 @@ suite(async () => {
       ['#/pve', '레이드 · PvE', '#content .row-list > .row'],
     ]) {
       await vp.goto(BASE + hash, { waitUntil: 'domcontentloaded' });
-      await vp.waitForSelector('#splash', { state: 'detached', timeout: 15000 }).catch(() => {});
-      await vp.waitForTimeout(600);
+      await waitSplash(vp);
+      // 2026-09-13 v3.22.0 고정 600ms 대기를 선택자 대기로 바꿨다 — 일꾼 넷이 붙어 부하가 높으면
+      // 머리 줄이 600ms 안에 안 그려져 "버튼 없음" 으로 헛 실패했다(단독 실행은 늘 통과)
+      await vp.waitForSelector('#page-head-actions .view-toggle', { timeout: 15000 }).catch(() => {});
+      await vp.waitForTimeout(300);
       const btn = vp.locator('#page-head-actions .view-toggle').first();
       if (!(await btn.count())) { ok(`${label}(w=${w}) 보기 전환 버튼 있음`, false, '버튼 없음'); continue; }
       const rowH = () => vp.evaluate((s) => {
@@ -223,7 +228,7 @@ suite(async () => {
     mp.on('pageerror', (e) => errs.push('mobile:' + e));
     for (const [hash, label] of [['#/pve', '레이드 · PvE'], ['#/dmax', 'D-MAX'], ['#/pvp', '배틀 · PvP']]) {
       await mp.goto(BASE + hash, { waitUntil: 'domcontentloaded' });
-      await mp.waitForSelector('#splash', { state: 'detached', timeout: 15000 }).catch(() => {});
+      await waitSplash(mp);
       await mp.waitForTimeout(700);
       const btn = mp.locator('#page-head-actions .view-toggle').first();
       ok(`${label} 보기 전환이 있다`, (await btn.count()) === 1);
@@ -247,7 +252,7 @@ suite(async () => {
     }
     // 리스트 얼굴이 ☰ 메뉴 버튼과 같은 그림이면 안 된다 (v3.10.0)
     await mp.goto(BASE + '#/dex', { waitUntil: 'domcontentloaded' });
-    await mp.waitForSelector('#splash', { state: 'detached', timeout: 15000 }).catch(() => {});
+    await waitSplash(mp);
     await mp.waitForTimeout(700);
     const face = mp.locator('#page-head-actions .view-toggle').first();
     if ((await face.getAttribute('data-view')) !== 'list') { await face.click(); await mp.waitForTimeout(400); }

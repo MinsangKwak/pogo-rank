@@ -618,7 +618,7 @@ CP = `floor((공격+IV) × √(방어+IV) × √(체력+IV) × CPM² / 10)`, 최
 - `scripts/dom.js` — `el(tag, attrs, ...children)` 하나가 렌더링의 기반.
 - `scripts/app.js` — 전역 `state` + `render()`. 탭 전환 = state 변경 후 전체 리렌더.
 - `components/` — row · list · modal · detail · schedule · search · drawer · pages(해시 라우팅 `#/dex`·`#/schedule`·`#/release`) · auth(로그인·즐겨찾기) · trainers · release · track(GA) · totop.
-- `views/` — 탭별 화면 (max · pve · tier · pvp) + 탭 안 도구(ifsolo: 솔플 계산기·PvP 덱, 각각 PvE·PvP 탭의 오른쪽 버튼이 펼친다) + usage(검색 패널의 활용처 순위). v2.16.0 부터 탭은 D-MAX·PvE·PvP 셋.
+- `views/` — 탭별 화면 (max · pve · tier · pvp) + 탭 안 도구(ifsolo: 솔플 계산기·PvP 덱, 각각 PvE·PvP 탭의 오른쪽 버튼이 펼친다) + usage(활용처 한 곳을 '레이드 전체 1위' 노드로 바꾸는 `placeLabel` 하나 — v3.22.0 부터 목록 그리기는 `components/home.js HOME_PICKS` 가 한다). v2.16.0 부터 탭은 D-MAX·PvE·PvP 셋.
 - `components/terms.js` · `privacy.js` · `consent.js` — 법·정책 화면 (v2.18.0): 이용약관(`#/terms`)·동의 팝업·IP 고지문(`IP_NOTICE` 한 곳) / 개인정보처리방침(`#/privacy`) / 통계 동의 배너·설정 팝업·캐시 비우기. 저장소 루트의 LICENSE·NOTICE·CONTRIBUTING·SECURITY 와 짝을 이룬다.
 - `planner/` — 🌱 플래너 모드 (v2.15.0): `shell.js`(모드 전환·`#/plan/*` 라우트·플래너 탭 줄) · `home.js`(플래너 홈) · `collection.js`(내 포켓몬 CRUD·비교). 모드는 해시가 정하고 `app.js render()`가 `state.appMode === 'plan'`이면 `renderPlan()`으로 분기한다. 신규 전역·localStorage 키·GA 이벤트는 전부 `plan` 접두사.
 - 상세 팝업은 **여는 곳에 따라** 구성이 다르다: 도감에서 열면 능력치 육각형 포함, 순위표·검색에서는 기술 중심(`openDetail(p, isDex)`).

@@ -9,7 +9,7 @@
 //   - 고른 값이 새로고침 뒤에도 남는가 (pogo_ivrank)
 //   - PvP 순위에 오른 종의 상세에만 PvP 블록이 붙는가 (도감 아무 종에나 붙지 않는다)
 //   - 로그인 없이는 잠겨 있는가
-const { launch, newContext, ok, finish, suite } = require('./_lib');
+const { launch, newContext, waitSplash, ok, finish, suite } = require('./_lib');
 const BASE = 'http://localhost:5503/?mock=1';
 
 suite(async () => {
@@ -22,7 +22,7 @@ suite(async () => {
 
   const go = async (hash) => {
     await page.goto(BASE + hash, { waitUntil: 'domcontentloaded' });
-    await page.waitForSelector('#splash', { state: 'detached', timeout: 15000 }).catch(() => {});
+    await waitSplash(page);
     await page.waitForTimeout(500);
   };
 
@@ -140,7 +140,7 @@ suite(async () => {
     const p3 = await nctx.newPage();
     p3.on('pageerror', (e) => errs.push('좁은 화면: ' + e));
     await p3.goto(BASE + '#/pvp/ivrank', { waitUntil: 'domcontentloaded' });
-    await p3.waitForSelector('#splash', { state: 'detached', timeout: 15000 }).catch(() => {});
+    await waitSplash(p3);
     await p3.waitForSelector('.ivrank__top', { timeout: 10000 }).catch(() => {});
     await p3.waitForTimeout(400);
     ok('블록 안에 리그 탭이 없다', (await p3.locator('.ivrank__top .seg').count()) === 0);
@@ -164,7 +164,7 @@ suite(async () => {
     const p2 = await anon.newPage();
     p2.on('pageerror', (e) => errs.push('비로그인: ' + e));
     await p2.goto('http://localhost:5503/#/ivrank', { waitUntil: 'domcontentloaded' });
-    await p2.waitForSelector('#splash', { state: 'detached', timeout: 15000 }).catch(() => {});
+    await waitSplash(p2);
     await p2.waitForTimeout(600);
     ok('로그인 없이는 잠긴 화면', (await p2.locator('.plan__lock').count()) === 1);
     ok('잠겼을 때 본문은 안 그린다', (await p2.locator('.ivrank__pick').count()) === 0);

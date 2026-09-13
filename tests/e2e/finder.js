@@ -7,7 +7,7 @@
 //   - 타입 여러 개가 `&` 가 아니라 `,` 로 이어지는가 — `&` 로 이으면 "둘 다인 것" 이 되어 거의 안 걸린다
 //   - 고른 것이 새로고침 뒤에도 남는가 — 검색식은 만들어 놓고 게임과 오가며 여러 번 쓴다
 //   - 로그인해야 열리는가 — 만든 검색식은 계정에 이어서 쓰는 개인 설정이다
-const { launch, newContext, ok, finish, suite } = require('./_lib');
+const { launch, newContext, waitSplash, ok, finish, suite } = require('./_lib');
 const BASE = 'http://localhost:5503/?mock=1';
 
 suite(async () => {
@@ -19,7 +19,7 @@ suite(async () => {
 
   const open = async () => {
     await page.goto(BASE + '#/finder', { waitUntil: 'domcontentloaded' });
-    await page.waitForSelector('#splash', { state: 'detached', timeout: 15000 }).catch(() => {});
+    await waitSplash(page);
     await page.waitForTimeout(300);
   };
   const out = () => page.locator('.finder__out').textContent();
@@ -113,7 +113,7 @@ suite(async () => {
     const guest = await newContext(browser, { locks: true, viewport: { width: 390, height: 844 } });   // v3.18.0 잠금은 임시로 열려 있다 — 여기서는 켠다
     const gp = await guest.newPage();
     await gp.goto('http://localhost:5503/#/finder', { waitUntil: 'domcontentloaded' });
-    await gp.waitForSelector('#splash', { state: 'detached', timeout: 15000 }).catch(() => {});
+    await waitSplash(gp);
     await gp.waitForTimeout(500);
     ok('로그인 안 하면 잠긴다', (await gp.locator('.finder').count()) === 0);
     ok('잠금 안내가 왜 막혔는지 말한다', /검색식/.test(await gp.locator('#page').textContent()));

@@ -8,7 +8,7 @@
 //   3) 비교가 눌린 티가 나는가 — v2.47.0 이전에는 안내문을 목록 **아래**(문서 3,000px 지점)에
 //      그려, 다른 종을 고른 사람에게는 "눌렀는데 아무 일도 안 일어난" 화면이었다.
 //      그래서 안내가 **뷰포트 안에** 있는지를 좌표로 확인한다 — 존재만 보면 이 버그를 다시 놓친다
-const { launch, newContext, ok, finish } = require('./_lib');
+const { launch, newContext, waitSplash, ok, finish } = require('./_lib');
 const BASE = 'http://localhost:5503/?mock=1';
 
 (async () => {
@@ -22,7 +22,7 @@ const BASE = 'http://localhost:5503/?mock=1';
 
   // ── 1. 메뉴는 한 줄 ────────────────────────────────────────────────────────
   await page.goto(BASE, { waitUntil: 'domcontentloaded' });
-  await page.waitForSelector('#splash', { state: 'detached', timeout: 15000 }).catch(() => {});
+  await waitSplash(page);
   await settle();
 
   const navLabels = await page.locator('.nav-menu .drawer__label').allTextContents();

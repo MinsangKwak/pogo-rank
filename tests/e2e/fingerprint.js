@@ -1,7 +1,7 @@
 'use strict';
 // 계산된 스타일 지문 — 클래스 이름만 바꾸는 리팩토링이 렌더 결과를 바꾸지 않았는지 확인한다.
 // 클래스 이름 자체는 지문에 넣지 않는다 (바뀌는 게 정상이므로). 대신 태그·순서·계산된 스타일만 본다.
-const { launch, newContext, suite } = require('./_lib');
+const { launch, newContext, waitSplash, suite } = require('./_lib');
 const fs = require('fs');
 const BASE = 'http://localhost:5503/';
 const tag = process.argv[2] || 'a';
@@ -38,7 +38,7 @@ suite(async () => {
     page.on('pageerror', (e) => errors.push(`${wname}: ${e}`));
     for (const [name, hash, action] of SCREENS) {
       await page.goto(BASE + '?mock=1' + hash, { waitUntil: 'domcontentloaded' });
-      await page.waitForSelector('#splash', { state: 'detached', timeout: 12000 }).catch(() => {});
+      await waitSplash(page);
       // 2026-09-12 v3.14.0 동의 배너는 _lib.newContext 가 미리 거부해 둔다 — 화면마다 없는 버튼을 1.5초씩
       // 기다리던 줄을 뺐다 (22화면 × 1.5초). 'consent' 화면은 맨 뒤라 전에도 배너 없이 찍혔다 — 지문은 그대로다
       await page.waitForTimeout(150);

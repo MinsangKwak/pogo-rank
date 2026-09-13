@@ -9,18 +9,22 @@
 
 ```js
 'use strict';
-const { launch, newContext, ok, finish, suite } = require('./_lib');
+const { launch, newContext, waitSplash, ok, finish, suite } = require('./_lib');
 const BASE = 'http://localhost:5503/?mock=1';
 suite(async () => {
   const browser = await launch();                                        // /opt/pw-browsers/chromium
   const ctx = await newContext(browser, { viewport: { width: 390, height: 844 } });  // 가입 권유 팝업 '본 적 있음' · 동의 배너 '거부' · 바깥 요청 차단
   const page = await ctx.newPage();
+  await page.goto(BASE + '#/dex', { waitUntil: 'domcontentloaded' });
+  await waitSplash(page);                                                // 스플래시가 걷힐 때까지 (최대 45초)
   // … ok('이름', 조건, 덧붙일 값)
   await finish(browser);                                                 // 합계 출력 + 종료 코드
 });
 ```
 
 - 동의 배너를 검사하는 스위트는 `newContext(browser, { banner: true, … })` — 배너가 그대로 뜬다.
+- 화면을 연 뒤에는 **반드시 `waitSplash(page)`** — 직접 `waitForSelector('#splash', …)` 를 적지 않는다 (v3.22.0). 한도가 15초이던 시절, 일꾼 넷으로 돌리면 부하가 높을 때 첫 화면이 그 안에 안 떴고 `.catch` 가 실패를 삼켜 **매번 다른 스위트**가 헛 실패했다(단독 실행은 늘 통과).
+- 화면이 그려지길 기다릴 때 `waitForTimeout(500)` 같은 **고정 대기를 쓰지 않는다** — 재려는 것이 붙을 때까지 `waitForSelector` 로 기다린다. 같은 이유로 흔들린다.
 - 없는 버튼을 `click({ timeout }).catch()` 로 "혹시 있으면 누르기" 하지 않는다 — 없을 때마다 그 시간을 통째로 잃는다 (v3.14.0 에 그 줄 32개가 회귀 45초를 먹고 있었다).
 - 이름이 `_` 로 시작하는 파일은 스위트가 아니다 (`scripts/test.sh` 가 건너뛴다).
 
