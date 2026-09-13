@@ -775,6 +775,23 @@ python3 -m http.server 5503 --directory dist
 
 main → deploy 는 여기 넣지 않는다 — PR 과 실서비스 반영은 사람이 결정하는 단계다.
 
+### 빌드 속도 · 첫 화면 성능 감사 (v3.23.0)
+
+**"빌드가 왜 느린지" 를 재 보니 빌드가 아니었다.** 로컬 `scripts/build.sh` 전체가 8초(fetch 3.1 · pve_build 1.5 · 나머지 <1초), `backend/build.py` 단독 0.4초, CI `Build site` 단계 6초(작업 전체 28초)다. 한 판이 미리보기에 뜨기까지 길게 느껴지는 것은 GitHub Pages CDN 반영(수 분)이다. 그래서 빌드 대신 **사용자가 받는 첫 화면**을 봤다.
+
+| 발견 | 원인 | 처방 |
+| --- | --- | --- |
+| index.html 862KB 안에 번들 CSS 155KB 가 **두 번** | `frontend/index.html` 로딩 가림막 주석에 자리표 `__STYLES__` 가 글자 그대로 있어 `str.replace` 가 거기도 채움 (v2.52.0 부터 사흘) | 주석 문구 변경 + `render_index_html()` 이 자리표가 정확히 하나인지 `assert` + `hardening.js` 가 `── tokens.css ──` 표식 1개 확인 |
+| Google Fonts `Inter` 요청 (렌더 차단 CSS + woff2 4벌) | v3.6.0 도트 디자인 뒤로 어느 규칙도 `Inter` 를 안 부름 | 링크 · 프리커넥트 · CSP 출처 제거 |
+| Pretendard CSS 가 첫 그리기를 세움 | head 의 외부 `<link rel=stylesheet>` | `preload` + `onload` 승격 + `noscript` 사본 |
+
+잰 값(localhost · 5회 중앙값): index.html 862 → 706KB(gzip 224 → 199KB), PC load 305 → 266ms, 휴대폰 CPU×4 load 1119 → 983ms. 외부 요청은 로컬에서 안 재니 글꼴 쪽 이득은 그 위에 얹힌다.
+
+**재는 법** — 회귀와 같은 Chromium 으로 `performance.getEntriesByType('navigation'|'paint'|'longtask')` 를 읽는다. 바깥 요청은 끊고(`ctx.route(/^https?:\/\/(?!localhost)/, abort)`), 휴대폰은 CDP `Emulation.setCPUThrottlingRate 4`, 5회 중앙값. 한 번 잰 값은 부하에 따라 ±30% 흔들리므로 전·후를 **같은 방법으로 같은 자리에서** 잰다. 전 값은 `git stash` 로 작업 트리를 잠깐 물려 빌드해 얻는다 — `build.py` 가 `snapshot/` 을 건드리므로 `git checkout -- snapshot/` 을 먼저.
+
+**보고 넘긴 것** — `data.js` 1.36MB(gzip 209KB)는 `SHEET_DATA` 의 `null` 30KB 를 빼도 gzip 0.9KB 차이라 두었다. 화면별 분할은 전역 이름을 지키며 가능하지만 큰 손질이라 다음으로. 긴 작업(50ms+) 0개 · DOM 1,765 노드 · 스플래시는 load 뒤 ~140ms 에 걷힌다.
+
+
 ### 편집기 설정 (`.vscode/`)
 
 주 작업 환경이 GitHub Codespaces라 세션을 새로 열 때마다 편집기 설정이 초기화됩니다. 그래서 설정을 저장소에 함께 커밋해 코드 컨벤션이 사람·기기와 무관하게 유지되도록 했습니다.

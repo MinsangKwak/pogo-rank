@@ -15,6 +15,16 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 const RELEASE_NOTES_EN = {
+  '2026-09-13 · v3.23.0': [
+    '**A lighter first screen** — the same 155KB of styles was shipped twice (a slip from reworking the loading screen three days ago). It ships once now: first-screen size 842 → 690KB.',
+    '**No more unused web font** — since the pixel redesign nothing used Inter, yet every visit fetched one request plus four font files.',
+    '**The Korean font no longer holds up rendering** — the first paint used to wait for the font CSS to arrive. It paints first and swaps the font in when it lands.',
+  ],
+  '2026-09-13 · v3.22.1': [
+    '**The home screen is now one dashboard** — three quick links (Pokédex · Events · Raid bosses) next to the greeting, the three ranking blocks below, then the feature tiles in three columns. It fits one wide screen, and stacks in the same order on phones.',
+    '**Each ranking leads with its #1 as a large sprite** — the first card in every block stands at 160px, with #2 and #3 as rows beneath. A colored top edge tells D-MAX, Raids and Useful-all-around apart.',
+    '**Feature tiles became rows inside three cards** — What now · Who to bring · Who to raise, each card listing its screens. The grouping reads first, where nine loose tiles used to.',
+  ],
   '2026-09-13 · v3.22.0': [
     '**Three rankings at once on the home screen** — the D-MAX tier list, raid attackers and \u0027useful all around\u0027, top 3 each, nine cards in all. Only the last one used to be here, so "what is strong in raids right now" meant opening another screen.',
     '**Cards lead with the artwork** — rank, name and a one-line reason (tier and Max Move type · DPS and TDO · how many places it is used). Tap a card for the full details, or [See all] in a block header for that ranking.',
