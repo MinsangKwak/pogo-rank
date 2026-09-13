@@ -631,7 +631,7 @@ const I18N_EN = {
   '움직이는 그림': 'Animated sprites',
   '켜기': 'On',
   '끄기': 'Off',
-  '포켓몬이 움직여요. 그림을 더 받아서 데이터를 조금 더 써요.': 'Pokémon animate. Uses a little more data for the extra images.',
+  '포켓몬이 움직여요. 움직이는 그림이 없는 종은 살짝 흔들려요. 그림을 더 받아서 데이터를 조금 더 써요.': 'Pokémon animate; species without an animated sprite bob gently. Uses a little more data for the extra images.',
   '정지 그림만 써요. 느린 회선이나 데이터를 아낄 때.': 'Still images only — for slow connections or saving data.',
   '바꾸면 다음에 여는 화면부터 적용돼요. 기기의 "동작 줄이기" 설정이 켜져 있으면 늘 정지 그림이에요.': 'Applies from the next screen you open. If your device has "reduce motion" on, images stay still.',
   '기기 설정': 'System',

@@ -26,7 +26,8 @@ Pokémon 및 관련 명칭·캐릭터·이미지의 권리는 **The Pokémon Com
 | [PvPoke](https://github.com/pvpoke/pvpoke) | PvP 순위·점수·추천 기술, 출시 여부 | MIT | 파생 데이터에 출처 표기 |
 | [PokeMiners game_masters](https://github.com/PokeMiners/game_masters) | 종족값·기술·상성·CPM·다이맥스 매핑 | 명시 라이선스 없음 (게임 추출 데이터) | 원본(`gm.json`·`pm.json`)은 **배포물(dist)에 포함하지 않음**. 가공 결과만 `data.js` 로 배포 |
 | [PokeAPI](https://github.com/PokeAPI/pokeapi) | 한글 종·기술 이름, 폼 인덱스 | BSD-3-Clause (코드) / 데이터는 fair use 고지 | CSV 원본 미배포, 이름만 사용 |
-| [PokeAPI sprites](https://github.com/PokeAPI/sprites) | 96×96 도트 스프라이트 | 이미지 자체는 권리자 소유, 저장소 라이선스 없음 | 서비스용 축소본(96px, 평균 1KB)만 배포. 원본 고해상도 이미지 미포함 |
+| [PokeAPI sprites](https://github.com/PokeAPI/sprites) | 96×96 도트 스프라이트 · B/W 애니메이션 GIF | 이미지 자체는 권리자 소유, 저장소 라이선스 없음 | 서비스용 축소본(96px, 평균 1KB)만 배포. 원본 고해상도 이미지 미포함 |
+| [Pokémon Showdown sprites](https://play.pokemonshowdown.com/sprites/) | PokeAPI 에 없는 종의 애니메이션 GIF (6~8세대·메가·리전 폼) | 팬 제작 스프라이트, 이미지 속 캐릭터의 권리는 권리자 소유 | 표시용으로만 사용. 서비스 안에서 판매·재배포하지 않음 |
 | [ScrapedDuck](https://github.com/bigfoott/ScrapedDuck) (LeekDuck) | 레이드 보스·알 부화 풀·이벤트 일정 | MIT (스크랩 결과) | 빌드가 자동 수집(`backend/gameday_build.py`) — 레이드·알 화면에 반영, 이벤트 일정표는 여전히 수동. 화면 하단에 출처 표기 |
 | hawaii 레이드 성능표 (구글 시트) | 속성별 레이드 DPS·TDO 평가 | 개인 공개 문서, 별도 라이선스 없음 | 출처 표기. 작성자 허락 확인 절차 진행 중 — 거절 시 해당 열 제거 |
 | [Bulbapedia](https://bulbapedia.bulbagarden.net/) | 다이맥스·거다이맥스 출시 목록 | CC BY-NC-SA 2.5 | 목록 사실만 사용, 문장 인용 없음 |

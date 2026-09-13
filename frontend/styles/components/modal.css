@@ -45,7 +45,9 @@ dialog.modal::backdrop { background: transparent; }
     repeating-radial-gradient(circle at 50% 50%, color-mix(in srgb, var(--fg) 7%, transparent) 0 0.2rem, transparent 0.2rem 2rem),
     var(--surface);
 }
-.sprite-box .sprite { width: 8rem; height: 8rem; }
+/* 2026-09-13 v3.19.1 그림을 조금 줄이고 아래로 내린다 — 움직이는 그림(v3.18.0 기본)은 정지본보다 위까지 차서
+   왼쪽 위 타입 배지가 머리를 가렸다. 위쪽에 배지 자리를 비워 둔다 */
+.sprite-box .sprite { width: 7.2rem; height: 7.2rem; margin-top: 0.9rem; }
 /* 2026-09-06 v2.11.0 폼별 그림 테두리 — 메가·맥스는 뱃지와 같은 색, 은은한 바깥 광택 */
 .sprite-box.sprite-box--max { border: 0.2rem solid var(--c-max); box-shadow: 0 0 0 0.3rem color-mix(in srgb, var(--c-max) 22%, transparent); }
 .sprite-box.sprite-box--mega { border: 0.2rem solid var(--c-mega); box-shadow: 0 0 0 0.3rem color-mix(in srgb, var(--c-mega) 22%, transparent); }
@@ -62,7 +64,8 @@ dialog.modal::backdrop { background: transparent; }
    그림 색이 다양해 늘 또렷하도록 그림자를 준다.
    2026-09-12 v3.8.1 여러 타입일 때 세로로 쌓던 것을 **가로 한 줄**로. 세로로 쌓으면 배지 둘이
    그림 왼쪽을 위에서 아래까지 덮어 포켓몬이 가렸다 — 가로로 두면 그림 위쪽 빈 자리만 스친다 */
-.detail__types { position: absolute; top: -0.6rem; left: -0.6rem; display: flex; align-items: flex-start; gap: 0.3rem; z-index: 1; }
+/* 2026-09-13 v3.19.1 배지를 더 위로 — 상자 위 모서리에 걸치되 그림과는 겹치지 않게 */
+.detail__types { position: absolute; top: -1rem; left: -0.6rem; display: flex; align-items: flex-start; gap: 0.3rem; z-index: 1; }
 .detail__types .detail__type-pill { white-space: nowrap; }
 .detail__type-pill { display: inline-flex; align-items: center; padding: 0.2rem 0.9rem; border-radius: 99.9rem; font-size: 1.05rem; font-weight: 700; color: #fff;
   text-shadow: 0 1px 0.2rem rgba(0,0,0,.35); background: var(--c, var(--muted)); box-shadow: 0 1px 0.4rem rgba(0,0,0,.35); }
