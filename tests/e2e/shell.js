@@ -4,7 +4,7 @@
 //
 // 스크롤 잠금이 남는 버그는 재현 경로가 다양해서(브라우저가 dialog 를 직접 닫는 경우 등)
 // "여는 방법 × 닫는 방법" 을 조합으로 훑는다. 하나라도 잠금이 남으면 그 화면은 영영 못 움직인다.
-const { launch, newContext, ok, finish, suite } = require('./_lib');
+const { launch, newContext, waitSplash, ok, finish, suite } = require('./_lib');
 const BASE = 'http://localhost:5503/?mock=1';
 
 suite(async () => {
@@ -25,7 +25,7 @@ suite(async () => {
 
     const go = async (hash = '') => {
       await page.goto(BASE + hash, { waitUntil: 'domcontentloaded' });
-      await page.waitForSelector('#splash', { state: 'detached', timeout: 15000 }).catch(() => {});
+      await waitSplash(page);
       await page.waitForTimeout(350);
     };
     // 실제로 굴려 본다 — style 만 보면 다른 원인(가로 넘침·덮개)을 놓친다
@@ -249,7 +249,7 @@ suite(async () => {
     const errs = [];
     page.on('pageerror', (e) => errs.push(String(e)));
     await page.goto(BASE + '#/dex', { waitUntil: 'domcontentloaded' });
-    await page.waitForSelector('#splash', { state: 'detached', timeout: 15000 }).catch(() => {});
+    await waitSplash(page);
     await page.waitForTimeout(500);
     const menuState = () => page.evaluate(() => ({
       note: !!document.querySelector('.drawer__panel #note-acc'),

@@ -10,7 +10,7 @@
 //   - 포획 CP · CP 계산기 행이 여전히 열리고 닫히는가 (모양만 바뀌고 동작은 그대로)
 //   - 공유를 누르면 "복사됨" 으로 바뀌어도 원 밖으로 글자가 새지 않는가
 //   - 메가 폼처럼 색 테두리가 있는 그림도 새 배경(동심원)·폼 라벨 줄과 같이 깨지지 않는가
-const { launch, newContext, ok, finish, suite } = require('./_lib');
+const { launch, newContext, waitSplash, ok, finish, suite } = require('./_lib');
 const BASE = 'http://localhost:5503/?mock=1';
 
 suite(async () => {
@@ -23,7 +23,7 @@ suite(async () => {
 
   const go = async (hash) => {
     await page.goto(BASE + hash, { waitUntil: 'domcontentloaded' });
-    await page.waitForSelector('#splash', { state: 'detached', timeout: 15000 }).catch(() => {});
+    await waitSplash(page);
     await page.waitForTimeout(500);
   };
 

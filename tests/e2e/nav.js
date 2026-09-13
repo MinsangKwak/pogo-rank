@@ -1,6 +1,6 @@
 'use strict';
 // v2.22.0 디자인 통일 검증 — 토큰·글꼴 복구 · 탭 줄 · 헤더 아이콘 · 팝업/검색 시트 · 홈
-const { launch, newContext, suite } = require('./_lib');
+const { launch, newContext, waitSplash, suite } = require('./_lib');
 const BASE = 'http://localhost:5503/';
 const results = [];
 const ok = (name, cond, extra = '') => results.push([cond ? 'PASS' : 'FAIL', name, extra]);
@@ -13,7 +13,7 @@ suite(async () => {
   const errors = [];
   page.on('pageerror', (e) => errors.push(String(e)));
   const settle = async () => {
-    await page.waitForSelector('#splash', { state: 'detached', timeout: 15000 }).catch(() => {});
+    await waitSplash(page);
     // 2026-09-12 v3.14.0 동의 배너는 _lib.newContext 가 미리 거부해 둔다 (v2.57.0 에는 여기서 눌러 껐고,
     // 그 클릭이 선택자 오류로 30초씩 기다린 적이 있다 — 없어도 되는 클릭은 이제 아예 하지 않는다)
     await page.waitForTimeout(250);
@@ -449,7 +449,7 @@ suite(async () => {
   await dark.route(/fonts\.googleapis|fonts\.gstatic|cdn\.jsdelivr/, (r) => r.abort());
   const dp = await dark.newPage();
   await dp.goto(BASE + '?mock=1', { waitUntil: 'domcontentloaded' });
-  await dp.waitForSelector('#splash', { state: 'detached', timeout: 15000 }).catch(() => {});
+  await waitSplash(dp);
   const dtok = await dp.evaluate(() => {
     const cs = getComputedStyle(document.documentElement);
     return { bg: cs.getPropertyValue('--bg').trim(), accent: cs.getPropertyValue('--accent').trim() };

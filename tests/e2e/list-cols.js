@@ -9,7 +9,7 @@
 //   - 좁은 칸에서 줄이 넘치지 않는가 (도감 줄은 조각이 많아 그대로 두면 이름이 세로로 쪼개졌다)
 //   - 상세 패널이 열리면 열이 줄어드는가 (본문이 패널 폭만큼 좁아진다)
 //   - 좁은 화면(<1100px)의 티어표는 v2.53.0 결정대로 한 줄에 하나인가
-const { launch, newContext, ok, finish, suite } = require('./_lib');
+const { launch, newContext, waitSplash, ok, finish, suite } = require('./_lib');
 const BASE = 'http://localhost:5503/?mock=1';
 
 // 폭 하나 · 화면 하나를 새 컨텍스트로 열어 재고 닫는다.
@@ -24,7 +24,7 @@ async function measure(browser, { width, hash, selector, storeKey, mode, openDet
   const errs = [];
   page.on('pageerror', (e) => errs.push(String(e)));
   await page.goto(BASE + hash, { waitUntil: 'domcontentloaded' });
-  await page.waitForSelector('#splash', { state: 'detached', timeout: 15000 }).catch(() => {});
+  await waitSplash(page);
   // 고정 대기는 병렬로 돌 때 모자란다 — 재려는 목록이 실제로 붙을 때까지 기다린다
   await page.waitForSelector(selector, { timeout: 15000 }).catch(() => {});
   await page.waitForTimeout(300);

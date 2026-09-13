@@ -15,6 +15,16 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 const RELEASE_NOTES_EN = {
+  '2026-09-13 · v3.22.0': [
+    '**Three rankings at once on the home screen** — the D-MAX tier list, raid attackers and \u0027useful all around\u0027, top 3 each, nine cards in all. Only the last one used to be here, so "what is strong in raids right now" meant opening another screen.',
+    '**Cards lead with the artwork** — rank, name and a one-line reason (tier and Max Move type · DPS and TDO · how many places it is used). Tap a card for the full details, or [See all] in a block header for that ranking.',
+    '**On wide screens the three blocks stand side by side** — easy to compare. On phones they stack, with three cards across each.',
+  ],
+  '2026-09-13 · v3.21.0': [
+    '**\u0027Useful all around\u0027 now sits at the top of the home screen** — it used to come after all nine feature tiles, so answering "what should I raise" meant scrolling past them. It is right under the greeting now.',
+    '**Each row reads in two lines** — the name first, where it is used underneath, and a [N places] badge on the right. Packed into one line, the tail used to wrap at random on narrow screens. Wide screens get two columns.',
+    '**The feature tiles are grouped in three** — What now · Who to bring · Who to raise, in the same order as the \u2630 menu. The 01~09 numbers are gone; they implied an order that was never there.',
+  ],
   '2026-09-13 · v3.20.0': [
     '**Animated sprites keep their original scale** — stretching every sprite to fill its box blew small Pokémon up more than 3× and left sizes all over the place. They now scale up **at most 2×**, so Bulbasaur reads smaller than Venusaur and the pixels stay crisp.',
     '**Large sprites still shrink to fit** — scaling down is smoothed, scaling up keeps the pixels sharp.',

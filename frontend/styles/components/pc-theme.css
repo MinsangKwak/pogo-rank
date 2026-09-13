@@ -116,23 +116,24 @@
   .home__intro > * { position: relative; z-index: 1; }
   .home__eyebrow { color: var(--brand); letter-spacing: .2em; font-size: 1.1rem; }
   .home__intro h2 { margin-top: 1.4rem; font-size: 3.8rem; font-weight: 700; letter-spacing: -0.03em; line-height: 1.3; }
-  .home__intro p { margin-top: 1.4rem; max-width: 30em; font-size: var(--fs-lead); color: var(--muted); }
 
   .home__section { border-top: 0; padding: 3.4rem 0 1.4rem; }
   .home__section h3 { font-size: var(--fs-sec); font-weight: 700; letter-spacing: -0.01em; }
   .home__section > span { font-size: var(--fs-sub); letter-spacing: 0; font-weight: 500; }
+  /* 2026-09-13 v3.21.0 갈래 소제목 */
+  .home__group { margin: 2.4rem 0 1rem; font-size: var(--fs-sub); font-weight: 600; letter-spacing: .04em; }
+  .home__group:first-of-type { margin-top: 0.6rem; }
 
-  /* 타일 — 목업의 5열. 번호는 오른쪽 위, 화살표는 오른쪽 아래 동그란 버튼 */
-  .home__grid { grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 1.4rem; }
+  /* 타일 — 2026-09-13 v3.21.0 다섯 열에서 네 열로. 갈래가 3·4·2마리라 다섯 열에서는 한 줄도 안 찼다.
+     네 열이면 갈래 하나가 딱 한 줄이다. 화살표는 오른쪽 아래 동그란 버튼 */
+  .home__grid { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1.4rem; }
   .home__tile { min-height: 16.8rem; padding: 1.8rem 1.8rem 2rem; }
   .home__tile:hover {
     border-color: color-mix(in srgb, var(--brand) 50%, var(--line));
     background: var(--surface);
     box-shadow: 0 0.6rem 2rem -1.2rem color-mix(in srgb, var(--brand) 60%, transparent);
   }
-  .home__tile-top { margin-bottom: auto; }
-  .home__icon { font-size: 2.4rem; }
-  .home__number { font-size: var(--fs-sub); }
+  .home__icon { margin-bottom: auto; font-size: 2.4rem; }
   .home__tile strong { margin-top: 1.4rem; font-size: var(--fs-lead); font-weight: 700; }
   .home__desc { margin-top: 0.6rem; padding-right: 4.2rem; font-size: var(--fs-sub); }
   .home__arrow {
@@ -141,6 +142,41 @@
     border-radius: 50%; border: 1px solid var(--line); background: var(--bg); font-size: 1.3rem;
   }
   .home__tile:hover .home__arrow { border-color: var(--brand); color: var(--brand); }
+
+  /* 2026-09-13 v3.22.0 홈 순위 — 넓은 화면에서는 덩이 셋을 **옆으로** 세운다.
+     좁은 화면은 덩이가 쌓이고 카드가 가로로 셋이지만, 넓은 화면에서 그 모양을 그대로 늘리면
+     카드 하나가 370px 로 부풀어 그림만 큰 빈 상자가 되고 구역 높이가 900px 을 넘는다.
+     덩이를 옆으로 세우면 화면이 3×3 격자가 되고 세 표를 한눈에 견주게 된다 —
+     대신 칸이 좁아지니 카드를 [그림][이름/근거] 가로 줄로 눕힌다 */
+  .home__picks { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0 2.4rem; align-items: start; margin-top: 2.4rem; }
+  .home__picks > .home__section,
+  .home__picks > .pick__foot { grid-column: 1 / -1; }
+  .pick__group + .pick__group { margin-top: 0; }
+
+  /* 머리는 두 줄 고정 — [표 이름 ...... 전체 보기] / [무엇으로 줄 세웠나].
+     hint 를 제 줄로 내리고 높이를 잡아 두면 덩이 셋의 첫 카드가 같은 높이에서 시작한다 */
+  .pick__head { margin-bottom: 1.2rem; padding-bottom: 0; }
+  .pick__head h4 { font-size: var(--fs-sub); font-weight: 700; }
+  .pick__hint { flex: 1 1 100%; order: 3; min-height: 1.8rem; font-size: 1.2rem; }
+  .pick__all { margin-left: auto; font-size: 1.2rem; }
+
+  .pick__grid { grid-template-columns: minmax(0, 1fr); gap: 0.8rem; }
+  .pick__card {
+    flex-direction: row; align-items: center; gap: 1.2rem;
+    padding: 1rem 1.4rem 1rem 1rem; border-radius: 1.2rem; text-align: left;
+  }
+  .pick__card:hover {
+    border-color: color-mix(in srgb, var(--brand) 50%, var(--line));
+    background: var(--surface);
+    box-shadow: 0 0.6rem 2rem -1.2rem color-mix(in srgb, var(--brand) 60%, transparent);
+  }
+  .pick__art { flex: none; width: auto; }
+  .pick__art .sprite { max-width: none; width: 5.6rem; height: 5.6rem; margin: 0; }
+  .pick__body { display: flex; flex-direction: column; gap: 0.2rem; min-width: 0; }
+  .pick__name { font-size: var(--fs-body); }
+  .pick__name .form-tag { margin: 0 0.3rem 0 0; }
+  .pick__meta { font-size: 1.2rem; }
+  .pick__foot { padding-top: 2rem; font-size: var(--fs-sub); }
 
   /* 홈 푸터 — 목업의 카드 한 장 */
   body[data-home="true"] footer {
