@@ -44,6 +44,37 @@ function spriteSrc(spriteId) {
 // 부르는 쪽이 지금까지처럼 정지 png 를 쓴다
 let _spriteAnimIds = null;
 const SPRITE_ANIM_KEY = 'pogo_sprite_anim';   // 'off' 면 정지본만. 없으면 켬
+// 2026-09-13 v3.20.0 움직이는 그림은 출처가 둘이라 원본 크기가 제각각이다 — 23×19 부터 201×166 까지.
+// 상자에 맞추기만 하면 작은 종이 3배 넘게 늘어나 뭉개지고, 종끼리 크기가 뒤죽박죽이었다.
+// 도트 그림은 **정수배**로 키울 때만 선명하므로 2배를 한도로 두고, 남는 자리는 padding 으로 비운다
+// (img 크기를 직접 줄이면 목록 줄 높이가 그림마다 달라진다 — border-box + padding 이라 자리는 그대로다)
+//
+// 상자 크기는 화면마다 다르고(줄 42px · 카드 128px · 상세 72px) 보기 전환으로 바뀌므로, 한 번 계산하고 끝내지 않고
+// ResizeObserver 로 상자가 바뀔 때마다 다시 맞춘다 — padding 을 바꿔도 border-box 크기는 그대로라 저를 다시 부르지 않는다
+const SPRITE_MAX_ZOOM = 2;
+const animZoomWatch = typeof ResizeObserver === 'function'
+  ? new ResizeObserver((entries) => { for (const entry of entries) fitAnimZoom(entry.target); })
+  : null;
+
+function fitAnimZoom(image) {
+  const natural = Math.max(Number(image.dataset.animW) || 0, Number(image.dataset.animH) || 0);
+  if (!natural) return;
+  // 화면이 원래 주던 여백(티어표 카드·비교 카드의 0.8rem)은 지키고 그 위에 한도를 얹는다 —
+  // 처음 한 번 인라인 padding 을 비워 CSS 값을 읽어 둔다
+  if (image.dataset.animPad === undefined) {
+    image.style.padding = '';
+    image.dataset.animPad = String(parseFloat(getComputedStyle(image).paddingTop) || 0);
+  }
+  const base = Number(image.dataset.animPad);
+  const box = Math.min(image.clientWidth, image.clientHeight);   // border-box 라 padding 을 포함한 상자 크기
+  if (!box) return;
+  const room = Math.max(0, box - base * 2);
+  const want = Math.min(natural * SPRITE_MAX_ZOOM, room);
+  image.style.padding = `${Math.max(base, Math.round((box - want) / 2))}px`;
+  // 줄일 때는 부드럽게, 키울 때는 도트 그대로 — 도트를 줄이면 계단이 지고(v2.7.2 sprite--hd 와 같은 이유),
+  // 정수배로 키우면 오히려 또렷하다
+  image.style.imageRendering = natural > room ? 'auto' : '';
+}
 function spriteAnimEnabled() {
   try { return localStorage.getItem(SPRITE_ANIM_KEY) !== 'off'; } catch { return true; }
 }
@@ -71,6 +102,10 @@ function spriteAnimate(image, spriteId) {
   loader.onload = () => {
     image.src = animUrl;
     image.classList.add('sprite--anim');
+    image.dataset.animW = String(loader.naturalWidth);
+    image.dataset.animH = String(loader.naturalHeight);
+    fitAnimZoom(image);
+    animZoomWatch?.observe(image, { box: 'border-box' });
   };
   loader.src = animUrl;
   return image;
