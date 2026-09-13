@@ -15,6 +15,10 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 const RELEASE_NOTES_EN = {
+  '2026-09-13 · v3.20.0': [
+    '**Animated sprites keep their original scale** — stretching every sprite to fill its box blew small Pokémon up more than 3× and left sizes all over the place. They now scale up **at most 2×**, so Bulbasaur reads smaller than Venusaur and the pixels stay crisp.',
+    '**Large sprites still shrink to fit** — scaling down is smoothed, scaling up keeps the pixels sharp.',
+  ],
   '2026-09-13 · v3.19.1': [
     '**Type badges no longer cover the sprite on the detail screen** — animated sprites reach higher than the still ones, so the top-left badges overlapped the head. The sprite is a bit smaller and sits lower; the badges moved up.',
   ],
