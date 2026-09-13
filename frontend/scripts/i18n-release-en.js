@@ -15,6 +15,9 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 const RELEASE_NOTES_EN = {
+  '2026-09-13 · v3.19.1': [
+    '**Type badges no longer cover the sprite on the detail screen** — animated sprites reach higher than the still ones, so the top-left badges overlapped the head. The sprite is a bit smaller and sits lower; the badges moved up.',
+  ],
   '2026-09-12 · v3.19.0': [
     '**Almost every Pokémon animates now** — only 949 species had animated sprites, so Gen 6+ and Mega/regional forms stood still. A second source (Pokémon Showdown) brings it to 1,151.',
     '**The 21 without one bob gently** — Gen 9 species like Ogerpon and Pecharunt have no public animation yet, so their still image breathes instead. Turning animated sprites off in Settings stops this too.',

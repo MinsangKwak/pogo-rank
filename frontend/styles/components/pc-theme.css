@@ -448,7 +448,7 @@
   /* 그림을 티어표·도감 카드와 같은 발광 판 위로. 타입 배지는 지금처럼 판 왼쪽 위 모서리에
      겹쳐 둔다 — 회귀 검사(tests/e2e/detail.js)가 그 자리를 지킨다 */
   .detail__head .sprite-box { width: 11.6rem; height: 11.6rem; border-radius: 50%; }
-  .detail__head .sprite-box .sprite { width: 8.4rem; height: 8.4rem; }
+  .detail__head .sprite-box .sprite { width: 7.8rem; height: 7.8rem; margin-top: 1rem; }   /* v3.19.1 배지 자리를 위에 비운다 */
   .detail__head .sprite-box:not(.sprite-box--mega):not(.sprite-box--max):not(.sprite-box--shadow) {
     border-color: color-mix(in srgb, var(--brand) 26%, var(--line));
     background-image:

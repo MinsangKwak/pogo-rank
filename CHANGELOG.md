@@ -1,6 +1,6 @@
 # 변경 이력
 
-**버전을 눌러 펼쳐 보세요.** 121개 판이 쌓여 한눈에 훑기 어려워, 각 버전을 접어 두었습니다.
+**버전을 눌러 펼쳐 보세요.** 122개 판이 쌓여 한눈에 훑기 어려워, 각 버전을 접어 두었습니다.
 
 각 줄은 `버전 — 날짜 · 그 판에서 한 일` 순서입니다. 최신이 위로 옵니다.
 형식은 [Keep a Changelog](https://keepachangelog.com/ko/1.1.0/)를 따릅니다.
@@ -11,6 +11,13 @@
 > 사용자가 읽는 패치노트는 서비스 안 [🎉 패치노트](https://minsangkwak.github.io/pogo-rank/#/release) 화면에 있습니다(영문판 포함).
 > 이 파일은 **왜 그렇게 고쳤는지**까지 남기는 개발 기록이라 더 깁니다.
 
+
+<details open>
+<summary><b>v3.19.1</b> — 2026-09-13 · <code>수정</code> 상세 그림이 타입 배지를 가리지 않게</summary>
+
+움직이는 GIF(v3.18.0 기본)는 `object-position: center bottom` 이라 정지 png 보다 상자 위까지 찬다 — 왼쪽 위 타입 배지(`.detail__types`)가 포켓몬 머리를 덮었다(라프라스에서 제보). 그림을 조금 줄여 아래로 내리고(`.sprite-box .sprite` 8 → 7.2rem, `margin-top 0.9rem`; PC 8.4 → 7.8rem, 1rem) 배지를 위로 올렸다(`top -0.6 → -1rem`). 상자 위쪽 한 줄이 배지 자리가 된다. 390 · 1440 폭에서 스크린샷으로 확인.
+
+</details>
 
 <details open>
 <summary><b>v3.19.0</b> — 2026-09-12 · <code>추가</code> 움직이는 그림 949 → 1,151종 · 없는 종은 CSS 로 흔든다</summary>
