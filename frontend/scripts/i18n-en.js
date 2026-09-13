@@ -579,6 +579,9 @@ const I18N_EN = {
   '🏆 두루 쓰이는 포켓몬': '🏆 Useful all around',
   // 2026-09-13 v3.22.0 홈 순위 세 덩이 (components/home.js HOME_PICKS)
   '지금 강한 포켓몬': 'Strong right now',
+  // 2026-09-13 v3.24.0 PvP/PvE 알약 · 육각형 점수 축 (components/pages.js dexUseNode · detail.js hexNode)
+  'PvP 는 리그 점수 상위 2개 평균, PvE 는 가장 잘 통하는 보스 3종 대비 비율 평균 (0~100, 가성비 화면과 같은 기준)': 'PvP = average of the top two league scores; PvE = average ratio to the best attacker for its three best boss types (0–100, same basis as the Value screen)',
+  '종족값 320 · CP 5,500 기준 비율. 레이드/PvP 는 가성비와 같은 0~100 점수 (레이드 = 가장 잘 통하는 보스 3종 평균, PvP = 리그 상위 2개 평균)': 'Ratios against base stat 320 and CP 5,500. Raid/PvP are 0–100 scores on the Value basis (Raid = average of its three best boss types, PvP = average of its top two leagues)',
   // 2026-09-13 v3.22.1 홈 대시보드 인사·바로가기 (components/home.js renderServiceHome)
   '다음 모험의': 'Find the star of',
   '주인공을 찾아요.': 'your next adventure.',

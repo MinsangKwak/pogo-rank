@@ -145,6 +145,18 @@ function dexEntries() {
 // 빈 칸을 남겨 두면 "없는 것"과 "0" 이 같아 보인다
 // 2026-09-12 v3.9.0 spriteId 를 따로 받는다 — 검색 결과에는 메가·리전 폼이 섞인다.
 // 세대는 원종 도감번호로 정하고(폼 id 는 10000 번대라 구간에 안 맞는다), CP 는 그 폼의 종족값으로 낸다
+// 2026-09-13 v3.24.0 이 포켓몬이 어디서 쓰이는가 — [PvP 89] [PvE 59] 두 알약. 높은 쪽이 진하다(.is-lead).
+// 검색해서 들어온 사람의 첫 물음이 "이거 PvP 용이야 레이드 용이야" 인데 줄에는 세대·CP 만 있었다.
+// 값은 VALUE_DATA.meter (가성비와 같은 0~100 산식, components/detail.js usageMeterOf). 둘 다 없으면 칸을 안 만든다
+function dexUseNode(name) {
+  const meter = typeof usageMeterOf === 'function' ? usageMeterOf(name) : null;
+  if (!meter) return '';
+  const lead = meter.pvp === meter.pve ? '' : meter.pvp > meter.pve ? 'pvp' : 'pve';
+  // 값은 <b> 가 아니라 <span> — 회귀·CSS 가 '.dex__row b' 를 "이름" 으로 읽는다 (tests/e2e/i18n.js · pages.css)
+  const pill = (key, label, value) => el('span', { class: `dex__use-pill${lead === key ? ' is-lead' : ''}${value ? '' : ' is-none'}` }, el('em', {}, label), el('span', { class: 'dex__use-val' }, value ? String(value) : '-'));
+  return el('span', { class: 'dex__use', title: 'PvP 는 리그 점수 상위 2개 평균, PvE 는 가장 잘 통하는 보스 3종 대비 비율 평균 (0~100, 가성비 화면과 같은 기준)' },
+    pill('pvp', 'PvP', meter.pvp), pill('pve', 'PvE', meter.pve));
+}
 function dexRowStats(dexNumber, spriteId = dexNumber) {
   const genIndex = DEX_GENS.findIndex(([genStart, genEnd]) => dexNumber >= genStart && dexNumber <= genEnd);
   const form = DEX_DATA.forms?.[spriteId] ?? DEX_DATA.forms?.[dexNumber];
@@ -232,7 +244,9 @@ function renderDexPage() {
         el('span', { class: 'dex__no' }, entry.dex != null ? `#${String(entry.dex).padStart(4, '0')}` : ''),
         sprite(entry.sprite),
         entry.unrel ? el('span', { class: 'tag dex__unrel' }, '미구현') : '',
-        el('b', {}, entry.name),
+        // 2026-09-13 v3.24.0 이름과 PvP/PvE 알약을 한 칸(.dex__name)에 — 자리가 있으면 한 줄, 없으면 알약이 이름 아래로 접힌다.
+        // 알약을 이름 옆 형제로 두면 좁은 줄(PC 3열 줄 모드)에서 이름이 0 으로 줄어 글자 위에 알약이 겹쳤다
+        el('span', { class: 'dex__name' }, el('b', {}, entry.name), dexUseNode(entry.name)),
         // 2026-09-10 v2.42.0 점 대신 이름이 적힌 알약 — 점만으로는 색을 외운 사람만 읽을 수 있었다.
         // 좁은 화면은 자리가 없어 지금처럼 점으로 둔다(CSS 가 글자를 감춘다, components/pc-theme.css)
         // 2026-09-10 v2.46.0 줄 모드는 이름과 타입 사이가 텅 비어 있었다 — 목업(내 포켓몬 목록)처럼
