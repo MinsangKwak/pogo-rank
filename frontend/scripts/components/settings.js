@@ -31,7 +31,7 @@ const SETTINGS_THEME = {
 
 // 2026-09-12 v3.18.0 움직이는 그림 — 기본 켬. 끄면 다음에 그리는 화면부터 정지본 (components/sprite.js)
 const SETTINGS_ANIM = [
-  ['on', '켜기', '포켓몬이 움직여요. 그림을 더 받아서 데이터를 조금 더 써요.'],
+  ['on', '켜기', '포켓몬이 움직여요. 움직이는 그림이 없는 종은 살짝 흔들려요. 그림을 더 받아서 데이터를 조금 더 써요.'],
   ['off', '끄기', '정지 그림만 써요. 느린 회선이나 데이터를 아낄 때.'],
 ];
 
@@ -77,6 +77,7 @@ function renderSettingsPage() {
       onclick: () => {
         try { if (choice === 'on') localStorage.removeItem(SPRITE_ANIM_KEY); else localStorage.setItem(SPRITE_ANIM_KEY, 'off'); } catch {}
         track('sprite_anim_set', { to: choice });
+        if (typeof syncSpriteAnimClass === 'function') syncSpriteAnimClass();
         drawAnim();
       },
     },

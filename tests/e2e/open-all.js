@@ -57,6 +57,14 @@ suite(async () => {
   await page.waitForTimeout(600);
   ok('상세 그림도 움직인다', (await page.locator('#detail-panel .sprite-box img.sprite--anim').count()) === 1);
 
+  // 2026-09-12 v3.19.0 움직이는 그림이 없는 종(오거폰 · 9세대)은 CSS 로 살짝 흔든다
+  await go('#/dex?q=%EC%98%A4%EA%B1%B0%ED%8F%B0');
+  await page.waitForTimeout(800);
+  const idle = await page.evaluate(() => {
+    const img = document.querySelector('#page .dex__row img.sprite');
+    return img ? { anim: img.classList.contains('sprite--anim'), name: getComputedStyle(img).animationName } : null;
+  });
+  ok('GIF 없는 종은 CSS 로 흔든다 (sprite-idle)', idle && !idle.anim && idle.name === 'sprite-idle', JSON.stringify(idle));
   // 설정에서 끄기 → 다음 화면부터 정지본
   await go('#/settings');
   ok('설정에 움직이는 그림 줄 (기본 켜기)', await page.evaluate(() => document.querySelector('[aria-label="움직이는 그림"] .settings__choice.is-on b')?.textContent === '켜기'));
@@ -66,6 +74,7 @@ suite(async () => {
   await go('#/dex');
   await page.waitForTimeout(1500);
   ok('끄면 정지 그림만', (await page.locator('#page img.sprite--anim').count()) === 0 && (await page.locator('#page img.sprite').count()) > 0);
+  ok('끄면 흔들지도 않는다', await page.evaluate(() => document.body.classList.contains('sprite-anim-off') && getComputedStyle(document.querySelector('#page img.sprite')).animationName === 'none'));
   ok('영어로도 설정 줄이 옮겨진다', await page.evaluate(() => { setLang('en'); location.hash = '#/settings'; return true; }) && await page.waitForTimeout(600).then(() => page.evaluate(() => /Animated sprites/.test(document.body.textContent))));
 
   ok('페이지 오류 없음', errs.length === 0, errs.join(' | ').slice(0, 200));

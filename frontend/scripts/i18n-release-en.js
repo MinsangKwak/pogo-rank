@@ -15,6 +15,13 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 const RELEASE_NOTES_EN = {
+  '2026-09-13 · v3.19.1': [
+    '**Type badges no longer cover the sprite on the detail screen** — animated sprites reach higher than the still ones, so the top-left badges overlapped the head. The sprite is a bit smaller and sits lower; the badges moved up.',
+  ],
+  '2026-09-12 · v3.19.0': [
+    '**Almost every Pokémon animates now** — only 949 species had animated sprites, so Gen 6+ and Mega/regional forms stood still. A second source (Pokémon Showdown) brings it to 1,151.',
+    '**The 21 without one bob gently** — Gen 9 species like Ogerpon and Pecharunt have no public animation yet, so their still image breathes instead. Turning animated sprites off in Settings stops this too.',
+  ],
   '2026-09-12 · v3.18.0': [
     '**Pokémon now animate** — the animated sprites that lived only on the detail screen are on by default across tier lists, the Pokédex and every list. The still image shows first and swaps in as the GIF arrives. Too heavy? Turn it off under **Settings → Animated sprites**.',
     '**Everything is open without signing in (for now)** — Events, Raid bosses, Eggs, Raid PvE, Battle PvP, Planner, My Pokémon and the Search builder. My Pokémon is stored in this browser and moves to your account when you sign in.',

@@ -19,7 +19,9 @@ import os
 import shutil
 import subprocess
 
-from sprite import LOCAL_SPRITE_BASE, LOCAL_SPRITE_URL   # 2026-09-05 저장소 배정 번호 → 원본 번호 / 전용 그림 주소
+from sprite import LOCAL_SPRITE_BASE, LOCAL_SPRITE_URL, sprite_id   # 2026-09-05 저장소 배정 번호 → 원본 번호 / 전용 그림 주소
+from names import name_ko, species   # 2026-09-12 v3.19.0 Showdown 이름표를 만들 때 PvPoke 종 이름이 필요하다
+import re
 
 # 시트 목록(sheet.json)처럼 중첩 구조도 있으므로 'sprite' 키를 재귀로 수집한다
 sprite_ids = set()
@@ -130,12 +132,49 @@ for sprite_identifier in local_ids:
 #   1,172개 중 949개(81%)만 있다 — 6세대 이후와 폼 변형 상당수가 없다.
 #   없으면 프런트가 지금까지처럼 정지 png 를 그린다(sprite.js spriteAnimSrc → null).
 #
-# 없는 것을 매번 다시 묻지 않으려고 <id>.none 빈 파일을 남긴다 —
+# 없는 것을 매번 다시 묻지 않으려고 <id>.miss 빈 파일을 남긴다 —
 # CI 의 actions/cache 가 이 폴더를 통째로 되살리므로 404 요청이 반복되지 않는다
+#
+# 2026-09-12 v3.19.0 두 번째 출처 — Pokémon Showdown 의 애니메이션 스프라이트(play.pokemonshowdown.com/sprites/ani/).
+#   PokeAPI 에 없는 6~8세대·메가·리전 폼 209종 중 195종이 여기에 있다. 남는 것은 9세대(오거폰·페차런트·
+#   아이언 계열)와 일부 폼 — 공개된 애니메이션이 없어 프런트가 CSS 로 살짝 흔든다(list.css sprite-idle).
+#   이름표는 PvPoke 종 이름에서 만든다: 'Mr. Mime (Galarian)' → mrmime-galar, 'Charizard (Mega X)' → charizard-megax.
+#   폼 이름표가 없으면(Meowstic (Female) 등) 기본 폼으로 되돌아간다.
+#   표시는 그림 아래 어디에도 없지만 NOTICE.md 에 출처를 적었다.
+# 표식 파일 이름을 .none → .miss 로 바꿨다 — 옛 표식은 한 출처만 물어본 결과라 지우고 다시 묻는다
 ANIM_DIR = 'data/sprites-anim'
 ANIM_URL = ('https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon'
             '/versions/generation-v/black-white/animated/{}.gif')
+SHOWDOWN_URL = 'https://play.pokemonshowdown.com/sprites/ani/{}.gif'
 os.makedirs(ANIM_DIR, exist_ok=True)
+for legacy in os.listdir(ANIM_DIR):
+    if legacy.endswith('.none'):
+        os.remove(f'{ANIM_DIR}/{legacy}')
+
+SHOWDOWN_FORM = {'galarian': 'galar', 'alolan': 'alola', 'hisuian': 'hisui', 'paldean': 'paldea', 'mega x': 'megax', 'mega y': 'megay'}
+
+def showdown_slug(species_name):
+    # 'Urshifu (Rapid Strike)' → ('urshifu-rapidstrike', 'urshifu'). 섀도우는 그림이 같으니 폼에서 뺀다
+    base, _, form = species_name.partition('(')
+    base = re.sub(r'[^a-z0-9]', '', base.lower())
+    form = re.sub(r'\s*shadow$', '', form.strip(') ').lower()).strip()
+    if not form:
+        return base, base
+    form = SHOWDOWN_FORM.get(form, re.sub(r'[^a-z0-9]', '', form))
+    return f'{base}-{form}', base
+
+# 스프라이트 id → Showdown 이름표 후보 (폼 → 기본 폼 순). PvPoke 게임마스터에 있는 종만 만들 수 있다
+showdown_slugs = {}
+if os.path.exists('data/gm.json'):
+    for entry in json.load(open('data/gm.json'))['pokemon']:
+        if entry['speciesId'] not in species:
+            continue
+        _, form_label = name_ko(entry['speciesId'])
+        try:
+            sprite_identifier = sprite_id(entry['dex'], form_label)
+        except Exception:
+            continue
+        showdown_slugs.setdefault(sprite_identifier, showdown_slug(entry['speciesName']))
 
 
 def is_gif(path):
@@ -144,18 +183,21 @@ def is_gif(path):
 
 def download_anim(sprite_identifier):
     gif_path = f'{ANIM_DIR}/{sprite_identifier}.gif'
-    subprocess.run(['curl', '-fsSL', '--retry', '2', '-o', gif_path, ANIM_URL.format(sprite_identifier)])
-    if is_gif(gif_path):
-        return
-    # 404 거나 깨진 응답이면 파일을 남기지 않고 "없음" 표시만 남긴다
-    if os.path.exists(gif_path):
-        os.remove(gif_path)
-    open(f'{ANIM_DIR}/{sprite_identifier}.none', 'w').close()
+    urls = [ANIM_URL.format(sprite_identifier)]
+    urls += [SHOWDOWN_URL.format(slug) for slug in dict.fromkeys(showdown_slugs.get(sprite_identifier, ()))]
+    for url in urls:
+        subprocess.run(['curl', '-fsSL', '--retry', '2', '-o', gif_path, url])
+        if is_gif(gif_path):
+            return
+        if os.path.exists(gif_path):
+            os.remove(gif_path)
+    # 어느 출처에도 없으면 파일을 남기지 않고 "없음" 표시만 남긴다
+    open(f'{ANIM_DIR}/{sprite_identifier}.miss', 'w').close()
 
 
 anim_todo = [sprite_identifier for sprite_identifier in sprite_ids
              if not is_gif(f'{ANIM_DIR}/{sprite_identifier}.gif')
-             and not os.path.exists(f'{ANIM_DIR}/{sprite_identifier}.none')]
+             and not os.path.exists(f'{ANIM_DIR}/{sprite_identifier}.miss')]
 if anim_todo:
     with ThreadPoolExecutor(16) as executor:
         list(executor.map(download_anim, anim_todo))
