@@ -161,7 +161,8 @@ Actions에서 빨간 X가 뜨면 **build 잡의 빨간 단계**를 펼쳐 마지
 |---|---|
 | `tab_max` `tab_pve` `tab_pvp` (`tab_usage` `tab_if`는 v2.16.0에 탭 제거로 더 안 쌓임) | 그 탭을 눌러 이동한 횟수 — **탭 순서 재배치는 이 순위로 판단** |
 | `tab_start` | 접속 시 처음 보이는 탭(클릭 아님, 통계 분리용) |
-| `sub_pve_*` / `tool_solo` `tool_pvpdeck` (on=1 펼침) / `usage_pick` | 탭 안 서브탭 전환 / 도구 버튼(v2.16.0) / 검색 패널 활용처 순위 클릭 |
+| `sub_pve_*` / `tool_solo` `tool_pvpdeck` (on=1 펼침) / `usage_pick` | 탭 안 서브탭 전환 / 도구 버튼(v2.16.0) / 활용처 순위 클릭 (v3.22.0 에 `home_pick` 으로 대체, 옛 이벤트는 남겨 둔다) |
+| `home_pick` (kind · mon · rank) | 서비스 홈의 순위 카드 클릭 — kind 는 `dmax` · `pve` · `usage` (v3.22.0) |
 | `page_open` | 도감·일정표·패치노트 열기 (`page` 파라미터) |
 | `detail_open` | 상세 팝업 열기 |
 | `solo_calc_boss` / `pvp_deck_foe` | 솔플 계산기 보스 선택 / 커스텀 덱 상대 추가 |

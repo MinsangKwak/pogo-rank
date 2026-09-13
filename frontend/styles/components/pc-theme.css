@@ -143,17 +143,40 @@
   }
   .home__tile:hover .home__arrow { border-color: var(--brand); color: var(--brand); }
 
-  /* 2026-09-13 v3.21.0 두루 쓰이는 포켓몬 — 넓은 화면에서는 두 열.
-     한 열로 두면 한 줄이 1,000px 넘게 벌어져 이름과 [N곳] 배지가 서로 멀어졌다 */
-  .home__usage .usage__top { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.8rem 1.2rem; align-content: start; }
-  .home__usage .sugg__head,
-  .home__usage .sugg__more,
-  .home__usage .sugg__hint { grid-column: 1 / -1; justify-self: start; }
-  .home__usage .usage__item { gap: 0.2rem 1rem; }
-  .home__usage .usage__rank { font-size: var(--fs-sub); }
-  .home__usage .usage__name { font-size: var(--fs-body); }
-  .home__usage .usage__where { font-size: var(--fs-sub); }
-  .home__usage .usage__count { font-size: var(--fs-sub); padding: 0.2rem 0.9rem; }
+  /* 2026-09-13 v3.22.0 홈 순위 — 넓은 화면에서는 덩이 셋을 **옆으로** 세운다.
+     좁은 화면은 덩이가 쌓이고 카드가 가로로 셋이지만, 넓은 화면에서 그 모양을 그대로 늘리면
+     카드 하나가 370px 로 부풀어 그림만 큰 빈 상자가 되고 구역 높이가 900px 을 넘는다.
+     덩이를 옆으로 세우면 화면이 3×3 격자가 되고 세 표를 한눈에 견주게 된다 —
+     대신 칸이 좁아지니 카드를 [그림][이름/근거] 가로 줄로 눕힌다 */
+  .home__picks { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0 2.4rem; align-items: start; margin-top: 2.4rem; }
+  .home__picks > .home__section,
+  .home__picks > .pick__foot { grid-column: 1 / -1; }
+  .pick__group + .pick__group { margin-top: 0; }
+
+  /* 머리는 두 줄 고정 — [표 이름 ...... 전체 보기] / [무엇으로 줄 세웠나].
+     hint 를 제 줄로 내리고 높이를 잡아 두면 덩이 셋의 첫 카드가 같은 높이에서 시작한다 */
+  .pick__head { margin-bottom: 1.2rem; padding-bottom: 0; }
+  .pick__head h4 { font-size: var(--fs-sub); font-weight: 700; }
+  .pick__hint { flex: 1 1 100%; order: 3; min-height: 1.8rem; font-size: 1.2rem; }
+  .pick__all { margin-left: auto; font-size: 1.2rem; }
+
+  .pick__grid { grid-template-columns: minmax(0, 1fr); gap: 0.8rem; }
+  .pick__card {
+    flex-direction: row; align-items: center; gap: 1.2rem;
+    padding: 1rem 1.4rem 1rem 1rem; border-radius: 1.2rem; text-align: left;
+  }
+  .pick__card:hover {
+    border-color: color-mix(in srgb, var(--brand) 50%, var(--line));
+    background: var(--surface);
+    box-shadow: 0 0.6rem 2rem -1.2rem color-mix(in srgb, var(--brand) 60%, transparent);
+  }
+  .pick__art { flex: none; width: auto; }
+  .pick__art .sprite { max-width: none; width: 5.6rem; height: 5.6rem; margin: 0; }
+  .pick__body { display: flex; flex-direction: column; gap: 0.2rem; min-width: 0; }
+  .pick__name { font-size: var(--fs-body); }
+  .pick__name .form-tag { margin: 0 0.3rem 0 0; }
+  .pick__meta { font-size: 1.2rem; }
+  .pick__foot { padding-top: 2rem; font-size: var(--fs-sub); }
 
   /* 홈 푸터 — 목업의 카드 한 장 */
   body[data-home="true"] footer {

@@ -7,7 +7,7 @@
 //   - 옛 주소가 뒤로가기 기록에 쌓이지 않는가 (replace 로 돌린다)
 //   - 화면마다 DOM 에 식별자가 붙는가 — GA·히트맵이 주소를 다시 파싱하지 않아도 되게
 //   - 상세 팝업이 "무엇의 상세인지" 를 종·폼 단위까지 밝히는가
-const { launch, newContext, ok, finish, suite } = require('./_lib');
+const { launch, newContext, waitSplash, ok, finish, suite } = require('./_lib');
 const BASE = 'http://localhost:5503/?mock=1';
 
 // [들어간 주소, 닿아야 할 주소, 라우트 id, 화면 헤더]
@@ -44,7 +44,7 @@ suite(async () => {
 
   const go = async (hash) => {
     await page.goto(BASE + hash, { waitUntil: 'domcontentloaded' });
-    await page.waitForSelector('#splash', { state: 'detached', timeout: 15000 }).catch(() => {});
+    await waitSplash(page);
     await page.waitForTimeout(500);
   };
   const seen = async () => page.evaluate(() => ({
@@ -130,7 +130,7 @@ suite(async () => {
   await page.waitForTimeout(300);
   await page.goto(BASE + '#/mon/6', { waitUntil: 'domcontentloaded' });
   await page.reload({ waitUntil: 'domcontentloaded' });
-  await page.waitForSelector('#splash', { state: 'detached', timeout: 15000 }).catch(() => {});
+  await waitSplash(page);
   await page.waitForSelector('#detail-panel:not([hidden])', { timeout: 8000 }).catch(() => {});
   ok('상세 딥링크가 패널을 연다', await page.locator('#detail-panel').isVisible());
   ok('딥링크 라우트 id = mon', (await page.evaluate(() => document.body.dataset.route)) === 'mon');
@@ -147,7 +147,7 @@ suite(async () => {
     narrow.on('pageerror', (e) => errs.push('mobile:' + e));
     await narrow.goto(BASE + '#/mon/6', { waitUntil: 'domcontentloaded' });
     await narrow.reload({ waitUntil: 'domcontentloaded' });   // 찬 시작 — 공유 링크를 처음 여는 상황
-    await narrow.waitForSelector('#splash', { state: 'detached', timeout: 15000 }).catch(() => {});
+    await waitSplash(narrow);
     await narrow.waitForTimeout(700);
     await narrow.waitForTimeout(400);
     const shown = () => narrow.evaluate(() => !!document.querySelector('dialog.modal[open]'));

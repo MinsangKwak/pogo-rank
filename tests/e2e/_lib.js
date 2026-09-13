@@ -40,10 +40,17 @@ async function newContext(browser, { banner = false, locks = false, ...options }
   return ctx;
 }
 
-// 화면 이동 — 스플래시가 걷힐 때까지 기다린다 (첫 화면 그림이 다 들어올 때까지 최대 2.5초 머문다)
+// 스플래시가 걷힐 때까지 기다린다 (첫 화면 그림이 다 들어올 때까지 최대 2.5초 머문다).
+// 2026-09-13 v3.22.0 한도 15 → 45초, 그리고 이 자리 하나로 모았다. 전에는 스위트 50곳이 같은 줄을
+// 각자 들고 있었고 한도가 15초였다 — 코어 넷에 일꾼 넷이면 부하가 20 을 넘어 첫 화면이 15초를 넘기는
+// 때가 있다. catch 가 그 실패를 삼키므로 스위트는 아직 안 그려진 화면에 대고 단언하다 **매번 다른
+// 스위트**가 흔들렸다(단독 실행은 늘 통과). 넉넉히 기다린다 — 제때 뜨면 기다리지 않으니 느려지지 않는다
+const waitSplash = (page) => page.waitForSelector('#splash', { state: 'detached', timeout: 45000 }).catch(() => {});
+
+// 화면 이동 — 옮겨 간 뒤 스플래시가 걷히길 기다린다
 async function go(page, url) {
   await page.goto(url, { waitUntil: 'domcontentloaded' });
-  await page.waitForSelector('#splash', { state: 'detached', timeout: 15000 }).catch(() => {});
+  await waitSplash(page);
 }
 
 // 스위트 끝 — 합계를 찍고 종료 코드로 알린다 (test.sh 는 마지막 줄과 종료 코드만 본다)
@@ -56,4 +63,4 @@ async function finish(browser) {
 // 스위트 본문을 감싼다 — 예외로 죽으면 CRASH 한 줄과 종료 코드 1
 const suite = (body) => body().catch((e) => { console.error('CRASH', e.message); process.exit(1); });
 
-module.exports = { chromium, CHROMIUM, SERVER, ok, launch, newContext, go, finish, suite };
+module.exports = { chromium, CHROMIUM, SERVER, ok, launch, newContext, go, waitSplash, finish, suite };

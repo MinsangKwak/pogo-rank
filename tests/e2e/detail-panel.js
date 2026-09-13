@@ -8,7 +8,7 @@
 //   - 닫기(✕)를 누르면 패널이 닫히고 body.has-detail-panel 도 지워지는가
 //   - 다른 화면(탭)으로 이동하면 패널이 자동으로 닫히는가
 //   - 좁은 화면(모바일)은 지금까지처럼 팝업(dialog)이지 패널이 아닌가 (회귀 없음)
-const { launch, newContext, ok, finish, suite } = require('./_lib');
+const { launch, newContext, waitSplash, ok, finish, suite } = require('./_lib');
 const BASE = 'http://localhost:5503/?mock=1';
 
 suite(async () => {
@@ -24,7 +24,7 @@ suite(async () => {
 
     const go = async (hash) => {
       await page.goto(BASE + hash, { waitUntil: 'domcontentloaded' });
-      await page.waitForSelector('#splash', { state: 'detached', timeout: 15000 }).catch(() => {});
+      await waitSplash(page);
       await page.waitForTimeout(500);
     };
 
@@ -86,7 +86,7 @@ suite(async () => {
     page.on('pageerror', (e) => errs.push('모바일: ' + e));
 
     await page.goto(BASE + '#/dex', { waitUntil: 'domcontentloaded' });
-    await page.waitForSelector('#splash', { state: 'detached', timeout: 15000 }).catch(() => {});
+    await waitSplash(page);
     await page.waitForTimeout(500);
     await page.locator('#page .dex__row').first().click();
     await page.waitForTimeout(500);
@@ -107,7 +107,7 @@ suite(async () => {
     page.on('pageerror', (e) => errs.push('이동: ' + e));
     const open = async () => {
       await page.goto(BASE + '#/dex', { waitUntil: 'domcontentloaded' });
-      await page.waitForSelector('#splash', { state: 'detached', timeout: 15000 }).catch(() => {});
+      await waitSplash(page);
       await page.waitForSelector('#page .dex__row', { timeout: 15000 }).catch(() => {});
       await page.locator('#page .dex__row').first().click();
       await page.waitForTimeout(500);
@@ -133,7 +133,7 @@ suite(async () => {
 
     // 상세를 가리키는 주소로 들어오면 패널이 곧 그 화면이라 열려 있어야 한다
     await page.goto(BASE + '#/mon/1', { waitUntil: 'domcontentloaded' });
-    await page.waitForSelector('#splash', { state: 'detached', timeout: 15000 }).catch(() => {});
+    await waitSplash(page);
     await page.waitForTimeout(800);
     const deep = await shut();
     ok('딥링크(#/mon/…)로 들어오면 패널이 열린다', deep.hidden === false, JSON.stringify(deep));

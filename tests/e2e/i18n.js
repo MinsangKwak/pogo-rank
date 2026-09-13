@@ -8,7 +8,7 @@
 //   - 부분 렌더(도감 청크·상성 결과·검색 결과)도 번역되는가 (MutationObserver 가 살아 있는가)
 //   - 한국어로만 두기로 한 화면에 영어 안내가 뜨는가
 //   - 헤더에서 👤 가 사라지고 계정이 메뉴 안 "마이페이지"로 갔는가
-const { launch, newContext, ok, finish, suite } = require('./_lib');
+const { launch, newContext, waitSplash, ok, finish, suite } = require('./_lib');
 const BASE = 'http://localhost:5503/?mock=1';
 const hangul = (text) => /[가-힣]/.test(text || '');
 
@@ -22,7 +22,7 @@ suite(async () => {
 
   const go = async (hash = '') => {
     await page.goto(BASE + hash, { waitUntil: 'domcontentloaded' });
-    await page.waitForSelector('#splash', { state: 'detached', timeout: 15000 }).catch(() => {});
+    await waitSplash(page);
     await page.waitForTimeout(400);
   };
 

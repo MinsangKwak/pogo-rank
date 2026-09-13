@@ -6,7 +6,7 @@
 //   - 가입 권유 팝업이 뜨지 않는다 (auth.js SIGNUP_INVITE_ENABLED)
 //   - 목록의 그림이 기본으로 움직이는 GIF 로 갈아 끼워진다 · 설정에서 끄면 정지본만 (components/sprite.js)
 //   - 옛 동작(잠금·팝업)은 localStorage 스위치로 살아난다 — 그 검사는 trial.js · planner.js · signup-invite.js 가 한다
-const { launch, newContext, ok, finish, suite } = require('./_lib');
+const { launch, newContext, waitSplash, ok, finish, suite } = require('./_lib');
 const BASE = 'http://localhost:5503/';
 
 suite(async () => {
@@ -20,7 +20,7 @@ suite(async () => {
   page.on('pageerror', (e) => errs.push(String(e)));
   const go = async (hash) => {
     await page.goto(BASE + hash, { waitUntil: 'domcontentloaded' });
-    await page.waitForSelector('#splash', { state: 'detached', timeout: 15000 }).catch(() => {});
+    await waitSplash(page);
     await page.waitForTimeout(500);
   };
 

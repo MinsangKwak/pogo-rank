@@ -16,7 +16,7 @@
 // 주의: 로그인 팝업(components/terms.js openTermsConsent)은 openModal()을 쓰는데, openModal()은
 // 열릴 때 드로어를 조용히 닫는다(components/modal.js) — 첫 로그인 동의 뒤에는 드로어가 닫힌 채로
 // 남으므로, 그 다음 계정 상태를 보려면 드로어를 다시 열어야 한다(실제 앱과 같은 동작, 버그 아님)
-const { launch, newContext, ok, finish, suite } = require('./_lib');
+const { launch, newContext, waitSplash, ok, finish, suite } = require('./_lib');
 const BASE = 'http://localhost:5503/?mock=1';
 
 suite(async () => {
@@ -56,7 +56,7 @@ suite(async () => {
   };
 
   await page.goto(BASE, { waitUntil: 'domcontentloaded' });
-  await page.waitForSelector('#splash', { state: 'detached', timeout: 15000 }).catch(() => {});
+  await waitSplash(page);
   await page.waitForTimeout(500);
   // 이 컨텍스트에서 재사용할 정상 동작 signInWithPopup 을 미리 잡아 둔다(뒤에서 여러 번 덮어쓴다)
   await page.evaluate(() => { window.__origSignInWithPopup = firebase.auth().signInWithPopup.bind(firebase.auth()); });

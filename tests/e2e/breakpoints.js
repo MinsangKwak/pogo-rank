@@ -8,7 +8,7 @@
 //   - 상세 패널이 열렸을 때 목록 내용과 패널 사이에 실제로 간격이 있는가 (겹치지 않는가) — 이전에
 //     이 간격이 4px 로 거의 없어 보이던 버그가 있었다(패널 위치 공식의 20px 안쪽 여백을 빼먹었었다)
 //   - 사이드바 왼쪽 끝과 패널 오른쪽 끝이 컨테이너를 기준으로 좌우 대칭인가
-const { launch, newContext, ok, finish, suite } = require('./_lib');
+const { launch, newContext, waitSplash, ok, finish, suite } = require('./_lib');
 const BASE = 'http://localhost:5503/?mock=1';
 
 suite(async () => {
@@ -17,7 +17,7 @@ suite(async () => {
 
   const openDexDetail = async (page) => {
     await page.goto(BASE + '#/dex', { waitUntil: 'domcontentloaded' });
-    await page.waitForSelector('#splash', { state: 'detached', timeout: 15000 }).catch(() => {});
+    await waitSplash(page);
     await page.waitForTimeout(500);
     await page.locator('#page .dex__row').first().click();
     await page.waitForTimeout(400);
@@ -87,7 +87,7 @@ suite(async () => {
     const page = await ctx.newPage();
     for (const route of ['dmax', 'pve', 'pvp']) {
       await page.goto(`${BASE}#/${route}`, { waitUntil: 'domcontentloaded' });
-      await page.waitForSelector('#splash', { state: 'detached', timeout: 15000 }).catch(() => {});
+      await waitSplash(page);
       await page.waitForTimeout(500);
       const shape = await page.evaluate(() => {
         const list = document.querySelector('#content .row-list');
@@ -109,7 +109,7 @@ suite(async () => {
     const ctx = await newContext(browser, { viewport: { width: 390, height: 844 } });
     const page = await ctx.newPage();
     await page.goto(`${BASE}#/dex`, { waitUntil: 'domcontentloaded' });
-    await page.waitForSelector('#splash', { state: 'detached', timeout: 15000 }).catch(() => {});
+    await waitSplash(page);
     await page.waitForTimeout(500);
     await page.locator('.dex__row:visible').first().click({ force: true });
     await page.waitForTimeout(600);

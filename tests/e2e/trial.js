@@ -7,7 +7,7 @@
 //   - 세 번을 다 쓰면 버튼 대신 "이젠 가입하셔야죠" 문구가 남는다
 //   - 새로고침해도 진행 중이던 시간은 이어진다 · 로그인(목)한 사람에겐 버튼이 없다
 // 20초를 세 번 기다리지 않는다 — TRIAL_SECONDS 는 let 이라 평가 문맥에서 줄여 쓴다
-const { launch, newContext, ok, finish, suite } = require('./_lib');
+const { launch, newContext, waitSplash, ok, finish, suite } = require('./_lib');
 const BASE = 'http://localhost:5503/';
 
 suite(async () => {
@@ -19,7 +19,7 @@ suite(async () => {
   page.on('pageerror', (e) => errs.push(String(e)));
   const go = async (hash) => {
     await page.goto(BASE + hash, { waitUntil: 'domcontentloaded' });
-    await page.waitForSelector('#splash', { state: 'detached', timeout: 15000 }).catch(() => {});
+    await waitSplash(page);
     await page.waitForTimeout(400);
   };
   const locked = () => page.locator('#page .plan__lock, #content .plan__lock').count();
@@ -80,7 +80,7 @@ suite(async () => {
   const mp = await mctx.newPage();
   mp.on('pageerror', (e) => errs.push('mock: ' + e));
   await mp.goto(BASE + '?mock=1#/raids', { waitUntil: 'domcontentloaded' });
-  await mp.waitForSelector('#splash', { state: 'detached', timeout: 15000 }).catch(() => {});
+  await waitSplash(mp);
   await mp.waitForTimeout(600);
   ok('로그인한 사람: 잠금 카드도 버튼도 없다', (await mp.locator('.plan__lock, .trial-go').count()) === 0);
 
