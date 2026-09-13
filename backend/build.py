@@ -39,7 +39,7 @@ from sprite import sprite_id
 from names import name_ko, species, FORM_KO
 
 # ── 설정 ─────────────────────────────────────────────────────────────────────
-APP_VERSION = 'v3.20.0'  # 움직이는 그림 확대 한도 2배 — 원본 크기를 살려 종끼리 크기가 자연스럽게
+APP_VERSION = 'v3.21.0'  # 서비스 홈 개편 — 두루 쓰이는 포켓몬을 타일 앞으로, 타일은 세 갈래로
 # 2026-09-05 v2.7.3 빌드 채널 — 'prod'(기본) / 'dev'. dev 브랜치 워크플로(.github/workflows/deploy-dev.yml)가 BUILD_CHANNEL=dev 로 부른다.
 # dev 빌드는 (1) 버전 배지에 -dev 를 붙여 화면에서 구분되고 (2) GA 스니펫을 넣지 않아 통계가 섞이지 않고
 # (3) robots.txt 를 전부 차단 + <meta name="robots" content="noindex"> 로 검색 색인을 막는다. 나머지는 prod 와 동일

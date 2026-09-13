@@ -25,6 +25,10 @@ body[data-home="true"] .layout { padding-bottom: 4rem; }
 .home__section h3 { margin: 0; font-size: 1.5rem; font-weight: 600; }
 .home__section > span { font-size: 1.1rem; font-weight: 600; letter-spacing: .16em; color: var(--muted); }
 
+/* 갈래 소제목 — 구역 제목(.home__section h3)보다 한 단계 작게, 목록의 머리글처럼 */
+.home__group { margin: 1.6rem 0 0.8rem; font-size: 1.25rem; font-weight: 600; color: var(--muted); }
+.home__group:first-of-type { margin-top: 0.4rem; }
+
 /* 타일 — 다른 카드와 같은 언어: 1px 테두리 · 12px 반경 · --surface 배경 */
 .home__grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.8rem; }
 .home__tile {
@@ -34,9 +38,9 @@ body[data-home="true"] .layout { padding-bottom: 4rem; }
   color: var(--fg); text-decoration: none;
 }
 .home__tile:hover { border-color: var(--fg); background: var(--hover); }
-.home__tile-top { display: flex; align-items: center; justify-content: space-between; gap: 0.8rem; margin-bottom: 0.8rem; }
-.home__icon { font-size: 1.9rem; line-height: 1; }
-.home__number { font-size: 1.1rem; font-weight: 600; color: var(--muted); font-variant-numeric: tabular-nums; }
+/* 2026-09-13 v3.21.0 타일 번호(01~09)를 뺐다 — 순서를 암시하는데 순서가 아니었다.
+   대신 갈래 소제목(.home__group)이 아홉을 세 덩이로 나눈다 */
+.home__icon { display: block; margin-bottom: 0.8rem; font-size: 1.9rem; line-height: 1; }
 .home__tile strong { font-size: 1.4rem; font-weight: 600; }
 .home__desc { margin-top: 0.3rem; padding-right: 1.4rem; font-size: 1.2rem; line-height: 1.5; color: var(--muted); word-break: keep-all; }
 .home__arrow { position: absolute; right: 1.2rem; bottom: 1.1rem; font-size: 1.2rem; color: var(--muted); }
@@ -52,7 +56,19 @@ body[data-home="true"] .layout { padding-bottom: 4rem; }
 }
 
 /* 2026-09-12 v3.12.0 홈의 활용처 순위 — 헤더 검색 패널의 빈 상태에 있던 것을 옮겨 왔다.
-   패널 안 목록이던 줄(.search__results)이 이제 본문에 서므로 카드 한 장으로 감싼다 */
-.home__usage { margin-top: 3.2rem; }
+   2026-09-13 v3.21.0 타일 **앞**으로 올라왔다. 홈에서 가장 먼저 얻을 답이라 맨 위 인사 바로 밑이다 */
+.home__usage { margin: 0 0 0.8rem; }
 .home__usage .usage__top { gap: 0.4rem; }
 .home__usage .sugg__head { padding-bottom: 0.8rem; }
+
+/* 줄 한 칸 — [순위] [그림] [이름 / 쓰이는 곳] [N곳].
+   v3.21.0 전에는 이름과 근거가 한 줄에 몰려 좁은 화면에서 꼬리가 제멋대로 접혔다 */
+.home__usage .usage__item { display: grid; grid-template-columns: 2.2rem auto minmax(0, 1fr) auto; align-items: center; gap: 0.2rem 0.8rem; }
+.home__usage .usage__rank { font-size: 1.2rem; font-weight: 600; color: var(--muted); font-variant-numeric: tabular-nums; text-align: center; }
+.home__usage .usage__body { display: flex; flex-direction: column; gap: 0.2rem; min-width: 0; }
+.home__usage .usage__name { font-size: 1.35rem; font-weight: 600; }
+.home__usage .usage__where { font-size: 1.15rem; line-height: 1.45; color: var(--muted); word-break: keep-all; }
+.home__usage .usage__where b { color: var(--fg); font-weight: 600; }
+/* 몇 곳에 쓰이는지 — 줄에서 가장 굵은 숫자. 이 목록의 정렬 기준이다 */
+.home__usage .usage__count { flex: none; padding: 0.2rem 0.7rem; border: 1px solid var(--line); border-radius: 99.9rem;
+  font-size: 1.15rem; font-weight: 600; color: var(--fg); white-space: nowrap; }
