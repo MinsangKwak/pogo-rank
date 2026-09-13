@@ -320,6 +320,9 @@ function maybeOpenSignupInvite() {
 function openLoginInvite(screenName) {
   const pending = AUTH.status === 'pending';
   track('login_invite', { screen: screenName || '', status: AUTH.status });  // GA4: 어느 화면이 로그인을 부르나
+  // 2026-09-13 v3.25.0 비로그인이면 버튼은 둘뿐 — [📺 광고 보고 다 훑어보기] [🔐 광고 안 보고 회원가입 후 보기] (components/adgate.js).
+  // [나중에]·[잠시 써보기] 는 뺐다. 문이 둘이면 "어느 쪽이든 고르면 열린다" 가 읽히고, 셋 넷이면 빠져나갈 길부터 찾는다
+  const gateButtons = typeof adGateButtons === 'function' ? adGateButtons(screenName) : [];
   const goButton = el('button', { class: 'drawer__item account__login login-invite__go', onclick: () => {
     closeModal({ silent: true });
     signIn();
@@ -332,23 +335,23 @@ function openLoginInvite(screenName) {
   openModal(el('div', { class: 'consent__modal login-invite' },
     el('div', { class: 'login-invite__head' },
       el('span', { class: 'login-invite__ico', 'aria-hidden': 'true' }, pending ? '⏳' : '🔒'),
-      el('h2', { class: 'detail__name' }, pending ? '승인을 기다리는 중이에요' : '로그인하면 열려요')),
+      el('h2', { class: 'detail__name' }, pending ? '승인을 기다리는 중이에요' : gateButtons.length ? '광고 보거나, 회원가입하면 열려요' : '로그인하면 열려요')),
     // 2026-09-11 v2.60.0 화면 이름 뒤에 조사를 붙이지 않는다 — koParticle 은 한글 받침만 읽어서
     // "레이드 · PvE" 처럼 라틴 문자로 끝나면 늘 '은' 을 골랐다 ("레이드 · PvE은 …").
     // 'PvE' 는 "피브이이" 라 '는' 이 맞는데, 라틴 독음 받침표를 들이는 대신 조사가 필요 없는 문장으로 적는다
     el('p', { class: 'plan__desc' }, pending
       ? `${screenName ? screenName + ' ' : '이 '}화면은 관리자가 승인하면 바로 열려요.`
-      : `${screenName ? screenName + ' ' : '이 '}화면은 승인된 분만 볼 수 있어요.`),
+      : gateButtons.length
+        ? `${screenName ? screenName + ' ' : '이 '}화면은 회원만 볼 수 있어요. 회원이 아니면 광고를 끝까지 본 뒤 2시간 동안 전부 열려요 (하루 3번).`
+        : `${screenName ? screenName + ' ' : '이 '}화면은 승인된 분만 볼 수 있어요.`),
     // 승인제라는 걸 누르기 **전에** 말한다 — 로그인하고 나서 "왜 아직도 안 되지" 를 겪지 않게
     pending ? '' : el('ol', { class: 'login-invite__steps' }, ...steps.map(([no, title, desc]) =>
       el('li', {},
         el('span', { class: 'login-invite__no' }, no),
         el('div', {}, el('b', {}, title), el('span', {}, desc))))),
-    pending ? '' : goButton,
-    el('button', { class: 'drawer__item login-invite__later', onclick: () => closeModal() }, pending ? '확인' : '나중에'),
-    // 2026-09-12 v3.16.0 [잠시 써보기] — 무엇이 열리는지 먼저 20초 보여 준다. 세 번 다 쓰면 권유 문구 (components/trial.js).
-    // 순서는 로그인 → 나중에 → 잠시 써보기: 권하는 것이 먼저, 빠져나가는 길이 그다음, 맛보기는 맨 끝
-    pending || typeof trialButtonNode !== 'function' ? '' : trialButtonNode(screenName),
+    // 승인 대기: [확인] 하나. 비로그인: 문 둘. (로그인 기능이 없는 빌드처럼 문이 없으면 예전 로그인 버튼)
+    ...(pending ? [el('button', { class: 'drawer__item login-invite__later', onclick: () => closeModal() }, '확인')]
+      : gateButtons.length ? gateButtons : [goButton]),
     footNote('첫 로그인 때 ',
       el('a', { href: '#/terms', onclick: () => closeModal({ silent: true }) }, '이용약관'), '·',
       el('a', { href: '#/privacy', onclick: () => closeModal({ silent: true }) }, '개인정보처리방침'), ' 동의를 받아요.')));

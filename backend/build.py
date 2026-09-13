@@ -39,7 +39,7 @@ from sprite import sprite_id
 from names import name_ko, species, FORM_KO
 
 # ── 설정 ─────────────────────────────────────────────────────────────────────
-APP_VERSION = 'v3.24.0'  # 검색 줄 PvP/PvE 알약 · 육각형 레이드/PvP 축을 순위 대신 전 종 점수로
+APP_VERSION = 'v3.25.0'  # 잠금 복귀 + 광고 보고 열기 — 문은 둘: 광고 15초(하루 3번) · 회원가입
 # 2026-09-05 v2.7.3 빌드 채널 — 'prod'(기본) / 'dev'. dev 브랜치 워크플로(.github/workflows/deploy-dev.yml)가 BUILD_CHANNEL=dev 로 부른다.
 # dev 빌드는 (1) 버전 배지에 -dev 를 붙여 화면에서 구분되고 (2) GA 스니펫을 넣지 않아 통계가 섞이지 않고
 # (3) robots.txt 를 전부 차단 + <meta name="robots" content="noindex"> 로 검색 색인을 막는다. 나머지는 prod 와 동일
@@ -93,6 +93,9 @@ def read_config():
         'ADMIN_EMAIL': os.environ.get('ADMIN_EMAIL', ''),        # ADMIN_UID 가 없을 때의 폴백 (보통 비움)
         'ADMIN_UID': os.environ.get('ADMIN_UID', ''),            # firestore.rules 의 __ADMIN_UID__ 와 같은 값 (scripts/render_rules.sh)
         'CONTACT_EMAIL': os.environ.get('CONTACT_EMAIL', ''),    # 푸터·개인정보처리방침 문의 이메일. 비우면 문구가 빠진다
+        # 2026-09-13 v3.25.0 광고 보고 열기 — AdSense 게시자 ID(ca-pub-…)와 광고 단위 ID. 둘 다 있어야 광고가 들어가고, 비우면 "광고 준비 중" 상자다
+        'ADSENSE_CLIENT': os.environ.get('ADSENSE_CLIENT', ''),
+        'ADSENSE_SLOT': os.environ.get('ADSENSE_SLOT', ''),
     }
     if not config['FIREBASE_CONFIG']:
         print('경고: FIREBASE_CONFIG_JSON 이 비어 있어 로그인 UI 없이 빌드됩니다 (.env.example 참고)')
@@ -101,6 +104,13 @@ def read_config():
 # 2026-09-07 v2.18.0 (공개 준비 3) GA 는 동의 뒤에만 붙는다 — 여기서는 측정 ID 만 남기고, 실제 gtag 삽입은
 # frontend/scripts/components/consent.js loadAnalytics() 가 localStorage pogo_consent 가 'granted' 일 때 한다.
 # 배포 도메인(github.io)에서만 ID 를 노출해 로컬 미리보기·개발 중엔 동의해도 집계되지 않는다
+# 2026-09-13 v3.25.0 AdSense 가 필요로 하는 출처 — ADSENSE_CLIENT·SLOT 이 있을 때만 CSP 에 더한다 (render_index_html)
+AD_CSP = {
+    'script-src': 'https://pagead2.googlesyndication.com https://*.googlesyndication.com https://*.doubleclick.net https://*.google.com https://adservice.google.com',
+    'frame-src': 'https://googleads.g.doubleclick.net https://tpc.googlesyndication.com https://*.google.com',
+    'img-src': 'https://*.googlesyndication.com https://*.doubleclick.net https://*.google.com https://*.gstatic.com',
+    'connect-src': 'https://*.googlesyndication.com https://*.doubleclick.net https://*.google.com',
+}
 GA_SNIPPET = '''<script>
 if (location.hostname.endsWith('github.io')) window.GA_PENDING_ID = '__GA_ID__';
 </script>'''
@@ -114,7 +124,7 @@ STYLES = [
     'components/finder.css', 'components/ivrank.css', 'components/tag.css', 'components/modal.css', 'components/search.css', 'components/drawer.css', 'components/pages.css',
     'components/planner.css',  # 2026-09-07 v2.15.0 🌱 플래너 모드 (QA-53·54)
     'components/consent.css',
-    'components/trial.css',    # 2026-09-12 v3.16.0 잠시 써보기 배지·버튼
+    'components/adgate.css',   # 2026-09-13 v3.25.0 광고 보고 열기 — 시트·배지·버튼 (v3.16.0 잠시 써보기 trial.css 의 후신)
     'components/app-shell.css',
     # 2026-09-10 v2.42.0 넓은 화면 전용 디자인 — 앞의 모든 규칙을 덮어써야 하므로 맨 끝
     'components/pc-theme.css',
@@ -138,7 +148,7 @@ SCRIPTS = [
     # 번들은 <script> 하나라 함수 선언은 위아래로 다 보이지만 const 는 TDZ 라 실행 순서를 탄다
     'components/theme.js',    # 2026-09-10 v2.47.0 밝게/어둡게 전환 (헤더 버튼 · 계정 저장)
     'components/settings.js', # 2026-09-12 v3.11.0 설정 화면 — theme 다음, pages 앞
-    'components/trial.js',    # 2026-09-12 v3.16.0 잠시 써보기 — pages 앞 (첫 렌더의 routeLocked 가 trialActive 를 부른다)
+    'components/adgate.js',   # 2026-09-13 v3.25.0 광고 보고 열기 — pages 앞 (첫 렌더의 routeLocked 가 adUnlockActive 를 부른다)
     'components/pages.js',
     'components/trainers.js', 'components/totop.js',  # 2026-09-12 v3.4.0 favdigest 제거 — ★ 즐겨찾기 기능을 걷어냈다
     'views/pvp.js', 'views/pve.js', 'views/max.js', 'views/tier.js', 'views/usage.js', 'views/ifsolo.js',  # 2026-09-02 if 탭
@@ -483,7 +493,17 @@ def render_index_html(game_master, config, data_js):
     # 2026-09-10 v2.50.0 BUILD_VERSION — 지금 띄운 것이 어느 빌드인지 코드가 알아야 한다.
     # 헤더에 글자로 박아 두던 것(__VERSION__)은 app-shell.js 가 헤더를 통째로 갈아 끼우면서 사라진다.
     # 화면에서 긁어 오는 대신 값으로 넣는다 (components/freshness.js 가 build.json 과 견준다)
-    html = html.replace('__APP_CONFIG__', f"const FIREBASE_CONFIG = {json.dumps(config['FIREBASE_CONFIG'])};\nconst ADMIN_EMAIL = {json.dumps(config['ADMIN_EMAIL'])};\nconst ADMIN_UID = {json.dumps(config['ADMIN_UID'])};\nconst CONTACT_EMAIL = {json.dumps(config['CONTACT_EMAIL'])};\nconst BUILD_VERSION = {json.dumps(APP_VERSION)};")
+    html = html.replace('__APP_CONFIG__', f"const FIREBASE_CONFIG = {json.dumps(config['FIREBASE_CONFIG'])};\nconst ADMIN_EMAIL = {json.dumps(config['ADMIN_EMAIL'])};\nconst ADMIN_UID = {json.dumps(config['ADMIN_UID'])};\nconst CONTACT_EMAIL = {json.dumps(config['CONTACT_EMAIL'])};\nconst BUILD_VERSION = {json.dumps(APP_VERSION)};\nconst ADSENSE_CLIENT = {json.dumps(config['ADSENSE_CLIENT'])};\nconst ADSENSE_SLOT = {json.dumps(config['ADSENSE_SLOT'])};")
+    # 2026-09-13 v3.25.0 AdSense — 게시자 ID·광고 단위가 둘 다 있을 때만 스크립트와 CSP 출처가 들어간다.
+    # 없으면 아무것도 안 들어가 CSP 는 지금 그대로다 (components/adgate.js 는 '광고 준비 중' 상자를 그린다)
+    ad_client, ad_slot = config['ADSENSE_CLIENT'], config['ADSENSE_SLOT']
+    if ad_client and ad_slot:
+        html = html.replace('__AD_SNIPPET__', f'<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client={ad_client}" crossorigin="anonymous"></script>')
+        for directive, extra in AD_CSP.items():
+            assert f'{directive} ' in html, f'CSP 에 {directive} 가 없다'
+            html = html.replace(f'{directive} ', f'{directive} {extra} ', 1)
+    else:
+        html = html.replace('__AD_SNIPPET__', '')
     # 2026-09-05 v2.8.0 푸터 문의 이메일 — CONTACT_EMAIL 이 비어 있으면 문구 자체를 뺀다
     contact_email = config['CONTACT_EMAIL']
     contact_html = f'문의·건의: <a href="mailto:{contact_email}">{contact_email}</a> · ' if contact_email else ''

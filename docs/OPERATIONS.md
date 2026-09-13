@@ -163,6 +163,7 @@ Actions에서 빨간 X가 뜨면 **build 잡의 빨간 단계**를 펼쳐 마지
 | `tab_start` | 접속 시 처음 보이는 탭(클릭 아님, 통계 분리용) |
 | `sub_pve_*` / `tool_solo` `tool_pvpdeck` (on=1 펼침) / `usage_pick` | 탭 안 서브탭 전환 / 도구 버튼(v2.16.0) / 활용처 순위 클릭 (v3.22.0 에 `home_pick` 으로 대체, 옛 이벤트는 남겨 둔다) |
 | `home_pick` (kind · mon · rank) | 서비스 홈의 순위 카드 클릭 — kind 는 `dmax` · `pve` · `usage` (v3.22.0) |
+| `ad_start` · `ad_done` · `ad_cancel` · `ad_unlock_end` (screen · n / left) | 광고 보고 열기 — 시작 · 끝까지 봄(오늘 n번째) · 중간에 닫음(남은 초) · 열림 시간 종료 (v3.25.0). 옛 `trial_start`·`trial_end` 는 더 찍지 않는다 |
 | `page_open` | 도감·일정표·패치노트 열기 (`page` 파라미터) |
 | `detail_open` | 상세 팝업 열기 |
 | `solo_calc_boss` / `pvp_deck_foe` | 솔플 계산기 보스 선택 / 커스텀 덱 상대 추가 |
@@ -272,3 +273,18 @@ GO 배틀리그 시즌이 바뀔 때(보통 3개월마다) 하는 유일한 수�
 - 진짜 한도는 Firestore(무료 Spark: 일 읽기 5만). 초과해도 **과금이 아니라 그날 기능 정지**
 - 커지면 순서는 **도메인 구입 → Cloudflare 무료 연결 → rate limiting·봇 차단 → Firebase App Check**
 - `robots.txt`는 배포에 포함되어 있으나 규칙을 지키는 봇에게만 유효 (강제력 없음)
+
+
+## 광고 보고 열기 — AdSense 연결 (2026-09-13 v3.25.0)
+
+회원이 아닌 사람은 잠긴 화면을 **광고 15초를 끝까지 본 뒤 2시간** 열 수 있다(하루 3번). 광고 자리는 운영 설정 두 개로 켠다.
+
+| 변수 | 값 | 어디에 |
+| --- | --- | --- |
+| `ADSENSE_CLIENT` | 게시자 ID `ca-pub-XXXXXXXXXXXXXXXX` | `.env`(로컬) · Repository variables(Actions) |
+| `ADSENSE_SLOT` | 광고 단위 ID(숫자) — 반응형 디스플레이 광고 단위 하나 | 같은 곳 |
+
+- 둘 다 있을 때만 `build.py` 가 `adsbygoogle.js` 스크립트와 CSP 출처(`AD_CSP`)를 넣는다. 비우면 CSP 는 그대로고 화면에는 "광고 준비 중" 상자가 뜨며 15초는 똑같이 센다 — 연결한 날 흐름이 바뀌지 않는다.
+- AdSense 는 사이트 심사(도메인 소유 확인 + 콘텐츠 심사)를 거쳐야 실제 광고가 나온다. 심사 전에는 값이 있어도 빈 칸이다.
+- 동의: 개인정보처리방침에 광고 사업자 쿠키 항목을 더했다. EU/UK 방문자에게 맞춤 광고를 내려면 AdSense 의 동의 관리(CMP)를 따로 켜야 한다 — 이 서비스의 GA 동의 배너와는 별개다.
+- 약관 1장(광고 없음 → 비회원 광고)은 문구만 바꾸고 `TERMS_VER` 은 올리지 않았다. 광고는 비회원에게만 걸리고 회원의 동의 내용(계정·저장)은 그대로라서다. 회원에게도 다시 물으려면 `terms.js TERMS_VER` 을 올린다 (시행 7일 전 패치노트 고지 원칙).
