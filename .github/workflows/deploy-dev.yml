@@ -62,6 +62,8 @@ jobs:
           ADMIN_UID: ${{ vars.ADMIN_UID }}
           CONTACT_EMAIL: ${{ vars.CONTACT_EMAIL }}
           FIREBASE_CONFIG_JSON: ${{ vars.FIREBASE_CONFIG_JSON }}
+          ADSENSE_CLIENT: ${{ vars.ADSENSE_CLIENT }}   # 2026-09-13 v3.25.0 광고 보고 열기 (비우면 광고 준비 중 상자)
+          ADSENSE_SLOT: ${{ vars.ADSENSE_SLOT }}
         run: bash scripts/build.sh
       - name: Publish to pogo-rank-dev (gh-pages)
         uses: peaceiris/actions-gh-pages@v4
