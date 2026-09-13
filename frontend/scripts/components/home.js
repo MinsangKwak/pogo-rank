@@ -71,7 +71,7 @@ function homePickGroup(pick) {
   const rows = pick.rows().slice(0, HOME_PICK_TOP);
   if (!rows.length) return null;
   if (pick.route && typeof routeLocked === 'function' && routeLocked(pick.route)) return null;
-  return el('div', { class: 'pick__group' },
+  return el('div', { class: `pick__group pick__group--${pick.key}` },
     el('div', { class: 'pick__head' },
       el('h4', {}, pick.title),
       el('span', { class: 'pick__hint' }, pick.hint),
@@ -102,10 +102,10 @@ function renderServiceHome() {
     .filter(([, routes]) => routes.length);
   const features = el('section', { class: 'home__features', 'aria-label': '서비스 기능' },
     el('div', { class: 'home__section' }, el('h3', {}, '무엇을 해볼까요?'), el('span', {}, 'POGO PLAN과 함께하는 포켓몬 라이프')),
-    ...groups.flatMap(([label, routes]) => [
-      el('h4', { class: 'home__group' }, label),
-      el('div', { class: 'home__grid' }, ...routes.map(homeTile)),
-    ]));
+    el('div', { class: 'home__service-grid' }, ...groups.map(([label, routes], index) =>
+      el('section', { class: 'home__service-group' },
+        el('h4', { class: 'home__group' }, el('span', {}, `0${index + 1}`), label),
+        el('div', { class: 'home__grid' }, ...routes.map(homeTile))))));
   // 타일을 만든 직후 잠금 표시를 한 번 맞춘다 (로그인 상태는 이미 정해져 있다)
   if (typeof syncLockedNav === 'function') queueMicrotask(syncLockedNav);
   // 잠긴 타일은 그 화면으로 보내지 않고 로그인 유도 팝업을 연다 — ☰ 메뉴의 잠긴 줄과 같은 처방.
@@ -118,14 +118,24 @@ function renderServiceHome() {
   });
   // 2026-09-13 v3.22.0 순위 세 덩이 — 인사 바로 밑, 기능 타일 앞
   const pickGroups = HOME_PICKS.map(homePickGroup).filter(Boolean);
-  $content.append(
-    el('section', { class: 'home__intro' },
+  $content.append(el('div', { class: 'home-dashboard' },
+    el('section', { class: 'home__welcome' },
+      el('div', { class: 'home__intro' },
       el('span', { class: 'home__eyebrow' }, 'YOUR POKÉMON COMPANION'),
-      el('h2', {}, '오늘의 모험,', el('br'), '여기서 준비하세요.')),
+      el('h2', {}, '다음 모험의', el('br'), '주인공을 찾아요.'),
+      el('p', {}, '지금 강한 포켓몬부터 나만의 육성 계획까지.', el('br'), '트레이너의 다음 선택을 함께 준비해요.')),
+      el('div', { class: 'home__quick' },
+        el('span', { class: 'home__eyebrow' }, '모험을 시작하는 세 가지 방법'),
+        ...['dex', 'schedule', 'raids'].map((id, index) => {
+          const route = ROUTES.find((item) => item.id === id);
+          return el('a', { class: 'home__quick-link', href: routeHash(id) },
+            el('span', { class: 'home__quick-number' }, `0${index + 1}`),
+            el('strong', {}, route.nav), el('span', { 'aria-hidden': 'true' }, '↗'));
+        }))),
     ...(pickGroups.length ? [el('section', { class: 'home__picks', 'aria-label': '지금 강한 포켓몬' },
       el('div', { class: 'home__section' }, el('h3', {}, '지금 강한 포켓몬'), el('span', {}, '순위표 세 곳의 상위 3종')),
       ...pickGroups,
       el('span', { class: 'pick__foot' }, '카드를 누르면 종족값·상성·활용처를 전부 볼 수 있어요'))] : []),
-    features);
+    features));
   $note.textContent = '뭘 키울지 여기서 정해요. 도감에서 포켓몬을 알아보고, 랭킹에서 추천 개체를 고른 뒤, 육성 플래너에 내 개체를 기록하면 돼요.';   // v3.13.0 '상성' 화면은 v2.63.0 에 접었다
 }
