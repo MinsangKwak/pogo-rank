@@ -15,6 +15,10 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 const RELEASE_NOTES_EN = {
+  '2026-09-13 · v3.24.0': [
+    '**Search now tells you PvP or raids at a glance** — every Pokédex and search row carries two pills next to the name, [PvP 89] [PvE 59], with the stronger side highlighted. Same 0–100 scores as the Value screen.',
+    '**The stat hexagon\u2019s Raid and PvP axes are fixed** — they used to be drawn from "does it make a top-30 table", so a base form like Swampert, whose Mega and Shadow are the ones ranked, had its Raid axis flat on the floor. They now use scores computed for every species (Swampert: Raid 59 · PvP 89).',
+  ],
   '2026-09-13 · v3.23.0': [
     '**A lighter first screen** — the same 155KB of styles was shipped twice (a slip from reworking the loading screen three days ago). It ships once now: first-screen size 842 → 690KB.',
     '**No more unused web font** — since the pixel redesign nothing used Inter, yet every visit fetched one request plus four font files.',

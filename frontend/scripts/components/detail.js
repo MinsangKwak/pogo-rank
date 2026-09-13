@@ -293,6 +293,14 @@ function usagePlacesFor(name) {
 function usageCountFor(name) {
   return usagePlacesFor(name).length;
 }
+// 2026-09-13 v3.24.0 전 종 PvE·PvP 점수 — VALUE_DATA.meter[이름] = [PvE, PvP] (0~100, backend/value_build.py).
+// 가성비 화면과 같은 산식이라 "PvP 89" 가 거기서도 여기서도 같은 뜻이다. 없으면(옛 빌드·미등재) null
+function usageMeterOf(name) {
+  const meter = typeof VALUE_DATA !== 'undefined' ? VALUE_DATA.meter?.[name] : null;
+  if (!meter) return null;
+  const [pve, pvp] = meter;
+  return pve || pvp ? { pve, pvp } : null;
+}
 function usageNode(name) {
   const places = usagePlacesFor(name);
   if (!places.length) return null;
@@ -477,14 +485,21 @@ function hexNode(form, name, types) {
     ? Math.min(bestRank('pve') ?? 99, bestRank('max') ?? 99) : null;
   const pvp = bestRank('pvp');
   const cp = DEX_DATA.cpm ? cpOf(form, DEX_DATA.cpm.l50) : null;
+  // 2026-09-13 v3.24.0 레이드·PvP 축은 순위가 아니라 **점수**(0~100)로 그린다 (usageMeterOf · 가성비와 같은 산식).
+  // 순위 기준은 "어느 순위표 30위 안에 드는가" 라, 대짱이처럼 메가·섀도우만 등재된 원종은 레이드 축이 미등재(0.08)로
+  // 누웠다 — 실제로는 땅·물 보스에서 A 티어인데. 점수는 전 종에 있어 어디서나 같은 자로 잰다. 옛 빌드(점수표 없음)는 순위로
+  const meter = usageMeterOf(name);
+  const meterScore = (value) => (value ? Math.max(0.08, value / 100) : 0.08);
+  const raidAxis = meter ? [meter.pve ? `${meter.pve}점` : '-', meterScore(meter.pve)] : [raid ? `${raid}위` : '-', rankScore(raid)];
+  const pvpAxis = meter ? [meter.pvp ? `${meter.pvp}점` : '-', meterScore(meter.pvp)] : [pvp ? `${pvp}위` : '-', rankScore(pvp)];
   // [축 이름, 라벨에 쓸 값 문자열, 0~1 비율]
   const axes = [
     ['공격', String(form.atk), Math.min(1, form.atk / 320)],
     ['방어', String(form.def), Math.min(1, form.def / 320)],
-    ['레이드', raid ? `${raid}위` : '-', rankScore(raid)],
+    ['레이드', ...raidAxis],
     ['체력', String(form.hp), Math.min(1, form.hp / 320)],
     ['CP', cp ? cp.toLocaleString() : '-', cp ? Math.min(1, cp / 5500) : 0.08],
-    ['PvP', pvp ? `${pvp}위` : '-', rankScore(pvp)],
+    ['PvP', ...pvpAxis],
   ];
   // 육각형 중심 좌표와 최대 반지름 (viewBox 300×236 기준)
   const CENTER_X = 150, CENTER_Y = 118, RADIUS = 76;
@@ -521,7 +536,7 @@ function hexNode(form, name, types) {
         svgEl('tspan', { class: 'hex__name' }, axis[0]),
         svgEl('tspan', { x, dy: 13, class: 'hex__val' }, axis[1]));
     }));
-  svg.append(svgEl('title', {}, '종족값 320 · CP 5,500 기준 비율. 레이드/PvP는 도감 순위표 최고 순위'));
+  svg.append(svgEl('title', {}, meter ? '종족값 320 · CP 5,500 기준 비율. 레이드/PvP 는 가성비와 같은 0~100 점수 (레이드 = 가장 잘 통하는 보스 3종 평균, PvP = 리그 상위 2개 평균)' : '종족값 320 · CP 5,500 기준 비율. 레이드/PvP는 도감 순위표 최고 순위'));
   return el('div', { class: 'hex' }, svg);
 }
 

@@ -39,7 +39,7 @@ from sprite import sprite_id
 from names import name_ko, species, FORM_KO
 
 # ── 설정 ─────────────────────────────────────────────────────────────────────
-APP_VERSION = 'v3.23.0'  # 첫 화면 가볍게 — CSS 두 번 실리던 것 제거 · 안 쓰는 Inter 웹폰트 제거 · Pretendard CSS 렌더 비차단
+APP_VERSION = 'v3.24.0'  # 검색 줄 PvP/PvE 알약 · 육각형 레이드/PvP 축을 순위 대신 전 종 점수로
 # 2026-09-05 v2.7.3 빌드 채널 — 'prod'(기본) / 'dev'. dev 브랜치 워크플로(.github/workflows/deploy-dev.yml)가 BUILD_CHANNEL=dev 로 부른다.
 # dev 빌드는 (1) 버전 배지에 -dev 를 붙여 화면에서 구분되고 (2) GA 스니펫을 넣지 않아 통계가 섞이지 않고
 # (3) robots.txt 를 전부 차단 + <meta name="robots" content="noindex"> 로 검색 색인을 막는다. 나머지는 prod 와 동일
@@ -207,8 +207,9 @@ def build_pvp_tables(game_master):
             pokemon = species[entry['speciesId']]
             korean_name, form_label = name_ko(entry['speciesId'])
             # 2026-09-05 form(폼 라벨)·dex 를 함께 남긴다 — roles_build.py 가 '도감번호|폼라벨' 키를 만들 때 쓴다
+            # 2026-09-13 v3.24.0 score 도 남긴다 — value_build.py 가 전 종 PvP 점수표(meter)를 만드는 데 쓴다 (data.js 에는 안 실린다)
             all_rows.append({'rank': index+1, 'name': korean_name, 'sprite': sprite_id(pokemon['dex'], form_label),
-                             'dex': pokemon['dex'], 'form': form_label,
+                             'dex': pokemon['dex'], 'form': form_label, 'score': entry['score'],
                              'types': [type_name for type_name in pokemon['types'] if type_name != 'none'], 'en': pokemon['speciesName']})
         pvp_all[league_id] = all_rows
         # 상위 TOP위: 추천 기술 구성과 점수까지 붙인 상세 표
