@@ -1,5 +1,5 @@
 # 포켓몬고에 실제 출시된 다이맥스/거다이맥스 목록
-# 출처: Bulbapedia "Dynamax (GO)", "Gigantamax (GO)" — 2026-08-25 기준
+# 출처: Bulbapedia "Dynamax (GO)", "Gigantamax (GO)" — 2026-08-25 기준 · 2026-09-14 뿔카노 계열 추가
 # 형식: D POKEMON_ID [FORM]  → 다이맥스 가능
 #       G POKEMON_ID [FORM]  → 거다이맥스 가능
 # 새로 출시되면 한 줄 추가. '#' 뒤는 주석.
@@ -146,10 +146,12 @@ D MAGIKARP
 D GYARADOS
 D HITMONTOP
 
+# 2026-09-14 맥스 먼데이 — 다이맥스 뿔카노 출시 (LeekDuck: Dynamax Rhyhorn during Max Monday 2026-09-14). 진화형 코뿌리·거대코뿌리도 다이맥스 유지
+D RHYHORN          # 2026-09-14
+D RHYDON           # 2026-09-14
+D RHYPERIOR        # 2026-09-14
+
 # 예정 (출시 후 주석 해제)
-# D RHYHORN        # 2026-09-14
-# D RHYDON         # 2026-09-14
-# D RHYPERIOR      # 2026-09-14
 # D SNEASEL        # 2026 TBA
 # D WEAVILE        # 2026 TBA
 # D UXIE           # 2026 TBA

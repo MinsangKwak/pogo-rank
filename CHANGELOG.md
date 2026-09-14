@@ -1,6 +1,6 @@
 # 변경 이력
 
-**버전을 눌러 펼쳐 보세요.** 128개 판이 쌓여 한눈에 훑기 어려워, 각 버전을 접어 두었습니다.
+**버전을 눌러 펼쳐 보세요.** 129개 판이 쌓여 한눈에 훑기 어려워, 각 버전을 접어 두었습니다.
 
 각 줄은 `버전 — 날짜 · 그 판에서 한 일` 순서입니다. 최신이 위로 옵니다.
 형식은 [Keep a Changelog](https://keepachangelog.com/ko/1.1.0/)를 따릅니다.
@@ -11,6 +11,17 @@
 > 사용자가 읽는 패치노트는 서비스 안 [🎉 패치노트](https://minsangkwak.github.io/pogo-rank/#/release) 화면에 있습니다(영문판 포함).
 > 이 파일은 **왜 그렇게 고쳤는지**까지 남기는 개발 기록이라 더 깁니다.
 
+
+<details open>
+<summary><b>v3.28.2</b> — 2026-09-14 · <code>데이터</code> 다이맥스 뿔카노 · 코뿌리 · 거대코뿌리 출시 반영</summary>
+
+2026-09-14 맥스 먼데이로 다이맥스 뿔카노가 나왔다(LeekDuck `Dynamax Rhyhorn during Max Monday`, `data/gameday.json` events 에서 확인). 진화형 코뿌리 · 거대코뿌리도 다이맥스를 유지한다.
+
+- `backend/config/max_released.txt` — 예정으로 주석 처리해 두었던 `D RHYHORN` · `D RHYDON` · `D RHYPERIOR` 세 줄을 해제. 다이맥스 출시 목록은 자동 갱신되지 않아(`DEVELOPMENT.md`) 이 파일이 유일한 입력이다.
+- `value_build.py` 산출: `max_pool.json` 159 → 162종(111 · 112 · 464 = D) → 도감·상세의 "맥스 배틀 다이맥스 가능" 표시. `dynamax_tier.json` overall · ground · rock 에 거대코뿌리, ground 에 코뿌리 · 뿔카노. `dynamax.json` 딜러 — 거대코뿌리 전기 1위 · 불꽃 2위 · 바위 5위 · 물 16위 · 땅 28위, 코뿌리 전기 3위 · 불꽃 8위 · 바위 13위. `dynamax_tank.json` — 거대코뿌리 독 3위 · 전기 2위 · 노말 · 비행 · 바위 4위, 코뿌리 그 아래, 뿔카노 독 12위 · 전기 7위. 활용처(`usage`)에서 다이맥스 거대코뿌리가 19곳으로 메가Y 뮤츠와 같은 최다.
+- 코드 변경 없음. 회귀 통과.
+
+</details>
 
 <details open>
 <summary><b>v3.28.1</b> — 2026-09-14 · <code>추가</code> 네이버 서치어드바이저 소유 확인 메타</summary>
