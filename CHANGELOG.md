@@ -1,6 +1,6 @@
 # 변경 이력
 
-**버전을 눌러 펼쳐 보세요.** 124개 판이 쌓여 한눈에 훑기 어려워, 각 버전을 접어 두었습니다.
+**버전을 눌러 펼쳐 보세요.** 125개 판이 쌓여 한눈에 훑기 어려워, 각 버전을 접어 두었습니다.
 
 각 줄은 `버전 — 날짜 · 그 판에서 한 일` 순서입니다. 최신이 위로 옵니다.
 형식은 [Keep a Changelog](https://keepachangelog.com/ko/1.1.0/)를 따릅니다.
@@ -11,6 +11,35 @@
 > 사용자가 읽는 패치노트는 서비스 안 [🎉 패치노트](https://minsangkwak.github.io/pogo-rank/#/release) 화면에 있습니다(영문판 포함).
 > 이 파일은 **왜 그렇게 고쳤는지**까지 남기는 개발 기록이라 더 깁니다.
 
+
+<details open>
+<summary><b>v3.27.0</b> — 2026-09-14 · <code>변경</code> 서비스명 moncamp(몬캠프) · <code>추가</code> moncamp.kr 도메인 준비</summary>
+
+### 왜 monlab 을 하루 만에 접었나
+
+`monlab` 은 `.com`/`.app` 이 모두 선점돼 있었다. 도메인을 사면서 이름을 다시 골랐고(작업 지시서 9절), `POGO` 는 EA 의 살아있는 등록상표(미국 2836746, 9류 비디오 게임 소프트웨어 · 41류 온라인 게임 서비스)라 도메인 구입과 광고가 붙는 순간 상업적 사용이 돼 UDRP 분쟁 위험이 생긴다. 바꾸는 비용이 가장 싼 지금 뺀다. `moncamp.kr` 은 가비아에서 2028-09-14 까지 등록.
+
+### 이름
+
+monlab 이 적힌 **현재 상태** 파일 전부를 moncamp 로: `index.html`(제목·og/twitter·apple·로딩·`<h1>`·지식재산 안내), `app-shell.js`, `manifest.webmanifest`, `robots.txt`, `build.py`(404·dev robots), `terms.js`·`privacy.js`, `home.js` 인사, `router.js` 스타일가이드, `i18n-en.js` 3키, `og_gen.py`(MON / CAMP) → `og.png`, 테스트 셋. 조사도 고쳤다 — 몬캠프는 받침이 없어 `moncamp는`·`moncamp와`·`moncamp를`. 패치노트·CHANGELOG·README 표에 남은 monlab 은 이력이라 그대로.
+
+### 도메인 준비 — 코드가 할 몫
+
+**2. 경로 하드코딩 점검** — 프로젝트 페이지(`/pogo-rank/`)에서 루트로 올라가도 깨지는 것이 없다: manifest `start_url`·`scope` 가 `./`, 서비스워커 등록 `sw.js` 와 캐시 키 `./`·`location.origin`, 라우터 basePath 없음(해시 라우팅), 루트 절대 경로(`/sprites` 등) 0건, CSP 에 github.io 호스트 없음. 고친 것은 **절대 주소**뿐 — `build.py SITE_URL`·`DEV_SITE_URL`(sitemap·robots Sitemap 줄의 출처) → `https://moncamp.kr/`·`https://dev.moncamp.kr/`, `index.html` canonical·og:url·og:image·twitter:image, `robots.txt` 주석. `ship_dev.sh`·`verify_deploy.sh` 의 주소도.
+
+**숨은 함정 둘** — 지시서에 없던 항목. `app.js` 의 서비스워커 등록과 `build.py` 의 GA 측정 ID 노출이 `location.hostname.endsWith('github.io')` 만 보고 있어, 도메인을 옮기면 PWA 오프라인 캐시와 통계가 **조용히** 꺼진다. 둘 다 `moncamp.kr` 을 조건에 넣었다.
+
+**3. 배포 방식 판정** — 실서비스 `deploy.yml` 은 `actions/upload-pages-artifact` + `actions/deploy-pages`(**Actions 배포**): CNAME 파일은 무시되고 저장소 Settings → Pages 의 Custom domain 값만 쓰인다. 미리보기 `deploy-dev.yml` 은 `peaceiris/actions-gh-pages` 가 `pogo-rank-dev` 의 `gh-pages` 브랜치에 push(**브랜치 배포**): 브랜치 루트에 `CNAME` 이 있어야 하고 `force_orphan: true` 라 매 배포마다 다시 실려야 한다 → 워크플로에 `cname: dev.moncamp.kr` 한 줄. `frontend/static/CNAME` 은 만들지 않는다 — 실서비스 `dist` 에도 실려 두 방식이 섞인다.
+
+### 사람이 할 몫 (코드 밖) — `docs/OPERATIONS.md` 12절
+
+Firebase 승인 도메인(`moncamp.kr`·`dev.moncamp.kr`) → `pogo-rank-dev` Settings → Pages Custom domain `dev.moncamp.kr` → `pogo-rank` Settings → Pages Custom domain `moncamp.kr` → 두 곳 Enforce HTTPS → 그다음 deploy. 이 판을 dev 에 올리면 미리보기가 `dev.moncamp.kr` 로 옮겨 가고 옛 주소는 리다이렉트된다.
+
+### 테스트
+
+`nav`·`shell`·`hardening` 이 moncamp 기대. `hardening` 의 canonical = og:url 검사는 주소가 바뀌어도 그대로 성립. 회귀 24묶음 통과.
+
+</details>
 
 <details open>
 <summary><b>v3.26.0</b> — 2026-09-14 · <code>변경</code> 서비스명 monlab(몬랩) · <code>수정</code> KR/EN 전환 엄격 감사</summary>

@@ -55,7 +55,7 @@ GitHub Pages는 **파일을 나눠주기만 하는 호스팅**입니다. 우리�
 
 - [ ] **Firebase 사용량 확인 습관** — 콘솔 → Firestore → 사용량 탭. 일 읽기가 평소의 10배로 튀면 그때 4번 항목을 본다
 - [ ] **Blaze(유료)로 올리지 않기** — 지금은 Spark라 과금 위험이 0. 올릴 일이 생기면 **반드시 예산 알림부터** 설정
-- [ ] **승인된 도메인 유지** — Authentication → 설정 → 승인된 도메인에 `minsangkwak.github.io`만 있으면 됨. 다른 사이트가 우리 Firebase로 로그인 못 함
+- [ ] **승인된 도메인 유지** — Authentication → 설정 → 승인된 도메인에 `minsangkwak.github.io` · `moncamp.kr` · `dev.moncamp.kr`(2026-09-14 v3.27.0)만 있으면 됨. 다른 사이트가 우리 Firebase로 로그인 못 함
 - [ ] robots.txt는 이미 배포됨 (아래 4번). 별도 조치 불필요
 
 ### 판이 커지면 (반나절, 트리거는 5번)
