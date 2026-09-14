@@ -105,7 +105,7 @@ suite(async () => {
     const bar = await page.locator('#app-title').textContent();
     const headVisible = await page.locator('#page-head').isVisible();
     // v2.30.0 좁은 화면도 같은 규칙 — 상단 바는 로고, 화면 이름은 본문 헤더
-    ok(`${label} 상단 바는 로고`, bar === 'POGO PLAN', bar);
+    ok(`${label} 상단 바는 로고`, bar === 'moncamp', bar);
     ok(`${label} 화면 헤더 보임`, headVisible && (await page.locator('#page-head h2').textContent()) === '레이드 · PvE');
     const headTop = (await page.locator('#page-head').boundingBox()).y;
     const contentTop = (await page.locator('#content').boundingBox()).y;

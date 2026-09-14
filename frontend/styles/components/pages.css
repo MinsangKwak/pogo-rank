@@ -65,6 +65,17 @@
    넓은 화면 줄 모드에서만 켠다 (components/pc-theme.css) */
 .dex__stats { display: none; }
 .dex__types .dot { width: 0.8rem; height: 0.8rem; border-radius: 50%; display: inline-block; }
+/* 2026-09-13 v3.24.0 이름 + PvP/PvE 알약 한 칸. 자리가 있으면 한 줄, 없으면 알약이 이름 아래로 접힌다 (min-width 0 이 있어야 줄어든다) */
+.dex__name { display: flex; flex-wrap: wrap; align-items: center; gap: 0.2rem 0.6rem; min-width: 0; }
+.dex__list.is-grid .dex__name { justify-content: center; }
+/* PvP/PvE 알약 — 높은 쪽(.is-lead)만 진하게, 없는 쪽(.is-none)은 흐리게 */
+.dex__use { display: inline-flex; gap: 0.3rem; flex: none; }
+.dex__use-pill { display: inline-flex; align-items: baseline; gap: 0.25rem; padding: 0 0.5rem; border: 1px solid var(--line); border-radius: 99.9rem;
+  font-size: 1.05rem; line-height: 1.7; color: var(--muted); white-space: nowrap; }
+.dex__use-pill em { font-style: normal; letter-spacing: 0.02em; }
+.dex__use-val { font-weight: 600; color: inherit; }
+.dex__use-pill.is-lead { color: var(--fg); border-color: var(--fg); }
+.dex__use-pill.is-none { opacity: .5; }
 
 /* 2026-09-03 도감 상단 간격 */
 .page__body > .boss__search { margin-bottom: 1.2rem; }

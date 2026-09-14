@@ -103,7 +103,7 @@ async function openTrainerAdmin() {
   const list = el('div', { class: 'admin__rows' }, ...rows.map((trainer) => el('div', { class: 'admin__row' },
     el('div', { class: 'admin__who' }, el('b', {}, trainer.name), el('span', { class: 'account__email' }, fmtCode(trainer.code))),
     el('button', { class: 'uchip admin__act is-danger', onclick: async () => {
-      if (!confirm(`${trainer.name} 코드를 삭제할까요?`)) return;
+      if (!confirm(t(`${trainer.name} 코드를 삭제할까요?`))) return;
       await AUTH.db.collection('trainers').doc(trainer.id).delete().catch(() => {});
       // 관리 팝업과 드로어의 목록을 둘 다 다시 그린다
       openTrainerAdmin();

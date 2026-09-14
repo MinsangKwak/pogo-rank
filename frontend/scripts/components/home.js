@@ -101,7 +101,7 @@ function renderServiceHome() {
     .map(([group, label]) => [label, ROUTES.filter((route) => route.nav && !route.parent && (route.group || 'mine') === group)])
     .filter(([, routes]) => routes.length);
   const features = el('section', { class: 'home__features', 'aria-label': '서비스 기능' },
-    el('div', { class: 'home__section' }, el('h3', {}, '무엇을 해볼까요?'), el('span', {}, 'POGO PLAN과 함께하는 포켓몬 라이프')),
+    el('div', { class: 'home__section' }, el('h3', {}, '무엇을 해볼까요?'), el('span', {}, 'moncamp와 함께하는 포켓몬 라이프')),
     el('div', { class: 'home__service-grid' }, ...groups.map(([label, routes], index) =>
       el('section', { class: 'home__service-group' },
         el('h4', { class: 'home__group' }, el('span', {}, `0${index + 1}`), label),

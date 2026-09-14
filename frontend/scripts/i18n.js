@@ -181,12 +181,35 @@ function translateTree(root) {
 // 그려지는 것을 지켜본다. 화면은 render() 말고도 여러 곳(도감 청크·상성 결과·검색 결과)에서
 // 부분적으로 다시 그려지므로, 그때마다 부르는 대신 한 번 걸어 두고 새로 붙는 가지만 훑는다.
 // 글자만 바꾸므로(childList 가 아니다) 이 관찰자가 자기 자신을 다시 깨우지 않는다
+// 2026-09-14 v3.26.0 속성·글자 바꿈도 지켜본다 — setAttribute('aria-label', …) 나 node.data = … 로
+// 이미 있는 노드의 값만 갈아 끼우면 childList 가 울리지 않아 그 줄만 한국어로 남았다 (테마 버튼 aria-label 등).
+// 옮긴 값에는 한글이 없으므로 다시 울려도 곧바로 돌아온다 — 스스로를 깨우는 고리는 생기지 않는다
 function i18nWatch() {
   translateTree(document.body);
   new MutationObserver((records) => {
     if (LANG !== 'en') return;
-    for (const record of records) for (const node of record.addedNodes) translateTree(node);
-  }).observe(document.body, { childList: true, subtree: true });
+    for (const record of records) {
+      if (record.type === 'childList') { for (const node of record.addedNodes) translateTree(node); continue; }
+      const target = record.target;
+      if (record.type === 'characterData') {
+        const source = target.data;
+        if (!/[가-힣]/.test(source) || I18N_SKIP_TAGS.has(target.parentElement?.tagName) || target.parentElement?.closest('[data-i18n="off"]')) continue;
+        const translated = t(source);
+        if (translated === source) continue;
+        target.__koText = source;
+        target.data = translated;
+        continue;
+      }
+      const attribute = record.attributeName;
+      const value = target.getAttribute(attribute);
+      if (value == null || !/[가-힣]/.test(value) || target.closest('[data-i18n="off"]')) continue;
+      const translated = t(value);
+      if (translated === value) continue;
+      target.__ko ??= {};
+      target.__ko[attribute] = value;
+      target.setAttribute(attribute, translated);
+    }
+  }).observe(document.body, { childList: true, subtree: true, characterData: true, attributes: true, attributeFilter: I18N_ATTRS });
 }
 
 // 한국어로만 두는 화면(패치노트·일정표·개인정보처리방침·이용약관)에 다는 안내 한 줄.

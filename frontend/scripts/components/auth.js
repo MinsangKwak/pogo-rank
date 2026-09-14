@@ -601,7 +601,7 @@ async function openAdminPanel() {
     openAdminPanel();
   })), '대기 중인 요청이 없어요.'));
   body.append(renderSection('승인된 친구', (allow?.docs || []).map((doc) => adminRow(doc.id, { ...doc.data(), uid: doc.data().uid || cardByEmail.get(doc.id)?.uid || '' }, '해제', async () => {
-    if (!confirm(`${doc.id} 승인을 해제할까요?`)) return;
+    if (!confirm(t(`${doc.id} 승인을 해제할까요?`))) return;
     await AUTH.db.collection('allowlist').doc(doc.id).delete();
     openAdminPanel();
   })), '아직 승인된 친구가 없어요.'));

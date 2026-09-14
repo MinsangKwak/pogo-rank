@@ -39,7 +39,7 @@ from sprite import sprite_id
 from names import name_ko, species, FORM_KO
 
 # ── 설정 ─────────────────────────────────────────────────────────────────────
-APP_VERSION = 'v3.22.0'  # 홈 순위 세 덩이 — 순위표 세 곳의 상위 3종을 카드 아홉 장으로
+APP_VERSION = 'v3.27.0'  # 서비스명 moncamp(몬캠프) · moncamp.kr 도메인 준비 (v3.25.0 은 feature-advertisement 브랜치에 예약)
 # 2026-09-05 v2.7.3 빌드 채널 — 'prod'(기본) / 'dev'. dev 브랜치 워크플로(.github/workflows/deploy-dev.yml)가 BUILD_CHANNEL=dev 로 부른다.
 # dev 빌드는 (1) 버전 배지에 -dev 를 붙여 화면에서 구분되고 (2) GA 스니펫을 넣지 않아 통계가 섞이지 않고
 # (3) robots.txt 를 전부 차단 + <meta name="robots" content="noindex"> 로 검색 색인을 막는다. 나머지는 prod 와 동일
@@ -48,8 +48,8 @@ if BUILD_CHANNEL == 'dev':
     APP_VERSION += '-dev'
 # 2026-09-08 v2.27.0 정식 주소 — canonical · og:url · og:image · sitemap 이 모두 여기서 나온다.
 # 커스텀 도메인을 붙이면 이 두 줄만 고치면 된다 (index.html 에 흩어 두지 않은 이유)
-SITE_URL = 'https://minsangkwak.github.io/pogo-rank/'
-DEV_SITE_URL = 'https://minsangkwak.github.io/pogo-rank-dev/'
+SITE_URL = 'https://moncamp.kr/'            # 2026-09-14 v3.27.0 커스텀 도메인 (전: minsangkwak.github.io/pogo-rank/)
+DEV_SITE_URL = 'https://dev.moncamp.kr/'    # 미리보기 (전: minsangkwak.github.io/pogo-rank-dev/)
 # 2026-09-03 v2.0.0: 데이터는 dist/data.js 별도 파일, 스프라이트는 개별 png + lazy 로딩
 # SPRITE_INLINE=1 환경변수면 옛 방식(단일 HTML, base64 인라인) — 채팅 미리보기용
 INLINE = os.environ.get('SPRITE_INLINE') == '1'
@@ -102,7 +102,7 @@ def read_config():
 # frontend/scripts/components/consent.js loadAnalytics() 가 localStorage pogo_consent 가 'granted' 일 때 한다.
 # 배포 도메인(github.io)에서만 ID 를 노출해 로컬 미리보기·개발 중엔 동의해도 집계되지 않는다
 GA_SNIPPET = '''<script>
-if (location.hostname.endsWith('github.io')) window.GA_PENDING_ID = '__GA_ID__';
+if (location.hostname.endsWith('github.io') || location.hostname.endsWith('moncamp.kr')) window.GA_PENDING_ID = '__GA_ID__';
 </script>'''
 
 # ── 번들 목록 — 순서가 곧 캐스케이드(CSS)·실행 순서(JS)이므로 새 파일은 여기 목록에 추가 ──
@@ -207,8 +207,9 @@ def build_pvp_tables(game_master):
             pokemon = species[entry['speciesId']]
             korean_name, form_label = name_ko(entry['speciesId'])
             # 2026-09-05 form(폼 라벨)·dex 를 함께 남긴다 — roles_build.py 가 '도감번호|폼라벨' 키를 만들 때 쓴다
+            # 2026-09-13 v3.24.0 score 도 남긴다 — value_build.py 가 전 종 PvP 점수표(meter)를 만드는 데 쓴다 (data.js 에는 안 실린다)
             all_rows.append({'rank': index+1, 'name': korean_name, 'sprite': sprite_id(pokemon['dex'], form_label),
-                             'dex': pokemon['dex'], 'form': form_label,
+                             'dex': pokemon['dex'], 'form': form_label, 'score': entry['score'],
                              'types': [type_name for type_name in pokemon['types'] if type_name != 'none'], 'en': pokemon['speciesName']})
         pvp_all[league_id] = all_rows
         # 상위 TOP위: 추천 기술 구성과 점수까지 붙인 상세 표
@@ -456,6 +457,10 @@ def render_index_html(game_master, config, data_js):
     # index.html 템플릿의 자리표시자를 차례로 실제 내용으로 치환한다
     html = open('frontend/index.html', encoding='utf-8').read()
     # CSS·JS 번들 삽입
+    # 2026-09-13 v3.23.0 자리표는 **정확히 한 번**만 있어야 한다. 주석 안에 '__STYLES__' 라고 적어 둔 줄이 있어
+    # str.replace 가 거기에도 155KB 번들을 끼워 넣었다 — v2.52.0(9/10) 부터 사흘, index.html 이 862KB 였다 (같은 CSS 를 두 번 파싱)
+    for mark in ('__STYLES__', '__SCRIPTS__'):
+        assert html.count(mark) == 1, f'{mark} 자리표가 {html.count(mark)}개 — frontend/index.html 에 정확히 하나여야 한다'
     html = html.replace('__STYLES__', bundle('styles', STYLES, '/*')).replace('__SCRIPTS__', bundle('scripts', SCRIPTS, '//'))
     # 데이터 기준일과 앱 버전 표시
     html = html.replace('__TIMESTAMP__', game_master['timestamp']).replace('__VERSION__', APP_VERSION)
@@ -527,7 +532,7 @@ def write_site_files(game_master, config):
             'Policy: https://github.com/minsangkwak/pogo-rank/blob/main/SECURITY.md\n')
     if BUILD_CHANNEL == 'dev':
         # dev 미리보기는 검색에 잡히면 안 된다 — 정적 robots.txt 를 전부 차단으로 덮어쓴다
-        open('dist/robots.txt', 'w', encoding='utf-8').write('# POGO PLAN dev 미리보기 — 색인 금지\nUser-agent: *\nDisallow: /\n')
+        open('dist/robots.txt', 'w', encoding='utf-8').write('# moncamp dev 미리보기 — 색인 금지\nUser-agent: *\nDisallow: /\n')
     else:
         # robots.txt 끝에 sitemap 위치를 알린다 (정적 파일에 주소를 박아 두지 않으려고 여기서 붙인다)
         with open('dist/robots.txt', 'a', encoding='utf-8') as robots:
@@ -536,7 +541,7 @@ def write_site_files(game_master, config):
     # 서비스 안으로 돌려보내는 문을 만들어 둔다
     open('dist/404.html', 'w', encoding='utf-8').write(f'''<!DOCTYPE html>
 <html lang="ko"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="robots" content="noindex"><title>페이지를 찾을 수 없어요 — POGO PLAN</title>
+<meta name="robots" content="noindex"><title>페이지를 찾을 수 없어요 — moncamp</title>
 <style>body{{margin:0;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;
 background:#fff;color:#17181a;font-family:system-ui,-apple-system,sans-serif;text-align:center;padding:24px}}
 a{{color:inherit}}p{{margin:0;color:#7a7c80;font-size:14px;line-height:1.6}}
@@ -544,7 +549,7 @@ a{{color:inherit}}p{{margin:0;color:#7a7c80;font-size:14px;line-height:1.6}}
 </head><body>
 <strong style="font-size:20px">페이지를 찾을 수 없어요</strong>
 <p>주소가 바뀌었거나 없는 페이지입니다.</p>
-<p><a href="{site_url}">POGO PLAN 첫 화면으로 →</a></p>
+<p><a href="{site_url}">moncamp 첫 화면으로 →</a></p>
 </body></html>
 ''')
 

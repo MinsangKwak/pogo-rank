@@ -150,6 +150,25 @@ suite(async () => {
   ok('칸을 비우면 전 종으로 돌아온다', (await page.evaluate(() => location.hash)) === '#/dex' && (await rows().count()) === 100,
     `${await page.evaluate(() => location.hash)} / ${await rows().count()}`);
 
+  // ── 2026-09-13 v3.24.0 검색 줄의 PvP/PvE 알약 + 상세 육각형의 점수 축 ─────────────────
+  // 대짱이는 PvP(슈퍼·하이퍼 89) 쪽이 세고 레이드는 A 티어(59점)다. 전에는 줄에 어느 쪽인지 표시가 없었고,
+  // 육각형의 레이드 축은 "30위 안 순위표" 가 메가·섀도우뿐이라 원종은 미등재(0.08)로 누웠다
+  await goHash('#/dex?q=대짱이');
+  await page.waitForSelector('#page .dex__row .dex__use', { timeout: 15000 }).catch(() => {});
+  const useRow = page.locator('#page .dex__row', { hasText: '대짱이' }).first();
+  const pills = await useRow.locator('.dex__use-pill').evaluateAll((nodes) => nodes.map((n) => ({ label: n.querySelector('em').textContent, value: Number(n.querySelector('.dex__use-val').textContent), lead: n.classList.contains('is-lead') })));
+  ok('검색 줄에 PvP·PvE 알약 둘', pills.length === 2 && pills[0].label === 'PvP' && pills[1].label === 'PvE', JSON.stringify(pills));
+  ok('대짱이는 PvP 쪽이 진하다 (PvP > PvE)', pills[0]?.lead === true && pills[0].value > pills[1]?.value, JSON.stringify(pills));
+  ok('PvE 도 0 이 아니다 (A 티어 어태커)', pills[1]?.value >= 50, JSON.stringify(pills));
+  await useRow.click();
+  await page.waitForSelector('.hex__svg', { timeout: 15000 }).catch(() => {});
+  const hex = await page.evaluate(() => Object.fromEntries([...document.querySelectorAll('.hex__label')].map((t) => [t.querySelector('.hex__name').textContent, t.querySelector('.hex__val').textContent])));
+  ok('육각형 레이드 축이 순위가 아니라 점수', /^\d+점$/.test(hex['레이드'] || ''), JSON.stringify(hex));
+  ok('대짱이 레이드 축이 눕지 않는다 (50점 이상)', parseInt(hex['레이드'], 10) >= 50, hex['레이드']);
+  ok('육각형 PvP 축도 점수 (80점 이상)', /^\d+점$/.test(hex['PvP'] || '') && parseInt(hex['PvP'], 10) >= 80, hex['PvP']);
+  await page.keyboard.press('Escape');
+  await page.waitForTimeout(300);
+
   ok('페이지 오류 없음', errs.length === 0, errs.join(' | ').slice(0, 200));
   await finish(browser);
 });
