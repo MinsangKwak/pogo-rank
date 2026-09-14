@@ -46,10 +46,11 @@
 
 ## 버전 이력
 
-최근 일곱 판만 펼쳐 둡니다. 전체 117개는 아래를 눌러 보세요 — 사용자가 읽는 짧은 판은 서비스 안 [🎉 패치노트] 화면에, 왜 그렇게 고쳤는지까지는 [변경 이력](CHANGELOG.md)에 있습니다.
+최근 일곱 판만 펼쳐 둡니다. 전체 118개는 아래를 눌러 보세요 — 사용자가 읽는 짧은 판은 서비스 안 [🎉 패치노트] 화면에, 왜 그렇게 고쳤는지까지는 [변경 이력](CHANGELOG.md)에 있습니다.
 
 | 버전 | 날짜 | 내용 |
 |---|---|---|
+| **v3.28.3** | 2026-09-14 | **(수정) 미출시 다이맥스 두랄루돈이 '맥스 배틀 가능' 으로 표시** — `backend/config/max_released.txt` 88줄의 `D DURALUDON` 이 활성 줄에 있어 `max_pool.json` 에 실렸고(162종), 도감·상세에 '맥스 배틀 다이맥스 가능' 배지가 붙었다. 같은 파일 꼬리말은 두랄루돈을 **미출시 거다이맥스**로 적고 있다 — 게임마스터에 거다이맥스 기술(`SOURDOUGH_MOVE_MAPPING_SETTINGS`)이 있는 것과 다이맥스 출시를 헷갈린 자리다. 예정 블록으로 되돌려 161종. 티어표·딜러·탱커에는 원래 없었다(점수가 상위 30 밖). 파일 머리말에 'D 와 G 는 별개 · 확신 없으면 예정 블록에' 를 못 박았다. 같은 꼬리말에 이름이 있는 이브이·아머까오·브리무음·우라오스는 **다이맥스는 출시된 종**이라 그대로 둔다(거다이맥스만 미출시) |
 | **v3.28.2** | 2026-09-14 | **(데이터) 다이맥스 뿔카노 · 코뿌리 · 거대코뿌리** — 2026-09-14 맥스 먼데이 출시(LeekDuck `Dynamax Rhyhorn during Max Monday`, `gameday.json` events 로 확인). `backend/config/max_released.txt` 에 예정으로 주석 처리돼 있던 세 줄을 해제 → `value_build.py` 가 `max_pool.json`(111·112·464 = D, 159 → 162종) · `dynamax_tier.json`(overall·ground·rock 에 거대코뿌리, ground 에 코뿌리·뿔카노) · `dynamax.json` 딜러(거대코뿌리: 전기 1위 · 불꽃 2위 · 바위 5위 · 물 16위 · 땅 28위, 코뿌리: 전기 3위 · 불꽃 8위 · 바위 13위) · `dynamax_tank.json`(거대코뿌리: 독 3위 · 전기 2위 · 노말·비행·바위 4위) 를 다시 굽는다. 활용처 `usage` 에서 다이맥스 거대코뿌리 19곳으로 메가Y 뮤츠와 같은 최다. 코드 변경 없음, 회귀 통과 |
 | **v3.28.1** | 2026-09-14 | **네이버 서치어드바이저 소유 확인 메타** — 네이버는 DNS 확인 방식이 없어 `<meta name="naver-site-verification" content="a5562549…">` 한 줄을 `index.html` `<head>` 에 넣는다(robots 메타 바로 아래). 값은 HTML 에 그대로 실리는 공개 식별자. dev 빌드에도 실리지만 dev 는 noindex·robots 전체 차단이라 무관. Google 은 같은 날 Search Console 도메인 속성 + 가비아 TXT 로 확인 완료(코드 변경 없음). `OPERATIONS.md` 13절에 반영 |
 | **v3.28.0** | 2026-09-14 | **검색 색인 열기** — v3.6.0 에 "아직 검색엔진에 올릴 단계가 아니다" 로 뺐던 것을 도메인이 생기면서 되살렸다. `index.html` 에 `<meta name="robots" content="index, follow, max-image-preview:large">` 와 JSON-LD(`@graph`: WebSite + WebApplication, 이름·별칭 몬캠프·설명·og 그림·무료·ko/en). JSON-LD 는 실행되지 않는 데이터 블록이라 CSP `script-src` 에 안 걸린다. **dev 는 그 줄을 바꿔 끼운다** — `build.py ROBOTS_INDEX_META` 상수를 정확히 한 번 찾아(assert) `noindex, nofollow` 로 치환. 전에는 `</title>` 뒤에 noindex 를 끼워 넣었는데 이제 index 줄이 원본에 있으니 두 줄이 공존하지 않게 치환으로 바꿨다. `hardening` 의 '구조화 데이터 없음'·'robots 는 dev 의 noindex 한 줄뿐' 두 검사를 뒤집어 넷으로(JSON 파싱·WebSite/WebApplication·주소 = canonical·robots 정확히 한 줄 index/noindex). `verify_deploy.sh` 의 prod noindex 없음/dev noindex 있음 검사는 그대로 성립. 사람이 할 등록 절차(Search Console 도메인 속성 + 가비아 TXT · 네이버 서치어드바이저)는 `OPERATIONS.md` 13절 |
@@ -59,7 +60,7 @@
 | **v3.24.0** | 2026-09-13 | **검색 줄 PvP/PvE 알약 · 육각형 레이드/PvP 축을 순위 대신 점수로** — 빌드가 전 종 점수표 `VALUE_DATA.meter[이름] = [PvE, PvP]`(0~100, 1,571종, 25KB)를 싣는다(`value_build.py`, 산식은 가성비와 동일: PvE = 보스 타입별 `(score/최강)^0.25` 상위 3개 평균, PvP = 리그 점수 상위 2개 평균 · 하나면 0.8배; `build.py` 가 `pvp_all.json` 에 `score` 를 남긴다). `detail.js usageMeterOf(name)` 이 한 자리에서 읽고, 도감·검색 줄(`pages.js dexUseNode`)이 이름 옆에 `[PvP 89][PvE 59]` 알약(높은 쪽 `.is-lead`), `hexNode` 의 레이드·PvP 축이 순위 대신 이 점수(`N점`)로 선다. 왜: 축이 "어느 순위표 30위 안 최고 순위" 라 대짱이(원종)는 메가·섀도우만 등재돼 미등재 0.08 로 누웠다 — 실제로는 땅·물 보스 A 티어(59점). 옛 빌드(점수표 없음)는 순위로 되돌아간다. 회귀 `dex-search` +6 |
 
 <details>
-<summary>이전 110개 판 펼쳐 보기</summary>
+<summary>이전 111개 판 펼쳐 보기</summary>
 
 | 버전 | 날짜 | 내용 |
 |---|---|---|
