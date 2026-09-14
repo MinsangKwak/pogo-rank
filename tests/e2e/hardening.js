@@ -157,13 +157,16 @@ suite(async () => {
   }));
   ok('og.png 실제로 받아짐', !!og && og.w === 1200 && og.h === 630, JSON.stringify(og));
 
-  // 2026-09-12 v3.6.0 검색 색인용 표시를 뺐다 — 아직 검색엔진에 올릴 단계가 아니다.
-  // 구조화 데이터(JSON-LD)와 실서비스 robots 줄이 **없음**을 지킨다. 되살릴 때 이 검사 둘을 뒤집으면 된다
-  const ldCount = await page.evaluate(() => document.querySelectorAll('script[type="application/ld+json"]').length);
-  ok('구조화 데이터 없음', ldCount === 0, String(ldCount));
+  // 2026-09-14 v3.28.0 검색 색인을 열었다 (v3.6.0 에 뺐던 것). 로컬 빌드는 prod 채널이라 index 한 줄,
+  // dev 빌드는 build.py 가 그 줄을 noindex 로 바꿔 끼운다 — 어느 쪽이든 robots 메타는 **정확히 한 줄**이다
+  const ld = await page.evaluate(() => [...document.querySelectorAll('script[type="application/ld+json"]')].map((n) => { try { return JSON.parse(n.textContent); } catch { return null; } }));
+  ok('구조화 데이터 한 블록, JSON 으로 읽힘', ld.length === 1 && ld[0] !== null, String(ld.length));
+  const ldTypes = (ld[0]?.['@graph'] ?? []).map((node) => node['@type']);
+  ok('구조화 데이터에 WebSite · WebApplication', ldTypes.includes('WebSite') && ldTypes.includes('WebApplication'), ldTypes.join(','));
+  ok('구조화 데이터 주소가 canonical 과 같음', (ld[0]?.['@graph'] ?? []).every((node) => node.url === meta.canonical), meta.canonical);
   const robotsMetas = await page.evaluate(() => [...document.querySelectorAll('meta[name="robots"]')].map((n) => n.content));
-  // dev 미리보기만 noindex 한 줄을 넣는다. 실서비스는 아예 없다
-  ok('robots 메타는 dev 의 noindex 한 줄뿐', robotsMetas.length === 0 || (robotsMetas.length === 1 && /noindex/.test(robotsMetas[0])), robotsMetas.join(' / '));
+  ok('robots 메타 정확히 한 줄', robotsMetas.length === 1, robotsMetas.join(' / '));
+  ok('robots 메타가 index 또는 noindex 한 가지', robotsMetas.length === 1 && (/^index, follow/.test(robotsMetas[0]) || /^noindex/.test(robotsMetas[0])), robotsMetas.join(' / '));
 
   // ── 2026-09-10 v2.50.0 최신 여부 확인 (components/freshness.js)
   // 설치형 앱은 한 번 띄우면 그대로 살아 있어, 며칠이 지나도 처음 받은 data.js 를 보여 준다.
