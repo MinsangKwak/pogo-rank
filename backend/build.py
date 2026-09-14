@@ -39,7 +39,9 @@ from sprite import sprite_id
 from names import name_ko, species, FORM_KO
 
 # ── 설정 ─────────────────────────────────────────────────────────────────────
-APP_VERSION = 'v3.27.1'  # (수정) GA4 측정 ID 를 moncamp.kr 스트림으로 — blog 스트림에 섞여 들어가던 것 (v3.25.0 은 feature-advertisement 브랜치에 예약)
+APP_VERSION = 'v3.28.0'  # 검색 색인 열기 — robots index 메타 · 구조화 데이터(JSON-LD) (v3.25.0 은 feature-advertisement 브랜치에 예약)
+# 2026-09-14 v3.28.0 index.html 의 색인 허용 줄 — dev 빌드가 이 줄을 noindex 로 바꿔 끼운다
+ROBOTS_INDEX_META = '<meta name="robots" content="index, follow, max-image-preview:large">'
 # 2026-09-05 v2.7.3 빌드 채널 — 'prod'(기본) / 'dev'. dev 브랜치 워크플로(.github/workflows/deploy-dev.yml)가 BUILD_CHANNEL=dev 로 부른다.
 # dev 빌드는 (1) 버전 배지에 -dev 를 붙여 화면에서 구분되고 (2) GA 스니펫을 넣지 않아 통계가 섞이지 않고
 # (3) robots.txt 를 전부 차단 + <meta name="robots" content="noindex"> 로 검색 색인을 막는다. 나머지는 prod 와 동일
@@ -473,12 +475,13 @@ def render_index_html(game_master, config, data_js):
         # 둘을 제목만 보고 구분할 수 있어야 한다 (화면 안 버전 배지는 탭 목록에서 안 보인다).
         # 화면을 옮길 때마다 다시 붙이는 쪽은 components/app-shell.js 가 맡는다
         html = html.replace('<title>', '<title>[dev] ', 1)
-        html = html.replace('</title>', '</title>\n<meta name="robots" content="noindex, nofollow">', 1)
+        # 2026-09-14 v3.28.0 index.html 의 색인 허용 줄을 noindex 로 바꿔 끼운다 (두 줄이 공존하지 않게)
+        assert html.count(ROBOTS_INDEX_META) == 1, 'index.html 의 robots 메타가 정확히 한 줄이어야 dev 가 noindex 로 바꿔 끼운다'
+        html = html.replace(ROBOTS_INDEX_META, '<meta name="robots" content="noindex, nofollow">', 1)
         # 2026-09-08 v2.27.0 미리보기의 공유 카드가 실서비스를 가리키면 안 된다 — 주소를 dev 로 바꾼다.
         # (색인은 어차피 막지만, 링크를 붙였을 때 엉뚱한 곳으로 가는 것을 막으려는 것)
         html = html.replace(SITE_URL, DEV_SITE_URL)
-    # 2026-09-12 v3.6.0 실서비스에 넣던 robots 색인 표시를 뺐다 — 아직 검색엔진에 올릴 단계가 아니다.
-    # (dev 의 noindex 는 그대로다. 실서비스는 robots 줄 자체가 없다)
+    # 2026-09-12 v3.6.0 실서비스 robots 색인 표시를 뺐다가 2026-09-14 v3.28.0 에 index.html 에 되살렸다 (도메인 생김)
     # 2026-09-03 v2.2.0 앱 설정 주입
     # 2026-09-10 v2.50.0 BUILD_VERSION — 지금 띄운 것이 어느 빌드인지 코드가 알아야 한다.
     # 헤더에 글자로 박아 두던 것(__VERSION__)은 app-shell.js 가 헤더를 통째로 갈아 끼우면서 사라진다.

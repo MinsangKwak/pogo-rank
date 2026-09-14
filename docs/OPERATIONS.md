@@ -325,3 +325,34 @@ A 레코드 넷이 다 나오고 dev 가 `minsangkwak.github.io` 로 풀리면 �
 - **GA4** — 측정 ID 노출 조건에 `moncamp.kr` 을 넣었다(v3.27.0). GA 속성 설정의 스트림 URL 은 콘솔에서 바꾼다(통계는 URL 과 무관하게 같은 ID 로 이어진다).
 - **CAA 레코드는 넣지 않는다.** 넣어야 한다면 `letsencrypt.org` 를 허용해야 인증서가 나온다.
 - 가비아 만기 **2028-09-14**. 두 달 · 한 달 · 2주 전 알림을 캘린더에 따로.
+
+---
+
+## 13. 검색 색인 (2026-09-14 v3.28.0)
+
+**v3.6.0 에 뺐던 검색 색인 표시를 도메인이 생기면서 되살렸다.** 실서비스 HTML 에 `<meta name="robots" content="index, follow, max-image-preview:large">` 와 구조화 데이터(JSON-LD: WebSite · WebApplication)가 들어간다. dev 빌드는 `build.py` 가 그 robots 줄을 `noindex, nofollow` 로 바꿔 끼우고 `robots.txt` 도 전체 차단이라 미리보기는 검색에 잡히지 않는다.
+
+이미 있던 것: `robots.txt`(일반 검색엔진 허용, 무거운 산출물·AI 크롤러 차단, `Sitemap:` 줄) · `sitemap.xml`(첫 화면 하나 — 해시 라우팅이라 색인되는 주소는 그것뿐) · canonical · description · og.
+
+### 사람이 할 것 — 검색엔진에 등록
+
+코드는 "색인해도 된다" 고 말할 뿐이고, 언제 오는지는 검색엔진이 정한다. 등록해 두면 몇 주가 며칠로 준다.
+
+**Google Search Console** — [search.google.com/search-console](https://search.google.com/search-console)
+1. 속성 추가 → **도메인** 유형 → `moncamp.kr` (URL 접두어 대신 도메인 유형을 고르면 dev·www 까지 한 속성으로 묶인다)
+2. 소유 확인 → **DNS 레코드** → 보여 주는 `google-site-verification=…` 값을 복사
+3. 가비아 → My가비아 → DNS 관리 → 레코드 추가: 타입 **TXT** · 호스트 `@` · 값 방금 복사한 문자열 · TTL 3600 → 저장
+4. Search Console 에서 **확인** (DNS 전파 몇 분 ~ 1시간)
+5. 확인되면 왼쪽 **Sitemaps** → `https://moncamp.kr/sitemap.xml` 제출
+6. **URL 검사** → `https://moncamp.kr/` → **색인 생성 요청** (첫 크롤을 앞당긴다)
+
+**네이버 서치어드바이저** — [searchadvisor.naver.com](https://searchadvisor.naver.com) (한국어 사이트라 네이버 유입이 구글만큼 크다)
+1. 웹마스터 도구 → 사이트 등록 → `https://moncamp.kr`
+2. 소유 확인 → **HTML 태그** 방식이면 `<meta name="naver-site-verification" content="…">` 한 줄을 알려 준다 → 그 값을 개발자에게 넘기면 `index.html` `<head>` 에 넣어 배포한다(코드 변경 필요). DNS 방식이 있으면 TXT 로 하는 편이 배포 없이 끝난다
+3. 확인되면 요청 → **사이트맵 제출** → `https://moncamp.kr/sitemap.xml`, 요청 → **웹 페이지 수집** → `https://moncamp.kr/`
+
+### 확인
+
+- `curl -s https://moncamp.kr/ | grep -c 'name="robots" content="index'` → 1, `https://dev.moncamp.kr/` 는 `noindex`
+- Search Console → 색인 생성 → 페이지: 며칠 뒤 "색인 생성됨" 1건. 구조화 데이터는 [리치 결과 테스트](https://search.google.com/test/rich-results)에 주소를 넣어 오류 없음 확인
+- 검색창에 `site:moncamp.kr` — 첫 색인까지 보통 며칠 ~ 2주
