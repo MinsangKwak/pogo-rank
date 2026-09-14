@@ -58,7 +58,7 @@ jobs:
         env:
           BUILD_CHANNEL: dev
           # 운영 설정값은 실서비스와 같은 Repository variables 를 쓴다 (GA 는 dev 채널이라 어차피 안 들어감)
-          GA_ID: ${{ vars.GA_ID }}
+          GA_ID: G-8MSZM80JHZ   # 2026-09-14 v3.27.1 deploy.yml 과 같은 값 (dev 채널은 어차피 안 들어감)
           ADMIN_UID: ${{ vars.ADMIN_UID }}
           CONTACT_EMAIL: ${{ vars.CONTACT_EMAIL }}
           FIREBASE_CONFIG_JSON: ${{ vars.FIREBASE_CONFIG_JSON }}

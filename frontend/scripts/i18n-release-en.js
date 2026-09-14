@@ -15,6 +15,9 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 const RELEASE_NOTES_EN = {
+  '2026-09-14 · v3.27.1': [
+    '**(Fix) Usage statistics were landing in the wrong place** — the analytics measurement ID pointed at another site under the same account. It now points at moncamp.kr. Only visits from people who consented are counted, as before.',
+  ],
   '2026-09-14 · v3.27.0': [
     '**The service is now named moncamp** — yesterday\u2019s monlab lasted a day: no domain was available. The new address moncamp.kr is being prepared. Saved settings and accounts are unchanged.',
     '**App install (PWA) and offline reading keep working at the new address** — they were switched on for the old address only, so a plain move would have silently turned them off.',
