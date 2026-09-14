@@ -74,17 +74,15 @@ const BASE = 'http://localhost:5503/?mock=1';
     const box = document.querySelector('.modal__box');
     if (!box) return null;
     const mid = (n) => { const r = n.getBoundingClientRect(); return r.left + r.width / 2; };
-    // 2026-09-13 v3.25.0 [나중에] 는 없다 — 문은 [광고 보고 다 훑어보기] · [광고 안 보고 회원가입 후 보기] 둘 (components/adgate.js)
     const go = document.querySelector('.login-invite__go');
-    const later = document.querySelector('.login-invite .ad-gate__go');
+    const later = document.querySelector('.login-invite__later');
     if (!go || !later) return null;
     return { box: mid(box), go: mid(go), later: mid(later) };
   });
-  ok('회원가입 버튼이 팝업 가운데', centered && Math.abs(centered.go - centered.box) < 1,
+  ok('로그인 버튼이 팝업 가운데', centered && Math.abs(centered.go - centered.box) < 1,
     centered ? `${Math.round(centered.go)} vs ${Math.round(centered.box)}` : '(못 찾음)');
-  ok('[광고 보고 다 훑어보기] 도 팝업 가운데', centered && Math.abs(centered.later - centered.box) < 1,
+  ok('[나중에] 도 팝업 가운데', centered && Math.abs(centered.later - centered.box) < 1,
     centered ? `${Math.round(centered.later)} vs ${Math.round(centered.box)}` : '(못 찾음)');
-  ok('팝업의 버튼은 딱 둘 ([나중에] 없음)', (await page.locator('.login-invite button.drawer__item').count()) === 2 && (await page.locator('.login-invite__later').count()) === 0);
   await page.keyboard.press('Escape');
   await settle(400);
 

@@ -1,0 +1,141 @@
+'use strict';
+// ─────────────────────────────────────────────────────────────────────────────
+// 2026-09-12 v3.16.0 잠시 써보기 — 잠긴 화면을 로그인 없이 얼마간 열어 준다
+// 2026-09-12 v3.17.0 20초 → 24시간. 20초는 "무엇이 열리는지" 를 보기엔 너무 짧았다 — 화면 하나를 채 못 읽었다.
+//   하루면 티어표를 실제로 써 보고 돌아올 수 있고, 세 번이면 사흘이다. 배지는 초가 아니라 시·분을 센다
+// 2026-09-12 v3.17.1 24시간 → 2시간. 하루는 세 번이면 사흘이라 가입할 이유가 너무 늦게 온다 — 한 번 앉아 쓰기엔 두 시간이면 넉넉하다
+//
+// 왜 만들었나
+//   잠긴 화면 안내(로그인하면 열려요)까지는 보는데, 그 자리에서 로그인·가입 신청까지 가는 사람이 없었다.
+//   무엇이 열리는지 모르는 채로 승인제 로그인을 누르라는 건 순서가 거꾸로다 — 먼저 잠깐 보여 주고,
+//   세 번을 다 쓰면 "이젠 가입하셔야죠" 로 권한다.
+//
+// 어떻게 도나
+//   routeLocked(router.js) 가 잠금을 정하는 유일한 자리다. 거기서 trialActive() 가 참이면 잠그지 않는다 —
+//   그래서 화면·메뉴·홈 타일이 전부 같은 규칙으로 열리고 닫힌다. 남은 시간은 오른쪽 위 고정 배지(#trial-timer)가 센다.
+//
+// 저장 (localStorage, 새 키는 pogo_ 접두사)
+//   pogo_trial_used   지금까지 쓴 횟수 (최대 TRIAL_MAX)
+//   pogo_trial_until  진행 중인 잠시 써보기가 끝나는 시각 (ms) — 새로고침해도 시간은 이어진다
+//
+// 제공하는 전역
+//   trialActive()            지금 잠시 써보기 중인가
+//   trialLeft()              남은 횟수
+//   startTrial(screenName)   시작 — 횟수가 남아 있으면 true
+//   trialButtonNode(name)    잠금 카드·로그인 유도 팝업에 붙이는 [잠시 써보기] 버튼 (다 썼으면 권유 문구)
+// ─────────────────────────────────────────────────────────────────────────────
+const TRIAL_USED_KEY = 'pogo_trial_used';
+const TRIAL_UNTIL_KEY = 'pogo_trial_until';
+const TRIAL_MAX = 3;
+let TRIAL_SECONDS = 2 * 60 * 60;   // let — 회귀(tests/e2e/trial.js)가 두 시간을 기다리지 않도록 줄여 쓴다
+let trialTick = null;
+
+function trialUsed() {
+  try { return Math.max(0, Number(localStorage.getItem(TRIAL_USED_KEY)) || 0); } catch { return 0; }
+}
+function trialUntil() {
+  try { return Number(localStorage.getItem(TRIAL_UNTIL_KEY)) || 0; } catch { return 0; }
+}
+function trialLeft() {
+  return Math.max(0, TRIAL_MAX - trialUsed());
+}
+function trialActive() {
+  return Date.now() < trialUntil();
+}
+// 2026-09-12 v3.18.0 잠금이 전부 열려 있으면(router.js lockOpenAll) 잠시 써보기는 할 일이 없다 —
+// 버튼도 배지도 내리고, 열어 두기 전에 시작해 둔 시간이 남아 있어도 끝날 때 로그인 안내를 띄우지 않는다
+function trialOff() {
+  return typeof lockOpenAll === 'function' && lockOpenAll();
+}
+
+// 기간·남은 시간을 사람 말로 — 24시간 · 23시간 59분 · 59분 30초 · 30초 (회귀가 초 단위로 줄이면 초로 나온다)
+function trialSpanLabel(seconds) {
+  const s = Math.max(0, Math.round(seconds));
+  const h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60), sec = s % 60;
+  if (h > 0) return m > 0 ? `${h}시간 ${m}분` : `${h}시간`;
+  if (m > 0) return sec > 0 ? `${m}분 ${sec}초` : `${m}분`;
+  return `${sec}초`;
+}
+
+// 잠금이 바뀐 뒤 화면을 맞춘다 — 메뉴 자물쇠(syncLockedNav)와 지금 보고 있는 화면(auth.js onAuthChange 와 같은 규칙)
+function trialRerender() {
+  if (typeof syncLockedNav === 'function') syncLockedNav();
+  const nowRoute = typeof routeOf === 'function' ? routeOf()?.route : null;
+  if (!nowRoute?.locked) return;
+  if (nowRoute.kind === 'page') renderPage();
+  else if (typeof render === 'function' && typeof _planShellReady !== 'undefined' && _planShellReady) render();
+}
+
+function startTrial(screenName) {
+  if (trialOff()) return false;
+  if (trialActive()) return true;
+  if (trialLeft() <= 0) return false;
+  const used = trialUsed() + 1;
+  try {
+    localStorage.setItem(TRIAL_USED_KEY, String(used));
+    localStorage.setItem(TRIAL_UNTIL_KEY, String(Date.now() + TRIAL_SECONDS * 1000));
+  } catch { return false; }   // 저장이 안 되면 횟수를 셀 수 없다 — 열어 주지 않는다
+  track('trial_start', { screen: screenName || '', n: used });   // GA4: 몇 번째 잠시 써보기인가
+  closeModal({ silent: true });
+  trialRerender();
+  trialTimerStart(screenName);
+  return true;
+}
+
+// ── 오른쪽 위 고정 배지 ────────────────────────────────────────────────────────
+function trialTimerNode() {
+  let badge = document.getElementById('trial-timer');
+  if (badge) return badge;
+  badge = el('div', { id: 'trial-timer', class: 'trial-timer', role: 'status', 'aria-live': 'polite' },
+    el('span', { class: 'trial-timer__label' }, '잠시 써보기'),
+    el('b', { class: 'trial-timer__left' }, ''));
+  document.body.append(badge);
+  return badge;
+}
+
+function trialTimerStart(screenName) {
+  clearInterval(trialTick);
+  const badge = trialTimerNode();
+  const paint = () => {
+    const left = Math.max(0, Math.ceil((trialUntil() - Date.now()) / 1000));
+    badge.querySelector('.trial-timer__left').textContent = trialSpanLabel(left);
+    // 마지막 5분(짧게 줄인 회귀에서는 5초)부터 빨갛게 — 끝나는 것을 미리 알린다
+    badge.classList.toggle('is-ending', left <= Math.min(300, Math.max(5, TRIAL_SECONDS / 4)));
+    if (left > 0) return;
+    clearInterval(trialTick); trialTick = null;
+    trialEnd(screenName);
+  };
+  paint();
+  trialTick = setInterval(paint, TRIAL_SECONDS >= 60 ? 1000 : 250);
+}
+
+function trialEnd(screenName) {
+  document.getElementById('trial-timer')?.remove();
+  track('trial_end', { screen: screenName || '', left: trialLeft() });
+  trialRerender();
+  // 끝나자마자 권한다 — 방금 본 것이 무엇이었는지 기억이 있을 때가 가입을 말할 자리다
+  if (typeof openLoginInvite === 'function' && AUTH.status === 'anon' && !document.querySelector('dialog[open]')) openLoginInvite(screenName);
+}
+
+// 새로고침해도 진행 중이던 잠시 써보기는 이어진다 — 배지를 다시 세운다
+function trialResume() {
+  if (!trialOff() && trialActive()) trialTimerStart('');
+}
+
+// 잠금 카드·로그인 유도 팝업에 붙는 조각 — 남았으면 버튼, 다 썼으면 권유 문구
+function trialButtonNode(screenName) {
+  if (trialOff()) return '';
+  if (typeof authEnabled === 'function' && !authEnabled()) return '';
+  if (AUTH.status !== 'anon') return '';
+  const left = trialLeft();
+  if (left <= 0) {
+    return el('p', { class: 'trial-exhausted' }, `잠시 써보기 ${TRIAL_MAX}번을 다 쓰셨어요. 이젠 가입하셔야죠 🙂`);
+  }
+  return el('button', { class: 'drawer__item trial-go', onclick: () => startTrial(screenName) },
+    el('b', {}, `⏱ 잠시 써보기 ^^ (${trialSpanLabel(TRIAL_SECONDS)})`),
+    el('span', { class: 'trial-go__left' }, `남은 횟수 ${left}번`));
+}
+
+// 진행 중이던 잠시 써보기가 있으면 배지를 다시 세운다 (첫 화면이 그려진 뒤)
+if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', trialResume);
+else trialResume();

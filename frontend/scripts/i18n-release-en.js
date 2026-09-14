@@ -15,11 +15,6 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 const RELEASE_NOTES_EN = {
-  '2026-09-13 · v3.25.0': [
-    '**Member screens are locked again, with two doors** — [📺 Watch an ad and browse everything] and [🔐 Skip the ad: sign up and view]. Watch a 15-second ad to the end and every locked screen opens for **2 hours**, up to **3 times a day**. Sign up (Google login + approval) and it stays open with no ads.',
-    '**"Try it briefly" and [Later] are gone** — with two doors it reads as "pick either and it opens"; with three or four, people look for the exit first. The badge at the top right counts the time left from the ad.',
-    '**The ad slot is a placeholder for now** — until an ad account is connected an "Ad coming soon" box shows and the 15 seconds count the same. The terms and privacy policy gained an ads item.',
-  ],
   '2026-09-13 · v3.24.0': [
     '**Search now tells you PvP or raids at a glance** — every Pokédex and search row carries two pills next to the name, [PvP 89] [PvE 59], with the stronger side highlighted. Same 0–100 scores as the Value screen.',
     '**The stat hexagon\u2019s Raid and PvP axes are fixed** — they used to be drawn from "does it make a top-30 table", so a base form like Swampert, whose Mega and Shadow are the ones ranked, had its Raid axis flat on the floor. They now use scores computed for every species (Swampert: Raid 59 · PvP 89).',

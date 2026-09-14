@@ -108,18 +108,14 @@ function lockedCardNode(screenName) {
     el('span', { class: 'plan__lock-ico', 'aria-hidden': 'true' }, pending ? '⏳' : '🔒'),
     // 세 줄이 각각 다른 것을 말한다 — 제목은 결론, 본문은 조건, 꼬리말은 동의.
     // 같은 말을 두 번 하지 않는다 ("로그인하면 열려요 / 로그인이 필요해요" 처럼)
-    el('h2', {}, pending ? '승인을 기다리는 중이에요' : '광고 보거나, 회원가입하면 열려요'),
+    el('h2', {}, pending ? '승인을 기다리는 중이에요' : '로그인하면 열려요'),
     el('p', {}, pending
       ? '관리자가 승인하면 바로 열려요.'
-      : '회원만 볼 수 있는 화면이에요. 회원이 아니면 광고를 끝까지 본 뒤 2시간 동안 전부 열려요 (하루 3번). 회원가입은 Google 로그인 + 관리자 승인이에요.'),
-    // 2026-09-13 v3.25.0 문 둘 — [📺 광고 보고 다 훑어보기] [🔐 광고 안 보고 회원가입 후 보기] (components/adgate.js).
-    // 회원가입 버튼(.plan__lock-go)은 바로 로그인 창을 띄우지 않고 안내 팝업을 먼저 연다 (v2.51.0) —
+      : '승인된 분만 쓸 수 있어서, 처음이라면 관리자 승인을 기다리게 돼요.'),
+    // 2026-09-10 v2.51.0 여기서도 바로 로그인 창을 띄우지 않고 안내 팝업을 먼저 연다 —
     // 승인제라는 사실을 누르기 전에 알려야 "로그인했는데 왜 안 되지" 를 겪지 않는다
-    ...(pending ? [] : (() => {
-      const buttons = typeof adGateButtons === 'function' ? adGateButtons(screenName) : [];
-      const signup = el('button', { class: 'drawer__item account__login plan__lock-go', onclick: () => openLoginInvite(screenName) }, buttons.length ? '🔐 광고 안 보고 회원가입 후 보기' : '🔐 Google로 로그인');
-      return buttons.length ? [buttons[0], signup] : [signup];
-    })()),
+    pending ? '' : el('button', { class: 'drawer__item account__login plan__lock-go', onclick: () => openLoginInvite(screenName) }, '🔐 Google로 로그인'),
+    pending || typeof trialButtonNode !== 'function' ? '' : trialButtonNode(screenName),   // 2026-09-12 v3.16.0 잠시 써보기 (components/trial.js)
     el('p', { class: 'detail__foot' }, '첫 로그인 때 이용약관·개인정보처리방침 동의를 받아요.'));
 }
 
