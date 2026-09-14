@@ -133,9 +133,9 @@ def main():
     cell_rect(canvas, cols - 1, 0, 1, rows, LINE)
 
     # 왼쪽: 서비스 이름 두 줄
-    # 2026-09-14 v3.26.0 POGO PLAN → monlab
+    # 2026-09-14 v3.26.0 POGO PLAN → monlab · v3.27.0 → moncamp (MON / CAMP)
     draw_text(canvas, 'MON', 12, 30, 3, FG)
-    draw_text(canvas, 'LAB', 12, 55, 3, ACCENT)
+    draw_text(canvas, 'CAMP', 12, 55, 3, ACCENT)
 
     # 이름 아래 밑줄 — 화면의 강조선과 같은 뜻
     cell_rect(canvas, 12, 78, 76, 1, LINE)

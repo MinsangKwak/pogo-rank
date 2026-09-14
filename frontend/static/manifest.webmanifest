@@ -1,6 +1,6 @@
 {
-  "name": "monlab — 포켓몬GO 육성 플래너",
-  "short_name": "monlab",
+  "name": "moncamp — 포켓몬GO 육성 플래너",
+  "short_name": "moncamp",
   "description": "뭘 키우고, 뭘 잡을지. 여기서 끝.",
   "start_url": "./",
   "scope": "./",

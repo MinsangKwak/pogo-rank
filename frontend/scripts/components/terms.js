@@ -19,7 +19,7 @@
 const TERMS_VER = '2026-09-07';
 const TERMS_OK_KEY = 'pogo_terms_ok';
 // 권리자 표기는 노션 "상용·오픈소스 전환 점검" 결정 — Pokémon GO 는 Scopely Explore, Inc. (2025년 Niantic 게임 사업 인수)
-const IP_NOTICE = 'monlab은 비공식 팬 프로젝트입니다. Pokémon 및 관련 명칭·이미지의 권리는 The Pokémon Company · Nintendo · Creatures Inc. · GAME FREAK inc. 에, Pokémon GO 는 Scopely Explore, Inc. 에 있으며 이 서비스는 권리자와 무관합니다.';
+const IP_NOTICE = 'moncamp는 비공식 팬 프로젝트입니다. Pokémon 및 관련 명칭·이미지의 권리는 The Pokémon Company · Nintendo · Creatures Inc. · GAME FREAK inc. 에, Pokémon GO 는 Scopely Explore, Inc. 에 있으며 이 서비스는 권리자와 무관합니다.';
 
 function termsAccepted() {
   try { return localStorage.getItem(TERMS_OK_KEY) === TERMS_VER; } catch { return false; }
@@ -70,7 +70,7 @@ function renderTermsPage() {
   // 2026-09-08 v2.29.0 한국어 원문이 효력을 갖는 문서라 번역하지 않는다 (영어 안내만 위에 단다)
   return el('div', { class: 'page__body' },
     i18nKoOnlyNote(),
-    p('monlab(이하 "서비스")을 이용하기 전에 읽어 주세요. 서비스는 개인이 무료로 운영하는 비공식 팬 프로젝트이며, 이 약관은 서비스가 실제로 하는 것과 하지 않는 것을 정합니다.'),
+    p('moncamp(이하 "서비스")를 이용하기 전에 읽어 주세요. 서비스는 개인이 무료로 운영하는 비공식 팬 프로젝트이며, 이 약관은 서비스가 실제로 하는 것과 하지 않는 것을 정합니다.'),
     footNote(`시행일 ${TERMS_VER} (v2.18.0 신설). 개정하면 시행 7일 전에 패치노트로 알리고, 다음 로그인 때 다시 동의를 받습니다.`),
 
     sec('1. 서비스란',

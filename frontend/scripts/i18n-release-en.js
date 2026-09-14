@@ -15,6 +15,10 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 const RELEASE_NOTES_EN = {
+  '2026-09-14 · v3.27.0': [
+    '**The service is now named moncamp** — yesterday\u2019s monlab lasted a day: no domain was available. The new address moncamp.kr is being prepared. Saved settings and accounts are unchanged.',
+    '**App install (PWA) and offline reading keep working at the new address** — they were switched on for the old address only, so a plain move would have silently turned them off.',
+  ],
   '2026-09-14 · v3.26.0': [
     '**The service is now called monlab** — logo, title, install name, share card and every notice say monlab. The address and your saved settings are unchanged.',
     '**Every small spot that stayed Korean in the KR/EN switch has been swept** — the sign-in prompt, locked-screen card, account card, the weakness/resistance headings and CP footnotes in the detail popup, D-MAX attacker/tank titles and notes, IV ranking, search-builder hint, consent banner, settings, move changes, the solo calculator and the My Pokémon editor. Nineteen screens and popups were opened in English and 172 leftovers fixed; only event names in the schedule stay Korean on purpose (it is the Korean server schedule).',

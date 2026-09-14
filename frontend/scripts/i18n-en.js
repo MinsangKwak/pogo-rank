@@ -485,8 +485,8 @@ const I18N_EN = {
   '통계 허용': 'Allow analytics',
   '이 사이트는 오프라인용 파일과 설정을 브라우저에 저장합니다(개인정보 아님). 방문 통계(Google Analytics)는 동의할 때만 켜지고, 위치정보는 수집하지 않습니다.':
     'This site stores offline files and settings in your browser (not personal data). Visit analytics (Google Analytics) only turn on if you agree, and no location data is collected.',
-  'monlab은 비공식 팬 프로젝트입니다. Pokémon 및 관련 명칭·이미지의 권리는 The Pokémon Company · Nintendo · Creatures Inc. · GAME FREAK inc. 에, Pokémon GO 는 Scopely Explore, Inc. 에 있으며 이 서비스는 권리자와 무관합니다.':
-    'monlab is an unofficial fan project. Pokémon and related names and images belong to The Pokémon Company · Nintendo · Creatures Inc. · GAME FREAK inc., and Pokémon GO to Scopely Explore, Inc.; this service is not affiliated with them.',
+  'moncamp는 비공식 팬 프로젝트입니다. Pokémon 및 관련 명칭·이미지의 권리는 The Pokémon Company · Nintendo · Creatures Inc. · GAME FREAK inc. 에, Pokémon GO 는 Scopely Explore, Inc. 에 있으며 이 서비스는 권리자와 무관합니다.':
+    'moncamp is an unofficial fan project. Pokémon and related names and images belong to The Pokémon Company · Nintendo · Creatures Inc. · GAME FREAK inc., and Pokémon GO to Scopely Explore, Inc.; this service is not affiliated with them.',
   '데이터는 PvPoke · PokeMiners · PokeAPI · LeekDuck 의 공개 자료를 사용합니다. 코드는 MIT, 데이터·이미지는 각 출처의 조건을 따릅니다 (저장소 NOTICE).':
     'Data comes from the public sources PvPoke · PokeMiners · PokeAPI · LeekDuck. The code is MIT; data and images follow each source’s terms (see NOTICE in the repository).',
 
@@ -767,7 +767,7 @@ const I18N_EN = {
   '완료': 'Done',
   '지금': 'Now',
   '언제': 'When',
-  'monlab과 함께하는 포켓몬 라이프': 'Your Pokémon GO companion',
+  'moncamp와 함께하는 포켓몬 라이프': 'Your Pokémon GO companion',
   'POGO PLAN과 함께하는 포켓몬 라이프': 'Your Pokémon GO companion',
   '찾고, 비교하고, 키우는 즐거움. 필요한 화면으로 바로 가요.': 'Find, compare, raise. Jump straight to the screen you need.',
   '지금 무엇을 하면 좋을까?': 'What should I do right now?',
@@ -1228,7 +1228,7 @@ const I18N_EN = {
   '무엇이 언제 바뀌었는지 적어 둬요.': 'A record of what changed and when.',
   '어떤 정보를 받고 어떻게 다루는지 알려 드려요.': 'What we collect and how we handle it.',
   '이 서비스를 쓸 때의 약속이에요.': 'The terms for using this service.',
-  'monlab 을 이루는 조각을 한자리에서 봐요. 화면을 새로 만들 때 여기서 가져다 써요.': 'Every building block of monlab in one place. Reuse them when building a new screen.',
+  'moncamp 를 이루는 조각을 한자리에서 봐요. 화면을 새로 만들 때 여기서 가져다 써요.': 'Every building block of moncamp in one place. Reuse them when building a new screen.',
 
   // 검색식 (finder.js) · 도감 (pages.js) · 설정 · 새 버전 (freshness.js)
   '조건 #개 · 게임 검색창에 그대로 붙여 넣으세요.': '# conditions · paste it straight into the in-game search box.',

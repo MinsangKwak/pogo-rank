@@ -238,4 +238,5 @@ initFreshness();
   : new Promise((resolve) => window.addEventListener('load', resolve))
 ).then(initAuth);
 // 2026-09-03 PWA 오프라인 캐시 (배포 환경에서만 — 로컬 개발 중 캐시 꼬임 방지)
-if ('serviceWorker' in navigator && location.hostname.endsWith('github.io')) navigator.serviceWorker.register('sw.js').catch(() => {});
+// 2026-09-14 v3.27.0 커스텀 도메인 moncamp.kr 에서도 등록한다 — github.io 만 보던 조건이라 도메인을 옮기면 PWA 캐시가 조용히 꺼졌다
+if ('serviceWorker' in navigator && (location.hostname.endsWith('github.io') || location.hostname.endsWith('moncamp.kr'))) navigator.serviceWorker.register('sw.js').catch(() => {});
