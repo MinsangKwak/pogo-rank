@@ -39,7 +39,7 @@ from sprite import sprite_id
 from names import name_ko, species, FORM_KO
 
 # ── 설정 ─────────────────────────────────────────────────────────────────────
-APP_VERSION = 'v3.27.0'  # 서비스명 moncamp(몬캠프) · moncamp.kr 도메인 준비 (v3.25.0 은 feature-advertisement 브랜치에 예약)
+APP_VERSION = 'v3.27.1'  # (수정) GA4 측정 ID 를 moncamp.kr 스트림으로 — blog 스트림에 섞여 들어가던 것 (v3.25.0 은 feature-advertisement 브랜치에 예약)
 # 2026-09-05 v2.7.3 빌드 채널 — 'prod'(기본) / 'dev'. dev 브랜치 워크플로(.github/workflows/deploy-dev.yml)가 BUILD_CHANNEL=dev 로 부른다.
 # dev 빌드는 (1) 버전 배지에 -dev 를 붙여 화면에서 구분되고 (2) GA 스니펫을 넣지 않아 통계가 섞이지 않고
 # (3) robots.txt 를 전부 차단 + <meta name="robots" content="noindex"> 로 검색 색인을 막는다. 나머지는 prod 와 동일

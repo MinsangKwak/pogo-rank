@@ -44,7 +44,9 @@ jobs:
       - name: Build site
         # 2026-09-05 v2.8.0 운영 설정값은 Repository variables 에서 (Settings → Secrets and variables → Actions → Variables). 키 설명은 .env.example
         env:
-          GA_ID: ${{ vars.GA_ID }}
+          # 2026-09-14 v3.27.1 측정 ID 를 워크플로에 직접 적는다 — 저장소 변수 GA_ID(G-KVRX9FBNDC)는 같은 속성의 blog 스트림 것이라
+          # 사이트 통계가 거기 섞여 들어갔다. moncamp.kr 스트림(15750161968)의 측정 ID. 공개 식별자라(배포 HTML 에 그대로 실린다) 코드에 둬도 된다
+          GA_ID: G-8MSZM80JHZ
           ADMIN_UID: ${{ vars.ADMIN_UID }}
           CONTACT_EMAIL: ${{ vars.CONTACT_EMAIL }}
           FIREBASE_CONFIG_JSON: ${{ vars.FIREBASE_CONFIG_JSON }}
