@@ -15,6 +15,12 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 const RELEASE_NOTES_EN = {
+  '2026-09-14 · v3.26.0': [
+    '**The service is now called monlab** — logo, title, install name, share card and every notice say monlab. The address and your saved settings are unchanged.',
+    '**Every small spot that stayed Korean in the KR/EN switch has been swept** — the sign-in prompt, locked-screen card, account card, the weakness/resistance headings and CP footnotes in the detail popup, D-MAX attacker/tank titles and notes, IV ranking, search-builder hint, consent banner, settings, move changes, the solo calculator and the My Pokémon editor. Nineteen screens and popups were opened in English and 172 leftovers fixed; only event names in the schedule stay Korean on purpose (it is the Korean server schedule).',
+    '**Text swapped in after rendering is translated too** — places that only change an attribute on an existing element, like the theme button\u2019s spoken name, were out of reach. Attribute and text changes are now watched as well.',
+    '**Dictionary keys that could never match are fixed** — nine keys ending in a space (such as "For now this is saved in this browser only.") never matched the engine, which trims before lookup, so those lines always stayed Korean.',
+  ],
   '2026-09-13 · v3.24.0': [
     '**Search now tells you PvP or raids at a glance** — every Pokédex and search row carries two pills next to the name, [PvP 89] [PvE 59], with the stronger side highlighted. Same 0–100 scores as the Value screen.',
     '**The stat hexagon\u2019s Raid and PvP axes are fixed** — they used to be drawn from "does it make a top-30 table", so a base form like Swampert, whose Mega and Shadow are the ones ranked, had its Raid axis flat on the floor. They now use scores computed for every species (Swampert: Raid 59 · PvP 89).',

@@ -471,7 +471,7 @@ function planMonCard(mon, index = 0) {
       }),
       uchip('수정', () => openPlanMonEditor(mon)),
       el('button', { class: 'uchip admin__act is-danger', onclick: () => {
-        if (!confirm(`${planMonName(mon)} (Lv ${mon.level}) 를 지울까요?`)) return;
+        if (!confirm(t(`${planMonName(mon)} (Lv ${mon.level}) 를 지울까요?`))) return;
         planDeleteMon(mon.id);
         _planCompare = _planCompare.filter((id) => id !== mon.id);
         render();

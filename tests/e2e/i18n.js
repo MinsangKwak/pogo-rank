@@ -110,6 +110,27 @@ suite(async () => {
   ok('보기 방식 버튼 이름이 영어', !hangul(viewLabel) && /^View:/.test(viewLabel) && /tap for (grid|list)/.test(viewLabel), viewLabel);
   ok('보기 방식 묶음 이름도 영어', !hangul(await layout.getAttribute('aria-label')), await layout.getAttribute('aria-label'));
 
+  // ── 2026-09-14 v3.26.0 엄격 감사에서 잡은 자리들 — 사전 구멍과 엔진 구멍 각각 하나씩은 늘 확인한다
+  await go('#/settings');
+  const settingsHint = (await page.locator('#page .dex__hint').first().textContent().catch(() => '')) || '';
+  ok('설정 힌트가 영어', settingsHint.length > 0 && !hangul(settingsHint), settingsHint.slice(0, 60));
+  // 설정에서 테마를 고르면 헤더 버튼의 aria-label 을 setAttribute 로 갈아 끼운다 — attributes 관찰이 없으면 한국어로 돌아온다
+  await page.locator('#page .settings__choice').nth(1).click().catch(() => {});
+  await page.waitForTimeout(300);
+  const themeLabel = (await page.locator('#theme-toggle').getAttribute('aria-label')) || '';
+  ok('갈아 끼운 테마 버튼 이름도 영어', !hangul(themeLabel) && /^Theme:/.test(themeLabel), themeLabel);
+  await go('#/mon/260');
+  await page.waitForTimeout(600);
+  const matchHeads = await page.locator('.detail .detail__match h3').allTextContents();
+  ok('상세 약점·내성 제목이 영어', matchHeads.length === 2 && !matchHeads.some(hangul), matchHeads.join(' | '));
+  const cpFoot = await page.locator('.detail .detail__foot').allTextContents();
+  ok('상세 각주가 영어', cpFoot.length > 0 && !cpFoot.some(hangul), cpFoot.filter(hangul).join(' | ').slice(0, 100));
+  await go('#/dmax');
+  await page.locator('.seg button').nth(2).click().catch(() => {});
+  await page.waitForTimeout(500);
+  const tankHead = (await page.locator('#content .row-head h2').first().textContent().catch(() => '')) || '';
+  ok('D-MAX 탱커 제목이 영어', !hangul(tankHead) && /D-MAX tanks/.test(tankHead), tankHead);
+
   // ── 되돌리기
   await go('#/dex');
   await page.click('#lang-toggle');

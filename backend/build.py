@@ -39,7 +39,7 @@ from sprite import sprite_id
 from names import name_ko, species, FORM_KO
 
 # ── 설정 ─────────────────────────────────────────────────────────────────────
-APP_VERSION = 'v3.24.0'  # 검색 줄 PvP/PvE 알약 · 육각형 레이드/PvP 축을 순위 대신 전 종 점수로
+APP_VERSION = 'v3.26.0'  # 서비스명 monlab · KR/EN 전환 엄격 감사 (v3.25.0 은 feature-advertisement 브랜치에 예약)
 # 2026-09-05 v2.7.3 빌드 채널 — 'prod'(기본) / 'dev'. dev 브랜치 워크플로(.github/workflows/deploy-dev.yml)가 BUILD_CHANNEL=dev 로 부른다.
 # dev 빌드는 (1) 버전 배지에 -dev 를 붙여 화면에서 구분되고 (2) GA 스니펫을 넣지 않아 통계가 섞이지 않고
 # (3) robots.txt 를 전부 차단 + <meta name="robots" content="noindex"> 로 검색 색인을 막는다. 나머지는 prod 와 동일
@@ -532,7 +532,7 @@ def write_site_files(game_master, config):
             'Policy: https://github.com/minsangkwak/pogo-rank/blob/main/SECURITY.md\n')
     if BUILD_CHANNEL == 'dev':
         # dev 미리보기는 검색에 잡히면 안 된다 — 정적 robots.txt 를 전부 차단으로 덮어쓴다
-        open('dist/robots.txt', 'w', encoding='utf-8').write('# POGO PLAN dev 미리보기 — 색인 금지\nUser-agent: *\nDisallow: /\n')
+        open('dist/robots.txt', 'w', encoding='utf-8').write('# monlab dev 미리보기 — 색인 금지\nUser-agent: *\nDisallow: /\n')
     else:
         # robots.txt 끝에 sitemap 위치를 알린다 (정적 파일에 주소를 박아 두지 않으려고 여기서 붙인다)
         with open('dist/robots.txt', 'a', encoding='utf-8') as robots:
@@ -541,7 +541,7 @@ def write_site_files(game_master, config):
     # 서비스 안으로 돌려보내는 문을 만들어 둔다
     open('dist/404.html', 'w', encoding='utf-8').write(f'''<!DOCTYPE html>
 <html lang="ko"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="robots" content="noindex"><title>페이지를 찾을 수 없어요 — POGO PLAN</title>
+<meta name="robots" content="noindex"><title>페이지를 찾을 수 없어요 — monlab</title>
 <style>body{{margin:0;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;
 background:#fff;color:#17181a;font-family:system-ui,-apple-system,sans-serif;text-align:center;padding:24px}}
 a{{color:inherit}}p{{margin:0;color:#7a7c80;font-size:14px;line-height:1.6}}
@@ -549,7 +549,7 @@ a{{color:inherit}}p{{margin:0;color:#7a7c80;font-size:14px;line-height:1.6}}
 </head><body>
 <strong style="font-size:20px">페이지를 찾을 수 없어요</strong>
 <p>주소가 바뀌었거나 없는 페이지입니다.</p>
-<p><a href="{site_url}">POGO PLAN 첫 화면으로 →</a></p>
+<p><a href="{site_url}">monlab 첫 화면으로 →</a></p>
 </body></html>
 ''')
 
