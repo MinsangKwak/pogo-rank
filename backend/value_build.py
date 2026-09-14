@@ -397,5 +397,30 @@ value_data['usage'] = use_list[:80]
 # 2026-09-07 v2.13.0 (QA-42) 순위표 행의 "활용 N곳" 배지와 상세 팝업 활용처용 — 상위 80에 못 든 항목도 어디서 몇 위인지 알아야 하므로
 # 전 항목의 등재 내역을 압축 형태(이름 → [[곳, 순위], ...])로 따로 싣는다. usage(상위 80, 스프라이트·점수 포함)는 활용처 탭 전용으로 그대로 둔다
 value_data['usage_places'] = {usage_entry['name']: [[place['place'], place['rank']] for place in usage_entry['places']] for usage_entry in use_list}
+# 2026-09-13 v3.24.0 전 종 PvE·PvP 점수표 — meter[이름] = [PvE, PvP] (0~100, 없으면 0).
+# 왜: 상세 팝업 육각형의 레이드·PvP 축과 검색 줄의 PvP/PvE 표시가 "어느 순위표 30위 안에 드는가" 로만 그려졌다.
+# 대짱이(원종)는 메가·섀도우만 등재돼 축이 미등재(0.08)로 눕고, 검색 줄은 어느 쪽에서 쓰이는지 말할 수 없었다.
+# 값은 위 가성비 표와 **같은 산식**이다 — PvE 는 보스 타입별 (score/최강)^0.25 의 상위 3개 평균, PvP 는 리그 점수 상위 2개 평균
+# (리그 하나뿐이면 0.8배). 다만 여기는 전설·메가·섀도우도 뺀 곳 없이 전부 넣는다 (usage_places 와 같은 범위)
+meter = {}
+for key, entry in meta.items():
+    ratios = sorted(((scores[boss_type][key] / boss_top_scores[boss_type]) ** 0.25 * 100 for boss_type in scores if key in scores[boss_type]), reverse=True)[:3]
+    if not ratios: continue
+    pve_score = sum(ratios) / len(ratios)
+    slot = meter.setdefault(entry['name'], [0, 0])
+    slot[0] = max(slot[0], round(pve_score))
+league_scores = {}
+for league_id, rows in pvp_all.items():
+    for row in rows:
+        if row.get('score') is None: continue
+        league_scores.setdefault(row['name'], {})
+        league_scores[row['name']][league_id] = max(league_scores[row['name']].get(league_id, 0), row['score'])
+for name, by_league in league_scores.items():
+    top_two = sorted(by_league.values(), reverse=True)[:2]
+    pvp_score = sum(top_two) / 2 if len(top_two) == 2 else top_two[0] * 0.8
+    slot = meter.setdefault(name, [0, 0])
+    slot[1] = max(slot[1], round(pvp_score))
+value_data['meter'] = meter
+print('meter:', len(meter), '종 · 대짱이', meter.get('대짱이'), '· 메가 대짱이', meter.get('메가 대짱이'))
 json.dump(value_data, open('data/value.json', 'w', encoding='utf-8'), ensure_ascii=False)
 print('usage:', len(use_list), [(usage_entry['name'], usage_entry['count']) for usage_entry in use_list[:6]])

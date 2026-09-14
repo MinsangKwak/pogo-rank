@@ -75,3 +75,7 @@ diff -rq tests/e2e/fp-before tests/e2e/fp-after
 - Playwright 와 Chromium 이 필요하다. 경로는 `_lib.js` 맨 위 한 곳에 있다
 - 서버 주소는 `http://localhost:5503/`, 목 모드는 `?mock=1` (frontend/static/dev-mock.js)
 - 외부 요청은 전부 차단한다 — 폰트·스프라이트 CDN 을 기다리느라 느려지지 않게
+
+## 남은 한글 찾기 (KR/EN)
+
+`node scripts/i18n_audit.js` — 언어를 EN 으로 두고 열아홉 화면과 드로어·팝업·모의 로그인을 열어 한글이 남은 텍스트·`aria-label`·`placeholder`·`title` 을 어디서 나왔는지와 함께 찍는다. 회귀 스위트가 아니라 사전을 손볼 때 쓰는 도구다. 일정표 이벤트·시즌 이름은 일부러 한국어로 두므로 남아도 된다.

@@ -71,4 +71,7 @@ jobs:
           publish_branch: gh-pages
           publish_dir: ./dist
           force_orphan: true   # 미리보기 저장소에 히스토리를 쌓지 않는다 (매번 한 커밋)
+          # 2026-09-14 v3.27.0 브랜치 배포라 gh-pages 루트의 CNAME 이 커스텀 도메인을 정한다 — force_orphan 이라 매 배포마다 다시 실려야 한다.
+          # 실서비스(deploy.yml)는 actions/deploy-pages 라 CNAME 파일을 무시하고 저장소 Settings → Pages 값만 쓴다.
+          cname: dev.moncamp.kr
           commit_message: "dev preview ${{ github.sha }}"

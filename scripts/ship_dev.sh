@@ -19,7 +19,7 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 WAIT=1; [[ ${1:-} == --no-wait ]] && WAIT=0
-DEV_URL='https://minsangkwak.github.io/pogo-rank-dev/'
+DEV_URL='https://dev.moncamp.kr/'   # 2026-09-14 v3.27.0 (전: minsangkwak.github.io/pogo-rank-dev/)
 
 branch=$(git rev-parse --abbrev-ref HEAD)
 case "$branch" in dev|main|deploy) echo "ship_dev: $branch 에서는 쓰지 않는다 — 작업 브랜치에서 실행하세요"; exit 1 ;; esac

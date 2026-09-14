@@ -1,6 +1,6 @@
 # 변경 이력
 
-**버전을 눌러 펼쳐 보세요.** 123개 판이 쌓여 한눈에 훑기 어려워, 각 버전을 접어 두었습니다.
+**버전을 눌러 펼쳐 보세요.** 125개 판이 쌓여 한눈에 훑기 어려워, 각 버전을 접어 두었습니다.
 
 각 줄은 `버전 — 날짜 · 그 판에서 한 일` 순서입니다. 최신이 위로 옵니다.
 형식은 [Keep a Changelog](https://keepachangelog.com/ko/1.1.0/)를 따릅니다.
@@ -11,6 +11,204 @@
 > 사용자가 읽는 패치노트는 서비스 안 [🎉 패치노트](https://minsangkwak.github.io/pogo-rank/#/release) 화면에 있습니다(영문판 포함).
 > 이 파일은 **왜 그렇게 고쳤는지**까지 남기는 개발 기록이라 더 깁니다.
 
+
+<details open>
+<summary><b>v3.27.0</b> — 2026-09-14 · <code>변경</code> 서비스명 moncamp(몬캠프) · <code>추가</code> moncamp.kr 도메인 준비</summary>
+
+### 왜 monlab 을 하루 만에 접었나
+
+`monlab` 은 `.com`/`.app` 이 모두 선점돼 있었다. 도메인을 사면서 이름을 다시 골랐고(작업 지시서 9절), `POGO` 는 EA 의 살아있는 등록상표(미국 2836746, 9류 비디오 게임 소프트웨어 · 41류 온라인 게임 서비스)라 도메인 구입과 광고가 붙는 순간 상업적 사용이 돼 UDRP 분쟁 위험이 생긴다. 바꾸는 비용이 가장 싼 지금 뺀다. `moncamp.kr` 은 가비아에서 2028-09-14 까지 등록.
+
+### 이름
+
+monlab 이 적힌 **현재 상태** 파일 전부를 moncamp 로: `index.html`(제목·og/twitter·apple·로딩·`<h1>`·지식재산 안내), `app-shell.js`, `manifest.webmanifest`, `robots.txt`, `build.py`(404·dev robots), `terms.js`·`privacy.js`, `home.js` 인사, `router.js` 스타일가이드, `i18n-en.js` 3키, `og_gen.py`(MON / CAMP) → `og.png`, 테스트 셋. 조사도 고쳤다 — 몬캠프는 받침이 없어 `moncamp는`·`moncamp와`·`moncamp를`. 패치노트·CHANGELOG·README 표에 남은 monlab 은 이력이라 그대로.
+
+### 도메인 준비 — 코드가 할 몫
+
+**2. 경로 하드코딩 점검** — 프로젝트 페이지(`/pogo-rank/`)에서 루트로 올라가도 깨지는 것이 없다: manifest `start_url`·`scope` 가 `./`, 서비스워커 등록 `sw.js` 와 캐시 키 `./`·`location.origin`, 라우터 basePath 없음(해시 라우팅), 루트 절대 경로(`/sprites` 등) 0건, CSP 에 github.io 호스트 없음. 고친 것은 **절대 주소**뿐 — `build.py SITE_URL`·`DEV_SITE_URL`(sitemap·robots Sitemap 줄의 출처) → `https://moncamp.kr/`·`https://dev.moncamp.kr/`, `index.html` canonical·og:url·og:image·twitter:image, `robots.txt` 주석. `ship_dev.sh`·`verify_deploy.sh` 의 주소도.
+
+**숨은 함정 둘** — 지시서에 없던 항목. `app.js` 의 서비스워커 등록과 `build.py` 의 GA 측정 ID 노출이 `location.hostname.endsWith('github.io')` 만 보고 있어, 도메인을 옮기면 PWA 오프라인 캐시와 통계가 **조용히** 꺼진다. 둘 다 `moncamp.kr` 을 조건에 넣었다.
+
+**3. 배포 방식 판정** — 실서비스 `deploy.yml` 은 `actions/upload-pages-artifact` + `actions/deploy-pages`(**Actions 배포**): CNAME 파일은 무시되고 저장소 Settings → Pages 의 Custom domain 값만 쓰인다. 미리보기 `deploy-dev.yml` 은 `peaceiris/actions-gh-pages` 가 `pogo-rank-dev` 의 `gh-pages` 브랜치에 push(**브랜치 배포**): 브랜치 루트에 `CNAME` 이 있어야 하고 `force_orphan: true` 라 매 배포마다 다시 실려야 한다 → 워크플로에 `cname: dev.moncamp.kr` 한 줄. `frontend/static/CNAME` 은 만들지 않는다 — 실서비스 `dist` 에도 실려 두 방식이 섞인다.
+
+### 사람이 할 몫 (코드 밖) — `docs/OPERATIONS.md` 12절
+
+Firebase 승인 도메인(`moncamp.kr`·`dev.moncamp.kr`) → `pogo-rank-dev` Settings → Pages Custom domain `dev.moncamp.kr` → `pogo-rank` Settings → Pages Custom domain `moncamp.kr` → 두 곳 Enforce HTTPS → 그다음 deploy. 이 판을 dev 에 올리면 미리보기가 `dev.moncamp.kr` 로 옮겨 가고 옛 주소는 리다이렉트된다.
+
+### 테스트
+
+`nav`·`shell`·`hardening` 이 moncamp 기대. `hardening` 의 canonical = og:url 검사는 주소가 바뀌어도 그대로 성립. 회귀 24묶음 통과.
+
+</details>
+
+<details open>
+<summary><b>v3.26.0</b> — 2026-09-14 · <code>변경</code> 서비스명 monlab(몬랩) · <code>수정</code> KR/EN 전환 엄격 감사</summary>
+
+> v3.25.0(비로그인 광고 게이트)은 `feature-advertisement` 브랜치에 그대로 두고 dev 는 v3.24.0 에서 이 판으로 바로 이어진다. 광고는 서비스명을 새로 지은 뒤 붙이기로 했다.
+
+### 이름 — POGO PLAN → monlab
+
+바뀐 곳: `index.html`(제목 · og/twitter · apple 제목 · 로딩 화면 제목 · `<h1>` · 지식재산 안내), `app-shell.js`(로고 · 드로어 메타 · `document.title`), `home.js` 인사, `router.js` 스타일가이드 설명, `terms.js` · `privacy.js` 서비스명, `manifest.webmanifest`(name · short_name), `robots.txt`, `build.py` 의 404 · robots 문자열, `og_gen.py`(5×7 글리프에 B · M 추가, MON / LAB 두 줄) → `python3 backend/og_gen.py` 로 `og.png` 재생성.
+불변 규칙대로 **그대로 둔 것**: 저장소명 · 배포 URL · localStorage 키(`pogo_*`) · GA 이벤트명 · SW 캐시 이름(`pogoplan-v5`). 패치노트 옛 줄의 "POGO PLAN" 도 역사라 그대로.
+
+### KR/EN — "자잘하게 안 바뀌는 곳" 을 셈으로 잡는다
+
+**감사 도구 둘**
+- `scripts/i18n_audit.js` — 언어를 EN 으로 두고 열아홉 화면 + 드로어 · 상세 패널 · D-MAX 세그먼트 · 개체값 순위 · 검색식 · 설정 · 잠긴 화면 · 로그인 팝업 · 동의 배너 · 모의 로그인(플래너 · 내 포켓몬 · 저장 창)을 열어, 한글이 남은 텍스트 노드와 `aria-label` · `placeholder` · `title` · `alt` 를 어디서 나왔는지와 함께 모은다. 출발 172건.
+- 정적 훑기 — 코드의 한국어 리터럴 861개에 엔진 `t()` 를 직접 적용해 못 옮기는 것을 파일별로 찍었다. 출발 372건(템플릿 자리표 때문에 과대 계상).
+
+**엔진 결함 둘 (i18n.js · i18n-en.js)**
+1. `i18nWatch()` 의 MutationObserver 가 `childList` 만 봤다. `setAttribute('aria-label', …)`(테마 버튼) 이나 `node.data = …` 로 **이미 있는 노드의 값만** 갈아 끼우면 아무것도 울리지 않아 그 줄만 한국어로 남았다. `attributes`(`attributeFilter: I18N_ATTRS`) 와 `characterData` 를 함께 관찰한다. 옮긴 값에는 한글이 없고, 못 옮기면 다시 쓰지 않으므로 관찰자가 자기 자신을 깨우는 고리는 생기지 않는다.
+2. 사전 키 아홉 개가 문장 끝 공백을 달고 있었다(`'지금은 이 브라우저에만 저장돼요. '` 등). `t()` 는 앞뒤 공백을 떼고 찾으므로 **한 번도 맞은 적이 없는** 키였다. 키 · 값을 다듬었다(공백은 `t()` 가 원문에서 되살린다).
+
+**사전** — 키 약 250개, `I18N_PATTERNS` 80개 추가. 패턴은 이름 · 숫자 · 조사가 섞여 사전에 적을 수 없는 문장이다: 달력 `#월 #일, 일정 #개`, `(.+)리그 상위 #`, `(.+)리그에서 가장 쓸 만해요`, `(.+) 보스 상대 D-MAX 탱커`, `(.+)가 보스로 나오면? (맥스 배틀 — …)`, `(.+) 속성 맥스 배틀 보스 기준 · …`, 솔플 계산기의 조사 붙은 문장(`(.+?)[이가] 반감으로 받아줌`, `(.+?)[을를] 확실히 이기는 픽이 없어요 — …`), `이름(타입)` 기술(`웨더볼(불꽃)`), `A/B` 타입 짝, `(.+) → (.+)` 역할 줄. 좁은 규칙을 위에 둔다.
+`confirm()` 세 곳(개체 삭제 · 코드 삭제 · 승인 해제)은 DOM 밖이라 엔진이 못 보므로 `t()` 로 감쌌다. `dev-mock.js` 의 기술명 셋을 PokeAPI 표기(`머드샷` · `블라스트번` · `섀도클로`)로 맞췄다 — 사이트의 기술명 출처가 그쪽이라 목만 다른 표기를 쓰고 있었다.
+
+**결과** — DOM 감사 172 → 46. 남은 46은 전부 일정표 이벤트 · 시즌 이름(한국 서버 일정이라 `I18N_KST_NOTE` 로 일부러 둔다)과 사용자가 친 검색어. 정적 훑기의 잔여 107은 정규식이 여러 줄에 걸친 조각과 `${}` 자리표 산물.
+
+### 테스트
+
+`i18n` +5(설정 힌트 · 테마 버튼 aria-label 갱신 · 상세 약점 제목 · CP 각주 · D-MAX 탱커 제목), `nav` · `shell` 은 `#app-title === 'monlab'`, `hardening` 은 og:title 에 monlab. 회귀 24묶음 통과.
+
+</details>
+
+<details open>
+<summary><b>v3.24.0</b> — 2026-09-13 · <code>기능</code> 검색 줄 PvP/PvE 알약 · 육각형 레이드/PvP 축을 순위 대신 전 종 점수로</summary>
+
+### 왜
+
+두 제보가 같은 뿌리였다.
+
+1. "검색창에 포켓몬을 치면 PvP 에서 많이 쓰는지 PvE 에서 많이 쓰는지 지표가 필요하다" — 도감·검색 줄에는 세대와 CP 100% 뿐이었다.
+2. "대짱이는 육각형에서 PvE 가 뛰어난데 낮게 나온다" — 상세 팝업 육각형의 레이드·PvP 축은 `usage_places`(각 순위표 **30위 안** 등재)의 최고 순위로 그렸다. 대짱이(원종)는 어느 표에도 30위 안이 없고 `메가 대짱이`(땅 3위) · `섀도우 대짱이`(땅 20위)만 등재돼 있어, 원종의 레이드 축은 **미등재 0.08** 로 누웠다. 실제로는 땅·물 보스에서 A 티어(6위)다. PvP 축도 같은 이유로 눕는다 — 슈퍼·하이퍼 89점인데 40위 안 표에는 없다.
+
+순위는 "표에 들었는가" 만 말한다. 두 물음 다 **연속된 점수**가 필요했다.
+
+### 변경 1 — 빌드가 전 종 점수표를 싣는다
+
+`backend/value_build.py` 가 `value.json['meter'] = {이름: [PvE, PvP]}` 를 만든다 (1,571종, data.js 에 25KB).
+
+| 축 | 산식 | 범위 |
+| --- | --- | --- |
+| PvE | 보스 타입별 `(score / 그 타입 최강)^0.25 × 100` 의 상위 3개 평균 | 전 종 (`pve_full.json meta` 전부 — 전설·메가·섀도우 포함) |
+| PvP | 리그별 PvPoke 점수의 상위 2개 평균, 리그 하나뿐이면 × 0.8 | PvPoke 에 오른 1,299종 |
+
+**가성비 화면(`VALUE_DATA.pvp/pve/both`)과 같은 산식**이다 — 대짱이는 거기서도 `PvP 88.7 · PvE 59.0`, 여기서도 `[59, 89]`. 한 서비스 안에서 같은 이름의 숫자가 두 뜻이면 안 된다. 다만 가성비는 "흔한" 개체만 골라 담았고, 점수표는 뺀 곳 없이 전부 넣는다. `build.py build_pvp_tables` 가 `pvp_all.json` 행에 `score` 를 남기게 됐다(중간 산출물, data.js 에는 안 실린다).
+
+### 변경 2 — 읽는 자리는 하나
+
+`components/detail.js usageMeterOf(name)` → `{ pve, pvp } | null`. 옛 빌드(점수표 없음)는 `null` 이라 부르는 쪽이 예전 방식으로 돌아간다.
+
+### 변경 3 — 도감·검색 줄의 알약
+
+`pages.js dexUseNode(name)` 이 이름 바로 뒤에 `[PvP 89] [PvE 59]` 를 붙인다. 높은 쪽이 `.is-lead`(진한 테두리·글자), 0 인 쪽은 `-` 에 `.is-none`(흐림). 둘 다 없으면 칸을 안 만든다 — 빈 칸은 "없음" 과 "0" 이 같아 보인다. 카드 모드에서는 가운데 정렬.
+
+### 변경 4 — 육각형의 레이드·PvP 축
+
+`hexNode` 가 점수표가 있으면 `점수/100`(하한 0.08)으로 축을 세우고 라벨을 `59점` 으로 적는다. 없으면 예전 순위(`3위`)로. `<title>` 도 산식을 말한다.
+
+| 대짱이 | 전 | 후 |
+| --- | --- | --- |
+| 레이드 축 | `-` (0.08) | **59점** (0.59) |
+| PvP 축 | `-` (0.08) | **89점** (0.89) |
+
+### 회귀
+
+`dex-search.js` +6 — 대짱이를 검색해 알약 둘 · PvP 쪽이 진함 · PvE ≥ 50, 줄을 열어 육각형 레이드 축이 `N점` 꼴 · ≥ 50, PvP ≥ 80. 전체 통과.
+
+</details>
+
+<details open>
+<summary><b>v3.23.0</b> — 2026-09-13 · <code>성능</code> 첫 화면 842 → 690KB — CSS 두 번 실리던 것 제거 · 안 쓰는 Inter 웹폰트 제거 · Pretendard CSS 렌더 비차단</summary>
+
+### 먼저, 빌드는 느리지 않았다
+
+"빌드가 왜 느린지" 를 재 보니 빌드가 아니었다.
+
+| 단계 | 시간 |
+| --- | --- |
+| 로컬 `scripts/build.sh` 전체 (fetch 포함) | **8.0초** — fetch_data 3.1 · pve_build 1.5 · build.py 0.5 · value 0.75 · dex 0.54 · 나머지 각 0.1~0.4 |
+| `backend/build.py` 단독 | 0.37~0.5초 (cProfile: JS 주석 제거 0.13 · JSON 직렬화 0.12 · CSV 읽기 0.10) |
+| CI `deploy-dev.yml` — Build site 단계 | **6초** (작업 전체 28초: 캐시 복원 3 · 빌드 6 · gh-pages 발행 11) |
+
+한 판을 올리고 미리보기에 뜨기까지 길게 느껴진 것은 **GitHub Pages CDN 반영**(수 분, 캐시 max-age 600)이지 빌드가 아니다. 그래서 빌드는 손대지 않았고, 실제 사용자가 받는 쪽을 봤다.
+
+### 무엇이 무거웠나 — 첫 화면 862KB 를 뜯어 보니
+
+`dist/index.html` 862,279 바이트 안에 `<style>` 이 셋이었다: 480B(Galmuri `@font-face`) · **158,691B** · **155,718B**. 뒤의 둘이 같은 번들 CSS 였다.
+
+원인은 `frontend/index.html` 의 로딩 가림막 주석 한 줄 — `이 블록은 번들 스타일(__STYLES__)보다 앞에서 그려지므로`. `build.py` 가 `html.replace('__STYLES__', bundle)` 로 자리표를 채우는데, `str.replace` 는 **모든** 자리표를 채운다. 주석 속 글자에도 155KB 번들이 통째로 들어갔다. v2.52.0(9/10)에 그 주석을 쓰면서 생겼고, 사흘 동안 모든 방문이 같은 CSS 를 두 번 받아 두 번 파싱했다.
+
+- 주석 문구를 `(아래 STYLES 자리)` 로 바꿨다.
+- `render_index_html()` 이 자리표(`__STYLES__` · `__SCRIPTS__`)가 **정확히 하나**인지 `assert` 한다 — 다시 생기면 빌드가 죽는다.
+- 회귀 `hardening.js` 가 문서 안의 `── tokens.css ──` · `── data.js ──` 표식을 세어 번들이 한 번만 들어갔는지 본다.
+
+### 안 쓰는 글꼴을 방문마다 받고 있었다
+
+`<link href="https://fonts.googleapis.com/css2?family=Inter…" rel="stylesheet">` — v3.0.0 에 본문 글꼴로 넣었지만, v3.6.0 도트 디자인이 본문을 Galmuri 로 바꾸면서 **어느 CSS 규칙도 `Inter` 를 부르지 않게 됐다**(`grep font-family` 0건). 그런데 링크는 남아 방문마다 렌더를 막는 CSS 요청 하나 + woff2 네 벌(400·500·600·700)을 받았다. 링크와 `fonts.googleapis`·`fonts.gstatic` 프리커넥트, CSP 의 두 출처를 뗐다. 머리말의 글꼴 주석(Inter · Fraunces · JetBrains Mono)도 현실과 달라 다시 썼다.
+
+### 한글 글꼴 CSS 가 첫 그리기를 세우고 있었다
+
+Pretendard 동적 서브셋 CSS 는 head 의 외부 `<link rel="stylesheet">` 였다 — 브라우저는 이 파일이 올 때까지 첫 그리기를 세운다(jsdelivr 왕복 한 번). `preload` 로 받아 두고 도착하면 `onload` 에서 `stylesheet` 로 승격한다(loadCSS 방식). 글꼴은 어차피 `font-display: swap` 이라 도착 전엔 시스템 글꼴로 그리고 바꿔 끼운다. JS 가 없는 환경은 `<noscript>` 사본이 예전처럼 받는다. CSP 는 `script-src 'unsafe-inline'` 이 이미 있어 `onload` 속성이 허용된다.
+
+### 잰 값
+
+localhost · 바깥 요청 차단 · 5회 중앙값. 외부 요청을 안 재므로 (2)(3) 의 이득은 이 위에 얹힌다.
+
+| | 전 | 후 |
+| --- | --- | --- |
+| index.html | 862,279B (gzip 224KB) | **706,473B (gzip 199KB)** |
+| 첫 화면 받은 바이트 | 2,169KB | **2,017KB** |
+| PC FCP · DCL · load | 136 · 288 · 305ms | **124 · 256 · 266ms** |
+| 휴대폰 CPU×4 FCP · DCL · load | 340 · 1098 · 1119ms | **292 · 958 · 983ms** |
+
+### 보고 넘긴 것 (바꾸지 않은 이유)
+
+- `data.js` 1.36MB(gzip 209KB) — `SHEET_DATA` 의 `null` 필드 30KB 를 빼면 gzip 은 0.9KB 만 준다. 데이터 모양을 바꿀 값이 아니다. 화면별로 쪼개 늦게 받는 것은 전역 이름을 지키며 할 수 있지만 큰 손질이라 다음으로.
+- 긴 작업(50ms+) 0개, DOM 1,765 노드, `waitForSprites` 는 load 뒤 ~140ms 에 걷힌다 — 병목이 아니다.
+- `PVE_DATA[].en` 이 `"메가Y Mewtwo"` 처럼 한글 폼 접두어를 품고 있다 — 성능은 아니고 데이터 정합 문제라 따로 적어 둔다.
+
+</details>
+
+<details open>
+<summary><b>v3.22.1</b> — 2026-09-13 · <code>변경</code> 홈 대시보드 — 인사·바로가기 한 판, 1위는 큰 그림, 타일은 갈래 카드 안의 줄</summary>
+
+### 무엇이 나갔나
+
+작성자가 `2679b21 Redesign home with desktop dashboard grid and featured Pokemon` 을 dev → main → deploy 로 직접 올렸다 (`home.js` 28줄 · `home.css` 77줄). 버전 갱신 없이 나가서 실서비스는 이 내용을 **v3.22.0 라벨**로 보여 주고 있다. 이 판은 그 변경에 버전·패치노트·영문 사전·회귀·문서를 따라 붙인 것이다 — 코드 쪽 변경은 `i18n-en.js` 다섯 키와 `nav.js` 단언 하나뿐이다.
+
+### 홈이 어떻게 바뀌었나
+
+`renderServiceHome()` 이 세 구역을 `.home-dashboard` 하나로 감싼다.
+
+| 구역 | 전 (v3.22.0) | 후 (v3.22.1) |
+| --- | --- | --- |
+| 인사 | 배너 한 장 (`오늘의 모험, / 여기서 준비하세요.`) | `.home__welcome` = 인사(`다음 모험의 / 주인공을 찾아요.` + 한 줄 설명) **옆에** `.home__quick` 바로가기 셋 — 포켓몬 도감 · 이벤트 일정 · 레이드 보스 (`ROUTES` 에서 이름, `01~03` 번호) |
+| 순위 세 덩이 | 카드 셋 나란히, 카드마다 같은 크기 | `.pick__group--{dmax\|pve\|usage}` 로 머리 색을 가르고(`--brand` · `--point` · `--good`), **1위 카드만 세로 큰 그림**(`.sprite` 16rem), 2·3위는 그 아래 가로 줄 |
+| 기능 타일 | 갈래 소제목 + 타일 아홉 장 | 갈래마다 `.home__service-group` **카드 하나** (`01 지금 뭐 하지` 식 번호 소제목), 그 안에 `.home__tile` 이 `[아이콘][이름/설명][↗]` **줄**로 선다 |
+
+잰 값 (1440×900 / 430×932):
+
+| | PC | 휴대폰 |
+| --- | --- | --- |
+| 인사 상자 | 1118×300, 왼쪽 7 : 오른쪽 5 | 390×485, 바로가기가 아래로 |
+| 순위 구역 시작 | y=477 | y=614 |
+| 1위 카드 | 317×276 · 그림 163px | 가로 줄 360×160 · 그림 122px |
+| 2·3위 카드 | 가로 줄 317×89 · 그림 65px | 두 열 세로 175×149 |
+| 타일 구역 시작 | y=1169 (3열 카드) | y=2060 (카드가 쌓임) |
+| 전체 높이 | 1951 | 3502 |
+
+휴대폰에서 타일 구역이 v3.22.0 의 y=971 에서 **2060** 으로 내려갔다 — 1위 큰 그림 셋과 바로가기 블록만큼이다. 순위를 먼저 크게 보여 주는 쪽을 택한 결과라 여기 적어 둔다.
+
+CSS 는 전부 `.home-dashboard` 아래로 한정했다. PC 테마(`pc-theme.css`)와 도트 테마(`pixel.css`)가 `.home__intro::before/::after` 로 그리던 옛 배너 장식은 `content: none` 으로 끈다 — 선택자를 한정하지 않으면 두 테마가 배너를 되살린다.
+
+### 이 판에서 덧붙인 것
+
+- **영문 사전** — 새 인사·바로가기 문구 다섯 키 (`다음 모험의` · `주인공을 찾아요.` · `지금 강한 포켓몬부터 나만의 육성 계획까지.` · `트레이너의 다음 선택을 함께 준비해요.` · `모험을 시작하는 세 가지 방법`). 없으면 EN 화면의 인사가 한국어로 남는다.
+- **회귀 `nav.js`** — `타일 모서리 0 · 2px 테두리` 단언이 깨졌다. 타일이 상자가 아니라 갈래 카드 안의 줄이 되면서 사방 2px 대신 밑선 1px 을 갖는다. 단언을 `타일 모서리 0 · 줄 밑선 1px · 카드 모서리 0` 으로 바꿨다 — 상자 테두리는 이제 `.home__service-group` 이 진다.
+- 버전 문서 다섯 곳 · 노션 `01. POGO PLAN 개발` 버전 근거 · WBS 행.
+
+</details>
 
 <details open>
 <summary><b>v3.22.0</b> — 2026-09-13 · <code>변경</code> 홈 순위 세 덩이 — 순위표 세 곳 × 상위 3종</summary>

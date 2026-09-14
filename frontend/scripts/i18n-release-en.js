@@ -15,6 +15,30 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 const RELEASE_NOTES_EN = {
+  '2026-09-14 · v3.27.0': [
+    '**The service is now named moncamp** — yesterday\u2019s monlab lasted a day: no domain was available. The new address moncamp.kr is being prepared. Saved settings and accounts are unchanged.',
+    '**App install (PWA) and offline reading keep working at the new address** — they were switched on for the old address only, so a plain move would have silently turned them off.',
+  ],
+  '2026-09-14 · v3.26.0': [
+    '**The service is now called monlab** — logo, title, install name, share card and every notice say monlab. The address and your saved settings are unchanged.',
+    '**Every small spot that stayed Korean in the KR/EN switch has been swept** — the sign-in prompt, locked-screen card, account card, the weakness/resistance headings and CP footnotes in the detail popup, D-MAX attacker/tank titles and notes, IV ranking, search-builder hint, consent banner, settings, move changes, the solo calculator and the My Pokémon editor. Nineteen screens and popups were opened in English and 172 leftovers fixed; only event names in the schedule stay Korean on purpose (it is the Korean server schedule).',
+    '**Text swapped in after rendering is translated too** — places that only change an attribute on an existing element, like the theme button\u2019s spoken name, were out of reach. Attribute and text changes are now watched as well.',
+    '**Dictionary keys that could never match are fixed** — nine keys ending in a space (such as "For now this is saved in this browser only.") never matched the engine, which trims before lookup, so those lines always stayed Korean.',
+  ],
+  '2026-09-13 · v3.24.0': [
+    '**Search now tells you PvP or raids at a glance** — every Pokédex and search row carries two pills next to the name, [PvP 89] [PvE 59], with the stronger side highlighted. Same 0–100 scores as the Value screen.',
+    '**The stat hexagon\u2019s Raid and PvP axes are fixed** — they used to be drawn from "does it make a top-30 table", so a base form like Swampert, whose Mega and Shadow are the ones ranked, had its Raid axis flat on the floor. They now use scores computed for every species (Swampert: Raid 59 · PvP 89).',
+  ],
+  '2026-09-13 · v3.23.0': [
+    '**A lighter first screen** — the same 155KB of styles was shipped twice (a slip from reworking the loading screen three days ago). It ships once now: first-screen size 842 → 690KB.',
+    '**No more unused web font** — since the pixel redesign nothing used Inter, yet every visit fetched one request plus four font files.',
+    '**The Korean font no longer holds up rendering** — the first paint used to wait for the font CSS to arrive. It paints first and swaps the font in when it lands.',
+  ],
+  '2026-09-13 · v3.22.1': [
+    '**The home screen is now one dashboard** — three quick links (Pokédex · Events · Raid bosses) next to the greeting, the three ranking blocks below, then the feature tiles in three columns. It fits one wide screen, and stacks in the same order on phones.',
+    '**Each ranking leads with its #1 as a large sprite** — the first card in every block stands at 160px, with #2 and #3 as rows beneath. A colored top edge tells D-MAX, Raids and Useful-all-around apart.',
+    '**Feature tiles became rows inside three cards** — What now · Who to bring · Who to raise, each card listing its screens. The grouping reads first, where nine loose tiles used to.',
+  ],
   '2026-09-13 · v3.22.0': [
     '**Three rankings at once on the home screen** — the D-MAX tier list, raid attackers and \u0027useful all around\u0027, top 3 each, nine cards in all. Only the last one used to be here, so "what is strong in raids right now" meant opening another screen.',
     '**Cards lead with the artwork** — rank, name and a one-line reason (tier and Max Move type · DPS and TDO · how many places it is used). Tap a card for the full details, or [See all] in a block header for that ranking.',

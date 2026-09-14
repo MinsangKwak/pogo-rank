@@ -25,9 +25,9 @@
 
 | 브랜치 | 역할 | 푸시하면 | 확인 주소 |
 |---|---|---|---|
-| `dev` | 작업·미리보기. 기능은 여기서 만든다 | `deploy-dev.yml` → **pogo-rank-dev** 저장소의 `gh-pages`로 배포 | **https://minsangkwak.github.io/pogo-rank-dev/** |
+| `dev` | 작업·미리보기. 기능은 여기서 만든다 | `deploy-dev.yml` → **pogo-rank-dev** 저장소의 `gh-pages`로 배포 | **https://dev.moncamp.kr/** (2026-09-14 v3.27.0 전에는 minsangkwak.github.io/pogo-rank-dev/) |
 | `main` | 통합. `dev`가 검증되면 머지 | 배포 없음 | — |
-| `deploy` | 실서비스. `main`을 머지한 것만 | `deploy.yml` → GitHub Pages 배포 | **https://minsangkwak.github.io/pogo-rank/** |
+| `deploy` | 실서비스. `main`을 머지한 것만 | `deploy.yml` → GitHub Pages 배포 | **https://moncamp.kr/** (전에는 minsangkwak.github.io/pogo-rank/) |
 
 - GitHub Pages는 저장소당 사이트 하나라서, `pogo-rank-dev` 주소는 **같은 이름의 별도 저장소**(MinsangKwak/pogo-rank-dev)가 서빙합니다. 그 저장소에는 소스가 없고 빌드 결과(`gh-pages`)만 실립니다.
 - dev 빌드는 `BUILD_CHANNEL=dev`로 만들어져 화면 버전 배지에 `-dev`가 붙고, GA 통계가 꺼지고, `robots.txt`·`noindex`로 검색 색인을 막습니다. 로그인·즐겨찾기는 실서비스와 **같은 Firebase 프로젝트**를 씁니다(별도 데이터 아님).
@@ -36,14 +36,14 @@
 ### 순서
 
 1. **기능 작업** — `dev`에서. 로컬은 `python3 backend/build.py`, 로그인 뒤 화면은 `localhost:5503/?mock=1`
-2. **dev 푸시** → 2~3분 뒤 **pogo-rank-dev** 주소에서 친구들과 함께 확인. 기계 검증은 `bash scripts/verify_deploy.sh https://minsangkwak.github.io/pogo-rank-dev/ dev`
+2. **dev 푸시** → 2~3분 뒤 **pogo-rank-dev** 주소에서 친구들과 함께 확인. 기계 검증은 `bash scripts/verify_deploy.sh https://dev.moncamp.kr/ dev`
 3. **버전 올리기** — `backend/build.py`의 `APP_VERSION` (화면 우측 상단 배지)
 4. **기록 3곳 갱신**
    - `CHANGELOG.md` — 새 버전 섹션 추가 (추가/변경/수정/제거)
    - `frontend/scripts/components/release.js` — 사용자용 패치노트 항목 + `RELEASE_VER` 갱신(바뀌면 ☰에 빨간 점이 뜸)
    - `README.md` 버전 이력 표 (한 줄)
 5. **main으로 머지** — `git checkout main && git merge dev && git push`
-6. **deploy로 머지** — `git checkout deploy && git merge main && git push` → Actions가 빌드·배포 (2~3분) → `bash scripts/verify_deploy.sh https://minsangkwak.github.io/pogo-rank/ prod`
+6. **deploy로 머지** — `git checkout deploy && git merge main && git push` → Actions가 빌드·배포 (2~3분) → `bash scripts/verify_deploy.sh https://moncamp.kr/ prod`
 7. **노션 정리** — QA 트래커에서 해당 이슈를 `완료`로 바꾸고 `버전` 속성을 지정
 
 > 급하면 GitHub → Actions → "Build and deploy to GitHub Pages" → **Run workflow** (deploy 브랜치를 다시 빌드). dev 쪽은 "Build and deploy dev preview".
@@ -139,7 +139,7 @@ Actions에서 빨간 X가 뜨면 **build 잡의 빨간 단계**를 펼쳐 마지
 1. [console.firebase.google.com](https://console.firebase.google.com) → 프로젝트 추가
 2. `</>` 웹 앱 등록 → 나오는 `firebaseConfig`를 `backend/build.py`의 `FIREBASE_CONFIG`에 파이썬 dict로 입력 (Firebase 호스팅 체크는 불필요 — GitHub Pages 사용)
 3. **Authentication** → 시작하기 → 로그인 방법 → **Google** 사용 설정 → 지원 이메일 선택
-4. Authentication → 설정 → **승인된 도메인**에 `minsangkwak.github.io` 추가
+4. Authentication → 설정 → **승인된 도메인**에 `minsangkwak.github.io` · `moncamp.kr` · `dev.moncamp.kr` 추가 (2026-09-14 v3.27.0 커스텀 도메인 — 12절)
 5. **Firestore Database** → 만들기 → 위치 `asia-northeast3(서울)` → 프로덕션 모드 → **규칙** 탭에 저장소의 [`firestore.rules`](../firestore.rules) 붙여넣고 **게시**
 
 `FIREBASE_CONFIG`가 비어 있으면 로그인 UI가 빌드에 들어가지 않아, 설정 전에 배포해도 나머지 기능은 정상입니다.
@@ -272,3 +272,56 @@ GO 배틀리그 시즌이 바뀔 때(보통 3개월마다) 하는 유일한 수�
 - 진짜 한도는 Firestore(무료 Spark: 일 읽기 5만). 초과해도 **과금이 아니라 그날 기능 정지**
 - 커지면 순서는 **도메인 구입 → Cloudflare 무료 연결 → rate limiting·봇 차단 → Firebase App Check**
 - `robots.txt`는 배포에 포함되어 있으나 규칙을 지키는 봇에게만 유효 (강제력 없음)
+
+---
+
+## 12. 커스텀 도메인 moncamp.kr (2026-09-14 v3.27.0)
+
+**실서비스는 `moncamp.kr`, 미리보기는 `dev.moncamp.kr`. 두 저장소의 배포 방식이 달라 도메인을 정하는 자리도 다릅니다.**
+
+| 저장소 | 배포 방식 | 도메인을 정하는 곳 |
+|---|---|---|
+| `pogo-rank` (실서비스) | `deploy.yml` → `actions/deploy-pages` (Actions 배포) | 저장소 **Settings → Pages → Custom domain** 값만. `CNAME` 파일은 무시됨 |
+| `pogo-rank-dev` (미리보기) | `deploy-dev.yml` → `peaceiris/actions-gh-pages` 가 `gh-pages` 브랜치에 push (브랜치 배포) | `gh-pages` 루트의 `CNAME` 파일. 워크플로의 `cname: dev.moncamp.kr` 이 매 배포마다 실어 준다 (`force_orphan` 이라 파일이 없으면 설정이 날아간다) |
+
+### 12-1. DNS (가비아, 입력 완료)
+
+| 타입 | 호스트 | 값 |
+|---|---|---|
+| A | `@` | `185.199.108.153` · `185.199.109.153` · `185.199.110.153` · `185.199.111.153` |
+| CNAME | `www` | `minsangkwak.github.io.` |
+| CNAME | `dev` | `minsangkwak.github.io.` |
+
+전파 확인 (8.8.8.8 을 지정해 로컬·통신사 캐시를 건너뜀):
+
+```
+nslookup -type=A moncamp.kr 8.8.8.8
+nslookup -type=CNAME dev.moncamp.kr 8.8.8.8
+```
+
+A 레코드 넷이 다 나오고 dev 가 `minsangkwak.github.io` 로 풀리면 다음으로.
+
+### 12-2. 순서 — 반드시 이 차례
+
+1. **Firebase 승인 도메인 먼저** — [console.firebase.google.com](https://console.firebase.google.com) → 프로젝트 → Authentication → 설정 탭 → **승인된 도메인** → 도메인 추가 → `moncamp.kr` 저장, 다시 도메인 추가 → `dev.moncamp.kr` 저장. `minsangkwak.github.io` 는 지우지 않는다(옛 주소가 리다이렉트되는 동안도 로그인이 돼야 한다). 이걸 빼먹으면 새 주소에서 Google 로그인이 `auth/unauthorized-domain` 으로 전부 실패한다.
+2. **미리보기 저장소 Pages** — github.com/MinsangKwak/pogo-rank-dev → Settings → 왼쪽 **Pages** → Build and deployment 의 Source 가 `Deploy from a branch` · Branch `gh-pages` / `/ (root)` 인지 확인 → 아래 **Custom domain** 칸에 `dev.moncamp.kr` 입력 → Save. 저장하면 GitHub 이 DNS 검사를 시작한다("DNS check in progress" → 성공하면 초록 체크). v3.27.0 부터는 dev 배포가 `CNAME` 파일을 함께 올리므로 이 칸이 자동으로 채워지기도 한다 — 이미 채워져 있으면 그대로 둔다.
+3. **실서비스 저장소 Pages** — github.com/MinsangKwak/pogo-rank → Settings → **Pages** → Source 는 `GitHub Actions` 그대로 → **Custom domain** 에 `moncamp.kr` 입력 → Save → DNS 검사 통과 확인. `www.moncamp.kr` 은 따로 적지 않는다 — apex(`moncamp.kr`)를 적으면 GitHub 이 `www` → apex 리다이렉트를 자동으로 처리한다.
+4. **Enforce HTTPS** — 두 저장소 모두, DNS 검사가 통과한 뒤 같은 화면의 **Enforce HTTPS** 체크박스가 활성화되면 켠다. 인증서(Let's Encrypt)는 GitHub 이 발급하며 보통 몇 분, 길면 24시간. 체크박스가 회색이면 아직 발급 전이니 기다렸다가 다시 연다.
+5. **deploy** — 이 순서가 끝난 뒤에 실서비스를 배포한다(`main` → `deploy`). 빌드의 canonical · og:url · sitemap 이 이미 `moncamp.kr` 로 찍히므로, Pages 설정 전에 배포하면 공유 카드가 아직 열리지 않는 주소를 가리킨다.
+
+### 12-3. 확인
+
+1. `https://moncamp.kr` — 홈 대시보드, 자물쇠(인증서) 정상
+2. `https://www.moncamp.kr` → `moncamp.kr` 로 넘어가는가
+3. `https://dev.moncamp.kr` — 미리보기(`-dev` 라벨), `https://minsangkwak.github.io/pogo-rank-dev/` 가 여기로 넘어오는가
+4. Google 로그인 (1번 승인 도메인)
+5. PWA — 주소창 설치 아이콘, 설치 후 오프라인 열람(`sw.js` 등록 조건에 `moncamp.kr` 포함, v3.27.0)
+6. 딥링크 `#/dmax` · `#/pve` · `#/dex` · `#/mon/260`
+7. `bash scripts/verify_deploy.sh https://moncamp.kr/ prod` · `bash scripts/verify_deploy.sh https://dev.moncamp.kr/ dev`
+
+### 12-4. 알아둘 것
+
+- **origin 이 바뀐다** — `pogo_*` localStorage(테마 · 언어 · 동의 · 게스트 플래너 `plan_guest_mons`)는 새 주소에서 빈 상태로 시작한다. 로그인 사용자는 Firestore 에 있어 무사.
+- **GA4** — 측정 ID 노출 조건에 `moncamp.kr` 을 넣었다(v3.27.0). GA 속성 설정의 스트림 URL 은 콘솔에서 바꾼다(통계는 URL 과 무관하게 같은 ID 로 이어진다).
+- **CAA 레코드는 넣지 않는다.** 넣어야 한다면 `letsencrypt.org` 를 허용해야 인증서가 나온다.
+- 가비아 만기 **2028-09-14**. 두 달 · 한 달 · 2주 전 알림을 캘린더에 따로.

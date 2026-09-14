@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 # 배포 검증 (2026-09-05 v2.7.4) — 배포된 주소가 "그 채널의, 그 버전" 빌드인지 확인한다.
 #   bash scripts/verify_deploy.sh <주소> <prod|dev> [기대 버전]
-#   예) bash scripts/verify_deploy.sh https://minsangkwak.github.io/pogo-rank-dev/ dev
-#       bash scripts/verify_deploy.sh https://minsangkwak.github.io/pogo-rank/ prod v2.7.4
+#   예) bash scripts/verify_deploy.sh https://dev.moncamp.kr/ dev
+#       bash scripts/verify_deploy.sh https://moncamp.kr/ prod v3.27.0
+#   (2026-09-14 v3.27.0 커스텀 도메인 전에는 minsangkwak.github.io/pogo-rank(-dev)/ 였다)
 # 기대 버전을 생략하면 backend/build.py 의 APP_VERSION 을 쓴다 (dev 채널은 -dev 를 붙여 비교).
 # 확인 항목: 버전 배지 · 채널 표식(-dev/noindex/GA/robots) · data.js · 아머드 뮤츠 전용 스프라이트 · PWA 파일
 # GitHub Pages CDN 캐시(max-age 600)를 피하려고 매 요청에 쿼리를 붙인다.
