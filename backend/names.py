@@ -164,6 +164,22 @@ released_dex = {
     for pokemon in _game_master['pokemon']
     if pokemon.get('released') and pokemon.get('dex')
 }
+# 2026-09-14 v3.31.0 메가·원시 폼의 출시 여부: (도감번호, 라벨) → released
+#   게임마스터는 **아직 안 나온** 메가의 tempEvoOverrides 까지 들고 있다 (두랄루돈 다이맥스 오등록과 같은 함정).
+#   PvPoke 쪽은 폼마다 released 를 적어 두므로 그것을 유일한 기준으로 삼는다.
+#   speciesId 'charizard_mega_x' → (6, '메가X') · 'kyogre_primal' → (382, '원시')
+mega_released = {}
+for _pokemon in _game_master['pokemon']:
+    _species_id = _pokemon.get('speciesId', '')
+    if '_mega' not in _species_id and '_primal' not in _species_id:
+        continue
+    if not _pokemon.get('dex'):
+        continue
+    _label = ('원시' if '_primal' in _species_id
+              else '메가X' if _species_id.endswith('_mega_x')
+              else '메가Y' if _species_id.endswith('_mega_y') else '메가')
+    mega_released[(_pokemon['dex'], _label)] = bool(_pokemon.get('released'))
+
 # PvPoke가 출시됨(released)으로 표시한 종의 한글 이름 집합
 released_names = {
     name_ko(species_id)[0]

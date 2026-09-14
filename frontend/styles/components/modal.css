@@ -87,6 +87,9 @@ dialog.modal::backdrop { background: transparent; }
 /* 2026-09-04 메가/원시 진화 칩 — 일반 진화형과 구분되게 살짝 강조 */
 .evo__mon.form-tag--mega { border-color: color-mix(in srgb, var(--c-mega) 40%, var(--line)); color: color-mix(in srgb, var(--c-mega) 70%, var(--muted)); }  /* v2.11.0 메가 색으로 통일 */
 .evo__mon.form-tag--mega.is-now { border-color: var(--c-mega); background: color-mix(in srgb, var(--c-mega) 12%, var(--surface)); color: var(--c-mega); }
+/* 2026-09-14 v3.31.0 아직 안 나온 메가 — 색을 빼고 '미구현' 딱지를 단다 */
+.evo__mon.is-unreleased { border-color: var(--line); color: var(--muted); opacity: 0.72; }
+.evo__mon.is-unreleased .tag { font-size: 0.95rem; padding: 0 0.4rem; }
 
 /* 기술 · 상성 목록 */
 .move-list__row { display: flex; align-items: baseline; gap: 1rem; margin-bottom: 0.6rem; }
