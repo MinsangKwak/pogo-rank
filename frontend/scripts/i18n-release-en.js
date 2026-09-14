@@ -15,6 +15,12 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 const RELEASE_NOTES_EN = {
+  '2026-09-14 · v3.31.0': [
+    '**Mega Evolution and Primal Reversion now show in the Pok\u00e9dex** — until now you had to open each entry to find out whether a species had a Mega. The list now carries a ⚡ Mega, Mega X·Y or Primal chip: 57 species with a Mega, 2 with a Primal Reversion (Kyogre and Groudon).',
+    '**A [⚡ Mega · Primal] chip gathers them in one place** — it sits beside the generation chips. Those now toggle off on a second tap too; picking a generation used to leave no way back to the full list.',
+    '**(Fix) Unreleased Megas were mixed in** — the game files carry stats for Megas that have not launched. Mega Camerupt was one, so it no longer gets a chip, and the evolution box marks it as not in GO.',
+    '**(Fix) Primal Reversion was labelled Mega Evolution** — Kyogre and Groudon said "Can Mega Evolve", which is a different thing in the game. They now say "Can Primal Revert".',
+  ],
   '2026-09-14 · v3.30.1': [
     '**(Fix) The (i) beside the tier list heading was floating in the wrong place** — on desktop it drifted to the middle between the title and the count on the right, and on phones it dropped onto its own line. It now sits right beside the title.',
     '**(Fix) On wide screens the reasoning box beside a card was only half the card\u2019s height** — it now matches the card.',

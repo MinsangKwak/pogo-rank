@@ -107,9 +107,11 @@ function openDetailByDex(dexNumber, isDex) {
 function megaMonNode(dex, entry, curSprite, isDex) {
   const spriteId = entry.sprite;
   const name = `${entry.label} ${DEX_DATA.names[dex] ?? dex}`;
-  return el('button', { class: `evo__mon form-tag--mega${spriteId === curSprite ? ' is-now' : ''}`,
+  // 2026-09-14 v3.31.0 미출시 폼은 '미구현' 을 달아 밝힌다 — 지우지는 않는다(게임마스터에 종족값이 있어 볼 수는 있다)
+  const unreleased = entry.rel === false;
+  return el('button', { class: `evo__mon form-tag--mega${spriteId === curSprite ? ' is-now' : ''}${unreleased ? ' is-unreleased' : ''}`,
     onclick: () => openDetail({ sprite: spriteId, name, en: '', types: DEX_DATA.forms[spriteId]?.types ?? [] }, isDex) },
-    sprite(spriteId), el('span', {}, entry.label));
+    sprite(spriteId), el('span', {}, entry.label), unreleased ? el('span', { class: 'tag dex__unrel' }, '미구현') : '');
 }
 
 // 진화 단계 블록: [1단계] → [2단계] → [3단계] (분기 진화는 한 단계에 여러 마리) → ⚡[메가 폼들]
@@ -131,7 +133,14 @@ function evoNode(dex, isDex, curSprite) {
     wrap.append(el('div', { class: 'evo__stage' }, ...megas.map((megaEntry) => megaMonNode(dex, megaEntry, curSprite, isDex))));
   }
   // 아래 안내 문구는 실제로 있는 것만 ' · ' 로 이어 붙인다
-  const foot = [hasFamily && '진화형을 누르면 그 포켓몬의 정보를 볼 수 있어요', megas?.length && '⚡ 메가 진화 가능 — 누르면 메가 진화 스탯을 볼 수 있어요'].filter(Boolean);
+  // 2026-09-14 v3.31.0 원시회귀(그란돈·가이오가)를 '메가 진화' 라고 적고 있었다 — 게임에서 다른 것이다.
+  // 라벨이 '원시' 인 폼만 있으면 원시회귀로, 섞여 있으면 둘 다 적는다
+  const megaLabels = (megas ?? []).filter((entry) => entry.rel !== false).map((entry) => entry.label);
+  const megaFoot = !megaLabels.length ? '' : megaLabels.every((label) => label === '원시')
+    ? '⚡ 원시회귀 가능 — 누르면 원시회귀 스탯을 볼 수 있어요'
+    : megaLabels.includes('원시') ? '⚡ 메가진화 · 원시회귀 가능 — 누르면 그 폼의 스탯을 볼 수 있어요'
+      : '⚡ 메가진화 가능 — 누르면 메가진화 스탯을 볼 수 있어요';
+  const foot = [hasFamily && '진화형을 누르면 그 포켓몬의 정보를 볼 수 있어요', megaFoot].filter(Boolean);
   wrap.append(footNote(foot.join(' · ')));
   return wrap;
 }

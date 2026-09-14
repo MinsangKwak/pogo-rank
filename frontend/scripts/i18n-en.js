@@ -362,6 +362,23 @@ const I18N_EN = {
   '진화가 없는 포켓몬이에요.': 'This Pokémon does not evolve.',
   '진화형을 누르면 그 포켓몬의 정보를 볼 수 있어요': 'Tap an evolution to see that Pokémon',
   '⚡ 메가 진화 가능 — 누르면 메가 진화 스탯을 볼 수 있어요': '⚡ Can Mega Evolve — tap to see its Mega stats',
+  // 2026-09-14 v3.31.0 원시회귀를 메가와 가른 문구 (components/detail.js evoNode)
+  '⚡ 메가진화 가능 — 누르면 메가진화 스탯을 볼 수 있어요': '⚡ Can Mega Evolve — tap to see its Mega stats',
+  '⚡ 원시회귀 가능 — 누르면 원시회귀 스탯을 볼 수 있어요': '⚡ Can Primal Revert — tap to see its Primal stats',
+  '⚡ 메가진화 · 원시회귀 가능 — 누르면 그 폼의 스탯을 볼 수 있어요': '⚡ Can Mega Evolve · Primal Revert — tap to see that form\u2019s stats',
+  '진화형을 누르면 그 포켓몬의 정보를 볼 수 있어요 · ⚡ 메가진화 가능 — 누르면 메가진화 스탯을 볼 수 있어요':
+    'Tap an evolution to view that Pokémon · ⚡ Can Mega Evolve — tap to see Mega stats',
+  '진화형을 누르면 그 포켓몬의 정보를 볼 수 있어요 · ⚡ 원시회귀 가능 — 누르면 원시회귀 스탯을 볼 수 있어요':
+    'Tap an evolution to view that Pokémon · ⚡ Can Primal Revert — tap to see Primal stats',
+  '진화형을 누르면 그 포켓몬의 정보를 볼 수 있어요 · ⚡ 메가진화 · 원시회귀 가능 — 누르면 그 폼의 스탯을 볼 수 있어요':
+    'Tap an evolution to view that Pokémon · ⚡ Can Mega Evolve · Primal Revert — tap to see that form\u2019s stats',
+  // 도감 줄 딱지와 거르기 칩 (components/pages.js dexMegaTag · drawDexChips)
+  '원시': 'Primal',
+  '메가 X·Y': 'Mega X·Y',
+  '⚡ 메가·원시': '⚡ Mega · Primal',
+  '메가진화 또는 원시회귀가 있는 종만 보기': 'Show only species with a Mega Evolution or Primal Reversion',
+  '메가진화 가능': 'Can Mega Evolve',
+  '원시회귀 가능': 'Can Primal Revert',
   '⚡ 메가X vs 메가Y 비교': '⚡ Mega X vs Mega Y',
   '누르면 그 포켓몬의 상세 정보가 열려요.': 'Tap to open that Pokémon.',
   '※ 일부는 지금 배울 수 없는 레거시 기술이에요': '※ Some are legacy moves you cannot learn right now',
@@ -559,6 +576,8 @@ const I18N_EN = {
   // ── 도감 · 안내 ───────────────────────────────────────────────────────────
   '미구현 = 포켓몬 GO에 아직 출시되지 않은 종 (PvPoke 출시 목록 기준, 데이터는 게임마스터 선등록분). 메가·섀도우·리전 폼은 🔍 검색으로 찾으면 이 목록에 함께 나와요.':
     '"Not in GO" marks species that have not been released in Pokémon GO (per the PvPoke release list; the data is pre-registered in the Game Master). Mega, Shadow and regional forms show up in this list when you find them through 🔍 search.',
+  '미구현 = 포켓몬 GO에 아직 출시되지 않은 종 (PvPoke 출시 목록 기준, 데이터는 게임마스터 선등록분). ⚡ 메가 · 원시 딱지는 그 종에 메가진화나 원시회귀가 있다는 뜻이에요 — 줄을 누르면 진화 칸에서 그 폼의 능력치를 볼 수 있어요. 섀도우·리전 폼은 🔍 검색으로 찾으면 이 목록에 함께 나와요.':
+    '"Not in GO" marks species that have not been released in Pokémon GO (per the PvPoke release list; the data is pre-registered in the Game Master). A ⚡ Mega or Primal chip means that species has a Mega Evolution or Primal Reversion — tap the row and the evolution box shows that form\u2019s stats. Shadow and regional forms show up in this list when you find them through 🔍 search.',
   '구하기 쉬운 일반 개체만 모은 레이드 티어표 (자체 계산). 속성 탭은 그 속성 포켓몬만 표시. 점수는 같은 속성 최강 어태커(전설·메가 포함) 대비 %, 티어는 목록 안 상대 등급. 포켓몬을 누르면 상세 정보가 열려요.':
     'A raid tier list of easy-to-get, ordinary Pokémon (own calculation). Each type tab shows only that type. Scores are a % of the strongest attacker of the same type (Legendary and Mega included), and tiers are relative within this list. Tap a Pokémon for details.',
   'PvPoke 시뮬레이션 점수(#점 만점). 속성 필터 안의 순위는 해당 속성 내 순위이며 전체 순위를 함께 표시합니다.':
