@@ -1,6 +1,6 @@
 # 변경 이력
 
-**버전을 눌러 펼쳐 보세요.** 127개 판이 쌓여 한눈에 훑기 어려워, 각 버전을 접어 두었습니다.
+**버전을 눌러 펼쳐 보세요.** 128개 판이 쌓여 한눈에 훑기 어려워, 각 버전을 접어 두었습니다.
 
 각 줄은 `버전 — 날짜 · 그 판에서 한 일` 순서입니다. 최신이 위로 옵니다.
 형식은 [Keep a Changelog](https://keepachangelog.com/ko/1.1.0/)를 따릅니다.
@@ -11,6 +11,13 @@
 > 사용자가 읽는 패치노트는 서비스 안 [🎉 패치노트](https://minsangkwak.github.io/pogo-rank/#/release) 화면에 있습니다(영문판 포함).
 > 이 파일은 **왜 그렇게 고쳤는지**까지 남기는 개발 기록이라 더 깁니다.
 
+
+<details open>
+<summary><b>v3.28.1</b> — 2026-09-14 · <code>추가</code> 네이버 서치어드바이저 소유 확인 메타</summary>
+
+네이버는 Google 과 달리 DNS 확인 방식이 없다. `index.html` `<head>` 의 robots 메타 바로 아래에 `<meta name="naver-site-verification" content="a5562549…">` 한 줄. 값은 HTML 에 그대로 실리는 공개 식별자라 코드에 둬도 된다. dev 빌드에도 실리지만 dev 는 noindex · robots 전체 차단이라 무관. Google Search Console 은 같은 날 도메인 속성 + 가비아 TXT 레코드로 확인 완료(코드 변경 없음). 회귀 `hardening` 통과.
+
+</details>
 
 <details open>
 <summary><b>v3.28.0</b> — 2026-09-14 · <code>추가</code> 검색 색인 열기 — robots index 메타 · 구조화 데이터(JSON-LD)</summary>

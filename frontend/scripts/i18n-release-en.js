@@ -15,6 +15,9 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 const RELEASE_NOTES_EN = {
+  '2026-09-14 · v3.28.1': [
+    '**Getting listed on Naver** — one line that lets Naver Search Advisor confirm who owns the site. Nothing changes on screen.',
+  ],
   '2026-09-14 · v3.28.0': [
     '**Open to search engines** — with a domain of its own, the site is ready to be indexed. An index directive and structured data (site information) let Google and Naver find the front page. The preview address stays out of search as before.',
   ],
