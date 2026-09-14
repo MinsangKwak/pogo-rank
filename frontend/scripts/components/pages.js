@@ -133,7 +133,23 @@ function dexEntries() {
   // rel 목록 자체가 비어 있는 빌드에서는 전부 출시된 것으로 취급(태그를 달지 않는다)
   const rel = new Set(DEX_DATA.rel ?? []);
   return Object.keys(DEX_DATA.names).map(Number).sort((a, b) => a - b)
-    .map((dexNumber) => ({ dex: dexNumber, name: DEX_DATA.names[dexNumber], sprite: dexNumber, types: DEX_DATA.forms[dexNumber]?.types ?? [], unrel: rel.size > 0 && !rel.has(dexNumber) }));
+    .map((dexNumber) => ({ dex: dexNumber, name: DEX_DATA.names[dexNumber], sprite: dexNumber, types: DEX_DATA.forms[dexNumber]?.types ?? [], unrel: rel.size > 0 && !rel.has(dexNumber), megas: DEX_DATA.megas?.[dexNumber] ?? [] }));
+}
+
+// 2026-09-14 v3.31.0 도감 줄의 메가·원시 딱지. 지금까지 목록에는 아무 표시가 없어
+// 줄을 하나씩 열어 봐야 메가가 있는 종인지 알 수 있었다 (데이터는 DEX_DATA.megas 에 늘 있었다).
+// 라벨은 게임마스터가 준 것 그대로 — '메가' · '메가X' · '메가Y' · '원시'.
+// X·Y 둘 다 있으면 '메가 X·Y' 한 칸으로 접는다(딱지 둘이 이름을 밀어낸다).
+// 원시회귀(그란돈·가이오가)는 메가와 다른 것이라 글자도 색도 따로 간다
+function dexMegaTag(megas) {
+  // 아직 안 나온 메가는 딱지를 달지 않는다 — 게임마스터에는 미출시 폼의 종족값도 들어 있다
+  // (2026-09-14 두랄루돈 다이맥스 오등록과 같은 함정). entry.rel 은 PvPoke 출시 목록에서 온다
+  const released = (megas ?? []).filter((entry) => entry.rel !== false);
+  if (!released.length) return '';
+  const labels = released.map((entry) => entry.label);
+  const primal = labels.includes('원시');
+  const text = primal ? '원시' : labels.length > 1 ? `메가 ${labels.map((label) => label.replace('메가', '')).join('·')}` : '메가';
+  return el('span', { class: `tag dex__mega${primal ? ' dex__mega--primal' : ''}`, title: primal ? '원시회귀 가능' : '메가진화 가능' }, text);
 }
 // 도감 페이지 조립.
 // 목록은 한 번에 다 그리지 않고 청크로 나눠 그린다 — 처음 100종, [더보기] 를 누를 때마다 +200종.
@@ -184,6 +200,10 @@ function dexSearchEntries(query, types) {
       name: pokemon.name,
       types: pokemon.types?.length ? pokemon.types : (DEX_DATA.forms[pokemon.sprite]?.types ?? []),
       unrel: dex != null && rel.size > 0 && !rel.has(dex),
+      // 검색 결과에는 딱지를 달지 않는다 — 메가·원시가 이미 **제 줄로** 함께 나오므로
+      // 원종 줄에 '메가 X·Y' 를 또 붙이면 바로 아래 줄과 같은 말을 두 번 하는 셈이다.
+      // 딱지는 폼 줄이 없는 넘버링 목록에서만 값을 한다
+      megas: [],
     };
   });
 }
@@ -244,6 +264,7 @@ function renderDexPage() {
         el('span', { class: 'dex__no' }, entry.dex != null ? `#${String(entry.dex).padStart(4, '0')}` : ''),
         sprite(entry.sprite),
         entry.unrel ? el('span', { class: 'tag dex__unrel' }, '미구현') : '',
+        dexMegaTag(entry.megas),
         // 2026-09-13 v3.24.0 이름과 PvP/PvE 알약을 한 칸(.dex__name)에 — 자리가 있으면 한 줄, 없으면 알약이 이름 아래로 접힌다.
         // 알약을 이름 옆 형제로 두면 좁은 줄(PC 3열 줄 모드)에서 이름이 0 으로 줄어 글자 위에 알약이 겹쳤다
         el('span', { class: 'dex__name' }, el('b', {}, entry.name), dexUseNode(entry.name)),
@@ -295,12 +316,36 @@ function renderDexPage() {
   // 2026-09-12 v3.4.0 즐겨찾기 기능을 통째로 걷어냈다 (components/favs.js 머리말)
   // 세대 칩은 **지금 보고 있는 목록** 을 거른다 — 검색해서 들어왔으면 그 결과 안에서 1세대만 남긴다.
   // (all 이 검색 모드에서는 검색 결과다)
-  const genChips = el('div', { class: 'tchips' }, ...DEX_GENS.map(([genStart, genEnd], genIndex) =>
-    el('button', { class: 'uchip', onclick: () => {
+  // 2026-09-14 v3.31.0 칩을 끌 수 있게 했다 — 지금까지 세대를 한 번 누르면 전 종으로 돌아갈 길이
+  // (검색 모드가 아닌 이상) 없어 새로고침해야 했다. 같은 칩을 다시 누르면 풀린다.
+  // [⚡ 메가·원시] 는 메가진화나 원시회귀가 있는 종만 남긴다 — 딱지가 줄에 붙었으니 모아 보는 길도 있어야 한다
+  let dexFilter = null;   // null | { kind: 'gen', index } | { kind: 'mega' }
+  const genChips = el('div', { class: 'tchips' });
+  const applyDexFilter = () => {
+    if (!dexFilter) list = all;
+    else if (dexFilter.kind === 'mega') list = all.filter((entry) => entry.megas?.some((mega) => mega.rel !== false));
+    else {
+      const [genStart, genEnd] = DEX_GENS[dexFilter.index];
       list = all.filter((entry) => entry.dex >= genStart && entry.dex <= genEnd);
-      shown = 999;
-      draw();
-    } }, `${genIndex + 1}세대`)));
+    }
+    shown = dexFilter ? 999 : (searching ? Infinity : 100);
+    drawDexChips();
+    draw();
+  };
+  const pickDexFilter = (next) => {
+    const same = dexFilter && next && dexFilter.kind === next.kind && dexFilter.index === next.index;
+    dexFilter = same ? null : next;
+    applyDexFilter();
+  };
+  function drawDexChips() {
+    genChips.replaceChildren(
+      ...DEX_GENS.map((range, genIndex) => uchip(`${genIndex + 1}세대`, () => pickDexFilter({ kind: 'gen', index: genIndex }),
+        { on: dexFilter?.kind === 'gen' && dexFilter.index === genIndex })),
+      uchip('⚡ 메가·원시', () => pickDexFilter({ kind: 'mega' }),
+        { on: dexFilter?.kind === 'mega', title: '메가진화 또는 원시회귀가 있는 종만 보기' }),
+    );
+  }
+  drawDexChips();
   // 검색 결과 머리: 무엇으로 걸렀는지와 몇 마리인지, 그리고 전 종으로 돌아가는 길.
   // 화면 안에 입력칸을 다시 두지는 않는다 (v3.5.0 에 뺀 이유가 그대로다 — 헤더 검색과 생김새가 같은
   // 입력칸 둘이 한 화면에 있으면 어느 쪽에 친 글자가 진짜인지가 흐려진다)
@@ -324,6 +369,8 @@ function renderDexPage() {
     all = searching ? dexSearchEntries(searchQuery, searchTypes) : species;
     list = all;
     shown = searching ? Infinity : 100;
+    dexFilter = null;   // 검색이 바뀌면 목록 자체가 바뀐다 — 세대·메가 칩을 켜 둔 채로 두면 거짓말이 된다
+    drawDexChips();
     // 주소를 결과에 맞춘다 — 그대로 보내면 상대도 같은 화면을 연다
     const next = new URLSearchParams();
     if (searchQuery) next.set('q', searchQuery);
@@ -379,7 +426,7 @@ function renderDexPage() {
   // 좁은 화면은 CSS 가 위아래로 쌓는다 (한 줄에 넣으면 칩이 잘린다)
   return el('div', { class: 'page__body dex-page' }, loginHint, $search, $typeBox, $head,
     el('div', { class: 'dex__toolbar page__filters' }, genChips, $layout), $list, $none, $more,
-    footNote('미구현 = 포켓몬 GO에 아직 출시되지 않은 종 (PvPoke 출시 목록 기준, 데이터는 게임마스터 선등록분). 메가·섀도우·리전 폼은 🔍 검색으로 찾으면 이 목록에 함께 나와요.'));
+    footNote('미구현 = 포켓몬 GO에 아직 출시되지 않은 종 (PvPoke 출시 목록 기준, 데이터는 게임마스터 선등록분). ⚡ 메가 · 원시 딱지는 그 종에 메가진화나 원시회귀가 있다는 뜻이에요 — 줄을 누르면 진화 칸에서 그 폼의 능력치를 볼 수 있어요. 섀도우·리전 폼은 🔍 검색으로 찾으면 이 목록에 함께 나와요.'));
 }
 
 // 해시 라우팅 대상 페이지들. 여기 없는 id 는 유효한 페이지로 보지 않는다.

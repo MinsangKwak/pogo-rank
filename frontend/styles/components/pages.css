@@ -83,6 +83,10 @@
 
 /* 2026-09-03 도감 [미구현] 태그 */
 .dex__unrel { flex: none; font-size: 1.05rem; color: var(--muted); border-color: var(--line); }
+/* 2026-09-14 v3.31.0 도감 줄의 메가·원시 딱지 — 메가는 폼 딱지(tag.css)와 같은 색을 쓴다 */
+.dex__mega { flex: none; font-size: 1.05rem; color: var(--c-mega); border-color: color-mix(in srgb, var(--c-mega) 40%, var(--line)); background: color-mix(in srgb, var(--c-mega) 8%, transparent); }
+/* 원시회귀는 메가와 다른 것이라 색도 가른다 */
+.dex__mega--primal { color: var(--t-fire); border-color: color-mix(in srgb, var(--t-fire) 40%, var(--line)); background: color-mix(in srgb, var(--t-fire) 8%, transparent); }
 .dex__row.is-unreleased { opacity: .55; }
 
 /* 2026-09-03 도감 2열 격자 토글 */
@@ -104,6 +108,9 @@
 .dex__list.is-grid .dex__fav { position: absolute; top: 0.4rem; right: 0.4rem; }
 .dex__list.is-grid .dex__types { margin-left: 0; justify-content: center; }
 .dex__list.is-grid .dex__unrel { position: absolute; top: 0.8rem; right: 3.4rem; }
+/* 카드 모드는 왼쪽 위에 도감번호가 이미 앉아 있다 — 딱지는 오른쪽 위로 보낸다('미구현' 은 그 왼쪽) */
+.dex__list.is-grid .dex__mega { position: absolute; top: 0.8rem; right: 0.8rem; }
+.dex__list.is-grid .dex__row:has(.dex__mega) .dex__unrel { right: 5.6rem; }
 /* 조건 문구(레이드·알)는 이름 아래로 내려 가운데 정렬 */
 .dex__list.is-grid .gameday__note { text-align: center; }
 

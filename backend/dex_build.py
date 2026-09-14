@@ -36,7 +36,7 @@
 # ─────────────────────────────────────────────────────────────────────────────
 import json, csv, re, os
 from sprite import sprite_id, LOCAL_FORMS
-from names import label_from_gm, released_dex, en_species, FORM_KO, FORM_EN  # 2026-09-08 v2.29.0 다국어: 영문 종 이름·폼 라벨
+from names import label_from_gm, released_dex, mega_released, en_species, FORM_KO, FORM_EN  # 2026-09-08 v2.29.0 다국어: 영문 종 이름·폼 라벨
 
 # 2026-09-03 PvPoke released는 PvP 사용 가능 기준이라 실출시 종(메타몽 등)이 빠짐 → 수동 보정 파일로 보완
 # 파일 형식: 한 줄에 도감번호 하나, '#' 뒤는 주석
@@ -143,7 +143,10 @@ for template in game_master:
         entries = megas_map.setdefault(str(mega_dex), [])
         # 서로 다른 폼이 같은 스프라이트로 떨어지는 경우가 있어 중복을 걸러 넣는다
         if not any(entry['sprite'] == sprite_identifier for entry in entries):
-            entries.append({'sprite': sprite_identifier, 'label': mega_label})
+            # 2026-09-14 v3.31.0 rel — 이 폼이 실제로 포켓몬 GO 에 나왔는가 (PvPoke released).
+            # 게임마스터에 종족값이 있다고 나온 것이 아니다. 없는 키는 미출시로 본다
+            entries.append({'sprite': sprite_identifier, 'label': mega_label,
+                            'rel': mega_released.get((mega_dex, mega_label), False)})
 referenced_sprite_ids |= {entry['sprite'] for entry_list in megas_map.values() for entry in entry_list}
 
 # 스프라이트 id → 도감번호 (PokeAPI pokemon.csv)
