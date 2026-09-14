@@ -15,6 +15,12 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 const RELEASE_NOTES_EN = {
+  '2026-09-14 · v3.30.1': [
+    '**(Fix) The (i) beside the tier list heading was floating in the wrong place** — on desktop it drifted to the middle between the title and the count on the right, and on phones it dropped onto its own line. It now sits right beside the title.',
+    '**(Fix) On wide screens the reasoning box beside a card was only half the card\u2019s height** — it now matches the card.',
+    '**Tap the (i) to open the note** — phones have no hover, so the tooltip never showed. Tapping now unfolds the same text under the heading; tap again to fold it.',
+    '**(Fix) Card rank numbers restarted at 1 in every tier group** — on the Ground tab #2 Excadrill read \'1\' and #3 Rhydon read \'2\', contradicting the \'#2 among Ground\' line in the reasoning. Ranks now count across the whole tab.',
+  ],
   '2026-09-14 · v3.30.0': [
     '**D-MAX tiers are now graded across every species** — until now a tier letter was decided within the tab you happened to be on, so the same Pokemon could read S in one tab and C in another. A letter is now fixed: S at 90% or more of the best score overall, A at 80%, B at 70%. Only the rank number is counted within the tab.',
     '**Bulk is now part of the tier score** — raw damage alone pushed single-stage species above fully evolved ones. A Max Battle is won by surviving through several Max phases, so Defense x HP is mixed in lightly as a fourth root. Rhyperior moving ahead of Excadrill is the result.',
