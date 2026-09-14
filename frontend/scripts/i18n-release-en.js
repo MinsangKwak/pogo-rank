@@ -15,6 +15,9 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 const RELEASE_NOTES_EN = {
+  '2026-09-14 · v3.28.2': [
+    '**Dynamax Rhyhorn, Rhydon and Rhyperior are in** — released in today\u2019s Max Monday, the line now appears in the D-MAX tier list, attacker and tank rankings, and the Max Battle marks in the Pokédex. Rhyperior is the #1 attacker against Electric bosses, #2 against Fire and #5 against Rock, and a top tank against Poison and Electric bosses.',
+  ],
   '2026-09-14 · v3.28.1': [
     '**Getting listed on Naver** — one line that lets Naver Search Advisor confirm who owns the site. Nothing changes on screen.',
   ],
