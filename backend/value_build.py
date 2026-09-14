@@ -5,7 +5,12 @@
 #   1) 다이맥스 랭킹 (data/dynamax.json)
 #      맥스어택/거다이맥스 기술 1발의 피해량과 내구(bulk)를 합성해 보스 속성별로 정렬한다.
 #   2) 다이맥스 티어표 (data/dynamax_tier.json)
-#      pogomate 방식 — 공격 종족값 x 맥스무브 위력 x 자속 보정만 쓰는 단순 딜 지표.
+#      맥스무브 한 방 화력 x 내구 보정 — 공격 x 맥스무브 위력 x 자속 x 내구^0.25.
+#      2026-09-14 v3.30.0 까지는 내구를 아예 빼고 화력만 봤다(pogomate 방식). 그랬더니 진화 단계가
+#      더 긴 개체가 밀렸다 — 땅 탭에서 다이맥스 몰드류(2단, 공격 213 내구 23)가 거대코뿌리
+#      (3단, 공격 202 내구 34)를 눌렀다. 맥스 배틀은 버텨서 맥스 페이즈를 여러 번 도는 싸움이라
+#      내구를 통째로 버린 화력표는 "누구 데려갈까"에 반만 답한다. 딜러 표(dynamax.json)의 sqrt 보다
+#      약한 네제곱근을 쓴다 — 화력이 여전히 주인공이되 진화 단계 차이는 드러나게.
 #   3) 가성비 (data/value.json 의 pvp/pve/both)
 #      전설·환상·울트라비스트·메가·섀도우를 뺀 "흔한" 포켓몬 중에서
 #      PvP 여러 리그와 PvE 여러 보스에서 동시에 상위인 개체를 뽑는다.
@@ -208,11 +213,18 @@ json.dump(max_pool, open('data/max_pool.json', 'w', encoding='utf-8'), ensure_as
 # ---------- 다이맥스 티어표: 속성 탭 = 그 속성 포켓몬만 ----------
 # 2026-09-02 pogomate 기준으로 변경: 공격 종족값 × 맥스무브 위력(거다이 450·다이 350) × 자속 1.2
 # 내구 미반영, 같은 종의 다이맥스/거다이맥스는 별도 행 (pogomate 수치 역산으로 검증)
-def rel_tier(rows):
-    # 목록 안 상대 등급 — 상위 12% S, 35% A, 65% B, 나머지 C
-    for index, row in enumerate(rows):
-        fraction = index / len(rows)
-        row['tier'] = 'S' if fraction < 0.12 else 'A' if fraction < 0.35 else 'B' if fraction < 0.65 else 'C'
+# 2026-09-14 v3.30.0 등급을 **절대 기준**으로 바꿨다.
+# 전에는 목록 안 상대 등급(상위 12% S …)이라 같은 점수가 탭마다 다른 글자를 받았다 —
+# 다이맥스 거대코뿌리 84,840 이 바위 탭(7줄)에서는 1위라 S, 전체 탭(30줄)에서는 꼴찌라 C.
+# 줄 수가 적은 탭은 무조건 S 가 하나 나오고, 상위 30 만 자른 전체 탭의 C 는 160여 종 중 30등이다.
+# 양쪽으로 다 거짓말을 해서, 가성비 화면이 이미 쓰던 절대 경계(90/80/70)를 그대로 가져온다.
+# 순위("바위 1위")는 탭 안에서 그대로 매기므로 등급과 순위가 서로 다른 질문에 답한다.
+def absolute_tier(rows):
+    if not rows: return
+    best = max(row['score'] for row in rows)
+    for row in rows:
+        row['pct'] = round(row['score'] / best * 100)
+        row['tier'] = 'S' if row['pct'] >= 90 else 'A' if row['pct'] >= 80 else 'B' if row['pct'] >= 70 else 'C'
 
 def tier_rows():
     # 2026-09-03 pogomate 대조 보정 2: 이중 자속(예: 연격 우라오스 물·격투)은 자속 타입마다 행 생성
@@ -223,6 +235,10 @@ def tier_rows():
         if entry['form'] and entry['form'].endswith('_S'): continue
         own_types = [type_name.upper() for type_name in entry['types']]
         gmax_move_type = gmax_type(entry['pid'], entry['form'])
+        # 내구 보정: 방어 x 체력 / 1000 의 네제곱근. 딜러 표(dyna_rank)는 같은 내구를 제곱근으로 쓴다 —
+        # 티어표는 화력표에 가깝게 두려고 한 단계 약하게 건다
+        bulk = entry['def'] * entry['hp'] / 1000
+        bulk_mul = bulk ** 0.25
         if is_dynamax(entry['pid'], entry['form']):
             attack = round(entry['atk'])
             # 보유 스피드기의 타입 = 쓸 수 있는 맥스어택 타입
@@ -234,22 +250,26 @@ def tier_rows():
             # 자속 맥스어택이 있으면 자속 타입마다 한 행, 없으면 사전순 첫 타입 하나만
             targets = stab_types or (sorted(move_types)[:1] if move_types else [])
             for move_type in targets:
-                # 350 = MAX_ATTACK_POWER(다이맥스 맥스무브 위력), 1.2 = 자속 보정
-                score = attack * 350 * (1.2 if move_type in own_types else 1)
+                # 350 = MAX_ATTACK_POWER(다이맥스 맥스무브 위력), 1.2 = 자속 보정, 내구^0.25
+                score = attack * 350 * (1.2 if move_type in own_types else 1) * bulk_mul
                 out.append({'sprite': entry['sprite'], 'name': max_name(entry['name'], False), 'en': entry['en'], 'types': entry['types'],
                             'fast': '맥스어택', 'charged': move_type.lower(), 'atk': attack, 'power': 350,
-                            'stab': move_type in own_types, 'score': round(score), 'gmax': False})
+                            'stab': move_type in own_types, 'bulk': round(bulk), 'bulkMul': round(bulk_mul, 2),
+                            'score': round(score), 'gmax': False})
         if gmax_move_type:
             attack = round(entry['atk'])
-            # 450 = GMAX_POWER(거다이맥스 전용 기술 위력), 1.2 = 자속 보정
-            score = attack * 450 * (1.2 if gmax_move_type in own_types else 1)
+            # 450 = GMAX_POWER(거다이맥스 전용 기술 위력), 1.2 = 자속 보정, 내구^0.25
+            score = attack * 450 * (1.2 if gmax_move_type in own_types else 1) * bulk_mul
             out.append({'sprite': gmax_sprite_id(entry['dex'], entry['form']), 'name': max_name(entry['name'], True), 'en': entry['en'], 'types': entry['types'],
                         'fast': '거다이맥스', 'charged': gmax_move_type.lower(), 'atk': attack, 'power': 450,
-                        'stab': gmax_move_type in own_types, 'score': round(score), 'gmax': True})
+                        'stab': gmax_move_type in own_types, 'bulk': round(bulk), 'bulkMul': round(bulk_mul, 2),
+                        'score': round(score), 'gmax': True})
     out.sort(key=lambda row: -row['score'])
     return out
 
 dmax_all = tier_rows()
+# 등급은 **전 종을 통틀어** 한 번만 매긴다 — 탭을 옮겨도 글자가 바뀌지 않게 (absolute_tier)
+absolute_tier(dmax_all)
 dmax_tier = {}
 # 2026-09-03 pogomate 대조 보정: 타입 탭 분류를 "그 타입 보유"가 아니라 "그 타입 맥스무브로 때리는 딜러"로
 # (할비롱이 드래곤 무브 점수로 노말 탭에 오르던 문제 — pogomate는 무브 타입 기준)
@@ -267,8 +287,7 @@ for key, type_filter in [('overall', None)] + [(type_name.lower(), type_name.low
         # 'charged' 에 맥스무브 타입이 들어있으므로 그것으로 탭을 가른다
         rows = [dict(row) for row in dmax_all if row['charged'] == type_filter][:TOP]
     if not rows: continue
-    rel_tier(rows)
-    dmax_tier[key] = rows
+    dmax_tier[key] = rows   # tier·pct 는 dmax_all 에서 이미 붙었다 (탭마다 다시 매기지 않는다)
 json.dump(dmax_tier, open('data/dynamax_tier.json','w'), ensure_ascii=False)
 print('dynamax eligible:', sum(1 for entry in base_meta.values() if is_dynamax(entry['pid'], entry['form'])), 'gmax:', sum(1 for entry in base_meta.values() if gmax_type(entry['pid'], entry['form'])))
 
