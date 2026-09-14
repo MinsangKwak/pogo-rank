@@ -25,9 +25,9 @@ const version = oldHeading.querySelector('.app-bar__version').textContent;
 // 2026-09-08 v2.30.0 로고를 누르면 서비스 홈. 좁은 화면에서도 상단 바는 늘 로고 자리이므로
 // "여기가 처음으로 가는 곳" 이라는 웹의 오랜 약속을 그대로 쓴다.
 // h1 은 화면 이름을 읽어 주는 자리(포커스 대상)라 그대로 두고 안쪽에 버튼을 넣는다 —
-// #app-title 의 textContent 는 여전히 'POGO PLAN' 이다
+// #app-title 의 textContent 는 여전히 'monlab' 이다 (2026-09-14 v3.26.0 POGO PLAN → monlab)
 const appLogo = el('button', { type: 'button', id: 'app-logo', class: 'app-bar__logo',
-  onclick: () => goHome() }, 'POGO PLAN');
+  onclick: () => goHome() }, 'monlab');
 const appTitle = el('h1', { id: 'app-title', tabindex: '-1' }, appLogo);
 const backButton = iconBtn('←', '이전 화면', () => {
   if (history.state?.appEntry) history.back();
@@ -211,7 +211,7 @@ const sideExtra = el('div', { class: 'app-nav__extra' });
 // 링크들이 원래 따로 놀던 형제라, 묶지 않으면 항목마다 테두리가 따로 생겨 "목록"이 아니라 "버튼 무더기"로
 // 읽힌다. 버전 문구(drawer__meta)는 카드 밖 맨 아래에 남는다
 const infoGroup = el('div', { class: 'drawer__group' });
-const versionMeta = el('p', { class: 'drawer__meta' }, 'POGO PLAN · ' + version);
+const versionMeta = el('p', { class: 'drawer__meta' }, 'monlab · ' + version);
 function placeDrawerExtra() {
   if (wideScreen.matches) {
     // 2026-09-09 v2.40.1 카드에 담아 뒀던 것들을 먼저 꺼내 제자리로 되돌린다 — 이 줄이 없으면
@@ -283,7 +283,7 @@ function syncAppShell(moveFocus = false) {
   // 2026-09-11 v2.59.0 dev 미리보기는 제목 앞에 [dev] — 빌드가 붙여 둔 것을 화면 이동 때도 잇는다.
   // 채널을 따로 주입하지 않고 BUILD_VERSION 끝의 -dev 로 판별한다 (backend/build.py)
   const devMark = typeof BUILD_VERSION === 'string' && BUILD_VERSION.endsWith('-dev') ? '[dev] ' : '';
-  document.title = devMark + (title ? `${title} — POGO PLAN` : 'POGO PLAN');
+  document.title = devMark + (title ? `${title} — monlab` : 'monlab');
   backButton.hidden = home;
   document.body.dataset.screen = home ? 'home' : 'detail';
   // 측정용 표식 — 어느 화면인지 DOM 만 보고 알 수 있게 (GA · 히트맵 · 자동화 검사)

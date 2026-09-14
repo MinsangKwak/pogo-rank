@@ -138,7 +138,7 @@ suite(async () => {
       canonical: document.querySelector('link[rel="canonical"]')?.href || '',
     };
   });
-  ok('og:title', meta.title.includes('POGO PLAN'), meta.title);
+  ok('og:title', meta.title.includes('monlab'), meta.title);
   ok('og:description 있음', meta.desc.length > 20);
   ok('og:image 절대주소', /^https:\/\//.test(meta.image), meta.image);
   ok('og:image 크기 1200×630', meta.w === '1200' && meta.h === '630');

@@ -160,7 +160,7 @@ suite(async () => {
   ok('랭킹 화면에 탭 줄이 없다', await page.locator('#tabs').isHidden());
   ok('바로가기도 없다', (await page.locator('#tabs .tabs__item--quick').count()) === 0);
   // v2.30.0 상단 바는 늘 로고, 화면 이름은 본문 헤더로 (좁은 화면도 PC 와 같은 규칙)
-  ok('상단 바는 로고', (await page.locator('#app-title').textContent()).trim() === 'POGO PLAN');
+  ok('상단 바는 로고', (await page.locator('#app-title').textContent()).trim() === 'monlab');
   ok('화면 헤더 = D-MAX', (await page.locator('#page-head h2').textContent()) === 'D-MAX');
   // 메뉴로 옮겨 다닌다 (탭 줄이 하던 일). 좁은 화면은 메뉴가 드로어 안이라 먼저 연다
   if (!wide) { await page.click('#menu-toggle'); await page.waitForTimeout(350); }

@@ -170,7 +170,7 @@ const ROUTE_DESC = {
   terms: '이 서비스를 쓸 때의 약속이에요.',
   settings: '화면을 어떻게 볼지 정해요. 로그인하면 계정에 저장돼 어느 기기에서든 같아요.',
   // mon 은 적지 않는다 — kind:'detail' 이라 화면 머리가 아니라 팝업 안에 이름이 뜬다
-  styleguide: 'POGO PLAN 을 이루는 조각을 한자리에서 봐요. 화면을 새로 만들 때 여기서 가져다 써요.',
+  styleguide: 'monlab 을 이루는 조각을 한자리에서 봐요. 화면을 새로 만들 때 여기서 가져다 써요.',
 };
 function routeDesc(id) {
   return ROUTE_DESC[id] || '';
