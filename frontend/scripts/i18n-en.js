@@ -117,10 +117,14 @@ const I18N_PATTERNS = [
   [/^([가-힣]+)\(([가-힣·]+)\)$/, '$1 ($2)'],
   [/^([가-힣]+)\/([가-힣]+)$/, '$1/$2'],
   [/^(.+) 상세 보기$/, 'View $1'],
-  [/^([SABC]) 근거 — 점수 ([\d,.]+) = 공격 ([\d,.]+) × 위력 ([\d,.]+) × 자속 ([\d,.]+) · (.+) (\d+)위 (.+) 대비 (\d+)%$/,
-    '$1 tier — score $2 = Attack $3 × Max Move power $4 × STAB $5 · #$7 among $6, $9% of $8'],
-  [/^([SABC]) 근거 — 점수 ([\d,.]+) = 공격 ([\d,.]+) × 위력 ([\d,.]+) × 자속 ([\d,.]+) · (.+) (\d+)위$/,
-    '$1 tier — score $2 = Attack $3 × Max Move power $4 × STAB $5 · #$7 among $6'],
+  // 2026-09-14 v3.30.0 근거가 두 줄로 갈라졌다 — 한 줄일 때는 잡을 조각이 열 개를 넘어
+  // 치환자($1~$9)가 모자랐다. 자속은 없을 때도 ×1 로 적히므로 항목이 늘 같은 자리에 있다
+  [/^점수 ([\d,.]+) = 공격 ([\d,.]+) × 위력 ([\d,.]+) × 자속 ([\d.]+) × 내구 보정 ([\d.]+)$/,
+    'Score $1 = Attack $2 × Max Move power $3 × STAB $4 × bulk factor $5'],
+  [/^([SABC]) 등급 — 전 종 1위 대비 (\d+)% · (.+) (\d+)위 \(1위 (.+) 대비 (\d+)%\)$/,
+    '$1 tier — $2% of the best of all species · #$4 among $3 (\u200b$6% of #1, $5)'],
+  [/^([SABC]) 등급 — 전 종 1위 대비 (\d+)% · (.+) 1위$/, '$1 tier — $2% of the best of all species · #1 among $3'],
+  [/^([SABC]) 등급 — 전 종 1위 대비 (\d+)%$/, '$1 tier — $2% of the best of all species'],
   [/^D·(.+)$/, 'D·$1'],
   [/^(.+) \((.+)\)$/, '$1 ($2)'],
   [/^(.+)가 보스로 나오면\? \(레이드 — (.+) 딜러 추천\)$/, 'If $1 is the boss (Raid — $2 attackers)'],
@@ -308,6 +312,10 @@ const I18N_EN = {
   '딜러는 맥스 피해 × √내구 순위, 탱커는 체력 × 방어 ÷ 받는 배율(EHP) 순위의 #위. 탱커 전체 순위는 [탱커] 세그먼트에서':
     'Attackers rank by Max damage × √bulk; tanks rank by HP × Defense ÷ damage taken (EHP) — this is #. The full tank ranking is under the [Tank] segment',
   '공격 # · 위력 # · 자속': 'Attack # · power # · STAB',
+  '공격 # · 위력 # · 자속 · 내구 #': 'Attack # · power # · STAB · bulk #',
+  '공격 # · 위력 # · 내구 #': 'Attack # · power # · bulk #',
+  '등급은 이 탭이 아니라 전 종을 통틀어 매깁니다 — 전 종 최고 점수 대비 #% 이상 S, #% 이상 A, #% 이상 B, 그 아래 C. 그래서 탭을 옮겨도 글자가 바뀌지 않아요. 순위는 이 탭 안에서만 셉니다. 점수 = 공격 × 맥스무브 위력(거다이 # · 다이 #) × 자속 # × 내구 보정(방어 × 체력 ÷ # 의 네제곱근). 내구를 약하게 섞는 이유는 화력만 보면 진화 단계가 짧은 개체가 앞서기 때문이에요 — 맥스 배틀은 버티면서 맥스 페이즈를 여러 번 도는 싸움이라 내구가 실제로 값을 합니다.':
+    'Tiers are graded across every species, not within this tab — S at #% or more of the best score overall, A at #%, B at #%, C below. The letter therefore stays the same whichever tab you open; only the ranking is counted within the tab. Score = Attack × Max Move power (Gigantamax # · Dynamax #) × STAB # × bulk factor (the fourth root of Defense × HP ÷ #). Bulk is mixed in lightly because raw damage alone favors shorter evolution lines — a Max Battle is won by surviving through several Max phases, so bulk genuinely counts.',
   '🛡 얘가 보스면 →': '🛡 If this one is the boss →',
   '🧩 추천 파티 — 딜러 # + 탱커 #': '🧩 Suggested party — # attackers + # tank',
   '⚔️ 이번 주 보스': "⚔️ This week's boss",
@@ -1056,6 +1064,10 @@ const I18N_EN = {
   'EHP · 받는 배율 ×# · 체력 # × 방어 #': 'EHP · damage taken ×# · HP # × Defense #',
   '공격 # · 위력 #': 'Attack # · power #',
   '공격 # · 위력 # · 자속': 'Attack # · power # · STAB',
+  '공격 # · 위력 # · 자속 · 내구 #': 'Attack # · power # · STAB · bulk #',
+  '공격 # · 위력 # · 내구 #': 'Attack # · power # · bulk #',
+  '등급은 이 탭이 아니라 전 종을 통틀어 매깁니다 — 전 종 최고 점수 대비 #% 이상 S, #% 이상 A, #% 이상 B, 그 아래 C. 그래서 탭을 옮겨도 글자가 바뀌지 않아요. 순위는 이 탭 안에서만 셉니다. 점수 = 공격 × 맥스무브 위력(거다이 # · 다이 #) × 자속 # × 내구 보정(방어 × 체력 ÷ # 의 네제곱근). 내구를 약하게 섞는 이유는 화력만 보면 진화 단계가 짧은 개체가 앞서기 때문이에요 — 맥스 배틀은 버티면서 맥스 페이즈를 여러 번 도는 싸움이라 내구가 실제로 값을 합니다.':
+    'Tiers are graded across every species, not within this tab — S at #% or more of the best score overall, A at #%, B at #%, C below. The letter therefore stays the same whichever tab you open; only the ranking is counted within the tab. Score = Attack × Max Move power (Gigantamax # · Dynamax #) × STAB # × bulk factor (the fourth root of Defense × HP ÷ #). Bulk is mixed in lightly because raw damage alone favors shorter evolution lines — a Max Battle is won by surviving through several Max phases, so bulk genuinely counts.',
   '점수 # = 공격 # × 위력 #': 'Score # = Attack # × power #',
   '점수 # = 공격 # × 위력 # × 자속 #': 'Score # = Attack # × power # × STAB #',
   '전체 #종 표시됨': 'All # species shown',

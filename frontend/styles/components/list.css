@@ -105,6 +105,16 @@
 .row__why-title { display: block; margin-bottom: 0.4rem; font-size: 1.25rem; font-weight: 600; color: var(--fg); }
 .row__why-line { margin: 0 0 0.6rem; }
 .row__why-chips { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+
+/* 2026-09-14 v3.30.0 제목 옆 ⓘ — 등급이 무슨 기준인지 native title 툴팁으로 밝힌다.
+   따로 팝업을 만들지 않는다: title 은 i18n 이 이미 번역하는 속성이고(I18N_ATTRS),
+   키보드로도 닿게 tabindex 만 준다. 손가락 과녁은 44px 규칙대로 여백으로 채운다 */
+.info-dot {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-width: 2.4rem; min-height: 2.4rem; margin-left: 0.2rem;
+  color: var(--muted); font-size: 1.3rem; line-height: 1; cursor: help;
+}
+.info-dot:hover, .info-dot:focus-visible { color: var(--fg); }
 .row__why-chip { padding: 0.3rem 0.9rem; border: 1px solid var(--line); border-radius: 99.9rem; font-size: 1.15rem; color: var(--fg); }
 .boss__card { margin: 0.4rem 0 1.6rem; padding: 1.4rem 1.6rem; border: 1px solid var(--line); border-radius: 1.2rem; background: var(--surface); }
 .boss__title { margin: 0 0 1rem; font-size: 1.35rem; font-weight: 600; }
