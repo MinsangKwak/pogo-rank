@@ -271,11 +271,20 @@ function maxSubmenu(axis) {
 function maxTierBlock(selectedType) {
   const tierItems = DMAX_TIER[selectedType] ?? [];
   const tierTitle = selectedType === 'overall' ? 'D-MAX 티어표 (전체)' : `${TYPE_KO[selectedType]} 맥스무브 D-MAX 티어표`;
+  // ⓘ 는 제목과 한 묶음(.row-head__title)으로 감싼다 — .row-head 가 space-between 이라
+  // 맨몸으로 두면 제목과 '9종' 사이 한가운데로 밀려나고, 휴대폰(row-head 가 block)에서는 제 줄로 떨어진다
+  // 휴대폰은 hover 가 없어 title 툴팁이 안 뜬다 — 누르면(Enter 포함) 같은 글을 제목 아래에 펼친다
+  const $note = el('p', { class: 'info-note', hidden: '' }, DMAX_TIER_INFO);
+  const $dot = el('span', { class: 'info-dot', tabindex: '0', role: 'button', 'aria-expanded': 'false', title: DMAX_TIER_INFO }, 'ⓘ');
+  const toggleNote = () => { $note.hidden = !$note.hidden; $dot.setAttribute('aria-expanded', String(!$note.hidden)); };
+  $dot.addEventListener('click', toggleNote);
+  $dot.addEventListener('keydown', (event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); toggleNote(); } });
   $content.append(el('div', { class: 'row-head' },
-    el('h2', {}, tierTitle),
-    el('span', { class: 'info-dot', tabindex: '0', title: DMAX_TIER_INFO }, 'ⓘ'),
-    el('span', { class: 'meta' }, `${tierItems.length}종`)));
-  if (tierItems.length) renderTierList(tierItems, (pokemon, index) => expandableRow(pokemon, String(index + 1), tierItems[0].score));  // 2026-09-02 1B·pogomate %
+    el('div', { class: 'row-head__title' }, el('h2', {}, tierTitle), $dot),
+    el('span', { class: 'meta' }, `${tierItems.length}종`)), $note);
+  // 2026-09-14 v3.30.1 순위 배지는 탭 전체 순위다 — renderTierList 가 넘기는 index 는 티어 묶음 안 순번이라
+  // 등급이 절대 기준이 된 뒤로는 B 티어 첫 카드가 '1' 로 찍혀 근거의 '땅 2위' 와 어긋났다
+  if (tierItems.length) renderTierList(tierItems, (pokemon) => expandableRow(pokemon, String(tierItems.indexOf(pokemon) + 1), tierItems[0].score));  // 2026-09-02 1B·pogomate %
   return tierItems.length;
 }
 
