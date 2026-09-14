@@ -15,6 +15,10 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 const RELEASE_NOTES_EN = {
+  '2026-09-14 · v3.29.0': [
+    '**The empty space beside tier cards on wide screens is fixed** — a tier with a single species left two cells empty while its reasoning block dropped below them. The reasoning now sits in that empty space, right beside the card.',
+    '**Type chips no longer get cut off** — opening the detail panel narrowed the chip strip until half of the eighteen types hid behind a horizontal scroll, including the one you had selected. On wide screens the strip now wraps and shows them all.',
+  ],
   '2026-09-14 · v3.28.3': [
     '**(Fix) Duraludon showed as Max Battle capable before its Dynamax released** — it had been listed as released by mistake, confused with the Gigantamax move data that sits in the game files. It is removed. It never appeared in the rankings.',
   ],
