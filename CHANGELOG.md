@@ -1,6 +1,6 @@
 # 변경 이력
 
-**버전을 눌러 펼쳐 보세요.** 126개 판이 쌓여 한눈에 훑기 어려워, 각 버전을 접어 두었습니다.
+**버전을 눌러 펼쳐 보세요.** 127개 판이 쌓여 한눈에 훑기 어려워, 각 버전을 접어 두었습니다.
 
 각 줄은 `버전 — 날짜 · 그 판에서 한 일` 순서입니다. 최신이 위로 옵니다.
 형식은 [Keep a Changelog](https://keepachangelog.com/ko/1.1.0/)를 따릅니다.
@@ -11,6 +11,19 @@
 > 사용자가 읽는 패치노트는 서비스 안 [🎉 패치노트](https://minsangkwak.github.io/pogo-rank/#/release) 화면에 있습니다(영문판 포함).
 > 이 파일은 **왜 그렇게 고쳤는지**까지 남기는 개발 기록이라 더 깁니다.
 
+
+<details open>
+<summary><b>v3.28.0</b> — 2026-09-14 · <code>추가</code> 검색 색인 열기 — robots index 메타 · 구조화 데이터(JSON-LD)</summary>
+
+v3.6.0 에 "아직 검색엔진에 올릴 단계가 아니다" 로 뺐던 색인 표시를, 도메인 `moncamp.kr` 이 생기면서 되살렸다.
+
+- `index.html` — `<meta name="robots" content="index, follow, max-image-preview:large">` 한 줄과 JSON-LD 한 블록(`@graph`: `WebSite`(이름 moncamp · 별칭 몬캠프 · 설명 · ko/en) + `WebApplication`(무료 · og 그림 · `isPartOf` WebSite)). 데이터 블록은 실행되지 않아 CSP `script-src` 와 무관.
+- `build.py` — dev 빌드는 `ROBOTS_INDEX_META` 를 정확히 한 번 찾아(assert) `noindex, nofollow` 로 **치환**한다. 전에는 `</title>` 뒤에 끼워 넣었는데, 이제 원본에 index 줄이 있어 두 줄이 공존하면 크롤러가 더 엄한 쪽을 고르긴 해도 읽는 사람이 헷갈린다. `robots.txt` 전체 차단은 그대로.
+- 해시 라우팅이라 색인되는 주소는 첫 화면 하나뿐 — `sitemap.xml` 도 그 하나만 적는다(v2.27.0 그대로).
+- `hardening` — '없음' 을 지키던 두 검사를 넷으로 뒤집음: JSON-LD 한 블록이 JSON 으로 읽힘 · `WebSite`·`WebApplication` 포함 · 노드 주소 = canonical · robots 메타 정확히 한 줄이고 `index, follow` 또는 `noindex` 중 하나. 24묶음 통과.
+- 등록은 사람이 한다 — Google Search Console(도메인 속성 + 가비아 TXT) · 네이버 서치어드바이저. `OPERATIONS.md` 13절.
+
+</details>
 
 <details open>
 <summary><b>v3.27.1</b> — 2026-09-14 · <code>수정</code> GA4 측정 ID 를 moncamp.kr 스트림으로 (blog 스트림에 섞여 들어가던 것)</summary>
