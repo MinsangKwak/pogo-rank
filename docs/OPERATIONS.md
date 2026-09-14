@@ -348,7 +348,7 @@ A 레코드 넷이 다 나오고 dev 가 `minsangkwak.github.io` 로 풀리면 �
 
 **네이버 서치어드바이저** — [searchadvisor.naver.com](https://searchadvisor.naver.com) (한국어 사이트라 네이버 유입이 구글만큼 크다)
 1. 웹마스터 도구 → 사이트 등록 → `https://moncamp.kr`
-2. 소유 확인 → **HTML 태그** 방식이면 `<meta name="naver-site-verification" content="…">` 한 줄을 알려 준다 → 그 값을 개발자에게 넘기면 `index.html` `<head>` 에 넣어 배포한다(코드 변경 필요). DNS 방식이 있으면 TXT 로 하는 편이 배포 없이 끝난다
+2. 소유 확인 → **HTML 태그** 방식 → `<meta name="naver-site-verification" content="…">` 한 줄. **2026-09-14 v3.28.1 에 `index.html` `<head>` 에 넣어 배포했다** (네이버는 DNS 방식이 없다). 값이 바뀌면 그 줄만 갈아 끼우면 된다
 3. 확인되면 요청 → **사이트맵 제출** → `https://moncamp.kr/sitemap.xml`, 요청 → **웹 페이지 수집** → `https://moncamp.kr/`
 
 ### 확인
