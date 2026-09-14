@@ -15,6 +15,24 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 const RELEASE_NOTES_EN = {
+  '2026-09-14 · v3.30.1': [
+    '**(Fix) The (i) beside the tier list heading was floating in the wrong place** — on desktop it drifted to the middle between the title and the count on the right, and on phones it dropped onto its own line. It now sits right beside the title.',
+    '**(Fix) On wide screens the reasoning box beside a card was only half the card\u2019s height** — it now matches the card.',
+    '**Tap the (i) to open the note** — phones have no hover, so the tooltip never showed. Tapping now unfolds the same text under the heading; tap again to fold it.',
+    '**(Fix) Card rank numbers restarted at 1 in every tier group** — on the Ground tab #2 Excadrill read \'1\' and #3 Rhydon read \'2\', contradicting the \'#2 among Ground\' line in the reasoning. Ranks now count across the whole tab.',
+  ],
+  '2026-09-14 · v3.30.0': [
+    '**D-MAX tiers are now graded across every species** — until now a tier letter was decided within the tab you happened to be on, so the same Pokemon could read S in one tab and C in another. A letter is now fixed: S at 90% or more of the best score overall, A at 80%, B at 70%. Only the rank number is counted within the tab.',
+    '**Bulk is now part of the tier score** — raw damage alone pushed single-stage species above fully evolved ones. A Max Battle is won by surviving through several Max phases, so Defense x HP is mixed in lightly as a fourth root. Rhyperior moving ahead of Excadrill is the result.',
+    '**Every card explains its grade in two lines** — open a card and you get the score formula on one line, and the tier letter, the percentage of the best of all species and the rank within the tab on the next. The (i) beside the table heading spells out the full grading rule.',
+  ],
+  '2026-09-14 · v3.29.0': [
+    '**The empty space beside tier cards on wide screens is fixed** — a tier with a single species left two cells empty while its reasoning block dropped below them. The reasoning now sits in that empty space, right beside the card.',
+    '**Type chips no longer get cut off** — opening the detail panel narrowed the chip strip until half of the eighteen types hid behind a horizontal scroll, including the one you had selected. On wide screens the strip now wraps and shows them all.',
+  ],
+  '2026-09-14 · v3.28.3': [
+    '**(Fix) Duraludon showed as Max Battle capable before its Dynamax released** — it had been listed as released by mistake, confused with the Gigantamax move data that sits in the game files. It is removed. It never appeared in the rankings.',
+  ],
   '2026-09-14 · v3.28.2': [
     '**Dynamax Rhyhorn, Rhydon and Rhyperior are in** — released in today\u2019s Max Monday, the line now appears in the D-MAX tier list, attacker and tank rankings, and the Max Battle marks in the Pokédex. Rhyperior is the #1 attacker against Electric bosses, #2 against Fire and #5 against Rock, and a top tank against Poison and Electric bosses.',
   ],

@@ -21,7 +21,7 @@
 //   - SCHEDULE_ITEMS / SCHEDULE_YM (components/schedule.js) : 이번 주 D-MAX 보스 주차를 찾는 데 쓴다
 //   - TYPE_KO, state.maxBoss(선택한 속성 칩), state.bossShow(추천 딜러 표시 개수)
 //
-// 제공하는 전역: maxRow · tankRow · whyText · tierRowNode · expandableRow · bossRecNodes · partyCardNode ·
+// 제공하는 전역: maxRow · tankRow · whyFormula · whyGrade · DMAX_TIER_INFO · tierRowNode · expandableRow · bossRecNodes · partyCardNode ·
 //                MAX_AXES · maxSubmenu · renderBossAcc · renderMaxTier · renderMaxDealer · renderMaxTank · renderMax (app.js가 탭 렌더러로 호출)
 // ※ 티어별로 묶어 그리는 renderTierList는 views/tier.js에 있다.
 // ─────────────────────────────────────────────────────────────────────────────
@@ -38,25 +38,39 @@ function maxRow(pokemon, rankText) {
   );
 }
 
-// 2026-09-02 티어 근거 인라인 펼침 행 (1B) — pogomate 기준 공식으로 갱신
-// 티어가 왜 그렇게 나왔는지 한 줄로 풀어 준다. 두 부분으로 이뤄진다.
-//   formula    : 점수 = 공격 종족값 × 맥스무브 위력 (× 자속 1.2). 점수의 계산 과정 그대로다.
-//   comparison : 같은 맥스무브 속성 목록의 1위와 비교한 백분율. 자기가 1위면 "1위"라고만 적는다.
+// 티어 근거 인라인 펼침 행. 2026-09-14 v3.30.0 부터 두 줄로 나눈다 —
+// 한 줄에 몰아넣었더니 영문 사전 패턴이 잡아야 할 조각이 열 개를 넘어 번역이 통째로 포기됐다
+// (i18n 엔진의 치환자는 $1~$9 뿐이다). 줄을 가르면 각 줄이 아홉 개 안에 들어온다.
+//   whyFormula : 점수의 계산 과정 그대로. 자속이 없으면 ×1 로 적는다 — 항목을 빼지 않아야
+//                문장 모양이 하나로 고정되고, 그래야 영문 패턴 하나로 덮인다.
+//   whyGrade   : 등급이 왜 그 글자인지. 등급은 **전 종 기준**(절대)이고 순위는 **그 탭 안**이라,
+//                둘을 한 줄에 적어 두 숫자가 서로 다른 질문에 답한다는 것을 보이게 한다.
 //                (이름이 같아도 다이맥스/거다이맥스는 별개 항목이라 name과 gmax를 함께 본다)
-function whyText(pokemon) {
-  const topOfType = (DMAX_TIER[pokemon.charged] ?? [])[0];
-  const percentOfTop = topOfType ? Math.round(pokemon.score / topOfType.score * 100) : null;
-  const formula = `점수 ${pokemon.score.toLocaleString()} = 공격 ${pokemon.atk} × 위력 ${pokemon.power}${pokemon.stab ? ' × 자속 1.2' : ''}`;
-  const comparison = percentOfTop == null ? '' : topOfType.name === pokemon.name && topOfType.gmax === pokemon.gmax ? ` · ${TYPE_KO[pokemon.charged]} 1위` : ` · ${TYPE_KO[pokemon.charged]} 1위 ${topOfType.name} 대비 ${percentOfTop}%`;
-  return `${pokemon.tier} 근거 — ${formula}${comparison}`;
+function whyFormula(pokemon) {
+  return `점수 ${pokemon.score.toLocaleString()} = 공격 ${pokemon.atk} × 위력 ${pokemon.power} × 자속 ${pokemon.stab ? '1.2' : '1'} × 내구 보정 ${pokemon.bulkMul ?? 1}`;
 }
+function whyGrade(pokemon) {
+  const list = DMAX_TIER[pokemon.charged] ?? [];
+  const topOfType = list[0];
+  const rank = list.findIndex((entry) => entry.name === pokemon.name && entry.gmax === pokemon.gmax) + 1;
+  const typeLabel = TYPE_KO[pokemon.charged] ?? '';
+  const isTop = topOfType && topOfType.name === pokemon.name && topOfType.gmax === pokemon.gmax;
+  const place = !topOfType ? '' : isTop ? `${typeLabel} 1위` : `${typeLabel} ${rank}위 (1위 ${topOfType.name} 대비 ${Math.round(pokemon.score / topOfType.score * 100)}%)`;
+  return `${pokemon.tier} 등급 — 전 종 1위 대비 ${pokemon.pct ?? 0}%${place ? ` · ${place}` : ''}`;
+}
+// 2026-09-14 v3.30.0 등급·점수가 무슨 뜻인지 한 번에 밝히는 안내. 제목 옆 ⓘ 에 달린다 —
+// 티어 글자는 탭이 아니라 전 종 기준이고, 점수에는 내구가 약하게 섞여 있다는 두 가지가 핵심이다
+const DMAX_TIER_INFO = '등급은 이 탭이 아니라 전 종을 통틀어 매깁니다 — 전 종 최고 점수 대비 90% 이상 S, 80% 이상 A, 70% 이상 B, 그 아래 C. 그래서 탭을 옮겨도 글자가 바뀌지 않아요. 순위는 이 탭 안에서만 셉니다. 점수 = 공격 × 맥스무브 위력(거다이 450 · 다이 350) × 자속 1.2 × 내구 보정(방어 × 체력 ÷ 1000 의 네제곱근). 내구를 약하게 섞는 이유는 화력만 보면 진화 단계가 짧은 개체가 앞서기 때문이에요 — 맥스 배틀은 버티면서 맥스 페이즈를 여러 번 도는 싸움이라 내구가 실제로 값을 합니다.'
 
 // 2026-09-02 티어표 행: pogomate 기준 % 표시 (내구 미반영)
 // 점수 칸은 절대 점수가 아니라 "이 목록 1위(topScore) 대비 %"다.
+// 2026-09-14 v3.30.0 점수 칸의 % 를 **전 종 1위 대비**(pct)로 바꿨다 — 전에는 그 탭 1위 대비라,
+// 절대 기준으로 매긴 등급 글자와 숫자가 서로 다른 말을 했다(바위 탭 1위라 100% 인데 등급은 A).
+// 탭 안에서의 비교는 펼친 근거 줄(whyGrade)이 맡는다
 function tierRowNode(pokemon, rankText, topScore) {
   return row(pokemon, rankText,
-    el('span', { class: 'row__score' }, `${Math.round(pokemon.score / topScore * 100)}%`),
-    el('span', { class: 'row__sub' }, `공격 ${pokemon.atk} · 위력 ${pokemon.power}${pokemon.stab ? ' · 자속' : ''}`),
+    el('span', { class: 'row__score' }, `${pokemon.pct ?? Math.round(pokemon.score / topScore * 100)}%`),
+    el('span', { class: 'row__sub' }, `공격 ${pokemon.atk} · 위력 ${pokemon.power}${pokemon.stab ? ' · 자속' : ''} · 내구 ${pokemon.bulk ?? 0}`),
     [pokemon.fast, `${TYPE_KO[pokemon.charged]} 타입`]);  // 2026-09-06 v2.10.0 G-MAX/D-MAX 뱃지는 이름의 폼 라벨로 대체
 }
 
@@ -75,7 +89,8 @@ function expandableRow(pokemon, rankText, topScore) {
   const whyNode = el('li', { class: 'row__why' },
     el('div', { class: 'row__why-col' },
       el('b', { class: 'row__why-title' }, '📊 티어 점수 산정 방식'),
-      el('p', { class: 'row__why-line' }, whyText(pokemon)),
+      el('p', { class: 'row__why-line' }, whyFormula(pokemon)),
+      el('p', { class: 'row__why-line' }, whyGrade(pokemon)),
       el('button', {
         class: 'row__why-more',
         onclick: (event) => {
@@ -256,9 +271,20 @@ function maxSubmenu(axis) {
 function maxTierBlock(selectedType) {
   const tierItems = DMAX_TIER[selectedType] ?? [];
   const tierTitle = selectedType === 'overall' ? 'D-MAX 티어표 (전체)' : `${TYPE_KO[selectedType]} 맥스무브 D-MAX 티어표`;
+  // ⓘ 는 제목과 한 묶음(.row-head__title)으로 감싼다 — .row-head 가 space-between 이라
+  // 맨몸으로 두면 제목과 '9종' 사이 한가운데로 밀려나고, 휴대폰(row-head 가 block)에서는 제 줄로 떨어진다
+  // 휴대폰은 hover 가 없어 title 툴팁이 안 뜬다 — 누르면(Enter 포함) 같은 글을 제목 아래에 펼친다
+  const $note = el('p', { class: 'info-note', hidden: '' }, DMAX_TIER_INFO);
+  const $dot = el('span', { class: 'info-dot', tabindex: '0', role: 'button', 'aria-expanded': 'false', title: DMAX_TIER_INFO }, 'ⓘ');
+  const toggleNote = () => { $note.hidden = !$note.hidden; $dot.setAttribute('aria-expanded', String(!$note.hidden)); };
+  $dot.addEventListener('click', toggleNote);
+  $dot.addEventListener('keydown', (event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); toggleNote(); } });
   $content.append(el('div', { class: 'row-head' },
-    el('h2', {}, tierTitle), el('span', { class: 'meta' }, `${tierItems.length}종`)));
-  if (tierItems.length) renderTierList(tierItems, (pokemon, index) => expandableRow(pokemon, String(index + 1), tierItems[0].score));  // 2026-09-02 1B·pogomate %
+    el('div', { class: 'row-head__title' }, el('h2', {}, tierTitle), $dot),
+    el('span', { class: 'meta' }, `${tierItems.length}종`)), $note);
+  // 2026-09-14 v3.30.1 순위 배지는 탭 전체 순위다 — renderTierList 가 넘기는 index 는 티어 묶음 안 순번이라
+  // 등급이 절대 기준이 된 뒤로는 B 티어 첫 카드가 '1' 로 찍혀 근거의 '땅 2위' 와 어긋났다
+  if (tierItems.length) renderTierList(tierItems, (pokemon) => expandableRow(pokemon, String(tierItems.indexOf(pokemon) + 1), tierItems[0].score));  // 2026-09-02 1B·pogomate %
   return tierItems.length;
 }
 

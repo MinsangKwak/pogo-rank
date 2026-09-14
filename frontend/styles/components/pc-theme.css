@@ -812,6 +812,69 @@ body:is([data-route="dmax"], [data-route="pve"], [data-route="pvp"]) #content .r
 body:is([data-route="dmax"], [data-route="pve"], [data-route="pvp"]) #content .row-list.is-grid .row__sub { display: block; }
 body:is([data-route="dmax"], [data-route="pve"], [data-route="pvp"]) #content .row-list.is-grid .row__score { font-size: 1.3rem; }
 body:is([data-route="dmax"], [data-route="pve"], [data-route="pvp"]) #content .row-list.is-grid > :is(.row__more, .row__why) { grid-column: 1 / -1; }
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   2026-09-14 v3.29.0 카드가 한 줄을 못 채우는 티어 묶음: 선정 근거를 카드 오른쪽 빈 칸에 넣는다.
+   S 티어는 대개 1종이라 1920(세 열)에서 두 칸이 비는데, 근거는 그 빈 칸을 두고 아래로 내려갔다.
+   CSS 에는 "이 줄의 남은 칸을 채워라" 가 없다 — `grid-column: auto / -1` 은 시작이 auto 라
+   span 1 로 해석돼 마지막 한 칸만 잡는다. 그래서 카드 수(:has 로 셈)와 열 수(미디어 쿼리)를
+   짝지어 **시작 열을 못 박는다**. 근거는 order:1 이라 카드보다 뒤에 놓이고, 그리드 자동 배치
+   커서가 아직 그 칸을 지나지 않았으므로 같은 줄 빈 칸에 그대로 들어간다(sparse 배치).
+   카드가 한 줄을 채우는 묶음(레이드·PvP 의 30줄 목록 등)은 건드리지 않는다 — 위 규칙 그대로 전체 폭.
+   2026-09-14 v3.30.1 세로는 stretch(기본) 로 카드 높이에 맞춘다 — align-self:start 로 두니 362px 카드 옆에
+   164px 상자가 떠 있어 깨져 보였다. 안쪽 두 단은 align-content:start 로 위에 붙인다.
+   ───────────────────────────────────────────────────────────────────────────── */
+@media (min-width: 1100px) {
+  /* 카드 한 장뿐인 묶음 — 열이 둘 이상이면 그 오른쪽 전부 */
+  body:is([data-route="dmax"], [data-route="pve"], [data-route="pvp"])
+    #content .row-list.is-grid:not(:has(> .row ~ .row)) > .row__why.is-open {
+    grid-column: 2 / -1; align-content: start;
+  }
+  /* 카드 두 장 — 패널이 닫혀 있으면 세 열 이상이라 셋째 칸부터 */
+  body:is([data-route="dmax"], [data-route="pve"], [data-route="pvp"]):not(.has-detail-panel)
+    #content .row-list.is-grid:has(> .row ~ .row):not(:has(> .row ~ .row ~ .row)) > .row__why.is-open {
+    grid-column: 3 / -1; align-content: start;
+  }
+}
+/* 패널이 열린 1440 미만은 한 열이라 빈 칸이 없다 — 전체 폭으로 되돌린다.
+   위 한 장짜리 규칙과 특이도를 맞춰야 이긴다(.has-detail-panel 한 칸을 더 얹는다) —
+   밀리면 없는 둘째 열이 암시적으로 생겨 카드가 42px 로 찌그러진다 */
+@media (min-width: 1100px) and (max-width: 1439px) {
+  body:is([data-route="dmax"], [data-route="pve"], [data-route="pvp"]).has-detail-panel
+    #content .row-list.is-grid:not(:has(> .row ~ .row)) > .row__why.is-open { grid-column: 1 / -1; }
+}
+/* 패널이 열린 1760 이상은 세 열 — 두 장 묶음도 오른쪽으로 (근거가 한 칸이라 안쪽은 한 단으로) */
+@media (min-width: 1760px) {
+  body:is([data-route="dmax"], [data-route="pve"], [data-route="pvp"]).has-detail-panel
+    #content .row-list.is-grid:has(> .row ~ .row):not(:has(> .row ~ .row ~ .row)) > .row__why.is-open {
+    grid-column: 3 / -1; align-content: start; grid-template-columns: 1fr;
+  }
+}
+/* 근거가 한 칸만 차지하는 나머지 두 자리도 안쪽을 한 단으로 —
+   두 단(1.4fr 1fr)을 340px 에 밀어 넣으면 '티어 점수 산정 방식' 문장이 글자 단위로 접힌다 */
+@media (min-width: 1440px) and (max-width: 1759px) {
+  body.has-detail-panel #content .row-list.is-grid:not(:has(> .row ~ .row)) > .row__why.is-open {
+    grid-template-columns: 1fr;
+  }
+}
+@media (min-width: 1100px) and (max-width: 1439px) {
+  body:not(.has-detail-panel) #content .row-list.is-grid:has(> .row ~ .row):not(:has(> .row ~ .row ~ .row)) > .row__why.is-open {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* 2026-09-14 v3.29.0 타입 필터 상자의 칩 줄은 PC 에서 접어 내린다.
+   `.chips` 는 휴대폰용 가로 스크롤 띠(overflow-x:auto, nowrap)인데, 상세 패널이 열리면
+   보이는 폭이 1194 → 662px 로 줄어 18타입 중 절반이 스크롤 뒤로 숨었다. 지금 고른 칩이
+   화면 밖에 있어 무엇을 거른 상태인지 읽히지 않았다. 상자는 접었다 펴는 것이라 세로 여유가 있다 */
+@media (min-width: 1100px) {
+  .filter-box .chips, .filter-box .submenu .chips {
+    flex-wrap: wrap; overflow: visible; margin: 0; padding: 0.2rem 0;
+    mask-image: none; -webkit-mask-image: none;
+  }
+  .filter-box .submenu { align-items: flex-start; }
+  .filter-box .submenu__label { padding-top: 0.7rem; }
+}
 @media (min-width: 1100px) {
   .dex__list.is-grid .gameday__row { padding: 4.2rem 2.2rem 2rem; gap: 1.2rem; }
   .dex__list.is-grid .gameday__row > .sprite { width: 18rem; height: 18rem; }
