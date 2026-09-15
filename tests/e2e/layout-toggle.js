@@ -240,14 +240,21 @@ suite(async () => {
         return l ? getComputedStyle(l).gridTemplateColumns.split(' ').length : 0;
       });
       ok(`${label} 휴대폰 그리드는 두 칸`, cols === 2, String(cols));
-      // 동작 버튼은 가로 한 줄 — 위아래로 쌓으면 화면 머리가 두 배로 높아진다
+      // 동작 버튼 줄 — 2026-09-15 v3.34.0 제목 **위** 제 줄을 통째로 쓴다(styles/pixel.css).
+      // 컨트롤이 셋까지면 한 줄, 넷이면(배틀 · PvP: 리그 + 도구 둘 + 보기 전환) 접혀 두 줄이다.
+      // 제 줄을 쓰는 자리라 접혀도 제목을 밀지 않는다 — 옛 규칙("무조건 한 줄")은 이 줄이
+      // 제목 오른쪽 좁은 칸에 끼어 있던 시절의 것이고, 지금 그것을 지키면 오른쪽이 잘린다
       const headRow = await mp.evaluate(() => {
         const a = document.querySelector('#page-head-actions');
-        if (!a || a.children.length < 2) return { tops: [], ok: true };
+        if (!a || a.children.length < 2) return { tops: [], rows: 1, clipped: false, above: true };
         const tops = [...a.children].map((c) => Math.round(c.getBoundingClientRect().top));
-        return { tops, ok: new Set(tops).size === 1 };
+        const h2 = document.querySelector('#page-head h2');
+        return { tops, rows: new Set(tops).size, clipped: a.scrollWidth > a.clientWidth + 1,
+                 above: !h2 || a.getBoundingClientRect().top < h2.getBoundingClientRect().top };
       });
-      ok(`${label} 동작 버튼이 한 줄에 선다`, headRow.ok, JSON.stringify(headRow.tops));
+      ok(`${label} 동작 버튼이 제목 위에 선다`, headRow.above);
+      ok(`${label} 동작 버튼이 두 줄을 넘지 않는다`, headRow.rows <= 2, JSON.stringify(headRow.tops));
+      ok(`${label} 동작 버튼이 잘리지 않는다`, !headRow.clipped);
       ok(`${label} 가로 넘침 없음`, !(await mp.evaluate(() => document.documentElement.scrollWidth > innerWidth)));
     }
     // 리스트 얼굴이 ☰ 메뉴 버튼과 같은 그림이면 안 된다 (v3.10.0)
