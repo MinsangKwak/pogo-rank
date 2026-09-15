@@ -39,7 +39,7 @@ from sprite import sprite_id
 from names import name_ko, species, FORM_KO
 
 # ── 설정 ─────────────────────────────────────────────────────────────────────
-APP_VERSION = 'v3.36.0'  # 데이터만 있고 아직 못 쓰는 것을 지우지 않고 흐리게 — D-MAX 미출시 거다이맥스·예정 다이맥스 · 도감 미출시 메가 (v3.25.0 은 feature-advertisement 브랜치에 예약)
+APP_VERSION = 'v3.37.0'  # [미구현] 체크로 켜고 끄기 — 기본 꺼짐 · 켜면 오른쪽으로 물린 흐린 줄 (v3.25.0 은 feature-advertisement 브랜치에 예약)
 # 2026-09-14 v3.28.0 index.html 의 색인 허용 줄 — dev 빌드가 이 줄을 noindex 로 바꿔 끼운다
 ROBOTS_INDEX_META = '<meta name="robots" content="index, follow, max-image-preview:large">'
 # 2026-09-05 v2.7.3 빌드 채널 — 'prod'(기본) / 'dev'. dev 브랜치 워크플로(.github/workflows/deploy-dev.yml)가 BUILD_CHANNEL=dev 로 부른다.

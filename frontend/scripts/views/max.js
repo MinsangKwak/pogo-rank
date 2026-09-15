@@ -68,6 +68,13 @@ function rankText(list, pokemon) {
   return pokemon.unrel ? '–' : String(releasedRank(list, pokemon));
 }
 
+// 2026-09-15 v3.37.0 [미구현] 체크가 꺼져 있으면 흐린 줄을 아예 뺀다.
+// **거르는 곳을 한 군데로 모은다** — 세 표(전체·딜러·탱커)가 모두 이 함수를 지나므로
+// 체크 상태를 각 표에서 다시 따질 일이 없다. 순위 계산도 걸러진 목록을 받아 그대로 맞는다
+function maxVisible(rows) {
+  return state.maxShowUnrel ? (rows ?? []) : (rows ?? []).filter((row) => !row.unrel);
+}
+
 function whyFormula(pokemon) {
   return `점수 ${pokemon.score.toLocaleString()} = 공격 ${pokemon.atk} × 위력 ${pokemon.power} × 자속 ${pokemon.stab ? '1.2' : '1'} × 내구 보정 ${pokemon.bulkMul ?? 1}`;
 }
@@ -258,12 +265,12 @@ function tankRow(pokemon, rankText, bossType) {
 
 // 2026-09-07 v2.13.0 (QA-43) 보스 속성별 탱커 목록 (탭 세그먼트 '탱커')
 function renderMaxTank(selectedType) {
-  const tanks = (typeof DMAX_TANK !== 'undefined' ? DMAX_TANK[selectedType] : null) ?? [];
+  const tanks = maxVisible(typeof DMAX_TANK !== 'undefined' ? DMAX_TANK[selectedType] : null);
   const title = selectedType === 'overall' ? 'D-MAX 탱커 (중립 · 순수 내구)' : `${TYPE_KO[selectedType]} 보스 상대 D-MAX 탱커`;
   $content.append(
     el('div', { class: 'row-head' }, el('h2', {}, title), el('span', { class: 'meta' }, `상위 ${tanks.length}`)),
     list(`maxtank-${selectedType}`, tanks, (pokemon) => tankRow(pokemon, rankText(tanks, pokemon), selectedType)));
-  $note.textContent = '탱커 순위: EHP = 체력 × 방어 ÷ 1000 ÷ (보스 타입 기술을 받는 배율). 레벨 40 실전 능력치 기준이고, 보스는 자기 타입 자속 기술로 때린다고 가정해요(복합 타입 보스는 상세 팝업의 타입 상성을 함께 보세요). 데이터만 등록되고 아직 게임에 나오지 않은 개체는 흐리게 [미구현] 으로 함께 보여 줘요 — 순위 번호는 주지 않고, 등급 기준도 출시분 맨 위예요. 포켓몬을 누르면 상세 정보가 열려요.';
+  $note.textContent = '탱커 순위: EHP = 체력 × 방어 ÷ 1000 ÷ (보스 타입 기술을 받는 배율). 레벨 40 실전 능력치 기준이고, 보스는 자기 타입 자속 기술로 때린다고 가정해요(복합 타입 보스는 상세 팝업의 타입 상성을 함께 보세요). 머리의 [미구현] 을 켜면 데이터만 등록되고 아직 게임에 나오지 않은 개체를 흐리게 함께 봐요 — 순위 번호는 주지 않고, 등급 기준도 출시분 맨 위예요. 포켓몬을 누르면 상세 정보가 열려요.';
 }
 
 // 2026-09-07 v2.14.0 (QA-52) D-MAX 탭 = [전체 | 딜러 | 탱커] 세그먼트 + 그 아래 하위 메뉴(속성 칩).
@@ -295,7 +302,7 @@ function maxSubmenu(axis) {
 // 여기서 "그 속성"은 맥스무브(charged) 속성 기준이다 — 그 타입 맥스무브를 쓰는 개체 목록.
 // 점수 칸의 %는 이 목록 1위(tierItems[0].score) 대비 값이고, 행을 누르면 근거가 펼쳐진다.
 function maxTierBlock(selectedType) {
-  const tierItems = DMAX_TIER[selectedType] ?? [];
+  const tierItems = maxVisible(DMAX_TIER[selectedType]);
   const tierTitle = selectedType === 'overall' ? 'D-MAX 티어표 (전체)' : `${TYPE_KO[selectedType]} 맥스무브 D-MAX 티어표`;
   // ⓘ 는 제목과 한 묶음(.row-head__title)으로 감싼다 — .row-head 가 space-between 이라
   // 맨몸으로 두면 제목과 '9종' 사이 한가운데로 밀려나고, 휴대폰(row-head 가 block)에서는 제 줄로 떨어진다
@@ -322,7 +329,7 @@ function renderMaxTier(selectedType) {
       el('button', { class: 'row__why-more', onclick: () => { state.maxAxis = 'dealer'; track('sub_max_dealer'); render(); } }, '[딜러]'), ' · ',
       el('button', { class: 'row__why-more', onclick: () => { state.maxAxis = 'tank'; track('sub_max_tank'); render(); } }, '[탱커]'), ' 에서'));
   }
-  $note.textContent = '티어표 행을 누르면 선정 근거가 펼쳐져요. 티어표는 pogomate와 같은 기준: 공격 종족값 × 맥스무브 위력(거다이 450 · 다이 350) × 자속 1.2, 내구 미반영, 다이맥스·거다이맥스는 별도 항목이며 %는 그 목록 1위 대비예요. 속성 칩은 그 타입 맥스무브를 쓰는 개체를 모아요(포켓몬 자체 타입이 아님). 데이터만 등록되고 아직 게임에 나오지 않은 개체는 흐리게 [미구현] 으로 함께 보여 줘요 — 순위 번호는 주지 않고, 등급 기준도 출시분 맨 위예요. 포켓몬을 누르면 상세 정보가 열려요.';
+  $note.textContent = '티어표 행을 누르면 선정 근거가 펼쳐져요. 티어표는 pogomate와 같은 기준: 공격 종족값 × 맥스무브 위력(거다이 450 · 다이 350) × 자속 1.2, 내구 미반영, 다이맥스·거다이맥스는 별도 항목이며 %는 그 목록 1위 대비예요. 속성 칩은 그 타입 맥스무브를 쓰는 개체를 모아요(포켓몬 자체 타입이 아님). 머리의 [미구현] 을 켜면 데이터만 등록되고 아직 게임에 나오지 않은 개체를 흐리게 함께 봐요 — 순위 번호는 주지 않고, 등급 기준도 출시분 맨 위예요. 포켓몬을 누르면 상세 정보가 열려요.';
 }
 
 // 딜러: 보스 속성 상대 맥스 어태커 (상성·내구 반영)
@@ -338,12 +345,12 @@ function renderMaxTier(selectedType) {
 // 머리글을 짧게 줄이면 두 표가 같은 것의 두 벌처럼 읽히므로 줄이지 않는다.
 function renderMaxDealer(selectedType) {
   maxTierBlock(selectedType);
-  const attackers = DMAX_DATA[selectedType] ?? [];
+  const attackers = maxVisible(DMAX_DATA[selectedType]);
   const title = selectedType === 'overall' ? 'D-MAX 딜러 (중립 · 맥스 피해 × √내구)' : `${TYPE_KO[selectedType]} 보스 상대 D-MAX 딜러`;
   $content.append(
     el('div', { class: 'row-head' }, el('h2', {}, title), el('span', { class: 'meta' }, `상위 ${attackers.length}`)),
     list(`max-${selectedType}`, attackers, (pokemon) => maxRow(pokemon, rankText(attackers, pokemon))));
-  $note.textContent = '위는 티어표(그 타입 맥스무브를 쓰는 개체), 아래는 딜러(그 타입 보스를 상대할 개체) — 같은 타입을 골라도 보는 각도가 달라 명단이 달라요. 티어표는 공격 종족값 × 맥스무브 위력(거다이 450 · 다이 350) × 자속 1.2, 내구 미반영이고 행을 누르면 근거가 펼쳐져요. 딜러 순위는 맥스어택 3레벨(위력 350) 또는 거다이맥스 3레벨(위력 450) 1회 피해 × √내구 기준이며, 보스 속성을 고르면 그 속성 보스를 때릴 때의 상성이 반영돼요(전체는 중립). 데이터만 등록되고 아직 게임에 나오지 않은 개체는 흐리게 [미구현] 으로 함께 보여 줘요 — 순위 번호는 주지 않고, 등급 기준도 출시분 맨 위예요. 포켓몬을 누르면 상세 정보가 열려요.';
+  $note.textContent = '위는 티어표(그 타입 맥스무브를 쓰는 개체), 아래는 딜러(그 타입 보스를 상대할 개체) — 같은 타입을 골라도 보는 각도가 달라 명단이 달라요. 티어표는 공격 종족값 × 맥스무브 위력(거다이 450 · 다이 350) × 자속 1.2, 내구 미반영이고 행을 누르면 근거가 펼쳐져요. 딜러 순위는 맥스어택 3레벨(위력 350) 또는 거다이맥스 3레벨(위력 450) 1회 피해 × √내구 기준이며, 보스 속성을 고르면 그 속성 보스를 때릴 때의 상성이 반영돼요(전체는 중립). 머리의 [미구현] 을 켜면 데이터만 등록되고 아직 게임에 나오지 않은 개체를 흐리게 함께 봐요 — 순위 번호는 주지 않고, 등급 기준도 출시분 맨 위예요. 포켓몬을 누르면 상세 정보가 열려요.';
 }
 
 function renderMax() {
@@ -355,6 +362,9 @@ function renderMax() {
     $controls.append(backButton);
     return renderMaxDeck();
   }
+  // [미구현] 체크는 기기에 남은 값을 매 렌더 다시 읽는다 — 보기 전환(layoutInitial)과 같은 방식이라
+  // 따로 초기화 훅이 필요 없고, 다른 탭에서 바꾼 값도 돌아오면 그대로 따라온다
+  state.maxShowUnrel = maxUnrelInitial();
   renderBossAcc();  // 2026-09-02 탭 위 보스 아코디언
   // 2026-09-07 v2.14.0 (QA-52) [전체 | 딜러 | 탱커] 세그먼트 — 탱커 데이터가 없는 빌드에서는 탱커 버튼을 뺀다
   const hasTank = typeof DMAX_TANK !== 'undefined' && Object.keys(DMAX_TANK ?? {}).length > 0;
@@ -374,6 +384,13 @@ function renderMax() {
   // 2026-09-15 v3.33.0 차례를 [전체|딜러|탱커] → 🧩 덱 짜기 → 보기 전환 으로.
   // 앞 둘은 **무엇을 볼지**, 마지막은 **어떻게 볼지** 라 성격이 같은 것끼리 붙는다.
   // 머리 슬롯은 .js-head-action 을 만난 차례대로 담으므로 여기 붙이는 차례가 곧 화면의 차례다
+  // 2026-09-15 v3.37.0 [미구현] 체크가 맨 왼쪽 — **무엇을 볼지**(목록의 범위)를 정하는 값이라
+  // 도구(덱 짜기)·보기 전환보다 앞이다. 표에 미구현이 한 줄도 없는 탭에서는 아예 안 그린다
+  if (maxHasUnreleased(state.maxBoss)) {
+    const unrelCheck = maxUnrelCheckbox();
+    unrelCheck.classList.add('js-head-action');
+    $controls.append(unrelCheck);
+  }
   const deckButton = maxDeckToolButton();
   deckButton.classList.add('js-head-action');
   $controls.append(deckButton);
@@ -390,6 +407,39 @@ function renderMax() {
   if (axis.id === 'dealer') { renderMaxDealer(selectedType); return applyMaxLayout(maxGrid); }
   renderMaxTier(selectedType);
   applyMaxLayout(maxGrid);
+}
+
+// 2026-09-15 v3.37.0 [미구현] 체크 — 데이터만 있고 아직 못 쓰는 줄을 보일지 정한다.
+// 기본은 꺼짐: 처음 들어온 사람에게 표는 **지금 쓸 수 있는 것**이어야 한다. 켜면 흐린 줄이 끼어든다.
+// 선택은 이 기기에 남는다 (보기 전환과 같은 규칙 — 화면마다 따로 기억한다)
+const MAX_UNREL_KEY = 'pogo_max_unrel';
+function maxUnrelInitial() {
+  try { return localStorage.getItem(MAX_UNREL_KEY) === '1'; } catch { return false; }   // 저장 불가 환경(사생활 모드 등)
+}
+// 지금 보는 탭에 미구현이 있기는 한가 — 없으면 체크박스를 그리지 않는다.
+// 늘 그려 두면 "눌러도 아무 일도 없는 칸" 이 되고, 그 자리는 화면 머리라 값이 비싸다
+function maxHasUnreleased(selectedType) {
+  const tables = [
+    typeof DMAX_TIER !== 'undefined' ? DMAX_TIER?.[selectedType] : null,
+    typeof DMAX_DATA !== 'undefined' ? DMAX_DATA?.[selectedType] : null,
+    typeof DMAX_TANK !== 'undefined' ? DMAX_TANK?.[selectedType] : null,
+  ];
+  return tables.some((rows) => (rows ?? []).some((row) => row.unrel));
+}
+function maxUnrelCheckbox() {
+  const box = el('input', { type: 'checkbox', class: 'check-toggle__box' });
+  box.checked = state.maxShowUnrel;
+  const label = el('label', {
+    class: `check-toggle${state.maxShowUnrel ? ' is-on' : ''}`,
+    title: '게임 파일에 데이터는 있지만 아직 못 쓰는 개체를 함께 봐요 — 흐리게 표시되고 순위 번호는 주지 않아요',
+    onchange: () => {
+      state.maxShowUnrel = box.checked;
+      try { localStorage.setItem(MAX_UNREL_KEY, box.checked ? '1' : '0'); } catch { /* 저장 불가 환경 */ }
+      track('max_unrel_' + (box.checked ? 'on' : 'off'));   // GA4: 이 값을 켜는 사람이 얼마나 되는지
+      render();
+    },
+  }, box, el('span', { class: 'check-toggle__text' }, '미구현'));
+  return label;
 }
 
 // 2026-09-12 v3.5.0 D-MAX 보기 전환 — 넓은 화면의 카드 격자(.row-list)를 줄로 되돌린다.

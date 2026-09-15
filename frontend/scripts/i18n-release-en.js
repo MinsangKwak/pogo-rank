@@ -15,6 +15,11 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 const RELEASE_NOTES_EN = {
+  '2026-09-15 · v3.37.0': [
+    '**A [not in GO] checkbox** — top right of the D-MAX screen, just left of the deck button. It is **off by default**, so the tables show only what you can use today. Turn it on to also see entries whose data is registered but that have not launched.',
+    '**When it is on, they are set further apart** — faded rows are pushed one step to the right, dimmed more, and slightly blurred. Hover one, or tap to expand it, and it sharpens so you can read it.',
+    'Your choice stays on this device, so the screen looks the same next time you come back.',
+  ],
   '2026-09-15 · v3.36.0': [
     '**Things that have not launched yet are shown faded** — the game files already carry data for Pokémon you cannot use yet. The D-MAX tables (all / attacker / tank) no longer drop them: they appear faded and marked **not in GO**, so you can see where one would land once it arrives.',
     '**The rankings do not shift** — faded rows get no rank number. Released entries stay numbered 1, 2, 3 … without a gap, and the 100% mark for grades is still the best released entry (so a faded row can go above 100%).',
