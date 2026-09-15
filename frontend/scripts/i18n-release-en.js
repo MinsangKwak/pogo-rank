@@ -15,6 +15,9 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 const RELEASE_NOTES_EN = {
+  '2026-09-15 · v3.42.1': [
+    '**(Fix) No visit statistics were being recorded at all** — the measurement ID pointed at a stream that no longer exists, so the analytics script never loaded. That is why nothing was logged even after v3.39.0 said it was on by default. The ID is corrected. Turning it off works the same way — [Turn off statistics] in the banner, or ☰ menu → statistics and storage settings.',
+  ],
   '2026-09-15 · v3.42.0': [
     '**The home screen is reordered** — "What would you like to do?" now sits right under the greeting, so a first visit starts with **where to go**. The three "Strong right now" boards moved below it.',
   ],
