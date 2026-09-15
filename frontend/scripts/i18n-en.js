@@ -134,6 +134,9 @@ const I18N_PATTERNS = [
     'Score $1 = Attack $2 × Max Move power $3 × STAB $4 × bulk factor $5'],
   [/^([SABC]) 등급 — 전 종 1위 대비 (\d+)% · (.+) (\d+)위 \(1위 (.+) 대비 (\d+)%\)$/,
     '$1 tier — $2% of the best of all species · #$4 among $3 (\u200b$6% of #1, $5)'],
+  [/^([SABC]) 등급 — 전 종 1위 대비 (\d+)% · (.+) 미구현 \(1위 (.+) 대비 (\d+)%\)$/,
+    '$1 tier — $2% of the best of all species · not in GO among $3 (\u200b$5% of #1, $4)'],
+  [/^([SABC]) 등급 — 전 종 1위 대비 (\d+)% · (.+) 미구현$/, '$1 tier — $2% of the best of all species · not in GO among $3'],
   [/^([SABC]) 등급 — 전 종 1위 대비 (\d+)% · (.+) 1위$/, '$1 tier — $2% of the best of all species · #1 among $3'],
   [/^([SABC]) 등급 — 전 종 1위 대비 (\d+)%$/, '$1 tier — $2% of the best of all species'],
   [/^D·(.+)$/, 'D·$1'],
@@ -260,6 +263,10 @@ const I18N_EN = {
   '즐겨찾기 #': 'Favorites #',
   '★ 즐겨찾기 #': '★ Favorites #',
   '미구현': 'Not in GO',
+  '머리의 [미구현] 을 켜면 데이터만 등록되고 아직 게임에 나오지 않은 개체도 함께 봐요 — 흐리게 표시되고 순위 번호는 주지 않아요. 관리자만 보이는 값이에요.':
+    'Turn on [not in GO] in the header to also see entries whose data is registered but that have not launched — they show faded and get no rank number. Admins only.',
+  '메가진화 데이터는 있지만 아직 미구현': 'Mega Evolution data exists, but it is not in GO yet',
+  '원시회귀 데이터는 있지만 아직 미구현': 'Primal Reversion data exists, but it is not in GO yet',
   '링크 공유': 'Share link',
   '이 포켓몬 링크 공유': 'Share a link to this Pokémon',
   '자세히 보기 (전체 화면) →': 'See more (full screen) →',
@@ -608,8 +615,8 @@ const I18N_EN = {
     'A raid tier list of easy-to-get, ordinary Pokémon (own calculation). Each type tab shows only that type. Scores are a % of the strongest attacker of the same type (Legendary and Mega included), and tiers are relative within this list. Tap a Pokémon for details.',
   'PvPoke 시뮬레이션 점수(#점 만점). 속성 필터 안의 순위는 해당 속성 내 순위이며 전체 순위를 함께 표시합니다.':
     'PvPoke simulation score (out of #). Inside a type filter the rank is within that type, shown alongside the overall rank.',
-  '티어표 행을 누르면 선정 근거가 펼쳐집니다. 티어표는 pogomate와 같은 기준: 공격 종족값 × 맥스무브 위력(거다이 # · 다이 #) × 자속 #, 내구 미반영, 다이맥스·거다이맥스는 별도 항목이며 %는 그 목록 #위 대비입니다. 속성 칩은 그 타입 맥스무브를 쓰는 개체를 모읍니다(포켓몬 자체 타입이 아님). 출시된 다이맥스 #종 · 거다이맥스 #종만 포함(미출시 리전 폼 제외). 포켓몬을 누르면 상세 정보가 열립니다.':
-    'Tap a tier-list row to expand why it landed there. The tier list uses the same basis as pogomate: Attack base stat × Max Move power (Gigantamax # · Dynamax #) × STAB #, bulk not counted, with Dynamax and Gigantamax listed separately and % measured against #1 of that list. A type chip gathers Pokémon whose Max Move is that type (not the Pokémon’s own type). Only the # released Dynamax and # released Gigantamax are included (unreleased regional forms excluded). Tap a Pokémon for details.',
+  '티어표 행을 누르면 선정 근거가 펼쳐집니다. 티어표는 pogomate와 같은 기준: 공격 종족값 × 맥스무브 위력(거다이 # · 다이 #) × 자속 #, 내구 미반영, 다이맥스·거다이맥스는 별도 항목이며 %는 그 목록 #위 대비입니다. 속성 칩은 그 타입 맥스무브를 쓰는 개체를 모읍니다(포켓몬 자체 타입이 아님). 출시된 다이맥스·거다이맥스만 포함. 포켓몬을 누르면 상세 정보가 열립니다.':
+    'Tap a tier-list row to expand why it landed there. The tier list uses the same basis as pogomate: Attack base stat × Max Move power (Gigantamax # · Dynamax #) × STAB #, bulk not counted, with Dynamax and Gigantamax listed separately and % measured against #1 of that list. A type chip gathers Pokémon whose Max Move is that type (not the Pokémon’s own type). Only released Dynamax · Gigantamax are included. Tap a Pokémon for details.',
 
   // ── 탭 줄 바로가기 · 일정표 ───────────────────────────────────────────────
   '도감': 'Dex',
@@ -775,8 +782,8 @@ const I18N_EN = {
   '이 화면은 지금 도는 로테이션만 말해요 — 앞으로의 일정은 달력이 맡아요.':
     'This screen only covers what is in rotation right now — the calendar handles what is coming up.',
   '지금 도는 알 부화 풀.': 'The egg pools currently in rotation.',
-  '티어표 행을 누르면 선정 근거가 펼쳐져요. 티어표는 pogomate와 같은 기준: 공격 종족값 × 맥스무브 위력(거다이 450 · 다이 350) × 자속 1.2, 내구 미반영, 다이맥스·거다이맥스는 별도 항목이며 %는 그 목록 1위 대비예요. 속성 칩은 그 타입 맥스무브를 쓰는 개체를 모아요(포켓몬 자체 타입이 아님). 출시된 다이맥스 139종 · 거다이맥스 17종만 포함(미출시 리전 폼 제외). 포켓몬을 누르면 상세 정보가 열려요.':
-    'Tap a row to unfold why it landed there. Same basis as pogomate: Attack base stat × Max Move power (G-Max 450 · Dynamax 350) × STAB 1.2, bulk not counted. Dynamax and Gigantamax are listed separately, and the % is against the top entry of that list. Type chips gather Pokémon whose Max Move is that type (not the Pokémon\'s own type). Only released Dynamax (139) and Gigantamax (17) are included; unreleased regional forms are left out. Tap a Pokémon for full details.',
+  '티어표 행을 누르면 선정 근거가 펼쳐져요. 티어표는 pogomate와 같은 기준: 공격 종족값 × 맥스무브 위력(거다이 450 · 다이 350) × 자속 1.2, 내구 미반영, 다이맥스·거다이맥스는 별도 항목이며 %는 그 목록 1위 대비예요. 속성 칩은 그 타입 맥스무브를 쓰는 개체를 모아요(포켓몬 자체 타입이 아님). 출시된 다이맥스·거다이맥스만 포함. 포켓몬을 누르면 상세 정보가 열려요.':
+    'Tap a row to unfold why it landed there. Same basis as pogomate: Attack base stat × Max Move power (G-Max 450 · Dynamax 350) × STAB 1.2, bulk not counted. Dynamax and Gigantamax are listed separately, and the % is against the top entry of that list. Type chips gather Pokémon whose Max Move is that type (not the Pokémon\'s own type). Only released Dynamax · Gigantamax are included. Tap a Pokémon for full details.',
   '프로토타입 가정: 자체 계산 PvE 수치(개체값 15/15/15) 기반에 선택 보스의 실제 방어·공격 종족값을 반영해 보정. 운용은 실측 제공자식 — 최정예 1~2마리를 기절 직전 이탈 → 부활(5~6초) → 재진입으로 돌려쓰는 방식 기준. 풀강50 토글은 딜 +6.3%·TDO +20%, 버프는 메가부스트 +30% / 풀버프(메가+날씨+친구) +60%. 실측 보정: 생존 3배 · DPS +20%. 기절 → 부활약 → 재진입 운용을 반영해 정예 1~6마리 중 가장 빨리 깎는 구성을 골라요 (교체 1초 · 전멸 후 재진입 13초). 난이도는 보스별로 자동 판정(메가·원시 → 메가, 전설·환상·울트라비스트 → 4성, 최종 진화 → 3성, 그 외 1성)이며 선택된 보스의 난이도 배지를 탭하면 수동 변경돼요. 레이드 표시 CP는 개체 종족값 기반 계산값(공식 검증: 뮤츠 5성 54,148), 전투 체력은 게임 구조상 티어 고정 — 1성 600 · 3성 3,600 · 4성 9,000 · 5성/메가 15,000, 제한 1·3성 180초 / 그 외 300초. 복합 타입 보스의 두 번째 타입은 어태커 자속 타입 기준 근사 보정. 포켓몬을 누르면 상세 정보가 열려요.':
     'Prototype assumptions. Built on our own PvE numbers (15/15/15 IVs), then adjusted for the selected boss\'s real Defense and Attack base stats. Play pattern follows what solo players actually do: cycle one or two top attackers out just before fainting, revive (5-6 s), and re-enter. The "maxed at 50" toggle adds +6.3% damage and +20% TDO; buffs are Mega boost +30% or full buff (Mega + weather + friend) +60%. Field correction: 3× survival, +20% DPS. Accounting for faint → revive → re-enter, we pick whichever lineup of one to six elites chews through the boss fastest (1 s to swap, 13 s to re-enter after a wipe). Tier is judged automatically per boss (Mega and Primal → Mega, Legendary / Mythical / Ultra Beast → 4-star, final evolutions → 3-star, everything else → 1-star); tap the tier badge on the selected boss to override it. Displayed raid CP is calculated from base stats (verified against Mewtwo 5-star: 54,148), while battle HP is fixed per tier by the game: 600 (1★) · 3,600 (3★) · 9,000 (4★) · 15,000 (5★/Mega), with a 180 s limit on 1★ and 3★ and 300 s otherwise. For dual-type bosses the second type is approximated against the attacker\'s STAB type. Tap a Pokémon for full details.',
   '실험 기능. 추천 덱 3종은 상대 입력 없이 리그 메타 기준으로 뽑아요 — 정석 코어(점수 + 약점 상호 보완 그리디), 안티 메타(상위 10마리 상대 평균 상성순), 타입 분산(방어 타입 안 겹치게). 커스텀 덱 짜기는 PvPoke 리그 순위 × 타입 상성(공격 최대 배율 ÷ 피격 최대 배율)의 근사 추천 — 실드·기술 사이클·CP 최적화는 반영하지 않아요. GO배틀리그 규칙상 같은 종은 파티에 1마리만(섀도우·일반도 같은 종)이라 모든 추천이 종 단위로 중복을 제거해요. 슬롯 3칸을 다 채우면 상대 덱 분석과 구성 가이드가 나와요.':

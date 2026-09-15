@@ -5,6 +5,32 @@
 
 .row-list { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--line); }
 .row { display: grid; grid-template-columns: 2.8rem 4rem 1fr auto;  /* 2026-09-03 v2.2.0 보유 ☆ 열 제거 */ align-items: center; gap: 1.2rem; padding: 0.9rem 0; border-bottom: 1px solid var(--line); cursor: pointer; }
+/* 2026-09-15 v3.36.0 아직 못 쓰는 줄 — 데이터만 등록되고 게임에는 안 나온 개체(미출시 거다이맥스 · 예정 다이맥스).
+   지우지 않고 흐리게 남긴다. 순위 칸이 '–' 라 번호가 밀리지 않는 것도 눈으로 보인다.
+   2026-09-15 v3.37.0 셋으로 갈라 둔다 — **오른쪽으로 물리고 · 더 옅게 · 살짝 흐리게**.
+     · 오른쪽 들여쓰기: 왼쪽 끝이 어긋나면 훑는 눈이 "이 줄은 결이 다르다" 를 글자를 읽기 전에 안다
+     · blur: 옅게만 하면 밝은 화면에서 그냥 연한 줄로 읽힌다. 초점이 안 맞는 느낌이 "지금 것이 아님" 을 더 잘 말한다
+   둘 다 hover·focus 에서 풀린다 — 살펴보려고 다가가면 또렷해져야 읽을 수 있다 */
+.row.is-unreleased {
+  margin-left: 4.8rem; opacity: .4; filter: blur(0.7px);
+  border-left: 2px dashed var(--line); padding-left: 1.2rem;
+  transition: opacity .12s, filter .12s, margin-left .12s;
+}
+.row.is-unreleased:hover, .row.is-unreleased:focus-visible,
+.row.is-unreleased.open { opacity: 1; filter: none; }
+.row.is-unreleased .row__rank { color: var(--muted); }
+/* 근거 줄(펼침)도 그 줄에 딸린 것이라 같이 물린다 */
+.row.is-unreleased + .row__why { margin-left: 4.8rem; }
+/* 카드 격자에서는 **밀지 않는다** — 칸 폭이 정해져 있어 밀면 그 카드만 좁아져(228px vs 309px) 줄이 너덜해진다.
+   오른쪽 들여쓰기는 왼쪽 끝이 한 줄로 서 있는 줄 보기에서만 뜻이 있다. 카드에서는 흐림과 점선이 같은 말을 한다 */
+.row-list.is-grid > .row.is-unreleased { margin-left: 0; }
+/* 휴대폰에서는 들여쓰기를 줄인다 — 390px 에서 48px 를 물리면 이름 자리가 그만큼 좁아져 줄이 접힌다 */
+@media (max-width: 699px) {
+  .row.is-unreleased { margin-left: 2.2rem; padding-left: 0.8rem; }
+  .row.is-unreleased + .row__why { margin-left: 2.2rem; }
+}
+/* 움직임을 줄이고 싶다는 설정이면 초점만 흐리고 미끄러지지는 않게 */
+@media (prefers-reduced-motion: reduce) { .row.is-unreleased { transition: none; } }
 .row:hover { background: var(--hover); }
 
 /* 등급 색상 — PvE 평가 글자(.grade-mark)와 티어표 뱃지(.tier__badge)가 같은 색을 쓴다 */

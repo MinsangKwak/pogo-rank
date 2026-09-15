@@ -15,6 +15,34 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 const RELEASE_NOTES_EN = {
+  '2026-09-15 · v3.40.0': [
+    '**Admins can now be appointed from the screen** — ☰ menu → 🔑 Approvals, then press [Make admin] next to an approved member. They can then handle sign-up approvals and trainer codes with you.',
+    '**The panel is split by role** — waiting / admins / approved friends. Who can do what is visible at a glance.',
+    '**Only the root admin can appoint or remove** — if the power spread on its own there would be nobody left to undo it.',
+    '**[not in GO] is now admin-only** — seeing what has not launched yet belongs to whoever runs the service.',
+  ],
+  '2026-09-15 · v3.39.0': [
+    '**Visit analytics are on by default** — previously only people who pressed "Allow analytics" on the first-visit banner were counted. Most visitors pressed nothing, so there was no way to see which screens get used. Now a visit is counted on arrival, and **you can turn it off**.',
+    '**Turning it off works the same way** — [Turn off analytics] on the first-visit banner, or ☰ menu → Analytics & storage settings. Once off, the analytics script is not loaded at all.',
+    '**No ads and no location, as before** — all that is recorded is visits and which features get used. The privacy policy has been updated to match.',
+    'Counting now starts **before** the screen finishes drawing — until now it started afterwards, so a quick visit left no record at all.',
+  ],
+  '2026-09-15 · v3.38.0': [
+    '**[not in GO] is now for members** — seeing what has not launched yet is a signed-in perk. Without an account the checkbox is not shown at all, and no faded rows appear in the tables.',
+    'Sign in and the control appears right away — no need to reload the screen.',
+  ],
+  '2026-09-15 · v3.37.0': [
+    '**A [not in GO] checkbox** — top right of the D-MAX screen, just left of the deck button. It is **off by default**, so the tables show only what you can use today. Turn it on to also see entries whose data is registered but that have not launched.',
+    '**When it is on, they are set further apart** — faded rows are pushed one step to the right, dimmed more, and slightly blurred. Hover one, or tap to expand it, and it sharpens so you can read it.',
+    'Your choice stays on this device, so the screen looks the same next time you come back.',
+  ],
+  '2026-09-15 · v3.36.0': [
+    '**Things that have not launched yet are shown faded** — the game files already carry data for Pokémon you cannot use yet. The D-MAX tables (all / attacker / tank) no longer drop them: they appear faded and marked **not in GO**, so you can see where one would land once it arrives.',
+    '**The rankings do not shift** — faded rows get no rank number. Released entries stay numbered 1, 2, 3 … without a gap, and the 100% mark for grades is still the best released entry (so a faded row can go above 100%).',
+    '**They stay out of deck building and recommendations** — a ranking can say "this is roughly where it would land", but a deck has to hold what you can actually bring today.',
+    '**The Pokédex marks unreleased Megas too** — the chip used to be dropped entirely, so a species with no Mega looked the same as one whose Mega has not launched. It now shows as a dashed grey chip (Mega Camerupt).',
+    '**(Fix) The Mega chip stacked its characters vertically in Pokédex rows** — on wide screens the row layout left it no room.',
+  ],
   '2026-09-15 · v3.35.1': [
     '**(Hotfix) Animated sprites grew without stopping** — where a sprite is sized by its slot rather than by a fixed rule, such as the PvP deck builder, one sprite grew a little every 0.8 seconds until it covered the screen. The Little League deck showed it clearly.',
   ],

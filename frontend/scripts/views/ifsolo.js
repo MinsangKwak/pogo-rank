@@ -114,8 +114,10 @@ function bossIndex() {
   // 2026-09-02 빌드 생성 보스 목록(메가 전 종 포함)을 최우선으로
   (typeof BOSS_LIST !== 'undefined' ? BOSS_LIST : []).forEach(add);
   Object.values(PVE_DATA).forEach((rankingList) => rankingList.forEach(add));
-  Object.values(DMAX_DATA).forEach((rankingList) => rankingList.forEach(add));
-  Object.values(DMAX_TIER).forEach((rankingList) => rankingList.forEach(add));
+  // 2026-09-15 v3.36.0 미구현 줄은 넣지 않는다 — 여기서 고른 개체로 덱을 짜는 화면이라
+  // 지금 데려갈 수 없는 것이 후보에 섞이면 안 된다
+  Object.values(DMAX_DATA).forEach((rankingList) => rankingList.forEach((pokemon) => { if (!pokemon.unrel) add(pokemon); }));
+  Object.values(DMAX_TIER).forEach((rankingList) => rankingList.forEach((pokemon) => { if (!pokemon.unrel) add(pokemon); }));
   // 2026-09-02 활용처·가성비 목록도 포함 — 어태커 순위엔 없는 메가(예: 메가 칼라마네로)까지 커버
   ['usage', 'pvp', 'pve', 'both'].forEach((valueKey) => (VALUE_DATA[valueKey] ?? []).forEach(add));
   // 마지막으로 도감 전체를 채워 넣어 어떤 종이든 검색은 되게 한다

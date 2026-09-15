@@ -82,11 +82,18 @@ meta, scores = pve_full['meta'], pve_full['scores']
 # 출시 목록은 검증된 외부 소스(max_released.txt)를 따르고, 거다이맥스 기술 타입만 게임마스터에서 읽는다
 # (게임마스터에는 "누가 다이맥스 가능한가"가 들어있지 않다)
 dynamax_released, gmax_released = set(), set()
+# 2026-09-15 v3.36.0 '예정' 블록(주석 처리된 D/G 줄)도 읽는다 — 지우지 않고 '미구현' 으로 밝히려면 목록이 필요하다
+dynamax_pending = set()
 for line in open('backend/config/max_released.txt', encoding='utf-8'):
-    line = line.split('#')[0].strip()   # '#' 뒤는 주석
-    if not line: continue
+    body, _, remark = line.partition('#')
+    if not body.strip():
+        # 주석 줄 중 "# D POKEMON_ID [FORM]" 꼴만 예정 목록으로 본다 (설명 문장은 형식이 달라 걸리지 않는다)
+        tokens = remark.split('#')[0].split()
+        if len(tokens) in (2, 3) and tokens[0] in ('D', 'G') and tokens[1].isupper():
+            dynamax_pending.add((tokens[1], tokens[2] if len(tokens) == 3 else None))
+        continue
     # 형식: "D POKEMON_ID [FORM]" = 다이맥스, "G POKEMON_ID [FORM]" = 거다이맥스
-    kind, pokemon_id, *form_tokens = line.split()
+    kind, pokemon_id, *form_tokens = body.split()
     (dynamax_released if kind == 'D' else gmax_released).add((pokemon_id, form_tokens[0] if form_tokens else None))
 # 거다이맥스 기술 타입: 게임마스터의 sourdough(거다이맥스) 기술 매핑에서 (종, 폼) → 기술 타입
 gmax_move_types = {}
@@ -116,13 +123,27 @@ def in_release_set(release_set, pokemon_id, form):
     return (pokemon_id, form) in release_set
 def is_dynamax(pokemon_id, form):
     return in_release_set(dynamax_released, pokemon_id, form)
-def gmax_type(pokemon_id, form):
-    # 거다이맥스 가능하면 그 전용 기술의 타입, 아니면 None
-    if not in_release_set(gmax_released, pokemon_id, form): return None
-    # 기술 타입 조회도 같은 규칙 — 기본 폼은 자신이 대표하는 폼의 키를, 그 밖의 폼은 그 폼 키만 본다
+def registered_gmax_type(pokemon_id, form):
+    # 출시 여부와 무관하게 게임마스터에 등록된 거다이맥스 기술 타입
+    # 기본 폼은 자신이 대표하는 폼의 키를, 그 밖의 폼은 그 폼 키만 본다
     if is_base_form(pokemon_id, form):
         return next((move_type for (candidate_id, candidate_form), move_type in gmax_move_types.items() if candidate_id == pokemon_id and base_form_matches(candidate_id, candidate_form)), None)
     return gmax_move_types.get((pokemon_id, form))
+def gmax_type(pokemon_id, form):
+    # 거다이맥스 가능하면 그 전용 기술의 타입, 아니면 None
+    if not in_release_set(gmax_released, pokemon_id, form): return None
+    return registered_gmax_type(pokemon_id, form)
+
+# 2026-09-15 v3.36.0 (미구현) '데이터는 있는데 아직 못 쓰는' 개체를 지우지 않고 흐리게 함께 보여주기 위한 판정.
+#   근거는 둘뿐이다 — ① 게임마스터에 거다이맥스 **기술 데이터**가 있는데 출시 목록에 없는 종
+#   ② max_released.txt 의 '예정' 블록에 손으로 적어 둔 줄.
+#   "종족값이 있다" 는 근거가 될 수 없다 (전 종이 다 걸린다). DEVELOPMENT.md 2.5 의 규칙 그대로다.
+def pending_dynamax(pokemon_id, form):
+    return not is_dynamax(pokemon_id, form) and in_release_set(dynamax_pending, pokemon_id, form)
+def pending_gmax_type(pokemon_id, form):
+    # 거다이맥스 기술은 등록돼 있는데 출시 목록에는 없는 경우 그 기술 타입
+    if in_release_set(gmax_released, pokemon_id, form): return None
+    return registered_gmax_type(pokemon_id, form)
 
 # 2026-09-06 v2.10.0 (QA-44) 맥스 배틀 행의 표시 이름: 거다이맥스/다이맥스 접두어를 붙여 일반 폼과 구분한다
 def max_name(name, is_gmax):
@@ -134,40 +155,60 @@ def damage(power, attack, multiplier):
 
 # 섀도우·메가·원시는 다이맥스가 불가능하므로 이름으로 걸러 기본 개체만 남긴다
 base_meta = {key: entry for key, entry in meta.items() if not re.search('섀도우|메가|원시', entry['name'])}
+# 2026-09-15 v3.36.0 자격(다이맥스 가능 여부 · 거다이맥스 기술 타입)을 받아 맥스무브 1발 최고 피해를 고른다.
+# 출시분과 미구현분을 **따로** 계산하려고 떼어냈다 — 섞어서 최고값을 고르면
+# '다이맥스는 나왔지만 거다이맥스는 아직' 인 종이 못 쓰는 위력 450 으로 줄에 오른다.
+def best_max_hit(entry, boss_types, own_types, dynamax_ok, gmax_move_type):
+    best = None
+    # 맥스어택 타입 = 보유 스피드기 타입 중 최선
+    for quick_id in (entry['quick'] if dynamax_ok else []):
+        move = moves.get(quick_id)
+        if not move: continue
+        move_type = move['pokemonType'].replace('POKEMON_TYPE_','')
+        dealt = damage(MAX_ATTACK_POWER, entry['atk'], (STAB if move_type in own_types else 1) * type_mult(move_type, boss_types))
+        if not best or dealt > best[0]: best = (dealt, move_type, '맥스어택')
+    if gmax_move_type:
+        # 거다이맥스 기술은 위력이 더 높으므로(450 vs 350) 보통 이쪽이 이긴다
+        dealt = damage(GMAX_POWER, entry['atk'], (STAB if gmax_move_type in own_types else 1) * type_mult(gmax_move_type, boss_types))
+        if not best or dealt > best[0]: best = (dealt, gmax_move_type, '거다이맥스')
+    return best
+
+# 2026-09-15 v3.36.0 출시분으로 상위 `limit` 줄을 먼저 확정하고, 미구현분은 그 마지막 줄의 점수 이상일 때만 끼워 넣는다.
+# 미구현을 같이 세면 출시분 표가 밀려 짧아진다 — 보이는 표는 그대로 두고 흐린 줄만 얹는 것이 목적이다.
+def cut_with_unreleased(rows, limit, key='score'):
+    if not limit: return rows
+    released = [row for row in rows if not row.get('unrel')][:limit]
+    keep = {id(row) for row in released}
+    cutoff = released[-1][key] if len(released) == limit else 0
+    return [row for row in rows if id(row) in keep or (row.get('unrel') and row[key] >= cutoff)]
+
 def dyna_rank(boss_types, limit=TOP):
     # 맥스 배틀 랭킹: 맥스무브 1발 피해량 x sqrt(내구)
     out = []
     for key, entry in base_meta.items():
         # _S(에이펙스) 폼은 맥스 배틀 대상이 아니라 제외
         if entry['form'] and entry['form'].endswith('_S'): continue
-        gmax_move_type = gmax_type(entry['pid'], entry['form'])
-        # 다이맥스도 거다이맥스도 못 하면 후보가 아니다
-        if not is_dynamax(entry['pid'], entry['form']) and not gmax_move_type: continue
         own_types = [type_name.upper() for type_name in entry['types']]
-        # 맥스어택 타입 = 보유 스피드기 타입 중 최선
-        best = None
-        for quick_id in (entry['quick'] if is_dynamax(entry['pid'], entry['form']) else []):
-            move = moves.get(quick_id)
-            if not move: continue
-            move_type = move['pokemonType'].replace('POKEMON_TYPE_','')
-            dealt = damage(MAX_ATTACK_POWER, entry['atk'], (STAB if move_type in own_types else 1) * type_mult(move_type, boss_types))
-            if not best or dealt > best[0]: best = (dealt, move_type, '맥스어택')
-        if gmax_move_type:
-            # 거다이맥스 기술은 위력이 더 높으므로(450 vs 350) 보통 이쪽이 이긴다
-            dealt = damage(GMAX_POWER, entry['atk'], (STAB if gmax_move_type in own_types else 1) * type_mult(gmax_move_type, boss_types))
-            if not best or dealt > best[0]: best = (dealt, gmax_move_type, '거다이맥스')
-        if not best: continue
-        # 내구 지표 = 방어력 x HP / 1000, 점수에는 제곱근으로 완화해 반영(딜 비중을 크게 둔다)
-        bulk = entry['def'] * entry['hp'] / 1000
-        score = best[0] * bulk ** 0.5
-        # 2026-09-06 v2.10.0 (QA-44) 이름에 맥스 종류를 붙인다 — '거다이맥스 에이스번' / '다이맥스 에이스번'.
-        # 일반 에이스번(PvE·PvP 표)과 이름이 같으면 검색 색인(이름 기준 중복 제거)·활용처(이름 기준 합산)에서
-        # 서로 다른 세 항목이 하나로 뭉개졌다. 이름 자체를 갈라 두면 화면 어디서든 자연히 분리된다.
-        # (rank_diff 비교 키가 '스프라이트|이름'이라 이번 빌드 한 번은 맥스 표의 ▲▼ 가 비어 있다가 다음 갱신부터 다시 붙는다)
-        out.append({'sprite': gmax_sprite_id(entry['dex'], entry['form']) if best[2] == '거다이맥스' else entry['sprite'], 'name': max_name(entry['name'], best[2] == '거다이맥스'), 'en': entry['en'], 'types': entry['types'],
-                    'fast': best[2], 'charged': f"{best[1].lower()}", 'dmg': best[0], 'bulk': round(bulk), 'score': round(score), 'gmax': best[2] == '거다이맥스'})
+        # 출시분(unrel=False)과 미구현분(unrel=True)을 각각 한 줄씩 낸다.
+        # 둘 다 있는 종(예: 다이맥스는 출시 · 거다이맥스는 미출시)은 두 줄로 갈려 서로를 가리지 않는다
+        for unrel in (False, True):
+            dynamax_ok = pending_dynamax(entry['pid'], entry['form']) if unrel else is_dynamax(entry['pid'], entry['form'])
+            gmax_move_type = pending_gmax_type(entry['pid'], entry['form']) if unrel else gmax_type(entry['pid'], entry['form'])
+            # 다이맥스도 거다이맥스도 못 하면 후보가 아니다
+            if not dynamax_ok and not gmax_move_type: continue
+            best = best_max_hit(entry, boss_types, own_types, dynamax_ok, gmax_move_type)
+            if not best: continue
+            # 내구 지표 = 방어력 x HP / 1000, 점수에는 제곱근으로 완화해 반영(딜 비중을 크게 둔다)
+            bulk = entry['def'] * entry['hp'] / 1000
+            score = best[0] * bulk ** 0.5
+            # 2026-09-06 v2.10.0 (QA-44) 이름에 맥스 종류를 붙인다 — '거다이맥스 에이스번' / '다이맥스 에이스번'.
+            # 일반 에이스번(PvE·PvP 표)과 이름이 같으면 검색 색인(이름 기준 중복 제거)·활용처(이름 기준 합산)에서
+            # 서로 다른 세 항목이 하나로 뭉개졌다. 이름 자체를 갈라 두면 화면 어디서든 자연히 분리된다.
+            # (rank_diff 비교 키가 '스프라이트|이름'이라 이번 빌드 한 번은 맥스 표의 ▲▼ 가 비어 있다가 다음 갱신부터 다시 붙는다)
+            out.append({'sprite': gmax_sprite_id(entry['dex'], entry['form']) if best[2] == '거다이맥스' else entry['sprite'], 'name': max_name(entry['name'], best[2] == '거다이맥스'), 'en': entry['en'], 'types': entry['types'],
+                        'fast': best[2], 'charged': f"{best[1].lower()}", 'dmg': best[0], 'bulk': round(bulk), 'score': round(score), 'gmax': best[2] == '거다이맥스', **({'unrel': True} if unrel else {})})
     out.sort(key=lambda row: -row['score'])
-    return out[:limit] if limit else out
+    return cut_with_unreleased(out, limit)
 dynamax_ranking = {'overall': dyna_rank([])}
 for type_name in TYPES: dynamax_ranking[type_name.lower()] = dyna_rank([type_name])
 json.dump(dynamax_ranking, open('data/dynamax.json','w'), ensure_ascii=False)
@@ -181,16 +222,19 @@ def tank_rank(boss_types, limit=TOP):
     out = []
     for key, entry in base_meta.items():
         if entry['form'] and entry['form'].endswith('_S'): continue   # 에이펙스 폼은 맥스 배틀 대상이 아니다
-        gmax_move_type = gmax_type(entry['pid'], entry['form'])
-        if not is_dynamax(entry['pid'], entry['form']) and not gmax_move_type: continue
         own_types = [type_name.upper() for type_name in entry['types']]
         multiplier = max(type_mult(boss_type, own_types) for boss_type in boss_types) if boss_types else 1.0
         bulk = entry['def'] * entry['hp'] / 1000
-        is_gmax = gmax_move_type is not None
-        out.append({'sprite': gmax_sprite_id(entry['dex'], entry['form']) if is_gmax else entry['sprite'], 'name': max_name(entry['name'], is_gmax), 'en': entry['en'], 'types': entry['types'],
-                    'fast': '', 'charged': '', 'ehp': round(bulk / multiplier), 'mult': round(multiplier, 2), 'hp': round(entry['hp']), 'def': round(entry['def']), 'gmax': is_gmax})
+        # 딜러 표와 같은 규칙 — 출시분과 미구현분을 각각 한 줄씩 (탱커 지표는 기술과 무관해 자격 판정만 갈린다)
+        for unrel in (False, True):
+            dynamax_ok = pending_dynamax(entry['pid'], entry['form']) if unrel else is_dynamax(entry['pid'], entry['form'])
+            gmax_move_type = pending_gmax_type(entry['pid'], entry['form']) if unrel else gmax_type(entry['pid'], entry['form'])
+            if not dynamax_ok and not gmax_move_type: continue
+            is_gmax = gmax_move_type is not None
+            out.append({'sprite': gmax_sprite_id(entry['dex'], entry['form']) if is_gmax else entry['sprite'], 'name': max_name(entry['name'], is_gmax), 'en': entry['en'], 'types': entry['types'],
+                        'fast': '', 'charged': '', 'ehp': round(bulk / multiplier), 'mult': round(multiplier, 2), 'hp': round(entry['hp']), 'def': round(entry['def']), 'gmax': is_gmax, **({'unrel': True} if unrel else {})})
     out.sort(key=lambda row: -row['ehp'])
-    return out[:limit] if limit else out
+    return cut_with_unreleased(out, limit, 'ehp')
 dynamax_tank = {'overall': tank_rank([])}
 for type_name in TYPES: dynamax_tank[type_name.lower()] = tank_rank([type_name])
 json.dump(dynamax_tank, open('data/dynamax_tank.json', 'w', encoding='utf-8'), ensure_ascii=False)
@@ -221,7 +265,10 @@ json.dump(max_pool, open('data/max_pool.json', 'w', encoding='utf-8'), ensure_as
 # 순위("바위 1위")는 탭 안에서 그대로 매기므로 등급과 순위가 서로 다른 질문에 답한다.
 def absolute_tier(rows):
     if not rows: return
-    best = max(row['score'] for row in rows)
+    # 2026-09-15 v3.36.0 기준선(100%)은 **출시분 1위**다. 미구현을 기준에 넣으면 아직 못 쓰는
+    # 개체(거다이맥스 자시안 등) 하나가 전체 등급을 끌어내린다 — 흐린 줄은 100% 를 넘을 수 있다
+    released = [row for row in rows if not row.get('unrel')]
+    best = max(row['score'] for row in (released or rows))
     for row in rows:
         row['pct'] = round(row['score'] / best * 100)
         row['tier'] = 'S' if row['pct'] >= 90 else 'A' if row['pct'] >= 80 else 'B' if row['pct'] >= 70 else 'C'
@@ -234,36 +281,39 @@ def tier_rows():
         # _S(에이펙스) 폼은 맥스 배틀 대상이 아니라 제외
         if entry['form'] and entry['form'].endswith('_S'): continue
         own_types = [type_name.upper() for type_name in entry['types']]
-        gmax_move_type = gmax_type(entry['pid'], entry['form'])
         # 내구 보정: 방어 x 체력 / 1000 의 네제곱근. 딜러 표(dyna_rank)는 같은 내구를 제곱근으로 쓴다 —
         # 티어표는 화력표에 가깝게 두려고 한 단계 약하게 건다
         bulk = entry['def'] * entry['hp'] / 1000
         bulk_mul = bulk ** 0.25
-        if is_dynamax(entry['pid'], entry['form']):
-            attack = round(entry['atk'])
-            # 보유 스피드기의 타입 = 쓸 수 있는 맥스어택 타입
-            move_types = set()
-            for quick_id in entry['quick']:
-                move = moves.get(quick_id)
-                if move: move_types.add(move['pokemonType'].replace('POKEMON_TYPE_',''))
-            stab_types = [type_name for type_name in own_types if type_name in move_types]
-            # 자속 맥스어택이 있으면 자속 타입마다 한 행, 없으면 사전순 첫 타입 하나만
-            targets = stab_types or (sorted(move_types)[:1] if move_types else [])
-            for move_type in targets:
-                # 350 = MAX_ATTACK_POWER(다이맥스 맥스무브 위력), 1.2 = 자속 보정, 내구^0.25
-                score = attack * 350 * (1.2 if move_type in own_types else 1) * bulk_mul
-                out.append({'sprite': entry['sprite'], 'name': max_name(entry['name'], False), 'en': entry['en'], 'types': entry['types'],
-                            'fast': '맥스어택', 'charged': move_type.lower(), 'atk': attack, 'power': 350,
-                            'stab': move_type in own_types, 'bulk': round(bulk), 'bulkMul': round(bulk_mul, 2),
-                            'score': round(score), 'gmax': False})
-        if gmax_move_type:
-            attack = round(entry['atk'])
-            # 450 = GMAX_POWER(거다이맥스 전용 기술 위력), 1.2 = 자속 보정, 내구^0.25
-            score = attack * 450 * (1.2 if gmax_move_type in own_types else 1) * bulk_mul
-            out.append({'sprite': gmax_sprite_id(entry['dex'], entry['form']), 'name': max_name(entry['name'], True), 'en': entry['en'], 'types': entry['types'],
-                        'fast': '거다이맥스', 'charged': gmax_move_type.lower(), 'atk': attack, 'power': 450,
-                        'stab': gmax_move_type in own_types, 'bulk': round(bulk), 'bulkMul': round(bulk_mul, 2),
-                        'score': round(score), 'gmax': True})
+        attack = round(entry['atk'])
+        # 출시분과 미구현분을 각각 낸다 (unrel 표시만 다르고 계산은 같다)
+        for unrel in (False, True):
+            unrel_mark = {'unrel': True} if unrel else {}
+            dynamax_ok = pending_dynamax(entry['pid'], entry['form']) if unrel else is_dynamax(entry['pid'], entry['form'])
+            gmax_move_type = pending_gmax_type(entry['pid'], entry['form']) if unrel else gmax_type(entry['pid'], entry['form'])
+            if dynamax_ok:
+                # 보유 스피드기의 타입 = 쓸 수 있는 맥스어택 타입
+                move_types = set()
+                for quick_id in entry['quick']:
+                    move = moves.get(quick_id)
+                    if move: move_types.add(move['pokemonType'].replace('POKEMON_TYPE_',''))
+                stab_types = [type_name for type_name in own_types if type_name in move_types]
+                # 자속 맥스어택이 있으면 자속 타입마다 한 행, 없으면 사전순 첫 타입 하나만
+                targets = stab_types or (sorted(move_types)[:1] if move_types else [])
+                for move_type in targets:
+                    # 350 = MAX_ATTACK_POWER(다이맥스 맥스무브 위력), 1.2 = 자속 보정, 내구^0.25
+                    score = attack * 350 * (1.2 if move_type in own_types else 1) * bulk_mul
+                    out.append({'sprite': entry['sprite'], 'name': max_name(entry['name'], False), 'en': entry['en'], 'types': entry['types'],
+                                'fast': '맥스어택', 'charged': move_type.lower(), 'atk': attack, 'power': 350,
+                                'stab': move_type in own_types, 'bulk': round(bulk), 'bulkMul': round(bulk_mul, 2),
+                                'score': round(score), 'gmax': False, **unrel_mark})
+            if gmax_move_type:
+                # 450 = GMAX_POWER(거다이맥스 전용 기술 위력), 1.2 = 자속 보정, 내구^0.25
+                score = attack * 450 * (1.2 if gmax_move_type in own_types else 1) * bulk_mul
+                out.append({'sprite': gmax_sprite_id(entry['dex'], entry['form']), 'name': max_name(entry['name'], True), 'en': entry['en'], 'types': entry['types'],
+                            'fast': '거다이맥스', 'charged': gmax_move_type.lower(), 'atk': attack, 'power': 450,
+                            'stab': gmax_move_type in own_types, 'bulk': round(bulk), 'bulkMul': round(bulk_mul, 2),
+                            'score': round(score), 'gmax': True, **unrel_mark})
     out.sort(key=lambda row: -row['score'])
     return out
 
@@ -282,10 +332,10 @@ for key, type_filter in [('overall', None)] + [(type_name.lower(), type_name.low
             if dedupe_key in seen_names: continue
             seen_names.add(dedupe_key)
             rows.append(dict(row))
-            if len(rows) >= TOP: break
+        rows = cut_with_unreleased(rows, TOP)
     else:
         # 'charged' 에 맥스무브 타입이 들어있으므로 그것으로 탭을 가른다
-        rows = [dict(row) for row in dmax_all if row['charged'] == type_filter][:TOP]
+        rows = cut_with_unreleased([dict(row) for row in dmax_all if row['charged'] == type_filter], TOP)
     if not rows: continue
     dmax_tier[key] = rows   # tier·pct 는 dmax_all 에서 이미 붙었다 (탭마다 다시 매기지 않는다)
 json.dump(dmax_tier, open('data/dynamax_tier.json','w'), ensure_ascii=False)
@@ -400,8 +450,11 @@ for boss, boss_scores in scores.items():
         entry = meta[key]
         add_usage(entry['name'], entry['sprite'], entry['en'], entry['types'], f"pve:{boss}", index + 1)
 # 맥스 배틀: 위에서 만든 다이맥스 랭킹 순서를 그대로 쓴다
+# 2026-09-15 v3.36.0 미구현 줄은 빼고 센다 — '활용처' 는 실제로 쓸 수 있는 자리를 뜻하고,
+# 흐린 줄을 같이 세면 그 아래 출시분의 순위까지 한 칸씩 밀린다
 for boss, rows in dynamax_ranking.items():
-    for index, row in enumerate(rows[:USE_TOP]): add_usage(row['name'], row['sprite'], row['en'], row['types'], f"max:{boss}", index + 1)
+    released_rows = [row for row in rows if not row.get('unrel')]
+    for index, row in enumerate(released_rows[:USE_TOP]): add_usage(row['name'], row['sprite'], row['en'], row['types'], f"max:{boss}", index + 1)
 use_list = []
 for usage_entry in usage.values():
     usage_entry['places'].sort(key=lambda place: place['rank'])
