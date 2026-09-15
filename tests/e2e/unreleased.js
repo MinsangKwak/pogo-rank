@@ -1,8 +1,10 @@
 'use strict';
 // v3.36.0 🌫 미구현 표시 회귀 — "데이터는 있는데 아직 못 쓰는 것" 을 지우지 않고 흐리게 보여 준다
 // v3.37.0 머리의 [미구현] 체크로 켜고 끈다 (기본 꺼짐 · 선택은 이 기기에 남는다)
+// v3.38.0 **회원 전용** — 비로그인에게는 체크가 안 보이고 흐린 줄도 안 나온다
 //
 // 이 스위트가 지키려는 것
+//   - **비로그인은 체크도 흐린 줄도 없다** — 저장값이 켜져 있어도 마찬가지 (화면 가림 · 데이터 차단은 아님)
 //   - **기본은 꺼짐** — 처음 들어오면 표에 흐린 줄이 한 개도 없다
 //   - 체크를 켜면 미구현 줄이 끼어들고, 다시 끄면 사라지는가
 //   - 체크 자리가 [미구현] → [덱 짜기] → [보기 전환] 차례인가
@@ -59,6 +61,22 @@ suite(async () => {
     return true;
   };
 
+  // ── 0-. 비로그인은 아예 못 본다 ──────────────────────────────────────────
+  // ?mock 없이 열면 AUTH.status 가 'anon' 으로 남는다 (SDK 가 바깥이라 로드되지 않는다)
+  const anonCtx = await newContext(browser, { viewport: { width: 1440, height: 1000 } });
+  const anon = await anonCtx.newPage();
+  // 저장값을 미리 켜 둔다 — 화면이 저장값이 아니라 **로그인 여부**를 본다는 것을 못 박으려고
+  await anon.addInitScript(() => { try { localStorage.setItem('pogo_max_unrel', '1'); } catch {} });
+  await anon.goto('http://localhost:5503/#/dmax', { waitUntil: 'domcontentloaded' });
+  await waitSplash(anon);
+  await anon.waitForTimeout(1200);
+  ok('비로그인 상태다', (await anon.evaluate(() => (typeof AUTH !== 'undefined' ? AUTH.status : '?'))) === 'anon');
+  ok('비로그인에게는 체크가 없다', (await anon.locator('.check-toggle').count()) === 0);
+  ok('비로그인에게는 흐린 줄이 없다', (await anon.locator('.row.is-unreleased').count()) === 0);
+  ok('비로그인 안내에는 [미구현] 붙임말이 없다',
+    !(await anon.evaluate(() => (document.getElementById('note')?.textContent ?? '').includes('[미구현]'))));
+  await anonCtx.close();
+
   // ── 0. 기본은 꺼짐 ────────────────────────────────────────────────────────
   await go('#/dmax');
   ok('체크가 기본으로 꺼져 있다', (await page.locator('.check-toggle__box').first().isChecked()) === false);
@@ -70,6 +88,8 @@ suite(async () => {
   ok('머리 차례가 [미구현]→[덱 짜기]→[보기 전환]',
     headOrder[0] === 'check-toggle' && headOrder[1] === 'tool-btn' && headOrder[2] === 'icon-btn',
     headOrder.join(' → '));
+  ok('회원 안내에는 [미구현] 붙임말이 있다',
+    await page.evaluate(() => (document.getElementById('note')?.textContent ?? '').includes('[미구현]')));
 
   // ── 1. D-MAX 티어표 ───────────────────────────────────────────────────────
   await setUnrel(true);

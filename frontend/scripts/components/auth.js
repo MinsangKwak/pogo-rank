@@ -217,6 +217,10 @@ async function onAuthChange(user) {
     if (nowRoute.kind === 'page') renderPage();
     else if (typeof render === 'function' && typeof _planShellReady !== 'undefined' && _planShellReady) render();
   }
+  // 2026-09-15 v3.38.0 D-MAX 는 잠긴 화면이 아니지만 로그인 여부로 화면이 달라진다 —
+  // [미구현] 체크가 회원에게만 보인다. SDK 는 첫 렌더 뒤에 로드되므로(initAuth) 그대로 두면
+  // 로그인한 사람이 주소로 바로 들어왔을 때 그 자리가 끝내 안 생긴다. 잠긴 화면과 같은 이유다
+  if (state.tab === 'max' && typeof render === 'function' && typeof _planShellReady !== 'undefined' && _planShellReady) render();
   // 2026-09-07 v2.15.0 (QA-54) 플래너 화면(내 포켓몬 목록·홈 요약)은 로그인 상태에 따라 내용이 다르다
   if (typeof _planShellReady !== 'undefined' && _planShellReady && state.appMode === 'plan') render();
   // 2026-09-12 v3.11.0 로그인 상태가 정해진 지금이 가입을 권할 자리다 — 그 전에는 비로그인인지 알 수 없다.

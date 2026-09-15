@@ -15,6 +15,10 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 const RELEASE_NOTES_EN = {
+  '2026-09-15 · v3.38.0': [
+    '**[not in GO] is now for members** — seeing what has not launched yet is a signed-in perk. Without an account the checkbox is not shown at all, and no faded rows appear in the tables.',
+    'Sign in and the control appears right away — no need to reload the screen.',
+  ],
   '2026-09-15 · v3.37.0': [
     '**A [not in GO] checkbox** — top right of the D-MAX screen, just left of the deck button. It is **off by default**, so the tables show only what you can use today. Turn it on to also see entries whose data is registered but that have not launched.',
     '**When it is on, they are set further apart** — faded rows are pushed one step to the right, dimmed more, and slightly blurred. Hover one, or tap to expand it, and it sharpens so you can read it.',
