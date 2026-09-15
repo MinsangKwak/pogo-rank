@@ -1,6 +1,7 @@
 // 2026-09-03 v2.2.0 Firestore 보안 규칙 — Firebase 콘솔 > Firestore Database > 규칙 탭에 붙여넣고 "게시"
 // 구조
 //   allowlist/{email}  승인된 친구 목록 (관리자만 쓰기, 본인 문서는 읽기·삭제 가능 → 승인 여부 확인 · 계정 삭제)
+//                      2026-09-15 v3.39.0 admin: true 가 붙으면 그 사람도 관리자 (지정·해제는 루트 관리자만)
 //   requests/{email}   가입(승인) 요청 (본인만 생성·갱신·삭제, 관리자만 열람·삭제)
 // 2026-09-08 v2.27.0 쓰기 한도 — users·requests 문서의 필드 개수와 목록 길이를 규칙에서 제한 (아래 smallDoc)
 // 2026-09-14 v3.28.1 콘솔 재점검 — 게시본(2026-09-08 15:14)이 이 파일과 같음을 확인하고 이 줄만 더해 다시 게시 (규칙 내용 변경 없음)
@@ -10,12 +11,26 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // ── 관리자 판정 ── uid 기준. __ADMIN_UID__ 는 자리표시자 — scripts/render_rules.sh 가 .env 의 ADMIN_UID 로 채운 firestore.rules.local 을 콘솔에 붙여넣는다 (2026-09-05 v2.8.0)
-    function isAdmin() {
+    // ── 관리자 판정 ─────────────────────────────────────────────────────────
+    // 2026-09-15 v3.39.0 관리자가 둘로 갈린다.
+    //   루트 관리자  : uid 가 __ADMIN_UID__ 인 사람. 규칙에 박혀 있어 누구도 뺏을 수 없다 (잠금 방지용 열쇠)
+    //   위임 관리자  : allowlist/{이메일} 문서에 admin: true 가 붙은 사람. 루트가 화면에서 지정한다
+    // __ADMIN_UID__ 는 자리표시자 — scripts/render_rules.sh 가 .env 의 ADMIN_UID 로 채운
+    // firestore.rules.local 을 콘솔에 붙여넣는다 (2026-09-05 v2.8.0)
+    function isRootAdmin() {
       return request.auth != null && request.auth.uid == '__ADMIN_UID__';
     }
     function myEmail() {
       return request.auth.token.email.lower();
+    }
+    // 위임 관리자 여부. exists() 를 먼저 보는 이유 — 문서가 없으면 get() 이 실패한다
+    function isDelegatedAdmin() {
+      return request.auth != null && request.auth.token.email != null
+             && exists(/databases/$(database)/documents/allowlist/$(myEmail()))
+             && get(/databases/$(database)/documents/allowlist/$(myEmail())).data.get('admin', false) == true;
+    }
+    function isAdmin() {
+      return isRootAdmin() || isDelegatedAdmin();
     }
     function isApproved() {
       return isAdmin() || (request.auth != null && exists(/databases/$(database)/documents/allowlist/$(myEmail())));
@@ -40,8 +55,18 @@ service cloud.firestore {
 
     match /allowlist/{mail} {
       allow read: if request.auth != null && (isAdmin() || mail == myEmail());
-      allow create, update: if isAdmin();
-      allow delete: if isAdmin() || (request.auth != null && mail == myEmail());  // v2.18.0 본인 승인 해제 = 계정 삭제 절차
+      // 2026-09-15 v3.39.0 **admin 필드는 루트만 건드린다.** 위임 관리자가 또 다른 관리자를 만들거나
+      // 남의 관리자 권한을 뺏지 못하게 막는다 — 권한이 스스로 번지면 되돌릴 사람이 없어진다.
+      //   create : 루트는 무엇이든 / 위임 관리자는 admin 을 켜지 않은 문서만
+      //   update : 루트는 무엇이든 / 위임 관리자는 admin 값을 **바꾸지 않는** 수정만
+      allow create: if isRootAdmin()
+                    || (isAdmin() && request.resource.data.get('admin', false) == false);
+      allow update: if isRootAdmin()
+                    || (isAdmin() && request.resource.data.get('admin', false) == resource.data.get('admin', false));
+      // 관리자끼리 서로 지우는 것도 막는다. 본인 문서 삭제(계정 삭제)는 그대로 허용
+      allow delete: if isRootAdmin()
+                    || (isAdmin() && resource.data.get('admin', false) == false)
+                    || (request.auth != null && mail == myEmail());  // v2.18.0 본인 승인 해제 = 계정 삭제 절차
     }
 
     match /requests/{mail} {

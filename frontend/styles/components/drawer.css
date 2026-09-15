@@ -113,6 +113,17 @@
 .admin__who b { display: block; font-size: 1.35rem; }
 .admin__act { flex: none; }
 .admin__act.is-danger { color: var(--warn); border-color: var(--warn); }
+/* 2026-09-15 v3.40.0 관리자 지정이 생기면서 한 줄에 버튼이 둘이 된다 — 좁으면 아래로 접는다 */
+.admin__acts { display: flex; flex: none; flex-wrap: wrap; justify-content: flex-end; gap: 0.5rem; }
+/* 이름 옆 역할 딱지. 관리자 줄은 왼쪽에 굵은 선을 둬 목록을 훑을 때 결이 다른 줄임이 보이게 */
+.admin__badge { margin-left: 0.6rem; font-size: 1.05rem; font-weight: 500; vertical-align: middle;
+                color: var(--accent); border-color: color-mix(in srgb, var(--accent) 40%, var(--line));
+                background: color-mix(in srgb, var(--accent) 8%, transparent); }
+.admin__row.is-admin { border-left: 3px solid color-mix(in srgb, var(--accent) 55%, var(--line)); }
+@media (max-width: 480px) {
+  .admin__row { flex-wrap: wrap; }
+  .admin__acts { width: 100%; }
+}
 /* 2026-09-03 v2.2.0 트레이너 코드 관리(관리자) 입력 */
 .trainer__bulk { width: 100%; box-sizing: border-box; padding: 1rem 1.2rem; border: 1px solid var(--line); border-radius: 1rem; background: var(--bg); color: var(--fg); font-size: 1.6rem; line-height: 1.5; font-family: inherit; resize: vertical; }
 /* 2026-09-03 코드 관리 결과 메시지 — 버튼 위에서 눈에 띄게 */

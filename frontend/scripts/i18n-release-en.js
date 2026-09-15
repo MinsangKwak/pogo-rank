@@ -15,6 +15,12 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 const RELEASE_NOTES_EN = {
+  '2026-09-15 · v3.40.0': [
+    '**Admins can now be appointed from the screen** — ☰ menu → 🔑 Approvals, then press [Make admin] next to an approved member. They can then handle sign-up approvals and trainer codes with you.',
+    '**The panel is split by role** — waiting / admins / approved friends. Who can do what is visible at a glance.',
+    '**Only the root admin can appoint or remove** — if the power spread on its own there would be nobody left to undo it.',
+    '**[not in GO] is now admin-only** — seeing what has not launched yet belongs to whoever runs the service.',
+  ],
   '2026-09-15 · v3.39.0': [
     '**Visit analytics are on by default** — previously only people who pressed "Allow analytics" on the first-visit banner were counted. Most visitors pressed nothing, so there was no way to see which screens get used. Now a visit is counted on arrival, and **you can turn it off**.',
     '**Turning it off works the same way** — [Turn off analytics] on the first-visit banner, or ☰ menu → Analytics & storage settings. Once off, the analytics script is not loaded at all.',
