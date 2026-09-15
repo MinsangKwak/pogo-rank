@@ -9,7 +9,9 @@
 //   - 체크를 켜면 미구현 줄이 끼어들고, 다시 끄면 사라지는가
 //   - 체크 자리가 [미구현] → [덱 짜기] → [보기 전환] 차례인가
 //   - 껐다 켠 선택이 화면을 옮겼다 돌아와도 남아 있는가
-//   - 미구현 줄이 **오른쪽으로 물리고 · 옅고 · 흐린가**, 그리고 hover 에서 또렷해지는가
+//   - 미구현 줄이 **오른쪽으로 물리고 · 옅고 · 흐린가**
+//   - v3.41.1 **hover 해도 흐림이 안 풀리는가** (스치기만 해도 또렷해지면 표시한 뜻이 없다)
+//   - 키보드 포커스에서는 풀리는가 (탭으로 다니는 사람에게 흐린 줄만 남으면 안 된다)
 //   - 카드 보기에서는 카드 폭이 출시분과 같은가 (밀면 그 카드만 좁아져 줄이 너덜해진다)
 //   - D-MAX 세 표(전체·딜러·탱커)에 미구현 줄이 흐리게(.is-unreleased) 뜨는가
 //   - 그 줄에 [미구현] 딱지가 붙고 순위 칸이 '–' 인가
@@ -121,16 +123,26 @@ suite(async () => {
   ok('미구현 줄이 오른쪽으로 물린다', indent.unrelLeft > indent.relLeft, `${indent.relLeft} → ${indent.unrelLeft}`);
   ok('더 옅다', indent.opacity <= 0.45, String(indent.opacity));
   ok('흐림이 걸린다', indent.filter.includes('blur'), indent.filter);
-  // 다가가면 또렷해진다
+  // v3.41.1 마우스를 얹어도 흐림은 그대로다 — 스치기만 해도 또렷해지면 표시한 뜻이 없다
   await page.locator('.row.is-unreleased').first().hover();
   await page.waitForTimeout(250);
   const onHover = await page.evaluate(() => {
     const style = getComputedStyle(document.querySelector('.row.is-unreleased'));
     return { opacity: Number(style.opacity), filter: style.filter };
   });
-  ok('hover 하면 또렷해진다', onHover.opacity > 0.9 && !onHover.filter.includes('blur'),
-    `${onHover.opacity} ${onHover.filter}`);
-  // 마우스를 치운다 — 얹힌 채로 재면 그 줄만 또렷해서 아래 검사가 헛짚는다
+  ok('hover 해도 흐림이 안 풀린다', onHover.filter.includes('blur'), onHover.filter);
+  ok('hover 해도 옅은 채로 있다', onHover.opacity <= 0.45, String(onHover.opacity));
+  // 키보드 포커스는 예외 — 탭으로 다니는 사람은 읽을 수 있어야 한다
+  const onFocus = await page.evaluate(() => {
+    const node = document.querySelector('.row.is-unreleased');
+    node.focus();
+    // :focus-visible 은 키보드 조작에만 붙으므로 선택자로 직접 확인한다
+    return { matches: node.matches(':focus'), rule: [...document.styleSheets]
+      .flatMap((sheet) => { try { return [...sheet.cssRules]; } catch { return []; } })
+      .some((rule) => rule.selectorText === '.row.is-unreleased:focus-visible') };
+  });
+  ok('키보드 포커스 규칙이 있다', onFocus.rule, JSON.stringify(onFocus));
+  // 마우스를 치운다 — 얹힌 채로 재면 그 줄만 다르게 보여 아래 검사가 헛짚는다
   await page.mouse.move(0, 0);
   await page.waitForTimeout(250);
 
