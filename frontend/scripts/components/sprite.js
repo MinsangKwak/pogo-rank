@@ -66,11 +66,23 @@ function fitAnimZoom(image) {
     image.dataset.animPad = String(parseFloat(getComputedStyle(image).paddingTop) || 0);
   }
   const base = Number(image.dataset.animPad);
-  const box = Math.min(image.clientWidth, image.clientHeight);   // border-box 라 padding 을 포함한 상자 크기
-  if (!box) return;
+  // 2026-09-15 v3.35.1 (버그) **상자를 잴 때는 우리가 넣은 padding 을 먼저 뺀다.**
+  //   이 함수는 "상자 크기는 padding 과 무관하다(border-box 니까)" 를 전제로 padding 을 키워 그림을 확대한다.
+  //   그 전제는 폭·높이가 CSS 로 못 박힌 자리에서만 참이다. PvP 덱 짜기 카드처럼 **크기가 자동인** 자리에서는
+  //   padding 이 그대로 상자를 키우고 → ResizeObserver 가 다시 불리고 → 또 키우는 되먹임이 된다
+  //   (리틀리그 덱에서 그림 하나가 0.8초마다 192px 씩 끝없이 자랐다).
+  //   padding 을 0 으로 두고 잰 값이 "화면이 이 그림에 준 자리" 다 — 못 박힌 자리에서는 같은 값이고,
+  //   자동인 자리에서는 그림 원래 크기라 확대가 0 이 되어 제자리에 선다
+  const applied = image.style.padding;
+  if (applied) image.style.padding = '0px';
+  const box = Math.min(image.clientWidth, image.clientHeight);
+  if (!box) { if (applied) image.style.padding = applied; return; }
   const room = Math.max(0, box - base * 2);
   const want = Math.min(natural * SPRITE_MAX_ZOOM, room);
-  image.style.padding = `${Math.max(base, Math.round((box - want) / 2))}px`;
+  const next = `${Math.max(base, Math.round((box - want) / 2))}px`;
+  // 값이 그대로면 쓰지 않는다 — 쓰면 관찰자가 또 불려 헛돈다
+  if (next !== applied) image.style.padding = next;
+  else if (applied) image.style.padding = applied;
   // 줄일 때는 부드럽게, 키울 때는 도트 그대로 — 도트를 줄이면 계단이 지고(v2.7.2 sprite--hd 와 같은 이유),
   // 정수배로 키우면 오히려 또렷하다
   image.style.imageRendering = natural > room ? 'auto' : '';

@@ -12,9 +12,14 @@
    헤더의 🌗 · ☰ 와 나란히 놓아도 한 벌로 읽힌다.
    지금 보기는 색으로 말한다: 그리드면 강조색으로 칠한다 (색은 "지금 여기" 라는 뜻으로만 쓰는 규칙) */
 .view-toggle { margin-left: auto; color: var(--muted); }
-/* 2026-09-15 v3.33.0 아이콘 옆 글자는 넓은 화면에서만 (pc-theme.css 가 켠다) —
-   좁은 화면은 자리가 없다. 감춰도 aria-label·title 은 그대로라 읽어 주는 데는 지장이 없다 */
-.view-toggle__text { display: none; }
+/* 2026-09-15 v3.35.0 아이콘 옆 글자는 **좁은 화면에서도** 보인다.
+   v3.33.0 에는 자리가 없다고 PC 에서만 켰는데, 그림만 남은 휴대폰에서는 ▤ 와 ⊞ 중 어느 쪽이
+   '지금' 이고 어느 쪽이 '누르면' 인지 알 길이 없었다("맨 처음에 보면 무슨 말인지 모르겠다").
+   자리는 탭 줄이 제 줄로 내려가면서 생겼다 — 머리에는 도구와 이 버튼만 남는다 */
+/* .icon-btn(drawer.css)이 width: var(--tap) 로 정사각을 못 박으므로 클래스 둘을 함께 걸어 이긴다 —
+   같은 특이도면 나중에 온 파일이 이기는데, 그 순서에 기대면 STYLES 차례를 바꿀 때 조용히 깨진다 */
+.icon-btn.view-toggle { gap: 0.6rem; width: auto; padding: 0 1.2rem; }
+.icon-btn.view-toggle .view-toggle__text { display: inline; font-size: var(--fs-sub); font-weight: 600; white-space: nowrap; }
 .view-toggle[data-view="grid"] { border-color: color-mix(in srgb, var(--accent) 45%, var(--line));
                                  background: color-mix(in srgb, var(--accent) 12%, var(--bg));
                                  color: var(--accent); }
