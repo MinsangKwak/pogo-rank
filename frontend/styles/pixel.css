@@ -191,7 +191,7 @@ h1, h2, .page-head h2, .detail__name, .home__intro h2, .page__sec { line-height:
   .page-head { grid-template-columns: minmax(0, 1fr); }
   .page-head__actions {
     grid-column: 1; grid-row: auto; align-self: auto; justify-self: stretch;
-    order: -1; flex-wrap: wrap; justify-content: flex-start; gap: 0.6rem; margin-bottom: 1.2rem;
+    order: -1; flex-wrap: wrap; justify-content: flex-end; gap: 0.6rem; margin-bottom: 1.2rem;   /* v3.35.0 오른쪽 정렬 */
   }
   /* 접히더라도 각 칸은 짓눌리지 않는다 — 눌리면 리그 글자가 세로로 쌓인다 */
   .page-head__actions > * { flex: none; max-width: 100%; }

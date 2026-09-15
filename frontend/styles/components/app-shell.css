@@ -65,6 +65,8 @@ body:has(#page-head:not([hidden])) #page { padding-top: 0; }
 .page-head > :not(.page-head__actions) { grid-column: 1; }
 .page-head__actions { grid-column: 2; grid-row: 1 / -1; align-self: center; justify-self: end;
                       display: flex; align-items: center; justify-content: flex-end; gap: 0.8rem; flex-wrap: wrap; }
+/* 2026-09-15 v3.35.0 오른쪽 정렬 — 좁은 화면에서도 마찬가지다(아래 pixel.css 가 flex-start 로
+   두던 것을 되돌린다). 제목은 왼쪽, 손잡이는 오른쪽이라 눈이 두 곳만 오간다 */
 /* 슬롯 안에서는 오른쪽 밀기를 끈다 — 컨트롤이 둘이면(레이드 · PvE) 둘 사이가 벌어진다 */
 .page-head__actions .view-toggle { margin-left: 0; }
 /* 2026-09-15 v3.33.0 슬롯에 도구 버튼(🧩 덱 짜기)이 끼면서 높이가 갈렸다 — .seg·.view-toggle 은 44px,
@@ -73,6 +75,17 @@ body:has(#page-head:not([hidden])) #page { padding-top: 0; }
 .page-head__actions > * { align-self: center; }
 .page-head__actions .tool-btn { min-height: 4.4rem; }
 /* 좁은 화면의 자리는 styles/pixel.css 가 정한다 (한 곳에서) */
+
+/* 2026-09-15 v3.35.0 화면 탭 줄 — "지금 무엇을 보는 중인가" 한 줄.
+   화면 설명 바로 아래, 그 화면의 첫 내용물보다 위에 **폭을 다 쓰고** 선다.
+   제목 옆 좁은 칸에 있을 때는 칸이 모자라 글자를 줄이거나 접어야 했는데, 한 줄을 통째로 쓰면
+   그럴 일이 없다 — 그리고 탭이 화면의 갈래라는 것이 자리로 읽힌다 */
+/* 폭·좌우 여백은 부모(.layout · .page__body)가 이미 잡았다 — 여기서 또 걸면 본문보다 좁아진다
+   (첫 구현에서 PC 1440 기준 본문 1118px 인데 탭만 720px 이었다) */
+.screen-tabs { margin: 0 0 1.6rem; }
+.screen-tabs:empty { display: none; }
+.screen-tabs .seg { display: flex; width: 100%; }
+.screen-tabs .seg > button { flex: 1 1 0; min-width: 0; }
 .page-head__actions:empty { display: none; }
 .page-head {
   background-image: linear-gradient(to right, var(--line), var(--line));

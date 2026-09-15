@@ -242,11 +242,13 @@ suite(async () => {
   // 2026-09-12 v3.7.1 앞 이모지를 도트 아이콘(svg)으로 뗐다 — 글자에는 이름만 남는다
   ok('개체값 순위가 앞, 덱 짜기가 뒤', pvpTools.join('|') === '개체값 순위|덱 짜기', pvpTools.join('|'));
   ok('도구 버튼에 도트 아이콘', (await page.locator('#page-head-actions .tool-btn svg.pxi').count()) === 2);
-  // 머리 줄의 차례 — 리그를 고르고, 도구를 고르고, 보는 방식을 고른다
-  ok('머리 줄 차례가 리그 → 도구 → 보기 전환', await page.evaluate(() => {
+  // 2026-09-15 v3.35.0 리그 세그먼트는 머리가 아니라 **화면 설명 아래 탭 줄**(#screen-tabs)로 갔다.
+  // 머리에는 도구와 보기 전환만 남는다 — 탭은 이 화면 안의 갈래고, 그 둘은 화면 밖으로
+  // 데려가거나 보는 방식을 바꾸는 것이라 성격이 다르다
+  ok('머리 줄 차례가 도구 → 보기 전환', await page.evaluate(() => {
     const kinds = [...document.querySelectorAll('#page-head-actions > *')].map((n) =>
-      n.classList.contains('seg') ? '리그' : n.classList.contains('tool-btn') ? '도구' : '보기');
-    return kinds.join('→') === '리그→도구→도구→보기';
+      n.classList.contains('tool-btn') ? '도구' : '보기');
+    return kinds.join('→') === '도구→도구→보기';
   }), await page.evaluate(() => [...document.querySelectorAll('#page-head-actions > *')].map((n) => n.className.split(' ')[0]).join('→')));
   await page.click('.tool-btn:has-text("개체값 순위")');
   await settle();
@@ -296,8 +298,12 @@ suite(async () => {
       n.querySelector('.tool-btn') ? '도구' : '타입'));
     ok('본문 컨트롤은 타입 한 줄', order.join(' → ') === '타입', order.join(' → '));
     ok('본문에 도구 버튼이 없다', (await page.locator('#controls .tool-btn').count()) === 0);
-    const headSeg = (await page.locator('#page-head-actions .seg button').allTextContents()).join('|');
-    ok('리그 세그먼트가 화면 머리에', headSeg === '리틀|슈퍼|하이퍼|마스터', headSeg);
+    const headSeg = (await page.locator('#screen-tabs .seg button').allTextContents()).join('|');
+    ok('리그 세그먼트가 화면 탭 줄에', headSeg === '리틀|슈퍼|하이퍼|마스터', headSeg);
+    ok('리그 탭은 화면 설명 아래', await page.evaluate(() => {
+      const tabs = document.querySelector('#screen-tabs .seg'), desc = document.querySelector('.page-head__desc');
+      return !!tabs && !!desc && tabs.getBoundingClientRect().top > desc.getBoundingClientRect().bottom;
+    }));
     ok('본문에 남은 리그 줄이 없다', (await page.locator('#controls .seg').count()) === 0);
   }
 
