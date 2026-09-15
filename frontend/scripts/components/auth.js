@@ -38,7 +38,8 @@ const AUTH = {
   ready: false,      // SDK 로드·초기화 완료
   user: null,        // firebase user
   status: 'anon',    // anon(비로그인) | pending(승인 대기) | ok(승인됨)
-  admin: false,
+  admin: false,     // 관리자인가 (루트 또는 위임)
+  adminRoot: false, // 2026-09-15 v3.40.0 루트 관리자인가 — ADMIN_UID 로 규칙에 박힌 사람. 관리자 지정·해제는 이 사람만 한다
   favs: new Set(),   // 즐겨찾기 도감번호
   roles: {},         // 2026-09-05 역할 수동 보정 — '도감번호|폼라벨' → ['pve'] / ['pvp'] / []
   mons: [],          // 2026-09-07 v2.15.0 (QA-54) 🌱 플래너 내 포켓몬 — 개체 단위 배열 (planner/collection.js 가 읽고 쓴다)
@@ -158,6 +159,7 @@ async function onAuthChange(user) {
   AUTH.user = user;
   AUTH.status = 'anon';
   AUTH.admin = false;
+  AUTH.adminRoot = false;
   AUTH.favs = new Set();
   AUTH.roles = {};
   AUTH.mons = [];
@@ -168,15 +170,22 @@ async function onAuthChange(user) {
     // ADMIN_UID가 채워져 있으면 uid로 판정(공개 저장소에 이메일을 남기지 않기 위함), 없으면 이메일로 폴백
     // 주의: 여기서 쓰는 값은 firestore.rules의 isAdmin()과 반드시 같아야 한다.
     //       화면에서만 관리자로 보이고 규칙이 막으면 승인 버튼이 permission-denied로 실패한다.
-    AUTH.admin = (typeof ADMIN_UID !== 'undefined' && ADMIN_UID)
+    //
+    // 2026-09-15 v3.40.0 관리자가 둘로 갈린다 (firestore.rules 와 같은 규칙).
+    //   루트 : ADMIN_UID. 규칙에 박혀 있어 누구도 뺏을 수 없다 — 관리자 지정·해제는 이 사람만 한다
+    //   위임 : allowlist/{이메일} 문서에 admin: true 가 붙은 사람. 루트가 화면에서 지정한다
+    AUTH.adminRoot = (typeof ADMIN_UID !== 'undefined' && ADMIN_UID)
       ? user.uid === ADMIN_UID
       : !!(typeof ADMIN_EMAIL !== 'undefined' && ADMIN_EMAIL && email === ADMIN_EMAIL.toLowerCase());
-    let approved = AUTH.admin;
+    let approved = AUTH.adminRoot;
+    let delegated = false;
     if (!approved) {
-      // 규칙상 본인 이메일 문서는 읽을 수 있다 — 문서가 있으면 승인된 친구
+      // 규칙상 본인 이메일 문서는 읽을 수 있다 — 문서가 있으면 승인된 친구, admin: true 면 위임 관리자
       const snapshot = await AUTH.db.collection('allowlist').doc(email).get().catch(() => null);
       approved = !!(snapshot && snapshot.exists);
+      delegated = !!(approved && snapshot.data()?.admin === true);
     }
+    AUTH.admin = AUTH.adminRoot || delegated;
     if (approved) {
       AUTH.status = 'ok';
       await loadFavs();
@@ -217,6 +226,11 @@ async function onAuthChange(user) {
     if (nowRoute.kind === 'page') renderPage();
     else if (typeof render === 'function' && typeof _planShellReady !== 'undefined' && _planShellReady) render();
   }
+  // 2026-09-15 v3.38.0 D-MAX 는 잠긴 화면이 아니지만 로그인 여부로 화면이 달라진다 —
+  // [미구현] 체크가 관리자에게만 보인다. SDK 는 첫 렌더 뒤에 로드되므로(initAuth) 그대로 두면
+  // 주소로 바로 들어왔을 때 그 자리가 끝내 안 생긴다.
+  // v3.39.0 화면을 통째로 다시 그리지 않고 **그 조각만** 갈아 끼운다 — 다시 그리면 펼쳐 둔 근거 줄이 날아간다
+  if (typeof syncMaxUnrelControl === 'function') syncMaxUnrelControl();
   // 2026-09-07 v2.15.0 (QA-54) 플래너 화면(내 포켓몬 목록·홈 요약)은 로그인 상태에 따라 내용이 다르다
   if (typeof _planShellReady !== 'undefined' && _planShellReady && state.appMode === 'plan') render();
   // 2026-09-12 v3.11.0 로그인 상태가 정해진 지금이 가입을 권할 자리다 — 그 전에는 비로그인인지 알 수 없다.
@@ -600,11 +614,54 @@ async function openAdminPanel() {
     // 목록을 부분 수정하지 않고 패널을 다시 열어 최신 상태로 그린다
     openAdminPanel();
   })), '대기 중인 요청이 없어요.'));
-  body.append(renderSection('승인된 친구', (allow?.docs || []).map((doc) => adminRow(doc.id, { ...doc.data(), uid: doc.data().uid || cardByEmail.get(doc.id)?.uid || '' }, '해제', async () => {
-    if (!confirm(t(`${doc.id} 승인을 해제할까요?`))) return;
-    await AUTH.db.collection('allowlist').doc(doc.id).delete();
+  // 2026-09-15 v3.40.0 승인된 사람을 **역할로 나눠** 보여 준다.
+  // 전에는 한 덩이라 "누가 관리자인가" 를 화면에서 알 길이 없었다 — 규칙에 박힌 uid 하나뿐이었으니 물을 일도 없었지만,
+  // 이제 루트가 관리자를 지정할 수 있으므로 누가 무엇을 할 수 있는지가 화면에 보여야 한다
+  const approvedDocs = (allow?.docs || []).map((doc) => ({ id: doc.id, data: { ...doc.data(), uid: doc.data().uid || cardByEmail.get(doc.id)?.uid || '' } }));
+  const adminDocs = approvedDocs.filter((entry) => entry.data.admin === true);
+  const friendDocs = approvedDocs.filter((entry) => entry.data.admin !== true);
+
+  // 관리자 지정·해제 — **루트만** 할 수 있다. 위임 관리자가 또 다른 관리자를 만들면 되돌릴 사람이 없어진다
+  //   (firestore.rules 도 같은 규칙이라, 루트가 아닌 사람이 우회해서 눌러도 규칙이 막는다)
+  const setAdminFlag = async (email, data, on) => {
+    const question = on ? `${email} 님을 관리자로 지정할까요? 가입 승인·트레이너 코드·미구현 목록을 볼 수 있게 돼요.`
+                        : `${email} 님의 관리자 권한을 해제할까요? 승인된 친구로는 남아요.`;
+    if (!confirm(t(question))) return;
+    try {
+      await AUTH.db.collection('allowlist').doc(email).set({ admin: on }, { merge: true });
+    } catch (error) {
+      alert(t('바꾸지 못했어요. 보안 규칙을 최신으로 게시했는지 확인해 주세요.') + `\n(${error.code || error.message})`);
+    }
     openAdminPanel();
-  })), '아직 승인된 친구가 없어요.'));
+  };
+  // 한 줄에 버튼 둘까지 — [관리자 지정|해제] 와 [승인 해제]
+  const approvedRow = (entry, isAdminRow) => {
+    const acts = [];
+    if (AUTH.adminRoot) {
+      acts.push(uchip(isAdminRow ? '관리자 해제' : '관리자 지정',
+        () => setAdminFlag(entry.id, entry.data, !isAdminRow),
+        { class: `admin__act${isAdminRow ? ' is-danger' : ''}` }));
+    }
+    acts.push(uchip('승인 해제', async () => {
+      if (!confirm(t(`${entry.id} 승인을 해제할까요?`))) return;
+      try {
+        await AUTH.db.collection('allowlist').doc(entry.id).delete();
+      } catch (error) {
+        alert(t('해제하지 못했어요.') + `\n(${error.code || error.message})`);
+      }
+      openAdminPanel();
+    }, { class: 'admin__act is-danger' }));
+    return adminRowNode(entry.id, entry.data, acts, isAdminRow ? '관리자' : '');
+  };
+
+  body.append(renderSection(`관리자 ${adminDocs.length + 1}명`,
+    [adminRowNode(authEmail(), { name: AUTH.user.displayName || '', photo: AUTH.user.photoURL || '', uid: AUTH.user.uid }, [], AUTH.adminRoot ? '루트 관리자 · 나' : '나'),
+      ...adminDocs.map((entry) => approvedRow(entry, true))],
+    '관리자가 없어요.'));
+  body.append(renderSection(`승인된 친구 ${friendDocs.length}명`, friendDocs.map((entry) => approvedRow(entry, false)), '아직 승인된 친구가 없어요.'));
+  if (!AUTH.adminRoot) {
+    body.append(footNote('관리자 지정·해제는 루트 관리자만 할 수 있어요.'));
+  }
   // 내 uid — firestore.rules와 build.py의 ADMIN_UID를 이메일 대신 uid로 바꿀 때 사용
   const uidButton = uchip('내 uid 복사');
   uidButton.addEventListener('click', async () => {
@@ -619,12 +676,21 @@ async function openAdminPanel() {
   body.append(footNote(`내 uid: ${AUTH.user.uid} `, uidButton));
 }
 
-// 승인 대기·승인된 친구 목록의 한 줄. label에 따라 버튼 색만 달라진다('해제'는 위험 동작이라 danger)
+// 승인 대기 줄 — 버튼 하나짜리 (label에 따라 색만 달라진다. '해제'는 위험 동작이라 danger)
 function adminRow(email, data, label, onclick) {
-  return el('div', { class: 'admin__row' },
+  return adminRowNode(email, data, [uchip(label, onclick, { class: `admin__act${label === '해제' ? ' is-danger' : ''}` })]);
+}
+
+// 2026-09-15 v3.40.0 목록 한 줄의 본체 — 버튼을 **여러 개** 받는다.
+// 승인된 사람 줄에는 [관리자 지정|해제] 와 [승인 해제] 둘이 붙기 때문이다.
+//   badge 를 주면 이름 옆에 역할 딱지가 붙는다 ('관리자' · '루트 관리자 · 나')
+function adminRowNode(email, data, actions, badge = '') {
+  return el('div', { class: `admin__row${badge ? ' is-admin' : ''}` },
     data.photo ? el('img', { class: 'avatar', src: data.photo, alt: '' }) : el('span', { class: 'avatar' }, '👤'),
-    el('div', { class: 'admin__who' }, el('b', {}, data.name || '(이름 없음)'), el('span', { class: 'account__email' }, email),
+    el('div', { class: 'admin__who' },
+      el('b', {}, data.name || '(이름 없음)', badge ? el('span', { class: 'tag admin__badge' }, badge) : ''),
+      el('span', { class: 'account__email' }, email),
       // 2026-09-06 v2.10.1 GA 사용자 탐색기의 User-ID 와 대조할 uid (아직 한 번도 로그인 안 한 옛 승인자는 비어 있다)
       data.uid ? el('span', { class: 'account__email', title: 'GA User-ID' }, `uid ${data.uid}`) : ''),
-    uchip(label, onclick, { class: `admin__act${label === '해제' ? ' is-danger' : ''}` }));
+    actions.length ? el('div', { class: 'admin__acts' }, ...actions) : '');
 }

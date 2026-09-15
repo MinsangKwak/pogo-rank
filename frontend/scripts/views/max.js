@@ -46,16 +46,63 @@ function maxRow(pokemon, rankText) {
 //   whyGrade   : 등급이 왜 그 글자인지. 등급은 **전 종 기준**(절대)이고 순위는 **그 탭 안**이라,
 //                둘을 한 줄에 적어 두 숫자가 서로 다른 질문에 답한다는 것을 보이게 한다.
 //                (이름이 같아도 다이맥스/거다이맥스는 별개 항목이라 name과 gmax를 함께 본다)
+// 2026-09-15 v3.36.0 순위는 **출시분끼리만** 센다. 미구현 줄(데이터만 있고 게임에 없는 개체)이
+// 사이에 끼어도 그 아래 출시분의 번호가 밀리지 않는다. 미구현 줄에는 번호 대신 '–' 를 둔다 —
+// 번호를 주면 지금 쓸 수 있는 자리처럼 읽힌다
+// 같은 개체인가 — 빌드가 탭마다 행을 **복사**해서 넣으므로 객체 동일성으로는 못 찾는다.
+// (전체 탭에서 펼친 행을 그 타입 탭 목록에서 찾을 때 늘 어긋났다) 이름과 거다이 여부로 본다 —
+// 한 목록 안에서 이 둘이 같은 행은 하나뿐이다
+function sameMaxEntry(left, right) {
+  return left === right || (left.name === right.name && left.gmax === right.gmax);
+}
+function releasedRank(list, pokemon) {
+  let rank = 0;
+  for (const entry of list) {
+    if (entry.unrel) continue;
+    rank += 1;
+    if (sameMaxEntry(entry, pokemon)) return rank;
+  }
+  return 0;
+}
+function rankText(list, pokemon) {
+  return pokemon.unrel ? '–' : String(releasedRank(list, pokemon));
+}
+
+// 2026-09-15 v3.40.0 미구현은 **관리자에게만** 보인다 (v3.38.0 에는 로그인한 사람 전부였다).
+// 아직 안 나온 것을 미리 보는 값이라 운영하는 사람의 몫으로 둔다 —
+// 관리자가 아니면 체크 자체를 안 그리고, 목록에서도 늘 걸러진다.
+// 관리자는 둘이다: 루트(ADMIN_UID) · 위임(allowlist 문서의 admin: true, 루트가 화면에서 지정).
+//
+// ⚠️ 이건 **화면을 가리는 것**이지 데이터를 막는 것이 아니다. 순위표는 빌드가 dist/index.html 에
+//   통째로 심어 두는 공개 값이라, 개발자 도구를 열면 흐린 줄의 내용도 그대로 보인다
+//   (components/auth.js 머리말의 "접근 제어의 주체는 이 화면 코드가 아니다" 와 같은 전제).
+//   정말로 막아야 한다면 미구현 줄을 빌드에서 빼고 로그인 뒤 Firestore 에서 받아 와야 한다 — 별도 작업이다.
+function maxUnrelAllowed() {
+  return typeof AUTH !== 'undefined' && AUTH.admin === true;
+}
+
+// 2026-09-15 v3.37.0 [미구현] 체크가 꺼져 있으면 흐린 줄을 아예 뺀다.
+// **거르는 곳을 한 군데로 모은다** — 세 표(전체·딜러·탱커)가 모두 이 함수를 지나므로
+// 체크 상태를 각 표에서 다시 따질 일이 없다. 순위 계산도 걸러진 목록을 받아 그대로 맞는다
+function maxVisible(rows) {
+  const show = state.maxShowUnrel && maxUnrelAllowed();
+  return show ? (rows ?? []) : (rows ?? []).filter((row) => !row.unrel);
+}
+
 function whyFormula(pokemon) {
   return `점수 ${pokemon.score.toLocaleString()} = 공격 ${pokemon.atk} × 위력 ${pokemon.power} × 자속 ${pokemon.stab ? '1.2' : '1'} × 내구 보정 ${pokemon.bulkMul ?? 1}`;
 }
 function whyGrade(pokemon) {
   const list = DMAX_TIER[pokemon.charged] ?? [];
-  const topOfType = list[0];
-  const rank = list.findIndex((entry) => entry.name === pokemon.name && entry.gmax === pokemon.gmax) + 1;
+  // 2026-09-15 v3.36.0 비교 상대도 순위도 **출시분** 기준이다 — 아직 못 쓰는 개체를 1위로 두면
+  // 대비 % 가 실제로 겨룰 상대와 무관한 숫자가 된다. 미구현 줄은 순위 대신 그 사실을 적는다
+  const released = list.filter((entry) => !entry.unrel);
+  const topOfType = released[0];
   const typeLabel = TYPE_KO[pokemon.charged] ?? '';
-  const isTop = topOfType && topOfType.name === pokemon.name && topOfType.gmax === pokemon.gmax;
-  const place = !topOfType ? '' : isTop ? `${typeLabel} 1위` : `${typeLabel} ${rank}위 (1위 ${topOfType.name} 대비 ${Math.round(pokemon.score / topOfType.score * 100)}%)`;
+  const isTop = topOfType && sameMaxEntry(topOfType, pokemon);
+  const versus = topOfType ? ` (1위 ${topOfType.name} 대비 ${Math.round(pokemon.score / topOfType.score * 100)}%)` : '';
+  const place = pokemon.unrel ? `${typeLabel} 미구현${versus}`
+    : !topOfType ? '' : isTop ? `${typeLabel} 1위` : `${typeLabel} ${releasedRank(list, pokemon)}위${versus}`;
   return `${pokemon.tier} 등급 — 전 종 1위 대비 ${pokemon.pct ?? 0}%${place ? ` · ${place}` : ''}`;
 }
 // 2026-09-14 v3.30.0 등급·점수가 무슨 뜻인지 한 번에 밝히는 안내. 제목 옆 ⓘ 에 달린다 —
@@ -82,7 +129,7 @@ function expandableRow(pokemon, rankText, topScore) {
   // 2026-09-02 가안 B: 근거 아래 "얘가 보스면?" 카운터 한 줄
   // 이 포켓몬의 첫 번째 속성을 보스 속성으로 보고, 그 보스를 잡을 딜러 상위 5마리를 곁들인다.
   const counterType = pokemon.types?.[0];
-  const counters = counterType ? (DMAX_DATA[counterType] ?? []).slice(0, 5) : [];
+  const counters = counterType ? (DMAX_DATA[counterType] ?? []).filter((entry) => !entry.unrel).slice(0, 5) : [];   // 미구현은 추천 칩에 넣지 않는다
   // 2026-09-10 v2.43.0 근거 줄을 두 칸으로 나눴다 — 왼쪽은 "왜 이 티어인가"(계산식), 오른쪽은
   // "이 포켓몬이 보스로 나오면 누구를 데려가나". 성격이 다른 두 정보가 한 문단에 이어져 있어
   // 어디까지가 계산식인지 눈이 못 잘랐다. 칸마다 제목을 달아 무엇을 읽는 중인지 밝힌다
@@ -232,12 +279,13 @@ function tankRow(pokemon, rankText, bossType) {
 
 // 2026-09-07 v2.13.0 (QA-43) 보스 속성별 탱커 목록 (탭 세그먼트 '탱커')
 function renderMaxTank(selectedType) {
-  const tanks = (typeof DMAX_TANK !== 'undefined' ? DMAX_TANK[selectedType] : null) ?? [];
+  const tanks = maxVisible(typeof DMAX_TANK !== 'undefined' ? DMAX_TANK[selectedType] : null);
   const title = selectedType === 'overall' ? 'D-MAX 탱커 (중립 · 순수 내구)' : `${TYPE_KO[selectedType]} 보스 상대 D-MAX 탱커`;
   $content.append(
     el('div', { class: 'row-head' }, el('h2', {}, title), el('span', { class: 'meta' }, `상위 ${tanks.length}`)),
-    list(`maxtank-${selectedType}`, tanks, (pokemon, index) => tankRow(pokemon, String(index + 1), selectedType)));
+    list(`maxtank-${selectedType}`, tanks, (pokemon) => tankRow(pokemon, rankText(tanks, pokemon), selectedType)));
   $note.textContent = '탱커 순위: EHP = 체력 × 방어 ÷ 1000 ÷ (보스 타입 기술을 받는 배율). 레벨 40 실전 능력치 기준이고, 보스는 자기 타입 자속 기술로 때린다고 가정해요(복합 타입 보스는 상세 팝업의 타입 상성을 함께 보세요). 출시된 다이맥스·거다이맥스만 포함. 포켓몬을 누르면 상세 정보가 열려요.';
+  maxNoteUnrelTail();
 }
 
 // 2026-09-07 v2.14.0 (QA-52) D-MAX 탭 = [전체 | 딜러 | 탱커] 세그먼트 + 그 아래 하위 메뉴(속성 칩).
@@ -269,7 +317,7 @@ function maxSubmenu(axis) {
 // 여기서 "그 속성"은 맥스무브(charged) 속성 기준이다 — 그 타입 맥스무브를 쓰는 개체 목록.
 // 점수 칸의 %는 이 목록 1위(tierItems[0].score) 대비 값이고, 행을 누르면 근거가 펼쳐진다.
 function maxTierBlock(selectedType) {
-  const tierItems = DMAX_TIER[selectedType] ?? [];
+  const tierItems = maxVisible(DMAX_TIER[selectedType]);
   const tierTitle = selectedType === 'overall' ? 'D-MAX 티어표 (전체)' : `${TYPE_KO[selectedType]} 맥스무브 D-MAX 티어표`;
   // ⓘ 는 제목과 한 묶음(.row-head__title)으로 감싼다 — .row-head 가 space-between 이라
   // 맨몸으로 두면 제목과 '9종' 사이 한가운데로 밀려나고, 휴대폰(row-head 가 block)에서는 제 줄로 떨어진다
@@ -284,7 +332,7 @@ function maxTierBlock(selectedType) {
     el('span', { class: 'meta' }, `${tierItems.length}종`)), $note);
   // 2026-09-14 v3.30.1 순위 배지는 탭 전체 순위다 — renderTierList 가 넘기는 index 는 티어 묶음 안 순번이라
   // 등급이 절대 기준이 된 뒤로는 B 티어 첫 카드가 '1' 로 찍혀 근거의 '땅 2위' 와 어긋났다
-  if (tierItems.length) renderTierList(tierItems, (pokemon) => expandableRow(pokemon, String(tierItems.indexOf(pokemon) + 1), tierItems[0].score));  // 2026-09-02 1B·pogomate %
+  if (tierItems.length) renderTierList(tierItems, (pokemon) => expandableRow(pokemon, rankText(tierItems, pokemon), tierItems[0].score));  // 2026-09-02 1B·pogomate %
   return tierItems.length;
 }
 
@@ -296,7 +344,8 @@ function renderMaxTier(selectedType) {
       el('button', { class: 'row__why-more', onclick: () => { state.maxAxis = 'dealer'; track('sub_max_dealer'); render(); } }, '[딜러]'), ' · ',
       el('button', { class: 'row__why-more', onclick: () => { state.maxAxis = 'tank'; track('sub_max_tank'); render(); } }, '[탱커]'), ' 에서'));
   }
-  $note.textContent = '티어표 행을 누르면 선정 근거가 펼쳐져요. 티어표는 pogomate와 같은 기준: 공격 종족값 × 맥스무브 위력(거다이 450 · 다이 350) × 자속 1.2, 내구 미반영, 다이맥스·거다이맥스는 별도 항목이며 %는 그 목록 1위 대비예요. 속성 칩은 그 타입 맥스무브를 쓰는 개체를 모아요(포켓몬 자체 타입이 아님). 출시된 다이맥스 139종 · 거다이맥스 17종만 포함(미출시 리전 폼 제외). 포켓몬을 누르면 상세 정보가 열려요.';
+  $note.textContent = '티어표 행을 누르면 선정 근거가 펼쳐져요. 티어표는 pogomate와 같은 기준: 공격 종족값 × 맥스무브 위력(거다이 450 · 다이 350) × 자속 1.2, 내구 미반영, 다이맥스·거다이맥스는 별도 항목이며 %는 그 목록 1위 대비예요. 속성 칩은 그 타입 맥스무브를 쓰는 개체를 모아요(포켓몬 자체 타입이 아님). 출시된 다이맥스·거다이맥스만 포함. 포켓몬을 누르면 상세 정보가 열려요.';
+  maxNoteUnrelTail();
 }
 
 // 딜러: 보스 속성 상대 맥스 어태커 (상성·내구 반영)
@@ -312,12 +361,13 @@ function renderMaxTier(selectedType) {
 // 머리글을 짧게 줄이면 두 표가 같은 것의 두 벌처럼 읽히므로 줄이지 않는다.
 function renderMaxDealer(selectedType) {
   maxTierBlock(selectedType);
-  const attackers = DMAX_DATA[selectedType] ?? [];
+  const attackers = maxVisible(DMAX_DATA[selectedType]);
   const title = selectedType === 'overall' ? 'D-MAX 딜러 (중립 · 맥스 피해 × √내구)' : `${TYPE_KO[selectedType]} 보스 상대 D-MAX 딜러`;
   $content.append(
     el('div', { class: 'row-head' }, el('h2', {}, title), el('span', { class: 'meta' }, `상위 ${attackers.length}`)),
-    list(`max-${selectedType}`, attackers, (pokemon, index) => maxRow(pokemon, String(index + 1))));
+    list(`max-${selectedType}`, attackers, (pokemon) => maxRow(pokemon, rankText(attackers, pokemon))));
   $note.textContent = '위는 티어표(그 타입 맥스무브를 쓰는 개체), 아래는 딜러(그 타입 보스를 상대할 개체) — 같은 타입을 골라도 보는 각도가 달라 명단이 달라요. 티어표는 공격 종족값 × 맥스무브 위력(거다이 450 · 다이 350) × 자속 1.2, 내구 미반영이고 행을 누르면 근거가 펼쳐져요. 딜러 순위는 맥스어택 3레벨(위력 350) 또는 거다이맥스 3레벨(위력 450) 1회 피해 × √내구 기준이며, 보스 속성을 고르면 그 속성 보스를 때릴 때의 상성이 반영돼요(전체는 중립). 출시된 다이맥스·거다이맥스만 포함. 포켓몬을 누르면 상세 정보가 열려요.';
+  maxNoteUnrelTail();
 }
 
 function renderMax() {
@@ -329,6 +379,9 @@ function renderMax() {
     $controls.append(backButton);
     return renderMaxDeck();
   }
+  // [미구현] 체크는 기기에 남은 값을 매 렌더 다시 읽는다 — 보기 전환(layoutInitial)과 같은 방식이라
+  // 따로 초기화 훅이 필요 없고, 다른 탭에서 바꾼 값도 돌아오면 그대로 따라온다
+  state.maxShowUnrel = maxUnrelInitial();
   renderBossAcc();  // 2026-09-02 탭 위 보스 아코디언
   // 2026-09-07 v2.14.0 (QA-52) [전체 | 딜러 | 탱커] 세그먼트 — 탱커 데이터가 없는 빌드에서는 탱커 버튼을 뺀다
   const hasTank = typeof DMAX_TANK !== 'undefined' && Object.keys(DMAX_TANK ?? {}).length > 0;
@@ -348,6 +401,13 @@ function renderMax() {
   // 2026-09-15 v3.33.0 차례를 [전체|딜러|탱커] → 🧩 덱 짜기 → 보기 전환 으로.
   // 앞 둘은 **무엇을 볼지**, 마지막은 **어떻게 볼지** 라 성격이 같은 것끼리 붙는다.
   // 머리 슬롯은 .js-head-action 을 만난 차례대로 담으므로 여기 붙이는 차례가 곧 화면의 차례다
+  // 2026-09-15 v3.37.0 [미구현] 체크가 맨 왼쪽 — **무엇을 볼지**(목록의 범위)를 정하는 값이라
+  // 도구(덱 짜기)·보기 전환보다 앞이다. 표에 미구현이 한 줄도 없는 탭에서는 아예 안 그린다
+  if (maxUnrelAllowed() && maxHasUnreleased(state.maxBoss)) {
+    const unrelCheck = maxUnrelCheckbox();
+    unrelCheck.classList.add('js-head-action');
+    $controls.append(unrelCheck);
+  }
   const deckButton = maxDeckToolButton();
   deckButton.classList.add('js-head-action');
   $controls.append(deckButton);
@@ -364,6 +424,70 @@ function renderMax() {
   if (axis.id === 'dealer') { renderMaxDealer(selectedType); return applyMaxLayout(maxGrid); }
   renderMaxTier(selectedType);
   applyMaxLayout(maxGrid);
+}
+
+// 2026-09-15 v3.37.0 [미구현] 체크 — 데이터만 있고 아직 못 쓰는 줄을 보일지 정한다.
+// 기본은 꺼짐: 처음 들어온 사람에게 표는 **지금 쓸 수 있는 것**이어야 한다. 켜면 흐린 줄이 끼어든다.
+// 선택은 이 기기에 남는다 (보기 전환과 같은 규칙 — 화면마다 따로 기억한다)
+const MAX_UNREL_KEY = 'pogo_max_unrel';
+// 체크를 볼 수 있는 사람에게만 붙는 한 문장. $note 에 **따로 붙인다** —
+// 본문에 이어 붙이면 문장 전체가 사전의 새 열쇠가 돼 세 안내마다 영문을 새로 맞춰야 한다.
+// 조각으로 두면 기존 세 열쇠는 그대로고 이 한 줄만 사전에 더하면 된다
+const MAX_UNREL_NOTE = '머리의 [미구현] 을 켜면 데이터만 등록되고 아직 게임에 나오지 않은 개체도 함께 봐요 — 흐리게 표시되고 순위 번호는 주지 않아요. 관리자만 보이는 값이에요.';
+function maxNoteUnrelTail() {
+  if (!maxUnrelAllowed() || !maxHasUnreleased(state.maxBoss)) return;
+  // 표식을 달아 둔다 — 로그인이 늦게 끝나면 syncMaxUnrelControl() 이 이 조각만 나중에 붙이거나 뗀다
+  $note.append(el('span', { class: 'js-unrel-note' }, ' ' + MAX_UNREL_NOTE));
+}
+function maxUnrelInitial() {
+  try { return localStorage.getItem(MAX_UNREL_KEY) === '1'; } catch { return false; }   // 저장 불가 환경(사생활 모드 등)
+}
+// 지금 보는 탭에 미구현이 있기는 한가 — 없으면 체크박스를 그리지 않는다.
+// 늘 그려 두면 "눌러도 아무 일도 없는 칸" 이 되고, 그 자리는 화면 머리라 값이 비싸다
+function maxHasUnreleased(selectedType) {
+  const tables = [
+    typeof DMAX_TIER !== 'undefined' ? DMAX_TIER?.[selectedType] : null,
+    typeof DMAX_DATA !== 'undefined' ? DMAX_DATA?.[selectedType] : null,
+    typeof DMAX_TANK !== 'undefined' ? DMAX_TANK?.[selectedType] : null,
+  ];
+  return tables.some((rows) => (rows ?? []).some((row) => row.unrel));
+}
+// 2026-09-15 v3.39.0 로그인 결과는 첫 렌더보다 **늦게** 온다 (Firebase SDK 지연 로드).
+// 그렇다고 화면을 통째로 다시 그리면 그 사이 사람이 펼쳐 둔 근거 줄·고른 칩이 날아간다 —
+// 회귀에서 실제로 터졌다(눌러 둔 티어 근거가 사라져 nav.js 가 떨어졌다).
+// 그래서 머리의 체크 **한 조각만** 갈아 끼운다. 자격이 사라진 경우에만 예외로 다시 그린다
+function syncMaxUnrelControl() {
+  if (state.tab !== 'max' || state.maxTool === 'deck') return;
+  const slot = document.getElementById('page-head-actions');
+  if (!slot) return;
+  const drawn = slot.querySelector('.check-toggle');
+  const want = maxUnrelAllowed() && maxHasUnreleased(state.maxBoss);
+  if (want === !!drawn) return;
+  if (want) {
+    slot.prepend(maxUnrelCheckbox());
+    maxNoteUnrelTail();   // 안내의 붙임말도 같이 (없는 값을 설명하지 않듯, 생긴 값은 설명한다)
+    return;
+  }
+  drawn.remove();
+  $note.querySelector('.js-unrel-note')?.remove();
+  // 로그아웃처럼 자격이 사라졌는데 흐린 줄이 켜져 있으면 그때는 목록을 다시 그려야 한다
+  if (state.maxShowUnrel) render();
+}
+
+function maxUnrelCheckbox() {
+  const box = el('input', { type: 'checkbox', class: 'check-toggle__box' });
+  box.checked = state.maxShowUnrel;
+  const label = el('label', {
+    class: `check-toggle${state.maxShowUnrel ? ' is-on' : ''}`,
+    title: '게임 파일에 데이터는 있지만 아직 못 쓰는 개체를 함께 봐요 — 흐리게 표시되고 순위 번호는 주지 않아요',
+    onchange: () => {
+      state.maxShowUnrel = box.checked;
+      try { localStorage.setItem(MAX_UNREL_KEY, box.checked ? '1' : '0'); } catch { /* 저장 불가 환경 */ }
+      track('max_unrel_' + (box.checked ? 'on' : 'off'));   // GA4: 이 값을 켜는 사람이 얼마나 되는지
+      render();
+    },
+  }, box, el('span', { class: 'check-toggle__text' }, '미구현'));
+  return label;
 }
 
 // 2026-09-12 v3.5.0 D-MAX 보기 전환 — 넓은 화면의 카드 격자(.row-list)를 줄로 되돌린다.

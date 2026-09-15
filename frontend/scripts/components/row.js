@@ -50,10 +50,14 @@ function row(pokemon, rankText, scoreNode, subNode, lineParts, tagNode) {
   // 2026-09-07 v2.13.0 (QA-42) "활용 N곳" — PvE 19표·PvP 4리그·D-MAX 상위 30 에 몇 곳 등장하는지 (pogomate ★N 에 해당하는 우리 식 범용성 표시).
   // 어느 탭에서 보든 같은 칩이라 "여기서만 좋은가, 다재다능인가"가 바로 보인다. 1곳뿐이면 붙이지 않는다(모든 행에 붙으면 뜻이 없다)
   const useBadge = usageBadge(pokemon.name);
-  if (tagNode || moveBadge || useBadge) main.append(el('div', { class: 'row__badges' }, tagNode ?? '', moveBadge, useBadge));
+  // 2026-09-15 v3.36.0 아직 못 쓰는 줄 — 데이터는 있는데 게임에 안 나온 개체(미출시 거다이맥스 · 예정 다이맥스).
+  // 지우지 않고 흐리게 남긴다: 지우면 "왜 없지" 를 아무도 모르고, 남겨 두면 "데이터는 이미 있다" 까지 전해진다
+  // (DEVELOPMENT.md 2.5 의 규칙). 표시를 여기 한 곳에 두어 티어표·딜러·탱커가 저절로 같은 모양이 된다
+  const unrelBadge = pokemon.unrel ? el('span', { class: 'tag dex__unrel' }, '미구현') : null;
+  if (tagNode || moveBadge || useBadge || unrelBadge) main.append(el('div', { class: 'row__badges' }, tagNode ?? '', unrelBadge ?? '', moveBadge, useBadge));
   main.append(name, line);
   // 줄 전체가 상세 팝업 버튼이다 (안쪽에 따로 버튼을 두지 않아 클릭 영역이 넓다)
-  return el('li', { class: 'row', tabindex: '0', role: 'button', 'aria-label': pokemon.name + ' 상세 보기',
+  return el('li', { class: `row${pokemon.unrel ? ' is-unreleased' : ''}`, tabindex: '0', role: 'button', 'aria-label': pokemon.name + ' 상세 보기',
     onkeydown: (event) => { if (event.target === event.currentTarget && (event.key === 'Enter' || event.key === ' ')) { event.preventDefault(); openDetail(pokemon); } },
     onclick: () => openDetail(pokemon) },
     // 순위 칸: 숫자 아래에 최근 변동 ▲▼ (변동이 없거나 오래됐으면 아무것도 안 붙는다)

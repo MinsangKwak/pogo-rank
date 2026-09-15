@@ -383,7 +383,7 @@ function counterRecsNode(recs) {
 function counterNode(types, name) {
   if (bossBattleKind(name) === 'max') {
     // 맥스 배틀: 대표 타입(types[0]) 의 맥스 배틀 딜러 상위 5마리. DMAX_DATA 가 없는 빌드면 null
-    const recs = (typeof DMAX_DATA !== 'undefined' ? DMAX_DATA[types[0]] : null)?.slice(0, 5);
+    const recs = (typeof DMAX_DATA !== 'undefined' ? DMAX_DATA[types[0]] : null)?.filter((pokemon) => !pokemon.unrel).slice(0, 5);   // 미구현은 추천하지 않는다 — 지금 데려갈 수 있는 것만
     if (!recs?.length) return null;
     return {
       title: `${name}가 보스로 나오면? (맥스 배틀 — 다이맥스·거다이맥스만 참전 가능)`,

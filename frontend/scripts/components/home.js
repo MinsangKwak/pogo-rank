@@ -29,7 +29,8 @@
 const HOME_PICKS = [
   {
     key: 'dmax', route: 'dmax', title: 'D-MAX 티어표', hint: '맥스 배틀에서 가장 센 셋',
-    rows: () => (typeof DMAX_TIER !== 'undefined' ? DMAX_TIER.overall : null) ?? [],
+    // 미구현(데이터만 등록된 개체)은 뺀다 — 홈 타일은 '지금 센 셋' 을 보여 주는 자리다
+    rows: () => ((typeof DMAX_TIER !== 'undefined' ? DMAX_TIER.overall : null) ?? []).filter((pokemon) => !pokemon.unrel),
     // 티어표는 공격 종족값 × 맥스무브 위력 × 자속 기준이라 내구가 안 들어간다 — 그래서 티어와 맥스무브 속성을 적는다
     meta: (pokemon) => [`${pokemon.tier} 티어 · ${TYPE_KO[pokemon.charged] ?? ''} 맥스`],
   },
