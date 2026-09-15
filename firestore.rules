@@ -1,7 +1,8 @@
 // 2026-09-15 v3.41.0 Firestore 보안 규칙 — Firebase 콘솔 > Firestore Database > 규칙 탭에 **전체 교체**로 붙여넣고 [게시]
 //
-// 붙여넣는 것은 이 파일이 아니라 `bash scripts/render_rules.sh` 가 만든 firestore.rules.local 이다.
-// 아래 __ADMIN_UID__ 가 .env 의 ADMIN_UID 로 채워진 판이다 — 자리표시자인 채로 게시하면 루트 관리자가 사라진다.
+// 게시할 판은 `bash scripts/render_rules.sh` 가 만드는 firestore.rules.local 이다 —
+// 저장소 원본의 자리표시자를 .env 의 ADMIN_UID 로 채운 것이다.
+// isRootAdmin() 의 uid 가 채워지지 않은 채로 게시하면 루트 관리자가 사라진다.
 //
 // 컬렉션
 //   allowlist/{email}  승인된 친구. admin: true 가 붙으면 위임 관리자. 가입 승인·해제·관리자 지정 전부 루트만
@@ -12,7 +13,7 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     // 2026-09-15 v3.39.0 관리자가 둘로 갈린다.
-    //   루트 관리자  : uid 가 __ADMIN_UID__ 인 사람. 규칙에 박혀 있어 누구도 뺏을 수 없다 (잠금 방지용 열쇠)
+    //   루트 관리자  : isRootAdmin() 에 박힌 uid 인 사람. 규칙에 있어 누구도 뺏을 수 없다 (잠금 방지용 열쇠)
     //   위임 관리자  : allowlist/{이메일} 문서에 admin: true 가 붙은 사람. 루트가 화면에서 지정한다
     function isRootAdmin() {
       return request.auth != null && request.auth.uid == '__ADMIN_UID__';
