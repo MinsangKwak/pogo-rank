@@ -15,6 +15,12 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 const RELEASE_NOTES_EN = {
+  '2026-09-15 · v3.39.0': [
+    '**Visit analytics are on by default** — previously only people who pressed "Allow analytics" on the first-visit banner were counted. Most visitors pressed nothing, so there was no way to see which screens get used. Now a visit is counted on arrival, and **you can turn it off**.',
+    '**Turning it off works the same way** — [Turn off analytics] on the first-visit banner, or ☰ menu → Analytics & storage settings. Once off, the analytics script is not loaded at all.',
+    '**No ads and no location, as before** — all that is recorded is visits and which features get used. The privacy policy has been updated to match.',
+    'Counting now starts **before** the screen finishes drawing — until now it started afterwards, so a quick visit left no record at all.',
+  ],
   '2026-09-15 · v3.38.0': [
     '**[not in GO] is now for members** — seeing what has not launched yet is a signed-in perk. Without an account the checkbox is not shown at all, and no faded rows appear in the tables.',
     'Sign in and the control appears right away — no need to reload the screen.',

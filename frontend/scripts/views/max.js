@@ -434,7 +434,8 @@ const MAX_UNREL_KEY = 'pogo_max_unrel';
 const MAX_UNREL_NOTE = '머리의 [미구현] 을 켜면 데이터만 등록되고 아직 게임에 나오지 않은 개체도 함께 봐요 — 흐리게 표시되고 순위 번호는 주지 않아요. 회원만 보이는 값이에요.';
 function maxNoteUnrelTail() {
   if (!maxUnrelAllowed() || !maxHasUnreleased(state.maxBoss)) return;
-  $note.append(' ', el('span', {}, MAX_UNREL_NOTE));
+  // 표식을 달아 둔다 — 로그인이 늦게 끝나면 syncMaxUnrelControl() 이 이 조각만 나중에 붙이거나 뗀다
+  $note.append(el('span', { class: 'js-unrel-note' }, ' ' + MAX_UNREL_NOTE));
 }
 function maxUnrelInitial() {
   try { return localStorage.getItem(MAX_UNREL_KEY) === '1'; } catch { return false; }   // 저장 불가 환경(사생활 모드 등)
@@ -449,6 +450,28 @@ function maxHasUnreleased(selectedType) {
   ];
   return tables.some((rows) => (rows ?? []).some((row) => row.unrel));
 }
+// 2026-09-15 v3.39.0 로그인 결과는 첫 렌더보다 **늦게** 온다 (Firebase SDK 지연 로드).
+// 그렇다고 화면을 통째로 다시 그리면 그 사이 사람이 펼쳐 둔 근거 줄·고른 칩이 날아간다 —
+// 회귀에서 실제로 터졌다(눌러 둔 티어 근거가 사라져 nav.js 가 떨어졌다).
+// 그래서 머리의 체크 **한 조각만** 갈아 끼운다. 자격이 사라진 경우에만 예외로 다시 그린다
+function syncMaxUnrelControl() {
+  if (state.tab !== 'max' || state.maxTool === 'deck') return;
+  const slot = document.getElementById('page-head-actions');
+  if (!slot) return;
+  const drawn = slot.querySelector('.check-toggle');
+  const want = maxUnrelAllowed() && maxHasUnreleased(state.maxBoss);
+  if (want === !!drawn) return;
+  if (want) {
+    slot.prepend(maxUnrelCheckbox());
+    maxNoteUnrelTail();   // 안내의 붙임말도 같이 (없는 값을 설명하지 않듯, 생긴 값은 설명한다)
+    return;
+  }
+  drawn.remove();
+  $note.querySelector('.js-unrel-note')?.remove();
+  // 로그아웃처럼 자격이 사라졌는데 흐린 줄이 켜져 있으면 그때는 목록을 다시 그려야 한다
+  if (state.maxShowUnrel) render();
+}
+
 function maxUnrelCheckbox() {
   const box = el('input', { type: 'checkbox', class: 'check-toggle__box' });
   box.checked = state.maxShowUnrel;
