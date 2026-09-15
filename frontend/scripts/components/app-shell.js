@@ -16,6 +16,10 @@
 // 메뉴에 화면을 하나 더 올리려면 ROUTES 에 nav 를 달면 되고, 여기는 손대지 않는다
 // 2026-09-09 v2.37.0 PC 는 사이드바가 늘 보이므로 ← 뒤로가기(styles/components/app-shell.css)와
 // ☰ 메뉴의 잡다한 항목(placeDrawerExtra, 아래)이 필요 없다 — 사이드바 링크 하나로 어디든 갈 수 있다
+// 2026-09-15 v3.43.0 홈의 제목. index.html 의 <title> 과 **한 글자도 다르지 않아야 한다** —
+// 크롤러가 JS 실행 전후로 다른 제목을 보면 어느 쪽을 쓸지 모른다.
+// 검색어를 앞에, 브랜드를 뒤에 둔다 (moncamp 는 아직 아무도 모르는 이름이다)
+const SITE_TITLE = '포켓몬고 다이맥스 티어표 · 맥스 배틀 덱 · 도감 | moncamp';
 const APP_DESTINATIONS = ROUTE_NAV;
 const appHeader = document.querySelector('header');
 document.body.insertBefore(appHeader, document.querySelector('.layout'));
@@ -294,7 +298,12 @@ function syncAppShell(moveFocus = false) {
   // 2026-09-11 v2.59.0 dev 미리보기는 제목 앞에 [dev] — 빌드가 붙여 둔 것을 화면 이동 때도 잇는다.
   // 채널을 따로 주입하지 않고 BUILD_VERSION 끝의 -dev 로 판별한다 (backend/build.py)
   const devMark = typeof BUILD_VERSION === 'string' && BUILD_VERSION.endsWith('-dev') ? '[dev] ' : '';
-  document.title = devMark + (title ? `${title} — moncamp` : 'moncamp');
+  // 2026-09-15 v3.43.0 홈에서는 index.html 의 <title> 과 **같은 문장**으로 되돌린다.
+  // 지금까지 홈에 오면 'moncamp' 한 마디로 덮어써 왔다. 구글은 JS 를 돌린 뒤의 제목을 보므로,
+  // index.html 에 아무리 검색어를 적어도 1초 뒤 그 문장이 사라졌다.
+  // 해시 라우팅이라 검색이 색인하는 주소는 홈 하나뿐이다 — 그 하나를 놓치고 있었던 셈이다.
+  // 하위 화면은 짧은 이름 그대로 둔다 (색인되지 않고, 탭에서는 짧은 쪽이 읽기 좋다)
+  document.title = devMark + (title ? `${title} — moncamp` : SITE_TITLE);
   backButton.hidden = home;
   document.body.dataset.screen = home ? 'home' : 'detail';
   // 측정용 표식 — 어느 화면인지 DOM 만 보고 알 수 있게 (GA · 히트맵 · 자동화 검사)

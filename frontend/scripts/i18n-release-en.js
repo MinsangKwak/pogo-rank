@@ -15,6 +15,11 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 const RELEASE_NOTES_EN = {
+  '2026-09-15 · v3.43.0': [
+    '**Easier to find by search** — the title in search results is now "Pokémon GO Dynamax tier list · Max Battle deck · Pokédex" instead of leading with a brand name nobody knows yet. Titles get cut off after about 30 characters, and that opening was being spent on the name.',
+    '**(Fix) The title collapsed to "moncamp" on the home screen** — search engines read the title after the page is drawn, so the longer one written into the page was disappearing a second later.',
+    '**Visitors with JavaScript turned off now see what the site is** — it used to be a blank page. The screens are listed in plain text.',
+  ],
   '2026-09-15 · v3.42.1': [
     '**(Fix) No visit statistics were being recorded at all** — the measurement ID pointed at a stream that no longer exists, so the analytics script never loaded. That is why nothing was logged even after v3.39.0 said it was on by default. The ID is corrected. Turning it off works the same way — [Turn off statistics] in the banner, or ☰ menu → statistics and storage settings.',
   ],
