@@ -1,4 +1,4 @@
-# 운영 문서 — POGO PLAN
+# 운영 문서 — moncamp
 
 배포·릴리스, 로그인 승인, 사용 통계, 노션 관리 — **서비스를 굴리는 방법**을 모았습니다.
 구조·산식·설계 배경은 [개발 문서](DEVELOPMENT.md)를 보세요.
@@ -36,15 +36,16 @@
 ### 순서
 
 1. **기능 작업** — `dev`에서. 로컬은 `python3 backend/build.py`, 로그인 뒤 화면은 `localhost:5503/?mock=1`
-2. **dev 푸시** → 2~3분 뒤 **pogo-rank-dev** 주소에서 친구들과 함께 확인. 기계 검증은 `bash scripts/verify_deploy.sh https://dev.moncamp.kr/ dev`
+2. **dev 푸시** — `bash scripts/ship_dev.sh --no-wait` 가 작업 브랜치를 `dev` 로 머지·푸시한다. 2~3분 뒤 **dev.moncamp.kr** 에서 확인하고, 기계 검증은 `bash scripts/verify_deploy.sh https://dev.moncamp.kr/ dev`. 반영 여부는 `curl -s https://dev.moncamp.kr/build.json` 의 `version` 이 `-dev` 를 달고 올라왔는지로 본다
 3. **버전 올리기** — `backend/build.py`의 `APP_VERSION` (화면 우측 상단 배지)
-4. **기록 3곳 갱신**
-   - `CHANGELOG.md` — 새 버전 섹션 추가 (추가/변경/수정/제거)
+4. **기록 4곳 갱신** — 버전을 올리면 **같이** 손봐야 하는 자리다. 하나라도 빠지면 화면과 문서가 어긋난다
    - `frontend/scripts/components/release.js` — 사용자용 패치노트 항목 + `RELEASE_VER` 갱신(바뀌면 ☰에 빨간 점이 뜸)
-   - `README.md` 버전 이력 표 (한 줄)
-5. **main으로 머지** — `git checkout main && git merge dev && git push`
+   - `frontend/scripts/i18n-release-en.js` — 그 패치노트의 영문판. 날짜 묶음 키(`2026-09-14 · v3.31.0`)가 한 글자까지 같아야 짝이 맞는다
+   - `CHANGELOG.md` — 그날 날짜 묶음 안에 버전 `<details>` 를 하나 더 얹고, 머리말의 판 수와 그 날짜 줄의 `N판 · 버전 범위` 를 갱신
+   - `README.md` 버전 이력 — 같은 2단 아코디언. 머리말의 전체 판 수도 함께
+5. **main으로 머지** — 풀 리퀘스트로 연다(`dev` → `main`). 머지 방식은 **merge commit**
 6. **deploy로 머지** — `git checkout deploy && git merge main && git push` → Actions가 빌드·배포 (2~3분) → `bash scripts/verify_deploy.sh https://moncamp.kr/ prod`
-7. **노션 정리** — QA 트래커에서 해당 이슈를 `완료`로 바꾸고 `버전` 속성을 지정
+7. **노션 정리** — QA 트래커에서 해당 이슈를 `완료`로 바꾸고, 릴리스 노트 페이지에 그 판을 적는다 (`버전` 속성은 선택지가 낡아 비워 두는 편이 안전하다 — 8절)
 
 > 급하면 GitHub → Actions → "Build and deploy to GitHub Pages" → **Run workflow** (deploy 브랜치를 다시 빌드). dev 쪽은 "Build and deploy dev preview".
 
@@ -68,14 +69,18 @@ bash scripts/setup_dev_deploy_key.sh
 | MINOR | 새 기능 | 로그인, IF 탭 개편, 도감 |
 | PATCH | 상세 기능·버그·문구 | 로딩 화면, 계산 보정 |
 
-**기록 위치가 넷이라 어긋나기 쉽습니다.** 릴리스 때 아래를 한 번에 확인하세요.
+**기록 위치가 여섯이라 어긋나기 쉽습니다.** 릴리스 때 아래를 한 번에 확인하세요.
 
 | 위치 | 목적 | 대상 |
 |---|---|---|
 | `backend/build.py` `APP_VERSION` | 화면 배지 | 사용자 |
-| `frontend/.../release.js` | 앱 안 패치노트(#/release) + 새 소식 뱃지 | 사용자 |
-| `CHANGELOG.md` | 개발 이력(상세) | 개발자 |
-| 노션 QA 트래커 `버전` | 이슈 ↔ 버전 연결 | 운영 |
+| `frontend/.../release.js` | 앱 안 패치노트(#/release) + 새 소식 뱃지(`RELEASE_VER`) | 사용자 |
+| `frontend/.../i18n-release-en.js` | 그 패치노트의 영문판 — 날짜 묶음 키가 한 글자까지 같아야 짝이 맞는다 | 사용자 |
+| `CHANGELOG.md` | 개발 이력(상세) — 날짜 → 버전 2단 아코디언 | 개발자 |
+| `README.md` 버전 이력 | 같은 2단 아코디언의 요약판 | 개발자 |
+| 노션 릴리스 노트 · QA 트래커 | 이슈 ↔ 버전 연결 | 운영 |
+
+> `CHANGELOG.md` · `README.md` 는 아코디언 머리말에 **전체 판 수**를, 각 날짜 줄에 **그날 판 수와 버전 범위**를 적습니다. 판을 더할 때 그 숫자도 같이 고치세요 — 안 고치면 조용히 틀린 채로 남습니다(2026-09-14 기준 실제 142판인데 머리말은 134로 적혀 있었습니다).
 
 ---
 
