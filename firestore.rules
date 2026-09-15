@@ -1,30 +1,27 @@
-// 2026-09-03 v2.2.0 Firestore 보안 규칙 — Firebase 콘솔 > Firestore Database > 규칙 탭에 붙여넣고 "게시"
-// 구조
-//   allowlist/{email}  승인된 친구 목록 (쓰기는 **루트만**, 본인 문서는 읽기·삭제 가능 → 승인 여부 확인 · 계정 삭제)
-//                      2026-09-15 v3.39.0 admin: true 가 붙으면 그 사람도 관리자 (지정·해제는 루트 관리자만)
-//                      2026-09-15 v3.41.0 가입 승인·해제도 루트만 — 위임 관리자는 목록 읽기와 trainers 쓰기까지
-//   requests/{email}   가입(승인) 요청 (본인만 생성·갱신·삭제, 관리자만 열람·삭제)
-// 2026-09-08 v2.27.0 쓰기 한도 — users·requests 문서의 필드 개수와 목록 길이를 규칙에서 제한 (아래 smallDoc)
-// 2026-09-14 v3.28.1 콘솔 재점검 — 게시본(2026-09-08 15:14)이 이 파일과 같음을 확인하고 이 줄만 더해 다시 게시 (규칙 내용 변경 없음)
-// 2026-09-07 v2.18.0 계정 삭제 셀프서비스 — 본인 이메일 문서의 delete 를 allowlist·requests 에서 허용 (auth.js deleteAccount). 콘솔에 다시 게시할 것
-//   users/{uid}        개인 데이터 — 즐겨찾기 favs 등 (본인만, 승인된 경우만)
-//   trainers/{name}    트레이너 코드 (승인된 사용자만 읽기, 관리자만 쓰기) — 공개 저장소에 코드를 두지 않기 위함
+// 2026-09-15 v3.41.0 Firestore 보안 규칙 — Firebase 콘솔 > Firestore Database > 규칙 탭에 **전체 교체**로 붙여넣고 [게시]
+//
+// 게시할 판은 `bash scripts/render_rules.sh` 가 만드는 firestore.rules.local 이다 —
+// 저장소 원본의 자리표시자를 .env 의 ADMIN_UID 로 채운 것이다.
+// isRootAdmin() 의 uid 가 채워지지 않은 채로 게시하면 루트 관리자가 사라진다.
+//
+// 컬렉션
+//   allowlist/{email}  승인된 친구. admin: true 가 붙으면 위임 관리자. 가입 승인·해제·관리자 지정 전부 루트만
+//   requests/{email}   가입 요청. 본인만 쓰고, 루트만 읽는다
+//   users/{uid}        개인 데이터(즐겨찾기 favs 등). 본인이 승인된 경우만
+//   trainers/{name}    트레이너 코드. 승인된 사람이 읽고, 관리자 둘 다 쓴다
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // ── 관리자 판정 ─────────────────────────────────────────────────────────
     // 2026-09-15 v3.39.0 관리자가 둘로 갈린다.
-    //   루트 관리자  : uid 가 __ADMIN_UID__ 인 사람. 규칙에 박혀 있어 누구도 뺏을 수 없다 (잠금 방지용 열쇠)
+    //   루트 관리자  : isRootAdmin() 에 박힌 uid 인 사람. 규칙에 있어 누구도 뺏을 수 없다 (잠금 방지용 열쇠)
     //   위임 관리자  : allowlist/{이메일} 문서에 admin: true 가 붙은 사람. 루트가 화면에서 지정한다
-    // __ADMIN_UID__ 는 자리표시자 — scripts/render_rules.sh 가 .env 의 ADMIN_UID 로 채운
-    // firestore.rules.local 을 콘솔에 붙여넣는다 (2026-09-05 v2.8.0)
     function isRootAdmin() {
       return request.auth != null && request.auth.uid == '__ADMIN_UID__';
     }
     function myEmail() {
       return request.auth.token.email.lower();
     }
-    // 위임 관리자 여부. exists() 를 먼저 보는 이유 — 문서가 없으면 get() 이 실패한다
+    // exists() 를 먼저 보는 이유 — 문서가 없으면 get() 이 실패한다
     function isDelegatedAdmin() {
       return request.auth != null && request.auth.token.email != null
              && exists(/databases/$(database)/documents/allowlist/$(myEmail()))
@@ -37,10 +34,7 @@ service cloud.firestore {
       return isAdmin() || (request.auth != null && exists(/databases/$(database)/documents/allowlist/$(myEmail())));
     }
 
-    // ── 2026-09-08 v2.27.0 쓰기 한도 ──────────────────────────────────────────
-    // 지금까지는 본인이면 무엇이든 얼마든지 쓸 수 있었다. 승인된 사용자가 실수하거나
-    // 계정이 털리면 문서 하나로 Firestore 무료 한도(Spark)를 태울 수 있다.
-    // 클라이언트의 PLAN_MAX_MONS 검사는 우회되므로 규칙에서 막아야 의미가 있다.
+    // 쓰기 한도. 클라이언트의 PLAN_MAX_MONS 검사는 우회되므로 규칙에서 막아야 의미가 있다.
     //
     // ★ 필드 이름을 hasOnly 로 못 박지 않는다. set({merge:true}) 는 request.resource.data 가
     //   **합쳐진 결과**라, 예전 버전이 남긴 필드가 하나라도 목록에 없으면 그 사용자는
@@ -64,14 +58,14 @@ service cloud.firestore {
       allow create, update: if isRootAdmin();
       // 본인 문서 삭제(계정 삭제)는 그대로 — 자기 계정을 스스로 지우는 길은 누구에게나 열려 있어야 한다
       allow delete: if isRootAdmin()
-                    || (request.auth != null && mail == myEmail());  // v2.18.0 본인 승인 해제 = 계정 삭제 절차
+                    || (request.auth != null && mail == myEmail());
     }
 
     match /requests/{mail} {
       // 2026-09-15 v3.41.0 가입 요청은 **루트만** 본다 — 승인할 수 있는 사람만 읽을 이유가 있다.
       // 위임 관리자 화면에서는 이 조회가 실패하고(코드가 catch 한다) '승인 대기' 칸이 아예 안 그려진다
       allow read: if isRootAdmin();
-      allow delete: if isRootAdmin() || (request.auth != null && mail == myEmail());  // v2.18.0 본인 가입 요청 삭제 = 계정 삭제 절차
+      allow delete: if isRootAdmin() || (request.auth != null && mail == myEmail());
       // 승인 대기 상태에서 쓸 수 있는 유일한 문서라 여기가 가장 무르다 — 크기를 규칙에서 제한한다
       allow create, update: if request.auth != null && mail == myEmail()
                             && request.resource.data.email == myEmail()
