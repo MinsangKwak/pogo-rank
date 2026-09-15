@@ -250,6 +250,64 @@ suite(async () => {
   ok('끄면 흐린 줄이 사라진다', (await page.locator('.row.is-unreleased').count()) === 0);
   await setUnrel(true);
 
+  // ── 4-2. 이번 주 보스 추천은 **체크와 무관하게** 출시분만 ──────────────────
+  //
+  // 제보 — "미구현된 애들로 보스 덱을 짜주면 어떡해". v3.36.0 이 DMAX_DATA·DMAX_TANK 에
+  // 미구현 행을 넣었는데 이 아코디언만 거르는 곳이 없어 추천 1~5위가 전부 미구현으로 찼다.
+  // 표는 "있으면 이쯤" 이지만 추천은 "오늘 무엇을 데려갈까" 다 — 여기 미구현이 오르면 거짓말이다
+  await go('#/dmax');
+  const bossAcc = async () => {
+    await page.evaluate(() => { const d = document.getElementById('boss-acc'); if (d && !d.open) d.open = true; });
+    await page.waitForTimeout(300);
+    return page.evaluate(() => {
+      const body = document.getElementById('boss-acc-body');
+      if (!body) return null;
+      const names = (sel) => [...body.querySelectorAll(sel)].map((n) => n.textContent.replace(/\s+/g, ' ').trim());
+      return {
+        party: names('.party-card .boss__rec'),
+        recs: names('.boss__recs .boss__rec'),
+        foot: body.querySelector('.boss__foot')?.textContent ?? '',
+      };
+    });
+  };
+  // 이 빌드에 보스 아코디언이 없으면(일정 밖) 이 묶음은 건너뛴다 — 없는 것을 있다고 검사하지 않는다
+  const accOff = await page.evaluate(() => document.getElementById('boss-acc')?.style.display === 'none');
+  if (accOff) {
+    ok('보스 아코디언이 없는 주 — 건너뜀', true);
+  } else {
+    await setUnrel(false);
+    const off = await bossAcc();
+    ok('체크 OFF 에서 추천 파티가 있다', (off?.party?.length ?? 0) === 3, JSON.stringify(off?.party));
+    // 추천 자리에는 [미구현] 딱지도 흐린 줄도 없어야 한다
+    const offTags = await page.evaluate(() =>
+      document.querySelectorAll('#boss-acc-body .dex__unrel').length);
+    ok('추천에 [미구현] 딱지가 없다', offTags === 0, String(offTags));
+
+    await setUnrel(true);
+    const on = await bossAcc();
+    const onTags = await page.evaluate(() =>
+      document.querySelectorAll('#boss-acc-body .dex__unrel').length);
+    ok('체크를 켜도 추천에 미구현이 안 들어온다', onTags === 0, String(onTags));
+    ok('체크를 켜도 추천 파티가 그대로다', JSON.stringify(on?.party) === JSON.stringify(off?.party),
+      `${JSON.stringify(off?.party)} / ${JSON.stringify(on?.party)}`);
+    ok('체크를 켜도 추천 딜러가 그대로다', JSON.stringify(on?.recs) === JSON.stringify(off?.recs));
+    // '전체 N종' 은 실제로 볼 수 있는 수여야 한다 — 미구현을 세면 눌러도 안 나오는 수가 된다
+    const shown = await page.evaluate(() => {
+      const text = document.querySelector('#boss-acc-body .boss__foot')?.textContent ?? '';
+      const m = text.match(/\((\d+)\/(\d+)\)/) || text.match(/전체 (\d+)종/);
+      return m ? Number(m[m.length - 1]) : null;
+    });
+    const releasedTotal = await page.evaluate(() => {
+      const title = document.getElementById('boss-acc-title')?.textContent ?? '';
+      const type = Object.keys(TYPE_KO).find((key) => title.includes(`(${TYPE_KO[key]})`));
+      return type ? (DMAX_DATA[type] ?? []).filter((row) => !row.unrel).length : null;
+    });
+    ok('더보기 총계가 출시분 수와 같다', shown != null && shown === releasedTotal,
+      `표시 ${shown} / 출시분 ${releasedTotal}`);
+    // 체크는 표를 바꾼다 — 아코디언이 안 바뀐다고 화면 전체가 멈춘 것은 아니다
+    ok('체크를 켜면 표에는 흐린 줄이 생긴다', (await page.locator('.row.is-unreleased').count()) > 0);
+  }
+
   // ── 5. EN ────────────────────────────────────────────────────────────────
   await go('#/dmax');
   await page.evaluate(() => setLang('en'));

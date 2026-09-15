@@ -37,6 +37,11 @@ body {
 button { font: inherit; color: inherit; background: none; border: 0; padding: 0; cursor: pointer; }
 button:focus-visible { outline: 0.2rem solid var(--fg); outline-offset: 0.2rem; border-radius: 0.4rem; }
 .layout { max-width: 76rem; margin: 0 auto; padding: 0 2rem 8rem; }
+/* 2026-09-15 v3.44.0 그려지기 전에 자리를 잡아 둔다.
+   #content 가 비어 있는 동안은 푸터가 화면 한가운데쯤에 떠 있다가, 본문이 들어오는 순간
+   화면 밖으로 밀려난다 — 그 한 번이 **레이아웃 이동(CLS)** 으로 잡혔다(실측 0.199).
+   본문이 들어오면 :empty 가 풀려 규칙이 저절로 사라진다. JS 한 줄도 필요 없다 */
+#content:empty { min-height: 100vh; }
 
 /* ─────────────────────────────────────────────────────────────────────────────
    2026-09-08 v2.26.0 버튼 반응 — 누를 수 있다는 것을 손보다 눈이 먼저 알게 한다.

@@ -15,6 +15,11 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 const RELEASE_NOTES_EN = {
+  '2026-09-15 · v3.44.0': [
+    '**(Fix) Pokémon not yet in the game were being recommended against this week’s boss** — the "Suggested party" and "Recommended attackers" cards at the top of D-MAX were filled from rank 1 with entries that only exist in the game files. Recommendations now list **only what you can actually bring today**, and the "N total" count matches what you can see.',
+    '**The home screen no longer jumps** — the whole page used to shift upward the moment it finished drawing.',
+    '**The first screen loads a little faster** — the data is read a different way, so there is less waiting on a phone.',
+  ],
   '2026-09-15 · v3.43.0': [
     '**Easier to find by search** — the title in search results is now "Pokémon GO Dynamax tier list · Max Battle deck · Pokédex" instead of leading with a brand name nobody knows yet. Titles get cut off after about 30 characters, and that opening was being spent on the name.',
     '**(Fix) The title collapsed to "moncamp" on the home screen** — search engines read the title after the page is drawn, so the longer one written into the page was disappearing a second later.',
