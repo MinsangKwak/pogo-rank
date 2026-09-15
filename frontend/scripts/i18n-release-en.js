@@ -15,6 +15,12 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 const RELEASE_NOTES_EN = {
+  '2026-09-15 · v3.41.0': [
+    '**What an admin can do is now split** — approving sign-ups, revoking approval and appointing admins belong to the **root admin** alone. An appointed admin gets [👥 User management] in the ☰ menu to see who is using the service, and keeps trainer-code management and the D-MAX [not in GO] view.',
+    'The menu name says what you can do — [🔑 Approvals] for the root admin, [👥 User management] for everyone else.',
+    '**(Fix) Your own name appeared twice in the admin list** — the "you" row at the top and the list row overlapped, and the count was one too high.',
+    '**(Fix) The root account showed up under "waiting for approval"** — it works without approval, so it should never have been listed as waiting.',
+  ],
   '2026-09-15 · v3.40.0': [
     '**Admins can now be appointed from the screen** — ☰ menu → 🔑 Approvals, then press [Make admin] next to an approved member. They can then handle sign-up approvals and trainer codes with you.',
     '**The panel is split by role** — waiting / admins / approved friends. Who can do what is visible at a glance.',

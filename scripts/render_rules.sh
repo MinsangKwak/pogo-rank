@@ -2,7 +2,7 @@
 # firestore.rules 의 __ADMIN_UID__ 를 .env 의 ADMIN_UID 로 채워 firestore.rules.local 로 만든다 (2026-09-05 v2.8.0).
 # 만들어진 파일 내용을 Firebase 콘솔 > Firestore > 규칙 에 붙여넣고 게시한다. firestore.rules.local 은 커밋되지 않는다.
 #
-# 2026-09-15 v3.40.1 값을 검사한다.
+# 2026-09-15 v3.41.0 값을 검사한다.
 #   전에는 .env 에 무엇이 적혀 있든 그대로 넣고 "1곳 치환" 이라며 성공한 척했다.
 #   로컬 시험용 .env(ADMIN_UID=mock-admin)로 돌린 결과를 그대로 게시하면 **루트 관리자가 사라진다** —
 #   isRootAdmin() 이 아무에게도 참이 아니게 되어 가입 승인·관리자 지정·트레이너 코드 쓰기가 전부 막힌다.

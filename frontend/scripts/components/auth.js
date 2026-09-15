@@ -580,7 +580,10 @@ function renderAccount(message) {
       el('span', {}, '🎒 내 포켓몬 ', el('b', {}, `${monCount}마리`))),
     note,
     el('div', { class: 'account__actions' },
-      AUTH.admin ? el('button', { class: 'drawer__item account__primary', onclick: openAdminPanel }, '🔑 가입 승인') : '',
+      // 2026-09-15 v3.41.0 이름이 곧 할 수 있는 일이다 — 루트는 사람을 들이고 내보내고(가입 승인),
+      // 위임 관리자는 누가 쓰는지 보고 운영을 돕는다(유저 관리). 없는 권한을 이름으로 약속하지 않는다
+      AUTH.admin ? el('button', { class: 'drawer__item account__primary', onclick: openAdminPanel },
+        AUTH.adminRoot ? '🔑 가입 승인' : '👥 유저 관리') : '',
       el('button', { class: 'drawer__item', onclick: signOut }, '로그아웃'),
       // 2026-09-07 v2.18.0 (공개 준비 3) 계정 삭제 셀프서비스 — 관리자는 제외 (deleteAccount 참고)
       AUTH.admin ? '' : el('button', { class: 'drawer__item account__danger', onclick: confirmDeleteAccount }, '계정 삭제')));
@@ -594,21 +597,28 @@ async function openAdminPanel() {
   if (!AUTH.admin) return;
   closeDrawer({ silent: true });  // 드로어가 팝업 위에 겹치지 않게. 히스토리 항목은 팝업이 이어받는다 (v2.11.0)
   // 조회를 기다리기 전에 팝업 틀을 먼저 띄운다 — 누른 즉시 반응이 보이도록
-  const body = el('div', { class: 'detail admin' }, el('h2', {}, '🔑 가입 승인'));
+  const body = el('div', { class: 'detail admin' }, el('h2', {}, AUTH.adminRoot ? '🔑 가입 승인' : '👥 유저 관리'));
   openModal(body);
+  // 2026-09-15 v3.41.0 가입 요청은 루트만 읽을 수 있다(firestore.rules). 위임 관리자가 불러도
+  // 규칙이 막아 null 이 되고, 아래에서 '승인 대기' 칸 자체를 안 그린다 — 조회조차 시도하지 않는다
   const [requests, allow] = await Promise.all([
-    AUTH.db.collection('requests').get().catch(() => null),
+    AUTH.adminRoot ? AUTH.db.collection('requests').get().catch(() => null) : Promise.resolve(null),
     AUTH.db.collection('allowlist').get().catch(() => null),
   ]);
   // 두 컬렉션 모두 문서 id가 이메일이라 id 비교로 "이미 승인된 요청"을 걸러낼 수 있다
   const allowed = new Set((allow?.docs || []).map((doc) => doc.id));
   // 관리자 본인의 계정 카드도 requests 에 있으므로(v2.10.1) 승인 대기에서는 뺀다 — allowlist 에 없어도 관리자는 이미 승인된 사람이다
-  const pending = (requests?.docs || []).filter((doc) => !allowed.has(doc.id) && doc.data().uid !== AUTH.user.uid);
+  // 2026-09-15 v3.41.0 루트 관리자(ADMIN_UID)도 뺀다 — 규칙상 allowlist 없이도 승인된 사람이라
+  // 문서가 없다고 '승인 대기' 로 보이면 안 된다 (다른 관리자 화면에 운영자가 대기자로 뜨던 자리)
+  const rootUid = typeof ADMIN_UID !== 'undefined' ? ADMIN_UID : '';
+  const pending = (requests?.docs || []).filter((doc) => !allowed.has(doc.id)
+    && doc.data().uid !== AUTH.user.uid
+    && !(rootUid && doc.data().uid === rootUid));
   // 2026-09-06 v2.10.1 이메일 → 계정 카드(uid 포함). 승인된 친구 줄에 uid 를 적어 GA User-ID 와 대조한다
   const cardByEmail = new Map((requests?.docs || []).map((doc) => [doc.id, doc.data()]));
   const renderSection = (title, rows, emptyText) => el('section', { class: 'detail__sec' }, el('h3', {}, title),
     rows.length ? el('div', { class: 'admin__rows' }, ...rows) : el('p', { class: 'empty' }, emptyText));
-  body.append(renderSection('승인 대기', pending.map((doc) => adminRow(doc.id, doc.data(), '승인', async () => {
+  if (AUTH.adminRoot) body.append(renderSection('승인 대기', pending.map((doc) => adminRow(doc.id, doc.data(), '승인', async () => {
     await AUTH.db.collection('allowlist').doc(doc.id).set({ approved: true, name: doc.data().name || '', uid: doc.data().uid || '', at: firebase.firestore.FieldValue.serverTimestamp() });
     // 2026-09-06 v2.10.1 계정 카드는 지우지 않는다 — 승인 뒤에도 이메일 ↔ uid 대조에 쓴다 (다음 로그인에 status 가 ok 로 갱신된다)
     // 목록을 부분 수정하지 않고 패널을 다시 열어 최신 상태로 그린다
@@ -617,14 +627,20 @@ async function openAdminPanel() {
   // 2026-09-15 v3.40.0 승인된 사람을 **역할로 나눠** 보여 준다.
   // 전에는 한 덩이라 "누가 관리자인가" 를 화면에서 알 길이 없었다 — 규칙에 박힌 uid 하나뿐이었으니 물을 일도 없었지만,
   // 이제 루트가 관리자를 지정할 수 있으므로 누가 무엇을 할 수 있는지가 화면에 보여야 한다
-  const approvedDocs = (allow?.docs || []).map((doc) => ({ id: doc.id, data: { ...doc.data(), uid: doc.data().uid || cardByEmail.get(doc.id)?.uid || '' } }));
+  // 2026-09-15 v3.41.0 (버그) 본인 줄은 맨 위에 따로 그리므로 목록에서는 뺀다 —
+  // 안 빼면 위임 관리자가 자기 이름을 두 번 보고(하나는 '나', 하나는 [승인 해제] 달린 줄), 머릿수도 하나 더 세어졌다.
+  // 자기 [승인 해제] 를 누를 수 있다는 것도 문제였다 — 그 자리에서 자기 권한이 날아간다
+  const myMail = authEmail();
+  const approvedDocs = (allow?.docs || [])
+    .filter((doc) => doc.id !== myMail)
+    .map((doc) => ({ id: doc.id, data: { ...doc.data(), uid: doc.data().uid || cardByEmail.get(doc.id)?.uid || '' } }));
   const adminDocs = approvedDocs.filter((entry) => entry.data.admin === true);
   const friendDocs = approvedDocs.filter((entry) => entry.data.admin !== true);
 
   // 관리자 지정·해제 — **루트만** 할 수 있다. 위임 관리자가 또 다른 관리자를 만들면 되돌릴 사람이 없어진다
   //   (firestore.rules 도 같은 규칙이라, 루트가 아닌 사람이 우회해서 눌러도 규칙이 막는다)
   const setAdminFlag = async (email, data, on) => {
-    const question = on ? `${email} 님을 관리자로 지정할까요? 가입 승인·트레이너 코드·미구현 목록을 볼 수 있게 돼요.`
+    const question = on ? `${email} 님을 관리자로 지정할까요? 유저 목록·트레이너 코드 관리·D-MAX 미구현 목록을 쓸 수 있게 돼요 (가입 승인은 루트만).`
                         : `${email} 님의 관리자 권한을 해제할까요? 승인된 친구로는 남아요.`;
     if (!confirm(t(question))) return;
     try {
@@ -635,13 +651,14 @@ async function openAdminPanel() {
     openAdminPanel();
   };
   // 한 줄에 버튼 둘까지 — [관리자 지정|해제] 와 [승인 해제]
+  // 2026-09-15 v3.41.0 **버튼은 루트에게만.** 위임 관리자에게는 목록만 보인다 —
+  // 규칙이 어차피 막으므로 버튼을 두면 "눌러도 안 되는 버튼" 이 된다
   const approvedRow = (entry, isAdminRow) => {
+    if (!AUTH.adminRoot) return adminRowNode(entry.id, entry.data, [], isAdminRow ? '관리자' : '');
     const acts = [];
-    if (AUTH.adminRoot) {
-      acts.push(uchip(isAdminRow ? '관리자 해제' : '관리자 지정',
-        () => setAdminFlag(entry.id, entry.data, !isAdminRow),
-        { class: `admin__act${isAdminRow ? ' is-danger' : ''}` }));
-    }
+    acts.push(uchip(isAdminRow ? '관리자 해제' : '관리자 지정',
+      () => setAdminFlag(entry.id, entry.data, !isAdminRow),
+      { class: `admin__act${isAdminRow ? ' is-danger' : ''}` }));
     acts.push(uchip('승인 해제', async () => {
       if (!confirm(t(`${entry.id} 승인을 해제할까요?`))) return;
       try {
@@ -660,7 +677,7 @@ async function openAdminPanel() {
     '관리자가 없어요.'));
   body.append(renderSection(`승인된 친구 ${friendDocs.length}명`, friendDocs.map((entry) => approvedRow(entry, false)), '아직 승인된 친구가 없어요.'));
   if (!AUTH.adminRoot) {
-    body.append(footNote('관리자 지정·해제는 루트 관리자만 할 수 있어요.'));
+    body.append(footNote('가입 승인·해제와 관리자 지정은 루트 관리자만 할 수 있어요. 여기서는 누가 쓰고 있는지 볼 수 있고, 트레이너 코드 관리와 D-MAX [미구현] 보기는 그대로 쓸 수 있어요.'));
   }
   // 내 uid — firestore.rules와 build.py의 ADMIN_UID를 이메일 대신 uid로 바꿀 때 사용
   const uidButton = uchip('내 uid 복사');
