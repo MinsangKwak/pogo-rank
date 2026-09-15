@@ -15,6 +15,14 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 const RELEASE_NOTES_EN = {
+  '2026-09-15 · v3.32.0': [
+    '**A Max Battle deck builder** — pick a boss and we pick the three to bring (two attackers and a tank). The [\U0001F9E9 Build a deck] button on the D-MAX screen opens it.',
+    '**Any boss, not just this week\u2019s** — it starts on the current boss, but all eighteen types are one tap away. Useful for \u201cthat one is coming next week, what should I power up?\u201d',
+    '**Every slot can be swapped** — [Swap] opens the candidates for that slot, so when you do not have the #1 pick you can drop in #2 or #3. The same species never fills two slots.',
+    '**A [Dynamax only] filter** — leaves Gigantamax forms out, for when you have not caught one yet.',
+    '**Decks travel as links** — send the address as it is and the other person sees the same deck.',
+    '**The contact email address changed** — it appears at the foot of the screen and in the privacy policy and terms.',
+  ],
   '2026-09-14 · v3.31.0': [
     '**Mega Evolution and Primal Reversion now show in the Pok\u00e9dex** — until now you had to open each entry to find out whether a species had a Mega. The list now carries a ⚡ Mega, Mega X·Y or Primal chip: 57 species with a Mega, 2 with a Primal Reversion (Kyogre and Groudon).',
     '**A [⚡ Mega · Primal] chip gathers them in one place** — it sits beside the generation chips. Those now toggle off on a second tap too; picking a generation used to leave no way back to the full list.',
