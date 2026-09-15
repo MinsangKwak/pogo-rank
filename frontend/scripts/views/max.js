@@ -89,6 +89,18 @@ function maxVisible(rows) {
   return show ? (rows ?? []) : (rows ?? []).filter((row) => !row.unrel);
 }
 
+// 2026-09-15 v3.44.0 **추천은 체크와 무관하게 출시분만.**
+//   maxVisible() 은 "표에 무엇을 보일까" 라 [미구현] 체크를 따른다. 이건 다르다 —
+//   이번 주 보스의 추천 파티·추천 딜러는 "오늘 무엇을 데려갈까" 에 답하는 자리다.
+//   데이터만 있고 게임에 없는 개체를 여기 올리면 그건 답이 아니라 거짓말이다.
+//   덱 짜기(maxDeckCandidates)·상세 추천 칩·솔플 후보가 이미 같은 규칙이다.
+//
+//   (제보 — "미구현된 애들로 보스 덱을 짜주면 어떡해". v3.36.0 이 DMAX_DATA·DMAX_TANK 에
+//    미구현 행을 넣을 때 이 아코디언만 거르는 곳이 없어 1~5위가 전부 미구현으로 찼다)
+function maxReleased(rows) {
+  return (rows ?? []).filter((row) => !row.unrel);
+}
+
 function whyFormula(pokemon) {
   return `점수 ${pokemon.score.toLocaleString()} = 공격 ${pokemon.atk} × 위력 ${pokemon.power} × 자속 ${pokemon.stab ? '1.2' : '1'} × 내구 보정 ${pokemon.bulkMul ?? 1}`;
 }
@@ -176,7 +188,7 @@ function expandableRow(pokemon, rankText, topScore) {
 // 2026-09-02 이번 주 보스 아코디언: 탭 위로 이동, 추천 딜러 딜량순 5개씩 더보기
 // 보스 속성(typeKey)을 상대할 딜러를 앞에서 count마리만 잘라 스프라이트 버튼으로 만든다.
 function bossRecNodes(typeKey, count) {
-  return (DMAX_DATA[typeKey] ?? []).slice(0, count).map((pokemon, index) =>
+  return maxReleased(DMAX_DATA[typeKey]).slice(0, count).map((pokemon, index) =>
     el('button', {
       class: 'boss__rec',
       onclick: (event) => {
@@ -189,8 +201,8 @@ function bossRecNodes(typeKey, count) {
 // 2026-09-07 v2.13.0 (QA-43) 파티 카드: 이 보스에 "딜러 상위 2 + 탱커 상위 1" — 친구들 질문("뭘 데려가?")에 가장 가까운 답.
 // 탱커는 딜러와 같은 종이 겹치지 않게 고른다. 탱커 데이터가 없는 빌드에서는 빈 문자열(카드 없음)
 function partyCardNode(typeKey) {
-  const dealers = (DMAX_DATA[typeKey] ?? []).slice(0, 2);
-  const tanks = typeof DMAX_TANK !== 'undefined' ? (DMAX_TANK?.[typeKey] ?? []) : [];
+  const dealers = maxReleased(DMAX_DATA[typeKey]).slice(0, 2);
+  const tanks = maxReleased(typeof DMAX_TANK !== 'undefined' ? DMAX_TANK?.[typeKey] : []);
   const dealerNames = new Set(dealers.map((pokemon) => pokemon.name));
   const tank = tanks.find((pokemon) => !dealerNames.has(pokemon.name));
   if (!dealers.length || !tank) return '';
@@ -240,7 +252,7 @@ function renderBossAcc() {
   // 일정 label에서 보스 이름만 뽑는다: 괄호 설명을 떼고 'D-MAX ' 접두어도 지운다
   const bossName = bossItem.label.split(' (')[0].replace('D-MAX ', '');
   titleEl.textContent = `${prefix}${bossName} (${TYPE_KO[bossItem.t]}) · ${SCHEDULE_YM.m}/${bossItem.s}–${bossItem.e}`;  // 2026-09-07 v2.13.0 (QA-20) 달 하드코딩 제거
-  const total = (DMAX_DATA[bossItem.t] ?? []).length;
+  const total = maxReleased(DMAX_DATA[bossItem.t]).length;   // 세는 것도 출시분만 — '전체 41종' 이 실제로 볼 수 있는 수와 달라지면 안 된다
   const grid = el('div', { class: 'boss__recs recs-wrap' }, ...bossRecNodes(bossItem.t, state.bossShow));
   bodyEl.replaceChildren(
     partyCardNode(bossItem.t),  // 2026-09-07 v2.13.0 (QA-43) "딜러 2 + 탱커 1" 파티 카드
