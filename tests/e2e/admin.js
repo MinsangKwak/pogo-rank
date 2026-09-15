@@ -1,7 +1,12 @@
 'use strict';
 // v3.40.0 🔑 관리자 지정 회귀 — 관리자가 '규칙에 박힌 한 명' 에서 '루트 + 루트가 지정한 사람' 으로 늘었다
+// v3.41.0 **권한을 갈랐다** — 사람을 들이고 내보내는 일은 루트만. 위임 관리자는 목록만 본다
 //
 // 이 스위트가 지키려는 것
+//   - 메뉴·제목이 역할을 말하는가 — 루트 `🔑 가입 승인` / 위임 `👥 유저 관리`
+//   - **위임 관리자에게는 버튼이 하나도 없는가** (승인·승인 해제·관리자 지정 전부)
+//   - **위임 관리자에게는 '승인 대기' 칸 자체가 없는가** — 규칙상 requests 를 읽지 못한다
+//   - 본인 줄이 두 번 나오지 않는가 (v3.41.0 버그 — 목록에도 남아 '나' 와 [승인 해제] 줄이 같이 떴다)
 //   - 패널이 역할로 나뉘는가 (승인 대기 / 관리자 N명 / 승인된 친구 N명)
 //   - 루트에게만 [관리자 지정]·[관리자 해제] 가 보이는가 — **위임 관리자에게는 안 보인다**
 //     (권한이 스스로 번지면 되돌릴 사람이 없어진다. firestore.rules 도 같은 규칙)
@@ -19,7 +24,8 @@ suite(async () => {
   const openPanel = async (page) => {
     await page.click('#menu-toggle');
     await page.waitForTimeout(300);
-    await page.click('.drawer__item:has-text("가입 승인")');
+    // 이름이 역할마다 다르다(가입 승인 / 유저 관리) — 자리로 찾는다
+    await page.click('.drawer__item.account__primary');
     await page.waitForSelector('.admin__row', { timeout: 6000 });
     await page.waitForTimeout(300);
   };
@@ -38,7 +44,15 @@ suite(async () => {
   ok('루트로 로그인된다', rootAuth.admin === true && rootAuth.root === true, JSON.stringify(rootAuth));
   ok('루트에게 [미구현] 체크가 보인다', (await root.locator('.check-toggle').count()) === 1);
 
+  ok('루트 메뉴는 [가입 승인]',
+    (await root.locator('.drawer__item.account__primary').textContent()).includes('가입 승인'));
   await openPanel(root);
+  ok('루트 패널 제목도 [가입 승인]', (await root.locator('.detail h2').textContent()).includes('가입 승인'));
+  // 본인이 목록에 또 나오면 안 된다 — 맨 위 '나' 줄과 겹친다
+  const myMail = await root.evaluate(() => (AUTH.user?.email || '').toLowerCase());
+  ok('본인 줄은 한 번만 나온다',
+    (await root.evaluate((mail) => [...document.querySelectorAll('.admin__row')]
+      .filter((node) => node.textContent.includes(mail)).length, myMail)) === 1, myMail);
   let heads = await sections(root);
   ok('패널이 역할로 나뉜다', heads.some((h) => h.startsWith('관리자')) && heads.some((h) => h.startsWith('승인된 친구')),
     heads.join(' / '));
@@ -71,17 +85,22 @@ suite(async () => {
   ok('지정받으면 관리자다', friendAuth.admin === true, JSON.stringify(friendAuth));
   ok('그래도 루트는 아니다', friendAuth.root === false);
   ok('위임 관리자에게도 [미구현] 체크가 보인다', (await friend.locator('.check-toggle').count()) === 1);
-  // **핵심** — 위임 관리자는 남을 관리자로 만들지 못한다
+  // **핵심** — 위임 관리자는 목록만 본다
+  ok('위임 메뉴는 [유저 관리]',
+    (await friend.locator('.drawer__item.account__primary').textContent()).includes('유저 관리'));
   await openPanel(friend);
-  ok('위임 관리자에게는 [관리자 지정] 이 없다',
-    (await friend.locator('.admin__act:has-text("관리자 지정")').count()) === 0);
-  ok('위임 관리자에게는 [관리자 해제] 도 없다',
-    (await friend.locator('.admin__act:has-text("관리자 해제")').count()) === 0);
+  ok('위임 패널 제목도 [유저 관리]', (await friend.locator('.detail h2').textContent()).includes('유저 관리'));
+  ok('위임 관리자에게는 버튼이 하나도 없다', (await friend.locator('.admin__act').count()) === 0,
+    String(await friend.locator('.admin__act').count()));
+  const friendHeads = await sections(friend);
+  ok('위임 관리자에게는 [승인 대기] 칸이 없다', !friendHeads.includes('승인 대기'), friendHeads.join(' / '));
   ok('왜 안 보이는지 적혀 있다',
     await friend.evaluate(() => document.querySelector('.detail')?.textContent.includes('루트 관리자만')));
+  ok('트레이너 코드·미구현은 그대로 쓸 수 있다고 적는다',
+    await friend.evaluate(() => document.querySelector('.detail')?.textContent.includes('트레이너 코드')));
   await friendCtx.close();
 
-  // ── 3. 해제하면 되돌아간다 ────────────────────────────────────────────────
+  // ── 3. 해제하면 되돌아간다 (루트만) ───────────────────────────────────────
   await root.click('.admin__act:has-text("관리자 해제")');
   await root.waitForTimeout(900);
   heads = await sections(root);
@@ -104,7 +123,7 @@ suite(async () => {
   ok('관리자가 아니면 흐린 줄도 없다', (await plain.locator('.row.is-unreleased').count()) === 0);
   ok('안내에 [미구현] 붙임말이 없다',
     !(await plain.evaluate(() => (document.getElementById('note')?.textContent ?? '').includes('[미구현]'))));
-  ok('가입 승인 메뉴 자체가 없다', (await plain.locator('.drawer__item:has-text("가입 승인")').count()) === 0);
+  ok('관리자 메뉴 자체가 없다', (await plain.locator('.drawer__item.account__primary').count()) === 0);
   await plainCtx.close();
 
   ok('JS 오류 없음', errs.length === 0, errs.join(' | '));

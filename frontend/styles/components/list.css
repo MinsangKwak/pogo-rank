@@ -16,8 +16,11 @@
   border-left: 2px dashed var(--line); padding-left: 1.2rem;
   transition: opacity .12s, filter .12s, margin-left .12s;
 }
-.row.is-unreleased:hover, .row.is-unreleased:focus-visible,
-.row.is-unreleased.open { opacity: 1; filter: none; }
+/* 2026-09-15 v3.41.1 **hover 에서는 풀지 않는다.** 마우스가 스치기만 해도 또렷해져서
+   "아직 못 쓰는 줄" 이라는 표시가 사실상 없는 것과 같았다. 펼친 근거 줄(.row__why)은 형제 요소라
+   흐림이 걸리지 않으므로, 눌러서 펼치면 계산식·등급은 그대로 읽을 수 있다.
+   키보드 포커스만 예외로 둔다 — 탭으로 옮겨 다니는 사람에게 흐린 줄만 남으면 화면을 쓸 수가 없다 */
+.row.is-unreleased:focus-visible { opacity: 1; filter: none; }
 .row.is-unreleased .row__rank { color: var(--muted); }
 /* 근거 줄(펼침)도 그 줄에 딸린 것이라 같이 물린다 */
 .row.is-unreleased + .row__why { margin-left: 4.8rem; }
