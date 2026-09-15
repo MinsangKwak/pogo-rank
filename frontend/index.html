@@ -6,7 +6,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="color-scheme" content="light dark">
 <!-- 2026-09-02 서비스명 POGO NOTE → 2026-09-03 POGO SEARCH → 2026-09-07 v2.17.0 POGO PLAN → 2026-09-14 v3.26.0 monlab(몬랩) → 2026-09-14 v3.27.0 moncamp(몬캠프, moncamp.kr). 저장소명·배포 URL·localStorage 키·GA 이벤트명은 그대로 -->
-<title>moncamp — 뭘 키우고, 뭘 잡을지</title>
+<title>moncamp — 포켓몬고 다이맥스 티어표 · 맥스 배틀 덱 · 도감</title>
 <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
 <!-- 2026-09-07 v2.14.0 (QA-52) 웹폰트: 한글 Pretendard (jsdelivr, 동적 서브셋) + 아래 Galmuri.
      2026-09-13 v3.23.0 Google Fonts 의 Inter 링크를 뗐다 — v3.0.0 에 본문 글꼴로 넣었지만 v3.6.0 도트 디자인이
@@ -51,22 +51,26 @@
      그림은 도트로 직접 그린다 (backend/og_gen.py) — 도감 스프라이트가 픽셀인데
      미리보기만 매끈하면 눌러 들어온 화면과 결이 어긋난다 -->
 <link rel="canonical" href="https://moncamp.kr/">
-<meta name="description" content="포켓몬 GO 의 D-MAX · 레이드 · PvP 순위와 도감, 타입 상성, 이벤트 일정, 레이드 보스와 알 부화까지. 내 개체를 저장해 뭘 키울지 정하는 비공식 팬 도구입니다.">
+<meta name="description" content="포켓몬고 다이맥스·거다이맥스 티어표와 맥스 배틀 덱 짜기, 레이드·PvP 순위, 전 종 도감과 타입 상성, 이벤트 일정까지 한 화면에서. Pokémon GO Dynamax & Gigantamax tier list, Max Battle deck builder, raid & PvP rankings, Pokédex — 비공식 팬 도구입니다.">
+<!-- 2026-09-15 v3.33.0 keywords 는 구글이 무시하지만 네이버는 아직 참고한다 — 한 줄이라 비용이 없다 -->
+<meta name="keywords" content="포켓몬고, 포켓몬 GO, 다이맥스, 거다이맥스, 다이맥스 티어표, 맥스 배틀, 맥스 배틀 덱, 포켓몬고 도감, 레이드 티어표, PvP 랭킹, 타입 상성, Pokemon GO, Pokémon GO, Dynamax, Gigantamax, Max Battle, tier list, Pokedex">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="moncamp">
-<meta property="og:title" content="moncamp — 뭘 키우고, 뭘 잡을지">
-<meta property="og:description" content="순위·도감·상성·일정을 한 화면에서. 내 포켓몬을 저장해 육성 우선순위를 정하세요.">
+<meta property="og:title" content="moncamp — 포켓몬고 다이맥스 티어표 · 맥스 배틀 덱 · 도감">
+<meta property="og:description" content="다이맥스 티어표부터 맥스 배틀 덱까지. 포켓몬고 순위·도감·일정을 한 화면에서 봐요.">
 <meta property="og:url" content="https://moncamp.kr/">
 <meta property="og:image" content="https://moncamp.kr/og.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:image:alt" content="moncamp — 도트로 그린 몬스터볼과 서비스 이름">
 <meta property="og:locale" content="ko_KR">
+<!-- 2026-09-15 v3.33.0 화면은 KR/EN 둘 다 된다 — 영어권 공유에서도 같은 카드가 뜨게 밝힌다 -->
+<meta property="og:locale:alternate" content="en_US">
 <meta name="twitter:card" content="summary_large_image">
 <!-- 2026-09-12 v2.67.0 X·디스코드·슬랙은 og:* 로 폴백하지만, 카드 필드를 따로 읽는 수집기도 있다.
      같은 문장을 두 번 적는 대신 og 와 뜻이 어긋나지 않게 그대로 맞춘다 -->
-<meta name="twitter:title" content="moncamp — 뭘 키우고, 뭘 잡을지">
-<meta name="twitter:description" content="순위·도감·상성·일정을 한 화면에서. 내 포켓몬을 저장해 육성 우선순위를 정하세요.">
+<meta name="twitter:title" content="moncamp — 포켓몬고 다이맥스 티어표 · 맥스 배틀 덱 · 도감">
+<meta name="twitter:description" content="다이맥스 티어표부터 맥스 배틀 덱까지. 포켓몬고 순위·도감·일정을 한 화면에서 봐요.">
 <meta name="twitter:image" content="https://moncamp.kr/og.png">
 <meta name="twitter:image:alt" content="moncamp — 도트로 그린 몬스터볼과 서비스 이름">
 <!-- 2026-09-12 v3.6.0 검색 색인용 표시를 뺐다가 2026-09-14 v3.28.0 에 되살렸다 — 도메인(moncamp.kr)이 생겨
@@ -86,8 +90,8 @@
       "@id": "https://moncamp.kr/#website",
       "url": "https://moncamp.kr/",
       "name": "moncamp",
-      "alternateName": ["몬캠프", "moncamp.kr"],
-      "description": "포켓몬 GO 의 D-MAX · 레이드 · PvP 순위와 도감, 타입 상성, 이벤트 일정, 레이드 보스와 알 부화까지. 내 개체를 저장해 뭘 키울지 정하는 비공식 팬 도구입니다.",
+      "alternateName": ["몬캠프", "moncamp.kr", "포켓몬고 다이맥스 티어표", "Pokemon GO Dynamax tier list"],
+      "description": "포켓몬고 다이맥스·거다이맥스 티어표와 맥스 배틀 덱 짜기, 레이드·PvP 순위, 전 종 도감과 타입 상성, 이벤트 일정까지 한 화면에서. Pokémon GO Dynamax & Gigantamax tier list, Max Battle deck builder, raid & PvP rankings, Pokédex — 비공식 팬 도구입니다.",
       "inLanguage": ["ko", "en"]
     },
     {
@@ -95,6 +99,8 @@
       "@id": "https://moncamp.kr/#app",
       "url": "https://moncamp.kr/",
       "name": "moncamp",
+      "alternateName": "Pokemon GO Dynamax tier list & Max Battle deck builder",
+      "description": "Pokémon GO Dynamax and Gigantamax tier lists, a Max Battle deck builder, raid and PvP rankings, a full Pokédex with type matchups, and the event calendar. An unofficial fan tool.",
       "applicationCategory": "UtilitiesApplication",
       "operatingSystem": "Any",
       "browserRequirements": "Requires JavaScript",

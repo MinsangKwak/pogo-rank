@@ -121,9 +121,11 @@ function renderServiceHome() {
   $content.append(el('div', { class: 'home-dashboard' },
     el('section', { class: 'home__welcome' },
       el('div', { class: 'home__intro' },
-      el('span', { class: 'home__eyebrow' }, 'YOUR POKÉMON COMPANION'),
-      el('h2', {}, '다음 모험의', el('br'), '주인공을 찾아요.'),
-      el('p', {}, '지금 강한 포켓몬부터 나만의 육성 계획까지.', el('br'), '트레이너의 다음 선택을 함께 준비해요.')),
+      // 2026-09-15 v3.33.0 캐치프라이즈 교체 — 'YOUR POKÉMON COMPANION' 은 무엇을 하는 곳인지를 말하지 않았다.
+      // 처음 들어온 사람이 첫 줄에서 "아 다이맥스 티어표 보는 데구나" 를 알아야 한다
+      el('span', { class: 'home__eyebrow' }, '다이맥스 · 레이드 · PvP 순위'),
+      el('h2', {}, '다이맥스 티어표는', el('br'), '여기서 봐요.'),
+      el('p', {}, '맥스 배틀에 데려갈 셋부터 레이드·PvP 순위, 전 종 도감까지.', el('br'), '트레이너의 다음 선택을 함께 준비해요.')),
       el('div', { class: 'home__quick' },
         el('span', { class: 'home__eyebrow' }, '모험을 시작하는 세 가지 방법'),
         ...['dex', 'schedule', 'raids'].map((id, index) => {

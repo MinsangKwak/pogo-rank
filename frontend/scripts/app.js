@@ -36,6 +36,12 @@ const state = {
   // 2026-09-07 v2.16.0 IF 탭 해체 — 솔플 계산기는 PvE 탭, PvP 덱 짜기는 PvP 탭의 오른쪽 도구 버튼으로 (활용처 탭은 검색 패널로)
   pveTool: null,             // PvE 도구 — 'solo'(솔플 계산기) / null. v2.66.0 부터 주소(#/pve/solo)가 정한다 — planner/shell.js applyPlanRoute
   pvpTool: null,             // PvP 도구 — 'deck' / 'ivrank' / null. v2.66.0 부터 주소(#/pvp/deck·#/pvp/ivrank)가 정한다. 덱 리그는 state.league 를 그대로 쓴다
+  maxTool: null,             // 2026-09-15 v3.32.0 D-MAX 도구 — 'deck' / null. 주소(#/dmax/deck)가 정한다
+  maxDeck: null,             // 덱 세 칸 [스프라이트 id | null, ...]. null 이면 아직 자동 추천을 안 채운 상태
+  maxDeckBoss: null,         // 덱을 채울 때 쓴 보스 타입 — 이 값이 바뀌면 세 칸을 다시 채운다
+  maxDeckSwap: null,         // 지금 후보 목록이 펼쳐진 칸 번호 (0·1·2) / null
+  maxDeckDynaOnly: false,    // [다이맥스만] — 거다이맥스 폼이 없는 사람용
+  maxDeckRead: false,        // 주소(?p=)의 덱을 이미 읽었나 — 처음 한 번만 읽는다
   deckFoes: [],              // 상대할 포켓몬 (최대 3칸)
   deckAccOpen: true,         // 덱 추천 아코디언 펼침 여부
   soloBossMon: null,         // 솔플 계산기에서 고른 보스. null이면 아직 고르기 전

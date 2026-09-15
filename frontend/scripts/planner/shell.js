@@ -54,6 +54,7 @@ function applyPlanRoute() {
   const shell = route ? null : routeOf()?.route;
   state.pvpTool = shell?.tab === 'pvp' ? (shell.tool ?? null) : null;
   state.pveTool = shell?.tab === 'pve' ? (shell.tool ?? null) : null;
+  state.maxTool = shell?.tab === 'max' ? (shell.tool ?? null) : null;   // 2026-09-15 v3.32.0 #/dmax/deck
   state.planTab = route ? route.tab : 'home';
   state.planParams = route ? route.params : null;
   document.body.dataset.mode = state.appMode;  // CSS 가 모드별로 숨길 것(즐겨찾기 카드 등)을 고른다

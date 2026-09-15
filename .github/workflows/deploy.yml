@@ -48,7 +48,7 @@ jobs:
           # 사이트 통계가 거기 섞여 들어갔다. moncamp.kr 스트림(15750161968)의 측정 ID. 공개 식별자라(배포 HTML 에 그대로 실린다) 코드에 둬도 된다
           GA_ID: G-8MSZM80JHZ
           ADMIN_UID: ${{ vars.ADMIN_UID }}
-          CONTACT_EMAIL: ${{ vars.CONTACT_EMAIL }}
+          CONTACT_EMAIL: kmsdevwork@knou.ac.kr   # 2026-09-15 v3.32.0 학생 계정으로 교체. 저장소 변수 vars.CONTACT_EMAIL 은 더 읽지 않는다 (v3.27.1 GA_ID 와 같은 처리)
           FIREBASE_CONFIG_JSON: ${{ vars.FIREBASE_CONFIG_JSON }}
         run: bash scripts/build.sh
       # 2026-09-03 보조 기록용 커밋 — 실패해도 배포는 계속되도록 (예: 푸시 거부·권한 변경)

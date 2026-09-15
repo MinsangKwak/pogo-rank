@@ -136,7 +136,7 @@ Actions에서 빨간 X가 뜨면 **build 잡의 빨간 단계**를 펼쳐 마지
 
 ## 6. Firebase 최초 설정
 
-> **(v2.8.0) 설정값은 코드가 아니라 `.env`에 둔다.** `cp .env.example .env` 후 `FIREBASE_CONFIG_JSON`·`ADMIN_UID`·`GA_ID`·`CONTACT_EMAIL`을 채운다. GitHub Actions는 Settings → Secrets and variables → Actions → **Variables**에 같은 이름으로 넣는다(둘 다 채워야 로컬과 배포가 같은 빌드가 된다). 보안 규칙은 `firestore.rules`의 `__ADMIN_UID__`를 `bash scripts/render_rules.sh`로 채운 `firestore.rules.local`을 콘솔에 붙여넣는다. 저장소가 public이므로 실제 값이 든 파일(`.env`, `firestore.rules.local`)은 절대 커밋하지 않는다(.gitignore에 있음).
+> **(v2.8.0) 설정값은 코드가 아니라 `.env`에 둔다.** `cp .env.example .env` 후 `FIREBASE_CONFIG_JSON`·`ADMIN_UID`·`GA_ID`·`CONTACT_EMAIL`을 채운다. GitHub Actions는 Settings → Secrets and variables → Actions → **Variables**에 같은 이름으로 넣는다(둘 다 채워야 로컬과 배포가 같은 빌드가 된다). 다만 `GA_ID`(v3.27.1)와 `CONTACT_EMAIL`(v3.32.0)은 **워크플로 파일에 직접 적혀 있어** 저장소 변수를 더 읽지 않는다 — 값을 바꾸려면 `.github/workflows/deploy.yml`·`deploy-dev.yml` 두 곳을 고친다. 보안 규칙은 `firestore.rules`의 `__ADMIN_UID__`를 `bash scripts/render_rules.sh`로 채운 `firestore.rules.local`을 콘솔에 붙여넣는다. 저장소가 public이므로 실제 값이 든 파일(`.env`, `firestore.rules.local`)은 절대 커밋하지 않는다(.gitignore에 있음).
 
 
 이미 설정된 프로젝트가 있다면 건너뛰세요. 새로 만들 때만 필요합니다.

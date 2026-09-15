@@ -321,6 +321,14 @@ function renderMaxDealer(selectedType) {
 }
 
 function renderMax() {
+  // 2026-09-15 v3.32.0 도구가 켜져 있으면 그 화면이다 — PvP 와 같은 규칙(주소가 도구를 정한다).
+  // 덱 짜기는 순위표가 아니라 다른 화면이라 세그먼트·칩·보기 전환을 그리지 않는다
+  if (state.maxTool === 'deck') {
+    const backButton = maxDeckToolButton();
+    backButton.classList.add('js-head-action');   // D-MAX 화면과 같은 자리에 둔다 — 버튼이 움직이면 같은 버튼으로 안 읽힌다
+    $controls.append(backButton);
+    return renderMaxDeck();
+  }
   renderBossAcc();  // 2026-09-02 탭 위 보스 아코디언
   // 2026-09-07 v2.14.0 (QA-52) [전체 | 딜러 | 탱커] 세그먼트 — 탱커 데이터가 없는 빌드에서는 탱커 버튼을 뺀다
   const hasTank = typeof DMAX_TANK !== 'undefined' && Object.keys(DMAX_TANK ?? {}).length > 0;
@@ -337,6 +345,12 @@ function renderMax() {
   });
   axisSeg.classList.add('js-head-action');
   $controls.append(axisSeg);
+  // 2026-09-15 v3.33.0 차례를 [전체|딜러|탱커] → 🧩 덱 짜기 → 보기 전환 으로.
+  // 앞 둘은 **무엇을 볼지**, 마지막은 **어떻게 볼지** 라 성격이 같은 것끼리 붙는다.
+  // 머리 슬롯은 .js-head-action 을 만난 차례대로 담으므로 여기 붙이는 차례가 곧 화면의 차례다
+  const deckButton = maxDeckToolButton();
+  deckButton.classList.add('js-head-action');
+  $controls.append(deckButton);
   // 2026-09-12 v3.5.0 보기 전환을 축 세그먼트 옆에 나란히 — 넓은 화면에서 티어표가 카드 격자로
   // 그려지는데(pc-theme.css .row-list) 줄로 되돌릴 방법이 여기만 없었다 (레이드 · PvE 와 같은 규칙)
   const maxGrid = layoutInitial(MAX_COLS_KEY);
@@ -354,6 +368,16 @@ function renderMax() {
 
 // 2026-09-12 v3.5.0 D-MAX 보기 전환 — 넓은 화면의 카드 격자(.row-list)를 줄로 되돌린다.
 // 도감·레이드 PvE 와 같은 규칙의 별도 키다 (화면마다 선택이 섞이지 않게)
+// 2026-09-15 v3.32.0 D-MAX 화면과 덱 짜기를 오가는 버튼 하나. 두 화면이 같은 버튼을 쓴다 —
+// 켜져 있으면 눌러서 순위표로 돌아오고, 꺼져 있으면 눌러서 덱 짜기로 간다
+function maxDeckToolButton() {
+  const on = state.maxTool === 'deck';
+  return toolButton('🧩 덱 짜기', on, () => {
+    track('tool_dmaxdeck', { on: on ? 0 : 1 });
+    navigateHash(on ? routeHash('dmax') : routeHash('dmax-deck'));
+  });
+}
+
 const MAX_COLS_KEY = 'pogo_max_cols';
 function applyMaxLayout(grid) {
   rowListLayout(grid);   // 2026-09-12 v3.9.1 레이드 · PvE 와 같은 일이라 components/ui.js 한 곳으로 뺐다
