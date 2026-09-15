@@ -67,6 +67,11 @@ body:has(#page-head:not([hidden])) #page { padding-top: 0; }
                       display: flex; align-items: center; justify-content: flex-end; gap: 0.8rem; flex-wrap: wrap; }
 /* 슬롯 안에서는 오른쪽 밀기를 끈다 — 컨트롤이 둘이면(레이드 · PvE) 둘 사이가 벌어진다 */
 .page-head__actions .view-toggle { margin-left: 0; }
+/* 2026-09-15 v3.33.0 슬롯에 도구 버튼(🧩 덱 짜기)이 끼면서 높이가 갈렸다 — .seg·.view-toggle 은 44px,
+   .tool-btn 은 36px 이라 가운데 정렬로는 윗줄이 4px 어긋난다(한 줄로 안 읽힌다).
+   슬롯 안에서만 높이를 맞춘다 — 다른 자리의 .tool-btn 은 그대로다 */
+.page-head__actions > * { align-self: center; }
+.page-head__actions .tool-btn { min-height: 4.4rem; }
 .page-head__actions:empty { display: none; }
 .page-head {
   background-image: linear-gradient(to right, var(--line), var(--line));

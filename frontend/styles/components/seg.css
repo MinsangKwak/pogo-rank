@@ -12,6 +12,9 @@
    헤더의 🌗 · ☰ 와 나란히 놓아도 한 벌로 읽힌다.
    지금 보기는 색으로 말한다: 그리드면 강조색으로 칠한다 (색은 "지금 여기" 라는 뜻으로만 쓰는 규칙) */
 .view-toggle { margin-left: auto; color: var(--muted); }
+/* 2026-09-15 v3.33.0 아이콘 옆 글자는 넓은 화면에서만 (pc-theme.css 가 켠다) —
+   좁은 화면은 자리가 없다. 감춰도 aria-label·title 은 그대로라 읽어 주는 데는 지장이 없다 */
+.view-toggle__text { display: none; }
 .view-toggle[data-view="grid"] { border-color: color-mix(in srgb, var(--accent) 45%, var(--line));
                                  background: color-mix(in srgb, var(--accent) 12%, var(--bg));
                                  color: var(--accent); }
