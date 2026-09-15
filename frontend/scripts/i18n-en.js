@@ -731,6 +731,11 @@ const I18N_EN = {
   'PvP 는 리그 점수 상위 2개 평균, PvE 는 가장 잘 통하는 보스 3종 대비 비율 평균 (0~100, 가성비 화면과 같은 기준)': 'PvP = average of the top two league scores; PvE = average ratio to the best attacker for its three best boss types (0–100, same basis as the Value screen)',
   '종족값 320 · CP 5,500 기준 비율. 레이드/PvP 는 가성비와 같은 0~100 점수 (레이드 = 가장 잘 통하는 보스 3종 평균, PvP = 리그 상위 2개 평균)': 'Ratios against base stat 320 and CP 5,500. Raid/PvP are 0–100 scores on the Value basis (Raid = average of its three best boss types, PvP = average of its top two leagues)',
   // 2026-09-13 v3.22.1 홈 대시보드 인사·바로가기 (components/home.js renderServiceHome)
+  // 2026-09-15 v3.33.0 캐치프라이즈 교체 — 옛 세 줄은 이미 나간 판이 쓰므로 남겨 둔다
+  '다이맥스 · 레이드 · PvP 순위': 'Dynamax · Raid · PvP rankings',
+  '다이맥스 티어표는': 'Dynamax tier lists',
+  '여기서 봐요.': 'live here.',
+  '맥스 배틀에 데려갈 셋부터 레이드·PvP 순위, 전 종 도감까지.': 'From the three to bring to a Max Battle, to raid and PvP rankings, to the full Pokédex.',
   '다음 모험의': 'Find the star of',
   '주인공을 찾아요.': 'your next adventure.',
   '지금 강한 포켓몬부터 나만의 육성 계획까지.': 'From what is strong right now to your own raising plan.',

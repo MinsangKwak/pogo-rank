@@ -15,6 +15,11 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 const RELEASE_NOTES_EN = {
+  '2026-09-15 · v3.33.0': [
+    '**Easier to find by search** — the title in search results changed from \u201cmoncamp \u2014 what to raise, what to catch\u201d to \u201cPok\u00e9mon GO Dynamax tier list \u00b7 Max Battle decks \u00b7 Pok\u00e9dex\u201d. A title without the words people actually type cannot be found.',
+    '**The opening line changed too** — \u201cDynamax tier lists live here.\u201d so a first-time visitor knows what this place is from the first line.',
+    '**English searches reach us now** — the description and structured data carry the English terms as well (Dynamax, Gigantamax, Max Battle, Pok\u00e9dex).',
+  ],
   '2026-09-15 · v3.32.0': [
     '**A Max Battle deck builder** — pick a boss and we pick the three to bring (two attackers and a tank). The [\U0001F9E9 Build a deck] button on the D-MAX screen opens it.',
     '**Any boss, not just this week\u2019s** — it starts on the current boss, but all eighteen types are one tap away. Useful for \u201cthat one is coming next week, what should I power up?\u201d',
