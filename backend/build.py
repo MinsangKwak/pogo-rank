@@ -39,7 +39,7 @@ from sprite import sprite_id
 from names import name_ko, species, FORM_KO
 
 # ── 설정 ─────────────────────────────────────────────────────────────────────
-APP_VERSION = 'v3.31.1'  # (문서) 변경 이력을 날짜 → 버전 2단 아코디언으로 · 유실된 v2.5.0 복원 · 문서 서비스명 최신화 (v3.25.0 은 feature-advertisement 브랜치에 예약)
+APP_VERSION = 'v3.32.0'  # D-MAX 덱 짜기 (#/dmax/deck) · 문의 메일을 학생 계정으로 (v3.25.0 은 feature-advertisement 브랜치에 예약)
 # 2026-09-14 v3.28.0 index.html 의 색인 허용 줄 — dev 빌드가 이 줄을 noindex 로 바꿔 끼운다
 ROBOTS_INDEX_META = '<meta name="robots" content="index, follow, max-image-preview:large">'
 # 2026-09-05 v2.7.3 빌드 채널 — 'prod'(기본) / 'dev'. dev 브랜치 워크플로(.github/workflows/deploy-dev.yml)가 BUILD_CHANNEL=dev 로 부른다.
@@ -143,7 +143,7 @@ SCRIPTS = [
     'components/trial.js',    # 2026-09-12 v3.16.0 잠시 써보기 — pages 앞 (첫 렌더의 routeLocked 가 trialActive 를 부른다)
     'components/pages.js',
     'components/trainers.js', 'components/totop.js',  # 2026-09-12 v3.4.0 favdigest 제거 — ★ 즐겨찾기 기능을 걷어냈다
-    'views/pvp.js', 'views/pve.js', 'views/max.js', 'views/tier.js', 'views/usage.js', 'views/ifsolo.js',  # 2026-09-02 if 탭
+    'views/pvp.js', 'views/pve.js', 'views/max.js', 'views/maxdeck.js', 'views/tier.js', 'views/usage.js', 'views/ifsolo.js',  # 2026-09-02 if 탭 · 2026-09-15 v3.32.0 maxdeck
     'components/freshness.js',  # 2026-09-10 v2.50.0 새 데이터·새 버전 알림 (설치형 앱이 옛 데이터를 붙들지 않게)
     'app.js', 'components/app-shell.js',
 ]

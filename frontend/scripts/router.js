@@ -70,6 +70,10 @@ const ROUTES = [
   // parent 는 화면 머리 브레드크럼에 한 칸을 더한다 (🏠 › 배틀 · PvP › 개체값 순위).
   // nav 가 없으니 메뉴에는 뜨지 않는다 — 갈 길은 부모 화면의 버튼 하나뿐이다
   { id: 'pvp-deck', path: 'pvp/deck', kind: 'shell', tab: 'pvp', tool: 'deck', parent: 'pvp', title: '덱 짜기', icon: '🃏', locked: true },
+  // 2026-09-15 v3.32.0 맥스 배틀에 데려갈 셋을 보스별로 고른다. PvP 덱 짜기와 같은 문법(부모 화면의 버튼 하나로만 간다).
+  // locked 를 달지 않는다 — 잠금은 app.js 가 **탭 단위**로 건다(max → 'dmax'). 부모인 D-MAX 가 누구나 보는 화면이라
+  // 자식 도구만 잠글 방법도 없고, 잠글 이유도 없다. 여기 locked 를 적어 두면 아무 일도 안 하면서 표만 거짓이 된다
+  { id: 'dmax-deck', path: 'dmax/deck', kind: 'shell', tab: 'max', tool: 'deck', parent: 'dmax', title: '덱 짜기', icon: '🧩' },
   { id: 'ivrank', path: 'pvp/ivrank', kind: 'shell', tab: 'pvp', tool: 'ivrank', parent: 'pvp', title: 'PvP 개체값 순위', icon: '🧬', locked: true, legacy: ['ivrank'] },
   { id: 'pve-solo', path: 'pve/solo', kind: 'shell', tab: 'pve', tool: 'solo', parent: 'pve', title: '솔플 계산기', icon: '🧮', locked: true },
   // 2026-09-10 v2.47.0 메뉴에서 내렸다 — '내 포켓몬' 과 '육성 플래너' 가 메뉴에 따로 있어
@@ -160,6 +164,7 @@ const ROUTE_DESC = {
   eggs: '거리별로 무엇이 부화하는지 봐요.',
   ivrank: '내 개체가 그 리그에서 몇 위인지 봐요.',
   'pvp-deck': '상대할 셋을 넣으면 맞설 덱을 골라 드려요.',
+  'dmax-deck': '맥스 배틀 보스를 고르면 데려갈 셋을 골라 드려요.',
   'pve-solo': '이 보스를 혼자 잡을 수 있는지 계산해요.',
   finder: '조건을 눌러 게임 검색창에 붙여 넣을 식을 만들어요.',
   // 2026-09-12 v2.64.0 메뉴에 없는 화면에도 부제를 단다 — 제목만 있는 화면은
