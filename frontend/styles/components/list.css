@@ -118,6 +118,14 @@
   color: var(--muted); font-size: 1.3rem; line-height: 1; cursor: help;
 }
 .info-dot:hover, .info-dot:focus-visible { color: var(--fg); }
+/* 2026-09-15 v3.32.0 D-MAX 덱 짜기 세 칸 — 목록(.row-list)을 그대로 쓰되 빈 칸과 [바꾸기] 만 더한다 */
+.deck-slot { cursor: pointer; }
+.deck-slot.is-empty { cursor: default; color: var(--muted); }
+.deck-slot__blank { display: inline-flex; align-items: center; justify-content: center; width: 4.8rem; height: 4.8rem; border: 1px dashed var(--line); border-radius: 1rem; color: var(--muted); }
+.deck-slot__swap { flex: none; margin-left: auto; }
+.deck-slot__picker { cursor: default; }
+.row__why-chip.is-on { border-color: var(--brand); color: var(--brand); font-weight: 600; }
+
 /* ⓘ 를 눌렀을 때 펼쳐지는 안내 — 툴팁과 같은 글 */
 .info-note { margin: 0 0 1rem; padding: 1rem 1.2rem; border: 1px solid var(--line); border-radius: 1rem; background: var(--surface); font-size: 1.2rem; line-height: 1.7; color: var(--muted); }
 .row__why-chip { padding: 0.3rem 0.9rem; border: 1px solid var(--line); border-radius: 99.9rem; font-size: 1.15rem; color: var(--fg); }

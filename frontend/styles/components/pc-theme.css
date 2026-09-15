@@ -22,9 +22,11 @@
   }
   .app-bar__head { display: flex; align-items: center; gap: 1rem; }
   .app-bar__logo, .app-bar h1 { font-size: 1.9rem; font-weight: 700; letter-spacing: -0.01em; }
-  /* 로고 아래 한 줄 — 목업의 YOUR POKÉMON COMPANION */
+  /* 로고 아래 한 줄. 2026-09-15 v3.33.0 'YOUR POKÉMON COMPANION' 에서 바꿨다 —
+     무엇을 하는 곳인지가 이름 옆에서 바로 읽혀야 한다 (CSS content 라 검색 색인에는 안 잡힌다,
+     검색용 문구는 index.html 의 title·description 에 있다) */
   .app-bar__head::after {
-    content: 'YOUR POKÉMON COMPANION';
+    content: 'DYNAMAX · RAID · PVP RANKINGS';
     position: absolute; margin-top: 3.4rem; margin-left: 0.2rem;
     font-size: 0.9rem; font-weight: 600; letter-spacing: .14em; color: var(--muted); white-space: nowrap;
   }
@@ -239,6 +241,9 @@
   .dex__toolbar { display: flex; align-items: flex-start; justify-content: space-between; gap: 1.6rem; margin: 1.4rem 0 0.4rem; }
   .dex__toolbar .tchips { flex: 1 1 auto; min-width: 0; }
   .dex__toolbar .view-toggle { flex: none; margin-left: 0; }
+  /* 2026-09-15 v3.33.0 보기 전환에 글자를 함께 — 그림만으로는 어느 쪽이 '지금' 인지 안 읽힌다 */
+  .view-toggle { gap: 0.6rem; width: auto; padding: 0 1.2rem; }
+  .view-toggle .view-toggle__text { display: inline; font-size: var(--fs-sub); font-weight: 600; white-space: nowrap; }
   /* 2026-09-10 v2.46.0 칩 높이를 34px → 22px 로 낮췄다. 두 줄로 접히면 줄 사이가 벌어져 보였는데,
      원인은 여백이 아니라 **속이 빈 알약**이었다 — .uchip 은 align-items: baseline(modal.css)이라
      글자가 아래에 붙고 위쪽 12px 이 그대로 빈다. 높이를 글자에 맞추고 가운데 정렬로 바꾼다.
@@ -354,18 +359,24 @@
   /* 화면 위 장식 띠 — 화면마다 그 화면의 색으로. 아무 데나 붙이지는 않는다 */
   /* 2026-09-10 v2.46.0 도감도 붙인다 — 목업의 화면 머리마다 오른쪽에 빛 띠가 있다.
      도감은 그 화면의 색이 따로 없으므로 브랜드 초록. 공식 아트워크가 없어 그림 대신 빛으로 채운다 */
-  .page-head[data-route="dex"] { position: relative; }
-  .page-head[data-route="dex"]::after {
-    content: ''; position: absolute; right: 0; top: 1.8rem; width: 46%; height: 10.8rem; pointer-events: none;
+  /* 2026-09-15 v3.33.0 높이를 10.8rem 으로 못 박아 두어, 머리가 길어지면(보기 전환 버튼에 글자가
+     붙거나 부제가 두 줄이 되면) 띠가 검색칸 한참 위에서 **가로로 뚝 끊겼다**.
+     bottom: 0 으로 머리 아래 끝까지 이어 붙이고, 아래 15% 는 mask 로 흐려 경계선을 지운다 —
+     '채워져 있다' 로 읽혀야지 '띠가 하나 얹혀 있다' 로 읽히면 안 된다 */
+  .page-head[data-route="dex"], .page-head[data-route="dmax"] { position: relative; }
+  .page-head[data-route="dex"]::after,
+  .page-head[data-route="dmax"]::after {
+    content: ''; position: absolute; right: 0; top: 1.8rem; bottom: 0; width: 46%; pointer-events: none;
     border-radius: var(--r-card);
+    -webkit-mask-image: linear-gradient(to bottom, #000 85%, transparent);
+    mask-image: linear-gradient(to bottom, #000 85%, transparent);
+  }
+  .page-head[data-route="dex"]::after {
     background:
       radial-gradient(70% 100% at 72% 100%, color-mix(in srgb, var(--brand) 22%, transparent), transparent 68%),
       radial-gradient(50% 90% at 96% 55%, color-mix(in srgb, var(--brand-2) 16%, transparent), transparent 70%);
   }
-  .page-head[data-route="dmax"] { position: relative; }
   .page-head[data-route="dmax"]::after {
-    content: ''; position: absolute; right: 0; top: 1.8rem; width: 46%; height: 10.8rem; pointer-events: none;
-    border-radius: var(--r-card);
     background:
       radial-gradient(70% 100% at 70% 100%, color-mix(in srgb, var(--c-max) 26%, transparent), transparent 68%),
       radial-gradient(50% 90% at 96% 60%, color-mix(in srgb, var(--c-max-2) 20%, transparent), transparent 70%);

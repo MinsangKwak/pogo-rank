@@ -117,9 +117,12 @@ function rowListLayout(grid) {
 //            누르면 저것" 을 그대로 적는다. 상태가 둘뿐인데 칸을 둘 둘 이유가 없다
 // 2026-09-12 v3.10.0 리스트 얼굴이 ☰ 였다 — 오른쪽 위 ☰ 메뉴 버튼과 그림이 똑같아
 // 나란히 놓이면 어느 쪽이 메뉴인지 헷갈렸다. 목록 아이콘(▤)으로 바꾼다 (components/pxicon.js)
+// 2026-09-15 v3.33.0 세 번째 칸은 **PC 에서 아이콘 옆에 적는 글자**다.
+// 그림만 있으면 ▤ 와 ⊞ 중 어느 쪽이 "지금" 이고 어느 쪽이 "누르면" 인지 모른다 —
+// 좁은 화면은 자리가 없어 CSS 가 감추고(aria-label·title 은 그대로라 읽어 주는 데는 지장이 없다)
 const LAYOUT_FACE = {
-  list: ['▤', '보기 방식: 리스트 · 누르면 그리드'],
-  grid: ['⊞', '보기 방식: 그리드 · 누르면 리스트'],
+  list: ['▤', '보기 방식: 리스트 · 누르면 그리드', '그리드로 보기'],
+  grid: ['⊞', '보기 방식: 그리드 · 누르면 리스트', '리스트로 보기'],
 };
 
 function layoutToggle(storageKey, grid, onToggle, extraClass = '') {
@@ -131,8 +134,9 @@ function layoutToggle(storageKey, grid, onToggle, extraClass = '') {
   // 얼굴 맞추기 — 아이콘·이름·상태를 한 곳에서 갈아 끼운다.
   // 그림이 SVG 라 글자로 상태를 읽을 수 없어 data-view 에도 남긴다 (화면 테마의 data-icon 과 같은 뜻)
   function face() {
-    const [icon, label] = LAYOUT_FACE[grid ? 'grid' : 'list'];
+    const [icon, label, wideText] = LAYOUT_FACE[grid ? 'grid' : 'list'];
     pxIconLabel($button, icon);
+    $button.append(el('span', { class: 'view-toggle__text' }, wideText));
     $button.dataset.view = grid ? 'grid' : 'list';
     $button.setAttribute('aria-label', label);
     $button.title = label;

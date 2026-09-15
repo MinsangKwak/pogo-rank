@@ -21,6 +21,17 @@
 // 이름 + 꼬리말 꼴. $1·$2 로 잡은 조각은 엔진이 다시 번역해 끼운다 (이름 1,000개를 사전에 적지 않기 위해).
 // 위에서부터 먼저 맞는 것을 쓴다 — 좁은 규칙을 위에 둔다
 const I18N_PATTERNS = [
+  // 2026-09-15 v3.32.0 D-MAX 덱 짜기
+  [/^(.+) 보스에 데려갈 셋$/, 'The three to bring against a $1 boss'],
+  [/^이번 주 (.+)$/, 'This week · $1'],
+  [/^다음 보스 (.+)$/, 'Next boss · $1'],
+  [/^딜러 · 맥스 피해 ([\d,]+) · 내구 ([\d,]+)$/, 'Attacker · Max damage $1 · bulk $2'],
+  [/^탱커 · EHP ([\d,]+) · 보스 기술을 ×([\d.]+) 로 받음$/, 'Tank · EHP $1 · takes the boss\u2019s moves at ×$2'],
+  [/^탱커 · EHP ([\d,]+) · 체력 ([\d,]+) · 방어 ([\d,]+)$/, 'Tank · EHP $1 · HP $2 · Defense $3'],
+  [/^딜러 후보 — (.+) 보스 상대 맥스 피해순$/, 'Attacker candidates — by Max damage against a $1 boss'],
+  [/^탱커 후보 — (.+) 보스 상대 EHP순$/, 'Tank candidates — by EHP against a $1 boss'],
+  [/^💬 딜러 (\d+)마리 맥스 피해 합 ([\d,]+) · 탱커 EHP ([\d,]+)$/, '💬 $1 attackers, Max damage total $2 · tank EHP $3'],
+  [/^💬 딜러 (\d+)마리 맥스 피해 합 ([\d,]+)$/, '💬 $1 attackers, Max damage total $2'],
   // 2026-09-14 v3.26.0 엄격 감사에서 남은 조합 문구 — 좁은 규칙이 위
   [/^(\d+)월 (\d+)일, 일정 (\d+)개$/, '$1/$2, $3 events'],
   [/^＋(.+)$/, '＋$1'],
@@ -362,6 +373,21 @@ const I18N_EN = {
   '진화가 없는 포켓몬이에요.': 'This Pokémon does not evolve.',
   '진화형을 누르면 그 포켓몬의 정보를 볼 수 있어요': 'Tap an evolution to see that Pokémon',
   '⚡ 메가 진화 가능 — 누르면 메가 진화 스탯을 볼 수 있어요': '⚡ Can Mega Evolve — tap to see its Mega stats',
+  // 2026-09-15 v3.32.0 D-MAX 덱 짜기 (views/maxdeck.js)
+  '덱 짜기': 'Build a deck',
+  '🧩 덱 짜기': '🧩 Build a deck',
+  '보스 속성': 'Boss type',
+  '다이맥스만': 'Dynamax only',
+  '거다이맥스 폼을 후보에서 빼요 — 아직 못 잡았다면': 'Leaves Gigantamax forms out of the candidates — for when you have not caught one yet',
+  '딜러': 'Attacker',
+  '탱커': 'Tank',
+  '바꾸기': 'Swap',
+  '닫기': 'Close',
+  '비어 있어요': 'Empty',
+  '세 칸이 모두 비었어요.': 'All three slots are empty.',
+  '맥스 배틀 보스를 고르면 데려갈 셋을 골라 드려요.': 'Pick a Max Battle boss and we pick the three to bring.',
+  '딜러는 맥스 피해 × √내구 순위, 탱커는 체력 × 방어 ÷ 받는 배율(EHP) 순위에서 골라요. 맥스가드·맥스스피릿 같은 방어·회복 역할은 아직 데이터가 없어 다루지 않아요. 주소를 그대로 보내면 상대도 같은 덱을 봅니다.':
+    'Attackers come from the Max damage × √bulk ranking, the tank from the HP × Defense ÷ incoming multiplier (EHP) ranking. Defensive and healing roles such as Max Guard and Max Spirit are not covered — we have no data for them yet. Send the address as it is and the other person sees the same deck.',
   // 2026-09-14 v3.31.0 원시회귀를 메가와 가른 문구 (components/detail.js evoNode)
   '⚡ 메가진화 가능 — 누르면 메가진화 스탯을 볼 수 있어요': '⚡ Can Mega Evolve — tap to see its Mega stats',
   '⚡ 원시회귀 가능 — 누르면 원시회귀 스탯을 볼 수 있어요': '⚡ Can Primal Revert — tap to see its Primal stats',
@@ -705,6 +731,11 @@ const I18N_EN = {
   'PvP 는 리그 점수 상위 2개 평균, PvE 는 가장 잘 통하는 보스 3종 대비 비율 평균 (0~100, 가성비 화면과 같은 기준)': 'PvP = average of the top two league scores; PvE = average ratio to the best attacker for its three best boss types (0–100, same basis as the Value screen)',
   '종족값 320 · CP 5,500 기준 비율. 레이드/PvP 는 가성비와 같은 0~100 점수 (레이드 = 가장 잘 통하는 보스 3종 평균, PvP = 리그 상위 2개 평균)': 'Ratios against base stat 320 and CP 5,500. Raid/PvP are 0–100 scores on the Value basis (Raid = average of its three best boss types, PvP = average of its top two leagues)',
   // 2026-09-13 v3.22.1 홈 대시보드 인사·바로가기 (components/home.js renderServiceHome)
+  // 2026-09-15 v3.33.0 캐치프라이즈 교체 — 옛 세 줄은 이미 나간 판이 쓰므로 남겨 둔다
+  '다이맥스 · 레이드 · PvP 순위': 'Dynamax · Raid · PvP rankings',
+  '다이맥스 티어표는': 'Dynamax tier lists',
+  '여기서 봐요.': 'live here.',
+  '맥스 배틀에 데려갈 셋부터 레이드·PvP 순위, 전 종 도감까지.': 'From the three to bring to a Max Battle, to raid and PvP rankings, to the full Pokédex.',
   '다음 모험의': 'Find the star of',
   '주인공을 찾아요.': 'your next adventure.',
   '지금 강한 포켓몬부터 나만의 육성 계획까지.': 'From what is strong right now to your own raising plan.',
