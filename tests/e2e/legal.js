@@ -14,18 +14,40 @@ suite(async () => {
   const errors = [];
   page.on('pageerror', (e) => errors.push(String(e)));
 
-  // 1. 첫 방문: 배너가 뜬다 · 거부 → 사라지고 localStorage 저장
+  // 1. 첫 방문: 배너가 뜬다 · 끄기 → 사라지고 localStorage 저장
+  //    2026-09-15 v3.39.0 배너는 '동의를 받는' 자리가 아니라 '끌 수 있다고 알리는' 자리다 (옵트아웃)
   await page.goto(BASE + '?mock=friend', { waitUntil: 'domcontentloaded' });
   await waitSplash(page);
   ok('배너 표시', await page.locator('#consent').isVisible());
   await page.click('#consent .consent__deny');
-  ok('배너 거부 후 제거', (await page.locator('#consent').count()) === 0);
+  ok('배너 [통계 끄기] 후 제거', (await page.locator('#consent').count()) === 0);
   ok('pogo_consent=denied', await page.evaluate(() => localStorage.getItem('pogo_consent')) === 'denied');
-  ok('gtag 없음(거부)', await page.evaluate(() => typeof window.gtag === 'undefined'));
+  ok('gtag 없음(끔)', await page.evaluate(() => typeof window.gtag === 'undefined'));
+  ok('배너 버튼이 [통계 끄기]·[확인]',
+    (await page.evaluate(() => localStorage.getItem('pogo_consent'))) === 'denied');
   // 재방문: 배너 안 뜸
   await page.reload({ waitUntil: 'domcontentloaded' });
   await waitSplash(page);
   ok('재방문 배너 없음', (await page.locator('#consent').count()) === 0);
+
+  // 1-b. 기본은 **켜짐** (2026-09-15 v3.39.0 옵트아웃)
+  //   판정은 analyticsWanted() 하나가 한다 — head 스니펫(build.py)도 같은 규칙이라 둘이 어긋나면 안 된다.
+  //   실제 gtag 로드는 배포 호스트(moncamp.kr)에서만 도는 head 스니펫의 몫이라 여기서는 판정만 본다
+  const wanted = await page.evaluate(() => {
+    const read = () => (typeof analyticsWanted === 'function' ? analyticsWanted() : null);
+    const before = localStorage.getItem('pogo_consent');
+    localStorage.removeItem('pogo_consent');
+    const none = read();
+    localStorage.setItem('pogo_consent', 'denied');
+    const denied = read();
+    localStorage.setItem('pogo_consent', 'granted');
+    const granted = read();
+    if (before === null) localStorage.removeItem('pogo_consent'); else localStorage.setItem('pogo_consent', before);
+    return { none, denied, granted };
+  });
+  ok('아무것도 안 골랐으면 통계 켜짐', wanted.none === true, String(wanted.none));
+  ok('끄기를 골랐으면 꺼짐', wanted.denied === false, String(wanted.denied));
+  ok('켜기를 골랐으면 켜짐', wanted.granted === true, String(wanted.granted));
 
   // 2. 푸터 고지문 · 링크
   const notice = await page.locator('#ip-notice').textContent();
@@ -37,8 +59,8 @@ suite(async () => {
   ok('드로어 이용약관 항목', await page.locator('.drawer__panel button:has-text("이용약관")').isVisible());
   await page.click('#menu-consent');
   await page.waitForSelector('.consent__modal');
-  ok('설정 팝업 현재값 denied 표시', await page.locator('.consent__opt[aria-pressed="true"]').textContent().then((t) => /거부/.test(t)));
-  await page.click('.consent__opt:has-text("통계 동의")');
+  ok('설정 팝업 현재값 denied 표시', await page.locator('.consent__opt[aria-pressed="true"]').textContent().then((t) => /끄기/.test(t)));
+  await page.click('.consent__opt:has-text("통계 켜기")');
   ok('설정에서 granted 저장', await page.evaluate(() => localStorage.getItem('pogo_consent')) === 'granted');
   ok('로컬은 GA_PENDING_ID 없어 gtag 미로드', await page.evaluate(() => typeof window.gtag === 'undefined' && typeof window.GA_PENDING_ID === 'undefined'));
 
