@@ -15,6 +15,9 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 const RELEASE_NOTES_EN = {
+  '2026-09-15 · v3.35.1': [
+    '**(Hotfix) Animated sprites grew without stopping** — where a sprite is sized by its slot rather than by a fixed rule, such as the PvP deck builder, one sprite grew a little every 0.8 seconds until it covered the screen. The Little League deck showed it clearly.',
+  ],
   '2026-09-15 · v3.35.0': [
     '**Tabs moved to their own full-width row right under the screen description** — the D-MAX axes, the raid Normal/All pair, the four PvP leagues and the Pok\u00e9dex generation chips all sit in the same place now, and the full width makes them easier to tap.',
     '**Only the tools and the view switch stay beside the title, pushed to the right** — title on the left, handles on the right, so your eye moves between two places instead of three.',
