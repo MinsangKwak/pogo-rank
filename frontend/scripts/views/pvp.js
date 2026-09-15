@@ -28,7 +28,7 @@ function renderPvp() {
       state.league = id;
       render();
     });
-  leagueSeg.classList.add('js-head-action');
+  leagueSeg.classList.add('js-screen-tab');   // v3.35.0 탭은 화면 설명 아래 제 줄로
   // 2026-09-07 v2.16.0 오른쪽 도구 버튼: 🃏 PvP 덱 짜기 (옛 IF 탭). 리그는 위 세그먼트를 그대로 쓴다
   // 2026-09-12 v2.63.0 🧬 개체값 순위를 그 옆에 붙였다 — 메뉴에 따로 두지 않는다.
   // "이 리그에서 뭐가 센가" 를 보다가 "그럼 내 개체는 몇 위지" 가 떠오르는 자리라,

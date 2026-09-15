@@ -177,6 +177,17 @@ const pageHead = el('header', { class: 'page-head', id: 'page-head', hidden: tru
 // const 는 그렇지 않아(TDZ), 앞줄의 components/pages.js 가 로드 직후 renderPage() 를 부르면
 // 아직 초기화되지 않은 pageHeadActions 를 건드려 화면 전체가 죽는다.
 // id 로 찾으면 셸이 만들어지기 전 호출은 조용히 아무 일도 하지 않는다 — 그 뒤 render 가 다시 맞춘다
+// 2026-09-15 v3.35.0 화면 탭 슬롯 — "지금 무엇을 보는 중인가" 한 줄을 화면 설명 아래에 놓는다.
+// 머리 동작 슬롯(.page-head__actions)에는 **도구와 보기 전환만** 남는다:
+// 그 둘은 화면 밖으로 데려가거나 보는 방식을 바꾸는 것이고, 탭은 이 화면 안의 갈래라 성격이 다르다.
+// 비우는 일도 이 함수가 한다 — 인자가 없으면 빈다 (앞 화면 탭이 남지 않게 render 가 늘 부른다)
+function setScreenTabs(...nodes) {
+  const slot = document.getElementById('screen-tabs');
+  if (!slot) return;
+  slot.replaceChildren();
+  for (const node of nodes.flat()) if (node) slot.append(node);
+}
+
 function setPageHeadAction(...nodes) {
   const slot = document.getElementById('page-head-actions');
   if (!slot) return;
@@ -312,7 +323,11 @@ syncAppShell();
 // 2026-09-12 v3.2.0 첫 로드 보정 — 이 파일은 SCRIPTS 의 **맨 끝**이라(app.js 다음) app.js 가
 // 바닥에서 부른 첫 render() 때는 아직 #page-head-actions 가 없었다. 그래서 D-MAX 로 바로
 // 들어온 첫 화면만 축 세그먼트가 본문에 남아 있었다 (화면을 한 번 옮기면 정상이 됐다).
-// 셸을 다 만든 지금 한 번 맞춰 준다 — 함수 선언은 번들 전체에서 끌어올려지므로 app.js 것을 부를 수 있다
+// 셸을 다 만든 지금 한 번 맞춰 준다 — 함수 선언은 번들 전체에서 끌어올려지므로 app.js 것을 부를 수 있다.
+//
+// 2026-09-15 v3.35.0 이 호출은 이제 안전하다 — liftShellHeadAction 은 **옮기기만** 하고
+// 비우는 일은 render() 의 clearShellSlots 가 맡는다 (app.js). 전에는 한 함수가 둘을 겸해서
+// 이 보정이 방금 제자리로 간 화면 탭을 도로 지웠다
 if (typeof liftShellHeadAction === 'function') liftShellHeadAction();
 
 document.addEventListener('keydown', (event) => {

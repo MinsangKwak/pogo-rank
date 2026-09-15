@@ -217,6 +217,12 @@ __STYLES__
        검색은 팝업에서 끝나는 일이 아니라 **포켓몬 도감으로 가는 일**이다 —
        🔍 · 상단 검색 칸 · `/` 키가 전부 #/dex 로 데려가고, 입력은 도감 안 칸(#dex-search)에서 한다.
        결과를 한 곳에서만 그리기 위해서다 (components/search.js 머리말) -->
+  <!-- 2026-09-15 v3.35.0 화면 탭 자리 — "지금 무엇을 보는 중인가"(D-MAX 전체|딜러|탱커,
+       PvE 일반|전체, PvP 리그) 한 줄. 화면 설명 바로 아래, 그 화면의 첫 내용물보다 위다.
+       D-MAX 의 '이번 주 보스' 아코디언보다 위여야 해서 #controls 가 아니라 여기다.
+       채우는 일은 components/app-shell.js setScreenTabs 가 한다 (머리 동작 슬롯과 같은 방식) -->
+  <div class="screen-tabs" id="screen-tabs"></div>
+
   <!-- 2026-09-02 이번 주 보스 아코디언: D-MAX 탭에서만 표시, 기본 접힘 -->
   <details class="schedule boss__acc" id="boss-acc">
     <summary id="boss-acc-title">⚔️ 이번 주 보스</summary>
