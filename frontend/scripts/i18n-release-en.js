@@ -15,6 +15,11 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 const RELEASE_NOTES_EN = {
+  '2026-09-15 · v3.34.0': [
+    '**Every screen control now sits in one row above the title** — D-MAX, Raid and Battle read the same way: what to look at, then the tools, then how to look at it.',
+    '**The tool buttons moved up** — IV rank, PvP deck and the solo raid calculator were scattered in a row above the list. They now share the place the Max Battle deck builder uses.',
+    '**(Fix) The button row was cut off on phones** — Battle/PvP has four controls, too many for one line, so the right edge was clipped. It now wraps to the next line instead.',
+  ],
   '2026-09-15 · v3.33.0': [
     '**Easier to find by search** — the title in search results changed from \u201cmoncamp \u2014 what to raise, what to catch\u201d to \u201cPok\u00e9mon GO Dynamax tier list \u00b7 Max Battle decks \u00b7 Pok\u00e9dex\u201d. A title without the words people actually type cannot be found.',
     '**The opening line changed too** — \u201cDynamax tier lists live here.\u201d so a first-time visitor knows what this place is from the first line.',

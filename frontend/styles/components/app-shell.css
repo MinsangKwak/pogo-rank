@@ -72,6 +72,7 @@ body:has(#page-head:not([hidden])) #page { padding-top: 0; }
    슬롯 안에서만 높이를 맞춘다 — 다른 자리의 .tool-btn 은 그대로다 */
 .page-head__actions > * { align-self: center; }
 .page-head__actions .tool-btn { min-height: 4.4rem; }
+/* 좁은 화면의 자리는 styles/pixel.css 가 정한다 (한 곳에서) */
 .page-head__actions:empty { display: none; }
 .page-head {
   background-image: linear-gradient(to right, var(--line), var(--line));

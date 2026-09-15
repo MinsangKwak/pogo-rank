@@ -236,19 +236,18 @@ suite(async () => {
   // 개체값 순위는 리그에 딸린 정보라 왼쪽, 덱 짜기는 리그와 상관없는 다른 일이라 오른쪽
   await page.goto(BASE + '?mock=1#/pvp', { waitUntil: 'domcontentloaded' });
   await settle();
-  const pvpTools = await page.locator('.controls__row .tool-btn').allTextContents();
+  // 2026-09-15 v3.34.0 도구 버튼이 화면 머리 줄로 올라갔다 — D-MAX · PvE 와 같은 자리다.
+  // 셋이 같은 문법으로 읽혀야 한다: [무엇을 볼지 세그먼트] [도구] [어떻게 볼지 보기 전환]
+  const pvpTools = await page.locator('#page-head-actions .tool-btn').allTextContents();
   // 2026-09-12 v3.7.1 앞 이모지를 도트 아이콘(svg)으로 뗐다 — 글자에는 이름만 남는다
   ok('개체값 순위가 앞, 덱 짜기가 뒤', pvpTools.join('|') === '개체값 순위|덱 짜기', pvpTools.join('|'));
-  ok('도구 버튼에 도트 아이콘', (await page.locator('.controls__row .tool-btn svg.pxi').count()) === 2);
-  // 2026-09-12 v2.67.0 오른쪽 덩이(.controls__rest)가 줄의 마지막이고 margin-left:auto 로 밀린다.
-  // 좁은 화면(이 검사는 390px)에서는 줄이 접혀 자리가 달라지므로 기하가 아니라 구조로 확인한다
-  ok('도구는 줄의 오른쪽 덩이에 있다', await page.evaluate(() => {
-    const row = document.querySelector('.controls__row--tools');
-    const rest = row && row.querySelector(':scope > .controls__rest');
-    if (!rest || row.lastElementChild !== rest) return false;
-    // margin-left:auto 는 computed 로 읽으면 px 로 풀리므로, 실제로 오른쪽 끝에 붙었는지로 본다
-    return Math.abs(rest.getBoundingClientRect().right - row.getBoundingClientRect().right) < 2;
-  }));
+  ok('도구 버튼에 도트 아이콘', (await page.locator('#page-head-actions .tool-btn svg.pxi').count()) === 2);
+  // 머리 줄의 차례 — 리그를 고르고, 도구를 고르고, 보는 방식을 고른다
+  ok('머리 줄 차례가 리그 → 도구 → 보기 전환', await page.evaluate(() => {
+    const kinds = [...document.querySelectorAll('#page-head-actions > *')].map((n) =>
+      n.classList.contains('seg') ? '리그' : n.classList.contains('tool-btn') ? '도구' : '보기');
+    return kinds.join('→') === '리그→도구→도구→보기';
+  }), await page.evaluate(() => [...document.querySelectorAll('#page-head-actions > *')].map((n) => n.className.split(' ')[0]).join('→')));
   await page.click('.tool-btn:has-text("개체값 순위")');
   await settle();
   ok('주소가 바뀐다', (await page.evaluate(() => location.hash)) === '#/pvp/ivrank', await page.evaluate(() => location.hash));
@@ -292,9 +291,11 @@ suite(async () => {
   {
     await page.goto(BASE + '?mock=1#/pvp', { waitUntil: 'domcontentloaded' });
     await settle();
+    // 2026-09-15 v3.34.0 도구 줄이 머리로 올라가, 본문에는 타입 필터만 남는다
     const order = await page.evaluate(() => [...document.querySelectorAll('#controls > *')].map((n) =>
       n.querySelector('.tool-btn') ? '도구' : '타입'));
-    ok('본문 컨트롤은 도구 → 타입 두 줄', order.join(' → ') === '도구 → 타입', order.join(' → '));
+    ok('본문 컨트롤은 타입 한 줄', order.join(' → ') === '타입', order.join(' → '));
+    ok('본문에 도구 버튼이 없다', (await page.locator('#controls .tool-btn').count()) === 0);
     const headSeg = (await page.locator('#page-head-actions .seg button').allTextContents()).join('|');
     ok('리그 세그먼트가 화면 머리에', headSeg === '리틀|슈퍼|하이퍼|마스터', headSeg);
     ok('본문에 남은 리그 줄이 없다', (await page.locator('#controls .seg').count()) === 0);

@@ -114,8 +114,11 @@ function renderPveTab() {
     track('tool_solo', { on: state.pveTool === 'solo' ? 0 : 1 });
     navigateHash(state.pveTool === 'solo' ? routeHash('pve') : routeHash('pve-solo'));
   });
+  // 2026-09-15 v3.34.0 도구 버튼도 화면 머리로 — D-MAX 와 같은 자리다.
+  // 셋(D-MAX · PvE · PvP)이 같은 문법으로 읽혀야 한다: [무엇을 볼지] [도구] [어떻게 볼지]
+  soloButton.classList.add('js-head-action');
   if (state.pveTool === 'solo') {
-    $controls.append(el('div', { class: 'controls__row controls__row--tools' }, soloButton));
+    $controls.append(soloButton);
     return renderSoloCalc();
   }
   // 2026-09-12 v3.3.0 [일반 | 전체]는 화면 머리 오른쪽으로 — 목록을 거르는 값이 아니라
@@ -132,12 +135,10 @@ function renderPveTab() {
   const pveGrid = layoutInitial(PVE_COLS_KEY);
   const pveLayout = layoutToggle(PVE_COLS_KEY, pveGrid, applyPveLayout);
   pveLayout.classList.add('js-head-action');
-  // 머리로 옮겨질 둘을 $controls 에 담아 둔다 — 옮기는 일은 render() 의 liftShellHeadAction 이 한다
-  $controls.append(el('div', { class: 'controls__row controls__row--head' }, modeSeg, pveLayout));
+  // 머리로 옮겨질 셋을 $controls 에 담아 둔다 — 옮기는 일은 render() 의 liftShellHeadAction 이 한다.
+  // 붙이는 차례가 곧 머리 줄의 차례다: 세그먼트 → 솔플 계산기 → 보기 전환
+  $controls.append(modeSeg, soloButton, pveLayout);
   (state.pveMode === 'easy' ? renderPveEasy : renderPve)();
-  // 타입 칩은 위 뷰가 $controls 에 붙였다. 솔플 계산기는 그 **아래** 줄이다 —
-  // "무엇을 볼지" 를 다 고른 다음에 "혼자 잡을 수 있나" 로 넘어가는 차례라서
-  $controls.append(el('div', { class: 'controls__row controls__row--tools' }, soloButton));
   applyPveLayout(pveGrid);
 }
 
