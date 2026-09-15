@@ -39,7 +39,7 @@ from sprite import sprite_id
 from names import name_ko, species, FORM_KO
 
 # ── 설정 ─────────────────────────────────────────────────────────────────────
-APP_VERSION = 'v3.43.0'  # 검색 유입 — 제목을 검색어 앞으로 · JS 없이 읽을 본문 · 구조화 데이터 보강 (v3.25.0 은 feature-advertisement 브랜치에 예약)
+APP_VERSION = 'v3.44.0'  # (수정) 보스 추천에 미구현이 끼던 것 · 첫 화면 속도 (CLS 0.911 → 0, data.js JSON.parse) (v3.25.0 은 feature-advertisement 브랜치에 예약)
 # 2026-09-14 v3.28.0 index.html 의 색인 허용 줄 — dev 빌드가 이 줄을 noindex 로 바꿔 끼운다
 ROBOTS_INDEX_META = '<meta name="robots" content="index, follow, max-image-preview:large">'
 # 2026-09-05 v2.7.3 빌드 채널 — 'prod'(기본) / 'dev'. dev 브랜치 워크플로(.github/workflows/deploy-dev.yml)가 BUILD_CHANNEL=dev 로 부른다.
@@ -70,6 +70,24 @@ JSON_TIGHT = (',', ':')
 def tight(obj):
     # 공백 없는 JSON 문자열 (data.js 에 싣는 모든 표가 이 모양이다)
     return json.dumps(obj, ensure_ascii=False, separators=JSON_TIGHT)
+
+
+# 2026-09-15 v3.44.0 큰 표는 **JSON.parse 로 싣는다.**
+#   data.js 는 1.4MB 가 전부 객체 리터럴이라, 브라우저가 이걸 **자바스크립트 문법**으로 읽는다.
+#   자바스크립트 파서는 한 글자마다 "이게 함수일까 연산자일까" 를 따져야 해서 느리다.
+#   같은 바이트를 JSON.parse 로 주면 파서가 "이건 데이터다" 만 알고 읽어 훨씬 빠르다
+#   (실측: data.js 파싱 347ms → 아래 CHANGELOG 참고).
+#   바이트 수는 거의 그대로다 — 따옴표와 이스케이프 몇 글자만 는다.
+JSON_PARSE_MIN = 20000   # 이보다 작은 표는 그대로 둔다 — JSON.parse 호출 자체의 비용이 더 크다
+
+def js_data(json_text):
+    if len(json_text) < JSON_PARSE_MIN:
+        return json_text
+    # JS 작은따옴표 문자열 안에 JSON 원문을 넣는다. 역슬래시·작은따옴표만 막으면 된다
+    # (tight() 는 줄바꿈을 만들지 않는다). '</' 는 미리보기 빌드가 이 파일을 <script> 안에
+    # 인라인할 때를 대비해 끊어 둔다 — JS 에서 \/ 는 그냥 / 라 값은 바뀌지 않는다
+    body = json_text.replace('\\', '\\\\').replace("'", "\\'").replace('</', '<\\/')
+    return "JSON.parse('" + body + "')"
 
 # ── 운영 설정값은 코드에 두지 않는다 (2026-09-05 v2.8.0) ──
 # 로컬은 저장소 루트의 .env, GitHub Actions 는 Repository variables 에서 같은 이름으로 읽는다. 키 설명은 .env.example.
@@ -457,22 +475,22 @@ const TYPE_KO = {tight(TYPE_KO)};
 const TYPE_EN = {tight(TYPE_EN)};
 // 2026-09-06 v2.10.0 이름 앞에 붙는 폼 라벨 목록 (backend/names.py FORM_KO 값 + 섀도우·다이맥스·거다이맥스) — components/name.js 가 이름을 [라벨 뱃지 + 종 이름]으로 가른다
 const FORM_LABELS = {tight(form_labels)};
-const PVP_DATA = {tight(pvp)};
-const PVE_DATA = {table_or_file('pve', 'data/pve.json')};
-const PVE_EASY = {table_or_file('pve_easy', 'data/pve_easy.json')};
-const DMAX_DATA = {optional_json('data/dynamax.json')};
-const DMAX_TANK = {optional_json('data/dynamax_tank.json')};   // 2026-09-07 v2.13.0 (QA-43) 보스 속성별 다이맥스 탱커(EHP) 순위
-const MAX_POOL = {optional_json('data/max_pool.json')};   // 2026-09-04 맥스 배틀 포획 가능 종 (스프라이트 id → 'G'|'D')
-const MOVE_CHANGES = {optional_json('data/move_changes.json')};   // 2026-09-04 시즌 기술 변경 안내 (backend/change_build.py)
-const ROLES = {optional_json('data/roles.json')};                 // 2026-09-05 PvE/PvP 역할 자동 분류 근거 (backend/roles_build.py)
+const PVP_DATA = {js_data(tight(pvp))};
+const PVE_DATA = {js_data(table_or_file('pve', 'data/pve.json'))};
+const PVE_EASY = {js_data(table_or_file('pve_easy', 'data/pve_easy.json'))};
+const DMAX_DATA = {js_data(optional_json('data/dynamax.json'))};
+const DMAX_TANK = {js_data(optional_json('data/dynamax_tank.json'))};   // 2026-09-07 v2.13.0 (QA-43) 보스 속성별 다이맥스 탱커(EHP) 순위
+const MAX_POOL = {js_data(optional_json('data/max_pool.json'))};   // 2026-09-04 맥스 배틀 포획 가능 종 (스프라이트 id → 'G'|'D')
+const MOVE_CHANGES = {js_data(optional_json('data/move_changes.json'))};   // 2026-09-04 시즌 기술 변경 안내 (backend/change_build.py)
+const ROLES = {js_data(optional_json('data/roles.json'))};                 // 2026-09-05 PvE/PvP 역할 자동 분류 근거 (backend/roles_build.py)
 const RANK_DELTA_DATE = {json.dumps(rank_delta_date)};            // 2026-09-04 순위 변동을 기록한 날 (뱃지 유효기간 계산용)
 const RANK_FRESH_DAYS = {rank_fresh_days};                        // 이 일수가 지나면 변동 뱃지를 감춘다
-const DMAX_TIER = {table_or_file('dmax', 'data/dynamax_tier.json')};
-const VALUE_DATA = {table_or_file('value', 'data/value.json')};
-const SHEET_DATA = {table_or_file('sheet', 'data/sheet.json')};
-const DEX_DATA = {optional_json('data/dex.json')};
-const BOSS_LIST = {optional_json('data/bosses.json') or '[]'};
-const GAMEDAY = {optional_json('data/gameday.json')};              // 2026-09-08 v2.25.0 레이드 보스·알 부화 풀·이벤트 원본 (backend/gameday_build.py)
+const DMAX_TIER = {js_data(table_or_file('dmax', 'data/dynamax_tier.json'))};
+const VALUE_DATA = {js_data(table_or_file('value', 'data/value.json'))};
+const SHEET_DATA = {js_data(table_or_file('sheet', 'data/sheet.json'))};
+const DEX_DATA = {js_data(optional_json('data/dex.json'))};
+const BOSS_LIST = {js_data(optional_json('data/bosses.json') or '[]')};
+const GAMEDAY = {js_data(optional_json('data/gameday.json'))};              // 2026-09-08 v2.25.0 레이드 보스·알 부화 풀·이벤트 원본 (backend/gameday_build.py)
 const SPRITE_IDS = {json.dumps(sorted(sprite_ids))};
 const SPRITE_ANIM_IDS = {json.dumps(sorted(sprite_anim_ids))};
 const SPRITES = {(open('data/sprites.json').read() if INLINE and os.path.exists('data/sprites.json') else 'null')};
