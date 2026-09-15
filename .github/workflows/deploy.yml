@@ -45,8 +45,14 @@ jobs:
         # 2026-09-05 v2.8.0 운영 설정값은 Repository variables 에서 (Settings → Secrets and variables → Actions → Variables). 키 설명은 .env.example
         env:
           # 2026-09-14 v3.27.1 측정 ID 를 워크플로에 직접 적는다 — 저장소 변수 GA_ID(G-KVRX9FBNDC)는 같은 속성의 blog 스트림 것이라
-          # 사이트 통계가 거기 섞여 들어갔다. moncamp.kr 스트림(15750161968)의 측정 ID. 공개 식별자라(배포 HTML 에 그대로 실린다) 코드에 둬도 된다
-          GA_ID: G-8MSZM80JHZ
+          # 사이트 통계가 거기 섞여 들어갔다. 공개 식별자라(배포 HTML 에 그대로 실린다) 코드에 둬도 된다
+          #
+          # 2026-09-15 v3.42.1 G-8MSZM80JHZ → G-1L6ENS8PVK. 옛 스트림(15750161968)이 사라져
+          # gtag/js?id=G-8MSZM80JHZ 가 404 였다 — 라이브러리가 안 받아져 히트가 한 건도 안 나갔다.
+          # 지금 스트림은 moncamp(15780045801). 값을 바꿀 때는 먼저 이걸 확인한다:
+          #   curl -so /dev/null -w '%{http_code}\n' "https://www.googletagmanager.com/gtag/js?id=<ID>"
+          #   200 이어야 한다. 404 면 그 스트림은 없는 것이다 (아무 ID 나 넣으면 200 이 나오므로 404 는 확실한 신호다)
+          GA_ID: G-1L6ENS8PVK
           ADMIN_UID: ${{ vars.ADMIN_UID }}
           CONTACT_EMAIL: kmsdevwork@knou.ac.kr   # 2026-09-15 v3.32.0 학생 계정으로 교체. 저장소 변수 vars.CONTACT_EMAIL 은 더 읽지 않는다 (v3.27.1 GA_ID 와 같은 처리)
           FIREBASE_CONFIG_JSON: ${{ vars.FIREBASE_CONFIG_JSON }}
