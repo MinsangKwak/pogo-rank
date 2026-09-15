@@ -82,12 +82,16 @@
 .page__body > .tchips { gap: 0.6rem; }
 
 /* 2026-09-03 도감 [미구현] 태그 */
-.dex__unrel { flex: none; font-size: 1.05rem; color: var(--muted); border-color: var(--line); }
+/* 2026-09-15 v3.36.0 white-space: nowrap 추가 — PC 줄 모드의 .dex__row 는 flex 가 아니라 grid 라
+   flex: none 이 듣지 않았다. 칸이 좁으면 딱지가 14px 로 짜부라져 '메 / 가' 로 글자가 세로로 눕었다 */
+.dex__unrel { flex: none; white-space: nowrap; font-size: 1.05rem; color: var(--muted); border-color: var(--line); }
 /* 2026-09-14 v3.31.0 도감 줄의 메가·원시 딱지 — 메가는 폼 딱지(tag.css)와 같은 색을 쓴다 */
-.dex__mega { flex: none; font-size: 1.05rem; color: var(--c-mega); border-color: color-mix(in srgb, var(--c-mega) 40%, var(--line)); background: color-mix(in srgb, var(--c-mega) 8%, transparent); }
+.dex__mega { flex: none; white-space: nowrap; font-size: 1.05rem; color: var(--c-mega); border-color: color-mix(in srgb, var(--c-mega) 40%, var(--line)); background: color-mix(in srgb, var(--c-mega) 8%, transparent); }
 /* 원시회귀는 메가와 다른 것이라 색도 가른다 */
 .dex__mega--primal { color: var(--t-fire); border-color: color-mix(in srgb, var(--t-fire) 40%, var(--line)); background: color-mix(in srgb, var(--t-fire) 8%, transparent); }
 .dex__row.is-unreleased { opacity: .55; }
+/* 2026-09-15 v3.36.0 아직 안 나온 메가 딱지 — 색을 빼고 테두리를 점선으로 (줄 자체는 흐리지 않다) */
+.dex__mega.is-unreleased { color: var(--muted); border-style: dashed; border-color: var(--line); background: transparent; }
 
 /* 2026-09-03 도감 2열 격자 토글 */
 /* 2026-09-08 v2.26.0 2열은 카드로 — 한 줄에 둘을 욱여넣으니 이름이 잘리고 밑줄만 촘촘해

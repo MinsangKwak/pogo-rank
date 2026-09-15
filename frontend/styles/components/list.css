@@ -5,6 +5,13 @@
 
 .row-list { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--line); }
 .row { display: grid; grid-template-columns: 2.8rem 4rem 1fr auto;  /* 2026-09-03 v2.2.0 보유 ☆ 열 제거 */ align-items: center; gap: 1.2rem; padding: 0.9rem 0; border-bottom: 1px solid var(--line); cursor: pointer; }
+/* 2026-09-15 v3.36.0 아직 못 쓰는 줄 — 데이터만 등록되고 게임에는 안 나온 개체(미출시 거다이맥스 · 예정 다이맥스).
+   지우지 않고 흐리게 남긴다. 순위 칸이 '–' 라 번호가 밀리지 않는 것도 눈으로 보인다.
+   왼쪽 점선은 색 대비에만 기대지 않으려고 둔다 — 흐리기만 하면 화면이 밝을 때 그냥 옅은 줄로 읽힌다 */
+.row.is-unreleased { opacity: .55; border-left: 2px dashed var(--line); padding-left: 0.8rem; margin-left: -1rem; }
+/* 눌러 보거나 훑을 때는 읽을 수 있을 만큼 돌려준다 */
+.row.is-unreleased:hover, .row.is-unreleased:focus-visible { opacity: .9; }
+.row.is-unreleased .row__rank { color: var(--muted); }
 .row:hover { background: var(--hover); }
 
 /* 등급 색상 — PvE 평가 글자(.grade-mark)와 티어표 뱃지(.tier__badge)가 같은 색을 쓴다 */

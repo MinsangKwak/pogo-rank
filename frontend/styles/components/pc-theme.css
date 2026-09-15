@@ -918,6 +918,11 @@ body:is([data-route="dmax"], [data-route="pve"], [data-route="pvp"]) #content .r
   .dex__list:not(.is-grid) .dex__row > .dex__fav { grid-area: fav; justify-self: end; }
   /* [미구현] 태그는 칸을 차지하지 않고 카드 오른쪽 위에 얹는다 */
   .dex__list:not(.is-grid) .dex__row > .dex__unrel { position: absolute; top: 0.6rem; right: 0.6rem; }
+  /* 2026-09-15 v3.36.0 메가·원시 딱지도 같은 자리로. 이 격자는 칸 이름이 정해져 있는데(sprite/no/name/fav…)
+     v3.31.0 에 딱지를 붙이면서 자리를 안 줘, 남은 10px 짜리 칸에 눌려 글자가 '메 / 가' 로 세로로 누웠다.
+     둘이 같이 있으면 미구현을 왼쪽으로 비켜 준다 (카드 모드가 쓰는 규칙과 같다) */
+  .dex__list:not(.is-grid) .dex__row > .dex__mega { position: absolute; top: 0.6rem; right: 0.6rem; }
+  .dex__list:not(.is-grid) .dex__row:has(> .dex__mega) > .dex__unrel { right: 5rem; }
   /* 화살표(::after)는 이름 자리를 먹기만 한다 — 누를 수 있다는 건 hover 로 이미 보인다 */
   .dex__list:not(.is-grid) .dex__row::after { content: none; }
   /* 세대는 접고 CP 만 남긴다 */
