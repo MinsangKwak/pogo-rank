@@ -114,8 +114,11 @@ function renderPveTab() {
     track('tool_solo', { on: state.pveTool === 'solo' ? 0 : 1 });
     navigateHash(state.pveTool === 'solo' ? routeHash('pve') : routeHash('pve-solo'));
   });
+  // 2026-09-15 v3.34.0 도구 버튼도 화면 머리로 — D-MAX 와 같은 자리다.
+  // 셋(D-MAX · PvE · PvP)이 같은 문법으로 읽혀야 한다: [무엇을 볼지] [도구] [어떻게 볼지]
+  soloButton.classList.add('js-head-action');
   if (state.pveTool === 'solo') {
-    $controls.append(el('div', { class: 'controls__row controls__row--tools' }, soloButton));
+    $controls.append(soloButton);
     return renderSoloCalc();
   }
   // 2026-09-12 v3.3.0 [일반 | 전체]는 화면 머리 오른쪽으로 — 목록을 거르는 값이 아니라
@@ -128,16 +131,14 @@ function renderPveTab() {
       track('sub_pve_' + id);  // 2026-09-03 GA4: 서브탭 사용량
       render();
     });
-  modeSeg.classList.add('js-head-action');
+  modeSeg.classList.add('js-screen-tab');   // v3.35.0 탭은 화면 설명 아래 제 줄로
   const pveGrid = layoutInitial(PVE_COLS_KEY);
   const pveLayout = layoutToggle(PVE_COLS_KEY, pveGrid, applyPveLayout);
   pveLayout.classList.add('js-head-action');
-  // 머리로 옮겨질 둘을 $controls 에 담아 둔다 — 옮기는 일은 render() 의 liftShellHeadAction 이 한다
-  $controls.append(el('div', { class: 'controls__row controls__row--head' }, modeSeg, pveLayout));
+  // 머리로 옮겨질 셋을 $controls 에 담아 둔다 — 옮기는 일은 render() 의 liftShellHeadAction 이 한다.
+  // 붙이는 차례가 곧 머리 줄의 차례다: 세그먼트 → 솔플 계산기 → 보기 전환
+  $controls.append(modeSeg, soloButton, pveLayout);
   (state.pveMode === 'easy' ? renderPveEasy : renderPve)();
-  // 타입 칩은 위 뷰가 $controls 에 붙였다. 솔플 계산기는 그 **아래** 줄이다 —
-  // "무엇을 볼지" 를 다 고른 다음에 "혼자 잡을 수 있나" 로 넘어가는 차례라서
-  $controls.append(el('div', { class: 'controls__row controls__row--tools' }, soloButton));
   applyPveLayout(pveGrid);
 }
 
@@ -150,9 +151,22 @@ function applyPveLayout(grid) {
 
 // 2026-09-12 v3.2.0 메인 셸의 화면 머리 동작 슬롯 — 뷰가 $controls 에 달아 둔 .js-head-action 을 옮긴다.
 // 전체 페이지 쪽은 components/pages.js liftViewToggle 이 같은 일을 한다 (슬롯 함수는 app-shell.js 한 곳)
+// 2026-09-15 v3.35.0 **비우는 일과 옮기는 일을 가른다.**
+// 전에는 한 함수가 둘을 겸해서, "옮길 것이 없다" 와 "비워라" 가 같은 뜻이 됐다. 그 탓에
+// app-shell.js 의 첫 로드 보정 호출이 방금 제자리로 간 화면 탭을 도로 지웠다
+// (D-MAX 로 바로 들어온 첫 화면에서만 탭 줄이 안 보이던 자리다).
+// 비우는 것은 화면을 새로 그리기 시작할 때 render() 가 한 번만 한다
+function clearShellSlots() {
+  if (typeof setScreenTabs === 'function') setScreenTabs();
+  if (typeof setPageHeadAction === 'function') setPageHeadAction();
+}
 function liftShellHeadAction() {
-  if (typeof setPageHeadAction !== 'function') return;
-  setPageHeadAction([...$controls.querySelectorAll('.js-head-action')]);
+  // .js-screen-tab 은 화면 설명 아래 탭 줄로, .js-head-action 은 제목 옆으로.
+  // 옮길 것이 있을 때만 건드린다 — 없으면 아무 일도 하지 않는다(있던 것을 지우지 않는다)
+  const tabs = [...$controls.querySelectorAll('.js-screen-tab')];
+  if (tabs.length && typeof setScreenTabs === 'function') setScreenTabs(tabs);
+  const actions = [...$controls.querySelectorAll('.js-head-action')];
+  if (actions.length && typeof setPageHeadAction === 'function') setPageHeadAction(actions);
 }
 
 // 2026-09-07 v2.16.0 탭 안 도구 버튼 — 세그먼트 오른쪽에 붙는 알약 버튼. 눌린 상태는 aria-pressed (seg·chip 과 같은 규칙)
@@ -172,7 +186,7 @@ function render() {
   $controls.textContent = '';
   $content.textContent = '';
   document.body.dataset.home = String(state.appMode === 'dex' && state.tab === 'home');
-  liftShellHeadAction();   // 먼저 비운다 — 아래 이른 return 들(홈·플래너·잠금)도 앞 화면 컨트롤을 남기지 않게
+  clearShellSlots();   // 먼저 비운다 — 아래 이른 return 들(홈·플래너·잠금)도 앞 화면 컨트롤을 남기지 않게
   if (state.appMode === 'dex' && state.tab === 'home') return renderServiceHome();
   // 2026-09-07 v2.15.0 (QA-53) 플래너 모드면 플래너 렌더러로 (도감 탭 상태는 건드리지 않는다)
   if (state.appMode === 'plan') return renderPlan();

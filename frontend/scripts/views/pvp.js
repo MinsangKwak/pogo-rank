@@ -28,7 +28,7 @@ function renderPvp() {
       state.league = id;
       render();
     });
-  leagueSeg.classList.add('js-head-action');
+  leagueSeg.classList.add('js-screen-tab');   // v3.35.0 탭은 화면 설명 아래 제 줄로
   // 2026-09-07 v2.16.0 오른쪽 도구 버튼: 🃏 PvP 덱 짜기 (옛 IF 탭). 리그는 위 세그먼트를 그대로 쓴다
   // 2026-09-12 v2.63.0 🧬 개체값 순위를 그 옆에 붙였다 — 메뉴에 따로 두지 않는다.
   // "이 리그에서 뭐가 센가" 를 보다가 "그럼 내 개체는 몇 위지" 가 떠오르는 자리라,
@@ -47,18 +47,24 @@ function renderPvp() {
   // 한 줄의 문법: [지금 무엇을 보는 중인가] [그 안에서 어느 리그인가] ……… [다른 걸 해 볼까].
   // 켜 둔 도구 버튼이 그 줄의 제목 노릇을 하고, 리그 탭이 바로 그 옆에서 범위를 좁힌다.
   // 랭킹 화면은 켜 둔 도구가 없으니 리그 탭이 맨 앞에 서고 도구 둘이 오른쪽으로 간다
+  // 2026-09-15 v3.34.0 도구 버튼도 화면 머리로 — D-MAX · PvE 와 같은 자리다.
+  // 셋이 같은 문법으로 읽혀야 한다: [무엇을 볼지] [도구] [어떻게 볼지]
   const buttons = {
-    ivrank: () => toolButton('🧬 개체값 순위', state.pvpTool === 'ivrank', tool('ivrank')),
-    deck: () => toolButton('🃏 덱 짜기', state.pvpTool === 'deck', tool('deck')),
+    ivrank: () => headAction(toolButton('🧬 개체값 순위', state.pvpTool === 'ivrank', tool('ivrank'))),
+    deck: () => headAction(toolButton('🃏 덱 짜기', state.pvpTool === 'deck', tool('deck'))),
   };
+  const headAction = (node) => { node.classList.add('js-head-action'); return node; };
   // 리그가 머리로 올라갔으므로 이 줄에는 도구만 남는다 — 왼쪽은 지금 켠 도구, 오른쪽은 다른 도구.
   // leagueSeg 는 $controls 안에 있어야 render() 가 찾아 옮길 수 있어 이 줄에 그대로 붙인다
-  const controlRow = (activeId, ...head) => {
+  // 머리 줄에 담기는 차례: 리그 세그먼트 → 켠 도구 → 나머지 도구 → (랭킹이면) 보기 전환.
+  // 켠 도구를 앞에 두는 것은 v2.67.0 부터의 규칙이다 — 그 버튼이 줄의 제목 노릇을 한다.
+  // 2026-09-15 v3.34.0 감싸는 줄(.controls__row--tools)을 만들지 않는다 — 안의 것이 전부
+  // 머리로 옮겨 가므로 본문에 빈 줄만 남는다. D-MAX 와 같이 $controls 에 바로 붙인다
+  const appendControls = (activeId, ...head) => {
     const others = Object.keys(buttons).filter((id) => id !== activeId);
-    return el('div', { class: 'controls__row controls__row--tools' },
-      activeId ? buttons[activeId]() : '',
-      leagueSeg, ...head,
-      el('div', { class: 'controls__rest' }, ...others.map((id) => buttons[id]())));
+    $controls.append(leagueSeg,
+      ...(activeId ? [buttons[activeId]()] : []),
+      ...others.map((id) => buttons[id]()), ...head);
   };
   // 2026-09-12 v3.10.0 배틀 · PvP 에도 보기 전환을 붙인다 (도감 · 레이드 · PvE · D-MAX 와 같은 규칙).
   // 붙이는 이유가 둘이다.
@@ -69,11 +75,11 @@ function renderPvp() {
   const pvpGrid = layoutInitial(PVP_COLS_KEY);
   const pvpLayout = layoutToggle(PVP_COLS_KEY, pvpGrid, applyPvpLayout);
   pvpLayout.classList.add('js-head-action');
-  if (state.pvpTool === 'deck') { $controls.append(controlRow('deck')); return renderPvpDeck(); }
+  if (state.pvpTool === 'deck') { appendControls('deck'); return renderPvpDeck(); }
   // 페이지 렌더러가 돌려주는 본문을 그대로 얹는다 (#/ivrank 주소로도 같은 화면이 열린다)
-  if (state.pvpTool === 'ivrank') { $controls.append(controlRow('ivrank')); $content.append(renderIvRankPage()); return; }
+  if (state.pvpTool === 'ivrank') { appendControls('ivrank'); $content.append(renderIvRankPage()); return; }
   // 보기 전환은 순위표가 있는 화면(랭킹)에서만 쓴다 — 덱 짜기 · 개체값 순위는 .row-list 가 다른 뜻이다
-  $controls.append(controlRow(null, pvpLayout));
+  appendControls(null, pvpLayout);
   const leagueRanking = PVP_DATA[state.league];
   // 이 리그 랭킹에 한 마리라도 있는 속성만 칩으로 만든다
   const presentTypes = new Set(leagueRanking.flatMap((pokemon) => pokemon.types));

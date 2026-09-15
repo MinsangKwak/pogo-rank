@@ -343,7 +343,7 @@ function renderMax() {
     track('sub_max_' + id);  // GA4: 서브탭 사용량 (sub_pve_* 와 같은 규칙)
     render();
   });
-  axisSeg.classList.add('js-head-action');
+  axisSeg.classList.add('js-screen-tab');   // v3.35.0 탭은 화면 설명 아래 제 줄로 (이번 주 보스보다 위)
   $controls.append(axisSeg);
   // 2026-09-15 v3.33.0 차례를 [전체|딜러|탱커] → 🧩 덱 짜기 → 보기 전환 으로.
   // 앞 둘은 **무엇을 볼지**, 마지막은 **어떻게 볼지** 라 성격이 같은 것끼리 붙는다.

@@ -424,8 +424,13 @@ function renderDexPage() {
   // 2026-09-10 v2.42.0 거르기(세대·즐겨찾기)와 보기 방식을 한 줄에 좌우로 — 성격은 달라도 둘 다
   // "목록을 어떻게 볼지" 라 목록 바로 위 한 줄에 모아 두는 편이 눈이 덜 움직인다.
   // 좁은 화면은 CSS 가 위아래로 쌓는다 (한 줄에 넣으면 칩이 잘린다)
-  return el('div', { class: 'page__body dex-page' }, loginHint, $search, $typeBox, $head,
-    el('div', { class: 'dex__toolbar page__filters' }, genChips, $layout), $list, $none, $more,
+  // 2026-09-15 v3.35.0 세대·메가 칩 줄을 **검색창 위**로 올린다 — 다른 화면의 탭 줄과 같은 자리다
+  // (화면 설명 바로 아래, 그 화면의 첫 내용물보다 위). 보기 전환은 그 줄 안에 그대로 두는데,
+  // 이 화면이 다 그려진 뒤 liftViewToggle() 이 머리 동작 슬롯으로 옮겨 간다(v3.1.0 부터의 규칙).
+  // 탭은 '무엇을 보는 중인가', 보기 전환은 '어떻게 볼지' 라 자리가 다르다
+  return el('div', { class: 'page__body dex-page' },
+    el('div', { class: 'screen-tabs dex__toolbar' }, genChips, $layout),
+    loginHint, $search, $typeBox, $head, $list, $none, $more,
     footNote('미구현 = 포켓몬 GO에 아직 출시되지 않은 종 (PvPoke 출시 목록 기준, 데이터는 게임마스터 선등록분). ⚡ 메가 · 원시 딱지는 그 종에 메가진화나 원시회귀가 있다는 뜻이에요 — 줄을 누르면 진화 칸에서 그 폼의 능력치를 볼 수 있어요. 섀도우·리전 폼은 🔍 검색으로 찾으면 이 목록에 함께 나와요.'));
 }
 
@@ -543,6 +548,9 @@ function liftViewToggle(id) {
   // 스타일 가이드의 .view-toggle 는 "이렇게 생겼다" 를 보여 주는 견본이라 옮기지 않는다
   const toggle = id === 'styleguide' ? null : document.querySelector('#page .page__body .view-toggle');
   setPageHeadAction(toggle);
+  // 2026-09-15 v3.35.0 메인 셸의 화면 탭(#screen-tabs)은 전체 페이지에 오면 비운다 —
+  // 안 비우면 D-MAX 에서 도감으로 옮겼을 때 [전체|딜러|탱커] 가 도감 위에 그대로 떠 있다
+  if (typeof setScreenTabs === 'function') setScreenTabs();
 }
 window.addEventListener('hashchange', renderPage);
 renderPage();  // #/schedule 같은 링크로 바로 들어온 경우
