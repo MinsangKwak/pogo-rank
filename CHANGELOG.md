@@ -1,19 +1,50 @@
 # 변경 이력
 
-**버전을 눌러 펼쳐 보세요.** 134개 판이 쌓여 한눈에 훑기 어려워, 각 버전을 접어 두었습니다.
+**날짜를 펼치고, 그 안에서 버전을 펼쳐 보세요.** 143개 판이 쌓여 한눈에 훑기 어려워 **날짜 → 버전** 두 겹으로 접어 두었습니다. 가장 최근 날짜만 펼쳐 둡니다.
 
-각 줄은 `버전 — 날짜 · 그 판에서 한 일` 순서입니다. 최신이 위로 옵니다.
+바깥 줄은 `날짜 — 그날 낸 판 수 · 버전 범위`, 안쪽 줄은 `버전 · 그 판에서 한 일` 입니다. 최신이 위로 옵니다.
 형식은 [Keep a Changelog](https://keepachangelog.com/ko/1.1.0/)를 따릅니다.
 
 **버전 규칙**은 `vMAJOR.MINOR.PATCH` — 큰 기능은 MINOR, 상세 기능·버그 수정은 PATCH 를 올립니다.
 **항목 종류**는 넷입니다 — `추가` 새 기능 · `변경` 기존 동작 변경 · `수정` 버그 수정 · `데이터` 수동 데이터 갱신.
 
-> 사용자가 읽는 패치노트는 서비스 안 [🎉 패치노트](https://minsangkwak.github.io/pogo-rank/#/release) 화면에 있습니다(영문판 포함).
+> 사용자가 읽는 패치노트는 서비스 안 [🎉 패치노트](https://moncamp.kr/#/release) 화면에 있습니다(영문판 포함).
 > 이 파일은 **왜 그렇게 고쳤는지**까지 남기는 개발 기록이라 더 깁니다.
 
 
+
 <details open>
-<summary><b>v3.31.0</b> — 2026-09-14 · <code>추가</code> 도감에 메가진화·원시회귀 표시 · <code>수정</code> 미출시 메가 가려내기 · 원시회귀 문구</summary>
+<summary><b>2026-09-14</b> — 12판 · <code>v3.26.0 … v3.31.1</code></summary>
+
+<details>
+<summary><b>v3.31.1</b> · <code>문서</code> 변경 이력을 날짜 → 버전 2단 아코디언으로 · 유실된 v2.5.0 복원 · 문서 서비스명 최신화</summary>
+
+화면에 보이는 변화가 **없다**. 그래서 `release.js` 패치노트에는 적지 않는다(v2.37.0 봇 트래픽 집계 제외와 같은 처리).
+
+### 왜
+
+요청 — "notion과 md문서도 다시 정리해서 알려줘 / 변경이력은 각각 날짜별로 버전별로 아코디언 부탁해".
+
+141판이 한 겹 아코디언으로 세로로 늘어서 있어, 특정 날 무슨 일이 있었는지 보려면 버전 번호를 외우고 있어야 했다. 하루에 34판이 나간 날(2026-09-12)도 있다.
+
+### 무엇을
+
+- **날짜 → 버전 2단 아코디언** — `CHANGELOG.md` 와 `README.md` 버전 이력 둘 다. 바깥 줄은 `날짜 — N판 · 버전 범위`, 안쪽은 `버전 · 그 판에서 한 일`. 가장 최근 날짜만 펼쳐 둔다. README 는 한 줄로 끝나는 초기 판 14개를 접지 않고 목록으로 둔다(빈 아코디언을 만들지 않는다).
+- **유실된 v2.5.0 복원** — 번호 연속성을 세다 `v2.5.0` · `v2.19.0` · `v3.25.0` 이 비어 있는 것을 발견했다. `v2.19.0` 은 건너뛴 번호, `v3.25.0` 은 `feature-advertisement` 브랜치 예약분, **`v2.5.0` 은 실재한 판**(커밋 `c3c0809`, 2026-09-04 — 시즌 기술 변경 안내 · 순위 변동 ▲▼ 뱃지)인데 `## [Unreleased]` 형식에서 아코디언 형식으로 옮기며 통째로 빠져 있었다. 그 커밋에서 되살렸다.
+- **판 수를 실제와 맞춤** — 머리말이 134로 적혀 있었으나 실제는 141(복원 뒤 142)이었다. 날짜 줄의 판 수와 버전 범위는 이제 파일에서 세어 적는다.
+- **문서 서비스명** — `README.md` 제목이 `monlab` 에 멈춰 있었다(v3.27.0 에 코드만 moncamp 로 옮기고 README 제목을 못 따라 적음). `docs/` 세 문서는 `POGO PLAN` 으로 두 번 뒤처져 있었다. 전부 moncamp 로.
+- **패치노트 링크** — `minsangkwak.github.io/pogo-rank/#/release` → `moncamp.kr/#/release`.
+
+### 문서에 더한 기록
+
+- `docs/DEVELOPMENT.md` **2.2.1 신설** — 2.2 는 "내구를 빼고 pogomate 와 같은 공식" 으로 끝나 현재 동작과 **반대**였다. v3.30.0 이 되돌린 두 가지(절대 등급 · 내구 ^0.25)와 0.25 를 고른 이유를 이어 적었다.
+- `docs/DEVELOPMENT.md` **2.5 보강** — 같은 함정을 두 번 더 밟은 기록(v3.28.3 두랄루돈 · v3.31.0 메가 폭타)을 표로. 규칙: 종족값은 "계산할 수 있다" 는 뜻이지 "나왔다" 는 뜻이 아니다.
+- `docs/OPERATIONS.md` **1절·2절** — 릴리스 때 함께 갱신할 자리가 넷에서 여섯으로(영문 패치노트·README 추가). dev 푸시는 `ship_dev.sh`, main 은 풀 리퀘스트라고 실제 흐름대로 고쳤다.
+
+</details>
+
+<details>
+<summary><b>v3.31.0</b> · <code>추가</code> 도감에 메가진화·원시회귀 표시 · <code>수정</code> 미출시 메가 가려내기 · 원시회귀 문구</summary>
 
 ### 왜
 
@@ -43,8 +74,8 @@ KR·EN × 1440·390 × 줄·카드 모드에서 딱지 57개, 폭타 제외 확�
 
 </details>
 
-<details open>
-<summary><b>v3.30.1</b> — 2026-09-14 · <code>수정</code> 티어표 ⓘ 자리 · 근거 상자 높이 · ⓘ 탭으로 펼침</summary>
+<details>
+<summary><b>v3.30.1</b> · <code>수정</code> 티어표 ⓘ 자리 · 근거 상자 높이 · ⓘ 탭으로 펼침</summary>
 
 ### 왜
 
@@ -72,8 +103,8 @@ v3.30.0 스크린샷 제보 — "이런 식으로 UI 가 깨지면 안 돼".
 
 </details>
 
-<details open>
-<summary><b>v3.30.0</b> — 2026-09-14 · <code>변경</code> D-MAX 등급을 전 종 절대 기준으로 · 티어 점수에 내구 반영 · 근거 두 줄과 ⓘ 안내</summary>
+<details>
+<summary><b>v3.30.0</b> · <code>변경</code> D-MAX 등급을 전 종 절대 기준으로 · 티어 점수에 내구 반영 · 근거 두 줄과 ⓘ 안내</summary>
 
 ### 왜
 
@@ -107,8 +138,8 @@ v3.30.0 스크린샷 제보 — "이런 식으로 UI 가 깨지면 안 돼".
 
 </details>
 
-<details open>
-<summary><b>v3.29.0</b> — 2026-09-14 · <code>변경</code> PC 티어표 선정 근거를 카드 오른쪽 빈 칸으로 · 타입 칩 줄 접어 내리기</summary>
+<details>
+<summary><b>v3.29.0</b> · <code>변경</code> PC 티어표 선정 근거를 카드 오른쪽 빈 칸으로 · 타입 칩 줄 접어 내리기</summary>
 
 ### 왜
 
@@ -144,8 +175,8 @@ CSS 에는 "이 줄의 남은 칸을 채워라" 가 없다. `grid-column: auto /
 
 </details>
 
-<details open>
-<summary><b>v3.28.3</b> — 2026-09-14 · <code>수정</code> 미출시 다이맥스 두랄루돈이 '맥스 배틀 가능' 으로 표시되던 것</summary>
+<details>
+<summary><b>v3.28.3</b> · <code>수정</code> 미출시 다이맥스 두랄루돈이 '맥스 배틀 가능' 으로 표시되던 것</summary>
 
 사용자 제보 — "아직 다이맥스 두랄루돈이 안 나왔는데 벌써 추가돼 있다".
 
@@ -158,8 +189,8 @@ CSS 에는 "이 줄의 남은 칸을 채워라" 가 없다. `grid-column: auto /
 
 </details>
 
-<details open>
-<summary><b>v3.28.2</b> — 2026-09-14 · <code>데이터</code> 다이맥스 뿔카노 · 코뿌리 · 거대코뿌리 출시 반영</summary>
+<details>
+<summary><b>v3.28.2</b> · <code>데이터</code> 다이맥스 뿔카노 · 코뿌리 · 거대코뿌리 출시 반영</summary>
 
 2026-09-14 맥스 먼데이로 다이맥스 뿔카노가 나왔다(LeekDuck `Dynamax Rhyhorn during Max Monday`, `data/gameday.json` events 에서 확인). 진화형 코뿌리 · 거대코뿌리도 다이맥스를 유지한다.
 
@@ -169,15 +200,15 @@ CSS 에는 "이 줄의 남은 칸을 채워라" 가 없다. `grid-column: auto /
 
 </details>
 
-<details open>
-<summary><b>v3.28.1</b> — 2026-09-14 · <code>추가</code> 네이버 서치어드바이저 소유 확인 메타</summary>
+<details>
+<summary><b>v3.28.1</b> · <code>추가</code> 네이버 서치어드바이저 소유 확인 메타</summary>
 
 네이버는 Google 과 달리 DNS 확인 방식이 없다. `index.html` `<head>` 의 robots 메타 바로 아래에 `<meta name="naver-site-verification" content="a5562549…">` 한 줄. 값은 HTML 에 그대로 실리는 공개 식별자라 코드에 둬도 된다. dev 빌드에도 실리지만 dev 는 noindex · robots 전체 차단이라 무관. Google Search Console 은 같은 날 도메인 속성 + 가비아 TXT 레코드로 확인 완료(코드 변경 없음). 회귀 `hardening` 통과.
 
 </details>
 
-<details open>
-<summary><b>v3.28.0</b> — 2026-09-14 · <code>추가</code> 검색 색인 열기 — robots index 메타 · 구조화 데이터(JSON-LD)</summary>
+<details>
+<summary><b>v3.28.0</b> · <code>추가</code> 검색 색인 열기 — robots index 메타 · 구조화 데이터(JSON-LD)</summary>
 
 v3.6.0 에 "아직 검색엔진에 올릴 단계가 아니다" 로 뺐던 색인 표시를, 도메인 `moncamp.kr` 이 생기면서 되살렸다.
 
@@ -189,8 +220,8 @@ v3.6.0 에 "아직 검색엔진에 올릴 단계가 아니다" 로 뺐던 색인
 
 </details>
 
-<details open>
-<summary><b>v3.27.1</b> — 2026-09-14 · <code>수정</code> GA4 측정 ID 를 moncamp.kr 스트림으로 (blog 스트림에 섞여 들어가던 것)</summary>
+<details>
+<summary><b>v3.27.1</b> · <code>수정</code> GA4 측정 ID 를 moncamp.kr 스트림으로 (blog 스트림에 섞여 들어가던 것)</summary>
 
 도메인을 옮기며 GA4 데이터 스트림을 정리하다 발견했다. 저장소 변수 `GA_ID` 의 값 `G-KVRX9FBNDC` 는 같은 속성 안 **`blog` 스트림**의 측정 ID 였다. 사이트용 스트림(옛 "pogo-rank 웹", 15750161968)의 측정 ID 는 `G-8MSZM80JHZ` 다. 즉 사이트 통계가 처음부터 블로그 스트림에 섞여 쌓이고 있었다(속성 단위 보고서에서는 합쳐 보여 눈에 띄지 않았다).
 
@@ -200,8 +231,8 @@ v3.6.0 에 "아직 검색엔진에 올릴 단계가 아니다" 로 뺐던 색인
 
 </details>
 
-<details open>
-<summary><b>v3.27.0</b> — 2026-09-14 · <code>변경</code> 서비스명 moncamp(몬캠프) · <code>추가</code> moncamp.kr 도메인 준비</summary>
+<details>
+<summary><b>v3.27.0</b> · <code>변경</code> 서비스명 moncamp(몬캠프) · <code>추가</code> moncamp.kr 도메인 준비</summary>
 
 ### 왜 monlab 을 하루 만에 접었나
 
@@ -229,8 +260,8 @@ Firebase 승인 도메인(`moncamp.kr`·`dev.moncamp.kr`) → `pogo-rank-dev` Se
 
 </details>
 
-<details open>
-<summary><b>v3.26.0</b> — 2026-09-14 · <code>변경</code> 서비스명 monlab(몬랩) · <code>수정</code> KR/EN 전환 엄격 감사</summary>
+<details>
+<summary><b>v3.26.0</b> · <code>변경</code> 서비스명 monlab(몬랩) · <code>수정</code> KR/EN 전환 엄격 감사</summary>
 
 > v3.25.0(비로그인 광고 게이트)은 `feature-advertisement` 브랜치에 그대로 두고 dev 는 v3.24.0 에서 이 판으로 바로 이어진다. 광고는 서비스명을 새로 지은 뒤 붙이기로 했다.
 
@@ -260,8 +291,13 @@ Firebase 승인 도메인(`moncamp.kr`·`dev.moncamp.kr`) → `pogo-rank-dev` Se
 
 </details>
 
-<details open>
-<summary><b>v3.24.0</b> — 2026-09-13 · <code>기능</code> 검색 줄 PvP/PvE 알약 · 육각형 레이드/PvP 축을 순위 대신 전 종 점수로</summary>
+</details>
+
+<details>
+<summary><b>2026-09-13</b> — 7판 · <code>v3.19.1 … v3.24.0</code></summary>
+
+<details>
+<summary><b>v3.24.0</b> · <code>기능</code> 검색 줄 PvP/PvE 알약 · 육각형 레이드/PvP 축을 순위 대신 전 종 점수로</summary>
 
 ### 왜
 
@@ -306,8 +342,8 @@ Firebase 승인 도메인(`moncamp.kr`·`dev.moncamp.kr`) → `pogo-rank-dev` Se
 
 </details>
 
-<details open>
-<summary><b>v3.23.0</b> — 2026-09-13 · <code>성능</code> 첫 화면 842 → 690KB — CSS 두 번 실리던 것 제거 · 안 쓰는 Inter 웹폰트 제거 · Pretendard CSS 렌더 비차단</summary>
+<details>
+<summary><b>v3.23.0</b> · <code>성능</code> 첫 화면 842 → 690KB — CSS 두 번 실리던 것 제거 · 안 쓰는 Inter 웹폰트 제거 · Pretendard CSS 렌더 비차단</summary>
 
 ### 먼저, 빌드는 느리지 않았다
 
@@ -358,8 +394,8 @@ localhost · 바깥 요청 차단 · 5회 중앙값. 외부 요청을 안 재므
 
 </details>
 
-<details open>
-<summary><b>v3.22.1</b> — 2026-09-13 · <code>변경</code> 홈 대시보드 — 인사·바로가기 한 판, 1위는 큰 그림, 타일은 갈래 카드 안의 줄</summary>
+<details>
+<summary><b>v3.22.1</b> · <code>변경</code> 홈 대시보드 — 인사·바로가기 한 판, 1위는 큰 그림, 타일은 갈래 카드 안의 줄</summary>
 
 ### 무엇이 나갔나
 
@@ -398,8 +434,8 @@ CSS 는 전부 `.home-dashboard` 아래로 한정했다. PC 테마(`pc-theme.css
 
 </details>
 
-<details open>
-<summary><b>v3.22.0</b> — 2026-09-13 · <code>변경</code> 홈 순위 세 덩이 — 순위표 세 곳 × 상위 3종</summary>
+<details>
+<summary><b>v3.22.0</b> · <code>변경</code> 홈 순위 세 덩이 — 순위표 세 곳 × 상위 3종</summary>
 
 ### 왜
 
@@ -448,8 +484,8 @@ PC 에서 좁은 화면 모양을 그대로 늘리면 카드 하나가 370px 로
 
 </details>
 
-<details open>
-<summary><b>v3.21.0</b> — 2026-09-13 · <code>변경</code> 서비스 홈 개편 — 답을 갈림길보다 먼저 보여 준다</summary>
+<details>
+<summary><b>v3.21.0</b> · <code>변경</code> 서비스 홈 개편 — 답을 갈림길보다 먼저 보여 준다</summary>
 
 ### 왜
 
@@ -507,8 +543,8 @@ PC 에서 좁은 화면 모양을 그대로 늘리면 카드 하나가 370px 로
 
 </details>
 
-<details open>
-<summary><b>v3.20.0</b> — 2026-09-13 · <code>변경</code> 움직이는 그림 확대 한도 2배 — 원본 크기를 살린다</summary>
+<details>
+<summary><b>v3.20.0</b> · <code>변경</code> 움직이는 그림 확대 한도 2배 — 원본 크기를 살린다</summary>
 
 ### 왜
 
@@ -535,15 +571,20 @@ PC 에서 좁은 화면 모양을 그대로 늘리면 카드 하나가 370px 로
 
 </details>
 
-<details open>
-<summary><b>v3.19.1</b> — 2026-09-13 · <code>수정</code> 상세 그림이 타입 배지를 가리지 않게</summary>
+<details>
+<summary><b>v3.19.1</b> · <code>수정</code> 상세 그림이 타입 배지를 가리지 않게</summary>
 
 움직이는 GIF(v3.18.0 기본)는 `object-position: center bottom` 이라 정지 png 보다 상자 위까지 찬다 — 왼쪽 위 타입 배지(`.detail__types`)가 포켓몬 머리를 덮었다(라프라스에서 제보). 그림을 조금 줄여 아래로 내리고(`.sprite-box .sprite` 8 → 7.2rem, `margin-top 0.9rem`; PC 8.4 → 7.8rem, 1rem) 배지를 위로 올렸다(`top -0.6 → -1rem`). 상자 위쪽 한 줄이 배지 자리가 된다. 390 · 1440 폭에서 스크린샷으로 확인.
 
 </details>
 
-<details open>
-<summary><b>v3.19.0</b> — 2026-09-12 · <code>추가</code> 움직이는 그림 949 → 1,151종 · 없는 종은 CSS 로 흔든다</summary>
+</details>
+
+<details>
+<summary><b>2026-09-12</b> — 34판 · <code>v2.63.0 … v3.19.0</code></summary>
+
+<details>
+<summary><b>v3.19.0</b> · <code>추가</code> 움직이는 그림 949 → 1,151종 · 없는 종은 CSS 로 흔든다</summary>
 
 ### 왜
 
@@ -563,8 +604,8 @@ v3.18.0 에서 움직이는 그림을 기본으로 켰더니 멈춰 있는 종�
 
 </details>
 
-<details open>
-<summary><b>v3.18.0</b> — 2026-09-12 · <code>변경</code> 움직이는 그림 기본 · 잠금 전부 임시 개방 · 가입 권유 팝업 내림</summary>
+<details>
+<summary><b>v3.18.0</b> · <code>변경</code> 움직이는 그림 기본 · 잠금 전부 임시 개방 · 가입 권유 팝업 내림</summary>
 
 ### 변경 — 움직이는 그림이 기본
 
@@ -586,15 +627,15 @@ v2.67.0 에는 GIF 가 png 의 13배(평균 54KB)라 상세 화면에만 썼다.
 
 </details>
 
-<details open>
-<summary><b>v3.17.1</b> — 2026-09-12 · <code>변경</code> 잠시 써보기 24시간 → 2시간</summary>
+<details>
+<summary><b>v3.17.1</b> · <code>변경</code> 잠시 써보기 24시간 → 2시간</summary>
 
 하루는 세 번이면 사흘이라 가입할 이유가 너무 늦게 온다. 한 번 앉아 쓰기엔 두 시간이면 넉넉하다 — `TRIAL_SECONDS = 2 * 60 * 60`, 버튼 라벨 `(2시간)`. 시·분 배지·횟수 3·저장 방식은 v3.17.0 그대로다.
 
 </details>
 
-<details open>
-<summary><b>v3.17.0</b> — 2026-09-12 · <code>변경</code> 잠시 써보기 20초 → 24시간</summary>
+<details>
+<summary><b>v3.17.0</b> · <code>변경</code> 잠시 써보기 20초 → 24시간</summary>
 
 써 본 사람들이 20초는 너무 짧다고 했다 — 화면 하나를 채 못 읽는 시간이다. 하루면 티어표를 실제로 써 보고 돌아올 수 있고, 세 번이면 사흘이다. 횟수(3)는 그대로다.
 
@@ -606,15 +647,15 @@ v2.67.0 에는 GIF 가 png 의 13배(평균 54KB)라 상세 화면에만 썼다.
 
 </details>
 
-<details open>
-<summary><b>v3.16.1</b> — 2026-09-12 · <code>수정</code> 로그인 유도 팝업의 버튼 셋을 같은 폭·가운데로</summary>
+<details>
+<summary><b>v3.16.1</b> · <code>수정</code> 로그인 유도 팝업의 버튼 셋을 같은 폭·가운데로</summary>
 
 [잠시 써보기] 가 팝업 왼쪽에 다른 폭으로 붙어 있었다 — `.drawer__item` 은 내용 폭만큼 줄어드는 버튼이라, 위 두 버튼이 쓰는 `min-width: 20rem; margin: … auto` 를 같이 받아야 한다(consent.css 의 v2.56.0 규칙과 같은 이유). 순서는 **Google 로그인 → 나중에 → 잠시 써보기 ^^ (20초)** — 권하는 것이 먼저, 빠져나가는 길이 그다음, 맛보기는 맨 끝. 이름에 `^^` 를 붙였다.
 
 </details>
 
-<details open>
-<summary><b>v3.16.0</b> — 2026-09-12 · <code>추가</code> 잠시 써보기 — 잠긴 화면을 20초 열어 주고, 세 번이면 가입을 권한다</summary>
+<details>
+<summary><b>v3.16.0</b> · <code>추가</code> 잠시 써보기 — 잠긴 화면을 20초 열어 주고, 세 번이면 가입을 권한다</summary>
 
 ### 왜
 
@@ -638,8 +679,8 @@ v2.67.0 에는 GIF 가 png 의 13배(평균 54KB)라 상세 화면에만 썼다.
 
 </details>
 
-<details open>
-<summary><b>v3.15.0</b> — 2026-09-12 · <code>추가</code> 도감 — 누른 줄 표시 · 진화 단계를 누르면 목록이 그 줄로 따라간다</summary>
+<details>
+<summary><b>v3.15.0</b> · <code>추가</code> 도감 — 누른 줄 표시 · 진화 단계를 누르면 목록이 그 줄로 따라간다</summary>
 
 ### 추가 — 누른 줄이 표시된 채로 남는다
 
@@ -655,8 +696,8 @@ v2.67.0 에는 GIF 가 png 의 13배(평균 54KB)라 상세 화면에만 썼다.
 
 </details>
 
-<details open>
-<summary><b>v3.14.0</b> — 2026-09-12 · <code>변경</code> 개발 순환 시간 단축 — 회귀 162→117초 · 빌드 단계화 · 죽은 코드 정리 · dev_up/ship_dev</summary>
+<details>
+<summary><b>v3.14.0</b> · <code>변경</code> 개발 순환 시간 단축 — 회귀 162→117초 · 빌드 단계화 · 죽은 코드 정리 · dev_up/ship_dev</summary>
 
 ### 왜
 
@@ -707,8 +748,8 @@ v2.67.0 에는 GIF 가 png 의 13배(평균 54KB)라 상세 화면에만 썼다.
 
 </details>
 
-<details open>
-<summary><b>v3.13.0</b> — 2026-09-12 · <code>변경</code> UX 흐름 점검 — 죽은 조각 · 낡은 문구 · 겹치는 문을 걷어냈다</summary>
+<details>
+<summary><b>v3.13.0</b> · <code>변경</code> UX 흐름 점검 — 죽은 조각 · 낡은 문구 · 겹치는 문을 걷어냈다</summary>
 
 ### 무엇을 찾았나
 
@@ -737,8 +778,8 @@ v2.67.0 에는 GIF 가 png 의 13배(평균 54KB)라 상세 화면에만 썼다.
 
 </details>
 
-<details open>
-<summary><b>v3.12.0</b> — 2026-09-12 · <code>변경</code> 검색 팝업을 걷어냈다 — 검색은 도감에서 · 타입 칩을 도감으로 · 활용처 순위를 홈으로 외 1건</summary>
+<details>
+<summary><b>v3.12.0</b> · <code>변경</code> 검색 팝업을 걷어냈다 — 검색은 도감에서 · 타입 칩을 도감으로 · 활용처 순위를 홈으로 외 1건</summary>
 
 ### 변경 — 검색 팝업을 걷어냈다. 검색은 도감에서 한다
 
@@ -786,7 +827,7 @@ v3.9.0 은 결과를 도감으로 넘겼고 v3.10.0 은 패널에서 결과 줄�
 </details>
 
 <details>
-<summary><b>v3.11.0</b> — 2026-09-12 · <code>추가·변경</code> 패치노트 영문판 · 화면 테마를 버튼과 설정 화면으로 가른다 · 가입 권유 팝업 외 2건</summary>
+<summary><b>v3.11.0</b> · <code>추가·변경</code> 패치노트 영문판 · 화면 테마를 버튼과 설정 화면으로 가른다 · 가입 권유 팝업 외 2건</summary>
 
 ### 추가 — 패치노트 영문판
 
@@ -840,7 +881,7 @@ String(text).split('**').map((part, i) => (i % 2 ? el('b', {}, part) : part))
 </details>
 
 <details>
-<summary><b>v3.10.0</b> — 2026-09-12 · <code>변경</code> 도감 안 검색 칸이 돌아왔다 · 휴대폰 티어표도 두 장씩 · 카드 한 장을 85% 로 외 4건</summary>
+<summary><b>v3.10.0</b> · <code>변경</code> 도감 안 검색 칸이 돌아왔다 · 휴대폰 티어표도 두 장씩 · 카드 한 장을 85% 로 외 4건</summary>
 
 ### 변경 — 도감 안 검색 칸이 돌아왔다
 
@@ -902,7 +943,7 @@ v3.7.1 에 위아래로 쌓고 리그 넷을 2×2 로 만든 것을 되돌린다
 </details>
 
 <details>
-<summary><b>v3.9.1</b> — 2026-09-12 · <code>수정·회귀</code> 레이드 · PvE 와 D-MAX 의 보기 전환이 아무 일도 안 했다 · 클래스가 아니라 화면을 받는다</summary>
+<summary><b>v3.9.1</b> · <code>수정·회귀</code> 레이드 · PvE 와 D-MAX 의 보기 전환이 아무 일도 안 했다 · 클래스가 아니라 화면을 받는다</summary>
 
 ### 수정 — 레이드 · PvE 와 D-MAX 의 보기 전환이 아무 일도 안 했다
 
@@ -970,7 +1011,7 @@ function rowListLayout(grid) {
 </details>
 
 <details>
-<summary><b>v3.9.0</b> — 2026-09-12 · <code>수정·추가</code> 검색 결과를 도감 화면에서 본다 · 타입 칩이 목록을 거르지 않았다 · 마리 수가 8에서 멈췄다 외 1건</summary>
+<summary><b>v3.9.0</b> · <code>수정·추가</code> 검색 결과를 도감 화면에서 본다 · 타입 칩이 목록을 거르지 않았다 · 마리 수가 8에서 멈췄다 외 1건</summary>
 
 ### 추가 — 검색 결과를 도감 화면에서 본다
 
@@ -1030,7 +1071,7 @@ const candidates = types.length && typeof typeMonList === 'function' ? typeMonLi
 </details>
 
 <details>
-<summary><b>v3.8.3</b> — 2026-09-12 · <code>수정</code> 보기 전환 버튼이 iOS 에서 눌리지 않았다 · 휴대폰에서 세로 스크롤이 끊겼다 · 회귀</summary>
+<summary><b>v3.8.3</b> · <code>수정</code> 보기 전환 버튼이 iOS 에서 눌리지 않았다 · 휴대폰에서 세로 스크롤이 끊겼다 · 회귀</summary>
 
 긴급. 사용자가 아이폰에서 겪은 두 가지다 — 세로 스크롤이 끊기고, 보기 전환 버튼이 안 눌렸다.
 
@@ -1076,7 +1117,7 @@ rect → rect → svg → button.icon-btn.view-toggle
 </details>
 
 <details>
-<summary><b>v3.8.2</b> — 2026-09-12 · <code>수정·변경</code> 검색식 만들기: 만들어진 식이 상단 바 뒤에 숨었다 · 묶음 간격을 다시 잡았다 · 머리 안내문에서 겹치는 문장을 뺐다 외 2건</summary>
+<summary><b>v3.8.2</b> · <code>수정·변경</code> 검색식 만들기: 만들어진 식이 상단 바 뒤에 숨었다 · 묶음 간격을 다시 잡았다 · 머리 안내문에서 겹치는 문장을 뺐다 외 2건</summary>
 
 ### 수정 — 검색식 만들기: 만들어진 식이 상단 바 뒤에 숨었다
 
@@ -1115,7 +1156,7 @@ rect → rect → svg → button.icon-btn.view-toggle
 </details>
 
 <details>
-<summary><b>v3.8.1</b> — 2026-09-12 · <code>수정</code> 상세 화면의 타입 배지가 그림을 덮었다</summary>
+<summary><b>v3.8.1</b> · <code>수정</code> 상세 화면의 타입 배지가 그림을 덮었다</summary>
 
 ### 수정 — 상세 화면의 타입 배지가 그림을 덮었다
 
@@ -1127,7 +1168,7 @@ rect → rect → svg → button.icon-btn.view-toggle
 </details>
 
 <details>
-<summary><b>v3.8.0</b> — 2026-09-12 · <code>수정·변경</code> 보기 전환(리스트 ↔ 그리드)을 버튼 하나로 · 구역 제목 꼬리말을 내리는 범위를 좁혔다 · 회귀</summary>
+<summary><b>v3.8.0</b> · <code>수정·변경</code> 보기 전환(리스트 ↔ 그리드)을 버튼 하나로 · 구역 제목 꼬리말을 내리는 범위를 좁혔다 · 회귀</summary>
 
 ### 변경 — 보기 전환(리스트 ↔ 그리드)을 버튼 하나로
 
@@ -1161,7 +1202,7 @@ v3.7.1 에서 좁은 화면의 제목 꼬리말을 아랫줄로 내렸는데, �
 </details>
 
 <details>
-<summary><b>v3.7.1</b> — 2026-09-12 · <code>변경</code> 굵기는 한 칸 옆으로 한 번 더 찍어서 낸다 · 좁은 화면의 화면 머리 배치 · 도구 버튼의 이모지를 도트 아이콘으로 외 2건</summary>
+<summary><b>v3.7.1</b> · <code>변경</code> 굵기는 한 칸 옆으로 한 번 더 찍어서 낸다 · 좁은 화면의 화면 머리 배치 · 도구 버튼의 이모지를 도트 아이콘으로 외 2건</summary>
 
 ### 변경 — 굵기는 한 칸 옆으로 한 번 더 찍어서 낸다
 
@@ -1204,7 +1245,7 @@ v3.6.1 의 곡선 제거는 `html:not(#_) body *` 로 우선순위를 id 한 칸
 </details>
 
 <details>
-<summary><b>v3.7.0</b> — 2026-09-12 · <code>변경</code> 키 컬러를 원작의 몬스터볼 빨강으로 · 앱 아이콘이 채운 몬스터볼로 (`backend/icon_gen.py`) · 공유 카드도 채운 몬스터볼 (`backend/og_gen.py`) 외 3건</summary>
+<summary><b>v3.7.0</b> · <code>변경</code> 키 컬러를 원작의 몬스터볼 빨강으로 · 앱 아이콘이 채운 몬스터볼로 (`backend/icon_gen.py`) · 공유 카드도 채운 몬스터볼 (`backend/og_gen.py`) 외 3건</summary>
 
 ### 변경 — 키 컬러를 원작의 몬스터볼 빨강으로
 
@@ -1250,7 +1291,7 @@ v3.6.1 의 곡선 제거는 `html:not(#_) body *` 로 우선순위를 id 한 칸
 </details>
 
 <details>
-<summary><b>v3.6.1</b> — 2026-09-12 · <code>수정·변경</code> 바탕이 글자 뒤에서 그대로 비쳤다 · 도트 글꼴에 가짜 굵기가 씌워져 있었다 · 글씨 크기·줄간 외 4건</summary>
+<summary><b>v3.6.1</b> · <code>수정·변경</code> 바탕이 글자 뒤에서 그대로 비쳤다 · 도트 글꼴에 가짜 굵기가 씌워져 있었다 · 글씨 크기·줄간 외 4건</summary>
 
 도트 디자인을 실제 화면에서 보고 다듬었다. 바탕이 글자를 가렸고, 글꼴은 도트로 안 보였고, 둥근 자리가 남아 있었다.
 
@@ -1311,7 +1352,7 @@ v3.6.0 은 둥근 자리의 **이름을 하나씩 적어** 눌렀다. 그래서 
 </details>
 
 <details>
-<summary><b>v3.6.0</b> — 2026-09-12 · <code>추가·변경</code> 도트(픽셀) 디자인 · 도트 아이콘 (`components/pxicon.js`) · 바탕의 몬스터볼과 점 격자 외 3건</summary>
+<summary><b>v3.6.0</b> · <code>추가·변경</code> 도트(픽셀) 디자인 · 도트 아이콘 (`components/pxicon.js`) · 바탕의 몬스터볼과 점 격자 외 3건</summary>
 
 ### 변경 — 도트(픽셀) 디자인
 
@@ -1360,7 +1401,7 @@ dev 미리보기의 `noindex` 와 `robots.txt` 전면 차단은 그대로다. �
 </details>
 
 <details>
-<summary><b>v3.5.0</b> — 2026-09-12 · <code>추가·변경</code> 포켓몬 도감 안의 검색 칸을 뺐다 · D-MAX 보기 전환 · [이번 주 보스] ↔ 타입 필터 간격 32px → 8px</summary>
+<summary><b>v3.5.0</b> · <code>추가·변경</code> 포켓몬 도감 안의 검색 칸을 뺐다 · D-MAX 보기 전환 · [이번 주 보스] ↔ 타입 필터 간격 32px → 8px</summary>
 
 ### 변경 — 포켓몬 도감 안의 검색 칸을 뺐다
 
@@ -1382,7 +1423,7 @@ v2.66.0 에 안내 문구로 성격을 갈라 놓았지만(헤더는 "어디로�
 </details>
 
 <details>
-<summary><b>v3.4.0</b> — 2026-09-12 · <code>수정·변경</code> ★ 즐겨찾기를 통째로 걷어냈다 · 메뉴의 `내 포켓몬` 들여쓰기</summary>
+<summary><b>v3.4.0</b> · <code>수정·변경</code> ★ 즐겨찾기를 통째로 걷어냈다 · 메뉴의 `내 포켓몬` 들여쓰기</summary>
 
 ### 변경 — ★ 즐겨찾기를 통째로 걷어냈다
 
@@ -1416,7 +1457,7 @@ v2.66.0 에서 부모(육성 플래너) 아래 한 칸 들여 썼는데, 좁은 
 </details>
 
 <details>
-<summary><b>v3.3.0</b> — 2026-09-12 · <code>변경</code> 레이드 · PvE 재배치</summary>
+<summary><b>v3.3.0</b> · <code>변경</code> 레이드 · PvE 재배치</summary>
 
 ### 변경 — 레이드 · PvE 재배치
 
@@ -1432,7 +1473,7 @@ v2.66.0 에서 부모(육성 플래너) 아래 한 칸 들여 썼는데, 좁은 
 </details>
 
 <details>
-<summary><b>v3.2.0</b> — 2026-09-12 · <code>수정·변경</code> D-MAX 축 · PvP 리그도 화면 머리로 · 앞 화면의 컨트롤이 머리에 남아 있었다 · D-MAX 로 바로 들어온 첫 화면</summary>
+<summary><b>v3.2.0</b> · <code>수정·변경</code> D-MAX 축 · PvP 리그도 화면 머리로 · 앞 화면의 컨트롤이 머리에 남아 있었다 · D-MAX 로 바로 들어온 첫 화면</summary>
 
 ### 변경 — D-MAX 축 · PvP 리그도 화면 머리로
 
@@ -1458,7 +1499,7 @@ v3.1.0 에서 만든 동작 슬롯을 메인 셸까지 넓힌다. 뷰가 컨트�
 </details>
 
 <details>
-<summary><b>v3.1.0</b> — 2026-09-12 · <code>변경</code> 보기 전환을 화면 머리로</summary>
+<summary><b>v3.1.0</b> · <code>변경</code> 보기 전환을 화면 머리로</summary>
 
 ### 변경 — 보기 전환을 화면 머리로
 
@@ -1473,7 +1514,7 @@ v3.1.0 에서 만든 동작 슬롯을 메인 셸까지 넓힌다. 뷰가 컨트�
 </details>
 
 <details>
-<summary><b>v3.0.0</b> — 2026-09-12 · <code>변경</code> 바탕과 카드를 뒤집는다 · 회색이 파란 기에서 보라 기로 · 브랜드가 초록에서 인디고로 외 2건</summary>
+<summary><b>v3.0.0</b> · <code>변경</code> 바탕과 카드를 뒤집는다 · 회색이 파란 기에서 보라 기로 · 브랜드가 초록에서 인디고로 외 2건</summary>
 
 새 디자인 시스템. 스타일 레퍼런스([yceffort.kr](https://yceffort.kr/))의 색·글꼴 체계를 가져왔다. 화면 구조와 기능은 그대로고, **토큰과 글꼴만** 갈아끼웠다 — `styles/tokens.css` 한 곳이 색을 쥐고 있어 가능한 일이다.
 
@@ -1522,7 +1563,7 @@ v3.1.0 에서 만든 동작 슬롯을 메인 셸까지 넓힌다. 뷰가 컨트�
 </details>
 
 <details>
-<summary><b>v2.67.1</b> — 2026-09-12 · <code>수정·변경</code> 보기 전환이 왼쪽 아래에 주저앉았다 · 즐겨찾기도 갈래 칩과 보기 전환을 한 줄에</summary>
+<summary><b>v2.67.1</b> · <code>수정·변경</code> 보기 전환이 왼쪽 아래에 주저앉았다 · 즐겨찾기도 갈래 칩과 보기 전환을 한 줄에</summary>
 
 ### 수정 — 보기 전환이 왼쪽 아래에 주저앉았다
 
@@ -1541,7 +1582,7 @@ v2.67.0 에서 `.seg-view` 를 `display: inline-grid` 로 바꾸면서 `margin-l
 </details>
 
 <details>
-<summary><b>v2.67.0</b> — 2026-09-12 · <code>추가·변경</code> 상세 화면의 포켓몬이 움직인다 · 컨트롤을 한 줄로 · 리스트 · 그리드 전환을 작게 외 1건</summary>
+<summary><b>v2.67.0</b> · <code>추가·변경</code> 상세 화면의 포켓몬이 움직인다 · 컨트롤을 한 줄로 · 리스트 · 그리드 전환을 작게 외 1건</summary>
 
 ### 추가 — 상세 화면의 포켓몬이 움직인다
 
@@ -1583,7 +1624,7 @@ v2.40.0 에 목록 폭을 다 쓰게 한 이유는 "눈에 들어와야 한다" 
 </details>
 
 <details>
-<summary><b>v2.66.0</b> — 2026-09-12 · <code>변경</code> 도구마다 주소를 준다 · 리그를 고르는 컨트롤이 둘이었다 · 구분선을 필터 줄 아래로 외 4건</summary>
+<summary><b>v2.66.0</b> · <code>변경</code> 도구마다 주소를 준다 · 리그를 고르는 컨트롤이 둘이었다 · 구분선을 필터 줄 아래로 외 4건</summary>
 
 한 화면이 여러 기능을 겸하면 그 화면의 이름이 무엇을 뜻하는지 흐려진다. dev 기준으로 화면과 기능을 대조해 겹치는 곳 여덟 군데를 찾고(노션 "한 페이지 한 기능 감사") 일곱을 고쳤다. 나머지 하나(D-MAX 칩 라벨)는 **이미 되어 있었다** — 백로그를 잘못 적은 것이라 해당 행에 근거를 적고 취소했다.
 
@@ -1647,7 +1688,7 @@ v2.47.0 이 지적한 "문이 둘" 은 **같은 층에 둘**이던 것이 문제
 </details>
 
 <details>
-<summary><b>v2.65.0</b> — 2026-09-12 · <code>변경</code> 메뉴를 "하려는 일" 로 다시 묶었다 · 화면 머리와 본문 사이에 구분선 · 넓은 화면에서 PvP 개체값 순위를 좌우로 외 2건</summary>
+<summary><b>v2.65.0</b> · <code>변경</code> 메뉴를 "하려는 일" 로 다시 묶었다 · 화면 머리와 본문 사이에 구분선 · 넓은 화면에서 PvP 개체값 순위를 좌우로 외 2건</summary>
 
 ### 변경 — 메뉴를 "하려는 일" 로 다시 묶었다
 
@@ -1687,7 +1728,7 @@ v2.47.0 이 지적한 "문이 둘" 은 **같은 층에 둘**이던 것이 문제
 </details>
 
 <details>
-<summary><b>v2.64.0</b> — 2026-09-12 · <code>변경</code> ★ 즐겨찾기를 헤더 버튼 + 팝업으로 · ☰ 메뉴를 주요 기능 · 부가 기능 두 덩이로 · 배틀 · PvP 를 읽는 순서대로 외 1건</summary>
+<summary><b>v2.64.0</b> · <code>변경</code> ★ 즐겨찾기를 헤더 버튼 + 팝업으로 · ☰ 메뉴를 주요 기능 · 부가 기능 두 덩이로 · 배틀 · PvP 를 읽는 순서대로 외 1건</summary>
 
 ### 변경 — ★ 즐겨찾기를 헤더 버튼 + 팝업으로
 
@@ -1731,7 +1772,7 @@ v2.47.0 이 지적한 "문이 둘" 은 **같은 층에 둘**이던 것이 문제
 </details>
 
 <details>
-<summary><b>v2.63.0</b> — 2026-09-12 · <code>변경</code> 🧭 타입 & 상성 화면을 접었다 · 🧬 PvP 개체값 순위를 배틀 · PvP 안으로 · 정리 — 홈 타일 11개 → 9개</summary>
+<summary><b>v2.63.0</b> · <code>변경</code> 🧭 타입 & 상성 화면을 접었다 · 🧬 PvP 개체값 순위를 배틀 · PvP 안으로 · 정리 — 홈 타일 11개 → 9개</summary>
 
 ### 변경 — 🧭 타입 & 상성 화면을 접었다
 
@@ -1758,8 +1799,13 @@ v2.47.0 이 지적한 "문이 둘" 은 **같은 층에 둘**이던 것이 문제
 
 </details>
 
+</details>
+
 <details>
-<summary><b>v2.62.0</b> — 2026-09-11 · <code>수정·변경</code> PvP 개체값 순위에 리그 탭 · 고른 포켓몬 카드가 한 줄에 뭉개지던 것</summary>
+<summary><b>2026-09-11</b> — 9판 · <code>v2.55.0 … v2.62.0</code></summary>
+
+<details>
+<summary><b>v2.62.0</b> · <code>수정·변경</code> PvP 개체값 순위에 리그 탭 · 고른 포켓몬 카드가 한 줄에 뭉개지던 것</summary>
 
 ### 변경 — PvP 개체값 순위에 리그 탭
 
@@ -1780,7 +1826,7 @@ v2.47.0 이 지적한 "문이 둘" 은 **같은 층에 둘**이던 것이 문제
 </details>
 
 <details>
-<summary><b>v2.61.0</b> — 2026-09-11 · <code>추가·변경</code> 🧬 PvP 개체값 순위 (실험 기능) · 랭킹 탭 줄과 바로가기 제거 · 타입 & 상성을 열면 노말이 기본</summary>
+<summary><b>v2.61.0</b> · <code>추가·변경</code> 🧬 PvP 개체값 순위 (실험 기능) · 랭킹 탭 줄과 바로가기 제거 · 타입 & 상성을 열면 노말이 기본</summary>
 
 ### 추가 — 🧬 PvP 개체값 순위 (실험 기능)
 
@@ -1840,7 +1886,7 @@ v2.22.0 에 이 줄을 되살린 이유는 "D-MAX ↔ PvE ↔ PvP 를 오가려�
 </details>
 
 <details>
-<summary><b>v2.60.1</b> — 2026-09-11 · <code>수정</code> 화면을 옮겨도 상세 패널이 따라오던 것</summary>
+<summary><b>v2.60.1</b> · <code>수정</code> 화면을 옮겨도 상세 패널이 따라오던 것</summary>
 
 ### 수정 — 화면을 옮겨도 상세 패널이 따라오던 것
 
@@ -1868,7 +1914,7 @@ if (!/^#\/mon\//.test(location.hash)) closeDetailPanel();
 </details>
 
 <details>
-<summary><b>v2.60.0</b> — 2026-09-11 · <code>수정·변경</code> 화면 말투를 친근체 하나로 · 잠긴 화면 문구를 짧게 · 화면 이름 뒤 조사가 늘 "은" 이던 것</summary>
+<summary><b>v2.60.0</b> · <code>수정·변경</code> 화면 말투를 친근체 하나로 · 잠긴 화면 문구를 짧게 · 화면 이름 뒤 조사가 늘 "은" 이던 것</summary>
 
 ### 변경 — 화면 말투를 친근체 하나로
 
@@ -1912,7 +1958,7 @@ if (!/^#\/mon\//.test(location.hash)) closeDetailPanel();
 </details>
 
 <details>
-<summary><b>v2.59.0</b> — 2026-09-11 · <code>변경</code> 목록을 한 줄에 여러 개로 (격자 사다리) · dev 빌드의 탭 제목에 `[dev]`</summary>
+<summary><b>v2.59.0</b> · <code>변경</code> 목록을 한 줄에 여러 개로 (격자 사다리) · dev 빌드의 탭 제목에 `[dev]`</summary>
 
 ### 변경 — 목록을 한 줄에 여러 개로 (격자 사다리)
 
@@ -1936,7 +1982,7 @@ if (!/^#\/mon\//.test(location.hash)) closeDetailPanel();
 </details>
 
 <details>
-<summary><b>v2.58.0</b> — 2026-09-11 · <code>추가</code> 🔎 검색식 만들기 (`#/finder`, 백로그 QA-57) · 넣지 않은 것이 이 화면의 경계다 · 잠금·문 외 2건</summary>
+<summary><b>v2.58.0</b> · <code>추가</code> 🔎 검색식 만들기 (`#/finder`, 백로그 QA-57) · 넣지 않은 것이 이 화면의 경계다 · 잠금·문 외 2건</summary>
 
 ### 추가 — 🔎 검색식 만들기 (`#/finder`, 백로그 QA-57)
 
@@ -1981,7 +2027,7 @@ if (!/^#\/mon\//.test(location.hash)) closeDetailPanel();
 </details>
 
 <details>
-<summary><b>v2.57.0</b> — 2026-09-11 · 먼저 쟀다 · 변경 · 안전선 외 3건</summary>
+<summary><b>v2.57.0</b> · 먼저 쟀다 · 변경 · 안전선 외 3건</summary>
 
 화면에 보이는 변화는 없다. **나가는 것만 가볍게 했다.** 그래서 패치노트(`RELEASE_VER`)는 올리지 않는다 — 올려 봐야 새 소식 빨간 점만 뜨고 볼 것이 없다.
 
@@ -2053,7 +2099,7 @@ gzip 보다 **원본**이 더 중요하다 — 브라우저가 풀어서 읽어�
 </details>
 
 <details>
-<summary><b>v2.56.0</b> — 2026-09-11 · 수정 · 회귀 · 확인</summary>
+<summary><b>v2.56.0</b> · 수정 · 회귀 · 확인</summary>
 
 ### 수정
 
@@ -2082,7 +2128,7 @@ gzip 보다 **원본**이 더 중요하다 — 브라우저가 풀어서 읽어�
 </details>
 
 <details>
-<summary><b>v2.55.0</b> — 2026-09-11 · 변경 · 주의 — 두 표에서 고른 타입의 뜻이 다르다 · 구조 외 1건</summary>
+<summary><b>v2.55.0</b> · 변경 · 주의 — 두 표에서 고른 타입의 뜻이 다르다 · 구조 외 1건</summary>
 
 ### 변경
 
@@ -2110,8 +2156,13 @@ gzip 보다 **원본**이 더 중요하다 — 브라우저가 풀어서 읽어�
 
 </details>
 
+</details>
+
 <details>
-<summary><b>v2.54.0</b> — 2026-09-10 · 먼저 쟀다 · 추가 · 변경 외 2건</summary>
+<summary><b>2026-09-10</b> — 14판 · <code>v2.42.0 … v2.54.0</code></summary>
+
+<details>
+<summary><b>v2.54.0</b> · 먼저 쟀다 · 추가 · 변경 외 2건</summary>
 
 화면에 보이는 변화는 없다. 개발 속도만 손봤다. 그래서 패치노트(`RELEASE_VER`)는 올리지 않는다 — 올려 봐야 새 소식 빨간 점만 뜨고 볼 것이 없다 (v2.49.1 과 같은 판단).
 
@@ -2157,7 +2208,7 @@ gzip 보다 **원본**이 더 중요하다 — 브라우저가 풀어서 읽어�
 </details>
 
 <details>
-<summary><b>v2.53.0</b> — 2026-09-10 · 수정 · 회귀 · 확인</summary>
+<summary><b>v2.53.0</b> · 수정 · 회귀 · 확인</summary>
 
 ### 수정
 
@@ -2186,7 +2237,7 @@ gzip 보다 **원본**이 더 중요하다 — 브라우저가 풀어서 읽어�
 </details>
 
 <details>
-<summary><b>v2.52.0</b> — 2026-09-10 · 변경 · 확인</summary>
+<summary><b>v2.52.0</b> · 변경 · 확인</summary>
 
 ### 변경
 
@@ -2205,7 +2256,7 @@ gzip 보다 **원본**이 더 중요하다 — 브라우저가 풀어서 읽어�
 </details>
 
 <details>
-<summary><b>v2.51.0</b> — 2026-09-10 · 변경</summary>
+<summary><b>v2.51.0</b> · 변경</summary>
 
 ### 변경
 
@@ -2218,7 +2269,7 @@ gzip 보다 **원본**이 더 중요하다 — 브라우저가 풀어서 읽어�
 </details>
 
 <details>
-<summary><b>v2.50.0</b> — 2026-09-10 · 수정</summary>
+<summary><b>v2.50.0</b> · 수정</summary>
 
 "알 부화 포켓몬이 바뀌었는데 반영이 안 된다" 는 제보를 확인한 결과, **배포된 데이터는 이미 최신이었다.** 대조 기록:
 
@@ -2240,7 +2291,7 @@ gzip 보다 **원본**이 더 중요하다 — 브라우저가 풀어서 읽어�
 </details>
 
 <details>
-<summary><b>v2.49.1</b> — 2026-09-10 · 변경</summary>
+<summary><b>v2.49.1</b> · 변경</summary>
 
 화면에 보이는 변화는 없다. 버그 제보 링크의 주소는 이미 요청받은 값(`https://www.notion.so/a0472984122d4f25b9b445b57465568f`)이었고, 이번에 한 일은 **그 값이 바뀌지 않도록 못 박은 것**이다.
 
@@ -2256,7 +2307,7 @@ gzip 보다 **원본**이 더 중요하다 — 브라우저가 풀어서 읽어�
 </details>
 
 <details>
-<summary><b>v2.49.0</b> — 2026-09-10 · 수정 · 변경</summary>
+<summary><b>v2.49.0</b> · 수정 · 변경</summary>
 
 ### 수정
 
@@ -2277,7 +2328,7 @@ gzip 보다 **원본**이 더 중요하다 — 브라우저가 풀어서 읽어�
 </details>
 
 <details>
-<summary><b>v2.48.0</b> — 2026-09-10 · 수정</summary>
+<summary><b>v2.48.0</b> · 수정</summary>
 
 **긴급.** v2.44.0 에서 CSP 를 고쳐 브라우저 로그인은 돌아왔지만, **홈 화면에 설치한 앱(PWA)에서는 여전히 로그인이 안 됐다.** 원인이 따로 있었다.
 
@@ -2293,7 +2344,7 @@ gzip 보다 **원본**이 더 중요하다 — 브라우저가 풀어서 읽어�
 </details>
 
 <details>
-<summary><b>v2.47.0</b> — 2026-09-10 · 변경 · 수정 · 추가</summary>
+<summary><b>v2.47.0</b> · 변경 · 수정 · 추가</summary>
 
 목업 4장(육성 현황 · 내 포켓몬 · 개체 비교 · 개체 추가)을 받아 플래너 쪽을 다시 짰다. 먼저 **메뉴를 합쳤다** — '내 포켓몬' 과 '육성 플래너' 는 같은 화면의 두 탭인데 ☰ 메뉴에도 서비스 홈 타일에도 문이 두 개씩 있어, 어느 쪽을 눌러야 하는지가 매번 질문이 됐다.
 
@@ -2327,7 +2378,7 @@ gzip 보다 **원본**이 더 중요하다 — 브라우저가 풀어서 읽어�
 </details>
 
 <details>
-<summary><b>v2.46.0</b> — 2026-09-10 · 변경</summary>
+<summary><b>v2.46.0</b> · 변경</summary>
 
 플래너·내 포켓몬 목업 4장을 받아 도감 쪽 화면을 같은 문법으로 맞췄다. 목업에 있고 도감에 없던 것 셋만 옮긴다 — 목업의 큰 히어로 배너는 붙이지 않았다. 도감 화면 머리에는 이미 제목과 한 줄 설명이 있고(`router.js` `ROUTE_DESC`), 그 위에 배너를 또 얹으면 "무엇을 찾을지" 보다 배너가 먼저 나온다. 공식 아트워크는 이 저장소에 없으므로 목업의 3D 그림 자리는 지금까지처럼 빛(그라데이션)으로 채운다.
 
@@ -2343,7 +2394,7 @@ gzip 보다 **원본**이 더 중요하다 — 브라우저가 풀어서 읽어�
 </details>
 
 <details>
-<summary><b>v2.45.0</b> — 2026-09-10 · 변경 · 수정</summary>
+<summary><b>v2.45.0</b> · 변경 · 수정</summary>
 
 도감 카드를 v2.43.0 티어표 카드와 같은 문법으로 맞췄다. `.dex__row` 는 도감만의 것이 아니다 — ★ 즐겨찾기 · ⚔️ 레이드 보스 · 🥚 알 부화가 같은 조각을 빌려 쓰므로(`components/favs.js` · `gameday.js`) 이 블록 하나로 네 화면이 같이 바뀐다. 티어표만 새 옷을 입고 도감이 옛 옷으로 남으면 같은 앱 안에 카드가 두 종류가 된다.
 
@@ -2360,7 +2411,7 @@ gzip 보다 **원본**이 더 중요하다 — 브라우저가 풀어서 읽어�
 </details>
 
 <details>
-<summary><b>v2.44.0</b> — 2026-09-10 · 수정 · 변경</summary>
+<summary><b>v2.44.0</b> · 수정 · 변경</summary>
 
 로그인이 안 되던 원인은 기기도 브라우저 설정도 아니라 **우리 CSP** 였다. v2.27.0(보안 강화)에서 `script-src` 에 `https://apis.google.com` 을 빠뜨렸고, `firebase-auth-compat` 는 로그인할 때 그 주소의 `api.js` 를 먼저 받아 인증 이벤트용 iframe 을 띄운다. CSP 가 그 스크립트를 거부하면 SDK 는 `loadJS` 의 `onerror` 를 `auth/internal-error` 로 바꿔 던진다 — 사용자가 본 그 문구다. 리다이렉트로 넘겨도 같은 파일이 필요해 v2.39.0(재시도)·v2.39.1(리다이렉트)이 둘 다 듣지 않았다.
 
@@ -2379,7 +2430,7 @@ gzip 보다 **원본**이 더 중요하다 — 브라우저가 풀어서 읽어�
 </details>
 
 <details>
-<summary><b>v2.43.0</b> — 2026-09-10 · 변경 · 불변</summary>
+<summary><b>v2.43.0</b> · 변경 · 불변</summary>
 
 D-MAX 목업을 받아 티어표를 다시 짰다. **여기 있는 것은 전부 공용 조각**이다 — 티어 머리글·랭킹 카드·선정 근거는 D-MAX·레이드 PvE·배틀 PvP·일반 티어표가 같이 쓰므로 한 화면만 바꿀 수는 없고 그럴 이유도 없다.
 
@@ -2396,7 +2447,7 @@ D-MAX 목업을 받아 티어표를 다시 짰다. **여기 있는 것은 전부
 </details>
 
 <details>
-<summary><b>v2.42.0</b> — 2026-09-10 · 변경 · 수정 · 불변</summary>
+<summary><b>v2.42.0</b> · 변경 · 수정 · 불변</summary>
 
 목업 4장을 받아 **넓은 화면(1100px~)** 디자인을 통째로 다시 입혔다. 휴대폰 배치는 손대지 않았다 — 목업이 PC 전용이었고, 좁은 화면은 지금 배치가 이미 손가락에 맞다.
 
@@ -2420,8 +2471,13 @@ D-MAX 목업을 받아 티어표를 다시 짰다. **여기 있는 것은 전부
 
 </details>
 
+</details>
+
 <details>
-<summary><b>v2.41.0</b> — 2026-09-09 · 추가</summary>
+<summary><b>2026-09-09</b> — 12판 · <code>v2.32.0 … v2.41.0</code></summary>
+
+<details>
+<summary><b>v2.41.0</b> · 추가</summary>
 
 "지금까지 만든 스타일을 한눈에 보고 싶다"는 요청. 스토리북 대신 **실제 조각을 그대로 늘어놓는 화면**을 만들었다.
 
@@ -2436,7 +2492,7 @@ D-MAX 목업을 받아 티어표를 다시 짰다. **여기 있는 것은 전부
 </details>
 
 <details>
-<summary><b>v2.40.1</b> — 2026-09-09 · 수정 · 감사 (이번에 통과한 것)</summary>
+<summary><b>v2.40.1</b> · 수정 · 감사 (이번에 통과한 것)</summary>
 
 배포 뒤 전 화면·전 폭을 훑는 감사에서 v2.40.0 이 심은 회귀를 하나 찾아 고쳤다.
 
@@ -2452,7 +2508,7 @@ D-MAX 목업을 받아 티어표를 다시 짰다. **여기 있는 것은 전부
 </details>
 
 <details>
-<summary><b>v2.40.0</b> — 2026-09-09 · 변경 · 불변</summary>
+<summary><b>v2.40.0</b> · 변경 · 불변</summary>
 
 ☰ 메뉴와 보기 방식 버튼을 목업에 맞춰 다시 짰다. 둘 다 "지금 어디/어느 보기인지"가 안 읽히던 자리다.
 
@@ -2473,7 +2529,7 @@ D-MAX 목업을 받아 티어표를 다시 짰다. **여기 있는 것은 전부
 </details>
 
 <details>
-<summary><b>v2.39.1</b> — 2026-09-09 · 수정</summary>
+<summary><b>v2.39.1</b> · 수정</summary>
 
 v2.39.0 이 고쳤다고 적은 재로그인 실패가, dev 배포로 실제 확인해 보니 그대로였다.
 
@@ -2483,7 +2539,7 @@ v2.39.0 이 고쳤다고 적은 재로그인 실패가, dev 배포로 실제 확
 </details>
 
 <details>
-<summary><b>v2.39.0</b> — 2026-09-09 · 변경 · 수정 · 불변</summary>
+<summary><b>v2.39.0</b> · 변경 · 수정 · 불변</summary>
 
 카드 그리드 열 수를 화면 폭에 맞춰 자동으로 조절하고, 그리드·리스트 토글 버튼 위치를 다듬었다.
 로그아웃 직후 재로그인이 실패하던 문제도 고쳤다.
@@ -2501,7 +2557,7 @@ v2.39.0 이 고쳤다고 적은 재로그인 실패가, dev 배포로 실제 확
 </details>
 
 <details>
-<summary><b>v2.38.0</b> — 2026-09-09 · 변경 · 수정 · 불변</summary>
+<summary><b>v2.38.0</b> · 변경 · 수정 · 불변</summary>
 
 "PC 는 1440 기준으로, 대신 태블릿 1100 을 넣어 달라"는 요청 — 한 단계였던 넓은 화면을 둘로 나눴다.
 그 과정에서 상세 패널 여백 버그도 함께 잡혔다.
@@ -2521,7 +2577,7 @@ v2.39.0 이 고쳤다고 적은 재로그인 실패가, dev 배포로 실제 확
 </details>
 
 <details>
-<summary><b>v2.37.0</b> — 2026-09-09 · 추가 · 변경 · 불변</summary>
+<summary><b>v2.37.0</b> · 추가 · 변경 · 불변</summary>
 
 GA4 데이터에서 헤드리스 브라우저 신호를 확인해 집계에서 뺐고, PC 레이아웃을 두 차례 더 다듬었다.
 
@@ -2552,7 +2608,7 @@ GA4 데이터에서 헤드리스 브라우저 신호를 확인해 집계에서 �
 </details>
 
 <details>
-<summary><b>v2.36.0</b> — 2026-09-09 · 추가 · 수정 (구현 중 발견) · 불변</summary>
+<summary><b>v2.36.0</b> · 추가 · 수정 (구현 중 발견) · 불변</summary>
 
 PC 는 오른쪽에 남는 자리가 많다는 지적 — 상세를 화면을 덮는 팝업 대신 목록 옆 패널로 열어 본다.
 
@@ -2575,7 +2631,7 @@ PC 는 오른쪽에 남는 자리가 많다는 지적 — 상세를 화면을 �
 </details>
 
 <details>
-<summary><b>v2.35.0</b> — 2026-09-09 · 변경 · 불변</summary>
+<summary><b>v2.35.0</b> · 변경 · 불변</summary>
 
 사용자가 준 참고 배치대로 상세 팝업 헤더를 한 번 더 다듬었다 — 타입은 그림 위 배지로, ★는 아이콘 줄로, 폼 라벨은 이름 위 자기 줄로.
 
@@ -2592,7 +2648,7 @@ PC 는 오른쪽에 남는 자리가 많다는 지적 — 상세를 화면을 �
 </details>
 
 <details>
-<summary><b>v2.34.0</b> — 2026-09-09 · 변경 · 불변</summary>
+<summary><b>v2.34.0</b> · 변경 · 불변</summary>
 
 v2.33.0 은 ✕ 닫기 자리를 카드 안에서 예약해 겹침을 없앴다. 아예 카드 밖으로 빼면 더 근본적으로 해결된다.
 
@@ -2609,7 +2665,7 @@ v2.33.0 은 ✕ 닫기 자리를 카드 안에서 예약해 겹침을 없앴다.
 </details>
 
 <details>
-<summary><b>v2.33.0</b> — 2026-09-09 · 수정 · 불변</summary>
+<summary><b>v2.33.0</b> · 수정 · 불변</summary>
 
 v2.32.0 이 새로 만든 오른쪽 위 아이콘 두 개가, 원래 있던 ✕ 닫기와 자리를 다퉜다.
 
@@ -2625,7 +2681,7 @@ v2.32.0 이 새로 만든 오른쪽 위 아이콘 두 개가, 원래 있던 ✕ 
 </details>
 
 <details>
-<summary><b>v2.32.0</b> — 2026-09-09 · 변경 · 추가 · 불변</summary>
+<summary><b>v2.32.0</b> · 변경 · 추가 · 불변</summary>
 
 상세 팝업 위쪽(그림 · 이름 · 타입 · CP)을 사용자가 준 참고 디자인에 맞춰 카드형으로 다시 짰다.
 
@@ -2647,8 +2703,13 @@ v2.32.0 이 새로 만든 오른쪽 위 아이콘 두 개가, 원래 있던 ✕ 
 
 </details>
 
+</details>
+
 <details>
-<summary><b>v2.31.0</b> — 2026-09-08 · <code>변경</code> 수정 · 포켓몬 그림 테두리 통일 · 불변</summary>
+<summary><b>2026-09-08</b> — 14판 · <code>v2.20.0 … v2.31.0</code></summary>
+
+<details>
+<summary><b>v2.31.0</b> · <code>변경</code> 수정 · 포켓몬 그림 테두리 통일 · 불변</summary>
 
 포켓몬 그림은 어디서든 같은 상자에 담기고, 레이드 보스 목록은 이름이 잘리지 않는다.
 
@@ -2669,7 +2730,7 @@ v2.32.0 이 새로 만든 오른쪽 위 아이콘 두 개가, 원래 있던 ✕ 
 </details>
 
 <details>
-<summary><b>v2.30.0</b> — 2026-09-08 · 추가 · 변경 · 수정 외 1건</summary>
+<summary><b>v2.30.0</b> · 추가 · 변경 · 수정 외 1건</summary>
 
 주소가 곧 메뉴 구조가 되고, 그 주소를 읽는 곳이 한 곳이 된다.
 
@@ -2698,7 +2759,7 @@ v2.32.0 이 새로 만든 오른쪽 위 아이콘 두 개가, 원래 있던 ✕ 
 </details>
 
 <details>
-<summary><b>v2.29.2</b> — 2026-09-08 · 변경 · 불변</summary>
+<summary><b>v2.29.2</b> · 변경 · 불변</summary>
 
 ### 변경
 - **도감 보기 전환 버튼이 "열 개수" 대신 "보기 방식" 을 말한다** — `☰ 1열` · `⊞ 2열` → `☰ 리스트` · `⊞ 그리드`
@@ -2711,7 +2772,7 @@ v2.32.0 이 새로 만든 오른쪽 위 아이콘 두 개가, 원래 있던 ✕ 
 </details>
 
 <details>
-<summary><b>v2.29.1</b> — 2026-09-08 · 수정 · 변경</summary>
+<summary><b>v2.29.1</b> · 수정 · 변경</summary>
 
 ### 수정
 - **플래너 「내 포켓몬」 목록이 깨져 보이던 문제.** v2.28.0 의 PC 카드 규칙을 `.row__name` · `.row__moves` · `.row__stats` 처럼 **맨 클래스**로 적었는데, 이 조각들은 랭킹 줄만 쓰는 게 아니다 — `.plan__mon-main`(플래너)과 `.boss__rec`(보스 추천 카드)이 같은 클래스를 빌려 쓴다. "이름 가운데 정렬" 같은 카드 전용 규칙이 그쪽까지 끌려가 이름이 행 가운데로 밀렸다. 카드 규칙을 전부 `.row-list > .row` 아래로 스코프했다
@@ -2726,7 +2787,7 @@ v2.32.0 이 새로 만든 오른쪽 위 아이콘 두 개가, 원래 있던 ✕ 
 </details>
 
 <details>
-<summary><b>v2.29.0</b> — 2026-09-08 · 추가 · 변경 · 번역하지 않는 것 (일부러) 외 1건</summary>
+<summary><b>v2.29.0</b> · 추가 · 변경 · 번역하지 않는 것 (일부러) 외 1건</summary>
 
 영어로도 읽히게 한다. **화면 문구는 사전이, 이름은 데이터가 맡는다** — 이 경계가 이 버전의 전부다.
 
@@ -2757,7 +2818,7 @@ v2.32.0 이 새로 만든 오른쪽 위 아이콘 두 개가, 원래 있던 ✕ 
 </details>
 
 <details>
-<summary><b>v2.28.0</b> — 2026-09-08 · 변경 · 수정 · 불변</summary>
+<summary><b>v2.28.0</b> · 변경 · 수정 · 불변</summary>
 
 넓은 화면에서 목록을 **줄이 아니라 카드로** 훑는다. 도감 2열에서 쓰던 카드(v2.26.0)를 서비스 전체의 문법으로 올린다.
 
@@ -2780,7 +2841,7 @@ v2.32.0 이 새로 만든 오른쪽 위 아이콘 두 개가, 원래 있던 ✕ 
 </details>
 
 <details>
-<summary><b>v2.27.0</b> — 2026-09-08 · 추가 · 변경 (보안) · 변경 (대역폭) 외 1건</summary>
+<summary><b>v2.27.0</b> · 추가 · 변경 (보안) · 변경 (대역폭) 외 1건</summary>
 
 공개 서비스로서의 최소 방비. 트래픽이 늘기 시작한 시점에 맞춰 **막을 수 있는 것과 막을 수 없는 것을 가른다.**
 
@@ -2809,7 +2870,7 @@ GA4 에서 이벤트 1,363건 · 사용자 25명(28일)이 잡혔다. **봇이 �
 </details>
 
 <details>
-<summary><b>v2.26.0</b> — 2026-09-08 · 수정 · 변경 · 추가</summary>
+<summary><b>v2.26.0</b> · 수정 · 변경 · 추가</summary>
 
 ### 수정
 - **PC 에서 스크롤이 막히던 버그** — 커서가 탭 줄(D-MAX · PvE · PvP) 위에 있으면 휠이 페이지로 가지 않았다. 원인은 `.tabs { overflow-x: auto }` 다. CSS 규칙상 **한 축이 `visible` 이 아니면 나머지 축의 `visible` 은 `auto` 로 계산**되므로 세로도 스크롤 컨테이너가 된다. 거기에 선택된 탭의 밑줄이 컨테이너 테두리를 덮으려고 `margin-bottom: -1px` 로 1px 삐져나와 있어, 탭 줄이 "세로로 스크롤할 게 1px 있는 영역"이 됐다. 브라우저는 그 1px 을 먼저 소비하고 페이지로 넘기지 않는다. PC 는 즐겨찾기 카드가 커 탭 줄이 화면 한가운데 와서 커서가 자연히 그 위에 놓였고, 모바일은 손가락으로 굴려 드러나지 않았다.
@@ -2829,7 +2890,7 @@ GA4 에서 이벤트 1,363건 · 사용자 25명(28일)이 잡혔다. **봇이 �
 </details>
 
 <details>
-<summary><b>v2.25.0</b> — 2026-09-08 · 추가 · 참고</summary>
+<summary><b>v2.25.0</b> · 추가 · 참고</summary>
 
 PoGoMate 대조에서 나온 결손 중 **자동 수집으로 채울 수 있는 것**부터 채웠다. 손이 닿아야만 갱신되던 데이터를 파이프라인으로 옮기고, 그 위에 화면 둘을 얹었다.
 
@@ -2848,7 +2909,7 @@ PoGoMate 대조에서 나온 결손 중 **자동 수집으로 채울 수 있는 
 </details>
 
 <details>
-<summary><b>v2.24.0</b> — 2026-09-08 · 변경 · 참고</summary>
+<summary><b>v2.24.0</b> · 변경 · 참고</summary>
 
 클래스 이름 리팩토링. 화면·기능은 바뀌지 않는다 (순수 이름 변경).
 
@@ -2865,7 +2926,7 @@ PoGoMate 대조에서 나온 결손 중 **자동 수집으로 채울 수 있는 
 </details>
 
 <details>
-<summary><b>v2.23.0</b> — 2026-09-08 · 추가</summary>
+<summary><b>v2.23.0</b> · 추가</summary>
 
 ### 추가
 - **PC 레이아웃** — 1024px 이상에서 왼쪽 고정 사이드바(서비스 이동 9항목) + 넓은 본문. 컨테이너 760px → 1100px, 사이드바 210px + 32px 간격. 서비스 홈 타일 4열(560px~ 3열 · 그 아래 2열), 팝업·검색 시트 520px. 하단 기준 안내도 같은 열에 정렬. **좁은 화면(~1023px)은 기존 배치 그대로** — 서비스 이동은 ☰ 드로어 안
@@ -2874,7 +2935,7 @@ PoGoMate 대조에서 나온 결손 중 **자동 수집으로 채울 수 있는 
 </details>
 
 <details>
-<summary><b>v2.22.0</b> — 2026-09-08 · 변경</summary>
+<summary><b>v2.22.0</b> · 변경</summary>
 
 디자인 통일. v2.19.0–v2.21.0 이 새 화면(서비스 홈·앱 셸)을 얹으면서 `components/app-shell.css` 가 **오버레이처럼 기존 체계를 덮어써서** 한 화면 안에 두 가지 디자인이 겹쳐 보였다. 새 기능은 그대로 두고 겉모습만 원래 체계로 되돌린다.
 
@@ -2894,7 +2955,7 @@ PoGoMate 대조에서 나온 결손 중 **자동 수집으로 채울 수 있는 
 </details>
 
 <details>
-<summary><b>v2.21.0</b> — 2026-09-08 · 기능 간 상단 탭 제거. 공통 앱 바와 홈에서 기능별 독립 화면으로 이동.</summary>
+<summary><b>v2.21.0</b> · 기능 간 상단 탭 제거. 공통 앱 바와 홈에서 기능별 독립 화면으로 이동.</summary>
 
 - 기능 간 상단 탭 제거. 공통 앱 바와 홈에서 기능별 독립 화면으로 이동.
 - 메뉴를 서비스 링크 중심으로 단순화하고 검색·상세를 전체 화면으로 변경.
@@ -2905,7 +2966,7 @@ PoGoMate 대조에서 나온 결손 중 **자동 수집으로 채울 수 있는 
 </details>
 
 <details>
-<summary><b>v2.20.0</b> — 2026-09-08 · 서비스 홈 신설: 모바일 2열·PC 3열 기능 카드. 해시 없는 첫 진입과 로고는 홈으로 연결.</summary>
+<summary><b>v2.20.0</b> · 서비스 홈 신설: 모바일 2열·PC 3열 기능 카드. 해시 없는 첫 진입과 로고는 홈으로 연결.</summary>
 
 - 서비스 홈 신설: 모바일 2열·PC 3열 기능 카드. 해시 없는 첫 진입과 로고는 홈으로 연결.
 - D-MAX 밑 중복 검색창·도감·상성·플래너·일정 줄 제거. 헤더 검색 유지.
@@ -2913,8 +2974,13 @@ PoGoMate 대조에서 나온 결손 중 **자동 수집으로 채울 수 있는 
 
 </details>
 
+</details>
+
 <details>
-<summary><b>v2.18.0</b> — 2026-09-07 · 추가 · 변경</summary>
+<summary><b>2026-09-07</b> — 9판 · <code>v2.13.0 … v2.18.0</code></summary>
+
+<details>
+<summary><b>v2.18.0</b> · 추가 · 변경</summary>
 
 노션 "🚀 상용·오픈소스 전환 점검" Phase 0 + 인수인계 문서 4-C **공개 준비 1·2·3**. 결정 근거: 수익화 없음 → 후원(단계적) · 코드 MIT · 스프라이트 고지 후 유지 · 승인제 유지 · 위치 기능 없음.
 
@@ -2932,7 +2998,7 @@ PoGoMate 대조에서 나온 결손 중 **자동 수집으로 채울 수 있는 
 </details>
 
 <details>
-<summary><b>v2.17.0</b> — 2026-09-07 · 변경</summary>
+<summary><b>v2.17.0</b> · 변경</summary>
 
 노션 "서비스명 변경 검토"에서 **POGO PLAN(포고플랜)** 확정 (인수인계 문서 3-1).
 
@@ -2942,7 +3008,7 @@ PoGoMate 대조에서 나온 결손 중 **자동 수집으로 채울 수 있는 
 </details>
 
 <details>
-<summary><b>v2.16.1</b> — 2026-09-07 · 수정</summary>
+<summary><b>v2.16.1</b> · 수정</summary>
 
 ### 수정
 - **첫 화면에서 스프라이트가 안 뜨고 새로고침해야 나오던 문제** — 원인은 `cloneNode`. D-MAX 티어표 행(`views/max.js expandableRow`)과 솔플 내 덱(`ifsolo.js`)은 `row()` 결과를 `cloneNode(true)`로 복제하는데(상세 팝업 클릭을 떼기 위해), 복제본의 `<img>`에는 v2.14.0 스켈레톤이 단 `load` 리스너가 없어 `.loading`(회색 반짝임)이 영영 안 벗겨졌다 — 첫 화면이 바로 티어표라 "그림이 안 뜬다"로 보였다. 새로고침하면 캐시된 이미지가 생성 시점에 이미 완료 상태라 `complete` 검사로 벗겨져 정상처럼 보였다. 수정: (1) `sprite.js`의 load/error 처리를 요소 리스너가 아니라 **문서 캡처 리스너**(`document.addEventListener('load'/'error', …, true)`)로 옮겨 복제돼도 동작하게. (2) `loading="lazy"` 제거 — 스프라이트는 평균 1.1KB(1,172장 4.8MB)라 이득이 없고, 동적으로 붙인 lazy 이미지가 스크롤 전까지 안 받아지는 브라우저 회피. (3) 실패 시 캐시를 우회하는 주소(`?r=1`, `?r=2`, `data-retry`)로 두 번 재시도한 뒤에야 몬스터볼 자리표시로 교체. (4) 첫 화면 가림막(#splash)은 문서에 `.loading` 스프라이트가 없어질 때까지(최대 2.5초, `waitForSprites`) 유지. `sw.js`: 캐시 세대 `pogonote-v3`, 스프라이트는 쿼리를 뗀 키로 캐시 조회·저장(재시도 주소도 같은 파일), 네트워크 실패 시 `cache: 'reload'`로 한 번 더, `res.ok`일 때만 캐시. Playwright로 정상(38/38 로드, 스켈레톤 0)·첫 요청 실패 후 재시도 복구(38/38)·전부 실패(자리표시 38, 가림막 2.5초 내 해제) 확인
@@ -2950,7 +3016,7 @@ PoGoMate 대조에서 나온 결손 중 **자동 수집으로 채울 수 있는 
 </details>
 
 <details>
-<summary><b>v2.16.0</b> — 2026-09-07 · 변경</summary>
+<summary><b>v2.16.0</b> · 변경</summary>
 
 ### 변경
 - **IF 탭·활용처 탭 해체 — 기능을 제자리로** (dev 피드백) — 탭은 D-MAX · PvE · PvP 셋. (1) **솔플 레이드 계산기**는 PvE 탭 세그먼트 오른쪽 `🧮` 도구 버튼(`toolButton`, `state.pveTool = 'solo'`)으로 — 누르면 티어표 자리에 `renderSoloCalc()`가 펼쳐지고 다시 누르면 접힌다(서브탭을 고르면 접힘). (2) **PvP 덱 짜기**는 PvP 탭 리그 세그먼트 오른쪽 `🃏` 버튼(`state.pvpTool = 'deck'`) — 덱 리그는 `state.league`를 그대로 써 `deckLeague`와 덱 안의 리그 세그먼트를 없앴다. (3) **활용처**는 🔍 검색 패널로 — 비어 있을 때 "🏆 활용처 순위"(`usageTopNodes`, 8마리 + 더보기, 누르면 상세) 를 보여 주고, 검색 후보 줄마다 "활용 N곳" 뱃지(`usageBadge`)를 붙인다. `renderIfTab`·`renderUsage`·`state.ifWho`·`deckLeague` 제거, `pogo_last_view`의 옛 `usage`/`if` 탭 값은 허용 목록에서 걸러져 D-MAX로. 새 줄 `.ctrl-row`(세그먼트 + 도구 버튼), `.tool-btn`(aria-pressed). GA `tool_solo`·`tool_pvpdeck`(on)·`usage_pick`
@@ -2958,7 +3024,7 @@ PoGoMate 대조에서 나온 결손 중 **자동 수집으로 채울 수 있는 
 </details>
 
 <details>
-<summary><b>v2.15.1</b> — 2026-09-07 · 변경</summary>
+<summary><b>v2.15.1</b> · 변경</summary>
 
 ### 변경
 - **중복 진입 버튼 정리 — 화면 하나에 버튼 하나** — dev 미리보기 피드백: 같은 화면을 가리키는 버튼이 여럿("도감", "도감 모드로 전환", "도감에서 채우기"…)이라 기능 위주로 병합·삭제. 남긴 것 / 지운 것: 모드 전환 = 헤더 배지 / ☰ `#menu-mode`·플래너 홈 "🔎 도감 모드로" · 📕 도감 = 탭 줄 📕 / ☰ "📕 도감"·계정 카드 "📕 도감에서 채우기"·플래너 홈 "📕 도감에서 찾기" · 🧭 상성 = 탭 줄 🧭 / ☰ "🧭 상성 검색" · ★ 즐겨찾기 페이지 = 탭 줄 ★ / ☰ `#menu-favs`·즐겨찾기 카드 "PvE · PvP 나눠 보기 ▸" · 🎒 내 포켓몬 = 플래너 탭 / 홈의 "내 포켓몬 열기"·"전체 보기 · 비교"·"첫 개체 저장하기" · 로그인 = 헤더 👤 / 플래너 홈·내 포켓몬의 "Google로 로그인" 버튼(안내 문구로). 플래너 홈은 소개 + 요약 + 후속 안내만. 계정 카드 요약에 🎒 내 포켓몬 마릿수 추가. 도감 페이지 안의 "★ 즐겨찾기 N" 칩은 탭 줄이 보이지 않는 전체 페이지라 유지(`initFavsMenu`는 대상 요소가 없으면 조용히 끝난다)
@@ -2966,7 +3032,7 @@ PoGoMate 대조에서 나온 결손 중 **자동 수집으로 채울 수 있는 
 </details>
 
 <details>
-<summary><b>v2.15.0</b> — 2026-09-07 · 추가 · 변경</summary>
+<summary><b>v2.15.0</b> · 추가 · 변경</summary>
 
 노션 QA 트래커 [플래너] v2.15.0 MVP — QA-53(모드 전환 셸) · QA-54(내 포켓몬). 배경: 개발 → 🌱 육성 플래너 통합 방향 / 🚀 v2.15.0 MVP 작업 명세.
 
@@ -2981,7 +3047,7 @@ PoGoMate 대조에서 나온 결손 중 **자동 수집으로 채울 수 있는 
 </details>
 
 <details>
-<summary><b>v2.14.0</b> — 2026-09-07 · 변경 · 추가</summary>
+<summary><b>v2.14.0</b> · 변경 · 추가</summary>
 
 노션 QA-52 "개선사항" 묶음.
 
@@ -2997,7 +3063,7 @@ PoGoMate 대조에서 나온 결손 중 **자동 수집으로 채울 수 있는 
 </details>
 
 <details>
-<summary><b>v2.13.1</b> — 2026-09-07 · 추가</summary>
+<summary><b>v2.13.1</b> · 추가</summary>
 
 ### 추가
 - **일정표 페이지 가독성** (`#/schedule`) — 달력 점만으로는 "무엇이 언제부터 언제까지"가 안 읽혔다. (1) 분류 칩(전체·이벤트·5성·메가·D-MAX·아워·섀도우, `chips()` 재사용 — `SCHEDULE_CATS`에 색 원천인 `type` 키 추가)으로 달력 점·타임라인·분류별 목록을 한꺼번에 거른다. 선택은 `localStorage`(`pogo_sched_cat`)에 기억, GA `sched_cat`. (2) **기간 막대 타임라인** `buildScheduleTimeline(cat)` — 한 줄에 일정 하나, 시작~종료를 분류 색 막대로 잇고 위에 날짜 눈금(1·5·10…, 주말 음영, 오늘 세로선). 막대 위치·폭은 일수 대비 백분율이라 화면 폭에 따라 맞춰진다. 시작이 달 후반(60% 이후)인 일정은 라벨을 막대 끝에 오른쪽 정렬해 잘리지 않게. 드로어(좁은 폭)는 달력 점을 그대로 두고 "자세히 보기" 페이지에서만 구현. `scheduleItemsOn(day, cat)`·`buildScheduleCal(cat)`·`scheduleMonthList(cat)`에 필터 인자를 더했고, 인자 없이 부르면 예전과 같다
@@ -3005,7 +3071,7 @@ PoGoMate 대조에서 나온 결손 중 **자동 수집으로 채울 수 있는 
 </details>
 
 <details>
-<summary><b>v2.13.0</b> — 2026-09-07 · 수정 · 추가 · 변경</summary>
+<summary><b>v2.13.0</b> · 수정 · 추가 · 변경</summary>
 
 노션 QA 트래커 v2.13.0 묶음(QA-49 · QA-50 · QA-20)과 백로그(QA-42 · QA-43).
 
@@ -3023,8 +3089,13 @@ PoGoMate 대조에서 나온 결손 중 **자동 수집으로 채울 수 있는 
 
 </details>
 
+</details>
+
 <details>
-<summary><b>v2.12.1</b> — 2026-09-06 · 변경</summary>
+<summary><b>2026-09-06</b> — 7판 · <code>v2.9.0 … v2.12.1</code></summary>
+
+<details>
+<summary><b>v2.12.1</b> · 변경</summary>
 
 ### 변경
 - **검색 패널 UI** — v2.12.0의 타입 칩이 페이지의 속성 필터 칩과 똑같이 생겨 "검색용인지" 구분이 안 됐다. 검색을 카드(`section.psearch`, surface 배경·테두리)로 묶고 제목 줄(검색 · 안내 · ✕), "타입" 라벨이 붙은 칩 줄(선택 시 검정 채움), 세로 결과 목록(행마다 그림·이름·순위 근거)으로 바꿨다. 빈 상태 안내, 결과 머리말("물 타입 165마리 중 앞 8마리 · 타입 지우기"), 하단 "전부 보기 · 상성 검색" 링크. 🔍 버튼은 열려 있을 때 눌린 상태로 표시, ✕로 닫으면 입력·칩을 비운다(`toggleSearchPanel`)
@@ -3032,7 +3103,7 @@ PoGoMate 대조에서 나온 결손 중 **자동 수집으로 채울 수 있는 
 </details>
 
 <details>
-<summary><b>v2.12.0</b> — 2026-09-06 · 추가</summary>
+<summary><b>v2.12.0</b> · 추가</summary>
 
 ### 추가
 - **전역 검색 = 이름 + 타입** (`search.js`) — 검색창 아래 타입 칩 줄(18개, 최대 2개 선택). 검색어에서 타입 이름 토큰("물 풀", "물·풀", "물타입")을 떼어 내 칩과 합친다(`parseSearchQuery`). 타입이 있으면 후보군을 `typeMonList`(도감 폼, 출시 → 미출시)로 바꾸고 이름 검색은 그 안에서 교집합. 타입만 고르면 12마리 + "상성 검색에서 전부 보기", 결과 없음 문구도 타입용으로 분리. GA `search_type`(t), `search_pick`·`search_none`에 `t` 추가
@@ -3040,7 +3111,7 @@ PoGoMate 대조에서 나온 결손 중 **자동 수집으로 채울 수 있는 
 </details>
 
 <details>
-<summary><b>v2.11.1</b> — 2026-09-06 · 추가</summary>
+<summary><b>v2.11.1</b> · 추가</summary>
 
 ### 추가
 - **상성 검색: 타입 조합 포켓몬 목록** (`typeMonList`) — `DEX_DATA.forms`(기본 폼 + 순위표·보스 목록에 등장한 메가·리전 폼)에서 타입 2개면 정확히 같은 집합, 1개면 그 타입 포함 전부를 뽑아 배율표 아래에 보여준다. 출시 → 미출시(`rel`, 흐리게 + 미구현 태그) 순, 도감번호순, 24마리씩 더보기. 해당 포켓몬이 없으면 "없습니다"를 명시한다. 누르면 상세 팝업
@@ -3048,7 +3119,7 @@ PoGoMate 대조에서 나온 결손 중 **자동 수집으로 채울 수 있는 
 </details>
 
 <details>
-<summary><b>v2.11.0</b> — 2026-09-06 · 추가</summary>
+<summary><b>v2.11.0</b> · 추가</summary>
 
 ### 추가
 - **뒤로가기 연동** (`components/history.js`) — 팝업(상세)·드로어(☰)를 처음 열 때 `history.pushState`로 항목을 하나 넣는다. 폰의 뒤로가기는 사이트를 나가는 대신 열린 것을 닫고(popstate), X·배경·Esc로 닫으면 `history.back()`으로 그 항목을 되돌린다. 팝업 위에서 다른 팝업(진화 줄)·드로어→팝업(관리자 패널)은 항목 하나를 재사용(silent 닫기). 오버레이가 열린 채 페이지로 이동하면 `navigateHash`가 `location.replace`로 그 항목을 덮어써 "닫힌 팝업" 항목이 남지 않는다. `openPage`·`openTypeSearch`가 이 함수를 쓴다
@@ -3058,7 +3129,7 @@ PoGoMate 대조에서 나온 결손 중 **자동 수집으로 채울 수 있는 
 </details>
 
 <details>
-<summary><b>v2.10.1</b> — 2026-09-06 · 추가 · 변경</summary>
+<summary><b>v2.10.1</b> · 추가 · 변경</summary>
 
 "누가 어떤 버튼을 눌렀나"를 사람 단위로 보기 위한 계측 보강. 노션 QA-44 후속.
 
@@ -3073,7 +3144,7 @@ PoGoMate 대조에서 나온 결손 중 **자동 수집으로 채울 수 있는 
 </details>
 
 <details>
-<summary><b>v2.10.0</b> — 2026-09-06 · 추가 · 변경 · 수정</summary>
+<summary><b>v2.10.0</b> · 추가 · 변경 · 수정</summary>
 
 노션 QA 트래커 QA-44("오류") 묶음. 스크린샷·요청 5건 + 차별화 제안.
 
@@ -3092,7 +3163,7 @@ PoGoMate 대조에서 나온 결손 중 **자동 수집으로 채울 수 있는 
 </details>
 
 <details>
-<summary><b>v2.9.0</b> — 2026-09-06 · 추가</summary>
+<summary><b>v2.9.0</b> · 추가</summary>
 
 GA 첫 3일 데이터(사용자 9명·세션 33)로 정한 개선 묶음. 근거는 노션 🛠 개발 → 📈 GA 첫 3일 데이터로 본 다음 기능 제안.
 
@@ -3106,8 +3177,13 @@ GA 첫 3일 데이터(사용자 9명·세션 33)로 정한 개선 묶음. 근거
 
 </details>
 
+</details>
+
 <details>
-<summary><b>v2.8.0</b> — 2026-09-05 · 변경</summary>
+<summary><b>2026-09-05</b> — 8판 · <code>v2.6.0 … v2.8.0</code></summary>
+
+<details>
+<summary><b>v2.8.0</b> · 변경</summary>
 
 ### 변경
 - **저장소 공개 전환 준비** — 운영 식별자를 코드에서 뺐다. `GA_ID` · `ADMIN_UID` · `ADMIN_EMAIL` · `CONTACT_EMAIL` · `FIREBASE_CONFIG_JSON`을 `build.py`가 `.env`(로컬, 커밋 안 함) 또는 GitHub Actions Repository variables에서 읽는다. 템플릿은 `.env.example`. 이 값들은 어차피 빌드 결과에 들어가 방문자에게 보이는 공개 식별자라 보안 조치가 아니라 **공개 저장소 코드에 운영 식별자를 남기지 않기 위한 분리**다
@@ -3119,7 +3195,7 @@ GA 첫 3일 데이터(사용자 9명·세션 33)로 정한 개선 묶음. 근거
 </details>
 
 <details>
-<summary><b>v2.7.4</b> — 2026-09-05 · 추가</summary>
+<summary><b>v2.7.4</b> · 추가</summary>
 
 ### 추가
 - `scripts/verify_deploy.sh <주소> <prod|dev> [버전]` — 배포된 주소가 "그 채널의, 그 버전" 빌드인지 검사한다. 버전 배지, 채널 표식(-dev · noindex · GA · robots), data.js의 ROLES·90150, 아머드 뮤츠 전용 스프라이트(일반 뮤츠와 바이트 수 비교), PWA 파일. CDN 캐시를 피하려고 매 요청에 쿼리를 붙인다. 릴리스 절차의 dev 확인·deploy 확인 단계에서 쓴다
@@ -3127,7 +3203,7 @@ GA 첫 3일 데이터(사용자 9명·세션 33)로 정한 개선 묶음. 근거
 </details>
 
 <details>
-<summary><b>v2.7.3</b> — 2026-09-05 · 변경</summary>
+<summary><b>v2.7.3</b> · 변경</summary>
 
 ### 변경
 - 브랜치 전략 개편 — `dev`(작업·미리보기) → `main`(통합) → `deploy`(실서비스). `deploy.yml`은 이제 **`deploy` 브랜치만** 배포하고(스케줄 실행도 `ref: deploy`로 체크아웃), `main` 푸시는 배포를 일으키지 않는다. GitHub Pages 환경 `github-pages`의 허용 브랜치에 `deploy` 추가
@@ -3137,7 +3213,7 @@ GA 첫 3일 데이터(사용자 9명·세션 33)로 정한 개선 묶음. 근거
 </details>
 
 <details>
-<summary><b>v2.7.2</b> — 2026-09-05 · 추가</summary>
+<summary><b>v2.7.2</b> · 추가</summary>
 
 ### 추가
 - 아머드 뮤츠 전용 그림 — v2.7.0에서는 일반 뮤츠 png를 복사해 써서 화면에서 둘이 구분되지 않았다. 포켓몬 GO 게임 에셋(PokeMiners/pogo_assets)의 `pm150.fA.icon.png`를 `sprite.py`의 `LOCAL_SPRITE_URL`에 등록해 `sprites.py`가 내려받는다. 다운로드가 실패하면 예전처럼 원본 복사로 폴백. CI `actions/cache`가 되살린 예전 복사본은 "원본과 바이트가 같으면 다시 받는다"로 걸러 낸다
@@ -3146,7 +3222,7 @@ GA 첫 3일 데이터(사용자 9명·세션 33)로 정한 개선 묶음. 근거
 </details>
 
 <details>
-<summary><b>v2.7.1</b> — 2026-09-05 · 추가</summary>
+<summary><b>v2.7.1</b> · 추가</summary>
 
 ### 추가
 - 로컬 테스트용 로그인 목(mock) 모드 — `frontend/static/dev-mock.js` 신설. `localhost`에서 `?mock=1`(관리자) · `?mock=friend`(승인된 친구) · `?mock=pending`(승인 대기)으로 열면 Google 팝업 없이 로그인된 상태로 즐겨찾기 페이지·역할 보정·관리자 패널·트레이너 코드를 확인할 수 있다. 가짜 Firestore는 `localStorage`(`pogo_mock_db`)에 남고 `?mock=reset`으로 초기화. `auth.js`의 `initAuth()`가 hostname·쿼리 조건을 모두 만족할 때만 이 파일을 받으므로 배포 환경에는 영향이 없다
@@ -3154,7 +3230,7 @@ GA 첫 3일 데이터(사용자 9명·세션 33)로 정한 개선 묶음. 근거
 </details>
 
 <details>
-<summary><b>v2.7.0</b> — 2026-09-05 · 추가 · 수정</summary>
+<summary><b>v2.7.0</b> · 추가 · 수정</summary>
 
 ### 추가
 - ★ 즐겨찾기 전용 페이지 (`#/favs`) — `[전체 | PvE | PvP | 기타]` 세그먼트와 근거 순위 표시. 별은 계속 "보유" 하나이고, 갈래는 순위표에서 자동으로 정한다. 기존 `favs`(도감번호 배열) 구조·데이터를 그대로 두므로 마이그레이션이 없다
@@ -3172,7 +3248,7 @@ GA 첫 3일 데이터(사용자 9명·세션 33)로 정한 개선 묶음. 근거
 </details>
 
 <details>
-<summary><b>v2.6.1</b> — 2026-09-05 · 변경</summary>
+<summary><b>v2.6.1</b> · 변경</summary>
 
 ### 변경
 - ⭐ 내 즐겨찾기 카드를 "순위 변동 있을 때만"에서 "로그인 + 즐겨찾기가 하나라도 있으면 항상 전체 목록"으로 변경 — v2.6.0 방식은 평소엔 카드가 아예 안 떠서, 드로어의 "★ 즐겨찾기 N마리" 문구를 봐도 그 목록을 확인할 방법이 없었다. 이제는 항상 전체 목록을 보여주고(12개 넘으면 더보기), 그중 최근(14일 이내) 순위가 움직인 종에만 ▲▼ 뱃지를 덧붙인다. 이름·스프라이트는 종(도감번호) 자체가 곧 기본 폼 스프라이트 id라 순위표 랭킹 여부와 무관하게 항상 뜬다
@@ -3180,7 +3256,7 @@ GA 첫 3일 데이터(사용자 9명·세션 33)로 정한 개선 묶음. 근거
 </details>
 
 <details>
-<summary><b>v2.6.0</b> — 2026-09-05 · 추가 · 변경 (코드 품질) · 수정</summary>
+<summary><b>v2.6.0</b> · 추가 · 변경 (코드 품질) · 수정</summary>
 
 ### 추가
 - 🔒 개인정보처리방침 페이지 (`#/privacy`) — 로그인 시 수집하는 개인정보(이메일·이름·프로필사진·즐겨찾기·uid), 목적, Firebase/Firestore 저장 위치, 승인 해제 시 데이터 보관 정책, GA4 처리위탁을 명시. 푸터·☰메뉴·로그인 전 계정 영역에서 진입, 노션에 같은 내용의 상세 페이지(표·콜아웃 포함)를 만들어 하단에 링크
@@ -3207,8 +3283,28 @@ GA 첫 3일 데이터(사용자 9명·세션 33)로 정한 개선 묶음. 근거
 
 </details>
 
+</details>
+
 <details>
-<summary><b>v2.4.0</b> — 2026-09-04 · 추가 · 변경 · 변경 (문서)</summary>
+<summary><b>2026-09-04</b> — 2판 · <code>v2.4.0 … v2.5.0</code></summary>
+
+<details>
+<summary><b>v2.5.0</b> · <code>추가</code> 시즌 기술 변경 안내 · 순위 변동 ▲▼ 뱃지</summary>
+
+> 2026-09-14 v3.32.0 복원 — 이 판의 항목은 `## [Unreleased]` 형식이던 시절에 적혔다가
+> 지금의 아코디언 형식으로 옮기는 과정에서 통째로 빠져 있었다. 커밋 `c3c0809` 에서 되살렸다.
+
+### 추가
+
+- **⚔️ 기술 변경 안내 페이지** (`#/changes`) — 시즌 기술 조정과 새로 배우는 기술을 위력 수치·비고까지 정리. 목록은 `backend/config/move_changes.txt`(공식 공지에서 옮겨 적는 유일한 수동 파일)에서 오고, 한글 기술명·포켓몬명·스프라이트·"그 기술을 쓰는 종"은 `backend/change_build.py` 가 게임마스터에서 자동으로 채운다.
+- **기술 변경 예고 뱃지** — 영향받는 포켓몬 줄에 `9/8 기술↑`. 적용일을 지나면 코드 수정 없이 사라진다. 예측("상향 예정")이 아니라 공지된 사실(어떤 기술이 얼마로 바뀌는지)만 표시한다.
+- **순위 변동 ▲▼ 뱃지** — `backend/rank_diff.py` 가 직전 빌드 순위(`snapshot/ranks.json`)와 비교해 각 행에 변동 폭을 심는다. PvP 4리그·PvE 자체계산·PvE 일반·시트 성능표·D-MAX 티어·활용처 79개 표가 대상. 2계단 미만은 일상적인 흔들림이라 무시하고, 순위가 실제로 달라진 빌드에서만 스냅샷을 갱신하며, 기록 후 14일이 지나면 표시하지 않는다.
+- 상세 팝업에 그 포켓몬에 걸린 **기술 변경 섹션** (레거시 전용 기술은 따로 표기).
+
+</details>
+
+<details>
+<summary><b>v2.4.0</b> · 추가 · 변경 · 변경 (문서)</summary>
 
 ### 추가
 - 상세 팝업 CP를 상황별로 분리 표시 — 레이드 보상(평시 Lv20 · 날씨부스트 Lv25), 야생 스폰(평시 Lv30 · 날씨부스트 Lv35). 기존엔 레이드 보상 CP가 아예 없어 야생 부스트(Lv35) 값을 레이드로 착각하기 쉬웠음
@@ -3225,8 +3321,13 @@ GA 첫 3일 데이터(사용자 9명·세션 33)로 정한 개선 묶음. 근거
 
 </details>
 
+</details>
+
 <details>
-<summary><b>v2.3.0</b> — 2026-09-03 · 추가 · 변경</summary>
+<summary><b>2026-09-03</b> — 9판 · <code>v1.4.0 … v2.3.0</code></summary>
+
+<details>
+<summary><b>v2.3.0</b> · 추가 · 변경</summary>
 
 ### 추가
 - 첫 화면 로딩 가림막 — 데이터(data.js)를 읽는 동안 흰 화면 대신 "POGO SEARCH · 불러오는 중" 표시, 첫 렌더가 끝나면 사라짐 (다크 모드 대응)
@@ -3238,7 +3339,7 @@ GA 첫 3일 데이터(사용자 9명·세션 33)로 정한 개선 묶음. 근거
 </details>
 
 <details>
-<summary><b>v2.2.0</b> — 2026-09-03 · 추가 · 제거</summary>
+<summary><b>v2.2.0</b> · 추가 · 제거</summary>
 
 ### 추가
 - 🔐 Google 로그인 (Firebase Authentication) — 헤더 👤 버튼 / ☰ 메뉴 상단. 홈 화면 설치(PWA) 환경은 리다이렉트 방식 자동 전환
@@ -3255,7 +3356,7 @@ GA 첫 3일 데이터(사용자 9명·세션 33)로 정한 개선 묶음. 근거
 </details>
 
 <details>
-<summary><b>v2.1.0</b> — 2026-09-03 · 추가 · 제거 · 변경</summary>
+<summary><b>v2.1.0</b> · 추가 · 제거 · 변경</summary>
 
 ### 추가
 - IF 탭 개편 — 실험 기능 모음으로: 서브탭 [솔플 레이드 계산기(기존) | PvP 덱 짜기(신규, QA-16 발전형)]. PvP 덱 짜기: 상대 1~3마리 추가 → 리그 순위 × 타입 상성(공격÷피격 배율) 근사로 추천 덱 3 + 상대별 카운터 3. 실드·기술 사이클 미반영 명시
@@ -3281,7 +3382,7 @@ GA 첫 3일 데이터(사용자 9명·세션 33)로 정한 개선 묶음. 근거
 </details>
 
 <details>
-<summary><b>v2.0.1</b> — 2026-09-03 · 추가 · 수정 (D-MAX 티어표 pogomate 대조 보정)</summary>
+<summary><b>v2.0.1</b> · 추가 · 수정 (D-MAX 티어표 pogomate 대조 보정)</summary>
 
 ### 추가
 - 도감 레이아웃 토글: 1열 목록 ↔ 2열 격자 (⊞/☰ 버튼, 선택 기억)
@@ -3296,7 +3397,7 @@ GA 첫 3일 데이터(사용자 9명·세션 33)로 정한 개선 묶음. 근거
 </details>
 
 <details>
-<summary><b>v2.0.0</b> — 2026-09-03 · 변경 · 추가 · 변경 (배포 속도)</summary>
+<summary><b>v2.0.0</b> · 변경 · 추가 · 변경 (배포 속도)</summary>
 
 성능 개편 — "의존성 없는 단일 HTML" 구조를 종료하고 리소스를 분리했습니다 (breaking: 산출물이 여러 파일).
 
@@ -3315,7 +3416,7 @@ GA 첫 3일 데이터(사용자 9명·세션 33)로 정한 개선 묶음. 근거
 </details>
 
 <details>
-<summary><b>v1.5.1</b> — 2026-09-03 · 변경</summary>
+<summary><b>v1.5.1</b> · 변경</summary>
 
 ### 변경
 - 상세 팝업을 여는 곳에 따라 구성 분리: 일반(순위표·검색)은 능력치 없이 "배울 수 있는 기술"을 전체 폭으로, 도감에서 열면 [능력치 육각형 | 기술] 표시
@@ -3324,7 +3425,7 @@ GA 첫 3일 데이터(사용자 9명·세션 33)로 정한 개선 묶음. 근거
 </details>
 
 <details>
-<summary><b>v1.5.0</b> — 2026-09-03 · 추가 · 변경</summary>
+<summary><b>v1.5.0</b> · 추가 · 변경</summary>
 
 ### 추가
 - 📕 도감 페이지 (메뉴 → 도감, #/dex): 넘버링순 전 종 목록(스프라이트·이름·타입 색점), 이름/번호 검색 + 1~9세대 점프, 100개씩 더보기, 행 클릭 시 상세 팝업
@@ -3338,7 +3439,7 @@ GA 첫 3일 데이터(사용자 9명·세션 33)로 정한 개선 묶음. 근거
 </details>
 
 <details>
-<summary><b>v1.4.1</b> — 2026-09-03 · 수정 · 변경</summary>
+<summary><b>v1.4.1</b> · 수정 · 변경</summary>
 
 ### 수정
 - 모바일(640px 미만)에서 목록의 포켓몬 이름이 세로로 흘러내리는 레이아웃 버그 — ☆ 보유 버튼이 이름 칸을 선점하던 문제(.star grid-column: 4)
@@ -3351,7 +3452,7 @@ GA 첫 3일 데이터(사용자 9명·세션 33)로 정한 개선 묶음. 근거
 </details>
 
 <details>
-<summary><b>v1.4.0</b> — 2026-09-03 · 추가 · 변경</summary>
+<summary><b>v1.4.0</b> · 추가 · 변경</summary>
 
 ### 추가
 - 오른쪽 드로어 메뉴(☰): 일정표·기준 안내·트레이너 코드·패치노트·QA 제보 정리, 헤더에 🔍 전역 검색
@@ -3365,8 +3466,13 @@ GA 첫 3일 데이터(사용자 9명·세션 33)로 정한 개선 묶음. 근거
 
 </details>
 
+</details>
+
 <details>
-<summary><b>v1.3.1</b> — 2026-09-02 · 변경</summary>
+<summary><b>2026-09-02</b> — 5판 · <code>v1.1.0 … v1.3.1</code></summary>
+
+<details>
+<summary><b>v1.3.1</b> · 변경</summary>
 
 ### 변경
 - 솔플 계산기 고도화: 보스 이름 검색형(전 종 1,586 bosses.json), 티어 자동 판정(전설=4성, 배지 탭 수동 보정), 개체별 레이드 CP·최대 CP 표시
@@ -3376,7 +3482,7 @@ GA 첫 3일 데이터(사용자 9명·세션 33)로 정한 개선 묶음. 근거
 </details>
 
 <details>
-<summary><b>v1.3.0</b> — 2026-09-02 · 추가</summary>
+<summary><b>v1.3.0</b> · 추가</summary>
 
 ### 추가
 - IF 탭 신설 — 솔플 레이드 계산기. 부활 운용 사이클 시뮬레이션으로 필요 개체·순서·예상 시간 제시, 불가능하면 "사람 손으로는 무리" 배너
@@ -3384,7 +3490,7 @@ GA 첫 3일 데이터(사용자 9명·세션 33)로 정한 개선 묶음. 근거
 </details>
 
 <details>
-<summary><b>v1.2.0</b> — 2026-09-02 · 변경 · 추가</summary>
+<summary><b>v1.2.0</b> · 변경 · 추가</summary>
 
 ### 변경
 - D-MAX 티어표 기준을 pogomate와 동일하게: 공격 종족값 × 맥스무브 위력(거다이 450·다이 350) × 자속 1.2, 내구 미반영, 다이/거다이 별도 행, 1위 대비 % 표시 (수치 역산 검증)
@@ -3396,7 +3502,7 @@ GA 첫 3일 데이터(사용자 9명·세션 33)로 정한 개선 묶음. 근거
 </details>
 
 <details>
-<summary><b>v1.1.1</b> — 2026-09-02 · 수정</summary>
+<summary><b>v1.1.1</b> · 수정</summary>
 
 ### 수정
 - 일정을 한국 기준으로 보정: LeekDuck 원본 JSON 전환, 메가 피날레 특별 기간(데일리 디스커버리 휴식) 반영, 피카츄의 한국 나들이·달맞이댄스·가을 소풍 등 한국 전용 이벤트 추가, 주말 섀도우 레이드·스포트라이트 요일(목) 검증
@@ -3404,7 +3510,7 @@ GA 첫 3일 데이터(사용자 9명·세션 33)로 정한 개선 묶음. 근거
 </details>
 
 <details>
-<summary><b>v1.1.0</b> — 2026-09-02 · 추가 · 변경</summary>
+<summary><b>v1.1.0</b> · 추가 · 변경</summary>
 
 ### 추가
 - 9월 일정표: 상단 아코디언 + 달력 그리드, 날짜 클릭 상세, 접힘 상태 오늘 일정 한 줄
@@ -3416,8 +3522,13 @@ GA 첫 3일 데이터(사용자 9명·세션 33)로 정한 개선 묶음. 근거
 
 </details>
 
+</details>
+
 <details>
-<summary><b>v1.0.0</b> — 2026-09-01 · 수정 · 변경 · 데이터</summary>
+<summary><b>2026-09-01</b> — 1판 · <code>v1.0.0</code></summary>
+
+<details>
+<summary><b>v1.0.0</b> · 수정 · 변경 · 데이터</summary>
 
 첫 정식판. 랭킹 도감(다이맥스 · PvE · PvP · 활용처), 포켓몬 상세 팝업(진화·기술·상성·종족값·활용처), 매일 00시 자동 빌드·배포.
 
@@ -3451,3 +3562,4 @@ GA 첫 3일 데이터(사용자 9명·세션 33)로 정한 개선 묶음. 근거
 
 </details>
 
+</details>
