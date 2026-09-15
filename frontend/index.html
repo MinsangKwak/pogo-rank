@@ -6,7 +6,12 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="color-scheme" content="light dark">
 <!-- 2026-09-02 서비스명 POGO NOTE → 2026-09-03 POGO SEARCH → 2026-09-07 v2.17.0 POGO PLAN → 2026-09-14 v3.26.0 monlab(몬랩) → 2026-09-14 v3.27.0 moncamp(몬캠프, moncamp.kr). 저장소명·배포 URL·localStorage 키·GA 이벤트명은 그대로 -->
-<title>moncamp — 포켓몬고 다이맥스 티어표 · 맥스 배틀 덱 · 도감</title>
+<!-- 2026-09-15 v3.43.0 검색어를 앞에, 브랜드를 뒤에. moncamp 는 아직 아무도 모르는 이름이라
+     맨 앞 자리를 브랜드에 주면 그 자리가 버려진다. 사람들이 실제로 치는 말이 먼저다.
+     제목은 대략 30~35자에서 잘리므로 '포켓몬고 다이맥스 티어표' 까지는 무조건 보이게 둔다.
+     ★ 이 줄만 고쳐서는 구글에 안 먹힌다 — 구글은 JS 를 돌리고, app-shell.js 가 document.title 을
+       다시 쓴다. 홈에서 같은 문장이 나오도록 그쪽도 함께 맞췄다 (components/app-shell.js SITE_TITLE) -->
+<title>포켓몬고 다이맥스 티어표 · 맥스 배틀 덱 · 도감 | moncamp</title>
 <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
 <!-- 2026-09-07 v2.14.0 (QA-52) 웹폰트: 한글 Pretendard (jsdelivr, 동적 서브셋) + 아래 Galmuri.
      2026-09-13 v3.23.0 Google Fonts 의 Inter 링크를 뗐다 — v3.0.0 에 본문 글꼴로 넣었지만 v3.6.0 도트 디자인이
@@ -51,9 +56,14 @@
      그림은 도트로 직접 그린다 (backend/og_gen.py) — 도감 스프라이트가 픽셀인데
      미리보기만 매끈하면 눌러 들어온 화면과 결이 어긋난다 -->
 <link rel="canonical" href="https://moncamp.kr/">
-<meta name="description" content="포켓몬고 다이맥스·거다이맥스 티어표와 맥스 배틀 덱 짜기, 레이드·PvP 순위, 전 종 도감과 타입 상성, 이벤트 일정까지 한 화면에서. Pokémon GO Dynamax & Gigantamax tier list, Max Battle deck builder, raid & PvP rankings, Pokédex — 비공식 팬 도구입니다.">
-<!-- 2026-09-15 v3.33.0 keywords 는 구글이 무시하지만 네이버는 아직 참고한다 — 한 줄이라 비용이 없다 -->
-<meta name="keywords" content="포켓몬고, 포켓몬 GO, 다이맥스, 거다이맥스, 다이맥스 티어표, 맥스 배틀, 맥스 배틀 덱, 포켓몬고 도감, 레이드 티어표, PvP 랭킹, 타입 상성, Pokemon GO, Pokémon GO, Dynamax, Gigantamax, Max Battle, tier list, Pokedex">
+<!-- 2026-09-15 v3.43.0 188자 → 150자대. 검색 결과에 보이는 것은 앞 150자 안팎이라 뒤는 버려진다.
+     한국어를 앞에 몰고 영문 표기는 꼬리에 짧게 남긴다 — 잘려도 매칭에는 쓰인다 -->
+<meta name="description" content="포켓몬고 다이맥스·거다이맥스 티어표, 맥스 배틀 덱 짜기, 레이드·PvP 순위, 전 종 도감과 타입 상성, 이벤트 일정을 한 화면에서. 무료 비공식 팬 도구 (Pokémon GO Dynamax tier list · Max Battle deck · Pokédex).">
+<!-- 2026-09-15 v3.33.0 keywords 는 구글이 무시하지만 네이버는 아직 참고한다 — 한 줄이라 비용이 없다.
+     2026-09-15 v3.43.0 **띄어쓰기 변형과 줄임말을 넣는다.** 사람들은 '맥스배틀' 을 붙여 쓰고
+     포켓몬고를 '포고' 라 부른다. 네이버는 토큰을 그대로 맞춰 보므로 변형이 없으면 그 검색은 안 걸린다.
+     없는 기능을 적지는 않는다 — 아래는 전부 화면에 실제로 있는 것이다 -->
+<meta name="keywords" content="포켓몬고, 포켓몬 GO, 포고, 포켓몬고 티어표, 포켓몬고 다이맥스, 다이맥스, 거다이맥스, 다이맥스 티어표, 다이맥스 포켓몬, 맥스배틀, 맥스 배틀, 맥스배틀 덱, 포켓몬고 맥스배틀, 포켓몬고 레이드 티어표, 레이드 티어표, 포켓몬고 도감, 포켓몬 도감, 포켓몬고 상성, 타입 상성, 포켓몬고 개체값, 개체값 순위, PvP 랭킹, 포켓몬고 이벤트 일정, Pokemon GO, Pokémon GO, Dynamax, Gigantamax, Max Battle, Max Battle deck, tier list, raid tier list, Pokedex, type chart, PvP ranking">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="moncamp">
 <meta property="og:title" content="moncamp — 포켓몬고 다이맥스 티어표 · 맥스 배틀 덱 · 도감">
@@ -62,6 +72,7 @@
 <meta property="og:image" content="https://moncamp.kr/og.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
+<meta property="og:image:type" content="image/png">
 <meta property="og:image:alt" content="moncamp — 도트로 그린 몬스터볼과 서비스 이름">
 <meta property="og:locale" content="ko_KR">
 <!-- 2026-09-15 v3.33.0 화면은 KR/EN 둘 다 된다 — 영어권 공유에서도 같은 카드가 뜨게 밝힌다 -->
@@ -102,12 +113,29 @@
       "alternateName": "Pokemon GO Dynamax tier list & Max Battle deck builder",
       "description": "Pokémon GO Dynamax and Gigantamax tier lists, a Max Battle deck builder, raid and PvP rankings, a full Pokédex with type matchups, and the event calendar. An unofficial fan tool.",
       "applicationCategory": "UtilitiesApplication",
+      "keywords": "포켓몬고, 포고, 다이맥스 티어표, 거다이맥스, 맥스배틀 덱, 레이드 티어표, 포켓몬고 도감, 타입 상성, 개체값 순위, PvP 랭킹, Pokemon GO, Dynamax, Gigantamax, Max Battle, Pokedex",
+      "featureList": [
+        "다이맥스·거다이맥스 티어표 (전체·딜러·탱커)",
+        "맥스 배틀 덱 짜기 — 보스 타입별 딜러 2 + 탱커 1",
+        "레이드 보스 티어표와 솔플 계산기",
+        "PvP 리그별 랭킹과 개체값 순위",
+        "전 종 도감 · 타입 상성 · 진화와 종족값",
+        "이벤트 일정표"
+      ],
       "operatingSystem": "Any",
       "browserRequirements": "Requires JavaScript",
       "isAccessibleForFree": true,
       "offers": { "@type": "Offer", "price": "0", "priceCurrency": "KRW" },
       "image": "https://moncamp.kr/og.png",
       "inLanguage": ["ko", "en"],
+      "about": {
+        "@type": "VideoGame",
+        "name": "Pokémon GO",
+        "alternateName": ["포켓몬 GO", "포켓몬고", "포고"],
+        "publisher": { "@type": "Organization", "name": "Niantic, Inc." },
+        "sameAs": "https://pokemongolive.com/"
+      },
+      "sameAs": "https://github.com/MinsangKwak/pogo-rank",
       "isPartOf": { "@id": "https://moncamp.kr/#website" }
     }
   ]
@@ -172,12 +200,44 @@ __GA_SNIPPET__
   #splash.is-done { opacity: 0; pointer-events: none; }
   @media (prefers-color-scheme: dark) { #splash { background: #0a0a0f; color: #f5f5fa; } }
   @media (prefers-reduced-motion: reduce) { #splash .splash__bar i, #splash .splash__ball { animation: none; } }
+  /* 2026-09-15 v3.43.0 JS 가 꺼진 화면(아래 <noscript>). 켜져 있으면 브라우저가 아예 그리지 않는다 */
+  .noscript { position: relative; z-index: 1000; max-width: 60rem; margin: 0 auto; padding: 3.2rem 1.6rem;
+              font-family: 'Pretendard Variable', 'Pretendard', system-ui, sans-serif; line-height: 1.7; color: #0a0a0f; }
+  .noscript h2 { font-size: 2rem; margin: 0 0 1.2rem; }
+  .noscript ul { padding-left: 2rem; }
+  .noscript li { margin: 0.4rem 0; }
+  .noscript small { display: block; margin-top: 2.4rem; opacity: .7; }
+  @media (prefers-color-scheme: dark) { .noscript { color: #f5f5fa; } }
 </style>
+<!-- 2026-09-15 v3.43.0 JS 가 없으면 로딩 가림막을 아예 안 그린다.
+     app.js 가 첫 렌더 뒤에 걷어내는 물건이라, JS 가 없으면 '불러오는 중…' 이 영원히 남아
+     아래 <noscript> 본문을 덮는다. head 의 <noscript> 안 <style> 은 JS 가 켜져 있으면 무시된다 -->
+<noscript><style>#splash, #px-bg { display: none; }</style></noscript>
 <style>
 __STYLES__
 </style>
 </head>
 <body>
+<!-- 2026-09-15 v3.43.0 자바스크립트가 없을 때 보이는 본문.
+     사람에게는 "왜 빈 화면인가" 의 답이고, 크롤러에게는 **읽을 수 있는 유일한 본문**이다 —
+     네이버 Yeti 는 JS 를 돌리지 않아 지금까지 <title> 과 description 말고는 읽을 것이 없었다.
+     ★ 여기에 화면에 없는 말을 적으면 클로킹이다. 아래는 전부 실제로 있는 화면의 이름 그대로다 -->
+<noscript id="noscript-intro">
+  <div class="noscript">
+    <h2>포켓몬고 다이맥스 티어표 · 맥스 배틀 덱 · 도감</h2>
+    <p>moncamp 는 포켓몬고에서 <b>무엇을 잡고 어떤 포켓몬을 키울지</b> 정하도록 돕는 무료 도구입니다. 화면을 자바스크립트로 그리기 때문에, 보시려면 브라우저에서 자바스크립트를 켜 주세요.</p>
+    <ul>
+      <li><b>다이맥스·거다이맥스 티어표</b> — 전체 · 딜러 · 탱커로 나눠 본 순위와 선정 근거</li>
+      <li><b>맥스 배틀 덱 짜기</b> — 보스 타입을 고르면 데려갈 셋(딜러 2 + 탱커 1)을 골라 줍니다</li>
+      <li><b>레이드 보스 티어표와 솔플 계산기</b> — 혼자 잡을 수 있는지 계산합니다</li>
+      <li><b>PvP 리그별 랭킹과 개체값 순위</b> — 슈퍼·하이퍼·마스터리그</li>
+      <li><b>전 종 도감</b> — 타입 상성, 진화, 종족값, 활용처</li>
+      <li><b>이벤트 일정표</b> — 이번 주 레이드 보스와 진행 중인 이벤트</li>
+    </ul>
+    <p><a href="https://moncamp.kr/">moncamp.kr</a></p>
+    <small>비공식 팬 프로젝트입니다. Pokémon 및 관련 명칭·이미지의 권리는 각 권리자(Nintendo · Creatures · GAME FREAK · Niantic)에게 있습니다. 데이터는 PvPoke · PokeMiners · PokeAPI · LeekDuck 의 공개 자료를 사용합니다.</small>
+  </div>
+</noscript>
 <!-- 2026-09-03 v2.2.1 로딩 화면 — 첫 렌더가 끝나면 app.js가 제거 -->
 <div id="splash">
   <div class="splash__ball" aria-hidden="true"></div>

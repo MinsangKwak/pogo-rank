@@ -163,6 +163,49 @@ suite(async () => {
   ok('구조화 데이터 한 블록, JSON 으로 읽힘', ld.length === 1 && ld[0] !== null, String(ld.length));
   const ldTypes = (ld[0]?.['@graph'] ?? []).map((node) => node['@type']);
   ok('구조화 데이터에 WebSite · WebApplication', ldTypes.includes('WebSite') && ldTypes.includes('WebApplication'), ldTypes.join(','));
+  // 2026-09-15 v3.43.0 무엇에 관한 사이트인지 기계가 알아보게 — about 이 빠지면 주제가 안 엮인다
+  const app = (ld[0]?.['@graph'] ?? []).find((node) => node['@type'] === 'WebApplication');
+  ok('구조화 데이터가 Pokémon GO 를 가리킨다', app?.about?.name === 'Pokémon GO', JSON.stringify(app?.about?.name));
+  ok('기능 목록이 있다', Array.isArray(app?.featureList) && app.featureList.length >= 5, String(app?.featureList?.length));
+
+  // ── 2026-09-15 v3.43.0 검색 유입 — 사람들이 실제로 치는 말이 제목·본문에 있는가
+  //
+  // ★ 가장 크게 놓쳤던 것 — 구글은 JS 를 돌린 **뒤**의 제목을 본다.
+  //   index.html 에 검색어를 아무리 적어도 app-shell.js 가 'moncamp' 한 마디로 덮어쓰면 그만이다.
+  //   해시 라우팅이라 색인되는 주소는 홈 하나뿐이니, 그 하나의 제목이 전부다.
+  const titles = await page.evaluate(() => ({
+    now: document.title,
+    tag: document.querySelector('title')?.textContent ?? '',
+  }));
+  ok('홈 제목에 검색어가 있다', /포켓몬고/.test(titles.now) && /다이맥스 티어표/.test(titles.now), titles.now);
+  ok('검색어가 브랜드보다 앞에 있다', titles.now.indexOf('포켓몬고') < titles.now.indexOf('moncamp'), titles.now);
+  ok('JS 가 제목을 다른 문장으로 덮지 않는다', titles.now === titles.tag, `${titles.tag} / ${titles.now}`);
+
+  // 네이버 Yeti 는 JS 를 돌리지 않는다 — <noscript> 가 크롤러가 읽는 **유일한 본문**이다.
+  // 화면에 없는 말을 적으면 클로킹이므로, 실제 화면 이름이 그대로 있는지까지 본다
+  // JS 가 켜져 있으면 <noscript> 안은 DOM 으로 파싱되지 않고 **글자 그대로** 남는다.
+  // 그래서 textContent 로 읽는다. 머리의 글꼴 <noscript> 와 섞이지 않게 id 로 집는다
+  const fallback = await page.evaluate(() => {
+    const node = document.getElementById('noscript-intro');
+    const text = (node?.textContent ?? '').replace(/\s+/g, ' ').trim();
+    return { text, length: text.length };
+  });
+  ok('JS 없이 읽을 본문이 있다', fallback.length > 300, String(fallback.length));
+  ok('본문이 실제 화면 이름을 쓴다',
+    ['다이맥스', '맥스 배틀 덱', '레이드', 'PvP', '도감', '일정표'].every((word) => fallback.text.includes(word)),
+    fallback.text.slice(0, 120));
+  ok('본문에 비공식 고지가 있다', /비공식/.test(fallback.text));
+  // JS 가 없으면 로딩 가림막을 안 그린다 — 안 그러면 '불러오는 중…' 이 영원히 남아 위 본문을 덮는다
+  ok('JS 없을 때 로딩 가림막을 숨긴다', await page.evaluate(() =>
+    [...document.head.querySelectorAll('noscript')].some((n) => n.textContent.includes('#splash'))));
+
+  // 잘리는 길이 — 제목 35자·설명 160자 안팎에서 검색 결과가 자른다
+  const desc = meta.description;
+  ok('설명이 잘리지 않을 길이', desc.length <= 165, String(desc.length));
+  ok('설명이 포켓몬고로 시작한다', desc.startsWith('포켓몬고'), desc.slice(0, 20));
+  const kw = await page.evaluate(() => document.querySelector('meta[name="keywords"]')?.content ?? '');
+  // 네이버는 토큰을 그대로 맞춰 본다 — '맥스배틀' 을 붙여 쓰는 사람이 더 많다
+  ok('붙여 쓴 변형도 넣는다', kw.includes('맥스배틀') && kw.includes('포고'), String(kw.split(', ').length));
   ok('구조화 데이터 주소가 canonical 과 같음', (ld[0]?.['@graph'] ?? []).every((node) => node.url === meta.canonical), meta.canonical);
   const robotsMetas = await page.evaluate(() => [...document.querySelectorAll('meta[name="robots"]')].map((n) => n.content));
   ok('robots 메타 정확히 한 줄', robotsMetas.length === 1, robotsMetas.join(' / '));
