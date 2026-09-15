@@ -39,7 +39,7 @@ from sprite import sprite_id
 from names import name_ko, species, FORM_KO
 
 # ── 설정 ─────────────────────────────────────────────────────────────────────
-APP_VERSION = 'v3.39.0'  # 방문 통계를 옵트아웃으로 — 들어오면 바로 찍히고, 끄고 싶은 사람이 끈다 (v3.25.0 은 feature-advertisement 브랜치에 예약)
+APP_VERSION = 'v3.40.0'  # 관리자를 화면에서 지정 — 루트 + 위임, [미구현] 은 관리자 전용 (v3.25.0 은 feature-advertisement 브랜치에 예약)
 # 2026-09-14 v3.28.0 index.html 의 색인 허용 줄 — dev 빌드가 이 줄을 noindex 로 바꿔 끼운다
 ROBOTS_INDEX_META = '<meta name="robots" content="index, follow, max-image-preview:large">'
 # 2026-09-05 v2.7.3 빌드 채널 — 'prod'(기본) / 'dev'. dev 브랜치 워크플로(.github/workflows/deploy-dev.yml)가 BUILD_CHANNEL=dev 로 부른다.

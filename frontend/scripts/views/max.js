@@ -68,15 +68,17 @@ function rankText(list, pokemon) {
   return pokemon.unrel ? '–' : String(releasedRank(list, pokemon));
 }
 
-// 2026-09-15 v3.38.0 미구현은 **회원에게만** 보인다.
-// 아직 안 나온 것을 미리 보는 값이라 로그인한 사람의 몫으로 둔다 — 비로그인에게는 체크 자체를 안 그린다.
+// 2026-09-15 v3.40.0 미구현은 **관리자에게만** 보인다 (v3.38.0 에는 로그인한 사람 전부였다).
+// 아직 안 나온 것을 미리 보는 값이라 운영하는 사람의 몫으로 둔다 —
+// 관리자가 아니면 체크 자체를 안 그리고, 목록에서도 늘 걸러진다.
+// 관리자는 둘이다: 루트(ADMIN_UID) · 위임(allowlist 문서의 admin: true, 루트가 화면에서 지정).
 //
 // ⚠️ 이건 **화면을 가리는 것**이지 데이터를 막는 것이 아니다. 순위표는 빌드가 dist/index.html 에
 //   통째로 심어 두는 공개 값이라, 개발자 도구를 열면 흐린 줄의 내용도 그대로 보인다
 //   (components/auth.js 머리말의 "접근 제어의 주체는 이 화면 코드가 아니다" 와 같은 전제).
 //   정말로 막아야 한다면 미구현 줄을 빌드에서 빼고 로그인 뒤 Firestore 에서 받아 와야 한다 — 별도 작업이다.
 function maxUnrelAllowed() {
-  return typeof AUTH !== 'undefined' && AUTH.status !== 'anon';
+  return typeof AUTH !== 'undefined' && AUTH.admin === true;
 }
 
 // 2026-09-15 v3.37.0 [미구현] 체크가 꺼져 있으면 흐린 줄을 아예 뺀다.
@@ -431,7 +433,7 @@ const MAX_UNREL_KEY = 'pogo_max_unrel';
 // 체크를 볼 수 있는 사람에게만 붙는 한 문장. $note 에 **따로 붙인다** —
 // 본문에 이어 붙이면 문장 전체가 사전의 새 열쇠가 돼 세 안내마다 영문을 새로 맞춰야 한다.
 // 조각으로 두면 기존 세 열쇠는 그대로고 이 한 줄만 사전에 더하면 된다
-const MAX_UNREL_NOTE = '머리의 [미구현] 을 켜면 데이터만 등록되고 아직 게임에 나오지 않은 개체도 함께 봐요 — 흐리게 표시되고 순위 번호는 주지 않아요. 회원만 보이는 값이에요.';
+const MAX_UNREL_NOTE = '머리의 [미구현] 을 켜면 데이터만 등록되고 아직 게임에 나오지 않은 개체도 함께 봐요 — 흐리게 표시되고 순위 번호는 주지 않아요. 관리자만 보이는 값이에요.';
 function maxNoteUnrelTail() {
   if (!maxUnrelAllowed() || !maxHasUnreleased(state.maxBoss)) return;
   // 표식을 달아 둔다 — 로그인이 늦게 끝나면 syncMaxUnrelControl() 이 이 조각만 나중에 붙이거나 뗀다
