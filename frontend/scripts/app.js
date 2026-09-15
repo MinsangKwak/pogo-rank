@@ -31,6 +31,7 @@ const state = {
   easyBoss: 'overall',       // PvE '일반' 탭에서 고른 칩 (전체 탭과 따로 기억한다)
   maxBoss: 'overall',        // D-MAX 탭에서 고른 칩
   maxAxis: 'all',            // 2026-09-07 v2.13.0 (QA-43) D-MAX 탭 세그먼트 — v2.14.0 (QA-52) [전체(티어표) | 딜러 | 탱커]
+  maxShowUnrel: false,       // 2026-09-15 v3.37.0 [미구현] 체크 — 데이터만 있고 아직 못 쓰는 줄을 보일지 (views/max.js 가 기기에 기억한다)
   pveMode: 'easy',           // 2026-09-02 pveMode: PvE 탭 통합 — 'easy'(일반) / 'all'(전체)
   bossShow: 5,               // 2026-09-02 bossShow: 보스 추천 표시 개수
   // 2026-09-07 v2.16.0 IF 탭 해체 — 솔플 계산기는 PvE 탭, PvP 덱 짜기는 PvP 탭의 오른쪽 도구 버튼으로 (활용처 탭은 검색 패널로)

@@ -1,7 +1,14 @@
 'use strict';
 // v3.36.0 🌫 미구현 표시 회귀 — "데이터는 있는데 아직 못 쓰는 것" 을 지우지 않고 흐리게 보여 준다
+// v3.37.0 머리의 [미구현] 체크로 켜고 끈다 (기본 꺼짐 · 선택은 이 기기에 남는다)
 //
 // 이 스위트가 지키려는 것
+//   - **기본은 꺼짐** — 처음 들어오면 표에 흐린 줄이 한 개도 없다
+//   - 체크를 켜면 미구현 줄이 끼어들고, 다시 끄면 사라지는가
+//   - 체크 자리가 [미구현] → [덱 짜기] → [보기 전환] 차례인가
+//   - 껐다 켠 선택이 화면을 옮겼다 돌아와도 남아 있는가
+//   - 미구현 줄이 **오른쪽으로 물리고 · 옅고 · 흐린가**, 그리고 hover 에서 또렷해지는가
+//   - 카드 보기에서는 카드 폭이 출시분과 같은가 (밀면 그 카드만 좁아져 줄이 너덜해진다)
 //   - D-MAX 세 표(전체·딜러·탱커)에 미구현 줄이 흐리게(.is-unreleased) 뜨는가
 //   - 그 줄에 [미구현] 딱지가 붙고 순위 칸이 '–' 인가
 //   - **출시분의 순위가 1,2,3… 으로 끊기지 않는가** — 미구현을 같이 세면 번호가 밀린다
@@ -44,9 +51,69 @@ suite(async () => {
     }));
   }, index);
 
-  // ── 1. D-MAX 티어표 ───────────────────────────────────────────────────────
+  // 머리의 [미구현] 체크를 켠다/끈다
+  const setUnrel = async (on) => {
+    const box = page.locator('.check-toggle__box').first();
+    if (!(await box.count())) return false;
+    if ((await box.isChecked()) !== on) { await box.click(); await page.waitForTimeout(600); }
+    return true;
+  };
+
+  // ── 0. 기본은 꺼짐 ────────────────────────────────────────────────────────
   await go('#/dmax');
+  ok('체크가 기본으로 꺼져 있다', (await page.locator('.check-toggle__box').first().isChecked()) === false);
+  ok('꺼진 표에는 흐린 줄이 없다', (await page.locator('.row.is-unreleased').count()) === 0);
+  const offCount = await page.locator('.row').count();
+  // 머리 차례: [미구현] → [덱 짜기] → [보기 전환]
+  const headOrder = await page.evaluate(() => [...document.querySelectorAll('#page-head-actions > *')]
+    .map((node) => node.className.split(' ')[0]));
+  ok('머리 차례가 [미구현]→[덱 짜기]→[보기 전환]',
+    headOrder[0] === 'check-toggle' && headOrder[1] === 'tool-btn' && headOrder[2] === 'icon-btn',
+    headOrder.join(' → '));
+
+  // ── 1. D-MAX 티어표 ───────────────────────────────────────────────────────
+  await setUnrel(true);
+  const onCount = await page.locator('.row').count();
+  ok('켜면 줄이 늘어난다', onCount > offCount, `${offCount} → ${onCount}`);
+  // 선택이 화면을 옮겼다 와도 남는다
+  await go('#/dex');
+  await go('#/dmax');
+  ok('선택이 기기에 남는다', (await page.locator('.check-toggle__box').first().isChecked()) === true);
+  ok('돌아와도 흐린 줄이 있다', (await page.locator('.row.is-unreleased').count()) > 0);
+  // 카드 보기에서 폭이 같은가 (미는 쪽은 줄 보기에서만)
+  const cardWidths = await page.evaluate(() => {
+    const grid = document.querySelector('.row-list.is-grid');
+    if (!grid) return null;
+    const pick = (sel) => { const node = grid.querySelector(sel); return node ? Math.round(node.getBoundingClientRect().width) : null; };
+    return { unrel: pick('.row.is-unreleased'), rel: pick('.row:not(.is-unreleased)') };
+  });
+  if (cardWidths && cardWidths.unrel && cardWidths.rel) {
+    ok('카드 보기에서 폭이 같다', cardWidths.unrel === cardWidths.rel, `${cardWidths.unrel} vs ${cardWidths.rel}`);
+  }
   await toListView();
+  // 줄 보기에서는 오른쪽으로 물린다
+  const indent = await page.evaluate(() => {
+    const unrel = document.querySelector('.row.is-unreleased'), rel = document.querySelector('.row:not(.is-unreleased)');
+    const style = getComputedStyle(unrel);
+    return { unrelLeft: Math.round(unrel.getBoundingClientRect().left), relLeft: Math.round(rel.getBoundingClientRect().left),
+      opacity: Number(style.opacity), filter: style.filter };
+  });
+  ok('미구현 줄이 오른쪽으로 물린다', indent.unrelLeft > indent.relLeft, `${indent.relLeft} → ${indent.unrelLeft}`);
+  ok('더 옅다', indent.opacity <= 0.45, String(indent.opacity));
+  ok('흐림이 걸린다', indent.filter.includes('blur'), indent.filter);
+  // 다가가면 또렷해진다
+  await page.locator('.row.is-unreleased').first().hover();
+  await page.waitForTimeout(250);
+  const onHover = await page.evaluate(() => {
+    const style = getComputedStyle(document.querySelector('.row.is-unreleased'));
+    return { opacity: Number(style.opacity), filter: style.filter };
+  });
+  ok('hover 하면 또렷해진다', onHover.opacity > 0.9 && !onHover.filter.includes('blur'),
+    `${onHover.opacity} ${onHover.filter}`);
+  // 마우스를 치운다 — 얹힌 채로 재면 그 줄만 또렷해서 아래 검사가 헛짚는다
+  await page.mouse.move(0, 0);
+  await page.waitForTimeout(250);
+
   let rows = await readRows();
   const unrelRows = rows.filter((row) => row.unrel);
   ok('티어표에 미구현 줄이 있다', unrelRows.length > 0, `줄 ${rows.length} 중 미구현 ${unrelRows.length}`);
@@ -86,6 +153,7 @@ suite(async () => {
       if (button) button.click();
     }, axis);
     await page.waitForTimeout(600);
+    await setUnrel(true);
     await toListView();
     // 딜러 화면은 [티어표, 딜러표] 두 표다 — 마지막 표가 그 축의 표
     rows = await readRows(await page.locator('.row-list').count() - 1);
@@ -143,6 +211,12 @@ suite(async () => {
   }));
   ok('줄 모드에서도 안 눕는다', megaTagsList.every((tag) => tag.w > tag.h),
     megaTagsList.slice(0, 4).map((tag) => `${tag.w}x${tag.h}`).join(' '));
+
+  // ── 4.5 다시 끄면 사라진다 ────────────────────────────────────────────────
+  await go('#/dmax');
+  await setUnrel(false);
+  ok('끄면 흐린 줄이 사라진다', (await page.locator('.row.is-unreleased').count()) === 0);
+  await setUnrel(true);
 
   // ── 5. EN ────────────────────────────────────────────────────────────────
   await go('#/dmax');
