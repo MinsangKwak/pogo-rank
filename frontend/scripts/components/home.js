@@ -117,7 +117,9 @@ function renderServiceHome() {
     event.preventDefault();
     openLoginInvite(tile.querySelector('strong')?.textContent || '');
   });
-  // 2026-09-13 v3.22.0 순위 세 덩이 — 인사 바로 밑, 기능 타일 앞
+  // 2026-09-13 v3.22.0 순위 세 덩이
+  // 2026-09-15 v3.42.0 자리를 기능 타일 **뒤** 로 옮긴다 — 처음 들어온 사람은 '어디로 갈까' 가 먼저다.
+  // 순위는 아직 실험 중인 화면이라 첫 화면의 둘째 칸을 차지할 만큼 확실하지 않다
   const pickGroups = HOME_PICKS.map(homePickGroup).filter(Boolean);
   $content.append(el('div', { class: 'home-dashboard' },
     el('section', { class: 'home__welcome' },
@@ -135,10 +137,10 @@ function renderServiceHome() {
             el('span', { class: 'home__quick-number' }, `0${index + 1}`),
             el('strong', {}, route.nav), el('span', { 'aria-hidden': 'true' }, '↗'));
         }))),
+    features,
     ...(pickGroups.length ? [el('section', { class: 'home__picks', 'aria-label': '지금 강한 포켓몬' },
       el('div', { class: 'home__section' }, el('h3', {}, '지금 강한 포켓몬'), el('span', {}, '순위표 세 곳의 상위 3종')),
       ...pickGroups,
-      el('span', { class: 'pick__foot' }, '카드를 누르면 종족값·상성·활용처를 전부 볼 수 있어요'))] : []),
-    features));
+      el('span', { class: 'pick__foot' }, '카드를 누르면 종족값·상성·활용처를 전부 볼 수 있어요'))] : [])));
   $note.textContent = '뭘 키울지 여기서 정해요. 도감에서 포켓몬을 알아보고, 랭킹에서 추천 개체를 고른 뒤, 육성 플래너에 내 개체를 기록하면 돼요.';   // v3.13.0 '상성' 화면은 v2.63.0 에 접었다
 }

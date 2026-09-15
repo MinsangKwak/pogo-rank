@@ -15,6 +15,9 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 const RELEASE_NOTES_EN = {
+  '2026-09-15 · v3.42.0': [
+    '**The home screen is reordered** — "What would you like to do?" now sits right under the greeting, so a first visit starts with **where to go**. The three "Strong right now" boards moved below it.',
+  ],
   '2026-09-15 · v3.41.1': [
     '**(Polish) Rows marked not in GO stay blurred on hover** — brushing past one used to sharpen it, which made the marking almost meaningless. Tap to expand and the formula and grade are still readable.',
   ],
