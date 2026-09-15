@@ -64,6 +64,9 @@ function maxDeckCandidates(slotIndex, bossType, deck) {
   return table.filter((pokemon) => {
     if (taken.has(Number(pokemon.sprite))) return false;
     if (state.maxDeckDynaOnly && pokemon.gmax) return false;
+    // 2026-09-15 v3.36.0 미구현(데이터만 있고 게임에 없는 개체)은 후보가 아니다 —
+    // 순위표는 "있으면 이쯤" 을 보여 주는 자리지만, 덱은 **지금 데려갈 수 있는** 것만 담아야 한다
+    if (pokemon.unrel) return false;
     return true;
   });
 }

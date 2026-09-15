@@ -141,15 +141,22 @@ function dexEntries() {
 // 라벨은 게임마스터가 준 것 그대로 — '메가' · '메가X' · '메가Y' · '원시'.
 // X·Y 둘 다 있으면 '메가 X·Y' 한 칸으로 접는다(딱지 둘이 이름을 밀어낸다).
 // 원시회귀(그란돈·가이오가)는 메가와 다른 것이라 글자도 색도 따로 간다
+// 2026-09-15 v3.36.0 아직 안 나온 메가도 딱지를 단다 — 대신 흐리게(.is-unreleased) 하고 말풍선에 그 사실을 적는다.
+// 전에는 통째로 뺐는데, 그러면 '메가가 없는 종' 과 '메가가 있지만 아직 안 나온 종' 이 화면에서 같아 보인다.
+// 데이터는 이미 DEX_DATA.megas 에 있고(entry.rel 이 PvPoke 출시 목록에서 온다), 상세 진화 칸은 전부터 '미구현' 으로 밝혀 왔다.
+// 출시분과 미출시분이 섞인 종은 출시분만 딱지 글자로 삼는다 — '메가 X' 는 나왔는데 'Y' 가 아직이면 딱지는 '메가' 하나다
 function dexMegaTag(megas) {
-  // 아직 안 나온 메가는 딱지를 달지 않는다 — 게임마스터에는 미출시 폼의 종족값도 들어 있다
-  // (2026-09-14 두랄루돈 다이맥스 오등록과 같은 함정). entry.rel 은 PvPoke 출시 목록에서 온다
-  const released = (megas ?? []).filter((entry) => entry.rel !== false);
-  if (!released.length) return '';
-  const labels = released.map((entry) => entry.label);
+  const entries = megas ?? [];
+  if (!entries.length) return '';
+  const released = entries.filter((entry) => entry.rel !== false);
+  const shown = released.length ? released : entries;
+  const labels = shown.map((entry) => entry.label);
   const primal = labels.includes('원시');
   const text = primal ? '원시' : labels.length > 1 ? `메가 ${labels.map((label) => label.replace('메가', '')).join('·')}` : '메가';
-  return el('span', { class: `tag dex__mega${primal ? ' dex__mega--primal' : ''}`, title: primal ? '원시회귀 가능' : '메가진화 가능' }, text);
+  const unrel = !released.length;
+  const title = unrel ? (primal ? '원시회귀 데이터는 있지만 아직 미구현' : '메가진화 데이터는 있지만 아직 미구현')
+    : primal ? '원시회귀 가능' : '메가진화 가능';
+  return el('span', { class: `tag dex__mega${primal ? ' dex__mega--primal' : ''}${unrel ? ' is-unreleased' : ''}`, title }, text);
 }
 // 도감 페이지 조립.
 // 목록은 한 번에 다 그리지 않고 청크로 나눠 그린다 — 처음 100종, [더보기] 를 누를 때마다 +200종.

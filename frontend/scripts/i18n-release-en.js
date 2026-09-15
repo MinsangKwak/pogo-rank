@@ -15,6 +15,13 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 const RELEASE_NOTES_EN = {
+  '2026-09-15 · v3.36.0': [
+    '**Things that have not launched yet are shown faded** — the game files already carry data for Pokémon you cannot use yet. The D-MAX tables (all / attacker / tank) no longer drop them: they appear faded and marked **not in GO**, so you can see where one would land once it arrives.',
+    '**The rankings do not shift** — faded rows get no rank number. Released entries stay numbered 1, 2, 3 … without a gap, and the 100% mark for grades is still the best released entry (so a faded row can go above 100%).',
+    '**They stay out of deck building and recommendations** — a ranking can say "this is roughly where it would land", but a deck has to hold what you can actually bring today.',
+    '**The Pokédex marks unreleased Megas too** — the chip used to be dropped entirely, so a species with no Mega looked the same as one whose Mega has not launched. It now shows as a dashed grey chip (Mega Camerupt).',
+    '**(Fix) The Mega chip stacked its characters vertically in Pokédex rows** — on wide screens the row layout left it no room.',
+  ],
   '2026-09-15 · v3.35.1': [
     '**(Hotfix) Animated sprites grew without stopping** — where a sprite is sized by its slot rather than by a fixed rule, such as the PvP deck builder, one sprite grew a little every 0.8 seconds until it covered the screen. The Little League deck showed it clearly.',
   ],
