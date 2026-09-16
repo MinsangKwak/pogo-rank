@@ -15,6 +15,10 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 const RELEASE_NOTES_EN = {
+  '2026-09-15 · v3.45.0': [
+    '**The notice banner that appeared on arrival is gone** — it covered the bottom of the screen and got in the way of a first visit. You now land straight on the site.',
+    '**Turning analytics off works exactly as before** — ☰ menu → analytics and storage settings, or the same entry at the bottom of the page. What is stored and what is sent is still written out in the privacy policy, and if you already turned it off it stays off.',
+  ],
   '2026-09-15 · v3.44.0': [
     '**(Fix) Pokémon not yet in the game were being recommended against this week’s boss** — the "Suggested party" and "Recommended attackers" cards at the top of D-MAX were filled from rank 1 with entries that only exist in the game files. Recommendations now list **only what you can actually bring today**, and the "N total" count matches what you can see.',
     '**The home screen no longer jumps** — the whole page used to shift upward the moment it finished drawing.',
