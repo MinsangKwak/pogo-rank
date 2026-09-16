@@ -1,5 +1,7 @@
 # 기여 안내 (CONTRIBUTING.md)
 
+[← README](README.md) · **기여 안내** · [NOTICE](NOTICE.md) · [SECURITY](SECURITY.md)
+
 **PR 은 `dev` 브랜치로, 커밋마다 DCO 서명(`git commit -s`)을 붙여 주세요.** 나머지 규칙은 아래와 개발 문서(docs/DEVELOPMENT.md)에 있습니다. (2026-09-07 v2.18.0 신설)
 
 ## 시작하기
