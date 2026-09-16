@@ -54,7 +54,7 @@ const ROUTES = [
   { id: 'pvp', path: 'pvp', kind: 'shell', tab: 'pvp', nav: '배틀 · PvP', icon: '🃏', group: 'pick', locked: true, legacy: ['rank/pvp'] },
   // 2026-09-16 v3.51.0 📢 게임 업데이트 — 게임 쪽 변경을 모아 읽는 상설 창구 (components/updates.js).
   // 잠그지 않는다: 무엇이 바뀌었는지는 로그인 여부와 상관없이 누구나 읽을 수 있어야 한다
-  { id: 'game-updates', path: 'game-updates', kind: 'page', nav: '게임 업데이트', icon: '📢', group: 'today' },
+  { id: 'game-updates', path: 'game-updates', kind: 'page', nav: '게임 업데이트', icon: '📢', group: 'info' },
   { id: 'schedule', path: 'schedule', kind: 'page', nav: '이벤트 일정', icon: '📅', group: 'today', locked: true },
   { id: 'raids', path: 'raids', kind: 'page', nav: '레이드 보스', icon: '⚔️', group: 'today', locked: true },
   { id: 'eggs', path: 'eggs', kind: 'page', nav: '알 부화', icon: '🥚', group: 'today', locked: true },
