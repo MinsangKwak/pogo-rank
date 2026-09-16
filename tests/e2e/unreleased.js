@@ -1,25 +1,29 @@
 'use strict';
-// v3.36.0 🌫 미구현 표시 회귀 — "데이터는 있는데 아직 못 쓰는 것" 을 지우지 않고 흐리게 보여 준다
+// v3.36.0 미구현 표시 회귀 — "데이터는 있는데 아직 못 쓰는 것" 을 지우지 않고 보여 준다
 // v3.37.0 머리의 [미구현] 체크로 켜고 끈다 (기본 꺼짐 · 선택은 이 기기에 남는다)
 // v3.38.0 회원 전용 → v3.40.0 **관리자 전용** (관리자 여부 자체는 tests/e2e/admin.js 가 본다)
+// v3.49.0 흐림 → 왼쪽 빨간 막대, 그리고 켜면 표가 **"만약 나온다면" 의 가상 순위**가 된다
 //
 // 이 스위트가 지키려는 것
-//   - **비로그인은 체크도 흐린 줄도 없다** — 저장값이 켜져 있어도 마찬가지 (화면 가림 · 데이터 차단은 아님)
-//   - **기본은 꺼짐** — 처음 들어오면 표에 흐린 줄이 한 개도 없다
+//   - **비로그인은 체크도 미구현 줄도 없다** — 저장값이 켜져 있어도 마찬가지 (화면 가림 · 데이터 차단은 아님)
+//   - **기본은 꺼짐** — 처음 들어오면 표에 미구현 줄이 한 개도 없다
 //   - 체크를 켜면 미구현 줄이 끼어들고, 다시 끄면 사라지는가
 //   - 체크 자리가 [미구현] → [덱 짜기] → [보기 전환] 차례인가
 //   - 껐다 켠 선택이 화면을 옮겼다 돌아와도 남아 있는가
-//   - 미구현 줄이 **오른쪽으로 물리고 · 옅고 · 흐린가**
-//   - v3.41.1 **hover 해도 흐림이 안 풀리는가** (스치기만 해도 또렷해지면 표시한 뜻이 없다)
-//   - 키보드 포커스에서는 풀리는가 (탭으로 다니는 사람에게 흐린 줄만 남으면 안 된다)
-//   - 카드 보기에서는 카드 폭이 출시분과 같은가 (밀면 그 카드만 좁아져 줄이 너덜해진다)
-//   - D-MAX 세 표(전체·딜러·탱커)에 미구현 줄이 흐리게(.is-unreleased) 뜨는가
-//   - 그 줄에 [미구현] 딱지가 붙고 순위 칸이 '–' 인가
-//   - **출시분의 순위가 1,2,3… 으로 끊기지 않는가** — 미구현을 같이 세면 번호가 밀린다
+//   - v3.49.0 미구현 줄이 **흐리지 않고**(blur·opacity 없음) 왼쪽 빨간 막대로 표시되는가
+//   - v3.49.0 왼쪽 끝이 출시분과 **같은 자리**인가 (번호가 한 줄로 서야 순서로 읽힌다)
+//   - hover 해도 표시(막대·바탕)가 남는가 — 스치기만 해도 사라지면 훑는 중에 놓친다
+//   - 카드 보기에서는 카드 폭이 출시분과 같은가
+//   - D-MAX 세 표(전체·딜러·탱커)에 미구현 줄이 뜨는가
+//   - 그 줄에 [미구현] 딱지가 붙는가
+//   - v3.49.0 **켜면 표 전체가 1,2,3… 가상 순위** — 미구현도 번호를 받고 그만큼 출시분이 밀린다
+//   - v3.49.0 밀린 줄에 [지금 N위] 딱지가 붙고, 그 수가 출시분끼리 센 순위와 맞는가
+//   - v3.49.0 표 제목에 [가상 순위] 딱지가 붙고, 끄면 사라지는가
+//   - **끄면 예전 그대로** — 출시분만 1,2,3… (가정 표시도 전부 사라진다)
 //   - 등급의 100% 기준이 출시분 1위인가 (미구현은 100% 를 넘을 수 있다)
 //   - 펼친 근거 줄에 순위 0 이 안 나오는가 (탭마다 행이 복사본이라 객체로 찾으면 못 찾는다)
 //   - **덱 짜기·솔플 후보에는 안 들어가는가** — 순위표는 "있으면 이쯤" 이지만 덱은 지금 데려갈 수 있는 것만
-//   - 도감의 미출시 메가가 딱지로 뜨되 흐린가 (메가 폭타)
+//   - 도감의 미출시 메가가 딱지로 뜨는가 (메가 폭타)
 //   - 도감 줄에서 메가 딱지가 눕지 않는가 (PC 줄 모드 격자에 자리가 없어 '메/가' 로 세로로 눕던 자리)
 //   - EN 으로 바꿔도 한글이 남지 않는가
 const { toEnglish, launch, newContext, waitSplash, ok, finish, suite } = require('./_lib');
@@ -74,7 +78,7 @@ suite(async () => {
   await anon.waitForTimeout(1200);
   ok('비로그인 상태다', (await anon.evaluate(() => (typeof AUTH !== 'undefined' ? AUTH.status : '?'))) === 'anon');
   ok('비로그인에게는 체크가 없다', (await anon.locator('.check-toggle').count()) === 0);
-  ok('비로그인에게는 흐린 줄이 없다', (await anon.locator('.row.is-unreleased').count()) === 0);
+  ok('비로그인에게는 미구현 줄이 없다', (await anon.locator('.row.is-unreleased').count()) === 0);
   ok('비로그인 안내에는 [미구현] 붙임말이 없다',
     !(await anon.evaluate(() => (document.getElementById('note')?.textContent ?? '').includes('[미구현]'))));
   await anonCtx.close();
@@ -82,7 +86,7 @@ suite(async () => {
   // ── 0. 기본은 꺼짐 ────────────────────────────────────────────────────────
   await go('#/dmax');
   ok('체크가 기본으로 꺼져 있다', (await page.locator('.check-toggle__box').first().isChecked()) === false);
-  ok('꺼진 표에는 흐린 줄이 없다', (await page.locator('.row.is-unreleased').count()) === 0);
+  ok('꺼진 표에는 미구현 줄이 없다', (await page.locator('.row.is-unreleased').count()) === 0);
   const offCount = await page.locator('.row').count();
   // 머리 차례: [미구현] → [덱 짜기] → [보기 전환]
   const headOrder = await page.evaluate(() => [...document.querySelectorAll('#page-head-actions > *')]
@@ -101,7 +105,7 @@ suite(async () => {
   await go('#/dex');
   await go('#/dmax');
   ok('선택이 기기에 남는다', (await page.locator('.check-toggle__box').first().isChecked()) === true);
-  ok('돌아와도 흐린 줄이 있다', (await page.locator('.row.is-unreleased').count()) > 0);
+  ok('돌아와도 미구현 줄이 있다', (await page.locator('.row.is-unreleased').count()) > 0);
   // 카드 보기에서 폭이 같은가 (미는 쪽은 줄 보기에서만)
   const cardWidths = await page.evaluate(() => {
     const grid = document.querySelector('.row-list.is-grid');
@@ -113,35 +117,37 @@ suite(async () => {
     ok('카드 보기에서 폭이 같다', cardWidths.unrel === cardWidths.rel, `${cardWidths.unrel} vs ${cardWidths.rel}`);
   }
   await toListView();
-  // 줄 보기에서는 오른쪽으로 물린다
-  const indent = await page.evaluate(() => {
+  // 2026-09-16 v3.49.0 표시는 **왼쪽 빨간 막대 + 옅은 바탕** 이고, 글자는 출시분과 똑같이 또렷하다.
+  // 흐리게 하면 정작 무엇이 끼어들었는지 볼 수가 없다 (제보 — "블러를 풀고 대신에 테두리를")
+  const mark = await page.evaluate(() => {
     const unrel = document.querySelector('.row.is-unreleased'), rel = document.querySelector('.row:not(.is-unreleased)');
     const style = getComputedStyle(unrel);
-    return { unrelLeft: Math.round(unrel.getBoundingClientRect().left), relLeft: Math.round(rel.getBoundingClientRect().left),
-      opacity: Number(style.opacity), filter: style.filter };
+    const bar = getComputedStyle(unrel, '::before');
+    const warn = getComputedStyle(document.documentElement).getPropertyValue('--warn').trim();
+    return {
+      unrelLeft: Math.round(unrel.getBoundingClientRect().left), relLeft: Math.round(rel.getBoundingClientRect().left),
+      opacity: Number(style.opacity), filter: style.filter,
+      barWidth: parseFloat(bar.width) || 0, barColor: bar.backgroundColor, bg: style.backgroundColor,
+      relBg: getComputedStyle(rel).backgroundColor, warn,
+    };
   });
-  ok('미구현 줄이 오른쪽으로 물린다', indent.unrelLeft > indent.relLeft, `${indent.relLeft} → ${indent.unrelLeft}`);
-  ok('더 옅다', indent.opacity <= 0.45, String(indent.opacity));
-  ok('흐림이 걸린다', indent.filter.includes('blur'), indent.filter);
-  // v3.41.1 마우스를 얹어도 흐림은 그대로다 — 스치기만 해도 또렷해지면 표시한 뜻이 없다
+  ok('흐림이 걸리지 않는다', !mark.filter.includes('blur'), mark.filter);
+  ok('옅게 하지 않는다 (글자가 또렷하다)', mark.opacity === 1, String(mark.opacity));
+  ok('왼쪽 끝이 출시분과 같은 자리다', mark.unrelLeft === mark.relLeft, `${mark.relLeft} vs ${mark.unrelLeft}`);
+  ok('왼쪽에 막대가 선다', mark.barWidth >= 2, `${mark.barWidth}px`);
+  ok('막대가 경고색(--warn)이다', mark.barColor !== 'rgba(0, 0, 0, 0)' && mark.barColor !== mark.relBg, `${mark.barColor} (--warn ${mark.warn})`);
+  ok('바탕이 출시분과 다르다', mark.bg !== mark.relBg, `${mark.bg} vs ${mark.relBg}`);
+  // 마우스를 얹어도 표시는 남는다 — 스치기만 해도 사라지면 훑는 중에 놓친다
   await page.locator('.row.is-unreleased').first().hover();
   await page.waitForTimeout(250);
   const onHover = await page.evaluate(() => {
-    const style = getComputedStyle(document.querySelector('.row.is-unreleased'));
-    return { opacity: Number(style.opacity), filter: style.filter };
-  });
-  ok('hover 해도 흐림이 안 풀린다', onHover.filter.includes('blur'), onHover.filter);
-  ok('hover 해도 옅은 채로 있다', onHover.opacity <= 0.45, String(onHover.opacity));
-  // 키보드 포커스는 예외 — 탭으로 다니는 사람은 읽을 수 있어야 한다
-  const onFocus = await page.evaluate(() => {
     const node = document.querySelector('.row.is-unreleased');
-    node.focus();
-    // :focus-visible 은 키보드 조작에만 붙으므로 선택자로 직접 확인한다
-    return { matches: node.matches(':focus'), rule: [...document.styleSheets]
-      .flatMap((sheet) => { try { return [...sheet.cssRules]; } catch { return []; } })
-      .some((rule) => rule.selectorText === '.row.is-unreleased:focus-visible') };
+    const rel = document.querySelector('.row:not(.is-unreleased)');
+    return { bg: getComputedStyle(node).backgroundColor, relHoverBg: getComputedStyle(rel).backgroundColor,
+      barWidth: parseFloat(getComputedStyle(node, '::before').width) || 0 };
   });
-  ok('키보드 포커스 규칙이 있다', onFocus.rule, JSON.stringify(onFocus));
+  ok('hover 해도 막대가 남는다', onHover.barWidth >= 2, `${onHover.barWidth}px`);
+  ok('hover 해도 바탕이 출시분과 다르다', onHover.bg !== onHover.relHoverBg, `${onHover.bg} vs ${onHover.relHoverBg}`);
   // 마우스를 치운다 — 얹힌 채로 재면 그 줄만 다르게 보여 아래 검사가 헛짚는다
   await page.mouse.move(0, 0);
   await page.waitForTimeout(250);
@@ -149,14 +155,34 @@ suite(async () => {
   let rows = await readRows();
   const unrelRows = rows.filter((row) => row.unrel);
   ok('티어표에 미구현 줄이 있다', unrelRows.length > 0, `줄 ${rows.length} 중 미구현 ${unrelRows.length}`);
-  ok('미구현 줄은 흐리다', unrelRows.every((row) => Number(row.opacity) < 0.7),
+  ok('미구현 줄도 또렷하다', unrelRows.every((row) => Number(row.opacity) === 1),
     unrelRows.map((row) => row.opacity).join(','));
   ok('미구현 줄에 딱지가 붙는다', unrelRows.every((row) => row.badge));
-  ok('미구현 줄은 순위 대신 –', unrelRows.every((row) => row.rank === '–'), unrelRows.map((row) => row.rank).join(','));
-  // 출시분 번호가 1,2,3… 으로 이어진다 (미구현이 사이에 끼어도 밀리지 않는다)
-  const ranks = rows.filter((row) => !row.unrel).map((row) => Number(row.rank));
-  ok('출시분 순위가 1부터 안 끊긴다', ranks.every((value, index) => value === index + 1),
-    ranks.slice(0, 8).join(','));
+  // 2026-09-16 v3.49.0 켜면 표 전체가 "만약 나온다면" 의 가상 순위다 — 미구현도 번호를 받고,
+  // 그 위에 낀 만큼 아래 출시분이 밀린다 (지금 1위가 5위가 되는 식)
+  ok('미구현 줄도 번호를 받는다', unrelRows.every((row) => /^\d+$/.test(row.rank)), unrelRows.map((row) => row.rank).join(','));
+  const allRanks = rows.map((row) => Number(row.rank));
+  ok('표 전체가 1,2,3… 으로 이어진다', allRanks.every((value, index) => value === index + 1),
+    allRanks.slice(0, 8).join(','));
+  ok('표 제목에 [가상 순위] 딱지', (await page.locator('.row-head .tag--hypo').count()) > 0);
+  // 밀린 줄에는 [지금 N위] — 그 수는 출시분끼리 센 순위와 맞아야 한다
+  const nowTags = await page.evaluate(() => {
+    const list = document.querySelectorAll('.row-list')[0];
+    let released = 0;
+    return [...list.querySelectorAll('.row')].map((node) => {
+      const unrel = node.classList.contains('is-unreleased');
+      if (!unrel) released += 1;
+      const tag = node.querySelector('.tag--now');
+      return { unrel, released: unrel ? 0 : released, shown: Number(node.querySelector('.row__rank')?.firstChild?.textContent?.trim()),
+        tag: tag ? Number((tag.textContent.match(/\d+/) ?? [0])[0]) : null };
+    });
+  });
+  const moved = nowTags.filter((entry) => !entry.unrel && entry.shown !== entry.released);
+  ok('밀린 줄이 있다 (미구현이 위에 낀 만큼)', moved.length > 0, String(moved.length));
+  ok('밀린 줄마다 [지금 N위] 딱지', moved.every((entry) => entry.tag === entry.released),
+    moved.slice(0, 4).map((entry) => `${entry.shown}←${entry.released}/${entry.tag}`).join(' '));
+  ok('미구현 줄에는 [지금 N위] 가 없다', nowTags.filter((entry) => entry.unrel).every((entry) => entry.tag === null));
+  ok('안 밀린 줄에도 없다', nowTags.filter((entry) => !entry.unrel && entry.shown === entry.released).every((entry) => entry.tag === null));
 
   // 등급 기준선: 출시분 1위가 100%
   const pcts = await page.evaluate(() => [...document.querySelectorAll('.row')].map((node) => ({
@@ -190,10 +216,10 @@ suite(async () => {
     // 딜러 화면은 [티어표, 딜러표] 두 표다 — 마지막 표가 그 축의 표
     rows = await readRows(await page.locator('.row-list').count() - 1);
     const unrel = rows.filter((row) => row.unrel);
-    const numbered = rows.filter((row) => !row.unrel).map((row) => Number(row.rank));
-    ok(`${label}: 미구현 줄이 흐리게 있다`, unrel.length > 0 && unrel.every((row) => Number(row.opacity) < 0.7),
+    const numbered = rows.map((row) => Number(row.rank));
+    ok(`${label}: 미구현 줄이 또렷하게 있다`, unrel.length > 0 && unrel.every((row) => Number(row.opacity) === 1),
       `미구현 ${unrel.length}`);
-    ok(`${label}: 출시분 순위가 안 밀린다`, numbered.every((value, index) => value === index + 1),
+    ok(`${label}: 표 전체가 1,2,3… 가상 순위`, numbered.every((value, index) => value === index + 1),
       numbered.slice(0, 8).join(','));
   }
 
@@ -247,7 +273,12 @@ suite(async () => {
   // ── 4.5 다시 끄면 사라진다 ────────────────────────────────────────────────
   await go('#/dmax');
   await setUnrel(false);
-  ok('끄면 흐린 줄이 사라진다', (await page.locator('.row.is-unreleased').count()) === 0);
+  ok('끄면 미구현 줄이 사라진다', (await page.locator('.row.is-unreleased').count()) === 0);
+  // 2026-09-16 v3.49.0 끄면 가정 표시도 전부 사라지고 번호는 출시분끼리 1,2,3…
+  ok('끄면 [가상 순위] 딱지가 없다', (await page.locator('.tag--hypo').count()) === 0);
+  ok('끄면 [지금 N위] 딱지가 없다', (await page.locator('.tag--now').count()) === 0);
+  const offRanks = (await readRows()).map((row) => Number(row.rank));
+  ok('끄면 출시분이 1,2,3…', offRanks.every((value, index) => value === index + 1), offRanks.slice(0, 8).join(','));
   await setUnrel(true);
 
   // ── 4-2. 이번 주 보스 추천은 **체크와 무관하게** 출시분만 ──────────────────
@@ -305,7 +336,7 @@ suite(async () => {
     ok('더보기 총계가 출시분 수와 같다', shown != null && shown === releasedTotal,
       `표시 ${shown} / 출시분 ${releasedTotal}`);
     // 체크는 표를 바꾼다 — 아코디언이 안 바뀐다고 화면 전체가 멈춘 것은 아니다
-    ok('체크를 켜면 표에는 흐린 줄이 생긴다', (await page.locator('.row.is-unreleased').count()) > 0);
+    ok('체크를 켜면 표에는 미구현 줄이 생긴다', (await page.locator('.row.is-unreleased').count()) > 0);
   }
 
   // ── 5. EN ────────────────────────────────────────────────────────────────

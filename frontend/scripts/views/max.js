@@ -29,11 +29,12 @@
 // 다이맥스 탭: 위에는 그 속성 다이맥스 포켓몬 티어표, 아래에 보스 상대 맥스 어태커
 
 // 하단 "보스 상대 맥스 어태커" 한 행: 점수 칸에 맥스 피해(dmg), 보조줄에 내구(bulk)를 적는다.
-function maxRow(pokemon, rankText) {
+function maxRow(pokemon, rank) {
   return row(
-    pokemon, rankText, el('span', { class: 'row__score' }, String(pokemon.dmg)),
+    pokemon, rank.text, el('span', { class: 'row__score' }, String(pokemon.dmg)),
     el('span', { class: 'row__sub' }, `맥스 피해 · 내구 ${pokemon.bulk}`),
     [pokemon.fast, `${TYPE_KO[pokemon.charged]} 타입`],
+    rank.tag,   // 2026-09-16 v3.49.0 가상 순위에서 밀린 줄의 [지금 N위]
     // 2026-09-06 v2.10.0 (QA-44) G-MAX/D-MAX 뱃지 제거 — 이름 자체가 '거다이맥스 X'/'다이맥스 X' 가 되어 폼 라벨 뱃지로 보인다
   );
 }
@@ -55,6 +56,11 @@ function maxRow(pokemon, rankText) {
 function sameMaxEntry(left, right) {
   return left === right || (left.name === right.name && left.gmax === right.gmax);
 }
+// 지금 표에 미구현 줄이 실제로 끼어 있는가 — 순위 셈법이 여기서 갈린다
+function maxUnrelShown() {
+  return state.maxShowUnrel && maxUnrelAllowed();
+}
+// 출시분끼리 센 순위 (= 오늘 실제로 겨루는 자리)
 function releasedRank(list, pokemon) {
   let rank = 0;
   for (const entry of list) {
@@ -64,8 +70,31 @@ function releasedRank(list, pokemon) {
   }
   return 0;
 }
-function rankText(list, pokemon) {
-  return pokemon.unrel ? '–' : String(releasedRank(list, pokemon));
+// 2026-09-16 v3.49.0 **[미구현] 을 켜면 표가 "만약 이들이 나온다면" 의 가상 순위가 된다.**
+//   v3.36.0~v3.48.2 는 미구현 줄에 '–' 를 주고 출시분 번호를 그대로 뒀다. 끼어든 줄이 순위에
+//   아무 영향이 없는 것처럼 읽혀서, 정작 이 화면이 답해야 할 질문("나오면 판이 어떻게 바뀌나")에
+//   답하지 못했다 — 제보: "미구현된 포켓몬이 나온다면 이라는 취지로 랭킹 순위도 바뀌는 게 좋겠다".
+//   이제 미구현도 번호를 받고, 그 위에 낀 만큼 아래 출시분이 밀린다 (지금 1위가 5위가 되는 식).
+//   밀린 줄에는 [지금 N위] 딱지를 달아 **무엇이 바뀌었는지**를 줄에서 바로 읽게 한다.
+//   목록은 빌드가 이미 점수순으로 섞어 두므로(미구현 포함) 보이는 차례가 곧 가상 순위다.
+//   체크가 꺼져 있으면 표에 미구현이 한 줄도 없어 두 셈법이 같은 값이 된다 — 예전 화면 그대로다.
+//   반환값 { text, tag } — text 는 순위 칸, tag 는 이름 위 뱃지 줄로 간다
+function maxRank(list, pokemon) {
+  let shown = 0;
+  let released = 0;
+  for (const entry of list) {
+    shown += 1;
+    if (!entry.unrel) released += 1;
+    if (!sameMaxEntry(entry, pokemon)) continue;
+    // 미구현 줄에는 '지금' 이 없다 — 오늘 겨루는 자리가 아예 없으니 딱지도 없다
+    const moved = !entry.unrel && shown !== released;
+    return { text: String(shown), tag: moved ? el('span', { class: 'tag tag--now', title: `미구현이 없으면 ${released}위 — 이 표는 미구현이 나왔다고 가정한 순위예요` }, `지금 ${released}위`) : null };
+  }
+  return { text: '0', tag: null };
+}
+// 표 제목 옆 [가상 순위] — 이 표 전체가 가정이라는 것을 한 눈에. 켜져 있을 때만 붙는다
+function maxHypoBadge() {
+  return maxUnrelShown() ? el('span', { class: 'tag tag--hypo', title: '미구현이 나왔다고 가정하고 매긴 순위예요 — 실제 순위는 [미구현] 을 끄면 나와요' }, '가상 순위') : '';
 }
 
 // 2026-09-15 v3.40.0 미구현은 **관리자에게만** 보인다 (v3.38.0 에는 로그인한 사람 전부였다).
@@ -85,8 +114,11 @@ function maxUnrelAllowed() {
 // **거르는 곳을 한 군데로 모은다** — 세 표(전체·딜러·탱커)가 모두 이 함수를 지나므로
 // 체크 상태를 각 표에서 다시 따질 일이 없다. 순위 계산도 걸러진 목록을 받아 그대로 맞는다
 function maxVisible(rows) {
-  const show = state.maxShowUnrel && maxUnrelAllowed();
-  return show ? (rows ?? []) : (rows ?? []).filter((row) => !row.unrel);
+  if (!maxUnrelShown()) return (rows ?? []).filter((row) => !row.unrel);
+  // 2026-09-16 v3.49.0 가상 순위에서는 어제 대비 변동(▲▼)을 감춘다 — 그 숫자는 **실제 순위**가
+  // 움직인 이야기라, 가정으로 매긴 번호 바로 아래 놓이면 한 줄에서 두 '움직임' 이 서로 다른 말을 한다.
+  // 이 표에서 밀린 정도는 [지금 N위] 딱지가 말한다. 빌드가 준 행을 건드리지 않게 얕은 복사로 넘긴다
+  return (rows ?? []).map((row) => (row.d ? { ...row, d: 0 } : row));
 }
 
 // 2026-09-15 v3.44.0 **추천은 체크와 무관하게 출시분만.**
@@ -107,14 +139,18 @@ function whyFormula(pokemon) {
 function whyGrade(pokemon) {
   const list = DMAX_TIER[pokemon.charged] ?? [];
   // 2026-09-15 v3.36.0 비교 상대도 순위도 **출시분** 기준이다 — 아직 못 쓰는 개체를 1위로 두면
-  // 대비 % 가 실제로 겨룰 상대와 무관한 숫자가 된다. 미구현 줄은 순위 대신 그 사실을 적는다
-  const released = list.filter((entry) => !entry.unrel);
-  const topOfType = released[0];
+  // 대비 % 가 실제로 겨룰 상대와 무관한 숫자가 된다.
+  // 2026-09-16 v3.49.0 단, [미구현] 이 켜져 있으면 표가 가상 순위이므로 여기도 같은 판으로 센다 —
+  // 근거 줄이 표를 설명하는 자리라, 표에 5위라고 적힌 줄이 근거에서 1위가 되면 둘 다 못 믿는다.
+  // 점수 칸의 %(pokemon.pct)는 빌드가 **출시분 1위** 대비로 계산해 둔 절대 기준이라 건드리지 않는다:
+  // 등급 글자(S/A/B/C)가 그 값에서 나오므로, 여기서 기준을 바꾸면 등급과 숫자가 어긋난다
+  const pool = maxUnrelShown() ? list : list.filter((entry) => !entry.unrel);
+  const topOfType = pool[0];
   const typeLabel = TYPE_KO[pokemon.charged] ?? '';
   const isTop = topOfType && sameMaxEntry(topOfType, pokemon);
   const versus = topOfType ? ` (1위 ${topOfType.name} 대비 ${Math.round(pokemon.score / topOfType.score * 100)}%)` : '';
-  const place = pokemon.unrel ? `${typeLabel} 미구현${versus}`
-    : !topOfType ? '' : isTop ? `${typeLabel} 1위` : `${typeLabel} ${releasedRank(list, pokemon)}위${versus}`;
+  const rank = pool.findIndex((entry) => sameMaxEntry(entry, pokemon)) + 1;
+  const place = !topOfType ? '' : isTop ? `${typeLabel} 1위` : `${typeLabel} ${rank}위${versus}`;
   return `${pokemon.tier} 등급 — 전 종 1위 대비 ${pokemon.pct ?? 0}%${place ? ` · ${place}` : ''}`;
 }
 // 2026-09-14 v3.30.0 등급·점수가 무슨 뜻인지 한 번에 밝히는 안내. 제목 옆 ⓘ 에 달린다 —
@@ -126,18 +162,19 @@ const DMAX_TIER_INFO = '등급은 이 탭이 아니라 전 종을 통틀어 매�
 // 2026-09-14 v3.30.0 점수 칸의 % 를 **전 종 1위 대비**(pct)로 바꿨다 — 전에는 그 탭 1위 대비라,
 // 절대 기준으로 매긴 등급 글자와 숫자가 서로 다른 말을 했다(바위 탭 1위라 100% 인데 등급은 A).
 // 탭 안에서의 비교는 펼친 근거 줄(whyGrade)이 맡는다
-function tierRowNode(pokemon, rankText, topScore) {
-  return row(pokemon, rankText,
+function tierRowNode(pokemon, rank, topScore) {
+  return row(pokemon, rank.text,
     el('span', { class: 'row__score' }, `${pokemon.pct ?? Math.round(pokemon.score / topScore * 100)}%`),
     el('span', { class: 'row__sub' }, `공격 ${pokemon.atk} · 위력 ${pokemon.power}${pokemon.stab ? ' · 자속' : ''} · 내구 ${pokemon.bulk ?? 0}`),
-    [pokemon.fast, `${TYPE_KO[pokemon.charged]} 타입`]);  // 2026-09-06 v2.10.0 G-MAX/D-MAX 뱃지는 이름의 폼 라벨로 대체
+    [pokemon.fast, `${TYPE_KO[pokemon.charged]} 타입`],   // 2026-09-06 v2.10.0 G-MAX/D-MAX 뱃지는 이름의 폼 라벨로 대체
+    rank.tag);
 }
 
 // 티어표 행 + 그 아래 접혀 있는 "선정 근거" 줄을 한 묶음(fragment)으로 만든다.
 // 행을 누르면 근거 줄이 열리고 닫힌다(.open 토글). 그래서 행의 원래 클릭 동작(상세 팝업)은
 // cloneNode로 지워 버리고, 상세 팝업은 근거 줄 안의 "포켓몬 상세 ▸" 버튼으로 따로 열게 했다.
-function expandableRow(pokemon, rankText, topScore) {
-  const rowNode = tierRowNode(pokemon, rankText, topScore).cloneNode(true);  // cloneNode로 팝업 클릭 리스너 제거
+function expandableRow(pokemon, rank, topScore) {
+  const rowNode = tierRowNode(pokemon, rank, topScore).cloneNode(true);  // cloneNode로 팝업 클릭 리스너 제거
   // 2026-09-02 가안 B: 근거 아래 "얘가 보스면?" 카운터 한 줄
   // 이 포켓몬의 첫 번째 속성을 보스 속성으로 보고, 그 보스를 잡을 딜러 상위 5마리를 곁들인다.
   const counterType = pokemon.types?.[0];
@@ -282,11 +319,12 @@ function renderBossAcc() {
 
 // 2026-09-07 v2.13.0 (QA-43) 탱커 한 행: 점수 칸에 EHP, 보조줄에 받는 배율과 체력·방어
 //   EHP = 체력 × 방어 ÷ 1000 ÷ 받는 배율 (backend/value_build.py tank_rank). 배율은 보스가 자기 타입 자속 기술로 때린다고 가정
-function tankRow(pokemon, rankText, bossType) {
+function tankRow(pokemon, rank, bossType) {
   return row(
-    pokemon, rankText, el('span', { class: 'row__score' }, String(pokemon.ehp)),
+    pokemon, rank.text, el('span', { class: 'row__score' }, String(pokemon.ehp)),
     el('span', { class: 'row__sub' }, bossType === 'overall' ? `EHP · 체력 ${pokemon.hp} × 방어 ${pokemon.def}` : `EHP · 받는 배율 ×${pokemon.mult} · 체력 ${pokemon.hp} × 방어 ${pokemon.def}`),
-    pokemon.types.map((typeName) => `${TYPE_KO[typeName]} 타입`));
+    pokemon.types.map((typeName) => `${TYPE_KO[typeName]} 타입`),
+    rank.tag);
 }
 
 // 2026-09-07 v2.13.0 (QA-43) 보스 속성별 탱커 목록 (탭 세그먼트 '탱커')
@@ -294,8 +332,8 @@ function renderMaxTank(selectedType) {
   const tanks = maxVisible(typeof DMAX_TANK !== 'undefined' ? DMAX_TANK[selectedType] : null);
   const title = selectedType === 'overall' ? 'D-MAX 탱커 (중립 · 순수 내구)' : `${TYPE_KO[selectedType]} 보스 상대 D-MAX 탱커`;
   $content.append(
-    el('div', { class: 'row-head' }, el('h2', {}, title), el('span', { class: 'meta' }, `상위 ${tanks.length}`)),
-    list(`maxtank-${selectedType}`, tanks, (pokemon) => tankRow(pokemon, rankText(tanks, pokemon), selectedType)));
+    el('div', { class: 'row-head' }, el('div', { class: 'row-head__title' }, el('h2', {}, title), maxHypoBadge()), el('span', { class: 'meta' }, `상위 ${tanks.length}`)),
+    list(`maxtank-${selectedType}`, tanks, (pokemon) => tankRow(pokemon, maxRank(tanks, pokemon), selectedType)));
   $note.textContent = '탱커 순위: EHP = 체력 × 방어 ÷ 1000 ÷ (보스 타입 기술을 받는 배율). 레벨 40 실전 능력치 기준이고, 보스는 자기 타입 자속 기술로 때린다고 가정해요(복합 타입 보스는 상세 팝업의 타입 상성을 함께 보세요). 출시된 다이맥스·거다이맥스만 포함. 포켓몬을 누르면 상세 정보가 열려요.';
   maxNoteUnrelTail();
 }
@@ -340,11 +378,11 @@ function maxTierBlock(selectedType) {
   $dot.addEventListener('click', toggleNote);
   $dot.addEventListener('keydown', (event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); toggleNote(); } });
   $content.append(el('div', { class: 'row-head' },
-    el('div', { class: 'row-head__title' }, el('h2', {}, tierTitle), $dot),
+    el('div', { class: 'row-head__title' }, el('h2', {}, tierTitle), $dot, maxHypoBadge()),
     el('span', { class: 'meta' }, `${tierItems.length}종`)), $note);
   // 2026-09-14 v3.30.1 순위 배지는 탭 전체 순위다 — renderTierList 가 넘기는 index 는 티어 묶음 안 순번이라
   // 등급이 절대 기준이 된 뒤로는 B 티어 첫 카드가 '1' 로 찍혀 근거의 '땅 2위' 와 어긋났다
-  if (tierItems.length) renderTierList(tierItems, (pokemon) => expandableRow(pokemon, rankText(tierItems, pokemon), tierItems[0].score));  // 2026-09-02 1B·pogomate %
+  if (tierItems.length) renderTierList(tierItems, (pokemon) => expandableRow(pokemon, maxRank(tierItems, pokemon), tierItems[0].score));  // 2026-09-02 1B·pogomate %
   return tierItems.length;
 }
 
@@ -376,8 +414,8 @@ function renderMaxDealer(selectedType) {
   const attackers = maxVisible(DMAX_DATA[selectedType]);
   const title = selectedType === 'overall' ? 'D-MAX 딜러 (중립 · 맥스 피해 × √내구)' : `${TYPE_KO[selectedType]} 보스 상대 D-MAX 딜러`;
   $content.append(
-    el('div', { class: 'row-head' }, el('h2', {}, title), el('span', { class: 'meta' }, `상위 ${attackers.length}`)),
-    list(`max-${selectedType}`, attackers, (pokemon) => maxRow(pokemon, rankText(attackers, pokemon))));
+    el('div', { class: 'row-head' }, el('div', { class: 'row-head__title' }, el('h2', {}, title), maxHypoBadge()), el('span', { class: 'meta' }, `상위 ${attackers.length}`)),
+    list(`max-${selectedType}`, attackers, (pokemon) => maxRow(pokemon, maxRank(attackers, pokemon))));
   $note.textContent = '위는 티어표(그 타입 맥스무브를 쓰는 개체), 아래는 딜러(그 타입 보스를 상대할 개체) — 같은 타입을 골라도 보는 각도가 달라 명단이 달라요. 티어표는 공격 종족값 × 맥스무브 위력(거다이 450 · 다이 350) × 자속 1.2, 내구 미반영이고 행을 누르면 근거가 펼쳐져요. 딜러 순위는 맥스어택 3레벨(위력 350) 또는 거다이맥스 3레벨(위력 450) 1회 피해 × √내구 기준이며, 보스 속성을 고르면 그 속성 보스를 때릴 때의 상성이 반영돼요(전체는 중립). 출시된 다이맥스·거다이맥스만 포함. 포켓몬을 누르면 상세 정보가 열려요.';
   maxNoteUnrelTail();
 }
@@ -445,7 +483,7 @@ const MAX_UNREL_KEY = 'pogo_max_unrel';
 // 체크를 볼 수 있는 사람에게만 붙는 한 문장. $note 에 **따로 붙인다** —
 // 본문에 이어 붙이면 문장 전체가 사전의 새 열쇠가 돼 세 안내마다 영문을 새로 맞춰야 한다.
 // 조각으로 두면 기존 세 열쇠는 그대로고 이 한 줄만 사전에 더하면 된다
-const MAX_UNREL_NOTE = '머리의 [미구현] 을 켜면 데이터만 등록되고 아직 게임에 나오지 않은 개체도 함께 봐요 — 흐리게 표시되고 순위 번호는 주지 않아요. 관리자만 보이는 값이에요.';
+const MAX_UNREL_NOTE = '머리의 [미구현] 을 켜면 데이터만 등록되고 아직 게임에 나오지 않은 개체도 함께 봐요 — 왼쪽에 빨간 막대가 서고, 순위는 그것들이 나왔다고 가정한 가상 판으로 다시 매겨져요(밀린 줄에는 [지금 N위]). 관리자만 보이는 값이에요.';
 function maxNoteUnrelTail() {
   if (!maxUnrelAllowed() || !maxHasUnreleased(state.maxBoss)) return;
   // 표식을 달아 둔다 — 로그인이 늦게 끝나면 syncMaxUnrelControl() 이 이 조각만 나중에 붙이거나 뗀다
@@ -491,7 +529,7 @@ function maxUnrelCheckbox() {
   box.checked = state.maxShowUnrel;
   const label = el('label', {
     class: `check-toggle${state.maxShowUnrel ? ' is-on' : ''}`,
-    title: '게임 파일에 데이터는 있지만 아직 못 쓰는 개체를 함께 봐요 — 흐리게 표시되고 순위 번호는 주지 않아요',
+    title: '게임 파일에 데이터는 있지만 아직 못 쓰는 개체를 함께 봐요 — 왼쪽에 빨간 막대가 서고, 순위는 그것들이 나왔다고 가정한 가상 판이 돼요',
     onchange: () => {
       state.maxShowUnrel = box.checked;
       try { localStorage.setItem(MAX_UNREL_KEY, box.checked ? '1' : '0'); } catch { /* 저장 불가 환경 */ }

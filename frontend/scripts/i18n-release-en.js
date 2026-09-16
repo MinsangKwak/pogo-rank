@@ -15,6 +15,9 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 const RELEASE_NOTES_EN = {
+  '2026-09-16 · v3.49.0': [
+    '**Pokémon that have not launched yet are easier to read** — the blur that hid them is gone, replaced by a red bar on the left. Blurred rows could not actually be read. The [not in GO] chip in the Pokédex is the same red now.',
+  ],
   '2026-09-16 · v3.48.2': [
     '**The terms for the code are now explicit** — the repository is public to read and learn from; forking and redistribution are not permitted. The same wording is in the terms (section 5), the page footer, and LICENSE · NOTICE in the repository.',
   ],
