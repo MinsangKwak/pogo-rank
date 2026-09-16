@@ -124,10 +124,17 @@ Pokémon과 관련 명칭·이미지의 권리는 The Pokémon Company, Nintendo
 
 ## 버전 이력
 
-전체 150개 릴리스를 `날짜 → 버전`의 2단계 접이식 목록으로 정리했습니다. 가장 최근 날짜만 기본으로 펼쳐지며, 설명이 한 줄인 초기 버전은 별도의 접이식 영역 없이 표시됩니다. 사용자용 요약은 서비스의 [🎉 패치 노트](https://moncamp.kr/#/release)에서, 변경 배경과 세부 구현 내용은 [변경 이력](CHANGELOG.md)에서 확인할 수 있습니다.
+전체 151개 릴리스를 `날짜 → 버전`의 2단계 접이식 목록으로 정리했습니다. 가장 최근 날짜만 기본으로 펼쳐지며, 설명이 한 줄인 초기 버전은 별도의 접이식 영역 없이 표시됩니다. 사용자용 요약은 서비스의 [🎉 패치 노트](https://moncamp.kr/#/release)에서, 변경 배경과 세부 구현 내용은 [변경 이력](CHANGELOG.md)에서 확인할 수 있습니다.
 
 <details open>
-<summary><b>2026-09-16</b> — 릴리스 10개 · <code>v3.46.0 … v3.50.2</code></summary>
+<summary><b>2026-09-16</b> — 릴리스 11개 · <code>v3.46.0 … v3.50.3</code></summary>
+
+<details>
+<summary><b>v3.50.3</b> · PC 상세 팝업 높이 상한 800px</summary>
+
+`height: min(86vh, 80rem)` — 큰 모니터에서 화면을 따라 끝없이 커지지 않는다
+
+</details>
 
 <details>
 <summary><b>v3.50.2</b> · (수정) 상세 팝업 ✕ 를 머리줄 버튼과 같은 줄·간격으로</summary>

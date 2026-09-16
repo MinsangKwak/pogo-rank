@@ -15,6 +15,9 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 const RELEASE_NOTES_EN = {
+  '2026-09-16 · v3.50.3': [
+    '**The PC detail popup is capped at 800px tall** — it no longer grows without limit on large monitors.',
+  ],
   '2026-09-16 · v3.50.2': [
     '**(fix) The detail popup\'s [close] sat slightly above [Pokédex]** — now on the same line with the same spacing.',
   ],

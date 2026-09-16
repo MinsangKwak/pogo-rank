@@ -2,7 +2,7 @@
 
 [← README](README.md) · [개발 문서](docs/DEVELOPMENT.md) · [운영 문서](docs/OPERATIONS.md) · [인프라 문서](docs/INFRA.md) · **변경 이력**
 
-**날짜를 펼치고, 그 안에서 버전을 펼쳐 보세요.** 170개 판이 쌓여 한눈에 훑기 어려워 **날짜 → 버전** 두 겹으로 접어 두었습니다. 가장 최근 날짜만 펼쳐 둡니다.
+**날짜를 펼치고, 그 안에서 버전을 펼쳐 보세요.** 171개 판이 쌓여 한눈에 훑기 어려워 **날짜 → 버전** 두 겹으로 접어 두었습니다. 가장 최근 날짜만 펼쳐 둡니다.
 
 바깥 줄은 `날짜 — 그날 낸 판 수 · 버전 범위`, 안쪽 줄은 `버전 · 그 판에서 한 일` 입니다. 최신이 위로 옵니다.
 형식은 [Keep a Changelog](https://keepachangelog.com/ko/1.1.0/)를 따릅니다.
@@ -16,7 +16,14 @@
 
 
 <details open>
-<summary><b>2026-09-16</b> — 10판 · <code>v3.46.0 … v3.50.2</code></summary>
+<summary><b>2026-09-16</b> — 11판 · <code>v3.46.0 … v3.50.3</code></summary>
+
+<details>
+<summary><b>v3.50.3</b> · <code>UI·UX</code> PC 상세 팝업 높이 상한 800px</summary>
+
+*"pc팝업에도 max-height를 넣어야 하지 않을까 800정도 까지만"* — v3.50.0 이 높이를 `86vh` 로 못 박으며 `max-height: none` 을 걸어 큰 모니터에서 화면을 따라 끝없이 커졌다. `height: min(86vh, 80rem)` · `max-height: 80rem`. 회귀: 1400px 높이 화면에서 800px 이하 확인.
+
+</details>
 
 <details>
 <summary><b>v3.50.2</b> · <code>수정</code> 상세 팝업 ✕ 를 머리줄 버튼과 같은 줄·간격으로</summary>

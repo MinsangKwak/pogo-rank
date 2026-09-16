@@ -61,6 +61,16 @@ suite(async () => {
     await page.waitForTimeout(300);
     ok('PC Esc 로 닫힘', (await page.locator('dialog.modal[open]').count()) === 0);
 
+    // 2026-09-16 v3.50.3 큰 모니터에서도 팝업 높이는 800px 까지
+    await page.setViewportSize({ width: 1440, height: 1400 });
+    await go('#/mon/6');
+    await page.waitForTimeout(400);
+    const tallBox = await page.locator('.modal__box').boundingBox();
+    ok('PC 팝업 높이 상한 800px (1400px 화면)', tallBox.height <= 801 && tallBox.height >= 760, String(tallBox.height));
+    await page.keyboard.press('Escape');
+    await page.waitForTimeout(300);
+    await page.setViewportSize({ width: 1440, height: 900 });
+
     // 딥링크
     await go('#/mon/1');
     await page.waitForTimeout(500);

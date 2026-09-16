@@ -329,7 +329,8 @@ dialog.modal::backdrop { background: transparent; }
 @media (min-width: 1100px) {
   .modal__wrap:has(.detail--mon) { max-width: 92rem; }
   .modal__box:has(> .detail--mon) { max-width: none; }   /* app-shell.css 의 52rem 상한을 이 팝업만 푼다 */
-  .modal__box:has(> .detail--mon) { height: 86vh; max-height: none; }
+  /* 2026-09-16 v3.50.3 높이 상한 80rem(800px) — 큰 모니터에서 화면을 따라 무한히 커지지 않게 */
+  .modal__box:has(> .detail--mon) { height: min(86vh, 80rem); max-height: 80rem; }
   .detail--mon .detail__body { flex-direction: row; }
   .detail--mon .detail__side { flex: 0 0 28rem; flex-direction: column; align-items: stretch; gap: 1.4rem; padding: 2rem; border-right: 1px solid var(--line); overflow-y: auto; }
   .detail--mon .detail__side .sprite-box { width: 100%; height: auto; aspect-ratio: 1; max-width: 24rem; border-radius: 1.4rem; }
