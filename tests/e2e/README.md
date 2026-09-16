@@ -1,7 +1,34 @@
 # e2e 회귀 스위트
 
-`dist/` 를 로컬 서버로 띄우고 Playwright 로 훑는다. 프레임워크 없이 스크립트 하나에 단언을 나열하는 방식이라
-`node <파일>` 하나로 돌고, 통과 수와 실패 항목만 찍는다.
+[← README](../../README.md) · [개발 문서](../../docs/DEVELOPMENT.md) · [기여 안내](../../CONTRIBUTING.md)
+
+**로컬 `dist/`를 Playwright로 열어 화면과 사용자 흐름을 검증합니다.** 각 스크립트는 `node <파일>`로 실행하며, 통과 수와 실패 항목을 출력합니다.
+
+실행 순서: [환경 준비](#전제) → [빌드·서버·테스트 실행](#돌리는-법). 새 테스트를 작성할 때는 아래 공통 조각을 사용하세요.
+
+## 전제
+
+- Playwright 와 Chromium 이 필요하다. 경로는 `_lib.js` 맨 위 한 곳에 있다
+- 서버 주소는 `http://localhost:5503/`, 목 모드는 `?mock=1` (frontend/static/dev-mock.js)
+- 외부 요청은 전부 차단한다 — 폰트·스프라이트 CDN 을 기다리느라 느려지지 않게
+
+## 돌리는 법
+
+```bash
+# 1) 목 모드로 빌드 (실제 Firebase 없이 로그인 흐름까지 확인하려면 값이 아무거나 있어야 한다)
+FIREBASE_CONFIG_JSON='{"apiKey":"local-test","projectId":"local-test"}' ADMIN_UID=mock-admin python3 backend/build.py
+
+# 2) dist 를 띄운다
+(cd dist && python3 -m http.server 5503) &
+
+# 3) 스위트 실행
+node tests/e2e/nav.js       # 탐색·디자인 (홈 타일 · 탭 줄 · 팝업 기하 · 드로어 · 토큰 색)
+node tests/e2e/legal.js     # 약관·동의 배너·개인정보처리방침·계정 삭제
+node tests/e2e/gameday.js   # ⚔️ 레이드 보스 · 🥚 알 부화 · 유사백 판정
+node tests/e2e/shell.js     # 앱 셸 — 스크롤·헤더 배치·드로어 중복·카드 보기·버튼 반응
+node tests/e2e/router.js   # 주소 체계 — 라우트 표·옛 주소 이전·측정용 식별자
+node tests/e2e/hardening.js # 보안(CSP·출처 검사)·공유 카드(OG)·검색 부속 파일
+```
 
 ## 공통 조각 — `_lib.js` (v3.14.0)
 
@@ -28,24 +55,6 @@ suite(async () => {
 - 없는 버튼을 `click({ timeout }).catch()` 로 "혹시 있으면 누르기" 하지 않는다 — 없을 때마다 그 시간을 통째로 잃는다 (v3.14.0 에 그 줄 32개가 회귀 45초를 먹고 있었다).
 - 이름이 `_` 로 시작하는 파일은 스위트가 아니다 (`scripts/test.sh` 가 건너뛴다).
 
-## 돌리는 법
-
-```bash
-# 1) 목 모드로 빌드 (실제 Firebase 없이 로그인 흐름까지 확인하려면 값이 아무거나 있어야 한다)
-FIREBASE_CONFIG_JSON='{"apiKey":"local-test","projectId":"local-test"}' ADMIN_UID=mock-admin python3 backend/build.py
-
-# 2) dist 를 띄운다
-(cd dist && python3 -m http.server 5503) &
-
-# 3) 스위트 실행
-node tests/e2e/nav.js       # 탐색·디자인 (홈 타일 · 탭 줄 · 팝업 기하 · 드로어 · 토큰 색)
-node tests/e2e/legal.js     # 약관·동의 배너·개인정보처리방침·계정 삭제
-node tests/e2e/gameday.js   # ⚔️ 레이드 보스 · 🥚 알 부화 · 유사백 판정
-node tests/e2e/shell.js     # 앱 셸 — 스크롤·헤더 배치·드로어 중복·카드 보기·버튼 반응
-node tests/e2e/router.js   # 주소 체계 — 라우트 표·옛 주소 이전·측정용 식별자
-node tests/e2e/hardening.js # 보안(CSP·출처 검사)·공유 카드(OG)·검색 부속 파일
-```
-
 ## shell.js — 스크롤이 막히는 원인을 직접 잡는다
 
 "스크롤이 안 된다"는 제보는 재현 조건이 커서 위치·화면 폭·직전 동작에 달려 있어 눈으로 쫓기 어렵다.
@@ -69,12 +78,6 @@ node tests/e2e/fingerprint.js before   # 리팩토링 전
 node tests/e2e/fingerprint.js after    # 리팩토링 후
 diff -rq tests/e2e/fp-before tests/e2e/fp-after
 ```
-
-## 전제
-
-- Playwright 와 Chromium 이 필요하다. 경로는 `_lib.js` 맨 위 한 곳에 있다
-- 서버 주소는 `http://localhost:5503/`, 목 모드는 `?mock=1` (frontend/static/dev-mock.js)
-- 외부 요청은 전부 차단한다 — 폰트·스프라이트 CDN 을 기다리느라 느려지지 않게
 
 ## 남은 한글 찾기 (KR/EN)
 
