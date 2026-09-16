@@ -15,6 +15,9 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 const RELEASE_NOTES_EN = {
+  '2026-09-16 · v3.55.1': [
+    '**Home section headers now share one shape** — title and its button on the top line, description on the line below.',
+  ],
   '2026-09-16 · v3.55.0': [
     '**Game updates moved to the bottom of the home screen** — what the service is, what it does and the recommended rankings come first; news is the last thing you scroll past.',
   ],
