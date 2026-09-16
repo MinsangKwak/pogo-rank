@@ -222,6 +222,402 @@
       "moncampAdvice": "목요일에 세트를 몰아 쓸 계획이면 🃏 배틀 · PvP 에서 그 주 리그의 순위를 먼저 보고, 🃏 덱 짜기로 상대할 셋에 맞설 조합을 준비해 두세요."
     },
     {
+      "editorialStatus": "published",
+      "evidenceStatus": "official",
+      "featured": false,
+      "announcedAt": "",
+      "effectiveAt": "",
+      "effectiveNote": "",
+      "checkedAt": "2026-09-16",
+      "beforeAfter": [],
+      "playerImpact": [
+        "표시가 없다고 해서 메가레벨을 올린 이득이 사라진 것은 아니에요.",
+        "화면 숫자만 보고 메가레벨 투자 판단을 내리면 잘못 읽을 수 있어요."
+      ],
+      "suggestedActions": [
+        "요약 화면의 표시 대신 공식 안내 기준으로 보너스가 붙는다고 보세요."
+      ],
+      "moncampAdvice": "moncamp 의 레이드·D-MAX 점수는 게임 화면 표시가 아니라 게임마스터 수치로 계산해요. 이 표시 누락과 무관하게 순위는 그대로 읽으시면 돼요.",
+      "related": [
+        "pve",
+        "dmax"
+      ],
+      "revisions": [],
+      "id": "mega-bonus-indicator-missing",
+      "title": "추가 스페셜 어택에 메가진화 보너스 표시가 빠져 보여요 — 실제로는 적용돼요",
+      "summary": "슈퍼 맥스 레벨까지 올릴 수 있는 포켓몬을 메가진화해 추가 스페셜 어택을 얻은 뒤 요약 화면을 보면 메가레벨별 보너스 표시가 없어요. 화면 표시만 빠진 것이고 보너스는 적용됩니다.",
+      "category": [
+        "bugfix",
+        "raid"
+      ],
+      "rolloutStatus": "unknown",
+      "key": [
+        "요약 화면에 메가레벨별 메가진화 보너스 표시가 누락돼요.",
+        "표시만 빠졌을 뿐 보너스는 실제로 적용돼요.",
+        "공식 문제 상태는 \"조사 중\" 이에요."
+      ],
+      "sources": [
+        {
+          "lang": "ko",
+          "label": "추가된 스페셜 어택에 메가진화 보너스 표시 누락 (공식)",
+          "url": "https://niantic.helpshift.com/hc/ko/6-pokemon-go/faq/5545-mega-evolution-bonus-indicator-missing-under-additional-charged-attack/",
+          "image": ""
+        },
+        {
+          "lang": "en",
+          "label": "Mega Evolution Bonus indicator missing under additional Charged Attack (official)",
+          "url": "https://niantic.helpshift.com/hc/en/6-pokemon-go/faq/5545-mega-evolution-bonus-indicator-missing-under-additional-charged-attack/",
+          "image": ""
+        }
+      ]
+    },
+    {
+      "editorialStatus": "published",
+      "evidenceStatus": "official",
+      "featured": false,
+      "announcedAt": "",
+      "effectiveAt": "",
+      "effectiveNote": "",
+      "checkedAt": "2026-09-16",
+      "beforeAfter": [],
+      "playerImpact": [
+        "표시를 보고 볼이 모자란다고 판단해 포기하지 않아도 돼요."
+      ],
+      "suggestedActions": [
+        "불안하면 포획 중에는 앱을 내리지 않는 편이 편해요."
+      ],
+      "moncampAdvice": "⚔️ 레이드 보스 화면에서 이번 주 보스의 약점을 먼저 보고 들어가면 볼을 덜 쓰게 돼요.",
+      "related": [
+        "raids",
+        "pve"
+      ],
+      "revisions": [],
+      "id": "raid-premier-ball-visual-reset",
+      "title": "레이드 중 앱을 내렸다 올리면 프리미어볼 수가 줄어 보여요 — 실제 개수는 그대로예요",
+      "summary": "레이드 보스를 잡는 중에 앱을 백그라운드로 두면 처음 받은 프리미어볼 수가 초기화된 것처럼 보여요. 시각 문제일 뿐 실제 보유 개수는 그대로입니다.",
+      "category": [
+        "bugfix",
+        "raid"
+      ],
+      "rolloutStatus": "unknown",
+      "key": [
+        "레이드 포획 중 앱을 백그라운드에 두면 프리미어볼 표기가 바뀌어 보여요.",
+        "표시만 그런 것이고 실제 개수는 유지돼요.",
+        "공식 문제 상태는 \"조사 중\" 이에요."
+      ],
+      "sources": [
+        {
+          "lang": "ko",
+          "label": "레이드 포획 시 프리미어볼 갯수 표기 문제 (공식)",
+          "url": "https://niantic.helpshift.com/hc/ko/6-pokemon-go/faq/5531-backgrounding-the-app-during-a-raid-encounter-may-visually-reset-the-premier-ball-count-though-the-actual-premier-ball-count-remains-correct/",
+          "image": ""
+        },
+        {
+          "lang": "en",
+          "label": "Premier Ball count may visually reset during a Raid encounter (official)",
+          "url": "https://niantic.helpshift.com/hc/en/6-pokemon-go/faq/5531-backgrounding-the-app-during-a-raid-encounter-may-visually-reset-the-premier-ball-count-though-the-actual-premier-ball-count-remains-correct/",
+          "image": ""
+        }
+      ]
+    },
+    {
+      "editorialStatus": "published",
+      "evidenceStatus": "official",
+      "featured": false,
+      "announcedAt": "",
+      "effectiveAt": "",
+      "effectiveNote": "",
+      "checkedAt": "2026-09-16",
+      "beforeAfter": [],
+      "playerImpact": [
+        "보상 화면의 0 을 보고 보상이 안 들어왔다고 판단하지 마세요."
+      ],
+      "suggestedActions": [
+        "가방에서 실제 수량을 확인해 보세요."
+      ],
+      "moncampAdvice": "맥스 배틀에 누구를 데려갈지는 ✨ D-MAX 티어표와 🧩 덱 짜기에서 고르시면 돼요.",
+      "related": [
+        "dmax",
+        "dmax-deck"
+      ],
+      "revisions": [],
+      "id": "max-battle-rewards-show-zero",
+      "title": "맥스 배틀 보상이 0으로 보이는 화면 오류가 있어요",
+      "summary": "맥스 배틀 보상 화면에서 실제로 받지 않은 보상까지 모두 나타나면서 수량이 0으로 표기되는 시각 버그예요. 공식 상태는 \"수정 중\" 입니다.",
+      "category": [
+        "bugfix",
+        "raid"
+      ],
+      "rolloutStatus": "rolling",
+      "key": [
+        "맥스 배틀 보상 화면에 지급 가능한 모든 보상이 0으로 나타나요.",
+        "시각적인 버그예요.",
+        "공식 문제 현황은 \"수정 중\" 이에요."
+      ],
+      "sources": [
+        {
+          "lang": "ko",
+          "label": "일부 아이템에 대한 맥스 배틀 보상이 0으로 표기됩니다 (공식)",
+          "url": "https://niantic.helpshift.com/hc/ko/6-pokemon-go/faq/5355-max-battle-rewards-display-0-for-some-items/",
+          "image": ""
+        },
+        {
+          "lang": "en",
+          "label": "Max Battle rewards display 0 for some items (official)",
+          "url": "https://niantic.helpshift.com/hc/en/6-pokemon-go/faq/5355-max-battle-rewards-display-0-for-some-items/",
+          "image": ""
+        }
+      ]
+    },
+    {
+      "editorialStatus": "published",
+      "evidenceStatus": "official",
+      "featured": false,
+      "announcedAt": "",
+      "effectiveAt": "",
+      "effectiveNote": "",
+      "checkedAt": "2026-09-16",
+      "beforeAfter": [],
+      "playerImpact": [
+        "목록이 2km 로 보인다고 그 알을 버릴 필요는 없어요."
+      ],
+      "suggestedActions": [
+        "🥚 알 부화 화면에서 거리별 실제 부화 풀을 확인하세요."
+      ],
+      "moncampAdvice": "🥚 알 부화 화면은 게임 화면이 아니라 수집한 데이터로 거리별 풀을 보여 줘요. 이 표시 오류와 무관하게 그대로 보시면 돼요.",
+      "related": [
+        "eggs"
+      ],
+      "revisions": [],
+      "id": "gofest-egg-list-visual-issue",
+      "title": "일부 5km·10km 알이 2km 부화 목록으로 잘못 보여요 — 부화는 정상이에요",
+      "summary": "GO Fest 관련 알에서 5km·10km 알의 부화 목록이 2km 목록으로 잘못 표시되는 경우가 있어요. 시각 오류이고 실제로는 그 알의 거리에 맞는 포켓몬이 부화합니다.",
+      "category": [
+        "bugfix",
+        "catch"
+      ],
+      "rolloutStatus": "planned",
+      "key": [
+        "일부 5km·10km 알의 부화 목록이 2km 목록으로 보여요.",
+        "시각 오류이고 부화는 알 거리에 맞게 정상 동작해요.",
+        "공식 현황은 원인 조사 중이며 향후 업데이트로 수정 예정이에요."
+      ],
+      "sources": [
+        {
+          "lang": "ko",
+          "label": "GO Fest 이벤트 관련 알의 부화 포켓몬 목록 표시 오류 (공식)",
+          "url": "https://niantic.helpshift.com/hc/ko/6-pokemon-go/faq/5515-visual-display-issue-occuring-rarely-for-go-fest-event-eggs/",
+          "image": ""
+        },
+        {
+          "lang": "en",
+          "label": "Visual display issue occurring rarely for GO Fest event Eggs (official)",
+          "url": "https://niantic.helpshift.com/hc/en/6-pokemon-go/faq/5515-visual-display-issue-occuring-rarely-for-go-fest-event-eggs/",
+          "image": ""
+        }
+      ]
+    },
+    {
+      "editorialStatus": "published",
+      "evidenceStatus": "official",
+      "featured": false,
+      "announcedAt": "2026-08-24",
+      "effectiveAt": "",
+      "effectiveNote": "공식 문서의 마지막 갱신일 2026년 8월 24일",
+      "checkedAt": "2026-09-16",
+      "beforeAfter": [],
+      "playerImpact": [
+        "배틀 중 기기가 네트워크를 바꾸면 연결이 끊길 수 있어요.",
+        "랭크가 걸린 세트는 연결이 안정적인 곳에서 도는 편이 안전해요."
+      ],
+      "suggestedActions": [
+        "목록은 계속 갱신되니 배틀이 이상하면 원문을 먼저 확인하세요."
+      ],
+      "moncampAdvice": "리그에 무엇을 데려갈지는 🃏 배틀 · PvP 순위와 🃏 덱 짜기에서 고르고, 개체는 🧬 개체값 순위로 맞추세요.",
+      "related": [
+        "pvp",
+        "pvp-deck",
+        "ivrank"
+      ],
+      "revisions": [],
+      "id": "new-pvp-battle-system-known-issues",
+      "title": "새 PvP 전투 시스템의 알려진 문제 목록이 공식으로 유지되고 있어요",
+      "summary": "GO 배틀리그의 새 PvP 전투 시스템과 관련해 조사 중인 문제들을 공식에서 목록으로 유지해요. 네트워크가 불안정할 때의 문제 완화 요령도 함께 안내합니다.",
+      "category": [
+        "pvp",
+        "bugfix"
+      ],
+      "rolloutStatus": "unknown",
+      "key": [
+        "새 PvP 전투 시스템 관련 문제를 공식이 한 목록으로 유지해요 — 발견·해결에 따라 계속 바뀌어요.",
+        "이 목록이 인지된 모든 문제를 담고 있는 것은 아니라고 공식이 밝혀 뒀어요.",
+        "완화 요령: 여러 Wi‑Fi 자동 연결 끄기 · 지하처럼 연결이 불안정한 곳 피하기."
+      ],
+      "sources": [
+        {
+          "lang": "ko",
+          "label": "새로운 PvP 전투 시스템에서 알려진 문제들 (공식)",
+          "url": "https://niantic.helpshift.com/hc/ko/6-pokemon-go/faq/5505-new-pvp-battle-system-known-issues/",
+          "image": ""
+        },
+        {
+          "lang": "en",
+          "label": "New PvP Battle System Known Issues (official)",
+          "url": "https://niantic.helpshift.com/hc/en/6-pokemon-go/faq/5505-new-pvp-battle-system-known-issues/",
+          "image": ""
+        }
+      ]
+    },
+    {
+      "editorialStatus": "published",
+      "evidenceStatus": "official",
+      "featured": false,
+      "announcedAt": "",
+      "effectiveAt": "",
+      "effectiveNote": "",
+      "checkedAt": "2026-09-16",
+      "beforeAfter": [
+        {
+          "label": "포획 정보 화면",
+          "before": "최신 업데이트의 새 UI",
+          "after": "이전 버전으로 되돌림 (일시적)"
+        }
+      ],
+      "playerImpact": [
+        "화면 구성이 갑자기 예전으로 보이는 것은 오류가 아니라 의도된 조치예요."
+      ],
+      "suggestedActions": [],
+      "moncampAdvice": "개체값·CP 는 게임 화면이 바뀌어도 그대로예요. 📕 도감 상세의 CP 계산기로 내 개체를 확인하세요.",
+      "related": [
+        "dex"
+      ],
+      "revisions": [],
+      "id": "catch-info-ui-reverted",
+      "title": "포획한 포켓몬의 정보 화면이 이전 버전으로 되돌아갔어요",
+      "summary": "최신 업데이트의 포획 정보 화면 UI 에서 문제가 발견돼 공식에서 일시적으로 이전 버전으로 되돌렸어요.",
+      "category": [
+        "catch",
+        "bugfix"
+      ],
+      "rolloutStatus": "live",
+      "key": [
+        "포획한 포켓몬의 정보 화면 UI 가 이전 버전으로 되돌아갔어요.",
+        "일시적인 조치이고 공식 상태는 해결 과정 중이에요."
+      ],
+      "sources": [
+        {
+          "lang": "ko",
+          "label": "포획한 포켓몬의 정보 화면의 UI 번복 (공식)",
+          "url": "https://niantic.helpshift.com/hc/ko/6-pokemon-go/faq/5237-pokemon-catch-info-ui-reverted/",
+          "image": ""
+        },
+        {
+          "lang": "en",
+          "label": "Pokémon Catch Info UI Reverted (official)",
+          "url": "https://niantic.helpshift.com/hc/en/6-pokemon-go/faq/5237-pokemon-catch-info-ui-reverted/",
+          "image": ""
+        }
+      ]
+    },
+    {
+      "editorialStatus": "published",
+      "evidenceStatus": "official",
+      "featured": false,
+      "announcedAt": "",
+      "effectiveAt": "",
+      "effectiveNote": "",
+      "checkedAt": "2026-09-16",
+      "beforeAfter": [
+        {
+          "label": "배틀 후 보상 화면·먼 오브젝트 등",
+          "before": "평소대로 표시",
+          "after": "충돌 완화를 위해 일시적으로 제거·다운그레이드"
+        }
+      ],
+      "playerImpact": [
+        "해당 기기에서 화면이 예전보다 단순해 보일 수 있어요 — 오류가 아니라 완화 조치예요."
+      ],
+      "suggestedActions": [],
+      "moncampAdvice": "moncamp 는 웹이라 게임 앱과 따로 돌아가요. 게임이 불안정한 날에도 티어표·도감은 그대로 쓸 수 있어요.",
+      "related": [],
+      "revisions": [],
+      "id": "ios26-older-device-crashes",
+      "title": "iOS 26 구형 기기에서 앱 충돌이 늘어 일부 기능이 일시적으로 낮춰졌어요",
+      "summary": "iPhone 13 이하에서 iOS 26 을 쓰면 충돌 가능성이 높아져, 공식에서 배틀 후 보상 화면·먼 오브젝트 같은 요소를 일시적으로 제거하거나 낮춰 문제를 완화했어요.",
+      "category": [
+        "bugfix"
+      ],
+      "rolloutStatus": "live",
+      "key": [
+        "iPhone 13 이하 + iOS 26 조합에서 앱 충돌이 늘었어요.",
+        "공식이 일부 기능을 일시적으로 제거·다운그레이드해 완화했어요.",
+        "문제 상태는 \"조사 중\" 이에요."
+      ],
+      "sources": [
+        {
+          "lang": "ko",
+          "label": "iOS 26 구형 기기에서 앱 충돌 현상 증가 (공식)",
+          "url": "https://niantic.helpshift.com/hc/ko/6-pokemon-go/faq/5519-ios-26-experiencing-increased-app-crashes-on-older-devices/",
+          "image": ""
+        },
+        {
+          "lang": "en",
+          "label": "iOS 26 experiencing increased app crashes on older devices (official)",
+          "url": "https://niantic.helpshift.com/hc/en/6-pokemon-go/faq/5519-ios-26-experiencing-increased-app-crashes-on-older-devices/",
+          "image": ""
+        }
+      ]
+    },
+    {
+      "editorialStatus": "published",
+      "evidenceStatus": "official",
+      "featured": false,
+      "announcedAt": "",
+      "effectiveAt": "",
+      "effectiveNote": "",
+      "checkedAt": "2026-09-16",
+      "beforeAfter": [
+        {
+          "label": "Pixel 10 의 AR 모드",
+          "before": "사용 가능",
+          "after": "0.377 릴리스에서 비활성화 (문제 해결 시까지)"
+        }
+      ],
+      "playerImpact": [
+        "해당 기기에서는 AR 포획·AR 스캔을 쓸 수 없어요."
+      ],
+      "suggestedActions": [],
+      "moncampAdvice": "",
+      "related": [],
+      "revisions": [],
+      "id": "pixel10-ar-disabled",
+      "title": "Pixel 10 에서는 0.377 릴리스 동안 AR 모드가 꺼져 있어요",
+      "summary": "Pixel 10 기기에서 AR 화면이 깨지는 문제가 확인돼, 해결될 때까지 0.377 릴리스에서 AR 모드가 비활성화됩니다.",
+      "category": [
+        "bugfix"
+      ],
+      "rolloutStatus": "live",
+      "key": [
+        "Pixel 10 에서 AR 화면이 깨지는 문제가 있어요.",
+        "해결될 때까지 0.377 릴리스에서 AR 모드가 꺼져요.",
+        "문제 상태는 \"조사 중\" 이에요."
+      ],
+      "sources": [
+        {
+          "lang": "ko",
+          "label": "Pixel 10 기기에서 AR 화면이 깨집니다 (공식)",
+          "url": "https://niantic.helpshift.com/hc/ko/6-pokemon-go/faq/5211-ar-crashes-on-pixel-10-devices/",
+          "image": ""
+        },
+        {
+          "lang": "en",
+          "label": "AR crashes on Pixel 10 devices (official)",
+          "url": "https://niantic.helpshift.com/hc/en/6-pokemon-go/faq/5211-ar-crashes-on-pixel-10-devices/",
+          "image": ""
+        }
+      ]
+    },
+    {
       "id": "gym-defense-2026-09",
       "title": "체육관 방어 시스템 변경 제보 — 확인 대기",
       "summary": "\"이번 주 체육관 방어 시스템이 바뀐 것 같다\" 는 제보입니다. 2026-09-16 조사에서 공식 원문·적용일·세부 수치를 특정하지 못해 공개하지 않습니다. 변경이 없었다는 뜻은 아닙니다. (추가 스페셜 어택의 체육관 제한은 원문을 확인해 따로 게시했습니다.)",

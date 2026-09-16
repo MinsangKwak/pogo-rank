@@ -47,7 +47,7 @@ const UPDATE_ROLLOUT = { planned: '적용 예정', rolling: '순차 적용', liv
 
 // 목록 화면의 상태 — 상세를 보고 뒤로 왔을 때 검색·분류·기간·스크롤이 그대로여야 한다.
 // 라우터가 화면을 다시 그리므로(renderPage) 상태를 DOM 밖에 둔다
-const UPDATE_UI = { query: '', cat: '', period: '', scroll: 0 };
+const UPDATE_UI = { query: '', cat: '', period: '', scroll: 0, shown: 0 };
 
 // 라우트 id → 메뉴 이름. router.js 에는 routeIcon 만 있고 이름을 꺼내는 함수가 없다 —
 // ROUTES 의 nav(메뉴 이름)를 먼저 보고, 메뉴에 없는 화면은 title 을 쓴다
@@ -62,9 +62,10 @@ function gameUpdates() {
 function gameUpdateById(id) {
   return gameUpdates().find((article) => article.id === id) ?? null;
 }
-// 발표일·적용일 중 이 글을 "언제 일" 로 볼지 — 적용일이 있으면 그쪽이 사람이 찾는 날짜다
+// 이 글을 "언제 일" 로 볼지 — 적용일 > 발표일 > 우리가 확인한 날.
+// 공식 릴리스 노트·알려진 문제는 날짜를 적지 않아서, 그 글은 확인일이 유일한 시간 기준이다
 function updateDateOf(article) {
-  return article.effectiveAt || article.announcedAt || '';
+  return article.effectiveAt || article.announcedAt || article.checkedAt || '';
 }
 // 오늘로부터 며칠 전 글인가 (날짜가 없으면 null — 기간 거르기에서 빠진다)
 function updateDaysAgo(article) {
@@ -98,7 +99,9 @@ function updateDates(article, withChecked = false) {
   const parts = [];
   if (article.announcedAt) parts.push(one('발표', article.announcedAt));
   if (article.effectiveAt) parts.push(one('적용', article.effectiveAt));
-  if (withChecked && article.checkedAt) parts.push(one('마지막 확인', article.checkedAt));
+  // 발표일·적용일이 없는 글(공식 릴리스 노트)은 확인일을 대신 보인다 — 목록에서도 "언제 것" 을 알 수 있게.
+  // 상세에서는 발표일이 있든 없든 확인일을 늘 적는다 (마지막으로 원문을 본 날)
+  if ((withChecked || !parts.length) && article.checkedAt) parts.push(one(parts.length ? '마지막 확인' : '확인', article.checkedAt));
   if (!parts.length) parts.push(el('span', { class: 'upd__date' }, el('em', {}, '날짜 미확인')));
   return el('div', { class: 'upd__dates' }, ...parts);
 }
@@ -178,6 +181,10 @@ function renderGameUpdatesList() {
   const $count = el('p', { class: 'upd__count' });
 
   const PERIODS = [['', '전체'], ['7', '최근 7일'], ['30', '최근 30일']];
+  // 한 번에 보이는 글 수. [더보기] 를 누를 때마다 이만큼씩 늘어난다 —
+  // 글이 쌓이는 화면이라 처음부터 전부 그리면 스크롤만 길어지고, 과거는 누를 때 온다
+  const PAGE = 5;
+  const $more = el('button', { class: 'upd__more' });
   const draw = () => {
     const query = UPDATE_UI.query.trim().toLowerCase();
     const rows = all.filter((article) => {
@@ -192,22 +199,33 @@ function renderGameUpdatesList() {
       return hay.includes(query);
     });
     $count.textContent = `${rows.length}건`;
+    // 남은 수보다 많이 펼쳐 달라고 해도 목록 길이에서 자른다(되돌리지 않는다) —
+    // 되돌리면 마지막 [더보기] 가 첫 장으로 돌아가 5↔10 을 오간다. 조건이 바뀔 때 첫 장으로 가는 일은 reset() 이 맡는다.
+    // 그린 수를 되적는 것도 필요하다: 처음(0)일 때 첫 [더보기] 가 0+5=5 가 되어 제자리걸음을 하지 않게
+    const shown = Math.min(Math.max(UPDATE_UI.shown, PAGE), rows.length);
+    UPDATE_UI.shown = shown;
     $list.replaceChildren(...(rows.length
-      ? rows.map((article) => updateCard(article))
+      ? rows.slice(0, shown).map((article) => updateCard(article))
       : [hintNote('조건에 맞는 글이 없어요. 검색어나 분류를 바꿔 보세요.')]));
+    const rest = rows.length - shown;
+    $more.hidden = rest <= 0;
+    $more.textContent = rest > 0 ? `지난 소식 더 보기 (${rest}건 남음)` : '';
     for (const button of $cats.children) button.setAttribute('aria-pressed', String(button.dataset.cat === UPDATE_UI.cat));
     for (const button of $periods.children) button.setAttribute('aria-pressed', String(button.dataset.period === UPDATE_UI.period));
   };
 
-  $search.addEventListener('input', () => { UPDATE_UI.query = $search.value; draw(); });
+  $more.addEventListener('click', () => { UPDATE_UI.shown += PAGE; draw(); });
+  // 검색·분류·기간을 바꾸면 펼친 만큼은 되돌린다 (새 조건의 첫 장부터 읽는다)
+  const reset = () => { UPDATE_UI.shown = PAGE; };
+  $search.addEventListener('input', () => { UPDATE_UI.query = $search.value; reset(); draw(); });
   const catButton = (key, label) => {
-    const button = uchip(label, () => { UPDATE_UI.cat = UPDATE_UI.cat === key ? '' : key; draw(); }, { on: false });
+    const button = uchip(label, () => { UPDATE_UI.cat = UPDATE_UI.cat === key ? '' : key; reset(); draw(); }, { on: false });
     button.dataset.cat = key;
     return button;
   };
   $cats.append(catButton('', '전체 분류'), ...Object.entries(UPDATE_CATS).map(([key, label]) => catButton(key, label)));
   $periods.append(...PERIODS.map(([key, label]) => {
-    const button = uchip(label, () => { UPDATE_UI.period = key; draw(); }, { on: false });
+    const button = uchip(label, () => { UPDATE_UI.period = key; reset(); draw(); }, { on: false });
     button.dataset.period = key;
     return button;
   }));
@@ -217,7 +235,7 @@ function renderGameUpdatesList() {
   if (typeof i18nKoOnlyNote === 'function') $body.append(i18nKoOnlyNote('ko'));
   $body.append(sectionTitle('전체 소식'),
     el('div', { class: 'upd__tools' }, $search, $cats, $periods, $count),
-    $list,
+    $list, $more,
     footNote('공식 발표를 확인한 글만 올려요. 모든 변경을 실시간으로 옮기지는 않고, 확인한 주요 변경을 정리해 드려요.'));
   return $body;
 }

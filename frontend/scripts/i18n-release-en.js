@@ -15,6 +15,11 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 const RELEASE_NOTES_EN = {
+  '2026-09-16 · v3.53.0': [
+    '**Game updates now has 11 posts** — added items confirmed from the official release notes and known issues: the Premier Ball count display during raids, Max Battle rewards showing 0, the egg hatch list mismatch, and more.',
+    '**[More past updates] walks back through the archive** — five at a time, more on each tap.',
+    '**Posts sourced from release notes carry a \'Checked\' date** — that document does not publish dates, so we state when we last read the original.',
+  ],
   '2026-09-16 · v3.52.0': [
     '**A gym post is up** — the additional Charged Attack from Mega Evolution works in GO Battle League but not in Gym battles against defenders. Confirmed against the official source (Korean and English).',
     '**Every post now carries \'What moncamp suggests\'** — instead of our internal status, it says which screen to use and what to do about the change.',

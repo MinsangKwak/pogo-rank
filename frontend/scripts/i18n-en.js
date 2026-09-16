@@ -1392,6 +1392,8 @@ const I18N_EN = {
   '활용 순위': 'Usage rankings',
   '아직 순위표 상위 #위에 오르지 않았어요.': 'Not in the top # of any ranking yet.',
   '전체 순위 펼치기 (#)': 'Show all rankings (#)',
+  '지난 소식 더 보기 (#건 남음)': 'More past updates (# left)',
+  '확인': 'Checked',
   '각 순위표 상위 #위 기준 · #위 안은 👑': 'Based on the top # of each ranking · top # get a 👑',
   '보스로 만났을 때': 'When it is the boss',
   '맥스 배틀 추천 후보 — 다이맥스·거다이맥스만 참전': 'Max Battle picks — only Dynamax/Gigantamax can join',

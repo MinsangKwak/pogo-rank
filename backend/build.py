@@ -40,7 +40,7 @@ from names import name_ko, species, FORM_KO
 import guard
 
 # ── 설정 ─────────────────────────────────────────────────────────────────────
-APP_VERSION = 'v3.52.0'  # 게임 업데이트 — 체육관 글 · moncamp 추천 · 원문 미리보기 카드 (v3.25.0 은 feature-advertisement 브랜치에 예약)
+APP_VERSION = 'v3.53.0'  # 게임 업데이트 — 수집 자동화 · 글 11건 · 지난 소식 더 보기 (v3.25.0 은 feature-advertisement 브랜치에 예약)
 # 2026-09-14 v3.28.0 index.html 의 색인 허용 줄 — dev 빌드가 이 줄을 noindex 로 바꿔 끼운다
 ROBOTS_INDEX_META = '<meta name="robots" content="index, follow, max-image-preview:large">'
 # 2026-09-05 v2.7.3 빌드 채널 — 'prod'(기본) / 'dev'. dev 브랜치 워크플로(.github/workflows/deploy-dev.yml)가 BUILD_CHANNEL=dev 로 부른다.
@@ -521,10 +521,13 @@ def load_game_updates(path='backend/config/game_updates.json'):
         assert article.get('key'), f'{where}: 공개 글에는 핵심 요약이 필요하다'
         assert article.get('evidenceStatus') == 'official', f'{where}: 1차 공개 피드는 공식 출처를 확인한 글만'
         assert article.get('sources'), f'{where}: 공개 글에는 출처가 필요하다'
-        assert article.get('announcedAt'), f'{where}: 공개 글에는 발표일이 필요하다'
+        # 발표일이 없는 출처가 있다 — 공식 릴리스 노트·알려진 문제는 날짜를 적지 않는다.
+        # 그 경우 **우리가 확인한 날**(checkedAt) 이라도 있어야 한다. 둘 다 없으면 언제 일인지 말할 수 없다
+        assert article.get('announcedAt') or article.get('checkedAt'), f'{where}: 공개 글에는 발표일이나 확인일이 필요하다'
         published.append({key: value for key, value in article.items() if not key.startswith('_')})
-    # 최신 발표일이 위로. 같은 날이면 편집 순서를 지킨다
-    published.sort(key=lambda article: article.get('announcedAt', ''), reverse=True)
+    # 최신이 위로. 발표일이 없는 글(공식 릴리스 노트)은 우리가 확인한 날로 센다 — 화면의 차례와 같은 기준이다
+    published.sort(key=lambda article: article.get('effectiveAt') or article.get('announcedAt') or article.get('checkedAt') or '',
+                   reverse=True)
     return published, counts
 
 

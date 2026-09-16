@@ -9,6 +9,11 @@
 .upd__search:focus-visible { outline: 2px solid var(--brand); outline-offset: 1px; }
 .upd__filter { display: flex; flex-wrap: wrap; gap: 0.5rem; }
 .upd__count { margin: 0; font-size: var(--fs-sub); color: var(--muted); }
+/* 지난 소식 더 보기 — 목록 아래 한 줄. 남은 수를 적어 "더 있다" 를 숫자로 말한다 */
+.upd__more { width: 100%; margin-top: 1rem; padding: 1.1rem; border: 1px solid var(--line); border-radius: var(--r-btn, 1rem);
+  background: var(--surface); font-size: 1.3rem; font-weight: 600; color: var(--fg); }
+.upd__more:hover { background: var(--hover); }
+.upd__more[hidden] { display: none; }
 
 .upd__cards { display: flex; flex-direction: column; gap: 1rem; }
 /* 주요 변경 — 같은 카드지만 왼쪽에 강조 막대를 세워 "고른 글" 임을 말한다 */

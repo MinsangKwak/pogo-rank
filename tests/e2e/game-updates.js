@@ -12,6 +12,7 @@
 //   - 이전 값을 모르는 항목은 지어내지 않고 '이전 값 미확인' 으로 적힌다
 //   - 원문은 줄 링크가 아니라 미리보기 카드(썸네일 + 제목 + 주소)로 나가고, CSP 가 그 그림 주소를 허용한다
 //   - moncamp 는 '점검 필요' 같은 우리 쪽 작업 상태가 아니라 '이렇게 추천해요' 를 적는다 (v3.52.0)
+//   - 글이 쌓이면 [지난 소식 더 보기] 로 과거를 이어 본다 · 거르는 조건을 바꾸면 첫 장부터 (v3.53.0)
 //   - 게임 업데이트 · 이벤트 일정 · moncamp 패치노트가 메뉴에서 서로 다른 화면으로 갈린다
 //   - 영어로 볼 때 화면 뼈대가 번역되고, 본문이 한국어로 남는다는 안내가 보인다
 const { launch, newContext, waitSplash, ok, finish, suite, toEnglish } = require('./_lib');
@@ -42,7 +43,13 @@ suite(async () => {
   ok('공개 글은 모두 공식 출처를 갖는다',
     data.every((article) => article.evidenceStatus === 'official' && (article.sources || []).length > 0),
     data.filter((article) => !(article.sources || []).length).map((article) => article.id).join(','));
-  ok('공개 글은 모두 발표일이 있다', data.every((article) => /^\d{4}-\d{2}-\d{2}$/.test(article.announcedAt || '')));
+  // 공식 릴리스 노트는 날짜를 적지 않는다 — 그런 글은 우리가 확인한 날이 유일한 시간 기준이다
+  ok('공개 글은 발표일이나 확인일이 있다',
+    data.every((article) => /^\d{4}-\d{2}-\d{2}$/.test(article.announcedAt || article.checkedAt || '')));
+  ok('최신이 위로 (적용일 > 발표일 > 확인일)', (() => {
+    const key = (a) => a.effectiveAt || a.announcedAt || a.checkedAt || '';
+    return data.every((a, i) => i === 0 || key(data[i - 1]) >= key(a));
+  })());
   // v3.52.0 moncamp 축은 상태가 아니라 추천 문단이다 — 옛 필드가 남아 있으면 화면에 두 벌이 생긴다
   ok('moncampImpact 상태 필드는 없다', data.every((article) => article.moncampImpact === undefined));
   ok('분류마다 공개 글이 있다 — 체육관 포함',
@@ -56,8 +63,19 @@ suite(async () => {
   // ── 목록 화면
   // 화면 머리는 라우터의 메뉴 이름을 쓴다 (PAGES.title 의 이모지는 다른 자리에서 쓰인다)
   ok('화면 제목', (await page.locator('#page-head h2').textContent()) === '게임 업데이트');
+  // v3.53.0 한 번에 5건씩 — 글이 쌓이는 화면이라 나머지는 [더보기] 로 온다
+  const PAGE = 5;
   const listCount = await cards().count();
-  ok('목록에 공개 글이 전부 보인다', listCount === data.length, `${listCount} vs ${data.length}`);
+  ok('첫 장은 5건', listCount === Math.min(PAGE, data.length), `${listCount} vs ${data.length}`);
+  ok('공개 글이 10건 이상 쌓였다', data.length >= 10, String(data.length));
+  const more = page.locator('.upd__more');
+  ok('[지난 소식 더 보기] 에 남은 수가 적힌다',
+    await more.isVisible() && (await more.textContent()).includes(String(data.length - PAGE)), await more.textContent());
+  await more.click();
+  await page.waitForTimeout(250);
+  ok('더 보기를 누르면 이어진다', (await cards().count()) === Math.min(PAGE * 2, data.length), String(await cards().count()));
+  while (await more.isVisible()) { await more.click(); await page.waitForTimeout(200); }
+  ok('끝까지 펼치면 전부 보이고 버튼이 사라진다', (await cards().count()) === data.length && !(await more.isVisible()));
   const firstTitle = await cards().first().locator('.upd__title').textContent();
   ok('카드에 제목·요약·상태·날짜', !!firstTitle
     && (await cards().first().locator('.upd__summary').count()) === 1
@@ -79,19 +97,20 @@ suite(async () => {
   ok('없으면 안내가 뜬다 (빈 화면이 아니다)', (await cards().count()) === 0 && (await page.locator('.upd__cards .dex__hint').count()) === 1);
   await page.fill('.upd__search', '');
   await page.waitForTimeout(250);
-  ok('검색어를 지우면 되돌아온다', (await cards().count()) === data.length);
+  ok('검색어를 지우면 첫 장으로 되돌아온다', (await cards().count()) === Math.min(PAGE, data.length));
 
   await page.locator('.upd__filter .uchip', { hasText: '체육관' }).first().click();
   await page.waitForTimeout(250);
   const gymCount = await cards().count();
   ok('분류로 좁힌다 — 체육관 글이 보인다', gymCount > 0 && gymCount < data.length, `${gymCount}/${data.length}`);
+  ok('조건을 바꾸면 첫 장부터 (펼친 만큼이 남지 않는다)', gymCount <= PAGE, String(gymCount));
   await page.locator('.upd__filter .uchip', { hasText: 'PvP' }).first().click();
   await page.waitForTimeout(250);
   const pvpCount = await cards().count();
   ok('PvP 분류는 있다', pvpCount > 0, String(pvpCount));
   await page.locator('.upd__filter .uchip', { hasText: '전체 분류' }).first().click();
   await page.waitForTimeout(250);
-  ok('전체 분류로 되돌아온다', (await cards().count()) === data.length);
+  ok('전체 분류로 되돌아온다', (await cards().count()) === Math.min(PAGE, data.length));
   await page.locator('.upd__filter .uchip', { hasText: '최근 7일' }).first().click();
   await page.waitForTimeout(250);
   const recent = await cards().count();
@@ -106,6 +125,15 @@ suite(async () => {
   await page.waitForTimeout(600);
   ok('상세 주소는 #/game-updates/<id>', /^#\/game-updates\/[a-z0-9-]+$/.test(await page.evaluate(() => location.hash)),
     await page.evaluate(() => location.hash));
+  await page.locator('.upd__back').click();
+  await page.waitForTimeout(500);
+  ok('뒤로 오면 검색어가 그대로', (await page.inputValue('.upd__search')) === '메가' && (await cards().count()) < data.length);
+  await page.fill('.upd__search', '');
+  await page.waitForTimeout(200);
+
+  // ── 상세의 차례·내용은 **글을 지정해** 본다.
+  // 검색 첫 줄에 기대면 글이 늘 때마다 다른 글이 걸려 검사가 흔들린다 (v3.53.0 에 실제로 겪었다)
+  await go('#/game-updates/gbl-mega-twilight-trails');
   const secs = await page.locator('.upd__sec > h3').allTextContents();
   ok('상세 차례 — 핵심 → 전후 → 영향 → 확인 → 반영 → 관련 → 원문',
     secs[0] === '핵심 요약' && secs.includes('변경 전 · 후') && secs.includes('플레이에 미치는 영향') && secs.at(-1) === '공식 원문',
@@ -136,12 +164,6 @@ suite(async () => {
     thumbs.every((src) => { const host = new URL(src).host; return imgSrc.includes(host) || imgSrc.includes('*.' + host.split('.').slice(-2).join('.')); }),
     imgSrc.trim());
   ok('원문 카드에 주소가 보인다', (await page.locator('.upd__source-host').first().textContent()) === 'pokemongo.com');
-  await page.locator('.upd__back').click();
-  await page.waitForTimeout(600);
-  ok('뒤로 오면 검색어가 그대로', (await page.inputValue('.upd__search')) === '메가' && (await cards().count()) < data.length);
-  await page.fill('.upd__search', '');
-  await page.waitForTimeout(200);
-
   // ── 없는 글 주소
   await go('#/game-updates/there-is-no-such-post');
   ok('없는 글은 안내로 받는다 (오류·빈 화면이 아니다)',
