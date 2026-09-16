@@ -2,7 +2,7 @@
 
 [← README](README.md) · [개발 문서](docs/DEVELOPMENT.md) · [운영 문서](docs/OPERATIONS.md) · [인프라 문서](docs/INFRA.md) · **변경 이력**
 
-**날짜를 펼치고, 그 안에서 버전을 펼쳐 보세요.** 164개 판이 쌓여 한눈에 훑기 어려워 **날짜 → 버전** 두 겹으로 접어 두었습니다. 가장 최근 날짜만 펼쳐 둡니다.
+**날짜를 펼치고, 그 안에서 버전을 펼쳐 보세요.** 165개 판이 쌓여 한눈에 훑기 어려워 **날짜 → 버전** 두 겹으로 접어 두었습니다. 가장 최근 날짜만 펼쳐 둡니다.
 
 바깥 줄은 `날짜 — 그날 낸 판 수 · 버전 범위`, 안쪽 줄은 `버전 · 그 판에서 한 일` 입니다. 최신이 위로 옵니다.
 형식은 [Keep a Changelog](https://keepachangelog.com/ko/1.1.0/)를 따릅니다.
@@ -16,7 +16,26 @@
 
 
 <details open>
-<summary><b>2026-09-16</b> — 4판 · <code>v3.46.0 … v3.48.1</code></summary>
+<summary><b>2026-09-16</b> — 5판 · <code>v3.46.0 … v3.48.2</code></summary>
+
+<details>
+<summary><b>v3.48.2</b> · <code>문서</code> 코드 이용 조건 — 포크·재배포 금지로 전환 · 문서의 옛 서비스명 정리</summary>
+
+### 제보
+
+*"md 문서를 전체적으로 검색해서 기존 이름이 들어간 게 있다면 엄격하게 전부 moncamp로 바꾸고"* · *"포크, 재배포는 안됩니다. 라는 말을 못박아"*
+
+### 이용 조건 — MIT → 포크·재배포 금지
+
+`LICENSE` 를 MIT 에서 **저작권자 소유 · 포크·재배포 금지** 로 바꿨다. 열람·학습과 이 저장소로 보내는 이슈·PR 은 그대로 허용하고, 사본 공개·다른 이름으로 배포·호스팅·복제 서비스 운영·상업적 이용을 금지한다. 같은 말을 `README` 라이선스 절, `NOTICE` 결론·1장 표·4장, `CONTRIBUTING`(DCO 문구 · 라이선스 절), 앱 푸터(KR/EN), 이용약관 5조에 적었다.
+
+알아둘 것 둘 — (1) 2026-09-16 이전에 MIT 로 받아 간 사본에는 그 조건이 남는다(MIT 는 철회되지 않는다). LICENSE 에 그렇게 적었다. (2) GitHub 이용약관은 공개 저장소를 누구나 포크할 수 있게 둔다 — 라이선스는 그 사본을 **쓰는 것**을 막을 뿐, 포크 버튼 자체를 막지는 못한다. 포크 자체를 막으려면 저장소를 비공개로 돌려야 한다.
+
+### 옛 서비스명 정리
+
+`README` · `CHANGELOG` · `NOTICE` 의 옛 이름 표기 27곳을 전부 moncamp 기준으로 고쳤다 — 이름 변경 이력을 적은 줄은 "옛 이름 / 1차 변경(moncamp 전 단계)" 로 바꿔 흐름은 남기고 이름은 지웠다. 코드 식별자(`pogoplan-v5` 캐시 이름 · `pogo_*` 키 · 저장소명 `pogo-rank`)는 불변 규칙대로 그대로다.
+
+</details>
 
 <details>
 <summary><b>v3.48.1</b> · <code>UI·UX</code> GIF 없는 종을 CSS 로 흔들던 것을 뺐다 — 정지 그림은 정지 그대로</summary>
@@ -974,7 +993,7 @@ D-MAX 화면 맨 위 보스 아코디언에 이미 추천 파티 카드(딜러 2
 - **날짜 → 버전 2단 아코디언** — `CHANGELOG.md` 와 `README.md` 버전 이력 둘 다. 바깥 줄은 `날짜 — N판 · 버전 범위`, 안쪽은 `버전 · 그 판에서 한 일`. 가장 최근 날짜만 펼쳐 둔다. README 는 한 줄로 끝나는 초기 판 14개를 접지 않고 목록으로 둔다(빈 아코디언을 만들지 않는다).
 - **유실된 v2.5.0 복원** — 번호 연속성을 세다 `v2.5.0` · `v2.19.0` · `v3.25.0` 이 비어 있는 것을 발견했다. `v2.19.0` 은 건너뛴 번호, `v3.25.0` 은 `feature-advertisement` 브랜치 예약분, **`v2.5.0` 은 실재한 판**(커밋 `c3c0809`, 2026-09-04 — 시즌 기술 변경 안내 · 순위 변동 ▲▼ 뱃지)인데 `## [Unreleased]` 형식에서 아코디언 형식으로 옮기며 통째로 빠져 있었다. 그 커밋에서 되살렸다.
 - **판 수를 실제와 맞춤** — 머리말이 134로 적혀 있었으나 실제는 141(복원 뒤 142)이었다. 날짜 줄의 판 수와 버전 범위는 이제 파일에서 세어 적는다.
-- **문서 서비스명** — `README.md` 제목이 `monlab` 에 멈춰 있었다(v3.27.0 에 코드만 moncamp 로 옮기고 README 제목을 못 따라 적음). `docs/` 세 문서는 `POGO PLAN` 으로 두 번 뒤처져 있었다. 전부 moncamp 로.
+- **문서 서비스명** — `README.md` 제목이 옛 이름에 멈춰 있었다(v3.27.0 에 코드만 moncamp 로 옮기고 README 제목을 못 따라 적음). `docs/` 세 문서는 그보다 한 단계 더 옛 이름이었다. 전부 moncamp 로.
 - **패치노트 링크** — `minsangkwak.github.io/pogo-rank/#/release` → `moncamp.kr/#/release`.
 
 ### 문서에 더한 기록
@@ -1181,13 +1200,13 @@ v3.6.0 에 "아직 검색엔진에 올릴 단계가 아니다" 로 뺐던 색인
 <details>
 <summary><b>v3.27.0</b> · <code>변경</code> 서비스명 moncamp(몬캠프) · <code>추가</code> moncamp.kr 도메인 준비</summary>
 
-### 왜 monlab 을 하루 만에 접었나
+### 왜 v3.26.0 의 이름을 하루 만에 접었나
 
-`monlab` 은 `.com`/`.app` 이 모두 선점돼 있었다. 도메인을 사면서 이름을 다시 골랐고(작업 지시서 9절), `POGO` 는 EA 의 살아있는 등록상표(미국 2836746, 9류 비디오 게임 소프트웨어 · 41류 온라인 게임 서비스)라 도메인 구입과 광고가 붙는 순간 상업적 사용이 돼 UDRP 분쟁 위험이 생긴다. 바꾸는 비용이 가장 싼 지금 뺀다. `moncamp.kr` 은 가비아에서 2028-09-14 까지 등록.
+v3.26.0 의 이름은 `.com`/`.app` 이 모두 선점돼 있었다. 도메인을 사면서 이름을 다시 골랐고(작업 지시서 9절), 옛 이름에 든 `POGO` 는 EA 의 살아있는 등록상표(미국 2836746, 9류 비디오 게임 소프트웨어 · 41류 온라인 게임 서비스)라 도메인 구입과 광고가 붙는 순간 상업적 사용이 돼 UDRP 분쟁 위험이 생긴다. 바꾸는 비용이 가장 싼 지금 뺀다. `moncamp.kr` 은 가비아에서 2028-09-14 까지 등록.
 
 ### 이름
 
-monlab 이 적힌 **현재 상태** 파일 전부를 moncamp 로: `index.html`(제목·og/twitter·apple·로딩·`<h1>`·지식재산 안내), `app-shell.js`, `manifest.webmanifest`, `robots.txt`, `build.py`(404·dev robots), `terms.js`·`privacy.js`, `home.js` 인사, `router.js` 스타일가이드, `i18n-en.js` 3키, `og_gen.py`(MON / CAMP) → `og.png`, 테스트 셋. 조사도 고쳤다 — 몬캠프는 받침이 없어 `moncamp는`·`moncamp와`·`moncamp를`. 패치노트·CHANGELOG·README 표에 남은 monlab 은 이력이라 그대로.
+옛 이름이 적힌 **현재 상태** 파일 전부를 moncamp 로: `index.html`(제목·og/twitter·apple·로딩·`<h1>`·지식재산 안내), `app-shell.js`, `manifest.webmanifest`, `robots.txt`, `build.py`(404·dev robots), `terms.js`·`privacy.js`, `home.js` 인사, `router.js` 스타일가이드, `i18n-en.js` 3키, `og_gen.py`(MON / CAMP) → `og.png`, 테스트 셋. 조사도 고쳤다 — 몬캠프는 받침이 없어 `moncamp는`·`moncamp와`·`moncamp를`. 패치노트·CHANGELOG·README 에 남아 있던 옛 이름은 2026-09-16 에 전부 moncamp 표기로 정리했다.
 
 ### 도메인 준비 — 코드가 할 몫
 
@@ -1208,14 +1227,14 @@ Firebase 승인 도메인(`moncamp.kr`·`dev.moncamp.kr`) → `pogo-rank-dev` Se
 </details>
 
 <details>
-<summary><b>v3.26.0</b> · <code>변경</code> 서비스명 monlab(몬랩) · <code>수정</code> KR/EN 전환 엄격 감사</summary>
+<summary><b>v3.26.0</b> · <code>변경</code> 서비스명 1차 변경(moncamp 전 단계) · <code>수정</code> KR/EN 전환 엄격 감사</summary>
 
 > v3.25.0(비로그인 광고 게이트)은 `feature-advertisement` 브랜치에 그대로 두고 dev 는 v3.24.0 에서 이 판으로 바로 이어진다. 광고는 서비스명을 새로 지은 뒤 붙이기로 했다.
 
-### 이름 — POGO PLAN → monlab
+### 이름 — 1차 변경 (moncamp 로 가는 중간 단계)
 
 바뀐 곳: `index.html`(제목 · og/twitter · apple 제목 · 로딩 화면 제목 · `<h1>` · 지식재산 안내), `app-shell.js`(로고 · 드로어 메타 · `document.title`), `home.js` 인사, `router.js` 스타일가이드 설명, `terms.js` · `privacy.js` 서비스명, `manifest.webmanifest`(name · short_name), `robots.txt`, `build.py` 의 404 · robots 문자열, `og_gen.py`(5×7 글리프에 B · M 추가, MON / LAB 두 줄) → `python3 backend/og_gen.py` 로 `og.png` 재생성.
-불변 규칙대로 **그대로 둔 것**: 저장소명 · 배포 URL · localStorage 키(`pogo_*`) · GA 이벤트명 · SW 캐시 이름(`pogoplan-v5`). 패치노트 옛 줄의 "POGO PLAN" 도 역사라 그대로.
+불변 규칙대로 **그대로 둔 것**: 저장소명 · 배포 URL · localStorage 키(`pogo_*`) · GA 이벤트명 · SW 캐시 이름(`pogoplan-v5`). 패치노트 옛 줄의 옛 이름은 2026-09-16 에 moncamp 로 정리했다.
 
 ### KR/EN — "자잘하게 안 바뀌는 곳" 을 셈으로 잡는다
 
@@ -1234,7 +1253,7 @@ Firebase 승인 도메인(`moncamp.kr`·`dev.moncamp.kr`) → `pogo-rank-dev` Se
 
 ### 테스트
 
-`i18n` +5(설정 힌트 · 테마 버튼 aria-label 갱신 · 상세 약점 제목 · CP 각주 · D-MAX 탱커 제목), `nav` · `shell` 은 `#app-title === 'monlab'`, `hardening` 은 og:title 에 monlab. 회귀 24묶음 통과.
+`i18n` +5(설정 힌트 · 테마 버튼 aria-label 갱신 · 상세 약점 제목 · CP 각주 · D-MAX 탱커 제목), `nav` · `shell` 은 `#app-title` 에, `hardening` 은 og:title 에 그때의 서비스명. 회귀 24묶음 통과.
 
 </details>
 
@@ -1377,7 +1396,7 @@ CSS 는 전부 `.home-dashboard` 아래로 한정했다. PC 테마(`pc-theme.css
 
 - **영문 사전** — 새 인사·바로가기 문구 다섯 키 (`다음 모험의` · `주인공을 찾아요.` · `지금 강한 포켓몬부터 나만의 육성 계획까지.` · `트레이너의 다음 선택을 함께 준비해요.` · `모험을 시작하는 세 가지 방법`). 없으면 EN 화면의 인사가 한국어로 남는다.
 - **회귀 `nav.js`** — `타일 모서리 0 · 2px 테두리` 단언이 깨졌다. 타일이 상자가 아니라 갈래 카드 안의 줄이 되면서 사방 2px 대신 밑선 1px 을 갖는다. 단언을 `타일 모서리 0 · 줄 밑선 1px · 카드 모서리 0` 으로 바꿨다 — 상자 테두리는 이제 `.home__service-group` 이 진다.
-- 버전 문서 다섯 곳 · 노션 `01. POGO PLAN 개발` 버전 근거 · WBS 행.
+- 버전 문서 다섯 곳 · 노션 `01. moncamp 개발` 버전 근거 · WBS 행.
 
 </details>
 
@@ -3314,7 +3333,7 @@ gzip 보다 **원본**이 더 중요하다 — 브라우저가 풀어서 읽어�
 ### 추가
 
 - **화면 테마 전환** (신설 `components/theme.js`) — 세 상태를 돈다: 기기 설정 따름 → 밝게 → 어둡게. "기기 설정 따름" 을 없애면 기기를 밤에 어둡게 바꿔도 이 사이트만 밝게 남는다. 색은 `tokens.css` 가 이미 세 경우를 다 정의해 뒀다(`prefers-color-scheme` · `[data-theme]`)
-  - 넓은 화면은 헤더 버튼(`#theme-toggle`), 좁은 화면은 ☰ 메뉴 줄(`#menu-theme`). 헤더에 버튼을 하나 더 넣었더니 좁은 화면에서 로고 "POGO PLAN" 이 잘려, 폭에 따라 하나만 켠다
+  - 넓은 화면은 헤더 버튼(`#theme-toggle`), 좁은 화면은 ☰ 메뉴 줄(`#menu-theme`). 헤더에 버튼을 하나 더 넣었더니 좁은 화면에서 로고가 잘려, 폭에 따라 하나만 켠다
   - 기억: `localStorage pogo_theme` + 승인된 로그인 사용자는 `users/{uid}.theme`. 둘이 어긋나면 계정 값이 이긴다(마지막으로 고른 값이 거기 있다)
   - **첫 화면 깜빡임 방지** — 저장한 값은 `index.html` `<head>` 인라인 스크립트가 붙인다. 번들은 `<body>` 끝의 인라인 `<script>` 라, 거기서 붙이면 어둡게 골라 둔 사람이 매번 흰 화면을 한 번 보고 지나간다
   - 브라우저 상단 바 색(`theme-color`)도 함께 맞춘다 — 고른 화면과 어긋나면 주소창만 다른 색으로 남는다
@@ -3812,7 +3831,7 @@ v2.32.0 이 새로 만든 오른쪽 위 아이콘 두 개가, 원래 있던 ✕ 
 
 ### 참고 — 트래픽 급증의 정체
 GA4 에서 이벤트 1,363건 · 사용자 25명(28일)이 잡혔다. **봇이 아니다.** 크롤러는 `tab_start`(217) · `detail_open`(118) · `login`(49) 같은 상호작용 이벤트를 만들지 못한다. 활성 사용자당 평균 참여 시간 3분 12초, DAU/MAU 72% 도 사람의 패턴이다. 서비스를 친구들에게 알린 시점(9/1 전후)과 그래프가 시작되는 지점이 일치한다.
-다만 GA 속성을 다른 프로젝트와 함께 쓰고 있어 `CODE DIARY`(4) · `POGO NOTE`(4) 조회수가 섞여 들어온다 — 이 사이트의 수치가 아니다.
+다만 GA 속성을 다른 프로젝트와 함께 쓰고 있어 `CODE DIARY`(4) · 옛 이름의 페이지(4) 조회수가 섞여 들어온다 — 이 사이트의 수치가 아니다.
 
 </details>
 
@@ -3827,7 +3846,7 @@ GA4 에서 이벤트 1,363건 · 사용자 25명(28일)이 잡혔다. **봇이 �
 - 화면 맨 아래 120px 빈 칸 제거 — v2.21.0 앱 셸 개편에서 하단 고정 '기준 안내' 막대가 사라졌는데 그 자리를 비워 두던 여백과 CSS 만 남아 있었다
 
 ### 변경
-- **PC 헤더 분리** — 1024px 이상에서 상단 바는 서비스 이름(POGO PLAN) 자리를 지키고, 지금 보고 있는 화면 이름은 본문 맨 위 헤더(`.page-head`)가 맡는다. 뒤로가기 버튼은 그대로. 좁은 화면은 지금까지처럼 상단 바가 제목을 겸한다
+- **PC 헤더 분리** — 1024px 이상에서 상단 바는 서비스 이름(moncamp) 자리를 지키고, 지금 보고 있는 화면 이름은 본문 맨 위 헤더(`.page-head`)가 맡는다. 뒤로가기 버튼은 그대로. 좁은 화면은 지금까지처럼 상단 바가 제목을 겸한다
 - **도감 2열은 카드형** — 한 줄에 둘을 욱여넣으니 이름이 잘리고 밑줄만 촘촘해 무엇을 고르는 화면인지 읽히지 않았다. 2열로 바꾸는 이유가 "한눈에 훑기"라면 줄이 아니라 카드가 맞다. 그림 64px, 번호는 왼쪽 위·★ 는 오른쪽 위 모서리. 560px~ 3열 · 1024px~ 4열
 - **버튼 반응** — hover·active 에 전환 효과. 원칙 셋: 상시로 움직이는 것을 두지 않는다(새 소식 점만 예외), 레이아웃을 흔들지 않는다(`transform`·색만), `prefers-reduced-motion` 을 존중한다. **위치는 옮기지 않는다** — hover 로 버튼이 이동하면 가리키는 순간 목표가 달아나 조준이 어긋난다
 
@@ -3947,10 +3966,10 @@ PoGoMate 대조에서 나온 결손 중 **자동 수집으로 채울 수 있는 
 <details>
 <summary><b>v2.17.0</b> · 변경</summary>
 
-노션 "서비스명 변경 검토"에서 **POGO PLAN(포고플랜)** 확정 (인수인계 문서 3-1).
+노션 "서비스명 변경 검토"에서 서비스명 확정 (인수인계 문서 3-1 · 현재 이름은 moncamp).
 
 ### 변경
-- **서비스명 POGO SEARCH → POGO PLAN** — 화면 `<title>`("POGO PLAN — 뭘 키우고, 뭘 잡을지")·헤더 `<h1>`·스플래시·`apple-mobile-web-app-title`, `manifest.webmanifest`(이름 "POGO NOTE" 잔재 → "POGO PLAN — 포켓몬GO 육성 플래너", short_name "POGO PLAN"), 상세 팝업 공유 제목, 개인정보처리방침 서비스명, `robots.txt`·dev robots 머리말, README·docs 제목, `.env.example`·`.vscode` 주석. 서비스워커 캐시 접두사 `pogonote-v3` → `pogoplan-v4`(activate 가 옛 캐시를 지우므로 사용자 조치 없음). **유지**: 저장소명·배포 URL(PWA 설치·공유 링크 보호), 전역 이름·`state` 키·localStorage 키(`pogo_*`)·GA 이벤트명·Firestore 필드명(불변 규칙). 패치노트의 지난 항목에 남은 "POGO SEARCH" 표기는 기록이라 그대로 둔다
+- **서비스명 변경 (moncamp 전 단계)** — 화면 `<title>`("서비스명 — 뭘 키우고, 뭘 잡을지")·헤더 `<h1>`·스플래시·`apple-mobile-web-app-title`, `manifest.webmanifest`(이전 이름 잔재 → 새 이름 · short_name), 상세 팝업 공유 제목, 개인정보처리방침 서비스명, `robots.txt`·dev robots 머리말, README·docs 제목, `.env.example`·`.vscode` 주석. 서비스워커 캐시 접두사 `pogonote-v3` → `pogoplan-v4`(activate 가 옛 캐시를 지우므로 사용자 조치 없음). **유지**: 저장소명·배포 URL(PWA 설치·공유 링크 보호), 전역 이름·`state` 키·localStorage 키(`pogo_*`)·GA 이벤트명·Firestore 필드명(불변 규칙). 패치노트의 지난 항목에 남은 옛 이름 표기는 2026-09-16 에 정리했다
 
 </details>
 
@@ -4070,7 +4089,7 @@ PoGoMate 대조에서 나온 결손 중 **자동 수집으로 채울 수 있는 
 
 ### 추가
 - **뒤로가기 연동** (`components/history.js`) — 팝업(상세)·드로어(☰)를 처음 열 때 `history.pushState`로 항목을 하나 넣는다. 폰의 뒤로가기는 사이트를 나가는 대신 열린 것을 닫고(popstate), X·배경·Esc로 닫으면 `history.back()`으로 그 항목을 되돌린다. 팝업 위에서 다른 팝업(진화 줄)·드로어→팝업(관리자 패널)은 항목 하나를 재사용(silent 닫기). 오버레이가 열린 채 페이지로 이동하면 `navigateHash`가 `location.replace`로 그 항목을 덮어써 "닫힌 팝업" 항목이 남지 않는다. `openPage`·`openTypeSearch`가 이 함수를 쓴다
-- **로고 = 홈** — 헤더 POGO SEARCH 클릭 → 열린 것 닫고 D-MAX 탭 전체로, 맨 위로 스크롤. GA `home`
+- **로고 = 홈** — 헤더 로고 클릭 → 열린 것 닫고 D-MAX 탭 전체로, 맨 위로 스크롤. GA `home`
 - **폼 색 토큰** (`tokens.css`) — 맥스 `--c-max`(자홍→보라), 메가 `--c-mega`(보라→파랑), 섀도우 `--c-shadow`. 이름 뱃지는 메가·맥스가 채움(흰 글씨), 상세 팝업 `.d-sprite`에 같은 색 테두리+광택, 진화 줄 ⚡메가 칩도 메가 색으로 통일(기존 금색 제거)
 
 </details>
@@ -4277,7 +4296,7 @@ GA 첫 3일 데이터(사용자 9명·세션 33)로 정한 개선 묶음. 근거
 <summary><b>v2.3.0</b> · 추가 · 변경</summary>
 
 ### 추가
-- 첫 화면 로딩 가림막 — 데이터(data.js)를 읽는 동안 흰 화면 대신 "POGO SEARCH · 불러오는 중" 표시, 첫 렌더가 끝나면 사라짐 (다크 모드 대응)
+- 첫 화면 로딩 가림막 — 데이터(data.js)를 읽는 동안 흰 화면 대신 "서비스명 · 불러오는 중" 표시, 첫 렌더가 끝나면 사라짐 (다크 모드 대응)
 
 ### 변경
 - 트레이너 코드: 비로그인·승인 대기 상태에서는 메뉴에서 **항목 자체를 숨김** (이전에는 안내문이 보였음)
@@ -4323,8 +4342,8 @@ GA 첫 3일 데이터(사용자 9명·세션 33)로 정한 개선 묶음. 근거
 - 활용처 탭 '★ 보유만' 필터 제외 (PvP 탭에는 유지) — 현 단계 단순화
 
 ### 변경
-- 헤더 단순화: "POGO SEARCH v2.1.0 / 편하게 검색하세요" — 기존 서문·To. 줄 제거 (헌정은 푸터 유지)
-- 브라우저 탭 제목·홈화면 앱 이름도 POGO SEARCH로 통일 (GA 페이지 이름에 반영)
+- 헤더 단순화: "서비스명 v2.1.0 / 편하게 검색하세요" — 기존 서문·To. 줄 제거 (헌정은 푸터 유지)
+- 브라우저 탭 제목·홈화면 앱 이름도 서비스명으로 통일 (GA 페이지 이름에 반영)
 
 </details>
 
@@ -4464,7 +4483,7 @@ GA 첫 3일 데이터(사용자 9명·세션 33)로 정한 개선 묶음. 근거
 - 업데이트 소식 팝업(30일 안 보기), 푸터 QA·버그 제보(노션) 링크
 
 ### 변경
-- 서비스명 POGO NOTE (울애들을 위한 포켓몬 노트)로 리브랜딩
+- 서비스명 리브랜딩 (울애들을 위한 포켓몬 노트 · 현재 이름은 moncamp)
 - PvE 일반·전체를 한 탭으로 통합, 다이맥스 표기를 D-MAX로, 기준 안내를 화면 하단 아코디언으로
 
 </details>

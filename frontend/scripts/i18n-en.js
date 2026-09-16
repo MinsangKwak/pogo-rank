@@ -543,8 +543,8 @@ const I18N_EN = {
     'This site stores offline files and settings in your browser (not personal data). Visit analytics (Google Analytics) only turn on if you agree, and no location data is collected.',
   'moncamp는 비공식 팬 프로젝트입니다. Pokémon 및 관련 명칭·이미지의 권리는 The Pokémon Company · Nintendo · Creatures Inc. · GAME FREAK inc. 에, Pokémon GO 는 Scopely Explore, Inc. 에 있으며 이 서비스는 권리자와 무관합니다.':
     'moncamp is an unofficial fan project. Pokémon and related names and images belong to The Pokémon Company · Nintendo · Creatures Inc. · GAME FREAK inc., and Pokémon GO to Scopely Explore, Inc.; this service is not affiliated with them.',
-  '데이터는 PvPoke · PokeMiners · PokeAPI · LeekDuck 의 공개 자료를 사용합니다. 코드는 MIT, 데이터·이미지는 각 출처의 조건을 따릅니다 (저장소 NOTICE).':
-    'Data comes from the public sources PvPoke · PokeMiners · PokeAPI · LeekDuck. The code is MIT; data and images follow each source’s terms (see NOTICE in the repository).',
+  '데이터는 PvPoke · PokeMiners · PokeAPI · LeekDuck 의 공개 자료를 사용합니다. 코드는 열람용으로 공개돼 있으며 포크·재배포는 안 됩니다. 데이터·이미지는 각 출처의 조건을 따릅니다 (저장소 LICENSE · NOTICE).':
+    'Data comes from the public sources PvPoke · PokeMiners · PokeAPI · LeekDuck. The code is published for viewing only — forking and redistribution are not permitted. Data and images follow each source’s terms (see LICENSE and NOTICE in the repository).',
 
   // ── 레이드 보스 · 알 부화 ─────────────────────────────────────────────────
   '보스를 누르면 약점과 추천 딜러가 열려요. 혼자 잡을 수 있는지는 ⚔️ 레이드 · PvE 의 🧮 솔플 계산기에서 확인하세요.':

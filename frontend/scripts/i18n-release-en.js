@@ -15,6 +15,9 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 const RELEASE_NOTES_EN = {
+  '2026-09-16 · v3.48.2': [
+    '**The terms for the code are now explicit** — the repository is public to read and learn from; forking and redistribution are not permitted. The same wording is in the terms (section 5), the page footer, and LICENSE · NOTICE in the repository.',
+  ],
   '2026-09-16 · v3.48.1': [
     '**Pokémon without an animated sprite now hold still** — the gentle bobbing of still images is gone; a list of them twitching out of step looked restless. Species with animated sprites still move.',
   ],
