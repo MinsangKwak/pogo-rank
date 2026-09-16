@@ -1067,11 +1067,8 @@ const I18N_EN = {
   '형식이 안 맞는 줄 #개': '# malformed lines',
   '등록된 코드 #개': 'Registered codes: #',
 
-  // 동의 배너 · 통계/저장소 설정 (consent.js)
-  '이 사이트는 오프라인용 파일과 설정을 브라우저에 저장해요(개인정보 아님). 방문 통계(Google Analytics)는 동의할 때만 켜지고, 위치정보는 수집하지 않아요.':
-    'This site stores offline files and settings in your browser (no personal data). Visit analytics (Google Analytics) runs only with your consent, and no location data is collected.',
+  // 통계/저장소 설정 (consent.js) — 2026-09-15 v3.45.0 첫 방문 배너를 걷어내며 그 문구 열쇠도 뺐다
   '자세히': 'Details',
-  '통계 동의': 'Allow analytics',
   '통계 · 저장소 설정': 'Analytics & storage settings',
   '방문 통계(Google Analytics)는 어떤 기능이 쓰이는지 보고 화면을 고치는 데만 써요. 이메일·이름은 보내지 않아요.':
     'Visit analytics (Google Analytics) is used only to see which features get used and improve the screens. Email and name are never sent.',

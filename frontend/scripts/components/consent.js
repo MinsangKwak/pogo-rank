@@ -17,6 +17,7 @@
 //
 // 제공하는 전역
 //   CONSENT_KEY · consentValue() · analyticsWanted() · setConsent(value, from) · loadAnalytics() · initConsent() · openConsentSettings() · clearAppCache()
+//   2026-09-15 v3.45.0 renderConsentBanner() 는 없어졌다 — 끄는 길은 ☰ 메뉴 → 통계·저장소 설정 하나다
 //
 // 의존하는 전역
 //   el (dom.js) · openModal · closeModal (components/modal.js) · track (track.js) · setTrackingUser (track.js) · AUTH (components/auth.js)
@@ -83,22 +84,13 @@ function setConsent(value, from = 'banner') {
   document.getElementById('consent')?.remove();
 }
 
-// 첫 방문 배너 — 선택이 저장돼 있으면 그리지 않는다
-function renderConsentBanner() {
-  if (consentValue() || document.getElementById('consent')) return;
-  // 첫 화면 가림막(#splash)이 걷힌 뒤에 띄운다 — 로딩 중에 배너부터 보이지 않게
-  const splash = document.getElementById('splash');
-  if (splash && !splash.classList.contains('is-done')) { setTimeout(renderConsentBanner, 300); return; }
-  const banner = el('div', { id: 'consent', class: 'consent', role: 'dialog', 'aria-label': '저장소·통계 안내' },
-    el('p', { class: 'consent__text' },
-      '이 사이트는 오프라인용 파일과 설정을 브라우저에 저장해요(개인정보 아님). 방문 통계(Google Analytics)가 켜져 있고, 원하면 끌 수 있어요. 광고·위치정보는 쓰지 않아요. ',
-      el('a', { href: '#/privacy' }, '자세히')),
-    el('div', { class: 'consent__btns' },
-      el('button', { class: 'uchip consent__deny', onclick: () => setConsent('denied', 'banner') }, '통계 끄기'),
-      el('button', { class: 'uchip consent__allow', onclick: () => setConsent('granted', 'banner') }, '확인')));
-  document.body.appendChild(banner);
-}
-
+// 2026-09-15 v3.45.0 **첫 방문 배너를 걷어냈다.**
+//   v2.18.0 에 동의를 받는 자리로 만들고 v3.39.0 에 "끌 수 있다고 알리는" 자리로 바꿨지만,
+//   처음 들어온 사람에게 화면 아래를 막는 안내가 먼저 뜨는 것은 그 자체로 문턱이었다
+//   (제보 — "이걸 팝업으로 띄우니까 아무도 안 들어오는 느낌이야").
+//   고지가 사라진 것은 아니다 — 무엇을 저장하고 무엇을 보내는지는 개인정보처리방침에 그대로 있고,
+//   **끄는 길도 그대로다**: ☰ 메뉴 → 통계·저장소 설정, 그리고 푸터의 같은 항목.
+//   판정(analyticsWanted)과 저장 키(pogo_consent)는 손대지 않았다 — 이미 끈 사람은 계속 꺼진다.
 // 서비스워커 캐시 + 등록 해제 → 새로고침. 로컬 설정(pogo_*)은 지우지 않는다 (동의 선택을 포함해 사용자가 고른 값이라)
 async function clearAppCache() {
   try {
@@ -140,11 +132,9 @@ function openConsentSettings() {
 }
 
 // app.js 첫 렌더 뒤 한 번.
-// GA 는 보통 head 스니펫이 이미 붙여 놨다 — 여기서는 스니펫이 없는 빌드를 위해 한 번 더 부르고(거부면 안 붙는다),
-// 아직 아무것도 안 고른 사람에게 알림 배너를 띄운다
+// GA 는 보통 head 스니펫이 이미 붙여 놨다 — 여기서는 스니펫이 없는 빌드를 위해 한 번 더 부른다(거부면 안 붙는다)
 function initConsent() {
   loadAnalytics();
-  if (!consentValue()) renderConsentBanner();
   document.getElementById('menu-consent')?.addEventListener('click', openConsentSettings);
   document.getElementById('foot-consent')?.addEventListener('click', openConsentSettings);
   // 푸터·전체 페이지의 IP 고지문 (components/terms.js)

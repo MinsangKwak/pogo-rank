@@ -1,5 +1,7 @@
 'use strict';
-// v2.18.0 공개 준비 e2e — 동의 배너 · 약관 동의 팝업 · 계정 삭제 · 약관/방침 페이지 · 푸터 고지 · 드로어 항목
+// v2.18.0 공개 준비 e2e — 약관 동의 팝업 · 계정 삭제 · 약관/방침 페이지 · 푸터 고지 · 드로어 항목
+// 2026-09-15 v3.45.0 첫 방문 배너를 걷어냈다. 이 스위트는 이제 **배너가 안 뜨는 것**과
+// 그래도 끄는 길과 고지가 남아 있는 것을 지킨다 — 둘 중 하나라도 없으면 방침이 거짓말이 된다
 const { launch, newContext, waitSplash, suite } = require('./_lib');
 const BASE = 'http://localhost:5503/';
 const results = [];
@@ -14,21 +16,20 @@ suite(async () => {
   const errors = [];
   page.on('pageerror', (e) => errors.push(String(e)));
 
-  // 1. 첫 방문: 배너가 뜬다 · 끄기 → 사라지고 localStorage 저장
-  //    2026-09-15 v3.39.0 배너는 '동의를 받는' 자리가 아니라 '끌 수 있다고 알리는' 자리다 (옵트아웃)
+  // 1. 첫 방문: **배너가 없다** (2026-09-15 v3.45.0)
+  //    아무것도 안 고른 상태(newContext { banner: true } 가 pogo_consent 를 안 심는다)로 들어와도
+  //    화면 아래를 막는 안내가 뜨지 않아야 한다 — 그것이 첫 방문의 문턱이었다
   await page.goto(BASE + '?mock=friend', { waitUntil: 'domcontentloaded' });
   await waitSplash(page);
-  ok('배너 표시', await page.locator('#consent').isVisible());
-  await page.click('#consent .consent__deny');
-  ok('배너 [통계 끄기] 후 제거', (await page.locator('#consent').count()) === 0);
-  ok('pogo_consent=denied', await page.evaluate(() => localStorage.getItem('pogo_consent')) === 'denied');
-  ok('gtag 없음(끔)', await page.evaluate(() => typeof window.gtag === 'undefined'));
-  ok('배너 버튼이 [통계 끄기]·[확인]',
-    (await page.evaluate(() => localStorage.getItem('pogo_consent'))) === 'denied');
-  // 재방문: 배너 안 뜸
-  await page.reload({ waitUntil: 'domcontentloaded' });
-  await waitSplash(page);
-  ok('재방문 배너 없음', (await page.locator('#consent').count()) === 0);
+  await page.waitForTimeout(700);   // 옛 배너는 스플래시가 걷힌 뒤 늦게 떴다 — 늦게 뜨는 것까지 본다
+  ok('첫 방문에 배너가 없다', (await page.locator('#consent').count()) === 0);
+  ok('아무 값도 저장하지 않는다', await page.evaluate(() => localStorage.getItem('pogo_consent')) === null,
+    String(await page.evaluate(() => localStorage.getItem('pogo_consent'))));
+  ok('화면 아래를 막는 것이 없다', (await page.locator('.consent__btns').count()) === 0);
+  ok('gtag 없음(로컬 빌드)', await page.evaluate(() => typeof window.gtag === 'undefined'));
+  // 배너를 없앴다고 고지까지 없어지면 안 된다 — 끄는 길이 두 곳에 남아 있어야 한다
+  ok('☰ 메뉴에 통계·저장소 설정이 있다', (await page.locator('#menu-consent').count()) === 1);
+  ok('푸터에도 같은 항목이 있다', (await page.locator('#foot-consent').count()) === 1);
 
   // 1-b. 기본은 **켜짐** (2026-09-15 v3.39.0 옵트아웃)
   //   판정은 analyticsWanted() 하나가 한다 — head 스니펫(build.py)도 같은 규칙이라 둘이 어긋나면 안 된다.
@@ -59,7 +60,14 @@ suite(async () => {
   ok('드로어 이용약관 항목', await page.locator('.drawer__panel button:has-text("이용약관")').isVisible());
   await page.click('#menu-consent');
   await page.waitForSelector('.consent__modal');
-  ok('설정 팝업 현재값 denied 표시', await page.locator('.consent__opt[aria-pressed="true"]').textContent().then((t) => /끄기/.test(t)));
+  // 아직 아무것도 안 고른 상태라 눌린 줄이 없다 (기본은 켜짐이지만 '고른 값' 은 아니다)
+  ok('설정 팝업에 고른 값이 없다', (await page.locator('.consent__opt[aria-pressed="true"]').count()) === 0);
+  await page.click('.consent__opt:has-text("통계 끄기")');
+  ok('설정에서 끄면 denied 저장', await page.evaluate(() => localStorage.getItem('pogo_consent')) === 'denied');
+  await page.click('#menu-toggle');
+  await page.click('#menu-consent');
+  await page.waitForSelector('.consent__modal');
+  ok('다시 열면 끄기가 눌려 있다', await page.locator('.consent__opt[aria-pressed="true"]').textContent().then((t) => /끄기/.test(t)));
   await page.click('.consent__opt:has-text("통계 켜기")');
   ok('설정에서 granted 저장', await page.evaluate(() => localStorage.getItem('pogo_consent')) === 'granted');
   ok('로컬은 GA_PENDING_ID 없어 gtag 미로드', await page.evaluate(() => typeof window.gtag === 'undefined' && typeof window.GA_PENDING_ID === 'undefined'));
@@ -147,9 +155,9 @@ suite(async () => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.evaluate(() => localStorage.removeItem('pogo_consent'));
   await page.goto(BASE + '?mock=1', { waitUntil: 'domcontentloaded' });
-  await page.waitForSelector('#consent');
   await waitSplash(page);
-  await page.screenshot({ path: __dirname + '/legal-banner.png' });
+  await page.waitForTimeout(700);   // 옛 배너가 늦게 뜨던 시점까지 기다린 뒤 찍는다
+  await page.screenshot({ path: __dirname + '/legal-first-visit.png' });   // v3.45.0 배너가 사라진 첫 화면
   await page.goto(BASE + '?mock=1#/privacy', { waitUntil: 'domcontentloaded' });
   await page.waitForSelector('#page:not([hidden])');
   await page.screenshot({ path: __dirname + '/legal-privacy.png', fullPage: false });

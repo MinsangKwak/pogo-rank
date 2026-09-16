@@ -39,7 +39,7 @@ from sprite import sprite_id
 from names import name_ko, species, FORM_KO
 
 # ── 설정 ─────────────────────────────────────────────────────────────────────
-APP_VERSION = 'v3.44.0'  # (수정) 보스 추천에 미구현이 끼던 것 · 첫 화면 속도 (CLS 0.911 → 0, data.js JSON.parse) (v3.25.0 은 feature-advertisement 브랜치에 예약)
+APP_VERSION = 'v3.45.0'  # 첫 방문 배너를 걷어냈다 — 끄는 길과 고지는 그대로 (v3.25.0 은 feature-advertisement 브랜치에 예약)
 # 2026-09-14 v3.28.0 index.html 의 색인 허용 줄 — dev 빌드가 이 줄을 noindex 로 바꿔 끼운다
 ROBOTS_INDEX_META = '<meta name="robots" content="index, follow, max-image-preview:large">'
 # 2026-09-05 v2.7.3 빌드 채널 — 'prod'(기본) / 'dev'. dev 브랜치 워크플로(.github/workflows/deploy-dev.yml)가 BUILD_CHANNEL=dev 로 부른다.
