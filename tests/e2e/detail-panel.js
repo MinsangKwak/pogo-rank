@@ -37,8 +37,8 @@ suite(async () => {
     ok('PC 두 열 — 정보 칸 왼쪽, 내용 오른쪽', side.x + side.width <= main.x + 2 && Math.abs(side.y - main.y) < 40, `side ${side.x}+${side.width} main ${main.x}`);
     const wrapWidth = (await page.locator('.modal__box').boundingBox()).width;
     ok('PC 팝업이 두 열만큼 넓다 (≥ 800px)', wrapWidth >= 800, String(wrapWidth));
-    ok('PC 링크 복사 글자가 보인다', await page.locator('.detail__share-text').isVisible() && (await page.locator('.detail__share-text').textContent()) === '링크 복사');
-    ok('PC 하단 안내 문구', await page.locator('.detail__dock-note').isVisible());
+    ok('PC 하단 왼쪽 [링크 복사] · 오른쪽 [CP 계산기]', await page.locator('.detail__dock .detail__share').isVisible() && await page.locator('.detail__dock-calc').isVisible());
+    ok('PC 머리줄 [포켓몬 도감]', await page.locator('.detail__bar .detail__bar-dex').isVisible());
     const closeBox = await page.locator('.modal__close').boundingBox();
     const boxBox = await page.locator('.modal__box').boundingBox();
     ok('PC ✕ 가 카드 안 위쪽 오른쪽', closeBox.y >= boxBox.y && closeBox.y < boxBox.y + 60 && closeBox.x + closeBox.width <= boxBox.x + boxBox.width + 1);

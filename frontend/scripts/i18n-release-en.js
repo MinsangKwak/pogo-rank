@@ -15,6 +15,10 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 const RELEASE_NOTES_EN = {
+  '2026-09-16 · v3.50.1': [
+    '**Detail popup buttons rearranged** — top row: [＋ My Pokémon] · [Pokédex] · [close]; bottom row: [Copy link] · [CP calculator]. The Pokédex button leaves for another screen, so it sits on top; sharing acts on this Pokémon, so it sits below.',
+    '**Type badges are back on the top-left corner of the sprite**, as before.',
+  ],
   '2026-09-16 · v3.50.0': [
     '**The Pokémon detail popup is rebuilt** — instead of one long column, three tabs (**Summary · Battle info · Evolution**) take you straight to what you need. Summary has the big sprite, CP, catch CP and moves; Battle info has weaknesses/resistances, usage rankings and recommended picks when it is the boss.',
     '**Tapping an evolution or a recommended pick switches inside the same window** — [← Back] restores the tab, scroll position and calculator inputs you had.',

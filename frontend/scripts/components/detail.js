@@ -768,27 +768,30 @@ function detailBuild(state) {
     form: formKind || 'base', view: isDex ? 'dex' : 'list', tab: state.tab, screen: state.screen,
   });
 
-  // ── 머리줄: 제목 · 링크 복사. ✕ 는 팝업 껍데기(modal.js)의 것이 이 줄 오른쪽 끝에 겹쳐 앉는다 — 스크롤과 무관하게 늘 위에 있다
+  // ── 머리줄: 제목 · [＋ 내 포켓몬] · [포켓몬 도감] · ✕. 도감은 페이지 이동이라 하단이 아니라 여기(2026-09-16 v3.50.1 제보).
+  // ✕ 는 팝업 껍데기(modal.js)의 것이 이 줄 오른쪽 끝에 겹쳐 앉는다 — 스크롤과 무관하게 늘 위에 있다
   const bar = el('div', { class: 'detail__bar' },
     el('button', { class: 'detail__bar-back', 'aria-label': '상세로 돌아가기', onclick: () => detailShowScreen(body, state, 'detail') }, '‹ ', '상세로'),
     el('p', { class: 'detail__bar-title' }, state.screen === 'calc' ? 'CP 계산기' : '포켓몬 상세'),
-    el('div', { class: 'detail__top-actions' }, shareBtn(pokemon)));
+    el('div', { class: 'detail__top-actions' },
+      // 2026-09-07 v2.15.0 (QA-54) ➕ 내 개체로 저장 — 로그인한 계정만
+      authEnabled() && AUTH.status === 'ok' && form && typeof planAddFromDetail === 'function'
+        ? el('button', { class: 'detail__bar-btn detail__plan', title: '🌱 플래너 내 포켓몬에 이 개체 저장',
+            onclick: (event) => { event.stopPropagation(); planAddFromDetail(pokemon); } }, '＋ ', '내 포켓몬')
+        : '',
+      el('button', { class: 'detail__bar-btn detail__bar-dex', onclick: () => detailGoDex() }, pxIcon('📖') ?? '📖', '포켓몬 도감')));
 
   // ── 왼쪽(모바일은 위): 그림 · 번호 · 폼 · 이름 · 영문명 · 타입 · ＋ 내 포켓몬
+  // 타입 배지는 v2.35.0 처럼 그림 왼쪽 위 모서리에 겹친다 (정보 칸에 두었던 v3.50.0 을 되돌렸다 — v3.50.1)
   const side = el('div', { class: 'detail__side' },
-    el('div', { class: `sprite-box${formKind ? ' sprite-box--' + formKind : ''}` }, sprite(pokemon.sprite)),
+    el('div', { class: `sprite-box${formKind ? ' sprite-box--' + formKind : ''}` }, sprite(pokemon.sprite),
+      types.length ? el('div', { class: 'detail__types' }, ...types.map((typeName) => el('span', { class: 'detail__type-pill', style: `--c: var(--t-${typeName})` }, TYPE_KO[typeName] ?? typeName))) : ''),
     el('div', { class: 'detail__info' },
       el('div', { class: 'detail__tags' },
         dex != null ? el('span', { class: 'tag detail__dexno' }, `#${String(dex).padStart(4, '0')}`) : '',
         ...formLabels.map((label) => el('span', { class: `form-tag${formLabelKind(label) ? ' form-tag--' + formLabelKind(label) : ''}` }, label))),
       el('h2', {}, baseName),
-      pokemon.en ? el('div', { class: 'detail__en-inline' }, pokemon.en) : '',
-      types.length ? el('div', { class: 'detail__types' }, ...types.map((typeName) => el('span', { class: 'detail__type-pill', style: `--c: var(--t-${typeName})` }, TYPE_KO[typeName] ?? typeName))) : '',
-      // 2026-09-07 v2.15.0 (QA-54) ➕ 내 개체로 저장 — 로그인한 계정만
-      authEnabled() && AUTH.status === 'ok' && form && typeof planAddFromDetail === 'function'
-        ? el('button', { class: 'detail__plan', title: '🌱 플래너 내 포켓몬에 이 개체 저장',
-            onclick: (event) => { event.stopPropagation(); planAddFromDetail(pokemon); } }, '＋ ', '내 포켓몬')
-        : ''));
+      pokemon.en ? el('div', { class: 'detail__en-inline' }, pokemon.en) : ''));
 
   // ── 요약 탭: CP · 포획 CP · 기술 · (기술 변경) · 능력치
   const summary = el('div', { class: 'detail__pane', 'data-pane': 'summary' });
@@ -874,10 +877,11 @@ function detailBuild(state) {
     calc);
 
   // ── 하단 고정 — 상세 화면: [포켓몬 도감] [CP 계산기] · 계산기 화면: [초기화] [상세로 돌아가기]
+  const share = shareBtn(pokemon);
+  share.classList.add('detail__dock-btn');
   const dock = el('div', { class: 'detail__dock' },
-    el('p', { class: 'detail__dock-note' }, '포켓몬을 바꿔도 이전 화면으로 돌아갈 수 있어요'),   // PC 에서만 보인다
     el('div', { class: 'detail__dock-row detail__dock-row--detail' },
-      el('button', { class: 'detail__dock-btn detail__dock-dex', onclick: () => detailGoDex() }, pxIcon('📖') ?? '📖', '포켓몬 도감'),
+      share,
       form ? el('button', { class: 'detail__dock-btn detail__dock-btn--accent detail__dock-calc', onclick: () => detailShowScreen(body, state, 'calc') }, pxIcon('🧮') ?? '🧮', 'CP 계산기') : ''),
     el('div', { class: 'detail__dock-row detail__dock-row--calc' },
       el('button', { class: 'detail__dock-btn detail__dock-reset', onclick: resetCalc }, '↻ ', '초기화'),

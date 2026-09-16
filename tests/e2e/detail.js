@@ -9,7 +9,7 @@
 //   - 배틀 정보: 약점·내성 두 카드 · 활용 순위 줄 · 보스로 만났을 때
 //   - 진화: 진화 계열을 누르면 **같은 창**에서 바뀌고, ← 로 돌아오면 탭 · 계산기 입력값이 그대로인가
 //   - CP 계산기: 숫자 입력 · ± · 프리셋이 CP 를 바꾸고, 초기화 · 상세로 돌아가기가 동작하는가
-//   - 하단 [포켓몬 도감] 이 팝업을 닫고 도감으로 가는가
+//   - 머리줄 [포켓몬 도감] 이 팝업을 닫고 도감으로 가는가 (v3.50.1 하단 → 머리줄 · 공유는 하단 왼쪽)
 //   - 공유를 누르면 "복사됨" 으로 바뀌어도 카드 밖으로 새지 않는가 · 메가 폼 테두리 · 큰 그림 움직임(회귀)
 const { launch, newContext, waitSplash, ok, finish, suite } = require('./_lib');
 const BASE = 'http://localhost:5503/?mock=1';
@@ -43,7 +43,13 @@ suite(async () => {
   ok('도감번호 배지', (await text('.detail__dexno')) === '#0016');
   ok('이름', (await text('.detail__info h2')) === '구구');
   const pills = await page.locator('.detail__types .detail__type-pill').allTextContents();
-  ok('타입 알약 2개 (정보 칸)', pills.join('·') === '노말·비행', pills.join('·'));
+  ok('타입 알약 2개', pills.join('·') === '노말·비행', pills.join('·'));
+  // 2026-09-16 v3.50.1 타입 배지는 그림 왼쪽 위 모서리에 겹친다 (v2.35.0 자리) — 정보 칸이 아니다
+  const typesBox = await page.locator('.detail__types').boundingBox();
+  const spriteBox = await page.locator('.detail__side .sprite-box').boundingBox();
+  ok('타입 배지가 그림 왼쪽 위 모서리에 겹침', typesBox.x <= spriteBox.x + 2 && typesBox.y <= spriteBox.y + 2, `types ${typesBox.x},${typesBox.y} vs sprite ${spriteBox.x},${spriteBox.y}`);
+  ok('머리줄 오른쪽에 [포켓몬 도감]', await page.locator('.detail__bar .detail__bar-dex').isVisible());
+  ok('하단 왼쪽에 [링크 복사]', await page.locator('.detail__dock .detail__share').isVisible() && (await text('.detail__share-text')) === '링크 복사');
   ok('탭 셋', (await page.locator('.detail__tab').allTextContents()).join('|') === '요약|배틀 정보|진화');
   ok('처음 탭은 요약', (await state()).tab === 'summary');
 
@@ -152,8 +158,8 @@ suite(async () => {
   ok('공유 버튼(복사됨 상태)이 카드 안에 있음', shareBox.x >= modalBox.x && shareBox.x + shareBox.width <= modalBox.x + modalBox.width + 1
     && await page.locator('.detail__share.is-copied').count() === 1, `${shareBox.x}+${shareBox.width} vs ${modalBox.x}+${modalBox.width}`);
 
-  // ── 하단 [포켓몬 도감]: 팝업을 닫고 도감으로
-  await page.click('.detail__dock-dex');
+  // ── 머리줄 [포켓몬 도감]: 팝업을 닫고 도감으로
+  await page.click('.detail__bar-dex');
   await page.waitForTimeout(700);
   ok('도감으로 이동 · 팝업 닫힘', await page.evaluate(() => location.hash) === '#/dex' && (await page.locator('dialog.modal[open]').count()) === 0);
 

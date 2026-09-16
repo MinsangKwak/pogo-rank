@@ -176,41 +176,45 @@ dialog.modal::backdrop { background: transparent; }
 .modal__wrap:has(.detail--mon) .modal__close { top: 0.9rem; right: 1rem; width: 3.2rem; height: 3.2rem; z-index: 2; box-shadow: none; }
 .detail--mon { display: flex; flex-direction: column; flex: 1 1 auto; min-height: 0; }
 
-/* 머리줄 — 제목 · (계산기 화면에서만) ‹ 상세로 · 링크 복사. 오른쪽 5.6rem 은 ✕ 자리 */
+/* 머리줄 — 제목 · (계산기 화면에서만) ‹ 상세로 · [＋ 내 포켓몬] [포켓몬 도감]. 오른쪽 5.6rem 은 ✕ 자리 */
 .detail__bar { display: flex; align-items: center; gap: 1rem; flex: none; padding: 1rem 5.6rem 1rem 2rem; border-bottom: 1px solid var(--line); }
 .detail__bar-title { margin: 0; font-size: 1.5rem; font-weight: 700; }
 .detail__bar-back { display: none; align-items: center; gap: 0.2rem; padding: 0.4rem 0.8rem 0.4rem 0; font-size: 1.3rem; font-weight: 600; color: var(--muted); }
 .detail__bar-back:hover { color: var(--fg); }
 .detail--mon[data-screen="calc"] .detail__bar-back { display: inline-flex; }
 .detail__top-actions { margin-left: auto; display: flex; gap: 0.6rem; }
-.detail__share { display: inline-flex; align-items: center; gap: 0.5rem; height: 3.2rem; padding: 0 1rem; border: 1px solid var(--line); border-radius: 0.8rem;
-  background: var(--surface); color: var(--muted); font-size: 1.25rem; font-weight: 600; white-space: nowrap; }
-.detail__share:hover { background: var(--hover); color: var(--fg); }
+.detail__bar-btn { display: inline-flex; align-items: center; gap: 0.4rem; height: 3.2rem; padding: 0 1rem; border: 1px solid var(--line); border-radius: 0.8rem;
+  background: var(--surface); color: var(--fg); font-size: 1.2rem; font-weight: 600; white-space: nowrap; }
+.detail__bar-btn:hover { background: var(--hover); }
+.detail__bar-btn .pxi { width: 1.4rem; height: 1.4rem; }
+/* 계산기 화면에서는 머리줄 오른쪽을 비운다 — 그 화면의 갈 곳은 하단 [상세로 돌아가기] 뿐 */
+.detail--mon[data-screen="calc"] .detail__top-actions { display: none; }
+/* 🔗 링크 복사 — 하단 왼쪽 (v3.50.1) */
 .detail__share.is-copied { color: var(--good); border-color: var(--good); }
-.detail__share-text { display: none; }
 
 /* 본문 — 왼쪽(정보) + 오른쪽(탭·내용). 좁은 화면은 위아래로 */
 .detail__body { display: flex; flex-direction: column; flex: 1 1 auto; min-height: 0; }
 .detail__side { display: flex; gap: 1.4rem; align-items: flex-start; flex: none; padding: 1.4rem 2rem 1rem; }
 .detail__side .sprite-box { width: 11rem; height: 11rem; }
-.detail__side .sprite-box .sprite { width: 8.4rem; height: 8.4rem; margin-top: 0; }
+.detail__side .sprite-box .sprite { width: 8.4rem; height: 8.4rem; margin-top: 0.6rem; }   /* 위쪽은 타입 배지 자리 */
+/* 타입 배지 — 그림 왼쪽 위 모서리에 살짝 겹치는 작은 뱃지 (v2.35.0 자리 그대로). 그림 색이 다양해 늘 또렷하도록 그림자를 준다 */
+.detail__types { position: absolute; top: -1rem; left: -0.6rem; display: flex; align-items: flex-start; gap: 0.3rem; z-index: 1; }
+.detail__types .detail__type-pill { white-space: nowrap; }
 .detail__info { display: flex; flex-direction: column; align-items: flex-start; gap: 0.5rem; flex: 1 1 auto; min-width: 0; }
 .detail__tags { display: flex; flex-wrap: wrap; gap: 0.4rem; }
 .detail__dexno { display: inline-block; }
 .detail__info h2 { margin: 0; font-size: 2rem; font-weight: 700; line-height: 1.2; }
 .detail__en-inline { font-size: 1.3rem; color: var(--muted); }
-.detail__types { display: flex; flex-wrap: wrap; gap: 0.4rem; }
-.detail__plan { display: inline-flex; align-items: center; gap: 0.2rem; margin-top: 0.4rem; height: 3.4rem; padding: 0 1.2rem;
-  border: 1px solid var(--line); border-radius: 0.8rem; background: var(--surface); font-size: 1.25rem; font-weight: 600; color: var(--fg); }
-.detail__plan:hover { background: var(--hover); }
 /* 배틀 정보 탭 · 계산기 화면은 머리를 접는다 — 좁은 화면에서 내용 자리를 넓힌다 (목업 02 · 03) */
 @media (max-width: 1099px) {
   .detail--mon:is([data-tab="battle"], [data-screen="calc"]) .detail__side { align-items: center; padding-bottom: 0.8rem; }
   .detail--mon:is([data-tab="battle"], [data-screen="calc"]) .detail__side .sprite-box { width: 5.6rem; height: 5.6rem; border-radius: 1rem; }
-  .detail--mon:is([data-tab="battle"], [data-screen="calc"]) .detail__side .sprite-box .sprite { width: 4.4rem; height: 4.4rem; }
+  .detail--mon:is([data-tab="battle"], [data-screen="calc"]) .detail__side .sprite-box .sprite { width: 4.4rem; height: 4.4rem; margin-top: 0.3rem; }
+  .detail--mon:is([data-tab="battle"], [data-screen="calc"]) .detail__types { top: -0.8rem; left: -0.5rem; }
+  .detail--mon:is([data-tab="battle"], [data-screen="calc"]) .detail__type-pill { padding: 0.1rem 0.6rem; font-size: 0.95rem; }
   .detail--mon:is([data-tab="battle"], [data-screen="calc"]) .detail__info { flex-direction: row; flex-wrap: wrap; align-items: center; gap: 0.4rem 0.8rem; }
   .detail--mon:is([data-tab="battle"], [data-screen="calc"]) .detail__info h2 { order: -1; font-size: 1.6rem; }
-  .detail--mon:is([data-tab="battle"], [data-screen="calc"]) :is(.detail__en-inline, .detail__plan) { display: none; }
+  .detail--mon:is([data-tab="battle"], [data-screen="calc"]) .detail__en-inline { display: none; }
 }
 
 /* 오른쪽 — ← 돌아가기 · 탭 · 스크롤 내용 / 계산기 화면 */
@@ -302,7 +306,6 @@ dialog.modal::backdrop { background: transparent; }
 
 /* 하단 고정 — 상세: [포켓몬 도감] [CP 계산기] · 계산기: [초기화] [상세로 돌아가기] */
 .detail__dock { flex: none; padding: 1rem 2rem; border-top: 1px solid var(--line); background: var(--bg); }
-.detail__dock-note { display: none; margin: 0; font-size: 1.2rem; color: var(--muted); }
 .detail__dock-row { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; gap: 0.8rem; }
 .detail__dock-row--calc { display: none; }
 .detail--mon[data-screen="calc"] .detail__dock-row--detail { display: none; }
@@ -325,7 +328,6 @@ dialog.modal::backdrop { background: transparent; }
   .modal__wrap:has(.detail--mon) { max-width: 92rem; }
   .modal__box:has(> .detail--mon) { max-width: none; }   /* app-shell.css 의 52rem 상한을 이 팝업만 푼다 */
   .modal__box:has(> .detail--mon) { height: 86vh; max-height: none; }
-  .detail__share-text { display: inline; }
   .detail--mon .detail__body { flex-direction: row; }
   .detail--mon .detail__side { flex: 0 0 28rem; flex-direction: column; align-items: stretch; gap: 1.4rem; padding: 2rem; border-right: 1px solid var(--line); overflow-y: auto; }
   .detail--mon .detail__side .sprite-box { width: 100%; height: auto; aspect-ratio: 1; max-width: 24rem; border-radius: 1.4rem; }
@@ -335,7 +337,7 @@ dialog.modal::backdrop { background: transparent; }
   .detail--mon .detail__calc { padding-top: 1.4rem; }
   .detail--mon .detail__back, .detail--mon .detail__tabs { margin-left: 2.4rem; margin-right: 2.4rem; }
   .detail--mon .detail__scroll, .detail--mon .detail__calc { padding: 1.4rem 2.4rem 2.4rem; }
-  .detail__dock { display: flex; align-items: center; gap: 1rem; padding: 1.2rem 2.4rem; }
-  .detail__dock-note { display: block; }
-  .detail__dock-row { margin-left: auto; grid-auto-columns: minmax(14rem, auto); }
+  .detail__dock { padding: 1.2rem 2.4rem; }
+  .detail__dock-row { grid-auto-columns: minmax(14rem, auto); justify-content: end; }
+  .detail--mon .detail__side .sprite-box .sprite { margin-top: 0; }
 }

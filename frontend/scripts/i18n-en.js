@@ -1413,5 +1413,4 @@ const I18N_EN = {
   '각 # – #': 'each # – #',
   '개체값 #%': 'IVs #%',
   '초기화': 'Reset',
-  '포켓몬을 바꿔도 이전 화면으로 돌아갈 수 있어요': 'You can always return to the previous screen after switching Pokémon',
 };
