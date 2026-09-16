@@ -1,13 +1,12 @@
 'use strict';
-// v2.36.0 PC 오른쪽 상세 패널 회귀
+// v3.50.0 넓은 화면(PC) 상세 = 두 열 팝업 회귀 (v2.36.0 의 오른쪽 고정 패널은 쓰지 않는다 — components/modal.js useDetailPanel)
 //
 // 이 스위트가 지키려는 것
-//   - 넓은 화면(PC)에서는 상세를 열면 팝업이 아니라 #detail-panel 에 뜨는가 (dialog 는 안 뜬다)
-//   - 목록이 패널에 가려지지 않고 계속 눌리는가 (모달과 달리 화면을 덮지 않는다)
-//   - 다른 포켓몬을 이어서 누르면 패널 하나가 내용만 바뀌는가 (여러 개로 쌓이지 않는가)
-//   - 닫기(✕)를 누르면 패널이 닫히고 body.has-detail-panel 도 지워지는가
-//   - 다른 화면(탭)으로 이동하면 패널이 자동으로 닫히는가
-//   - 좁은 화면(모바일)은 지금까지처럼 팝업(dialog)이지 패널이 아닌가 (회귀 없음)
+//   - PC 에서 상세를 열면 #detail-panel 이 아니라 팝업(dialog)이 뜨는가
+//   - 왼쪽 정보 칸 · 오른쪽 탭 내용이 나란히(두 열) 서는가 · 링크 복사 글자 · 하단 안내가 보이는가
+//   - 다른 포켓몬(진화 계열)으로 바뀌어도 팝업은 하나인가 · ✕ · Esc 로 닫히는가
+//   - 딥링크(#/mon/…)로 들어와도 팝업이 뜨는가
+//   - 좁은 화면(모바일)은 그대로 바텀시트 팝업인가
 const { launch, newContext, waitSplash, ok, finish, suite } = require('./_lib');
 const BASE = 'http://localhost:5503/?mock=1';
 
@@ -15,13 +14,12 @@ suite(async () => {
   const browser = await launch();
   const errs = [];
 
-  // ── PC (1440px) ──────────────────────────────────────────────
+  // ── PC (1440px)
   {
     const ctx = await newContext(browser, { viewport: { width: 1440, height: 900 } });
     ctx.setDefaultTimeout(8000);
     const page = await ctx.newPage();
     page.on('pageerror', (e) => errs.push('PC: ' + e));
-
     const go = async (hash) => {
       await page.goto(BASE + hash, { waitUntil: 'domcontentloaded' });
       await waitSplash(page);
@@ -30,115 +28,63 @@ suite(async () => {
 
     await go('#/dex');
     await page.locator('#page .dex__row').first().click();
-    await page.waitForTimeout(500);
-
-    ok('PC 상세를 열면 팝업이 아니라 패널', (await page.locator('dialog.modal[open]').count()) === 0 && await page.locator('#detail-panel').isVisible());
-    ok('PC body에 has-detail-panel 클래스', await page.evaluate(() => document.body.classList.contains('has-detail-panel')));
-    const firstDexno = await page.locator('#detail-panel .detail__dexno').textContent();
-    ok('PC 패널에 상세 내용', firstDexno === '#0001', firstDexno);
-
-    // 목록이 계속 눌리는가 — 모달처럼 화면을 덮지 않는다
-    const secondRow = page.locator('#page .dex__row').nth(1);
-    ok('PC 패널이 떠도 목록 두 번째 줄이 화면에 보임', await secondRow.isVisible());
-    await secondRow.click();
-    await page.waitForTimeout(400);
-    const secondDexno = await page.locator('#detail-panel .detail__dexno').textContent();
-    ok('PC 다른 포켓몬을 누르면 패널 내용만 바뀜', secondDexno === '#0002', secondDexno);
-    ok('PC 패널은 하나만 있음 (쌓이지 않음)', (await page.locator('#detail-panel').count()) === 1);
-
-    // 2026-09-12 v3.15.0 누른 줄에 표시가 남는가 · 진화 단계를 누르면 목록이 그 줄로 따라가는가
-    const selectedOf = () => page.evaluate(() => [...document.querySelectorAll('#page .dex__row.is-selected')].map((row) => row.dataset.sprite));
-    ok('PC 누른 줄에 is-selected (하나만)', JSON.stringify(await selectedOf()) === '["2"]', JSON.stringify(await selectedOf()));
-    await page.locator('#detail-panel .evo__mon').nth(2).click();   // 이상해씨 → 이상해풀 → [이상해꽃]
-    await page.waitForTimeout(500);
-    ok('PC 진화 단계를 누르면 패널이 그 포켓몬', (await page.locator('#detail-panel .detail__dexno').textContent()) === '#0003');
-    ok('PC 진화 단계를 누르면 목록 표시도 그 줄로', JSON.stringify(await selectedOf()) === '["3"]', JSON.stringify(await selectedOf()));
-    const inView = await page.evaluate(() => { const r = document.querySelector('#page .dex__row.is-selected').getBoundingClientRect(); return r.top >= 0 && r.bottom <= innerHeight; });
-    ok('PC 선택된 줄이 화면 안에 있음', inView);
-    // [더보기] 뒤(100번째 이후)의 포켓몬으로 옮겨 가면 거기까지 펼쳐서 표시한다
-    await page.evaluate(() => openDetailByDex(150, true));
     await page.waitForTimeout(600);
-    ok('PC 더보기 뒤 포켓몬으로 가면 목록을 펼쳐 표시', JSON.stringify(await selectedOf()) === '["150"]' && (await page.locator('#page .dex__row').count()) >= 150, JSON.stringify(await selectedOf()));
+    ok('PC 상세는 팝업(dialog) — 패널이 아니다', (await page.locator('dialog.modal[open]').count()) === 1 && await page.locator('#detail-panel').isHidden());
+    ok('PC body 에 has-detail-panel 없음', !(await page.evaluate(() => document.body.classList.contains('has-detail-panel'))));
+    ok('PC 팝업에 상세 내용', (await page.locator('.detail__dexno').textContent()) === '#0001');
+    const side = await page.locator('.detail__side').boundingBox();
+    const main = await page.locator('.detail__main').boundingBox();
+    ok('PC 두 열 — 정보 칸 왼쪽, 내용 오른쪽', side.x + side.width <= main.x + 2 && Math.abs(side.y - main.y) < 40, `side ${side.x}+${side.width} main ${main.x}`);
+    const wrapWidth = (await page.locator('.modal__box').boundingBox()).width;
+    ok('PC 팝업이 두 열만큼 넓다 (≥ 800px)', wrapWidth >= 800, String(wrapWidth));
+    ok('PC 링크 복사 글자가 보인다', await page.locator('.detail__share-text').isVisible() && (await page.locator('.detail__share-text').textContent()) === '링크 복사');
+    ok('PC 하단 안내 문구', await page.locator('.detail__dock-note').isVisible());
+    const closeBox = await page.locator('.modal__close').boundingBox();
+    const boxBox = await page.locator('.modal__box').boundingBox();
+    ok('PC ✕ 가 카드 안 위쪽 오른쪽', closeBox.y >= boxBox.y && closeBox.y < boxBox.y + 60 && closeBox.x + closeBox.width <= boxBox.x + boxBox.width + 1);
+
+    // 진화 계열 → 같은 팝업 안에서 바뀐다
+    await page.click('.detail__tab[data-tab="evo"]');
+    await page.waitForTimeout(250);
+    await page.locator('.evo__mon').nth(2).click();   // 이상해씨 → 이상해풀 → [이상해꽃]
+    await page.waitForTimeout(500);
+    ok('PC 진화 단계를 누르면 같은 팝업이 그 포켓몬', (await page.locator('dialog.modal[open]').count()) === 1 && (await page.locator('.detail__dexno').textContent()) === '#0003');
+    ok('PC ← 돌아가기 줄', (await page.locator('.detail__back').count()) === 1);
 
     // 닫기
-    await page.locator('.detail-panel__close').click();
+    await page.locator('.modal__close').click();
     await page.waitForTimeout(300);
-    ok('PC 닫기를 누르면 패널이 숨음', await page.locator('#detail-panel').isHidden());
-    ok('PC 닫으면 줄 표시도 지워짐', (await selectedOf()).length === 0);
-    ok('PC 닫으면 has-detail-panel 클래스도 지워짐', !(await page.evaluate(() => document.body.classList.contains('has-detail-panel'))));
-
-    // 다시 열고 다른 화면으로 이동하면 자동으로 닫히는가
+    ok('PC ✕ 로 닫힘', (await page.locator('dialog.modal[open]').count()) === 0);
     await page.locator('#page .dex__row').first().click();
     await page.waitForTimeout(400);
-    await page.evaluate(() => navigateHash('#/pve'));
-    await page.waitForTimeout(500);
-    ok('PC 다른 화면으로 이동하면 패널이 자동으로 닫힘', await page.locator('#detail-panel').isHidden());
+    await page.keyboard.press('Escape');
+    await page.waitForTimeout(300);
+    ok('PC Esc 로 닫힘', (await page.locator('dialog.modal[open]').count()) === 0);
 
-    ok('PC 페이지 오류 없음', errs.filter((e) => e.startsWith('PC:')).length === 0);
+    // 딥링크
+    await go('#/mon/1');
+    await page.waitForTimeout(500);
+    ok('PC 딥링크(#/mon/…)로 들어오면 팝업', (await page.locator('dialog.modal[open]').count()) === 1);
+    ok('PC 페이지 오류 없음', errs.filter((e) => e.startsWith('PC:')).length === 0, errs.join(' | '));
     await ctx.close();
   }
 
-  // ── 모바일 (390px) — 회귀: 지금까지처럼 팝업이어야 한다 ──────────
+  // ── 모바일 (390px) — 바텀시트 팝업 그대로
   {
     const ctx = await newContext(browser, { viewport: { width: 390, height: 844 } });
     ctx.setDefaultTimeout(8000);
     const page = await ctx.newPage();
     page.on('pageerror', (e) => errs.push('모바일: ' + e));
-
     await page.goto(BASE + '#/dex', { waitUntil: 'domcontentloaded' });
     await waitSplash(page);
     await page.waitForTimeout(500);
     await page.locator('#page .dex__row').first().click();
     await page.waitForTimeout(500);
-
-    ok('모바일 상세는 지금까지처럼 팝업', (await page.locator('dialog.modal[open]').count()) === 1);
-    ok('모바일 패널은 뜨지 않음 (회귀 없음)', await page.locator('#detail-panel').isHidden());
+    ok('모바일 상세는 팝업', (await page.locator('dialog.modal[open]').count()) === 1);
+    ok('모바일 패널은 뜨지 않음', await page.locator('#detail-panel').isHidden());
+    const body = await page.locator('.detail__body').evaluate((n) => getComputedStyle(n).flexDirection);
+    ok('모바일은 한 열(위아래)', body === 'column', body);
     ok('모바일 페이지 오류 없음', errs.filter((e) => e.startsWith('모바일:')).length === 0);
-    await ctx.close();
-  }
-
-  // ── 2026-09-11 v2.60.1 화면을 옮기면 패널이 따라오지 않는다
-  // 전에는 홈을 예외로 둬서, 도감에서 포켓몬을 연 채 [서비스 홈] 으로 가면
-  // 홈 오른쪽에 이전 포켓몬 패널이 그대로 남아 본문이 눌렸다.
-  // 남겨야 하는 것은 "홈" 이 아니라 상세를 가리키는 주소(#/mon/…) 하나뿐이다
-  {
-    const ctx = await newContext(browser, { viewport: { width: 1440, height: 900 } });
-    const page = await ctx.newPage();
-    page.on('pageerror', (e) => errs.push('이동: ' + e));
-    const open = async () => {
-      await page.goto(BASE + '#/dex', { waitUntil: 'domcontentloaded' });
-      await waitSplash(page);
-      await page.waitForSelector('#page .dex__row', { timeout: 15000 }).catch(() => {});
-      await page.locator('#page .dex__row').first().click();
-      await page.waitForTimeout(500);
-    };
-    const shut = () => page.evaluate(() => ({
-      hidden: document.getElementById('detail-panel')?.hidden,
-      cls: document.body.classList.contains('has-detail-panel'),
-      hash: location.hash,
-    }));
-
-    await open();
-    ok('패널이 열렸다', (await shut()).hidden === false);
-    await page.click('.nav-menu a:has-text("서비스 홈")');
-    await page.waitForTimeout(700);
-    const home = await shut();
-    ok('서비스 홈으로 가면 패널이 닫힌다', home.hidden === true && home.cls === false, JSON.stringify(home));
-
-    await open();
-    await page.click('.nav-menu a:has-text("알 부화")');
-    await page.waitForTimeout(700);
-    const other = await shut();
-    ok('다른 화면으로 가도 패널이 닫힌다', other.hidden === true && other.cls === false, JSON.stringify(other));
-
-    // 상세를 가리키는 주소로 들어오면 패널이 곧 그 화면이라 열려 있어야 한다
-    await page.goto(BASE + '#/mon/1', { waitUntil: 'domcontentloaded' });
-    await waitSplash(page);
-    await page.waitForTimeout(800);
-    const deep = await shut();
-    ok('딥링크(#/mon/…)로 들어오면 패널이 열린다', deep.hidden === false, JSON.stringify(deep));
-
-    ok('이동 중 페이지 오류 없음', errs.filter((e) => e.startsWith('이동:')).length === 0, errs.filter((e) => e.startsWith('이동:')).join(' | '));
     await ctx.close();
   }
 

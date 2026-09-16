@@ -101,8 +101,10 @@ document.addEventListener('keydown', (event) => { if (event.key === 'Escape' && 
 // 로 처음 들어오면 pages.js 가 app-shell.js 보다 먼저 이 함수를 부르는데, wideScreen 은 const 라
 // 선언되기 전에 참조하면(TDZ) typeof 로도 못 피하고 ReferenceError 가 난다. matchMedia 는 어디서 불러도 안전하다
 // 2026-09-09 v2.38.0 태블릿 1100px~ 부터 패널 — app-shell.css 의 같은 임계값(태블릿·PC 두 단계 공통)
+// 2026-09-16 v3.50.0 넓은 화면도 팝업이다 — 상세가 왼쪽 정보 고정 · 오른쪽 탭 전환의 두 열 팝업으로 바뀌면서
+// (components/detail.js 머리말) 420px 패널에는 들어가지 않는다. 패널 코드와 #detail-panel 마크업은 되돌릴 수 있게 남긴다
 function useDetailPanel() {
-  return window.matchMedia('(min-width: 1100px)').matches;
+  return false;
 }
 function openDetailPanel(content) {
   const panel = document.getElementById('detail-panel');

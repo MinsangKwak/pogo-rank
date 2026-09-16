@@ -103,13 +103,13 @@ suite(async () => {
     errs.push(...got.errs);
   }
 
-  // ── 상세 패널이 열리면 본문이 패널 폭만큼 좁아진다 — 열도 함께 줄어야 카드가 안 눌린다
-  for (const [width, expect] of [[1920, 3], [1440, 2], [1280, 1]]) {
+  // ── 2026-09-16 v3.50.0 상세는 팝업이라 본문을 밀지 않는다 — 열어도 열 수가 그대로다 (1920 다섯 · 1440 넷 · 1280 셋)
+  for (const [width, expect] of [[1920, 5], [1440, 4], [1280, 3]]) {
     const got = await measure(browser, {
       width, hash: '#/raids', selector: '#page .dex__list', storeKey: 'pogo_raids_cols', mode: 'grid',
       openDetail: true,
     });
-    ok(`상세 패널 열림(w=${width}) 레이드 보스 ${expect}열`, got.cols === expect, String(got.cols));
+    ok(`상세 팝업 열림(w=${width}) 레이드 보스 ${expect}열 그대로`, got.cols === expect, String(got.cols));
     errs.push(...got.errs);
   }
 

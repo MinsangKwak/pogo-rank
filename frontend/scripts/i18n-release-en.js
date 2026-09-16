@@ -15,6 +15,13 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 const RELEASE_NOTES_EN = {
+  '2026-09-16 · v3.50.0': [
+    '**The Pokémon detail popup is rebuilt** — instead of one long column, three tabs (**Summary · Battle info · Evolution**) take you straight to what you need. Summary has the big sprite, CP, catch CP and moves; Battle info has weaknesses/resistances, usage rankings and recommended picks when it is the boss.',
+    '**Tapping an evolution or a recommended pick switches inside the same window** — [← Back] restores the tab, scroll position and calculator inputs you had.',
+    '**[Pokédex] and [CP calculator] buttons stay pinned at the bottom** — the calculator takes typed numbers, ± buttons and level presets (20·25·30·40·50). The Pokédex button closes the popup and opens the Pokédex.',
+    '**On PC it is a two-column popup** — Pokémon info fixed on the left, only the right side changes. It replaces the fixed right-hand panel.',
+    '**(fix) A detail popup opened right before sign-in finished on the Pokédex used to vanish** — redrawing the same screen no longer touches an open popup.',
+  ],
   '2026-09-16 · v3.49.1': [
     '**(fix) Refreshing looked like it signed you out** — you were never signed out; restoring the session took over ten seconds and the [sign in] button sat there meanwhile. It now carries over immediately, and says "checking your sign-in" if it needs a moment.',
     '**(fix) Edits to My Pokémon during that gap did not reach your account** — saving now waits until the sign-in check has finished.',

@@ -28,14 +28,6 @@ dialog.modal::backdrop { background: transparent; }
   .modal__close { top: -4.4rem; right: 0.4rem; }
 }
 
-/* 2026-09-08 v2.32.0 헤더 카드형 재배치 — 그림(왼쪽) · 정보(오른쪽). CP 는 detail__cp-card 로 헤더 밖에 따로 뗐다
-   2026-09-09 v2.35.0 재배치 — 타입은 이름 줄이 아니라 그림 위 모서리 배지로, ★ 는 공유·저장과 한 줄로.
-   "이 포켓몬에 대한 동작"(공유·저장·즐겨찾기)을 오른쪽 위 아이콘 한 줄에 모으고, 정보 칸은
-   #번호 → 폼 라벨(거다이맥스 등) → 이름 → 영문명 순서로 세로로 쌓는다 */
-/* padding-right 는 detail__top-actions 세 자리(원 34px × 3 + 간격) 만큼 미리 비워 둔다 —
-   즐겨찾기·저장 버튼이 빠질 때(비로그인 등)도 정보 칸이 자리를 다투지 않게 늘 넉넉히 잡는다 */
-.detail__head { position: relative; display: flex; align-items: flex-start; gap: 1.6rem; padding-right: 12rem; }
-.detail__info { flex: 1 1 auto; min-width: 0; padding-top: 0.2rem; }
 /* 그림 상자 뒤에 옅은 동심원 — 도트 스프라이트가 판 위에 그냥 놓인 것보다 자리가 또렷하다.
    var(--fg) 를 낮은 비율로만 섞어서 라이트·다크 어디서나 따로 값을 안 적어도 된다.
    position: relative 는 .detail__types 모서리 배지의 기준점 */
@@ -52,21 +44,7 @@ dialog.modal::backdrop { background: transparent; }
 .sprite-box.sprite-box--max { border: 0.2rem solid var(--c-max); box-shadow: 0 0 0 0.3rem color-mix(in srgb, var(--c-max) 22%, transparent); }
 .sprite-box.sprite-box--mega { border: 0.2rem solid var(--c-mega); box-shadow: 0 0 0 0.3rem color-mix(in srgb, var(--c-mega) 22%, transparent); }
 .sprite-box.sprite-box--shadow { border: 0.2rem solid var(--c-shadow); box-shadow: 0 0 0 0.3rem color-mix(in srgb, var(--c-shadow) 18%, transparent); }
-/* #도감번호 — 목록 줄의 dex__no 와 같은 뜻이라 .tag 를 그대로 쓴다(새 색을 안 만든다) */
-.detail__dexno { display: inline-block; margin-bottom: 0.4rem; }
-/* 2026-09-09 v2.35.0 폼 라벨(거다이맥스 등)을 이름과 한 줄에서 떼어 이름 위 줄로 — 오른쪽 위
-   아이콘 줄과 같은 높이에서 시작해, "이 개체가 어떤 폼인지"가 아이콘 줄과 나란히 먼저 읽힌다 */
-.detail__form-row { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-bottom: 0.2rem; }
-.detail__head h2 { margin: 0; font-size: 1.8rem; font-weight: 600; }
-/* 영문명 — 이름 옆 괄호가 아니라 그 아래 자기 줄로 */
-.detail__en-inline { display: block; margin-top: 0.2rem; font-weight: 400; font-size: 1.3rem; color: var(--muted); }
-/* 타입 배지 — 이름 줄의 알약이 아니라 그림 왼쪽 위 모서리에 살짝 겹치는 작은 뱃지.
-   그림 색이 다양해 늘 또렷하도록 그림자를 준다.
-   2026-09-12 v3.8.1 여러 타입일 때 세로로 쌓던 것을 **가로 한 줄**로. 세로로 쌓으면 배지 둘이
-   그림 왼쪽을 위에서 아래까지 덮어 포켓몬이 가렸다 — 가로로 두면 그림 위쪽 빈 자리만 스친다 */
-/* 2026-09-13 v3.19.1 배지를 더 위로 — 상자 위 모서리에 걸치되 그림과는 겹치지 않게 */
-.detail__types { position: absolute; top: -1rem; left: -0.6rem; display: flex; align-items: flex-start; gap: 0.3rem; z-index: 1; }
-.detail__types .detail__type-pill { white-space: nowrap; }
+.detail__type-pill { white-space: nowrap; }
 .detail__type-pill { display: inline-flex; align-items: center; padding: 0.2rem 0.9rem; border-radius: 99.9rem; font-size: 1.05rem; font-weight: 700; color: #fff;
   text-shadow: 0 1px 0.2rem rgba(0,0,0,.35); background: var(--c, var(--muted)); box-shadow: 0 1px 0.4rem rgba(0,0,0,.35); }
 
@@ -152,7 +130,6 @@ dialog.modal::backdrop { background: transparent; }
 .cmp__row b { font-weight: 500; }
 .cmp__row b.is-high { color: var(--caution); font-weight: 700; }
 .cmp__head b { color: var(--muted); font-size: 1.15rem; font-weight: 600; }
-.detail__en-inline { font-weight: 400; font-size: 1.3rem; color: var(--muted); }
 /* 2026-09-03 v4: 약점/내성 위아래 + CP 계산기 아코디언 */
 .detail__matchrows { display: flex; flex-direction: column; gap: 1.2rem; }
 .detail__matchrows h3 { margin: 0 0 0.6rem; font-size: 1.25rem; font-weight: 600; color: var(--muted); }
@@ -164,34 +141,17 @@ dialog.modal::backdrop { background: transparent; }
 .detail__acc summary::after { content: '›'; margin-left: auto; padding-left: 1rem; font-size: 1.9rem; line-height: 1; color: var(--muted); transition: transform .15s ease; }
 .detail__acc[open] summary::after { transform: rotate(90deg); }
 .detail__acc-body { padding: 0 1.4rem 1.4rem; }
-/* 🎯 포획 CP — 가장 먼저 확인하는 표라 살짝 강조한다 */
-.detail__acc--catch { background: color-mix(in srgb, var(--warn) 8%, var(--surface)); border-color: color-mix(in srgb, var(--warn) 30%, var(--line)); }
-.detail__acc--catch summary { color: var(--warn); }
-.cp__inline { margin: 1rem 0 0; font-size: 1.35rem; }
-.cp__inline b { font-size: 1.6rem; }
-
 /* 2026-09-03 도감형: 육각형 | 기술 2열 */
 .hex { display: flex; flex-direction: column; align-items: center; }
 .hex__svg { width: 100%; max-width: 20rem; height: auto; }
 .hex__name { font-size: 1.3rem; fill: var(--muted); }
 .hex__val { font-size: 1.45rem; font-weight: 600; fill: var(--fg); }
-.detail__hexmoves { display: grid; grid-template-columns: 46% 1fr; gap: 0.4rem 1.4rem; margin-top: 1.8rem; align-items: start; }
-.detail__hexmoves h3 { margin: 0 0 0.6rem; font-size: 1.25rem; font-weight: 600; color: var(--muted); }
 /* 2026-09-03 기술 간격: 라벨(스피드/차지) 바로 아래 칩, 그룹 사이 10px */
 .detail__moves .move-list__row { flex-direction: column; align-items: flex-start; gap: 0.4rem; margin: 0 0 1rem; }
 .detail__moves .move-list__row:last-of-type { margin-bottom: 0; }
 /* 세로 배치에서는 em의 flex-basis 44px가 '높이'가 돼 간격이 벌어짐 → 해제 */
 .detail__moves .move-list__row em { flex: none; font-size: 1.2rem; color: var(--muted); font-style: normal; font-weight: 600; }
-@media (max-width: 359px) { .detail__hexmoves { grid-template-columns: 1fr; } }
 
-/* 2026-09-08 v2.32.0 헤더 오른쪽 위 동그란 아이콘 자리(공유 · 저장 · 즐겨찾기) — ✕ 닫기(.modal__close)는
-   이제 카드 밖에 있어(v2.34.0) 자리를 다투지 않는다.
-   2026-09-09 v2.35.0 ★ 즐겨찾기도 이 줄로 옮겼다 — 공유·저장과 같은 "이 포켓몬에 대한 동작"이라 한 줄이 낫다 */
-.detail__top-actions { position: absolute; top: 0; right: 0; display: flex; gap: 0.6rem; }
-/* min-width(고정 width 아님) — 공유를 누르면 "복사됨 ✓" 로 글자가 길어지는데 폭을 고정하면 글자가 밖으로 샌다 */
-.detail__share { min-width: 3.4rem; height: 3.4rem; padding: 0 0.9rem; display: flex; align-items: center; justify-content: center; flex: none;
-  font-size: 1.5rem; line-height: 1; border-radius: 99.9rem; border: 1px solid var(--line); background: var(--surface); color: var(--muted); white-space: nowrap; }
-.detail__share:hover { background: var(--hover); color: var(--fg); }
 .fav-pop__head { display: flex; flex-direction: column; gap: 0.3rem; margin-bottom: 1.2rem; }
 .fav-pop__list { display: flex; flex-wrap: wrap; gap: 0.8rem; overflow: visible; }
 .fav-pop .boss__foot { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.8rem; margin-top: 1.4rem; padding-top: 1.2rem; border-top: 1px solid var(--line); }
@@ -205,3 +165,177 @@ dialog.modal::backdrop { background: transparent; }
 .signup-invite__before { color: var(--muted); }
 .signup-invite__after { color: var(--brand); font-weight: 600; }
 .signup-invite__list { margin: 0 0 1.2rem; font-size: 1.15rem; color: var(--muted); line-height: 1.6; }
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   2026-09-16 v3.50.0 상세 팝업 재설계 — 요약 · 배틀 정보 · 진화 탭 + CP 계산기 화면 + 하단 고정 버튼
+   (components/detail.js detailBuild). 카드(.modal__box)는 스크롤하지 않고 안쪽 .detail__scroll 만 스크롤한다 —
+   머리줄(✕)과 하단 버튼이 늘 제자리에 있어야 해서다. PC(≥1100px)는 왼쪽 정보 고정 · 오른쪽 내용 전환의 두 열
+   ───────────────────────────────────────────────────────────────────────────── */
+.modal__box:has(> .detail--mon) { display: flex; flex-direction: column; padding: 0; overflow: hidden; }
+/* ✕ 는 껍데기(modal.js)의 것 그대로 — 카드 밖 모서리 대신 머리줄 오른쪽 끝에 앉힌다. .modal__wrap 은 스크롤하지 않아 늘 위에 있다 */
+.modal__wrap:has(.detail--mon) .modal__close { top: 0.9rem; right: 1rem; width: 3.2rem; height: 3.2rem; z-index: 2; box-shadow: none; }
+.detail--mon { display: flex; flex-direction: column; flex: 1 1 auto; min-height: 0; }
+
+/* 머리줄 — 제목 · (계산기 화면에서만) ‹ 상세로 · 링크 복사. 오른쪽 5.6rem 은 ✕ 자리 */
+.detail__bar { display: flex; align-items: center; gap: 1rem; flex: none; padding: 1rem 5.6rem 1rem 2rem; border-bottom: 1px solid var(--line); }
+.detail__bar-title { margin: 0; font-size: 1.5rem; font-weight: 700; }
+.detail__bar-back { display: none; align-items: center; gap: 0.2rem; padding: 0.4rem 0.8rem 0.4rem 0; font-size: 1.3rem; font-weight: 600; color: var(--muted); }
+.detail__bar-back:hover { color: var(--fg); }
+.detail--mon[data-screen="calc"] .detail__bar-back { display: inline-flex; }
+.detail__top-actions { margin-left: auto; display: flex; gap: 0.6rem; }
+.detail__share { display: inline-flex; align-items: center; gap: 0.5rem; height: 3.2rem; padding: 0 1rem; border: 1px solid var(--line); border-radius: 0.8rem;
+  background: var(--surface); color: var(--muted); font-size: 1.25rem; font-weight: 600; white-space: nowrap; }
+.detail__share:hover { background: var(--hover); color: var(--fg); }
+.detail__share.is-copied { color: var(--good); border-color: var(--good); }
+.detail__share-text { display: none; }
+
+/* 본문 — 왼쪽(정보) + 오른쪽(탭·내용). 좁은 화면은 위아래로 */
+.detail__body { display: flex; flex-direction: column; flex: 1 1 auto; min-height: 0; }
+.detail__side { display: flex; gap: 1.4rem; align-items: flex-start; flex: none; padding: 1.4rem 2rem 1rem; }
+.detail__side .sprite-box { width: 11rem; height: 11rem; }
+.detail__side .sprite-box .sprite { width: 8.4rem; height: 8.4rem; margin-top: 0; }
+.detail__info { display: flex; flex-direction: column; align-items: flex-start; gap: 0.5rem; flex: 1 1 auto; min-width: 0; }
+.detail__tags { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+.detail__dexno { display: inline-block; }
+.detail__info h2 { margin: 0; font-size: 2rem; font-weight: 700; line-height: 1.2; }
+.detail__en-inline { font-size: 1.3rem; color: var(--muted); }
+.detail__types { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+.detail__plan { display: inline-flex; align-items: center; gap: 0.2rem; margin-top: 0.4rem; height: 3.4rem; padding: 0 1.2rem;
+  border: 1px solid var(--line); border-radius: 0.8rem; background: var(--surface); font-size: 1.25rem; font-weight: 600; color: var(--fg); }
+.detail__plan:hover { background: var(--hover); }
+/* 배틀 정보 탭 · 계산기 화면은 머리를 접는다 — 좁은 화면에서 내용 자리를 넓힌다 (목업 02 · 03) */
+@media (max-width: 1099px) {
+  .detail--mon:is([data-tab="battle"], [data-screen="calc"]) .detail__side { align-items: center; padding-bottom: 0.8rem; }
+  .detail--mon:is([data-tab="battle"], [data-screen="calc"]) .detail__side .sprite-box { width: 5.6rem; height: 5.6rem; border-radius: 1rem; }
+  .detail--mon:is([data-tab="battle"], [data-screen="calc"]) .detail__side .sprite-box .sprite { width: 4.4rem; height: 4.4rem; }
+  .detail--mon:is([data-tab="battle"], [data-screen="calc"]) .detail__info { flex-direction: row; flex-wrap: wrap; align-items: center; gap: 0.4rem 0.8rem; }
+  .detail--mon:is([data-tab="battle"], [data-screen="calc"]) .detail__info h2 { order: -1; font-size: 1.6rem; }
+  .detail--mon:is([data-tab="battle"], [data-screen="calc"]) :is(.detail__en-inline, .detail__plan) { display: none; }
+}
+
+/* 오른쪽 — ← 돌아가기 · 탭 · 스크롤 내용 / 계산기 화면 */
+.detail__main { display: flex; flex-direction: column; flex: 1 1 auto; min-height: 0; min-width: 0; }
+.detail__main-detail { display: flex; flex-direction: column; flex: 1 1 auto; min-height: 0; }
+.detail--mon[data-screen="calc"] .detail__main-detail { display: none; }
+.detail__calc { display: none; flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding: 0.4rem 2rem 2rem; }
+.detail--mon[data-screen="calc"] .detail__calc { display: block; }
+.detail__back { display: flex; align-items: center; gap: 0.4rem; margin: 0 2rem 0.8rem; padding: 0.8rem 1.2rem; border: 1px dashed var(--line); border-radius: 0.8rem;
+  background: var(--surface); font-size: 1.25rem; font-weight: 600; color: var(--fg); text-align: left; }
+.detail__back:hover { background: var(--hover); }
+.detail__tabs { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; gap: 0.2rem; flex: none; margin: 0 2rem; padding: 0.3rem;
+  border: 1px solid var(--line); border-radius: 0.8rem; background: var(--surface); }
+.detail__tab { padding: 0.8rem 0.4rem; border-radius: 0.6rem; font-size: 1.3rem; font-weight: 600; color: var(--muted); }
+.detail__tab:hover { color: var(--fg); }
+.detail__tab[aria-selected="true"] { background: color-mix(in srgb, var(--brand) 14%, var(--bg)); color: var(--brand); box-shadow: inset 0 -0.2rem 0 var(--brand); }
+.detail__scroll { flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding: 1.2rem 2rem 2rem; }
+.detail__pane[hidden] { display: none; }
+
+/* 카드 — 팝업 안 블록의 기본 단위. 카드 안의 줄·칸은 한 단 깊은 색(--bg) */
+.detail__card { margin-top: 1.2rem; padding: 1.4rem 1.6rem; border: 1px solid var(--line); border-radius: 1.2rem; background: var(--surface); }
+.detail__pane > :first-child, .detail__calc-body > :first-child { margin-top: 0; }
+.detail__card > h3, .detail__card-head h3, .detail__calc-row h3 { margin: 0 0 1rem; font-size: 1.35rem; font-weight: 700; color: var(--fg); letter-spacing: 0; }
+.detail__card-head { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; }
+.detail__card-sub { margin: -0.6rem 0 1rem; font-size: 1.2rem; color: var(--muted); }
+.detail__card .detail__match { background: var(--bg); }
+.detail__card .detail__foot { margin-top: 1rem; }
+.detail__cp-line { display: flex; align-items: baseline; gap: 0.6rem; }
+.detail__cp-label { font-size: 1.6rem; font-weight: 700; }
+.detail__acc--hex .hex { padding-top: 0.6rem; }
+
+/* 포획 CP — [맥스 배틀 | 레이드 | 야생] 세그먼트 → 경로별 줄 (조건 · 100% CP 큰 숫자 · 최저) */
+.detail__catch-seg { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; width: 100%; margin-bottom: 1rem; }
+.detail__catch-seg button { padding: 0.6rem 0.4rem; font-size: 1.25rem; }
+.detail__catch-row { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 1rem 1.2rem; border-radius: 1rem; background: var(--bg); }
+.detail__catch-row + .detail__catch-row { margin-top: 0.6rem; }
+.detail__catch-cond { display: flex; flex-direction: column; gap: 0.2rem; min-width: 0; }
+.detail__catch-cond em { font-style: normal; font-size: 1.3rem; font-weight: 600; }
+.detail__catch-val { display: flex; flex-direction: column; align-items: flex-end; gap: 0.1rem; flex: none; text-align: right; }
+.detail__catch-val b { font-size: 2.4rem; font-weight: 700; line-height: 1.1; }
+.detail__catch-floor { font-size: 1.15rem; color: var(--muted); }
+.detail__catch .detail__acc { margin-top: 1rem; background: var(--bg); }
+.detail__catch .detail__acc summary { padding: 1rem 1.2rem; font-size: 1.25rem; color: var(--muted); }
+.move-chip.is-legacy { border-color: color-mix(in srgb, var(--caution) 55%, var(--line)); }
+
+/* 활용 순위 — 한 줄에 하나. 3위 안은 👑 + 강조색 순위 */
+.detail__rank-row { display: flex; align-items: center; gap: 0.8rem; margin-top: 0.5rem; padding: 0.9rem 1.2rem; border-radius: 0.8rem; background: var(--bg); font-size: 1.3rem; }
+.detail__ranks > .detail__rank-row:first-child { margin-top: 0; }
+.detail__rank-crown { width: 1.8rem; flex: none; }
+.detail__rank-where { display: flex; align-items: center; flex-wrap: wrap; gap: 0.5rem; flex: 1 1 auto; min-width: 0; }
+.detail__rank-no { flex: none; font-weight: 700; }
+.detail__rank-row.is-top .detail__rank-no { color: var(--brand); }
+.detail__rank-more { display: flex; align-items: center; justify-content: center; width: 100%; margin-top: 0.8rem; padding: 0.8rem; border: 1px solid var(--line); border-radius: 0.8rem;
+  background: var(--bg); font-size: 1.2rem; font-weight: 600; color: var(--muted); }
+.detail__rank-more::after { content: '⌄'; margin-left: 0.6rem; }
+.detail__rank-more[aria-expanded="true"]::after { content: '⌃'; }
+
+/* 보스로 만났을 때 — 추천 후보 줄 목록 (누르면 같은 창에서 바뀐다) */
+.detail__recs { display: flex; flex-direction: column; gap: 0.5rem; }
+.detail__rec { display: flex; align-items: center; gap: 1rem; width: 100%; padding: 0.6rem 1.2rem 0.6rem 0.8rem; border: 1px solid var(--line); border-radius: 0.8rem;
+  background: var(--bg); font-size: 1.3rem; text-align: left; color: var(--fg); }
+.detail__rec:hover { background: var(--hover); }
+.detail__rec .sprite { width: 4rem; height: 4rem; flex: none; }
+.detail__rec-name { display: flex; align-items: center; flex-wrap: wrap; gap: 0.4rem; flex: 1 1 auto; min-width: 0; }
+.detail__rec-go { color: var(--muted); font-size: 1.8rem; line-height: 1; }
+
+/* CP 계산기 화면 — 예상 CP · 레벨(− 숫자 + · 슬라이더 · 프리셋) · 개체값(− 숫자 +) */
+.detail__calc-big { display: flex; align-items: baseline; flex-wrap: wrap; gap: 0.8rem; }
+.detail__calc-cp-label { font-size: 1.6rem; font-weight: 700; }
+.detail__calc-cp { font-size: 3.6rem; font-weight: 700; line-height: 1.05; }
+.detail__calc-row { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+.detail__calc-row + .detail__calc-row { margin-top: 0.8rem; }
+.detail__calc-row em { font-style: normal; font-size: 1.3rem; }
+.detail__calc-row--max { margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--line); }
+.detail__calc-row--max b { font-size: 1.6rem; }
+.detail__calc-stepper { display: inline-flex; align-items: stretch; flex: none; border: 1px solid var(--line); border-radius: 0.8rem; background: var(--bg); overflow: hidden; }
+.detail__calc-step { width: 4.4rem; font-size: 1.8rem; line-height: 1; color: var(--fg); }
+.detail__calc-step:hover:not(:disabled) { background: var(--hover); }
+.detail__calc-step:disabled { color: var(--muted); opacity: .5; }
+.detail__calc-num { width: 6.4rem; height: 4rem; border: 0; border-left: 1px solid var(--line); border-right: 1px solid var(--line); border-radius: 0;
+  background: var(--bg); color: var(--fg); text-align: center; font-size: 1.5rem; font-weight: 700; -moz-appearance: textfield; appearance: textfield; }
+.detail__calc-num::-webkit-outer-spin-button, .detail__calc-num::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+.detail__calc-range { width: 100%; margin: 1.2rem 0 1rem; accent-color: var(--brand); }
+.detail__calc-presets { display: grid; grid-template-columns: repeat(5, 1fr); gap: 0.6rem; }
+.detail__calc-preset { padding: 0.7rem 0; border: 1px solid var(--line); border-radius: 0.8rem; background: var(--bg); font-size: 1.3rem; font-weight: 600; color: var(--muted); }
+.detail__calc-preset[aria-pressed="true"] { border-color: var(--brand); color: var(--brand); background: color-mix(in srgb, var(--brand) 12%, var(--bg)); }
+.detail__calc-iv-sum { margin: 1.2rem 0 0; font-size: 1.3rem; color: var(--muted); }
+.detail__calc-iv-sum b { color: var(--brand); }
+
+/* 하단 고정 — 상세: [포켓몬 도감] [CP 계산기] · 계산기: [초기화] [상세로 돌아가기] */
+.detail__dock { flex: none; padding: 1rem 2rem; border-top: 1px solid var(--line); background: var(--bg); }
+.detail__dock-note { display: none; margin: 0; font-size: 1.2rem; color: var(--muted); }
+.detail__dock-row { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; gap: 0.8rem; }
+.detail__dock-row--calc { display: none; }
+.detail--mon[data-screen="calc"] .detail__dock-row--detail { display: none; }
+.detail--mon[data-screen="calc"] .detail__dock-row--calc { display: grid; }
+.detail__dock-btn { display: inline-flex; align-items: center; justify-content: center; gap: 0.6rem; height: 4.4rem; padding: 0 1.2rem; border: 1px solid var(--line); border-radius: 1rem;
+  background: var(--surface); font-size: 1.35rem; font-weight: 700; color: var(--fg); white-space: nowrap; }
+.detail__dock-btn:hover { background: var(--hover); }
+.detail__dock-btn--accent { border-color: var(--brand); background: var(--brand); color: #fff; }
+.detail__dock-btn--accent:hover { background: color-mix(in srgb, var(--brand) 85%, #000); }
+
+/* 좁은 화면 — 바텀시트를 더 높이 쓴다 (75vh → 88vh). 팝업 안에서 화면이 바뀌는 구조라 자리가 더 필요하고,
+   뒤 화면은 위 한 뼘으로 남긴다 */
+/* 높이를 고정한다(max 가 아니라 height) — 탭·화면을 오갈 때 내용 길이대로 시트가 들썩이지 않게 */
+@media (max-width: 640px) {
+  .modal__box:has(> .detail--mon) { height: 88vh; height: 88dvh; max-height: none; }
+}
+
+/* PC — 왼쪽 정보 고정 · 오른쪽 내용 전환 (목업 "PC 상세 팝업") */
+@media (min-width: 1100px) {
+  .modal__wrap:has(.detail--mon) { max-width: 92rem; }
+  .modal__box:has(> .detail--mon) { max-width: none; }   /* app-shell.css 의 52rem 상한을 이 팝업만 푼다 */
+  .modal__box:has(> .detail--mon) { height: 86vh; max-height: none; }
+  .detail__share-text { display: inline; }
+  .detail--mon .detail__body { flex-direction: row; }
+  .detail--mon .detail__side { flex: 0 0 28rem; flex-direction: column; align-items: stretch; gap: 1.4rem; padding: 2rem; border-right: 1px solid var(--line); overflow-y: auto; }
+  .detail--mon .detail__side .sprite-box { width: 100%; height: auto; aspect-ratio: 1; max-width: 24rem; border-radius: 1.4rem; }
+  .detail--mon .detail__side .sprite-box .sprite { width: 62%; height: 62%; }
+  .detail--mon .detail__info h2 { font-size: 2.6rem; }
+  .detail--mon .detail__main-detail { padding-top: 1.2rem; }
+  .detail--mon .detail__calc { padding-top: 1.4rem; }
+  .detail--mon .detail__back, .detail--mon .detail__tabs { margin-left: 2.4rem; margin-right: 2.4rem; }
+  .detail--mon .detail__scroll, .detail--mon .detail__calc { padding: 1.4rem 2.4rem 2.4rem; }
+  .detail__dock { display: flex; align-items: center; gap: 1rem; padding: 1.2rem 2.4rem; }
+  .detail__dock-note { display: block; }
+  .detail__dock-row { margin-left: auto; grid-auto-columns: minmax(14rem, auto); }
+}

@@ -1,31 +1,40 @@
-// 포켓몬 상세 팝업: 도트 스프라이트 · 진화 단계 · 기술 · 약점/내성 · 종족값 · 활용처
+// 포켓몬 상세 팝업: 요약 · 배틀 정보 · 진화 세 탭 + CP 계산기 화면 + 하단 고정 버튼
 //
 // [역할]
 // 순위표·검색·도감 어디서든 포켓몬 하나를 눌렀을 때 뜨는 상세의 내용을 조립한다.
-// 팝업은 "어디서 열었는지"에 따라 구성이 달라진다 — openDetail(pokemon, isDex) 의 isDex 참고.
-// 2026-09-09 v2.36.0 넓은 화면(PC)에서는 팝업 대신 목록 오른쪽 고정 패널에 뜬다 —
-// useDetailPanel()/openDetailPanel() (components/modal.js) 이 갈래를 정한다
+// 2026-09-16 v3.50.0 재설계 — 한 줄로 길게 쌓던 섹션을 "필요한 정보로 바로 가는" 구조로 바꿨다.
+//   요약      큰 그림 · CP · 포획 CP · 배울 수 있는 기술
+//   배틀 정보  약점·내성 · 활용 순위 · 보스로 만났을 때 추천 후보
+//   진화      진화 계열 — 누르면 **같은 창에서** 그 포켓몬으로 바뀐다 (← 로 돌아오면 보던 탭·스크롤 그대로)
+//   하단 고정  [포켓몬 도감](팝업을 닫고 도감으로) · [CP 계산기](팝업 안 계산기 화면 — 숫자 입력 · ± · 레벨 프리셋)
+// PC(≥1100px)는 왼쪽에 포켓몬 정보를 고정하고 오른쪽 내용만 바뀌는 두 열 팝업이다.
+// v2.36.0 의 오른쪽 고정 패널은 쓰지 않는다 (components/modal.js useDetailPanel 참고).
 //
 // [이 파일이 제공하는 전역]
-// - openDetail(pokemon, isDex)  : 상세 팝업을 연다 (row.js · search.js · views/max.js 에서 호출)
+// - openDetail(pokemon, isDex, from)  : 상세 팝업을 새로 연다 (row.js · search.js · views/max.js 에서 호출)
 // - openDetailByDex(dexNumber, isDex) : 도감번호만으로 상세 팝업을 연다 (pages.js 도감 목록에서 호출)
+// - openDetailBySprite(spriteId, from): 스프라이트 id 만으로 연다 (#/mon/<id> 딥링크)
+// - detailSwitch(pokemon, isDex, from): 열린 팝업 **안에서** 다른 포켓몬으로 바꾼다 (진화 · 추천 후보)
+// - detailBack()                      : 바꾸기 전 포켓몬으로 돌아간다 (탭 · 스크롤 · 계산기 입력값 복원)
 // - dexOf(spriteId)             : 스프라이트 id → 도감번호
 // - typeChipEl(typeName, extraText) : 타입 칩(색 점 + 한글 타입명 + 부가 텍스트)
 // - typeMultAgainst(atkType, defTypes) : 방어 타입 조합에 대한 공격 타입 배율 (views/ifsolo.js 도 사용)
-// - detailSection(title, node)  : 팝업 안의 제목 있는 섹션 래퍼
+// - detailSection(title, node)  : 제목 있는 섹션 래퍼
 // - cpOf / cpNode / statsNode / matchupNode / matchupCols / movesNode /
 //   usageNode / counterNode / evoNode / megaMonNode / megaCompareNode /
 //   hexNode / svgEl / detailCpCalc : 팝업 각 블록을 만드는 조립 함수들
 //
 // [의존하는 전역 · 데이터]
-// - el() (dom.js) · sprite() · spriteAnimate() (components/sprite.js) · track() (track.js) · openModal() (components/modal.js)
-// - authEnabled() (components/auth.js) — 로그인 기능이 켜진 빌드에서만 즐겨찾기 ★ 표시
-// - calcCp() (components/pages.js) — 내 개체 CP 계산기에서 사용
+// - el() (dom.js) · sprite() (components/sprite.js) · track() (track.js) · openModal() (components/modal.js)
+// - navigateHash() (components/history.js) · routeIdOf() · routeHash() (router.js) — 하단 [포켓몬 도감]
+// - authEnabled() (components/auth.js) — 로그인한 빌드에서만 [＋ 내 포켓몬]
+// - calcCp() (components/pages.js) — CP 계산기
+// - koParticle() (components/name.js) — "○○로 돌아가기" 조사
 // - DEX_DATA (data.js): names / forms / evo / megas / chart / dex / cpm
-// - VALUE_DATA.usage_places · usage (data.js): 이름별 등재 내역(전 항목, 압축) · 활용처 탭용 상위 80 (v2.13.0 QA-42)
+// - VALUE_DATA.usage_places · usage · meter (data.js): 이름별 등재 내역 · 활용처 상위 80 · PvE/PvP 점수
 // - TYPE_KO · LEAGUE_KO (data.js): 타입·리그 한글 이름
 // - DMAX_DATA (data.js, 선택): 맥스 보스별 추천 카운터 (없는 빌드도 있어 typeof 로 방어)
-// - SHEET_DATA.pve · PVE_DATA (data.js): 레이드 보스 카운터 — 공격 타입별 레이드 성능표 (v2.13.0 QA-49)
+// - SHEET_DATA.pve · PVE_DATA (data.js): 레이드 보스 카운터 — 공격 타입별 레이드 성능표
 // - MAX_POOL (data.js, 선택): 맥스 배틀에서 잡을 수 있는 종 (스프라이트 id → 'G' 거다이맥스 · 'D' 다이맥스)
 
 // 스프라이트 id → 도감번호 (기본 폼은 id가 곧 도감번호)
@@ -62,9 +71,15 @@ function monShareUrl(spriteId) {
 }
 
 // 🔗 공유 버튼: Web Share가 되는 기기(대부분의 폰)는 공유 시트, 아니면 클립보드 복사 후 "복사됨 ✓" 표시
+// 2026-09-16 v3.50.0 넓은 화면에서는 아이콘 옆에 '링크 복사' 글자가 붙는다 (좁은 화면은 CSS 가 글자를 감춘다)
 function shareBtn(pokemon) {
-  const button = el('button', { class: 'detail__share', 'aria-label': '링크 공유', title: '이 포켓몬 링크 공유' }, '🔗');
-  const copied = () => { button.textContent = '복사됨 ✓'; setTimeout(() => { button.textContent = '🔗'; }, 1500); };
+  const $icon = el('span', { class: 'detail__share-icon' }, '🔗');
+  const $label = el('span', { class: 'detail__share-text' }, '링크 복사');
+  const button = el('button', { class: 'detail__share', 'aria-label': '링크 공유', title: '이 포켓몬 링크 공유' }, $icon, $label);
+  const copied = () => {
+    button.classList.add('is-copied'); $icon.textContent = '✓'; $label.textContent = '복사됨 ✓';
+    setTimeout(() => { button.classList.remove('is-copied'); $icon.textContent = '🔗'; $label.textContent = '링크 복사'; }, 1500);
+  };
   button.addEventListener('click', async (event) => {
     event.stopPropagation();
     const url = monShareUrl(pokemon.sprite);
@@ -109,8 +124,9 @@ function megaMonNode(dex, entry, curSprite, isDex) {
   const name = `${entry.label} ${DEX_DATA.names[dex] ?? dex}`;
   // 2026-09-14 v3.31.0 미출시 폼은 '미구현' 을 달아 밝힌다 — 지우지는 않는다(게임마스터에 종족값이 있어 볼 수는 있다)
   const unreleased = entry.rel === false;
+  // 2026-09-16 v3.50.0 새 팝업이 아니라 열린 창 안에서 바뀐다 — ← 로 돌아올 수 있다
   return el('button', { class: `evo__mon form-tag--mega${spriteId === curSprite ? ' is-now' : ''}${unreleased ? ' is-unreleased' : ''}`,
-    onclick: () => openDetail({ sprite: spriteId, name, en: '', types: DEX_DATA.forms[spriteId]?.types ?? [] }, isDex) },
+    onclick: () => detailSwitch({ sprite: spriteId, name, en: '', types: DEX_DATA.forms[spriteId]?.types ?? [] }, isDex, 'evo') },
     sprite(spriteId), el('span', {}, entry.label), unreleased ? el('span', { class: 'tag dex__unrel' }, '미구현') : '');
 }
 
@@ -125,7 +141,8 @@ function evoNode(dex, isDex, curSprite) {
   if (hasFamily) family.forEach((stage, stageIndex) => {
     // 첫 단계 앞에는 화살표를 넣지 않는다
     if (stageIndex > 0) wrap.append(el('span', { class: 'evo__arrow' }, '→'));
-    wrap.append(el('div', { class: 'evo__stage' }, ...stage.map((stageDex) => el('button', { class: `evo__mon${stageDex === dex && stageDex === curSprite ? ' is-now' : ''}`, onclick: () => openDetailByDex(stageDex, isDex) },
+    wrap.append(el('div', { class: 'evo__stage' }, ...stage.map((stageDex) => el('button', { class: `evo__mon${stageDex === dex && stageDex === curSprite ? ' is-now' : ''}`,
+      onclick: () => detailSwitch({ sprite: stageDex, name: DEX_DATA.names[stageDex] ?? String(stageDex), en: '', types: DEX_DATA.forms[stageDex]?.types ?? [] }, isDex, 'evo') },
       sprite(stageDex), el('span', {}, DEX_DATA.names[stageDex] ?? stageDex)))));
   });
   if (megas?.length) {
@@ -140,21 +157,22 @@ function evoNode(dex, isDex, curSprite) {
     ? '⚡ 원시회귀 가능 — 누르면 원시회귀 스탯을 볼 수 있어요'
     : megaLabels.includes('원시') ? '⚡ 메가진화 · 원시회귀 가능 — 누르면 그 폼의 스탯을 볼 수 있어요'
       : '⚡ 메가진화 가능 — 누르면 메가진화 스탯을 볼 수 있어요';
-  const foot = [hasFamily && '진화형을 누르면 그 포켓몬의 정보를 볼 수 있어요', megaFoot].filter(Boolean);
+  const foot = [hasFamily && '진화형을 누르면 이 창에서 그 포켓몬으로 바뀌어요', megaFoot].filter(Boolean);
   wrap.append(footNote(foot.join(' · ')));
   return wrap;
 }
 
-// 배울 수 있는 기술: 스피드(빠른 기술) / 차지(차지 기술) 두 줄
-// form.fast · form.charged 는 [기술명, 레거시여부] 쌍의 배열이라 레거시면 이름 뒤에 ' *' 를 붙인다.
+// 배울 수 있는 기술: 일반 기술(빠른 기술) / 스페셜 기술(차지 기술) 두 줄
+// form.fast · form.charged 는 [기술명, 레거시여부] 쌍의 배열이라 레거시면 이름 뒤에 ' ★' 를 붙인다.
+// 2026-09-16 v3.50.0 '스피드 · 차지' 를 게임 안 표기인 '일반 기술 · 스페셜 기술' 로, 레거시 표시는 '*' 에서 '★' 로
 function movesNode(form) {
-  const moveChip = ([name, elite]) => el('span', { class: 'move-chip' }, name + (elite ? ' *' : ''));
+  const moveChip = ([name, elite]) => el('span', { class: `move-chip${elite ? ' is-legacy' : ''}` }, name + (elite ? ' ★' : ''));
   return el('div', {},
-    el('div', { class: 'move-list__row' }, el('em', {}, '스피드'), el('div', { class: 'move-list' }, ...form.fast.map(moveChip))),
-    el('div', { class: 'move-list__row' }, el('em', {}, '차지'), el('div', { class: 'move-list' }, ...form.charged.map(moveChip))),
+    el('div', { class: 'move-list__row' }, el('em', {}, '일반 기술'), el('div', { class: 'move-list' }, ...form.fast.map(moveChip))),
+    el('div', { class: 'move-list__row' }, el('em', {}, '스페셜 기술'), el('div', { class: 'move-list' }, ...form.charged.map(moveChip))),
     // 레거시 기술이 하나라도 있을 때만 각주를 붙인다
     (form.fast.some((move) => move[1]) || form.charged.some((move) => move[1]))
-      ? footNote('* 레거시 기술 — 대단한 기술머신 또는 이벤트로만 습득') : '',
+      ? footNote('★ 레거시 기술 — 대단한 기술머신 또는 이벤트로만 습득') : '',
   );
 }
 
@@ -212,36 +230,44 @@ function maxPoolKind(spriteId) {
   return MAX_POOL[String(spriteId)] ?? null;
 }
 
-// 최대 CP 블록: 포획 경로별로 "100% CP(굵게) + 최저 CP" 를 묶어 보여준다
-// spriteId 를 받는 이유는 맥스 배틀 가능 여부에 따라 라벨과 안내 문구가 달라지기 때문이다
-function cpNode(form, spriteId) {
+// 포획 CP 카드: [맥스 배틀 | 레이드 | 야생] 세그먼트로 경로를 고르면 그 경로의 "100% CP(굵게) + 최저 CP" 가 보인다
+// 2026-09-16 v3.50.0 칩 네 줄을 한꺼번에 늘어놓던 표를 세그먼트로 — 한 번에 한 경로만 보면 숫자가 크게 들어간다.
+//   state.catchSeg 에 고른 경로를 남겨 두어 진화 탐색에서 돌아와도 같은 경로가 열린다
+function cpNode(form, spriteId, state = {}) {
   const cpm = DEX_DATA.cpm;
-  if (!cpm) return null;
-  // 개체값 하한이 있는 경로: 100%를 굵게, 그 아래 "최저 N" 을 작게
-  const rangeChip = (label, multiplier, floorIv) => el('span', { class: 'uchip is-top' }, label,
-    el('b', {}, `CP ${cpOf(form, multiplier).toLocaleString()}`),
-    el('i', {}, `최저 ${cpAtIv(form, multiplier, floorIv).toLocaleString()}`));
-  // 하한이 없는 경로(야생·만렙): 100% 값만
-  const chip = (label, multiplier) => el('span', { class: 'uchip' }, label, el('b', {}, `CP ${cpOf(form, multiplier).toLocaleString()}`));
+  if (!cpm) return '';
   const maxKind = maxPoolKind(spriteId);
+  const segs = [maxKind ? ['max', '맥스 배틀'] : null, ['raid', '레이드'], ['wild', '야생']].filter(Boolean);
+  if (!segs.some(([id]) => id === state.catchSeg)) state.catchSeg = segs[0][0];
+  // 한 줄 = 조건(레벨 · 부스트) + 100% CP + 최저 CP(개체값 하한이 있는 경로만)
+  const row = (label, sub, multiplier, floorIv) => el('div', { class: 'detail__catch-row' },
+    el('div', { class: 'detail__catch-cond' }, el('em', {}, label), sub ? metaText(sub) : ''),
+    el('div', { class: 'detail__catch-val' }, metaText('100% 기준'), el('b', {}, cpOf(form, multiplier).toLocaleString()),
+      floorIv != null ? el('span', { class: 'detail__catch-floor' }, `최저 ${cpAtIv(form, multiplier, floorIv).toLocaleString()}`) : metaText('개체값 하한 없음')));
   const maxLabel = maxKind === 'G' ? '거다이맥스·다이맥스' : '다이맥스';
-  return el('div', {},
-    el('div', { class: 'cp__ctx' },
-      el('em', {}, '레이드 보상 — 개체값 10 이상 확정'),
-      el('div', { class: 'tchips' }, rangeChip('평시 Lv20', cpm.l20, 10), rangeChip('날씨부스트 Lv25', cpm.l25, 10))),
-    // 맥스 배틀에 나오지 않는 종이면 이 줄 자체를 만들지 않는다
-    maxKind
-      ? el('div', { class: 'cp__ctx' },
-          el('em', {}, `맥스 배틀 (${maxLabel}) — Lv20 고정, 날씨부스트 없음`),
-          el('div', { class: 'tchips' }, rangeChip('포획 Lv20', cpm.l20, 10)))
-      : '',
-    el('div', { class: 'cp__ctx' },
-      el('em', {}, '야생 스폰 — 개체값 하한 없음'),
-      el('div', { class: 'tchips' }, chip('평시 Lv30', cpm.l30), chip('날씨부스트 Lv35', cpm.l35))),
-    el('div', { class: 'cp__ctx' },
-      el('em', {}, '강화 상한'),
-      el('div', { class: 'tchips' }, chip('만렙 Lv50', cpm.l50))),
-    footNote(`굵은 숫자가 개체값 100%(15/15/15) CP예요. 잡은 개체가 이 값이면 100%. ${maxKind ? '맥스 배틀은 날씨부스트가 없어 항상 Lv20이라 레이드 평시와 같은 CP가 나와요. ' : ''}야생은 레벨 하한이 없어 최저 CP를 적지 않아요.`));
+  const panes = {
+    max: () => [row('Lv.20', `날씨 부스트 없음 · ${maxLabel}`, cpm.l20, 10)],
+    raid: () => [row('평시 Lv.20', '개체값 10 이상', cpm.l20, 10), row('날씨 부스트 Lv.25', '개체값 10 이상', cpm.l25, 10)],
+    wild: () => [row('평시 Lv.30', '', cpm.l30, null), row('날씨 부스트 Lv.35', '', cpm.l35, null)],
+  };
+  const $body = el('div', { class: 'detail__catch-body' });
+  const $seg = el('div', { class: 'seg detail__catch-seg', role: 'tablist' });
+  const show = (id) => {
+    state.catchSeg = id;
+    [...$seg.children].forEach((button, index) => button.setAttribute('aria-pressed', String(segs[index][0] === id)));
+    $body.replaceChildren(...panes[id]());
+  };
+  for (const [id, label] of segs) $seg.append(el('button', { 'aria-pressed': 'false', onclick: () => show(id) }, label));
+  show(state.catchSeg);
+  return el('div', { class: 'detail__card detail__catch' },
+    el('h3', {}, '포획 CP'),
+    $seg, $body,
+    el('details', { class: 'detail__acc detail__acc--catch' },
+      el('summary', {}, '조건과 계산 기준 보기'),
+      el('div', { class: 'detail__acc-body' },
+        footNote('굵은 숫자가 개체값 100%(15/15/15) CP예요. 잡은 개체가 이 값이면 100%.'),
+        footNote('레이드 보상은 개체값 10 이상이 확정이라 "최저" 가 있고, 야생은 하한이 없어 최저 CP를 적지 않아요.'),
+        maxKind ? footNote('맥스 배틀은 날씨 부스트가 없어 항상 Lv20이라 레이드 평시와 같은 CP가 나와요.') : '')));
 }
 
 // 2026-09-04 메가X/메가Y가 둘 다 있는 종(현재 뮤츠·리자몽 등)만 — 좌우 비교 + 차이 자동 요약
@@ -310,27 +336,37 @@ function usageMeterOf(name) {
   const [pve, pvp] = meter;
   return pve || pvp ? { pve, pvp } : null;
 }
+// 활용 순위: 순위가 좋은 순으로 한 줄씩 — 3위 안은 👑. 처음엔 3줄, [전체 순위 펼치기] 로 나머지
+// 2026-09-16 v3.50.0 칩 무더기에서 줄 목록으로 — "어디서 몇 위" 가 한 줄에 하나씩 읽힌다
 function usageNode(name) {
   const places = usagePlacesFor(name);
   if (!places.length) return null;
-  const groups = { pvp: [], pve: [], max: [] };
-  for (const placement of places) groups[placement.place.split(':')[0]]?.push(placement);
   const GROUP_KO = { pvp: 'PvP', pve: '레이드', max: '맥스' };
-  const chip = ({ place, rank, mark }) => {
-    const key = place.split(':')[1];
+  const rows = places.map(({ place, rank, mark }) => {
+    const [group, key] = place.split(':');
     // PvP 는 리그 이름, 레이드·맥스는 타입 이름 (overall 은 '전체'). 맥스는 D(다이맥스)/G(거다이맥스) 표시
-    const where = place.startsWith('pvp') ? LEAGUE_KO[key] : (key === 'overall' ? '전체' : TYPE_KO[key]);
-    return el('span', { class: `uchip${rank <= 3 ? ' is-top' : ''}` }, mark ? `${mark}·${where}` : where, el('b', {}, `${rank}위`));
-  };
-  const wrap = el('div', {});
-  for (const groupKey of ['pvp', 'pve', 'max']) {
-    if (!groups[groupKey].length) continue;
-    groups[groupKey].sort((a, b) => a.rank - b.rank);
-    wrap.append(el('div', { class: 'move-list__row' }, el('em', {}, GROUP_KO[groupKey]),
-      el('div', { class: 'tchips' }, ...groups[groupKey].map(chip))));
-  }
-  wrap.append(footNote(`각 순위표 상위 30위 기준 · 3위 안은 강조 표시${groups.max.length ? ' · D = 다이맥스, G = 거다이맥스' : ''}`));
-  return wrap;
+    const where = group === 'pvp' ? `${LEAGUE_KO[key] ?? key}리그` : key === 'overall' ? '전체' : (TYPE_KO[key] ?? key);
+    return { group, where, rank, mark };
+  }).sort((a, b) => a.rank - b.rank);
+  const rowNode = (row) => el('div', { class: `detail__rank-row${row.rank <= 3 ? ' is-top' : ''}` },
+    el('span', { class: 'detail__rank-crown', 'aria-hidden': 'true' }, row.rank <= 3 ? '👑' : ''),
+    // 갈래 · 자리를 따로 떨어진 글자 노드로 — 사전(i18n)이 '레이드' · '불꽃' · '하이퍼리그' 를 각각 찾는다
+    el('span', { class: 'detail__rank-where' }, GROUP_KO[row.group] ?? row.group, ' · ', row.where,
+      row.mark ? el('span', { class: 'tag' }, row.mark === 'G' ? '거다이맥스' : '다이맥스') : ''),
+    el('b', { class: 'detail__rank-no' }, `${row.rank}위`));
+  const SHOWN = 3;
+  const $rest = el('div', { class: 'detail__rank-rest' }, ...rows.slice(SHOWN).map(rowNode));
+  $rest.hidden = true;
+  const $more = rows.length > SHOWN
+    ? el('button', { class: 'detail__rank-more', 'aria-expanded': 'false' }, `전체 순위 펼치기 (${rows.length})`)
+    : '';
+  if ($more) $more.addEventListener('click', () => {
+    $rest.hidden = !$rest.hidden;
+    $more.setAttribute('aria-expanded', String(!$rest.hidden));
+    $more.textContent = $rest.hidden ? `전체 순위 펼치기 (${rows.length})` : '접기';
+  });
+  return el('div', { class: 'detail__ranks' }, ...rows.slice(0, SHOWN).map(rowNode), $rest, $more,
+    footNote('각 순위표 상위 30위 기준 · 3위 안은 👑'));
 }
 
 // 2026-09-02 가안 A: 이 포켓몬이 보스로 나올 때 추천 카운터
@@ -373,20 +409,20 @@ function raidDealerRows(attackTypes, count = 5) {
   }
   return picked;
 }
-// 추천 딜러 버튼 줄 (팝업 안의 버튼이라 클릭이 바깥 모달로 새지 않게 stopPropagation)
+// 추천 후보 줄 목록 — 누르면 같은 창에서 그 포켓몬으로 바뀐다 (← 로 돌아올 수 있다)
 function counterRecsNode(recs) {
-  return el('div', { class: 'boss__recs' }, ...recs.map((counter, index) =>
-    el('button', { class: 'boss__rec', onclick: (event) => { event.stopPropagation(); openDetail(counter); } },
-      sprite(counter.sprite), el('span', {}, `${index + 1} `, nameNode(counter.name)))));  // 2026-09-06 v2.10.0 폼 라벨 뱃지
+  return el('div', { class: 'detail__recs' }, ...recs.map((counter) =>
+    el('button', { class: 'detail__rec', onclick: (event) => { event.stopPropagation(); detailSwitch(counter, undefined, 'boss'); } },
+      sprite(counter.sprite), el('span', { class: 'detail__rec-name' }, nameNode(counter.name)), el('span', { class: 'detail__rec-go', 'aria-hidden': 'true' }, '›'))));
 }
-// 반환값: { title, node } — 섹션 제목까지 보스 종류에 따라 달라지므로 함께 돌려준다. 추천이 없으면 null
+// 반환값: { sub, node } — 부제(어느 배틀의 후보인지)까지 보스 종류에 따라 달라지므로 함께 돌려준다. 추천이 없으면 null
 function counterNode(types, name) {
   if (bossBattleKind(name) === 'max') {
     // 맥스 배틀: 대표 타입(types[0]) 의 맥스 배틀 딜러 상위 5마리. DMAX_DATA 가 없는 빌드면 null
     const recs = (typeof DMAX_DATA !== 'undefined' ? DMAX_DATA[types[0]] : null)?.filter((pokemon) => !pokemon.unrel).slice(0, 5);   // 미구현은 추천하지 않는다 — 지금 데려갈 수 있는 것만
     if (!recs?.length) return null;
     return {
-      title: `${name}가 보스로 나오면? (맥스 배틀 — 다이맥스·거다이맥스만 참전 가능)`,
+      sub: '맥스 배틀 추천 후보 — 다이맥스·거다이맥스만 참전',
       node: el('div', {}, counterRecsNode(recs),
         footNote(`${TYPE_KO[types[0]]} 속성 맥스 배틀 보스 기준 · 메가·원시·섀도우는 맥스 배틀에 참전할 수 없어 제외`)),
     };
@@ -397,12 +433,11 @@ function counterNode(types, name) {
   if (!recs.length) return null;
   const typeLabel = attackTypes.map((typeName) => TYPE_KO[typeName]).join('·');
   return {
-    title: `${name}가 보스로 나오면? (레이드 — ${typeLabel} 딜러 추천)`,
+    sub: `레이드 추천 후보 — ${typeLabel} 딜러`,
     node: el('div', {}, counterRecsNode(recs),
       footNote(`일반·전설·메가 레이드는 전체 포켓몬 참전 · ${typeLabel} 타입 레이드 성능표 상위 (종 중복 제거)`)),
   };
 }
-
 
 // 2026-09-03 타입 상성: 약점 위 · 내성 아래, 뱃지 중첩 없이 평평한 칩(점+타입+배율)
 // 표시 기준: 배율 1.5 이상이면 약점(큰 순 정렬), 0.7 이하면 내성(작은 순 정렬).
@@ -437,35 +472,68 @@ function matchupCols(types, spriteId) {
   return wrap;
 }
 
-// 2026-09-03 능력치 육각형 대신 내 개체 CP 계산기: 이 포켓몬 고정, 레벨·IV만 조절
-// 슬라이더 4개(레벨 · 공격/방어/체력 개체값)를 움직이면 결과 줄만 다시 그린다.
-function detailCpCalc(form) {
-  // 슬라이더 현재값 저장소 — 각 키가 sliderRow 의 key 인자와 짝을 이룬다
-  const inputs = { level: 30, attackIv: 15, defenseIv: 15, hpIv: 15 };
-  const $result = el('p', { class: 'cp__inline' });
+// CP 계산기 화면: 이 포켓몬 고정, 레벨·개체값만 조절
+// 2026-09-16 v3.50.0 슬라이더 넷에서 "숫자 직접 입력 · ± 버튼 · 레벨 프리셋" 으로.
+//   inputs 는 호출부(팝업 상태)가 들고 있어 진화 탐색에서 돌아와도 입력값이 그대로다
+function detailCpCalc(form, inputs) {
+  const LEVEL_PRESETS = [20, 25, 30, 40, 50];
+  const clamp = (value, min, max, step) => Math.min(max, Math.max(min, Math.round(value / step) * step));
+  const $cp = el('b', { class: 'detail__calc-cp' });
+  const $cpMeta = metaText('');
+  const $cp50 = el('b', {});
+  const $ivFoot = el('p', { class: 'detail__calc-iv-sum' });
+  const fields = {};
   const update = () => {
     const cp = calcCp(form, inputs.level, inputs.attackIv, inputs.defenseIv, inputs.hpIv);
     // 같은 개체값으로 Lv50 까지 올렸을 때의 CP — 지금 CP가 그 몇 %인지 보여준다
     const maxCp = calcCp(form, 50, inputs.attackIv, inputs.defenseIv, inputs.hpIv);
-    $result.replaceChildren(el('b', {}, `CP ${cp.toLocaleString()}`),
-      ` · 개체값 ${Math.round((inputs.attackIv + inputs.defenseIv + inputs.hpIv) / 45 * 100)}% · 이 개체 만렙 CP ${maxCp.toLocaleString()} (${Math.round(cp / maxCp * 100)}%)`);
+    $cp.textContent = cp.toLocaleString();
+    $cpMeta.textContent = `입력값 기준 · Lv.${inputs.level}`;
+    $cp50.textContent = `${maxCp.toLocaleString()} (${Math.round(cp / maxCp * 100)}%)`;
+    const ivPct = Math.round((inputs.attackIv + inputs.defenseIv + inputs.hpIv) / 45 * 100);
+    $ivFoot.replaceChildren(el('b', {}, `개체값 ${ivPct}%`), ` · ${inputs.attackIv} / ${inputs.defenseIv} / ${inputs.hpIv}`);
+    for (const [key, field] of Object.entries(fields)) field.sync();
   };
-  const sliderRow = (label, key, min, max, step) => {
-    const $value = el('b', {}, String(inputs[key]));
-    const $slider = el('input', { type: 'range', min: String(min), max: String(max), step: String(step), value: String(inputs[key]) });
-    $slider.addEventListener('input', () => {
-      inputs[key] = +$slider.value;
-      $value.textContent = $slider.value;
-      update();
-    });
-    return el('div', { class: 'cp__slider' }, el('em', {}, label), $slider, $value);
+  // − [숫자] + 한 벌. 숫자 칸에 바로 적어도 되고, 범위를 벗어나면 가장 가까운 값으로 되돌린다
+  const stepper = (key, min, max, step) => {
+    const $input = el('input', { type: 'number', class: 'detail__calc-num', inputmode: 'decimal', min: String(min), max: String(max), step: String(step), 'aria-label': key });
+    const set = (value) => { inputs[key] = clamp(Number.isFinite(value) ? value : inputs[key], min, max, step); update(); };
+    $input.addEventListener('change', () => set(parseFloat($input.value)));
+    $input.addEventListener('keydown', (event) => { if (event.key === 'Enter') { event.preventDefault(); $input.blur(); } });
+    const $minus = el('button', { class: 'detail__calc-step', 'aria-label': '−', onclick: () => set(inputs[key] - step) }, '−');
+    const $plus = el('button', { class: 'detail__calc-step', 'aria-label': '+', onclick: () => set(inputs[key] + step) }, '+');
+    fields[key] = { sync: () => { $input.value = String(inputs[key]); $minus.disabled = inputs[key] <= min; $plus.disabled = inputs[key] >= max; } };
+    return { node: el('div', { class: 'detail__calc-stepper' }, $minus, $input, $plus), set };
   };
-  update();
-  return el('div', {},
-    sliderRow('레벨', 'level', 1, 50, 0.5), sliderRow('공격 IV', 'attackIv', 0, 15, 1),
-    sliderRow('방어 IV', 'defenseIv', 0, 15, 1), sliderRow('체력 IV', 'hpIv', 0, 15, 1),
-    $result,
+  const level = stepper('level', 1, 50, 0.5);
+  const $slider = el('input', { type: 'range', class: 'detail__calc-range', min: '1', max: '50', step: '0.5', 'aria-label': '레벨' });
+  $slider.addEventListener('input', () => level.set(parseFloat($slider.value)));
+  const $presets = el('div', { class: 'detail__calc-presets' }, ...LEVEL_PRESETS.map((preset) =>
+    el('button', { class: 'detail__calc-preset', 'data-level': String(preset), onclick: () => level.set(preset) }, String(preset))));
+  fields.levelExtra = { sync: () => {
+    $slider.value = String(inputs.level);
+    [...$presets.children].forEach((button) => button.setAttribute('aria-pressed', String(Number(button.dataset.level) === inputs.level)));
+  } };
+  const ivRow = (label, key) => {
+    const field = stepper(key, 0, 15, 1);
+    return el('div', { class: 'detail__calc-row' }, el('em', {}, label), field.node);
+  };
+  // 조작부를 전부 만든 뒤에 한 번 맞춘다 — 숫자 칸의 값·± 활성은 update() 가 채운다
+  const node = el('div', { class: 'detail__calc-body' },
+    el('div', { class: 'detail__card detail__calc-result' },
+      el('h3', {}, '예상 CP'),
+      el('div', { class: 'detail__calc-big' }, el('span', { class: 'detail__calc-cp-label' }, 'CP'), $cp, $cpMeta),
+      el('div', { class: 'detail__calc-row detail__calc-row--max' }, el('em', {}, 'Lv.50 예상 CP'), $cp50)),
+    el('div', { class: 'detail__card' },
+      el('div', { class: 'detail__calc-row' }, el('h3', {}, '포켓몬 레벨'), level.node),
+      $slider, $presets),
+    el('div', { class: 'detail__card' },
+      el('div', { class: 'detail__card-head' }, el('h3', {}, '개체값 (IV)'), metaText('각 0 – 15')),
+      ivRow('공격 IV', 'attackIv'), ivRow('방어 IV', 'defenseIv'), ivRow('체력 IV', 'hpIv'),
+      $ivFoot),
     footNote('내 개체의 레벨·개체값을 맞추면 지금 CP와 만렙까지의 여지가 보여요'));
+  update();
+  return node;
 }
 
 
@@ -549,88 +617,194 @@ function hexNode(form, name, types) {
   return el('div', { class: 'hex' }, svg);
 }
 
-// 상세 팝업 본체.
+// ─────────────────────────────────────────────────────────────────────────────
+// 2026-09-16 v3.50.0 팝업 안 화면 전환
+//
+// 팝업은 한 번에 한 포켓몬을 보여 주지만, 진화 계열·추천 후보를 누르면 **같은 창에서** 그 포켓몬으로 바뀐다.
+// 떠난 화면은 DETAIL_NAV.stack 에 쌓아 두고, ← 로 돌아오면 보던 탭 · 스크롤 · 계산기 입력값 · 포획 CP 경로를
+// 그대로 되살린다. 한 화면의 상태는 아래 detailState() 모양이다.
+//   pokemon · isDex   무엇을 보는지
+//   tab               'summary' | 'battle' | 'evo'
+//   screen            'detail' | 'calc' (CP 계산기 화면)
+//   scrolls           탭별 스크롤 위치 · calcScroll 계산기 스크롤 위치
+//   calc              계산기 입력값 { level, attackIv, defenseIv, hpIv }
+//   catchSeg          포획 CP 카드에서 고른 경로
+// ─────────────────────────────────────────────────────────────────────────────
+const DETAIL_NAV = { stack: [], current: null };
+const DETAIL_TABS = [['summary', '요약'], ['battle', '배틀 정보'], ['evo', '진화']];
+
+function detailState(pokemon, isDex) {
+  return {
+    pokemon, isDex, tab: 'summary', screen: 'detail',
+    scrolls: { summary: 0, battle: 0, evo: 0 }, calcScroll: 0,
+    calc: { level: 30, attackIv: 15, defenseIv: 15, hpIv: 15 },
+    catchSeg: null,
+  };
+}
+// 지금 팝업에 떠 있는 상세 본체 (없으면 null)
+function detailMounted() {
+  return document.querySelector('dialog.modal[open] .detail--mon');
+}
+// 떠나기 전에 화면에서 읽어야 하는 값(스크롤)만 상태에 옮겨 적는다 — 나머지는 조작할 때마다 이미 상태에 적혀 있다
+function detailSnapshot() {
+  const body = detailMounted();
+  const state = DETAIL_NAV.current;
+  if (!body || !state) return;
+  state.scrolls[state.tab] = body.querySelector('.detail__scroll')?.scrollTop ?? 0;
+  state.calcScroll = body.querySelector('.detail__calc')?.scrollTop ?? 0;
+}
+// 본체를 팝업에 얹는다. replace 면 열려 있는 팝업 안의 본체만 바꿔 끼운다 (히스토리 항목 · 스크롤 잠금은 그대로)
+function detailMount(body, state, replace) {
+  const old = replace ? detailMounted() : null;
+  if (old) {
+    old.replaceWith(body);
+    const overlay = body.closest('dialog.modal');
+    if (overlay) {
+      overlay.dataset.mon = body.dataset.mon; overlay.dataset.sprite = body.dataset.sprite;
+      overlay.setAttribute('aria-label', body.querySelector('h2')?.textContent || '상세 정보');
+    }
+  } else openModal(body);
+  // 스크롤은 DOM 에 붙은 뒤에야 먹는다
+  requestAnimationFrame(() => {
+    const $scroll = body.querySelector('.detail__scroll');
+    if ($scroll) $scroll.scrollTop = state.scrolls[state.tab] ?? 0;
+    const $calc = body.querySelector('.detail__calc');
+    if ($calc) $calc.scrollTop = state.calcScroll ?? 0;
+  });
+}
+// 2026-09-06 v2.9.0 메인 화면에서 열었을 때만 주소를 #/mon/<id>로 바꿔 둔다 — 그대로 복사하면 공유 링크가 된다.
+// openModal이 먼저 closeModal을 불러 기존 #/mon 해시를 지우므로, 반드시 그 뒤에 넣는다.
+// 페이지(#/dex 등) 위에서 열 때는 그 페이지 주소를 지우지 않도록 건드리지 않는다. replaceState라 히스토리는 안 쌓인다
+function detailSyncHash(pokemon) {
+  const onShell = routeIdOf() === 'home' || routeIdOf() === 'mon';
+  if (!onShell) return;
+  try { history.replaceState(history.state, '', routeHash('mon', String(pokemon.sprite))); } catch {}
+}
+
+// 상세 팝업을 새로 연다 (목록·검색·도감·딥링크). 안에 쌓인 탐색 기록은 비운다
 // pokemon 은 { sprite, name, en, types } 형태 (순위표 행·검색 결과·도감 항목이 모두 이 모양으로 넘긴다).
-// isDex = true (도감에서 열었을 때): 능력치 육각형 + 기술을 2열로 — "이 종이 어떤 포켓몬인가"를 본다
-// isDex = false (순위표·검색에서 열었을 때): 육각형 없이 기술만 전체 폭으로 — "지금 쓸 기술"을 본다
-// 섹션 순서: 헤더 → CP 계산기(아코디언) → 능력치/기술 → 타입 상성 → 활용처 → 메가 비교 → 진화 단계 → 보스 카운터
+// isDex 는 어디서 열었는지(도감 true) — GA 의 from 과 본체 data-view 에만 남는다 (v3.50.0 부터 구성은 같다)
 function openDetail(pokemon, isDex = false, from = null) {
   track('detail_open', { mon: pokemon.name, from: from ?? (isDex ? 'dex' : 'list') });  // 2026-09-03 GA4: 상세 팝업 사용량 · 2026-09-06 from: list/dex/link(공유 링크)
+  DETAIL_NAV.stack = [];
+  DETAIL_NAV.current = detailState(pokemon, isDex);
+  detailMount(detailBuild(DETAIL_NAV.current), DETAIL_NAV.current, false);
+  detailSyncHash(pokemon);
+}
+// 열린 팝업 안에서 다른 포켓몬으로 바꾼다 (진화 계열 · 추천 후보). 팝업이 없으면 그냥 새로 연다
+function detailSwitch(pokemon, isDex, from = 'evo') {
+  if (!detailMounted() || !DETAIL_NAV.current) return openDetail(pokemon, isDex ?? false, from);
+  track('detail_open', { mon: pokemon.name, from });
+  detailSnapshot();
+  DETAIL_NAV.stack.push(DETAIL_NAV.current);
+  DETAIL_NAV.current = detailState(pokemon, isDex ?? DETAIL_NAV.stack.at(-1).isDex);
+  detailMount(detailBuild(DETAIL_NAV.current), DETAIL_NAV.current, true);
+  detailSyncHash(pokemon);
+}
+// 바꾸기 전 포켓몬으로 — 떠날 때의 탭 · 스크롤 · 입력값 그대로
+function detailBack() {
+  const previous = DETAIL_NAV.stack.pop();
+  if (!previous) return;
+  DETAIL_NAV.current = previous;
+  detailMount(detailBuild(previous), previous, true);
+  detailSyncHash(previous.pokemon);
+}
+// 하단 [포켓몬 도감] — 팝업을 닫고 도감으로. 이미 도감 위라면 닫기만 한다
+function detailGoDex() {
+  if (routeIdOf() === 'dex') { closeModal(); return; }
+  navigateHash(routeHash('dex'));
+}
 
+// 탭 전환 — 떠나는 탭의 스크롤을 적어 두고, 가는 탭의 스크롤을 되살린다
+function detailShowTab(body, state, tab) {
+  const $scroll = body.querySelector('.detail__scroll');
+  if ($scroll) state.scrolls[state.tab] = $scroll.scrollTop;
+  state.tab = tab;
+  body.dataset.tab = tab;
+  body.querySelectorAll('.detail__tab').forEach((button) => button.setAttribute('aria-selected', String(button.dataset.tab === tab)));
+  body.querySelectorAll('.detail__pane').forEach((pane) => { pane.hidden = pane.dataset.pane !== tab; });
+  if ($scroll) $scroll.scrollTop = state.scrolls[tab] ?? 0;
+}
+// 화면 전환 — 'detail'(탭 셋) ↔ 'calc'(CP 계산기). 머리줄 제목과 하단 버튼이 함께 바뀐다 (CSS 가 data-screen 을 본다)
+function detailShowScreen(body, state, screen) {
+  const $scroll = body.querySelector('.detail__scroll');
+  const $calc = body.querySelector('.detail__calc');
+  if (state.screen === 'detail' && $scroll) state.scrolls[state.tab] = $scroll.scrollTop;
+  if (state.screen === 'calc' && $calc) state.calcScroll = $calc.scrollTop;
+  state.screen = screen;
+  body.dataset.screen = screen;
+  const $title = body.querySelector('.detail__bar-title');
+  if ($title) $title.textContent = screen === 'calc' ? 'CP 계산기' : '포켓몬 상세';
+  requestAnimationFrame(() => {
+    if (screen === 'detail' && $scroll) $scroll.scrollTop = state.scrolls[state.tab] ?? 0;
+    if (screen === 'calc' && $calc) $calc.scrollTop = state.calcScroll ?? 0;
+  });
+}
+
+// 제목 있는 카드 — 팝업 안 블록의 기본 단위
+function detailCard(title, node, extraClass = '') {
+  return el('section', { class: `detail__card${extraClass ? ' ' + extraClass : ''}` }, title ? el('h3', {}, title) : '', node);
+}
+
+// 상세 본체를 만든다 — state 대로 탭 · 화면 · 입력값을 되살린 채로
+// 구성: 머리줄(제목 · 링크 복사) → [왼쪽] 그림 · 이름 · 타입 · ＋ 내 포켓몬 → [오른쪽] ← 돌아가기 · 탭 · 내용 → 하단 고정 버튼
+function detailBuild(state) {
+  const { pokemon, isDex } = state;
   const dex = dexOf(pokemon.sprite);
   // 폼 데이터는 스프라이트 id 로 먼저 찾고(메가·리전 폼), 없으면 원종 도감번호로 되돌아간다
   const form = DEX_DATA.forms[pokemon.sprite] ?? (dex != null ? DEX_DATA.forms[dex] : null);
   const types = (pokemon.types?.length ? pokemon.types : form?.types) ?? [];
-
-  // 2026-09-08 v2.32.0 헤더를 카드형으로 다시 짰다 — 그림 · 이름 · 타입은 위 칸에,
-  // CP 는 큰 숫자 + 2×2 표로 따로 뗀 카드에.
-  // 2026-09-09 v2.35.0 재배치 — 타입은 이름 줄이 아니라 그림 위 왼쪽 위 모서리에 겹치는 작은 배지로
-  // (여러 개면 세로로 쌓는다). ★ 즐겨찾기는 이름 옆이 아니라 공유·저장과 같은 오른쪽 위 아이콘 줄로 —
-  // "이 포켓몬에 대한 동작"(공유·저장·즐겨찾기)을 한 줄에 모으는 게 더 일관적이다.
-  // 폼 라벨(거다이맥스 등)은 이름과 한 줄에 있던 것을 이름 위 줄로 떼어, 아이콘 줄과 같은 높이에서 시작한다
   const cpm = DEX_DATA.cpm;
   const { labels: formLabels, base: baseName } = typeof splitFormName === 'function' ? splitFormName(pokemon.name) : { labels: [], base: pokemon.name };
   // 2026-09-06 v2.11.0 그림 테두리를 폼 색으로 — 메가·다이맥스/거다이맥스·섀도우 (components/name.js formLabelKind, 색은 tokens.css)
   const formKind = formLabels.map(formLabelKind)[0] ?? '';
-  const head = el('div', { class: 'detail__head' },
-    el('div', { class: `sprite-box${formKind ? ' sprite-box--' + formKind : ''}` },
-      // 2026-09-12 v2.67.0 상세 화면의 큰 그림만 움직인다 — 한 번에 한 마리라 GIF 한 장이면 된다.
-      // 정지본을 먼저 띄우고 다 받은 뒤 갈아 끼우므로, 없는 종(6세대 이후 다수)은 그대로 정지본이다
-      // 2026-09-12 v3.18.0 sprite() 가 스스로 움직이는 그림으로 갈아 끼운다(설정 따름) — 여기서 따로 부르지 않는다
-      sprite(pokemon.sprite),
-      // 상성표의 작은 점 칩(tchips__item)과는 다른 자리라 건드려도 이중약점 강조 같은 다른 뜻이 흔들리지 않는다
-      types.length ? el('div', { class: 'detail__types' }, ...types.map((typeName) => el('span', { class: 'detail__type-pill', style: `--c: var(--t-${typeName})` }, TYPE_KO[typeName] ?? typeName))) : ''),
-    // 2026-09-03 v2.2.0 즐겨찾기 ★ · 2026-09-06 v2.9.0 🔗 공유 · 2026-09-07 v2.15.0 (QA-54) ➕ 내 개체로 저장.
-    // 오른쪽 위 동그란 아이콘 세 자리 — 이 포켓몬에 대한 동작을 한 줄에
-    el('div', { class: 'detail__top-actions' },
-      shareBtn(pokemon),
-      authEnabled() && AUTH.status === 'ok' && form && typeof planAddFromDetail === 'function'
-        ? el('button', { class: 'detail__share detail__plan', title: '🌱 플래너 내 포켓몬에 이 개체 저장', 'aria-label': '내 개체로 저장',
-            onclick: (event) => { event.stopPropagation(); planAddFromDetail(pokemon); } }, '➕')
-        : '',
-      ''),   // 2026-09-12 v3.4.0 ★ 자리 — 즐겨찾기를 걷어내며 비웠다
-    el('div', { class: 'detail__info' },
-      dex != null ? el('span', { class: 'tag detail__dexno' }, `#${String(dex).padStart(4, '0')}`) : '',
-      formLabels.length ? el('div', { class: 'detail__form-row' }, ...formLabels.map((label) => el('span', { class: `form-tag${formLabelKind(label) ? ' form-tag--' + formLabelKind(label) : ''}` }, label))) : '',
-      el('h2', {}, baseName),
-      pokemon.en ? el('div', { class: 'detail__en-inline' }, `(${pokemon.en})`) : ''));
 
-  const body = el('div', { class: 'detail' }, head);
-  // 2026-09-08 v2.32.0 CP 를 헤더 밖 카드로 뗐다 — 만렙 큰 숫자 + 레이드·부스트·야생·부스트 2×2 표.
-  // 2026-09-09 v2.34.0 표 네 칸이 자리를 너무 차지해 <details> 로 접을 수 있게 했다.
-  // 큰 숫자(summary)는 접혀도 항상 보이고, 2×2 표만 접힌다 — "CP 100% 기준"이 이 팝업에서 가장 먼저 찾는 값이라
-  // 접었을 때도 남아 있어야 한다. 기본은 접힌 상태(다른 아코디언들과 같은 규칙)
+  const body = el('div', { class: 'detail detail--mon' });
+  // 2026-09-08 v2.30.0 상세는 주소가 #/mon/<스프라이트 id> 하나뿐이라, DOM 만 보고는 "무엇의 상세인지" 를
+  // 알 수 없었다 (GA·히트맵에서 상세 화면이 전부 한 덩어리로 뭉쳤다). 식별자를 종·폼 단위까지 쪼개 붙인다
+  body.id = `detail-${pokemon.sprite}`;
+  Object.assign(body.dataset, {
+    route: 'mon', sprite: String(pokemon.sprite), dex: dex != null ? String(dex) : '', mon: pokemon.name,
+    form: formKind || 'base', view: isDex ? 'dex' : 'list', tab: state.tab, screen: state.screen,
+  });
+
+  // ── 머리줄: 제목 · 링크 복사. ✕ 는 팝업 껍데기(modal.js)의 것이 이 줄 오른쪽 끝에 겹쳐 앉는다 — 스크롤과 무관하게 늘 위에 있다
+  const bar = el('div', { class: 'detail__bar' },
+    el('button', { class: 'detail__bar-back', 'aria-label': '상세로 돌아가기', onclick: () => detailShowScreen(body, state, 'detail') }, '‹ ', '상세로'),
+    el('p', { class: 'detail__bar-title' }, state.screen === 'calc' ? 'CP 계산기' : '포켓몬 상세'),
+    el('div', { class: 'detail__top-actions' }, shareBtn(pokemon)));
+
+  // ── 왼쪽(모바일은 위): 그림 · 번호 · 폼 · 이름 · 영문명 · 타입 · ＋ 내 포켓몬
+  const side = el('div', { class: 'detail__side' },
+    el('div', { class: `sprite-box${formKind ? ' sprite-box--' + formKind : ''}` }, sprite(pokemon.sprite)),
+    el('div', { class: 'detail__info' },
+      el('div', { class: 'detail__tags' },
+        dex != null ? el('span', { class: 'tag detail__dexno' }, `#${String(dex).padStart(4, '0')}`) : '',
+        ...formLabels.map((label) => el('span', { class: `form-tag${formLabelKind(label) ? ' form-tag--' + formLabelKind(label) : ''}` }, label))),
+      el('h2', {}, baseName),
+      pokemon.en ? el('div', { class: 'detail__en-inline' }, pokemon.en) : '',
+      types.length ? el('div', { class: 'detail__types' }, ...types.map((typeName) => el('span', { class: 'detail__type-pill', style: `--c: var(--t-${typeName})` }, TYPE_KO[typeName] ?? typeName))) : '',
+      // 2026-09-07 v2.15.0 (QA-54) ➕ 내 개체로 저장 — 로그인한 계정만
+      authEnabled() && AUTH.status === 'ok' && form && typeof planAddFromDetail === 'function'
+        ? el('button', { class: 'detail__plan', title: '🌱 플래너 내 포켓몬에 이 개체 저장',
+            onclick: (event) => { event.stopPropagation(); planAddFromDetail(pokemon); } }, '＋ ', '내 포켓몬')
+        : ''));
+
+  // ── 요약 탭: CP · 포획 CP · 기술 · (기술 변경) · 능력치
+  const summary = el('div', { class: 'detail__pane', 'data-pane': 'summary' });
   if (form && cpm) {
+    // 2026-09-08 v2.32.0 만렙 큰 숫자 + 레이드·부스트·야생·부스트 2×2 표. 큰 숫자(summary)는 접혀도 보이고 표만 접힌다
     const raidLabel = maxPoolKind(pokemon.sprite) ? '레이드·맥스' : '레이드';
-    body.append(el('details', { class: 'detail__cp-card' },
-      el('summary', {}, el('div', { class: 'detail__cp-big' }, metaText('CP 100% 기준'), el('b', {}, cpOf(form, cpm.l50).toLocaleString()))),
+    summary.append(el('details', { class: 'detail__cp-card' },
+      el('summary', {}, el('div', { class: 'detail__cp-big' }, metaText('Lv.50 · 개체값 15/15/15'), el('span', { class: 'detail__cp-line' }, el('span', { class: 'detail__cp-label' }, 'CP'), el('b', {}, cpOf(form, cpm.l50).toLocaleString())))),
       el('div', { class: 'detail__cp-grid' },
         el('div', { class: 'detail__cp-tile' }, metaText(raidLabel), el('b', {}, cpOf(form, cpm.l20).toLocaleString())),
         el('div', { class: 'detail__cp-tile' }, metaText('부스트'), el('b', {}, cpOf(form, cpm.l25).toLocaleString())),
         el('div', { class: 'detail__cp-tile' }, metaText('야생'), el('b', {}, cpOf(form, cpm.l30).toLocaleString())),
         el('div', { class: 'detail__cp-tile' }, metaText('부스트'), el('b', {}, cpOf(form, cpm.l35).toLocaleString())))));
+    summary.append(cpNode(form, pokemon.sprite, state));
   }
-  // 2026-09-11 v2.61.0 PvP 순위에 오른 종은 "그 리그에서는 어떤 개체값이 1위인가" 를 덧붙인다.
-  // 위의 CP 100% 는 PvE 기준(15/15/15 만렙)이라 PvP 에서는 쓸 데가 없다 — 두 기준이 정반대다
-  if (form && typeof ivrankDetailNode === 'function') body.append(ivrankDetailNode(form, pokemon.sprite));
-  // 2026-09-04 포획 CP: "지금 잡은 개체가 100%인가"를 확인하는 표. 계산기보다 자주 보므로 위에 둔다
-  if (form) body.append(el('details', { class: 'detail__acc detail__acc--catch' },
-    // 2026-09-12 v3.6.1 이모지를 도트 아이콘으로 (components/pxicon.js). 글자는 그대로 둬야 사전(i18n-en.js)이 찾는다
-    el('summary', {}, pxIcon('🎯') ?? '🎯', ' 포획 CP — 이 숫자면 100%'),
-    el('div', { class: 'detail__acc-body' }, cpNode(form, pokemon.sprite))));
-  // 2026-09-03 v4: 내 개체 CP 계산기를 상성 위로, 접이식 아코디언으로
-  // 2026-09-03 도감형 재배치: 계산기 아코디언 → [능력치 육각형 | 배울 수 있는 기술] → 상성 → 활용처 → 진화, "보스로 나오면"은 맨 아래
-  if (form) body.append(el('details', { class: 'detail__acc' },
-    el('summary', {}, pxIcon('🧮') ?? '🧮', ' 내 개체 CP 계산기'),
-    el('div', { class: 'detail__acc-body' }, detailCpCalc(form))));
-  // 2026-09-03 일반 팝업: 능력치 없이 기술만 전체 폭 / 도감 팝업: [능력치 육각형 | 기술] 2열
-  if (form) {
-    body.append(isDex
-      ? el('div', { class: 'detail__hexmoves' },
-          el('div', {}, el('h3', {}, '능력치'), hexNode(form, pokemon.name, types)),
-          el('div', { class: 'detail__moves' }, el('h3', {}, '배울 수 있는 기술'), movesNode(form)))
-      : detailSection('배울 수 있는 기술', el('div', { class: 'detail__moves' }, movesNode(form))));
-  }
+  if (form) summary.append(detailCard('배울 수 있는 기술', el('div', { class: 'detail__moves' }, movesNode(form))));
   // 2026-09-04 이 포켓몬에 걸린 시즌 기술 변경 (적용 전후 모두 표시 — 적용 뒤에도 "왜 순위가 움직였나"의 답이 된다)
   const moveChange = moveChangeFor(pokemon.sprite);
   if (moveChange) {
@@ -643,7 +817,7 @@ function openDetail(pokemon, isDex = false, from = null) {
             names.some((name) => moveChange.legacy?.includes(name))
               ? el('div', { class: 'changes__sub' }, '※ 일부는 지금 배울 수 없는 레거시 기술이에요') : ''))
       : '');
-    body.append(detailSection(
+    summary.append(detailCard(
       daysLeft > 0 ? `⚔️ ${data.date} 기술 변경 예정 (D-${daysLeft})` : `⚔️ ${data.date} 기술 변경 적용됨`,
       el('div', {},
         el('div', { class: 'changes__list' },
@@ -651,37 +825,64 @@ function openDetail(pokemon, isDex = false, from = null) {
           bucket('·', moveChange.energy, ''), bucket('＋', moveChange.new, 'is-up')),
         footNote('위력 수치는 트레이너 배틀 기준 · 자세한 내용은 메뉴 → ⚔️ 기술 변경'))));
   }
-  if (types.length) body.append(detailSection('타입 상성', matchupCols(types, pokemon.sprite)));
-  // 아래 섹션들은 해당 데이터가 있을 때만 붙는다 (활용처 미등재·메가 없음·진화 없음 등)
+  // 능력치 육각형 — 접어 둔다. 자주 보는 값이 아니라 아래에 두되, 도감에서 보던 사람을 위해 남긴다
+  if (form) summary.append(el('details', { class: 'detail__acc detail__acc--hex' },
+    el('summary', {}, '능력치 육각형'),
+    el('div', { class: 'detail__acc-body' }, hexNode(form, pokemon.name, types))));
+  if (!form) summary.append(el('p', { class: 'detail__none-text' }, '이 폼은 능력치 데이터가 없어요.'));
+
+  // ── 배틀 정보 탭: 타입 상성 · 활용 순위 · (PvP 개체값) · (메가 비교) · 보스로 만났을 때
+  const battle = el('div', { class: 'detail__pane', 'data-pane': 'battle' });
+  if (types.length) battle.append(detailCard('타입 상성', matchupCols(types, pokemon.sprite)));
   const usage = usageNode(pokemon.name);
-  if (usage) body.append(detailSection('이 도감에서의 활용처 (상위 30위 내)', usage));
+  battle.append(detailCard('활용 순위', usage ?? el('p', { class: 'detail__none-text' }, '아직 순위표 상위 30위에 오르지 않았어요.')));
+  // 2026-09-11 v2.61.0 PvP 순위에 오른 종은 "그 리그에서는 어떤 개체값이 1위인가" 를 덧붙인다
+  if (form && typeof ivrankDetailNode === 'function') battle.append(ivrankDetailNode(form, pokemon.sprite));
   const megaCmp = dex != null ? megaCompareNode(dex) : null;
-  if (megaCmp) body.append(detailSection('⚡ 메가X vs 메가Y 비교', megaCmp));
-  if (dex != null) body.append(detailSection('진화 단계', evoNode(dex, isDex, pokemon.sprite)));
-  // 2026-09-07 v2.13.0 (QA-49) 보스 종류(맥스 배틀 / 레이드)에 따라 참전 가능한 풀과 제목이 달라진다
+  if (megaCmp) battle.append(detailCard('⚡ 메가X vs 메가Y 비교', megaCmp));
+  // 2026-09-07 v2.13.0 (QA-49) 보스 종류(맥스 배틀 / 레이드)에 따라 참전 가능한 풀과 부제가 달라진다
   const counter = types.length ? counterNode(types, pokemon.name) : null;
-  if (counter) body.append(detailSection(counter.title, counter.node));
-  // 2026-09-08 v2.30.0 상세는 주소가 #/mon/<스프라이트 id> 하나뿐이라, DOM 만 보고는 "무엇의 상세인지" 를
-  // 알 수 없었다 (GA·히트맵에서 상세 화면이 전부 한 덩어리로 뭉쳤다). 식별자를 종·폼 단위까지 쪼개 붙인다
-  body.id = `detail-${pokemon.sprite}`;
-  Object.assign(body.dataset, {
-    route: 'mon',
-    sprite: String(pokemon.sprite),
-    dex: dex != null ? String(dex) : '',
-    mon: pokemon.name,
-    form: formKind || 'base',
-    view: isDex ? 'dex' : 'list',
-  });
-  // 2026-09-09 v2.36.0 넓은 화면(PC)에서는 목록 오른쪽 고정 패널로 — 목록을 보면서 이어서 확인할 수 있다.
-  // 좁은 화면은 지금까지처럼 팝업(다이얼로그). components/modal.js
-  // openDetailPanel 은 패널이 아직 없으면(예: #/mon/id 딥링크 첫 로드 — pages.js 가 app-shell.js 보다
-  // 먼저 실행돼 그 시점엔 #detail-panel 이 아직 안 만들어졌다) false 를 돌려주고, 그러면 팝업으로 되돌아간다
-  if (!useDetailPanel() || !openDetailPanel(body)) openModal(body);
-  // 2026-09-06 v2.9.0 메인 화면에서 열었을 때만 주소를 #/mon/<id>로 바꿔 둔다 — 그대로 복사하면 공유 링크가 된다.
-  // openModal이 먼저 closeModal을 불러 기존 #/mon 해시를 지우므로, 반드시 그 뒤에 넣는다.
-  // 페이지(#/dex 등) 위에서 열 때는 그 페이지 주소를 지우지 않도록 건드리지 않는다. replaceState라 히스토리는 안 쌓인다
-  const onShell = routeIdOf() === 'home' || routeIdOf() === 'mon';
-  if (onShell) {
-    try { history.replaceState(history.state, '', routeHash('mon', String(pokemon.sprite))); } catch {}
-  }
+  if (counter) battle.append(el('section', { class: 'detail__card detail__boss' },
+    el('h3', {}, '보스로 만났을 때'), el('p', { class: 'detail__card-sub' }, counter.sub), counter.node));
+
+  // ── 진화 탭
+  const evo = el('div', { class: 'detail__pane', 'data-pane': 'evo' },
+    detailCard('진화 계열', dex != null ? evoNode(dex, isDex, pokemon.sprite) : el('p', { class: 'detail__none-text' }, '진화가 없는 포켓몬이에요.')),
+    hintNote('진화 계열과 메가·맥스 폼을 구분해서 보여 줘요 · 포켓몬을 누르면 이 창에서 상세가 바뀌고, ← 로 돌아오면 보던 탭과 위치가 그대로예요'));
+
+  const panes = { summary, battle, evo };
+  for (const [id, pane] of Object.entries(panes)) pane.hidden = id !== state.tab;
+  const tabs = el('div', { class: 'detail__tabs', role: 'tablist' }, ...DETAIL_TABS.map(([id, label]) =>
+    el('button', { class: 'detail__tab', role: 'tab', 'data-tab': id, 'aria-selected': String(id === state.tab), onclick: () => detailShowTab(body, state, id) }, label)));
+
+  // ── ← 돌아가기: 팝업 안에서 다른 포켓몬으로 옮겨 온 경우에만
+  const previous = DETAIL_NAV.stack.at(-1);
+  const back = previous
+    ? el('button', { class: 'detail__back', onclick: () => detailBack() }, '← ',
+        `${previous.pokemon.name}${typeof koParticle === 'function' ? koParticle(previous.pokemon.name, 'ro') : '로'} 돌아가기`)
+    : '';
+
+  // ── CP 계산기 화면 (form 이 있을 때만)
+  const calc = form ? el('div', { class: 'detail__calc' }, detailCpCalc(form, state.calc)) : '';
+  const resetCalc = () => {
+    Object.assign(state.calc, { level: 30, attackIv: 15, defenseIv: 15, hpIv: 15 });
+    calc.replaceChildren(detailCpCalc(form, state.calc));
+  };
+
+  const main = el('div', { class: 'detail__main' },
+    el('div', { class: 'detail__main-detail' }, back, tabs, el('div', { class: 'detail__scroll' }, summary, battle, evo)),
+    calc);
+
+  // ── 하단 고정 — 상세 화면: [포켓몬 도감] [CP 계산기] · 계산기 화면: [초기화] [상세로 돌아가기]
+  const dock = el('div', { class: 'detail__dock' },
+    el('p', { class: 'detail__dock-note' }, '포켓몬을 바꿔도 이전 화면으로 돌아갈 수 있어요'),   // PC 에서만 보인다
+    el('div', { class: 'detail__dock-row detail__dock-row--detail' },
+      el('button', { class: 'detail__dock-btn detail__dock-dex', onclick: () => detailGoDex() }, pxIcon('📖') ?? '📖', '포켓몬 도감'),
+      form ? el('button', { class: 'detail__dock-btn detail__dock-btn--accent detail__dock-calc', onclick: () => detailShowScreen(body, state, 'calc') }, pxIcon('🧮') ?? '🧮', 'CP 계산기') : ''),
+    el('div', { class: 'detail__dock-row detail__dock-row--calc' },
+      el('button', { class: 'detail__dock-btn detail__dock-reset', onclick: resetCalc }, '↻ ', '초기화'),
+      el('button', { class: 'detail__dock-btn detail__dock-btn--accent detail__dock-return', onclick: () => detailShowScreen(body, state, 'detail') }, '← ', '상세로 돌아가기')));
+
+  body.append(bar, el('div', { class: 'detail__body' }, side, main), dock);
+  return body;
 }

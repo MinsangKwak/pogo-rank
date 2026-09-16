@@ -162,6 +162,9 @@ const I18N_PATTERNS = [
   [/^(.+) 알$/, '$1 Eggs'],
   [/^(.+) 레이드$/, '$1 Raids'],
   [/^(.+) 리그$/, '$1 League'],
+  // 2026-09-16 v3.50.0 상세 팝업 재설계 (components/detail.js)
+  [/^(.+?)(?:으로|로) 돌아가기$/, 'Back to $1'],
+  [/^레이드 추천 후보 — (.+) 딜러$/, 'Raid picks — $1 attackers'],
 ];
 
 // 법률·콘텐츠 화면에 띄우는 안내 (privacy.js · terms.js · release.js)
@@ -1359,4 +1362,56 @@ const I18N_EN = {
   'DPS # · 버팀 #': 'DPS # · TDO #',
   '출처: LeekDuck 원본 데이터 + 포켓몬고 공식 한국 발표 (#-#-# 수집, 한국 시간 기준). 스포트라이트 아워는 #년부터 목요일.':
     'Source: LeekDuck data + official Pokémon GO Korea announcements (collected #-#-#, KST). Spotlight Hour is on Thursdays from #.',
+  // 2026-09-16 v3.50.0 상세 팝업 재설계 — 요약 · 배틀 정보 · 진화 탭 · CP 계산기 화면 · 하단 고정 버튼 (components/detail.js)
+  'CP 계산기': 'CP calculator',
+  '상세로': 'Details',
+  '상세로 돌아가기': 'Back to details',
+  '링크 복사': 'Copy link',
+  '요약': 'Summary',
+  '배틀 정보': 'Battle info',
+  'Lv.# · 개체값 #/#/#': 'Lv.# · IVs #/#/#',
+  '포획 CP': 'Catch CP',
+  '맥스 배틀': 'Max Battle',
+  'Lv.#': 'Lv.#',
+  '평시 Lv.#': 'Normal Lv.#',
+  '날씨 부스트 Lv.#': 'Weather boost Lv.#',
+  '날씨 부스트 없음 · 다이맥스': 'No weather boost · Dynamax',
+  '날씨 부스트 없음 · 거다이맥스·다이맥스': 'No weather boost · Gigantamax·Dynamax',
+  '개체값 # 이상': 'IVs # or higher',
+  '#% 기준': 'at #%',
+  '개체값 하한 없음': 'No IV floor',
+  '조건과 계산 기준 보기': 'Conditions and how it is calculated',
+  '굵은 숫자가 개체값 #%(#/#/#) CP예요. 잡은 개체가 이 값이면 #%.': 'The bold number is the CP at #% IVs (#/#/#). If what you caught shows this, it is #%.',
+  '레이드 보상은 개체값 # 이상이 확정이라 "최저" 가 있고, 야생은 하한이 없어 최저 CP를 적지 않아요.': 'Raid rewards are guaranteed IVs of # or higher, so there is a "min"; wild spawns have no floor, so no min CP is listed.',
+  '맥스 배틀은 날씨 부스트가 없어 항상 Lv#이라 레이드 평시와 같은 CP가 나와요.': 'Max Battles have no weather boost, so they are always Lv# — the same CP as a normal raid.',
+  '일반 기술': 'Fast moves',
+  '스페셜 기술': 'Charged moves',
+  '★ 레거시 기술 — 대단한 기술머신 또는 이벤트로만 습득': '★ Legacy move — only via Elite TM or events',
+  '능력치 육각형': 'Stat hexagon',
+  '이 폼은 능력치 데이터가 없어요.': 'This form has no stat data.',
+  '활용 순위': 'Usage rankings',
+  '아직 순위표 상위 #위에 오르지 않았어요.': 'Not in the top # of any ranking yet.',
+  '전체 순위 펼치기 (#)': 'Show all rankings (#)',
+  '각 순위표 상위 #위 기준 · #위 안은 👑': 'Based on the top # of each ranking · top # get a 👑',
+  '보스로 만났을 때': 'When it is the boss',
+  '맥스 배틀 추천 후보 — 다이맥스·거다이맥스만 참전': 'Max Battle picks — only Dynamax/Gigantamax can join',
+  '진화 계열': 'Evolution line',
+  '진화 계열과 메가·맥스 폼을 구분해서 보여 줘요 · 포켓몬을 누르면 이 창에서 상세가 바뀌고, ← 로 돌아오면 보던 탭과 위치가 그대로예요':
+    'The evolution line and Mega/Max forms are shown separately · tap a Pokémon to switch to it in this window, and ← brings back the tab and position you were on',
+  '진화형을 누르면 이 창에서 그 포켓몬으로 바뀌어요': 'Tap an evolution to switch to it in this window',
+  '진화형을 누르면 이 창에서 그 포켓몬으로 바뀌어요 · ⚡ 메가진화 가능 — 누르면 메가진화 스탯을 볼 수 있어요':
+    'Tap an evolution to switch to it in this window · ⚡ Can Mega Evolve — tap to see its Mega stats',
+  '진화형을 누르면 이 창에서 그 포켓몬으로 바뀌어요 · ⚡ 원시회귀 가능 — 누르면 원시회귀 스탯을 볼 수 있어요':
+    'Tap an evolution to switch to it in this window · ⚡ Can Primal Revert — tap to see its Primal stats',
+  '진화형을 누르면 이 창에서 그 포켓몬으로 바뀌어요 · ⚡ 메가진화 · 원시회귀 가능 — 누르면 그 폼의 스탯을 볼 수 있어요':
+    'Tap an evolution to switch to it in this window · ⚡ Can Mega Evolve / Primal Revert — tap to see that form\'s stats',
+  '예상 CP': 'Estimated CP',
+  '입력값 기준 · Lv.#': 'From your inputs · Lv.#',
+  'Lv.# 예상 CP': 'Lv.# estimated CP',
+  '포켓몬 레벨': 'Pokémon level',
+  '개체값 (IV)': 'IVs',
+  '각 # – #': 'each # – #',
+  '개체값 #%': 'IVs #%',
+  '초기화': 'Reset',
+  '포켓몬을 바꿔도 이전 화면으로 돌아갈 수 있어요': 'You can always return to the previous screen after switching Pokémon',
 };
