@@ -202,21 +202,25 @@ dialog.modal::backdrop { background: transparent; }
 /* 타입 배지 — 그림 왼쪽 위 모서리에 살짝 겹치는 작은 뱃지 (v2.35.0 자리 그대로). 그림 색이 다양해 늘 또렷하도록 그림자를 준다 */
 .detail__types { position: absolute; top: -1rem; left: -0.6rem; display: flex; align-items: flex-start; gap: 0.3rem; z-index: 1; }
 .detail__types .detail__type-pill { white-space: nowrap; }
+/* 이름 왼쪽 한 벌 — 접힌 머리(아래 미디어 쿼리)에서만 보인다 */
+.detail__types--inline { position: static; display: none; }
 .detail__info { display: flex; flex-direction: column; align-items: flex-start; gap: 0.5rem; flex: 1 1 auto; min-width: 0; }
 .detail__tags { display: flex; flex-wrap: wrap; gap: 0.4rem; }
 .detail__dexno { display: inline-block; }
 .detail__info h2 { margin: 0; font-size: 2rem; font-weight: 700; line-height: 1.2; }
 .detail__en-inline { font-size: 1.3rem; color: var(--muted); }
-/* 배틀 정보 탭 · 계산기 화면은 머리를 접는다 — 좁은 화면에서 내용 자리를 넓힌다 (목업 02 · 03) */
+/* 배틀 정보 · 진화 탭 · 계산기 화면은 머리를 접는다 — 좁은 화면에서 내용 자리를 넓힌다 (목업 02 · 03).
+   2026-09-16 v3.50.4 진화 탭도 접는다("작아질 거면 둘 다"). 접히면 그림이 작아 모서리 배지 자리가 없으므로
+   배지를 이름 왼쪽으로: [드래곤][비행] 망나뇽 #0149 */
 @media (max-width: 1099px) {
-  .detail--mon:is([data-tab="battle"], [data-screen="calc"]) .detail__side { align-items: center; padding-bottom: 0.8rem; }
-  .detail--mon:is([data-tab="battle"], [data-screen="calc"]) .detail__side .sprite-box { width: 5.6rem; height: 5.6rem; border-radius: 1rem; }
-  .detail--mon:is([data-tab="battle"], [data-screen="calc"]) .detail__side .sprite-box .sprite { width: 4.4rem; height: 4.4rem; margin-top: 0.3rem; }
-  .detail--mon:is([data-tab="battle"], [data-screen="calc"]) .detail__types { top: -0.8rem; left: -0.5rem; }
-  .detail--mon:is([data-tab="battle"], [data-screen="calc"]) .detail__type-pill { padding: 0.1rem 0.6rem; font-size: 0.95rem; }
-  .detail--mon:is([data-tab="battle"], [data-screen="calc"]) .detail__info { flex-direction: row; flex-wrap: wrap; align-items: center; gap: 0.4rem 0.8rem; }
-  .detail--mon:is([data-tab="battle"], [data-screen="calc"]) .detail__info h2 { order: -1; font-size: 1.6rem; }
-  .detail--mon:is([data-tab="battle"], [data-screen="calc"]) .detail__en-inline { display: none; }
+  .detail--mon:is([data-tab="battle"], [data-tab="evo"], [data-screen="calc"]) .detail__side { align-items: center; padding-bottom: 0.8rem; }
+  .detail--mon:is([data-tab="battle"], [data-tab="evo"], [data-screen="calc"]) .detail__side .sprite-box { width: 5.6rem; height: 5.6rem; border-radius: 1rem; }
+  .detail--mon:is([data-tab="battle"], [data-tab="evo"], [data-screen="calc"]) .detail__side .sprite-box .sprite { width: 4.6rem; height: 4.6rem; margin-top: 0; }
+  .detail--mon:is([data-tab="battle"], [data-tab="evo"], [data-screen="calc"]) .sprite-box > .detail__types { display: none; }
+  .detail--mon:is([data-tab="battle"], [data-tab="evo"], [data-screen="calc"]) .detail__types--inline { display: flex; order: -2; }
+  .detail--mon:is([data-tab="battle"], [data-tab="evo"], [data-screen="calc"]) .detail__info { flex-direction: row; flex-wrap: wrap; align-items: center; gap: 0.4rem 0.6rem; }
+  .detail--mon:is([data-tab="battle"], [data-tab="evo"], [data-screen="calc"]) .detail__info h2 { order: -1; font-size: 1.6rem; }
+  .detail--mon:is([data-tab="battle"], [data-tab="evo"], [data-screen="calc"]) .detail__en-inline { display: none; }
 }
 
 /* 오른쪽 — ← 돌아가기 · 탭 · 스크롤 내용 / 계산기 화면 */

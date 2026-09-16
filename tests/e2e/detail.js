@@ -42,10 +42,12 @@ suite(async () => {
   ok('✕ 가 머리줄 안에 (카드 위쪽)', closeBox.y >= barBox.y - 2 && closeBox.y + closeBox.height <= barBox.y + barBox.height + 2, `close ${closeBox.y} bar ${barBox.y}~${barBox.y + barBox.height}`);
   ok('도감번호 배지', (await text('.detail__dexno')) === '#0016');
   ok('이름', (await text('.detail__info h2')) === '구구');
-  const pills = await page.locator('.detail__types .detail__type-pill').allTextContents();
+  // v3.50.4 배지는 두 벌(그림 모서리 · 이름 왼쪽)이고 한 번에 하나만 보인다 — 요약 탭은 모서리 쪽
+  const pills = await page.locator('.sprite-box > .detail__types .detail__type-pill').allTextContents();
   ok('타입 알약 2개', pills.join('·') === '노말·비행', pills.join('·'));
+  ok('요약 탭은 이름 왼쪽 배지가 숨어 있다', await page.locator('.detail__types--inline').isHidden());
   // 2026-09-16 v3.50.1 타입 배지는 그림 왼쪽 위 모서리에 겹친다 (v2.35.0 자리) — 정보 칸이 아니다
-  const typesBox = await page.locator('.detail__types').boundingBox();
+  const typesBox = await page.locator('.sprite-box > .detail__types').boundingBox();
   const spriteBox = await page.locator('.detail__side .sprite-box').boundingBox();
   ok('타입 배지가 그림 왼쪽 위 모서리에 겹침', typesBox.x <= spriteBox.x + 2 && typesBox.y <= spriteBox.y + 2, `types ${typesBox.x},${typesBox.y} vs sprite ${spriteBox.x},${spriteBox.y}`);
   ok('머리줄 오른쪽에 [포켓몬 도감]', await page.locator('.detail__bar .detail__bar-dex').isVisible());
@@ -80,6 +82,18 @@ suite(async () => {
   // ── 배틀 정보 탭 · 탭별 스크롤 기억
   await tab('battle');
   ok('배틀 정보 탭으로', (await state()).tab === 'battle' && await page.locator('.detail__pane[data-pane="battle"]').isVisible());
+  // 2026-09-16 v3.50.4 접힌 머리 — 작은 그림 · 배지는 모서리가 아니라 이름 왼쪽에 · 진화 탭도 같은 모양
+  const compact = () => page.evaluate(() => {
+    const box = document.querySelector('.detail__side .sprite-box').getBoundingClientRect();
+    const corner = document.querySelector('.sprite-box > .detail__types');
+    const inline = document.querySelector('.detail__types--inline');
+    const h2 = document.querySelector('.detail__info h2').getBoundingClientRect();
+    const inlineBox = inline?.getBoundingClientRect();
+    return { w: box.width, cornerHidden: !corner || getComputedStyle(corner).display === 'none', inlineShown: !!inline && getComputedStyle(inline).display !== 'none',
+      leftOfName: inlineBox ? inlineBox.x + inlineBox.width <= h2.x + 1 && Math.abs(inlineBox.y + inlineBox.height / 2 - (h2.y + h2.height / 2)) < 14 : false };
+  });
+  const battleHead = await compact();
+  ok('배틀 정보 탭 — 그림이 작아지고 배지가 이름 왼쪽에', battleHead.w < 70 && battleHead.cornerHidden && battleHead.inlineShown && battleHead.leftOfName, JSON.stringify(battleHead));
   ok('약점·내성 두 카드', (await page.locator('.detail__match h3').allTextContents()).join('|') === '약점 (더 큰 데미지)|내성 (덜 받는 데미지)');
   ok('활용 순위 카드', (await page.locator('.detail__card h3', { hasText: '활용 순위' }).count()) === 1);
   ok('보스로 만났을 때 — 추천 후보 줄', (await page.locator('.detail__boss .detail__rec').count()) >= 3);
@@ -126,6 +140,8 @@ suite(async () => {
   await page.waitForTimeout(250);
   ok('상세로 돌아오면 배틀 정보 탭 그대로', (await state()).screen === 'detail' && (await state()).tab === 'battle');
   await tab('evo');
+  const evoHead = await compact();
+  ok('진화 탭도 같은 접힌 머리', evoHead.w < 70 && evoHead.inlineShown && evoHead.leftOfName, JSON.stringify(evoHead));
   ok('진화 계열 3단계', (await page.locator('.evo__mon').count()) === 3 && (await page.locator('.evo__mon.is-now').count()) === 1);
   await page.locator('.evo__mon').nth(1).click();   // 피죤
   await page.waitForTimeout(500);

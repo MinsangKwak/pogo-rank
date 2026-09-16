@@ -783,10 +783,14 @@ function detailBuild(state) {
 
   // ── 왼쪽(모바일은 위): 그림 · 번호 · 폼 · 이름 · 영문명 · 타입 · ＋ 내 포켓몬
   // 타입 배지는 v2.35.0 처럼 그림 왼쪽 위 모서리에 겹친다 (정보 칸에 두었던 v3.50.0 을 되돌렸다 — v3.50.1)
+  // 2026-09-16 v3.50.4 좁은 화면의 접힌 머리(배틀 정보·진화 탭·계산기)에서는 그림이 작아 모서리에 걸 자리가 없다 —
+  // 같은 배지를 이름 왼쪽에 한 벌 더 두고(.detail__types--inline) 어느 쪽을 보일지는 CSS 가 data-tab 으로 고른다
+  const typePills = () => types.map((typeName) => el('span', { class: 'detail__type-pill', style: `--c: var(--t-${typeName})` }, TYPE_KO[typeName] ?? typeName));
   const side = el('div', { class: 'detail__side' },
     el('div', { class: `sprite-box${formKind ? ' sprite-box--' + formKind : ''}` }, sprite(pokemon.sprite),
-      types.length ? el('div', { class: 'detail__types' }, ...types.map((typeName) => el('span', { class: 'detail__type-pill', style: `--c: var(--t-${typeName})` }, TYPE_KO[typeName] ?? typeName))) : ''),
+      types.length ? el('div', { class: 'detail__types' }, ...typePills()) : ''),
     el('div', { class: 'detail__info' },
+      types.length ? el('div', { class: 'detail__types detail__types--inline', 'aria-hidden': 'true' }, ...typePills()) : '',
       el('div', { class: 'detail__tags' },
         dex != null ? el('span', { class: 'tag detail__dexno' }, `#${String(dex).padStart(4, '0')}`) : '',
         ...formLabels.map((label) => el('span', { class: `form-tag${formLabelKind(label) ? ' form-tag--' + formLabelKind(label) : ''}` }, label))),
