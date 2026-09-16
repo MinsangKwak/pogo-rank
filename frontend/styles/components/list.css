@@ -6,35 +6,24 @@
 .row-list { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--line); }
 .row { display: grid; grid-template-columns: 2.8rem 4rem 1fr auto;  /* 2026-09-03 v2.2.0 보유 ☆ 열 제거 */ align-items: center; gap: 1.2rem; padding: 0.9rem 0; border-bottom: 1px solid var(--line); cursor: pointer; }
 /* 2026-09-15 v3.36.0 아직 못 쓰는 줄 — 데이터만 등록되고 게임에는 안 나온 개체(미출시 거다이맥스 · 예정 다이맥스).
-   지우지 않고 흐리게 남긴다. 순위 칸이 '–' 라 번호가 밀리지 않는 것도 눈으로 보인다.
-   2026-09-15 v3.37.0 셋으로 갈라 둔다 — **오른쪽으로 물리고 · 더 옅게 · 살짝 흐리게**.
-     · 오른쪽 들여쓰기: 왼쪽 끝이 어긋나면 훑는 눈이 "이 줄은 결이 다르다" 를 글자를 읽기 전에 안다
-     · blur: 옅게만 하면 밝은 화면에서 그냥 연한 줄로 읽힌다. 초점이 안 맞는 느낌이 "지금 것이 아님" 을 더 잘 말한다
-   둘 다 hover·focus 에서 풀린다 — 살펴보려고 다가가면 또렷해져야 읽을 수 있다 */
-.row.is-unreleased {
-  margin-left: 4.8rem; opacity: .4; filter: blur(0.7px);
-  border-left: 2px dashed var(--line); padding-left: 1.2rem;
-  transition: opacity .12s, filter .12s, margin-left .12s;
+   지우지 않고 남긴다: 지우면 "왜 없지" 를 아무도 모르고, 남겨 두면 "데이터는 이미 있다" 까지 전해진다.
+
+   2026-09-16 v3.49.0 **흐림(blur)과 오른쪽 들여쓰기를 걷었다.** (제보 — "블러를 풀고 대신에 테두리를")
+     · 흐림: v3.37.0 은 옅게(.4) + 초점 흐리기로 "지금 것이 아님" 을 말했는데, 읽으려면 눈을
+       찌푸려야 해서 정작 **무엇이 끼어들었는지**를 볼 수가 없었다. 표시가 정보를 가리면 안 된다.
+     · 들여쓰기: v3.49.0 부터 미구현도 순위 번호를 받는다(가상 순위 — views/max.js). 번호가 한 줄로
+       서야 1,2,3… 이 순서로 읽히므로 왼쪽 끝을 어긋내지 않는다.
+   이제 표시는 **왼쪽 빨간 막대 + 옅은 바탕 + [미구현] 딱지** 셋이고, 글자는 출시분과 똑같이 또렷하다.
+   막대는 ::before 로 얹는다 — border-left 로 그으면 그 두께만큼 내용이 밀려 번호 칸이 어긋난다 */
+.row.is-unreleased { position: relative; background: color-mix(in srgb, var(--warn) 5%, transparent); }
+.row.is-unreleased::before {
+  content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 0.3rem;
+  background: var(--warn);
 }
-/* 2026-09-15 v3.41.1 **hover 에서는 풀지 않는다.** 마우스가 스치기만 해도 또렷해져서
-   "아직 못 쓰는 줄" 이라는 표시가 사실상 없는 것과 같았다. 펼친 근거 줄(.row__why)은 형제 요소라
-   흐림이 걸리지 않으므로, 눌러서 펼치면 계산식·등급은 그대로 읽을 수 있다.
-   키보드 포커스만 예외로 둔다 — 탭으로 옮겨 다니는 사람에게 흐린 줄만 남으면 화면을 쓸 수가 없다 */
-.row.is-unreleased:focus-visible { opacity: 1; filter: none; }
-.row.is-unreleased .row__rank { color: var(--muted); }
-/* 근거 줄(펼침)도 그 줄에 딸린 것이라 같이 물린다 */
-.row.is-unreleased + .row__why { margin-left: 4.8rem; }
-/* 카드 격자에서는 **밀지 않는다** — 칸 폭이 정해져 있어 밀면 그 카드만 좁아져(228px vs 309px) 줄이 너덜해진다.
-   오른쪽 들여쓰기는 왼쪽 끝이 한 줄로 서 있는 줄 보기에서만 뜻이 있다. 카드에서는 흐림과 점선이 같은 말을 한다 */
-.row-list.is-grid > .row.is-unreleased { margin-left: 0; }
-/* 휴대폰에서는 들여쓰기를 줄인다 — 390px 에서 48px 를 물리면 이름 자리가 그만큼 좁아져 줄이 접힌다 */
-@media (max-width: 699px) {
-  .row.is-unreleased { margin-left: 2.2rem; padding-left: 0.8rem; }
-  .row.is-unreleased + .row__why { margin-left: 2.2rem; }
-}
-/* 움직임을 줄이고 싶다는 설정이면 초점만 흐리고 미끄러지지는 않게 */
-@media (prefers-reduced-motion: reduce) { .row.is-unreleased { transition: none; } }
+.row.is-unreleased .row__rank { color: var(--warn); }
 .row:hover { background: var(--hover); }
+/* 미구현 줄은 hover 에서도 제 바탕을 지킨다 — 스친 줄만 표시가 사라지면 훑는 중에 놓친다 */
+.row.is-unreleased:hover { background: color-mix(in srgb, var(--warn) 12%, var(--hover)); }
 
 /* 등급 색상 — PvE 평가 글자(.grade-mark)와 티어표 뱃지(.tier__badge)가 같은 색을 쓴다 */
 .grade-mark { font-weight: 600; }
@@ -131,6 +120,8 @@
    키보드로도 닿게 tabindex 만 준다. 손가락 과녁은 44px 규칙대로 여백으로 채운다 */
 /* 제목 + ⓘ 묶음 — 휴대폰에서 .row-head 가 block 이 돼도 둘은 한 줄에 남는다 */
 .row-head__title { display: flex; align-items: baseline; gap: 0.2rem; min-width: 0; }
+/* 제목 옆 딱지([가상 순위])는 ⓘ 보다 한 칸 떨어진다 — ⓘ 는 제목에 붙는 표식이고 딱지는 따로 읽는 말이다 */
+.row-head__title .tag { margin-left: 0.4rem; }
 .row-head__title h2 { min-width: 0; }
 .info-dot {
   display: inline-flex; align-items: center; justify-content: center;

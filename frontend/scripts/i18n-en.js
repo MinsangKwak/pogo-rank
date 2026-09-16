@@ -261,8 +261,16 @@ const I18N_EN = {
   '즐겨찾기 #': 'Favorites #',
   '★ 즐겨찾기 #': '★ Favorites #',
   '미구현': 'Not in GO',
-  '머리의 [미구현] 을 켜면 데이터만 등록되고 아직 게임에 나오지 않은 개체도 함께 봐요 — 흐리게 표시되고 순위 번호는 주지 않아요. 관리자만 보이는 값이에요.':
-    'Turn on [not in GO] in the header to also see entries whose data is registered but that have not launched — they show faded and get no rank number. Admins only.',
+  '머리의 [미구현] 을 켜면 데이터만 등록되고 아직 게임에 나오지 않은 개체도 함께 봐요 — 왼쪽에 빨간 막대가 서고, 순위는 그것들이 나왔다고 가정한 가상 판으로 다시 매겨져요(밀린 줄에는 [지금 N위]). 관리자만 보이는 값이에요.':
+    'Turn on [not in GO] in the header to also see entries whose data is registered but that have not launched — they get a red bar on the left, and the ranking is recomputed as a what-if with them included (rows pushed down show [now at N]). Admins only.',
+  '게임 파일에 데이터는 있지만 아직 못 쓰는 개체를 함께 봐요 — 왼쪽에 빨간 막대가 서고, 순위는 그것들이 나왔다고 가정한 가상 판이 돼요':
+    'Also show entries whose data is in the game files but that cannot be used yet — they get a red bar on the left, and the ranking becomes a what-if with them included',
+  '가상 순위': 'What-if ranking',
+  '미구현이 나왔다고 가정하고 매긴 순위예요 — 실제 순위는 [미구현] 을 끄면 나와요':
+    'Ranked as if the unreleased entries had launched — turn [not in GO] off for the real ranking',
+  '지금 #위': 'now at #',
+  '미구현이 없으면 #위 — 이 표는 미구현이 나왔다고 가정한 순위예요':
+    'Would be # without the unreleased entries — this table ranks them as if they had launched',
   '메가진화 데이터는 있지만 아직 미구현': 'Mega Evolution data exists, but it is not in GO yet',
   '원시회귀 데이터는 있지만 아직 미구현': 'Primal Reversion data exists, but it is not in GO yet',
   '링크 공유': 'Share link',
