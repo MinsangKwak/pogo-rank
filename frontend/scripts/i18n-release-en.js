@@ -15,6 +15,10 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 const RELEASE_NOTES_EN = {
+  '2026-09-16 · v3.49.1': [
+    '**(fix) Refreshing looked like it signed you out** — you were never signed out; restoring the session took over ten seconds and the [sign in] button sat there meanwhile. It now carries over immediately, and says "checking your sign-in" if it needs a moment.',
+    '**(fix) Edits to My Pokémon during that gap did not reach your account** — saving now waits until the sign-in check has finished.',
+  ],
   '2026-09-16 · v3.49.0': [
     '**Pokémon that have not launched yet are easier to read** — the blur that hid them is gone, replaced by a red bar on the left. Blurred rows could not actually be read. The [not in GO] chip in the Pokédex is the same red now.',
   ],

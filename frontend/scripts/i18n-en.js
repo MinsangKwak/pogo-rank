@@ -261,6 +261,7 @@ const I18N_EN = {
   '즐겨찾기 #': 'Favorites #',
   '★ 즐겨찾기 #': '★ Favorites #',
   '미구현': 'Not in GO',
+  '🔄 로그인 확인 중…': '🔄 Checking your sign-in…',
   '머리의 [미구현] 을 켜면 데이터만 등록되고 아직 게임에 나오지 않은 개체도 함께 봐요 — 왼쪽에 빨간 막대가 서고, 순위는 그것들이 나왔다고 가정한 가상 판으로 다시 매겨져요(밀린 줄에는 [지금 N위]). 관리자만 보이는 값이에요.':
     'Turn on [not in GO] in the header to also see entries whose data is registered but that have not launched — they get a red bar on the left, and the ranking is recomputed as a what-if with them included (rows pushed down show [now at N]). Admins only.',
   '게임 파일에 데이터는 있지만 아직 못 쓰는 개체를 함께 봐요 — 왼쪽에 빨간 막대가 서고, 순위는 그것들이 나왔다고 가정한 가상 판이 돼요':

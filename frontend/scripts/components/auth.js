@@ -37,7 +37,7 @@ const REDIRECT_TRY_KEY = 'pogo_auth_redirect';
 const AUTH = {
   ready: false,      // SDK 로드·초기화 완료
   user: null,        // firebase user
-  status: 'anon',    // anon(비로그인) | pending(승인 대기) | ok(승인됨)
+  status: 'anon',    // anon(비로그인) | loading(판정 중) | pending(승인 대기) | ok(승인됨)
   admin: false,     // 관리자인가 (루트 또는 위임)
   adminRoot: false, // 2026-09-15 v3.40.0 루트 관리자인가 — ADMIN_UID 로 규칙에 박힌 사람. 관리자 지정·해제는 이 사람만 한다
   favs: new Set(),   // 즐겨찾기 도감번호
@@ -55,6 +55,52 @@ const AUTH = {
 function authEnabled() {
   return typeof FIREBASE_CONFIG !== 'undefined' && !!(FIREBASE_CONFIG && FIREBASE_CONFIG.apiKey);
 }
+
+// ── 2026-09-16 v3.49.1 "새로고침하면 로그인이 풀린다" ─────────────────────────
+// 실제로 풀리는 게 아니라 **되돌아오는 데 오래 걸려서** 그렇게 보였다. 재 보니 둘이 겹쳤다:
+//   (1) initAuth 를 window.load 뒤에 불렀다 — load 는 첫 화면 그림을 다 받아야 오고,
+//       Slow 4G · 휴대폰에서 DOMContentLoaded 보다 4.4초 늦다 (실측).
+//   (2) 그 뒤에야 compat SDK 세 벌을 **차례로** 받는다 — app 10 + auth 39 + firestore 159 = 208KB(gz).
+// 합쳐서 십수 초. 그동안 화면은 로그인 버튼을 내밀었고, 그 사이 내 포켓몬 저장은 계정이 아니라
+// 손님 저장소로 샜다 (planner/collection.js planPersist).
+//
+// 그래서 **SDK 를 받기 전에** 이 기기에 로그인 자취가 있는지 동기로 본다.
+// compat 은 로그인 사용자를 localStorage 'firebase:authUser:<apiKey>:[DEFAULT]' 에 남긴다 —
+// 그 키가 있으면 새로고침해도 로그인은 그대로이고, 판정이 끝날 때까지 'loading' 으로 그려야 한다.
+// (로그아웃하면 SDK 가 이 키를 지우므로 남은 자취가 거짓말을 하지 않는다)
+function authStoredUser() {
+  try {
+    for (let index = 0; index < localStorage.length; index += 1) {
+      if ((localStorage.key(index) || '').startsWith('firebase:authUser:')) return true;
+    }
+  } catch { /* 저장소를 막은 브라우저 — 그때는 어차피 로그인이 안 남는다 */ }
+  return false;
+}
+
+// 판정이 끝나기를 기다린다. 쓰기(내 포켓몬 저장 등)가 'loading' 중에 일어나면 계정이 아니라
+// 손님 저장소로 새기 때문이다. 폴링으로 두는 이유 — SDK 를 못 받아 판정이 영영 안 끝나는 길이
+// 여럿이라, 약속(promise)을 걸어 두면 그 경우 영원히 안 풀린다. 시간 상한을 둔다
+function authSettled(maxWaitMs = 12000) {
+  if (AUTH.status !== 'loading') return Promise.resolve();
+  const startedAt = Date.now();
+  return new Promise((resolve) => {
+    const tick = () => {
+      if (AUTH.status !== 'loading' || Date.now() - startedAt > maxWaitMs) return resolve();
+      setTimeout(tick, 120);
+    };
+    tick();
+  });
+}
+
+// SDK 를 못 받았거나 초기화가 깨졌다 — 'loading' 에 머물면 "확인 중" 이 영영 돌아간다.
+// 비로그인으로 되돌리고 무엇이 잘못됐는지 적는다
+function authGiveUp(message) {
+  AUTH.status = 'anon';
+  renderAccount(message);
+}
+
+// 로그인 자취가 있으면 SDK 가 올 때까지 'loading' — 비로그인과 구분한다 (위 authStoredUser 머리말)
+if (authEnabled() && authStoredUser()) AUTH.status = 'loading';
 
 // 로컬 테스트 목 모드 여부 — localhost/127.0.0.1 에서 주소에 ?mock 이 있을 때만 (자세한 사용법은 static/dev-mock.js 머리말)
 function mockAuthWanted() {
@@ -104,19 +150,21 @@ async function initAuth() {
     try {
       await loadScript('dev-mock.js');
     } catch {
-      renderAccount('테스트 목(dev-mock.js) 로드 실패 — dist/ 를 다시 빌드하세요');
+      authGiveUp('테스트 목(dev-mock.js) 로드 실패 — dist/ 를 다시 빌드하세요');
       return;
     }
   }
   // 테스트용 목(mock)이 이미 있으면 SDK를 안 받는다
   if (typeof window.firebase === 'undefined') {
+    const sdk = (moduleName) => loadScript(`https://www.gstatic.com/firebasejs/${FIREBASE_VER}/firebase-${moduleName}-compat.js`);
     try {
-      // app → auth → firestore 순서로 하나씩 기다린다: auth·firestore는 app이 먼저 있어야 한다
-      for (const moduleName of ['app', 'auth', 'firestore']) {
-        await loadScript(`https://www.gstatic.com/firebasejs/${FIREBASE_VER}/firebase-${moduleName}-compat.js`);
-      }
+      // app 이 먼저다 — auth·firestore 는 그 위에 얹힌다.
+      // 2026-09-16 v3.49.1 나머지 둘은 **서로를 안 기다린다.** 차례로 받으면 왕복이 하나 더 들고,
+      // firestore(159KB)가 auth(39KB)보다 훨씬 커서 "로그인했는지" 를 아는 일이 그만큼 늦어졌다
+      await sdk('app');
+      await Promise.all([sdk('auth'), sdk('firestore')]);
     } catch {
-      renderAccount('SDK 를 받지 못했어요 — 네트워크를 확인해 주세요');
+      authGiveUp('SDK 를 받지 못했어요 — 네트워크를 확인해 주세요');
       return;
     }
   }
@@ -124,6 +172,10 @@ async function initAuth() {
     if (!firebase.apps.length) firebase.initializeApp(FIREBASE_CONFIG);
     AUTH.db = firebase.firestore();
     AUTH.ready = true;
+    // 2026-09-16 v3.49.1 지속성을 **명시**한다. compat 기본값이 이미 LOCAL 이지만, 적어 두면
+    // "새로고침하면 풀리는 것 아니냐" 에 코드가 답한다. 저장소를 막은 브라우저에서는 실패해도 그냥 간다
+    const persistence = firebase.auth.Auth?.Persistence?.LOCAL;
+    if (persistence) await firebase.auth().setPersistence(persistence).catch(() => {});
     // 팝업 대체 경로(리다이렉트)로 돌아온 경우의 결과 수거.
     // 2026-09-10 v2.44.0 여기서 오류를 통째로 버리던 것을 화면에 띄운다 — 리다이렉트가 실패하면
     // 사용자는 아무 안내 없이 비로그인 화면으로 돌아왔고(CSP 로 로그인이 막혀 있던 동안이 그랬다),
@@ -150,7 +202,7 @@ async function initAuth() {
       });
     firebase.auth().onAuthStateChanged(onAuthChange);
   } catch (error) {
-    renderAccount('초기화 실패: ' + (error.message || error));
+    authGiveUp('초기화 실패: ' + (error.message || error));
   }
 }
 
@@ -541,6 +593,12 @@ function renderAccount(message) {
   // 직접 넘긴 문구가 우선, 없으면 리다이렉트 안내(AUTH.redirectMsg)를 얹는다
   const shown = message || AUTH.redirectMsg;
   const note = shown ? el('p', { class: 'account__msg' }, shown) : '';
+  // (0) 2026-09-16 v3.49.1 확인 중 — 이 기기에 로그인 자취가 있는데 SDK 가 아직 안 왔다.
+  // 여기서 로그인 버튼을 내밀면 "새로고침했더니 로그아웃됐다" 로 읽힌다. 실제로는 곧 돌아온다
+  if (!AUTH.user && AUTH.status === 'loading') {
+    accountBox.append(el('p', { class: 'account__sub account__loading' }, '🔄 로그인 확인 중…'), note);
+    return;
+  }
   // (1) 비로그인
   if (!AUTH.user) {
     accountBox.append(

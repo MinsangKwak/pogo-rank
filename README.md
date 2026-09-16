@@ -124,10 +124,17 @@ Pokémon과 관련 명칭·이미지의 권리는 The Pokémon Company, Nintendo
 
 ## 버전 이력
 
-전체 146개 릴리스를 `날짜 → 버전`의 2단계 접이식 목록으로 정리했습니다. 가장 최근 날짜만 기본으로 펼쳐지며, 설명이 한 줄인 초기 버전은 별도의 접이식 영역 없이 표시됩니다. 사용자용 요약은 서비스의 [🎉 패치 노트](https://moncamp.kr/#/release)에서, 변경 배경과 세부 구현 내용은 [변경 이력](CHANGELOG.md)에서 확인할 수 있습니다.
+전체 147개 릴리스를 `날짜 → 버전`의 2단계 접이식 목록으로 정리했습니다. 가장 최근 날짜만 기본으로 펼쳐지며, 설명이 한 줄인 초기 버전은 별도의 접이식 영역 없이 표시됩니다. 사용자용 요약은 서비스의 [🎉 패치 노트](https://moncamp.kr/#/release)에서, 변경 배경과 세부 구현 내용은 [변경 이력](CHANGELOG.md)에서 확인할 수 있습니다.
 
 <details open>
-<summary><b>2026-09-16</b> — 릴리스 6개 · <code>v3.46.0 … v3.49.0</code></summary>
+<summary><b>2026-09-16</b> — 릴리스 7개 · <code>v3.46.0 … v3.49.1</code></summary>
+
+<details>
+<summary><b>v3.49.1</b> · (수정) 새로고침 뒤 로그인이 돌아오기까지 십수 초 → 즉시</summary>
+
+**로그인이 풀린 게 아니라 되찾는 데 오래 걸렸다.** `initAuth` 를 `window.load` 뒤에 불렀는데 `load` 는 첫 화면 그림을 다 받아야 오고(Slow 4G 휴대폰 실측 DOMContentLoaded +4.4초), 그 뒤에야 compat SDK 208KB(gz)를 차례로 받았다. 그동안 메뉴는 로그인 버튼을 내밀었고, 그 창에 내 포켓몬을 고치면 계정이 아니라 손님 저장소로 샜다. 고친 것 넷 — SDK 보다 먼저 `localStorage` 의 로그인 자취를 확인해 새 상태 `'loading'` 으로 시작 · 확인 중에는 로그인 버튼 대신 `🔄 로그인 확인 중…`(잠금도 안 건다) · 자취가 있으면 `load` 를 안 기다리고 `auth`·`firestore` 를 병렬로(+ gstatic preconnect) · 저장은 `authSettled()` 로 판정을 기다린 뒤에. `setPersistence(LOCAL)` 도 명시했다. 회귀 `auth-boot.js` 14건 신설
+
+</details>
 
 <details>
 <summary><b>v3.49.0</b> · 미구현 흐림 → 왼쪽 빨간 막대 · D-MAX 는 "나온다면" 의 가상 순위로</summary>

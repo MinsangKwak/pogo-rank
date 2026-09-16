@@ -263,8 +263,12 @@ initTheme();
 // 다시 보일 때 작은 표식 파일로 새 빌드가 있는지 확인한다 (components/freshness.js)
 initFreshness();
 // 2026-09-03 v2.2.0 로그인: 첫 화면이 그려진 뒤에 Firebase SDK를 받는다 (초기 로딩 영향 없음)
-// 이미 load가 끝났으면 곧바로, 아니면 load 이벤트를 기다렸다가 initAuth를 부른다
-(document.readyState === 'complete'
+// 2026-09-16 v3.49.1 **로그인 자취가 있으면 load 를 기다리지 않는다.**
+// load 는 첫 화면 그림을 다 받아야 오는데, Slow 4G · 휴대폰 실측에서 DOMContentLoaded 보다 4.4초 늦다.
+// 그 뒤에야 SDK 208KB 를 받으니 새로고침 → 로그인 복구까지 십수 초였고, 그동안 화면은 로그아웃으로 보였다.
+// 자취가 없는 방문자는 예전대로 load 뒤에 — 그들에게 로그인은 첫 화면보다 급한 기능이 아니다
+if (typeof authStoredUser === 'function' && authEnabled() && authStoredUser()) initAuth();
+else (document.readyState === 'complete'
   ? Promise.resolve()
   : new Promise((resolve) => window.addEventListener('load', resolve))
 ).then(initAuth);
