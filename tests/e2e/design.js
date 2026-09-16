@@ -39,7 +39,7 @@ suite(async () => {
   ok('목적별 카드 셋', (await page.locator('.home__service-group').count()) === 3);
   const descs = await page.locator('.home__group-desc').allTextContents();
   ok('카드마다 한 줄 설명', descs.length === 3 && descs.every((d) => d.length > 8), descs.join(' | '));
-  ok('타일 9개는 그대로', (await page.locator('.home__tile').count()) === 9);
+  ok('타일 10개', (await page.locator('.home__tile').count()) === 10);   // v3.51.0 📢 게임 업데이트가 늘었다
 
   // 용도별 상위 포켓몬 — 기준 · 수치 · 날짜
   const groups = await page.locator('.pick__group').count();
@@ -87,7 +87,13 @@ suite(async () => {
   // ── EN · 다크
   await toEnglish(page);
   await page.waitForTimeout(600);
-  const enTexts = await page.locator('.home-dashboard').evaluate((n) => n.innerText);
+  // 2026-09-16 v3.51.0 게임 업데이트 카드는 **일부러** 한국어로 둔다 — 공식 공지를 한국어로 요약한 글이라
+  // 사전을 태우지 않고, 그 사실을 i18nKoOnlyNote 로 밝힌다 (일정표와 같은 규칙). 그 덩이는 이 검사에서 뺀다
+  const enTexts = await page.locator('.home-dashboard').evaluate((n) => {
+    const clone = n.cloneNode(true);
+    clone.querySelector('.home-updates')?.remove();
+    return clone.innerText;
+  });
   const leftover = enTexts.split('\n').filter((line) => /[가-힣]/.test(line) && !/^(#|\d)/.test(line));
   // 포켓몬 이름은 data 에서 영문으로 바뀐다 — 남은 한글은 사전에 빠진 줄이다
   ok('EN 홈에 한글이 남지 않는다', leftover.length === 0, leftover.slice(0, 4).join(' | '));

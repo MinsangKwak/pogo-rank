@@ -53,9 +53,12 @@ html:not(#_):not(#__) .pick__hero .sprite:not(.is-loading):not(.empty) { backgro
 .home__ball::after { content: ''; position: absolute; left: 50%; top: 50%; width: 0.9rem; height: 0.9rem; transform: translate(-50%, -50%); border: 0.3rem solid var(--fg); border-radius: 50%; background: var(--surface); }
 
 /* ── 구역 머리 — [제목] [한 마디] ─────────────────────────────────────────── */
-.home__section { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.4rem 1.2rem; padding: 0 0 1.4rem; }
+/* 머리줄은 늘 두 줄이다 (v3.55.1) — 위는 제목과 그 구역의 버튼, 아래는 부제.
+   부제 길이에 따라 한 줄이 됐다 두 줄이 됐다 하면 구역마다 머리줄 높이가 달라져 훑기 어렵다.
+   order 로만 자리를 바꾼다 — 읽는 차례(제목 → 설명 → 버튼)는 그대로 두고 보이는 자리만 옮긴다 */
+.home__section { display: flex; flex-wrap: wrap; align-items: center; gap: 0.6rem 1.2rem; padding: 0 0 1.4rem; }
 .home__section h3 { margin: 0; font-size: 1.8rem; font-weight: 700; }
-.home__section > span { font-size: 1.2rem; color: var(--muted); word-break: keep-all; }
+.home__section > span { flex-basis: 100%; order: 2; font-size: 1.2rem; color: var(--muted); word-break: keep-all; }
 .home__date { color: var(--muted); }
 
 /* ── 목적별 기능 세 카드 ──────────────────────────────────────────────────── */

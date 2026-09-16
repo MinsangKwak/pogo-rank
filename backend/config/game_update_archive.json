@@ -1,0 +1,545 @@
+{
+  "_comment": [
+    "**아카이브 색인** — 자동 수집 (scripts/collect_game_updates.py).",
+    "excerpt 는 우리 요약이 아니라 **공식 원문에서 그대로 따온 인용**이다. 그래서 검증 없이 공개할 수 있다.",
+    "여기에 있는 항목에 사람이 요약을 쓰면 backend/config/game_updates.json 의 기사가 되고,",
+    "화면은 그때부터 기사를 보인다(같은 원문의 아카이브 항목은 숨는다)."
+  ],
+  "collectedAt": "2026-09-16",
+  "entries": [
+    {
+      "id": "communityday-october-2026-zorua",
+      "kind": "news",
+      "title": "2026년 10월 커뮤니티 데이: 조로아",
+      "date": "2026-09-15",
+      "excerpt": "이벤트 기간 동안 “향로” 효과 3시간 지속(“산책향로” 제외)",
+      "sources": [
+        {
+          "lang": "ko",
+          "label": "2026년 10월 커뮤니티 데이: 조로아",
+          "url": "https://pokemongo.com/ko/news/communityday-october-2026-zorua",
+          "image": "https://lh3.googleusercontent.com/HJT-iQ6qMUmoXYCmtwOqp-68HQFXJFzEiw6R_eqgY9KhKQLdihsIsIIY_Px9DE8-oBEzB0Cr7CKoyk5pX8tyWklwJyyRyH0GiBrBNRc82YA"
+        }
+      ]
+    },
+    {
+      "id": "choose-your-path-twilight-trails-2026",
+      "kind": "news",
+      "title": "\"황혼의 여정\" 시즌에는 새로운 시간제한 리서치를 활용해 나만의 모험을 떠나 보세요!",
+      "date": "2026-09-14",
+      "excerpt": "Pokémon GO”는 영어, 프랑스어, 독일어, 이탈리아어, 일본어, 스페인어, 번체자, 한국어, 태국어, 포르투갈어, 튀르키예어, 인도네시아어로 플레이가 가능합니다.",
+      "sources": [
+        {
+          "lang": "ko",
+          "label": "\"황혼의 여정\" 시즌에는 새로운 시간제한 리서치를 활용해 나만의 모험을 떠나 보세요!",
+          "url": "https://pokemongo.com/ko/news/choose-your-path-twilight-trails-2026",
+          "image": "https://lh3.googleusercontent.com/_yKVtZhYNjg2v6GwFtgVR-r4J_DaJL_Q16g0UhSOWH78D0WtXKOBZ-opQJzNB6bS-AxYjnZmHyDxGdg34p98fTe1p_NSyVOfgaR1ACHMM70"
+        }
+      ]
+    },
+    {
+      "id": "gigantamax-cinderace-max-battle-day-2026",
+      "kind": "news",
+      "title": "\"맥스배틀 데이\"에 \"거다이맥스 에이스번\"이 거대한 불꽃 볼을 슛!",
+      "date": "2026-09-09",
+      "excerpt": "한국시간 2026년 10월 3일 14:00부터 17:00까지",
+      "sources": [
+        {
+          "lang": "ko",
+          "label": "\"맥스배틀 데이\"에 \"거다이맥스 에이스번\"이 거대한 불꽃 볼을 슛!",
+          "url": "https://pokemongo.com/ko/news/gigantamax-cinderace-max-battle-day-2026",
+          "image": "https://lh3.googleusercontent.com/WT8oI0oxsVj0AVZ1qD58MMbCPc8di-ajTXg2IBD3OcFshTR025JQIKbJnlMYVUBw96yMdeyMlosgQliCxVxgyTCJPtiN53G05HUMcdshAw"
+        }
+      ]
+    },
+    {
+      "id": "weekly-branching-tr-korea-2026",
+      "kind": "news",
+      "title": "주간 릴레이 시간제한 리서치가 찾아옵니다!",
+      "date": "2026-09-07",
+      "excerpt": "매주 새로운 선택과 보너스가 기다리는 주간 릴레이 시간제한 리서치가 찾아옵니다! 오직 한국에서만 만날 수 있는 이번 이벤트에서 나만의 경로를 선택해보세요! 여러분의 선택에 따라 한 주 동안 즐길 수 있는 리서치 과제와 보너스가 달라집니다.",
+      "sources": [
+        {
+          "lang": "ko",
+          "label": "주간 릴레이 시간제한 리서치가 찾아옵니다!",
+          "url": "https://pokemongo.com/ko/news/weekly-branching-tr-korea-2026",
+          "image": "https://lh3.googleusercontent.com/YTWdPxzC8pivOHHqNqkA5VYuXBhfFinH38ENvIZ7f9LfkMDoyXrXRnh5kd-ibfKJHequDEp7sbd6Ahwnvh2ct8REj7kjdvJQkCkIXabrFikr"
+        }
+      ]
+    },
+    {
+      "id": "harvest-festival-tgr-2026",
+      "kind": "news",
+      "title": "수확 축제: 점령 이벤트에는 \"그림자 제크로무\"를 구해 주세요!",
+      "date": "2026-09-07",
+      "excerpt": "한국시간 2026년 10월 2일 00:00부터 10월 5일 20:00까지",
+      "sources": [
+        {
+          "lang": "ko",
+          "label": "수확 축제: 점령 이벤트에는 \"그림자 제크로무\"를 구해 주세요!",
+          "url": "https://pokemongo.com/ko/news/harvest-festival-tgr-2026",
+          "image": "https://lh3.googleusercontent.com/papryPKXMu6SdbGgSZRDSZURigphJVWB5Am87oJJ4BqEfpLfqD4kStG47AFnLnl9Dxi-f0CaRK2mp8A_kWqMfx5D3mFVMqmVjsvaSqa0SIiS"
+        }
+      ]
+    },
+    {
+      "id": "harvest-festival-2026",
+      "kind": "news",
+      "title": "풍성한 \"수확 축제\"와 색이 다른 \"과사삭벌레\"의 \"Pokémon GO\" 첫 등장을 즐겨요!",
+      "date": "2026-09-07",
+      "excerpt": "한국시간 2026년 9월 29일 10:00부터 10월 5일 20:00까지",
+      "sources": [
+        {
+          "lang": "ko",
+          "label": "풍성한 \"수확 축제\"와 색이 다른 \"과사삭벌레\"의 \"Pokémon GO\" 첫 등장을 즐겨요!",
+          "url": "https://pokemongo.com/ko/news/harvest-festival-2026",
+          "image": "https://lh3.googleusercontent.com/xNJ7JKQK3J1NgJXra1tCGw0XmW9r9vQBiNy1ZpDL683M_1GjMZDTONVKpVcrUd2U2dPeV2X5UGhbQjSnr8aApqqbwHZAD60u-H68Go-R"
+        }
+      ]
+    },
+    {
+      "id": "gowildarea-sendai-ticket-update",
+      "kind": "news",
+      "title": "\"Pokémon GO 와일드 에리어: 센다이, 도호쿠\" 티켓팅 최신 소식",
+      "date": "2026-09-07",
+      "excerpt": "올해 \"Pokémon GO 와일드 에리어\"에 관해 더 자세한 정보를 공유해 드립니다. 모두가 원활하게 티켓을 등록할 수 있도록, \"Pokémon GO 와일드 에리어: 센다이, 도호쿠\"에 선착순 신청 절차를 적용하고자 합니다.",
+      "sources": [
+        {
+          "lang": "ko",
+          "label": "\"Pokémon GO 와일드 에리어: 센다이, 도호쿠\" 티켓팅 최신 소식",
+          "url": "https://pokemongo.com/ko/news/gowildarea-sendai-ticket-update",
+          "image": "https://lh3.googleusercontent.com/1gLekpJ6ufDdk-OksjycvqaJIQREQ6qlsP5Lt8HoMhZyJTiwNVuV8mqI0n-fjF3N7hhOhSYoDnZ9qEJq2unSlISul2f4W87piqz23PKSspw"
+        }
+      ]
+    },
+    {
+      "id": "pokemon-horizons-celebration-event-2026",
+      "kind": "news",
+      "title": "\"애니메이션 콜라보\" 이벤트가 돌아옵니다!",
+      "date": "2026-09-02",
+      "excerpt": "한국시간 2026년 9월 16일 10:00부터 9월 22일 20:00까지",
+      "sources": [
+        {
+          "lang": "ko",
+          "label": "\"애니메이션 콜라보\" 이벤트가 돌아옵니다!",
+          "url": "https://pokemongo.com/ko/news/pokemon-horizons-celebration-event-2026",
+          "image": "https://lh3.googleusercontent.com/njVG59fv5qM3XSss4PM2Ja2LzhX_NnYzHiDpYcLrw4BIPgYK7p0FjMy-p2P87qXIzqDcZ6sM15KrzTs48dMvkaLaXYB3-ELO_GmmITJkdLA"
+        }
+      ]
+    },
+    {
+      "id": "staraptor-super-mega-raid-day-2026",
+      "kind": "news",
+      "title": "\"찌르호크 슈퍼 메가 레이드 데이\"에는 용감하게 도전할 준비를 하세요!",
+      "date": "2026-09-01",
+      "excerpt": "포켓몬의 메가레벨이 오르면 이 기술의 위력도 증가합니다!",
+      "sources": [
+        {
+          "lang": "ko",
+          "label": "\"찌르호크 슈퍼 메가 레이드 데이\"에는 용감하게 도전할 준비를 하세요!",
+          "url": "https://pokemongo.com/ko/news/staraptor-super-mega-raid-day-2026",
+          "image": "https://lh3.googleusercontent.com/wBYc9h2vb7e40ldRqi4atgrTsPv7Jcs0M1DAyQ9Tp-Jd8L8b0gkwJEEYcUjUml5KaMst8zTk7k_SNZg-LegIxBwt8fXRdW2lgD0iF27ILw"
+        }
+      ]
+    },
+    {
+      "id": "more-mega-updates-2026",
+      "kind": "news",
+      "title": "또 다른 메가톤급 소식! \"메가 피날레\"에서 추가 스페셜 어택과 \"메가뮤츠\"의 필드 효과 등장!",
+      "date": "2026-08-31",
+      "excerpt": "\"Pokémon GO Fest 2026: 메가 피날레\"부터 특정 메가진화 포켓몬은 추가 스페셜 어택을 사용할 수 있습니다. 새로운 배틀 전략을 구상해 보세요.",
+      "sources": [
+        {
+          "lang": "ko",
+          "label": "또 다른 메가톤급 소식! \"메가 피날레\"에서 추가 스페셜 어택과 \"메가뮤츠\"의 필드 효과 등장!",
+          "url": "https://pokemongo.com/ko/news/more-mega-updates-2026",
+          "image": "https://lh3.googleusercontent.com/OqkaukguYyiMfq3j-DtNXCTiZ31HI0gm1vvPzTpE_MpFt266bbt7gKMQkoZd248UabRcieqH7OX5uFMh-tNoFOBXKtglW56sCNezwl2qgxw"
+        }
+      ]
+    },
+    {
+      "id": "megafinale-2026-armored-mewtwo",
+      "kind": "news",
+      "title": "\"메가 피날레\"에 \"아머드 뮤츠\"가 돌아옵니다",
+      "date": "2026-08-31",
+      "excerpt": "방금 샌프란시스코의 “포켓몬 월드챔피언십2026” 현장에서 발표된 대로, “아머드 뮤츠”가 돌아옵니다! 2020년에 마지막으로 발견되었던 “아머드 뮤츠”가 기간 한정으로 “Pokémon GO”에 다시 등장합니다. 이 특별한 “뮤츠”와 만날 방법을 아래에서 확인하세요!",
+      "sources": [
+        {
+          "lang": "ko",
+          "label": "\"메가 피날레\"에 \"아머드 뮤츠\"가 돌아옵니다",
+          "url": "https://pokemongo.com/ko/news/megafinale-2026-armored-mewtwo",
+          "image": "https://lh3.googleusercontent.com/0u1yH85M9mb35sOkETn7o6lZTh4I876A4PjI1tc_G6837FcJKfQpbADPyTBAJYYstn4_PevYQ0R9UGfPlbs2jPFo8kJm2Xl4PdEQ1kDUcSeR"
+        }
+      ]
+    },
+    {
+      "id": "mega-squads-2026",
+      "kind": "news",
+      "title": "\"메가 피날레\"에 이어 힘차게 \"팀 메가\" 이벤트를 즐겨요!",
+      "date": "2026-08-31",
+      "excerpt": "포켓몬의 메가레벨이 오르면 이 기술의 위력도 증가합니다!",
+      "sources": [
+        {
+          "lang": "ko",
+          "label": "\"메가 피날레\"에 이어 힘차게 \"팀 메가\" 이벤트를 즐겨요!",
+          "url": "https://pokemongo.com/ko/news/mega-squads-2026",
+          "image": "https://lh3.googleusercontent.com/YTPMYhNExmtm88g0AR6OFQcNYVEP8zIi2KAxSpOT1EGMP3YPJNwJJpWa4-hyxIUxlg53x8JYbmsJfvJF7qRhiz4LVYHmDFPTfjS8phqTcQ"
+        }
+      ]
+    },
+    {
+      "id": "mega-finale-2026-community",
+      "kind": "news",
+      "title": "\"Pokémon GO Fest 2026: 메가 피날레\" 글로벌 챌린지 #PokemonGOFest2026",
+      "date": "2026-08-31",
+      "excerpt": "“메가 어센션”과 “Pokémon GO Fest 2026: 메가 피날레” 이벤트 기간 동안 지역 커뮤니티 미트업에 체크인하면 다음 리워드가 잠금 해제됩니다.",
+      "sources": [
+        {
+          "lang": "ko",
+          "label": "\"Pokémon GO Fest 2026: 메가 피날레\" 글로벌 챌린지 #PokemonGOFest2026",
+          "url": "https://pokemongo.com/ko/news/mega-finale-2026-community",
+          "image": "https://lh3.googleusercontent.com/-Ns_XObB98FxmTuaRiYADkjTxnuDb5QY33a0ua1JNbKO4YvZ9B3-Dc0TL22cOu3Vvja9yWxoC2VwRll-BmAJ___0YHVwNctDHXe0Ewerm_LW"
+        }
+      ]
+    },
+    {
+      "id": "go-battle-league-twilight-trails",
+      "kind": "news",
+      "title": "\"GO배틀리그: 황혼의 여정\" 최신 소식",
+      "date": "2026-08-31",
+      "excerpt": "\"GO배틀리그: 황혼의 여정\"이 곧 시작됩니다!",
+      "sources": [
+        {
+          "lang": "ko",
+          "label": "\"GO배틀리그: 황혼의 여정\" 최신 소식",
+          "url": "https://pokemongo.com/ko/news/go-battle-league-twilight-trails",
+          "image": "https://lh3.googleusercontent.com/jRv78WS9N3uii-wL4KWowwz66OMwl8MNaind313_aKu-Ual_uwqlGOdLxYuP7oIbxRtV_14D89swp-MhKOhErE3cAOKStefEs61NuO1YtFug"
+        }
+      ]
+    },
+    {
+      "id": "communitydayclassic-gible-september-2026",
+      "kind": "news",
+      "title": "2026년 9월 커뮤니티 데이(복각): 딥상어동",
+      "date": "2026-08-31",
+      "excerpt": "$1.99(또는 동일한 가치의 현지 통화)로 “딥상어동 커뮤니티 데이(복각)” 한정 스페셜리서치를 진행할 수 있습니다. 이 스페셜리서치를 완료하면 다음을 포함해 다양한 리워드를 받을 수 있습니다.",
+      "sources": [
+        {
+          "lang": "ko",
+          "label": "2026년 9월 커뮤니티 데이(복각): 딥상어동",
+          "url": "https://pokemongo.com/ko/news/communitydayclassic-gible-september-2026",
+          "image": "https://lh3.googleusercontent.com/F7MGzYnKzNuMhS3zZxkhAfASJSrTRUqxiZBQGVWiDXIVj39LQbh1UIQSDtUJNAFOF6AmcXo_nuH5yOmoJ98MEYdIQIW_0ioSrnbctSDp6tG_"
+        }
+      ]
+    },
+    {
+      "id": "pikachu-autumn-picnic-korea-2026",
+      "kind": "news",
+      "title": "“Pokémon GO”에서 “2026 피카츄의 가을 소풍\" 이벤트 및 “2026 피카츄의 한국 나들이\" 이벤트와 함께 특별한 가을을 맞이하세요!",
+      "date": "2026-08-27",
+      "excerpt": "“2026 피카츄의 가을 소풍” 이벤트 - 일부 지역 한정",
+      "sources": [
+        {
+          "lang": "ko",
+          "label": "“Pokémon GO”에서 “2026 피카츄의 가을 소풍\" 이벤트 및 “2026 피카츄의 한국 나들이\" 이벤트와 함께 특별한 가을을 맞이하세요!",
+          "url": "https://pokemongo.com/ko/news/pikachu-autumn-picnic-korea-2026",
+          "image": "https://lh3.googleusercontent.com/yZgyb4bT3ECDInztWuKr2ugZHNJNruyn1F5fFrVQLzFLm8t145C6ptiRN3iLdtaAs87ptKmB3mkdaZ9qAi_Eoe3C4h_Wy0zES6UKMQE8oBY"
+        }
+      ]
+    },
+    {
+      "id": "catch-mastery-phantump-2026",
+      "kind": "news",
+      "title": "그루터기포켓몬 \"나목령\"이 등장하는 \"마스터리 시리즈\" 이벤트에 대비하세요!",
+      "date": "2026-08-27",
+      "excerpt": "한국시간 2026년 9월 26일 10:00부터 20:00까지",
+      "sources": [
+        {
+          "lang": "ko",
+          "label": "그루터기포켓몬 \"나목령\"이 등장하는 \"마스터리 시리즈\" 이벤트에 대비하세요!",
+          "url": "https://pokemongo.com/ko/news/catch-mastery-phantump-2026",
+          "image": "https://lh3.googleusercontent.com/-6L35plf6_QjX-LQvygJFlGvnQFcb4aRUq_wFXeAFWrq507sS-btYiff_-vTL2S5Y--x16sFEbpFgfhn18-Mhrnwf02faW4zege2Njp6Z2s"
+        }
+      ]
+    },
+    {
+      "id": "go-pass-september-2026",
+      "kind": "news",
+      "title": "맹렬한 속도로 \"라티오스\"가 날아오르는 \"GO패스: 9월\"!",
+      "date": "2026-08-25",
+      "excerpt": "한국시간 9월 8일 10:00부터 10월 6일 10:00까지 “Pokémon GO”에서 9월의 “GO패스”와 “GO패스 디럭스”를 만날 수 있습니다!",
+      "sources": [
+        {
+          "lang": "ko",
+          "label": "맹렬한 속도로 \"라티오스\"가 날아오르는 \"GO패스: 9월\"!",
+          "url": "https://pokemongo.com/ko/news/go-pass-september-2026",
+          "image": "https://lh3.googleusercontent.com/X-8d7GHRr9T9DVuP-AFLVJv7tJLr541Sk4RICeQJWEn3-XBX86cSybrNKPKMyb7YRZmQaVPFk0CyTGGz0bjlrKiRrjFMjgKYdnDViWJKw3E"
+        }
+      ]
+    },
+    {
+      "id": "mega-finale-korea-2026",
+      "kind": "news",
+      "title": "모험의 시작! “Pokémon GO Fest 2026: 메가 피날레” 기념 한국 현장 이벤트",
+      "date": "2026-08-24",
+      "excerpt": "\"Pokémon GO Fest 2026: 메가 피날레”를 기념하여, 한국에서 소규모 현장 이벤트가 열립니다. 다양한 체험형 콘텐츠와 교류 공간이 마련되어 있으니, 현장에서 \"Pokémon GO\"의 열기를 직접 느껴보세요!",
+      "sources": [
+        {
+          "lang": "ko",
+          "label": "모험의 시작! “Pokémon GO Fest 2026: 메가 피날레” 기념 한국 현장 이벤트",
+          "url": "https://pokemongo.com/ko/news/mega-finale-korea-2026",
+          "image": "https://lh3.googleusercontent.com/Qao6-KTgpm6RQk9cAGN-6XMJWPePPjwGjj9zZ7fvcqS_G17Unn6Vwv1MmexJf9SWe6dPj43uHUyMEUqQUoqK3HT_ZWP4-lWmB9nXIzT17g"
+        }
+      ]
+    },
+    {
+      "id": "dancing-in-the-moonlight-2026",
+      "kind": "news",
+      "title": "\"삐삐\"와 함께 달빛 아래에서 춤을 춰요",
+      "date": "2026-08-14",
+      "excerpt": "이번 이벤트는 한국, 일본, 대만, 인도네시아, 싱가포르, 홍콩, 말레이시아 각 현지 시간 2026년 9월 23일 10:00부터 9월 27일 23:59까지 진행됩니다.",
+      "sources": [
+        {
+          "lang": "ko",
+          "label": "\"삐삐\"와 함께 달빛 아래에서 춤을 춰요",
+          "url": "https://pokemongo.com/ko/news/dancing-in-the-moonlight-2026",
+          "image": "https://lh3.googleusercontent.com/uj7A8M0A3vwux9SelWVwilTzwAX3gtrnNwAEHoK_3ehyvgBr1q_CMJlGfyOQv-ae_rCjt-S1Lcr2IkI861vahWxDU89VM4tzm-uqIw1S3s8k"
+        }
+      ]
+    },
+    {
+      "id": "pgo-explorer-gadget-2026",
+      "kind": "news",
+      "title": "\"외출캐처\"의 첫 등장!",
+      "date": "2026-08-13",
+      "excerpt": "이 기능의 전 세계 개시 일정은 추후 다시 안내드리겠습니다.",
+      "sources": [
+        {
+          "lang": "ko",
+          "label": "\"외출캐처\"의 첫 등장!",
+          "url": "https://pokemongo.com/ko/news/pgo-explorer-gadget-2026",
+          "image": "https://lh3.googleusercontent.com/FW6jn-P_yuS55DXXkiKs6Omyypiu0ZnWR0fVyf00Ic-38YICc5ijgh1LHLJTt3EMOa2rwnBqwNp5vgvTvePGw7EH73jb36LG-rC7URB0Cw"
+        }
+      ]
+    },
+    {
+      "id": "event-apac-stamp-rally-2026",
+      "kind": "news",
+      "title": "아시아 태평양 지역을 탐험하는 \"PokéXciting!\" 지역 횡단 \"GO스탬프랠리\"에 참여하세요!",
+      "date": "2026-08-12",
+      "excerpt": "\"PokéXciting!\" 이벤트를 기념하는 첫 번째 지역 횡단 \"GO스탬프랠리\"가 열립니다!",
+      "sources": [
+        {
+          "lang": "ko",
+          "label": "아시아 태평양 지역을 탐험하는 \"PokéXciting!\" 지역 횡단 \"GO스탬프랠리\"에 참여하세요!",
+          "url": "https://pokemongo.com/ko/news/event-apac-stamp-rally-2026",
+          "image": "https://lh3.googleusercontent.com/nqJ9X06yWs01-pPsSB7I2KTTvPsVMwMW0VZqaJCU9jVUb6E45970crW3-rVyQWufr_esZMy3uqzvHwQDbryqqPxhFNhwx8o_8jXEB1TUoN8"
+        }
+      ]
+    },
+    {
+      "id": "event-apac-30th-anniversary-2026",
+      "kind": "news",
+      "title": "\"포켓몬\" 30주년을 기념하는 \"PokéXciting!\" 이벤트 동안 최고의 파티가 열립니다!",
+      "date": "2026-08-12",
+      "excerpt": "\"포켓몬\" 30주년을 축하할 준비는 되셨나요? \"포켓몬\" 30주년 기념 투어 \"PokéXciting!\"이 여러분을 찾아간다는 멋진 소식입니다. 아시아 태평양 지역 곳곳의 활기찬 도시에서 각 2일간 축제가 열릴 예정이니 준비하세요. 친구들을 모아 탐험할 준비를 하고, 주말 내내 흥미진진한 발견을 하고, 커뮤니티와 함께 즐기며 잊지 못할 추억을 만들어 보세요!",
+      "sources": [
+        {
+          "lang": "ko",
+          "label": "\"포켓몬\" 30주년을 기념하는 \"PokéXciting!\" 이벤트 동안 최고의 파티가 열립니다!",
+          "url": "https://pokemongo.com/ko/news/event-apac-30th-anniversary-2026",
+          "image": "https://lh3.googleusercontent.com/JeRu4g5duzaVNIBOkkkNArX1ciAZ1n4QaB699nrXh4wuKXgs8UV16dsizwt0Ci9q15ksRq9150vamFJK2ulbT7Gt552-2UdFy86eLUA4Ag"
+        }
+      ]
+    },
+    {
+      "id": "10th-anniversary-celebration",
+      "kind": "news",
+      "title": "모든 트레이너가 특별한 뮤츠와 함께 Pokémon GO 10주년을 기념할 수 있습니다!",
+      "date": "2026-08-12",
+      "excerpt": "한국시간 2026년 8월 13일 08:00부터 9월 6일 23:59까지",
+      "sources": [
+        {
+          "lang": "ko",
+          "label": "모든 트레이너가 특별한 뮤츠와 함께 Pokémon GO 10주년을 기념할 수 있습니다!",
+          "url": "https://pokemongo.com/ko/news/10th-anniversary-celebration",
+          "image": "https://lh3.googleusercontent.com/65h57hSiboO6yZ4q38bsK_rZ7UHRZfOh6GA4j26z6ct5sAe7USU1RoVPwEt5PFE0RJvmwc5zAATD4efoMoB7fBgGT3UOht1xzstv0ZoiyA"
+        }
+      ]
+    },
+    {
+      "id": "gofest2026-mega-finale-incoming",
+      "kind": "news",
+      "title": "여름의 끝에 메가 에너지 돌풍이 찾아옵니다",
+      "date": "2026-08-11",
+      "excerpt": "“Pokémon GO Fest 2026: 메가 피날레” 개최일이 다가오는 가운데, 아주 강력한 이벤트가 될 것 같은 조짐입니다. 올여름의 끝에는 무엇이 우리를 기다릴까요? 곧 확인하실 수 있습니다.",
+      "sources": [
+        {
+          "lang": "ko",
+          "label": "여름의 끝에 메가 에너지 돌풍이 찾아옵니다",
+          "url": "https://pokemongo.com/ko/news/gofest2026-mega-finale-incoming",
+          "image": "https://lh3.googleusercontent.com/OJCLZTDO_5KMA-1QeqHvSsiCusDNqG1_qKLnHiUaJLgJsr0-w_FkH-yBRBixvX1Z1vg33Vr-C9Ps4ZafGaRfqSLRYp735STbPNpcyY7IVA"
+        }
+      ]
+    },
+    {
+      "id": "save-the-date-s24",
+      "kind": "news",
+      "title": "다음 시즌의 커뮤니티 데이 일정을 안내합니다!",
+      "date": "2026-08-10",
+      "excerpt": "다음 시즌의 커뮤니티 데이 일정을 공유합니다!",
+      "sources": [
+        {
+          "lang": "ko",
+          "label": "다음 시즌의 커뮤니티 데이 일정을 안내합니다!",
+          "url": "https://pokemongo.com/ko/news/save-the-date-s24",
+          "image": "https://lh3.googleusercontent.com/GMESDlJRw5GMsmroW_oK6TLXA4OerLjNY43b0JkjCoSXrez97CwCflnTBTh-uzMhJZYQvQbtA8nK8YPEknYHu0tearwDyBVUoi8"
+        }
+      ]
+    },
+    {
+      "id": "world-championships-event-2026",
+      "kind": "news",
+      "title": "\"Pokémon GO\"에서 \"PokémonXP\"와 \"포켓몬 월드챔피언십2026\" 개최를 기념하세요!",
+      "date": "2026-08-05",
+      "excerpt": "\"Pokémon GO\"의 \"포켓몬 월드챔피언십\"",
+      "sources": [
+        {
+          "lang": "ko",
+          "label": "\"Pokémon GO\"에서 \"PokémonXP\"와 \"포켓몬 월드챔피언십2026\" 개최를 기념하세요!",
+          "url": "https://pokemongo.com/ko/news/world-championships-event-2026",
+          "image": "https://lh3.googleusercontent.com/6XBu1Y8DcJq_GNgNSU0N_CoWqI67zS3zPGc57XYNBoq9_7KfHV_8Drxtqkn5a-pFC3Tl3h1uyJN3tPAei0mIW_bFfbXIRhJHfkS2SfsOzqdm"
+        }
+      ]
+    },
+    {
+      "id": "jamsil-magikarp-2026",
+      "kind": "news",
+      "title": "“Pokémon GO 2026 잠실 잉어킹 이벤트”와 함께 특별한 여름을 맞이하세요!",
+      "date": "2026-08-03",
+      "excerpt": "잠실 일대가 파닥거리는 물결로 뒤덮입니다! 2026년 8월, 서울 잠실 롯데월드타워•몰 인근에서 수많은 잉어킹이 대량발생하는 \"2026 잠실 잉어킹 이벤트\"가 개최됩니다.",
+      "sources": [
+        {
+          "lang": "ko",
+          "label": "“Pokémon GO 2026 잠실 잉어킹 이벤트”와 함께 특별한 여름을 맞이하세요!",
+          "url": "https://pokemongo.com/ko/news/jamsil-magikarp-2026",
+          "image": "https://lh3.googleusercontent.com/Jci-Gj2imKnD-9Nz_sPmnSGIuAQZZSkPpKHq4AS2zvsJvzvWYA2w74vHqtujorJNM1juGPJy_Zq6VK44bfpSF2z7awylgwkZlVNMWID7cA"
+        }
+      ]
+    },
+    {
+      "id": "gofest2026-finale-save-the-date",
+      "kind": "news",
+      "title": "이번 여름의 막바지를 Pokémon GO Fest: 메가 피날레로 장식하세요!",
+      "date": "2026-07-28",
+      "excerpt": "GO Fest 시즌의 즐거움은 아직 끝나지 않았습니다.",
+      "sources": [
+        {
+          "lang": "ko",
+          "label": "이번 여름의 막바지를 Pokémon GO Fest: 메가 피날레로 장식하세요!",
+          "url": "https://pokemongo.com/ko/news/gofest2026-finale-save-the-date",
+          "image": "https://lh3.googleusercontent.com/N3-denQu6eoC6-t_3A9KKGwUnTYmnrxD9A01SYyK7H6KLH8NO0n7y2rTGnKH-MpPUEIpyxECNa7Q-qjwMVheKdEQY0nKtwtSrMJD4o2QJw"
+        }
+      ]
+    },
+    {
+      "id": "go-pass-august-2026",
+      "kind": "news",
+      "title": "\"반짝이 참\"이 돌아오고 \"라티아스\"가 날아오르는 \"GO패스: 8월\"!",
+      "date": "2026-07-21",
+      "excerpt": "한국시간 2026년 8월 4일 10:00부터 9월 8일 10:00까지 “Pokémon GO”에서 8월의 새로운 “GO패스”와 “GO패스 디럭스”를 만날 수 있습니다!",
+      "sources": [
+        {
+          "lang": "ko",
+          "label": "\"반짝이 참\"이 돌아오고 \"라티아스\"가 날아오르는 \"GO패스: 8월\"!",
+          "url": "https://pokemongo.com/ko/news/go-pass-august-2026",
+          "image": "https://lh3.googleusercontent.com/zGNNUVZJjG7sNgAZB5IgU8v9-glz6IQW50ui-c2WXrw81jwVon9XAFjnzq1jb1e2E_mHuTPnjh5yofSn4NFFK4gwLA_fbzjYg2fqDnMWsO1H"
+        }
+      ]
+    },
+    {
+      "id": "helpshift-5523",
+      "kind": "release-note",
+      "title": "일부 트레이너들이 구매하지 않은 아바타 아이템을 착용할 수 없는 현상",
+      "date": "",
+      "excerpt": "문제 설명: 다른 문제 관련 임시 조치가 진행된 후 일부 트레이너들이 포켓코인으로 구매하지 않아도 프리미엄 아바타 아이템을 착용할 수 있는 오류가 발생했습니다. 관련 아바타 아이템들은 유저의 아이템 가방에 추가되지 않았습니다. 다른 문제에 대한 정식 ...",
+      "sources": [
+        {
+          "lang": "ko",
+          "label": "일부 트레이너들이 구매하지 않은 아바타 아이템을 착용할 수 없는 현상",
+          "url": "https://niantic.helpshift.com/hc/ko/6-pokemon-go/faq/5523-some-trainers-lost-access-to-unpaid-avatar-items/",
+          "image": ""
+        },
+        {
+          "lang": "en",
+          "label": "Some Trainers lost access to unpaid avatar items",
+          "url": "https://niantic.helpshift.com/hc/en/6-pokemon-go/faq/5523-some-trainers-lost-access-to-unpaid-avatar-items/",
+          "image": ""
+        }
+      ]
+    },
+    {
+      "id": "helpshift-5521",
+      "kind": "release-note",
+      "title": "Incubators unavailable for purchase in Brazil",
+      "date": "",
+      "excerpt": "Issue Description: In Brazil, paid Incubators and Super Incubators are unavailable for individual purchase. This change was made to ensure t...",
+      "sources": [
+        {
+          "lang": "ko",
+          "label": "Incubators unavailable for purchase in Brazil",
+          "url": "https://niantic.helpshift.com/hc/ko/6-pokemon-go/faq/5521-incubators-unavailable-for-purchase-in-brazil/",
+          "image": ""
+        },
+        {
+          "lang": "en",
+          "label": "Incubators unavailable for purchase in Brazil",
+          "url": "https://niantic.helpshift.com/hc/en/6-pokemon-go/faq/5521-incubators-unavailable-for-purchase-in-brazil/",
+          "image": ""
+        }
+      ]
+    },
+    {
+      "id": "helpshift-5283",
+      "kind": "release-note",
+      "title": "스탬프 랠리 포켓몬의 포획을 종료하면 포켓몬 포획 보상이 사라지는 문제",
+      "date": "",
+      "excerpt": "문제 설명: 스탬프를 수집한 후 포켓몬을 바로 포획하지 않고 포획 보상을 종료하면 포켓몬 포획 보상이 사라지는 문제가 확인되었습니다.만약 이미 관련 장소에서 떠나셔서 포획을 진행하지 못하신다면 고객센터에 문의해주세요.일시적인 문제 해결 방법: 스탬프 ...",
+      "sources": [
+        {
+          "lang": "ko",
+          "label": "스탬프 랠리 포켓몬의 포획을 종료하면 포켓몬 포획 보상이 사라지는 문제",
+          "url": "https://niantic.helpshift.com/hc/ko/6-pokemon-go/faq/5283-exiting-the-stamp-rally-catch-encounter-appears-to-dismiss-the-pokemon-encounter/",
+          "image": ""
+        },
+        {
+          "lang": "en",
+          "label": "Exiting the Stamp Rally catch encounter appears to dismiss the Pokémon encounter.",
+          "url": "https://niantic.helpshift.com/hc/en/6-pokemon-go/faq/5283-exiting-the-stamp-rally-catch-encounter-appears-to-dismiss-the-pokemon-encounter/",
+          "image": ""
+        }
+      ]
+    },
+    {
+      "id": "helpshift-4172",
+      "kind": "release-note",
+      "title": "일부 트레이너에게 Amazon Prime 코드가 오류 메시지를 표시합니다.",
+      "date": "",
+      "excerpt": "일부 트레이너에게 Amazon Prime 코드가 오류 메시지를 표시합니다. 문제 설명:  일부 트레이너는 Amazon Prime 코드를 청구하려고 할 때 오류 메시지가 나타납니다. 문제 상태:  조사 중입니다. 웹 브라우저나 기기를 변경하면 이 문제...",
+      "sources": [
+        {
+          "lang": "ko",
+          "label": "일부 트레이너에게 Amazon Prime 코드가 오류 메시지를 표시합니다.",
+          "url": "https://niantic.helpshift.com/hc/ko/6-pokemon-go/faq/4172-amazon-prime-codes-show-error-message-for-some-trainers/",
+          "image": ""
+        },
+        {
+          "lang": "en",
+          "label": "Amazon Prime codes show error message for some Trainers",
+          "url": "https://niantic.helpshift.com/hc/en/6-pokemon-go/faq/4172-amazon-prime-codes-show-error-message-for-some-trainers/",
+          "image": ""
+        }
+      ]
+    }
+  ]
+}

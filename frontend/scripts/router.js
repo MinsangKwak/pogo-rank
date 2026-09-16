@@ -52,6 +52,9 @@ const ROUTES = [
   { id: 'dmax', path: 'dmax', kind: 'shell', tab: 'max', nav: 'D-MAX', icon: '✨', group: 'pick', legacy: ['rank/max'] },
   { id: 'pve', path: 'pve', kind: 'shell', tab: 'pve', nav: '레이드 · PvE', icon: '⚔️', group: 'pick', locked: true, legacy: ['rank/pve'] },
   { id: 'pvp', path: 'pvp', kind: 'shell', tab: 'pvp', nav: '배틀 · PvP', icon: '🃏', group: 'pick', locked: true, legacy: ['rank/pvp'] },
+  // 2026-09-16 v3.51.0 📢 게임 업데이트 — 게임 쪽 변경을 모아 읽는 상설 창구 (components/updates.js).
+  // 잠그지 않는다: 무엇이 바뀌었는지는 로그인 여부와 상관없이 누구나 읽을 수 있어야 한다
+  { id: 'game-updates', path: 'game-updates', kind: 'page', nav: '게임 업데이트', icon: '📢', group: 'today' },
   { id: 'schedule', path: 'schedule', kind: 'page', nav: '이벤트 일정', icon: '📅', group: 'today', locked: true },
   { id: 'raids', path: 'raids', kind: 'page', nav: '레이드 보스', icon: '⚔️', group: 'today', locked: true },
   { id: 'eggs', path: 'eggs', kind: 'page', nav: '알 부화', icon: '🥚', group: 'today', locked: true },
@@ -164,6 +167,7 @@ const ROUTE_DESC = {
   pve: '레이드 추천 딜러와 솔플 가능 여부를 계산해요.',
   pvp: '리그별 순위와 덱 구성을 봐요.',
   planner: '내 포켓몬의 육성 현황을 한눈에 정리해요.',
+  'game-updates': '게임의 규칙·밸런스·오류가 바뀐 소식이에요. 공식 발표를 확인한 것만 적어요.',
   schedule: '다가오는 레이드와 이벤트 일정이에요.',
   raids: '지금 도는 레이드 보스와 약점이에요.',
   eggs: '거리별로 무엇이 부화하는지 봐요.',

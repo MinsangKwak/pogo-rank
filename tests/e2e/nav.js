@@ -119,7 +119,8 @@ suite(async () => {
   // 2026-09-10 v2.47.0 '내 포켓몬' 타일과 '육성 플래너' 타일을 하나로 합쳐 10 → 9 가 됐다
   // 2026-09-11 v2.58.0 🔎 검색식 만들기가 늘어 10 이다. ☰ 메뉴와 홈 타일은 **같은 수**여야 한다 —
   // 같은 화면인데 문이 한쪽에만 있으면 메뉴를 안 여는 사람은 그 화면이 있는 줄도 모른다
-  ok('홈 타일 9개', (await page.locator('.home__tile').count()) === 9);
+  // 2026-09-16 v3.51.0 📢 게임 업데이트가 늘어 10 이다
+  ok('홈 타일 10개', (await page.locator('.home__tile').count()) === 10);
   // 2026-09-12 v3.6.0 이모지 → 도트 아이콘 SVG (scripts/components/pxicon.js).
   // 아홉 타일 전부 도트 그림이어야 한다 — 하나라도 이모지로 남으면 그 줄만 기기 글꼴로 그려진다
   const pxIcons = await page.locator('.home__icon svg.pxi').count();
@@ -215,7 +216,7 @@ suite(async () => {
   ok('드로어 서비스 홈 항목', (await page.locator('.nav-menu a .drawer__label').first().textContent()) === '서비스 홈');
   await page.click('.nav-menu a:has-text("서비스 홈")');
   await page.waitForTimeout(400);
-  ok('서비스 홈으로 이동', (await page.locator('.home__tile').count()) === 9 && !(await page.evaluate(() => location.hash)));
+  ok('서비스 홈으로 이동', (await page.locator('.home__tile').count()) === 10 && !(await page.evaluate(() => location.hash)));
 
   // 8. 2026-09-12 v2.66.0 마지막 탭 줄(플래너)도 걷어냈다 — 이동은 왼쪽 메뉴 하나가 맡는다.
   // 주소와 화면 이름은 그대로 산다
@@ -280,7 +281,8 @@ suite(async () => {
       }
       return out;
     });
-    ok('지금 뭐 하지 = 시간에 매인 것', groups['지금 뭐 하지'].join('|') === '이벤트 일정|레이드 보스|알 부화', groups['지금 뭐 하지'].join('|'));
+    // 2026-09-16 v3.51.0 📢 게임 업데이트가 이 덩이의 첫 줄 — 게임이 바뀐 소식도 "오늘 지나면 값이 달라지는" 것이다
+    ok('지금 뭐 하지 = 시간에 매인 것', groups['지금 뭐 하지'].join('|') === '게임 업데이트|이벤트 일정|레이드 보스|알 부화', groups['지금 뭐 하지'].join('|'));
     ok('뭘 데려갈까 = 고르려고 보는 것', groups['뭘 데려갈까'].join('|') === '포켓몬 도감|D-MAX|레이드 · PvE|배틀 · PvP', groups['뭘 데려갈까'].join('|'));
     // v2.66.0 덩이 이름을 '뭘 키울까' 로 바꿨다 — 같은 이름의 화면(내 포켓몬)이 그 안에 생겨
     // 덩이 제목과 항목이 똑같은 글자가 됐다. 내 포켓몬은 육성 플래너 아래 한 칸 들여쓴 자식이다
