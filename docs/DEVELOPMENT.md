@@ -627,7 +627,9 @@ backend/change_build.py        시즌 기술 변경 안내 → data/move_changes
 backend/roles_build.py         PvE/PvP 역할 자동 분류 근거 → data/roles.json
 backend/sprites.py             없는 스프라이트만 16개 병렬 다운로드
   ↓
-backend/build.py (2차)         [최종 조립]
+backend/build.py (2차)         [최종 조립]  (BUILD_GATE=1)
+  · 검문: data.js 에 실릴 표 14개를 직전 정상본(snapshot/tables/)과 견줘 비거나 70% 미만이면
+    어제 표로 대체하고 DATA_STALE 에 이름을 남긴다. 필수 표가 비었는데 폴백도 없으면 exit 1 (backend/guard.py)
   · frontend/ CSS·JS를 순서대로 이어붙여 __STYLES__ / __SCRIPTS__ 치환
   · 중간 JSON을 const 선언으로 묶어 dist/data.js 생성
   · 스프라이트 복사 + 유효 id 목록(SPRITE_IDS) 주입

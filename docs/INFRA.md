@@ -58,6 +58,7 @@ GitHub Pages는 **파일을 나눠주기만 하는 호스팅**입니다. 우리�
 - [ ] **Firebase 사용량 확인 습관** — 콘솔 → Firestore → 사용량 탭. 일 읽기가 평소의 10배로 튀면 그때 4번 항목을 본다
 - [ ] **Blaze(유료)로 올리지 않기** — 지금은 Spark라 과금 위험이 0. 올릴 일이 생기면 **반드시 예산 알림부터** 설정
 - [ ] **승인된 도메인 유지** — Authentication → 설정 → 승인된 도메인에 `minsangkwak.github.io` · `moncamp.kr` · `dev.moncamp.kr`(2026-09-14 v3.27.0)만 있으면 됨. 다른 사이트가 우리 Firebase로 로그인 못 함
+- [ ] **Firestore 백업 시크릿 등록** — `FIREBASE_SA_JSON` · `BACKUP_PASSPHRASE` 둘을 넣어야 주간 백업이 돈다 (2026-09-16 v3.47.0, [운영 문서 14장](OPERATIONS.md#14-firestore-사용자-데이터-백업-2026-09-16-v3470)). 이게 없으면 사용자 데이터는 Firestore 한 곳뿐이다
 - [ ] robots.txt는 이미 배포됨 (아래 4번). 별도 조치 불필요
 
 ### 판이 커지면 (반나절, 트리거는 5번)

@@ -15,6 +15,10 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 const RELEASE_NOTES_EN = {
+  '2026-09-16 · v3.47.0': [
+    '**The screen no longer goes blank on a bad data day** — if a source arrives empty or sharply shrunk, that one table is served from the previous day instead. Until now that screen simply went empty.',
+    '**Sign-up approvals and My Pokémon are backed up weekly** — an operator mistake can now be undone. Backups are encrypted and never readable by anyone else.',
+  ],
   '2026-09-16 · v3.46.0': [
     '**The first screen is noticeably faster** — 22% less to download up front, and the wait before the first text appears dropped by more than half on a slow connection.',
     '**Patch notes and the English dictionary load on demand** — the home screen never uses them, so they now follow afterwards.',

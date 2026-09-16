@@ -265,6 +265,12 @@ suite(async () => {
   const security = await grab('.well-known/security.txt');
   ok('security.txt 있음', !!security && security.includes('Contact:'));
   ok('security.txt 만료일 있음', !!security && /Expires:\s*\d{4}-/.test(security));
+  // 2026-09-16 v3.47.0 검문(backend/guard.py)의 흔적 — 대체된 표 이름이 두 곳에 남는다. 평소에는 빈 목록이어야 한다
+  const buildJson = JSON.parse((await grab('build.json')) || '{}');
+  ok('build.json 에 stale 목록', Array.isArray(buildJson.stale), JSON.stringify(buildJson));
+  ok('평소 빌드는 대체된 표가 없다', Array.isArray(buildJson.stale) && buildJson.stale.length === 0, JSON.stringify(buildJson.stale));
+  const dataJs = (await grab('data.js')) || '';
+  ok('data.js 에 DATA_STALE', /^const DATA_STALE = \[.*\];/m.test(dataJs));
   const notFound = await grab('404.html');
   ok('404.html 있음', !!notFound && notFound.includes('찾을 수 없'));
   ok('404 는 색인 금지', !!notFound && notFound.includes('noindex'));
