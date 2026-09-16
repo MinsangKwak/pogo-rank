@@ -42,7 +42,8 @@ body[data-home="true"] .layout { padding-bottom: 4rem; }
 .home__art { position: relative; display: flex; align-items: flex-end; justify-content: center; gap: 1.2rem; min-height: 14rem; padding: 1rem 0 0; }
 .home__art .sprite { width: 12rem; height: 12rem; }
 /* pixel.css 가 모든 스프라이트에 바탕색을 깐다(id 두 칸 우선순위) — 큰 그림은 투명해야 카드 위에 떠 보인다 */
-html:not(#_):not(#__) .home__art .sprite, html:not(#_):not(#__) .pick__hero .sprite { background: transparent; }
+html:not(#_):not(#__) .home__art .sprite:not(.is-loading):not(.empty),
+html:not(#_):not(#__) .pick__hero .sprite:not(.is-loading):not(.empty) { background: transparent; }   /* 우선순위 (2,4,1) — pixel.css 의 (2,3,1) 보다 한 칸 위 */
 .home__art-mon--1 { transform: translateY(-1rem); }
 .home__art-mon--2 .sprite { width: 10rem; height: 10rem; }
 .home__motto { position: absolute; right: 0; top: 0; font-size: 1rem; line-height: 1.5; letter-spacing: .14em; color: var(--muted); text-align: right; opacity: .8; }
