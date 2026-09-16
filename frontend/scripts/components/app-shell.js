@@ -44,7 +44,7 @@ const actions = appHeader.querySelector('.app-bar__actions');
 // 좁은 화면에서는 CSS 가 감춘다 (돋보기 버튼은 그대로 남는다)
 const appSearch = el('button', { class: 'app-search', id: 'app-search', 'aria-label': '포켓몬 검색' },
   el('span', { class: 'app-search__ico', 'aria-hidden': 'true' }, '🔍'),
-  el('span', { class: 'app-search__ph' }, '포켓몬, 기술, 가이드를 검색하세요…'),
+  el('span', { class: 'app-search__ph' }, '포켓몬을 검색하세요'),   // 2026-09-16 design 시안 01 — 검색이 실제로 찾는 것만 말한다
   el('kbd', { class: 'app-search__key', 'aria-hidden': 'true' }, '/'));
 appSearch.addEventListener('click', () => openSearch());
 // 슬래시 한 번으로 검색 — 글자를 치고 있던 중이면 가로채지 않는다

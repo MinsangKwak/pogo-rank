@@ -9,3 +9,4 @@ __pycache__/
 # 2026-09-05 v2.8.0 빌드 설정은 .env (커밋 안 함). 템플릿은 .env.example
 .env
 firestore.rules.local
+snapshot/tables/

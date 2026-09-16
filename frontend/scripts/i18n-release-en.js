@@ -15,6 +15,20 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 const RELEASE_NOTES_EN = {
+  '2026-09-16 · v3.48.2': [
+    '**The terms for the code are now explicit** — the repository is public to read and learn from; forking and redistribution are not permitted. The same wording is in the terms (section 5), the page footer, and LICENSE · NOTICE in the repository.',
+  ],
+  '2026-09-16 · v3.48.1': [
+    '**Pokémon without an animated sprite now hold still** — the gentle bobbing of still images is gone; a list of them twitching out of step looked restless. Species with animated sprites still move.',
+  ],
+  '2026-09-16 · v3.48.0': [
+    '**The first screen got lighter again** — 23% less to download up front (362 → 278KB), and the speed score went from 89 to 94. Tables the home screen never uses (raid bosses, eggs, the sheet tier list, move changes) now arrive after the screen is drawn.',
+    '**Opening one of those screens first shows a brief "loading" line** — usually the data is already there and it opens at once. Search re-indexes automatically when those tables arrive.',
+  ],
+  '2026-09-16 · v3.47.0': [
+    '**The screen no longer goes blank on a bad data day** — if a source arrives empty or sharply shrunk, that one table is served from the previous day instead. Until now that screen simply went empty.',
+    '**Sign-up approvals and My Pokémon are backed up weekly** — an operator mistake can now be undone. Backups are encrypted and never readable by anyone else.',
+  ],
   '2026-09-16 · v3.46.0': [
     '**The first screen is noticeably faster** — 22% less to download up front, and the wait before the first text appears dropped by more than half on a slow connection.',
     '**Patch notes and the English dictionary load on demand** — the home screen never uses them, so they now follow afterwards.',

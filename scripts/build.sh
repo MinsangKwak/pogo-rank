@@ -12,5 +12,6 @@ python3 backend/change_build.py
 python3 backend/gameday_build.py   # 2026-09-08 v2.25.0 레이드 보스·알 부화·이벤트 (dex 이름표가 필요해 dex_build 뒤, 스프라이트 수집 전)
 python3 backend/roles_build.py
 python3 backend/sprites.py
-python3 backend/build.py
+# 2026-09-16 v3.47.0 마지막 조립에서만 검문한다 — 비거나 줄어든 표는 직전 정상본(snapshot/tables/)으로 대체 (backend/guard.py)
+BUILD_GATE=1 python3 backend/build.py
 echo "built dist/index.html"

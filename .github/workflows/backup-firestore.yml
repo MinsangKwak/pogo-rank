@@ -1,0 +1,61 @@
+name: Backup Firestore user data
+
+# 2026-09-16 v3.47.0 사용자 데이터 백업 — allowlist · requests · users · trainers 를 매주 받아 암호화해 둔다.
+#   게임 데이터는 매일 원본에서 다시 만들지만, 사용자 데이터는 Firestore 한 곳뿐이고 Spark 요금제에는 자동 백업이 없다.
+#   결과는 Actions 아티팩트(90일 보관, 최대 13벌)로 남는다. 공개 저장소의 아티팩트는 누구나 받을 수 있으므로
+#   **반드시 암호화**해 올린다 — 평문은 러너 안에서만 잠깐 존재하고 지워진다.
+#
+# 필요한 시크릿 (Settings → Secrets and variables → Actions → Secrets) — 설정 순서는 docs/OPERATIONS.md 14장
+#   FIREBASE_SA_JSON    Firestore 를 읽을 서비스 계정 키(JSON 한 줄). 역할 "Cloud Datastore 뷰어"
+#   BACKUP_PASSPHRASE   아티팩트 암호. 잃어버리면 백업을 못 푼다 — 비밀번호 관리자에 따로 보관
+#
+# 되돌리기: 아티팩트를 받아 풀고 scripts/firestore_restore.py (기본 미리보기, --apply 로 실제 쓰기)
+#   openssl enc -d -aes-256-cbc -pbkdf2 -in firestore-backup-<날짜>.json.enc -out firestore-backup.json
+
+on:
+  schedule:
+    - cron: '0 16 * * 0'   # 매주 월요일 01:00 KST (일요일 16:00 UTC) — 일일 빌드(15:00 UTC)와 겹치지 않게
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: backup-firestore
+  cancel-in-progress: false
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    env:
+      HAS_SA: ${{ secrets.FIREBASE_SA_JSON != '' }}
+      HAS_PASS: ${{ secrets.BACKUP_PASSPHRASE != '' }}
+    steps:
+      - name: 시크릿 확인
+        run: |
+          [ "$HAS_SA" = "true" ] || { echo "::error::시크릿 FIREBASE_SA_JSON 이 없습니다 (docs/OPERATIONS.md 14장)"; exit 1; }
+          [ "$HAS_PASS" = "true" ] || { echo "::error::시크릿 BACKUP_PASSPHRASE 가 없습니다 (docs/OPERATIONS.md 14장)"; exit 1; }
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install --quiet google-auth requests
+      - name: Firestore 내려받기
+        env:
+          FIREBASE_SA_JSON: ${{ secrets.FIREBASE_SA_JSON }}
+        run: python3 scripts/firestore_backup.py firestore-backup.json
+      - name: 암호화 (평문 삭제)
+        env:
+          BACKUP_PASSPHRASE: ${{ secrets.BACKUP_PASSPHRASE }}
+        run: |
+          name="firestore-backup-$(date -u +%Y%m%d).json.enc"
+          openssl enc -aes-256-cbc -pbkdf2 -salt -pass env:BACKUP_PASSPHRASE -in firestore-backup.json -out "$name"
+          rm -f firestore-backup.json
+          echo "BACKUP_FILE=$name" >> "$GITHUB_ENV"
+          ls -l "$name"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.BACKUP_FILE }}
+          path: ${{ env.BACKUP_FILE }}
+          retention-days: 90
+          if-no-files-found: error

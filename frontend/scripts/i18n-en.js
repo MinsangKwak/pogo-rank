@@ -543,8 +543,8 @@ const I18N_EN = {
     'This site stores offline files and settings in your browser (not personal data). Visit analytics (Google Analytics) only turn on if you agree, and no location data is collected.',
   'moncamp는 비공식 팬 프로젝트입니다. Pokémon 및 관련 명칭·이미지의 권리는 The Pokémon Company · Nintendo · Creatures Inc. · GAME FREAK inc. 에, Pokémon GO 는 Scopely Explore, Inc. 에 있으며 이 서비스는 권리자와 무관합니다.':
     'moncamp is an unofficial fan project. Pokémon and related names and images belong to The Pokémon Company · Nintendo · Creatures Inc. · GAME FREAK inc., and Pokémon GO to Scopely Explore, Inc.; this service is not affiliated with them.',
-  '데이터는 PvPoke · PokeMiners · PokeAPI · LeekDuck 의 공개 자료를 사용합니다. 코드는 MIT, 데이터·이미지는 각 출처의 조건을 따릅니다 (저장소 NOTICE).':
-    'Data comes from the public sources PvPoke · PokeMiners · PokeAPI · LeekDuck. The code is MIT; data and images follow each source’s terms (see NOTICE in the repository).',
+  '데이터는 PvPoke · PokeMiners · PokeAPI · LeekDuck 의 공개 자료를 사용합니다. 코드는 열람용으로 공개돼 있으며 포크·재배포는 안 됩니다. 데이터·이미지는 각 출처의 조건을 따릅니다 (저장소 LICENSE · NOTICE).':
+    'Data comes from the public sources PvPoke · PokeMiners · PokeAPI · LeekDuck. The code is published for viewing only — forking and redistribution are not permitted. Data and images follow each source’s terms (see LICENSE and NOTICE in the repository).',
 
   // ── 레이드 보스 · 알 부화 ─────────────────────────────────────────────────
   '보스를 누르면 약점과 추천 딜러가 열려요. 혼자 잡을 수 있는지는 ⚔️ 레이드 · PvE 의 🧮 솔플 계산기에서 확인하세요.':
@@ -738,6 +738,28 @@ const I18N_EN = {
   // 2026-09-13 v3.22.1 홈 대시보드 인사·바로가기 (components/home.js renderServiceHome)
   // 2026-09-15 v3.33.0 캐치프라이즈 교체 — 옛 세 줄은 이미 나간 판이 쓰므로 남겨 둔다
   '다이맥스 · 레이드 · PvP 순위': 'Dynamax · Raid · PvP rankings',
+  // 2026-09-16 design 홈 시안 02
+  '맥스 배틀에 데려갈 포켓몬,': 'The Pokémon to bring to Max Battles —',
+  '여기서 골라요.': 'pick them here.',
+  '다이맥스 티어표와 추천 덱을 비교하고, 레이드·PvP까지 확인하세요.': 'Compare the Dynamax tier list and recommended decks, then check raids and PvP.',
+  '다이맥스 티어표 보기': 'See the Dynamax tier list',
+  '맥스 배틀 덱 짜기': 'Build a Max Battle deck',
+  '무엇이 필요한가요?': 'What do you need?',
+  '목적에 맞는 화면으로 바로 가요': 'Jump straight to the screen for the job',
+  '진행 중인 이벤트와 레이드 일정을 확인하세요.': 'Check running events and the raid schedule.',
+  '상황에 맞는 포켓몬과 추천 덱을 찾아보세요.': 'Find the right Pokémon and a recommended deck.',
+  '더 강한 포켓몬을 위한 육성 계획을 세워보세요.': 'Plan how to raise stronger Pokémon.',
+  '용도별 상위 포켓몬': 'Top Pokémon by purpose',
+  '평가 조건에 따라 추천이 달라져요': 'Recommendations change with the criteria',
+  '기준일 #-#-#': 'data as of #-#-#',
+  '다이맥스 배틀에서 활약하는 포켓몬': 'Pokémon that shine in Max Battles',
+  '종합 점수 순 · DPS 와 버팀(TDO)을 함께 봐요': 'By overall score · DPS and staying power (TDO) together',
+  '다양한 활용처': 'Useful all around',
+  '다이맥스': 'Dynamax',
+  '여러 순위표에 이름을 올린 포켓몬': 'Pokémon that appear on several rankings',
+  '순위표 #곳': 'On # rankings',
+  '1위 #': 'No. 1 #',
+  '이름을 누르면 종족값·상성·활용처를 전부 볼 수 있어요': 'Tap a name for base stats, matchups and every place it is used',
   '다이맥스 티어표는': 'Dynamax tier lists',
   '여기서 봐요.': 'live here.',
   '맥스 배틀에 데려갈 셋부터 레이드·PvP 순위, 전 종 도감까지.': 'From the three to bring to a Max Battle, to raid and PvP rankings, to the full Pokédex.',
@@ -808,6 +830,7 @@ const I18N_EN = {
 
   // 셸 · 메뉴 · 홈
   '포켓몬, 기술, 가이드를 검색하세요…': 'Search Pokémon, moves, guides…',
+  '포켓몬을 검색하세요': 'Search Pokémon',
   '지금 뭐 하지': 'What now',
   '뭘 데려갈까': 'Who to bring',
   '뭘 키울까': 'Who to raise',
@@ -815,7 +838,7 @@ const I18N_EN = {
   '움직이는 그림': 'Animated sprites',
   '켜기': 'On',
   '끄기': 'Off',
-  '포켓몬이 움직여요. 움직이는 그림이 없는 종은 살짝 흔들려요. 그림을 더 받아서 데이터를 조금 더 써요.': 'Pokémon animate; species without an animated sprite bob gently. Uses a little more data for the extra images.',
+  '포켓몬이 움직여요. 움직이는 그림이 없는 종은 정지 그림 그대로예요. 그림을 더 받아서 데이터를 조금 더 써요.': 'Pokémon animate; species without an animated sprite stay still. Uses a little more data for the extra images.',
   '정지 그림만 써요. 느린 회선이나 데이터를 아낄 때.': 'Still images only — for slow connections or saving data.',
   '바꾸면 다음에 여는 화면부터 적용돼요. 기기의 "동작 줄이기" 설정이 켜져 있으면 늘 정지 그림이에요.': 'Applies from the next screen you open. If your device has "reduce motion" on, images stay still.',
   '기기 설정': 'System',

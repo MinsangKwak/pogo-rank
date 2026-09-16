@@ -17,6 +17,8 @@
 - [10. 정기 점검 체크리스트](#10-정기-점검-체크리스트)
 - [11. 트래픽·남용 대응](#11-트래픽남용-대응)
 - [12. 커스텀 도메인 moncamp.kr](#12-커스텀-도메인-moncampkr-2026-09-14-v3270)
+- [13. 검색 색인](#13-검색-색인-2026-09-14-v3280)
+- [14. Firestore 사용자 데이터 백업](#14-firestore-사용자-데이터-백업-2026-09-16-v3470)
 
 ---
 
@@ -96,6 +98,8 @@ Actions에서 빨간 X가 뜨면 **build 잡의 빨간 단계**를 펼쳐 마지
 | `JSON 깨짐: data/xxx.json` | 원본 다운로드가 429/5xx를 받음 | 대개 일시적 — Run workflow로 재실행. 반복되면 소스 URL 확인 |
 | `FETCH FAIL: <url>` | 소스 경로 변경·삭제 | `scripts/fetch_data.sh`의 URL 갱신 |
 | `sheet ... download failed` | 구글 시트 게시 중단 | 저장소 `snapshot/` 사본으로 자동 대체됨. 시트 주인에게 게시 상태 확인 |
+| `경고: xxx: 내용이 N 잎으로 직전 M 의 P% — 직전 정상본으로 대체` (노란 경고, 배포는 성공) | 원본이 비거나 크게 줄어든 채로 옴 | 그 표만 **어제 것**이 실렸다(`backend/guard.py`). 다음 날도 반복되면 원본 쪽 변화 — `data/<이름>.json` 을 만든 스크립트를 본다. `build.json` 의 `stale` 에 이름이 남는다 |
+| `필수 표가 비어 있고 폴백도 없다: xxx — 배포를 멈춘다` | 필수 표가 비었는데 캐시(`tables-v1-`)에 직전 정상본이 없음 | 직전 배포가 그대로 남아 있다. 원본을 고친 뒤 재실행. 캐시는 성공한 빌드가 다시 채운다 |
 | 스냅샷 커밋 단계 실패 | 푸시 권한·경합 | **배포를 막지 않음**(continue-on-error). 무시 가능 |
 | 배포는 성공인데 화면이 그대로 | 서비스워커 캐시 | 새로고침(또는 캐시 삭제). 페이지·data.js는 네트워크 우선이라 대개 즉시 반영 |
 
@@ -286,7 +290,8 @@ GO 배틀리그 시즌이 바뀔 때(보통 3개월마다) 하는 유일한 수�
 
 **수시**
 
-- [ ] 배포 성공 여부 (Actions 탭에 빨간 X가 없는지)
+- [ ] 배포 성공 여부 (Actions 탭에 빨간 X가 없는지) — 노란 경고 `직전 정상본으로 대체` 가 이틀 넘게 이어지면 원본 쪽 변화다 ([3장](#3-배포-실패-대응))
+- [ ] 매주 월요일 **Backup Firestore user data** 가 초록인지 — 빨간 X 면 시크릿이 빠졌거나 만료된 것 ([14장](#14-firestore-사용자-데이터-백업-2026-09-16-v3470))
 - [ ] GA 이벤트로 탭 사용 순위 확인 → 탭 순서 재검토
 - [ ] 가입 승인 대기자 확인 (☰ → 🔑 가입 승인)
 - [ ] 새 폼·메가가 도감에 정상 표기되는지 (PvPoke `released` 반영 지연 확인)
@@ -387,3 +392,37 @@ A 레코드 넷이 다 나오고 dev 가 `minsangkwak.github.io` 로 풀리면 �
 - `curl -s https://moncamp.kr/ | grep -c 'name="robots" content="index'` → 1, `https://dev.moncamp.kr/` 는 `noindex`
 - Search Console → 색인 생성 → 페이지: 며칠 뒤 "색인 생성됨" 1건. 구조화 데이터는 [리치 결과 테스트](https://search.google.com/test/rich-results)에 주소를 넣어 오류 없음 확인
 - 검색창에 `site:moncamp.kr` — 첫 색인까지 보통 며칠 ~ 2주
+
+---
+
+## 14. Firestore 사용자 데이터 백업 (2026-09-16 v3.47.0)
+
+가입 승인 목록(`allowlist`) · 가입 요청(`requests`) · 내 포켓몬(`users`) · 트레이너 코드(`trainers`)는 Firestore 한 곳에만 있고, Spark 요금제에는 자동 백업이 없습니다. `.github/workflows/backup-firestore.yml` 이 **매주 월요일 01:00 KST** 에 네 컬렉션을 받아 암호화한 아티팩트로 **90일** 보관합니다(최대 13벌). 시크릿 둘이 없으면 워크플로는 첫 단계에서 멈추고 무엇이 없는지 말합니다.
+
+### 최초 1회 설정 (10분)
+
+1. **서비스 계정** — [Google Cloud 콘솔 → IAM → 서비스 계정](https://console.cloud.google.com/iam-admin/serviceaccounts) 에서 Firebase 프로젝트를 고르고 **계정 만들기** → 이름 `moncamp-backup` → 역할 **Cloud Datastore 뷰어**(`roles/datastore.viewer`) 하나만. 만든 계정 → 키 → **새 키 만들기(JSON)** → 내려받은 파일을 한 줄로 만든다: `python3 -c "import json,sys;print(json.dumps(json.load(open(sys.argv[1]))))" <파일>`
+   - Firebase 콘솔 → 프로젝트 설정 → 서비스 계정의 "새 비공개 키" 도 되지만 그 계정은 **편집자** 권한이라 백업용으로는 과합니다. 읽기만 되는 전용 계정을 권장합니다
+2. **시크릿 등록** — 저장소 Settings → Secrets and variables → Actions → **Secrets**(Variables 아님)
+   - `FIREBASE_SA_JSON` — 위 한 줄 JSON
+   - `BACKUP_PASSPHRASE` — 긴 무작위 문자열(예: `openssl rand -base64 32`). **비밀번호 관리자에 따로 보관** — 잃어버리면 백업을 못 풉니다
+3. **한 번 돌려 본다** — Actions → Backup Firestore user data → Run workflow. 로그에 `backup ok: allowlist N · requests N · users N · trainers N` 이 찍히고 아티팩트 `firestore-backup-<날짜>.json.enc` 가 붙으면 됩니다
+
+### 되돌리기
+
+```bash
+# 1. Actions 실행 화면에서 아티팩트를 받아 푼다 → firestore-backup-20260916.json.enc
+openssl enc -d -aes-256-cbc -pbkdf2 -in firestore-backup-20260916.json.enc -out firestore-backup.json
+# 2. 무엇을 되돌릴지 먼저 본다 (아무것도 안 바꾼다)
+python3 scripts/firestore_restore.py firestore-backup.json --only users --id <uid>
+# 3. 맞으면 실제로 쓴다 — 쓰기에는 "Cloud Datastore 사용자" 역할의 키가 필요하다 (백업용 뷰어 키로는 안 된다)
+FIREBASE_SA_JSON='<한 줄 JSON>' python3 scripts/firestore_restore.py firestore-backup.json --only users --id <uid> --apply
+```
+
+`--only` · `--id` 없이 `--apply` 하면 네 컬렉션 전부를 백업 시점으로 되돌립니다. 백업에 있는 문서만 덮어쓰므로 **백업 뒤에 생긴 문서는 남습니다**. 다 끝나면 평문 `firestore-backup.json` 을 지우세요 — 이메일과 트레이너 코드가 들어 있습니다.
+
+### 알아둘 것
+
+- 백업 파일은 이메일·트레이너 코드가 든 개인정보입니다. 아티팩트가 암호화돼 있는 이유이고, 평문을 저장소·노션·채팅에 올리지 않습니다
+- 90일이 지나면 GitHub 이 아티팩트를 지웁니다. 더 오래 남기려면 분기마다 한 벌을 받아 로컬 비밀번호 관리자·암호화 드라이브에 두세요
+- 컬렉션이 늘면 `scripts/firestore_backup.py` 의 `COLLECTIONS` 에 이름을 더합니다

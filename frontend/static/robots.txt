@@ -12,6 +12,7 @@
 User-agent: *
 Allow: /
 Disallow: /data.js
+Disallow: /data-lazy.js
 Disallow: /sprites/
 # 2026-09-12 v2.67.0 움직이는 그림 949장(약 51MB) — 상세 화면 전용이라 검색에 의미가 없다
 Disallow: /sprites-anim/

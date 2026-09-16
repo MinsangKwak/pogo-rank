@@ -37,9 +37,10 @@ import json, csv, re, os, shutil
 from datetime import date
 from sprite import sprite_id
 from names import name_ko, species, FORM_KO
+import guard
 
 # ── 설정 ─────────────────────────────────────────────────────────────────────
-APP_VERSION = 'v3.46.0'  # 첫 화면 무게 462 → 362KB(gz) · 번들을 app.js 로 빼고 안 쓰는 94KB 를 뒤로 (v3.25.0 은 feature-advertisement 브랜치에 예약)
+APP_VERSION = 'v3.48.2'  # 코드 이용 조건 — 포크·재배포 금지로 전환 · 문서의 옛 서비스명 정리 (v3.25.0 은 feature-advertisement 브랜치에 예약)
 # 2026-09-14 v3.28.0 index.html 의 색인 허용 줄 — dev 빌드가 이 줄을 noindex 로 바꿔 끼운다
 ROBOTS_INDEX_META = '<meta name="robots" content="index, follow, max-image-preview:large">'
 # 2026-09-05 v2.7.3 빌드 채널 — 'prod'(기본) / 'dev'. dev 브랜치 워크플로(.github/workflows/deploy-dev.yml)가 BUILD_CHANNEL=dev 로 부른다.
@@ -382,23 +383,16 @@ def bundle(folder, files, mark):
         parts.append(heading + cleaned.strip())
     return '\n\n'.join(parts)
 
-# 아직 만들어지지 않은 데이터 파일(build.py 1차 실행 시점)은 빈 객체로 대체한다
-def optional_json(path):
-    # 2026-09-11 v2.57.0 파일을 그대로 붙이지 않고 한 번 되감아 공백을 줄인다.
-    # 앞 단계(pve_build.py 등)가 만든 json 은 사람이 읽으라고 기본 구분자(`", "` · `": "`)로 저장돼 있는데,
-    # 배포본에 그대로 실리면 항목마다 공백 두 개가 따라간다 — DEX_DATA·BOSS_LIST 처럼 큰 것에서 많이 쌓인다.
-    # json 을 다시 읽어 다시 쓰므로 **값은 그대로고 사이의 공백만** 없어진다.
-    # 깨진 json 이면 되감지 않고 원문을 그대로 넘긴다 — 여기서 배포를 막을 이유가 없다.
-    if not os.path.exists(path):
-        return '{}'
-    raw = open(path, encoding='utf-8').read()
-    try:
-        return tight(json.loads(raw))
-    except Exception:
-        return raw
-
+# 아직 만들어지지 않은 데이터 파일(build.py 1차 실행 시점)은 None — data.js 에는 빈 값으로 실린다.
+# 2026-09-16 v3.47.0 깨진 json 도 None 으로 본다 — 그래야 검문(guard.py)이 "없는 표" 로 다뤄 직전 정상본을 꺼낸다
 def load_table_file(path):
-    return json.load(open(path, encoding='utf-8')) if os.path.exists(path) else None
+    if not os.path.exists(path):
+        return None
+    try:
+        return json.load(open(path, encoding='utf-8'))
+    except Exception as e:
+        print(f'경고: {path} 를 읽지 못했다 ({e}) — 없는 표로 다룬다')
+        return None
 
 
 # ── 스프라이트 복사 ───────────────────────────────────────────────────────────
@@ -444,20 +438,20 @@ def copy_sprites():
 # ── 순위 변동(▲▼) 계산 ────────────────────────────────────────────────────
 # 직전 빌드의 순위와 비교해 각 행에 'd'(변동 폭)를 심는다. 자세한 규칙은 backend/rank_diff.py 참고.
 # PvE·D-MAX 표가 아직 없는 1차 실행에서는 건너뛴다 (그때 비교하면 잘못된 기준이 남는다).
-def apply_rank_delta(pvp, tables):
+def apply_rank_delta(tables):
     # 화면에 실제로 순위가 보이는 표를 전부 넣는다.
     # 같은 PvE 탭이라도 시트 데이터가 있으면 시트를, 없으면 자체 계산을 그리므로 둘 다 대상이다.
     rank_delta_date, changed_table_count, rank_fresh_days = '', 0, 14
-    if tables['pve'] and tables['dmax']:
+    if tables['pve'] and tables['dynamax_tier']:
         import rank_diff
         all_tables = {}
-        for league_id, rows in pvp.items():
+        for league_id, rows in tables['pvp'].items():
             all_tables[f'pvp:{league_id}'] = rows
         for type_key, rows in tables['pve'].items():
             all_tables[f'pve:{type_key}'] = rows
         for type_key, rows in (tables['pve_easy'] or {}).items():
             all_tables[f'pveEasy:{type_key}'] = rows
-        for type_key, rows in tables['dmax'].items():
+        for type_key, rows in tables['dynamax_tier'].items():
             all_tables[f'dmax:{type_key}'] = rows
         for type_key, rows in ((tables['sheet'] or {}).get('pve') or {}).items():
             all_tables[f'sheet:{type_key}'] = rows
@@ -470,41 +464,55 @@ def apply_rank_delta(pvp, tables):
 
 
 # ── data.js ───────────────────────────────────────────────────────────────────
-def render_data_js(game_master, pvp, tables, rank_delta_date, rank_fresh_days, sprite_ids, sprite_anim_ids):
-    # 프론트가 읽는 전역 데이터. 각 상수는 대응하는 뷰가 그대로 참조한다
-    # (없는 파일은 optional_json이 '{}'로 채우므로 1차 실행에서도 문법 오류가 나지 않는다)
-    def table_or_file(key, path):
-        # 순위 변동을 심은 표(메모리)가 있으면 그것을, 없으면 파일 원문을 싣는다
-        return tight(tables[key]) if tables[key] else optional_json(path)
+def render_data_js(game_master, tables, stale, rank_delta_date, rank_fresh_days, sprite_ids, sprite_anim_ids):
+    # 프론트가 읽는 전역 데이터. 각 상수는 대응하는 뷰가 그대로 참조한다.
+    # 2026-09-16 v3.47.0 전부 main() 이 읽어 둔 표(tables)에서 싣는다 — 검문(guard.py)이 바꿔 넣은 표가 그대로 나간다.
+    # 없는 표는 빈 값이라 1차 실행에서도 문법 오류가 나지 않는다.
+    #
+    # 2026-09-16 v3.48.0 **두 파일로 가른다** — (data.js, data-lazy.js) 를 돌려준다.
+    #   홈이 쓰는 표는 data.js 에, 홈이 한 글자도 안 쓰는 여섯 표(gzip 84KB)는 data-lazy.js 에.
+    #   PVE_EASY 17 · SHEET_DATA 31 · BOSS_LIST 21 · GAMEDAY 4 · MOVE_CHANGES 5 · ROLES 6 —
+    #   PvE 탭 · 레이드 보스 · 알 부화 · 기술 변경 · 솔플 계산기 · 검색이 쓰고, 첫 렌더 뒤 한가할 때 미리 받는다 (scripts/lazy.js).
+    #   전역 이름은 그대로다 — 어느 파일에 실리든 읽는 쪽 코드는 한 글자도 안 바뀐다.
+    #   DATA_FETCHED 는 GAMEDAY.fetched 의 복사본 — freshness.js 가 지연분 없이도 "이 빌드의 데이터 날짜" 를 알아야 한다
+    def t(key, empty='{}'):
+        return js_data(tight(tables[key])) if tables.get(key) is not None else empty
+    gameday = tables.get('gameday')
+    data_fetched = gameday.get('fetched', '') if isinstance(gameday, dict) else ''
     # 긴 라벨부터 — name.js 가 앞에서부터 맞춰 보므로 '가라르 달마모드' 가 '가라르' 보다 먼저 와야 한다.
     # 2026-09-12 v3.14.0 같은 길이 안은 가나다순 — 집합 순서를 그대로 쓰면 빌드마다 data.js 가 달라졌다(해시 무작위화)
     form_labels = sorted({label for label in FORM_KO.values() if label} | {'섀도우', '다이맥스', '거다이맥스'}, key=lambda label: (-len(label), label))
-    return f'''// 빌드 생성 데이터 (backend/build.py) — 기준일 {game_master['timestamp']}
+    core = f'''// 빌드 생성 데이터 (backend/build.py) — 기준일 {game_master['timestamp']}
 const TYPE_KO = {tight(TYPE_KO)};
 // 2026-09-08 v2.29.0 다국어 — 타입 이름 영문. TYPE_KO 와 키가 같아야 typeName(t) 이 한 줄로 갈린다
 const TYPE_EN = {tight(TYPE_EN)};
 // 2026-09-06 v2.10.0 이름 앞에 붙는 폼 라벨 목록 (backend/names.py FORM_KO 값 + 섀도우·다이맥스·거다이맥스) — components/name.js 가 이름을 [라벨 뱃지 + 종 이름]으로 가른다
 const FORM_LABELS = {tight(form_labels)};
-const PVP_DATA = {js_data(tight(pvp))};
-const PVE_DATA = {js_data(table_or_file('pve', 'data/pve.json'))};
-const PVE_EASY = {js_data(table_or_file('pve_easy', 'data/pve_easy.json'))};
-const DMAX_DATA = {js_data(optional_json('data/dynamax.json'))};
-const DMAX_TANK = {js_data(optional_json('data/dynamax_tank.json'))};   // 2026-09-07 v2.13.0 (QA-43) 보스 속성별 다이맥스 탱커(EHP) 순위
-const MAX_POOL = {js_data(optional_json('data/max_pool.json'))};   // 2026-09-04 맥스 배틀 포획 가능 종 (스프라이트 id → 'G'|'D')
-const MOVE_CHANGES = {js_data(optional_json('data/move_changes.json'))};   // 2026-09-04 시즌 기술 변경 안내 (backend/change_build.py)
-const ROLES = {js_data(optional_json('data/roles.json'))};                 // 2026-09-05 PvE/PvP 역할 자동 분류 근거 (backend/roles_build.py)
+const PVP_DATA = {t('pvp')};
+const PVE_DATA = {t('pve')};
+const DMAX_DATA = {t('dynamax')};
+const DMAX_TANK = {t('dynamax_tank')};   // 2026-09-07 v2.13.0 (QA-43) 보스 속성별 다이맥스 탱커(EHP) 순위
+const MAX_POOL = {t('max_pool')};   // 2026-09-04 맥스 배틀 포획 가능 종 (스프라이트 id → 'G'|'D')
 const RANK_DELTA_DATE = {json.dumps(rank_delta_date)};            // 2026-09-04 순위 변동을 기록한 날 (뱃지 유효기간 계산용)
 const RANK_FRESH_DAYS = {rank_fresh_days};                        // 이 일수가 지나면 변동 뱃지를 감춘다
-const DMAX_TIER = {js_data(table_or_file('dmax', 'data/dynamax_tier.json'))};
-const VALUE_DATA = {js_data(table_or_file('value', 'data/value.json'))};
-const SHEET_DATA = {js_data(table_or_file('sheet', 'data/sheet.json'))};
-const DEX_DATA = {js_data(optional_json('data/dex.json'))};
-const BOSS_LIST = {js_data(optional_json('data/bosses.json') or '[]')};
-const GAMEDAY = {js_data(optional_json('data/gameday.json'))};              // 2026-09-08 v2.25.0 레이드 보스·알 부화 풀·이벤트 원본 (backend/gameday_build.py)
+const DMAX_TIER = {t('dynamax_tier')};
+const VALUE_DATA = {t('value')};
+const DEX_DATA = {t('dex')};
+const DATA_FETCHED = {json.dumps(data_fetched)};   // 2026-09-16 v3.48.0 데이터 수집일 (GAMEDAY.fetched 와 같다 — GAMEDAY 는 data-lazy.js 에 있다)
+const DATA_STALE = {json.dumps(stale)};   // 2026-09-16 v3.47.0 검문에서 직전 정상본으로 대체된 표 이름 (backend/guard.py). 비어 있으면 전부 오늘 것
 const SPRITE_IDS = {json.dumps(sorted(sprite_ids))};
 const SPRITE_ANIM_IDS = {json.dumps(sorted(sprite_anim_ids))};
 const SPRITES = {(open('data/sprites.json').read() if INLINE and os.path.exists('data/sprites.json') else 'null')};
 '''
+    lazy = f'''// 빌드 생성 데이터 — 첫 화면이 안 쓰는 표 (backend/build.py v3.48.0, scripts/lazy.js 가 첫 렌더 뒤에 받는다) — 기준일 {game_master['timestamp']}
+const PVE_EASY = {t('pve_easy')};
+const SHEET_DATA = {t('sheet')};
+const BOSS_LIST = {t('bosses', '[]')};
+const GAMEDAY = {t('gameday')};              // 2026-09-08 v2.25.0 레이드 보스·알 부화 풀·이벤트 원본 (backend/gameday_build.py)
+const MOVE_CHANGES = {t('move_changes')};   // 2026-09-04 시즌 기술 변경 안내 (backend/change_build.py)
+const ROLES = {t('roles')};                 // 2026-09-05 PvE/PvP 역할 자동 분류 근거 (backend/roles_build.py)
+'''
+    return core, lazy
 
 
 # ── index.html ────────────────────────────────────────────────────────────────
@@ -574,7 +582,7 @@ def render_index_html(game_master, config, data_js):
     # 2026-09-10 v2.50.0 BUILD_VERSION — 지금 띄운 것이 어느 빌드인지 코드가 알아야 한다.
     # 헤더에 글자로 박아 두던 것(__VERSION__)은 app-shell.js 가 헤더를 통째로 갈아 끼우면서 사라진다.
     # 화면에서 긁어 오는 대신 값으로 넣는다 (components/freshness.js 가 build.json 과 견준다)
-    html = html.replace('__APP_CONFIG__', f"const FIREBASE_CONFIG = {json.dumps(config['FIREBASE_CONFIG'])};\nconst ADMIN_EMAIL = {json.dumps(config['ADMIN_EMAIL'])};\nconst ADMIN_UID = {json.dumps(config['ADMIN_UID'])};\nconst CONTACT_EMAIL = {json.dumps(config['CONTACT_EMAIL'])};\nconst BUILD_VERSION = {json.dumps(APP_VERSION)};\nconst LAZY_BUNDLE_URL = {json.dumps(lazy_url)};")
+    html = html.replace('__APP_CONFIG__', f"const FIREBASE_CONFIG = {json.dumps(config['FIREBASE_CONFIG'])};\nconst ADMIN_EMAIL = {json.dumps(config['ADMIN_EMAIL'])};\nconst ADMIN_UID = {json.dumps(config['ADMIN_UID'])};\nconst CONTACT_EMAIL = {json.dumps(config['CONTACT_EMAIL'])};\nconst BUILD_VERSION = {json.dumps(APP_VERSION)};\nconst LAZY_BUNDLE_URL = {json.dumps(lazy_url)};\nconst LAZY_DATA_URL = {json.dumps('' if INLINE else 'data-lazy.js')};")
     # 2026-09-05 v2.8.0 푸터 문의 이메일 — CONTACT_EMAIL 이 비어 있으면 문구 자체를 뺀다
     contact_email = config['CONTACT_EMAIL']
     contact_html = f'문의·건의: <a href="mailto:{contact_email}">{contact_email}</a> · ' if contact_email else ''
@@ -586,17 +594,15 @@ def render_index_html(game_master, config, data_js):
 
 
 # ── 부속 파일 — build.json · PWA 정적 파일 · sitemap · security.txt · robots · 404 ──
-def write_site_files(game_master, config):
+def write_site_files(game_master, config, tables, stale=()):
     # 2026-09-10 v2.50.0 아주 작은 빌드 표식 — 앱이 "지금 보고 있는 것이 최신인가" 를 물을 때 받는 파일.
     # data.js 는 1.5MB 라 확인용으로 매번 받을 수 없다. 이 파일은 100바이트도 안 된다.
     #   version  앱 버전 (patch 포함)
-    #   fetched  데이터를 받은 날짜 (gameday.json 의 그 값 — 알 부화·레이드 보스가 이 날짜 기준이다)
-    gameday_fetched = ''
-    try:
-        gameday_fetched = json.load(open('data/gameday.json', encoding='utf-8')).get('fetched', '')
-    except Exception:
-        pass
-    json.dump({'version': APP_VERSION, 'fetched': gameday_fetched, 'timestamp': game_master['timestamp']},
+    #   fetched  데이터를 받은 날짜 (GAMEDAY 의 그 값 — 알 부화·레이드 보스가 이 날짜 기준이다).
+    #            2026-09-16 v3.47.0 파일이 아니라 실리는 표에서 읽는다 — 검문이 직전 정상본으로 바꿔 넣었으면 그 날짜가 맞다
+    gameday_fetched = (tables.get('gameday') or {}).get('fetched', '') if isinstance(tables.get('gameday'), dict) else ''
+    #   stale    2026-09-16 v3.47.0 검문에서 직전 정상본으로 대체된 표 이름 (backend/guard.py). 보통 빈 목록
+    json.dump({'version': APP_VERSION, 'fetched': gameday_fetched, 'timestamp': game_master['timestamp'], 'stale': list(stale)},
               open('dist/build.json', 'w', encoding='utf-8'), ensure_ascii=False)
     # 2026-09-03 PWA 정적 파일(manifest·아이콘·서비스워커) 복사
     if os.path.isdir('frontend/static'):
@@ -650,24 +656,25 @@ def main():
     game_master = json.load(open('data/gm.json'))
     config = read_config()
     os.makedirs('dist', exist_ok=True)
-    pvp = build_pvp_tables(game_master)
     sprite_ids, sprite_anim_ids = copy_sprites()
-    # 앞 단계가 만든 표 — 순위 변동을 심은 뒤 data.js 에 싣는다 (1차 실행에서는 대부분 None)
-    tables = {
-        'pve': load_table_file('data/pve.json'),
-        'pve_easy': load_table_file('data/pve_easy.json'),
-        'dmax': load_table_file('data/dynamax_tier.json'),
-        'sheet': load_table_file('data/sheet.json'),
-        'value': load_table_file('data/value.json'),
-    }
-    rank_delta_date, rank_fresh_days = apply_rank_delta(pvp, tables)
-    data_js = render_data_js(game_master, pvp, tables, rank_delta_date, rank_fresh_days, sprite_ids, sprite_anim_ids)
-    if not INLINE:
+    # 앞 단계가 만든 표 전부 — 이름은 data/<이름>.json 과 같다 (1차 실행에서는 대부분 None)
+    tables = {'pvp': build_pvp_tables(game_master)}
+    for name, _required in guard.TABLES:
+        if name != 'pvp':
+            tables[name] = load_table_file(f'data/{name}.json')
+    # 2026-09-16 v3.47.0 검문 — 비거나 줄어든 표는 직전 정상본으로 바꿔 넣는다 (BUILD_GATE=1 일 때만, backend/guard.py)
+    stale = guard.apply(tables) if guard.enabled() else []
+    rank_delta_date, rank_fresh_days = apply_rank_delta(tables)
+    data_js, data_lazy_js = render_data_js(game_master, tables, stale, rank_delta_date, rank_fresh_days, sprite_ids, sprite_anim_ids)
+    if INLINE:
+        data_js += '\n' + data_lazy_js   # 미리보기는 단일 HTML — 지연분도 한 덩이로
+    else:
         open('dist/data.js', 'w', encoding='utf-8').write(data_js)
+        open('dist/data-lazy.js', 'w', encoding='utf-8').write(data_lazy_js)
     open('dist/index.html', 'w', encoding='utf-8').write(render_index_html(game_master, config, data_js))
-    write_site_files(game_master, config)
+    write_site_files(game_master, config, tables, stale)
     # 리그별로 몇 줄이 실렸는지 요약 출력 (빌드 로그 확인용)
-    print('ok', {league_id: len(league_rows) for league_id, league_rows in pvp.items()})
+    print('ok', {league_id: len(league_rows) for league_id, league_rows in tables['pvp'].items()})
 
 if __name__ == '__main__':
     main()
