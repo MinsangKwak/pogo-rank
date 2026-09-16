@@ -240,7 +240,8 @@ const startedStandalone = window.matchMedia?.('(display-mode: standalone)').matc
 track('tab_start', { tab: state.tab, standalone: startedStandalone });
 // 2026-09-06 v2.9.0 GA4: 홈 화면 설치 완료 — 브라우저가 설치를 마쳤을 때 한 번 뜬다
 window.addEventListener('appinstalled', () => track('pwa_install'));
-// 2026-09-07 v2.18.0 통계 동의 배너 — 동의가 저장돼 있으면 GA 를 붙이고, 없으면 첫 화면에 배너 (components/consent.js)
+// 2026-09-07 v2.18.0 통계 · 저장소 (components/consent.js) — 2026-09-15 v3.45.0 첫 방문 배너를 걷어냈다.
+// 여기서는 GA 를 붙일지 판정하고(끈 사람이면 안 붙는다) ☰ 메뉴·푸터의 설정 항목을 연결한다
 initConsent();
 // 2026-09-03 자동 팝업 대신 새 패치노트 뱃지 (☰에 빨간 점)
 initReleaseBadge();
