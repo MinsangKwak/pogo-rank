@@ -13,7 +13,7 @@
 //   - 로그인 없이도 열리는가 — 부모인 D-MAX 가 누구나 보는 화면이라 이 도구도 잠그지 않는다
 //     (잠금은 app.js 가 탭 단위로 건다. PvP 덱 짜기가 잠기는 것은 PvP 탭이 잠겨서다)
 //   - EN 으로 바꿔도 한글이 남지 않는가
-const { launch, newContext, waitSplash, ok, finish, suite } = require('./_lib');
+const { toEnglish, launch, newContext, waitSplash, ok, finish, suite } = require('./_lib');
 const BASE = 'http://localhost:5503/?mock=1';
 
 suite(async () => {
@@ -100,7 +100,7 @@ suite(async () => {
 
   // ── EN
   await go('#/dmax/deck');
-  await page.evaluate(() => setLang('en'));
+  await toEnglish(page);
   await page.waitForTimeout(500);
   const leftKo = await page.evaluate(() => (document.querySelector('#content').textContent.match(/[가-힣]+/g) ?? []));
   ok('EN 에서 한글이 안 남는다', leftKo.length === 0, leftKo.slice(0, 8).join(' '));

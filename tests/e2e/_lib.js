@@ -63,4 +63,13 @@ async function finish(browser) {
 // 스위트 본문을 감싼다 — 예외로 죽으면 CRASH 한 줄과 종료 코드 1
 const suite = (body) => body().catch((e) => { console.error('CRASH', e.message); process.exit(1); });
 
-module.exports = { chromium, CHROMIUM, SERVER, ok, launch, newContext, go, waitSplash, finish, suite };
+// 2026-09-16 v3.46.0 영어 사전은 지연 묶음에 있다 (scripts/lazy.js). 첫 렌더 뒤 미리 받지만
+// 검사는 그 타이밍을 기다려 주지 않는다 — 먼저 받아 두고 바꾼다. 화면의 EN 버튼도 같은 순서로 돈다
+async function toEnglish(page) {
+  await page.evaluate(() => (typeof loadLazyBundle === 'function' ? loadLazyBundle() : null));
+  await page.evaluate(() => setLang('en'));
+  await page.waitForTimeout(250);
+}
+
+module.exports = {
+  toEnglish, chromium, CHROMIUM, SERVER, ok, launch, newContext, go, waitSplash, finish, suite };

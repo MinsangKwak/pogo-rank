@@ -7,7 +7,7 @@
 //   - 세 번을 다 쓰면 버튼 대신 "이젠 가입하셔야죠" 문구가 남는다
 //   - 새로고침해도 진행 중이던 시간은 이어진다 · 로그인(목)한 사람에겐 버튼이 없다
 // 20초를 세 번 기다리지 않는다 — TRIAL_SECONDS 는 let 이라 평가 문맥에서 줄여 쓴다
-const { launch, newContext, waitSplash, ok, finish, suite } = require('./_lib');
+const { toEnglish, launch, newContext, waitSplash, ok, finish, suite } = require('./_lib');
 const BASE = 'http://localhost:5503/';
 
 suite(async () => {
@@ -72,7 +72,9 @@ suite(async () => {
   await page.locator('.login-invite__later').click();
   await page.waitForTimeout(200);
   ok('잠금 카드에도 권유 문구', (await page.locator('.plan__lock .trial-go').count()) === 0 && (await page.locator('.plan__lock .trial-exhausted').count()) === 1);
-  ok('영어로 바꿔도 문구가 옮겨진다', await page.evaluate(() => { setLang('en'); return /sign up/i.test(document.querySelector('.plan__lock .trial-exhausted').textContent); }));
+  await toEnglish(page);
+  ok('영어로 바꿔도 문구가 옮겨진다',
+    await page.evaluate(() => /sign up/i.test(document.querySelector('.plan__lock .trial-exhausted').textContent)));
   await page.evaluate(() => setLang('ko'));
 
   // 로그인(목)한 사람에게는 버튼이 없다 — 잠긴 화면 자체가 없다

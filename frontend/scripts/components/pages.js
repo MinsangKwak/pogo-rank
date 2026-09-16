@@ -37,9 +37,20 @@ function renderReleasePage() {
   // 2026-09-12 v3.11.0 영어로 볼 때는 영문판을 쓴다 (i18n-release-en.js). 원문과 어긋나는 문제는
   // 통째로 짝지어 두는 방식으로 푼다 — 날짜 키가 같아야 짝이 맞고, 짝이 없으면 한국어가 그대로 나간다.
   // 남은 한국어가 하나도 없으면 "여긴 한국어" 안내도 띄우지 않는다
+  // 2026-09-16 v3.46.0 본문은 지연 묶음에 있다 (scripts/release-notes.js → dist/app-lazy.js).
+  // 미리 받아 두므로 대개 이미 와 있다. 아직이면 한 줄 안내를 띄우고, 도착하면 이 화면을 다시 그린다 —
+  // 빈 화면을 내밀지 않는다
+  if (!releaseNotesReady()) {
+    if (typeof loadLazyBundle === 'function') {
+      loadLazyBundle().then(() => {
+        if (typeof currentPageId === 'function' && currentPageId() === 'release') renderPage();
+      });
+    }
+    return el('div', { class: 'page__body' }, el('p', { class: 'meta' }, '패치노트를 불러오는 중이에요…'));
+  }
   return el('div', { class: 'page__body' },
     releaseHasKoreanLeft() ? i18nKoOnlyNote() : '',
-    ...RELEASE_NOTES.map((group, groupIndex) => el('section', { class: 'release__sec' },
+    ...releaseNotes().map((group, groupIndex) => el('section', { class: 'release__sec' },
       el('h2', {}, group.date, groupIndex === 0 ? el('span', { class: 'tag tag--gmax' }, 'NEW') : ''),
       el('ul', {}, ...releaseItems(group).map(releaseItemNode)))));
 }
