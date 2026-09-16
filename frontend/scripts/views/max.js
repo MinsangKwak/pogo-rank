@@ -136,7 +136,7 @@ function maxReleased(rows) {
 function whyFormula(pokemon) {
   return `점수 ${pokemon.score.toLocaleString()} = 공격 ${pokemon.atk} × 위력 ${pokemon.power} × 자속 ${pokemon.stab ? '1.2' : '1'} × 내구 보정 ${pokemon.bulkMul ?? 1}`;
 }
-function whyGrade(pokemon) {
+function whyGrade(pokemon, topScore) {
   const list = DMAX_TIER[pokemon.charged] ?? [];
   // 2026-09-15 v3.36.0 비교 상대도 순위도 **출시분** 기준이다 — 아직 못 쓰는 개체를 1위로 두면
   // 대비 % 가 실제로 겨룰 상대와 무관한 숫자가 된다.
@@ -151,7 +151,7 @@ function whyGrade(pokemon) {
   const versus = topOfType ? ` (1위 ${topOfType.name} 대비 ${Math.round(pokemon.score / topOfType.score * 100)}%)` : '';
   const rank = pool.findIndex((entry) => sameMaxEntry(entry, pokemon)) + 1;
   const place = !topOfType ? '' : isTop ? `${typeLabel} 1위` : `${typeLabel} ${rank}위${versus}`;
-  return `${pokemon.tier} 등급 — 전 종 1위 대비 ${pokemon.pct ?? 0}%${place ? ` · ${place}` : ''}`;
+  return `${pokemon.tier} 등급 — 전 종 1위 대비 ${pokemon.pct ?? Math.round(pokemon.score / topScore * 100)}%${place ? ` · ${place}` : ''}`;
 }
 // 2026-09-14 v3.30.0 등급·점수가 무슨 뜻인지 한 번에 밝히는 안내. 제목 옆 ⓘ 에 달린다 —
 // 티어 글자는 탭이 아니라 전 종 기준이고, 점수에는 내구가 약하게 섞여 있다는 두 가지가 핵심이다
@@ -182,11 +182,14 @@ function expandableRow(pokemon, rank, topScore) {
   // 2026-09-10 v2.43.0 근거 줄을 두 칸으로 나눴다 — 왼쪽은 "왜 이 티어인가"(계산식), 오른쪽은
   // "이 포켓몬이 보스로 나오면 누구를 데려가나". 성격이 다른 두 정보가 한 문단에 이어져 있어
   // 어디까지가 계산식인지 눈이 못 잘랐다. 칸마다 제목을 달아 무엇을 읽는 중인지 밝힌다
-  const whyNode = el('li', { class: 'row__why' },
+  const whyNode = el('li', { class: 'row__why tier-report' },
     el('div', { class: 'row__why-col' },
-      el('b', { class: 'row__why-title' }, '📊 티어 점수 산정 방식'),
+      el('b', { class: 'row__why-title' }, `${pokemon.name} · 티어 평가 리포트`),
+      el('div', { class: 'tier-report__summary' },
+        el('strong', {}, `${pokemon.tier} 등급`),
+        el('span', {}, el('b', {}, `${pokemon.pct ?? Math.round(pokemon.score / topScore * 100)}%`), ' 전 종 1위 대비')),
       el('p', { class: 'row__why-line' }, whyFormula(pokemon)),
-      el('p', { class: 'row__why-line' }, whyGrade(pokemon)),
+      el('p', { class: 'row__why-line' }, whyGrade(pokemon, topScore)),
       el('button', {
         class: 'row__why-more',
         onclick: (event) => {
@@ -203,7 +206,7 @@ function expandableRow(pokemon, rank, topScore) {
             event.stopPropagation();
             openDetail(counter);
           }
-        }, counter.name)))) : '');
+        }, sprite(counter.sprite), el('span', {}, counter.name))))) : '');
   // 2026-09-10 v2.52.0 한 번에 하나만 연다 (아코디언).
   // 전에는 카드마다 따로 토글해서, 넷을 차례로 누르면 근거 넷이 한꺼번에 펼쳐진 채 쌓였다.
   // 근거는 카드 뒤에 가로폭을 다 쓰고 붙으므로(order, pc-theme.css) 여러 개가 열리면
@@ -212,10 +215,14 @@ function expandableRow(pokemon, rank, topScore) {
   rowNode.addEventListener('click', () => {
     const willOpen = !whyNode.classList.contains('is-open');
     for (const other of document.querySelectorAll('.row__why.is-open')) other.classList.remove('is-open');
+    for (const selected of document.querySelectorAll('.row.is-report-selected')) {
+      selected.classList.remove('is-report-selected');
+      selected.setAttribute('aria-expanded', 'false');
+    }
     if (!willOpen) return;
+    rowNode.classList.add('is-report-selected');
+    rowNode.setAttribute('aria-expanded', 'true');
     whyNode.classList.add('is-open');
-    // 열린 근거가 화면 밖이면 끌어온다. block: 'nearest' 라 이미 보이면 화면이 움직이지 않는다
-    whyNode.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
   });
   const fragment = document.createDocumentFragment();
   fragment.append(rowNode, whyNode);
