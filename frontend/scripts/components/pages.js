@@ -469,7 +469,9 @@ const PAGES = {
 };
 
 // 2026-09-16 v3.48.0 지연 데이터(GAMEDAY · MOVE_CHANGES)로 그리는 화면 — renderPage 가 도착을 기다린다
-const LAZY_DATA_PAGES = new Set(['raids', 'eggs', 'changes']);
+// 2026-09-16 v3.54.0 game-updates: 아카이브 색인(GAME_ARCHIVE)이 지연분에 있다 — 기사(GAME_UPDATES)는 core 라
+// 자료가 늦어도 기사는 먼저 보인다. 이 표에 넣는 이유는 **아카이브까지 갖춘 목록**을 그리기 위해서다
+const LAZY_DATA_PAGES = new Set(['raids', 'eggs', 'changes', 'game-updates']);
 
 // 현재 해시가 가리키는 전체 페이지 id. 페이지가 아니면 null = 메인 화면.
 // 2026-09-08 v2.30.0 주소 해석은 router.js 한 곳이 한다 — 여기서 정규식을 또 쓰지 않는다

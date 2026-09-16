@@ -40,7 +40,7 @@ from names import name_ko, species, FORM_KO
 import guard
 
 # ── 설정 ─────────────────────────────────────────────────────────────────────
-APP_VERSION = 'v3.53.0'  # 게임 업데이트 — 수집 자동화 · 글 11건 · 지난 소식 더 보기 (v3.25.0 은 feature-advertisement 브랜치에 예약)
+APP_VERSION = 'v3.54.0'  # 게임 업데이트 — 아카이브 색인(인용) · 기사와 한 목록 · 백필 모드 (v3.25.0 은 feature-advertisement 브랜치에 예약)
 # 2026-09-14 v3.28.0 index.html 의 색인 허용 줄 — dev 빌드가 이 줄을 noindex 로 바꿔 끼운다
 ROBOTS_INDEX_META = '<meta name="robots" content="index, follow, max-image-preview:large">'
 # 2026-09-05 v2.7.3 빌드 채널 — 'prod'(기본) / 'dev'. dev 브랜치 워크플로(.github/workflows/deploy-dev.yml)가 BUILD_CHANNEL=dev 로 부른다.
@@ -483,6 +483,45 @@ GAME_UPDATE_ROUTES = {'dex', 'dmax', 'pve', 'pvp', 'schedule', 'raids', 'eggs', 
 DATE_RE = re.compile(r'^\d{4}-\d{2}-\d{2}$')
 
 
+def _source_ids(article):
+    """기사가 쓰는 출처를 아카이브 id 와 같은 모양으로 — 뉴스는 주소 끝자리, 릴리스 노트는 helpshift-<번호>"""
+    ids = set()
+    for source in article.get('sources') or []:
+        url = source.get('url', '').rstrip('/')
+        faq = re.search(r'/faq/([0-9]+)-', url)
+        ids.add(f'helpshift-{faq.group(1)}' if faq else url.split('/')[-1])
+    return ids
+
+
+def load_game_archive(published, path='backend/config/game_update_archive.json'):
+    """아카이브 색인 — 공식 제목·날짜·원문 링크·인용만. 요약이 없으니 검증 없이 내보낼 수 있다.
+
+    **기사가 된 원문은 뺀다.** 같은 소식이 기사 하나와 아카이브 하나로 두 번 서면 안 된다 —
+    사람이 요약을 쓰는 순간 아카이브 쪽은 자리를 비켜야 한다(승격).
+    """
+    if not os.path.exists(path):
+        return []
+    entries = json.load(open(path, encoding='utf-8')).get('entries', [])
+    taken = set()
+    for article in published:
+        taken |= _source_ids(article)
+    out = []
+    for index, entry in enumerate(entries):
+        where = f"game_update_archive.json[{index}] id={entry.get('id', '?')}"
+        assert entry.get('id'), f'{where}: id 가 없다'
+        assert entry.get('title'), f'{where}: 제목이 없다'
+        assert entry.get('sources'), f'{where}: 출처가 없다'
+        for source in entry['sources']:
+            assert source.get('url', '').startswith('https://'), f'{where}: 출처 URL 은 https'
+        date_value = entry.get('date', '')
+        assert date_value == '' or DATE_RE.fullmatch(date_value), f'{where}: date={date_value!r} 는 YYYY-MM-DD'
+        if entry['id'] in taken:
+            continue
+        out.append({key: value for key, value in entry.items() if not key.startswith('_')})
+    out.sort(key=lambda entry: (entry.get('date') or '', entry['id']), reverse=True)
+    return out
+
+
 def load_game_updates(path='backend/config/game_updates.json'):
     """편집 원본을 읽어 (공개할 기사 목록, 상태별 개수) 를 돌려준다. 파일이 없으면 빈 목록."""
     if not os.path.exists(path):
@@ -532,7 +571,7 @@ def load_game_updates(path='backend/config/game_updates.json'):
 
 
 # ── data.js ───────────────────────────────────────────────────────────────────
-def render_data_js(game_master, tables, stale, rank_delta_date, rank_fresh_days, sprite_ids, sprite_anim_ids, game_updates):
+def render_data_js(game_master, tables, stale, rank_delta_date, rank_fresh_days, sprite_ids, sprite_anim_ids, game_updates, game_archive):
     # 프론트가 읽는 전역 데이터. 각 상수는 대응하는 뷰가 그대로 참조한다.
     # 2026-09-16 v3.47.0 전부 main() 이 읽어 둔 표(tables)에서 싣는다 — 검문(guard.py)이 바꿔 넣은 표가 그대로 나간다.
     # 없는 표는 빈 값이라 1차 실행에서도 문법 오류가 나지 않는다.
@@ -583,6 +622,9 @@ const BOSS_LIST = {t('bosses', '[]')};
 const GAMEDAY = {t('gameday')};              // 2026-09-08 v2.25.0 레이드 보스·알 부화 풀·이벤트 원본 (backend/gameday_build.py)
 const MOVE_CHANGES = {t('move_changes')};   // 2026-09-04 시즌 기술 변경 안내 (backend/change_build.py)
 const ROLES = {t('roles')};                 // 2026-09-05 PvE/PvP 역할 자동 분류 근거 (backend/roles_build.py)
+// 2026-09-16 v3.54.0 게임 업데이트 **아카이브 색인** — 공식 제목·날짜·원문 링크·인용만 (요약 없음).
+// 목록 화면(#/game-updates)에서만 쓰므로 지연분에 둔다. 홈의 주요 소식은 core 의 GAME_UPDATES 로 충분하다
+const GAME_ARCHIVE = {js_data(tight(game_archive))};
 '''
     return core, lazy
 
@@ -738,7 +780,8 @@ def main():
     stale = guard.apply(tables) if guard.enabled() else []
     rank_delta_date, rank_fresh_days = apply_rank_delta(tables)
     game_updates, update_counts = load_game_updates()
-    data_js, data_lazy_js = render_data_js(game_master, tables, stale, rank_delta_date, rank_fresh_days, sprite_ids, sprite_anim_ids, game_updates)
+    game_archive = load_game_archive(game_updates)
+    data_js, data_lazy_js = render_data_js(game_master, tables, stale, rank_delta_date, rank_fresh_days, sprite_ids, sprite_anim_ids, game_updates, game_archive)
     if INLINE:
         data_js += '\n' + data_lazy_js   # 미리보기는 단일 HTML — 지연분도 한 덩이로
     else:
@@ -749,7 +792,8 @@ def main():
     # 리그별로 몇 줄이 실렸는지 요약 출력 (빌드 로그 확인용)
     print('ok', {league_id: len(league_rows) for league_id, league_rows in tables['pvp'].items()})
     if update_counts:
-        print('게임 업데이트:', ' · '.join(f'{status} {count}' for status, count in sorted(update_counts.items())), f"→ 공개 {len(game_updates)}건")
+        print('게임 업데이트:', ' · '.join(f'{status} {count}' for status, count in sorted(update_counts.items())),
+              f"→ 공개 {len(game_updates)}건 · 아카이브 {len(game_archive)}건")
 
 if __name__ == '__main__':
     main()

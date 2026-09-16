@@ -11,6 +11,13 @@
 //   🎉 패치노트        moncamp 이 바뀐 일 (components/release.js)
 // 게임 쪽 변경과 moncamp 버전은 따로 센다. 서버에서 조용히 바뀌는 값도 있어 게임 버전을 강제하지 않는다.
 //
+// [두 층 — 기사와 아카이브 (2026-09-16 v3.54.0)]
+//   기사(GAME_UPDATES)     사람이 검증해 쓴 글. 요약 · 변경 전후 · 플레이 영향 · moncamp 추천 · 상태 배지
+//   아카이브(GAME_ARCHIVE) 공식 제목 · 날짜 · 원문 링크 · 썸네일 + **원문에서 그대로 따온 인용** 한 문단.
+//                          우리 요약이 아니라 인용이라 검증 없이도 내보낼 수 있다.
+// 한 목록에 시간순으로 함께 서고, 아카이브 항목에 사람이 요약을 쓰면 그 자리는 기사가 된다(승격).
+// 승격된 원문의 아카이브 항목은 빌드가 뺀다 — 같은 소식이 두 번 서지 않게 (backend/build.py load_game_archive)
+//
 // [글은 어디서 오나]
 // backend/config/game_updates.json 이 편집 원본이고, 빌드가 검증한 뒤 editorialStatus='published'
 // 인 것만 GAME_UPDATES 로 싣는다 (backend/build.py load_game_updates). 확인 대기 글은 빌드에 아예
@@ -19,6 +26,8 @@
 // [이 파일이 제공하는 전역]
 // - renderGameUpdatesPage()  : 목록 또는 상세 (주소의 뒷자리로 갈린다) — PAGES 에 등록된다
 // - gameUpdates()            : 공개된 기사 목록 (최신 발표일 순)
+// - gameArchive()            : 아카이브 색인 (지연분 — 아직 안 왔으면 빈 목록)
+// - updateRows()             : 기사 + 아카이브를 섞어 최신순으로
 // - gameUpdateById(id)       : id 로 한 건
 // - homeUpdatesNode()        : 홈의 "주요 소식" 덩이 (최대 3건 + 전체 보기) — components/home.js 가 부른다
 //
@@ -47,7 +56,7 @@ const UPDATE_ROLLOUT = { planned: '적용 예정', rolling: '순차 적용', liv
 
 // 목록 화면의 상태 — 상세를 보고 뒤로 왔을 때 검색·분류·기간·스크롤이 그대로여야 한다.
 // 라우터가 화면을 다시 그리므로(renderPage) 상태를 DOM 밖에 둔다
-const UPDATE_UI = { query: '', cat: '', period: '', scroll: 0, shown: 0 };
+const UPDATE_UI = { query: '', cat: '', period: '', scroll: 0, shown: 0, articleOnly: false };
 
 // 라우트 id → 메뉴 이름. router.js 에는 routeIcon 만 있고 이름을 꺼내는 함수가 없다 —
 // ROUTES 의 nav(메뉴 이름)를 먼저 보고, 메뉴에 없는 화면은 title 을 쓴다
@@ -62,10 +71,24 @@ function gameUpdates() {
 function gameUpdateById(id) {
   return gameUpdates().find((article) => article.id === id) ?? null;
 }
+// 아카이브 색인 — data-lazy.js 에 있다. 아직 안 왔으면 빈 목록이라 기사만 보인다(화면이 비지 않는다)
+function gameArchive() {
+  return typeof GAME_ARCHIVE !== 'undefined' && Array.isArray(GAME_ARCHIVE) ? GAME_ARCHIVE : [];
+}
+function archiveById(id) {
+  return gameArchive().find((entry) => entry.id === id) ?? null;
+}
+// 목록에 서는 줄 전부 — 기사가 먼저 만들어지고 아카이브가 뒤를 채운다. 차례는 날짜 하나로 센다
+function updateRows() {
+  const rows = [...gameUpdates().map((article) => ({ ...article, kind: 'article' })),
+    ...gameArchive().map((entry) => ({ ...entry, kind: 'archive' }))];
+  rows.sort((left, right) => (updateDateOf(right) || '').localeCompare(updateDateOf(left) || ''));
+  return rows;
+}
 // 이 글을 "언제 일" 로 볼지 — 적용일 > 발표일 > 우리가 확인한 날.
 // 공식 릴리스 노트·알려진 문제는 날짜를 적지 않아서, 그 글은 확인일이 유일한 시간 기준이다
 function updateDateOf(article) {
-  return article.effectiveAt || article.announcedAt || article.checkedAt || '';
+  return article.effectiveAt || article.announcedAt || article.checkedAt || article.date || '';
 }
 // 오늘로부터 며칠 전 글인가 (날짜가 없으면 null — 기간 거르기에서 빠진다)
 function updateDaysAgo(article) {
@@ -97,7 +120,8 @@ function updateDates(article, withChecked = false) {
   // 라벨은 제 노드에 둔다 — '발표 ' 처럼 공백이 붙은 글자는 사전(i18n)이 키를 못 찾는다
   const one = (label, date) => el('span', { class: 'upd__date' }, el('em', {}, label), el('b', {}, date));
   const parts = [];
-  if (article.announcedAt) parts.push(one('발표', article.announcedAt));
+  // 아카이브 항목은 공식 발표일 하나만 갖는다 (date) — 기사의 announcedAt 과 같은 뜻이다
+  if (article.announcedAt || article.date) parts.push(one('발표', article.announcedAt || article.date));
   if (article.effectiveAt) parts.push(one('적용', article.effectiveAt));
   // 발표일·적용일이 없는 글(공식 릴리스 노트)은 확인일을 대신 보인다 — 목록에서도 "언제 것" 을 알 수 있게.
   // 상세에서는 발표일이 있든 없든 확인일을 늘 적는다 (마지막으로 원문을 본 날)
@@ -143,6 +167,36 @@ function openGameUpdate(id, from = 'list') {
   navigateHash(routeHash('game-updates', id));
 }
 
+// 아카이브 카드 — 우리 요약이 없으므로 **인용**을 보이고, 그렇다는 것을 배지로 밝힌다.
+// 기사 카드와 같은 상자를 쓰되 왼쪽 막대를 빼고 배지 하나로 갈린다 — 한 목록에서 종류가 읽혀야 한다
+function archiveCard(entry) {
+  return el('article', { class: 'upd__card upd__card--archive', onclick: () => openGameUpdate(entry.id, 'archive') },
+    el('div', { class: 'upd__badges' }, updateBadge('원문 보기', 'plain')),
+    el('h3', { class: 'upd__title' }, entry.title),
+    entry.excerpt ? el('p', { class: 'upd__quote' }, entry.excerpt) : '',
+    updateDates(entry));
+}
+
+// 아카이브 상세 — 기사가 아직 없는 소식. 지어낸 요약 대신 인용과 원문 카드를 보인다
+function renderArchiveDetail(entry) {
+  const $body = pageBody('game-update');
+  $body.append(
+    el('button', { class: 'upd__back', onclick: () => navigateHash(routeHash('game-updates')) }, '← ', '게임 업데이트'),
+    typeof i18nKoOnlyNote === 'function' ? i18nKoOnlyNote('ko') : '',
+    el('header', { class: 'upd__head' },
+      el('div', { class: 'upd__badges' }, updateBadge('원문 보기', 'plain')),
+      el('h2', { class: 'upd__head-title' }, entry.title),
+      updateDates(entry)),
+    entry.excerpt
+      ? el('section', { class: 'upd__sec' }, el('h3', {}, '공식 원문에서'),
+          el('blockquote', { class: 'upd__quote-box' }, entry.excerpt))
+      : '',
+    el('section', { class: 'upd__sec' }, el('h3', {}, '공식 원문'),
+      el('div', { class: 'upd__sources' }, ...(entry.sources ?? []).map(sourceCard))),
+    hintNote('이 소식은 아직 moncamp 요약이 없어요. 위 문단은 공식 원문에서 그대로 옮긴 인용이고, 전체 내용은 원문에서 확인해 주세요.'));
+  return $body;
+}
+
 // 목록 카드 — 결론형 제목 · 2줄 요약 · 분류 · 상태 · 날짜. 장식용 그림보다 문장과 날짜를 먼저 둔다
 function updateCard(article, from = 'list') {
   return el('article', { class: 'upd__card', onclick: () => openGameUpdate(article.id, from) },
@@ -155,7 +209,7 @@ function updateCard(article, from = 'list') {
 
 // 목록 화면
 function renderGameUpdatesList() {
-  const all = gameUpdates();
+  const all = updateRows();
   const $body = pageBody('game-updates');
   if (!all.length) {
     $body.append(hintNote('아직 공개된 게임 업데이트 글이 없어요. 공식 발표를 확인한 글만 올라와요.'));
@@ -164,7 +218,7 @@ function renderGameUpdatesList() {
 
   // ── 주요 변경 — 운영자가 고른 글 최대 3건.
   // 글이 적어 고른 것과 전체가 같을 때는 이 덩이를 만들지 않는다 — 같은 카드가 두 번 서면 두 배가 있는 것처럼 읽힌다
-  const featured = all.filter((article) => article.featured).slice(0, 3);
+  const featured = all.filter((article) => article.kind === 'article' && article.featured).slice(0, 3);
   if (featured.length && featured.length < all.length) {
     $body.append(sectionTitle('주요 변경'),
       el('div', { class: 'upd__cards upd__cards--top' }, ...featured.map((article) => updateCard(article, 'top'))));
@@ -188,6 +242,8 @@ function renderGameUpdatesList() {
   const draw = () => {
     const query = UPDATE_UI.query.trim().toLowerCase();
     const rows = all.filter((article) => {
+      if (UPDATE_UI.articleOnly && article.kind !== 'article') return false;
+      // 아카이브 항목에는 분류가 없다 — 분류로 좁히면 기사만 남는 것이 맞다
       if (UPDATE_UI.cat && !(article.category ?? []).includes(UPDATE_UI.cat)) return false;
       if (UPDATE_UI.period) {
         const days = updateDaysAgo(article);
@@ -195,7 +251,8 @@ function renderGameUpdatesList() {
       }
       if (!query) return true;
       // 제목·요약·핵심 요약까지 훑는다 — 본문에만 있는 말로도 찾을 수 있어야 한다
-      const hay = [article.title, article.summary, ...(article.key ?? []), ...(article.playerImpact ?? [])].join(' ').toLowerCase();
+      const hay = [article.title, article.summary, article.excerpt, ...(article.key ?? []), ...(article.playerImpact ?? [])]
+        .filter(Boolean).join(' ').toLowerCase();
       return hay.includes(query);
     });
     $count.textContent = `${rows.length}건`;
@@ -205,13 +262,16 @@ function renderGameUpdatesList() {
     const shown = Math.min(Math.max(UPDATE_UI.shown, PAGE), rows.length);
     UPDATE_UI.shown = shown;
     $list.replaceChildren(...(rows.length
-      ? rows.slice(0, shown).map((article) => updateCard(article))
+      ? rows.slice(0, shown).map((article) => (article.kind === 'archive' ? archiveCard(article) : updateCard(article)))
       : [hintNote('조건에 맞는 글이 없어요. 검색어나 분류를 바꿔 보세요.')]));
     const rest = rows.length - shown;
     $more.hidden = rest <= 0;
     $more.textContent = rest > 0 ? `지난 소식 더 보기 (${rest}건 남음)` : '';
     for (const button of $cats.children) button.setAttribute('aria-pressed', String(button.dataset.cat === UPDATE_UI.cat));
-    for (const button of $periods.children) button.setAttribute('aria-pressed', String(button.dataset.period === UPDATE_UI.period));
+    for (const button of $periods.children) {
+      if (button.dataset.only) button.setAttribute('aria-pressed', String(UPDATE_UI.articleOnly));
+      else button.setAttribute('aria-pressed', String(button.dataset.period === UPDATE_UI.period));
+    }
   };
 
   $more.addEventListener('click', () => { UPDATE_UI.shown += PAGE; draw(); });
@@ -224,6 +284,13 @@ function renderGameUpdatesList() {
     return button;
   };
   $cats.append(catButton('', '전체 분류'), ...Object.entries(UPDATE_CATS).map(([key, label]) => catButton(key, label)));
+  // 기사만 — 우리 요약이 붙은 글만 보고 싶을 때. 아카이브는 인용뿐이라 성격이 다르다
+  const $onlyArticle = uchip('요약 있는 글만', () => {
+    UPDATE_UI.articleOnly = !UPDATE_UI.articleOnly;
+    reset(); draw();
+  }, { on: false });
+  $onlyArticle.dataset.only = '1';
+  $periods.append($onlyArticle);
   $periods.append(...PERIODS.map(([key, label]) => {
     const button = uchip(label, () => { UPDATE_UI.period = key; reset(); draw(); }, { on: false });
     button.dataset.period = key;
@@ -236,13 +303,18 @@ function renderGameUpdatesList() {
   $body.append(sectionTitle('전체 소식'),
     el('div', { class: 'upd__tools' }, $search, $cats, $periods, $count),
     $list, $more,
-    footNote('공식 발표를 확인한 글만 올려요. 모든 변경을 실시간으로 옮기지는 않고, 확인한 주요 변경을 정리해 드려요.'));
+    footNote('[원문 보기] 는 아직 moncamp 요약이 없는 소식이에요 — 공식 제목·날짜와 원문에서 따온 인용만 보여 드려요. 요약이 붙으면 그 자리가 기사가 돼요.'));
   return $body;
 }
 
 // 상세 화면 — 핵심 → 변경 전·후 → 플레이 영향 → 확인할 것 → 관련 화면 → 원문 → 정정 이력
 function renderGameUpdateDetail(id) {
   const article = gameUpdateById(id);
+  // 기사가 없으면 아카이브에 있는 소식인지 본다 — 있으면 인용과 원문으로 받아 준다
+  if (!article) {
+    const entry = archiveById(id);
+    if (entry) return renderArchiveDetail(entry);
+  }
   const $body = pageBody('game-update');
   const back = el('button', { class: 'upd__back', onclick: () => navigateHash(routeHash('game-updates')) }, '← ', '게임 업데이트');
   const koNote = typeof i18nKoOnlyNote === 'function' ? i18nKoOnlyNote('ko') : '';

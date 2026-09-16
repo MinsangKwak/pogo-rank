@@ -63,19 +63,21 @@ suite(async () => {
   // ── 목록 화면
   // 화면 머리는 라우터의 메뉴 이름을 쓴다 (PAGES.title 의 이모지는 다른 자리에서 쓰인다)
   ok('화면 제목', (await page.locator('#page-head h2').textContent()) === '게임 업데이트');
-  // v3.53.0 한 번에 5건씩 — 글이 쌓이는 화면이라 나머지는 [더보기] 로 온다
+  // v3.53.0 한 번에 5건씩 — 글이 쌓이는 화면이라 나머지는 [더보기] 로 온다.
+  // v3.54.0 목록에는 기사 + 아카이브가 함께 서므로 총계는 화면에서 읽는다 (기사 수만 보면 어긋난다)
   const PAGE = 5;
+  const total = parseInt(await page.locator('.upd__count').textContent(), 10);
   const listCount = await cards().count();
-  ok('첫 장은 5건', listCount === Math.min(PAGE, data.length), `${listCount} vs ${data.length}`);
+  ok('첫 장은 5건', listCount === Math.min(PAGE, total), `${listCount} vs ${total}`);
   ok('공개 글이 10건 이상 쌓였다', data.length >= 10, String(data.length));
   const more = page.locator('.upd__more');
   ok('[지난 소식 더 보기] 에 남은 수가 적힌다',
-    await more.isVisible() && (await more.textContent()).includes(String(data.length - PAGE)), await more.textContent());
+    await more.isVisible() && (await more.textContent()).includes(String(total - PAGE)), await more.textContent());
   await more.click();
   await page.waitForTimeout(250);
-  ok('더 보기를 누르면 이어진다', (await cards().count()) === Math.min(PAGE * 2, data.length), String(await cards().count()));
+  ok('더 보기를 누르면 이어진다', (await cards().count()) === Math.min(PAGE * 2, total), String(await cards().count()));
   while (await more.isVisible()) { await more.click(); await page.waitForTimeout(200); }
-  ok('끝까지 펼치면 전부 보이고 버튼이 사라진다', (await cards().count()) === data.length && !(await more.isVisible()));
+  ok('끝까지 펼치면 전부 보이고 버튼이 사라진다', (await cards().count()) === total && !(await more.isVisible()));
   const firstTitle = await cards().first().locator('.upd__title').textContent();
   ok('카드에 제목·요약·상태·날짜', !!firstTitle
     && (await cards().first().locator('.upd__summary').count()) === 1
@@ -87,7 +89,7 @@ suite(async () => {
   await page.fill('.upd__search', '썰스데이');
   await page.waitForTimeout(250);
   const hitTitles = await cards().locator('.upd__title').allTextContents();
-  ok('검색어로 좁혀진다', hitTitles.length > 0 && hitTitles.length < data.length, hitTitles.join(' | '));
+  ok('검색어로 좁혀진다', hitTitles.length > 0 && hitTitles.length < total, hitTitles.join(' | '));
   await page.fill('.upd__search', '메가');
   await page.waitForTimeout(250);
   const bodyHits = await cards().evaluateAll((ns) => ns.map((n) => /메가/.test(n.innerText)));
@@ -97,12 +99,12 @@ suite(async () => {
   ok('없으면 안내가 뜬다 (빈 화면이 아니다)', (await cards().count()) === 0 && (await page.locator('.upd__cards .dex__hint').count()) === 1);
   await page.fill('.upd__search', '');
   await page.waitForTimeout(250);
-  ok('검색어를 지우면 첫 장으로 되돌아온다', (await cards().count()) === Math.min(PAGE, data.length));
+  ok('검색어를 지우면 첫 장으로 되돌아온다', (await cards().count()) === Math.min(PAGE, total));
 
   await page.locator('.upd__filter .uchip', { hasText: '체육관' }).first().click();
   await page.waitForTimeout(250);
   const gymCount = await cards().count();
-  ok('분류로 좁힌다 — 체육관 글이 보인다', gymCount > 0 && gymCount < data.length, `${gymCount}/${data.length}`);
+  ok('분류로 좁힌다 — 체육관 글이 보인다', gymCount > 0 && gymCount < total, `${gymCount}/${total}`);
   ok('조건을 바꾸면 첫 장부터 (펼친 만큼이 남지 않는다)', gymCount <= PAGE, String(gymCount));
   await page.locator('.upd__filter .uchip', { hasText: 'PvP' }).first().click();
   await page.waitForTimeout(250);
@@ -110,11 +112,11 @@ suite(async () => {
   ok('PvP 분류는 있다', pvpCount > 0, String(pvpCount));
   await page.locator('.upd__filter .uchip', { hasText: '전체 분류' }).first().click();
   await page.waitForTimeout(250);
-  ok('전체 분류로 되돌아온다', (await cards().count()) === Math.min(PAGE, data.length));
+  ok('전체 분류로 되돌아온다', (await cards().count()) === Math.min(PAGE, total));
   await page.locator('.upd__filter .uchip', { hasText: '최근 7일' }).first().click();
   await page.waitForTimeout(250);
   const recent = await cards().count();
-  ok('기간으로 좁힌다 (최근 7일)', recent <= data.length, `${recent}/${data.length}`);
+  ok('기간으로 좁힌다 (최근 7일)', recent <= total, `${recent}/${total}`);
   await page.locator('.upd__filter .uchip', { hasText: '전체' }).first().click();
   await page.waitForTimeout(250);
 
@@ -127,7 +129,7 @@ suite(async () => {
     await page.evaluate(() => location.hash));
   await page.locator('.upd__back').click();
   await page.waitForTimeout(500);
-  ok('뒤로 오면 검색어가 그대로', (await page.inputValue('.upd__search')) === '메가' && (await cards().count()) < data.length);
+  ok('뒤로 오면 검색어가 그대로', (await page.inputValue('.upd__search')) === '메가' && (await cards().count()) < total);
   await page.fill('.upd__search', '');
   await page.waitForTimeout(200);
 
@@ -192,6 +194,48 @@ suite(async () => {
   await page.locator('.nav-menu a:has-text("게임 업데이트")').first().click();
   await page.waitForTimeout(700);
   ok('메뉴로 이동', await page.evaluate(() => location.hash) === '#/game-updates');
+
+  // ── 아카이브 색인 (v3.54.0) — 기사와 한 목록에 섞이되, 우리 요약이 아니라 **인용**이라는 것이 드러나야 한다
+  await go('#/game-updates');
+  const archive = await page.evaluate(() => (typeof GAME_ARCHIVE === 'undefined' ? null : GAME_ARCHIVE));
+  ok('GAME_ARCHIVE 가 지연분에 실렸다', Array.isArray(archive) && archive.length > 0, String(archive && archive.length));
+  ok('아카이브는 기사가 된 원문을 다시 담지 않는다 (승격)',
+    !archive.some((entry) => data.some((article) => (article.sources || []).some((source) => source.url.includes(entry.id)))),
+    archive.filter((entry) => data.some((article) => (article.sources || []).some((source) => source.url.includes(entry.id)))).map((entry) => entry.id).join(','));
+  ok('아카이브 제목에 사이트 꼬리표가 없다', !archive.some((entry) => /Pok[eé]mon GO\s*$/.test(entry.title)),
+    archive.filter((entry) => /Pok[eé]mon GO\s*$/.test(entry.title)).map((entry) => entry.title).join(' | ').slice(0, 80));
+  ok('아카이브에는 우리 요약(summary·key)이 없다',
+    archive.every((entry) => entry.summary === undefined && entry.key === undefined));
+  ok('아카이브 항목마다 출처가 있다', archive.every((entry) => (entry.sources || []).length > 0));
+
+  const totalText = await page.locator('.upd__count').textContent();
+  ok('목록이 기사 + 아카이브를 함께 센다', parseInt(totalText, 10) === data.length + archive.length,
+    `${totalText} vs ${data.length}+${archive.length}`);
+  // 아카이브 카드가 나올 때까지 펼친다
+  while (await page.locator('.upd__more').isVisible() && !(await page.locator('.upd__card--archive').count())) {
+    await page.locator('.upd__more').click();
+    await page.waitForTimeout(200);
+  }
+  const archCard = page.locator('.upd__card--archive').first();
+  ok('아카이브 카드에 [원문 보기] 배지와 인용', (await archCard.locator('.upd__badge').textContent()) === '원문 보기'
+    && (await archCard.locator('.upd__quote').count()) === 1);
+  ok('아카이브 카드에는 요약 문단이 없다', (await archCard.locator('.upd__summary').count()) === 0);
+  await archCard.click();
+  await page.waitForTimeout(700);
+  ok('아카이브 상세 — 인용 · 원문 카드 · 안내', (await page.locator('.upd__quote-box').count()) === 1
+    && (await page.locator('.upd__source').count()) >= 1
+    && (await page.locator('#page-game-update .dex__hint').count()) === 1);
+  ok('아카이브 상세에는 지어낸 요약 차례가 없다',
+    (await page.locator('.upd__sec > h3').allTextContents()).every((title) => title !== '핵심 요약'));
+  await page.locator('.upd__back').click();
+  await page.waitForTimeout(600);
+
+  await page.locator('.upd__filter .uchip', { hasText: '요약 있는 글만' }).click();
+  await page.waitForTimeout(300);
+  ok('[요약 있는 글만] 이면 기사만 남는다',
+    (await page.locator('.upd__card--archive').count()) === 0 && parseInt(await page.locator('.upd__count').textContent(), 10) === data.length);
+  await page.locator('.upd__filter .uchip', { hasText: '요약 있는 글만' }).click();
+  await page.waitForTimeout(300);
 
   // ── 영어
   await toEnglish(page);

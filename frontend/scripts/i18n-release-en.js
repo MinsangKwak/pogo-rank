@@ -15,6 +15,11 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 const RELEASE_NOTES_EN = {
+  '2026-09-16 · v3.54.0': [
+    '**43 past updates are now browsable** — our 11 written posts plus 32 official items listed as [Source only].',
+    '**[Source only] is a verbatim quote from the official source, not our summary** — title, date, link and one passage. When someone writes a summary, that entry becomes a full post.',
+    '**[With summary only] filters to posts we have written up.**',
+  ],
   '2026-09-16 · v3.53.0': [
     '**Game updates now has 11 posts** — added items confirmed from the official release notes and known issues: the Premier Ball count display during raids, Max Battle rewards showing 0, the egg hatch list mismatch, and more.',
     '**[More past updates] walks back through the archive** — five at a time, more on each tap.',

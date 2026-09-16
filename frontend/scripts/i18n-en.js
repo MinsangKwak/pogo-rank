@@ -1393,6 +1393,13 @@ const I18N_EN = {
   '아직 순위표 상위 #위에 오르지 않았어요.': 'Not in the top # of any ranking yet.',
   '전체 순위 펼치기 (#)': 'Show all rankings (#)',
   '지난 소식 더 보기 (#건 남음)': 'More past updates (# left)',
+  '원문 보기': 'Source only',
+  '요약 있는 글만': 'With summary only',
+  '공식 원문에서': 'Quoted from the official source',
+  '이 소식은 아직 moncamp 요약이 없어요. 위 문단은 공식 원문에서 그대로 옮긴 인용이고, 전체 내용은 원문에서 확인해 주세요.':
+    'We have not written a moncamp summary for this one yet. The passage above is quoted verbatim from the official source — read the full text there.',
+  '[원문 보기] 는 아직 moncamp 요약이 없는 소식이에요 — 공식 제목·날짜와 원문에서 따온 인용만 보여 드려요. 요약이 붙으면 그 자리가 기사가 돼요.':
+    '[Source only] means we have not summarized it yet — you get the official title, date and a verbatim quote. Once a summary is written, that entry becomes a full post.',
   '확인': 'Checked',
   '각 순위표 상위 #위 기준 · #위 안은 👑': 'Based on the top # of each ranking · top # get a 👑',
   '보스로 만났을 때': 'When it is the boss',
