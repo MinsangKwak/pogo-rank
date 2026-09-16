@@ -23,13 +23,12 @@ html { font-size: 62.5%; }
 html { -webkit-text-size-adjust: 100%; }
 body {
   margin: 0; background: var(--bg); color: var(--fg);
-  /* 2026-09-12 v3.6.0 도트 디자인 — 본문 글꼴이 픽셀 글꼴(Galmuri11)이다. 한글 글리프가 들어 있어
-     영문·한글이 같은 글꼴로 그려진다(지금까지는 앞 글꼴에 한글이 없어 Pretendard 로 넘어갔다).
-     Pretendard 는 Galmuri 에 없는 글리프(드문 한자·기호)를 받는 자리로만 남는다.
-     긴 산문은 .prose 가 Pretendard 로 되돌린다 — 도트로 여러 줄을 읽히면 눈이 빨리 지친다 */
-  font-family: "Galmuri11", "Pretendard Variable", "Pretendard", "Apple SD Gothic Neo", system-ui, sans-serif;
-  /* 픽셀 글꼴은 자간을 건드리면 격자가 깨진다 */
-  letter-spacing: 0;
+  /* 2026-09-12 v3.6.0 도트 디자인 — 본문 글꼴이 픽셀 글꼴(Galmuri11)이었다.
+     2026-09-16 design 본문을 읽는 글꼴(Pretendard)로 되돌린다 — 시안 검토: "배경 도트, 도트 글꼴, 얇은 설명문이
+     함께 보여 정보보다 스타일이 먼저 읽힌다". 도트는 로고·제목·짧은 라벨(pixel.css)에 남긴다.
+     Galmuri 는 그 자리들이 직접 지정한다 (아래 h1·h2 규칙, pixel.css 라벨 목록) */
+  font-family: "Pretendard Variable", "Pretendard", "Apple SD Gothic Neo", system-ui, sans-serif;
+  letter-spacing: -0.01em;
   /* 2026-09-12 v3.6.0 15px → 14px. Galmuri14 가 그려진 크기 그대로라야 픽셀이 선명하다.
      줄 간격도 정수 픽셀로 떨어지게 1.5 → 1.5714(=22/14) 대신 22px 를 직접 준다 */
   font-size: 1.4rem; line-height: 2.2rem; font-feature-settings: "tnum" 1;
@@ -104,9 +103,8 @@ h1, h2, .page-head h2, .detail__name, .home__intro h2 {
   font-weight: 400;   /* 픽셀 글꼴에 가짜 굵기를 씌우면 획이 번진다 — 굵기는 색과 크기로 낸다 */
 }
 
-/* 숫자 — CP · 순위 · 개체값. 도트 고정폭이라 자릿수가 세로로 맞는다 */
+/* 숫자 — CP · 순위 · 개체값. 2026-09-16 design 도트 고정폭 → 본문 글꼴의 고정폭 숫자(tnum) — 수치는 읽는 글이다 */
 .num, .row__score, .detail__cp-big b, .ivrank__rank, .ivrank__no, .dex__no, .plan__recent-sub {
-  font-family: "GalmuriMono11", ui-monospace, SFMono-Regular, Menlo, monospace;
   font-variant-numeric: tabular-nums;
   letter-spacing: 0;
 }
