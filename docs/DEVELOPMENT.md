@@ -28,17 +28,18 @@
 | **판단 근거를 화면에 남긴다** | 티어·추천에는 "왜 이 값인지" 한 줄을 같이 보여준다. 숫자만 있는 표는 신뢰받지 못한다 |
 | **모바일 우선** | 실제 사용처가 게임 중 폰. 입력 확대 방지, 한 손 조작, 첫 화면 로딩 최소화 |
 
-산출물은 네 덩어리입니다 (2026-09-16 v3.46.0~). gzip 기준 괄호 안이 실제 전송량입니다.
+산출물은 다섯 덩어리입니다 (2026-09-16 v3.48.0~). gzip 기준 괄호 안이 실제 전송량입니다.
 
 | 파일 | 크기 | 언제 받나 |
 | --- | --- | --- |
 | `index.html` | 176KB (**32KB**) | 마크업 + CSS 인라인. CSS 를 `<link>` 로 빼면 도착까지 첫 그리기가 멈춰서 그대로 둔다 |
 | `app.js` | 621KB (**99KB**) | 화면을 그리는 코드. body 끝이라 그리기를 막지 않는다 |
-| `data.js` | 1.45MB (**230KB**) | 게임 데이터. 큰 표는 `JSON.parse` 로 싣는다(v3.44.0) |
-| `app-lazy.js` | 288KB (**94KB**) | **첫 렌더 뒤에** 따라온다 — 영어 사전 · 패치노트 본문 (`scripts/lazy.js`) |
+| `data.js` | 950KB (**144KB**) | 홈이 쓰는 게임 데이터. 큰 표는 `JSON.parse` 로 싣는다(v3.44.0) |
+| `data-lazy.js` | 539KB (**87KB**) | **첫 렌더 뒤에** 따라온다 — PvE 시트 · 일반 티어표 · 보스 목록 · 레이드/알 · 기술 변경 (v3.48.0, `scripts/lazy.js`) |
+| `app-lazy.js` | 288KB (**94KB**) | 그다음에 따라온다 — 영어 사전 · 패치노트 본문 (`scripts/lazy.js`) |
 | `sprites/*.png` | 개별 | lazy 로딩 |
 
-첫 화면이 받는 것은 위 셋 **362KB(gz)** 입니다 (v3.46.0 이전 462KB).
+첫 화면이 받는 것은 위 셋(`index.html` · `app.js` · `data.js`) **278KB(gz)** 입니다 (v3.46.0 362KB · 그 이전 462KB).
 
 ---
 
@@ -631,7 +632,7 @@ backend/build.py (2차)         [최종 조립]  (BUILD_GATE=1)
   · 검문: data.js 에 실릴 표 14개를 직전 정상본(snapshot/tables/)과 견줘 비거나 70% 미만이면
     어제 표로 대체하고 DATA_STALE 에 이름을 남긴다. 필수 표가 비었는데 폴백도 없으면 exit 1 (backend/guard.py)
   · frontend/ CSS·JS를 순서대로 이어붙여 __STYLES__ / __SCRIPTS__ 치환
-  · 중간 JSON을 const 선언으로 묶어 dist/data.js 생성
+  · 중간 JSON을 const 선언으로 묶어 dist/data.js 생성 — 홈이 안 쓰는 여섯 표는 dist/data-lazy.js 로 (v3.48.0)
   · 스프라이트 복사 + 유효 id 목록(SPRITE_IDS) 주입
   · 직전 순위(snapshot/ranks.json)와 비교해 각 행에 변동 폭 'd' 주입 (backend/rank_diff.py)
   · APP_VERSION · 기준일 · GA 스니펫 · Firebase 설정 주입, PWA 파일 복사

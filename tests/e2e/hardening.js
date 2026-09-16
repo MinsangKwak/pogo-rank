@@ -271,6 +271,15 @@ suite(async () => {
   ok('평소 빌드는 대체된 표가 없다', Array.isArray(buildJson.stale) && buildJson.stale.length === 0, JSON.stringify(buildJson.stale));
   const dataJs = (await grab('data.js')) || '';
   ok('data.js 에 DATA_STALE', /^const DATA_STALE = \[.*\];/m.test(dataJs));
+  // 2026-09-16 v3.48.0 홈이 안 쓰는 여섯 표는 data-lazy.js 로 — 본체에는 없고 지연 파일에는 있어야 한다
+  const dataLazy = (await grab('data-lazy.js')) || '';
+  ok('data-lazy.js 있음', dataLazy.length > 1000);
+  for (const name of ['PVE_EASY', 'SHEET_DATA', 'BOSS_LIST', 'GAMEDAY', 'MOVE_CHANGES', 'ROLES']) {
+    ok(`${name} 은 지연 파일에만`, !new RegExp(`^const ${name} =`, 'm').test(dataJs) && new RegExp(`^const ${name} =`, 'm').test(dataLazy));
+  }
+  ok('data.js 에 DATA_FETCHED', /^const DATA_FETCHED = "/m.test(dataJs));
+  const indexHtml = (await grab('index.html')) || '';
+  ok('HTML 은 지연 데이터를 미리 부르지 않는다', indexHtml.length > 0 && !/<script[^>]*src="data-lazy\.js/.test(indexHtml));
   const notFound = await grab('404.html');
   ok('404.html 있음', !!notFound && notFound.includes('찾을 수 없'));
   ok('404 는 색인 금지', !!notFound && notFound.includes('noindex'));

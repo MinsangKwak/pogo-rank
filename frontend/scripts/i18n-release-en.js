@@ -15,6 +15,10 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 const RELEASE_NOTES_EN = {
+  '2026-09-16 · v3.48.0': [
+    '**The first screen got lighter again** — 23% less to download up front (362 → 278KB), and the speed score went from 89 to 94. Tables the home screen never uses (raid bosses, eggs, the sheet tier list, move changes) now arrive after the screen is drawn.',
+    '**Opening one of those screens first shows a brief "loading" line** — usually the data is already there and it opens at once. Search re-indexes automatically when those tables arrive.',
+  ],
   '2026-09-16 · v3.47.0': [
     '**The screen no longer goes blank on a bad data day** — if a source arrives empty or sharply shrunk, that one table is served from the previous day instead. Until now that screen simply went empty.',
     '**Sign-up approvals and My Pokémon are backed up weekly** — an operator mistake can now be undone. Backups are encrypted and never readable by anyone else.',

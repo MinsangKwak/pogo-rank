@@ -124,10 +124,17 @@ Pokémon과 관련 명칭·이미지의 권리는 The Pokémon Company, Nintendo
 
 ## 버전 이력
 
-전체 142개 릴리스를 `날짜 → 버전`의 2단계 접이식 목록으로 정리했습니다. 가장 최근 날짜만 기본으로 펼쳐지며, 설명이 한 줄인 초기 버전은 별도의 접이식 영역 없이 표시됩니다. 사용자용 요약은 서비스의 [🎉 패치 노트](https://moncamp.kr/#/release)에서, 변경 배경과 세부 구현 내용은 [변경 이력](CHANGELOG.md)에서 확인할 수 있습니다.
+전체 143개 릴리스를 `날짜 → 버전`의 2단계 접이식 목록으로 정리했습니다. 가장 최근 날짜만 기본으로 펼쳐지며, 설명이 한 줄인 초기 버전은 별도의 접이식 영역 없이 표시됩니다. 사용자용 요약은 서비스의 [🎉 패치 노트](https://moncamp.kr/#/release)에서, 변경 배경과 세부 구현 내용은 [변경 이력](CHANGELOG.md)에서 확인할 수 있습니다.
 
 <details open>
-<summary><b>2026-09-16</b> — 릴리스 2개 · <code>v3.46.0 … v3.47.0</code></summary>
+<summary><b>2026-09-16</b> — 릴리스 3개 · <code>v3.46.0 … v3.48.0</code></summary>
+
+<details>
+<summary><b>v3.48.0</b> · data.js 를 갈랐다 — 첫 화면 362 → 278KB(gz), 홈이 안 쓰는 여섯 표는 뒤로</summary>
+
+**v3.46.0 이 남긴 LCP 3.5s 는 `data.js` 230KB 를 다 받아야 홈이 그려지기 때문이었다.** 그중 84KB(`SHEET_DATA` 31 · `BOSS_LIST` 21 · `PVE_EASY` 17 · `ROLES` 6 · `MOVE_CHANGES` 5 · `GAMEDAY` 4)는 홈이 한 글자도 안 쓴다 — `data-lazy.js` 로 갈라 첫 렌더 뒤 한가할 때 받는다(`scripts/lazy.js`, `app-lazy.js` 와 같은 방식). 전역 이름은 그대로. 사용처 13곳은 아직이면 "불러오는 중" 한 줄을 내밀고 도착하면 그 화면일 때만 다시 그리며(PvE 탭 · 레이드 보스 · 알 부화 · 기술 변경), 검색·보스 색인은 `onLazyData()` 로 도착 시 비운다. `data.js` **230 → 144KB**, 첫 화면 **362 → 278KB**, Lighthouse 모바일 **89 → 94**(3회 중앙값), LCP 3.5 → 2.8s
+
+</details>
 
 <details>
 <summary><b>v3.47.0</b> · 빌드 검문 — 비거나 줄어든 표는 전날 것으로 · Firestore 사용자 데이터 주간 백업</summary>

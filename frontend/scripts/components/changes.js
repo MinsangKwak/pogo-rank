@@ -102,6 +102,8 @@ function rankDeltaBadge(delta) {
 }
 
 // 변경 데이터가 있을 때만 메뉴에 항목을 띄운다 (index.html 에서는 hidden 으로 두고 여기서 연다)
+// 2026-09-16 v3.48.0 MOVE_CHANGES 는 data-lazy.js 에 있다 — 부팅 때는 없어서 항목이 숨고, 도착하면 여기서 다시 판다
+onLazyData(() => initMoveChangesMenu());
 function initMoveChangesMenu() {
   const data = moveChangeData();
   const $item = document.getElementById('menu-changes');

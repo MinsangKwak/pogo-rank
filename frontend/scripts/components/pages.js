@@ -466,6 +466,9 @@ const PAGES = {
   settings: { title: '🛠 설정', render: renderSettingsPage },                 // 2026-09-12 v3.11.0 화면 테마 · 계정 저장        // 2026-09-11 v2.58.0 게임 검색창에 붙여 넣을 식 (백로그 QA-57)
 };
 
+// 2026-09-16 v3.48.0 지연 데이터(GAMEDAY · MOVE_CHANGES)로 그리는 화면 — renderPage 가 도착을 기다린다
+const LAZY_DATA_PAGES = new Set(['raids', 'eggs', 'changes']);
+
 // 현재 해시가 가리키는 전체 페이지 id. 페이지가 아니면 null = 메인 화면.
 // 2026-09-08 v2.30.0 주소 해석은 router.js 한 곳이 한다 — 여기서 정규식을 또 쓰지 않는다
 function currentPageId() {
@@ -538,9 +541,13 @@ function renderPage() {
   $page.dataset.route = id;
   // 2026-09-10 v2.48.1 로그인해야 쓰는 화면은 본문 대신 잠금 카드를 그린다 (router.js ROUTES.locked).
   // 메뉴에서 잠가 두는 것만으로는 주소로 들어오는 길이 열려 있다 — 화면 자체가 막혀야 잠근 것이다
+  // 2026-09-16 v3.48.0 레이드 보스 · 알 부화 · 기술 변경은 지연 데이터(data-lazy.js)를 그린다 —
+  // 아직이면 한 줄 안내를 내밀고, 도착하면 이 화면이 그대로 열려 있을 때만 다시 그린다
   const body = routeLocked(id)
     ? lockedCardNode(PAGES[id].title.replace(/^[^가-힣A-Za-z]+/, ''))
-    : PAGES[id].render();
+    : LAZY_DATA_PAGES.has(id) && !lazyDataReady()
+      ? el('div', { class: 'page__body' }, lazyDataWaitNode(() => { if (currentPageId() === id) renderPage(); }))
+      : PAGES[id].render();
   // 화면마다 본문에 id 를 단다. 이미 pageBody(id) 로 단 화면은 그대로 둔다
   if (body && body.nodeType === 1 && !body.id) {
     body.id = `page-${id}`;

@@ -106,6 +106,12 @@ const $note = document.getElementById('note');
 // 2026-09-02 PvE 탭: 일반/전체 세부 토글 (PvP 리그 토글과 같은 seg)
 // 토글만 직접 그리고, 실제 목록은 고른 모드에 맞는 뷰 함수에 넘긴다
 function renderPveTab() {
+  // 2026-09-16 v3.48.0 시트 · 일반 티어표 · 보스 목록은 지연 데이터(data-lazy.js)다 — 아직이면 기다렸다가 이 탭이면 다시 그린다.
+  // 자체 계산(PVE_DATA)으로 먼저 그렸다가 시트로 바꿔 끼우면 화면이 두 번 튄다
+  if (!lazyDataReady()) {
+    $content.append(lazyDataWaitNode(() => { if (state.tab === 'pve' && state.appMode === 'dex') render(); }));
+    return;
+  }
   // 2026-09-07 v2.16.0 오른쪽 도구 버튼: 🧮 솔플 레이드 계산기 (옛 IF 탭)
   // 2026-09-12 v2.66.0 계산기는 #/pve/solo 로 뗐다 — 한 화면이 "거르기(티어표)" 와
   // "값을 넣고 답을 받는 도구" 를 겸하고 있었다. 계산기를 켜면 티어표가 통째로 사라지는데도
