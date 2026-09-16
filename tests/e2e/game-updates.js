@@ -178,6 +178,9 @@ suite(async () => {
   await go('');
   const homeItems = page.locator('.home-updates__item');
   ok('홈에 주요 소식이 최대 3건', (await homeItems.count()) > 0 && (await homeItems.count()) <= 3, String(await homeItems.count()));
+  // v3.55.0 소식은 홈 맨 아래 — 소개·기능·추천 순위를 먼저 읽고 나서 본다
+  ok('홈에서 게임 업데이트가 마지막 칸이다',
+    await page.evaluate(() => document.querySelector('.home-dashboard')?.lastElementChild?.classList.contains('home-updates') === true));
   await homeItems.first().click();
   await page.waitForTimeout(600);
   ok('홈 카드를 누르면 그 글이 열린다', /^#\/game-updates\/[a-z0-9-]+$/.test(await page.evaluate(() => location.hash)));

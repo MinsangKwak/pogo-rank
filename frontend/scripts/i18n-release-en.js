@@ -15,6 +15,9 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 const RELEASE_NOTES_EN = {
+  '2026-09-16 · v3.55.0': [
+    '**Game updates moved to the bottom of the home screen** — what the service is, what it does and the recommended rankings come first; news is the last thing you scroll past.',
+  ],
   '2026-09-16 · v3.54.0': [
     '**43 past updates are now browsable** — our 11 written posts plus 32 official items listed as [Source only].',
     '**[Source only] is a verbatim quote from the official source, not our summary** — title, date, link and one passage. When someone writes a summary, that entry becomes a full post.',

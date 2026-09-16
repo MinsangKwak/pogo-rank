@@ -113,7 +113,9 @@
 }
 
 /* ── 홈의 주요 소식 ──────────────────────────────────────────────────────── */
-.home-updates { margin-top: 3.2rem; }
+/* 홈 맨 아래 칸 (v3.55.0). 그리드 간격 위에 가로줄을 하나 더 그어 "여기부터는 소식" 을 말한다 —
+   간격만 벌리면 화면이 길어지기만 하고 구역이 나뉘었다는 뜻은 안 남는다 */
+.home-updates { padding-top: 3.2rem; border-top: 1px solid var(--line); }
 .home-updates .home__section { position: relative; padding-bottom: 1rem; }
 .home-updates__all { margin-left: auto; padding: 0.5rem 1rem; border: 1px solid var(--line); border-radius: var(--r-btn, 1rem);
   background: var(--bg); font-size: 1.2rem; font-weight: 600; color: var(--muted); white-space: nowrap; }
