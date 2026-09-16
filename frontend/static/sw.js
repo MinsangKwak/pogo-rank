@@ -22,7 +22,7 @@ self.addEventListener('fetch', (e) => {
       if (res.ok) { const copy = res.clone(); caches.open(CACHE).then((c) => c.put(key, copy)); }
       return res;
     })));
-  } else if (url.origin === location.origin && (url.pathname.endsWith('data.js') || url.pathname.endsWith('app.js') || url.pathname.endsWith('app-lazy.js'))) {
+  } else if (url.origin === location.origin && (url.pathname.endsWith('data.js') || url.pathname.endsWith('data-lazy.js') || url.pathname.endsWith('app.js') || url.pathname.endsWith('app-lazy.js'))) {
     // 데이터는 매일 갱신 — 네트워크 우선, 실패 시 캐시
     // 2026-09-16 v3.46.0 app.js 도 같은 규칙. 전에는 이 코드가 HTML 안에 있어 'navigate' 규칙이 챙겼는데,
     // 밖으로 빼면서 어느 갈래에도 안 걸려 오프라인에서 화면이 통째로 비게 될 뻔했다.

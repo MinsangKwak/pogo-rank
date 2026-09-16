@@ -37,7 +37,8 @@ let _freshBarShown = false;
 function currentBuildMark() {
   return {
     version: typeof BUILD_VERSION !== 'undefined' ? BUILD_VERSION : '',
-    fetched: typeof GAMEDAY !== 'undefined' ? (GAMEDAY.fetched || '') : '',
+    // 2026-09-16 v3.48.0 GAMEDAY 는 지연 파일로 갔다 — 빌드가 같은 값을 DATA_FETCHED 로 본체에 남긴다
+    fetched: typeof DATA_FETCHED !== 'undefined' ? DATA_FETCHED : (typeof GAMEDAY !== 'undefined' ? (GAMEDAY.fetched || '') : ''),
   };
 }
 

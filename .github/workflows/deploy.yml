@@ -41,6 +41,13 @@ jobs:
             data/sprites-anim
           key: sprites-v1-${{ github.run_id }}
           restore-keys: sprites-v1-
+      # 2026-09-16 v3.47.0 직전 정상본 표 — 원본이 비거나 줄어든 날 이걸로 대체한다 (backend/guard.py).
+      # 저장소에 커밋하지 않는다(1.6MB 가 매일 바뀐다). 캐시를 잃으면 폴백이 한 번 없을 뿐이고, 그때는 빌드가 멈춰 직전 배포가 남는다
+      - uses: actions/cache@v4
+        with:
+          path: snapshot/tables
+          key: tables-v1-${{ github.run_id }}
+          restore-keys: tables-v1-
       - name: Build site
         # 2026-09-05 v2.8.0 운영 설정값은 Repository variables 에서 (Settings → Secrets and variables → Actions → Variables). 키 설명은 .env.example
         env:

@@ -103,11 +103,11 @@ bash scripts/test.sh --no-build nav dex-search    # 빌드 생략하고 일부�
 
 ## 라이선스
 
-소스 코드는 MIT 라이선스로 제공하지만, 데이터와 이미지에는 원출처의 이용 조건이 적용됩니다. 자세한 범위와 조건은 [NOTICE.md](NOTICE.md)를 확인하세요.
+**포크, 재배포는 안 됩니다.** 소스 코드는 열람과 학습을 위해 공개돼 있을 뿐, 사본을 공개하거나 다른 이름으로 배포·호스팅하거나 복제 서비스를 운영하는 것은 허용하지 않습니다 ([LICENSE](LICENSE)). 데이터와 이미지에는 원출처의 이용 조건이 따로 적용됩니다 — 범위와 조건은 [NOTICE.md](NOTICE.md).
 
 | 경로 | 적용 조건 |
 | --- | --- |
-| `backend/` · `frontend/` · `scripts/` · `docs/` · `.github/` | MIT ([LICENSE](LICENSE)) |
+| `backend/` · `frontend/` · `scripts/` · `docs/` · `.github/` | 저작권자 소유 · **포크·재배포 금지** ([LICENSE](LICENSE)) |
 | `snapshot/` · `data/`(빌드 결과물) · 스프라이트 | 각 원출처의 조건 적용 — PvPoke(MIT), PokeMiners, PokeAPI, ScrapedDuck(MIT), 커뮤니티 시트 |
 
 프로젝트에 기여하려면 DCO 서명이 포함된 커밋(`git commit -s`)을 제출해야 합니다. 자세한 절차는 [CONTRIBUTING.md](CONTRIBUTING.md)를 확인하세요. 보안 취약점은 [SECURITY.md](SECURITY.md)의 절차에 따라 제보해 주세요.
@@ -124,10 +124,38 @@ Pokémon과 관련 명칭·이미지의 권리는 The Pokémon Company, Nintendo
 
 ## 버전 이력
 
-전체 141개 릴리스를 `날짜 → 버전`의 2단계 접이식 목록으로 정리했습니다. 가장 최근 날짜만 기본으로 펼쳐지며, 설명이 한 줄인 초기 버전은 별도의 접이식 영역 없이 표시됩니다. 사용자용 요약은 서비스의 [🎉 패치 노트](https://moncamp.kr/#/release)에서, 변경 배경과 세부 구현 내용은 [변경 이력](CHANGELOG.md)에서 확인할 수 있습니다.
+전체 145개 릴리스를 `날짜 → 버전`의 2단계 접이식 목록으로 정리했습니다. 가장 최근 날짜만 기본으로 펼쳐지며, 설명이 한 줄인 초기 버전은 별도의 접이식 영역 없이 표시됩니다. 사용자용 요약은 서비스의 [🎉 패치 노트](https://moncamp.kr/#/release)에서, 변경 배경과 세부 구현 내용은 [변경 이력](CHANGELOG.md)에서 확인할 수 있습니다.
 
 <details open>
-<summary><b>2026-09-16</b> — 릴리스 1개 · <code>v3.46.0</code></summary>
+<summary><b>2026-09-16</b> — 릴리스 5개 · <code>v3.46.0 … v3.48.2</code></summary>
+
+<details>
+<summary><b>v3.48.2</b> · 코드 이용 조건 — 포크·재배포 금지로 전환 · 문서의 옛 서비스명 정리</summary>
+
+**"포크, 재배포는 안 됩니다" 를 못박았다.** `LICENSE` 를 MIT 에서 저작권자 소유·포크·재배포 금지로 바꾸고, README·NOTICE·CONTRIBUTING·앱 푸터·이용약관에 같은 말을 적었다. 2026-09-16 이전에 MIT 로 받아 간 사본에는 그 조건이 남고, GitHub 의 포크 버튼 자체는 저장소를 비공개로 돌려야 막힌다. 문서에 남아 있던 옛 서비스명 27곳도 전부 moncamp 기준으로 정리했다
+
+</details>
+
+<details>
+<summary><b>v3.48.1</b> · GIF 없는 종을 CSS 로 흔들던 것을 뺐다 — 정지 그림은 정지 그대로</summary>
+
+**"괜히 움찔움찔 하는 것 같다."** v3.19.0 이 움직이는 그림이 없는 종의 정지본을 `sprite-idle` 로 살짝 들썩이게 했는데, 목록에서는 수십 장이 제각각 박자로 움찔거려 어수선했다. 규칙과 키프레임을 뺐다 — GIF 가 있는 종은 그대로 움직이고, 없는 종은 가만히 있는다
+
+</details>
+
+<details>
+<summary><b>v3.48.0</b> · data.js 를 갈랐다 — 첫 화면 362 → 278KB(gz), 홈이 안 쓰는 여섯 표는 뒤로</summary>
+
+**v3.46.0 이 남긴 LCP 3.5s 는 `data.js` 230KB 를 다 받아야 홈이 그려지기 때문이었다.** 그중 84KB(`SHEET_DATA` 31 · `BOSS_LIST` 21 · `PVE_EASY` 17 · `ROLES` 6 · `MOVE_CHANGES` 5 · `GAMEDAY` 4)는 홈이 한 글자도 안 쓴다 — `data-lazy.js` 로 갈라 첫 렌더 뒤 한가할 때 받는다(`scripts/lazy.js`, `app-lazy.js` 와 같은 방식). 전역 이름은 그대로. 사용처 13곳은 아직이면 "불러오는 중" 한 줄을 내밀고 도착하면 그 화면일 때만 다시 그리며(PvE 탭 · 레이드 보스 · 알 부화 · 기술 변경), 검색·보스 색인은 `onLazyData()` 로 도착 시 비운다. `data.js` **230 → 144KB**, 첫 화면 **362 → 278KB**, Lighthouse 모바일 **89 → 94**(3회 중앙값), LCP 3.5 → 2.8s
+
+</details>
+
+<details>
+<summary><b>v3.47.0</b> · 빌드 검문 — 비거나 줄어든 표는 전날 것으로 · Firestore 사용자 데이터 주간 백업</summary>
+
+**"백업 DB 가 없다" 는 둘로 갈라진다.** 게임 데이터는 매일 다시 만드는 산출물이라 DB 가 있어도 "오늘 받은 것이 이상하다" 는 그대로다 — 그래서 마지막 조립에서 표 14개를 직전 정상본과 견줘(`backend/guard.py`) 70% 미만·빈 것·깨진 것은 **어제 표로 갈아 끼우고** `DATA_STALE` 에 이름을 남긴다. 필수 표가 비었는데 폴백도 없으면 빌드를 멈춘다 — 직전 배포가 그대로 남는 것이 폴백이다. 정말 백업이 없던 것은 **Firestore 사용자 데이터**(가입 승인·내 포켓몬·트레이너 코드) — 매주 월요일 네 컬렉션을 원형 그대로 받아 암호화한 아티팩트로 90일 보관한다(`.github/workflows/backup-firestore.yml`). 되돌리기는 `scripts/firestore_restore.py`, 기본은 미리보기다
+
+</details>
 
 <details>
 <summary><b>v3.46.0</b> · 첫 화면 무게 462 → 362KB(gz) · 번들을 밖으로, 안 쓰는 94KB 를 뒤로</summary>
@@ -287,7 +315,7 @@ PC 는 제목 오른쪽, 휴대폰은 제목 **위** 제 줄에 `[무엇을 볼�
 
 **유실된 v2.5.0 복원** — 번호 연속성을 세다 `v2.5.0` · `v2.19.0` · `v3.25.0` 이 비어 있는 것을 발견했습니다. `v2.19.0` 은 건너뛴 번호, `v3.25.0` 은 `feature-advertisement` 예약분, **`v2.5.0` 은 실재한 판**(커밋 `c3c0809`, 시즌 기술 변경 안내 · 순위 변동 ▲▼ 뱃지)인데 `## [Unreleased]` 형식에서 옮기며 통째로 빠져 있었습니다. 그 커밋에서 되살렸습니다.
 
-**판 수를 실제와 맞춤** — 머리말이 134로 적혀 있었으나 실제는 141이었습니다. **문서 서비스명** — 이 문서 제목이 `monlab` 에, `docs/` 세 문서가 `POGO PLAN` 에 멈춰 있었습니다. **`DEVELOPMENT.md` 2.2.1 신설** — 2.2 가 "내구를 빼고 pogomate 와 같은 공식" 으로 끝나 현재 동작과 반대였습니다. **2.5 보강** — 같은 함정을 두 번 더 밟은 기록(두랄루돈 · 메가 폭타)을 표로. **`OPERATIONS.md` 1·2절** — 릴리스 때 함께 갱신할 자리가 넷에서 여섯으로.
+**판 수를 실제와 맞춤** — 머리말이 134로 적혀 있었으나 실제는 141이었습니다. **문서 서비스명** — 이 문서 제목과 `docs/` 세 문서의 서비스명이 옛 표기에 멈춰 있었습니다. **`DEVELOPMENT.md` 2.2.1 신설** — 2.2 가 "내구를 빼고 pogomate 와 같은 공식" 으로 끝나 현재 동작과 반대였습니다. **2.5 보강** — 같은 함정을 두 번 더 밟은 기록(두랄루돈 · 메가 폭타)을 표로. **`OPERATIONS.md` 1·2절** — 릴리스 때 함께 갱신할 자리가 넷에서 여섯으로.
 
 </details>
 
@@ -378,9 +406,9 @@ v3.6.0 에 "아직 검색엔진에 올릴 단계가 아니다" 로 뺐던 것을
 <details>
 <summary><b>v3.27.0</b> · 서비스명 moncamp(몬캠프) · moncamp.kr 도메인 준비</summary>
 
-v3.26.0 의 monlab 은 `.com`/`.app`이 선점돼 하루 만에 접었다. `POGO`는 EA 의 살아있는 등록상표(9류·41류)라 도메인을 사고 광고를 붙이는 순간 분쟁 위험이 생겨 이름에서 뺀다(근거는 작업 지시서 9절).
+v3.26.0 의 이름은 `.com`/`.app`이 선점돼 하루 만에 접었다. 옛 이름에 든 `POGO`는 EA 의 살아있는 등록상표(9류·41류)라 도메인을 사고 광고를 붙이는 순간 분쟁 위험이 생겨 이름에서 뺀다(근거는 작업 지시서 9절).
 
-**이름** — monlab 이 적힌 현재 상태 파일 전부(`index.html`·`app-shell.js`·`manifest`·`robots`·`build.py` 404/robots·`terms`·`privacy`·`home`·`router`·`i18n-en.js` 3키·`og_gen.py` MON/CAMP → `og.png`) + 조사 교정(`moncamp는`·`moncamp와`·`moncamp를` — 몬캠프는 받침이 없다). 패치노트·CHANGELOG·README 표의 monlab 은 이력이라 그대로.
+**이름** — 옛 이름이 적힌 현재 상태 파일 전부(`index.html`·`app-shell.js`·`manifest`·`robots`·`build.py` 404/robots·`terms`·`privacy`·`home`·`router`·`i18n-en.js` 3키·`og_gen.py` MON/CAMP → `og.png`) + 조사 교정(`moncamp는`·`moncamp와`·`moncamp를` — 몬캠프는 받침이 없다). 패치노트·CHANGELOG·README 에 남아 있던 옛 이름 표기는 2026-09-16 에 전부 moncamp 로 정리했다.
 
 **도메인 준비(코드 쪽)** — `build.py SITE_URL/DEV_SITE_URL` → `https://moncamp.kr/`·`https://dev.moncamp.kr/`(canonical·og:url·og:image·twitter:image·sitemap·robots Sitemap 줄이 여기서 나온다), `index.html` 절대 주소 4곳, `robots.txt` 주석.
 
@@ -391,7 +419,7 @@ v3.26.0 의 monlab 은 `.com`/`.app`이 선점돼 하루 만에 접었다. `POGO
 </details>
 
 <details>
-<summary><b>v3.26.0</b> · 서비스명 monlab(몬랩) · KR/EN 전환 엄격 감사</summary>
+<summary><b>v3.26.0</b> · 서비스명 1차 변경(moncamp 전 단계) · KR/EN 전환 엄격 감사</summary>
 
 (v3.25.0 은 광고 게이트로 `feature-advertisement` 브랜치에 예약, dev 는 v3.24.0 에서 바로 이어짐)
 
@@ -401,7 +429,7 @@ v3.26.0 의 monlab 은 `.com`/`.app`이 선점돼 하루 만에 접었다. `POGO
 
 **엔진** — `i18n.js i18nWatch()`가 `characterData`와 `attributes`(`I18N_ATTRS`만)도 관찰: `setAttribute('aria-label', …)`·`node.data = …`로 기존 노드의 값만 갈아 끼우면 `childList`가 감지하지 못해 그 줄만 한국어로 남았다(테마 버튼). 옮긴 값에는 한글이 없고 못 옮기면 다시 쓰지 않아 불필요한 재실행을 일으키지 않는다.
 
-**사전** — 앞뒤 공백이 붙은 키 아홉 개는 `t()`가 trim 한 뒤 찾으므로 한 번도 맞은 적이 없었다 → 키·값 다듬음. 신규 키 약 250개 + `I18N_PATTERNS` 80개(달력 `#월 #일, 일정 #개`, `(.+)리그 상위 #`, `(.+) 보스 상대 D-MAX 탱커`, `(.+)가 보스로 나오면? (맥스 배틀 — …)`, 솔플 계산기의 조사 붙은 문장 `(.+?)[이가] 반감으로 받아줌`, `이름(타입)` 기술 등). `confirm()` 셋은 DOM 밖이라 `t()`로 감쌈. `dev-mock.js` 기술명을 PokeAPI 표기(`머드샷`·`블라스트번`·`섀도클로`)로 맞춤. 결과: DOM 감사 172 → 46(남은 46은 전부 일정표 이벤트·시즌 이름과 사용자 검색어). 회귀 `i18n` +5(설정 힌트·테마 aria-label 갱신·상세 약점 제목·CP 각주·D-MAX 탱커 제목), `nav`·`shell`·`hardening`이 monlab 을 기대
+**사전** — 앞뒤 공백이 붙은 키 아홉 개는 `t()`가 trim 한 뒤 찾으므로 한 번도 맞은 적이 없었다 → 키·값 다듬음. 신규 키 약 250개 + `I18N_PATTERNS` 80개(달력 `#월 #일, 일정 #개`, `(.+)리그 상위 #`, `(.+) 보스 상대 D-MAX 탱커`, `(.+)가 보스로 나오면? (맥스 배틀 — …)`, 솔플 계산기의 조사 붙은 문장 `(.+?)[이가] 반감으로 받아줌`, `이름(타입)` 기술 등). `confirm()` 셋은 DOM 밖이라 `t()`로 감쌈. `dev-mock.js` 기술명을 PokeAPI 표기(`머드샷`·`블라스트번`·`섀도클로`)로 맞춤. 결과: DOM 감사 172 → 46(남은 46은 전부 일정표 이벤트·시즌 이름과 사용자 검색어). 회귀 `i18n` +5(설정 힌트·테마 aria-label 갱신·상세 약점 제목·CP 각주·D-MAX 탱커 제목), `nav`·`shell`·`hardening`이 옛 이름을 기대
 
 </details>
 
@@ -1311,9 +1339,9 @@ LICENSE(MIT)·NOTICE·CONTRIBUTING(DCO)·SECURITY 신설, 개인정보처리방�
 </details>
 
 <details>
-<summary><b>v2.17.0</b> · 서비스명 POGO PLAN(포고플랜) 확정</summary>
+<summary><b>v2.17.0</b> · 서비스명 확정 (moncamp 전 단계)</summary>
 
-화면 제목·헤더·스플래시·manifest("POGO NOTE" 잔재 정리)·문서 표기 교체, sw 캐시 접두사 `pogoplan-v4`. 저장소명·URL·localStorage 키·GA이벤트명은 불변
+화면 제목·헤더·스플래시·manifest(옛 이름 잔재 정리)·문서 표기 교체, sw 캐시 접두사 `pogoplan-v4`. 저장소명·URL·localStorage 키·GA이벤트명은 불변
 
 </details>
 

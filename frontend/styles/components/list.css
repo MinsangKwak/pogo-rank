@@ -70,18 +70,9 @@
    여기서는 그 안을 비율대로 채운다. pixelated 로 그려 2배 확대에서도 도트가 뭉개지지 않는다(줄일 때는 JS 가 auto 로 되돌린다).
    border-box — padding 이 상자를 늘리면 목록 줄 높이가 그림마다 달라진다 */
 .sprite.sprite--anim { image-rendering: pixelated; object-fit: contain; object-position: center bottom; box-sizing: border-box; }
-/* 2026-09-12 v3.19.0 움직이는 그림이 없는 종(9세대 등)은 정지본을 살짝 흔든다 — "전부 움직인다" 를 지키려고.
-   GIF 로 갈아 끼워진 그림(.sprite--anim)과 몬스터볼 자리표시(.empty)는 제외. 설정에서 끄면(body.sprite-anim-off) 멈춘다.
-   두 박자를 어긋나게 둬서 목록 전체가 한 몸처럼 들썩이지 않게 한다 */
-@media (prefers-reduced-motion: no-preference) {
-  body:not(.sprite-anim-off) img.sprite:not(.sprite--anim) { animation: sprite-idle 2.6s ease-in-out infinite; transform-origin: 50% 100%; }
-  body:not(.sprite-anim-off) :nth-child(2n) > img.sprite:not(.sprite--anim),
-  body:not(.sprite-anim-off) :nth-child(2n) img.sprite:not(.sprite--anim) { animation-delay: -1.3s; }
-}
-@keyframes sprite-idle {
-  0%, 100% { transform: translateY(0) scale(1, 1); }
-  50% { transform: translateY(-0.2rem) scale(1.02, 0.98); }
-}
+/* 2026-09-12 v3.19.0 움직이는 그림이 없는 종을 CSS 로 살짝 흔들던 규칙(sprite-idle)은 2026-09-16 v3.48.1 에 뺐다 —
+   "전부 움직인다" 를 지키려던 것인데, 실제로는 그림 수십 장이 제각각 움찔거려 목록이 어수선했다.
+   GIF 가 없는 종은 정지 그림 그대로 둔다. 설정 '움직이는 그림' 은 GIF 갈아 끼우기만 다룬다 */
 @media (prefers-reduced-motion: reduce) {
   /* 움직임을 줄이는 설정이면 GIF 를 갈아 끼우지 않는다 — 재생을 CSS 로 멈출 수는 없어
      sprite.js 가 이 설정을 직접 읽는다. 여기 규칙은 남은 표시만 지운다 */

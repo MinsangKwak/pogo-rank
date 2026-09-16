@@ -233,9 +233,7 @@ button { touch-action: manipulation; }
   .app-nav__extra .drawer__item:hover { background: var(--hover); color: var(--fg); }
   .app-nav__extra .drawer__meta { margin: 0.6rem 0 0; padding: 0.8rem 1rem 0; font-size: 1.05rem; line-height: 1.5; color: var(--muted); }
 
-  /* 서비스 홈: 넓은 화면은 4열 */
-  .home__grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
-  .home__intro { padding: 3.6rem 0 3.2rem; }
+  /* 서비스 홈 규칙은 components/home.css 한 곳에 (2026-09-16 design) */
 
   /* 팝업·검색 시트는 본문 폭 안에서 조금 더 여유 있게 */
   .modal__box { max-width: 52rem; }
@@ -276,7 +274,6 @@ button { touch-action: manipulation; }
 @media (min-width: 1440px) {
   :root { --shell-half: 72rem; --panel-w: 48rem; --panel-gap: 3.2rem; }
   /* 아주 넓은 화면에서 홈 인사말이 한없이 늘어지지 않게 */
-  .home__intro p { max-width: 42em; }
 }
 
 /* 2026-09-10 v2.50.0 새 데이터·새 버전 알림 줄 (components/freshness.js).

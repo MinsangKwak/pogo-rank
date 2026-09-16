@@ -94,6 +94,7 @@ const REVIVE_LOSS = 5.5;
 // 보스 검색 인덱스: 순위 데이터(메가·폼 포함) + 도감 기본 종 전체
 // 한 번 만들면 캐시해서 재사용한다(BOSS_INDEX). 이름이 먼저 들어온 출처가 이긴다.
 let BOSS_INDEX = null;
+onLazyData(() => { BOSS_INDEX = null; });   // 2026-09-16 v3.48.0 BOSS_LIST 가 늦게 오면 다시 만든다
 function bossIndex() {
   if (BOSS_INDEX) return BOSS_INDEX;
   const byName = new Map();

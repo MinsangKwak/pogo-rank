@@ -25,6 +25,8 @@
 
 // 검색 색인 캐시. 만드는 데 데이터 전체를 훑어야 하므로 처음 검색할 때 한 번만 만든다
 let _searchIndex = null;
+// 2026-09-16 v3.48.0 PVE_EASY · SHEET_DATA · BOSS_LIST 는 늦게 온다 — 도착하면 색인을 다시 만든다
+onLazyData(() => { _searchIndex = null; });
 
 // 검색 대상 목록을 만든다.
 //   반환값  [{ sprite, name, en, types }, …] — 이름 기준으로 중복이 제거된 배열
@@ -158,6 +160,7 @@ function monSuggestRow(pokemon, onclick, ...extras) {
 //   query   미리 채워 둘 검색어 (없으면 지금 도감에 있는 값을 그대로 둔다)
 function openSearch(query) {
   track('search_open', { from: currentPageId() ?? 'shell' });
+  loadLazyData();   // 2026-09-16 v3.48.0 검색 대상 표가 아직이면 지금 받기 시작한다
   const focusBox = () => {
     const box = document.getElementById('dex-search');
     if (!box) return false;
