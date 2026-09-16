@@ -59,13 +59,22 @@ suite(async () => {
   ];
   // 2026-09-13 v3.23.0 번들 CSS·JS 가 문서에 **한 번**만 들어갔는가. 자리표 '__STYLES__' 를 주석에 적어 둔 줄 때문에
   // build.py 의 str.replace 가 번들을 두 번 끼워 넣어 index.html 이 862KB 였다 (같은 CSS 두 번 파싱)
+  // 2026-09-16 v3.46.0 JS 는 밖으로 나갔다(app.js) — 문서 안에서 세던 표식은 이제 CSS 쪽만 유효하다
   const dup = await page.evaluate(() => ({
     css: (document.documentElement.innerHTML.match(/\/\* ── tokens\.css ── \*\//g) || []).length,
-    js: (document.documentElement.innerHTML.match(/\/\/ ── data\.js ──/g) || []).length,
     styles: document.querySelectorAll('style').length,
+    appSrc: [...document.querySelectorAll('script[src]')].map((n) => n.getAttribute('src')),
+    inlineBig: [...document.querySelectorAll('script:not([src])')].filter((n) => n.textContent.length > 20000).length,
   }));
-  ok('번들 CSS 가 문서에 한 번만 (tokens.css 표식 1개)', dup.css === 1, JSON.stringify(dup));
-  ok('번들 JS 가 문서에 한 번만 (data.js 표식 1개)', dup.js === 1, JSON.stringify(dup));
+  ok('번들 CSS 가 문서에 한 번만 (tokens.css 표식 1개)', dup.css === 1, JSON.stringify(dup.css));
+  // 번들 JS 는 **밖에서 한 번만** 불린다. 두 번 불리면 전역이 두 번 선언돼 조용히 깨진다
+  const appTags = dup.appSrc.filter((src) => /(^|\/)app\.js(\?|$)/.test(src));
+  ok('app.js 를 한 번만 부른다', appTags.length === 1, JSON.stringify(dup.appSrc));
+  ok('app.js 주소에 판 표식(?v=)이 붙는다', /\?v=v[\d.]+/.test(appTags[0] ?? ''), appTags[0]);
+  // 페이지 소스가 다시 부풀지 않게 — 인라인 <script> 는 설정값 한 덩이뿐이어야 한다
+  ok('큰 인라인 <script> 가 남지 않았다', dup.inlineBig === 0, String(dup.inlineBig));
+  const htmlBytes = await page.evaluate(() => document.documentElement.outerHTML.length);
+  ok('문서가 400KB 아래', htmlBytes < 400000, `${Math.round(htmlBytes / 1024)}KB`);
   // Google Fonts 링크가 없다 — 쓰지 않는 글꼴을 방문마다 받던 것을 뗐다
   ok('Google Fonts 링크 없음', (await page.locator('link[href*="fonts.googleapis.com"]').count()) === 0);
   // Pretendard CSS 는 렌더를 막지 않는 preload 로 받아 도착하면 stylesheet 로 승격된다 — 회귀는 바깥 요청을 끊고 돌므로

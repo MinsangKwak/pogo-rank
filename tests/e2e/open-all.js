@@ -6,7 +6,7 @@
 //   - 가입 권유 팝업이 뜨지 않는다 (auth.js SIGNUP_INVITE_ENABLED)
 //   - 목록의 그림이 기본으로 움직이는 GIF 로 갈아 끼워진다 · 설정에서 끄면 정지본만 (components/sprite.js)
 //   - 옛 동작(잠금·팝업)은 localStorage 스위치로 살아난다 — 그 검사는 trial.js · planner.js · signup-invite.js 가 한다
-const { launch, newContext, waitSplash, ok, finish, suite } = require('./_lib');
+const { toEnglish, launch, newContext, waitSplash, ok, finish, suite } = require('./_lib');
 const BASE = 'http://localhost:5503/';
 
 suite(async () => {
@@ -75,7 +75,11 @@ suite(async () => {
   await page.waitForTimeout(1500);
   ok('끄면 정지 그림만', (await page.locator('#page img.sprite--anim').count()) === 0 && (await page.locator('#page img.sprite').count()) > 0);
   ok('끄면 흔들지도 않는다', await page.evaluate(() => document.body.classList.contains('sprite-anim-off') && getComputedStyle(document.querySelector('#page img.sprite')).animationName === 'none'));
-  ok('영어로도 설정 줄이 옮겨진다', await page.evaluate(() => { setLang('en'); location.hash = '#/settings'; return true; }) && await page.waitForTimeout(600).then(() => page.evaluate(() => /Animated sprites/.test(document.body.textContent))));
+  // 2026-09-16 v3.46.0 영어 사전은 지연 묶음이라 먼저 받는다 (toEnglish)
+  await toEnglish(page);
+  await page.evaluate(() => { location.hash = '#/settings'; });
+  await page.waitForTimeout(600);
+  ok('영어로도 설정 줄이 옮겨진다', await page.evaluate(() => /Animated sprites/.test(document.body.textContent)));
 
   ok('페이지 오류 없음', errs.length === 0, errs.join(' | ').slice(0, 200));
   await finish(browser);

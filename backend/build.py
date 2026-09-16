@@ -39,7 +39,7 @@ from sprite import sprite_id
 from names import name_ko, species, FORM_KO
 
 # ── 설정 ─────────────────────────────────────────────────────────────────────
-APP_VERSION = 'v3.45.0'  # 첫 방문 배너를 걷어냈다 — 끄는 길과 고지는 그대로 (v3.25.0 은 feature-advertisement 브랜치에 예약)
+APP_VERSION = 'v3.46.0'  # 첫 화면 무게 462 → 362KB(gz) · 번들을 app.js 로 빼고 안 쓰는 94KB 를 뒤로 (v3.25.0 은 feature-advertisement 브랜치에 예약)
 # 2026-09-14 v3.28.0 index.html 의 색인 허용 줄 — dev 빌드가 이 줄을 noindex 로 바꿔 끼운다
 ROBOTS_INDEX_META = '<meta name="robots" content="index, follow, max-image-preview:large">'
 # 2026-09-05 v2.7.3 빌드 채널 — 'prod'(기본) / 'dev'. dev 브랜치 워크플로(.github/workflows/deploy-dev.yml)가 BUILD_CHANNEL=dev 로 부른다.
@@ -168,7 +168,7 @@ STYLES = [
 SCRIPTS = [
     'data.js', 'dom.js', 'track.js',  # 2026-09-03 track: GA4 이벤트 헬퍼 (가장 먼저 정의)
     'components/pxicon.js',           # 2026-09-12 v3.6.0 도트 아이콘 — 라우터 표·홈 타일·버튼이 모두 본다 (dom 다음, 나머지보다 앞)
-    'i18n-en.js', 'i18n-release-en.js', 'i18n.js',  # 2026-09-08 v2.29.0 다국어 — 사전이 엔진보다 먼저 (엔진이 I18N_EN 을 참조)
+    'lazy.js', 'i18n.js',  # 2026-09-08 v2.29.0 다국어 — 2026-09-16 v3.46.0 사전(i18n-en·i18n-release-en)은 SCRIPTS_LAZY 로 갔다. 엔진은 typeof 로 막혀 있어 사전이 늦어도 돈다
     'router.js',              # 2026-09-08 v2.30.0 주소 표 — pages·planner·app-shell 이 모두 이 표를 본다
     'components/ui.js',       # 2026-09-08 v2.30.0 재사용 조각 (uchip · iconBtn · pageBody · footNote · hintNote)
     'components/home.js',
@@ -189,6 +189,16 @@ SCRIPTS = [
     'views/pvp.js', 'views/pve.js', 'views/max.js', 'views/maxdeck.js', 'views/tier.js', 'views/usage.js', 'views/ifsolo.js',  # 2026-09-02 if 탭 · 2026-09-15 v3.32.0 maxdeck
     'components/freshness.js',  # 2026-09-10 v2.50.0 새 데이터·새 버전 알림 (설치형 앱이 옛 데이터를 붙들지 않게)
     'app.js', 'components/app-shell.js',
+]
+
+# 2026-09-16 v3.46.0 **첫 화면이 안 쓰는 덩이** — dist/app-lazy.js 로 묶어 첫 렌더 뒤에 부른다.
+#   셋 합쳐 gzip 94KB 다. 홈에서는 한 글자도 안 쓰는데 늘 같이 받고 있었다.
+#   읽는 쪽이 전부 typeof 로 막혀 있어(i18n.js · components/release.js) 늦게 와도 터지지 않는다.
+#   순서는 그대로 지킨다 — 사전이 먼저, 그다음 패치노트 본문.
+#   미리보기 빌드(INLINE)는 단일 HTML 이라 이 목록도 본 번들에 합친다 (아래 render_index_html)
+SCRIPTS_LAZY = [
+    'i18n-en.js', 'i18n-release-en.js',   # 영어 사전 · 패치노트 영문판 (EN 으로 바꿔야 쓴다)
+    'release-notes.js',                   # 패치노트 본문 160판 (#/release 를 열어야 쓴다)
 ]
 # 2026-09-09 v2.41.0 UI 목록(#/styleguide)은 dev 미리보기에만 — 방문자에게는 쓸모가 없고 번들만 키운다.
 # 라우트(ROUTES)·페이지(PAGES) 등록을 그 파일이 스스로 하므로, 빼면 주소 자체가 없는 빌드가 된다.
@@ -498,15 +508,50 @@ const SPRITES = {(open('data/sprites.json').read() if INLINE and os.path.exists(
 
 
 # ── index.html ────────────────────────────────────────────────────────────────
+
+# 2026-09-16 v3.46.0 배포본에서 설명을 걷어낸다.
+#   frontend/index.html 의 HTML 주석은 "왜 이렇게 했나" 를 남긴 개발 기록이라 소스에는 그대로 둔다.
+#   다만 방문자가 받을 이유는 없다 — 실측 54곳 15KB(gzip 뒤 6.6KB), 템플릿 <style> 안 CSS 주석이 10KB 더.
+#   번들 CSS·JS 는 bundle() 이 이미 strip_*_comments 로 지우고 있었고, 남은 것이 여기였다.
+#   ★ 치환보다 **먼저** 돌린다 — 그래야 주석 안에 적힌 '__STYLES__' 같은 글자가 자리표로 오인되지 않는다
+#     (v2.52.0~v3.23.0 사흘간 실제로 그 사고가 있었다)
+def strip_template_comments(html):
+    html = re.sub(r'<!--(?!\[if).*?-->', '', html, flags=re.S)
+    html = re.sub(r'<style>(.*?)</style>',
+                  lambda m: '<style>' + strip_css_comments(m.group(1)) + '</style>', html, flags=re.S)
+    return _pack_blank_lines(html.split('\n'))
+
+
 def render_index_html(game_master, config, data_js):
     # index.html 템플릿의 자리표시자를 차례로 실제 내용으로 치환한다
-    html = open('frontend/index.html', encoding='utf-8').read()
+    html = strip_template_comments(open('frontend/index.html', encoding='utf-8').read())
     # CSS·JS 번들 삽입
     # 2026-09-13 v3.23.0 자리표는 **정확히 한 번**만 있어야 한다. 주석 안에 '__STYLES__' 라고 적어 둔 줄이 있어
     # str.replace 가 거기에도 155KB 번들을 끼워 넣었다 — v2.52.0(9/10) 부터 사흘, index.html 이 862KB 였다 (같은 CSS 를 두 번 파싱)
     for mark in ('__STYLES__', '__SCRIPTS__'):
         assert html.count(mark) == 1, f'{mark} 자리표가 {html.count(mark)}개 — frontend/index.html 에 정확히 하나여야 한다'
-    html = html.replace('__STYLES__', bundle('styles', STYLES, '/*')).replace('__SCRIPTS__', bundle('scripts', SCRIPTS, '//'))
+    html = html.replace('__STYLES__', bundle('styles', STYLES, '/*'))
+    # 2026-09-16 v3.46.0 **JS 는 밖으로 뺀다.** 63만 자를 <script> 안에 인라인하고 있었다.
+    #   1) 페이지 소스가 812KB 라 열어 봐도 읽을 수가 없었다 (이제 마크업만 남는다)
+    #   2) 배포할 때마다 HTML 을 통째로 다시 받았다 — 이제 안 바뀐 판은 브라우저 캐시가 막는다
+    #   3) 화면별로 쪼개려면(다음 단계) 먼저 파일이 밖에 있어야 한다
+    #   CSS 는 인라인으로 **남긴다** — <link> 로 빼면 도착할 때까지 첫 그리기가 멈춘다(왕복 1회 = FCP 손해).
+    #   JS 는 body 끝이라 어차피 그리기를 막지 않으므로 빼도 첫 화면이 늦어지지 않는다.
+    #   ?v= 는 배포마다 주소를 바꿔 옛 캐시를 확실히 끊는다 (서비스워커 규칙은 frontend/static/sw.js)
+    scripts_js = bundle('scripts', SCRIPTS, '//')
+    lazy_js = bundle('scripts', SCRIPTS_LAZY, '//')
+    lazy_url = ''
+    if INLINE:
+        # 미리보기는 단일 HTML 을 지킨다 — 지연분도 그대로 합친다 (LAZY_BUNDLE_URL 이 비면 loadLazyBundle 이 바로 답한다)
+        html = html.replace('__SCRIPTS__', scripts_js + '\n\n' + lazy_js)
+    else:
+        os.makedirs('dist', exist_ok=True)
+        open('dist/app.js', 'w', encoding='utf-8').write(scripts_js)
+        open('dist/app-lazy.js', 'w', encoding='utf-8').write(lazy_js)
+        lazy_url = f'app-lazy.js?v={APP_VERSION}'
+        tag = '<script>\n__SCRIPTS__\n</script>'
+        assert html.count(tag) == 1, 'index.html 의 __SCRIPTS__ 블록이 정확히 하나여야 밖으로 뺄 수 있다'
+        html = html.replace(tag, f'<script src="app.js?v={APP_VERSION}"></script>', 1)
     # 데이터 기준일과 앱 버전 표시
     html = html.replace('__TIMESTAMP__', game_master['timestamp']).replace('__VERSION__', APP_VERSION)
     # 2026-09-03 GA4: 측정 ID가 있으면 스니펫 삽입, 없으면 자리표시자 제거
@@ -529,7 +574,7 @@ def render_index_html(game_master, config, data_js):
     # 2026-09-10 v2.50.0 BUILD_VERSION — 지금 띄운 것이 어느 빌드인지 코드가 알아야 한다.
     # 헤더에 글자로 박아 두던 것(__VERSION__)은 app-shell.js 가 헤더를 통째로 갈아 끼우면서 사라진다.
     # 화면에서 긁어 오는 대신 값으로 넣는다 (components/freshness.js 가 build.json 과 견준다)
-    html = html.replace('__APP_CONFIG__', f"const FIREBASE_CONFIG = {json.dumps(config['FIREBASE_CONFIG'])};\nconst ADMIN_EMAIL = {json.dumps(config['ADMIN_EMAIL'])};\nconst ADMIN_UID = {json.dumps(config['ADMIN_UID'])};\nconst CONTACT_EMAIL = {json.dumps(config['CONTACT_EMAIL'])};\nconst BUILD_VERSION = {json.dumps(APP_VERSION)};")
+    html = html.replace('__APP_CONFIG__', f"const FIREBASE_CONFIG = {json.dumps(config['FIREBASE_CONFIG'])};\nconst ADMIN_EMAIL = {json.dumps(config['ADMIN_EMAIL'])};\nconst ADMIN_UID = {json.dumps(config['ADMIN_UID'])};\nconst CONTACT_EMAIL = {json.dumps(config['CONTACT_EMAIL'])};\nconst BUILD_VERSION = {json.dumps(APP_VERSION)};\nconst LAZY_BUNDLE_URL = {json.dumps(lazy_url)};")
     # 2026-09-05 v2.8.0 푸터 문의 이메일 — CONTACT_EMAIL 이 비어 있으면 문구 자체를 뺀다
     contact_email = config['CONTACT_EMAIL']
     contact_html = f'문의·건의: <a href="mailto:{contact_email}">{contact_email}</a> · ' if contact_email else ''
