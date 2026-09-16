@@ -15,8 +15,10 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 const RELEASE_NOTES_EN = {
-  '2026-09-16 · v3.50.4': [
-    '**The header shrinks on both the Battle info and Evolution tabs** — next to the small sprite, type badges sit left of the name, like [Dragon][Flying] Dragonite #0149 (the Summary tab keeps the big sprite and corner badges).',
+  '2026-09-16 · v3.50.5': [
+    '**(fix) Opening another Pokémon\'s share link while a detail popup was open dropped you on the home screen** — it now opens that Pokémon.',
+    '**In English, the line under the name shows the Korean name** — 메타그로스 under Metagross, instead of Metagross twice. The Korean view keeps the English name there.',
+    '**The header shrinks on both the Battle info and Evolution tabs** — next to the small sprite: [Dragon][Flying] #0149 · Dragonite · English name, in the same order as the big header (the Summary tab keeps the big sprite and corner badges).',
   ],
   '2026-09-16 · v3.50.3': [
     '**The PC detail popup is capped at 800px tall** — it no longer grows without limit on large monitors.',

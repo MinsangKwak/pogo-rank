@@ -74,7 +74,11 @@ function closeModal({ silent = false, keepEntry = false } = {}) {
   if (overlay) { overlay.close(); overlay.remove(); }
   syncScrollLock();   // 드로어가 아직 열려 있으면 잠금은 그대로 유지된다
   // 2026-09-06 v2.9.0 상세 딥링크(#/mon/…)를 열어 둔 채 닫으면 주소에서 해시만 지운다 (히스토리 항목 추가 없음)
-  if (overlay && /^#\/mon\//.test(location.hash) && !keepEntry) {
+  // 2026-09-16 v3.50.5 **자기 것일 때만**. 팝업이 떠 있는 채로 다른 #/mon/… 링크로 옮겨 가면 popstate 가 이 함수를
+  // 먼저 부르는데, 그때 주소는 이미 새 포켓몬의 것이다 — 접두어만 보고 지우면 새 상세가 열리기도 전에 주소가 비어
+  // 홈으로 떨어졌다. 껍데기의 data-sprite 와 맞는 해시만 지운다 (상세가 아닌 팝업은 예전대로)
+  const ownHash = overlay?.dataset.sprite ? `#/mon/${overlay.dataset.sprite}` : null;
+  if (overlay && /^#\/mon\//.test(location.hash) && !keepEntry && (!ownHash || location.hash === ownHash)) {
     try { history.replaceState(history.state, '', location.pathname + location.search); } catch {}
   }
   if (overlay && !keepEntry && !overlayVisible()) releaseOverlayEntry(silent);

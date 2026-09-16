@@ -214,13 +214,15 @@ dialog.modal::backdrop { background: transparent; }
    배지를 이름 왼쪽으로: [드래곤][비행] 망나뇽 #0149 */
 @media (max-width: 1099px) {
   .detail--mon:is([data-tab="battle"], [data-tab="evo"], [data-screen="calc"]) .detail__side { align-items: center; padding-bottom: 0.8rem; }
-  .detail--mon:is([data-tab="battle"], [data-tab="evo"], [data-screen="calc"]) .detail__side .sprite-box { width: 5.6rem; height: 5.6rem; border-radius: 1rem; }
-  .detail--mon:is([data-tab="battle"], [data-tab="evo"], [data-screen="calc"]) .detail__side .sprite-box .sprite { width: 4.6rem; height: 4.6rem; margin-top: 0; }
+  .detail--mon:is([data-tab="battle"], [data-tab="evo"], [data-screen="calc"]) .detail__side .sprite-box { width: 6.4rem; height: 6.4rem; border-radius: 1rem; }
+  .detail--mon:is([data-tab="battle"], [data-tab="evo"], [data-screen="calc"]) .detail__side .sprite-box .sprite { width: 5.2rem; height: 5.2rem; margin-top: 0; }
   .detail--mon:is([data-tab="battle"], [data-tab="evo"], [data-screen="calc"]) .sprite-box > .detail__types { display: none; }
+  /* 순서는 큰 머리와 같다 — [타입][#번호] · 이름 · 영문명 (v3.50.5). 배지·번호는 한 줄에, 이름·영문명은 제 줄에 */
   .detail--mon:is([data-tab="battle"], [data-tab="evo"], [data-screen="calc"]) .detail__types--inline { display: flex; order: -2; }
-  .detail--mon:is([data-tab="battle"], [data-tab="evo"], [data-screen="calc"]) .detail__info { flex-direction: row; flex-wrap: wrap; align-items: center; gap: 0.4rem 0.6rem; }
-  .detail--mon:is([data-tab="battle"], [data-tab="evo"], [data-screen="calc"]) .detail__info h2 { order: -1; font-size: 1.6rem; }
-  .detail--mon:is([data-tab="battle"], [data-tab="evo"], [data-screen="calc"]) .detail__en-inline { display: none; }
+  .detail--mon:is([data-tab="battle"], [data-tab="evo"], [data-screen="calc"]) .detail__tags { order: -1; }
+  .detail--mon:is([data-tab="battle"], [data-tab="evo"], [data-screen="calc"]) .detail__info { flex-direction: row; flex-wrap: wrap; align-items: center; gap: 0.3rem 0.5rem; }
+  .detail--mon:is([data-tab="battle"], [data-tab="evo"], [data-screen="calc"]) .detail__info h2 { flex-basis: 100%; font-size: 1.6rem; }
+  .detail--mon:is([data-tab="battle"], [data-tab="evo"], [data-screen="calc"]) .detail__en-inline { flex-basis: 100%; font-size: 1.15rem; }
 }
 
 /* 오른쪽 — ← 돌아가기 · 탭 · 스크롤 내용 / 계산기 화면 */

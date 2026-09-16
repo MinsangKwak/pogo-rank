@@ -88,12 +88,15 @@ suite(async () => {
     const corner = document.querySelector('.sprite-box > .detail__types');
     const inline = document.querySelector('.detail__types--inline');
     const h2 = document.querySelector('.detail__info h2').getBoundingClientRect();
+    const tags = document.querySelector('.detail__tags').getBoundingClientRect();
+    const en = document.querySelector('.detail__en-inline')?.getBoundingClientRect();
     const inlineBox = inline?.getBoundingClientRect();
-    return { w: box.width, cornerHidden: !corner || getComputedStyle(corner).display === 'none', inlineShown: !!inline && getComputedStyle(inline).display !== 'none',
-      leftOfName: inlineBox ? inlineBox.x + inlineBox.width <= h2.x + 1 && Math.abs(inlineBox.y + inlineBox.height / 2 - (h2.y + h2.height / 2)) < 14 : false };
+    // v3.50.5 순서: [타입][#번호] 한 줄 → 이름 → 영문명 (큰 머리와 같은 순서)
+    const rowOrder = inlineBox ? inlineBox.x + inlineBox.width <= tags.x + 1 && Math.abs(inlineBox.y - tags.y) < 8 && tags.y + tags.height <= h2.y + 1 && (!en || h2.y + h2.height <= en.y + 1) : false;
+    return { w: box.width, cornerHidden: !corner || getComputedStyle(corner).display === 'none', inlineShown: !!inline && getComputedStyle(inline).display !== 'none', leftOfName: rowOrder };
   });
   const battleHead = await compact();
-  ok('배틀 정보 탭 — 그림이 작아지고 배지가 이름 왼쪽에', battleHead.w < 70 && battleHead.cornerHidden && battleHead.inlineShown && battleHead.leftOfName, JSON.stringify(battleHead));
+  ok('배틀 정보 탭 — 그림이 작아지고 [타입][#번호] · 이름 · 영문명 순서', battleHead.w < 70 && battleHead.cornerHidden && battleHead.inlineShown && battleHead.leftOfName, JSON.stringify(battleHead));
   ok('약점·내성 두 카드', (await page.locator('.detail__match h3').allTextContents()).join('|') === '약점 (더 큰 데미지)|내성 (덜 받는 데미지)');
   ok('활용 순위 카드', (await page.locator('.detail__card h3', { hasText: '활용 순위' }).count()) === 1);
   ok('보스로 만났을 때 — 추천 후보 줄', (await page.locator('.detail__boss .detail__rec').count()) >= 3);

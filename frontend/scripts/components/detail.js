@@ -795,7 +795,9 @@ function detailBuild(state) {
         dex != null ? el('span', { class: 'tag detail__dexno' }, `#${String(dex).padStart(4, '0')}`) : '',
         ...formLabels.map((label) => el('span', { class: `form-tag${formLabelKind(label) ? ' form-tag--' + formLabelKind(label) : ''}` }, label))),
       el('h2', {}, baseName),
-      pokemon.en ? el('div', { class: 'detail__en-inline' }, pokemon.en) : ''));
+      // 2026-09-16 v3.50.5 이 줄은 늘 "반대 언어의 이름" — 한국어 화면엔 Metagross, 영어 화면엔 메타그로스 (i18n.js data-i18n="alt").
+      // 사전을 태우면 영어 화면에서 이름 줄과 똑같은 Metagross 가 두 번 선다
+      pokemon.en ? el('div', { class: 'detail__en-inline', 'data-i18n': 'alt', 'data-alt-ko': pokemon.en, 'data-alt-en': baseName }, pokemon.en) : ''));
 
   // ── 요약 탭: CP · 포획 CP · 기술 · (기술 변경) · 능력치
   const summary = el('div', { class: 'detail__pane', 'data-pane': 'summary' });
