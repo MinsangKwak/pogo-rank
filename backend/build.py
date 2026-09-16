@@ -40,7 +40,7 @@ from names import name_ko, species, FORM_KO
 import guard
 
 # ── 설정 ─────────────────────────────────────────────────────────────────────
-APP_VERSION = 'v3.51.0'  # 📢 게임 업데이트 신설 · 상세 팝업 배지 줄 세로 가운데 (v3.25.0 은 feature-advertisement 브랜치에 예약)
+APP_VERSION = 'v3.52.0'  # 게임 업데이트 — 체육관 글 · moncamp 추천 · 원문 미리보기 카드 (v3.25.0 은 feature-advertisement 브랜치에 예약)
 # 2026-09-14 v3.28.0 index.html 의 색인 허용 줄 — dev 빌드가 이 줄을 noindex 로 바꿔 끼운다
 ROBOTS_INDEX_META = '<meta name="robots" content="index, follow, max-image-preview:large">'
 # 2026-09-05 v2.7.3 빌드 채널 — 'prod'(기본) / 'dev'. dev 브랜치 워크플로(.github/workflows/deploy-dev.yml)가 BUILD_CHANNEL=dev 로 부른다.
@@ -475,7 +475,6 @@ GAME_UPDATE_CATEGORIES = {'gym', 'raid', 'pvp', 'catch', 'reward', 'bugfix'}
 GAME_UPDATE_EDITORIAL = {'draft', 'review', 'published', 'withdrawn'}
 GAME_UPDATE_EVIDENCE = {'official', 'observed', 'pending'}
 GAME_UPDATE_ROLLOUT = {'planned', 'rolling', 'live', 'withdrawn', 'unknown'}
-GAME_UPDATE_IMPACT = {'none', 'check', 'done'}
 # related 에 적을 수 있는 화면 — frontend/scripts/router.js 의 ROUTES id 와 같아야 한다.
 # 표를 두 번 적는 셈이지만, 빌드가 프론트 소스를 파싱하게 만드는 쪽이 더 부서지기 쉽다.
 # 여기 없는 id 를 적으면 빌드가 선다 — 화면에서 죽은 링크가 되는 것보다 먼저 걸린다
@@ -504,7 +503,6 @@ def load_game_updates(path='backend/config/game_updates.json'):
         counts[status] = counts.get(status, 0) + 1
         assert article.get('evidenceStatus') in GAME_UPDATE_EVIDENCE, f'{where}: evidenceStatus'
         assert article.get('rolloutStatus') in GAME_UPDATE_ROLLOUT, f'{where}: rolloutStatus'
-        assert article.get('moncampImpact') in GAME_UPDATE_IMPACT, f'{where}: moncampImpact'
         categories = article.get('category') or []
         assert categories and set(categories) <= GAME_UPDATE_CATEGORIES, f'{where}: category={categories}'
         assert set(article.get('related') or []) <= GAME_UPDATE_ROUTES, f'{where}: related 에 모르는 화면'
@@ -513,6 +511,9 @@ def load_game_updates(path='backend/config/game_updates.json'):
             assert value == '' or DATE_RE.fullmatch(value), f'{where}: {key}={value!r} 는 YYYY-MM-DD'
         for source in article.get('sources') or []:
             assert source.get('url', '').startswith('https://'), f'{where}: 출처 URL 은 https'
+            # 미리보기 그림도 https — 원본을 그대로 가리킨다(우리 저장소로 복사하지 않는다)
+            image = source.get('image', '')
+            assert image == '' or image.startswith('https://'), f'{where}: 출처 그림은 https'
         if status != 'published':
             continue
         # 공개하는 글에만 거는 조건 — 초안은 비어 있어도 된다

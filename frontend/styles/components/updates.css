@@ -73,17 +73,30 @@
   .upd__ba-arrow { transform: rotate(90deg); justify-self: start; }
 }
 
-/* moncamp 반영 — 기사와 계산은 다른 일이라 상자를 따로 준다 */
-.upd__impact { padding: 1.2rem 1.4rem; border: 1px solid var(--line); border-radius: 1.2rem; background: var(--surface); }
-.upd__impact b { display: block; margin-bottom: 0.4rem; font-size: 1.3rem; }
-.upd__impact p { margin: 0; font-size: 1.3rem; line-height: 1.7; color: var(--muted); word-break: keep-all; }
-.upd__impact--check { border-color: color-mix(in srgb, var(--warn) 35%, var(--line)); background: color-mix(in srgb, var(--warn) 7%, var(--surface)); }
-.upd__impact--check b { color: var(--warn); }
-.upd__impact--done b { color: var(--good); }
+/* moncamp 는 이렇게 추천해요 — 우리 쪽 작업 상태가 아니라 "그래서 뭘 하면 되는지" 한 문단 (v3.52.0) */
+.upd__advice { padding: 1.2rem 1.4rem; border: 1px solid color-mix(in srgb, var(--brand) 32%, var(--line)); border-radius: 1.2rem;
+  background: color-mix(in srgb, var(--brand) 6%, var(--surface)); }
+.upd__advice p { margin: 0; font-size: 1.3rem; line-height: 1.75; word-break: keep-all; }
 
 .upd__related { display: flex; flex-wrap: wrap; gap: 0.6rem; }
-.upd__sources { margin: 0; padding-left: 1.8rem; font-size: 1.3rem; line-height: 1.8; }
-.upd__sources a { color: var(--brand); text-decoration: underline; word-break: break-all; }
+
+/* 공식 원문 — 줄 링크가 아니라 미리보기 카드. 그림은 원본을 가리키고, 못 받으면 스크립트가 지운다 */
+.upd__sources { display: flex; flex-direction: column; gap: 0.8rem; }
+.upd__source { display: flex; align-items: stretch; gap: 1.2rem; padding: 1rem 1.2rem; border: 1px solid var(--line); border-radius: 1.2rem;
+  background: var(--surface); color: var(--fg); text-decoration: none; }
+.upd__source:hover { background: var(--hover); }
+/* 16:9 썸네일. object-fit 으로 비율이 달라도 상자가 흔들리지 않게 */
+.upd__source-img { flex: 0 0 auto; width: 12rem; height: 6.75rem; border-radius: 0.8rem; object-fit: cover; background: var(--bg); }
+.upd__source-body { display: flex; flex-direction: column; justify-content: center; gap: 0.5rem; min-width: 0; }
+.upd__source-body b { font-size: 1.3rem; font-weight: 700; line-height: 1.5; word-break: keep-all; }
+.upd__source-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; font-size: 1.15rem; color: var(--muted); }
+.upd__source-lang { padding: 0.1rem 0.6rem; border: 1px solid var(--line); border-radius: 99.9rem; background: var(--bg); font-weight: 700; }
+.upd__source-host { word-break: break-all; }
+.upd__source-go { color: var(--brand); font-weight: 700; }
+@media (max-width: 480px) {
+  .upd__source { flex-direction: column; gap: 0.8rem; }
+  .upd__source-img { width: 100%; height: auto; aspect-ratio: 16 / 9; }
+}
 
 /* ── 홈의 주요 소식 ──────────────────────────────────────────────────────── */
 .home-updates { margin-top: 3.2rem; }

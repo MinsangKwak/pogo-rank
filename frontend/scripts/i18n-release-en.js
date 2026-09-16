@@ -15,6 +15,11 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 const RELEASE_NOTES_EN = {
+  '2026-09-16 · v3.52.0': [
+    '**A gym post is up** — the additional Charged Attack from Mega Evolution works in GO Battle League but not in Gym battles against defenders. Confirmed against the official source (Korean and English).',
+    '**Every post now carries \'What moncamp suggests\'** — instead of our internal status, it says which screen to use and what to do about the change.',
+    '**Official sources appear as preview cards** — the original article\'s image, title and address together.',
+  ],
   '2026-09-16 · v3.51.0': [
     '**A 📢 Game updates screen has been added** — rule, balance and bug changes in Pokémon GO, collected in one place. Reachable from the menu and the home screen.',
     '**Only posts confirmed against an official announcement are published** — each carries its evidence and rollout status, announced/effective dates, and a link to the official source. Reports still being checked are not published.',

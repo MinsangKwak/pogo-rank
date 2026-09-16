@@ -37,13 +37,13 @@ const UPDATE_CATS = {
   reward: '보상·편의',
   bugfix: '오류 수정',
 };
-// 상태 세 축 — 뜻이 서로 다르므로 한 줄에 섞지 않는다.
+// 상태 두 축 — 뜻이 서로 다르므로 한 줄에 섞지 않는다.
 //   근거     무엇으로 확인했는가        공식 발표인가, 관찰인가
 //   게임 적용 게임에서 언제 적용되는가   발표만 된 것과 이미 적용된 것은 다르다
-//   반영     moncamp 계산에 들어왔는가   기사를 썼다고 순위가 다시 계산되는 것은 아니다
+// 2026-09-16 v3.52.0 'moncamp 반영' 축을 걷어냈다 — 읽는 사람에게 필요한 것은 우리 쪽 작업 상태가 아니라
+// **그래서 뭘 하면 되는지** 다. 같은 자리에 'moncamp 는 이렇게 추천해요' 한 문단을 둔다 (moncampAdvice)
 const UPDATE_EVIDENCE = { official: '공식 확인', observed: '관찰 보고', pending: '확인 대기' };
 const UPDATE_ROLLOUT = { planned: '적용 예정', rolling: '순차 적용', live: '적용 확인', withdrawn: '철회', unknown: '시점 미확인' };
-const UPDATE_IMPACT = { none: '반영 해당 없음', check: 'moncamp 점검 필요', done: 'moncamp 반영 완료' };
 
 // 목록 화면의 상태 — 상세를 보고 뒤로 왔을 때 검색·분류·기간·스크롤이 그대로여야 한다.
 // 라우터가 화면을 다시 그리므로(renderPage) 상태를 DOM 밖에 둔다
@@ -85,9 +85,6 @@ function updateBadges(article) {
   if (evidence) badges.push(updateBadge(evidence, article.evidenceStatus === 'official' ? 'ok' : 'warn'));
   const rollout = UPDATE_ROLLOUT[article.rolloutStatus];
   if (rollout) badges.push(updateBadge(rollout, article.rolloutStatus === 'live' ? 'ok' : article.rolloutStatus === 'withdrawn' ? 'warn' : ''));
-  if (article.moncampImpact && article.moncampImpact !== 'none') {
-    badges.push(updateBadge(UPDATE_IMPACT[article.moncampImpact], article.moncampImpact === 'check' ? 'warn' : 'ok'));
-  }
   return el('div', { class: 'upd__badges' }, ...badges);
 }
 function updateCatChips(article) {
@@ -104,6 +101,38 @@ function updateDates(article, withChecked = false) {
   if (withChecked && article.checkedAt) parts.push(one('마지막 확인', article.checkedAt));
   if (!parts.length) parts.push(el('span', { class: 'upd__date' }, el('em', {}, '날짜 미확인')));
   return el('div', { class: 'upd__dates' }, ...parts);
+}
+
+// 미리보기 그림 주소 → 썸네일 크기로.
+// 공식 페이지의 og:image 는 원본 그대로라 무겁다 — 실측 2.7MB GIF · 208KB PNG.
+// 구글 이미지 호스트(lh3)는 주소 뒤 옵션으로 크기·형식을 바꿔 준다:
+//   w320-h180-c  320×180 으로 잘라 맞춤 (카드 썸네일 비율 16:9)
+//   -no          움직임 제거 (GIF 한 장으로)
+//   -rj          JPEG 로 (2.7MB GIF → 25KB · 208KB PNG → 30KB, 실측)
+// 다른 호스트의 그림은 손대지 않고 그대로 쓴다
+function sourceThumbUrl(url) {
+  if (!/^https:\/\/lh3\.googleusercontent\.com\//.test(url) || url.includes('=')) return url;
+  return `${url}=w320-h180-c-no-rj`;
+}
+
+// 출처 링크 카드 — 원문 미리보기 그림 + 제목 + 주소.
+// 그림은 공식 페이지의 og:image 를 **그대로 가리킨다** (우리 저장소로 복사하지 않는다).
+// 못 받는 경우(차단·주소 변경)가 있으므로 실패하면 그림 자리를 접는다 — 깨진 그림을 남기지 않는다
+function sourceCard(source) {
+  const $thumb = source.image
+    ? el('img', { class: 'upd__source-img', src: sourceThumbUrl(source.image), alt: '', loading: 'lazy', decoding: 'async', referrerpolicy: 'no-referrer' })
+    : '';
+  if ($thumb) $thumb.addEventListener('error', () => $thumb.remove());
+  let host = '';
+  try { host = new URL(source.url).host; } catch { host = source.url; }
+  return el('a', { class: 'upd__source', href: source.url, target: '_blank', rel: 'noopener noreferrer' },
+    $thumb,
+    el('span', { class: 'upd__source-body' },
+      el('b', {}, source.label),
+      el('span', { class: 'upd__source-meta' },
+        el('span', { class: 'upd__source-lang' }, source.lang === 'ko' ? '한국어' : '영어'),
+        el('span', { class: 'upd__source-host' }, host),
+        el('span', { class: 'upd__source-go', 'aria-hidden': 'true' }, '↗'))));
 }
 
 function openGameUpdate(id, from = 'list') {
@@ -234,12 +263,9 @@ function renderGameUpdateDetail(id) {
   if (article.playerImpact?.length) $body.append(section('플레이에 미치는 영향', list(article.playerImpact)));
   if (article.suggestedActions?.length) $body.append(section('확인하면 좋은 것', list(article.suggestedActions)));
 
-  // moncamp 반영 — "기사를 썼다" 와 "계산에 들어왔다" 는 다른 일이라 따로 적는다
-  if (article.moncampNote) {
-    $body.append(section('moncamp 반영 상태',
-      el('div', { class: `upd__impact upd__impact--${article.moncampImpact}` },
-        el('b', {}, UPDATE_IMPACT[article.moncampImpact] ?? ''),
-        el('p', {}, article.moncampNote))));
+  // moncamp 는 이렇게 추천해요 — 이 변경을 두고 우리 화면으로 무엇을 하면 되는지 한 문단
+  if (article.moncampAdvice) {
+    $body.append(section('moncamp 는 이렇게 추천해요', el('div', { class: 'upd__advice' }, el('p', {}, article.moncampAdvice))));
   }
 
   if (article.related?.length) {
@@ -248,9 +274,7 @@ function renderGameUpdateDetail(id) {
   }
 
   $body.append(section('공식 원문', article.sources?.length
-    ? el('ul', { class: 'upd__sources' }, ...article.sources.map((source) =>
-        el('li', {}, el('a', { href: source.url, target: '_blank', rel: 'noopener noreferrer' },
-          source.label, el('span', { class: 'meta' }, source.lang === 'ko' ? ' · 한국어' : ' · 영어')))))
+    ? el('div', { class: 'upd__sources' }, ...article.sources.map(sourceCard))
     : hintNote('원문 링크가 없어요.')));
 
   if (article.revisions?.length) {

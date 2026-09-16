@@ -10,6 +10,8 @@
 //   - 상세를 보고 뒤로 오면 검색·분류가 그대로다 (기획: 복귀 시 탐색 상태 유지)
 //   - 없는 글 주소(#/game-updates/없는id)로 들어가도 빈 화면·오류가 아니라 안내가 뜬다
 //   - 이전 값을 모르는 항목은 지어내지 않고 '이전 값 미확인' 으로 적힌다
+//   - 원문은 줄 링크가 아니라 미리보기 카드(썸네일 + 제목 + 주소)로 나가고, CSP 가 그 그림 주소를 허용한다
+//   - moncamp 는 '점검 필요' 같은 우리 쪽 작업 상태가 아니라 '이렇게 추천해요' 를 적는다 (v3.52.0)
 //   - 게임 업데이트 · 이벤트 일정 · moncamp 패치노트가 메뉴에서 서로 다른 화면으로 갈린다
 //   - 영어로 볼 때 화면 뼈대가 번역되고, 본문이 한국어로 남는다는 안내가 보인다
 const { launch, newContext, waitSplash, ok, finish, suite, toEnglish } = require('./_lib');
@@ -41,6 +43,11 @@ suite(async () => {
     data.every((article) => article.evidenceStatus === 'official' && (article.sources || []).length > 0),
     data.filter((article) => !(article.sources || []).length).map((article) => article.id).join(','));
   ok('공개 글은 모두 발표일이 있다', data.every((article) => /^\d{4}-\d{2}-\d{2}$/.test(article.announcedAt || '')));
+  // v3.52.0 moncamp 축은 상태가 아니라 추천 문단이다 — 옛 필드가 남아 있으면 화면에 두 벌이 생긴다
+  ok('moncampImpact 상태 필드는 없다', data.every((article) => article.moncampImpact === undefined));
+  ok('분류마다 공개 글이 있다 — 체육관 포함',
+    ['gym', 'pvp'].every((cat) => data.some((article) => (article.category || []).includes(cat))),
+    data.map((article) => article.category.join('+')).join(' | '));
   ok('출처는 모두 https', data.every((article) => (article.sources || []).every((source) => source.url.startsWith('https://'))));
   // 편집 원본에는 초안이 있는데 빌드에 안 실렸다 — 거르는 자리가 실제로 동작한다는 뜻
   ok('초안(체육관 방어 제보)은 주소로도 못 연다',
@@ -58,11 +65,15 @@ suite(async () => {
     && (await cards().first().locator('.upd__dates b').count()) > 0, firstTitle);
 
   // ── 검색 · 분류 · 기간
-  await page.fill('.upd__search', '메가');
+  // 제목만이 아니라 요약·핵심까지 훑는다 — 체육관 글은 제목에 '메가' 가 없어도 본문에 있어 걸린다
+  await page.fill('.upd__search', '썰스데이');
   await page.waitForTimeout(250);
   const hitTitles = await cards().locator('.upd__title').allTextContents();
-  ok('검색어로 좁혀진다', hitTitles.length > 0 && hitTitles.every((title) => /메가/.test(title)) && hitTitles.length < data.length,
-    hitTitles.join(' | '));
+  ok('검색어로 좁혀진다', hitTitles.length > 0 && hitTitles.length < data.length, hitTitles.join(' | '));
+  await page.fill('.upd__search', '메가');
+  await page.waitForTimeout(250);
+  const bodyHits = await cards().evaluateAll((ns) => ns.map((n) => /메가/.test(n.innerText)));
+  ok('본문에만 있는 말로도 찾는다', bodyHits.length > 0 && bodyHits.every(Boolean), String(bodyHits.length));
   await page.fill('.upd__search', '있을 리 없는 말 zzzz');
   await page.waitForTimeout(250);
   ok('없으면 안내가 뜬다 (빈 화면이 아니다)', (await cards().count()) === 0 && (await page.locator('.upd__cards .dex__hint').count()) === 1);
@@ -72,7 +83,8 @@ suite(async () => {
 
   await page.locator('.upd__filter .uchip', { hasText: '체육관' }).first().click();
   await page.waitForTimeout(250);
-  ok('분류로 좁힌다 — 체육관 글은 공개된 것이 없다', (await cards().count()) === 0);
+  const gymCount = await cards().count();
+  ok('분류로 좁힌다 — 체육관 글이 보인다', gymCount > 0 && gymCount < data.length, `${gymCount}/${data.length}`);
   await page.locator('.upd__filter .uchip', { hasText: 'PvP' }).first().click();
   await page.waitForTimeout(250);
   const pvpCount = await cards().count();
@@ -98,13 +110,32 @@ suite(async () => {
   ok('상세 차례 — 핵심 → 전후 → 영향 → 확인 → 반영 → 관련 → 원문',
     secs[0] === '핵심 요약' && secs.includes('변경 전 · 후') && secs.includes('플레이에 미치는 영향') && secs.at(-1) === '공식 원문',
     secs.join(' | '));
-  const source = await page.locator('.upd__sources a').first();
+  const source = await page.locator('.upd__source').first();
   ok('원문 링크가 공식 주소로 나간다', (await source.getAttribute('href')).startsWith('https://pokemongo.com/'),
     await source.getAttribute('href'));
   ok('원문은 새 탭으로 (읽던 자리를 잃지 않게)', (await source.getAttribute('target')) === '_blank'
     && /noopener/.test((await source.getAttribute('rel')) || ''));
   ok('이전 값을 모르는 항목은 지어내지 않는다', (await page.locator('.upd__ba-none').first().textContent()) === '이전 값 미확인');
-  ok('moncamp 반영 상태를 따로 적는다', (await page.locator('.upd__impact').count()) === 1);
+  ok('moncamp 는 추천을 적는다 (작업 상태가 아니라)',
+    (await page.locator('.upd__advice').count()) === 1 && (await page.locator('.upd__impact').count()) === 0
+    && (await page.locator('.upd__sec > h3', { hasText: 'moncamp' }).textContent()) === 'moncamp 는 이렇게 추천해요');
+  ok('상태 알약은 두 축뿐 (근거 · 게임 적용)', (await page.locator('.upd__head .upd__badge').count()) === 2);
+
+  // ── 원문 미리보기 카드 — 썸네일 주소 · 새 탭 · CSP 허용
+  const srcCards = page.locator('.upd__source');
+  ok('원문이 카드로 나온다 (줄 링크가 아니라)', (await srcCards.count()) >= 1);
+  const thumbs = await page.locator('.upd__source-img').evaluateAll((ns) => ns.map((n) => n.getAttribute('src')));
+  // 이 검사망의 브라우저는 바깥 그림을 못 받아(gstatic 과 같은 정책) 실제로 뜨는지는 못 본다 —
+  // 주소가 맞게 붙는지, 썸네일 크기로 줄였는지, CSP 가 그 호스트를 허용하는지까지 본다
+  ok('썸네일 주소가 붙는다', thumbs.length >= 1 && thumbs.every((src) => src.startsWith('https://')), thumbs.join(' | ').slice(0, 120));
+  ok('썸네일은 원본이 아니라 줄인 크기로', thumbs.every((src) => !/googleusercontent/.test(src) || /=w\d+-h\d+-c-no-rj$/.test(src)),
+    thumbs.join(' | ').slice(0, 120));
+  const csp = await page.evaluate(() => document.querySelector('meta[http-equiv="Content-Security-Policy"]')?.content || '');
+  const imgSrc = (csp.split(';').find((part) => part.trim().startsWith('img-src')) || '');
+  ok('CSP img-src 가 그 그림 호스트를 허용한다',
+    thumbs.every((src) => { const host = new URL(src).host; return imgSrc.includes(host) || imgSrc.includes('*.' + host.split('.').slice(-2).join('.')); }),
+    imgSrc.trim());
+  ok('원문 카드에 주소가 보인다', (await page.locator('.upd__source-host').first().textContent()) === 'pokemongo.com');
   await page.locator('.upd__back').click();
   await page.waitForTimeout(600);
   ok('뒤로 오면 검색어가 그대로', (await page.inputValue('.upd__search')) === '메가' && (await cards().count()) < data.length);
