@@ -146,7 +146,7 @@ function renderEggsPage() {
   const $layout = layoutToggle('pogo_eggs_cols', grid, (next) => sections.forEach(({ $list }) => $list.classList.toggle('is-grid', next)));
   return el('div', { class: 'page__body' },
     el('div', { class: 'gameday__intro page__filters' },
-      el('p', { class: 'note' }, '★ 를 누르면 즐겨찾기에 담겨요. 이름을 누르면 종족값과 상성을 볼 수 있어요.'),
+      el('p', { class: 'note' }, '포켓몬을 누르면 종족값과 상성을 볼 수 있어요.'),
       $layout),
     ...sections.map(({ node }) => node),
     gamedayFoot('지금 도는 알 부화 풀.'));
