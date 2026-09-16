@@ -15,6 +15,9 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 const RELEASE_NOTES_EN = {
+  '2026-09-16 · v3.50.2': [
+    '**(fix) The detail popup\'s [close] sat slightly above [Pokédex]** — now on the same line with the same spacing.',
+  ],
   '2026-09-16 · v3.50.1': [
     '**Detail popup buttons rearranged** — top row: [＋ My Pokémon] · [Pokédex] · [close]; bottom row: [Copy link] · [CP calculator]. The Pokédex button leaves for another screen, so it sits on top; sharing acts on this Pokémon, so it sits below.',
     '**Type badges are back on the top-left corner of the sprite**, as before.',

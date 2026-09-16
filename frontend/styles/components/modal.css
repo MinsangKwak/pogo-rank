@@ -173,7 +173,9 @@ dialog.modal::backdrop { background: transparent; }
    ───────────────────────────────────────────────────────────────────────────── */
 .modal__box:has(> .detail--mon) { display: flex; flex-direction: column; padding: 0; overflow: hidden; }
 /* ✕ 는 껍데기(modal.js)의 것 그대로 — 카드 밖 모서리 대신 머리줄 오른쪽 끝에 앉힌다. .modal__wrap 은 스크롤하지 않아 늘 위에 있다 */
-.modal__wrap:has(.detail--mon) .modal__close { top: 0.9rem; right: 1rem; width: 3.2rem; height: 3.2rem; z-index: 2; box-shadow: none; }
+/* 2026-09-16 v3.50.2 머리줄 버튼과 같은 줄·같은 간격 — .modal__wrap 기준이라 카드 테두리(2px)만큼 더 내리고(1rem + 2px),
+   오른쪽은 [포켓몬 도감] 과 0.6rem 만 띄운다(머리줄 padding-right 5.6rem = ✕ 3.2rem + 간격 0.6rem + 테두리·여백) */
+.modal__wrap:has(.detail--mon) .modal__close { top: calc(1rem + 2px); right: 2rem; width: 3.2rem; height: 3.2rem; z-index: 2; box-shadow: none; }
 .detail--mon { display: flex; flex-direction: column; flex: 1 1 auto; min-height: 0; }
 
 /* 머리줄 — 제목 · (계산기 화면에서만) ‹ 상세로 · [＋ 내 포켓몬] [포켓몬 도감]. 오른쪽 5.6rem 은 ✕ 자리 */

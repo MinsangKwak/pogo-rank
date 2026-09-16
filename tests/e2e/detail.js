@@ -49,6 +49,10 @@ suite(async () => {
   const spriteBox = await page.locator('.detail__side .sprite-box').boundingBox();
   ok('타입 배지가 그림 왼쪽 위 모서리에 겹침', typesBox.x <= spriteBox.x + 2 && typesBox.y <= spriteBox.y + 2, `types ${typesBox.x},${typesBox.y} vs sprite ${spriteBox.x},${spriteBox.y}`);
   ok('머리줄 오른쪽에 [포켓몬 도감]', await page.locator('.detail__bar .detail__bar-dex').isVisible());
+  // 2026-09-16 v3.50.2 ✕ 와 [포켓몬 도감] 이 같은 줄·같은 높이·0.6rem 간격 ("세로 높이는 맞춰줘라")
+  const dexBox = await page.locator('.detail__bar-dex').boundingBox();
+  ok('✕ 와 [포켓몬 도감] 높이·줄이 같다', Math.abs(closeBox.y - dexBox.y) < 1 && Math.abs(closeBox.height - dexBox.height) < 1, `close ${closeBox.y}/${closeBox.height} dex ${dexBox.y}/${dexBox.height}`);
+  ok('✕ 와 [포켓몬 도감] 간격 6px', Math.abs((closeBox.x - (dexBox.x + dexBox.width)) - 6) < 1.5, String(closeBox.x - (dexBox.x + dexBox.width)));
   ok('하단 왼쪽에 [링크 복사]', await page.locator('.detail__dock .detail__share').isVisible() && (await text('.detail__share-text')) === '링크 복사');
   ok('탭 셋', (await page.locator('.detail__tab').allTextContents()).join('|') === '요약|배틀 정보|진화');
   ok('처음 탭은 요약', (await state()).tab === 'summary');
