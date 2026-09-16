@@ -15,6 +15,34 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 const RELEASE_NOTES_EN = {
+  '2026-09-16 · v3.55.1': [
+    '**Home section headers now share one shape** — title and its button on the top line, description on the line below.',
+  ],
+  '2026-09-16 · v3.55.0': [
+    '**Game updates moved to the bottom of the home screen** — what the service is, what it does and the recommended rankings come first; news is the last thing you scroll past.',
+  ],
+  '2026-09-16 · v3.54.0': [
+    '**43 past updates are now browsable** — our 11 written posts plus 32 official items listed as [Source only].',
+    '**[Source only] is a verbatim quote from the official source, not our summary** — title, date, link and one passage. When someone writes a summary, that entry becomes a full post.',
+    '**[With summary only] filters to posts we have written up.**',
+  ],
+  '2026-09-16 · v3.53.0': [
+    '**Game updates now has 11 posts** — added items confirmed from the official release notes and known issues: the Premier Ball count display during raids, Max Battle rewards showing 0, the egg hatch list mismatch, and more.',
+    '**[More past updates] walks back through the archive** — five at a time, more on each tap.',
+    '**Posts sourced from release notes carry a \'Checked\' date** — that document does not publish dates, so we state when we last read the original.',
+  ],
+  '2026-09-16 · v3.52.0': [
+    '**A gym post is up** — the additional Charged Attack from Mega Evolution works in GO Battle League but not in Gym battles against defenders. Confirmed against the official source (Korean and English).',
+    '**Every post now carries \'What moncamp suggests\'** — instead of our internal status, it says which screen to use and what to do about the change.',
+    '**Official sources appear as preview cards** — the original article\'s image, title and address together.',
+  ],
+  '2026-09-16 · v3.51.0': [
+    '**A 📢 Game updates screen has been added** — rule, balance and bug changes in Pokémon GO, collected in one place. Reachable from the menu and the home screen.',
+    '**Only posts confirmed against an official announcement are published** — each carries its evidence and rollout status, announced/effective dates, and a link to the official source. Reports still being checked are not published.',
+    '**The detail view puts before and after side by side** — when the previous value is unknown it says so instead of inventing one. It also flags whether moncamp\'s rankings still need a check.',
+    '**Game updates, Events and Patch notes are three different screens** — what changed in the game / what is on when / what changed in moncamp.',
+    '**(fix) The dex number and form badge in the detail popup sat at different heights** — now centered on the same line.',
+  ],
   '2026-09-16 · v3.50.5': [
     '**(fix) Opening another Pokémon\'s share link while a detail popup was open dropped you on the home screen** — it now opens that Pokémon.',
     '**In English, the line under the name shows the Korean name** — 메타그로스 under Metagross, instead of Metagross twice. The Korean view keeps the English name there.',

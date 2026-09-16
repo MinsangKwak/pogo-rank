@@ -155,6 +155,10 @@ function renderServiceHome() {
   // ── 용도별 상위 포켓몬 — 평가 조건과 기준일을 같이 읽게 한다 (시안 "순위 참고")
   const pickGroups = HOME_PICKS.map(homePickGroup).filter(Boolean);
   const dataDate = typeof DATA_FETCHED !== 'undefined' && DATA_FETCHED ? DATA_FETCHED : '';
+  // ── 게임 업데이트 주요 소식 (2026-09-16 v3.51.0) — 글이 없으면 빈 문자열이라 자리도 안 만든다
+  // 홈 맨 아래에 둔다 (v3.55.0): 처음 온 사람은 소개·기능·추천 순위를 먼저 읽어야 하고,
+  // 소식은 이미 쓰는 사람이 마지막에 훑는 것이라 자리를 앞에서 뺏으면 안 된다
+  const updates = typeof homeUpdatesNode === 'function' ? homeUpdatesNode() : '';
   $content.append(el('div', { class: 'home-dashboard' },
     hero,
     features,
@@ -163,6 +167,7 @@ function renderServiceHome() {
         el('h3', {}, '용도별 상위 포켓몬'),
         el('span', {}, '평가 조건에 따라 추천이 달라져요', dataDate ? el('span', { class: 'home__date' }, ' · ', `기준일 ${dataDate}`) : '')),
       el('div', { class: 'home__pick-grid' }, ...pickGroups),
-      el('span', { class: 'pick__foot' }, '이름을 누르면 종족값·상성·활용처를 전부 볼 수 있어요'))] : [])));
+      el('span', { class: 'pick__foot' }, '이름을 누르면 종족값·상성·활용처를 전부 볼 수 있어요'))] : []),
+    updates));
   $note.textContent = '뭘 키울지 여기서 정해요. 도감에서 포켓몬을 알아보고, 랭킹에서 추천 개체를 고른 뒤, 육성 플래너에 내 개체를 기록하면 돼요.';   // v3.13.0 '상성' 화면은 v2.63.0 에 접었다
 }

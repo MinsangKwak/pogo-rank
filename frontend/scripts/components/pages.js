@@ -463,11 +463,15 @@ const PAGES = {
   raids: { title: '⚔️ 레이드 보스', render: renderRaidsPage },  // 2026-09-08 v2.25.0 지금 도는 티어별 보스 (components/gameday.js)
   eggs: { title: '🥚 알 부화', render: renderEggsPage },                 // 2026-09-08 v2.25.0 거리별 부화 풀 (components/gameday.js)
   finder: { title: '🔎 검색식 만들기', render: renderFinderPage },
+  // 2026-09-16 v3.51.0 📢 게임 업데이트 — 목록과 상세가 같은 라우트다 (주소 뒷자리로 갈린다, components/updates.js)
+  'game-updates': { title: '📢 게임 업데이트', render: renderGameUpdatesPage },
   settings: { title: '🛠 설정', render: renderSettingsPage },                 // 2026-09-12 v3.11.0 화면 테마 · 계정 저장        // 2026-09-11 v2.58.0 게임 검색창에 붙여 넣을 식 (백로그 QA-57)
 };
 
 // 2026-09-16 v3.48.0 지연 데이터(GAMEDAY · MOVE_CHANGES)로 그리는 화면 — renderPage 가 도착을 기다린다
-const LAZY_DATA_PAGES = new Set(['raids', 'eggs', 'changes']);
+// 2026-09-16 v3.54.0 game-updates: 아카이브 색인(GAME_ARCHIVE)이 지연분에 있다 — 기사(GAME_UPDATES)는 core 라
+// 자료가 늦어도 기사는 먼저 보인다. 이 표에 넣는 이유는 **아카이브까지 갖춘 목록**을 그리기 위해서다
+const LAZY_DATA_PAGES = new Set(['raids', 'eggs', 'changes', 'game-updates']);
 
 // 현재 해시가 가리키는 전체 페이지 id. 페이지가 아니면 null = 메인 화면.
 // 2026-09-08 v2.30.0 주소 해석은 router.js 한 곳이 한다 — 여기서 정규식을 또 쓰지 않는다

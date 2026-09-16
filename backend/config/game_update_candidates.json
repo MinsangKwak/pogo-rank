@@ -1,0 +1,127 @@
+{
+  "_comment": [
+    "자동 수집한 **후보** 목록이다 (scripts/collect_game_updates.py).",
+    "이 파일은 게시물이 아니다 — 사람이 읽고 판단해 backend/config/game_updates.json 에",
+    "editorialStatus=published 로 옮겨 적어야 화면에 나간다.",
+    "changeLines 는 공식 원문에서 \"규칙이 바뀐 것으로 보이는\" 줄을 그대로 옮긴 것이다. 요약이 아니다."
+  ],
+  "collectedAt": "2026-09-16",
+  "candidates": [
+    {
+      "slug": "helpshift-5523",
+      "kind": "release-note",
+      "title": "일부 트레이너들이 구매하지 않은 아바타 아이템을 착용할 수 없는 현상",
+      "snippet": "문제 설명: 다른 문제 관련 임시 조치가 진행된 후 일부 트레이너들이 포켓코인으로 구매하지 않아도 프리미엄 아바타 아이템을 착용할 수 있는 오류가 발생했습니다. 관련 아바타 아이템들은 유저의 아이템 가방에 추가되지 않았습니다. 다른 문제에 대한 정식 ...",
+      "announcedAt": "",
+      "sources": [
+        {
+          "lang": "ko",
+          "label": "일부 트레이너들이 구매하지 않은 아바타 아이템을 착용할 수 없는 현상",
+          "url": "https://niantic.helpshift.com/hc/ko/6-pokemon-go/faq/5523-some-trainers-lost-access-to-unpaid-avatar-items/",
+          "image": ""
+        },
+        {
+          "lang": "en",
+          "label": "Some Trainers lost access to unpaid avatar items",
+          "url": "https://niantic.helpshift.com/hc/en/6-pokemon-go/faq/5523-some-trainers-lost-access-to-unpaid-avatar-items/",
+          "image": ""
+        }
+      ],
+      "changeLines": {
+        "ko": [
+          "문제 설명: 다른 문제 관련 임시 조치가 진행된 후 일부 트레이너들이 포켓코인으로 구매하지 않아도 프리미엄 아바타 아이템을 착용할 수 있는 오류가 발생했습니다. 관련 아바타 아이템들은 유저의 아이템 가방에 추가되지 않았습니다. 다른 문제에 대한 정식 ..."
+        ],
+        "en": [
+          "Issue description: Following a recent mitigation for an unrelated issue, a small subset of Trainers were temporarily able to equip premium a..."
+        ]
+      }
+    },
+    {
+      "slug": "helpshift-5521",
+      "kind": "release-note",
+      "title": "Incubators unavailable for purchase in Brazil",
+      "snippet": "Issue Description: In Brazil, paid Incubators and Super Incubators are unavailable for individual purchase. This change was made to ensure t...",
+      "announcedAt": "",
+      "sources": [
+        {
+          "lang": "ko",
+          "label": "Incubators unavailable for purchase in Brazil",
+          "url": "https://niantic.helpshift.com/hc/ko/6-pokemon-go/faq/5521-incubators-unavailable-for-purchase-in-brazil/",
+          "image": ""
+        },
+        {
+          "lang": "en",
+          "label": "Incubators unavailable for purchase in Brazil",
+          "url": "https://niantic.helpshift.com/hc/en/6-pokemon-go/faq/5521-incubators-unavailable-for-purchase-in-brazil/",
+          "image": ""
+        }
+      ],
+      "changeLines": {
+        "ko": [
+          "Issue Description: In Brazil, paid Incubators and Super Incubators are unavailable for individual purchase. This change was made to ensure t..."
+        ],
+        "en": [
+          "Issue Description: In Brazil, paid Incubators and Super Incubators are unavailable for individual purchase. This change was made to ensure t..."
+        ]
+      }
+    },
+    {
+      "slug": "helpshift-5283",
+      "kind": "release-note",
+      "title": "스탬프 랠리 포켓몬의 포획을 종료하면 포켓몬 포획 보상이 사라지는 문제",
+      "snippet": "문제 설명: 스탬프를 수집한 후 포켓몬을 바로 포획하지 않고 포획 보상을 종료하면 포켓몬 포획 보상이 사라지는 문제가 확인되었습니다.만약 이미 관련 장소에서 떠나셔서 포획을 진행하지 못하신다면 고객센터에 문의해주세요.일시적인 문제 해결 방법: 스탬프 ...",
+      "announcedAt": "",
+      "sources": [
+        {
+          "lang": "ko",
+          "label": "스탬프 랠리 포켓몬의 포획을 종료하면 포켓몬 포획 보상이 사라지는 문제",
+          "url": "https://niantic.helpshift.com/hc/ko/6-pokemon-go/faq/5283-exiting-the-stamp-rally-catch-encounter-appears-to-dismiss-the-pokemon-encounter/",
+          "image": ""
+        },
+        {
+          "lang": "en",
+          "label": "Exiting the Stamp Rally catch encounter appears to dismiss the Pokémon encounter.",
+          "url": "https://niantic.helpshift.com/hc/en/6-pokemon-go/faq/5283-exiting-the-stamp-rally-catch-encounter-appears-to-dismiss-the-pokemon-encounter/",
+          "image": ""
+        }
+      ],
+      "changeLines": {
+        "ko": [
+          "문제 설명: 스탬프를 수집한 후 포켓몬을 바로 포획하지 않고 포획 보상을 종료하면 포켓몬 포획 보상이 사라지는 문제가 확인되었습니다.만약 이미 관련 장소에서 떠나셔서 포획을 진행하지 못하신다면 고객센터에 문의해주세요.일시적인 문제 해결 방법: 스탬프 ..."
+        ],
+        "en": [
+          "Issue description: After collecting a Stamp Rally stamp, exiting the Pokémon reward encounter without catching the Pokémon will make it appe..."
+        ]
+      }
+    },
+    {
+      "slug": "helpshift-4172",
+      "kind": "release-note",
+      "title": "일부 트레이너에게 Amazon Prime 코드가 오류 메시지를 표시합니다.",
+      "snippet": "일부 트레이너에게 Amazon Prime 코드가 오류 메시지를 표시합니다. 문제 설명:  일부 트레이너는 Amazon Prime 코드를 청구하려고 할 때 오류 메시지가 나타납니다. 문제 상태:  조사 중입니다. 웹 브라우저나 기기를 변경하면 이 문제...",
+      "announcedAt": "",
+      "sources": [
+        {
+          "lang": "ko",
+          "label": "일부 트레이너에게 Amazon Prime 코드가 오류 메시지를 표시합니다.",
+          "url": "https://niantic.helpshift.com/hc/ko/6-pokemon-go/faq/4172-amazon-prime-codes-show-error-message-for-some-trainers/",
+          "image": ""
+        },
+        {
+          "lang": "en",
+          "label": "Amazon Prime codes show error message for some Trainers",
+          "url": "https://niantic.helpshift.com/hc/en/6-pokemon-go/faq/4172-amazon-prime-codes-show-error-message-for-some-trainers/",
+          "image": ""
+        }
+      ],
+      "changeLines": {
+        "ko": [
+          "일부 트레이너에게 Amazon Prime 코드가 오류 메시지를 표시합니다. 문제 설명:  일부 트레이너는 Amazon Prime 코드를 청구하려고 할 때 오류 메시지가 나타납니다. 문제 상태:  조사 중입니다. 웹 브라우저나 기기를 변경하면 이 문제..."
+        ],
+        "en": [
+          "Issue description: Some Trainers see an error message when trying to claim an Amazon Prime code.Issue status: Investigating. Changing your w..."
+        ]
+      }
+    }
+  ]
+}
