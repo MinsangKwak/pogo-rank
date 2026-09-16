@@ -38,6 +38,12 @@ const I18N_SKIP_TAGS = new Set(['SCRIPT', 'STYLE', 'NOSCRIPT', 'TEXTAREA']);
 // 번역할 속성 — 눈에 보이지 않아도 읽히는 글이다
 const I18N_ATTRS = ['aria-label', 'placeholder', 'title', 'alt', 'aria-placeholder'];
 
+// 2026-09-16 v3.46.0 이 두 줄은 i18n-en.js 에 있었는데 **핵심 쪽으로 옮겼다.**
+// 사전을 지연 묶음으로 뺐더니 부팅이 ReferenceError 로 죽었다 — 한국어로 첫 화면을 그릴 때도
+// i18nKstNote() 를 거치는 길이 있어서다. 둘 다 짧은 문자열이라 핵심에 둬도 비용이 없다
+const I18N_KO_ONLY_NOTE = 'This section is kept in Korean. The Korean text is the authoritative version.';
+const I18N_KST_NOTE = 'Dates and times follow the Korean server schedule (KST, UTC+9) and may differ in your region. This section is kept in Korean.';
+
 // 이름표는 처음 쓸 때 한 번만 뒤집는다 (DEX_DATA 가 크다 — 매번 훑으면 전환이 눈에 띄게 느려진다)
 let i18nNameMap = null;
 function i18nNames() {
@@ -221,6 +227,12 @@ function i18nKoOnlyNote(kind) {
 
 // 언어 전환. 화면 전체를 원문으로 되돌린 뒤 새 언어로 다시 훑는다
 function setLang(lang) {
+  // 2026-09-16 v3.46.0 영어 사전은 지연 묶음에 있다 (scripts/lazy.js). 아직 안 왔으면 받아서 **다시 부른다** —
+  // 없이 그대로 진행하면 EN 인데 한국어가 그대로 남는다. 받은 뒤에는 아래 본문이 정상으로 돈다
+  if (lang === 'en' && typeof I18N_EN === 'undefined' && typeof loadLazyBundle === 'function') {
+    loadLazyBundle().then(() => setLang('en'));
+    return;
+  }
   LANG = lang === 'en' ? 'en' : 'ko';
   try {
     localStorage.setItem(I18N_LANG_KEY, LANG);

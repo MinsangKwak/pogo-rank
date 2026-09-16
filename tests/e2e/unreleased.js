@@ -22,7 +22,7 @@
 //   - 도감의 미출시 메가가 딱지로 뜨되 흐린가 (메가 폭타)
 //   - 도감 줄에서 메가 딱지가 눕지 않는가 (PC 줄 모드 격자에 자리가 없어 '메/가' 로 세로로 눕던 자리)
 //   - EN 으로 바꿔도 한글이 남지 않는가
-const { launch, newContext, waitSplash, ok, finish, suite } = require('./_lib');
+const { toEnglish, launch, newContext, waitSplash, ok, finish, suite } = require('./_lib');
 const BASE = 'http://localhost:5503/?mock=1';
 
 suite(async () => {
@@ -310,7 +310,7 @@ suite(async () => {
 
   // ── 5. EN ────────────────────────────────────────────────────────────────
   await go('#/dmax');
-  await page.evaluate(() => setLang('en'));
+  await toEnglish(page);
   await page.waitForTimeout(600);
   const leftKo = await page.evaluate(() => {
     const scope = document.querySelector('#content').textContent + ' ' + (document.getElementById('note')?.textContent ?? '');

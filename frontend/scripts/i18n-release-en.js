@@ -15,6 +15,11 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 const RELEASE_NOTES_EN = {
+  '2026-09-16 · v3.46.0': [
+    '**The first screen is noticeably faster** — 22% less to download up front, and the wait before the first text appears dropped by more than half on a slow connection.',
+    '**Patch notes and the English dictionary load on demand** — the home screen never uses them, so they now follow afterwards.',
+    '**Repeat visits are faster** — the rendering code is a separate file now, so an unchanged release is not downloaded again.',
+  ],
   '2026-09-15 · v3.45.0': [
     '**The notice banner that appeared on arrival is gone** — it covered the bottom of the screen and got in the way of a first visit. You now land straight on the site.',
     '**Turning analytics off works exactly as before** — ☰ menu → analytics and storage settings, or the same entry at the bottom of the page. What is stored and what is sent is still written out in the privacy policy, and if you already turned it off it stays off.',

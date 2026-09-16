@@ -245,6 +245,9 @@ window.addEventListener('appinstalled', () => track('pwa_install'));
 initConsent();
 // 2026-09-03 자동 팝업 대신 새 패치노트 뱃지 (☰에 빨간 점)
 initReleaseBadge();
+// 2026-09-16 v3.46.0 첫 화면을 그린 뒤 한가할 때 지연 묶음(패치노트 본문·영어 사전)을 미리 받는다.
+// 미리 받아 두면 #/release 를 열거나 EN 으로 바꿀 때 기다림이 없고, 실패해도 한국어로는 멀쩡히 돈다 (scripts/lazy.js)
+prefetchLazyBundle();
 // 2026-09-04 시즌 기술 변경 안내: 변경 데이터가 있을 때만 메뉴에 항목이 뜬다
 initMoveChangesMenu();
 // 2026-09-10 v2.47.0 화면 테마 버튼(해·달). 저장된 값은 index.html 의 head 스크립트가 이미 붙였고,
