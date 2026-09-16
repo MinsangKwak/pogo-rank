@@ -74,7 +74,11 @@ function closeModal({ silent = false, keepEntry = false } = {}) {
   if (overlay) { overlay.close(); overlay.remove(); }
   syncScrollLock();   // 드로어가 아직 열려 있으면 잠금은 그대로 유지된다
   // 2026-09-06 v2.9.0 상세 딥링크(#/mon/…)를 열어 둔 채 닫으면 주소에서 해시만 지운다 (히스토리 항목 추가 없음)
-  if (overlay && /^#\/mon\//.test(location.hash) && !keepEntry) {
+  // 2026-09-16 v3.50.5 **자기 것일 때만**. 팝업이 떠 있는 채로 다른 #/mon/… 링크로 옮겨 가면 popstate 가 이 함수를
+  // 먼저 부르는데, 그때 주소는 이미 새 포켓몬의 것이다 — 접두어만 보고 지우면 새 상세가 열리기도 전에 주소가 비어
+  // 홈으로 떨어졌다. 껍데기의 data-sprite 와 맞는 해시만 지운다 (상세가 아닌 팝업은 예전대로)
+  const ownHash = overlay?.dataset.sprite ? `#/mon/${overlay.dataset.sprite}` : null;
+  if (overlay && /^#\/mon\//.test(location.hash) && !keepEntry && (!ownHash || location.hash === ownHash)) {
     try { history.replaceState(history.state, '', location.pathname + location.search); } catch {}
   }
   if (overlay && !keepEntry && !overlayVisible()) releaseOverlayEntry(silent);
@@ -101,8 +105,10 @@ document.addEventListener('keydown', (event) => { if (event.key === 'Escape' && 
 // 로 처음 들어오면 pages.js 가 app-shell.js 보다 먼저 이 함수를 부르는데, wideScreen 은 const 라
 // 선언되기 전에 참조하면(TDZ) typeof 로도 못 피하고 ReferenceError 가 난다. matchMedia 는 어디서 불러도 안전하다
 // 2026-09-09 v2.38.0 태블릿 1100px~ 부터 패널 — app-shell.css 의 같은 임계값(태블릿·PC 두 단계 공통)
+// 2026-09-16 v3.50.0 넓은 화면도 팝업이다 — 상세가 왼쪽 정보 고정 · 오른쪽 탭 전환의 두 열 팝업으로 바뀌면서
+// (components/detail.js 머리말) 420px 패널에는 들어가지 않는다. 패널 코드와 #detail-panel 마크업은 되돌릴 수 있게 남긴다
 function useDetailPanel() {
-  return window.matchMedia('(min-width: 1100px)').matches;
+  return false;
 }
 function openDetailPanel(content) {
   const panel = document.getElementById('detail-panel');

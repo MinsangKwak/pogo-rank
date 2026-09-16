@@ -143,6 +143,9 @@ function routeLocked(id) {
   if (lockOpenAll()) return false;
   // 2026-09-12 v3.16.0 잠시 써보기 중이면 잠그지 않는다 (components/trial.js) — 잠금을 정하는 자리가 여기 하나라 화면·메뉴·홈 타일이 함께 열린다
   if (typeof trialActive === 'function' && trialActive()) return false;
+  // 2026-09-16 v3.49.1 판정 중에는 잠그지 않는다 — 이 기기에 로그인 자취가 있을 때만 'loading' 이라 곧 열릴 화면이고,
+  // 잠갔다 여는 깜빡임은 "로그아웃됐다" 로 읽힌다 (components/auth.js authStoredUser)
+  if (typeof AUTH !== 'undefined' && AUTH.status === 'loading') return false;
   return typeof authEnabled === 'function' && authEnabled() && AUTH.status !== 'ok';
 }
 

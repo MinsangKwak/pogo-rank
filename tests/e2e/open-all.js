@@ -55,7 +55,7 @@ suite(async () => {
   ok('도감 목록 그림이 GIF 로 갈아 끼워진다', anim.anim > 0 && anim.gif, JSON.stringify(anim));
   await page.locator('#page .dex__row').first().click();
   await page.waitForTimeout(600);
-  ok('상세 그림도 움직인다', (await page.locator('#detail-panel .sprite-box img.sprite--anim').count()) === 1);
+  ok('상세 그림도 움직인다', (await page.locator('dialog.modal[open] .sprite-box img.sprite--anim').count()) === 1);
 
   // 2026-09-12 v3.19.0 움직이는 그림이 없는 종(오거폰 · 9세대)은 CSS 로 살짝 흔들었다 —
   // 2026-09-16 v3.48.1 뺐다. 수십 장이 제각각 움찔거려 어수선했다. 정지 그림은 정지 그대로여야 한다

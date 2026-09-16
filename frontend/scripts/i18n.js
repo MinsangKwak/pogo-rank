@@ -151,7 +151,7 @@ function translateTree(root) {
   // 텍스트 노드가 통째로 새로 붙는 경우(예: node.textContent = '...' 로 갈아 끼운 제목).
   // TreeWalker 는 뿌리 자신을 돌려주지 않으므로 여기서 직접 처리한다 — 안 그러면 그 줄만 한국어로 남는다
   if (root.nodeType === Node.TEXT_NODE) {
-    if (I18N_SKIP_TAGS.has(root.parentElement?.tagName) || root.parentElement?.closest('[data-i18n="off"]')) return;
+    if (I18N_SKIP_TAGS.has(root.parentElement?.tagName) || root.parentElement?.closest('[data-i18n="off"], [data-i18n="alt"]')) return;
     const source = root.__koText ?? root.data;
     if (!/[가-힣]/.test(source)) return;
     root.__koText = source;
@@ -162,6 +162,9 @@ function translateTree(root) {
   if (start) {
     for (const node of [start, ...start.querySelectorAll('*')]) {
       if (node.closest('[data-i18n="off"]')) continue;
+      // 2026-09-16 v3.50.5 data-i18n="alt" — 사전이 아니라 **반대 언어의 이름**을 보이는 칸 (상세의 영문명 줄).
+      // 한국어면 data-alt-ko(영문), 영어면 data-alt-en(한글). 안의 글자는 사전을 타지 않는다
+      if (node.dataset?.i18n === 'alt') { node.textContent = (LANG === 'en' ? node.dataset.altEn : node.dataset.altKo) ?? ''; continue; }
       for (const attribute of I18N_ATTRS) {
         if (!node.hasAttribute(attribute)) continue;
         // 원문은 dataset 이 아니라 요소에 직접 붙인다 — data-* 이름에는 '-' 가 든 속성명을 넣을 수 없다
@@ -173,7 +176,7 @@ function translateTree(root) {
     }
   }
   const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
-    acceptNode: (node) => (I18N_SKIP_TAGS.has(node.parentElement?.tagName) || node.parentElement?.closest('[data-i18n="off"]'))
+    acceptNode: (node) => (I18N_SKIP_TAGS.has(node.parentElement?.tagName) || node.parentElement?.closest('[data-i18n="off"], [data-i18n="alt"]'))
       ? NodeFilter.FILTER_REJECT : NodeFilter.FILTER_ACCEPT,
   });
   for (let node = walker.nextNode(); node; node = walker.nextNode()) {
@@ -199,7 +202,7 @@ function i18nWatch() {
       const target = record.target;
       if (record.type === 'characterData') {
         const source = target.data;
-        if (!/[가-힣]/.test(source) || I18N_SKIP_TAGS.has(target.parentElement?.tagName) || target.parentElement?.closest('[data-i18n="off"]')) continue;
+        if (!/[가-힣]/.test(source) || I18N_SKIP_TAGS.has(target.parentElement?.tagName) || target.parentElement?.closest('[data-i18n="off"], [data-i18n="alt"]')) continue;
         const translated = t(source);
         if (translated === source) continue;
         target.__koText = source;

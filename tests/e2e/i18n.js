@@ -123,6 +123,17 @@ suite(async () => {
   await page.waitForTimeout(600);
   const matchHeads = await page.locator('.detail .detail__match h3').allTextContents();
   ok('상세 약점·내성 제목이 영어', matchHeads.length === 2 && !matchHeads.some(hangul), matchHeads.join(' | '));
+  // 2026-09-16 v3.50.5 영문명 줄은 반대 언어 — 영어 화면에서는 이름이 Metagross, 그 아래가 메타그로스 (Metagross 가 두 번 서지 않는다).
+  // 아래 376 → 260 은 팝업이 떠 있는 채로 다른 #/mon/… 으로 옮겨 가는 길 — 그 상세가 열려야 한다 (modal.js closeModal ownHash)
+  await page.keyboard.press('Escape');
+  await page.waitForTimeout(300);
+  await go('#/mon/376');
+  await page.waitForTimeout(600);
+  const enName = (await page.locator('.detail__info h2').textContent().catch(() => '')) || '';
+  const enSub = (await page.locator('.detail__en-inline').textContent().catch(() => '')) || '';
+  ok('영어 화면: 이름 Metagross · 아래 줄 메타그로스', enName === 'Metagross' && enSub === '메타그로스', `${enName} / ${enSub}`);
+  await go('#/mon/260');
+  await page.waitForTimeout(600);
   const cpFoot = await page.locator('.detail .detail__foot').allTextContents();
   ok('상세 각주가 영어', cpFoot.length > 0 && !cpFoot.some(hangul), cpFoot.filter(hangul).join(' | ').slice(0, 100));
   await go('#/dmax');

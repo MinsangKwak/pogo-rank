@@ -127,6 +127,9 @@ function planLevelFromCp(form, ivs, cp) {
 // ── 저장 ──────────────────────────────────────────────────────────────────────
 // 낙관적 갱신: AUTH.mons 를 먼저 바꾸고 화면을 그린 뒤 Firestore 에 쓴다. 실패는 조용히(규칙이 막는 경우 등)
 async function planPersist() {
+  // 2026-09-16 v3.49.1 로그인 판정이 끝나기를 먼저 기다린다 — 'loading' 중에 쓰면 계정이 아니라
+  // 손님 저장소(plan_guest_mons)로 샌다. 새로고침 직후 몇 초가 그 창이었다 (components/auth.js)
+  if (typeof authSettled === 'function' && AUTH.status === 'loading') await authSettled();
   if (!authEnabled() || AUTH.status !== 'ok' || !AUTH.db || !AUTH.user) { try { localStorage.setItem('plan_guest_mons', JSON.stringify(planMons())); } catch {} return; }
   const fieldValue = firebase.firestore.FieldValue;
   await AUTH.db.collection('users').doc(AUTH.user.uid).set({
