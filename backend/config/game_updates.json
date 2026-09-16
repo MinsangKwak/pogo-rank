@@ -1,0 +1,143 @@
+{
+  "_comment": [
+    "Pokémon GO 게임 업데이트 — 편집 원본 (2026-09-16 v3.51.0).",
+    "이 파일이 기사 한 벌의 원본이고, backend/build.py 가 검증한 뒤 editorialStatus='published' 인 것만",
+    "GAME_UPDATES 로 내보낸다. draft/review 는 빌드에 실리지 않는다 — 확인 대기 글이 공개되지 않게.",
+    "",
+    "쓰는 법: 공식 원문을 먼저 확보하고(sources), 전후 차이를 직접 대조한 뒤 published 로 올린다.",
+    "모르는 값은 지어내지 않는다 — beforeAfter.before 를 비우면 화면에 '이전 값 미확인' 이라고 적힌다.",
+    "",
+    "필드",
+    "  editorialStatus  draft | review | published | withdrawn   (published 만 빌드에 실린다)",
+    "  evidenceStatus   official | observed | pending           무엇으로 확인했는가",
+    "  rolloutStatus    planned | rolling | live | withdrawn | unknown   게임에 언제 적용되는가",
+    "  moncampImpact    none | check | done                     moncamp 계산·추천에 반영됐는가",
+    "  category         gym | raid | pvp | catch | reward | bugfix  (여러 개 허용)",
+    "  featured         홈의 주요 소식 후보 (최대 3건까지 노출)"
+  ],
+  "articles": [
+    {
+      "id": "gbl-mega-twilight-trails",
+      "title": "메가진화 포켓몬이 GO배틀리그에 참가합니다",
+      "summary": "\"황혼의 여정\" 시즌부터 메가진화 포켓몬이 GO배틀리그에 참가해요. 슈퍼·하이퍼·마스터리그의 메가 버전이 시즌 일정에 들어갔고, 앞으로의 시즌에도 이어집니다.",
+      "category": ["pvp"],
+      "editorialStatus": "published",
+      "evidenceStatus": "official",
+      "rolloutStatus": "live",
+      "moncampImpact": "check",
+      "featured": true,
+      "announcedAt": "2026-08-31",
+      "effectiveAt": "2026-09-09",
+      "effectiveNote": "한국시간 2026년 9월 9일 05:00 시즌 시작",
+      "checkedAt": "2026-09-16",
+      "key": [
+        "메가진화 포켓몬이 GO배틀리그에 참가할 수 있게 됐어요. 이번 시즌만이 아니라 앞으로의 시즌에도 이어집니다.",
+        "슈퍼·하이퍼·마스터리그의 \"메가 버전\"이 시즌 일정에 번갈아 들어가요.",
+        "메가진화 포켓몬의 CP를 배틀 중에만 낮춰 주는 변경은 \"가까운 시일 내\"로만 예고돼 적용 시점이 밝혀지지 않았어요."
+      ],
+      "beforeAfter": [
+        {
+          "label": "GO배틀리그 참가",
+          "before": "메가진화 포켓몬은 참가할 수 없었어요",
+          "after": "\"황혼의 여정\" 시즌부터 참가합니다"
+        },
+        {
+          "label": "리그 일정",
+          "before": "슈퍼 · 하이퍼 · 마스터리그",
+          "after": "메가 버전 리그가 시즌 일정에 함께 돌아가요"
+        },
+        {
+          "label": "추가 스페셜 어택",
+          "before": "",
+          "after": "\"Pokémon GO Fest: 메가 피날레\"부터 특정 메가진화 포켓몬이 메가레벨과 관계없이 쓸 수 있어요"
+        },
+        {
+          "label": "메가 CP 일시 감소",
+          "before": "없음",
+          "after": "배틀 중에만 CP를 낮춰 슈퍼·하이퍼리그 메가 버전에 참가 (적용 시점 미확인)"
+        }
+      ],
+      "playerImpact": [
+        "메가진화를 해 둔 포켓몬을 배틀에도 쓸 수 있어요 — 레이드 전용이라고 생각해 아껴 둘 이유가 줄었어요.",
+        "메가 버전 리그가 도는 주에는 상대 덱에 메가가 섞여 나올 수 있어요.",
+        "CP 일시 감소는 아직 예고 단계라, 지금 슈퍼·하이퍼리그 메가 버전에 넣을 개체를 CP 기준으로 미리 맞추기는 일러요."
+      ],
+      "suggestedActions": [
+        "이번 주 리그가 메가 버전인지 시즌 일정에서 확인하세요.",
+        "메가진화 상태는 시간이 지나면 풀리니 배틀 직전 상태를 확인하세요."
+      ],
+      "moncampNote": "moncamp 의 PvP 순위는 PvPoke 평가를 그대로 옮긴 표라 메가진화 포켓몬이 한 마리도 들어 있지 않아요(슈퍼·하이퍼·마스터·리틀 각 40위 확인). 리그에서 실제로 쓰이는데 순위표에는 없는 상태라 점검이 필요합니다.",
+      "related": ["pvp", "ivrank"],
+      "sources": [
+        { "lang": "ko", "label": "\"GO배틀리그: 황혼의 여정\" 최신 소식 (공식)", "url": "https://pokemongo.com/ko/news/go-battle-league-twilight-trails" },
+        { "lang": "en", "label": "GO Battle League: Twilight Trails Update (official)", "url": "https://pokemongo.com/en/news/go-battle-league-twilight-trails" }
+      ],
+      "revisions": []
+    },
+    {
+      "id": "gbl-thursday-10-sets",
+      "title": "GO배틀리그 썰스데이에는 하루 10세트까지",
+      "summary": "목요일 \"데일리 디스커버리\" 에는 하루 배틀 세트가 5회에서 10회로 늘어 총 50회까지 싸울 수 있어요. 승리 리워드의 별의모래도 최대 4배가 됩니다.",
+      "category": ["pvp", "reward"],
+      "editorialStatus": "published",
+      "evidenceStatus": "official",
+      "rolloutStatus": "live",
+      "moncampImpact": "none",
+      "featured": true,
+      "announcedAt": "2026-08-31",
+      "effectiveAt": "2026-09-09",
+      "effectiveNote": "\"황혼의 여정\" 시즌 동안 매주 목요일 한국시간 00:00~23:59",
+      "checkedAt": "2026-09-16",
+      "key": [
+        "목요일에는 하루 최대 세트가 5회에서 10회로 늘어요 — 총 50회 배틀입니다.",
+        "그날 승리 리워드의 별의모래가 최대 4배가 돼요 (세트 종료 리워드는 해당 없음).",
+        "시즌 내내 매주 목요일에 돌아옵니다."
+      ],
+      "beforeAfter": [
+        { "label": "하루 최대 세트", "before": "5회 (25배틀)", "after": "10회 (50배틀) · 목요일 한정" },
+        { "label": "승리 리워드 별의모래", "before": "기본", "after": "최대 4배 (세트 종료 리워드 제외)" }
+      ],
+      "playerImpact": [
+        "별의모래를 모으는 날을 목요일로 몰아 두면 같은 시간에 두 배를 싸울 수 있어요.",
+        "랭크를 올리려는 주에는 목요일에 세트를 남겨 두는 편이 유리해요."
+      ],
+      "suggestedActions": [
+        "목요일 자정 전에 남은 세트를 확인하세요 — 날짜가 바뀌면 초기화돼요."
+      ],
+      "moncampNote": "",
+      "related": ["pvp"],
+      "sources": [
+        { "lang": "ko", "label": "\"GO배틀리그: 황혼의 여정\" 최신 소식 (공식)", "url": "https://pokemongo.com/ko/news/go-battle-league-twilight-trails" },
+        { "lang": "en", "label": "GO Battle League: Twilight Trails Update (official)", "url": "https://pokemongo.com/en/news/go-battle-league-twilight-trails" }
+      ],
+      "revisions": []
+    },
+    {
+      "id": "gym-defense-2026-09",
+      "title": "체육관 방어 변경 제보 — 확인 대기",
+      "summary": "\"이번 주 체육관 방어 시스템이 바뀐 것 같다\" 는 제보입니다. 2026-09-16 조사에서 공식 원문·적용일·세부 수치를 특정하지 못해 공개하지 않습니다. 변경이 없었다는 뜻은 아닙니다.",
+      "category": ["gym"],
+      "editorialStatus": "draft",
+      "evidenceStatus": "pending",
+      "rolloutStatus": "unknown",
+      "moncampImpact": "none",
+      "featured": false,
+      "announcedAt": "",
+      "effectiveAt": "",
+      "effectiveNote": "",
+      "checkedAt": "2026-09-16",
+      "key": [
+        "확인할 것: 방어 행동·기술 사용·의욕·보상 중 무엇이 바뀌었는가.",
+        "확인할 것: 이전·이후 조건과 적용 지역·시각.",
+        "확인할 것: 일시적인 오류인가, 의도한 변경인가."
+      ],
+      "beforeAfter": [],
+      "playerImpact": [],
+      "suggestedActions": [],
+      "moncampNote": "",
+      "related": [],
+      "sources": [],
+      "revisions": []
+    }
+  ]
+}

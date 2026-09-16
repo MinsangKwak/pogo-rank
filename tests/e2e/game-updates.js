@@ -1,0 +1,160 @@
+'use strict';
+// v3.51.0 📢 게임 업데이트 회귀 — 게임 쪽 변경을 모아 읽는 상설 창구 (components/updates.js)
+//
+// 이 스위트가 지키려는 것
+//   - **확인 대기 글이 공개 빌드에 없다** — editorialStatus 가 published 가 아닌 글은 빌드가 걸러야 한다.
+//     이 검사가 이 화면에서 가장 중요하다: 검증 안 된 소식을 내보내는 것이 이 기능의 유일한 큰 사고다
+//   - 공개된 글에는 출처 · 발표일 · 근거/적용 상태가 빠짐없이 있다
+//   - 메뉴와 홈에서 들어갈 수 있고, 목록 → 상세 한 단계로 원문까지 닿는다
+//   - 목록에서 검색 · 분류 · 기간으로 좁혀지고, 결과 없음이 잘못된 내용을 만들지 않는다
+//   - 상세를 보고 뒤로 오면 검색·분류가 그대로다 (기획: 복귀 시 탐색 상태 유지)
+//   - 없는 글 주소(#/game-updates/없는id)로 들어가도 빈 화면·오류가 아니라 안내가 뜬다
+//   - 이전 값을 모르는 항목은 지어내지 않고 '이전 값 미확인' 으로 적힌다
+//   - 게임 업데이트 · 이벤트 일정 · moncamp 패치노트가 메뉴에서 서로 다른 화면으로 갈린다
+//   - 영어로 볼 때 화면 뼈대가 번역되고, 본문이 한국어로 남는다는 안내가 보인다
+const { launch, newContext, waitSplash, ok, finish, suite, toEnglish } = require('./_lib');
+const BASE = 'http://localhost:5503/?mock=1';
+
+suite(async () => {
+  const browser = await launch();
+  const ctx = await newContext(browser, { viewport: { width: 390, height: 900 } });
+  ctx.setDefaultTimeout(8000);
+  const page = await ctx.newPage();
+  const errs = [];
+  page.on('pageerror', (e) => errs.push(String(e)));
+
+  const go = async (hash) => {
+    await page.goto(BASE + hash, { waitUntil: 'domcontentloaded' });
+    await waitSplash(page);
+    await page.waitForTimeout(500);
+  };
+  const cards = () => page.locator('.upd__cards:not(.upd__cards--top) .upd__card');
+
+  // ── 빌드가 무엇을 실었나 — 화면보다 먼저 데이터를 본다
+  await go('#/game-updates');
+  const data = await page.evaluate(() => (typeof GAME_UPDATES === 'undefined' ? null : GAME_UPDATES));
+  ok('GAME_UPDATES 가 빌드에 실렸다', Array.isArray(data) && data.length > 0, String(data && data.length));
+  ok('공개 빌드에 확인 대기·초안 글이 없다',
+    data.every((article) => article.editorialStatus === 'published'),
+    data.filter((article) => article.editorialStatus !== 'published').map((article) => article.id).join(','));
+  ok('공개 글은 모두 공식 출처를 갖는다',
+    data.every((article) => article.evidenceStatus === 'official' && (article.sources || []).length > 0),
+    data.filter((article) => !(article.sources || []).length).map((article) => article.id).join(','));
+  ok('공개 글은 모두 발표일이 있다', data.every((article) => /^\d{4}-\d{2}-\d{2}$/.test(article.announcedAt || '')));
+  ok('출처는 모두 https', data.every((article) => (article.sources || []).every((source) => source.url.startsWith('https://'))));
+  // 편집 원본에는 초안이 있는데 빌드에 안 실렸다 — 거르는 자리가 실제로 동작한다는 뜻
+  ok('초안(체육관 방어 제보)은 주소로도 못 연다',
+    !data.some((article) => article.id === 'gym-defense-2026-09'));
+
+  // ── 목록 화면
+  // 화면 머리는 라우터의 메뉴 이름을 쓴다 (PAGES.title 의 이모지는 다른 자리에서 쓰인다)
+  ok('화면 제목', (await page.locator('#page-head h2').textContent()) === '게임 업데이트');
+  const listCount = await cards().count();
+  ok('목록에 공개 글이 전부 보인다', listCount === data.length, `${listCount} vs ${data.length}`);
+  const firstTitle = await cards().first().locator('.upd__title').textContent();
+  ok('카드에 제목·요약·상태·날짜', !!firstTitle
+    && (await cards().first().locator('.upd__summary').count()) === 1
+    && (await cards().first().locator('.upd__badge').count()) > 0
+    && (await cards().first().locator('.upd__dates b').count()) > 0, firstTitle);
+
+  // ── 검색 · 분류 · 기간
+  await page.fill('.upd__search', '메가');
+  await page.waitForTimeout(250);
+  const hitTitles = await cards().locator('.upd__title').allTextContents();
+  ok('검색어로 좁혀진다', hitTitles.length > 0 && hitTitles.every((title) => /메가/.test(title)) && hitTitles.length < data.length,
+    hitTitles.join(' | '));
+  await page.fill('.upd__search', '있을 리 없는 말 zzzz');
+  await page.waitForTimeout(250);
+  ok('없으면 안내가 뜬다 (빈 화면이 아니다)', (await cards().count()) === 0 && (await page.locator('.upd__cards .dex__hint').count()) === 1);
+  await page.fill('.upd__search', '');
+  await page.waitForTimeout(250);
+  ok('검색어를 지우면 되돌아온다', (await cards().count()) === data.length);
+
+  await page.locator('.upd__filter .uchip', { hasText: '체육관' }).first().click();
+  await page.waitForTimeout(250);
+  ok('분류로 좁힌다 — 체육관 글은 공개된 것이 없다', (await cards().count()) === 0);
+  await page.locator('.upd__filter .uchip', { hasText: 'PvP' }).first().click();
+  await page.waitForTimeout(250);
+  const pvpCount = await cards().count();
+  ok('PvP 분류는 있다', pvpCount > 0, String(pvpCount));
+  await page.locator('.upd__filter .uchip', { hasText: '전체 분류' }).first().click();
+  await page.waitForTimeout(250);
+  ok('전체 분류로 되돌아온다', (await cards().count()) === data.length);
+  await page.locator('.upd__filter .uchip', { hasText: '최근 7일' }).first().click();
+  await page.waitForTimeout(250);
+  const recent = await cards().count();
+  ok('기간으로 좁힌다 (최근 7일)', recent <= data.length, `${recent}/${data.length}`);
+  await page.locator('.upd__filter .uchip', { hasText: '전체' }).first().click();
+  await page.waitForTimeout(250);
+
+  // ── 목록 → 상세 → 뒤로: 탐색 상태가 남는가
+  await page.fill('.upd__search', '메가');
+  await page.waitForTimeout(250);
+  await cards().first().click();
+  await page.waitForTimeout(600);
+  ok('상세 주소는 #/game-updates/<id>', /^#\/game-updates\/[a-z0-9-]+$/.test(await page.evaluate(() => location.hash)),
+    await page.evaluate(() => location.hash));
+  const secs = await page.locator('.upd__sec > h3').allTextContents();
+  ok('상세 차례 — 핵심 → 전후 → 영향 → 확인 → 반영 → 관련 → 원문',
+    secs[0] === '핵심 요약' && secs.includes('변경 전 · 후') && secs.includes('플레이에 미치는 영향') && secs.at(-1) === '공식 원문',
+    secs.join(' | '));
+  const source = await page.locator('.upd__sources a').first();
+  ok('원문 링크가 공식 주소로 나간다', (await source.getAttribute('href')).startsWith('https://pokemongo.com/'),
+    await source.getAttribute('href'));
+  ok('원문은 새 탭으로 (읽던 자리를 잃지 않게)', (await source.getAttribute('target')) === '_blank'
+    && /noopener/.test((await source.getAttribute('rel')) || ''));
+  ok('이전 값을 모르는 항목은 지어내지 않는다', (await page.locator('.upd__ba-none').first().textContent()) === '이전 값 미확인');
+  ok('moncamp 반영 상태를 따로 적는다', (await page.locator('.upd__impact').count()) === 1);
+  await page.locator('.upd__back').click();
+  await page.waitForTimeout(600);
+  ok('뒤로 오면 검색어가 그대로', (await page.inputValue('.upd__search')) === '메가' && (await cards().count()) < data.length);
+  await page.fill('.upd__search', '');
+  await page.waitForTimeout(200);
+
+  // ── 없는 글 주소
+  await go('#/game-updates/there-is-no-such-post');
+  ok('없는 글은 안내로 받는다 (오류·빈 화면이 아니다)',
+    (await page.locator('#page-game-update .dex__hint').count()) === 1 && (await page.locator('.upd__back').count()) === 1);
+  await page.locator('.upd__back').click();
+  await page.waitForTimeout(500);
+  ok('안내에서 목록으로 돌아온다', await page.evaluate(() => location.hash) === '#/game-updates');
+
+  // ── 홈 · 메뉴 진입
+  await go('');
+  const homeItems = page.locator('.home-updates__item');
+  ok('홈에 주요 소식이 최대 3건', (await homeItems.count()) > 0 && (await homeItems.count()) <= 3, String(await homeItems.count()));
+  await homeItems.first().click();
+  await page.waitForTimeout(600);
+  ok('홈 카드를 누르면 그 글이 열린다', /^#\/game-updates\/[a-z0-9-]+$/.test(await page.evaluate(() => location.hash)));
+  await go('');
+  await page.locator('.home-updates__all').click();
+  await page.waitForTimeout(600);
+  ok('홈 [전체 보기]로 목록', await page.evaluate(() => location.hash) === '#/game-updates');
+
+  await page.click('#menu-toggle');
+  await page.waitForTimeout(400);
+  const menu = await page.locator('.nav-menu .drawer__label').allTextContents();
+  ok('메뉴에 게임 업데이트 · 이벤트 일정이 따로 있다',
+    menu.includes('게임 업데이트') && menu.includes('이벤트 일정'), menu.join(' | '));
+  await page.locator('.nav-menu a:has-text("게임 업데이트")').first().click();
+  await page.waitForTimeout(700);
+  ok('메뉴로 이동', await page.evaluate(() => location.hash) === '#/game-updates');
+
+  // ── 영어
+  await toEnglish(page);
+  await page.waitForTimeout(500);
+  const hangul = (text) => /[가-힣]/.test(text || '');
+  ok('화면 제목이 영어', !hangul(await page.locator('#page-head h2').textContent()),
+    await page.locator('#page-head h2').textContent());
+  const chips = await page.locator('.upd__filter .uchip').allTextContents();
+  ok('분류·기간 칩이 영어', !chips.some(hangul), chips.join(' | '));
+  const badges = await page.locator('.upd__badge').allTextContents();
+  ok('상태 알약이 영어', badges.length > 0 && !badges.some(hangul), badges.join(' | '));
+  const dateLabels = await page.locator('.upd__date em').allTextContents();
+  ok('날짜 라벨이 영어 (뒤 공백 없는 제 노드)', dateLabels.length > 0 && !dateLabels.some(hangul), dateLabels.join(' | '));
+  // 홈에도 같은 안내가 있으므로(감춰진 채) 지금 보고 있는 화면 안의 것만 본다
+  ok('본문이 한국어로 남는다는 안내', await page.locator('#page .i18n-note').first().isVisible());
+
+  ok('페이지 오류 없음', errs.length === 0, errs.join(' | ').slice(0, 200));
+  await finish(browser);
+});

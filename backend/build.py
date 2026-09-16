@@ -40,7 +40,7 @@ from names import name_ko, species, FORM_KO
 import guard
 
 # ── 설정 ─────────────────────────────────────────────────────────────────────
-APP_VERSION = 'v3.50.5'  # 접힌 머리 순서 — [타입][#번호] · 이름 · 영문명 (v3.25.0 은 feature-advertisement 브랜치에 예약)
+APP_VERSION = 'v3.51.0'  # 📢 게임 업데이트 신설 · 상세 팝업 배지 줄 세로 가운데 (v3.25.0 은 feature-advertisement 브랜치에 예약)
 # 2026-09-14 v3.28.0 index.html 의 색인 허용 줄 — dev 빌드가 이 줄을 noindex 로 바꿔 끼운다
 ROBOTS_INDEX_META = '<meta name="robots" content="index, follow, max-image-preview:large">'
 # 2026-09-05 v2.7.3 빌드 채널 — 'prod'(기본) / 'dev'. dev 브랜치 워크플로(.github/workflows/deploy-dev.yml)가 BUILD_CHANNEL=dev 로 부른다.
@@ -159,6 +159,7 @@ STYLES = [
     'components/list.css',
     'components/finder.css', 'components/ivrank.css', 'components/tag.css', 'components/modal.css', 'components/search.css', 'components/drawer.css', 'components/pages.css',
     'components/planner.css',  # 2026-09-07 v2.15.0 🌱 플래너 모드 (QA-53·54)
+    'components/updates.css',  # 2026-09-16 v3.51.0 📢 게임 업데이트
     'components/consent.css',
     'components/trial.css',    # 2026-09-12 v3.16.0 잠시 써보기 배지·버튼
     'components/app-shell.css',
@@ -177,7 +178,7 @@ SCRIPTS = [
     'components/list.js', 'components/chips.js', 'components/seg.js',
     'components/history.js', 'components/modal.js', 'components/auth.js', 'components/detail.js',  # 2026-09-03 v2.2.0 auth: 로그인·즐겨찾기 (detail보다 먼저) · 2026-09-06 v2.11.0 history: 뒤로가기가 팝업·드로어를 닫게 (modal·drawer 가 사용)
     'components/schedule.js', 'components/release.js', 'components/terms.js', 'components/privacy.js', 'components/consent.js', 'components/search.js', 'components/drawer.js',  # 2026-09-07 v2.18.0 terms: 약관·동의 팝업·IP 고지 (privacy·auth 가 사용) · consent: GA 동의 배너  # 2026-09-02 9월 일정표 달력 · 업데이트 팝업
-    'components/favs.js', 'components/gameday.js', 'components/finder.js', 'components/ivrank.js',  # 2026-09-11 v2.58.0 finder: 🔎 검색식 만들기 (pages 가 PAGES 에 등록하므로 그 앞) # 2026-09-05 favs: ★ 즐겨찾기 페이지 · 2026-09-08 gameday: ⚔️ 레이드 보스 · 🥚 알 부화 (pages가 PAGES에 등록하므로 그 앞)
+    'components/favs.js', 'components/gameday.js', 'components/finder.js', 'components/ivrank.js', 'components/updates.js',  # 2026-09-16 v3.51.0 updates: 📢 게임 업데이트 (pages 가 PAGES 에 등록하므로 그 앞)  # 2026-09-11 v2.58.0 finder: 🔎 검색식 만들기 (pages 가 PAGES 에 등록하므로 그 앞) # 2026-09-05 favs: ★ 즐겨찾기 페이지 · 2026-09-08 gameday: ⚔️ 레이드 보스 · 🥚 알 부화 (pages가 PAGES에 등록하므로 그 앞)
     'planner/shell.js', 'planner/home.js', 'planner/collection.js',  # 2026-09-07 v2.15.0 🌱 플래너 모드 (QA-53 셸 · QA-54 내 포켓몬) — pages.js 가 #/plan 라우팅에 쓰므로 그 앞
     # 2026-09-12 v3.11.0 theme 는 pages 보다 **앞**이어야 한다. pages.js 는 파일 끝에서 renderPage() 를
     # 한 번 부르는데, 주소가 #/settings 면 그 순간 settings.js 가 THEME_ORDER(const)를 읽는다.
@@ -463,8 +464,71 @@ def apply_rank_delta(tables):
     return rank_delta_date, rank_fresh_days
 
 
+# ── 게임 업데이트 기사 (2026-09-16 v3.51.0) ──────────────────────────────────
+#
+# 편집 원본은 backend/config/game_updates.json 한 벌이고, 여기서 **검증한 뒤 published 만** 내보낸다.
+# 수집·빌드가 성공했다고 게시 승인이 되는 것이 아니다 — 확인 대기 글(draft·review)은 공개 빌드에
+# 들어가지 않아야 한다. 그래서 거르는 자리를 화면이 아니라 빌드에 둔다: 안 실린 글은 열 방법이 없다.
+#
+# 검사에서 하나라도 걸리면 빌드를 세운다(예외). 잘못된 기사가 조용히 나가는 것보다 낫다.
+GAME_UPDATE_CATEGORIES = {'gym', 'raid', 'pvp', 'catch', 'reward', 'bugfix'}
+GAME_UPDATE_EDITORIAL = {'draft', 'review', 'published', 'withdrawn'}
+GAME_UPDATE_EVIDENCE = {'official', 'observed', 'pending'}
+GAME_UPDATE_ROLLOUT = {'planned', 'rolling', 'live', 'withdrawn', 'unknown'}
+GAME_UPDATE_IMPACT = {'none', 'check', 'done'}
+# related 에 적을 수 있는 화면 — frontend/scripts/router.js 의 ROUTES id 와 같아야 한다.
+# 표를 두 번 적는 셈이지만, 빌드가 프론트 소스를 파싱하게 만드는 쪽이 더 부서지기 쉽다.
+# 여기 없는 id 를 적으면 빌드가 선다 — 화면에서 죽은 링크가 되는 것보다 먼저 걸린다
+GAME_UPDATE_ROUTES = {'dex', 'dmax', 'pve', 'pvp', 'schedule', 'raids', 'eggs', 'finder',
+                      'planner', 'planner-collection', 'ivrank', 'pvp-deck', 'dmax-deck', 'pve-solo', 'changes'}
+DATE_RE = re.compile(r'^\d{4}-\d{2}-\d{2}$')
+
+
+def load_game_updates(path='backend/config/game_updates.json'):
+    """편집 원본을 읽어 (공개할 기사 목록, 상태별 개수) 를 돌려준다. 파일이 없으면 빈 목록."""
+    if not os.path.exists(path):
+        return [], {}
+    raw = json.load(open(path, encoding='utf-8'))
+    articles = raw.get('articles', [])
+    counts = {}
+    seen_ids = set()
+    published = []
+    for index, article in enumerate(articles):
+        where = f"game_updates.json[{index}] id={article.get('id', '?')}"
+        article_id = article.get('id', '')
+        assert re.fullmatch(r'[a-z0-9][a-z0-9-]*', article_id), f'{where}: id 는 소문자·숫자·- 만'
+        assert article_id not in seen_ids, f'{where}: id 가 겹친다'
+        seen_ids.add(article_id)
+        status = article.get('editorialStatus', '')
+        assert status in GAME_UPDATE_EDITORIAL, f'{where}: editorialStatus={status!r}'
+        counts[status] = counts.get(status, 0) + 1
+        assert article.get('evidenceStatus') in GAME_UPDATE_EVIDENCE, f'{where}: evidenceStatus'
+        assert article.get('rolloutStatus') in GAME_UPDATE_ROLLOUT, f'{where}: rolloutStatus'
+        assert article.get('moncampImpact') in GAME_UPDATE_IMPACT, f'{where}: moncampImpact'
+        categories = article.get('category') or []
+        assert categories and set(categories) <= GAME_UPDATE_CATEGORIES, f'{where}: category={categories}'
+        assert set(article.get('related') or []) <= GAME_UPDATE_ROUTES, f'{where}: related 에 모르는 화면'
+        for key in ('announcedAt', 'effectiveAt', 'checkedAt'):
+            value = article.get(key, '')
+            assert value == '' or DATE_RE.fullmatch(value), f'{where}: {key}={value!r} 는 YYYY-MM-DD'
+        for source in article.get('sources') or []:
+            assert source.get('url', '').startswith('https://'), f'{where}: 출처 URL 은 https'
+        if status != 'published':
+            continue
+        # 공개하는 글에만 거는 조건 — 초안은 비어 있어도 된다
+        assert article.get('title') and article.get('summary'), f'{where}: 공개 글에는 제목·요약이 필요하다'
+        assert article.get('key'), f'{where}: 공개 글에는 핵심 요약이 필요하다'
+        assert article.get('evidenceStatus') == 'official', f'{where}: 1차 공개 피드는 공식 출처를 확인한 글만'
+        assert article.get('sources'), f'{where}: 공개 글에는 출처가 필요하다'
+        assert article.get('announcedAt'), f'{where}: 공개 글에는 발표일이 필요하다'
+        published.append({key: value for key, value in article.items() if not key.startswith('_')})
+    # 최신 발표일이 위로. 같은 날이면 편집 순서를 지킨다
+    published.sort(key=lambda article: article.get('announcedAt', ''), reverse=True)
+    return published, counts
+
+
 # ── data.js ───────────────────────────────────────────────────────────────────
-def render_data_js(game_master, tables, stale, rank_delta_date, rank_fresh_days, sprite_ids, sprite_anim_ids):
+def render_data_js(game_master, tables, stale, rank_delta_date, rank_fresh_days, sprite_ids, sprite_anim_ids, game_updates):
     # 프론트가 읽는 전역 데이터. 각 상수는 대응하는 뷰가 그대로 참조한다.
     # 2026-09-16 v3.47.0 전부 main() 이 읽어 둔 표(tables)에서 싣는다 — 검문(guard.py)이 바꿔 넣은 표가 그대로 나간다.
     # 없는 표는 빈 값이라 1차 실행에서도 문법 오류가 나지 않는다.
@@ -500,6 +564,10 @@ const VALUE_DATA = {t('value')};
 const DEX_DATA = {t('dex')};
 const DATA_FETCHED = {json.dumps(data_fetched)};   // 2026-09-16 v3.48.0 데이터 수집일 (GAMEDAY.fetched 와 같다 — GAMEDAY 는 data-lazy.js 에 있다)
 const DATA_STALE = {json.dumps(stale)};   // 2026-09-16 v3.47.0 검문에서 직전 정상본으로 대체된 표 이름 (backend/guard.py). 비어 있으면 전부 오늘 것
+// 2026-09-16 v3.51.0 게임 업데이트 기사 (backend/config/game_updates.json 에서 published 만).
+// 홈의 주요 소식이 첫 화면에서 바로 필요해 core 에 둔다 — 지금 2건 ≈ 3KB.
+// 글이 20건을 넘으면 목록용 요약과 본문을 갈라 본문만 data-lazy.js 로 옮긴다
+const GAME_UPDATES = {js_data(tight(game_updates))};
 const SPRITE_IDS = {json.dumps(sorted(sprite_ids))};
 const SPRITE_ANIM_IDS = {json.dumps(sorted(sprite_anim_ids))};
 const SPRITES = {(open('data/sprites.json').read() if INLINE and os.path.exists('data/sprites.json') else 'null')};
@@ -665,7 +733,8 @@ def main():
     # 2026-09-16 v3.47.0 검문 — 비거나 줄어든 표는 직전 정상본으로 바꿔 넣는다 (BUILD_GATE=1 일 때만, backend/guard.py)
     stale = guard.apply(tables) if guard.enabled() else []
     rank_delta_date, rank_fresh_days = apply_rank_delta(tables)
-    data_js, data_lazy_js = render_data_js(game_master, tables, stale, rank_delta_date, rank_fresh_days, sprite_ids, sprite_anim_ids)
+    game_updates, update_counts = load_game_updates()
+    data_js, data_lazy_js = render_data_js(game_master, tables, stale, rank_delta_date, rank_fresh_days, sprite_ids, sprite_anim_ids, game_updates)
     if INLINE:
         data_js += '\n' + data_lazy_js   # 미리보기는 단일 HTML — 지연분도 한 덩이로
     else:
@@ -675,6 +744,8 @@ def main():
     write_site_files(game_master, config, tables, stale)
     # 리그별로 몇 줄이 실렸는지 요약 출력 (빌드 로그 확인용)
     print('ok', {league_id: len(league_rows) for league_id, league_rows in tables['pvp'].items()})
+    if update_counts:
+        print('게임 업데이트:', ' · '.join(f'{status} {count}' for status, count in sorted(update_counts.items())), f"→ 공개 {len(game_updates)}건")
 
 if __name__ == '__main__':
     main()

@@ -33,7 +33,7 @@ const BASE = 'http://localhost:5503/?mock=1';
   ok('내 포켓몬은 들여쓴 자식 줄',
     (await page.locator('.nav-menu .drawer__item--sub .drawer__label').allTextContents()).join('|') === '내 포켓몬',
     (await page.locator('.nav-menu .drawer__item--sub .drawer__label').allTextContents()).join('|'));
-  ok('홈 타일 9개', (await page.locator('.home__tile').count()) === 9);
+  ok('홈 타일 10개', (await page.locator('.home__tile').count()) === 10);   // v3.51.0 📢 게임 업데이트가 늘었다
 
   // ── 2. 로그아웃 상태 = 잠김 ────────────────────────────────────────────────
   await page.evaluate(() => { try { firebase.auth().signOut(); } catch {} });

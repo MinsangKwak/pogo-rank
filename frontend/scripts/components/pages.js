@@ -463,6 +463,8 @@ const PAGES = {
   raids: { title: '⚔️ 레이드 보스', render: renderRaidsPage },  // 2026-09-08 v2.25.0 지금 도는 티어별 보스 (components/gameday.js)
   eggs: { title: '🥚 알 부화', render: renderEggsPage },                 // 2026-09-08 v2.25.0 거리별 부화 풀 (components/gameday.js)
   finder: { title: '🔎 검색식 만들기', render: renderFinderPage },
+  // 2026-09-16 v3.51.0 📢 게임 업데이트 — 목록과 상세가 같은 라우트다 (주소 뒷자리로 갈린다, components/updates.js)
+  'game-updates': { title: '📢 게임 업데이트', render: renderGameUpdatesPage },
   settings: { title: '🛠 설정', render: renderSettingsPage },                 // 2026-09-12 v3.11.0 화면 테마 · 계정 저장        // 2026-09-11 v2.58.0 게임 검색창에 붙여 넣을 식 (백로그 QA-57)
 };
 

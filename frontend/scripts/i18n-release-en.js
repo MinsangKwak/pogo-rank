@@ -15,6 +15,13 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 const RELEASE_NOTES_EN = {
+  '2026-09-16 · v3.51.0': [
+    '**A 📢 Game updates screen has been added** — rule, balance and bug changes in Pokémon GO, collected in one place. Reachable from the menu and the home screen.',
+    '**Only posts confirmed against an official announcement are published** — each carries its evidence and rollout status, announced/effective dates, and a link to the official source. Reports still being checked are not published.',
+    '**The detail view puts before and after side by side** — when the previous value is unknown it says so instead of inventing one. It also flags whether moncamp\'s rankings still need a check.',
+    '**Game updates, Events and Patch notes are three different screens** — what changed in the game / what is on when / what changed in moncamp.',
+    '**(fix) The dex number and form badge in the detail popup sat at different heights** — now centered on the same line.',
+  ],
   '2026-09-16 · v3.50.5': [
     '**(fix) Opening another Pokémon\'s share link while a detail popup was open dropped you on the home screen** — it now opens that Pokémon.',
     '**In English, the line under the name shows the Korean name** — 메타그로스 under Metagross, instead of Metagross twice. The Korean view keeps the English name there.',

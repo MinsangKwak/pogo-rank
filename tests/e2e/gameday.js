@@ -14,8 +14,8 @@ suite(async () => {
   await waitSplash(page);
   await page.waitForTimeout(300);
 
-  // v2.47.0 '내 포켓몬'·'육성 플래너' 타일 통합으로 10 → 9
-  ok('홈 타일 9개', (await page.locator('.home__tile').count()) === 9);
+  // v2.47.0 '내 포켓몬'·'육성 플래너' 타일 통합으로 10 → 9 · v3.51.0 📢 게임 업데이트가 늘어 10
+  ok('홈 타일 10개', (await page.locator('.home__tile').count()) === 10);
   const tiles = await page.locator('.home__tile strong').allTextContents();
   ok('새 타일 2개', tiles.includes('레이드 보스') && tiles.includes('알 부화'), tiles.slice(-2).join('|'));
 

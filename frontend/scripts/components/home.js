@@ -155,8 +155,11 @@ function renderServiceHome() {
   // ── 용도별 상위 포켓몬 — 평가 조건과 기준일을 같이 읽게 한다 (시안 "순위 참고")
   const pickGroups = HOME_PICKS.map(homePickGroup).filter(Boolean);
   const dataDate = typeof DATA_FETCHED !== 'undefined' && DATA_FETCHED ? DATA_FETCHED : '';
+  // ── 게임 업데이트 주요 소식 (2026-09-16 v3.51.0) — 글이 없으면 빈 문자열이라 자리도 안 만든다
+  const updates = typeof homeUpdatesNode === 'function' ? homeUpdatesNode() : '';
   $content.append(el('div', { class: 'home-dashboard' },
     hero,
+    updates,
     features,
     ...(pickGroups.length ? [el('section', { class: 'home__picks', 'aria-label': '용도별 상위 포켓몬' },
       el('div', { class: 'home__section' },
