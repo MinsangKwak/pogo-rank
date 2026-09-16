@@ -2,7 +2,9 @@
 
 [← README](README.md) · **기여 안내** · [NOTICE](NOTICE.md) · [SECURITY](SECURITY.md)
 
-**PR 은 `dev` 브랜치로, 커밋마다 DCO 서명(`git commit -s`)을 붙여 주세요.** 나머지 규칙은 아래와 개발 문서(docs/DEVELOPMENT.md)에 있습니다. (2026-09-07 v2.18.0 신설)
+**`dev`에서 작업 브랜치를 만들고, DCO 서명이 포함된 커밋을 `dev` 대상 PR로 제출하세요.**
+
+작업 순서: [로컬 실행](#시작하기) → [브랜치·PR 준비](#브랜치와-pr) → [DCO 서명](#dco-developer-certificate-of-origin). 코드 변경 전에는 [코드 규칙](#코드-규칙-요약)을 확인하세요.
 
 ## 시작하기
 
@@ -12,7 +14,7 @@ python3 backend/build.py     # 화면만 고쳤을 때
 cd dist && python3 -m http.server 5503   # http://localhost:5503/?mock=1 → 로그인 뒤 화면을 목으로
 ```
 
-의존성은 없습니다(Python 표준 라이브러리 + 바닐라 JS). `pip install` 이 필요한 변경은 받지 않습니다 — CI 가 stdlib 만 쓰는 것이 원칙입니다.
+빌드는 Python 표준 라이브러리, 화면은 바닐라 JavaScript를 사용합니다. CI가 표준 라이브러리만 사용하는 원칙에 따라 `pip install`이 필요한 변경은 받지 않습니다. 브라우저 테스트의 Playwright·Chromium 준비는 [E2E 안내](tests/e2e/README.md#전제)를 확인하세요.
 
 ## 브랜치와 PR
 
