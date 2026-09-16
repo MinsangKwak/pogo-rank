@@ -57,14 +57,15 @@ suite(async () => {
   await page.waitForTimeout(600);
   ok('상세 그림도 움직인다', (await page.locator('#detail-panel .sprite-box img.sprite--anim').count()) === 1);
 
-  // 2026-09-12 v3.19.0 움직이는 그림이 없는 종(오거폰 · 9세대)은 CSS 로 살짝 흔든다
+  // 2026-09-12 v3.19.0 움직이는 그림이 없는 종(오거폰 · 9세대)은 CSS 로 살짝 흔들었다 —
+  // 2026-09-16 v3.48.1 뺐다. 수십 장이 제각각 움찔거려 어수선했다. 정지 그림은 정지 그대로여야 한다
   await go('#/dex?q=%EC%98%A4%EA%B1%B0%ED%8F%B0');
   await page.waitForTimeout(800);
   const idle = await page.evaluate(() => {
     const img = document.querySelector('#page .dex__row img.sprite');
     return img ? { anim: img.classList.contains('sprite--anim'), name: getComputedStyle(img).animationName } : null;
   });
-  ok('GIF 없는 종은 CSS 로 흔든다 (sprite-idle)', idle && !idle.anim && idle.name === 'sprite-idle', JSON.stringify(idle));
+  ok('GIF 없는 종은 정지 그림 그대로 (흔들지 않는다)', idle && !idle.anim && idle.name === 'none', JSON.stringify(idle));
   // 설정에서 끄기 → 다음 화면부터 정지본
   await go('#/settings');
   ok('설정에 움직이는 그림 줄 (기본 켜기)', await page.evaluate(() => document.querySelector('[aria-label="움직이는 그림"] .settings__choice.is-on b')?.textContent === '켜기'));

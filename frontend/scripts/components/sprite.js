@@ -90,7 +90,7 @@ function fitAnimZoom(image) {
 function spriteAnimEnabled() {
   try { return localStorage.getItem(SPRITE_ANIM_KEY) !== 'off'; } catch { return true; }
 }
-// 2026-09-12 v3.19.0 설정을 body.sprite-anim-off 로도 알린다 — 움직이는 그림이 없는 종을 흔드는 CSS(list.css sprite-idle)가 읽는다
+// 2026-09-12 v3.19.0 설정을 body.sprite-anim-off 로도 알린다 (CSS 가 읽을 수 있게). v3.48.1 에 흔드는 규칙(sprite-idle)은 뺐지만 클래스는 상태 표식으로 남긴다
 function syncSpriteAnimClass() {
   document.body?.classList.toggle('sprite-anim-off', !spriteAnimEnabled());
 }
