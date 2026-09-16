@@ -3,9 +3,9 @@
 //
 // 이 스위트가 지키려는 것
 //   - 1099px 이하는 지금까지처럼 모바일 배치(사이드바·패널 없음)
-//   - 1100~1439px(태블릿)은 사이드바 210px + 컨테이너 1100px + 패널 420px, 간격 24px
-//   - 1440px 이상(PC)은 컨테이너 1440px + 패널 480px, 간격 32px — 태블릿보다 더 넓다
-//   - 상세 패널이 열렸을 때 목록 내용과 패널 사이에 실제로 간격이 있는가 (겹치지 않는가) — 이전에
+//   - 1100px 부터 사이드바가 보이고 컨테이너 폭이 화면을 따라 는다
+//   - 2026-09-16 v3.50.0 상세는 넓은 화면에서도 팝업(두 열)이다 — 오른쪽 패널 치수 검사는 뺐다
+//   - (옛) 상세 패널이 열렸을 때 목록 내용과 패널 사이에 실제로 간격이 있는가 (겹치지 않는가) — 이전에
 //     이 간격이 4px 로 거의 없어 보이던 버그가 있었다(패널 위치 공식의 20px 안쪽 여백을 빼먹었었다)
 //   - 사이드바 왼쪽 끝과 패널 오른쪽 끝이 컨테이너를 기준으로 좌우 대칭인가
 const { launch, newContext, waitSplash, ok, finish, suite } = require('./_lib');
@@ -40,10 +40,10 @@ suite(async () => {
   // 양쪽에 32px 만 남긴다. 그래서 기대값도 그 식대로 센다 (1440 → 1376, 1680 → 1616)
   const containerAt = (w) => Math.min(1800, w - 64);
   const tiers = [
-    { w: 1100, label: '태블릿 1100', panelW: 420, gap: 24 },
-    { w: 1280, label: '태블릿 1280', panelW: 420, gap: 24 },
-    { w: 1440, label: 'PC 1440', panelW: 480, gap: 32 },
-    { w: 1680, label: 'PC 1680', panelW: 480, gap: 32 },
+    { w: 1100, label: '태블릿 1100' },
+    { w: 1280, label: '태블릿 1280' },
+    { w: 1440, label: 'PC 1440' },
+    { w: 1680, label: 'PC 1680' },
   ].map((t) => ({ ...t, containerW: containerAt(t.w) }));
   for (const tier of tiers) {
     const ctx = await newContext(browser, { viewport: { width: tier.w, height: 900 } });
@@ -52,28 +52,15 @@ suite(async () => {
     await openDexDetail(page);
 
     ok(`${tier.label} 사이드바 보임`, await page.locator('.app-nav').isVisible());
-    ok(`${tier.label} 상세는 패널로(팝업 아님)`, (await page.locator('dialog.modal[open]').count()) === 0 && await page.locator('#detail-panel').isVisible());
-
+    // 2026-09-16 v3.50.0 넓은 화면도 팝업 — 왼쪽 정보 · 오른쪽 내용 두 열 (tests/e2e/detail-panel.js 가 자세히 본다)
+    ok(`${tier.label} 상세는 두 열 팝업`, (await page.locator('dialog.modal[open]').count()) === 1 && await page.locator('#detail-panel').isHidden()
+      && (await page.locator('.detail__body').evaluate((n) => getComputedStyle(n).flexDirection)) === 'row');
     const rects = await page.evaluate(() => ({
       page: document.getElementById('page').getBoundingClientRect(),
-      panel: document.getElementById('detail-panel').getBoundingClientRect(),
-      nav: document.querySelector('.app-nav').getBoundingClientRect(),
-      // 2026-09-10 v2.53.0 오른쪽 여백을 padding 으로만 재면 안 된다 — 지금 설계는 padding 이 아니라
-      // 안쪽 목록의 폭으로 자리를 낸다. 사용자가 겪는 것은 "줄이 패널에 가리는가" 하나뿐이라,
-      // 실제로 그려진 줄 중 가장 오른쪽 끝을 잰다
-      contentRight: Math.max(...[...document.querySelectorAll('#page .dex__row')].map((n) => n.getBoundingClientRect().right)),
+      box: document.querySelector('.modal__box').getBoundingClientRect(),
     }));
-    ok(`${tier.label} 패널 폭 ${tier.panelW}px`, Math.round(rects.panel.width) === tier.panelW, String(Math.round(rects.panel.width)));
     ok(`${tier.label} 컨테이너 폭 ${tier.containerW}px`, Math.round(rects.page.width) === tier.containerW, String(Math.round(rects.page.width)));
-
-    // 목록 내용의 실제 오른쪽 끝 ~ 패널 왼쪽 끝 사이 간격이 의도한 값인가 (겹치지 않는가)
-    const actualGap = rects.panel.left - rects.contentRight;
-    ok(`${tier.label} 목록·패널 간격 ${tier.gap}px (겹침 없음)`, Math.abs(actualGap - tier.gap) < 1, `${actualGap.toFixed(1)}px`);
-
-    // 사이드바 왼쪽 여백과 패널 오른쪽 여백이 대칭인가 (컨테이너 기준 거울 대칭)
-    const leftGutter = rects.nav.left;
-    const rightGutter = tier.w - rects.panel.right;
-    ok(`${tier.label} 사이드바·패널 좌우 대칭`, Math.abs(leftGutter - rightGutter) < 1, `${leftGutter} vs ${rightGutter}`);
+    ok(`${tier.label} 팝업이 화면 안에`, rects.box.left >= 0 && rects.box.right <= tier.w && rects.box.width >= 800, `${rects.box.left}~${rects.box.right}`);
 
     await ctx.close();
   }
@@ -104,7 +91,8 @@ suite(async () => {
     await ctx.close();
   }
 
-  // 2026-09-10 v2.53.0 휴대폰 상세 팝업은 화면의 75% 까지만 — 다 덮으면 팝업이 아니라 새 화면으로 읽힌다
+  // 2026-09-10 v2.53.0 휴대폰 상세 팝업은 화면을 다 덮지 않는다 — 다 덮으면 팝업이 아니라 새 화면으로 읽힌다
+  // 2026-09-16 v3.50.0 75% → 88%. 팝업 안에서 탭·계산기 화면을 오가는 구조라 자리가 더 필요하고, 위 한 뼘은 남긴다
   {
     const ctx = await newContext(browser, { viewport: { width: 390, height: 844 } });
     const page = await ctx.newPage();
@@ -117,7 +105,7 @@ suite(async () => {
       const box = document.querySelector('.modal__box');
       return box ? box.getBoundingClientRect().height / window.innerHeight : null;
     });
-    ok('휴대폰 팝업이 화면의 75% 이하', ratio !== null && ratio <= 0.751, ratio === null ? 'null' : (ratio * 100).toFixed(1) + '%');
+    ok('휴대폰 팝업이 화면의 88% 이하', ratio !== null && ratio <= 0.881, ratio === null ? 'null' : (ratio * 100).toFixed(1) + '%');
     ok('그래도 뒤 화면이 남는다', ratio !== null && ratio > 0.5, ratio === null ? 'null' : (ratio * 100).toFixed(1) + '%');
     await ctx.close();
   }

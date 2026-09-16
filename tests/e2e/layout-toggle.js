@@ -128,21 +128,23 @@ suite(async () => {
     await gctx.close();
   }
 
-  // 상세 패널이 열려 본문이 좁아지면 자동으로 열이 줄어드는가 (레이드 보스 기준)
-  for (const [w, expect] of [[1280, 1], [1440, 2]]) {
+  // 2026-09-16 v3.50.0 상세는 팝업이라 본문을 밀지 않는다 — 열어도 열 수가 그대로인가 (레이드 보스 기준)
+  for (const w of [1280, 1440]) {
     const sctx = await newContext(browser, { viewport: { width: w, height: 900 } });
     const spage = await sctx.newPage();
     spage.on('pageerror', (e) => errs.push(`squeeze ${w}:` + e));
     await spage.goto(BASE + '#/raids', { waitUntil: 'domcontentloaded' });
     await waitSplash(spage);
     await spage.waitForSelector('#page .dex__row', { timeout: 15000 }).catch(() => {});
-    await spage.locator('#page .dex__row').first().click();
-    await spage.waitForTimeout(400);
-    const cols = await spage.evaluate(() => {
+    const colsOf = () => spage.evaluate(() => {
       const node = document.querySelector('#page .dex__list');
       return node ? getComputedStyle(node).gridTemplateColumns.split(' ').length : null;
     });
-    ok(`상세 패널 열림(w=${w}) 레이드 보스 ${expect}열로 줄어듦`, cols === expect, String(cols));
+    const before = await colsOf();
+    await spage.locator('#page .dex__row').first().click();
+    await spage.waitForTimeout(400);
+    const cols = await colsOf();
+    ok(`상세 팝업 열림(w=${w}) 레이드 보스 열 수 그대로 (${before})`, cols === before && before >= 1, `${before} → ${cols}`);
     await sctx.close();
   }
 

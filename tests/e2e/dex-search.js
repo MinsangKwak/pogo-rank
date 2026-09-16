@@ -76,7 +76,7 @@ suite(async () => {
   const megaIndex = names.findIndex((t) => /메가/.test(t));
   await rows().nth(megaIndex).click();
   await page.waitForTimeout(700);
-  const detail = await page.locator('.detail__head').innerText();
+  const detail = await page.locator('.detail__side').innerText();   // v3.50.0 머리는 .detail__side
   ok('폼 줄을 누르면 그 폼이 열린다 (원종이 아니다)', /메가/.test(detail), detail.replace(/\n/g, ' ').slice(0, 60));
   await page.keyboard.press('Escape');
   await page.waitForTimeout(300);

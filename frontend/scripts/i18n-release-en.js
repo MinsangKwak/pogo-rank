@@ -15,6 +15,32 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 const RELEASE_NOTES_EN = {
+  '2026-09-16 · v3.50.5': [
+    '**(fix) Opening another Pokémon\'s share link while a detail popup was open dropped you on the home screen** — it now opens that Pokémon.',
+    '**In English, the line under the name shows the Korean name** — 메타그로스 under Metagross, instead of Metagross twice. The Korean view keeps the English name there.',
+    '**The header shrinks on both the Battle info and Evolution tabs** — next to the small sprite: [Dragon][Flying] #0149 · Dragonite · English name, in the same order as the big header (the Summary tab keeps the big sprite and corner badges).',
+  ],
+  '2026-09-16 · v3.50.3': [
+    '**The PC detail popup is capped at 800px tall** — it no longer grows without limit on large monitors.',
+  ],
+  '2026-09-16 · v3.50.2': [
+    '**(fix) The detail popup\'s [close] sat slightly above [Pokédex]** — now on the same line with the same spacing.',
+  ],
+  '2026-09-16 · v3.50.1': [
+    '**Detail popup buttons rearranged** — top row: [＋ My Pokémon] · [Pokédex] · [close]; bottom row: [Copy link] · [CP calculator]. The Pokédex button leaves for another screen, so it sits on top; sharing acts on this Pokémon, so it sits below.',
+    '**Type badges are back on the top-left corner of the sprite**, as before.',
+  ],
+  '2026-09-16 · v3.50.0': [
+    '**The Pokémon detail popup is rebuilt** — instead of one long column, three tabs (**Summary · Battle info · Evolution**) take you straight to what you need. Summary has the big sprite, CP, catch CP and moves; Battle info has weaknesses/resistances, usage rankings and recommended picks when it is the boss.',
+    '**Tapping an evolution or a recommended pick switches inside the same window** — [← Back] restores the tab, scroll position and calculator inputs you had.',
+    '**[Pokédex] and [CP calculator] buttons stay pinned at the bottom** — the calculator takes typed numbers, ± buttons and level presets (20·25·30·40·50). The Pokédex button closes the popup and opens the Pokédex.',
+    '**On PC it is a two-column popup** — Pokémon info fixed on the left, only the right side changes. It replaces the fixed right-hand panel.',
+    '**(fix) A detail popup opened right before sign-in finished on the Pokédex used to vanish** — redrawing the same screen no longer touches an open popup.',
+  ],
+  '2026-09-16 · v3.49.1': [
+    '**(fix) Refreshing looked like it signed you out** — you were never signed out; restoring the session took over ten seconds and the [sign in] button sat there meanwhile. It now carries over immediately, and says "checking your sign-in" if it needs a moment.',
+    '**(fix) Edits to My Pokémon during that gap did not reach your account** — saving now waits until the sign-in check has finished.',
+  ],
   '2026-09-16 · v3.49.0': [
     '**Pokémon that have not launched yet are easier to read** — the blur that hid them is gone, replaced by a red bar on the left. Blurred rows could not actually be read. The [not in GO] chip in the Pokédex is the same red now.',
   ],

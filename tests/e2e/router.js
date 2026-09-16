@@ -101,14 +101,13 @@ suite(async () => {
   }
 
   // ── 측정용 식별자: 상세 (종·폼·어디서 열었나까지)
-  // 2026-09-09 v2.36.0 이 스위트는 PC 폭(1440px)이라 상세는 팝업이 아니라 오른쪽 패널(#detail-panel)로 뜬다
-  // (useDetailPanel(), components/modal.js). 껍데기 식별자는 패널 쪽에, 본문 식별자는 지금까지와 같다
+  // 2026-09-16 v3.50.0 넓은 화면도 팝업(dialog.modal) — 껍데기 식별자는 dialog 에, 본문 식별자는 지금까지와 같다
   await go('#/dex');
   await page.locator('#page .dex__row').first().click();
-  await page.waitForSelector('#detail-panel:not([hidden])', { timeout: 8000 });
+  await page.waitForSelector('dialog.modal[open]', { timeout: 8000 });
   await page.waitForTimeout(400);
   const detail = await page.evaluate(() => {
-    const panel = document.getElementById('detail-panel');
+    const panel = document.querySelector('dialog.modal[open]');
     const body = panel.querySelector('[data-route="mon"]');
     return { dialogRoute: panel.dataset.route, dialogMon: panel.dataset.mon, id: body?.id, ...body?.dataset };
   });
@@ -119,9 +118,9 @@ suite(async () => {
   // 랭킹에서 연 상세는 진입 경로가 다르다 (같은 종이라도 어디서 봤는지 갈린다)
   await go('#/pve');
   await page.locator('#content .row').first().click();
-  await page.waitForSelector('#detail-panel:not([hidden])', { timeout: 8000 });
+  await page.waitForSelector('dialog.modal[open]', { timeout: 8000 });
   await page.waitForTimeout(400);
-  ok('랭킹에서 연 상세는 view=list', (await page.evaluate(() => document.querySelector('#detail-panel [data-route="mon"]')?.dataset.view)) === 'list');
+  ok('랭킹에서 연 상세는 view=list', (await page.evaluate(() => document.querySelector('dialog.modal[open] [data-route="mon"]')?.dataset.view)) === 'list');
 
   // ── 상세 딥링크
   // 앞 단계에서 열어 둔 패널을 닫고, 해시만 다른 goto 는 새로고침이 아니므로 reload 로 찬 시작을 만든다
@@ -131,8 +130,8 @@ suite(async () => {
   await page.goto(BASE + '#/mon/6', { waitUntil: 'domcontentloaded' });
   await page.reload({ waitUntil: 'domcontentloaded' });
   await waitSplash(page);
-  await page.waitForSelector('#detail-panel:not([hidden])', { timeout: 8000 }).catch(() => {});
-  ok('상세 딥링크가 패널을 연다', await page.locator('#detail-panel').isVisible());
+  await page.waitForSelector('dialog.modal[open]', { timeout: 8000 }).catch(() => {});
+  ok('상세 딥링크가 팝업을 연다', (await page.locator('dialog.modal[open]').count()) === 1);
   ok('딥링크 라우트 id = mon', (await page.evaluate(() => document.body.dataset.route)) === 'mon');
 
   // ── 공유 링크로 바로 들어온 팝업이 ✕ 로 닫히는가 (2026-09-11 v2.56.0)

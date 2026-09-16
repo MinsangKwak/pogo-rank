@@ -485,9 +485,12 @@ function goBack() {
   // 히스토리가 있으면 브라우저 뒤로가기와 동일하게, 링크로 바로 들어왔으면 메인으로
   if (currentPageId()) (history.length > 1 ? history.back() : (location.hash = ''));
 }
+// 마지막으로 그린 페이지 주소 — 같은 주소를 다시 그리는지(팝업을 살려 둔다) 가르는 기준
+let _pageRenderedHash = null;
 // 현재 해시에 맞춰 #page(전체 페이지)와 .wrap(메인 화면) 중 하나만 보이게 한다
 function renderPage() {
   const id = currentPageId();
+  if (!id) _pageRenderedHash = null;   // 페이지가 아닌 길(메인·플래너·상세)을 거치면 다음 페이지는 반드시 "새로 온" 것이다
   const $page = document.getElementById('page');
   const $wrap = document.querySelector('.layout');
   // 2026-09-06 v2.9.0 상세 딥링크 #/mon/<스프라이트 id> — 메인 화면을 보인 채 그 포켓몬 상세 팝업을 연다.
@@ -532,9 +535,14 @@ function renderPage() {
     return;
   }
   // 페이지로 넘어갈 때는 열려 있던 서랍·모달을 먼저 닫는다 (히스토리는 해시 이동이 이미 처리했으므로 silent)
-  closeDrawer({ silent: true });
-  closeModal({ silent: true });
-  NAV.open = false;
+  // 2026-09-16 v3.50.0 **주소가 바뀌었을 때만**. 같은 주소를 다시 그리는 경우(로그인 판정 — auth.js · 잠시 써보기 — trial.js ·
+  // 늦게 온 자료)에는 열린 팝업을 건드리지 않는다 — 도감에서 상세를 연 직후 로그인이 끝나면 팝업이 소리 없이 닫혔다
+  if (location.hash !== _pageRenderedHash) {
+    closeDrawer({ silent: true });
+    closeModal({ silent: true });
+    NAV.open = false;
+  }
+  _pageRenderedHash = location.hash;
   $wrap.hidden = true;
   $page.hidden = false;
   // 2026-09-08 v2.30.0 측정용 표식 — 어느 화면인지 DOM 만 보고 알 수 있게 (GA·히트맵)
