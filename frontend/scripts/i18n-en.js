@@ -738,6 +738,28 @@ const I18N_EN = {
   // 2026-09-13 v3.22.1 홈 대시보드 인사·바로가기 (components/home.js renderServiceHome)
   // 2026-09-15 v3.33.0 캐치프라이즈 교체 — 옛 세 줄은 이미 나간 판이 쓰므로 남겨 둔다
   '다이맥스 · 레이드 · PvP 순위': 'Dynamax · Raid · PvP rankings',
+  // 2026-09-16 design 홈 시안 02
+  '맥스 배틀에 데려갈 포켓몬,': 'The Pokémon to bring to Max Battles —',
+  '여기서 골라요.': 'pick them here.',
+  '다이맥스 티어표와 추천 덱을 비교하고, 레이드·PvP까지 확인하세요.': 'Compare the Dynamax tier list and recommended decks, then check raids and PvP.',
+  '다이맥스 티어표 보기': 'See the Dynamax tier list',
+  '맥스 배틀 덱 짜기': 'Build a Max Battle deck',
+  '무엇이 필요한가요?': 'What do you need?',
+  '목적에 맞는 화면으로 바로 가요': 'Jump straight to the screen for the job',
+  '진행 중인 이벤트와 레이드 일정을 확인하세요.': 'Check running events and the raid schedule.',
+  '상황에 맞는 포켓몬과 추천 덱을 찾아보세요.': 'Find the right Pokémon and a recommended deck.',
+  '더 강한 포켓몬을 위한 육성 계획을 세워보세요.': 'Plan how to raise stronger Pokémon.',
+  '용도별 상위 포켓몬': 'Top Pokémon by purpose',
+  '평가 조건에 따라 추천이 달라져요': 'Recommendations change with the criteria',
+  '기준일 #-#-#': 'data as of #-#-#',
+  '다이맥스 배틀에서 활약하는 포켓몬': 'Pokémon that shine in Max Battles',
+  '종합 점수 순 · DPS 와 버팀(TDO)을 함께 봐요': 'By overall score · DPS and staying power (TDO) together',
+  '다양한 활용처': 'Useful all around',
+  '다이맥스': 'Dynamax',
+  '여러 순위표에 이름을 올린 포켓몬': 'Pokémon that appear on several rankings',
+  '순위표 #곳': 'On # rankings',
+  '1위 #': 'No. 1 #',
+  '이름을 누르면 종족값·상성·활용처를 전부 볼 수 있어요': 'Tap a name for base stats, matchups and every place it is used',
   '다이맥스 티어표는': 'Dynamax tier lists',
   '여기서 봐요.': 'live here.',
   '맥스 배틀에 데려갈 셋부터 레이드·PvP 순위, 전 종 도감까지.': 'From the three to bring to a Max Battle, to raid and PvP rankings, to the full Pokédex.',
@@ -808,6 +830,7 @@ const I18N_EN = {
 
   // 셸 · 메뉴 · 홈
   '포켓몬, 기술, 가이드를 검색하세요…': 'Search Pokémon, moves, guides…',
+  '포켓몬을 검색하세요': 'Search Pokémon',
   '지금 뭐 하지': 'What now',
   '뭘 데려갈까': 'Who to bring',
   '뭘 키울까': 'Who to raise',

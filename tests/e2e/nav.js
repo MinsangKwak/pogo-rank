@@ -66,9 +66,11 @@ suite(async () => {
   ok('의미 색 여섯 벌 있음', ['brand', 'brand-2', 'point', 'warn', 'caution', 'off'].every((k) => design[k]),
     JSON.stringify({ brand: design.brand, warn: design.warn }));
   ok('토큰 --tap 이 손가락 크기 44px', design.tapPx === 44, `${design.tap} = ${design.tapPx}px`);
-  // 2026-09-12 v3.6.0 Inter → 갈무리(Galmuri11). 한글까지 한 글꼴이 그리고, Pretendard 는 뒤로 물러나
-  // 긴 산문(약관·안내문·패치노트)에서만 쓰인다 (styles/base.css)
-  ok('본문 글꼴 Galmuri11 우선 · Pretendard 로 폴백', /^"?Galmuri11/.test(design.font) && /Pretendard/.test(design.font), design.font.slice(0, 48));
+  // 2026-09-12 v3.6.0 Inter → 갈무리(Galmuri11). 2026-09-16 design 본문은 다시 Pretendard —
+  // 시안 검토 "정보보다 스타일이 먼저 읽힌다". 도트는 로고·제목·메뉴 라벨에 남는다 (styles/base.css · pixel.css)
+  ok('본문 글꼴 Pretendard 우선', /^"?Pretendard/.test(design.font), design.font.slice(0, 48));
+  const logoFont = await page.evaluate(() => getComputedStyle(document.querySelector('.app-bar__logo')).fontFamily);
+  ok('로고는 도트(Galmuri)로 남는다', /Galmuri/.test(logoFont), logoFont.slice(0, 40));
   // 도트 글꼴은 설계 격자의 정수배에서만 또렷하다 — Galmuri11 은 11 · 14 · 22px 이라 14px 로 내렸다
   ok('본문 14px (도트 격자)', design.size === '14px', design.size);
 
