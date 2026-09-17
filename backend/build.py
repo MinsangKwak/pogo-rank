@@ -40,7 +40,7 @@ from names import name_ko, species, FORM_KO
 import guard
 
 # ── 설정 ─────────────────────────────────────────────────────────────────────
-APP_VERSION = 'v3.56.0'  # 노트 테마 정리 — 셸 분리 · 토큰화 · 덮어쓰기 걷어내기 (v3.25.0 은 feature-advertisement 브랜치에 예약)
+APP_VERSION = 'v3.57.0'  # 화면별 측정 — 해시 라우트를 가상 경로로, 전환마다 page_view (v3.25.0 은 feature-advertisement 브랜치에 예약)
 # 2026-09-14 v3.28.0 index.html 의 색인 허용 줄 — dev 빌드가 이 줄을 noindex 로 바꿔 끼운다
 ROBOTS_INDEX_META = '<meta name="robots" content="index, follow, max-image-preview:large">'
 # 2026-09-05 v2.7.3 빌드 채널 — 'prod'(기본) / 'dev'. dev 브랜치 워크플로(.github/workflows/deploy-dev.yml)가 BUILD_CHANNEL=dev 로 부른다.
@@ -134,6 +134,12 @@ GA_SNIPPET = '''<script>
   window.GA_PENDING_ID = id;
   if (!id) return;
   try { if (localStorage.getItem('pogo_consent') === 'denied') return; } catch (e) {}
+  // 해시(#/dex?q=1)를 실제 경로처럼 만든다: https://moncamp.kr/dex
+  //   물음표 뒤는 떼고, 빈 해시(홈)는 '/' 로 둔다. track.js 의 같은 함수를 덮어쓰지 않도록 여기서 정의한다
+  window.gaVirtualUrl = function () {
+    var raw = (location.hash || '').replace(/^#\/?/, '').split('?')[0].replace(/\/+$/, '');
+    return location.origin + '/' + raw;
+  };
   var bot = navigator.webdriver
     || (window.screen && window.screen.width === 800 && window.screen.height === 600)
     || /headless|puppeteer|playwright|bot|crawler|spider/i.test(navigator.userAgent || '');
@@ -142,7 +148,20 @@ GA_SNIPPET = '''<script>
   window.gtag = function () { window.dataLayer.push(arguments); };
   window.gtag('consent', 'default', { analytics_storage: 'granted', ad_storage: 'denied', ad_user_data: 'denied', ad_personalization: 'denied' });
   window.gtag('js', new Date());
-  window.gtag('config', id);
+  // 2026-09-17 v3.57.0 해시 라우트를 **가상 경로**로 바꿔 보낸다.
+  //   GA4 의 '페이지 경로' 는 page_location 의 pathname 에서 뽑는데, 해시(#/dex)는 pathname 이 아니다.
+  //   그래서 어느 화면을 봐도 경로가 늘 '/' 하나로 뭉쳐 있었다 (실측: 조회수 60 이 전부 '/').
+  //
+  //   첫 조회를 **누가 보낼지는 들어온 주소가 가른다.**
+  //   홈(해시 없음)   여기서 바로 보낸다. <head> 라 번들보다 빨라 금방 떠나는 방문도 잡힌다.
+  //                  index.html 의 <title> 이 곧 홈 제목이라 이름도 맞다.
+  //   하위 화면(#/dex) 번들이 보낸다. 여기서 보내면 경로는 /dex 인데 제목은 홈 제목이 붙어
+  //                  **경로와 제목이 어긋난다.** 라우터가 제목을 세운 뒤 보내야 둘이 맞는다.
+  var atHome = !location.hash || location.hash === '#' || location.hash === '#/';
+  window.GA_SENT_FIRST = atHome;
+  window.gtag('config', id, atHome
+    ? { page_location: window.gaVirtualUrl() }
+    : { send_page_view: false });
   window.GA_MEASUREMENT_ID = id;
   var tag = document.createElement('script');
   tag.async = true;
