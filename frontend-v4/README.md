@@ -1,6 +1,6 @@
 # moncamp v4 — React 전환 미리보기
 
-**미리보기 주소 — https://dev.moncamp.kr/react/**
+**미리보기 주소 — https://dev.moncamp.kr/** (2026-09-17 부터 dev 는 통째로 v4 다. 전에 쓰던 /react/ 는 없어졌다)
 
 계획 문서는 노션 `05. moncamp v4.0.0 React 전환 계획` 에 있다. 이 폴더는 그 계획의 **Phase 0~3 일부**를 실제로 만들어 본 것이다.
 

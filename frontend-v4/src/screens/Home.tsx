@@ -47,7 +47,7 @@ function Discover({ mascot, sprite, kicker, head, copy, extra, href }: {
     <button className={`pick__discover${extra ? ` ${extra}` : ''}`} type="button"
       onClick={() => { location.hash = href; }}>
       <span className={`home-card-mascot home-card-mascot--${mascot}`} aria-hidden="true">
-        <img className="home-card-mascot__body" src={`${import.meta.env.BASE_URL}../sprites/${sprite}.png`}
+        <img className="home-card-mascot__body" src={`${import.meta.env.BASE_URL}sprites/${sprite}.png`}
           alt="" width={96} height={96} />
       </span>
       <span className="pick__discover-kicker">{kicker}</span>
@@ -144,7 +144,7 @@ export default function Home({ onOpen }: { onOpen: (sprite: number, en?: string)
           <h2>맥스 배틀에 데려갈 포켓몬,<br />여기서 골라요.</h2>
           <p>다이맥스 티어표와 추천 덱을 비교하고, 레이드·PvP까지 확인하세요.</p>
         </div>
-        <img className="home__pixel-mascot" src={`${import.meta.env.BASE_URL}../sprites/25.png`}
+        <img className="home__pixel-mascot" src={`${import.meta.env.BASE_URL}sprites/25.png`}
           alt="" aria-hidden="true" width={96} height={96} />
         <div className="home__cta">
           <a className="home__btn home__btn--primary" href={routeHash('dmax')}
@@ -181,7 +181,7 @@ export default function Home({ onOpen }: { onOpen: (sprite: number, en?: string)
           {ROUTE_GROUPS.map(([id, label, desc]) => (
             <section key={id} className={`home__service-group home__service-group--${id}`}>
               <div className="home__group-head">
-                <img className="home__starter" src={`${import.meta.env.BASE_URL}../sprites/${STARTER[id]}.png`}
+                <img className="home__starter" src={`${import.meta.env.BASE_URL}sprites/${STARTER[id]}.png`}
                   alt="" aria-hidden="true" width={96} height={96} />
                 <h4 className="home__group">{label}</h4>
                 <p className="home__group-desc">{desc}</p>

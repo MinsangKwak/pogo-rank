@@ -1,12 +1,14 @@
 // ─────────────────────────────────────────────────────────────────────────────
 // lib/sprite.ts — 포켓몬 그림 주소
 //
-// 미리보기는 dev.moncamp.kr/react/ 에 얹히고 그림은 루트의 v3 배포본에 있다.
-// 40MB 를 두 벌 두지 않으려고 '../sprites/' 로 그쪽을 그대로 가리킨다.
-// 정식 전환 때는 v3 처럼 자기 dist 안에 둔다.
+// 그림은 v3 빌드가 만든 것을 그대로 쓴다 (2,000장이 넘어 두 벌 둘 것이 아니다).
+// 배포가 v3 dist 의 sprites · sprites-anim 만 이 앱 옆에 옮겨 놓는다 (deploy-dev.yml).
+//
+// **'../sprites/' 로 적지 않는다.** 그건 이 앱이 /react/ 밑에 살던 때 한 겹 위를 가리키던 말이고,
+// 루트로 올라온 지금은 사이트 밖(/../sprites/)을 가리킨다. BASE 뒤에 바로 붙인다.
 // ─────────────────────────────────────────────────────────────────────────────
-const BASE = `${import.meta.env.BASE_URL}../sprites/`;
-const ANIM = `${import.meta.env.BASE_URL}../sprites-anim/`;
+const BASE = `${import.meta.env.BASE_URL}sprites/`;
+const ANIM = `${import.meta.env.BASE_URL}sprites-anim/`;
 
 export function spriteSrc(id: number, ids: ReadonlySet<number>): string | null {
   return ids.has(Number(id)) ? `${BASE}${id}.png` : null;
