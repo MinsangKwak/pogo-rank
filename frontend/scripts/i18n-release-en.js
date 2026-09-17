@@ -15,6 +15,9 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 const RELEASE_NOTES_EN = {
+  '2026-09-17 · v3.57.1': [
+    '**Analytics is collected on moncamp.kr only** — another site sharing the old host no longer mixes into our numbers. Nothing changes on screen.',
+  ],
   '2026-09-17 · v3.57.0': [
     '**Screen-by-screen usage is now measured correctly** — moving between screens used to register as a single page. Nothing changes on screen.',
   ],

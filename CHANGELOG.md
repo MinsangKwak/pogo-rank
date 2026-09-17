@@ -22,7 +22,18 @@
 ---
 
 <details open>
-<summary><b>2026-09-17</b> — 2판 · <code>v3.56.0 … v3.57.0</code></summary>
+<summary><b>2026-09-17</b> — 3판 · <code>v3.56.0 … v3.57.1</code></summary>
+
+<details>
+<summary><b>v3.57.1</b> · <code>수정</code> 집계 호스트를 moncamp.kr 로 좁힌다</summary>
+
+GA 보고서에 **우리 것이 아닌 글 제목이 섞여 있었다**(`CODE DIARY` 2건). 호스트 이름으로 갈라 보니 전부 `minsangkwak.github.io` 에서 왔다 — 옛 배포 주소(`/pogo-rank`)와 **다른 사이트가 같은 호스트에 얹혀 있는** 곳이다.
+
+그 사이트의 소스·커밋 이력 200개·지금 서빙 중인 번들을 모두 확인했고 **우리 측정 ID 는 쓰지 않는다**(자기 것 `G-KVRX9FBNDC` 만). 그래서 코드가 새는 것은 아니고, 캐시에 갇힌 옛 클라이언트 쪽 문제로 본다.
+
+스니펫의 호스트 조건에서 `github.io` 를 뺀다. 옛 주소는 2026-09-14 부터 `moncamp.kr` 로 301 이라 남겨 둘 이유가 없었다. **이미 갇힌 사람에게는 닿지 않는다** — 그쪽은 옛 번들을 돌기 때문이다. 앞으로를 막는 것이다.
+
+</details>
 
 <details>
 <summary><b>v3.57.0</b> · <code>수정</code> 화면별 측정 — 해시 라우트를 가상 경로로, 전환마다 page_view</summary>
