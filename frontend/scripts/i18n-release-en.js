@@ -15,6 +15,9 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 const RELEASE_NOTES_EN = {
+  '2026-09-17 · v3.57.0': [
+    '**Screen-by-screen usage is now measured correctly** — moving between screens used to register as a single page. Nothing changes on screen.',
+  ],
   '2026-09-17 · v3.56.0': [
     '**Korean text no longer leaks into the English pages** — the new home cards were not being translated.',
     '**The current menu item stands out again** — it had become the same colour as hover.',
