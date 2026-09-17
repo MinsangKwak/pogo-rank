@@ -29,13 +29,16 @@ function NavItem({ route, now }: { route: RouteDef; now: string }) {
   );
 }
 
-export function AppBar({ onMenu }: { onMenu: () => void }) {
+export function AppBar({ onMenu, home }: { onMenu: () => void; home: boolean }) {
   const theme = usePrefStore((s) => s.theme);
   const toggleTheme = usePrefStore((s) => s.toggleTheme);
   return (
     <header className="app-bar">
       <div className="app-bar__head">
-        <button className="icon-btn" aria-label="이전 화면" onClick={() => history.back()}>←</button>
+        {/* 2026-09-17 홈에는 뒤로가기가 없다 — v3 app-shell.js 의 `backButton.hidden = home`.
+            여기가 처음이라 돌아갈 앞 화면이 없고, 있는 버튼은 "누를 수 있다" 는 약속이다 (제보) */}
+        <button className="icon-btn" aria-label="이전 화면" hidden={home}
+          onClick={() => { if (history.length > 1) history.back(); else location.hash = '#/'; }}>←</button>
         <h1 id="app-title" tabIndex={-1}>
           <a className="app-bar__logo" href="#/">moncamp</a>
         </h1>

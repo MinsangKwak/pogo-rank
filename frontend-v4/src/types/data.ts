@@ -54,6 +54,8 @@ export interface RankRow {
   charged: string;
   gmax?: boolean;
   unrel?: boolean;              // 데이터만 있고 아직 게임에 없는 줄
+  /** 지난 갱신 대비 순위 변동 (backend/rank_diff.py). 양수면 상승, 음수면 하락. 안 움직였으면 없다 */
+  d?: number;
 }
 
 export interface PveRow extends RankRow {
@@ -65,6 +67,9 @@ export interface PveRow extends RankRow {
   ctype?: TypeKey;
   /** 차지기가 한 사이클에서 차지하는 피해 비중 (두 기술 타입이 갈릴 때만) */
   cshare?: number;
+  /** '일반'(PVE_EASY) 표에만 있다 — 같은 속성 최강 어태커 대비 % 와 티어 글자 */
+  ratio?: number;
+  tier?: string;
 }
 
 export interface DmaxRow extends RankRow {
@@ -176,6 +181,16 @@ export interface MetaBundle {
   RANK_FRESH_DAYS: number;
   DATA_FETCHED: string;
   DATA_STALE: string[];
+}
+
+/**
+ * 활용처 — 이름 → [[순위표, 순위], …] (v3 VALUE_DATA.usage_places).
+ * 압축 형태라 333종을 담고도 32KB 다.
+ */
+export interface UsageBundle {
+  USAGE_PLACES: Record<string, [string, number][]>;
+  /** 이름 → [PvE, PvP] 0~100 점 (v3 VALUE_DATA.meter). 도감 줄의 알약이 쓴다 */
+  METER: Record<string, [number, number]>;
 }
 
 export interface Manifest {

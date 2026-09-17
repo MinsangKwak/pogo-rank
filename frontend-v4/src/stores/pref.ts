@@ -22,12 +22,22 @@ function readTheme(): Theme {
   return window.matchMedia?.('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
 }
 
-export function readCols(screen: string, fallback: 'grid' | 'list'): 'grid' | 'list' {
+/**
+ * 보기 방식의 기본값은 **화면 폭이 정한다** — v3 dom.js wideCards() 와 같은 1100px 경계.
+ * 좁은 화면에서 카드를 기본으로 두면 한 줄에 한 장씩 서서 스크롤만 길어지고,
+ * CSS 가 카드용으로 감춰 둔 칸(세대·CP·타입)까지 같이 사라진다.
+ * (처음에 폭과 무관하게 grid 를 기본으로 뒀다가 390px 에서 v3 와 다른 줄이 나왔다.)
+ */
+export function wideCards(): boolean {
+  return window.matchMedia?.('(min-width: 1100px)').matches ?? false;
+}
+
+export function readCols(screen: string, fallback?: 'grid' | 'list'): 'grid' | 'list' {
   try {
     const saved = localStorage.getItem(COLS_KEY(screen));
     if (saved === 'grid' || saved === 'list') return saved;
   } catch { /* 위와 같다 */ }
-  return fallback;
+  return fallback ?? (wideCards() ? 'grid' : 'list');
 }
 
 interface PrefState {

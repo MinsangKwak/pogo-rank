@@ -38,7 +38,10 @@ for (const name of ['data.js', 'data-lazy.js']) {
 }
 const readGlobal = (key) => vm.runInContext(`typeof ${key} === 'undefined' ? undefined : ${key}`, sandbox);
 
-// 파일 하나 = 같이 바뀌는 표 묶음
+// 파일 하나 = 같이 바뀌는 표 묶음.
+// 값은 전역 이름이거나 [실을 이름, 전역에서 꺼낼 경로] 다 —
+// 'usage' 는 VALUE_DATA 전체(319KB)가 아니라 그 안의 한 가지만 필요해서 경로로 집는다.
+// 순위 화면 셋이 모두 '활용 N곳' 배지에 쓰므로 따로 가른다
 const BUNDLES = {
   dex: ['DEX_DATA', 'TYPE_KO', 'TYPE_EN', 'FORM_LABELS', 'SPRITE_IDS', 'SPRITE_ANIM_IDS'],
   max: ['DMAX_DATA', 'DMAX_TANK', 'DMAX_TIER', 'MAX_POOL'],
@@ -47,6 +50,10 @@ const BUNDLES = {
   gameday: ['GAMEDAY', 'MOVE_CHANGES'],
   'fav-events': ['FAV_EVENTS'],
   updates: ['GAME_UPDATES', 'GAME_ARCHIVE'],
+  // usage 가 아니라 usage_places 다 — usage(80종)는 요약이고 **원본은 usage_places(333종)** 이다.
+  // 배지 숫자가 v3 와 하나 어긋나 찾았다: '거다이맥스 고릴타' 가 13곳인데 12곳으로 나왔고,
+  // 나머지 1곳은 원종 '고릴타' 줄에 있었다 (v3 usagePlacesOf 가 이 표를 먼저 본다)
+  usage: [['USAGE_PLACES', 'VALUE_DATA.usage_places'], ['METER', 'VALUE_DATA.meter']],
   meta: ['RANK_DELTA_DATE', 'RANK_FRESH_DAYS', 'DATA_FETCHED', 'DATA_STALE'],
 };
 
@@ -56,13 +63,14 @@ let total = 0;
 
 for (const [name, keys] of Object.entries(BUNDLES)) {
   const payload = {};
-  for (const key of keys) {
-    const value = readGlobal(key);
+  for (const entry of keys) {
+    const [name, path] = Array.isArray(entry) ? entry : [entry, entry];
+    const value = readGlobal(path);
     if (value === undefined) {
-      console.error(`전역 ${key} 를 v3 번들에서 못 찾았습니다 — 이름이 바뀌었는지 확인하세요.`);
+      console.error(`${path} 를 v3 번들에서 못 찾았습니다 — 이름이 바뀌었는지 확인하세요.`);
       process.exit(1);
     }
-    payload[key] = value;
+    payload[name] = value;
   }
   const text = JSON.stringify(payload);
   // 해시는 파일명이 아니라 매니페스트에 둔다 — 정적 호스팅에서 경로가 하나면 캐시 무효화를 쿼리로 한다

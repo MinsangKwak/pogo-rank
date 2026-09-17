@@ -35,11 +35,11 @@ function Screen({ route, onOpen }: { route: RouteDef; onOpen: (sprite: number) =
   switch (route.id) {
     case 'home': return <Home onOpen={onOpen} />;
     case 'dex': return <Dex onOpen={onOpen} />;
-    case 'dmax': return <Dmax />;
-    case 'pve': return <Pve />;
-    case 'pvp': return <Pvp />;
-    case 'raids': return <Raids />;
-    case 'eggs': return <Eggs />;
+    case 'dmax': return <Dmax onOpen={onOpen} />;
+    case 'pve': return <Pve onOpen={onOpen} />;
+    case 'pvp': return <Pvp onOpen={onOpen} />;
+    case 'raids': return <Raids onOpen={onOpen} />;
+    case 'eggs': return <Eggs onOpen={onOpen} />;
     case 'schedule': return <Schedule />;
     case 'game-updates': return <GameUpdates />;
     // 잠긴 화면 — 잠금은 라우터 표(locked)가 정한다 (v3 와 같은 규칙)
@@ -73,7 +73,7 @@ export default function App() {
         <div className="px-ball px-ball--2" />
       </div>
 
-      <AppBar onMenu={() => setMenuOpen(true)} />
+      <AppBar onMenu={() => setMenuOpen(true)} home={route.id === 'home'} />
       <AppNav now={route.id} />
 
       {/* 홈이 아닌 화면에는 머리줄 — v3 는 page 라우트에만 붙였지만 셸 라우트도 같은 머리를 쓴다 */}
