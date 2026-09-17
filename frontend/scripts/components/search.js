@@ -3,6 +3,7 @@
 //
 // 제공하는 전역
 //   buildSearchIndex()             검색 대상 목록을 만들어 캐시해 두고 돌려준다
+//   searchVisible(list)            그중 **지금 게임에 있는 것만** 남긴다 (미구현은 관리자만)
 //   monNorm(text)                  검색용 정규화 (공백 제거 + 소문자)
 //   monSearch(candidates, query, limit)  후보 목록에서 이름으로 걸러 정확도순으로 돌려준다
 //   searchTypePool(types)          검색 색인에서 그 타입 조합만 골라 돌려준다
@@ -29,22 +30,33 @@ let _searchIndex = null;
 onLazyData(() => { _searchIndex = null; });
 
 // 검색 대상 목록을 만든다.
-//   반환값  [{ sprite, name, en, types }, …] — 이름 기준으로 중복이 제거된 배열
+//   반환값  [{ sprite, name, en, types, unrel }, …] — 이름 기준으로 중복이 제거된 배열
 // 빌드가 주입하는 데이터들의 모양이 리그별·보스별·티어별로 제각각이라, 구조를 일일이
 // 따라가는 대신 전체를 재귀로 훑으면서 "sprite와 name을 가진 객체"를 모두 긁어모은다.
 function buildSearchIndex() {
   if (_searchIndex) return _searchIndex;
   // 같은 포켓몬이 여러 랭킹에 나오므로 이름을 키로 삼아 먼저 만난 것만 남긴다
   const byName = new Map();
+  // 2026-09-17 v3.61.2 (긴급) **미출시 표시를 색인까지 들고 온다.**
+  //   순위표 행에는 있는 unrel(맥스 표) · released:false(시트)를 여기서 버리고 있었다.
+  //   그래서 '거다이맥스 방패왕 자마젠타' 처럼 게임에 없는 폼이 도감 검색에 그냥 나왔고,
+  //   미구현 딱지조차 안 붙었다 — 딱지는 원종 도감번호(889, 출시됨)로 판정하기 때문이다.
+  const unreleased = (pokemon) => pokemon.unrel === true || pokemon.released === false;
   const add = (pokemon) => {
-    if (pokemon?.name && pokemon.sprite != null && !byName.has(pokemon.name)) {
-      byName.set(pokemon.name, {
-        sprite: pokemon.sprite,
-        name: pokemon.name,
-        en: pokemon.en ?? '',
-        types: pokemon.types ?? [],
-      });
+    if (!pokemon?.name || pokemon.sprite == null) return;
+    const found = byName.get(pokemon.name);
+    if (found) {
+      // 같은 이름이 여러 표에 나온다 — 한 곳에서라도 '출시됨' 으로 나오면 그쪽을 믿는다
+      if (found.unrel && !unreleased(pokemon)) found.unrel = false;
+      return;
     }
+    byName.set(pokemon.name, {
+      sprite: pokemon.sprite,
+      name: pokemon.name,
+      en: pokemon.en ?? '',
+      types: pokemon.types ?? [],
+      unrel: unreleased(pokemon),
+    });
   };
   // 배열이면 원소마다, 객체면 값마다 파고든다. 포켓몬처럼 생긴 객체는 담고,
   // 담은 뒤에도 그 안을 계속 훑는다 (추천 덱처럼 객체 안에 또 목록이 있는 경우가 있다)
@@ -66,7 +78,11 @@ function buildSearchIndex() {
   // 도감 키는 문자열 도감번호라서 스프라이트 id로 쓸 때 +로 숫자로 바꾼다
   for (const [dexNumber, name] of Object.entries(DEX_DATA.names ?? {})) {
     if (!byName.has(name)) {
-      byName.set(name, { sprite: +dexNumber, name, en: '', types: DEX_DATA.forms[dexNumber]?.types ?? [] });
+      // **종 단위 미출시는 여기서 거르지 않는다.** 오거폰처럼 종 전체가 아직 안 나온 경우는
+      // v3.36.0 부터 '지우지 않고 [미구현] 딱지로 보여 준다' 가 규칙이고, 그 판정은
+      // dexSearchEntries() 가 DEX_DATA.rel 로 따로 한다. 여기서 막으면 도감에서 통째로 사라진다
+      // (tests/e2e/open-all.js 의 오거폰 검사가 이걸 잡았다)
+      byName.set(name, { sprite: +dexNumber, name, en: '', types: DEX_DATA.forms[dexNumber]?.types ?? [], unrel: false });
     }
   }
   _searchIndex = [...byName.values()];
@@ -113,8 +129,21 @@ function monSearch(candidates, query, limit = 8) {
 // 색인 항목이 이미 types 를 들고 있으니 여기서 직접 거른다. 고른 타입을 **모두** 가진 것만 남긴다
 // (물+비행 = 물이면서 비행, 둘 중 하나가 아니다 — 상성 검색이 쓰던 규칙 그대로다)
 function searchTypePool(types) {
-  if (!types.length) return buildSearchIndex();
-  return buildSearchIndex().filter((pokemon) => types.every((typeKey) => pokemon.types?.includes(typeKey)));
+  const pool = searchVisible(buildSearchIndex());
+  if (!types.length) return pool;
+  return pool.filter((pokemon) => types.every((typeKey) => pokemon.types?.includes(typeKey)));
+}
+
+// 2026-09-17 v3.61.2 (긴급) 게임에 아직 없는 **폼**은 검색에서 뺀다.
+//   D-MAX 화면은 처음부터 [미구현] 체크를 관리자에게만 열어 두는데(views/max.js maxUnrelAllowed),
+//   검색만 그 문을 안 잠가 두고 있었다 — 한쪽에서 감춘 것이 다른 쪽으로 새면 감춘 적이 없는 것과 같다.
+//
+//   **종 단위 미출시(오거폰 등)는 여기서 안 거른다** — 그쪽은 v3.36.0 부터 딱지를 달아 보여 주는 것이
+//   규칙이고, 도감 목록에도 그렇게 서 있다. 거르는 것은 순위표 행이 '아직' 이라고 말한 폼뿐이다.
+//   딥링크(#/mon/…)는 색인을 그대로 쓰므로 공유된 링크는 계속 열린다
+function searchVisible(list) {
+  const admin = typeof maxUnrelAllowed === 'function' ? maxUnrelAllowed() : false;
+  return admin ? list : (list ?? []).filter((pokemon) => !pokemon.unrel);
 }
 
 // 검색어에서 타입 이름 토큰을 떼어 낸다. "물 풀 메가" → { types: ['water','grass'], query: '메가' }

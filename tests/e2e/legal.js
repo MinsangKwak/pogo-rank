@@ -124,7 +124,8 @@ suite(async () => {
   ok('계정 삭제 버튼', await page.locator('.drawer__panel .account__danger').isVisible());
   await page.click('.drawer__panel .account__danger');
   await page.waitForSelector('.consent__modal');
-  ok('삭제 확인 팝업 항목 3개', (await page.locator('.consent__modal .priv__list li').count()) === 3);
+  // v3.61.0 에 ★ 와 개체 기록을 따로 적으면서 셋에서 넷이 됐다 (auth.js confirmDeleteAccount)
+  ok('삭제 확인 팝업 항목 4개', (await page.locator('.consent__modal .priv__list li').count()) === 4);
   await page.click('.consent__modal .account__danger');
   await page.waitForFunction(() => AUTH.status === 'anon', null, { timeout: 5000 });
   const db = await page.evaluate(() => JSON.parse(localStorage.getItem('pogo_mock_db')));
