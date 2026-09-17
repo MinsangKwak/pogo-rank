@@ -94,6 +94,39 @@ suite(async () => {
   // 새 잠금 화면이 없다 — 홈 타일의 잠김 개수는 라우터 표 그대로다 (open-all.js 가 전체 개방 상태를 본다)
   ok('홈에 새 잠금 요소가 없다', (await page.locator('.home__welcome [aria-disabled="true"], .home__picks [aria-disabled="true"]').count()) === 0);
 
+  // ── 팝업 버튼은 한 벌이다 (2026-09-17 v3.60.0)
+  // 관리자 팝업의 버튼만 공책 옷을 입고 있어, 같은 문법의 동의·로그인 유도 팝업은 맨 테두리로 남아 있었다.
+  // 여기서 지킬 것 — 팝업 안의 버튼은 **같은 테두리·그림자·모서리**를 쓰고, 누를 것 하나만 색이 찬다
+  const all = [];
+  for (const [name, open] of [['로그인 전에 확인해 주세요', 'openTermsConsent(() => {})'],
+                              ['로그인하면 열려요', "openLoginInvite('육성 플래너')"]]) {
+    await page.evaluate(open);
+    await page.waitForTimeout(400);
+    const btns = await page.evaluate(() => [...document.querySelectorAll('.modal__box .drawer__item')].map((node) => {
+      const cs = getComputedStyle(node);
+      return { primary: node.classList.contains('account__login'), disabled: node.disabled,
+        border: cs.borderTopWidth, radius: cs.borderTopLeftRadius, shadow: cs.boxShadow !== 'none',
+        bg: cs.backgroundColor, fg: cs.color, h: Math.round(node.getBoundingClientRect().height) };
+    }));
+    ok(`${name}: 버튼이 있다`, btns.length >= 1, String(btns.length));
+    all.push(...btns.map((b) => `${b.border}/${b.radius}`));
+    ok(`${name}: 누를 수 있는 버튼은 종이에서 떠 있다`, btns.filter((b) => !b.disabled).every((b) => b.shadow),
+      JSON.stringify(btns.map((b) => [b.disabled, b.shadow])));
+    ok(`${name}: 손가락 닿는 높이(44px)`, btns.every((b) => b.h >= 44), JSON.stringify(btns.map((b) => b.h)));
+    // 누를 것 하나 — 살아 있을 때만 색이 찬다 (잠긴 [동의하고 로그인] 은 비어 있어야 "아직" 이 읽힌다)
+    const primary = btns.filter((b) => b.primary);
+    ok(`${name}: 색이 찬 버튼은 하나뿐`, primary.length === 1, JSON.stringify(primary));
+    if (primary[0] && !primary[0].disabled) {
+      ok(`${name}: 그 하나는 바탕과 글자가 뒤집힌다`, primary[0].bg !== primary[0].fg, `${primary[0].bg} / ${primary[0].fg}`);
+    } else {
+      ok(`${name}: 잠긴 버튼은 그림자를 내린다`, primary[0]?.shadow === false, JSON.stringify(primary[0]));
+    }
+    await page.evaluate(() => closeModal());
+    await page.waitForTimeout(300);
+  }
+  // 두 팝업을 가로질러 같은 테두리·모서리다 — 팝업마다 버튼이 달라 보이던 것이 이 검사로 막힌다
+  ok('팝업이 달라도 버튼 테두리·모서리는 한 벌', new Set(all).size === 1, JSON.stringify([...new Set(all)]));
+
   // ── EN · 다크
   await toEnglish(page);
   await page.waitForTimeout(600);

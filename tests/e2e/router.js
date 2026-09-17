@@ -2,7 +2,7 @@
 // v2.30.0 주소 체계 회귀 — 라우트 표 · 옛 주소 · 측정용 식별자
 //
 // 이 스위트가 지키려는 것
-//   - 새 주소(#/pve · #/dmax · #/planner/collection)가 메뉴 구조와 1:1 인가
+//   - 새 주소(#/pve · #/dmax · #/planner)가 메뉴 구조와 1:1 인가
 //   - **옛 주소로 들어와도 같은 화면에 닿는가** — 이미 공유·북마크된 링크를 깨지 않는다
 //   - 옛 주소가 뒤로가기 기록에 쌓이지 않는가 (replace 로 돌린다)
 //   - 화면마다 DOM 에 식별자가 붙는가 — GA·히트맵이 주소를 다시 파싱하지 않아도 되게
@@ -16,14 +16,14 @@ const ROUTES = [
   ['#/dmax', '#/dmax', 'dmax', 'D-MAX'],
   ['#/pve', '#/pve', 'pve', '레이드 · PvE'],
   ['#/pvp', '#/pvp', 'pvp', '배틀 · PvP'],
-  ['#/planner', '#/planner', 'planner', '육성 플래너'],
-  ['#/planner/collection', '#/planner/collection', 'planner-collection', '내 포켓몬'],
+  ['#/planner', '#/planner', 'planner', '내 포켓몬'],
   ['#/dex', '#/dex', 'dex', '포켓몬 도감'],
   ['#/schedule', '#/schedule', 'schedule', '이벤트 일정'],
   ['#/raids', '#/raids', 'raids', '레이드 보스'],
   ['#/eggs', '#/eggs', 'eggs', '알 부화'],
-  // v3.4.0 ★ 즐겨찾기를 걷어냈다 — 저장해 둔 옛 주소는 도감으로 잇는다 (모르는 주소로 떨어지지 않게)
-  ['#/favs', '#/dex', 'dex', '포켓몬 도감'],
+  // v3.4.0 에 ★ 즐겨찾기를 걷어내며 옛 주소를 도감으로 보냈었다 — 그때는 ★ 화면이 없어서다.
+  // 2026-09-17 v3.61.0 ★ 화면이 돌아왔으니 제 화면으로 되돌린다
+  ['#/favs', '#/planner', 'planner', '내 포켓몬'],
 ];
 // 옛 주소 → 새 주소 (v2.29.x 이전에 공유된 링크)
 const LEGACY = [
@@ -31,7 +31,9 @@ const LEGACY = [
   ['#/rank/pve', '#/pve', 'pve'],
   ['#/rank/pvp', '#/pvp', 'pvp'],
   ['#/plan', '#/planner', 'planner'],
-  ['#/plan/collection', '#/planner/collection', 'planner-collection'],
+  // 2026-09-17 v3.61.0 두 화면을 하나로 합치면서 자식 주소도 부모로 온다 — 공유된 링크가 죽지 않게
+  ['#/planner/collection', '#/planner', 'planner'],
+  ['#/plan/collection', '#/planner', 'planner'],
 ];
 
 suite(async () => {
@@ -81,11 +83,10 @@ suite(async () => {
   const navHrefs = await page.locator('.nav-menu a').evaluateAll((ns) => ns.map((n) => n.getAttribute('href')));
   ok('이동 목록에 옛 주소 없음', !navHrefs.some((href) => /#\/(rank|plan)(\/|$)/.test(href)), navHrefs.filter((h) => /rank|\/plan\b/.test(h)).join(' '));
   ok('이동 목록에 새 주소', navHrefs.includes('#/pve') && navHrefs.includes('#/planner'), navHrefs.join(' '));
-  // 2026-09-12 v2.66.0 '내 포켓몬' 이 메뉴로 돌아왔다 — 육성 플래너 **바로 뒤**에 선다.
+  // 2026-09-17 v3.61.0 '육성 플래너' 와 '내 포켓몬' 을 한 줄로 합쳤다 — 메뉴에 남는 것은 하나뿐이다.
   // 표에 적은 순서가 아니라 소속 순서로 정렬한다 (router.js ROUTE_NAV)
-  ok('이동 목록에 내 포켓몬 줄', navHrefs.includes('#/planner/collection'), navHrefs.join(' '));
-  ok('내 포켓몬이 육성 플래너 바로 뒤',
-    navHrefs.indexOf('#/planner/collection') === navHrefs.indexOf('#/planner') + 1, navHrefs.join(' '));
+  ok('이동 목록에 내 포켓몬 줄', navHrefs.includes('#/planner'), navHrefs.join(' '));
+  ok('합쳐 낸 자식 주소는 메뉴에 없다', !navHrefs.includes('#/planner/collection'), navHrefs.join(' '));
   // 도구 화면(#/pvp/deck 등)은 메뉴에 두지 않는다 — 부모 화면의 버튼 하나가 유일한 길이다
   ok('도구 화면은 메뉴에 없다', !navHrefs.some((href) => /#\/(pvp\/(deck|ivrank)|pve\/solo)$/.test(href)), navHrefs.join(' '));
 

@@ -75,6 +75,22 @@ def parse_image(url):
     return int(match.group(1)), form
 
 
+# 2026-09-17 v3.60.0 이벤트에 걸린 **도감번호**만 뽑는다 (즐겨찾기 소식 맞추기용).
+#   원본의 그림 주소 형식이 **두 가지**다 — 하나만 보면 절반을 놓친다 (실측: 꼬렛 스포트라이트).
+#     .../pm570.icon.png              새 형식 (parse_image 가 보는 것)
+#     .../pokemon_icon_019_00.png     옛 형식 — 도감번호 019
+#   폼은 보지 않는다. 담는 단위가 종(도감번호)이라 폼까지 맞출 이유가 없다.
+DEX_IN_IMAGE = re.compile(r'/pm(\d+)\.|/pokemon_icon_(\d+)_')
+
+def event_dex_numbers(item):
+    found = set()
+    for match in DEX_IN_IMAGE.finditer(json.dumps(item.get('extraData') or {})):
+        number = match.group(1) or match.group(2)
+        if number:
+            found.add(int(number))
+    return sorted(found)
+
+
 # 한글 이름을 만든다. 종 이름은 반드시 dex 이름표에서 가져오고, 폼 라벨은 FORM_KO 에 있는 것만 붙인다.
 # 이름표에 없는 번호면 None 을 돌려 그 항목을 통째로 버린다 (모르는 이름을 지어내지 않는다).
 def korean_name(names, sprite_id, form_token, english):
@@ -150,14 +166,20 @@ def build_events(raw):
         start, end = item.get('start'), item.get('end')
         if not start:
             continue
-        events.append({
+        row = {
             'id': item.get('eventID'),
             'title': item.get('name'),      # 영문 원제 — 화면에서 "원문" 표시와 함께 보여 준다
             'heading': item.get('heading'),
             'type': item.get('eventType'),
             'start': start,
             'end': end or start,
-        })
+        }
+        # v3.60.0 걸린 포켓몬이 있을 때만 싣는다. 대부분의 이벤트(시즌·패스·GBL)는 특정 종이 없고,
+        # 아직 발표 전인 커뮤니티 데이도 비어 있다 — 없는 것과 "아직 모른다" 를 같은 빈 값으로 둔다
+        dex = event_dex_numbers(item)
+        if dex:
+            row['dex'] = dex
+        events.append(row)
     events.sort(key=lambda e: e['start'])
     return events
 

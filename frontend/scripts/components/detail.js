@@ -768,14 +768,57 @@ function detailBuild(state) {
     form: formKind || 'base', view: isDex ? 'dex' : 'list', tab: state.tab, screen: state.screen,
   });
 
-  // ── 머리줄: 제목 · [＋ 내 포켓몬] · [포켓몬 도감] · ✕. 도감은 페이지 이동이라 하단이 아니라 여기(2026-09-16 v3.50.1 제보).
+  // 📣 소식 자리 — **이름 아래**다. 머리줄에 두었더니 390px 에서 버튼 넷이 제목을 15px 로 눌러
+  // 머리줄이 131px 로 부풀었다(실측). 소식은 누르는 것보다 읽는 것이라 넓은 줄이 맞다.
+  // ★ 를 누르면 여기도 같이 바뀐다 — 담자마자 "무엇이 열렸는지" 가 보여야 한다.
+  // display:contents 라 비어 있을 때 빈 줄을 만들지 않는다 (modal.css)
+  const favNewsSlot = el('span', { class: 'detail__favnews-slot' });
+  const paintFavNews = () => {
+    favNewsSlot.textContent = '';
+    const node = typeof favNewsNode === 'function' ? favNewsNode(dex) : '';
+    if (node) favNewsSlot.append(node);
+  };
+  paintFavNews();
+
+  // ★ 한 개. 누르면 그 자리에서 모양만 바뀐다 — 팝업을 다시 그리면 탭·스크롤·입력값이 날아간다
+  function favStarNode(mon) {
+    const dex = dexOf(mon.sprite);
+    const node = el('button', { class: 'detail__bar-btn detail__fav', 'data-dex': String(dex ?? '') });
+    const paint = () => {
+      const on = typeof isFav === 'function' && isFav(dex);
+      node.classList.toggle('is-on', on);
+      node.setAttribute('aria-pressed', String(on));
+      node.title = on ? '즐겨찾기에서 빼기' : '즐겨찾기에 담기 — 이 포켓몬의 일정을 챙겨 드려요';
+      node.textContent = '';
+      node.append(el('span', { class: 'detail__fav-star', 'aria-hidden': 'true' }, on ? '★' : '☆'),
+        el('span', { class: 'detail__fav-label' }, on ? '담음' : '즐겨찾기'));
+    };
+    node.onclick = async (event) => {
+      event.stopPropagation();
+      await toggleFav(dex, '포켓몬 상세');
+      paint();
+      paintFavNews();
+    };
+    paint();
+    return node;
+  }
+
+  // ── 머리줄: 제목 · [★] · [＋ 내 포켓몬] · [포켓몬 도감] · ✕. 도감은 페이지 이동이라 하단이 아니라 여기(2026-09-16 v3.50.1 제보).
   // ✕ 는 팝업 껍데기(modal.js)의 것이 이 줄 오른쪽 끝에 겹쳐 앉는다 — 스크롤과 무관하게 늘 위에 있다
   const bar = el('div', { class: 'detail__bar' },
     el('button', { class: 'detail__bar-back', 'aria-label': '상세로 돌아가기', onclick: () => detailShowScreen(body, state, 'detail') }, '‹ ', '상세로'),
     el('p', { class: 'detail__bar-title' }, state.screen === 'calc' ? 'CP 계산기' : '포켓몬 상세'),
     el('div', { class: 'detail__top-actions' },
+      // 2026-09-17 v3.60.0 ★ 즐겨찾기 — **입구는 여기 하나뿐이다.** 목록 카드에는 달지 않는다
+      //   (v2.66.0 에 입구 셋을 하나로 모았고, v3.4.0 에 "담은 뒤 할 일이 없어" 통째로 걷어냈던 자리다).
+      //   담아 두면 그 포켓몬의 커뮤니티 데이·스포트라이트·레이드 일정을 챙겨 준다.
+      //   비로그인이 눌러도 버튼은 보인다 — 무엇이 열리는지 알아야 로그인할 이유가 생긴다(누르면 유도 팝업)
+      typeof toggleFav === 'function' ? favStarNode(pokemon) : '',
       // 2026-09-07 v2.15.0 (QA-54) ➕ 내 개체로 저장 — 로그인한 계정만
-      authEnabled() && AUTH.status === 'ok' && form && typeof planAddFromDetail === 'function'
+      // 2026-09-17 v3.61.0 개체 기록의 스위치를 내리면 이 버튼도 같이 내린다 —
+      //   누르면 편집 팝업이 열리고 저장까지 되는데 그 값을 보여 주는 화면이 없다 (planner/collection.js)
+      typeof PLAN_MONS_ENABLED !== 'undefined' && PLAN_MONS_ENABLED
+        && authEnabled() && AUTH.status === 'ok' && form && typeof planAddFromDetail === 'function'
         ? el('button', { class: 'detail__bar-btn detail__plan', title: '🌱 플래너 내 포켓몬에 이 개체 저장',
             onclick: (event) => { event.stopPropagation(); planAddFromDetail(pokemon); } }, '＋ ', '내 포켓몬')
         : '',
@@ -797,7 +840,9 @@ function detailBuild(state) {
       el('h2', {}, baseName),
       // 2026-09-16 v3.50.5 이 줄은 늘 "반대 언어의 이름" — 한국어 화면엔 Metagross, 영어 화면엔 메타그로스 (i18n.js data-i18n="alt").
       // 사전을 태우면 영어 화면에서 이름 줄과 똑같은 Metagross 가 두 번 선다
-      pokemon.en ? el('div', { class: 'detail__en-inline', 'data-i18n': 'alt', 'data-alt-ko': pokemon.en, 'data-alt-en': baseName }, pokemon.en) : ''));
+      pokemon.en ? el('div', { class: 'detail__en-inline', 'data-i18n': 'alt', 'data-alt-ko': pokemon.en, 'data-alt-en': baseName }, pokemon.en) : '',
+      // 2026-09-17 v3.60.0 📣 담아 둔 포켓몬의 일정 — 실험 기능 참가자에게만 (components/favnews.js)
+      favNewsSlot));
 
   // ── 요약 탭: CP · 포획 CP · 기술 · (기술 변경) · 능력치
   const summary = el('div', { class: 'detail__pane', 'data-pane': 'summary' });

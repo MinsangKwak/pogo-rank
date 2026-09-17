@@ -40,7 +40,7 @@ from names import name_ko, species, FORM_KO
 import guard
 
 # ── 설정 ─────────────────────────────────────────────────────────────────────
-APP_VERSION = 'v3.58.0'  # 솔플 레이드 — 복합 타입 보정을 때리는 타입으로 (WBS-74) (v3.25.0 은 feature-advertisement 브랜치에 예약)
+APP_VERSION = 'v3.61.1'  # 합친 뒤 남은 옛 자리 정리 (계정 카드의 셈·[＋ 내 포켓몬]·#/favs) (v3.25.0 은 feature-advertisement 브랜치에 예약)
 # 2026-09-14 v3.28.0 index.html 의 색인 허용 줄 — dev 빌드가 이 줄을 noindex 로 바꿔 끼운다
 ROBOTS_INDEX_META = '<meta name="robots" content="index, follow, max-image-preview:large">'
 # 2026-09-05 v2.7.3 빌드 채널 — 'prod'(기본) / 'dev'. dev 브랜치 워크플로(.github/workflows/deploy-dev.yml)가 BUILD_CHANNEL=dev 로 부른다.
@@ -202,7 +202,7 @@ SCRIPTS = [
     'components/home.js',
     'components/type-dots.js', 'components/sprite.js', 'components/name.js', 'components/changes.js', 'components/row.js',  # 2026-09-04 changes: 기술 변경·순위 변동 뱃지 (row가 사용) · 2026-09-06 name: 폼 라벨 뱃지 (row·detail·search 가 사용)
     'components/list.js', 'components/chips.js', 'components/seg.js',
-    'components/history.js', 'components/modal.js', 'components/auth.js', 'components/detail.js',  # 2026-09-03 v2.2.0 auth: 로그인·즐겨찾기 (detail보다 먼저) · 2026-09-06 v2.11.0 history: 뒤로가기가 팝업·드로어를 닫게 (modal·drawer 가 사용)
+    'components/history.js', 'components/modal.js', 'components/auth.js', 'components/favnews.js', 'components/detail.js',  # 2026-09-03 v2.2.0 auth: 로그인·즐겨찾기 (detail보다 먼저) · 2026-09-06 v2.11.0 history: 뒤로가기가 팝업·드로어를 닫게 (modal·drawer 가 사용) · 2026-09-17 v3.60.0 favnews: ★ 담아 둔 포켓몬의 소식 배지 (auth 다음, detail 앞)
     'components/schedule.js', 'components/release.js', 'components/terms.js', 'components/privacy.js', 'components/consent.js', 'components/search.js', 'components/drawer.js',  # 2026-09-07 v2.18.0 terms: 약관·동의 팝업·IP 고지 (privacy·auth 가 사용) · consent: GA 동의 배너  # 2026-09-02 9월 일정표 달력 · 업데이트 팝업
     'components/favs.js', 'components/gameday.js', 'components/finder.js', 'components/ivrank.js', 'components/updates.js',  # 2026-09-16 v3.51.0 updates: 📢 게임 업데이트 (pages 가 PAGES 에 등록하므로 그 앞)  # 2026-09-11 v2.58.0 finder: 🔎 검색식 만들기 (pages 가 PAGES 에 등록하므로 그 앞) # 2026-09-05 favs: ★ 즐겨찾기 페이지 · 2026-09-08 gameday: ⚔️ 레이드 보스 · 🥚 알 부화 (pages가 PAGES에 등록하므로 그 앞)
     'planner/shell.js', 'planner/home.js', 'planner/collection.js',  # 2026-09-07 v2.15.0 🌱 플래너 모드 (QA-53 셸 · QA-54 내 포켓몬) — pages.js 가 #/plan 라우팅에 쓰므로 그 앞
@@ -505,7 +505,7 @@ GAME_UPDATE_ROLLOUT = {'planned', 'rolling', 'live', 'withdrawn', 'unknown'}
 # 표를 두 번 적는 셈이지만, 빌드가 프론트 소스를 파싱하게 만드는 쪽이 더 부서지기 쉽다.
 # 여기 없는 id 를 적으면 빌드가 선다 — 화면에서 죽은 링크가 되는 것보다 먼저 걸린다
 GAME_UPDATE_ROUTES = {'dex', 'dmax', 'pve', 'pvp', 'schedule', 'raids', 'eggs', 'finder',
-                      'planner', 'planner-collection', 'ivrank', 'pvp-deck', 'dmax-deck', 'pve-solo', 'changes'}
+                      'planner', 'ivrank', 'pvp-deck', 'dmax-deck', 'pve-solo', 'changes'}
 DATE_RE = re.compile(r'^\d{4}-\d{2}-\d{2}$')
 
 
@@ -612,6 +612,10 @@ def render_data_js(game_master, tables, stale, rank_delta_date, rank_fresh_days,
         return js_data(tight(tables[key])) if tables.get(key) is not None else empty
     gameday = tables.get('gameday')
     data_fetched = gameday.get('fetched', '') if isinstance(gameday, dict) else ''
+    # v3.60.0 즐겨찾기 소식 — 포켓몬이 걸린 이벤트만 추려 core 로 보낸다 (위 FAV_EVENTS)
+    fav_events = [{'id': e.get('id'), 'title': e.get('title'), 'type': e.get('type'),
+                   'start': e.get('start'), 'end': e.get('end'), 'dex': e['dex']}
+                  for e in ((gameday or {}).get('events') or []) if e.get('dex')]
     # 긴 라벨부터 — name.js 가 앞에서부터 맞춰 보므로 '가라르 달마모드' 가 '가라르' 보다 먼저 와야 한다.
     # 2026-09-12 v3.14.0 같은 길이 안은 가나다순 — 집합 순서를 그대로 쓰면 빌드마다 data.js 가 달라졌다(해시 무작위화)
     form_labels = sorted({label for label in FORM_KO.values() if label} | {'섀도우', '다이맥스', '거다이맥스'}, key=lambda label: (-len(label), label))
@@ -637,6 +641,11 @@ const DATA_STALE = {json.dumps(stale)};   // 2026-09-16 v3.47.0 검문에서 직
 // 홈의 주요 소식이 첫 화면에서 바로 필요해 core 에 둔다 — 지금 2건 ≈ 3KB.
 // 글이 20건을 넘으면 목록용 요약과 본문을 갈라 본문만 data-lazy.js 로 옮긴다
 const GAME_UPDATES = {js_data(tight(game_updates))};
+// 2026-09-17 v3.60.0 즐겨찾기 소식용 **최소분** — 포켓몬이 걸린 이벤트만, 배지를 세는 데 필요한 것만.
+//   왜 여기(core)에 두나 — 전체 일정(GAMEDAY)은 data-lazy.js 에 있어 일정 화면에 들어가야 읽힌다.
+//   배지는 홈·메뉴에서 바로 보여야 하므로 그 표를 기다릴 수 없다. 지금 13건 ≈ 1KB 다.
+//   맞추는 단위는 종(도감번호)이라 폼은 싣지 않는다 (components/favnews.js)
+const FAV_EVENTS = {js_data(tight(fav_events))};
 const SPRITE_IDS = {json.dumps(sorted(sprite_ids))};
 const SPRITE_ANIM_IDS = {json.dumps(sorted(sprite_anim_ids))};
 const SPRITES = {(open('data/sprites.json').read() if INLINE and os.path.exists('data/sprites.json') else 'null')};

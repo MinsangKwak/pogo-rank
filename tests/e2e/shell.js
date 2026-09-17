@@ -44,8 +44,10 @@ suite(async () => {
     //   `overflow-x: auto` 만 적으면 CSS 규칙상 세로도 auto 가 되어 스크롤 컨테이너가 된다.
     //   거기에 1px 이라도 세로 넘침이 있으면 커서가 그 위에 있는 동안 휠이 페이지로 가지 않는다
     //   (v2.26.0 탭 줄에서 실제로 났던 버그 — PC 에서 탭 줄이 화면 한가운데 와 더 잘 걸렸다).
-    const screens = ['', '#/dmax', '#/pve', '#/pvp', '#/dex', '#/favs',
-      '#/planner', '#/planner/collection', '#/schedule', '#/raids', '#/eggs', '#/release', '#/privacy', '#/terms'];
+    // 2026-09-17 v3.61.0 '#/favs' 를 뺐다 — 옛 ★ 주소가 도감이 아니라 #/planner 로 가게 됐고
+    // 그 화면은 잠겨 있어(비로그인) 목록이 안 그려진다. 같은 도감 화면은 위 '#/dex' 가 이미 본다
+    const screens = ['', '#/dmax', '#/pve', '#/pvp', '#/dex',
+      '#/planner', '#/schedule', '#/raids', '#/eggs', '#/release', '#/privacy', '#/terms'];
     const stuck = [];
     const traps = [];
     for (const hash of screens) {
@@ -211,10 +213,12 @@ suite(async () => {
     // 2026-09-10 v2.53.0 레이드 보스는 다르다 — 폭과 무관하게 카드가 기본이다
     // (gameday.js 가 layoutInitial 에 true 를 넘긴다). 그림을 크게 보여 주는 화면이라 그렇게 정했고,
     // 사용자가 보기 방식 토글로 언제든 목록으로 되돌릴 수 있다. 그래서 기대값을 화면마다 따로 둔다
-    for (const [hash, wantsGrid] of [['#/dex', wide], ['#/raids', true], ['#/favs', wide]]) {
+    // 2026-09-17 v3.61.0 '#/favs' 짝을 뺐다 — v3.4.0 부터 그 주소는 도감으로 넘어가 '#/dex' 와 같은
+    // 화면을 두 번 재고 있었고, v3.61.0 에 넘어가는 곳이 잠긴 #/planner 로 바뀌어 목록 자체가 없다
+    for (const [hash, wantsGrid] of [['#/dex', wide], ['#/raids', true]]) {
       // 앞 검사에서 보기 방식 토글을 눌러 저장된 선택이 남아 있다 — 기본값을 보려면 지우고 들어간다.
-      // 화면마다 키가 따로다 (pogo_dex_cols · pogo_raids_cols · pogo_favs_cols) — 전에는 도감 키
-      // 하나만 지워서 나머지 둘이 앞 검사가 남긴 선택을 읽었다. 셋을 다 지운다
+      // 화면마다 키가 따로다 (pogo_dex_cols · pogo_raids_cols) — 전에는 도감 키
+      // 하나만 지워서 나머지가 앞 검사가 남긴 선택을 읽었다. 다 지운다
       await page.evaluate(() => {
         for (const k of ['pogo_dex_cols', 'pogo_raids_cols', 'pogo_favs_cols']) {
           try { localStorage.removeItem(k); } catch { /* 저장 불가 환경 */ }
@@ -263,8 +267,9 @@ suite(async () => {
       await page.waitForTimeout(450);
       const s = await menuState();
       ok(`폭 왕복 ${wLabel}(${w}) 기준 안내·트레이너 코드 유지`, s.note && s.trainer, JSON.stringify(s));
-      // v2.47.0 '내 포켓몬'·'육성 플래너' 를 한 줄로 합쳐 11 → 10 · v3.51.0 📢 게임 업데이트가 늘어 12 (서비스 홈 + 화면 11개)
-      ok(`폭 왕복 ${wLabel}(${w}) 이동 목록 12개·한 벌`, s.nav === 12 && s.navMenus === 1, JSON.stringify(s));
+      // v2.47.0 '내 포켓몬'·'육성 플래너' 를 한 줄로 합쳐 11 → 10 · v3.51.0 📢 게임 업데이트가 늘어 12
+      // 2026-09-17 v3.61.0 다시 둘을 하나로 합쳐 11 (서비스 홈 + 화면 10개)
+      ok(`폭 왕복 ${wLabel}(${w}) 이동 목록 11개·한 벌`, s.nav === 11 && s.navMenus === 1, JSON.stringify(s));
       ok(`폭 왕복 ${wLabel}(${w}) #drawer-extra 한 벌(복제 아님)`, s.extras === 1, JSON.stringify(s));
     }
     ok('폭 왕복 중 오류 없음', errs.length === 0, errs.join(' | ').slice(0, 160));

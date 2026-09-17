@@ -105,8 +105,27 @@ body .modal__box .admin__row { padding:1.4rem; gap:1.2rem; background:color-mix(
 body .modal__box .admin__who { overflow-wrap:anywhere; }
 body .modal__box .admin__row.is-admin { border-left:4px solid #c92532; }
 body .modal__box .admin__acts { width:100%; padding-top:.6rem; }
-body .modal__box .admin__act { padding:.7rem 1rem; min-height:3.6rem; border:1.5px solid #b77d7e; box-shadow:.2rem .2rem 0 var(--notebook-shadow); }
-body .modal__box .admin__act.is-danger { color:#b51d31; border-color:#b51d31; }@media(max-width:699px) {
+body .modal__box .admin__act { padding:.7rem 1rem; min-height:3.6rem; border:1.5px solid var(--notebook-btn-edge); box-shadow:.2rem .2rem 0 var(--notebook-shadow); }
+body .modal__box .admin__act.is-danger { color:#b51d31; border-color:#b51d31; }
+body .modal__box .admin__act.is-on { color:var(--good); border-color:var(--good); }
+/* 2026-09-17 v3.60.0 팝업 안의 버튼은 한 벌이다.
+   관리자 줄(.admin__act)만 공책 옷을 입고 있어서, 같은 팝업 문법을 쓰는 동의·로그인 유도·계정 팝업의
+   버튼은 맨 테두리 그대로 남아 있었다 — 한 서비스 안에서 버튼이 두 종류로 보였다.
+   팝업의 버튼은 전부 .drawer__item 을 다므로 그 하나로 묶는다 (드로어 .account__actions 와 같은 문법). */
+body .modal__box .drawer__item { min-height:4.4rem; padding:.9rem 1.4rem; border:1.5px solid var(--notebook-btn-edge); border-radius:.6rem; background:var(--bg); box-shadow:.2rem .2rem 0 var(--notebook-shadow); font-family:"Galmuri11",sans-serif; font-size:1.2rem; }
+body .modal__box .drawer__item:hover { background:var(--notebook-tint); }
+/* 이 팝업에서 누를 것 하나 — 드로어의 .account__primary 와 같은 문법. [동의하고 로그인]·[로그인하기] 가 여기 든다 */
+body .modal__box .account__login { background:var(--notebook-red); color:#fff4e9; border-color:var(--notebook-red-deep); }
+body .modal__box .account__login:hover { background:var(--notebook-red-deep); }
+body .modal__box .account__danger { color:#b51d31; border-color:#b51d31; }
+/* 아직 누를 수 없는 버튼은 종이에서 떠 있지 않다 — 그림자를 내려 "지금은 아니다" 를 보인다 */
+body .modal__box .drawer__item:disabled { background:var(--bg); color:var(--muted); border-color:var(--notebook-edge); box-shadow:none; }
+/* 동의 팝업 — 제목은 관리자 팝업과 같은 점선 밑줄, 체크 두 줄은 공책 칸 */
+body .modal__box .consent__modal > .detail__name { font-family:"Galmuri11",sans-serif; padding-bottom:1.8rem; border-bottom:2px dotted var(--notebook-edge); }
+body .modal__box .consent__check { padding:1.2rem 1.4rem; border:1.5px solid var(--notebook-edge); background:color-mix(in srgb,var(--notebook-accent-soft) 12%,var(--bg)); cursor:pointer; }
+body .modal__box .consent__check:has(input:checked) { border-color:var(--notebook-red); background:var(--notebook-tint); }
+body .modal__box .consent__check input { accent-color:var(--notebook-red); }
+@media(max-width:699px) {
  body .modal { padding:1.4rem; align-items:center; }
  body .modal__wrap:not(:has(.detail--mon)) .modal__box { padding:2rem 1.6rem; }}
 /* Drawer as the notebook's inside cover. */
@@ -120,8 +139,8 @@ body .drawer__panel .account__who b { font-family:"Galmuri11",sans-serif; font-s
 body .drawer__panel .avatar { width:4rem; height:4rem; background:var(--notebook-tint); border:1.5px solid var(--notebook-edge); }
 body .drawer__panel .account__stats { padding:1.2rem 0; border-top:1.5px dotted var(--notebook-edge); border-bottom:1.5px dotted var(--notebook-edge); }
 body .drawer__panel .account__actions { gap:1rem; }
-body .drawer__panel .account__actions .drawer__item { min-height:4.4rem; padding:.8rem; border:1.5px solid #b77d7e; background:var(--bg); box-shadow:.2rem .2rem 0 var(--notebook-shadow); font-family:"Galmuri11",sans-serif; font-size:1.1rem; }
-body .drawer__panel .account__actions .account__primary { background:#b92334; color:#fff4e9; border-color:#852132; }
+body .drawer__panel .account__actions .drawer__item { min-height:4.4rem; padding:.8rem; border:1.5px solid var(--notebook-btn-edge); background:var(--bg); box-shadow:.2rem .2rem 0 var(--notebook-shadow); font-family:"Galmuri11",sans-serif; font-size:1.1rem; }
+body .drawer__panel .account__actions .account__primary { background:var(--notebook-red); color:#fff4e9; border-color:var(--notebook-red-deep); }
 body .drawer__panel .schedule { border:0; border-top:2px solid #bc3542; border-bottom:1px solid var(--notebook-edge); background:transparent; }
 body .drawer__panel .schedule > summary { min-height:5.4rem; padding:1.6rem 3.4rem 1.6rem 1rem; font-family:"Galmuri11",sans-serif; font-size:1.25rem; }
 body .drawer__panel .schedule[open] { background:color-mix(in srgb,var(--notebook-accent-soft) 10%,var(--bg)); }
@@ -134,7 +153,7 @@ body .drawer__panel :is(button,a,summary):focus-visible { outline:.2rem dashed #
  body .drawer__panel { padding-left:1.8rem; padding-right:1.8rem; }
  body .drawer__head { margin-left:-1.8rem; margin-right:-1.8rem; padding-left:1.8rem; padding-right:1.8rem; }}
 /* Shared notebook pages: planning, collection, tools and reference documents. */
-body { --notebook-red:#b92334; --notebook-line:color-mix(in srgb,var(--notebook-edge) 65%,var(--line)); --notebook-paper:color-mix(in srgb,var(--notebook-accent-soft) 10%,var(--bg)); }
+body { --notebook-red:#b92334; --notebook-red-deep:#852132; --notebook-btn-edge:#b77d7e; --notebook-line:color-mix(in srgb,var(--notebook-edge) 65%,var(--line)); --notebook-paper:color-mix(in srgb,var(--notebook-accent-soft) 10%,var(--bg)); }
 body .page-head { background:transparent; border-bottom:2px dotted var(--notebook-line); padding-bottom:2.4rem; }
 body .page-head h2, body .page-head h1 { font-family:"Galmuri11",sans-serif; }
 body :is(.plan__title,.plan__hero h2,.plan__guide-head b,.page__sec,.finder .row-head h2) { font-family:"Galmuri11",sans-serif; line-height:1.6; }

@@ -42,9 +42,17 @@ function trialLeft() {
 function trialActive() {
   return Date.now() < trialUntil();
 }
+// 2026-09-17 v3.59.0 **잠시 써보기를 꺼 둔다.** 기능을 지우지 않고 스위치만 내린다.
+//   왜 — 이제 잠기는 화면은 육성 플래너·내 포켓몬 둘뿐이고, 둘 다 **내 개체를 적어 두는 자리**다.
+//   두 시간 뒤 잠기면 적어 둔 것을 못 보게 되니 체험이 아니라 손해가 된다.
+//   읽기만 하는 화면(일정·레이드·알·티어표)은 아예 안 잠그므로 체험으로 열어 줄 것도 없다.
+//   되살릴 때는 이 상수만 true 로 — 그때는 router.js routeLocked 의 trialActive 갈래도 같이 되돌린다.
+const TRIAL_ENABLED = false;
+
 // 2026-09-12 v3.18.0 잠금이 전부 열려 있으면(router.js lockOpenAll) 잠시 써보기는 할 일이 없다 —
 // 버튼도 배지도 내리고, 열어 두기 전에 시작해 둔 시간이 남아 있어도 끝날 때 로그인 안내를 띄우지 않는다
 function trialOff() {
+  if (!TRIAL_ENABLED) return true;
   return typeof lockOpenAll === 'function' && lockOpenAll();
 }
 
