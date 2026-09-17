@@ -1,0 +1,4 @@
+node_modules/
+dist/
+# 데이터는 v3 빌드에서 뽑는다 (scripts/extract-data.mjs) — 저장소에 두지 않는다
+public/data/
