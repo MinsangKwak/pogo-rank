@@ -40,7 +40,7 @@ from names import name_ko, species, FORM_KO
 import guard
 
 # ── 설정 ─────────────────────────────────────────────────────────────────────
-APP_VERSION = 'v3.57.0'  # 화면별 측정 — 해시 라우트를 가상 경로로, 전환마다 page_view (v3.25.0 은 feature-advertisement 브랜치에 예약)
+APP_VERSION = 'v3.57.1'  # 집계 호스트를 moncamp.kr 로 좁힌다 (github.io 제외) (v3.25.0 은 feature-advertisement 브랜치에 예약)
 # 2026-09-14 v3.28.0 index.html 의 색인 허용 줄 — dev 빌드가 이 줄을 noindex 로 바꿔 끼운다
 ROBOTS_INDEX_META = '<meta name="robots" content="index, follow, max-image-preview:large">'
 # 2026-09-05 v2.7.3 빌드 채널 — 'prod'(기본) / 'dev'. dev 브랜치 워크플로(.github/workflows/deploy-dev.yml)가 BUILD_CHANNEL=dev 로 부른다.
@@ -121,7 +121,7 @@ def read_config():
 
 # 2026-09-07 v2.18.0 (공개 준비 3) GA 는 동의 뒤에만 붙는다 — 여기서는 측정 ID 만 남기고, 실제 gtag 삽입은
 # frontend/scripts/components/consent.js loadAnalytics() 가 localStorage pogo_consent 가 'granted' 일 때 한다.
-# 배포 도메인(github.io)에서만 ID 를 노출해 로컬 미리보기·개발 중엔 동의해도 집계되지 않는다
+# 배포 도메인에서만 ID 를 노출해 로컬 미리보기·개발 중엔 동의해도 집계되지 않는다
 # 2026-09-15 v3.39.0 GA 를 **여기서 바로** 붙인다 (전에는 측정 ID 만 남기고 동의를 기다렸다).
 #   왜 옮겼나 — 번들의 initConsent() 는 첫 렌더가 끝난 뒤에 돈다. 그 사이에 떠나는 방문(이탈)이
 #   page_view 로 잡히지 않았다. head 에서 바로 붙이면 들어온 즉시 한 건이 찍힌다.
@@ -129,7 +129,11 @@ def read_config():
 #   봇은 여기서도 거른다 (track.js IS_BOT_LIKE 와 같은 세 조건) — 번들보다 먼저 도므로 여기 한 벌이 더 있다.
 GA_SNIPPET = '''<script>
 (function () {
-  if (!(location.hostname.endsWith('github.io') || location.hostname.endsWith('moncamp.kr'))) return;
+  // 2026-09-17 v3.57.1 집계는 moncamp.kr 에서만. 전에는 github.io 도 허용했는데,
+  //   옛 주소(minsangkwak.github.io/pogo-rank)는 2026-09-14 부터 moncamp.kr 로 301 이고
+  //   그 호스트에는 **다른 사이트도 같이 얹혀 있다.** 실측에서 남의 글 제목이 우리 속성에 섞여 들어왔다.
+  //   이미 옛 주소에 캐시가 갇힌 사람에게는 이 줄이 닿지 않는다(그쪽은 옛 번들을 돈다) — 앞으로를 막는 것이다.
+  if (!location.hostname.endsWith('moncamp.kr')) return;
   var id = '__GA_ID__';
   window.GA_PENDING_ID = id;
   if (!id) return;
