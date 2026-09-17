@@ -122,7 +122,7 @@ html:not(#_):not(#__) .pick__hero .sprite:not(.is-loading):not(.empty) { backgro
 
 /* ── 700px~ 태블릿 세로 ───────────────────────────────────────────────────── */
 @media (min-width: 700px) {
-  .home__welcome { grid-template-columns: 7fr 5fr; align-items: center; padding: 3.2rem 3.2rem; }
+  .home__welcome { grid-template-columns: minmax(0, 1fr); align-items: center; padding: 3.2rem 3.2rem; }
   .home__intro h2 { font-size: 3.2rem; }
   .home__cta { flex-direction: row; flex-wrap: wrap; }
   .home__art { min-height: 18rem; }
@@ -168,13 +168,13 @@ body #px-bg { opacity: .07; }
 body .app-bar { background:transparent; border:0; backdrop-filter:blur(1rem); }
 body .app-bar__logo { font-family:"Galmuri11",Pretendard,sans-serif; font-size:2.8rem; font-weight:950; font-style:normal; letter-spacing:-.08em; color:#c92532; text-shadow:.16rem .16rem #ffd5b8; }
 body .app-bar__head::after { letter-spacing:.08em; }
-.home-dashboard .home__welcome { position:relative; overflow:hidden; background:var(--play-blue); border:0; color:white; padding:4.8rem; box-shadow:.8rem .8rem 0 var(--play-ink); }
+.home-dashboard .home__welcome { position:relative; overflow:hidden; background:var(--play-blue); border:0; color:white; padding:2.4rem 3.2rem 3.2rem; box-shadow:.8rem .8rem 0 var(--play-ink); }
 .home-dashboard .home__welcome::after { content:''; position:absolute; bottom:0; left:0; width:100%; height:2rem; background:repeating-conic-gradient(#ffd5b8 0 25%,#172647 0 50%) 0 / 4rem 4rem; }
-.home-dashboard .home__intro h2 { font-family:"Galmuri11",Pretendard,sans-serif; font-weight:900; font-size:clamp(2.8rem,3.3vw,5.6rem); letter-spacing:-.06em; line-height:1.18; color:white; margin-top:2rem; }
+.home-dashboard .home__intro h2 { font-family:"Galmuri11",Pretendard,sans-serif; font-weight:900; font-size:clamp(2.8rem,3.3vw,5.6rem); letter-spacing:-.06em; line-height:1.18; color:white; margin-top:1rem; }
 .home-dashboard .home__intro p { color:#fff0e9; }
 .home-dashboard .home__eyebrow { color:#ffd5b8; letter-spacing:.18em; font-weight:800; }
 .home-dashboard .home__eyebrow-dot { background:#ffd5b8; }
-.home-dashboard .home__cta { margin-top:3rem; gap:1.4rem; }
+.home-dashboard .home__cta { margin-top:1.6rem; gap:1rem; }
 .home-dashboard .home__btn { background:white; color:#172647; border:.2rem solid #172647; box-shadow:.4rem .4rem 0 #172647; }
 .home-dashboard .home__btn--primary { background:#ffd5b8; }
 .home-dashboard .home__btn:hover { background:#ffe5d4; transform:translateY(-.2rem); }
@@ -234,7 +234,7 @@ body .app-nav__extra { border-top:.5rem solid #ffd5b8; }
 html:not(#_):not(#__) .home-dashboard .home__art::before { border-radius:50%; }
 @media (max-width:699px) {
  .home-dashboard { gap:3.6rem; padding-right:.6rem; }
- .home-dashboard .home__welcome { padding:2.4rem 2rem 3.6rem; }
+ .home-dashboard .home__welcome { padding:1.8rem 1.6rem 2.8rem; }
  .home-dashboard .home__art { min-height:23rem; }
  .home-dashboard .home__art::before { width:20rem; height:20rem; border-width:2.4rem; }
  .home-dashboard .home__art .sprite { width:15rem; height:15rem; }
@@ -266,7 +266,7 @@ body { background:var(--notebook-canvas); }
 body .app-bar__logo { font-family:"Galmuri11",sans-serif; font-size:2.4rem; letter-spacing:-.07em; text-shadow:.2rem .2rem #efb8a7; }
 .home-dashboard .home__welcome { background-color:#c92532; background-image:radial-gradient(#ffffff12 .12rem,transparent .12rem); background-size:1rem 1rem; }
 .home-dashboard .home__welcome::after { height:1.2rem; background:repeating-linear-gradient(90deg,#ffd5b8 0 1.2rem,transparent 1.2rem 2.4rem); }
-.home-dashboard .home__intro h2 { font-size:clamp(2.6rem,2.8vw,4.6rem); font-weight:700; letter-spacing:-.055em; line-height:1.45; }
+.home-dashboard .home__intro h2 { font-size:clamp(2.2rem,2.3vw,3.2rem); font-weight:700; letter-spacing:-.04em; line-height:1.45; }
 .home-dashboard .home__art::before { border:0; width:27rem; height:24rem; background:radial-gradient(#ffd5b8 .22rem,transparent .24rem) 0 / 1.4rem 1.4rem; box-shadow:none; clip-path:polygon(12% 0,88% 0,88% 12%,100% 12%,100% 88%,88% 88%,88% 100%,12% 100%,12% 88%,0 88%,0 12%,12% 12%); }
 .home-dashboard .home__motto { font-family:"Galmuri11",sans-serif; font-style:normal; font-size:.9rem; }
 .home-dashboard .home__group { font-size:2.3rem; line-height:1.6; }
@@ -283,7 +283,7 @@ body footer::before { color:#c92532; font-family:"Galmuri11",sans-serif; }
 body .app-nav .nav-menu [aria-current="page"] { margin-top:0; }
 html:not(#_):not(#__) .home-dashboard .home__art::before { border-radius:0; }
 @media(max-width:699px) {
- .home-dashboard .home__intro h2 { font-size:2.6rem; }
+ .home-dashboard .home__intro h2 { font-size:2.2rem; }
  .home-dashboard .home__art::before { width:23rem; height:20rem; }
  body .app-bar__logo { font-size:2rem; }
 }

@@ -112,8 +112,7 @@ function homeCta(routeId, label, primary) {
 }
 
 function renderServiceHome() {
-  // ── 소개 + 대표 행동. 큰 그림은 D-MAX 티어표 상위 둘 — 시안의 예시 그림이 아니라 오늘 표의 실제 1·2위다
-  const heroMons = HOME_PICKS[0].rows().slice(0, 2);
+  // 소개와 주요 버튼만 배치해 첫 화면에서 서비스 기능까지 확인할 수 있게 한다.
   const hero = el('section', { class: 'home__welcome', 'aria-label': '소개' },
     el('div', { class: 'home__intro' },
       el('span', { class: 'home__eyebrow' }, el('span', { class: 'home__eyebrow-dot', 'aria-hidden': 'true' }), 'DYNAMAX · RAID · PVP'),
@@ -121,11 +120,7 @@ function renderServiceHome() {
       el('p', {}, '다이맥스 티어표와 추천 덱을 비교하고, 레이드·PvP까지 확인하세요.'),
       el('div', { class: 'home__cta' },
         homeCta('dmax', '다이맥스 티어표 보기', true),
-        homeCta('dmax-deck', '맥스 배틀 덱 짜기', false))),
-    el('div', { class: 'home__art', 'aria-hidden': 'true' },
-      ...heroMons.map((pokemon, index) => el('span', { class: `home__art-mon home__art-mon--${index + 1}` }, sprite(pokemon.sprite))),
-      el('span', { class: 'home__motto' }, 'BIGGER', el('br'), 'STRONGER', el('br'), 'TOGETHER'),
-      el('span', { class: 'home__ball' })));
+        homeCta('dmax-deck', '맥스 배틀 덱 짜기', false))));
 
   // ── 목적별 기능 세 카드 — ☰ 메뉴와 **같은 차례**여야 같은 서비스의 같은 목록으로 읽힌다 (router.js ROUTE_GROUPS).
   // 부모가 있는 화면(내 포켓몬)은 홈에 올리지 않는다 — 홈은 "어디로 갈까" 의 첫 갈림길이다
