@@ -39,7 +39,7 @@ function Splash() {
 }
 
 /** 라우트 하나가 그리는 본문 */
-function Screen({ route, onOpen }: { route: RouteDef; onOpen: (sprite: number) => void }) {
+function Screen({ route, onOpen }: { route: RouteDef; onOpen: (sprite: number, en?: string) => void }) {
   switch (route.id) {
     case 'home': return <Home onOpen={onOpen} />;
     case 'dex': return <Dex onOpen={onOpen} />;
@@ -52,14 +52,41 @@ function Screen({ route, onOpen }: { route: RouteDef; onOpen: (sprite: number) =
     case 'game-updates': return <GameUpdates />;
     // 잠긴 화면 — 잠금은 라우터 표(locked)가 정한다 (v3 와 같은 규칙)
     case 'planner': return <Locked name="내 포켓몬" />;
+    // #/mon/<id> 는 본문이 따로 없다 — 팝업이 곧 그 화면이라, 뒤에는 홈을 깔아 준다 (v3 와 같다)
+    case 'mon': return <Home onOpen={onOpen} />;
     default: return <NotPorted route={route} />;
   }
 }
 
 export default function App() {
-  const { route } = useRoute();
+  const { route, rest } = useRoute();
   const [menuOpen, setMenuOpen] = useState(false);
-  const [detail, setDetail] = useState<number | null>(null);
+  // [스프라이트, 영문명]. 영문명은 **연 쪽이 들고 있던 것**만 넘긴다 —
+  // v3 도 순위표 줄에서 열면 이름 아래에 Melmetal 이 서고, 도감에서 열면 서지 않는다
+  const [detail, setDetail] = useState<[number, string] | null>(null);
+  const openMon = (sprite: number, en = '') => {
+    setDetail([sprite, en]);
+    track('detail_open', { sprite });
+    // 주소를 상세로 바꿔 두는 것은 **홈(과 상세) 위에서만** 이다 (v3 detailSyncHash 의 규칙).
+    //   목록 위에서 바꾸면 뒤에 깔린 화면이 그 목록에서 홈으로 갈리고, ✕ 를 눌러도 목록으로 못 돌아온다.
+    //   기록에 쌓지 않고 바꿔치기한다 — ✕ 한 번으로 닫혀야 한다
+    if (route.id === 'home' || route.id === 'mon') {
+      try { history.replaceState(history.state, '', `#/mon/${sprite}`); } catch { /* 파일 프로토콜 등 */ }
+    }
+  };
+  const closeMon = () => {
+    setDetail(null);
+    // 상세 주소에서 닫으면 홈으로 — 그 자리에 남기면 새로고침에 팝업이 되살아난다
+    if (location.hash.startsWith('#/mon/')) { try { history.replaceState(history.state, '', '#/'); } catch { /* 위와 같다 */ } }
+  };
+
+  // #/mon/<스프라이트 id> 로 **바로** 들어온 경우 (공유 링크). 주소가 곧 열려 있어야 할 팝업이다
+  useEffect(() => {
+    if (route.id !== 'mon') return;
+    const sprite = Number(rest);
+    if (!Number.isFinite(sprite) || !sprite) return;
+    setDetail((now) => (now?.[0] === sprite ? now : [sprite, '']));
+  }, [route, rest]);
   // 포털이 꽂힐 자리. ref 가 아니라 state 인 이유 — 붙은 뒤 한 번 더 그려야 포털이 들어간다
   const [tabsEl, setTabsEl] = useState<HTMLDivElement | null>(null);
   const [bossEl, setBossEl] = useState<HTMLDivElement | null>(null);
@@ -76,8 +103,10 @@ export default function App() {
     track('route_view', { route: route.id });
   }, [route]);
 
-  const isShell = route.kind === 'shell' || route.kind === 'plan';
-  const home = route.id === 'home';
+  // #/mon/<id> 뒤에 깔리는 것은 홈이다 — 셸도 머리줄도 홈과 같게 둔다 (v3 detailSyncHash 가 둘을 같이 본다)
+  const asHome = route.id === 'home' || route.id === 'mon';
+  const isShell = route.kind === 'shell' || route.kind === 'plan' || asHome;
+  const home = asHome;
 
   return (
     <SlotProvider value={{ tabs: tabsEl, bossAcc: bossEl, controls: controlsEl, headActions: actionsEl }}>
@@ -105,7 +134,7 @@ export default function App() {
           <div className="controls" id="controls" ref={setControlsEl} />
           <div id="content">
             <Suspense fallback={<Splash />}>
-              <Screen route={route} onOpen={setDetail} />
+              <Screen route={route} onOpen={openMon} />
             </Suspense>
           </div>
           <Footer />
@@ -113,13 +142,13 @@ export default function App() {
       ) : (
         <div id="page">
           <Suspense fallback={<Splash />}>
-            <Screen route={route} onOpen={setDetail} />
+            <Screen route={route} onOpen={openMon} />
           </Suspense>
           <p className="ip-notice">moncamp는 비공식 팬 프로젝트입니다. Pokémon 및 관련 명칭·이미지의 권리는 The Pokémon Company · Nintendo · Creatures Inc. · GAME FREAK inc. 에, Pokémon GO 는 Scopely Explore, Inc. 에 있으며 이 서비스는 권리자와 무관합니다.</p>
         </div>
       )}
       <Suspense fallback={null}>
-        {detail === null ? null : <MonDetail dex={detail} onClose={() => setDetail(null)} />}
+        {detail === null ? null : <MonDetail sprite={detail[0]} en={detail[1]} onClose={closeMon} />}
       </Suspense>
 
       <ToTop />

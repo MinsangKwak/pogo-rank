@@ -25,6 +25,7 @@
 import { useState, type ReactNode } from 'react';
 import { useDex, useUsage, useMeta } from '../lib/data';
 import { Sprite } from './Bits';
+import { usageCountFor } from '../lib/usage';
 
 /** v3 name.js FORM_LABELS — 이름 앞에 붙는 폼 라벨을 작은 배지로 뗀다 */
 const FORM_KIND: Record<string, string> = {
@@ -154,21 +155,10 @@ export function Row({ sprite, name, en, types, rank, score, sub, lines, unrel, d
   );
 }
 
-/**
- * 이름 → 활용처 수 (v3 usagePlacesFor).
- *
- * **이름 하나로 찾으면 안 된다.** 처음에 정확히 일치하는 줄만 세었더니 v3 의 13곳이 12곳으로 나왔다.
- * v3 는 다이맥스 접두어를 뗀 뒤 **세 변형**(원종 · 다이맥스 X · 거다이맥스 X)의 등장을 합친다 —
- * 같은 종인데 폼별로 표에 따로 오르기 때문이다. 상세 팝업의 활용처 목록과 숫자가 늘 같아야 해서
- * 여기서도 같은 규칙을 쓴다.
- */
+/** 이름 → 활용처 수. 세는 규칙은 상세 팝업의 활용 순위와 한 곳에 모아 뒀다 (lib/usage.ts) */
 function useUsageCount(name: string): number {
   const { data } = useUsage();
-  const base = name.replace(/^(거다이맥스|다이맥스)\s+/, '');
-  const variants = [base, `다이맥스 ${base}`, `거다이맥스 ${base}`];
-  let total = 0;
-  for (const variant of variants) total += data.USAGE_PLACES[variant]?.length ?? 0;
-  return total;
+  return usageCountFor(data.USAGE_PLACES, name);
 }
 
 /** 목록 상자 — v3 는 <ul class="row-list is-list"> 다 (is-grid 면 카드) */

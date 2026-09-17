@@ -32,7 +32,7 @@ function pickMonth(months: Record<string, ScheduleMonth>, today: Date): Schedule
 }
 
 export default function BossAcc({ onOpen, onGoBoss }: {
-  onOpen: (sprite: number) => void;
+  onOpen: (sprite: number, en?: string) => void;
   onGoBoss: (type: string) => void;
 }) {
   const { data: schedule } = useSchedule();
@@ -67,7 +67,7 @@ export default function BossAcc({ onOpen, onGoBoss }: {
 
   const rec = (row: DmaxRow, lead: string, sub?: string) => (
     <button key={`${row.sprite}-${lead}`} className="boss__rec"
-      onClick={(event) => { event.stopPropagation(); onOpen(row.sprite); }}>
+      onClick={(event) => { event.stopPropagation(); onOpen(row.sprite, row.en); }}>
       <Sprite id={row.sprite} />
       <span>{lead}<NameNode name={row.name} labels={dex.FORM_LABELS} /></span>
       {sub ? <small className="row__sub">{sub}</small> : null}

@@ -26,9 +26,10 @@ export interface DexData {
   dex: Record<string, number>;                        // 스프라이트 id → 도감번호
   names: Record<string, string>;                      // 도감번호 → 한글 이름
   en: Record<string, string>;
-  evo: Record<string, unknown>;
+  evo: Record<string, number[][]>;                   // 도감번호 → [단계][그 단계의 종]. 분기 진화는 한 단계에 여러 마리
   forms: Record<string, DexForm>;
-  megas: Record<string, { sprite: number; label: string }[]>;
+  // rel === false 면 게임마스터에만 있고 아직 못 쓰는 폼 ('미구현' 을 달아 밝힌다)
+  megas: Record<string, { sprite: number; label: string; rel?: boolean }[]>;
   cls: Record<string, unknown>;
   rel: number[];                                      // 출시된 도감번호
   moveKo: Record<string, string>;
@@ -119,7 +120,8 @@ export interface PveBundle {
 export interface PvpBundle {
   PVP_DATA: Record<LeagueKey, PvpRow[]>;
   VALUE_DATA: Record<string, unknown>;
-  SHEET_DATA: Record<string, unknown>;
+  // 속성별 레이드 성능표 (사람이 관리하는 시트). 상세 팝업의 '보스로 만났을 때' 가 이것을 먼저 본다
+  SHEET_DATA: { pve?: Record<string, SheetRow[]> };
 }
 
 /** 레이드 보스 · 알 부화 한 줄 */
@@ -153,8 +155,14 @@ export interface GamedayBundle {
     eggs: Record<string, GamedayMon[]>;
     events: GamedayEvent[];
   };
-  // 시즌 기술 변경 — 없는 시즌도 있다 (그때는 메뉴 줄 자체를 만들지 않는다)
-  MOVE_CHANGES?: { season: string; date: string; moves: MoveChange[] };
+  // 시즌 기술 변경 — 없는 시즌도 있다 (그때는 메뉴 줄 자체를 만들지 않는다).
+  // affected 는 스프라이트 id → 그 종에 걸린 변경 (상세 팝업이 종별로 읽는다)
+  MOVE_CHANGES?: {
+    season: string;
+    date: string;
+    moves: MoveChange[];
+    affected?: Record<string, { up?: string[]; down?: string[]; energy?: string[]; new?: string[]; legacy?: string[] }>;
+  };
 }
 
 export interface FavEvent {
@@ -248,4 +256,14 @@ export interface MoveChange {
   from?: number;
   to?: number;
   note?: string;
+}
+
+/** 시트 행 — score 는 그 속성 최강 대비 %라 타입이 달라도 견줄 수 있다 */
+export interface SheetRow {
+  name: string;
+  en: string;
+  sprite: number;
+  types: TypeKey[];
+  score?: number;
+  rank?: number;
 }

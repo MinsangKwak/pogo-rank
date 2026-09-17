@@ -48,7 +48,7 @@ function useView(screen: string) {
   return { view: saved, toggle: () => setCols(screen, saved === 'grid' ? 'list' : 'grid') };
 }
 
-export function Dmax({ onOpen }: { onOpen: (sprite: number) => void }) {
+export function Dmax({ onOpen }: { onOpen: (sprite: number, en?: string) => void }) {
   const { data: max } = useMax();
   const { data: dex } = useDex();
   const boss = useRankStore((s) => s.maxBoss);
@@ -121,7 +121,7 @@ export function Dmax({ onOpen }: { onOpen: (sprite: number) => void }) {
                     rank={String(rows.indexOf(row) + 1)}
                     unrel={row.unrel}
                     delta={row.d}
-                    onOpen={() => onOpen(row.sprite)}
+                    onOpen={() => onOpen(row.sprite, row.en)}
                     score={`${row.pct ?? Math.round(row.score)}%`}
                     sub={`공격 ${row.atk} · 위력 ${row.power}${row.stab ? ' · 자속' : ''} · 내구 ${row.bulk ?? 0}`}
                     lines={[row.fast, `${dex.TYPE_KO[row.charged] ?? row.charged} 타입`]}
@@ -140,7 +140,7 @@ export function Dmax({ onOpen }: { onOpen: (sprite: number) => void }) {
                 rank={String(index + 1)}
                 unrel={row.unrel}
                 delta={row.d}
-                onOpen={() => onOpen(row.sprite)}
+                onOpen={() => onOpen(row.sprite, row.en)}
                 score={String(row.dmg ?? Math.round(row.score))}
                 sub={`맥스 피해 · 내구 ${row.bulk}`}
                 lines={[row.fast, `${dex.TYPE_KO[row.charged] ?? row.charged} 타입`]}
@@ -152,7 +152,7 @@ export function Dmax({ onOpen }: { onOpen: (sprite: number) => void }) {
   );
 }
 
-export function Pve({ onOpen }: { onOpen: (sprite: number) => void }) {
+export function Pve({ onOpen }: { onOpen: (sprite: number, en?: string) => void }) {
   const { data: pve } = usePve();
   const { data: dex } = useDex();
   const mode = useRankStore((s) => s.pveMode);
@@ -216,7 +216,7 @@ export function Pve({ onOpen }: { onOpen: (sprite: number) => void }) {
                     sprite={row.sprite} name={row.name} en={row.en} types={row.types}
                     rank={String(rows.indexOf(row) + 1)}
                     unrel={row.unrel} delta={row.d}
-                    onOpen={() => onOpen(row.sprite)}
+                    onOpen={() => onOpen(row.sprite, row.en)}
                     score={`${row.ratio ?? Math.round(row.score)}점`}
                     sub={`DPS ${row.dps} · TDO ${row.tdo}`}
                     lines={[row.fast, row.charged]}
@@ -234,7 +234,7 @@ export function Pve({ onOpen }: { onOpen: (sprite: number) => void }) {
                 sprite={row.sprite} name={row.name} en={row.en} types={row.types}
                 rank={String(index + 1)}
                 unrel={row.unrel} delta={row.d}
-                onOpen={() => onOpen(row.sprite)}
+                onOpen={() => onOpen(row.sprite, row.en)}
                 score={row.dps.toFixed(1)}
                 sub={`DPS · TDO ${row.tdo}`}
                 lines={[row.fast, row.charged]}
@@ -254,7 +254,7 @@ const LEAGUES: readonly { id: LeagueKey; name: string; cp: string }[] = [
   { id: 'master', name: '마스터', cp: '10000' },
 ];
 
-export function Pvp({ onOpen }: { onOpen: (sprite: number) => void }) {
+export function Pvp({ onOpen }: { onOpen: (sprite: number, en?: string) => void }) {
   const { data: pvp } = usePvp();
   const { data: dex } = useDex();
   const league = useRankStore((s) => s.league);
@@ -306,7 +306,7 @@ export function Pvp({ onOpen }: { onOpen: (sprite: number) => void }) {
             sprite={row.sprite} name={row.name} en={row.en} types={row.types}
             rank={String(index + 1)}
             delta={row.d}
-            onOpen={() => onOpen(row.sprite)}
+            onOpen={() => onOpen(row.sprite, row.en)}
             score={row.score.toFixed(1)}
             // 속성으로 걸렀을 때만 원래 전체 순위를 덧붙인다 — 앞 번호가 속성 안의 순위로 바뀌어서다
             sub={pvpType === 'all' ? undefined : `전체 ${row.rank}위`}

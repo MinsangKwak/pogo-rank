@@ -28,7 +28,7 @@ import { NameNode } from '../components/Row';
 import { usePrefStore, readCols } from '../stores/pref';
 import type { GamedayMon } from '../types/data';
 
-function MonCard({ mon, onOpen }: { mon: GamedayMon; onOpen: (sprite: number) => void }) {
+function MonCard({ mon, onOpen }: { mon: GamedayMon; onOpen: (sprite: number, en?: string) => void }) {
   const { data } = useDex();
   // v3 와 같은 순서·같은 구분자 — 없는 조각은 넣지 않는다
   const note = [
@@ -49,7 +49,7 @@ function MonCard({ mon, onOpen }: { mon: GamedayMon; onOpen: (sprite: number) =>
 }
 
 function Grouped({ sections, view, onOpen }: {
-  sections: [string, GamedayMon[]][]; view: 'grid' | 'list'; onOpen: (sprite: number) => void;
+  sections: [string, GamedayMon[]][]; view: 'grid' | 'list'; onOpen: (sprite: number, en?: string) => void;
 }) {
   return (
     <>
@@ -99,7 +99,7 @@ function eggSections(eggs: Record<string, GamedayMon[]>): [string, GamedayMon[]]
   return buckets.map(({ distance, tail, list }) => [tail ? `${distance} 알 · ${tail}` : `${distance} 알`, list]);
 }
 
-export function Raids({ onOpen }: { onOpen: (sprite: number) => void }) {
+export function Raids({ onOpen }: { onOpen: (sprite: number, en?: string) => void }) {
   const { data } = useGameday();
   // 레이드 보스는 그림이 커서 넓은 화면이 아니어도 카드가 기본이다 (v3 layoutInitial(RAIDS_COLS_KEY, true))
   const view = usePrefStore((s) => s.cols['raids']) ?? readCols('raids', 'grid');
@@ -126,7 +126,7 @@ export function Raids({ onOpen }: { onOpen: (sprite: number) => void }) {
   );
 }
 
-export function Eggs({ onOpen }: { onOpen: (sprite: number) => void }) {
+export function Eggs({ onOpen }: { onOpen: (sprite: number, en?: string) => void }) {
   const { data } = useGameday();
   const view = usePrefStore((s) => s.cols['eggs']) ?? readCols('eggs', 'grid');
   const setCols = usePrefStore((s) => s.setCols);

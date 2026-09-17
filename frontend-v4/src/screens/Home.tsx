@@ -34,7 +34,7 @@ function Tile({ route }: { route: RouteDef }) {
 // 처음에 pick__row 안에 그림과 이름을 바로 넣었더니 이름이 세로로 한 글자씩 쪼개졌다 —
 // CSS 가 .pick__row > .pick__body 를 flex 자식으로 잡고 있어 중간 칸이 꼭 있어야 한다.
 // 클래스명을 그대로 쓰면서 **구조까지** 같아야 디자인이 같다는 것을 여기서 배웠다.
-interface PickRow { sprite: number; name: string; meta: string }
+interface PickRow { sprite: number; name: string; en: string; meta: string }
 
 /**
  * 갈래 카드 옆에 서는 '발견' 카드 (v3 home.js pickDiscoverNode).
@@ -60,7 +60,7 @@ function Discover({ mascot, sprite, kicker, head, copy, extra, href }: {
 
 function PickCard({ kind, title, hint, rows, href, labels, onOpen }: {
   kind: string; title: string; hint: string; rows: PickRow[]; href: string | null;
-  labels: readonly string[]; onOpen: (sprite: number) => void;
+  labels: readonly string[]; onOpen: (sprite: number, en?: string) => void;
 }) {
   const first = rows[0];
   if (!first) return null;
@@ -72,7 +72,7 @@ function PickCard({ kind, title, hint, rows, href, labels, onOpen }: {
         {href ? <a className="pick__all" href={href}>전체 보기 <PxIcon emoji="↗" /></a> : null}
       </div>
       <div className="pick__grid">
-        <button className="pick__hero" type="button" aria-label={`1위 ${first.name}`} onClick={() => onOpen(first.sprite)}>
+        <button className="pick__hero" type="button" aria-label={`1위 ${first.name}`} onClick={() => onOpen(first.sprite, first.en)}>
           <span className="pick__spotlight" aria-hidden="true">NO.01</span>
           <Sprite id={first.sprite} />
           <span className="pick__inspect" aria-hidden="true">상세 보기 ↗</span>
@@ -80,7 +80,7 @@ function PickCard({ kind, title, hint, rows, href, labels, onOpen }: {
         <ol className="pick__list">
           {rows.map((row, index) => (
             <li key={`${row.sprite}-${index}`}>
-              <button className="pick__row" type="button" onClick={() => onOpen(row.sprite)}>
+              <button className="pick__row" type="button" onClick={() => onOpen(row.sprite, row.en)}>
                 <span className="pick__rank">{index + 1}</span>
                 <span className="pick__body">
                   <span className="pick__name"><NameNode name={row.name} labels={labels} /></span>
@@ -114,7 +114,7 @@ function UpdateDates({ row }: { row: GameUpdate }) {
   );
 }
 
-export default function Home({ onOpen }: { onOpen: (sprite: number) => void }) {
+export default function Home({ onOpen }: { onOpen: (sprite: number, en?: string) => void }) {
   const { data: max } = useMax();
   const { data: pve } = usePve();
   const { data: dex } = useDex();
@@ -127,9 +127,9 @@ export default function Home({ onOpen }: { onOpen: (sprite: number) => void }) {
   //   D-MAX 화면 쪽은 [미구현 포함] 체크가 따로 있어 거기서는 고를 수 있다 (v3 와 같은 규칙).
   const dmax = (max.DMAX_TIER['overall'] ?? []).filter((row) => !row.unrel).slice(0, 3)
     // 티어표는 공격 × 맥스무브 위력 × 자속이라 내구가 안 들어간다 — 그래서 티어와 맥스무브 속성을 적는다
-    .map((row) => ({ sprite: row.sprite, name: row.name, meta: `${row.tier} 티어 · ${dex.TYPE_KO[row.charged] ?? ''} 맥스` }));
+    .map((row) => ({ sprite: row.sprite, name: row.name, en: row.en, meta: `${row.tier} 티어 · ${dex.TYPE_KO[row.charged] ?? ''} 맥스` }));
   const raid = (pve.PVE_DATA['overall'] ?? []).slice(0, 3)
-    .map((row) => ({ sprite: row.sprite, name: row.name, meta: `DPS ${row.dps} · 버팀 ${row.tdo}` }));
+    .map((row) => ({ sprite: row.sprite, name: row.name, en: row.en, meta: `DPS ${row.dps} · 버팀 ${row.tdo}` }));
   // 골라 둔 글(featured)이 있으면 그것부터 — 없을 때만 최신순으로 떨어진다 (v3 homeUpdatesNode)
   const featured = updates.GAME_UPDATES.filter((row) => row.featured);
   const top = (featured.length ? featured : updates.GAME_UPDATES).slice(0, 2);

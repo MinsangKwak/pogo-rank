@@ -50,7 +50,7 @@ function DexUse({ name }: { name: string }) {
   );
 }
 
-export default function Dex({ onOpen }: { onOpen: (sprite: number) => void }) {
+export default function Dex({ onOpen }: { onOpen: (sprite: number, en?: string) => void }) {
   const { data } = useDex();
   const [term, setTerm] = useState('');
   const [types, setTypes] = useState<string[]>([]);
