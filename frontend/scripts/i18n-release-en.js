@@ -15,6 +15,11 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 const RELEASE_NOTES_EN = {
+  '2026-09-17 · v3.58.0': [
+    '**Solo raid recommendations are more accurate** — against dual-type bosses we now use the moves a Pokémon actually carries, not its own typing.',
+    '**For example** Shadow Chandelure is Ghost/Fire but only carries Fire moves, so it gets no Ghost bonus against a Psychic boss. We used to grant it anyway, overstating its damage by 60% and ranking it first.',
+    '**238 of 570 attackers changed** — the recommended order for dual-type bosses shifts.',
+  ],
   '2026-09-17 · v3.57.1': [
     '**Analytics is collected on moncamp.kr only** — another site sharing the old host no longer mixes into our numbers. Nothing changes on screen.',
   ],
