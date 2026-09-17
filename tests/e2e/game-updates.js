@@ -185,9 +185,10 @@ suite(async () => {
   await page.waitForTimeout(600);
   ok('홈 카드를 누르면 그 글이 열린다', /^#\/game-updates\/[a-z0-9-]+$/.test(await page.evaluate(() => location.hash)));
   await go('');
-  await page.locator('.home-updates__all').click();
+  // v3.56.0 [전체 보기] 줄 버튼이 발견 카드로 바뀌었다 — 누르면 가는 곳은 같다
+  await page.locator('.home-updates .pick__discover').click();
   await page.waitForTimeout(600);
-  ok('홈 [전체 보기]로 목록', await page.evaluate(() => location.hash) === '#/game-updates');
+  ok('홈 발견 카드로 목록', await page.evaluate(() => location.hash) === '#/game-updates');
 
   await page.click('#menu-toggle');
   await page.waitForTimeout(400);
