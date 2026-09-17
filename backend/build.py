@@ -33,7 +33,7 @@
 #   설정 → PvP 표 가공 → 주석 걷어내기·번들 → 스프라이트 복사 → 순위 변동 → data.js → index.html → 부속 파일
 #   main() 이 그 순서대로 부른다. 어느 단계가 무엇을 받아 무엇을 내는지는 함수 서명이 말한다.
 # ─────────────────────────────────────────────────────────────────────────────
-import json, csv, re, os, shutil
+import json, csv, re, os, shutil, hashlib
 from datetime import date
 from sprite import sprite_id
 from names import name_ko, species, FORM_KO
@@ -652,14 +652,20 @@ def render_index_html(game_master, config, data_js):
     # str.replace 가 거기에도 155KB 번들을 끼워 넣었다 — v2.52.0(9/10) 부터 사흘, index.html 이 862KB 였다 (같은 CSS 를 두 번 파싱)
     for mark in ('__STYLES__', '__SCRIPTS__'):
         assert html.count(mark) == 1, f'{mark} 자리표가 {html.count(mark)}개 — frontend/index.html 에 정확히 하나여야 한다'
-    html = html.replace('__STYLES__', bundle('styles', STYLES, '/*'))
-    # 2026-09-16 v3.46.0 **JS 는 밖으로 뺀다.** 63만 자를 <script> 안에 인라인하고 있었다.
-    #   1) 페이지 소스가 812KB 라 열어 봐도 읽을 수가 없었다 (이제 마크업만 남는다)
-    #   2) 배포할 때마다 HTML 을 통째로 다시 받았다 — 이제 안 바뀐 판은 브라우저 캐시가 막는다
-    #   3) 화면별로 쪼개려면(다음 단계) 먼저 파일이 밖에 있어야 한다
-    #   CSS 는 인라인으로 **남긴다** — <link> 로 빼면 도착할 때까지 첫 그리기가 멈춘다(왕복 1회 = FCP 손해).
-    #   JS 는 body 끝이라 어차피 그리기를 막지 않으므로 빼도 첫 화면이 늦어지지 않는다.
-    #   ?v= 는 배포마다 주소를 바꿔 옛 캐시를 확실히 끊는다 (서비스워커 규칙은 frontend/static/sw.js)
+    styles_css = bundle('styles', STYLES, '/*')
+    # Content hashes change even when the release version stays the same.
+    def asset_url(name, content):
+        digest = hashlib.sha256(content.encode('utf-8')).hexdigest()[:16]
+        return f'{name}?v={digest}'
+
+    if INLINE:
+        html = html.replace('__STYLES__', styles_css)
+    else:
+        os.makedirs('dist', exist_ok=True)
+        open('dist/style.css', 'w', encoding='utf-8').write(styles_css)
+        style_tag = '<style>\n__STYLES__\n</style>'
+        assert html.count(style_tag) == 1, 'Expected one stylesheet placeholder'
+        html = html.replace(style_tag, f'<link rel="stylesheet" href="{asset_url("style.css", styles_css)}">')
     scripts_js = bundle('scripts', SCRIPTS, '//')
     lazy_js = bundle('scripts', SCRIPTS_LAZY, '//')
     lazy_url = ''
@@ -670,10 +676,10 @@ def render_index_html(game_master, config, data_js):
         os.makedirs('dist', exist_ok=True)
         open('dist/app.js', 'w', encoding='utf-8').write(scripts_js)
         open('dist/app-lazy.js', 'w', encoding='utf-8').write(lazy_js)
-        lazy_url = f'app-lazy.js?v={APP_VERSION}'
+        lazy_url = asset_url('app-lazy.js', lazy_js)
         tag = '<script>\n__SCRIPTS__\n</script>'
         assert html.count(tag) == 1, 'index.html 의 __SCRIPTS__ 블록이 정확히 하나여야 밖으로 뺄 수 있다'
-        html = html.replace(tag, f'<script src="app.js?v={APP_VERSION}"></script>', 1)
+        html = html.replace(tag, f'<script src="{asset_url("app.js", scripts_js)}"></script>', 1)
     # 데이터 기준일과 앱 버전 표시
     html = html.replace('__TIMESTAMP__', game_master['timestamp']).replace('__VERSION__', APP_VERSION)
     # 2026-09-03 GA4: 측정 ID가 있으면 스니펫 삽입, 없으면 자리표시자 제거
