@@ -48,13 +48,28 @@ jobs:
           node-version: '22'
           cache: npm
           cache-dependency-path: frontend-v4/package-lock.json
-      # 스프라이트는 굽지 않는다 — 미리보기는 루트(v3 배포본)의 그림을 '../sprites/' 로 그대로 쓴다
-      - name: v3 빌드 (데이터만 쓴다)
+      # 스프라이트·직전 정상본 캐시는 dev 워크플로와 같은 키 계열을 써서 서로 재사용한다
+      - uses: actions/cache@v4
+        with:
+          path: |
+            data/sprites
+            data/sprites-anim
+          key: sprites-v1-${{ github.run_id }}
+          restore-keys: sprites-v1-
+      - uses: actions/cache@v4
+        with:
+          path: snapshot/tables
+          key: tables-v1-${{ github.run_id }}
+          restore-keys: tables-v1-
+      # **전체 빌드를 돌려야 한다.** backend/build.py 하나만으로는 data/ 의 표가 없어 선다
+      # (첫 판에서 그렇게 넣었다가 실패했다 — scripts/build.sh 가 fetch → 계산 → 조립을 차례로 한다).
+      # 미리보기가 쓰는 것은 그중 dist/data.js · dist/data-lazy.js 둘뿐이다
+      - name: v3 빌드 (데이터를 여기서 얻는다)
         env:
           BUILD_CHANNEL: dev
           ADMIN_UID: ${{ vars.ADMIN_UID }}
           FIREBASE_CONFIG_JSON: ${{ vars.FIREBASE_CONFIG_JSON }}
-        run: python3 backend/build.py
+        run: bash scripts/build.sh
       - name: v4 빌드
         working-directory: frontend-v4
         run: |
