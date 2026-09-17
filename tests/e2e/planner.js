@@ -195,6 +195,24 @@ const BASE = 'http://localhost:5503/?mock=1';
   ok('옛 개체 데이터는 지우지 않는다', (await page.evaluate(() => (AUTH.mons || []).length)) > 0,
     String(await page.evaluate(() => (AUTH.mons || []).length)));
 
+  // ── 7. ☰ 메뉴의 계정 카드가 같은 것을 센다 ────────────────────────────────
+  // 제보: 담았는데 메뉴에는 "🎒 내 포켓몬 0마리" 로 남아 있었다 — 개체 기록(AUTH.mons)을 세고 있어서다.
+  // 스위치를 내린 값을 세면 영원히 0 이다. 이제 화면과 같은 값(★ 수)을 세고, 눌러 그 화면으로 간다
+  const stat = () => page.locator('.account__stats').textContent();
+  await page.evaluate(() => { AUTH.favs = new Set([1, 4]); renderAccount(); });
+  await settle(400);
+  ok('계정 카드가 담아 둔 수를 센다', /2마리/.test(await stat()), (await stat()).trim());
+  ok('숫자를 누르면 내 포켓몬으로 간다',
+    (await page.locator('.account__stat-go').getAttribute('href')) === '#/planner',
+    await page.locator('.account__stat-go').getAttribute('href'));
+  // 누르는 순간 갱신된다 — 메뉴를 닫았다 열어야 맞는 값이 뜨면 "안 담겼나" 로 읽힌다
+  await page.evaluate(() => toggleFav(7, '검사'));
+  await settle(500);
+  ok('★ 를 누르면 그 자리에서 숫자가 는다', /3마리/.test(await stat()), (await stat()).trim());
+  await page.evaluate(() => toggleFav(7, '검사'));
+  await settle(500);
+  ok('빼면 그 자리에서 준다', /2마리/.test(await stat()), (await stat()).trim());
+
   ok('페이지 오류 없음', errs.length === 0, errs.join(' | ').slice(0, 200));
   await finish(browser);
 })();

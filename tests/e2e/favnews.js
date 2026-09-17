@@ -113,6 +113,9 @@ suite(async () => {
   await page.evaluate((dex) => openDetailByDex(dex, true), sample.dex);
   await page.waitForTimeout(500);
   ok('상세에 ★ 가 하나 있다', (await page.locator('.detail__fav').count()) === 1);
+  // 2026-09-17 v3.61.0 [＋ 내 포켓몬] 은 내려갔다 — 누르면 편집 팝업이 열리고 저장까지 되는데
+  // 그 값을 보여 주는 화면이 없었다 (planner/collection.js PLAN_MONS_ENABLED)
+  ok('[＋ 내 포켓몬] 버튼은 없다', (await page.locator('.detail__plan').count()) === 0);
   ok('담아 둔 상태로 켜져 있다', (await page.locator('.detail__fav').getAttribute('aria-pressed')) === 'true');
   ok('📣 소식 배지가 섰다', (await page.locator('.detail__favnews').count()) === 1);
   // 배지는 **이름 아래**다 — 머리줄에 두면 좁은 화면에서 제목을 눌러 버린다 (아래 390px 검사가 그 결과를 지킨다)

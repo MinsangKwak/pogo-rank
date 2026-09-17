@@ -49,11 +49,12 @@ const ROUTES = [
   //   (CP·리그 도달·유사백)은 계산기가 저장 없이도 알려 주던 것이다. ★ 담기는 탭 한 번에
   //   📣 일정을 돌려준다 — 이쪽을 뼈대로 세우고 두 화면을 하나로 줄인다.
   //   주소는 짧은 쪽(#/planner)만 남기고 옛 주소 셋을 전부 이리로 잇는다.
-  { id: 'planner', path: 'planner', kind: 'plan', tab: 'home', nav: '내 포켓몬', icon: '🎒', group: 'mine', title: '내 포켓몬', locked: true, legacy: ['plan', 'planner/collection', 'plan/collection'] },
+  { id: 'planner', path: 'planner', kind: 'plan', tab: 'home', nav: '내 포켓몬', icon: '🎒', group: 'mine', title: '내 포켓몬', locked: true, legacy: ['plan', 'planner/collection', 'plan/collection', 'favs'] },
   // 2026-09-12 v2.63.0 '타입 & 상성' 화면을 접고 도감으로 넘긴다 — 타입 상성은 상세 팝업이
   // 이미 같은 표를 보여 준다. 공유된 #/types?t=… 링크가 죽지 않게 legacy 로 잇는다.
-  // 2026-09-12 v3.4.0 접힌 ★ 즐겨찾기(#/favs)도 여기로 — 저장해 둔 링크가 모르는 주소로 떨어지지 않게
-  { id: 'dex', path: 'dex', kind: 'page', nav: '포켓몬 도감', icon: '📕', group: 'pick', legacy: ['types', 'favs'] },
+  // 2026-09-12 v3.4.0 접힌 ★ 즐겨찾기(#/favs)를 여기로 보냈었다 — 그때는 ★ 화면이 없어서다.
+  // 2026-09-17 v3.61.0 ★ 화면이 돌아왔으니 옛 주소도 제 화면(#/planner)으로 되돌린다 (위 planner 의 legacy)
+  { id: 'dex', path: 'dex', kind: 'page', nav: '포켓몬 도감', icon: '📕', group: 'pick', legacy: ['types'] },
   { id: 'dmax', path: 'dmax', kind: 'shell', tab: 'max', nav: 'D-MAX', icon: '✨', group: 'pick', legacy: ['rank/max'] },
   { id: 'pve', path: 'pve', kind: 'shell', tab: 'pve', nav: '레이드 · PvE', icon: '⚔️', group: 'pick', legacy: ['rank/pve'] },
   { id: 'pvp', path: 'pvp', kind: 'shell', tab: 'pvp', nav: '배틀 · PvP', icon: '🃏', group: 'pick', legacy: ['rank/pvp'] },
@@ -111,7 +112,8 @@ const ROUTES = [
 const ROUTE_GROUPS = [
   ['today', '지금 뭐 하지', '진행 중인 이벤트와 레이드 일정을 확인하세요.', '📅'],
   ['pick', '뭘 데려갈까', '상황에 맞는 포켓몬과 추천 덱을 찾아보세요.', '🎯'],
-  ['mine', '뭘 키울까', '더 강한 포켓몬을 위한 육성 계획을 세워보세요.', '🌱'],
+  // 2026-09-17 v3.61.0 설명을 덩이에 맞췄다 — 육성 계획을 세우던 화면이 ★ 담아 두는 화면이 됐다
+  ['mine', '뭘 키울까', '담아 둔 포켓몬의 일정을 챙기고, 게임에 붙여 넣을 검색식을 만들어요.', '🌱'],
 ];
 // 2026-09-12 v2.66.0 자식 화면은 부모 바로 뒤에 선다 — 표에 적은 순서가 아니라 소속 순서다.
 // [해시, 라벨, 아이콘, 덩이, 부모 id] — 부모 id 가 있으면 메뉴에서 한 칸 들여 쓴다

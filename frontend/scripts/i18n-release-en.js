@@ -15,6 +15,11 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 const RELEASE_NOTES_EN = {
+  '2026-09-17 · v3.61.1': [
+    '**The menu\u2019s [My Pokémon — N] now counts what you saved** — it used to sit at 0 no matter what. Tap it to open the screen, and the number updates the moment you tap ★.',
+    '**The [+ My Pokémon] button is gone from Pokémon pages** — while individual records are paused there was nowhere for it to lead.',
+    '**Old ★ favourites links go to the right screen** — they used to land on the Pokédex, now they open [My Pokémon].',
+  ],
   '2026-09-17 · v3.61.0': [
     '**Training Planner and My Pokémon are one screen now** — everything lives under [My Pokémon] in the menu. Old links still open.',
     '**[Coming up] sits at the top** — Community Day, Spotlight Hour and raid dates for the Pokémon you saved, soonest first.',

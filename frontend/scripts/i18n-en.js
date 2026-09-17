@@ -1269,6 +1269,8 @@ const I18N_EN = {
   // 내 포켓몬 · 플래너 (planner/collection.js · planner/home.js)
   // 2026-09-17 v3.61.0 화면을 ★ 즐겨찾기 뼈대로 갈아엎었다 (planner/home.js · components/favnews.js)
   '담아 둔 포켓몬의 일정을 챙겨 드려요': 'We keep an eye on your saved Pokémon',
+  '담아 둔 포켓몬의 일정을 챙기고, 게임에 붙여 넣을 검색식을 만들어요.':
+    'Follow your saved Pokémon\u2019s schedule and build search strings to paste into the game.',
   '포켓몬 상세에서 ★ 를 누르면 여기에 쌓여요. 그 포켓몬이 커뮤니티 데이·스포트라이트 아워·레이드 보스에 뜨면 아래 소식 칸에 먼저 알려 드려요.':
     'Tap ★ on a Pokémon page and it lands here. When that Pokémon shows up in a Community Day, Spotlight Hour or raid rotation, you see it in the news panel below first.',
   '도감에서 담을 포켓몬 찾기': 'Find a Pokémon in the Pokédex',

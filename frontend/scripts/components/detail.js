@@ -815,7 +815,10 @@ function detailBuild(state) {
       //   비로그인이 눌러도 버튼은 보인다 — 무엇이 열리는지 알아야 로그인할 이유가 생긴다(누르면 유도 팝업)
       typeof toggleFav === 'function' ? favStarNode(pokemon) : '',
       // 2026-09-07 v2.15.0 (QA-54) ➕ 내 개체로 저장 — 로그인한 계정만
-      authEnabled() && AUTH.status === 'ok' && form && typeof planAddFromDetail === 'function'
+      // 2026-09-17 v3.61.0 개체 기록의 스위치를 내리면 이 버튼도 같이 내린다 —
+      //   누르면 편집 팝업이 열리고 저장까지 되는데 그 값을 보여 주는 화면이 없다 (planner/collection.js)
+      typeof PLAN_MONS_ENABLED !== 'undefined' && PLAN_MONS_ENABLED
+        && authEnabled() && AUTH.status === 'ok' && form && typeof planAddFromDetail === 'function'
         ? el('button', { class: 'detail__bar-btn detail__plan', title: '🌱 플래너 내 포켓몬에 이 개체 저장',
             onclick: (event) => { event.stopPropagation(); planAddFromDetail(pokemon); } }, '＋ ', '내 포켓몬')
         : '',

@@ -526,7 +526,10 @@ async function deleteAccount() {
 // 삭제 확인 팝업 — 되돌릴 수 없으므로 무엇이 지워지는지 먼저 보여 준다
 function confirmDeleteAccount() {
   const items = [
-    `🎒 내 포켓몬 ${Array.isArray(AUTH.mons) ? AUTH.mons.length : 0}마리 · 화면 설정`,
+    // 2026-09-17 v3.61.0 스위치를 내린 개체 기록(mons)도 계정에는 남아 있다 —
+    // 이 팝업은 **지워지는 것을 있는 그대로** 적는 자리라 둘 다 적는다
+    `★ 담아 둔 포켓몬 ${AUTH.favs instanceof Set ? AUTH.favs.size : 0}마리 · 화면 설정`,
+    `🎒 개체 기록 ${Array.isArray(AUTH.mons) ? AUTH.mons.length : 0}마리 (지금은 화면에서 쉬는 기능)`,
     '승인 정보와 가입 요청(이메일·이름·사진·약관 동의 기록)',
     'Google 로그인 연결(Firebase 인증 계정)',
   ];
@@ -605,6 +608,9 @@ async function toggleFav(dex, screenName) {
   const on = !isFav(number);
   // 화면을 먼저 바꾼다 — 저장은 뒤따라온다. 느린 회선에서 눌러도 반응이 있어야 한다
   if (on) AUTH.favs.add(number); else AUTH.favs.delete(number);
+  // 2026-09-17 v3.61.0 열려 있는 ☰ 메뉴의 "🎒 내 포켓몬 N마리" 도 그 자리에서 고친다 —
+  // 담았는데 메뉴에는 0 마리로 남아 있었다(제보). 계정 카드가 세는 값이 방금 바뀌었으니 다시 그린다
+  if (typeof renderAccount === 'function' && document.getElementById('account')) renderAccount();
   track('fav_toggle', { on: on ? 1 : 0, mon: number, from: screenName || '' });
   if (!AUTH.db || !AUTH.user) return on;
   const fieldValue = firebase.firestore.FieldValue;
@@ -615,6 +621,7 @@ async function toggleFav(dex, screenName) {
   }, { merge: true }).catch(() => {
     // 저장이 실패하면 화면도 되돌린다 — 담긴 것처럼 보이는데 안 담긴 상태가 가장 나쁘다
     if (on) AUTH.favs.delete(number); else AUTH.favs.add(number);
+    if (typeof renderAccount === 'function' && document.getElementById('account')) renderAccount();
     alert(t('담지 못했어요. 잠시 뒤 다시 눌러 주세요.'));
   });
   return on;
@@ -673,17 +680,19 @@ function renderAccount(message) {
         el('button', { class: 'drawer__item account__danger', onclick: confirmDeleteAccount }, '계정 삭제')));  // 2026-09-07 v2.18.0 가입 요청만 남은 상태도 스스로 지울 수 있게
     return;
   }
-  // (3) 승인됨 — 즐겨찾기 개수와 바로가기, 관리자에게만 승인 패널 버튼
+  // (3) 승인됨 — 담아 둔 수와 바로가기, 관리자에게만 승인 패널 버튼
   // 2026-09-07 v2.15.1 "📕 도감에서 채우기" 버튼 제거 — 탭 줄 📕 와 같은 화면. 요약 한 줄만 남긴다
-  const monCount = Array.isArray(AUTH.mons) ? AUTH.mons.length : 0;
-  // 2026-09-09 v2.40.0 두 숫자를 한 문장에 가운뎃점으로 이어 붙이던 줄을 두 칸으로 나눴다 — 세는 대상이
-  // 다른 숫자라 나란히 놓아야 각각 눈에 들어온다
-  // 2026-09-12 v3.6.0 ★ 즐겨찾기 수를 뺐다 — v3.4.0 에 기능을 걷어냈는데 숫자만 남아 있었다.
-  // 담을 길도 볼 길도 없는 수를 보여 주면 "어디서 보지" 만 남는다 (계정에 저장된 값 자체는 그대로다 —
-  // 계정 삭제 확인 팝업은 지워지는 것을 있는 그대로 적어야 하므로 거기에는 남겨 둔다)
+  // 2026-09-12 v3.6.0 ★ 즐겨찾기 수를 뺐다 (기능을 걷어낸 자리라 숫자만 남아 있었다)
+  // 2026-09-17 v3.61.0 **다시 ★ 수로 돌아왔다.** 그 사이 세던 것은 개체 기록(AUTH.mons)이었는데,
+  //   v3.61.0 에 그 기능의 스위치를 내렸다(PLAN_MONS_ENABLED). 담아도 0 마리로 남아 있는 숫자라
+  //   "담았는데 안 세네" 가 됐다. 이제 🎒 내 포켓몬 화면이 세는 것과 같은 것을 센다.
+  //   숫자를 누르면 그 화면으로 간다 — 셈만 보여 주고 갈 길이 없으면 "어디서 보지" 가 남는다
+  const favCount = AUTH.favs instanceof Set ? AUTH.favs.size : 0;
   accountBox.append(who,
     el('div', { class: 'account__stats' },
-      el('span', {}, '🎒 내 포켓몬 ', el('b', {}, `${monCount}마리`))),
+      el('a', { class: 'account__stat-go', href: routeHash('planner'),
+        onclick: () => closeDrawer({ silent: true }) },
+        '🎒 내 포켓몬 ', el('b', {}, `${favCount}마리`), el('span', { 'aria-hidden': 'true' }, ' ›'))),
     note,
     el('div', { class: 'account__actions' },
       // 2026-09-15 v3.41.0 이름이 곧 할 수 있는 일이다 — 루트는 사람을 들이고 내보내고(가입 승인),
