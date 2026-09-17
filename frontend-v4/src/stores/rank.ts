@@ -8,7 +8,7 @@
 import { create } from 'zustand';
 import type { LeagueKey } from '../types/data';
 
-export type MaxAxis = 'all' | 'dps' | 'tank';
+export type MaxAxis = 'all' | 'dealer' | 'tank';   // v3 MAX_AXES 와 같은 id (GA `sub_max_*` 가 이 글자를 쓴다)
 export type PveMode = 'easy' | 'all';
 
 interface RankState {

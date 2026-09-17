@@ -22,7 +22,7 @@
 // CSS 가 `.row__main > .row__name` 처럼 자식 선택자와 flex 레이아웃에 기대고 있어서다.
 // 그래서 이 파일은 짐작하지 않는다: v3 의 실제 DOM 을 브라우저에서 떠서 그대로 옮겼다.
 // ─────────────────────────────────────────────────────────────────────────────
-import type { ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
 import { useDex, useUsage, useMeta } from '../lib/data';
 import { Sprite } from './Bits';
 
@@ -172,8 +172,34 @@ function useUsageCount(name: string): number {
 }
 
 /** 목록 상자 — v3 는 <ul class="row-list is-list"> 다 (is-grid 면 카드) */
-export function RowList({ children }: { children: ReactNode }) {
-  return <ul className="row-list is-list">{children}</ul>;
+/**
+ * 순위 목록. **두 클래스 중 하나가 반드시 붙는다** (v3.9.1 의 규칙) —
+ * 전에는 is-list 만 켜고 껐더니 "그리드" 가 클래스 없는 상태라, CSS 가 그것을 "기본" 과 구별하지 못했다.
+ */
+export function RowList({ view = 'list', children }: { view?: 'grid' | 'list'; children: ReactNode }) {
+  return <ul className={`row-list is-${view}`}>{children}</ul>;
+}
+
+/** 한 번에 보이는 줄 수 — v3 data.js SHOW */
+export const ROW_SHOW = 10;
+
+/**
+ * 펼침 상태. v3 는 `expanded` 라는 전역 Set 에 `pvp-great-all` 같은 키를 담았다 —
+ * 리그나 속성을 바꾸면 키가 달라져 저절로 접힌다. 그 규칙을 그대로 쓴다.
+ */
+export function useExpanded() {
+  const [open, setOpen] = useState<string | null>(null);
+  return { isOpen: (key: string) => open === key, toggle: (key: string) => setOpen((now) => (now === key ? null : key)) };
+}
+
+/** 목록 꼬리의 [더보기 · N개] — **ul 안**에 선다 (v3 list.js). 밖에 두면 목록 테두리가 끊긴다 */
+export function RowMore({ total, expanded, onToggle }: { total: number; expanded: boolean; onToggle: () => void }) {
+  if (total <= ROW_SHOW) return null;
+  return (
+    <button className="row__more" onClick={onToggle}>
+      {expanded ? '접기' : `더보기 · ${total - ROW_SHOW}개`}
+    </button>
+  );
 }
 
 // v3 views/tier.js 의 티어 묶음 머리. 등급 글자 하나만으로는 "S 가 위인지 아래인지" 를
@@ -197,11 +223,22 @@ export function TierHead({ tier, count }: { tier: string; count: number }) {
   );
 }
 
-/** 목록 머리 — 제목 + 오른쪽 메타 한 줄 */
-export function RowHead({ title, meta }: { title: string; meta: string }) {
+/**
+ * 목록 머리 — 제목 + 오른쪽 메타 한 줄.
+ * **ⓘ 가 있을 때만 제목을 감싼다** — v3 는 감쌀 것이 없으면 `<h2>` 를 맨 앞에 그냥 둔다.
+ * 늘 감쌌더니 ⓘ 없는 화면(PvE·PvP)의 머리 높이가 v3 보다 5px 컸다.
+ */
+export function RowHead({ title, meta, info }: { title: string; meta: string; info?: string }) {
   return (
     <div className="row-head">
-      <div className="row-head__title"><h2>{title}</h2></div>
+      {info
+        ? (
+          <div className="row-head__title">
+            <h2>{title}</h2>
+            <span className="info-dot" tabIndex={0} role="button" aria-expanded={false} title={info}>ⓘ</span>
+          </div>
+        )
+        : <h2>{title}</h2>}
       <span className="meta">{meta}</span>
     </div>
   );

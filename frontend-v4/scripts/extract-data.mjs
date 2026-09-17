@@ -36,6 +36,14 @@ const sandbox = vm.createContext({});
 for (const name of ['data.js', 'data-lazy.js']) {
   vm.runInContext(readFileSync(resolve(distV3, name), 'utf8'), sandbox, { filename: name });
 }
+// 월 일정표는 data.js 가 아니라 **화면 코드 안**에 손으로 적혀 있다 (components/schedule.js SCHEDULE_MONTHS).
+// 그 파일은 맨 끝에서 renderSchedule() 을 불러 DOM 을 건드리므로, 표를 선언하는 앞부분만 잘라 실행한다.
+// 손으로 다시 옮겨 적지 않는다 — 실제 일정이라 한 글자만 어긋나도 틀린 날짜를 내보내게 된다
+{
+  const text = readFileSync(resolve(repo, 'frontend/scripts/components/schedule.js'), 'utf8');
+  const cut = text.indexOf('const SCHEDULE_ITEMS');
+  vm.runInContext(text.slice(0, text.indexOf('\n', cut)), sandbox, { filename: 'schedule.js' });
+}
 const readGlobal = (key) => vm.runInContext(`typeof ${key} === 'undefined' ? undefined : ${key}`, sandbox);
 
 // 파일 하나 = 같이 바뀌는 표 묶음.
@@ -55,6 +63,7 @@ const BUNDLES = {
   // 나머지 1곳은 원종 '고릴타' 줄에 있었다 (v3 usagePlacesOf 가 이 표를 먼저 본다)
   usage: [['USAGE_PLACES', 'VALUE_DATA.usage_places'], ['METER', 'VALUE_DATA.meter']],
   meta: ['RANK_DELTA_DATE', 'RANK_FRESH_DAYS', 'DATA_FETCHED', 'DATA_STALE'],
+  schedule: ['SCHEDULE_MONTHS', 'SCHEDULE_CATS'],
 };
 
 mkdirSync(out, { recursive: true });

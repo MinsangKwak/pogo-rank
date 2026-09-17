@@ -12,6 +12,11 @@ import { create } from 'zustand';
 const THEME_KEY = 'pogo_theme';       // v3 components/theme.js 와 같은 키
 const COLS_KEY = (screen: string) => `pogo_${screen}_cols`;   // pogo_dex_cols · pogo_raids_cols …
 
+// **저장 값은 '1'(리스트) · '2'(그리드) 다** — v3 components/ui.js layoutInitial 의 관례 그대로.
+// 'grid'/'list' 로 적었더니 키 이름은 같은데 값이 안 읽혀, 이미 고른 사람의 보기가 첫 실행에 되돌아갔다
+const COLS_GRID = '2';
+const COLS_LIST = '1';
+
 export type Theme = 'light' | 'dark';
 
 function readTheme(): Theme {
@@ -35,7 +40,8 @@ export function wideCards(): boolean {
 export function readCols(screen: string, fallback?: 'grid' | 'list'): 'grid' | 'list' {
   try {
     const saved = localStorage.getItem(COLS_KEY(screen));
-    if (saved === 'grid' || saved === 'list') return saved;
+    if (saved === COLS_GRID) return 'grid';
+    if (saved === COLS_LIST) return 'list';
   } catch { /* 위와 같다 */ }
   return fallback ?? (wideCards() ? 'grid' : 'list');
 }
@@ -58,7 +64,7 @@ export const usePrefStore = create<PrefState>((set, get) => ({
   toggleTheme: () => get().setTheme(get().theme === 'dark' ? 'light' : 'dark'),
   cols: {},
   setCols: (screen, next) => {
-    try { localStorage.setItem(COLS_KEY(screen), next); } catch { /* 위와 같다 */ }
+    try { localStorage.setItem(COLS_KEY(screen), next === 'grid' ? COLS_GRID : COLS_LIST); } catch { /* 위와 같다 */ }
     set((state) => ({ cols: { ...state.cols, [screen]: next } }));
   },
 }));

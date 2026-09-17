@@ -82,6 +82,11 @@ export interface DmaxRow extends RankRow {
   score: number;
   pct?: number;
   tier?: string;
+  // 탱커 표(DMAX_TANK)만 갖는 칸 — EHP = 체력 × 방어 ÷ 받는 배율
+  ehp?: number;
+  mult?: number;
+  hp?: number;
+  def?: number;
 }
 
 export interface PvpRow {
@@ -93,6 +98,7 @@ export interface PvpRow {
   fast: string;
   charged: string;
   score: number;
+  d?: number;        // 지난 갱신 대비 순위 변동 (backend/rank_diff.py)
 }
 
 export type LeagueKey = 'little' | 'great' | 'ultra' | 'master';
@@ -147,7 +153,8 @@ export interface GamedayBundle {
     eggs: Record<string, GamedayMon[]>;
     events: GamedayEvent[];
   };
-  MOVE_CHANGES: Record<string, unknown>;
+  // 시즌 기술 변경 — 없는 시즌도 있다 (그때는 메뉴 줄 자체를 만들지 않는다)
+  MOVE_CHANGES?: { season: string; date: string; moves: MoveChange[] };
 }
 
 export interface FavEvent {
@@ -166,8 +173,13 @@ export interface FavEventsBundle {
 export interface GameUpdate {
   id: string;
   title: string;
-  date: string;
+  date?: string;
   summary?: string;
+  featured?: boolean;
+  category?: string[];        // 'pvp' · 'gym' … (UPDATE_CATS 의 키)
+  announcedAt?: string;       // 공식 발표일
+  effectiveAt?: string;       // 게임에 적용되는 날
+  checkedAt?: string;         // 원문을 마지막으로 본 날 — 앞의 둘이 없을 때 대신 적는다
   [key: string]: unknown;
 }
 
@@ -196,4 +208,44 @@ export interface UsageBundle {
 export interface Manifest {
   built: string;
   files: Record<string, { hash: string; bytes: number }>;
+}
+
+/**
+ * 월 일정표 — v3 components/schedule.js 의 손으로 적은 표.
+ * s·e 는 **이 달의 몇 일**이며 양끝 포함이다. 달을 넘기는 일정은 이 달 안에서 끊어 적는다.
+ * t 는 dmax 분류에만 붙는 보스 속성 키다 ('이번 주 보스' 카드가 읽는다).
+ */
+export interface ScheduleItem {
+  s: number;
+  e: number;
+  cat: string;
+  label: string;
+  t?: string;
+}
+
+export interface ScheduleMonth {
+  ym: { y: number; m: number };
+  note: string;
+  items: ScheduleItem[];
+}
+
+export interface ScheduleCat {
+  name: string;
+  color: string;
+  type: string;
+}
+
+export interface ScheduleBundle {
+  SCHEDULE_MONTHS: Record<string, ScheduleMonth>;
+  SCHEDULE_CATS: Record<string, ScheduleCat>;
+}
+
+/** 기술 한 건의 변경 — kind 가 'energy' 면 위력이 아니라 에너지만 바뀐 것이다 */
+export interface MoveChange {
+  id: string;
+  ko: string;
+  kind: 'up' | 'down' | 'energy';
+  from?: number;
+  to?: number;
+  note?: string;
 }
