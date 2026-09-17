@@ -401,16 +401,16 @@ function homeUpdatesNode() {
       el('span', {}, '게임에서 무엇이 바뀌었는지 확인한 것만 적어요')),
     typeof i18nKoOnlyNote === 'function' ? i18nKoOnlyNote('ko') : '',
     el('div', { class: 'home-updates__list' },
-      el('button', { class: 'pick__discover pick__discover--updates', type: 'button', onclick: () => navigateHash(routeHash('game-updates')) },
-        homeCardMascot('gengar', '94'),
-        el('span', { class: 'pick__discover-kicker' }, '게임 업데이트'),
-        el('strong', {}, '새로운 소식,', el('br'), '놓치지 마세요.'),
-        el('span', { class: 'pick__discover-copy' }, '패치부터 이벤트까지 한눈에 확인해요'),
-        el('span', { class: 'pick__discover-action' }, '전체 보기', el('span', { 'aria-hidden': 'true' }, '↗'))),
       ...top.slice(0, 2).map((article) =>
       el('button', { class: 'home-updates__item', onclick: () => openGameUpdate(article.id, 'home') },
         updateCatChips(article),
         el('b', {}, article.title),
         el('span', { class: 'home-updates__sum' }, article.summary),
-        updateDates(article)))));
+        updateDates(article))),
+      el('button', { class: 'pick__discover pick__discover--updates', type: 'button', onclick: () => navigateHash(routeHash('game-updates')) },
+        homeCardMascot('gengar', '94'),
+        el('span', { class: 'pick__discover-kicker' }, '게임 업데이트'),
+        el('strong', {}, '새로운 소식,', el('br'), '놓치지 마세요.'),
+        el('span', { class: 'pick__discover-copy' }, '패치부터 이벤트까지 한눈에 확인해요'),
+        el('span', { class: 'pick__discover-action' }, '전체 보기', el('span', { 'aria-hidden': 'true' }, '↗')))));
 }
