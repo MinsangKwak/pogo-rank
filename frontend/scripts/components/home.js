@@ -117,10 +117,11 @@ function renderServiceHome() {
     el('div', { class: 'home__intro' },
       el('span', { class: 'home__eyebrow' }, el('span', { class: 'home__eyebrow-dot', 'aria-hidden': 'true' }), 'DYNAMAX · RAID · PVP'),
       el('h2', {}, '맥스 배틀에 데려갈 포켓몬,', el('br'), '여기서 골라요.'),
-      el('p', {}, '다이맥스 티어표와 추천 덱을 비교하고, 레이드·PvP까지 확인하세요.'),
-      el('div', { class: 'home__cta' },
+      el('p', {}, '다이맥스 티어표와 추천 덱을 비교하고, 레이드·PvP까지 확인하세요.')),
+    el('img', { class: 'home__pixel-mascot', src: 'sprites/25.png', alt: '', 'aria-hidden': 'true', width: 96, height: 96 }),
+    el('div', { class: 'home__cta' },
         homeCta('dmax', '다이맥스 티어표 보기', true),
-        homeCta('dmax-deck', '맥스 배틀 덱 짜기', false))));
+        homeCta('dmax-deck', '맥스 배틀 덱 짜기', false)));
 
   // ── 목적별 기능 세 카드 — ☰ 메뉴와 **같은 차례**여야 같은 서비스의 같은 목록으로 읽힌다 (router.js ROUTE_GROUPS).
   // 부모가 있는 화면(내 포켓몬)은 홈에 올리지 않는다 — 홈은 "어디로 갈까" 의 첫 갈림길이다
@@ -151,18 +152,18 @@ function renderServiceHome() {
   const pickGroups = HOME_PICKS.map(homePickGroup).filter(Boolean);
   const dataDate = typeof DATA_FETCHED !== 'undefined' && DATA_FETCHED ? DATA_FETCHED : '';
   // ── 게임 업데이트 주요 소식 (2026-09-16 v3.51.0) — 글이 없으면 빈 문자열이라 자리도 안 만든다
-  // 홈 맨 아래에 둔다 (v3.55.0): 처음 온 사람은 소개·기능·추천 순위를 먼저 읽어야 하고,
+  // 홈 맨 아래에 둔다: 소개와 추천 순위, 기능 안내를 먼저 확인한다.
   // 소식은 이미 쓰는 사람이 마지막에 훑는 것이라 자리를 앞에서 뺏으면 안 된다
   const updates = typeof homeUpdatesNode === 'function' ? homeUpdatesNode() : '';
   $content.append(el('div', { class: 'home-dashboard' },
     hero,
-    features,
     ...(pickGroups.length ? [el('section', { class: 'home__picks', 'aria-label': '용도별 상위 포켓몬' },
       el('div', { class: 'home__section' },
         el('h3', {}, '용도별 상위 포켓몬'),
         el('span', {}, '평가 조건에 따라 추천이 달라져요', dataDate ? el('span', { class: 'home__date' }, ' · ', `기준일 ${dataDate}`) : '')),
       el('div', { class: 'home__pick-grid' }, ...pickGroups),
       el('span', { class: 'pick__foot' }, '이름을 누르면 종족값·상성·활용처를 전부 볼 수 있어요'))] : []),
+    features,
     updates));
   $note.textContent = '뭘 키울지 여기서 정해요. 도감에서 포켓몬을 알아보고, 랭킹에서 추천 개체를 고른 뒤, 육성 플래너에 내 개체를 기록하면 돼요.';   // v3.13.0 '상성' 화면은 v2.63.0 에 접었다
 }
