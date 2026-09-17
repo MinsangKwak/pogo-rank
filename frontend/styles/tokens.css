@@ -27,7 +27,7 @@
      --brand-2 는 같은 계열의 진한 빨강으로 둔다 — 한 서비스 안의 다른 갈래(PvP)라
      계열까지 바꿀 이유가 없다. --good(teal) · --caution(앰버) 은 그대로다. */
 :root {
-  --bg: #fafafa; --fg: #0a0a0f; --muted: #64647a; --line: #e5e5eb; --surface: #ffffff; --hover: #f2f2f5;
+  --bg: #fff8f2; --fg: #0a0a0f; --muted: #64647a; --line: #e5e5eb; --surface: #ffffff; --hover: #f2f2f5;
   --line-2: #d4d4dc;    /* 한 단 진한 테두리 — 눌린 칸·활성 입력처럼 경계를 세워야 할 때 */
   --ink-2: #2a2a35;     /* 본문보다 한 단 흐린 글자 (카드 안 보조 문장) */
   --ink-4: #9b9bb0;     /* 가장 흐린 글자 — 자리표시·비활성 */
@@ -78,14 +78,14 @@
    라이트와 같은 규칙으로 바탕(#0a0a0f) < 카드(#16161f) < 눌림(#1c1c28) 순으로 밝아진다 */
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --bg:#0a0a0f; --fg:#f5f5fa; --muted:#8b8ba3; --line:#26263a; --surface:#16161f; --hover:#1c1c28;
+    --bg:#171e2e; --fg:#f5f5fa; --muted:#8b8ba3; --line:#26263a; --surface:#16161f; --hover:#1c1c28;
     --line-2:#33334d; --ink-2:#c9c9d6; --ink-4:#5c5c73;
     --brand:#ff5f52; --brand-2:#ff8a80; --point:#6f9df0; --warn:#f43f5e; --caution:#f59e0b; --off:#5c5c73;
     --good:#2dd4bf; --accent:#ff5f52;
   }
 }
 :root[data-theme="dark"] {
-  --bg:#0a0a0f; --fg:#f5f5fa; --muted:#8b8ba3; --line:#26263a; --surface:#16161f; --hover:#1c1c28;
+  --bg:#171e2e; --fg:#f5f5fa; --muted:#8b8ba3; --line:#26263a; --surface:#16161f; --hover:#1c1c28;
   --line-2:#33334d; --ink-2:#c9c9d6; --ink-4:#5c5c73;
   --brand:#ff5f52; --brand-2:#ff8a80; --point:#6f9df0; --warn:#f43f5e; --caution:#f59e0b; --off:#5c5c73;
   --good:#2dd4bf; --accent:#ff5f52;

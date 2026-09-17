@@ -129,8 +129,11 @@ def change_lines(lines, lang):
 TITLE_TAIL = re.compile(r'\s*[—–-]\s*(Pok[eé]mon GO( 고객센터)?|Pokémon GO Help Center)\s*$', re.I)
 # 어느 글에나 붙는 안내 문구 — 그 글의 내용이 아니라서 인용으로 쓰면 전부 같은 줄이 된다
 BOILERPLATE = re.compile(
-    r'주변을 살피|안전에 유의|Please be aware of your surroundings|follow guidelines from local|'
-    r'게임을 플레이할 때는|Remember to be alert|'
+    r'주변을 살피|안전에 유의|주변 안전에 주의|Please be aware of your surroundings|follow guidelines from local|'
+    # '게임을 플레이할 때는' 이 '"Pokémon GO"를 플레이할 때는' 으로 바뀌어 새어 나왔다 — 앞말을 떼고 잡는다
+    r'플레이할 때는|Remember to be alert|'
+    # 일정이 바뀔 수 있다는 고지 — 안전 문구 바로 뒤에 붙어 다닌다
+    r'개최 중지 또는 내용이 변경|subject to change|'
     # 지원 언어 목록 — 거의 모든 글 끝에 붙는 안내라 그 글의 내용이 아니다
     r'는 영어, 프랑스어|is available in English')
 

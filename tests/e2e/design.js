@@ -31,7 +31,10 @@ suite(async () => {
   ok('보조 버튼 → 덱 짜기', cta[1]?.[1] === '#/dmax/deck' && /덱/.test(cta[1]?.[0]), JSON.stringify(cta[1]));
   const btnH = await page.locator('.home__btn--primary').evaluate((n) => n.getBoundingClientRect().height);
   ok('대표 버튼 높이 44px 이상', btnH >= 44, String(btnH));
-  ok('큰 그림은 실제 스프라이트 둘', (await page.locator('.home__art img.sprite').count()) === 2);
+  // v3.56.0 큰 그림이 **오늘 표의 1·2위**에서 붙박이 장식(피카츄)으로 바뀌었다.
+  //   실데이터를 보여 주던 자리라 값이 줄었다 — 되돌릴지는 따로 판단한다. 지금은 장식임을 확인만 한다
+  const mascot = page.locator('.home__pixel-mascot');
+  ok('큰 그림은 장식이라 읽어 주지 않는다', (await mascot.count()) === 1 && await mascot.getAttribute('aria-hidden') === 'true');
   ok('제목에 검색 목적어(다이맥스 · 티어표)가 설명에 남는다', /다이맥스 티어표/.test(await page.locator('.home__intro p').textContent()));
   ok('빠른 바로가기 셋(모험을 시작하는…)은 없다', (await page.locator('.home__quick').count()) === 0);
 
@@ -42,16 +45,22 @@ suite(async () => {
   ok('타일 10개', (await page.locator('.home__tile').count()) === 10);   // v3.51.0 📢 게임 업데이트가 늘었다
 
   // 용도별 상위 포켓몬 — 기준 · 수치 · 날짜
+  // v3.56.0 '다양한 활용처' 는 덩이가 아니라 발견 카드가 됐다 — 눌러야 전체 순위가 열린다
   const groups = await page.locator('.pick__group').count();
-  ok('순위 덩이 셋', groups === 3, String(groups));
+  ok('순위 덩이 둘 + 활용처 발견 카드', groups === 2 && (await page.locator('.home__picks .pick__discover').count()) === 1, String(groups));
   const pveHint = await page.locator('.pick__group--pve .pick__hint').textContent();
   ok('레이드 정렬 기준이 "종합 점수" 라고 말한다', /종합 점수/.test(pveHint) && /DPS/.test(pveHint), pveHint);
   const pveMeta = await page.locator('.pick__group--pve .pick__meta').allTextContents();
   ok('레이드 보조 수치는 DPS 와 버팀 둘 다', pveMeta.length === 3 && pveMeta.every((m) => /DPS \d/.test(m) && /버팀 \d/.test(m)), pveMeta.join(' | '));
-  const usageMeta = await page.locator('.pick__group--usage .pick__meta').first().textContent();
+  // 발견 카드를 열면 그 안에 순위가 있다 — 단위 설명은 거기서 읽힌다
+  await page.locator('.home__picks .pick__discover').click();
+  await page.waitForTimeout(400);
+  const usageMeta = await page.locator('.pick-usage .pick__meta').first().textContent();
   ok('활용처 수치의 단위가 설명된다 (순위표 N곳)', /순위표 \d+곳/.test(usageMeta), usageMeta);
+  await page.keyboard.press('Escape');
+  await page.waitForTimeout(300);
   ok('기준일이 순위 옆에 있다', /기준일 \d{4}-\d{2}-\d{2}/.test(await page.locator('.home__picks .home__section').textContent()));
-  ok('덩이마다 1위 큰 그림 + 세 줄', (await page.locator('.pick__hero img.sprite').count()) === 3 && (await page.locator('.pick__row').count()) === 9);
+  ok('덩이마다 1위 큰 그림 + 세 줄', (await page.locator('.pick__hero img.sprite').count()) === 2 && (await page.locator('.pick__row').count()) === 6);
   // 줄을 누르면 상세가 열린다 (기존 동작 유지)
   await page.locator('.pick__group--dmax .pick__row').nth(1).click();
   await page.waitForTimeout(500);

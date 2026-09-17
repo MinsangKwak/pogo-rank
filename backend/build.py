@@ -40,7 +40,7 @@ from names import name_ko, species, FORM_KO
 import guard
 
 # ── 설정 ─────────────────────────────────────────────────────────────────────
-APP_VERSION = 'v3.55.1'  # 홈 머리줄 — 제목·버튼 한 줄, 부제는 아래 줄 (v3.25.0 은 feature-advertisement 브랜치에 예약)
+APP_VERSION = 'v3.56.0'  # 노트 테마 정리 — 셸 분리 · 토큰화 · 덮어쓰기 걷어내기 (v3.25.0 은 feature-advertisement 브랜치에 예약)
 # 2026-09-14 v3.28.0 index.html 의 색인 허용 줄 — dev 빌드가 이 줄을 noindex 로 바꿔 끼운다
 ROBOTS_INDEX_META = '<meta name="robots" content="index, follow, max-image-preview:large">'
 # 2026-09-05 v2.7.3 빌드 채널 — 'prod'(기본) / 'dev'. dev 브랜치 워크플로(.github/workflows/deploy-dev.yml)가 BUILD_CHANNEL=dev 로 부른다.
@@ -155,6 +155,9 @@ GA_SNIPPET = '''<script>
 STYLES = [
     'tokens.css', 'base.css', 'layout.css',
     'components/home.css',
+    # 2026-09-17 v3.56.0 앱 셸 노트 테마 — home.css 에 섞여 있던 상단바·내비·푸터 규칙.
+    #   home.css 바로 뒤에 둬 실리는 차례를 그대로 지킨다 (자리를 옮기면 이기는 규칙이 바뀐다)
+    'components/shell-notebook.css',
     'components/tabs.css', 'components/seg.css', 'components/chips.css',
     'components/list.css',
     'components/finder.css', 'components/ivrank.css', 'components/tag.css', 'components/modal.css', 'components/search.css', 'components/drawer.css', 'components/pages.css',
