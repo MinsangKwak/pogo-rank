@@ -8,7 +8,8 @@
 //
 // 이 스위트가 지키려는 것
 //   - FAV_EVENTS 계약: 포켓몬이 걸린 일정만 들어 있고(빈 dex 없음), 종류·날짜를 읽을 수 있다
-//   - **실험 기능 참가자에게만** 보인다 — beta 가 아니면 셈도 0, 배지도 없다
+//   - 로그인해야 보인다 — 비로그인이면 셈도 0, 배지도 없다 (담을 수 있는 사람만 소식을 본다)
+//   - 승인 대기(pending)도 본다 — 담는 것이 허용돼 있어서다 (firestore.rules favsOnly)
 //   - 담아 둔 종만 걸린다 (★ 를 누를 이유가 배지에서 나온다)
 //   - 끝난 일정은 세지 않고, 너무 먼 일정도 세지 않는다
 //   - 상세 팝업에 ★ 가 있고 **목록 카드에는 없다** (입구는 하나)
@@ -17,16 +18,17 @@
 //   - 콘솔 오류가 없다
 //
 // 로그인을 흉내 내는 법. Firebase 는 로컬에서 안 붙으므로 AUTH 를 직접 세운다 —
-// favnews.js 가 보는 것은 AUTH.beta · AUTH.favs · isFav() 셋뿐이라 그 셋이면 충분하다.
+// favnews.js 가 보는 것은 AUTH.status · AUTH.favs · isFav() 셋뿐이라 그 셋이면 충분하다.
+// 2026-09-17 v3.61.0 AUTH.beta 문턱을 걷어냈다 — 소식이 🎒 내 포켓몬 화면의 주 내용이 되면서
+// 실험 참가자가 아닌 사람에게 빈 화면이 뜨게 됐다. 로그인 + 승인이 이미 문턱이다.
 const { launch, newContext, waitSplash, ok, finish, suite } = require('./_lib');
 const BASE = 'http://localhost:5503/?mock=1';
 
-// AUTH 를 승인된 계정으로 세운다. beta 는 부르는 쪽이 고른다
-const signIn = (page, { beta, favs }) => page.evaluate(({ beta, favs }) => {
-  AUTH.status = 'ok';
-  AUTH.beta = beta;
+// AUTH 를 세운다. status 는 부르는 쪽이 고른다 ('ok' 승인 · 'pending' 승인 대기 · 'none' 비로그인)
+const signIn = (page, { status = 'ok', favs = [] } = {}) => page.evaluate(({ status, favs }) => {
+  AUTH.status = status;
   AUTH.favs = new Set(favs);
-}, { beta, favs });
+}, { status, favs });
 
 suite(async () => {
   const browser = await launch();
@@ -61,18 +63,23 @@ suite(async () => {
   });
   ok('앞으로 남은 일정을 하나 골랐다', !!sample, JSON.stringify(sample));
 
-  // ── 실험 기능이 꺼져 있으면 아무것도 없다 ──────────────────────────────────
-  await signIn(page, { beta: false, favs: [sample.dex] });
+  // ── 로그인하지 않으면 아무것도 없다 ────────────────────────────────────────
+  // 담아 둔 것처럼 favs 를 채워 둬도(옛 세션의 잔여물) status 가 서지 않으면 한 건도 세지 않는다
+  await signIn(page, { status: 'none', favs: [sample.dex] });
   const off = await page.evaluate((dex) => ({
     enabled: favNewsEnabled(), count: favNewsCount(),
     forMon: favNewsFor(dex).length, node: favNewsNode(dex) === '',
   }), sample.dex);
-  ok('실험 기능이 꺼져 있으면 소식이 꺼져 있다', off.enabled === false);
+  ok('비로그인이면 소식이 꺼져 있다', off.enabled === false);
   ok('꺼져 있으면 셈이 0 이다', off.count === 0 && off.forMon === 0, JSON.stringify(off));
   ok('꺼져 있으면 배지 조각을 만들지 않는다', off.node === true);
 
-  // ── 켜면 담아 둔 종만 걸린다 ───────────────────────────────────────────────
-  await signIn(page, { beta: true, favs: [sample.dex] });
+  // 승인 대기도 담을 수 있으니 소식도 본다 — 두 조건이 갈리면 "담았는데 아무 일도 없는" 자리가 생긴다
+  await signIn(page, { status: 'pending', favs: [sample.dex] });
+  ok('승인 대기도 소식을 본다', await page.evaluate(() => favNewsEnabled()) === true);
+
+  // ── 로그인하면 담아 둔 종만 걸린다 ─────────────────────────────────────────
+  await signIn(page, { status: 'ok', favs: [sample.dex] });
   const on = await page.evaluate((dex) => {
     // 어느 일정에도 없는 번호 하나 — 담지 않은 종이 걸리지 않는지 보려고
     const used = new Set(FAV_EVENTS.flatMap((row) => row.dex));
@@ -90,7 +97,7 @@ suite(async () => {
       far: favNewsList().filter((row) => row.days > 45).length,
     };
   }, sample.dex);
-  ok('실험 기능을 켜면 소식이 켜진다', on.enabled === true);
+  ok('로그인하면 소식이 켜진다', on.enabled === true);
   ok('담아 둔 종의 소식이 잡힌다', on.forMon > 0, `${on.forMon}건`);
   ok('합계도 같이 선다', on.count > 0, `${on.count}건`);
   ok('일정에 없는 번호는 배지가 없다', on.otherNode === true);
@@ -125,7 +132,7 @@ suite(async () => {
     (await page.evaluate(() => document.querySelector('.detail--mon')?.dataset.tab)) === before, String(before));
 
   // ── 로그인하지 않으면 배지는 없다 (★ 는 보인다 — 무엇이 열리는지 알아야 로그인할 이유가 생긴다)
-  await page.evaluate(() => { AUTH.status = 'none'; AUTH.beta = false; AUTH.favs = new Set(); });
+  await page.evaluate(() => { AUTH.status = 'none'; AUTH.favs = new Set(); });
   await page.evaluate(() => openDetailByDex(1, true));
   await page.waitForTimeout(400);
   ok('비로그인에게도 ★ 는 보인다', (await page.locator('.detail__fav').count()) === 1);
@@ -140,7 +147,7 @@ suite(async () => {
   await small.goto(`${BASE}#/dex`, { waitUntil: 'domcontentloaded' });
   await waitSplash(small);
   await small.waitForTimeout(500);
-  await signIn(small, { beta: true, favs: [sample.dex] });
+  await signIn(small, { status: 'ok', favs: [sample.dex] });
   await small.evaluate((dex) => openDetailByDex(dex, true), sample.dex);
   await small.waitForTimeout(500);
   ok('좁은 화면에도 배지가 선다', (await small.locator('.detail__favnews').count()) === 1);

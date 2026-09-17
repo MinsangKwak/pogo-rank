@@ -40,7 +40,7 @@ from names import name_ko, species, FORM_KO
 import guard
 
 # ── 설정 ─────────────────────────────────────────────────────────────────────
-APP_VERSION = 'v3.60.0'  # ★ 즐겨찾기 부활 + 📣 담아 둔 포켓몬의 일정 배지 (실험 기능) (v3.25.0 은 feature-advertisement 브랜치에 예약)
+APP_VERSION = 'v3.61.0'  # 육성 플래너·내 포켓몬을 한 화면으로 — 뼈대를 ★ 즐겨찾기로 (v3.25.0 은 feature-advertisement 브랜치에 예약)
 # 2026-09-14 v3.28.0 index.html 의 색인 허용 줄 — dev 빌드가 이 줄을 noindex 로 바꿔 끼운다
 ROBOTS_INDEX_META = '<meta name="robots" content="index, follow, max-image-preview:large">'
 # 2026-09-05 v2.7.3 빌드 채널 — 'prod'(기본) / 'dev'. dev 브랜치 워크플로(.github/workflows/deploy-dev.yml)가 BUILD_CHANNEL=dev 로 부른다.
@@ -505,7 +505,7 @@ GAME_UPDATE_ROLLOUT = {'planned', 'rolling', 'live', 'withdrawn', 'unknown'}
 # 표를 두 번 적는 셈이지만, 빌드가 프론트 소스를 파싱하게 만드는 쪽이 더 부서지기 쉽다.
 # 여기 없는 id 를 적으면 빌드가 선다 — 화면에서 죽은 링크가 되는 것보다 먼저 걸린다
 GAME_UPDATE_ROUTES = {'dex', 'dmax', 'pve', 'pvp', 'schedule', 'raids', 'eggs', 'finder',
-                      'planner', 'planner-collection', 'ivrank', 'pvp-deck', 'dmax-deck', 'pve-solo', 'changes'}
+                      'planner', 'ivrank', 'pvp-deck', 'dmax-deck', 'pve-solo', 'changes'}
 DATE_RE = re.compile(r'^\d{4}-\d{2}-\d{2}$')
 
 

@@ -7,7 +7,7 @@
 // 즉 새 패치노트를 알리는 방법은 아래 RELEASE_VER 문자열을 바꾸는 것 하나뿐이고,
 // 날짜나 항목 개수를 비교하지 않으므로 문구만 손볼 때는 뱃지가 뜨지 않는다.
 // 패치노트 페이지를 열면 markReleaseSeen()이 현재 버전을 기록해 빨간 점이 사라진다.
-const RELEASE_VER = '2026-09-17-91';  // v3.60.0 ★ 즐겨찾기 + 📣 소식 배지
+const RELEASE_VER = '2026-09-17-92';  // v3.61.0 🎒 내 포켓몬 한 화면으로
 const RELEASE_HIDE_KEY = 'pogo_release_hide';
 // 2026-09-16 v3.46.0 **패치노트 본문은 밖으로 뺐다** (scripts/release-notes.js → dist/app-lazy.js).
 // 160판 × 여러 줄이라 이 파일의 94%(gzip 30KB)를 차지했는데, 첫 화면은 그중 한 글자도 안 쓴다.

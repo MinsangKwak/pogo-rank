@@ -15,6 +15,13 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 const RELEASE_NOTES_EN = {
+  '2026-09-17 · v3.61.0': [
+    '**Training Planner and My Pokémon are one screen now** — everything lives under [My Pokémon] in the menu. Old links still open.',
+    '**[Coming up] sits at the top** — Community Day, Spotlight Hour and raid dates for the Pokémon you saved, soonest first.',
+    '**Your saved list sits below it** — rows with an event carry a countdown, and ★ removes one.',
+    '**📣 news is open to every signed-in account** — it used to be limited to experimental testers.',
+    '**Recording individual Pokémon (level, IVs, moves) is paused** — seven fields to fill in, and the numbers went stale the moment you powered one up in game. CP and league reach are still in the calculator.',
+  ],
   '2026-09-17 · v3.60.0': [
     '**★ Favourites are back** — the star at the top right of a Pokémon page adds it. That page is the only place you add one.',
     '**Saving one now buys you something** — when that Pokémon shows up in a Community Day, Spotlight Hour or raid rotation, a 📣 badge appears on its page and takes you straight to the event schedule.',

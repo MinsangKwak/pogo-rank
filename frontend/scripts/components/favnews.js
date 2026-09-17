@@ -15,12 +15,14 @@
 //   (11월 커뮤니티 데이처럼). "없다" 로 볼 뿐 오류가 아니다.
 //
 // 어디에 붙나
-//   **포켓몬 상세 팝업 하나뿐이다.** 담은 자리에서 바로 보이는 것이 먼저라서,
-//   홈·메뉴의 합계 배지는 다음 단계로 둔다 — 셈은 favNewsCount() 로 이미 나온다.
+//   1) 🎒 내 포켓몬 화면의 **맨 위 덩이** — 이 화면의 주인공이다 (planner/home.js)
+//   2) 포켓몬 상세 팝업의 작은 배지 — 담은 자리에서 바로 보이라고
 //
 // 누가 보나
-//   **실험 기능 참가자(AUTH.beta)만.** 관리자가 allowlist 문서에 beta 를 켜 준 사람이다.
-//   전체에 열 때는 favNewsEnabled() 의 조건 한 줄만 고치면 된다.
+//   2026-09-17 v3.61.0 실험 기능 문을 열었다. v3.60.0 에는 AUTH.beta 뒤에 뒀는데, 소식이
+//   🎒 내 포켓몬 화면의 **주 내용**이 되면서 참가자가 아닌 사람에게는 빈 화면이 뜨게 됐다.
+//   로그인 + 승인이 이미 충분한 문턱이다. 승인 대기(pending)도 본다 — 담는 것이 허용돼 있고
+//   (firestore.rules favsOnly), 기다리는 동안 볼 것이 있어야 기다릴 이유도 생긴다.
 //
 // 알림 방식
 //   앱 안 배지다. 푸시가 아니다. 커뮤니티 데이는 한 달 전에 발표되고 스포트라이트는 매주라,
@@ -32,9 +34,12 @@
 //   favNewsList()     담아 둔 전부의 소식 (홈·메뉴 배지용)
 //   favNewsCount()    그 개수
 //   favNewsNode(dex)  상세에 붙이는 배지 조각 — 담지 않았거나 소식이 없으면 빈 문자열
+//   favNewsMonName(dex)   담아 둔 종의 한글 이름 (없으면 #번호)
+//   favNewsCardNode(row)  🎒 화면의 소식 카드 한 장
 //
 // 의존하는 전역
-//   FAV_EVENTS (data.js) · AUTH · isFav (components/auth.js) · el (dom.js) · closeModal (components/modal.js)
+//   FAV_EVENTS · DEX_DATA (data.js) · AUTH · favEnabled · isFav (components/auth.js)
+//   el (dom.js) · sprite (components/sprite.js) · closeModal (components/modal.js)
 // ─────────────────────────────────────────────────────────────────────────────
 
 // 일정 종류 이름. ScrapedDuck 의 type 값 그대로가 열쇠다 (backend/gameday_build.py)
@@ -48,9 +53,9 @@ const FAV_NEWS_LABEL = {
 const FAV_NEWS_WINDOW_DAYS = 45;
 const FAV_NEWS_DAY_MS = 24 * 60 * 60 * 1000;
 
+// 담을 수 있는 사람이면 소식도 본다 — 두 조건이 갈리면 "담았는데 아무 일도 안 일어나는" 자리가 생긴다
 function favNewsEnabled() {
-  // 실험 기능 참가자에게만. 전체에 열 때 AUTH.beta === true 를 AUTH.status === 'ok' 로 바꾼다
-  return typeof AUTH !== 'undefined' && AUTH.beta === true
+  return typeof favEnabled === 'function' && favEnabled()
     && typeof FAV_EVENTS !== 'undefined' && Array.isArray(FAV_EVENTS);
 }
 
@@ -105,6 +110,24 @@ function favNewsWhen(row) {
 
 function favNewsText(row) {
   return `${FAV_NEWS_LABEL[row.event.type] || '일정'} ${favNewsWhen(row)}`;
+}
+
+// 담아 둔 종의 한글 이름 — 이름표에 없으면 번호를 그대로 쓴다 (이름을 지어내지 않는다)
+function favNewsMonName(dex) {
+  const names = typeof DEX_DATA !== 'undefined' ? DEX_DATA.names : null;
+  return (names && names[dex]) || `#${dex}`;
+}
+
+// 🎒 내 포켓몬 화면의 소식 카드 한 장 — 누구의, 무슨 일정이, 언제.
+// 상세의 배지와 달리 여기서는 **누구인지**가 먼저다 (여러 마리가 한 줄씩 서므로)
+function favNewsCardNode(row) {
+  const when = favNewsWhen(row);
+  return el('a', { class: `favnews__card${row.days <= 0 ? ' is-now' : ''}`, href: '#/schedule' },
+    el('span', { class: 'favnews__mons' }, ...row.dex.map((dex) => sprite(dex))),
+    el('span', { class: 'favnews__main' },
+      el('b', { class: 'favnews__who' }, row.dex.map(favNewsMonName).join(' · ')),
+      el('span', { class: 'favnews__kind' }, FAV_NEWS_LABEL[row.event.type] || '일정')),
+    el('span', { class: `favnews__when${row.days <= 0 ? ' is-now' : ''}` }, when));
 }
 
 // 상세 팝업의 배지. **담아 둔 포켓몬에만 선다** — ★ 를 누를 이유가 여기서 생긴다.

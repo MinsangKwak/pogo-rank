@@ -1267,6 +1267,29 @@ const I18N_EN = {
   '공격 # · 방어 # · 체력 # · 맥스 배틀 거다이맥스 가능': 'Attack # · Defense # · HP # · Max Battle: Gigantamax capable',
 
   // 내 포켓몬 · 플래너 (planner/collection.js · planner/home.js)
+  // 2026-09-17 v3.61.0 화면을 ★ 즐겨찾기 뼈대로 갈아엎었다 (planner/home.js · components/favnews.js)
+  '담아 둔 포켓몬의 일정을 챙겨 드려요': 'We keep an eye on your saved Pokémon',
+  '포켓몬 상세에서 ★ 를 누르면 여기에 쌓여요. 그 포켓몬이 커뮤니티 데이·스포트라이트 아워·레이드 보스에 뜨면 아래 소식 칸에 먼저 알려 드려요.':
+    'Tap ★ on a Pokémon page and it lands here. When that Pokémon shows up in a Community Day, Spotlight Hour or raid rotation, you see it in the news panel below first.',
+  '도감에서 담을 포켓몬 찾기': 'Find a Pokémon in the Pokédex',
+  '다가오는 소식': 'Coming up',
+  '담아 둔 포켓몬에 잡힌 일정이에요. 가까운 것부터 보여 드려요.': 'Events lined up for the Pokémon you saved, soonest first.',
+  '담아 둔 포켓몬에 잡힌 일정이 아직 없어요. 새 일정이 올라오면 여기에 떠요.':
+    'Nothing lined up for your saved Pokémon yet. New events show up here.',
+  '아직 담아 둔 포켓몬이 없어요. 도감에서 ★ 를 눌러 담아 보세요.': 'You have not saved any Pokémon yet. Tap ★ in the Pokédex to save one.',
+  '담아 둔 포켓몬 #마리': '# saved Pokémon',
+  '★ 를 다시 누르면 빠져요. 이름을 누르면 상세가 열려요.': 'Tap ★ again to remove. Tap a name to open its page.',
+  '위 [도감에서 담을 포켓몬 찾기] 로 첫 포켓몬을 담아 보세요.': 'Use [Find a Pokémon in the Pokédex] above to save your first one.',
+  '커뮤니티 데이': 'Community Day',
+  '스포트라이트 아워': 'Spotlight Hour',
+  '레이드 보스': 'Raid boss',
+  '진행 중': 'Now on',
+  '오늘': 'Today',
+  '내일': 'Tomorrow',
+  '포켓몬 상세의 ★ 로 담고, 담아 둔 포켓몬의 커뮤니티 데이·스포트라이트 아워·레이드 일정을 여기서 챙겨요. 로그인한 분만 담을 수 있어요.':
+    'Save Pokémon with the ★ on their page, then follow their Community Day, Spotlight Hour and raid schedules here. Saving needs an account.',
+  '로그인하면 포켓몬을 ★ 로 담아 두고, 그 포켓몬의 커뮤니티 데이·스포트라이트 아워·레이드 일정을 챙겨 드려요. 승인된 분만 쓸 수 있어요.':
+    'Sign in to save Pokémon with ★ and follow their Community Day, Spotlight Hour and raid schedules. Approved accounts only.',
   '✏️ 개체 수정': '✏️ Edit Pokémon',
   '폼 데이터 없음': 'No form data',
   '종 이름 검색 (예: 메가 리자몽, 섀도우 뮤츠)': 'Search species (e.g. Mega Charizard, Shadow Mewtwo)',

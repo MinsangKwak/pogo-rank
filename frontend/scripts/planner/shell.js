@@ -19,7 +19,7 @@
 // 의존하는 전역
 //   el (dom.js) · track (track.js) · navigateHash · NAV (components/history.js) · closeDrawer · closeModal
 //   state · $controls · $content · $note · render (app.js — 호출 시점에는 정의돼 있다)
-//   renderPlanHome (planner/home.js) · renderPlanCollection (planner/collection.js)
+//   renderPlanHome (planner/home.js)
 // ─────────────────────────────────────────────────────────────────────────────
 
 // 번들은 파일 전체가 한 <script> 라 app.js 의 함수들은 호이스팅되지만 const state 는 초기화 전(TDZ)이다.
@@ -28,7 +28,9 @@ let _planShellReady = false;
 // [탭 id, 라벨] — 주소가 어느 화면을 뜻하는지 가리는 허용 목록.
 // 2026-09-12 v2.66.0 탭 줄은 걷어냈다(이동은 왼쪽 메뉴가 맡는다). 이 표는 남는다 —
 // planRouteFromHash() 가 "아는 플래너 화면인가" 를 이 목록으로 판별한다
-const PLAN_TABS = [['home', '육성 현황'], ['collection', '내 포켓몬']];
+// 2026-09-17 v3.61.0 'collection' 을 뺐다 — 두 화면을 하나로 합치면서 라우트가 사라졌다(router.js).
+// 옛 주소 #/planner/collection · #/plan/collection 은 legacy 가 #/planner 로 잇는다
+const PLAN_TABS = [['home', '내 포켓몬']];
 
 // 현재 해시가 플래너 주소면 { tab, params }, 아니면 null
 // 2026-09-08 v2.30.0 주소 해석은 router.js 가 한다 — 여기서 정규식을 또 쓰지 않는다
@@ -85,8 +87,8 @@ function switchMode(to, from = 'badge') {
 function updateModeBadge() {}
 
 // ── 2026-09-10 v2.47.0 로그인 잠금 ────────────────────────────────────────────
-// 육성 플래너는 **로그인한 사용자만** 쓴다. 개체를 계정에 저장하는 화면이라, 로그인 전에는
-// 저장이 되지 않는데도 화면은 다 열려 있어 "적었는데 사라졌다" 로 끝나는 길이 있었다.
+// 🎒 내 포켓몬은 **로그인한 사용자만** 쓴다. 담아 둔 것을 계정에 저장하는 화면이라, 로그인 전에는
+// 저장이 되지 않는데도 화면은 다 열려 있어 "담았는데 사라졌다" 로 끝나는 길이 있었다.
 //
 // 로그인 기능이 꺼진 빌드(FIREBASE_CONFIG 비어 있음)에서는 잠그지 않는다 —
 // 로그인할 방법이 없는데 잠그면 그 빌드에서는 영영 못 여는 화면이 된다.
@@ -121,15 +123,17 @@ function lockedCardNode(screenName) {
 }
 
 function renderPlanLocked() {
-  $content.append(lockedCardNode('육성 플래너'));
-  $note.textContent = '로그인하면 내 개체를 계정에 저장하고 같은 종끼리 비교할 수 있어요. 승인된 분만 쓸 수 있어요.';
+  $content.append(lockedCardNode('내 포켓몬'));
+  $note.textContent = '로그인하면 포켓몬을 ★ 로 담아 두고, 그 포켓몬의 커뮤니티 데이·스포트라이트 아워·레이드 일정을 챙겨 드려요. 승인된 분만 쓸 수 있어요.';
 }
 
 // 플래너 화면 렌더러 — app.js render() 가 appMode === 'plan' 일 때 부른다
 function renderPlan() {
   track('plan_view', { tab: state.planTab });
   if (planLocked()) { renderPlanLocked(); return; }
-  ({ home: renderPlanHome, collection: renderPlanCollection })[state.planTab]();
+  // 2026-09-17 v3.61.0 플래너 화면은 하나뿐이다 — 개체 목록은 그 화면 안의 덩이로 들어갔다
+  // (planner/home.js, PLAN_MONS_ENABLED 가 켜졌을 때만)
+  renderPlanHome();
 }
 
 function initPlanShell() {

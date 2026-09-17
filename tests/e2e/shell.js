@@ -45,7 +45,7 @@ suite(async () => {
     //   거기에 1px 이라도 세로 넘침이 있으면 커서가 그 위에 있는 동안 휠이 페이지로 가지 않는다
     //   (v2.26.0 탭 줄에서 실제로 났던 버그 — PC 에서 탭 줄이 화면 한가운데 와 더 잘 걸렸다).
     const screens = ['', '#/dmax', '#/pve', '#/pvp', '#/dex', '#/favs',
-      '#/planner', '#/planner/collection', '#/schedule', '#/raids', '#/eggs', '#/release', '#/privacy', '#/terms'];
+      '#/planner', '#/schedule', '#/raids', '#/eggs', '#/release', '#/privacy', '#/terms'];
     const stuck = [];
     const traps = [];
     for (const hash of screens) {
@@ -263,8 +263,9 @@ suite(async () => {
       await page.waitForTimeout(450);
       const s = await menuState();
       ok(`폭 왕복 ${wLabel}(${w}) 기준 안내·트레이너 코드 유지`, s.note && s.trainer, JSON.stringify(s));
-      // v2.47.0 '내 포켓몬'·'육성 플래너' 를 한 줄로 합쳐 11 → 10 · v3.51.0 📢 게임 업데이트가 늘어 12 (서비스 홈 + 화면 11개)
-      ok(`폭 왕복 ${wLabel}(${w}) 이동 목록 12개·한 벌`, s.nav === 12 && s.navMenus === 1, JSON.stringify(s));
+      // v2.47.0 '내 포켓몬'·'육성 플래너' 를 한 줄로 합쳐 11 → 10 · v3.51.0 📢 게임 업데이트가 늘어 12
+      // 2026-09-17 v3.61.0 다시 둘을 하나로 합쳐 11 (서비스 홈 + 화면 10개)
+      ok(`폭 왕복 ${wLabel}(${w}) 이동 목록 11개·한 벌`, s.nav === 11 && s.navMenus === 1, JSON.stringify(s));
       ok(`폭 왕복 ${wLabel}(${w}) #drawer-extra 한 벌(복제 아님)`, s.extras === 1, JSON.stringify(s));
     }
     ok('폭 왕복 중 오류 없음', errs.length === 0, errs.join(' | ').slice(0, 160));

@@ -4,7 +4,7 @@
 //
 // 이 스위트가 지키려는 것
 //   - 읽기만 하는 화면(레이드 보스·배틀 PvP 등)은 비로그인으로 열린다
-//   - 잠기는 것은 육성 플래너 · 내 포켓몬 둘뿐 — 메뉴 자물쇠와 홈 타일까지 그 범위다
+//   - 잠기는 것은 🎒 내 포켓몬 하나뿐 — 메뉴 자물쇠와 홈 타일까지 그 범위다 (v3.61.0 에 두 줄을 하나로 합쳤다)
 //   - 가입 권유 팝업이 뜨지 않는다 (auth.js SIGNUP_INVITE_ENABLED)
 //   - 목록의 그림이 기본으로 움직이는 GIF 로 갈아 끼워진다 · 설정에서 끄면 정지본만 (components/sprite.js)
 //   - 옛 동작(잠금·팝업)은 localStorage 스위치로 살아난다 — 그 검사는 trial.js · planner.js · signup-invite.js 가 한다
@@ -31,16 +31,16 @@ suite(async () => {
   // 잠긴 쪽의 자세한 동작(팝업 문구·주소 직접 진입)은 planner.js 가 본다 — 여기서는 범위만 확인한다
   await go('#/raids');
   ok('비로그인: 레이드 보스가 열려 있다', (await page.locator('.plan__lock:visible').count()) === 0 && (await page.locator('#page .dex__row').count()) > 0);
-  ok('메뉴 자물쇠는 육성 플래너·내 포켓몬 둘뿐',
-    (await page.locator('.nav-menu a[aria-disabled="true"] .drawer__label').allTextContents()).join('|') === '육성 플래너|내 포켓몬',
+  ok('메뉴 자물쇠는 내 포켓몬 하나뿐',
+    (await page.locator('.nav-menu a[aria-disabled="true"] .drawer__label').allTextContents()).join('|') === '내 포켓몬',
     (await page.locator('.nav-menu a[aria-disabled="true"] .drawer__label').allTextContents()).join('|'));
   await go('#/planner');
-  ok('육성 플래너는 잠겨 있다 (내 개체를 적는 자리)', (await page.locator('.plan__lock:visible').count()) === 1);
+  ok('내 포켓몬은 잠겨 있다 (담아 둔 것이 계정에 남는 자리)', (await page.locator('.plan__lock:visible').count()) === 1);
   await go('#/pvp');
   ok('배틀 · PvP 는 열린다', (await page.locator('.plan__lock:visible').count()) === 0 && (await page.locator('#content .row').count()) > 0);
   await go('');
-  ok('홈 타일 자물쇠는 육성 플래너 하나',
-    (await page.locator('.home__tile[aria-disabled="true"] strong').allTextContents()).join('|') === '육성 플래너',
+  ok('홈 타일 자물쇠는 내 포켓몬 하나',
+    (await page.locator('.home__tile[aria-disabled="true"] strong').allTextContents()).join('|') === '내 포켓몬',
     (await page.locator('.home__tile[aria-disabled="true"] strong').allTextContents()).join('|'));
 
   // ── 잠시 써보기도 내려가 있다 — 열어 두기 전에 시작한 시간이 남아 있어도 배지가 안 뜬다 ──
