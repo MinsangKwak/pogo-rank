@@ -30,6 +30,16 @@
 const PLAN_STATUS_MODS = ['a', 'b', 'c'];
 const PLAN_STATUSES = ['육성 중', '완료', '교환 후보'];
 const PLAN_MAX_MONS = 300;  // 문서 1MB 한도 안에서 넉넉한 상한 — 친구 규모에서는 닿을 일이 없다
+
+// 2026-09-17 v3.61.0 **개체 기록을 내렸다** (기능은 지우지 않고 스위치만 — components/trial.js 와 같은 방식).
+//   왜 — 개체 하나를 적으려면 레벨·개체값 셋·기술 둘·상태까지 일곱 번을 손으로 넣어야 하는데,
+//   그렇게 적어 둔 값은 **게임과 동기화되지 않는다.** 사탕을 먹여 레벨을 올리면 앱의 숫자는 그대로라
+//   적을수록 틀려지고, 고치려면 또 손으로 들어가야 했다.
+//   게다가 돌려주던 것(CP · 리그 도달 · 유사백)은 **계산기가 저장 없이도 알려 주던 값**이다.
+//   ★ 담기는 탭 한 번에 📣 일정을 돌려준다 — 그쪽이 🎒 화면의 뼈대가 됐다 (planner/home.js).
+//   되살릴 때는 이 값을 true 로 올리면 화면 맨 아래 접힌 칸으로 돌아온다.
+const PLAN_MONS_ENABLED = false;
+function planMonsOff() { return !PLAN_MONS_ENABLED; }
 // 리그 CP 상한 (마스터는 상한 없음 = 만렙)
 const PLAN_LEAGUES = [['little', 500], ['great', 1500], ['ultra', 2500], ['master', null]];
 

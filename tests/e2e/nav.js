@@ -222,11 +222,15 @@ suite(async () => {
 
   // 8. 2026-09-12 v2.66.0 마지막 탭 줄(플래너)도 걷어냈다 — 이동은 왼쪽 메뉴 하나가 맡는다.
   // 주소와 화면 이름은 그대로 산다
+  // 2026-09-17 v3.61.0 옛 자식 주소로 들어와도 합쳐 낸 한 화면이 뜬다 (부모 줄이 사라져 브레드크럼도 한 칸)
   await page.goto(BASE + '?mock=1#/planner/collection', { waitUntil: 'domcontentloaded' });
   await settle();
   ok('화면 안 탭 줄이 없다', (await page.locator('#tabs .tabs__item').count()) === 0);
+  ok('옛 자식 주소가 합친 화면으로', (await page.evaluate(() => location.hash)) === '#/planner',
+    await page.evaluate(() => location.hash));
   ok('내 포켓몬 화면 이름', (await page.locator('#page-head h2').textContent()) === '내 포켓몬');
-  ok('브레드크럼에 부모(육성 플래너)', (await page.locator('.page-head__crumb-up').textContent()) === '육성 플래너');
+  // 부모 칸은 마크업에 남아 있고 비어 있다 (app-shell.js 가 글자만 갈아 끼운다)
+  ok('브레드크럼에 부모 이름이 없다', (await page.locator('.page-head__crumb-up').textContent()) === '');
 
   // 8b. 2026-09-12 v2.63.0 타입 & 상성 화면을 접었다 — 상세 팝업이 같은 표를 이미 보여 준다.
   //     공유된 옛 주소(#/types?t=…)가 죽지 않고 도감으로 넘어가는지 본다
@@ -287,9 +291,9 @@ suite(async () => {
     ok('지금 뭐 하지 = 시간에 매인 것', groups['지금 뭐 하지'].join('|') === '게임 업데이트|이벤트 일정|레이드 보스|알 부화', groups['지금 뭐 하지'].join('|'));
     ok('뭘 데려갈까 = 고르려고 보는 것', groups['뭘 데려갈까'].join('|') === '포켓몬 도감|D-MAX|레이드 · PvE|배틀 · PvP', groups['뭘 데려갈까'].join('|'));
     // v2.66.0 덩이 이름을 '뭘 키울까' 로 바꿨다 — 같은 이름의 화면(내 포켓몬)이 그 안에 생겨
-    // 덩이 제목과 항목이 똑같은 글자가 됐다. 내 포켓몬은 육성 플래너 아래 한 칸 들여쓴 자식이다
-    ok('뭘 키울까 = 내 박스', groups['뭘 키울까'].join('|') === '육성 플래너|내 포켓몬|검색식 만들기', groups['뭘 키울까'].join('|'));
-    ok('내 포켓몬은 육성 플래너의 자식', (await page.locator('.nav-menu .drawer__item--sub').allTextContents()).join('|').includes('내 포켓몬'),
+    // 덩이 제목과 항목이 똑같은 글자가 됐다. 이름은 그대로 두고 v3.61.0 에 줄 둘을 하나로 합쳤다
+    ok('뭘 키울까 = 내 박스', groups['뭘 키울까'].join('|') === '내 포켓몬|검색식 만들기', groups['뭘 키울까'].join('|'));
+    ok('들여쓴 자식 줄이 남아 있지 않다', (await page.locator('.nav-menu .drawer__item--sub').count()) === 0,
       (await page.locator('.nav-menu .drawer__item--sub').allTextContents()).join('|'));
   }
 

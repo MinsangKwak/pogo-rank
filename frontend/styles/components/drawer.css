@@ -98,9 +98,14 @@
 .account__who b { display: block; font-size: 1.4rem; }
 .account__email { display: block; font-size: 1.15rem; color: var(--muted); word-break: break-all; }
 /* 2026-09-09 v2.40.0 즐겨찾기·내 포켓몬 개수를 두 칸으로 — 세는 대상이 달라 한 줄에 이어 붙이면 뭉친다 */
-.account__stats { display: grid; grid-template-columns: 1fr 1fr; gap: 0.8rem; padding: 0.8rem 0.2rem; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); font-size: 1.2rem; color: var(--muted); text-align: center; }
-.account__stats span + span { border-left: 1px solid var(--line); }
+/* 2026-09-17 v3.61.0 칸이 하나뿐이다 — v2.40.0 에 둘로 나눴던 것을 되돌린다 (세는 값이 하나가 됐다).
+   auto-fit 이라 칸이 다시 늘어도 규칙을 고칠 일이 없다 */
+.account__stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(0, 1fr)); gap: 0.8rem; padding: 0.8rem 0.2rem; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); font-size: 1.2rem; color: var(--muted); text-align: center; }
+.account__stats > * + * { border-left: 1px solid var(--line); }
 .account__stats b { font-weight: 600; color: var(--fg); }
+/* 숫자가 곧 그 화면으로 가는 문이다 — 손가락이 닿는 높이를 준다 */
+.account__stat-go { display: flex; align-items: center; justify-content: center; gap: 0.2rem; min-height: var(--tap); color: inherit; text-decoration: none; }
+.account__stat-go:hover { color: var(--fg); }
 /* 버튼은 나란히 — 세로로 쌓으면 계정 카드가 메뉴 절반을 먹는다 */
 .account__actions { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; gap: 0.6rem; }
 .account__actions .drawer__item { justify-content: center; padding: 0.9rem 1.2rem; font-size: 1.3rem; }
@@ -116,6 +121,8 @@
 .admin__who b { display: block; font-size: 1.35rem; }
 .admin__act { flex: none; }
 .admin__act.is-danger { color: var(--warn); border-color: var(--warn); }
+/* 2026-09-17 v3.60.0 실험 기능이 켜진 사람 — 해제(빨강)와 갈리게 teal */
+.admin__act.is-on { color: var(--good); border-color: var(--good); }
 /* 2026-09-15 v3.40.0 관리자 지정이 생기면서 한 줄에 버튼이 둘이 된다 — 좁으면 아래로 접는다 */
 .admin__acts { display: flex; flex: none; flex-wrap: wrap; justify-content: flex-end; gap: 0.5rem; }
 /* 이름 옆 역할 딱지. 관리자 줄은 왼쪽에 굵은 선을 둬 목록을 훑을 때 결이 다른 줄임이 보이게 */

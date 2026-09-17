@@ -119,7 +119,8 @@ suite(async () => {
   await page3.goto('http://localhost:5503/#/pvp/deck', { waitUntil: 'domcontentloaded' });
   await waitSplash(page3);
   await page3.waitForTimeout(600);
-  ok('대조: PvP 덱 짜기는 잠겨 있다', (await page3.locator('.plan__lock').count()) === 1);
+  // v3.59.0 잠그는 화면을 육성 플래너·내 포켓몬 둘로 좁혔다 — PvP 덱 짜기는 읽는 도구라 열어 둔다
+  ok('대조: PvP 덱 짜기도 열려 있다', (await page3.locator('.plan__lock:visible').count()) === 0);
   await ctx3.close();
 
   ok('JS 오류 없음', errs.length === 0, errs.join(' | '));

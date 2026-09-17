@@ -15,6 +15,30 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 const RELEASE_NOTES_EN = {
+  '2026-09-17 · v3.61.1': [
+    '**The menu\u2019s [My Pokémon — N] now counts what you saved** — it used to sit at 0 no matter what. Tap it to open the screen, and the number updates the moment you tap ★.',
+    '**The [+ My Pokémon] button is gone from Pokémon pages** — while individual records are paused there was nowhere for it to lead.',
+    '**Old ★ favourites links go to the right screen** — they used to land on the Pokédex, now they open [My Pokémon].',
+  ],
+  '2026-09-17 · v3.61.0': [
+    '**Training Planner and My Pokémon are one screen now** — everything lives under [My Pokémon] in the menu. Old links still open.',
+    '**[Coming up] sits at the top** — Community Day, Spotlight Hour and raid dates for the Pokémon you saved, soonest first.',
+    '**Your saved list sits below it** — rows with an event carry a countdown, and ★ removes one.',
+    '**📣 news is open to every signed-in account** — it used to be limited to experimental testers.',
+    '**Recording individual Pokémon (level, IVs, moves) is paused** — seven fields to fill in, and the numbers went stale the moment you powered one up in game. CP and league reach are still in the calculator.',
+  ],
+  '2026-09-17 · v3.60.0': [
+    '**★ Favourites are back** — the star at the top right of a Pokémon page adds it. That page is the only place you add one.',
+    '**Saving one now buys you something** — when that Pokémon shows up in a Community Day, Spotlight Hour or raid rotation, a 📣 badge appears on its page and takes you straight to the event schedule.',
+    '**Signing in keeps them** — you can save favourites while your account is still awaiting approval.',
+    '**Still an experiment** — the 📣 badge only shows for accounts opted into experimental features.',
+    '**Buttons in popups now look the same** — the one you are meant to press is filled in, the rest share a single outline.',
+  ],
+  '2026-09-17 · v3.59.0': [
+    '**Event schedule, raid bosses, egg hatches, PvP and the search builder are open without signing in** — screens that used to be locked are now free to browse.',
+    '**Training Planner and My Pokémon need an account** — they record your own Pokémon, so they belong to a signed-in profile.',
+    '**The temporary trial is paused** — being locked out two hours after writing things down was worse than not starting.',
+  ],
   '2026-09-17 · v3.58.0': [
     '**Solo raid recommendations are more accurate** — against dual-type bosses we now use the moves a Pokémon actually carries, not its own typing.',
     '**For example** Shadow Chandelure is Ghost/Fire but only carries Fire moves, so it gets no Ghost bonus against a Psychic boss. We used to grant it anyway, overstating its damage by 60% and ranking it first.',

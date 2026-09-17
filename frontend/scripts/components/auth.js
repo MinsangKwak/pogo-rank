@@ -213,6 +213,7 @@ async function onAuthChange(user) {
   AUTH.admin = false;
   AUTH.adminRoot = false;
   AUTH.favs = new Set();
+  AUTH.beta = false;   // v3.60.0 실험 기능 참가자 표식 — 로그아웃하면 내려간다
   AUTH.roles = {};
   AUTH.mons = [];
   AUTH.requestError = '';
@@ -236,8 +237,13 @@ async function onAuthChange(user) {
       const snapshot = await AUTH.db.collection('allowlist').doc(email).get().catch(() => null);
       approved = !!(snapshot && snapshot.exists);
       delegated = !!(approved && snapshot.data()?.admin === true);
+      // 2026-09-17 v3.60.0 실험 기능 참가자 — admin 과 같은 문서의 beta: true.
+      //   규칙은 안 고쳤다: 이 문서는 이미 루트만 쓰고 본인은 읽을 수 있다
+      AUTH.beta = !!(approved && snapshot.data()?.beta === true);
     }
     AUTH.admin = AUTH.adminRoot || delegated;
+    // 루트는 늘 참가자다 — 실험 기능을 켠 사람이 자기 화면에서 못 보면 확인할 방법이 없다
+    if (AUTH.adminRoot) AUTH.beta = true;
     if (approved) {
       AUTH.status = 'ok';
       await loadFavs();
@@ -520,7 +526,10 @@ async function deleteAccount() {
 // 삭제 확인 팝업 — 되돌릴 수 없으므로 무엇이 지워지는지 먼저 보여 준다
 function confirmDeleteAccount() {
   const items = [
-    `🎒 내 포켓몬 ${Array.isArray(AUTH.mons) ? AUTH.mons.length : 0}마리 · 화면 설정`,
+    // 2026-09-17 v3.61.0 스위치를 내린 개체 기록(mons)도 계정에는 남아 있다 —
+    // 이 팝업은 **지워지는 것을 있는 그대로** 적는 자리라 둘 다 적는다
+    `★ 담아 둔 포켓몬 ${AUTH.favs instanceof Set ? AUTH.favs.size : 0}마리 · 화면 설정`,
+    `🎒 개체 기록 ${Array.isArray(AUTH.mons) ? AUTH.mons.length : 0}마리 (지금은 화면에서 쉬는 기능)`,
     '승인 정보와 가입 요청(이메일·이름·사진·약관 동의 기록)',
     'Google 로그인 연결(Firebase 인증 계정)',
   ];
@@ -569,8 +578,54 @@ async function loadFavs() {
   }
 }
 
-// 2026-09-12 v3.14.0 ★ 버튼 함수들(isFav · toggleFav · favBtn · refreshFavUi)과 역할 보정 setRole 을 지웠다 —
-// v3.4.0 에 ★ 즐겨찾기 기능을 걷어낸 뒤로 부르는 곳이 없었다. AUTH.favs · AUTH.roles 는 Firestore 필드라 그대로 읽는다
+// 2026-09-12 v3.14.0 ★ 버튼 함수들을 지웠다 — v3.4.0 에 기능을 걷어낸 뒤로 부르는 곳이 없었다.
+//
+// 2026-09-17 v3.60.0 **다시 만든다.** 이번에는 쓸모를 먼저 정했다.
+//   v3.4.0 에 걷어낸 이유는 "담을 수는 있는데 담은 뒤에 할 수 있는 일이 없었다" 였다.
+//   이제 담아 두면 **그 포켓몬의 커뮤니티 데이·스포트라이트·레이드 일정을 챙겨 준다**(components/favnews.js).
+//   입구도 하나뿐이다 — 포켓몬 상세 팝업의 ★ 하나. 목록 카드에는 달지 않는다(v2.66.0 에 셋을 하나로 모았던 이유).
+//
+//   승인 대기(pending)도 담을 수 있다. 담아 두는 일은 승인을 기다리는 동안에도 할 수 있어야 하고,
+//   담아 둔 것이 있어야 승인을 기다릴 이유도 생긴다 (firestore.rules favsOnly).
+//   소식을 받는 것은 승인된 사람부터다.
+//
+//   저장 단위는 **종(도감번호)** 이다 — 폼이 아니라. "이 포켓몬을 챙긴다" 는 종 단위의 뜻이고,
+//   도감번호 하나면 상세·일정 어디서든 같은 값으로 맞출 수 있다.
+function favEnabled() {
+  return authEnabled() && (AUTH.status === 'ok' || AUTH.status === 'pending');
+}
+function isFav(dex) {
+  return AUTH.favs instanceof Set && AUTH.favs.has(Number(dex));
+}
+// arrayUnion/arrayRemove 로 갱신한다 — 문서 전체를 덮어쓰지 않아 다른 기기의 변경과 부딪히지 않는다
+async function toggleFav(dex, screenName) {
+  const number = Number(dex);
+  if (!Number.isFinite(number)) return false;
+  if (!favEnabled()) {
+    if (typeof openLoginInvite === 'function') openLoginInvite(screenName || '즐겨찾기');
+    return false;
+  }
+  const on = !isFav(number);
+  // 화면을 먼저 바꾼다 — 저장은 뒤따라온다. 느린 회선에서 눌러도 반응이 있어야 한다
+  if (on) AUTH.favs.add(number); else AUTH.favs.delete(number);
+  // 2026-09-17 v3.61.0 열려 있는 ☰ 메뉴의 "🎒 내 포켓몬 N마리" 도 그 자리에서 고친다 —
+  // 담았는데 메뉴에는 0 마리로 남아 있었다(제보). 계정 카드가 세는 값이 방금 바뀌었으니 다시 그린다
+  if (typeof renderAccount === 'function' && document.getElementById('account')) renderAccount();
+  track('fav_toggle', { on: on ? 1 : 0, mon: number, from: screenName || '' });
+  if (!AUTH.db || !AUTH.user) return on;
+  const fieldValue = firebase.firestore.FieldValue;
+  await AUTH.db.collection('users').doc(AUTH.user.uid).set({
+    email: authEmail(),
+    favs: on ? fieldValue.arrayUnion(number) : fieldValue.arrayRemove(number),
+    updatedAt: fieldValue.serverTimestamp(),
+  }, { merge: true }).catch(() => {
+    // 저장이 실패하면 화면도 되돌린다 — 담긴 것처럼 보이는데 안 담긴 상태가 가장 나쁘다
+    if (on) AUTH.favs.delete(number); else AUTH.favs.add(number);
+    if (typeof renderAccount === 'function' && document.getElementById('account')) renderAccount();
+    alert(t('담지 못했어요. 잠시 뒤 다시 눌러 주세요.'));
+  });
+  return on;
+}
 
 // ── 드로어 계정 영역 ────────────────────────────────────
 // message를 주면 계정 영역 아래에 안내문을 함께 그린다(로그인 실패·승인 대기 안내 등).
@@ -625,17 +680,19 @@ function renderAccount(message) {
         el('button', { class: 'drawer__item account__danger', onclick: confirmDeleteAccount }, '계정 삭제')));  // 2026-09-07 v2.18.0 가입 요청만 남은 상태도 스스로 지울 수 있게
     return;
   }
-  // (3) 승인됨 — 즐겨찾기 개수와 바로가기, 관리자에게만 승인 패널 버튼
+  // (3) 승인됨 — 담아 둔 수와 바로가기, 관리자에게만 승인 패널 버튼
   // 2026-09-07 v2.15.1 "📕 도감에서 채우기" 버튼 제거 — 탭 줄 📕 와 같은 화면. 요약 한 줄만 남긴다
-  const monCount = Array.isArray(AUTH.mons) ? AUTH.mons.length : 0;
-  // 2026-09-09 v2.40.0 두 숫자를 한 문장에 가운뎃점으로 이어 붙이던 줄을 두 칸으로 나눴다 — 세는 대상이
-  // 다른 숫자라 나란히 놓아야 각각 눈에 들어온다
-  // 2026-09-12 v3.6.0 ★ 즐겨찾기 수를 뺐다 — v3.4.0 에 기능을 걷어냈는데 숫자만 남아 있었다.
-  // 담을 길도 볼 길도 없는 수를 보여 주면 "어디서 보지" 만 남는다 (계정에 저장된 값 자체는 그대로다 —
-  // 계정 삭제 확인 팝업은 지워지는 것을 있는 그대로 적어야 하므로 거기에는 남겨 둔다)
+  // 2026-09-12 v3.6.0 ★ 즐겨찾기 수를 뺐다 (기능을 걷어낸 자리라 숫자만 남아 있었다)
+  // 2026-09-17 v3.61.0 **다시 ★ 수로 돌아왔다.** 그 사이 세던 것은 개체 기록(AUTH.mons)이었는데,
+  //   v3.61.0 에 그 기능의 스위치를 내렸다(PLAN_MONS_ENABLED). 담아도 0 마리로 남아 있는 숫자라
+  //   "담았는데 안 세네" 가 됐다. 이제 🎒 내 포켓몬 화면이 세는 것과 같은 것을 센다.
+  //   숫자를 누르면 그 화면으로 간다 — 셈만 보여 주고 갈 길이 없으면 "어디서 보지" 가 남는다
+  const favCount = AUTH.favs instanceof Set ? AUTH.favs.size : 0;
   accountBox.append(who,
     el('div', { class: 'account__stats' },
-      el('span', {}, '🎒 내 포켓몬 ', el('b', {}, `${monCount}마리`))),
+      el('a', { class: 'account__stat-go', href: routeHash('planner'),
+        onclick: () => closeDrawer({ silent: true }) },
+        '🎒 내 포켓몬 ', el('b', {}, `${favCount}마리`), el('span', { 'aria-hidden': 'true' }, ' ›'))),
     note,
     el('div', { class: 'account__actions' },
       // 2026-09-15 v3.41.0 이름이 곧 할 수 있는 일이다 — 루트는 사람을 들이고 내보내고(가입 승인),
@@ -708,6 +765,20 @@ async function openAdminPanel() {
     }
     openAdminPanel();
   };
+  // 2026-09-17 v3.60.0 실험 기능 참가 — 관리자 지정과 같은 문서·같은 규칙(루트만)이라 규칙을 안 고쳤다.
+  //   참가자에게만 먼저 여는 기능이 생길 때마다 이 표식 뒤에 둔다 (AUTH.beta)
+  const setBetaFlag = async (email, on) => {
+    const question = on ? `${email} 님에게 실험 기능을 열까요? 아직 다듬는 중인 기능을 먼저 써 보게 돼요.`
+                        : `${email} 님의 실험 기능을 닫을까요?`;
+    if (!confirm(t(question))) return;
+    try {
+      await AUTH.db.collection('allowlist').doc(email).set({ beta: on }, { merge: true });
+    } catch (error) {
+      alert(t('바꾸지 못했어요. 보안 규칙을 최신으로 게시했는지 확인해 주세요.') + `\n(${error.code || error.message})`);
+    }
+    openAdminPanel();
+  };
+
   // 한 줄에 버튼 둘까지 — [관리자 지정|해제] 와 [승인 해제]
   // 2026-09-15 v3.41.0 **버튼은 루트에게만.** 위임 관리자에게는 목록만 보인다 —
   // 규칙이 어차피 막으므로 버튼을 두면 "눌러도 안 되는 버튼" 이 된다
@@ -717,6 +788,12 @@ async function openAdminPanel() {
     acts.push(uchip(isAdminRow ? '관리자 해제' : '관리자 지정',
       () => setAdminFlag(entry.id, entry.data, !isAdminRow),
       { class: `admin__act${isAdminRow ? ' is-danger' : ''}` }));
+    // 2026-09-17 v3.60.0 실험 기능 — 만들어 둔 기능을 **먼저 써 볼 사람**을 고른다.
+    //   관리자 권한과 뜻이 다르다: 운영을 돕는 자리가 아니라 시험해 보는 자리다
+    const onBeta = entry.data.beta === true;
+    acts.push(uchip(onBeta ? '🧪 실험 해제' : '🧪 실험 기능',
+      () => setBetaFlag(entry.id, !onBeta),
+      { class: `admin__act${onBeta ? ' is-on' : ''}` }));
     acts.push(uchip('승인 해제', async () => {
       if (!confirm(t(`${entry.id} 승인을 해제할까요?`))) return;
       try {

@@ -1,142 +1,104 @@
 // ─────────────────────────────────────────────────────────────────────────────
-// planner/home.js — 🌱 육성 플래너 · 육성 현황 (2026-09-07 v2.15.0, QA-53)
+// planner/home.js — 🎒 내 포켓몬 (2026-09-17 v3.61.0)
 //
-// 2026-09-10 v2.47.0 목업을 받아 화면을 다시 짰다. 카드 넉 장이 위에서 아래로:
-//   (1) 히어로   이 화면이 무엇인지 + 주 동작 하나(개체 등록하기)
-//   (2) 요약     내 포켓몬 N마리 + 상태별 수치 세 칸 + 바로가기
-//   (3) 다음 걸음 지금 할 수 있는 다섯 가지 — 순서대로 따라가면 되는 흐름
-//   (4) 최근     마지막에 손댄 개체 넷
+// 2026-09-17 v3.61.0 화면을 갈아엎었다. 전에는 '🌱 육성 플래너' 와 '🎒 내 포켓몬' 두 화면이었고,
+// 이 파일은 그중 앞의 것(육성 현황 요약 · 다음 걸음 다섯 · 최근 개체 넷)이었다.
 //
-// 다섯 걸음은 **지금 실제로 되는 것만** 적는다.
-//   목업의 걸음은 "필요 자원 계산하기 · 기술 세팅하기" 처럼 아직 없는 기능을 가리킨다.
-//   화면에 그렇게 적으면 눌러 보고 없다는 걸 알게 되는데, 그건 안내가 아니라 헛걸음이다.
-//   그래서 걸음은 이 앱이 오늘 할 수 있는 것으로 바꿔 적고, 아직 없는 것은 아래 로드맵 한 줄에 그대로 남긴다.
+// 왜 갈아엎었나
+//   두 화면이 같은 것을 묻고 있었다 — "내가 담아 둔 것이 뭔가". 그리고 걸음 다섯 중 넷이
+//   이미 자식 화면 하나를 가리키고 있었다(v2.65.0 에 한 번 줄였는데도 그랬다).
+//   더 근본적으로는 **개체 기록의 값이 비용을 못 넘었다.** 일곱 번 입력해서 얻는 것이
+//   CP·리그 도달·유사백인데, 셋 다 계산기가 저장 없이도 알려 준다. 게다가 게임과 동기화되지
+//   않아 사탕을 먹이는 순간 틀린 값이 된다. ★ 담기는 탭 한 번에 📣 일정을 돌려준다.
+//
+// 그래서 순서가 이렇다 — **일정이 먼저, 목록이 나중**
+//   (1) 📣 다가오는 소식   담아 둔 종에 잡힌 일정. 이 화면의 주인공이다
+//   (2) ★ 담아 둔 포켓몬   ★ 목록. 소식이 있는 줄에는 D-day 가 붙는다
+//   (3) 🎒 내 개체         PLAN_MONS_ENABLED 가 켜졌을 때만 (지금은 꺼짐)
+//
+//   v3.4.0 에 ★ 를 걷어낸 이유가 "★ 목록 화면이 도감을 이름순으로 거른 것과 다르지 않아서" 였다.
+//   그래서 (2)가 맨 위면 안 된다. 목록은 주인공이 아니고 **일정이 주인공**이다.
 //
 // 제공하는 전역
 //   renderPlanHome()
 //
 // 의존하는 전역
 //   el (dom.js) · sprite (components/sprite.js) · nameNode (components/name.js) · routeHash (router.js)
-//   AUTH · authEnabled (components/auth.js)
-//   planMons · planMonName · planMonCp · planIvPercent · planHundoLabel · PLAN_STATUSES · PLAN_STATUS_MODS (planner/collection.js)
+//   AUTH · authEnabled · favEnabled · isFav · toggleFav (components/auth.js)
+//   favNewsEnabled · favNewsList · favNewsFor · favNewsWhen · favNewsMonName · favNewsCardNode (components/favnews.js)
+//   PLAN_MONS_ENABLED · renderPlanCollection (planner/collection.js)
 //   $content · $note (app.js)
 // ─────────────────────────────────────────────────────────────────────────────
 
-// 상태 세 칸의 아이콘 — PLAN_STATUSES 와 같은 순서 (육성 중 · 완료 · 교환 후보)
-const PLAN_STATUS_ICONS = ['🌱', '✅', '🔄'];
-
-// 지금 할 수 있는 걸음. [아이콘, 제목, 두 줄 설명, 갈 곳]
-// 갈 곳이 없는 걸음은 넣지 않는다 — 걸음은 곧 "눌러서 할 수 있는 것" 이다
-// 2026-09-12 v2.65.0 다섯 중 넷이 같은 곳(내 포켓몬)을 가리켜, 어느 것을 눌러도 같은 화면이 떴다.
-// 내 포켓몬 안에서 하는 일은 한 줄로 묶고, 그 자리에서 못 하는 일(박스 정리 · 리그 순위)로 잇는다.
-// 잠긴 화면은 넣지 않는다 — 눌렀는데 로그인 카드가 뜨면 "걸음" 이 아니라 벽이다
-function planSteps() {
-  const steps = [
-    ['🎒', '개체 등록하기', '가진 포켓몬을 레벨·개체값·기술 단위로 적어 둬요.', routeHash('planner-collection')],
-    ['⚖️', '같은 종 비교하기', '두 마리의 [비교] 를 눌러 CP·개체값·리그 도달을 나란히 봐요.', routeHash('planner-collection')],
-    ['📕', '도감에서 더 찾기', '무엇이 센지부터 보고 싶다면 도감으로 가요.', routeHash('dex')],
-  ];
-  // 2026-09-11 v2.58.0 검색식 만들기 · 2026-09-12 v2.63.0 PvP 개체값 순위 — 플래너와 같은 일(내 박스 다루기)이라 여기서 잇는다
-  if (typeof routeLocked !== 'function' || !routeLocked('finder')) {
-    steps.push(['🔎', '박스 정리하기', '조건을 눌러 게임 검색창에 붙여 넣을 식을 만들어요.', routeHash('finder')]);
-  }
-  steps.push(['🧬', 'PvP 에서 몇 위인지', '리그마다 몇 위짜리 개체인지 봐요. PvP 는 0/15/15 처럼 기준이 다르거든요.', routeHash('ivrank')]);
-  return steps;
+// 담아 둔 도감번호 — 번호순. AUTH.favs 는 Set 이라 순서가 들어간 순이다(사람에게는 뜻이 없다)
+function planFavDex() {
+  return AUTH.favs instanceof Set ? [...AUTH.favs].map(Number).filter(Number.isFinite).sort((a, b) => a - b) : [];
 }
 
-// 최근 카드 한 장 — 목록 줄에서 쓰는 값과 같은 값을 쓴다(다른 값을 보여 주면 같은 개체가 달라 보인다)
-function planRecentCard(mon) {
-  const hundo = typeof planHundoLabel === 'function' ? planHundoLabel(mon) : null;
-  const statusMod = PLAN_STATUS_MODS[PLAN_STATUSES.indexOf(mon.status)] || 'a';
-  return el('a', { class: 'plan__recent-item', href: routeHash('planner-collection') },
-    sprite(mon.sprite),
-    el('span', { class: 'plan__recent-main' },
-      el('span', { class: 'plan__recent-name' },
-        nameNode(planMonName(mon)),
-        el('span', { class: `tag plan__status plan__status--${statusMod}` }, mon.status),
-        hundo ? el('span', { class: `tag plan__hundo plan__hundo--${hundo.kind}` }, hundo.text) : ''),
-      el('span', { class: 'plan__recent-sub' },
-        `Lv ${mon.level} · 개체값 ${(mon.ivs ?? []).join('/')} (${planIvPercent(mon.ivs)}%) · CP ${planMonCp(mon).toLocaleString()}`),
-      el('span', { class: 'plan__recent-sub' }, `${mon.fast || '스피드 모름'} · ${mon.charged || '차지 모름'}`)));
+// ★ 목록의 한 줄. 소식이 걸린 줄에는 D-day 를, 아닌 줄에는 아무것도 붙이지 않는다 —
+// "없음" 을 적으면 없는 줄이 있는 줄보다 눈에 띈다
+function planFavRow(dex) {
+  const rows = typeof favNewsFor === 'function' ? favNewsFor(dex) : [];
+  const soon = rows[0];
+  const off = el('button', { class: 'plan__fav-off', 'aria-label': `${favNewsMonName(dex)} 즐겨찾기에서 빼기`,
+    onclick: async (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      await toggleFav(dex, '내 포켓몬');
+      // renderPlanHome() 을 바로 부르면 안 된다 — $content 를 비우지 않아 화면이 한 벌 더 쌓인다
+      // (실측: 줄 10개가 19개가 됐다). 화면을 다시 그리는 일은 app.js render() 가 맡는다
+      render();
+    } }, '★');
+  return el('div', { class: 'plan__fav-row' },
+    el('a', { class: 'plan__fav-go', href: `#/mon/${dex}` },
+      sprite(dex),
+      el('span', { class: 'plan__fav-name' }, nameNode(favNewsMonName(dex))),
+      soon ? el('span', { class: `tag plan__fav-when${soon.days <= 0 ? ' is-now' : ''}` }, favNewsWhen(soon)) : ''),
+    off);
+}
+
+// 덩이 하나 — 제목 줄 + 내용. 비어 있을 때 할 말이 있어야 빈 칸이 안내가 된다
+function planSection(icon, title, desc, body) {
+  return el('section', { class: 'plan__card plan__sec' },
+    el('div', { class: 'plan__guide-head' },
+      el('span', { class: 'plan__guide-ico', 'aria-hidden': 'true' }, icon),
+      el('div', {}, el('b', {}, title), el('span', { class: 'plan__summary-desc' }, desc))),
+    body);
 }
 
 function renderPlanHome() {
-  const loggedIn = authEnabled() && AUTH.status === 'ok';
-  const mons = planMons();
-  const countBy = (status) => mons.filter((mon) => mon.status === status).length;
+  const favDex = planFavDex();
+  const news = typeof favNewsList === 'function' ? favNewsList() : [];
 
-  // (1) 히어로 — 공식 아트워크가 이 저장소에 없어 목업의 그림 자리는 빛(그라데이션)으로 채운다 (styles/components/pc-theme.css)
-  const hero = el('section', { class: 'plan__hero' },
+  // (0) 히어로 — 이 화면이 무엇인지 + 주 동작 하나(담으러 가기)
+  $content.append(el('section', { class: 'plan__hero' },
     el('div', { class: 'plan__hero-head' },
-      el('span', { class: 'plan__hero-ico', 'aria-hidden': 'true' }, '🌱'),
-      el('h2', {}, '플래너 — 내 개체를 어떻게 키울까')),
-    el('p', { class: 'plan__hero-desc' }, '도감이 "뭐가 세나"에 답한다면, 플래너는 "내가 가진 이 개체를 지금 키워도 되나"에 답해요. 메뉴의 내 포켓몬에서 개체를 레벨·개체값·기술 단위로 저장하면 같은 종끼리 비교할 수 있어요.'),
-    el('a', { class: 'plan__hero-go', href: routeHash('planner-collection') },
+      el('span', { class: 'plan__hero-ico', 'aria-hidden': 'true' }, '🎒'),
+      el('h2', {}, '담아 둔 포켓몬의 일정을 챙겨 드려요')),
+    el('p', { class: 'plan__hero-desc' }, '포켓몬 상세에서 ★ 를 누르면 여기에 쌓여요. 그 포켓몬이 커뮤니티 데이·스포트라이트 아워·레이드 보스에 뜨면 아래 소식 칸에 먼저 알려 드려요.'),
+    el('a', { class: 'plan__hero-go', href: routeHash('dex') },
       el('span', { class: 'plan__hero-go-ico', 'aria-hidden': 'true' }, '＋'),
-      '내 포켓몬에서 개체 등록하기',
-      el('span', { class: 'plan__hero-go-arrow', 'aria-hidden': 'true' }, '›')));
+      '도감에서 담을 포켓몬 찾기',
+      el('span', { class: 'plan__hero-go-arrow', 'aria-hidden': 'true' }, '›'))));
 
-  // (2) 요약 — 로그인 상태에 따라 말이 달라진다. 숫자를 못 보여 줄 때 0 을 보여 주면 "없다"로 읽힌다
-  const summary = el('section', { class: 'plan__card plan__summary' });
-  if (!authEnabled()) {
-    summary.append(el('div', { class: 'plan__summary-main' },
-      el('span', { class: 'plan__summary-ico', 'aria-hidden': 'true' }, '🎒'),
-      el('div', {}, el('b', {}, '내 포켓몬'),
-        el('span', { class: 'plan__summary-desc' }, '계산·조회는 할 수 있어요. 이 빌드는 로그인 기능이 꺼져 있어 저장만 안 돼요.'))));
-  } else if (!loggedIn) {
-    summary.append(el('div', { class: 'plan__summary-main' },
-      el('span', { class: 'plan__summary-ico', 'aria-hidden': 'true' }, '🎒'),
-      el('div', {}, el('b', {}, '내 포켓몬'),
-        el('span', { class: 'plan__summary-desc' }, AUTH.status === 'pending'
-          ? '⏳ 승인 대기 중 — 승인되면 개체를 계정에 저장하고 기기 간에 동기화해요.'
-          : '☰ 메뉴 맨 위 "👤 마이페이지" 에서 로그인하면 개체를 계정에 저장하고 어느 기기에서든 같은 목록을 봐요. 로그인 없이도 CP 계산은 해 볼 수 있어요.'))));
-  } else {
-    summary.append(
-      el('div', { class: 'plan__summary-main' },
-        el('span', { class: 'plan__summary-ico', 'aria-hidden': 'true' }, '🎒'),
-        el('div', {}, el('b', {}, `내 포켓몬 ${mons.length}마리`),
-          el('span', { class: 'plan__summary-desc' }, mons.length
-            ? '육성 중인 포켓몬 현황을 한눈에 봐요.'
-            : '아직 저장한 개체가 없어요. 위 버튼으로 첫 개체를 등록해 보세요.'))),
-      // 2026-09-12 v3.13.0 [내 포켓몬 바로가기 →] 를 뺐다 — 바로 위 히어로의 [개체 등록하기] 와
-      // 같은 곳(#/planner/collection)으로 가는 문이 한 화면에 다섯이었다. 요약 카드는 숫자를 보여 주는
-      // 자리지 가는 자리가 아니다 (전체 목록은 아래 '최근 추가한 포켓몬' 의 [전체 보기] 가 잇는다)
-      el('div', { class: 'plan__stats' }, ...PLAN_STATUSES.map((status, index) =>
-        el('div', { class: `plan__stat plan__stat--${PLAN_STATUS_MODS[index]}` },
-          el('span', { class: 'plan__stat-ico', 'aria-hidden': 'true' }, PLAN_STATUS_ICONS[index]),
-          el('div', {}, el('em', {}, status), el('b', {}, String(countBy(status))))))));
+  // (1) 📣 다가오는 소식 — 이 화면의 주인공
+  $content.append(planSection('📣', '다가오는 소식', '담아 둔 포켓몬에 잡힌 일정이에요. 가까운 것부터 보여 드려요.',
+    news.length
+      ? el('div', { class: 'favnews__list' }, ...news.map(favNewsCardNode))
+      : el('p', { class: 'empty' }, favDex.length
+        ? '담아 둔 포켓몬에 잡힌 일정이 아직 없어요. 새 일정이 올라오면 여기에 떠요.'
+        : '아직 담아 둔 포켓몬이 없어요. 도감에서 ★ 를 눌러 담아 보세요.')));
+
+  // (2) ★ 담아 둔 포켓몬 — 목록은 일정 다음이다
+  $content.append(planSection('★', `담아 둔 포켓몬 ${favDex.length}마리`, '★ 를 다시 누르면 빠져요. 이름을 누르면 상세가 열려요.',
+    favDex.length
+      ? el('div', { class: 'plan__fav-list' }, ...favDex.map(planFavRow))
+      : el('p', { class: 'empty' }, '위 [도감에서 담을 포켓몬 찾기] 로 첫 포켓몬을 담아 보세요.')));
+
+  // (3) 🎒 내 개체 — 스위치가 켜졌을 때만 (지금은 꺼짐, planner/collection.js PLAN_MONS_ENABLED)
+  if (typeof PLAN_MONS_ENABLED !== 'undefined' && PLAN_MONS_ENABLED && typeof renderPlanCollection === 'function') {
+    renderPlanCollection();
   }
 
-  // (3) 다음 걸음 — 화살표는 걸음 사이를 잇는 장식이라 CSS 가 그린다
-  const guide = el('section', { class: 'plan__card plan__guide' },
-    el('div', { class: 'plan__guide-head' },
-      el('span', { class: 'plan__guide-ico', 'aria-hidden': 'true' }, '🎯'),
-      el('div', {}, el('b', {}, '지금 무엇을 하면 좋을까?'),
-        el('span', { class: 'plan__summary-desc' }, '내 포켓몬의 상태에 맞는 다음 단계를 확인해보세요.'))),
-    el('ol', { class: 'plan__steps' }, ...planSteps().map(([icon, title, desc, href], index) =>
-      el('li', {},
-        el('a', { class: 'plan__step', href },
-          el('span', { class: 'plan__step-no' }, String(index + 1)),
-          el('span', { class: 'plan__step-ico', 'aria-hidden': 'true' }, icon),
-          el('span', { class: 'plan__step-main' },
-            el('b', {}, title),
-            el('span', { class: 'plan__step-desc' }, desc)))))));
-
-  $content.append(hero, summary, guide);
-
-  // (4) 최근 — 마지막에 손댄 순서(at). at 이 없는 옛 문서는 뒤로 민다
-  if (loggedIn && mons.length) {
-    const recent = mons.slice().sort((a, b) => (b.at ?? 0) - (a.at ?? 0)).slice(0, 4);
-    $content.append(el('section', { class: 'plan__card plan__recent' },
-      el('div', { class: 'plan__guide-head' },
-        el('span', { class: 'plan__guide-ico', 'aria-hidden': 'true' }, '🕘'),
-        el('div', {}, el('b', {}, '최근 추가한 포켓몬'),
-          el('span', { class: 'plan__summary-desc' }, '가장 최근에 등록한 포켓몬이에요.')),
-        el('a', { class: 'plan__more', href: routeHash('planner-collection') }, '전체 보기', el('span', { 'aria-hidden': 'true' }, '›'))),
-      el('div', { class: 'plan__recent-list' }, ...recent.map(planRecentCard))));
-  }
-
-  // 2026-09-12 v3.13.0 화면 아래 "다음에 붙을 것" 로드맵 줄을 뺐다 — 사용자에게 할 일 목록을 보여 줄
-  // 이유가 없고, 그 안의 '게임 검색식 생성기' 는 v2.58.0 에 이미 붙어 있었다. 로드맵은 문서에 둔다
-  $note.textContent = '내 개체(레벨 · 개체값 · 기술)를 계정에 저장하고 같은 종끼리 비교해요. 메뉴에서 육성 현황과 내 포켓몬 목록을 오가요. 계산은 누구나, 저장은 승인된 분만.';
+  $note.textContent = '포켓몬 상세의 ★ 로 담고, 담아 둔 포켓몬의 커뮤니티 데이·스포트라이트 아워·레이드 일정을 여기서 챙겨요. 로그인한 분만 담을 수 있어요.';
 }
