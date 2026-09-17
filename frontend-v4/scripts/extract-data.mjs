@@ -40,8 +40,16 @@ for (const name of ['data.js', 'data-lazy.js']) {
 // 그 파일은 맨 끝에서 renderSchedule() 을 불러 DOM 을 건드리므로, 표를 선언하는 앞부분만 잘라 실행한다.
 // 손으로 다시 옮겨 적지 않는다 — 실제 일정이라 한 글자만 어긋나도 틀린 날짜를 내보내게 된다
 {
-  const text = readFileSync(resolve(repo, 'frontend/scripts/components/schedule.js'), 'utf8');
+  const path = 'frontend/scripts/components/schedule.js';
+  const text = readFileSync(resolve(repo, path), 'utf8');
   const cut = text.indexOf('const SCHEDULE_ITEMS');
+  // 못 찾으면 **여기서** 멈춘다. indexOf 가 -1 이면 slice 가 첫 줄만 잘라 내고,
+  // 그러면 아래 전역 검사가 'SCHEDULE_MONTHS 를 번들에서 못 찾았습니다' 라고 엉뚱한 곳을 가리킨다
+  if (cut < 0) {
+    console.error(`${path} 에서 'const SCHEDULE_ITEMS' 를 못 찾았습니다 — 그 앞까지가 표 선언이라 보고 자르는 중입니다.`);
+    console.error('v3 쪽에서 이름이나 차례가 바뀌었다면 이 자르는 기준도 같이 고쳐야 합니다.');
+    process.exit(1);
+  }
   vm.runInContext(text.slice(0, text.indexOf('\n', cut)), sandbox, { filename: 'schedule.js' });
 }
 const readGlobal = (key) => vm.runInContext(`typeof ${key} === 'undefined' ? undefined : ${key}`, sandbox);
