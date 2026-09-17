@@ -205,7 +205,8 @@ function openPlanMonEditor(mon = null, prefill = null) {
       $sugg.textContent = '';
       const query = $input.value.trim();
       if (!query) return;
-      const candidates = buildSearchIndex().filter((entry) => !/^(다이맥스|거다이맥스) /.test(entry.name));
+      // 미구현 폼도 뺀다 — 여기서 고르는 것은 **내가 실제로 가진 개체**다 (v3.61.2)
+      const candidates = searchVisible(buildSearchIndex()).filter((entry) => !/^(다이맥스|거다이맥스) /.test(entry.name));
       for (const hit of monSearch(candidates, query, 8)) {
         // 2026-09-10 v2.47.0 헤더 검색 패널과 같은 줄(components/search.js monSuggestRow) —
         // 그림 · 이름 · 타입 알약 · 도감번호. 이름만 있던 줄은 물짱이 / 새도우 물짱이를 구분해 주지 못했다
