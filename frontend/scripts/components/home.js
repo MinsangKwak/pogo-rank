@@ -78,6 +78,19 @@ function homePickGroup(pick) {
   const rows = pick.rows().slice(0, HOME_PICK_TOP);
   if (!rows.length) return null;
   if (pick.route && typeof routeLocked === 'function' && routeLocked(pick.route)) return null;
+  if (pick.key === 'usage') {
+    return el('button', { class: 'pick__discover', type: 'button', onclick: () => {
+      track('home_usage_all');
+      openModal(el('div', { class: 'pick-usage' },
+        el('h2', {}, '다양한 활용처'),
+        el('p', {}, '여러 순위표에 이름을 올린 포켓몬이에요. 이름을 누르면 상세 정보를 볼 수 있어요.'),
+        el('ol', { class: 'pick__list' }, ...pick.rows().map((pokemon, index) => homePickRow(pick, pokemon, index)))));
+    } },
+      el('span', { class: 'pick__discover-kicker' }, '다양한 활용처'),
+      el('strong', {}, '한 마리로', el('br'), '여러 배틀을.'),
+      el('span', { class: 'pick__discover-copy' }, '레이드부터 PvP까지, 두루 쓰이는 포켓몬'),
+      el('span', { class: 'pick__discover-action' }, '전체 보기', el('span', { 'aria-hidden': 'true' }, '↗')));
+  }
   const first = rows[0];
   return el('section', { class: `pick__group pick__group--${pick.key}`, 'aria-label': pick.title },
     el('div', { class: 'pick__head' },
