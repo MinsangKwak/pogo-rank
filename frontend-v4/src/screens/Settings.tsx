@@ -9,6 +9,9 @@ import { useState } from 'react';
 import { usePrefStore, THEME_ORDER, type Theme } from '../stores/pref';
 import { spriteAnimEnabled, SPRITE_ANIM_KEY } from '../components/Bits';
 import { track } from '../lib/track';
+import { authEmail, useAuthStore } from '../stores/auth';
+import { termsAccepted } from '../lib/terms';
+import TermsConsent from '../components/TermsConsent';
 
 // 세 갈래의 이름과 한 줄 설명. 순서는 THEME_ORDER 그대로다
 const THEME_TEXT: Record<Theme, [string, string]> = {
@@ -32,6 +35,35 @@ function Choice({ on, name, desc, onPick }: { on: boolean; name: string; desc: s
   );
 }
 
+/**
+ * 고른 테마가 어디에 남는지 (v3 settings.js savedWhere).
+ * **지어내지 않는다** — 규칙상 계정 문서는 승인된 사람만 쓸 수 있고, 그 외에는 이 브라우저에만 남는다.
+ * v3 는 이 줄을 한 번 그리고 말아 로그인이 늦게 붙으면 '브라우저에만' 이 그대로 남았다. 여기서는 따라 바뀐다
+ */
+function SavedWhere() {
+  const { enabled, status, api } = useAuthStore();
+  const [consentOpen, setConsentOpen] = useState(false);
+  if (status === 'ok') {
+    return <p className="dex__hint">{`✓ 계정(${authEmail()})에 저장돼요 — 다른 기기에서 로그인해도 같은 화면으로 열려요.`}</p>;
+  }
+  const start = () => {
+    if (!termsAccepted()) { setConsentOpen(true); return; }
+    void api?.signIn();
+  };
+  return (
+    <p className="dex__hint">
+      {'지금은 이 브라우저에만 저장돼요. '}
+      {status === 'anon' && enabled
+        ? <button className="uchip" onClick={start}>로그인하고 계정에 저장하기</button>
+        : '승인되면 계정에 저장돼 어느 기기에서든 같아요.'}
+      {consentOpen ? (
+        <TermsConsent onClose={() => setConsentOpen(false)}
+          onAccept={() => { setConsentOpen(false); void api?.signIn(); }} />
+      ) : null}
+    </p>
+  );
+}
+
 export default function Settings() {
   const theme = usePrefStore((s) => s.theme);
   const setTheme = usePrefStore((s) => s.setTheme);
@@ -52,8 +84,7 @@ export default function Settings() {
           })}
         </div>
       </div>
-      {/* 미리보기에는 로그인이 없다 — 지어내지 않고 지금 사실만 적는다 (v3 는 여기서 계정 저장을 안내한다) */}
-      <p className="dex__hint">지금은 이 브라우저에만 저장돼요. 계정 저장은 로그인이 붙는 판에 이어져요.</p>
+      <SavedWhere />
       <p className="detail__foot">상단 바의 테마 버튼은 밝게 ↔ 어둡게만 한 번에 뒤집어요. 기기 설정을 따르게 하려면 여기서 고르세요.</p>
 
       <h2 className="page__sec">움직이는 그림</h2>

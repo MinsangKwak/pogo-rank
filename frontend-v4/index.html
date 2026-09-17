@@ -2,9 +2,64 @@
 <html lang="ko" data-theme="light">
   <head>
     <meta charset="utf-8" />
+    <!-- 입력 포커스 때 화면이 확대되지 않게 -->
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="color-scheme" content="light dark" />
+    <!-- 제목은 v3 와 같은 문장이다 — 검색어가 앞, 브랜드가 뒤.
+         moncamp 는 아직 아무도 모르는 이름이라 맨 앞 자리를 브랜드에 주면 그 자리가 버려진다 -->
+    <title>포켓몬고 다이맥스 티어표 · 맥스 배틀 덱 · 도감 | moncamp</title>
+    <!-- 미리보기(dev.moncamp.kr)는 색인하지 않는다. **운영으로 올릴 때 이 줄을 빼야 한다** —
+         robots.txt 와 여기 두 곳이 같이 막고 있다 -->
     <meta name="robots" content="noindex, nofollow" />
-    <title>moncamp — React 전환 미리보기</title>
+    <meta name="referrer" content="strict-origin-when-cross-origin" />
+
+    <!-- GitHub Pages 는 응답 헤더를 못 바꾼다 — meta 로 걸 수 있는 것만 건다 (v3 index.html 과 같은 한 벌).
+         번들이 'self' 라도 'unsafe-inline' 이 필요하다: 아래 테마 조각과 React 의 style= 가 인라인이다.
+         그래도 **외부 도메인 주입은 막힌다** — 악성 <script src> 를 심어도 브라우저가 거부한다 -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://www.gstatic.com https://apis.google.com https://www.googletagmanager.com; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; font-src 'self' https://cdn.jsdelivr.net; img-src 'self' data: https://raw.githubusercontent.com https://*.googleusercontent.com; connect-src 'self' https://*.googleapis.com https://*.firebaseio.com https://securetoken.googleapis.com https://www.google-analytics.com https://*.google-analytics.com https://raw.githubusercontent.com; frame-src https://*.firebaseapp.com https://apis.google.com https://accounts.google.com; object-src 'none'; base-uri 'none'; form-action 'none'" />
+
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
+    <!-- 로그인 SDK 를 받을 곳. 첫 화면 뒤에 받지만 DNS·TLS 는 미리 터 둔다 -->
+    <link rel="preconnect" href="https://www.gstatic.com" crossorigin />
+
+    <!-- 도트 디자인의 픽셀 글꼴 Galmuri. 배포본 galmuri.css 는 아홉 벌을 한꺼번에 걸어 두므로
+         쓰지 않고, 쓰는 얼굴 셋만 직접 선언한다. 크기를 글꼴이 그려진 격자(11px · 14px)의
+         정수배로 쓰는 것이 중요하다 — 어중간한 크기는 픽셀이 뭉갠다 (styles/base.css) -->
+    <style>
+      @font-face { font-family: 'Galmuri11'; src: url('https://cdn.jsdelivr.net/npm/galmuri@2.40.3/dist/Galmuri11.woff2') format('woff2'); font-display: swap; }
+      @font-face { font-family: 'Galmuri14'; src: url('https://cdn.jsdelivr.net/npm/galmuri@2.40.3/dist/Galmuri14.woff2') format('woff2'); font-display: swap; }
+      @font-face { font-family: 'GalmuriMono11'; src: url('https://cdn.jsdelivr.net/npm/galmuri@2.40.3/dist/GalmuriMono11.woff2') format('woff2'); font-display: swap; }
+    </style>
+    <!-- 본문 글꼴 Pretendard — <link rel=stylesheet> 로 받으면 첫 그리기가 jsdelivr 왕복 한 번을 기다린다.
+         preload 로 받아 두고 도착하면 stylesheet 로 승격한다. 글꼴은 font-display: swap 이라
+         도착 전에는 시스템 글꼴로 그리고 바꿔 끼운다 -->
+    <link rel="preload" as="style" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" onload="this.onload=null;this.rel='stylesheet'" />
+    <noscript><link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" /></noscript>
+
+    <!-- PWA: 홈 화면 설치 (v3 index.html 과 같은 한 벌) -->
+    <link rel="manifest" href="manifest.webmanifest" />
+    <link rel="apple-touch-icon" href="icon-192.png" />
+    <link rel="icon" type="image/png" href="icon-192.png" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="moncamp" />
+    <meta name="theme-color" media="(prefers-color-scheme: light)" content="#fafafa" />
+    <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#0a0a0f" />
+
+    <!-- 화면 데이터는 번들이 받는다 — 그런데 받는 순서가 번들 → manifest.json → 묶음 셋이라
+         왕복이 세 번이다. manifest 만 미리 걸어 두면 한 번이 겹쳐 사라진다 -->
+    <link rel="preload" as="fetch" href="data/manifest.json" crossorigin />
+
+    <!-- 고른 화면 테마를 번들보다 **먼저** 붙인다 — 여기서 안 붙이면 어둡게 골라 둔 사람이
+         매번 흰 화면을 한 번 보고 지나간다. 값은 stores/pref.ts 와 같은 키(pogo_theme)를 읽는다.
+         'system' 은 속성을 달지 않는다 — 기기 설정을 따르는 상태가 곧 '속성 없음' 이다 -->
+    <script>
+      'use strict';
+      try {
+        var t = localStorage.getItem('pogo_theme');
+        if (t === 'light' || t === 'dark') document.documentElement.setAttribute('data-theme', t);
+        else document.documentElement.removeAttribute('data-theme');
+      } catch (e) {}
+    </script>
   </head>
   <body>
     <div id="root"></div>

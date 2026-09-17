@@ -27,7 +27,7 @@ function Row({ move }: { move: MoveChange }) {
       <span className="changes__mark">{arrow}</span>
       <div>
         <b>{move.ko}</b>
-        <div className="changes__sub">{amount}{move.note ? <em> · {move.note}</em> : ''}</div>
+        <div className="changes__sub">{amount}{move.note ? <em>{` · ${move.note}`}</em> : ''}</div>
       </div>
     </li>
   );

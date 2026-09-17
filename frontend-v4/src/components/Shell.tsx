@@ -12,10 +12,12 @@ import { useEffect, useState } from 'react';
 import { ROUTE_GROUPS, ROUTE_NAV, routeById, routeDesc, type RouteDef } from '../routes';
 import { usePrefStore, themeIsDark, THEME_WORD, type Theme } from '../stores/pref';
 import { releaseSeen } from '../lib/release';
+import { setLang, useLang } from '../lib/useLang';
 import { useGameday, useMeta } from '../lib/data';
 import { track } from '../lib/track';
 import { PxIcon } from './PxIcon';
 import { routeNote } from '../lib/notes';
+import Account from './Account';
 
 function NavItem({ route, now }: { route: RouteDef; now: string }) {
   return (
@@ -46,6 +48,7 @@ export function AppBar({ onMenu, home }: { onMenu: () => void; home: boolean }) 
   const toggleTheme = usePrefStore((s) => s.toggleTheme);
   const [icon, label] = THEME_FACE[theme];
   const newRelease = useNewRelease();
+  const now = useLang();
   return (
     <header className="app-bar">
       <div className="app-bar__head">
@@ -80,7 +83,13 @@ export function AppBar({ onMenu, home }: { onMenu: () => void; home: boolean }) 
         >
           <PxIcon emoji={icon} />
         </button>
-        <button className="icon-btn lang-toggle" id="lang-toggle" aria-label="View in English (영어로 보기)" aria-live="polite" data-i18n="off">EN</button>
+        {/* 버튼 글자는 "지금 누르면 갈 언어" 다 (한국어면 EN, 영어면 KR) — 상태가 아니라 행동 표시다.
+            이 글자는 사전을 타지 않는다(data-i18n="off") — 맡기면 뜻이 뒤집힌다 */}
+        <button className="icon-btn lang-toggle" id="lang-toggle" aria-live="polite" data-i18n="off"
+          aria-label={now === 'en' ? 'View in Korean (한국어로 보기)' : 'View in English (영어로 보기)'}
+          onClick={() => { const next = now === 'en' ? 'ko' : 'en'; void setLang(next); track('lang_switch', { lang: next }); }}>
+          {now === 'en' ? 'KR' : 'EN'}
+        </button>
         <button className={`icon-btn${newRelease ? ' dot-badge' : ''}`} id="menu-toggle" aria-label="메뉴" aria-haspopup="dialog"
           aria-expanded={false} aria-controls="drawer-backdrop" onClick={onMenu}><PxIcon emoji="☰" /></button>
       </div>
@@ -255,6 +264,8 @@ export function Drawer({ open, onClose, now }: { open: boolean; onClose: () => v
           <b>메뉴</b>
           <button className="icon-btn" id="drawer-close" aria-label="닫기" onClick={onClose}><PxIcon emoji="✕" /></button>
         </div>
+        {/* 로그인 상태는 ☰ 메뉴 맨 위 한 곳에서만 보인다 (v3 v2.29.0 에 헤더 👤 를 없애며 정한 자리) */}
+        <Account onGo={onClose} />
         <nav className="nav-menu" aria-label="서비스 이동">
           <a href="#/" className="drawer__item" onClick={onClose}>
             <span className="drawer__ico" aria-hidden="true"><PxIcon emoji="🏠" /></span>

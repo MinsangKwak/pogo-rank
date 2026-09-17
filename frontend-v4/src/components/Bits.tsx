@@ -84,13 +84,49 @@ function animate(image: HTMLImageElement, url: string): () => void {
   return () => { loader.onload = null; zoomWatch?.unobserve(image); };
 }
 
-/** 포켓몬 그림. 없으면 몬스터볼 자리표시 (v3 spritePlaceholder 와 같은 자리) */
+/**
+ * 있는 그림 번호를 **묶음마다 한 번만** Set 으로 만든다.
+ * 그림 하나를 그릴 때마다 `new Set(2000개)` 를 짓고 있었다 — 도감 한 화면이 1,000줄이라
+ * 200만 번을 헛으로 넣었다. 묶음은 staleTime: Infinity 라 자리(identity)가 안 바뀐다
+ */
+const idSets = new WeakMap<object, { still: Set<number>; anim: Set<number> }>();
+function spriteIdSets(dex: { SPRITE_IDS: readonly number[]; SPRITE_ANIM_IDS: readonly number[] }) {
+  let found = idSets.get(dex);
+  if (!found) {
+    found = { still: new Set(dex.SPRITE_IDS.map(Number)), anim: new Set(dex.SPRITE_ANIM_IDS.map(Number)) };
+    idSets.set(dex, found);
+  }
+  return found;
+}
+
+/** 자리표시용 몬스터볼 — currentColor 로 그려 두면 테마 색을 그대로 따라간다 (v3 spritePlaceholder) */
+function Ball({ className }: { className?: string }) {
+  return (
+    <span className={`sprite empty${className ? ` ${className}` : ''}`}>
+      <svg viewBox="0 0 40 40" width="24" height="24" aria-hidden="true">
+        <circle cx="20" cy="20" r="14" fill="none" stroke="currentColor" strokeWidth="2.5" />
+        <path d="M6 20h9.5M24.5 20H34" stroke="currentColor" strokeWidth="2.5" />
+        <circle cx="20" cy="20" r="4.5" fill="none" stroke="currentColor" strokeWidth="2.5" />
+      </svg>
+    </span>
+  );
+}
+
+// 받기에 실패했을 때 몇 번까지 다시 받아 보는가 (v3 문서 캡처 리스너와 같은 수·같은 간격).
+// 한 번 놓쳤다고 몬스터볼로 바꿔 버리면 잠깐 끊긴 회선이 "이 포켓몬은 그림이 없다" 로 읽힌다
+const SPRITE_RETRY = 2;
+
+/** 포켓몬 그림. 없으면 몬스터볼 자리표시 (v3 sprite() · spritePlaceholder 와 같은 자리) */
 export function Sprite({ id, className }: { id: number; className?: string }) {
   const { data } = useDex();
+  // 재시도 횟수가 곧 주소다 — 0 이면 원본, 1·2 면 캐시를 비켜 가는 ?r=n
+  const [retry, setRetry] = useState(0);
   const [failed, setFailed] = useState(false);
+  const [loading, setLoading] = useState(true);
   const node = useRef<HTMLImageElement>(null);
-  const src = spriteSrc(id, new Set(data.SPRITE_IDS));
-  const anim = spriteAnimSrc(id, new Set(data.SPRITE_ANIM_IDS));
+  const sets = spriteIdSets(data);
+  const src = spriteSrc(id, sets.still);
+  const anim = spriteAnimSrc(id, sets.anim);
 
   useEffect(() => {
     const image = node.current;
@@ -100,23 +136,31 @@ export function Sprite({ id, className }: { id: number; className?: string }) {
     return animate(image, anim);
   }, [anim]);
 
-  if (!src || failed) {
-    return <span className={`sprite empty${className ? ` ${className}` : ''}`} aria-hidden="true">◓</span>;
-  }
+  // 번호가 바뀌면 처음부터 — 앞 포켓몬이 실패했다고 다음 포켓몬까지 몬스터볼로 열리면 안 된다
+  useEffect(() => { setRetry(0); setFailed(false); setLoading(true); }, [id]);
+
+  if (!src || failed) return <Ball className={className} />;
   // 저장소 배정 번호(90000번대)는 픽셀 스프라이트가 아니라 게임 내 3D 렌더 아이콘이라
   // pixelated 로 축소하면 계단이 진다 — sprite--hd 로 부드럽게 그린다 (v3 v2.7.2)
   const hd = Number(id) >= 90000 ? ' sprite--hd' : '';
   return (
     <img
       ref={node}
-      className={`sprite${hd}${className ? ` ${className}` : ''}`}
-      src={src}
+      className={`sprite${hd}${loading ? ' is-loading' : ''}${className ? ` ${className}` : ''}`}
+      src={retry ? `${src}?r=${retry}` : src}
       alt=""
       width={64}
       height={64}
       loading="lazy"
       decoding="async"
-      onError={() => setFailed(true)}
+      // 다 받으면 뼈대(.is-loading)를 벗긴다 — v3 는 이걸 문서 캡처 리스너로 했다.
+      // cloneNode 로 복제한 행에서 리스너가 사라지는 문제 때문이었는데, 여기서는 복제가 없다
+      onLoad={() => setLoading(false)}
+      onError={() => {
+        if (retry >= SPRITE_RETRY) { setFailed(true); return; }
+        const next = retry + 1;
+        setTimeout(() => setRetry(next), 300 * next);
+      }}
     />
   );
 }

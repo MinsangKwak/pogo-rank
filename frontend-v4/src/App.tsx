@@ -13,11 +13,12 @@
 // <Suspense> 를 한 곳에 두는 이유 — 화면마다 `if (isLoading)` 분기를 두면
 // 그 분기가 곧 빠뜨리는 자리가 된다. 데이터 기다림은 경계 하나가 맡는다.
 // ─────────────────────────────────────────────────────────────────────────────
-import { Suspense, useEffect, useState } from 'react';
+import { Suspense, lazy, useEffect, useState } from 'react';
 import { AppBar, AppNav, Drawer, Footer, PageHead, ToTop } from './components/Shell';
 import { SlotProvider } from './components/Slots';
 import { useRoute } from './lib/useRoute';
 import type { MonPick, OpenMon } from './lib/mon';
+import { useAuthStore } from './stores/auth';
 import { trackPageView, track } from './lib/track';
 import type { RouteDef } from './routes';
 import Home from './screens/Home';
@@ -26,19 +27,30 @@ import { Dmax, Pve, Pvp } from './screens/Ranks';
 import { Eggs, Raids } from './screens/Gameday';
 import Schedule from './screens/Schedule';
 import { NotPorted } from './screens/Misc';
-import GameUpdates from './screens/GameUpdates';
-import Release from './screens/Release';
-import Changes from './screens/Changes';
-import { Privacy, Terms } from './screens/Legal';
-import Settings from './screens/Settings';
-import Planner from './screens/Planner';
-import Finder from './screens/Finder';
-import IvRankPage from './screens/IvRankPage';
-import PvpDeck from './screens/PvpDeck';
-import DmaxDeck from './screens/DmaxDeck';
-import SoloCalc from './screens/SoloCalc';
 import MonDetail from './screens/MonDetail';
 import ConsentDialog from './components/Consent';
+import LoginInvite from './components/LoginInvite';
+import { useInviteStore } from './stores/invite';
+import LangBridge from './components/LangBridge';
+import AuthBridge from './components/AuthBridge';
+import LockCard from './components/LockCard';
+
+// ── 눌러 들어가는 화면은 **누를 때 받는다** ────────────────────────────────────
+// 첫 화면(홈·도감·티어표)에 없는 것을 첫 묶음에 넣을 이유가 없다. v3 도 같은 이유로
+// app-lazy.js 를 갈랐다. 기다림은 이미 있는 <Suspense> 하나가 받는다 —
+// 이 화면들은 어차피 제 데이터 묶음을 기다리느라 한 번 그 자리를 지나간다
+const GameUpdates = lazy(() => import('./screens/GameUpdates'));
+const Release = lazy(() => import('./screens/Release'));
+const Changes = lazy(() => import('./screens/Changes'));
+const Privacy = lazy(() => import('./screens/Legal').then((m) => ({ default: m.Privacy })));
+const Terms = lazy(() => import('./screens/Legal').then((m) => ({ default: m.Terms })));
+const Settings = lazy(() => import('./screens/Settings'));
+const Planner = lazy(() => import('./screens/Planner'));
+const Finder = lazy(() => import('./screens/Finder'));
+const IvRankPage = lazy(() => import('./screens/IvRankPage'));
+const PvpDeck = lazy(() => import('./screens/PvpDeck'));
+const DmaxDeck = lazy(() => import('./screens/DmaxDeck'));
+const SoloCalc = lazy(() => import('./screens/SoloCalc'));
 
 function Splash() {
   return (
@@ -51,8 +63,24 @@ function Splash() {
   );
 }
 
+/**
+ * 로그인해야 열리는 화면인가 (v3 router.js routeLocked 와 같은 규칙).
+ *   - **판정 중에는 잠그지 않는다** — 이 기기에 로그인 자취가 있을 때만 'loading' 이라 곧 열릴 화면이고,
+ *     잠갔다 여는 깜빡임은 "로그아웃됐다" 로 읽힌다
+ *   - 로그인을 쓸 수 없는 빌드에서는 잠그지 않는다 — 열 길이 없는 자물쇠는 고장과 같다
+ */
+function useLocked(route: RouteDef): boolean {
+  const enabled = useAuthStore((s) => s.enabled);
+  const status = useAuthStore((s) => s.status);
+  if (!route.locked || !enabled) return false;
+  if (status === 'loading') return false;
+  return status !== 'ok';
+}
+
 /** 라우트 하나가 그리는 본문 */
 function Screen({ route, rest, onOpen }: { route: RouteDef; rest: string; onOpen: OpenMon }) {
+  const locked = useLocked(route);
+  if (locked) return <LockCard />;
   switch (route.id) {
     case 'home': return <Home onOpen={onOpen} />;
     case 'dex': return <Dex onOpen={onOpen} />;
@@ -63,7 +91,6 @@ function Screen({ route, rest, onOpen }: { route: RouteDef; rest: string; onOpen
     case 'eggs': return <Eggs onOpen={onOpen} />;
     case 'schedule': return <Schedule />;
     case 'game-updates': return <GameUpdates rest={rest} />;
-    // v3 는 이 화면을 로그인 뒤에만 연다. 미리보기는 ★ 를 이 기기에 두므로 그냥 열린다 (stores/favs.ts)
     case 'planner': return <Planner />;
     case 'finder': return <Finder />;
     // 화면 아래 화면 — 부모 화면의 도구 버튼 하나로만 들어온다 (주소가 도구를 정한다)
@@ -86,6 +113,8 @@ export default function App() {
   const { route, rest } = useRoute();
   const [menuOpen, setMenuOpen] = useState(false);
   const [consentOpen, setConsentOpen] = useState(false);
+  const invite = useInviteStore((s) => s.screen);
+  const closeInvite = useInviteStore((s) => s.close);
   // [스프라이트, 영문명]. 영문명은 **연 쪽이 들고 있던 것**만 넘긴다 —
   // v3 도 순위표 줄에서 열면 이름 아래에 Melmetal 이 서고, 도감에서 열면 서지 않는다
   const [detail, setDetail] = useState<MonPick | null>(null);
@@ -120,7 +149,7 @@ export default function App() {
   }, [route, rest]);
   // 화면을 옮기면 열려 있던 팝업·서랍은 닫는다 — <dialog> 가 새 화면 위에 그대로 떠 있으면
   // 아무 데도 눌리지 않는다 (상세 팝업에서 같은 자리를 이미 한 번 겪었다)
-  useEffect(() => { setConsentOpen(false); setMenuOpen(false); }, [route, rest]);
+  useEffect(() => { setConsentOpen(false); setMenuOpen(false); closeInvite(); }, [route, rest, closeInvite]);
 
   // 포털이 꽂힐 자리. ref 가 아니라 state 인 이유 — 붙은 뒤 한 번 더 그려야 포털이 들어간다
   const [tabsEl, setTabsEl] = useState<HTMLDivElement | null>(null);
@@ -150,6 +179,9 @@ export default function App() {
         <div className="px-ball px-ball--1" />
         <div className="px-ball px-ball--2" />
       </div>
+
+      <LangBridge />
+      <AuthBridge />
 
       <AppBar onMenu={() => setMenuOpen(true)} home={home} />
       <AppNav now={route.id} onConsent={() => setConsentOpen(true)} />
@@ -190,6 +222,8 @@ export default function App() {
       </Suspense>
 
       {consentOpen ? <ConsentDialog onClose={() => setConsentOpen(false)} /> : null}
+      {/* ★ 를 눌렀는데 로그인 전일 때 — 누른 곳과 그리는 곳이 멀어 stores/invite.ts 를 거친다 */}
+      {invite !== null ? <LoginInvite screen={invite} onClose={closeInvite} /> : null}
 
       <ToTop />
       <Drawer open={menuOpen} onClose={() => setMenuOpen(false)} now={route.id} />

@@ -101,7 +101,7 @@ export default function BossAcc({ onOpen, onGoBoss }: {
                 더보기 +{BOSS_STEP} ({Math.min(show, total)}/{total})
               </button>
             )
-            : <span className="meta">전체 {total}종 표시됨</span>}
+            : <span className="meta">{`전체 ${total}종 표시됨`}</span>}
           <button className="boss__more" onClick={(event) => { event.preventDefault(); onGoBoss(type); }}>
             {typeName} 보스 딜러 순위 ▸
           </button>

@@ -245,6 +245,15 @@ export interface MetaBundle {
   CONTACT_EMAIL: string;
   /** 이 문자열이 바뀌면 ☰ 에 빨간 점이 뜬다 — 날짜나 항목 수를 비교하지 않는다 */
   RELEASE_VER: string;
+  /**
+   * 로그인 설정 — 빌드가 환경변수에서 읽어 넣는다.
+   * **apiKey 가 비면 로그인 기능 자체가 꺼진다** (v3 authEnabled 와 같은 규칙) — 눌러도 안 되는
+   * 버튼을 내밀지 않는다. 값이 공개돼도 되는 이유는 접근 제어를 전부 Firestore 규칙이 맡기 때문이다.
+   */
+  FIREBASE_CONFIG: Record<string, string>;
+  /** 규칙(firestore.rules)의 isAdmin() 과 **같은 값이어야 한다** — 화면만 관리자로 보이면 규칙이 막는다 */
+  ADMIN_UID: string;
+  ADMIN_EMAIL: string;
 }
 
 /** 패치노트 한 묶음. 최신 날짜가 위로 오도록 **적힌 차례 그대로** 쓴다 (코드에서 다시 정렬하지 않는다) */
@@ -253,6 +262,12 @@ export interface ReleaseGroup { date: string; items: string[] }
 export interface ReleaseBundle {
   RELEASE_NOTES: ReleaseGroup[];
   RELEASE_VER: string;
+  /**
+   * 패치노트 영문판 — **날짜(묶음 키)로 통째 짝지어** 둔다.
+   * 항목이 `**굵게**` 가 섞인 문장 덩어리라, 낱말 단위로 찾는 일반 사전으로는 문장을 못 맞춘다.
+   * 없는 날짜는 한국어 그대로 나간다.
+   */
+  RELEASE_NOTES_EN?: Record<string, string[]>;
 }
 
 /**

@@ -23,21 +23,36 @@
 // ─────────────────────────────────────────────────────────────────────────────
 import { useGameday, useDex } from '../lib/data';
 import { Sprite, ViewToggle } from '../components/Bits';
+import { PxIcon } from '../components/PxIcon';
 import type { OpenMon } from '../lib/mon';
 import { Slot } from '../components/Slots';
 import { NameNode } from '../components/Row';
 import { usePrefStore, readCols } from '../stores/pref';
 import type { GamedayMon } from '../types/data';
 
-function MonCard({ mon, onOpen }: { mon: GamedayMon; onOpen: OpenMon }) {
+/** 출처 한 줄 — v3 gamedayFoot. **한 문자열이다**: 사전은 줄 단위로 찾는다 */
+function gamedayFoot(lead: string, fetched: string): string {
+  const day = (fetched ?? '').slice(0, 10);
+  return `${lead} 출처 LeekDuck(ScrapedDuck)${day ? ` · ${day} 수집` : ''} · 지역과 이벤트에 따라 실제와 다를 수 있어요`;
+}
+
+function MonCard({ mon, kind, onOpen }: { mon: GamedayMon; kind: 'raid' | 'egg'; onOpen: OpenMon }) {
   const { data } = useDex();
-  // v3 와 같은 순서·같은 구분자 — 없는 조각은 넣지 않는다
-  const note = [
-    mon.types?.map((type) => data.TYPE_KO[type] ?? type).join('·'),
-    `CP ${mon.cp.min}–${mon.cp.max}`,
-    mon.weather?.length ? `${mon.weather.join('·')} 부스트` : '',
-    mon.shiny ? '✨' : '',
-  ].filter(Boolean).join(' · ');
+  // **보조줄 규칙이 둘이다** (v3 renderRaidsPage · renderEggsPage 의 notes).
+  //   레이드  타입 · CP 범위 · 날씨 부스트 · ✨
+  //   알      CP(같으면 한 숫자) · ✨ · 지역한정
+  // 알 쪽에서 범위를 늘 적으면 'CP 637–637' 처럼 같은 숫자가 두 번 찍힌다
+  const cp = mon.cp?.min
+    ? (mon.cp.min === mon.cp.max ? `CP ${mon.cp.min}` : `CP ${mon.cp.min}–${mon.cp.max}`)
+    : '';
+  const note = (kind === 'egg'
+    ? [cp, mon.shiny ? '✨' : '', mon.regional ? '지역한정' : '']
+    : [
+      mon.types?.map((type) => data.TYPE_KO[type] ?? type).join('·'),
+      mon.cp?.min ? `CP ${mon.cp.min}–${mon.cp.max}` : '',
+      mon.weather?.length ? `${mon.weather.join('·')} 부스트` : '',
+      mon.shiny ? '✨' : '',
+    ]).filter(Boolean).join(' · ');
   return (
     <button className="dex__row gameday__row" onClick={() => onOpen({ sprite: mon.sprite, name: mon.name, types: mon.types })}>
       <Sprite id={mon.sprite} />
@@ -49,17 +64,17 @@ function MonCard({ mon, onOpen }: { mon: GamedayMon; onOpen: OpenMon }) {
   );
 }
 
-function Grouped({ sections, view, onOpen }: {
-  sections: [string, GamedayMon[]][]; view: 'grid' | 'list'; onOpen: OpenMon;
+function Grouped({ sections, view, kind, onOpen }: {
+  sections: [string, GamedayMon[]][]; view: 'grid' | 'list'; kind: 'raid' | 'egg'; onOpen: OpenMon;
 }) {
   return (
     <>
       {sections.map(([label, mons]) => (
         <section key={label} className="gameday__sec">
-          <h2 className="page__sec">{label}<span className="meta"> {mons.length}종</span></h2>
+          <h2 className="page__sec">{label}<span className="meta">{` ${mons.length}종`}</span></h2>
           {/* 도감 목록은 **줄이 기본**이라 .is-grid 하나만 켜고 끈다 (순위표와 반대다 — v3.9.1) */}
           <div className={`dex__list${view === 'grid' ? ' is-grid' : ''}`}>
-            {mons.map((mon, index) => <MonCard key={`${mon.sprite}-${index}`} mon={mon} onOpen={onOpen} />)}
+            {mons.map((mon, index) => <MonCard key={`${mon.sprite}-${index}`} mon={mon} kind={kind} onOpen={onOpen} />)}
           </div>
         </section>
       ))}
@@ -112,17 +127,19 @@ export function Raids({ onOpen }: { onOpen: OpenMon }) {
       </Slot>
       {/* 이 줄이 화면의 경계를 긋는다 — '지금 도는 것' 과 '앞으로의 일정' 을 가르는 말이라 뺄 수 없다 */}
       <div className="gameday__intro page__filters">
+        {/* 이모지는 도트 아이콘으로 떼고 글자는 **이름만** 남긴다 — 사전이 '솔플 계산기' 를 찾게 하려면
+            한 노드에 이모지가 섞여 있으면 안 된다 (v3 도 같은 이유로 pxIcon 을 따로 붙인다) */}
         <p className="note">
-          보스를 누르면 약점과 추천 딜러가 열려요. 혼자 잡을 수 있는지는 <a href="#/pve/solo">🧮 솔플 계산기</a> 에서,
-          앞으로의 일정은 <a href="#/schedule">📅 이벤트 일정</a> 에서 봐요.
+          {'보스를 누르면 약점과 추천 딜러가 열려요. 혼자 잡을 수 있는지는 '}
+          <a href="#/pve/solo"><PxIcon emoji="🧮" />{' 솔플 계산기'}</a>
+          {' 에서, 앞으로의 일정은 '}
+          <a href="#/schedule"><PxIcon emoji="📅" />{' 이벤트 일정'}</a>
+          {' 에서 봐요.'}
         </p>
       </div>
       <Grouped sections={Object.entries(data.GAMEDAY.raids).map(([tier, list]) => [`${tier} 레이드`, list])}
-        view={view} onOpen={onOpen} />
-      <p className="detail__foot">
-        이 화면은 지금 도는 로테이션만 말해요 — 앞으로의 일정은 달력이 맡아요.
-        출처 LeekDuck(ScrapedDuck) · {data.GAMEDAY.fetched.slice(0, 10)} 수집 · 지역과 이벤트에 따라 실제와 다를 수 있어요
-      </p>
+        view={view} kind="raid" onOpen={onOpen} />
+      <p className="detail__foot">{gamedayFoot('이 화면은 지금 도는 로테이션만 말해요 — 앞으로의 일정은 달력이 맡아요.', data.GAMEDAY.fetched)}</p>
     </div>
   );
 }
@@ -139,11 +156,8 @@ export function Eggs({ onOpen }: { onOpen: OpenMon }) {
       <div className="gameday__intro page__filters">
         <p className="note">포켓몬을 누르면 종족값과 상성을 볼 수 있어요.</p>
       </div>
-      <Grouped sections={eggSections(data.GAMEDAY.eggs)} view={view} onOpen={onOpen} />
-      <p className="detail__foot">
-        지금 도는 알 부화 풀. 출처 LeekDuck(ScrapedDuck) · {data.GAMEDAY.fetched.slice(0, 10)} 수집 ·
-        지역과 이벤트에 따라 실제와 다를 수 있어요
-      </p>
+      <Grouped sections={eggSections(data.GAMEDAY.eggs)} view={view} kind="egg" onOpen={onOpen} />
+      <p className="detail__foot">{gamedayFoot('지금 도는 알 부화 풀.', data.GAMEDAY.fetched)}</p>
     </div>
   );
 }

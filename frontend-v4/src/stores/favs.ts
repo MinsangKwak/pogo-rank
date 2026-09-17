@@ -1,14 +1,12 @@
 // ─────────────────────────────────────────────────────────────────────────────
 // stores/favs.ts — ★ 담아 둔 포켓몬
 //
-// **v3 는 이것을 계정에 둔다** (Firestore `users/{uid}.favs`). 로그인한 사람만 담을 수 있고,
-// 기기를 바꿔도 따라온다. 미리보기에는 아직 로그인이 없다 (Firebase 는 Phase 5).
+// **v3 는 이것을 계정에 둔다** (Firestore `users/{uid}.favs`). 여기도 로그인하면 계정에 둔다
+// (stores/auth.ts) — 이 파일이 맡는 것은 **로그인 전**의 ★ 다.
 //
-// 그래서 여기서는 **이 기기에** 둔다. 고른 길이 셋이었다:
-//   ① 화면을 잠가 둔다      — 담을 수가 없으니 📣 소식도, 내 포켓몬 화면도 영영 빈 채다
-//   ② Firebase 를 먼저 옮긴다 — 승인·약관·계정 삭제까지 딸려 와 순서가 뒤집힌다
-//   ③ 이 기기에 둔다        — ★ 를 눌러 보고, 소식이 뜨는 것까지 확인할 수 있다
-// ③ 을 골랐다. 미리보기의 일은 **만져 보게 하는 것**이고, 담는 곳이 어디든 화면이 하는 말은 같다.
+// 로그인해야만 담을 수 있게 하면 📣 소식도, 내 포켓몬 화면도 로그인 전에는 영영 빈 채다.
+// 그래서 로그인 전에는 이 기기에 담아 두고, 승인 로그인하는 순간 계정으로 **합쳐 올린다**
+// (components/AuthBridge.tsx syncAccount) — 담아 둔 것이 사라지지 않는다.
 //
 // 키는 `pogo_favs` — v3 가 안 쓰는 이름이다 (v3 의 pogo_* 25개와 겹치지 않는 것을 확인했다).
 // 계정이 붙는 날, 이 값을 첫 로그인 때 계정으로 올려 주면 담아 둔 것이 안 사라진다.
@@ -33,6 +31,8 @@ interface FavState {
   favs: number[];
   has: (dex: number) => boolean;
   toggle: (dex: number) => void;
+  /** 계정으로 옮긴 뒤 이 기기 목록을 비운다 — 두 곳이 어긋나면 어느 쪽이 참인지 알 수 없다 */
+  clear: () => void;
 }
 
 export const useFavStore = create<FavState>((set, get) => ({
@@ -48,5 +48,9 @@ export const useFavStore = create<FavState>((set, get) => ({
       : [...now, number].sort((a, b) => a - b);
     try { localStorage.setItem(FAVS_KEY, JSON.stringify(next)); } catch { /* 위와 같다 */ }
     set({ favs: next });
+  },
+  clear: () => {
+    try { localStorage.removeItem(FAVS_KEY); } catch { /* 위와 같다 */ }
+    set({ favs: [] });
   },
 }));

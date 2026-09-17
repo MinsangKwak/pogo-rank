@@ -11,7 +11,7 @@
 // 가르는 기준은 "파일 크기" 가 아니라 **"같이 바뀌는가"** 다 (계획 문서 데이터 계층).
 //   dex 는 거의 안 바뀌고 gameday 는 매주 바뀐다 — 한 덩어리로 두면 일정 하나에 985KB 를 다시 받는다.
 // ─────────────────────────────────────────────────────────────────────────────
-import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'node:fs';
+import { readFileSync, writeFileSync, mkdirSync, existsSync, copyFileSync } from 'node:fs';
 import { createHash } from 'node:crypto';
 import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -73,11 +73,32 @@ for (const name of ['data.js', 'data-lazy.js']) {
 // 문의 이메일은 저장소에 없다 — 빌드가 환경변수에서 읽어 dist/index.html 에 박아 넣는다.
 // 그 값을 그대로 꺼내 쓴다 (약관·개인정보처리방침의 문의처가 이 한 곳을 본다).
 // 비어 있으면 v3 와 같이 '사이트 운영자' 로 적힌다
+// 설정값은 저장소에 없다 — 빌드가 환경변수에서 읽어 dist/index.html 에 박아 넣는다.
+// 그 값을 그대로 꺼내 쓴다. 비어 있으면 v3 와 같이 그 기능이 조용히 꺼진다
+// (FIREBASE_CONFIG.apiKey 가 없으면 로그인 UI 자체가 안 뜬다 — authEnabled).
 {
   const html = readFileSync(resolve(distV3, 'index.html'), 'utf8');
-  const hit = /const CONTACT_EMAIL = "([^"]*)"/.exec(html);
-  vm.runInContext(`var CONTACT_EMAIL = ${JSON.stringify(hit?.[1] ?? '')};`, sandbox, { filename: 'index.html' });
+  const str = (name) => new RegExp(`const ${name} = "([^"]*)"`).exec(html)?.[1] ?? '';
+  const json = /const FIREBASE_CONFIG = (\{[^;]*\});/.exec(html)?.[1] ?? '{}';
+  vm.runInContext([
+    `var CONTACT_EMAIL = ${JSON.stringify(str('CONTACT_EMAIL'))};`,
+    `var ADMIN_UID = ${JSON.stringify(str('ADMIN_UID'))};`,
+    `var ADMIN_EMAIL = ${JSON.stringify(str('ADMIN_EMAIL'))};`,
+    `var FIREBASE_CONFIG = ${json};`,
+  ].join('\n'), sandbox, { filename: 'index.html' });
 }
+
+// 영문 사전도 화면 코드 안에 있다 — i18n-en.js(사전 · 규칙) · i18n-release-en.js(패치노트 영문판).
+// 둘 다 선언뿐이라 파일을 통째로 돌려도 화면을 건드리지 않는다
+{
+  for (const name of ['i18n-en.js', 'i18n-release-en.js']) {
+    vm.runInContext(readFileSync(resolve(repo, 'frontend/scripts', name), 'utf8'), sandbox, { filename: name });
+  }
+}
+
+// 정규식은 JSON 에 담기지 않는다 — 본문과 플래그로 펴 둔다 (읽는 쪽이 new RegExp 로 되세운다)
+vm.runInContext(`var __i18nPatterns = typeof I18N_PATTERNS === 'undefined' ? undefined
+  : I18N_PATTERNS.map(function (row) { return [row[0].source, row[0].flags, row[1]]; });`, sandbox, { filename: 'i18n-patterns' });
 
 const readGlobal = (key) => vm.runInContext(`typeof ${key} === 'undefined' ? undefined : ${key}`, sandbox);
 
@@ -99,9 +120,12 @@ const BUNDLES = {
   usage: [['USAGE_PLACES', 'VALUE_DATA.usage_places'], ['METER', 'VALUE_DATA.meter']],
   // RELEASE_VER 은 **본문이 아니라 판 번호 하나**다 — 셸의 빨간 점이 첫 화면부터 이 값을 봐야 해서
   // 50KB 본문(release.json)이 아니라 여기 함께 싣는다
-  meta: ['RANK_DELTA_DATE', 'RANK_FRESH_DAYS', 'DATA_FETCHED', 'DATA_STALE', 'CONTACT_EMAIL', 'RELEASE_VER'],
+  meta: ['RANK_DELTA_DATE', 'RANK_FRESH_DAYS', 'DATA_FETCHED', 'DATA_STALE', 'CONTACT_EMAIL', 'RELEASE_VER', 'FIREBASE_CONFIG', 'ADMIN_UID', 'ADMIN_EMAIL'],
   // 패치노트는 첫 화면이 한 글자도 안 쓴다 — 제 묶음으로 갈라 그 화면을 열 때만 받는다 (v3 v3.46.0 과 같은 판단)
-  release: ['RELEASE_NOTES', 'RELEASE_VER'],
+  release: ['RELEASE_NOTES', 'RELEASE_VER', 'RELEASE_NOTES_EN'],
+  // 영문 사전도 EN 을 켠 사람만 받는다. **규칙(I18N_PATTERNS)은 정규식이라 JSON 에 그대로 못 담는다** —
+  // [본문, 플래그, 번역틀] 로 펴서 싣고 읽는 쪽이 다시 세운다 (lib/i18n.ts)
+  i18n: ['I18N_EN', ['I18N_PATTERNS', '__i18nPatterns']],
   schedule: ['SCHEDULE_MONTHS', 'SCHEDULE_CATS'],
 };
 
@@ -130,4 +154,16 @@ for (const [name, keys] of Object.entries(BUNDLES)) {
 }
 
 writeFileSync(resolve(out, 'manifest.json'), JSON.stringify(manifest, null, 1));
+// ── PWA 정적 파일 (아이콘 · manifest) ────────────────────────────────────────
+// v3 frontend/static/ 의 것을 그대로 옮긴다. 아이콘은 그림 파일이라 저장소에 두 벌 두지 않고,
+// 데이터와 같은 규칙으로 빌드 때 가져온다 (public/ 의 이 파일들은 .gitignore 에 있다)
+{
+  const from = resolve(repo, 'frontend/static');
+  const to = resolve(here, '../public');
+  for (const name of ['manifest.webmanifest', 'icon-192.png', 'icon-512.png', 'og.png']) {
+    copyFileSync(resolve(from, name), resolve(to, name));
+  }
+  console.log('  PWA 정적 파일 4개 (v3 static/ 에서)');
+}
+
 console.log(`데이터 ${Object.keys(BUNDLES).length}개 · 합계 ${(total / 1024).toFixed(0)}KB`);

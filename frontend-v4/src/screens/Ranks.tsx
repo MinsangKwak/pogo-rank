@@ -212,11 +212,14 @@ export function Pve({ onOpen }: { onOpen: OpenMon }) {
             <Fragment key={tier}>
               <TierHead tier={tier} count={group.length} />
               <RowList view={view}>
-                {group.map((row) => (
+                {/* **번호는 그 티어 묶음 안의 순번이다** (v3 renderTierList 가 넘기는 index).
+                    D-MAX 티어표는 반대로 탭 전체 순위를 쓴다 — 등급이 절대 기준이라
+                    묶음 안 순번을 쓰면 B 티어 첫 카드가 '1' 로 찍혀 근거와 어긋난다(v3.30.1) */}
+                {group.map((row, index) => (
                   <Row
                     key={`${row.sprite}-${row.name}`}
                     sprite={row.sprite} name={row.name} en={row.en} types={row.types}
-                    rank={String(rows.indexOf(row) + 1)}
+                    rank={String(index + 1)}
                     unrel={row.unrel} delta={row.d}
                     onOpen={() => onOpen(row)}
                     score={`${row.ratio ?? Math.round(row.score)}점`}

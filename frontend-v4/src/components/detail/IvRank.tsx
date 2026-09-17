@@ -39,7 +39,7 @@ export default function IvRank({ form, sprite }: { form: DexForm; sprite: number
         </p>
         {rows.map((row) => (
           <div key={row.league} className="ivrank__pick-row">
-            <span className="ivrank__pick-lg">{LEAGUE_KO[row.league]}리그<span className="meta"> 순위 {row.rank}위</span></span>
+            <span className="ivrank__pick-lg">{`${LEAGUE_KO[row.league]}리그`}<span className="meta">{` 순위 ${row.rank}위`}</span></span>
             <b>{row.ivs}</b>
             <span className="meta">Lv{row.level} · CP {row.cp.toLocaleString()}</span>
           </div>

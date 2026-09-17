@@ -1,25 +1,65 @@
 'use strict';
 // ─────────────────────────────────────────────────────────────────────────────
-// sw.js — 옛 v3 서비스 워커를 **스스로 걷어낸다** (2026-09-17)
+// sw.js — 오프라인 캐시 (v3 frontend/static/sw.js 이식)
 //
-// 왜 빈 파일이 아니라 이 코드인가
-//   어제까지 dev.moncamp.kr 루트는 v3 였고, 그 페이지가 /sw.js 를 등록해 두고 갔다.
-//   서비스 워커는 페이지를 닫아도 브라우저에 남아, 다음 방문 때 **캐시해 둔 v3 껍데기**를
-//   먼저 내준다. 그대로 두면 전에 들른 사람은 루트가 v4 로 바뀐 줄도 모르고 옛 화면을 본다.
-//   (파일을 아예 지우면 404 가 나고, 그때 브라우저는 옛 워커를 그냥 계속 쓴다.)
+// 규칙은 **무엇이 변하는가**로 가른다. v3 와 같은 판단이고, 갈래만 v4 의 파일 이름에 맞췄다.
+//   화면(navigate)      네트워크 우선 · 실패하면 캐시해 둔 './' — 오프라인에서도 앱이 열린다
+//   그림(sprites·anim)  캐시 우선 — id 별로 불변이다. 쌓이는 양은 내가 열어 본 종만큼이다
+//   번들(assets/…)      캐시 우선 — vite 가 이름에 내용 해시를 박는다. 내용이 바뀌면 이름이 바뀐다
+//   데이터(data/*.json) 캐시 우선 — 주소에 ?v=해시가 붙어 같은 이유로 안전하다.
+//   매니페스트           **네트워크 우선** — '새 빌드가 올라왔나' 를 묻는 자리라 캐시가 답하면 안 된다
 //
-//   그래서 같은 자리에 '스스로 물러나는' 워커를 한 벌 올린다 — 캐시를 비우고,
-//   등록을 지우고, 열려 있는 탭을 다시 불러온다. 한 번 돌고 나면 이 파일도 할 일이 없다.
-//   v4 가 제 캐시 전략을 갖추면(PWA) 그때 이 자리를 그 코드가 이어받는다.
+// v3 와 달라진 곳 하나 — v3 는 app.js·data.js 를 네트워크 우선으로 뒀다. 그 이름들은 해시가 없어
+// 같은 주소가 매일 다른 내용을 담았기 때문이다. v4 는 이름이나 쿼리에 해시가 들어가 그럴 일이 없다.
 // ─────────────────────────────────────────────────────────────────────────────
+const CACHE = 'moncamp-v4-1';
 
 self.addEventListener('install', () => self.skipWaiting());
 
-self.addEventListener('activate', (event) => {
-  event.waitUntil((async () => {
-    for (const key of await caches.keys()) await caches.delete(key);
-    await self.registration.unregister();
-    // 지금 열려 있는 탭은 아직 옛 껍데기를 보고 있다 — 새로 받아 오게 한다
-    for (const client of await self.clients.matchAll({ type: 'window' })) client.navigate(client.url);
-  })());
+self.addEventListener('activate', (event) => event.waitUntil(
+  caches.keys()
+    .then((keys) => Promise.all(keys.filter((key) => key !== CACHE).map((key) => caches.delete(key))))
+    .then(() => self.clients.claim()),
+));
+
+// 캐시 우선 — 없으면 받아서 넣는다. 받기에 실패하면 한 번 더 시도한다(v3 와 같은 되받기)
+function cacheFirst(request, key) {
+  return caches.match(key).then((hit) => hit || fetch(request)
+    .catch(() => fetch(request, { cache: 'reload' }))
+    .then((res) => {
+      if (res.ok) { const copy = res.clone(); caches.open(CACHE).then((cache) => cache.put(key, copy)); }
+      return res;
+    }));
+}
+
+// 네트워크 우선 — 받아서 넣고, 못 받으면 캐시로 답한다
+function networkFirst(request, key) {
+  return fetch(request).then((res) => {
+    const copy = res.clone();
+    caches.open(CACHE).then((cache) => cache.put(key, copy));
+    return res;
+  }).catch(() => caches.match(key));
+}
+
+self.addEventListener('fetch', (event) => {
+  const url = new URL(event.request.url);
+  const mine = url.origin === location.origin;
+  if (event.request.mode === 'navigate') {
+    // 주소가 무엇이든 앱은 한 장이다 — './' 한 자리에만 담는다 (해시 라우팅)
+    event.respondWith(networkFirst(event.request, './'));
+    return;
+  }
+  if (!mine) return;
+  if (/\/sprites(-anim)?\//.test(url.pathname)) {
+    // ?r=n 재시도 주소도 같은 파일이다 — 쿼리를 뗀 키로 찾고 저장한다 (v3 v2.16.1)
+    event.respondWith(cacheFirst(event.request, new Request(url.origin + url.pathname)));
+    return;
+  }
+  if (url.pathname.endsWith('/data/manifest.json')) {
+    event.respondWith(networkFirst(event.request, event.request));
+    return;
+  }
+  if (/\/assets\/.+\.(js|css)$/.test(url.pathname) || /\/data\/.+\.json$/.test(url.pathname)) {
+    event.respondWith(cacheFirst(event.request, event.request));
+  }
 });

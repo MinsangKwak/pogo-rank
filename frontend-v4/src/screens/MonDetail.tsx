@@ -22,7 +22,7 @@ import { cpOf } from '../lib/cp';
 import { counterTypes, matchups } from '../lib/matchup';
 import { usagePlacesFor } from '../lib/usage';
 import { favNewsFor, favNewsWhen, FAV_NEWS_LABEL } from '../lib/favnews';
-import { useFavStore } from '../stores/favs';
+import { useFavs } from '../lib/useFavs';
 import { buildSearchIndex } from '../lib/search';
 import { resolveMon, type MonPick, type MonRef } from '../lib/mon';
 import { track } from '../lib/track';
@@ -201,7 +201,7 @@ function Ranks({ name }: { name: string }) {
         {GROUP_KO[row.group] ?? row.group}{' · '}{row.where}
         {row.mark ? <span className="tag">{row.mark === 'G' ? '거다이맥스' : '다이맥스'}</span> : null}
       </span>
-      <b className="detail__rank-no">{row.rank}위</b>
+      <b className="detail__rank-no">{`${row.rank}위`}</b>
     </div>
   );
   return (
@@ -225,8 +225,7 @@ export default function MonDetail({ pick, onClose }: { pick: MonPick; onClose: (
   const { data: pvpData } = usePvp();
   const { data: gameday } = useGameday();
   const { data: favEvents } = useFavEvents();
-  const favs = useFavStore((s) => s.favs);
-  const toggleFav = useFavStore((s) => s.toggle);
+  const { favs, toggle: toggleFav } = useFavs();
   const overlay = useRef<HTMLDialogElement>(null);
 
   // 지금 보는 것 + 떠나온 것들.
@@ -379,8 +378,8 @@ export default function MonDetail({ pick, onClose }: { pick: MonPick; onClose: (
                     title={isFav ? '즐겨찾기에서 빼기' : '즐겨찾기에 담기 — 이 포켓몬의 일정을 챙겨 드려요'}
                     onClick={(event) => {
                       event.stopPropagation();
-                      toggleFav(dexNo);
-                      track('fav_toggle', { mon: mon.name, on: isFav ? 0 : 1 });
+                      // 지표는 useFavs 안에서 한 번만 찍는다 — 여기서 또 찍으면 한 번 누른 것이 두 건이 된다
+                      toggleFav(dexNo, '포켓몬 상세');
                     }}>
                     <span className="detail__fav-star" aria-hidden="true">{isFav ? '★' : '☆'}</span>
                     <span className="detail__fav-label">{isFav ? '담음' : '즐겨찾기'}</span>

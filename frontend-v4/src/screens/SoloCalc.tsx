@@ -19,7 +19,7 @@ import {
   BUFFS, SOLO_TIERS, buildSoloPlan, damageInTime, inferTier, marginText,
   maxCp, raidCp, scaledPool, simulateRevive, type SoloPlan, type SoloTier,
 } from '../lib/solo';
-import { useFavStore } from '../stores/favs';
+import { useFavs } from '../lib/useFavs';
 import type { OpenMon } from '../lib/mon';
 import { track } from '../lib/track';
 import type { PveRow } from '../types/data';
@@ -29,7 +29,7 @@ export default function SoloCalc({ onOpen }: { onOpen: OpenMon }) {
   const { data: max } = useMax();
   const { data: pve } = usePve();
   const { data: pvp } = usePvp();
-  const favs = useFavStore((s) => s.favs);
+  const { favs } = useFavs();
 
   const [boss, setBoss] = useState<BossEntry | null>(null);
   const [tierOverride, setTierOverride] = useState<string | null>(null);

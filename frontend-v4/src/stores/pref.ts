@@ -8,6 +8,7 @@
 // 감싸 저장하는데 v3 는 날값('dark')을 넣었다. 여기서는 **v3 와 같은 날값**을 읽고 쓴다.
 // ─────────────────────────────────────────────────────────────────────────────
 import { create } from 'zustand';
+import { useAuthStore } from './auth';
 
 const THEME_KEY = 'pogo_theme';       // v3 components/theme.js 와 같은 키
 const COLS_KEY = (screen: string) => `pogo_${screen}_cols`;   // pogo_dex_cols · pogo_raids_cols …
@@ -71,7 +72,8 @@ export function readCols(screen: string, fallback?: 'grid' | 'list'): 'grid' | '
 
 interface PrefState {
   theme: Theme;
-  setTheme: (next: Theme) => void;
+  /** opts.sync === false 면 계정에 쓰지 않는다 — 계정에서 읽어 온 값을 되받아 쓰지 않으려고 */
+  setTheme: (next: Theme, opts?: { sync?: boolean }) => void;
   toggleTheme: () => void;
   cols: Record<string, 'grid' | 'list'>;
   setCols: (screen: string, next: 'grid' | 'list') => void;
@@ -79,10 +81,12 @@ interface PrefState {
 
 export const usePrefStore = create<PrefState>((set, get) => ({
   theme: readTheme(),
-  setTheme: (next) => {
+  setTheme: (next, opts) => {
     applyTheme(next);
     try { localStorage.setItem(THEME_KEY, next); } catch { /* 위와 같다 */ }
     set({ theme: next });
+    // 로그인했으면 계정에도 남긴다 — 어느 기기에서 열어도 같은 화면이 되게 (v3 saveThemeToAccount)
+    if (opts?.sync !== false) void saveThemeToAccount(next);
   },
   // 버튼은 둘만 돈다 — **지금 보이는 것의 반대로**. '기기 설정' 에서 누르면 그 순간 화면의 반대가 된다
   toggleTheme: () => get().setTheme(themeIsDark(get().theme) ? 'light' : 'dark'),
@@ -95,3 +99,10 @@ export const usePrefStore = create<PrefState>((set, get) => ({
 
 // 첫 그림 전에 <html data-theme> 을 맞춘다 — 늦으면 흰 화면이 한 번 번쩍인다
 applyTheme(usePrefStore.getState().theme);
+
+/** 계정에 테마를 남긴다. 로그인 전이면 아무 일도 하지 않는다 */
+async function saveThemeToAccount(theme: Theme) {
+  const { api, user, status } = useAuthStore.getState();
+  if (!api || !user || (status !== 'ok' && status !== 'pending')) return;
+  await api.setDoc(`users/${user.uid}`, { theme }).catch(() => { /* 저장 실패는 조용히 — 이 기기 값은 이미 바뀌었다 */ });
+}

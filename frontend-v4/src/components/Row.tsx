@@ -139,7 +139,7 @@ export function Row({ sprite, name, en, types, rank, score, sub, lines, linesCla
             {unrel ? <span className="tag dex__unrel">미구현</span> : null}
             {count >= 2 ? (
               <span className={`tag tag--use${count >= 5 ? ' tag--many' : ''}`}
-                title="이 포켓몬이 상위 30위에 드는 순위표 수 (PvE 19표 · PvP 4리그 · D-MAX 19표)">활용 {count}곳</span>
+                title="이 포켓몬이 상위 30위에 드는 순위표 수 (PvE 19표 · PvP 4리그 · D-MAX 19표)">{`활용 ${count}곳`}</span>
             ) : null}
           </div>
         ) : null}
@@ -208,8 +208,10 @@ export function TierHead({ tier, count }: { tier: string; count: number }) {
   return (
     <div className="tier__head">
       <b className={`tier__badge tier__badge--${tier.toLowerCase()}`}>{tier}</b>
-      <span className="tier__name">{tier} 티어</span>
-      <span className="meta">{count}종</span>
+      {/* **한 줄은 한 노드로 둔다.** `{tier} 티어` 라고 적으면 React 가 텍스트 노드를 둘로 쪼개고,
+          사전은 줄 단위로 찾으므로 ' 티어' 만 남아 못 옮긴다 (v3 는 한 문자열이었다) */}
+      <span className="tier__name">{`${tier} 티어`}</span>
+      <span className="meta">{`${count}종`}</span>
       <span className="tier__desc">{TIER_DESC[tier] ?? ''}</span>
     </div>
   );

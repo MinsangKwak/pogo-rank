@@ -9,6 +9,7 @@
 // ─────────────────────────────────────────────────────────────────────────────
 import type { ReactNode } from 'react';
 import { useMeta } from '../lib/data';
+import KoOnlyNote from '../components/KoOnlyNote';
 
 export const PRIVACY_VER = '2026-09-07';
 export const TERMS_VER = '2026-09-07';
@@ -41,6 +42,7 @@ export function Privacy() {
   const contact = useContact();
   return (
     <div className="page__body" id="page-privacy" data-route="privacy">
+      <KoOnlyNote />
       <p>moncamp(이하 "서비스")는 로그인하지 않으면 개인정보를 수집하지 않습니다. Google 로그인으로 승인된 사용자에게만 즐겨찾기·내 포켓몬 저장 기능을 제공하며, 이 문서는 그 과정에서 무엇을 어디에 얼마나 보관하는지 설명합니다.</p>
       <p className="detail__foot">{`시행일 2026-09-04 · 개정 2026-09-06 (이용 통계에 계정 식별자 연결) · 2026-09-07 (플래너 개체 정보 항목) · ${PRIVACY_VER} v2.18.0 (처리위탁·국외이전·보유기간·14세·보호책임자·자동수집·셀프 삭제 명시). 서비스는 개인이 무료로 운영하며 상업적 목적이 없습니다.`}</p>
 
@@ -133,6 +135,7 @@ export function Terms() {
   const contact = useContact();
   return (
     <div className="page__body" id="page-terms" data-route="terms">
+      <KoOnlyNote />
       <p>moncamp(이하 "서비스")를 이용하기 전에 읽어 주세요. 서비스는 개인이 무료로 운영하는 비공식 팬 프로젝트이며, 이 약관은 서비스가 실제로 하는 것과 하지 않는 것을 정합니다.</p>
       <p className="detail__foot">{`시행일 ${TERMS_VER} (v2.18.0 신설). 개정하면 시행 7일 전에 패치노트로 알리고, 다음 로그인 때 다시 동의를 받습니다.`}</p>
 

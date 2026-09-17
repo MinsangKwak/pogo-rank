@@ -9,12 +9,12 @@
 //   (1) 📣 다가오는 소식  담아 둔 종에 잡힌 일정
 //   (2) ★ 담아 둔 포켓몬  소식이 걸린 줄에는 D-day 가 붙는다
 //
-// v3 는 ★ 를 계정에 두지만 미리보기는 이 기기에 둔다 (stores/favs.ts 머리말).
+// ★ 는 로그인하면 계정, 로그인 전이면 이 기기에 둔다 (lib/useFavs.ts).
 // (3) 🎒 내 개체는 v3 에서도 스위치가 내려가 있다 (PLAN_MONS_ENABLED=false) — 옮기지 않았다.
 // ─────────────────────────────────────────────────────────────────────────────
 import type { ReactNode } from 'react';
 import { useDex, useFavEvents } from '../lib/data';
-import { useFavStore } from '../stores/favs';
+import { useFavs } from '../lib/useFavs';
 import { favNewsFor, favNewsList, favNewsWhen, FAV_NEWS_LABEL, type FavNewsRow } from '../lib/favnews';
 import { Sprite } from '../components/Bits';
 import { NameNode } from '../components/Row';
@@ -53,8 +53,7 @@ function NewsCard({ row, nameOf }: { row: FavNewsRow; nameOf: (dex: number) => s
 export default function Planner() {
   const { data: dex } = useDex();
   const { data: fav } = useFavEvents();
-  const favs = useFavStore((s) => s.favs);
-  const toggle = useFavStore((s) => s.toggle);
+  const { favs, toggle } = useFavs();
 
   // 이름표에 없으면 번호를 그대로 쓴다 — 이름을 지어내지 않는다
   const nameOf = (id: number) => dex.DEX_DATA.names[String(id)] ?? `#${id}`;
@@ -107,7 +106,7 @@ export default function Planner() {
                       onClick={(event) => {
                         event.preventDefault();
                         event.stopPropagation();
-                        toggle(id);
+                        toggle(id, '내 포켓몬');
                         track('fav_off', { mon: String(id), from: '내 포켓몬' });
                       }}>★</button>
                   </div>

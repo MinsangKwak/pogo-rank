@@ -96,7 +96,7 @@ function LeagueCard({ form, cpms, league, cap, floor, ivs, on }: {
   return (
     <div className={`ivrank__card${got.rank === 1 ? ' is-top' : ''}${mark}`}>
       <div className="ivrank__lg">{name}<span className="meta">CP {cap}</span></div>
-      <b className="ivrank__rank">{got.rank.toLocaleString()}위<span className="ivrank__total"> / {got.total.toLocaleString()}</span></b>
+      <b className="ivrank__rank">{`${got.rank.toLocaleString()}위`}<span className="ivrank__total">{` / ${got.total.toLocaleString()}`}</span></b>
       <span className="ivrank__pct">1위의 {got.percent}%</span>
       <span className="meta">Lv{got.level} · CP {got.cp.toLocaleString()}</span>
       <span className="meta ivrank__best">1위는 {got.best.ivs.join('/')}</span>
@@ -203,7 +203,13 @@ export default function IvRankPage() {
         <ToolBtn label="🃏 덱 짜기" onClick={() => { track('tool_pvpdeck', { on: 1 }); location.hash = '#/pvp/deck'; }} />
       </Slot>
 
-      <p className="note">실험 기능이에요. <b>PvP 는 CP 상한이 있어 공격이 낮을수록 좋은 개체</b>가 돼요 — 같은 CP 안에서 레벨을 더 올릴 수 있어서예요. 그래서 0/15/15 같은 조합이 1위가 되는 일이 흔해요.</p>
+      {/* v3 는 이 문단을 조각 넷으로 붙인다 — 사전이 줄 단위로 찾으므로 붙이는 자리도 같아야 한다 */}
+      <p className="note">
+        {'실험 기능이에요. '}
+        <b>PvP 는 CP 상한이 있어 공격이 낮을수록 좋은 개체</b>
+        {'가 돼요 — 같은 CP 안에서 레벨을 더 올릴 수 있어서예요. '}
+        {'그래서 0/15/15 같은 조합이 1위가 되는 일이 흔해요.'}
+      </p>
 
       <div className="ivrank__split">
         <div className="ivrank__form">
@@ -289,7 +295,13 @@ export default function IvRankPage() {
         </div>
       </div>
 
-      <p className="detail__foot">순위는 CP 상한 안에서 가장 높은 레벨까지 올렸을 때의 공격 × 방어 × 체력(스탯 곱)으로 매겨요. 체력만 내림으로 끊는 게임 규칙까지 그대로 반영했고, 종족값과 레벨별 배율은 화면이 이미 쓰는 값 그대로예요. 베스트 버디(+1레벨)는 빼고 봐요 — 모두가 가질 수 있는 조건이 아니라서예요. 마스터리그는 CP 상한이 없어 개체값이 높을수록 좋아요(순위를 매기지 않아요).</p>
+      {/* v3 는 이 각주를 네 문장으로 나눠 붙인다 — 사전이 줄 단위로 찾으므로 한 덩이로 합치면 못 옮긴다 */}
+      <p className="detail__foot">
+        {'순위는 CP 상한 안에서 가장 높은 레벨까지 올렸을 때의 공격 × 방어 × 체력(스탯 곱)으로 매겨요. '}
+        {'체력만 내림으로 끊는 게임 규칙까지 그대로 반영했고, 종족값과 레벨별 배율은 화면이 이미 쓰는 값 그대로예요. '}
+        {'베스트 버디(+1레벨)는 빼고 봐요 — 모두가 가질 수 있는 조건이 아니라서예요. '}
+        {'마스터리그는 CP 상한이 없어 개체값이 높을수록 좋아요(순위를 매기지 않아요).'}
+      </p>
     </div>
   );
 }

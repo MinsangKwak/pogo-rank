@@ -16,6 +16,7 @@
 import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import { useUpdates } from '../lib/data';
 import { UPDATE_CATS } from '../lib/notes';
+import KoOnlyNote from '../components/KoOnlyNote';
 import { routeById, routeHash, type RouteId } from '../routes';
 import { track } from '../lib/track';
 import type { ArchiveEntry, GameUpdate, UpdateSource } from '../types/data';
@@ -223,6 +224,7 @@ function UpdatesList() {
         </>
       ) : null}
 
+      <KoOnlyNote kind="ko" />
       <h2 className="page__sec">전체 소식</h2>
       <div className="upd__tools">
         <input type="search" className="upd__search" value={UI.query} placeholder="제목·내용으로 찾기"
@@ -243,7 +245,7 @@ function UpdatesList() {
               onClick={() => { UI.period = key; reset(); bump(); }}>{label}</button>
           ))}
         </div>
-        <p className="upd__count">{rows.length}건</p>
+        <p className="upd__count">{`${rows.length}건`}</p>
       </div>
 
       <div className="upd__cards">
@@ -269,6 +271,7 @@ function ArchiveDetail({ row }: { row: ArchiveEntry }) {
   return (
     <div className="page__body" id="page-game-update" data-route="game-update">
       <Back />
+      <KoOnlyNote kind="ko" />
       <header className="upd__head">
         <div className="upd__badges"><Badge text="원문 보기" kind="plain" /></div>
         <h2 className="upd__head-title">{row.title}</h2>
@@ -308,6 +311,7 @@ function UpdateDetail({ id }: { id: string }) {
   return (
     <div className="page__body" id="page-game-update" data-route="game-update">
       <Back />
+      <KoOnlyNote kind="ko" />
       <header className="upd__head">
         <CatChips row={article} />
         <h2 className="upd__head-title">{article.title}</h2>
