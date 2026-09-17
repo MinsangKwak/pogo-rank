@@ -308,7 +308,17 @@ body .app-nav__extra .drawer__item:not([hidden]) { display:flex; align-items:cen
 body .app-nav__extra .drawer__ico { display:none; }
 body .app-nav__extra :is(#menu-changes,#menu-release,#menu-game-updates,a[target="_blank"]) { grid-column:1 / -1; }
 body .app-nav__extra :is(#menu-release,#menu-game-updates) { color:var(--fg); font-size:1.3rem; border-bottom:.1rem solid #d9b7b2; position:relative; padding-right:1.8rem; }
-body .app-nav__extra :is(#menu-release,#menu-game-updates)::after { content:'↗'; margin-left:auto; color:#bc3542; }
+body .app-nav__extra :is(#menu-release,#menu-game-updates)::after {
+  content:'↗'; position:static; display:block; flex:0 0 1.6rem; margin-left:auto;
+  width:1.6rem; height:auto; color:#bc3542; line-height:1; text-align:center;
+  background:transparent; border-radius:0; transform:none; animation:none;
+}
+body .app-nav__extra :is(#menu-release,#menu-game-updates) .drawer__label {
+  display:inline-flex; align-items:center; gap:.6rem; min-width:0;
+}
+body .app-nav__extra :is(#menu-release,#menu-game-updates).dot-badge .drawer__label::after {
+  content:''; display:block; flex:0 0 .6rem; width:.6rem; height:.6rem; background:var(--warn);
+}
 body .app-nav__extra #menu-changes { font-size:1rem; min-height:3rem; color:#a93440; }
 body .app-nav__extra a[target="_blank"] { margin-bottom:1rem; }
 body .app-nav__extra .drawer__item:hover { background:transparent; color:#c92532; text-decoration:underline; text-underline-offset:.4rem; }
