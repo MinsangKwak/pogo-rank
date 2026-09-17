@@ -149,14 +149,14 @@ function renderServiceHome() {
   // ── 목적별 기능 세 카드 — ☰ 메뉴와 **같은 차례**여야 같은 서비스의 같은 목록으로 읽힌다 (router.js ROUTE_GROUPS).
   // 부모가 있는 화면(내 포켓몬)은 홈에 올리지 않는다 — 홈은 "어디로 갈까" 의 첫 갈림길이다
   const groups = ROUTE_GROUPS
-    .map(([group, label, desc, icon]) => [label, desc, icon, ROUTES.filter((route) => route.nav && !route.parent && (route.group || 'mine') === group)])
+    .map(([group, label, desc, icon]) => [label, desc, icon, ROUTES.filter((route) => route.nav && !route.parent && (route.group || 'mine') === group), group])
     .filter(([, , , routes]) => routes.length);
   const features = el('section', { class: 'home__features', 'aria-label': '서비스 기능' },
     el('div', { class: 'home__section' }, el('h3', {}, '무엇이 필요한가요?'), el('span', {}, '목적에 맞는 화면으로 바로 가요')),
-    el('div', { class: 'home__service-grid' }, ...groups.map(([label, desc, icon, routes]) =>
-      el('section', { class: 'home__service-group' },
+    el('div', { class: 'home__service-grid' }, ...groups.map(([label, desc, icon, routes, group]) =>
+      el('section', { class: `home__service-group home__service-group--${group}` },
         el('div', { class: 'home__group-head' },
-          el('span', { class: 'home__group-icon', 'aria-hidden': 'true' }, pxIcon(icon) ?? icon),
+          el('img', { class: 'home__starter', src: `sprites/${({ today: 7, pick: 4, mine: 1 })[group] || 1}.png`, alt: '', 'aria-hidden': 'true', width: 96, height: 96 }),
           el('h4', { class: 'home__group' }, label),
           el('p', { class: 'home__group-desc' }, desc)),
         el('div', { class: 'home__grid' }, ...routes.map(homeTile))))));
