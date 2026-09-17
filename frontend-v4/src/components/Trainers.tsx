@@ -8,11 +8,12 @@
 // **승인 전에는 항목 자체를 감춘다.** "로그인하면 보입니다" 같은 안내조차 두지 않는다 —
 // 코드가 있다는 사실을 승인 안 된 사람에게 알릴 이유가 없다.
 //
-// 등록·삭제(코드 관리)는 옮기지 않았다 — 관리자 화면은 지금 moncamp.kr 에 있다.
+// 등록·삭제는 관리자에게만 보이는 [코드 관리] 버튼이 맡는다 (components/TrainerAdmin.tsx).
 // ─────────────────────────────────────────────────────────────────────────────
 import { useEffect, useState } from 'react';
 import { useAuthStore } from '../stores/auth';
 import { PxIcon } from './PxIcon';
+import TrainerAdmin from './TrainerAdmin';
 
 interface Trainer { id: string; name: string; code: string; order?: number }
 
@@ -37,6 +38,8 @@ function CopyButton({ code }: { code: string }) {
 export default function Trainers() {
   const { enabled, status, admin, api } = useAuthStore();
   const [rows, setRows] = useState<Trainer[] | null>(null);
+  const [manageOpen, setManageOpen] = useState(false);
+  const [reload, setReload] = useState(0);
   const visible = enabled && status === 'ok';
 
   useEffect(() => {
@@ -52,7 +55,7 @@ export default function Trainers() {
       setRows(list);
     });
     return () => { alive = false; };
-  }, [visible, api]);
+  }, [visible, api, reload]);
 
   if (!visible) return null;
   return (
@@ -63,7 +66,7 @@ export default function Trainers() {
       </summary>
       <div className="schedule__body" id="trainer-list">
         {rows === null ? null : rows.length === 0
-          ? <p className="detail__foot">{admin ? '아직 등록된 코드가 없어요. 코드 관리는 moncamp.kr 에서 해요.' : '아직 등록된 코드가 없어요.'}</p>
+          ? <p className="detail__foot">{admin ? '아직 등록된 코드가 없어요. 아래 “코드 관리”에서 추가하세요.' : '아직 등록된 코드가 없어요.'}</p>
           : (
             <>
               {rows.map((one) => (
@@ -74,6 +77,12 @@ export default function Trainers() {
               <p className="detail__foot">공백 없는 12자리로 복사돼요 — 게임의 친구 추가 화면에 바로 붙여넣으면 돼요.</p>
             </>
           )}
+        {admin ? (
+          <button className="schedule__more" onClick={() => setManageOpen(true)}>🛠 코드 관리 (추가·삭제) →</button>
+        ) : null}
+        {manageOpen ? (
+          <TrainerAdmin onClose={() => setManageOpen(false)} onChanged={() => setReload((now) => now + 1)} />
+        ) : null}
       </div>
     </details>
   );

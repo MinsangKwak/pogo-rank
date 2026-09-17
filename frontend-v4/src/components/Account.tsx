@@ -11,11 +11,13 @@ import { authEmail, useAuthStore } from '../stores/auth';
 import { routeHash } from '../routes';
 import { track } from '../lib/track';
 import TermsConsent from './TermsConsent';
+import AdminPanel from './AdminPanel';
 import { termsAccepted } from '../lib/terms';
 
 export default function Account({ onGo }: { onGo: () => void }) {
   const { enabled, user, status, admin, adminRoot, favs, requestError, api } = useAuthStore();
   const [consentOpen, setConsentOpen] = useState(false);
+  const [adminOpen, setAdminOpen] = useState(false);
   const [message, setMessage] = useState('');
 
   if (!enabled) return null;
@@ -75,8 +77,14 @@ export default function Account({ onGo }: { onGo: () => void }) {
           </a>
         </div>
         <div className="account__actions">
-          {/* 관리자 화면은 아직 v3 에 있다 — 없는 버튼을 내밀지 않는다 */}
-          {admin ? <p className="account__sub">{adminRoot ? '🔑 가입 승인' : '👥 유저 관리'}은 지금 moncamp.kr 에서 해요.</p> : null}
+          {/* 이름이 곧 할 수 있는 일이다 — 루트는 사람을 들이고 내보내고(가입 승인),
+              위임 관리자는 누가 쓰는지 보고 운영을 돕는다(유저 관리).
+              없는 권한을 이름으로 약속하지 않는다 */}
+          {admin ? (
+            <button className="drawer__item account__primary" onClick={() => setAdminOpen(true)}>
+              {adminRoot ? '🔑 가입 승인' : '👥 유저 관리'}
+            </button>
+          ) : null}
           <button className="drawer__item" onClick={() => void api?.signOut()}>로그아웃</button>
           {admin ? null : <button className="drawer__item account__danger" onClick={() => void remove(setMessage)}>계정 삭제</button>}
         </div>
@@ -91,6 +99,7 @@ export default function Account({ onGo }: { onGo: () => void }) {
         {card}
         {message ? <p className="account__msg">{message}</p> : null}
       </div>
+      {adminOpen ? <AdminPanel onClose={() => setAdminOpen(false)} /> : null}
       {consentOpen ? (
         <TermsConsent onClose={() => setConsentOpen(false)} onAccept={() => {
           setConsentOpen(false);

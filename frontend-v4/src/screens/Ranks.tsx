@@ -25,6 +25,7 @@ import { Slot } from '../components/Slots';
 import BossAcc from '../components/BossAcc';
 import { Row, RowHead, RowList, RowMore, ROW_SHOW, TierHead, TIER_ORDER, useExpanded } from '../components/Row';
 import { track } from '../lib/track';
+import { useAuthStore } from '../stores/auth';
 import { LEAGUES } from '../lib/leagues';
 import type { OpenMon } from '../lib/mon';
 import { Fragment } from 'react';
@@ -55,13 +56,22 @@ export function Dmax({ onOpen }: { onOpen: OpenMon }) {
   const { data: dex } = useDex();
   const boss = useRankStore((s) => s.maxBoss);
   const axis = useRankStore((s) => s.maxAxis);
-  const unrel = useRankStore((s) => s.maxShowUnrel);
+  const checked = useRankStore((s) => s.maxShowUnrel);
   const set = useRankStore((s) => s.set);
   const { view, toggle } = useView('max');
+  // **[미구현] 은 관리자만 본다** (v3 maxUnrelAllowed). 켜 둔 값이 저장소에 남아 있어도
+  // 관리자가 아니면 안 보여 준다 — 체크만 감추면 옛 값이 그대로 살아 미구현 줄이 새어 나간다.
+  // 게임에 없는 개체가 일반 화면에 뜨는 것은 v3.61.2 에 긴급으로 막았던 바로 그 자리다
+  const admin = useAuthStore((s) => s.admin);
+  const unrel = checked && admin;
 
   const table = axis === 'tank' ? max.DMAX_TANK : axis === 'dealer' ? max.DMAX_DATA : max.DMAX_TIER;
   const all = table[boss] ?? [];
   const rows = all.filter((row) => unrel || !row.unrel);
+  // 지금 고른 속성에 미구현이 있기는 한가 — **세 표를 다 본다** (v3 maxHasUnreleased).
+  // 보고 있는 표만 보면 축을 옮길 때 체크가 나타났다 사라진다
+  const hasUnrel = [max.DMAX_TIER, max.DMAX_DATA, max.DMAX_TANK]
+    .some((one) => (one?.[boss] ?? []).some((row) => row.unrel));
   const typeName = boss === 'overall' ? '' : (dex.TYPE_KO[boss] ?? boss);
   const title = axis === 'tank'
     ? (boss === 'overall' ? 'D-MAX 탱커 (중립 · 순수 내구)' : `${typeName} 보스 상대 D-MAX 탱커`)
@@ -92,11 +102,11 @@ export function Dmax({ onOpen }: { onOpen: OpenMon }) {
       </Slot>
       <Slot name="headActions">
         {/* 표에 미구현이 한 줄도 없는 칩에서는 아예 안 그린다 (v3 maxHasUnreleased) */}
-        {all.some((row) => row.unrel) ? (
+        {admin && hasUnrel ? (
           <CheckToggle
             text="미구현"
             title="게임 파일에 데이터는 있지만 아직 못 쓰는 개체를 함께 봐요 — 왼쪽에 빨간 막대가 서고, 순위는 그것들이 나왔다고 가정한 가상 판이 돼요"
-            checked={unrel}
+            checked={checked}
             onChange={(next) => set('maxShowUnrel', next)}
           />
         ) : null}

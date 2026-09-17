@@ -25,8 +25,17 @@ interface RankState {
 
 const UNREL_KEY = 'pogo_max_unrel';   // v3 와 같은 키
 
+/**
+ * **v3 와 같은 값을 쓴다** — '1' 이 켬, '0' 이 끔.
+ * 같은 키에 다른 낱말('on'/'off')을 넣고 있었다. 키가 같아도 뜻이 다르면 다른 키다 —
+ * v3 에서 켜 둔 관리자가 v4 에서는 꺼진 채로 열렸다.
+ * 읽을 때는 'on' 도 받아 준다 — dev 에서 v4 를 먼저 만져 본 값이 남아 있을 수 있다
+ */
 function readUnrel(): boolean {
-  try { return localStorage.getItem(UNREL_KEY) === 'on'; } catch { return false; }
+  try {
+    const saved = localStorage.getItem(UNREL_KEY);
+    return saved === '1' || saved === 'on';
+  } catch { return false; }
 }
 
 export const useRankStore = create<RankState>((set) => ({
@@ -40,7 +49,7 @@ export const useRankStore = create<RankState>((set) => ({
   maxShowUnrel: readUnrel(),
   set: (key, value) => {
     if (key === 'maxShowUnrel') {
-      try { localStorage.setItem(UNREL_KEY, value ? 'on' : 'off'); } catch { /* 저장 불가 환경 */ }
+      try { localStorage.setItem(UNREL_KEY, value ? '1' : '0'); } catch { /* 저장 불가 환경 */ }
     }
     set({ [key]: value } as Pick<RankState, typeof key>);
   },

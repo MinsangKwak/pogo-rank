@@ -27,7 +27,7 @@ export function makeMockApi(adminUid: string): AuthApi {
   let db: Record<string, DocData> = {};
   try { db = mode === 'reset' ? {} : JSON.parse(localStorage.getItem(DB_KEY) || '{}'); } catch { db = {}; }
   // 승인된 친구는 허용 목록에 있어야 'ok' 가 된다 (규칙과 같은 뜻)
-  db['allowlist/friend@mock.local'] ??= { approved: true };
+  db['allowlist/friend@mock.local'] ??= { approved: true, name: '로컬 테스트 (친구)', at: new Date().toISOString() };
   // ★ 를 v3 dev-mock.js 와 **같은 값으로** 심는다 — 다르면 나란히 놓고 비교할 때
   // 화면이 틀린 것인지 씨앗이 다른 것인지 구분이 안 된다. 실제 도감번호만 쓴다
   db[`users/${users['1']!.uid}`] ??= { email: 'admin@mock.local', name: '로컬 테스트 (관리자)', favs: [150, 384, 383, 149, 68, 143, 302, 227, 25] };
