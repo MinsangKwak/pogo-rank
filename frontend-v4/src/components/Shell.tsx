@@ -18,6 +18,7 @@ import { track } from '../lib/track';
 import { PxIcon } from './PxIcon';
 import { routeNote } from '../lib/notes';
 import Account from './Account';
+import Trainers from './Trainers';
 
 function NavItem({ route, now }: { route: RouteDef; now: string }) {
   return (
@@ -170,7 +171,7 @@ function NavExtra({ onConsent }: { onConsent: () => void }) {
         <span className="drawer__label">통계·저장소 설정</span>
       </button>
       <p className="drawer__meta">
-        PvPoke · PokeMiners 데이터<br />기준일 {meta.DATA_FETCHED} · 매일 00시 자동 갱신
+        PvPoke · PokeMiners 데이터<br />{`기준일 ${meta.DATA_TIMESTAMP} · 매일 00시 자동 갱신`}
       </p>
     </div>
   );
@@ -249,7 +250,7 @@ export function Footer({ onConsent }: { onConsent: () => void }) {
 }
 
 /** ☰ 를 누르면 열리는 서랍 — 좁은 화면에서 왼쪽 메뉴 대신 쓴다 */
-export function Drawer({ open, onClose, now }: { open: boolean; onClose: () => void; now: string }) {
+export function Drawer({ open, onClose, now, onConsent }: { open: boolean; onClose: () => void; now: string; onConsent: () => void }) {
   useEffect(() => {
     if (!open) return;
     const onKey = (event: KeyboardEvent) => { if (event.key === 'Escape') onClose(); };
@@ -266,6 +267,9 @@ export function Drawer({ open, onClose, now }: { open: boolean; onClose: () => v
         </div>
         {/* 로그인 상태는 ☰ 메뉴 맨 위 한 곳에서만 보인다 (v3 v2.29.0 에 헤더 👤 를 없애며 정한 자리) */}
         <Account onGo={onClose} />
+        {/* 서랍은 세 덩이로 읽힌다 — 👤 마이페이지 · 서비스(갈 곳) · 정보(그 밖).
+            제목은 좁은 화면에만 단다: 넓은 화면의 왼쪽 메뉴는 갈 곳만 있는 자리라 또 적을 이유가 없다 */}
+        <h2 className="drawer__sec">서비스</h2>
         <nav className="nav-menu" aria-label="서비스 이동">
           <a href="#/" className="drawer__item" onClick={onClose}>
             <span className="drawer__ico" aria-hidden="true"><PxIcon emoji="🏠" /></span>
@@ -282,8 +286,11 @@ export function Drawer({ open, onClose, now }: { open: boolean; onClose: () => v
             </div>
           ))}
         </nav>
-        {/* 기준 안내는 본문이 아니라 여기 산다 — 늘 보이면 목록보다 긴 글이 화면을 밀어낸다 (v3 #note-acc) */}
+        {/* 정보 덩이는 **카드 한 장으로** 묶는다 — 아코디언과 바깥 링크가 따로 놀면 항목마다 테두리가
+            따로 생겨 '목록' 이 아니라 '버튼 무더기' 로 읽힌다 (v3 infoGroup). 버전 줄은 카드 밖이다 */}
+        <h2 className="drawer__sec">정보</h2>
         <div className="drawer__group">
+          {/* 기준 안내는 본문이 아니라 여기 산다 — 늘 보이면 목록보다 긴 글이 화면을 밀어낸다 (v3 #note-acc) */}
           <details className="schedule" id="note-acc">
             <summary>
               <span className="drawer__ico" aria-hidden="true"><PxIcon emoji="ℹ️" /></span>
@@ -291,10 +298,21 @@ export function Drawer({ open, onClose, now }: { open: boolean; onClose: () => v
             </summary>
             <p className="note" id="note">{routeNote(now)}</p>
           </details>
+          <Trainers />
+          {/* **좁은 화면에서는 여기가 유일한 메뉴다.** 이 줄들이 없으면 휴대폰에서
+              설정 · 약관 · 개인정보 · 패치노트 · 통계 설정으로 갈 길이 통째로 사라진다 */}
+          <NavExtra onConsent={onConsent} />
         </div>
+        <Version />
       </aside>
     </div>
   );
+}
+
+/** 서랍 맨 아래 한 줄 (v3 versionMeta). 판 번호는 빌드가 실어 준 값만 쓴다 — 손으로 적지 않는다 */
+function Version() {
+  const { data: meta } = useMeta();
+  return <p className="drawer__meta">{`moncamp · ${meta.APP_VERSION}`}</p>;
 }
 
 /** 맨 위로 — 좀 내려가면 나타난다 */

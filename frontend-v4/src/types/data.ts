@@ -245,6 +245,10 @@ export interface MetaBundle {
   CONTACT_EMAIL: string;
   /** 이 문자열이 바뀌면 ☰ 에 빨간 점이 뜬다 — 날짜나 항목 수를 비교하지 않는다 */
   RELEASE_VER: string;
+  /** 서랍 맨 아래에 적는 판 번호 (v3 머리줄의 .app-bar__version 과 같은 값) */
+  APP_VERSION: string;
+  /** 데이터 기준 시각. DATA_FETCHED(날짜만) 와 다른 값이다 — 서랍의 '기준일' 은 이쪽이다 */
+  DATA_TIMESTAMP: string;
   /**
    * 로그인 설정 — 빌드가 환경변수에서 읽어 넣는다.
    * **apiKey 가 비면 로그인 기능 자체가 꺼진다** (v3 authEnabled 와 같은 규칙) — 눌러도 안 되는

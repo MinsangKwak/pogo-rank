@@ -226,7 +226,7 @@ export default function App() {
       {invite !== null ? <LoginInvite screen={invite} onClose={closeInvite} /> : null}
 
       <ToTop />
-      <Drawer open={menuOpen} onClose={() => setMenuOpen(false)} now={route.id} />
+      <Drawer open={menuOpen} onClose={() => setMenuOpen(false)} now={route.id} onConsent={() => setConsentOpen(true)} />
     </SlotProvider>
   );
 }

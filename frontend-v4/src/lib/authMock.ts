@@ -32,6 +32,7 @@ export function makeMockApi(adminUid: string): AuthApi {
   // 화면이 틀린 것인지 씨앗이 다른 것인지 구분이 안 된다. 실제 도감번호만 쓴다
   db[`users/${users['1']!.uid}`] ??= { email: 'admin@mock.local', name: '로컬 테스트 (관리자)', favs: [150, 384, 383, 149, 68, 143, 302, 227, 25] };
   db['users/mock-friend'] ??= { email: 'friend@mock.local', name: '로컬 테스트 (친구)', favs: [150, 6, 302] };
+  db['trainers/테스트 트레이너'] ??= { name: '테스트 트레이너', code: '000000000000', order: 0 };
   const save = () => { try { localStorage.setItem(DB_KEY, JSON.stringify(db)); } catch { /* 저장 불가 환경 */ } };
   save();
 
@@ -46,6 +47,12 @@ export function makeMockApi(adminUid: string): AuthApi {
     async getDoc(path) { return db[path] ?? null; },
     async setDoc(path, data) { db[path] = { ...(db[path] ?? {}), ...data }; save(); },
     async deleteDoc(path) { delete db[path]; save(); },
+    async listDocs(path) {
+      const head = `${path}/`;
+      return Object.entries(db)
+        .filter(([key]) => key.startsWith(head) && !key.slice(head.length).includes('/'))
+        .map(([key, value]) => ({ id: key.slice(head.length), ...value }));
+    },
     async arrayEdit(path, field, value, add) {
       const now = Array.isArray(db[path]?.[field]) ? (db[path]![field] as number[]) : [];
       db[path] = { ...(db[path] ?? {}), [field]: add ? [...new Set([...now, value])] : now.filter((one) => one !== value) };

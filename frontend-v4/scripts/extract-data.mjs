@@ -85,6 +85,11 @@ for (const name of ['data.js', 'data-lazy.js']) {
     `var ADMIN_UID = ${JSON.stringify(str('ADMIN_UID'))};`,
     `var ADMIN_EMAIL = ${JSON.stringify(str('ADMIN_EMAIL'))};`,
     `var FIREBASE_CONFIG = ${json};`,
+    // 판 번호는 머리줄에 글자로 박혀 있다 — 선언이 아니라서 거기서 꺼낸다 (v3 app-shell.js 도 같은 자리를 읽는다)
+    `var APP_VERSION = ${JSON.stringify(/app-bar__version">([^<]*)</.exec(html)?.[1] ?? '')};`,
+    // 데이터 기준일도 마찬가지 — 빌드가 게임 마스터의 timestamp 를 서랍 글자에 박아 넣는다.
+    // **DATA_FETCHED 와 다른 값이다**(그쪽은 날짜만) — 같은 줄에 다른 값을 적으면 v3 와 어긋난다
+    `var DATA_TIMESTAMP = ${JSON.stringify(/기준일 ([^·]*) ·/.exec(html)?.[1]?.trim() ?? '')};`,
   ].join('\n'), sandbox, { filename: 'index.html' });
 }
 
@@ -120,7 +125,7 @@ const BUNDLES = {
   usage: [['USAGE_PLACES', 'VALUE_DATA.usage_places'], ['METER', 'VALUE_DATA.meter']],
   // RELEASE_VER 은 **본문이 아니라 판 번호 하나**다 — 셸의 빨간 점이 첫 화면부터 이 값을 봐야 해서
   // 50KB 본문(release.json)이 아니라 여기 함께 싣는다
-  meta: ['RANK_DELTA_DATE', 'RANK_FRESH_DAYS', 'DATA_FETCHED', 'DATA_STALE', 'CONTACT_EMAIL', 'RELEASE_VER', 'FIREBASE_CONFIG', 'ADMIN_UID', 'ADMIN_EMAIL'],
+  meta: ['RANK_DELTA_DATE', 'RANK_FRESH_DAYS', 'DATA_FETCHED', 'DATA_STALE', 'CONTACT_EMAIL', 'RELEASE_VER', 'APP_VERSION', 'DATA_TIMESTAMP', 'FIREBASE_CONFIG', 'ADMIN_UID', 'ADMIN_EMAIL'],
   // 패치노트는 첫 화면이 한 글자도 안 쓴다 — 제 묶음으로 갈라 그 화면을 열 때만 받는다 (v3 v3.46.0 과 같은 판단)
   release: ['RELEASE_NOTES', 'RELEASE_VER', 'RELEASE_NOTES_EN'],
   // 영문 사전도 EN 을 켠 사람만 받는다. **규칙(I18N_PATTERNS)은 정규식이라 JSON 에 그대로 못 담는다** —

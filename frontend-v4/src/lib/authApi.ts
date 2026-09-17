@@ -22,6 +22,8 @@ export interface AuthApi {
   getDoc(path: string): Promise<DocData | null>;
   setDoc(path: string, data: DocData): Promise<void>;
   deleteDoc(path: string): Promise<void>;
+  /** 컬렉션 하나를 통째로 읽는다. 문서 id 를 `id` 로 붙여 준다 (트레이너 코드 목록) */
+  listDocs(path: string): Promise<(DocData & { id: string })[]>;
   /** 배열 필드를 통째로 덮어쓰지 않고 한 값만 넣고 뺀다 (다른 기기의 변경과 부딪히지 않게) */
   arrayEdit(path: string, field: string, value: number, add: boolean): Promise<void>;
 }
@@ -87,6 +89,11 @@ async function makeFirebaseApi(config: Record<string, string>): Promise<AuthApi>
       await store.setDoc(ref(path), { ...data, updatedAt: store.serverTimestamp() }, { merge: true });
     },
     async deleteDoc(path) { await store.deleteDoc(ref(path)).catch(() => { /* 없으면 그만 */ }); },
+    async listDocs(path) {
+      // 승인 전에는 규칙이 읽기를 막는다 — 실패는 조용히 빈 목록이다 (v3 loadTrainers 와 같다)
+      const snapshot = await store.getDocs(store.collection(db, path)).catch(() => null);
+      return snapshot ? snapshot.docs.map((one) => ({ id: one.id, ...(one.data() as DocData) })) : [];
+    },
     async arrayEdit(path, field, value, add) {
       await store.setDoc(ref(path), {
         [field]: add ? store.arrayUnion(value) : store.arrayRemove(value),
