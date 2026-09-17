@@ -166,8 +166,9 @@ suite(async () => {
     await p2.goto('http://localhost:5503/#/ivrank', { waitUntil: 'domcontentloaded' });
     await waitSplash(p2);
     await p2.waitForTimeout(600);
-    ok('로그인 없이는 잠긴 화면', (await p2.locator('.plan__lock').count()) === 1);
-    ok('잠겼을 때 본문은 안 그린다', (await p2.locator('.ivrank__pick').count()) === 0);
+    // v3.59.0 PvP 개체값 순위도 열어 둔다 — 내 개체를 저장하지 않고 조회만 하는 화면이다
+    ok('로그인 없이도 열린다', (await p2.locator('.plan__lock:visible').count()) === 0);
+    ok('본문이 그려진다', (await p2.locator('.ivrank__pick').count()) > 0);
     await anon.close();
   }
 

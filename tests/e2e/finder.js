@@ -115,7 +115,8 @@ suite(async () => {
     await gp.goto('http://localhost:5503/#/finder', { waitUntil: 'domcontentloaded' });
     await waitSplash(gp);
     await gp.waitForTimeout(500);
-    ok('로그인 안 하면 잠긴다', (await gp.locator('.finder').count()) === 0);
+    // v3.59.0 검색식 만들기는 열어 둔다 — 로그인 없이도 쓸 수 있는 도구다
+    ok('로그인 없이도 열린다', (await gp.locator('.finder').count()) > 0);
     ok('잠금 안내가 왜 막혔는지 말한다', /검색식/.test(await gp.locator('#page').textContent()));
     await guest.close();
   }

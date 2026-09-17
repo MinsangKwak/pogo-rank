@@ -41,15 +41,19 @@ const BASE = 'http://localhost:5503/?mock=1';
   ok('로그아웃 확인', (await page.evaluate(() => AUTH.status)) === 'anon');
   ok('메뉴 줄 잠김', (await page.locator('#menu-planner').getAttribute('aria-disabled')) === 'true');
   ok('홈 타일 잠김', (await page.locator('#home-tile-planner').getAttribute('aria-disabled')) === 'true');
-  // 2026-09-10 v2.48.1 잠그는 화면이 늘었다 — 육성 플래너 · 배틀 PvP · 이벤트 일정 · 레이드 보스 · 알 부화.
-  // 도감 · 타입 & 상성 · D-MAX · 레이드 PvE 는 로그인 없이 쓰는 화면이라 잠기면 안 된다
+  // 2026-09-17 v3.59.0 **잠그는 화면을 둘로 좁혔다** — 육성 플래너 · 내 포켓몬.
+  // 둘 다 내 개체를 적어 두는 자리라 계정이 있어야 뜻이 있다.
+  // 읽기만 하는 화면(일정·레이드·알·티어표·PvP·검색식)은 열어 둔다 —
+  // 처음 온 사람이 볼 것이 없으면 가입할 이유도 생기지 않는다
   const lockedLabels = await page.locator('.nav-menu a[aria-disabled="true"] .drawer__label').allTextContents();
-  // 2026-09-11 v2.58.0 🔎 검색식 만들기가 늘어 일곱 · 2026-09-12 v2.66.0 내 포켓몬이 돌아와 여덟이다
-  ok('잠긴 메뉴 줄이 정확히 여덟', lockedLabels.join('|') === '이벤트 일정|레이드 보스|알 부화|레이드 · PvE|배틀 · PvP|육성 플래너|내 포켓몬|검색식 만들기', lockedLabels.join('|'));
+  ok('잠긴 메뉴 줄은 둘뿐', lockedLabels.join('|') === '육성 플래너|내 포켓몬', lockedLabels.join('|'));
   const openLabels = await page.locator('.nav-menu a:not([aria-disabled]) .drawer__label').allTextContents();
-  ok('로그인 없이 쓰는 화면은 안 잠긴다', ['포켓몬 도감', 'D-MAX'].every((t) => openLabels.includes(t)), openLabels.join('|'));
+  ok('읽는 화면은 안 잠긴다',
+    ['포켓몬 도감', 'D-MAX', '이벤트 일정', '레이드 보스', '알 부화', '레이드 · PvE', '배틀 · PvP', '검색식 만들기']
+      .every((t) => openLabels.includes(t)), openLabels.join('|'));
   const lockedTiles = await page.locator('.home__tile[aria-disabled="true"] strong').allTextContents();
-  ok('잠긴 홈 타일도 일곱', lockedTiles.length === 7, lockedTiles.join('|'));
+  // 타일은 하나다 — 내 포켓몬은 플래너의 하위 화면(parent)이라 홈에 타일이 없다(메뉴에만 선다)
+  ok('잠긴 홈 타일은 육성 플래너 하나', lockedTiles.join('|') === '육성 플래너', lockedTiles.join('|'));
   // 잠긴 타일을 눌러도 그 화면으로 가지 않는다 (대신 계정 카드가 열린다)
   // force: true — Playwright 는 aria-disabled 를 "누를 수 없음" 으로 보고 클릭을 거절하지만,
   // 실제 브라우저에서는 눌린다. 우리는 그 눌림을 받아 계정 카드를 여는 쪽을 택했으므로 강제로 누른다
@@ -90,15 +94,19 @@ const BASE = 'http://localhost:5503/?mock=1';
   await page.goto(BASE + '#/planner', { waitUntil: 'domcontentloaded' });
   await settle(1200);
   ok('주소로 들어가도 잠긴 화면', (await page.locator('.plan__lock').count()) === 1);
-  // 다른 잠긴 화면들도 주소로 들어가면 막힌다 — 메뉴만 흐리게 하고 주소로 들어가지면 잠근 게 아니다
-  for (const [hash, name] of [['#/raids', '레이드 보스'], ['#/eggs', '알 부화'], ['#/schedule', '이벤트 일정'], ['#/pvp', '배틀 PvP'], ['#/pve', '레이드 PvE']]) {
+  // 내 포켓몬도 주소로 들어가면 막힌다 — 메뉴만 흐리게 하고 주소로 들어가지면 잠근 게 아니다
+  // v3.59.0 반대쪽도 본다: 열어 둔 화면은 주소로 들어가면 **정말 열려야** 한다
+  for (const [hash, name] of [['#/planner/collection', '내 포켓몬']]) {
     await page.goto(BASE + hash, { waitUntil: 'domcontentloaded' });
     await settle(1400);
     // .first() 를 쓰면 안 된다 — 앞 화면(플래너)이 남긴 잠금 카드가 감춰진 채 .wrap 안에 남아 있어
     // 그쪽이 먼저 잡힌다. **보이는 것**만 센다
     ok(`${name} 주소도 잠긴 화면`, (await page.locator('.plan__lock:visible').count()) > 0);
   }
-  for (const [hash, name] of [['#/dex', '포켓몬 도감'], ['#/dmax', 'D-MAX']]) {
+  // v3.59.0 열어 둔 화면 — 메뉴만 열어 두고 주소로 들어가면 잠기는 일이 없어야 한다
+  for (const [hash, name] of [['#/dex', '포켓몬 도감'], ['#/dmax', 'D-MAX'],
+    ['#/raids', '레이드 보스'], ['#/eggs', '알 부화'], ['#/schedule', '이벤트 일정'],
+    ['#/pvp', '배틀 PvP'], ['#/pve', '레이드 PvE'], ['#/finder', '검색식 만들기']]) {
     await page.goto(BASE + hash, { waitUntil: 'domcontentloaded' });
     await settle(1400);
     ok(`${name} 는 잠기지 않는다`, (await page.locator('.plan__lock:visible').count()) === 0);

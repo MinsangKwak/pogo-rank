@@ -15,6 +15,11 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 const RELEASE_NOTES_EN = {
+  '2026-09-17 · v3.59.0': [
+    '**Event schedule, raid bosses, egg hatches, PvP and the search builder are open without signing in** — screens that used to be locked are now free to browse.',
+    '**Training Planner and My Pokémon need an account** — they record your own Pokémon, so they belong to a signed-in profile.',
+    '**The temporary trial is paused** — being locked out two hours after writing things down was worse than not starting.',
+  ],
   '2026-09-17 · v3.58.0': [
     '**Solo raid recommendations are more accurate** — against dual-type bosses we now use the moves a Pokémon actually carries, not its own typing.',
     '**For example** Shadow Chandelure is Ghost/Fire but only carries Fire moves, so it gets no Ghost bonus against a Psychic boss. We used to grant it anyway, overstating its damage by 60% and ranking it first.',

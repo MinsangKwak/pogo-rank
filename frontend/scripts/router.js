@@ -50,17 +50,17 @@ const ROUTES = [
   // 2026-09-12 v3.4.0 접힌 ★ 즐겨찾기(#/favs)도 여기로 — 저장해 둔 링크가 모르는 주소로 떨어지지 않게
   { id: 'dex', path: 'dex', kind: 'page', nav: '포켓몬 도감', icon: '📕', group: 'pick', legacy: ['types', 'favs'] },
   { id: 'dmax', path: 'dmax', kind: 'shell', tab: 'max', nav: 'D-MAX', icon: '✨', group: 'pick', legacy: ['rank/max'] },
-  { id: 'pve', path: 'pve', kind: 'shell', tab: 'pve', nav: '레이드 · PvE', icon: '⚔️', group: 'pick', locked: true, legacy: ['rank/pve'] },
-  { id: 'pvp', path: 'pvp', kind: 'shell', tab: 'pvp', nav: '배틀 · PvP', icon: '🃏', group: 'pick', locked: true, legacy: ['rank/pvp'] },
+  { id: 'pve', path: 'pve', kind: 'shell', tab: 'pve', nav: '레이드 · PvE', icon: '⚔️', group: 'pick', legacy: ['rank/pve'] },
+  { id: 'pvp', path: 'pvp', kind: 'shell', tab: 'pvp', nav: '배틀 · PvP', icon: '🃏', group: 'pick', legacy: ['rank/pvp'] },
   // 2026-09-16 v3.51.0 📢 게임 업데이트 — 게임 쪽 변경을 모아 읽는 상설 창구 (components/updates.js).
   // 잠그지 않는다: 무엇이 바뀌었는지는 로그인 여부와 상관없이 누구나 읽을 수 있어야 한다
   { id: 'game-updates', path: 'game-updates', kind: 'page', nav: '게임 업데이트', icon: '📢', group: 'today' },
-  { id: 'schedule', path: 'schedule', kind: 'page', nav: '이벤트 일정', icon: '📅', group: 'today', locked: true },
-  { id: 'raids', path: 'raids', kind: 'page', nav: '레이드 보스', icon: '⚔️', group: 'today', locked: true },
-  { id: 'eggs', path: 'eggs', kind: 'page', nav: '알 부화', icon: '🥚', group: 'today', locked: true },
+  { id: 'schedule', path: 'schedule', kind: 'page', nav: '이벤트 일정', icon: '📅', group: 'today' },
+  { id: 'raids', path: 'raids', kind: 'page', nav: '레이드 보스', icon: '⚔️', group: 'today' },
+  { id: 'eggs', path: 'eggs', kind: 'page', nav: '알 부화', icon: '🥚', group: 'today' },
   // 2026-09-11 v2.58.0 백로그 QA-57. 다른 잠긴 화면과 같은 규칙으로 로그인해야 열린다 —
   // 만든 검색식이 이 브라우저에 남는 개인 설정이라, 계정을 가진 사람의 것으로 다룬다
-  { id: 'finder', path: 'finder', kind: 'page', nav: '검색식 만들기', icon: '🔎', group: 'mine', locked: true },
+  { id: 'finder', path: 'finder', kind: 'page', nav: '검색식 만들기', icon: '🔎', group: 'mine' },
 
   // ── 화면 아래 화면 ───────────────────────────────────────────────────────
   // 2026-09-12 v2.66.0 한 화면이 여러 기능을 겸하지 않는다.
@@ -72,13 +72,13 @@ const ROUTES = [
   // 그대로 옮기므로, 화면을 그리는 쪽은 지금까지와 똑같이 state 만 읽으면 된다.
   // parent 는 화면 머리 브레드크럼에 한 칸을 더한다 (🏠 › 배틀 · PvP › 개체값 순위).
   // nav 가 없으니 메뉴에는 뜨지 않는다 — 갈 길은 부모 화면의 버튼 하나뿐이다
-  { id: 'pvp-deck', path: 'pvp/deck', kind: 'shell', tab: 'pvp', tool: 'deck', parent: 'pvp', title: '덱 짜기', icon: '🃏', locked: true },
+  { id: 'pvp-deck', path: 'pvp/deck', kind: 'shell', tab: 'pvp', tool: 'deck', parent: 'pvp', title: '덱 짜기', icon: '🃏' },
   // 2026-09-15 v3.32.0 맥스 배틀에 데려갈 셋을 보스별로 고른다. PvP 덱 짜기와 같은 문법(부모 화면의 버튼 하나로만 간다).
   // locked 를 달지 않는다 — 잠금은 app.js 가 **탭 단위**로 건다(max → 'dmax'). 부모인 D-MAX 가 누구나 보는 화면이라
   // 자식 도구만 잠글 방법도 없고, 잠글 이유도 없다. 여기 locked 를 적어 두면 아무 일도 안 하면서 표만 거짓이 된다
   { id: 'dmax-deck', path: 'dmax/deck', kind: 'shell', tab: 'max', tool: 'deck', parent: 'dmax', title: '덱 짜기', icon: '🧩' },
-  { id: 'ivrank', path: 'pvp/ivrank', kind: 'shell', tab: 'pvp', tool: 'ivrank', parent: 'pvp', title: 'PvP 개체값 순위', icon: '🧬', locked: true, legacy: ['ivrank'] },
-  { id: 'pve-solo', path: 'pve/solo', kind: 'shell', tab: 'pve', tool: 'solo', parent: 'pve', title: '솔플 계산기', icon: '🧮', locked: true },
+  { id: 'ivrank', path: 'pvp/ivrank', kind: 'shell', tab: 'pvp', tool: 'ivrank', parent: 'pvp', title: 'PvP 개체값 순위', icon: '🧬', legacy: ['ivrank'] },
+  { id: 'pve-solo', path: 'pve/solo', kind: 'shell', tab: 'pve', tool: 'solo', parent: 'pve', title: '솔플 계산기', icon: '🧮' },
   // 2026-09-10 v2.47.0 메뉴에서 내렸다 — '내 포켓몬' 과 '육성 플래너' 가 메뉴에 따로 있어
   // 같은 곳으로 가는 문이 둘로 보였다.
   // 2026-09-12 v2.66.0 다시 올린다. 문이 둘이던 것이 문제였지 화면이 둘인 것이 문제가 아니었다 —
@@ -131,10 +131,13 @@ const ROUTE_NAV = (() => {
 // 로그인 기능이 꺼진 빌드(FIREBASE_CONFIG 비어 있음)에서는 잠그지 않는다 —
 // 로그인할 방법이 없는데 잠그면 그 빌드에서는 영영 못 여는 화면이 된다.
 // 실제 데이터 차단은 Firestore 규칙이 하고, 여기서 하는 것은 화면을 여닫는 일이다
-// 2026-09-12 v3.18.0 **임시** — 잠긴 화면을 전부 연다. 가입 유도보다 먼저 쓰게 하는 쪽을 택했다.
-// ROUTES.locked 표는 그대로 두고 여기서만 가른다 — 되돌릴 때는 아래 상수 하나만 false 로.
+// 2026-09-12 v3.18.0 **임시** — 잠긴 화면을 전부 열었다. 가입 유도보다 먼저 쓰게 하는 쪽을 택했다.
+// 2026-09-17 v3.59.0 **되돌린다.** 잠글 화면을 둘로 좁히고(아래 ROUTES) 이 스위치를 끈다.
+//   전부 열어 두는 동안 잠금 장치는 만들어져 있으면서 한 번도 걸리지 않았다 — 표만 참이고 동작은 거짓이었다.
+//   지금 잠그는 것은 **육성 플래너 · 내 포켓몬 둘뿐**이다. 읽기만 하는 화면(일정·레이드·알·티어표)은
+//   열어 둔다 — 처음 온 사람이 볼 것이 없으면 가입할 이유도 생기지 않는다.
 // 회귀가 잠금 동작을 계속 검사할 수 있도록 localStorage pogo_lock_open = 'off' 면 잠금이 살아난다
-const LOCK_OPEN_ALL = true;
+const LOCK_OPEN_ALL = false;
 function lockOpenAll() {
   if (!LOCK_OPEN_ALL) return false;
   try { return localStorage.getItem('pogo_lock_open') !== 'off'; } catch { return true; }
@@ -144,8 +147,10 @@ function routeLocked(id) {
   const route = ROUTES.find((entry) => entry.id === id);
   if (!route?.locked) return false;
   if (lockOpenAll()) return false;
-  // 2026-09-12 v3.16.0 잠시 써보기 중이면 잠그지 않는다 (components/trial.js) — 잠금을 정하는 자리가 여기 하나라 화면·메뉴·홈 타일이 함께 열린다
-  if (typeof trialActive === 'function' && trialActive()) return false;
+  // 2026-09-12 v3.16.0 잠시 써보기 중이면 잠그지 않았다 (components/trial.js).
+  // 2026-09-17 v3.59.0 **뺀다.** 남은 잠금은 내 개체를 기록하는 두 화면뿐인데, 두 시간 뒤 잠기면
+  //   적어 둔 것을 못 보게 된다 — 체험이 아니라 손해다. 읽기만 하는 화면은 아예 안 잠그므로
+  //   체험으로 열어 줄 것도 없다. 코드는 남긴다 (trial.js TRIAL_ENABLED 로 꺼 둔다)
   // 2026-09-16 v3.49.1 판정 중에는 잠그지 않는다 — 이 기기에 로그인 자취가 있을 때만 'loading' 이라 곧 열릴 화면이고,
   // 잠갔다 여는 깜빡임은 "로그아웃됐다" 로 읽힌다 (components/auth.js authStoredUser)
   if (typeof AUTH !== 'undefined' && AUTH.status === 'loading') return false;
