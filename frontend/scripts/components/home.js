@@ -85,7 +85,10 @@ function homePickGroup(pick) {
       el('p', { class: 'pick__hint' }, pick.hint),
       ...(pick.route ? [el('a', { class: 'pick__all', href: routeHash(pick.route) }, '전체 보기 ', pxIcon('↗') ?? '↗')] : [])),
     el('div', { class: 'pick__grid' },
-      el('button', { class: 'pick__hero', type: 'button', 'aria-label': `1위 ${first.name}`, onclick: () => homePickOpen(pick, first, 0) }, sprite(first.sprite)),
+      el('button', { class: 'pick__hero', type: 'button', 'aria-label': `1위 ${first.name}`, onclick: () => homePickOpen(pick, first, 0) },
+        el('span', { class: 'pick__spotlight', 'aria-hidden': 'true' }, 'NO.01'),
+        sprite(first.sprite),
+        el('span', { class: 'pick__inspect', 'aria-hidden': 'true' }, '상세 보기 ↗')),
       el('ol', { class: 'pick__list' }, ...rows.map((pokemon, index) => homePickRow(pick, pokemon, index)))));
 }
 
