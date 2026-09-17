@@ -23,6 +23,9 @@
 //   - 등급의 100% 기준이 출시분 1위인가 (미구현은 100% 를 넘을 수 있다)
 //   - 펼친 근거 줄에 순위 0 이 안 나오는가 (탭마다 행이 복사본이라 객체로 찾으면 못 찾는다)
 //   - **덱 짜기·솔플 후보에는 안 들어가는가** — 순위표는 "있으면 이쯤" 이지만 덱은 지금 데려갈 수 있는 것만
+//   - v3.61.2 (긴급) **도감 검색에 게임에 없는 폼이 안 나오는가** — '자마젠타' 에 거다이맥스가 떠 있었다
+//   - v3.61.2 관리자는 그대로 보는가 (감추는 것은 화면이지 데이터가 아니다)
+//   - v3.61.2 공유 링크(#/mon/…)는 계속 열리는가
 //   - 도감의 미출시 메가가 딱지로 뜨는가 (메가 폭타)
 //   - 도감 줄에서 메가 딱지가 눕지 않는가 (PC 줄 모드 격자에 자리가 없어 '메/가' 로 세로로 눕던 자리)
 //   - EN 으로 바꿔도 한글이 남지 않는가
@@ -238,6 +241,48 @@ suite(async () => {
         .filter((node) => node.textContent.includes('미구현')).length);
     ok('후보 목록에도 미구현이 없다', candUnrel === 0, String(candUnrel));
   }
+
+  // ── 3.5 도감 검색에는 게임에 없는 폼이 안 나온다 (v3.61.2 긴급) ───────────
+  // 제보(실서비스 화면): '자마젠타' 를 찾으면 [거다이맥스 방패왕 자마젠타] 가 그냥 떠 있었다.
+  // D-MAX 표는 처음부터 관리자에게만 미구현을 여는데 검색 색인만 그 문을 안 잠갔다.
+  // **?mock 없이 연다** — 이 스위트의 page 는 mock 관리자로 로그인돼 있어 원래 다 보인다
+  {
+    const guestCtx = await newContext(browser, { viewport: { width: 1440, height: 1000 } });
+    const guest = await guestCtx.newPage();
+    const search = async (query) => {
+      await guest.goto(`http://localhost:5503/#/dex?q=${encodeURIComponent(query)}`, { waitUntil: 'domcontentloaded' });
+      await waitSplash(guest);
+      await guest.waitForTimeout(700);
+      return guest.evaluate(() => [...document.querySelectorAll('.dex__row .dex__name b')].map((node) => node.textContent.trim()));
+    };
+    const zama = await search('자마젠타');
+    ok('도감 검색에 미구현 폼이 안 나온다', !zama.some((name) => name.startsWith('거다이맥스')), zama.join(', '));
+    ok('같은 종의 출시분은 그대로 나온다', zama.includes('방패왕 자마젠타'), zama.join(', '));
+    // 데이터가 든 미구현 거다이맥스가 하나라도 새면 이 검사가 잡는다
+    const gmax = await search('거다이맥스');
+    const gmaxUnrel = await guest.evaluate(() => {
+      const seen = new Map();
+      for (const table of [DMAX_DATA, DMAX_TIER, typeof DMAX_TANK === 'undefined' ? {} : DMAX_TANK]) {
+        for (const rows of Object.values(table ?? {})) for (const row of rows ?? []) if (!seen.has(row.name)) seen.set(row.name, !!row.unrel);
+      }
+      return [...seen].filter(([name, unrel]) => unrel && name.startsWith('거다이맥스')).map(([name]) => name);
+    });
+    ok('미구현 거다이맥스가 하나도 안 샌다',
+      gmaxUnrel.length > 0 && !gmax.some((name) => gmaxUnrel.includes(name)),
+      `데이터 ${gmaxUnrel.length}종 · 화면 ${gmax.length}종`);
+    // 감추는 것은 화면이지 데이터가 아니다 — 공유된 링크는 계속 열려야 한다
+    await guest.goto('http://localhost:5503/#/mon/889', { waitUntil: 'domcontentloaded' });
+    await waitSplash(guest);
+    await guest.waitForTimeout(900);
+    ok('미구현 폼 딥링크는 그대로 열린다', (await guest.locator('.modal__box .detail--mon').count()) > 0);
+    await guestCtx.close();
+  }
+  // 관리자(이 스위트의 page)는 그대로 본다 — 감춘 것은 화면이지 데이터가 아니다
+  await go('#/dex?q=' + encodeURIComponent('자마젠타'));
+  await page.waitForTimeout(600);
+  ok('관리자는 미구현 폼도 본다',
+    (await page.evaluate(() => [...document.querySelectorAll('.dex__row .dex__name b')].map((n) => n.textContent.trim())))
+      .some((name) => name.startsWith('거다이맥스')));
 
   // ── 4. 도감의 미출시 메가 ─────────────────────────────────────────────────
   await go('#/dex');

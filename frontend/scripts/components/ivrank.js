@@ -250,7 +250,8 @@ function renderIvRankPage() {
       $sugg.textContent = '';
       const query = $input.value.trim();
       if (!query) return;
-      const candidates = buildSearchIndex().filter((entry) => !/^(다이맥스|거다이맥스) /.test(entry.name));
+      // 미구현 폼도 뺀다 — 여기서 고르는 것은 **내가 실제로 가진 개체**다 (v3.61.2)
+      const candidates = searchVisible(buildSearchIndex()).filter((entry) => !/^(다이맥스|거다이맥스) /.test(entry.name));
       for (const hit of monSearch(candidates, query, 8)) {
         $sugg.append(monSuggestRow(hit, () => {
           picked.sprite = hit.sprite;

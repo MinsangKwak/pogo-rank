@@ -15,6 +15,10 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 const RELEASE_NOTES_EN = {
+  '2026-09-17 · v3.61.2': [
+    '**Pokémon that aren\u2019t in the game yet no longer show up in Pokédex search** — 16 data-only forms such as [Gigantamax Zamazenta (Crowned Shield)] were simply listed. Only what you can actually catch now appears.',
+    '**Same for IV rank and [Add a Pokémon] in My Pokémon** — those pick a Pokémon you actually own, so unreleased forms are out of the candidate list.',
+  ],
   '2026-09-17 · v3.61.1': [
     '**The menu\u2019s [My Pokémon — N] now counts what you saved** — it used to sit at 0 no matter what. Tap it to open the screen, and the number updates the moment you tap ★.',
     '**The [+ My Pokémon] button is gone from Pokémon pages** — while individual records are paused there was nowhere for it to lead.',
