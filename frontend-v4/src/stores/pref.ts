@@ -17,14 +17,37 @@ const COLS_KEY = (screen: string) => `pogo_${screen}_cols`;   // pogo_dex_cols �
 const COLS_GRID = '2';
 const COLS_LIST = '1';
 
-export type Theme = 'light' | 'dark';
+/**
+ * 테마는 **세 갈래**다 (v3 components/theme.js THEME_ORDER 와 같다).
+ *   system  기기 설정을 따른다 — <html> 의 data-theme 를 아예 떼어 둔다
+ *   light   늘 밝게
+ *   dark    늘 어둡게
+ * 헤더 버튼은 그중 둘만 돈다(지금 보이는 것의 반대). 세 갈래를 고르는 자리는 설정 화면이다 —
+ * "자주 뒤집는 것" 과 "한 번 정해 두는 것" 은 같은 자리에 있을 이유가 없다.
+ */
+export type Theme = 'system' | 'light' | 'dark';
+export const THEME_ORDER: readonly Theme[] = ['system', 'light', 'dark'];
+export const THEME_WORD: Record<Theme, string> = { system: '기기 설정', light: '밝게', dark: '어둡게' };
 
 function readTheme(): Theme {
   try {
     const saved = localStorage.getItem(THEME_KEY);
-    if (saved === 'light' || saved === 'dark') return saved;
+    if (saved === 'system' || saved === 'light' || saved === 'dark') return saved;
   } catch { /* 저장 불가 환경(사생활 보호 모드) — 기본값으로 간다 */ }
-  return window.matchMedia?.('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  return 'system';
+}
+
+/** 지금 실제로 어두운 화면인가 — '기기 설정' 은 기기에 물어봐야 안다 */
+export function themeIsDark(choice: Theme): boolean {
+  if (choice === 'dark') return true;
+  if (choice === 'light') return false;
+  return !!window.matchMedia?.('(prefers-color-scheme: dark)').matches;
+}
+
+function applyTheme(next: Theme) {
+  const root = document.documentElement;
+  if (next === 'system') root.removeAttribute('data-theme');
+  else root.dataset.theme = next;
 }
 
 /**
@@ -57,11 +80,12 @@ interface PrefState {
 export const usePrefStore = create<PrefState>((set, get) => ({
   theme: readTheme(),
   setTheme: (next) => {
-    document.documentElement.dataset.theme = next;
+    applyTheme(next);
     try { localStorage.setItem(THEME_KEY, next); } catch { /* 위와 같다 */ }
     set({ theme: next });
   },
-  toggleTheme: () => get().setTheme(get().theme === 'dark' ? 'light' : 'dark'),
+  // 버튼은 둘만 돈다 — **지금 보이는 것의 반대로**. '기기 설정' 에서 누르면 그 순간 화면의 반대가 된다
+  toggleTheme: () => get().setTheme(themeIsDark(get().theme) ? 'light' : 'dark'),
   cols: {},
   setCols: (screen, next) => {
     try { localStorage.setItem(COLS_KEY(screen), next === 'grid' ? COLS_GRID : COLS_LIST); } catch { /* 위와 같다 */ }
@@ -70,4 +94,4 @@ export const usePrefStore = create<PrefState>((set, get) => ({
 }));
 
 // 첫 그림 전에 <html data-theme> 을 맞춘다 — 늦으면 흰 화면이 한 번 번쩍인다
-document.documentElement.dataset.theme = usePrefStore.getState().theme;
+applyTheme(usePrefStore.getState().theme);

@@ -11,8 +11,58 @@ import { useDex } from '../lib/data';
 import { spriteSrc, spriteAnimSrc } from '../lib/sprite';
 import { PxIcon, PxLabel } from './PxIcon';
 
-// 움직이는 그림은 원본 크기가 제각각이라 상자에 맞춰 키운다. 2배까지만 — 더 키우면 도트가 뭉갠다
+// ── 움직이는 그림 (v3 components/sprite.js spriteAnimate · fitAnimZoom 이식) ──────
+//
+// GIF 는 출처가 둘이라 원본 크기가 제각각이다 — 23×19 부터 201×166 까지.
+// 상자에 맞추기만 하면 작은 종이 3배 넘게 늘어나 뭉개지므로 **정수배 2배**를 한도로 두고,
+// 남는 자리는 padding 으로 비운다 (img 를 직접 줄이면 목록 줄 높이가 그림마다 달라진다).
+//
+// **한 번 재고 끝내지 않는다.** 상자 크기는 화면마다 다르고(줄 42px · 카드 180px · 상세 72px)
+// 보기 전환·글꼴 도착·화면 회전으로 바뀐다. v3 는 ResizeObserver 로 그때마다 다시 맞추는데
+// v4 는 GIF 를 갈아 끼울 때 한 번만 재고 있었다 — 그래서 첫 목록에서 한 번 크게 잡히면
+// 그 화면을 떠났다 돌아오기 전까지 그대로 컸다 (제보: '맨 처음 리스트 때 이미지가 너무 커').
 const SPRITE_MAX_ZOOM = 2;
+export const SPRITE_ANIM_KEY = 'pogo_sprite_anim';   // 'off' 면 정지본만 (v3 와 같은 키)
+
+const zoomWatch = typeof ResizeObserver === 'function'
+  ? new ResizeObserver((entries) => { for (const entry of entries) fitZoom(entry.target as HTMLImageElement); })
+  : null;
+
+/** 움직이는 그림을 쓰는가 — 설정 화면이 정한다. 기본 켬 */
+export function spriteAnimEnabled(): boolean {
+  try { return localStorage.getItem(SPRITE_ANIM_KEY) !== 'off'; } catch { return true; }
+}
+
+// 설정을 body 클래스로도 알린다 — CSS 가 읽는 상태 표식이다 (v3 syncSpriteAnimClass)
+document.body?.classList.toggle('sprite-anim-off', !spriteAnimEnabled());
+
+/**
+ * 상자 안에서 그림을 키운다.
+ * **잴 때는 우리가 넣은 padding 을 먼저 뺀다** — 크기가 자동인 자리에서는 padding 이 상자를 키워
+ * 그림이 끝없이 자라는 되먹임이 된다 (v3.35.1 에 리틀리그 덱에서 겪었다).
+ */
+function fitZoom(image: HTMLImageElement) {
+  const natural = Math.max(Number(image.dataset['animW']) || 0, Number(image.dataset['animH']) || 0);
+  if (!natural) return;
+  // 화면이 원래 주던 여백은 지키고 그 위에 한도를 얹는다 — 인라인 padding 을 한 번 비워 CSS 값을 읽어 둔다
+  if (image.dataset['animPad'] === undefined) {
+    image.style.padding = '';
+    image.dataset['animPad'] = String(parseFloat(getComputedStyle(image).paddingTop) || 0);
+  }
+  const base = Number(image.dataset['animPad']);
+  const applied = image.style.padding;
+  if (applied) image.style.padding = '0px';
+  const box = Math.min(image.clientWidth, image.clientHeight);
+  if (!box) { if (applied) image.style.padding = applied; return; }
+  const room = Math.max(0, box - base * 2);
+  const want = Math.min(natural * SPRITE_MAX_ZOOM, room);
+  const next = `${Math.max(base, Math.round((box - want) / 2))}px`;
+  // 값이 그대로면 쓰지 않는다 — 쓰면 관찰자가 또 불려 헛돈다
+  if (next !== applied) image.style.padding = next;
+  else if (applied) image.style.padding = applied;
+  // 줄일 때는 부드럽게, 키울 때는 도트 그대로 — 도트를 줄이면 계단이 진다
+  image.style.imageRendering = natural > room ? 'auto' : '';
+}
 
 /**
  * 정지본 자리에 움직이는 그림을 **갈아 끼운다**.
@@ -20,33 +70,18 @@ const SPRITE_MAX_ZOOM = 2;
  * 받기에 실패하면 정지본 그대로 둔다. 움직임을 줄여 달라고 한 사람에게는 아예 갈지 않는다
  * (GIF 는 재생을 멈출 방법이 없다).
  */
-function animate(image: HTMLImageElement, url: string) {
+function animate(image: HTMLImageElement, url: string): () => void {
   const loader = new Image();
   loader.onload = () => {
     image.src = url;
     image.classList.add('sprite--anim');
-    fitZoom(image, Math.max(loader.naturalWidth, loader.naturalHeight));
+    image.dataset['animW'] = String(loader.naturalWidth);
+    image.dataset['animH'] = String(loader.naturalHeight);
+    fitZoom(image);
+    zoomWatch?.observe(image, { box: 'border-box' });
   };
   loader.src = url;
-}
-
-/**
- * 상자 안에서 그림을 키운다 (v3 fitAnimZoom).
- * **잴 때는 우리가 넣은 padding 을 먼저 뺀다** — 크기가 자동인 자리에서는 padding 이 상자를 키워
- * 그림이 끝없이 자라는 되먹임이 된다 (v3.35.1 에 리틀리그 덱에서 겪었다).
- */
-function fitZoom(image: HTMLImageElement, natural: number) {
-  if (!natural) return;
-  const applied = image.style.padding;
-  if (applied) image.style.padding = '0px';
-  const base = parseFloat(getComputedStyle(image).paddingTop) || 0;
-  const box = Math.min(image.clientWidth, image.clientHeight);
-  if (!box) { if (applied) image.style.padding = applied; return; }
-  const room = Math.max(0, box - base * 2);
-  const want = Math.min(natural * SPRITE_MAX_ZOOM, room);
-  image.style.padding = `${Math.max(base, Math.round((box - want) / 2))}px`;
-  // 줄일 때는 부드럽게, 키울 때는 도트 그대로 — 도트를 줄이면 계단이 진다
-  image.style.imageRendering = natural > room ? 'auto' : '';
+  return () => { loader.onload = null; zoomWatch?.unobserve(image); };
 }
 
 /** 포켓몬 그림. 없으면 몬스터볼 자리표시 (v3 spritePlaceholder 와 같은 자리) */
@@ -60,17 +95,21 @@ export function Sprite({ id, className }: { id: number; className?: string }) {
   useEffect(() => {
     const image = node.current;
     if (!image || !anim) return;
+    if (!spriteAnimEnabled()) return;
     if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return;
-    animate(image, anim);
+    return animate(image, anim);
   }, [anim]);
 
   if (!src || failed) {
     return <span className={`sprite empty${className ? ` ${className}` : ''}`} aria-hidden="true">◓</span>;
   }
+  // 저장소 배정 번호(90000번대)는 픽셀 스프라이트가 아니라 게임 내 3D 렌더 아이콘이라
+  // pixelated 로 축소하면 계단이 진다 — sprite--hd 로 부드럽게 그린다 (v3 v2.7.2)
+  const hd = Number(id) >= 90000 ? ' sprite--hd' : '';
   return (
     <img
       ref={node}
-      className={`sprite${className ? ` ${className}` : ''}`}
+      className={`sprite${hd}${className ? ` ${className}` : ''}`}
       src={src}
       alt=""
       width={64}

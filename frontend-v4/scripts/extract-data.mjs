@@ -52,6 +52,33 @@ for (const name of ['data.js', 'data-lazy.js']) {
   }
   vm.runInContext(text.slice(0, text.indexOf('\n', cut)), sandbox, { filename: 'schedule.js' });
 }
+
+// 패치노트 본문과 판 번호도 **화면 코드 안**에 손으로 적혀 있다.
+//   scripts/release-notes.js        RELEASE_NOTES (160판)
+//   components/release.js           RELEASE_VER  (빨간 점 판정에 쓰는 문자열 하나)
+// 둘 다 파일 전체를 돌리면 화면을 건드리므로 필요한 선언만 잘라 실행한다.
+// 손으로 옮겨 적지 않는다 — 사용자가 그대로 읽는 문구라 한 글자만 어긋나도 기록이 틀어진다
+{
+  vm.runInContext(readFileSync(resolve(repo, 'frontend/scripts/release-notes.js'), 'utf8'), sandbox, { filename: 'release-notes.js' });
+  const path = 'frontend/scripts/components/release.js';
+  const text = readFileSync(resolve(repo, path), 'utf8');
+  const line = text.split('\n').find((one) => one.startsWith('const RELEASE_VER'));
+  if (!line) {
+    console.error(`${path} 에서 'const RELEASE_VER' 을 못 찾았습니다 — 이름이 바뀌었는지 확인하세요.`);
+    process.exit(1);
+  }
+  vm.runInContext(line, sandbox, { filename: 'release.js' });
+}
+
+// 문의 이메일은 저장소에 없다 — 빌드가 환경변수에서 읽어 dist/index.html 에 박아 넣는다.
+// 그 값을 그대로 꺼내 쓴다 (약관·개인정보처리방침의 문의처가 이 한 곳을 본다).
+// 비어 있으면 v3 와 같이 '사이트 운영자' 로 적힌다
+{
+  const html = readFileSync(resolve(distV3, 'index.html'), 'utf8');
+  const hit = /const CONTACT_EMAIL = "([^"]*)"/.exec(html);
+  vm.runInContext(`var CONTACT_EMAIL = ${JSON.stringify(hit?.[1] ?? '')};`, sandbox, { filename: 'index.html' });
+}
+
 const readGlobal = (key) => vm.runInContext(`typeof ${key} === 'undefined' ? undefined : ${key}`, sandbox);
 
 // 파일 하나 = 같이 바뀌는 표 묶음.
@@ -70,7 +97,11 @@ const BUNDLES = {
   // 배지 숫자가 v3 와 하나 어긋나 찾았다: '거다이맥스 고릴타' 가 13곳인데 12곳으로 나왔고,
   // 나머지 1곳은 원종 '고릴타' 줄에 있었다 (v3 usagePlacesOf 가 이 표를 먼저 본다)
   usage: [['USAGE_PLACES', 'VALUE_DATA.usage_places'], ['METER', 'VALUE_DATA.meter']],
-  meta: ['RANK_DELTA_DATE', 'RANK_FRESH_DAYS', 'DATA_FETCHED', 'DATA_STALE'],
+  // RELEASE_VER 은 **본문이 아니라 판 번호 하나**다 — 셸의 빨간 점이 첫 화면부터 이 값을 봐야 해서
+  // 50KB 본문(release.json)이 아니라 여기 함께 싣는다
+  meta: ['RANK_DELTA_DATE', 'RANK_FRESH_DAYS', 'DATA_FETCHED', 'DATA_STALE', 'CONTACT_EMAIL', 'RELEASE_VER'],
+  // 패치노트는 첫 화면이 한 글자도 안 쓴다 — 제 묶음으로 갈라 그 화면을 열 때만 받는다 (v3 v3.46.0 과 같은 판단)
+  release: ['RELEASE_NOTES', 'RELEASE_VER'],
   schedule: ['SCHEDULE_MONTHS', 'SCHEDULE_CATS'],
 };
 

@@ -15,6 +15,7 @@
 import { useState } from 'react';
 import { useDex, useMax, useSchedule } from '../lib/data';
 import { pickMonth } from '../lib/schedule';
+import type { OpenMon } from '../lib/mon';
 import { Sprite } from './Bits';
 import { NameNode } from './Row';
 import type { DmaxRow } from '../types/data';
@@ -24,7 +25,7 @@ const BOSS_STEP = 5;   // [더보기] 한 번에 다섯 (v3 state.bossShow)
 const released = (rows: DmaxRow[] | undefined) => (rows ?? []).filter((row) => !row.unrel);
 
 export default function BossAcc({ onOpen, onGoBoss }: {
-  onOpen: (sprite: number, en?: string) => void;
+  onOpen: OpenMon;
   onGoBoss: (type: string) => void;
 }) {
   const { data: schedule } = useSchedule();
@@ -59,7 +60,7 @@ export default function BossAcc({ onOpen, onGoBoss }: {
 
   const rec = (row: DmaxRow, lead: string, sub?: string) => (
     <button key={`${row.sprite}-${lead}`} className="boss__rec"
-      onClick={(event) => { event.stopPropagation(); onOpen(row.sprite, row.en); }}>
+      onClick={(event) => { event.stopPropagation(); onOpen(row); }}>
       <Sprite id={row.sprite} />
       <span>{lead}<NameNode name={row.name} labels={dex.FORM_LABELS} /></span>
       {sub ? <small className="row__sub">{sub}</small> : null}

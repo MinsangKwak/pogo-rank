@@ -20,10 +20,11 @@ import {
   maxCp, raidCp, scaledPool, simulateRevive, type SoloPlan, type SoloTier,
 } from '../lib/solo';
 import { useFavStore } from '../stores/favs';
+import type { OpenMon } from '../lib/mon';
 import { track } from '../lib/track';
 import type { PveRow } from '../types/data';
 
-export default function SoloCalc({ onOpen }: { onOpen: (sprite: number, en?: string) => void }) {
+export default function SoloCalc({ onOpen }: { onOpen: OpenMon }) {
   const { data: dex } = useDex();
   const { data: max } = useMax();
   const { data: pve } = usePve();
@@ -184,7 +185,7 @@ export default function SoloCalc({ onOpen }: { onOpen: (sprite: number, en?: str
 function Result({ boss, tier, mode, plan, typeKo, cardOnly = false, onOpen }: {
   boss: BossEntry; tier: SoloTier; mode: 'auto' | 'mine'; plan: SoloPlan | null;
   typeKo: Record<string, string>; cardOnly?: boolean;
-  onOpen: (sprite: number, en?: string) => void;
+  onOpen: OpenMon;
 }) {
   if (!plan) return <p className="empty">데이터가 없어요.</p>;
   const typeLabel = boss.types.map((type) => typeKo[type] ?? type).join('·');
@@ -228,7 +229,7 @@ function Result({ boss, tier, mode, plan, typeKo, cardOnly = false, onOpen }: {
             rank={String(index + 1)}
             score={member.dps.toFixed(1)} sub={`DPS · TDO ${member.tdo}`}
             lines={[member.fast, member.charged]}
-            onOpen={() => onOpen(member.sprite, member.en)}
+            onOpen={() => onOpen(member)}
           />
         ))}
       </ul>

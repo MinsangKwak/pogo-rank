@@ -23,12 +23,13 @@
 // ─────────────────────────────────────────────────────────────────────────────
 import { useGameday, useDex } from '../lib/data';
 import { Sprite, ViewToggle } from '../components/Bits';
+import type { OpenMon } from '../lib/mon';
 import { Slot } from '../components/Slots';
 import { NameNode } from '../components/Row';
 import { usePrefStore, readCols } from '../stores/pref';
 import type { GamedayMon } from '../types/data';
 
-function MonCard({ mon, onOpen }: { mon: GamedayMon; onOpen: (sprite: number, en?: string) => void }) {
+function MonCard({ mon, onOpen }: { mon: GamedayMon; onOpen: OpenMon }) {
   const { data } = useDex();
   // v3 와 같은 순서·같은 구분자 — 없는 조각은 넣지 않는다
   const note = [
@@ -38,7 +39,7 @@ function MonCard({ mon, onOpen }: { mon: GamedayMon; onOpen: (sprite: number, en
     mon.shiny ? '✨' : '',
   ].filter(Boolean).join(' · ');
   return (
-    <button className="dex__row gameday__row" onClick={() => onOpen(mon.sprite)}>
+    <button className="dex__row gameday__row" onClick={() => onOpen({ sprite: mon.sprite, name: mon.name, types: mon.types })}>
       <Sprite id={mon.sprite} />
       <div className="gameday__main">
         <b><NameNode name={mon.name} labels={data.FORM_LABELS} /></b>
@@ -49,7 +50,7 @@ function MonCard({ mon, onOpen }: { mon: GamedayMon; onOpen: (sprite: number, en
 }
 
 function Grouped({ sections, view, onOpen }: {
-  sections: [string, GamedayMon[]][]; view: 'grid' | 'list'; onOpen: (sprite: number, en?: string) => void;
+  sections: [string, GamedayMon[]][]; view: 'grid' | 'list'; onOpen: OpenMon;
 }) {
   return (
     <>
@@ -99,7 +100,7 @@ function eggSections(eggs: Record<string, GamedayMon[]>): [string, GamedayMon[]]
   return buckets.map(({ distance, tail, list }) => [tail ? `${distance} 알 · ${tail}` : `${distance} 알`, list]);
 }
 
-export function Raids({ onOpen }: { onOpen: (sprite: number, en?: string) => void }) {
+export function Raids({ onOpen }: { onOpen: OpenMon }) {
   const { data } = useGameday();
   // 레이드 보스는 그림이 커서 넓은 화면이 아니어도 카드가 기본이다 (v3 layoutInitial(RAIDS_COLS_KEY, true))
   const view = usePrefStore((s) => s.cols['raids']) ?? readCols('raids', 'grid');
@@ -126,7 +127,7 @@ export function Raids({ onOpen }: { onOpen: (sprite: number, en?: string) => voi
   );
 }
 
-export function Eggs({ onOpen }: { onOpen: (sprite: number, en?: string) => void }) {
+export function Eggs({ onOpen }: { onOpen: OpenMon }) {
   const { data } = useGameday();
   const view = usePrefStore((s) => s.cols['eggs']) ?? readCols('eggs', 'grid');
   const setCols = usePrefStore((s) => s.setCols);

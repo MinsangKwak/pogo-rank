@@ -18,6 +18,7 @@ import { NameNode } from '../components/Row';
 import { weekBoss } from '../lib/schedule';
 import { MAX_DECK_SIZE, MAX_DECK_SLOTS, maxDeckAutoFill, maxDeckCandidates, maxDeckRowOf, maxDeckWhy, type MaxDeck } from '../lib/maxdeck';
 import { track } from '../lib/track';
+import type { OpenMon } from '../lib/mon';
 
 /** 주소에 실린 덱(?p=) — 숫자로 못 읽는 조각은 버린다 */
 function readHashIds(): number[] | null {
@@ -34,7 +35,7 @@ function readHashBoss(typeKo: Record<string, string>): string | null {
   return raw && (raw === 'overall' || typeKo[raw]) ? raw : null;
 }
 
-export default function DmaxDeck({ onOpen }: { onOpen: (sprite: number, en?: string) => void }) {
+export default function DmaxDeck({ onOpen }: { onOpen: OpenMon }) {
   const { data: dex } = useDex();
   const { data: max } = useMax();
   const { data: schedule } = useSchedule();
@@ -120,7 +121,7 @@ export default function DmaxDeck({ onOpen }: { onOpen: (sprite: number, en?: str
               <li className={`row deck-slot${row ? '' : ' is-empty'}`}
                 onClick={(event) => {
                   if ((event.target as HTMLElement).closest('.deck-slot__swap')) return;
-                  if (row) onOpen(row.sprite, row.en);
+                  if (row) onOpen(row);
                 }}>
                 <span className="row__rank">{index + 1}</span>
                 {row ? <Sprite id={row.sprite} /> : <span className="deck-slot__blank">—</span>}

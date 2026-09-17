@@ -12,6 +12,7 @@ import { usePrefStore, readCols } from '../stores/pref';
 import { TypeDot, Sprite, ViewToggle } from '../components/Bits';
 import { Slot } from '../components/Slots';
 import { track } from '../lib/track';
+import type { OpenMon } from '../lib/mon';
 
 // v3 pages.js DEX_GENS — 도감번호 구간으로 세대를 정한다
 const DEX_GENS: [number, number][] = [
@@ -50,7 +51,7 @@ function DexUse({ name }: { name: string }) {
   );
 }
 
-export default function Dex({ onOpen }: { onOpen: (sprite: number, en?: string) => void }) {
+export default function Dex({ onOpen }: { onOpen: OpenMon }) {
   const { data } = useDex();
   const [term, setTerm] = useState('');
   const [types, setTypes] = useState<string[]>([]);
@@ -146,7 +147,7 @@ export default function Dex({ onOpen }: { onOpen: (sprite: number, en?: string) 
             const form = row.form!;
             const gen = DEX_GENS.findIndex(([from, to]) => row.dex >= from && row.dex <= to);
             return (
-              <button key={row.dex} className="dex__row" data-sprite={row.dex} onClick={() => onOpen(row.dex)}>
+              <button key={row.dex} className="dex__row" data-sprite={row.dex} onClick={() => onOpen({ sprite: row.dex, name: row.name, types: form.types })}>
                 <span className="dex__no">#{String(row.dex).padStart(4, '0')}</span>
                 <Sprite id={row.dex} />
                 {/* 메가 딱지는 그림 **바로 뒤**, 이름 앞에 선다 — 이름 안에 넣었더니 이름 줄이 밀렸다 */}

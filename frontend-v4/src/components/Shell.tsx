@@ -10,7 +10,8 @@
 // ─────────────────────────────────────────────────────────────────────────────
 import { useEffect, useState } from 'react';
 import { ROUTE_GROUPS, ROUTE_NAV, routeById, routeDesc, type RouteDef } from '../routes';
-import { usePrefStore } from '../stores/pref';
+import { usePrefStore, themeIsDark, THEME_WORD, type Theme } from '../stores/pref';
+import { releaseSeen } from '../lib/release';
 import { useGameday, useMeta } from '../lib/data';
 import { track } from '../lib/track';
 import { PxIcon } from './PxIcon';
@@ -32,9 +33,19 @@ function NavItem({ route, now }: { route: RouteDef; now: string }) {
   );
 }
 
+// [상태, 버튼 아이콘, 버튼이 말하는 것] — v3 components/theme.js THEME_FACE 그대로.
+// 아이콘은 **지금 상태**를 가리킨다. 세 상태를 도는 버튼이라 '다음에 무엇이 되는지' 를 한 글자로 못 적는다
+const THEME_FACE: Record<Theme, [string, string]> = {
+  system: ['🌗', '화면 테마: 기기 설정 따름'],
+  light: ['☀️', '화면 테마: 밝게 — 누르면 어둡게'],
+  dark: ['🌙', '화면 테마: 어둡게 — 누르면 밝게'],
+};
+
 export function AppBar({ onMenu, home }: { onMenu: () => void; home: boolean }) {
   const theme = usePrefStore((s) => s.theme);
   const toggleTheme = usePrefStore((s) => s.toggleTheme);
+  const [icon, label] = THEME_FACE[theme];
+  const newRelease = useNewRelease();
   return (
     <header className="app-bar">
       <div className="app-bar__head">
@@ -61,23 +72,23 @@ export function AppBar({ onMenu, home }: { onMenu: () => void; home: boolean }) 
         <button
           className="icon-btn"
           id="theme-toggle"
-          aria-label={`화면 테마: ${theme === 'dark' ? '어둡게' : '밝게'}`}
+          aria-label={label}
           aria-live="polite"
-          data-icon={theme === 'dark' ? '🌙' : '☀️'}
-          title={`화면 테마: ${theme === 'dark' ? '어둡게' : '밝게'}`}
-          onClick={() => { toggleTheme(); track('theme_toggle', { to: theme === 'dark' ? 'light' : 'dark' }); }}
+          data-icon={icon}
+          title={label}
+          onClick={() => { toggleTheme(); track('theme_switch', { to: themeIsDark(theme) ? 'light' : 'dark' }); }}
         >
-          <PxIcon emoji={theme === 'dark' ? '🌙' : '☀️'} />
+          <PxIcon emoji={icon} />
         </button>
         <button className="icon-btn lang-toggle" id="lang-toggle" aria-label="View in English (영어로 보기)" aria-live="polite" data-i18n="off">EN</button>
-        <button className="icon-btn dot-badge" id="menu-toggle" aria-label="메뉴" aria-haspopup="dialog"
+        <button className={`icon-btn${newRelease ? ' dot-badge' : ''}`} id="menu-toggle" aria-label="메뉴" aria-haspopup="dialog"
           aria-expanded={false} aria-controls="drawer-backdrop" onClick={onMenu}><PxIcon emoji="☰" /></button>
       </div>
     </header>
   );
 }
 
-export function AppNav({ now }: { now: string }) {
+export function AppNav({ now, onConsent }: { now: string; onConsent: () => void }) {
   return (
     <aside className="app-nav" id="app-nav">
       <nav className="nav-menu" aria-label="서비스 이동">
@@ -95,7 +106,7 @@ export function AppNav({ now }: { now: string }) {
         ))}
       </nav>
       <div className="app-nav__extra">
-        <NavExtra />
+        <NavExtra onConsent={onConsent} />
       </div>
     </aside>
   );
@@ -105,9 +116,10 @@ export function AppNav({ now }: { now: string }) {
  * 메뉴 아래쪽의 곁줄 — 자주 안 가지만 있어야 하는 것들 (v3 index.html #drawer-extra).
  * 이 줄이 통째로 없으면 넓은 화면에서 왼쪽 메뉴가 절반 높이로 끝나 화면이 비어 보인다.
  */
-function NavExtra() {
+function NavExtra({ onConsent }: { onConsent: () => void }) {
   const { data: meta } = useMeta();
   const { data: gameday } = useGameday();
+  const newRelease = useNewRelease();
   const go = (hash: string) => () => { location.hash = hash; };
   const date = gameday.MOVE_CHANGES?.date;
   const changes = date ? `${Number(date.split('-')[1])}/${Number(date.split('-')[2])}` : '';
@@ -120,7 +132,7 @@ function NavExtra() {
           ⚔️ {changes} 기술 변경
         </button>
       ) : null}
-      <button className="drawer__item dot-badge" id="menu-release" onClick={go('#/release')}>
+      <button className={`drawer__item${newRelease ? ' dot-badge' : ''}`} id="menu-release" onClick={go('#/release')}>
         <span className="drawer__ico" aria-hidden="true"><PxIcon emoji="🎉" /></span>
         <span className="drawer__label">패치노트</span>
       </button>
@@ -143,6 +155,11 @@ function NavExtra() {
         <span className="drawer__ico" aria-hidden="true"><PxIcon emoji="🛠" /></span>
         <span className="drawer__label">설정</span>
       </button>
+      {/* 개인정보처리방침이 '☰ 메뉴 → 통계·저장소 설정' 이라고 적어 뒀다 — 이 줄이 없으면 방침이 거짓말이 된다 */}
+      <button className="drawer__item" id="menu-consent" onClick={onConsent}>
+        <span className="drawer__ico" aria-hidden="true"><PxIcon emoji="🍪" /></span>
+        <span className="drawer__label">통계·저장소 설정</span>
+      </button>
       <p className="drawer__meta">
         PvPoke · PokeMiners 데이터<br />기준일 {meta.DATA_FETCHED} · 매일 00시 자동 갱신
       </p>
@@ -154,14 +171,31 @@ function NavExtra() {
 function ThemeItem() {
   const theme = usePrefStore((s) => s.theme);
   const toggleTheme = usePrefStore((s) => s.toggleTheme);
+  const [icon, label] = THEME_FACE[theme];
   return (
-    <button className="drawer__item" id="menu-theme" onClick={toggleTheme}
-      aria-label={`화면 테마: ${theme === 'dark' ? '어둡게' : '밝게'}`}>
-      <span className="drawer__ico" aria-hidden="true"><PxIcon emoji="🌗" /></span>
+    <button className="drawer__item" id="menu-theme" onClick={toggleTheme} aria-label={label}>
+      <span className="drawer__ico" aria-hidden="true"><PxIcon emoji={icon} /></span>
       <span className="drawer__label">화면 테마</span>
-      <span className="drawer__value" id="menu-theme-value">{theme === 'dark' ? '어둡게' : '밝게'}</span>
+      <span className="drawer__value" id="menu-theme-value">{THEME_WORD[theme]}</span>
     </button>
   );
+}
+
+/**
+ * 새 패치노트가 있는가. 판 번호는 제 묶음(release.json)에 있어 셸이 그걸 기다릴 수는 없다 —
+ * 매니페스트의 해시를 열쇠로 쓰지 않고, 화면이 열릴 때 기록한 값과 견준다.
+ * 패치노트를 열면 markReleaseSeen 이 알려 주므로 그때 다시 센다.
+ */
+function useNewRelease(): boolean {
+  const { data: meta } = useMeta();
+  const [seen, setSeen] = useState(0);
+  useEffect(() => {
+    const onSeen = () => setSeen((n) => n + 1);
+    window.addEventListener('moncamp:release-seen', onSeen);
+    return () => window.removeEventListener('moncamp:release-seen', onSeen);
+  }, []);
+  void seen;   // 알림을 받으면 다시 세기만 하면 된다
+  return !!meta.RELEASE_VER && !releaseSeen(meta.RELEASE_VER);
 }
 
 /** 화면 머리 — 브레드크럼 · 제목 · 한 줄 설명 · 오른쪽 동작.
@@ -187,14 +221,18 @@ export function PageHead({ route, actionsRef }: { route: RouteDef; actionsRef: (
   );
 }
 
-export function Footer() {
+export function Footer({ onConsent }: { onConsent: () => void }) {
+  const { data: meta } = useMeta();
   return (
     <footer>
       <p className="foot-lead">포켓몬고 응애 친구들을 위해 만들어진 서비스예요.</p>
       <p id="ip-notice">moncamp는 비공식 팬 프로젝트입니다. Pokémon 및 관련 명칭·이미지의 권리는 The Pokémon Company · Nintendo · Creatures Inc. · GAME FREAK inc. 에, Pokémon GO 는 Scopely Explore, Inc. 에 있으며 이 서비스는 권리자와 무관합니다.</p>
       <p>데이터는 PvPoke · PokeMiners · PokeAPI · LeekDuck 의 공개 자료를 사용합니다. 코드는 열람용으로 공개돼 있으며 포크·재배포는 안 됩니다. 데이터·이미지는 각 출처의 조건을 따릅니다 (저장소 LICENSE · NOTICE).</p>
       <p className="foot-links">
+        {/* 문의 이메일은 빌드가 넣은 값이다 — 저장소에 적어 두지 않는다 (v3 index.html __CONTACT__) */}
+        {meta.CONTACT_EMAIL ? <>문의·건의: <a href={`mailto:${meta.CONTACT_EMAIL}`}>{meta.CONTACT_EMAIL}</a> · </> : null}
         <a href="#/privacy">개인정보처리방침</a> · <a href="#/terms">이용약관</a> ·{' '}
+        <button type="button" id="foot-consent" onClick={onConsent}>통계·저장소 설정</button> ·{' '}
         <a href="https://github.com/MinsangKwak/pogo-rank" target="_blank" rel="noopener">GitHub</a>
       </p>
     </footer>

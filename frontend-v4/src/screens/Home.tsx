@@ -14,6 +14,7 @@ import { NameNode } from '../components/Row';
 import type { GameUpdate } from '../types/data';
 import { track } from '../lib/track';
 import { UPDATE_CATS } from '../lib/notes';
+import type { OpenMon } from '../lib/mon';
 
 // 갈래마다 문 앞에 세우는 스타터 (v3 home.js 와 같은 번호 — 꼬부기 · 파이리 · 이상해씨)
 const STARTER: Record<string, number> = { today: 7, pick: 4, mine: 1 };
@@ -60,7 +61,7 @@ function Discover({ mascot, sprite, kicker, head, copy, extra, href }: {
 
 function PickCard({ kind, title, hint, rows, href, labels, onOpen }: {
   kind: string; title: string; hint: string; rows: PickRow[]; href: string | null;
-  labels: readonly string[]; onOpen: (sprite: number, en?: string) => void;
+  labels: readonly string[]; onOpen: OpenMon;
 }) {
   const first = rows[0];
   if (!first) return null;
@@ -72,7 +73,7 @@ function PickCard({ kind, title, hint, rows, href, labels, onOpen }: {
         {href ? <a className="pick__all" href={href}>전체 보기 <PxIcon emoji="↗" /></a> : null}
       </div>
       <div className="pick__grid">
-        <button className="pick__hero" type="button" aria-label={`1위 ${first.name}`} onClick={() => onOpen(first.sprite, first.en)}>
+        <button className="pick__hero" type="button" aria-label={`1위 ${first.name}`} onClick={() => onOpen(first)}>
           <span className="pick__spotlight" aria-hidden="true">NO.01</span>
           <Sprite id={first.sprite} />
           <span className="pick__inspect" aria-hidden="true">상세 보기 ↗</span>
@@ -80,7 +81,7 @@ function PickCard({ kind, title, hint, rows, href, labels, onOpen }: {
         <ol className="pick__list">
           {rows.map((row, index) => (
             <li key={`${row.sprite}-${index}`}>
-              <button className="pick__row" type="button" onClick={() => onOpen(row.sprite, row.en)}>
+              <button className="pick__row" type="button" onClick={() => onOpen(row)}>
                 <span className="pick__rank">{index + 1}</span>
                 <span className="pick__body">
                   <span className="pick__name"><NameNode name={row.name} labels={labels} /></span>
@@ -114,7 +115,7 @@ function UpdateDates({ row }: { row: GameUpdate }) {
   );
 }
 
-export default function Home({ onOpen }: { onOpen: (sprite: number, en?: string) => void }) {
+export default function Home({ onOpen }: { onOpen: OpenMon }) {
   const { data: max } = useMax();
   const { data: pve } = usePve();
   const { data: dex } = useDex();

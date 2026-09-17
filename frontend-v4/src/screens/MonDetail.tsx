@@ -23,6 +23,8 @@ import { counterTypes, matchups } from '../lib/matchup';
 import { usagePlacesFor } from '../lib/usage';
 import { favNewsFor, favNewsWhen, FAV_NEWS_LABEL } from '../lib/favnews';
 import { useFavStore } from '../stores/favs';
+import { buildSearchIndex } from '../lib/search';
+import { resolveMon, type MonPick, type MonRef } from '../lib/mon';
 import { track } from '../lib/track';
 import Hex from '../components/detail/Hex';
 import IvRank from '../components/detail/IvRank';
@@ -30,7 +32,7 @@ import CalcScreen, { CALC_DEFAULT, type CalcInputs } from '../components/detail/
 import { Evo, MegaCompare } from '../components/detail/Evo';
 import type { DexForm } from '../types/data';
 
-export interface MonRef { sprite: number; name: string; en: string; types: readonly string[] }
+export type { MonRef } from '../lib/mon';
 
 /** 팝업 한 화면의 상태 — 떠날 때 통째로 쌓았다가 ← 로 돌아올 때 그대로 되돌린다 (v3 detailState) */
 interface View { mon: MonRef; tab: Tab; screen: 'detail' | 'calc'; calc: CalcInputs; catchSeg: string }
@@ -216,7 +218,7 @@ function Ranks({ name }: { name: string }) {
   );
 }
 
-export default function MonDetail({ sprite: startSprite, en, onClose }: { sprite: number; en: string; onClose: () => void }) {
+export default function MonDetail({ pick, onClose }: { pick: MonPick; onClose: () => void }) {
   const { data } = useDex();
   const { data: pve } = usePve();
   const { data: max } = useMax();
@@ -230,12 +232,14 @@ export default function MonDetail({ sprite: startSprite, en, onClose }: { sprite
   // 지금 보는 것 + 떠나온 것들.
   // **떠날 때 화면 전체를 통째로 쌓는다** — ← 로 돌아오면 보던 탭·계산기 입력값·포획 CP 경로가 그대로여야 한다.
   // 포켓몬만 쌓았더니 배틀 정보 탭에서 추천 후보를 눌렀다 돌아왔을 때 요약 탭이 열렸다 (v3 는 배틀 정보로 돌아온다)
-  const start = useMemo<MonRef>(() => ({
-    sprite: startSprite,
-    name: data.DEX_DATA.names[String(startSprite)] ?? `#${startSprite}`,
-    en,
-    types: data.DEX_DATA.forms[String(startSprite)]?.types ?? [],
-  }), [startSprite, en, data]);
+  // **이름은 연 쪽이 들고 있던 것을 쓴다.** 순위표 줄은 '거다이맥스 고릴타' 를 이미 알고 있다.
+  // 이름이 없는 길은 공유 링크 하나뿐이고, 그때만 검색 색인에서 찾는다 (v3 openDetailBySprite).
+  // 도감 이름표만 보던 시절에는 폼 스프라이트(10000번대)가 표에 없어 '#10209' 라고 적혔고,
+  // 그 한 값이 활용 순위(이름으로 찾는다)와 '보스로 만났을 때'(이름 앞 '거다이맥스' 로 가른다)를 같이 무너뜨렸다
+  const start = useMemo<MonRef>(
+    () => resolveMon(pick, buildSearchIndex(data, max, pve, pvpData), data.DEX_DATA),
+    [pick, data, max, pve, pvpData],
+  );
   const [stack, setStack] = useState<View[]>([]);
   const [mon, setMon] = useState<MonRef>(start);
   const [tab, setTab] = useState<Tab>('summary');
@@ -345,6 +349,10 @@ export default function MonDetail({ sprite: startSprite, en, onClose }: { sprite
   const changed = changes?.affected?.[String(sprite)] ?? null;
 
   const previous = stack.at(-1);
+
+  // 모르는 스프라이트 번호면 아무것도 열지 않는다 — v3 openDetailBySprite 도 조용히 돌아간다.
+  // (틀린 공유 링크에 빈 팝업이 뜨면 '데이터가 없는 종' 처럼 읽힌다)
+  if (mon.name === `#${sprite}`) return null;
 
   return (
     <dialog className="modal" ref={overlay} aria-label={`${mon.name} 상세`}
@@ -540,7 +548,11 @@ export default function MonDetail({ sprite: startSprite, en, onClose }: { sprite
                                 <h3>내성 (덜 받는 데미지)</h3>{chipList(match.resist)}
                               </div>
                             </div>
-                            <p className="detail__foot">이중 = 두 타입 모두에 걸려 ×2.56(약점) / ×0.39(내성·무효)</p>
+                            {/* 줄은 늘 서고 **이중이 있을 때만 글자가 찬다** (v3 hasDouble) — 없는 데 설명이 붙으면 찾게 된다 */}
+                            <p className="detail__foot">
+                              {match.weak.some((row) => row.mult >= 2.5) || match.resist.some((row) => row.mult <= 0.4)
+                                ? '이중 = 두 타입 모두에 걸려 ×2.56(약점) / ×0.39(내성·무효)' : ''}
+                            </p>
                           </div>
                         </section>
                       ) : null}

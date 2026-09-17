@@ -23,6 +23,7 @@ import { LEAGUE_KO } from '../lib/ivrank';
 import { buildBossIndex, monSearch, type BossEntry } from '../lib/search';
 import { josa, makeDeckTools, type DeckMon } from '../lib/deck';
 import { track } from '../lib/track';
+import type { OpenMon } from '../lib/mon';
 import type { LeagueKey, PvpRow } from '../types/data';
 
 /** 슬롯 3칸을 다 채우면 나오는 분석 카드 — 추천 덱 vs 상대 덱의 차이를 한눈에 */
@@ -70,7 +71,7 @@ function DeckAnalysis({ tools, deck, foes, typeKo, chart }: {
   );
 }
 
-export default function PvpDeck({ onOpen }: { onOpen: (sprite: number, en?: string) => void }) {
+export default function PvpDeck({ onOpen }: { onOpen: OpenMon }) {
   const { data: dex } = useDex();
   const { data: max } = useMax();
   const { data: pve } = usePve();
@@ -143,7 +144,7 @@ export default function PvpDeck({ onOpen }: { onOpen: (sprite: number, en?: stri
       sprite={mon.sprite} name={mon.name} en={mon.en} types={mon.types}
       rank={String(index + 1)}
       delta={mon.d}
-      onOpen={() => onOpen(mon.sprite, mon.en)}
+      onOpen={() => onOpen(mon)}
       score={score} sub={sub}
       lines={why ? [why] : [mon.fast, mon.charged]}
       linesClass={why ? 'row__counter' : undefined}

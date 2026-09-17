@@ -8,10 +8,13 @@ declare global {
   interface Window { gtag?: (...args: unknown[]) => void; __trackLog?: unknown[][] }
 }
 
+import { analyticsWanted } from './consent';
+
 const ON = typeof window !== 'undefined' && typeof window.gtag === 'function';
 
 export function track(name: string, params: Record<string, unknown> = {}): void {
-  if (ON) window.gtag?.('event', name, params);
+  // '통계 끄기' 를 고른 사람에게는 한 건도 보내지 않는다 (lib/consent.ts)
+  if (ON && analyticsWanted()) window.gtag?.('event', name, params);
   // 미리보기에서는 무엇이 찍히는지 볼 수 있게 남겨 둔다 (콘솔에서 window.__trackLog)
   (window.__trackLog ??= []).push([name, params]);
 }
@@ -23,7 +26,7 @@ export function gaVirtualUrl(): string {
 }
 
 export function trackPageView(title: string): void {
-  if (!ON) return;
+  if (!ON || !analyticsWanted()) return;
   window.gtag?.('event', 'page_view', {
     page_location: gaVirtualUrl(),
     page_title: title,

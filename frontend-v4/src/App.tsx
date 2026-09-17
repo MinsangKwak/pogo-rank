@@ -17,6 +17,7 @@ import { Suspense, useEffect, useState } from 'react';
 import { AppBar, AppNav, Drawer, Footer, PageHead, ToTop } from './components/Shell';
 import { SlotProvider } from './components/Slots';
 import { useRoute } from './lib/useRoute';
+import type { MonPick, OpenMon } from './lib/mon';
 import { trackPageView, track } from './lib/track';
 import type { RouteDef } from './routes';
 import Home from './screens/Home';
@@ -24,7 +25,12 @@ import Dex from './screens/Dex';
 import { Dmax, Pve, Pvp } from './screens/Ranks';
 import { Eggs, Raids } from './screens/Gameday';
 import Schedule from './screens/Schedule';
-import { GameUpdates, NotPorted } from './screens/Misc';
+import { NotPorted } from './screens/Misc';
+import GameUpdates from './screens/GameUpdates';
+import Release from './screens/Release';
+import Changes from './screens/Changes';
+import { Privacy, Terms } from './screens/Legal';
+import Settings from './screens/Settings';
 import Planner from './screens/Planner';
 import Finder from './screens/Finder';
 import IvRankPage from './screens/IvRankPage';
@@ -32,6 +38,7 @@ import PvpDeck from './screens/PvpDeck';
 import DmaxDeck from './screens/DmaxDeck';
 import SoloCalc from './screens/SoloCalc';
 import MonDetail from './screens/MonDetail';
+import ConsentDialog from './components/Consent';
 
 function Splash() {
   return (
@@ -45,7 +52,7 @@ function Splash() {
 }
 
 /** 라우트 하나가 그리는 본문 */
-function Screen({ route, onOpen }: { route: RouteDef; onOpen: (sprite: number, en?: string) => void }) {
+function Screen({ route, rest, onOpen }: { route: RouteDef; rest: string; onOpen: OpenMon }) {
   switch (route.id) {
     case 'home': return <Home onOpen={onOpen} />;
     case 'dex': return <Dex onOpen={onOpen} />;
@@ -55,7 +62,7 @@ function Screen({ route, onOpen }: { route: RouteDef; onOpen: (sprite: number, e
     case 'raids': return <Raids onOpen={onOpen} />;
     case 'eggs': return <Eggs onOpen={onOpen} />;
     case 'schedule': return <Schedule />;
-    case 'game-updates': return <GameUpdates />;
+    case 'game-updates': return <GameUpdates rest={rest} />;
     // v3 는 이 화면을 로그인 뒤에만 연다. 미리보기는 ★ 를 이 기기에 두므로 그냥 열린다 (stores/favs.ts)
     case 'planner': return <Planner />;
     case 'finder': return <Finder />;
@@ -64,6 +71,11 @@ function Screen({ route, onOpen }: { route: RouteDef; onOpen: (sprite: number, e
     case 'pvp-deck': return <PvpDeck onOpen={onOpen} />;
     case 'dmax-deck': return <DmaxDeck onOpen={onOpen} />;
     case 'pve-solo': return <SoloCalc onOpen={onOpen} />;
+    case 'release': return <Release />;
+    case 'changes': return <Changes onOpen={onOpen} />;
+    case 'privacy': return <Privacy />;
+    case 'terms': return <Terms />;
+    case 'settings': return <Settings />;
     // #/mon/<id> 는 본문이 따로 없다 — 팝업이 곧 그 화면이라, 뒤에는 홈을 깔아 준다 (v3 와 같다)
     case 'mon': return <Home onOpen={onOpen} />;
     default: return <NotPorted route={route} />;
@@ -73,11 +85,13 @@ function Screen({ route, onOpen }: { route: RouteDef; onOpen: (sprite: number, e
 export default function App() {
   const { route, rest } = useRoute();
   const [menuOpen, setMenuOpen] = useState(false);
+  const [consentOpen, setConsentOpen] = useState(false);
   // [스프라이트, 영문명]. 영문명은 **연 쪽이 들고 있던 것**만 넘긴다 —
   // v3 도 순위표 줄에서 열면 이름 아래에 Melmetal 이 서고, 도감에서 열면 서지 않는다
-  const [detail, setDetail] = useState<[number, string] | null>(null);
-  const openMon = (sprite: number, en = '') => {
-    setDetail([sprite, en]);
+  const [detail, setDetail] = useState<MonPick | null>(null);
+  const openMon: OpenMon = (pick) => {
+    const sprite = pick.sprite;
+    setDetail(pick);
     track('detail_open', { sprite });
     // 주소를 상세로 바꿔 두는 것은 **홈(과 상세) 위에서만** 이다 (v3 detailSyncHash 의 규칙).
     //   목록 위에서 바꾸면 뒤에 깔린 화면이 그 목록에서 홈으로 갈리고, ✕ 를 눌러도 목록으로 못 돌아온다.
@@ -101,8 +115,13 @@ export default function App() {
     if (route.id !== 'mon') { setDetail(null); return; }
     const sprite = Number(rest);
     if (!Number.isFinite(sprite) || !sprite) return;
-    setDetail((now) => (now?.[0] === sprite ? now : [sprite, '']));
+    // 공유 링크에는 이름이 없다 — 스프라이트만 넘기고 상세가 색인에서 찾게 둔다 (v3 openDetailBySprite)
+    setDetail((now) => (now?.sprite === sprite ? now : { sprite }));
   }, [route, rest]);
+  // 화면을 옮기면 열려 있던 팝업·서랍은 닫는다 — <dialog> 가 새 화면 위에 그대로 떠 있으면
+  // 아무 데도 눌리지 않는다 (상세 팝업에서 같은 자리를 이미 한 번 겪었다)
+  useEffect(() => { setConsentOpen(false); setMenuOpen(false); }, [route, rest]);
+
   // 포털이 꽂힐 자리. ref 가 아니라 state 인 이유 — 붙은 뒤 한 번 더 그려야 포털이 들어간다
   const [tabsEl, setTabsEl] = useState<HTMLDivElement | null>(null);
   const [bossEl, setBossEl] = useState<HTMLDivElement | null>(null);
@@ -133,7 +152,7 @@ export default function App() {
       </div>
 
       <AppBar onMenu={() => setMenuOpen(true)} home={home} />
-      <AppNav now={route.id} />
+      <AppNav now={route.id} onConsent={() => setConsentOpen(true)} />
 
       {/* 홈에는 화면 머리가 없다 — 제목이 히어로 안에 있다 (v3 syncAppShell 과 같은 규칙) */}
       {home ? null : <PageHead route={route} actionsRef={setActionsEl} />}
@@ -150,22 +169,27 @@ export default function App() {
           <div className="controls" id="controls" ref={setControlsEl} />
           <div id="content">
             <Suspense fallback={<Splash />}>
-              <Screen route={route} onOpen={openMon} />
+              <Screen route={route} rest={rest} onOpen={openMon} />
             </Suspense>
           </div>
-          <Footer />
+          <Footer onConsent={() => setConsentOpen(true)} />
         </div>
       ) : (
         <div id="page">
           <Suspense fallback={<Splash />}>
-            <Screen route={route} onOpen={openMon} />
+            <Screen route={route} rest={rest} onOpen={openMon} />
           </Suspense>
-          <p className="ip-notice">moncamp는 비공식 팬 프로젝트입니다. Pokémon 및 관련 명칭·이미지의 권리는 The Pokémon Company · Nintendo · Creatures Inc. · GAME FREAK inc. 에, Pokémon GO 는 Scopely Explore, Inc. 에 있으며 이 서비스는 권리자와 무관합니다.</p>
+          {/* 약관·개인정보처리방침은 제 본문 끝에 같은 고지를 이미 달고 있다 — 여기서 한 번 더 붙이지 않는다 (v3 와 같다) */}
+          {route.id === 'terms' || route.id === 'privacy' ? null : (
+            <p className="ip-notice">moncamp는 비공식 팬 프로젝트입니다. Pokémon 및 관련 명칭·이미지의 권리는 The Pokémon Company · Nintendo · Creatures Inc. · GAME FREAK inc. 에, Pokémon GO 는 Scopely Explore, Inc. 에 있으며 이 서비스는 권리자와 무관합니다.</p>
+          )}
         </div>
       )}
       <Suspense fallback={null}>
-        {detail === null ? null : <MonDetail sprite={detail[0]} en={detail[1]} onClose={closeMon} />}
+        {detail === null ? null : <MonDetail pick={detail} onClose={closeMon} />}
       </Suspense>
+
+      {consentOpen ? <ConsentDialog onClose={() => setConsentOpen(false)} /> : null}
 
       <ToTop />
       <Drawer open={menuOpen} onClose={() => setMenuOpen(false)} now={route.id} />
