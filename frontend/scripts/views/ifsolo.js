@@ -165,16 +165,33 @@ function scaledPool(boss) {
   }));
 }
 
-// 보스 상대 카운터 풀: 보스 타입별 순위를 합치고, 복합 타입은 어태커 자속 타입 기준으로 근사 보정
-// 복합 타입 보스는 타입별 순위를 각각 가져와서, 어태커의 첫 자속 타입이 "나머지 타입"에
-// 얼마로 들어가는지를 곱해 근사한다. 같은 포켓몬이 두 타입 목록에 겹치면 DPS가 높은 쪽을 남긴다.
+// 복합 타입 보스의 "나머지 타입" 보정 — **때리는 타입**으로 잰다 (2026-09-17 v3.58.0)
+//
+// 전에는 어태커의 첫 자속 타입으로 쟀다. 포켓몬의 타입과 실제로 때리는 타입이 같다는 가정인데,
+// 570마리 중 70마리(12%)는 자속이 아닌 주력기를 든다 — 사이코 타입인 메가Y 뮤츠가 물 보스를
+// 전기 기술(10만볼트)로 때리는 식이다. 그런 어태커가 실제보다 낮게 잡히고 있었다.
+//
+// 스피드기와 차지기의 타입이 다를 수 있으므로 **한 사이클에서 각자 넣는 피해량으로 가중**한다.
+// 그 비중(cshare)은 지어낸 값이 아니라 backend/pve_build.py 가 dps 를 낼 때 쓴 값 그대로다.
+// 옛 data.js 가 캐시에 남아 ftype/ctype 이 없으면 예전처럼 자속 타입으로 되돌아간다.
+function attackTypeMult(attacker, againstType) {
+  const chart = DEX_DATA.chart;
+  const ownType = attacker.types?.[0];
+  const fastMult = chart[attacker.ftype ?? ownType]?.[againstType] ?? 1;
+  const chargedMult = chart[attacker.ctype ?? ownType]?.[againstType] ?? 1;
+  const chargedShare = typeof attacker.cshare === 'number' ? attacker.cshare : 1;
+  return fastMult * (1 - chargedShare) + chargedMult * chargedShare;
+}
+
+// 보스 상대 카운터 풀: 보스 타입별 순위를 합치고, 복합 타입은 위 함수로 나머지 타입을 보정한다.
+// 같은 포켓몬이 두 타입 목록에 겹치면 DPS가 높은 쪽을 남긴다.
 function counterPool(bossTypes) {
   const byName = new Map();
   for (let index = 0; index < bossTypes.length; index++) {
     const mainType = bossTypes[index];
     const otherType = bossTypes[1 - index];  // 단일 타입 보스면 undefined
     for (const attacker of PVE_DATA[mainType] ?? []) {
-      const secondTypeAdjust = otherType ? (DEX_DATA.chart[attacker.types?.[0]]?.[otherType] ?? 1) : 1;
+      const secondTypeAdjust = otherType ? attackTypeMult(attacker, otherType) : 1;
       const candidate = {
         ...attacker,
         dps: attacker.dps * secondTypeAdjust,
@@ -414,7 +431,7 @@ function renderSoloCalc() {
       $content.append(...soloResultNodes(state.soloBossMon, tier));
     }
   }
-  $note.textContent = '프로토타입 가정: 자체 계산 PvE 수치(개체값 15/15/15) 기반에 선택 보스의 실제 방어·공격 종족값을 반영해 보정. 운용은 실측 제공자식 — 최정예 1~2마리를 기절 직전 이탈 → 부활(5~6초) → 재진입으로 돌려쓰는 방식 기준. 풀강50 토글은 딜 +6.3%·TDO +20%, 버프는 메가부스트 +30% / 풀버프(메가+날씨+친구) +60%. 실측 보정: 생존 3배 · DPS +20%. 기절 → 부활약 → 재진입 운용을 반영해 정예 1~6마리 중 가장 빨리 깎는 구성을 골라요 (교체 1초 · 전멸 후 재진입 13초). 난이도는 보스별로 자동 판정(메가·원시 → 메가, 전설·환상·울트라비스트 → 4성, 최종 진화 → 3성, 그 외 1성)이며 선택된 보스의 난이도 배지를 탭하면 수동 변경돼요. 레이드 표시 CP는 개체 종족값 기반 계산값(공식 검증: 뮤츠 5성 54,148), 전투 체력은 게임 구조상 티어 고정 — 1성 600 · 3성 3,600 · 4성 9,000 · 5성/메가 15,000, 제한 1·3성 180초 / 그 외 300초. 복합 타입 보스의 두 번째 타입은 어태커 자속 타입 기준 근사 보정. 포켓몬을 누르면 상세 정보가 열려요.';
+  $note.textContent = '프로토타입 가정: 자체 계산 PvE 수치(개체값 15/15/15) 기반에 선택 보스의 실제 방어·공격 종족값을 반영해 보정. 운용은 실측 제공자식 — 최정예 1~2마리를 기절 직전 이탈 → 부활(5~6초) → 재진입으로 돌려쓰는 방식 기준. 풀강50 토글은 딜 +6.3%·TDO +20%, 버프는 메가부스트 +30% / 풀버프(메가+날씨+친구) +60%. 실측 보정: 생존 3배 · DPS +20%. 기절 → 부활약 → 재진입 운용을 반영해 정예 1~6마리 중 가장 빨리 깎는 구성을 골라요 (교체 1초 · 전멸 후 재진입 13초). 난이도는 보스별로 자동 판정(메가·원시 → 메가, 전설·환상·울트라비스트 → 4성, 최종 진화 → 3성, 그 외 1성)이며 선택된 보스의 난이도 배지를 탭하면 수동 변경돼요. 레이드 표시 CP는 개체 종족값 기반 계산값(공식 검증: 뮤츠 5성 54,148), 전투 체력은 게임 구조상 티어 고정 — 1성 600 · 3성 3,600 · 4성 9,000 · 5성/메가 15,000, 제한 1·3성 180초 / 그 외 300초. 복합 타입 보스의 두 번째 타입은 그 포켓몬이 실제로 쓰는 기술 타입으로 보정하며, 스피드기와 차지기가 한 사이클에서 넣는 피해량으로 가중해요. 포켓몬을 누르면 상세 정보가 열려요.';
 }
 
 // ── 진입점 ────────────────────────────────────────────────────────────────

@@ -102,7 +102,14 @@ def damage(power, attack, defense, multiplier):
 
 def best_dps(attack, own_types, quick, charged, boss_types):
     # 가능한 (스피드기, 차지기) 조합을 모두 돌려 DPS 가 가장 높은 하나를 고른다.
-    # 반환: (dps, 스피드기 id, 차지기 id) 또는 조합이 없으면 None
+    # 반환: (dps, 스피드기 id, 차지기 id, 스피드기 타입, 차지기 타입, 차지기 피해 비중)
+    #       조합이 없으면 None
+    #
+    # 2026-09-17 v3.58.0 **때리는 타입을 같이 돌려준다.** 전에는 dps 와 기술 이름만 내보내
+    # 화면 쪽에서 "포켓몬의 타입 = 때리는 타입" 으로 가정할 수밖에 없었다. 자속이 아닌
+    # 주력기를 드는 어태커(얼음 기술을 든 드래곤 등)가 실제보다 낮게 잡히던 원인이다.
+    # 비중(cshare)은 한 사이클에서 차지기가 넣는 피해의 몫이다 — 지어낸 가중치가 아니라
+    # 바로 위에서 dps 를 낼 때 쓴 값 그대로다.
     best = None
     for quick_id in quick:
         fast_move = moves.get(quick_id)
@@ -121,7 +128,10 @@ def best_dps(attack, own_types, quick, charged, boss_types):
             fast_uses = -(-abs(charged_move['energyDelta']) // fast_move['energyDelta'])
             # DPS = 한 사이클(스피드기 n회 + 차지기 1회) 총 피해 / 사이클 소요 초
             dps = (fast_damage*fast_uses + charged_damage) / ((fast_move['durationMs']*fast_uses + charged_move['durationMs'])/1000)
-            if not best or dps > best[0]: best = (dps, quick_id, charged_id)
+            cycle_damage = fast_damage*fast_uses + charged_damage
+            charged_share = charged_damage / cycle_damage if cycle_damage else 0
+            if not best or dps > best[0]:
+                best = (dps, quick_id, charged_id, fast_type.lower(), charged_type.lower(), round(charged_share, 2))
     return best
 
 # 후보 목록 구성 (일반 / 섀도우 / 메가), 중복 폼 제거
@@ -180,7 +190,8 @@ def rank_for(boss_types, score_sink=None, pool=None):
     for candidate in (pool if pool is not None else candidates):
         best = best_dps(candidate['atk'], candidate['types'], candidate['quick'], candidate['charged'], boss_types)
         if not best: continue
-        dps, quick_id, charged_id = best
+        dps, quick_id, charged_id, fast_type, charged_type, charged_share = best
+        own_first = (candidate['types'][0] or '').lower() if candidate['types'] else ''
         # 생존 시간(초) = 내 HP / 보스가 주는 초당 실피해. 보스 피해는 방어력 100 기준으로 환산한다.
         time_to_faint = candidate['hp'] / (BOSS_DPS * (100/candidate['def']))
         # TDO = 쓰러지기 전까지 누적 피해량
@@ -188,6 +199,16 @@ def rank_for(boss_types, score_sink=None, pool=None):
         # 종합 점수 = DPS^3 x TDO / 1000 — 레이드에서는 순간 화력이 훨씬 중요하므로 DPS 에 3제곱 가중
         if score_sink is not None: score_sink[candidate['key']] = round(dps**3*tdo/1000)
         out.append({'sprite': candidate['sprite'], 'name': candidate['name'], 'en': candidate['en'], 'types': [type_name.lower() for type_name in candidate['types']], 'fast': korean_move_name(quick_id), 'charged': korean_move_name(charged_id),
+                    # ftype/ctype 은 **때리는 타입**이다 — 포켓몬 자신의 타입과 다를 수 있다.
+                    # cshare 는 한 사이클에서 차지기가 넣는 피해의 몫(0~1). 화면이 복합 타입 보스를
+                    # 보정할 때 이 둘을 피해량으로 가중해 쓴다 (v3.58.0)
+                    #
+                    # **자기 타입과 같으면 안 싣는다.** 대부분은 자속이라 전부 실으면 27KB 가 늘고,
+                    # 화면 쪽 attackTypeMult() 가 빠진 값을 자기 타입으로 되돌리므로 뜻이 같다.
+                    # 비중도 두 기술 타입이 같으면 어느 쪽을 써도 결과가 같아 뺀다.
+                    **({'ftype': fast_type} if fast_type != own_first else {}),
+                    **({'ctype': charged_type} if charged_type != own_first else {}),
+                    **({'cshare': charged_share} if fast_type != charged_type else {}),
                     'dps': round(dps,1), 'tdo': round(tdo), 'score': round(dps**3*tdo/1000)})
     out.sort(key=lambda row: -row['score'])
     return out[:TOP]
@@ -212,7 +233,7 @@ def rank_neutral(pool):
     for candidate in pool:
         best = best_dps(candidate['atk'], candidate['types'], candidate['quick'], candidate['charged'], [])
         if not best: continue
-        dps, quick_id, charged_id = best
+        dps, quick_id, charged_id = best[0], best[1], best[2]   # 여기는 타입을 안 쓴다
         tdo = dps * (candidate['hp'] / (BOSS_DPS * (100/candidate['def'])))
         out.append({'key': candidate['key'], 'sprite': candidate['sprite'], 'name': candidate['name'], 'en': candidate['en'], 'types': [type_name.lower() for type_name in candidate['types']],
                     'fast': korean_move_name(quick_id), 'charged': korean_move_name(charged_id), 'dps': round(dps,1), 'tdo': round(tdo), 'score': round(dps**3*tdo/1000)})
