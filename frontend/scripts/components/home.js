@@ -78,6 +78,20 @@ function homePickGroup(pick) {
   const rows = pick.rows().slice(0, HOME_PICK_TOP);
   if (!rows.length) return null;
   if (pick.route && typeof routeLocked === 'function' && routeLocked(pick.route)) return null;
+  if (pick.key === 'usage') {
+    return el('button', { class: 'pick__discover', type: 'button', onclick: () => {
+      track('home_usage_all');
+      openModal(el('div', { class: 'pick-usage' },
+        el('h2', {}, '다양한 활용처'),
+        el('p', {}, '여러 순위표에 이름을 올린 포켓몬이에요. 이름을 누르면 상세 정보를 볼 수 있어요.'),
+        el('ol', { class: 'pick__list' }, ...pick.rows().map((pokemon, index) => homePickRow(pick, pokemon, index)))));
+    } },
+      homeCardMascot('machamp', '68'),
+      el('span', { class: 'pick__discover-kicker' }, '다양한 활용처'),
+      el('strong', {}, '한 마리로', el('br'), '여러 배틀을.'),
+      el('span', { class: 'pick__discover-copy' }, '레이드부터 PvP까지, 두루 쓰이는 포켓몬'),
+      el('span', { class: 'pick__discover-action' }, '전체 보기', el('span', { 'aria-hidden': 'true' }, '↗')));
+  }
   const first = rows[0];
   return el('section', { class: `pick__group pick__group--${pick.key}`, 'aria-label': pick.title },
     el('div', { class: 'pick__head' },
@@ -85,8 +99,17 @@ function homePickGroup(pick) {
       el('p', { class: 'pick__hint' }, pick.hint),
       ...(pick.route ? [el('a', { class: 'pick__all', href: routeHash(pick.route) }, '전체 보기 ', pxIcon('↗') ?? '↗')] : [])),
     el('div', { class: 'pick__grid' },
-      el('button', { class: 'pick__hero', type: 'button', 'aria-label': `1위 ${first.name}`, onclick: () => homePickOpen(pick, first, 0) }, sprite(first.sprite)),
+      el('button', { class: 'pick__hero', type: 'button', 'aria-label': `1위 ${first.name}`, onclick: () => homePickOpen(pick, first, 0) },
+        el('span', { class: 'pick__spotlight', 'aria-hidden': 'true' }, 'NO.01'),
+        sprite(first.sprite),
+        el('span', { class: 'pick__inspect', 'aria-hidden': 'true' }, '상세 보기 ↗')),
       el('ol', { class: 'pick__list' }, ...rows.map((pokemon, index) => homePickRow(pick, pokemon, index)))));
+}
+
+// Decorative sprites use CSS motion without adding accessible content.
+function homeCardMascot(kind, id) {
+  return el('span', { class: `home-card-mascot home-card-mascot--${kind}`, 'aria-hidden': 'true' },
+    el('img', { class: 'home-card-mascot__body', src: `sprites/${id}.png`, alt: '', width: 96, height: 96 }));
 }
 
 // 타일 한 장 — 주소·이름·아이콘은 전부 라우터 표(router.js ROUTES)에서 온다.
@@ -149,7 +172,7 @@ function renderServiceHome() {
   });
 
   // ── 용도별 상위 포켓몬 — 평가 조건과 기준일을 같이 읽게 한다 (시안 "순위 참고")
-  const pickGroups = HOME_PICKS.map(homePickGroup).filter(Boolean);
+  const pickGroups = [...HOME_PICKS].sort((a, b) => Number(b.key === 'usage') - Number(a.key === 'usage')).map(homePickGroup).filter(Boolean);
   const dataDate = typeof DATA_FETCHED !== 'undefined' && DATA_FETCHED ? DATA_FETCHED : '';
   // ── 게임 업데이트 주요 소식 (2026-09-16 v3.51.0) — 글이 없으면 빈 문자열이라 자리도 안 만든다
   // 홈 맨 아래에 둔다: 소개와 추천 순위, 기능 안내를 먼저 확인한다.
