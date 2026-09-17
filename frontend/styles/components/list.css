@@ -15,7 +15,7 @@
        서야 1,2,3… 이 순서로 읽히므로 왼쪽 끝을 어긋내지 않는다.
    이제 표시는 **왼쪽 빨간 막대 + 옅은 바탕 + [미구현] 딱지** 셋이고, 글자는 출시분과 똑같이 또렷하다.
    막대는 ::before 로 얹는다 — border-left 로 그으면 그 두께만큼 내용이 밀려 번호 칸이 어긋난다 */
-.row.is-unreleased { position: relative; background: color-mix(in srgb, var(--warn) 5%, transparent); }
+.row.is-unreleased { position: relative; background: color-mix(in srgb, var(--warn) 9%, var(--bg)); }
 .row.is-unreleased::before {
   content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 0.3rem;
   background: var(--warn);

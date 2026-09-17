@@ -185,7 +185,9 @@ suite(async () => {
     const r = n.getBoundingClientRect(); const s = getComputedStyle(n);
     return { top: Math.round(r.top), h: Math.round(r.height), radius: s.borderTopLeftRadius };
   });
-  ok('상세 = 바텀시트 (화면 아래에서)', modal.top > 60, JSON.stringify(modal));
+  // v3.56.0 노트 테마에서 모바일 상세는 바텀시트가 아니라 **화면을 가득 채우는 장**이 됐다.
+  //   위에서 내려오든 아래에서 올라오든, 지켜야 할 것은 '상세가 화면을 온전히 쓴다' 는 쪽이다
+  ok('상세가 화면을 가득 쓴다', modal.h > 600, JSON.stringify(modal));
   // 2026-09-12 v3.6.0 도트 디자인 — 곡선을 없앴다 (styles/pixel.css)
   ok('상세 모서리 각진 카드', modal.radius === '0px', modal.radius);
   ok('닫기 버튼 ✕', (await page.locator('.modal__close').textContent()) === '✕');
@@ -355,7 +357,9 @@ suite(async () => {
     const ruled = await page.evaluate(() => {
       const found = [];
       const head = document.getElementById('page-head');
-      if (head && !head.hidden && getComputedStyle(head).backgroundImage !== 'none') found.push('head');
+      // v3.56.0 노트 테마는 같은 선을 점선 테두리로 긋는다 — 그림이든 테두리든 '선 하나' 면 된다
+      const hs = head && !head.hidden ? getComputedStyle(head) : null;
+      if (hs && (hs.backgroundImage !== 'none' || parseFloat(hs.borderBottomWidth) > 0)) found.push('head');
       const controls = document.querySelector('.layout:not([hidden]) #controls');
       if (controls && controls.childElementCount && parseFloat(getComputedStyle(controls).borderBottomWidth) > 0) found.push('controls');
       for (const row of document.querySelectorAll('#page:not([hidden]) .page__filters')) {
@@ -468,7 +472,7 @@ suite(async () => {
     const cs = getComputedStyle(document.documentElement);
     return { bg: cs.getPropertyValue('--bg').trim(), accent: cs.getPropertyValue('--accent').trim() };
   });
-  ok('다크 --bg (잉크블랙 #0a0a0f)', dtok.bg === '#0a0a0f', dtok.bg);
+  ok('다크 --bg (노트 네이비 #171e2e)', dtok.bg === '#171e2e', dtok.bg);
   // 어두운 바탕에서는 #e5372e 가 무거워 보여 한 단 밝은 빨강을 쓴다
   ok('다크 --accent (#ff5f52)', dtok.accent === '#ff5f52', dtok.accent);
   await dark.close();

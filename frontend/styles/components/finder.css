@@ -9,12 +9,14 @@
    좁은 화면은 아이콘 버튼(4.4rem) + 아래 여백(1.4rem) + 선(0.1rem) 에 위 여백을 더한 값 */
 .finder__result {
   position: sticky;
-  top: calc(5.9rem + max(1.4rem, env(safe-area-inset-top)));
+  top: calc(5.6rem + max(1.4rem, env(safe-area-inset-top)));
   z-index: 2;
   margin: 1.6rem 0; padding: 1.4rem 1.6rem;
   border: 1px solid var(--line); border-radius: 1.2rem; background: var(--surface);
 }
-@media (min-width: 1100px) { .finder__result { top: 8.1rem; } }
+/* 상단 바 높이만큼 내려 붙인다. v3.56.0 노트 테마에서 바의 아래 테두리가 빠져 3px 낮아졌다 —
+   값이 바 높이를 따라다녀야 해서, 바를 손보면 이 줄도 같이 본다 */
+@media (min-width: 1100px) { .finder__result { top: 7.8rem; } }
 
 /* ── 묶음 리듬 ────────────────────────────────────────────────────────────────
    2026-09-12 v3.8.2 전에는 제목↔칩 10px · 묶음↔다음 제목 18px 이었다. 칩 줄 사이가 6px 이니

@@ -769,6 +769,16 @@ const I18N_EN = {
   '다양한 활용처': 'Useful all around',
   '다이맥스': 'Dynamax',
   '여러 순위표에 이름을 올린 포켓몬': 'Pokémon that appear on several rankings',
+  // 2026-09-17 v3.56.0 홈 발견 카드·1위 배지 — 새 문구가 사전에 없어 영어 화면에 한글이 남아 있었다
+  '한 마리로': 'One Pokémon,',
+  '여러 배틀을.': 'many battles.',
+  '레이드부터 PvP까지, 두루 쓰이는 포켓몬': 'From raids to PvP — Pokémon that pull their weight everywhere',
+  '상세 보기 ↗': 'View details ↗',
+  '새로운 소식,': 'What is new,',
+  '놓치지 마세요.': "don't miss it.",
+  '패치부터 이벤트까지 한눈에 확인해요': 'Patches and events, all in one place',
+  '여러 순위표에 이름을 올린 포켓몬이에요. 이름을 누르면 상세 정보를 볼 수 있어요.':
+    'These Pokémon appear on several rankings. Tap a name for details.',
   '순위표 #곳': 'On # rankings',
   '1위 #': 'No. 1 #',
   '이름을 누르면 종족값·상성·활용처를 전부 볼 수 있어요': 'Tap a name for base stats, matchups and every place it is used',

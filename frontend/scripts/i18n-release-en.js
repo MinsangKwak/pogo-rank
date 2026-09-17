@@ -15,6 +15,14 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 const RELEASE_NOTES_EN = {
+  '2026-09-17 · v3.56.0': [
+    '**Korean text no longer leaks into the English pages** — the new home cards were not being translated.',
+    '**The current menu item stands out again** — it had become the same colour as hover.',
+    '**The rule between a page title and its body is back** — it had vanished on seven screens.',
+    '**Rules no longer thicken when you enlarge text** — a line says present or absent, not how thick.',
+    '**Unreleased Pokémon rows are marked again** — their tint had become identical to released rows.',
+    '**Column counts on wide screens are back to the ladder** — raids and eggs had gained an extra column.',
+  ],
   '2026-09-16 · v3.55.1': [
     '**Home section headers now share one shape** — title and its button on the top line, description on the line below.',
   ],

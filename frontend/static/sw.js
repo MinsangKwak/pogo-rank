@@ -6,7 +6,7 @@ self.addEventListener('activate', (e) => e.waitUntil(
 self.addEventListener('fetch', (e) => {
   const url = new URL(e.request.url);
   if (e.request.mode === 'navigate') {
-    e.respondWith(fetch(e.request, { cache: 'no-cache' }).then((res) => {
+    e.respondWith(fetch(e.request).then((res) => {
       const copy = res.clone();
       caches.open(CACHE).then((c) => c.put('./', copy));
       return res;
@@ -27,7 +27,7 @@ self.addEventListener('fetch', (e) => {
     // 2026-09-16 v3.46.0 app.js 도 같은 규칙. 전에는 이 코드가 HTML 안에 있어 'navigate' 규칙이 챙겼는데,
     // 밖으로 빼면서 어느 갈래에도 안 걸려 오프라인에서 화면이 통째로 비게 될 뻔했다.
     // 주소에 ?v=버전 이 붙지만 캐시 키는 요청 그대로 쓴다 — 판이 바뀌면 키도 바뀌어 옛 것을 안 집는다
-    e.respondWith(fetch(e.request, { cache: 'no-cache' }).then((res) => {
+    e.respondWith(fetch(e.request).then((res) => {
       const copy = res.clone();
       caches.open(CACHE).then((c) => c.put(e.request, copy));
       return res;

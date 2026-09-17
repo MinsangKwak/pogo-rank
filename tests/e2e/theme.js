@@ -40,8 +40,9 @@ const BASE = 'http://localhost:5503/?mock=1';
   ok('헤더에 테마 버튼', await page.locator('#theme-toggle').isVisible());
   const start = await state();
   ok('처음은 기기 설정 따름 (표시 없음)', start.attr === null, String(start.attr));
-  // v3.0.0 딥네이비(#0b0f15) → 잉크블랙(#0a0a0f) · 흰 바탕 → 꺼진 바탕(#fafafa)
-  ok('기기가 어두우면 어두운 배경', start.bg === 'rgb(10, 10, 15)', start.bg);
+  // v3.0.0 잉크블랙(#0a0a0f)·꺼진 흰(#fafafa) → v3.56.0 노트 테마: 크림(#fff8f2)·네이비(#171e2e).
+  // 값은 tokens.css --bg 한 곳에만 있다 — 컴포넌트가 body 를 덮던 것을 걷어냈다
+  ok('기기가 어두우면 어두운 배경', start.bg === 'rgb(23, 30, 46)', start.bg);
   ok('버튼에 이름이 있다', /테마/.test(start.label || ''), start.label || '');
 
   // ── 2. 세 상태를 돈다 + 실제로 색이 바뀐다
@@ -49,14 +50,14 @@ const BASE = 'http://localhost:5503/?mock=1';
   await page.waitForTimeout(300);
   const light = await state();
   ok('1번 → 밝게', light.attr === 'light' && light.saved === 'light', JSON.stringify(light));
-  ok('밝게는 밝은 배경', light.bg === 'rgb(250, 250, 250)', light.bg);
+  ok('밝게는 밝은 배경', light.bg === 'rgb(255, 248, 242)', light.bg);
   ok('밝게 아이콘 ☀️ (도트)', light.icon === '☀️' && light.pxi, JSON.stringify(light));
 
   await page.locator('#theme-toggle').click();
   await page.waitForTimeout(300);
   const dark = await state();
   ok('2번 → 어둡게', dark.attr === 'dark' && dark.saved === 'dark', JSON.stringify(dark));
-  ok('어둡게는 어두운 배경', dark.bg === 'rgb(10, 10, 15)', dark.bg);
+  ok('어둡게는 어두운 배경', dark.bg === 'rgb(23, 30, 46)', dark.bg);
   ok('어둡게 아이콘 🌙 (도트)', dark.icon === '🌙' && dark.pxi, JSON.stringify(dark));
 
   // 2026-09-12 v3.11.0 세 번째 누름은 '기기 설정' 이 아니라 다시 밝게다 — 버튼은 둘만 돈다

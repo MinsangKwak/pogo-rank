@@ -60,17 +60,21 @@ suite(async () => {
   // 2026-09-13 v3.23.0 번들 CSS·JS 가 문서에 **한 번**만 들어갔는가. 자리표 '__STYLES__' 를 주석에 적어 둔 줄 때문에
   // build.py 의 str.replace 가 번들을 두 번 끼워 넣어 index.html 이 862KB 였다 (같은 CSS 두 번 파싱)
   // 2026-09-16 v3.46.0 JS 는 밖으로 나갔다(app.js) — 문서 안에서 세던 표식은 이제 CSS 쪽만 유효하다
+  // 2026-09-17 v3.56.0 CSS 도 밖으로 나갔다(style.css) — 문서 안 표식 대신 <link> 를 센다.
+  //   목적은 그대로다: **번들이 문서에 두 번 들어가지 않았는가**
   const dup = await page.evaluate(() => ({
-    css: (document.documentElement.innerHTML.match(/\/\* ── tokens\.css ── \*\//g) || []).length,
+    css: [...document.querySelectorAll('link[rel="stylesheet"]')].filter((n) => /(^|\/)style\.css(\?|$)/.test(n.getAttribute('href') || '')).length,
     styles: document.querySelectorAll('style').length,
     appSrc: [...document.querySelectorAll('script[src]')].map((n) => n.getAttribute('src')),
     inlineBig: [...document.querySelectorAll('script:not([src])')].filter((n) => n.textContent.length > 20000).length,
   }));
-  ok('번들 CSS 가 문서에 한 번만 (tokens.css 표식 1개)', dup.css === 1, JSON.stringify(dup.css));
+  ok('번들 CSS 를 한 번만 부른다 (style.css 링크 1개)', dup.css === 1, JSON.stringify(dup.css));
   // 번들 JS 는 **밖에서 한 번만** 불린다. 두 번 불리면 전역이 두 번 선언돼 조용히 깨진다
   const appTags = dup.appSrc.filter((src) => /(^|\/)app\.js(\?|$)/.test(src));
   ok('app.js 를 한 번만 부른다', appTags.length === 1, JSON.stringify(dup.appSrc));
-  ok('app.js 주소에 판 표식(?v=)이 붙는다', /\?v=v[\d.]+/.test(appTags[0] ?? ''), appTags[0]);
+  // 2026-09-17 v3.56.0 표식이 **판 번호에서 내용 해시로** 바뀌었다. 판을 안 올리고 코드만 고치는
+  //   일이 실제로 있었고(codex 15판), 그때 주소가 그대로라 옛 캐시가 남았다. 해시는 내용이 바뀌면 바뀐다
+  ok('app.js 주소에 내용 표식(?v=)이 붙는다', /\?v=[0-9a-f]{8,}$/.test(appTags[0] ?? ''), appTags[0]);
   // 페이지 소스가 다시 부풀지 않게 — 인라인 <script> 는 설정값 한 덩이뿐이어야 한다
   ok('큰 인라인 <script> 가 남지 않았다', dup.inlineBig === 0, String(dup.inlineBig));
   const htmlBytes = await page.evaluate(() => document.documentElement.outerHTML.length);
