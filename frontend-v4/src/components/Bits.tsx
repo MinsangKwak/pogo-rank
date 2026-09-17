@@ -122,10 +122,12 @@ export function Chips({ items, value, onPick }: {
   );
 }
 
-/** 화면 위 세그먼트 — v3 는 #screen-tabs 안의 `.seg.js-screen-tab` 하나다 */
-export function ScreenTabs({ items, value, onPick }: { items: ChipDef[]; value: string; onPick: (id: string) => void }) {
+/** 세그먼트 컨트롤 — 붙어 있는 버튼 몇 개로 하나를 고른다 (v3 components/seg.js) */
+export function Seg({ items, value, onPick, className }: {
+  items: ChipDef[]; value: string; onPick: (id: string) => void; className?: string;
+}) {
   return (
-    <div className="seg js-screen-tab">
+    <div className={`seg${className ? ` ${className}` : ''}`}>
       {items.map((item) => (
         <button key={item.id} type="button" aria-pressed={item.id === value} onClick={() => onPick(item.id)}>
           {item.label}
@@ -133,6 +135,11 @@ export function ScreenTabs({ items, value, onPick }: { items: ChipDef[]; value: 
       ))}
     </div>
   );
+}
+
+/** 화면 위 세그먼트 — v3 는 #screen-tabs 안의 `.seg.js-screen-tab` 하나다 */
+export function ScreenTabs({ items, value, onPick }: { items: ChipDef[]; value: string; onPick: (id: string) => void }) {
+  return <Seg items={items} value={value} onPick={onPick} className="js-screen-tab" />;
 }
 
 /** 타입 필터 접이식 — #controls 안에 이것 하나가 들어간다 (v3 compactScreenFilters) */

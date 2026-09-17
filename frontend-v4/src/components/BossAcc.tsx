@@ -14,22 +14,14 @@
 // ─────────────────────────────────────────────────────────────────────────────
 import { useState } from 'react';
 import { useDex, useMax, useSchedule } from '../lib/data';
+import { pickMonth } from '../lib/schedule';
 import { Sprite } from './Bits';
 import { NameNode } from './Row';
-import type { DmaxRow, ScheduleMonth } from '../types/data';
+import type { DmaxRow } from '../types/data';
 
 const BOSS_STEP = 5;   // [더보기] 한 번에 다섯 (v3 state.bossShow)
 
 const released = (rows: DmaxRow[] | undefined) => (rows ?? []).filter((row) => !row.unrel);
-
-function pickMonth(months: Record<string, ScheduleMonth>, today: Date): ScheduleMonth | undefined {
-  const keys = Object.keys(months).sort();
-  const key = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}`;
-  if (months[key]) return months[key];
-  const past = keys.filter((one) => one < key);
-  const pick = past.length ? past[past.length - 1] : keys[0];
-  return pick ? months[pick] : undefined;
-}
 
 export default function BossAcc({ onOpen, onGoBoss }: {
   onOpen: (sprite: number, en?: string) => void;

@@ -32,7 +32,7 @@ export function NotPorted({ route }: { route: RouteDef }) {
     <section className="plan__lock">
       <span className="plan__lock-ico" aria-hidden="true">🚧</span>
       <h2>{name} 는 아직 안 옮겼어요</h2>
-      <p>이 미리보기는 Phase 0~3 까지입니다. 계산 화면(Phase 4)과 계정 화면(Phase 5)은 다음 판이에요.</p>
+      <p>이 미리보기는 계산 화면(Phase 4)까지입니다. 설정 · 약관 · 패치노트와 계정 화면(Phase 5)은 다음 판이에요.</p>
       <a className="drawer__item account__login plan__lock-go" href={`https://moncamp.kr/#/${route.path}`}>
         v3 에서 이 화면 보기 ↗
       </a>

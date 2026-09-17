@@ -82,6 +82,8 @@ export interface RowProps {
   sub?: ReactNode;
   /** 이름 아래 보조줄. 비면 줄을 만들지 않는다 */
   lines?: (string | null | undefined)[];
+  /** 보조줄에 덧붙일 클래스 — 덱 짜기의 카운터 이유 줄이 `.row__counter` 로 넓게 선다 (v3 와 같다) */
+  linesClass?: string;
   /** 아직 게임에 안 나온 줄 — 지우지 않고 흐리게 남긴다 (v3.36.0 의 판단) */
   unrel?: boolean;
   /** 지난 갱신 대비 순위 변동 (양수 상승 · 음수 하락) */
@@ -107,7 +109,7 @@ function DeltaBadge({ delta }: { delta?: number }) {
   );
 }
 
-export function Row({ sprite, name, en, types, rank, score, sub, lines, unrel, delta, onOpen }: RowProps) {
+export function Row({ sprite, name, en, types, rank, score, sub, lines, linesClass, unrel, delta, onOpen }: RowProps) {
   const { data } = useDex();
   // 2026-09-17 '활용 N곳' — 이 종이 상위 30위에 드는 순위표 수 (v3 usageBadge).
   //   어느 탭에서 보든 같은 칩이라 "여기서만 좋은가, 다재다능인가" 가 바로 보인다.
@@ -145,7 +147,7 @@ export function Row({ sprite, name, en, types, rank, score, sub, lines, unrel, d
           <NameNode name={name} en={en} labels={data.FORM_LABELS} />
           <TypeDots types={types} />
         </div>
-        {parts.length ? <div className="row__moves">{parts.map((text, i) => <span key={i}>{text}</span>)}</div> : null}
+        {parts.length ? <div className={`row__moves${linesClass ? ` ${linesClass}` : ''}`}>{parts.map((text, i) => <span key={i}>{text}</span>)}</div> : null}
       </div>
       <div className="row__stats">
         <span className="row__score">{score}</span>

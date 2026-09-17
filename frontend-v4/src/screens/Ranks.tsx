@@ -25,6 +25,7 @@ import { Slot } from '../components/Slots';
 import BossAcc from '../components/BossAcc';
 import { Row, RowHead, RowList, RowMore, ROW_SHOW, TierHead, TIER_ORDER, useExpanded } from '../components/Row';
 import { track } from '../lib/track';
+import { LEAGUES } from '../lib/leagues';
 import { Fragment } from 'react';
 import type { LeagueKey } from '../types/data';
 
@@ -245,14 +246,6 @@ export function Pve({ onOpen }: { onOpen: (sprite: number, en?: string) => void 
     </>
   );
 }
-
-// v3 data.js LEAGUES 와 같은 한 벌 — 세그먼트에 서는 이름은 '리그' 를 뗀 짧은 쪽이다
-const LEAGUES: readonly { id: LeagueKey; name: string; cp: string }[] = [
-  { id: 'little', name: '리틀', cp: '500' },
-  { id: 'great', name: '슈퍼', cp: '1500' },
-  { id: 'ultra', name: '하이퍼', cp: '2500' },
-  { id: 'master', name: '마스터', cp: '10000' },
-];
 
 export function Pvp({ onOpen }: { onOpen: (sprite: number, en?: string) => void }) {
   const { data: pvp } = usePvp();

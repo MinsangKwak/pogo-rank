@@ -8,39 +8,9 @@
 // ─────────────────────────────────────────────────────────────────────────────
 import { useMemo } from 'react';
 import { useDex, usePvp } from '../../lib/data';
-import { calcCp, cpmAt } from '../../lib/cp';
+// 셈은 개체값 순위 화면과 **한 벌을 같이 쓴다** — 표를 캐시해 두므로 같은 종을 두 번 세지 않는다
+import { IVRANK_LEAGUES, LEAGUE_KO, ivRankTable } from '../../lib/ivrank';
 import type { DexForm, LeagueKey } from '../../types/data';
-
-const IVRANK_LEAGUES: [LeagueKey, number | null][] = [['little', 500], ['great', 1500], ['ultra', 2500], ['master', null]];
-const LEAGUE_KO: Record<LeagueKey, string> = { little: '리틀', great: '슈퍼', ultra: '하이퍼', master: '마스터' };
-const MAX_LEVEL = 50;
-
-/** CP 상한을 넘지 않는 가장 높은 레벨. CP 는 레벨에 단조 증가하므로 반씩 좁혀 찾는다 */
-function bestLevel(form: DexForm, cpms: readonly number[], cap: number | null, a: number, d: number, h: number): number | null {
-  if (cap == null) return MAX_LEVEL;
-  let low = 1, high = MAX_LEVEL, best: number | null = null;
-  while (low <= high) {
-    const level = Math.floor(Math.round(low + high) / 2 * 2) / 2;   // 0.5 단위로 맞춘다
-    if (calcCp(form, cpms, level, a, d, h) <= cap) { best = level; low = level + 0.5; }
-    else high = level - 0.5;
-  }
-  return best;
-}
-
-/** 스탯 곱 1위 조합 — 공격 × 방어 × (내림한) 체력 */
-function bestIv(form: DexForm, cpms: readonly number[], cap: number | null) {
-  let top: { ivs: [number, number, number]; level: number; cp: number; product: number } | null = null;
-  for (let a = 0; a <= 15; a += 1) for (let d = 0; d <= 15; d += 1) for (let h = 0; h <= 15; h += 1) {
-    const level = bestLevel(form, cpms, cap, a, d, h);
-    if (level == null) continue;   // Lv1 CP 가 이미 상한을 넘는다 (리틀리그의 전설 등)
-    // **반레벨은 보간해야 한다** — cpms[floor(level)-1] 로 잘랐더니 Lv15.5 가 Lv15 로 계산돼
-    // 슈퍼리그 1위가 v3 의 1/15/14 대신 0/5/13 으로 나왔다
-    const m = cpmAt(cpms, level);
-    const product = (form.atk + a) * m * ((form.def + d) * m) * Math.floor((form.hp + h) * m);
-    if (!top || product > top.product) top = { ivs: [a, d, h], level, cp: calcCp(form, cpms, level, a, d, h), product };
-  }
-  return top;
-}
 
 export default function IvRank({ form, sprite }: { form: DexForm; sprite: number }) {
   const { data: pvp } = usePvp();
@@ -52,7 +22,7 @@ export default function IvRank({ form, sprite }: { form: DexForm; sprite: number
     for (const [league, cap] of IVRANK_LEAGUES) {
       const hit = (pvp.PVP_DATA[league] ?? []).find((row) => row.sprite === sprite);
       if (!hit) continue;
-      const best = bestIv(form, cpms, cap);
+      const best = ivRankTable(form, cpms, cap, 0)[0];
       if (!best) continue;
       out.push({ league, rank: hit.rank, ivs: best.ivs.join('/'), level: best.level, cp: best.cp });
     }

@@ -27,6 +27,10 @@ import Schedule from './screens/Schedule';
 import { GameUpdates, NotPorted } from './screens/Misc';
 import Planner from './screens/Planner';
 import Finder from './screens/Finder';
+import IvRankPage from './screens/IvRankPage';
+import PvpDeck from './screens/PvpDeck';
+import DmaxDeck from './screens/DmaxDeck';
+import SoloCalc from './screens/SoloCalc';
 import MonDetail from './screens/MonDetail';
 
 function Splash() {
@@ -55,6 +59,11 @@ function Screen({ route, onOpen }: { route: RouteDef; onOpen: (sprite: number, e
     // v3 는 이 화면을 로그인 뒤에만 연다. 미리보기는 ★ 를 이 기기에 두므로 그냥 열린다 (stores/favs.ts)
     case 'planner': return <Planner />;
     case 'finder': return <Finder />;
+    // 화면 아래 화면 — 부모 화면의 도구 버튼 하나로만 들어온다 (주소가 도구를 정한다)
+    case 'ivrank': return <IvRankPage />;
+    case 'pvp-deck': return <PvpDeck onOpen={onOpen} />;
+    case 'dmax-deck': return <DmaxDeck onOpen={onOpen} />;
+    case 'pve-solo': return <SoloCalc onOpen={onOpen} />;
     // #/mon/<id> 는 본문이 따로 없다 — 팝업이 곧 그 화면이라, 뒤에는 홈을 깔아 준다 (v3 와 같다)
     case 'mon': return <Home onOpen={onOpen} />;
     default: return <NotPorted route={route} />;
