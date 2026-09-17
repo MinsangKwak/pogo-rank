@@ -32,7 +32,8 @@ suite(async () => {
   const btnH = await page.locator('.home__btn--primary').evaluate((n) => n.getBoundingClientRect().height);
   ok('대표 버튼 높이 44px 이상', btnH >= 44, String(btnH));
   // v3.56.0 큰 그림이 **오늘 표의 1·2위**에서 붙박이 장식(피카츄)으로 바뀌었다.
-  //   실데이터를 보여 주던 자리라 값이 줄었다 — 되돌릴지는 따로 판단한다. 지금은 장식임을 확인만 한다
+  //   실데이터를 보여 주던 자리지만 2026-09-17 유지로 결정했다 — 되돌리자는 제안은 그 판단을 먼저 뒤집어야 한다.
+  //   여기서 지킬 것은 하나: 장식이면 읽어 주지 않는다 (aria-hidden)
   const mascot = page.locator('.home__pixel-mascot');
   ok('큰 그림은 장식이라 읽어 주지 않는다', (await mascot.count()) === 1 && await mascot.getAttribute('aria-hidden') === 'true');
   ok('제목에 검색 목적어(다이맥스 · 티어표)가 설명에 남는다', /다이맥스 티어표/.test(await page.locator('.home__intro p').textContent()));

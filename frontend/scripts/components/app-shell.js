@@ -318,6 +318,21 @@ function syncAppShell(moveFocus = false) {
     appTitle.focus({ preventScroll: true });
   }
 }
+// 2026-09-17 v3.57.0 **어디를 눌러 그 화면에 갔나.** page_open 의 from(menu/tabbar/card)이 이 답을
+// 맡고 있었지만, 메뉴가 평범한 <a href="#/..."> 라 openPage() 를 거치지 않아 사실상 죽어 있었다
+// (실측 3일: route_view 93건 대 page_open 1건). 그래서 누르는 순간을 여기서 한 번만 잡는다.
+// 클릭 → 해시 변경 순서가 보장되므로, 다음 route_view 가 이 값을 가져다 쓰고 비운다.
+let _navFrom = '';
+document.addEventListener('click', (event) => {
+  const link = event.target.closest?.('a[href^="#/"], button');
+  if (!link) return;
+  _navFrom = link.closest('.drawer__panel, .nav-menu') ? 'menu'
+    : link.closest('.home-dashboard') ? 'home'
+    : link.closest('.app-bar, .app-nav') ? 'topbar'
+    : link.closest('.modal__wrap') ? 'popup'
+    : 'body';
+}, true);
+
 window.addEventListener('hashchange', () => {
   // Hash navigation has a same-app predecessor; directly loaded links do not.
   if (location.hash !== previousRoute && !history.state?.appEntry) {
@@ -326,9 +341,16 @@ window.addEventListener('hashchange', () => {
   previousRoute = location.hash;
   syncAppShell(true);
   // 2026-09-08 v2.30.0 화면 단위 측정 — 주소를 GA 에서 다시 파싱하지 않도록 라우트 id 를 그대로 보낸다
-  if (typeof track === 'function') track('route_view', { route: routeIdOf(), path: location.hash.replace(/^#\/?/, '') || 'home' });
+  const from = _navFrom || 'direct';   // 눌러서 온 것이 아니면 주소창·뒤로가기·딥링크다
+  _navFrom = '';
+  if (typeof track === 'function') track('route_view', { route: routeIdOf(), path: location.hash.replace(/^#\/?/, '') || 'home', from });
+  // 2026-09-17 v3.57.0 화면이 바뀌었으니 조회 한 건. syncAppShell 이 먼저 돌아 document.title 은 이미 새 이름이다
+  if (typeof trackPageView === 'function') trackPageView();
 });
 syncAppShell();
+// v3.57.0 하위 화면으로 바로 들어온 경우의 첫 조회 — 셸이 제목을 세운 **뒤라야** 경로와 제목이 맞는다.
+// 홈으로 들어왔으면 스니펫이 이미 보냈고, trackPageView 가 같은 주소를 걸러 낸다
+if (typeof trackPageView === 'function') trackPageView();
 // 2026-09-12 v3.2.0 첫 로드 보정 — 이 파일은 SCRIPTS 의 **맨 끝**이라(app.js 다음) app.js 가
 // 바닥에서 부른 첫 render() 때는 아직 #page-head-actions 가 없었다. 그래서 D-MAX 로 바로
 // 들어온 첫 화면만 축 세그먼트가 본문에 남아 있었다 (화면을 한 번 옮기면 정상이 됐다).

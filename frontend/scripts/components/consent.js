@@ -55,7 +55,8 @@ function loadAnalytics() {
   window.gtag = function () { window.dataLayer.push(arguments); };
   window.gtag('consent', 'default', { analytics_storage: 'granted', ad_storage: 'denied', ad_user_data: 'denied', ad_personalization: 'denied' });
   window.gtag('js', new Date());
-  window.gtag('config', id);
+  // v3.57.0 여기서 붙는 경우(동의를 뒤늦게 켠 길)도 첫 조회를 가상 경로로 보낸다 — head 스니펫과 같은 규칙
+  window.gtag('config', id, typeof window.gaVirtualUrl === 'function' ? { page_location: window.gaVirtualUrl() } : {});
   window.GA_MEASUREMENT_ID = id;  // track.js setTrackingUser 가 user_id 를 붙여 config 를 다시 부를 때 쓴다
   const script = document.createElement('script');
   script.async = true;
