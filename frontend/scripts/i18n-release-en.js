@@ -15,6 +15,13 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 const RELEASE_NOTES_EN = {
+  '2026-09-17 · v3.60.0': [
+    '**★ Favourites are back** — the star at the top right of a Pokémon page adds it. That page is the only place you add one.',
+    '**Saving one now buys you something** — when that Pokémon shows up in a Community Day, Spotlight Hour or raid rotation, a 📣 badge appears on its page and takes you straight to the event schedule.',
+    '**Signing in keeps them** — you can save favourites while your account is still awaiting approval.',
+    '**Still an experiment** — the 📣 badge only shows for accounts opted into experimental features.',
+    '**Buttons in popups now look the same** — the one you are meant to press is filled in, the rest share a single outline.',
+  ],
   '2026-09-17 · v3.59.0': [
     '**Event schedule, raid bosses, egg hatches, PvP and the search builder are open without signing in** — screens that used to be locked are now free to browse.',
     '**Training Planner and My Pokémon need an account** — they record your own Pokémon, so they belong to a signed-in profile.',

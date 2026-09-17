@@ -189,6 +189,17 @@ dialog.modal::backdrop { background: transparent; }
   background: var(--surface); color: var(--fg); font-size: 1.2rem; font-weight: 600; white-space: nowrap; }
 .detail__bar-btn:hover { background: var(--hover); }
 .detail__bar-btn .pxi { width: 1.4rem; height: 1.4rem; }
+
+/* 2026-09-17 v3.60.0 ★ 즐겨찾기 — 담으면 켜진다. 색은 A티어와 같은 앰버(--caution) */
+.detail__fav.is-on { color: var(--caution); border-color: var(--caution); }
+.detail__fav-star { font-size: 1.4rem; line-height: 1; }
+/* 📣 담아 둔 포켓몬의 소식 — 이름 아래 한 줄. 상세에만, 실험 기능 참가자에게만 (components/favnews.js) */
+.detail__favnews { display: inline-flex; align-items: center; gap: 0.5rem; margin-top: 0.8rem; padding: 0.5rem 1rem;
+  border: 1px solid var(--good); border-radius: 0.8rem; background: color-mix(in srgb, var(--good) 8%, var(--bg));
+  color: var(--good); font-size: 1.2rem; font-weight: 600; }
+.detail__favnews:hover { background: color-mix(in srgb, var(--good) 16%, var(--bg)); }
+.detail__favnews-more { color: var(--muted); }
+.detail__favnews-slot { display: contents; }
 /* 계산기 화면에서는 머리줄 오른쪽을 비운다 — 그 화면의 갈 곳은 하단 [상세로 돌아가기] 뿐 */
 .detail--mon[data-screen="calc"] .detail__top-actions { display: none; }
 /* 🔗 링크 복사 — 하단 왼쪽 (v3.50.1) */
@@ -334,6 +345,11 @@ dialog.modal::backdrop { background: transparent; }
 /* 높이를 고정한다(max 가 아니라 height) — 탭·화면을 오갈 때 내용 길이대로 시트가 들썩이지 않게 */
 @media (max-width: 640px) {
   .modal__box:has(> .detail--mon) { height: 88vh; height: 88dvh; max-height: none; }
+  /* 2026-09-17 v3.60.0 머리줄이 두 줄이 되면 ✕ 와 버튼 줄이 어긋난다 — 좁은 화면은 자리를 줄인다.
+     ★ 는 글자를 접어 기호만 남기고, 제목 [포켓몬 상세] 는 내린다 — 무엇의 팝업인지는 바로 아래 이름이 말한다.
+     계산기 화면은 버튼 줄이 없어(위 .detail--mon[data-screen="calc"]) 제목이 그대로 선다 */
+  .detail__fav-label { display: none; }
+  .detail--mon:not([data-screen="calc"]) .detail__bar-title { display: none; }
 }
 
 /* PC — 왼쪽 정보 고정 · 오른쪽 내용 전환 (목업 "PC 상세 팝업") */

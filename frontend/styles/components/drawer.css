@@ -116,6 +116,8 @@
 .admin__who b { display: block; font-size: 1.35rem; }
 .admin__act { flex: none; }
 .admin__act.is-danger { color: var(--warn); border-color: var(--warn); }
+/* 2026-09-17 v3.60.0 실험 기능이 켜진 사람 — 해제(빨강)와 갈리게 teal */
+.admin__act.is-on { color: var(--good); border-color: var(--good); }
 /* 2026-09-15 v3.40.0 관리자 지정이 생기면서 한 줄에 버튼이 둘이 된다 — 좁으면 아래로 접는다 */
 .admin__acts { display: flex; flex: none; flex-wrap: wrap; justify-content: flex-end; gap: 0.5rem; }
 /* 이름 옆 역할 딱지. 관리자 줄은 왼쪽에 굵은 선을 둬 목록을 훑을 때 결이 다른 줄임이 보이게 */

@@ -213,6 +213,7 @@ async function onAuthChange(user) {
   AUTH.admin = false;
   AUTH.adminRoot = false;
   AUTH.favs = new Set();
+  AUTH.beta = false;   // v3.60.0 실험 기능 참가자 표식 — 로그아웃하면 내려간다
   AUTH.roles = {};
   AUTH.mons = [];
   AUTH.requestError = '';
@@ -236,8 +237,13 @@ async function onAuthChange(user) {
       const snapshot = await AUTH.db.collection('allowlist').doc(email).get().catch(() => null);
       approved = !!(snapshot && snapshot.exists);
       delegated = !!(approved && snapshot.data()?.admin === true);
+      // 2026-09-17 v3.60.0 실험 기능 참가자 — admin 과 같은 문서의 beta: true.
+      //   규칙은 안 고쳤다: 이 문서는 이미 루트만 쓰고 본인은 읽을 수 있다
+      AUTH.beta = !!(approved && snapshot.data()?.beta === true);
     }
     AUTH.admin = AUTH.adminRoot || delegated;
+    // 루트는 늘 참가자다 — 실험 기능을 켠 사람이 자기 화면에서 못 보면 확인할 방법이 없다
+    if (AUTH.adminRoot) AUTH.beta = true;
     if (approved) {
       AUTH.status = 'ok';
       await loadFavs();
@@ -569,8 +575,50 @@ async function loadFavs() {
   }
 }
 
-// 2026-09-12 v3.14.0 ★ 버튼 함수들(isFav · toggleFav · favBtn · refreshFavUi)과 역할 보정 setRole 을 지웠다 —
-// v3.4.0 에 ★ 즐겨찾기 기능을 걷어낸 뒤로 부르는 곳이 없었다. AUTH.favs · AUTH.roles 는 Firestore 필드라 그대로 읽는다
+// 2026-09-12 v3.14.0 ★ 버튼 함수들을 지웠다 — v3.4.0 에 기능을 걷어낸 뒤로 부르는 곳이 없었다.
+//
+// 2026-09-17 v3.60.0 **다시 만든다.** 이번에는 쓸모를 먼저 정했다.
+//   v3.4.0 에 걷어낸 이유는 "담을 수는 있는데 담은 뒤에 할 수 있는 일이 없었다" 였다.
+//   이제 담아 두면 **그 포켓몬의 커뮤니티 데이·스포트라이트·레이드 일정을 챙겨 준다**(components/favnews.js).
+//   입구도 하나뿐이다 — 포켓몬 상세 팝업의 ★ 하나. 목록 카드에는 달지 않는다(v2.66.0 에 셋을 하나로 모았던 이유).
+//
+//   승인 대기(pending)도 담을 수 있다. 담아 두는 일은 승인을 기다리는 동안에도 할 수 있어야 하고,
+//   담아 둔 것이 있어야 승인을 기다릴 이유도 생긴다 (firestore.rules favsOnly).
+//   소식을 받는 것은 승인된 사람부터다.
+//
+//   저장 단위는 **종(도감번호)** 이다 — 폼이 아니라. "이 포켓몬을 챙긴다" 는 종 단위의 뜻이고,
+//   도감번호 하나면 상세·일정 어디서든 같은 값으로 맞출 수 있다.
+function favEnabled() {
+  return authEnabled() && (AUTH.status === 'ok' || AUTH.status === 'pending');
+}
+function isFav(dex) {
+  return AUTH.favs instanceof Set && AUTH.favs.has(Number(dex));
+}
+// arrayUnion/arrayRemove 로 갱신한다 — 문서 전체를 덮어쓰지 않아 다른 기기의 변경과 부딪히지 않는다
+async function toggleFav(dex, screenName) {
+  const number = Number(dex);
+  if (!Number.isFinite(number)) return false;
+  if (!favEnabled()) {
+    if (typeof openLoginInvite === 'function') openLoginInvite(screenName || '즐겨찾기');
+    return false;
+  }
+  const on = !isFav(number);
+  // 화면을 먼저 바꾼다 — 저장은 뒤따라온다. 느린 회선에서 눌러도 반응이 있어야 한다
+  if (on) AUTH.favs.add(number); else AUTH.favs.delete(number);
+  track('fav_toggle', { on: on ? 1 : 0, mon: number, from: screenName || '' });
+  if (!AUTH.db || !AUTH.user) return on;
+  const fieldValue = firebase.firestore.FieldValue;
+  await AUTH.db.collection('users').doc(AUTH.user.uid).set({
+    email: authEmail(),
+    favs: on ? fieldValue.arrayUnion(number) : fieldValue.arrayRemove(number),
+    updatedAt: fieldValue.serverTimestamp(),
+  }, { merge: true }).catch(() => {
+    // 저장이 실패하면 화면도 되돌린다 — 담긴 것처럼 보이는데 안 담긴 상태가 가장 나쁘다
+    if (on) AUTH.favs.delete(number); else AUTH.favs.add(number);
+    alert(t('담지 못했어요. 잠시 뒤 다시 눌러 주세요.'));
+  });
+  return on;
+}
 
 // ── 드로어 계정 영역 ────────────────────────────────────
 // message를 주면 계정 영역 아래에 안내문을 함께 그린다(로그인 실패·승인 대기 안내 등).
@@ -708,6 +756,20 @@ async function openAdminPanel() {
     }
     openAdminPanel();
   };
+  // 2026-09-17 v3.60.0 실험 기능 참가 — 관리자 지정과 같은 문서·같은 규칙(루트만)이라 규칙을 안 고쳤다.
+  //   참가자에게만 먼저 여는 기능이 생길 때마다 이 표식 뒤에 둔다 (AUTH.beta)
+  const setBetaFlag = async (email, on) => {
+    const question = on ? `${email} 님에게 실험 기능을 열까요? 아직 다듬는 중인 기능을 먼저 써 보게 돼요.`
+                        : `${email} 님의 실험 기능을 닫을까요?`;
+    if (!confirm(t(question))) return;
+    try {
+      await AUTH.db.collection('allowlist').doc(email).set({ beta: on }, { merge: true });
+    } catch (error) {
+      alert(t('바꾸지 못했어요. 보안 규칙을 최신으로 게시했는지 확인해 주세요.') + `\n(${error.code || error.message})`);
+    }
+    openAdminPanel();
+  };
+
   // 한 줄에 버튼 둘까지 — [관리자 지정|해제] 와 [승인 해제]
   // 2026-09-15 v3.41.0 **버튼은 루트에게만.** 위임 관리자에게는 목록만 보인다 —
   // 규칙이 어차피 막으므로 버튼을 두면 "눌러도 안 되는 버튼" 이 된다
@@ -717,6 +779,12 @@ async function openAdminPanel() {
     acts.push(uchip(isAdminRow ? '관리자 해제' : '관리자 지정',
       () => setAdminFlag(entry.id, entry.data, !isAdminRow),
       { class: `admin__act${isAdminRow ? ' is-danger' : ''}` }));
+    // 2026-09-17 v3.60.0 실험 기능 — 만들어 둔 기능을 **먼저 써 볼 사람**을 고른다.
+    //   관리자 권한과 뜻이 다르다: 운영을 돕는 자리가 아니라 시험해 보는 자리다
+    const onBeta = entry.data.beta === true;
+    acts.push(uchip(onBeta ? '🧪 실험 해제' : '🧪 실험 기능',
+      () => setBetaFlag(entry.id, !onBeta),
+      { class: `admin__act${onBeta ? ' is-on' : ''}` }));
     acts.push(uchip('승인 해제', async () => {
       if (!confirm(t(`${entry.id} 승인을 해제할까요?`))) return;
       try {
