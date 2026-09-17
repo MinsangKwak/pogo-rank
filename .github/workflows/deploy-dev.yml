@@ -44,6 +44,12 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
+      # v4 미리보기(/react/)를 같은 판에서 만들기 위해 (아래 'v4 미리보기' 단계)
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: frontend-v4/package-lock.json
       # 스프라이트 캐시는 실서비스 워크플로와 같은 키 계열을 써서 서로 재사용한다
       # 2026-09-12 v2.67.0 움직이는 그림(data/sprites-anim, 949장 51MB)도 같은 캐시에 —
       # 빼 두면 매 빌드가 51MB 를 다시 받고 없는 223종에 404 를 다시 묻는다
@@ -70,6 +76,19 @@ jobs:
           CONTACT_EMAIL: kmsdevwork@knou.ac.kr   # 2026-09-15 v3.32.0 학생 계정으로 교체. 저장소 변수 vars.CONTACT_EMAIL 은 더 읽지 않는다 (v3.27.1 GA_ID 와 같은 처리)
           FIREBASE_CONFIG_JSON: ${{ vars.FIREBASE_CONFIG_JSON }}
         run: bash scripts/build.sh
+      # 2026-09-17 v4 미리보기를 **같은 dist 안에** 넣어 한 번에 올린다.
+      #   아래 발행은 force_orphan 이라 gh-pages 를 통째로 새로 쓴다 — 따로 올린 /react/ 는 그때 지워진다.
+      #   실제로 dev 배포가 한 번 돌 때마다 미리보기가 사라져 손으로 다시 돌려야 했다.
+      #   한 판에서 같이 만들어 한 번에 올리면 그 문제가 아예 없어진다 (경쟁도 없다).
+      #   데이터는 방금 만든 dist/data.js 에서 뽑는다 (frontend-v4/scripts/extract-data.mjs)
+      - name: v4 미리보기 빌드 (dist/react/)
+        run: |
+          cd frontend-v4
+          npm ci
+          npm run build
+          cd ..
+          rm -rf dist/react
+          cp -r frontend-v4/dist dist/react
       - name: Publish to pogo-rank-dev (gh-pages)
         uses: peaceiris/actions-gh-pages@v4
         with:
