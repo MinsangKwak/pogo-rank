@@ -106,11 +106,10 @@ function homePickGroup(pick) {
       el('ol', { class: 'pick__list' }, ...rows.map((pokemon, index) => homePickRow(pick, pokemon, index)))));
 }
 
-// Decorative sprite layers keep the punching arm independent from the body.
+// Decorative sprites use CSS motion without adding accessible content.
 function homeCardMascot(kind, id) {
   return el('span', { class: `home-card-mascot home-card-mascot--${kind}`, 'aria-hidden': 'true' },
-    el('img', { class: 'home-card-mascot__body', src: `sprites/${id}.png`, alt: '', width: 96, height: 96 }),
-    ...(kind === 'machamp' ? [el('img', { class: 'home-card-mascot__arm', src: `sprites/${id}.png`, alt: '', width: 96, height: 96 })] : []));
+    el('img', { class: 'home-card-mascot__body', src: `sprites/${id}.png`, alt: '', width: 96, height: 96 }));
 }
 
 // 타일 한 장 — 주소·이름·아이콘은 전부 라우터 표(router.js ROUTES)에서 온다.
