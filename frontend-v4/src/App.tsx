@@ -24,7 +24,9 @@ import Dex from './screens/Dex';
 import { Dmax, Pve, Pvp } from './screens/Ranks';
 import { Eggs, Raids } from './screens/Gameday';
 import Schedule from './screens/Schedule';
-import { GameUpdates, Locked, NotPorted } from './screens/Misc';
+import { GameUpdates, NotPorted } from './screens/Misc';
+import Planner from './screens/Planner';
+import Finder from './screens/Finder';
 import MonDetail from './screens/MonDetail';
 
 function Splash() {
@@ -50,8 +52,9 @@ function Screen({ route, onOpen }: { route: RouteDef; onOpen: (sprite: number, e
     case 'eggs': return <Eggs onOpen={onOpen} />;
     case 'schedule': return <Schedule />;
     case 'game-updates': return <GameUpdates />;
-    // 잠긴 화면 — 잠금은 라우터 표(locked)가 정한다 (v3 와 같은 규칙)
-    case 'planner': return <Locked name="내 포켓몬" />;
+    // v3 는 이 화면을 로그인 뒤에만 연다. 미리보기는 ★ 를 이 기기에 두므로 그냥 열린다 (stores/favs.ts)
+    case 'planner': return <Planner />;
+    case 'finder': return <Finder />;
     // #/mon/<id> 는 본문이 따로 없다 — 팝업이 곧 그 화면이라, 뒤에는 홈을 깔아 준다 (v3 와 같다)
     case 'mon': return <Home onOpen={onOpen} />;
     default: return <NotPorted route={route} />;
@@ -80,9 +83,13 @@ export default function App() {
     if (location.hash.startsWith('#/mon/')) { try { history.replaceState(history.state, '', '#/'); } catch { /* 위와 같다 */ } }
   };
 
-  // #/mon/<스프라이트 id> 로 **바로** 들어온 경우 (공유 링크). 주소가 곧 열려 있어야 할 팝업이다
+  // 주소가 바뀌면 팝업도 따라간다.
+  //   #/mon/<스프라이트 id> 로 바로 들어오면(공유 링크) 그 팝업을 열고,
+  //   **다른 화면으로 옮겨 가면 닫는다.** 안 닫으면 <dialog> 가 새 화면 위에 그대로 떠서
+  //   아무 데도 눌리지 않는다 (메뉴로 검색식 화면에 갔는데 클릭이 안 먹어 찾았다).
+  //   목록에서 열 때는 주소가 안 바뀌므로(홈에서만 replaceState) 이 효과가 방해하지 않는다
   useEffect(() => {
-    if (route.id !== 'mon') return;
+    if (route.id !== 'mon') { setDetail(null); return; }
     const sprite = Number(rest);
     if (!Number.isFinite(sprite) || !sprite) return;
     setDetail((now) => (now?.[0] === sprite ? now : [sprite, '']));

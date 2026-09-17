@@ -105,7 +105,7 @@ export function Raids({ onOpen }: { onOpen: (sprite: number, en?: string) => voi
   const view = usePrefStore((s) => s.cols['raids']) ?? readCols('raids', 'grid');
   const setCols = usePrefStore((s) => s.setCols);
   return (
-    <div id="page-raids" className="page__body">
+    <div id="page-raids" className="page__body" data-route="raids">
       <Slot name="headActions">
         <ViewToggle view={view} onToggle={() => setCols('raids', view === 'grid' ? 'list' : 'grid')} extraClass="" />
       </Slot>
@@ -131,7 +131,7 @@ export function Eggs({ onOpen }: { onOpen: (sprite: number, en?: string) => void
   const view = usePrefStore((s) => s.cols['eggs']) ?? readCols('eggs', 'grid');
   const setCols = usePrefStore((s) => s.setCols);
   return (
-    <div id="page-eggs" className="page__body">
+    <div id="page-eggs" className="page__body" data-route="eggs">
       <Slot name="headActions">
         <ViewToggle view={view} onToggle={() => setCols('eggs', view === 'grid' ? 'list' : 'grid')} extraClass="" />
       </Slot>

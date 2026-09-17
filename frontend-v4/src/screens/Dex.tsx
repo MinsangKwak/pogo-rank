@@ -87,7 +87,7 @@ export default function Dex({ onOpen }: { onOpen: (sprite: number, en?: string) 
   };
 
   return (
-    <div id="page-dex" className="page__body dex-page">
+    <div id="page-dex" className="page__body dex-page" data-route="dex">
       {/* 보기 전환은 본문이 아니라 **화면 머리 오른쪽**에 선다 — 도감·레이드·순위표가 같은 자리다.
           본문 꼬리에 뒀더니 목록을 다 내려야 보여, 있으나 마나 한 버튼이 됐다 */}
       <Slot name="headActions">
