@@ -34,3 +34,4 @@ import '../../frontend/styles/components/pc-theme.css';
 import '../../frontend/styles/pixel.css';
 // 마지막 — v3 CSS 를 다 실은 뒤에 래퍼 하나만 지운다
 import './root.css';
+import './design.css';
