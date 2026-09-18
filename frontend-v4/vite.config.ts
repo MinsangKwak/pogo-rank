@@ -1,3 +1,4 @@
+/// <reference types="vitest/config" />
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 
@@ -9,6 +10,16 @@ import react from '@vitejs/plugin-react';
 export default defineConfig({
   base: '/',
   plugins: [react()],
+  // 컴포넌트 검사 — 브라우저도 빌드도 없이 jsdom 에서 돈다.
+  // **왜 여기에 두나** — 권한 규칙은 순수 함수지만, v4.0.1 에 터진 버그는 규칙이 아니라
+  // 그 규칙을 **아무도 안 읽은** 배선 문제였다. 그래서 규칙만이 아니라 규칙을 쓰는
+  // 컴포넌트를 실제로 그려 본다. 브라우저로 같은 것을 보려면 빌드 6초 + 기동이 더 든다.
+  test: {
+    environment: 'jsdom',
+    globals: true,
+    setupFiles: ['./src/test/setup.ts'],
+    css: false,
+  },
   build: {
     outDir: 'dist',
     // 코드 스플리팅 — 화면별 청크는 React.lazy 가 만든다. 여기서는 벤더만 가른다

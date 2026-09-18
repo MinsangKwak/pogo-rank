@@ -21,7 +21,8 @@ import type { OpenMon } from '../lib/mon';
 const STARTER: Record<string, number> = { today: 7, pick: 4, mine: 1 };
 
 // 주소는 라우터 표의 path 에서 온다 — 손으로 조립하면 v3.61.0 의 죽은 링크가 되풀이된다
-function Tile({ route }: { route: RouteDef }) {
+// 내보내는 이유는 검사 하나뿐이다 (Shell 의 NavItem 과 같은 사정)
+export function Tile({ route }: { route: RouteDef }) {
   // 메뉴 줄과 같은 표시 — 흐려지고 이름 뒤에 🔒 (planner.css .home__tile.is-locked)
   const reason = useLockReason(route.id);
   const lock = lockedAttrs(reason);

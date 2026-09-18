@@ -21,7 +21,8 @@ import { useLockReason, lockedAttrs } from '../lib/useLocked';
 import Account from './Account';
 import Trainers from './Trainers';
 
-function NavItem({ route, now }: { route: RouteDef; now: string }) {
+// 내보내는 이유는 검사 하나뿐이다 — 잠금 표시가 붙는 자리를 데이터 없이 그려 보려면 필요하다
+export function NavItem({ route, now }: { route: RouteDef; now: string }) {
   // 잠긴 줄은 흐려지고 라벨 뒤에 🔒 가 붙는다 (planner.css .is-locked).
   // 누르는 것 자체는 막지 않는다 — 누르면 왜 잠겼는지와 로그인 버튼이 있는 화면으로 간다
   const reason = useLockReason(route.id);
