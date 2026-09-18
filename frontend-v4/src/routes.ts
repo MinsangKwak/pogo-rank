@@ -2,8 +2,7 @@
 // routes.ts — v3 router.js 의 ROUTES 표를 그대로 옮긴 것
 //
 // **경로 문자열을 바꾸지 않는다.** 공유된 링크·북마크·GA 지표가 전부 이 문자열에 달려 있다.
-// legacy 표도 그대로다 — 라우트가 사라져도 옛 주소는 남는다. v3.61.0 에 두 화면을 합치며
-// planner 로 이어 뒀던 주소 넷은, planner 를 접은 v4.2.0 에 planner 자신과 함께 홈으로 옮겼다.
+// legacy 표도 그대로다 — v3.61.0 에 두 화면을 합치면서 옛 주소 넷을 planner 로 이어 뒀다.
 //
 // v3 와 달라진 것은 하나 — `as const` 와 유니온 타입이 붙어, 없는 id 를 적으면 **컴파일이 선다.**
 // v3 에서는 `routeHash('planner-collection')` 이 라우트가 사라진 뒤에도 그대로 남아
@@ -30,11 +29,10 @@ export interface RouteDef {
 }
 
 export const ROUTES = [
-  // 내 포켓몬(🎒)을 접으면서 그 주소 다섯이 갈 곳이 없어졌다 — 홈이 받는다 (v4.2.0).
-  // 공유된 링크와 북마크는 남아 있으므로, 없애는 대신 **이어 둔다**
-  { id: 'home', path: '', kind: 'shell', tab: 'home', title: '서비스 홈', legacy: ['planner', 'plan', 'planner/collection', 'plan/collection', 'favs'] },
+  { id: 'home', path: '', kind: 'shell', tab: 'home', title: '서비스 홈' },
 
   // ── 이동 목록(메뉴)에 오르는 순서 그대로 ────────────────────────────────
+  { id: 'planner', path: 'planner', kind: 'plan', tab: 'home', nav: '내 포켓몬', icon: '🎒', group: 'mine', title: '내 포켓몬', locked: true, beta: true, legacy: ['plan', 'planner/collection', 'plan/collection', 'favs'] },
   { id: 'dex', path: 'dex', kind: 'page', nav: '포켓몬 도감', icon: '📕', group: 'pick', legacy: ['types'] },
   { id: 'dmax', path: 'dmax', kind: 'shell', tab: 'max', nav: 'D-MAX', icon: '✨', group: 'pick', legacy: ['rank/max'] },
   { id: 'pve', path: 'pve', kind: 'shell', tab: 'pve', nav: '레이드 · PvE', icon: '⚔️', group: 'pick', legacy: ['rank/pve'] },
@@ -64,7 +62,7 @@ export type RouteId = (typeof ROUTES)[number]['id'];
 export const ROUTE_GROUPS: readonly [GroupId, string, string, string][] = [
   ['today', '지금 뭐 하지', '진행 중인 이벤트와 레이드 일정을 확인하세요.', '📅'],
   ['pick', '뭘 데려갈까', '상황에 맞는 포켓몬과 추천 덱을 찾아보세요.', '🎯'],
-  ['mine', '뭘 키울까', '게임 검색창에 붙여 넣을 검색식을 만들어요.', '🌱'],
+  ['mine', '뭘 키울까', '담아 둔 포켓몬의 일정을 챙기고, 게임에 붙여 넣을 검색식을 만들어요.', '🌱'],
 ];
 
 export const ROUTE_DESC: Partial<Record<RouteId, string>> = {
@@ -73,6 +71,7 @@ export const ROUTE_DESC: Partial<Record<RouteId, string>> = {
   dmax: '거대한 힘을 지닌 포켓몬의 티어를 봐요.',
   pve: '레이드 추천 딜러와 솔플 가능 여부를 계산해요.',
   pvp: '리그별 순위와 덱 구성을 봐요.',
+  planner: '담아 둔 포켓몬의 다가오는 일정을 챙겨 드려요.',
   'game-updates': '게임의 규칙·밸런스·오류가 바뀐 소식이에요. 공식 발표를 확인한 것만 적어요.',
   schedule: '다가오는 레이드와 이벤트 일정이에요.',
   raids: '지금 도는 레이드 보스와 약점이에요.',
@@ -146,10 +145,7 @@ export function routeCanonical(path: string): string | null {
   const exact = ROUTE_LEGACY.get(clean);
   if (exact !== undefined) return exact;
   for (const [old, next] of ROUTE_LEGACY) {
-    if (!clean.startsWith(`${old}/`)) continue;
-    // 홈으로 잇는 옛 주소는 뒤를 버린다 — 홈에는 이어받을 뒷경로가 없고,
-    // 그대로 붙이면 `#//collection` 같은 주소가 남는다 (v4.2.0)
-    return next ? `${next}/${clean.slice(old.length + 1)}` : '';
+    if (clean.startsWith(`${old}/`)) return `${next}/${clean.slice(old.length + 1)}`;
   }
   return null;
 }

@@ -12,7 +12,7 @@
 import { useQuery, useSuspenseQuery, type UseSuspenseQueryResult } from '@tanstack/react-query';
 import type {
   DexBundle, MaxBundle, PveBundle, PvpBundle, GamedayBundle,
-  UpdatesBundle, MetaBundle, UsageBundle, ScheduleBundle, ReleaseBundle, Manifest,
+  FavEventsBundle, UpdatesBundle, MetaBundle, UsageBundle, ScheduleBundle, ReleaseBundle, Manifest,
 } from '../types/data';
 
 const BASE = `${import.meta.env.BASE_URL}data/`;
@@ -69,6 +69,7 @@ export const useMax = bundleHook<MaxBundle>('max');
 export const usePve = bundleHook<PveBundle>('pve');
 export const usePvp = bundleHook<PvpBundle>('pvp');
 export const useGameday = bundleHook<GamedayBundle>('gameday');
+export const useFavEvents = bundleHook<FavEventsBundle>('fav-events');
 export const useUpdates = bundleHook<UpdatesBundle>('updates');
 export const useMeta = bundleHook<MetaBundle>('meta');
 export const useUsage = bundleHook<UsageBundle>('usage');
