@@ -16,7 +16,7 @@
 
 const RELEASE_NOTES_EN = {
   '2026-09-18 · v4.0.0': [
-    '**Smoother navigation and a faster first load** — moving between screens no longer redraws everything, and the first screen downloads less.',
+    '**moncamp has evolved — rebuilt on React** — smoother navigation and a faster first load. Screens, URLs and everything you saved stay the same.',
     '**If you installed moncamp to your home screen, please remove and reinstall it** — an older copy of the app may still be cached.',
   ],
   '2026-09-17 · v3.61.2': [
