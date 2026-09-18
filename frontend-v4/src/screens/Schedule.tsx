@@ -17,6 +17,7 @@ import { Fragment, useMemo, useState } from 'react';
 import { useSchedule } from '../lib/data';
 import { Chips, type ChipDef } from '../components/Bits';
 import { track } from '../lib/track';
+import KoOnlyNote from '../components/KoOnlyNote';
 import type { ScheduleCat, ScheduleItem, ScheduleMonth } from '../types/data';
 
 const SCHED_CAT_KEY = 'pogo_sched_cat';   // v3 와 같은 키
@@ -77,7 +78,7 @@ function Cal({ month, cats, items, picked, onPick }: {
                   {item.label.split(' (')[0]}
                 </span>
               ))}
-              {dayItems.length > 3 ? <span className="cal__more">+{dayItems.length - 3}개 더 보기</span> : null}
+              {dayItems.length > 3 ? <span className="cal__more">{`+${dayItems.length - 3}개 더 보기`}</span> : null}
             </span>
           </button>
         );
@@ -176,6 +177,7 @@ export default function Schedule() {
 
   return (
     <div className="page__body schedule__page" id="page-schedule" data-route="schedule">
+      <KoOnlyNote kind="kst" />
       <div className="page__filters">
         <Chips items={chipItems} value={cat} onPick={(id) => {
           setCat(id);
@@ -201,7 +203,7 @@ export default function Schedule() {
             ))}
           </p>
           <div className="schedule__detail">
-            <p className="schedule__sec">{m}/{day} 일정</p>
+            <p className="schedule__sec">{`${m}/${day} 일정`}</p>
             {onDay.length
               ? onDay.map((item, index) => (
                 <p key={index} className="schedule__item">

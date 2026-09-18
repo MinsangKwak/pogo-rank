@@ -11,8 +11,58 @@ import { useDex } from '../lib/data';
 import { spriteSrc, spriteAnimSrc } from '../lib/sprite';
 import { PxIcon, PxLabel } from './PxIcon';
 
-// 움직이는 그림은 원본 크기가 제각각이라 상자에 맞춰 키운다. 2배까지만 — 더 키우면 도트가 뭉갠다
+// ── 움직이는 그림 (v3 components/sprite.js spriteAnimate · fitAnimZoom 이식) ──────
+//
+// GIF 는 출처가 둘이라 원본 크기가 제각각이다 — 23×19 부터 201×166 까지.
+// 상자에 맞추기만 하면 작은 종이 3배 넘게 늘어나 뭉개지므로 **정수배 2배**를 한도로 두고,
+// 남는 자리는 padding 으로 비운다 (img 를 직접 줄이면 목록 줄 높이가 그림마다 달라진다).
+//
+// **한 번 재고 끝내지 않는다.** 상자 크기는 화면마다 다르고(줄 42px · 카드 180px · 상세 72px)
+// 보기 전환·글꼴 도착·화면 회전으로 바뀐다. v3 는 ResizeObserver 로 그때마다 다시 맞추는데
+// v4 는 GIF 를 갈아 끼울 때 한 번만 재고 있었다 — 그래서 첫 목록에서 한 번 크게 잡히면
+// 그 화면을 떠났다 돌아오기 전까지 그대로 컸다 (제보: '맨 처음 리스트 때 이미지가 너무 커').
 const SPRITE_MAX_ZOOM = 2;
+export const SPRITE_ANIM_KEY = 'pogo_sprite_anim';   // 'off' 면 정지본만 (v3 와 같은 키)
+
+const zoomWatch = typeof ResizeObserver === 'function'
+  ? new ResizeObserver((entries) => { for (const entry of entries) fitZoom(entry.target as HTMLImageElement); })
+  : null;
+
+/** 움직이는 그림을 쓰는가 — 설정 화면이 정한다. 기본 켬 */
+export function spriteAnimEnabled(): boolean {
+  try { return localStorage.getItem(SPRITE_ANIM_KEY) !== 'off'; } catch { return true; }
+}
+
+// 설정을 body 클래스로도 알린다 — CSS 가 읽는 상태 표식이다 (v3 syncSpriteAnimClass)
+document.body?.classList.toggle('sprite-anim-off', !spriteAnimEnabled());
+
+/**
+ * 상자 안에서 그림을 키운다.
+ * **잴 때는 우리가 넣은 padding 을 먼저 뺀다** — 크기가 자동인 자리에서는 padding 이 상자를 키워
+ * 그림이 끝없이 자라는 되먹임이 된다 (v3.35.1 에 리틀리그 덱에서 겪었다).
+ */
+function fitZoom(image: HTMLImageElement) {
+  const natural = Math.max(Number(image.dataset['animW']) || 0, Number(image.dataset['animH']) || 0);
+  if (!natural) return;
+  // 화면이 원래 주던 여백은 지키고 그 위에 한도를 얹는다 — 인라인 padding 을 한 번 비워 CSS 값을 읽어 둔다
+  if (image.dataset['animPad'] === undefined) {
+    image.style.padding = '';
+    image.dataset['animPad'] = String(parseFloat(getComputedStyle(image).paddingTop) || 0);
+  }
+  const base = Number(image.dataset['animPad']);
+  const applied = image.style.padding;
+  if (applied) image.style.padding = '0px';
+  const box = Math.min(image.clientWidth, image.clientHeight);
+  if (!box) { if (applied) image.style.padding = applied; return; }
+  const room = Math.max(0, box - base * 2);
+  const want = Math.min(natural * SPRITE_MAX_ZOOM, room);
+  const next = `${Math.max(base, Math.round((box - want) / 2))}px`;
+  // 값이 그대로면 쓰지 않는다 — 쓰면 관찰자가 또 불려 헛돈다
+  if (next !== applied) image.style.padding = next;
+  else if (applied) image.style.padding = applied;
+  // 줄일 때는 부드럽게, 키울 때는 도트 그대로 — 도트를 줄이면 계단이 진다
+  image.style.imageRendering = natural > room ? 'auto' : '';
+}
 
 /**
  * 정지본 자리에 움직이는 그림을 **갈아 끼운다**.
@@ -20,64 +70,97 @@ const SPRITE_MAX_ZOOM = 2;
  * 받기에 실패하면 정지본 그대로 둔다. 움직임을 줄여 달라고 한 사람에게는 아예 갈지 않는다
  * (GIF 는 재생을 멈출 방법이 없다).
  */
-function animate(image: HTMLImageElement, url: string) {
+function animate(image: HTMLImageElement, url: string): () => void {
   const loader = new Image();
   loader.onload = () => {
     image.src = url;
     image.classList.add('sprite--anim');
-    fitZoom(image, Math.max(loader.naturalWidth, loader.naturalHeight));
+    image.dataset['animW'] = String(loader.naturalWidth);
+    image.dataset['animH'] = String(loader.naturalHeight);
+    fitZoom(image);
+    zoomWatch?.observe(image, { box: 'border-box' });
   };
   loader.src = url;
+  return () => { loader.onload = null; zoomWatch?.unobserve(image); };
 }
 
 /**
- * 상자 안에서 그림을 키운다 (v3 fitAnimZoom).
- * **잴 때는 우리가 넣은 padding 을 먼저 뺀다** — 크기가 자동인 자리에서는 padding 이 상자를 키워
- * 그림이 끝없이 자라는 되먹임이 된다 (v3.35.1 에 리틀리그 덱에서 겪었다).
+ * 있는 그림 번호를 **묶음마다 한 번만** Set 으로 만든다.
+ * 그림 하나를 그릴 때마다 `new Set(2000개)` 를 짓고 있었다 — 도감 한 화면이 1,000줄이라
+ * 200만 번을 헛으로 넣었다. 묶음은 staleTime: Infinity 라 자리(identity)가 안 바뀐다
  */
-function fitZoom(image: HTMLImageElement, natural: number) {
-  if (!natural) return;
-  const applied = image.style.padding;
-  if (applied) image.style.padding = '0px';
-  const base = parseFloat(getComputedStyle(image).paddingTop) || 0;
-  const box = Math.min(image.clientWidth, image.clientHeight);
-  if (!box) { if (applied) image.style.padding = applied; return; }
-  const room = Math.max(0, box - base * 2);
-  const want = Math.min(natural * SPRITE_MAX_ZOOM, room);
-  image.style.padding = `${Math.max(base, Math.round((box - want) / 2))}px`;
-  // 줄일 때는 부드럽게, 키울 때는 도트 그대로 — 도트를 줄이면 계단이 진다
-  image.style.imageRendering = natural > room ? 'auto' : '';
+const idSets = new WeakMap<object, { still: Set<number>; anim: Set<number> }>();
+function spriteIdSets(dex: { SPRITE_IDS: readonly number[]; SPRITE_ANIM_IDS: readonly number[] }) {
+  let found = idSets.get(dex);
+  if (!found) {
+    found = { still: new Set(dex.SPRITE_IDS.map(Number)), anim: new Set(dex.SPRITE_ANIM_IDS.map(Number)) };
+    idSets.set(dex, found);
+  }
+  return found;
 }
 
-/** 포켓몬 그림. 없으면 몬스터볼 자리표시 (v3 spritePlaceholder 와 같은 자리) */
+/** 자리표시용 몬스터볼 — currentColor 로 그려 두면 테마 색을 그대로 따라간다 (v3 spritePlaceholder) */
+function Ball({ className }: { className?: string }) {
+  return (
+    <span className={`sprite empty${className ? ` ${className}` : ''}`}>
+      <svg viewBox="0 0 40 40" width="24" height="24" aria-hidden="true">
+        <circle cx="20" cy="20" r="14" fill="none" stroke="currentColor" strokeWidth="2.5" />
+        <path d="M6 20h9.5M24.5 20H34" stroke="currentColor" strokeWidth="2.5" />
+        <circle cx="20" cy="20" r="4.5" fill="none" stroke="currentColor" strokeWidth="2.5" />
+      </svg>
+    </span>
+  );
+}
+
+// 받기에 실패했을 때 몇 번까지 다시 받아 보는가 (v3 문서 캡처 리스너와 같은 수·같은 간격).
+// 한 번 놓쳤다고 몬스터볼로 바꿔 버리면 잠깐 끊긴 회선이 "이 포켓몬은 그림이 없다" 로 읽힌다
+const SPRITE_RETRY = 2;
+
+/** 포켓몬 그림. 없으면 몬스터볼 자리표시 (v3 sprite() · spritePlaceholder 와 같은 자리) */
 export function Sprite({ id, className }: { id: number; className?: string }) {
   const { data } = useDex();
+  // 재시도 횟수가 곧 주소다 — 0 이면 원본, 1·2 면 캐시를 비켜 가는 ?r=n
+  const [retry, setRetry] = useState(0);
   const [failed, setFailed] = useState(false);
+  const [loading, setLoading] = useState(true);
   const node = useRef<HTMLImageElement>(null);
-  const src = spriteSrc(id, new Set(data.SPRITE_IDS));
-  const anim = spriteAnimSrc(id, new Set(data.SPRITE_ANIM_IDS));
+  const sets = spriteIdSets(data);
+  const src = spriteSrc(id, sets.still);
+  const anim = spriteAnimSrc(id, sets.anim);
 
   useEffect(() => {
     const image = node.current;
     if (!image || !anim) return;
+    if (!spriteAnimEnabled()) return;
     if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return;
-    animate(image, anim);
+    return animate(image, anim);
   }, [anim]);
 
-  if (!src || failed) {
-    return <span className={`sprite empty${className ? ` ${className}` : ''}`} aria-hidden="true">◓</span>;
-  }
+  // 번호가 바뀌면 처음부터 — 앞 포켓몬이 실패했다고 다음 포켓몬까지 몬스터볼로 열리면 안 된다
+  useEffect(() => { setRetry(0); setFailed(false); setLoading(true); }, [id]);
+
+  if (!src || failed) return <Ball className={className} />;
+  // 저장소 배정 번호(90000번대)는 픽셀 스프라이트가 아니라 게임 내 3D 렌더 아이콘이라
+  // pixelated 로 축소하면 계단이 진다 — sprite--hd 로 부드럽게 그린다 (v3 v2.7.2)
+  const hd = Number(id) >= 90000 ? ' sprite--hd' : '';
   return (
     <img
       ref={node}
-      className={`sprite${className ? ` ${className}` : ''}`}
-      src={src}
+      className={`sprite${hd}${loading ? ' is-loading' : ''}${className ? ` ${className}` : ''}`}
+      src={retry ? `${src}?r=${retry}` : src}
       alt=""
       width={64}
       height={64}
       loading="lazy"
       decoding="async"
-      onError={() => setFailed(true)}
+      // 다 받으면 뼈대(.is-loading)를 벗긴다 — v3 는 이걸 문서 캡처 리스너로 했다.
+      // cloneNode 로 복제한 행에서 리스너가 사라지는 문제 때문이었는데, 여기서는 복제가 없다
+      onLoad={() => setLoading(false)}
+      onError={() => {
+        if (retry >= SPRITE_RETRY) { setFailed(true); return; }
+        const next = retry + 1;
+        setTimeout(() => setRetry(next), 300 * next);
+      }}
     />
   );
 }
@@ -122,10 +205,12 @@ export function Chips({ items, value, onPick }: {
   );
 }
 
-/** 화면 위 세그먼트 — v3 는 #screen-tabs 안의 `.seg.js-screen-tab` 하나다 */
-export function ScreenTabs({ items, value, onPick }: { items: ChipDef[]; value: string; onPick: (id: string) => void }) {
+/** 세그먼트 컨트롤 — 붙어 있는 버튼 몇 개로 하나를 고른다 (v3 components/seg.js) */
+export function Seg({ items, value, onPick, className }: {
+  items: ChipDef[]; value: string; onPick: (id: string) => void; className?: string;
+}) {
   return (
-    <div className="seg js-screen-tab">
+    <div className={`seg${className ? ` ${className}` : ''}`}>
       {items.map((item) => (
         <button key={item.id} type="button" aria-pressed={item.id === value} onClick={() => onPick(item.id)}>
           {item.label}
@@ -133,6 +218,11 @@ export function ScreenTabs({ items, value, onPick }: { items: ChipDef[]; value: 
       ))}
     </div>
   );
+}
+
+/** 화면 위 세그먼트 — v3 는 #screen-tabs 안의 `.seg.js-screen-tab` 하나다 */
+export function ScreenTabs({ items, value, onPick }: { items: ChipDef[]; value: string; onPick: (id: string) => void }) {
+  return <Seg items={items} value={value} onPick={onPick} className="js-screen-tab" />;
 }
 
 /** 타입 필터 접이식 — #controls 안에 이것 하나가 들어간다 (v3 compactScreenFilters) */

@@ -17,6 +17,9 @@ Disallow: /sprites/
 # 2026-09-12 v2.67.0 움직이는 그림 949장(약 51MB) — 상세 화면 전용이라 검색에 의미가 없다
 Disallow: /sprites-anim/
 Disallow: /dev-mock.js
+# 2026-09-18 v4.0.0 화면 데이터와 번들 — 검색에 의미가 없는데 크롤러가 통째로 받으면 대역폭만 먹는다
+Disallow: /data/
+Disallow: /assets/
 # 해시 라우팅(#/dex 등)은 크롤러가 색인하지 않는다. 별도 차단 경로가 필요 없음
 Crawl-delay: 10
 

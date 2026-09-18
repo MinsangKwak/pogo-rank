@@ -7,6 +7,7 @@
 // ─────────────────────────────────────────────────────────────────────────────
 import type { ReactNode } from 'react';
 import { ROUTE_GROUPS, ROUTE_NAV, routeDesc, routeHash, type RouteDef } from '../routes';
+import { useLocked, lockedAttrs } from '../lib/useLocked';
 import { useMax, useUpdates, useMeta, usePve, useDex } from '../lib/data';
 import { Sprite } from '../components/Bits';
 import { PxIcon } from '../components/PxIcon';
@@ -14,14 +15,20 @@ import { NameNode } from '../components/Row';
 import type { GameUpdate } from '../types/data';
 import { track } from '../lib/track';
 import { UPDATE_CATS } from '../lib/notes';
+import type { OpenMon } from '../lib/mon';
 
 // 갈래마다 문 앞에 세우는 스타터 (v3 home.js 와 같은 번호 — 꼬부기 · 파이리 · 이상해씨)
 const STARTER: Record<string, number> = { today: 7, pick: 4, mine: 1 };
 
 // 주소는 라우터 표의 path 에서 온다 — 손으로 조립하면 v3.61.0 의 죽은 링크가 되풀이된다
 function Tile({ route }: { route: RouteDef }) {
+  // 메뉴 줄과 같은 표시 — 흐려지고 이름 뒤에 🔒 (planner.css .home__tile.is-locked)
+  const locked = useLocked(route.id);
+  const lock = lockedAttrs(locked);
   return (
-    <a className="home__tile" href={`#/${route.path}`} data-route={route.id} title={routeDesc(route.id)}
+    <a className={`home__tile${lock.className}`} href={`#/${route.path}`} data-route={route.id}
+      title={locked ? lock.title : routeDesc(route.id)}
+      {...(lock['aria-disabled'] ? { 'aria-disabled': lock['aria-disabled'] } : {})}
       {...(route.id === 'planner' ? { id: 'home-tile-planner' } : {})}>
       <span className="home__icon" aria-hidden="true">{route.icon}</span>
       <strong>{route.nav}</strong>
@@ -47,7 +54,7 @@ function Discover({ mascot, sprite, kicker, head, copy, extra, href }: {
     <button className={`pick__discover${extra ? ` ${extra}` : ''}`} type="button"
       onClick={() => { location.hash = href; }}>
       <span className={`home-card-mascot home-card-mascot--${mascot}`} aria-hidden="true">
-        <img className="home-card-mascot__body" src={`${import.meta.env.BASE_URL}../sprites/${sprite}.png`}
+        <img className="home-card-mascot__body" src={`${import.meta.env.BASE_URL}sprites/${sprite}.png`}
           alt="" width={96} height={96} />
       </span>
       <span className="pick__discover-kicker">{kicker}</span>
@@ -60,7 +67,7 @@ function Discover({ mascot, sprite, kicker, head, copy, extra, href }: {
 
 function PickCard({ kind, title, hint, rows, href, labels, onOpen }: {
   kind: string; title: string; hint: string; rows: PickRow[]; href: string | null;
-  labels: readonly string[]; onOpen: (sprite: number, en?: string) => void;
+  labels: readonly string[]; onOpen: OpenMon;
 }) {
   const first = rows[0];
   if (!first) return null;
@@ -72,7 +79,7 @@ function PickCard({ kind, title, hint, rows, href, labels, onOpen }: {
         {href ? <a className="pick__all" href={href}>전체 보기 <PxIcon emoji="↗" /></a> : null}
       </div>
       <div className="pick__grid">
-        <button className="pick__hero" type="button" aria-label={`1위 ${first.name}`} onClick={() => onOpen(first.sprite, first.en)}>
+        <button className="pick__hero" type="button" aria-label={`1위 ${first.name}`} onClick={() => onOpen(first)}>
           <span className="pick__spotlight" aria-hidden="true">NO.01</span>
           <Sprite id={first.sprite} />
           <span className="pick__inspect" aria-hidden="true">상세 보기 ↗</span>
@@ -80,7 +87,7 @@ function PickCard({ kind, title, hint, rows, href, labels, onOpen }: {
         <ol className="pick__list">
           {rows.map((row, index) => (
             <li key={`${row.sprite}-${index}`}>
-              <button className="pick__row" type="button" onClick={() => onOpen(row.sprite, row.en)}>
+              <button className="pick__row" type="button" onClick={() => onOpen(row)}>
                 <span className="pick__rank">{index + 1}</span>
                 <span className="pick__body">
                   <span className="pick__name"><NameNode name={row.name} labels={labels} /></span>
@@ -114,7 +121,7 @@ function UpdateDates({ row }: { row: GameUpdate }) {
   );
 }
 
-export default function Home({ onOpen }: { onOpen: (sprite: number, en?: string) => void }) {
+export default function Home({ onOpen }: { onOpen: OpenMon }) {
   const { data: max } = useMax();
   const { data: pve } = usePve();
   const { data: dex } = useDex();
@@ -144,7 +151,7 @@ export default function Home({ onOpen }: { onOpen: (sprite: number, en?: string)
           <h2>맥스 배틀에 데려갈 포켓몬,<br />여기서 골라요.</h2>
           <p>다이맥스 티어표와 추천 덱을 비교하고, 레이드·PvP까지 확인하세요.</p>
         </div>
-        <img className="home__pixel-mascot" src={`${import.meta.env.BASE_URL}../sprites/25.png`}
+        <img className="home__pixel-mascot" src={`${import.meta.env.BASE_URL}sprites/25.png`}
           alt="" aria-hidden="true" width={96} height={96} />
         <div className="home__cta">
           <a className="home__btn home__btn--primary" href={routeHash('dmax')}
@@ -181,7 +188,7 @@ export default function Home({ onOpen }: { onOpen: (sprite: number, en?: string)
           {ROUTE_GROUPS.map(([id, label, desc]) => (
             <section key={id} className={`home__service-group home__service-group--${id}`}>
               <div className="home__group-head">
-                <img className="home__starter" src={`${import.meta.env.BASE_URL}../sprites/${STARTER[id]}.png`}
+                <img className="home__starter" src={`${import.meta.env.BASE_URL}sprites/${STARTER[id]}.png`}
                   alt="" aria-hidden="true" width={96} height={96} />
                 <h4 className="home__group">{label}</h4>
                 <p className="home__group-desc">{desc}</p>

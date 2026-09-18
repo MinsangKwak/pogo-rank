@@ -5,7 +5,10 @@
 #       bash scripts/verify_deploy.sh https://moncamp.kr/ prod v3.27.0
 #   (2026-09-14 v3.27.0 커스텀 도메인 전에는 minsangkwak.github.io/pogo-rank(-dev)/ 였다)
 # 기대 버전을 생략하면 backend/build.py 의 APP_VERSION 을 쓴다 (dev 채널은 -dev 를 붙여 비교).
-# 확인 항목: 버전 배지 · 채널 표식(-dev/noindex/GA/robots) · data.js · 아머드 뮤츠 전용 스프라이트 · PWA 파일
+# 확인 항목: 판 번호 · 채널 표식(-dev/noindex/GA/robots) · 화면 데이터 · 아머드 뮤츠 전용 스프라이트 · PWA 파일
+# 2026-09-18 v4.0.0 실서비스가 v4(React)로 바뀌었다. 판이 달라 **찾을 자리도 다르다** —
+#   v3 는 HTML 안에 판 번호와 data.js 가 있었고, v4 는 data/meta.json 과 data/manifest.json 에 있다.
+#   어느 판인지는 HTML 에 <div id="root"> 가 있는지로 가른다 (v4 는 있고 v3 는 없다)
 # GitHub Pages CDN 캐시(max-age 600)를 피하려고 매 요청에 쿼리를 붙인다.
 set -uo pipefail
 URL=${1:?사용법: verify_deploy.sh <주소> <prod|dev> [기대 버전]}
@@ -23,12 +26,26 @@ echo "▶ $URL  채널=$CHANNEL  기대 버전=$EXPECT"
 html=$(get "$URL") || { echo "  ✗ index.html 응답 없음"; exit 1; }
 ok "index.html 200 ($(echo -n "$html" | wc -c | tr -d ' ') bytes)"
 
-# 1) 버전 배지 — 기대 버전이 있고, prod 라면 -dev 가 붙어 있지 않아야 한다
-if grep -q -- "$EXPECT" <<<"$html"; then ok "버전 $EXPECT"; else bad "버전 $EXPECT 없음 (실제: $(grep -o 'v2\.[0-9]*\.[0-9]*\(-dev\)\?' <<<"$html" | sort -u | tr '\n' ' '))"; fi
-if [[ $CHANNEL == prod ]] && grep -q -- "${EXPECT}-dev" <<<"$html"; then bad "prod 인데 -dev 배지가 있음"; fi
+# 0) 어느 판인가 — v4 는 #root 하나에 그린다
+if grep -q '<div id="root">' <<<"$html"; then V=v4; else V=v3; fi
+ok "판: $V"
+
+# 1) 판 번호 — v3 는 HTML 에 글자로 박혀 있고, v4 는 data/meta.json 의 APP_VERSION 이다
+if [[ $V == v4 ]]; then
+  meta=$(get "${URL}data/meta.json") || meta=""
+  got=$(sed -n 's/.*"APP_VERSION":"\([^"]*\)".*/\1/p' <<<"$meta")
+  [[ $got == "$EXPECT" ]] && ok "판 번호 $EXPECT" || bad "판 번호가 $EXPECT 가 아님 (실제: ${got:-없음})"
+else
+  if grep -q -- "$EXPECT" <<<"$html"; then ok "판 번호 $EXPECT"; else bad "판 번호 $EXPECT 없음"; fi
+fi
+if [[ $CHANNEL == prod && ${got:-} == *-dev ]]; then bad "prod 인데 -dev 판이 올라가 있음"; fi
 
 # 1b) 문의 이메일 주입 (CONTACT_EMAIL) — 두 채널 모두 mailto 링크가 있어야 한다 (비워 둔 빌드라면 이 항목은 경고만)
-grep -q 'href="mailto:' <<<"$html" && ok "문의 이메일(mailto) 링크 있음" || echo "  ! mailto 링크 없음 — CONTACT_EMAIL 이 비어 있는 빌드인지 확인"
+if [[ $V == v4 ]]; then
+  grep -q '"CONTACT_EMAIL":"[^"]' <<<"${meta:-}" && ok "문의 이메일 주입됨" || echo "  ! CONTACT_EMAIL 이 비어 있음"
+else
+  grep -q 'href="mailto:' <<<"$html" && ok "문의 이메일(mailto) 링크 있음" || echo "  ! mailto 링크 없음 — CONTACT_EMAIL 이 비어 있는 빌드인지 확인"
+fi
 
 # 2) 채널 표식
 has_noindex=$(grep -c 'name="robots" content="noindex' <<<"$html" || true)
@@ -48,11 +65,21 @@ else
   grep -q '^Allow: /$' <<<"$robots" && ok "robots.txt 검색 허용" || bad "prod robots.txt 에 Allow: / 없음"
 fi
 
-# 3) 데이터 번들
-datajs=$(get "${URL}data.js") || datajs=""
-[[ -n $datajs ]] && ok "data.js 200 ($(echo -n "$datajs" | wc -c | tr -d ' ') bytes)" || bad "data.js 응답 없음"
-grep -q 'const ROLES' <<<"$datajs" && ok "ROLES(즐겨찾기 분류 근거) 포함" || bad "data.js 에 ROLES 없음"
-grep -q '90150' <<<"$datajs" && ok "SPRITE_IDS 에 아머드 뮤츠(90150) 포함" || bad "data.js 에 90150 없음"
+# 3) 화면 데이터 — v3 는 data.js 한 덩이, v4 는 data/ 밑의 묶음들이다
+if [[ $V == v4 ]]; then
+  man=$(get "${URL}data/manifest.json") || man=""
+  [[ -n $man ]] && ok "data/manifest.json 200" || bad "data/manifest.json 응답 없음"
+  for one in dex max pve pvp; do
+    grep -q "\"$one\"" <<<"$man" && ok "묶음 $one 있음" || bad "manifest 에 $one 없음"
+  done
+  dexj=$(get "${URL}data/dex.json") || dexj=""
+  grep -q '90150' <<<"$dexj" && ok "SPRITE_IDS 에 아머드 뮤츠(90150) 포함" || bad "dex.json 에 90150 없음"
+else
+  datajs=$(get "${URL}data.js") || datajs=""
+  [[ -n $datajs ]] && ok "data.js 200 ($(echo -n "$datajs" | wc -c | tr -d ' ') bytes)" || bad "data.js 응답 없음"
+  grep -q 'const ROLES' <<<"$datajs" && ok "ROLES(즐겨찾기 분류 근거) 포함" || bad "data.js 에 ROLES 없음"
+  grep -q '90150' <<<"$datajs" && ok "SPRITE_IDS 에 아머드 뮤츠(90150) 포함" || bad "data.js 에 90150 없음"
+fi
 
 # 4) 아머드 뮤츠 전용 스프라이트 — PNG 이고, 일반 뮤츠(150)와 바이트 수가 달라야 전용 그림이다
 s150=$(curl -fsSL "${URL}sprites/150.png$bust" | wc -c | tr -d ' ')
@@ -69,7 +96,14 @@ code=$(curl -s -o /dev/null -w '%{http_code}' "${URL}sprites/10070.png$bust")
 [[ $code == 200 ]] && ok "sprites/10070.png (메가 샤크니아) 200" || bad "sprites/10070.png $code — sprites.py 수집 범위 확인"
 # 2026-09-12 v3.14.0 상성 검색 페이지(renderTypeSearchPage)는 v3.9.0 에 도감 검색으로 합쳐져 사라졌다 — 그 뒤로 이 항목이 늘 실패했다.
 # 지금 검색 입구는 openSearch (components/search.js, v3.12.0) 하나다
-grep -q 'function openSearch' <<<"$html" && ok "🔍 검색 입구(openSearch) 번들 포함" || bad "index.html 에 검색 입구(components/search.js openSearch) 없음"
+if [[ $V == v4 ]]; then
+  # 번들이 따로라 HTML 에는 함수 이름이 없다 — 대신 번들·스타일이 붙어 있는지로 본다
+  grep -q 'assets/index-.*\.js' <<<"$html" && ok "v4 번들 연결됨" || bad "index.html 에 v4 번들 <script> 가 없음"
+  grep -q 'assets/index-.*\.css' <<<"$html" && ok "v4 스타일 연결됨" || bad "index.html 에 v4 스타일이 없음"
+  grep -q 'Galmuri11' <<<"$html" && ok "도트 글꼴(Galmuri) 선언 있음" || bad "글꼴 선언이 없음 — 화면이 시스템 글꼴로 그려집니다"
+else
+  grep -q 'function openSearch' <<<"$html" && ok "🔍 검색 입구(openSearch) 번들 포함" || bad "index.html 에 검색 입구 없음"
+fi
 
 # 5) PWA 정적 파일
 for f in manifest.webmanifest sw.js icon-192.png; do

@@ -14,13 +14,17 @@
 //     .detail__dock  링크 복사 · CP 계산기 / 초기화 · 상세로 돌아가기
 // ─────────────────────────────────────────────────────────────────────────────
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { useDex, useGameday, useMax, usePve, usePvp, useUsage } from '../lib/data';
+import { useDex, useFavEvents, useGameday, useMax, usePve, usePvp, useUsage } from '../lib/data';
 import { Sprite } from '../components/Bits';
 import { PxIcon } from '../components/PxIcon';
 import { NameNode } from '../components/Row';
 import { cpOf } from '../lib/cp';
 import { counterTypes, matchups } from '../lib/matchup';
 import { usagePlacesFor } from '../lib/usage';
+import { favNewsFor, favNewsWhen, FAV_NEWS_LABEL } from '../lib/favnews';
+import { useFavs } from '../lib/useFavs';
+import { buildSearchIndex } from '../lib/search';
+import { resolveMon, type MonPick, type MonRef } from '../lib/mon';
 import { track } from '../lib/track';
 import Hex from '../components/detail/Hex';
 import IvRank from '../components/detail/IvRank';
@@ -28,7 +32,7 @@ import CalcScreen, { CALC_DEFAULT, type CalcInputs } from '../components/detail/
 import { Evo, MegaCompare } from '../components/detail/Evo';
 import type { DexForm } from '../types/data';
 
-export interface MonRef { sprite: number; name: string; en: string; types: readonly string[] }
+export type { MonRef } from '../lib/mon';
 
 /** 팝업 한 화면의 상태 — 떠날 때 통째로 쌓았다가 ← 로 돌아올 때 그대로 되돌린다 (v3 detailState) */
 interface View { mon: MonRef; tab: Tab; screen: 'detail' | 'calc'; calc: CalcInputs; catchSeg: string }
@@ -197,7 +201,7 @@ function Ranks({ name }: { name: string }) {
         {GROUP_KO[row.group] ?? row.group}{' · '}{row.where}
         {row.mark ? <span className="tag">{row.mark === 'G' ? '거다이맥스' : '다이맥스'}</span> : null}
       </span>
-      <b className="detail__rank-no">{row.rank}위</b>
+      <b className="detail__rank-no">{`${row.rank}위`}</b>
     </div>
   );
   return (
@@ -214,23 +218,27 @@ function Ranks({ name }: { name: string }) {
   );
 }
 
-export default function MonDetail({ sprite: startSprite, en, onClose }: { sprite: number; en: string; onClose: () => void }) {
+export default function MonDetail({ pick, onClose }: { pick: MonPick; onClose: () => void }) {
   const { data } = useDex();
   const { data: pve } = usePve();
   const { data: max } = useMax();
   const { data: pvpData } = usePvp();
   const { data: gameday } = useGameday();
+  const { data: favEvents } = useFavEvents();
+  const { favs, toggle: toggleFav } = useFavs();
   const overlay = useRef<HTMLDialogElement>(null);
 
   // 지금 보는 것 + 떠나온 것들.
   // **떠날 때 화면 전체를 통째로 쌓는다** — ← 로 돌아오면 보던 탭·계산기 입력값·포획 CP 경로가 그대로여야 한다.
   // 포켓몬만 쌓았더니 배틀 정보 탭에서 추천 후보를 눌렀다 돌아왔을 때 요약 탭이 열렸다 (v3 는 배틀 정보로 돌아온다)
-  const start = useMemo<MonRef>(() => ({
-    sprite: startSprite,
-    name: data.DEX_DATA.names[String(startSprite)] ?? `#${startSprite}`,
-    en,
-    types: data.DEX_DATA.forms[String(startSprite)]?.types ?? [],
-  }), [startSprite, en, data]);
+  // **이름은 연 쪽이 들고 있던 것을 쓴다.** 순위표 줄은 '거다이맥스 고릴타' 를 이미 알고 있다.
+  // 이름이 없는 길은 공유 링크 하나뿐이고, 그때만 검색 색인에서 찾는다 (v3 openDetailBySprite).
+  // 도감 이름표만 보던 시절에는 폼 스프라이트(10000번대)가 표에 없어 '#10209' 라고 적혔고,
+  // 그 한 값이 활용 순위(이름으로 찾는다)와 '보스로 만났을 때'(이름 앞 '거다이맥스' 로 가른다)를 같이 무너뜨렸다
+  const start = useMemo<MonRef>(
+    () => resolveMon(pick, buildSearchIndex(data, max, pve, pvpData), data.DEX_DATA),
+    [pick, data, max, pve, pvpData],
+  );
   const [stack, setStack] = useState<View[]>([]);
   const [mon, setMon] = useState<MonRef>(start);
   const [tab, setTab] = useState<Tab>('summary');
@@ -269,6 +277,9 @@ export default function MonDetail({ sprite: startSprite, en, onClose }: { sprite
   const cpm = data.DEX_DATA.cpm;
   const { labels: formLabels, base: baseName } = splitName(mon.name, data.FORM_LABELS);
   const formKind = formLabels.map((label) => FORM_KIND[label]).find(Boolean) ?? '';
+
+  const isFav = dexNo != null && favs.includes(dexNo);
+  const news = dexNo != null ? favNewsFor(favEvents.FAV_EVENTS, dexNo) : [];
 
   const typePills = () => types.map((type) => (
     <span key={type} className="detail__type-pill" style={{ ['--c' as string]: `var(--t-${type})` }}>
@@ -338,6 +349,10 @@ export default function MonDetail({ sprite: startSprite, en, onClose }: { sprite
 
   const previous = stack.at(-1);
 
+  // 모르는 스프라이트 번호면 아무것도 열지 않는다 — v3 openDetailBySprite 도 조용히 돌아간다.
+  // (틀린 공유 링크에 빈 팝업이 뜨면 '데이터가 없는 종' 처럼 읽힌다)
+  if (mon.name === `#${sprite}`) return null;
+
   return (
     <dialog className="modal" ref={overlay} aria-label={`${mon.name} 상세`}
       data-route="mon" data-mon={mon.name} data-sprite={sprite}
@@ -355,7 +370,21 @@ export default function MonDetail({ sprite: startSprite, en, onClose }: { sprite
               <button className="detail__bar-back" aria-label="상세로 돌아가기" onClick={() => setScreen('detail')}>‹ 상세로</button>
               <p className="detail__bar-title">{screen === 'calc' ? 'CP 계산기' : '포켓몬 상세'}</p>
               <div className="detail__top-actions">
-                {/* ★ 는 계정 기능이라 미리보기에서는 아직 없다 — 자리를 비워 두고 도감만 남긴다 */}
+                {/* ★ 입구는 **여기 하나뿐**이다 (v3.60.0 의 규칙) — 목록 카드에는 달지 않는다.
+                    담아 두면 그 포켓몬의 커뮤니티 데이·스포트라이트·레이드 일정을 챙겨 준다 */}
+                {dexNo != null ? (
+                  <button className={`detail__bar-btn detail__fav${isFav ? ' is-on' : ''}`} data-dex={dexNo}
+                    aria-pressed={isFav}
+                    title={isFav ? '즐겨찾기에서 빼기' : '즐겨찾기에 담기 — 이 포켓몬의 일정을 챙겨 드려요'}
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      // 지표는 useFavs 안에서 한 번만 찍는다 — 여기서 또 찍으면 한 번 누른 것이 두 건이 된다
+                      toggleFav(dexNo, '포켓몬 상세');
+                    }}>
+                    <span className="detail__fav-star" aria-hidden="true">{isFav ? '★' : '☆'}</span>
+                    <span className="detail__fav-label">{isFav ? '담음' : '즐겨찾기'}</span>
+                  </button>
+                ) : null}
                 <button className="detail__bar-btn detail__bar-dex" onClick={() => { location.hash = '#/dex'; onClose(); }}>
                   <PxIcon emoji="📕" />포켓몬 도감
                 </button>
@@ -379,12 +408,34 @@ export default function MonDetail({ sprite: startSprite, en, onClose }: { sprite
                     ))}
                   </div>
                   <h2>{baseName}</h2>
-                  {mon.en ? <div className="detail__en-inline">{mon.en}</div> : null}
-                  {/* 📣 소식 자리 — **담아 둔 포켓몬에게만** 뜬다 (v3 favNewsNode 는 isFav 를 먼저 묻는다).
-                      미리보기에는 로그인이 없어 담아 둔 것도 없다. 그래서 자리만 두고 비워 놓는다 —
-                      누구에게나 띄우면 '담아 둔 포켓몬의 일정' 이라는 말 자체가 거짓이 된다.
+                  {/* 이 줄은 늘 **반대 언어의 이름**이다 — 한국어 화면엔 Metagross, 영어 화면엔 메타그로스.
+                      사전을 태우면(data-i18n 없이 두면) 영어 화면에서 이름 줄과 똑같은 Metagross 가 두 번 선다.
+                      엔진이 data-alt-ko/en 을 보고 갈아 끼운다 (lib/i18n.ts) */}
+                  {mon.en ? (
+                    <div className="detail__en-inline" data-i18n="alt" data-alt-ko={mon.en} data-alt-en={baseName}>{mon.en}</div>
+                  ) : null}
+                  {/* 📣 소식 자리 — **담아 둔 포켓몬에만** 선다 (v3 favNewsNode 가 isFav 를 먼저 묻는다).
+                      ★ 를 누를 이유가 여기서 생긴다. 머리줄이 아니라 이름 **아래**인 것은
+                      390px 에서 버튼 넷이 제목을 15px 로 눌렀기 때문이다 (v3.60.0 실측).
+                      가장 가까운 한 건만 쓰고 나머지는 개수로 접는다.
                       display:contents 라 비어 있을 때 빈 줄을 만들지 않는다 (modal.css) */}
-                  <span className="detail__favnews-slot" />
+                  <span className="detail__favnews-slot">
+                    {isFav && news.length ? (
+                      <button className="detail__favnews"
+                        title={news.map((row) => `${FAV_NEWS_LABEL[row.event.type] ?? '일정'} ${favNewsWhen(row)} — ${row.event.title}`).join('\n')}
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          track('fav_news_open', { mon: String(dexNo), count: news.length });
+                          onClose();
+                          location.hash = '#/schedule';
+                        }}>
+                        <span className="detail__favnews-dot" aria-hidden="true">📣</span>
+                        <b className="detail__favnews-kind">{FAV_NEWS_LABEL[news[0]!.event.type] ?? '일정'}</b>
+                        <span className="detail__favnews-when">{favNewsWhen(news[0]!)}</span>
+                        {news.length > 1 ? <span className="detail__favnews-more">외 {news.length - 1}</span> : null}
+                      </button>
+                    ) : null}
+                  </span>
                 </div>
               </div>
 
@@ -501,7 +552,11 @@ export default function MonDetail({ sprite: startSprite, en, onClose }: { sprite
                                 <h3>내성 (덜 받는 데미지)</h3>{chipList(match.resist)}
                               </div>
                             </div>
-                            <p className="detail__foot">이중 = 두 타입 모두에 걸려 ×2.56(약점) / ×0.39(내성·무효)</p>
+                            {/* 줄은 늘 서고 **이중이 있을 때만 글자가 찬다** (v3 hasDouble) — 없는 데 설명이 붙으면 찾게 된다 */}
+                            <p className="detail__foot">
+                              {match.weak.some((row) => row.mult >= 2.5) || match.resist.some((row) => row.mult <= 0.4)
+                                ? '이중 = 두 타입 모두에 걸려 ×2.56(약점) / ×0.39(내성·무효)' : ''}
+                            </p>
                           </div>
                         </section>
                       ) : null}
