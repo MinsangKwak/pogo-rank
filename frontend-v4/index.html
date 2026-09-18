@@ -8,10 +8,102 @@
     <!-- 제목은 v3 와 같은 문장이다 — 검색어가 앞, 브랜드가 뒤.
          moncamp 는 아직 아무도 모르는 이름이라 맨 앞 자리를 브랜드에 주면 그 자리가 버려진다 -->
     <title>포켓몬고 다이맥스 티어표 · 맥스 배틀 덱 · 도감 | moncamp</title>
-    <!-- 미리보기(dev.moncamp.kr)는 색인하지 않는다. **운영으로 올릴 때 이 줄을 빼야 한다** —
-         robots.txt 와 여기 두 곳이 같이 막고 있다 -->
-    <meta name="robots" content="noindex, nofollow" />
     <meta name="referrer" content="strict-origin-when-cross-origin" />
+
+    <!-- ── 검색·공유 (v3 index.html 에서 그대로 떠 온 한 벌) ────────────────────
+         **채널에 따라 갈린다** — scripts/finalize-html.mjs 가 빌드 뒤에 손본다.
+         운영은 이대로, dev 는 robots 를 noindex 로 바꿔 끼우고 주소를 dev.moncamp.kr 로 돌린다.
+         robots 줄은 **정확히 하나**여야 한다 (두 줄이 있으면 크롤러가 더 엄한 쪽을 고르는데,
+         하나만 두는 편이 헷갈리지 않는다). finalize 가 그 수를 검사한다 -->
+<link rel="canonical" href="https://moncamp.kr/">
+<!-- 2026-09-15 v3.43.0 188자 → 150자대. 검색 결과에 보이는 것은 앞 150자 안팎이라 뒤는 버려진다.
+     한국어를 앞에 몰고 영문 표기는 꼬리에 짧게 남긴다 — 잘려도 매칭에는 쓰인다 -->
+<meta name="description" content="포켓몬고 다이맥스·거다이맥스 티어표, 맥스 배틀 덱 짜기, 레이드·PvP 순위, 전 종 도감과 타입 상성, 이벤트 일정을 한 화면에서. 무료 비공식 팬 도구 (Pokémon GO Dynamax tier list · Max Battle deck · Pokédex).">
+<!-- 2026-09-15 v3.33.0 keywords 는 구글이 무시하지만 네이버는 아직 참고한다 — 한 줄이라 비용이 없다.
+     2026-09-15 v3.43.0 **띄어쓰기 변형과 줄임말을 넣는다.** 사람들은 '맥스배틀' 을 붙여 쓰고
+     포켓몬고를 '포고' 라 부른다. 네이버는 토큰을 그대로 맞춰 보므로 변형이 없으면 그 검색은 안 걸린다.
+     없는 기능을 적지는 않는다 — 아래는 전부 화면에 실제로 있는 것이다 -->
+<meta name="keywords" content="포켓몬고, 포켓몬 GO, 포고, 포켓몬고 티어표, 포켓몬고 다이맥스, 다이맥스, 거다이맥스, 다이맥스 티어표, 다이맥스 포켓몬, 맥스배틀, 맥스 배틀, 맥스배틀 덱, 포켓몬고 맥스배틀, 포켓몬고 레이드 티어표, 레이드 티어표, 포켓몬고 도감, 포켓몬 도감, 포켓몬고 상성, 타입 상성, 포켓몬고 개체값, 개체값 순위, PvP 랭킹, 포켓몬고 이벤트 일정, Pokemon GO, Pokémon GO, Dynamax, Gigantamax, Max Battle, Max Battle deck, tier list, raid tier list, Pokedex, type chart, PvP ranking">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="moncamp">
+<meta property="og:title" content="moncamp — 포켓몬고 다이맥스 티어표 · 맥스 배틀 덱 · 도감">
+<meta property="og:description" content="다이맥스 티어표부터 맥스 배틀 덱까지. 포켓몬고 순위·도감·일정을 한 화면에서 봐요.">
+<meta property="og:url" content="https://moncamp.kr/">
+<meta property="og:image" content="https://moncamp.kr/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:type" content="image/png">
+<meta property="og:image:alt" content="moncamp — 도트로 그린 몬스터볼과 서비스 이름">
+<meta property="og:locale" content="ko_KR">
+<!-- 2026-09-15 v3.33.0 화면은 KR/EN 둘 다 된다 — 영어권 공유에서도 같은 카드가 뜨게 밝힌다 -->
+<meta property="og:locale:alternate" content="en_US">
+<meta name="twitter:card" content="summary_large_image">
+<!-- 2026-09-12 v2.67.0 X·디스코드·슬랙은 og:* 로 폴백하지만, 카드 필드를 따로 읽는 수집기도 있다.
+     같은 문장을 두 번 적는 대신 og 와 뜻이 어긋나지 않게 그대로 맞춘다 -->
+<meta name="twitter:title" content="moncamp — 포켓몬고 다이맥스 티어표 · 맥스 배틀 덱 · 도감">
+<meta name="twitter:description" content="다이맥스 티어표부터 맥스 배틀 덱까지. 포켓몬고 순위·도감·일정을 한 화면에서 봐요.">
+<meta name="twitter:image" content="https://moncamp.kr/og.png">
+<meta name="twitter:image:alt" content="moncamp — 도트로 그린 몬스터볼과 서비스 이름">
+<!-- 2026-09-12 v3.6.0 검색 색인용 표시를 뺐다가 2026-09-14 v3.28.0 에 되살렸다 — 도메인(moncamp.kr)이 생겨
+     검색엔진에 올릴 단계가 됐다. robots 는 아래 한 줄이 원본이고, dev 빌드는 backend/build.py 가 이 줄을
+     noindex 로 **바꿔 끼운다**(두 줄이 함께 있으면 크롤러가 더 엄한 쪽을 고르지만, 하나만 두는 편이 헷갈리지 않는다).
+     구조화 데이터(JSON-LD)는 실행되지 않는 데이터 블록이라 CSP script-src 에 걸리지 않는다.
+     주소(#/dex 등)는 해시 라우팅이라 검색엔진이 첫 화면 하나만 색인한다 — sitemap.xml 도 그 하나만 적는다 -->
+<meta name="robots" content="index, follow, max-image-preview:large">
+<!-- 2026-09-14 v3.28.1 네이버 서치어드바이저 소유 확인 — DNS 방식이 없어 태그로. 값은 비밀이 아니다(HTML 에 그대로 실린다) -->
+<meta name="naver-site-verification" content="a5562549d83756203590044b7d25311fee9086af">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "WebSite",
+      "@id": "https://moncamp.kr/#website",
+      "url": "https://moncamp.kr/",
+      "name": "moncamp",
+      "alternateName": ["몬캠프", "moncamp.kr", "포켓몬고 다이맥스 티어표", "Pokemon GO Dynamax tier list"],
+      "description": "포켓몬고 다이맥스·거다이맥스 티어표와 맥스 배틀 덱 짜기, 레이드·PvP 순위, 전 종 도감과 타입 상성, 이벤트 일정까지 한 화면에서. Pokémon GO Dynamax & Gigantamax tier list, Max Battle deck builder, raid & PvP rankings, Pokédex — 비공식 팬 도구입니다.",
+      "inLanguage": ["ko", "en"]
+    },
+    {
+      "@type": "WebApplication",
+      "@id": "https://moncamp.kr/#app",
+      "url": "https://moncamp.kr/",
+      "name": "moncamp",
+      "alternateName": "Pokemon GO Dynamax tier list & Max Battle deck builder",
+      "description": "Pokémon GO Dynamax and Gigantamax tier lists, a Max Battle deck builder, raid and PvP rankings, a full Pokédex with type matchups, and the event calendar. An unofficial fan tool.",
+      "applicationCategory": "UtilitiesApplication",
+      "keywords": "포켓몬고, 포고, 다이맥스 티어표, 거다이맥스, 맥스배틀 덱, 레이드 티어표, 포켓몬고 도감, 타입 상성, 개체값 순위, PvP 랭킹, Pokemon GO, Dynamax, Gigantamax, Max Battle, Pokedex",
+      "featureList": [
+        "다이맥스·거다이맥스 티어표 (전체·딜러·탱커)",
+        "맥스 배틀 덱 짜기 — 보스 타입별 딜러 2 + 탱커 1",
+        "레이드 보스 티어표와 솔플 계산기",
+        "PvP 리그별 랭킹과 개체값 순위",
+        "전 종 도감 · 타입 상성 · 진화와 종족값",
+        "이벤트 일정표"
+      ],
+      "operatingSystem": "Any",
+      "browserRequirements": "Requires JavaScript",
+      "isAccessibleForFree": true,
+      "offers": { "@type": "Offer", "price": "0", "priceCurrency": "KRW" },
+      "image": "https://moncamp.kr/og.png",
+      "inLanguage": ["ko", "en"],
+      "about": {
+        "@type": "VideoGame",
+        "name": "Pokémon GO",
+        "alternateName": ["포켓몬 GO", "포켓몬고", "포고"],
+        "publisher": { "@type": "Organization", "name": "Niantic, Inc." },
+        "sameAs": "https://pokemongolive.com/"
+      },
+      "sameAs": "https://github.com/MinsangKwak/pogo-rank",
+      "isPartOf": { "@id": "https://moncamp.kr/#website" }
+    }
+  ]
+}
+</script>
+
+    <!-- GA4 — finalize-html.mjs 가 채널과 GA_ID 를 보고 채우거나 지운다 (dev 에서는 지운다) -->
+    __GA_SNIPPET__
 
     <!-- GitHub Pages 는 응답 헤더를 못 바꾼다 — meta 로 걸 수 있는 것만 건다 (v3 index.html 과 같은 한 벌).
          번들이 'self' 라도 'unsafe-inline' 이 필요하다: 아래 테마 조각과 React 의 style= 가 인라인이다.

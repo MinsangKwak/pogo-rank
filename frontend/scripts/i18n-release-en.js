@@ -15,6 +15,10 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 const RELEASE_NOTES_EN = {
+  '2026-09-18 · v4.0.0': [
+    '**Smoother navigation and a faster first load** — moving between screens no longer redraws everything, and the first screen downloads less.',
+    '**If you installed moncamp to your home screen, please remove and reinstall it** — an older copy of the app may still be cached.',
+  ],
   '2026-09-17 · v3.61.2': [
     '**Pokémon that aren\u2019t in the game yet no longer show up in Pokédex search** — 16 data-only forms such as [Gigantamax Zamazenta (Crowned Shield)] were simply listed. Only what you can actually catch now appears.',
     '**Same for IV rank and [Add a Pokémon] in My Pokémon** — those pick a Pokémon you actually own, so unreleased forms are out of the candidate list.',

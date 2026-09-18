@@ -88,11 +88,15 @@ jobs:
       #   그림 2,000여 장도 거기서 가져온다. 올리는 것만 v4 쪽으로 바뀐 것이다.
       - name: v4 빌드
         continue-on-error: true
+        env:
+          BUILD_CHANNEL: dev
         run: |
           set -e
           cd frontend-v4
           npm ci
           npm run build
+          # 채널에 맞춰 손본다 — dev 는 GA 를 빼고 robots 를 noindex 로 바꿔 끼운다 (v3 build.py 와 같은 규칙)
+          node scripts/finalize-html.mjs
       # 올릴 폴더를 여기서 한 벌 만든다.
       #   v4 가 서면 그것을, 서다 말면 v3 를 올린다 — **어느 쪽이든 dev 가 깜깜해지지 않는다.**
       #   v4 는 v3 파일에 얹혀 살아서(CSS 23장 · dist/data.js · schedule.js) v3 쪽 이름만 바뀌어도 설 수 있다.
@@ -109,7 +113,7 @@ jobs:
           fi
           # 그림과 부속 파일은 v3 빌드가 만든 것을 그대로 쓴다 (v4 는 아직 제 것을 안 만든다).
           # robots 는 dev 채널용 전면 차단본이라 반드시 따라와야 한다 — 미리보기가 색인되면 안 된다
-          for keep in sprites sprites-anim robots.txt build.json; do
+          for keep in sprites sprites-anim robots.txt sitemap.xml 404.html build.json; do
             if [ -e "dist/$keep" ] && [ ! -e "site/$keep" ]; then cp -r "dist/$keep" "site/$keep"; fi
           done
           test -f site/index.html && test -f site/robots.txt
@@ -119,6 +123,8 @@ jobs:
           # dev 채널 robots 는 세 줄짜리 전면 차단본이고 'Allow:' 가 한 줄도 없다
           grep -q '색인 금지' site/robots.txt || { echo "::error::robots 가 dev 차단본이 아닙니다"; cat site/robots.txt; exit 1; }
           grep -q '^Allow:' site/robots.txt && { echo "::error::robots 에 Allow 가 있습니다 (운영본이 실렸습니다)"; exit 1; }
+          # 2026-09-18 index.html 쪽도 본다 — robots.txt 만 막고 메타가 색인 허용이면 미리보기가 잡힌다
+          if ! grep -q 'noindex' site/index.html; then echo "::error::index.html 에 noindex 가 없습니다 (운영 빌드가 실렸습니다)"; exit 1; fi
           echo "robots 차단본 확인"
           # 그림이 통째로 빠지면 화면이 몬스터볼 자리표시로 도배된다 — 수로 확인한다
           test "$(ls site/sprites | wc -l)" -gt 500 || { echo "::error::스프라이트가 모자랍니다"; exit 1; }
