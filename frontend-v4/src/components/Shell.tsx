@@ -53,7 +53,9 @@ const THEME_FACE: Record<Theme, [string, string]> = {
   dark: ['🌙', '화면 테마: 어둡게 — 누르면 밝게'],
 };
 
-export function AppBar({ onMenu, home, detail = false }: { onMenu: () => void; home: boolean; detail?: boolean }) {
+export function AppBar({ onMenu, home, detail = false, onBack }: {
+  onMenu: () => void; home: boolean; detail?: boolean; onBack?: () => void;
+}) {
   const theme = usePrefStore((s) => s.theme);
   const toggleTheme = usePrefStore((s) => s.toggleTheme);
   const [icon, label] = THEME_FACE[theme];
@@ -64,8 +66,11 @@ export function AppBar({ onMenu, home, detail = false }: { onMenu: () => void; h
       <div className="app-bar__head">
         {/* 2026-09-17 홈에는 뒤로가기가 없다 — v3 app-shell.js 의 `backButton.hidden = home`.
             여기가 처음이라 돌아갈 앞 화면이 없고, 있는 버튼은 "누를 수 있다" 는 약속이다 (제보) */}
-        <button className="icon-btn" aria-label="이전 화면" hidden={home}
-          onClick={() => { if (history.length > 1) history.back(); else location.hash = '#/'; }}>
+        <button className="icon-btn" aria-label={onBack ? '상세 닫기' : '이전 화면'} hidden={home}
+          onClick={() => {
+            if (onBack) { onBack(); return; }
+            if (history.length > 1) history.back(); else location.hash = '#/';
+          }}>
           <PxIcon emoji="←" />
         </button>
         {/* h1 은 상세에서도 남긴다 — 눈에서만 접는다. 없애면 화면에 제목이 하나도 없어지고,

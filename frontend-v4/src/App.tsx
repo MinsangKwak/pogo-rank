@@ -158,9 +158,13 @@ export default function App() {
   const asHome = route.id === 'home' || route.id === 'mon';
   const isShell = route.kind === 'shell' || route.kind === 'plan' || asHome;
   const home = asHome;
-  // **상세는 셸은 홈이지만 머리줄은 홈이 아니다.** 돌아갈 곳이 있으니 뒤로가기를 주고,
-  // 그 자리에 로고까지 두면 같은 줄이 "여기가 처음" 과 "돌아갈 수 있다" 를 같이 말하게 된다
-  const onDetail = route.id === 'mon';
+  // **상세일 때 머리줄은 홈이 아니다.** 돌아갈 곳이 있으니 뒤로가기를 주고,
+  // 그 자리에 로고까지 두면 같은 줄이 "여기가 처음" 과 "돌아갈 수 있다" 를 같이 말하게 된다.
+  //
+  // **주소가 아니라 팝업이 떴는지를 본다.** 주소는 홈에서 열 때만 #/mon/… 으로 바뀐다
+  // (목록 위에서 바꾸면 ✕ 를 눌러도 목록으로 못 돌아온다 — openMon 머리말).
+  // 그래서 route.id 만 보면 도감·티어표에서 연 상세는 그대로 로고가 남는다.
+  const onDetail = detail !== null;
 
   return (
     <SlotProvider value={{ tabs: tabsEl, bossAcc: bossEl, controls: controlsEl, headActions: actionsEl }}>
@@ -173,7 +177,9 @@ export default function App() {
       <LangBridge />
       <AuthBridge />
 
-      <AppBar onMenu={() => setMenuOpen(true)} home={home && !onDetail} detail={onDetail} />
+      {/* 상세에서 뒤로가기는 **팝업을 닫는다** — 화면을 떠나면 뒤에 보던 목록까지 잃는다 */}
+      <AppBar onMenu={() => setMenuOpen(true)} home={home && !onDetail} detail={onDetail}
+        onBack={onDetail ? closeMon : undefined} />
       <AppNav now={route.id} onConsent={() => setConsentOpen(true)} />
 
       {/* 홈에는 화면 머리가 없다 — 제목이 히어로 안에 있다 (v3 syncAppShell 과 같은 규칙) */}
