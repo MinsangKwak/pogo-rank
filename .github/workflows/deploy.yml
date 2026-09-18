@@ -109,7 +109,9 @@ jobs:
           done
           if grep -q '색인 금지' site/robots.txt; then echo "::error::robots 가 dev 차단본입니다"; exit 1; fi
           if ! grep -q '^Allow: /' site/robots.txt; then echo "::error::robots 에 Allow 가 없습니다 (운영본이 아닙니다)"; exit 1; fi
-          if grep -q 'noindex' site/index.html; then echo "::error::index.html 에 noindex 가 있습니다 (dev 빌드가 실렸습니다)"; exit 1; fi
+          # 낱말이 아니라 **메타 태그**를 본다 — index.html 의 주석에 든 'noindex' 한 낱말이
+          # 이 검사를 걸어 넘어뜨려 첫 v4.0.0 배포가 섰다 (2026-09-18 run #106). verify_deploy.sh 와 같은 패턴
+          if grep -q 'name="robots" content="noindex' site/index.html; then echo "::error::index.html 에 noindex 메타가 있습니다 (dev 빌드가 실렸습니다)"; exit 1; fi
           echo "운영 robots·색인 확인"
           # 그림이 통째로 빠지면 화면이 몬스터볼 자리표시로 도배된다 — 수로 확인한다
           test "$(ls site/sprites | wc -l)" -gt 500 || { echo "::error::스프라이트가 모자랍니다"; exit 1; }
