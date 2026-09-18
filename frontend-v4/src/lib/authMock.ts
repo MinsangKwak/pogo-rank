@@ -36,8 +36,8 @@ export function makeMockApi(adminUid: string): AuthApi {
       'allowlist/friend@mock.local': { approved: true, name: '로컬 테스트 (친구)', at: new Date().toISOString() },
       // ★ 는 v3 dev-mock.js 와 **같은 값**이다 — 씨앗이 다르면 나란히 놓고 비교할 때
       // 화면이 틀린 것인지 씨앗이 다른 것인지 구분이 안 된다. 실제 도감번호만 쓴다
-      [`users/${users['1']!.uid}`]: { email: 'admin@mock.local', name: '로컬 테스트 (관리자)', favs: [150, 384, 383, 149, 68, 143, 302, 227, 25] },
-      'users/mock-friend': { email: 'friend@mock.local', name: '로컬 테스트 (친구)', favs: [150, 6, 302] },
+      [`users/${users['1']!.uid}`]: { email: 'admin@mock.local', name: '로컬 테스트 (관리자)' },
+      'users/mock-friend': { email: 'friend@mock.local', name: '로컬 테스트 (친구)' },
       'trainers/테스트 트레이너': { name: '테스트 트레이너', code: '000000000000', order: 0 },
     };
   }
@@ -54,6 +54,7 @@ export function makeMockApi(adminUid: string): AuthApi {
     async signOut() { user = null; tell(); },
     async deleteUser() { user = null; tell(); },
     async getDoc(path) { return store[path] ?? null; },
+    async getDocStrict(path) { return store[path] ?? null; },
     async setDoc(path, data) { store[path] = { ...(store[path] ?? {}), ...data }; save(); },
     async deleteDoc(path) { delete store[path]; save(); },
     async listDocs(path) {
