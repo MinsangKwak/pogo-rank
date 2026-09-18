@@ -1,0 +1,152 @@
+<!doctype html><html lang="ko"><head><meta charset="utf-8"><title>moncamp 서비스 구조</title>
+<style>
+  :root{
+    --bg:#fff8f2; --fg:#0a0a0f; --muted:#64647a; --line:#e5e5eb; --surface:#fff; --line2:#d4d4dc;
+    --brand:#d63024; --brand2:#b3231b; --point:#2f6fd0; --caution:#d97706; --good:#0d9488; --off:#9b9bb0;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{width:1600px;background:var(--bg);color:var(--fg);
+    font-family:"WenQuanYi Zen Hei","Noto Sans CJK KR",sans-serif;padding:44px 48px 40px;-webkit-font-smoothing:antialiased}
+  .head{display:flex;align-items:flex-end;gap:18px;border-bottom:4px solid var(--brand);padding-bottom:16px;margin-bottom:26px}
+  .logo{width:46px;height:46px;border:4px solid var(--fg);background:var(--brand);position:relative}
+  .logo::after{content:"";position:absolute;left:-4px;right:-4px;top:17px;height:4px;background:var(--fg)}
+  h1{font-size:40px;letter-spacing:-1px}
+  .ver{font-size:23px;font-weight:700;color:#fff;background:var(--brand);padding:4px 12px}
+  .when{margin-left:auto;font-size:17px;color:var(--muted);text-align:right;line-height:1.5}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:26px}
+  .card{background:var(--surface);border:4px solid var(--fg);box-shadow:8px 8px 0 0 rgba(10,10,15,.14);padding:20px 22px}
+  .card > h2{font-size:23px;margin-bottom:4px}
+  .card > .sub{font-size:15px;color:var(--muted);margin-bottom:16px;line-height:1.5}
+  .grp{margin-bottom:15px}
+  .grp-t{font-size:16px;font-weight:700;color:var(--brand2);border-bottom:2px dashed var(--line2);padding-bottom:5px;margin-bottom:9px}
+  .row{display:flex;flex-wrap:wrap;gap:7px}
+  .s{display:inline-flex;align-items:center;gap:6px;font-size:16px;border:3px solid var(--fg);padding:6px 11px;background:#fff;white-space:nowrap}
+  .s .p{font-size:13px;color:var(--muted)}
+  .s.lock{border-color:var(--caution);background:#fffaf0}
+  .s.sub{border-style:dashed;font-size:15px;padding:5px 9px}
+  .legend{display:flex;gap:18px;font-size:14px;color:var(--muted);margin-top:6px;flex-wrap:wrap}
+  table{width:100%;border-collapse:collapse;font-size:15px}
+  th,td{border:2px solid var(--line2);padding:8px 9px;text-align:left;vertical-align:top}
+  th{background:#f4f1ee;font-size:14px;font-weight:700}
+  td.w{white-space:nowrap;font-weight:700}
+  .y{color:var(--good);font-weight:700}
+  .n{color:var(--off)}
+  .flow{display:flex;align-items:center;gap:9px;flex-wrap:wrap;font-size:15px}
+  .b{border:3px solid var(--fg);padding:6px 11px;background:#fff;font-weight:700;white-space:nowrap}
+  .b.dim{border-color:var(--line2);color:var(--muted);font-weight:400}
+  .ar{color:var(--brand);font-weight:700;font-size:17px}
+  .kv{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;font-size:15px;line-height:1.55}
+  .kv b{white-space:nowrap;color:var(--brand2)}
+  .note{margin-top:13px;border-left:5px solid var(--caution);background:#fffaf0;padding:9px 12px;font-size:14px;line-height:1.6}
+  .foot{margin-top:24px;font-size:14px;color:var(--muted);border-top:2px solid var(--line2);padding-top:12px;line-height:1.6}
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+</style></head><body>
+
+<div class="head">
+  <div class="logo"></div>
+  <h1>moncamp 서비스 구조</h1>
+  <span class="ver">v4.2.2</span>
+  <div class="when">2026-09-18 기준<br>moncamp.kr · React 19 + TypeScript + Vite</div>
+</div>
+
+<div class="grid">
+
+  <div class="card">
+    <h2>화면 지도</h2>
+    <p class="sub">홈의 갈래 셋은 <b>기능의 종류가 아니라 사람이 하려는 일</b>로 가릅니다. 점선은 부모 화면의 버튼으로만 들어가는 자리입니다.</p>
+
+    <div class="grp"><div class="grp-t">📅 지금 뭐 하지</div><div class="row">
+      <span class="s">📢 게임 업데이트<span class="p">#/game-updates</span></span>
+      <span class="s">📅 이벤트 일정<span class="p">#/schedule</span></span>
+      <span class="s">⚔️ 레이드 보스<span class="p">#/raids</span></span>
+      <span class="s">🥚 알 부화<span class="p">#/eggs</span></span>
+    </div></div>
+
+    <div class="grp"><div class="grp-t">🎯 뭘 데려갈까</div><div class="row">
+      <span class="s">📕 포켓몬 도감<span class="p">#/dex</span></span>
+      <span class="s">✨ D-MAX<span class="p">#/dmax</span></span>
+      <span class="s">⚔️ 레이드 · PvE<span class="p">#/pve</span></span>
+      <span class="s">🃏 배틀 · PvP<span class="p">#/pvp</span></span>
+    </div>
+    <div class="row" style="margin-top:7px">
+      <span class="s sub">🧩 맥스 덱 짜기<span class="p">#/dmax/deck</span></span>
+      <span class="s sub">🃏 PvP 덱 짜기<span class="p">#/pvp/deck</span></span>
+      <span class="s sub">🧬 개체값 순위<span class="p">#/pvp/ivrank</span></span>
+      <span class="s sub">🧮 솔플 계산기<span class="p">#/pve/solo</span></span>
+    </div></div>
+
+    <div class="grp"><div class="grp-t">🌱 뭘 키울까</div><div class="row">
+      <span class="s lock">🔒 🎒 내 포켓몬<span class="p">#/planner · 실험 기능</span></span>
+      <span class="s">🔎 검색식 만들기<span class="p">#/finder</span></span>
+    </div></div>
+
+    <div class="grp"><div class="grp-t">그 밖에 (메뉴에 없음)</div><div class="row">
+      <span class="s sub">포켓몬 상세 <span class="p">#/mon/… · 팝업</span></span>
+      <span class="s sub">🎉 패치노트</span><span class="s sub">⚔️ 기술 변경</span>
+      <span class="s sub">🔒 개인정보처리방침</span><span class="s sub">📜 이용약관</span><span class="s sub">🛠 설정</span>
+    </div></div>
+
+    <div class="legend"><span>🔒 주황 테두리 = 권한이 있어야 열림</span><span>점선 = 부모 화면에서만 진입</span></div>
+  </div>
+
+  <div class="card">
+    <h2>권한 — 두 갈래, 겹치지 않는다</h2>
+    <p class="sub"><b>운영을 돕는 사람</b>과 <b>먼저 써 보는 사람</b>은 다릅니다. 한 깃발로 둘을 다 열면 실험 기능을 열어 주려다 유저 목록까지 넘기게 됩니다.</p>
+    <table>
+      <tr><th>누구</th><th>도감 · 순위 · 일정 · 계산기</th><th>★ 담기</th><th>🎒 내 포켓몬</th><th>트레이너 코드</th><th>유저 관리</th></tr>
+      <tr><td class="w">비로그인</td><td class="y">O</td><td class="n">—</td><td class="n">—</td><td class="n">—</td><td class="n">—</td></tr>
+      <tr><td class="w">승인 대기</td><td class="y">O</td><td class="y">O</td><td class="n">—</td><td class="n">—</td><td class="n">—</td></tr>
+      <tr><td class="w">승인된 회원</td><td class="y">O</td><td class="y">O</td><td class="n">—</td><td class="y">O</td><td class="n">—</td></tr>
+      <tr><td class="w">+ 실험 기능<br><span style="font-weight:400;font-size:13px;color:#64647a">beta</span></td><td class="y">O</td><td class="y">O</td><td class="y">O</td><td class="y">O</td><td class="n">—</td></tr>
+      <tr><td class="w">+ 관리자<br><span style="font-weight:400;font-size:13px;color:#64647a">admin</span></td><td class="y">O</td><td class="y">O</td><td class="n">— <span style="font-size:13px">beta 필요</span></td><td class="y">O</td><td class="y">O</td></tr>
+      <tr><td class="w">루트<br><span style="font-weight:400;font-size:13px;color:#64647a">ADMIN_UID</span></td><td class="y">O</td><td class="y">O</td><td class="y">O</td><td class="y">O</td><td class="y">O + 가입 승인</td></tr>
+    </table>
+    <div class="note"><b>실험 기능(beta)이 여는 것 둘</b> — 🎒 내 포켓몬 화면, D-MAX 의 <b>[미구현]</b> 보기.<br>
+      <b>판정을 쓰는 자리 넷</b> — 화면 본문 · ☰ 메뉴 줄 · 홈 타일 · 계정 카드. 앞 셋은 흐려지고 🔒 가 붙고, 계정 카드의 <b>[🎒 내 포켓몬 N마리]</b> 는 줄째 사라집니다.<br>
+      <b>실제 차단은 화면이 아니라 Firestore 보안 규칙</b>이 합니다 — 이 코드는 공개 번들이라 누구나 고칠 수 있습니다.</div>
+  </div>
+</div>
+
+<div class="grid" style="margin-top:26px">
+  <div class="card">
+    <h2>데이터와 로그인</h2>
+    <div class="kv">
+      <b>데이터</b><span>빌드 때 굽는 정적 JSON 묶음 — 서버 없음. 티어표·도감·일정·스프라이트</span>
+      <b>출처</b><span>Game Master · pogomate(D-MAX) · hawaii(PvE) · PvPoke(PvP) · LeekDuck(일정)</span>
+      <b>로그인</b><span>Google 계정 하나. <b>승인제</b> — 첫 로그인은 '승인 대기', 루트가 승인</span>
+      <b>계정에 저장</b><span>★ 즐겨찾기 · 화면 테마 · 약관 동의 기록 <span style="color:#64647a">(그것뿐입니다)</span></span>
+      <b>권한 갱신</b><span>탭으로 돌아올 때 다시 읽음 (1분 간격). <b>못 읽으면 마지막 판정 유지</b></span>
+      <b>SDK</b><span>Firebase 는 첫 그림 뒤에 받음 — 티어표만 보러 온 사람의 첫 화면을 늦추지 않게</span>
+    </div>
+    <div class="note">📣 <b>담아 둔 포켓몬 소식</b> — ★ 를 담으면 그 종의 커뮤니티 데이·스포트라이트·레이드 일정을 상세와 내 포켓몬 화면에서 챙겨 줍니다. ★ 를 담을 이유가 여기서 생깁니다.</div>
+  </div>
+
+  <div class="card">
+    <h2>만들고 내보내는 길</h2>
+    <div class="flow" style="margin-bottom:14px">
+      <span class="b">dev</span><span class="ar">→</span>
+      <span class="b">PR</span><span class="ar">→</span>
+      <span class="b">main</span><span class="ar">→</span>
+      <span class="b">deploy</span><span class="ar">→</span>
+      <span class="b" style="border-color:var(--brand);color:var(--brand)">moncamp.kr</span>
+    </div>
+    <div class="flow" style="margin-bottom:14px">
+      <span class="b dim">dev 브랜치</span><span class="ar">→</span><span class="b dim">dev.moncamp.kr</span>
+      <span style="font-size:14px;color:#64647a">· 미리보기 (검색 차단 · 통계 없음 · OG 빨간 테두리)</span>
+    </div>
+    <div class="kv">
+      <b>빌드 둘</b><span><b>v4</b> React/Vite 가 화면을 만들고, <b>v3</b> Python 이 데이터·스프라이트를 굽습니다 (v3 는 예비 산출물)</span>
+      <b>검문</b><span>CI 의 <b>v4 검사</b>가 빨가면 배포가 멈춥니다 — 43건, 1.3초, 브라우저 없이</span>
+      <b>버전</b><span>릴리스마다 여섯 곳을 함께 올립니다 (빌드 · 패치노트 뱃지 · 본문 한/영 · CHANGELOG · README)</span>
+      <b>확인</b><span><code>verify_deploy.sh</code> + 브라우저로 실제 주소를 열어 확인</span>
+    </div>
+    <div class="note">검사는 <b>버그를 다시 넣어 빨개지는지</b>까지 봅니다. v4.2.x 에서 라우트 삭제·깃발 제거·권한 재확인·계정 삭제·계정 카드 다섯 갈래를 주입해 확인했습니다.</div>
+  </div>
+</div>
+
+<div class="foot">
+  <b>지금 없는 것</b> — 🎒 내 개체 기록(종·레벨·개체값·기술·메모)은 v3 에서도 스위치가 내려가 있고 v4 에 옮기지 않았습니다. 내 포켓몬 화면은 <b>📣 소식 + ★ 목록</b>입니다. 회원 분석 대시보드·광고도 없습니다.<br>
+  <b>이 그림은 코드와 운영 주소를 대조해 그렸습니다</b> — 화면 목록은 <code>frontend-v4/src/routes.ts</code>, 권한은 <code>stores/auth.ts</code> · <code>lib/useLocked.ts</code> · <code>firestore.rules</code> 기준입니다.
+</div>
+
+</body></html>
