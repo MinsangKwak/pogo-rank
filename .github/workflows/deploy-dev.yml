@@ -122,7 +122,8 @@ jobs:
           grep -q '색인 금지' site/robots.txt || { echo "::error::robots 가 dev 차단본이 아닙니다"; cat site/robots.txt; exit 1; }
           grep -q '^Allow:' site/robots.txt && { echo "::error::robots 에 Allow 가 있습니다 (운영본이 실렸습니다)"; exit 1; }
           # 2026-09-18 index.html 쪽도 본다 — robots.txt 만 막고 메타가 색인 허용이면 미리보기가 잡힌다
-          if ! grep -q 'noindex' site/index.html; then echo "::error::index.html 에 noindex 가 없습니다 (운영 빌드가 실렸습니다)"; exit 1; fi
+          # 낱말이 아니라 메타 태그를 본다 — 주석의 낱말로는 운영 빌드가 실려도 통과해 버린다 (deploy.yml 과 같은 패턴)
+          if ! grep -q 'name="robots" content="noindex' site/index.html; then echo "::error::index.html 에 noindex 메타가 없습니다 (운영 빌드가 실렸습니다)"; exit 1; fi
           echo "robots 차단본 확인"
           # 그림이 통째로 빠지면 화면이 몬스터볼 자리표시로 도배된다 — 수로 확인한다
           test "$(ls site/sprites | wc -l)" -gt 500 || { echo "::error::스프라이트가 모자랍니다"; exit 1; }
