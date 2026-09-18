@@ -15,7 +15,8 @@
 //
 // **깃발 둘은 서로 다른 것을 연다. 겹치지 않는다.**
 //   admin  유저 관리 — 승인된 사람 목록 · 트레이너 코드 관리
-//   beta   실험 기능 — 내 포켓몬 · D-MAX [미구현]
+//   beta   실험 기능 — **지금 이 깃발로 열리는 화면은 없다** (v4.2.0 에 내 포켓몬을 접었다).
+//          깃발과 배선은 남겨 뒀다. 다음 실험 기능은 routes.ts 에 beta: true 한 줄이면 열린다
 // 운영을 돕는 사람과 먼저 써 보는 사람은 다르다. 실험 기능을 열어 주려고 관리자를
 // 시키게 되면, 써 보라고 준 권한으로 유저 목록까지 열린다.
 // ─────────────────────────────────────────────────────────────────────────────
@@ -154,7 +155,7 @@ export default function AdminPanel({ onClose }: { onClose: () => void }) {
             <button className={`uchip admin__act${onBeta ? ' is-on' : ''}`} aria-pressed={onBeta}
               onClick={() => setFlag(one.id, 'beta', !onBeta, onBeta
                 ? `${one.id} 님의 실험 기능을 닫을까요?`
-                : `${one.id} 님에게 실험 기능을 열까요? 실험 기능을 써볼 수 있어요.`)}>
+                : `${one.id} 님에게 실험 기능을 열까요? 지금은 이 깃발로 열리는 화면이 없어, 다음 실험 기능이 생기면 바로 쓸 수 있어요.`)}>
               {onBeta ? '🧪 실험 해제' : '🧪 실험 기능'}
             </button>
             <button className="uchip admin__act is-danger" onClick={() => revoke(one.id)}>승인 해제</button>

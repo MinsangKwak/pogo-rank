@@ -29,8 +29,6 @@ import Schedule from './screens/Schedule';
 import { NotPorted } from './screens/Misc';
 import MonDetail from './screens/MonDetail';
 import ConsentDialog from './components/Consent';
-import LoginInvite from './components/LoginInvite';
-import { useInviteStore } from './stores/invite';
 import LangBridge from './components/LangBridge';
 import AuthBridge from './components/AuthBridge';
 import LockCard from './components/LockCard';
@@ -45,7 +43,6 @@ const Changes = lazy(() => import('./screens/Changes'));
 const Privacy = lazy(() => import('./screens/Legal').then((m) => ({ default: m.Privacy })));
 const Terms = lazy(() => import('./screens/Legal').then((m) => ({ default: m.Terms })));
 const Settings = lazy(() => import('./screens/Settings'));
-const Planner = lazy(() => import('./screens/Planner'));
 const Finder = lazy(() => import('./screens/Finder'));
 const IvRankPage = lazy(() => import('./screens/IvRankPage'));
 const PvpDeck = lazy(() => import('./screens/PvpDeck'));
@@ -78,7 +75,6 @@ function Screen({ route, rest, onOpen }: { route: RouteDef; rest: string; onOpen
     case 'eggs': return <Eggs onOpen={onOpen} />;
     case 'schedule': return <Schedule />;
     case 'game-updates': return <GameUpdates rest={rest} />;
-    case 'planner': return <Planner />;
     case 'finder': return <Finder />;
     // 화면 아래 화면 — 부모 화면의 도구 버튼 하나로만 들어온다 (주소가 도구를 정한다)
     case 'ivrank': return <IvRankPage />;
@@ -100,8 +96,6 @@ export default function App() {
   const { route, rest } = useRoute();
   const [menuOpen, setMenuOpen] = useState(false);
   const [consentOpen, setConsentOpen] = useState(false);
-  const invite = useInviteStore((s) => s.screen);
-  const closeInvite = useInviteStore((s) => s.close);
   // [스프라이트, 영문명]. 영문명은 **연 쪽이 들고 있던 것**만 넘긴다 —
   // v3 도 순위표 줄에서 열면 이름 아래에 Melmetal 이 서고, 도감에서 열면 서지 않는다
   const [detail, setDetail] = useState<MonPick | null>(null);
@@ -136,7 +130,7 @@ export default function App() {
   }, [route, rest]);
   // 화면을 옮기면 열려 있던 팝업·서랍은 닫는다 — <dialog> 가 새 화면 위에 그대로 떠 있으면
   // 아무 데도 눌리지 않는다 (상세 팝업에서 같은 자리를 이미 한 번 겪었다)
-  useEffect(() => { setConsentOpen(false); setMenuOpen(false); closeInvite(); }, [route, rest, closeInvite]);
+  useEffect(() => { setConsentOpen(false); setMenuOpen(false); }, [route, rest]);
 
   // 포털이 꽂힐 자리. ref 가 아니라 state 인 이유 — 붙은 뒤 한 번 더 그려야 포털이 들어간다
   const [tabsEl, setTabsEl] = useState<HTMLDivElement | null>(null);
@@ -219,8 +213,6 @@ export default function App() {
       </Suspense>
 
       {consentOpen ? <ConsentDialog onClose={() => setConsentOpen(false)} /> : null}
-      {/* ★ 를 눌렀는데 로그인 전일 때 — 누른 곳과 그리는 곳이 멀어 stores/invite.ts 를 거친다 */}
-      {invite !== null ? <LoginInvite screen={invite} onClose={closeInvite} /> : null}
 
       <ToTop />
       <Drawer open={menuOpen} onClose={() => setMenuOpen(false)} now={route.id} onConsent={() => setConsentOpen(true)} />

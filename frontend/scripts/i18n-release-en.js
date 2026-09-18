@@ -15,6 +15,13 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 const RELEASE_NOTES_EN = {
+  '2026-09-18 · v4.2.0': [
+    '**My Pok\u00e9mon and \u2605 favourites have been retired** — rather than leave them in beta indefinitely, we folded them. Sorry for taking away what you had saved. The dex, rankings, schedule and calculators are unchanged.',
+    '**Old links still work** — bookmarks to My Pok\u00e9mon now land on the home screen.',
+    '**Sign-in is for trainer codes and display settings** — once approved you can see trainer codes, and your theme follows you across devices.',
+    '**Approvals apply right away** — access is re-checked when you come back to the tab, instead of only after a reload.',
+    '**Account deletion no longer half-finishes** — if something blocks it, we tell you and stop rather than leaving data behind.',
+  ],
   '2026-09-18 · v4.1.1': [
     '**You can sign in with a different account** — after signing out, the app kept taking you back to the previous account. Sign-in now always asks which account to use.',
   ],

@@ -29,8 +29,7 @@ export function Tile({ route }: { route: RouteDef }) {
   return (
     <a className={`home__tile${lock.className}`} href={`#/${route.path}`} data-route={route.id}
       title={reason ? lock.title : routeDesc(route.id)}
-      {...(lock['aria-disabled'] ? { 'aria-disabled': lock['aria-disabled'] } : {})}
-      {...(route.id === 'planner' ? { id: 'home-tile-planner' } : {})}>
+      {...(lock['aria-disabled'] ? { 'aria-disabled': lock['aria-disabled'] } : {})}>
       <span className="home__icon" aria-hidden="true">{route.icon}</span>
       <strong>{route.nav}</strong>
       <span className="home__arrow" aria-hidden="true">›</span>
