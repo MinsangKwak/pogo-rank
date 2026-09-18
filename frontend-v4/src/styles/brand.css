@@ -39,11 +39,14 @@
 @media (max-width: 767px) {
   :root { --mark-w: 3.6rem; --mark-h: 2rem; }
 }
-/* 좁은 화면에서는 로고가 이미 꽉 찬다 — 표식이 줄을 밀어내면 안 된다 */
+/* **가장 좁은 화면에서는 표식을 뺀다.** 로고·표식·검색·언어·메뉴가 한 줄에 다 들어가지 못해
+   320px 에서 표식이 검색 버튼 위로 6px 올라탔다(좌표로 확인). 줄여도 겹치면 줄이는 것이 답이 아니다.
+   표식은 "지금 보는 게 v4 인가" 를 눈으로 가르는 자리라, 화면이 좁으면 없어도 된다 — 빠지는 것은
+   로고가 아니라 덧붙임이다 */
 @media (max-width: 380px) {
-  :root { --logo-size: 2.4rem; --mark-w: 3rem; }
+  :root { --logo-size: 2.4rem; }
   .app-bar__logo--brand { gap: var(--space-xs); }
-  .v4-mark { margin-left: var(--space-xs); }
+  .v4-mark { display: none; }
 }
 
 /* 상세 화면의 이름 — 눈에서만 접는다.

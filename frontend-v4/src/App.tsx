@@ -177,8 +177,9 @@ export default function App() {
       <LangBridge />
       <AuthBridge />
 
-      {/* 상세에서 뒤로가기는 **팝업을 닫는다** — 화면을 떠나면 뒤에 보던 목록까지 잃는다 */}
-      <AppBar onMenu={() => setMenuOpen(true)} home={home && !onDetail} detail={onDetail}
+      {/* 로고는 home 이 정한다 (뒤로가기가 있으면 접는다).
+          상세에서 뒤로가기는 **팝업을 닫는다** — 화면을 떠나면 뒤에 보던 목록까지 잃는다 */}
+      <AppBar onMenu={() => setMenuOpen(true)} home={home && !onDetail}
         onBack={onDetail ? closeMon : undefined} />
       <AppNav now={route.id} onConsent={() => setConsentOpen(true)} />
 

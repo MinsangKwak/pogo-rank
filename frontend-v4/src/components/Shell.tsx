@@ -53,8 +53,8 @@ const THEME_FACE: Record<Theme, [string, string]> = {
   dark: ['🌙', '화면 테마: 어둡게 — 누르면 밝게'],
 };
 
-export function AppBar({ onMenu, home, detail = false, onBack }: {
-  onMenu: () => void; home: boolean; detail?: boolean; onBack?: () => void;
+export function AppBar({ onMenu, home, onBack }: {
+  onMenu: () => void; home: boolean; onBack?: () => void;
 }) {
   const theme = usePrefStore((s) => s.theme);
   const toggleTheme = usePrefStore((s) => s.toggleTheme);
@@ -73,16 +73,19 @@ export function AppBar({ onMenu, home, detail = false, onBack }: {
           }}>
           <PxIcon emoji="←" />
         </button>
-        {/* h1 은 상세에서도 남긴다 — 눈에서만 접는다. 없애면 화면에 제목이 하나도 없어지고,
+        {/* **뒤로가기가 있는 화면에는 로고를 두지 않는다.**
+            둘 다 두면 같은 줄이 "여기가 처음" 과 "돌아갈 수 있다" 를 같이 말하고,
+            좁은 화면에서는 로고·표식·검색·언어·메뉴가 한 줄에 다 들어가지 못해 겹친다 (제보).
+            h1 은 남긴다 — 눈에서만 접는다. 없애면 화면에 제목이 하나도 없어지고,
             포커스가 돌아올 자리(#app-title)도 같이 사라진다 */}
         <h1 id="app-title" tabIndex={-1}>
-          {detail ? <span className="app-bar__name">moncamp</span> : (
+          {home ? (
             <>
               <BrandLogo />
               {/* 주소가 같아 화면만 보고는 v3 인지 v4 인지 알 수가 없다 — 눈으로 가르는 표식 */}
               <BrandMark />
             </>
-          )}
+          ) : <span className="app-bar__name">moncamp</span>}
         </h1>
       </div>
       <button className="app-search" id="app-search" aria-label="포켓몬 검색"
