@@ -15,6 +15,11 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 const RELEASE_NOTES_EN = {
+  '2026-09-18 · v4.2.3': [
+    '**Picking a type under Raids \u203a All now lists that type** \u2014 choosing Electric used to return Ground-types (Groudon, Garchomp) that counter Electric, under the heading "Electric-type raid performance".',
+    '**All and Easy now differ only in what they filter out** \u2014 same type list; Easy drops legendaries, mythicals, megas and shadows, All keeps them.',
+    '**To find what beats a boss, use the solo calculator** \u2014 pick the boss and it picks the attackers. The Usage section on a Pok\u00e9mon page is unchanged.',
+  ],
   '2026-09-18 · v4.2.2': [
     '**When beta access is switched off, the [\ud83c\udf92 My Pok\u00e9mon N] row in the menu goes with it** \u2014 the row used to stay and only led to a locked screen.',
     '**Permission changes show up in the menu right away** \u2014 an admin changing their own access no longer needs a reload.',

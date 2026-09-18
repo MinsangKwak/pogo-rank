@@ -112,8 +112,12 @@ export interface MaxBundle {
 }
 
 export interface PveBundle {
+  /** **키는 보스 타입이다** — 불꽃 → 불꽃 보스를 잡는 카운터(물·땅). 솔플 계산기와 상세의 활용처가 쓴다 */
   PVE_DATA: Record<string, PveRow[]>;
+  /** 키는 **어태커 자신의 타입** — 불꽃 → 불꽃 포켓몬. 전설·환상·UB·메가·섀도우는 뺀 목록 */
   PVE_EASY: Record<string, PveRow[]>;
+  /** PVE_EASY 와 같은 묶음 기준에 전설·환상·UB·메가·섀도우를 남긴 것 — 레이드 화면의 「전체」 탭 */
+  PVE_BY_TYPE: Record<string, PveRow[]>;
   BOSS_LIST: unknown[];
 }
 

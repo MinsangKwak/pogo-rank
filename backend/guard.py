@@ -36,7 +36,7 @@ MIN_RATIO = 0.7
 # (이름, 필수 여부). 필수 표가 비면 그 화면만이 아니라 홈까지 무너진다.
 # 보조 표(시트·보스·일정·기술 변경)는 원래부터 "없으면 그 화면을 비운다" 로 설계돼 있다 (fetch_data.sh 참고)
 TABLES = [
-    ('pvp', True), ('pve', True), ('pve_easy', False), ('dynamax', True), ('dynamax_tank', True),
+    ('pvp', True), ('pve', True), ('pve_easy', False), ('pve_by_type', False), ('dynamax', True), ('dynamax_tank', True),
     ('dynamax_tier', True), ('value', True), ('dex', True), ('max_pool', False), ('move_changes', False),
     ('roles', False), ('sheet', False), ('bosses', False), ('gameday', False),
 ]
