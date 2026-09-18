@@ -25,7 +25,7 @@ import '../../frontend/styles/components/modal.css';
 import '../../frontend/styles/components/search.css';
 import '../../frontend/styles/components/drawer.css';
 import '../../frontend/styles/components/pages.css';
-import './styles/lock.css';
+import '../../frontend/styles/components/planner.css';
 import '../../frontend/styles/components/updates.css';
 import '../../frontend/styles/components/consent.css';
 import '../../frontend/styles/components/trial.css';

@@ -19,6 +19,7 @@ import {
   BUFFS, SOLO_TIERS, buildSoloPlan, damageInTime, inferTier, marginText,
   maxCp, raidCp, scaledPool, simulateRevive, type SoloPlan, type SoloTier,
 } from '../lib/solo';
+import { useFavs } from '../lib/useFavs';
 import type { OpenMon } from '../lib/mon';
 import { track } from '../lib/track';
 import type { PveRow } from '../types/data';
@@ -28,6 +29,7 @@ export default function SoloCalc({ onOpen }: { onOpen: OpenMon }) {
   const { data: max } = useMax();
   const { data: pve } = usePve();
   const { data: pvp } = usePvp();
+  const { favs } = useFavs();
 
   const [boss, setBoss] = useState<BossEntry | null>(null);
   const [tierOverride, setTierOverride] = useState<string | null>(null);
@@ -37,6 +39,7 @@ export default function SoloCalc({ onOpen }: { onOpen: OpenMon }) {
   const [myDeck, setMyDeck] = useState<PveRow[]>([]);
   const [bossTerm, setBossTerm] = useState('');
   const [deckTerm, setDeckTerm] = useState('');
+  const [fillNote, setFillNote] = useState('');
 
   const tierId = boss ? (tierOverride ?? inferTier(dex.DEX_DATA, boss)) : 't3';
   const tier = SOLO_TIERS.find((one) => one.id === tierId) ?? SOLO_TIERS[1] as SoloTier;
@@ -63,6 +66,7 @@ export default function SoloCalc({ onOpen }: { onOpen: OpenMon }) {
     setTierOverride(null);   // 새 보스면 자동 판정으로 리셋
     setBossTerm('');
     setMyDeck([]);
+    setFillNote('');
     track('solo_calc_boss', { boss: next.name });
   };
 
@@ -120,10 +124,26 @@ export default function SoloCalc({ onOpen }: { onOpen: OpenMon }) {
       ) : mode === 'mine' ? (
         <>
           <div className="row-head"><h2>내 덱</h2><span className="meta">{`${myDeck.length}/6 · 넣는 순서대로 출전`}</span></div>
+          {/* ★ 담아 둔 종에서 덱을 채운다 — 이 보스 상대 평가 가능한 풀(효율순) 중 즐겨찾기한 것만 */}
+          <div className="solo__fill">
+            <button className="uchip" onClick={() => {
+              const room = 6 - myDeck.length;
+              const owned = pool.filter((one) => favs.includes(Number(dex.DEX_DATA.dex[String(one.sprite)] ?? one.sprite))
+                && !myDeck.some((member) => member.name === one.name));
+              const picked = owned.slice(0, Math.max(room, 0));
+              track('solo_fill_favs', { n: picked.length });
+              if (!picked.length) {
+                setFillNote(room > 0 ? '즐겨찾기 중 이 보스 상대 상위 목록에 든 포켓몬이 없어요.' : '덱이 이미 6마리예요.');
+                return;
+              }
+              setFillNote('');
+              setMyDeck((now) => [...now, ...picked]);
+            }}>{`★ 즐겨찾기에서 채우기 (${favs.length})`}</button>
+          </div>
           <input className="boss__search" type="search" placeholder="내 어태커 검색해서 추가 (예: 자시안, 메가Y 뮤츠)"
-            value={deckTerm} onChange={(event) => setDeckTerm(event.target.value)} />
+            value={deckTerm} onChange={(event) => { setDeckTerm(event.target.value); setFillNote(''); }} />
           <div className="boss__sugg">
-            {deckTerm.trim() ? (deckHits.length
+            {fillNote ? <p className="empty">{fillNote}</p> : deckTerm.trim() ? (deckHits.length
               ? deckHits.map((hit) => (
                 <button key={hit.name} className="boss__rec" onClick={() => {
                   if (myDeck.length >= 6) return;

@@ -41,7 +41,7 @@ describe('계정 삭제', () => {
   it('문서가 안 지워지면 인증 계정에 손대지 않는다 — 지울 길 없는 찌꺼기를 남기지 않게', async () => {
     const server = api(async () => { throw { code: 'permission-denied' }; });
     signIn(server.handle);
-    render(<Account />);
+    render(<Account onGo={() => {}} />);
     fireEvent.click(screen.getByText('계정 삭제'));
     expect(await screen.findByText(/삭제 실패/)).toBeInTheDocument();
     expect(await screen.findByText(/permission-denied/)).toBeInTheDocument();
@@ -51,7 +51,7 @@ describe('계정 삭제', () => {
   it('문서가 지워지면 인증 계정까지 간다', async () => {
     const server = api(async () => {});
     signIn(server.handle);
-    render(<Account />);
+    render(<Account onGo={() => {}} />);
     fireEvent.click(screen.getByText('계정 삭제'));
     await vi.waitFor(() => expect(server.deleteUser).toHaveBeenCalled());
   });
@@ -60,7 +60,7 @@ describe('계정 삭제', () => {
     vi.spyOn(window, 'confirm').mockReturnValue(false);
     const server = api(async () => {});
     signIn(server.handle);
-    render(<Account />);
+    render(<Account onGo={() => {}} />);
     fireEvent.click(screen.getByText('계정 삭제'));
     expect(server.handle.deleteDoc).not.toHaveBeenCalled();
     expect(server.deleteUser).not.toHaveBeenCalled();
@@ -72,14 +72,14 @@ describe('권한 재확인 안내', () => {
     const server = api(async () => {});
     signIn(server.handle);
     useAuthStore.getState().set({ recheckError: 'unavailable' });
-    render(<Account />);
+    render(<Account onGo={() => {}} />);
     expect(screen.getByText(/권한을 다시 확인하지 못했어요/)).toBeInTheDocument();
   });
 
   it('잘 읽혔으면 안내를 안 띄운다', () => {
     const server = api(async () => {});
     signIn(server.handle);
-    render(<Account />);
+    render(<Account onGo={() => {}} />);
     expect(screen.queryByText(/권한을 다시 확인하지 못했어요/)).toBeNull();
   });
 });

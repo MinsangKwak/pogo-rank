@@ -167,6 +167,19 @@ export interface GamedayBundle {
   };
 }
 
+export interface FavEvent {
+  id: string;
+  title: string;
+  type: string;
+  start: string;
+  end: string;
+  dex: number[];
+}
+
+export interface FavEventsBundle {
+  FAV_EVENTS: FavEvent[];
+}
+
 export interface GameUpdate {
   id: string;
   title: string;

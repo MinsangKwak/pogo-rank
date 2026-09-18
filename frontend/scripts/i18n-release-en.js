@@ -15,6 +15,11 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 const RELEASE_NOTES_EN = {
+  '2026-09-18 · v4.2.1': [
+    '**My Pok\u00e9mon and \u2605 favourites are back** — the previous release retired them by mistake, and that has been reversed. Everything you had saved is still on your account. Sorry for the scare.',
+    '**Open to beta participants**, exactly as before: once an admin enables it you get My Pok\u00e9mon and the D-MAX [unreleased] view.',
+    '**What you saved shows up the moment you are approved** — the screen no longer looks empty right after approval.',
+  ],
   '2026-09-18 · v4.2.0': [
     '**My Pok\u00e9mon and \u2605 favourites have been retired** — rather than leave them in beta indefinitely, we folded them. Sorry for taking away what you had saved. The dex, rankings, schedule and calculators are unchanged.',
     '**Old links still work** — bookmarks to My Pok\u00e9mon now land on the home screen.',
