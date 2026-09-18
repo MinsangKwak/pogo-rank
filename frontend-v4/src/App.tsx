@@ -18,7 +18,7 @@ import { AppBar, AppNav, Drawer, Footer, PageHead, ToTop } from './components/Sh
 import { SlotProvider } from './components/Slots';
 import { useRoute } from './lib/useRoute';
 import type { MonPick, OpenMon } from './lib/mon';
-import { useAuthStore } from './stores/auth';
+import { useLocked } from './lib/useLocked';
 import { trackPageView, track } from './lib/track';
 import type { RouteDef } from './routes';
 import Home from './screens/Home';
@@ -63,23 +63,10 @@ function Splash() {
   );
 }
 
-/**
- * 로그인해야 열리는 화면인가 (v3 router.js routeLocked 와 같은 규칙).
- *   - **판정 중에는 잠그지 않는다** — 이 기기에 로그인 자취가 있을 때만 'loading' 이라 곧 열릴 화면이고,
- *     잠갔다 여는 깜빡임은 "로그아웃됐다" 로 읽힌다
- *   - 로그인을 쓸 수 없는 빌드에서는 잠그지 않는다 — 열 길이 없는 자물쇠는 고장과 같다
- */
-function useLocked(route: RouteDef): boolean {
-  const enabled = useAuthStore((s) => s.enabled);
-  const status = useAuthStore((s) => s.status);
-  if (!route.locked || !enabled) return false;
-  if (status === 'loading') return false;
-  return status !== 'ok';
-}
-
 /** 라우트 하나가 그리는 본문 */
 function Screen({ route, rest, onOpen }: { route: RouteDef; rest: string; onOpen: OpenMon }) {
-  const locked = useLocked(route);
+  // 판정은 lib/useLocked 하나가 한다 — 메뉴 줄·홈 타일도 같은 답을 쓴다
+  const locked = useLocked(route.id);
   if (locked) return <LockCard />;
   switch (route.id) {
     case 'home': return <Home onOpen={onOpen} />;
