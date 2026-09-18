@@ -9,6 +9,7 @@
 import { useState } from 'react';
 import { signInNow, authEmail, useAuthStore } from '../stores/auth';
 import { routeHash } from '../routes';
+import { useLockReason } from '../lib/useLocked';
 import { track } from '../lib/track';
 import TermsConsent from './TermsConsent';
 import AdminPanel from './AdminPanel';
@@ -19,6 +20,9 @@ export default function Account({ onGo }: { onGo: () => void }) {
   const [consentOpen, setConsentOpen] = useState(false);
   const [adminOpen, setAdminOpen] = useState(false);
   const [message, setMessage] = useState('');
+  // 이 줄도 화면·메뉴 줄과 **같은 판정**을 쓴다. 안 쓰면 실험 기능이 닫힌 사람에게
+  // 셈이 남아 있고, 눌러 봐야 잠긴 화면이 나온다 (제보 — 승인은 그대로인데 실험만 해제한 경우)
+  const planLock = useLockReason('planner');
 
   if (!enabled) return null;
 
@@ -70,12 +74,16 @@ export default function Account({ onGo }: { onGo: () => void }) {
     return (
       <>
         {who}
-        {/* 셈만 보여 주고 갈 길이 없으면 "어디서 보지" 가 남는다 — 누르면 그 화면으로 간다 */}
-        <div className="account__stats">
-          <a className="account__stat-go" href={routeHash('planner')} onClick={onGo}>
-            {'🎒 내 포켓몬 '}<b>{`${favs.length}마리`}</b><span aria-hidden="true"> ›</span>
-          </a>
-        </div>
+        {/* 셈만 보여 주고 갈 길이 없으면 "어디서 보지" 가 남는다 — 누르면 그 화면으로 간다.
+            **열리지 않으면 아예 안 그린다.** 잠긴 줄로 남겨 두면 "담아 둔 게 있는데 왜 못 보지" 가 되고,
+            🔒 를 붙여 봐야 여기는 메뉴가 아니라 내 계정 요약이라 자리만 차지한다 */}
+        {planLock ? null : (
+          <div className="account__stats">
+            <a className="account__stat-go" href={routeHash('planner')} onClick={onGo}>
+              {'🎒 내 포켓몬 '}<b>{`${favs.length}마리`}</b><span aria-hidden="true"> ›</span>
+            </a>
+          </div>
+        )}
         <div className="account__actions">
           {/* 이름이 곧 할 수 있는 일이다 — 루트는 사람을 들이고 내보내고(가입 승인),
               위임 관리자는 누가 쓰는지 보고 운영을 돕는다(유저 관리).

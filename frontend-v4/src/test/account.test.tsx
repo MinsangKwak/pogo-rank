@@ -30,10 +30,13 @@ function api(deleteDoc: () => Promise<void>) {
 beforeEach(() => { vi.spyOn(window, 'confirm').mockReturnValue(true); });
 afterEach(() => { vi.restoreAllMocks(); });
 
-function signIn(handle: AuthApi) {
+type Seed = Partial<ReturnType<typeof useAuthStore.getState>>;
+
+function signIn(handle: AuthApi, extra: Seed = {}) {
   useAuthStore.getState().set({
     enabled: true, status: 'pending', user: USER, api: handle,
-    admin: false, adminRoot: false, beta: false, recheckError: '', requestError: '',
+    admin: false, adminRoot: false, beta: false, favs: [], recheckError: '', requestError: '',
+    ...extra,
   });
 }
 
@@ -81,5 +84,31 @@ describe('권한 재확인 안내', () => {
     signIn(server.handle);
     render(<Account onGo={() => {}} />);
     expect(screen.queryByText(/권한을 다시 확인하지 못했어요/)).toBeNull();
+  });
+});
+
+describe('🎒 내 포켓몬 셈 — 열리지 않으면 아예 안 보인다', () => {
+  // 제보: 실험 기능을 해제했는데 ☰ 메뉴의 계정 카드에는 [🎒 내 포켓몬 1마리] 가 그대로 남았다.
+  // 화면과 메뉴 줄은 useLockReason 을 쓰는데 이 줄만 안 썼다 — 눌러도 잠긴 화면이 나왔다
+  it('실험 기능 깃발이 있으면 보인다', () => {
+    const server = api(async () => {});
+    signIn(server.handle, { status: 'ok', beta: true, favs: [25] });
+    render(<Account onGo={() => {}} />);
+    expect(screen.getByText('1마리')).toBeInTheDocument();
+    expect(document.querySelector('.account__stat-go')).not.toBeNull();
+  });
+
+  it('깃발을 떼면 줄이 통째로 사라진다 — 🔒 를 붙여 남기지 않는다', () => {
+    const server = api(async () => {});
+    signIn(server.handle, { status: 'ok', beta: false, favs: [25] });
+    render(<Account onGo={() => {}} />);
+    expect(document.querySelector('.account__stat-go')).toBeNull();
+  });
+
+  it('승인이 풀리면 역시 안 보인다', () => {
+    const server = api(async () => {});
+    signIn(server.handle, { status: 'pending', beta: true, favs: [25] });
+    render(<Account onGo={() => {}} />);
+    expect(document.querySelector('.account__stat-go')).toBeNull();
   });
 });

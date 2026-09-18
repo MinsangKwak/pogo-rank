@@ -20,7 +20,7 @@
 // 시키게 되면, 써 보라고 준 권한으로 유저 목록까지 열린다.
 // ─────────────────────────────────────────────────────────────────────────────
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { authEmail, useAuthStore } from '../stores/auth';
+import { authEmail, recheckAccess, useAuthStore } from '../stores/auth';
 import { useMeta } from '../lib/data';
 import type { DocData } from '../lib/authApi';
 
@@ -111,12 +111,18 @@ export default function AdminPanel({ onClose }: { onClose: () => void }) {
   const admins = approved.filter((one) => one.data['admin'] === true);
   const friends = approved.filter((one) => one.data['admin'] !== true);
 
-  const write = async (run: () => Promise<void>, fail: string) => {
+  /**
+   * 목록을 바꾼다. `mine` 은 **그 변경이 나 자신에게 닿았는가** — 닿았으면 내 권한도 그 자리에서
+   * 다시 읽는다 (v4.2.1). 안 그러면 실험 기능을 나에게서 뗀 직후에도 ☰ 메뉴와 계정 카드가
+   * 로그인 때 읽은 권한 그대로 남아, 탭을 나갔다 와야(탭 복귀 재확인) 맞춰졌다 — 제보.
+   */
+  const write = async (run: () => Promise<void>, fail: string, mine = false) => {
     try { await run(); } catch (error) {
       setMessage(`${fail}\n(${(error as { code?: string })?.code ?? String(error)})`);
       return;
     }
     setMessage('');
+    if (mine) await recheckAccess();
     await load();   // 부분 수정 대신 다시 읽는다 — 화면과 저장된 것이 어긋날 자리를 아예 없앤다
   };
 
@@ -129,12 +135,12 @@ export default function AdminPanel({ onClose }: { onClose: () => void }) {
 
   const setFlag = (email: string, field: 'admin' | 'beta', on: boolean, question: string) => {
     if (!window.confirm(question)) return;
-    void write(() => api.setDoc(`allowlist/${email}`, { [field]: on }), '바꾸지 못했어요. 보안 규칙을 최신으로 게시했는지 확인해 주세요.');
+    void write(() => api.setDoc(`allowlist/${email}`, { [field]: on }), '바꾸지 못했어요. 보안 규칙을 최신으로 게시했는지 확인해 주세요.', email === myMail);
   };
 
   const revoke = (email: string) => {
     if (!window.confirm(`${email} 승인을 해제할까요?`)) return;
-    void write(() => api.deleteDoc(`allowlist/${email}`), '해제하지 못했어요.');
+    void write(() => api.deleteDoc(`allowlist/${email}`), '해제하지 못했어요.', email === myMail);
   };
 
   const approvedRow = (one: Row, isAdmin: boolean) => {
