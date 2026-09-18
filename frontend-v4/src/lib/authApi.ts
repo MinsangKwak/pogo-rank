@@ -20,6 +20,12 @@ export interface AuthApi {
   signOut(): Promise<void>;
   deleteUser(): Promise<void>;
   getDoc(path: string): Promise<DocData | null>;
+  /**
+   * getDoc 과 같되 **실패를 삼키지 않는다.**
+   * getDoc 은 못 읽으면 null 이라 '문서가 없다' 와 '못 읽었다' 가 같은 답이 된다. 권한을 다시
+   * 읽을 때는 그 둘이 정반대다 — 없으면 승인 해제, 못 읽었으면 회선 문제다 (stores/auth recheckAccess)
+   */
+  getDocStrict(path: string): Promise<DocData | null>;
   setDoc(path: string, data: DocData): Promise<void>;
   deleteDoc(path: string): Promise<void>;
   /** 컬렉션 하나를 통째로 읽는다. 문서 id 를 `id` 로 붙여 준다 (트레이너 코드 목록) */
@@ -91,10 +97,17 @@ async function makeFirebaseApi(config: Record<string, string>): Promise<AuthApi>
       const snapshot = await store.getDoc(ref(path)).catch(() => null);
       return snapshot?.exists() ? (snapshot.data() as DocData) : null;
     },
+    async getDocStrict(path) {
+      const snapshot = await store.getDoc(ref(path));
+      return snapshot.exists() ? (snapshot.data() as DocData) : null;
+    },
     async setDoc(path, data) {
       await store.setDoc(ref(path), { ...data, updatedAt: store.serverTimestamp() }, { merge: true });
     },
-    async deleteDoc(path) { await store.deleteDoc(ref(path)).catch(() => { /* 없으면 그만 */ }); },
+    // **실패를 삼키지 않는다** (v4.2.0). 없는 문서를 지우는 것은 원래 성공이라, 여기서 잡히는 것은
+    // 규칙이 막았거나 회선이 끊긴 경우뿐이다 — 그것을 삼키면 '지웠다' 고 말하고 안 지운 것이 된다.
+    // 부르는 쪽이 저마다 어떻게 알릴지 정한다 (계정 삭제는 멈추고, 목록 화면은 줄을 되돌린다)
+    async deleteDoc(path) { await store.deleteDoc(ref(path)); },
     async listDocs(path) {
       // 승인 전에는 규칙이 읽기를 막는다 — 실패는 조용히 빈 목록이다 (v3 loadTrainers 와 같다)
       const snapshot = await store.getDocs(store.collection(db, path)).catch(() => null);
