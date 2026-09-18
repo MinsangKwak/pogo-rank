@@ -15,6 +15,12 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 const RELEASE_NOTES_EN = {
+  '2026-09-18 · v4.1.0': [
+    '**A new look** — the logo, the cards and the Pok\u00e9mon detail view have been redrawn. Where things live, the URLs and everything you saved stay the same.',
+    '**Pok\u00e9mon detail is now two columns on wide screens** — the Pok\u00e9mon on the left, the details on the right. The summary puts max CP and battle usage side by side, and catch CP opens only when you want it.',
+    '**A tidier top bar** — screens you can go back from now show just the back arrow. This also fixes the logo overlapping the buttons on narrow phones.',
+    '**A slightly faster first load** — the sign-in code is fetched only when it is needed.',
+  ],
   '2026-09-18 · v4.0.1': [
     '**Experimental features are now granted separately** — \uD83C\uDF92 My Pok\u00e9mon and the [Unreleased] view on D-MAX are still being worked on. An admin can turn them on for you.',
     '**Admin rights now cover user management only** — helping run the service and trying things early are two different roles. Becoming an admin no longer opens experimental features.',

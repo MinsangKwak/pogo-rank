@@ -3,7 +3,7 @@
 //
 // 약관을 개정해 TERMS_VER 을 올리면 다음 로그인 때 다시 묻는다 — 버전을 그대로 값으로 쓴다.
 // ─────────────────────────────────────────────────────────────────────────────
-import { TERMS_VER } from '../screens/Legal';
+import { TERMS_VER } from './legalMeta';
 
 const TERMS_OK_KEY = 'pogo_terms_ok';   // v3 와 같은 키
 

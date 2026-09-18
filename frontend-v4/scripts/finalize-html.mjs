@@ -47,6 +47,12 @@ if (channel === 'dev') {
   // 미리보기의 공유 카드가 실서비스를 가리키면 안 된다 — 색인은 어차피 막지만,
   // 링크를 붙였을 때 엉뚱한 곳으로 가는 것을 막으려는 것이다
   html = html.split(SITE_URL).join(DEV_SITE_URL);
+  // 공유 카드 그림도 갈아 끼운다 — 주소만 바꾸면 카드 그림이 실서비스와 똑같아,
+  // 슬랙·카톡에 붙였을 때 어느 쪽 링크인지 **그림만 보고는 알 수가 없다**.
+  // dev 판에는 빨간 테두리와 [DEV] 띠, 아래에 주소가 찍혀 있다 (frontend/static/og-dev.png)
+  html = html.split('og-design.png').join('og-dev.png');
+  html = html.split('도트 캠프와 함께하는 포켓몬 GO 가이드')
+             .join('개발 미리보기 — 검색 색인 안 함');
 }
 
 writeFileSync(target, html);

@@ -1,0 +1,61 @@
+/* ─────────────────────────────────────────────────────────────────────────────
+   brand.css — 상단 바의 로고와 v4 표식
+
+   **여기에는 되돌리는 규칙이 없다.** 노트 테마가 로고를 빨간 명패로 만드는 규칙은
+   shell-notebook.css 에서 `.app-bar__logo--brand` 를 비켜 가도록 좁혀 뒀다.
+   씌운 것을 지우는 규칙을 쌓으면, 나중에 기반이 바뀔 때마다 지우는 쪽도 같이 고쳐야 한다.
+
+   표식이 왜 있나 — 주소가 같아서(moncamp.kr) 화면만 보고는 v3 인지 v4 인지 알 수가 없다.
+   배포가 실제로 갈렸는지, 캐시된 옛 화면을 보고 있는 건 아닌지를 눈으로 가르는 자리다.
+   ───────────────────────────────────────────────────────────────────────────── */
+.app-bar__head #app-title { display: flex; align-items: center; min-width: 0; }
+
+.app-bar__logo--brand {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-sm);
+  color: var(--brand);
+}
+.app-bar__logo--brand:hover { color: var(--brand-2); }
+.app-bar__logo--brand svg {
+  flex: none;
+  width: var(--logo-size);
+  height: var(--logo-size);
+  shape-rendering: crispEdges;   /* 도트 심벌이라 안티에일리어싱이 오히려 흐린다 */
+}
+
+.v4-mark {
+  display: inline-flex;
+  flex: none;
+  margin-left: var(--space-sm);
+  padding: var(--space-xs);
+  background: var(--mark-dark);
+  border: 1px solid var(--mark-light);
+  box-shadow: .2rem .2rem 0 var(--line-2);
+  vertical-align: middle;
+}
+.v4-mark svg { display: block; width: var(--mark-w); height: var(--mark-h); }
+
+@media (max-width: 767px) {
+  :root { --mark-w: 3.6rem; --mark-h: 2rem; }
+}
+/* **가장 좁은 화면에서는 표식을 뺀다.** 로고·표식·검색·언어·메뉴가 한 줄에 다 들어가지 못해
+   320px 에서 표식이 검색 버튼 위로 6px 올라탔다(좌표로 확인). 줄여도 겹치면 줄이는 것이 답이 아니다.
+   표식은 "지금 보는 게 v4 인가" 를 눈으로 가르는 자리라, 화면이 좁으면 없어도 된다 — 빠지는 것은
+   로고가 아니라 덧붙임이다 */
+@media (max-width: 380px) {
+  :root { --logo-size: 2.4rem; }
+  .app-bar__logo--brand { gap: var(--space-xs); }
+  .v4-mark { display: none; }
+}
+
+/* 상세 화면의 이름 — 눈에서만 접는다.
+   display:none 이나 visibility:hidden 은 읽어 주는 기기에서도 사라져 제목 없는 화면이 된다 */
+.app-bar__name {
+  position: absolute;
+  width: 1px; height: 1px;
+  margin: -1px; padding: 0; border: 0;
+  clip-path: inset(50%);
+  overflow: hidden;
+  white-space: nowrap;
+}

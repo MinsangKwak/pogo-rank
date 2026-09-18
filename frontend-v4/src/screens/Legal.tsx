@@ -11,8 +11,9 @@ import type { ReactNode } from 'react';
 import { useMeta } from '../lib/data';
 import KoOnlyNote from '../components/KoOnlyNote';
 
-export const PRIVACY_VER = '2026-09-07';
-export const TERMS_VER = '2026-09-07';
+// 날짜는 lib/legalMeta.ts 에 있다 — 그래야 날짜만 쓰는 쪽이 이 본문을 끌고 오지 않는다
+export { PRIVACY_VER, TERMS_VER } from '../lib/legalMeta';
+import { PRIVACY_VER, TERMS_VER } from '../lib/legalMeta';
 // 권리자 표기는 '상용·오픈소스 전환 점검' 의 결정 — Pokémon GO 는 Scopely Explore, Inc.
 export const IP_NOTICE = 'moncamp는 비공식 팬 프로젝트입니다. Pokémon 및 관련 명칭·이미지의 권리는 The Pokémon Company · Nintendo · Creatures Inc. · GAME FREAK inc. 에, Pokémon GO 는 Scopely Explore, Inc. 에 있으며 이 서비스는 권리자와 무관합니다.';
 

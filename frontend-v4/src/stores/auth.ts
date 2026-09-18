@@ -48,6 +48,8 @@ interface AuthState {
   favs: number[];          // 계정에 담아 둔 도감번호 (화면은 번호순으로 읽는다)
   requestError: string;    // 가입 요청(requests 문서) 쓰기가 실패했을 때의 코드
   api: AuthApi | null;
+  /** SDK 를 지금 받아 오게 하는 손잡이 (AuthBridge 가 꽂는다). 두 번 불러도 한 번만 받는다 */
+  start: (() => Promise<AuthApi | null>) | null;
   set: (next: Partial<AuthState>) => void;
 }
 
@@ -62,10 +64,27 @@ export const useAuthStore = create<AuthState>((set) => ({
   favs: [],
   requestError: '',
   api: null,
+  start: null,
   set,
 }));
 
 export const authEmail = () => (useAuthStore.getState().user?.email ?? '').toLowerCase();
+
+/**
+ * 로그인을 연다 — **SDK 가 아직 안 왔으면 받아 온 뒤에.**
+ *
+ * 왜 필요한가 — 로그아웃 상태에서는 '로그인 확인 중' 안내가 안 뜨고 버튼이 바로 보인다.
+ * 그런데 SDK 는 첫 그림 뒤에 오므로, 그 사이에 누르면 `api` 가 없어 **아무 일도 안 일어났다.**
+ * 눌러도 안 되는 버튼은 고장과 같다. 여기서 받아 오고 열면 언제 눌러도 열린다.
+ *
+ * 기다렸다 열면 브라우저가 팝업을 막을 수 있지만, signIn 이 막히면 리다이렉트로 넘어간다
+ * (lib/authApi.ts) — 창이 뜨는 대신 화면이 넘어갈 뿐, 로그인은 된다.
+ */
+export async function signInNow(): Promise<void> {
+  const state = useAuthStore.getState();
+  const api = state.api ?? (await state.start?.()) ?? null;
+  await api?.signIn();
+}
 
 /** 담을 수 있는가 — **승인 대기도 담을 수 있다**. 담아 둘 것이 있어야 승인을 기다릴 이유도 생긴다 */
 export function favEnabled(): boolean {
