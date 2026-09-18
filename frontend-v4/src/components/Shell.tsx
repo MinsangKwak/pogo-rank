@@ -62,6 +62,10 @@ export function AppBar({ onMenu, home }: { onMenu: () => void; home: boolean }) 
         <h1 id="app-title" tabIndex={-1}>
           <button type="button" id="app-logo" className="app-bar__logo"
             onClick={() => { location.hash = '#/'; }}>moncamp</button>
+          {/* 주소가 같아 화면만 보고는 v3 인지 v4 인지 알 수가 없다 — 눈으로 가르는 표식 (root.css) */}
+          <span className="v4-mark" id="v4-mark" title="React 로 만든 판입니다" aria-hidden="true">
+            <PxIcon emoji="⚛" /><PxIcon emoji="◓" />
+          </span>
         </h1>
       </div>
       <button className="app-search" id="app-search" aria-label="포켓몬 검색"
