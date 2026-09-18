@@ -82,8 +82,12 @@ export interface RowProps {
   sub?: ReactNode;
   /** 이름 아래 보조줄. 비면 줄을 만들지 않는다 */
   lines?: (string | null | undefined)[];
+  /** 보조줄에 덧붙일 클래스 — 덱 짜기의 카운터 이유 줄이 `.row__counter` 로 넓게 선다 (v3 와 같다) */
+  linesClass?: string;
   /** 아직 게임에 안 나온 줄 — 지우지 않고 흐리게 남긴다 (v3.36.0 의 판단) */
   unrel?: boolean;
+  /** 가상 순위에서 밀린 줄의 [지금 N위] — 실제 순위(미구현을 뺀 값) (v3 maxRank 의 tag) */
+  nowRank?: number;
   /** 지난 갱신 대비 순위 변동 (양수 상승 · 음수 하락) */
   delta?: number;
   onOpen?: () => void;
@@ -107,14 +111,14 @@ function DeltaBadge({ delta }: { delta?: number }) {
   );
 }
 
-export function Row({ sprite, name, en, types, rank, score, sub, lines, unrel, delta, onOpen }: RowProps) {
+export function Row({ sprite, name, en, types, rank, score, sub, lines, linesClass, unrel, nowRank, delta, onOpen }: RowProps) {
   const { data } = useDex();
   // 2026-09-17 '활용 N곳' — 이 종이 상위 30위에 드는 순위표 수 (v3 usageBadge).
   //   어느 탭에서 보든 같은 칩이라 "여기서만 좋은가, 다재다능인가" 가 바로 보인다.
   //   1곳뿐이면 안 붙인다 — 모든 줄에 붙으면 뜻이 없다
   const count = useUsageCount(name);
   const parts = (lines ?? []).filter(Boolean) as string[];
-  const badges = unrel || count >= 2;
+  const badges = unrel || nowRank != null || count >= 2;
   return (
     <li
       className={`row${unrel ? ' is-unreleased' : ''}`}
@@ -135,9 +139,14 @@ export function Row({ sprite, name, en, types, rank, score, sub, lines, unrel, d
         {badges ? (
           <div className="row__badges">
             {unrel ? <span className="tag dex__unrel">미구현</span> : null}
+            {/* 가정으로 매긴 번호 옆에 **오늘의 자리**를 같이 둔다 — 무엇이 바뀌었는지가 줄에서 바로 읽힌다 */}
+            {nowRank != null ? (
+              <span className="tag tag--now"
+                title={`미구현이 없으면 ${nowRank}위 — 이 표는 미구현이 나왔다고 가정한 순위예요`}>{`지금 ${nowRank}위`}</span>
+            ) : null}
             {count >= 2 ? (
               <span className={`tag tag--use${count >= 5 ? ' tag--many' : ''}`}
-                title="이 포켓몬이 상위 30위에 드는 순위표 수 (PvE 19표 · PvP 4리그 · D-MAX 19표)">활용 {count}곳</span>
+                title="이 포켓몬이 상위 30위에 드는 순위표 수 (PvE 19표 · PvP 4리그 · D-MAX 19표)">{`활용 ${count}곳`}</span>
             ) : null}
           </div>
         ) : null}
@@ -145,7 +154,7 @@ export function Row({ sprite, name, en, types, rank, score, sub, lines, unrel, d
           <NameNode name={name} en={en} labels={data.FORM_LABELS} />
           <TypeDots types={types} />
         </div>
-        {parts.length ? <div className="row__moves">{parts.map((text, i) => <span key={i}>{text}</span>)}</div> : null}
+        {parts.length ? <div className={`row__moves${linesClass ? ` ${linesClass}` : ''}`}>{parts.map((text, i) => <span key={i}>{text}</span>)}</div> : null}
       </div>
       <div className="row__stats">
         <span className="row__score">{score}</span>
@@ -206,8 +215,10 @@ export function TierHead({ tier, count }: { tier: string; count: number }) {
   return (
     <div className="tier__head">
       <b className={`tier__badge tier__badge--${tier.toLowerCase()}`}>{tier}</b>
-      <span className="tier__name">{tier} 티어</span>
-      <span className="meta">{count}종</span>
+      {/* **한 줄은 한 노드로 둔다.** `{tier} 티어` 라고 적으면 React 가 텍스트 노드를 둘로 쪼개고,
+          사전은 줄 단위로 찾으므로 ' 티어' 만 남아 못 옮긴다 (v3 는 한 문자열이었다) */}
+      <span className="tier__name">{`${tier} 티어`}</span>
+      <span className="meta">{`${count}종`}</span>
       <span className="tier__desc">{TIER_DESC[tier] ?? ''}</span>
     </div>
   );
@@ -218,17 +229,21 @@ export function TierHead({ tier, count }: { tier: string; count: number }) {
  * **ⓘ 가 있을 때만 제목을 감싼다** — v3 는 감쌀 것이 없으면 `<h2>` 를 맨 앞에 그냥 둔다.
  * 늘 감쌌더니 ⓘ 없는 화면(PvE·PvP)의 머리 높이가 v3 보다 5px 컸다.
  */
-export function RowHead({ title, meta, info }: { title: string; meta: string; info?: string }) {
+export function RowHead({ title, meta, info, hypo }: { title: string; meta: string; info?: string; hypo?: boolean }) {
+  // 이 표 전체가 가정이라는 것을 한 눈에 (v3 maxHypoBadge). 켜져 있을 때만 붙는다
+  const badge = hypo
+    ? <span className="tag tag--hypo" title="미구현이 나왔다고 가정하고 매긴 순위예요 — 실제 순위는 [미구현] 을 끄면 나와요">가상 순위</span>
+    : null;
   return (
     <div className="row-head">
       {info
         ? (
           <div className="row-head__title">
-            <h2>{title}</h2>
+            <h2>{title}{badge}</h2>
             <span className="info-dot" tabIndex={0} role="button" aria-expanded={false} title={info}>ⓘ</span>
           </div>
         )
-        : <h2>{title}</h2>}
+        : <h2>{title}{badge}</h2>}
       <span className="meta">{meta}</span>
     </div>
   );

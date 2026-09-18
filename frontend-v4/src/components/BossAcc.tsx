@@ -14,25 +14,18 @@
 // ─────────────────────────────────────────────────────────────────────────────
 import { useState } from 'react';
 import { useDex, useMax, useSchedule } from '../lib/data';
+import { pickMonth } from '../lib/schedule';
+import type { OpenMon } from '../lib/mon';
 import { Sprite } from './Bits';
 import { NameNode } from './Row';
-import type { DmaxRow, ScheduleMonth } from '../types/data';
+import type { DmaxRow } from '../types/data';
 
 const BOSS_STEP = 5;   // [더보기] 한 번에 다섯 (v3 state.bossShow)
 
 const released = (rows: DmaxRow[] | undefined) => (rows ?? []).filter((row) => !row.unrel);
 
-function pickMonth(months: Record<string, ScheduleMonth>, today: Date): ScheduleMonth | undefined {
-  const keys = Object.keys(months).sort();
-  const key = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}`;
-  if (months[key]) return months[key];
-  const past = keys.filter((one) => one < key);
-  const pick = past.length ? past[past.length - 1] : keys[0];
-  return pick ? months[pick] : undefined;
-}
-
 export default function BossAcc({ onOpen, onGoBoss }: {
-  onOpen: (sprite: number, en?: string) => void;
+  onOpen: OpenMon;
   onGoBoss: (type: string) => void;
 }) {
   const { data: schedule } = useSchedule();
@@ -67,7 +60,7 @@ export default function BossAcc({ onOpen, onGoBoss }: {
 
   const rec = (row: DmaxRow, lead: string, sub?: string) => (
     <button key={`${row.sprite}-${lead}`} className="boss__rec"
-      onClick={(event) => { event.stopPropagation(); onOpen(row.sprite, row.en); }}>
+      onClick={(event) => { event.stopPropagation(); onOpen(row); }}>
       <Sprite id={row.sprite} />
       <span>{lead}<NameNode name={row.name} labels={dex.FORM_LABELS} /></span>
       {sub ? <small className="row__sub">{sub}</small> : null}
@@ -108,7 +101,7 @@ export default function BossAcc({ onOpen, onGoBoss }: {
                 더보기 +{BOSS_STEP} ({Math.min(show, total)}/{total})
               </button>
             )
-            : <span className="meta">전체 {total}종 표시됨</span>}
+            : <span className="meta">{`전체 ${total}종 표시됨`}</span>}
           <button className="boss__more" onClick={(event) => { event.preventDefault(); onGoBoss(type); }}>
             {typeName} 보스 딜러 순위 ▸
           </button>

@@ -25,6 +25,9 @@ import { Slot } from '../components/Slots';
 import BossAcc from '../components/BossAcc';
 import { Row, RowHead, RowList, RowMore, ROW_SHOW, TierHead, TIER_ORDER, useExpanded } from '../components/Row';
 import { track } from '../lib/track';
+import { useAuthStore } from '../stores/auth';
+import { LEAGUES } from '../lib/leagues';
+import type { OpenMon } from '../lib/mon';
 import { Fragment } from 'react';
 import type { LeagueKey } from '../types/data';
 
@@ -48,18 +51,42 @@ function useView(screen: string) {
   return { view: saved, toggle: () => setCols(screen, saved === 'grid' ? 'list' : 'grid') };
 }
 
-export function Dmax({ onOpen }: { onOpen: (sprite: number, en?: string) => void }) {
+export function Dmax({ onOpen }: { onOpen: OpenMon }) {
   const { data: max } = useMax();
   const { data: dex } = useDex();
   const boss = useRankStore((s) => s.maxBoss);
   const axis = useRankStore((s) => s.maxAxis);
-  const unrel = useRankStore((s) => s.maxShowUnrel);
+  const checked = useRankStore((s) => s.maxShowUnrel);
   const set = useRankStore((s) => s.set);
   const { view, toggle } = useView('max');
+  // **[미구현] 은 관리자만 본다** (v3 maxUnrelAllowed). 켜 둔 값이 저장소에 남아 있어도
+  // 관리자가 아니면 안 보여 준다 — 체크만 감추면 옛 값이 그대로 살아 미구현 줄이 새어 나간다.
+  // 게임에 없는 개체가 일반 화면에 뜨는 것은 v3.61.2 에 긴급으로 막았던 바로 그 자리다
+  const admin = useAuthStore((s) => s.admin);
+  const unrel = checked && admin;
 
   const table = axis === 'tank' ? max.DMAX_TANK : axis === 'dealer' ? max.DMAX_DATA : max.DMAX_TIER;
   const all = table[boss] ?? [];
+  // **[미구현] 을 켜면 표가 "만약 이들이 나온다면" 의 가상 순위가 된다** (v3.49.0 maxVisible · maxRank).
+  //   미구현도 번호를 받고, 그 위에 낀 만큼 아래 출시분이 밀린다 (지금 1위가 5위가 되는 식).
+  //   밀린 줄에는 [지금 N위] 딱지가 붙어 무엇이 바뀌었는지를 줄에서 바로 읽게 한다.
+  //   가상 순위에서는 어제 대비 변동(▲▼)을 감춘다 — 그 숫자는 **실제 순위**가 움직인 이야기라,
+  //   가정으로 매긴 번호 바로 아래 놓이면 한 줄에서 두 '움직임' 이 서로 다른 말을 한다
   const rows = all.filter((row) => unrel || !row.unrel);
+  // 보이는 차례(shown) ↔ 출시분만 센 차례(released). 체크가 꺼져 있으면 둘이 같은 값이다
+  const nowRankOf = new Map<number, number>();
+  if (unrel) {
+    let released = 0;
+    rows.forEach((row, at) => {
+      if (!row.unrel) released += 1;
+      // 미구현 줄에는 '지금' 이 없다 — 오늘 겨루는 자리가 아예 없으니 딱지도 없다
+      if (!row.unrel && at + 1 !== released) nowRankOf.set(at, released);
+    });
+  }
+  // 지금 고른 속성에 미구현이 있기는 한가 — **세 표를 다 본다** (v3 maxHasUnreleased).
+  // 보고 있는 표만 보면 축을 옮길 때 체크가 나타났다 사라진다
+  const hasUnrel = [max.DMAX_TIER, max.DMAX_DATA, max.DMAX_TANK]
+    .some((one) => (one?.[boss] ?? []).some((row) => row.unrel));
   const typeName = boss === 'overall' ? '' : (dex.TYPE_KO[boss] ?? boss);
   const title = axis === 'tank'
     ? (boss === 'overall' ? 'D-MAX 탱커 (중립 · 순수 내구)' : `${typeName} 보스 상대 D-MAX 탱커`)
@@ -90,11 +117,11 @@ export function Dmax({ onOpen }: { onOpen: (sprite: number, en?: string) => void
       </Slot>
       <Slot name="headActions">
         {/* 표에 미구현이 한 줄도 없는 칩에서는 아예 안 그린다 (v3 maxHasUnreleased) */}
-        {all.some((row) => row.unrel) ? (
+        {admin && hasUnrel ? (
           <CheckToggle
             text="미구현"
             title="게임 파일에 데이터는 있지만 아직 못 쓰는 개체를 함께 봐요 — 왼쪽에 빨간 막대가 서고, 순위는 그것들이 나왔다고 가정한 가상 판이 돼요"
-            checked={unrel}
+            checked={checked}
             onChange={(next) => set('maxShowUnrel', next)}
           />
         ) : null}
@@ -102,7 +129,7 @@ export function Dmax({ onOpen }: { onOpen: (sprite: number, en?: string) => void
         <ViewToggle view={view} onToggle={toggle} />
       </Slot>
 
-      <RowHead title={title} meta={`${rows.length}종`} info={DMAX_INFO} />
+      <RowHead title={title} meta={`${rows.length}종`} info={DMAX_INFO} hypo={unrel} />
       {/* 티어표는 **티어별로 묶어** 그린다 — v3 renderTierList.
           한 줄로 이어 붙이면 "몇 위인가" 만 남고 "어느 급인가" 가 사라진다 */}
       {axis === 'all'
@@ -120,8 +147,9 @@ export function Dmax({ onOpen }: { onOpen: (sprite: number, en?: string) => void
                     sprite={row.sprite} name={row.name} en={row.en} types={row.types}
                     rank={String(rows.indexOf(row) + 1)}
                     unrel={row.unrel}
-                    delta={row.d}
-                    onOpen={() => onOpen(row.sprite, row.en)}
+                    nowRank={nowRankOf.get(rows.indexOf(row))}
+                    delta={unrel ? 0 : row.d}
+                    onOpen={() => onOpen(row)}
                     score={`${row.pct ?? Math.round(row.score)}%`}
                     sub={`공격 ${row.atk} · 위력 ${row.power}${row.stab ? ' · 자속' : ''} · 내구 ${row.bulk ?? 0}`}
                     lines={[row.fast, `${dex.TYPE_KO[row.charged] ?? row.charged} 타입`]}
@@ -139,8 +167,9 @@ export function Dmax({ onOpen }: { onOpen: (sprite: number, en?: string) => void
                 sprite={row.sprite} name={row.name} en={row.en} types={row.types}
                 rank={String(index + 1)}
                 unrel={row.unrel}
-                delta={row.d}
-                onOpen={() => onOpen(row.sprite, row.en)}
+                nowRank={nowRankOf.get(index)}
+                delta={unrel ? 0 : row.d}
+                onOpen={() => onOpen(row)}
                 score={String(row.dmg ?? Math.round(row.score))}
                 sub={`맥스 피해 · 내구 ${row.bulk}`}
                 lines={[row.fast, `${dex.TYPE_KO[row.charged] ?? row.charged} 타입`]}
@@ -152,7 +181,7 @@ export function Dmax({ onOpen }: { onOpen: (sprite: number, en?: string) => void
   );
 }
 
-export function Pve({ onOpen }: { onOpen: (sprite: number, en?: string) => void }) {
+export function Pve({ onOpen }: { onOpen: OpenMon }) {
   const { data: pve } = usePve();
   const { data: dex } = useDex();
   const mode = useRankStore((s) => s.pveMode);
@@ -210,13 +239,16 @@ export function Pve({ onOpen }: { onOpen: (sprite: number, en?: string) => void 
             <Fragment key={tier}>
               <TierHead tier={tier} count={group.length} />
               <RowList view={view}>
-                {group.map((row) => (
+                {/* **번호는 그 티어 묶음 안의 순번이다** (v3 renderTierList 가 넘기는 index).
+                    D-MAX 티어표는 반대로 탭 전체 순위를 쓴다 — 등급이 절대 기준이라
+                    묶음 안 순번을 쓰면 B 티어 첫 카드가 '1' 로 찍혀 근거와 어긋난다(v3.30.1) */}
+                {group.map((row, index) => (
                   <Row
                     key={`${row.sprite}-${row.name}`}
                     sprite={row.sprite} name={row.name} en={row.en} types={row.types}
-                    rank={String(rows.indexOf(row) + 1)}
+                    rank={String(index + 1)}
                     unrel={row.unrel} delta={row.d}
-                    onOpen={() => onOpen(row.sprite, row.en)}
+                    onOpen={() => onOpen(row)}
                     score={`${row.ratio ?? Math.round(row.score)}점`}
                     sub={`DPS ${row.dps} · TDO ${row.tdo}`}
                     lines={[row.fast, row.charged]}
@@ -234,7 +266,7 @@ export function Pve({ onOpen }: { onOpen: (sprite: number, en?: string) => void 
                 sprite={row.sprite} name={row.name} en={row.en} types={row.types}
                 rank={String(index + 1)}
                 unrel={row.unrel} delta={row.d}
-                onOpen={() => onOpen(row.sprite, row.en)}
+                onOpen={() => onOpen(row)}
                 score={row.dps.toFixed(1)}
                 sub={`DPS · TDO ${row.tdo}`}
                 lines={[row.fast, row.charged]}
@@ -246,15 +278,7 @@ export function Pve({ onOpen }: { onOpen: (sprite: number, en?: string) => void 
   );
 }
 
-// v3 data.js LEAGUES 와 같은 한 벌 — 세그먼트에 서는 이름은 '리그' 를 뗀 짧은 쪽이다
-const LEAGUES: readonly { id: LeagueKey; name: string; cp: string }[] = [
-  { id: 'little', name: '리틀', cp: '500' },
-  { id: 'great', name: '슈퍼', cp: '1500' },
-  { id: 'ultra', name: '하이퍼', cp: '2500' },
-  { id: 'master', name: '마스터', cp: '10000' },
-];
-
-export function Pvp({ onOpen }: { onOpen: (sprite: number, en?: string) => void }) {
+export function Pvp({ onOpen }: { onOpen: OpenMon }) {
   const { data: pvp } = usePvp();
   const { data: dex } = useDex();
   const league = useRankStore((s) => s.league);
@@ -306,7 +330,7 @@ export function Pvp({ onOpen }: { onOpen: (sprite: number, en?: string) => void 
             sprite={row.sprite} name={row.name} en={row.en} types={row.types}
             rank={String(index + 1)}
             delta={row.d}
-            onOpen={() => onOpen(row.sprite, row.en)}
+            onOpen={() => onOpen(row)}
             score={row.score.toFixed(1)}
             // 속성으로 걸렀을 때만 원래 전체 순위를 덧붙인다 — 앞 번호가 속성 안의 순위로 바뀌어서다
             sub={pvpType === 'all' ? undefined : `전체 ${row.rank}위`}

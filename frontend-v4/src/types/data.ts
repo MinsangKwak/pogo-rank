@@ -161,6 +161,8 @@ export interface GamedayBundle {
     season: string;
     date: string;
     moves: MoveChange[];
+    /** 새로 배우는 기술 — 위력이 바뀐 것이 아니라 배울 수 있게 된 것 */
+    newMoves: { sprite: number; name: string; dex: number; move: string; moveId?: string }[];
     affected?: Record<string, { up?: string[]; down?: string[]; energy?: string[]; new?: string[]; legacy?: string[] }>;
   };
 }
@@ -188,12 +190,50 @@ export interface GameUpdate {
   announcedAt?: string;       // 공식 발표일
   effectiveAt?: string;       // 게임에 적용되는 날
   checkedAt?: string;         // 원문을 마지막으로 본 날 — 앞의 둘이 없을 때 대신 적는다
+  effectiveNote?: string;
+  // 상태 두 축 — 뜻이 서로 다르므로 한 줄에 섞지 않는다.
+  //   근거     무엇으로 확인했는가 (공식 발표인가, 관찰인가)
+  //   게임 적용 게임에서 언제 적용되는가 (발표만 된 것과 이미 적용된 것은 다르다)
+  evidenceStatus?: string;
+  rolloutStatus?: string;
+  key?: string[];
+  beforeAfter?: BeforeAfter[];
+  playerImpact?: string[];
+  suggestedActions?: string[];
+  moncampAdvice?: string;
+  related?: string[];
+  revisions?: { at: string; note: string }[];
+  sources?: UpdateSource[];
   [key: string]: unknown;
+}
+
+/** 원문 링크 한 건 — 썸네일은 공식 og:image 를 그대로 가리킨다 (우리 저장소로 복사하지 않는다) */
+export interface UpdateSource {
+  lang: string;
+  label: string;
+  url: string;
+  image?: string;
+}
+
+/** 변경 전·후 한 줄. before 가 비면 '이전 값 미확인' 이라고 적는다 (지어내지 않는다) */
+export interface BeforeAfter { label: string; before?: string; after: string }
+
+/**
+ * 아카이브 한 건 — 사람이 쓴 요약이 **없는** 소식.
+ * 공식 제목·날짜·원문 링크와 원문에서 그대로 따온 인용(excerpt)만 있다.
+ */
+export interface ArchiveEntry {
+  id: string;
+  kind?: string;
+  title: string;
+  date?: string;
+  excerpt?: string;
+  sources?: UpdateSource[];
 }
 
 export interface UpdatesBundle {
   GAME_UPDATES: GameUpdate[];
-  GAME_ARCHIVE: unknown[];
+  GAME_ARCHIVE: ArchiveEntry[];
 }
 
 export interface MetaBundle {
@@ -201,6 +241,37 @@ export interface MetaBundle {
   RANK_FRESH_DAYS: number;
   DATA_FETCHED: string;
   DATA_STALE: string[];
+  /** 문의 이메일 — 빌드가 환경변수에서 읽어 넣는다. 비면 문구가 '사이트 운영자' 로 바뀐다 */
+  CONTACT_EMAIL: string;
+  /** 이 문자열이 바뀌면 ☰ 에 빨간 점이 뜬다 — 날짜나 항목 수를 비교하지 않는다 */
+  RELEASE_VER: string;
+  /** 서랍 맨 아래에 적는 판 번호 (v3 머리줄의 .app-bar__version 과 같은 값) */
+  APP_VERSION: string;
+  /** 데이터 기준 시각. DATA_FETCHED(날짜만) 와 다른 값이다 — 서랍의 '기준일' 은 이쪽이다 */
+  DATA_TIMESTAMP: string;
+  /**
+   * 로그인 설정 — 빌드가 환경변수에서 읽어 넣는다.
+   * **apiKey 가 비면 로그인 기능 자체가 꺼진다** (v3 authEnabled 와 같은 규칙) — 눌러도 안 되는
+   * 버튼을 내밀지 않는다. 값이 공개돼도 되는 이유는 접근 제어를 전부 Firestore 규칙이 맡기 때문이다.
+   */
+  FIREBASE_CONFIG: Record<string, string>;
+  /** 규칙(firestore.rules)의 isAdmin() 과 **같은 값이어야 한다** — 화면만 관리자로 보이면 규칙이 막는다 */
+  ADMIN_UID: string;
+  ADMIN_EMAIL: string;
+}
+
+/** 패치노트 한 묶음. 최신 날짜가 위로 오도록 **적힌 차례 그대로** 쓴다 (코드에서 다시 정렬하지 않는다) */
+export interface ReleaseGroup { date: string; items: string[] }
+
+export interface ReleaseBundle {
+  RELEASE_NOTES: ReleaseGroup[];
+  RELEASE_VER: string;
+  /**
+   * 패치노트 영문판 — **날짜(묶음 키)로 통째 짝지어** 둔다.
+   * 항목이 `**굵게**` 가 섞인 문장 덩어리라, 낱말 단위로 찾는 일반 사전으로는 문장을 못 맞춘다.
+   * 없는 날짜는 한국어 그대로 나간다.
+   */
+  RELEASE_NOTES_EN?: Record<string, string[]>;
 }
 
 /**

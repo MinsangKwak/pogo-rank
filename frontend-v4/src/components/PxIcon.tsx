@@ -20,6 +20,42 @@ const PXI_INK: Record<string, string> = {
 };
 
 const PXI_ART: Record<string, string[]> = {
+  // ── v4 표식 두 개 ───────────────────────────────────────────────────────
+  // 눈으로 "지금 보는 것이 v4 인가" 를 바로 알기 위한 자리다 (components/Shell.tsx V4Mark).
+  // 둘 다 currentColor 한 색으로만 찍는다 — 색은 붙이는 쪽이 정한다
+  //
+  // ⚛ React — 핵 하나와 그 둘레를 도는 타원 하나. 실제 로고는 타원이 셋이지만
+  //   12칸에 셋을 겹치면 뭉쳐서 점 덩어리가 된다. 하나만 남겨야 '원자' 로 읽힌다
+  '⚛': [
+    '............',
+    '............',
+    '..########..',
+    '.##......##.',
+    '#..........#',
+    '#....##....#',
+    '#....##....#',
+    '#..........#',
+    '.##......##.',
+    '..########..',
+    '............',
+    '............'
+  ],
+  // ◓ 몬스터볼 — 테두리 · 가운데 띠 · 버튼. 같은 글자를 그림 없는 자리표시로도 쓰지만
+  //   그쪽은 SVG 를 직접 그린다 (components/Bits.tsx Ball) — 여기와 겹치지 않는다
+  '◓': [
+    '....####....',
+    '..##....##..',
+    '.#........#.',
+    '#..........#',
+    '#...####...#',
+    '#####..#####',
+    '#####..#####',
+    '#...####...#',
+    '#..........#',
+    '.#........#.',
+    '..##....##..',
+    '....####....'
+  ],
   '⚪': [
     '....####....',
     '..##1111##..',
@@ -543,13 +579,36 @@ function rects(rows: string[]): ReactNode[] {
   return out;
 }
 
+/**
+ * 이모지 표기 흔들림을 한 글자로 모은다 (v3 PXI_ALIAS).
+ * 변이 선택자(U+FE0F) 유무와 같은 뜻의 다른 이모지를 같은 열쇠로 본다 —
+ * 이 표가 없으면 '🔎 검색식 만들기' 의 아이콘이 도트가 아니라 이모지 글자로 새어 나온다.
+ */
+const PXI_ALIAS: Record<string, string> = {
+  '⚔': '⚔️', '☀': '☀️', '🔎': '🔍', '🗡': '⚔️', '🎴': '🃏',
+  '🏡': '🏠', '📗': '📕', '📘': '📕', '📙': '📕', '📖': '📕',
+  '⬅': '←', '✖': '✕', '❌': '✕', '×': '✕',
+};
+
+/** 이모지 하나를 표의 열쇠로. 표에 없으면 null — 부르는 쪽이 이모지를 그대로 쓴다 */
+function pxIconKey(emoji: string): string | null {
+  if (typeof emoji !== 'string') return null;
+  const raw = emoji.trim();
+  if (raw in PXI_ART) return raw;
+  const bare = raw.replace(/\uFE0F/g, '');
+  if (bare in PXI_ART) return bare;
+  const alias = PXI_ALIAS[bare] ?? PXI_ALIAS[raw];
+  return alias && alias in PXI_ART ? alias : null;
+}
+
 export function hasPxIcon(emoji: string): boolean {
-  return emoji in PXI_ART;
+  return pxIconKey(emoji) !== null;
 }
 
 /** 표에 있으면 도트 SVG, 없으면 이모지 그대로 */
 export function PxIcon({ emoji }: { emoji: string }) {
-  const rows = PXI_ART[emoji];
+  const key = pxIconKey(emoji);
+  const rows = key ? PXI_ART[key] : null;
   if (!rows) return <>{emoji}</>;
   return (
     <svg viewBox="0 0 12 12" className="pxi" aria-hidden="true" focusable="false" shapeRendering="crispEdges">

@@ -6,12 +6,13 @@
   "scripts": {
     "data": "node scripts/extract-data.mjs",
     "dev": "vite",
-    "build": "npm run data && tsc --noEmit && vite build",
+    "build": "npm run data && tsc --noEmit && vite build && node scripts/finalize-html.mjs",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@tanstack/react-query": "^5.62.0",
+    "firebase": "^12.19.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "zustand": "^5.0.2"

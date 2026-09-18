@@ -2,3 +2,9 @@ node_modules/
 dist/
 # 데이터는 v3 빌드에서 뽑는다 (scripts/extract-data.mjs) — 저장소에 두지 않는다
 public/data/
+
+# PWA 정적 파일도 v3 static/ 에서 가져온다 (scripts/extract-data.mjs)
+public/manifest.webmanifest
+public/icon-192.png
+public/icon-512.png
+public/og.png

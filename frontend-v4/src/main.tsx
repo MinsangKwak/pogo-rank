@@ -9,6 +9,7 @@ import { createRoot } from 'react-dom/client';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import './styles';
 import App from './App';
+import { registerServiceWorker } from './lib/pwa';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -31,3 +32,6 @@ createRoot(root).render(
     </QueryClientProvider>
   </StrictMode>,
 );
+
+// 오프라인 캐시 — 첫 그림을 막지 않게 맨 끝에서 붙인다
+registerServiceWorker();
