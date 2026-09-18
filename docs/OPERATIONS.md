@@ -412,7 +412,7 @@ A 레코드 넷이 다 나오고 dev 가 `minsangkwak.github.io` 로 풀리면 �
 
 ### 12-4. 알아둘 것
 
-- **origin 이 바뀐다** — `pogo_*` localStorage(테마 · 언어 · 동의 · 게스트 플래너 `plan_guest_mons`)는 새 주소에서 빈 상태로 시작한다. 로그인 사용자는 Firestore 에 있어 무사.
+- **origin 이 바뀐다** — `pogo_*` localStorage(테마 · 언어 · 동의 · 로그인 전에 담아 둔 ★ `pogo_favs`)는 새 주소에서 빈 상태로 시작한다. 승인 로그인한 사용자의 ★ 는 Firestore 에 있어 무사.
 - **GA4** — 측정 ID 노출 조건에 `moncamp.kr` 을 넣었다(v3.27.0). GA 속성 설정의 스트림 URL 은 콘솔에서 바꾼다(통계는 URL 과 무관하게 같은 ID 로 이어진다).
 - **CAA 레코드는 넣지 않는다.** 넣어야 한다면 `letsencrypt.org` 를 허용해야 인증서가 나온다.
 - 가비아 만기 **2028-09-14**. 두 달 · 한 달 · 2주 전 알림을 캘린더에 따로.
