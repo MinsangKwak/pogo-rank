@@ -66,6 +66,12 @@ async function makeFirebaseApi(config: Record<string, string>): Promise<AuthApi>
     onUser(fn) { auth.onAuthStateChanged(authObj, (user) => fn(user ? trim(user) : null)); },
     async signIn() {
       const provider = new auth.GoogleAuthProvider();
+      // **늘 어느 계정인지 묻는다.** 이것을 안 주면 구글은 브라우저에 로그인된 계정이 하나일 때
+      // 묻지 않고 그대로 쓴다. 그래서 로그아웃한 뒤 다른 계정으로 들어가려 해도 **앞 계정으로만**
+      // 다시 들어가졌다 (제보). 우리 로그아웃은 이 서비스의 자취만 지울 수 있고 구글 쪽 로그인은
+      // 건드리지 못한다 — 건드리면 지메일까지 함께 로그아웃된다. 그래서 나갈 때 지우는 대신
+      // **들어올 때 고르게** 한다.
+      provider.setCustomParameters({ prompt: 'select_account' });
       // 팝업이 막히는 브라우저가 있다 — 그때는 리다이렉트로 되돌아간다 (v3 와 같은 갈래)
       try { await auth.signInWithPopup(authObj, provider); }
       catch { await auth.signInWithRedirect(authObj, provider); }

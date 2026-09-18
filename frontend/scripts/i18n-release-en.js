@@ -15,6 +15,9 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 const RELEASE_NOTES_EN = {
+  '2026-09-18 · v4.1.1': [
+    '**You can sign in with a different account** — after signing out, the app kept taking you back to the previous account. Sign-in now always asks which account to use.',
+  ],
   '2026-09-18 · v4.1.0': [
     '**A new look** — the logo, the cards and the Pok\u00e9mon detail view have been redrawn. Where things live, the URLs and everything you saved stay the same.',
     '**Pok\u00e9mon detail is now two columns on wide screens** — the Pok\u00e9mon on the left, the details on the right. The summary puts max CP and battle usage side by side, and catch CP opens only when you want it.',
