@@ -2,7 +2,7 @@
 // components/Shell.tsx — 머리줄 · 왼쪽 메뉴 · 화면 머리 · 바닥
 //
 // **클래스명과 DOM id 를 v3 와 똑같이 쓴다.** 그것이 디자인을 그대로 유지하는 방법이고,
-// 회귀 34 스위트가 붙잡고 있는 계약이다 (`.app-bar` · `#app-nav` · `#page-head` …).
+// 회귀 34 스위트가 붙잡고 있는 계약이다 (`.app-bar` · `#app-nav` · `#page-head` · `#menu-planner` …).
 // CSS 는 frontend/styles 의 것을 한 줄도 안 고치고 그대로 쓴다 (src/styles.ts).
 //
 // 도트 아이콘도 v3 표를 그대로 쓴다 (components/PxIcon.tsx) — 이모지로 두면
@@ -34,6 +34,7 @@ export function NavItem({ route, now }: { route: RouteDef; now: string }) {
       href={`#/${route.path}`}
       className={`drawer__item${lock.className}`}
       data-route={route.id}
+      {...(route.id === 'planner' ? { id: 'menu-planner' } : {})}
       {...(route.id === now ? { 'aria-current': 'page' as const } : {})}
       {...(lock['aria-disabled'] ? { 'aria-disabled': lock['aria-disabled'] } : {})}
       title={reason ? lock.title : routeDesc(route.id)}
@@ -289,7 +290,7 @@ export function Drawer({ open, onClose, now, onConsent }: { open: boolean; onClo
           <button className="icon-btn" id="drawer-close" aria-label="닫기" onClick={onClose}><PxIcon emoji="✕" /></button>
         </div>
         {/* 로그인 상태는 ☰ 메뉴 맨 위 한 곳에서만 보인다 (v3 v2.29.0 에 헤더 👤 를 없애며 정한 자리) */}
-        <Account />
+        <Account onGo={onClose} />
         {/* 서랍은 세 덩이로 읽힌다 — 👤 마이페이지 · 서비스(갈 곳) · 정보(그 밖).
             제목은 좁은 화면에만 단다: 넓은 화면의 왼쪽 메뉴는 갈 곳만 있는 자리라 또 적을 이유가 없다 */}
         <h2 className="drawer__sec">서비스</h2>

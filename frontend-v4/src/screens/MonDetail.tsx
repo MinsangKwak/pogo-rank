@@ -9,19 +9,22 @@
 //
 // 구성 (v3 detailBuild 와 같은 자리):
 //   .modal(dialog) > .modal__wrap > .modal__close + .modal__box > .detail#detail-{sprite}
-//     .detail__bar   ‹ 상세로 · 제목
+//     .detail__bar   ‹ 상세로 · 제목 · ★ · 포켓몬 도감
 //     .detail__body  .detail__side (그림·이름) + .detail__main (탭 · 내용 · 계산기)
 //     .detail__dock  링크 복사 · CP 계산기 / 초기화 · 상세로 돌아가기
 // ─────────────────────────────────────────────────────────────────────────────
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { useDex, useGameday, useMax, usePve, usePvp } from '../lib/data';
+import { useDex, useFavEvents, useGameday, useMax, usePve, usePvp } from '../lib/data';
 import { Sprite } from '../components/Bits';
 import { PxIcon } from '../components/PxIcon';
 import { NameNode } from '../components/Row';
 import { cpOf } from '../lib/cp';
 import { counterTypes, matchups } from '../lib/matchup';
+import { favNewsFor, favNewsWhen, FAV_NEWS_LABEL } from '../lib/favnews';
+import { useFavs } from '../lib/useFavs';
 import { buildSearchIndex } from '../lib/search';
 import { resolveMon, type MonPick, type MonRef } from '../lib/mon';
+import { track } from '../lib/track';
 import ShareBtn from '../components/detail/ShareBtn';
 import DetailTabs from '../components/detail/DetailTabs';
 import Hex from '../components/detail/Hex';
@@ -101,6 +104,8 @@ export default function MonDetail({ pick, onClose }: { pick: MonPick; onClose: (
   const { data: max } = useMax();
   const { data: pvpData } = usePvp();
   const { data: gameday } = useGameday();
+  const { data: favEvents } = useFavEvents();
+  const { favs, toggle: toggleFav } = useFavs();
   const overlay = useRef<HTMLDialogElement>(null);
 
   // 지금 보는 것 + 떠나온 것들.
@@ -153,6 +158,8 @@ export default function MonDetail({ pick, onClose }: { pick: MonPick; onClose: (
   const { labels: formLabels, base: baseName } = splitName(mon.name, data.FORM_LABELS);
   const formKind = formLabels.map((label) => FORM_KIND[label]).find(Boolean) ?? '';
 
+  const isFav = dexNo != null && favs.includes(dexNo);
+  const news = dexNo != null ? favNewsFor(favEvents.FAV_EVENTS, dexNo) : [];
 
   const typePills = () => types.map((type) => (
     <span key={type} className="detail__type-pill" style={{ ['--c' as string]: `var(--t-${type})` }}>
@@ -242,6 +249,24 @@ export default function MonDetail({ pick, onClose }: { pick: MonPick; onClose: (
             <div className="detail__bar">
               <button className="detail__bar-back" aria-label="상세로 돌아가기" onClick={() => setScreen('detail')}>‹ 상세로</button>
               <p className="detail__bar-title">{screen === 'calc' ? 'CP 계산기' : '포켓몬 상세'}</p>
+              <div className="detail__top-actions">
+                {/* ★ 입구는 **여기 하나뿐**이다 (v3.60.0 의 규칙) — 목록 카드에는 달지 않는다.
+                    담아 두면 그 포켓몬의 커뮤니티 데이·스포트라이트·레이드 일정을 챙겨 준다 */}
+                {dexNo != null ? (
+                  <button className={`detail__bar-btn detail__fav${isFav ? ' is-on' : ''}`} data-dex={dexNo}
+                    aria-pressed={isFav}
+                    title={isFav ? '즐겨찾기에서 빼기' : '즐겨찾기에 담기 — 이 포켓몬의 일정을 챙겨 드려요'}
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      // 지표는 useFavs 안에서 한 번만 찍는다 — 여기서 또 찍으면 한 번 누른 것이 두 건이 된다
+                      toggleFav(dexNo, '포켓몬 상세');
+                    }}>
+                    <span className="detail__fav-star" aria-hidden="true">{isFav ? '★' : '☆'}</span>
+                    <span className="detail__fav-label">{isFav ? '담음' : '즐겨찾기'}</span>
+                  </button>
+                ) : null}
+
+              </div>
             </div>
 
             <div className="detail__body">
@@ -267,6 +292,28 @@ export default function MonDetail({ pick, onClose }: { pick: MonPick; onClose: (
                   {mon.en ? (
                     <div className="detail__en-inline" data-i18n="alt" data-alt-ko={mon.en} data-alt-en={baseName}>{mon.en}</div>
                   ) : null}
+                  {/* 📣 소식 자리 — **담아 둔 포켓몬에만** 선다 (v3 favNewsNode 가 isFav 를 먼저 묻는다).
+                      ★ 를 누를 이유가 여기서 생긴다. 머리줄이 아니라 이름 **아래**인 것은
+                      390px 에서 버튼 넷이 제목을 15px 로 눌렀기 때문이다 (v3.60.0 실측).
+                      가장 가까운 한 건만 쓰고 나머지는 개수로 접는다.
+                      display:contents 라 비어 있을 때 빈 줄을 만들지 않는다 (modal.css) */}
+                  <span className="detail__favnews-slot">
+                    {isFav && news.length ? (
+                      <button className="detail__favnews"
+                        title={news.map((row) => `${FAV_NEWS_LABEL[row.event.type] ?? '일정'} ${favNewsWhen(row)} — ${row.event.title}`).join('\n')}
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          track('fav_news_open', { mon: String(dexNo), count: news.length });
+                          onClose();
+                          location.hash = '#/schedule';
+                        }}>
+                        <span className="detail__favnews-dot" aria-hidden="true">📣</span>
+                        <b className="detail__favnews-kind">{FAV_NEWS_LABEL[news[0]!.event.type] ?? '일정'}</b>
+                        <span className="detail__favnews-when">{favNewsWhen(news[0]!)}</span>
+                        {news.length > 1 ? <span className="detail__favnews-more">외 {news.length - 1}</span> : null}
+                      </button>
+                    ) : null}
+                  </span>
                 </div>
               </div>
 

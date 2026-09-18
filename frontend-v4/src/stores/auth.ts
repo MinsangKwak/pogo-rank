@@ -13,7 +13,7 @@
 //
 // **권한은 두 갈래다. 겹치지 않는다.**
 //   admin  운영을 돕는 자리 — 유저 관리(승인된 사람 목록 · 트레이너 코드)
-//   beta   먼저 써 보는 자리 — 지금 이 깃발로 열리는 화면은 없다 (v4.2.0 에 내 포켓몬을 접었다)
+//   beta   먼저 써 보는 자리 — 실험 기능(내 포켓몬 · D-MAX [미구현])
 // 운영을 돕는 사람과 먼저 써 보는 사람은 다르다. 한 깃발로 둘을 다 열면 실험 기능을
 // 열어 주려다 유저 목록까지 넘기게 된다. 루트는 만든 사람이라 둘 다 켜져 있다.
 //
@@ -50,6 +50,7 @@ interface AuthState {
   admin: boolean;
   adminRoot: boolean;
   beta: boolean;           // 실험 기능을 써 볼 수 있는가 (allowlist 문서의 beta: true · 루트는 항상)
+  favs: number[];          // 계정에 담아 둔 도감번호 (화면은 번호순으로 읽는다)
   recheckError: string;    // 권한을 다시 읽다 실패했을 때의 코드 (마지막 판정은 그대로 둔다)
   requestError: string;    // 가입 요청(requests 문서) 쓰기가 실패했을 때의 코드
   api: AuthApi | null;
@@ -66,6 +67,7 @@ export const useAuthStore = create<AuthState>((set) => ({
   admin: false,
   adminRoot: false,
   beta: false,
+  favs: [],
   recheckError: '',
   requestError: '',
   api: null,
@@ -91,11 +93,17 @@ export async function signInNow(): Promise<void> {
   await api?.signIn();
 }
 
+/** 담을 수 있는가 — **승인 대기도 담을 수 있다**. 담아 둘 것이 있어야 승인을 기다릴 이유도 생긴다 */
+export function favEnabled(): boolean {
+  const { enabled, status } = useAuthStore.getState();
+  return enabled && (status === 'ok' || status === 'pending');
+}
+
 /** 로그인·로그아웃마다 — 상태를 다시 계산한다 (v3 onAuthChange) */
 export async function applyUser(api: AuthApi, user: AuthUser | null, adminUid: string, adminEmail: string, consent: string) {
   const store = useAuthStore.getState();
   if (!user) {
-    store.set({ user: null, status: 'anon', admin: false, adminRoot: false, beta: false, recheckError: '', requestError: '' });
+    store.set({ user: null, status: 'anon', admin: false, adminRoot: false, beta: false, favs: [], recheckError: '', requestError: '' });
     return;
   }
   const email = user.email;
@@ -114,7 +122,9 @@ export async function applyUser(api: AuthApi, user: AuthUser | null, adminUid: s
     beta = doc?.['beta'] === true;
   }
   const status: AuthStatus = approved ? 'ok' : 'pending';
-  store.set({ user, status, admin: adminRoot || delegated, adminRoot, beta, recheckError: '' });
+  let favs: number[] = [];
+  if (approved) favs = await loadFavs(api, user.uid);
+  store.set({ user, status, admin: adminRoot || delegated, adminRoot, beta, favs, recheckError: '' });
 
   // 계정 카드(본인 이메일 문서)를 로그인마다 갱신한다 — 이 문서가 곧 **가입 요청**이다.
   // 실패하면 조용히 넘기지 않는다: 본인은 '승인 대기 중' 을 보는데 관리자 화면에는 줄이 안 뜬다
@@ -156,10 +166,24 @@ export async function recheckAccess(): Promise<void> {
   }
   // 읽는 사이에 로그아웃했거나 다른 계정으로 바뀌었으면 그 판정을 덮지 않는다
   if (useAuthStore.getState().user?.uid !== user.uid) return;
+  const was = useAuthStore.getState().status;
   useAuthStore.getState().set({
     status: doc ? 'ok' : 'pending',
     admin: doc?.['admin'] === true,
     beta: doc?.['beta'] === true,
     recheckError: '',
   });
+  // 기다리던 사람이 방금 승인됐다면 ★ 도 가져온다 — 로그인 때는 승인 전이라 못 읽었다.
+  // 안 채우면 '내 포켓몬' 이 열리긴 하는데 비어 있고, 그것이 "담아 둔 게 날아갔다" 로 읽힌다
+  if (doc && was !== 'ok') {
+    const favs = await loadFavs(api, user.uid).catch(() => null);
+    if (favs && useAuthStore.getState().user?.uid === user.uid) useAuthStore.getState().set({ favs });
+  }
+}
+
+/** 계정에 담아 둔 ★ — 번호순으로 읽는다 (담은 차례는 사람에게 뜻이 없다) */
+export async function loadFavs(api: AuthApi, uid: string): Promise<number[]> {
+  const doc = await api.getDoc(`users/${uid}`);
+  const raw = Array.isArray(doc?.['favs']) ? (doc!['favs'] as unknown[]) : [];
+  return raw.map(Number).filter(Number.isFinite).sort((a, b) => a - b);
 }

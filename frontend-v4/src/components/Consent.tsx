@@ -46,7 +46,7 @@ export default function ConsentDialog({ onClose }: { onClose: () => void }) {
             <div className="account__actions">
               <button className="drawer__item" onClick={() => { track('cache_clear'); void clearAppCache(); }}>🧹 캐시 비우고 새로고침</button>
             </div>
-            <p className="detail__foot">설정값까지 지우려면 브라우저의 "사이트 데이터 삭제"를 쓰세요. 계정에 저장한 설정은 여기서 지워지지 않아요 (계정 카드 → 계정 삭제).</p>
+            <p className="detail__foot">설정값까지 지우려면 브라우저의 "사이트 데이터 삭제"를 쓰세요. 계정에 저장한 즐겨찾기·내 포켓몬은 여기서 지워지지 않아요 (계정 카드 → 계정 삭제).</p>
           </div>
         </div>
       </div>

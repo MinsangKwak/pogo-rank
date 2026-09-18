@@ -18,6 +18,7 @@ import { getAuthApi } from '../lib/authApi';
 import type { AuthApi } from '../lib/authApi';
 import { applyUser, authEmail, recheckAccess, useAuthStore } from '../stores/auth';
 import { termsAccepted, TERMS_VER } from '../lib/terms';
+import { useFavStore } from '../stores/favs';
 import { usePrefStore, type Theme } from '../stores/pref';
 
 /** 이 기기에 로그인 자취가 있는가 — Firebase 는 로그인 사용자를 이 접두사로 남긴다 */
@@ -94,19 +95,24 @@ const RECHECK_GAP = 60_000;
 
 /**
  * 로그인 뒤 한 번 — 이 기기에 있던 것을 계정과 맞춘다.
+ *   ★   이 기기 목록을 계정에 **합친다**. 사라지면 "로그인했더니 없어졌다" 가 된다
  *   테마 계정에 저장해 둔 값이 이 기기 값보다 우선한다 (마지막으로 고른 값이 계정에 있다)
- *
- * v4.2.0 에 ★ 합치기가 여기서 빠졌다 — 내 포켓몬을 접으면서 옮길 것이 없어졌다.
  */
 async function syncAccount(api: Awaited<ReturnType<typeof getAuthApi>>, user: { uid: string } | null) {
   if (!user) return;
   const state = useAuthStore.getState();
   if (state.status !== 'ok' && state.status !== 'pending') return;
   const doc = await api.getDoc(`users/${user.uid}`);
-  // 첫 로그인이면 빈 문서를 만들어 둔다 — 이 문서가 계정 설정(테마)이 앉는 자리다
-  if (!doc) await api.setDoc(`users/${user.uid}`, { email: authEmail(), name: state.user?.displayName ?? '' }).catch(() => {});
+  // 첫 로그인이면 빈 문서를 만들어 둔다 — 이후 ★ 갱신이 merge 로 늘 성공하도록 (v3 loadFavs 와 같다)
+  if (!doc) await api.setDoc(`users/${user.uid}`, { email: authEmail(), name: state.user?.displayName ?? '', favs: [] }).catch(() => {});
   const saved = doc?.['theme'];
   if (saved === 'system' || saved === 'light' || saved === 'dark') {
     usePrefStore.getState().setTheme(saved as Theme, { sync: false });
   }
+  const device = useFavStore.getState().favs;
+  if (!device.length) return;
+  const merged = [...new Set([...state.favs, ...device])].sort((a, b) => a - b);
+  await api.setDoc(`users/${user.uid}`, { favs: merged });
+  useAuthStore.getState().set({ favs: merged });
+  useFavStore.getState().clear();   // 옮겼으니 이 기기 목록은 비운다 (두 곳이 어긋나지 않게)
 }

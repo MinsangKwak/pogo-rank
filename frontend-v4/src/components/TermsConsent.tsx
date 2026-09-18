@@ -23,7 +23,7 @@ export default function TermsConsent({ onClose, onAccept }: { onClose: () => voi
         <div className="modal__box">
           <div className="consent__modal">
             <h2 className="detail__name">로그인 전에 확인해 주세요</h2>
-            <p className="plan__desc">로그인하면 Google 계정의 이메일·이름·프로필 사진이 서비스에 저장되고, 화면 설정을 계정에 보관합니다. 승인된 분은 트레이너 코드를 볼 수 있어요. 로그인 없이도 도감·순위·계산기는 그대로 쓸 수 있어요.</p>
+            <p className="plan__desc">로그인하면 Google 계정의 이메일·이름·프로필 사진이 서비스에 저장되고, 즐겨찾기와 내 포켓몬을 계정에 보관합니다. 로그인 없이도 도감·순위·계산기는 그대로 쓸 수 있어요.</p>
             <label className="consent__check">
               <input type="checkbox" checked={agree} onChange={(event) => setAgree(event.target.checked)} />
               <span><a href="#/terms">이용약관</a>{'과 '}<a href="#/privacy">개인정보처리방침</a>{'을 읽었고 동의합니다'}</span>
