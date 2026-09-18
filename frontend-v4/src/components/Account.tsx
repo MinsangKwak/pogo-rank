@@ -7,7 +7,7 @@
 // **로그인을 쓸 수 없는 빌드에서는 카드를 통째로 감춘다** — 눌러도 안 되는 버튼을 내밀지 않는다.
 // ─────────────────────────────────────────────────────────────────────────────
 import { useState } from 'react';
-import { authEmail, useAuthStore } from '../stores/auth';
+import { signInNow, authEmail, useAuthStore } from '../stores/auth';
 import { routeHash } from '../routes';
 import { track } from '../lib/track';
 import TermsConsent from './TermsConsent';
@@ -25,7 +25,7 @@ export default function Account({ onGo }: { onGo: () => void }) {
   const start = () => {
     // 승인제라는 사실을 누르기 전에 알린다 — 그래야 "로그인했는데 왜 안 되지" 를 겪지 않는다
     if (!termsAccepted()) { setConsentOpen(true); return; }
-    void api?.signIn().catch((error) => setMessage(`로그인 실패: ${(error as { code?: string })?.code ?? error}`));
+    void signInNow().catch((error) => setMessage(`로그인 실패: ${(error as { code?: string })?.code ?? error}`));
   };
 
   const card = (() => {
@@ -103,7 +103,7 @@ export default function Account({ onGo }: { onGo: () => void }) {
       {consentOpen ? (
         <TermsConsent onClose={() => setConsentOpen(false)} onAccept={() => {
           setConsentOpen(false);
-          void api?.signIn().catch((error) => setMessage(`로그인 실패: ${(error as { code?: string })?.code ?? error}`));
+          void signInNow().catch((error) => setMessage(`로그인 실패: ${(error as { code?: string })?.code ?? error}`));
         }} />
       ) : null}
     </>

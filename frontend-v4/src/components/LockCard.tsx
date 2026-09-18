@@ -11,20 +11,19 @@
 // 버튼이 있으면 눌러도 아무 일이 안 일어난다 — 눌러도 안 되는 버튼은 고장과 같다.
 // ─────────────────────────────────────────────────────────────────────────────
 import { useState } from 'react';
-import { useAuthStore } from '../stores/auth';
+import { signInNow, useAuthStore } from '../stores/auth';
 import { termsAccepted } from '../lib/terms';
 import type { LockReason } from '../lib/useLocked';
 import TermsConsent from './TermsConsent';
 
 export default function LockCard({ reason = 'login' }: { reason?: LockReason }) {
   const status = useAuthStore((s) => s.status);
-  const api = useAuthStore((s) => s.api);
   const [consentOpen, setConsentOpen] = useState(false);
   const beta = reason === 'beta';
   const pending = status === 'pending';
   const start = () => {
     if (!termsAccepted()) { setConsentOpen(true); return; }
-    void api?.signIn();
+    void signInNow();
   };
   if (beta) {
     return (
@@ -46,7 +45,7 @@ export default function LockCard({ reason = 'login' }: { reason?: LockReason }) 
       <p className="detail__foot">첫 로그인 때 이용약관·개인정보처리방침 동의를 받아요.</p>
       {consentOpen ? (
         <TermsConsent onClose={() => setConsentOpen(false)}
-          onAccept={() => { setConsentOpen(false); void api?.signIn(); }} />
+          onAccept={() => { setConsentOpen(false); void signInNow(); }} />
       ) : null}
     </section>
   );

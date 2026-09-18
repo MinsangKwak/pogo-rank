@@ -15,6 +15,7 @@
 import { useEffect } from 'react';
 import { useMeta } from '../lib/data';
 import { getAuthApi } from '../lib/authApi';
+import type { AuthApi } from '../lib/authApi';
 import { applyUser, authEmail, useAuthStore } from '../stores/auth';
 import { termsAccepted, TERMS_VER } from '../lib/terms';
 import { useFavStore } from '../stores/favs';
@@ -36,28 +37,35 @@ export default function AuthBridge() {
     const enabled = !!meta.FIREBASE_CONFIG?.['apiKey'];
     useAuthStore.getState().set({ enabled });
     if (!enabled) { useAuthStore.getState().set({ status: 'anon' }); return; }
+
     let alive = true;
+    // 두 번 불러도 한 번만 받는다 — 한가할 때와 로그인 버튼이 같은 손잡이를 쓴다
+    let pending: Promise<AuthApi | null> | null = null;
     const start = () => {
-      if (!alive) return;
-      void getAuthApi(meta.FIREBASE_CONFIG, meta.ADMIN_UID).then((api) => {
-      if (!alive) return;
-        if (!alive) return;
+      pending ??= getAuthApi(meta.FIREBASE_CONFIG, meta.ADMIN_UID).then((api) => {
+        if (!alive) return null;
         useAuthStore.getState().set({ api, ready: true });
         api.onUser((user) => {
           void applyUser(api, user, meta.ADMIN_UID, meta.ADMIN_EMAIL, termsAccepted() ? TERMS_VER : '')
             .then(() => syncAccount(api, user));
         });
+        return api;
       }).catch(() => {
         // SDK 를 못 받아도 앱은 그대로 돈다 — 로그인만 안 될 뿐이다
         useAuthStore.getState().set({ status: 'anon' });
+        return null;
       });
+      return pending;
     };
+    // 손잡이는 **바로** 꽂는다. 받는 것은 미뤄도, 누르면 받아 올 길은 처음부터 있어야 한다
+    useAuthStore.getState().set({ start });
 
-    if (authTrace()) { start(); return () => { alive = false; }; }
-    // 한가해질 때. requestIdleCallback 이 없는 브라우저(사파리 일부)는 타이머로 같은 자리에 둔다
+    if (authTrace()) { void start(); return () => { alive = false; }; }
+
+    // 한가해질 때. requestIdleCallback 이 없는 브라우저(사파리 일부)는 타이머로 같은 자리에 둔다.
     // 타입 정의는 늘 있다고 보지만 실제로 없는 브라우저가 있다 — 있는지 직접 본다
     const idle = (window as { requestIdleCallback?: typeof window.requestIdleCallback }).requestIdleCallback;
-    const id = idle ? idle(start, { timeout: 3000 }) : window.setTimeout(start, 1200);
+    const id = idle ? idle(() => void start(), { timeout: 3000 }) : window.setTimeout(() => void start(), 1200);
     return () => {
       alive = false;
       if (idle) window.cancelIdleCallback?.(id as number); else clearTimeout(id as number);
