@@ -95,8 +95,6 @@ jobs:
           cd frontend-v4
           npm ci
           npm run build
-          # 채널에 맞춰 손본다 — dev 는 GA 를 빼고 robots 를 noindex 로 바꿔 끼운다 (v3 build.py 와 같은 규칙)
-          node scripts/finalize-html.mjs
       # 올릴 폴더를 여기서 한 벌 만든다.
       #   v4 가 서면 그것을, 서다 말면 v3 를 올린다 — **어느 쪽이든 dev 가 깜깜해지지 않는다.**
       #   v4 는 v3 파일에 얹혀 살아서(CSS 23장 · dist/data.js · schedule.js) v3 쪽 이름만 바뀌어도 설 수 있다.

@@ -67,7 +67,22 @@ export function Dmax({ onOpen }: { onOpen: OpenMon }) {
 
   const table = axis === 'tank' ? max.DMAX_TANK : axis === 'dealer' ? max.DMAX_DATA : max.DMAX_TIER;
   const all = table[boss] ?? [];
+  // **[미구현] 을 켜면 표가 "만약 이들이 나온다면" 의 가상 순위가 된다** (v3.49.0 maxVisible · maxRank).
+  //   미구현도 번호를 받고, 그 위에 낀 만큼 아래 출시분이 밀린다 (지금 1위가 5위가 되는 식).
+  //   밀린 줄에는 [지금 N위] 딱지가 붙어 무엇이 바뀌었는지를 줄에서 바로 읽게 한다.
+  //   가상 순위에서는 어제 대비 변동(▲▼)을 감춘다 — 그 숫자는 **실제 순위**가 움직인 이야기라,
+  //   가정으로 매긴 번호 바로 아래 놓이면 한 줄에서 두 '움직임' 이 서로 다른 말을 한다
   const rows = all.filter((row) => unrel || !row.unrel);
+  // 보이는 차례(shown) ↔ 출시분만 센 차례(released). 체크가 꺼져 있으면 둘이 같은 값이다
+  const nowRankOf = new Map<number, number>();
+  if (unrel) {
+    let released = 0;
+    rows.forEach((row, at) => {
+      if (!row.unrel) released += 1;
+      // 미구현 줄에는 '지금' 이 없다 — 오늘 겨루는 자리가 아예 없으니 딱지도 없다
+      if (!row.unrel && at + 1 !== released) nowRankOf.set(at, released);
+    });
+  }
   // 지금 고른 속성에 미구현이 있기는 한가 — **세 표를 다 본다** (v3 maxHasUnreleased).
   // 보고 있는 표만 보면 축을 옮길 때 체크가 나타났다 사라진다
   const hasUnrel = [max.DMAX_TIER, max.DMAX_DATA, max.DMAX_TANK]
@@ -114,7 +129,7 @@ export function Dmax({ onOpen }: { onOpen: OpenMon }) {
         <ViewToggle view={view} onToggle={toggle} />
       </Slot>
 
-      <RowHead title={title} meta={`${rows.length}종`} info={DMAX_INFO} />
+      <RowHead title={title} meta={`${rows.length}종`} info={DMAX_INFO} hypo={unrel} />
       {/* 티어표는 **티어별로 묶어** 그린다 — v3 renderTierList.
           한 줄로 이어 붙이면 "몇 위인가" 만 남고 "어느 급인가" 가 사라진다 */}
       {axis === 'all'
@@ -132,7 +147,8 @@ export function Dmax({ onOpen }: { onOpen: OpenMon }) {
                     sprite={row.sprite} name={row.name} en={row.en} types={row.types}
                     rank={String(rows.indexOf(row) + 1)}
                     unrel={row.unrel}
-                    delta={row.d}
+                    nowRank={nowRankOf.get(rows.indexOf(row))}
+                    delta={unrel ? 0 : row.d}
                     onOpen={() => onOpen(row)}
                     score={`${row.pct ?? Math.round(row.score)}%`}
                     sub={`공격 ${row.atk} · 위력 ${row.power}${row.stab ? ' · 자속' : ''} · 내구 ${row.bulk ?? 0}`}
@@ -151,7 +167,8 @@ export function Dmax({ onOpen }: { onOpen: OpenMon }) {
                 sprite={row.sprite} name={row.name} en={row.en} types={row.types}
                 rank={String(index + 1)}
                 unrel={row.unrel}
-                delta={row.d}
+                nowRank={nowRankOf.get(index)}
+                delta={unrel ? 0 : row.d}
                 onOpen={() => onOpen(row)}
                 score={String(row.dmg ?? Math.round(row.score))}
                 sub={`맥스 피해 · 내구 ${row.bulk}`}

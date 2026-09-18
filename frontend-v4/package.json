@@ -6,7 +6,7 @@
   "scripts": {
     "data": "node scripts/extract-data.mjs",
     "dev": "vite",
-    "build": "npm run data && tsc --noEmit && vite build",
+    "build": "npm run data && tsc --noEmit && vite build && node scripts/finalize-html.mjs",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit"
   },

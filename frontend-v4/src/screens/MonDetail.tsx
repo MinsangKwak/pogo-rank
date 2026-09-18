@@ -408,7 +408,12 @@ export default function MonDetail({ pick, onClose }: { pick: MonPick; onClose: (
                     ))}
                   </div>
                   <h2>{baseName}</h2>
-                  {mon.en ? <div className="detail__en-inline">{mon.en}</div> : null}
+                  {/* 이 줄은 늘 **반대 언어의 이름**이다 — 한국어 화면엔 Metagross, 영어 화면엔 메타그로스.
+                      사전을 태우면(data-i18n 없이 두면) 영어 화면에서 이름 줄과 똑같은 Metagross 가 두 번 선다.
+                      엔진이 data-alt-ko/en 을 보고 갈아 끼운다 (lib/i18n.ts) */}
+                  {mon.en ? (
+                    <div className="detail__en-inline" data-i18n="alt" data-alt-ko={mon.en} data-alt-en={baseName}>{mon.en}</div>
+                  ) : null}
                   {/* 📣 소식 자리 — **담아 둔 포켓몬에만** 선다 (v3 favNewsNode 가 isFav 를 먼저 묻는다).
                       ★ 를 누를 이유가 여기서 생긴다. 머리줄이 아니라 이름 **아래**인 것은
                       390px 에서 버튼 넷이 제목을 15px 로 눌렀기 때문이다 (v3.60.0 실측).

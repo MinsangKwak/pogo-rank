@@ -84,7 +84,6 @@ jobs:
           cd frontend-v4
           npm ci
           npm run build
-          node scripts/finalize-html.mjs
       # 올릴 폴더를 여기서 한 벌 만든다.
       #   v4 가 서면 그것을, 서다 말면 v3 를 올린다 — **어느 쪽이든 실서비스가 깜깜해지지 않는다.**
       - name: 올릴 폴더 꾸리기 (site/)
