@@ -18,7 +18,7 @@ import { AppBar, AppNav, Drawer, Footer, PageHead, ToTop } from './components/Sh
 import { SlotProvider } from './components/Slots';
 import { useRoute } from './lib/useRoute';
 import type { MonPick, OpenMon } from './lib/mon';
-import { useLocked } from './lib/useLocked';
+import { useLockReason } from './lib/useLocked';
 import { trackPageView, track } from './lib/track';
 import type { RouteDef } from './routes';
 import Home from './screens/Home';
@@ -66,8 +66,8 @@ function Splash() {
 /** 라우트 하나가 그리는 본문 */
 function Screen({ route, rest, onOpen }: { route: RouteDef; rest: string; onOpen: OpenMon }) {
   // 판정은 lib/useLocked 하나가 한다 — 메뉴 줄·홈 타일도 같은 답을 쓴다
-  const locked = useLocked(route.id);
-  if (locked) return <LockCard />;
+  const reason = useLockReason(route.id);
+  if (reason) return <LockCard reason={reason} />;
   switch (route.id) {
     case 'home': return <Home onOpen={onOpen} />;
     case 'dex': return <Dex onOpen={onOpen} />;

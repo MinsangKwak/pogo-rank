@@ -10,6 +10,12 @@
 //
 // **판정은 규칙과 같아야 한다.** 관리자는 ADMIN_UID(루트) 또는 allowlist 문서의 admin: true(위임) —
 // 화면에서만 관리자로 보이고 규칙이 막으면 승인 버튼이 permission-denied 로 실패한다.
+//
+// **권한은 두 갈래다. 겹치지 않는다.**
+//   admin  운영을 돕는 자리 — 유저 관리(승인된 사람 목록 · 트레이너 코드)
+//   beta   먼저 써 보는 자리 — 실험 기능(내 포켓몬 · D-MAX [미구현])
+// 운영을 돕는 사람과 먼저 써 보는 사람은 다르다. 한 깃발로 둘을 다 열면 실험 기능을
+// 열어 주려다 유저 목록까지 넘기게 된다. 루트는 만든 사람이라 둘 다 켜져 있다.
 // ─────────────────────────────────────────────────────────────────────────────
 import { create } from 'zustand';
 import type { AuthApi, AuthUser } from '../lib/authApi';
@@ -38,6 +44,7 @@ interface AuthState {
   status: AuthStatus;
   admin: boolean;
   adminRoot: boolean;
+  beta: boolean;           // 실험 기능을 써 볼 수 있는가 (allowlist 문서의 beta: true · 루트는 항상)
   favs: number[];          // 계정에 담아 둔 도감번호 (화면은 번호순으로 읽는다)
   requestError: string;    // 가입 요청(requests 문서) 쓰기가 실패했을 때의 코드
   api: AuthApi | null;
@@ -51,6 +58,7 @@ export const useAuthStore = create<AuthState>((set) => ({
   status: storedUser() ? 'loading' : 'anon',
   admin: false,
   adminRoot: false,
+  beta: false,
   favs: [],
   requestError: '',
   api: null,
@@ -69,7 +77,7 @@ export function favEnabled(): boolean {
 export async function applyUser(api: AuthApi, user: AuthUser | null, adminUid: string, adminEmail: string, consent: string) {
   const store = useAuthStore.getState();
   if (!user) {
-    store.set({ user: null, status: 'anon', admin: false, adminRoot: false, favs: [], requestError: '' });
+    store.set({ user: null, status: 'anon', admin: false, adminRoot: false, beta: false, favs: [], requestError: '' });
     return;
   }
   const email = user.email;
@@ -77,16 +85,20 @@ export async function applyUser(api: AuthApi, user: AuthUser | null, adminUid: s
   const adminRoot = adminUid ? user.uid === adminUid : !!(adminEmail && email === adminEmail.toLowerCase());
   let approved = adminRoot;
   let delegated = false;
+  // 루트는 만든 사람이라 실험 기능이 늘 켜져 있다 — 자기 자신에게 깃발을 달아 줄 자리가 없다
+  let beta = adminRoot;
   if (!approved) {
     // 규칙상 본인 이메일 문서는 읽을 수 있다 — 있으면 승인된 사람, admin: true 면 위임 관리자
     const doc = await api.getDoc(`allowlist/${email}`);
     approved = !!doc;
     delegated = doc?.['admin'] === true;
+    // **실험 기능은 관리자 권한을 따라가지 않는다** — 깃발이 따로 있어야 따로 줄 수 있다
+    beta = doc?.['beta'] === true;
   }
   const status: AuthStatus = approved ? 'ok' : 'pending';
   let favs: number[] = [];
   if (approved) favs = await loadFavs(api, user.uid);
-  store.set({ user, status, admin: adminRoot || delegated, adminRoot, favs });
+  store.set({ user, status, admin: adminRoot || delegated, adminRoot, beta, favs });
 
   // 계정 카드(본인 이메일 문서)를 로그인마다 갱신한다 — 이 문서가 곧 **가입 요청**이다.
   // 실패하면 조용히 넘기지 않는다: 본인은 '승인 대기 중' 을 보는데 관리자 화면에는 줄이 안 뜬다
