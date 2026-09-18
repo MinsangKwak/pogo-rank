@@ -73,7 +73,26 @@ jobs:
           node-version: '22'
           cache: npm
           cache-dependency-path: frontend-v4/package-lock.json
+      # **설치 실패와 검사 실패는 뜻이 다르다.**
+      #   설치가 안 되면 그건 네트워크 사정이다 — v4 를 접고 v3 를 올려 화면을 지킨다.
+      #   검사가 빨개지면 규칙이 틀린 것이다 — 그때는 **배포를 세운다.** 조용히 v3 로
+      #   내려앉으면 잘못된 판을 막은 것이 아니라 아무도 모르게 되돌린 것이 된다.
+      #   세워 두면 GitHub Pages 가 직전 정상 판을 계속 서빙한다.
+      - name: v4 의존성 설치
+        id: v4deps
+        continue-on-error: true
+        run: |
+          set -e
+          cd frontend-v4
+          npm ci
+      - name: v4 검사 (권한·잠금) — 빨개지면 배포를 세운다
+        if: steps.v4deps.outcome == 'success'
+        run: |
+          set -e
+          cd frontend-v4
+          npm test
       - name: v4 빌드
+        if: steps.v4deps.outcome == 'success'
         continue-on-error: true
         env:
           # 채널·측정 ID 는 finalize-html.mjs 가 읽는다 — v3 의 build.py 와 같은 규칙, 같은 값
@@ -82,7 +101,6 @@ jobs:
         run: |
           set -e
           cd frontend-v4
-          npm ci
           npm run build
       # 올릴 폴더를 여기서 한 벌 만든다.
       #   v4 가 서면 그것을, 서다 말면 v3 를 올린다 — **어느 쪽이든 실서비스가 깜깜해지지 않는다.**
