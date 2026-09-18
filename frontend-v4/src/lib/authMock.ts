@@ -24,16 +24,25 @@ export function makeMockApi(adminUid: string): AuthApi {
   };
   let user: AuthUser | null = mode === 'anon' ? null : (users[mode] ?? users['1']!);
 
-  let db: Record<string, DocData> = {};
-  try { db = mode === 'reset' ? {} : JSON.parse(localStorage.getItem(DB_KEY) || '{}'); } catch { db = {}; }
-  // 승인된 친구는 허용 목록에 있어야 'ok' 가 된다 (규칙과 같은 뜻)
-  db['allowlist/friend@mock.local'] ??= { approved: true, name: '로컬 테스트 (친구)', at: new Date().toISOString() };
-  // ★ 를 v3 dev-mock.js 와 **같은 값으로** 심는다 — 다르면 나란히 놓고 비교할 때
-  // 화면이 틀린 것인지 씨앗이 다른 것인지 구분이 안 된다. 실제 도감번호만 쓴다
-  db[`users/${users['1']!.uid}`] ??= { email: 'admin@mock.local', name: '로컬 테스트 (관리자)', favs: [150, 384, 383, 149, 68, 143, 302, 227, 25] };
-  db['users/mock-friend'] ??= { email: 'friend@mock.local', name: '로컬 테스트 (친구)', favs: [150, 6, 302] };
-  db['trainers/테스트 트레이너'] ??= { name: '테스트 트레이너', code: '000000000000', order: 0 };
-  const save = () => { try { localStorage.setItem(DB_KEY, JSON.stringify(db)); } catch { /* 저장 불가 환경 */ } };
+  // **씨앗은 저장소가 통째로 없을 때만 심는다** (v3 dev-mock.js 와 같은 규칙).
+  // 문서마다 ??= 로 채웠더니 지운 문서가 새로 고칠 때마다 되살아났다 —
+  // '승인 해제' 를 눌러도 다음 판에 다시 승인된 사람이 되어, 화면이 옳은지 그른지를 볼 수가 없었다.
+  // 목이 진실을 덮으면 목을 쓸 이유가 없다
+  let db: Record<string, DocData> | null = null;
+  try { db = mode === 'reset' ? null : JSON.parse(localStorage.getItem(DB_KEY) || 'null'); } catch { db = null; }
+  if (!db) {
+    db = {
+      // 승인된 친구는 허용 목록에 있어야 'ok' 가 된다 (규칙과 같은 뜻)
+      'allowlist/friend@mock.local': { approved: true, name: '로컬 테스트 (친구)', at: new Date().toISOString() },
+      // ★ 는 v3 dev-mock.js 와 **같은 값**이다 — 씨앗이 다르면 나란히 놓고 비교할 때
+      // 화면이 틀린 것인지 씨앗이 다른 것인지 구분이 안 된다. 실제 도감번호만 쓴다
+      [`users/${users['1']!.uid}`]: { email: 'admin@mock.local', name: '로컬 테스트 (관리자)', favs: [150, 384, 383, 149, 68, 143, 302, 227, 25] },
+      'users/mock-friend': { email: 'friend@mock.local', name: '로컬 테스트 (친구)', favs: [150, 6, 302] },
+      'trainers/테스트 트레이너': { name: '테스트 트레이너', code: '000000000000', order: 0 },
+    };
+  }
+  const store = db;
+  const save = () => { try { localStorage.setItem(DB_KEY, JSON.stringify(store)); } catch { /* 저장 불가 환경 */ } };
   save();
 
   let notify: ((next: AuthUser | null) => void) | null = null;
@@ -44,18 +53,18 @@ export function makeMockApi(adminUid: string): AuthApi {
     async signIn() { user = users[mode === 'anon' ? '1' : mode] ?? users['1']!; tell(); },
     async signOut() { user = null; tell(); },
     async deleteUser() { user = null; tell(); },
-    async getDoc(path) { return db[path] ?? null; },
-    async setDoc(path, data) { db[path] = { ...(db[path] ?? {}), ...data }; save(); },
-    async deleteDoc(path) { delete db[path]; save(); },
+    async getDoc(path) { return store[path] ?? null; },
+    async setDoc(path, data) { store[path] = { ...(store[path] ?? {}), ...data }; save(); },
+    async deleteDoc(path) { delete store[path]; save(); },
     async listDocs(path) {
       const head = `${path}/`;
-      return Object.entries(db)
+      return Object.entries(store)
         .filter(([key]) => key.startsWith(head) && !key.slice(head.length).includes('/'))
         .map(([key, value]) => ({ id: key.slice(head.length), ...value }));
     },
     async arrayEdit(path, field, value, add) {
-      const now = Array.isArray(db[path]?.[field]) ? (db[path]![field] as number[]) : [];
-      db[path] = { ...(db[path] ?? {}), [field]: add ? [...new Set([...now, value])] : now.filter((one) => one !== value) };
+      const now = Array.isArray(store[path]?.[field]) ? (store[path]![field] as number[]) : [];
+      store[path] = { ...(store[path] ?? {}), [field]: add ? [...new Set([...now, value])] : now.filter((one) => one !== value) };
       save();
     },
   };
