@@ -114,7 +114,7 @@ const readGlobal = (key) => vm.runInContext(`typeof ${key} === 'undefined' ? und
 const BUNDLES = {
   dex: ['DEX_DATA', 'TYPE_KO', 'TYPE_EN', 'FORM_LABELS', 'SPRITE_IDS', 'SPRITE_ANIM_IDS'],
   max: ['DMAX_DATA', 'DMAX_TANK', 'DMAX_TIER', 'MAX_POOL'],
-  pve: ['PVE_DATA', 'PVE_EASY', 'BOSS_LIST'],
+  pve: ['PVE_DATA', 'PVE_EASY', 'PVE_BY_TYPE', 'BOSS_LIST'],
   pvp: ['PVP_DATA', 'VALUE_DATA', 'SHEET_DATA'],
   gameday: ['GAMEDAY', 'MOVE_CHANGES'],
   'fav-events': ['FAV_EVENTS'],

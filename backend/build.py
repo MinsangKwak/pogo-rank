@@ -40,7 +40,7 @@ from names import name_ko, species, FORM_KO
 import guard
 
 # ── 설정 ─────────────────────────────────────────────────────────────────────
-APP_VERSION = 'v4.2.2'  # 실험 기능이 닫히면 계정 카드의 [내 포켓몬 N마리] 도 사라진다
+APP_VERSION = 'v4.2.3'  # (긴급) 레이드 [전체] 가 그 타입이 아니라 카운터를 내던 것
 # 2026-09-14 v3.28.0 index.html 의 색인 허용 줄 — dev 빌드가 이 줄을 noindex 로 바꿔 끼운다
 ROBOTS_INDEX_META = '<meta name="robots" content="index, follow, max-image-preview:large">'
 # 2026-09-05 v2.7.3 빌드 채널 — 'prod'(기본) / 'dev'. dev 브랜치 워크플로(.github/workflows/deploy-dev.yml)가 BUILD_CHANNEL=dev 로 부른다.
@@ -478,6 +478,8 @@ def apply_rank_delta(tables):
             all_tables[f'pve:{type_key}'] = rows
         for type_key, rows in (tables['pve_easy'] or {}).items():
             all_tables[f'pveEasy:{type_key}'] = rows
+        for type_key, rows in (tables['pve_by_type'] or {}).items():
+            all_tables[f'pveType:{type_key}'] = rows
         for type_key, rows in tables['dynamax_tier'].items():
             all_tables[f'dmax:{type_key}'] = rows
         for type_key, rows in ((tables['sheet'] or {}).get('pve') or {}).items():
@@ -652,6 +654,7 @@ const SPRITES = {(open('data/sprites.json').read() if INLINE and os.path.exists(
 '''
     lazy = f'''// 빌드 생성 데이터 — 첫 화면이 안 쓰는 표 (backend/build.py v3.48.0, scripts/lazy.js 가 첫 렌더 뒤에 받는다) — 기준일 {game_master['timestamp']}
 const PVE_EASY = {t('pve_easy')};
+const PVE_BY_TYPE = {t('pve_by_type')};
 const SHEET_DATA = {t('sheet')};
 const BOSS_LIST = {t('bosses', '[]')};
 const GAMEDAY = {t('gameday')};              // 2026-09-08 v2.25.0 레이드 보스·알 부화 풀·이벤트 원본 (backend/gameday_build.py)
