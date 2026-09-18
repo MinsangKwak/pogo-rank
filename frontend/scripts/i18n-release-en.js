@@ -15,6 +15,10 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 const RELEASE_NOTES_EN = {
+  '2026-09-18 · v4.2.2': [
+    '**When beta access is switched off, the [\ud83c\udf92 My Pok\u00e9mon N] row in the menu goes with it** \u2014 the row used to stay and only led to a locked screen.',
+    '**Permission changes show up in the menu right away** \u2014 an admin changing their own access no longer needs a reload.',
+  ],
   '2026-09-18 · v4.2.1': [
     '**My Pok\u00e9mon and \u2605 favourites are back** — the previous release retired them by mistake, and that has been reversed. Everything you had saved is still on your account. Sorry for the scare.',
     '**Open to beta participants**, exactly as before: once an admin enables it you get My Pok\u00e9mon and the D-MAX [unreleased] view.',
