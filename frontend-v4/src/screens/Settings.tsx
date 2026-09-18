@@ -9,7 +9,7 @@ import { useState } from 'react';
 import { usePrefStore, THEME_ORDER, type Theme } from '../stores/pref';
 import { spriteAnimEnabled, SPRITE_ANIM_KEY } from '../components/Bits';
 import { track } from '../lib/track';
-import { authEmail, useAuthStore } from '../stores/auth';
+import { signInNow, authEmail, useAuthStore } from '../stores/auth';
 import { termsAccepted } from '../lib/terms';
 import TermsConsent from '../components/TermsConsent';
 
@@ -41,14 +41,14 @@ function Choice({ on, name, desc, onPick }: { on: boolean; name: string; desc: s
  * v3 는 이 줄을 한 번 그리고 말아 로그인이 늦게 붙으면 '브라우저에만' 이 그대로 남았다. 여기서는 따라 바뀐다
  */
 function SavedWhere() {
-  const { enabled, status, api } = useAuthStore();
+  const { enabled, status } = useAuthStore();
   const [consentOpen, setConsentOpen] = useState(false);
   if (status === 'ok') {
     return <p className="dex__hint">{`✓ 계정(${authEmail()})에 저장돼요 — 다른 기기에서 로그인해도 같은 화면으로 열려요.`}</p>;
   }
   const start = () => {
     if (!termsAccepted()) { setConsentOpen(true); return; }
-    void api?.signIn();
+    void signInNow();
   };
   return (
     <p className="dex__hint">
@@ -58,7 +58,7 @@ function SavedWhere() {
         : '승인되면 계정에 저장돼 어느 기기에서든 같아요.'}
       {consentOpen ? (
         <TermsConsent onClose={() => setConsentOpen(false)}
-          onAccept={() => { setConsentOpen(false); void api?.signIn(); }} />
+          onAccept={() => { setConsentOpen(false); void signInNow(); }} />
       ) : null}
     </p>
   );

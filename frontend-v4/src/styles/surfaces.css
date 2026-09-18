@@ -1,0 +1,46 @@
+/* ─────────────────────────────────────────────────────────────────────────────
+   surfaces.css — 홈 · 도감 · 랭킹이 공유하는 카드 표면
+
+   세 화면이 같은 얼굴을 쓴다 — 테두리 한 겹, 도트 바탕, 오른쪽 아래로 떨어지는 그림자.
+   같은 값을 세 곳에 적는 대신 토큰(--card-border · --card-shadow · --dot-pattern)을 본다.
+   그래서 카드 느낌을 바꾸려면 tokens.css 한 줄만 고치면 된다.
+   ───────────────────────────────────────────────────────────────────────────── */
+.home-dashboard { --home-gap: var(--space-lg); }
+.home-dashboard .home__section {
+  margin-bottom: var(--space-md); padding-bottom: var(--space-sm); border-bottom: var(--card-border);
+}
+.home-dashboard .home__service-group,
+.home-dashboard .pick__group,
+.home-dashboard .home-updates__item {
+  background-color: var(--surface); border: var(--card-border); box-shadow: var(--card-shadow);
+}
+.home-dashboard .home__service-group { padding: var(--space-md); }
+.home-dashboard .home__group-head { background-image: var(--dot-pattern); background-size: var(--dot-size); }
+.home-dashboard .home__tile { min-height: var(--tap); }
+
+.page-head { border-bottom: var(--card-border); }
+.page-head h2 { color: var(--brand); }
+
+.dex__list.is-grid .dex__row {
+  gap: var(--space-sm); padding: var(--space-lg) var(--space-md) var(--space-md);
+  background: var(--surface); border: var(--card-border); box-shadow: var(--card-shadow);
+}
+.dex__list.is-grid .dex__row .sprite {
+  width: var(--sprite-grid); height: var(--sprite-grid);
+  background-image: var(--dot-pattern); background-size: var(--dot-size);
+}
+.dex__list.is-grid .dex__row:hover { border-color: var(--brand); transform: translateY(-.2rem); }
+
+.row-list .row { background: var(--surface); border: var(--card-border); box-shadow: var(--card-shadow); }
+
+.filter-box, .screen-tabs { accent-color: var(--brand); }
+
+/* 키보드로 도는 사람에게 지금 어디인지 — 테마와 무관하게 같은 굵기로 보인다 */
+:where(button, a, input, summary):focus-visible { outline: 2px solid var(--point); outline-offset: 3px; }
+
+@media (max-width: 767px) {
+  :root { --sprite-grid: 8rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .dex__list.is-grid .dex__row:hover { transform: none; }
+}

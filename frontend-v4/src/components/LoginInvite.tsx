@@ -8,7 +8,7 @@
 // 끝나는 이름에서 늘 틀린다 ("PvE은"). 조사가 필요 없는 문장으로 적는다.
 // ─────────────────────────────────────────────────────────────────────────────
 import { useEffect, useRef, useState } from 'react';
-import { useAuthStore } from '../stores/auth';
+import { signInNow, useAuthStore } from '../stores/auth';
 import { termsAccepted } from '../lib/terms';
 import { track } from '../lib/track';
 import TermsConsent from './TermsConsent';
@@ -21,7 +21,6 @@ const STEPS: [string, string, string][] = [
 
 export default function LoginInvite({ screen, onClose }: { screen: string; onClose: () => void }) {
   const status = useAuthStore((s) => s.status);
-  const api = useAuthStore((s) => s.api);
   const box = useRef<HTMLDialogElement>(null);
   const [consentOpen, setConsentOpen] = useState(false);
   const pending = status === 'pending';
@@ -33,7 +32,7 @@ export default function LoginInvite({ screen, onClose }: { screen: string; onClo
   const start = () => {
     if (!termsAccepted()) { setConsentOpen(true); return; }
     onClose();
-    void api?.signIn();
+    void signInNow();
   };
 
   const where = screen ? `${screen} ` : '이 ';
@@ -75,7 +74,7 @@ export default function LoginInvite({ screen, onClose }: { screen: string; onClo
       </div>
       {consentOpen ? (
         <TermsConsent onClose={() => setConsentOpen(false)}
-          onAccept={() => { setConsentOpen(false); onClose(); void api?.signIn(); }} />
+          onAccept={() => { setConsentOpen(false); onClose(); void signInNow(); }} />
       ) : null}
     </dialog>
   );

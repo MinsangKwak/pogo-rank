@@ -19,6 +19,8 @@ import { PxIcon } from './PxIcon';
 import { routeNote } from '../lib/notes';
 import { useLockReason, lockedAttrs } from '../lib/useLocked';
 import Account from './Account';
+import BrandLogo from './BrandLogo';
+import BrandMark from './BrandMark';
 import Trainers from './Trainers';
 
 // 내보내는 이유는 검사 하나뿐이다 — 잠금 표시가 붙는 자리를 데이터 없이 그려 보려면 필요하다
@@ -51,7 +53,9 @@ const THEME_FACE: Record<Theme, [string, string]> = {
   dark: ['🌙', '화면 테마: 어둡게 — 누르면 밝게'],
 };
 
-export function AppBar({ onMenu, home }: { onMenu: () => void; home: boolean }) {
+export function AppBar({ onMenu, home, onBack }: {
+  onMenu: () => void; home: boolean; onBack?: () => void;
+}) {
   const theme = usePrefStore((s) => s.theme);
   const toggleTheme = usePrefStore((s) => s.toggleTheme);
   const [icon, label] = THEME_FACE[theme];
@@ -62,17 +66,26 @@ export function AppBar({ onMenu, home }: { onMenu: () => void; home: boolean }) 
       <div className="app-bar__head">
         {/* 2026-09-17 홈에는 뒤로가기가 없다 — v3 app-shell.js 의 `backButton.hidden = home`.
             여기가 처음이라 돌아갈 앞 화면이 없고, 있는 버튼은 "누를 수 있다" 는 약속이다 (제보) */}
-        <button className="icon-btn" aria-label="이전 화면" hidden={home}
-          onClick={() => { if (history.length > 1) history.back(); else location.hash = '#/'; }}>
+        <button className="icon-btn" aria-label={onBack ? '상세 닫기' : '이전 화면'} hidden={home}
+          onClick={() => {
+            if (onBack) { onBack(); return; }
+            if (history.length > 1) history.back(); else location.hash = '#/';
+          }}>
           <PxIcon emoji="←" />
         </button>
+        {/* **뒤로가기가 있는 화면에는 로고를 두지 않는다.**
+            둘 다 두면 같은 줄이 "여기가 처음" 과 "돌아갈 수 있다" 를 같이 말하고,
+            좁은 화면에서는 로고·표식·검색·언어·메뉴가 한 줄에 다 들어가지 못해 겹친다 (제보).
+            h1 은 남긴다 — 눈에서만 접는다. 없애면 화면에 제목이 하나도 없어지고,
+            포커스가 돌아올 자리(#app-title)도 같이 사라진다 */}
         <h1 id="app-title" tabIndex={-1}>
-          <button type="button" id="app-logo" className="app-bar__logo"
-            onClick={() => { location.hash = '#/'; }}>moncamp</button>
-          {/* 주소가 같아 화면만 보고는 v3 인지 v4 인지 알 수가 없다 — 눈으로 가르는 표식 (root.css) */}
-          <span className="v4-mark" id="v4-mark" title="React 로 만든 판입니다" aria-hidden="true">
-            <PxIcon emoji="⚛" /><PxIcon emoji="◓" />
-          </span>
+          {home ? (
+            <>
+              <BrandLogo />
+              {/* 주소가 같아 화면만 보고는 v3 인지 v4 인지 알 수가 없다 — 눈으로 가르는 표식 */}
+              <BrandMark />
+            </>
+          ) : <span className="app-bar__name">moncamp</span>}
         </h1>
       </div>
       <button className="app-search" id="app-search" aria-label="포켓몬 검색"

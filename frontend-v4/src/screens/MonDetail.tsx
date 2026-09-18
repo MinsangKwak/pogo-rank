@@ -14,23 +14,25 @@
 //     .detail__dock  링크 복사 · CP 계산기 / 초기화 · 상세로 돌아가기
 // ─────────────────────────────────────────────────────────────────────────────
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { useDex, useFavEvents, useGameday, useMax, usePve, usePvp, useUsage } from '../lib/data';
+import { useDex, useFavEvents, useGameday, useMax, usePve, usePvp } from '../lib/data';
 import { Sprite } from '../components/Bits';
 import { PxIcon } from '../components/PxIcon';
 import { NameNode } from '../components/Row';
 import { cpOf } from '../lib/cp';
 import { counterTypes, matchups } from '../lib/matchup';
-import { usagePlacesFor } from '../lib/usage';
 import { favNewsFor, favNewsWhen, FAV_NEWS_LABEL } from '../lib/favnews';
 import { useFavs } from '../lib/useFavs';
 import { buildSearchIndex } from '../lib/search';
 import { resolveMon, type MonPick, type MonRef } from '../lib/mon';
 import { track } from '../lib/track';
+import ShareBtn from '../components/detail/ShareBtn';
+import DetailTabs from '../components/detail/DetailTabs';
 import Hex from '../components/detail/Hex';
 import IvRank from '../components/detail/IvRank';
 import CalcScreen, { CALC_DEFAULT, type CalcInputs } from '../components/detail/CalcScreen';
 import { Evo, MegaCompare } from '../components/detail/Evo';
-import type { DexForm } from '../types/data';
+import CatchCard from '../components/detail/CatchCard';
+import UsageRanks from '../components/detail/UsageRanks';
 
 export type { MonRef } from '../lib/mon';
 
@@ -40,8 +42,6 @@ interface View { mon: MonRef; tab: Tab; screen: 'detail' | 'calc'; calc: CalcInp
 type Tab = 'summary' | 'battle' | 'evo';
 const TABS: [Tab, string][] = [['summary', '요약'], ['battle', '배틀 정보'], ['evo', '진화']];
 
-const LEAGUE_KO: Record<string, string> = { little: '리틀', great: '슈퍼', ultra: '하이퍼', master: '마스터' };
-const GROUP_KO: Record<string, string> = { pvp: 'PvP', pve: '레이드', max: '맥스' };
 const FORM_KIND: Record<string, string> = {
   메가: 'mega', 메가X: 'mega', 메가Y: 'mega', 원시: 'mega',
   다이맥스: 'max', 거다이맥스: 'max', 섀도우: 'shadow',
@@ -82,31 +82,6 @@ function TypeChip({ type, extra, className }: { type: string; extra?: string; cl
   );
 }
 
-/** 🔗 공유 — Web Share 가 되는 기기는 공유 시트, 아니면 클립보드 복사 후 '복사됨 ✓' */
-function ShareBtn({ mon }: { mon: MonRef }) {
-  const [copied, setCopied] = useState(false);
-  const click = async () => {
-    const url = `${location.origin}${location.pathname}#/mon/${mon.sprite}`;
-    track('share', { mon: mon.name });
-    const flash = () => { setCopied(true); setTimeout(() => setCopied(false), 1500); };
-    try {
-      if (navigator.share) await navigator.share({ title: `${mon.name} — moncamp`, url });
-      else { await navigator.clipboard.writeText(url); flash(); }
-    } catch (error) {
-      // 공유 시트를 취소한 경우는 조용히, 그 밖(권한 등)은 클립보드로 한 번 더
-      if ((error as { name?: string })?.name === 'AbortError') return;
-      try { await navigator.clipboard.writeText(url); flash(); } catch { /* 클립보드도 막힌 환경 */ }
-    }
-  };
-  return (
-    <button className={`detail__share detail__dock-btn${copied ? ' is-copied' : ''}`}
-      aria-label="링크 공유" title="이 포켓몬 링크 공유" onClick={click}>
-      <span className="detail__share-icon">{copied ? '✓' : '🔗'}</span>
-      <span className="detail__share-text">{copied ? '복사됨 ✓' : '링크 복사'}</span>
-    </button>
-  );
-}
-
 /** 추천 후보 줄 — 누르면 같은 창에서 그 포켓몬으로 바뀐다 */
 function Recs({ rows, onSwitch }: { rows: MonRef[]; onSwitch: (mon: MonRef) => void }) {
   const { data } = useDex();
@@ -119,101 +94,6 @@ function Recs({ rows, onSwitch }: { rows: MonRef[]; onSwitch: (mon: MonRef) => v
           <span className="detail__rec-go" aria-hidden="true">›</span>
         </button>
       ))}
-    </div>
-  );
-}
-
-/** 포획 CP — [맥스 배틀 | 레이드 | 야생] 중 한 경로만 크게 본다 (v3.50.0) */
-function CatchCard({ form, sprite, seg, onSeg }: {
-  form: DexForm; sprite: number; seg: string; onSeg: (id: string) => void;
-}) {
-  const { data } = useDex();
-  const { data: max } = useMax();
-  const cpm = data.DEX_DATA.cpm;
-  const maxKind = max.MAX_POOL[String(sprite)] ?? null;
-  const segs: [string, string][] = [...(maxKind ? [['max', '맥스 배틀'] as [string, string]] : []), ['raid', '레이드'], ['wild', '야생']];
-  const now = segs.some(([id]) => id === seg) ? seg : segs[0]![0];
-  const maxLabel = maxKind === 'G' ? '거다이맥스·다이맥스' : '다이맥스';
-
-  // 한 줄 = 조건(레벨·부스트) + 100% CP + 최저 CP(개체값 하한이 있는 경로만)
-  const row = (label: string, sub: string, cpmKey: string, floorIv: number | null) => {
-    const m = cpm[cpmKey];
-    if (!m) return null;
-    return (
-      <div key={label} className="detail__catch-row">
-        <div className="detail__catch-cond"><em>{label}</em>{sub ? <span className="meta">{sub}</span> : null}</div>
-        <div className="detail__catch-val">
-          <span className="meta">100% 기준</span>
-          <b>{cpOf(form, m).toLocaleString()}</b>
-          {floorIv != null
-            ? <span className="detail__catch-floor">최저 {Math.max(10, Math.floor((form.atk + floorIv) * Math.sqrt(form.def + floorIv) * Math.sqrt(form.hp + floorIv) * m * m / 10)).toLocaleString()}</span>
-            : <span className="meta">개체값 하한 없음</span>}
-        </div>
-      </div>
-    );
-  };
-  const panes: Record<string, () => (React.ReactNode | null)[]> = {
-    max: () => [row('Lv.20', `날씨 부스트 없음 · ${maxLabel}`, 'l20', 10)],
-    raid: () => [row('평시 Lv.20', '개체값 10 이상', 'l20', 10), row('날씨 부스트 Lv.25', '개체값 10 이상', 'l25', 10)],
-    wild: () => [row('평시 Lv.30', '', 'l30', null), row('날씨 부스트 Lv.35', '', 'l35', null)],
-  };
-
-  return (
-    <div className="detail__card detail__catch">
-      <h3>포획 CP</h3>
-      <div className="seg detail__catch-seg" role="tablist">
-        {segs.map(([id, label]) => (
-          <button key={id} aria-pressed={id === now} onClick={() => onSeg(id)}>{label}</button>
-        ))}
-      </div>
-      <div className="detail__catch-body">{panes[now]?.()}</div>
-      <details className="detail__acc detail__acc--catch">
-        <summary>조건과 계산 기준 보기</summary>
-        <div className="detail__acc-body">
-          <p className="detail__foot">굵은 숫자가 개체값 100%(15/15/15) CP예요. 잡은 개체가 이 값이면 100%.</p>
-          <p className="detail__foot">레이드 보상은 개체값 10 이상이 확정이라 "최저" 가 있고, 야생은 하한이 없어 최저 CP를 적지 않아요.</p>
-          {maxKind ? <p className="detail__foot">맥스 배틀은 날씨 부스트가 없어 항상 Lv20이라 레이드 평시와 같은 CP가 나와요.</p> : null}
-        </div>
-      </details>
-    </div>
-  );
-}
-
-/** 활용 순위 — 순위가 좋은 순으로 한 줄씩. 3위 안은 👑. 처음엔 셋, [전체 순위 펼치기] 로 나머지 */
-function Ranks({ name }: { name: string }) {
-  const { data: usage } = useUsage();
-  const { data: dex } = useDex();
-  const [open, setOpen] = useState(false);
-  const rows = usagePlacesFor(usage.USAGE_PLACES, name).map(({ place, rank, mark }) => {
-    const [group, key] = place.split(':');
-    const where = group === 'pvp' ? `${LEAGUE_KO[key ?? ''] ?? key}리그`
-      : key === 'overall' ? '전체' : (dex.TYPE_KO[key ?? ''] ?? key);
-    return { group: group ?? '', where: where ?? '', rank, mark };
-  }).sort((a, b) => a.rank - b.rank);
-  if (!rows.length) return <p className="detail__none-text">아직 순위표 상위 30위에 오르지 않았어요.</p>;
-
-  const SHOWN = 3;
-  const rowNode = (row: typeof rows[number], index: number) => (
-    <div key={index} className={`detail__rank-row${row.rank <= 3 ? ' is-top' : ''}`}>
-      <span className="detail__rank-crown" aria-hidden="true">{row.rank <= 3 ? '👑' : ''}</span>
-      {/* 갈래 · 자리를 따로 떨어진 글자로 — 사전(i18n)이 '레이드' · '불꽃' 을 각각 찾는다 */}
-      <span className="detail__rank-where">
-        {GROUP_KO[row.group] ?? row.group}{' · '}{row.where}
-        {row.mark ? <span className="tag">{row.mark === 'G' ? '거다이맥스' : '다이맥스'}</span> : null}
-      </span>
-      <b className="detail__rank-no">{`${row.rank}위`}</b>
-    </div>
-  );
-  return (
-    <div className="detail__ranks">
-      {rows.slice(0, SHOWN).map(rowNode)}
-      <div className="detail__rank-rest" hidden={!open}>{rows.slice(SHOWN).map(rowNode)}</div>
-      {rows.length > SHOWN ? (
-        <button className="detail__rank-more" aria-expanded={open} onClick={() => setOpen(!open)}>
-          {open ? '접기' : `전체 순위 펼치기 (${rows.length})`}
-        </button>
-      ) : null}
-      <p className="detail__foot">각 순위표 상위 30위 기준 · 3위 안은 👑</p>
     </div>
   );
 }
@@ -385,9 +265,7 @@ export default function MonDetail({ pick, onClose }: { pick: MonPick; onClose: (
                     <span className="detail__fav-label">{isFav ? '담음' : '즐겨찾기'}</span>
                   </button>
                 ) : null}
-                <button className="detail__bar-btn detail__bar-dex" onClick={() => { location.hash = '#/dex'; onClose(); }}>
-                  <PxIcon emoji="📕" />포켓몬 도감
-                </button>
+
               </div>
             </div>
 
@@ -444,19 +322,15 @@ export default function MonDetail({ pick, onClose }: { pick: MonPick; onClose: (
                   {previous ? (
                     <button className="detail__back" onClick={back}>← {previous.mon.name}로 돌아가기</button>
                   ) : null}
-                  <div className="detail__tabs" role="tablist">
-                    {TABS.map(([id, label]) => (
-                      <button key={id} className="detail__tab" role="tab" data-tab={id}
-                        aria-selected={id === tab} onClick={() => setTab(id)}>{label}</button>
-                    ))}
-                  </div>
+                  <DetailTabs tabs={TABS} value={tab} onChange={setTab} />
                   <div className="detail__scroll">
 
                     {/* ── 요약: CP · 포획 CP · 기술 · (기술 변경) · 능력치 */}
-                    <div className="detail__pane" data-pane="summary" hidden={tab !== 'summary'}>
+                    <div className="detail__pane" role="tabpanel" data-pane="summary" id="detail-pane-summary" aria-labelledby="detail-tab-summary" hidden={tab !== 'summary'}>
                       {form && cpm['l50'] ? (
                         <>
                           {/* 만렙 큰 숫자는 접혀도 보이고 2×2 표만 접힌다 (v2.32.0) */}
+                          <div className="detail__matchrows">
                           <details className="detail__cp-card">
                             <summary>
                               <div className="detail__cp-big">
@@ -476,6 +350,11 @@ export default function MonDetail({ pick, onClose }: { pick: MonPick; onClose: (
                               ))}
                             </div>
                           </details>
+                            <section className="detail__card">
+                              <h3>배틀 활용 순위</h3>
+                              <UsageRanks name={mon.name} compact />
+                            </section>
+                          </div>
                           <CatchCard form={form} sprite={sprite} seg={catchSeg} onSeg={setCatchSeg} />
                         </>
                       ) : null}
@@ -538,7 +417,7 @@ export default function MonDetail({ pick, onClose }: { pick: MonPick; onClose: (
                     </div>
 
                     {/* ── 배틀 정보: 타입 상성 · 활용 순위 · PvP 개체값 · 메가 비교 · 보스로 만났을 때 */}
-                    <div className="detail__pane" data-pane="battle" hidden={tab !== 'battle'}>
+                    <div className="detail__pane" role="tabpanel" data-pane="battle" id="detail-pane-battle" aria-labelledby="detail-tab-battle" hidden={tab !== 'battle'}>
                       {types.length ? (
                         <section className="detail__card">
                           <h3>타입 상성</h3>
@@ -563,7 +442,7 @@ export default function MonDetail({ pick, onClose }: { pick: MonPick; onClose: (
 
                       <section className="detail__card">
                         <h3>활용 순위</h3>
-                        <Ranks name={mon.name} />
+                        <UsageRanks name={mon.name} />
                       </section>
 
                       {form ? <IvRank form={form} sprite={sprite} /> : null}
@@ -584,7 +463,7 @@ export default function MonDetail({ pick, onClose }: { pick: MonPick; onClose: (
                     </div>
 
                     {/* ── 진화 */}
-                    <div className="detail__pane" data-pane="evo" hidden={tab !== 'evo'}>
+                    <div className="detail__pane" role="tabpanel" data-pane="evo" id="detail-pane-evo" aria-labelledby="detail-tab-evo" hidden={tab !== 'evo'}>
                       <section className="detail__card">
                         <h3>진화 계열</h3>
                         {dexNo != null
@@ -609,6 +488,9 @@ export default function MonDetail({ pick, onClose }: { pick: MonPick; onClose: (
             <div className="detail__dock">
               <div className="detail__dock-row detail__dock-row--detail">
                 <ShareBtn mon={mon} />
+                <button className="detail__dock-btn detail__bar-dex" onClick={() => { location.hash = '#/dex'; onClose(); }}>
+                  <PxIcon emoji="📕" />포켓몬 도감
+                </button>
                 {form ? (
                   <button className="detail__dock-btn detail__dock-btn--accent detail__dock-calc"
                     onClick={() => setScreen('calc')}><PxIcon emoji="🧮" />CP 계산기</button>

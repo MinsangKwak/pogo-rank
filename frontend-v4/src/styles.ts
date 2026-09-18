@@ -34,3 +34,9 @@ import '../../frontend/styles/components/pc-theme.css';
 import '../../frontend/styles/pixel.css';
 // 마지막 — v3 CSS 를 다 실은 뒤에 래퍼 하나만 지운다
 import './root.css';
+
+// v4 가 소유한 화면의 디자인. 영역마다 파일 하나다 — v3 의 components/ 규칙과 같은 방식이다.
+// 토큰은 여기 없다 (styles/tokens.css 한곳) — 값이 흩어지면 어디서 왔는지를 매번 다시 찾는다
+import './styles/brand.css';
+import './styles/surfaces.css';
+import './styles/detail.css';
