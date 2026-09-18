@@ -107,3 +107,34 @@
 body.has-detail-panel { --list-cols: 1; }
 @media (min-width: 1440px) { body.has-detail-panel { --list-cols: 2; } }
 @media (min-width: 1760px) { body.has-detail-panel { --list-cols: 3; } }
+
+/* 2026-09-18 v4 디자인 토큰 — 간격 · 표면 · 테두리 · 그림자 · 팝업 폭.
+   **색은 여기 없다.** 위의 테마 토큰(--brand · --surface · --line-2)을 그대로 쓴다 —
+   색을 두 벌 두면 다크 모드가 한쪽만 따라온다.
+   v3 화면은 이 값을 읽지 않는다. 그래도 한곳에 둔다 — 변수가 파일마다 흩어지면
+   "이 여백이 어디서 왔지" 를 매번 다시 찾게 된다. */
+:root {
+  --space-xs: .4rem;
+  --space-sm: .8rem;
+  --space-md: 1.6rem;
+  --space-lg: 2.4rem;
+  --space-xl: 3.2rem;
+  --card-border: 1px solid var(--line-2);
+  --card-tint: color-mix(in srgb, var(--brand) 5%, var(--surface));
+  --card-shadow: .4rem .4rem 0 color-mix(in srgb, var(--brand) 18%, var(--line));
+  --dot-pattern: radial-gradient(var(--line-2) 1px, transparent 1px);
+  --dot-size: 1.2rem 1.2rem;
+  --detail-width: 104rem;
+  --detail-height: 84rem;
+  --detail-profile: 29rem;
+  --detail-cp-size: 4rem;
+  --sprite-grid: 9.6rem;
+  --logo-size: 3.2rem;
+  --mark-w: 4.6rem;
+  --mark-h: 2.5rem;
+  /* 표식 색만 테마를 안 따른다 — React 파랑과 볼 빨강은 밝기가 뒤집혀도 그 색이어야 뜻이 산다 */
+  --mark-react: #8ce4ff;
+  --mark-ball: #ff5f52;
+  --mark-light: #fff8f2;
+  --mark-dark: #2a2027;
+}

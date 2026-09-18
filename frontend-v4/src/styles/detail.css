@@ -1,0 +1,141 @@
+/* ─────────────────────────────────────────────────────────────────────────────
+   detail.css — 포켓몬 팝업 (v4 가 그리는 화면)
+
+   **왜 modal.css 에 합치지 않았나.** 그 파일은 v3 와 함께 쓰는 자리다. v3 는 빌드가
+   깨졌을 때 대신 서는 판이라, 여기 규칙을 그쪽으로 옮기면 폴백의 생김새까지 같이 바뀐다.
+   v4 만 그리는 마크업(.detail__matchrows · details.detail__catch)도 섞여 있다.
+   그래서 **v4 가 소유한 화면의 디자인 계층**으로 따로 둔다.
+
+   PC 는 왼쪽 프로필 · 오른쪽 정보의 두 칸, 모바일은 프로필을 한 줄로 눕힌다.
+   ───────────────────────────────────────────────────────────────────────────── */
+.modal__wrap:has(.detail--mon) {
+  width: min(var(--detail-width), calc(100vw - 4.8rem));
+  max-width: var(--detail-width);
+  padding-top: 0;
+}
+.modal__wrap:has(.detail--mon) .modal__close {
+  top: var(--space-sm); right: var(--space-sm); z-index: 5;
+  width: var(--tap); height: var(--tap);
+  background: var(--surface); border: var(--card-border);
+}
+.modal__box:has(> .detail--mon) {
+  width: 100%; max-width: none; padding: 0;
+  height: min(var(--detail-height), calc(100dvh - 6.4rem)); max-height: none;
+  border: 2px solid var(--brand); box-shadow: var(--card-shadow);
+}
+
+/* 머리줄 */
+.detail--mon .detail__bar {
+  min-height: 6rem;
+  padding: var(--space-sm) 6.4rem var(--space-sm) var(--space-lg);
+  background: var(--card-tint); border-bottom: var(--card-border);
+}
+.detail--mon .detail__bar-title { display: block; color: var(--brand); font-size: var(--fs-lead); letter-spacing: .04em; }
+
+/* 두 칸 — 왼쪽 프로필, 오른쪽 정보 */
+.detail--mon .detail__body { flex-direction: row; }
+.detail--mon .detail__side {
+  flex: 0 0 var(--detail-profile); flex-direction: column; align-items: stretch;
+  gap: var(--space-lg); padding: var(--space-lg);
+  background: var(--card-tint); border-right: var(--card-border); overflow-y: auto;
+}
+.detail--mon .detail__side .sprite-box {
+  width: 100%; height: auto; max-width: none; aspect-ratio: 1;
+  background-color: var(--surface);
+  background-image: var(--dot-pattern); background-size: var(--dot-size);
+  border: var(--card-border); box-shadow: none;
+}
+.detail--mon .detail__side .sprite-box .sprite { width: 82%; height: 82%; margin: 0; }
+.detail--mon .detail__info { gap: var(--space-sm); }
+.detail--mon .detail__info h2 { font-size: var(--fs-title); overflow-wrap: anywhere; }
+.detail--mon .detail__types { top: var(--space-sm); left: var(--space-sm); }
+.detail--mon .detail__main-detail { padding-top: var(--space-lg); }
+
+/* 탭 */
+.detail--mon .detail__tabs {
+  margin: 0 var(--space-lg); padding: 0; gap: 0;
+  background: transparent; border: 0; border-bottom: 2px solid var(--line-2);
+}
+.detail--mon .detail__tab { min-height: var(--tap); font-size: var(--fs-lead); }
+.detail--mon .detail__tab[aria-selected="true"] {
+  color: var(--brand); background: var(--card-tint); box-shadow: inset 0 -.3rem 0 var(--brand);
+}
+
+/* 본문 카드 */
+.detail--mon .detail__scroll,
+.detail--mon .detail__calc { padding: var(--space-md) var(--space-lg) var(--space-lg); scrollbar-gutter: stable; }
+.detail--mon .detail__card,
+.detail--mon .detail__cp-card,
+.detail--mon .detail__acc { background: var(--surface); border: var(--card-border); box-shadow: none; }
+.detail--mon .detail__card { margin-top: var(--space-md); padding: var(--space-md); }
+.detail--mon .detail__card h3 { font-size: var(--fs-lead); }
+.detail--mon .detail__pane > :first-child { margin-top: 0; }
+.detail--mon .detail__cp-card { margin-top: 0; background: var(--card-tint); }
+.detail--mon .detail__cp-line b { color: var(--brand); font-size: var(--detail-cp-size); font-variant-numeric: tabular-nums; }
+.detail--mon .detail__catch-row,
+.detail--mon .detail__rank-row { padding: var(--space-sm) var(--space-md); }
+.detail--mon .detail__back { margin: 0 var(--space-lg) var(--space-sm); }
+.detail--mon .detail__rec { min-height: var(--tap); }
+
+/* 요약 탭의 두 칸 — 만렙 CP 와 배틀 활용 순위를 나란히 */
+.detail--mon .detail__pane > .detail__matchrows {
+  display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: var(--space-md);
+}
+.detail--mon .detail__pane > .detail__matchrows > .detail__card { margin-top: 0; }
+.detail--mon .detail__pane > .detail__matchrows .detail__rank-crown { display: none; }
+.detail--mon .detail__pane > .detail__matchrows .detail__rank-row {
+  padding: var(--space-sm) 0; background: transparent; border-bottom: 1px solid var(--line);
+}
+
+/* 포획 CP — 접어 두고 필요할 때 편다 (요약 탭이 길어지지 않도록) */
+.detail--mon .detail__catch > summary {
+  display: flex; justify-content: space-between; align-items: center;
+  min-height: var(--tap); font-weight: 700; list-style: none; cursor: pointer;
+}
+.detail--mon .detail__catch > summary::after { content: '+'; color: var(--brand); font-size: var(--fs-sec); }
+.detail--mon .detail__catch[open] > summary::after { content: '−'; }
+.detail--mon .detail__catch > summary::-webkit-details-marker { display: none; }
+
+/* 아래 고정 줄 */
+.detail--mon .detail__dock {
+  padding: var(--space-md) var(--space-lg);
+  padding-bottom: max(var(--space-md), env(safe-area-inset-bottom));
+  background: var(--surface); border-top: var(--card-border);
+}
+.detail--mon .detail__dock-row { grid-auto-columns: minmax(0, 1fr); justify-content: stretch; gap: var(--space-sm); }
+.detail--mon .detail__dock-btn {
+  min-height: var(--tap); height: auto; padding: var(--space-sm);
+  border: var(--card-border); font-size: var(--fs-body);
+}
+.detail--mon .detail__dock-btn--accent { background: var(--brand); border-color: var(--brand); color: var(--surface); }
+
+@media (max-width: 767px) {
+  .modal:has(.detail--mon) { padding: 0; }
+  .modal__wrap:has(.detail--mon) { width: 100%; margin: 0; }
+  .modal__box:has(> .detail--mon) { height: 94dvh; max-height: 94dvh; border-width: 2px 0 0; }
+  /* 좁은 화면에서는 같은 여백이 너무 넓다 — 팝업 안에서만 한 칸 줄인다 */
+  .detail--mon { --space-lg: 1.6rem; }
+  .detail--mon .detail__body { flex-direction: column; }
+  .detail--mon .detail__side {
+    flex: none; flex-direction: row; align-items: center; gap: var(--space-md);
+    padding: var(--space-md); overflow: visible;
+    border-right: 0; border-bottom: var(--card-border);
+  }
+  .detail--mon .detail__side .sprite-box { flex: 0 0 8.8rem; width: 8.8rem; height: 8.8rem; }
+  .detail--mon .detail__side .sprite-box .sprite { width: 7.2rem; height: 7.2rem; }
+  .detail--mon .detail__side .sprite-box .detail__types { display: none; }
+  .detail--mon .detail__types--inline { position: static; display: flex; }
+  .detail--mon .detail__info { flex-direction: column; align-items: flex-start; gap: var(--space-xs); }
+  .detail--mon .detail__info h2 { font-size: var(--fs-sec); }
+  .detail--mon .detail__en-inline { font-size: var(--fs-sub); }
+  .detail--mon .detail__main-detail { padding-top: var(--space-sm); }
+  .detail--mon .detail__bar { min-height: 5.6rem; }
+  .detail--mon:not([data-screen="calc"]) .detail__bar-title { display: block; }
+  .detail--mon .detail__cp-line b { font-size: 3.2rem; }
+  .detail--mon .detail__dock-btn { font-size: var(--fs-sub); }
+  .detail--mon .detail__share-icon { display: none; }
+  .detail--mon .detail__fav-label { display: inline; }
+}
+@media (max-width: 380px) {
+  .detail--mon .detail__pane > .detail__matchrows { grid-template-columns: 1fr; }
+}

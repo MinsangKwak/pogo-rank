@@ -165,10 +165,10 @@ writeFileSync(resolve(out, 'manifest.json'), JSON.stringify(manifest, null, 1));
 {
   const from = resolve(repo, 'frontend/static');
   const to = resolve(here, '../public');
-  for (const name of ['manifest.webmanifest', 'icon-192.png', 'icon-512.png', 'og.png']) {
+  for (const name of ['manifest.webmanifest', 'icon-192.png', 'icon-512.png', 'og.png', 'og-design.png', 'og-dev.png', 'logo.svg']) {
     copyFileSync(resolve(from, name), resolve(to, name));
   }
-  console.log('  PWA 정적 파일 4개 (v3 static/ 에서)');
+  console.log('  PWA·브랜드 정적 파일 7개 (v3 static/ 에서)');
 }
 
 console.log(`데이터 ${Object.keys(BUNDLES).length}개 · 합계 ${(total / 1024).toFixed(0)}KB`);

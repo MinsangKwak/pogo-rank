@@ -205,12 +205,16 @@ export function Chips({ items, value, onPick }: {
   );
 }
 
-/** 세그먼트 컨트롤 — 붙어 있는 버튼 몇 개로 하나를 고른다 (v3 components/seg.js) */
-export function Seg({ items, value, onPick, className }: {
-  items: ChipDef[]; value: string; onPick: (id: string) => void; className?: string;
+/**
+ * 세그먼트 컨트롤 — 붙어 있는 버튼 몇 개로 하나를 고른다 (v3 components/seg.js)
+ * `label` 을 주면 묶음으로 읽힌다 — 화면에 제목이 없는 자리(팝업 안)에서 필요하다
+ */
+export function Seg({ items, value, onPick, className, label }: {
+  items: ChipDef[]; value: string; onPick: (id: string) => void; className?: string; label?: string;
 }) {
   return (
-    <div className={`seg${className ? ` ${className}` : ''}`}>
+    <div className={`seg${className ? ` ${className}` : ''}`}
+      {...(label ? { role: 'group', 'aria-label': label } : {})}>
       {items.map((item) => (
         <button key={item.id} type="button" aria-pressed={item.id === value} onClick={() => onPick(item.id)}>
           {item.label}

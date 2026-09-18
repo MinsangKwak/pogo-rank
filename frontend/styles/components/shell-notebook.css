@@ -75,9 +75,9 @@ body .app-nav__extra .drawer__meta { grid-column:1 / -1; margin:1.8rem 0 0; padd
 body .app-bar { padding-top:1.8rem; padding-bottom:1.8rem; border-bottom:2px dotted #cf9997; }
 body .app-bar__head { position:relative; padding-bottom:1.4rem; }
 body .app-bar h1 { overflow:visible; }
-body .app-bar__logo { display:inline-block; position:relative; padding:.7rem 1.1rem; background:#c92532; color:#fff8ee; font-size:2.3rem; line-height:1.2; text-shadow:.15rem .15rem #771823; box-shadow:.3rem .3rem 0 #35252b; letter-spacing:-.07em; }
-body .app-bar__logo::before { content:''; display:inline-block; width:.6rem; height:.6rem; margin-right:.8rem; vertical-align:middle; background:#ffd5b8; box-shadow:0 -.6rem #ffd5b8,.6rem 0 #ffd5b8,0 .6rem #ffd5b8,-.6rem 0 #ffd5b8; transform:scale(.6); }
-body .app-bar__logo:hover { background:#a7192c; color:#fff8ee; }
+body .app-bar__logo:not(.app-bar__logo--brand) { display:inline-block; position:relative; padding:.7rem 1.1rem; background:#c92532; color:#fff8ee; font-size:2.3rem; line-height:1.2; text-shadow:.15rem .15rem #771823; box-shadow:.3rem .3rem 0 #35252b; letter-spacing:-.07em; }
+body .app-bar__logo:not(.app-bar__logo--brand)::before { content:''; display:inline-block; width:.6rem; height:.6rem; margin-right:.8rem; vertical-align:middle; background:#ffd5b8; box-shadow:0 -.6rem #ffd5b8,.6rem 0 #ffd5b8,0 .6rem #ffd5b8,-.6rem 0 #ffd5b8; transform:scale(.6); }
+body .app-bar__logo:not(.app-bar__logo--brand):hover { background:#a7192c; color:#fff8ee; }
 body .app-bar__head::after { bottom:-.3rem; margin:0; font-size:.75rem; letter-spacing:.08em; color:var(--muted); }
 body .app-search { min-height:4.2rem; border:1.5px solid #bd777c; border-bottom:3px solid #b52e3d; padding:0 1.4rem; background:var(--bg); color:var(--fg); box-shadow:.3rem .3rem 0 #e8c9c1; font-family:"Galmuri11",sans-serif; font-size:1.1rem; }
 body .app-search:hover { border-color:#c92532; }
@@ -88,7 +88,7 @@ body .app-bar__actions .icon-btn:active { transform:translate(.2rem,.2rem); box-
 body .app-bar :is(button,a):focus-visible { outline:.2rem dashed #c92532; outline-offset:.5rem; }@media(max-width:699px) {
  body .app-bar { gap:.8rem; padding:1.2rem 1.6rem; }
  body .app-bar__head { padding-bottom:0; }
- body .app-bar__logo { font-size:1.8rem; padding:.6rem .8rem; }
+ body .app-bar__logo:not(.app-bar__logo--brand) { font-size:1.8rem; padding:.6rem .8rem; }
  body .app-bar__actions { gap:.6rem; }
  body .app-bar__actions .icon-btn { min-width:3.4rem; min-height:3.4rem; }}
 /* Utility popups share the red notebook chrome; Pokémon detail keeps its own layout. */
