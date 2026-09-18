@@ -21,6 +21,10 @@
 #                       행 키: sprite, name, en, types, fast, charged, dps, tdo, score
 #   data/pve_easy.json  같은 구조의 "일반" 티어표. 전설·환상·울트라비스트·메가·섀도우를
 #                       뺀 목록이며 행에 ratio(같은 속성 최강 대비 %)와 tier(S/A/B/C)가 더 붙는다
+#   data/pve_by_type.json  {'overall' | 어태커속성: [상위 TOP개 행]} — "전체" 탭.
+#                       **pve.json 과 키의 뜻이 다르다**: 저쪽은 그 타입 '보스를 잡는 카운터',
+#                       여기는 그 타입 '포켓몬'. 일반 티어표와 같은 묶음 기준에
+#                       전설·환상·UB·메가·섀도우를 남긴 것이다
 #   data/pve_full.json  {'meta': {개체키: 개체정보}, 'scores': {보스속성: {개체키: 점수}}}
 #                       — value_build.py 가 가성비·활용처 계산에 그대로 읽어 쓴다
 #   data/bosses.json    솔플 계산기의 보스 검색용 목록 (출시된 전 종의 이름·타입·종족값)
@@ -240,11 +244,19 @@ def rank_neutral(pool):
     out.sort(key=lambda row: -row['score'])
     return out
 pve_easy = {}
+pve_by_type = {}
 for key, type_filter in [('overall', None)] + [(type_name.lower(), type_name) for type_name in TYPES]:
     pool = candidates if type_filter is None else [candidate for candidate in candidates if type_filter in candidate['types']]
     rows_all = rank_neutral(pool)
     if not rows_all: continue
     top_all = rows_all[0]['score']  # 같은 속성 최강(전설·메가 포함) 대비 %
+    # ---------- PvE 전체: 같은 묶음 기준에 전설·환상·UB·메가·섀도우를 남긴 표 ----------
+    # **pve.json 과 뜻이 다르다.** 저쪽은 '그 타입 보스를 잡는 카운터'(불꽃 → 물·땅)이고,
+    # 여기는 '그 타입 포켓몬'(불꽃 → 불카모스·에이스번)이다. 화면의 타입 칩 한 줄이
+    # 탭에 따라 정반대를 뜻하던 것을 고치려고 갈랐다 (2026-09-18 제보).
+    # 카운터 표는 솔플 계산기·상세의 활용처가 계속 쓰므로 그대로 둔다.
+    # rows_all 의 dict 를 그대로 담으면 아래 `del row['key']` 가 이쪽까지 깎는다 — 복사해 담는다
+    pve_by_type[key] = [{name: value for name, value in row.items() if name != 'key'} for row in rows_all[:TOP]]
     rows = [row for row in rows_all if row['key'] in easy_keys][:TOP]
     for row in rows:
         # score 는 DPS^3 x TDO 이므로 4제곱근을 취해 체감에 가까운 선형 비율(%)로 환산한다
@@ -253,6 +265,13 @@ for key, type_filter in [('overall', None)] + [(type_name.lower(), type_name) fo
     rel_tier(rows)
     pve_easy[key] = rows
 json.dump(pve_easy, open('data/pve_easy.json','w'), ensure_ascii=False)
+# 이 표의 약속은 하나다 — **키가 곧 그 줄의 타입이다.** 어기면 화면이 [전기] 를 눌렀는데
+# 땅 타입을 "전기 타입 레이드 성능" 으로 내놓는다 (2026-09-18 에 그렇게 나가 있었다).
+for type_key, rows in pve_by_type.items():
+    if type_key == 'overall': continue
+    off = [row['name'] for row in rows if type_key not in row['types']]
+    assert not off, f"pve_by_type[{type_key}] 에 그 타입이 아닌 줄: {off[:5]}"
+json.dump(pve_by_type, open('data/pve_by_type.json','w'), ensure_ascii=False)
 # value_build.py 가 그대로 받아 쓰는 개체 메타. quick 은 다이맥스 맥스어택 타입 판정에 필요하다.
 meta = {candidate['key']: {'name': candidate['name'], 'en': candidate['en'], 'dex': candidate['dex'], 'sprite': candidate['sprite'], 'types': [type_name.lower() for type_name in candidate['types']],
                    'atk': candidate['atk'], 'def': candidate['def'], 'hp': candidate['hp'], 'quick': candidate['quick'], 'form': candidate['form'], 'pid': candidate['pid']} for candidate in candidates}

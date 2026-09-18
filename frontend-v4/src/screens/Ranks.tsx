@@ -191,7 +191,14 @@ export function Pve({ onOpen }: { onOpen: OpenMon }) {
   const set = useRankStore((s) => s.set);
   const { view, toggle } = useView('pve');
 
-  const table = mode === 'easy' ? pve.PVE_EASY : pve.PVE_DATA;
+  // **두 탭은 거르는 범위만 다르다 — 묶는 기준은 같다.**
+  //   일반  그 타입 포켓몬 중 전설·환상·UB·메가·섀도우를 뺀 것
+  //   전체  그 타입 포켓몬 전부
+  // 전체가 PVE_DATA(보스 타입 카운터)를 쓰고 있었다 — [전기] 를 눌렀는데 땅 타입인 그란돈·
+  // 한카리아스가 "전기 타입 레이드 성능" 이라는 이름으로 나왔다 (2026-09-18 제보).
+  // 카운터 표는 지운 게 아니라 제 자리에 남겼다: 솔플 계산기(보스를 고르면 카운터)와
+  // 상세의 활용처가 그것을 쓴다. 이 화면의 타입 칩은 "그 타입" 하나만 뜻한다
+  const table = mode === 'easy' ? pve.PVE_EASY : pve.PVE_BY_TYPE;
   const picked = mode === 'easy' ? easyBoss : boss;
   const rows = table[picked] ?? table['overall'] ?? [];
   const typeName = picked === 'overall' ? '전체' : (dex.TYPE_KO[picked] ?? picked);
@@ -199,6 +206,10 @@ export function Pve({ onOpen }: { onOpen: OpenMon }) {
   const title = mode === 'easy'
     ? (picked === 'overall' ? '레이드 일반 티어표 (전체)' : `${typeName} 타입 일반 티어표`)
     : (picked === 'overall' ? '레이드 어태커 전체 (자체 계산)' : `${typeName} 타입 레이드 성능`);
+  // 같은 표를 두 번 거른 것이라, 무엇을 더 보고 있는지 한 줄로 밝힌다
+  const meta = mode === 'easy'
+    ? `${rows.length}종 · 전설·환상·메가·섀도우 제외`
+    : `${rows.length}종 · 전설·메가·섀도우 포함 · 자체 계산`;
 
   return (
     <>
@@ -223,10 +234,7 @@ export function Pve({ onOpen }: { onOpen: OpenMon }) {
         <ViewToggle view={view} onToggle={toggle} />
       </Slot>
 
-      <RowHead
-        title={title}
-        meta={mode === 'easy' ? `${rows.length}종 · 전설·환상·메가·섀도우 제외` : `자체 계산 · 상위 ${rows.length}`}
-      />
+      <RowHead title={title} meta={meta} />
       {/* **모드마다 점수 칸의 뜻이 다르다** (v3 tier.js vs pve.js) —
           일반: `66점` = 같은 속성 최강 어태커 대비 % + 티어 묶음
           전체: `14.3` = DPS 그대로, 티어 없이 한 줄로
