@@ -50,7 +50,9 @@ fi
 # 2) 채널 표식
 has_noindex=$(grep -c 'name="robots" content="noindex' <<<"$html" || true)
 # 2026-09-07 v2.18.0 GA 는 동의 뒤에만 붙는다 — 번들(consent.js)에 gtag 주소 문자열이 항상 있으므로, 채널 표식은 build.py 가 넣는 측정 ID 자리(window.GA_PENDING_ID = 'G-…')로 본다
-has_ga=$(grep -c "window.GA_PENDING_ID = 'G-" <<<"$html" || true)
+# 2026-09-18 v4.0.0 스니펫은 `var id = 'G-…'; window.GA_PENDING_ID = id;` 라 리터럴이 붙는 자리는 `var id` 쪽이다.
+# 전에는 `GA_PENDING_ID = 'G-` 를 찾았는데 그 문자열은 v3 때부터 한 번도 있었던 적이 없다 — 늘 실패하던 검사였다
+has_ga=$(grep -c "var id = 'G-" <<<"$html" || true)
 if [[ $CHANNEL == dev ]]; then
   [[ $has_noindex -ge 1 ]] && ok "noindex 메타 있음" || bad "dev 인데 noindex 메타 없음"
   [[ $has_ga -eq 0 ]] && ok "GA 스니펫 없음" || bad "dev 인데 GA 스니펫이 들어 있음"

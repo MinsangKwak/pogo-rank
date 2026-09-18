@@ -59,11 +59,12 @@ export function Dmax({ onOpen }: { onOpen: OpenMon }) {
   const checked = useRankStore((s) => s.maxShowUnrel);
   const set = useRankStore((s) => s.set);
   const { view, toggle } = useView('max');
-  // **[미구현] 은 관리자만 본다** (v3 maxUnrelAllowed). 켜 둔 값이 저장소에 남아 있어도
-  // 관리자가 아니면 안 보여 준다 — 체크만 감추면 옛 값이 그대로 살아 미구현 줄이 새어 나간다.
+  // **[미구현] 은 실험 기능이다** (v3 maxUnrelAllowed). 켜 둔 값이 저장소에 남아 있어도
+  // 깃발이 없으면 안 보여 준다 — 체크만 감추면 옛 값이 그대로 살아 미구현 줄이 새어 나간다.
+  // 운영을 돕는 admin 이 아니라 먼저 써 보는 beta 를 본다 (stores/auth.ts 머리말).
   // 게임에 없는 개체가 일반 화면에 뜨는 것은 v3.61.2 에 긴급으로 막았던 바로 그 자리다
-  const admin = useAuthStore((s) => s.admin);
-  const unrel = checked && admin;
+  const beta = useAuthStore((s) => s.beta);
+  const unrel = checked && beta;
 
   const table = axis === 'tank' ? max.DMAX_TANK : axis === 'dealer' ? max.DMAX_DATA : max.DMAX_TIER;
   const all = table[boss] ?? [];
@@ -117,7 +118,7 @@ export function Dmax({ onOpen }: { onOpen: OpenMon }) {
       </Slot>
       <Slot name="headActions">
         {/* 표에 미구현이 한 줄도 없는 칩에서는 아예 안 그린다 (v3 maxHasUnreleased) */}
-        {admin && hasUnrel ? (
+        {beta && hasUnrel ? (
           <CheckToggle
             text="미구현"
             title="게임 파일에 데이터는 있지만 아직 못 쓰는 개체를 함께 봐요 — 왼쪽에 빨간 막대가 서고, 순위는 그것들이 나왔다고 가정한 가상 판이 돼요"

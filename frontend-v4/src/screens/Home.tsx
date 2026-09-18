@@ -7,7 +7,7 @@
 // ─────────────────────────────────────────────────────────────────────────────
 import type { ReactNode } from 'react';
 import { ROUTE_GROUPS, ROUTE_NAV, routeDesc, routeHash, type RouteDef } from '../routes';
-import { useLocked, lockedAttrs } from '../lib/useLocked';
+import { useLockReason, lockedAttrs } from '../lib/useLocked';
 import { useMax, useUpdates, useMeta, usePve, useDex } from '../lib/data';
 import { Sprite } from '../components/Bits';
 import { PxIcon } from '../components/PxIcon';
@@ -23,11 +23,11 @@ const STARTER: Record<string, number> = { today: 7, pick: 4, mine: 1 };
 // 주소는 라우터 표의 path 에서 온다 — 손으로 조립하면 v3.61.0 의 죽은 링크가 되풀이된다
 function Tile({ route }: { route: RouteDef }) {
   // 메뉴 줄과 같은 표시 — 흐려지고 이름 뒤에 🔒 (planner.css .home__tile.is-locked)
-  const locked = useLocked(route.id);
-  const lock = lockedAttrs(locked);
+  const reason = useLockReason(route.id);
+  const lock = lockedAttrs(reason);
   return (
     <a className={`home__tile${lock.className}`} href={`#/${route.path}`} data-route={route.id}
-      title={locked ? lock.title : routeDesc(route.id)}
+      title={reason ? lock.title : routeDesc(route.id)}
       {...(lock['aria-disabled'] ? { 'aria-disabled': lock['aria-disabled'] } : {})}
       {...(route.id === 'planner' ? { id: 'home-tile-planner' } : {})}>
       <span className="home__icon" aria-hidden="true">{route.icon}</span>
