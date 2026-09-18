@@ -12,6 +12,12 @@
 //
 // 가입 요청(requests)은 규칙상 루트만 읽는다. 위임 관리자가 부르면 조회가 실패하므로
 // 아예 부르지 않고 '승인 대기' 칸도 그리지 않는다.
+//
+// **깃발 둘은 서로 다른 것을 연다. 겹치지 않는다.**
+//   admin  유저 관리 — 승인된 사람 목록 · 트레이너 코드 관리
+//   beta   실험 기능 — 내 포켓몬 · D-MAX [미구현]
+// 운영을 돕는 사람과 먼저 써 보는 사람은 다르다. 실험 기능을 열어 주려고 관리자를
+// 시키게 되면, 써 보라고 준 권한으로 유저 목록까지 열린다.
 // ─────────────────────────────────────────────────────────────────────────────
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { authEmail, useAuthStore } from '../stores/auth';
@@ -140,14 +146,15 @@ export default function AdminPanel({ onClose }: { onClose: () => void }) {
             <button className={`uchip admin__act${isAdmin ? ' is-danger' : ''}`}
               onClick={() => setFlag(one.id, 'admin', !isAdmin, isAdmin
                 ? `${one.id} 님의 관리자 권한을 해제할까요? 승인된 친구로는 남아요.`
-                : `${one.id} 님을 관리자로 지정할까요? 유저 목록·트레이너 코드 관리·D-MAX 미구현 목록을 쓸 수 있게 돼요 (가입 승인은 루트만).`)}>
+                : `${one.id} 님을 관리자로 지정할까요? 유저 관리(승인된 사람 목록·트레이너 코드)를 쓸 수 있게 돼요 (가입 승인은 루트만).`)}>
               {isAdmin ? '관리자 해제' : '관리자 지정'}
             </button>
             {/* 실험 기능은 관리자 권한과 뜻이 다르다 — 운영을 돕는 자리가 아니라 먼저 써 보는 자리다 */}
+            {/* 여는 것을 하나하나 세지 않는다 — 실험 기능은 늘어나고 줄고, 문구는 그때마다 낡는다 */}
             <button className={`uchip admin__act${onBeta ? ' is-on' : ''}`} aria-pressed={onBeta}
               onClick={() => setFlag(one.id, 'beta', !onBeta, onBeta
                 ? `${one.id} 님의 실험 기능을 닫을까요?`
-                : `${one.id} 님에게 실험 기능을 열까요? 아직 다듬는 중인 기능을 먼저 써 보게 돼요.`)}>
+                : `${one.id} 님에게 실험 기능을 열까요? 실험 기능을 써볼 수 있어요.`)}>
               {onBeta ? '🧪 실험 해제' : '🧪 실험 기능'}
             </button>
             <button className="uchip admin__act is-danger" onClick={() => revoke(one.id)}>승인 해제</button>
@@ -184,7 +191,7 @@ export default function AdminPanel({ onClose }: { onClose: () => void }) {
             <Section title={`승인된 친구 ${friends.length}명`} empty="아직 승인된 친구가 없어요."
               rows={friends.map((one) => approvedRow(one, false))} />
             {adminRoot ? null : (
-              <p className="detail__foot">가입 승인·해제와 관리자 지정은 루트 관리자만 할 수 있어요. 여기서는 누가 쓰고 있는지 볼 수 있고, 트레이너 코드 관리와 D-MAX [미구현] 보기는 그대로 쓸 수 있어요.</p>
+              <p className="detail__foot">가입 승인·해제와 관리자 지정은 루트 관리자만 할 수 있어요. 여기서는 누가 쓰고 있는지 볼 수 있고, 트레이너 코드 관리를 쓸 수 있어요. 실험 기능은 따로 열어 드려요.</p>
             )}
             {message ? <p className="account__msg">{message}</p> : null}
             <p className="detail__foot">{`내 uid: ${user.uid} `}<UidCopy uid={user.uid} /></p>

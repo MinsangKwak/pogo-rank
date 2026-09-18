@@ -17,15 +17,15 @@ import { useGameday, useMeta } from '../lib/data';
 import { track } from '../lib/track';
 import { PxIcon } from './PxIcon';
 import { routeNote } from '../lib/notes';
-import { useLocked, lockedAttrs } from '../lib/useLocked';
+import { useLockReason, lockedAttrs } from '../lib/useLocked';
 import Account from './Account';
 import Trainers from './Trainers';
 
 function NavItem({ route, now }: { route: RouteDef; now: string }) {
   // 잠긴 줄은 흐려지고 라벨 뒤에 🔒 가 붙는다 (planner.css .is-locked).
   // 누르는 것 자체는 막지 않는다 — 누르면 왜 잠겼는지와 로그인 버튼이 있는 화면으로 간다
-  const locked = useLocked(route.id);
-  const lock = lockedAttrs(locked);
+  const reason = useLockReason(route.id);
+  const lock = lockedAttrs(reason);
   return (
     <a
       href={`#/${route.path}`}
@@ -34,7 +34,7 @@ function NavItem({ route, now }: { route: RouteDef; now: string }) {
       {...(route.id === 'planner' ? { id: 'menu-planner' } : {})}
       {...(route.id === now ? { 'aria-current': 'page' as const } : {})}
       {...(lock['aria-disabled'] ? { 'aria-disabled': lock['aria-disabled'] } : {})}
-      title={locked ? lock.title : routeDesc(route.id)}
+      title={reason ? lock.title : routeDesc(route.id)}
     >
       <span className="drawer__ico" aria-hidden="true"><PxIcon emoji={route.icon ?? ''} /></span>
       <span className="drawer__label">{route.nav}</span>

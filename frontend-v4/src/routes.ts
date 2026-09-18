@@ -23,7 +23,8 @@ export interface RouteDef {
   group?: GroupId;
   parent?: string;
   title?: string;
-  locked?: boolean;
+  locked?: boolean;        // 로그인·승인이 있어야 열린다
+  beta?: boolean;          // 실험 기능 — 승인 위에 beta 깃발이 하나 더 있어야 열린다
   legacy?: string[];
 }
 
@@ -31,7 +32,7 @@ export const ROUTES = [
   { id: 'home', path: '', kind: 'shell', tab: 'home', title: '서비스 홈' },
 
   // ── 이동 목록(메뉴)에 오르는 순서 그대로 ────────────────────────────────
-  { id: 'planner', path: 'planner', kind: 'plan', tab: 'home', nav: '내 포켓몬', icon: '🎒', group: 'mine', title: '내 포켓몬', locked: true, legacy: ['plan', 'planner/collection', 'plan/collection', 'favs'] },
+  { id: 'planner', path: 'planner', kind: 'plan', tab: 'home', nav: '내 포켓몬', icon: '🎒', group: 'mine', title: '내 포켓몬', locked: true, beta: true, legacy: ['plan', 'planner/collection', 'plan/collection', 'favs'] },
   { id: 'dex', path: 'dex', kind: 'page', nav: '포켓몬 도감', icon: '📕', group: 'pick', legacy: ['types'] },
   { id: 'dmax', path: 'dmax', kind: 'shell', tab: 'max', nav: 'D-MAX', icon: '✨', group: 'pick', legacy: ['rank/max'] },
   { id: 'pve', path: 'pve', kind: 'shell', tab: 'pve', nav: '레이드 · PvE', icon: '⚔️', group: 'pick', legacy: ['rank/pve'] },

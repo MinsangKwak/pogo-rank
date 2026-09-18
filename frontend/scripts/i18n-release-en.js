@@ -15,6 +15,10 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 const RELEASE_NOTES_EN = {
+  '2026-09-18 · v4.0.1': [
+    '**Experimental features are now granted separately** — \uD83C\uDF92 My Pok\u00e9mon and the [Unreleased] view on D-MAX are still being worked on. An admin can turn them on for you.',
+    '**Admin rights now cover user management only** — helping run the service and trying things early are two different roles. Becoming an admin no longer opens experimental features.',
+  ],
   '2026-09-18 · v4.0.0': [
     '**moncamp has evolved — rebuilt on React** — smoother navigation and a faster first load. Screens, URLs and everything you saved stay the same.',
     '**If you installed moncamp to your home screen, please remove and reinstall it** — an older copy of the app may still be cached.',

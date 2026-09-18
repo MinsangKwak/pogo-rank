@@ -1,9 +1,14 @@
 // ─────────────────────────────────────────────────────────────────────────────
-// lib/useLocked.ts — 로그인해야 열리는 화면인가 (v3 router.js routeLocked)
+// lib/useLocked.ts — 잠긴 화면인가, 그리고 **왜** 잠겼는가 (v3 router.js routeLocked)
 //
 // **판정을 한 곳에 둔다.** 이 답을 쓰는 자리가 셋이다 —
 //   화면 본문(App 의 Screen) · ☰ 메뉴와 PC 사이드바 줄 · 서비스 홈 타일.
 // v3 도 routeLocked 하나를 셋이 나눠 썼다. 나뉘어 있으면 한쪽만 고쳐지는 날이 온다.
+//
+// **잠긴 까닭이 둘이라 답도 둘이다.**
+//   login  로그인·승인이 없다 — 로그인 버튼을 내밀면 풀린다
+//   beta   실험 기능이다 — 로그인해도 관리자가 깃발을 달아 줘야 열린다
+// 둘을 한 글자로 묶으면 승인된 사람에게 "로그인하면 열려요" 를 내밀게 된다. 이미 했는데.
 //
 // 규칙
 //   - **판정 중에는 잠그지 않는다** — 이 기기에 로그인 자취가 있을 때만 'loading' 이라 곧 열릴 화면이고,
@@ -16,19 +21,30 @@
 import { routeById } from '../routes';
 import { useAuthStore } from '../stores/auth';
 
-export function useLocked(routeId: string): boolean {
+export type LockReason = '' | 'login' | 'beta';
+
+const LOCK_TITLE: Record<Exclude<LockReason, ''>, string> = {
+  login: '로그인하면 열려요',
+  beta: '실험 기능이에요',
+};
+
+export function useLockReason(routeId: string): LockReason {
   const enabled = useAuthStore((s) => s.enabled);
   const status = useAuthStore((s) => s.status);
-  if (!routeById(routeId)?.locked || !enabled) return false;
-  if (status === 'loading') return false;
-  return status !== 'ok';
+  const beta = useAuthStore((s) => s.beta);
+  const route = routeById(routeId);
+  if (!route || !enabled) return '';
+  if (status === 'loading') return '';
+  if (route.locked && status !== 'ok') return 'login';
+  if (route.beta && !beta) return 'beta';
+  return '';
 }
 
 /** 잠긴 줄에 붙는 것들 — 클래스·aria·설명글을 한 벌로 (v3 syncLockedNav 와 같은 값) */
-export function lockedAttrs(locked: boolean) {
+export function lockedAttrs(reason: LockReason) {
   return {
-    className: locked ? ' is-locked' : '',
-    'aria-disabled': locked ? ('true' as const) : undefined,
-    title: locked ? '로그인하면 열려요' : '',
+    className: reason ? ' is-locked' : '',
+    'aria-disabled': reason ? ('true' as const) : undefined,
+    title: reason ? LOCK_TITLE[reason] : '',
   };
 }
