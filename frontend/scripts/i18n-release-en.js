@@ -15,6 +15,10 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 const RELEASE_NOTES_EN = {
+  '2026-09-19 · v4.3.6': [
+    '**The Pokemon detail popup no longer covers the whole screen** — it caps at 85% height so you can still see what is behind it',
+    '**The close button was redrawn** — it used to be a small white square with a tiny x; now it is a deep red key that sits inside the header band, with a much larger glyph',
+  ],
   '2026-09-19 · v4.3.5': [
     '**Small text got bigger** — 11px is gone from the screen; 12px is the new floor, the minimum that both the Naver and Google guidelines set for reading',
     '**Tabs are easier to hit** — the [All / Dealer / Tank] tabs were 26px tall; they are 44px now',

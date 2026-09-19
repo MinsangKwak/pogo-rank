@@ -13,14 +13,36 @@
   max-width: var(--detail-width);
   padding-top: 0;
 }
+/* 닫기 — **머리 띠 안에 들어앉는다.** 흰 상자를 얹으면 박에 구멍이 뚫린 것처럼 보이고,
+   44px 칸에 14px 짜리 ✕ 하나면 글자가 길을 잃는다(실측 14px).
+   채움은 진한 빨강, 글자는 --bg — 테마가 뒤집혀도 같이 뒤집힌다 (CLAUDE.md §1-b).
+   밝은 테두리 한 겹은 띠와 단추를 가르는 선이다. 누르면 그림자만큼 내려앉는다 */
 .modal__wrap:has(.detail--mon) .modal__close {
   top: var(--space-sm); right: var(--space-sm); z-index: 5;
+  display: flex; align-items: center; justify-content: center;
   width: var(--tap); height: var(--tap);
-  background: var(--surface); border: var(--card-border);
+  background: var(--brand-2); border: 2px solid var(--bg); color: var(--bg);
+  font-size: var(--fs-sec); line-height: 1;
+  box-shadow: var(--shadow-hard) rgb(0 0 0 / 30%);
+}
+.modal__wrap:has(.detail--mon) .modal__close:hover {
+  background: var(--bg); border-color: var(--brand-2); color: var(--brand-2);
+}
+.modal__wrap:has(.detail--mon) .modal__close:active {
+  transform: translate(var(--px), var(--px)); box-shadow: none;
+}
+/* **팝업이 열리면 이 단추로 포커스가 간다**(키보드로 닫을 수 있어야 해서다). 그래서 기본 포커스 링
+   `outline: 2px solid var(--fg)` 이 늘 그려져, 빨간 띠 위에 검은 네모가 하나 얹힌 것처럼 보였다(제보 사진).
+   링을 없애면 키보드로 도는 사람이 길을 잃는다 — **없애지 말고 디자인에 맞춘다.**
+   단추 테두리와 같은 색이라 두 겹 테두리로 읽힌다 */
+.modal__wrap:has(.detail--mon) .modal__close:focus-visible {
+  outline: 2px solid var(--bg); outline-offset: 2px;
 }
 .modal__box:has(> .detail--mon) {
   width: 100%; max-width: none; padding: 0;
-  height: min(var(--detail-height), calc(100dvh - 6.4rem)); max-height: none;
+  /* 2026-09-19 v4.3.6 화면의 85% 까지만. 꽉 채우면 뒤가 안 보여 팝업이 아니라 페이지로 읽힌다 —
+     테두리 밖으로 원래 화면이 조금 남아야 "덮여 있다" 가 전해진다 (제보) */
+  height: min(var(--detail-height), 85dvh); max-height: 85dvh;
   /* 2026-09-19 v4.3.0 팝업이 곧 카드 앞면이다 — 박테 두 겹(테두리 + 바깥 링)에 둥근 모서리 */
   border: var(--card-border); border-radius: var(--r-card); box-shadow: var(--card-shadow-up);
 }
@@ -121,7 +143,7 @@
 @media (max-width: 767px) {
   .modal:has(.detail--mon) { padding: 0; }
   .modal__wrap:has(.detail--mon) { width: 100%; margin: 0; }
-  .modal__box:has(> .detail--mon) { height: 94dvh; max-height: 94dvh; border-width: 2px 0 0; }
+  .modal__box:has(> .detail--mon) { height: 85dvh; max-height: 85dvh; border-width: 2px 0 0; }
   /* 좁은 화면에서는 같은 여백이 너무 넓다 — 팝업 안에서만 한 칸 줄인다 */
   .detail--mon { --space-lg: 1.6rem; }
   .detail--mon .detail__body { flex-direction: column; }
