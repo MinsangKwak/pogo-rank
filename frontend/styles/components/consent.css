@@ -5,7 +5,7 @@
 
 /* 동의 팝업 · 설정 팝업 */
 .consent__modal .plan__desc { margin-bottom: 1.2rem; }
-.consent__check { display: flex; align-items: flex-start; gap: 1rem; margin: 1rem 0; font-size: 1.35rem; line-height: 1.55; word-break: keep-all; }
+.consent__check { display: flex; align-items: flex-start; gap: 1.2rem; margin: 1.2rem 0; font-size: var(--fs-body); line-height: 1.5; word-break: keep-all; }
 .consent__check input { flex: none; width: 2rem; height: 2rem; margin-top: 1px; accent-color: var(--fg); }
 .consent__check a { color: var(--fg); text-decoration: underline; }
 /* 2026-09-10 v2.52.0 [동의하고 로그인] — 체크 두 줄 바로 밑에 왼쪽으로 붙어 있어, 마지막 체크의
@@ -18,19 +18,19 @@
 .consent__opt { justify-content: flex-start; }
 .consent__opt.is-on { border-color: var(--fg); }
 .consent__opt span { display: flex; flex-direction: column; gap: 0.2rem; }
-.consent__opt small { font-size: 1.15rem; font-weight: 400; color: var(--muted); }
-.consent__modal .page__sec { margin-top: 1.8rem; }
+.consent__opt small { font-size: var(--fs-sub); font-weight: 400; color: var(--muted); }
+.consent__modal .page__sec { margin-top: 2rem; }
 .consent__modal .priv__list { margin-bottom: 1.2rem; }
 
 /* 개인정보처리방침 표 — 좁은 폭은 가로 스크롤 */
 .priv__table-wrap { overflow-x: auto; overflow-y: hidden; margin: 0.8rem 0; }   /* overflow-y 를 함께 (v2.26.0) */
-.priv__table { width: 100%; min-width: 46rem; border-collapse: collapse; font-size: 1.25rem; line-height: 1.5; }
-.priv__table th, .priv__table td { padding: 0.6rem 0.8rem; border: 1px solid var(--line); text-align: left; vertical-align: top; word-break: keep-all; }
+.priv__table { width: 100%; min-width: 46rem; border-collapse: collapse; font-size: var(--fs-body); line-height: 1.5; }
+.priv__table th, .priv__table td { padding: 0.4rem 0.8rem; border: 1px solid var(--line); text-align: left; vertical-align: top; word-break: keep-all; }
 .priv__table th { background: var(--surface); font-weight: 600; }
 
 /* IP 고지문: 푸터와 전체 페이지 하단 공통 */
-.ip-notice { font-size: 1.15rem; line-height: 1.6; color: var(--muted); word-break: keep-all; }
-#page .ip-notice { margin: 3.2rem 0 0; padding-top: 1.4rem; border-top: 1px solid var(--line); }
+.ip-notice { font-size: var(--fs-sub); line-height: 1.7; color: var(--muted); word-break: keep-all; }
+#page .ip-notice { margin: 3.2rem 0 0; padding-top: 1.2rem; border-top: 1px solid var(--line); }
 footer .foot-links a, footer .foot-links button { color: var(--muted); text-decoration: underline; background: none; border: 0; padding: 0; font: inherit; cursor: pointer; }
 
 /* 계정 삭제 버튼: 위험 동작이라 색으로 구분 */
@@ -39,19 +39,19 @@ footer .foot-links a, footer .foot-links button { color: var(--muted); text-deco
 
 /* 2026-09-10 v2.51.0 로그인 유도 팝업 (components/auth.js openLoginInvite).
    화면 하나에 할 일 하나 — 왜 막혔고 무엇을 누르면 되는지만 담는다 */
-.login-invite__head { display: flex; align-items: center; gap: 1rem; }
-.login-invite__ico { font-size: 2.6rem; line-height: 1; }
+.login-invite__head { display: flex; align-items: center; gap: 1.2rem; }
+.login-invite__ico { font-size: var(--fs-title); line-height: 1; }
 .login-invite .detail__name, .signup-invite .detail__name { margin: 0; }
 /* 승인제라는 걸 누르기 전에 보여 준다 — 로그인하고 나서 "왜 아직도 안 되지" 를 겪지 않게 */
-.login-invite__steps { display: flex; flex-direction: column; gap: 1rem; margin: 1.4rem 0; padding: 0; list-style: none; }
-.login-invite__steps li { display: flex; align-items: flex-start; gap: 1rem; }
+.login-invite__steps { display: flex; flex-direction: column; gap: 1.2rem; margin: 1.2rem 0; padding: 0; list-style: none; }
+.login-invite__steps li { display: flex; align-items: flex-start; gap: 1.2rem; }
 .login-invite__no {
   flex: none; display: flex; align-items: center; justify-content: center; width: 2.2rem; height: 2.2rem;
   border-radius: 50%; border: 1px solid color-mix(in srgb, var(--brand) 50%, var(--line));
-  color: var(--brand); font-size: 1.1rem; font-weight: 700;
+  color: var(--brand); font-size: var(--fs-sub); font-weight: 700;
 }
-.login-invite__steps b { display: block; font-size: 1.35rem; font-weight: 600; }
-.login-invite__steps span:not(.login-invite__no) { display: block; margin-top: 0.2rem; font-size: 1.2rem; line-height: 1.55; color: var(--muted); word-break: keep-all; }
+.login-invite__steps b { display: block; font-size: var(--fs-body); font-weight: 600; }
+.login-invite__steps span:not(.login-invite__no) { display: block; margin-top: 0.2rem; font-size: var(--fs-sub); line-height: 1.5; color: var(--muted); word-break: keep-all; }
 /* 2026-09-11 v2.56.0 두 버튼을 가운데로. 버튼은 내용 폭에 맞춰 줄어드는데(button 의 width:auto)
    그대로 두면 왼쪽 모서리에 붙어, 위의 세 단계 설명과 같은 왼쪽 줄에 선다 —
    설명의 네 번째 줄처럼 읽혔다. 이 둘은 읽는 것이 아니라 **고르는 것**이라 줄에서 떨어져야 한다.

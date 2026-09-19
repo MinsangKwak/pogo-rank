@@ -14,8 +14,8 @@ dialog.modal::backdrop { background: transparent; }
 .modal__wrap { position: relative; width: 100%; max-width: 44rem; }
 .modal__box { position: relative; background: var(--bg); border: 1px solid var(--line); border-radius: 1.6rem; width: 100%; max-height: 85vh; overflow-y: auto; padding: 2rem; }
 .modal__close { position: absolute; top: -3.6rem; right: -0.4rem; width: 3.2rem; height: 3.2rem; border-radius: 99.9rem;
-  color: var(--muted); font-size: 1.5rem; background: var(--surface); border: 1px solid var(--line);
-  box-shadow: 0 0.2rem 0.6rem rgba(0,0,0,.25); }
+  color: var(--muted); font-size: var(--fs-body); background: var(--surface); border: 1px solid var(--line);
+  box-shadow: 0.2rem 0.2rem 0 rgba(0,0,0,.25); }
 .modal__close:hover { background: var(--surface); color: var(--fg); }
 @media (max-width: 640px) {
   .modal { padding: 0; align-items: flex-end; }
@@ -39,27 +39,30 @@ dialog.modal::backdrop { background: transparent; }
 }
 /* 2026-09-13 v3.19.1 그림을 조금 줄이고 아래로 내린다 — 움직이는 그림(v3.18.0 기본)은 정지본보다 위까지 차서
    왼쪽 위 타입 배지가 머리를 가렸다. 위쪽에 배지 자리를 비워 둔다 */
-.sprite-box .sprite { width: 7.2rem; height: 7.2rem; margin-top: 0.9rem; }
+.sprite-box .sprite { width: 7.2rem; height: 7.2rem; margin-top: 0.8rem; }
 /* 2026-09-06 v2.11.0 폼별 그림 테두리 — 메가·맥스는 뱃지와 같은 색, 은은한 바깥 광택 */
 .sprite-box.sprite-box--max { border: 0.2rem solid var(--c-max); box-shadow: 0 0 0 0.3rem color-mix(in srgb, var(--c-max) 22%, transparent); }
 .sprite-box.sprite-box--mega { border: 0.2rem solid var(--c-mega); box-shadow: 0 0 0 0.3rem color-mix(in srgb, var(--c-mega) 22%, transparent); }
 .sprite-box.sprite-box--shadow { border: 0.2rem solid var(--c-shadow); box-shadow: 0 0 0 0.3rem color-mix(in srgb, var(--c-shadow) 18%, transparent); }
 .detail__type-pill { white-space: nowrap; }
-.detail__type-pill { display: inline-flex; align-items: center; padding: 0.2rem 0.9rem; border-radius: 99.9rem; font-size: 1.05rem; font-weight: 700; color: #fff;
-  text-shadow: 0 1px 0.2rem rgba(0,0,0,.35); background: var(--c, var(--muted)); box-shadow: 0 1px 0.4rem rgba(0,0,0,.35); }
+.detail__type-pill { display: inline-flex; align-items: center; padding: 0.2rem 0.8rem; border-radius: 99.9rem; font-size: var(--fs-sub); font-weight: 700; color: #fff;
+  /* 타입색 열여덟은 게임 원작 값이라 못 바꾼다 — 밝은 타입(비행·얼음·페어리) 위의 흰 글자는
+     색만으로는 2.6 까지 떨어진다. 글자에 그늘을 깔아 어느 타입 위에서도 윤곽이 남게 한다 */
+  text-shadow: 1px 1px 0 rgb(0 0 0 / 65%);
+  text-shadow: 1px 1px 0 rgba(0,0,0,.35); background: var(--c, var(--muted)); box-shadow: 1px 1px 0 rgba(0,0,0,.35); }
 
-.detail__sec { margin-top: 1.8rem; }
-.detail__sec h3 { margin: 0 0 0.8rem; font-size: 1.2rem; font-weight: 600; color: var(--muted); letter-spacing: .02em; }
-.detail__none-text { margin: 0; font-size: 1.25rem; color: var(--muted); }
-.detail__foot { margin: 0.6rem 0 0; font-size: 1.15rem; color: var(--muted); }
+.detail__sec { margin-top: 2rem; }
+.detail__sec h3 { margin: 0 0 0.8rem; font-size: var(--fs-sub); font-weight: 600; color: var(--muted); letter-spacing: .02em; }
+.detail__none-text { margin: 0; font-size: var(--fs-body); color: var(--muted); }
+.detail__foot { margin: 0.4rem 0 0; font-size: var(--fs-sub); color: var(--muted); }
 
 /* 진화 단계 */
-.evo { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; }
+.evo { display: flex; align-items: center; gap: 1.2rem; flex-wrap: wrap; }
 .evo__arrow { color: var(--muted); }
-.evo__stage { display: flex; flex-wrap: wrap; gap: 0.6rem; }
+.evo__stage { display: flex; flex-wrap: wrap; gap: 0.4rem; }
 /* 2026-09-08 v2.31.0 진화 전 단계는 테두리가 아예 없어(border: transparent) 그림이 붕 떠 보였다.
    모든 단계에 같은 상자를 주고, "지금 보는 이 포켓몬"(is-now)만 테두리 색·굵기로 구분한다 */
-.evo__mon { display: flex; flex-direction: column; align-items: center; gap: 0.2rem; width: 6.4rem; padding: 0.6rem 0.2rem 0.4rem; border-radius: 1rem; border: 1px solid var(--line); background: var(--surface); font-size: 1.1rem; color: var(--muted); text-align: center; }
+.evo__mon { display: flex; flex-direction: column; align-items: center; gap: 0.2rem; width: 6.4rem; padding: 0.4rem 0.2rem 0.4rem; border-radius: 1rem; border: 1px solid var(--line); background: var(--surface); font-size: var(--fs-sub); color: var(--muted); text-align: center; }
 .evo__mon .sprite { width: 4rem; height: 4rem; }
 .evo__mon.is-now { border-color: var(--fg); color: var(--fg); font-weight: 600; }
 /* 2026-09-04 메가/원시 진화 칩 — 일반 진화형과 구분되게 살짝 강조 */
@@ -67,104 +70,104 @@ dialog.modal::backdrop { background: transparent; }
 .evo__mon.form-tag--mega.is-now { border-color: var(--c-mega); background: color-mix(in srgb, var(--c-mega) 12%, var(--surface)); color: var(--c-mega); }
 /* 2026-09-14 v3.31.0 아직 안 나온 메가 — 색을 빼고 '미구현' 딱지를 단다 */
 .evo__mon.is-unreleased { border-color: var(--line); color: var(--muted); opacity: 0.72; }
-.evo__mon.is-unreleased .tag { font-size: 0.95rem; padding: 0 0.4rem; }
+.evo__mon.is-unreleased .tag { font-size: var(--fs-sub); padding: 0 0.4rem; }
 
 /* 기술 · 상성 목록 */
-.move-list__row { display: flex; align-items: baseline; gap: 1rem; margin-bottom: 0.6rem; }
-.move-list__row em { flex: 0 0 4.4rem; font-style: normal; font-size: 1.15rem; color: var(--muted); }
+.move-list__row { display: flex; align-items: baseline; gap: 1.2rem; margin-bottom: 0.4rem; }
+.move-list__row em { flex: 0 0 4.4rem; font-style: normal; font-size: var(--fs-sub); color: var(--muted); }
 .move-list, .tchips { display: flex; flex-wrap: wrap; gap: 0.4rem; }
-.move-chip { border: 1px solid var(--line); border-radius: 0.6rem; padding: 0.2rem 0.8rem; font-size: 1.2rem; }
-.tchips__item { display: inline-flex; align-items: center; gap: 0.5rem; border: 1px solid var(--line); border-radius: 99.9rem; padding: 0.2rem 0.9rem; font-size: 1.2rem; }
+.move-chip { border: 1px solid var(--line); border-radius: 0.6rem; padding: 0.2rem 0.8rem; font-size: var(--fs-sub); }
+.tchips__item { display: inline-flex; align-items: center; gap: 0.4rem; border: 1px solid var(--line); border-radius: 99.9rem; padding: 0.2rem 0.8rem; font-size: var(--fs-sub); }
 .tchips__item .dot { width: 0.8rem; height: 0.8rem; border-radius: 50%; background: var(--c, var(--muted)); }
-.tchips__item small { font-size: 1.05rem; color: var(--muted); }
+.tchips__item small { font-size: var(--fs-sub); color: var(--muted); }
 
 /* 활용처 순위 칩 */
-.uchip { display: inline-flex; align-items: baseline; gap: 0.4rem; border: 1px solid var(--line); border-radius: 0.6rem; padding: 0.2rem 0.8rem; font-size: 1.2rem; color: var(--muted); }
+.uchip { display: inline-flex; align-items: baseline; gap: 0.4rem; border: 1px solid var(--line); border-radius: 0.6rem; padding: 0.2rem 0.8rem; font-size: var(--fs-sub); color: var(--muted); }
 .uchip b { font-weight: 600; color: var(--fg); }
 /* 2026-09-04 포획 CP 칩의 보조 숫자(개체값 하한 CP) */
-.uchip i { font-style: normal; font-size: 1.1rem; color: var(--muted); }
+.uchip i { font-style: normal; font-size: var(--fs-sub); color: var(--muted); }
 .uchip.is-top { border-color: color-mix(in srgb, var(--warn) 45%, var(--line)); color: var(--fg); }
 .uchip.is-top b { color: var(--warn); }
 
 /* 종족값 */
-.stat-bar { display: grid; grid-template-columns: 3.4rem 1fr 4rem; gap: 1rem; align-items: center; font-size: 1.2rem; margin-bottom: 0.5rem; }
-.stat-bar em { font-style: normal; color: var(--muted); font-size: 1.15rem; }
+.stat-bar { display: grid; grid-template-columns: 3.4rem 1fr 4rem; gap: 1.2rem; align-items: center; font-size: var(--fs-sub); margin-bottom: 0.4rem; }
+.stat-bar em { font-style: normal; color: var(--muted); font-size: var(--fs-sub); }
 .stat-bar .score-bar { height: 0.6rem; background: var(--surface); border-radius: 0.3rem; overflow: hidden; }
 .stat-bar .score-bar i { display: block; height: 100%; background: var(--fg); opacity: .55; border-radius: 0.3rem; }
 .stat-bar b { font-weight: 500; text-align: right; }
 
 /* 2026-09-02 업데이트 모달 날짜별 아코디언 */
 .detail__rel-acc { border: 1px solid var(--line); border-radius: 1rem; margin: 0.8rem 0; }
-.detail__rel-acc summary { padding: 1rem 1.4rem; cursor: pointer; font-weight: 600; font-size: 1.35rem; list-style: none; }
+.detail__rel-acc summary { padding: 1.2rem 1.2rem; cursor: pointer; font-weight: 600; font-size: var(--fs-body); list-style: none; }
 .detail__rel-acc summary::-webkit-details-marker { display: none; }
 .detail__rel-acc summary::after { content: '▾'; float: right; color: var(--muted); }
 .detail__rel-acc[open] summary::after { content: '▴'; }
-.detail__rel-acc ul { margin: 0 0 1rem; }
+.detail__rel-acc ul { margin: 0 0 1.2rem; }
 
 /* 2026-09-08 v2.32.0 헤더 한 줄 문장(.detail__cpline) 대신 카드 — CP 는 detail__cp-card 참고.
    만렙 큰 숫자 하나 + 레이드·부스트·야생·부스트 2×2 표. 문장보다 숫자 넷이 바로 눈에 들어온다
    2026-09-09 v2.34.0 표 네 칸이 자리를 많이 차지해 <details> 로 바꿔 접을 수 있게 했다.
    summary(큰 숫자)는 접혀도 항상 보이고, 2×2 표(detail__cp-grid)만 접힌다.
    다른 아코디언(.detail__acc)과 같은 꺾쇠 규칙을 쓰되, 카드 톤(무채색)은 그대로 둔다 */
-.detail__cp-card { margin-top: 1.4rem; padding: 1.6rem; border: 1px solid var(--line); border-radius: 1.4rem; background: var(--surface); }
-.detail__cp-card > summary { display: flex; align-items: center; justify-content: space-between; gap: 1rem; cursor: pointer; list-style: none; }
+.detail__cp-card { margin-top: 1.2rem; padding: 1.6rem; border: 1px solid var(--line); border-radius: 1.4rem; background: var(--surface); }
+.detail__cp-card > summary { display: flex; align-items: center; justify-content: space-between; gap: 1.2rem; cursor: pointer; list-style: none; }
 .detail__cp-card > summary::-webkit-details-marker { display: none; }
-.detail__cp-card > summary::after { content: '›'; flex: none; font-size: 2.2rem; line-height: 1; color: var(--muted); transition: transform .15s ease; }
+.detail__cp-card > summary::after { content: '›'; flex: none; font-size: var(--fs-sec); line-height: 1; color: var(--muted); transition: transform .15s ease; }
 .detail__cp-card[open] > summary::after { transform: rotate(90deg); }
-.detail__cp-big { display: flex; flex-direction: column; gap: 0.3rem; }
-.detail__cp-big b { font-size: 3rem; font-weight: 700; line-height: 1.1; }
-.detail__cp-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.8rem; margin-top: 1.4rem; }
+.detail__cp-big { display: flex; flex-direction: column; gap: 0.4rem; }
+.detail__cp-big b { font-size: var(--fs-title); font-weight: 700; line-height: 1.2; }
+.detail__cp-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.8rem; margin-top: 1.2rem; }
 /* 안쪽 칸은 카드보다 한 단 깊은 색(--bg) — party-card·boss__rec 과 같은 "카드 위 카드" 규칙 */
-.detail__cp-tile { padding: 1rem 1.2rem; border-radius: 1rem; background: var(--bg); }
-.detail__cp-tile b { display: block; margin-top: 0.2rem; font-size: 1.6rem; font-weight: 700; }
+.detail__cp-tile { padding: 1.2rem 1.2rem; border-radius: 1rem; background: var(--bg); }
+.detail__cp-tile b { display: block; margin-top: 0.2rem; font-size: var(--fs-body); font-weight: 700; }
 
 /* 2026-09-04 레이드 보상/야생 스폰 CP 구분 */
 .cp__ctx { margin-top: 0.8rem; }
-.cp__ctx em { display: block; font-style: normal; font-size: 1.15rem; color: var(--muted); margin-bottom: 0.4rem; }
+.cp__ctx em { display: block; font-style: normal; font-size: var(--fs-sub); color: var(--muted); margin-bottom: 0.4rem; }
 
 /* 2026-09-04 메가X vs 메가Y 좌우 비교 */
 .cmp { border: 1px solid var(--line); border-radius: 1rem; padding: 0.4rem 1.2rem; }
-.cmp__row { display: grid; grid-template-columns: 4.4rem 1fr 1fr; gap: 0.8rem; align-items: center; padding: 0.6rem 0; font-size: 1.25rem; border-top: 1px solid var(--line); }
+.cmp__row { display: grid; grid-template-columns: 4.4rem 1fr 1fr; gap: 0.8rem; align-items: center; padding: 0.4rem 0; font-size: var(--fs-body); border-top: 1px solid var(--line); }
 .cmp__row:first-child { border-top: none; }
-.cmp__row em { font-style: normal; color: var(--muted); font-size: 1.15rem; }
+.cmp__row em { font-style: normal; color: var(--muted); font-size: var(--fs-sub); }
 .cmp__row b { font-weight: 500; }
 .cmp__row b.is-high { color: var(--caution); font-weight: 700; }
-.cmp__head b { color: var(--muted); font-size: 1.15rem; font-weight: 600; }
+.cmp__head b { color: var(--muted); font-size: var(--fs-sub); font-weight: 600; }
 /* 2026-09-03 v4: 약점/내성 위아래 + CP 계산기 아코디언 */
 .detail__matchrows { display: flex; flex-direction: column; gap: 1.2rem; }
-.detail__matchrows h3 { margin: 0 0 0.6rem; font-size: 1.25rem; font-weight: 600; color: var(--muted); }
+.detail__matchrows h3 { margin: 0 0 0.4rem; font-size: var(--fs-body); font-weight: 600; color: var(--muted); }
 /* 2026-09-08 v2.32.0 아코디언을 "누르면 열리는 줄" 모양으로 — 아이콘 + 굵은 이름 + 오른쪽 꺾쇠.
    꺾쇠는 열리면 아래를 가리키게 90도 돈다(펼쳐진 내용이 그 아래 있다는 뜻) */
-.detail__acc { margin-top: 1.4rem; border: 1px solid var(--line); border-radius: 1.4rem; background: var(--surface); overflow: hidden; }
-.detail__acc summary { display: flex; align-items: center; padding: 1.3rem 1.4rem; cursor: pointer; font-size: 1.4rem; font-weight: 600; list-style: none; }
+.detail__acc { margin-top: 1.2rem; border: 1px solid var(--line); border-radius: 1.4rem; background: var(--surface); overflow: hidden; }
+.detail__acc summary { display: flex; align-items: center; padding: 1.2rem 1.2rem; cursor: pointer; font-size: var(--fs-body); font-weight: 600; list-style: none; }
 .detail__acc summary::-webkit-details-marker { display: none; }
-.detail__acc summary::after { content: '›'; margin-left: auto; padding-left: 1rem; font-size: 1.9rem; line-height: 1; color: var(--muted); transition: transform .15s ease; }
+.detail__acc summary::after { content: '›'; margin-left: auto; padding-left: 1.2rem; font-size: var(--fs-sec); line-height: 1; color: var(--muted); transition: transform .15s ease; }
 .detail__acc[open] summary::after { transform: rotate(90deg); }
-.detail__acc-body { padding: 0 1.4rem 1.4rem; }
+.detail__acc-body { padding: 0 1.2rem 1.2rem; }
 /* 2026-09-03 도감형: 육각형 | 기술 2열 */
 .hex { display: flex; flex-direction: column; align-items: center; }
 .hex__svg { width: 100%; max-width: 20rem; height: auto; }
-.hex__name { font-size: 1.3rem; fill: var(--muted); }
-.hex__val { font-size: 1.45rem; font-weight: 600; fill: var(--fg); }
+.hex__name { font-size: var(--fs-body); fill: var(--muted); }
+.hex__val { font-size: var(--fs-body); font-weight: 600; fill: var(--fg); }
 /* 2026-09-03 기술 간격: 라벨(스피드/차지) 바로 아래 칩, 그룹 사이 10px */
-.detail__moves .move-list__row { flex-direction: column; align-items: flex-start; gap: 0.4rem; margin: 0 0 1rem; }
+.detail__moves .move-list__row { flex-direction: column; align-items: flex-start; gap: 0.4rem; margin: 0 0 1.2rem; }
 .detail__moves .move-list__row:last-of-type { margin-bottom: 0; }
 /* 세로 배치에서는 em의 flex-basis 44px가 '높이'가 돼 간격이 벌어짐 → 해제 */
-.detail__moves .move-list__row em { flex: none; font-size: 1.2rem; color: var(--muted); font-style: normal; font-weight: 600; }
+.detail__moves .move-list__row em { flex: none; font-size: var(--fs-sub); color: var(--muted); font-style: normal; font-weight: 600; }
 
-.fav-pop__head { display: flex; flex-direction: column; gap: 0.3rem; margin-bottom: 1.2rem; }
+.fav-pop__head { display: flex; flex-direction: column; gap: 0.4rem; margin-bottom: 1.2rem; }
 .fav-pop__list { display: flex; flex-wrap: wrap; gap: 0.8rem; overflow: visible; }
-.fav-pop .boss__foot { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.8rem; margin-top: 1.4rem; padding-top: 1.2rem; border-top: 1px solid var(--line); }
+.fav-pop .boss__foot { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.8rem; margin-top: 1.2rem; padding-top: 1.2rem; border-top: 1px solid var(--line); }
 
 /* 2026-09-12 v3.11.0 가입 권유 팝업 (components/auth.js openSignupInvite) —
    로그인 전과 후를 나란히. 표로 두면 "지금 / 로그인하면" 두 칸이 같은 줄에서 맞붙어 차이가 바로 읽힌다 */
-.signup-invite__table { width: 100%; margin: 1.4rem 0 0.8rem; border-collapse: collapse; font-size: var(--fs-sub); }
-.signup-invite__table th, .signup-invite__table td { padding: 0.8rem 0.6rem; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
-.signup-invite__table thead th { font-size: 1.1rem; font-weight: 600; color: var(--muted); }
+.signup-invite__table { width: 100%; margin: 1.2rem 0 0.8rem; border-collapse: collapse; font-size: var(--fs-sub); }
+.signup-invite__table th, .signup-invite__table td { padding: 0.8rem 0.4rem; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+.signup-invite__table thead th { font-size: var(--fs-sub); font-weight: 600; color: var(--muted); }
 .signup-invite__table tbody th { font-weight: 600; }
 .signup-invite__before { color: var(--muted); }
 .signup-invite__after { color: var(--brand); font-weight: 600; }
-.signup-invite__list { margin: 0 0 1.2rem; font-size: 1.15rem; color: var(--muted); line-height: 1.6; }
+.signup-invite__list { margin: 0 0 1.2rem; font-size: var(--fs-sub); color: var(--muted); line-height: 1.7; }
 
 /* ─────────────────────────────────────────────────────────────────────────────
    2026-09-16 v3.50.0 상세 팝업 재설계 — 요약 · 배틀 정보 · 진화 탭 + CP 계산기 화면 + 하단 고정 버튼
@@ -179,24 +182,24 @@ dialog.modal::backdrop { background: transparent; }
 .detail--mon { display: flex; flex-direction: column; flex: 1 1 auto; min-height: 0; }
 
 /* 머리줄 — 제목 · (계산기 화면에서만) ‹ 상세로 · [＋ 내 포켓몬] [포켓몬 도감]. 오른쪽 5.6rem 은 ✕ 자리 */
-.detail__bar { display: flex; align-items: center; gap: 1rem; flex: none; padding: 1rem 5.6rem 1rem 2rem; border-bottom: 1px solid var(--line); }
-.detail__bar-title { margin: 0; font-size: 1.5rem; font-weight: 700; }
-.detail__bar-back { display: none; align-items: center; gap: 0.2rem; padding: 0.4rem 0.8rem 0.4rem 0; font-size: 1.3rem; font-weight: 600; color: var(--muted); }
+.detail__bar { display: flex; align-items: center; gap: 1.2rem; flex: none; padding: 1.2rem 5.6rem 1.2rem 2rem; border-bottom: 1px solid var(--line); }
+.detail__bar-title { margin: 0; font-size: var(--fs-body); font-weight: 700; }
+.detail__bar-back { display: none; align-items: center; gap: 0.2rem; padding: 0.4rem 0.8rem 0.4rem 0; font-size: var(--fs-body); font-weight: 600; color: var(--muted); }
 .detail__bar-back:hover { color: var(--fg); }
 .detail--mon[data-screen="calc"] .detail__bar-back { display: inline-flex; }
-.detail__top-actions { margin-left: auto; display: flex; gap: 0.6rem; }
-.detail__bar-btn { display: inline-flex; align-items: center; gap: 0.4rem; height: 3.2rem; padding: 0 1rem; border: 1px solid var(--line); border-radius: 0.8rem;
-  background: var(--surface); color: var(--fg); font-size: 1.2rem; font-weight: 600; white-space: nowrap; }
+.detail__top-actions { margin-left: auto; display: flex; gap: 0.4rem; }
+.detail__bar-btn { display: inline-flex; align-items: center; gap: 0.4rem; height: 3.2rem; padding: 0 1.2rem; border: 1px solid var(--line); border-radius: 0.8rem;
+  background: var(--surface); color: var(--fg); font-size: var(--fs-sub); font-weight: 600; white-space: nowrap; }
 .detail__bar-btn:hover { background: var(--hover); }
 .detail__bar-btn .pxi { width: 1.4rem; height: 1.4rem; }
 
 /* 2026-09-17 v3.60.0 ★ 즐겨찾기 — 담으면 켜진다. 색은 A티어와 같은 앰버(--caution) */
 .detail__fav.is-on { color: var(--caution); border-color: var(--caution); }
-.detail__fav-star { font-size: 1.4rem; line-height: 1; }
+.detail__fav-star { font-size: var(--fs-body); line-height: 1; }
 /* 📣 담아 둔 포켓몬의 소식 — 이름 아래 한 줄. 상세에만, 실험 기능 참가자에게만 (components/favnews.js) */
-.detail__favnews { display: inline-flex; align-items: center; gap: 0.5rem; margin-top: 0.8rem; padding: 0.5rem 1rem;
+.detail__favnews { display: inline-flex; align-items: center; gap: 0.4rem; margin-top: 0.8rem; padding: 0.4rem 1.2rem;
   border: 1px solid var(--good); border-radius: 0.8rem; background: color-mix(in srgb, var(--good) 8%, var(--bg));
-  color: var(--good); font-size: 1.2rem; font-weight: 600; }
+  color: var(--good); font-size: var(--fs-sub); font-weight: 600; }
 .detail__favnews:hover { background: color-mix(in srgb, var(--good) 16%, var(--bg)); }
 .detail__favnews-more { color: var(--muted); }
 .detail__favnews-slot { display: contents; }
@@ -207,24 +210,24 @@ dialog.modal::backdrop { background: transparent; }
 
 /* 본문 — 왼쪽(정보) + 오른쪽(탭·내용). 좁은 화면은 위아래로 */
 .detail__body { display: flex; flex-direction: column; flex: 1 1 auto; min-height: 0; }
-.detail__side { display: flex; gap: 1.4rem; align-items: flex-start; flex: none; padding: 1.4rem 2rem 1rem; }
+.detail__side { display: flex; gap: 1.2rem; align-items: flex-start; flex: none; padding: 1.2rem 2rem 1.2rem; }
 .detail__side .sprite-box { width: 11rem; height: 11rem; }
-.detail__side .sprite-box .sprite { width: 8.4rem; height: 8.4rem; margin-top: 0.6rem; }   /* 위쪽은 타입 배지 자리 */
+.detail__side .sprite-box .sprite { width: 8.4rem; height: 8.4rem; margin-top: 0.4rem; }   /* 위쪽은 타입 배지 자리 */
 /* 타입 배지 — 그림 왼쪽 위 모서리에 살짝 겹치는 작은 뱃지 (v2.35.0 자리 그대로). 그림 색이 다양해 늘 또렷하도록 그림자를 준다 */
-.detail__types { position: absolute; top: -1rem; left: -0.6rem; display: flex; align-items: flex-start; gap: 0.3rem; z-index: 1; }
+.detail__types { position: absolute; top: -1rem; left: -0.6rem; display: flex; align-items: flex-start; gap: 0.4rem; z-index: 1; }
 .detail__types .detail__type-pill { white-space: nowrap; }
 /* 이름 왼쪽 한 벌 — 접힌 머리(아래 미디어 쿼리)에서만 보인다 */
 .detail__types--inline { position: static; display: none; }
-.detail__info { display: flex; flex-direction: column; align-items: flex-start; gap: 0.5rem; flex: 1 1 auto; min-width: 0; }
+.detail__info { display: flex; flex-direction: column; align-items: flex-start; gap: 0.4rem; flex: 1 1 auto; min-width: 0; }
 /* 2026-09-16 v3.51.0 배지 줄은 세로 가운데로 — #번호(.tag)와 폼 라벨(.form-tag)은 글자 크기·줄높이가 달라
    기본 stretch 로는 상자만 같은 높이가 되고 글자가 위아래로 엇갈렸다. 같은 최소 높이를 주고 안에서 가운데 정렬한다 */
 .detail__tags { display: flex; flex-wrap: wrap; align-items: center; gap: 0.4rem; }
-/* .tag(display:inline-block) · .form-tag(line-height:1.5) 와 같은 특이도로는 파일 순서에 기대게 된다 —
+/* .tag(display:inline-block) · .form-tag(line-height: 1.5) 와 같은 특이도로는 파일 순서에 기대게 된다 —
    두 클래스를 함께 적어 한 칸 올린다 */
 .detail__tags > .tag, .detail__tags > .form-tag { display: inline-flex; align-items: center; min-height: 2.2rem; padding-top: 0; padding-bottom: 0; line-height: 1; }
 .detail__dexno { display: inline-block; }
-.detail__info h2 { margin: 0; font-size: 2rem; font-weight: 700; line-height: 1.2; }
-.detail__en-inline { font-size: 1.3rem; color: var(--muted); }
+.detail__info h2 { margin: 0; font-size: var(--fs-sec); font-weight: 700; line-height: 1.2; }
+.detail__en-inline { font-size: var(--fs-body); color: var(--muted); }
 /* 배틀 정보 · 진화 탭 · 계산기 화면은 머리를 접는다 — 좁은 화면에서 내용 자리를 넓힌다 (목업 02 · 03).
    2026-09-16 v3.50.4 진화 탭도 접는다("작아질 거면 둘 다"). 접히면 그림이 작아 모서리 배지 자리가 없으므로
    배지를 이름 왼쪽으로: [드래곤][비행] 망나뇽 #0149 */
@@ -236,9 +239,9 @@ dialog.modal::backdrop { background: transparent; }
   /* 순서는 큰 머리와 같다 — [타입][#번호] · 이름 · 영문명 (v3.50.5). 배지·번호는 한 줄에, 이름·영문명은 제 줄에 */
   .detail--mon:is([data-tab="battle"], [data-tab="evo"], [data-screen="calc"]) .detail__types--inline { display: flex; order: -2; }
   .detail--mon:is([data-tab="battle"], [data-tab="evo"], [data-screen="calc"]) .detail__tags { order: -1; }
-  .detail--mon:is([data-tab="battle"], [data-tab="evo"], [data-screen="calc"]) .detail__info { flex-direction: row; flex-wrap: wrap; align-items: center; gap: 0.3rem 0.5rem; }
-  .detail--mon:is([data-tab="battle"], [data-tab="evo"], [data-screen="calc"]) .detail__info h2 { flex-basis: 100%; font-size: 1.6rem; }
-  .detail--mon:is([data-tab="battle"], [data-tab="evo"], [data-screen="calc"]) .detail__en-inline { flex-basis: 100%; font-size: 1.15rem; }
+  .detail--mon:is([data-tab="battle"], [data-tab="evo"], [data-screen="calc"]) .detail__info { flex-direction: row; flex-wrap: wrap; align-items: center; gap: 0.4rem 0.4rem; }
+  .detail--mon:is([data-tab="battle"], [data-tab="evo"], [data-screen="calc"]) .detail__info h2 { flex-basis: 100%; font-size: var(--fs-body); }
+  .detail--mon:is([data-tab="battle"], [data-tab="evo"], [data-screen="calc"]) .detail__en-inline { flex-basis: 100%; font-size: var(--fs-sub); }
 }
 
 /* 오른쪽 — ← 돌아가기 · 탭 · 스크롤 내용 / 계산기 화면 */
@@ -248,94 +251,94 @@ dialog.modal::backdrop { background: transparent; }
 .detail__calc { display: none; flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding: 0.4rem 2rem 2rem; }
 .detail--mon[data-screen="calc"] .detail__calc { display: block; }
 .detail__back { display: flex; align-items: center; gap: 0.4rem; margin: 0 2rem 0.8rem; padding: 0.8rem 1.2rem; border: 1px dashed var(--line); border-radius: 0.8rem;
-  background: var(--surface); font-size: 1.25rem; font-weight: 600; color: var(--fg); text-align: left; }
+  background: var(--surface); font-size: var(--fs-body); font-weight: 600; color: var(--fg); text-align: left; }
 .detail__back:hover { background: var(--hover); }
-.detail__tabs { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; gap: 0.2rem; flex: none; margin: 0 2rem; padding: 0.3rem;
+.detail__tabs { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; gap: 0.2rem; flex: none; margin: 0 2rem; padding: 0.4rem;
   border: 1px solid var(--line); border-radius: 0.8rem; background: var(--surface); }
-.detail__tab { padding: 0.8rem 0.4rem; border-radius: 0.6rem; font-size: 1.3rem; font-weight: 600; color: var(--muted); }
+.detail__tab { padding: 0.8rem 0.4rem; border-radius: 0.6rem; font-size: var(--fs-body); font-weight: 600; color: var(--muted); }
 .detail__tab:hover { color: var(--fg); }
 .detail__tab[aria-selected="true"] { background: color-mix(in srgb, var(--brand) 14%, var(--bg)); color: var(--brand); box-shadow: inset 0 -0.2rem 0 var(--brand); }
 .detail__scroll { flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding: 1.2rem 2rem 2rem; }
 .detail__pane[hidden] { display: none; }
 
 /* 카드 — 팝업 안 블록의 기본 단위. 카드 안의 줄·칸은 한 단 깊은 색(--bg) */
-.detail__card { margin-top: 1.2rem; padding: 1.4rem 1.6rem; border: 1px solid var(--line); border-radius: 1.2rem; background: var(--surface); }
+.detail__card { margin-top: 1.2rem; padding: 1.2rem 1.6rem; border: 1px solid var(--line); border-radius: 1.2rem; background: var(--surface); }
 .detail__pane > :first-child, .detail__calc-body > :first-child { margin-top: 0; }
-.detail__card > h3, .detail__card-head h3, .detail__calc-row h3 { margin: 0 0 1rem; font-size: 1.35rem; font-weight: 700; color: var(--fg); letter-spacing: 0; }
-.detail__card-head { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; }
-.detail__card-sub { margin: -0.6rem 0 1rem; font-size: 1.2rem; color: var(--muted); }
+.detail__card > h3, .detail__card-head h3, .detail__calc-row h3 { margin: 0 0 1.2rem; font-size: var(--fs-body); font-weight: 700; color: var(--fg); letter-spacing: 0; }
+.detail__card-head { display: flex; align-items: baseline; justify-content: space-between; gap: 1.2rem; }
+.detail__card-sub { margin: -0.6rem 0 1.2rem; font-size: var(--fs-sub); color: var(--muted); }
 .detail__card .detail__match { background: var(--bg); }
-.detail__card .detail__foot { margin-top: 1rem; }
-.detail__cp-line { display: flex; align-items: baseline; gap: 0.6rem; }
-.detail__cp-label { font-size: 1.6rem; font-weight: 700; }
-.detail__acc--hex .hex { padding-top: 0.6rem; }
+.detail__card .detail__foot { margin-top: 1.2rem; }
+.detail__cp-line { display: flex; align-items: baseline; gap: 0.4rem; }
+.detail__cp-label { font-size: var(--fs-body); font-weight: 700; }
+.detail__acc--hex .hex { padding-top: 0.4rem; }
 
 /* 포획 CP — [맥스 배틀 | 레이드 | 야생] 세그먼트 → 경로별 줄 (조건 · 100% CP 큰 숫자 · 최저) */
-.detail__catch-seg { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; width: 100%; margin-bottom: 1rem; }
-.detail__catch-seg button { padding: 0.6rem 0.4rem; font-size: 1.25rem; }
-.detail__catch-row { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 1rem 1.2rem; border-radius: 1rem; background: var(--bg); }
-.detail__catch-row + .detail__catch-row { margin-top: 0.6rem; }
+.detail__catch-seg { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; width: 100%; margin-bottom: 1.2rem; }
+.detail__catch-seg button { padding: 0.4rem 0.4rem; font-size: var(--fs-body); }
+.detail__catch-row { display: flex; align-items: center; justify-content: space-between; gap: 1.2rem; padding: 1.2rem 1.2rem; border-radius: 1rem; background: var(--bg); }
+.detail__catch-row + .detail__catch-row { margin-top: 0.4rem; }
 .detail__catch-cond { display: flex; flex-direction: column; gap: 0.2rem; min-width: 0; }
-.detail__catch-cond em { font-style: normal; font-size: 1.3rem; font-weight: 600; }
-.detail__catch-val { display: flex; flex-direction: column; align-items: flex-end; gap: 0.1rem; flex: none; text-align: right; }
-.detail__catch-val b { font-size: 2.4rem; font-weight: 700; line-height: 1.1; }
-.detail__catch-floor { font-size: 1.15rem; color: var(--muted); }
-.detail__catch .detail__acc { margin-top: 1rem; background: var(--bg); }
-.detail__catch .detail__acc summary { padding: 1rem 1.2rem; font-size: 1.25rem; color: var(--muted); }
+.detail__catch-cond em { font-style: normal; font-size: var(--fs-body); font-weight: 600; }
+.detail__catch-val { display: flex; flex-direction: column; align-items: flex-end; gap: 0.2rem; flex: none; text-align: right; }
+.detail__catch-val b { font-size: var(--fs-sec); font-weight: 700; line-height: 1.2; }
+.detail__catch-floor { font-size: var(--fs-sub); color: var(--muted); }
+.detail__catch .detail__acc { margin-top: 1.2rem; background: var(--bg); }
+.detail__catch .detail__acc summary { padding: 1.2rem 1.2rem; font-size: var(--fs-body); color: var(--muted); }
 .move-chip.is-legacy { border-color: color-mix(in srgb, var(--caution) 55%, var(--line)); }
 
 /* 활용 순위 — 한 줄에 하나. 3위 안은 👑 + 강조색 순위 */
-.detail__rank-row { display: flex; align-items: center; gap: 0.8rem; margin-top: 0.5rem; padding: 0.9rem 1.2rem; border-radius: 0.8rem; background: var(--bg); font-size: 1.3rem; }
+.detail__rank-row { display: flex; align-items: center; gap: 0.8rem; margin-top: 0.4rem; padding: 0.8rem 1.2rem; border-radius: 0.8rem; background: var(--bg); font-size: var(--fs-body); }
 .detail__ranks > .detail__rank-row:first-child { margin-top: 0; }
 .detail__rank-crown { width: 1.8rem; flex: none; }
-.detail__rank-where { display: flex; align-items: center; flex-wrap: wrap; gap: 0.5rem; flex: 1 1 auto; min-width: 0; }
+.detail__rank-where { display: flex; align-items: center; flex-wrap: wrap; gap: 0.4rem; flex: 1 1 auto; min-width: 0; }
 .detail__rank-no { flex: none; font-weight: 700; }
 .detail__rank-row.is-top .detail__rank-no { color: var(--brand); }
 .detail__rank-more { display: flex; align-items: center; justify-content: center; width: 100%; margin-top: 0.8rem; padding: 0.8rem; border: 1px solid var(--line); border-radius: 0.8rem;
-  background: var(--bg); font-size: 1.2rem; font-weight: 600; color: var(--muted); }
-.detail__rank-more::after { content: '⌄'; margin-left: 0.6rem; }
+  background: var(--bg); font-size: var(--fs-sub); font-weight: 600; color: var(--muted); }
+.detail__rank-more::after { content: '⌄'; margin-left: 0.4rem; }
 .detail__rank-more[aria-expanded="true"]::after { content: '⌃'; }
 
 /* 보스로 만났을 때 — 추천 후보 줄 목록 (누르면 같은 창에서 바뀐다) */
-.detail__recs { display: flex; flex-direction: column; gap: 0.5rem; }
-.detail__rec { display: flex; align-items: center; gap: 1rem; width: 100%; padding: 0.6rem 1.2rem 0.6rem 0.8rem; border: 1px solid var(--line); border-radius: 0.8rem;
-  background: var(--bg); font-size: 1.3rem; text-align: left; color: var(--fg); }
+.detail__recs { display: flex; flex-direction: column; gap: 0.4rem; }
+.detail__rec { display: flex; align-items: center; gap: 1.2rem; width: 100%; padding: 0.4rem 1.2rem 0.4rem 0.8rem; border: 1px solid var(--line); border-radius: 0.8rem;
+  background: var(--bg); font-size: var(--fs-body); text-align: left; color: var(--fg); }
 .detail__rec:hover { background: var(--hover); }
 .detail__rec .sprite { width: 4rem; height: 4rem; flex: none; }
 .detail__rec-name { display: flex; align-items: center; flex-wrap: wrap; gap: 0.4rem; flex: 1 1 auto; min-width: 0; }
-.detail__rec-go { color: var(--muted); font-size: 1.8rem; line-height: 1; }
+.detail__rec-go { color: var(--muted); font-size: var(--fs-sec); line-height: 1; }
 
 /* CP 계산기 화면 — 예상 CP · 레벨(− 숫자 + · 슬라이더 · 프리셋) · 개체값(− 숫자 +) */
 .detail__calc-big { display: flex; align-items: baseline; flex-wrap: wrap; gap: 0.8rem; }
-.detail__calc-cp-label { font-size: 1.6rem; font-weight: 700; }
-.detail__calc-cp { font-size: 3.6rem; font-weight: 700; line-height: 1.05; }
-.detail__calc-row { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+.detail__calc-cp-label { font-size: var(--fs-body); font-weight: 700; }
+.detail__calc-cp { font-size: var(--fs-hero); font-weight: 700; line-height: 1; }
+.detail__calc-row { display: flex; align-items: center; justify-content: space-between; gap: 1.2rem; }
 .detail__calc-row + .detail__calc-row { margin-top: 0.8rem; }
-.detail__calc-row em { font-style: normal; font-size: 1.3rem; }
-.detail__calc-row--max { margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--line); }
-.detail__calc-row--max b { font-size: 1.6rem; }
+.detail__calc-row em { font-style: normal; font-size: var(--fs-body); }
+.detail__calc-row--max { margin-top: 1.2rem; padding-top: 1.2rem; border-top: 1px solid var(--line); }
+.detail__calc-row--max b { font-size: var(--fs-body); }
 .detail__calc-stepper { display: inline-flex; align-items: stretch; flex: none; border: 1px solid var(--line); border-radius: 0.8rem; background: var(--bg); overflow: hidden; }
-.detail__calc-step { width: 4.4rem; font-size: 1.8rem; line-height: 1; color: var(--fg); }
+.detail__calc-step { width: 4.4rem; font-size: var(--fs-sec); line-height: 1; color: var(--fg); }
 .detail__calc-step:hover:not(:disabled) { background: var(--hover); }
 .detail__calc-step:disabled { color: var(--muted); opacity: .5; }
 .detail__calc-num { width: 6.4rem; height: 4rem; border: 0; border-left: 1px solid var(--line); border-right: 1px solid var(--line); border-radius: 0;
-  background: var(--bg); color: var(--fg); text-align: center; font-size: 1.5rem; font-weight: 700; -moz-appearance: textfield; appearance: textfield; }
+  background: var(--bg); color: var(--fg); text-align: center; font-size: var(--fs-body); font-weight: 700; -moz-appearance: textfield; appearance: textfield; }
 .detail__calc-num::-webkit-outer-spin-button, .detail__calc-num::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
-.detail__calc-range { width: 100%; margin: 1.2rem 0 1rem; accent-color: var(--brand); }
-.detail__calc-presets { display: grid; grid-template-columns: repeat(5, 1fr); gap: 0.6rem; }
-.detail__calc-preset { padding: 0.7rem 0; border: 1px solid var(--line); border-radius: 0.8rem; background: var(--bg); font-size: 1.3rem; font-weight: 600; color: var(--muted); }
+.detail__calc-range { width: 100%; margin: 1.2rem 0 1.2rem; accent-color: var(--brand); }
+.detail__calc-presets { display: grid; grid-template-columns: repeat(5, 1fr); gap: 0.4rem; }
+.detail__calc-preset { padding: 0.8rem 0; border: 1px solid var(--line); border-radius: 0.8rem; background: var(--bg); font-size: var(--fs-body); font-weight: 600; color: var(--muted); }
 .detail__calc-preset[aria-pressed="true"] { border-color: var(--brand); color: var(--brand); background: color-mix(in srgb, var(--brand) 12%, var(--bg)); }
-.detail__calc-iv-sum { margin: 1.2rem 0 0; font-size: 1.3rem; color: var(--muted); }
+.detail__calc-iv-sum { margin: 1.2rem 0 0; font-size: var(--fs-body); color: var(--muted); }
 .detail__calc-iv-sum b { color: var(--brand); }
 
 /* 하단 고정 — 상세: [포켓몬 도감] [CP 계산기] · 계산기: [초기화] [상세로 돌아가기] */
-.detail__dock { flex: none; padding: 1rem 2rem; border-top: 1px solid var(--line); background: var(--bg); }
+.detail__dock { flex: none; padding: 1.2rem 2rem; border-top: 1px solid var(--line); background: var(--bg); }
 .detail__dock-row { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; gap: 0.8rem; }
 .detail__dock-row--calc { display: none; }
 .detail--mon[data-screen="calc"] .detail__dock-row--detail { display: none; }
 .detail--mon[data-screen="calc"] .detail__dock-row--calc { display: grid; }
-.detail__dock-btn { display: inline-flex; align-items: center; justify-content: center; gap: 0.6rem; height: 4.4rem; padding: 0 1.2rem; border: 1px solid var(--line); border-radius: 1rem;
-  background: var(--surface); font-size: 1.35rem; font-weight: 700; color: var(--fg); white-space: nowrap; }
+.detail__dock-btn { display: inline-flex; align-items: center; justify-content: center; gap: 0.4rem; height: 4.4rem; padding: 0 1.2rem; border: 1px solid var(--line); border-radius: 1rem;
+  background: var(--surface); font-size: var(--fs-body); font-weight: 700; color: var(--fg); white-space: nowrap; }
 .detail__dock-btn:hover { background: var(--hover); }
 .detail__dock-btn--accent { border-color: var(--brand); background: var(--brand); color: #fff; }
 .detail__dock-btn--accent:hover { background: color-mix(in srgb, var(--brand) 85%, #000); }
@@ -359,14 +362,14 @@ dialog.modal::backdrop { background: transparent; }
   /* 2026-09-16 v3.50.3 높이 상한 80rem(800px) — 큰 모니터에서 화면을 따라 무한히 커지지 않게 */
   .modal__box:has(> .detail--mon) { height: min(86vh, 80rem); max-height: 80rem; }
   .detail--mon .detail__body { flex-direction: row; }
-  .detail--mon .detail__side { flex: 0 0 28rem; flex-direction: column; align-items: stretch; gap: 1.4rem; padding: 2rem; border-right: 1px solid var(--line); overflow-y: auto; }
+  .detail--mon .detail__side { flex: 0 0 28rem; flex-direction: column; align-items: stretch; gap: 1.2rem; padding: 2rem; border-right: 1px solid var(--line); overflow-y: auto; }
   .detail--mon .detail__side .sprite-box { width: 100%; height: auto; aspect-ratio: 1; max-width: 24rem; border-radius: 1.4rem; }
   .detail--mon .detail__side .sprite-box .sprite { width: 62%; height: 62%; }
-  .detail--mon .detail__info h2 { font-size: 2.6rem; }
+  .detail--mon .detail__info h2 { font-size: var(--fs-title); }
   .detail--mon .detail__main-detail { padding-top: 1.2rem; }
-  .detail--mon .detail__calc { padding-top: 1.4rem; }
+  .detail--mon .detail__calc { padding-top: 1.2rem; }
   .detail--mon .detail__back, .detail--mon .detail__tabs { margin-left: 2.4rem; margin-right: 2.4rem; }
-  .detail--mon .detail__scroll, .detail--mon .detail__calc { padding: 1.4rem 2.4rem 2.4rem; }
+  .detail--mon .detail__scroll, .detail--mon .detail__calc { padding: 1.2rem 2.4rem 2.4rem; }
   .detail__dock { padding: 1.2rem 2.4rem; }
   .detail__dock-row { grid-auto-columns: minmax(14rem, auto); justify-content: end; }
   .detail--mon .detail__side .sprite-box .sprite { margin-top: 0; }

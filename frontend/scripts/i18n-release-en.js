@@ -15,6 +15,51 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 const RELEASE_NOTES_EN = {
+  '2026-09-19 · v4.3.9': [
+    '**Type names in the Pokedex are legible now** — bright types like Electric, Ground, Steel and Ice were washing out against the page; the type tint stays, the text just got deeper',
+  ],
+  '2026-09-19 · v4.3.8': [
+    '**The menu is now 80% of the screen width** — a strip of the page stays visible, and tapping outside to close is easier',
+    '**The close button follows you as you scroll the menu** — it used to slide off the top and leave no way to close',
+    '**Menu type was reworked for reading** — section names and tappable rows were the same size; now they read apart at a glance',
+  ],
+  '2026-09-19 · v4.3.7': [
+    '**On phones, popups now stick to the bottom of the screen** — the close and calculator buttons land where your thumb already is',
+    '**The close button is the same in every popup now** — the detail popup and the rest finally match',
+  ],
+  '2026-09-19 · v4.3.6': [
+    '**The Pokemon detail popup no longer covers the whole screen** — it caps at 85% height so you can still see what is behind it',
+    '**The close button was redrawn** — it used to be a small white square with a tiny x; now it is a deep red key that sits inside the header band, with a much larger glyph',
+  ],
+  '2026-09-19 · v4.3.5': [
+    '**Small text got bigger** — 11px is gone from the screen; 12px is the new floor, the minimum that both the Naver and Google guidelines set for reading',
+    '**Tabs are easier to hit** — the [All / Dealer / Tank] tabs were 26px tall; they are 44px now',
+    '**Scores are prominent again** — the number you should read first on a card was the same size as body text',
+  ],
+  '2026-09-19 · v4.3.4': [
+    '**Type and spacing now sit on a grid** — text uses only the sizes the pixel font renders crisply, and spacing steps in 4px. The screen breathes more and the letters are sharper',
+  ],
+  '2026-09-19 · v4.3.3': [
+    '**Shadows are hard-edged now too** — no blur anywhere, so the whole screen matches the square corners',
+  ],
+  '2026-09-19 · v4.3.2': [
+    '**Corners are square again** — the card frames, holographic sheen and type bars all stay; only the rounding is gone, so the chrome matches the pixel art',
+  ],
+  '2026-09-19 · v4.3.1': [
+    '**The cards are red now** — Poké Ball red fills the frames and header bands, over a warm red-tinted cream',
+    '**Dark mode is bright red on deep maroon** — a black with red in it, so the red on top never goes muddy',
+    '**Anything special (Mega, Legendary, S tier) is marked in blue** — the opposite of red, so it still stands out. Warnings moved to crimson so they no longer read as a selection',
+  ],
+  '2026-09-19 · v4.3.0': [
+    '**The whole look is now a trading-card concept** — each ranking row is a card with a gold frame, rounded corners and a holographic sheen',
+    '**The bar across the top of each card is its type** — split in half for dual types. The top three in every group always shimmer',
+    '**Dark mode is gold on deep indigo** — the way foil catches light on a real card in a dim room',
+    '**Pokémon detail reads as a card front** — foil name bar, holographic art window, rounded card frame',
+  ],
+  '2026-09-19 · v4.2.5': [
+    '**Three nets now catch bad numbers before they reach you** — every value is formatted in one place, and the full dataset plus all 46 screens are swept before each release',
+    '**A missing value shows a dash (—) instead of a made-up number** — an empty cell is more honest than a wrong one',
+  ],
   '2026-09-19 · v4.2.4': [
     '**D-MAX Tank numbers are back** \u2014 where it read `NaN max damage \u00b7 bulk undefined`, you now get EHP with HP \u00d7 Defense, plus the damage multiplier taken once you pick a boss type.',
     '**Dealer, tier list, raids and PvP were checked too** \u2014 each table has its own row shape, so the score cell is now decided in one place and guarded by a test using real-shaped rows.',
