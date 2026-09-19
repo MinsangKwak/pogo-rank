@@ -132,7 +132,7 @@
   .dex__list.is-grid .dex__row { padding: 1.8rem 1.2rem 1.6rem; background: var(--surface); }
   .dex__list.is-grid .dex__row:hover, .dex__list.is-grid .dex__row.is-selected {
     border-color: color-mix(in srgb, var(--brand) 55%, var(--line));
-    box-shadow: 0 0.6rem 2rem -1.2rem color-mix(in srgb, var(--brand) 60%, transparent);
+    box-shadow: var(--shadow-hard) color-mix(in srgb, var(--brand) 45%, var(--line));
   }
   .dex__list.is-grid .dex__row .sprite { width: 7.6rem; height: 7.6rem; }
   .dex__list.is-grid .dex__row b { font-size: var(--fs-body); }
@@ -145,12 +145,12 @@
   .row-list:not(.is-list) > .row { background: var(--surface); }
   .row-list:not(.is-list) > .row:hover {
     border-color: color-mix(in srgb, var(--brand) 55%, var(--line));
-    box-shadow: 0 0.6rem 2rem -1.2rem color-mix(in srgb, var(--brand) 60%, transparent);
+    box-shadow: var(--shadow-hard) color-mix(in srgb, var(--brand) 45%, var(--line));
   }
   .row-list:not(.is-list) > .row .row__score { color: var(--brand); }
 
   /* ── 상세 패널 ───────────────────────────────────────────────────────────── */
-  .detail-panel { box-shadow: 0 1rem 4rem -1.8rem rgba(0,0,0,.5); }
+  .detail-panel { box-shadow: 0.4rem 0.4rem 0 0 rgba(0,0,0,.28); }
   .detail-panel__close { border-radius: 1rem; }
 
   /* ── 검색·필터 칸 ────────────────────────────────────────────────────────── */
@@ -511,7 +511,7 @@
   .plan__mon-cp, .plan__mon-moves { grid-column: auto; }
   .plan__mon:hover {
     border-color: color-mix(in srgb, var(--brand) 45%, var(--line));
-    box-shadow: 0 0.6rem 2rem -1.2rem color-mix(in srgb, var(--brand) 60%, transparent);
+    box-shadow: var(--shadow-hard) color-mix(in srgb, var(--brand) 45%, var(--line));
   }
   .plan__mon.is-picked { border-color: var(--brand); }
   /* 순번 — 목업의 왼쪽 번호 배지. 티어표 순위 배지와 같은 문법(둥근 사각) */

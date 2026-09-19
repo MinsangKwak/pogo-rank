@@ -15,6 +15,9 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 const RELEASE_NOTES_EN = {
+  '2026-09-19 · v4.3.3': [
+    '**Shadows are hard-edged now too** — no blur anywhere, so the whole screen matches the square corners',
+  ],
   '2026-09-19 · v4.3.2': [
     '**Corners are square again** — the card frames, holographic sheen and type bars all stay; only the rounding is gone, so the chrome matches the pixel art',
   ],

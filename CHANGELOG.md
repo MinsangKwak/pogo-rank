@@ -22,7 +22,29 @@
 ---
 
 <details open>
-<summary><b>2026-09-19</b> — 5판 · <code>v4.3.2</code> · <code>v4.3.1</code> · <code>v4.3.0</code> · <code>v4.2.5</code> · <code>v4.2.4</code></summary>
+<summary><b>2026-09-19</b> — 6판 · <code>v4.3.3</code> · <code>v4.3.2</code> · <code>v4.3.1</code> · <code>v4.3.0</code> · <code>v4.2.5</code> · <code>v4.2.4</code></summary>
+
+<details>
+<summary><b>v4.3.3</b> · 그림자 흐림도 0 으로</summary>
+
+**요청 — "그래 값을 0으로만 전부 바꿔봐."** v4.3.2 에서 모서리를 각지게 하고 남겨 둔 숙제다 — 흐린 그림자는 모서리를 뭉개 각을 도로 깎는다.
+
+**화면 전체에서 `blur` 를 걷었다.** `box-shadow` 11군데와 `text-shadow` 3군데다.
+
+| 자리 | 전 | 후 |
+| --- | --- | --- |
+| 카드 (`--card-shadow`) | `0 .6rem 1.6rem` | `var(--shadow-hard)` = `.4rem .4rem 0 0` |
+| 카드 들림 (`--card-shadow-up`) | `0 1rem 2.4rem` | `.8rem .8rem 0 0` |
+| 상세 패널 · 드로어 · 모달 · 세그 | 흐림 0.2~4rem | 같은 크기의 계단 그림자 |
+| 타입 알약 글자 | `0 0 .2rem` | `1px 1px 0` — 윤곽은 남기고 흐림만 |
+
+**굵기는 `--shadow-hard` 한 곳에서 정한다.** v3.6.0 이 도트 디자인 때 만들어 둔 토큰이고(`0.4rem 0.4rem 0 0` — 색은 쓰는 쪽에서 붙인다), 그대로 쓰면 카드 그림자가 한 벌로 묶인다. 새 값을 따로 적지 않았다.
+
+**음수 퍼짐(spread)도 같이 0 으로 뒀다.** `0 .8rem 2.8rem -1.4rem` 처럼 흐림을 크게 주고 퍼짐을 음수로 당겨 둔 그림자가 셋 있었는데, 흐림만 0 으로 두면 퍼짐이 음수로 남아 그림자가 아예 사라진다.
+
+**검사 57건 · 화면 46장 `NaN`·`undefined` 없음 · 명암비 42장.** 남은 6군데는 원작 타입색으로 v4.3.0 과 같다.
+
+</details>
 
 <details>
 <summary><b>v4.3.2</b> · 모서리를 다시 각지게</summary>

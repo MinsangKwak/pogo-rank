@@ -85,7 +85,7 @@
 .copy-btn:hover { background: var(--hover); }
 
 /* 2026-09-03 맨 위로 플로팅 버튼 */
-.totop { position: fixed; right: 1.8rem; bottom: 2.2rem; z-index: 40; width: 4.2rem; height: 4.2rem; border-radius: 50%; background: var(--bg); box-shadow: 0 0.2rem 1rem rgba(0,0,0,.18); font-size: 1.7rem; }
+.totop { position: fixed; right: 1.8rem; bottom: 2.2rem; z-index: 40; width: 4.2rem; height: 4.2rem; border-radius: 50%; background: var(--bg); box-shadow: 0.4rem 0.4rem 0 rgba(0,0,0,.18); font-size: 1.7rem; }
 
 /* 2026-09-03 v2.2.0 계정 영역 (드로어 상단) · 헤더 아바타 · 관리자 승인 패널 */
 .account { display: flex; flex-direction: column; gap: 0.8rem; padding: 1.2rem 1.4rem; border: 1px solid var(--line); border-radius: 1.2rem; background: var(--surface); }

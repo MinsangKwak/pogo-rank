@@ -143,8 +143,11 @@ body.has-detail-panel { --list-cols: 1; }
   --card-border: 2px solid var(--foil-hi);
   --card-ring: 0 0 0 1px var(--foil-lo);
   --card-tint: color-mix(in srgb, var(--brand) 6%, var(--surface));
-  --card-shadow: var(--card-ring), 0 .6rem 1.6rem rgb(28 25 23 / 14%);
-  --card-shadow-up: var(--card-ring), 0 1rem 2.4rem rgb(28 25 23 / 22%);
+  /* 2026-09-19 v4.3.3 **흐림을 0 으로.** 각진 모서리에는 계단 그림자가 맞는다 —
+     흐린 그림자는 모서리를 뭉개 각을 도로 깎아 버린다(v3.6.0 이 도트에서 같은 판단을 했다).
+     굵기는 --shadow-hard 한 곳에서 정한다. 색만 여기서 붙인다 */
+  --card-shadow: var(--card-ring), var(--shadow-hard) color-mix(in srgb, var(--brand) 22%, var(--line));
+  --card-shadow-up: var(--card-ring), 0.8rem 0.8rem 0 0 color-mix(in srgb, var(--brand) 32%, var(--line));
   /* 박 — 넓은 면(머리 띠 · 강조 카드)에 쓴다. 단색은 큰 면에서 갈색으로 읽혀서,
      빛을 받는 띠를 가운데 한 줄 넣어 금속으로 보이게 한다 */
   --foil: linear-gradient(135deg,
