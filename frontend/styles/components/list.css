@@ -1,10 +1,10 @@
 /* 랭킹 리스트: 제목줄 · 행(순위/스프라이트/이름/기술/점수) · 더보기 */
-.row-head { display: flex; align-items: baseline; justify-content: space-between; padding: 1.4rem 0 0.6rem; }
-.row-head h2 { margin: 0; font-size: 1.4rem; font-weight: 500; }
-.row-head .meta { font-size: 1.2rem; }
+.row-head { display: flex; align-items: baseline; justify-content: space-between; padding: 1.2rem 0 0.4rem; }
+.row-head h2 { margin: 0; font-size: var(--fs-body); font-weight: 500; }
+.row-head .meta { font-size: var(--fs-sub); }
 
 .row-list { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--line); }
-.row { display: grid; grid-template-columns: 2.8rem 4rem 1fr auto;  /* 2026-09-03 v2.2.0 보유 ☆ 열 제거 */ align-items: center; gap: 1.2rem; padding: 0.9rem 0; border-bottom: 1px solid var(--line); cursor: pointer; }
+.row { display: grid; grid-template-columns: 2.8rem 4rem 1fr auto;  /* 2026-09-03 v2.2.0 보유 ☆ 열 제거 */ align-items: center; gap: 1.2rem; padding: 0.8rem 0; border-bottom: 1px solid var(--line); cursor: pointer; }
 /* 2026-09-15 v3.36.0 아직 못 쓰는 줄 — 데이터만 등록되고 게임에는 안 나온 개체(미출시 거다이맥스 · 예정 다이맥스).
    지우지 않고 남긴다: 지우면 "왜 없지" 를 아무도 모르고, 남겨 두면 "데이터는 이미 있다" 까지 전해진다.
 
@@ -35,20 +35,20 @@
 /* 티어표: S/A/B/C 그룹 머리글 */
 /* 2026-09-10 v2.43.0 [뱃지] S 티어 · 4종 / 한 줄 설명 — 설명은 제 줄로 내린다(좁은 화면에서 뱃지 줄에
    같이 두면 세 조각이 서로 밀어 글자가 한 자씩 끊긴다) */
-.tier__head { display: flex; align-items: center; flex-wrap: wrap; gap: 0.4rem 1rem; padding: 2rem 0 0.8rem; }
-.tier__name { font-size: 1.4rem; font-weight: 600; }
-.tier__desc { flex: 1 1 100%; margin-left: 3.8rem; font-size: 1.2rem; line-height: 1.5; color: var(--muted); word-break: keep-all; }
-.tier__badge { width: 2.8rem; height: 2.8rem; border-radius: 0.9rem; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; font-weight: 700; background: var(--surface); }
+.tier__head { display: flex; align-items: center; flex-wrap: wrap; gap: 0.4rem 1.2rem; padding: 2rem 0 0.8rem; }
+.tier__name { font-size: var(--fs-body); font-weight: 600; }
+.tier__desc { flex: 1 1 100%; margin-left: 3.6rem; font-size: var(--fs-sub); line-height: 1.5; color: var(--muted); word-break: keep-all; }
+.tier__badge { width: 2.8rem; height: 2.8rem; border-radius: 0.9rem; display: flex; align-items: center; justify-content: center; font-size: var(--fs-body); font-weight: 700; background: var(--surface); }
 .tier__badge--s { color: var(--warn); }
 .tier__badge--a { color: #d98b0b; }
 .tier__badge--b { color: #4f9e57; }
 .tier__badge--c { color: #8c8f94; }
 
 /* 목록 하단 용어 설명 */
-.legend { display: flex; flex-direction: column; gap: 0.3rem; margin-top: 1.6rem; padding: 1.2rem 1.4rem; background: var(--surface); border-radius: 1rem; font-size: 1.2rem; color: var(--muted); line-height: 1.55; }
-.legend__item::before { content: "●"; font-size: 0.7rem; vertical-align: 0.2rem; margin-right: 0.7rem; }
+.legend { display: flex; flex-direction: column; gap: 0.4rem; margin-top: 1.6rem; padding: 1.2rem 1.2rem; background: var(--surface); border-radius: 1rem; font-size: var(--fs-sub); color: var(--muted); line-height: 1.5; }
+.legend__item::before { content: "●"; font-size: var(--fs-sub); vertical-align: 0.2rem; margin-right: 0.8rem; }
 .legend__item b { font-weight: 600; color: var(--fg); }
-.row__rank { font-size: 1.3rem; color: var(--muted); text-align: right; }
+.row__rank { font-size: var(--fs-body); color: var(--muted); text-align: right; }
 .row:nth-child(-n+3) .row__rank { color: var(--fg); font-weight: 600; }
 .sprite { width: 4rem; height: 4rem; image-rendering: pixelated; display: block; }
 .sprite.sprite--hd { image-rendering: auto; object-fit: contain; }  /* 2026-09-05 v2.7.2 게임 에셋 아이콘(아머드 뮤츠 등)은 부드럽게 축소 */
@@ -75,30 +75,32 @@
 .row__main { min-width: 0; }
 .row__name { display: flex; align-items: center; flex-wrap: wrap; gap: 0.4rem 0.8rem; min-width: 0; }
 .row__name b { font-weight: 500; }
-.row__types { display: inline-flex; gap: 0.3rem; flex: 0 0 auto; }
+.row__types { display: inline-flex; gap: 0.4rem; flex: 0 0 auto; }
 .row__types i { width: 0.7rem; height: 0.7rem; border-radius: 50%; background: var(--c); display: inline-block; }
-.row__moves { font-size: 1.25rem; color: var(--muted); margin-top: 1px; }
+.row__moves { font-size: var(--fs-body); color: var(--muted); margin-top: 1px; }
 .row__moves span { display: inline; }
-.row__moves span + span::before { content: "·"; margin: 0 0.6rem; }
+.row__moves span + span::before { content: "·"; margin: 0 0.4rem; }
 /* 2026-09-03 PvP 카운터 이유 줄: 길어도 줄바꿈으로 다 보이게 */
-.row__counter { line-height: 1.45; word-break: keep-all; }
+.row__counter { line-height: 1.5; word-break: keep-all; }
 /* 2026-09-03 추천 덱 카드: 이유 문장 · 덱 목록에선 보유 별 숨김(보유 체크는 PvP 탭에서) */
-.deck__reason { margin: 0.8rem 0.2rem 0.2rem; font-size: 1.25rem; color: var(--muted); line-height: 1.6; word-break: keep-all; }
+.deck__reason { margin: 0.8rem 0.2rem 0.2rem; font-size: var(--fs-body); color: var(--muted); line-height: 1.7; word-break: keep-all; }
 .schedule__body.is-starless .row { padding-right: 0.4rem; }
 .row__stats { text-align: right; }
-.row__score { font-size: 1.5rem; font-weight: 500; }
-.row__sub { font-size: 1.15rem; color: var(--muted); display: block; }
+/* 2026-09-19 v4.3.5 점수는 카드의 주인공이라 본문보다 커야 한다. v4.3.4 에서 격자로 스냅하며
+   1.5rem → 본문(1.4)으로 눌려 위계가 사라졌었다 — 강조 단(16px)으로 올린다 */
+.row__score { font-size: var(--fs-lead); font-weight: 600; }
+.row__sub { font-size: var(--fs-sub); color: var(--muted); display: block; }
 
-.row__more { width: 100%; padding: 1.2rem 0; font-size: 1.35rem; color: var(--muted); border-bottom: 1px solid var(--line); }
+.row__more { width: 100%; padding: 1.2rem 0; font-size: var(--fs-body); color: var(--muted); border-bottom: 1px solid var(--line); }
 .row__more:hover { color: var(--fg); }
 
-.places { display: flex; flex-wrap: wrap; gap: 0.4rem 1rem; font-size: 1.25rem; color: var(--muted); margin-top: 0.2rem; }
+.places { display: flex; flex-wrap: wrap; gap: 0.4rem 1.2rem; font-size: var(--fs-body); color: var(--muted); margin-top: 0.2rem; }
 .places span b { font-weight: 500; color: var(--fg); }
 .places__more { color: var(--muted); opacity: .8; }
 
 /* 640px 미만: 점수를 이름 아래로 내려 세로 배치. 말줄임 없이 전부 표시 */
 @media (max-width: 640px) {
-  .row { grid-template-columns: 2.4rem 3.6rem minmax(0, 1fr); gap: 0.2rem 1rem; align-items: start; padding: 1.1rem 0; }
+  .row { grid-template-columns: 2.4rem 3.6rem minmax(0, 1fr); gap: 0.2rem 1.2rem; align-items: start; padding: 1.2rem 0; }
   .row__rank { grid-row: 1 / span 2; padding-top: 0.2rem; }
   .sprite { grid-row: 1 / span 2; width: 3.6rem; height: 3.6rem; }
   .row__stats { grid-column: 3; display: flex; align-items: baseline; gap: 0.8rem; text-align: left; }
@@ -106,14 +108,14 @@
 }
 
 /* 2026-09-02 티어 근거 인라인(1B) · 이번 주 보스 카드(2A) */
-.row__why { display: none; padding: 0.6rem 1.2rem 1rem 4.4rem; font-size: 1.25rem; color: var(--muted); line-height: 1.5; border-bottom: 1px solid var(--line); }
+.row__why { display: none; padding: 0.4rem 1.2rem 1.2rem 4.4rem; font-size: var(--fs-body); color: var(--muted); line-height: 1.5; border-bottom: 1px solid var(--line); }
 .row__why.is-open { display: block; }
-.row__why-more { color: var(--fg); font-size: 1.2rem; text-decoration: underline; }
+.row__why-more { color: var(--fg); font-size: var(--fs-sub); text-decoration: underline; }
 /* 2026-09-10 v2.43.0 근거는 두 칸(계산식 · 카운터) — 좁은 화면에서는 위아래로 쌓인다 */
-.row__why-col + .row__why-col { margin-top: 1rem; }
-.row__why-title { display: block; margin-bottom: 0.4rem; font-size: 1.25rem; font-weight: 600; color: var(--fg); }
-.row__why-line { margin: 0 0 0.6rem; }
-.row__why-chips { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+.row__why-col + .row__why-col { margin-top: 1.2rem; }
+.row__why-title { display: block; margin-bottom: 0.4rem; font-size: var(--fs-body); font-weight: 600; color: var(--fg); }
+.row__why-line { margin: 0 0 0.4rem; }
+.row__why-chips { display: flex; flex-wrap: wrap; gap: 0.4rem; }
 
 /* 2026-09-14 v3.30.0 제목 옆 ⓘ — 등급이 무슨 기준인지 native title 툴팁으로 밝힌다.
    따로 팝업을 만들지 않는다: title 은 i18n 이 이미 번역하는 속성이고(I18N_ATTRS),
@@ -126,7 +128,7 @@
 .info-dot {
   display: inline-flex; align-items: center; justify-content: center;
   min-width: 2.4rem; min-height: 2.4rem; margin-left: 0.2rem;
-  color: var(--muted); font-size: 1.3rem; line-height: 1; cursor: help;
+  color: var(--muted); font-size: var(--fs-body); line-height: 1; cursor: help;
 }
 .info-dot:hover, .info-dot:focus-visible { color: var(--fg); }
 /* 2026-09-15 v3.32.0 D-MAX 덱 짜기 세 칸 — 목록(.row-list)을 그대로 쓰되 빈 칸과 [바꾸기] 만 더한다 */
@@ -138,20 +140,20 @@
 .row__why-chip.is-on { border-color: var(--brand); color: var(--brand); font-weight: 600; }
 
 /* ⓘ 를 눌렀을 때 펼쳐지는 안내 — 툴팁과 같은 글 */
-.info-note { margin: 0 0 1rem; padding: 1rem 1.2rem; border: 1px solid var(--line); border-radius: 1rem; background: var(--surface); font-size: 1.2rem; line-height: 1.7; color: var(--muted); }
-.row__why-chip { padding: 0.3rem 0.9rem; border: 1px solid var(--line); border-radius: 99.9rem; font-size: 1.15rem; color: var(--fg); }
-.boss__card { margin: 0.4rem 0 1.6rem; padding: 1.4rem 1.6rem; border: 1px solid var(--line); border-radius: 1.2rem; background: var(--surface); }
-.boss__title { margin: 0 0 1rem; font-size: 1.35rem; font-weight: 600; }
+.info-note { margin: 0 0 1.2rem; padding: 1.2rem 1.2rem; border: 1px solid var(--line); border-radius: 1rem; background: var(--surface); font-size: var(--fs-sub); line-height: 1.7; color: var(--muted); }
+.row__why-chip { padding: 0.4rem 0.8rem; border: 1px solid var(--line); border-radius: 99.9rem; font-size: var(--fs-sub); color: var(--fg); }
+.boss__card { margin: 0.4rem 0 1.6rem; padding: 1.2rem 1.6rem; border: 1px solid var(--line); border-radius: 1.2rem; background: var(--surface); }
+.boss__title { margin: 0 0 1.2rem; font-size: var(--fs-body); font-weight: 600; }
 /* overflow-y 를 함께 적는다 (v2.26.0) — 가로 스크롤만 의도한 줄이 세로 휠까지 먹지 않게 */
 .boss__recs { display: flex; gap: 0.8rem; overflow-x: auto; overflow-y: hidden; padding: 0.4rem 0; }
 /* 2026-09-08 v2.31.0 카드 배경이 페이지 배경과 같은 값(var(--bg))이라 카드가 안 보였다 —
    테두리도 없어 그림이 배경에 그냥 떠 있는 것처럼 보였다. --surface 로 대비를 내고 얇은 테두리를 준다 */
-.boss__rec { flex: none; display: flex; flex-direction: column; align-items: center; gap: 0.3rem; padding: 0.8rem 1rem; border: 1px solid var(--line); border-radius: 1rem; background: var(--surface); font-size: 1.15rem; line-height: 1.35; }
+.boss__rec { flex: none; display: flex; flex-direction: column; align-items: center; gap: 0.4rem; padding: 0.8rem 1.2rem; border: 1px solid var(--line); border-radius: 1rem; background: var(--surface); font-size: var(--fs-sub); line-height: 1.5; }
 .boss__rec .sprite { width: 4rem; height: 4rem; }
 /* 2026-09-07 v2.14.0 (QA-52) 긴 이름(거다이맥스 ○○○)은 카드 폭 안에서 가운데 정렬로 줄바꿈 — 한 줄로 늘어져 격자가 깨지지 않게 */
 .boss__rec > span { max-width: 10.4rem; text-align: center; word-break: keep-all; overflow-wrap: anywhere; }
 .boss__rec .form-tag { display: inline-block; margin-bottom: 1px; }
-.boss__more { margin-top: 0.8rem; font-size: 1.25rem; color: var(--muted); text-decoration: underline; }
+.boss__more { margin-top: 0.8rem; font-size: var(--fs-body); color: var(--muted); text-decoration: underline; }
 
 /* 2026-09-02 보스 아코디언 */
 /* 2026-09-12 v3.5.0 보스 아코디언과 그 아래 필터 줄 사이를 8px 로 좁힌다.
@@ -162,35 +164,35 @@
 .boss__acc.is-on ~ .controls { padding-top: 0; }
 .recs-wrap { flex-wrap: wrap; overflow-x: visible; }
 /* 2026-09-07 v2.13.0 (QA-43) 이번 주 보스 파티 카드 — 딜러 2 + 탱커 1 */
-.party-card { margin-bottom: 1rem; padding: 0.8rem 1rem; border: 1px solid var(--line); border-radius: 1rem; background: var(--surface); }
+.party-card { margin-bottom: 1.2rem; padding: 0.8rem 1.2rem; border: 1px solid var(--line); border-radius: 1rem; background: var(--surface); }
 .party-card .boss__rec { background: var(--bg); }
-.party-card .boss__rec .row__sub { font-size: 1.05rem; }
-.boss__foot { display: flex; justify-content: space-between; align-items: center; margin-top: 1rem; gap: 0.8rem; }
+.party-card .boss__rec .row__sub { font-size: var(--fs-sub); }
+.boss__foot { display: flex; justify-content: space-between; align-items: center; margin-top: 1.2rem; gap: 0.8rem; }
 
 /* 2026-09-02 솔플 계산기 판정 카드 */
 .solo__card { margin: 0.4rem 0 2rem; padding: 1.6rem; border-radius: 1.2rem; border: 1px solid var(--line); background: var(--surface); }
 .solo__card.solo__ok { border-color: var(--t-grass); }
 .solo__card.solo__tight { border-color: var(--t-ground); }
 .solo__card.solo__no { border-color: var(--t-fighting); }
-.solo__verdict { margin: 0; font-size: 1.8rem; font-weight: 700; }
-.solo__why { margin: 0.6rem 0 0; font-size: 1.3rem; line-height: 1.5; }
-.solo__stats { margin: 0.8rem 0 0; font-size: 1.2rem; color: var(--muted); line-height: 1.5; }
+.solo__verdict { margin: 0; font-size: var(--fs-sec); font-weight: 700; }
+.solo__why { margin: 0.4rem 0 0; font-size: var(--fs-body); line-height: 1.5; }
+.solo__stats { margin: 0.8rem 0 0; font-size: var(--fs-sub); color: var(--muted); line-height: 1.5; }
 
 /* 2026-09-02 솔플 계산기 보스 검색 */
-.boss__search { width: 100%; padding: 1rem 1.4rem; border: 1px solid var(--line); border-radius: 1rem; background: var(--bg); color: var(--fg); font: inherit; font-size: 1.6rem; }  /* 2026-09-03 16px 미만이면 iOS가 포커스 시 자동 확대 */
+.boss__search { width: 100%; padding: 1.2rem 1.2rem; border: 1px solid var(--line); border-radius: 1rem; background: var(--bg); color: var(--fg); font: inherit; font-size: var(--fs-body); }  /* 2026-09-03 16px 미만이면 iOS가 포커스 시 자동 확대 */
 .boss__search:focus { outline: 0.2rem solid var(--fg); outline-offset: 1px; }
 .boss__sugg { display: flex; flex-wrap: wrap; gap: 0.8rem; }
 .boss__sugg:empty { display: none; }
 
 /* 2026-09-02 선택된 보스 유지 표시 */
-.boss__selected { display: flex; align-items: center; gap: 1rem; padding: 0.8rem 1.2rem; border: 1px solid var(--line); border-radius: 1rem; background: var(--surface); font-size: 1.4rem; }
+.boss__selected { display: flex; align-items: center; gap: 1.2rem; padding: 0.8rem 1.2rem; border: 1px solid var(--line); border-radius: 1rem; background: var(--surface); font-size: var(--fs-body); }
 .boss__selected .sprite { width: 3.6rem; height: 3.6rem; }
 .boss__clear { margin-left: auto; width: 2.8rem; height: 2.8rem; border-radius: 0.7rem; color: var(--muted); }
 .boss__clear:hover { background: var(--hover); color: var(--fg); }
 
 /* 2026-09-02 보스 CP 표기 */
 .boss__cp { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
-.boss__cp .meta { font-size: 1.15rem; }
+.boss__cp .meta { font-size: var(--fs-sub); }
 
 /* 2026-09-02 솔플 계산기 옵션 줄 */
 .solo__opts { display: flex; flex-wrap: wrap; gap: 0.8rem; }
@@ -199,15 +201,15 @@
 /* 2026-09-12 v3.14.0 .fav(★ 버튼) 규칙을 뺐다 — 그 버튼을 만드는 favBtn() 이 v3.4.0 부터 불리지 않았다 */
 
 /* 2026-09-03 PvP 덱 짜기 슬롯 UI */
-.deck__slots { display: flex; gap: 1rem; margin: 1.2rem 0 1rem; }
+.deck__slots { display: flex; gap: 1.2rem; margin: 1.2rem 0 1.2rem; }
 /* 2026-09-03 추천 덱 3 아코디언: 일정표 아코디언 스타일 재사용, 위 간격만 */
 .deck__acc { margin: 0.8rem 0 0; }
-.deck__slot { flex: 1; min-height: 8.6rem; border: 0.15rem dashed var(--line); border-radius: 1.2rem; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.3rem; color: var(--muted); position: relative; }
-.deck__slot .slot__plus { font-size: 2.6rem; line-height: 1; }
+.deck__slot { flex: 1; min-height: 8.6rem; border: 0.15rem dashed var(--line); border-radius: 1.2rem; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.4rem; color: var(--muted); position: relative; }
+.deck__slot .slot__plus { font-size: var(--fs-title); line-height: 1; }
 .deck__slot.is-filled { border-style: solid; background: var(--surface); color: var(--fg); }
 .deck__slot .sprite { width: 4rem; height: 4rem; }
-.deck__slot .slot__name { font-size: 1.15rem; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding: 0 0.6rem; }
-.deck__slot .slot__close { position: absolute; top: 0.5rem; right: 0.8rem; font-size: 1.1rem; color: var(--muted); }
+.deck__slot .slot__name { font-size: var(--fs-sub); max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding: 0 0.4rem; }
+.deck__slot .slot__close { position: absolute; top: 0.5rem; right: 0.8rem; font-size: var(--fs-sub); color: var(--muted); }
 
 /* 2026-09-08 v2.28.0 PC 는 카드 격자 — 줄이 아니라 카드로 훑는다
    왜 바꾸나
@@ -236,29 +238,29 @@
      (.dex__list 와 같은 값을 본다 — pages.css 참고) */
   .row-list:not(.is-list) { display: grid; grid-template-columns: repeat(var(--list-cols), minmax(0, 1fr)); gap: 1.2rem; padding-top: 0.4rem; border-top: 0; }
   .row-list:not(.is-list) > .row {
-    position: relative; display: flex; flex-direction: column; align-items: center; gap: 0.6rem;
-    padding: 1.8rem 1.2rem 1.4rem; text-align: center;
+    position: relative; display: flex; flex-direction: column; align-items: center; gap: 0.4rem;
+    padding: 2rem 1.2rem 1.2rem; text-align: center;
     border: 1px solid var(--line); border-radius: 1.2rem; background: var(--surface);
   }
   .row-list:not(.is-list) > .row:hover { border-color: var(--fg); background: var(--hover); }
   /* 순위는 카드 모서리로 — 세로로 세운 카드에서 순위가 한 칸을 차지하면 그림이 밀린다 */
-  .row-list:not(.is-list) > .row > .row__rank { position: absolute; top: 0.8rem; left: 1rem; text-align: left; font-size: 1.2rem; }
+  .row-list:not(.is-list) > .row > .row__rank { position: absolute; top: 0.8rem; left: 1rem; text-align: left; font-size: var(--fs-sub); }
   /* 그림 칸을 회색 판으로 떼고 아래에 얇은 선 — 도감 카드(pages.css)·상세 팝업(.sprite-box)과 같은 뜻 */
   .row-list:not(.is-list) > .row > .sprite { box-sizing: content-box; width: 6.4rem; height: 6.4rem; padding: 0.8rem; border-radius: 1.2rem; }
   .row-list:not(.is-list) > .row > .sprite:not(.is-loading) { background: var(--bg); }
-  .row-list:not(.is-list) > .row > .row__main { width: 100%; min-width: 0; padding-top: 0.9rem; border-top: 1px solid var(--line); }
+  .row-list:not(.is-list) > .row > .row__main { width: 100%; min-width: 0; padding-top: 0.8rem; border-top: 1px solid var(--line); }
   .row-list:not(.is-list) > .row .row__badges { justify-content: center; margin-bottom: 0.4rem; }
   .row-list:not(.is-list) > .row .row__name { justify-content: center; }
-  .row-list:not(.is-list) > .row .row__name b { font-size: 1.4rem; font-weight: 600; line-height: 1.35; word-break: keep-all; }
-  .row-list:not(.is-list) > .row .row__moves { margin-top: 0.3rem; line-height: 1.5; word-break: keep-all; }
+  .row-list:not(.is-list) > .row .row__name b { font-size: var(--fs-body); font-weight: 600; line-height: 1.5; word-break: keep-all; }
+  .row-list:not(.is-list) > .row .row__moves { margin-top: 0.4rem; line-height: 1.5; word-break: keep-all; }
   /* 점수는 카드 바닥에 붙인다 — 기술 줄 길이가 종마다 달라도 점수 높이가 가지런하다 */
   .row-list:not(.is-list) > .row > .row__stats { display: flex; flex-direction: column; align-items: center; gap: 1px; margin-top: auto; padding-top: 0.8rem; text-align: center; }
-  .row-list:not(.is-list) > .row .row__score { font-size: 1.7rem; font-weight: 600; }
+  .row-list:not(.is-list) > .row .row__score { font-size: var(--fs-lead); font-weight: 700; }
   .row-list:not(.is-list) > .row .row__sub { display: block; }
   /* 격자 폭을 다 쓰는 항목들 — 더보기 버튼과 티어표의 "선정 근거" 줄 */
   .row-list:not(.is-list) > .row__more { grid-column: 1 / -1; border: 1px solid var(--line); border-radius: 1rem; }
   .row-list:not(.is-list) > .row__more:hover { border-color: var(--fg); background: var(--hover); }
-  .row-list:not(.is-list) > .row__why { grid-column: 1 / -1; padding: 1.2rem 1.4rem; border: 1px solid var(--line); border-radius: 1rem; background: var(--surface); }
+  .row-list:not(.is-list) > .row__why { grid-column: 1 / -1; padding: 1.2rem 1.2rem; border: 1px solid var(--line); border-radius: 1rem; background: var(--surface); }
   /* 순위가 없는 목록(덱 슬롯 등)은 3열이면 카드가 너무 홀쭉하다 */
   .is-starless .row-list:not(.is-list) { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 }

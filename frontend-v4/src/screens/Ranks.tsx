@@ -30,7 +30,8 @@ import { useAuthStore } from '../stores/auth';
 import { LEAGUES } from '../lib/leagues';
 import type { OpenMon } from '../lib/mon';
 import { Fragment } from 'react';
-import type { DmaxRow, LeagueKey } from '../types/data';
+import type { DmaxRow, PveRow, PvpRow, LeagueKey } from '../types/data';
+import { num, word, lines as keep } from '../lib/cell';
 
 // ⓘ 안내 — v3 티어표 머리의 정보점과 같은 글이다 (등급 기준이 탭이 아니라 전 종이라는 오해가 잦았다)
 const DMAX_INFO = '등급은 이 탭이 아니라 전 종을 통틀어 매깁니다 — 전 종 최고 점수 대비 90% 이상 S, 80% 이상 A, 70% 이상 B, 그 아래 C. 그래서 탭을 옮겨도 글자가 바뀌지 않아요. 순위는 이 탭 안에서만 셉니다. 점수 = 공격 × 맥스무브 위력(거다이 450 · 다이 350) × 자속 1.2 × 내구 보정(방어 × 체력 ÷ 1000 의 네제곱근). 내구를 약하게 섞는 이유는 화력만 보면 진화 단계가 짧은 개체가 앞서기 때문이에요 — 맥스 배틀은 버티면서 맥스 페이즈를 여러 번 도는 싸움이라 내구가 실제로 값을 합니다.';
@@ -62,23 +63,47 @@ function useView(screen: string) {
  */
 export function dmaxCells(axis: 'all' | 'dealer' | 'tank', boss: string, row: DmaxRow, typeKo: Record<string, string>) {
   if (axis === 'tank') {
+    const body = `체력 ${num(row.hp)} × 방어 ${num(row.def)}`;
     return {
-      score: String(row.ehp),
-      sub: boss === 'overall'
-        ? `EHP · 체력 ${row.hp} × 방어 ${row.def}`
-        : `EHP · 받는 배율 ×${row.mult} · 체력 ${row.hp} × 방어 ${row.def}`,
+      score: num(row.ehp),
+      // 보스를 고르면 그 타입에 받는 배율이 한 칸 더 붙는다
+      sub: boss === 'overall' ? `EHP · ${body}` : `EHP · 받는 배율 ×${num(row.mult)} · ${body}`,
       lines: [] as string[],
     };
   }
-  const lines = [row.fast, `${typeKo[row.charged] ?? row.charged} 타입`];
+  // 기술이 비어 있으면 줄 자체를 세우지 않는다 — `— 타입` 은 없는 정보를 있는 척한다
+  const moves = keep(row.fast, row.charged && `${word(typeKo[row.charged] ?? row.charged)} 타입`);
   if (axis === 'all') {
     return {
-      score: `${row.pct ?? Math.round(row.score)}%`,
-      sub: `공격 ${row.atk} · 위력 ${row.power}${row.stab ? ' · 자속' : ''} · 내구 ${row.bulk ?? 0}`,
-      lines,
+      score: `${num(row.pct ?? Math.round(row.score))}%`,
+      sub: `공격 ${num(row.atk)} · 위력 ${num(row.power)}${row.stab ? ' · 자속' : ''} · 내구 ${num(row.bulk ?? 0)}`,
+      lines: moves,
     };
   }
-  return { score: String(row.dmg ?? Math.round(row.score)), sub: `맥스 피해 · 내구 ${row.bulk}`, lines };
+  return { score: num(row.dmg ?? Math.round(row.score)), sub: `맥스 피해 · 내구 ${num(row.bulk)}`, lines: moves };
+}
+
+/**
+ * 레이드 한 줄의 칸 — **모드마다 점수 칸의 뜻이 다르다** (v3 tier.js vs pve.js).
+ *   easy  일반 `66점` = 같은 속성 최강 어태커 대비 % + 티어 묶음
+ *   all   전체 `14.3` = DPS 그대로, 티어 없이 한 줄로
+ * 처음에 전체 쪽 문법을 양쪽에 썼더니 v3 의 66점이 14.3 으로 나왔다.
+ */
+export function pveCells(mode: 'easy' | 'all', row: PveRow) {
+  const moves = keep(row.fast, row.charged);
+  if (mode === 'easy') {
+    return { score: `${num(row.ratio ?? Math.round(row.score))}점`, sub: `DPS ${num(row.dps)} · TDO ${num(row.tdo)}`, lines: moves };
+  }
+  return { score: num(row.dps, 1), sub: `DPS · TDO ${num(row.tdo)}`, lines: moves };
+}
+
+// 배틀 한 줄의 칸 — 속성 칩을 고른 동안만 전체 순위를 곁들인다.
+export function pvpCells(pvpType: string, row: PvpRow) {
+  return {
+    score: num(row.score, 1),
+    sub: pvpType === 'all' ? undefined : `전체 ${num(row.rank)}위`,
+    lines: keep(row.fast, row.charged),
+  };
 }
 
 export function Dmax({ onOpen }: { onOpen: OpenMon }) {
@@ -261,10 +286,7 @@ export function Pve({ onOpen }: { onOpen: OpenMon }) {
       </Slot>
 
       <RowHead title={title} meta={meta} />
-      {/* **모드마다 점수 칸의 뜻이 다르다** (v3 tier.js vs pve.js) —
-          일반: `66점` = 같은 속성 최강 어태커 대비 % + 티어 묶음
-          전체: `14.3` = DPS 그대로, 티어 없이 한 줄로
-          처음에 전체 쪽 문법을 양쪽에 썼더니 v3 의 66점이 14.3 으로 나왔다 */}
+      {/* 점수 칸의 뜻은 모드마다 다르다 — 그 갈래는 pveCells 안에 적어 뒀다 */}
       {mode === 'easy'
         ? TIER_ORDER.map((tier) => {
           const group = rows.filter((row) => row.tier === tier);
@@ -284,9 +306,7 @@ export function Pve({ onOpen }: { onOpen: OpenMon }) {
                     rank={String(index + 1)}
                     unrel={row.unrel} delta={row.d}
                     onOpen={() => onOpen(row)}
-                    score={`${row.ratio ?? Math.round(row.score)}점`}
-                    sub={`DPS ${row.dps} · TDO ${row.tdo}`}
-                    lines={[row.fast, row.charged]}
+                    {...pveCells('easy', row)}
                   />
                 ))}
               </RowList>
@@ -302,9 +322,7 @@ export function Pve({ onOpen }: { onOpen: OpenMon }) {
                 rank={String(index + 1)}
                 unrel={row.unrel} delta={row.d}
                 onOpen={() => onOpen(row)}
-                score={row.dps.toFixed(1)}
-                sub={`DPS · TDO ${row.tdo}`}
-                lines={[row.fast, row.charged]}
+                {...pveCells('all', row)}
               />
             ))}
           </RowList>
@@ -366,10 +384,7 @@ export function Pvp({ onOpen }: { onOpen: OpenMon }) {
             rank={String(index + 1)}
             delta={row.d}
             onOpen={() => onOpen(row)}
-            score={row.score.toFixed(1)}
-            // 속성으로 걸렀을 때만 원래 전체 순위를 덧붙인다 — 앞 번호가 속성 안의 순위로 바뀌어서다
-            sub={pvpType === 'all' ? undefined : `전체 ${row.rank}위`}
-            lines={[row.fast, row.charged]}
+            {...pvpCells(pvpType, row)}
           />
         ))}
         <RowMore total={rows.length} expanded={isOpen(listKey)} onToggle={() => toggleMore(listKey)} />

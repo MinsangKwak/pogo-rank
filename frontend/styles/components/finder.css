@@ -11,7 +11,7 @@
   position: sticky;
   top: calc(5.6rem + max(1.4rem, env(safe-area-inset-top)));
   z-index: 2;
-  margin: 1.6rem 0; padding: 1.4rem 1.6rem;
+  margin: 1.6rem 0; padding: 1.2rem 1.6rem;
   border: 1px solid var(--line); border-radius: 1.2rem; background: var(--surface);
 }
 /* 상단 바 높이만큼 내려 붙인다. v3.56.0 노트 테마에서 바의 아래 테두리가 빠져 3px 낮아졌다 —
@@ -26,17 +26,17 @@
 .finder .row-head:first-of-type { margin-top: 2.4rem; }
 .finder .detail__foot { margin-top: 2.4rem; }
 .finder__out {
-  display: block; width: 100%; padding: 1rem 1.2rem;
+  display: block; width: 100%; padding: 1.2rem 1.2rem;
   border: 1px solid var(--line); border-radius: 0.8rem; background: var(--bg);
-  font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 1.4rem;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: var(--fs-body);
   line-height: 1.5; color: var(--fg); word-break: break-all; user-select: all;
 }
 .finder__out.is-empty { color: var(--muted); user-select: none; }
-.finder__actions { display: flex; gap: 0.8rem; margin-top: 1rem; }
+.finder__actions { display: flex; gap: 0.8rem; margin-top: 1.2rem; }
 .finder__copy:disabled { opacity: .5; cursor: default; }
 .finder__hint { margin: 0.8rem 0 0; }
 
-.finder__chips { display: flex; flex-wrap: wrap; gap: 0.6rem; margin: 0; }
+.finder__chips { display: flex; flex-wrap: wrap; gap: 0.4rem; margin: 0; }
 
 /* 포함(＋)은 브랜드색, 제외(－)는 주의색 — 같은 칸이 세 상태를 도니 색으로도 갈라 준다.
    글자만으로 가르면 ＋ 와 － 가 작아서 빠르게 훑을 때 안 읽힌다 */
@@ -58,7 +58,7 @@
 .finder__num, .finder__name {
   min-height: var(--tap); padding: 0 1.2rem;
   border: 1px solid var(--line); border-radius: 0.8rem;
-  background: var(--bg); color: var(--fg); font-size: 1.4rem;
+  background: var(--bg); color: var(--fg); font-size: var(--fs-body);
 }
 .finder__num { width: 11rem; }
 .finder__name { flex: 1 1 18rem; min-width: 0; }
