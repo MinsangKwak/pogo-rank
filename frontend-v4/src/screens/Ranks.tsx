@@ -5,6 +5,7 @@
 // **점수 칸과 보조줄이 화면마다 다르다** — v3 의 각 뷰가 넘기던 그대로 옮겼다:
 //   D-MAX 티어표  점수 `100%`(전 종 1위 대비 pct) · 보조 `공격 201 · 위력 450 · 자속 · 내구 27`
 //   D-MAX 딜러    점수 맥스 피해(dmg)           · 보조 `맥스 피해 · 내구 27`
+//   D-MAX 탱커    점수 EHP(ehp)                · 보조 `EHP · 받는 배율 ×2 · 체력 403 × 방어 145` — 기술 줄 없음
 //   PvE           점수 DPS                       · 보조 `DPS · TDO 149`
 //   PvP           점수 점수(100점 만점)          · 보조 없음
 // 숫자만 옮기고 라벨을 지어내면 같은 값이 다른 말을 하게 된다 — 그래서 문구까지 그대로 가져왔다.
@@ -29,7 +30,7 @@ import { useAuthStore } from '../stores/auth';
 import { LEAGUES } from '../lib/leagues';
 import type { OpenMon } from '../lib/mon';
 import { Fragment } from 'react';
-import type { LeagueKey } from '../types/data';
+import type { DmaxRow, LeagueKey } from '../types/data';
 
 // ⓘ 안내 — v3 티어표 머리의 정보점과 같은 글이다 (등급 기준이 탭이 아니라 전 종이라는 오해가 잦았다)
 const DMAX_INFO = '등급은 이 탭이 아니라 전 종을 통틀어 매깁니다 — 전 종 최고 점수 대비 90% 이상 S, 80% 이상 A, 70% 이상 B, 그 아래 C. 그래서 탭을 옮겨도 글자가 바뀌지 않아요. 순위는 이 탭 안에서만 셉니다. 점수 = 공격 × 맥스무브 위력(거다이 450 · 다이 350) × 자속 1.2 × 내구 보정(방어 × 체력 ÷ 1000 의 네제곱근). 내구를 약하게 섞는 이유는 화력만 보면 진화 단계가 짧은 개체가 앞서기 때문이에요 — 맥스 배틀은 버티면서 맥스 페이즈를 여러 번 도는 싸움이라 내구가 실제로 값을 합니다.';
@@ -49,6 +50,35 @@ function useView(screen: string) {
   const saved = usePrefStore((s) => s.cols[screen]) ?? readCols(screen);
   const setCols = usePrefStore((s) => s.setCols);
   return { view: saved, toggle: () => setCols(screen, saved === 'grid' ? 'list' : 'grid') };
+}
+
+/**
+ * D-MAX 한 줄의 점수·보조·기술 칸 — **축마다 행 모양이 다르다.**
+ *   all     티어표(DMAX_TIER)  pct · atk · power · stab · bulk
+ *   dealer  딜러(DMAX_DATA)    dmg · bulk · fast · charged
+ *   tank    탱커(DMAX_TANK)    ehp · hp · def · mult — 기술 칸은 비어 있다
+ * 탱커가 딜러 가지를 그대로 타서 `NaN 맥스 피해 · 내구 undefined` 로 나왔다 (2026-09-19 제보).
+ * 세 축을 한 함수에 두고 검사(test/rankcells.test.ts)가 실데이터 모양으로 확인한다.
+ */
+export function dmaxCells(axis: 'all' | 'dealer' | 'tank', boss: string, row: DmaxRow, typeKo: Record<string, string>) {
+  if (axis === 'tank') {
+    return {
+      score: String(row.ehp),
+      sub: boss === 'overall'
+        ? `EHP · 체력 ${row.hp} × 방어 ${row.def}`
+        : `EHP · 받는 배율 ×${row.mult} · 체력 ${row.hp} × 방어 ${row.def}`,
+      lines: [] as string[],
+    };
+  }
+  const lines = [row.fast, `${typeKo[row.charged] ?? row.charged} 타입`];
+  if (axis === 'all') {
+    return {
+      score: `${row.pct ?? Math.round(row.score)}%`,
+      sub: `공격 ${row.atk} · 위력 ${row.power}${row.stab ? ' · 자속' : ''} · 내구 ${row.bulk ?? 0}`,
+      lines,
+    };
+  }
+  return { score: String(row.dmg ?? Math.round(row.score)), sub: `맥스 피해 · 내구 ${row.bulk}`, lines };
 }
 
 export function Dmax({ onOpen }: { onOpen: OpenMon }) {
@@ -151,9 +181,7 @@ export function Dmax({ onOpen }: { onOpen: OpenMon }) {
                     nowRank={nowRankOf.get(rows.indexOf(row))}
                     delta={unrel ? 0 : row.d}
                     onOpen={() => onOpen(row)}
-                    score={`${row.pct ?? Math.round(row.score)}%`}
-                    sub={`공격 ${row.atk} · 위력 ${row.power}${row.stab ? ' · 자속' : ''} · 내구 ${row.bulk ?? 0}`}
-                    lines={[row.fast, `${dex.TYPE_KO[row.charged] ?? row.charged} 타입`]}
+                    {...dmaxCells('all', boss, row, dex.TYPE_KO)}
                   />
                 ))}
               </RowList>
@@ -171,9 +199,7 @@ export function Dmax({ onOpen }: { onOpen: OpenMon }) {
                 nowRank={nowRankOf.get(index)}
                 delta={unrel ? 0 : row.d}
                 onOpen={() => onOpen(row)}
-                score={String(row.dmg ?? Math.round(row.score))}
-                sub={`맥스 피해 · 내구 ${row.bulk}`}
-                lines={[row.fast, `${dex.TYPE_KO[row.charged] ?? row.charged} 타입`]}
+                {...dmaxCells(axis, boss, row, dex.TYPE_KO)}
               />
             ))}
           </RowList>
