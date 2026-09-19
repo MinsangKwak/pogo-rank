@@ -1,6 +1,9 @@
 /* 세그먼트 컨트롤 (리그 전환, 가성비 서브탭) */
 .seg { display: inline-flex; background: var(--surface); border-radius: 1rem; padding: 0.4rem; gap: 0.2rem; align-self: flex-start; }
-.seg button { padding: 0.4rem 1.2rem; border-radius: 0.8rem; font-size: var(--fs-body); color: var(--muted); }
+/* 2026-09-19 v4.3.5 탭 타깃 — 실측 26px 이었다. Material 48dp · Apple 44pt 가 최소선이고
+   이 서비스의 --tap(44px)이 그 값이다. 칩·도구 버튼은 이미 지키고 있었는데 탭만 빠져 있었다 */
+.seg button { display: inline-flex; align-items: center; justify-content: center; min-height: var(--tap);
+  padding: 0.4rem 1.2rem; border-radius: 0.8rem; font-size: var(--fs-body); color: var(--muted); }
 .seg button[aria-pressed="true"] { background: var(--bg); color: var(--fg); box-shadow: 1px 1px 0 rgba(0,0,0,.08); }
 @media (prefers-reduced-motion: no-preference) {
   .seg button { transition: color .12s, border-color .12s, background .12s; }

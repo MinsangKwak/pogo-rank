@@ -15,6 +15,11 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 const RELEASE_NOTES_EN = {
+  '2026-09-19 · v4.3.5': [
+    '**Small text got bigger** — 11px is gone from the screen; 12px is the new floor, the minimum that both the Naver and Google guidelines set for reading',
+    '**Tabs are easier to hit** — the [All / Dealer / Tank] tabs were 26px tall; they are 44px now',
+    '**Scores are prominent again** — the number you should read first on a card was the same size as body text',
+  ],
   '2026-09-19 · v4.3.4': [
     '**Type and spacing now sit on a grid** — text uses only the sizes the pixel font renders crisply, and spacing steps in 4px. The screen breathes more and the letters are sharper',
   ],

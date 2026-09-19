@@ -249,7 +249,7 @@ html:not(#_):not(#__) .home-dashboard .home__art::before { border-radius:50%; }@
 .home-dashboard .home__welcome::after { height:1.2rem; background:repeating-linear-gradient(90deg,var(--foil-hi) 0 1.2rem,transparent 1.2rem 2.4rem); }
 .home-dashboard .home__intro h2 { font-size:clamp(2.2rem,2.3vw,3.2rem); font-weight:700; letter-spacing:-.04em; line-height: 1.5; }
 .home-dashboard .home__art::before { border:0; width:27rem; height:24rem; background:radial-gradient(var(--foil-hi) .22rem,transparent .24rem) 0 / 1.4rem 1.4rem; box-shadow:none; clip-path:polygon(12% 0,88% 0,88% 12%,100% 12%,100% 88%,88% 88%,88% 100%,12% 100%,12% 88%,0 88%,0 12%,12% 12%); }
-.home-dashboard .home__motto { font-family:"Galmuri11",sans-serif; font-style:normal; font-size: var(--fs-sub); }
+.home-dashboard .home__motto { font-family:"Galmuri11",sans-serif; font-style:normal; font-size: var(--fs-body); }
 .home-dashboard .home__group { font-size: var(--fs-sec); line-height: 1.7; }
 .home-dashboard .home__section h3 { font-size: var(--fs-sec); line-height: 1.7; }
 .home-dashboard .pick__head h4 { font-size: var(--fs-sec); line-height: 1.5; }
@@ -264,7 +264,7 @@ html:not(#_):not(#__) .home-dashboard .home__art::before { border-radius:0; }@me
 /* Field notebook pages: calendar, current raid bosses and hatch pools. */
 :is(#page-schedule,#page-raids,#page-eggs) { --field-red:var(--brand-2); --field-paper:color-mix(in srgb,var(--notebook-tint) 12%,var(--bg)); }
 :is(#page-schedule,#page-raids,#page-eggs) .page__sec { font-family:"Galmuri11",sans-serif; font-size: var(--fs-sec); padding:1.6rem 0; margin-top:3.2rem; border-top:3px solid var(--field-red); }
-:is(#page-schedule,#page-raids,#page-eggs) .chips__item { min-height:3.8rem; padding:0.8rem 1.2rem; border:1px solid var(--notebook-edge); font-family:"Galmuri11",sans-serif; font-size: var(--fs-sub); }
+:is(#page-schedule,#page-raids,#page-eggs) .chips__item { min-height:3.8rem; padding:0.8rem 1.2rem; border:1px solid var(--notebook-edge); font-family:"Galmuri11",sans-serif; font-size: var(--fs-body); }
 :is(#page-schedule,#page-raids,#page-eggs) .chips__item.is-on { background:var(--brand-2); color:var(--surface); border-color:var(--brand-2); box-shadow:.2rem .2rem 0 var(--fg); }
 #page-schedule .schedule__bridge, :is(#page-raids,#page-eggs) .gameday__intro { padding:1.6rem 2rem; background:var(--field-paper); border-left:4px solid var(--field-red); line-height: 1.7; }
 #page-schedule .schedule__cal { gap:0.4rem; padding:1.2rem; border:1.5px solid var(--notebook-edge); border-top:5px solid var(--field-red); background:var(--field-paper); }
@@ -299,7 +299,7 @@ html:not(#_):not(#__) .home-dashboard .home__art::before { border-radius:0; }@me
 /* Pick a partner: consistent red notebook controls across all four tools. */
 body:is([data-route="dex"],[data-route="dmax"],[data-route="pve"],[data-route="pvp"]) { --pick-red:var(--brand-2); --pick-line:var(--notebook-edge); }
 body:is([data-route="dex"],[data-route="dmax"],[data-route="pve"],[data-route="pvp"]) :is(.page-head h2,.tier__name,.row-head h2) { font-family:"Galmuri11",sans-serif; }
-body:is([data-route="dex"],[data-route="dmax"],[data-route="pve"],[data-route="pvp"]) .chips__item { min-height:4.4rem; padding:0.8rem 1.2rem; border:1px solid var(--pick-line); font-family:"Galmuri11",sans-serif; font-size: var(--fs-sub); }
+body:is([data-route="dex"],[data-route="dmax"],[data-route="pve"],[data-route="pvp"]) .chips__item { min-height:4.4rem; padding:0.8rem 1.2rem; border:1px solid var(--pick-line); font-family:"Galmuri11",sans-serif; font-size: var(--fs-body); }
 body:is([data-route="dex"],[data-route="dmax"],[data-route="pve"],[data-route="pvp"]) .chips__item.is-on { background:var(--pick-red); color:var(--surface); border-color:var(--brand-2); box-shadow:.2rem .2rem 0 var(--fg); }
 body:is([data-route="dex"],[data-route="dmax"],[data-route="pve"],[data-route="pvp"]) :is(.view-toggle,.boss__selected) { border:1.5px solid var(--pick-line); background:var(--bg); }
 body:is([data-route="dex"],[data-route="dmax"],[data-route="pve"],[data-route="pvp"]) .tier__head { padding:2.4rem 0 1.2rem; margin-top:2rem; border-top:3px solid var(--pick-red); }
@@ -349,7 +349,7 @@ html:not(#_):not(#__) body[data-route] :is(.row-list.is-grid,.dex-catalog.is-gri
 html body[data-route] #content .row-list.is-grid > .row > .row__rank,
 html body[data-route] .dex-catalog.is-grid .dex__no {
  position:absolute; top:1rem; left:1rem; background:var(--brand-2); color:var(--surface); border:0; padding:0.4rem 0.8rem;
- font-family:"Galmuri11",sans-serif; font-size: var(--fs-sub); box-shadow:.2rem .2rem 0 var(--foil-lo);
+ font-family:"Galmuri11",sans-serif; font-size: var(--fs-body); box-shadow:.2rem .2rem 0 var(--foil-lo);
 }
 html body[data-route] #content .row-list.is-grid .row__main { gap:1.2rem; text-align:left; }
 html body[data-route] #content .row-list.is-grid .row__name { justify-content:flex-start; gap:0.4rem; }
@@ -508,7 +508,10 @@ html body[data-route="dmax"] #content .row-list.is-list > .row.is-report-selecte
   .home-dashboard .pick__discover { display:grid; grid-template-columns:minmax(0,1fr) auto; gap:0.4rem 1.2rem; padding:1.2rem 1.2rem; }
   .home-dashboard .pick__discover-kicker { justify-self:start; }
   .home-dashboard .pick__discover strong { font-size: var(--fs-body); }
-  .home-dashboard .pick__discover strong br { display:none; }
+  /* 2026-09-19 v4.3.5 좁은 화면에서 줄바꿈을 숨기면 "한 마리로여러 배틀을" 처럼 말이 붙는다 —
+     원문에 공백이 없고 <br> 이 그 자리를 대신하고 있어서다. display:none 대신 **줄바꿈만 없애고**
+     제 폭만큼 공백을 남긴다(inline-block + width). 마크업은 안 건드린다 */
+  .home-dashboard .pick__discover strong br { display:inline-block; width:.4rem; }
   .home-dashboard .pick__discover-copy { display:none; }
   .home-dashboard .pick__discover-action { grid-column:2; grid-row:1 / 3; width:auto; gap:0.8rem; margin:0; padding:0; border:0; font-size: var(--fs-sub); }}
 

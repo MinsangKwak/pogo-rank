@@ -86,7 +86,9 @@
 .deck__reason { margin: 0.8rem 0.2rem 0.2rem; font-size: var(--fs-body); color: var(--muted); line-height: 1.7; word-break: keep-all; }
 .schedule__body.is-starless .row { padding-right: 0.4rem; }
 .row__stats { text-align: right; }
-.row__score { font-size: var(--fs-body); font-weight: 500; }
+/* 2026-09-19 v4.3.5 점수는 카드의 주인공이라 본문보다 커야 한다. v4.3.4 에서 격자로 스냅하며
+   1.5rem → 본문(1.4)으로 눌려 위계가 사라졌었다 — 강조 단(16px)으로 올린다 */
+.row__score { font-size: var(--fs-lead); font-weight: 600; }
 .row__sub { font-size: var(--fs-sub); color: var(--muted); display: block; }
 
 .row__more { width: 100%; padding: 1.2rem 0; font-size: var(--fs-body); color: var(--muted); border-bottom: 1px solid var(--line); }
@@ -253,7 +255,7 @@
   .row-list:not(.is-list) > .row .row__moves { margin-top: 0.4rem; line-height: 1.5; word-break: keep-all; }
   /* 점수는 카드 바닥에 붙인다 — 기술 줄 길이가 종마다 달라도 점수 높이가 가지런하다 */
   .row-list:not(.is-list) > .row > .row__stats { display: flex; flex-direction: column; align-items: center; gap: 1px; margin-top: auto; padding-top: 0.8rem; text-align: center; }
-  .row-list:not(.is-list) > .row .row__score { font-size: var(--fs-body); font-weight: 600; }
+  .row-list:not(.is-list) > .row .row__score { font-size: var(--fs-lead); font-weight: 700; }
   .row-list:not(.is-list) > .row .row__sub { display: block; }
   /* 격자 폭을 다 쓰는 항목들 — 더보기 버튼과 티어표의 "선정 근거" 줄 */
   .row-list:not(.is-list) > .row__more { grid-column: 1 / -1; border: 1px solid var(--line); border-radius: 1rem; }
