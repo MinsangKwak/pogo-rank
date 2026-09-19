@@ -140,7 +140,7 @@
   .detail--mon .detail__main-detail { padding-top: var(--space-sm); }
   .detail--mon .detail__bar { min-height: 5.6rem; }
   .detail--mon:not([data-screen="calc"]) .detail__bar-title { display: block; }
-  .detail--mon .detail__cp-line b { font-size: 3.2rem; }
+  .detail--mon .detail__cp-line b { font-size: var(--fs-title); }
   .detail--mon .detail__dock-btn { font-size: var(--fs-sub); }
   .detail--mon .detail__share-icon { display: none; }
   .detail--mon .detail__fav-label { display: inline; }

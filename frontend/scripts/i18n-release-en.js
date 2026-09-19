@@ -15,6 +15,9 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 const RELEASE_NOTES_EN = {
+  '2026-09-19 · v4.3.4': [
+    '**Type and spacing now sit on a grid** — text uses only the sizes the pixel font renders crisply, and spacing steps in 4px. The screen breathes more and the letters are sharper',
+  ],
   '2026-09-19 · v4.3.3': [
     '**Shadows are hard-edged now too** — no blur anywhere, so the whole screen matches the square corners',
   ],

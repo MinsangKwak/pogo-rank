@@ -31,7 +31,7 @@ body {
   letter-spacing: -0.01em;
   /* 2026-09-12 v3.6.0 15px → 14px. Galmuri14 가 그려진 크기 그대로라야 픽셀이 선명하다.
      줄 간격도 정수 픽셀로 떨어지게 1.5 → 1.5714(=22/14) 대신 22px 를 직접 준다 */
-  font-size: 1.4rem; line-height: 2.2rem; font-feature-settings: "tnum" 1;
+  font-size: var(--fs-body); line-height: 1.7.2rem; font-feature-settings: "tnum" 1;
 }
 button { font: inherit; color: inherit; background: none; border: 0; padding: 0; cursor: pointer; }
 button:focus-visible { outline: 0.2rem solid var(--fg); outline-offset: 0.2rem; border-radius: 0.4rem; }

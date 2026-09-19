@@ -3,50 +3,50 @@
    상태 알약은 색만으로 뜻을 말하지 않는다: 늘 글자가 함께 있고, 색은 "한 번 더 봐야 하는 값" 에만 붙는다 */
 
 /* ── 목록 ────────────────────────────────────────────────────────────────── */
-.upd__tools { display: flex; flex-direction: column; gap: 0.8rem; margin-bottom: 1.4rem; }
+.upd__tools { display: flex; flex-direction: column; gap: 0.8rem; margin-bottom: 1.2rem; }
 .upd__search { width: 100%; height: 4.4rem; padding: 0 1.2rem; border: 1px solid var(--line); border-radius: var(--r-btn, 1rem);
   background: var(--bg); color: var(--fg); font-size: var(--fs-body); }
 .upd__search:focus-visible { outline: 2px solid var(--brand); outline-offset: 1px; }
-.upd__filter { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+.upd__filter { display: flex; flex-wrap: wrap; gap: 0.4rem; }
 .upd__count { margin: 0; font-size: var(--fs-sub); color: var(--muted); }
 /* 지난 소식 더 보기 — 목록 아래 한 줄. 남은 수를 적어 "더 있다" 를 숫자로 말한다 */
-.upd__more { width: 100%; margin-top: 1rem; padding: 1.1rem; border: 1px solid var(--line); border-radius: var(--r-btn, 1rem);
-  background: var(--surface); font-size: 1.3rem; font-weight: 600; color: var(--fg); }
+.upd__more { width: 100%; margin-top: 1.2rem; padding: 1.2rem; border: 1px solid var(--line); border-radius: var(--r-btn, 1rem);
+  background: var(--surface); font-size: var(--fs-body); font-weight: 600; color: var(--fg); }
 .upd__more:hover { background: var(--hover); }
 .upd__more[hidden] { display: none; }
 
-.upd__cards { display: flex; flex-direction: column; gap: 1rem; }
+.upd__cards { display: flex; flex-direction: column; gap: 1.2rem; }
 /* 주요 변경 — 같은 카드지만 왼쪽에 강조 막대를 세워 "고른 글" 임을 말한다 */
 .upd__cards--top { margin-bottom: 2.4rem; }
 .upd__cards--top .upd__card { border-left: 0.3rem solid var(--brand); }
-.upd__card { display: flex; flex-direction: column; gap: 0.6rem; padding: 1.4rem 1.6rem; border: 1px solid var(--line); border-radius: 1.2rem;
+.upd__card { display: flex; flex-direction: column; gap: 0.4rem; padding: 1.2rem 1.6rem; border: 1px solid var(--line); border-radius: 1.2rem;
   background: var(--surface); text-align: left; cursor: pointer; }
 .upd__card:hover { background: var(--hover); }
-.upd__title { margin: 0; font-size: 1.6rem; font-weight: 700; line-height: 1.35; word-break: keep-all; }
+.upd__title { margin: 0; font-size: var(--fs-body); font-weight: 700; line-height: 1.5; word-break: keep-all; }
 /* 요약은 두 줄까지 — 카드마다 높이가 들쭉날쭉하면 목록을 훑기 어렵다 */
 .upd__summary { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
-  margin: 0; font-size: 1.3rem; line-height: 1.6; color: var(--muted); word-break: keep-all; }
+  margin: 0; font-size: var(--fs-body); line-height: 1.7; color: var(--muted); word-break: keep-all; }
 /* 아카이브 카드 — 우리 문장이 아니라 인용이다. 왼쪽 세로줄로 "옮겨 온 말" 임을 눈에 보이게 한다 */
 .upd__card--archive { border-style: dashed; }
 .upd__quote { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
-  margin: 0; padding-left: 1rem; border-left: 0.2rem solid var(--line);
-  font-size: 1.25rem; line-height: 1.6; color: var(--muted); word-break: keep-all; }
-.upd__quote-box { margin: 0; padding: 1.2rem 1.4rem; border-left: 0.3rem solid var(--line); border-radius: 0 1rem 1rem 0;
-  background: var(--surface); font-size: 1.35rem; line-height: 1.75; word-break: keep-all; }
+  margin: 0; padding-left: 1.2rem; border-left: 0.2rem solid var(--line);
+  font-size: var(--fs-body); line-height: 1.7; color: var(--muted); word-break: keep-all; }
+.upd__quote-box { margin: 0; padding: 1.2rem 1.2rem; border-left: 0.3rem solid var(--line); border-radius: 0 1rem 1rem 0;
+  background: var(--surface); font-size: var(--fs-body); line-height: 1.7; word-break: keep-all; }
 
 /* 분류 · 상태 · 날짜 */
 .upd__cats { display: flex; flex-wrap: wrap; gap: 0.4rem; }
 .upd__cat { padding: 0.2rem 0.8rem; border: 1px solid var(--line); border-radius: 99.9rem; background: var(--bg);
-  font-size: 1.05rem; font-weight: 700; color: var(--muted); }
+  font-size: var(--fs-sub); font-weight: 700; color: var(--muted); }
 .upd__badges { display: flex; flex-wrap: wrap; gap: 0.4rem; }
 .upd__badges:empty { display: none; }
-.upd__badge { padding: 0.2rem 0.7rem; border: 1px solid var(--line); border-radius: 0.5rem; background: var(--bg);
-  font-size: 1.05rem; font-weight: 600; color: var(--muted); }
+.upd__badge { padding: 0.2rem 0.8rem; border: 1px solid var(--line); border-radius: 0.5rem; background: var(--bg);
+  font-size: var(--fs-sub); font-weight: 600; color: var(--muted); }
 .upd__badge--ok { color: var(--good); border-color: color-mix(in srgb, var(--good) 45%, var(--line)); }
 /* 아카이브 표시 — 색을 쓰지 않는다. 좋고 나쁨이 아니라 "종류가 다르다" 는 뜻이라서다 */
 .upd__badge--plain { border-style: dashed; }
 .upd__badge--warn { color: var(--warn); border-color: color-mix(in srgb, var(--warn) 45%, var(--line)); }
-.upd__dates { display: flex; flex-wrap: wrap; gap: 0.3rem 1rem; font-size: 1.15rem; color: var(--muted); }
+.upd__dates { display: flex; flex-wrap: wrap; gap: 0.4rem 1.2rem; font-size: var(--fs-sub); color: var(--muted); }
 .upd__date { display: inline-flex; align-items: baseline; gap: 0.4rem; }
 .upd__date em { font-style: normal; }
 .upd__dates b { font-weight: 700; color: var(--fg); font-variant-numeric: tabular-nums; }
@@ -54,31 +54,31 @@
 /* ── 상세 ────────────────────────────────────────────────────────────────── */
 /* 기사 본문은 PC 에서도 폭을 묶는다 — 한 줄이 길면 눈이 다음 줄을 놓친다 */
 #page-game-update { max-width: 72rem; }
-.upd__back { display: inline-flex; align-items: center; gap: 0.3rem; margin-bottom: 1.4rem; padding: 0.7rem 1.2rem;
+.upd__back { display: inline-flex; align-items: center; gap: 0.4rem; margin-bottom: 1.2rem; padding: 0.8rem 1.2rem;
   border: 1px solid var(--line); border-radius: var(--r-btn, 1rem); background: var(--surface);
-  font-size: 1.25rem; font-weight: 600; color: var(--fg); }
+  font-size: var(--fs-body); font-weight: 600; color: var(--fg); }
 .upd__back:hover { background: var(--hover); }
 .upd__head { display: flex; flex-direction: column; gap: 0.8rem; padding-bottom: 1.6rem; border-bottom: 1px solid var(--line); }
-.upd__head-title { margin: 0; font-size: 2.2rem; font-weight: 700; line-height: 1.3; word-break: keep-all; }
-.upd__head-sum { margin: 0; font-size: 1.45rem; line-height: 1.65; color: var(--muted); word-break: keep-all; }
+.upd__head-title { margin: 0; font-size: var(--fs-sec); font-weight: 700; line-height: 1.2; word-break: keep-all; }
+.upd__head-sum { margin: 0; font-size: var(--fs-body); line-height: 1.7; color: var(--muted); word-break: keep-all; }
 .upd__head .detail__foot { margin: 0; }
 
 .upd__sec { margin-top: 2.4rem; }
-.upd__sec > h3 { margin: 0 0 1rem; font-size: 1.5rem; font-weight: 700; }
-.upd__list { margin: 0; padding-left: 1.8rem; font-size: 1.35rem; line-height: 1.75; word-break: keep-all; }
-.upd__list li + li { margin-top: 0.6rem; }
+.upd__sec > h3 { margin: 0 0 1.2rem; font-size: var(--fs-body); font-weight: 700; }
+.upd__list { margin: 0; padding-left: 2rem; font-size: var(--fs-body); line-height: 1.7; word-break: keep-all; }
+.upd__list li + li { margin-top: 0.4rem; }
 /* 핵심 요약은 목록점 대신 카드 한 장 — 먼저 읽는 세 줄이라 눈에 걸려야 한다 */
-.upd__list--key { padding: 1.4rem 1.6rem 1.4rem 3.2rem; border: 1px solid var(--line); border-radius: 1.2rem; background: var(--surface); }
+.upd__list--key { padding: 1.2rem 1.6rem 1.2rem 3.2rem; border: 1px solid var(--line); border-radius: 1.2rem; background: var(--surface); }
 
 /* 변경 전 · 후 — 라벨 / 이전 / → / 이후. 좁은 화면에서는 세로로 쌓는다 */
 .upd__ba { display: flex; flex-direction: column; gap: 0.8rem; }
 .upd__ba-row { display: grid; grid-template-columns: 1fr auto 1fr; grid-template-areas: 'label label label' 'before arrow after';
-  gap: 0.6rem 1rem; align-items: center; padding: 1.2rem 1.4rem; border: 1px solid var(--line); border-radius: 1.2rem; background: var(--surface); }
-.upd__ba-row em { grid-area: label; font-style: normal; font-size: 1.2rem; font-weight: 700; color: var(--muted); }
+  gap: 0.4rem 1.2rem; align-items: center; padding: 1.2rem 1.2rem; border: 1px solid var(--line); border-radius: 1.2rem; background: var(--surface); }
+.upd__ba-row em { grid-area: label; font-style: normal; font-size: var(--fs-sub); font-weight: 700; color: var(--muted); }
 .upd__ba-before { grid-area: before; }
-.upd__ba-arrow { grid-area: arrow; color: var(--muted); font-size: 1.6rem; line-height: 1; }
+.upd__ba-arrow { grid-area: arrow; color: var(--muted); font-size: var(--fs-body); line-height: 1; }
 .upd__ba-after { grid-area: after; font-weight: 600; }
-.upd__ba-before, .upd__ba-after { font-size: 1.3rem; line-height: 1.55; word-break: keep-all; }
+.upd__ba-before, .upd__ba-after { font-size: var(--fs-body); line-height: 1.5; word-break: keep-all; }
 .upd__ba-before { color: var(--muted); }
 /* 이전 값을 모를 때 — 비워 두지 않고 모른다고 적는다 */
 .upd__ba-none { font-style: italic; }
@@ -88,23 +88,23 @@
 }
 
 /* moncamp 는 이렇게 추천해요 — 우리 쪽 작업 상태가 아니라 "그래서 뭘 하면 되는지" 한 문단 (v3.52.0) */
-.upd__advice { padding: 1.2rem 1.4rem; border: 1px solid color-mix(in srgb, var(--brand) 32%, var(--line)); border-radius: 1.2rem;
+.upd__advice { padding: 1.2rem 1.2rem; border: 1px solid color-mix(in srgb, var(--brand) 32%, var(--line)); border-radius: 1.2rem;
   background: color-mix(in srgb, var(--brand) 6%, var(--surface)); }
-.upd__advice p { margin: 0; font-size: 1.3rem; line-height: 1.75; word-break: keep-all; }
+.upd__advice p { margin: 0; font-size: var(--fs-body); line-height: 1.7; word-break: keep-all; }
 
-.upd__related { display: flex; flex-wrap: wrap; gap: 0.6rem; }
+.upd__related { display: flex; flex-wrap: wrap; gap: 0.4rem; }
 
 /* 공식 원문 — 줄 링크가 아니라 미리보기 카드. 그림은 원본을 가리키고, 못 받으면 스크립트가 지운다 */
 .upd__sources { display: flex; flex-direction: column; gap: 0.8rem; }
-.upd__source { display: flex; align-items: stretch; gap: 1.2rem; padding: 1rem 1.2rem; border: 1px solid var(--line); border-radius: 1.2rem;
+.upd__source { display: flex; align-items: stretch; gap: 1.2rem; padding: 1.2rem 1.2rem; border: 1px solid var(--line); border-radius: 1.2rem;
   background: var(--surface); color: var(--fg); text-decoration: none; }
 .upd__source:hover { background: var(--hover); }
 /* 16:9 썸네일. object-fit 으로 비율이 달라도 상자가 흔들리지 않게 */
 .upd__source-img { flex: 0 0 auto; width: 12rem; height: 6.75rem; border-radius: 0.8rem; object-fit: cover; background: var(--bg); }
-.upd__source-body { display: flex; flex-direction: column; justify-content: center; gap: 0.5rem; min-width: 0; }
-.upd__source-body b { font-size: 1.3rem; font-weight: 700; line-height: 1.5; word-break: keep-all; }
-.upd__source-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; font-size: 1.15rem; color: var(--muted); }
-.upd__source-lang { padding: 0.1rem 0.6rem; border: 1px solid var(--line); border-radius: 99.9rem; background: var(--bg); font-weight: 700; }
+.upd__source-body { display: flex; flex-direction: column; justify-content: center; gap: 0.4rem; min-width: 0; }
+.upd__source-body b { font-size: var(--fs-body); font-weight: 700; line-height: 1.5; word-break: keep-all; }
+.upd__source-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 0.4rem; font-size: var(--fs-sub); color: var(--muted); }
+.upd__source-lang { padding: 0.2rem 0.4rem; border: 1px solid var(--line); border-radius: 99.9rem; background: var(--bg); font-weight: 700; }
 .upd__source-host { word-break: break-all; }
 .upd__source-go { color: var(--brand); font-weight: 700; }
 @media (max-width: 480px) {
@@ -116,17 +116,17 @@
 /* 홈 맨 아래 칸 (v3.55.0). 그리드 간격 위에 가로줄을 하나 더 그어 "여기부터는 소식" 을 말한다 —
    간격만 벌리면 화면이 길어지기만 하고 구역이 나뉘었다는 뜻은 안 남는다 */
 .home-updates { padding-top: 3.2rem; border-top: 1px solid var(--line); }
-.home-updates .home__section { position: relative; padding-bottom: 1rem; }
-.home-updates__all { margin-left: auto; padding: 0.5rem 1rem; border: 1px solid var(--line); border-radius: var(--r-btn, 1rem);
-  background: var(--bg); font-size: 1.2rem; font-weight: 600; color: var(--muted); white-space: nowrap; }
+.home-updates .home__section { position: relative; padding-bottom: 1.2rem; }
+.home-updates__all { margin-left: auto; padding: 0.4rem 1.2rem; border: 1px solid var(--line); border-radius: var(--r-btn, 1rem);
+  background: var(--bg); font-size: var(--fs-sub); font-weight: 600; color: var(--muted); white-space: nowrap; }
 .home-updates__all:hover { background: var(--hover); color: var(--fg); }
-.home-updates__list { display: grid; gap: 1rem; }
-.home-updates__item { display: flex; flex-direction: column; align-items: flex-start; gap: 0.5rem;
-  padding: 1.4rem 1.6rem; border: 1px solid var(--line); border-radius: 1.2rem; background: var(--surface); text-align: left; cursor: pointer; }
+.home-updates__list { display: grid; gap: 1.2rem; }
+.home-updates__item { display: flex; flex-direction: column; align-items: flex-start; gap: 0.4rem;
+  padding: 1.2rem 1.6rem; border: 1px solid var(--line); border-radius: 1.2rem; background: var(--surface); text-align: left; cursor: pointer; }
 .home-updates__item:hover { background: var(--hover); }
-.home-updates__item > b { font-size: 1.45rem; font-weight: 700; line-height: 1.35; word-break: keep-all; }
+.home-updates__item > b { font-size: var(--fs-body); font-weight: 700; line-height: 1.5; word-break: keep-all; }
 .home-updates__sum { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
-  font-size: 1.25rem; line-height: 1.6; color: var(--muted); word-break: keep-all; }
+  font-size: var(--fs-body); line-height: 1.7; color: var(--muted); word-break: keep-all; }
 @media (min-width: 700px) {
   .home-updates__list { grid-template-columns: repeat(3, 1fr); }
 }

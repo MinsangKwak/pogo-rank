@@ -1,6 +1,6 @@
 /* 세그먼트 컨트롤 (리그 전환, 가성비 서브탭) */
-.seg { display: inline-flex; background: var(--surface); border-radius: 1rem; padding: 0.3rem; gap: 0.2rem; align-self: flex-start; }
-.seg button { padding: 0.6rem 1.4rem; border-radius: 0.8rem; font-size: 1.4rem; color: var(--muted); }
+.seg { display: inline-flex; background: var(--surface); border-radius: 1rem; padding: 0.4rem; gap: 0.2rem; align-self: flex-start; }
+.seg button { padding: 0.4rem 1.2rem; border-radius: 0.8rem; font-size: var(--fs-body); color: var(--muted); }
 .seg button[aria-pressed="true"] { background: var(--bg); color: var(--fg); box-shadow: 1px 1px 0 rgba(0,0,0,.08); }
 @media (prefers-reduced-motion: no-preference) {
   .seg button { transition: color .12s, border-color .12s, background .12s; }
@@ -18,7 +18,7 @@
    자리는 탭 줄이 제 줄로 내려가면서 생겼다 — 머리에는 도구와 이 버튼만 남는다 */
 /* .icon-btn(drawer.css)이 width: var(--tap) 로 정사각을 못 박으므로 클래스 둘을 함께 걸어 이긴다 —
    같은 특이도면 나중에 온 파일이 이기는데, 그 순서에 기대면 STYLES 차례를 바꿀 때 조용히 깨진다 */
-.icon-btn.view-toggle { gap: 0.6rem; width: auto; padding: 0 1.2rem; }
+.icon-btn.view-toggle { gap: 0.4rem; width: auto; padding: 0 1.2rem; }
 .icon-btn.view-toggle .view-toggle__text { display: inline; font-size: var(--fs-sub); font-weight: 600; white-space: nowrap; }
 .view-toggle[data-view="grid"] { border-color: color-mix(in srgb, var(--accent) 45%, var(--line));
                                  background: color-mix(in srgb, var(--accent) 12%, var(--bg));
@@ -30,7 +30,7 @@
    도구 버튼·보기 전환과 나란히 서므로 같은 높이·같은 테두리를 쓴다. 다만 **눌러서 가는 곳이 없는**
    값이라 칠하지 않는다 — 색은 "지금 여기" 라는 뜻으로만 쓰는 규칙이라, 켜졌다는 표시는 체크 표시가 맡는다 */
 .check-toggle {
-  display: inline-flex; align-items: center; gap: 0.7rem;
+  display: inline-flex; align-items: center; gap: 0.8rem;
   height: 4.4rem; padding: 0 1.2rem;
   border: 1px solid var(--line); border-radius: var(--r-btn, 1rem);
   background: var(--bg); color: var(--muted);

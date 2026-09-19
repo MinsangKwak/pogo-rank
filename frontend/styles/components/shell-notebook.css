@@ -17,9 +17,9 @@
 body { background: var(--notebook-canvas); }
 body #px-bg { opacity: .07; }
 body .app-bar { background:transparent; border:0; backdrop-filter:blur(1rem); }
-body .app-bar__logo { font-family:"Galmuri11",Pretendard,sans-serif; font-size:2.8rem; font-weight:950; font-style:normal; letter-spacing:-.08em; color:var(--brand); text-shadow:.16rem .16rem var(--foil-hi); }
+body .app-bar__logo { font-family:"Galmuri11",Pretendard,sans-serif; font-size: var(--fs-title); font-weight:950; font-style:normal; letter-spacing:-.08em; color:var(--brand); text-shadow:.16rem .16rem var(--foil-hi); }
 body .app-bar__head::after { letter-spacing:.08em; }
-body footer { margin-top:5rem; padding:3rem; background:var(--bg); border:0; border-top:8px solid var(--brand); box-shadow:.6rem .6rem 0 var(--foil-lo); }
+body footer { margin-top:5.2rem; padding:3.2rem; background:var(--bg); border:0; border-top:8px solid var(--brand); box-shadow:.6rem .6rem 0 var(--foil-lo); }
 body footer::before { content:'moncamp / PLAY & GROW'; display:block; font:900 2rem/1.2 Pretendard,sans-serif; color:var(--brand); margin-bottom:2rem; }
 body footer .foot-lead { font-family:"Galmuri11",Pretendard,sans-serif; font-weight:800; }
 body .app-nav .nav-menu .drawer__item { border-left:4px solid transparent; }
@@ -27,72 +27,72 @@ body .app-nav .nav-menu [aria-current="page"] { background:var(--brand); color:v
 body .app-nav .nav-menu .drawer__item:hover { background:var(--foil-hi); color:var(--foil-lo); }
 body .app-nav__extra { border-top:5px solid var(--foil-hi); }
 /* Raised studs on the selected navigation brick; text remains unobstructed. */
-body .app-nav .nav-menu [aria-current="page"] { position:relative; margin-top:.8rem; }
+body .app-nav .nav-menu [aria-current="page"] { position:relative; margin-top:0.8rem; }
 body .app-nav .nav-menu [aria-current="page"]::before { content:''; position:absolute; top:-.7rem; left:1.4rem; width:calc(100% - 2.8rem); height:.6rem; background:repeating-linear-gradient(90deg,var(--brand) 0 2rem,transparent 2rem 3.4rem); }
 
 /* Red pixel notebook: flat dot textures and stepped corners, no brick studs. */
 body { background:var(--notebook-canvas); }
-body .app-bar__logo { font-family:"Galmuri11",sans-serif; font-size:2.4rem; letter-spacing:-.07em; text-shadow:.2rem .2rem var(--foil-hi); }
+body .app-bar__logo { font-family:"Galmuri11",sans-serif; font-size: var(--fs-sec); letter-spacing:-.07em; text-shadow:.2rem .2rem var(--foil-hi); }
 .home-dashboard .home__tile strong, body .app-nav .drawer__item { font-family:"Galmuri11",sans-serif; }
 .home-dashboard .home-updates__item::before, body .app-nav .nav-menu [aria-current="page"]::before { content:none; }
 body footer::before { color:var(--brand); font-family:"Galmuri11",sans-serif; }
 body .app-nav .nav-menu [aria-current="page"] { margin-top:0; }@media(max-width:699px) {
- body .app-bar__logo { font-size:2rem; }}
+ body .app-bar__logo { font-size: var(--fs-sec); }}
 
 /* Notebook index: quiet numbered sections and a pixel cursor for the active page. */
-body .app-nav .nav-menu { counter-reset:chapter; gap:.3rem; padding:1.2rem 1rem; border-left:2px solid var(--brand); }
-body .app-nav .nav-menu__sec { counter-increment:chapter; display:flex; align-items:center; gap:.8rem; margin:2rem 0 .8rem; padding:.8rem .6rem; border:0; color:var(--brand-2); font-family:"Galmuri11",sans-serif; font-size:1.1rem; }
-body .app-nav .nav-menu__sec::before { content:'0' counter(chapter); font-size:1rem; padding:.3rem; background:var(--notebook-tint); color:var(--brand-2); }
-body .app-nav .nav-menu .drawer__item { position:relative; padding:.8rem 1rem .8rem 2rem; min-height:4.4rem; border:0; font-size:1.3rem; background:transparent; box-shadow:none; }
+body .app-nav .nav-menu { counter-reset:chapter; gap:0.4rem; padding:1.2rem 1.2rem; border-left:2px solid var(--brand); }
+body .app-nav .nav-menu__sec { counter-increment:chapter; display:flex; align-items:center; gap:0.8rem; margin:2rem 0 0.8rem; padding:0.8rem 0.4rem; border:0; color:var(--brand-2); font-family:"Galmuri11",sans-serif; font-size: var(--fs-sub); }
+body .app-nav .nav-menu__sec::before { content:'0' counter(chapter); font-size: var(--fs-sub); padding:0.4rem; background:var(--notebook-tint); color:var(--brand-2); }
+body .app-nav .nav-menu .drawer__item { position:relative; padding:0.8rem 1.2rem 0.8rem 2rem; min-height:4.4rem; border:0; font-size: var(--fs-body); background:transparent; box-shadow:none; }
 body .app-nav .nav-menu .drawer__ico { display:none; }
 body .app-nav .nav-menu [aria-current="page"] { background:var(--notebook-tint); color:var(--brand-2); box-shadow:inset 0 -.2rem var(--accent); border:0; }
 body .app-nav .nav-menu [aria-current="page"]::before { content:''; position:absolute; left:.6rem; top:50%; width:.6rem; height:.6rem; transform:translateY(-50%); background:var(--brand); box-shadow:.3rem 0 var(--brand); }
 body .app-nav .nav-menu .drawer__item:hover { color:var(--brand-2); background:var(--notebook-tint); }
-body .app-nav__extra { margin-top:2.4rem; padding:1.6rem 1rem 0; border-top:2px dotted var(--line-2); }
-body .app-nav__extra::before { content:'기록과 안내'; display:block; padding:0 1rem 1rem; font-family:"Galmuri11",sans-serif; font-size:1.1rem; color:var(--muted); }
-body .app-nav__extra .drawer__item { font-size:1.1rem; min-height:3.8rem; }
+body .app-nav__extra { margin-top:2.4rem; padding:1.6rem 1.2rem 0; border-top:2px dotted var(--line-2); }
+body .app-nav__extra::before { content:'기록과 안내'; display:block; padding:0 1.2rem 1.2rem; font-family:"Galmuri11",sans-serif; font-size: var(--fs-sub); color:var(--muted); }
+body .app-nav__extra .drawer__item { font-size: var(--fs-sub); min-height:3.8rem; }
 /* Appendix: news index above a compact two-column utility directory. */
 body .app-nav__extra { padding:1.6rem 0 0; border-top:3px solid var(--brand-2); }
-body .app-nav__extra::before { content:'04 / 기록실'; padding:0 1rem 1.4rem; color:var(--fg); font-size:1.3rem; }
-body .app-nav__extra #drawer-extra { display:grid; grid-template-columns:1fr 1fr; gap:.2rem .8rem; padding:0 1rem; }
-body .app-nav__extra .drawer__item:not([hidden]) { display:flex; align-items:center; min-width:0; min-height:4.4rem; padding:.8rem 0; font-family:"Galmuri11",sans-serif; font-size:1rem; line-height:1.7; border:0; background:transparent; color:var(--muted); text-align:left; }
+body .app-nav__extra::before { content:'04 / 기록실'; padding:0 1.2rem 1.2rem; color:var(--fg); font-size: var(--fs-body); }
+body .app-nav__extra #drawer-extra { display:grid; grid-template-columns:1fr 1fr; gap:0.2rem 0.8rem; padding:0 1.2rem; }
+body .app-nav__extra .drawer__item:not([hidden]) { display:flex; align-items:center; min-width:0; min-height:4.4rem; padding:0.8rem 0; font-family:"Galmuri11",sans-serif; font-size: var(--fs-sub); line-height: 1.7; border:0; background:transparent; color:var(--muted); text-align:left; }
 body .app-nav__extra .drawer__ico { display:none; }
 body .app-nav__extra :is(#menu-changes,#menu-release,#menu-game-updates,a[target="_blank"]) { grid-column:1 / -1; }
-body .app-nav__extra :is(#menu-release,#menu-game-updates) { color:var(--fg); font-size:1.3rem; border-bottom:1px solid var(--line); position:relative; padding-right:1.8rem; }
+body .app-nav__extra :is(#menu-release,#menu-game-updates) { color:var(--fg); font-size: var(--fs-body); border-bottom:1px solid var(--line); position:relative; padding-right:2rem; }
 body .app-nav__extra :is(#menu-release,#menu-game-updates)::after {
   content:'↗'; position:static; display:block; flex:0 0 1.6rem; margin-left:auto;
-  width:1.6rem; height:auto; color:var(--brand-2); line-height:1; text-align:center;
+  width:1.6rem; height:auto; color:var(--brand-2); line-height: 1; text-align:center;
   background:transparent; border-radius:0; transform:none; animation:none;
 }
 body .app-nav__extra :is(#menu-release,#menu-game-updates) .drawer__label {
-  display:inline-flex; align-items:center; gap:.6rem; min-width:0;
+  display:inline-flex; align-items:center; gap:0.4rem; min-width:0;
 }
 body .app-nav__extra :is(#menu-release,#menu-game-updates).dot-badge .drawer__label::after {
   content:''; display:block; flex:0 0 .6rem; width:.6rem; height:.6rem; background:var(--warn);
 }
-body .app-nav__extra #menu-changes { font-size:1rem; min-height:3rem; color:var(--brand-2); }
-body .app-nav__extra a[target="_blank"] { margin-bottom:1rem; }
+body .app-nav__extra #menu-changes { font-size: var(--fs-sub); min-height:3rem; color:var(--brand-2); }
+body .app-nav__extra a[target="_blank"] { margin-bottom:1.2rem; }
 body .app-nav__extra .drawer__item:hover { background:transparent; color:var(--brand); text-decoration:underline; text-underline-offset:.4rem; }
-body .app-nav__extra .drawer__meta { grid-column:1 / -1; margin:1.8rem 0 0; padding:1.4rem 0 0; border-top:2px dotted var(--line-2); font-size:.95rem; line-height:1.8; opacity:.8; }
+body .app-nav__extra .drawer__meta { grid-column:1 / -1; margin:2rem 0 0; padding:1.2rem 0 0; border-top:2px dotted var(--line-2); font-size: var(--fs-sub); line-height: 1.7; opacity:.8; }
 /* Pixel masthead: CSS-only nameplate and tactile utility keys. */
-body .app-bar { padding-top:1.8rem; padding-bottom:1.8rem; border-bottom:2px dotted var(--line-2); }
-body .app-bar__head { position:relative; padding-bottom:1.4rem; }
+body .app-bar { padding-top:2rem; padding-bottom:2rem; border-bottom:2px dotted var(--line-2); }
+body .app-bar__head { position:relative; padding-bottom:1.2rem; }
 body .app-bar h1 { overflow:visible; }
-body .app-bar__logo:not(.app-bar__logo--brand) { display:inline-block; position:relative; padding:.7rem 1.1rem; background:var(--brand); color:var(--surface); font-size:2.3rem; line-height:1.2; text-shadow:.15rem .15rem var(--brand-2); box-shadow:.3rem .3rem 0 var(--fg); letter-spacing:-.07em; }
-body .app-bar__logo:not(.app-bar__logo--brand)::before { content:''; display:inline-block; width:.6rem; height:.6rem; margin-right:.8rem; vertical-align:middle; background:var(--foil-hi); box-shadow:0 -.6rem var(--foil-hi),.6rem 0 var(--foil-hi),0 .6rem var(--foil-hi),-.6rem 0 var(--foil-hi); transform:scale(.6); }
+body .app-bar__logo:not(.app-bar__logo--brand) { display:inline-block; position:relative; padding:0.8rem 1.2rem; background:var(--brand); color:var(--surface); font-size: var(--fs-sec); line-height: 1.2; text-shadow:.15rem .15rem var(--brand-2); box-shadow:.3rem .3rem 0 var(--fg); letter-spacing:-.07em; }
+body .app-bar__logo:not(.app-bar__logo--brand)::before { content:''; display:inline-block; width:.6rem; height:.6rem; margin-right:0.8rem; vertical-align:middle; background:var(--foil-hi); box-shadow:0 -.6rem var(--foil-hi),.6rem 0 var(--foil-hi),0 .6rem var(--foil-hi),-.6rem 0 var(--foil-hi); transform:scale(.6); }
 body .app-bar__logo:not(.app-bar__logo--brand):hover { background:var(--brand-2); color:var(--surface); }
-body .app-bar__head::after { bottom:-.3rem; margin:0; font-size:.75rem; letter-spacing:.08em; color:var(--muted); }
-body .app-search { min-height:4.2rem; border:1.5px solid var(--line-2); border-bottom:3px solid var(--brand-2); padding:0 1.4rem; background:var(--bg); color:var(--fg); box-shadow:.3rem .3rem 0 var(--line); font-family:"Galmuri11",sans-serif; font-size:1.1rem; }
+body .app-bar__head::after { bottom:-.3rem; margin:0; font-size: var(--fs-sub); letter-spacing:.08em; color:var(--muted); }
+body .app-search { min-height:4.2rem; border:1.5px solid var(--line-2); border-bottom:3px solid var(--brand-2); padding:0 1.2rem; background:var(--bg); color:var(--fg); box-shadow:.3rem .3rem 0 var(--line); font-family:"Galmuri11",sans-serif; font-size: var(--fs-sub); }
 body .app-search:hover { border-color:var(--brand); }
-body .app-bar__actions { gap:.9rem; }
+body .app-bar__actions { gap:0.8rem; }
 body .app-bar__actions .icon-btn { border:1.5px solid var(--line-2); background:var(--bg); color:var(--fg); box-shadow:.3rem .3rem 0 var(--notebook-shadow); min-width:3.8rem; min-height:3.8rem; }
 body .app-bar__actions .icon-btn:hover { background:var(--notebook-tint); color:var(--brand-2); }
 body .app-bar__actions .icon-btn:active { transform:translate(.2rem,.2rem); box-shadow:.1rem .1rem 0 var(--notebook-shadow); }
 body .app-bar :is(button,a):focus-visible { outline:.2rem dashed var(--brand); outline-offset:.5rem; }@media(max-width:699px) {
- body .app-bar { gap:.8rem; padding:1.2rem 1.6rem; }
+ body .app-bar { gap:0.8rem; padding:1.2rem 1.6rem; }
  body .app-bar__head { padding-bottom:0; }
- body .app-bar__logo:not(.app-bar__logo--brand) { font-size:1.8rem; padding:.6rem .8rem; }
- body .app-bar__actions { gap:.6rem; }
+ body .app-bar__logo:not(.app-bar__logo--brand) { font-size: var(--fs-sec); padding:0.4rem 0.8rem; }
+ body .app-bar__actions { gap:0.4rem; }
  body .app-bar__actions .icon-btn { min-width:3.4rem; min-height:3.4rem; }}
 /* Utility popups share the red notebook chrome; Pokémon detail keeps its own layout. */
 body .modal { background:rgba(39,20,27,.62); backdrop-filter:blur(.3rem); }
@@ -100,22 +100,22 @@ body .modal__wrap:not(:has(.detail--mon)) { max-width:52rem; padding-top:4.8rem;
 body .modal__wrap:not(:has(.detail--mon))::before { content:'MONCAMP / NOTE'; position:absolute; top:1.6rem; left:2rem; color:var(--bg); font:1.1rem/1 "Galmuri11",sans-serif; letter-spacing:.12em; }
 body .modal__wrap:not(:has(.detail--mon)) .modal__close { top:.8rem; right:1rem; width:3rem; height:3rem; border:1.5px solid var(--fg); background:var(--surface); color:var(--brand-2); box-shadow:.2rem .2rem 0 var(--fg); z-index:2; }
 body .modal__wrap:not(:has(.detail--mon)) .modal__box { box-sizing:border-box; padding:2.8rem; background:var(--bg); border:0; max-height:calc(85dvh - 4.8rem); }
-body .modal__box .admin > h2 { font-family:"Galmuri11",sans-serif; font-size:2.2rem; padding-bottom:1.8rem; border-bottom:2px dotted var(--notebook-edge); }
+body .modal__box .admin > h2 { font-family:"Galmuri11",sans-serif; font-size: var(--fs-sec); padding-bottom:2rem; border-bottom:2px dotted var(--notebook-edge); }
 body .modal__box .admin .detail__sec { margin-top:2.4rem; }
-body .modal__box .admin h3 { font-family:"Galmuri11",sans-serif; color:var(--fg); font-size:1.25rem; margin-bottom:1.2rem; }
-body .modal__box .admin .empty { padding:2rem 1.4rem; border:1px dashed var(--notebook-edge); background:color-mix(in srgb,var(--notebook-accent-soft) 15%,var(--bg)); text-align:left; }
-body .modal__box .admin__row { padding:1.4rem; gap:1.2rem; background:color-mix(in srgb,var(--notebook-accent-soft) 12%,var(--bg)); border:0; border-bottom:1.5px solid var(--notebook-edge); flex-wrap:wrap; }
+body .modal__box .admin h3 { font-family:"Galmuri11",sans-serif; color:var(--fg); font-size: var(--fs-body); margin-bottom:1.2rem; }
+body .modal__box .admin .empty { padding:2rem 1.2rem; border:1px dashed var(--notebook-edge); background:color-mix(in srgb,var(--notebook-accent-soft) 15%,var(--bg)); text-align:left; }
+body .modal__box .admin__row { padding:1.2rem; gap:1.2rem; background:color-mix(in srgb,var(--notebook-accent-soft) 12%,var(--bg)); border:0; border-bottom:1.5px solid var(--notebook-edge); flex-wrap:wrap; }
 body .modal__box .admin__who { overflow-wrap:anywhere; }
 body .modal__box .admin__row.is-admin { border-left:4px solid var(--brand); }
-body .modal__box .admin__acts { width:100%; padding-top:.6rem; }
-body .modal__box .admin__act { padding:.7rem 1rem; min-height:3.6rem; border:1.5px solid var(--notebook-btn-edge); box-shadow:.2rem .2rem 0 var(--notebook-shadow); }
+body .modal__box .admin__acts { width:100%; padding-top:0.4rem; }
+body .modal__box .admin__act { padding:0.8rem 1.2rem; min-height:3.6rem; border:1.5px solid var(--notebook-btn-edge); box-shadow:.2rem .2rem 0 var(--notebook-shadow); }
 body .modal__box .admin__act.is-danger { color:var(--brand-2); border-color:var(--brand-2); }
 body .modal__box .admin__act.is-on { color:var(--good); border-color:var(--good); }
 /* 2026-09-17 v3.60.0 팝업 안의 버튼은 한 벌이다.
    관리자 줄(.admin__act)만 공책 옷을 입고 있어서, 같은 팝업 문법을 쓰는 동의·로그인 유도·계정 팝업의
    버튼은 맨 테두리 그대로 남아 있었다 — 한 서비스 안에서 버튼이 두 종류로 보였다.
    팝업의 버튼은 전부 .drawer__item 을 다므로 그 하나로 묶는다 (드로어 .account__actions 와 같은 문법). */
-body .modal__box .drawer__item { min-height:4.4rem; padding:.9rem 1.4rem; border:1.5px solid var(--notebook-btn-edge); border-radius:.6rem; background:var(--bg); box-shadow:.2rem .2rem 0 var(--notebook-shadow); font-family:"Galmuri11",sans-serif; font-size:1.2rem; }
+body .modal__box .drawer__item { min-height:4.4rem; padding:0.8rem 1.2rem; border:1.5px solid var(--notebook-btn-edge); border-radius:.6rem; background:var(--bg); box-shadow:.2rem .2rem 0 var(--notebook-shadow); font-family:"Galmuri11",sans-serif; font-size: var(--fs-sub); }
 body .modal__box .drawer__item:hover { background:var(--notebook-tint); }
 /* 이 팝업에서 누를 것 하나 — 드로어의 .account__primary 와 같은 문법. [동의하고 로그인]·[로그인하기] 가 여기 든다 */
 body .modal__box .account__login { background:var(--notebook-red); color:var(--surface); border-color:var(--notebook-red-deep); }
@@ -124,64 +124,64 @@ body .modal__box .account__danger { color:var(--brand-2); border-color:var(--bra
 /* 아직 누를 수 없는 버튼은 종이에서 떠 있지 않다 — 그림자를 내려 "지금은 아니다" 를 보인다 */
 body .modal__box .drawer__item:disabled { background:var(--bg); color:var(--muted); border-color:var(--notebook-edge); box-shadow:none; }
 /* 동의 팝업 — 제목은 관리자 팝업과 같은 점선 밑줄, 체크 두 줄은 공책 칸 */
-body .modal__box .consent__modal > .detail__name { font-family:"Galmuri11",sans-serif; padding-bottom:1.8rem; border-bottom:2px dotted var(--notebook-edge); }
-body .modal__box .consent__check { padding:1.2rem 1.4rem; border:1.5px solid var(--notebook-edge); background:color-mix(in srgb,var(--notebook-accent-soft) 12%,var(--bg)); cursor:pointer; }
+body .modal__box .consent__modal > .detail__name { font-family:"Galmuri11",sans-serif; padding-bottom:2rem; border-bottom:2px dotted var(--notebook-edge); }
+body .modal__box .consent__check { padding:1.2rem 1.2rem; border:1.5px solid var(--notebook-edge); background:color-mix(in srgb,var(--notebook-accent-soft) 12%,var(--bg)); cursor:pointer; }
 body .modal__box .consent__check:has(input:checked) { border-color:var(--notebook-red); background:var(--notebook-tint); }
 body .modal__box .consent__check input { accent-color:var(--notebook-red); }
 @media(max-width:699px) {
- body .modal { padding:1.4rem; align-items:center; }
+ body .modal { padding:1.2rem; align-items:center; }
  body .modal__wrap:not(:has(.detail--mon)) .modal__box { padding:2rem 1.6rem; }}
 /* Drawer as the notebook's inside cover. */
 body .drawer { background:rgba(39,20,27,.58); backdrop-filter:blur(.3rem); }
 body .drawer__panel { box-sizing:border-box; width:min(39rem,92vw); padding:0 2.4rem 2.4rem; gap:2rem; border-left:3px solid var(--brand-2); background:var(--bg); box-shadow:-.7rem 0 0 var(--fg); }
-body .drawer__head { margin:0 -2.4rem; padding:max(1.6rem,env(safe-area-inset-top)) 2.4rem 1.6rem; background:var(--brand-2); color:var(--surface); border-bottom:6px solid var(--brand-2); font-family:"Galmuri11",sans-serif; font-size:1.8rem; }
+body .drawer__head { margin:0 -2.4rem; padding:max(1.6rem,env(safe-area-inset-top)) 2.4rem 1.6rem; background:var(--brand-2); color:var(--surface); border-bottom:6px solid var(--brand-2); font-family:"Galmuri11",sans-serif; font-size: var(--fs-sec); }
 body #drawer-close { background:var(--surface); color:var(--brand-2); border:1.5px solid var(--fg); box-shadow:.3rem .3rem 0 var(--fg); }
-body .drawer__panel .drawer__sec { margin:1rem 0 -.6rem; font-family:"Galmuri11",sans-serif; font-size:1.2rem; color:var(--muted); letter-spacing:.04em; }
+body .drawer__panel .drawer__sec { margin:1.2rem 0 -.6rem; font-family:"Galmuri11",sans-serif; font-size: var(--fs-sub); color:var(--muted); letter-spacing:.04em; }
 body .drawer__panel .account { position:relative; padding:2rem; gap:1.6rem; border:1.5px solid var(--notebook-edge); border-top:5px solid var(--brand); background:color-mix(in srgb,var(--notebook-accent-soft) 12%,var(--bg)); box-shadow:.4rem .4rem 0 var(--notebook-shadow); }
-body .drawer__panel .account__who b { font-family:"Galmuri11",sans-serif; font-size:1.3rem; line-height:1.7; }
+body .drawer__panel .account__who b { font-family:"Galmuri11",sans-serif; font-size: var(--fs-body); line-height: 1.7; }
 body .drawer__panel .avatar { width:4rem; height:4rem; background:var(--notebook-tint); border:1.5px solid var(--notebook-edge); }
 body .drawer__panel .account__stats { padding:1.2rem 0; border-top:1.5px dotted var(--notebook-edge); border-bottom:1.5px dotted var(--notebook-edge); }
-body .drawer__panel .account__actions { gap:1rem; }
-body .drawer__panel .account__actions .drawer__item { min-height:4.4rem; padding:.8rem; border:1.5px solid var(--notebook-btn-edge); background:var(--bg); box-shadow:.2rem .2rem 0 var(--notebook-shadow); font-family:"Galmuri11",sans-serif; font-size:1.1rem; }
+body .drawer__panel .account__actions { gap:1.2rem; }
+body .drawer__panel .account__actions .drawer__item { min-height:4.4rem; padding:0.8rem; border:1.5px solid var(--notebook-btn-edge); background:var(--bg); box-shadow:.2rem .2rem 0 var(--notebook-shadow); font-family:"Galmuri11",sans-serif; font-size: var(--fs-sub); }
 body .drawer__panel .account__actions .account__primary { background:var(--notebook-red); color:var(--surface); border-color:var(--notebook-red-deep); }
 body .drawer__panel .schedule { border:0; border-top:2px solid var(--brand-2); border-bottom:1px solid var(--notebook-edge); background:transparent; }
-body .drawer__panel .schedule > summary { min-height:5.4rem; padding:1.6rem 3.4rem 1.6rem 1rem; font-family:"Galmuri11",sans-serif; font-size:1.25rem; }
+body .drawer__panel .schedule > summary { min-height:5.4rem; padding:1.6rem 3.6rem 1.6rem 1.2rem; font-family:"Galmuri11",sans-serif; font-size: var(--fs-body); }
 body .drawer__panel .schedule[open] { background:color-mix(in srgb,var(--notebook-accent-soft) 10%,var(--bg)); }
 body .drawer__panel .drawer__group, body .drawer__panel .nav-menu { border:0; background:transparent; }
-body .drawer__panel .nav-menu__sec { padding:1.2rem 1rem; color:var(--brand-2); font-family:"Galmuri11",sans-serif; border-top:2px dotted var(--notebook-edge); }
-body .drawer__panel .nav-menu .drawer__item { font-family:"Galmuri11",sans-serif; font-size:1.3rem; border-bottom:1px solid var(--line); }
+body .drawer__panel .nav-menu__sec { padding:1.2rem 1.2rem; color:var(--brand-2); font-family:"Galmuri11",sans-serif; border-top:2px dotted var(--notebook-edge); }
+body .drawer__panel .nav-menu .drawer__item { font-family:"Galmuri11",sans-serif; font-size: var(--fs-body); border-bottom:1px solid var(--line); }
 body .drawer__panel .nav-menu [aria-current="page"] { background:var(--notebook-tint); color:var(--brand-2); border-left:4px solid var(--brand); }
-body .drawer__panel > .drawer__meta { padding-top:1.6rem; border-top:2px dotted var(--notebook-edge); font-family:"Galmuri11",sans-serif; font-size:1rem; }
+body .drawer__panel > .drawer__meta { padding-top:1.6rem; border-top:2px dotted var(--notebook-edge); font-family:"Galmuri11",sans-serif; font-size: var(--fs-sub); }
 body .drawer__panel :is(button,a,summary):focus-visible { outline:.2rem dashed var(--brand); outline-offset:.3rem; }@media(max-width:699px) {
- body .drawer__panel { padding-left:1.8rem; padding-right:1.8rem; }
- body .drawer__head { margin-left:-1.8rem; margin-right:-1.8rem; padding-left:1.8rem; padding-right:1.8rem; }}
+ body .drawer__panel { padding-left:2rem; padding-right:2rem; }
+ body .drawer__head { margin-left:-1.8rem; margin-right:-1.8rem; padding-left:2rem; padding-right:2rem; }}
 /* Shared notebook pages: planning, collection, tools and reference documents. */
 body { --notebook-red:var(--brand); --notebook-red-deep:var(--brand-2); --notebook-btn-edge:var(--foil-hi); --notebook-line:color-mix(in srgb,var(--notebook-edge) 65%,var(--line)); --notebook-paper:color-mix(in srgb,var(--notebook-accent-soft) 10%,var(--bg)); }
 body .page-head { background:transparent; border-bottom:2px dotted var(--notebook-line); padding-bottom:2.4rem; }
 body .page-head h2, body .page-head h1 { font-family:"Galmuri11",sans-serif; }
-body :is(.plan__title,.plan__hero h2,.plan__guide-head b,.page__sec,.finder .row-head h2) { font-family:"Galmuri11",sans-serif; line-height:1.6; }
+body :is(.plan__title,.plan__hero h2,.plan__guide-head b,.page__sec,.finder .row-head h2) { font-family:"Galmuri11",sans-serif; line-height: 1.7; }
 body :is(.plan__card,.plan__hero,.finder__result) { background:var(--notebook-paper); border:1.5px solid var(--notebook-line); border-top:4px solid var(--notebook-red); padding:2.4rem; box-shadow:.3rem .3rem 0 color-mix(in srgb,var(--fg) 20%,transparent); }
 body .plan__hero { background:color-mix(in srgb,var(--notebook-accent-soft) 22%,var(--bg)); }
-body .plan__stat { padding:1.4rem 1.8rem; background:var(--bg); border:1.5px solid var(--notebook-line); border-bottom:3px solid var(--notebook-red); }
+body .plan__stat { padding:1.2rem 2rem; background:var(--bg); border:1.5px solid var(--notebook-line); border-bottom:3px solid var(--notebook-red); }
 body .plan__stat b { font-family:"Galmuri11",sans-serif; color:var(--notebook-red); }
 body .plan__steps { gap:1.2rem; }
-body :is(.plan__desc,.plan__hero-desc,.plan__summary-desc) { line-height:1.8; }
-body :is(.plan__hero-go,.plan__summary-go,.finder__copy,.finder__flag,.finder__type,.finder__actions button) { min-height:4.4rem; padding:.9rem 1.2rem; border:1.5px solid var(--notebook-line); background:var(--bg); }
+body :is(.plan__desc,.plan__hero-desc,.plan__summary-desc) { line-height: 1.7; }
+body :is(.plan__hero-go,.plan__summary-go,.finder__copy,.finder__flag,.finder__type,.finder__actions button) { min-height:4.4rem; padding:0.8rem 1.2rem; border:1.5px solid var(--notebook-line); background:var(--bg); }
 body .finder__result { margin-bottom:2.4rem; }
-body .finder__out { padding:1.6rem; background:var(--bg); border:1.5px dashed var(--notebook-line); line-height:1.8; overflow-wrap:anywhere; }
+body .finder__out { padding:1.6rem; background:var(--bg); border:1.5px dashed var(--notebook-line); line-height: 1.7; overflow-wrap:anywhere; }
 body :is(.finder__num,.finder__name) { min-height:4.4rem; border:1.5px solid var(--notebook-line); background:var(--bg); }
 body .page__body :is(input:not([type="checkbox"]):not([type="radio"]),select) { min-height:4.4rem; }
 body .page__body :is(.chips__item,.seg button,.view-toggle button) { min-height:4.4rem; }
 body .page__body :is(.chips__item.is-on,.finder__flag.is-on) { background:var(--brand-2); color:var(--surface); border-color:var(--brand-2); }
-body .page__body > .page__sec { padding:1.6rem 0; border-top:2.5px solid var(--notebook-red); margin-top:3rem; }
+body .page__body > .page__sec { padding:1.6rem 0; border-top:2.5px solid var(--notebook-red); margin-top:3.2rem; }
 body .page__body :is(.upd__card,.upd__item) { background:var(--notebook-paper); border-color:var(--notebook-line); padding:2rem; }
-body .page__body :is(.note,.detail__foot) { line-height:1.8; }
+body .page__body :is(.note,.detail__foot) { line-height: 1.7; }
 body .detail-panel { border:1.5px solid var(--notebook-line); border-top:4px solid var(--notebook-red); }
 body .modal__box:has(> .detail--mon) { border:2px solid var(--notebook-red); }
 body .detail--mon .detail__head { background:var(--notebook-paper); border-bottom:2px solid var(--notebook-red); }@media(max-width:699px) {
- body :is(.plan__card,.plan__hero,.finder__result) { padding:1.6rem; margin-right:.3rem; }
- body .plan__stats { gap:.8rem; }
- body .plan__stat { padding:1rem; min-width:0; }
+ body :is(.plan__card,.plan__hero,.finder__result) { padding:1.6rem; margin-right:0.4rem; }
+ body .plan__stats { gap:0.8rem; }
+ body .plan__stat { padding:1.2rem; min-width:0; }
  body .finder__actions { flex-wrap:wrap; }
  body .finder__actions > * { flex:1 1 auto; }
  body .page__body { overflow-wrap:anywhere; }
@@ -193,13 +193,13 @@ body .detail--mon .detail__head { background:var(--notebook-paper); border-botto
 body:has(#page:not([hidden]) .page__filters) .page-head,
 body:has(.layout:not([hidden]) #controls > *) .page-head { border-bottom:0; }
 body :is(.plan__mon,.plan__recent-item,.plan__step,.settings__choice) { border:1.5px solid var(--notebook-line); background:var(--notebook-paper); }
-body .plan__mon { border-top:4px solid var(--notebook-red); padding:1.8rem; }
-body :is(.plan__recent-name,.settings__choice-main b) { font-family:"Galmuri11",sans-serif; line-height:1.6; }
+body .plan__mon { border-top:4px solid var(--notebook-red); padding:2rem; }
+body :is(.plan__recent-name,.settings__choice-main b) { font-family:"Galmuri11",sans-serif; line-height: 1.7; }
 body .settings__choice { padding:1.6rem; min-height:6rem; }
 body .settings__choice.is-on { border-color:var(--brand-2); background:color-mix(in srgb,var(--notebook-accent-soft) 22%,var(--bg)); box-shadow:inset .4rem 0 var(--brand-2); }
-body :is(.plan__mon-actions,.plan__row) { gap:1rem; }
+body :is(.plan__mon-actions,.plan__row) { gap:1.2rem; }
 body :is(.plan__num,.plan__select) { min-height:4.4rem; border:1.5px solid var(--notebook-line); background:var(--bg); }
-body :is(#page-privacy,#page-terms,#page-release,#page-changes) { line-height:1.9; }
+body :is(#page-privacy,#page-terms,#page-release,#page-changes) { line-height: 1.7; }
 body :is(#page-privacy,#page-terms,#page-release,#page-changes) h2 { font-family:"Galmuri11",sans-serif; padding-top:1.6rem; border-top:2px solid var(--notebook-line); }@media(max-width:699px) {
  body .plan__mon { padding:1.2rem; }
  body .plan__mon-actions { flex-wrap:wrap; }
@@ -223,12 +223,12 @@ body .home-dashboard .home__pick-grid, body .home-dashboard .pick__group { borde
 body .app-nav .nav-menu__sec::before { color:var(--fg); }
 body .home-dashboard .home__group-head::before { color:var(--muted); }
 body .home-dashboard .home__service-group .home__group-head::before {
-  grid-column:1; margin:0 0 .6rem; color:var(--bg); opacity:.8; font-size:1.1rem;
+  grid-column:1; margin:0 0 0.4rem; color:var(--bg); opacity:.8; font-size: var(--fs-sub);
 }
 body .home-dashboard .home__service-group .home__tile {
-  box-sizing:border-box; min-width:0; min-height:4.8rem; padding:.7rem 1rem;
+  box-sizing:border-box; min-width:0; min-height:4.8rem; padding:0.8rem 1.2rem;
   border:1px solid var(--notebook-edge); background:var(--bg); color:var(--fg);
-  grid-template-columns:minmax(0,1fr) 2.6rem; gap:.8rem;
+  grid-template-columns:minmax(0,1fr) 2.6rem; gap:0.8rem;
   box-shadow:0 .2rem 0 var(--notebook-shadow);
   transition:background-color .15s,transform .15s,box-shadow .15s;
 }

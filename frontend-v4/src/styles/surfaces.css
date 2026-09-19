@@ -103,7 +103,7 @@
 /* ▲▼ 는 박 배지 안에 들어앉는다. 글자색만 바꾸면 배지가 없는 화면(덱 짜기)에서 되레 흐려지므로,
    **제 바탕을 깔아** 어디에 놓이든 의미색(상승 초록 · 하락 빨강) 그대로 읽히게 한다 */
 .row-list > .row .row__rank .delta {
-  padding: 0 .3rem; border-radius: var(--r-chip); background: var(--surface);
+  padding: 0 0.4rem; border-radius: var(--r-chip); background: var(--surface);
 }
 
 .filter-box, .screen-tabs { accent-color: var(--brand); }
