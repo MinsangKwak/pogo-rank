@@ -15,6 +15,10 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 const RELEASE_NOTES_EN = {
+  '2026-09-19 · v4.3.7': [
+    '**On phones, popups now stick to the bottom of the screen** — the close and calculator buttons land where your thumb already is',
+    '**The close button is the same in every popup now** — the detail popup and the rest finally match',
+  ],
   '2026-09-19 · v4.3.6': [
     '**The Pokemon detail popup no longer covers the whole screen** — it caps at 85% height so you can still see what is behind it',
     '**The close button was redrawn** — it used to be a small white square with a tiny x; now it is a deep red key that sits inside the header band, with a much larger glyph',

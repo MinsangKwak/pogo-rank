@@ -97,8 +97,22 @@ body .app-bar :is(button,a):focus-visible { outline:.2rem dashed var(--brand); o
 /* Utility popups share the red notebook chrome; Pokémon detail keeps its own layout. */
 body .modal { background:rgba(39,20,27,.62); backdrop-filter:blur(.3rem); }
 body .modal__wrap:not(:has(.detail--mon)) { max-width:52rem; padding-top:4.8rem; background:var(--brand-2); box-shadow:.7rem .7rem 0 var(--fg); border:2px solid var(--fg); }
-body .modal__wrap:not(:has(.detail--mon))::before { content:'MONCAMP / NOTE'; position:absolute; top:1.6rem; left:2rem; color:var(--bg); font:1.4rem/1 "Galmuri11",sans-serif; letter-spacing:.12em; }
-body .modal__wrap:not(:has(.detail--mon)) .modal__close { top:.8rem; right:1rem; width:3rem; height:3rem; border:1.5px solid var(--fg); background:var(--surface); color:var(--brand-2); box-shadow:.2rem .2rem 0 var(--fg); z-index:2; }
+body .modal__wrap:not(:has(.detail--mon))::before { content:'MONCAMP'; position:absolute; top:1.6rem; left:2rem; color:var(--bg); font:1.4rem/1 "Galmuri11",sans-serif; letter-spacing:.12em; }
+/* 2026-09-19 v4.3.7 닫기 단추는 팝업마다 다르면 안 된다 — 상세 팝업(detail.css)과 같은 모양으로 맞춘다.
+   진한 빨강 채움 · --bg 글자 · 밝은 테두리 한 겹 · 계단 그림자, 그리고 44px 탭 타깃 */
+body .modal__wrap:not(:has(.detail--mon)) .modal__close {
+  top:.8rem; right:.8rem; z-index:2;
+  display:flex; align-items:center; justify-content:center;
+  width:var(--tap); height:var(--tap);
+  background:var(--brand-2); border:2px solid var(--bg); color:var(--bg);
+  font-size:var(--fs-sec); line-height:1;
+  box-shadow:var(--shadow-hard) rgb(0 0 0 / 30%); }
+body .modal__wrap:not(:has(.detail--mon)) .modal__close:hover {
+  background:var(--bg); border-color:var(--brand-2); color:var(--brand-2); }
+body .modal__wrap:not(:has(.detail--mon)) .modal__close:active {
+  transform:translate(var(--px), var(--px)); box-shadow:none; }
+body .modal__wrap:not(:has(.detail--mon)) .modal__close:focus-visible {
+  outline:2px solid var(--bg); outline-offset:2px; }
 body .modal__wrap:not(:has(.detail--mon)) .modal__box { box-sizing:border-box; padding:2.8rem; background:var(--bg); border:0; max-height:calc(85dvh - 4.8rem); }
 body .modal__box .admin > h2 { font-family:"Galmuri11",sans-serif; font-size: var(--fs-sec); padding-bottom:2rem; border-bottom:2px dotted var(--notebook-edge); }
 body .modal__box .admin .detail__sec { margin-top:2.4rem; }
@@ -128,9 +142,26 @@ body .modal__box .consent__modal > .detail__name { font-family:"Galmuri11",sans-
 body .modal__box .consent__check { padding:1.2rem 1.2rem; border:1.5px solid var(--notebook-edge); background:color-mix(in srgb,var(--notebook-accent-soft) 12%,var(--bg)); cursor:pointer; }
 body .modal__box .consent__check:has(input:checked) { border-color:var(--notebook-red); background:var(--notebook-tint); }
 body .modal__box .consent__check input { accent-color:var(--notebook-red); }
-@media(max-width:699px) {
- body .modal { padding:1.2rem; align-items:center; }
- body .modal__wrap:not(:has(.detail--mon)) .modal__box { padding:2rem 1.6rem; }}
+/* 2026-09-19 v4.3.7 **좁은 화면의 팝업은 전부 바닥에 붙는다** (제보).
+   여기서 `align-items:center` 로 가운데에 띄우고 있었는데, 그 한 줄이 modal.css 의
+   바텀시트 규칙(`@media (max-width:640px)`)을 구체도로 이기고 있었다 — `body .modal`(0,1,1)
+   대 `.modal`(0,1,0). 그래서 좁은 화면에서도 팝업이 공중에 떠 있었다.
+
+   바닥에 붙이는 이유는 손이다 — 한 손으로 들면 엄지가 닿는 자리가 화면 아래쪽이고,
+   팝업의 행동 단추(닫기·계산기)가 거기 있어야 누르기 쉽다.
+
+   중단점을 **767px 로 맞췄다.** 전에는 셋이 제각각이었다 —
+   modal.css 640 · 이 파일 699 · detail.css 767. 그 사이 폭에서는 상세 팝업만 시트 모양이고
+   나머지는 가운데 떠 있어, 같은 화면에서 팝업마다 다르게 열렸다. */
+@media(max-width:767px) {
+ body .modal { padding:0; align-items:flex-end; }
+ body .modal__wrap { width:100%; max-width:none; margin:0; }
+ /* 바닥에 붙으므로 위 테두리만 남긴다 */
+ body .modal__box { max-height:85dvh; border-width:2px 0 0; }
+ body .modal__wrap:not(:has(.detail--mon)) .modal__box { padding:2rem 1.6rem; }
+ /* 홈 인디케이터에 단추가 가리지 않게 — 상세 팝업은 제 바닥 줄(.detail__dock)이 이미
+    안전영역을 물고 있으므로 두 번 주지 않는다 */
+ body .modal__wrap:not(:has(.detail--mon)) .modal__box { padding-bottom:max(2rem, env(safe-area-inset-bottom)); }}
 /* Drawer as the notebook's inside cover. */
 body .drawer { background:rgba(39,20,27,.58); backdrop-filter:blur(.3rem); }
 body .drawer__panel { box-sizing:border-box; width:min(39rem,92vw); padding:0 2.4rem 2.4rem; gap:2rem; border-left:3px solid var(--brand-2); background:var(--bg); box-shadow:-.7rem 0 0 var(--fg); }
