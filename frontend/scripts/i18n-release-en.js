@@ -15,6 +15,10 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 const RELEASE_NOTES_EN = {
+  '2026-09-19 · v4.2.4': [
+    '**D-MAX Tank numbers are back** \u2014 where it read `NaN max damage \u00b7 bulk undefined`, you now get EHP with HP \u00d7 Defense, plus the damage multiplier taken once you pick a boss type.',
+    '**Dealer, tier list, raids and PvP were checked too** \u2014 each table has its own row shape, so the score cell is now decided in one place and guarded by a test using real-shaped rows.',
+  ],
   '2026-09-18 · v4.2.3': [
     '**Picking a type under Raids \u203a All now lists that type** \u2014 choosing Electric used to return Ground-types (Groudon, Garchomp) that counter Electric, under the heading "Electric-type raid performance".',
     '**All and Easy now differ only in what they filter out** \u2014 same type list; Easy drops legendaries, mythicals, megas and shadows, All keeps them.',

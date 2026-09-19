@@ -154,9 +154,37 @@ Pokémon과 관련 명칭·이미지의 권리는 The Pokémon Company, Nintendo
 
 ## 버전 이력
 
-전체 175개 릴리스를 `날짜 → 버전`의 2단계 접이식 목록으로 정리했습니다. 가장 최근 날짜만 기본으로 펼쳐지며, 설명이 한 줄인 초기 버전은 별도의 접이식 영역 없이 표시됩니다. 사용자용 요약은 서비스의 [🎉 패치 노트](https://moncamp.kr/#/release)에서, 변경 배경과 세부 구현 내용은 [변경 이력](CHANGELOG.md)에서 확인할 수 있습니다.
+전체 176개 릴리스를 `날짜 → 버전`의 2단계 접이식 목록으로 정리했습니다. 가장 최근 날짜만 기본으로 펼쳐지며, 설명이 한 줄인 초기 버전은 별도의 접이식 영역 없이 표시됩니다. 사용자용 요약은 서비스의 [🎉 패치 노트](https://moncamp.kr/#/release)에서, 변경 배경과 세부 구현 내용은 [변경 이력](CHANGELOG.md)에서 확인할 수 있습니다.
 
 <details open>
+<summary><b>2026-09-19</b> — 릴리스 1개 · <code>v4.2.4</code></summary>
+
+<details>
+<summary><b>v4.2.4</b> · (긴급) D-MAX [탱커] 가 NaN · undefined 로 나오던 것</summary>
+
+**제보 — D-MAX 의 `[탱커]` 를 누르면 모든 줄이 `NaN 맥스 피해 · 내구 undefined` 였고, 기술 줄에는 `타입` 한 글자만 남았다.**
+
+**표마다 행 모양이 다른데 화면이 딜러 가지 하나로 두 축을 그리고 있었다** (`frontend-v4/src/screens/Ranks.tsx`).
+
+| 축 | 표 | 행이 갖는 칸 |
+| --- | --- | --- |
+| 전체 | `DMAX_TIER` | `pct · atk · power · stab · bulk` |
+| 딜러 | `DMAX_DATA` | `dmg · bulk · fast · charged` |
+| 탱커 | `DMAX_TANK` | `ehp · hp · def · mult` — **기술 칸은 비어 있다** |
+
+탱커 줄이 딜러 가지를 타니 `row.dmg` 는 없어 `Math.round(row.score)` 로 떨어지는데 `score` 도 없어 `NaN`, `row.bulk` 는 `undefined`, 기술 줄은 빈 `fast` 와 `${TYPE_KO['']} 타입` 이 되어 "타입" 만 남았다. 탱커를 읽는 **다른** 자리(홈 파티 카드 `BossAcc` · 덱 짜기 `maxdeck`)는 처음부터 `ehp` 를 읽고 있었다 — 이 화면의 가지 하나가 빠진 것이다.
+
+**점수·보조·기술 칸을 정하는 일을 함수 하나(`dmaxCells`)로 모았다.** 세 축이 각자 제 칸을 읽고, 탱커는 v3 `views/max.js` 와 같은 문장으로 그린다 — 전체 보스는 `EHP · 체력 403 × 방어 145`, 속성 보스는 `EHP · 받는 배율 ×2 · 체력 … × 방어 …`, 기술 줄 없음.
+
+**다른 표도 같은 눈으로 훑었다.** 여덟 표의 첫 행 키를 화면이 읽는 칸과 대조했다 — 티어표·딜러·PvE 셋(`dps · tdo`)·PvP(`score · rank`)는 맞았고 어긋난 것은 탱커뿐이었다.
+
+**검사 43건 → 48건** (`test/rankcells.test.ts`). 실데이터 첫 줄과 같은 모양의 행으로 세 축을 넣어 `NaN · undefined · null` 이 새면 빨개진다. 탱커 가지를 떼어 옛 상태로 되돌리자 탱커 검사 셋이 빨개지는 것을 확인했다.
+
+</details>
+
+</details>
+
+<details>
 <summary><b>2026-09-18</b> — 릴리스 8개 · <code>v4.2.3</code> · <code>v4.2.2</code> · <code>v4.2.1</code> · <code>v4.2.0</code> · <code>v4.1.1</code> · <code>v4.1.0</code> · <code>v4.0.1</code> · <code>v4.0.0</code></summary>
 
 <details>
