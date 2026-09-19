@@ -53,7 +53,26 @@ const AUDIT = (min) => {
     const body = parse(getComputedStyle(document.body).backgroundColor);
     return body && body.a > 0.85 ? body.rgb : [255, 255, 255];
   };
-  const bad = [];
+  // **게임 원작 타입색(--t-*)이 원인이면 예외다.** CLAUDE.md §1-b 에 "바꾸지 않는다" 고 적어 둔 값이라
+  // 고칠 수가 없는데, 그냥 두면 검문이 매번 빨개져서 아무도 안 보게 된다 — 울다 지친 경보는 경보가 아니다.
+  // 색 값으로 대조하므로 구멍이 아니다: 타입색이 아닌 이유로 흐려지면 그대로 걸린다.
+  const root = getComputedStyle(document.documentElement);
+  const TYPE_COLORS = new Set();
+  for (const name of ['normal','fire','water','grass','electric','ice','fighting','poison','ground',
+                      'flying','psychic','bug','rock','ghost','dragon','dark','steel','fairy']) {
+    const raw = root.getPropertyValue(`--t-${name}`).trim();
+    if (raw) TYPE_COLORS.add(raw.toLowerCase());
+  }
+  // 화면에 그려진 값과 견주려면 같은 표기로 바꿔야 한다 — 브라우저에게 시킨다
+  const probe = document.createElement('span');
+  probe.style.display = 'none';
+  document.body.appendChild(probe);
+  const asRgb = (value) => { probe.style.color = ''; probe.style.color = value; return getComputedStyle(probe).color; };
+  const TYPE_RGB = new Set([...TYPE_COLORS].map(asRgb));
+  probe.remove();
+  const hexOf = (c) => 'rgb(' + c.map((x) => Math.round(x)).join(', ') + ')';
+
+  const bad = [], known = [];
   for (const el of document.querySelectorAll('body *')) {
     const text = [...el.childNodes].filter((n) => n.nodeType === 3).map((n) => n.textContent.trim()).join('');
     if (!text) continue;
@@ -68,14 +87,16 @@ const AUDIT = (min) => {
     const ratio = (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05);
     if (ratio < min) {
       const hex = (c) => '#' + c.map((x) => Math.round(x).toString(16).padStart(2, '0')).join('');
-      bad.push(`${ratio.toFixed(2)} · ${el.tagName.toLowerCase()}.${[...el.classList].join('.')} · 글자 ${hex(fg.rgb)} / 바탕 ${hex(bg)} · "${text.slice(0, 22)}"`);
+      const line = `${ratio.toFixed(2)} · ${el.tagName.toLowerCase()}.${[...el.classList].join('.')} · 글자 ${hex(fg.rgb)} / 바탕 ${hex(bg)} · "${text.slice(0, 22)}"`;
+      // 글자든 바탕이든 한쪽이 원작 타입색이면 알려진 한계다
+      (TYPE_RGB.has(hexOf(fg.rgb)) || TYPE_RGB.has(hexOf(bg)) ? known : bad).push(line);
     }
   }
-  return [...new Set(bad)];
+  return { bad: [...new Set(bad)], known: [...new Set(known)] };
 };
 
 const browser = await chromium.launch({ args: ['--ignore-certificate-errors'] });
-const bad = [];
+const bad = [], known = [];
 let visited = 0;
 
 for (const theme of ['light', 'dark']) {
@@ -85,7 +106,9 @@ for (const theme of ['light', 'dark']) {
     try {
       await page.goto(`${BASE}#/${path}`, { waitUntil: 'load', timeout: 20000 });
       await page.waitForTimeout(700);
-      for (const one of await page.evaluate(AUDIT, MIN)) bad.push(`${theme} #/${path} → ${one}`);
+      const found = await page.evaluate(AUDIT, MIN);
+      for (const one of found.bad) bad.push(`${theme} #/${path} → ${one}`);
+      for (const one of found.known) known.push(`${theme} #/${path} → ${one}`);
       visited += 1;
     } catch (error) {
       bad.push(`${theme} #/${path} → [열리지 않음] ${error.message.split('\n')[0]}`);
@@ -96,6 +119,10 @@ for (const theme of ['light', 'dark']) {
 await browser.close();
 
 console.log(`훑은 화면 ${visited}장 · 기준 명암비 ${MIN} · ${BASE}`);
+if (known.length) {
+  console.log(`\n알려진 한계 ${known.length}군데 (게임 원작 타입색 — CLAUDE.md §1-b, 고치지 않는다):`);
+  for (const one of [...new Set(known)].slice(0, 8)) console.log(`  ${one}`);
+}
 if (bad.length) {
   console.error(`\n안 보이는 글자 ${bad.length}군데:`);
   for (const one of bad.slice(0, 40)) console.error(`  ${one}`);

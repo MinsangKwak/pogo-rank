@@ -15,6 +15,9 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 const RELEASE_NOTES_EN = {
+  '2026-09-19 · v4.3.9': [
+    '**Type names in the Pokedex are legible now** — bright types like Electric, Ground, Steel and Ice were washing out against the page; the type tint stays, the text just got deeper',
+  ],
   '2026-09-19 · v4.3.8': [
     '**The menu is now 80% of the screen width** — a strip of the page stays visible, and tapping outside to close is easier',
     '**The close button follows you as you scroll the menu** — it used to slide off the top and leave no way to close',

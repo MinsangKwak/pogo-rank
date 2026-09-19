@@ -180,7 +180,11 @@
   .dex__type {
     gap: 0.4rem; padding: 0.4rem 1.2rem 0.4rem 0.8rem; border-radius: var(--r-chip);
     background: color-mix(in srgb, var(--c) 18%, transparent);
-    color: color-mix(in srgb, var(--c) 72%, var(--fg));
+    /* 2026-09-19 v4.3.9 타입 72% → 55%. 밝은 타입(전기·땅·강철·얼음)에서 글자가 바탕에 묻혔다
+       (실측 2.32~2.94, 기준 3.0). 타입색 자체는 원작 값이라 못 바꾸니 **섞는 비율**을 내렸다.
+       18개 타입을 라이트·다크 양쪽에서 계산해 최악(전기 라이트)이 3.5 가 되는 값이다 —
+       60% 면 3.10 이라 다음에 팔레트를 손질하면 다시 깨진다. 색기는 그대로 남는다 */
+    color: color-mix(in srgb, var(--c) 55%, var(--fg));
   }
   .dex__type b { display: inline; font-size: var(--fs-sub); font-weight: 600; }
 }
