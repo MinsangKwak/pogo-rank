@@ -15,6 +15,11 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 const RELEASE_NOTES_EN = {
+  '2026-09-19 · v4.3.1': [
+    '**The cards are red now** — Poké Ball red fills the frames and header bands, over a warm red-tinted cream',
+    '**Dark mode is bright red on deep maroon** — a black with red in it, so the red on top never goes muddy',
+    '**Anything special (Mega, Legendary, S tier) is marked in blue** — the opposite of red, so it still stands out. Warnings moved to crimson so they no longer read as a selection',
+  ],
   '2026-09-19 · v4.3.0': [
     '**The whole look is now a trading-card concept** — each ranking row is a card with a gold frame, rounded corners and a holographic sheen',
     '**The bar across the top of each card is its type** — split in half for dual types. The top three in every group always shimmer',

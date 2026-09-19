@@ -17,22 +17,22 @@
 body { background: var(--notebook-canvas); }
 body #px-bg { opacity: .07; }
 body .app-bar { background:transparent; border:0; backdrop-filter:blur(1rem); }
-body .app-bar__logo { font-family:"Galmuri11",Pretendard,sans-serif; font-size:2.8rem; font-weight:950; font-style:normal; letter-spacing:-.08em; color:var(--brand); text-shadow:.16rem .16rem var(--gold-hi); }
+body .app-bar__logo { font-family:"Galmuri11",Pretendard,sans-serif; font-size:2.8rem; font-weight:950; font-style:normal; letter-spacing:-.08em; color:var(--brand); text-shadow:.16rem .16rem var(--foil-hi); }
 body .app-bar__head::after { letter-spacing:.08em; }
-body footer { margin-top:5rem; padding:3rem; background:var(--bg); border:0; border-top:8px solid var(--brand); box-shadow:.6rem .6rem 0 var(--gold-lo); }
+body footer { margin-top:5rem; padding:3rem; background:var(--bg); border:0; border-top:8px solid var(--brand); box-shadow:.6rem .6rem 0 var(--foil-lo); }
 body footer::before { content:'moncamp / PLAY & GROW'; display:block; font:900 2rem/1.2 Pretendard,sans-serif; color:var(--brand); margin-bottom:2rem; }
 body footer .foot-lead { font-family:"Galmuri11",Pretendard,sans-serif; font-weight:800; }
 body .app-nav .nav-menu .drawer__item { border-left:4px solid transparent; }
-body .app-nav .nav-menu [aria-current="page"] { background:var(--brand); color:var(--bg); border-left:4px solid var(--gold-hi); box-shadow:.4rem .4rem 0 var(--gold-lo); }
-body .app-nav .nav-menu .drawer__item:hover { background:var(--gold-hi); color:var(--gold-lo); }
-body .app-nav__extra { border-top:5px solid var(--gold-hi); }
+body .app-nav .nav-menu [aria-current="page"] { background:var(--brand); color:var(--bg); border-left:4px solid var(--foil-hi); box-shadow:.4rem .4rem 0 var(--foil-lo); }
+body .app-nav .nav-menu .drawer__item:hover { background:var(--foil-hi); color:var(--foil-lo); }
+body .app-nav__extra { border-top:5px solid var(--foil-hi); }
 /* Raised studs on the selected navigation brick; text remains unobstructed. */
 body .app-nav .nav-menu [aria-current="page"] { position:relative; margin-top:.8rem; }
 body .app-nav .nav-menu [aria-current="page"]::before { content:''; position:absolute; top:-.7rem; left:1.4rem; width:calc(100% - 2.8rem); height:.6rem; background:repeating-linear-gradient(90deg,var(--brand) 0 2rem,transparent 2rem 3.4rem); }
 
 /* Red pixel notebook: flat dot textures and stepped corners, no brick studs. */
 body { background:var(--notebook-canvas); }
-body .app-bar__logo { font-family:"Galmuri11",sans-serif; font-size:2.4rem; letter-spacing:-.07em; text-shadow:.2rem .2rem var(--gold-hi); }
+body .app-bar__logo { font-family:"Galmuri11",sans-serif; font-size:2.4rem; letter-spacing:-.07em; text-shadow:.2rem .2rem var(--foil-hi); }
 .home-dashboard .home__tile strong, body .app-nav .drawer__item { font-family:"Galmuri11",sans-serif; }
 .home-dashboard .home-updates__item::before, body .app-nav .nav-menu [aria-current="page"]::before { content:none; }
 body footer::before { color:var(--brand); font-family:"Galmuri11",sans-serif; }
@@ -79,7 +79,7 @@ body .app-bar { padding-top:1.8rem; padding-bottom:1.8rem; border-bottom:2px dot
 body .app-bar__head { position:relative; padding-bottom:1.4rem; }
 body .app-bar h1 { overflow:visible; }
 body .app-bar__logo:not(.app-bar__logo--brand) { display:inline-block; position:relative; padding:.7rem 1.1rem; background:var(--brand); color:var(--surface); font-size:2.3rem; line-height:1.2; text-shadow:.15rem .15rem var(--brand-2); box-shadow:.3rem .3rem 0 var(--fg); letter-spacing:-.07em; }
-body .app-bar__logo:not(.app-bar__logo--brand)::before { content:''; display:inline-block; width:.6rem; height:.6rem; margin-right:.8rem; vertical-align:middle; background:var(--gold-hi); box-shadow:0 -.6rem var(--gold-hi),.6rem 0 var(--gold-hi),0 .6rem var(--gold-hi),-.6rem 0 var(--gold-hi); transform:scale(.6); }
+body .app-bar__logo:not(.app-bar__logo--brand)::before { content:''; display:inline-block; width:.6rem; height:.6rem; margin-right:.8rem; vertical-align:middle; background:var(--foil-hi); box-shadow:0 -.6rem var(--foil-hi),.6rem 0 var(--foil-hi),0 .6rem var(--foil-hi),-.6rem 0 var(--foil-hi); transform:scale(.6); }
 body .app-bar__logo:not(.app-bar__logo--brand):hover { background:var(--brand-2); color:var(--surface); }
 body .app-bar__head::after { bottom:-.3rem; margin:0; font-size:.75rem; letter-spacing:.08em; color:var(--muted); }
 body .app-search { min-height:4.2rem; border:1.5px solid var(--line-2); border-bottom:3px solid var(--brand-2); padding:0 1.4rem; background:var(--bg); color:var(--fg); box-shadow:.3rem .3rem 0 var(--line); font-family:"Galmuri11",sans-serif; font-size:1.1rem; }
@@ -156,7 +156,7 @@ body .drawer__panel :is(button,a,summary):focus-visible { outline:.2rem dashed v
  body .drawer__panel { padding-left:1.8rem; padding-right:1.8rem; }
  body .drawer__head { margin-left:-1.8rem; margin-right:-1.8rem; padding-left:1.8rem; padding-right:1.8rem; }}
 /* Shared notebook pages: planning, collection, tools and reference documents. */
-body { --notebook-red:var(--brand); --notebook-red-deep:var(--brand-2); --notebook-btn-edge:var(--gold-hi); --notebook-line:color-mix(in srgb,var(--notebook-edge) 65%,var(--line)); --notebook-paper:color-mix(in srgb,var(--notebook-accent-soft) 10%,var(--bg)); }
+body { --notebook-red:var(--brand); --notebook-red-deep:var(--brand-2); --notebook-btn-edge:var(--foil-hi); --notebook-line:color-mix(in srgb,var(--notebook-edge) 65%,var(--line)); --notebook-paper:color-mix(in srgb,var(--notebook-accent-soft) 10%,var(--bg)); }
 body .page-head { background:transparent; border-bottom:2px dotted var(--notebook-line); padding-bottom:2.4rem; }
 body .page-head h2, body .page-head h1 { font-family:"Galmuri11",sans-serif; }
 body :is(.plan__title,.plan__hero h2,.plan__guide-head b,.page__sec,.finder .row-head h2) { font-family:"Galmuri11",sans-serif; line-height:1.6; }
