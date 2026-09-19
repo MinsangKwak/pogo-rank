@@ -46,7 +46,7 @@
 /* 그림 칸은 카드의 일러스트 창 — 안쪽으로 한 겹 더 두르고 홀로를 깐다 */
 .dex__list.is-grid .dex__row .sprite {
   width: var(--sprite-grid); height: var(--sprite-grid);
-  border: 1px solid var(--foil-lo); border-radius: calc(var(--r-card) - .4rem);
+  border: 1px solid var(--foil-lo); border-radius: var(--r-card);
   background-color: var(--card-tint);
   background-image: var(--holo-soft), var(--dot-pattern);
   background-size: cover, var(--dot-size);

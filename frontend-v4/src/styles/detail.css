@@ -51,7 +51,7 @@
   background-color: var(--surface);
   background-image: var(--holo-soft), var(--dot-pattern);
   background-size: cover, var(--dot-size);
-  border: 1px solid var(--foil-lo); border-radius: calc(var(--r-card) - .4rem);
+  border: 1px solid var(--foil-lo); border-radius: var(--r-card);
   border: var(--card-border); box-shadow: none;
 }
 .detail--mon .detail__side .sprite-box .sprite { width: 82%; height: 82%; margin: 0; }

@@ -9,7 +9,7 @@
      도트 그림 + 카드 프레임은 실물 카드가 이미 하고 있는 조합이다.
 
    규칙 넷 — 이 파일이 하는 일은 사실상 이 넷뿐이다
-     1) 모서리를 둥글린다    : --r-card(카드) · --r-chip(알약). tokens.css 한 곳에서 정한다
+     1) 곡선을 없앤다        : border-radius 0 (tokens.css --r-card · --r-chip)
      2) 선을 세운다          : 테두리 2px(--px) — 1px 는 화면 배율에 따라 사라진다
      3) 그림자는 띄운다      : 박 링 + 아래로 퍼지는 그림자 (--card-shadow)
      4) 움직임은 미끄러지게  : 카드가 들렸다 놓이는 느낌 (ease)
@@ -23,39 +23,29 @@
      아이콘은 브랜드 표식이라 카드 컨셉과 무관하게 그 모양이어야 한다.
    ───────────────────────────────────────────────────────────────────────────── */
 
-/* ── 1. 모서리를 둥글린다 ─────────────────────────────────────────────────── */
-/* 2026-09-12 v3.6.1 은 여기서 `border-radius: 0` 을 뿌리에 걸어 모든 곡선을 눌렀다.
-   이름을 하나씩 적어 누르면 다음에 또 빠지더라는 이유였고, 그 판단은 지금도 맞다 —
-   그래서 **뿌리에서 누르는 방식은 그대로 두고 값만 뒤집는다.**
-
-   전부에 반경을 주지는 않는다. `*` 에 반경을 주면 글자 상자·인라인 조각까지 둥글려져
-   아무 데도 안 보이면서 그리기 비용만 든다. 카드가 되는 상자만 이름을 적는다 —
-   이쪽은 v3.6.1 의 걱정(빠뜨림)이 반대로 작동한다: 빠뜨리면 각진 채 남을 뿐 깨지지 않는다.
+/* ── 1. 곡선을 없앤다 ─────────────────────────────────────────────────────── */
+/* **반경은 뿌리에서 한 번에 누른다.** v4.3.0 은 카드가 되는 상자의 이름을 적어 반경을 줬는데,
+   0 으로 돌아오니 그 방식으로는 부족하다 — v3 CSS 에 `border-radius` 가 박힌 자리가 162군데다
+   (티어 배지 · 범례 · 그림 받침 · 검색식 입력칸 · 상세 패널 닫기 …). 이름을 더 적어 봐야
+   다음에 또 빠진다. v3.6.1 이 같은 이유로 세운 규칙이라 그 장치를 그대로 되살린다.
 
    :not(#_):not(#__) 는 우선순위를 id 두 칸만큼 올리려는 장치다 (둘 다 이 서비스에 없는 id).
    두 칸이나 올리는 이유: 넓은 화면 규칙에 `body:is([data-route=…]) #content .row > .sprite` 처럼
    id 한 칸 + 클래스 셋짜리 선택자가 있어서, 한 칸만으로는 못 덮는다 (v3.7.1 에서 실제로 새어 나왔다) */
-html:not(#_):not(#__) :is(
-  .filter-box, .modal__box, .detail-panel, .ivrank__card, .legend, .schedule, .timeline,
-  .cp__result, .account, .plan__card, .home__tile, .home__btn, .pick__group, .pick__row,
-  .home__service-group, .home-updates__item, .dex__list .dex__row, .row-list > .row,
-  .boss__acc, .party-card, .detail__card, .detail__cp-card, .detail__acc, .sprite-box
-) { border-radius: var(--r-card); }
-
-/* 알약 — 칩·태그·배지는 완전히 둥글다. 카드의 에너지 표시를 닮았다 */
-html:not(#_):not(#__) :is(
-  .uchip, .chips__item, .tchips__item, .tag, .form-tag, .tier__badge, .delta, .grade-mark
-) { border-radius: var(--r-chip); }
-
-/* 진짜 동그란 것들 — 프로필 사진은 사람 얼굴이고, 알림 점은 점이고, 바탕 몬스터볼은 공이다 */
+html:not(#_):not(#__) body *,
+html:not(#_):not(#__) body *::before,
+html:not(#_):not(#__) body *::after {
+  border-radius: 0;
+}
+/* 되돌리는 것 — 진짜 동그란 것들.
+   프로필 사진은 사람 얼굴이고, 알림 점은 점이고, 바탕 몬스터볼은 공이다.
+   타입 색 띠(.row__types i)는 되돌리지 않는다 — 카드 위를 가로지르는 띠라 각져야 테두리와 맞는다 */
 html:not(#_):not(#__) .avatar,
 html:not(#_):not(#__) .dot-badge::after,
 html:not(#_):not(#__) .px-ball,
 html:not(#_):not(#__) .px-ball::after {
   border-radius: 50%;
 }
-/* 타입 색 띠는 각지게 둔다 — 카드 위쪽을 가로지르는 띠라 끝이 둥글면 테두리와 어긋난다 */
-html:not(#_):not(#__) .row__types i { border-radius: 0; }
 
 /* ── 2. 선을 세운다 ───────────────────────────────────────────────────────── */
 /* **상자**만 두껍게 한다. 목록 줄(.dex__row · .row-list > .row)은 줄 사이를 가르는

@@ -15,6 +15,9 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 const RELEASE_NOTES_EN = {
+  '2026-09-19 · v4.3.2': [
+    '**Corners are square again** — the card frames, holographic sheen and type bars all stay; only the rounding is gone, so the chrome matches the pixel art',
+  ],
   '2026-09-19 · v4.3.1': [
     '**The cards are red now** — Poké Ball red fills the frames and header bands, over a warm red-tinted cream',
     '**Dark mode is bright red on deep maroon** — a black with red in it, so the red on top never goes muddy',
