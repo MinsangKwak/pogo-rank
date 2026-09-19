@@ -91,7 +91,8 @@
 .account { display: flex; flex-direction: column; gap: 0.8rem; padding: 1.2rem 1.2rem; border: 1px solid var(--line); border-radius: 1.2rem; background: var(--surface); }
 .account[hidden] { display: none; }
 .account__login { justify-content: center; }
-.account__sub { margin: 0; font-size: var(--fs-sub); color: var(--muted); line-height: 1.5; }
+/* 2026-09-19 v4.3.8 읽으라고 쓴 문단이라 보조가 아니라 본문 크기다 — 로그인 전에 한 번은 읽는 글이다 */
+.account__sub { margin: 0; font-size: var(--fs-body); color: var(--muted); line-height: 1.7; }
 .account__pending { color: var(--caution); }
 .account__msg { margin: 0; font-size: var(--fs-sub); color: var(--warn); line-height: 1.5; }
 .account__who { display: flex; align-items: center; gap: 1.2rem; }

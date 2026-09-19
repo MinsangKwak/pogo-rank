@@ -164,10 +164,32 @@ body .modal__box .consent__check input { accent-color:var(--notebook-red); }
  body .modal__wrap:not(:has(.detail--mon)) .modal__box { padding-bottom:max(2rem, env(safe-area-inset-bottom)); }}
 /* Drawer as the notebook's inside cover. */
 body .drawer { background:rgba(39,20,27,.58); backdrop-filter:blur(.3rem); }
-body .drawer__panel { box-sizing:border-box; width:min(39rem,92vw); padding:0 2.4rem 2.4rem; gap:2rem; border-left:3px solid var(--brand-2); background:var(--bg); box-shadow:-.7rem 0 0 var(--fg); }
-body .drawer__head { margin:0 -2.4rem; padding:max(1.6rem,env(safe-area-inset-top)) 2.4rem 1.6rem; background:var(--brand-2); color:var(--surface); border-bottom:6px solid var(--brand-2); font-family:"Galmuri11",sans-serif; font-size: var(--fs-sec); }
-body #drawer-close { background:var(--surface); color:var(--brand-2); border:1.5px solid var(--fg); box-shadow:.3rem .3rem 0 var(--fg); }
-body .drawer__panel .drawer__sec { margin:1.2rem 0 -.6rem; font-family:"Galmuri11",sans-serif; font-size: var(--fs-body); color:var(--muted); letter-spacing:.04em; }
+/* 2026-09-19 v4.3.8 폭 92vw → 80vw (제보). 92% 는 덮은 것에 가까워 뒤 화면이 거의 안 보였다 —
+   옆에 남는 한 뼘이 "이건 겹쳐 열린 판이고 바깥을 누르면 닫힌다" 를 말해 준다 */
+body .drawer__panel { box-sizing:border-box; width:min(39rem,80vw); padding:0 2.4rem 2.4rem; gap:2rem; border-left:3px solid var(--brand-2); background:var(--bg); box-shadow:-.7rem 0 0 var(--fg); }
+/* 머리는 패널 맨 위에 **붙어 있는다**(sticky). 메뉴가 길어 스크롤을 내리면 닫기가 화면 밖으로
+   나가 버렸다 — 열어 놓고 내려가면 닫을 방법이 사라진다(제보).
+   패널이 스크롤 통(.drawer__panel { overflow-y:auto })이라 top:0 이 그대로 먹는다.
+   바탕이 불투명해야 밑에서 올라오는 글자가 비치지 않는다 — --brand-2 채움이 그 역할을 한다 */
+body .drawer__head { position:sticky; top:0; z-index:3; margin:0 -2.4rem; padding:max(1.6rem,env(safe-area-inset-top)) 2.4rem 1.6rem;
+  /* 팝업 머리와 같은 박을 깐다 — 띠가 단색이면 같은 색인 닫기 단추가 테두리로만 갈려 잘 안 보인다.
+     **바탕색을 먼저 박는다**: 박은 그림이라 안 그려지면 밝은 글자가 밝은 바탕에 놓인다 (CLAUDE.md §1-b) */
+  background-color:var(--brand-2); background-image:var(--foil); background-size:cover; color:var(--bg); border-bottom:6px solid var(--brand-2); font-family:"Galmuri11",sans-serif; font-size: var(--fs-sec); }
+/* 닫기 단추는 팝업(detail.css · modal)과 같은 모양이어야 한다 — 같은 뜻이면 같게 생겨야 한다 */
+body .drawer__head .icon-btn {
+  display:flex; align-items:center; justify-content:center; flex:none;
+  width:var(--tap); height:var(--tap); font-size:var(--fs-sec); line-height:1; }
+
+/* 2026-09-19 v4.3.8 닫기 단추의 색·테두리·그림자는 **id 선택자**가 쥐고 있다(1,0,1) —
+   클래스 규칙으로는 못 이긴다. 그래서 여기서 바꾼다. 팝업 닫기(detail.css · modal)와 같은 모양이다 */
+body #drawer-close { background:var(--brand-2); color:var(--bg); border:2px solid var(--bg); box-shadow:var(--shadow-hard) rgb(0 0 0 / 30%); }
+body #drawer-close:hover { background:var(--bg); border-color:var(--brand-2); color:var(--brand-2); }
+body #drawer-close:active { transform:translate(var(--px),var(--px)); box-shadow:none; }
+body #drawer-close:focus-visible { outline:2px solid var(--bg); outline-offset:2px; }
+/* 구역 라벨(마이페이지 · 서비스 · 정보)이 메뉴 항목과 같은 14px Galmuri 였다 — 같은 크기·같은 글꼴이면
+   무엇이 제목이고 무엇이 누를 것인지 눈으로 안 갈린다. **라벨은 읽는 글이라 Pretendard 12px 로 내린다.**
+   내리는 대신 자간을 벌려 라벨답게 만든다 (CLAUDE.md §7 — 크기가 아니라 결로 가른다) */
+body .drawer__panel .drawer__sec { margin:1.6rem 0 -.4rem; font-family:inherit; font-size: var(--fs-sub); font-weight:700; color:var(--muted); letter-spacing:.08em; }
 body .drawer__panel .account { position:relative; padding:2rem; gap:1.6rem; border:1.5px solid var(--notebook-edge); border-top:5px solid var(--brand); background:color-mix(in srgb,var(--notebook-accent-soft) 12%,var(--bg)); box-shadow:.4rem .4rem 0 var(--notebook-shadow); }
 body .drawer__panel .account__who b { font-family:"Galmuri11",sans-serif; font-size: var(--fs-body); line-height: 1.7; }
 body .drawer__panel .avatar { width:4rem; height:4rem; background:var(--notebook-tint); border:1.5px solid var(--notebook-edge); }

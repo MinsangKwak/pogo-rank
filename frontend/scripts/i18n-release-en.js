@@ -15,6 +15,11 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 const RELEASE_NOTES_EN = {
+  '2026-09-19 · v4.3.8': [
+    '**The menu is now 80% of the screen width** — a strip of the page stays visible, and tapping outside to close is easier',
+    '**The close button follows you as you scroll the menu** — it used to slide off the top and leave no way to close',
+    '**Menu type was reworked for reading** — section names and tappable rows were the same size; now they read apart at a glance',
+  ],
   '2026-09-19 · v4.3.7': [
     '**On phones, popups now stick to the bottom of the screen** — the close and calculator buttons land where your thumb already is',
     '**The close button is the same in every popup now** — the detail popup and the rest finally match',
