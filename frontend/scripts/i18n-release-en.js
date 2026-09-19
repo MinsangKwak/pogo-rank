@@ -15,6 +15,10 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 const RELEASE_NOTES_EN = {
+  '2026-09-19 · v4.2.5': [
+    '**Three nets now catch bad numbers before they reach you** — every value is formatted in one place, and the full dataset plus all 46 screens are swept before each release',
+    '**A missing value shows a dash (—) instead of a made-up number** — an empty cell is more honest than a wrong one',
+  ],
   '2026-09-19 · v4.2.4': [
     '**D-MAX Tank numbers are back** \u2014 where it read `NaN max damage \u00b7 bulk undefined`, you now get EHP with HP \u00d7 Defense, plus the damage multiplier taken once you pick a boss type.',
     '**Dealer, tier list, raids and PvP were checked too** \u2014 each table has its own row shape, so the score cell is now decided in one place and guarded by a test using real-shaped rows.',

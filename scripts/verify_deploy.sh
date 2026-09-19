@@ -113,5 +113,18 @@ for f in manifest.webmanifest sw.js icon-192.png; do
   [[ $code == 200 ]] && ok "$f 200" || bad "$f $code"
 done
 
+# 6) 2026-09-19 v4.2.5 화면 글자 훑기 — `NaN` · `undefined` 가 한 글자도 안 나가야 한다.
+#    파일이 200 인 것과 화면이 멀쩡한 것은 다르다. 46장을 실제로 열어 보고 판정한다.
+#    Playwright 가 없는 자리(CI 러너 등)에서는 건너뛴다 — 없다고 배포를 세우지는 않는다.
+if node -e "import('/opt/node22/lib/node_modules/playwright/index.js')" 2>/dev/null; then
+  if node "$(dirname "$0")/check_screens.mjs" "$URL" >/tmp/check_screens.log 2>&1; then
+    ok "화면 46장에 NaN · undefined 없음"
+  else
+    bad "화면에 NaN · undefined 가 보입니다 — $(grep -c '→' /tmp/check_screens.log 2>/dev/null || echo '?')군데. 자세히는 /tmp/check_screens.log"
+  fi
+else
+  echo "   (건너뜀) Playwright 가 없어 화면 글자 훑기를 못 했습니다 — node scripts/check_screens.mjs $URL 로 따로 돌려 주세요"
+fi
+
 if [[ $fail -eq 0 ]]; then echo "✅ 통과: $URL ($EXPECT)"; else echo "❌ 실패 항목 있음: $URL"; fi
 exit $fail
