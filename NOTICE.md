@@ -44,7 +44,7 @@ Pokémon 및 관련 명칭·캐릭터·이미지의 권리는 **The Pokémon Com
 | [Bulbapedia](https://bulbapedia.bulbagarden.net/) | 다이맥스·거다이맥스 출시 목록 | CC BY-NC-SA 2.5 | 목록 사실만 사용, 문장 인용 없음 |
 | pogomate | D-MAX 티어 공식 기준점 | 참고 | 공식만 참고, 데이터 미사용 |
 | [Pretendard](https://github.com/orioncactus/pretendard) | 한글 웹폰트 | SIL OFL 1.1 | CDN 참조 |
-| [Montserrat](https://fonts.google.com/specimen/Montserrat) | 영문·숫자 웹폰트 | SIL OFL 1.1 | Google Fonts 참조 |
+| [Galmuri](https://github.com/quiple/galmuri) | 픽셀 웹폰트 (칩·탭·버튼·제목) | SIL OFL 1.1 | CDN 참조 |
 | Firebase SDK · Google Analytics | 로그인·저장소·통계 | Google 약관 | CDN 참조 |
 
 ## 4. 포크·재배포

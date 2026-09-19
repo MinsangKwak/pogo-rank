@@ -393,7 +393,7 @@
 | 무엇 | 원본 파일 | 비고 |
 |---|---|---|
 | 색 토큰 · 타입/폼 색 · `--accent` · `--tap` | `styles/tokens.css` | 다른 파일에서 `:root` 를 다시 열지 않는다 |
-| 글꼴 · 기본 글자 크기 · 리셋 | `styles/base.css` | Montserrat(영문·숫자) + Pretendard(한글) |
+| 글꼴 · 기본 글자 크기 · 리셋 | `styles/base.css` | 읽는 글 Pretendard(12·14·16) + 크롬 Galmuri(14·22·28·42) — 크기 격자는 `tokens.css` |
 | 컨테이너 폭 · 헤더 · 푸터 · 아코디언 | `styles/layout.css` | `.wrap` 760px |
 | 컴포넌트 모양 | 그 컴포넌트의 CSS | 아이콘 버튼 → `drawer.css`, 팝업 → `modal.css`, 검색 → `search.css` |
 
