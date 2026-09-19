@@ -1,37 +1,110 @@
 /* ─────────────────────────────────────────────────────────────────────────────
    surfaces.css — 홈 · 도감 · 랭킹이 공유하는 카드 표면
 
-   세 화면이 같은 얼굴을 쓴다 — 테두리 한 겹, 도트 바탕, 오른쪽 아래로 떨어지는 그림자.
-   같은 값을 세 곳에 적는 대신 토큰(--card-border · --card-shadow · --dot-pattern)을 본다.
-   그래서 카드 느낌을 바꾸려면 tokens.css 한 줄만 고치면 된다.
+   2026-09-19 v4.3.0 **TCG 카드 컨셉.** 한 줄·한 칸이 카드 한 장이다.
+   카드 한 장은 넷으로 이뤄진다 — 위에서부터:
+     1. 타입 띠   그 포켓몬의 속성색. 두 속성이면 반씩 나눠 갖는다
+     2. 금테      밝은 금 테두리 + 그 바깥 어두운 금 링 (--card-border · --card-ring)
+     3. 판        아이보리 바탕 (--surface)
+     4. 홀로      스치면 도는 무지개 (--holo). 상위 세 장은 늘 옅게 깔고 있다
+
+   **타입 띠는 마크업을 안 건드리고 만든다.** `.row__types i` 가 이미 인라인 스타일로
+   제 속성색(--c)을 물고 있다 — 이름 옆 작은 점으로 쓰이던 그 요소를 카드 위쪽에
+   가로로 눕혀 띠로 쓴다. 색을 새로 내려보낼 길이 없어서가 아니라, 이미 내려와 있는 값을
+   쓰는 편이 표와 화면을 두 벌로 만들지 않아서다.
+
+   값은 토큰을 본다(--card-border · --card-shadow · --holo · --r-card).
+   카드 느낌을 바꾸려면 tokens.css 한 곳만 고치면 된다.
    ───────────────────────────────────────────────────────────────────────────── */
+
+/* ── 홈 ──────────────────────────────────────────────────────────────────── */
 .home-dashboard { --home-gap: var(--space-lg); }
 .home-dashboard .home__section {
-  margin-bottom: var(--space-md); padding-bottom: var(--space-sm); border-bottom: var(--card-border);
+  margin-bottom: var(--space-lg); padding-bottom: var(--space-md); border-bottom: 1px solid var(--line);
 }
 .home-dashboard .home__service-group,
 .home-dashboard .pick__group,
 .home-dashboard .home-updates__item {
-  background-color: var(--surface); border: var(--card-border); box-shadow: var(--card-shadow);
+  background-color: var(--surface); border: var(--card-border); border-radius: var(--r-card);
+  box-shadow: var(--card-shadow); overflow: hidden;
 }
 .home-dashboard .home__service-group { padding: var(--space-md); }
-.home-dashboard .home__group-head { background-image: var(--dot-pattern); background-size: var(--dot-size); }
-.home-dashboard .home__tile { min-height: var(--tap); }
+/* 묶음 머리의 바탕은 건드리지 않는다 — home.css 가 묶음마다 다른 강조색(--service-accent)을
+   칠하고 그 위에 흰 글자를 올린다. 여기서 옅은 판으로 덮으면 흰 글자가 흰 바탕에 놓인다 */
+.home-dashboard .home__tile { min-height: var(--tap); border-radius: var(--r-card); }
 
-.page-head { border-bottom: var(--card-border); }
+.page-head { border-bottom: 2px solid var(--gold-hi); }
 .page-head h2 { color: var(--brand); }
 
+/* ── 도감 그리드 ─────────────────────────────────────────────────────────── */
 .dex__list.is-grid .dex__row {
+  position: relative; overflow: hidden;
   gap: var(--space-sm); padding: var(--space-lg) var(--space-md) var(--space-md);
-  background: var(--surface); border: var(--card-border); box-shadow: var(--card-shadow);
+  background: var(--surface); border: var(--card-border); border-radius: var(--r-card);
+  box-shadow: var(--card-shadow);
 }
+/* 그림 칸은 카드의 일러스트 창 — 안쪽으로 한 겹 더 두르고 홀로를 깐다 */
 .dex__list.is-grid .dex__row .sprite {
   width: var(--sprite-grid); height: var(--sprite-grid);
-  background-image: var(--dot-pattern); background-size: var(--dot-size);
+  border: 1px solid var(--gold-lo); border-radius: calc(var(--r-card) - .4rem);
+  background-color: var(--card-tint);
+  background-image: var(--holo-soft), var(--dot-pattern);
+  background-size: cover, var(--dot-size);
 }
-.dex__list.is-grid .dex__row:hover { border-color: var(--brand); transform: translateY(-.2rem); }
+.dex__list.is-grid .dex__row:hover {
+  border-color: var(--brand); box-shadow: var(--card-shadow-up); transform: translateY(-.3rem);
+}
 
-.row-list .row { background: var(--surface); border: var(--card-border); box-shadow: var(--card-shadow); }
+/* ── 랭킹 한 줄 = 카드 한 장 ─────────────────────────────────────────────── */
+/* **구체도를 맞춰야 이긴다.** list.css 와 pc-theme.css 가 `.row-list:not(.is-list) > .row`
+   (클래스 셋)로 카드를 그려 놨다. 여기서 `.row-list > .row`(클래스 둘)로 적으면 파일이
+   나중에 실려도 진다 — 구체도가 먼저다. 그래서 두 모드를 다 적어 셋으로 맞춘다.
+
+   목록은 두 모드다 — 카드 보기(`.row-list:not(.is-list)`, 격자)와 줄 보기(`.is-list`).
+   격자는 list.css 가 이미 짜 놓았으므로 display 를 건드리지 않는다. 줄 보기만
+   칸막이 선 대신 카드 사이 여백으로 바꾼다 — 카드가 맞닿아 있으면 한 장으로 읽힌다 */
+.row-list { border-top: 0; }
+.row-list.is-list { display: flex; flex-direction: column; gap: var(--space-sm); }
+
+.row-list:not(.is-list) > .row,
+.row-list.is-list > .row {
+  position: relative; overflow: hidden;
+  /* 위쪽 여백이 한 단 큰 이유는 타입 띠가 그 자리를 쓰기 때문이다 */
+  padding: var(--space-md) var(--space-md) var(--space-sm);
+  background-color: var(--surface);
+  border: var(--card-border); border-radius: var(--r-card);
+  box-shadow: var(--card-shadow);
+  transition: transform .18s ease, box-shadow .18s ease;
+}
+/* 스치면 카드가 들리고 무지개가 돈다 — 미구현 줄은 제 경고 바탕을 지켜야 해서 비켜 간다 */
+.row-list:not(.is-list) > .row:not(.is-unreleased):hover,
+.row-list.is-list > .row:not(.is-unreleased):hover {
+  background-image: var(--holo);
+  box-shadow: var(--card-shadow-up); transform: translateY(-.3rem);
+}
+/* 각 묶음의 상위 세 장은 늘 옅게 홀로를 깔고 있다 — 실물 카드의 레어가 그렇다.
+   티어표는 묶음마다 목록이 새로 시작하므로 S·A·B·C 각각의 1~3위가 여기 걸린다 */
+.row-list:not(.is-list) > .row:nth-child(-n+3):not(.is-unreleased),
+.row-list.is-list > .row:nth-child(-n+3):not(.is-unreleased) {
+  background-image: var(--holo-soft); border-color: var(--gold-lo);
+}
+/* 이름 옆 점이던 것을 카드 맨 위 띠로 눕힌다. 두 속성이면 반씩 나눠 갖는다 */
+.row-list:not(.is-list) > .row .row__types,
+.row-list.is-list > .row .row__types {
+  position: absolute; top: 0; left: 0; right: 0; z-index: 1;
+  display: flex; gap: 0; height: .5rem;
+}
+.row-list:not(.is-list) > .row .row__types i,
+.row-list.is-list > .row .row__types i { flex: 1 1 0; width: auto; height: 100%; border-radius: 0; }
+/* 띠가 왼쪽 경고 막대를 덮지 않게 — 미구현 표시가 먼저다 */
+.row-list:not(.is-list) > .row.is-unreleased::before,
+.row-list.is-list > .row.is-unreleased::before { z-index: 2; }
+
+/* ▲▼ 는 금박 배지 안에 들어앉는다. 글자색만 바꾸면 배지가 없는 화면(덱 짜기)에서 되레 흐려지므로,
+   **제 바탕을 깔아** 어디에 놓이든 의미색(상승 초록 · 하락 빨강) 그대로 읽히게 한다 */
+.row-list > .row .row__rank .delta {
+  padding: 0 .3rem; border-radius: var(--r-chip); background: var(--surface);
+}
 
 .filter-box, .screen-tabs { accent-color: var(--brand); }
 
@@ -42,5 +115,6 @@
   :root { --sprite-grid: 8rem; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .dex__list.is-grid .dex__row:hover { transform: none; }
+  .dex__list.is-grid .dex__row:hover,
+  .row-list:not(.is-list) > .row:not(.is-unreleased):hover { transform: none; }
 }

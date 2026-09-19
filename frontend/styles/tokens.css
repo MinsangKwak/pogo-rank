@@ -27,22 +27,22 @@
      --brand-2 는 같은 계열의 진한 빨강으로 둔다 — 한 서비스 안의 다른 갈래(PvP)라
      계열까지 바꿀 이유가 없다. --good(teal) · --caution(앰버) 은 그대로다. */
 :root {
-  --bg: #fff8f2; --fg: #0a0a0f; --muted: #64647a; --line: #e5e5eb; --surface: #ffffff; --hover: #f2f2f5;
-  --line-2: #d4d4dc;    /* 한 단 진한 테두리 — 눌린 칸·활성 입력처럼 경계를 세워야 할 때 */
-  --ink-2: #2a2a35;     /* 본문보다 한 단 흐린 글자 (카드 안 보조 문장) */
-  --ink-4: #9b9bb0;     /* 가장 흐린 글자 — 자리표시·비활성 */
+  --bg: #f4f1e8; --fg: #1c1917; --muted: #57534e; --line: #e0d9c8; --surface: #fffdf7; --hover: #f0ead8;
+  --line-2: #c9bda0;    /* 한 단 진한 테두리 — 눌린 칸·활성 입력처럼 경계를 세워야 할 때 */
+  --ink-2: #3f3a34;     /* 본문보다 한 단 흐린 글자 (카드 안 보조 문장) */
+  --ink-4: #8a8279;     /* 가장 흐린 글자 — 자리표시·비활성 */
   /* 의미 색 — 이름이 곧 쓰임새다 */
   /* 몬스터볼 빨강. 그림(스플래시 공 · 앱 아이콘 · 공유 카드)은 원작 값 #e5372e 를 쓰고,
      **글자로 쓰이는** 이 토큰만 반 단 어둡게 잡았다 — #e5372e 는 밝은 바탕(#fafafa)에서
      명암비 4.1 이라 작은 글씨가 흐려 보인다. #d63024 는 4.7 로 기준을 넘으면서 같은 빨강이다 */
-  --brand: #d63024;     /* 브랜드 · 지금 보고 있는 곳 */
-  --brand-2: #b3231b;   /* 보조 — 다른 갈래를 구분할 때 (PvP 등). 같은 계열 한 단 진한 빨강 */
-  --point: #2f6fd0;     /* 포인트 — 특별한 것 (메가·전설·S티어). 빨강의 정반대 */
-  --warn: #9f1239;      /* 경고 — 나쁨(하향·약점)·삭제. 브랜드보다 어둡고 자주빛이 돈다 */
-  --caution: #d97706;   /* 주의 — 대기·A티어 */
-  --off: #9b9bb0;       /* 비활성 */
-  --good: #0d9488;      /* 좋음(상향·내성) — 전에는 브랜드 초록이 겸했다. 레퍼런스의 teal */
-  --accent: #d63024;    /* = --brand. 예전부터 쓰던 이름이라 그대로 둔다 */
+  --brand: #8a6510;     /* 브랜드 · 지금 보고 있는 곳. 카드 금테의 어두운 쪽 */
+  --brand-2: #6b4f08;   /* 보조 — 다른 갈래를 구분할 때 (PvP 등). 같은 금색 한 단 진하게 */
+  --point: #7c3aed;     /* 포인트 — 특별한 것 (메가·전설·S티어). 금색의 보색 자리인 보라 */
+  --warn: #b91c1c;      /* 경고 — 나쁨(하향·약점)·삭제 */
+  --caution: #b45309;   /* 주의 — 대기·A티어 */
+  --off: #8a8279;       /* 비활성 */
+  --good: #15803d;      /* 좋음(상향·내성) */
+  --accent: #8a6510;    /* = --brand. 예전부터 쓰던 이름이라 그대로 둔다 */
 
   --t-normal:#a8a77a; --t-fire:#ee8130; --t-water:#6390f0; --t-grass:#7ac74c; --t-electric:#f7d02c; --t-ice:#96d9d6;
   --t-fighting:#c22e28; --t-poison:#a33ea1; --t-ground:#e2bf65; --t-flying:#a98ff3; --t-psychic:#f95587; --t-bug:#a6b91a;
@@ -64,31 +64,35 @@
   --fs-body: 1.4rem;    /* 본문 (Galmuri14) */
   --fs-sub: 1.1rem;     /* 보조 (Galmuri11) */
   /* 카드 — 한 서비스에 반경이 여러 벌 생기지 않게 두 단으로만.
-     2026-09-12 v3.6.0 도트 디자인 — **둥근 모서리를 전부 없앤다**. 픽셀 격자에 곡선은 없다.
-     대신 테두리를 2px 로 세우고 그림자를 흐림 없는 계단(--shadow-hard)으로 준다 —
-     이 둘이 도트 UI 의 입체감을 만든다 (블러 그림자는 격자를 뭉갠다) */
-  --r-card: 0;
-  --r-chip: 0;
+     2026-09-12 v3.6.0 은 도트 격자에 곡선이 없다며 반경을 0 으로 뒀다.
+     2026-09-19 v4.3.0 **TCG 카드 컨셉** — 반경을 되살린다. 실물 카드는 모서리가 둥글다.
+     글꼴은 Galmuri 그대로다(게임 원작의 글꼴이라 카드와도 붙는다) — 곡선은 카드 테두리에만
+     쓰고 글자 격자는 건드리지 않으므로 픽셀이 뭉개지지 않는다. */
+  --r-card: 1.2rem;
+  --r-chip: 99.9rem;                  /* 칩은 완전한 알약 — 카드의 에너지 표시를 닮았다 */
   --px: 0.2rem;                       /* 도트 한 칸 — 테두리·그림자·간격의 기본 단위 */
   --shadow-hard: 0.4rem 0.4rem 0 0;   /* 흐림 0 — 색은 쓰는 쪽에서 붙인다 */
 }
-/* 다크 — 2026-09-12 v3.0.0 레퍼런스의 잉크블랙(#0a0a0f). 완전한 검정이 아니라 보라 기가
-   아주 옅게 도는 검정이라, 그 위에 올라가는 빨강이 탁해지지 않는다.
-   어두운 바탕에서는 #e5372e 가 무거워 보여 한 단 밝은 #ff5f52 를 쓴다.
-   라이트와 같은 규칙으로 바탕(#0a0a0f) < 카드(#16161f) < 눌림(#1c1c28) 순으로 밝아진다 */
+/* 다크 — 2026-09-19 v4.3.0 TCG 카드. 깊은 남보라(#131020) 위에 금색이 올라간다 —
+   실물 카드를 어두운 데서 볼 때 금박이 뜨는 그 관계다. 검정 대신 보라를 쓴 이유는
+   금색과 나란히 놓였을 때 검정은 금을 누렇게 만들고 보라는 금을 밝혀 주기 때문이다.
+   라이트와 같은 규칙으로 바탕(#131020) < 카드(#1c1730) < 눌림(#251e3c) 순으로 밝아진다.
+   금색은 어두운 바탕에서 밝은 쪽(#e8c86a)을 쓴다 — 라이트의 #8a6510 은 여기서 안 보인다 */
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --bg:#171e2e; --fg:#f5f5fa; --muted:#8b8ba3; --line:#26263a; --surface:#16161f; --hover:#1c1c28;
-    --line-2:#33334d; --ink-2:#c9c9d6; --ink-4:#5c5c73;
-    --brand:#ff5f52; --brand-2:#ff8a80; --point:#6f9df0; --warn:#f43f5e; --caution:#f59e0b; --off:#5c5c73;
-    --good:#2dd4bf; --accent:#ff5f52;
+    --bg:#131020; --fg:#f5f2ea; --muted:#a8a29e; --line:#2a2340; --surface:#1c1730; --hover:#251e3c;
+    --line-2:#463a68; --ink-2:#d6d0c4; --ink-4:#7a7189;
+    --brand:#e8c86a; --brand-2:#d4af37; --point:#a78bfa; --warn:#fb7185; --caution:#fbbf24; --off:#7a7189;
+    --good:#4ade80; --accent:#e8c86a;
+  --c-shadow:#a78bfa;
   }
 }
 :root[data-theme="dark"] {
-  --bg:#171e2e; --fg:#f5f5fa; --muted:#8b8ba3; --line:#26263a; --surface:#16161f; --hover:#1c1c28;
-  --line-2:#33334d; --ink-2:#c9c9d6; --ink-4:#5c5c73;
-  --brand:#ff5f52; --brand-2:#ff8a80; --point:#6f9df0; --warn:#f43f5e; --caution:#f59e0b; --off:#5c5c73;
-  --good:#2dd4bf; --accent:#ff5f52;
+  --bg:#131020; --fg:#f5f2ea; --muted:#a8a29e; --line:#2a2340; --surface:#1c1730; --hover:#251e3c;
+  --line-2:#463a68; --ink-2:#d6d0c4; --ink-4:#7a7189;
+  --brand:#e8c86a; --brand-2:#d4af37; --point:#a78bfa; --warn:#fb7185; --caution:#fbbf24; --off:#7a7189;
+  --good:#4ade80; --accent:#e8c86a;
+  --c-shadow:#a78bfa;
 }
 
 /* 2026-09-11 v2.59.0 목록 격자 사다리 — 한 줄에 몇 개를 놓을지 여기 한 곳에서만 정한다.
@@ -119,9 +123,35 @@ body.has-detail-panel { --list-cols: 1; }
   --space-md: 1.6rem;
   --space-lg: 2.4rem;
   --space-xl: 3.2rem;
-  --card-border: 1px solid var(--line-2);
-  --card-tint: color-mix(in srgb, var(--brand) 5%, var(--surface));
-  --card-shadow: .4rem .4rem 0 color-mix(in srgb, var(--brand) 18%, var(--line));
+  /* 2026-09-19 v4.3.0 TCG 카드 — 한 줄·한 칸이 카드 한 장이다.
+     금테는 두 겹으로 만든다. border 로 밝은 금을 긋고, box-shadow 의 퍼짐 0 짜리 링으로
+     그 바깥에 어두운 금을 한 겹 더 두른다 — 실물 카드의 금박이 빛을 받는 쪽과 지는 쪽으로
+     갈리는 그 두 줄이다. 한 겹으로는 테두리가 그냥 노란 선으로만 읽힌다. */
+  /* 어두운 채움(금박 배지 · 금박 띠) 위에 올라가는 의미색. 라이트 테마의 --good/--warn 은
+     밝은 바탕을 전제로 어둡게 잡혀 있어, 금색 원 안에서는 거의 안 보인다(명암비 1.2 로 실측).
+     다크 테마가 쓰는 밝은 짝을 여기 따로 둔다 — 테마가 아니라 **바탕의 밝기**가 고르는 값이다 */
+  --good-bright: #4ade80;
+  --warn-bright: #fb7185;
+  --gold-hi: #e8c86a;                 /* 금박의 밝은 쪽 — 장식 전용, 글자로 쓰지 않는다 */
+  --gold-lo: #8a6510;                 /* 금박의 어두운 쪽 = --brand 와 같은 값 */
+  --card-border: 2px solid var(--gold-hi);
+  --card-ring: 0 0 0 1px var(--gold-lo);
+  --card-tint: color-mix(in srgb, var(--brand) 6%, var(--surface));
+  --card-shadow: var(--card-ring), 0 .6rem 1.6rem rgb(28 25 23 / 14%);
+  --card-shadow-up: var(--card-ring), 0 1rem 2.4rem rgb(28 25 23 / 22%);
+  /* 금박 — 넓은 면(머리 띠 · 강조 카드)에 쓴다. 단색 금은 큰 면에서 갈색으로 읽혀서,
+     빛을 받는 띠를 가운데 한 줄 넣어 금속으로 보이게 한다 */
+  --gold-foil: linear-gradient(135deg,
+    var(--brand-2) 0%, var(--brand) 42%, var(--gold-hi) 50%, var(--brand) 58%, var(--brand-2) 100%);
+  /* 홀로그램 — 카드를 기울일 때 도는 무지개. 실물처럼 돌 수는 없으니 각도만 고정해 얹는다.
+     conic 은 한 바퀴가 이어져야 이음매가 안 보인다 — 시작색과 끝색을 같게 둔 이유다 */
+  --holo: linear-gradient(115deg,
+    rgb(124 58 237 / 10%) 0%, rgb(59 130 246 / 10%) 22%, rgb(45 212 191 / 10%) 44%,
+    rgb(250 204 21 / 10%) 66%, rgb(244 114 182 / 10%) 88%, rgb(124 58 237 / 10%) 100%);
+  /* 늘 깔려 있는 쪽은 절반 세기 — 상위 카드가 "레어" 로 읽히되 글자를 안 먹는다 */
+  --holo-soft: linear-gradient(115deg,
+    rgb(124 58 237 / 5%) 0%, rgb(59 130 246 / 5%) 22%, rgb(45 212 191 / 5%) 44%,
+    rgb(250 204 21 / 5%) 66%, rgb(244 114 182 / 5%) 88%, rgb(124 58 237 / 5%) 100%);
   --dot-pattern: radial-gradient(var(--line-2) 1px, transparent 1px);
   --dot-size: 1.2rem 1.2rem;
   --detail-width: 104rem;

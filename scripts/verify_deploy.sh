@@ -122,8 +122,15 @@ if node -e "import('/opt/node22/lib/node_modules/playwright/index.js')" 2>/dev/n
   else
     bad "화면에 NaN · undefined 가 보입니다 — $(grep -c '→' /tmp/check_screens.log 2>/dev/null || echo '?')군데. 자세히는 /tmp/check_screens.log"
   fi
+  # 7) 2026-09-19 v4.3.0 명암비 훑기 — 글자가 바탕에 묻히면 그것도 안 보이는 것이다.
+  #    같은 브라우저가 이미 떠 있는 김에 이어서 돌린다 (CLAUDE.md §1-b)
+  if node "$(dirname "$0")/check_contrast.mjs" "$URL" >/tmp/check_contrast.log 2>&1; then
+    ok "글자가 바탕에 묻히는 자리 없음"
+  else
+    bad "안 보이는 글자가 있습니다 — $(grep -c '→' /tmp/check_contrast.log 2>/dev/null || echo '?')군데. 자세히는 /tmp/check_contrast.log"
+  fi
 else
-  echo "   (건너뜀) Playwright 가 없어 화면 글자 훑기를 못 했습니다 — node scripts/check_screens.mjs $URL 로 따로 돌려 주세요"
+  echo "   (건너뜀) Playwright 가 없어 화면·명암비 훑기를 못 했습니다 — node scripts/check_screens.mjs $URL 로 따로 돌려 주세요"
 fi
 
 if [[ $fail -eq 0 ]]; then echo "✅ 통과: $URL ($EXPECT)"; else echo "❌ 실패 항목 있음: $URL"; fi

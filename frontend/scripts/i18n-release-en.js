@@ -15,6 +15,12 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 const RELEASE_NOTES_EN = {
+  '2026-09-19 · v4.3.0': [
+    '**The whole look is now a trading-card concept** — each ranking row is a card with a gold frame, rounded corners and a holographic sheen',
+    '**The bar across the top of each card is its type** — split in half for dual types. The top three in every group always shimmer',
+    '**Dark mode is gold on deep indigo** — the way foil catches light on a real card in a dim room',
+    '**Pokémon detail reads as a card front** — foil name bar, holographic art window, rounded card frame',
+  ],
   '2026-09-19 · v4.2.5': [
     '**Three nets now catch bad numbers before they reach you** — every value is formatted in one place, and the full dataset plus all 46 screens are swept before each release',
     '**A missing value shows a dash (—) instead of a made-up number** — an empty cell is more honest than a wrong one',

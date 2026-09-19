@@ -46,6 +46,9 @@ dialog.modal::backdrop { background: transparent; }
 .sprite-box.sprite-box--shadow { border: 0.2rem solid var(--c-shadow); box-shadow: 0 0 0 0.3rem color-mix(in srgb, var(--c-shadow) 18%, transparent); }
 .detail__type-pill { white-space: nowrap; }
 .detail__type-pill { display: inline-flex; align-items: center; padding: 0.2rem 0.9rem; border-radius: 99.9rem; font-size: 1.05rem; font-weight: 700; color: #fff;
+  /* 타입색 열여덟은 게임 원작 값이라 못 바꾼다 — 밝은 타입(비행·얼음·페어리) 위의 흰 글자는
+     색만으로는 2.6 까지 떨어진다. 글자에 그늘을 깔아 어느 타입 위에서도 윤곽이 남게 한다 */
+  text-shadow: 0 0 .2rem rgb(0 0 0 / 55%);
   text-shadow: 0 1px 0.2rem rgba(0,0,0,.35); background: var(--c, var(--muted)); box-shadow: 0 1px 0.4rem rgba(0,0,0,.35); }
 
 .detail__sec { margin-top: 1.8rem; }

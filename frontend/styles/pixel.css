@@ -1,44 +1,61 @@
 /* ─────────────────────────────────────────────────────────────────────────────
-   도트(픽셀) 디자인 — 2026-09-12 v3.6.0
-//
-   왜 도트인가
-     이 서비스가 보여 주는 그림이 전부 96px 픽셀 스프라이트다. 그림은 도트인데 껍데기만
-     매끈하면 둘이 따로 논다. 껍데기를 그림 쪽으로 맞춘다.
+   카드(TCG) 디자인 — 2026-09-19 v4.3.0
+   (2026-09-12 v3.6.0 의 도트 디자인을 이 파일에서 갈아끼웠다)
+
+   왜 카드인가
+     이 서비스가 하는 일은 포켓몬 한 마리를 한 칸에 담아 견주는 것이다. 그 모양이 곧 카드다.
+     순위·타입·기술·수치가 한 장에 모여 있고, 장끼리 나란히 놓여 비교된다 —
+     실물 카드가 하는 일과 같다. 그림이 도트인 것은 그대로다(게임 원작의 그림이라 바꿀 수 없다).
+     도트 그림 + 카드 프레임은 실물 카드가 이미 하고 있는 조합이다.
 
    규칙 넷 — 이 파일이 하는 일은 사실상 이 넷뿐이다
-     1) 곡선을 없앤다        : border-radius 0 (tokens.css --r-card · --r-chip)
+     1) 모서리를 둥글린다    : --r-card(카드) · --r-chip(알약). tokens.css 한 곳에서 정한다
      2) 선을 세운다          : 테두리 2px(--px) — 1px 는 화면 배율에 따라 사라진다
-     3) 그림자는 계단으로    : blur 0 의 오프셋 그림자 (--shadow-hard)
-     4) 움직임은 칸칸이      : transition·animation 에 steps() — 부드러우면 도트가 아니다
+     3) 그림자는 띄운다      : 금색 링 + 아래로 퍼지는 그림자 (--card-shadow)
+     4) 움직임은 미끄러지게  : 카드가 들렸다 놓이는 느낌 (ease)
+
+   v3.6.0 과 정확히 반대인 자리가 셋(1·3·4)이다. 그때는 "픽셀 격자에 곡선은 없다" 였고
+   지금은 "카드는 모서리가 둥글고 빛을 받는다" 다. 뿌리에서 한 번에 누르던 그 장치
+   (html:not(#_):not(#__) 로 우선순위를 id 두 칸 올리기)는 그대로 쓴다 — 누르는 값만 바뀐다.
 
    건드리지 않는 것
-     레이아웃(폭·격자·순서)과 색 토큰. 이 파일은 **생김새만** 바꾼다 —
-     그래서 되돌리려면 build.py 의 STYLES 에서 이 줄 하나만 빼면 된다.
+     레이아웃(폭·격자·순서)과 색 토큰, 그리고 아래쪽 **도트 아이콘**(px-ball · PxIcon).
+     아이콘은 브랜드 표식이라 카드 컨셉과 무관하게 그 모양이어야 한다.
    ───────────────────────────────────────────────────────────────────────────── */
 
-/* ── 1. 곡선 제거 ─────────────────────────────────────────────────────────── */
-/* 2026-09-12 v3.6.1 — v3.6.0 은 둥근 자리의 **이름을 하나씩 적어** 눌렀다. 그래서 목록에
-   없던 자리가 그대로 둥글게 남았다: 상세 화면의 카드와 알약 배지, 그림 받침(넓은 화면에서는
-   아예 정원이었다), 일정표 날짜 칸, 검색식 입력칸, 티어 배지, 진화 칸, 맨 위로 버튼 …
-   이름을 더 적어 봐야 다음에 또 빠진다. 뿌리에서 한 번에 누르고, 진짜 동그래야 하는 것만 되돌린다.
+/* ── 1. 모서리를 둥글린다 ─────────────────────────────────────────────────── */
+/* 2026-09-12 v3.6.1 은 여기서 `border-radius: 0` 을 뿌리에 걸어 모든 곡선을 눌렀다.
+   이름을 하나씩 적어 누르면 다음에 또 빠지더라는 이유였고, 그 판단은 지금도 맞다 —
+   그래서 **뿌리에서 누르는 방식은 그대로 두고 값만 뒤집는다.**
+
+   전부에 반경을 주지는 않는다. `*` 에 반경을 주면 글자 상자·인라인 조각까지 둥글려져
+   아무 데도 안 보이면서 그리기 비용만 든다. 카드가 되는 상자만 이름을 적는다 —
+   이쪽은 v3.6.1 의 걱정(빠뜨림)이 반대로 작동한다: 빠뜨리면 각진 채 남을 뿐 깨지지 않는다.
 
    :not(#_):not(#__) 는 우선순위를 id 두 칸만큼 올리려는 장치다 (둘 다 이 서비스에 없는 id).
    두 칸이나 올리는 이유: 넓은 화면 규칙에 `body:is([data-route=…]) #content .row > .sprite` 처럼
    id 한 칸 + 클래스 셋짜리 선택자가 있어서, 한 칸만으로는 못 덮는다 (v3.7.1 에서 실제로 새어 나왔다) */
-html:not(#_):not(#__) body *,
-html:not(#_):not(#__) body *::before,
-html:not(#_):not(#__) body *::after {
-  border-radius: 0;
-}
-/* 되돌리는 것 — 진짜 동그란 것들.
-   프로필 사진은 사람 얼굴이고, 알림 점은 점이고, 바탕 몬스터볼은 공이다.
-   타입 색 점(.dot)은 되돌리지 않는다 — 도트 디자인에서 한 칸짜리 네모가 곧 점이다 */
+html:not(#_):not(#__) :is(
+  .filter-box, .modal__box, .detail-panel, .ivrank__card, .legend, .schedule, .timeline,
+  .cp__result, .account, .plan__card, .home__tile, .home__btn, .pick__group, .pick__row,
+  .home__service-group, .home-updates__item, .dex__list .dex__row, .row-list > .row,
+  .boss__acc, .party-card, .detail__card, .detail__cp-card, .detail__acc, .sprite-box
+) { border-radius: var(--r-card); }
+
+/* 알약 — 칩·태그·배지는 완전히 둥글다. 카드의 에너지 표시를 닮았다 */
+html:not(#_):not(#__) :is(
+  .uchip, .chips__item, .tchips__item, .tag, .form-tag, .tier__badge, .delta, .grade-mark
+) { border-radius: var(--r-chip); }
+
+/* 진짜 동그란 것들 — 프로필 사진은 사람 얼굴이고, 알림 점은 점이고, 바탕 몬스터볼은 공이다 */
 html:not(#_):not(#__) .avatar,
 html:not(#_):not(#__) .dot-badge::after,
 html:not(#_):not(#__) .px-ball,
 html:not(#_):not(#__) .px-ball::after {
   border-radius: 50%;
 }
+/* 타입 색 띠는 각지게 둔다 — 카드 위쪽을 가로지르는 띠라 끝이 둥글면 테두리와 어긋난다 */
+html:not(#_):not(#__) .row__types i { border-radius: 0; }
 
 /* ── 2. 선을 세운다 ───────────────────────────────────────────────────────── */
 /* **상자**만 두껍게 한다. 목록 줄(.dex__row · .row-list > .row)은 줄 사이를 가르는
@@ -57,22 +74,26 @@ html:not(#_):not(#__) .px-ball::after {
    한 서비스 안에서 카드 테두리가 두께가 둘이면 같은 종류로 안 읽힌다 */
 html:not(#_):not(#__) .row-list:not(.is-list) > .row { border-width: var(--px); border-style: solid; }
 
-/* ── 3. 그림자는 계단으로 ─────────────────────────────────────────────────── */
+/* ── 3. 그림자는 띄운다 ───────────────────────────────────────────────────── */
+/* v3.6.0 은 흐림 0 의 계단 그림자로 도트의 입체감을 만들었다. 카드는 반대다 —
+   금박 링을 한 겹 두르고 아래로 퍼지는 그림자를 줘서 판 위에 **놓인** 것처럼 보이게 한다 */
 .modal__box, .detail-panel, .fav-pop {
-  box-shadow: var(--shadow-hard) var(--line);
+  box-shadow: var(--card-shadow);
 }
 /* 2026-09-12 v3.15.0 .dex__row.is-selected — 상세 패널이 보여 주는 줄은 가리키고 있을 때와 같은 모양으로 남는다 */
 .dex__list.is-grid .dex__row:hover, .dex__list.is-grid .dex__row.is-selected, .row-list:not(.is-list) > .row:hover {
-  box-shadow: var(--shadow-hard) var(--brand);
-  transform: translate(calc(var(--px) * -1), calc(var(--px) * -1));
+  box-shadow: var(--card-shadow-up);
+  transform: translateY(calc(var(--px) * -1.5));
 }
 
-/* ── 4. 움직임은 칸칸이 ───────────────────────────────────────────────────── */
+/* ── 4. 움직임은 미끄러지게 ───────────────────────────────────────────────── */
+/* v3.6.0 은 steps() 로 칸칸이 끊었다(부드러우면 도트가 아니라서). 카드는 손으로 집어
+   드는 물건이라 끊기면 어색하다 — 같은 시간을 ease 로 편다 */
 @media (prefers-reduced-motion: no-preference) {
   .uchip, .tool-btn, .seg button, .view-toggle, .chips__item, .drawer__item,
   .dex__row, .row-list > .row, .home__tile, .home__btn, .pick__row, .icon-btn {
-    transition: background 0.12s steps(3), color 0.12s steps(3),
-                border-color 0.12s steps(3), box-shadow 0.12s steps(3), transform 0.12s steps(2);
+    transition: background 0.18s ease, color 0.18s ease,
+                border-color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
   }
 }
 
