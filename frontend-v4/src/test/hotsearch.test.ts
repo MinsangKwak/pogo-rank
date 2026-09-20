@@ -85,3 +85,36 @@ describe('인기 검색어 — 미리보기 샘플이 운영으로 새지 않는
     expect(job).not.toContain('env:');
   });
 });
+
+// 이 브라우저에 세는 표 — 저장소가 막혀 있어도 화면이 멀쩡해야 한다
+describe('인기 검색어 — 이 브라우저에 센 것', () => {
+  it('저장된 것이 없으면 빈 목록이다', async () => {
+    const { readLocalPicks, LOCAL_PICK_KEY } = await import('../lib/track');
+    localStorage.removeItem(LOCAL_PICK_KEY);
+    expect(readLocalPicks()).toEqual([]);
+  });
+
+  it('많이 고른 것이 위로 온다', async () => {
+    const { readLocalPicks, LOCAL_PICK_KEY } = await import('../lib/track');
+    localStorage.setItem(LOCAL_PICK_KEY, JSON.stringify([
+      { name: '가디안', sprite: 282, count: 2 },
+      { name: '뮤츠', sprite: 150, count: 5 },
+    ]));
+    expect(readLocalPicks().map((one) => one.name)).toEqual(['뮤츠', '가디안']);
+  });
+
+  // 남의 값이나 예전 판이 남긴 모양이 들어와도 줄을 세우면 안 된다 (§1)
+  it('모양이 깨진 값은 걸러 낸다', async () => {
+    const { readLocalPicks, LOCAL_PICK_KEY } = await import('../lib/track');
+    localStorage.setItem(LOCAL_PICK_KEY, JSON.stringify([
+      { name: '뮤츠', count: 3 }, null, { name: 7, count: 1 }, { name: '가디안', count: NaN }, '뮤',
+    ]));
+    expect(readLocalPicks()).toEqual([{ name: '뮤츠', count: 3 }]);
+  });
+
+  it('저장소가 깨져 있어도 터지지 않는다', async () => {
+    const { readLocalPicks, LOCAL_PICK_KEY } = await import('../lib/track');
+    localStorage.setItem(LOCAL_PICK_KEY, '{이건 JSON 이 아니다');
+    expect(readLocalPicks()).toEqual([]);
+  });
+});

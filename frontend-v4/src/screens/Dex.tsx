@@ -179,7 +179,7 @@ export default function Dex({ onOpen }: { onOpen: OpenMon }) {
             return (
               <button key={row.dex} className={`dex__row${row.unrel ? ' is-unreleased' : ''}`} data-sprite={row.dex}
                 onClick={() => {
-                  if (term.trim()) trackSearchPick(row.name, 'dex');
+                  if (term.trim()) trackSearchPick(row.name, 'dex', row.dex);
                   onOpen({ sprite: row.dex, name: row.name, types: form?.types ?? [] });
                 }}>
                 <span className="dex__no">{`#${String(row.dex).padStart(4, '0')}`}</span>

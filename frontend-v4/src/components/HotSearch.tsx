@@ -11,9 +11,11 @@
 // 줄이 없으면 구역 자체를 그리지 않는다. 집계 전이거나 GA 가 조용할 수 있고,
 // 그때 '0회' 를 세우면 서비스가 비어 보인다 (CLAUDE.md §1 의 '빈 값은 줄을 세우지 않는다').
 // ─────────────────────────────────────────────────────────────────────────────
+import { useState, useEffect } from 'react';
 import { Sprite } from './Bits';
 import { useHotSearchSoft } from '../lib/data';
 import { num } from '../lib/cell';
+import { readLocalPicks } from '../lib/track';
 import type { OpenMon } from '../lib/mon';
 
 // 'YYYY-MM-DDTHH:MM:SS+09:00' → '9월 20일 12시'.
@@ -39,7 +41,14 @@ export function barWidth(count: number, top: number): number {
 
 export default function HotSearch({ onOpen }: { onOpen: OpenMon }) {
   const hot = useHotSearchSoft();
-  const rows = hot?.rows ?? [];
+  // 미리보기에서 이 브라우저에 센 것. **그릴 때 한 번 읽는다** — 검색하고 홈으로 돌아오면 새로 읽힌다.
+  // 저장소는 렌더 중에 읽으면 서버·클라이언트가 어긋나므로 붙은 뒤에 읽는다
+  const [mine, setMine] = useState<ReturnType<typeof readLocalPicks>>([]);
+  useEffect(() => { if (hot?.preview) setMine(readLocalPicks()); }, [hot?.preview]);
+
+  // 내가 검색한 것이 있으면 그것을 세운다 — 샘플보다 내 손으로 만든 표가 먼저다
+  const isMine = !!hot?.preview && mine.length > 0;
+  const rows = isMine ? mine.slice(0, 10) : (hot?.rows ?? []);
   if (!rows.length) return null;
 
   const label = hot?.asOf ? asOfLabel(hot.asOf) : '';
@@ -50,14 +59,17 @@ export default function HotSearch({ onOpen }: { onOpen: OpenMon }) {
       <div className="home__section">
         <h3>
           오늘 많이 찾은 포켓몬
-          {/* dev 미리보기가 채운 표라는 것을 화면에서 바로 알 수 있어야 한다 — 수를 진짜로 읽으면 안 된다 */}
-          {hot?.sample ? <span className="hot__flag">미리보기 샘플</span> : null}
+          {/* 이 수가 어디서 왔는지 화면에서 바로 알 수 있어야 한다 — 진짜 집계로 읽으면 안 된다 */}
+          {isMine ? <span className="hot__flag">내 검색 · 이 브라우저</span>
+            : hot?.sample ? <span className="hot__flag">미리보기 샘플</span> : null}
         </h3>
         <span>
-          {hot?.sample
-            ? '모양을 보려고 채운 표예요. 실제 검색 수가 아니에요'
-            : '검색해서 열어 본 횟수예요'}
-          {label && !hot?.sample ? <span className="home__date"> · {label} 기준</span> : null}
+          {isMine
+            ? '이 브라우저에서 검색해 연 횟수예요. 밖으로 나가지 않아요'
+            : hot?.sample
+              ? '모양을 보려고 채운 표예요. 실제 검색 수가 아니에요'
+              : '검색해서 열어 본 횟수예요'}
+          {label && !hot?.sample && !isMine ? <span className="home__date"> · {label} 기준</span> : null}
         </span>
       </div>
       <ol className="hot__list">
@@ -79,7 +91,9 @@ export default function HotSearch({ onOpen }: { onOpen: OpenMon }) {
         ))}
       </ol>
       <span className="hot__foot">
-        {hot?.sample ? '운영에 올라가면 실제 검색으로 채워져요' : '하루 두 번(낮 12시 · 자정) 새로 세요'}
+        {isMine ? '미리보기라 이 기기에만 세요. 운영에서는 모두의 검색을 하루 두 번 세요'
+          : hot?.sample ? '운영에 올라가면 실제 검색으로 채워져요'
+            : '하루 두 번(낮 12시 · 자정) 새로 세요'}
       </span>
     </section>
   );

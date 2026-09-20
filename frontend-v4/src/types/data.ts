@@ -361,4 +361,6 @@ export interface HotSearchBundle {
   rows: HotSearchRow[];
   /** 미리보기(dev)가 실제 순위표 이름으로 채운 표. 운영에서는 오지 않는다 */
   sample?: boolean;
+  /** 미리보기(dev) 빌드. 화면이 '이 브라우저에 센 것' 을 대신 세울 수 있다 */
+  preview?: boolean;
 }

@@ -233,7 +233,7 @@ export default function IvRankPage() {
                   {term.trim() ? (hits.length
                     ? hits.map((hit) => (
                       <SuggestRow key={hit.name} mon={hit} typeKo={dex.TYPE_KO} labels={dex.FORM_LABELS}
-                        onPick={() => { trackSearchPick(hit.name, 'iv_rank'); save({ ...picked, sprite: hit.sprite }); }} />
+                        onPick={() => { trackSearchPick(hit.name, 'iv_rank', hit.sprite); save({ ...picked, sprite: hit.sprite }); }} />
                     ))
                     : <span className="sugg__none">검색 결과가 없어요</span>) : null}
                 </div>

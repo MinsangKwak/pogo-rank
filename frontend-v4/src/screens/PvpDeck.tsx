@@ -213,7 +213,7 @@ export default function PvpDeck({ onOpen }: { onOpen: OpenMon }) {
             {hits.map((hit) => (
               <button key={hit.name} className="boss__rec" onClick={() => {
                 if (foes.length >= 3) return;
-                trackSearchPick(hit.name, 'pvp_deck');
+                trackSearchPick(hit.name, 'pvp_deck', hit.sprite);
                 track('pvp_deck_foe', { mon: hit.name });
                 setFoes((now) => [...now, hit]);
                 setTerm('');

@@ -153,6 +153,10 @@ def main():
 
     # 표가 빈 채로 끝나는 자리가 셋이다(시크릿 없음 · 조회 실패 · GA 가 0건). 셋 다 여기를 지난다
     def finish(note):
+        # 미리보기 표식 — 화면이 '이 브라우저에 센 것' 을 얹어도 되는 자리인지 이 값으로 안다.
+        # 표가 GA 로 찼는지와 무관하게 dev 면 늘 붙는다
+        if is_dev:
+            payload['preview'] = True
         if is_dev and not payload['rows']:
             payload['rows'] = sample_rows(sprite_by_name())
             payload['sample'] = True
