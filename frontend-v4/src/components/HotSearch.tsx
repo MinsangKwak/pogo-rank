@@ -1,5 +1,5 @@
 // ─────────────────────────────────────────────────────────────────────────────
-// HotSearch.tsx — 오늘 많이 찾은 포켓몬 (v4.5.5)
+// HotSearch.tsx — 어제 많이 검색된 포켓몬 (v4.5.5)
 //
 // 세는 말은 **완성어**다. '뮤' 를 치다 뮤츠를 고르면 뮤츠가 한 번 오른다 —
 // 토막말은 애초에 보내지 않는다 (lib/track.ts trackSearchPick).
@@ -55,10 +55,10 @@ export default function HotSearch({ onOpen }: { onOpen: OpenMon }) {
   const top = rows[0]?.count ?? 0;
 
   return (
-    <section className="home__hot" aria-label="오늘 많이 찾은 포켓몬">
+    <section className="home__hot" aria-label="어제 많이 검색된 포켓몬">
       <div className="home__section">
         <h3>
-          오늘 많이 찾은 포켓몬
+          어제 많이 검색된 포켓몬
           {/* 이 수가 어디서 왔는지 화면에서 바로 알 수 있어야 한다 — 진짜 집계로 읽으면 안 된다 */}
           {isMine ? <span className="hot__flag">내 검색 · 이 브라우저</span>
             : hot?.sample ? <span className="hot__flag">미리보기 샘플</span> : null}

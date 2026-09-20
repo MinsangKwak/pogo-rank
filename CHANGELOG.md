@@ -22,7 +22,18 @@
 ---
 
 <details open>
-<summary><b>2026-09-20</b> — 12판 · <code>v4.5.8</code> · <code>v4.5.7</code> · <code>v4.5.6</code> · <code>v4.5.5</code> · <code>v4.5.4</code> · <code>v4.5.3</code> · <code>v4.5.2</code> · <code>v4.5.1</code> · <code>v4.5.0</code> · <code>v4.4.2</code> · <code>v4.4.1</code> · <code>v4.4.0</code></summary>
+<summary><b>2026-09-20</b> — 13판 · <code>v4.5.9</code> · <code>v4.5.8</code> · <code>v4.5.7</code> · <code>v4.5.6</code> · <code>v4.5.5</code> · <code>v4.5.4</code> · <code>v4.5.3</code> · <code>v4.5.2</code> · <code>v4.5.1</code> · <code>v4.5.0</code> · <code>v4.4.2</code> · <code>v4.4.1</code> · <code>v4.4.0</code></summary>
+
+<details>
+<summary><b>v4.5.9</b> · 인기 검색어 제목을 '어제 많이 검색된 포켓몬' 으로</summary>
+
+운영 화면에 아직 이 구역이 없어 사용자용 패치 노트에는 v4.5.5 줄을 고쳐 적었다.
+
+**변경** — 제목이 '오늘 많이 찾은 포켓몬' 이었는데 창은 최근 24시간이고 GA4 가 이벤트를 몇 시간 늦게 처리한다. '오늘' 은 지키지 못할 약속이라 '어제' 로 바꿨다.
+
+**변경** — 미리보기 샘플을 넷으로 고정했다(거다이맥스 잠만보 · 다이맥스 해피너스 · 다이맥스 코뿌리 · 다이맥스 몰드류). 순위표 상위를 긁어 오던 방식은 빌드마다 줄이 바뀌어 모양을 견주기 어려웠다. 이름은 여전히 실데이터에 있는 종만 쓴다(§3).
+
+</details>
 
 <details>
 <summary><b>v4.5.8</b> · 좁은 화면 그리드에서 CP 숫자가 쪼개지던 것</summary>

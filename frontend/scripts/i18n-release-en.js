@@ -19,7 +19,7 @@ const RELEASE_NOTES_EN = {
     '**Fixed CP numbers splitting apart on narrow dex cards** — "1,260" broke into "1,26 / 0"; the label now sits above the number, which stays on one line',
   ],
   '2026-09-20 · v4.5.5': [
-    "**Today's most-searched Pokémon now sits on the home screen** — the ten people opened most from search, recounted twice a day at noon and midnight",
+    "**Yesterday's most-searched Pokémon now sits on the home screen** — the ones people opened most from search, recounted twice a day at noon and midnight",
     '**It counts the name you landed on** — type "Mew", open Mewtwo, and Mewtwo is what gets counted; the letters you typed are not. Searches from anyone who turned analytics off are not counted',
   ],
   '2026-09-20 · v4.5.3': [

@@ -107,43 +107,15 @@ def fetch_rows(property_id, sa_info):
     return response.json().get('rows', [])
 
 
-# 미리보기용 표 — 실제 순위표 상위 열 종의 이름을 그대로 쓰고 횟수만 만든다.
-# 순서를 흩지 않고 위에서부터 쓰는 이유: 어느 줄이 1위인지 눈으로 견줄 수 있어야 막대가 읽힌다.
-SAMPLE_SOURCES = ('data/dynamax_tier.json', 'data/pve.json', 'data/pvp.json')
-
-
-# 표 하나에서 상위 이름만 읽는다 (표마다 묶음 이름이 overall · little 로 갈려 먼저 나오는 목록을 쓴다)
-def top_names(path, limit):
-    if not os.path.exists(path):
-        return []
-    try:
-        table = json.load(open(path, encoding='utf-8'))
-    except (ValueError, OSError):
-        return []
-    for group in (table.values() if isinstance(table, dict) else [table]):
-        if isinstance(group, list) and group:
-            return [row['name'].strip() for row in group[:limit]
-                    if isinstance(row, dict) and isinstance(row.get('name'), str) and row['name'].strip()]
-    return []
+# 미리보기용 표 — 모양을 보려고 세우는 넷이다.
+# 이름은 실제 데이터에 있는 종만 쓴다 (§3 — 지어내지 않는다). 횟수만 만든다.
+SAMPLE_NAMES = ('거다이맥스 잠만보', '다이맥스 해피너스', '다이맥스 코뿌리', '다이맥스 몰드류')
+SAMPLE_COUNTS = (412, 318, 247, 191)
 
 
 def sample_rows(sprites):
-    # 세 표를 번갈아 뽑는다 — 한 표에서만 채우면 열 줄이 전부 거다이맥스라 실제 검색처럼 안 보인다
-    lanes = [top_names(path, TOP_N) for path in SAMPLE_SOURCES]
-    picked, seen = [], set()
-    for index in range(TOP_N):
-        for lane in lanes:
-            if index >= len(lane) or lane[index] in seen:
-                continue
-            seen.add(lane[index])
-            picked.append(lane[index])
-            if len(picked) >= TOP_N:
-                break
-        if len(picked) >= TOP_N:
-            break
-    # 1위 412 에서 한 줄에 약 8% 씩 줄인다 — 막대가 눈에 띄게 층지도록
-    return [{'name': name, 'count': round(412 * (0.92 ** index)), 'sprite': sprites.get(name)}
-            for index, name in enumerate(picked)]
+    return [{'name': name, 'count': count, 'sprite': sprites.get(name)}
+            for name, count in zip(SAMPLE_NAMES, SAMPLE_COUNTS)]
 
 
 def main():
