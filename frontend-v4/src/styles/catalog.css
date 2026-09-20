@@ -1,142 +1,109 @@
-/* Shared catalog surfaces: portrait, identity, and numeric summary. */
-html body #root :is(.dex-catalog.is-grid .dex__row,.row-list.is-grid > .row,.dex__list.is-grid .gameday__row) {
- background: var(--bg); border: .1rem solid var(--line); border-top: .3rem solid color-mix(in srgb,var(--brand) 65%,var(--line));
- box-shadow: none; padding: 2rem; gap: 1.2rem; overflow: hidden;
-}
-html body #root :is(.dex-catalog.is-grid .dex__row,.row-list.is-grid > .row,.dex__list.is-grid .gameday__row)::after { display:none; }
-html:not(#_):not(#__) body #root :is(.dex-catalog.is-grid,.row-list.is-grid,.dex__list.is-grid) .sprite {
- background: transparent; border: 0; box-shadow:none;
- width: 15rem; height: 15rem; padding: 0; object-fit: contain;
-}
-html body #root .dex-catalog.is-grid .dex__name { display: flex; flex-direction: column; align-items: stretch; gap: 1.2rem; width: 100%; }
-html body #root .dex-catalog.is-grid .dex__name > b { font-size: 2rem; line-height: 1.4; text-align: left; }
-html body #root .dex-catalog.is-grid .dex__use { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:.8rem; width:100%; }
-html body #root .dex-catalog.is-grid .dex__use-pill { display:flex; align-items:center; justify-content:space-between; gap:.6rem; padding:1rem; background:color-mix(in srgb,var(--fg) 4%,var(--bg)); border:0; color:var(--fg); }
-html body #root .dex-catalog.is-grid .dex__use-pill em { font-size:1.2rem; color:var(--muted); }
-html body #root .dex-catalog.is-grid .dex__use-val { font-size:2rem; font-weight:750; font-variant-numeric:tabular-nums; }
-html body #root .dex-catalog.is-grid .dex__stats { width:100%; margin:0; padding:1.2rem 0 0; border-top:.1rem solid var(--line); justify-content:space-between; }
-html body #root .dex-catalog.is-grid .dex__stat--cp b { font-size:2.2rem; font-weight:750; color:var(--brand); font-variant-numeric:tabular-nums; }
-html body #root .dex-catalog.is-grid .dex__types { justify-content:flex-start; width:100%; }
-html body #root .dex-catalog.is-grid .dex__no { background:transparent; color:var(--muted); border:0; font-size:1.2rem; }
-html body #root .row-list.is-grid .row__name { font-size:1.8rem; justify-content:flex-start; }
-html body #root .row-list.is-grid .row__stats { background:color-mix(in srgb,var(--brand) 6%,var(--bg)); border:0; padding:1.4rem; width:100%; box-sizing:border-box; }
-html body #root .row-list.is-grid .row__score { font-size:2.6rem; font-weight:750; line-height:1.3; font-variant-numeric:tabular-nums; color:var(--brand); }
-html body #root .row-list.is-grid .row__sub { font-size:1.2rem; line-height:1.7; }
-html body #root :is(.screen-tabs,.filter-box) { box-shadow:none; background:color-mix(in srgb,var(--fg) 2%,var(--bg)); border:.1rem solid var(--line); padding:1rem; }
-html body #root .screen-tabs .tchips { display:flex; flex-wrap:wrap; gap:.6rem; }
-html body #root :is(.screen-tabs .uchip,.chips__item) { min-height:4.2rem; padding:.8rem 1.2rem; border:.1rem solid transparent; background:transparent; color:var(--muted); }
-html body #root :is(.screen-tabs .uchip,.chips__item)[aria-pressed="true"] { background:var(--brand); color:#fff; border-color:var(--brand); }
-html body #root :is(.boss__search,.dex__search) { min-height:4.8rem; padding:1.2rem 1.6rem; border:.1rem solid var(--line); background:var(--bg); box-shadow:none; box-sizing:border-box; }
-html body #root .filter-box > summary { padding:.8rem; line-height:1.6; }
-@media(hover:hover) {
- html body #root :is(.dex-catalog.is-grid .dex__row,.row-list.is-grid > .row,.dex__list.is-grid .gameday__row):hover { transform:none; border-color:var(--brand); background:var(--bg); box-shadow:0 0 0 .1rem var(--brand); }
-}
-@media(max-width:699px) {
- html body #root :is(.dex-catalog.is-grid .dex__row,.row-list.is-grid > .row,.dex__list.is-grid .gameday__row) { padding:1.2rem; gap:.8rem; }
- html:not(#_):not(#__) body #root :is(.dex-catalog.is-grid,.row-list.is-grid,.dex__list.is-grid) .sprite { width:11rem; height:11rem; }
- html body #root .dex-catalog.is-grid .dex__name > b { font-size:1.6rem; }
- html body #root .dex-catalog.is-grid .dex__use { gap:.4rem; }
- html body #root .dex-catalog.is-grid .dex__use-pill { padding:.6rem; }
- html body #root .dex-catalog.is-grid .dex__use-val { font-size:1.6rem; }
- html body #root .dex-catalog.is-grid .dex__stat--cp b { font-size:1.8rem; }
-}
+/* ─────────────────────────────────────────────────────────────────────────────
+   catalog.css — 도감 · 순위 · 레이드/알 카드가 같이 쓰는 표면 (v4.4.0)
 
-/* Current position and recent movement are separate, legible badges. */
-html body #root .row__rank { display: inline-flex; align-items: center; gap: .7rem; width: auto; min-width: 2.8rem; padding: .5rem .7rem; line-height: 1.4; font-variant-numeric: tabular-nums; }
-html body #root .row__rank .delta { display: inline-flex; align-items: center; padding: .3rem .6rem; margin: 0; border: 0; font: 600 1.1rem/1.3 sans-serif; letter-spacing: .05em; background: var(--bg); box-shadow: none; white-space: nowrap; }
-html body #root .row__rank .delta.is-up { color: var(--good); background: color-mix(in srgb,var(--good) 10%,var(--bg)); }
-html body #root .row__rank .delta.is-down { color: var(--muted); background: var(--bg); }
+   카드 한 장은 **바닥 무대 → 이름 → 수치** 순이다. 그림은 발을 한 선에 맞춰 선다 —
+   스프라이트마다 아래 투명 여백이 달라 가운데 정렬하면 어떤 것은 떠 있고 어떤 것은 파묻힌다.
+   Bits.tsx 의 fitGround() 가 그림의 투명 바닥을 재서 --sprite-ground-offset 으로 내려 준다.
 
-/* Keep form labels visually separate from the Pokemon name. */
-html body #root .form-tag + b { margin-inline-start: .5rem; }
+   `html body #root` 접두사는 home-editorial.css 머리말과 같은 이유다 — v3 스킨을 이기는
+   v4 의 장치 하나. 색·크기·간격은 토큰(CLAUDE.md §1-b · §7).
+   ───────────────────────────────────────────────────────────────────────────── */
 
-/* A small pixel habitat anchors each specimen above its data label. */
-html body #root .dex-catalog.is-grid .dex__row { gap:1rem; border-top:.1rem solid var(--line); padding-top:3.6rem; }
-html body #root :is(.dex-catalog,.dex__list).is-grid .dex__portrait {
-  display:flex; position:relative; align-items:center; justify-content:center;
-  width:100%; height:15rem; margin:0 0 .4rem; isolation:isolate;
-  background:linear-gradient(0deg,color-mix(in srgb,var(--brand) 5%,transparent),transparent 75%);
-  border-bottom:.1rem solid color-mix(in srgb,var(--brand) 20%,transparent);
+/* 카드 — 상자 하나에 위쪽 굵은 선. 홀로·박테(surfaces.css)는 여기서 끈다 */
+html body #root :is(.dex-catalog.is-grid .dex__row, .row-list.is-grid > .row, .dex__list.is-grid .gameday__row) {
+  background: var(--bg); border: .1rem solid var(--line); border-top: .4rem solid color-mix(in srgb, var(--brand) 65%, var(--line));
+  box-shadow: none; padding: 2rem; gap: 1.2rem; overflow: hidden;
 }
-html body #root :is(.dex-catalog,.dex__list).is-grid .dex__portrait::before {
-  content:''; position:absolute; z-index:-1; width:68%; height:36%; bottom:1.2rem;
-  background:repeating-linear-gradient(0deg,transparent 0 .7rem,color-mix(in srgb,var(--fg) 9%,transparent) .7rem .8rem),repeating-linear-gradient(90deg,transparent 0 .7rem,color-mix(in srgb,var(--fg) 9%,transparent) .7rem .8rem),color-mix(in srgb,var(--brand) 6%,transparent);
-  transform:perspective(18rem) rotateX(48deg); box-shadow:0 .4rem 0 color-mix(in srgb,var(--fg) 8%,transparent);
-}
-html:not(#_):not(#__) body #root :is(.dex-catalog,.dex__list).is-grid .dex__portrait .sprite { width:15rem; height:15rem; margin:0; position:relative; }
-html body #root .dex-catalog.is-grid .dex__no { font:600 1.2rem/1.5 monospace; letter-spacing:.08em; box-shadow:none; color:var(--muted); }
-html body #root .dex-catalog.is-grid .dex__name { gap:1.2rem; }
-html body #root .dex-catalog.is-grid .dex__name > b { font-family:inherit; font-size:2.2rem; font-weight:750; letter-spacing:-.04em; line-height:1.35; }
-html body #root .dex-catalog.is-grid .dex__use-pill { background:transparent; padding:.8rem 0; border-top:.1rem solid var(--line); }
-html body #root .dex-catalog.is-grid .dex__use-pill + .dex__use-pill { border-left:.1rem solid var(--line); padding-left:1rem; }
-html body #root .dex-catalog.is-grid .dex__use-val { font-size:2.4rem; font-weight:700; letter-spacing:-.04em; }
-html body #root .dex-catalog.is-grid .dex__stats { background:color-mix(in srgb,var(--brand) 7%,transparent); border:0; padding:1.2rem; }
-html body #root .dex-catalog.is-grid .dex__stat--cp { display:flex; justify-content:space-between; align-items:center; width:100%; gap:.8rem; }
-html body #root .dex-catalog.is-grid .dex__stat--cp em { color:var(--muted); font-size:1.1rem; }
-html body #root .dex-catalog.is-grid .dex__types { padding:0; border:0; }
-@media(max-width:699px) {
- html body #root .dex-catalog.is-grid .dex__row { padding-top:3.2rem; }
- html body #root :is(.dex-catalog,.dex__list).is-grid .dex__portrait { height:12rem; }
- html:not(#_):not(#__) body #root :is(.dex-catalog,.dex__list).is-grid .dex__portrait .sprite { width:12rem; height:12rem; }
- html body #root .dex-catalog.is-grid .dex__name > b { font-size:1.8rem; }
- html body #root .dex-catalog.is-grid .dex__use-val { font-size:1.9rem; }
- html body #root .dex-catalog.is-grid .dex__stats { padding:.8rem; }
-}
-
-/* List rows keep their layout; grid portraits share the dex ground plane. */
-html body #root .row__portrait { display:contents; }
-
-html body #root .row-list.is-grid .row__portrait {
-  display:flex; position:relative; align-items:center; justify-content:center;
-  width:100%; height:15rem; margin:0 0 .4rem; isolation:isolate;
-  background:linear-gradient(0deg,color-mix(in srgb,var(--brand) 5%,transparent),transparent 75%);
-  border-bottom:.1rem solid color-mix(in srgb,var(--brand) 20%,transparent);
-}
-
-html body #root .row-list.is-grid .row__portrait::before {
-  content:''; position:absolute; z-index:-1; width:68%; height:36%; bottom:1.2rem;
-  background:repeating-linear-gradient(0deg,transparent 0 .7rem,color-mix(in srgb,var(--fg) 9%,transparent) .7rem .8rem),repeating-linear-gradient(90deg,transparent 0 .7rem,color-mix(in srgb,var(--fg) 9%,transparent) .7rem .8rem),color-mix(in srgb,var(--brand) 6%,transparent);
-  transform:perspective(18rem) rotateX(48deg); box-shadow:0 .4rem 0 color-mix(in srgb,var(--fg) 8%,transparent);
-}
-
-html:not(#_):not(#__) body #root .row-list.is-grid .row__portrait .sprite { width:15rem; height:15rem; margin:0; position:relative; }
-
-@media(max-width:699px) {
- html body #root .row-list.is-grid .row__portrait { height:12rem; }
- html:not(#_):not(#__) body #root .row-list.is-grid .row__portrait .sprite { width:12rem; height:12rem; }
-}
-
-/* Keep even full-height sprites inside the ground plane, with room below their feet. */
-html body #root :is(:is(.dex-catalog,.dex__list).is-grid .dex__portrait,.row-list.is-grid .row__portrait) {
-  height:18rem; padding-bottom:3rem; box-sizing:border-box;
-}
-html body #root :is(:is(.dex-catalog,.dex__list).is-grid .dex__portrait,.row-list.is-grid .row__portrait)::before {
-  width:82%; height:32%; bottom:.7rem;
-  transform:perspective(24rem) rotateX(48deg);
-}
-@media(max-width:699px) {
-  html body #root :is(:is(.dex-catalog,.dex__list).is-grid .dex__portrait,.row-list.is-grid .row__portrait) {
-    height:14.4rem; padding-bottom:2.4rem;
+html body #root :is(.dex-catalog.is-grid .dex__row, .row-list.is-grid > .row, .dex__list.is-grid .gameday__row)::after { display: none; }
+@media (hover: hover) {
+  html body #root :is(.dex-catalog.is-grid .dex__row, .row-list.is-grid > .row, .dex__list.is-grid .gameday__row):hover {
+    transform: none; border-color: var(--brand); background: var(--bg); box-shadow: 0 0 0 .1rem var(--brand);
   }
 }
 
-html:not(#_):not(#__) body #root :is(:is(.dex-catalog,.dex__list).is-grid .dex__portrait,.row-list.is-grid .row__portrait) .sprite { object-position:center bottom; }
+/* 무대 — 그림 뒤의 격자 바닥. 줄 보기(.row__portrait 가 display:contents)에서는 없다 */
+html body #root .row__portrait { display: contents; }
+html body #root :is(:is(.dex-catalog, .dex__list).is-grid .dex__portrait, .row-list.is-grid .row__portrait) {
+  display: flex; position: relative; align-items: center; justify-content: center; isolation: isolate;
+  width: 100%; height: 18rem; padding-bottom: 3.2rem; box-sizing: border-box; margin: 0 0 .4rem;
+  background: linear-gradient(0deg, color-mix(in srgb, var(--brand) 5%, transparent), transparent 75%);
+  border-bottom: .1rem solid color-mix(in srgb, var(--brand) 20%, transparent);
+}
+html body #root :is(:is(.dex-catalog, .dex__list).is-grid .dex__portrait, .row-list.is-grid .row__portrait)::before {
+  content: ''; position: absolute; z-index: -1; width: 82%; height: 32%; bottom: .8rem;
+  background:
+    repeating-linear-gradient(0deg, transparent 0 .7rem, color-mix(in srgb, var(--fg) 9%, transparent) .7rem .8rem),
+    repeating-linear-gradient(90deg, transparent 0 .7rem, color-mix(in srgb, var(--fg) 9%, transparent) .7rem .8rem),
+    color-mix(in srgb, var(--brand) 6%, transparent);
+  transform: perspective(24rem) rotateX(48deg); box-shadow: 0 .4rem 0 color-mix(in srgb, var(--fg) 8%, transparent);
+}
+/* 그림 — pixel.css 의 뿌리 규칙(id 두 칸)보다 위여야 배경·테두리를 벗길 수 있다 */
+html:not(#_):not(#__) body #root :is(.dex-catalog.is-grid, .row-list.is-grid, .dex__list.is-grid) .sprite {
+  width: 15rem; height: 15rem; margin: 0; padding: 0; position: relative;
+  background: transparent; border: 0; box-shadow: none; object-fit: contain; object-position: center bottom;
+}
+html:not(#_):not(#__) body #root :is(:is(.dex-catalog, .dex__list).is-grid .dex__portrait, .row-list.is-grid .row__portrait) .sprite:not(.sprite--anim) {
+  translate: 0 var(--sprite-ground-offset, 0%);
+}
 
-html:not(#_):not(#__) body #root :is(:is(.dex-catalog,.dex__list).is-grid .dex__portrait,.row-list.is-grid .row__portrait) .sprite:not(.sprite--anim) { translate:0 var(--sprite-ground-offset,0%); }
+/* 도감 카드 — 번호는 흐리게, 이름은 크게, 두 용도 수치는 나란히, CP 는 판 위에 */
+html body #root .dex-catalog.is-grid .dex__row { border-top: .1rem solid var(--line); padding-top: 3.6rem; }
+html body #root .dex-catalog.is-grid .dex__no { background: transparent; border: 0; box-shadow: none; color: var(--muted); font-size: var(--fs-sub); font-weight: 600; line-height: 1.5; letter-spacing: .08em; font-variant-numeric: tabular-nums; }
+html body #root .dex-catalog.is-grid .dex__name { display: flex; flex-direction: column; align-items: stretch; gap: 1.2rem; width: 100%; }
+html body #root .dex-catalog.is-grid .dex__name > b { font-size: var(--fs-sec); font-weight: 700; line-height: 1.5; letter-spacing: -.04em; text-align: left; }
+html body #root .dex-catalog.is-grid .dex__use { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .8rem; width: 100%; }
+html body #root .dex-catalog.is-grid .dex__use-pill { display: flex; align-items: center; justify-content: space-between; gap: .8rem; padding: .8rem 0; background: transparent; border: 0; border-top: .1rem solid var(--line); color: var(--fg); }
+html body #root .dex-catalog.is-grid .dex__use-pill + .dex__use-pill { border-left: .1rem solid var(--line); padding-left: 1.2rem; }
+html body #root .dex-catalog.is-grid .dex__use-pill em { font-size: var(--fs-sub); color: var(--muted); }
+html body #root .dex-catalog.is-grid .dex__use-val { font-size: var(--fs-sec); font-weight: 700; letter-spacing: -.04em; font-variant-numeric: tabular-nums; }
+html body #root .dex-catalog.is-grid .dex__stats { width: 100%; margin: 0; padding: 1.2rem; border: 0; background: color-mix(in srgb, var(--brand) 7%, transparent); justify-content: space-between; }
+html body #root .dex-catalog.is-grid .dex__stat--cp { display: flex; justify-content: space-between; align-items: center; width: 100%; gap: .8rem; }
+html body #root .dex-catalog.is-grid .dex__stat--cp em { color: var(--muted); font-size: var(--fs-sub); }
+html body #root .dex-catalog.is-grid .dex__stat--cp b { font-size: var(--fs-sec); font-weight: 700; color: var(--brand); font-variant-numeric: tabular-nums; }
+html body #root .dex-catalog.is-grid .dex__types { justify-content: flex-start; width: 100%; padding: 0; border: 0; }
 
-/* Raid and egg cards use the catalog identity and stat hierarchy. */
-html body #root .dex__list.is-grid .gameday__row { border:.1rem solid var(--line); padding:2rem; box-shadow:none; }
-html body #root .dex__list.is-grid .gameday__main { display:flex; flex-direction:column; align-items:stretch; width:100%; gap:1.2rem; text-align:left; }
-html body #root .dex__list.is-grid .gameday__main > b { font-size:2.2rem; line-height:1.5; letter-spacing:-.04em; }
-html body #root .gameday__traits { display:flex; flex-wrap:wrap; gap:.4rem; color:var(--muted); font-size:1.2rem; }
-html body #root .gameday__traits > span { padding:.4rem .8rem; background:color-mix(in srgb,var(--fg) 5%,transparent); }
-html body #root .gameday__weather { color:var(--muted); font-size:1.2rem; }
-html body #root .gameday__cp { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:.8rem; margin-top:auto; padding:1.2rem; background:color-mix(in srgb,var(--brand) 7%,transparent); }
-html body #root .gameday__cp > span { font-size:1.2rem; color:var(--muted); }
-html body #root .gameday__cp strong { color:var(--brand); font-size:2.2rem; font-variant-numeric:tabular-nums; }
-@media(max-width:699px) {
- html body #root .dex__list.is-grid .gameday__row { padding:1.2rem; }
- html body #root .dex__list.is-grid .gameday__main > b { font-size:1.8rem; }
- html body #root .gameday__cp { padding:.8rem; }
- html body #root .gameday__cp strong { font-size:1.8rem; }
+/* 순위 카드 — 이름은 왼쪽 맞춤, 점수는 판 위에 크게 */
+html body #root .row-list.is-grid .row__name { font-size: var(--fs-sec); justify-content: flex-start; }
+html body #root .row-list.is-grid .row__stats { background: color-mix(in srgb, var(--brand) 6%, var(--bg)); border: 0; padding: 1.6rem; width: 100%; box-sizing: border-box; }
+html body #root .row-list.is-grid .row__score { font-size: var(--fs-title); font-weight: 700; line-height: 1.2; font-variant-numeric: tabular-nums; color: var(--brand); }
+html body #root .row-list.is-grid .row__sub { font-size: var(--fs-sub); line-height: 1.7; }
+/* 순위와 등락은 서로 다른 것 — 한 배지에 붙이되 등락을 제 색 알약으로 뗀다 */
+html body #root .row__rank { display: inline-flex; align-items: center; gap: .8rem; width: auto; min-width: 2.8rem; padding: .4rem .8rem; line-height: 1.5; font-variant-numeric: tabular-nums; }
+html body #root .row__rank .delta { display: inline-flex; align-items: center; padding: .4rem .8rem; margin: 0; border: 0; font-size: var(--fs-sub); font-weight: 600; line-height: 1.2; letter-spacing: .05em; background: var(--bg); box-shadow: none; white-space: nowrap; }
+html body #root .row__rank .delta.is-up { color: var(--good); background: color-mix(in srgb, var(--good) 10%, var(--bg)); }
+html body #root .row__rank .delta.is-down { color: var(--muted); background: var(--bg); }
+/* 폼 딱지와 이름 사이 — 붙으면 「메가뮤츠」로 읽힌다 */
+html body #root .form-tag + b { margin-inline-start: .4rem; }
+
+/* 레이드 · 알 카드 — 도감 카드와 같은 위계. CP 는 카드 바닥에 */
+html body #root .dex__list.is-grid .gameday__main { display: flex; flex-direction: column; align-items: stretch; width: 100%; gap: 1.2rem; text-align: left; }
+html body #root .dex__list.is-grid .gameday__main > b { font-size: var(--fs-sec); line-height: 1.5; letter-spacing: -.04em; }
+html body #root .gameday__traits { display: flex; flex-wrap: wrap; gap: .4rem; color: var(--muted); font-size: var(--fs-sub); }
+html body #root .gameday__traits > span { padding: .4rem .8rem; background: color-mix(in srgb, var(--fg) 5%, transparent); }
+html body #root .gameday__weather { color: var(--muted); font-size: var(--fs-sub); }
+html body #root .gameday__cp { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: .8rem; margin-top: auto; padding: 1.2rem; background: color-mix(in srgb, var(--brand) 7%, transparent); }
+html body #root .gameday__cp > span { font-size: var(--fs-sub); color: var(--muted); }
+html body #root .gameday__cp strong { color: var(--brand); font-size: var(--fs-sec); font-variant-numeric: tabular-nums; }
+
+/* 탭 줄 · 필터 상자 — 눌린 칩만 채우고 나머지는 글자로 */
+html body #root :is(.screen-tabs, .filter-box) { box-shadow: none; background: color-mix(in srgb, var(--fg) 2%, var(--bg)); border: .1rem solid var(--line); padding: 1.2rem; }
+html body #root .screen-tabs .tchips { display: flex; flex-wrap: wrap; gap: .8rem; }
+html body #root :is(.screen-tabs .uchip, .chips__item) { min-height: var(--tap); padding: .8rem 1.2rem; border: .1rem solid transparent; background: transparent; color: var(--muted); }
+/* 채움 위 글자는 --bg (§1-b) — #fff 는 다크에서 밝은 빨강 위에 놓여 2.3 으로 떨어졌다 */
+html body #root :is(.screen-tabs .uchip, .chips__item)[aria-pressed="true"] { background: var(--brand); color: var(--bg); border-color: var(--brand); }
+html body #root :is(.boss__search, .dex__search) { min-height: 4.8rem; padding: 1.2rem 1.6rem; border: .1rem solid var(--line); background: var(--bg); box-shadow: none; box-sizing: border-box; }
+html body #root .filter-box > summary { padding: .8rem; line-height: 1.5; }
+
+/* 좁은 화면 — 두 열이라 그림·이름을 한 단 줄인다. 22 아래 Galmuri 격자는 14 뿐이라 굵기로 버틴다 */
+@media (max-width: 699px) {
+  html body #root :is(.dex-catalog.is-grid .dex__row, .row-list.is-grid > .row, .dex__list.is-grid .gameday__row) { padding: 1.2rem; gap: .8rem; }
+  html body #root .dex-catalog.is-grid .dex__row { padding-top: 3.2rem; }
+  html body #root :is(:is(.dex-catalog, .dex__list).is-grid .dex__portrait, .row-list.is-grid .row__portrait) { height: 14.4rem; padding-bottom: 2.4rem; }
+  html:not(#_):not(#__) body #root :is(.dex-catalog.is-grid, .row-list.is-grid, .dex__list.is-grid) .sprite { width: 12rem; height: 12rem; }
+  html body #root :is(.dex-catalog.is-grid .dex__name > b, .row-list.is-grid .row__name, .dex__list.is-grid .gameday__main > b) { font-size: var(--fs-body); font-weight: 700; }
+  html body #root .dex-catalog.is-grid .dex__use { gap: .4rem; }
+  html body #root .dex-catalog.is-grid .dex__use-pill { padding: .8rem 0; }
+  html body #root .dex-catalog.is-grid .dex__use-val { font-size: var(--fs-lead); }
+  html body #root .dex-catalog.is-grid .dex__stats { padding: .8rem; }
+  html body #root .gameday__cp { padding: .8rem; }
 }

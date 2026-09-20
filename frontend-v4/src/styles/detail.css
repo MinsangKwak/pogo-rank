@@ -171,59 +171,38 @@
   .detail--mon .detail__pane > .detail__matchrows { grid-template-columns: 1fr; }
 }
 
-/* Detail surface refresh: preserve all dimensions and responsive placement. */
+/* ── 팝업 표면을 평면으로 (v4.4.0) ───────────────────────────────────────────
+   박·홀로 대신 선과 옅은 판으로 구역을 가른다 — 정보가 많은 화면이라 장식이 글자와 다툰다.
+   그림자는 흐림 0(v4.3.3), 채움 위 글자는 --bg(§1-b): #fff 는 다크의 밝은 빨강 위에서 2.3 이었다 */
 html body #root .modal__box:has(> .detail--mon) {
   border-color: color-mix(in srgb, var(--fg) 22%, var(--bg));
-  box-shadow: 0 1.8rem 6rem rgb(0 0 0 / 25%);
+  box-shadow: var(--shadow-hard) color-mix(in srgb, var(--fg) 25%, transparent);
   background: var(--bg);
 }
-html body #root .detail--mon {
-  --detail-rule: color-mix(in srgb, var(--fg) 14%, transparent);
-  color: var(--fg); background: var(--bg);
-}
-html body #root .detail--mon .detail__bar {
-  background: color-mix(in srgb, var(--brand) 80%, #22151c);
-  border-bottom-color: var(--detail-rule);
-}
-html body #root .detail--mon .detail__bar-title { color: #fff; text-shadow: none; font-weight: 700; }
-html body #root .modal__wrap:has(.detail--mon) .modal__close {
-  background: transparent; color: #fff; border-color: rgb(255 255 255 / 35%); box-shadow: none;
-}
-html body #root .modal__wrap:has(.detail--mon) .modal__close:hover { background: rgb(255 255 255 / 14%); }
-html body #root .modal__wrap:has(.detail--mon) .modal__close:focus-visible { outline-color: #fff; }
-html body #root .detail--mon .detail__side {
-  background: color-mix(in srgb, var(--brand) 5%, var(--bg)); border-color: var(--detail-rule);
-}
+html body #root .detail--mon { --detail-rule: color-mix(in srgb, var(--fg) 14%, transparent); color: var(--fg); background: var(--bg); }
+/* 머리띠 — 단축 background 로 박(--foil)을 지우고 진한 빨강 한 색. 글자·닫기는 그 짝인 --bg */
+html body #root .detail--mon .detail__bar { background: var(--brand-2); border-bottom-color: var(--detail-rule); }
+html body #root .detail--mon .detail__bar-title { color: var(--bg); text-shadow: none; font-weight: 700; }
+html body #root .modal__wrap:has(.detail--mon) .modal__close { background: transparent; color: var(--bg); border-color: color-mix(in srgb, var(--bg) 35%, transparent); box-shadow: none; }
+html body #root .modal__wrap:has(.detail--mon) .modal__close:hover { background: color-mix(in srgb, var(--bg) 14%, transparent); }
+html body #root .modal__wrap:has(.detail--mon) .modal__close:focus-visible { outline-color: var(--bg); }
+html body #root .detail--mon .detail__side { background: color-mix(in srgb, var(--brand) 5%, var(--bg)); border-color: var(--detail-rule); }
 html body #root .detail--mon .detail__side .sprite-box {
   background-color: transparent;
-  background-image: radial-gradient(circle, color-mix(in srgb,var(--brand) 18%,transparent) .06rem,transparent .08rem);
+  background-image: radial-gradient(circle, color-mix(in srgb, var(--brand) 18%, transparent) .06rem, transparent .08rem);
   background-size: .8rem .8rem;
   border-color: transparent; box-shadow: none;
 }
 html body #root .detail--mon .detail__tabs { border-color: var(--detail-rule); }
 html body #root .detail--mon .detail__tab { color: var(--muted); background: transparent; }
-html body #root .detail--mon .detail__tab[aria-selected="true"] {
-  color: var(--brand); font-weight: 700; background: color-mix(in srgb,var(--brand) 6%,transparent);
-  box-shadow: inset 0 -.3rem 0 var(--brand);
-}
-html body #root .detail--mon :is(.detail__card,.detail__cp-card,.detail__acc) {
-  background: color-mix(in srgb,var(--fg) 2%,var(--bg)); border-color: var(--detail-rule); box-shadow: none;
-}
-html body #root .detail--mon .detail__cp-card {
-  background: color-mix(in srgb,var(--brand) 8%,var(--bg));
-  border-color: color-mix(in srgb,var(--brand) 25%,transparent);
-}
-html body #root .detail--mon .detail__cp-line b { font-weight: 750; letter-spacing: -.04em; }
-html body #root .detail--mon :is(.detail__card h3,.detail__rank-pos) { font-weight: 700; }
-html body #root .detail--mon .move-chip {
-  background: color-mix(in srgb,var(--fg) 5%,transparent); border-color: transparent; color: var(--fg); box-shadow: none;
-}
-html body #root .detail--mon .move-chip.is-legacy {
-  color: var(--brand); background: color-mix(in srgb,var(--brand) 9%,transparent);
-}
+html body #root .detail--mon .detail__tab[aria-selected="true"] { color: var(--brand); font-weight: 700; background: color-mix(in srgb, var(--brand) 6%, transparent); box-shadow: inset 0 -.4rem 0 var(--brand); }
+html body #root .detail--mon :is(.detail__card, .detail__cp-card, .detail__acc) { background: color-mix(in srgb, var(--fg) 2%, var(--bg)); border-color: var(--detail-rule); box-shadow: none; }
+html body #root .detail--mon .detail__cp-card { background: color-mix(in srgb, var(--brand) 8%, var(--bg)); border-color: color-mix(in srgb, var(--brand) 25%, transparent); }
+html body #root .detail--mon .detail__cp-line b { font-weight: 700; letter-spacing: -.04em; }
+html body #root .detail--mon :is(.detail__card h3, .detail__rank-pos) { font-weight: 700; }
+html body #root .detail--mon .move-chip { background: color-mix(in srgb, var(--fg) 5%, transparent); border-color: transparent; color: var(--fg); box-shadow: none; }
+html body #root .detail--mon .move-chip.is-legacy { color: var(--brand); background: color-mix(in srgb, var(--brand) 9%, transparent); }
 html body #root .detail--mon .detail__dock { background: var(--bg); border-color: var(--detail-rule); }
-html body #root .detail--mon .detail__dock-btn {
-  background: color-mix(in srgb,var(--fg) 3%,transparent); border-color: var(--detail-rule); color: var(--fg); box-shadow: none;
-}
-html body #root .detail--mon .detail__dock-btn--accent { background: var(--brand); border-color: var(--brand); color: #fff; }
+html body #root .detail--mon .detail__dock-btn { background: color-mix(in srgb, var(--fg) 3%, transparent); border-color: var(--detail-rule); color: var(--fg); box-shadow: none; }
+html body #root .detail--mon .detail__dock-btn--accent { background: var(--brand); border-color: var(--brand); color: var(--bg); }
 html body #root .detail--mon .detail__dock-btn:hover { border-color: var(--brand); filter: brightness(.96); transform: none; }

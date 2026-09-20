@@ -15,6 +15,13 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 const RELEASE_NOTES_EN = {
+  '2026-09-20 · v4.4.0': [
+    '**The home page was rebuilt** — a Max Battle scene up top and a magazine-style index below, so find, compare and record read at a glance',
+    '**Pokedex, ranking and raid cards now have a stage** — every Pokemon stands with its feet on the same line; they used to float or sink depending on the sprite',
+    '**The search-string builder works like a workbench** — your string sits large on a dark console at the top, and the common presets say why you would use them',
+    '**The event calendar can flip months** — six October entries (Harvest Festival, Cinderace Max Battle Day, Zorua Community Day and more) link to the official notices',
+    '**Fixed text that vanished in dark mode** — white labels on pressed chips and the CP calculator button were washing out on the bright red',
+  ],
   '2026-09-19 · v4.3.9': [
     '**Type names in the Pokedex are legible now** — bright types like Electric, Ground, Steel and Ice were washing out against the page; the type tint stays, the text just got deeper',
   ],

@@ -53,7 +53,7 @@ body .app-nav__extra::before { content:'기록과 안내'; display:block; paddin
 body .app-nav__extra .drawer__item { font-size: var(--fs-sub); min-height:3.8rem; }
 /* Appendix: news index above a compact two-column utility directory. */
 body .app-nav__extra { padding:1.6rem 0 0; border-top:3px solid var(--brand-2); }
-body .app-nav__extra::before { content:'04 / 기록실'; padding:0 1.2rem 1.2rem; color:var(--fg); font-size: var(--fs-body); }
+body .app-nav__extra::before { content:'04 / 자료실'; padding:0 1.2rem 1.2rem; color:var(--fg); font-size: var(--fs-body); }
 body .app-nav__extra #drawer-extra { display:grid; grid-template-columns:1fr 1fr; gap:0.2rem 0.8rem; padding:0 1.2rem; }
 body .app-nav__extra .drawer__item:not([hidden]) { display:flex; align-items:center; min-width:0; min-height:4.4rem; padding:0.8rem 0; font-family:"Galmuri11",sans-serif; font-size: var(--fs-body); line-height: 1.7; border:0; background:transparent; color:var(--muted); text-align:left; }
 body .app-nav__extra .drawer__ico { display:none; }

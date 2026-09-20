@@ -57,8 +57,8 @@ function fitZoom(image: HTMLImageElement) {
   const room = Math.max(0, box - base * 2);
   const want = Math.min(natural * SPRITE_MAX_ZOOM, room);
   const pad = Math.max(base, Math.round((box - want) / 2));
-  // Portrait stages share a ground line: put spare vertical room above the sprite.
-  // Compact list rows and detail images retain their centered fitting.
+  // 무대(카드 그리드)에서는 남는 세로 여백을 전부 위에 준다 — 그림마다 발이 한 선에 서야
+  // 옆 카드와 나란히 보인다. 줄 보기·상세는 가운데 맞춤 그대로다
   const grounded = image.closest('.dex__portrait') ||
     (image.closest('.row__portrait') && image.closest('.row-list.is-grid'));
   const next = grounded ? `${pad * 2}px ${pad}px 0px` : `${pad}px`;
@@ -121,7 +121,9 @@ function Ball({ className }: { className?: string }) {
 // 한 번 놓쳤다고 몬스터볼로 바꿔 버리면 잠깐 끊긴 회선이 "이 포켓몬은 그림이 없다" 로 읽힌다
 const SPRITE_RETRY = 2;
 
-// Cache the transparent bottom margin of static sprites; leave source assets untouched.
+// 그림마다 아래 투명 여백이 달라 가운데 정렬하면 어떤 것은 떠 있고 어떤 것은 파묻힌다.
+// 그 여백을 캔버스로 한 번 재서(--sprite-ground-offset) 발을 바닥선에 맞춘다 — 원본 파일은 안 건드린다.
+// 같은 그림은 한 번만 잰다 (도감 한 판에 그림이 수백 장이다)
 const groundOffsets = new Map<string, number>();
 function fitGround(image: HTMLImageElement) {
   if (image.classList.contains('sprite--anim')) {

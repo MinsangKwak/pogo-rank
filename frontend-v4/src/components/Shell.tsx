@@ -13,7 +13,7 @@ import { ROUTE_GROUPS, ROUTE_NAV, routeById, routeDesc, type RouteDef } from '..
 import { usePrefStore, themeIsDark, THEME_WORD, type Theme } from '../stores/pref';
 import { releaseSeen } from '../lib/release';
 import { setLang, useLang } from '../lib/useLang';
-import { useMeta } from '../lib/data';
+import { useGameday, useMeta } from '../lib/data';
 import { track } from '../lib/track';
 import { PxIcon } from './PxIcon';
 import { routeNote } from '../lib/notes';
@@ -73,7 +73,9 @@ export function AppBar({ onMenu, home, onBack }: {
           }}>
           <PxIcon emoji="←" />
         </button>
-        {/* Desktop keeps the home link on every route; mobile detail keeps its compact back header. */}
+        {/* 넓은 화면은 어느 화면에서든 로고가 홈 링크로 선다. 좁은 화면의 안쪽 화면에서는 CSS 가
+            표식만 남긴다(brand.css) — 뒤로가기·로고·검색·언어·메뉴가 한 줄에 다 못 들어가 겹쳤다(제보).
+            h1 은 늘 남긴다 — 없애면 화면에 제목이 없어지고 포커스가 돌아올 자리(#app-title)도 사라진다 */}
         <h1 id="app-title" tabIndex={-1}>
           <span className={`app-bar__identity${home ? '' : ' app-bar__identity--inner'}`}>
             <BrandLogo />
@@ -146,10 +148,20 @@ export function AppNav({ now, onConsent }: { now: string; onConsent: () => void 
  */
 function NavExtra({ onConsent }: { onConsent: () => void }) {
   const { data: meta } = useMeta();
+  const { data: gameday } = useGameday();
   const newRelease = useNewRelease();
   const go = (hash: string) => () => { location.hash = hash; };
+  const date = gameday.MOVE_CHANGES?.date;
+  const changes = date ? `${Number(date.split('-')[1])}/${Number(date.split('-')[2])}` : '';
   return (
     <div id="drawer-extra">
+      {/* 시즌 기술 변경 — 변경 데이터가 있을 때만 줄을 만든다 (없는 것을 설명하지 않는다).
+          #menu-changes 는 바깥이 물고 있는 id 라 지우지 않는다 (CLAUDE.md §2) */}
+      {changes ? (
+        <button className="drawer__item" id="menu-changes" onClick={go('#/changes')}>
+          ⚔️ {changes} 기술 변경
+        </button>
+      ) : null}
       <button className={`drawer__item${newRelease ? ' dot-badge' : ''}`} id="menu-release" onClick={go('#/release')}>
         <span className="drawer__ico" aria-hidden="true"><PxIcon emoji="🎉" /></span>
         <span className="drawer__label">패치노트</span>
