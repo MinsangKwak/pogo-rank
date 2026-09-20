@@ -40,3 +40,9 @@ import './root.css';
 import './styles/brand.css';
 import './styles/surfaces.css';
 import './styles/detail.css';
+// v4.4.0 — 홈 · 목록 카드 · 검색식. v3 스킨(home.css · shell-notebook.css)이 같은 자리를
+// `html body[data-route]` 로 잡고 있어 순서만으로는 못 이긴다. 이 셋은 `html body #root` 한 가지
+// 접두사로 올린다(장치는 하나만). v3 스킨 쪽 규칙을 걷어내는 일은 남은 정리 항목이다
+import './styles/home-editorial.css';
+import './styles/catalog.css';
+import './styles/finder.css';

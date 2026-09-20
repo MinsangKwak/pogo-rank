@@ -73,7 +73,7 @@ const SCHEDULE_MONTHS = {
       { s: 18, e: 30, cat: 'event', label: '피카츄의 가을 소풍 (9/18~10/11 · 서울 종로·중구, 인천공항 한정)' },
       { s: 23, e: 27, cat: 'event', label: '달맞이댄스: 야생 삐삐 대량 등장 (한국 포함 아시아 한정, 9/23 10시~9/27)' },
       { s: 24, e: 26, cat: 'event', label: '2026 피카츄의 한국 나들이 (전국, 9/24 10시~9/26 20시)' },
-      { s: 29, e: 30, cat: 'event', label: '수확 축제 (9/29 10시 ~ 10/5 20시)' },
+      { s: 29, e: 30, cat: 'event', label: '수확 축제: 과사삭벌레 모으기 (9/29 10시 ~ 10/5 20시)', source: 'https://pokemongo.com/ko/news/harvest-festival-2026' },
       { s: 7, e: 8, cat: 'raid5', label: '레지락 · 레지아이스 · 레지스틸 (특별 기간 종료 후 막차, ~9/8 22시)' },
       { s: 5, e: 6, cat: 'raid5', label: '아머드 뮤츠 (GO Fest 한정)' },
       { s: 9, e: 15, cat: 'raid5', label: '자시안 (역전의 용사)' },
@@ -107,11 +107,16 @@ const SCHEDULE_MONTHS = {
     ym: { y: 2026, m: 10 },
     // 2026-09-07 v2.13.0 (QA-20) 9월 발표분에서 10월로 넘어가는 확정 일정만 먼저 등재. 10/6 이후 로테이션(5성·메가·D-MAX·스포트라이트)은
     // 대략 9월 말 발표되므로 발표 뒤 이 배열을 채운다
-    note: '출처: 포켓몬고 공식 한국 발표 (2026-09-07 수집, 한국 시간 기준). 10/6 이후 레이드·맥스 배틀 로테이션은 아직 발표 전 — 발표되면 추가돼요.',
+    note: '공식 한국 공지 확인: 2026-09-20 · 한국시간 기준. 확인된 일정만 수록했으며, 세부 내용 미발표 행사는 날짜만 확정된 상태예요. 미등재 일정은 추후 공지 확인이 필요해요.',
     items: [
-      { s: 1, e: 5, cat: 'event', label: '수확 축제 (9/29 10시 ~ 10/5 20시)' },
+      { s: 1, e: 5, cat: 'event', label: '수확 축제: 과사삭벌레 모으기 (9/29 10시 ~ 10/5 20시)', source: 'https://pokemongo.com/ko/news/harvest-festival-2026' },
       { s: 1, e: 11, cat: 'event', label: '피카츄의 가을 소풍 (9/18~10/11 · 서울 종로·중구, 인천공항 한정)' },
-      { s: 10, e: 10, cat: 'event', label: '커뮤니티 데이 (10/10 14–17시, 포켓몬 미발표)' },
+      { s: 2, e: 5, cat: 'event', label: '수확 축제: 점령 (10/2 00시 ~ 10/5 20시 · 그림자 제크로무)', source: 'https://pokemongo.com/ko/news/harvest-festival-tgr-2026' },
+      { s: 3, e: 3, cat: 'event', label: '거다이맥스 에이스번 맥스배틀 데이 (14–17시)', source: 'https://pokemongo.com/ko/news/gigantamax-cinderace-max-battle-day-2026' },
+      { s: 10, e: 10, cat: 'event', label: '조로아 커뮤니티 데이 (14–17시)', source: 'https://pokemongo.com/ko/news/communityday-october-2026-zorua' },
+      { s: 17, e: 17, cat: 'event', label: '부화데이 (날짜 확정 · 세부 내용 미발표)', source: 'https://pokemongo.com/ko/news/save-the-date-s24' },
+      { s: 24, e: 24, cat: 'event', label: '맥스배틀 데이 (날짜 확정 · 세부 내용 미발표)', source: 'https://pokemongo.com/ko/news/save-the-date-s24' },
+      { s: 31, e: 31, cat: 'event', label: '슈퍼 메가 레이드 데이 (날짜 확정 · 세부 내용 미발표)', source: 'https://pokemongo.com/ko/news/save-the-date-s24' },
       { s: 1, e: 6, cat: 'raid5', label: '제르네아스 (9/30~10/6)' },
       { s: 1, e: 6, cat: 'mega', label: '메가 우츠보트 (9/30~10/6)' },
       { s: 1, e: 4, cat: 'dmax', label: 'D-MAX 울머기 (맥스 먼데이 9/28 주차, ~10/4)', t: 'water' },

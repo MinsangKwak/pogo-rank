@@ -246,8 +246,8 @@
   /* 순위는 카드 모서리로 — 세로로 세운 카드에서 순위가 한 칸을 차지하면 그림이 밀린다 */
   .row-list:not(.is-list) > .row > .row__rank { position: absolute; top: 0.8rem; left: 1rem; text-align: left; font-size: var(--fs-sub); }
   /* 그림 칸을 회색 판으로 떼고 아래에 얇은 선 — 도감 카드(pages.css)·상세 팝업(.sprite-box)과 같은 뜻 */
-  .row-list:not(.is-list) > .row > .sprite { box-sizing: content-box; width: 6.4rem; height: 6.4rem; padding: 0.8rem; border-radius: 1.2rem; }
-  .row-list:not(.is-list) > .row > .sprite:not(.is-loading) { background: var(--bg); }
+  .row-list:not(.is-list) > .row .sprite { box-sizing: content-box; width: 6.4rem; height: 6.4rem; padding: 0.8rem; border-radius: 1.2rem; }
+  .row-list:not(.is-list) > .row .sprite:not(.is-loading) { background: var(--bg); }
   .row-list:not(.is-list) > .row > .row__main { width: 100%; min-width: 0; padding-top: 0.8rem; border-top: 1px solid var(--line); }
   .row-list:not(.is-list) > .row .row__badges { justify-content: center; margin-bottom: 0.4rem; }
   .row-list:not(.is-list) > .row .row__name { justify-content: center; }

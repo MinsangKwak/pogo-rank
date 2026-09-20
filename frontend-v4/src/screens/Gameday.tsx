@@ -36,7 +36,7 @@ function gamedayFoot(lead: string, fetched: string): string {
   return `${lead} 출처 LeekDuck(ScrapedDuck)${day ? ` · ${day} 수집` : ''} · 지역과 이벤트에 따라 실제와 다를 수 있어요`;
 }
 
-function MonCard({ mon, kind, onOpen }: { mon: GamedayMon; kind: 'raid' | 'egg'; onOpen: OpenMon }) {
+function MonCard({ mon, kind, view, onOpen }: { view: 'grid' | 'list'; mon: GamedayMon; kind: 'raid' | 'egg'; onOpen: OpenMon }) {
   const { data } = useDex();
   // **보조줄 규칙이 둘이다** (v3 renderRaidsPage · renderEggsPage 의 notes).
   //   레이드  타입 · CP 범위 · 날씨 부스트 · ✨
@@ -55,10 +55,18 @@ function MonCard({ mon, kind, onOpen }: { mon: GamedayMon; kind: 'raid' | 'egg';
     ]).filter(Boolean).join(' · ');
   return (
     <button className="dex__row gameday__row" onClick={() => onOpen({ sprite: mon.sprite, name: mon.name, types: mon.types })}>
-      <Sprite id={mon.sprite} />
+      {view === 'grid' ? <span className="dex__portrait"><Sprite id={mon.sprite} /></span> : <Sprite id={mon.sprite} />}
       <div className="gameday__main">
         <b><NameNode name={mon.name} labels={data.FORM_LABELS} /></b>
-        <span className="meta gameday__note">{note}</span>
+        {view === 'list' ? <span className="meta gameday__note">{note}</span> : <>
+          <span className="gameday__traits">
+            {mon.types?.map((type) => <span key={type}>{data.TYPE_KO[type] ?? type}</span>)}
+            {mon.shiny ? <span title="색이 다른 모습 등장 가능">✨ 색이 다른 모습</span> : null}
+            {mon.regional ? <span>지역한정</span> : null}
+          </span>
+          {kind === 'raid' && mon.weather?.length ? <span className="gameday__weather">{mon.weather.join(' · ')} 부스트</span> : null}
+          {cp ? <span className="gameday__cp"><span>{kind === 'egg' ? '부화 CP' : '포획 CP'}</span><strong>{cp.replace('CP ', '')}</strong></span> : null}
+        </>}
       </div>
     </button>
   );
@@ -74,7 +82,7 @@ function Grouped({ sections, view, kind, onOpen }: {
           <h2 className="page__sec">{label}<span className="meta">{` ${mons.length}종`}</span></h2>
           {/* 도감 목록은 **줄이 기본**이라 .is-grid 하나만 켜고 끈다 (순위표와 반대다 — v3.9.1) */}
           <div className={`dex__list${view === 'grid' ? ' is-grid' : ''}`}>
-            {mons.map((mon, index) => <MonCard key={`${mon.sprite}-${index}`} mon={mon} kind={kind} onOpen={onOpen} />)}
+            {mons.map((mon, index) => <MonCard key={`${mon.sprite}-${index}`} mon={mon} kind={kind} view={view} onOpen={onOpen} />)}
           </div>
         </section>
       ))}

@@ -73,19 +73,15 @@ export function AppBar({ onMenu, home, onBack }: {
           }}>
           <PxIcon emoji="←" />
         </button>
-        {/* **뒤로가기가 있는 화면에는 로고를 두지 않는다.**
-            둘 다 두면 같은 줄이 "여기가 처음" 과 "돌아갈 수 있다" 를 같이 말하고,
-            좁은 화면에서는 로고·표식·검색·언어·메뉴가 한 줄에 다 들어가지 못해 겹친다 (제보).
-            h1 은 남긴다 — 눈에서만 접는다. 없애면 화면에 제목이 하나도 없어지고,
-            포커스가 돌아올 자리(#app-title)도 같이 사라진다 */}
+        {/* 넓은 화면은 어느 화면에서든 로고가 홈 링크로 선다. 좁은 화면의 안쪽 화면에서는 CSS 가
+            표식만 남긴다(brand.css) — 뒤로가기·로고·검색·언어·메뉴가 한 줄에 다 못 들어가 겹쳤다(제보).
+            h1 은 늘 남긴다 — 없애면 화면에 제목이 없어지고 포커스가 돌아올 자리(#app-title)도 사라진다 */}
         <h1 id="app-title" tabIndex={-1}>
-          {home ? (
-            <>
-              <BrandLogo />
-              {/* 주소가 같아 화면만 보고는 v3 인지 v4 인지 알 수가 없다 — 눈으로 가르는 표식 */}
-              <BrandMark />
-            </>
-          ) : <span className="app-bar__name">moncamp</span>}
+          <span className={`app-bar__identity${home ? '' : ' app-bar__identity--inner'}`}>
+            <BrandLogo />
+            <BrandMark />
+          </span>
+          {!home ? <span className="app-bar__name">moncamp</span> : null}
         </h1>
       </div>
       <button className="app-search" id="app-search" aria-label="포켓몬 검색"
@@ -159,9 +155,9 @@ function NavExtra({ onConsent }: { onConsent: () => void }) {
   const changes = date ? `${Number(date.split('-')[1])}/${Number(date.split('-')[2])}` : '';
   return (
     <div id="drawer-extra">
-      {/* 시즌 기술 변경 — 변경 데이터가 있을 때만 줄을 만든다 (없는 것을 설명하지 않는다) */}
+      {/* 시즌 기술 변경 — 변경 데이터가 있을 때만 줄을 만든다 (없는 것을 설명하지 않는다).
+          #menu-changes 는 바깥이 물고 있는 id 라 지우지 않는다 (CLAUDE.md §2) */}
       {changes ? (
-        // 이 줄만 아이콘·라벨 칸 없이 글자 한 줄이다 (v3 initMoveChangesMenu 가 textContent 를 통째로 갈아 끼운다)
         <button className="drawer__item" id="menu-changes" onClick={go('#/changes')}>
           ⚔️ {changes} 기술 변경
         </button>

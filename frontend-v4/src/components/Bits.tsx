@@ -56,7 +56,12 @@ function fitZoom(image: HTMLImageElement) {
   if (!box) { if (applied) image.style.padding = applied; return; }
   const room = Math.max(0, box - base * 2);
   const want = Math.min(natural * SPRITE_MAX_ZOOM, room);
-  const next = `${Math.max(base, Math.round((box - want) / 2))}px`;
+  const pad = Math.max(base, Math.round((box - want) / 2));
+  // 무대(카드 그리드)에서는 남는 세로 여백을 전부 위에 준다 — 그림마다 발이 한 선에 서야
+  // 옆 카드와 나란히 보인다. 줄 보기·상세는 가운데 맞춤 그대로다
+  const grounded = image.closest('.dex__portrait') ||
+    (image.closest('.row__portrait') && image.closest('.row-list.is-grid'));
+  const next = grounded ? `${pad * 2}px ${pad}px 0px` : `${pad}px`;
   // 값이 그대로면 쓰지 않는다 — 쓰면 관찰자가 또 불려 헛돈다
   if (next !== applied) image.style.padding = next;
   else if (applied) image.style.padding = applied;
@@ -116,6 +121,38 @@ function Ball({ className }: { className?: string }) {
 // 한 번 놓쳤다고 몬스터볼로 바꿔 버리면 잠깐 끊긴 회선이 "이 포켓몬은 그림이 없다" 로 읽힌다
 const SPRITE_RETRY = 2;
 
+// 그림마다 아래 투명 여백이 달라 가운데 정렬하면 어떤 것은 떠 있고 어떤 것은 파묻힌다.
+// 그 여백을 캔버스로 한 번 재서(--sprite-ground-offset) 발을 바닥선에 맞춘다 — 원본 파일은 안 건드린다.
+// 같은 그림은 한 번만 잰다 (도감 한 판에 그림이 수백 장이다)
+const groundOffsets = new Map<string, number>();
+function fitGround(image: HTMLImageElement) {
+  if (image.classList.contains('sprite--anim')) {
+    image.style.removeProperty('--sprite-ground-offset');
+    return;
+  }
+  const key = image.currentSrc || image.src;
+  let offset = groundOffsets.get(key);
+  if (offset === undefined) {
+    try {
+      const canvas = document.createElement('canvas');
+      canvas.width = image.naturalWidth; canvas.height = image.naturalHeight;
+      const ctx = canvas.getContext('2d', { willReadFrequently: true });
+      if (!ctx || !canvas.width || !canvas.height) return;
+      ctx.drawImage(image, 0, 0);
+      const pixels = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+      let bottom = canvas.height;
+      outer: for (let y = canvas.height - 1; y >= 0; y--) {
+        for (let x = 0; x < canvas.width; x++) {
+          if (pixels[(y * canvas.width + x) * 4 + 3]! > 16) { bottom = y + 1; break outer; }
+        }
+      }
+      offset = (canvas.height - bottom) / Math.max(canvas.width, canvas.height) * 100;
+      groundOffsets.set(key, offset);
+    } catch { return; }
+  }
+  image.style.setProperty('--sprite-ground-offset', `${offset}%`);
+}
+
 /** 포켓몬 그림. 없으면 몬스터볼 자리표시 (v3 sprite() · spritePlaceholder 와 같은 자리) */
 export function Sprite({ id, className }: { id: number; className?: string }) {
   const { data } = useDex();
@@ -155,7 +192,7 @@ export function Sprite({ id, className }: { id: number; className?: string }) {
       decoding="async"
       // 다 받으면 뼈대(.is-loading)를 벗긴다 — v3 는 이걸 문서 캡처 리스너로 했다.
       // cloneNode 로 복제한 행에서 리스너가 사라지는 문제 때문이었는데, 여기서는 복제가 없다
-      onLoad={() => setLoading(false)}
+      onLoad={(event) => { setLoading(false); fitGround(event.currentTarget); }}
       onError={() => {
         if (retry >= SPRITE_RETRY) { setFailed(true); return; }
         const next = retry + 1;
