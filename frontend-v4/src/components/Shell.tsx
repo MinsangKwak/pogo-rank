@@ -13,7 +13,7 @@ import { ROUTE_GROUPS, ROUTE_NAV, routeById, routeDesc, type RouteDef } from '..
 import { usePrefStore, themeIsDark, THEME_WORD, type Theme } from '../stores/pref';
 import { releaseSeen } from '../lib/release';
 import { setLang, useLang } from '../lib/useLang';
-import { useGameday, useMeta } from '../lib/data';
+import { useMeta } from '../lib/data';
 import { track } from '../lib/track';
 import { PxIcon } from './PxIcon';
 import { routeNote } from '../lib/notes';
@@ -73,19 +73,13 @@ export function AppBar({ onMenu, home, onBack }: {
           }}>
           <PxIcon emoji="←" />
         </button>
-        {/* **뒤로가기가 있는 화면에는 로고를 두지 않는다.**
-            둘 다 두면 같은 줄이 "여기가 처음" 과 "돌아갈 수 있다" 를 같이 말하고,
-            좁은 화면에서는 로고·표식·검색·언어·메뉴가 한 줄에 다 들어가지 못해 겹친다 (제보).
-            h1 은 남긴다 — 눈에서만 접는다. 없애면 화면에 제목이 하나도 없어지고,
-            포커스가 돌아올 자리(#app-title)도 같이 사라진다 */}
+        {/* Desktop keeps the home link on every route; mobile detail keeps its compact back header. */}
         <h1 id="app-title" tabIndex={-1}>
-          {home ? (
-            <>
-              <BrandLogo />
-              {/* 주소가 같아 화면만 보고는 v3 인지 v4 인지 알 수가 없다 — 눈으로 가르는 표식 */}
-              <BrandMark />
-            </>
-          ) : <span className="app-bar__name">moncamp</span>}
+          <span className={`app-bar__identity${home ? '' : ' app-bar__identity--inner'}`}>
+            <BrandLogo />
+            <BrandMark />
+          </span>
+          {!home ? <span className="app-bar__name">moncamp</span> : null}
         </h1>
       </div>
       <button className="app-search" id="app-search" aria-label="포켓몬 검색"
@@ -152,20 +146,10 @@ export function AppNav({ now, onConsent }: { now: string; onConsent: () => void 
  */
 function NavExtra({ onConsent }: { onConsent: () => void }) {
   const { data: meta } = useMeta();
-  const { data: gameday } = useGameday();
   const newRelease = useNewRelease();
   const go = (hash: string) => () => { location.hash = hash; };
-  const date = gameday.MOVE_CHANGES?.date;
-  const changes = date ? `${Number(date.split('-')[1])}/${Number(date.split('-')[2])}` : '';
   return (
     <div id="drawer-extra">
-      {/* 시즌 기술 변경 — 변경 데이터가 있을 때만 줄을 만든다 (없는 것을 설명하지 않는다) */}
-      {changes ? (
-        // 이 줄만 아이콘·라벨 칸 없이 글자 한 줄이다 (v3 initMoveChangesMenu 가 textContent 를 통째로 갈아 끼운다)
-        <button className="drawer__item" id="menu-changes" onClick={go('#/changes')}>
-          ⚔️ {changes} 기술 변경
-        </button>
-      ) : null}
       <button className={`drawer__item${newRelease ? ' dot-badge' : ''}`} id="menu-release" onClick={go('#/release')}>
         <span className="drawer__ico" aria-hidden="true"><PxIcon emoji="🎉" /></span>
         <span className="drawer__label">패치노트</span>

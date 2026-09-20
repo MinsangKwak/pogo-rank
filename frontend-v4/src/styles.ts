@@ -40,3 +40,9 @@ import './root.css';
 import './styles/brand.css';
 import './styles/surfaces.css';
 import './styles/detail.css';
+
+import './styles/home-editorial.css';
+
+import './styles/catalog.css';
+
+import './styles/finder.css';

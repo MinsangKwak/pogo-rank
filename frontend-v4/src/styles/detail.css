@@ -170,3 +170,60 @@
 @media (max-width: 380px) {
   .detail--mon .detail__pane > .detail__matchrows { grid-template-columns: 1fr; }
 }
+
+/* Detail surface refresh: preserve all dimensions and responsive placement. */
+html body #root .modal__box:has(> .detail--mon) {
+  border-color: color-mix(in srgb, var(--fg) 22%, var(--bg));
+  box-shadow: 0 1.8rem 6rem rgb(0 0 0 / 25%);
+  background: var(--bg);
+}
+html body #root .detail--mon {
+  --detail-rule: color-mix(in srgb, var(--fg) 14%, transparent);
+  color: var(--fg); background: var(--bg);
+}
+html body #root .detail--mon .detail__bar {
+  background: color-mix(in srgb, var(--brand) 80%, #22151c);
+  border-bottom-color: var(--detail-rule);
+}
+html body #root .detail--mon .detail__bar-title { color: #fff; text-shadow: none; font-weight: 700; }
+html body #root .modal__wrap:has(.detail--mon) .modal__close {
+  background: transparent; color: #fff; border-color: rgb(255 255 255 / 35%); box-shadow: none;
+}
+html body #root .modal__wrap:has(.detail--mon) .modal__close:hover { background: rgb(255 255 255 / 14%); }
+html body #root .modal__wrap:has(.detail--mon) .modal__close:focus-visible { outline-color: #fff; }
+html body #root .detail--mon .detail__side {
+  background: color-mix(in srgb, var(--brand) 5%, var(--bg)); border-color: var(--detail-rule);
+}
+html body #root .detail--mon .detail__side .sprite-box {
+  background-color: transparent;
+  background-image: radial-gradient(circle, color-mix(in srgb,var(--brand) 18%,transparent) .06rem,transparent .08rem);
+  background-size: .8rem .8rem;
+  border-color: transparent; box-shadow: none;
+}
+html body #root .detail--mon .detail__tabs { border-color: var(--detail-rule); }
+html body #root .detail--mon .detail__tab { color: var(--muted); background: transparent; }
+html body #root .detail--mon .detail__tab[aria-selected="true"] {
+  color: var(--brand); font-weight: 700; background: color-mix(in srgb,var(--brand) 6%,transparent);
+  box-shadow: inset 0 -.3rem 0 var(--brand);
+}
+html body #root .detail--mon :is(.detail__card,.detail__cp-card,.detail__acc) {
+  background: color-mix(in srgb,var(--fg) 2%,var(--bg)); border-color: var(--detail-rule); box-shadow: none;
+}
+html body #root .detail--mon .detail__cp-card {
+  background: color-mix(in srgb,var(--brand) 8%,var(--bg));
+  border-color: color-mix(in srgb,var(--brand) 25%,transparent);
+}
+html body #root .detail--mon .detail__cp-line b { font-weight: 750; letter-spacing: -.04em; }
+html body #root .detail--mon :is(.detail__card h3,.detail__rank-pos) { font-weight: 700; }
+html body #root .detail--mon .move-chip {
+  background: color-mix(in srgb,var(--fg) 5%,transparent); border-color: transparent; color: var(--fg); box-shadow: none;
+}
+html body #root .detail--mon .move-chip.is-legacy {
+  color: var(--brand); background: color-mix(in srgb,var(--brand) 9%,transparent);
+}
+html body #root .detail--mon .detail__dock { background: var(--bg); border-color: var(--detail-rule); }
+html body #root .detail--mon .detail__dock-btn {
+  background: color-mix(in srgb,var(--fg) 3%,transparent); border-color: var(--detail-rule); color: var(--fg); box-shadow: none;
+}
+html body #root .detail--mon .detail__dock-btn--accent { background: var(--brand); border-color: var(--brand); color: #fff; }
+html body #root .detail--mon .detail__dock-btn:hover { border-color: var(--brand); filter: brightness(.96); transform: none; }

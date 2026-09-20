@@ -151,7 +151,14 @@ function Timeline({ month, cats, items }: {
 
 export default function Schedule() {
   const { data } = useSchedule();
-  const month = pickMonth(data.SCHEDULE_MONTHS);
+  const months = data.SCHEDULE_MONTHS;
+  const monthKeys = Object.keys(months).sort();
+  const [selectedMonth, setSelectedMonth] = useState(() => {
+    const initial = pickMonth(months);
+    return monthKeys.find((key) => months[key] === initial) ?? '';
+  });
+  const month = months[selectedMonth];
+  const monthIndex = monthKeys.indexOf(selectedMonth);
   const cats = data.SCHEDULE_CATS;
   const [cat, setCat] = useState(() => {
     const saved = readCat();
@@ -171,6 +178,13 @@ export default function Schedule() {
   if (!month) return <div className="page__body"><p className="empty">일정을 아직 받지 못했어요.</p></div>;
 
   const { m } = month.ym;
+  const changeMonth = (index: number) => {
+    const key = monthKeys[index];
+    if (!key) return;
+    const next = months[key]!;
+    setSelectedMonth(key);
+    setDay(today.getFullYear() === next.ym.y && today.getMonth() + 1 === next.ym.m ? today.getDate() : 1);
+  };
   const chipItems: ChipDef[] = [{ id: 'all', label: '전체' },
     ...Object.entries(cats).map(([id, one]) => ({ id, label: one.name, type: one.type }))];
   const onDay = items.filter((item) => day >= item.s && day <= item.e);
@@ -178,6 +192,11 @@ export default function Schedule() {
   return (
     <div className="page__body schedule__page" id="page-schedule" data-route="schedule">
       <KoOnlyNote kind="kst" />
+      <nav className="schedule__month-nav" aria-label="달력 월 이동">
+        <button type="button" aria-label="이전 달" disabled={monthIndex <= 0} onClick={() => changeMonth(monthIndex - 1)}>‹</button>
+        <div aria-live="polite"><span>{month.ym.y}년</span><h2>{m}월 일정</h2></div>
+        <button type="button" aria-label="다음 달" disabled={monthIndex >= monthKeys.length - 1} onClick={() => changeMonth(monthIndex + 1)}>›</button>
+      </nav>
       <div className="page__filters">
         <Chips items={chipItems} value={cat} onPick={(id) => {
           setCat(id);
@@ -208,6 +227,7 @@ export default function Schedule() {
               ? onDay.map((item, index) => (
                 <p key={index} className="schedule__item">
                   <span className="dot" style={{ background: cats[item.cat]?.color }} />{item.label}
+                  {item.source ? <a className="schedule__source" href={item.source} target="_blank" rel="noreferrer">공식 공지 ↗</a> : null}
                 </p>
               ))
               : <p className="schedule__item">등록된 일정이 없어요.</p>}
@@ -219,7 +239,7 @@ export default function Schedule() {
       <h2 className="page__sec">기간 한눈에</h2>
       <div><Timeline month={month} cats={cats} items={items} /></div>
 
-      <h2 className="page__sec">이번 달 전체 일정</h2>
+      <h2 className="page__sec">{m}월 전체 일정</h2>
       {/* 겉의 <div> 는 자리, 안의 <div> 가 목록이다 (v3 $list ← scheduleMonthList).
           한 겹으로 줄이면 `.schedule__page > p` 규칙이 걸려 문단 여백이 달라진다 */}
       <div>
@@ -235,6 +255,7 @@ export default function Schedule() {
                   <p key={index} className="schedule__item">
                     <span className="dot" style={{ background: one.color }} />
                     <b className="schedule__date">{m}/{item.s}{item.e !== item.s ? `–${item.e}` : ''}</b> {item.label}
+                    {item.source ? <a className="schedule__source" href={item.source} target="_blank" rel="noreferrer">공식 공지 ↗</a> : null}
                   </p>
                 ))}
               </div>

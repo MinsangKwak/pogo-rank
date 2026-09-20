@@ -152,8 +152,14 @@ export default function Home({ onOpen }: { onOpen: OpenMon }) {
           <h2>맥스 배틀에 데려갈 포켓몬,<br />여기서 골라요.</h2>
           <p>다이맥스 티어표와 추천 덱을 비교하고, 레이드·PvP까지 확인하세요.</p>
         </div>
-        <img className="home__pixel-mascot" src={`${import.meta.env.BASE_URL}sprites/25.png`}
-          alt="" aria-hidden="true" width={96} height={96} />
+        <div className="max-scene" aria-hidden="true">
+          <div className="max-scene__status"><span>GIGANTAMAX</span><b>팬텀</b><i /></div>
+          <div className="max-scene__ring" />
+          <img className="max-scene__boss" src={`${import.meta.env.BASE_URL}sprites/10202.png`} alt="" />
+          <img className="max-scene__ally" src={`${import.meta.env.BASE_URL}sprites/818.png`} alt="" />
+          <span className="max-scene__label">MAX BATTLE</span>
+          <div className="max-scene__charge"><span>MAX ENERGY</span><i /><i /><i /></div>
+        </div>
         <div className="home__cta">
           <a className="home__btn home__btn--primary" href={routeHash('dmax')}
             onClick={() => track('home_cta', { to: 'dmax' })}>다이맥스 티어표 보기<span aria-hidden="true"> →</span></a>

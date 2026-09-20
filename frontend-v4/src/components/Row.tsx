@@ -134,7 +134,7 @@ export function Row({ sprite, name, en, types, rank, score, sub, lines, linesCla
       }}
     >
       <span className="row__rank">{rank}<DeltaBadge delta={delta} /></span>
-      <Sprite id={sprite} />
+      <span className="row__portrait"><Sprite id={sprite} /></span>
       <div className="row__main">
         {badges ? (
           <div className="row__badges">

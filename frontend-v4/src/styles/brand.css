@@ -59,3 +59,15 @@
   overflow: hidden;
   white-space: nowrap;
 }
+
+.app-bar__identity { display:inline-flex; align-items:center; gap:var(--space-xs); }
+@media (max-width:999px) {
+  html body #root .app-bar__identity--inner { display:inline-flex; }
+  html body #root .app-bar__identity .v4-mark,
+  html body #root .app-bar__logo--brand > span { display:none; }
+  html body #root .app-bar__logo--brand {
+    display:inline-flex; align-items:center; justify-content:center;
+    width:4.4rem; min-width:4.4rem; height:4.4rem; padding:0; gap:0;
+  }
+  html body #root .app-bar__logo--brand svg { width:2.8rem; height:2.8rem; }
+}

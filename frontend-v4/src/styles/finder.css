@@ -1,0 +1,39 @@
+/* Search workshop: result console, presets, and clearly separated conditions. */
+html body #root .finder { --finder-rule: color-mix(in srgb,var(--fg) 16%,transparent); }
+html body #root .finder > .note { color: var(--muted); margin-bottom: 1.6rem; }
+html body #root .finder__result {
+  background: #282026; color: #fff5ee; border: 0; border-top: .4rem solid var(--brand);
+  padding: 2.4rem; margin: 0 0 3.2rem; box-shadow: 0 .6rem 0 color-mix(in srgb,var(--brand) 20%,transparent);
+}
+html body #root .finder__result-label { display:flex; justify-content:space-between; gap:1rem; color:#f4b7af; font:700 1.2rem/1.5 monospace; letter-spacing:.08em; }
+html body #root .finder__result-label span { font:400 1.2rem/1.5 sans-serif; letter-spacing:0; }
+html body #root .finder__out { border:0; border-bottom:.1rem solid #615058; background:transparent; color:#fff5ee; padding:1.8rem 0; font-size:2rem; line-height:1.6; }
+html body #root .finder__out.is-empty { color:#c4b6bd; font-size:1.5rem; }
+html body #root .finder__result .finder__hint { color:#c4b6bd; font-size:1.2rem; }
+html body #root .finder__actions button { box-shadow:none; border:.1rem solid #76606a; background:transparent; color:#fff5ee; min-height:4.4rem; }
+html body #root .finder__actions .finder__copy { background:#f8e9df; color:#282026; border-color:#f8e9df; font-weight:700; }
+html body #root .finder__presets { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:1.2rem; margin-bottom:3.2rem; }
+html body #root .finder__preset { display:flex; flex-direction:column; align-items:flex-start; text-align:left; white-space:normal; gap:1rem; padding:1.8rem; border:0; border-left:.3rem solid var(--brand); background:color-mix(in srgb,var(--brand) 6%,var(--bg)); color:var(--fg); box-shadow:none; font-size:1.6rem; }
+html body #root .finder__preset-description { color:var(--muted); font-size:1.2rem; line-height:1.7; font-weight:400; }
+html body #root .finder__section { display:grid; grid-template-columns:13rem minmax(0,1fr); gap:2rem; padding:2.8rem 0; border-top:.1rem solid var(--finder-rule); }
+html body #root .finder__section .row-head { margin:0; display:block; }
+html body #root .finder .row-head h2 { font-size:1.8rem; }
+html body #root .finder__section .row-head .meta { display:block; margin-top:.8rem; }
+html body #root .finder__chips { gap:.8rem; align-content:start; }
+html body #root .finder :is(.finder__flag,.finder__type) { min-height:4.4rem; padding:1rem 1.3rem; border:.1rem solid var(--finder-rule); color:var(--fg); background:var(--bg); font-weight:500; box-shadow:none; white-space:normal; text-align:left; }
+html body #root .finder :is(.finder__flag,.finder__type).is-on { color:var(--brand); border-color:var(--brand); background:color-mix(in srgb,var(--brand) 12%,var(--bg)); box-shadow:inset .3rem 0 0 var(--brand); font-weight:700; }
+html body #root .finder .finder__flag.is-off { color:var(--muted); border-style:dashed; border-color:var(--muted); background:color-mix(in srgb,var(--fg) 7%,var(--bg)); text-decoration:line-through; }
+html body #root .finder button:hover:not(:disabled) { transform:none; filter:none; border-color:var(--brand); }
+html body #root .finder button:focus-visible { outline:.2rem solid var(--brand); outline-offset:.3rem; }
+html body #root .finder :is(.finder__num,.finder__name) { min-height:4.8rem; border:.1rem solid var(--finder-rule); border-bottom:.2rem solid var(--muted); background:var(--bg); box-shadow:none; }
+html body #root .finder > .detail__foot { border-top:.1rem solid var(--finder-rule); padding-top:2rem; color:var(--muted); line-height:1.8; }
+@media(max-width:699px) {
+  html body #root .finder__result { padding:1.6rem; top:7rem; }
+  html body #root .finder__section { grid-template-columns:1fr; gap:1.4rem; padding:2.4rem 0; }
+  html body #root .finder__presets { grid-template-columns:1fr; }
+  html body #root .finder__preset { gap:.5rem; padding:1.4rem; }
+  html body #root .finder__row { display:grid; grid-template-columns:minmax(0,1fr) auto minmax(0,1fr); }
+  html body #root .finder__num { width:100%; min-width:0; }
+  html body #root .finder__name { width:100%; grid-column:1/-1; }
+  html body #root .finder__out { font-size:1.6rem; max-height:9rem; overflow-y:auto; }
+}
