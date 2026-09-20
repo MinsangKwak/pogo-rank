@@ -116,3 +116,10 @@ html body #root .filter-box > summary { padding: .8rem; line-height: 1.5; }
   html body #root .dex-catalog.is-grid .dex__stats { padding: .8rem; }
   html body #root .gameday__cp { padding: .8rem; }
 }
+
+/* 만화식 잉크 선(list.css)의 굵은 판 — 카드의 큰 그림은 두 겹으로 4px */
+html body #root :is(:is(.dex-catalog, .dex__list).is-grid .dex__portrait, .row-list.is-grid .row__portrait) .sprite {
+  filter:
+    drop-shadow(.2rem 0 0 var(--ink)) drop-shadow(-.2rem 0 0 var(--ink)) drop-shadow(0 .2rem 0 var(--ink)) drop-shadow(0 -.2rem 0 var(--ink))
+    drop-shadow(.2rem 0 0 var(--ink)) drop-shadow(-.2rem 0 0 var(--ink)) drop-shadow(0 .2rem 0 var(--ink)) drop-shadow(0 -.2rem 0 var(--ink));
+}

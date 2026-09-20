@@ -155,10 +155,17 @@ Pokémon과 관련 명칭·이미지의 권리는 The Pokémon Company, Nintendo
 
 ## 버전 이력
 
-전체 192개 릴리스를 `날짜 → 버전`의 2단계 접이식 목록으로 정리했습니다. 가장 최근 날짜만 기본으로 펼쳐지며, 설명이 한 줄인 초기 버전은 별도의 접이식 영역 없이 표시됩니다. 사용자용 요약은 서비스의 [🎉 패치 노트](https://moncamp.kr/#/release)에서, 변경 배경과 세부 구현 내용은 [변경 이력](CHANGELOG.md)에서 확인할 수 있습니다.
+전체 193개 릴리스를 `날짜 → 버전`의 2단계 접이식 목록으로 정리했습니다. 가장 최근 날짜만 기본으로 펼쳐지며, 설명이 한 줄인 초기 버전은 별도의 접이식 영역 없이 표시됩니다. 사용자용 요약은 서비스의 [🎉 패치 노트](https://moncamp.kr/#/release)에서, 변경 배경과 세부 구현 내용은 [변경 이력](CHANGELOG.md)에서 확인할 수 있습니다.
 
 <details open>
-<summary><b>2026-09-20</b> — 릴리스 4개 · <code>v4.5.0</code> · <code>v4.4.2</code> · <code>v4.4.1</code> · <code>v4.4.0</code></summary>
+<summary><b>2026-09-20</b> — 릴리스 5개 · <code>v4.5.1</code> · <code>v4.5.0</code> · <code>v4.4.2</code> · <code>v4.4.1</code> · <code>v4.4.0</code></summary>
+
+<details>
+<summary><b>v4.5.1</b> · 포켓몬 그림에 만화식 잉크 선 — 스티커처럼 도드라지게</summary>
+
+일러스트의 알파 실루엣을 drop-shadow 네 방향으로 둘러 윤곽선을 만듭니다. 기본 2px, 큰 그림은 4px. 색은 `--ink` 변수 하나라 다크 모드에서는 밝은 선으로 뒤집히고, 어두운 판(홈 히어로)은 밝은 선을 씁니다.
+
+</details>
 
 <details>
 <summary><b>v4.5.0</b> · 포켓몬 그림을 공식 일러스트로 — 도감·순위·레이드·홈 전부</summary>

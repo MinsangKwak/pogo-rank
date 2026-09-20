@@ -22,7 +22,14 @@
 ---
 
 <details open>
-<summary><b>2026-09-20</b> — 4판 · <code>v4.5.0</code> · <code>v4.4.2</code> · <code>v4.4.1</code> · <code>v4.4.0</code></summary>
+<summary><b>2026-09-20</b> — 5판 · <code>v4.5.1</code> · <code>v4.5.0</code> · <code>v4.4.2</code> · <code>v4.4.1</code> · <code>v4.4.0</code></summary>
+
+<details>
+<summary><b>v4.5.1</b> · 포켓몬 그림에 만화식 잉크 선</summary>
+
+**추가** — 일러스트의 알파 실루엣을 `drop-shadow` 네 방향으로 둘러 만화식 윤곽선을 만든다. 기본 2px(`list.css` `.sprite`), 큰 그림(그리드 카드 · 상세 대표 · 홈 대표)은 두 겹 4px. 색은 `--ink` 변수 하나로 — 판 위에서는 `--fg` 라 테마와 함께 뒤집히고, 어두운 판(홈 히어로)은 `--plate-fg` 로 바꿔 단다(§1-b). 몬스터볼 자리표시에는 선을 두르지 않는다. drop-shadow 는 필터 패스라 목록의 작은 그림(4rem)에는 한 겹만 둬 부담을 줄였다.
+
+</details>
 
 <details>
 <summary><b>v4.5.0</b> · 포켓몬 그림을 96px 도트에서 공식 일러스트 축소본(256px)으로</summary>

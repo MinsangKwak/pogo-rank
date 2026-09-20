@@ -15,6 +15,9 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 const RELEASE_NOTES_EN = {
+  '2026-09-20 · v4.5.1': [
+    '**Pokémon images now have a cartoon-style outline** — they pop like stickers, and the line flips to light in dark mode',
+  ],
   '2026-09-20 · v4.5.0': [
     '**Pokémon images look better** — official artwork replaces the 96px pixel sprites, so the dex, rankings, raids and home are all sharper',
     '**Animated pixel sprites are now opt-in** — artwork stills are the default; turn animation back on under Settings > Animated sprites',
