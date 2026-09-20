@@ -34,6 +34,8 @@ const LEAK = /\bNaN\b|\bundefined\b|\bnull\b|\bInfinity\b|\[object Object\]/;
 // 따옴표(`) 안은 뺀다 — 패치노트가 "`NaN 맥스 피해` 로 나오던 자리" 처럼 **버그를 인용**하기 때문이다.
 // 진짜로 새는 칸에는 따옴표가 붙지 않으므로, 이 한 줄로 인용문만 정확히 걸러진다.
 async function scan(page, where, bad) {
+  // v4.4.2 카드가 content-visibility:auto 라 화면 밖 카드는 innerText 에 안 잡힌다 — 훑기 전에 전부 켠다
+  await page.addStyleTag({ content: '* { content-visibility: visible !important; }' }).catch(() => {});
   const text = await page.evaluate(() => document.body.innerText || '');
   for (const line of text.split('\n')) {
     if (LEAK.test(line.replace(/`[^`]*`/g, ''))) bad.push(`${where} → ${line.trim()}`);

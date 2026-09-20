@@ -15,6 +15,11 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 const RELEASE_NOTES_EN = {
+  '2026-09-20 · v4.4.2': [
+    '**Screens no longer jump while opening** — on D-MAX the button row used to slide in late and push the title down; its space is now reserved up front',
+    '**Home shows up sooner** — the intro at the top renders without waiting for data, and the picks below fill in after',
+    '**Long lists scroll more smoothly** — cards outside the viewport are skipped until they come close',
+  ],
   '2026-09-20 · v4.4.1': [
     '**Fixed oversized Pokemon on egg and raid cards** — small sprites were blown up 4x and filled the card; they now scale to at most 2x',
   ],
