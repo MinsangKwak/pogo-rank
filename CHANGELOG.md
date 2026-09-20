@@ -22,7 +22,43 @@
 ---
 
 <details open>
-<summary><b>2026-09-20</b> — 3판 · <code>v4.4.2</code> · <code>v4.4.1</code> · <code>v4.4.0</code></summary>
+<summary><b>2026-09-20</b> — 7판 · <code>v4.5.3</code> · <code>v4.5.2</code> · <code>v4.5.1</code> · <code>v4.5.0</code> · <code>v4.4.2</code> · <code>v4.4.1</code> · <code>v4.4.0</code></summary>
+
+<details>
+<summary><b>v4.5.3</b> · 잉크 선 한 번 더 반토막</summary>
+
+**수정** — v4.5.2 도 굵다는 제보. `--ink-w` 기본 0.5px · 큰 그림 1px. 값이 변수 하나라 이번 조정은 숫자 넷이었다.
+
+</details>
+
+<details>
+<summary><b>v4.5.2</b> · 잉크 선 반토막 · 순위/레이드 카드에도</summary>
+
+**수정** — 잉크 선이 너무 굵다는 제보(v4.5.1). 굵기를 `--ink-w` 변수 하나로 모으고 반으로 — 기본 1px, 큰 그림 2px. 두 겹 filter 를 반복하던 굵은 판 규칙들은 `--ink-w` 만 올리는 한 줄이 됐다.
+
+**수정** — D-MAX 티어표 · 레이드/PvP 순위 · 알 부화 카드에 선이 안 둘렸다. v3 카드 무대 규칙(`home.css`, `#content` 포함)이 같은 자리에 포일 그림자 `filter` 를 걸어 잉크 선을 통째로 덮은 것. filter 는 합쳐지지 않고 이긴 쪽만 남는다. §7 의 pixel.css 급 장치(`html:not(#_):not(#__) body #root`)로 세게 걸고 **잉크 선 + 무대 그림자를 한 filter 에 같이** 단다. 레이드·알은 감싸는 칸 없이 `.gameday__row > .sprite` 라 선택자를 따로 잡았다.
+
+</details>
+
+<details>
+<summary><b>v4.5.1</b> · 포켓몬 그림에 만화식 잉크 선</summary>
+
+**추가** — 일러스트의 알파 실루엣을 `drop-shadow` 네 방향으로 둘러 만화식 윤곽선을 만든다. 기본 2px(`list.css` `.sprite`), 큰 그림(그리드 카드 · 상세 대표 · 홈 대표)은 두 겹 4px. 색은 `--ink` 변수 하나로 — 판 위에서는 `--fg` 라 테마와 함께 뒤집히고, 어두운 판(홈 히어로)은 `--plate-fg` 로 바꿔 단다(§1-b). 몬스터볼 자리표시에는 선을 두르지 않는다. drop-shadow 는 필터 패스라 목록의 작은 그림(4rem)에는 한 겹만 둬 부담을 줄였다.
+
+</details>
+
+<details>
+<summary><b>v4.5.0</b> · 포켓몬 그림을 96px 도트에서 공식 일러스트 축소본(256px)으로</summary>
+
+**변경** — 정지 그림의 출처를 PokeAPI 96×96 도트에서 같은 저장소의 공식 일러스트(`other/official-artwork`, 475px)로 바꿨다. id 체계가 도트와 동일해 1,184장 전부 매핑 없이 대응됐고(사전 전수 확인, 결측 0), 파일명(`sprites/{id}.png`)이 그대로라 프런트 주소는 바뀌지 않았다.
+
+- **축소·양자화** — `backend/sprites.py` 가 Pillow 로 긴 변 256px(화면 최대 15rem 의 레티나 2배)로 줄이고 256색 팔레트로 양자화한다. 장당 평균 120KB → 11KB, 전체 15MB. 원본 크기(475px)는 배포하지 않는다(NOTICE.md 의 축소본 배포 원칙 유지).
+- **캐시 형식 표식** — CI 의 actions/cache 에 옛 도트 png 가 살아 있으면 "파일이 있으니 통과"로 영영 안 바뀐다. `data/sprites/.format` 표식이 다르면 png 만 비우고 다시 받는다(애니메이션 GIF 캐시는 유지). 일러스트에 없는 id 는 도트로 폴백해 빈 칸을 만들지 않는다.
+- **렌더링** — 정지 그림의 `image-rendering: pixelated` 를 부드러운 축소로 바꿨다(v3 `list.css`·`home.css` 4곳, v4 `home-editorial.css`). 도트로 남은 움직이는 GIF(`sprite--anim`)만 pixelated 를 유지한다.
+- **움직이는 그림 기본 끔** — 도트 GIF 갈아 끼우기가 켜져 있으면 일러스트가 대부분 카드에서 안 보인다. 기본을 끔으로 바꾸고, 켬은 `pogo_sprite_anim = 'on'` 으로 적는다('off' 값 의미는 그대로 — §2 저장값 호환). 설정 화면 문구와 EN 사전도 맞췄다.
+- **CI** — 두 배포 워크플로에 Pillow 설치 한 줄 추가.
+
+</details>
 
 <details>
 <summary><b>v4.4.2</b> · 성능 — 첫 화면이 밀리지 않고, 카드 100장이 메인 스레드를 안 잡는다</summary>

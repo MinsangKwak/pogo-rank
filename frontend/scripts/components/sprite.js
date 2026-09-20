@@ -5,7 +5,7 @@
 //   spriteSrc(spriteId)     스프라이트 이미지 경로(또는 data URL). 없으면 null
 //   spriteAnimSrc(spriteId) 움직이는 그림 경로. 없으면 null
 //   spriteAnimate(img, id)  정지 그림 <img> 를 다 받은 뒤 움직이는 그림으로 갈아 끼운다
-//   spriteAnimEnabled()     움직이는 그림을 쓰는가 — 설정 화면(pogo_sprite_anim)이 정한다. 기본 켬 (v3.18.0)
+//   spriteAnimEnabled()     움직이는 그림을 쓰는가 — 설정 화면(pogo_sprite_anim)이 정한다. 기본 끔 (v4.5.0)
 //   sprite(spriteId)      화면에 넣을 이미지 요소. 이미지가 없으면 몬스터볼 자리표시. 받는 동안은 스켈레톤(.loading), 실패 시 2회 재시도
 //   waitForSprites(maxMs) 문서의 받는 중인 스프라이트가 끝날 때까지 기다린다 (첫 화면 가림막용)
 //   spritePlaceholder()   몬스터볼 자리표시 요소 (이미지가 없거나 받기 실패했을 때)
@@ -43,7 +43,7 @@ function spriteSrc(spriteId) {
 // 1,172종 중 949종에만 있다(6세대 이후·폼 변형 상당수 없음) — 없으면 null 을 돌려주고
 // 부르는 쪽이 지금까지처럼 정지 png 를 쓴다
 let _spriteAnimIds = null;
-const SPRITE_ANIM_KEY = 'pogo_sprite_anim';   // 'off' 면 정지본만. 없으면 켬
+const SPRITE_ANIM_KEY = 'pogo_sprite_anim';   // 'on' 일 때만 움직인다. 없으면 끔
 // 2026-09-13 v3.20.0 움직이는 그림은 출처가 둘이라 원본 크기가 제각각이다 — 23×19 부터 201×166 까지.
 // 상자에 맞추기만 하면 작은 종이 3배 넘게 늘어나 뭉개지고, 종끼리 크기가 뒤죽박죽이었다.
 // 도트 그림은 **정수배**로 키울 때만 선명하므로 2배를 한도로 두고, 남는 자리는 padding 으로 비운다
@@ -88,7 +88,8 @@ function fitAnimZoom(image) {
   image.style.imageRendering = natural > room ? 'auto' : '';
 }
 function spriteAnimEnabled() {
-  try { return localStorage.getItem(SPRITE_ANIM_KEY) !== 'off'; } catch { return true; }
+  // 2026-09-20 v4.5.0 기본 끔 — 기본 그림이 일러스트가 되면서 도트 GIF 는 'on' 을 고른 사람만
+  try { return localStorage.getItem(SPRITE_ANIM_KEY) === 'on'; } catch { return false; }
 }
 // 2026-09-12 v3.19.0 설정을 body.sprite-anim-off 로도 알린다 (CSS 가 읽을 수 있게). v3.48.1 에 흔드는 규칙(sprite-idle)은 뺐지만 클래스는 상태 표식으로 남긴다
 function syncSpriteAnimClass() {

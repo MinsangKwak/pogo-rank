@@ -1,10 +1,10 @@
-# 랭킹에 등장하는 스프라이트만 내려받아 base64로 묶는다.
+# 랭킹에 등장하는 포켓몬 그림만 내려받아 256px 로 줄여 캐시한다.
 #
 # 입력
 #   data/pvp.json · pve.json · pve_easy.json · dynamax.json · dynamax_tier.json · value.json · sheet.json
 #                     각 빌드 스크립트가 만든 랭킹 결과. 여기서 'sprite' 키 값을 모은다
 #   data/dex.json     도감 데이터. 진화 계보(evo)와 전 종 이름표(names)의 스프라이트도 함께 모은다
-#   data/sprites/*.png  PokeAPI 스프라이트 캐시 (없는 것만 새로 내려받는다)
+#   data/sprites/*.png  공식 일러스트 축소 캐시 (없는 것만 새로 내려받는다)
 #
 # 출력
 #   data/sprites/<id>.png  내려받은 원본 파일 (다음 빌드에서 캐시로 재사용)
@@ -15,6 +15,7 @@
 
 import json
 import base64
+from PIL import Image   # 2026-09-20 v4.5.0 일러스트(475px)를 256px 로 줄이는 데 쓴다. CI 도 Pillow 를 깐다
 import os
 import shutil
 import subprocess
@@ -69,13 +70,52 @@ sprite_ids |= set(LOCAL_SPRITE_BASE)
 os.makedirs('data/sprites', exist_ok=True)
 # 2026-09-03 v2.0.0: 없는 것만 16개씩 병렬 다운로드 (CI는 actions/cache로 대부분 재사용)
 from concurrent.futures import ThreadPoolExecutor
+
+
+# 파일이 진짜 PNG 인지 (curl 이 404 본문을 저장한 경우를 걸러 낸다)
+def is_png(path):
+    return os.path.exists(path) and open(path, 'rb').read(4) == b'\x89PNG'
+
+
+# 2026-09-20 v4.5.0 그림을 96px 도트에서 공식 일러스트(475px → 256px 축소)로 바꿨다.
+# 캐시(data/sprites, CI actions/cache)에 옛 도트 png 가 남아 있으면 "파일이 있으니 통과"로 영영 안 바뀌므로,
+# 형식 표식이 다르면 png 를 전부 지우고 다시 받는다. 애니메이션 GIF 캐시(sprites-anim)는 그대로 둔다.
+SPRITE_FORMAT = 'art256'
+format_path = 'data/sprites/.format'
+current_format = open(format_path).read().strip() if os.path.exists(format_path) else ''
+if current_format != SPRITE_FORMAT:
+    stale = [name for name in os.listdir('data/sprites') if name.endswith('.png')]
+    for name in stale:
+        os.remove(f'data/sprites/{name}')
+    open(format_path, 'w').write(SPRITE_FORMAT)
+    print(f'sprite format {current_format or "(none)"} → {SPRITE_FORMAT}: 캐시 {len(stale)}장 비움')
+
 missing_ids = [sprite_identifier for sprite_identifier in sprite_ids
                if not os.path.exists(f'data/sprites/{sprite_identifier}.png')]
 
+ART_URL = 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/{}.png'
+PIXEL_URL = 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/{}.png'
 
-# 스프라이트 png 한 장을 PokeAPI 저장소에서 내려받아 캐시 폴더에 저장한다 (실패해도 멈추지 않는다)
+
+# 긴 변을 256px 로 줄이고 256색 팔레트로 양자화해 다시 저장한다 (평균 ~11KB, 원본 그대로면 ~120KB).
+# 256px 인 이유: 화면 최대 크기가 15rem(150px)이라 레티나 2배에도 넉넉하고, 원본 크기 배포를 피한다(NOTICE.md).
+def shrink_sprite(path):
+    image = Image.open(path).convert('RGBA')
+    image.thumbnail((256, 256), Image.LANCZOS)
+    image.quantize(256, method=Image.Quantize.FASTOCTREE, dither=Image.Dither.FLOYDSTEINBERG).save(path, optimize=True)
+
+
+# 그림 한 장을 내려받아 캐시 폴더에 저장한다 (실패해도 멈추지 않는다).
+# 공식 일러스트를 먼저 받고, 없는 id(미공개 폼 등)는 96px 도트 스프라이트로 되돌아간다 — 빈 칸보다 도트가 낫다.
 def download_sprite(sprite_identifier):
-    subprocess.run(['curl', '-sSL', '-o', f'data/sprites/{sprite_identifier}.png', f'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/{sprite_identifier}.png'])
+    path = f'data/sprites/{sprite_identifier}.png'
+    for url in (ART_URL.format(sprite_identifier), PIXEL_URL.format(sprite_identifier)):
+        subprocess.run(['curl', '-fsSL', '--retry', '2', '-o', path, url])
+        if is_png(path):
+            shrink_sprite(path)
+            return
+        if os.path.exists(path):
+            os.remove(path)
 
 
 # 2026-09-05 저장소가 직접 배정한 번호(90000번대)는 PokeAPI 에 없으므로 일반 다운로드 목록에서 뺀다.
@@ -89,10 +129,6 @@ if missing_ids:
         list(executor.map(download_sprite, missing_ids))
     print(f'downloaded {len(missing_ids)} new sprites')
 
-
-# 파일이 진짜 PNG 인지 (curl 이 404 본문을 저장한 경우를 걸러 낸다)
-def is_png(path):
-    return os.path.exists(path) and open(path, 'rb').read(4) == b'\x89PNG'
 
 
 for sprite_identifier in local_ids:
@@ -109,6 +145,8 @@ for sprite_identifier in local_ids:
     if needs_fetch:
         subprocess.run(['curl', '-fsSL', '--retry', '3', '-o', local_path, LOCAL_SPRITE_URL[sprite_identifier]])
         if is_png(local_path):
+            # 전용 그림도 같은 축소 규칙을 태워 무게와 팔레트를 맞춘다
+            shrink_sprite(local_path)
             print(f'local sprite {sprite_identifier} ← 전용 그림 다운로드')
             continue
         # 실패하면 깨진 파일을 남기지 않는다 (다음 빌드에서 다시 시도되도록)
