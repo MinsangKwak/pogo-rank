@@ -15,6 +15,9 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 const RELEASE_NOTES_EN = {
+  '2026-09-20 · v4.4.1': [
+    '**Fixed oversized Pokemon on egg and raid cards** — small sprites were blown up 4x and filled the card; they now scale to at most 2x',
+  ],
   '2026-09-20 · v4.4.0': [
     '**The home page was rebuilt** — a Max Battle scene up top and a magazine-style index below, so find, compare and record read at a glance',
     '**Pokedex, ranking and raid cards now have a stage** — every Pokemon stands with its feet on the same line; they used to float or sink depending on the sprite',

@@ -22,7 +22,18 @@
 ---
 
 <details open>
-<summary><b>2026-09-20</b> — 1판 · <code>v4.4.0</code></summary>
+<summary><b>2026-09-20</b> — 2판 · <code>v4.4.1</code> · <code>v4.4.0</code></summary>
+
+<details>
+<summary><b>v4.4.1</b> · (긴급) 알 부화·레이드 카드의 그림이 4배로 나오던 것</summary>
+
+**제보(사진) — dev 알 부화 카드의 포켓몬이 카드를 꽉 채울 만큼 크다.** 실측: 카드 264px 에 그림 상자 **224px**, 원본 37px 그림이 150px 로 그려졌다 — 4배.
+
+**`box-sizing` 이 범인이다.** `Bits.tsx fitZoom()` 은 확대를 2배(`SPRITE_MAX_ZOOM`)로 막으려고 상자 안에 padding 을 넣는다 — 상자가 고정(`border-box`)이라는 전제다. 그런데 카드 그리드의 `.sprite` 가 `content-box` 라 padding 이 **상자를 키웠고**(150 + 37×2 = 224), 그림은 content 150px 에 그대로 4배로 늘어났다. 도감 카드는 원본이 96px 이라 1.5배로 끝나 눈에 안 띄었고, 알 부화·레이드는 작은 그림(37px)이 많아 드러났다.
+
+`catalog.css` 의 그리드 그림 규칙에 `box-sizing: border-box` 한 줄. 이제 37px 그림은 74px(2배)로 서고, 96px 그림은 그대로 150px 이다.
+
+</details>
 
 <details>
 <summary><b>v4.4.0</b> · 홈 편집 레이아웃 · 카드 무대 · 검색식 콘솔 · 달력 월 이동 — 그리고 규칙 대조</summary>

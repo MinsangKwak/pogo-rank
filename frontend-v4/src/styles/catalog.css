@@ -37,9 +37,11 @@ html body #root :is(:is(.dex-catalog, .dex__list).is-grid .dex__portrait, .row-l
     color-mix(in srgb, var(--brand) 6%, transparent);
   transform: perspective(24rem) rotateX(48deg); box-shadow: 0 .4rem 0 color-mix(in srgb, var(--fg) 8%, transparent);
 }
-/* 그림 — pixel.css 의 뿌리 규칙(id 두 칸)보다 위여야 배경·테두리를 벗길 수 있다 */
+/* 그림 — pixel.css 의 뿌리 규칙(id 두 칸)보다 위여야 배경·테두리를 벗길 수 있다.
+   **box-sizing 은 border-box 여야 한다.** fitZoom() 이 확대를 2배로 막으려고 padding 을 넣는데,
+   content-box 면 padding 이 상자를 키워 그림이 그대로 4배(알 부화의 37px 그림 → 150px)로 나온다 (v4.4.1 제보) */
 html:not(#_):not(#__) body #root :is(.dex-catalog.is-grid, .row-list.is-grid, .dex__list.is-grid) .sprite {
-  width: 15rem; height: 15rem; margin: 0; padding: 0; position: relative;
+  width: 15rem; height: 15rem; margin: 0; padding: 0; position: relative; box-sizing: border-box;
   background: transparent; border: 0; box-shadow: none; object-fit: contain; object-position: center bottom;
 }
 html:not(#_):not(#__) body #root :is(:is(.dex-catalog, .dex__list).is-grid .dex__portrait, .row-list.is-grid .row__portrait) .sprite:not(.sprite--anim) {
