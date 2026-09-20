@@ -22,7 +22,19 @@
 ---
 
 <details open>
-<summary><b>2026-09-20</b> — 11판 · <code>v4.5.7</code> · <code>v4.5.6</code> · <code>v4.5.5</code> · <code>v4.5.4</code> · <code>v4.5.3</code> · <code>v4.5.2</code> · <code>v4.5.1</code> · <code>v4.5.0</code> · <code>v4.4.2</code> · <code>v4.4.1</code> · <code>v4.4.0</code></summary>
+<summary><b>2026-09-20</b> — 12판 · <code>v4.5.8</code> · <code>v4.5.7</code> · <code>v4.5.6</code> · <code>v4.5.5</code> · <code>v4.5.4</code> · <code>v4.5.3</code> · <code>v4.5.2</code> · <code>v4.5.1</code> · <code>v4.5.0</code> · <code>v4.4.2</code> · <code>v4.4.1</code> · <code>v4.4.0</code></summary>
+
+<details>
+<summary><b>v4.5.8</b> · 좁은 화면 그리드에서 CP 숫자가 쪼개지던 것</summary>
+
+**수정** — 제보(아이폰 · 도감 그리드): `1,260` 이 `1,26` / `0` 으로 갈라졌다. 원인이 둘이다.
+
+1. `.dex__stat--cp` 가 `justify-content: space-between` 이라 라벨과 숫자가 좌우로 벌어진다. 두 열 폭에서는 둘이 한 줄에 못 들어가 라벨이 `CP` / `100%` 로 접히고 숫자에 남는 폭이 더 줄었다.
+2. 브라우저가 **쉼표 뒤에서 줄을 끊는다.** 숫자 한 덩이인데 글자 취급을 받아 자릿수 중간이 갈렸다.
+
+699px 아래에서 라벨을 위로 올려(`flex-direction: column`) 숫자에 카드 폭을 통째로 주고, 숫자에는 폭과 무관하게 `white-space: nowrap` 을 둬 자릿수가 갈리지 않게 했다. 둘 중 하나만 고치면 더 긴 숫자나 더 좁은 기기에서 같은 일이 다시 난다.
+
+</details>
 
 <details>
 <summary><b>v4.5.7</b> · 미리보기에서 내 검색이 바로 세어지게</summary>
