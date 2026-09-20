@@ -207,5 +207,5 @@ html body #root .detail--mon .detail__dock-btn { background: color-mix(in srgb, 
 html body #root .detail--mon .detail__dock-btn--accent { background: var(--brand); border-color: var(--brand); color: var(--bg); }
 html body #root .detail--mon .detail__dock-btn:hover { border-color: var(--brand); filter: brightness(.96); transform: none; }
 
-/* 만화식 잉크 선(list.css)의 굵은 판 — 상세의 대표 그림은 2px */
-html body #root .detail--mon .detail__side .sprite-box .sprite { --ink-w: .2rem; }
+/* 만화식 잉크 선(list.css)의 굵은 판 — 상세의 대표 그림은 1px */
+html body #root .detail--mon .detail__side .sprite-box .sprite { --ink-w: .1rem; }

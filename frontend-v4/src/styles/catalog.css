@@ -117,12 +117,12 @@ html body #root .filter-box > summary { padding: .8rem; line-height: 1.5; }
   html body #root .gameday__cp { padding: .8rem; }
 }
 
-/* 만화식 잉크 선(list.css)의 굵은 판 — 카드의 큰 그림은 2px.
+/* 만화식 잉크 선(list.css)의 굵은 판 — 카드의 큰 그림은 1px.
    v3 카드 무대(home.css)가 같은 자리에 포일 그림자 filter 를 걸어 잉크 선을 덮으므로,
    그 규칙(#content 포함)보다 세게(§7 의 pixel.css 급 장치) 걸고 무대 그림자를 같이 단다 */
 html:not(#_):not(#__) body #root :is(.row-list.is-grid .row__portrait, :is(.dex-catalog, .dex__list).is-grid .dex__portrait) .sprite,
 html:not(#_):not(#__) body #root :is(#page-raids, #page-eggs) .dex__list.is-grid .gameday__row > .sprite {
-  --ink-w: .2rem;
+  --ink-w: .1rem;
   filter:
     drop-shadow(var(--ink-w) 0 0 var(--ink)) drop-shadow(calc(var(--ink-w) * -1) 0 0 var(--ink)) drop-shadow(0 var(--ink-w) 0 var(--ink)) drop-shadow(0 calc(var(--ink-w) * -1) 0 var(--ink))
     drop-shadow(.35rem .5rem 0 color-mix(in srgb, var(--foil-lo) 19%, transparent));

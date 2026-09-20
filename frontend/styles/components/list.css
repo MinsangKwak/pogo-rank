@@ -55,9 +55,9 @@
 .sprite { width: 4rem; height: 4rem; image-rendering: auto; object-fit: contain; display: block; }
 /* 2026-09-20 v4.5.1 만화식 잉크 선 — drop-shadow 네 방향이 알파 실루엣을 따라 선을 두른다.
    색은 --ink 로 두어 테마와 함께 뒤집히고(§1-b), 어두운 판 위(홈 히어로)는 그쪽 파일이 밝게 바꾼다.
-   굵기는 --ink-w 하나다 — 기본 1px, 큰 그림(그리드 카드·상세·홈 대표)은 각자 파일에서 2px 로 올린다 (v4.5.2 반토막) */
+   굵기는 --ink-w 하나다 — 기본 0.5px, 큰 그림(그리드 카드·상세·홈 대표)은 각자 파일에서 1px 로 올린다 (v4.5.3 다시 반토막) */
 .sprite {
-  --ink: var(--fg); --ink-w: .1rem;
+  --ink: var(--fg); --ink-w: .05rem;
   filter: drop-shadow(var(--ink-w) 0 0 var(--ink)) drop-shadow(calc(var(--ink-w) * -1) 0 0 var(--ink)) drop-shadow(0 var(--ink-w) 0 var(--ink)) drop-shadow(0 calc(var(--ink-w) * -1) 0 var(--ink));
 }
 .sprite.empty { filter: none; }  /* 몬스터볼 자리표시에는 선을 안 두른다 */

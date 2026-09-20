@@ -22,7 +22,14 @@
 ---
 
 <details open>
-<summary><b>2026-09-20</b> — 6판 · <code>v4.5.2</code> · <code>v4.5.1</code> · <code>v4.5.0</code> · <code>v4.4.2</code> · <code>v4.4.1</code> · <code>v4.4.0</code></summary>
+<summary><b>2026-09-20</b> — 7판 · <code>v4.5.3</code> · <code>v4.5.2</code> · <code>v4.5.1</code> · <code>v4.5.0</code> · <code>v4.4.2</code> · <code>v4.4.1</code> · <code>v4.4.0</code></summary>
+
+<details>
+<summary><b>v4.5.3</b> · 잉크 선 한 번 더 반토막</summary>
+
+**수정** — v4.5.2 도 굵다는 제보. `--ink-w` 기본 0.5px · 큰 그림 1px. 값이 변수 하나라 이번 조정은 숫자 넷이었다.
+
+</details>
 
 <details>
 <summary><b>v4.5.2</b> · 잉크 선 반토막 · 순위/레이드 카드에도</summary>
