@@ -52,18 +52,18 @@ html body #root .form-tag + b { margin-inline-start: .5rem; }
 
 /* A small pixel habitat anchors each specimen above its data label. */
 html body #root .dex-catalog.is-grid .dex__row { gap:1rem; border-top:.1rem solid var(--line); padding-top:3.6rem; }
-html body #root .dex-catalog.is-grid .dex__portrait {
+html body #root :is(.dex-catalog,.dex__list).is-grid .dex__portrait {
   display:flex; position:relative; align-items:center; justify-content:center;
   width:100%; height:15rem; margin:0 0 .4rem; isolation:isolate;
   background:linear-gradient(0deg,color-mix(in srgb,var(--brand) 5%,transparent),transparent 75%);
   border-bottom:.1rem solid color-mix(in srgb,var(--brand) 20%,transparent);
 }
-html body #root .dex-catalog.is-grid .dex__portrait::before {
+html body #root :is(.dex-catalog,.dex__list).is-grid .dex__portrait::before {
   content:''; position:absolute; z-index:-1; width:68%; height:36%; bottom:1.2rem;
   background:repeating-linear-gradient(0deg,transparent 0 .7rem,color-mix(in srgb,var(--fg) 9%,transparent) .7rem .8rem),repeating-linear-gradient(90deg,transparent 0 .7rem,color-mix(in srgb,var(--fg) 9%,transparent) .7rem .8rem),color-mix(in srgb,var(--brand) 6%,transparent);
   transform:perspective(18rem) rotateX(48deg); box-shadow:0 .4rem 0 color-mix(in srgb,var(--fg) 8%,transparent);
 }
-html:not(#_):not(#__) body #root .dex-catalog.is-grid .dex__portrait .sprite { width:15rem; height:15rem; margin:0; position:relative; }
+html:not(#_):not(#__) body #root :is(.dex-catalog,.dex__list).is-grid .dex__portrait .sprite { width:15rem; height:15rem; margin:0; position:relative; }
 html body #root .dex-catalog.is-grid .dex__no { font:600 1.2rem/1.5 monospace; letter-spacing:.08em; box-shadow:none; color:var(--muted); }
 html body #root .dex-catalog.is-grid .dex__name { gap:1.2rem; }
 html body #root .dex-catalog.is-grid .dex__name > b { font-family:inherit; font-size:2.2rem; font-weight:750; letter-spacing:-.04em; line-height:1.35; }
@@ -76,8 +76,8 @@ html body #root .dex-catalog.is-grid .dex__stat--cp em { color:var(--muted); fon
 html body #root .dex-catalog.is-grid .dex__types { padding:0; border:0; }
 @media(max-width:699px) {
  html body #root .dex-catalog.is-grid .dex__row { padding-top:3.2rem; }
- html body #root .dex-catalog.is-grid .dex__portrait { height:12rem; }
- html:not(#_):not(#__) body #root .dex-catalog.is-grid .dex__portrait .sprite { width:12rem; height:12rem; }
+ html body #root :is(.dex-catalog,.dex__list).is-grid .dex__portrait { height:12rem; }
+ html:not(#_):not(#__) body #root :is(.dex-catalog,.dex__list).is-grid .dex__portrait .sprite { width:12rem; height:12rem; }
  html body #root .dex-catalog.is-grid .dex__name > b { font-size:1.8rem; }
  html body #root .dex-catalog.is-grid .dex__use-val { font-size:1.9rem; }
  html body #root .dex-catalog.is-grid .dex__stats { padding:.8rem; }
@@ -107,19 +107,36 @@ html:not(#_):not(#__) body #root .row-list.is-grid .row__portrait .sprite { widt
 }
 
 /* Keep even full-height sprites inside the ground plane, with room below their feet. */
-html body #root :is(.dex-catalog.is-grid .dex__portrait,.row-list.is-grid .row__portrait) {
+html body #root :is(:is(.dex-catalog,.dex__list).is-grid .dex__portrait,.row-list.is-grid .row__portrait) {
   height:18rem; padding-bottom:3rem; box-sizing:border-box;
 }
-html body #root :is(.dex-catalog.is-grid .dex__portrait,.row-list.is-grid .row__portrait)::before {
+html body #root :is(:is(.dex-catalog,.dex__list).is-grid .dex__portrait,.row-list.is-grid .row__portrait)::before {
   width:82%; height:32%; bottom:.7rem;
   transform:perspective(24rem) rotateX(48deg);
 }
 @media(max-width:699px) {
-  html body #root :is(.dex-catalog.is-grid .dex__portrait,.row-list.is-grid .row__portrait) {
+  html body #root :is(:is(.dex-catalog,.dex__list).is-grid .dex__portrait,.row-list.is-grid .row__portrait) {
     height:14.4rem; padding-bottom:2.4rem;
   }
 }
 
-html:not(#_):not(#__) body #root :is(.dex-catalog.is-grid .dex__portrait,.row-list.is-grid .row__portrait) .sprite { object-position:center bottom; }
+html:not(#_):not(#__) body #root :is(:is(.dex-catalog,.dex__list).is-grid .dex__portrait,.row-list.is-grid .row__portrait) .sprite { object-position:center bottom; }
 
-html:not(#_):not(#__) body #root :is(.dex-catalog.is-grid .dex__portrait,.row-list.is-grid .row__portrait) .sprite:not(.sprite--anim) { translate:0 var(--sprite-ground-offset,0%); }
+html:not(#_):not(#__) body #root :is(:is(.dex-catalog,.dex__list).is-grid .dex__portrait,.row-list.is-grid .row__portrait) .sprite:not(.sprite--anim) { translate:0 var(--sprite-ground-offset,0%); }
+
+/* Raid and egg cards use the catalog identity and stat hierarchy. */
+html body #root .dex__list.is-grid .gameday__row { border:.1rem solid var(--line); padding:2rem; box-shadow:none; }
+html body #root .dex__list.is-grid .gameday__main { display:flex; flex-direction:column; align-items:stretch; width:100%; gap:1.2rem; text-align:left; }
+html body #root .dex__list.is-grid .gameday__main > b { font-size:2.2rem; line-height:1.5; letter-spacing:-.04em; }
+html body #root .gameday__traits { display:flex; flex-wrap:wrap; gap:.4rem; color:var(--muted); font-size:1.2rem; }
+html body #root .gameday__traits > span { padding:.4rem .8rem; background:color-mix(in srgb,var(--fg) 5%,transparent); }
+html body #root .gameday__weather { color:var(--muted); font-size:1.2rem; }
+html body #root .gameday__cp { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:.8rem; margin-top:auto; padding:1.2rem; background:color-mix(in srgb,var(--brand) 7%,transparent); }
+html body #root .gameday__cp > span { font-size:1.2rem; color:var(--muted); }
+html body #root .gameday__cp strong { color:var(--brand); font-size:2.2rem; font-variant-numeric:tabular-nums; }
+@media(max-width:699px) {
+ html body #root .dex__list.is-grid .gameday__row { padding:1.2rem; }
+ html body #root .dex__list.is-grid .gameday__main > b { font-size:1.8rem; }
+ html body #root .gameday__cp { padding:.8rem; }
+ html body #root .gameday__cp strong { font-size:1.8rem; }
+}
