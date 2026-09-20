@@ -1,5 +1,5 @@
 import unittest
-from hotsearch_build import country_rows, pick_rows, MIN_ROW_COUNT, MIN_ROWS, MIN_COUNTRY, WINDOWS
+from hotsearch_build import country_rows, pick_rows, sample_rows, sample_countries, MIN_ROW_COUNT, MIN_ROWS, MIN_COUNTRY, WINDOWS
 
 def row(name, country, count):
     return {'dimensionValues': [{'value': name}, {'value': country}], 'metricValues': [{'value': str(count)}]}
@@ -41,6 +41,14 @@ class GlobalSearchTests(unittest.TestCase):
     # 하루 → 일주일 순서다. 뒤집히면 늘 일주일 창만 쓰게 된다
     def test_windows_widen(self):
         self.assertEqual([w for w, _ in WINDOWS], ['1d', '7d'])
+
+class SampleTests(unittest.TestCase):
+    # 미리보기 나라 표도 실제 문턱을 지켜야 화면이 운영과 같은 모양이다
+    def test_sample_countries_pass_thresholds(self):
+        for group in sample_countries(sample_rows({})):
+            self.assertGreaterEqual(group['total'], MIN_COUNTRY)
+            self.assertGreaterEqual(len(group['rows']), MIN_ROWS)
+            self.assertTrue(all(row['count'] >= MIN_ROW_COUNT for row in group['rows']))
 
 if __name__ == '__main__':
     unittest.main()

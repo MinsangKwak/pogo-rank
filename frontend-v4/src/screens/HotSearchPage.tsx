@@ -20,7 +20,8 @@ export default function HotSearchPage({ onOpen }: { onOpen: OpenMon }) {
   const countries = hot?.countries ?? [];
   const selected = countries.find(item => item.code === country);
   const rows = country ? selected?.rows ?? [] : global.rows;
-  const options = [...new Set([...world.map(item => item.code), ...countries.map(item => item.code)])].sort((a, b) => countryName(a).localeCompare(countryName(b), 'ko'));
+  // 고를 수 있는 나라는 집계된 나라뿐이다 (v4.6.2). 177개를 다 늘어놓으면 골라도 빈 화면인 나라가 대부분이다
+  const options = countries.map(item => item.code).sort((a, b) => countryName(a).localeCompare(countryName(b), 'ko'));
   const max = Math.max(1, ...countries.map(item => item.total));
 
   return (
@@ -32,13 +33,15 @@ export default function HotSearchPage({ onOpen }: { onOpen: OpenMon }) {
             <svg viewBox="0 0 720 300" role="group" aria-label="국가별 인기 검색 지도">
               {world.map(item => {
                 const data = countries.find(entry => entry.code === item.code);
-                // 지도는 마우스용이다 — 177개 나라를 탭으로 도는 대신 아래 <select> 가 키보드 길이라 tabIndex 를 뺀다
+                // 집계 없는 나라는 그림일 뿐이다 — 눌러도 빈 화면이라 단추로 두지 않는다.
+                // 지도는 마우스용이다 — 나라를 탭으로 도는 대신 아래 <select> 가 키보드 길이라 tabIndex 를 뺀다
+                if (!data) return <path key={item.code} d={item.path} aria-hidden="true"><title>{countryName(item.code)} · 집계 없음</title></path>;
                 return <path key={item.code} d={item.path} role="button" tabIndex={-1}
-                  aria-label={`${countryName(item.code)}${data ? ` · 검색 ${num(data.total)}회` : ' · 집계 없음'}`}
+                  aria-label={`${countryName(item.code)} · 검색 ${num(data.total)}회`}
                   aria-pressed={country === item.code}
-                  className={`${data ? 'has-data' : ''} ${country === item.code ? 'is-selected' : ''}`}
-                  style={data ? { fillOpacity: .3 + .7 * data.total / max } : undefined}
-                  onClick={() => setCountry(item.code)}><title>{countryName(item.code)} · {data ? `${num(data.total)}회` : '집계 없음'}</title></path>;
+                  className={`has-data ${country === item.code ? 'is-selected' : ''}`}
+                  style={{ fillOpacity: .3 + .7 * data.total / max }}
+                  onClick={() => setCountry(item.code)}><title>{countryName(item.code)} · {num(data.total)}회</title></path>;
               })}
             </svg>
             <div className="hot-atlas__legend"><span>옅을수록 적은 검색</span><i aria-hidden="true" /><span>많은 검색</span></div>

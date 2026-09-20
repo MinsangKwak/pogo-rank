@@ -15,10 +15,15 @@ describe('인기 검색 국가와 보기 전환', () => {
     fireEvent.change(screen.getByLabelText('어느 나라가 궁금하세요?'), { target: { value: 'KR' } });
     expect(screen.getByText('피카츄')).toBeTruthy();
     expect(screen.queryByText('이상해씨')).toBeNull();
-    fireEvent.change(screen.getByLabelText('어느 나라가 궁금하세요?'), { target: { value: 'US' } });
-    expect(screen.getByText(/미국의 검색 데이터가 아직 없어요/)).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: '전 세계 순위 보기 ↗' }));
     expect(screen.getByText('이상해씨')).toBeTruthy();
+  });
+  // 177개를 다 늘어놓으면 골라도 빈 화면인 나라가 대부분이다 — 집계된 나라만 고를 수 있다
+  it('셀렉트에는 전 세계와 집계된 나라만 있다', () => {
+    render(<HotSearchPage onOpen={vi.fn()} />);
+    const options = (screen.getByLabelText('어느 나라가 궁금하세요?') as HTMLSelectElement).options;
+    expect([...options].map(option => option.textContent)).toEqual(['전 세계', '대한민국']);
+    expect(screen.queryByRole('button', { name: /미국/ })).toBeNull();
   });
   it('지도 클릭과 보기 전환 후 선택된 국가가 유지된다', () => {
     const { container } = render(<HotSearchPage onOpen={vi.fn()} />);

@@ -22,7 +22,16 @@
 ---
 
 <details open>
-<summary><b>2026-09-20</b> — 17판 · <code>v4.6.1</code> · <code>v4.6.0</code> · <code>v4.5.11</code> · <code>v4.5.10</code> · <code>v4.5.9</code> · <code>v4.5.8</code> · <code>v4.5.7</code> · <code>v4.5.6</code> · <code>v4.5.5</code> · <code>v4.5.4</code> · <code>v4.5.3</code> · <code>v4.5.2</code> · <code>v4.5.1</code> · <code>v4.5.0</code> · <code>v4.4.2</code> · <code>v4.4.1</code> · <code>v4.4.0</code></summary>
+<summary><b>2026-09-20</b> — 18판 · <code>v4.6.2</code> · <code>v4.6.1</code> · <code>v4.6.0</code> · <code>v4.5.11</code> · <code>v4.5.10</code> · <code>v4.5.9</code> · <code>v4.5.8</code> · <code>v4.5.7</code> · <code>v4.5.6</code> · <code>v4.5.5</code> · <code>v4.5.4</code> · <code>v4.5.3</code> · <code>v4.5.2</code> · <code>v4.5.1</code> · <code>v4.5.0</code> · <code>v4.4.2</code> · <code>v4.4.1</code> · <code>v4.4.0</code></summary>
+
+<details>
+<summary><b>v4.6.2</b> · 검색순위 나라 고르기는 집계된 나라만</summary>
+
+전체 보기의 `<select>` 가 Natural Earth 의 177개 나라를 다 늘어놓았다 — 골라도 빈 화면인 나라가 대부분이다. 집계된 나라(`countries`)만 남기고, 지도도 집계 없는 나라는 `aria-hidden` 그림으로 두어 누르지 못하게 했다. 미리보기(dev) 샘플에 나라 셋(KR·US·JP)을 실어 그 모양을 dev 에서 본다 — 실제 방문 분포(한국 대부분)를 따른 몫이고 `sample: true` 아래에서만 나간다. 집계 로그의 진단 줄에 최근 7일 방문 나라 분포를 더했다.
+
+검사: 셀렉트 항목이 전 세계 + 집계된 나라뿐 (vitest 76), 샘플 나라도 문턱을 지킨다 (unittest 7).
+
+</details>
 
 <details>
 <summary><b>v4.6.1</b> · 검색순위 창 자동 확장(하루 → 일주일) · 방문 규모 진단</summary>

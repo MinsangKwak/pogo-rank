@@ -6,9 +6,9 @@ html body #root .hot-atlas__eyebrow { color:var(--brand); letter-spacing:.16em; 
 html body #root .hot-atlas__badge { font-size:var(--fs-sub); color:var(--muted); white-space:nowrap; }
 html body #root .hot-atlas__body { display:grid; grid-template-columns:minmax(0,3fr) minmax(20rem,1fr); gap:3.2rem; margin-top:2.4rem; align-items:center; }
 html body #root .hot-atlas__map svg { width:100%; display:block; }
-html body #root .hot-atlas__map path { fill:color-mix(in srgb,var(--muted) 20%,var(--surface)); stroke:var(--surface); stroke-width:.6; cursor:pointer; transition:fill .15s; }
-html body #root .hot-atlas__map path.has-data { fill:var(--brand); }
-html body #root .hot-atlas__map path:hover, html body #root .hot-atlas__map path.is-selected { fill:var(--brand); fill-opacity:1; stroke:var(--fg); stroke-width:1.2; }
+html body #root .hot-atlas__map path { fill:color-mix(in srgb,var(--muted) 20%,var(--surface)); stroke:var(--surface); stroke-width:.6; transition:fill .15s; }
+html body #root .hot-atlas__map path.has-data { fill:var(--brand); cursor:pointer; }
+html body #root .hot-atlas__map path.has-data:hover, html body #root .hot-atlas__map path.is-selected { fill:var(--brand); fill-opacity:1; stroke:var(--fg); stroke-width:1.2; }
 html body #root .hot-atlas__legend { display:flex; align-items:center; justify-content:center; gap:.8rem; font-size:var(--fs-sub); color:var(--muted); }
 html body #root .hot-atlas__legend i { width:8rem; height:.8rem; background:linear-gradient(90deg,color-mix(in srgb,var(--brand) 20%,var(--surface)),var(--brand)); }
 html body #root .hot-atlas__credit { display:block; text-align:center; color:var(--muted); font-size:var(--fs-sub); margin-top:1.6rem; }

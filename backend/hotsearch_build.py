@@ -132,7 +132,17 @@ def traffic_note(property_id, sa_info):
     })
     values = [item.get('value', '0') for item in (report.get('rows') or [{}])[0].get('metricValues', [])]
     views, users = (values + ['0', '0'])[:2]
-    return f'최근 7일 page_view {views}회 · 사용자 {users}명'
+    # 나라 분포도 같이 — 지도에 어느 나라가 설 수 있는지 미리 보인다
+    by_country = run_report(property_id, sa_info, {
+        'dateRanges': [{'startDate': '7daysAgo', 'endDate': 'today'}],
+        'dimensions': [{'name': 'countryId'}],
+        'dimensionFilter': {'filter': {'fieldName': 'eventName', 'stringFilter': {'value': 'page_view', 'matchType': 'EXACT'}}},
+        'metrics': [{'name': 'eventCount'}],
+        'orderBys': [{'metric': {'metricName': 'eventCount'}, 'desc': True}],
+        'limit': 8,
+    })
+    spread = ' · '.join(f"{row['dimensionValues'][0]['value']} {row['metricValues'][0]['value']}" for row in by_country.get('rows', []))
+    return f'최근 7일 page_view {views}회 · 사용자 {users}명 · 나라 {spread or "-"}'
 
 
 def fetch_rows(property_id, sa_info, start='1daysAgo', by_country=False):
@@ -163,6 +173,20 @@ SAMPLE_COUNTS = (412, 318, 247, 191, 168, 145, 122, 98, 76, 54)
 def sample_rows(sprites):
     return [{'name': name, 'count': count, 'sprite': sprites.get(name)}
             for name, count in zip(SAMPLE_NAMES, SAMPLE_COUNTS)]
+
+
+# 미리보기의 나라별 표 — 셀렉트·지도가 "집계된 나라만" 보이는 모양을 dev 에서 확인하려고 둔다 (v4.6.2).
+# 나라 셋은 방문 로그의 실제 분포(한국이 대부분, 미국·일본 소수)를 따른 몫이다. 이것도 sample: true 아래에서만 나간다
+SAMPLE_SHARES = (('KR', .7, 10), ('US', .2, 5), ('JP', .1, 3))
+
+
+def sample_countries(rows):
+    out = []
+    for code, share, take in SAMPLE_SHARES:
+        picked = [{'name': row['name'], 'count': max(MIN_ROW_COUNT, round(row['count'] * share)), 'sprite': row['sprite']}
+                  for row in rows[:take]]
+        out.append({'code': code, 'total': sum(row['count'] for row in picked), 'rows': picked})
+    return out
 
 
 # 전체 순위 — GA 행에서 문턱을 넘은 줄만 상위 N 으로. 줄이 MIN_ROWS 에 못 미치면 빈 표다
@@ -228,6 +252,8 @@ def main():
             payload['preview'] = True
         if is_dev and not payload['rows']:
             payload['rows'] = sample_rows(sprite_by_name())
+            payload['countries'] = sample_countries(payload['rows'])
+            payload['countriesStatus'] = 'ready'
             payload['sample'] = True
             note += f" → 미리보기 샘플 {len(payload['rows'])}건"
         json.dump(payload, open(OUT_PATH, 'w', encoding='utf-8'), ensure_ascii=False)
