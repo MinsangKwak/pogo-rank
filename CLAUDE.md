@@ -87,6 +87,9 @@ node scripts/check_screens.mjs https://dev.moncamp.kr/   # 배포된 화면 훑�
 3. **하드코딩 색은 토큰으로.** 색이 파일마다 박혀 있으면 팔레트를 갈아도 그 자리만 남는다.
    v4.3.0 에서 `shell-notebook.css` · `home.css` 의 182군데를 토큰으로 돌렸다.
 
+4. **테마를 안 타고 늘 어두운 판(검색식 콘솔 · 홈 히어로)은 `--plate` 한 벌로.** `--bg`·`--fg` 는 다크에서
+   판이 밝아져 뒤집히고, hex 는 채움과 글자의 짝이 끊긴다 (v4.4.0).
+
 ```bash
 node scripts/check_contrast.mjs                          # 로컬 미리보기(:4173)
 node scripts/check_contrast.mjs https://dev.moncamp.kr/   # 배포된 화면
@@ -149,6 +152,8 @@ WCAG 의 4.5 가 아니라 3.0 인 이유는, 여기서 찾는 것이 "읽기 �
 - 주석은 `//` 한 줄씩 단다. 여러 줄이면 `//` 를 줄마다 붙인다.
 - 주석은 **왜** 를 적는다. 무엇을 하는지는 코드가 말한다.
 - CSS: 1) 최대한 변수화 2) override 최소화 3) 컴포넌트화 4) 나머지는 성능에 문제 없으면 둔다.
+- v4 화면 규칙이 v3 스킨을 이겨야 하면 접두사는 **`html body #root` 하나만** 쓴다. 장치가 둘이면 셋이 된다
+  ([`docs/DEVELOPMENT.md` §2.26](docs/DEVELOPMENT.md)). `#page-head` 의 `margin`·`padding` 은 단축으로 적지 않는다 — 왼쪽 값(사이드바 자리)이 지워진다.
 
 ### 글자와 간격은 격자 위에만 둔다 (v4.3.4)
 
