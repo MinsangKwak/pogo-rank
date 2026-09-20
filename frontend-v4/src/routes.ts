@@ -49,6 +49,7 @@ export const ROUTES = [
   { id: 'dmax-deck', path: 'dmax/deck', kind: 'shell', tab: 'max', tool: 'deck', parent: 'dmax', title: '덱 짜기', icon: '🧩' },
   { id: 'ivrank', path: 'pvp/ivrank', kind: 'shell', tab: 'pvp', tool: 'ivrank', parent: 'pvp', title: 'PvP 개체값 순위', icon: '🧬', legacy: ['ivrank'] },
   { id: 'pve-solo', path: 'pve/solo', kind: 'shell', tab: 'pve', tool: 'solo', parent: 'pve', title: '솔플 계산기', icon: '🧮' },
+  { id: 'hot', path: 'hot', kind: 'page', title: '어제 많이 검색된 포켓몬', icon: '🔥' },
   { id: 'release', path: 'release', kind: 'page', title: '패치노트', icon: '🎉' },
   { id: 'changes', path: 'changes', kind: 'page', title: '기술 변경', icon: '⚔️' },
   { id: 'privacy', path: 'privacy', kind: 'page', title: '개인정보처리방침', icon: '🔒' },

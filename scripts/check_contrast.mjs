@@ -23,7 +23,7 @@ const MIN = 3.0;
 
 const PATHS = [
   '', 'dex', 'dmax', 'pve', 'pvp', 'game-updates', 'schedule', 'raids', 'eggs',
-  'finder', 'planner', 'pvp/deck', 'dmax/deck', 'pvp/ivrank', 'pve/solo',
+  'hot', 'finder', 'planner', 'pvp/deck', 'dmax/deck', 'pvp/ivrank', 'pve/solo',
   'release', 'changes', 'privacy', 'terms', 'settings', 'mon/149',
 ];
 

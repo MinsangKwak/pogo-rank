@@ -15,6 +15,10 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 const RELEASE_NOTES_EN = {
+  '2026-09-20 · v4.5.11': [
+    '**The home banner is half as tall on phones** — it used to fill the screen and push everything else below the fold',
+    "**Yesterday's most-searched Pokémon now scrolls as a single ticker** on narrow screens; tap [See all] for the full ranking",
+  ],
   '2026-09-20 · v4.5.8': [
     '**Fixed CP numbers splitting apart on narrow dex cards** — "1,260" broke into "1,26 / 0"; the label now sits above the number, which stays on one line',
   ],

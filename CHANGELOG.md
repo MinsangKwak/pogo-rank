@@ -22,7 +22,22 @@
 ---
 
 <details open>
-<summary><b>2026-09-20</b> — 14판 · <code>v4.5.10</code> · <code>v4.5.9</code> · <code>v4.5.8</code> · <code>v4.5.7</code> · <code>v4.5.6</code> · <code>v4.5.5</code> · <code>v4.5.4</code> · <code>v4.5.3</code> · <code>v4.5.2</code> · <code>v4.5.1</code> · <code>v4.5.0</code> · <code>v4.4.2</code> · <code>v4.4.1</code> · <code>v4.4.0</code></summary>
+<summary><b>2026-09-20</b> — 15판 · <code>v4.5.11</code> · <code>v4.5.10</code> · <code>v4.5.9</code> · <code>v4.5.8</code> · <code>v4.5.7</code> · <code>v4.5.6</code> · <code>v4.5.5</code> · <code>v4.5.4</code> · <code>v4.5.3</code> · <code>v4.5.2</code> · <code>v4.5.1</code> · <code>v4.5.0</code> · <code>v4.4.2</code> · <code>v4.4.1</code> · <code>v4.4.0</code></summary>
+
+<details>
+<summary><b>v4.5.11</b> · 손에서 배너를 반으로 · 한 줄 롤링 · 전체 보기 화면</summary>
+
+**수정** — 좁은 화면 히어로가 **643px → 302px**. `min-height: 37rem` 이 모바일에도 그대로 남아 있어 그림만 줄여서는 소용이 없었다. 높이를 풀고, 장면 칸과 그림을 줄이고, 글자 장식 셋(상태·라벨·충전)은 접고, 단추를 두 칸으로 폈다.
+
+**추가** — 인기 검색어가 좁은 화면에서 **한 줄 띠로 끝없이 흐른다**. 줄을 두 벌 깔고 정확히 `-50%` 만 밀어 되돌린다 — 되돌아가는 순간 이어붙인 벌이 그 자리에 있어 이음매가 안 보인다. 흐르는 시간은 줄 수 × 3초. `prefers-reduced-motion` 이면 흐르지 않는다.
+
+**추가** — 전체 보기 화면 `#/hot`. 홈과 **같은 훅·같은 조각**을 쓴다(`useHotRows` · `HotHead` · `HotList`) — 두 곳이 따로 읽으면 한쪽만 고쳐져 순위가 어긋난다.
+
+**수정(그 과정에서 찾은 것)** — 띠가 `width: max-content` 라 홈 전체가 **2,142px** 로 늘어났다. `.home__hot` 이 격자 칸인데 `min-width` 기본값이 `auto` 라 안의 최대 폭을 그대로 밀어 올린 것. `overflow: hidden` 으로는 안 막힌다 — `min-width: 0` 이 답이다.
+
+**그물** — 새 화면이라 `check_screens.mjs` · `check_contrast.mjs` 의 주소를 늘렸다(46 → 48장).
+
+</details>
 
 <details>
 <summary><b>v4.5.10</b> · 어제 많이 검색된 포켓몬을 홈 맨 위로</summary>
