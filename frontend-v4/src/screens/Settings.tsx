@@ -20,10 +20,10 @@ const THEME_TEXT: Record<Theme, [string, string]> = {
   dark: ['어둡게', '기기 설정과 상관없이 늘 어둡게 봐요.'],
 };
 
-// 움직이는 그림 — 기본 켬. 끄면 다음에 그리는 화면부터 정지본
+// 움직이는 그림 — 기본 끔 (기본 그림이 일러스트라). 켜면 다음에 그리는 화면부터 도트 GIF
 const ANIM: [string, string, string][] = [
-  ['on', '켜기', '포켓몬이 움직여요. 움직이는 그림이 없는 종은 정지 그림 그대로예요. 그림을 더 받아서 데이터를 조금 더 써요.'],
-  ['off', '끄기', '정지 그림만 써요. 느린 회선이나 데이터를 아낄 때.'],
+  ['on', '켜기', '포켓몬이 도트 그림으로 움직여요. 움직이는 그림이 없는 종은 정지 그림 그대로예요. 데이터를 조금 더 써요.'],
+  ['off', '끄기', '공식 일러스트 정지 그림만 써요.'],
 ];
 
 function Choice({ on, name, desc, onPick }: { on: boolean; name: string; desc: string; onPick: () => void }) {
@@ -93,8 +93,8 @@ export default function Settings() {
           {ANIM.map(([choice, name, desc]) => (
             <Choice key={choice} on={choice === anim} name={name} desc={desc} onPick={() => {
               try {
-                if (choice === 'on') localStorage.removeItem(SPRITE_ANIM_KEY);
-                else localStorage.setItem(SPRITE_ANIM_KEY, 'off');
+                // 켬을 'on' 으로 적는다 — 기본이 끔이 되면서 '켬 = 키 삭제' 로는 선택을 남길 수 없다
+                localStorage.setItem(SPRITE_ANIM_KEY, choice);
               } catch { /* 저장 불가 환경 */ }
               track('sprite_anim_set', { to: choice });
               document.body.classList.toggle('sprite-anim-off', choice === 'off');
