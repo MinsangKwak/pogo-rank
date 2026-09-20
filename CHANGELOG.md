@@ -22,7 +22,19 @@
 ---
 
 <details open>
-<summary><b>2026-09-20</b> — 7판 · <code>v4.5.3</code> · <code>v4.5.2</code> · <code>v4.5.1</code> · <code>v4.5.0</code> · <code>v4.4.2</code> · <code>v4.4.1</code> · <code>v4.4.0</code></summary>
+<summary><b>2026-09-20</b> — 8판 · <code>v4.5.4</code> · <code>v4.5.3</code> · <code>v4.5.2</code> · <code>v4.5.1</code> · <code>v4.5.0</code> · <code>v4.4.2</code> · <code>v4.4.1</code> · <code>v4.4.0</code></summary>
+
+<details>
+<summary><b>v4.5.4</b> · 검색어 기록 — GA4 search 이벤트</summary>
+
+화면에 보이는 변화가 없어 사용자용 패치 노트에는 적지 않았다(v3.31.1 과 같은 처리). RELEASE_VER 도 그대로다 — 올리면 새 소식 빨간 점만 뜨고 읽을 내용이 없다.
+
+**추가** — 사람들이 무엇을 검색하는지 보려고 GA4 표준 `search` 이벤트(`search_term` + `surface`)를 보낸다. 검색창 다섯: 도감(dex) · 솔플 보스/어태커(solo_boss·solo_deck) · PvP 덱(pvp_deck) · 개체값(iv_rank) · 게임 업데이트(game_updates). GA 실시간 보고서(30분)와 참여도 > 이벤트에서 본다.
+
+- **디바운스** — 타이핑이 멎고 1.5초 뒤 한 번만. 두 글자부터, 같은 말 연속 중복 제거, 100자 한도(붙여넣기 사고 방지).
+- **동의** — track() 의 게이트를 그대로 탄다. '통계 끄기' 면 한 건도 안 나가고, GA 조각이 없는 dev 채널에서는 window.__trackLog 로만 확인된다.
+
+</details>
 
 <details>
 <summary><b>v4.5.3</b> · 잉크 선 한 번 더 반토막</summary>

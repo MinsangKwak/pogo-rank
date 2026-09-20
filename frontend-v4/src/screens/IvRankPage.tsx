@@ -21,7 +21,7 @@ import {
   ivRankOf, ivRankTable,
 } from '../lib/ivrank';
 import { calcCp } from '../lib/cp';
-import { track } from '../lib/track';
+import { track, trackSearch } from '../lib/track';
 import type { DexForm, LeagueKey } from '../types/data';
 
 interface Picked { sprite: number | null; ivs: [number, number, number]; floor: number }
@@ -228,7 +228,7 @@ export default function IvRankPage() {
             ) : (
               <>
                 <input className="boss__search" placeholder="종 이름 검색 (예: 레지스틸, 앱솔)" autoComplete="off"
-                  value={term} onChange={(event) => setTerm(event.target.value)} />
+                  value={term} onChange={(event) => { setTerm(event.target.value); trackSearch('iv_rank', event.target.value); }} />
                 <div className="boss__sugg">
                   {term.trim() ? (hits.length
                     ? hits.map((hit) => (

@@ -38,3 +38,21 @@ export function trackPageView(title: string): void {
     page_title: title,
   });
 }
+
+// ── 검색어 기록 (v4.5.4) ─────────────────────────────────────────────────────
+// GA4 표준 'search' 이벤트(search_term)로 보낸다 — GA 실시간·이벤트 보고서에 바로 잡힌다.
+// 타이핑이 멎고 1.5초 뒤 한 번만, 두 글자부터, 같은 말 연속 중복은 거른다.
+// 동의 게이트는 track() 안에 있다 — '통계 끄기' 면 한 건도 안 나간다.
+const searchTimers: Record<string, ReturnType<typeof setTimeout>> = {};
+const searchLast: Record<string, string> = {};
+
+export function trackSearch(surface: string, term: string): void {
+  clearTimeout(searchTimers[surface]);
+  const clean = term.trim();
+  if (clean.length < 2 || searchLast[surface] === clean) return;
+  searchTimers[surface] = setTimeout(() => {
+    searchLast[surface] = clean;
+    // 100자 한도 — 붙여넣기 사고로 긴 글이 통째로 실려 가지 않게
+    track('search', { search_term: clean.slice(0, 100), surface });
+  }, 1500);
+}

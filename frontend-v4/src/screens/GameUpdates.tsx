@@ -18,7 +18,7 @@ import { useUpdates } from '../lib/data';
 import { UPDATE_CATS } from '../lib/notes';
 import KoOnlyNote from '../components/KoOnlyNote';
 import { routeById, routeHash, type RouteId } from '../routes';
-import { track } from '../lib/track';
+import { track, trackSearch } from '../lib/track';
 import type { ArchiveEntry, GameUpdate, UpdateSource } from '../types/data';
 
 // 근거 — 무엇으로 확인했는가
@@ -229,7 +229,7 @@ function UpdatesList() {
       <div className="upd__tools">
         <input type="search" className="upd__search" value={UI.query} placeholder="제목·내용으로 찾기"
           aria-label="게임 업데이트 검색"
-          onChange={(event) => { UI.query = event.target.value; reset(); bump(); }} />
+          onChange={(event) => { UI.query = event.target.value; reset(); bump(); trackSearch('game_updates', event.target.value); }} />
         <div className="upd__filter">
           {[['', '전체 분류'] as [string, string], ...Object.entries(UPDATE_CATS)].map(([key, label]) => (
             <button key={key || 'all'} className="uchip" data-cat={key} aria-pressed={UI.cat === key}

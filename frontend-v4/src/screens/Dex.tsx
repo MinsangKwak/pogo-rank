@@ -11,7 +11,7 @@ import { useDex, useUsage } from '../lib/data';
 import { usePrefStore, readCols } from '../stores/pref';
 import { TypeDot, Sprite, ViewToggle } from '../components/Bits';
 import { Slot } from '../components/Slots';
-import { track } from '../lib/track';
+import { track, trackSearch } from '../lib/track';
 import type { OpenMon } from '../lib/mon';
 
 // v3 pages.js DEX_GENS — 도감번호 구간으로 세대를 정한다
@@ -144,7 +144,7 @@ export default function Dex({ onOpen }: { onOpen: OpenMon }) {
         type="search"
         placeholder="이름 · 영문명 · 도감번호로 찾기"
         value={term}
-        onChange={(event) => { setTerm(event.target.value); setShown(DEX_PAGE); }}
+        onChange={(event) => { setTerm(event.target.value); setShown(DEX_PAGE); trackSearch('dex', event.target.value); }}
       />
 
       <details className="filter-box dex__type-box">
