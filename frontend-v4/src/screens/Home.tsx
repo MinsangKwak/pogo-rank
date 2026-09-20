@@ -188,6 +188,9 @@ function HomeData({ onOpen }: { onOpen: OpenMon }) {
 
   return (
     <>
+      {/* 본문 맨 위 — 줄이 없으면 스스로 아무것도 그리지 않는다 (집계 전이거나 GA 가 조용할 때) */}
+      <HotSearch onOpen={onOpen} />
+
       <section className="home__picks">
         <div className="home__section">
           <h3>용도별 상위 포켓몬</h3>
@@ -206,8 +209,6 @@ function HomeData({ onOpen }: { onOpen: OpenMon }) {
         <span className="pick__foot">이름을 누르면 종족값·상성·활용처를 전부 볼 수 있어요</span>
       </section>
 
-      {/* 줄이 없으면 스스로 아무것도 그리지 않는다 — 집계 전이거나 GA 가 조용할 때 */}
-      <HotSearch onOpen={onOpen} />
 
       <section className="home__features" aria-label="서비스 기능">
         <div className="home__section">

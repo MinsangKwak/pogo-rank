@@ -22,7 +22,16 @@
 ---
 
 <details open>
-<summary><b>2026-09-20</b> — 13판 · <code>v4.5.9</code> · <code>v4.5.8</code> · <code>v4.5.7</code> · <code>v4.5.6</code> · <code>v4.5.5</code> · <code>v4.5.4</code> · <code>v4.5.3</code> · <code>v4.5.2</code> · <code>v4.5.1</code> · <code>v4.5.0</code> · <code>v4.4.2</code> · <code>v4.4.1</code> · <code>v4.4.0</code></summary>
+<summary><b>2026-09-20</b> — 14판 · <code>v4.5.10</code> · <code>v4.5.9</code> · <code>v4.5.8</code> · <code>v4.5.7</code> · <code>v4.5.6</code> · <code>v4.5.5</code> · <code>v4.5.4</code> · <code>v4.5.3</code> · <code>v4.5.2</code> · <code>v4.5.1</code> · <code>v4.5.0</code> · <code>v4.4.2</code> · <code>v4.4.1</code> · <code>v4.4.0</code></summary>
+
+<details>
+<summary><b>v4.5.10</b> · 어제 많이 검색된 포켓몬을 홈 맨 위로</summary>
+
+운영 화면에 아직 이 구역이 없어 사용자용 패치 노트에는 적지 않았다.
+
+**변경** — '용도별 상위 포켓몬' 뒤에 있던 것을 **본문 맨 위**(히어로 바로 아래)로 올렸다. 남들이 지금 무엇을 찾는지부터 보고 추천으로 내려가는 순서가 자연스럽다.
+
+</details>
 
 <details>
 <summary><b>v4.5.9</b> · 인기 검색어 제목을 '어제 많이 검색된 포켓몬' 으로</summary>
