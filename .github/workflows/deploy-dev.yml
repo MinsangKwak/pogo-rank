@@ -89,6 +89,8 @@ jobs:
         env:
           GA_SA_JSON: ${{ secrets.GA_SA_JSON }}
           GA_PROPERTY_ID: ${{ secrets.GA_PROPERTY_ID }}
+          # 표가 비면 실제 순위표 이름으로 채워 모양을 볼 수 있게 한다 (화면에 '미리보기 샘플' 딱지가 붙는다)
+          BUILD_CHANNEL: dev
         run: |
           pip install --quiet google-auth requests
           python3 backend/hotsearch_build.py

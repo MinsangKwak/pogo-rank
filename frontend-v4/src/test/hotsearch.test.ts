@@ -7,6 +7,8 @@
 // 구역 자체가 안 그려지기 때문이다. 그래서 그물을 여기에 둔다 (CLAUDE.md §1).
 // ─────────────────────────────────────────────────────────────────────────────
 import { describe, it, expect } from 'vitest';
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 import { num } from '../lib/cell';
 import { asOfLabel, barWidth } from '../components/HotSearch';
 
@@ -61,5 +63,25 @@ describe('인기 검색어 — 횟수 칸', () => {
     for (const value of [131, 0, undefined, null, NaN, Infinity, '412']) {
       expect(LEAK.test(`${num(value)}회`)).toBe(false);
     }
+  });
+});
+
+// 미리보기 샘플이 운영으로 새면 가짜 수를 진짜처럼 보여 주는 사고다.
+// 집계 스크립트는 BUILD_CHANNEL=dev 일 때만 그 길로 가고, 운영 워크플로는 그 값을 주지 않는다.
+describe('인기 검색어 — 미리보기 샘플이 운영으로 새지 않는다', () => {
+  // __dirname 을 쓴다 — import.meta.url 은 vite 가 /@fs 를 붙여 파일을 못 연다 (datasweep.test.ts 와 같은 방식)
+  const yaml = readFileSync(resolve(__dirname, '../../../.github/workflows/deploy.yml'), 'utf-8');
+
+  it('운영 워크플로의 집계 단계에 BUILD_CHANNEL 이 없다', () => {
+    const step = yaml.slice(yaml.indexOf('name: 인기 검색어 집계'));
+    // 다음 단계가 시작되기 전까지가 이 단계의 몫이다
+    const body = step.slice(0, step.indexOf('\n      - name:', 1));
+    expect(body).toContain('GA_SA_JSON');
+    expect(body).not.toContain('BUILD_CHANNEL');
+  });
+
+  it('작업 수준 env 가 없어 다른 단계의 채널이 번지지 않는다', () => {
+    const job = yaml.slice(yaml.indexOf('jobs:'), yaml.indexOf('steps:'));
+    expect(job).not.toContain('env:');
   });
 });

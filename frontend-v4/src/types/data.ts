@@ -359,4 +359,6 @@ export interface HotSearchBundle {
   asOf: string | null;
   window: string;
   rows: HotSearchRow[];
+  /** 미리보기(dev)가 실제 순위표 이름으로 채운 표. 운영에서는 오지 않는다 */
+  sample?: boolean;
 }

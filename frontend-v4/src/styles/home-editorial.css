@@ -193,3 +193,9 @@ html body #root .hot__foot { display: block; margin-top: 1.2rem; color: var(--mu
   html body #root .hot__bar { display: none; }
   html body #root .hot__portrait { width: 4rem; height: 4rem; }
 }
+
+/* 미리보기 샘플 딱지 — 채움 위 글자라 --bg (§1-b). 제목 옆에 붙어 한눈에 구분된다 */
+html body #root .hot__flag {
+  margin-left: 1.2rem; padding: .4rem .8rem; background: var(--muted); color: var(--bg);
+  font-size: var(--fs-sub); font-weight: 700; line-height: 1.2; vertical-align: middle;
+}

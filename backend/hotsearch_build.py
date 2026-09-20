@@ -19,6 +19,12 @@
 #
 # 비어도 빌드를 세우지 않는다 — 시크릿이 없거나 GA 가 답을 안 주면 rows 를 비워 쓴다.
 # 화면은 rows 가 비면 구역 자체를 그리지 않는다 (§1 의 '빈 값은 줄을 세우지 않는다' 와 같은 결).
+#
+# 미리보기(dev)는 예외다 — 표가 비면 **실제 순위표 상위로 샘플을 채운다**.
+#   dev 에는 GA 조각이 없어 스스로는 한 건도 안 보내고, 운영이 보낸 것만 쌓인다.
+#   그래서 새 화면을 dev 에서 볼 방법이 구조적으로 없다. 모양을 확인하려고 두는 길이다.
+#   **이름은 지어내지 않는다** (§3) — 순위표에 실제로 있는 종을 그대로 쓰고, 횟수만 만든다.
+#   sample: true 를 함께 실어 화면이 '미리보기 샘플' 딱지를 달게 한다. 운영 채널에서는 이 길로 가지 않는다.
 import json
 import os
 import sys
@@ -101,22 +107,69 @@ def fetch_rows(property_id, sa_info):
     return response.json().get('rows', [])
 
 
+# 미리보기용 표 — 실제 순위표 상위 열 종의 이름을 그대로 쓰고 횟수만 만든다.
+# 순서를 흩지 않고 위에서부터 쓰는 이유: 어느 줄이 1위인지 눈으로 견줄 수 있어야 막대가 읽힌다.
+SAMPLE_SOURCES = ('data/dynamax_tier.json', 'data/pve.json', 'data/pvp.json')
+
+
+# 표 하나에서 상위 이름만 읽는다 (표마다 묶음 이름이 overall · little 로 갈려 먼저 나오는 목록을 쓴다)
+def top_names(path, limit):
+    if not os.path.exists(path):
+        return []
+    try:
+        table = json.load(open(path, encoding='utf-8'))
+    except (ValueError, OSError):
+        return []
+    for group in (table.values() if isinstance(table, dict) else [table]):
+        if isinstance(group, list) and group:
+            return [row['name'].strip() for row in group[:limit]
+                    if isinstance(row, dict) and isinstance(row.get('name'), str) and row['name'].strip()]
+    return []
+
+
+def sample_rows(sprites):
+    # 세 표를 번갈아 뽑는다 — 한 표에서만 채우면 열 줄이 전부 거다이맥스라 실제 검색처럼 안 보인다
+    lanes = [top_names(path, TOP_N) for path in SAMPLE_SOURCES]
+    picked, seen = [], set()
+    for index in range(TOP_N):
+        for lane in lanes:
+            if index >= len(lane) or lane[index] in seen:
+                continue
+            seen.add(lane[index])
+            picked.append(lane[index])
+            if len(picked) >= TOP_N:
+                break
+        if len(picked) >= TOP_N:
+            break
+    # 1위 412 에서 한 줄에 약 8% 씩 줄인다 — 막대가 눈에 띄게 층지도록
+    return [{'name': name, 'count': round(412 * (0.92 ** index)), 'sprite': sprites.get(name)}
+            for index, name in enumerate(picked)]
+
+
 def main():
     os.makedirs('data', exist_ok=True)
     payload = {'asOf': datetime.now(KST).isoformat(timespec='seconds'), 'window': '24h', 'rows': []}
+    is_dev = os.environ.get('BUILD_CHANNEL') == 'dev'
+
+    # 표가 빈 채로 끝나는 자리가 셋이다(시크릿 없음 · 조회 실패 · GA 가 0건). 셋 다 여기를 지난다
+    def finish(note):
+        if is_dev and not payload['rows']:
+            payload['rows'] = sample_rows(sprite_by_name())
+            payload['sample'] = True
+            note += f" → 미리보기 샘플 {len(payload['rows'])}건"
+        json.dump(payload, open(OUT_PATH, 'w', encoding='utf-8'), ensure_ascii=False)
+        print(f'hotsearch: {note}')
 
     property_id = (os.environ.get('GA_PROPERTY_ID') or '').strip()
     raw_key = (os.environ.get('GA_SA_JSON') or '').strip()
     if not property_id or not raw_key:
-        json.dump(payload, open(OUT_PATH, 'w', encoding='utf-8'), ensure_ascii=False)
-        print('hotsearch: GA 시크릿이 없어 빈 표를 씁니다 (화면은 구역을 그리지 않습니다)')
+        finish('GA 시크릿이 없어 빈 표')
         return
 
     try:
         rows = fetch_rows(property_id, json.loads(raw_key))
     except Exception as error:                      # noqa: BLE001 — 집계 실패가 배포를 세우면 안 된다
-        json.dump(payload, open(OUT_PATH, 'w', encoding='utf-8'), ensure_ascii=False)
-        print(f'hotsearch: GA 조회 실패 — 빈 표를 씁니다 ({type(error).__name__})', file=sys.stderr)
+        finish(f'GA 조회 실패 ({type(error).__name__})')
         return
 
     sprites = sprite_by_name()
@@ -137,8 +190,7 @@ def main():
             break
 
     payload['rows'] = picked
-    json.dump(payload, open(OUT_PATH, 'w', encoding='utf-8'), ensure_ascii=False)
-    print(f'hotsearch: {len(picked)}건 (기준 {payload["asOf"]})')
+    finish(f'{len(picked)}건 (기준 {payload["asOf"]})')
 
 
 if __name__ == '__main__':

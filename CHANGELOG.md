@@ -22,7 +22,20 @@
 ---
 
 <details open>
-<summary><b>2026-09-20</b> — 9판 · <code>v4.5.5</code> · <code>v4.5.4</code> · <code>v4.5.3</code> · <code>v4.5.2</code> · <code>v4.5.1</code> · <code>v4.5.0</code> · <code>v4.4.2</code> · <code>v4.4.1</code> · <code>v4.4.0</code></summary>
+<summary><b>2026-09-20</b> — 10판 · <code>v4.5.6</code> · <code>v4.5.5</code> · <code>v4.5.4</code> · <code>v4.5.3</code> · <code>v4.5.2</code> · <code>v4.5.1</code> · <code>v4.5.0</code> · <code>v4.4.2</code> · <code>v4.4.1</code> · <code>v4.4.0</code></summary>
+
+<details>
+<summary><b>v4.5.6</b> · 미리보기에서 인기 검색어 모양을 볼 수 있게</summary>
+
+운영 화면에 보이는 변화가 없어 사용자용 패치 노트에는 적지 않았다(v3.31.1 과 같은 처리).
+
+**문제** — dev 에서 새 화면을 볼 방법이 구조적으로 없었다. dev 채널에는 GA 조각이 안 들어가 스스로는 한 건도 안 보내고, 운영은 아직 이 판이 아니라 GA 에 `search` 가 0건이다. 표가 비면 화면이 구역을 안 그리니 만든 것을 아무도 못 본다.
+
+**해결** — `BUILD_CHANNEL=dev` 일 때만, 표가 비면 **실제 순위표 상위 이름**으로 열 줄을 채운다. D-MAX·레이드·PvP 셋을 번갈아 뽑아 한 표로 쏠리지 않게 하고, 횟수만 만든다(§3 — 이름은 지어내지 않는다). `sample: true` 를 함께 실어 화면이 **'미리보기 샘플'** 딱지를 달고 설명·꼬리말을 바꾼다.
+
+**운영으로 새지 않는다는 것을 검사로 못 박았다** — `deploy.yml` 의 집계 단계에 `BUILD_CHANNEL` 이 없다는 것과, 작업 수준 `env` 가 없어 다른 단계의 `BUILD_CHANNEL: prod` 가 번지지 않는다는 것 둘. 지침만으로는 나중에 누가 한 줄 더할 때 막을 수 없다.
+
+</details>
 
 <details>
 <summary><b>v4.5.5</b> · 오늘 많이 찾은 포켓몬 — 완성어 기준, 하루 두 번</summary>

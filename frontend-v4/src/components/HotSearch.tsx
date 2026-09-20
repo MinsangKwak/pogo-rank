@@ -48,10 +48,16 @@ export default function HotSearch({ onOpen }: { onOpen: OpenMon }) {
   return (
     <section className="home__hot" aria-label="오늘 많이 찾은 포켓몬">
       <div className="home__section">
-        <h3>오늘 많이 찾은 포켓몬</h3>
+        <h3>
+          오늘 많이 찾은 포켓몬
+          {/* dev 미리보기가 채운 표라는 것을 화면에서 바로 알 수 있어야 한다 — 수를 진짜로 읽으면 안 된다 */}
+          {hot?.sample ? <span className="hot__flag">미리보기 샘플</span> : null}
+        </h3>
         <span>
-          검색해서 열어 본 횟수예요
-          {label ? <span className="home__date"> · {label} 기준</span> : null}
+          {hot?.sample
+            ? '모양을 보려고 채운 표예요. 실제 검색 수가 아니에요'
+            : '검색해서 열어 본 횟수예요'}
+          {label && !hot?.sample ? <span className="home__date"> · {label} 기준</span> : null}
         </span>
       </div>
       <ol className="hot__list">
@@ -72,7 +78,9 @@ export default function HotSearch({ onOpen }: { onOpen: OpenMon }) {
           </li>
         ))}
       </ol>
-      <span className="hot__foot">하루 두 번(낮 12시 · 자정) 새로 세요</span>
+      <span className="hot__foot">
+        {hot?.sample ? '운영에 올라가면 실제 검색으로 채워져요' : '하루 두 번(낮 12시 · 자정) 새로 세요'}
+      </span>
     </section>
   );
 }
