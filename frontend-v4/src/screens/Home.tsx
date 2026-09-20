@@ -16,6 +16,7 @@ import type { GameUpdate } from '../types/data';
 import { track } from '../lib/track';
 import { UPDATE_CATS } from '../lib/notes';
 import type { OpenMon } from '../lib/mon';
+import HotSearch from '../components/HotSearch';
 
 // 갈래마다 문 앞에 세우는 스타터 (v3 home.js 와 같은 번호 — 꼬부기 · 파이리 · 이상해씨)
 const STARTER: Record<string, number> = { today: 7, pick: 4, mine: 1 };
@@ -204,6 +205,9 @@ function HomeData({ onOpen }: { onOpen: OpenMon }) {
         </div>
         <span className="pick__foot">이름을 누르면 종족값·상성·활용처를 전부 볼 수 있어요</span>
       </section>
+
+      {/* 줄이 없으면 스스로 아무것도 그리지 않는다 — 집계 전이거나 GA 가 조용할 때 */}
+      <HotSearch onOpen={onOpen} />
 
       <section className="home__features" aria-label="서비스 기능">
         <div className="home__section">

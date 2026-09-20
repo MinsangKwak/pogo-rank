@@ -13,6 +13,7 @@ import { useQuery, useSuspenseQuery, type UseSuspenseQueryResult } from '@tansta
 import type {
   DexBundle, MaxBundle, PveBundle, PvpBundle, GamedayBundle,
   FavEventsBundle, UpdatesBundle, MetaBundle, UsageBundle, ScheduleBundle, ReleaseBundle, Manifest,
+  HotSearchBundle,
 } from '../types/data';
 
 const BASE = `${import.meta.env.BASE_URL}data/`;
@@ -86,6 +87,8 @@ export const usePvp = bundleHook<PvpBundle>('pvp');
 export const useGameday = bundleHook<GamedayBundle>('gameday');
 export const useGamedaySoft = bundleSoftHook<GamedayBundle>('gameday');
 export const useDexSoft = bundleSoftHook<DexBundle>('dex');
+// 인기 검색어는 **기다리지 않는 훅**이다 — 없어도 홈은 그려져야 한다 (아직 집계 전이거나 GA 가 조용할 수 있다)
+export const useHotSearchSoft = bundleSoftHook<HotSearchBundle>('hotsearch');
 export const useFavEvents = bundleHook<FavEventsBundle>('fav-events');
 export const useUpdates = bundleHook<UpdatesBundle>('updates');
 export const useMeta = bundleHook<MetaBundle>('meta');

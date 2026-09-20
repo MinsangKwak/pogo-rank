@@ -15,6 +15,10 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 const RELEASE_NOTES_EN = {
+  '2026-09-20 · v4.5.5': [
+    "**Today's most-searched Pokémon now sits on the home screen** — the ten people opened most from search, recounted twice a day at noon and midnight",
+    '**It counts the name you landed on** — type "Mew", open Mewtwo, and Mewtwo is what gets counted; the letters you typed are not. Searches from anyone who turned analytics off are not counted',
+  ],
   '2026-09-20 · v4.5.3': [
     '**Outlines trimmed once more** — now a subtle edge that just defines the shape',
   ],

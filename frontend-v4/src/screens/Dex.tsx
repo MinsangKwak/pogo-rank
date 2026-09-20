@@ -11,7 +11,7 @@ import { useDex, useUsage } from '../lib/data';
 import { usePrefStore, readCols } from '../stores/pref';
 import { TypeDot, Sprite, ViewToggle } from '../components/Bits';
 import { Slot } from '../components/Slots';
-import { track, trackSearch } from '../lib/track';
+import { track, trackSearchPick } from '../lib/track';
 import type { OpenMon } from '../lib/mon';
 
 // v3 pages.js DEX_GENS — 도감번호 구간으로 세대를 정한다
@@ -144,7 +144,7 @@ export default function Dex({ onOpen }: { onOpen: OpenMon }) {
         type="search"
         placeholder="이름 · 영문명 · 도감번호로 찾기"
         value={term}
-        onChange={(event) => { setTerm(event.target.value); setShown(DEX_PAGE); trackSearch('dex', event.target.value); }}
+        onChange={(event) => { setTerm(event.target.value); setShown(DEX_PAGE); }}
       />
 
       <details className="filter-box dex__type-box">
@@ -178,7 +178,10 @@ export default function Dex({ onOpen }: { onOpen: OpenMon }) {
             const gen = DEX_GENS.findIndex(([from, to]) => row.dex >= from && row.dex <= to);
             return (
               <button key={row.dex} className={`dex__row${row.unrel ? ' is-unreleased' : ''}`} data-sprite={row.dex}
-                onClick={() => onOpen({ sprite: row.dex, name: row.name, types: form?.types ?? [] })}>
+                onClick={() => {
+                  if (term.trim()) trackSearchPick(row.name, 'dex');
+                  onOpen({ sprite: row.dex, name: row.name, types: form?.types ?? [] });
+                }}>
                 <span className="dex__no">{`#${String(row.dex).padStart(4, '0')}`}</span>
                 {saved === 'grid' ? <span className="dex__portrait"><Sprite id={row.dex} /></span> : <Sprite id={row.dex} />}
                 {row.unrel ? <span className="tag dex__unrel">미구현</span> : null}

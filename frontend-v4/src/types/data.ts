@@ -343,3 +343,20 @@ export interface SheetRow {
   score?: number;
   rank?: number;
 }
+
+/** 인기 검색어 한 줄 — sprite 는 이름을 못 찾으면 없다(그림 없이 이름만 세운다) */
+export interface HotSearchRow {
+  name: string;
+  count: number;
+  sprite?: number | null;
+}
+
+/**
+ * 인기 검색어 묶음 (backend/hotsearch_build.py).
+ * asOf 가 null 이면 아직 한 번도 집계가 안 돈 것이다 — rows 도 비어 있다.
+ */
+export interface HotSearchBundle {
+  asOf: string | null;
+  window: string;
+  rows: HotSearchRow[];
+}

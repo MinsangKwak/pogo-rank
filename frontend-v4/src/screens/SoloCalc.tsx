@@ -21,7 +21,7 @@ import {
 } from '../lib/solo';
 import { useFavs } from '../lib/useFavs';
 import type { OpenMon } from '../lib/mon';
-import { track, trackSearch } from '../lib/track';
+import { track, trackSearchPick } from '../lib/track';
 import type { PveRow } from '../types/data';
 
 export default function SoloCalc({ onOpen }: { onOpen: OpenMon }) {
@@ -87,11 +87,11 @@ export default function SoloCalc({ onOpen }: { onOpen: OpenMon }) {
           <Seg items={BUFFS.map((one) => ({ id: one.id, label: one.label }))} value={buff} onPick={setBuff} />
         </div>
         <input className="boss__search" type="search" placeholder="보스 이름 검색 (예: 메가거북왕, 자시안)"
-          value={bossTerm} onChange={(event) => { setBossTerm(event.target.value); trackSearch('solo_boss', event.target.value); }} />
+          value={bossTerm} onChange={(event) => setBossTerm(event.target.value)} />
         <div className="boss__sugg">
           {bossTerm.trim() ? (bossHits.length
             ? bossHits.map((hit) => (
-              <button key={hit.name} className="boss__rec" onClick={() => pickBoss(hit)}>
+              <button key={hit.name} className="boss__rec" onClick={() => { trackSearchPick(hit.name, 'solo_boss'); pickBoss(hit); }}>
                 <Sprite id={hit.sprite} /><span>{hit.name}</span>
               </button>
             ))
@@ -141,12 +141,13 @@ export default function SoloCalc({ onOpen }: { onOpen: OpenMon }) {
             }}>{`★ 즐겨찾기에서 채우기 (${favs.length})`}</button>
           </div>
           <input className="boss__search" type="search" placeholder="내 어태커 검색해서 추가 (예: 자시안, 메가Y 뮤츠)"
-            value={deckTerm} onChange={(event) => { setDeckTerm(event.target.value); setFillNote(''); trackSearch('solo_deck', event.target.value); }} />
+            value={deckTerm} onChange={(event) => { setDeckTerm(event.target.value); setFillNote(''); }} />
           <div className="boss__sugg">
             {fillNote ? <p className="empty">{fillNote}</p> : deckTerm.trim() ? (deckHits.length
               ? deckHits.map((hit) => (
                 <button key={hit.name} className="boss__rec" onClick={() => {
                   if (myDeck.length >= 6) return;
+                  trackSearchPick(hit.name, 'solo_deck');
                   setMyDeck((now) => [...now, hit]);
                   setDeckTerm('');
                 }}>

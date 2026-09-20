@@ -158,6 +158,22 @@ for (const [name, keys] of Object.entries(BUNDLES)) {
   console.log(`  ${name}.json  ${(text.length / 1024).toFixed(0)}KB  ${hash}`);
 }
 
+// ── 인기 검색어 — v3 번들이 아니라 backend/hotsearch_build.py 가 직접 쓴 파일이다 ─────────
+// 다른 묶음과 달리 게임 데이터가 아니라 **우리 서비스에서 나온 수**라 전역에 실리지 않는다.
+// 없으면(시크릿이 없는 로컬·미리보기) 빈 표를 만들어 둔다 — 읽는 쪽이 404 를 만나지 않게
+{
+  const from = resolve(repo, 'data/hotsearch.json');
+  const text = existsSync(from)
+    ? readFileSync(from, 'utf8')
+    : JSON.stringify({ asOf: null, window: '24h', rows: [] });
+  const hash = createHash('sha256').update(text).digest('hex').slice(0, 16);
+  writeFileSync(resolve(out, 'hotsearch.json'), text);
+  manifest.files['hotsearch'] = { hash, bytes: text.length };
+  total += text.length;
+  const count = JSON.parse(text).rows?.length ?? 0;
+  console.log(`  hotsearch.json  ${count}건  ${hash}`);
+}
+
 writeFileSync(resolve(out, 'manifest.json'), JSON.stringify(manifest, null, 1));
 // ── PWA 정적 파일 (아이콘 · manifest) ────────────────────────────────────────
 // v3 frontend/static/ 의 것을 그대로 옮긴다. 아이콘은 그림 파일이라 저장소에 두 벌 두지 않고,
