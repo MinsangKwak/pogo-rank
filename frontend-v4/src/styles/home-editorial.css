@@ -109,37 +109,12 @@ html body #root .home-dashboard .home__btn--primary { background: var(--plate-ct
 }
 
 /* 장면 — 꾸밈이지 게임 상태가 아니다 (aria-hidden). 그림자는 흐림 0 (v4.3.3) */
-.max-scene { position: relative; grid-column: 2; grid-row: 1 / 3; min-height: 30rem; isolation: isolate; }
-.max-scene::before { content: ''; position: absolute; inset: 0; z-index: -1; background: repeating-conic-gradient(from 15deg at 65% 55%, transparent 0 17deg, color-mix(in srgb, var(--plate-accent) 10%, transparent) 18deg 20deg); }
-.max-scene__ring { position: absolute; width: 85%; height: 30%; bottom: 6%; left: 8%; border: .4rem solid var(--plate-accent); border-radius: 50%; box-shadow: 0 0 0 .4rem color-mix(in srgb, var(--plate-accent) 30%, transparent); transform: rotate(-8deg); }
-/* 어두운 판 위라 잉크 선은 밝은 쪽(--plate-fg) — 선을 두른 뒤 기존 하드 섀도를 잇는다 */
-.max-scene img {
-  position: absolute; object-fit: contain; --ink: var(--plate-fg);
-  filter:
-    drop-shadow(.05rem 0 0 var(--ink)) drop-shadow(-.05rem 0 0 var(--ink)) drop-shadow(0 .05rem 0 var(--ink)) drop-shadow(0 -.05rem 0 var(--ink))
-    drop-shadow(.4rem .4rem 0 color-mix(in srgb, var(--plate-accent) 45%, transparent));
-}
-.max-scene__boss { width: 28rem; height: 28rem; right: 0; top: 0; }
-.max-scene__ally { width: 14rem; height: 14rem; left: 2%; bottom: 0; transform: scaleX(-1); }
-.max-scene__status { position: absolute; left: 7%; top: 0; width: 14rem; z-index: 2; display: grid; gap: .4rem; font-size: var(--fs-sub); color: var(--plate-accent); }
-.max-scene__status b { font-size: var(--fs-lead); color: var(--plate-fg); }
-.max-scene__status i { height: .4rem; background: var(--plate-accent); box-shadow: 2rem 0 var(--plate-line); }
-.max-scene__label { position: absolute; right: 0; bottom: 4rem; font: 700 var(--fs-sec)/1 'Galmuri11', sans-serif; color: var(--plate-accent); transform: rotate(-8deg); }
-.max-scene__charge { position: absolute; right: 0; bottom: 0; display: flex; align-items: center; gap: .4rem; font-size: var(--fs-sub); color: var(--plate-muted); }
-.max-scene__charge i { width: 2rem; height: .8rem; background: var(--plate-accent); }
 @media (prefers-reduced-motion: no-preference) {
-  .max-scene__boss { animation: max-hover 4s ease-in-out infinite; }
   @keyframes max-hover { 50% { translate: 0 -.8rem; } }
 }
 
 /* 좁은 화면 — 한 열. 잠긴 목적지까지 본문 폭을 다 쓴다 */
 @media (max-width: 699px) {
-  html body #root .home-dashboard .home__welcome { grid-template-columns: minmax(0, 1fr); padding: 2.4rem 2rem; gap: 1.6rem; }
-  .max-scene { grid-column: 1; grid-row: 2; min-height: 24rem; }
-  .max-scene__boss { width: 23rem; height: 23rem; }
-  .max-scene__ally { width: 11rem; height: 11rem; }
-  .max-scene__status { left: 0; width: 10rem; }
-  html body #root .home-dashboard .home__cta { grid-row: 3; display: grid; grid-template-columns: minmax(0, 1fr); width: 100%; }
   html body #root .home-dashboard .home__btn { width: 100%; box-sizing: border-box; }
   html body #root .home-dashboard .home__section { align-items: flex-start; flex-direction: column; }
   html body #root .home-dashboard :is(.home__picks, .home__features, .home-updates) { margin-top: 4rem; }
@@ -163,3 +138,57 @@ html body #root .home-dashboard .home__btn--primary { background: var(--plate-ct
 
 /* 만화식 잉크 선(list.css)의 굵은 판 — 홈 대표 그림은 1px */
 html body #root .home-dashboard .pick__hero .sprite { --ink-w: .1rem; }
+
+/* ── 홈 최상단: 배틀 포스터 (v4.6.0 · v4.6.3) ──────────────────────────────────
+   v4.6.0 에는 왼쪽에 검색 보드가 있었다 — v4.6.3 에 내렸다(검색이 모자라 순위가 서지 않는다. ranking 브랜치).
+   격자는 한 열로 남긴다: 보드를 다시 올릴 때 칸 하나만 더하면 된다.
+   선택자마다 선언은 한 번이다 — 같은 선택자를 아래에서 다시 적지 않는다 (DEVELOPMENT §2.26) */
+html body #root .home__top-layout { display: grid; grid-template-columns: minmax(0, 1fr); gap: 2.4rem; align-items: stretch; }
+html body #root .home__top-layout > * { min-width: 0; }
+
+/* 포스터 — 어두운 판(--plate) 위. 그림이 오른쪽 두 줄을 다 차지한다 */
+html body #root .home__top-layout .home__welcome {
+  margin: 0; min-height: 44rem; padding: 4rem; grid-template-columns: minmax(0, .85fr) minmax(0, 1.4fr); gap: 2.4rem; align-items: start;
+  background: radial-gradient(ellipse at 90% 15%, color-mix(in srgb, var(--plate-accent) 34%, var(--plate-2)), transparent 65%), var(--plate);
+  border-bottom: .4rem solid var(--plate-accent);
+}
+html body #root .home__top-layout .home__intro { min-width: 0; padding-right: 0; }
+html body #root .home__top-layout .home__eyebrow { font-size: var(--fs-sub); font-weight: 700; line-height: 1.5; letter-spacing: .16em; }
+html body #root .home__top-layout .home__intro h2 { margin-top: 2.4rem; max-width: none; padding-right: 0; font-size: var(--fs-hero); line-height: 1.5; letter-spacing: -.04em; }
+html body #root .home__top-layout .home__intro h2 em { font-style: normal; color: var(--plate-accent); }
+html body #root .home__top-layout .home__intro p { margin-top: 2rem; max-width: none; padding-right: 0; font-size: var(--fs-body); }
+html body #root .home__top-layout .home__cta { gap: 1.2rem; }
+html body #root .home__top-layout .home__btn { min-height: 4.8rem; padding: 1.2rem 1.6rem; }
+html body #root .home__top-layout .home__btn--primary { background: var(--plate-accent); color: var(--plate); border-color: var(--plate-accent); }
+html body #root .max-battle-art { grid-column: 2; grid-row: 1 / 3; align-self: center; margin: 0; min-width: 0; }
+html body #root .max-battle-art img { display: block; width: 100%; height: auto; border-radius: .8rem; }
+html body #root .max-battle-art figcaption { display: flex; flex-direction: column; gap: .8rem; padding: 1.6rem 0 0; color: var(--plate-fg); }
+html body #root .max-battle-art figcaption span { color: var(--plate-accent); font-size: var(--fs-sub); letter-spacing: .1em; }
+html body #root .max-battle-art figcaption b { font-size: var(--fs-lead); }
+html body #root .max-battle-art figcaption small { color: var(--plate-muted); font-size: var(--fs-sub); }
+
+/* 이동 목록의 아래 항목(기술 변경 내역 → 게임 업데이트 아래) — 글자를 줄이지 않고 색으로 누른다(§7) */
+html body #root .nav-menu .drawer__item[data-parent] { min-height: var(--tap); padding-left: 3.2rem; color: var(--muted); }
+html body #root .nav-menu .drawer__item[data-parent] .drawer__label::before { content: '↳ '; margin-right: .4rem; }
+html body #root .nav-menu .drawer__item[data-parent][aria-current=page] { color: var(--brand); }
+
+@media (min-width: 1000px) and (max-width: 1399px) {
+  html body #root .home__top-layout .home__welcome { padding: 2.4rem; }
+  html body #root .home__top-layout .home__intro h2 { font-size: var(--fs-title); }
+}
+@media (max-width: 699px) {
+  html body #root .home__top-layout { gap: 1.6rem; }
+  /* 배너는 손에서 반이다(v4.5.11, 643 → ≈320px) — 장식(눈썹줄·설명·소제목)은 접고 그림은 띠처럼 자른다.
+     남는 것은 제목·그림·날짜와 보스·단추 둘, 손에서 뜻이 서는 데 필요한 넷이다 */
+  html body #root .home__top-layout .home__welcome { grid-template-columns: minmax(0, 1fr); min-height: 0; padding: 1.6rem; gap: .8rem; }
+  html body #root .home__top-layout .home__eyebrow { display: none; }
+  html body #root .home__top-layout .home__intro h2 { margin-top: 0; font-size: var(--fs-sec); }
+  html body #root .home__top-layout .home__intro p { display: none; }
+  html body #root .max-battle-art { grid-column: 1; grid-row: 2; }
+  html body #root .max-battle-art img { aspect-ratio: 3 / 1.1; object-fit: cover; object-position: center 30%; }
+  html body #root .max-battle-art figcaption { flex-direction: row; flex-wrap: wrap; align-items: baseline; gap: .4rem 1.2rem; padding-top: .8rem; }
+  html body #root .max-battle-art figcaption small { display: none; }
+  /* 바탕 규칙이 display: flex 라 grid-template-columns 만으로는 안 갈린다 — grid 로 바꿔야 두 칸이 된다 */
+  html body #root .home__top-layout .home__cta { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .8rem; }
+  html body #root .home__top-layout .home__btn { padding: 1.2rem .8rem; font-size: var(--fs-sub); }
+}

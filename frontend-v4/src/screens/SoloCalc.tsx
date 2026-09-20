@@ -21,7 +21,7 @@ import {
 } from '../lib/solo';
 import { useFavs } from '../lib/useFavs';
 import type { OpenMon } from '../lib/mon';
-import { track } from '../lib/track';
+import { track, trackSearchPick } from '../lib/track';
 import type { PveRow } from '../types/data';
 
 export default function SoloCalc({ onOpen }: { onOpen: OpenMon }) {
@@ -91,7 +91,7 @@ export default function SoloCalc({ onOpen }: { onOpen: OpenMon }) {
         <div className="boss__sugg">
           {bossTerm.trim() ? (bossHits.length
             ? bossHits.map((hit) => (
-              <button key={hit.name} className="boss__rec" onClick={() => pickBoss(hit)}>
+              <button key={hit.name} className="boss__rec" onClick={() => { trackSearchPick(hit.name, 'solo_boss'); pickBoss(hit); }}>
                 <Sprite id={hit.sprite} /><span>{hit.name}</span>
               </button>
             ))
@@ -147,6 +147,7 @@ export default function SoloCalc({ onOpen }: { onOpen: OpenMon }) {
               ? deckHits.map((hit) => (
                 <button key={hit.name} className="boss__rec" onClick={() => {
                   if (myDeck.length >= 6) return;
+                  trackSearchPick(hit.name, 'solo_deck');
                   setMyDeck((now) => [...now, hit]);
                   setDeckTerm('');
                 }}>

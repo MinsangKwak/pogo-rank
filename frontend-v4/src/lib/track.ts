@@ -38,3 +38,23 @@ export function trackPageView(title: string): void {
     page_title: title,
   });
 }
+
+// ── 검색어 기록 (v4.5.5) ─────────────────────────────────────────────────────
+// **완성어만 센다.** '뮤' 를 치다 뮤츠를 고르면 기록되는 말은 '뮤츠' 다 —
+// 친 글자를 그대로 보내면 뮤·뮤ㅊ 같은 토막이 순위를 덮는다.
+// 그래서 타이핑이 아니라 **고른 순간**(추천 선택 · 검색 결과에서 연 상세)에 한 번 보낸다.
+//
+// GA4 표준 'search' 이벤트를 쓰는 이유 — search_term 이 GA4 **기본 측정기준**이라
+// 콘솔에서 맞춤 측정기준을 따로 등록하지 않아도 Data API 로 바로 읽힌다.
+// 순위 화면은 v4.6.3 에 내렸지만(ranking 브랜치) 기록은 계속 쌓는다 — 다시 올릴 때 이 수가 밑천이다.
+// 동의 게이트는 track() 안에 있다 — '통계 끄기' 면 한 건도 안 나간다.
+
+// 같은 이름을 연달아 보내지 않는다 — 고쳐 고르느라 오간 것까지 세면 한 사람이 순위를 만든다
+let lastPick = '';
+
+export function trackSearchPick(name: string, surface: string): void {
+  const term = name.trim();
+  if (!term || term === lastPick) return;
+  lastPick = term;
+  track('search', { search_term: term, surface });
+}

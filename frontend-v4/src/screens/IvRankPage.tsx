@@ -21,7 +21,7 @@ import {
   ivRankOf, ivRankTable,
 } from '../lib/ivrank';
 import { calcCp } from '../lib/cp';
-import { track } from '../lib/track';
+import { track, trackSearchPick } from '../lib/track';
 import type { DexForm, LeagueKey } from '../types/data';
 
 interface Picked { sprite: number | null; ivs: [number, number, number]; floor: number }
@@ -233,7 +233,7 @@ export default function IvRankPage() {
                   {term.trim() ? (hits.length
                     ? hits.map((hit) => (
                       <SuggestRow key={hit.name} mon={hit} typeKo={dex.TYPE_KO} labels={dex.FORM_LABELS}
-                        onPick={() => save({ ...picked, sprite: hit.sprite })} />
+                        onPick={() => { trackSearchPick(hit.name, 'iv_rank'); save({ ...picked, sprite: hit.sprite }); }} />
                     ))
                     : <span className="sugg__none">검색 결과가 없어요</span>) : null}
                 </div>

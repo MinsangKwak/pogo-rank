@@ -481,3 +481,20 @@ FIREBASE_SA_JSON='<한 줄 JSON>' python3 scripts/firestore_restore.py firestore
 - 백업 파일은 이메일·트레이너 코드가 든 개인정보입니다. 아티팩트가 암호화돼 있는 이유이고, 평문을 저장소·노션·채팅에 올리지 않습니다
 - 90일이 지나면 GitHub 이 아티팩트를 지웁니다. 더 오래 남기려면 분기마다 한 벌을 받아 로컬 비밀번호 관리자·암호화 드라이브에 두세요
 - 컬렉션이 늘면 `scripts/firestore_backup.py` 의 `COLLECTIONS` 에 이름을 더합니다
+
+---
+
+## 15. 포켓몬 검색순위 — 보류 (2026-09-20 v4.6.3)
+
+**화면·집계는 내렸고, 기록은 계속 쌓인다.** 실측(GA4 최근 7일)이 page_view 408회 · 사용자 54명이라 순위가 서지 않는다.
+검색순위 보드 · `#/hot` 전체 보기 · `backend/hotsearch_build.py` · 낮 12시 집계 cron 은 v4.6.2 까지 만든 그대로
+`ranking` 브랜치에 있다. 백로그 행은 Notion 'moncamp 버전·백로그 WBS' 에 있다.
+
+남아 있는 것 —
+- **GA4 `search` 이벤트** (`frontend-v4/src/lib/track.ts` `trackSearchPick`). 검색창에서 **골라 연 완성어**만 보낸다.
+  다시 올릴 때 이 수가 밑천이라 계속 쌓는다. 통계를 끈 사람은 안 센다.
+- **저장소 시크릿 `GA_SA_JSON` · `GA_PROPERTY_ID`** — 서비스 계정은 GA 속성 뷰어로 이미 들어가 있다. 지우지 않는다.
+
+다시 올릴 때 볼 신호 — GA 탐색 보고서에서 `search` 이벤트의 `search_term` 상위가 **하루 3회 이상인 이름이 셋**을 넘기 시작하면
+하루 창으로 순위가 선다. 그 전에는 일주일 창(`ranking` 브랜치 v4.6.1 의 `WINDOWS`)으로 시작한다.
+
