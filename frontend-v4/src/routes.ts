@@ -26,6 +26,7 @@ export interface RouteDef {
   locked?: boolean;        // 로그인·승인이 있어야 열린다
   beta?: boolean;          // 실험 기능 — 승인 위에 beta 깃발이 하나 더 있어야 열린다
   legacy?: string[];
+  actions?: boolean;       // 머리 오른쪽에 단추(보기 전환·도구)가 선다 — 좁은 화면은 그 줄 높이를 미리 비워 둔다 (CLS)
 }
 
 export const ROUTES = [
@@ -33,14 +34,14 @@ export const ROUTES = [
 
   // ── 이동 목록(메뉴)에 오르는 순서 그대로 ────────────────────────────────
   { id: 'planner', path: 'planner', kind: 'plan', tab: 'home', nav: '내 포켓몬', icon: '🎒', group: 'mine', title: '내 포켓몬', locked: true, beta: true, legacy: ['plan', 'planner/collection', 'plan/collection', 'favs'] },
-  { id: 'dex', path: 'dex', kind: 'page', nav: '포켓몬 도감', icon: '📕', group: 'pick', legacy: ['types'] },
-  { id: 'dmax', path: 'dmax', kind: 'shell', tab: 'max', nav: 'D-MAX', icon: '✨', group: 'pick', legacy: ['rank/max'] },
-  { id: 'pve', path: 'pve', kind: 'shell', tab: 'pve', nav: '레이드 · PvE', icon: '⚔️', group: 'pick', legacy: ['rank/pve'] },
-  { id: 'pvp', path: 'pvp', kind: 'shell', tab: 'pvp', nav: '배틀 · PvP', icon: '🃏', group: 'pick', legacy: ['rank/pvp'] },
+  { id: 'dex', path: 'dex', kind: 'page', nav: '포켓몬 도감', icon: '📕', group: 'pick', legacy: ['types'], actions: true },
+  { id: 'dmax', path: 'dmax', kind: 'shell', tab: 'max', nav: 'D-MAX', icon: '✨', group: 'pick', legacy: ['rank/max'], actions: true },
+  { id: 'pve', path: 'pve', kind: 'shell', tab: 'pve', nav: '레이드 · PvE', icon: '⚔️', group: 'pick', legacy: ['rank/pve'], actions: true },
+  { id: 'pvp', path: 'pvp', kind: 'shell', tab: 'pvp', nav: '배틀 · PvP', icon: '🃏', group: 'pick', legacy: ['rank/pvp'], actions: true },
   { id: 'game-updates', path: 'game-updates', kind: 'page', nav: '게임 업데이트', icon: '📢', group: 'today' },
   { id: 'schedule', path: 'schedule', kind: 'page', nav: '이벤트 일정', icon: '📅', group: 'today' },
-  { id: 'raids', path: 'raids', kind: 'page', nav: '레이드 보스', icon: '⚔️', group: 'today' },
-  { id: 'eggs', path: 'eggs', kind: 'page', nav: '알 부화', icon: '🥚', group: 'today' },
+  { id: 'raids', path: 'raids', kind: 'page', nav: '레이드 보스', icon: '⚔️', group: 'today', actions: true },
+  { id: 'eggs', path: 'eggs', kind: 'page', nav: '알 부화', icon: '🥚', group: 'today', actions: true },
   { id: 'finder', path: 'finder', kind: 'page', nav: '검색식 만들기', icon: '🔎', group: 'mine' },
 
   // ── 화면 아래 화면 (메뉴에 없다 — 갈 길은 부모 화면의 버튼 하나뿐) ──────

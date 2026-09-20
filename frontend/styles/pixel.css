@@ -211,6 +211,9 @@ h1, h2, .page-head h2, .detail__name, .home__intro h2, .page__sec { line-height:
   }
   /* 접히더라도 각 칸은 짓눌리지 않는다 — 눌리면 리그 글자가 세로로 쌓인다 */
   .page-head__actions > * { flex: none; max-width: 100%; }
+  /* 2026-09-20 v4.4.2 단추가 서는 화면(routes.ts actions)은 비어 있어도 한 줄 높이를 지킨다 —
+     데이터가 온 뒤 단추가 끼어들며 제목을 56px 밀던 것(D-MAX CLS 0.85)을 막는다 */
+  .page-head__actions[data-reserve]:empty { display: flex; min-height: var(--tap); }
   /* 칸이 넷이면(배틀 · PvP 의 리그) 글자를 한 단 줄여 될 수 있으면 한 줄에 들인다 */
   .page-head__actions .seg { min-width: 0; }
   .page-head__actions .seg button { min-width: 0; padding-left: 1.2rem; padding-right: 1.2rem; }

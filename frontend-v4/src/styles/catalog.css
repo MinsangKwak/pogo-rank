@@ -9,10 +9,17 @@
    v4 의 장치 하나. 색·크기·간격은 토큰(CLAUDE.md §1-b · §7).
    ───────────────────────────────────────────────────────────────────────────── */
 
-/* 카드 — 상자 하나에 위쪽 굵은 선. 홀로·박테(surfaces.css)는 여기서 끈다 */
+/* 카드 — 상자 하나에 위쪽 굵은 선. 홀로·박테(surfaces.css)는 여기서 끈다.
+   content-visibility: 화면 밖 카드는 스타일·레이아웃·그리기를 건너뛴다 — 카드 한 장에 그라데이션 셋과
+   원근 변환이 있어 100장을 한꺼번에 세우면 메인 스레드가 1.5초를 잡았다(v4.4.2 측정).
+   contain-intrinsic-size 의 auto 는 한 번 그린 크기를 기억해 스크롤 막대가 튀지 않게 한다 */
 html body #root :is(.dex-catalog.is-grid .dex__row, .row-list.is-grid > .row, .dex__list.is-grid .gameday__row) {
   background: var(--bg); border: .1rem solid var(--line); border-top: .4rem solid color-mix(in srgb, var(--brand) 65%, var(--line));
   box-shadow: none; padding: 2rem; gap: 1.2rem; overflow: hidden;
+  content-visibility: auto; contain-intrinsic-size: auto 38.4rem;
+}
+html body #root :is(.dex-catalog:not(.is-grid) .dex__row, .row-list.is-list > .row, .dex__list:not(.is-grid) .gameday__row) {
+  content-visibility: auto; contain-intrinsic-size: auto 7.2rem;
 }
 html body #root :is(.dex-catalog.is-grid .dex__row, .row-list.is-grid > .row, .dex__list.is-grid .gameday__row)::after { display: none; }
 @media (hover: hover) {

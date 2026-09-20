@@ -51,6 +51,21 @@ export function useFreshness() {
 // 묶음 하나를 받는 훅을 찍어 내는 틀.
 // Suspense 를 쓰는 이유 — 화면마다 `if (isLoading) return …` 을 쓰면 그 분기가 곧 버그 자리가 된다.
 // 경계 한 곳에서 한 번만 처리한다 (App.tsx 의 <Suspense>).
+// 같은 묶음을 **기다리지 않고** 받는 틀 — 곁줄(메뉴의 기술 변경)처럼 없어도 화면이 서야 하는 자리.
+// 키·해시가 bundleHook 과 같아 캐시를 나눠 쓴다: 어느 쪽이 먼저 받든 한 번만 받는다
+function bundleSoftHook<T>(name: string) {
+  return (): T | undefined => {
+    const { data: manifest } = useManifest();
+    const hash = manifest.files[name]?.hash ?? 'dev';
+    return useQuery({
+      queryKey: qk.bundle(name, hash),
+      queryFn: () => getJson<T>(`${name}.json?v=${hash}`),
+      staleTime: Infinity,
+      gcTime: Infinity,
+    }).data;
+  };
+}
+
 function bundleHook<T>(name: string) {
   return (): UseSuspenseQueryResult<T> => {
     const { data: manifest } = useManifest();
@@ -69,6 +84,8 @@ export const useMax = bundleHook<MaxBundle>('max');
 export const usePve = bundleHook<PveBundle>('pve');
 export const usePvp = bundleHook<PvpBundle>('pvp');
 export const useGameday = bundleHook<GamedayBundle>('gameday');
+export const useGamedaySoft = bundleSoftHook<GamedayBundle>('gameday');
+export const useDexSoft = bundleSoftHook<DexBundle>('dex');
 export const useFavEvents = bundleHook<FavEventsBundle>('fav-events');
 export const useUpdates = bundleHook<UpdatesBundle>('updates');
 export const useMeta = bundleHook<MetaBundle>('meta');

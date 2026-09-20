@@ -192,7 +192,8 @@ export function Sprite({ id, className }: { id: number; className?: string }) {
       decoding="async"
       // 다 받으면 뼈대(.is-loading)를 벗긴다 — v3 는 이걸 문서 캡처 리스너로 했다.
       // cloneNode 로 복제한 행에서 리스너가 사라지는 문제 때문이었는데, 여기서는 복제가 없다
-      onLoad={(event) => { setLoading(false); fitGround(event.currentTarget); }}
+      // 바닥 재기는 무대(카드 그리드) 위 그림만 — 줄 보기는 가운데 맞춤이라 캔버스를 돌릴 이유가 없다
+      onLoad={(event) => { setLoading(false); if (event.currentTarget.closest('.dex__portrait, .row__portrait')) fitGround(event.currentTarget); }}
       onError={() => {
         if (retry >= SPRITE_RETRY) { setFailed(true); return; }
         const next = retry + 1;

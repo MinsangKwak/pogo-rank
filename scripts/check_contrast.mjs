@@ -106,6 +106,8 @@ for (const theme of ['light', 'dark']) {
     try {
       await page.goto(`${BASE}#/${path}`, { waitUntil: 'load', timeout: 20000 });
       await page.waitForTimeout(700);
+      // v4.4.2 content-visibility:auto 로 건너뛴 카드도 재게 전부 켠다 (check_screens 와 같은 이유)
+      await page.addStyleTag({ content: '* { content-visibility: visible !important; }' }).catch(() => {});
       const found = await page.evaluate(AUDIT, MIN);
       for (const one of found.bad) bad.push(`${theme} #/${path} → ${one}`);
       for (const one of found.known) known.push(`${theme} #/${path} → ${one}`);

@@ -22,7 +22,44 @@
 ---
 
 <details open>
-<summary><b>2026-09-20</b> — 2판 · <code>v4.4.1</code> · <code>v4.4.0</code></summary>
+<summary><b>2026-09-20</b> — 3판 · <code>v4.4.2</code> · <code>v4.4.1</code> · <code>v4.4.0</code></summary>
+
+<details>
+<summary><b>v4.4.2</b> · 성능 — 첫 화면이 밀리지 않고, 카드 100장이 메인 스레드를 안 잡는다</summary>
+
+**요청 — "현재까지 작업된 컴포넌트들을 성능 최적화를 분석해서 조치."** 먼저 쟀다 — Lighthouse(모바일 · 4G 시뮬레이션) 넉 장, 긴 작업(50ms+) 관찰, 레이아웃 이동의 출처, 메인 청크의 구성(소스맵).
+
+| 화면 | 전 | 후 |
+| --- | --- | --- |
+| 홈 | 88 · CLS 0 · TBT 128ms | 89 · CLS 0 · TBT 48ms |
+| 도감 | 85 · TBT 322ms | **92** · TBT 170ms |
+| D-MAX | **69 · CLS 0.853** | 76 · **CLS 0.052** |
+| 레이드 보스 | 86 · TBT 116ms | 79\* · TBT 36ms |
+| 긴 작업(50ms+) | 도감 79 · D-MAX 51 · 레이드 50 · 일정 68 | **0** |
+
+\* LCP 요소가 바뀌었다 — 전에는 **바닥글 고지**(`#ip-notice`)가 첫 화면의 가장 큰 글자여서 LCP 로 잡혔다. 본문 자리를 잡아 두자 진짜 본문(레이드 안내 · D-MAX 보스 줄)이 LCP 가 됐고, 그 숫자는 정직하게 더 크다. 점수는 그래서 갈린다.
+
+**1. D-MAX 의 CLS 0.85 — 머리 단추 줄이 나중에 끼어들었다.** `#page-head-actions` 는 빈 상자로 서 있다가 화면이 데이터를 받은 뒤 포털로 채워진다. 좁은 화면에서는 이 줄이 제목 **위**라, 채워지는 순간 제목이 56px 내려앉았다(`layout-shift` 출처 실측). 단추가 서는 화면(`routes.ts` 의 `actions`)은 빈 채로도 한 줄 높이를 지킨다. 순위 셸의 탭·필터 슬롯도 불러오는 동안 대강의 자리를 지킨다(0.85 → 0.27 → 0.05).
+
+**2. 바닥글이 먼저 보였다가 밀렸다.** Suspense 의 스플래시가 몇 십 px 라 그 아래 바닥글이 첫 화면에 들어왔다가 본문이 오면 화면 밖으로 밀렸다 — 그 이동이 홈·도감·레이드에서 CLS 0.1~0.45 였다. 스플래시가 한 화면을 채운다(`#page > #splash { min-height: 100dvh }`).
+
+**3. 홈은 히어로가 데이터를 기다릴 이유가 없다.** `Home` 이 max·pve·updates 를 맨 위에서 부르니 글자뿐인 히어로까지 5초를 기다렸다. 히어로는 바로 서고 아래(`HomeData`)만 `<Suspense>` 로 기다린다. 장면의 이름 한 글자는 기다리지 않는 훅(`useDexSoft`)으로 — 도착하면 채워진다.
+
+**4. 카드 100장 — `content-visibility: auto`.** 카드 한 장에 그라데이션 셋과 원근 변환이 있어 도감 한 판(100장)을 세우면 Style & Layout 1.5초 · Rendering 2.4초였다. 화면 밖 카드는 건너뛴다. `contain-intrinsic-size: auto` 가 한 번 그린 크기를 기억해 스크롤 막대가 튀지 않는다. **검문의 눈을 가린다** — 화면 밖 카드는 `innerText` 에 안 잡혀 `check_screens` 가 못 본다(주입해 확인: 켜기 전 false · 켠 뒤 true). 두 검문이 훑기 전에 `content-visibility: visible` 을 잠시 켠다.
+
+**5. 셸이 기술 변경 한 줄 때문에 gameday.json 을 기다렸다.** v4.4.0 에 되살린 `#menu-changes` 가 `useGameday()`(Suspense)라 모든 화면이 그 묶음을 기다렸다. 기다리지 않는 틀 `bundleSoftHook` 을 두고 그 줄만 쓴다 — 키·해시가 같아 캐시를 나눠 쓴다.
+
+**6. 데이터 미리 받기.** JS 를 받아 실행한 뒤에야 manifest → dex → meta 를 차례로 불렀다. `finalize-html.mjs` 가 빌드 때 해시를 읽어 `dex`·`meta` 를 `<link rel=preload as=fetch>` 로, 화면별 묶음(D-MAX 는 max·gameday …)은 주소창 해시를 보는 한 줄 스크립트로 건다. 주소는 `lib/data.ts` 와 글자 하나까지 같아야 한다(`crossorigin` 포함) — 콘솔에 "preloaded but not used" 가 없는지로 확인했다.
+
+**7. react-dom 이 main 에 섞여 있었다.** `manualChunks` 객체형은 react 청크가 4KB 뿐이었다(소스맵으로 봤다 — main 923KB 중 react-dom 612KB). 함수형으로 가르니 main 367 → 157KB, react 223KB. 앱 코드가 바뀌어도 react 청크는 캐시에 남는다.
+
+**8. 바닥 재기는 무대에서만.** `fitGround()` 캔버스는 카드 그리드의 그림에만 돈다 — 줄 보기는 가운데 맞춤이라 잴 이유가 없다.
+
+**실제 조절(4G · CPU 4배)로도 쟀다.** 로컬 미리보기(HTTP/1.1)에서는 도감이 380ms 빨라지고 레이드·D-MAX 가 250~450ms 느려졌다 — 미리 받는 78KB 가 여섯 연결을 나눠 쓰는 HTTP/1.1 에서 JS 와 다퉜다. 운영은 HTTP/2 라 같은 값이 아니다. dev 에 올린 뒤 dev(최적화) 대 운영(전 판)을 같은 조절로 대조해 결정한다 — 이 항목 아래에 결과를 적는다.
+
+검사 57건 · 화면 46장 `NaN` 없음 · 명암비 42장 0 · 전후 스크린샷 24장 대조(달라진 곳 1% 미만 — 히어로 이름 도착 순서).
+
+</details>
 
 <details>
 <summary><b>v4.4.1</b> · (긴급) 알 부화·레이드 카드의 그림이 4배로 나오던 것</summary>
