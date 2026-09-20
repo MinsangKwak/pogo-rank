@@ -32,8 +32,8 @@ export default function HotSearchPage({ onOpen }: { onOpen: OpenMon }) {
             <svg viewBox="0 0 720 300" role="group" aria-label="국가별 인기 검색 지도">
               {world.map(item => {
                 const data = countries.find(entry => entry.code === item.code);
-                return <path key={item.code} d={item.path} role="button" tabIndex={country === item.code ? 0 : -1}
-                  onKeyDown={event => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); setCountry(item.code); } }}
+                // 지도는 마우스용이다 — 177개 나라를 탭으로 도는 대신 아래 <select> 가 키보드 길이라 tabIndex 를 뺀다
+                return <path key={item.code} d={item.path} role="button" tabIndex={-1}
                   aria-label={`${countryName(item.code)}${data ? ` · 검색 ${num(data.total)}회` : ' · 집계 없음'}`}
                   aria-pressed={country === item.code}
                   className={`${data ? 'has-data' : ''} ${country === item.code ? 'is-selected' : ''}`}

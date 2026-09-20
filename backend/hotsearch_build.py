@@ -32,6 +32,14 @@ from datetime import datetime, timedelta, timezone
 
 TOP_N = 10
 OUT_PATH = 'data/hotsearch.json'
+# 문턱 — 많이 검색된 것만 순위에 오른다. 1회짜리가 1위로 서면 순위가 아니라 우연이다.
+#   MIN_ROW_COUNT   한 줄이 순위에 오르려면 이만큼은 열려야 한다
+#   MIN_ROWS        이보다 줄이 적으면 표를 통째로 비운다 — 홈은 구역을 안 그리고, 전체 보기는 '아직' 이라 적는다
+#   MIN_COUNTRY     한 나라가 지도에 서려면 (문턱을 넘은 줄들의) 합이 이만큼은 돼야 한다
+# GA4 도 지역 측정기준이 섞이면 방문자 적은 행을 제 임계값으로 숨긴다 — 그 위에 우리 문턱을 한 겹 더 두는 것이다
+MIN_ROW_COUNT = 3
+MIN_ROWS = 3
+MIN_COUNTRY = 10
 KST = timezone(timedelta(hours=9))
 SCOPE = 'https://www.googleapis.com/auth/analytics.readonly'
 
@@ -83,7 +91,9 @@ def sprite_by_name():
     return table
 
 
-# GA4 속성 시간대의 어제 하루. 화면 제목과 같은 기간을 국가별로도 조회한다.
+# GA4 Data API runReport — 어제부터 지금까지의 search_term 상위 N (국가별도 같은 창).
+# '어제 하루'(1daysAgo..1daysAgo) 가 아니라 굴러가는 이틀인 이유: GA4 는 이벤트를 몇 시간 늦게 처리해서,
+# 자정 집계가 '어제' 를 물으면 방금 끝난 날이라 거의 비어 온다. 창을 넓히면 그 구멍이 메워진다.
 def fetch_rows(property_id, sa_info, by_country=False):
     from google.oauth2 import service_account
     from google.auth.transport.requests import Request
@@ -92,7 +102,7 @@ def fetch_rows(property_id, sa_info, by_country=False):
     creds = service_account.Credentials.from_service_account_info(sa_info, scopes=[SCOPE])
     creds.refresh(Request())
     body = {
-        'dateRanges': [{'startDate': '1daysAgo', 'endDate': '1daysAgo'}],
+        'dateRanges': [{'startDate': '1daysAgo', 'endDate': 'today'}],
         'dimensions': [{'name': 'searchTerm'}] + ([{'name': 'countryId'}] if by_country else []),
         'dimensionFilter': {'filter': {'fieldName': 'eventName', 'stringFilter': {'value': 'search', 'matchType': 'EXACT'}}},
         'metrics': [{'name': 'eventCount'}],
@@ -137,14 +147,20 @@ def country_rows(rows, sprites):
             count = int(row['metricValues'][0]['value'])
         except (KeyError, IndexError, ValueError, TypeError):
             continue
-        if count <= 0:
+        # 줄 문턱 — 한 나라 안에서도 1회짜리는 순위가 아니다
+        if count < MIN_ROW_COUNT:
             continue
         group = countries.setdefault(code.upper(), {'code': code.upper(), 'total': 0, 'rows': []})
         group['total'] += count
         group['rows'].append({'name': name, 'count': count, 'sprite': sprites.get(name)})
+    kept = []
     for group in countries.values():
+        # 나라 문턱 — 합이 작거나 줄이 몇 없는 나라는 지도에 세우지 않는다
+        if group['total'] < MIN_COUNTRY or len(group['rows']) < MIN_ROWS:
+            continue
         group['rows'] = sorted(group['rows'], key=lambda item: item['count'], reverse=True)[:TOP_N]
-    return sorted(countries.values(), key=lambda group: group['total'], reverse=True)
+        kept.append(group)
+    return sorted(kept, key=lambda group: group['total'], reverse=True)
 
 
 def main():
@@ -188,17 +204,22 @@ def main():
             count = int((row.get('metricValues') or [{}])[0].get('value', 0))
         except (TypeError, ValueError):
             continue
-        if count <= 0:
+        if count < MIN_ROW_COUNT:
             continue
         picked.append({'name': name, 'count': count, 'sprite': sprites.get(name)})
         if len(picked) >= TOP_N:
             break
+    # 줄이 몇 개 안 되면 순위라 부르기 어렵다 — 비운다 (미리보기는 finish 가 샘플로 채운다)
+    if len(picked) < MIN_ROWS:
+        picked = []
 
-    try:
-        payload['countries'] = country_rows(fetch_rows(property_id, json.loads(raw_key), by_country=True), sprites)
-        payload['countriesStatus'] = 'ready'
-    except Exception as error:
-        print(f'hotsearch: 국가 집계 실패 ({type(error).__name__})')
+    # 나라별은 전체가 문턱을 넘었을 때만 묻는다 — 전체가 못 넘는데 나라가 넘을 리 없고, 호출 하나를 아낀다
+    if picked:
+        try:
+            payload['countries'] = country_rows(fetch_rows(property_id, json.loads(raw_key), by_country=True), sprites)
+            payload['countriesStatus'] = 'ready'
+        except Exception as error:                  # noqa: BLE001 — 나라별이 죽어도 전체 순위는 나가야 한다
+            print(f'hotsearch: 국가 집계 실패 ({type(error).__name__})', file=sys.stderr)
 
     payload['rows'] = picked
     finish(f'{len(picked)}건 (기준 {payload["asOf"]})')

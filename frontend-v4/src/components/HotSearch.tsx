@@ -1,5 +1,9 @@
 // ─────────────────────────────────────────────────────────────────────────────
-// HotSearch.tsx — 다이맥스 포켓몬 검색순위 (v4.5.5)
+// HotSearch.tsx — 포켓몬 검색순위 (v4.5.5)
+//
+// **'다이맥스 검색순위' 가 아니다** (v4.6.0). 세는 곳이 도감·솔플·PvP 덱·개체값 검색창이고
+// D-MAX 덱에는 검색창이 없다 — 다이맥스 이름이 기록될 길이 없어 그 제목은 참이 될 수 없다.
+// D-MAX 덱에 검색이 생기고 거기서만 세는 표를 따로 둘 때 다시 이름을 갈라 붙인다.
 //
 // 세는 말은 **완성어**다. '뮤' 를 치다 뮤츠를 고르면 뮤츠가 한 번 오른다 —
 // 토막말은 애초에 보내지 않는다 (lib/track.ts trackSearchPick).
@@ -67,7 +71,7 @@ const FLAG: Partial<Record<Source, string>> = { mine: '내 검색 · 이 브라�
 const NOTE: Record<Source, string> = {
   mine: '이 브라우저에서 검색해 연 횟수예요. 밖으로 나가지 않아요',
   sample: '모양을 보려고 채운 표예요. 실제 검색 수가 아니에요',
-  ga: '어제 검색해서 열어 본 횟수예요',
+  ga: '어제부터 지금까지 검색해서 열어 본 횟수예요',
 };
 const FOOT: Record<Source, string> = {
   mine: '미리보기라 이 기기에만 세요. 운영에서는 모두의 검색을 하루 두 번 세요',
@@ -80,7 +84,7 @@ export function HotHead({ source, label }: { source: Source; label: string }) {
   return (
     <div className="home__section">
       <h3>
-        다이맥스 포켓몬 검색순위
+        포켓몬 검색순위
         {/* 이 수가 어디서 왔는지 화면에서 바로 알 수 있어야 한다 — 진짜 집계로 읽으면 안 된다 */}
         {FLAG[source] ? <span className="hot__flag">{FLAG[source]}</span> : null}
       </h3>
@@ -133,7 +137,7 @@ export default function HotSearch({ onOpen }: { onOpen: OpenMon }) {
   const loop = [...rows, ...rows];
 
   return (
-    <section className="home__hot" aria-label="다이맥스 포켓몬 검색순위">
+    <section className="home__hot" aria-label="포켓몬 검색순위">
       <HotHead source={source} label={label} />
 
       {/* 넓은 화면 — 표 그대로 */}

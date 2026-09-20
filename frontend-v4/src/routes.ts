@@ -38,7 +38,7 @@ export const ROUTES = [
   { id: 'dmax', path: 'dmax', kind: 'shell', tab: 'max', nav: 'D-MAX', icon: '✨', group: 'pick', legacy: ['rank/max'], actions: true },
   { id: 'pve', path: 'pve', kind: 'shell', tab: 'pve', nav: '레이드 · PvE', icon: '⚔️', group: 'pick', legacy: ['rank/pve'], actions: true },
   { id: 'pvp', path: 'pvp', kind: 'shell', tab: 'pvp', nav: '배틀 · PvP', icon: '🃏', group: 'pick', legacy: ['rank/pvp'], actions: true },
-  { id: 'hot', path: 'hot', kind: 'page', nav: '다이맥스 포켓몬 검색순위', title: '다이맥스 포켓몬 검색순위', icon: '🔥', group: 'today' },
+  { id: 'hot', path: 'hot', kind: 'page', nav: '포켓몬 검색순위', title: '포켓몬 검색순위', icon: '🔥', group: 'today' },
   { id: 'game-updates', path: 'game-updates', kind: 'page', nav: '게임 업데이트', icon: '📢', group: 'today' },
   { id: 'changes', path: 'changes', kind: 'page', nav: '기술 변경 내역', title: '기술 변경 내역', icon: '⚔️', group: 'today', parent: 'game-updates' },
   { id: 'schedule', path: 'schedule', kind: 'page', nav: '이벤트 일정', icon: '📅', group: 'today' },

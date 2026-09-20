@@ -15,6 +15,11 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 const RELEASE_NOTES_EN = {
+  '2026-09-20 · v4.6.0': [
+    '**Home has a new layout** — the Pokémon search ranking on the left, the next Max Battle poster on the right; its date and bosses come from the schedule',
+    '**The full ranking page now has a world map** — pick a country to see what people there searched most; only countries with enough searches are shaded',
+    '**Only well-searched Pokémon make the ranking** — a name opened just a few times no longer counts; it has to add up before we call it a ranking',
+  ],
   '2026-09-20 · v4.5.11': [
     '**The home banner is half as tall on phones** — it used to fill the screen and push everything else below the fold',
     "**Yesterday's most-searched Pokémon now scrolls as a single ticker** on narrow screens; tap [See all] for the full ranking",

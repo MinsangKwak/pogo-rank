@@ -8,7 +8,7 @@
 import { Suspense, type ReactNode } from 'react';
 import { ROUTE_GROUPS, ROUTE_NAV, routeDesc, routeHash, type RouteDef } from '../routes';
 import { useLockReason, lockedAttrs } from '../lib/useLocked';
-import { useMax, useUpdates, useMeta, usePve, useDex, useDexSoft } from '../lib/data';
+import { useMax, useUpdates, useMeta, usePve, useDex, useDexSoft, useGamedaySoft } from '../lib/data';
 import { Sprite } from '../components/Bits';
 import { PxIcon } from '../components/PxIcon';
 import { NameNode } from '../components/Row';
@@ -125,9 +125,47 @@ function UpdateDates({ row }: { row: GameUpdate }) {
 
 /** 홈 — 히어로는 데이터 없이 바로 서고, 그 아래(추천·안내·소식)만 기다린다.
     전에는 화면 전체가 max·pve·updates 를 기다려 첫 내용(LCP)이 5초였다 — 히어로는 글자뿐인데도 (v4.4.2 측정) */
+/** 다음 맥스 배틀 한 건 — 지금 진행 중이거나 다가오는 것 중 가장 이른 것. 없으면 null */
+function nextMaxBattle(events: readonly { type: string; title: string; start: string; end: string }[] | undefined) {
+  if (!events) return null;
+  const now = Date.now();
+  return events
+    .filter((event) => (event.type === 'max-mondays' || event.type === 'max-battles') && Date.parse(event.end) >= now)
+    .sort((left, right) => Date.parse(left.start) - Date.parse(right.start))[0] ?? null;
+}
+
+// 'Dynamax Articuno, Zapdos, and Moltres during Max Monday' → ['프리져', '썬더', '파이어'].
+// 일정 원본에 dex 번호가 없어 영문 제목의 낱말을 도감 영문 이름표에 대 본다.
+// 못 찾는 낱말은 그냥 버린다 — 이름을 지어내지 않는다 (§3)
+function bossNamesFromTitle(title: string, en: Record<string, string> | undefined, ko: Record<string, string> | undefined): string[] {
+  if (!en || !ko) return [];
+  const byEn = new Map(Object.entries(en).map(([id, name]) => [name.toLowerCase(), id]));
+  const out: string[] = [];
+  for (const word of title.replace(/[^A-Za-z' -]/g, ' ').split(/\s+/)) {
+    const id = byEn.get(word.toLowerCase());
+    const name = id ? ko[id] : undefined;
+    if (name && !out.includes(name)) out.push(name);
+  }
+  return out;
+}
+
+// '2026-09-21T06:00:00.000' → '9.21'. 시간대를 안 옮긴다 — 값이 이미 한국 기준이다 (HotSearch asOfLabel 과 같은 이유)
+function monthDay(iso: string): string {
+  const match = /^(\d{4})-(\d{2})-(\d{2})/.exec(iso);
+  return match ? `${Number(match[2])}.${Number(match[3])}` : '';
+}
+
 export default function Home({ onOpen }: { onOpen: OpenMon }) {
   // 장면의 이름 한 글자 때문에 히어로를 세우지 않는다 — 도착하면 채워진다
   const dexSoft = useDexSoft();
+  const gameday = useGamedaySoft();
+  const battle = nextMaxBattle(gameday?.GAMEDAY.events);
+  const bosses = battle ? bossNamesFromTitle(battle.title, dexSoft?.DEX_DATA.en, dexSoft?.DEX_DATA.names) : [];
+  // 같은 날이면 날짜 하나, 다른 날이면 '9.21 — 9.27'
+  const when = battle
+    ? (monthDay(battle.start) === monthDay(battle.end) ? monthDay(battle.start) : `${monthDay(battle.start)} — ${monthDay(battle.end)}`)
+    : '';
+  const kind = battle?.type === 'max-battles' ? 'MAX BATTLE DAY' : 'MAX MONDAY';
   return (
     <div className="home-dashboard">
       <div className="home__top-layout">
@@ -140,10 +178,20 @@ export default function Home({ onOpen }: { onOpen: OpenMon }) {
           <h2>다음 맥스 배틀,<br /><em>누구와 갈까요?</em></h2>
           <p>티어를 비교하고, 나만의 팀을 준비하세요.<br />첫 선택부터 배틀 준비까지 함께해요.</p>
         </div>
+        {/* 손에는 720w, PC 에는 1200w — 원본 1536w·292KB 를 첫 그림(LCP)으로 실을 이유가 없다 (v4.4.2 의 성능 작업을 지키려고).
+            캡션의 날짜·보스는 gameday 일정에서 온다 — 코드에 박아 두면 다음 주에 틀린 말이 된다 (§3) */}
         <figure className="max-battle-art">
-          <img src={`${import.meta.env.BASE_URL}images/max-battle-articuno-team-v2.webp`}
-            alt={`${dexSoft?.DEX_DATA.names['464'] ?? ''}·${dexSoft?.DEX_DATA.names['242'] ?? ''}·${dexSoft?.DEX_DATA.names['249'] ?? ''}·${dexSoft?.DEX_DATA.names['530'] ?? ''}가 다이맥스 ${dexSoft?.DEX_DATA.names['144'] ?? ''}와 맞서는 배틀 일러스트`} width="1536" height="1024" fetchPriority="high" />
-          <figcaption><span>9.21 — 9.27 · MAX BATTLE</span><b>{['144', '145', '146'].map(id => dexSoft?.DEX_DATA.names[id]).filter(Boolean).join(' · ')}</b><small>대표 보스 배틀 일러스트</small></figcaption>
+          <img
+            src={`${import.meta.env.BASE_URL}images/max-battle-articuno-team-1200.webp`}
+            srcSet={`${import.meta.env.BASE_URL}images/max-battle-articuno-team-720.webp 720w, ${import.meta.env.BASE_URL}images/max-battle-articuno-team-1200.webp 1200w`}
+            sizes="(max-width: 699px) 100vw, (max-width: 999px) 90vw, 55vw"
+            alt={`${dexSoft?.DEX_DATA.names['464'] ?? ''}·${dexSoft?.DEX_DATA.names['242'] ?? ''}·${dexSoft?.DEX_DATA.names['249'] ?? ''}·${dexSoft?.DEX_DATA.names['530'] ?? ''}가 다이맥스 ${dexSoft?.DEX_DATA.names['144'] ?? ''}와 맞서는 배틀 일러스트`}
+            width="1200" height="800" fetchPriority="high" decoding="async" />
+          <figcaption>
+            {when ? <span>{when} · {kind}</span> : null}
+            {bosses.length ? <b>{bosses.join(' · ')}</b> : null}
+            <small>대표 보스 배틀 일러스트</small>
+          </figcaption>
         </figure>
         <div className="home__cta">
           <a className="home__btn home__btn--primary" href={routeHash('dmax')}
