@@ -355,7 +355,15 @@ export interface HotSearchRow {
  * 인기 검색어 묶음 (backend/hotsearch_build.py).
  * asOf 가 null 이면 아직 한 번도 집계가 안 돈 것이다 — rows 도 비어 있다.
  */
+export interface HotSearchCountry {
+  code: string;
+  total: number;
+  rows: HotSearchRow[];
+}
+
 export interface HotSearchBundle {
+  countries?: HotSearchCountry[];
+  countriesStatus?: 'ready' | 'unavailable';
   asOf: string | null;
   window: string;
   rows: HotSearchRow[];

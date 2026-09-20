@@ -130,26 +130,21 @@ export default function Home({ onOpen }: { onOpen: OpenMon }) {
   const dexSoft = useDexSoft();
   return (
     <div className="home-dashboard">
+      <div className="home__top-layout">
+        <HotSearch onOpen={onOpen} />
       {/* 마스코트와 버튼 줄은 .home__intro **밖**에 선다 — CSS 가 세 칸(글·그림·버튼)으로 잡는다.
           안에 넣었더니 그림이 글 아래로 내려가고 히어로 높이가 71px 줄었다 */}
       <section className="home__welcome" aria-label="소개">
         <div className="home__intro">
-          <span className="home__eyebrow"><span className="home__eyebrow-dot" aria-hidden="true" />DYNAMAX · RAID · PVP</span>
-          <h2>맥스 배틀에 데려갈 포켓몬,<br />여기서 골라요.</h2>
-          <p>다이맥스 티어표와 추천 덱을 비교하고, 레이드·PvP까지 확인하세요.</p>
+          <span className="home__eyebrow"><span className="home__eyebrow-dot" aria-hidden="true" />BATTLE GUIDE / 01</span>
+          <h2>다음 맥스 배틀,<br /><em>누구와 갈까요?</em></h2>
+          <p>티어를 비교하고, 나만의 팀을 준비하세요.<br />첫 선택부터 배틀 준비까지 함께해요.</p>
         </div>
-        {/* 맥스 배틀 한 장면 — 꾸밈이라 aria-hidden. 이름은 도감 이름표에서 읽는다(코드에 한글을 박지 않는다 · §3).
-            그림은 스프라이트 묶음의 거다이맥스 팬텀(10202)·인텔리레온(818) — 파일이 없으면 깨진 그림 대신 자리를 비운다 */}
-        <div className="max-scene" aria-hidden="true">
-          <div className="max-scene__status"><span>GIGANTAMAX</span><b>{dexSoft?.DEX_DATA.names['94'] ?? ''}</b><i /></div>
-          <div className="max-scene__ring" />
-          <img className="max-scene__boss" src={`${import.meta.env.BASE_URL}sprites/10202.png`} alt=""
-            onError={(event) => { event.currentTarget.hidden = true; }} />
-          <img className="max-scene__ally" src={`${import.meta.env.BASE_URL}sprites/818.png`} alt=""
-            onError={(event) => { event.currentTarget.hidden = true; }} />
-          <span className="max-scene__label">MAX BATTLE</span>
-          <div className="max-scene__charge"><span>MAX ENERGY</span><i /><i /><i /></div>
-        </div>
+        <figure className="max-battle-art">
+          <img src={`${import.meta.env.BASE_URL}images/max-battle-articuno-team-v2.webp`}
+            alt={`${dexSoft?.DEX_DATA.names['464'] ?? ''}·${dexSoft?.DEX_DATA.names['242'] ?? ''}·${dexSoft?.DEX_DATA.names['249'] ?? ''}·${dexSoft?.DEX_DATA.names['530'] ?? ''}가 다이맥스 ${dexSoft?.DEX_DATA.names['144'] ?? ''}와 맞서는 배틀 일러스트`} width="1536" height="1024" fetchPriority="high" />
+          <figcaption><span>9.21 — 9.27 · MAX BATTLE</span><b>{['144', '145', '146'].map(id => dexSoft?.DEX_DATA.names[id]).filter(Boolean).join(' · ')}</b><small>대표 보스 배틀 일러스트</small></figcaption>
+        </figure>
         <div className="home__cta">
           <a className="home__btn home__btn--primary" href={routeHash('dmax')}
             onClick={() => track('home_cta', { to: 'dmax' })}>다이맥스 티어표 보기<span aria-hidden="true"> →</span></a>
@@ -157,6 +152,7 @@ export default function Home({ onOpen }: { onOpen: OpenMon }) {
             onClick={() => track('home_cta', { to: 'dmax-deck' })}>맥스 배틀 덱 짜기</a>
         </div>
       </section>
+      </div>
       {/* 기다리는 자리도 한 화면을 채운다 — 바닥글이 먼저 보였다가 밀리면 CLS 다 */}
       <Suspense fallback={<div className="home__loading" aria-busy="true" />}>
         <HomeData onOpen={onOpen} />
@@ -188,8 +184,6 @@ function HomeData({ onOpen }: { onOpen: OpenMon }) {
 
   return (
     <>
-      {/* 본문 맨 위 — 줄이 없으면 스스로 아무것도 그리지 않는다 (집계 전이거나 GA 가 조용할 때) */}
-      <HotSearch onOpen={onOpen} />
 
       <section className="home__picks">
         <div className="home__section">

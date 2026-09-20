@@ -1,5 +1,5 @@
 // ─────────────────────────────────────────────────────────────────────────────
-// HotSearch.tsx — 어제 많이 검색된 포켓몬 (v4.5.5)
+// HotSearch.tsx — 다이맥스 포켓몬 검색순위 (v4.5.5)
 //
 // 세는 말은 **완성어**다. '뮤' 를 치다 뮤츠를 고르면 뮤츠가 한 번 오른다 —
 // 토막말은 애초에 보내지 않는다 (lib/track.ts trackSearchPick).
@@ -67,7 +67,7 @@ const FLAG: Partial<Record<Source, string>> = { mine: '내 검색 · 이 브라�
 const NOTE: Record<Source, string> = {
   mine: '이 브라우저에서 검색해 연 횟수예요. 밖으로 나가지 않아요',
   sample: '모양을 보려고 채운 표예요. 실제 검색 수가 아니에요',
-  ga: '검색해서 열어 본 횟수예요',
+  ga: '어제 검색해서 열어 본 횟수예요',
 };
 const FOOT: Record<Source, string> = {
   mine: '미리보기라 이 기기에만 세요. 운영에서는 모두의 검색을 하루 두 번 세요',
@@ -80,7 +80,7 @@ export function HotHead({ source, label }: { source: Source; label: string }) {
   return (
     <div className="home__section">
       <h3>
-        어제 많이 검색된 포켓몬
+        다이맥스 포켓몬 검색순위
         {/* 이 수가 어디서 왔는지 화면에서 바로 알 수 있어야 한다 — 진짜 집계로 읽으면 안 된다 */}
         {FLAG[source] ? <span className="hot__flag">{FLAG[source]}</span> : null}
       </h3>
@@ -133,12 +133,12 @@ export default function HotSearch({ onOpen }: { onOpen: OpenMon }) {
   const loop = [...rows, ...rows];
 
   return (
-    <section className="home__hot" aria-label="어제 많이 검색된 포켓몬">
+    <section className="home__hot" aria-label="다이맥스 포켓몬 검색순위">
       <HotHead source={source} label={label} />
 
       {/* 넓은 화면 — 표 그대로 */}
       <div className="hot__full">
-        <HotList rows={rows} onOpen={onOpen} />
+        <div className="hot__scroll" tabIndex={0} role="region" aria-label="인기 검색 1위부터 10위까지"><HotList rows={rows.slice(0, 10)} onOpen={onOpen} /></div>
         <span className="hot__foot">{FOOT[source]}</span>
       </div>
 
@@ -155,7 +155,7 @@ export default function HotSearch({ onOpen }: { onOpen: OpenMon }) {
         </div>
       </div>
 
-      <a className="hot__more" href={routeHash('hot')}>전체 보기 →</a>
+      <a className="hot__more" href={routeHash('hot')}>목록 더보기 →</a>
     </section>
   );
 }
