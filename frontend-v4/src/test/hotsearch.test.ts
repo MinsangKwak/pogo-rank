@@ -10,7 +10,7 @@ import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { num } from '../lib/cell';
-import { asOfLabel, barWidth } from '../components/HotSearch';
+import { asOfLabel, barWidth, gaNote } from '../components/HotSearch';
 
 const LEAK = /NaN|undefined|null|Infinity|\[object Object\]/;
 
@@ -34,6 +34,17 @@ describe('인기 검색어 — 기준 시각', () => {
     for (const bad of ['', 'nope', '2026-09', 'null']) {
       expect(asOfLabel(bad)).toBe('');
     }
+  });
+});
+
+// 일주일 창으로 넓혀 온 표에 '어제부터' 라 적으면 거짓말이다
+describe('인기 검색어 — 창에 맞는 문구', () => {
+  it('하루 창은 어제부터, 일주일 창은 일주일', () => {
+    expect(gaNote('1d')).toContain('어제부터');
+    expect(gaNote('7d')).toContain('일주일');
+  });
+  it('모르는 값이면 하루 창 문구로 — 새지 않는다', () => {
+    for (const value of ['', 'nope']) expect(LEAK.test(gaNote(value))).toBe(false);
   });
 });
 

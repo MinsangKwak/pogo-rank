@@ -1,5 +1,5 @@
 import unittest
-from hotsearch_build import country_rows, MIN_ROW_COUNT, MIN_ROWS, MIN_COUNTRY
+from hotsearch_build import country_rows, pick_rows, MIN_ROW_COUNT, MIN_ROWS, MIN_COUNTRY, WINDOWS
 
 def row(name, country, count):
     return {'dimensionValues': [{'value': name}, {'value': country}], 'metricValues': [{'value': str(count)}]}
@@ -22,6 +22,25 @@ class CountrySearchTests(unittest.TestCase):
         self.assertEqual([g['code'] for g in country_rows(enough, {})], ['JP'])
     def test_invalid_rows_are_not_exposed(self):
         self.assertEqual(country_rows([{}, row('(not set)', 'KR', 4), row('피카츄', '(not set)', 4), row('피카츄', 'KR', 'nan'), row('피카츄', 'KR', -1)], {}), [])
+
+class GlobalSearchTests(unittest.TestCase):
+    def one(self, name, count):
+        return {'dimensionValues': [{'value': name}], 'metricValues': [{'value': str(count)}]}
+
+    # 줄이 MIN_ROWS 에 못 미치면 표를 통째로 비운다 — main 은 그때 다음 창(7일)으로 넓힌다
+    def test_too_few_rows_empties_the_table(self):
+        few = [self.one('포켓몬'+str(i), MIN_ROW_COUNT) for i in range(MIN_ROWS - 1)]
+        self.assertEqual(pick_rows(few, {}), [])
+        enough = few + [self.one('뮤츠', MIN_ROW_COUNT)]
+        self.assertEqual(len(pick_rows(enough, {})), MIN_ROWS)
+
+    def test_low_counts_and_not_set_are_dropped(self):
+        rows = [self.one('(not set)', 50), self.one('피카츄', MIN_ROW_COUNT - 1)] + [self.one('포켓몬'+str(i), 9) for i in range(3)]
+        self.assertEqual([r['name'] for r in pick_rows(rows, {})], ['포켓몬0', '포켓몬1', '포켓몬2'])
+
+    # 하루 → 일주일 순서다. 뒤집히면 늘 일주일 창만 쓰게 된다
+    def test_windows_widen(self):
+        self.assertEqual([w for w, _ in WINDOWS], ['1d', '7d'])
 
 if __name__ == '__main__':
     unittest.main()

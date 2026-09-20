@@ -52,18 +52,19 @@ export function barWidth(count: number, top: number): number {
 type Source = 'ga' | 'sample' | 'mine';
 
 /** 표와 출처를 한 번에 — 홈과 전체 보기 화면이 같은 규칙으로 읽게 (v4.5.11) */
-export function useHotRows(): { rows: HotSearchRow[]; source: Source; label: string } {
+export function useHotRows(): { rows: HotSearchRow[]; source: Source; label: string; window: string } {
   const hot = useHotSearchSoft();
   // 미리보기에서 이 브라우저에 센 것. 저장소는 렌더 중에 읽으면 어긋나므로 붙은 뒤에 읽는다
   const [mine, setMine] = useState<HotSearchRow[]>([]);
   useEffect(() => { if (hot?.preview) setMine(readLocalPicks()); }, [hot?.preview]);
 
   // 내가 검색한 것이 있으면 그것을 세운다 — 샘플보다 내 손으로 만든 표가 먼저다
-  if (hot?.preview && mine.length) return { rows: mine, source: 'mine', label: '' };
+  if (hot?.preview && mine.length) return { rows: mine, source: 'mine', label: '', window: '' };
   return {
     rows: hot?.rows ?? [],
     source: hot?.sample ? 'sample' : 'ga',
     label: hot?.asOf ? asOfLabel(hot.asOf) : '',
+    window: hot?.window ?? '',
   };
 }
 
@@ -73,6 +74,12 @@ const NOTE: Record<Source, string> = {
   sample: '모양을 보려고 채운 표예요. 실제 검색 수가 아니에요',
   ga: '어제부터 지금까지 검색해서 열어 본 횟수예요',
 };
+
+// 집계가 하루치로 문턱을 못 넘으면 일주일로 넓혀 온다 (backend/hotsearch_build.py WINDOWS).
+// 그 표에 '어제부터' 라 적으면 거짓말이다 — window 값을 보고 말을 고른다
+export function gaNote(window: string): string {
+  return window === '7d' ? '최근 일주일 동안 검색해서 열어 본 횟수예요' : NOTE.ga;
+}
 const FOOT: Record<Source, string> = {
   mine: '미리보기라 이 기기에만 세요. 운영에서는 모두의 검색을 하루 두 번 세요',
   sample: '운영에 올라가면 실제 검색으로 채워져요',
@@ -80,7 +87,7 @@ const FOOT: Record<Source, string> = {
 };
 
 /** 머리줄 — 홈과 전체 보기가 같은 말을 쓴다 */
-export function HotHead({ source, label }: { source: Source; label: string }) {
+export function HotHead({ source, label, window = '' }: { source: Source; label: string; window?: string }) {
   return (
     <div className="home__section">
       <h3>
@@ -89,7 +96,7 @@ export function HotHead({ source, label }: { source: Source; label: string }) {
         {FLAG[source] ? <span className="hot__flag">{FLAG[source]}</span> : null}
       </h3>
       <span>
-        {NOTE[source]}
+        {source === 'ga' ? gaNote(window) : NOTE[source]}
         {label && source === 'ga' ? <span className="home__date"> · {label} 기준</span> : null}
       </span>
     </div>
@@ -128,7 +135,7 @@ export function HotList({ rows, onOpen }: { rows: HotSearchRow[]; onOpen: OpenMo
 }
 
 export default function HotSearch({ onOpen }: { onOpen: OpenMon }) {
-  const { rows, source, label } = useHotRows();
+  const { rows, source, label, window } = useHotRows();
   if (!rows.length) return null;
 
   const top = rows[0]?.count ?? 0;
@@ -138,7 +145,7 @@ export default function HotSearch({ onOpen }: { onOpen: OpenMon }) {
 
   return (
     <section className="home__hot" aria-label="포켓몬 검색순위">
-      <HotHead source={source} label={label} />
+      <HotHead source={source} label={label} window={window} />
 
       {/* 넓은 화면 — 표 그대로 */}
       <div className="hot__full">

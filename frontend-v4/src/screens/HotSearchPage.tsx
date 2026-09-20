@@ -54,7 +54,7 @@ export default function HotSearchPage({ onOpen }: { onOpen: OpenMon }) {
         </div>
       </section>
       <section className={`hot-results hot-results--${view}`} aria-label="검색 순위">
-        <div className="hot-results__heading"><div>{country ? <><h3>{countryName(country)} 인기 검색</h3><p>선택한 국가에서 검색해 연 포켓몬{hot?.asOf ? ` · ${asOfLabel(hot.asOf)} 기준` : ''}</p></> : <HotHead source={global.source} label={global.label} />}</div><ViewToggle view={view} onToggle={() => setView(view === 'grid' ? 'list' : 'grid')} extraClass="" /></div>
+        <div className="hot-results__heading"><div>{country ? <><h3>{countryName(country)} 인기 검색</h3><p>선택한 국가에서 검색해 연 포켓몬{hot?.asOf ? ` · ${asOfLabel(hot.asOf)} 기준` : ''}</p></> : <HotHead source={global.source} label={global.label} window={global.window} />}</div><ViewToggle view={view} onToggle={() => setView(view === 'grid' ? 'list' : 'grid')} extraClass="" /></div>
         <div aria-live="polite">{rows.length ? <HotList rows={rows} onOpen={onOpen} /> : <p className="empty">{country ? `${countryName(country)}의 검색 데이터가 아직 없어요. 다른 국가나 전 세계 순위를 선택해 주세요.` : '아직 검색 데이터가 충분하지 않아요.'}</p>}</div>
       </section>
       <p className="detail__foot">실시간 순위가 아닌 정기 집계입니다. 검색창에서 골라 연 포켓몬만 세며, 통계를 꺼 두신 분의 검색은 포함하지 않아요. 국가별 집계는 분석 서비스에서 확인된 접속 국가를 기준으로 합니다.</p>

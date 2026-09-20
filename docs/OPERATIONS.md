@@ -520,9 +520,13 @@ python3 backend/hotsearch_build.py          # 시크릿이 없으면 "빈 표를
 cat data/hotsearch.json                      # rows 가 차 있으면 성공
 ```
 
-Actions 로그의 `인기 검색어 집계` 단계에 `hotsearch: N건` 이 찍힌다. `0건` 이 이어지면 볼 곳은 셋이다 —
-시크릿이 비었는지, 서비스 계정이 GA 속성에 뷰어로 들어갔는지, 운영에 `search` 이벤트가 실제로 쌓였는지
+Actions 로그의 `인기 검색어 집계` 단계에 두 줄이 찍힌다 —
+`hotsearch: 최근 7일 page_view N회 · 사용자 M명` 과 `hotsearch: N건 · 창 1d|7d`.
+첫 줄이 0이면 시크릿·뷰어 권한 문제고, 첫 줄은 차는데 둘째 줄이 `0건` 이면 운영에 `search` 이벤트가 안 쌓인 것이다
 (GA 실시간 보고서에서 `search` 를 찾는다).
+
+**창은 하루 → 일주일로 넓힌다** (v4.6.1). 하루치 줄이 문턱(`MIN_ROWS=3`)에 못 미치면 `7daysAgo..today` 로 다시 묻고,
+파일의 `window` 가 `7d` 가 되며 화면은 "최근 일주일 동안" 이라 적는다. 일주일로도 못 넘으면 빈 표다.
 
 ### 알아둘 것
 

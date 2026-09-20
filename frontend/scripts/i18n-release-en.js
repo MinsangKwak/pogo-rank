@@ -15,6 +15,9 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 const RELEASE_NOTES_EN = {
+  '2026-09-20 · v4.6.1': [
+    '**When a single day has too few searches, the ranking widens to the past week** — the note above the table says "past week" when that happened',
+  ],
   '2026-09-20 · v4.6.0': [
     '**Home has a new layout** — the Pokémon search ranking on the left, the next Max Battle poster on the right; its date and bosses come from the schedule',
     '**The full ranking page now has a world map** — pick a country to see what people there searched most; only countries with enough searches are shaded',

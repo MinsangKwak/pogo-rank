@@ -365,6 +365,7 @@ export interface HotSearchBundle {
   countries?: HotSearchCountry[];
   countriesStatus?: 'ready' | 'unavailable';
   asOf: string | null;
+  /** 집계 창 — '1d' 가 문턱을 못 넘으면 '7d' 로 넓혀 온다. 화면 문구가 이 값을 본다 */
   window: string;
   rows: HotSearchRow[];
   /** 미리보기(dev)가 실제 순위표 이름으로 채운 표. 운영에서는 오지 않는다 */

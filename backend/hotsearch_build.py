@@ -15,7 +15,7 @@
 #   GA_SA_JSON       서비스 계정 키 JSON 한 줄. GA4 속성에 '뷰어' 로 추가해 두어야 한다 (docs/OPERATIONS.md)
 #   GA_PROPERTY_ID   GA4 속성 번호(숫자만). 측정 ID(G-...)가 아니다
 # 출력
-#   data/hotsearch.json  {"asOf": ISO8601, "window": "24h", "rows": [{"name", "count", "sprite"}...]}
+#   data/hotsearch.json  {"asOf": ISO8601, "window": "1d"|"7d", "rows": [{"name", "count", "sprite"}...]}
 #
 # 비어도 빌드를 세우지 않는다 — 시크릿이 없거나 GA 가 답을 안 주면 rows 를 비워 쓴다.
 # 화면은 rows 가 비면 구역 자체를 그리지 않는다 (§1 의 '빈 값은 줄을 세우지 않는다' 와 같은 결).
@@ -40,6 +40,10 @@ OUT_PATH = 'data/hotsearch.json'
 MIN_ROW_COUNT = 3
 MIN_ROWS = 3
 MIN_COUNTRY = 10
+# 창 — 앞에서부터 시험해 줄이 MIN_ROWS 를 넘는 첫 창을 쓴다 (v4.6.1).
+#   하루치가 문턱에 못 미치면 일주일로 넓힌다. 방문이 적은 서비스에서 하루 창은 거의 늘 비고,
+#   비어 있는 것보다 '이번 주' 라 적힌 표가 낫다. 화면은 window 값을 보고 문구를 고른다
+WINDOWS = (('1d', '1daysAgo'), ('7d', '7daysAgo'))
 KST = timezone(timedelta(hours=9))
 SCOPE = 'https://www.googleapis.com/auth/analytics.readonly'
 
@@ -91,18 +95,49 @@ def sprite_by_name():
     return table
 
 
-# GA4 Data API runReport — 어제부터 지금까지의 search_term 상위 N (국가별도 같은 창).
+# GA4 Data API runReport — start 부터 지금까지의 search_term 상위 N (국가별도 같은 창).
 # '어제 하루'(1daysAgo..1daysAgo) 가 아니라 굴러가는 이틀인 이유: GA4 는 이벤트를 몇 시간 늦게 처리해서,
 # 자정 집계가 '어제' 를 물으면 방금 끝난 날이라 거의 비어 온다. 창을 넓히면 그 구멍이 메워진다.
-def fetch_rows(property_id, sa_info, by_country=False):
+_TOKEN = {}
+
+
+# 한 판에 보고서를 넷까지 부른다 — 토큰은 한 번만 받는다
+def token(sa_info):
     from google.oauth2 import service_account
     from google.auth.transport.requests import Request
+
+    if 'value' not in _TOKEN:
+        creds = service_account.Credentials.from_service_account_info(sa_info, scopes=[SCOPE])
+        creds.refresh(Request())
+        _TOKEN['value'] = creds.token
+    return _TOKEN['value']
+
+
+def run_report(property_id, sa_info, body):
     import requests
 
-    creds = service_account.Credentials.from_service_account_info(sa_info, scopes=[SCOPE])
-    creds.refresh(Request())
+    response = requests.post(
+        f'https://analyticsdata.googleapis.com/v1beta/properties/{property_id}:runReport',
+        headers={'Authorization': f'Bearer {token(sa_info)}'}, json=body, timeout=30)
+    response.raise_for_status()
+    return response.json()
+
+
+# 최근 7일 방문 규모 — 로그에만 남긴다. '0건' 이 이어질 때 검색이 없는 건지 방문 자체가 없는 건지 여기서 갈린다
+def traffic_note(property_id, sa_info):
+    report = run_report(property_id, sa_info, {
+        'dateRanges': [{'startDate': '7daysAgo', 'endDate': 'today'}],
+        'dimensionFilter': {'filter': {'fieldName': 'eventName', 'stringFilter': {'value': 'page_view', 'matchType': 'EXACT'}}},
+        'metrics': [{'name': 'eventCount'}, {'name': 'activeUsers'}],
+    })
+    values = [item.get('value', '0') for item in (report.get('rows') or [{}])[0].get('metricValues', [])]
+    views, users = (values + ['0', '0'])[:2]
+    return f'최근 7일 page_view {views}회 · 사용자 {users}명'
+
+
+def fetch_rows(property_id, sa_info, start='1daysAgo', by_country=False):
     body = {
-        'dateRanges': [{'startDate': '1daysAgo', 'endDate': 'today'}],
+        'dateRanges': [{'startDate': start, 'endDate': 'today'}],
         'dimensions': [{'name': 'searchTerm'}] + ([{'name': 'countryId'}] if by_country else []),
         'dimensionFilter': {'filter': {'fieldName': 'eventName', 'stringFilter': {'value': 'search', 'matchType': 'EXACT'}}},
         'metrics': [{'name': 'eventCount'}],
@@ -112,11 +147,7 @@ def fetch_rows(property_id, sa_info, by_country=False):
     collected = []
     while True:
         body['offset'] = len(collected)
-        response = requests.post(
-            f'https://analyticsdata.googleapis.com/v1beta/properties/{property_id}:runReport',
-            headers={'Authorization': f'Bearer {creds.token}'}, json=body, timeout=30)
-        response.raise_for_status()
-        report = response.json()
+        report = run_report(property_id, sa_info, body)
         batch = report.get('rows', [])
         collected.extend(batch)
         if not by_country or not batch or len(collected) >= int(report.get('rowCount', 0)):
@@ -132,6 +163,27 @@ SAMPLE_COUNTS = (412, 318, 247, 191, 168, 145, 122, 98, 76, 54)
 def sample_rows(sprites):
     return [{'name': name, 'count': count, 'sprite': sprites.get(name)}
             for name, count in zip(SAMPLE_NAMES, SAMPLE_COUNTS)]
+
+
+# 전체 순위 — GA 행에서 문턱을 넘은 줄만 상위 N 으로. 줄이 MIN_ROWS 에 못 미치면 빈 표다
+def pick_rows(rows, sprites):
+    picked = []
+    for row in rows:
+        name = (row.get('dimensionValues') or [{}])[0].get('value', '').strip()
+        # GA 가 값을 못 붙인 행은 '(not set)' 으로 온다 — 화면에 그대로 나가면 §1 위반이다
+        if not name or name.startswith('('):
+            continue
+        try:
+            count = int((row.get('metricValues') or [{}])[0].get('value', 0))
+        except (TypeError, ValueError):
+            continue
+        if count < MIN_ROW_COUNT:
+            continue
+        picked.append({'name': name, 'count': count, 'sprite': sprites.get(name)})
+        if len(picked) >= TOP_N:
+            break
+    # 줄이 몇 개 안 되면 순위라 부르기 어렵다 — 비운다 (미리보기는 finish 가 샘플로 채운다)
+    return picked if len(picked) >= MIN_ROWS else []
 
 
 def country_rows(rows, sprites):
@@ -165,7 +217,7 @@ def country_rows(rows, sprites):
 
 def main():
     os.makedirs('data', exist_ok=True)
-    payload = {'asOf': datetime.now(KST).isoformat(timespec='seconds'), 'window': '24h', 'rows': [], 'countries': [], 'countriesStatus': 'unavailable'}
+    payload = {'asOf': datetime.now(KST).isoformat(timespec='seconds'), 'window': WINDOWS[0][0], 'rows': [], 'countries': [], 'countriesStatus': 'unavailable'}
     is_dev = os.environ.get('BUILD_CHANNEL') == 'dev'
 
     # 표가 빈 채로 끝나는 자리가 셋이다(시크릿 없음 · 조회 실패 · GA 가 0건). 셋 다 여기를 지난다
@@ -187,42 +239,34 @@ def main():
         finish('GA 시크릿이 없어 빈 표')
         return
 
+    sa_info = json.loads(raw_key)
     try:
-        rows = fetch_rows(property_id, json.loads(raw_key))
-    except Exception as error:                      # noqa: BLE001 — 집계 실패가 배포를 세우면 안 된다
-        finish(f'GA 조회 실패 ({type(error).__name__})')
-        return
+        print(f'hotsearch: {traffic_note(property_id, sa_info)}')
+    except Exception as error:                      # noqa: BLE001 — 진단 줄이 죽어도 집계는 가야 한다
+        print(f'hotsearch: 방문 규모 조회 실패 ({type(error).__name__})', file=sys.stderr)
 
     sprites = sprite_by_name()
-    picked = []
-    for row in rows:
-        name = (row.get('dimensionValues') or [{}])[0].get('value', '').strip()
-        # GA 가 값을 못 붙인 행은 '(not set)' 으로 온다 — 화면에 그대로 나가면 §1 위반이다
-        if not name or name.startswith('('):
-            continue
+    picked, start = [], None
+    for window, start in WINDOWS:
         try:
-            count = int((row.get('metricValues') or [{}])[0].get('value', 0))
-        except (TypeError, ValueError):
-            continue
-        if count < MIN_ROW_COUNT:
-            continue
-        picked.append({'name': name, 'count': count, 'sprite': sprites.get(name)})
-        if len(picked) >= TOP_N:
+            picked = pick_rows(fetch_rows(property_id, sa_info, start), sprites)
+        except Exception as error:                  # noqa: BLE001 — 집계 실패가 배포를 세우면 안 된다
+            finish(f'GA 조회 실패 ({type(error).__name__})')
+            return
+        payload['window'] = window
+        if picked:
             break
-    # 줄이 몇 개 안 되면 순위라 부르기 어렵다 — 비운다 (미리보기는 finish 가 샘플로 채운다)
-    if len(picked) < MIN_ROWS:
-        picked = []
 
-    # 나라별은 전체가 문턱을 넘었을 때만 묻는다 — 전체가 못 넘는데 나라가 넘을 리 없고, 호출 하나를 아낀다
+    # 나라별은 전체가 문턱을 넘었을 때만, 같은 창으로 묻는다 — 전체가 못 넘는데 나라가 넘을 리 없고, 호출 하나를 아낀다
     if picked:
         try:
-            payload['countries'] = country_rows(fetch_rows(property_id, json.loads(raw_key), by_country=True), sprites)
+            payload['countries'] = country_rows(fetch_rows(property_id, sa_info, start, by_country=True), sprites)
             payload['countriesStatus'] = 'ready'
         except Exception as error:                  # noqa: BLE001 — 나라별이 죽어도 전체 순위는 나가야 한다
             print(f'hotsearch: 국가 집계 실패 ({type(error).__name__})', file=sys.stderr)
 
     payload['rows'] = picked
-    finish(f'{len(picked)}건 (기준 {payload["asOf"]})')
+    finish(f'{len(picked)}건 · 창 {payload["window"]} (기준 {payload["asOf"]})')
 
 
 if __name__ == '__main__':

@@ -22,7 +22,18 @@
 ---
 
 <details open>
-<summary><b>2026-09-20</b> — 16판 · <code>v4.6.0</code> · <code>v4.5.11</code> · <code>v4.5.10</code> · <code>v4.5.9</code> · <code>v4.5.8</code> · <code>v4.5.7</code> · <code>v4.5.6</code> · <code>v4.5.5</code> · <code>v4.5.4</code> · <code>v4.5.3</code> · <code>v4.5.2</code> · <code>v4.5.1</code> · <code>v4.5.0</code> · <code>v4.4.2</code> · <code>v4.4.1</code> · <code>v4.4.0</code></summary>
+<summary><b>2026-09-20</b> — 17판 · <code>v4.6.1</code> · <code>v4.6.0</code> · <code>v4.5.11</code> · <code>v4.5.10</code> · <code>v4.5.9</code> · <code>v4.5.8</code> · <code>v4.5.7</code> · <code>v4.5.6</code> · <code>v4.5.5</code> · <code>v4.5.4</code> · <code>v4.5.3</code> · <code>v4.5.2</code> · <code>v4.5.1</code> · <code>v4.5.0</code> · <code>v4.4.2</code> · <code>v4.4.1</code> · <code>v4.4.0</code></summary>
+
+<details>
+<summary><b>v4.6.1</b> · 검색순위 창 자동 확장(하루 → 일주일) · 방문 규모 진단</summary>
+
+**"이 정도 수치가 실제로 찍히나"** 에 답하려고 둔 판이다. 방문이 적은 서비스에서 하루 창(`1daysAgo..today`)은 문턱(`MIN_ROWS=3`)을 거의 못 넘는다. `backend/hotsearch_build.py` 가 `WINDOWS = (1d, 7d)` 를 앞에서부터 시험해 줄이 문턱을 넘는 첫 창을 쓰고, `window` 값을 파일에 실어 화면이 "최근 일주일 동안" 으로 말을 바꾼다(`gaNote`). 나라별도 같은 창으로 묻는다.
+
+**방문 규모 진단** — 집계 로그에 `최근 7일 page_view N회 · 사용자 M명` 한 줄을 남긴다. `0건` 이 이어질 때 검색이 없는 건지 방문 자체가 없는 건지가 여기서 갈린다. 토큰은 한 판에 한 번만 받는다.
+
+검사: `pick_rows` 문턱 · 창 순서(unittest 6건), `gaNote` 창 문구(vitest 75건).
+
+</details>
 
 <details>
 <summary><b>v4.6.0</b> · 홈 새 배치(검색 보드 + 배틀 포스터) · 국가별 검색 순위 · 문턱</summary>
