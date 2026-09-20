@@ -317,7 +317,7 @@ body:is([data-route="dex"],[data-route="dmax"],[data-route="pve"],[data-route="p
  body:is([data-route="dex"],[data-route="dmax"],[data-route="pve"],[data-route="pvp"]) .controls { gap:1.2rem; }
  body:is([data-route="dex"],[data-route="dmax"],[data-route="pve"],[data-route="pvp"]) .chips { gap:0.4rem; max-width:100%; }
  body:is([data-route="dmax"],[data-route="pve"],[data-route="pvp"]) .row-list > .row { grid-template-columns:2.4rem 5.6rem minmax(0,1fr) auto; gap:0.8rem; padding:1.6rem 0.4rem; }
- body:is([data-route="dmax"],[data-route="pve"],[data-route="pvp"]) .row > .sprite { width:5.6rem; height:5.6rem; }
+ body:is([data-route="dmax"],[data-route="pve"],[data-route="pvp"]) .row .sprite { width:5.6rem; height:5.6rem; }
  body:is([data-route="dmax"],[data-route="pve"],[data-route="pvp"]) .row__name b { font-size: var(--fs-body); line-height: 1.5; }
  body:is([data-route="dmax"],[data-route="pve"],[data-route="pvp"]) .row__sub { white-space:normal; line-height: 1.7; }
  body[data-route="dex"] .dex-catalog.is-grid { grid-template-columns:repeat(2,minmax(0,1fr)); gap:1.2rem; }
@@ -339,7 +339,7 @@ html body[data-route] :is(#page-raids,#page-eggs) .dex__list.is-grid .gameday__r
  background:radial-gradient(color-mix(in srgb, var(--brand-2) 19%, transparent) .1rem,transparent .12rem) 0 / .8rem .8rem,linear-gradient(135deg,var(--notebook-portrait),var(--notebook-canvas));
  border-bottom:2px solid var(--foil-lo);
 }
-html body[data-route] #content .row-list.is-grid > .row > .sprite,
+html body[data-route] #content .row-list.is-grid > .row .sprite,
 html body[data-route] .dex-catalog.is-grid .dex__row .sprite,
 html body[data-route] :is(#page-raids,#page-eggs) .dex__list.is-grid .gameday__row > .sprite {
  width:18rem; height:18rem; max-width:100%; padding:0; object-fit:contain; align-self:center; margin-bottom:1.2rem;
@@ -366,7 +366,7 @@ html body[data-route] #content .row-list.is-list > .row { border-left:3px solid 
  html body[data-route] #content .row-list.is-grid > .row::after,
  html body[data-route] .dex-catalog.is-grid .dex__row::after,
  html body[data-route] :is(#page-raids,#page-eggs) .dex__list.is-grid .gameday__row::after { height:15rem; }
- html body[data-route] #content .row-list.is-grid > .row > .sprite,
+ html body[data-route] #content .row-list.is-grid > .row .sprite,
  html body[data-route] .dex-catalog.is-grid .dex__row .sprite,
  html body[data-route] :is(#page-raids,#page-eggs) .dex__list.is-grid .gameday__row > .sprite { width:12rem; height:12rem; margin-bottom:1.2rem; }
  html body[data-route] #content .row-list.is-grid .row__name b,

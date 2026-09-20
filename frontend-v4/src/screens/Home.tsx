@@ -152,8 +152,18 @@ export default function Home({ onOpen }: { onOpen: OpenMon }) {
           <h2>맥스 배틀에 데려갈 포켓몬,<br />여기서 골라요.</h2>
           <p>다이맥스 티어표와 추천 덱을 비교하고, 레이드·PvP까지 확인하세요.</p>
         </div>
-        <img className="home__pixel-mascot" src={`${import.meta.env.BASE_URL}sprites/25.png`}
-          alt="" aria-hidden="true" width={96} height={96} />
+        {/* 맥스 배틀 한 장면 — 꾸밈이라 aria-hidden. 이름은 도감 이름표에서 읽는다(코드에 한글을 박지 않는다 · §3).
+            그림은 스프라이트 묶음의 거다이맥스 팬텀(10202)·인텔리레온(818) — 파일이 없으면 깨진 그림 대신 자리를 비운다 */}
+        <div className="max-scene" aria-hidden="true">
+          <div className="max-scene__status"><span>GIGANTAMAX</span><b>{dex.DEX_DATA.names['94'] ?? ''}</b><i /></div>
+          <div className="max-scene__ring" />
+          <img className="max-scene__boss" src={`${import.meta.env.BASE_URL}sprites/10202.png`} alt=""
+            onError={(event) => { event.currentTarget.hidden = true; }} />
+          <img className="max-scene__ally" src={`${import.meta.env.BASE_URL}sprites/818.png`} alt=""
+            onError={(event) => { event.currentTarget.hidden = true; }} />
+          <span className="max-scene__label">MAX BATTLE</span>
+          <div className="max-scene__charge"><span>MAX ENERGY</span><i /><i /><i /></div>
+        </div>
         <div className="home__cta">
           <a className="home__btn home__btn--primary" href={routeHash('dmax')}
             onClick={() => track('home_cta', { to: 'dmax' })}>다이맥스 티어표 보기<span aria-hidden="true"> →</span></a>

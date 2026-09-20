@@ -180,7 +180,7 @@ export default function Dex({ onOpen }: { onOpen: OpenMon }) {
               <button key={row.dex} className={`dex__row${row.unrel ? ' is-unreleased' : ''}`} data-sprite={row.dex}
                 onClick={() => onOpen({ sprite: row.dex, name: row.name, types: form?.types ?? [] })}>
                 <span className="dex__no">{`#${String(row.dex).padStart(4, '0')}`}</span>
-                <Sprite id={row.dex} />
+                {saved === 'grid' ? <span className="dex__portrait"><Sprite id={row.dex} /></span> : <Sprite id={row.dex} />}
                 {row.unrel ? <span className="tag dex__unrel">미구현</span> : null}
                 {/* 메가 딱지는 그림 **바로 뒤**, 이름 앞에 선다 — 이름 안에 넣었더니 이름 줄이 밀렸다 */}
                 <MegaTag megas={data.DEX_DATA.megas[String(row.dex)]} />

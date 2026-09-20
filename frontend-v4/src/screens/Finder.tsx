@@ -139,7 +139,7 @@ export default function Finder() {
   };
 
   const numberBox = (key: 'cpMin' | 'cpMax', label: string) => (
-    <input className="finder__num" type="number" min="0" inputMode="numeric" placeholder={label}
+    <input className="finder__num" type="number" min="0" inputMode="numeric" placeholder={label} aria-label={label}
       value={picked[key]}
       onChange={(event) => setPicked({ ...picked, [key]: event.target.value.replace(/\D/g, '') })} />
   );
@@ -152,6 +152,7 @@ export default function Finder() {
 
       {/* 만들어진 식을 **맨 위에** — 조건을 고르는 내내 결과가 눈에 있어야 무엇이 달라지는지 보인다 */}
       <div className="finder__result">
+        <div className="finder__result-label">READY TO SEARCH <span>포켓몬 GO 검색식</span></div>
         <code className={`finder__out${query ? '' : ' is-empty'}`}>
           {query || '(조건을 고르면 여기에 검색식이 만들어져요)'}
         </code>
@@ -168,7 +169,7 @@ export default function Finder() {
       </div>
 
       <div className="row-head"><h2>자주 쓰는 묶음</h2></div>
-      <div className="finder__chips">
+      <div className="finder__chips finder__presets">
         {FINDER_PRESETS.map((preset) => (
           <button key={preset.id} className="uchip finder__preset" title={preset.why}
             onClick={() => {
@@ -179,12 +180,13 @@ export default function Finder() {
               setPicked({ ...picked, flags });
             }}>
             <PxLabel label={preset.label} />
+            <span className="finder__preset-description">{preset.why}</span>
           </button>
         ))}
       </div>
 
       {FINDER_GROUPS.map((group) => (
-        <div key={group.id} style={{ display: 'contents' }}>
+        <section key={group.id} className="finder__section">
           <div className="row-head"><h2>{group.label}</h2></div>
           <div className="finder__chips">
             {group.items.map((item) => {
@@ -198,9 +200,10 @@ export default function Finder() {
               );
             })}
           </div>
-        </div>
+        </section>
       ))}
 
+      <section className="finder__section">
       <div className="row-head"><h2>타입</h2><span className="meta">여러 개면 “또는”</span></div>
       <div className="finder__chips">
         {Object.keys(data.TYPE_KO).map((key) => {
@@ -217,14 +220,18 @@ export default function Finder() {
         })}
       </div>
 
+      </section>
+      <section className="finder__section">
       <div className="row-head"><h2>CP · 이름</h2></div>
       <div className="finder__row">
         {numberBox('cpMin', 'CP 최소')}
         <span className="finder__dash">–</span>
         {numberBox('cpMax', 'CP 최대')}
-        <input className="finder__name" type="text" placeholder="이름 (예: 파이리)" value={picked.name}
+        <input className="finder__name" type="text" placeholder="이름 (예: 파이리)" aria-label="포켓몬 이름" value={picked.name}
           onChange={(event) => setPicked({ ...picked, name: event.target.value })} />
       </div>
+
+      </section>
 
       {/* v3 는 두 문장으로 나눠 붙인다 — 사전이 줄 단위로 찾으므로 붙이는 자리도 같아야 한다 */}
       <p className="detail__foot">

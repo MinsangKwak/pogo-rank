@@ -299,6 +299,7 @@ export interface Manifest {
  * t 는 dmax 분류에만 붙는 보스 속성 키다 ('이번 주 보스' 카드가 읽는다).
  */
 export interface ScheduleItem {
+  source?: string;
   s: number;
   e: number;
   cat: string;
