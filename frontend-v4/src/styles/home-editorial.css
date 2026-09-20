@@ -116,7 +116,7 @@ html body #root .home-dashboard .home__btn--primary { background: var(--plate-ct
 .max-scene img {
   position: absolute; object-fit: contain; --ink: var(--plate-fg);
   filter:
-    drop-shadow(.2rem 0 0 var(--ink)) drop-shadow(-.2rem 0 0 var(--ink)) drop-shadow(0 .2rem 0 var(--ink)) drop-shadow(0 -.2rem 0 var(--ink))
+    drop-shadow(.1rem 0 0 var(--ink)) drop-shadow(-.1rem 0 0 var(--ink)) drop-shadow(0 .1rem 0 var(--ink)) drop-shadow(0 -.1rem 0 var(--ink))
     drop-shadow(.4rem .4rem 0 color-mix(in srgb, var(--plate-accent) 45%, transparent));
 }
 .max-scene__boss { width: 28rem; height: 28rem; right: 0; top: 0; }
@@ -161,9 +161,5 @@ html body #root .home-dashboard .home__btn--primary { background: var(--plate-ct
   html body #root .home-dashboard .home__tile.is-locked strong::after { display: inline-block; margin-left: .8rem; white-space: nowrap; }
 }
 
-/* 만화식 잉크 선(list.css)의 굵은 판 — 홈 대표 그림도 두 겹 4px */
-html body #root .home-dashboard .pick__hero .sprite {
-  filter:
-    drop-shadow(.2rem 0 0 var(--ink)) drop-shadow(-.2rem 0 0 var(--ink)) drop-shadow(0 .2rem 0 var(--ink)) drop-shadow(0 -.2rem 0 var(--ink))
-    drop-shadow(.2rem 0 0 var(--ink)) drop-shadow(-.2rem 0 0 var(--ink)) drop-shadow(0 .2rem 0 var(--ink)) drop-shadow(0 -.2rem 0 var(--ink));
-}
+/* 만화식 잉크 선(list.css)의 굵은 판 — 홈 대표 그림은 2px */
+html body #root .home-dashboard .pick__hero .sprite { --ink-w: .2rem; }

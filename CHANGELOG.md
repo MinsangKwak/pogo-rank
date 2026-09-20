@@ -22,7 +22,16 @@
 ---
 
 <details open>
-<summary><b>2026-09-20</b> — 5판 · <code>v4.5.1</code> · <code>v4.5.0</code> · <code>v4.4.2</code> · <code>v4.4.1</code> · <code>v4.4.0</code></summary>
+<summary><b>2026-09-20</b> — 6판 · <code>v4.5.2</code> · <code>v4.5.1</code> · <code>v4.5.0</code> · <code>v4.4.2</code> · <code>v4.4.1</code> · <code>v4.4.0</code></summary>
+
+<details>
+<summary><b>v4.5.2</b> · 잉크 선 반토막 · 순위/레이드 카드에도</summary>
+
+**수정** — 잉크 선이 너무 굵다는 제보(v4.5.1). 굵기를 `--ink-w` 변수 하나로 모으고 반으로 — 기본 1px, 큰 그림 2px. 두 겹 filter 를 반복하던 굵은 판 규칙들은 `--ink-w` 만 올리는 한 줄이 됐다.
+
+**수정** — D-MAX 티어표 · 레이드/PvP 순위 · 알 부화 카드에 선이 안 둘렸다. v3 카드 무대 규칙(`home.css`, `#content` 포함)이 같은 자리에 포일 그림자 `filter` 를 걸어 잉크 선을 통째로 덮은 것. filter 는 합쳐지지 않고 이긴 쪽만 남는다. §7 의 pixel.css 급 장치(`html:not(#_):not(#__) body #root`)로 세게 걸고 **잉크 선 + 무대 그림자를 한 filter 에 같이** 단다. 레이드·알은 감싸는 칸 없이 `.gameday__row > .sprite` 라 선택자를 따로 잡았다.
+
+</details>
 
 <details>
 <summary><b>v4.5.1</b> · 포켓몬 그림에 만화식 잉크 선</summary>

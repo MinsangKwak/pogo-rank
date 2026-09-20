@@ -53,12 +53,12 @@
 /* 2026-09-20 v4.5.0 정지 그림이 96px 도트에서 공식 일러스트 축소본(256px)으로 바뀌었다 — pixelated 축소는 계단이 져 부드럽게 그린다.
    도트로 남은 것은 움직이는 GIF(sprite--anim)뿐이라 그쪽만 pixelated 를 유지한다 */
 .sprite { width: 4rem; height: 4rem; image-rendering: auto; object-fit: contain; display: block; }
-/* 2026-09-20 v4.5.1 만화식 잉크 선 — drop-shadow 네 방향이 알파 실루엣을 따라 2px 선을 두른다.
-   색은 --ink 로 두어 테마와 함께 뒤집힌다(§1-b). 어두운 판 위(홈 히어로)는 그쪽 파일이 --ink 를 밝게 바꾼다.
-   큰 그림(그리드 카드·상세·히어로)은 각자 파일에서 두 겹으로 4px 을 얹는다 */
+/* 2026-09-20 v4.5.1 만화식 잉크 선 — drop-shadow 네 방향이 알파 실루엣을 따라 선을 두른다.
+   색은 --ink 로 두어 테마와 함께 뒤집히고(§1-b), 어두운 판 위(홈 히어로)는 그쪽 파일이 밝게 바꾼다.
+   굵기는 --ink-w 하나다 — 기본 1px, 큰 그림(그리드 카드·상세·홈 대표)은 각자 파일에서 2px 로 올린다 (v4.5.2 반토막) */
 .sprite {
-  --ink: var(--fg);
-  filter: drop-shadow(.2rem 0 0 var(--ink)) drop-shadow(-.2rem 0 0 var(--ink)) drop-shadow(0 .2rem 0 var(--ink)) drop-shadow(0 -.2rem 0 var(--ink));
+  --ink: var(--fg); --ink-w: .1rem;
+  filter: drop-shadow(var(--ink-w) 0 0 var(--ink)) drop-shadow(calc(var(--ink-w) * -1) 0 0 var(--ink)) drop-shadow(0 var(--ink-w) 0 var(--ink)) drop-shadow(0 calc(var(--ink-w) * -1) 0 var(--ink));
 }
 .sprite.empty { filter: none; }  /* 몬스터볼 자리표시에는 선을 안 두른다 */
 .sprite.sprite--hd { image-rendering: auto; object-fit: contain; }  /* v2.7.2 게임 에셋 아이콘 — 이제 기본과 같지만 클래스는 상태 표식으로 남긴다 */

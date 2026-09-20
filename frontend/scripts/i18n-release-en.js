@@ -15,6 +15,9 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 const RELEASE_NOTES_EN = {
+  '2026-09-20 · v4.5.2': [
+    '**Outlines refined** — half as thick, and now applied to the D-MAX tier, raid and PvP ranking cards that were missing them',
+  ],
   '2026-09-20 · v4.5.1': [
     '**Pokémon images now have a cartoon-style outline** — they pop like stickers, and the line flips to light in dark mode',
   ],
