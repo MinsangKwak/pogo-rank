@@ -22,7 +22,20 @@
 ---
 
 <details open>
-<summary><b>2026-09-20</b> — 18판 · <code>v4.6.2</code> · <code>v4.6.1</code> · <code>v4.6.0</code> · <code>v4.5.11</code> · <code>v4.5.10</code> · <code>v4.5.9</code> · <code>v4.5.8</code> · <code>v4.5.7</code> · <code>v4.5.6</code> · <code>v4.5.5</code> · <code>v4.5.4</code> · <code>v4.5.3</code> · <code>v4.5.2</code> · <code>v4.5.1</code> · <code>v4.5.0</code> · <code>v4.4.2</code> · <code>v4.4.1</code> · <code>v4.4.0</code></summary>
+<summary><b>2026-09-20</b> — 19판 · <code>v4.6.3</code> · <code>v4.6.2</code> · <code>v4.6.1</code> · <code>v4.6.0</code> · <code>v4.5.11</code> · <code>v4.5.10</code> · <code>v4.5.9</code> · <code>v4.5.8</code> · <code>v4.5.7</code> · <code>v4.5.6</code> · <code>v4.5.5</code> · <code>v4.5.4</code> · <code>v4.5.3</code> · <code>v4.5.2</code> · <code>v4.5.1</code> · <code>v4.5.0</code> · <code>v4.4.2</code> · <code>v4.4.1</code> · <code>v4.4.0</code></summary>
+
+<details>
+<summary><b>v4.6.3</b> · 포켓몬 검색순위 보류 — 화면·집계를 내리고 기록만 남긴다</summary>
+
+**실측이 답을 정했다.** GA4 최근 7일 page_view 408회 · 사용자 54명 · 나라 KR 391. 검색해서 여는 일은 그 일부라 하루 창은 문턱(한 이름 3회 · 세 줄)을 못 넘고, 일주일 창으로도 1위가 한 자리 수다. 순위라 부를 수가 아니다.
+
+**내린 것** — 홈 검색 보드(`HotSearch.tsx`) · `#/hot` 전체 보기(`HotSearchPage.tsx` · 지도 `world-map.json` · `hot-page.css`) · 집계 `backend/hotsearch_build.py` 와 검사 · 워크플로의 `인기 검색어 집계` 단계와 낮 12시 cron · `extract-data.mjs` 의 hotsearch 묶음 · `useHotSearchSoft` 와 `HotSearch*` 타입 · 이 브라우저 집계(`pogo_hotsearch_local`) · 훑기 PATHS 의 `hot`(47장). `home-editorial.css` 의 보드 규칙 ~110줄을 걷고 최상단 격자를 한 열로 뒀다.
+
+**남긴 것** — GA4 `search` 이벤트(`trackSearchPick`). 다시 올릴 때 이 수가 밑천이라 계속 쌓는다. 저장소 시크릿 둘과 GA 뷰어 권한도 그대로다.
+
+**보존** — v4.5.4 – v4.6.2 의 구현은 `ranking` 브랜치(`db5a491`)에 그대로 있다. Notion 백로그에 행을 두었다(다시 올릴 조건: `search_term` 상위가 하루 3회 이상인 이름 셋).
+
+</details>
 
 <details>
 <summary><b>v4.6.2</b> · 검색순위 나라 고르기는 집계된 나라만</summary>

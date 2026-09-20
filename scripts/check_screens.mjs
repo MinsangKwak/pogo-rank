@@ -20,7 +20,7 @@ const BASE = (process.argv[2] || 'http://localhost:4173/').replace(/\/?$/, '/');
 // 라우터 표(routes.ts)와 같은 순서. 도구 화면까지 모두 든다.
 const PATHS = [
   '', 'dex', 'dmax', 'pve', 'pvp', 'game-updates', 'schedule', 'raids', 'eggs',
-  'hot', 'finder', 'planner', 'pvp/deck', 'dmax/deck', 'pvp/ivrank', 'pve/solo',
+  'finder', 'planner', 'pvp/deck', 'dmax/deck', 'pvp/ivrank', 'pve/solo',
   'release', 'changes', 'privacy', 'terms', 'settings',
   // 상세 — 폼이 있는 것과 없는 것을 하나씩 (상세는 표 밖의 칸이 가장 많다)
   'mon/6', 'mon/94', 'mon/888',

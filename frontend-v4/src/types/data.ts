@@ -343,33 +343,3 @@ export interface SheetRow {
   score?: number;
   rank?: number;
 }
-
-/** 인기 검색어 한 줄 — sprite 는 이름을 못 찾으면 없다(그림 없이 이름만 세운다) */
-export interface HotSearchRow {
-  name: string;
-  count: number;
-  sprite?: number | null;
-}
-
-/**
- * 인기 검색어 묶음 (backend/hotsearch_build.py).
- * asOf 가 null 이면 아직 한 번도 집계가 안 돈 것이다 — rows 도 비어 있다.
- */
-export interface HotSearchCountry {
-  code: string;
-  total: number;
-  rows: HotSearchRow[];
-}
-
-export interface HotSearchBundle {
-  countries?: HotSearchCountry[];
-  countriesStatus?: 'ready' | 'unavailable';
-  asOf: string | null;
-  /** 집계 창 — '1d' 가 문턱을 못 넘으면 '7d' 로 넓혀 온다. 화면 문구가 이 값을 본다 */
-  window: string;
-  rows: HotSearchRow[];
-  /** 미리보기(dev)가 실제 순위표 이름으로 채운 표. 운영에서는 오지 않는다 */
-  sample?: boolean;
-  /** 미리보기(dev) 빌드. 화면이 '이 브라우저에 센 것' 을 대신 세울 수 있다 */
-  preview?: boolean;
-}

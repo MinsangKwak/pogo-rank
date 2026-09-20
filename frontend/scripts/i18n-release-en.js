@@ -15,6 +15,9 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 const RELEASE_NOTES_EN = {
+  '2026-09-20 · v4.6.3': [
+    '**The Pokémon search ranking is down for now** — there are not enough searches yet to call it a ranking. Searches are still being counted, and it comes back once there are enough',
+  ],
   '2026-09-20 · v4.6.2': [
     '**The country picker on the search ranking now lists only countries with searches** — it used to list every country, most of them empty; the map is clickable only where there is data',
   ],

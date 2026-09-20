@@ -47,7 +47,6 @@ const Terms = lazy(() => import('./screens/Legal').then((m) => ({ default: m.Ter
 const Settings = lazy(() => import('./screens/Settings'));
 const Planner = lazy(() => import('./screens/Planner'));
 const Finder = lazy(() => import('./screens/Finder'));
-const HotSearchPage = lazy(() => import('./screens/HotSearchPage'));
 const IvRankPage = lazy(() => import('./screens/IvRankPage'));
 const PvpDeck = lazy(() => import('./screens/PvpDeck'));
 const DmaxDeck = lazy(() => import('./screens/DmaxDeck'));
@@ -81,7 +80,6 @@ function Screen({ route, rest, onOpen }: { route: RouteDef; rest: string; onOpen
     case 'game-updates': return <GameUpdates rest={rest} />;
     case 'planner': return <Planner />;
     case 'finder': return <Finder />;
-    case 'hot': return <HotSearchPage onOpen={onOpen} />;
     // 화면 아래 화면 — 부모 화면의 도구 버튼 하나로만 들어온다 (주소가 도구를 정한다)
     case 'ivrank': return <IvRankPage />;
     case 'pvp-deck': return <PvpDeck onOpen={onOpen} />;

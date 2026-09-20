@@ -54,7 +54,7 @@
 | 층 | 무엇 | 언제 돈다 |
 | --- | --- | --- |
 | 관문 | `lib/cell.ts` — `num` · `word` · `lines` | 늘 (화면이 값을 찍을 때마다) |
-| 단위 | `src/test/rankcells.test.ts` 손으로 적은 줄 모양<br>`src/test/datasweep.test.ts` **실데이터 전량**(모든 표 · 모든 키 · 모든 줄)<br>`src/test/hotsearch.test.ts` 인기 검색어 — 빌드가 못 채우는 칸이라 여기서 잡는다 | `npm test` · CI 의 `v4 검사` |
+| 단위 | `src/test/rankcells.test.ts` 손으로 적은 줄 모양<br>`src/test/datasweep.test.ts` **실데이터 전량**(모든 표 · 모든 키 · 모든 줄) | `npm test` · CI 의 `v4 검사` |
 | 화면 | `scripts/check_screens.mjs` — 46장을 돌며 그려진 글자를 훑는다 | 배포 전 (아래 참고) |
 | 색 | `scripts/check_contrast.mjs` — 42장의 글자가 바탕에 묻히지 않는지 본다 (§1-b) | 배포 전 |
 

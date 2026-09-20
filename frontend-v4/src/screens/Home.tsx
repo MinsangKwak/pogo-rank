@@ -16,7 +16,6 @@ import type { GameUpdate } from '../types/data';
 import { track } from '../lib/track';
 import { UPDATE_CATS } from '../lib/notes';
 import type { OpenMon } from '../lib/mon';
-import HotSearch from '../components/HotSearch';
 
 // 갈래마다 문 앞에 세우는 스타터 (v3 home.js 와 같은 번호 — 꼬부기 · 파이리 · 이상해씨)
 const STARTER: Record<string, number> = { today: 7, pick: 4, mine: 1 };
@@ -149,7 +148,7 @@ function bossNamesFromTitle(title: string, en: Record<string, string> | undefine
   return out;
 }
 
-// '2026-09-21T06:00:00.000' → '9.21'. 시간대를 안 옮긴다 — 값이 이미 한국 기준이다 (HotSearch asOfLabel 과 같은 이유)
+// '2026-09-21T06:00:00.000' → '9.21'. 시간대를 안 옮긴다 — 값이 이미 한국 기준이다
 function monthDay(iso: string): string {
   const match = /^(\d{4})-(\d{2})-(\d{2})/.exec(iso);
   return match ? `${Number(match[2])}.${Number(match[3])}` : '';
@@ -168,8 +167,8 @@ export default function Home({ onOpen }: { onOpen: OpenMon }) {
   const kind = battle?.type === 'max-battles' ? 'MAX BATTLE DAY' : 'MAX MONDAY';
   return (
     <div className="home-dashboard">
+      {/* 검색 보드는 v4.6.3 에 내렸다 — 검색이 모자라 순위가 서지 않는다 (ranking 브랜치 · 백로그). 포스터가 한 열을 다 쓴다 */}
       <div className="home__top-layout">
-        <HotSearch onOpen={onOpen} />
       {/* 마스코트와 버튼 줄은 .home__intro **밖**에 선다 — CSS 가 세 칸(글·그림·버튼)으로 잡는다.
           안에 넣었더니 그림이 글 아래로 내려가고 히어로 높이가 71px 줄었다 */}
       <section className="home__welcome" aria-label="소개">
