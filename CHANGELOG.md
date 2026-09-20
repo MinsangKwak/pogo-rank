@@ -22,7 +22,20 @@
 ---
 
 <details open>
-<summary><b>2026-09-20</b> — 3판 · <code>v4.4.2</code> · <code>v4.4.1</code> · <code>v4.4.0</code></summary>
+<summary><b>2026-09-20</b> — 4판 · <code>v4.5.0</code> · <code>v4.4.2</code> · <code>v4.4.1</code> · <code>v4.4.0</code></summary>
+
+<details>
+<summary><b>v4.5.0</b> · 포켓몬 그림을 96px 도트에서 공식 일러스트 축소본(256px)으로</summary>
+
+**변경** — 정지 그림의 출처를 PokeAPI 96×96 도트에서 같은 저장소의 공식 일러스트(`other/official-artwork`, 475px)로 바꿨다. id 체계가 도트와 동일해 1,184장 전부 매핑 없이 대응됐고(사전 전수 확인, 결측 0), 파일명(`sprites/{id}.png`)이 그대로라 프런트 주소는 바뀌지 않았다.
+
+- **축소·양자화** — `backend/sprites.py` 가 Pillow 로 긴 변 256px(화면 최대 15rem 의 레티나 2배)로 줄이고 256색 팔레트로 양자화한다. 장당 평균 120KB → 11KB, 전체 15MB. 원본 크기(475px)는 배포하지 않는다(NOTICE.md 의 축소본 배포 원칙 유지).
+- **캐시 형식 표식** — CI 의 actions/cache 에 옛 도트 png 가 살아 있으면 "파일이 있으니 통과"로 영영 안 바뀐다. `data/sprites/.format` 표식이 다르면 png 만 비우고 다시 받는다(애니메이션 GIF 캐시는 유지). 일러스트에 없는 id 는 도트로 폴백해 빈 칸을 만들지 않는다.
+- **렌더링** — 정지 그림의 `image-rendering: pixelated` 를 부드러운 축소로 바꿨다(v3 `list.css`·`home.css` 4곳, v4 `home-editorial.css`). 도트로 남은 움직이는 GIF(`sprite--anim`)만 pixelated 를 유지한다.
+- **움직이는 그림 기본 끔** — 도트 GIF 갈아 끼우기가 켜져 있으면 일러스트가 대부분 카드에서 안 보인다. 기본을 끔으로 바꾸고, 켬은 `pogo_sprite_anim = 'on'` 으로 적는다('off' 값 의미는 그대로 — §2 저장값 호환). 설정 화면 문구와 EN 사전도 맞췄다.
+- **CI** — 두 배포 워크플로에 Pillow 설치 한 줄 추가.
+
+</details>
 
 <details>
 <summary><b>v4.4.2</b> · 성능 — 첫 화면이 밀리지 않고, 카드 100장이 메인 스레드를 안 잡는다</summary>

@@ -40,7 +40,7 @@ from names import name_ko, species, FORM_KO
 import guard
 
 # ── 설정 ─────────────────────────────────────────────────────────────────────
-APP_VERSION = 'v4.4.2'  # 성능 — 첫 화면이 밀리지 않고(CLS 0.85 → 0.05), 카드 100장이 메인 스레드를 안 잡는다
+APP_VERSION = 'v4.5.0'  # 포켓몬 그림을 96px 도트에서 공식 일러스트 축소본(256px)으로
 # 2026-09-14 v3.28.0 index.html 의 색인 허용 줄 — dev 빌드가 이 줄을 noindex 로 바꿔 끼운다
 ROBOTS_INDEX_META = '<meta name="robots" content="index, follow, max-image-preview:large">'
 # 2026-09-05 v2.7.3 빌드 채널 — 'prod'(기본) / 'dev'. dev 브랜치 워크플로(.github/workflows/deploy-dev.yml)가 BUILD_CHANNEL=dev 로 부른다.

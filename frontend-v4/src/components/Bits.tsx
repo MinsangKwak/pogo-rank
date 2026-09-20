@@ -22,15 +22,16 @@ import { PxIcon, PxLabel } from './PxIcon';
 // v4 는 GIF 를 갈아 끼울 때 한 번만 재고 있었다 — 그래서 첫 목록에서 한 번 크게 잡히면
 // 그 화면을 떠났다 돌아오기 전까지 그대로 컸다 (제보: '맨 처음 리스트 때 이미지가 너무 커').
 const SPRITE_MAX_ZOOM = 2;
-export const SPRITE_ANIM_KEY = 'pogo_sprite_anim';   // 'off' 면 정지본만 (v3 와 같은 키)
+export const SPRITE_ANIM_KEY = 'pogo_sprite_anim';   // 'on' 일 때만 움직인다 (v3 와 같은 키)
 
 const zoomWatch = typeof ResizeObserver === 'function'
   ? new ResizeObserver((entries) => { for (const entry of entries) fitZoom(entry.target as HTMLImageElement); })
   : null;
 
-/** 움직이는 그림을 쓰는가 — 설정 화면이 정한다. 기본 켬 */
+/** 움직이는 그림을 쓰는가 — 설정 화면이 정한다. 기본 끔 (v4.5.0 일러스트가 기본 그림이라, 도트 GIF 는 고른 사람만) */
 export function spriteAnimEnabled(): boolean {
-  try { return localStorage.getItem(SPRITE_ANIM_KEY) !== 'off'; } catch { return true; }
+  // 'on' 일 때만 켠다 — 값이 없으면 끔. 예전 '켬 = 키 삭제' 방식과 겹치지 않게 'off' 값은 그대로 존중한다
+  try { return localStorage.getItem(SPRITE_ANIM_KEY) === 'on'; } catch { return false; }
 }
 
 // 설정을 body 클래스로도 알린다 — CSS 가 읽는 상태 표식이다 (v3 syncSpriteAnimClass)
