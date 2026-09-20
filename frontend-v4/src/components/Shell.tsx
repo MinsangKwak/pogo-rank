@@ -13,7 +13,7 @@ import { ROUTE_GROUPS, ROUTE_NAV, routeById, routeDesc, type RouteDef } from '..
 import { usePrefStore, themeIsDark, THEME_WORD, type Theme } from '../stores/pref';
 import { releaseSeen } from '../lib/release';
 import { setLang, useLang } from '../lib/useLang';
-import { useGamedaySoft, useMeta } from '../lib/data';
+import { useMeta } from '../lib/data';
 import { track } from '../lib/track';
 import { PxIcon } from './PxIcon';
 import { routeNote } from '../lib/notes';
@@ -34,6 +34,8 @@ export function NavItem({ route, now }: { route: RouteDef; now: string }) {
       href={`#/${route.path}`}
       className={`drawer__item${lock.className}`}
       data-route={route.id}
+      data-parent={route.parent}
+      {...(route.id === 'changes' ? { id: 'menu-changes' } : {})}
       {...(route.id === 'planner' ? { id: 'menu-planner' } : {})}
       {...(route.id === now ? { 'aria-current': 'page' as const } : {})}
       {...(lock['aria-disabled'] ? { 'aria-disabled': lock['aria-disabled'] } : {})}
@@ -148,21 +150,10 @@ export function AppNav({ now, onConsent }: { now: string; onConsent: () => void 
  */
 function NavExtra({ onConsent }: { onConsent: () => void }) {
   const { data: meta } = useMeta();
-  // 셸을 세우지 않는 훅이다 — 이 한 줄 때문에 모든 화면이 gameday.json 을 기다리면 안 된다 (v4.4.2)
-  const gameday = useGamedaySoft();
   const newRelease = useNewRelease();
   const go = (hash: string) => () => { location.hash = hash; };
-  const date = gameday?.MOVE_CHANGES?.date;
-  const changes = date ? `${Number(date.split('-')[1])}/${Number(date.split('-')[2])}` : '';
   return (
     <div id="drawer-extra">
-      {/* 시즌 기술 변경 — 변경 데이터가 있을 때만 줄을 만든다 (없는 것을 설명하지 않는다).
-          #menu-changes 는 바깥이 물고 있는 id 라 지우지 않는다 (CLAUDE.md §2) */}
-      {changes ? (
-        <button className="drawer__item" id="menu-changes" onClick={go('#/changes')}>
-          ⚔️ {changes} 기술 변경
-        </button>
-      ) : null}
       <button className={`drawer__item${newRelease ? ' dot-badge' : ''}`} id="menu-release" onClick={go('#/release')}>
         <span className="drawer__ico" aria-hidden="true"><PxIcon emoji="🎉" /></span>
         <span className="drawer__label">패치노트</span>

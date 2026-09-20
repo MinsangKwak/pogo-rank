@@ -22,7 +22,7 @@ import { LEAGUES } from '../lib/leagues';
 import { LEAGUE_KO } from '../lib/ivrank';
 import { buildBossIndex, monSearch, type BossEntry } from '../lib/search';
 import { josa, makeDeckTools, type DeckMon } from '../lib/deck';
-import { track } from '../lib/track';
+import { track, trackSearchPick } from '../lib/track';
 import type { OpenMon } from '../lib/mon';
 import type { LeagueKey, PvpRow } from '../types/data';
 
@@ -213,6 +213,7 @@ export default function PvpDeck({ onOpen }: { onOpen: OpenMon }) {
             {hits.map((hit) => (
               <button key={hit.name} className="boss__rec" onClick={() => {
                 if (foes.length >= 3) return;
+                trackSearchPick(hit.name, 'pvp_deck');
                 track('pvp_deck_foe', { mon: hit.name });
                 setFoes((now) => [...now, hit]);
                 setTerm('');

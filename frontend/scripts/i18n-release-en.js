@@ -15,6 +15,31 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 const RELEASE_NOTES_EN = {
+  '2026-09-20 · v4.6.3': [
+    '**The Pokémon search ranking is down for now** — there are not enough searches yet to call it a ranking. Searches are still being counted, and it comes back once there are enough',
+  ],
+  '2026-09-20 · v4.6.2': [
+    '**The country picker on the search ranking now lists only countries with searches** — it used to list every country, most of them empty; the map is clickable only where there is data',
+  ],
+  '2026-09-20 · v4.6.1': [
+    '**When a single day has too few searches, the ranking widens to the past week** — the note above the table says "past week" when that happened',
+  ],
+  '2026-09-20 · v4.6.0': [
+    '**Home has a new layout** — the Pokémon search ranking on the left, the next Max Battle poster on the right; its date and bosses come from the schedule',
+    '**The full ranking page now has a world map** — pick a country to see what people there searched most; only countries with enough searches are shaded',
+    '**Only well-searched Pokémon make the ranking** — a name opened just a few times no longer counts; it has to add up before we call it a ranking',
+  ],
+  '2026-09-20 · v4.5.11': [
+    '**The home banner is half as tall on phones** — it used to fill the screen and push everything else below the fold',
+    "**Yesterday's most-searched Pokémon now scrolls as a single ticker** on narrow screens; tap [See all] for the full ranking",
+  ],
+  '2026-09-20 · v4.5.8': [
+    '**Fixed CP numbers splitting apart on narrow dex cards** — "1,260" broke into "1,26 / 0"; the label now sits above the number, which stays on one line',
+  ],
+  '2026-09-20 · v4.5.5': [
+    "**Yesterday's most-searched Pokémon now sits on the home screen** — the ones people opened most from search, recounted twice a day at noon and midnight",
+    '**It counts the name you landed on** — type "Mew", open Mewtwo, and Mewtwo is what gets counted; the letters you typed are not. Searches from anyone who turned analytics off are not counted',
+  ],
   '2026-09-20 · v4.5.3': [
     '**Outlines trimmed once more** — now a subtle edge that just defines the shape',
   ],
