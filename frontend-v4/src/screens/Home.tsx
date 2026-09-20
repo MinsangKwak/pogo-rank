@@ -5,10 +5,10 @@
 //   히어로 → 용도별 상위 포켓몬 → 갈래 카드 → 게임 업데이트
 // 타일의 이름·아이콘·설명은 **전부 라우터 표에서** 온다 (v2.66.0 의 규칙 — 글을 두 곳에 적지 않는다).
 // ─────────────────────────────────────────────────────────────────────────────
-import type { ReactNode } from 'react';
+import { Suspense, type ReactNode } from 'react';
 import { ROUTE_GROUPS, ROUTE_NAV, routeDesc, routeHash, type RouteDef } from '../routes';
 import { useLockReason, lockedAttrs } from '../lib/useLocked';
-import { useMax, useUpdates, useMeta, usePve, useDex } from '../lib/data';
+import { useMax, useUpdates, useMeta, usePve, useDex, useDexSoft } from '../lib/data';
 import { Sprite } from '../components/Bits';
 import { PxIcon } from '../components/PxIcon';
 import { NameNode } from '../components/Row';
@@ -122,7 +122,50 @@ function UpdateDates({ row }: { row: GameUpdate }) {
   );
 }
 
+/** 홈 — 히어로는 데이터 없이 바로 서고, 그 아래(추천·안내·소식)만 기다린다.
+    전에는 화면 전체가 max·pve·updates 를 기다려 첫 내용(LCP)이 5초였다 — 히어로는 글자뿐인데도 (v4.4.2 측정) */
 export default function Home({ onOpen }: { onOpen: OpenMon }) {
+  // 장면의 이름 한 글자 때문에 히어로를 세우지 않는다 — 도착하면 채워진다
+  const dexSoft = useDexSoft();
+  return (
+    <div className="home-dashboard">
+      {/* 마스코트와 버튼 줄은 .home__intro **밖**에 선다 — CSS 가 세 칸(글·그림·버튼)으로 잡는다.
+          안에 넣었더니 그림이 글 아래로 내려가고 히어로 높이가 71px 줄었다 */}
+      <section className="home__welcome" aria-label="소개">
+        <div className="home__intro">
+          <span className="home__eyebrow"><span className="home__eyebrow-dot" aria-hidden="true" />DYNAMAX · RAID · PVP</span>
+          <h2>맥스 배틀에 데려갈 포켓몬,<br />여기서 골라요.</h2>
+          <p>다이맥스 티어표와 추천 덱을 비교하고, 레이드·PvP까지 확인하세요.</p>
+        </div>
+        {/* 맥스 배틀 한 장면 — 꾸밈이라 aria-hidden. 이름은 도감 이름표에서 읽는다(코드에 한글을 박지 않는다 · §3).
+            그림은 스프라이트 묶음의 거다이맥스 팬텀(10202)·인텔리레온(818) — 파일이 없으면 깨진 그림 대신 자리를 비운다 */}
+        <div className="max-scene" aria-hidden="true">
+          <div className="max-scene__status"><span>GIGANTAMAX</span><b>{dexSoft?.DEX_DATA.names['94'] ?? ''}</b><i /></div>
+          <div className="max-scene__ring" />
+          <img className="max-scene__boss" src={`${import.meta.env.BASE_URL}sprites/10202.png`} alt=""
+            onError={(event) => { event.currentTarget.hidden = true; }} />
+          <img className="max-scene__ally" src={`${import.meta.env.BASE_URL}sprites/818.png`} alt=""
+            onError={(event) => { event.currentTarget.hidden = true; }} />
+          <span className="max-scene__label">MAX BATTLE</span>
+          <div className="max-scene__charge"><span>MAX ENERGY</span><i /><i /><i /></div>
+        </div>
+        <div className="home__cta">
+          <a className="home__btn home__btn--primary" href={routeHash('dmax')}
+            onClick={() => track('home_cta', { to: 'dmax' })}>다이맥스 티어표 보기<span aria-hidden="true"> →</span></a>
+          <a className="home__btn" href={routeHash('dmax-deck')}
+            onClick={() => track('home_cta', { to: 'dmax-deck' })}>맥스 배틀 덱 짜기</a>
+        </div>
+      </section>
+      {/* 기다리는 자리도 한 화면을 채운다 — 바닥글이 먼저 보였다가 밀리면 CLS 다 */}
+      <Suspense fallback={<div className="home__loading" aria-busy="true" />}>
+        <HomeData onOpen={onOpen} />
+      </Suspense>
+    </div>
+  );
+}
+
+/** 데이터가 있어야 그리는 아래쪽 — 추천 셋 · 서비스 안내 · 소식 */
+function HomeData({ onOpen }: { onOpen: OpenMon }) {
   const { data: max } = useMax();
   const { data: pve } = usePve();
   const { data: dex } = useDex();
@@ -143,35 +186,7 @@ export default function Home({ onOpen }: { onOpen: OpenMon }) {
   const top = (featured.length ? featured : updates.GAME_UPDATES).slice(0, 2);
 
   return (
-    <div className="home-dashboard">
-      {/* 마스코트와 버튼 줄은 .home__intro **밖**에 선다 — CSS 가 세 칸(글·그림·버튼)으로 잡는다.
-          안에 넣었더니 그림이 글 아래로 내려가고 히어로 높이가 71px 줄었다 */}
-      <section className="home__welcome" aria-label="소개">
-        <div className="home__intro">
-          <span className="home__eyebrow"><span className="home__eyebrow-dot" aria-hidden="true" />DYNAMAX · RAID · PVP</span>
-          <h2>맥스 배틀에 데려갈 포켓몬,<br />여기서 골라요.</h2>
-          <p>다이맥스 티어표와 추천 덱을 비교하고, 레이드·PvP까지 확인하세요.</p>
-        </div>
-        {/* 맥스 배틀 한 장면 — 꾸밈이라 aria-hidden. 이름은 도감 이름표에서 읽는다(코드에 한글을 박지 않는다 · §3).
-            그림은 스프라이트 묶음의 거다이맥스 팬텀(10202)·인텔리레온(818) — 파일이 없으면 깨진 그림 대신 자리를 비운다 */}
-        <div className="max-scene" aria-hidden="true">
-          <div className="max-scene__status"><span>GIGANTAMAX</span><b>{dex.DEX_DATA.names['94'] ?? ''}</b><i /></div>
-          <div className="max-scene__ring" />
-          <img className="max-scene__boss" src={`${import.meta.env.BASE_URL}sprites/10202.png`} alt=""
-            onError={(event) => { event.currentTarget.hidden = true; }} />
-          <img className="max-scene__ally" src={`${import.meta.env.BASE_URL}sprites/818.png`} alt=""
-            onError={(event) => { event.currentTarget.hidden = true; }} />
-          <span className="max-scene__label">MAX BATTLE</span>
-          <div className="max-scene__charge"><span>MAX ENERGY</span><i /><i /><i /></div>
-        </div>
-        <div className="home__cta">
-          <a className="home__btn home__btn--primary" href={routeHash('dmax')}
-            onClick={() => track('home_cta', { to: 'dmax' })}>다이맥스 티어표 보기<span aria-hidden="true"> →</span></a>
-          <a className="home__btn" href={routeHash('dmax-deck')}
-            onClick={() => track('home_cta', { to: 'dmax-deck' })}>맥스 배틀 덱 짜기</a>
-        </div>
-      </section>
-
+    <>
       <section className="home__picks">
         <div className="home__section">
           <h3>용도별 상위 포켓몬</h3>
@@ -238,6 +253,6 @@ export default function Home({ onOpen }: { onOpen: OpenMon }) {
             href={routeHash('game-updates')} />
         </div>
       </section>
-    </div>
+    </>
   );
 }

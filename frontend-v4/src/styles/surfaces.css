@@ -200,3 +200,15 @@ html body #root .schedule__month-nav h2 { margin: .4rem 0 0; font-size: var(--fs
 html body #root .schedule__month-nav button { width: 4.8rem; height: 4.8rem; font-size: var(--fs-title); background: var(--bg); color: var(--brand); border: .1rem solid var(--line); }
 html body #root .schedule__month-nav button:disabled { opacity: .3; cursor: default; }
 html body #root .schedule__source { display: inline-block; margin-left: .8rem; color: var(--brand); font-size: var(--fs-sub); text-decoration: underline; }
+
+/* ── 불러오는 동안 바닥글이 화면에 들어오지 않게 (v4.4.2) ───────────────────────────
+   Suspense 의 스플래시는 몇 십 px 라, 그 아래 바닥글이 첫 화면에 보였다가 본문이 오면 화면 밖으로
+   밀린다 — 그 이동이 CLS 0.45~0.59 로 잡혔다. 본문 자리를 한 화면 높이로 잡아 두면 바닥글은
+   처음부터 화면 밖이라 움직여도 세지 않는다. 본문이 오면 min-height 는 뜻을 잃는다 */
+#content > #splash, #page > #splash { min-height: 100dvh; box-sizing: border-box; }
+/* 순위 셸(D-MAX·PvE·PvP)은 탭 줄·보스·필터가 데이터 뒤에 포털로 들어와 본문을 355px 밀었다(CLS 0.27).
+   불러오는 동안 두 슬롯이 대강의 자리를 지킨다 — 탭 한 줄, 보스 줄 + 필터 상자 */
+body:is([data-route="dmax"], [data-route="pve"], [data-route="pvp"]) .layout:has(> #content > #splash) .screen-tabs:empty { display: block; min-height: 6.4rem; }
+body:is([data-route="dmax"], [data-route="pve"], [data-route="pvp"]) .layout:has(> #content > #splash) #controls:empty { display: block; min-height: 16rem; }
+/* 홈은 히어로가 먼저 서고 그 아래가 기다린다(Home.tsx) — 기다리는 자리도 한 화면을 채워 바닥글을 밀어 둔다 */
+.home__loading { min-height: 60dvh; }

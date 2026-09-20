@@ -22,12 +22,15 @@ export default defineConfig({
   },
   build: {
     outDir: 'dist',
-    // 코드 스플리팅 — 화면별 청크는 React.lazy 가 만든다. 여기서는 벤더만 가른다
+    // 코드 스플리팅 — 화면별 청크는 React.lazy 가 만든다. 여기서는 벤더만 가른다.
+    // 객체형(`react: ['react','react-dom']`)은 react-dom 이 main 에 섞여 들어가 react 청크가 4KB 뿐이었다(v4.4.2 측정).
+    // 함수형으로 경로를 보고 가르면 react-dom·scheduler 까지 한 청크다 — 앱 코드가 바뀌어도 이 청크는 캐시에 남는다
     rollupOptions: {
       output: {
-        manualChunks: {
-          react: ['react', 'react-dom'],
-          query: ['@tanstack/react-query'],
+        manualChunks(id) {
+          if (/node_modules\/(react|react-dom|scheduler)\//.test(id)) return 'react';
+          if (id.includes('node_modules/@tanstack/')) return 'query';
+          return undefined;
         },
       },
     },

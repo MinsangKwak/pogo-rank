@@ -55,6 +55,31 @@ if (channel === 'dev') {
              .join('개발 미리보기 — 검색 색인 안 함');
 }
 
+// ── 데이터 미리 받기 — JS 를 다 받아 실행한 뒤에야 manifest → dex → meta 를 차례로 부르면
+//    첫 내용이 그려지기까지 왕복이 셋 더 든다(LCP 3~4초, v4.4.2 측정). 어느 화면이든 반드시 쓰는 셋을
+//    HTML 이 먼저 받아 두면 JS 가 도착했을 때 이미 손에 있다. 주소는 lib/data.ts 가 만드는 것과
+//    글자 하나까지 같아야 브라우저가 같은 요청으로 본다 (as=fetch 는 crossorigin 이 있어야 짝이 맞는다)
+const manifestPath = resolve(dirname(target), 'data/manifest.json');
+const manifest = JSON.parse(readFileSync(manifestPath, 'utf8'));
+// manifest.json 은 index.html 이 이미 미리 받는다 — 해시가 붙는 둘만 여기서 끼운다
+const preload = ['dex', 'meta'].map((name) => `${name}.json?v=${manifest.files[name]?.hash ?? 'dev'}`)
+  .map((path) => `    <link rel="preload" as="fetch" href="/data/${path}" crossorigin>`).join('\n');
+// 화면별 묶음은 주소(해시)를 봐야 안다 — HTML 을 읽는 즉시 도는 한 줄 스크립트가 해시에 맞는
+// 묶음을 preload 로 건다. 해시 표는 빌드 때 여기서 박는다 (lib/data.ts 의 주소와 같은 모양)
+const ROUTE_BUNDLES = {
+  '': ['max', 'pve', 'updates'], dex: ['usage'], dmax: ['max', 'gameday'], 'dmax/deck': ['max'],
+  pve: ['pve', 'gameday'], 'pve/solo': ['pve', 'gameday'], pvp: ['pvp'], 'pvp/deck': ['pvp'], 'pvp/ivrank': ['pvp'],
+  raids: ['gameday'], eggs: ['gameday'], schedule: ['schedule'], 'game-updates': ['updates'], release: ['release'],
+};
+const hashes = Object.fromEntries(Object.entries(manifest.files).map(([name, one]) => [name, one.hash]));
+const routeScript = `    <script>(function(){var H=${JSON.stringify(hashes)},R=${JSON.stringify(ROUTE_BUNDLES)};`
+  + `var p=(location.hash||'').replace(/^#\\/?/,'').split('?')[0].replace(/\\/$/,'');`
+  + `var need=R[p]||R[p.split('/')[0]]||[];for(var i=0;i<need.length;i++){if(!H[need[i]])continue;`
+  + `var l=document.createElement('link');l.rel='preload';l.as='fetch';l.crossOrigin='anonymous';`
+  + `l.href='/data/'+need[i]+'.json?v='+H[need[i]];document.head.appendChild(l);}})();</script>`;
+if (html.indexOf('rel="modulepreload"') === -1) throw new Error('index.html 에 modulepreload 줄이 없습니다 — 미리 받기를 끼울 자리가 없다');
+html = html.replace(/(\s*<link rel="modulepreload")/, `\n${preload}\n${routeScript}$1`);
+
 writeFileSync(target, html);
 const ga = channel === 'prod' && gaId ? `GA ${gaId}` : 'GA 없음';
 console.log(`finalize ok: ${channel} · ${ga} · robots ${channel === 'dev' ? 'noindex' : 'index'} · ${target}`);

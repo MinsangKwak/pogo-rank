@@ -13,7 +13,7 @@ import { ROUTE_GROUPS, ROUTE_NAV, routeById, routeDesc, type RouteDef } from '..
 import { usePrefStore, themeIsDark, THEME_WORD, type Theme } from '../stores/pref';
 import { releaseSeen } from '../lib/release';
 import { setLang, useLang } from '../lib/useLang';
-import { useGameday, useMeta } from '../lib/data';
+import { useGamedaySoft, useMeta } from '../lib/data';
 import { track } from '../lib/track';
 import { PxIcon } from './PxIcon';
 import { routeNote } from '../lib/notes';
@@ -148,10 +148,11 @@ export function AppNav({ now, onConsent }: { now: string; onConsent: () => void 
  */
 function NavExtra({ onConsent }: { onConsent: () => void }) {
   const { data: meta } = useMeta();
-  const { data: gameday } = useGameday();
+  // 셸을 세우지 않는 훅이다 — 이 한 줄 때문에 모든 화면이 gameday.json 을 기다리면 안 된다 (v4.4.2)
+  const gameday = useGamedaySoft();
   const newRelease = useNewRelease();
   const go = (hash: string) => () => { location.hash = hash; };
-  const date = gameday.MOVE_CHANGES?.date;
+  const date = gameday?.MOVE_CHANGES?.date;
   const changes = date ? `${Number(date.split('-')[1])}/${Number(date.split('-')[2])}` : '';
   return (
     <div id="drawer-extra">
@@ -246,7 +247,9 @@ export function PageHead({ route, actionsRef }: { route: RouteDef; actionsRef: (
       </nav>
       <h2>{name}</h2>
       <p className="page-head__desc">{routeDesc(route.id)}</p>
-      <div className="page-head__actions" id="page-head-actions" ref={actionsRef} />
+      {/* 단추는 화면이 데이터를 받은 뒤 포털로 들어온다. 좁은 화면에서는 이 줄이 제목 **위**라
+          나중에 끼어들면 제목이 56px 내려앉는다(D-MAX 에서 CLS 0.85). 단추가 서는 화면은 자리를 먼저 비워 둔다 */}
+      <div className="page-head__actions" id="page-head-actions" ref={actionsRef} data-reserve={route.actions ? '' : undefined} />
     </header>
   );
 }
