@@ -10,7 +10,7 @@ import cors from '@fastify/cors';
 import rateLimit from '@fastify/rate-limit';
 import swagger from '@fastify/swagger';
 import swaggerUi from '@fastify/swagger-ui';
-import { OPENAPI_INFO, OPENAPI_TAGS, BEARER_SCHEME } from './lib/openapi.ts';
+import { OPENAPI_INFO, OPENAPI_TAGS, BEARER_SCHEME, toOas30 } from './lib/openapi.ts';
 import type { Sql } from './db/client.ts';
 import type { Env } from './env.ts';
 import { healthRoutes } from './routes/health.ts';
@@ -91,7 +91,13 @@ export async function buildApp(env: Env, sql: Sql): Promise<FastifyInstance> {
   });
   // 읽는 자리는 열어 둔다 — 코드가 통째로 공개돼 있어 숨겨서 얻는 것이 없고,
   // 관리 주소는 열쇠가 막는다
-  await app.register(swaggerUi, { routePrefix: '/docs', uiConfig: { docExpansion: 'list' } });
+  await app.register(swaggerUi, {
+    routePrefix: '/docs',
+    uiConfig: { docExpansion: 'list' },
+    // **내보내기 직전에 3.0 문법으로 맞춘다.** 라우트 스키마의 배열 `type` 은 Fastify 의
+    // 검증·직렬화가 읽는 것이라 그대로 두고, 문서로 나가는 길목에서만 갈아 낀다
+    transformSpecification: (spec) => toOas30(spec) as typeof spec,
+  });
 
   healthRoutes(app, sql);
   eventRoutes(app, sql);

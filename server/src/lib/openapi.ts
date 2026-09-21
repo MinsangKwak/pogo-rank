@@ -40,3 +40,28 @@ export const BEARER_SCHEME = {
   scheme: 'bearer',
   description: '`Authorization: Bearer <ADMIN_TOKEN>`. 운영에서는 32자 이상이어야 서버가 뜬다',
 } as const;
+
+/**
+ * `type: ['string', 'null']` 을 `type: 'string', nullable: true` 로 바꾼다.
+ *
+ * **라우트 스키마는 안 건드린다.** 그 배열 문법은 Fastify 안에서 검증과 직렬화가 읽는 것이고,
+ * 바꾸면 방금 세운 검사들이 보는 동작이 같이 바뀐다. 문서로 나갈 때만 갈아 낀다.
+ *
+ * 배열 `type` 은 JSON Schema · OpenAPI **3.1** 문법이다. 우리가 내는 문서는 3.0.3 이라
+ * 그 자리에서 `type` 은 문자열 하나여야 하고, 없는 값은 `nullable: true` 로 적는다 —
+ * 엄격한 검증기와 클라이언트 생성기가 3.1 문법을 만나면 문서를 통째로 거부한다.
+ */
+export function toOas30(node: unknown): unknown {
+  if (Array.isArray(node)) return node.map(toOas30);
+  if (!node || typeof node !== 'object') return node;
+  const out: Record<string, unknown> = {};
+  for (const [key, value] of Object.entries(node as Record<string, unknown>)) {
+    out[key] = toOas30(value);
+  }
+  const type = out['type'];
+  if (Array.isArray(type) && type.length === 2 && type.includes('null')) {
+    out['type'] = type.find((one) => one !== 'null');
+    out['nullable'] = true;
+  }
+  return out;
+}

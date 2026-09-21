@@ -22,7 +22,33 @@
 ---
 
 <details open>
-<summary><b>2026-09-21</b> — 9판 · <code>v4.8.2</code> · <code>v4.8.1</code> · <code>v4.8.0</code> · <code>v4.7.4</code> · <code>v4.7.3</code> · <code>v4.7.2</code> · <code>v4.7.1</code> · <code>v4.7.0</code> · <code>v4.6.4</code></summary>
+<summary><b>2026-09-21</b> — 10판 · <code>v4.8.3</code> · <code>v4.8.2</code> · <code>v4.8.1</code> · <code>v4.8.0</code> · <code>v4.7.4</code> · <code>v4.7.3</code> · <code>v4.7.2</code> · <code>v4.7.1</code> · <code>v4.7.0</code> · <code>v4.6.4</code></summary>
+
+<details>
+<summary><b>v4.8.3</b> · 리뷰 다섯 번째 판 — 구운 파일만 고치고 돌아가는 서버를 안 고쳤다</summary>
+
+**리뷰가 `471fc04` 에서 하나를 더 잡았고, 바로 앞 판이 낸 것이다.**
+
+v4.8.2 에서 3.0 문법 문제를 고쳤는데 **고친 자리가 반쪽이었다.** `toOas30` 을 `lib/spec.ts` 안에 두고
+거기서만 불렀더니, 그 함수는 **저장소에 넣을 파일을 굽는 길**에서만 돌았다.
+돌아가는 서버의 Swagger UI 는 `app.swagger()` 를 그대로 내보내고 있어,
+`/docs/json` 은 여전히 `3.0.3` 이라고 말하면서 `type: ["…","null"]` 을 실어 보냈다.
+
+**저장소 파일은 멀쩡한데 실제 문서는 딴것이었다.** 그리고 검사가 저장소 파일만 봤으니 초록이었다.
+
+셋을 고쳤다.
+
+1. `toOas30` 을 `lib/openapi.ts` 로 옮겨 **서버와 굽는 자리가 같은 함수**를 쓰게 했다
+2. `swaggerUi` 의 `transformSpecification` 에 걸어 **내보내는 길목**에서 맞춘다
+3. `openapiSpec()` 이 `app.swagger()` 대신 **`/docs/json` 을 직접 받는다** —
+   저장소에 들어가는 파일이 **서버가 내보내는 바로 그 문서**가 된다
+
+**검사를 문서가 아니라 주소에 건다.** `/docs/json` 을 열어 배열 `type` 이 없는지 보고,
+그것이 저장소의 `openapi.json` 과 **같은지**까지 견준다 — 한쪽만 고치면 두 번째가 빨개진다.
+
+검사 80 → **82건**. 되돌려서 넷이 빨개지는 것을 확인했다.
+
+</details>
 
 <details>
 <summary><b>v4.8.2</b> · 리뷰 네 번째 판 — 3.0 문법 · 걸른 주 · 컬렉션별 급감 · 겹치는 이름</summary>

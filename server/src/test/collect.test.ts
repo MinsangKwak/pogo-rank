@@ -6,6 +6,8 @@ import { buildApp } from '../app.ts';
 import { readEnv } from '../env.ts';
 import { makeFakeSql, type Captured } from './fakeSql.ts';
 import { PERSON_CAP, MIN_VISITORS } from '../lib/hot.ts';
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 
 const env = readEnv({
   DATABASE_URL: 'postgres://u:p@localhost:5432/db',
@@ -168,5 +170,36 @@ describe('응답 몸통이 온전한가', () => {
     expect(Object.keys(body.thresholds).sort()).toEqual(['minHits', 'minRows', 'minVisitors', 'personCap']);
     expect(body.thresholds['personCap']).toBe(PERSON_CAP);
     expect(body.thresholds['minVisitors']).toBe(MIN_VISITORS);
+  });
+});
+
+// **돌아가는 서버가 내보내는 문서를 본다.** 구운 파일만 손질하면 저장소는 멀쩡한데
+// 실제 /docs/json 은 딴것이 된다 — 그쪽을 읽는 클라이언트가 문서를 거부한다 (v4.8.3)
+describe('/docs/json — 서버가 실제로 내보내는 문서', () => {
+  it('3.0.3 문서에 3.1 문법(배열 type)이 없다', async () => {
+    const res = await app.inject({ method: 'GET', url: '/docs/json' });
+    expect(res.statusCode).toBe(200);
+    const spec = res.json() as Record<string, any>;
+    expect(spec['openapi']).toBe('3.0.3');
+
+    const arrays: string[] = [];
+    const walk = (node: unknown, where: string): void => {
+      if (Array.isArray(node)) return node.forEach((one, i) => walk(one, `${where}[${i}]`));
+      if (!node || typeof node !== 'object') return;
+      const one = node as Record<string, unknown>;
+      if (Array.isArray(one['type'])) arrays.push(where);
+      for (const [key, value] of Object.entries(one)) walk(value, `${where}.${key}`);
+    };
+    walk(spec, '');
+    expect(arrays).toEqual([]);
+
+    expect(spec['paths']['/v1/hot']['get']['responses']['200']['content']['application/json']
+      ['schema']['properties']['thresholds']).toMatchObject({ type: 'object', nullable: true });
+  });
+
+  it('그 문서가 저장소의 openapi.json 과 같다', async () => {
+    const live = (await app.inject({ method: 'GET', url: '/docs/json' })).json();
+    const baked = JSON.parse(readFileSync(resolve(__dirname, '../../openapi.json'), 'utf-8'));
+    expect(live).toEqual(baked);
   });
 });
