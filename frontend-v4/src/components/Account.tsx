@@ -43,8 +43,8 @@ export default function Account({ onGo }: { onGo: () => void }) {
         <>
           <button className="drawer__item account__login" onClick={start}>🔐 Google로 로그인</button>
           <p className="account__sub">
-            {'로그인하면 내 포켓몬과 화면 설정이 계정에 저장돼요. 승인된 분만 쓸 수 있고, 첫 로그인 때 '}
-            <a href="#/terms">이용약관</a>·<a href="#/privacy">개인정보처리방침</a>{' 동의를 받아요'}
+            {'로그인 후 관리자 승인을 받으면 내 포켓몬과 화면 설정을 계정에 저장할 수 있어요. 첫 로그인 시 '}
+            <a href="#/terms">이용약관</a>·<a href="#/privacy">개인정보처리방침</a>{'에 대한 동의를 받아요'}
           </p>
         </>
       );

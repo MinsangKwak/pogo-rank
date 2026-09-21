@@ -179,7 +179,7 @@ function UpdatesList() {
   if (!all.length) {
     return (
       <div className="page__body" id="page-game-updates" data-route="game-updates">
-        <p className="dex__hint">아직 공개된 게임 업데이트 글이 없어요. 공식 발표를 확인한 글만 올라와요.</p>
+        <p className="dex__hint">아직 등록된 게임 업데이트 소식이 없어요. 공식 발표를 확인한 후 게시해요.</p>
       </div>
     );
   }
@@ -239,7 +239,7 @@ function UpdatesList() {
         <div className="upd__filter">
           {/* 기사만 — 우리 요약이 붙은 글만 보고 싶을 때. 아카이브는 인용뿐이라 성격이 다르다 */}
           <button className="uchip" data-only="1" aria-pressed={UI.articleOnly}
-            onClick={() => { UI.articleOnly = !UI.articleOnly; reset(); bump(); }}>요약 있는 글만</button>
+            onClick={() => { UI.articleOnly = !UI.articleOnly; reset(); bump(); }}>요약 글만 보기</button>
           {PERIODS.map(([key, label]) => (
             <button key={key || 'all'} className="uchip" data-period={key} aria-pressed={UI.period === key}
               onClick={() => { UI.period = key; reset(); bump(); }}>{label}</button>
@@ -257,7 +257,7 @@ function UpdatesList() {
       </div>
       <button className="upd__more" hidden={rest <= 0}
         onClick={() => { UI.shown += PAGE; bump(); }}>{rest > 0 ? `지난 소식 더 보기 (${rest}건 남음)` : ''}</button>
-      <p className="detail__foot">[원문 보기] 는 아직 moncamp 요약이 없는 소식이에요 — 공식 제목·날짜와 원문에서 따온 인용만 보여 드려요. 요약이 붙으면 그 자리가 기사가 돼요.</p>
+      <p className="detail__foot">[원문 보기]는 요약이 준비되지 않은 소식이에요. 공식 제목·날짜와 원문 일부를 먼저 제공하며, 확인이 끝나면 요약을 추가해요.</p>
     </div>
   );
 }
@@ -278,7 +278,7 @@ function ArchiveDetail({ row }: { row: ArchiveEntry }) {
         <Dates row={row} />
       </header>
       {row.excerpt
-        ? <Section title="공식 원문에서"><blockquote className="upd__quote-box">{row.excerpt}</blockquote></Section>
+        ? <Section title="공식 원문 발췌"><blockquote className="upd__quote-box">{row.excerpt}</blockquote></Section>
         : null}
       <Section title="공식 원문">
         <div className="upd__sources">{(row.sources ?? []).map((one) => <SourceCard key={one.url} source={one} />)}</div>
@@ -299,7 +299,7 @@ function UpdateDetail({ id }: { id: string }) {
     return (
       <div className="page__body" id="page-game-update" data-route="game-update">
         <Back />
-        <p className="dex__hint">그 글을 찾을 수 없어요. 아직 공개되지 않았거나 내려간 글일 수 있어요.</p>
+        <p className="dex__hint">소식을 찾을 수 없어요. 아직 공개되지 않았거나 게시가 중단된 글일 수 있어요.</p>
       </div>
     );
   }
@@ -340,11 +340,11 @@ function UpdateDetail({ id }: { id: string }) {
       ) : null}
 
       {article.playerImpact?.length ? <Section title="플레이에 미치는 영향"><Bullets items={article.playerImpact} /></Section> : null}
-      {article.suggestedActions?.length ? <Section title="확인하면 좋은 것"><Bullets items={article.suggestedActions} /></Section> : null}
+      {article.suggestedActions?.length ? <Section title="확인할 사항"><Bullets items={article.suggestedActions} /></Section> : null}
 
       {/* 이 변경을 두고 우리 화면으로 무엇을 하면 되는지 한 문단 */}
       {article.moncampAdvice
-        ? <Section title="moncamp 는 이렇게 추천해요"><div className="upd__advice"><p>{article.moncampAdvice}</p></div></Section>
+        ? <Section title="moncamp 추천"><div className="upd__advice"><p>{article.moncampAdvice}</p></div></Section>
         : null}
 
       {article.related?.length ? (
@@ -363,7 +363,7 @@ function UpdateDetail({ id }: { id: string }) {
       <Section title="공식 원문">
         {article.sources?.length
           ? <div className="upd__sources">{article.sources.map((one) => <SourceCard key={one.url} source={one} />)}</div>
-          : <p className="dex__hint">원문 링크가 없어요.</p>}
+          : <p className="dex__hint">등록된 원문 링크가 없어요.</p>}
       </Section>
 
       {article.revisions?.length ? (

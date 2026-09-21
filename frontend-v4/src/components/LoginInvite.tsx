@@ -14,9 +14,9 @@ import { track } from '../lib/track';
 import TermsConsent from './TermsConsent';
 
 const STEPS: [string, string, string][] = [
-  ['1', 'Google 계정으로 로그인', '이메일·이름·프로필 사진만 받아요.'],
+  ['1', 'Google 계정으로 로그인', '계정의 이메일·이름·프로필 사진을 받아요.'],
   ['2', '관리자 승인 기다리기', '바로 승인되지 않을 수 있어요. 관리자에게 알려 주세요.'],
-  ['3', '승인되면 열려요', '내 포켓몬·검색식·화면 설정이 계정에 묶여 어느 기기에서든 같아요.'],
+  ['3', '승인 후 이용하기', '승인 후 계정에 저장한 정보를 다른 기기에서도 사용할 수 있어요.'],
 ];
 
 export default function LoginInvite({ screen, onClose }: { screen: string; onClose: () => void }) {
@@ -67,7 +67,7 @@ export default function LoginInvite({ screen, onClose }: { screen: string; onClo
             <button className="drawer__item login-invite__later" onClick={onClose}>{pending ? '확인' : '나중에'}</button>
             <p className="detail__foot">
               {'첫 로그인 때 '}<a href="#/terms" onClick={onClose}>이용약관</a>{'·'}
-              <a href="#/privacy" onClick={onClose}>개인정보처리방침</a>{' 동의를 받아요.'}
+              <a href="#/privacy" onClick={onClose}>개인정보처리방침</a>{'에 대한 동의를 받아요.'}
             </p>
           </div>
         </div>

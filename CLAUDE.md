@@ -1,14 +1,14 @@
 # moncamp — 작업 지침
 
-이 파일은 세션마다 먼저 읽힌다. **어길 수 없는 규칙만** 둔다.
-자세한 설명은 [`docs/DEVELOPMENT.md`](docs/DEVELOPMENT.md) · [`docs/OPERATIONS.md`](docs/OPERATIONS.md) · [`docs/INFRA.md`](docs/INFRA.md) 에 있다.
+작업을 시작할 때 먼저 확인해야 하는 필수 규칙입니다.
+상세 내용은 [`docs/DEVELOPMENT.md`](docs/DEVELOPMENT.md) · [`docs/OPERATIONS.md`](docs/OPERATIONS.md) · [`docs/INFRA.md`](docs/INFRA.md) 에 있습니다.
 
 ---
 
 ## 1. `NaN` · `undefined` 는 어떤 상태에서도 화면에 못 나간다
 
-**절대 규칙이다.** 로그인 전후 · 권한 있고 없고 · 데이터 있고 없고 · 어느 탭 어느 칩이든,
-사용자가 보는 글자에 `NaN` · `undefined` · `null` · `Infinity` · `[object Object]` 가 섞이면 안 된다.
+**모든 화면에서 반드시 지켜야 합니다.** 로그인 전후 · 권한 있고 없고 · 데이터 있고 없고 · 어느 탭 어느 칩이든,
+화면에 표시되는 문구에 `NaN` · `undefined` · `null` · `Infinity` · `[object Object]` 가 포함되면 안 됩니다.
 
 ### 왜 샜나
 
@@ -21,7 +21,7 @@
 | 탱커 | `dynamax_tank.json` | `ehp` `hp` `def` `mult` — 기술 칸이 없다 |
 
 탱커 줄이 딜러 문법을 타면서 `NaN 맥스 피해 · 내구 undefined` 가 그대로 찍혔다 (v4.2.4 제보).
-표는 바뀌었는데 읽는 쪽이 안 바뀐 것이다. 읽는 자리가 화면 곳곳에 흩어져 있으면 사람이 다 볼 수 없다.
+데이터 구조가 바뀌어도 화면의 참조 방식이 그대로이면 오류가 발생합니다. 참조 코드가 여러 곳에 분산되어 있으면 수동으로 모두 확인하기 어렵습니다.
 
 ### 그래서 지켜야 할 셋
 
@@ -49,12 +49,12 @@
 
 ### 기계가 막는 그물 셋
 
-지침만 적어 두면 또 샌다. 층을 셋 둔다 — **위가 뚫려도 아래가 잡는다.**
+문서만으로는 재발을 막기 어려우므로 검증 단계를 둡니다 — **한 단계에서 놓친 오류를 다음 단계에서 확인합니다.**
 
 | 층 | 무엇 | 언제 돈다 |
 | --- | --- | --- |
 | 관문 | `lib/cell.ts` — `num` · `word` · `lines` | 늘 (화면이 값을 찍을 때마다) |
-| 단위 | `src/test/rankcells.test.ts` 손으로 적은 줄 모양<br>`src/test/datasweep.test.ts` **실데이터 전량**(모든 표 · 모든 키 · 모든 줄) | `npm test` · CI 의 `v4 검사` |
+| 단위 | `src/test/rankcells.test.ts` 수동으로 정의한 표본 데이터<br>`src/test/datasweep.test.ts` **실데이터 전량**(모든 표 · 모든 키 · 모든 줄) | `npm test` · CI 의 `v4 검사` |
 | 화면 | `scripts/check_screens.mjs` — 46장을 돌며 그려진 글자를 훑는다 | 배포 전 (아래 참고) |
 | 색 | `scripts/check_contrast.mjs` — 42장의 글자가 바탕에 묻히지 않는지 본다 (§1-b) | 배포 전 |
 

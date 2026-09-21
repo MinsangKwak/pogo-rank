@@ -91,7 +91,7 @@ export default function CalcScreen({ form, inputs, onChange }: {
         </p>
       </div>
 
-      <p className="detail__foot">내 개체의 레벨·개체값을 맞추면 지금 CP와 만렙까지의 여지가 보여요</p>
+      <p className="detail__foot">레벨과 개체값을 입력하면 현재 CP와 레벨 50의 예상 CP를 비교할 수 있어요</p>
     </div>
   );
 }
