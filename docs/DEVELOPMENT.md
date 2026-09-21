@@ -713,6 +713,12 @@ GA4 의 성질이었다 — 세 가지가 겹친다.
 **개인정보.** IP 는 어디에도 저장하지 않는다 — 앞단이 판정해 둔 국가 코드만 읽으므로 이 서버는 IP 를 볼 일조차 없다.
 방문자는 브라우저가 만든 난수(`pogo_visitor`)이고, `pogo_consent=denied` 면 한 건도 안 나간다(GA4 와 같은 게이트).
 
+**설명서는 코드에서 뽑는다.** 주소마다의 모양은 라우트의 JSON Schema 에 이미 있으므로
+`@fastify/swagger` 가 그대로 읽는다 — 손으로 쓰면 언젠가 어긋나고, 어긋난 설명서는 없느니만 못하다
+(읽는 사람이 그걸 믿고 짠다). 저장소의 `openapi.json` 과 [`docs/server-api.html`](server-api.html) 은
+`npm run openapi` 가 굽고, **검사가 코드와 파일을 대어 본다**. 표 그림도 같은 규칙이다 —
+[`server-erd.html`](server-erd.html) 을 고치고 `node scripts/bake_erd.mjs` 로 다시 굽는다.
+
 **결과.** 1판은 화면에 보이는 변화가 없다. `search` 이벤트가 GA4 와 내 DB 에 **나란히** 쌓이기 시작할 뿐이다.
 둘을 견줄 수 있는 동안 내 수집기가 맞는지 확인하고, 2주쯤 쌓인 뒤에 v4.6.3 이 내린 검색순위를
 `ranking` 브랜치에서 되살린다 — 그때는 GA4 의 임계값이 없다.
