@@ -1,0 +1,192 @@
+<!doctype html><html lang="ko"><head><meta charset="utf-8"><title>moncamp 수집 서버 ERD</title>
+<style>
+  :root{
+    --bg:#fff8f2; --fg:#0a0a0f; --muted:#64647a; --surface:#fff; --line2:#d4d4dc;
+    --brand:#d63024; --point:#2f6fd0; --good:#0d9488; --caution:#d97706; --off:#9b9bb0;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{width:1480px;background:var(--bg);color:var(--fg);
+    font-family:"WenQuanYi Zen Hei","Noto Sans CJK KR",sans-serif;padding:44px 48px 40px;-webkit-font-smoothing:antialiased}
+  .head{display:flex;align-items:flex-end;gap:18px;border-bottom:4px solid var(--brand);padding-bottom:16px;margin-bottom:26px}
+  .logo{width:46px;height:46px;border:4px solid var(--fg);background:var(--brand);position:relative}
+  .logo::after{content:"";position:absolute;left:-4px;right:-4px;top:17px;height:4px;background:var(--fg)}
+  h1{font-size:38px;letter-spacing:-1px}
+  .ver{font-size:22px;font-weight:700;color:#fff;background:var(--brand);padding:4px 12px}
+  .when{margin-left:auto;font-size:16px;color:var(--muted);text-align:right;line-height:1.5}
+
+  .flow{display:flex;align-items:center;gap:14px;margin-bottom:26px;font-size:16px}
+  .step{background:var(--surface);border:3px solid var(--fg);padding:9px 14px;font-weight:700}
+  .step small{display:block;font-weight:400;color:var(--muted);font-size:13px;margin-top:2px}
+  .arrow{color:var(--brand);font-size:26px;font-weight:700}
+  .step.off{border-color:var(--off);color:var(--muted)}
+
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:26px;align-items:start}
+  .tbl{background:var(--surface);border:4px solid var(--fg);box-shadow:8px 8px 0 0 rgba(10,10,15,.14)}
+  .tbl > header{background:var(--fg);color:#fff;padding:12px 18px;display:flex;align-items:baseline;gap:12px}
+  .tbl > header b{font-size:24px;letter-spacing:-.5px}
+  .tbl > header span{font-size:14px;color:#c9c9d6}
+  table{width:100%;border-collapse:collapse;font-size:15px}
+  td{padding:8px 12px;border-bottom:1px solid var(--line2);vertical-align:top}
+  tr:last-child td{border-bottom:0}
+  td.k{width:34px;text-align:center;font-weight:700;font-size:13px}
+  td.n{width:150px;font-weight:700;font-family:ui-monospace,"DejaVu Sans Mono",monospace}
+  td.t{width:132px;color:var(--point);font-family:ui-monospace,"DejaVu Sans Mono",monospace;font-size:13.5px}
+  td.d{color:var(--muted);line-height:1.45;font-size:14px}
+  .pk{color:var(--brand)} .idx{color:var(--good)}
+  .tbl footer{border-top:3px solid var(--fg);padding:11px 16px;font-size:13.5px;color:var(--muted);line-height:1.6}
+  .tbl footer b{color:var(--fg)}
+
+  .link{margin:24px 0 8px;display:flex;align-items:center;gap:16px;
+    background:var(--surface);border:4px solid var(--fg);padding:14px 18px;font-size:15.5px;line-height:1.5}
+  .link .big{font-size:30px;color:var(--brand);font-weight:700}
+  .link b{color:var(--fg)}
+  .note{margin-top:18px;font-size:14px;color:var(--muted);line-height:1.7;
+    border-left:5px solid var(--caution);padding-left:14px}
+  .note b{color:var(--fg)}
+  .gate{margin-top:26px;background:var(--surface);border:4px solid var(--fg);
+    box-shadow:8px 8px 0 0 rgba(10,10,15,.14);padding:16px 18px 14px}
+  .gate h3{font-size:19px;margin-bottom:10px}
+  .gate table{margin-bottom:10px}
+  .gate td{border-bottom:1px solid var(--line2);padding:7px 8px}
+  .gate tr:last-child td{border-bottom:0}
+  .gate td.c{width:44px;text-align:center;font-size:22px;font-weight:700;color:var(--brand)}
+  .gate td.n{width:148px;font-family:ui-monospace,"DejaVu Sans Mono",monospace;font-size:14px;font-weight:700}
+  .gate td.d{color:var(--muted);font-size:14px;line-height:1.45}
+  .gate td.d b{color:var(--fg)}
+  .gate p{font-size:13.5px;color:var(--muted);line-height:1.6;
+    border-left:5px solid var(--caution);padding-left:12px}
+  .gate p b{color:var(--fg)}
+</style></head><body>
+
+<div class="head">
+  <div class="logo"></div>
+  <h1>수집 서버 ERD</h1>
+  <div class="ver">v4.8.5</div>
+  <div class="when">moncamp · <code>server/</code><br>Node 22 · Fastify · Postgres</div>
+</div>
+
+<div class="flow">
+  <div class="step">브라우저<small>lib/collect.ts</small></div>
+  <div class="arrow">→</div>
+  <div class="step">POST /v1/events<small>출처·스키마·한도·뜻</small></div>
+  <div class="arrow">→</div>
+  <div class="step">events<small>원본 한 줄</small></div>
+  <div class="arrow">→</div>
+  <div class="step">일 1회 01:30<small>집계 + 파기</small></div>
+  <div class="arrow">→</div>
+  <div class="step">search_daily<small>굳힌 합계</small></div>
+  <div class="arrow">→</div>
+  <div class="step off">빌드가 GET /v1/hot<small>정적 파일로 굽는다</small></div>
+</div>
+
+<div class="flow">
+  <div class="step">주간 워크플로<small>backup-firestore.yml</small></div>
+  <div class="arrow">→</div>
+  <div class="step">Firestore 내려받기<small>네 컬렉션</small></div>
+  <div class="arrow">→</div>
+  <div class="step">암호화<small>평문은 러너에만</small></div>
+  <div class="arrow">→</div>
+  <div class="step">아티팩트 90일 + <b>GCS 12개월</b><small>암호화본이 떨어지는 곳</small></div>
+  <div class="arrow">→</div>
+  <div class="step">POST /v1/admin/backups<small>잰 수만 보낸다</small></div>
+  <div class="arrow">→</div>
+  <div class="step">backup_runs<small>정말 돌았나</small></div>
+</div>
+
+<div class="grid">
+  <div>
+  <div class="tbl">
+    <header><b>events</b><span>원본 — 한 줄이 한 번의 검색</span></header>
+    <table>
+      <tr><td class="k pk">PK</td><td class="n">id</td><td class="t">bigint identity</td><td class="d"></td></tr>
+      <tr><td class="k idx">IX</td><td class="n">name</td><td class="t">text not null</td><td class="d">화이트리스트를 지난 이름만 (<code>search</code>)</td></tr>
+      <tr><td class="k idx">IX</td><td class="n">visitor</td><td class="t">text not null</td><td class="d">브라우저가 만든 난수. <b>사람과 안 이어진다</b></td></tr>
+      <tr><td class="k idx">IX</td><td class="n">term</td><td class="t">text</td><td class="d">고른 <b>완성어</b> — 친 글자가 아니다</td></tr>
+      <tr><td class="k"></td><td class="n">surface</td><td class="t">text</td><td class="d">어느 검색창 (dex · pvp_deck …)</td></tr>
+      <tr><td class="k"></td><td class="n">country</td><td class="t">char(2) 'ZZ'</td><td class="d"><b>IP 는 저장 안 함.</b> 앞단이 판정한 코드</td></tr>
+      <tr><td class="k"></td><td class="n">channel</td><td class="t">prod | dev</td><td class="d">미리보기가 운영 순위에 안 섞이게</td></tr>
+      <tr><td class="k"></td><td class="n">props</td><td class="t">jsonb '{}'</td><td class="d">아직 칸으로 안 올린 값</td></tr>
+      <tr><td class="k"></td><td class="n">occurred_at</td><td class="t">timestamptz</td><td class="d">브라우저가 말한 시각 — <b>안 믿는다</b></td></tr>
+      <tr><td class="k idx">IX</td><td class="n">created_at</td><td class="t">timestamptz now()</td><td class="d">서버가 받은 시각 — <b>집계는 이쪽</b></td></tr>
+    </table>
+    <footer>
+      <b>보관 12개월.</b> KST 날짜로 잘라 통째로 지운다 (<code>lib/retention.ts</code>)<br>
+      <b>인덱스</b> (name, created_at desc) · (term, visitor) where term is not null
+    </footer>
+  </div>
+
+  <div class="gate">
+    <h3>순위를 세는 규칙 — 문턱 넷</h3>
+    <table>
+      <tr><td class="c">5</td><td class="n">PERSON_CAP</td><td class="d">한 사람이 <b>하루에</b> 한 말로 셀 수 있는 최대</td></tr>
+      <tr><td class="c">3</td><td class="n">MIN_HITS</td><td class="d">이 수를 못 넘긴 말은 안 세운다</td></tr>
+      <tr><td class="c">2</td><td class="n">MIN_VISITORS</td><td class="d"><b>한 사람이 찾은 말은 안 세운다</b></td></tr>
+      <tr><td class="c">3</td><td class="n">MIN_ROWS</td><td class="d">줄이 이만큼 안 차면 표를 통째로 비운다</td></tr>
+    </table>
+    <p><b>문턱은 자르기(LIMIT) 전에 건다.</b> 뒤에 걸면 한 사람이 밀어 올린 말들이
+       열 자리를 다 먹고 그 뒤에 전부 걸러져 표가 통째로 빈다.</p>
+  </div>
+  </div>
+
+  <div>
+  <div class="tbl">
+    <header><b>search_daily</b><span>굳힌 역사 — 원본을 지워도 남는다</span></header>
+    <table>
+      <tr><td class="k pk">PK</td><td class="n">day</td><td class="t">date</td><td class="d"><b>KST 기준 날짜.</b> UTC 로 자르면 한국 저녁이 다음 날로 넘어간다</td></tr>
+      <tr><td class="k pk">PK</td><td class="n">term</td><td class="t">text</td><td class="d"></td></tr>
+      <tr><td class="k pk">PK</td><td class="n">country</td><td class="t">char(2)</td><td class="d">모르면 <code>ZZ</code> — 기본키에 null 을 못 둔다</td></tr>
+      <tr><td class="k"></td><td class="n">hits</td><td class="t">integer</td><td class="d">사람당 <b>하루</b> 5회까지 센 합계</td></tr>
+      <tr><td class="k"></td><td class="n">visitors</td><td class="t">integer</td><td class="d">그 날 찾은 사람 수</td></tr>
+    </table>
+    <footer>
+      <b>날짜를 넘어 visitors 를 더하면 안 된다</b> — 같은 사람이 이틀 찾으면 2가 된다.<br>
+      여러 날의 사람 수가 필요하면 events 를 직접 센다 (<code>/v1/hot</code> 이 그렇게 한다)
+    </footer>
+  </div>
+
+
+  <div class="tbl" style="margin-top:26px">
+    <header><b>backup_runs</b><span>백업이 정말 돌았나 — 개인정보 없음</span></header>
+    <table>
+      <tr><td class="k pk">PK</td><td class="n">id</td><td class="t">bigint identity</td><td class="d"></td></tr>
+      <tr><td class="k idx">IX</td><td class="n">ran_at</td><td class="t">timestamptz</td><td class="d">늘 최근 것부터 본다</td></tr>
+      <tr><td class="k"></td><td class="n">location</td><td class="t">text</td><td class="d"><code>gs://…</code> 또는 <code>actions-artifact://…</code></td></tr>
+      <tr><td class="k"></td><td class="n">bytes</td><td class="t">bigint &gt; 0</td><td class="d"></td></tr>
+      <tr><td class="k"></td><td class="n">sha256</td><td class="t">char(64) hex</td><td class="d">받은 것이 온전한지 대어 본다</td></tr>
+      <tr><td class="k"></td><td class="n">counts</td><td class="t">jsonb</td><td class="d">컬렉션별 문서 <b>수</b>만 — 이름·이메일 없음</td></tr>
+      <tr><td class="k"></td><td class="n">note</td><td class="t">text</td><td class="d">워크플로 실행 주소</td></tr>
+    </table>
+    <footer>
+      <b>백업의 진짜 실패는 조용하다</b> — 초록인데 안이 비었거나 몇 주째 안 돈 쪽이다.<br>
+      여드레가 넘거나(STALE_DAYS) 문서 수가 30% 넘게 줄면(DROP_RATIO) 짚는다
+    </footer>
+  </div>
+
+  <div class="tbl" style="margin-top:26px">
+    <header><b>backup_ack</b><span>사람이 끊는 자리 — 개인정보 없음</span></header>
+    <table>
+      <tr><td class="k pk">PK</td><td class="n">collection</td><td class="t">text</td><td class="d">컬렉션 이름</td></tr>
+      <tr><td class="k"></td><td class="n">baseline</td><td class="t">integer &ge; 0</td><td class="d">여태 최대 대신 이 수를 잣대로</td></tr>
+      <tr><td class="k"></td><td class="n">acked_at</td><td class="t">timestamptz</td><td class="d">이 뒤에 되살아났으면 그쪽이 잣대</td></tr>
+      <tr><td class="k"></td><td class="n">reason</td><td class="t">text</td><td class="d">왜 사고가 아닌지</td></tr>
+    </table>
+    <footer>
+      <b>잣대에 창을 두면 사고가 지워진다</b> — 망가진 판이 그만큼 쌓이면 성한 판이 밀려난다.<br>
+      그래서 잣대는 <b>여태 최대</b>이고, 진짜로 줄어든 경우만 <b>사람이</b> 여기서 끊는다
+    </footer>
+  </div>
+  </div>
+</div>
+
+<div class="link">
+  <div class="big">⇄</div>
+  <div>
+    <b>표 넷 사이에 외래키가 하나도 없다.</b> <code>search_daily</code> 는 <code>events</code> 의 자식이 아니라
+    <b>그것을 지우고 나서도 남을 요약</b>이다 — 부모가 사라지는 것이 설계다.
+    <code>backup_runs</code>·<code>backup_ack</code> 는 아예 다른 일을 재는 자리라 이을 것이 없다.<br>
+    앞의 둘을 이어 주는 것은 키가 아니라 <b>같은 셈</b>이다: 둘 다 <code>(KST 날짜, 말, 사람)</code> 으로 묶어
+    사람당 하루 5회까지 센다. 그래서 <code>/v1/hot</code> 과 <code>search_daily</code> 가 같은 수를 말한다.
+  </div>
+</div>
+
+</body></html>
