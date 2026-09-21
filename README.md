@@ -158,10 +158,17 @@ Pokémon과 관련 명칭·이미지의 권리는 The Pokémon Company, Nintendo
 
 ## 버전 이력
 
-전체 214개 릴리스를 `날짜 → 버전`의 2단계 접이식 목록으로 정리했습니다. 가장 최근 날짜만 기본으로 펼쳐지며, 설명이 한 줄인 초기 버전은 별도의 접이식 영역 없이 표시됩니다. 사용자용 요약은 서비스의 [🎉 패치 노트](https://moncamp.kr/#/release)에서, 변경 배경과 세부 구현 내용은 [변경 이력](CHANGELOG.md)에서 확인할 수 있습니다.
+전체 215개 릴리스를 `날짜 → 버전`의 2단계 접이식 목록으로 정리했습니다. 가장 최근 날짜만 기본으로 펼쳐지며, 설명이 한 줄인 초기 버전은 별도의 접이식 영역 없이 표시됩니다. 사용자용 요약은 서비스의 [🎉 패치 노트](https://moncamp.kr/#/release)에서, 변경 배경과 세부 구현 내용은 [변경 이력](CHANGELOG.md)에서 확인할 수 있습니다.
 
 <details open>
-<summary><b>2026-09-21</b> — 릴리스 7개 · <code>v4.8.0</code> · <code>v4.7.4</code> · <code>v4.7.3</code> · <code>v4.7.2</code> · <code>v4.7.1</code> · <code>v4.7.0</code> · <code>v4.6.4</code></summary>
+<summary><b>2026-09-21</b> — 릴리스 8개 · <code>v4.8.1</code> · <code>v4.8.0</code> · <code>v4.7.4</code> · <code>v4.7.3</code> · <code>v4.7.2</code> · <code>v4.7.1</code> · <code>v4.7.0</code> · <code>v4.6.4</code></summary>
+
+<details>
+<summary><b>v4.8.1</b> · 수집 서버의 응답이 값을 흘리던 자리를 막았습니다</summary>
+
+코드 리뷰가 셋을 더 잡았습니다. 응답 스키마에 칸을 안 적은 자리가 값을 통째로 `{}` 로 내보내고 있었고(검색 순위의 문턱, 백업 기록 둘), 12개월 파기 경계가 4년에 한 번 윤년 하루를 흘렸으며, API 설명서가 `text/plain` 을 안 알리고 있었습니다. 화면에 보이는 변화는 없습니다.
+
+</details>
 
 <details>
 <summary><b>v4.8.0</b> · 계정 백업본을 한 곳 더</summary>

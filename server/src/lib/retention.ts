@@ -14,9 +14,12 @@
 //   ② 경계가 하루 가운데를 지나면 그 날의 **앞부분만** 굳혀 놓고 지운다. 다음 판에서 뒷부분이
 //      대상이 되지만 on conflict do nothing 이 막아, 그 수는 영영 사라진다.
 // KST 날짜로 자르면 한 날은 통째로 가거나 통째로 남는다 — 둘 다 없어진다. 늦게가 아니라 **일찍** 자른다.
+//
+// **경계는 빼서 구하지 않는다** (v4.8.1 코드 리뷰). 달을 빼면 월말이 당겨 붙어 2/29 한 날이 새어 나간다.
+// 약속이 참인 날을 세어 가장 늦은 것을 고른다 — retentionEdge.
 // ─────────────────────────────────────────────────────────────────────────────
 'use strict';
-import type { Sql } from '../db/client.ts';
+import type { Sql, Queryable } from '../db/client.ts';
 import { PERSON_CAP } from './hot.ts';
 
 /** 방침 5번에 적은 값. 여기를 고치면 방침도 같이 고친다 */
@@ -31,6 +34,47 @@ export interface PurgeResult {
   throughDay: string;
 }
 
+export interface RetentionEdge {
+  /** 이 KST 날짜까지가 대상 (그 날도 포함) */
+  through: string;
+  /** 그 다음 날 0시 KST. 이걸로 비교해야 created_at 의 인덱스를 탄다 */
+  at: Date;
+}
+
+/**
+ * 파기 경계를 구한다. `today` 는 검사에서만 넘긴다 — 평소에는 KST 의 오늘이다.
+ *
+ * **빼지 않고 센다.** `날짜 - interval '12 month'` 는 월말이 당겨 붙는다 —
+ * 2025-02-28 에서 열두 달을 빼면 2024-02-28 이라 2024-02-29 한 날이 경계 밖에 남고,
+ * 그 줄은 다음 판(내일 새벽)까지 산다. 반대로 `+1일 -12개월 -1일` 로 보정하면
+ * **윤년 당일(2024-02-28)에 거꾸로** 하루를 더 살려 둔다.
+ *
+ * 약속은 하나다 — *D 에 만든 줄은 D+12개월 안에 지운다*. 그 부등식이 참인 날 중
+ * 가장 늦은 날을 직접 고르면 달이 당겨 붙든 말든 어느 쪽으로도 안 샌다.
+ * ±3일만 훑는다 — 당겨 붙어 봐야 하루다.
+ */
+export async function retentionEdge(sql: Queryable, months = KEEP_MONTHS, today?: string): Promise<RetentionEdge> {
+  const [edge] = await sql<RetentionEdge[]>`
+    with today as (
+      select coalesce(${today ?? null}::date, (now() at time zone 'Asia/Seoul')::date) as d
+    ),
+         span as (select ${months} * interval '1 month' as len),
+         last_due as (
+           select max(g)::date as day
+           from today, span,
+                generate_series(today.d - span.len - interval '3 day',
+                                today.d - span.len + interval '3 day',
+                                interval '1 day') g
+           where (g::date + span.len)::date <= today.d
+         )
+    select to_char(day, 'YYYY-MM-DD') as through,
+           ((day + 1)::timestamp at time zone 'Asia/Seoul') as at
+    from last_due
+  `;
+  if (!edge?.through) throw new Error('보존 경계를 못 구했습니다');
+  return edge;
+}
+
 export async function purge(sql: Sql, months = KEEP_MONTHS): Promise<PurgeResult> {
   return sql.begin(async (tx) => {
     // **경계를 한 번만 잰다.** 문장마다 now() 를 다시 부르면 그 사이에 걸친 줄이
@@ -38,13 +82,7 @@ export async function purge(sql: Sql, months = KEEP_MONTHS): Promise<PurgeResult
     //
     // throughDay  이 KST 날짜까지가 대상 (그 날도 포함)
     // horizon     그 다음 날 0시 KST. 이걸로 비교해야 created_at 의 인덱스를 탄다
-    const [edge] = await tx<{ through: string; at: Date }[]>`
-      select to_char(day, 'YYYY-MM-DD') as through,
-             ((day + 1)::timestamp at time zone 'Asia/Seoul') as at
-      from (select ((now() at time zone 'Asia/Seoul')::date
-                    - (${months} * interval '1 month'))::date as day) one
-    `;
-    if (!edge) throw new Error('보존 경계를 못 구했습니다');
+    const edge = await retentionEdge(tx, months);
     const horizon = edge.at;
 
     // 이미 rollup 이 쓴 날은 그대로 둔다 — 같은 셈이라 덮어쓸 이유가 없고,

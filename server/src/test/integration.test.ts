@@ -10,14 +10,19 @@
 // ─────────────────────────────────────────────────────────────────────────────
 'use strict';
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
+import type { FastifyInstance } from 'fastify';
+import { buildApp } from '../app.ts';
+import { readEnv } from '../env.ts';
 import { makeDb, type Sql } from '../db/client.ts';
 import { migrate } from '../db/migrate.ts';
 import { hotRows, rollup, PERSON_CAP, MIN_HITS, MIN_VISITORS } from '../lib/hot.ts';
-import { purge } from '../lib/retention.ts';
+import { purge, retentionEdge, KEEP_MONTHS } from '../lib/retention.ts';
 import { backupHealth, STALE_DAYS, DROP_RATIO } from '../lib/backup.ts';
 
 const url = (process.env['DATABASE_URL'] ?? '').trim();
+const TOKEN = 'k'.repeat(40);
 let sql: Sql;
+let app: FastifyInstance;
 
 async function seed(term: string, visitor: string, times: number, channel = 'prod') {
   for (let i = 0; i < times; i += 1) {
@@ -39,9 +44,14 @@ describe.skipIf(!url)('통합 — 진짜 Postgres', () => {
     sql = makeDb(url);
     await migrate(sql);
     await sql`truncate events, search_daily, backup_runs`;
+    // 라우트가 **실제로 내보내는 글자**를 보려면 진짜 줄이 있어야 한다
+    app = await buildApp(readEnv({
+      DATABASE_URL: url, ALLOWED_ORIGINS: 'https://moncamp.kr', NODE_ENV: 'test', ADMIN_TOKEN: TOKEN,
+    }), sql);
+    await app.ready();
   });
 
-  afterAll(async () => { if (sql) await sql.end(); });
+  afterAll(async () => { if (app) await app.close(); if (sql) await sql.end(); });
 
   it('마이그레이션이 두 번 돌아도 한 번만 적용된다', async () => {
     expect(await migrate(sql)).toEqual([]);
@@ -182,9 +192,7 @@ describe.skipIf(!url)('통합 — 진짜 Postgres', () => {
   // v4.7.3 코드 리뷰 — 정확한 시각으로 자르면 하루 한 번 도는 일이 반나절을 넘긴다
   it('파기는 KST 날짜로 자른다 — 경계 날은 통째로 가고 그 다음 날은 통째로 남는다', async () => {
     await sql`truncate events, search_daily`;
-    const [edge] = await sql<{ through: string }[]>`
-      select to_char(((now() at time zone 'Asia/Seoul')::date - interval '12 months')::date, 'YYYY-MM-DD') as through`;
-    const through = edge!.through;
+    const through = (await retentionEdge(sql)).through;
 
     // 경계 날 늦은 시각 — 시각으로 자르면 살아남던 줄이다
     await sql`insert into events (name, visitor, term, country, channel, created_at)
@@ -204,9 +212,7 @@ describe.skipIf(!url)('통합 — 진짜 Postgres', () => {
 
   it('반쪽 하루를 완전한 집계로 굳히지 않는다', async () => {
     await sql`truncate events, search_daily`;
-    const [edge] = await sql<{ through: string }[]>`
-      select to_char(((now() at time zone 'Asia/Seoul')::date - interval '12 months')::date, 'YYYY-MM-DD') as through`;
-    const through = edge!.through;
+    const through = (await retentionEdge(sql)).through;
     // 같은 날 이른 시각과 늦은 시각 — 한 날은 통째로 세어져야 한다
     for (const at of ['01:00', '13:00', '23:00']) {
       await sql`insert into events (name, visitor, term, country, channel, created_at)
@@ -219,6 +225,49 @@ describe.skipIf(!url)('통합 — 진짜 Postgres', () => {
     expect(await sql`select 1 from events`).toHaveLength(0);
   });
 
+
+  // ── 파기 경계 (v4.8.1 코드 리뷰) ─────────────────────────────────────────
+  // **달을 빼면 월말이 당겨 붙는다.** 약속은 'D 에 만든 줄은 D+12개월 안에 지운다' 하나이고,
+  // 경계는 그 부등식이 참인 날 중 가장 늦은 날이어야 한다 — 어느 쪽으로도 안 새게
+  it('경계가 윤년 하루를 남기지 않는다', async () => {
+    // 2025-02-28 에서 열두 달을 빼면 2024-02-28 이라 2024-02-29 가 하루 더 산다
+    expect((await retentionEdge(sql, KEEP_MONTHS, '2025-02-28')).through).toBe('2024-02-29');
+    expect((await retentionEdge(sql, KEEP_MONTHS, '2029-02-28')).through).toBe('2028-02-29');
+  });
+
+  it('보정한다고 반대로 하루를 더 살려 두지도 않는다', async () => {
+    // `+1일 -12개월 -1일` 로 보정하면 여기서 2023-02-27 이 되어 하루가 더 산다.
+    // 2023-02-28 은 열두 달이 이미 찼다 (2023-02-28 + 12개월 = 2024-02-28)
+    expect((await retentionEdge(sql, KEEP_MONTHS, '2024-02-28')).through).toBe('2023-02-28');
+    expect((await retentionEdge(sql, KEEP_MONTHS, '2024-02-29')).through).toBe('2023-02-28');
+  });
+
+  it('평범한 날에는 그냥 열두 달 전이다', async () => {
+    for (const [today, want] of [
+      ['2026-06-15', '2025-06-15'],
+      ['2025-03-01', '2024-03-01'],
+      ['2025-12-31', '2024-12-31'],
+      ['2026-01-31', '2025-01-31'],
+      ['2026-05-31', '2025-05-31'],
+    ]) {
+      expect((await retentionEdge(sql, KEEP_MONTHS, today)).through).toBe(want);
+    }
+  });
+
+  it('경계가 고른 날은 언제나 약속을 지킨다 — 윤년을 낀 430일을 하루씩 대어 본다', async () => {
+    // 손으로 고른 날짜 몇으로는 다음 월말 규칙을 못 잡는다. 1년을 통째로 훑는다
+    const days = await sql<{ d: string }[]>`
+      select to_char(g, 'YYYY-MM-DD') as d
+      from generate_series('2024-01-01'::date, '2025-03-05'::date, interval '1 day') g`;
+    for (const { d } of days) {
+      const { through } = await retentionEdge(sql, KEEP_MONTHS, d);
+      const [check] = await sql<{ due: boolean; nextDue: boolean }[]>`
+        select (${through}::date + interval '12 month')::date <= ${d}::date as due,
+               (${through}::date + 1 + interval '12 month')::date <= ${d}::date as "nextDue"`;
+      // 고른 날은 열두 달이 찼고 (안 새고), 그 다음 날은 아직 안 찼다 (더 안 지우고)
+      expect([d, check?.due, check?.nextDue]).toEqual([d, true, false]);
+    }
+  });
 
   // ── 3판 백업 기록 ───────────────────────────────────────────────────────
   // 백업의 진짜 실패는 조용하다 — 워크플로는 초록인데 안이 비었거나 몇 주째 안 돈 쪽이다
@@ -276,6 +325,22 @@ describe.skipIf(!url)('통합 — 진짜 Postgres', () => {
                      values ('gs://x', 1, 'not-a-hash')`).rejects.toThrow();
     await expect(sql`insert into backup_runs (location, bytes, sha256)
                      values ('gs://x', 0, ${'a'.repeat(64)})`).rejects.toThrow();
+  });
+
+  it('/v1/admin/backups 가 기록을 온전히 내보낸다 — 스키마가 칸을 지우지 않는다', async () => {
+    await sql`truncate backup_runs`;
+    await logRun(1, { users: 7, trainers: 3 }, 'a');
+    const res = await app.inject({
+      method: 'GET', url: '/v1/admin/backups', headers: { authorization: `Bearer ${TOKEN}` },
+    });
+    expect(res.statusCode).toBe(200);
+    const body = res.json() as { runs: Record<string, unknown>[]; latest: Record<string, unknown>; staleDays: number; dropRatio: number };
+    // 되돌릴 일이 생겼을 때 "어느 것을 받아야 하나" 를 답하는 칸들이다 — 하나라도 비면 못 쓴다
+    expect(Object.keys(body.runs[0] ?? {}).sort()).toEqual(['bytes', 'counts', 'location', 'note', 'ran_at', 'sha256']);
+    expect(body.runs[0]?.['counts']).toEqual({ users: 7, trainers: 3 });
+    expect(body.runs[0]?.['location']).toBe('gs://moncamp-backup/a.enc');
+    expect(body.latest?.['sha256']).toBe('a'.repeat(64));
+    expect([body.staleDays, body.dropRatio]).toEqual([STALE_DAYS, DROP_RATIO]);
   });
 
   it('롤업이 일별 표를 채우고, 다시 돌려도 수가 안 부푼다', async () => {

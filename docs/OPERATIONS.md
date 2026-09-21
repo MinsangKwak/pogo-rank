@@ -607,6 +607,10 @@ curl -s -H "Authorization: Bearer $ADMIN_TOKEN" 'https://api.moncamp.kr/v1/hot?d
 
 `deleted` 가 계속 0 인 것이 정상이다 — 첫 12개월 동안은 지울 것이 없다.
 
+`throughDay` 가 **어느 KST 날짜까지 지웠나**를 말한다. 이 날짜는 `날짜 - 12개월` 이 아니라
+약속(`D + 12개월 <= 오늘`)이 참인 가장 늦은 날이다 — 달을 빼면 월말이 당겨 붙어
+4년에 한 번 2/29 가 하루 더 살아남는다 (v4.8.1, `server/SCHEMA.md` 12개월 파기).
+
 ---
 
 ## 17. 백업본을 GCS 에도 (2026-09-21 v4.8.0)

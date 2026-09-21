@@ -64,7 +64,18 @@ export function hotRoutes(app: FastifyInstance, sql: Sql, adminToken: string): v
           properties: {
             window: { type: 'integer', description: '센 날 수. 화면이 "최근 N일" 이라고 말을 바꾼다' },
             country: { type: ['string', 'null'] },
-            thresholds: { type: ['object', 'null'], description: 'raw 면 null' },
+            // **칸을 하나하나 적는다.** fast-json-stringify 는 적힌 칸만 내보낸다 —
+            // 빈 object 스키마는 값이 들어 있어도 `{}` 가 되어 문턱이 소리 없이 사라진다
+            thresholds: {
+              type: ['object', 'null'],
+              description: '`raw` 면 `null`',
+              properties: {
+                minHits: { type: 'integer', description: '이 횟수를 못 넘긴 말은 안 세운다' },
+                minRows: { type: 'integer', description: '남은 줄이 이보다 적으면 빈 표를 준다' },
+                minVisitors: { type: 'integer', description: '찾은 사람이 이보다 적은 말은 안 세운다' },
+                personCap: { type: 'integer', description: '사람당 하루 이 횟수까지만 센다' },
+              },
+            },
             generated: { type: 'string', format: 'date-time' },
             rows: { type: 'array', items: HOT_ROW },
           },

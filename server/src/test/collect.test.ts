@@ -5,6 +5,7 @@ import type { FastifyInstance } from 'fastify';
 import { buildApp } from '../app.ts';
 import { readEnv } from '../env.ts';
 import { makeFakeSql, type Captured } from './fakeSql.ts';
+import { PERSON_CAP, MIN_VISITORS } from '../lib/hot.ts';
 
 const env = readEnv({
   DATABASE_URL: 'postgres://u:p@localhost:5432/db',
@@ -154,5 +155,18 @@ describe('롤업 열쇠', () => {
 
   it('진단용 raw 순위도 열쇠가 필요하다 — 문턱 아래 값이 그냥 나가지 않는다', async () => {
     expect((await app.inject({ method: 'GET', url: '/v1/hot?raw=true' })).statusCode).toBe(401);
+  });
+});
+
+// **스키마가 값을 지우지 않는가.** fast-json-stringify 는 응답 스키마에 적힌 칸만 내보낸다 —
+// 칸을 안 적은 object 는 핸들러가 무엇을 담아도 `{}` 로 나간다. 그리는 쪽은 아무 오류도 못 본다
+describe('응답 몸통이 온전한가', () => {
+  it('/v1/hot 이 문턱 넷을 그대로 실어 보낸다', async () => {
+    const res = await app.inject({ method: 'GET', url: '/v1/hot' });
+    expect(res.statusCode).toBe(200);
+    const body = res.json() as { thresholds: Record<string, number> };
+    expect(Object.keys(body.thresholds).sort()).toEqual(['minHits', 'minRows', 'minVisitors', 'personCap']);
+    expect(body.thresholds['personCap']).toBe(PERSON_CAP);
+    expect(body.thresholds['minVisitors']).toBe(MIN_VISITORS);
   });
 });

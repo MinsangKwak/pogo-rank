@@ -31,6 +31,10 @@ export function eventRoutes(app: FastifyInstance, sql: Sql): void {
         '- 모르는 칸이 하나라도 있으면 `400`. 조용히 지우지 않는다.',
         '- `term` 없는 `search` 처럼 셀 것이 없는 줄은 버리지만, 그래도 `204` 다 — 보낸 쪽이 틀린 게 아니다.',
       ].join('\n'),
+      // **둘 다 적는다.** 설명에만 적으면 스펙에는 application/json 하나만 실려,
+      // 이 스펙으로 만든 클라이언트는 프리플라이트가 붙는 쪽으로 보낸다 —
+      // 탭을 떠나며 보낸 것이 그때 사라진다 (v4.8.1)
+      consumes: ['application/json', 'text/plain'],
       body: collectBodySchema,
       response: {
         204: { type: 'null', description: '받았다 (걸러져 남은 줄이 없어도 같다)' },

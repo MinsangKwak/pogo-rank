@@ -41,6 +41,21 @@ export function backupRoutes(app: FastifyInstance, sql: Sql, adminToken: string)
   const authorized = (header: string | undefined): boolean =>
     !!adminToken && header === `Bearer ${adminToken}`;
 
+  // **칸을 하나하나 적는다.** fast-json-stringify 는 적힌 칸만 내보낸다 —
+  // 빈 object 스키마는 값이 들어 있어도 `{}` 가 되어 기록이 통째로 사라진다 (v4.8.1)
+  const RUN_SHAPE = {
+    type: 'object',
+    properties: {
+      ran_at: { type: 'string', format: 'date-time' },
+      location: { type: 'string', description: "`gs://…` 또는 `actions-artifact://…`" },
+      // bigint 라 문자열로 낸다 — 자바스크립트 수로는 못 담는 크기가 언젠가 온다
+      bytes: { type: 'string' },
+      sha256: { type: 'string' },
+      counts: { type: 'object', additionalProperties: { type: 'integer' }, description: '컬렉션별 문서 수' },
+      note: { type: ['string', 'null'], description: '돌린 워크플로 주소' },
+    },
+  } as const;
+
   app.post<{ Body: RunBody }>('/v1/admin/backups', {
     schema: {
       tags: ['관리'],
@@ -88,8 +103,10 @@ export function backupRoutes(app: FastifyInstance, sql: Sql, adminToken: string)
           properties: {
             ok: { type: 'boolean' },
             problems: { type: 'array', items: { type: 'string' } },
-            latest: { type: ['object', 'null'] },
-            runs: { type: 'array', items: { type: 'object' } },
+            latest: { ...RUN_SHAPE, type: ['object', 'null'], description: '마지막 한 벌. 한 번도 안 돌았으면 `null`' },
+            runs: { type: 'array', items: RUN_SHAPE, description: '최근 열 벌, 최신 순' },
+            staleDays: { type: 'integer', description: '이보다 오래되면 짚는다' },
+            dropRatio: { type: 'number', description: '문서 수가 이 비율 넘게 줄면 짚는다' },
           },
         },
         401: { type: 'object', properties: { error: { type: 'string' } } },

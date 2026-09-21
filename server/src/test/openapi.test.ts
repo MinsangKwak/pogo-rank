@@ -44,4 +44,31 @@ describe('OpenAPI 설명서', () => {
     expect(body.additionalProperties).toBe(false);
     expect(body.properties.events.maxItems).toBe(20);
   });
+
+  it('sendBeacon 이 보내는 text/plain 도 받는다고 적혀 있다', async () => {
+    const spec = await openapiSpec() as Record<string, any>;
+    // 설명에만 적고 스펙에 안 실으면, 이 스펙으로 만든 클라이언트는 프리플라이트가 붙는
+    // 쪽으로 보낸다 — 탭을 떠나며 보낸 것이 그때 사라진다
+    const content = spec['paths']['/v1/events']['post']['requestBody']['content'];
+    expect(Object.keys(content).sort()).toEqual(['application/json', 'text/plain']);
+  });
+
+  // **빈 object 스키마는 값을 통째로 지운다.** fast-json-stringify 는 적힌 칸만 내보내므로
+  // `{ type: 'object' }` 로 둔 자리는 핸들러가 무엇을 담아도 `{}` 로 나간다.
+  // 자리마다 검사를 세우면 새 주소에서 또 샌다 — 스펙 전체를 훑는다
+  it('칸을 안 적은 object 가 스펙 어디에도 없다', async () => {
+    const spec = await openapiSpec() as Record<string, any>;
+    const bare: string[] = [];
+    const walk = (node: unknown, where: string): void => {
+      if (Array.isArray(node)) return node.forEach((one, i) => walk(one, `${where}[${i}]`));
+      if (!node || typeof node !== 'object') return;
+      const one = node as Record<string, unknown>;
+      const type = one['type'];
+      const isObject = type === 'object' || (Array.isArray(type) && type.includes('object'));
+      if (isObject && !one['properties'] && !one['additionalProperties']) bare.push(where);
+      for (const [key, value] of Object.entries(one)) walk(value, `${where}.${key}`);
+    };
+    walk(spec['paths'], 'paths');
+    expect(bare).toEqual([]);
+  });
 });

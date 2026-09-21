@@ -124,6 +124,10 @@ WCAG 의 4.5 가 아니라 3.0 인 이유는, 여기서 찾는 것이 "읽기 �
   ([`server/src/lib/country.ts`](server/src/lib/country.ts)) — 사람을 가리키는 값은 어느 표에도 두지 않는다.
   **'안 본다' 와 '안 남긴다' 를 섞어 적지 않는다** — 분당 한도는 IP 를 보고 버린다. 방침에는 남기지 않는다고만 적는다.
   통계를 끈 사람(`pogo_consent=denied`)에게서는 GA4 와 마찬가지로 **한 건도 안 나간다.**
+- **서버 응답 스키마에 `object` 를 적을 때는 칸도 같이 적는다** (v4.8.1). `fast-json-stringify` 는
+  적힌 칸만 내보낸다 — 칸 없는 `{ type: 'object' }` 는 값이 들어 있어도 `{}` 로 나가고
+  **오류도 경고도 없다.** 설명서를 붙이는 일이 계약을 깨뜨린 자리다.
+  `src/test/openapi.test.ts` 가 스펙 전체를 훑어 잡는다 — 새 주소를 붙여도 자동으로 걸린다.
 - **약관·개인정보처리방침을 고칠 때는 v3·v4 를 같이 고친다.** 두 판이 같은 도메인을 쓰는 동안
   한쪽만 개정되면 어느 화면을 열었느냐로 동의 범위가 갈린다. `frontend/scripts/components/privacy.js`·`terms.js`
   와 `frontend-v4/src/screens/Legal.tsx`·`components/TermsConsent.tsx` 넷이다 —
