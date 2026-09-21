@@ -177,7 +177,7 @@ function NavExtra({ onConsent }: { onConsent: () => void }) {
         <span className="drawer__ico" aria-hidden="true"><PxIcon emoji="🛠" /></span>
         <span className="drawer__label">설정</span>
       </button>
-      {/* 개인정보처리방침이 '☰ 메뉴 → 통계·저장소 설정' 이라고 적어 뒀다 — 이 줄이 없으면 방침이 거짓말이 된다 */}
+      {/* 개인정보처리방침이 '메뉴 → 통계·저장소 설정' 이라고 적어 뒀다 — 이 줄이 없으면 방침이 거짓말이 된다 */}
       <button className="drawer__item" id="menu-consent" onClick={onConsent}>
         <span className="drawer__ico" aria-hidden="true"><PxIcon emoji="🍪" /></span>
         <span className="drawer__label">통계·저장소 설정</span>

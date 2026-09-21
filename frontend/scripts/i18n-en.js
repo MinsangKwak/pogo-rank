@@ -173,6 +173,10 @@ const I18N_PATTERNS = [
 // 영어로 보는 사람이 자기 지역 일정으로 오해하면 실제로 이벤트를 놓친다
 
 const I18N_EN = {
+  "포켓몬을 누르면 종족값과 상성을 볼 수 있어요.": "Tap a Pokémon to see its base stats and type matchups.",
+  "즐겨찾기에 담은 포켓몬의 다가오는 일정을 확인해 보세요.": "Check upcoming events for the Pokémon you saved as favorites.",
+  "딜러는 맥스 피해 × √내구, 탱커는 체력 × 방어 ÷ 받는 배율(EHP)을 기준으로 추천해요. 전체 탱커 순위는 [탱커] 탭에서 확인할 수 있어요": "Attackers are ranked by Max damage × √bulk, tanks by HP × Defense ÷ incoming multiplier (EHP). The full tank ranking is in the [Tank] tab.",
+
   "등급은 전체 포켓몬의 최고 점수를 기준으로 정해요. 최고 점수 대비 90% 이상은 S, 80% 이상은 A, 70% 이상은 B, 그 미만은 C예요. 타입 탭을 바꿔도 등급은 같고, 순위만 해당 탭 안에서 다시 표시해요. 점수 = 공격 × 맥스무브 위력(거다이 450 · 다이 350) × 자속 1.2 × 내구 보정(방어 × 체력 ÷ 1000의 네제곱근). 맥스 페이즈를 반복해서 사용할 수 있는 생존력을 고려해 내구를 일부 반영해요.": "Grades use the highest score across all Pok\u00e9mon: S at 90% or above, A at 80%, B at 70%, and C below. Grades remain the same across type tabs; ranks are calculated within the selected tab. Score = Attack \u00d7 Max Move power (Gigantamax 450, Dynamax 350) \u00d7 STAB 1.2 \u00d7 bulk adjustment (fourth root of Defense \u00d7 HP / 1000). Bulk partly accounts for surviving repeated Max phases.",
 
   "로그인 후 관리자 승인을 받으면 내 포켓몬과 화면 설정을 계정에 저장할 수 있어요. 첫 로그인 시": "Sign in and your Pokémon and display settings are saved to your account. Access is by approval, and on first sign-in the",

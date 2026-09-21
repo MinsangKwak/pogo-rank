@@ -15,6 +15,9 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 const RELEASE_NOTES_EN = {
+  '2026-09-21 · v4.9.0': [
+    '**Wording across the screens has been tidied up** — the same thing was described differently from screen to screen. Descriptions in the dex, planner and rankings, plus the Terms and Privacy Policy, now read consistently. Nothing about how the site works has changed',
+  ],
   '2026-09-21 · v4.8.7': [
     '**The monthly schedule now fills itself** — 5-star, Mega and Shadow raids, Max Mondays, Raid Hours and Spotlight Hours come straight from LeekDuck announcements, and next month shows up early. English titles are items without a Korean name yet',
     '**Fixed favorites vanishing when one ★ save failed** — tapping several in a row and having one fail used to drop the others from the screen until a refresh; now only the one that failed is reverted',
