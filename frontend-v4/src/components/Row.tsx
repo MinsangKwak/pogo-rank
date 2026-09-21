@@ -205,10 +205,10 @@ export function RowMore({ total, expanded, onToggle }: { total: number; expanded
 // 처음 보는 사람이 모른다 — 이름과 한 줄 설명을 같이 단다 (v2.43.0 의 판단)
 export const TIER_ORDER = ['S', 'A', 'B', 'C'] as const;
 const TIER_DESC: Record<string, string> = {
-  S: '메타를 지배하는 최상위 포켓몬이에요.',
+  S: '현재 평가 기준에서 가장 높은 등급의 포켓몬이에요.',
   A: '뛰어난 성능을 가진 상위권 포켓몬이에요.',
-  B: '상황에 따라 충분히 쓸 만한 중위권이에요.',
-  C: '대체할 개체가 없을 때 쓰는 하위권이에요.',
+  B: '배틀 조건과 역할에 따라 활용할 수 있는 포켓몬이에요.',
+  C: '현재 평가 기준에서는 다른 후보를 먼저 비교해 보세요.',
 };
 
 export function TierHead({ tier, count }: { tier: string; count: number }) {
@@ -232,7 +232,7 @@ export function TierHead({ tier, count }: { tier: string; count: number }) {
 export function RowHead({ title, meta, info, hypo }: { title: string; meta: string; info?: string; hypo?: boolean }) {
   // 이 표 전체가 가정이라는 것을 한 눈에 (v3 maxHypoBadge). 켜져 있을 때만 붙는다
   const badge = hypo
-    ? <span className="tag tag--hypo" title="미구현이 나왔다고 가정하고 매긴 순위예요 — 실제 순위는 [미구현] 을 끄면 나와요">가상 순위</span>
+    ? <span className="tag tag--hypo" title="미출시 포켓몬을 포함한 가상 순위예요. [미구현]을 끄면 출시된 포켓몬 기준으로 볼 수 있어요">가상 순위</span>
     : null;
   return (
     <div className="row-head">

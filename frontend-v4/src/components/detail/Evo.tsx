@@ -27,7 +27,7 @@ export function Evo({ dex, sprite, onSwitch }: {
     ? '⚡ 원시회귀 가능 — 누르면 원시회귀 스탯을 볼 수 있어요'
     : labels.includes('원시') ? '⚡ 메가진화 · 원시회귀 가능 — 누르면 그 폼의 스탯을 볼 수 있어요'
       : '⚡ 메가진화 가능 — 누르면 메가진화 스탯을 볼 수 있어요';
-  const foot = [hasFamily ? '진화형을 누르면 이 창에서 그 포켓몬으로 바뀌어요' : '', megaFoot].filter(Boolean);
+  const foot = [hasFamily ? '진화형을 선택하면 같은 창에서 해당 포켓몬의 정보를 확인할 수 있어요' : '', megaFoot].filter(Boolean);
 
   return (
     <div className="evo">

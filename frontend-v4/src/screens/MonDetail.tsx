@@ -255,7 +255,7 @@ export default function MonDetail({ pick, onClose }: { pick: MonPick; onClose: (
                 {dexNo != null ? (
                   <button className={`detail__bar-btn detail__fav${isFav ? ' is-on' : ''}`} data-dex={dexNo}
                     aria-pressed={isFav}
-                    title={isFav ? '즐겨찾기에서 빼기' : '즐겨찾기에 담기 — 이 포켓몬의 일정을 챙겨 드려요'}
+                    title={isFav ? '즐겨찾기에서 빼기' : '즐겨찾기에 추가 — 관련 일정을 확인할 수 있어요'}
                     onClick={(event) => {
                       event.stopPropagation();
                       // 지표는 useFavs 안에서 한 번만 찍는다 — 여기서 또 찍으면 한 번 누른 것이 두 건이 된다
@@ -375,7 +375,7 @@ export default function MonDetail({ pick, onClose }: { pick: MonPick; onClose: (
                                 </div>
                               ))}
                               {form.fast.some((move) => move[1]) || form.charged.some((move) => move[1])
-                                ? <p className="detail__foot">★ 레거시 기술 — 대단한 기술머신 또는 이벤트로만 습득</p>
+                                ? <p className="detail__foot">★ 레거시 기술 — 대단한 기술머신 또는 특정 이벤트를 통해 습득</p>
                                 : null}
                             </div>
                           </div>

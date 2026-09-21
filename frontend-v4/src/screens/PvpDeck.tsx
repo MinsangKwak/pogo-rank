@@ -55,10 +55,10 @@ function DeckAnalysis({ tools, deck, foes, typeKo, chart }: {
       <p className="solo__verdict">🧠 상대 덱 분석 &amp; 구성 가이드</p>
       <p className="solo__why">{`상대: ${foes.map((foe) => `${foe.name}(${foe.types.map(ko).join('·')})`).join(' / ')}`}</p>
       {bestAtk.length ? (
-        <p className="solo__stats">{`공격 기술 추천: ${bestAtk.map(([type, count]) => `${ko(type)}(${count}마리 약점)`).join(' · ')} — 이 타입 기술을 가진 픽 위주로.`}</p>
+        <p className="solo__stats">{`공격 기술 추천: ${bestAtk.map(([type, count]) => `${ko(type)}(${count}마리 약점)`).join(' · ')} — 이 타입의 기술을 가진 포켓몬을 우선 추천해요.`}</p>
       ) : null}
       {guards.length ? (
-        <p className="solo__stats">{`몸으로 받기 좋은 타입: ${guards.map(([type, count]) => `${ko(type)}(자속 ${count}종 반감)`).join(' · ')}`}</p>
+        <p className="solo__stats">{`방어에 유리한 타입: ${guards.map(([type, count]) => `${ko(type)}(자속 ${count}종 반감)`).join(' · ')}`}</p>
       ) : null}
       <p className="solo__stats">{`역할 분담: ${deck.map(({ candidate }) => {
         const good = foes.filter((foe) => tools.foeFit(candidate, foe) > 1).map((foe) => foe.name);
@@ -227,7 +227,7 @@ export default function PvpDeck({ onOpen }: { onOpen: OpenMon }) {
       ) : null}
 
       {!foes.length ? (
-        <p className="empty">자주 만나는 상대를 [+]에 1~3마리 채우면, 그 셋을 두루 잘 받아치는 맞춤 덱을 짜 줘요.</p>
+        <p className="empty">[+]를 눌러 상대 포켓몬을 1~3마리 선택해 보세요. 상대의 타입 상성을 고려한 덱을 추천해요.</p>
       ) : deck.length ? (
         <>
           <div className="row-head"><h2>맞춤 추천 덱</h2><span className="meta">{`상대 ${foes.length}마리 기준`}</span></div>

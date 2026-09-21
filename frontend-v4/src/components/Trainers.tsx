@@ -74,7 +74,7 @@ export default function Trainers() {
                   <b>{one.name}</b><code>{fmtCode(one.code)}</code><CopyButton code={one.code} />
                 </div>
               ))}
-              <p className="detail__foot">공백 없는 12자리로 복사돼요 — 게임의 친구 추가 화면에 바로 붙여넣으면 돼요.</p>
+              <p className="detail__foot">공백 없는 12자리 코드로 복사돼요. 게임의 친구 추가 화면에 붙여 넣어 주세요.</p>
             </>
           )}
         {admin ? (

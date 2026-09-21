@@ -32,12 +32,12 @@ export default function ConsentDialog({ onClose }: { onClose: () => void }) {
         <div className="modal__box">
           <div className="consent__modal">
             <h2 className="detail__name">통계 · 저장소 설정</h2>
-            <p className="plan__desc">방문 통계(Google Analytics)는 어떤 기능이 쓰이는지 보고 화면을 고치는 데만 써요. 이메일·이름은 보내지 않아요.</p>
+            <p className="plan__desc">방문 통계(Google Analytics)는 기능별 이용 현황을 파악하고 화면을 개선하는 데 사용해요. 이메일·이름은 전송하지 않아요.</p>
             <div className="account__actions">
               {row('granted', '통계 켜기', '이용 패턴을 기록해요 (기본값)')}
               {row('denied', '통계 끄기', '통계 스크립트를 불러오지 않아요')}
             </div>
-            <h2 className="page__sec">브라우저에 저장된 것</h2>
+            <h2 className="page__sec">브라우저 저장 항목</h2>
             <ul className="priv__list">
               <li>오프라인용 파일 캐시(화면·데이터·포켓몬 그림) — 서비스워커</li>
               <li>설정값(마지막 탭·모드, 패치노트 읽음, 동의 여부 등) — localStorage, pogo_ 접두사</li>

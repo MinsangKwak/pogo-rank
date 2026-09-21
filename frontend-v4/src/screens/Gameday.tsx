@@ -138,16 +138,16 @@ export function Raids({ onOpen }: { onOpen: OpenMon }) {
         {/* 이모지는 도트 아이콘으로 떼고 글자는 **이름만** 남긴다 — 사전이 '솔플 계산기' 를 찾게 하려면
             한 노드에 이모지가 섞여 있으면 안 된다 (v3 도 같은 이유로 pxIcon 을 따로 붙인다) */}
         <p className="note">
-          {'보스를 누르면 약점과 추천 딜러가 열려요. 혼자 잡을 수 있는지는 '}
+          {'보스를 선택하면 약점과 추천 포켓몬을 확인할 수 있어요. 솔플 가능성은 '}
           <a href="#/pve/solo"><PxIcon emoji="🧮" />{' 솔플 계산기'}</a>
           {' 에서, 앞으로의 일정은 '}
           <a href="#/schedule"><PxIcon emoji="📅" />{' 이벤트 일정'}</a>
-          {' 에서 봐요.'}
+          {'에서 확인할 수 있어요.'}
         </p>
       </div>
       <Grouped sections={Object.entries(data.GAMEDAY.raids).map(([tier, list]) => [`${tier} 레이드`, list])}
         view={view} kind="raid" onOpen={onOpen} />
-      <p className="detail__foot">{gamedayFoot('이 화면은 지금 도는 로테이션만 말해요 — 앞으로의 일정은 달력이 맡아요.', data.GAMEDAY.fetched)}</p>
+      <p className="detail__foot">{gamedayFoot('현재 등장하는 레이드 보스 기준이에요. 예정된 일정은 이벤트 일정에서 확인해 주세요.', data.GAMEDAY.fetched)}</p>
     </div>
   );
 }
@@ -165,7 +165,7 @@ export function Eggs({ onOpen }: { onOpen: OpenMon }) {
         <p className="note">포켓몬을 누르면 종족값과 상성을 볼 수 있어요.</p>
       </div>
       <Grouped sections={eggSections(data.GAMEDAY.eggs)} view={view} kind="egg" onOpen={onOpen} />
-      <p className="detail__foot">{gamedayFoot('지금 도는 알 부화 풀.', data.GAMEDAY.fetched)}</p>
+      <p className="detail__foot">{gamedayFoot('현재 알에서 부화할 수 있는 포켓몬 목록이에요.', data.GAMEDAY.fetched)}</p>
     </div>
   );
 }

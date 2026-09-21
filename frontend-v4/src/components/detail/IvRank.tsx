@@ -32,10 +32,10 @@ export default function IvRank({ form, sprite }: { form: DexForm; sprite: number
   if (!rows.length) return null;
   return (
     <details className="detail__acc ivrank__detail">
-      <summary>🧬 PvP 라면 이 개체값<span className="ivrank__badge ivrank__badge--pvp">PvP</span></summary>
+      <summary>🧬 PvP 추천 개체값<span className="ivrank__badge ivrank__badge--pvp">PvP</span></summary>
       <div className="detail__acc-body">
         <p className="meta ivrank__why">
-          PvP 는 CP 상한이 있어 공격이 낮을수록 레벨을 더 올릴 수 있어요. 그래서 100% 개체가 1위가 아니에요.
+          CP 상한이 있는 리그에서는 공격 개체값이 낮을 때 레벨을 더 높일 수 있는 경우가 있어요. 따라서 개체값 100%가 항상 1위는 아니에요.
         </p>
         {rows.map((row) => (
           <div key={row.league} className="ivrank__pick-row">
