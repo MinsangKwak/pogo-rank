@@ -387,6 +387,162 @@
           }
         }
       }
+    },
+    "/v1/admin/backups": {
+      "post": {
+        "summary": "백업 한 판을 기록한다",
+        "tags": [
+          "관리"
+        ],
+        "description": "주간 백업 워크플로가 암호화본을 올린 **뒤에** 부른다.\n\n**내용물은 안 보낸다.** 잰 수만 온다 — 어디에, 몇 바이트, 해시, 컬렉션별 문서 **수**.\n이름·이메일·트레이너 코드는 오지 않으므로 이 표에는 개인정보가 없다.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "location",
+                  "bytes",
+                  "sha256"
+                ],
+                "additionalProperties": false,
+                "properties": {
+                  "location": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 500,
+                    "description": "`gs://…` 또는 `actions-artifact://…`"
+                  },
+                  "bytes": {
+                    "type": "integer",
+                    "minimum": 1
+                  },
+                  "sha256": {
+                    "type": "string",
+                    "pattern": "^[0-9a-f]{64}$",
+                    "description": "암호화본의 sha256"
+                  },
+                  "counts": {
+                    "type": "object",
+                    "additionalProperties": {
+                      "type": "integer",
+                      "minimum": 0
+                    }
+                  },
+                  "note": {
+                    "type": "string",
+                    "maxLength": 500
+                  },
+                  "ranAt": {
+                    "type": "string",
+                    "format": "date-time"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "adminToken": []
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "ok": {
+                      "type": "boolean"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "summary": "백업이 살아 있는가",
+        "tags": [
+          "관리"
+        ],
+        "description": "**백업의 진짜 실패는 조용하다.** 워크플로는 초록인데 받아 온 문서가 절반이 됐거나,\n몇 주째 안 돌았는데 아무도 모르는 쪽이다. 파일이 있다는 것과 그 안에 다 들어 있다는 것은 다른 말이다.\n\n- 마지막 백업이 **8일**보다 오래되면 짚는다 (주 1회이므로 한 번은 거른 것)\n- 문서 수가 지난번보다 **30%** 넘게 줄면 짚는다 — 계정 삭제일 수도 있으니 '틀렸다' 가 아니라 '보라' 다\n\n되돌릴 일이 생겼을 때 \"언제 것을 받아야 하나\" 도 여기서 답한다.",
+        "security": [
+          {
+            "adminToken": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "ok": {
+                      "type": "boolean"
+                    },
+                    "problems": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "latest": {
+                      "type": [
+                        "null",
+                        "object"
+                      ]
+                    },
+                    "runs": {
+                      "type": "array",
+                      "items": {
+                        "type": "object"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "servers": [

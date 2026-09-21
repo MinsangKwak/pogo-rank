@@ -20,10 +20,10 @@ describe('OpenAPI 설명서', () => {
     expect(readFileSync(file, 'utf-8')).toBe(specText(await openapiSpec()));
   });
 
-  it('주소 넷이 다 적혀 있다', async () => {
+  it('주소가 다 적혀 있다', async () => {
     const spec = await openapiSpec() as { paths: Record<string, unknown> };
     expect(Object.keys(spec.paths).sort()).toEqual(
-      ['/healthz', '/v1/admin/rollup', '/v1/events', '/v1/hot'],
+      ['/healthz', '/v1/admin/backups', '/v1/admin/rollup', '/v1/events', '/v1/hot'],
     );
   });
 

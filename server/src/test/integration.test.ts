@@ -14,6 +14,7 @@ import { makeDb, type Sql } from '../db/client.ts';
 import { migrate } from '../db/migrate.ts';
 import { hotRows, rollup, PERSON_CAP, MIN_HITS, MIN_VISITORS } from '../lib/hot.ts';
 import { purge } from '../lib/retention.ts';
+import { backupHealth, STALE_DAYS, DROP_RATIO } from '../lib/backup.ts';
 
 const url = (process.env['DATABASE_URL'] ?? '').trim();
 let sql: Sql;
@@ -37,7 +38,7 @@ describe.skipIf(!url)('통합 — 진짜 Postgres', () => {
   beforeAll(async () => {
     sql = makeDb(url);
     await migrate(sql);
-    await sql`truncate events, search_daily`;
+    await sql`truncate events, search_daily, backup_runs`;
   });
 
   afterAll(async () => { if (sql) await sql.end(); });
@@ -103,7 +104,7 @@ describe.skipIf(!url)('통합 — 진짜 Postgres', () => {
   // v4.7.2 코드 리뷰가 잡은 것 — 한도가 창 전체에 한 번 걸려 rollup 과 수가 어긋났다
   it('사람당 한도는 **날마다** 다시 열린다 — rollup 과 같은 셈이어야 한다', async () => {
     await sql`truncate events, search_daily`;
-    const who = 'daily'.padEnd(32, 'd');
+    const who = 'daily'.padEnd(32, '3');
     // 사흘 동안 매일 열 번. 한도가 하루 5 이므로 15 가 맞다 (창 전체에 한 번이면 5 가 나온다)
     for (const ago of [0, 1, 2]) await seedDaysAgo('사흘말', who, 10, ago);
 
@@ -162,13 +163,13 @@ describe.skipIf(!url)('통합 — 진짜 Postgres', () => {
   it('한 사람이 자리를 다 채워도 표가 비지 않는다', async () => {
     await sql`truncate events`;
     // 한 사람이 열두 말을 이레 동안 매일 다섯 번씩 — 하나하나가 35회라 상위 열 자리를 다 먹는다
-    const bully = 'bully'.padEnd(32, 'b');
+    const bully = 'bully'.padEnd(32, '1');
     for (let n = 0; n < 12; n += 1) {
       for (let ago = 0; ago < 7; ago += 1) await seedDaysAgo(`혼자밀기${n}`, bully, 5, ago);
     }
     // 그 아래에 자격 있는 말 셋 (두 사람씩 두 번)
     for (let n = 0; n < 3; n += 1) {
-      for (const who of ['aa', 'bb']) await seed(`여럿말${n}`, `${who}${n}`.padEnd(32, 'c'), 2);
+      for (const who of ['aa', 'bb']) await seed(`여럿말${n}`, `${who}${n}`.padEnd(32, '2'), 2);
     }
 
     const rows = await hotRows(sql, { days: 7, limit: 10 });
@@ -187,11 +188,11 @@ describe.skipIf(!url)('통합 — 진짜 Postgres', () => {
 
     // 경계 날 늦은 시각 — 시각으로 자르면 살아남던 줄이다
     await sql`insert into events (name, visitor, term, country, channel, created_at)
-              values ('search', ${'edge'.padEnd(32, 'e')}, '경계말', 'KR', 'prod',
+              values ('search', ${'edge'.padEnd(32, '4')}, '경계말', 'KR', 'prod',
                       (${through}::date + time '23:59') at time zone 'Asia/Seoul')`;
     // 그 다음 날 새벽 — 남아야 한다
     await sql`insert into events (name, visitor, term, country, channel, created_at)
-              values ('search', ${'safe'.padEnd(32, 'f')}, '안전말', 'KR', 'prod',
+              values ('search', ${'safe'.padEnd(32, '5')}, '안전말', 'KR', 'prod',
                       (${through}::date + 1 + time '00:01') at time zone 'Asia/Seoul')`;
 
     const out = await purge(sql);
@@ -209,13 +210,72 @@ describe.skipIf(!url)('통합 — 진짜 Postgres', () => {
     // 같은 날 이른 시각과 늦은 시각 — 한 날은 통째로 세어져야 한다
     for (const at of ['01:00', '13:00', '23:00']) {
       await sql`insert into events (name, visitor, term, country, channel, created_at)
-                values ('search', ${'day'.padEnd(32, 'g')}, '하루말', 'KR', 'prod',
+                values ('search', ${'day'.padEnd(32, '6')}, '하루말', 'KR', 'prod',
                         (${through}::date + ${at}::time) at time zone 'Asia/Seoul')`;
     }
     await purge(sql);
     const [row] = await sql<{ hits: number }[]>`select hits from search_daily where term = '하루말'`;
     expect(row?.hits).toBe(3);   // 셋 다 한 줄로 굳었다 — 앞부분만 굳고 뒷부분이 사라지지 않았다
     expect(await sql`select 1 from events`).toHaveLength(0);
+  });
+
+
+  // ── 3판 백업 기록 ───────────────────────────────────────────────────────
+  // 백업의 진짜 실패는 조용하다 — 워크플로는 초록인데 안이 비었거나 몇 주째 안 돈 쪽이다
+  const logRun = (agoDays: number, counts: Record<string, number>, tag = '0') =>
+    sql`insert into backup_runs (ran_at, location, bytes, sha256, counts)
+        values (now() - (${agoDays} * interval '1 day'),
+                ${`gs://moncamp-backup/${tag}.enc`}, 1234, ${tag.repeat(64).slice(0, 64)},
+                ${sql.json(counts)})`;
+
+  it('기록이 하나도 없으면 문제로 잡는다', async () => {
+    await sql`truncate backup_runs`;
+    const out = await backupHealth(sql);
+    expect(out.ok).toBe(false);
+    expect(out.latest).toBeNull();
+    expect(out.problems[0]).toContain('하나도 없습니다');
+  });
+
+  it('제때 돌고 수가 그대로면 괜찮다고 한다', async () => {
+    await sql`truncate backup_runs`;
+    await logRun(8, { allowlist: 7, users: 7 }, '1');
+    await logRun(1, { allowlist: 7, users: 7 }, '2');
+    const out = await backupHealth(sql);
+    expect(out.ok).toBe(true);
+    expect(out.problems).toEqual([]);
+    expect(out.latest?.location).toContain('2.enc');   // 최근 것이 위로 온다
+  });
+
+  it('너무 오래되면 잡는다 — 주 1회인데 여드레가 넘었다', async () => {
+    await sql`truncate backup_runs`;
+    await logRun(STALE_DAYS + 3, { users: 7 }, '3');
+    const out = await backupHealth(sql);
+    expect(out.ok).toBe(false);
+    expect(out.problems.join(' ')).toContain('마지막 백업이');
+  });
+
+  it('문서 수가 급감하면 잡는다 — 안이 빈 백업을 초록으로 넘기지 않는다', async () => {
+    await sql`truncate backup_runs`;
+    await logRun(8, { allowlist: 7, users: 7, trainers: 6 }, '4');   // 20건
+    await logRun(1, { allowlist: 1, users: 1 }, '5');                // 2건 — 90% 줄었다
+    const out = await backupHealth(sql);
+    expect(out.ok).toBe(false);
+    expect(out.problems.join(' ')).toContain('문서 수가');
+  });
+
+  it('조금 줄어든 것은 안 잡는다 — 계정 하나 지운 것까지 시끄러우면 아무도 안 본다', async () => {
+    await sql`truncate backup_runs`;
+    await logRun(8, { users: 10 }, '6');
+    await logRun(1, { users: 9 }, '7');   // 10% — 문턱(30%) 아래
+    expect((await backupHealth(sql)).ok).toBe(true);
+    expect(DROP_RATIO).toBe(0.3);
+  });
+
+  it('표가 이상한 줄을 막는다 — 해시 모양과 크기', async () => {
+    await expect(sql`insert into backup_runs (location, bytes, sha256)
+                     values ('gs://x', 1, 'not-a-hash')`).rejects.toThrow();
+    await expect(sql`insert into backup_runs (location, bytes, sha256)
+                     values ('gs://x', 0, ${'a'.repeat(64)})`).rejects.toThrow();
   });
 
   it('롤업이 일별 표를 채우고, 다시 돌려도 수가 안 부푼다', async () => {

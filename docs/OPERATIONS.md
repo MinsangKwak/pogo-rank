@@ -31,6 +31,7 @@
 - [14. Firestore 사용자 데이터 백업](#14-firestore-사용자-데이터-백업-2026-09-16-v3470)
 - [15. 포켓몬 검색순위 — 보류](#15-포켓몬-검색순위--보류-2026-09-20-v463)
 - [16. 수집 서버 운영](#16-수집-서버-운영-2026-09-21-v470)
+- [17. 백업본을 GCS 에도 (2026-09-21 v4.8.0)](#17-백업본을-gcs-에도-2026-09-21-v480)
 
 ---
 
@@ -605,3 +606,63 @@ curl -s -H "Authorization: Bearer $ADMIN_TOKEN" 'https://api.moncamp.kr/v1/hot?d
 ```
 
 `deleted` 가 계속 0 인 것이 정상이다 — 첫 12개월 동안은 지울 것이 없다.
+
+---
+
+## 17. 백업본을 GCS 에도 (2026-09-21 v4.8.0)
+
+**Actions 아티팩트는 90일 뒤 사라진다.** 그보다 오래된 사본이 한 벌도 없었다.
+같은 암호화본을 GCS 에 한 벌 더 두고 12개월 뒤 자동 삭제한다.
+
+수탁자는 **Google LLC 로 이미 표에 있는 곳**이다(Firestore · Cloud Run) — 새 업체가 늘지 않는다.
+방침 4번에 Cloud Storage 줄을, 5번에 백업 보유 기간을 적었다(시행 2026-09-28).
+
+### 17.1 한 번만 해 두면 되는 것
+
+| # | 무엇 | 확인 |
+| --- | --- | --- |
+| 1 | 버킷 만들기 — **서울 `asia-northeast3`**, 균일 액세스, 공개 안 함 | 방침 4번 표에 그 리전이 적혀 있다 |
+| 2 | **수명 주기 규칙: 365일 뒤 삭제** | 방침 5번의 "12개월 뒤 자동 삭제" 를 지키는 것이 이 규칙 하나다 |
+| 3 | `GCP_SA_KEY` 의 서비스 계정에 `roles/storage.objectCreator` | 없으면 올리기에서 403 |
+| 4 | 저장소 시크릿 `BACKUP_BUCKET` = 버킷 이름 | 없으면 **조용히 건너뛴다** (고장이 아니다) |
+
+**2번을 빠뜨리면 방침이 거짓이 된다.** 버킷에 규칙을 안 걸면 12개월 뒤에도 안 지워진다 —
+코드로 지우는 게 아니라 **버킷이 지운다.**
+
+### 17.2 백업이 살아 있는지
+
+```bash
+curl -s "$BASE/v1/admin/backups" -H "Authorization: Bearer $ADMIN_TOKEN" | python3 -m json.tool
+```
+
+```json
+{ "ok": true, "problems": [], "latest": { "ran_at": "…", "location": "gs://…", "counts": {…} } }
+```
+
+**백업의 진짜 실패는 조용하다.** 워크플로는 초록인데 받아 온 문서가 절반이 됐거나, 몇 주째 안 돌았는데
+아무도 모르는 쪽이다. 둘을 본다.
+
+| 판정 | 언제 | 무슨 뜻 |
+| --- | --- | --- |
+| `마지막 백업이 N일 전` | 8일 초과 | 주 1회인데 한 번은 걸렀다 |
+| `문서 수가 A → B 로 줄었습니다` | 30% 초과 감소 | **계정 삭제일 수도 있다** — 판정이 아니라 보라는 뜻 |
+
+워크플로 마지막 단계가 같은 것을 되묻고, 문제가 있으면 실행 로그에 `warning` 으로 남긴다.
+
+### 17.3 되돌리기
+
+바뀐 것이 없다 — 받는 곳만 하나 늘었다.
+
+```bash
+gcloud storage cp gs://<버킷>/firestore/firestore-backup-<날짜>.json.enc .
+openssl enc -d -aes-256-cbc -pbkdf2 -in firestore-backup-<날짜>.json.enc -out firestore-backup.json
+python3 scripts/firestore_restore.py            # 미리보기
+python3 scripts/firestore_restore.py --apply    # 실제 쓰기
+```
+
+끝나면 평문 `firestore-backup.json` 을 지운다 — 이메일과 트레이너 코드가 들어 있다.
+
+### 17.4 정기 점검에 더할 줄
+
+- [ ] `/v1/admin/backups` 의 `ok` 가 `true` 인가 (월 1회)
+- [ ] GCS 버킷에 파일이 매주 하나씩 늘고 있는가 · 365일 규칙이 살아 있는가 (분기 1회)

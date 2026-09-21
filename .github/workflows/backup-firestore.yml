@@ -5,9 +5,18 @@ name: Backup Firestore user data
 #   결과는 Actions 아티팩트(90일 보관, 최대 13벌)로 남는다. 공개 저장소의 아티팩트는 누구나 받을 수 있으므로
 #   **반드시 암호화**해 올린다 — 평문은 러너 안에서만 잠깐 존재하고 지워진다.
 #
+# 2026-09-21 v4.8.0 두 가지를 더한다 (둘 다 시크릿이 없으면 조용히 건너뛴다).
+#   ① **같은 암호화본을 GCS 에도 올린다.** 아티팩트는 90일 뒤 사라져, 그보다 오래된 사본이 한 벌도 없었다.
+#      수탁자는 Google LLC 로 이미 표에 있는 곳이다(Firestore·Cloud Run) — 새 업체가 늘지 않는다.
+#   ② **잰 수를 수집 서버에 남긴다.** 백업의 진짜 실패는 조용하다 — 초록인데 안이 비었거나
+#      몇 주째 안 돈 쪽이다. 아티팩트 목록은 그걸 말해 주지 않는다 (server/src/lib/backup.ts).
+#      보내는 것은 수뿐이다: 어디에, 몇 바이트, 해시, 컬렉션별 문서 **수**. 내용물은 안 보낸다.
+#
 # 필요한 시크릿 (Settings → Secrets and variables → Actions → Secrets) — 설정 순서는 docs/OPERATIONS.md 14장
 #   FIREBASE_SA_JSON    Firestore 를 읽을 서비스 계정 키(JSON 한 줄). 역할 "Cloud Datastore 뷰어"
 #   BACKUP_PASSPHRASE   아티팩트 암호. 잃어버리면 백업을 못 푼다 — 비밀번호 관리자에 따로 보관
+#   (선택) BACKUP_BUCKET · GCP_SA_KEY   GCS 사본. 키에 roles/storage.objectCreator 가 있어야 한다
+#   (선택) COLLECT_BASE_URL · ADMIN_TOKEN   수집 서버에 기록 남기기
 #
 # 되돌리기: 아티팩트를 받아 풀고 scripts/firestore_restore.py (기본 미리보기, --apply 로 실제 쓰기)
 #   openssl enc -d -aes-256-cbc -pbkdf2 -in firestore-backup-<날짜>.json.enc -out firestore-backup.json
@@ -44,18 +53,111 @@ jobs:
         env:
           FIREBASE_SA_JSON: ${{ secrets.FIREBASE_SA_JSON }}
         run: python3 scripts/firestore_backup.py firestore-backup.json
+      # **수는 평문에서 센다.** 암호화한 뒤에는 몇 건이 들어 있는지 알 길이 없다.
+      # 세는 것은 컬렉션별 문서 **수**뿐이고 이름·이메일은 읽지 않는다
+      - name: 문서 수 세기
+        run: |
+          set -e
+          # **JSON 은 파일로 넘긴다.** $GITHUB_ENV 로 나르면 따옴표가 든 값이 어디선가 한 번 더
+          # 해석될 자리가 생긴다 — 파일에는 그럴 자리가 없다
+          python3 -c "import json;d=json.load(open('firestore-backup.json'));json.dump({k:len(v) for k,v in d.get('collections',{}).items()},open('backup-counts.json','w'),separators=(',',':'))"
+          echo "센 수: $(cat backup-counts.json)"
+
       - name: 암호화 (평문 삭제)
         env:
           BACKUP_PASSPHRASE: ${{ secrets.BACKUP_PASSPHRASE }}
         run: |
+          set -e
           name="firestore-backup-$(date -u +%Y%m%d).json.enc"
           openssl enc -aes-256-cbc -pbkdf2 -salt -pass env:BACKUP_PASSPHRASE -in firestore-backup.json -out "$name"
           rm -f firestore-backup.json
-          echo "BACKUP_FILE=$name" >> "$GITHUB_ENV"
+          {
+            echo "BACKUP_FILE=$name"
+            echo "BACKUP_BYTES=$(stat -c%s "$name")"
+            echo "BACKUP_SHA=$(sha256sum "$name" | cut -d' ' -f1)"
+          } >> "$GITHUB_ENV"
           ls -l "$name"
+
       - uses: actions/upload-artifact@v4
         with:
           name: ${{ env.BACKUP_FILE }}
           path: ${{ env.BACKUP_FILE }}
           retention-days: 90
           if-no-files-found: error
+
+      # ── 아래 둘은 시크릿이 없으면 건너뛴다 — 설정을 안 한 것은 고장이 아니다 ──
+      - name: GCS 에도 올릴 수 있나
+        id: gcs
+        env:
+          BUCKET: ${{ secrets.BACKUP_BUCKET }}
+          KEY: ${{ secrets.GCP_SA_KEY }}
+        run: |
+          if [ -n "$BUCKET" ] && [ -n "$KEY" ]; then
+            echo "go=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "go=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::BACKUP_BUCKET·GCP_SA_KEY 가 없어 GCS 사본을 건너뜁니다"
+          fi
+
+      - if: steps.gcs.outputs.go == 'true'
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+      - if: steps.gcs.outputs.go == 'true'
+        uses: google-github-actions/setup-gcloud@v2
+      - name: GCS 사본 (아티팩트는 90일 뒤 사라진다)
+        if: steps.gcs.outputs.go == 'true'
+        env:
+          BUCKET: ${{ secrets.BACKUP_BUCKET }}
+        run: |
+          set -e
+          dest="gs://$BUCKET/firestore/$BACKUP_FILE"
+          gcloud storage cp "$BACKUP_FILE" "$dest"
+          echo "BACKUP_LOCATION=$dest" >> "$GITHUB_ENV"
+          echo "올렸다: $dest"
+
+      - name: 기록 남기기 (수집 서버)
+        env:
+          BASE: ${{ secrets.COLLECT_BASE_URL }}
+          TOKEN: ${{ secrets.ADMIN_TOKEN }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          set -e
+          if [ -z "$BASE" ] || [ -z "$TOKEN" ]; then
+            echo "::notice::COLLECT_BASE_URL·ADMIN_TOKEN 이 없어 기록을 건너뜁니다"
+            exit 0
+          fi
+          # GCS 로 안 갔으면 아티팩트가 있는 곳을 적는다 — 어디 있는지는 늘 남아야 한다
+          LOC="${BACKUP_LOCATION:-actions-artifact://$GITHUB_REPOSITORY/$GITHUB_RUN_ID/$BACKUP_FILE}"
+          export LOC
+          body=$(python3 -c "
+          import json, os
+          print(json.dumps({
+            'location': os.environ['LOC'],
+            'bytes': int(os.environ['BACKUP_BYTES']),
+            'sha256': os.environ['BACKUP_SHA'],
+            'counts': json.load(open('backup-counts.json')),
+            'note': os.environ['RUN_URL'],
+          }))")
+          code=$(curl -sS -o /tmp/out.json -w '%{http_code}' --max-time 60 \
+            -X POST "$BASE/v1/admin/backups" \
+            -H "Authorization: Bearer $TOKEN" -H 'content-type: application/json' \
+            -d "$body")
+          cat /tmp/out.json; echo
+          [ "$code" = "201" ] || { echo "::error::기록 실패 ($code)"; exit 1; }
+
+      - name: 백업이 살아 있는지 되묻기
+        if: always()
+        env:
+          BASE: ${{ secrets.COLLECT_BASE_URL }}
+          TOKEN: ${{ secrets.ADMIN_TOKEN }}
+        run: |
+          [ -n "$BASE" ] && [ -n "$TOKEN" ] || exit 0
+          # **방금 올린 것만 보고 끝내지 않는다.** 수가 급감했거나 지난번을 걸렀으면 여기서 드러난다
+          out=$(curl -sS --max-time 60 "$BASE/v1/admin/backups" -H "Authorization: Bearer $TOKEN" || echo '{}')
+          python3 -c "
+          import json, sys
+          d = json.loads(sys.argv[1] or '{}')
+          for one in d.get('problems', []):
+              print(f'::warning::{one}')
+          print('백업 상태:', '괜찮음' if d.get('ok') else '볼 것 있음')" "$out"

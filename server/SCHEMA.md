@@ -1,6 +1,6 @@
 # 수집 서버 스키마
 
-**표가 둘이다.** `events` 는 원본, `search_daily` 는 그 원본을 언젠가 잘라내도 남길 역사다.
+**표가 셋이다.** `events` 는 원본, `search_daily` 는 그 원본을 언젠가 잘라내도 남길 역사, `backup_runs` 는 백업이 정말 돌았는지 아는 자리다.
 
 [← server/README](README.md) · [API 설명서](openapi.json) · [개발 문서 §2.28](../docs/DEVELOPMENT.md) · [운영 문서 §16](../docs/OPERATIONS.md)
 
@@ -17,6 +17,7 @@
 | --- | --- | --- |
 | `events` | 한 줄이 한 번의 검색. **GA4 가 끝내 안 돌려주는 바로 그것** | **12개월** ([`lib/retention.ts`](src/lib/retention.ts)) |
 | `search_daily` | 날짜·이름·나라별 합계. 누가 찾았는지와 이어지지 않는다 | 계속 |
+| `backup_runs` | 백업 한 판의 **잰 수** — 언제·어디에·몇 바이트·해시·문서 수 | 계속 |
 
 **`/v1/hot` 은 `events` 를 직접 센다.** `search_daily` 는 조회를 빠르게 하려는 캐시가 아니라
 **원본을 지워도 되게** 만드는 보험이다. 지금 규모에서 원본을 직접 세는 쪽이 정확하고 충분히 빠르다.
@@ -157,6 +158,55 @@ limit :limit;                        -- ④ 그다음 자른다
 ```json
 { "ok": true, "written": 12, "purged": { "rolled": 0, "deleted": 0, "throughDay": "2025-09-21" }, "keepMonths": 12 }
 ```
+
+---
+
+## `backup_runs` — 백업이 정말 돌았나
+
+```sql
+create table backup_runs (
+  id       bigint generated always as identity primary key,
+  ran_at   timestamptz not null default now(),
+  location text        not null,   -- 'gs://…' 또는 'actions-artifact://…'
+  bytes    bigint      not null,
+  sha256   char(64)    not null,
+  counts   jsonb       not null default '{}'::jsonb,
+  note     text
+);
+```
+
+**개인정보가 없다.** 백업 내용물은 암호화돼 다른 데(GCS)에 있고, 이 표에는 **잰 수**만 남는다 —
+언제, 어디에, 몇 바이트, 해시, 컬렉션별 문서 **수**. 이름도 이메일도 트레이너 코드도 오지 않는다.
+그래서 이 표가 생겨도 방침의 수집 항목은 늘지 않는다.
+
+### 왜 두나 — 백업의 진짜 실패는 조용하다
+
+워크플로는 초록인데 받아 온 문서가 절반이 됐거나, 몇 주째 안 돌았는데 아무도 모르는 쪽이다.
+**파일이 있다는 것과 그 안에 다 들어 있다는 것은 다른 말이고**, 아티팩트 목록은 뒤쪽을 말해 주지 않는다.
+
+[`lib/backup.ts`](src/lib/backup.ts) 가 둘을 본다.
+
+| 상수 | 값 | 무엇을 잡나 |
+| --- | --- | --- |
+| `STALE_DAYS` | 8 | 주 1회인데 여드레가 넘었다 — 한 번은 걸렀다 |
+| `DROP_RATIO` | 0.3 | 문서 수가 지난번보다 30% 넘게 줄었다 |
+
+**줄어든 것을 '틀렸다' 고 하지 않는다.** 사람이 계정을 지웠을 수도 있다 — 판정이 아니라 **묻는 것**이다.
+계정 하나 지운 것까지 시끄러우면 아무도 안 본다.
+
+`GET /v1/admin/backups` 가 판정과 최근 열 판을 돌려준다. 되돌릴 일이 생겼을 때
+"언제 것을 받아야 하나" 도 여기서 답한다.
+
+### 백업 자체는 서버가 하지 않는다
+
+주간 워크플로(`backup-firestore.yml`)가 Firestore 를 받아 암호화해 올린다 —
+**이미 잘 도는 것을 가운데로 끌어오면 고장 날 자리만 는다.** 서버가 맡는 것은 그 일이 정말 돌았는지
+아는 일이다. 워크플로는 올린 **뒤에** 잰 수를 `POST /v1/admin/backups` 로 보낸다.
+
+| 어디에 | 언제까지 | 왜 |
+| --- | --- | --- |
+| Actions 아티팩트 | 90일 | 원래 있던 것 |
+| **GCS** (v4.8.0) | 12개월 (버킷 수명 주기) | **90일보다 오래된 사본이 한 벌도 없었다** |
 
 ---
 

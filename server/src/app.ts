@@ -16,6 +16,7 @@ import type { Env } from './env.ts';
 import { healthRoutes } from './routes/health.ts';
 import { eventRoutes } from './routes/events.ts';
 import { hotRoutes } from './routes/hot.ts';
+import { backupRoutes } from './routes/backup.ts';
 
 export async function buildApp(env: Env, sql: Sql): Promise<FastifyInstance> {
   const app = Fastify({
@@ -95,6 +96,7 @@ export async function buildApp(env: Env, sql: Sql): Promise<FastifyInstance> {
   healthRoutes(app, sql);
   eventRoutes(app, sql);
   hotRoutes(app, sql, env.adminToken);
+  backupRoutes(app, sql, env.adminToken);
 
   // 수집이 실패해도 화면은 멀쩡해야 한다 — 500 을 내되 몸통에 내부 사정을 싣지 않는다
   app.setErrorHandler((error: FastifyError, req, reply) => {

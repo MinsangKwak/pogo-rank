@@ -22,7 +22,8 @@ GA4 Data API 는 **집계만** 돌려준다. 원본 이벤트를 못 꺼내고, 
 | 맡는 것 | 안 맡는 것 |
 | --- | --- |
 | 이벤트 수집 · 일별 집계 · 순위 조회 | 로그인 · 권한 (Firebase Auth + `firestore.rules` 그대로) |
-| Firestore 백업 미러 *(3판)* | 화면 렌더링 (GitHub Pages 정적 그대로) |
+| **백업이 정말 돌았는지 아는 일** | **백업 자체** — 주간 워크플로가 한다. 잘 도는 것을 가운데로 끌어오면 고장 날 자리만 는다 |
+| | 화면 렌더링 (GitHub Pages 정적 그대로) |
 
 ---
 
@@ -51,7 +52,9 @@ npm run typecheck
 | `GET` | `/healthz` | Cloud Run | — |
 | `POST` | `/v1/events` | 브라우저 (답을 안 기다린다) | — (CORS · 한도) |
 | `GET` | `/v1/hot?days=7&limit=10&country=KR` | 배포 워크플로 | — (`raw=true` 는 필요) |
-| `POST` | `/v1/admin/rollup` | 배포 워크플로 | `Authorization: Bearer $ADMIN_TOKEN` |
+| `POST` | `/v1/admin/rollup` | 집계 워크플로 | `Authorization: Bearer $ADMIN_TOKEN` |
+| `POST` | `/v1/admin/backups` | 주간 백업 워크플로 (올린 **뒤에**) | 〃 |
+| `GET` | `/v1/admin/backups` | 사람 — 백업이 살아 있는가 | 〃 |
 
 ### `POST /v1/events`
 
