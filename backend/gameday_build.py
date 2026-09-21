@@ -91,6 +91,32 @@ def event_dex_numbers(item):
     return sorted(found)
 
 
+# 2026-09-21 v4.9.1 맥스 먼데이·맥스 배틀 데이는 **그림이 없다.** extraData 가 통째로
+#   {"generic": {...}} 뿐이라 위 함수가 한 마리도 못 찾고, 담아 둔 포켓몬이 그날 다이맥스로
+#   올라와도 소식에 안 떴다 (제보: 프리져·썬더·파이어 맥스 먼데이).
+#   이름이 있는 곳은 영문 제목뿐이라 거기서 뽑는다 — 이 두 종류에만 쓴다.
+#   **이름을 지어내지 않는다** (CLAUDE.md §3): dex.json 의 영문 이름표에 있는 것만 번호가 된다.
+TITLE_DEX_TYPES = {'max-mondays', 'max-battles'}
+# 'Dynamax Articuno, Zapdos, and Moltres during Max Monday' → 가운데 토막만 남긴다
+TITLE_HEAD = re.compile(r'^(?:Gigantamax|Dynamax)\s+', re.I)
+TITLE_TAIL = re.compile(r'\s*(?:during\s+)?Max\s+(?:Monday|Battle\s+Day).*$', re.I)
+TITLE_SPLIT = re.compile(r',\s*(?:and\s+)?|\s+and\s+', re.I)
+
+
+def title_dex_numbers(title, english):
+    """영문 제목에 적힌 종만 번호로. 이름표에 없으면 그 조각을 버린다"""
+    rest = TITLE_TAIL.sub('', TITLE_HEAD.sub('', title or '')).strip()
+    if not rest:
+        return []
+    found = set()
+    for piece in TITLE_SPLIT.split(rest):
+        # 'Gigantamax Cinderace' 처럼 조각마다 접두어가 또 붙는 제목이 있다
+        key = TITLE_HEAD.sub('', piece).strip().lower()
+        if key in english:
+            found.add(english[key])
+    return sorted(found)
+
+
 # 한글 이름을 만든다. 종 이름은 반드시 dex 이름표에서 가져오고, 폼 라벨은 FORM_KO 에 있는 것만 붙인다.
 # 이름표에 없는 번호면 None 을 돌려 그 항목을 통째로 버린다 (모르는 이름을 지어내지 않는다).
 def korean_name(names, sprite_id, form_token, english):
@@ -160,7 +186,8 @@ def build_eggs(raw, names):
 
 # 이벤트는 원문이 영문이라 한글 일정표를 대신하지 못한다.
 # 손으로 적은 달이 없을 때만 달력이 비지 않게 받쳐 주는 용도라, 제목은 원문 그대로 둔다.
-def build_events(raw):
+def build_events(raw, english=None):
+    english = english or {}
     events = []
     for item in raw or []:
         start, end = item.get('start'), item.get('end')
@@ -177,6 +204,9 @@ def build_events(raw):
         # v3.60.0 걸린 포켓몬이 있을 때만 싣는다. 대부분의 이벤트(시즌·패스·GBL)는 특정 종이 없고,
         # 아직 발표 전인 커뮤니티 데이도 비어 있다 — 없는 것과 "아직 모른다" 를 같은 빈 값으로 둔다
         dex = event_dex_numbers(item)
+        # 그림이 없는 종류(맥스 먼데이·맥스 배틀 데이)는 제목에서 받쳐 준다
+        if not dex and row['type'] in TITLE_DEX_TYPES:
+            dex = title_dex_numbers(row['title'], english)
         if dex:
             row['dex'] = dex
         events.append(row)
@@ -185,13 +215,17 @@ def build_events(raw):
 
 
 def main():
-    names = (load('data/dex.json') or {}).get('names') or {}
+    dex_table = load('data/dex.json') or {}
+    names = dex_table.get('names') or {}
     if not names:
         print('gameday: dex.json 이름표가 없어 건너뜀 (dex_build.py 를 먼저 실행)')
         return
+    # 영문 이름 → 도감번호. 제목에서 종을 찾는 데만 쓴다 (title_dex_numbers)
+    english = {value.lower(): int(key) for key, value in (dex_table.get('en') or {}).items()
+               if value and str(key).isdigit()}
     raids = build_raids(load('data/sd_raids.json'), names)
     eggs = build_eggs(load('data/sd_eggs.json'), names)
-    events = build_events(load('data/sd_events.json'))
+    events = build_events(load('data/sd_events.json'), english)
     out = {
         'fetched': date.today().isoformat(),
         'raids': raids,

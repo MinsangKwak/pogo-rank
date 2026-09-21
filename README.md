@@ -158,10 +158,17 @@ Pokémon과 관련 명칭·이미지의 권리는 The Pokémon Company, Nintendo
 
 ## 버전 이력
 
-전체 222개 릴리스를 `날짜 → 버전`의 2단계 접이식 목록으로 정리했습니다. 가장 최근 날짜만 기본으로 펼쳐지며, 설명이 한 줄인 초기 버전은 별도의 접이식 영역 없이 표시됩니다. 사용자용 요약은 서비스의 [🎉 패치 노트](https://moncamp.kr/#/release)에서, 변경 배경과 세부 구현 내용은 [변경 이력](CHANGELOG.md)에서 확인할 수 있습니다.
+전체 223개 릴리스를 `날짜 → 버전`의 2단계 접이식 목록으로 정리했습니다. 가장 최근 날짜만 기본으로 펼쳐지며, 설명이 한 줄인 초기 버전은 별도의 접이식 영역 없이 표시됩니다. 사용자용 요약은 서비스의 [🎉 패치 노트](https://moncamp.kr/#/release)에서, 변경 배경과 세부 구현 내용은 [변경 이력](CHANGELOG.md)에서 확인할 수 있습니다.
 
 <details open>
-<summary><b>2026-09-21</b> — 릴리스 15개 · <code>v4.9.0</code> · <code>v4.8.7</code> · <code>v4.8.6</code> · <code>v4.8.5</code> · <code>v4.8.4</code> · <code>v4.8.3</code> · <code>v4.8.2</code> · <code>v4.8.1</code> · <code>v4.8.0</code> · <code>v4.7.4</code> · <code>v4.7.3</code> · <code>v4.7.2</code> · <code>v4.7.1</code> · <code>v4.7.0</code> · <code>v4.6.4</code></summary>
+<summary><b>2026-09-21</b> — 릴리스 16개 · <code>v4.9.1</code> · <code>v4.9.0</code> · <code>v4.8.7</code> · <code>v4.8.6</code> · <code>v4.8.5</code> · <code>v4.8.4</code> · <code>v4.8.3</code> · <code>v4.8.2</code> · <code>v4.8.1</code> · <code>v4.8.0</code> · <code>v4.7.4</code> · <code>v4.7.3</code> · <code>v4.7.2</code> · <code>v4.7.1</code> · <code>v4.7.0</code> · <code>v4.6.4</code></summary>
+
+<details>
+<summary><b>v4.9.1</b> · (긴급) 맥스 먼데이가 즐겨찾기 소식에 안 뜨던 것</summary>
+
+맥스 먼데이·맥스 배틀 데이는 원본에 포켓몬 그림이 없어 소식에 한 건도 걸리지 않았습니다. 영문 제목에서 종을 읽어 도감 이름표에 있는 것만 잇습니다.
+
+</details>
 
 <details>
 <summary><b>v4.9.0</b> · 화면·약관·문서 한국어 문구 정리</summary>
