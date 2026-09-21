@@ -49,6 +49,7 @@ bash scripts/test.sh --no-build nav dex-search    # 빌드 생략하고 일부�
 | [운영 문서](docs/OPERATIONS.md) | 릴리스 절차, 버전 규칙, 배포 장애 대응, 가입 승인, Firebase 설정, GA4 통계, 점검 목록 |
 | [인프라 문서](docs/INFRA.md) | 정적 사이트에서 가능한 남용 대응과 확장 로드맵 (도메인 → Cloudflare → App Check) |
 | [수집 서버](server/README.md) | 왜 GA4 만으로는 안 되는지, 순위가 오염되지 않게 하는 다섯 겹, 로컬 실행 |
+| [수집 서버 스키마](server/SCHEMA.md) · [ERD](docs/server-erd.png) · [API](docs/server-api.html) | 표·칸·제약과 왜 · 표 관계 한 장 · 주소마다의 요청과 응답 |
 | [변경 이력](CHANGELOG.md) | 버전별 변경 사항과 수정 배경 |
 | [NOTICE](NOTICE.md) · [CONTRIBUTING](CONTRIBUTING.md) · [SECURITY](SECURITY.md) | 라이선스 범위와 출처 조건 · DCO 기여 절차 · 보안 제보 |
 | [QA 트래커](https://www.notion.so/a0472984122d4f25b9b445b57465568f) | 외부 제보 접수처 (내부 WBS 와 용도가 다릅니다) |
@@ -157,10 +158,17 @@ Pokémon과 관련 명칭·이미지의 권리는 The Pokémon Company, Nintendo
 
 ## 버전 이력
 
-전체 212개 릴리스를 `날짜 → 버전`의 2단계 접이식 목록으로 정리했습니다. 가장 최근 날짜만 기본으로 펼쳐지며, 설명이 한 줄인 초기 버전은 별도의 접이식 영역 없이 표시됩니다. 사용자용 요약은 서비스의 [🎉 패치 노트](https://moncamp.kr/#/release)에서, 변경 배경과 세부 구현 내용은 [변경 이력](CHANGELOG.md)에서 확인할 수 있습니다.
+전체 213개 릴리스를 `날짜 → 버전`의 2단계 접이식 목록으로 정리했습니다. 가장 최근 날짜만 기본으로 펼쳐지며, 설명이 한 줄인 초기 버전은 별도의 접이식 영역 없이 표시됩니다. 사용자용 요약은 서비스의 [🎉 패치 노트](https://moncamp.kr/#/release)에서, 변경 배경과 세부 구현 내용은 [변경 이력](CHANGELOG.md)에서 확인할 수 있습니다.
 
 <details open>
-<summary><b>2026-09-21</b> — 릴리스 5개 · <code>v4.7.3</code> · <code>v4.7.2</code> · <code>v4.7.1</code> · <code>v4.7.0</code> · <code>v4.6.4</code></summary>
+<summary><b>2026-09-21</b> — 릴리스 6개 · <code>v4.7.4</code> · <code>v4.7.3</code> · <code>v4.7.2</code> · <code>v4.7.1</code> · <code>v4.7.0</code> · <code>v4.6.4</code></summary>
+
+<details>
+<summary><b>v4.7.4</b> · 수집 서버 설명서</summary>
+
+수집 서버의 API 설명서(OpenAPI/Swagger)·스키마 문서·ERD 그림을 만들었습니다. 설명서는 코드에서 뽑으므로 어긋나지 않고, 검사가 대어 봅니다.
+
+</details>
 
 <details>
 <summary><b>v4.7.3</b> · 리뷰 두 번째 판</summary>

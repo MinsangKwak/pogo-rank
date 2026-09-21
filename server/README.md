@@ -5,6 +5,12 @@
 
 [← 저장소 README](../README.md) · [개발 문서](../docs/DEVELOPMENT.md) · [인프라 문서](../docs/INFRA.md) · [운영 문서](../docs/OPERATIONS.md)
 
+| 보려는 것 | 어디 |
+| --- | --- |
+| 표·칸·제약·인덱스와 **왜** | [`SCHEMA.md`](SCHEMA.md) |
+| 표 관계 한 장 | [`docs/server-erd.png`](../docs/server-erd.png) |
+| 주소마다의 요청·응답 | [`docs/server-api.html`](../docs/server-api.html) (열면 바로 보인다) · [`openapi.json`](openapi.json) · 서버가 뜨면 `/docs` |
+
 ---
 
 ## 왜 있나

@@ -22,7 +22,37 @@
 ---
 
 <details open>
-<summary><b>2026-09-21</b> — 5판 · <code>v4.7.3</code> · <code>v4.7.2</code> · <code>v4.7.1</code> · <code>v4.7.0</code> · <code>v4.6.4</code></summary>
+<summary><b>2026-09-21</b> — 6판 · <code>v4.7.4</code> · <code>v4.7.3</code> · <code>v4.7.2</code> · <code>v4.7.1</code> · <code>v4.7.0</code> · <code>v4.6.4</code></summary>
+
+<details>
+<summary><b>v4.7.4</b> · 수집 서버 설명서 — OpenAPI · 스키마 문서 · ERD</summary>
+
+화면에 보이는 변화가 없어 사용자용 패치 노트에는 적지 않았다(v4.5.4 와 같은 처리).
+
+**설명서를 손으로 쓰지 않는다.** 주소마다의 모양은 라우트의 JSON Schema 에 이미 있다 —
+`@fastify/swagger` 가 그대로 읽는다. 손으로 쓰면 언젠가 코드와 어긋나고, **어긋난 설명서는
+없느니만 못하다** (읽는 사람이 그걸 믿고 짜기 때문이다).
+
+| 무엇 | 어디 | 어떻게 만드나 |
+| --- | --- | --- |
+| API 설명서 (UI) | 서버가 뜨면 `/docs` · [`docs/server-api.html`](../docs/server-api.html) | `npm run openapi` |
+| API 설명서 (기계용) | [`server/openapi.json`](../server/openapi.json) | 〃 |
+| 표·칸·제약과 **왜** | [`server/SCHEMA.md`](../server/SCHEMA.md) | 손으로 |
+| 표 관계 한 장 | [`docs/server-erd.png`](../docs/server-erd.png) | `node scripts/bake_erd.mjs` |
+
+**한 장으로도 굽는다.** 운영에서는 `/docs` 가 같은 것을 서빙하지만, 리뷰하거나 남에게 보여 줄 때
+컨테이너를 띄우게 만들면 아무도 안 본다. `docs/server-api.html` 은 스펙을 박아 두어 **열면 바로 보인다.**
+
+**ERD 도 그림을 손으로 그리지 않는다.** [`docs/server-erd.html`](../docs/server-erd.html) 을 고치고 다시 굽는다 —
+[`moncamp-structure`](../docs/moncamp-structure.html) 과 같은 방식이다. 표가 바뀌었는데 그림만 옛것인 일을 막는다.
+
+**그물** — `src/test/openapi.test.ts` 4건. 저장소의 `openapi.json` 이 지금 코드와 **글자까지 같은지**
+대어 본다(어긋나면 `npm run openapi`). 주소 넷이 다 있는지, 열쇠가 필요한 자리에만 자물쇠가 붙었는지,
+수집 몸통이 모르는 칸을 막는다고 적혀 있는지도 함께 본다. 서버 56 → 60건.
+
+라우트마다 `summary` · `description` · `response` 를 달았다 — 설명이 코드 옆에 있어야 같이 고쳐진다.
+
+</details>
 
 <details>
 <summary><b>v4.7.3</b> · 리뷰 두 번째 판 — 문턱을 자르기 전에 · 파기를 날짜로</summary>

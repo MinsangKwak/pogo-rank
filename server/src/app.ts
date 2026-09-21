@@ -8,6 +8,9 @@
 import Fastify, { type FastifyError, type FastifyInstance } from 'fastify';
 import cors from '@fastify/cors';
 import rateLimit from '@fastify/rate-limit';
+import swagger from '@fastify/swagger';
+import swaggerUi from '@fastify/swagger-ui';
+import { OPENAPI_INFO, OPENAPI_TAGS, BEARER_SCHEME } from './lib/openapi.ts';
 import type { Sql } from './db/client.ts';
 import type { Env } from './env.ts';
 import { healthRoutes } from './routes/health.ts';
@@ -71,6 +74,23 @@ export async function buildApp(env: Env, sql: Sql): Promise<FastifyInstance> {
       return reply.code(403).send({ error: '허용하지 않은 출처입니다' });
     }
   });
+
+  // **설명서는 라우트보다 먼저 붙인다.** 뒤에 붙이면 이미 등록된 주소의 스키마를 못 읽는다.
+  // 본문을 손으로 안 쓰므로 코드와 어긋날 자리가 없다 (lib/openapi.ts)
+  await app.register(swagger, {
+    openapi: {
+      info: OPENAPI_INFO,
+      tags: [...OPENAPI_TAGS],
+      components: { securitySchemes: { adminToken: BEARER_SCHEME } },
+      servers: [
+        { url: 'https://api.moncamp.kr', description: '운영' },
+        { url: 'http://localhost:8080', description: '로컬' },
+      ],
+    },
+  });
+  // 읽는 자리는 열어 둔다 — 코드가 통째로 공개돼 있어 숨겨서 얻는 것이 없고,
+  // 관리 주소는 열쇠가 막는다
+  await app.register(swaggerUi, { routePrefix: '/docs', uiConfig: { docExpansion: 'list' } });
 
   healthRoutes(app, sql);
   eventRoutes(app, sql);

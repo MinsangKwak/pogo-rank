@@ -9,7 +9,17 @@ import type { FastifyInstance } from 'fastify';
 import type { Sql } from '../db/client.ts';
 
 export function healthRoutes(app: FastifyInstance, sql: Sql): void {
-  app.get('/healthz', async (_req, reply) => {
+  app.get('/healthz', {
+    schema: {
+      tags: ['상태'],
+      summary: '살아 있는가, DB 에 닿는가',
+      description: 'DB 에 못 닿으면 **503** 이다 — 200 을 주면 Cloud Run 이 죽은 인스턴스에 계속 보낸다.',
+      response: {
+        200: { type: 'object', properties: { ok: { type: 'boolean' }, db: { type: 'string', enum: ['up'] } } },
+        503: { type: 'object', properties: { ok: { type: 'boolean' }, db: { type: 'string', enum: ['down'] } } },
+      },
+    },
+  }, async (_req, reply) => {
     let db: 'up' | 'down' = 'down';
     try {
       await sql`select 1`;

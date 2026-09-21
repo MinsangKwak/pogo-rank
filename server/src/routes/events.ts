@@ -19,7 +19,27 @@ import { countryOf } from '../lib/country.ts';
 import { toRows } from '../lib/normalize.ts';
 
 export function eventRoutes(app: FastifyInstance, sql: Sql): void {
-  app.post<{ Body: CollectBody }>('/v1/events', { schema: { body: collectBodySchema } }, async (req, reply) => {
+  app.post<{ Body: CollectBody }>('/v1/events', {
+    schema: {
+      tags: ['수집'],
+      summary: '검색 기록을 보낸다',
+      description: [
+        '**답을 기다리지 않는 자리다.** 몸통 없이 `204` 만 돌려준다.',
+        '',
+        '- `sendBeacon` 이 보내는 `text/plain` 도 받는다 (프리플라이트가 없어야 탭을 떠나며 보낸 것이 닿는다).',
+        '- `Origin` 을 **서버가 직접 본다** — 허용 목록에 없으면 `403`. CORS 는 단순 요청을 막지 못한다.',
+        '- 모르는 칸이 하나라도 있으면 `400`. 조용히 지우지 않는다.',
+        '- `term` 없는 `search` 처럼 셀 것이 없는 줄은 버리지만, 그래도 `204` 다 — 보낸 쪽이 틀린 게 아니다.',
+      ].join('\n'),
+      body: collectBodySchema,
+      response: {
+        204: { type: 'null', description: '받았다 (걸러져 남은 줄이 없어도 같다)' },
+        400: { type: 'object', properties: { error: { type: 'string' } } },
+        403: { type: 'object', properties: { error: { type: 'string' } } },
+        429: { type: 'object', properties: { error: { type: 'string' } }, description: '분당 한도' },
+      },
+    },
+  }, async (req, reply) => {
     const rows = toRows(req.body, countryOf(req.headers));
     // 다 걸러져 남은 것이 없어도 400 이 아니다 — 보낸 쪽이 틀린 게 아니라 셀 것이 없을 뿐이다
     if (rows.length) {
