@@ -11,7 +11,7 @@ name: Backup Firestore user data
 #   ② **잰 수를 수집 서버에 남긴다.** 백업의 진짜 실패는 조용하다 — 초록인데 안이 비었거나
 #      몇 주째 안 돈 쪽이다. 아티팩트 목록은 그걸 말해 주지 않는다 (server/src/lib/backup.ts).
 #      보내는 것은 수뿐이다: 어디에, 몇 바이트, 해시, 컬렉션별 문서 **수**. 내용물은 안 보낸다.
-#      GCS 이름에는 실행 번호를 붙인다 — 같은 날 다시 돌려도 앞선 사본을 안 덮는다 (v4.8.1).
+#      이름에는 실행 번호와 차수를 붙인다 — 같은 날 다시 돌려도 아티팩트도 GCS 도 안 겹친다 (v4.8.4).
 #
 # 필요한 시크릿 (Settings → Secrets and variables → Actions → Secrets) — 설정 순서는 docs/OPERATIONS.md 14장
 #   FIREBASE_SA_JSON    Firestore 를 읽을 서비스 계정 키(JSON 한 줄). 역할 "Cloud Datastore 뷰어"
@@ -69,11 +69,19 @@ jobs:
           BACKUP_PASSPHRASE: ${{ secrets.BACKUP_PASSPHRASE }}
         run: |
           set -e
-          name="firestore-backup-$(date -u +%Y%m%d).json.enc"
+          # **이름을 여기 한 자리에서 정한다** (v4.8.4 코드 리뷰). 아래로 내려가는 곳이 셋이다 —
+          # 아티팩트 · GCS · backup_runs 의 location. 한 곳만 고치면 나머지가 어긋난다.
+          #
+          # 실행 번호와 차수를 넣는 이유: 날짜뿐이면 같은 날 다시 돌릴 때
+          #   ① upload-artifact@v4 가 같은 이름을 두 번 못 올려 **재시도 자체가 막히고**
+          #   ② GCS 는 403(권한이 좁을 때)이거나 덮어써서, 앞서 남긴 기록의 해시가 실제와 어긋난다
+          stem="firestore-backup-$(date -u +%Y%m%d)-r$GITHUB_RUN_ID.$GITHUB_RUN_ATTEMPT"
+          name="$stem.json.enc"
           openssl enc -aes-256-cbc -pbkdf2 -salt -pass env:BACKUP_PASSPHRASE -in firestore-backup.json -out "$name"
           rm -f firestore-backup.json
           {
             echo "BACKUP_FILE=$name"
+            echo "BACKUP_ARTIFACT=$stem"
             echo "BACKUP_BYTES=$(stat -c%s "$name")"
             echo "BACKUP_SHA=$(sha256sum "$name" | cut -d' ' -f1)"
           } >> "$GITHUB_ENV"
@@ -81,7 +89,8 @@ jobs:
 
       - uses: actions/upload-artifact@v4
         with:
-          name: ${{ env.BACKUP_FILE }}
+          # 실행마다 다른 이름이다 — v4 는 한 실행에서 같은 이름을 두 번 못 올린다
+          name: ${{ env.BACKUP_ARTIFACT }}
           path: ${{ env.BACKUP_FILE }}
           retention-days: 90
           if-no-files-found: error
@@ -112,10 +121,8 @@ jobs:
           BUCKET: ${{ secrets.BACKUP_BUCKET }}
         run: |
           set -e
-          # **실행마다 다른 이름을 준다** (v4.8.1 코드 리뷰). 파일명이 날짜뿐이면 같은 날 다시 돌릴 때
-          # 같은 자리를 가리킨다 — objectCreator 만 있으면 403 으로 멈추고, 권한이 넓으면 덮어써서
-          # 앞서 남긴 backup_runs 줄의 해시가 실제 파일과 어긋난다 (되돌릴 때 어느 쪽을 믿나)
-          dest="gs://$BUCKET/firestore/${BACKUP_FILE%.json.enc}-r$GITHUB_RUN_ID.$GITHUB_RUN_ATTEMPT.json.enc"
+          # 이름은 암호화 단계에서 이미 실행별로 정해졌다 — 여기서 또 만들지 않는다
+          dest="gs://$BUCKET/firestore/$BACKUP_FILE"
           gcloud storage cp "$BACKUP_FILE" "$dest"
           echo "BACKUP_LOCATION=$dest" >> "$GITHUB_ENV"
           echo "올렸다: $dest"

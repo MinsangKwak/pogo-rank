@@ -17,7 +17,7 @@ import { makeDb, type Sql } from '../db/client.ts';
 import { migrate } from '../db/migrate.ts';
 import { hotRows, rollup, PERSON_CAP, MIN_HITS, MIN_VISITORS } from '../lib/hot.ts';
 import { purge, retentionEdge, KEEP_MONTHS } from '../lib/retention.ts';
-import { backupHealth, STALE_DAYS, DROP_RATIO } from '../lib/backup.ts';
+import { backupHealth, STALE_DAYS, DROP_RATIO, LOOKBACK_RUNS } from '../lib/backup.ts';
 
 const url = (process.env['DATABASE_URL'] ?? '').trim();
 const TOKEN = 'k'.repeat(40);
@@ -385,6 +385,27 @@ describe.skipIf(!url)('통합 — 진짜 Postgres', () => {
     await sql`truncate backup_runs`;
     await logRun(7, { users: 100, allowlist: 100 }, 'e');
     await logRun(0, { users: 90, allowlist: 105 }, 'f');
+    expect((await backupHealth(sql)).ok).toBe(true);
+  });
+
+  it('안 고쳐진 손실이 일주일 지났다고 사라지지 않는다', async () => {
+    await sql`truncate backup_runs`;
+    // users 가 비었고, 그 다음 판에도 여전히 비어 있다. 총합은 더 안 줄어든다
+    await logRun(14, { users: 100, allowlist: 100 }, 'a');
+    await logRun(7, { users: 0, allowlist: 200 }, 'b');
+    await logRun(0, { users: 0, allowlist: 200 }, 'c');
+    const out = await backupHealth(sql);
+    // 바로 앞 판만 보면 견줄 것이 0 이라 통과한다 — 최근 판들의 가장 큰 수와 견뎌야 잡힌다
+    expect(out.ok).toBe(false);
+    expect(out.problems.join(' ')).toContain('users');
+    expect(LOOKBACK_RUNS).toBe(5);
+  });
+
+  it('되살아나면 더 안 묻는다', async () => {
+    await sql`truncate backup_runs`;
+    await logRun(14, { users: 100 }, 'a');
+    await logRun(7, { users: 0 }, 'b');
+    await logRun(0, { users: 100 }, 'c');
     expect((await backupHealth(sql)).ok).toBe(true);
   });
 
