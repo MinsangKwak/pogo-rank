@@ -15,6 +15,9 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 const RELEASE_NOTES_EN = {
+  '2026-09-21 · v4.6.4': [
+    '**The home poster is no longer cropped on phones** — it was clipped to a strip that hid the bosses; the full picture now shows',
+  ],
   '2026-09-20 · v4.6.3': [
     '**The Pokémon search ranking is down for now** — there are not enough searches yet to call it a ranking. Searches are still being counted, and it comes back once there are enough',
   ],

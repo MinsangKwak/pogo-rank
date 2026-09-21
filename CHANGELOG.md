@@ -22,6 +22,18 @@
 ---
 
 <details open>
+<summary><b>2026-09-21</b> — 1판 · <code>v4.6.4</code></summary>
+
+<details>
+<summary><b>v4.6.4</b> · (긴급) 손에서 포스터 그림이 잘리던 것</summary>
+
+v4.6.0 의 손 규칙이 포스터 `img` 를 `aspect-ratio: 3 / 1.1` + `object-fit: cover` 로 띠처럼 잘라 보스 넷 중 둘이 화면 밖이었다(제보 스크린샷). 그 한 줄을 걷어 원래 비율(3:2)로 세운다. 손 배너는 310 → 약 420px 로 커지지만, 잘린 그림보다 낫다.
+
+</details>
+
+</details>
+
+<details>
 <summary><b>2026-09-20</b> — 19판 · <code>v4.6.3</code> · <code>v4.6.2</code> · <code>v4.6.1</code> · <code>v4.6.0</code> · <code>v4.5.11</code> · <code>v4.5.10</code> · <code>v4.5.9</code> · <code>v4.5.8</code> · <code>v4.5.7</code> · <code>v4.5.6</code> · <code>v4.5.5</code> · <code>v4.5.4</code> · <code>v4.5.3</code> · <code>v4.5.2</code> · <code>v4.5.1</code> · <code>v4.5.0</code> · <code>v4.4.2</code> · <code>v4.4.1</code> · <code>v4.4.0</code></summary>
 
 <details>
