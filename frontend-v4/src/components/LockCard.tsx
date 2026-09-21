@@ -30,7 +30,7 @@ export default function LockCard({ reason = 'login' }: { reason?: LockReason }) 
       <section className="plan__lock">
         <span className="plan__lock-ico" aria-hidden="true">🧪</span>
         <h2>실험 기능이에요</h2>
-        <p>관리자가 열어 주면 실험 기능을 써볼 수 있어요.</p>
+        <p>관리자가 실험 기능 이용 권한을 부여하면 사용할 수 있어요.</p>
       </section>
     );
   }
@@ -38,11 +38,11 @@ export default function LockCard({ reason = 'login' }: { reason?: LockReason }) 
     <section className="plan__lock">
       <span className="plan__lock-ico" aria-hidden="true">{pending ? '⏳' : '🔒'}</span>
       <h2>{pending ? '승인을 기다리는 중이에요' : '로그인하면 열려요'}</h2>
-      <p>{pending ? '관리자가 승인하면 바로 열려요.' : '승인된 분만 쓸 수 있어서, 처음이라면 관리자 승인을 기다리게 돼요.'}</p>
+      <p>{pending ? '관리자가 승인하면 바로 열려요.' : '로그인 후 관리자 승인을 받으면 이용할 수 있어요.'}</p>
       {pending ? null : (
         <button className="drawer__item account__login plan__lock-go" onClick={start}>🔐 Google로 로그인</button>
       )}
-      <p className="detail__foot">첫 로그인 때 이용약관·개인정보처리방침 동의를 받아요.</p>
+      <p className="detail__foot">첫 로그인 때 이용약관·개인정보처리방침에 대한 동의를 받아요.</p>
       {consentOpen ? (
         <TermsConsent onClose={() => setConsentOpen(false)}
           onAccept={() => { setConsentOpen(false); void signInNow(); }} />

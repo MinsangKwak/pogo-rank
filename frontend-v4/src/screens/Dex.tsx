@@ -148,7 +148,7 @@ export default function Dex({ onOpen }: { onOpen: OpenMon }) {
       />
 
       <details className="filter-box dex__type-box">
-        <summary>타입으로 좁히기{types.length ? ` (${types.length})` : ''}</summary>
+        <summary>타입 선택{types.length ? ` (${types.length})` : ''}</summary>
         <div className="chips dex__types-filter">
           {Object.keys(data.DEX_DATA.chart).map((type) => (
             <button
@@ -204,18 +204,18 @@ export default function Dex({ onOpen }: { onOpen: OpenMon }) {
         })}
       </div>
 
-      <p className="dex__hint" hidden={rows.length > 0}>찾는 포켓몬이 없어요. 이름 일부만 넣어 보세요.</p>
+      <p className="dex__hint" hidden={rows.length > 0}>검색 결과가 없어요. 이름 일부로 검색하거나 필터를 바꿔 보세요.</p>
       {rows.length > shown
         ? (
           <button className="boss__more" onClick={() => setShown(shown + DEX_PAGE)}>
-            더보기 ({shown}/{rows.length})
+            더 보기 ({shown}/{rows.length})
           </button>
         )
         : null}
       <p className="detail__foot">
         미구현 = 포켓몬 GO에 아직 출시되지 않은 종 (PvPoke 출시 목록 기준, 데이터는 게임마스터 선등록분).
-        ⚡ 메가 · 원시 딱지는 그 종에 메가진화나 원시회귀가 있다는 뜻이에요 — 줄을 누르면 진화 칸에서 그 폼의 능력치를 볼 수 있어요.
-        섀도우·리전 폼은 🔍 검색으로 찾으면 이 목록에 함께 나와요.
+        ⚡ 메가·원시 배지는 메가진화 또는 원시회귀가 가능한 종을 뜻해요. 포켓몬을 선택한 뒤 진화 탭에서 해당 폼의 능력치를 확인할 수 있어요.
+        섀도우·리전 폼은 🔍 검색을 통해 이 목록에서 함께 확인할 수 있어요.
       </p>
 
     </div>

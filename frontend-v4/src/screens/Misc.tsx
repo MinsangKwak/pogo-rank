@@ -13,9 +13,9 @@ export function NotPorted({ route }: { route: RouteDef }) {
     <section className="plan__lock">
       <span className="plan__lock-ico" aria-hidden="true">🚧</span>
       <h2>{name} 는 아직 안 옮겼어요</h2>
-      <p>주소는 맞는데 화면이 아직 준비되지 않았어요. moncamp.kr 에서는 열려요.</p>
+      <p>이 화면은 아직 준비 중이에요. moncamp.kr에서 기존 화면을 이용할 수 있어요.</p>
       <a className="drawer__item account__login plan__lock-go" href={`https://moncamp.kr/#/${route.path}`}>
-        v3 에서 이 화면 보기 ↗
+        기존 화면에서 보기 ↗
       </a>
     </section>
   );

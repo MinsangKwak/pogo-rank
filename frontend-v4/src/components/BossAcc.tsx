@@ -84,7 +84,7 @@ export default function BossAcc({ onOpen, onGoBoss }: {
               {rec(tank, '', `탱커 · EHP ${tank.ehp}${type === 'overall' ? '' : ` · 받는 배율 ×${tank.mult}`}`)}
             </div>
             <p className="detail__foot">
-              딜러는 맥스 피해 × √내구 순위, 탱커는 체력 × 방어 ÷ 받는 배율(EHP) 순위의 1위. 탱커 전체 순위는 [탱커] 세그먼트에서
+              딜러는 맥스 피해 × √내구, 탱커는 체력 × 방어 ÷ 받는 배율(EHP)을 기준으로 추천해요. 전체 탱커 순위는 [탱커] 탭에서 확인할 수 있어요
             </p>
           </div>
         ) : null}

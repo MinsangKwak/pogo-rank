@@ -244,17 +244,17 @@ function HomeData({ onOpen }: { onOpen: OpenMon }) {
             href={routeHash('dex')} />
           <PickCard kind="dmax" title="다이맥스" hint="다이맥스 배틀에서 활약하는 포켓몬" rows={dmax}
             href={routeHash('dmax')} labels={dex.FORM_LABELS} onOpen={onOpen} />
-          <PickCard kind="pve" title="레이드" hint="종합 점수 순 · DPS 와 버팀(TDO)을 함께 봐요" rows={raid}
+          <PickCard kind="pve" title="레이드" hint="종합 점수 순 · 초당 피해량(DPS)과 총 피해량(TDO) 기준" rows={raid}
             href={routeHash('pve')} labels={dex.FORM_LABELS} onOpen={onOpen} />
         </div>
-        <span className="pick__foot">이름을 누르면 종족값·상성·활용처를 전부 볼 수 있어요</span>
+        <span className="pick__foot">이름을 누르면 종족값·상성·배틀 활용 순위를 확인할 수 있어요</span>
       </section>
 
 
       <section className="home__features" aria-label="서비스 기능">
         <div className="home__section">
           <h3>무엇이 필요한가요?</h3>
-          <span>목적에 맞는 화면으로 바로 가요</span>
+          <span>필요한 기능을 선택해 바로 시작해 보세요</span>
         </div>
         <div className="home__service-grid">
           {ROUTE_GROUPS.map(([id, label, desc]) => (
@@ -279,7 +279,7 @@ function HomeData({ onOpen }: { onOpen: OpenMon }) {
       <section className="home-updates">
         <div className="home__section">
           <h3>게임 업데이트</h3>
-          <span>게임에서 무엇이 바뀌었는지 확인한 것만 적어요</span>
+          <span>공식 발표로 확인한 게임 변경 소식을 전해요</span>
         </div>
         {/* 제목만 있는 <li> 줄이 아니라 요약과 두 날짜를 든 카드다 — '무엇이 언제 바뀌나' 가 제목만으로는 안 읽힌다 */}
         <div className="home-updates__list">

@@ -44,7 +44,7 @@ export default function TrainerAdmin({ onClose, onChanged }: { onClose: () => vo
   const [rows, setRows] = useState<Trainer[] | null>(null);
   const [text, setText] = useState('');
   const [busy, setBusy] = useState(false);
-  const [message, setMessage] = useState('이름과 12자리 코드를 한 줄에 하나씩. 같은 이름이 있으면 덮어써요.');
+  const [message, setMessage] = useState('이름과 12자리 트레이너 코드를 한 줄에 하나씩 입력해 주세요. 같은 이름이 있으면 기존 코드를 변경해요.');
 
   useEffect(() => { const node = box.current; if (!node?.open) node?.showModal(); }, []);
 
@@ -124,10 +124,10 @@ export default function TrainerAdmin({ onClose, onChanged }: { onClose: () => vo
                     </div>
                   ))}
                 </div>
-              ) : <p className="empty">아직 없어요.</p>}
+              ) : <p className="empty">아직 등록된 항목이 없어요.</p>}
             </section>
             <section className="detail__sec">
-              <h3>붙여넣어 추가</h3>
+              <h3>코드 붙여넣기</h3>
               <textarea className="trainer__bulk" rows={6} value={text} onChange={(event) => setText(event.target.value)}
                 placeholder={'한 줄에 하나씩\n이름 0000 0000 0000\n이름2 1111 2222 3333'} />
               <p className="trainer__msg">{message}</p>

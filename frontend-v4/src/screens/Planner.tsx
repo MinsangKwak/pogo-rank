@@ -64,10 +64,10 @@ export default function Planner() {
       <section className="plan__hero">
         <div className="plan__hero-head">
           <span className="plan__hero-ico" aria-hidden="true">🎒</span>
-          <h2>담아 둔 포켓몬의 일정을 챙겨 드려요</h2>
+          <h2>즐겨찾기 포켓몬의 일정을 확인해 보세요</h2>
         </div>
         <p className="plan__hero-desc">
-          포켓몬 상세에서 ★ 를 누르면 여기에 쌓여요. 그 포켓몬이 커뮤니티 데이·스포트라이트 아워·레이드 보스에 뜨면 아래 소식 칸에 먼저 알려 드려요.
+          포켓몬 상세에서 ★를 눌러 즐겨찾기에 추가해 보세요. 해당 포켓몬의 커뮤니티 데이·스포트라이트 아워·레이드 일정이 등록되면 아래에 표시돼요.
         </p>
         <a className="plan__hero-go" href={routeHash('dex')}>
           <span className="plan__hero-go-ico" aria-hidden="true">＋</span>
@@ -76,19 +76,19 @@ export default function Planner() {
         </a>
       </section>
 
-      <Section icon="📣" title="다가오는 소식" desc="담아 둔 포켓몬에 잡힌 일정이에요. 가까운 것부터 보여 드려요.">
+      <Section icon="📣" title="다가오는 소식" desc="즐겨찾기 포켓몬의 일정을 가까운 날짜순으로 보여 드려요.">
         {news.length
           ? <div className="favnews__list">{news.map((row, index) => <NewsCard key={index} row={row} nameOf={nameOf} />)}</div>
           : (
             <p className="empty">
               {favs.length
-                ? '담아 둔 포켓몬에 잡힌 일정이 아직 없어요. 새 일정이 올라오면 여기에 떠요.'
+                ? '즐겨찾기 포켓몬의 예정된 일정이 없어요. 새 일정이 등록되면 여기에 표시돼요.'
                 : '아직 담아 둔 포켓몬이 없어요. 도감에서 ★ 를 눌러 담아 보세요.'}
             </p>
           )}
       </Section>
 
-      <Section icon="★" title={`담아 둔 포켓몬 ${favs.length}마리`} desc="★ 를 다시 누르면 빠져요. 이름을 누르면 상세가 열려요.">
+      <Section icon="★" title={`담아 둔 포켓몬 ${favs.length}마리`} desc="이름을 누르면 상세 정보를 보고, ★를 다시 누르면 즐겨찾기에서 삭제할 수 있어요.">
         {favs.length
           ? (
             <div className="plan__fav-list">
@@ -114,7 +114,7 @@ export default function Planner() {
               })}
             </div>
           )
-          : <p className="empty">위 [도감에서 담을 포켓몬 찾기] 로 첫 포켓몬을 담아 보세요.</p>}
+          : <p className="empty">[도감에서 담을 포켓몬 찾기]를 눌러 즐겨찾기를 추가해 보세요.</p>}
       </Section>
     </>
   );

@@ -32,7 +32,7 @@ const FINDER_GROUPS: { id: string; label: string; items: FinderItem[] }[] = [
     { id: 'lucky', q: 'lucky', why: '행운' },
     { id: 'shadow', q: 'shadow', why: '그림자' },
     { id: 'purified', q: 'purified', why: '정화됨' },
-    { id: 'fav', q: 'favorite', why: '즐겨찾기로 표시한 것' },
+    { id: 'fav', q: 'favorite', why: '즐겨찾기 포켓몬' },
     { id: 'costume', q: 'costume', why: '의상 입은 개체' },
   ] },
   { id: 'kind', label: '분류', items: [
@@ -40,15 +40,15 @@ const FINDER_GROUPS: { id: string; label: string; items: FinderItem[] }[] = [
     { id: 'mythical', q: 'mythical', why: '환상' },
     { id: 'ultra', q: 'ultrabeast', why: '울트라비스트' },
     { id: 'mega', q: 'mega', why: '메가진화 가능' },
-    { id: 'evolve', q: 'evolve', why: '지금 진화할 수 있는 것' },
-    { id: 'item', q: 'item', why: '진화에 도구가 필요한 것' },
-    { id: 'defender', q: 'defender', why: '체육관에 넣어 둔 것' },
+    { id: 'evolve', q: 'evolve', why: '현재 진화 가능한 포켓몬' },
+    { id: 'item', q: 'item', why: '진화에 도구가 필요한 포켓몬' },
+    { id: 'defender', q: 'defender', why: '체육관 방어 중인 포켓몬' },
   ] },
   { id: 'trade', label: '교환·정리', items: [
-    { id: 'tradable', q: 'tradable', why: '교환할 수 있는 것' },
-    { id: 'traded', q: 'traded', why: '교환으로 받은 것' },
-    { id: 'hatched', q: 'hatched', why: '알에서 깬 것' },
-    { id: 'raid', q: 'raid', why: '레이드에서 잡은 것' },
+    { id: 'tradable', q: 'tradable', why: '교환 가능한 포켓몬' },
+    { id: 'traded', q: 'traded', why: '교환으로 받은 포켓몬' },
+    { id: 'hatched', q: 'hatched', why: '알에서 부화한 포켓몬' },
+    { id: 'raid', q: 'raid', why: '레이드에서 잡은 포켓몬' },
     { id: 'research', q: 'research', why: '리서치 보상' },
     { id: 'gbl', q: 'gbl', why: 'GO 배틀리그 보상' },
   ] },
@@ -58,7 +58,7 @@ const FINDER_GROUPS: { id: string; label: string; items: FinderItem[] }[] = [
 const FINDER_PRESETS = [
   { id: 'box', label: '🧹 박스 정리', why: '교환할 수 있고, 즐겨찾기·그림자·전설이 아닌 것',
     on: ['tradable'], off: ['fav', 'shadow', 'legendary', 'mythical'] },
-  { id: 'raise', label: '🌱 육성 후보', why: '개체값이 높고 지금 진화할 수 있는 것',
+  { id: 'raise', label: '🌱 육성 후보', why: '개체값이 높고 현재 진화 가능한 포켓몬',
     on: ['iv4', 'evolve'], off: [] },
   { id: 'trade', label: '🤝 교환용', why: '교환할 수 있고 아직 행운이 아닌 것',
     on: ['tradable'], off: ['lucky', 'fav'] },
@@ -168,7 +168,7 @@ export default function Finder() {
         </p>
       </div>
 
-      <div className="row-head"><h2>자주 쓰는 묶음</h2></div>
+      <div className="row-head"><h2>자주 쓰는 검색 조건</h2></div>
       <div className="finder__chips finder__presets">
         {FINDER_PRESETS.map((preset) => (
           <button key={preset.id} className="uchip finder__preset" title={preset.why}
@@ -235,8 +235,8 @@ export default function Finder() {
 
       {/* v3 는 두 문장으로 나눠 붙인다 — 사전이 줄 단위로 찾으므로 붙이는 자리도 같아야 한다 */}
       <p className="detail__foot">
-        {'게임이 지원하지 않아 넣지 않은 것: 교환 상대 닉네임, 리모트 레이드 전용. '}
-        {'버전에 따라 달라지는 문법(사탕 수 등)도 빼 뒀어요 — 틀린 식을 드리지 않기 위해서예요.'}
+        {'게임에서 검색할 수 없는 교환 상대 닉네임과 리모트 레이드 전용 조건은 제공하지 않아요. '}
+        {'사탕 수 등 버전에 따라 지원 여부가 달라지는 조건도 제외했어요.'}
       </p>
     </div>
   );

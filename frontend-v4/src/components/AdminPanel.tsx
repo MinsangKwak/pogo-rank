@@ -151,16 +151,16 @@ export default function AdminPanel({ onClose }: { onClose: () => void }) {
           <>
             <button className={`uchip admin__act${isAdmin ? ' is-danger' : ''}`}
               onClick={() => setFlag(one.id, 'admin', !isAdmin, isAdmin
-                ? `${one.id} 님의 관리자 권한을 해제할까요? 승인된 친구로는 남아요.`
-                : `${one.id} 님을 관리자로 지정할까요? 유저 관리(승인된 사람 목록·트레이너 코드)를 쓸 수 있게 돼요 (가입 승인은 루트만).`)}>
+                ? `${one.id} 님의 관리자 권한을 해제할까요? 일반 이용자 승인 상태는 유지돼요.`
+                : `${one.id} 님을 관리자로 지정할까요? 이용자 목록과 트레이너 코드를 관리할 수 있어요. 가입 승인은 루트 관리자만 할 수 있어요.`)}>
               {isAdmin ? '관리자 해제' : '관리자 지정'}
             </button>
             {/* 실험 기능은 관리자 권한과 뜻이 다르다 — 운영을 돕는 자리가 아니라 먼저 써 보는 자리다 */}
             {/* 여는 것을 하나하나 세지 않는다 — 실험 기능은 늘어나고 줄고, 문구는 그때마다 낡는다 */}
             <button className={`uchip admin__act${onBeta ? ' is-on' : ''}`} aria-pressed={onBeta}
               onClick={() => setFlag(one.id, 'beta', !onBeta, onBeta
-                ? `${one.id} 님의 실험 기능을 닫을까요?`
-                : `${one.id} 님에게 실험 기능을 열까요? 실험 기능을 써볼 수 있어요.`)}>
+                ? `${one.id} 님의 실험 기능 이용 권한을 해제할까요?`
+                : `${one.id} 님에게 실험 기능 이용 권한을 부여할까요?`)}>
               {onBeta ? '🧪 실험 해제' : '🧪 실험 기능'}
             </button>
             <button className="uchip admin__act is-danger" onClick={() => revoke(one.id)}>승인 해제</button>
@@ -194,10 +194,10 @@ export default function AdminPanel({ onClose }: { onClose: () => void }) {
                   data={{ name: user.displayName, photo: user.photoURL, uid: user.uid }} />,
                 ...admins.map((one) => approvedRow(one, true)),
               ]} />
-            <Section title={`승인된 친구 ${friends.length}명`} empty="아직 승인된 친구가 없어요."
+            <Section title={`승인된 친구 ${friends.length}명`} empty="아직 승인된 이용자가 없어요."
               rows={friends.map((one) => approvedRow(one, false))} />
             {adminRoot ? null : (
-              <p className="detail__foot">가입 승인·해제와 관리자 지정은 루트 관리자만 할 수 있어요. 여기서는 누가 쓰고 있는지 볼 수 있고, 트레이너 코드 관리를 쓸 수 있어요. 실험 기능은 따로 열어 드려요.</p>
+              <p className="detail__foot">가입 승인·해제와 관리자 지정은 루트 관리자만 할 수 있어요. 이 화면에서는 이용자 목록을 확인하고 트레이너 코드를 관리할 수 있어요. 실험 기능에는 별도의 이용 권한이 필요해요.</p>
             )}
             {message ? <p className="account__msg">{message}</p> : null}
             <p className="detail__foot">{`내 uid: ${user.uid} `}<UidCopy uid={user.uid} /></p>

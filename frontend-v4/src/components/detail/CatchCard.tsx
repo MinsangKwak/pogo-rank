@@ -45,9 +45,9 @@ export default function CatchCard({ form, sprite, seg, onSeg }: {
       <details className="detail__acc detail__acc--catch">
         <summary>조건과 계산 기준 보기</summary>
         <div className="detail__acc-body">
-          <p className="detail__foot">굵은 숫자가 개체값 100%(15/15/15) CP예요. 잡은 개체가 이 값이면 100%.</p>
-          <p className="detail__foot">레이드 보상은 개체값 10 이상이 확정이라 "최저" 가 있고, 야생은 하한이 없어 최저 CP를 적지 않아요.</p>
-          {maxKind ? <p className="detail__foot">맥스 배틀은 날씨 부스트가 없어 항상 Lv20이라 레이드 평시와 같은 CP가 나와요.</p> : null}
+          <p className="detail__foot">굵은 숫자는 표시된 레벨에서 개체값이 100%(15/15/15)일 때의 CP예요. 특히 야생 포켓몬은 레벨이 다를 수 있으므로 CP만으로 개체값을 확정할 수 없어요.</p>
+          <p className="detail__foot">레이드 보상의 공격·방어·체력 개체값은 각각 10 이상이므로 최저 CP를 함께 표시해요. 야생 포켓몬은 최저 CP를 표시하지 않아요.</p>
+          {maxKind ? <p className="detail__foot">맥스 배틀 포획은 날씨 부스트 없이 레벨 20을 기준으로 하므로 일반 레이드 보상과 CP가 같아요.</p> : null}
         </div>
       </details>
     </details>

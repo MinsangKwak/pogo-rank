@@ -177,7 +177,7 @@ function NavExtra({ onConsent }: { onConsent: () => void }) {
         <span className="drawer__ico" aria-hidden="true"><PxIcon emoji="🛠" /></span>
         <span className="drawer__label">설정</span>
       </button>
-      {/* 개인정보처리방침이 '☰ 메뉴 → 통계·저장소 설정' 이라고 적어 뒀다 — 이 줄이 없으면 방침이 거짓말이 된다 */}
+      {/* 개인정보처리방침이 '메뉴 → 통계·저장소 설정' 이라고 적어 뒀다 — 이 줄이 없으면 방침이 거짓말이 된다 */}
       <button className="drawer__item" id="menu-consent" onClick={onConsent}>
         <span className="drawer__ico" aria-hidden="true"><PxIcon emoji="🍪" /></span>
         <span className="drawer__label">통계·저장소 설정</span>
@@ -249,9 +249,9 @@ export function Footer({ onConsent }: { onConsent: () => void }) {
   const { data: meta } = useMeta();
   return (
     <footer>
-      <p className="foot-lead">포켓몬고 응애 친구들을 위해 만들어진 서비스예요.</p>
-      <p id="ip-notice">moncamp는 비공식 팬 프로젝트입니다. Pokémon 및 관련 명칭·이미지의 권리는 The Pokémon Company · Nintendo · Creatures Inc. · GAME FREAK inc. 에, Pokémon GO 는 Scopely Explore, Inc. 에 있으며 이 서비스는 권리자와 무관합니다.</p>
-      <p>데이터는 PvPoke · PokeMiners · PokeAPI · LeekDuck 의 공개 자료를 사용합니다. 코드는 열람용으로 공개돼 있으며 포크·재배포는 안 됩니다. 데이터·이미지는 각 출처의 조건을 따릅니다 (저장소 LICENSE · NOTICE).</p>
+      <p className="foot-lead">포켓몬 GO의 정보 탐색부터 배틀 준비까지 함께하는 서비스예요.</p>
+      <p id="ip-notice">moncamp는 비공식 팬 프로젝트입니다. Pokémon 및 관련 명칭·이미지의 권리는 The Pokémon Company · Nintendo · Creatures Inc. · GAME FREAK inc.에, Pokémon GO는 Scopely Explore, Inc.에 있으며 이 서비스는 권리자와 무관합니다.</p>
+      <p>데이터는 PvPoke · PokeMiners · PokeAPI · LeekDuck의 공개 자료를 사용합니다. 코드는 열람용으로 공개하며 포크·재배포를 허용하지 않습니다. 데이터·이미지는 각 출처의 조건을 따릅니다 (저장소 LICENSE · NOTICE).</p>
       <p className="foot-links">
         {/* 문의 이메일은 빌드가 넣은 값이다 — 저장소에 적어 두지 않는다 (v3 index.html __CONTACT__) */}
         {meta.CONTACT_EMAIL ? <>문의·건의: <a href={`mailto:${meta.CONTACT_EMAIL}`}>{meta.CONTACT_EMAIL}</a> · </> : null}

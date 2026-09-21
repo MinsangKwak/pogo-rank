@@ -13,7 +13,7 @@ export default function UsageRanks({ name, compact = false }: { name: string; co
       : key === 'overall' ? '전체' : (dex.TYPE_KO[key ?? ''] ?? key);
     return { group: group ?? '', where: where ?? '', rank, mark };
   }).sort((a, b) => a.rank - b.rank);
-  if (!rows.length) return <p className="detail__none-text">아직 순위표 상위 30위에 오르지 않았어요.</p>;
+  if (!rows.length) return <p className="detail__none-text">현재 순위표에서 상위 30위에 해당하는 활용처가 없어요.</p>;
 
   const SHOWN = compact ? 2 : 3;
   const rowNode = (row: typeof rows[number], index: number) => (
@@ -35,7 +35,7 @@ export default function UsageRanks({ name, compact = false }: { name: string; co
           {open ? '접기' : `전체 순위 펼치기 (${rows.length})`}
         </button>
       ) : null}
-      {!compact ? <p className="detail__foot">각 순위표 상위 30위 기준 · 3위 안은 👑</p> : null}
+      {!compact ? <p className="detail__foot">각 순위표 상위 30위 기준 · 상위 3위는 👑 표시</p> : null}
     </div>
   );
 }

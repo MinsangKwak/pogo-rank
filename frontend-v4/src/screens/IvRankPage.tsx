@@ -88,8 +88,8 @@ function LeagueCard({ form, cpms, league, cap, floor, ivs, on }: {
     return (
       <div className={`ivrank__card is-out${mark}`}>
         <div className="ivrank__lg">{name}<span className="meta">CP {cap}</span></div>
-        <b className="ivrank__rank">못 들어가요</b>
-        <span className="meta">Lv1 CP 가 이미 상한을 넘어요</span>
+        <b className="ivrank__rank">참가 불가</b>
+        <span className="meta">레벨 1의 CP가 리그 상한을 초과해요</span>
       </div>
     );
   }
@@ -112,10 +112,10 @@ function Verdict({ form, cpms, floor, ivs }: { form: DexForm; cpms: readonly num
     .filter((one): one is { league: LeagueKey; got: NonNullable<ReturnType<typeof ivRankOf>> } => one.got != null)
     .sort((left, right) => left.got.rank - right.got.rank || right.got.percent - left.got.percent);
   const best = scored[0];
-  if (!best) return <p className="ivrank__verdict"><b>들어갈 리그가 없어요</b> 상한이 있는 리그는 Lv1 CP 가 이미 넘어요.</p>;
+  if (!best) return <p className="ivrank__verdict"><b>참가 가능한 리그가 없어요</b> 레벨 1의 CP가 각 리그의 상한을 초과해요.</p>;
   return (
     <p className="ivrank__verdict">
-      <b>{LEAGUE_KO[best.league]}리그에서 가장 쓸 만해요</b>
+      <b>{LEAGUE_KO[best.league]}리그에서 개체값 순위가 가장 높아요</b>
       {` — 4,096 조합 중 ${best.got.rank.toLocaleString()}위 (1위의 ${best.got.percent}%).`}
     </p>
   );
@@ -157,7 +157,7 @@ function TopList({ form, cpms, floor, ivs, league }: {
             </li>
           ))}
         </ol>
-      ) : <p className="empty">이 리그에는 들어갈 수 없어요 — Lv1 CP 가 이미 상한을 넘어요.</p>}
+      ) : <p className="empty">레벨 1의 CP가 리그 상한을 초과해 참가할 수 없어요.</p>}
     </div>
   );
 }
@@ -206,14 +206,14 @@ export default function IvRankPage() {
       {/* v3 는 이 문단을 조각 넷으로 붙인다 — 사전이 줄 단위로 찾으므로 붙이는 자리도 같아야 한다 */}
       <p className="note">
         {'실험 기능이에요. '}
-        <b>PvP 는 CP 상한이 있어 공격이 낮을수록 좋은 개체</b>
-        {'가 돼요 — 같은 CP 안에서 레벨을 더 올릴 수 있어서예요. '}
-        {'그래서 0/15/15 같은 조합이 1위가 되는 일이 흔해요.'}
+        <b>CP 상한이 있는 리그에서는 공격 개체값이 낮은 조합</b>
+        {'이 유리할 수 있어요. 같은 CP 상한 안에서 레벨을 더 높일 수 있기 때문이에요. '}
+        {'최적 개체값은 포켓몬과 리그에 따라 달라요.'}
       </p>
 
       <div className="ivrank__split">
         <div className="ivrank__form">
-          <div className="row-head"><h2>어느 포켓몬인가요</h2></div>
+          <div className="row-head"><h2>포켓몬 선택</h2></div>
           <div className="ivrank__pick">
             {picked.sprite != null ? (
               <div className="ivrank__picked">
@@ -258,7 +258,7 @@ export default function IvRankPage() {
             ))}
           </div>
 
-          <div className="row-head"><h2>어디서 얻었나요</h2><span className="meta">하한이 달라 순위도 달라져요</span></div>
+          <div className="row-head"><h2>획득 경로</h2><span className="meta">하한이 달라 순위도 달라져요</span></div>
           <div className="tchips ivrank__floors">
             {IVRANK_FLOORS.map(([label, value, why]) => (
               <button key={label} className={`uchip${picked.floor === value ? ' is-on' : ''}`} title={why}
@@ -276,9 +276,9 @@ export default function IvRankPage() {
 
         <div className="ivrank__out">
           {picked.sprite == null
-            ? <p className="empty">왼쪽에서 종을 고르면 지금 고른 리그의 순위가 나와요.</p>
+            ? <p className="empty">포켓몬을 선택하면 해당 리그의 개체값 순위를 확인할 수 있어요.</p>
             : !outForm
-              ? <p className="empty">이 종의 종족값이 아직 없어요.</p>
+              ? <p className="empty">이 포켓몬의 종족값 정보가 아직 없어요.</p>
               : (
                 <>
                   <Verdict form={outForm} cpms={cpms} floor={picked.floor} ivs={picked.ivs} />
@@ -298,8 +298,8 @@ export default function IvRankPage() {
       {/* v3 는 이 각주를 네 문장으로 나눠 붙인다 — 사전이 줄 단위로 찾으므로 한 덩이로 합치면 못 옮긴다 */}
       <p className="detail__foot">
         {'순위는 CP 상한 안에서 가장 높은 레벨까지 올렸을 때의 공격 × 방어 × 체력(스탯 곱)으로 매겨요. '}
-        {'체력만 내림으로 끊는 게임 규칙까지 그대로 반영했고, 종족값과 레벨별 배율은 화면이 이미 쓰는 값 그대로예요. '}
-        {'베스트 버디(+1레벨)는 빼고 봐요 — 모두가 가질 수 있는 조건이 아니라서예요. '}
+        {'체력의 소수점 이하를 버리는 게임 규칙을 반영하며, 도감과 동일한 종족값·레벨별 배율을 사용해요. '}
+        {'베스트 버디의 레벨 보너스(+1)는 계산에서 제외해요. '}
         {'마스터리그는 CP 상한이 없어 개체값이 높을수록 좋아요(순위를 매기지 않아요).'}
       </p>
     </div>

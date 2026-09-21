@@ -117,7 +117,7 @@ export default function SoloCalc({ onOpen }: { onOpen: OpenMon }) {
         ) : null}
       </Slot>
 
-      <div className="row-head"><h2>솔플 레이드 계산기</h2><span className="meta">프로토타입 · 부활 운용</span></div>
+      <div className="row-head"><h2>솔플 레이드 계산기</h2><span className="meta">실험 기능 · 부활 후 재도전 기준</span></div>
 
       {!boss ? (
         <p className="empty">잡고 싶은 보스를 검색해서 골라주세요. 예: 메가거북왕을 고르면 풀·전기 정예 덱이 나와요.</p>
@@ -171,7 +171,7 @@ export default function SoloCalc({ onOpen }: { onOpen: OpenMon }) {
             </ul>
           ) : null}
           {!myDeck.length
-            ? <p className="empty">어태커를 추가하면 이 조합으로 잡을 수 있는지 알려 줘요.</p>
+            ? <p className="empty">공격 포켓몬을 추가하면 덱의 예상 클리어 시간을 계산해요.</p>
             /* 판정 카드만 — 목록은 위의 내 덱이 대신한다 */
             : <Result boss={boss} tier={tier} mode={mode} plan={{ ...simulateRevive(myDeck, tier), squad: myDeck, possible: simulateRevive(myDeck, tier).time <= tier.time }} typeKo={dex.TYPE_KO} cardOnly onOpen={onOpen} />}
         </>
@@ -200,16 +200,16 @@ function Result({ boss, tier, mode, plan, typeKo, cardOnly = false, onOpen }: {
 
   const card = plan.possible ? (
     <div className="solo__card solo__ok">
-      <p className="solo__verdict">{`💪 솔플 가능 — 정예 ${plan.squad.length}마리, 약 ${plan.time}초`}</p>
+      <p className="solo__verdict">{`💪 계산상 솔플 가능 — 추천 ${plan.squad.length}마리, 약 ${plan.time}초`}</p>
       <p className="solo__why">{`${bossLabel} · 기절 직전 이탈 → 부활(5~6초) → 같은 덱 재진입 · 총 ${plan.cycles}사이클${plan.revives ? ` · 부활 ${plan.revives}회 (부활약·회복약 챙기세요)` : ' · 부활 없이 한 번에'}`}</p>
-      <p className="solo__stats">{`${marginText(plan, tier)} (제한 ${tier.time}초 중 약 ${plan.time}초) · 아래 순서 그대로 내보내면 돼요.`}</p>
+      <p className="solo__stats">{`${marginText(plan, tier)} (제한 ${tier.time}초 중 약 ${plan.time}초) · 아래 출전 순서를 기준으로 계산했어요.`}</p>
       <p className="solo__stats">{damageLine}</p>
     </div>
   ) : (
     <div className="solo__card solo__no">
-      <p className="solo__verdict">🙅 이건 사람 손으로는 무리예요</p>
-      <p className="solo__why">{`${bossLabel} — ${mode === 'mine' ? '이 덱으로는' : '최정예를 부활시켜 가며 무한정 갈아넣어도'} 약 ${plan.time}초 (${marginText(plan, tier)}). 친구를 부르거나 풀강·버프로 마진을 채워보세요.`}</p>
-      <p className="solo__stats">아래는 그래도 가장 빨리 깎는 구성이에요.</p>
+      <p className="solo__verdict">🙅 계산상 솔플이 어려워요</p>
+      <p className="solo__why">{`${bossLabel} — ${mode === 'mine' ? '이 덱으로는' : '추천 덱을 부활시켜 재투입해도'} 약 ${plan.time}초 (${marginText(plan, tier)}). 다른 트레이너와 함께 도전하거나 강화·버프 조건을 확인해 보세요.`}</p>
+      <p className="solo__stats">아래는 현재 조건에서 예상 클리어 시간이 가장 짧은 구성이에요.</p>
       <p className="solo__stats">{damageLine}</p>
     </div>
   );
