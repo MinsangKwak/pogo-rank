@@ -15,6 +15,10 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 const RELEASE_NOTES_EN = {
+  '2026-09-21 · v4.9.2': [
+    '**The home banner is shorter on desktop** — it grew with the window and hid everything below it. The rankings below the banner are now visible without scrolling',
+    '**Its buttons moved up under the text** — they used to sit at the very bottom of the banner, far from what they refer to',
+  ],
   '2026-09-21 · v4.9.1': [
     '**Your favorites now show up when they appear as Dynamax** — Max Mondays and Max Battle Days were never matched to your saved Pokémon. Save today\'s Articuno, Zapdos or Moltres and the event shows as [Now on]',
   ],

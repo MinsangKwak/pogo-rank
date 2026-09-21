@@ -148,7 +148,9 @@ html body #root .home__top-layout > * { min-width: 0; }
 
 /* 포스터 — 어두운 판(--plate) 위. 그림이 오른쪽 두 줄을 다 차지한다 */
 html body #root .home__top-layout .home__welcome {
-  margin: 0; min-height: 44rem; padding: 4rem; grid-template-columns: minmax(0, .85fr) minmax(0, 1.4fr); gap: 2.4rem; align-items: start;
+  margin: 0; min-height: 40rem; padding: 4rem; grid-template-columns: minmax(0, .85fr) minmax(0, 1.4fr);
+  /* 남는 높이를 둘째 줄이 다 받는다 — 나누면 글과 단추 사이가 벌어져 단추가 배너 바닥에 떨어진다 */
+  grid-template-rows: auto 1fr; gap: 2.4rem; align-items: start;
   background: radial-gradient(ellipse at 90% 15%, color-mix(in srgb, var(--plate-accent) 34%, var(--plate-2)), transparent 65%), var(--plate);
   border-bottom: .4rem solid var(--plate-accent);
 }
@@ -157,11 +159,13 @@ html body #root .home__top-layout .home__eyebrow { font-size: var(--fs-sub); fon
 html body #root .home__top-layout .home__intro h2 { margin-top: 2.4rem; max-width: none; padding-right: 0; font-size: var(--fs-hero); line-height: 1.5; letter-spacing: -.04em; }
 html body #root .home__top-layout .home__intro h2 em { font-style: normal; color: var(--plate-accent); }
 html body #root .home__top-layout .home__intro p { margin-top: 2rem; max-width: none; padding-right: 0; font-size: var(--fs-body); }
-html body #root .home__top-layout .home__cta { gap: 1.2rem; }
+/* 바탕 규칙이 align-self: end 라 단추가 둘째 줄 바닥, 곧 배너 맨 아래에 떨어져 있었다 —
+   글에서 240px 떨어져 무엇에 딸린 단추인지 읽히지 않았다. 글 바로 아래로 올린다 */
+html body #root .home__top-layout .home__cta { align-self: start; gap: 1.2rem; }
 html body #root .home__top-layout .home__btn { min-height: 4.8rem; padding: 1.2rem 1.6rem; }
 html body #root .home__top-layout .home__btn--primary { background: var(--plate-accent); color: var(--plate); border-color: var(--plate-accent); }
 html body #root .max-battle-art { grid-column: 2; grid-row: 1 / 3; align-self: center; margin: 0; min-width: 0; }
-html body #root .max-battle-art img { display: block; width: 100%; height: auto; border-radius: .8rem; }
+html body #root .max-battle-art img { display: block; width: 100%; height: auto; max-height: 44rem; object-fit: cover; border-radius: .8rem; }
 html body #root .max-battle-art figcaption { display: flex; flex-direction: column; gap: .8rem; padding: 1.6rem 0 0; color: var(--plate-fg); }
 html body #root .max-battle-art figcaption span { color: var(--plate-accent); font-size: var(--fs-sub); letter-spacing: .1em; }
 html body #root .max-battle-art figcaption b { font-size: var(--fs-lead); }
@@ -172,6 +176,13 @@ html body #root .nav-menu .drawer__item[data-parent] { min-height: var(--tap); p
 html body #root .nav-menu .drawer__item[data-parent] .drawer__label::before { content: '↳ '; margin-right: .4rem; }
 html body #root .nav-menu .drawer__item[data-parent][aria-current=page] { color: var(--brand); }
 
+/* ── 넓은 화면에서 배너가 첫 화면을 다 먹지 않게 (v4.9.2) ─────────────────────────
+   그림이 제 칸 폭을 따라 커지는데 그 칸이 62%(1.4fr / 2.25fr)라, 1920 에서 배너가
+   759px · 화면의 83% 가 됐다. 아래 내용이 안 보여 스크롤할 것이 있는지조차 모른다.
+   칸을 반씩 나눠 그림을 줄이고, 그래도 남는 초광폭은 img 의 max-height 가 받는다 */
+@media (min-width: 1400px) {
+  html body #root .home__top-layout .home__welcome { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+}
 @media (min-width: 1000px) and (max-width: 1399px) {
   html body #root .home__top-layout .home__welcome { padding: 2.4rem; }
   html body #root .home__top-layout .home__intro h2 { font-size: var(--fs-title); }

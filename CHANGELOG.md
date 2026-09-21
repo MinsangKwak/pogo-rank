@@ -22,7 +22,33 @@
 ---
 
 <details open>
-<summary><b>2026-09-21</b> — 16판 · <code>v4.9.1</code> · <code>v4.9.0</code> · <code>v4.8.7</code> · <code>v4.8.6</code> · <code>v4.8.5</code> · <code>v4.8.4</code> · <code>v4.8.3</code> · <code>v4.8.2</code> · <code>v4.8.1</code> · <code>v4.8.0</code> · <code>v4.7.4</code> · <code>v4.7.3</code> · <code>v4.7.2</code> · <code>v4.7.1</code> · <code>v4.7.0</code> · <code>v4.6.4</code></summary>
+<summary><b>2026-09-21</b> — 17판 · <code>v4.9.2</code> · <code>v4.9.1</code> · <code>v4.9.0</code> · <code>v4.8.7</code> · <code>v4.8.6</code> · <code>v4.8.5</code> · <code>v4.8.4</code> · <code>v4.8.3</code> · <code>v4.8.2</code> · <code>v4.8.1</code> · <code>v4.8.0</code> · <code>v4.7.4</code> · <code>v4.7.3</code> · <code>v4.7.2</code> · <code>v4.7.1</code> · <code>v4.7.0</code> · <code>v4.6.4</code></summary>
+
+<details>
+<summary><b>v4.9.2</b> · PC 에서 홈 배너가 첫 화면을 다 먹던 것</summary>
+
+**제보** — PC 에서 '누구와 갈까요?' 배너가 너무 크다. 스크롤할 것이 있는지도 모르겠다.
+
+**그림이 제 칸 폭을 따라 커진다.** 그 칸이 62%(`1.4fr / 2.25fr`)라 화면이 넓을수록 배너가 같이 자랐다. 1920 에서 **759px · 화면의 83%** 였다.
+
+| 화면 | 전 | 후 |
+| --- | --- | --- |
+| 1920 | 759px (83%) | **608px (69%)** |
+| 1680 | 682px (78%) | 585px (68%) |
+| 1440 | 583px (80%) | 505px (71%) |
+| 1280 | 498px (79%) | 503px (80%) — 그대로 |
+
+셋을 고쳤다.
+
+1. **≥1400px 에서 칸을 반씩 나눈다** (`1fr 1fr`). 그림이 좁아져 높이가 따라 준다.
+2. **그림에 뚜껑** — `max-height: 44rem` + `object-fit: cover`. 초광폭에서만 물리고, 물려도 8% 남짓이라 보스 넷이 다 보인다.
+3. **남는 높이는 둘째 줄이 다 받는다** (`grid-template-rows: auto 1fr`). 나눠 가지면 글과 단추 사이가 벌어진다.
+
+**단추가 배너 맨 밑에 떨어져 있었다.** 바탕 규칙의 `align-self: end` 탓이다. 1920 에서 글과 **240px** 떨어져 무엇에 딸린 단추인지 읽히지 않았다. `start` 로 올려 **24px**(격자 한 칸)이 됐다.
+
+손 화면은 그대로다 (404px) — 뚜껑이 물릴 높이가 아니다.
+
+</details>
 
 <details>
 <summary><b>v4.9.1</b> · (긴급) 맥스 먼데이가 즐겨찾기 소식에 한 건도 안 뜨던 것</summary>
