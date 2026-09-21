@@ -262,6 +262,12 @@ export interface MetaBundle {
   /** 규칙(firestore.rules)의 isAdmin() 과 **같은 값이어야 한다** — 화면만 관리자로 보이면 규칙이 막는다 */
   ADMIN_UID: string;
   ADMIN_EMAIL: string;
+  /**
+   * 수집 서버 주소 (v4.7.0, 예: `https://api.moncamp.kr`).
+   * **비면 수집이 통째로 꺼진다** — FIREBASE_CONFIG.apiKey 와 같은 규칙이다.
+   * 서버가 죽어도 화면은 멀쩡하다: 보내는 쪽이 실패를 삼키고, 순위는 빌드가 구운 정적 파일이다
+   */
+  COLLECT_URL?: string;
 }
 
 /** 패치노트 한 묶음. 최신 날짜가 위로 오도록 **적힌 차례 그대로** 쓴다 (코드에서 다시 정렬하지 않는다) */

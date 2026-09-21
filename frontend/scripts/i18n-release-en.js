@@ -15,6 +15,13 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 const RELEASE_NOTES_EN = {
+  '2026-09-21 · v4.7.1': [
+    '**From September 28, searches are also logged on moncamp\'s own server** — they currently go only to Google Analytics, which hides Pokémon with few searches, so a ranking could never be built. This brings back the **search ranking** that was taken down on September 20',
+    '**Only four things are stored** — the Pokémon you picked, which search box you used, a random number that exists only in this browser, and a country code. **Your IP address is not stored**, your name and email are never sent, and signing in does not link searches to you',
+    '**What you type is never sent** — type "Mew", pick Mewtwo, and only **Mewtwo** is counted. The keystrokes in between are not kept anywhere',
+    '**Turning it off is still one switch** — ☰ menu → Analytics & storage settings → "Turn off analytics" switches off visit analytics **and** search logging together. If you already turned it off, nothing is sent at all',
+    '**The privacy policy has been revised** — effective September 28. It spells out what is kept, where it goes, and for how long. You will be asked to agree once more at your next sign-in',
+  ],
   '2026-09-21 · v4.6.4': [
     '**The home poster is no longer cropped on phones** — it was clipped to a strip that hid the bosses; the full picture now shows',
   ],

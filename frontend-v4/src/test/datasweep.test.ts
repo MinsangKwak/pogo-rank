@@ -68,10 +68,14 @@ function sweep(table: Table, build: (key: string, row: Record<string, unknown>) 
   return bad;
 }
 
+// **describe 의 몸통은 skipIf 여도 읽힌다.** vitest 는 검사를 모으려고 콜백을 한 번 돌리고,
+// 건너뛰기는 그다음에 정한다 — 그래서 데이터가 없을 때 `src!.where` 를 제목에 쓰면
+// 건너뛰는 대신 TypeError 로 죽었다(빌드를 안 돌린 새 작업 환경에서 바로 난다).
+// 제목은 모으는 시점에 만들어지므로, 데이터가 없어도 읽히는 값만 쓴다.
 describe.skipIf(!src)('실데이터 전량 — 어떤 줄도 NaN·undefined 를 흘리지 않는다', () => {
   const data = src!;
 
-  it(`데이터를 찾았다 (${data.where})`, () => {
+  it(`데이터를 찾았다 (${src?.where ?? '없음'})`, () => {
     expect(Object.keys(data.tier).length).toBeGreaterThan(0);
     expect(Object.keys(data.pvp).length).toBeGreaterThan(0);
   });

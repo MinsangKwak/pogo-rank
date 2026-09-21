@@ -77,6 +77,10 @@ jobs:
           ADMIN_UID: ${{ vars.ADMIN_UID }}
           CONTACT_EMAIL: kmsdevwork@knou.ac.kr   # 2026-09-15 v3.32.0 학생 계정으로 교체. 저장소 변수 vars.CONTACT_EMAIL 은 더 읽지 않는다 (v3.27.1 GA_ID 와 같은 처리)
           FIREBASE_CONFIG_JSON: ${{ vars.FIREBASE_CONFIG_JSON }}
+          # 2026-09-21 v4.7.0 수집 서버 (server/). **저장소 변수가 비면 수집이 통째로 꺼진다** —
+          # 서버를 세우기 전에는 비워 두면 되고, 그때 화면은 서버가 없던 때와 똑같이 돈다.
+          # 공개 식별자라 배포 HTML 에 그대로 실린다 (GA_ID 와 같은 성격)
+          COLLECT_URL: ${{ vars.COLLECT_URL }}
         run: bash scripts/build.sh
       # 2026-09-17 v4 미리보기를 **같은 dist 안에** 넣어 한 번에 올린다.
       #   아래 발행은 force_orphan 이라 gh-pages 를 통째로 새로 쓴다 — 따로 올린 /react/ 는 그때 지워진다.

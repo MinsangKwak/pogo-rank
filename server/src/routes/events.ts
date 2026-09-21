@@ -1,0 +1,31 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// routes/events.ts — POST /v1/events. 이 서버의 존재 이유.
+//
+// **204 를 빨리 돌려주는 것이 일이다.** 프런트는 답을 안 기다린다(fire-and-forget) —
+// 여기서 느려지거나 500 을 내도 사용자 화면은 아무 일도 없어야 한다.
+//
+// 막는 것 넷
+//   ① CORS   우리 주소에서 온 것만 (app.ts)
+//   ② 스키마 모양이 틀리면 400, 저장 없음 (lib/contract.ts)
+//   ③ 한도   같은 앞단에서 분당 N 건 (app.ts)
+//   ④ 뜻     term 없는 search 처럼 셀 것이 없는 줄은 버린다 (lib/normalize.ts)
+// 넷 다 뚫려도 집계의 사람당 한도가 마지막으로 잡는다 (lib/hot.ts PERSON_CAP).
+// ─────────────────────────────────────────────────────────────────────────────
+'use strict';
+import type { FastifyInstance } from 'fastify';
+import type { Sql } from '../db/client.ts';
+import { collectBodySchema, type CollectBody } from '../lib/contract.ts';
+import { countryOf } from '../lib/country.ts';
+import { toRows } from '../lib/normalize.ts';
+
+export function eventRoutes(app: FastifyInstance, sql: Sql): void {
+  app.post<{ Body: CollectBody }>('/v1/events', { schema: { body: collectBodySchema } }, async (req, reply) => {
+    const rows = toRows(req.body, countryOf(req.headers));
+    // 다 걸러져 남은 것이 없어도 400 이 아니다 — 보낸 쪽이 틀린 게 아니라 셀 것이 없을 뿐이다
+    if (rows.length) {
+      // postgres.js 의 다중 insert. 값은 전부 바인딩 파라미터로 나간다
+      await sql`insert into events ${sql(rows, 'name', 'visitor', 'term', 'surface', 'country', 'channel', 'occurred_at')}`;
+    }
+    return reply.code(204).send();
+  });
+}
