@@ -46,6 +46,12 @@ export async function hotRows(sql: Sql, options: HotOptions): Promise<HotRow[]> 
   // **날을 빼면 rollup 과 수가 어긋난다** (v4.7.2 코드 리뷰). 한도는 '하루에 몇 번' 인데
   // 날을 안 묶으면 창 전체에 한 번만 걸려, 이레 동안 매일 다섯 번 찾은 사람이 35 가 아니라 5 로 센다.
   // search_daily 는 날짜별로 묶으므로 같은 말의 수가 두 표에서 달라진다 — 그러면 둘 다 못 믿는다.
+  // **문턱은 자르기 전에 건다** (v4.7.3 코드 리뷰). 받아 온 뒤 자바스크립트로 거르면,
+  // 한 사람이 밀어 올린 말들이 limit 자리를 다 차지하고 그다음 전부 걸러져 **표가 통째로 빈다** —
+  // 막으려던 바로 그 일이 일어난다. 자격을 SQL 에서 먼저 보고, 남은 것 중에 상위를 자른다.
+  const gate = threshold
+    ? sql`where hits >= ${MIN_HITS} and visitors >= ${MIN_VISITORS}`
+    : sql``;
   const rows = await sql<HotRow[]>`
     with capped as (
       select term, visitor,
@@ -58,17 +64,20 @@ export async function hotRows(sql: Sql, options: HotOptions): Promise<HotRow[]> 
         and created_at >= now() - (${days} * interval '1 day')
         ${narrow}
       group by term, visitor, day
+    ), totals as (
+      select term, sum(hits)::int as hits, count(distinct visitor)::int as visitors
+      from capped
+      group by term
     )
-    select term, sum(hits)::int as hits, count(distinct visitor)::int as visitors
-    from capped
-    group by term
+    select term, hits, visitors
+    from totals
+    ${gate}
     order by hits desc, term asc
     limit ${limit}
   `;
   if (!threshold) return rows;
-  const kept = rows.filter((row) => row.hits >= MIN_HITS && row.visitors >= MIN_VISITORS);
   // 줄이 모자라면 **빈 표**를 준다. 화면은 표가 비면 구역 자체를 안 그린다 (v4.6.0 과 같은 약속)
-  return kept.length >= MIN_ROWS ? kept : [];
+  return rows.length >= MIN_ROWS ? rows : [];
 }
 
 /**

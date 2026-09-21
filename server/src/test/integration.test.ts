@@ -134,9 +134,10 @@ describe.skipIf(!url)('통합 — 진짜 Postgres', () => {
     await seedDaysAgo('옛날말', 'old'.padEnd(32, 'o'), 3, 400);      // 13개월 전
     await seedDaysAgo('요즘말', 'new'.padEnd(32, 'n'), 3, 1);        // 어제
 
-    const { rolled, deleted } = await purge(sql);
+    const { rolled, deleted, throughDay } = await purge(sql);
     expect(deleted).toBe(3);
     expect(rolled).toBe(1);
+    expect(throughDay).toMatch(/^\d{4}-\d{2}-\d{2}$/);
 
     // 원본은 갔고
     const left = await sql<{ term: string }[]>`select distinct term from events`;
@@ -155,6 +156,66 @@ describe.skipIf(!url)('통합 — 진짜 Postgres', () => {
     await purge(sql);
     const [row] = await sql<{ hits: number }[]>`select hits from search_daily where term = '겹치는말'`;
     expect(row?.hits).toBe(99);   // rollup 이 쓴 값이 이긴다
+  });
+
+  // v4.7.3 코드 리뷰 — 자바스크립트로 거르면 한 사람이 표를 통째로 비울 수 있었다
+  it('한 사람이 자리를 다 채워도 표가 비지 않는다', async () => {
+    await sql`truncate events`;
+    // 한 사람이 열두 말을 이레 동안 매일 다섯 번씩 — 하나하나가 35회라 상위 열 자리를 다 먹는다
+    const bully = 'bully'.padEnd(32, 'b');
+    for (let n = 0; n < 12; n += 1) {
+      for (let ago = 0; ago < 7; ago += 1) await seedDaysAgo(`혼자밀기${n}`, bully, 5, ago);
+    }
+    // 그 아래에 자격 있는 말 셋 (두 사람씩 두 번)
+    for (let n = 0; n < 3; n += 1) {
+      for (const who of ['aa', 'bb']) await seed(`여럿말${n}`, `${who}${n}`.padEnd(32, 'c'), 2);
+    }
+
+    const rows = await hotRows(sql, { days: 7, limit: 10 });
+    expect(rows).toHaveLength(3);
+    expect(rows.every((row) => row.term.startsWith('여럿말'))).toBe(true);
+    // 혼자 민 말은 한 줄도 없다
+    expect(rows.filter((row) => row.term.startsWith('혼자밀기'))).toEqual([]);
+  });
+
+  // v4.7.3 코드 리뷰 — 정확한 시각으로 자르면 하루 한 번 도는 일이 반나절을 넘긴다
+  it('파기는 KST 날짜로 자른다 — 경계 날은 통째로 가고 그 다음 날은 통째로 남는다', async () => {
+    await sql`truncate events, search_daily`;
+    const [edge] = await sql<{ through: string }[]>`
+      select to_char(((now() at time zone 'Asia/Seoul')::date - interval '12 months')::date, 'YYYY-MM-DD') as through`;
+    const through = edge!.through;
+
+    // 경계 날 늦은 시각 — 시각으로 자르면 살아남던 줄이다
+    await sql`insert into events (name, visitor, term, country, channel, created_at)
+              values ('search', ${'edge'.padEnd(32, 'e')}, '경계말', 'KR', 'prod',
+                      (${through}::date + time '23:59') at time zone 'Asia/Seoul')`;
+    // 그 다음 날 새벽 — 남아야 한다
+    await sql`insert into events (name, visitor, term, country, channel, created_at)
+              values ('search', ${'safe'.padEnd(32, 'f')}, '안전말', 'KR', 'prod',
+                      (${through}::date + 1 + time '00:01') at time zone 'Asia/Seoul')`;
+
+    const out = await purge(sql);
+    expect(out.throughDay).toBe(through);
+    expect(out.deleted).toBe(1);
+    const left = await sql<{ term: string }[]>`select term from events`;
+    expect(left.map((one) => one.term)).toEqual(['안전말']);
+  });
+
+  it('반쪽 하루를 완전한 집계로 굳히지 않는다', async () => {
+    await sql`truncate events, search_daily`;
+    const [edge] = await sql<{ through: string }[]>`
+      select to_char(((now() at time zone 'Asia/Seoul')::date - interval '12 months')::date, 'YYYY-MM-DD') as through`;
+    const through = edge!.through;
+    // 같은 날 이른 시각과 늦은 시각 — 한 날은 통째로 세어져야 한다
+    for (const at of ['01:00', '13:00', '23:00']) {
+      await sql`insert into events (name, visitor, term, country, channel, created_at)
+                values ('search', ${'day'.padEnd(32, 'g')}, '하루말', 'KR', 'prod',
+                        (${through}::date + ${at}::time) at time zone 'Asia/Seoul')`;
+    }
+    await purge(sql);
+    const [row] = await sql<{ hits: number }[]>`select hits from search_daily where term = '하루말'`;
+    expect(row?.hits).toBe(3);   // 셋 다 한 줄로 굳었다 — 앞부분만 굳고 뒷부분이 사라지지 않았다
+    expect(await sql`select 1 from events`).toHaveLength(0);
   });
 
   it('롤업이 일별 표를 채우고, 다시 돌려도 수가 안 부푼다', async () => {
