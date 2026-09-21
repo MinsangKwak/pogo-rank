@@ -22,7 +22,27 @@
 ---
 
 <details open>
-<summary><b>2026-09-21</b> — 15판 · <code>v4.9.0</code> · <code>v4.8.7</code> · <code>v4.8.6</code> · <code>v4.8.5</code> · <code>v4.8.4</code> · <code>v4.8.3</code> · <code>v4.8.2</code> · <code>v4.8.1</code> · <code>v4.8.0</code> · <code>v4.7.4</code> · <code>v4.7.3</code> · <code>v4.7.2</code> · <code>v4.7.1</code> · <code>v4.7.0</code> · <code>v4.6.4</code></summary>
+<summary><b>2026-09-21</b> — 16판 · <code>v4.9.1</code> · <code>v4.9.0</code> · <code>v4.8.7</code> · <code>v4.8.6</code> · <code>v4.8.5</code> · <code>v4.8.4</code> · <code>v4.8.3</code> · <code>v4.8.2</code> · <code>v4.8.1</code> · <code>v4.8.0</code> · <code>v4.7.4</code> · <code>v4.7.3</code> · <code>v4.7.2</code> · <code>v4.7.1</code> · <code>v4.7.0</code> · <code>v4.6.4</code></summary>
+
+<details>
+<summary><b>v4.9.1</b> · (긴급) 맥스 먼데이가 즐겨찾기 소식에 한 건도 안 뜨던 것</summary>
+
+**제보** — 오늘(9/21) 프리져·썬더·파이어가 다이맥스로 올라오는데, 담아 뒀는데도 볼트로스처럼 [진행 중] 이 안 붙는다.
+
+**원인은 화면이 아니라 데이터였다.** 소식은 `FAV_EVENTS` 에서 오고, 그 표는 `gameday.json` 의 이벤트 중 `dex` 가 있는 줄만 싣는다(`backend/build.py`). 그런데 `event_dex_numbers` 는 **그림 주소**에서만 번호를 뽑는다 — `extraData` 의 `pm<번호>.icon.png` 같은 자리다. 맥스 먼데이·맥스 배틀 데이는 그 칸이 통째로 `{"generic": {…}}` 뿐이라 **여덟 건 전부 `dex` 가 비어 있었다.** 이름이 있는 곳은 영문 제목뿐이었다.
+
+**제목에서 받쳐 준다** (`title_dex_numbers`). 앞의 `Dynamax`·`Gigantamax` 와 뒤의 `during Max Monday`·`Max Battle Day` 를 떼고, 남은 토막을 쉼표와 `and` 로 갈라 도감의 **영문 이름표에 있는 것만** 번호로 바꾼다. 이름을 지어내지 않는다(§3) — 이름표에 없는 조각은 버린다. **이 길은 두 종류에만 연다**: 다른 이벤트 제목에 나오는 종 이름은 그 종이 등장한다는 뜻이 아니다. 그림이 있으면 그림이 먼저고, 제목은 없을 때만 본다.
+
+| 무엇 | 전 | 후 |
+| --- | --- | --- |
+| 맥스 먼데이·배틀 데이 8건의 `dex` | 전부 비어 있음 | 7건이 참 (`Dynamax Max Battle Day` 는 종이 안 적혀 그대로 빈 값) |
+| 오늘 9/21 | 안 뜸 | 프리져 · 썬더 · 파이어 |
+
+**라벨도 붙였다** — `FAV_NEWS_LABEL` 에 없어 '일정' 으로 뭉뚱그려질 뻔했다. 일정표가 쓰는 말과 같이 '맥스 먼데이' · '맥스 배틀 데이' 다.
+
+검사: `backend/test_gameday_build.py` 8건 신설. 제보에 걸린 그 제목, 한 마리 제목, 거다이맥스 배틀 데이, 종이 없는 제목, 이름표에 없는 종, 다른 종류가 제목을 안 보는 것, 그림이 있으면 그림이 이기는 것.
+
+</details>
 
 <details>
 <summary><b>v4.9.0</b> · 화면·약관·문서 한국어 문구 정리 — 그리고 대조에서 걸린 넷</summary>
