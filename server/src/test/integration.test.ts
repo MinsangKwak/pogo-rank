@@ -17,7 +17,7 @@ import { makeDb, type Sql } from '../db/client.ts';
 import { migrate } from '../db/migrate.ts';
 import { hotRows, rollup, PERSON_CAP, MIN_HITS, MIN_VISITORS } from '../lib/hot.ts';
 import { purge, retentionEdge, KEEP_MONTHS } from '../lib/retention.ts';
-import { backupHealth, STALE_DAYS, DROP_RATIO, LOOKBACK_RUNS } from '../lib/backup.ts';
+import { backupHealth, STALE_DAYS, DROP_RATIO } from '../lib/backup.ts';
 
 const url = (process.env['DATABASE_URL'] ?? '').trim();
 const TOKEN = 'k'.repeat(40);
@@ -43,7 +43,7 @@ describe.skipIf(!url)('통합 — 진짜 Postgres', () => {
   beforeAll(async () => {
     sql = makeDb(url);
     await migrate(sql);
-    await sql`truncate events, search_daily, backup_runs`;
+    await sql`truncate events, search_daily, backup_runs, backup_ack`;
     // 라우트가 **실제로 내보내는 글자**를 보려면 진짜 줄이 있어야 한다
     app = await buildApp(readEnv({
       DATABASE_URL: url, ALLOWED_ORIGINS: 'https://moncamp.kr', NODE_ENV: 'test', ADMIN_TOKEN: TOKEN,
@@ -304,12 +304,15 @@ describe.skipIf(!url)('통합 — 진짜 Postgres', () => {
   });
 
   it('문서 수가 급감하면 잡는다 — 안이 빈 백업을 초록으로 넘기지 않는다', async () => {
-    await sql`truncate backup_runs`;
+    await sql`truncate backup_runs, backup_ack`;
     await logRun(8, { allowlist: 7, users: 7, trainers: 6 }, '4');   // 20건
     await logRun(1, { allowlist: 1, users: 1 }, '5');                // 2건 — 90% 줄었다
     const out = await backupHealth(sql);
     expect(out.ok).toBe(false);
-    expect(out.problems.join(' ')).toContain('문서 수가');
+    // 총합으로 뭉뚱그리지 않고 **어느 표**가 어떻게 됐는지 짚는다
+    const said = out.problems.join(' ');
+    expect(said).toContain('trainers');   // 통째로 사라졌다
+    expect(said).toContain('users');      // 7 → 1
   });
 
   it('조금 줄어든 것은 안 잡는다 — 계정 하나 지운 것까지 시끄러우면 아무도 안 본다', async () => {
@@ -318,6 +321,19 @@ describe.skipIf(!url)('통합 — 진짜 Postgres', () => {
     await logRun(1, { users: 9 }, '7');   // 10% — 문턱(30%) 아래
     expect((await backupHealth(sql)).ok).toBe(true);
     expect(DROP_RATIO).toBe(0.3);
+  });
+
+  // 어느 하나도 문턱을 안 넘었는데 여럿이 조금씩 줄어든 경우 — 여기서만 총합이 말한다
+  it('여럿이 조금씩 줄어 총합이 무너지면 총합이 말한다', async () => {
+    await sql`truncate backup_runs, backup_ack`;
+    await logRun(7, { a: 100, b: 100, c: 100 }, 'a');
+    await logRun(0, { a: 72, b: 72, c: 72 }, 'b');   // 각 28% — 문턱(30%) 아래, 합은 28%
+    const out = await backupHealth(sql);
+    // 합이 216 이라 216 < 300*0.7 = 210 이 아니다 → 아직 조용하다
+    expect(out.ok).toBe(true);
+
+    await logRun(0, { a: 69, b: 69, c: 69 }, 'c');   // 각 31% — 이제 컬렉션이 먼저 말한다
+    expect((await backupHealth(sql)).problems.join(' ')).toContain('컬렉션');
   });
 
   it('표가 이상한 줄을 막는다 — 해시 모양과 크기', async () => {
@@ -389,24 +405,53 @@ describe.skipIf(!url)('통합 — 진짜 Postgres', () => {
   });
 
   it('안 고쳐진 손실이 일주일 지났다고 사라지지 않는다', async () => {
-    await sql`truncate backup_runs`;
+    await sql`truncate backup_runs, backup_ack`;
     // users 가 비었고, 그 다음 판에도 여전히 비어 있다. 총합은 더 안 줄어든다
     await logRun(14, { users: 100, allowlist: 100 }, 'a');
     await logRun(7, { users: 0, allowlist: 200 }, 'b');
     await logRun(0, { users: 0, allowlist: 200 }, 'c');
     const out = await backupHealth(sql);
-    // 바로 앞 판만 보면 견줄 것이 0 이라 통과한다 — 최근 판들의 가장 큰 수와 견뎌야 잡힌다
+    // 바로 앞 판만 보면 견줄 것이 0 이라 통과한다 — 여태 가장 컸던 수와 견뎌야 잡힌다
     expect(out.ok).toBe(false);
     expect(out.problems.join(' ')).toContain('users');
-    expect(LOOKBACK_RUNS).toBe(5);
+  });
+
+  // **창으로 잡으면 미루기만 한다** (v4.8.5 코드 리뷰). 망가진 판이 창만큼 쌓이면
+  // 성한 판이 밀려나 사고가 저절로 지워진다 — 잣대에 창이 없어야 한다
+  it('망가진 판이 아무리 쌓여도 사고가 지워지지 않는다', async () => {
+    await sql`truncate backup_runs, backup_ack`;
+    await logRun(70, { users: 100, allowlist: 100 }, 'a');
+    // 성한 판 하나에 망가진 판 여덟 — 어떤 창을 잡아도 성한 판이 밖으로 밀려난다
+    for (let i = 8; i >= 1; i -= 1) await logRun(i * 7, { users: 0, allowlist: 100 }, String(i));
+    await logRun(0, { users: 0, allowlist: 100 }, 'f');
+    const out = await backupHealth(sql);
+    expect(out.ok).toBe(false);
+    expect(out.problems.join(' ')).toContain('users');
   });
 
   it('되살아나면 더 안 묻는다', async () => {
-    await sql`truncate backup_runs`;
+    await sql`truncate backup_runs, backup_ack`;
     await logRun(14, { users: 100 }, 'a');
     await logRun(7, { users: 0 }, 'b');
     await logRun(0, { users: 100 }, 'c');
     expect((await backupHealth(sql)).ok).toBe(true);
+  });
+
+  // 진짜로 줄어든 경우를 끊는 자리. **기계가 스스로 잊지는 못하고 사람이 끊는다**
+  it('사람이 못 박으면 조용해진다 — 그때만', async () => {
+    await sql`truncate backup_runs, backup_ack`;
+    // 판 사이는 여드레 안이다 — 여기서 보려는 것은 간격이 아니라 줄어듦이다
+    await logRun(7, { users: 100 }, 'a');
+    await logRun(0, { users: 40 }, 'b');
+    expect((await backupHealth(sql)).ok).toBe(false);
+
+    await sql`insert into backup_ack (collection, baseline, reason)
+              values ('users', 40, '계정 정리 — 확인함')`;
+    expect((await backupHealth(sql)).ok).toBe(true);
+
+    // 못 박은 수보다 더 줄면 다시 묻는다 — 한 번 끊었다고 영영 안 보는 것이 아니다
+    await logRun(0, { users: 10 }, 'c');
+    expect((await backupHealth(sql)).ok).toBe(false);
   });
 
   it('롤업이 일별 표를 채우고, 다시 돌려도 수가 안 부푼다', async () => {

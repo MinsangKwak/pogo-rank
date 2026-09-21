@@ -61,7 +61,7 @@
 <div class="head">
   <div class="logo"></div>
   <h1>수집 서버 ERD</h1>
-  <div class="ver">v4.8.0</div>
+  <div class="ver">v4.8.5</div>
   <div class="when">moncamp · <code>server/</code><br>Node 22 · Fastify · Postgres</div>
 </div>
 
@@ -161,15 +161,29 @@
       여드레가 넘거나(STALE_DAYS) 문서 수가 30% 넘게 줄면(DROP_RATIO) 짚는다
     </footer>
   </div>
+
+  <div class="tbl" style="margin-top:26px">
+    <header><b>backup_ack</b><span>사람이 끊는 자리 — 개인정보 없음</span></header>
+    <table>
+      <tr><td class="k pk">PK</td><td class="n">collection</td><td class="t">text</td><td class="d">컬렉션 이름</td></tr>
+      <tr><td class="k"></td><td class="n">baseline</td><td class="t">integer &ge; 0</td><td class="d">여태 최대 대신 이 수를 잣대로</td></tr>
+      <tr><td class="k"></td><td class="n">acked_at</td><td class="t">timestamptz</td><td class="d"></td></tr>
+      <tr><td class="k"></td><td class="n">reason</td><td class="t">text</td><td class="d">왜 사고가 아닌지</td></tr>
+    </table>
+    <footer>
+      <b>잣대에 창을 두면 사고가 지워진다</b> — 망가진 판이 그만큼 쌓이면 성한 판이 밀려난다.<br>
+      그래서 잣대는 <b>여태 최대</b>이고, 진짜로 줄어든 경우만 <b>사람이</b> 여기서 끊는다
+    </footer>
+  </div>
   </div>
 </div>
 
 <div class="link">
   <div class="big">⇄</div>
   <div>
-    <b>표 셋 사이에 외래키가 하나도 없다.</b> <code>search_daily</code> 는 <code>events</code> 의 자식이 아니라
+    <b>표 넷 사이에 외래키가 하나도 없다.</b> <code>search_daily</code> 는 <code>events</code> 의 자식이 아니라
     <b>그것을 지우고 나서도 남을 요약</b>이다 — 부모가 사라지는 것이 설계다.
-    <code>backup_runs</code> 는 아예 다른 일을 재는 자리라 이을 것이 없다.<br>
+    <code>backup_runs</code>·<code>backup_ack</code> 는 아예 다른 일을 재는 자리라 이을 것이 없다.<br>
     앞의 둘을 이어 주는 것은 키가 아니라 <b>같은 셈</b>이다: 둘 다 <code>(KST 날짜, 말, 사람)</code> 으로 묶어
     사람당 하루 5회까지 센다. 그래서 <code>/v1/hot</code> 과 <code>search_daily</code> 가 같은 수를 말한다.
   </div>
