@@ -33,6 +33,7 @@ import LoginInvite from './components/LoginInvite';
 import { useInviteStore } from './stores/invite';
 import LangBridge from './components/LangBridge';
 import AuthBridge from './components/AuthBridge';
+import CollectBridge from './components/CollectBridge';
 import LockCard from './components/LockCard';
 
 // ── 눌러 들어가는 화면은 **누를 때 받는다** ────────────────────────────────────
@@ -176,6 +177,7 @@ export default function App() {
 
       <LangBridge />
       <AuthBridge />
+      <CollectBridge />
 
       {/* 로고는 home 이 정한다 (뒤로가기가 있으면 접는다).
           상세에서 뒤로가기는 **팝업을 닫는다** — 화면을 떠나면 뒤에 보던 목록까지 잃는다 */}

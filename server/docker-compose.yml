@@ -1,0 +1,25 @@
+# 로컬 Postgres 한 대. 운영(Neon)과 같은 메이저 버전을 쓴다 —
+# 로컬에서 도는 SQL 이 운영에서 안 도는 일을 줄이려는 것이다.
+#
+#   docker compose up -d
+#   DATABASE_URL=postgres://moncamp:moncamp@localhost:5433/moncamp npm run db:migrate
+#
+# 포트를 5433 으로 미룬 이유 — 5432 는 이미 다른 것이 쓰고 있을 가능성이 높고,
+# 그때 나는 오류가 '접속은 되는데 표가 없다' 라 원인을 찾기 어렵다
+services:
+  db:
+    image: postgres:17-alpine
+    ports: ['5433:5432']
+    environment:
+      POSTGRES_USER: moncamp
+      POSTGRES_PASSWORD: moncamp
+      POSTGRES_DB: moncamp
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U moncamp']
+      interval: 3s
+      retries: 10
+    volumes:
+      - moncamp-pgdata:/var/lib/postgresql/data
+
+volumes:
+  moncamp-pgdata:

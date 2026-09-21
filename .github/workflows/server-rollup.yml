@@ -1,0 +1,34 @@
+name: server 일별 집계
+
+# 2026-09-21 v4.7.0 원본 이벤트를 일별 표(search_daily)로 굳힌다.
+#
+# **왜 따로 도나** — 배포 워크플로에 붙이면 배포를 안 한 날은 집계가 없다.
+# 집계는 배포와 상관없이 매일 있어야 원본을 언젠가 잘라낼 수 있다.
+#
+# 늦게 도착한 이벤트가 있으므로 최근 며칠을 다시 센다 (server/src/lib/hot.ts rollup).
+# 저장소 시크릿: COLLECT_BASE_URL(예: https://api.moncamp.kr) · ADMIN_TOKEN
+on:
+  schedule:
+    - cron: '30 16 * * *'   # 매일 01:30 KST — GA4 처리 지연과 무관하지만 한가한 시간을 고른다
+  workflow_dispatch:
+
+jobs:
+  rollup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 집계 부르기
+        env:
+          BASE: ${{ secrets.COLLECT_BASE_URL }}
+          TOKEN: ${{ secrets.ADMIN_TOKEN }}
+        run: |
+          set -e
+          if [ -z "$BASE" ]; then
+            echo "COLLECT_BASE_URL 이 없다 — 서버를 아직 안 세웠다. 건너뛴다"
+            exit 0
+          fi
+          # 콜드 스타트가 있다. 첫 요청이 느린 것은 실패가 아니라서 넉넉히 기다린다
+          code="$(curl -sS -o /tmp/rollup.json -w '%{http_code}' --max-time 60 \
+            -X POST "$BASE/v1/admin/rollup" -H "Authorization: Bearer $TOKEN")"
+          cat /tmp/rollup.json
+          echo
+          [ "$code" = "200" ] || { echo "집계 실패 ($code)"; exit 1; }
