@@ -1,0 +1,448 @@
+{
+"max-mondays-2026-09-21": {
+"id": "max-mondays-2026-09-21",
+"type": "max-mondays",
+"start": "2026-09-21",
+"end": "2026-09-27",
+"cat": "dmax",
+"label": "D-MAX 프리져 · 썬더 · 파이어 (맥스 먼데이 9/21)",
+"t": "ice"
+},
+"pokemon-horizons-bonus-timed-research-2026": {
+"id": "pokemon-horizons-bonus-timed-research-2026",
+"type": "research",
+"start": "2026-09-18",
+"end": "2026-09-22",
+"cat": "event",
+"label": "Pokémon Horizons Bonus Timed Research"
+},
+"pokemon-horizons-the-series-celebration-event-2026": {
+"id": "pokemon-horizons-the-series-celebration-event-2026",
+"type": "event",
+"start": "2026-09-16",
+"end": "2026-09-22",
+"cat": "event",
+"label": "Pokémon Horizons: The Series Celebration Event 2026"
+},
+"mega-venusaur-in-mega-raids-september-2026": {
+"id": "mega-venusaur-in-mega-raids-september-2026",
+"type": "raid-battles",
+"start": "2026-09-16",
+"end": "2026-09-22",
+"cat": "mega",
+"label": "메가 이상해꽃"
+},
+"zamazenta-hero-of-many-battles-in-5-star-raid-battles-september-2026": {
+"id": "zamazenta-hero-of-many-battles-in-5-star-raid-battles-september-2026",
+"type": "raid-battles",
+"start": "2026-09-16",
+"end": "2026-09-22",
+"cat": "raid5",
+"label": "자마젠타 (마이티폼)"
+},
+"raidhour20260923": {
+"id": "raidhour20260923",
+"type": "raid-hour",
+"start": "2026-09-23",
+"end": "2026-09-23",
+"cat": "hour",
+"label": "레이드 아워: 전수목 · 페로코체 · 매시붕"
+},
+"pokemonspotlighthour2026-09-24": {
+"id": "pokemonspotlighthour2026-09-24",
+"type": "pokemon-spotlight-hour",
+"start": "2026-09-24",
+"end": "2026-09-24",
+"cat": "hour",
+"label": "스포트라이트: 꼬렛 — 진화 XP 2배"
+},
+"catch-mastery-phantump-2026": {
+"id": "catch-mastery-phantump-2026",
+"type": "event",
+"start": "2026-09-26",
+"end": "2026-09-26",
+"cat": "event",
+"label": "Phantump Catch Mastery"
+},
+"choose-your-path-twilight-trails-2026": {
+"id": "choose-your-path-twilight-trails-2026",
+"type": "choose-your-path",
+"start": "2026-09-23",
+"end": "2026-09-28",
+"cat": "event",
+"label": "Choose Your Path: Twilight Trails"
+},
+"max-mondays-2026-09-28": {
+"id": "max-mondays-2026-09-28",
+"type": "max-mondays",
+"start": "2026-09-28",
+"end": "2026-10-04",
+"cat": "dmax",
+"label": "D-MAX 울머기 (맥스 먼데이 9/28)",
+"t": "water"
+},
+"mega-malamar-in-mega-raids-september-2026": {
+"id": "mega-malamar-in-mega-raids-september-2026",
+"type": "raid-battles",
+"start": "2026-09-23",
+"end": "2026-09-29",
+"cat": "mega",
+"label": "메가 칼라마네로"
+},
+"xurkitree-pheromosa-buzzwole-in-5-star-raid-battles-september-2026": {
+"id": "xurkitree-pheromosa-buzzwole-in-5-star-raid-battles-september-2026",
+"type": "raid-battles",
+"start": "2026-09-23",
+"end": "2026-09-29",
+"cat": "raid5",
+"label": "매시붕 · 페로코체 · 전수목"
+},
+"raidhour20260930": {
+"id": "raidhour20260930",
+"type": "raid-hour",
+"start": "2026-09-30",
+"end": "2026-09-30",
+"cat": "hour",
+"label": "레이드 아워: 제르네아스"
+},
+"lego-pokemon-go-2026": {
+"id": "lego-pokemon-go-2026",
+"type": "event",
+"start": "2026-08-03",
+"end": "2026-09-30",
+"cat": "event",
+"label": "LEGO Stores and Pokémon GO"
+},
+"pokemonspotlighthour2026-10-01": {
+"id": "pokemonspotlighthour2026-10-01",
+"type": "pokemon-spotlight-hour",
+"start": "2026-10-01",
+"end": "2026-10-01",
+"cat": "hour",
+"label": "스포트라이트: 도토링 — 포획 XP 2배"
+},
+"patterns-of-the-wild-2026": {
+"id": "patterns-of-the-wild-2026",
+"type": "event",
+"start": "2026-10-02",
+"end": "2026-10-02",
+"cat": "event",
+"label": "Patterns of the Wild"
+},
+"gigantamax-cinderace-max-battle-day-2026": {
+"id": "gigantamax-cinderace-max-battle-day-2026",
+"type": "max-battles",
+"start": "2026-10-03",
+"end": "2026-10-03",
+"cat": "event",
+"label": "거다이맥스 에이스번 맥스 배틀 데이"
+},
+"harvest-festival-2026": {
+"id": "harvest-festival-2026",
+"type": "event",
+"start": "2026-09-29",
+"end": "2026-10-05",
+"cat": "event",
+"label": "Harvest Festival 2026: Applin Picking"
+},
+"harvest-festival-taken-over-2026": {
+"id": "harvest-festival-taken-over-2026",
+"type": "event",
+"start": "2026-10-02",
+"end": "2026-10-05",
+"cat": "event",
+"label": "Harvest Festival: Taken Over"
+},
+"max-mondays-2026-10-05": {
+"id": "max-mondays-2026-10-05",
+"type": "max-mondays",
+"start": "2026-10-05",
+"end": "2026-10-11",
+"cat": "dmax",
+"label": "D-MAX 태우지네 (맥스 먼데이 10/5)",
+"t": "fire"
+},
+"shadow-thundurus-incarnate-forme-in-shadow-raids-september-2026": {
+"id": "shadow-thundurus-incarnate-forme-in-shadow-raids-september-2026",
+"type": "raid-battles",
+"start": "2026-09-09",
+"end": "2026-10-06",
+"cat": "shadow",
+"label": "주말 섀도우 레이드: 섀도우 볼트로스 (화신폼)"
+},
+"mega-victreebel-in-mega-raids-september-2026": {
+"id": "mega-victreebel-in-mega-raids-september-2026",
+"type": "raid-battles",
+"start": "2026-09-30",
+"end": "2026-10-06",
+"cat": "mega",
+"label": "메가 우츠보트"
+},
+"xerneas-in-5-star-raid-battles-september-2026": {
+"id": "xerneas-in-5-star-raid-battles-september-2026",
+"type": "raid-battles",
+"start": "2026-09-30",
+"end": "2026-10-06",
+"cat": "raid5",
+"label": "제르네아스"
+},
+"raidhour20261007": {
+"id": "raidhour20261007",
+"type": "raid-hour",
+"start": "2026-10-07",
+"end": "2026-10-07",
+"cat": "hour",
+"label": "레이드 아워: 이벨타르"
+},
+"pokemonspotlighthour2026-10-08": {
+"id": "pokemonspotlighthour2026-10-08",
+"type": "pokemon-spotlight-hour",
+"start": "2026-10-08",
+"end": "2026-10-08",
+"cat": "hour",
+"label": "스포트라이트: 리그레 — 포획 사탕 2배"
+},
+"october-communityday2026": {
+"id": "october-communityday2026",
+"type": "community-day",
+"start": "2026-10-10",
+"end": "2026-10-10",
+"cat": "event",
+"label": "커뮤니티 데이: 조로아"
+},
+"max-mondays-2026-10-12": {
+"id": "max-mondays-2026-10-12",
+"type": "max-mondays",
+"start": "2026-10-12",
+"end": "2026-10-18",
+"cat": "dmax",
+"label": "D-MAX 파라꼬 (맥스 먼데이 10/12)",
+"t": "flying"
+},
+"mega-blastoise-in-mega-raids-october-2026": {
+"id": "mega-blastoise-in-mega-raids-october-2026",
+"type": "raid-battles",
+"start": "2026-10-07",
+"end": "2026-10-13",
+"cat": "mega",
+"label": "메가 거북왕"
+},
+"yveltal-in-5-star-raid-battles-october-2026": {
+"id": "yveltal-in-5-star-raid-battles-october-2026",
+"type": "raid-battles",
+"start": "2026-10-07",
+"end": "2026-10-13",
+"cat": "raid5",
+"label": "이벨타르"
+},
+"raidhour20261014": {
+"id": "raidhour20261014",
+"type": "raid-hour",
+"start": "2026-10-14",
+"end": "2026-10-14",
+"cat": "hour",
+"label": "레이드 아워: 디아루가"
+},
+"pokemonspotlighthour2026-10-15": {
+"id": "pokemonspotlighthour2026-10-15",
+"type": "pokemon-spotlight-hour",
+"start": "2026-10-15",
+"end": "2026-10-15",
+"cat": "hour",
+"label": "스포트라이트: 포곰곰 — 전송 사탕 2배"
+},
+"hatch-day-october-2026": {
+"id": "hatch-day-october-2026",
+"type": "event",
+"start": "2026-10-17",
+"end": "2026-10-17",
+"cat": "event",
+"label": "Hatch Day"
+},
+"fall-marathon-buddy-trek-2026": {
+"id": "fall-marathon-buddy-trek-2026",
+"type": "event",
+"start": "2026-10-13",
+"end": "2026-10-19",
+"cat": "event",
+"label": "Fall Marathon: Buddy Trek"
+},
+"max-mondays-2026-10-19": {
+"id": "max-mondays-2026-10-19",
+"type": "max-mondays",
+"start": "2026-10-19",
+"end": "2026-10-25",
+"cat": "dmax",
+"label": "D-MAX 포푸니 (맥스 먼데이 10/19)",
+"t": "dark"
+},
+"dialga-in-5-star-raid-battles-october-2026": {
+"id": "dialga-in-5-star-raid-battles-october-2026",
+"type": "raid-battles",
+"start": "2026-10-14",
+"end": "2026-10-20",
+"cat": "raid5",
+"label": "디아루가"
+},
+"mega-dragonite-in-mega-raids-october-2026": {
+"id": "mega-dragonite-in-mega-raids-october-2026",
+"type": "raid-battles",
+"start": "2026-10-14",
+"end": "2026-10-20",
+"cat": "mega",
+"label": "메가 망나뇽"
+},
+"raidhour20261021": {
+"id": "raidhour20261021",
+"type": "raid-hour",
+"start": "2026-10-21",
+"end": "2026-10-21",
+"cat": "hour",
+"label": "레이드 아워: 펄기아"
+},
+"pokemonspotlighthour2026-10-22": {
+"id": "pokemonspotlighthour2026-10-22",
+"type": "pokemon-spotlight-hour",
+"start": "2026-10-22",
+"end": "2026-10-22",
+"cat": "hour",
+"label": "스포트라이트: 자마슈 — 포획 별의모래 2배"
+},
+"max-battle-day-october-24-2026": {
+"id": "max-battle-day-october-24-2026",
+"type": "max-battles",
+"start": "2026-10-24",
+"end": "2026-10-24",
+"cat": "event",
+"label": "맥스 배틀 데이"
+},
+"max-mondays-2026-10-26": {
+"id": "max-mondays-2026-10-26",
+"type": "max-mondays",
+"start": "2026-10-26",
+"end": "2026-11-01",
+"cat": "dmax",
+"label": "D-MAX 깜까미 (맥스 먼데이 10/26)",
+"t": "dark"
+},
+"mega-charizard-x-mega-charizard-y-in-mega-raids-october-2026": {
+"id": "mega-charizard-x-mega-charizard-y-in-mega-raids-october-2026",
+"type": "raid-battles",
+"start": "2026-10-21",
+"end": "2026-10-27",
+"cat": "mega",
+"label": "메가X 리자몽 · 메가Y 리자몽"
+},
+"palkia-in-5-star-raid-battles-october-2026": {
+"id": "palkia-in-5-star-raid-battles-october-2026",
+"type": "raid-battles",
+"start": "2026-10-21",
+"end": "2026-10-27",
+"cat": "raid5",
+"label": "펄기아"
+},
+"raidhour20261028": {
+"id": "raidhour20261028",
+"type": "raid-hour",
+"start": "2026-10-28",
+"end": "2026-10-28",
+"cat": "hour",
+"label": "레이드 아워: 기라티나 (오리진폼)"
+},
+"pokemonspotlighthour2026-10-29": {
+"id": "pokemonspotlighthour2026-10-29",
+"type": "pokemon-spotlight-hour",
+"start": "2026-10-29",
+"end": "2026-10-29",
+"cat": "hour",
+"label": "스포트라이트: 고오스 — 진화 XP 2배"
+},
+"super-mega-raid-day-october-2026": {
+"id": "super-mega-raid-day-october-2026",
+"type": "raid-day",
+"start": "2026-10-31",
+"end": "2026-10-31",
+"cat": "event",
+"label": "슈퍼 메가 레이드 데이"
+},
+"halloween-2026-part-1": {
+"id": "halloween-2026-part-1",
+"type": "event",
+"start": "2026-10-27",
+"end": "2026-10-31",
+"cat": "event",
+"label": "Halloween 2026 Part I"
+},
+"shadow-landorus-incarnate-forme-in-shadow-raids-october-2026": {
+"id": "shadow-landorus-incarnate-forme-in-shadow-raids-october-2026",
+"type": "raid-battles",
+"start": "2026-10-07",
+"end": "2026-11-03",
+"cat": "shadow",
+"label": "주말 섀도우 레이드: 섀도우 랜드로스 (화신폼)"
+},
+"giratina-origin-forme-in-5-star-raid-battles-october-2026": {
+"id": "giratina-origin-forme-in-5-star-raid-battles-october-2026",
+"type": "raid-battles",
+"start": "2026-10-28",
+"end": "2026-11-03",
+"cat": "raid5",
+"label": "기라티나 (오리진폼)"
+},
+"mega-sableye-in-mega-raids-october-2026": {
+"id": "mega-sableye-in-mega-raids-october-2026",
+"type": "raid-battles",
+"start": "2026-10-28",
+"end": "2026-11-03",
+"cat": "mega",
+"label": "메가 깜까미"
+},
+"halloween-2026-part-2": {
+"id": "halloween-2026-part-2",
+"type": "event",
+"start": "2026-11-01",
+"end": "2026-11-05",
+"cat": "event",
+"label": "Halloween 2026 Part II"
+},
+"pokemon-go-wild-area-2026-sendai-japan": {
+"id": "pokemon-go-wild-area-2026-sendai-japan",
+"type": "wild-area",
+"start": "2026-11-06",
+"end": "2026-11-08",
+"cat": "event",
+"label": "Pokémon GO Wild Area 2026: Sendai • Tohoku"
+},
+"pokemon-go-wild-area-2026-mexico-city": {
+"id": "pokemon-go-wild-area-2026-mexico-city",
+"type": "wild-area",
+"start": "2026-11-06",
+"end": "2026-11-09",
+"cat": "event",
+"label": "Pokémon GO Wild Area 2026: Mexico City"
+},
+"pokemon-go-wild-area-2026-global": {
+"id": "pokemon-go-wild-area-2026-global",
+"type": "wild-area",
+"start": "2026-11-14",
+"end": "2026-11-15",
+"cat": "event",
+"label": "Pokémon GO Wild Area 2026: Global"
+},
+"november-communityday2026": {
+"id": "november-communityday2026",
+"type": "community-day",
+"start": "2026-11-21",
+"end": "2026-11-21",
+"cat": "event",
+"label": "11월 커뮤니티 데이"
+},
+"super-mega-raid-day-november-2026": {
+"id": "super-mega-raid-day-november-2026",
+"type": "raid-day",
+"start": "2026-11-28",
+"end": "2026-11-28",
+"cat": "event",
+"label": "슈퍼 메가 레이드 데이"
+}
+}
