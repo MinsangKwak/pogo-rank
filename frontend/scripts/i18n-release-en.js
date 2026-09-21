@@ -15,6 +15,13 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 const RELEASE_NOTES_EN = {
+  '2026-09-21 · v4.8.0': [
+    '**Account backups will be kept in one more place** — they are encrypted weekly and stored on GitHub, but those expire after 90 days, so no copy older than that existed. The same encrypted file now also goes to Google storage (Seoul) and is **deleted automatically after 12 months.** Effective September 28; sections 4 and 5 of the privacy policy say so',
+    '**Backups are encrypted** — nobody but us can open them. Deleting your account removes it from Firestore right away, but backups taken before that keep it for up to 12 months and then drop it',
+  ],
+  '2026-09-21 · v4.7.2': [
+    '**The privacy policy now describes IP handling correctly** — your IP address is still never stored. But it is read for a moment on arrival, to stop a flood of requests, so the sentence saying it is **"never even seen" has been corrected.** It is still discarded immediately and kept nowhere',
+  ],
   '2026-09-21 · v4.7.1': [
     '**From September 28, searches are also logged on moncamp\'s own server** — they currently go only to Google Analytics, which hides Pokémon with few searches, so a ranking could never be built. This brings back the **search ranking** that was taken down on September 20',
     '**Only four things are stored** — the Pokémon you picked, which search box you used, a random number that exists only in this browser, and a country code. **Your IP address is not stored**, your name and email are never sent, and signing in does not link searches to you',

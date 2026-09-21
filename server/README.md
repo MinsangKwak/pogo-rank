@@ -5,6 +5,12 @@
 
 [← 저장소 README](../README.md) · [개발 문서](../docs/DEVELOPMENT.md) · [인프라 문서](../docs/INFRA.md) · [운영 문서](../docs/OPERATIONS.md)
 
+| 보려는 것 | 어디 |
+| --- | --- |
+| 표·칸·제약·인덱스와 **왜** | [`SCHEMA.md`](SCHEMA.md) |
+| 표 관계 한 장 | [`docs/server-erd.png`](../docs/server-erd.png) |
+| 주소마다의 요청·응답 | [`docs/server-api.html`](../docs/server-api.html) (열면 바로 보인다) · [`openapi.json`](openapi.json) · 서버가 뜨면 `/docs` |
+
 ---
 
 ## 왜 있나
@@ -16,7 +22,8 @@ GA4 Data API 는 **집계만** 돌려준다. 원본 이벤트를 못 꺼내고, 
 | 맡는 것 | 안 맡는 것 |
 | --- | --- |
 | 이벤트 수집 · 일별 집계 · 순위 조회 | 로그인 · 권한 (Firebase Auth + `firestore.rules` 그대로) |
-| Firestore 백업 미러 *(3판)* | 화면 렌더링 (GitHub Pages 정적 그대로) |
+| **백업이 정말 돌았는지 아는 일** | **백업 자체** — 주간 워크플로가 한다. 잘 도는 것을 가운데로 끌어오면 고장 날 자리만 는다 |
+| | 화면 렌더링 (GitHub Pages 정적 그대로) |
 
 ---
 
@@ -45,7 +52,9 @@ npm run typecheck
 | `GET` | `/healthz` | Cloud Run | — |
 | `POST` | `/v1/events` | 브라우저 (답을 안 기다린다) | — (CORS · 한도) |
 | `GET` | `/v1/hot?days=7&limit=10&country=KR` | 배포 워크플로 | — (`raw=true` 는 필요) |
-| `POST` | `/v1/admin/rollup` | 배포 워크플로 | `Authorization: Bearer $ADMIN_TOKEN` |
+| `POST` | `/v1/admin/rollup` | 집계 워크플로 | `Authorization: Bearer $ADMIN_TOKEN` |
+| `POST` | `/v1/admin/backups` | 주간 백업 워크플로 (올린 **뒤에**) | 〃 |
+| `GET` | `/v1/admin/backups` | 사람 — 백업이 살아 있는가 | 〃 |
 
 ### `POST /v1/events`
 
@@ -86,8 +95,10 @@ npm run typecheck
 
 ## 개인정보
 
-- **IP 를 저장하지 않는다.** 앞단이 판정해 둔 국가 코드만 읽는다 (`lib/country.ts`).
+- **IP 를 저장하지 않는다.** 나라는 앞단이 판정해 둔 코드를 읽는다 (`lib/country.ts`).
   앞단이 없으면 `ZZ` 다 — 모른다고 적지, 지어내지 않는다.
+  **다만 '아예 안 본다' 는 아니다** — 분당 한도가 `req.ip` 를 키로 쓴다. 보고 버릴 뿐 어디에도 안 남긴다.
+- **원본은 12개월 뒤 지운다** (`lib/retention.ts`). 지우기 전에 `search_daily` 로 굳히므로 순위 역사는 남는다.
 - 방문자는 브라우저가 만든 난수 ID(`pogo_visitor`)다. 사람과 이어지지 않는다.
 - `pogo_consent=denied` 인 사람은 **한 건도 안 보낸다** — GA4 와 같은 게이트를 탄다.
 - 수집 항목은 개인정보처리방침에 적혀 있어야 한다 (CLAUDE.md §3).

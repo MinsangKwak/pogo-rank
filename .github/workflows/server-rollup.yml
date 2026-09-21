@@ -1,4 +1,4 @@
-name: server 일별 집계
+name: server 일별 집계·파기·백업 점검
 
 # 2026-09-21 v4.7.0 원본 이벤트를 일별 표(search_daily)로 굳힌다.
 #
@@ -6,6 +6,15 @@ name: server 일별 집계
 # 집계는 배포와 상관없이 매일 있어야 원본을 언젠가 잘라낼 수 있다.
 #
 # 늦게 도착한 이벤트가 있으므로 최근 며칠을 다시 센다 (server/src/lib/hot.ts rollup).
+#
+# **파기도 같은 부름에서 한다** (v4.7.2). 개인정보처리방침 5번이 "원본은 최대 12개월 뒤 지운다" 고
+# 약속했는데, 지우는 것을 따로 두면 그 워크플로를 빠뜨린 날이 생긴다 —
+# 적어 둔 기간은 누가 기억해서 돌리는 것이 아니라 저절로 지켜져야 한다 (server/src/lib/retention.ts).
+#
+# **백업 상태도 여기서 묻는다** (v4.8.1 코드 리뷰). 백업 워크플로는 기록을 넣고 나서 되묻기 때문에
+# 그 자리에서는 '걸른 주' 가 안 보이고, 워크플로가 아예 멈추면 묻는 사람 자체가 없어진다.
+# 매일 도는 이 워크플로가 **따로** 물으면 둘 다 드러난다 (server/src/lib/backup.ts).
+#
 # 저장소 시크릿: COLLECT_BASE_URL(예: https://api.moncamp.kr) · ADMIN_TOKEN
 on:
   schedule:
@@ -16,7 +25,7 @@ jobs:
   rollup:
     runs-on: ubuntu-latest
     steps:
-      - name: 집계 부르기
+      - name: 집계·파기 부르기
         env:
           BASE: ${{ secrets.COLLECT_BASE_URL }}
           TOKEN: ${{ secrets.ADMIN_TOKEN }}
@@ -32,3 +41,36 @@ jobs:
           cat /tmp/rollup.json
           echo
           [ "$code" = "200" ] || { echo "집계 실패 ($code)"; exit 1; }
+
+      # **백업 워크플로 밖에서 묻는다.** 그쪽이 멈춰 있으면 그쪽 경보도 같이 멈춘다 —
+      # 매일 도는 이 자리가 조용한 실패를 잡는 유일한 곳이다
+      - name: 백업이 살아 있는지 묻기
+        if: always()
+        env:
+          BASE: ${{ secrets.COLLECT_BASE_URL }}
+          TOKEN: ${{ secrets.ADMIN_TOKEN }}
+        run: |
+          set -e
+          [ -n "$BASE" ] && [ -n "$TOKEN" ] || exit 0
+          # **못 물었으면 '괜찮음' 이 아니다** (v4.8.6 코드 리뷰). 연결이 끊기거나 500 이 와도
+          # 예전에는 빈 값으로 넘어가 problems 가 없다고 읽혔다 — 감시자가 조용히 초록이 됐다
+          rm -f /tmp/health.json   # 지난번 답이 남아 있으면 못 물은 것을 물은 것처럼 찍는다
+          code=$(curl -sS -o /tmp/health.json -w '%{http_code}' --max-time 60 \
+            "$BASE/v1/admin/backups" -H "Authorization: Bearer $TOKEN") || code=000
+          if [ "$code" != "200" ]; then
+            echo "::error::백업 상태를 물을 수 없습니다 (HTTP $code) — 판정이 없는 것은 괜찮음이 아닙니다"
+            cat /tmp/health.json 2>/dev/null || true
+            exit 1
+          fi
+          python3 -c '
+          import json, sys
+          try:
+              d = json.load(open("/tmp/health.json"))
+          except Exception as err:
+              print(f"::error::백업 상태 응답을 읽을 수 없습니다 ({err})"); sys.exit(1)
+          if not isinstance(d.get("ok"), bool):
+              print("::error::백업 상태 응답에 ok 가 없습니다 — 주소가 바뀌었거나 열쇠가 막혔습니다"); sys.exit(1)
+          for one in d.get("problems", []):
+              print(f"::warning::{one}")
+          print("백업 상태:", "괜찮음" if d["ok"] else "볼 것 있음")
+          '

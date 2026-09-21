@@ -65,10 +65,25 @@ describe('약관·방침이 v3 와 v4 에서 같은 말을 한다', () => {
     expect(v4.size).toBeGreaterThan(50);
   });
 
-  it('이번 판에 더한 문장이 양쪽에 다 있다', () => {
+  // **문장을 통째로 박아 두지 않는다.** 말을 다듬을 때마다 검사가 빨개지면 검사를 고치게 되고,
+  // 그러다 보면 뜻이 바뀐 것도 같이 통과시킨다. 지켜야 할 것은 문구가 아니라 **약속**이다.
+  const bothSay = (needle: string) => [v3, v4].every((set) => [...set].some((one) => one.includes(needle)));
+  const sentencesWith = (set: Set<string>, needle: string) => [...set].filter((one) => one.includes(needle));
+
+  it('수집 항목과 보유 기간을 양쪽에 적어 뒀다', () => {
+    expect(bothSay('검색어 기록(moncamp 수집 서버)')).toBe(true);
+    expect(bothSay('12개월')).toBe(true);
+  });
+
+  it('IP 를 말하는 자리는 "저장하지 않는다" 고만 한다', () => {
     for (const set of [v3, v4]) {
-      expect([...set].some((one) => one.includes('검색어 기록(moncamp 수집 서버)'))).toBe(true);
-      expect([...set].some((one) => one.includes('IP 주소는 저장하지 않습니다'))).toBe(true);
+      const lines = sentencesWith(set, 'IP 주소');
+      expect(lines.length).toBeGreaterThan(0);
+      // 전부 '저장하지 않는다' 를 말해야 한다
+      expect(lines.filter((one) => !one.includes('저장하지 않습니다'))).toEqual([]);
+      // **'안 본다' 는 거짓이다** — 분당 한도가 req.ip 를 키로 쓴다 (v4.7.2 코드 리뷰).
+      // 그 말이 방침에 다시 들어오면 여기서 잡는다
+      expect(lines.filter((one) => /볼 일(조차|\s*자체가)? 없/.test(one))).toEqual([]);
     }
   });
 });

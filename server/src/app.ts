@@ -8,11 +8,15 @@
 import Fastify, { type FastifyError, type FastifyInstance } from 'fastify';
 import cors from '@fastify/cors';
 import rateLimit from '@fastify/rate-limit';
+import swagger from '@fastify/swagger';
+import swaggerUi from '@fastify/swagger-ui';
+import { OPENAPI_INFO, OPENAPI_TAGS, BEARER_SCHEME, toOas30 } from './lib/openapi.ts';
 import type { Sql } from './db/client.ts';
 import type { Env } from './env.ts';
 import { healthRoutes } from './routes/health.ts';
 import { eventRoutes } from './routes/events.ts';
 import { hotRoutes } from './routes/hot.ts';
+import { backupRoutes } from './routes/backup.ts';
 
 export async function buildApp(env: Env, sql: Sql): Promise<FastifyInstance> {
   const app = Fastify({
@@ -72,9 +76,33 @@ export async function buildApp(env: Env, sql: Sql): Promise<FastifyInstance> {
     }
   });
 
+  // **설명서는 라우트보다 먼저 붙인다.** 뒤에 붙이면 이미 등록된 주소의 스키마를 못 읽는다.
+  // 본문을 손으로 안 쓰므로 코드와 어긋날 자리가 없다 (lib/openapi.ts)
+  await app.register(swagger, {
+    openapi: {
+      info: OPENAPI_INFO,
+      tags: [...OPENAPI_TAGS],
+      components: { securitySchemes: { adminToken: BEARER_SCHEME } },
+      servers: [
+        { url: 'https://api.moncamp.kr', description: '운영' },
+        { url: 'http://localhost:8080', description: '로컬' },
+      ],
+    },
+  });
+  // 읽는 자리는 열어 둔다 — 코드가 통째로 공개돼 있어 숨겨서 얻는 것이 없고,
+  // 관리 주소는 열쇠가 막는다
+  await app.register(swaggerUi, {
+    routePrefix: '/docs',
+    uiConfig: { docExpansion: 'list' },
+    // **내보내기 직전에 3.0 문법으로 맞춘다.** 라우트 스키마의 배열 `type` 은 Fastify 의
+    // 검증·직렬화가 읽는 것이라 그대로 두고, 문서로 나가는 길목에서만 갈아 낀다
+    transformSpecification: (spec) => toOas30(spec) as typeof spec,
+  });
+
   healthRoutes(app, sql);
   eventRoutes(app, sql);
   hotRoutes(app, sql, env.adminToken);
+  backupRoutes(app, sql, env.adminToken);
 
   // 수집이 실패해도 화면은 멀쩡해야 한다 — 500 을 내되 몸통에 내부 사정을 싣지 않는다
   app.setErrorHandler((error: FastifyError, req, reply) => {

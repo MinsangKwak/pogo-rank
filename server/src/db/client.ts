@@ -12,6 +12,8 @@
 import postgres from 'postgres';
 
 export type Sql = postgres.Sql;
+/** 연결이든 트랜잭션이든 같은 문장을 받는 자리 — 헬퍼가 둘 다 받게 한다 */
+export type Queryable = postgres.Sql | postgres.TransactionSql;
 
 export function makeDb(databaseUrl: string): Sql {
   return postgres(databaseUrl, {
