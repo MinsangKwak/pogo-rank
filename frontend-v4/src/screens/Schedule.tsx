@@ -143,7 +143,7 @@ function Timeline({ month, cats, items }: {
             </div>
           );
         })}
-        {rows.length ? null : <p className="schedule__item">이 분류의 일정이 없어요.</p>}
+        {rows.length ? null : <p className="schedule__item">선택한 분류에 등록된 일정이 없어요.</p>}
       </div>
     </div>
   );
@@ -175,7 +175,7 @@ export default function Schedule() {
     () => (month ? (cat === 'all' ? month.items : month.items.filter((item) => item.cat === cat)) : []),
     [month, cat],
   );
-  if (!month) return <div className="page__body"><p className="empty">일정을 아직 받지 못했어요.</p></div>;
+  if (!month) return <div className="page__body"><p className="empty">아직 일정 정보를 불러오지 못했어요.</p></div>;
 
   const { m } = month.ym;
   const changeMonth = (index: number) => {
@@ -206,8 +206,8 @@ export default function Schedule() {
       </div>
       {/* 달력과 ⚔️ 레이드 보스는 **다른 것**을 말한다 — 밝히지 않으면 두 화면이 서로 다른 보스를 가리켜 보인다 */}
       <p className="note schedule__bridge">
-        이 달력은 <b>언제</b> 무엇이 열리는지를 봐요. <b>지금</b> 실제로 도는 보스는{' '}
-        <a href="#/raids">⚔️ 레이드 보스</a> 에서 봐요.
+        달력에서 <b>언제</b> 어떤 이벤트가 열리는지 확인해 보세요. <b>지금</b> 등장하는 보스는{' '}
+        <a href="#/raids">⚔️ 레이드 보스</a>에서 확인할 수 있어요.
       </p>
 
       <div>
@@ -232,11 +232,11 @@ export default function Schedule() {
               ))
               : <p className="schedule__item">등록된 일정이 없어요.</p>}
           </div>
-          <p className="schedule__note">{month.note} 날짜를 누르면 그날 일정이 보여요.</p>
+          <p className="schedule__note">{month.note} 날짜를 선택하면 해당일의 일정을 확인할 수 있어요.</p>
         </div>
       </div>
 
-      <h2 className="page__sec">기간 한눈에</h2>
+      <h2 className="page__sec">이벤트 기간 한눈에 보기</h2>
       <div><Timeline month={month} cats={cats} items={items} /></div>
 
       <h2 className="page__sec">{m}월 전체 일정</h2>

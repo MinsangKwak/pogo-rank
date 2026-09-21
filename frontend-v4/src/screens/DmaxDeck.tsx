@@ -94,7 +94,7 @@ export default function DmaxDeck({ onOpen }: { onOpen: OpenMon }) {
       </Slot>
 
       <div className="row-head">
-        <div className="row-head__title"><h2>{`${typeLabel} 보스에 데려갈 셋`}</h2></div>
+        <div className="row-head__title"><h2>{`${typeLabel} 보스 상대 추천 3마리`}</h2></div>
         <span className="meta">{week && week.type === bossType ? (week.now ? `이번 주 ${week.label}` : `다음 보스 ${week.label}`) : ''}</span>
       </div>
 
@@ -107,7 +107,7 @@ export default function DmaxDeck({ onOpen }: { onOpen: OpenMon }) {
           틀린 것은 아니지만 가진 사람과 안 가진 사람의 답이 달라야 한다 */}
       <div className="controls__row controls__row--tools">
         <button className={`uchip${dynaOnly ? ' is-on' : ''}`} aria-pressed={dynaOnly}
-          title="거다이맥스 폼을 후보에서 빼요 — 아직 못 잡았다면"
+          title="거다이맥스를 제외하고 다이맥스 포켓몬만 추천해요"
           onClick={() => { setDynaOnly(!dynaOnly); setPicked(null); setSwap(null); }}>다이맥스만</button>
       </div>
 

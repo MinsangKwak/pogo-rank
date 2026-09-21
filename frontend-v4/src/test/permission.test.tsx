@@ -114,7 +114,7 @@ describe('잠금 카드 — 까닭마다 얼굴이 다르다', () => {
     signedIn('ok');
     render(<LockCard reason="beta" />);
     expect(screen.getByText('실험 기능이에요')).toBeInTheDocument();
-    expect(screen.getByText('관리자가 열어 주면 실험 기능을 써볼 수 있어요.')).toBeInTheDocument();
+    expect(screen.getByText('관리자가 실험 기능 이용 권한을 부여하면 사용할 수 있어요.')).toBeInTheDocument();
     expect(screen.queryByRole('button')).toBeNull();
   });
 
