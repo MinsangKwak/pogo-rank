@@ -185,7 +185,7 @@ html body #root .nav-menu .drawer__item[data-parent][aria-current=page] { color:
   html body #root .home__top-layout .home__intro h2 { margin-top: 0; font-size: var(--fs-sec); }
   html body #root .home__top-layout .home__intro p { display: none; }
   html body #root .max-battle-art { grid-column: 1; grid-row: 2; }
-  html body #root .max-battle-art img { aspect-ratio: 3 / 1.1; object-fit: cover; object-position: center 30%; }
+  /* 그림은 자르지 않는다 (v4.6.4) — 띠처럼 자르니 손에서 보스 넷 중 둘이 잘려 나갔다. 원래 비율(3:2) 그대로 세운다 */
   html body #root .max-battle-art figcaption { flex-direction: row; flex-wrap: wrap; align-items: baseline; gap: .4rem 1.2rem; padding-top: .8rem; }
   html body #root .max-battle-art figcaption small { display: none; }
   /* 바탕 규칙이 display: flex 라 grid-template-columns 만으로는 안 갈린다 — grid 로 바꿔야 두 칸이 된다 */
