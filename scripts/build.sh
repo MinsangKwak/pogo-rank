@@ -50,6 +50,7 @@ if [ "$COMPUTE" = 1 ]; then
   python3 backend/dex_build.py
   python3 backend/change_build.py
   python3 backend/gameday_build.py   # 2026-09-08 v2.25.0 레이드 보스·알 부화·이벤트 (dex 이름표가 필요해 dex_build 뒤, 스프라이트 수집 전)
+  python3 backend/schedule_build.py  # 2026-09-21 v4.7.0 월 일정표 자동 수집 (같은 원본 sd_events.json · snapshot/schedule_auto.json 에 지난 달을 누적)
   python3 backend/roles_build.py
 fi
 

@@ -16,6 +16,7 @@ import { createHash } from 'node:crypto';
 import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import vm from 'node:vm';
+import { mergeSchedule } from './merge-schedule.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const repo = resolve(here, '../..');
@@ -109,6 +110,18 @@ vm.runInContext(`var __i18nPatterns = typeof I18N_PATTERNS === 'undefined' ? und
 
 const readGlobal = (key) => vm.runInContext(`typeof ${key} === 'undefined' ? undefined : ${key}`, sandbox);
 
+// 월 일정표는 손으로 적은 표(SCHEDULE_MONTHS)에 자동 수집분(data/schedule.json, backend/schedule_build.py)을 합친다.
+// 같은 자리는 손 줄이 이기고, 자동분은 빈 자리만 채운다 (merge-schedule.mjs). 파일이 없으면 손 표만 나간다 —
+// 빌드를 --meta-only 로 돌린 자리에서도 v4 가 서야 한다
+{
+  const path = resolve(repo, 'data/schedule.json');
+  const auto = existsSync(path) ? JSON.parse(readFileSync(path, 'utf8')).months ?? {} : {};
+  const merged = mergeSchedule(readGlobal('SCHEDULE_MONTHS'), auto);
+  const autoCount = Object.values(merged).reduce((sum, month) => sum + month.items.filter((item) => item.auto).length, 0);
+  vm.runInContext(`var __scheduleMerged = ${JSON.stringify(merged)};`, sandbox, { filename: 'schedule-merge' });
+  console.log(`  일정표: 손 ${Object.keys(readGlobal('SCHEDULE_MONTHS') ?? {}).length}달 + 자동 ${Object.keys(auto).length}달 → ${Object.keys(merged).length}달, 자동 줄 ${autoCount}개`);
+}
+
 // 파일 하나 = 같이 바뀌는 표 묶음.
 // 값은 전역 이름이거나 [실을 이름, 전역에서 꺼낼 경로] 다 —
 // 'usage' 는 VALUE_DATA 전체(319KB)가 아니라 그 안의 한 가지만 필요해서 경로로 집는다.
@@ -133,7 +146,8 @@ const BUNDLES = {
   // 영문 사전도 EN 을 켠 사람만 받는다. **규칙(I18N_PATTERNS)은 정규식이라 JSON 에 그대로 못 담는다** —
   // [본문, 플래그, 번역틀] 로 펴서 싣고 읽는 쪽이 다시 세운다 (lib/i18n.ts)
   i18n: ['I18N_EN', ['I18N_PATTERNS', '__i18nPatterns']],
-  schedule: ['SCHEDULE_MONTHS', 'SCHEDULE_CATS'],
+  // 손으로 적은 표에 자동 수집분을 합친 것 — 위 병합 블록이 만든다 (v4.7.2 WBS-224)
+  schedule: [['SCHEDULE_MONTHS', '__scheduleMerged'], 'SCHEDULE_CATS'],
 };
 
 mkdirSync(out, { recursive: true });

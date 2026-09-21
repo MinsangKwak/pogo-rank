@@ -306,6 +306,8 @@ export interface Manifest {
  */
 export interface ScheduleItem {
   source?: string;
+  /** 자동 수집(LeekDuck)으로 들어온 줄 — 손으로 적은 줄과 구분한다 (v4.7.2 WBS-224) */
+  auto?: boolean;
   s: number;
   e: number;
   cat: string;

@@ -43,8 +43,13 @@ export function useFavs() {
     setAuth({ favs: next });
     track('fav_toggle', { on: on ? 1 : 0, mon: number, from });   // v3 와 같은 이름·같은 값
     void api.arrayEdit(`users/${user.uid}`, 'favs', number, on).catch(() => {
-      // 저장이 실패하면 화면도 되돌린다 — 담긴 것처럼 보이는데 안 담긴 상태가 가장 나쁘다
-      setAuth({ favs: account });
+      // 저장이 실패하면 화면도 되돌린다 — 담긴 것처럼 보이는데 안 담긴 상태가 가장 나쁘다.
+      // **그 한 마리만** 되돌린다 (v4.7.2 WBS-199). 누를 때 복사해 둔 `account` 로 통째 되돌리면
+      // 저장이 끝나기 전에 담은 다른 포켓몬까지 함께 사라진다 — 서버에는 남아 있는데 화면에서만 없어져
+      // 새로고침하면 되살아나는 어긋남이 됐다. 바탕은 실패한 순간의 지금 값을 읽는다
+      const now = useAuthStore.getState().favs;
+      const back = on ? now.filter((one) => one !== number) : [...now, number].sort((a, b) => a - b);
+      useAuthStore.getState().set({ favs: back });
     });
   }, [enabled, onAccount, api, user, account, setAuth, toggleDevice]);
 

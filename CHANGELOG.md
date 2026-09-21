@@ -22,7 +22,19 @@
 ---
 
 <details open>
-<summary><b>2026-09-21</b> — 13판 · <code>v4.8.6</code> · <code>v4.8.5</code> · <code>v4.8.4</code> · <code>v4.8.3</code> · <code>v4.8.2</code> · <code>v4.8.1</code> · <code>v4.8.0</code> · <code>v4.7.4</code> · <code>v4.7.3</code> · <code>v4.7.2</code> · <code>v4.7.1</code> · <code>v4.7.0</code> · <code>v4.6.4</code></summary>
+<summary><b>2026-09-21</b> — 14판 · <code>v4.8.7</code> · <code>v4.8.6</code> · <code>v4.8.5</code> · <code>v4.8.4</code> · <code>v4.8.3</code> · <code>v4.8.2</code> · <code>v4.8.1</code> · <code>v4.8.0</code> · <code>v4.7.4</code> · <code>v4.7.3</code> · <code>v4.7.2</code> · <code>v4.7.1</code> · <code>v4.7.0</code> · <code>v4.6.4</code></summary>
+
+<details>
+<summary><b>v4.8.7</b> · 월 일정 자동 수집(WBS-224) · ★ 저장 실패 되돌림 수정(WBS-199)</summary>
+
+**추가 — 월 일정 자동 수집.** 일정표는 v2.13.0 뒤로도 매달 사람이 적었다. 레이드 보스·알 부화는 v2.25.0 에 ScrapedDuck 원본으로 자동화됐고 `sd_events.json` 까지 받아 두는데 일정만 손에 남아, 안 적으면 달력이 비고 이번 주 보스 카드도 서지 않았다. 새 빌더 `backend/schedule_build.py` 가 그 원본을 달별 표(`data/schedule.json`)로 굽는다 — 5성·메가·섀도우 레이드 → `raid5`·`mega`·`shadow`, 맥스 먼데이 → `dmax`(그 주 월~일, 보스 속성 `t` 는 `dex.json forms` 에서), 레이드 아워·스포트라이트 → `hour`, 커뮤니티 데이·레이드 데이·맥스 배틀 데이·일반 이벤트 → `event`. GO배틀리그 로테이션·패스·시즌은 싣지 않는다. **한글 이름은 지어내지 않는다** — `species_names.csv`(영문 → 도감번호) → `dex.json names` 로만 잇고, 못 찾으면 영문 원제 그대로 둔다(10월 기준 17건). ScrapedDuck 은 끝난 이벤트를 지우므로 `snapshot/schedule_auto.json` 에 본 이벤트를 누적한다(운영 워크플로가 `snapshot/` 을 커밋, 120일 지나면 지움).
+
+합치는 일은 `frontend-v4/scripts/merge-schedule.mjs` — **같은 자리면 손으로 적은 줄이 이긴다.** 같은 분류·같은 날짜는 자동 줄을 버리고, 보스 분류(raid5·mega·dmax·shadow)는 날짜가 겹치기만 해도 손 줄이 남는다. 나머지 자동 줄은 뒤에 붙고, 자동분에만 있는 달(11월)은 통째로 들어온다. 손 표가 시작되기 전 달은 세우지 않는다(원본에 끝물 이벤트 한둘만 남아 달 전체를 모른다). `extract-data.mjs` 가 `SCHEDULE_MONTHS` 자리에 합친 표를 싣으므로 화면(Schedule · BossAcc · DmaxDeck)은 바뀐 것이 없다. `source` 는 화면이 '공식 공지 ↗' 링크로 그리므로 자동 줄은 `auto: true` 표식만 단다. 검사: `backend/test_schedule_build.py`(unittest 12) · `src/test/schedule-merge.test.ts`(병합 규칙 + 꾸러미 전량 훑기). `scripts/build.sh` 에 `schedule_build.py` 한 줄(gameday 뒤).
+
+**수정 — ★ 저장 실패 되돌림(WBS-199).** `useFavs.ts` 가 저장 실패 때 누를 때 복사해 둔 `account` 로 통째 되돌려, 연달아 누른 다른 포켓몬까지 화면에서 사라졌다 — 서버에는 남아 새로고침하면 되살아나는 어긋남이었다. 이제 실패한 순간의 지금 값을 읽어 **그 한 마리만** 되돌린다. `src/test/favs.test.ts` 가 붙잡는다(고치기 전 코드로 두 검사 모두 빨개짐을 확인).
+
+</details>
+
 
 <details>
 <summary><b>v4.8.6</b> · 리뷰 여덟 번째 판 — 못 물었으면 '괜찮음' 이 아니다</summary>
