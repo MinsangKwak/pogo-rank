@@ -10,7 +10,8 @@
 'use strict';
 import type { FastifyInstance } from 'fastify';
 import type { Sql } from '../db/client.ts';
-import { hotRows, rollup, MIN_HITS, MIN_ROWS, PERSON_CAP } from '../lib/hot.ts';
+import { hotRows, rollup, MIN_HITS, MIN_ROWS, MIN_VISITORS, PERSON_CAP } from '../lib/hot.ts';
+import { purge, KEEP_MONTHS } from '../lib/retention.ts';
 
 interface HotQuery { days?: number; limit?: number; country?: string; raw?: boolean }
 
@@ -44,15 +45,18 @@ export function hotRoutes(app: FastifyInstance, sql: Sql, adminToken: string): v
       // 화면이 "최근 N일 동안" 이라고 말을 바꿀 수 있게 창을 같이 실어 준다 (v4.6.1 gaNote 와 같은 자리)
       window: days,
       country: country ? country.toUpperCase() : null,
-      thresholds: raw ? null : { minHits: MIN_HITS, minRows: MIN_ROWS, personCap: PERSON_CAP },
+      thresholds: raw ? null : { minHits: MIN_HITS, minRows: MIN_ROWS, minVisitors: MIN_VISITORS, personCap: PERSON_CAP },
       generated: new Date().toISOString(),
       rows,
     };
   });
 
+  // **집계와 파기를 한 자리에서 한다.** 파기를 따로 두면 그 워크플로를 빠뜨린 날이 생기고,
+  // 방침에 적은 12개월은 '누가 기억해서 돌리면' 이 아니라 저절로 지켜져야 한다
   app.post('/v1/admin/rollup', async (req, reply) => {
     if (!authorized(req.headers.authorization)) return reply.code(401).send({ error: '열쇠가 필요합니다' });
     const written = await rollup(sql);
-    return { ok: true, written };
+    const purged = await purge(sql);
+    return { ok: true, written, purged, keepMonths: KEEP_MONTHS };
   });
 }

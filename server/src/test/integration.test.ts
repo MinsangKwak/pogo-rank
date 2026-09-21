@@ -12,7 +12,8 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { makeDb, type Sql } from '../db/client.ts';
 import { migrate } from '../db/migrate.ts';
-import { hotRows, rollup, PERSON_CAP, MIN_HITS } from '../lib/hot.ts';
+import { hotRows, rollup, PERSON_CAP, MIN_HITS, MIN_VISITORS } from '../lib/hot.ts';
+import { purge } from '../lib/retention.ts';
 
 const url = (process.env['DATABASE_URL'] ?? '').trim();
 let sql: Sql;
@@ -21,6 +22,14 @@ async function seed(term: string, visitor: string, times: number, channel = 'pro
   for (let i = 0; i < times; i += 1) {
     await sql`insert into events (name, visitor, term, surface, country, channel)
               values ('search', ${visitor}, ${term}, 'dex', 'KR', ${channel})`;
+  }
+}
+
+/** 며칠 전으로 날짜를 밀어 넣는다 — 하루 단위 규칙은 날을 넘겨 봐야 확인된다 */
+async function seedDaysAgo(term: string, visitor: string, times: number, daysAgo: number) {
+  for (let i = 0; i < times; i += 1) {
+    await sql`insert into events (name, visitor, term, country, channel, created_at)
+              values ('search', ${visitor}, ${term}, 'KR', 'prod', now() - (${daysAgo} * interval '1 day'))`;
   }
 }
 
@@ -89,6 +98,63 @@ describe.skipIf(!url)('통합 — 진짜 Postgres', () => {
               values ('search', ${'jp'.padEnd(32, 'j')}, '일본말', 'JP', 'prod')`;
     const kr = await hotRows(sql, { days: 7, limit: 10, country: 'KR', threshold: false });
     expect(kr.map((row) => row.term)).toEqual(['한국말']);
+  });
+
+  // v4.7.2 코드 리뷰가 잡은 것 — 한도가 창 전체에 한 번 걸려 rollup 과 수가 어긋났다
+  it('사람당 한도는 **날마다** 다시 열린다 — rollup 과 같은 셈이어야 한다', async () => {
+    await sql`truncate events, search_daily`;
+    const who = 'daily'.padEnd(32, 'd');
+    // 사흘 동안 매일 열 번. 한도가 하루 5 이므로 15 가 맞다 (창 전체에 한 번이면 5 가 나온다)
+    for (const ago of [0, 1, 2]) await seedDaysAgo('사흘말', who, 10, ago);
+
+    const [row] = await hotRows(sql, { days: 7, limit: 10, threshold: false });
+    expect(row?.hits).toBe(PERSON_CAP * 3);
+
+    // 굳힌 표와 살아 있는 순위가 같은 수를 말해야 한다
+    await rollup(sql, 7);
+    const [sum] = await sql<{ hits: number }[]>`
+      select sum(hits)::int as hits from search_daily where term = '사흘말'`;
+    expect(sum?.hits).toBe(row?.hits);
+  });
+
+  it('한 사람이 찾은 말은 창이 길어도 순위에 안 선다', async () => {
+    await sql`truncate events`;
+    // 이레 동안 매일 다섯 번 — 하루 한도는 다 지키지만 찾은 사람은 하나다
+    for (let ago = 0; ago < 7; ago += 1) await seedDaysAgo('혼자이레', 'solo7'.padEnd(32, 's'), 5, ago);
+    const raw = await hotRows(sql, { days: 7, limit: 10, threshold: false });
+    expect(raw[0]?.hits).toBe(35);          // 하루 한도는 다 지켰다
+    expect(raw[0]?.visitors).toBe(1);
+    expect(await hotRows(sql, { days: 7, limit: 10 })).toEqual([]);   // 그래도 안 세운다
+    expect(MIN_VISITORS).toBe(2);
+  });
+
+  // v4.7.2 코드 리뷰가 잡은 것 — 방침에 12개월을 적어 두고 지우는 코드가 없었다
+  it('12개월 지난 원본을 지우고, 그 전에 합계를 굳힌다', async () => {
+    await sql`truncate events, search_daily`;
+    await seedDaysAgo('옛날말', 'old'.padEnd(32, 'o'), 3, 400);      // 13개월 전
+    await seedDaysAgo('요즘말', 'new'.padEnd(32, 'n'), 3, 1);        // 어제
+
+    const { rolled, deleted } = await purge(sql);
+    expect(deleted).toBe(3);
+    expect(rolled).toBe(1);
+
+    // 원본은 갔고
+    const left = await sql<{ term: string }[]>`select distinct term from events`;
+    expect(left.map((one) => one.term)).toEqual(['요즘말']);
+    // 역사는 남았다 — 방문자 난수 ID 는 원본과 함께 사라졌다
+    const [kept] = await sql<{ hits: number; visitors: number }[]>`
+      select hits, visitors from search_daily where term = '옛날말'`;
+    expect(kept).toMatchObject({ hits: 3, visitors: 1 });
+  });
+
+  it('이미 굳힌 날은 파기가 덮어쓰지 않는다', async () => {
+    await sql`truncate events, search_daily`;
+    await seedDaysAgo('겹치는말', 'dup'.padEnd(32, 'p'), 2, 400);
+    await sql`insert into search_daily (day, term, country, hits, visitors)
+              values ((now() - interval '400 days')::date, '겹치는말', 'KR', 99, 9)`;
+    await purge(sql);
+    const [row] = await sql<{ hits: number }[]>`select hits from search_daily where term = '겹치는말'`;
+    expect(row?.hits).toBe(99);   // rollup 이 쓴 값이 이긴다
   });
 
   it('롤업이 일별 표를 채우고, 다시 돌려도 수가 안 부푼다', async () => {

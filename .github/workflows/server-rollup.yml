@@ -1,4 +1,4 @@
-name: server 일별 집계
+name: server 일별 집계·파기
 
 # 2026-09-21 v4.7.0 원본 이벤트를 일별 표(search_daily)로 굳힌다.
 #
@@ -6,6 +6,11 @@ name: server 일별 집계
 # 집계는 배포와 상관없이 매일 있어야 원본을 언젠가 잘라낼 수 있다.
 #
 # 늦게 도착한 이벤트가 있으므로 최근 며칠을 다시 센다 (server/src/lib/hot.ts rollup).
+#
+# **파기도 같은 부름에서 한다** (v4.7.2). 개인정보처리방침 5번이 "원본은 최대 12개월 뒤 지운다" 고
+# 약속했는데, 지우는 것을 따로 두면 그 워크플로를 빠뜨린 날이 생긴다 —
+# 적어 둔 기간은 누가 기억해서 돌리는 것이 아니라 저절로 지켜져야 한다 (server/src/lib/retention.ts).
+#
 # 저장소 시크릿: COLLECT_BASE_URL(예: https://api.moncamp.kr) · ADMIN_TOKEN
 on:
   schedule:
@@ -16,7 +21,7 @@ jobs:
   rollup:
     runs-on: ubuntu-latest
     steps:
-      - name: 집계 부르기
+      - name: 집계·파기 부르기
         env:
           BASE: ${{ secrets.COLLECT_BASE_URL }}
           TOKEN: ${{ secrets.ADMIN_TOKEN }}
