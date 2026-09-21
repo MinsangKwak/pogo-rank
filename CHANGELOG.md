@@ -22,6 +22,62 @@
 ---
 
 <details open>
+<summary><b>2026-09-21</b> — 1판 · <code>v4.7.0</code></summary>
+
+<details open>
+<summary><b>v4.7.0</b> · 수집·집계 서버 — GA4 가 안 돌려주는 원본을 내 DB 에</summary>
+
+화면에 보이는 변화가 없어 사용자용 패치 노트에는 적지 않았다(v3.31.1 · v4.5.4 와 같은 처리).
+`RELEASE_VER` 도 그대로다 — 올리면 새 소식 빨간 점만 뜨고 읽을 내용이 없다.
+
+**왜** — v4.6.3 에서 검색순위를 내린 진짜 이유가 트래픽이 아니라 GA4 의 성질이었다.
+Data API 는 **집계만** 돌려주고(원본 이벤트를 못 꺼낸다), 지역 측정기준이 섞이면 방문자 적은 행을
+**제 임계값으로 숨기며**(v4.6.0 이 부딪힌 그것), 기본 보존이 **14개월**이다. 하루 3회짜리 검색어는
+내 표에서는 정확히 3 이지만 GA4 에서는 영영 안 보인다. 쌓고 있던 것이 내 것이 아니라 빌려 쓰는 요약본이었다.
+
+**설계 원칙을 고쳤다.** `docs/DEVELOPMENT.md` §1 의 "서버를 두지 않는다" 는 이제 참이 아니다.
+말없이 깨면 문서가 거짓말이 되므로 **"화면에는 서버를 두지 않는다 · 기록은 서버가 맡는다"** 두 줄로 갈랐고,
+의사결정 기록 §2.28 에 BigQuery 익스포트·SSR 전환을 왜 안 골랐는지 적었다.
+
+**추가 — `server/`** (Node 22 · TypeScript · Fastify · Postgres)
+- `POST /v1/events` 수집 · `GET /v1/hot` 순위 · `POST /v1/admin/rollup` 일별 집계 · `/healthz`
+- **ORM 을 안 얹었다.** 표가 둘이고 집계는 어차피 SQL 이다 — 마이그레이션은 `migrations/*.sql` 과 40줄짜리 러너뿐이다
+- 마이그레이션을 **부팅에서** 돌린다. 배포에 단계를 더 두면 그걸 빠뜨린 배포가 언젠가 난다
+
+**순위가 오염되지 않게 하는 다섯 겹** — 수집 엔드포인트는 공개라 누구나 밀어 넣을 수 있다.
+출처(`Origin`) · 스키마 · 분당 한도 · 뜻 · **사람당 한도**. 마지막 하나만으로도 버틴다 —
+한 사람이 같은 말을 천 번 보내도 `PERSON_CAP=5` 로 잘린다. 반대쪽은 v4.6.0 의 문턱이 그대로 막는다.
+
+**CORS 는 그 다섯에 없다.** CORS 는 브라우저가 *응답을 읽는 것*을 막을 뿐이고, `sendBeacon` 이 보내는
+단순 요청(`text/plain`)은 프리플라이트 없이 그냥 도착한다 — 남의 사이트에서 쏘면 그대로 들어온다.
+그래서 `Origin` 을 **서버가 직접 본다**. `curl` 은 지어낼 수 있으므로 거기까지는 사람당 한도가 맡는다.
+
+**개인정보** — IP 를 어디에도 저장하지 않는다. 앞단이 판정해 둔 국가 코드만 읽으므로 이 서버는 IP 를 볼 일조차 없다.
+방문자는 브라우저가 만든 난수(`pogo_visitor`)이고, `pogo_consent=denied` 면 한 건도 안 나간다 — GA4 와 **같은 게이트**다.
+
+**추가 — 프런트 병행 기록** (`frontend-v4/src/lib/collect.ts`)
+- `trackSearchPick` 이 GA4 와 **나란히** 보낸다. GA 를 끄지 않는다 — 두 수치를 견줄 기준이 있어야 내 수집기가 맞는지 안다
+- 모아서(2초 · 최대 20건) `sendBeacon` 으로. 탭을 떠날 때도 남은 것이 나간다(`visibilitychange`) —
+  모바일 사파리는 `unload` 를 안 부른다
+- **`COLLECT_URL` 이 비면 통째로 꺼진다.** 서버를 세우기 전에도 화면은 지금과 똑같이 돈다
+- 미리보기(`-dev`)는 `channel: dev` 로 적혀 운영 순위에 안 섞인다 (v4.5.6 이 검사로 못 박은 것과 같은 자리)
+
+**그물** — 서버 40건(`server/src/test`, DB 없이) + 통합 9건(진짜 Postgres) · 프런트 15건(`collect.test.ts`).
+검사가 실제로 둘을 잡았다: 스키마에 없는 칸이 조용히 지워지고 있던 것(`removeAdditional` 기본값)과,
+`sendBeacon` 이 CORS 를 그냥 지나가는 것. 둘 다 고쳤다.
+
+**워크플로 셋** — `server-test.yml`(Postgres 서비스 컨테이너 + 이미지 빌드) ·
+`deploy-server.yml`(Cloud Run, `--min-instances 0`) · `server-rollup.yml`(매일 01:30 KST).
+배포 전 체크리스트는 [인프라 §7](docs/INFRA.md), 운영은 [운영 §16](docs/OPERATIONS.md) 에 있다 —
+**GCP 예산 알림을 걸기 전에는 배포하지 않는다.**
+
+**아직 안 한 것** — 검색순위 화면 되살리기(2판, 2주쯤 쌓인 뒤) · Firestore 백업 미러(3판) · 관리자 대시보드(4판).
+
+</details>
+
+</details>
+
+<details>
 <summary><b>2026-09-20</b> — 19판 · <code>v4.6.3</code> · <code>v4.6.2</code> · <code>v4.6.1</code> · <code>v4.6.0</code> · <code>v4.5.11</code> · <code>v4.5.10</code> · <code>v4.5.9</code> · <code>v4.5.8</code> · <code>v4.5.7</code> · <code>v4.5.6</code> · <code>v4.5.5</code> · <code>v4.5.4</code> · <code>v4.5.3</code> · <code>v4.5.2</code> · <code>v4.5.1</code> · <code>v4.5.0</code> · <code>v4.4.2</code> · <code>v4.4.1</code> · <code>v4.4.0</code></summary>
 
 <details>

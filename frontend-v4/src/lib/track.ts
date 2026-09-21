@@ -9,6 +9,7 @@ declare global {
 }
 
 import { analyticsWanted } from './consent';
+import { collectSearch } from './collect';
 
 // **볼 때마다 본다.** 처음에 모듈을 읽는 순간 한 번만 보고 상수에 담아 뒀는데,
 // GA 조각은 async 로 붙어 그때는 아직 window.gtag 가 없다 — 켜도 영영 한 건도 안 나갔다
@@ -57,4 +58,7 @@ export function trackSearchPick(name: string, surface: string): void {
   if (!term || term === lastPick) return;
   lastPick = term;
   track('search', { search_term: term, surface });
+  // v4.7.0 **같은 것을 한 벌 더 남긴다.** GA4 는 집계만 돌려주고 임계값 아래를 숨기며 14개월 뒤 지운다 —
+  // v4.6.3 에 순위를 내린 이유가 그것이었다. 둘을 나란히 두는 동안 두 수치를 견줄 수 있다 (lib/collect.ts)
+  collectSearch(term, surface);
 }
