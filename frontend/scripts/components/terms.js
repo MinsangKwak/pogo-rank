@@ -16,7 +16,7 @@
 //   el (dom.js) · openModal · closeModal (components/modal.js) · track (track.js) · CONTACT_EMAIL (build.py)
 // ─────────────────────────────────────────────────────────────────────────────
 
-const TERMS_VER = '2026-09-07';
+const TERMS_VER = '2026-09-28';
 const TERMS_OK_KEY = 'pogo_terms_ok';
 // 권리자 표기는 노션 "상용·오픈소스 전환 점검" 결정 — Pokémon GO 는 Scopely Explore, Inc. (2025년 Niantic 게임 사업 인수)
 const IP_NOTICE = 'moncamp는 비공식 팬 프로젝트입니다. Pokémon 및 관련 명칭·이미지의 권리는 The Pokémon Company · Nintendo · Creatures Inc. · GAME FREAK inc. 에, Pokémon GO 는 Scopely Explore, Inc. 에 있으며 이 서비스는 권리자와 무관합니다.';

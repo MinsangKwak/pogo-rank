@@ -1,4 +1,4 @@
-// 월 일정표 병합 — 손으로 적은 줄이 이기고 자동분은 빈 자리만 채운다 (v4.7.0 WBS-224).
+// 월 일정표 병합 — 손으로 적은 줄이 이기고 자동분은 빈 자리만 채운다 (v4.7.2 WBS-224).
 // 실제 꾸러미(public/data/schedule.json)가 있으면 그 줄 전량도 훑는다 — 화면이 먹는 모양 그대로
 import { describe, it, expect } from 'vitest';
 import { readFileSync, existsSync } from 'node:fs';

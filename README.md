@@ -8,6 +8,7 @@
 | **서비스** | **[moncamp.kr](https://moncamp.kr/)** — `deploy` 브랜치 |
 | **미리보기** | [dev.moncamp.kr](https://dev.moncamp.kr/) — `dev` 브랜치, 버전명에 `-dev` |
 | **구성** | GitHub Pages 정적 호스팅 · 계정 데이터는 Firebase · **React 19 + TypeScript + Vite** · PWA(홈 화면 설치 · 오프라인) |
+| **수집 서버** | [`server/`](server/README.md) — Node 22 + Fastify + Postgres (Cloud Run). **화면은 이 서버를 런타임에 읽지 않습니다** — 죽어도 사이트는 그대로 섭니다 |
 | **갱신** | GitHub Actions 가 매일 원본 데이터를 받아 다시 빌드 · 배포 |
 | **의존성** | 데이터·스프라이트 빌드는 **파이썬 표준 라이브러리만** (pip 불필요) · 화면 빌드는 **Node** |
 | **한눈에** | [서비스 구조 한 장](docs/moncamp-structure.png) — 화면 지도 · 권한 · 데이터 · 배포 흐름 |
@@ -47,6 +48,7 @@ bash scripts/test.sh --no-build nav dex-search    # 빌드 생략하고 일부�
 | [개발 문서](docs/DEVELOPMENT.md) | 설계 원칙, 의사결정 기록, 데이터 소스와 파이프라인, 계산식, 프런트엔드 구조, 알려진 한계 |
 | [운영 문서](docs/OPERATIONS.md) | 릴리스 절차, 버전 규칙, 배포 장애 대응, 가입 승인, Firebase 설정, GA4 통계, 점검 목록 |
 | [인프라 문서](docs/INFRA.md) | 정적 사이트에서 가능한 남용 대응과 확장 로드맵 (도메인 → Cloudflare → App Check) |
+| [수집 서버](server/README.md) | 왜 GA4 만으로는 안 되는지, 순위가 오염되지 않게 하는 다섯 겹, 로컬 실행 |
 | [변경 이력](CHANGELOG.md) | 버전별 변경 사항과 수정 배경 |
 | [NOTICE](NOTICE.md) · [CONTRIBUTING](CONTRIBUTING.md) · [SECURITY](SECURITY.md) | 라이선스 범위와 출처 조건 · DCO 기여 절차 · 보안 제보 |
 | [QA 트래커](https://www.notion.so/a0472984122d4f25b9b445b57465568f) | 외부 제보 접수처 (내부 WBS 와 용도가 다릅니다) |
@@ -155,15 +157,29 @@ Pokémon과 관련 명칭·이미지의 권리는 The Pokémon Company, Nintendo
 
 ## 버전 이력
 
-전체 209개 릴리스를 `날짜 → 버전`의 2단계 접이식 목록으로 정리했습니다. 가장 최근 날짜만 기본으로 펼쳐지며, 설명이 한 줄인 초기 버전은 별도의 접이식 영역 없이 표시됩니다. 사용자용 요약은 서비스의 [🎉 패치 노트](https://moncamp.kr/#/release)에서, 변경 배경과 세부 구현 내용은 [변경 이력](CHANGELOG.md)에서 확인할 수 있습니다.
+전체 211개 릴리스를 `날짜 → 버전`의 2단계 접이식 목록으로 정리했습니다. 가장 최근 날짜만 기본으로 펼쳐지며, 설명이 한 줄인 초기 버전은 별도의 접이식 영역 없이 표시됩니다. 사용자용 요약은 서비스의 [🎉 패치 노트](https://moncamp.kr/#/release)에서, 변경 배경과 세부 구현 내용은 [변경 이력](CHANGELOG.md)에서 확인할 수 있습니다.
 
 <details open>
-<summary><b>2026-09-21</b> — 릴리스 2개 · <code>v4.7.0</code> · <code>v4.6.4</code></summary>
+<summary><b>2026-09-21</b> — 릴리스 4개 · <code>v4.7.2</code> · <code>v4.7.1</code> · <code>v4.7.0</code> · <code>v4.6.4</code></summary>
 
 <details>
-<summary><b>v4.7.0</b> · 월 일정 자동 수집 · ★ 저장 실패 되돌림 수정</summary>
+<summary><b>v4.7.2</b> · 월 일정 자동 수집 · ★ 저장 실패 되돌림 수정</summary>
 
 월 일정(5성·메가·섀도우 레이드, 맥스 먼데이, 레이드 아워·스포트라이트)이 LeekDuck 발표에서 자동으로 채워지고, 손으로 적은 줄이 같은 자리에 있으면 그 줄이 남습니다. ★ 저장이 하나 실패했을 때 다른 즐겨찾기까지 화면에서 사라지던 것을 고쳤습니다.
+
+</details>
+
+<details>
+<summary><b>v4.7.1</b> · 검색어 기록을 방침에 적었어요</summary>
+
+검색한 포켓몬을 moncamp 서버에도 함께 세는 것을 개인정보처리방침에 적고, 시행일(2026-09-28) 7일 전에 패치노트로 알립니다. 남는 것은 고른 포켓몬 이름·검색창 이름·브라우저 난수 ID·나라 코드뿐이고 IP 주소는 저장하지 않습니다. 통계 끄기 하나로 방문 통계와 함께 꺼집니다.
+
+</details>
+
+<details>
+<summary><b>v4.7.0</b> · 수집·집계 서버</summary>
+
+GA4 가 돌려주지 않는 원본 이벤트를 남길 서버(`server/`)를 세웠습니다. 화면에 보이는 변화는 없고, 검색 기록이 GA4 와 내 DB 에 나란히 쌓이기 시작합니다. 화면은 이 서버를 런타임에 읽지 않으므로 서버가 죽어도 사이트는 그대로 섭니다.
 
 </details>
 

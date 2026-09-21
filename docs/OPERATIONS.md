@@ -11,6 +11,7 @@
 | 가입 승인·계정 운영 | [4. 로그인·가입 승인](#4-로그인--가입-승인-운영) |
 | 정기 점검 | [10. 점검 체크리스트](#10-정기-점검-체크리스트) |
 | 사용자 데이터 백업 | [14. Firestore 백업](#14-firestore-사용자-데이터-백업-2026-09-16-v3470) |
+| 수집 서버 운영 | [16. 수집 서버](#16-수집-서버-운영-2026-09-21-v470) |
 
 ### 전체 목차
 
@@ -28,6 +29,8 @@
 - [12. 커스텀 도메인 moncamp.kr](#12-커스텀-도메인-moncampkr-2026-09-14-v3270)
 - [13. 검색 색인](#13-검색-색인-2026-09-14-v3280)
 - [14. Firestore 사용자 데이터 백업](#14-firestore-사용자-데이터-백업-2026-09-16-v3470)
+- [15. 포켓몬 검색순위 — 보류](#15-포켓몬-검색순위--보류-2026-09-20-v463)
+- [16. 수집 서버 운영](#16-수집-서버-운영-2026-09-21-v470)
 
 ---
 
@@ -498,3 +501,86 @@ FIREBASE_SA_JSON='<한 줄 JSON>' python3 scripts/firestore_restore.py firestore
 다시 올릴 때 볼 신호 — GA 탐색 보고서에서 `search` 이벤트의 `search_term` 상위가 **하루 3회 이상인 이름이 셋**을 넘기 시작하면
 하루 창으로 순위가 선다. 그 전에는 일주일 창(`ranking` 브랜치 v4.6.1 의 `WINDOWS`)으로 시작한다.
 
+---
+
+## 16. 수집 서버 운영 (2026-09-21 v4.7.0)
+
+**GA4 가 안 돌려주는 원본을 내 DB 에 남기는 서버다.** 구조와 설계 배경은
+[`server/README.md`](../server/README.md) · [개발 문서 §2.28](DEVELOPMENT.md#228-기록할-자리를-만든다--화면은-그대로-정적-v470) 에 있다.
+여기는 **운영자가 하는 일**만 적는다.
+
+### 16.1 최초 설정 — 순서를 지킨다
+
+| # | 할 일 | 확인 |
+| --- | --- | --- |
+| 1 | **GCP 예산 알림 $1** ([인프라 §7](INFRA.md#7-수집-서버--비용-0-을-유지하는-조건-2026-09-21-v470)) | 결제 → 예산 및 알림에 줄이 보인다 |
+| 2 | Neon 프로젝트 생성 → `DATABASE_URL` 복사 | `?sslmode=require` 가 붙어 있다 |
+| 3 | `openssl rand -hex 32` → `ADMIN_TOKEN` | 64자다 |
+| 4 | GCP 서비스 계정 + Artifact Registry 저장소 `moncamp` | `roles/run.admin` · `roles/iam.serviceAccountUser` · `roles/artifactregistry.writer` |
+| 5 | 저장소 **시크릿** 넣기 | `GCP_PROJECT_ID` · `GCP_SA_KEY` · `DATABASE_URL` · `ADMIN_TOKEN` · `COLLECT_BASE_URL` |
+| 6 | `server 배포 (Cloud Run)` 수동 실행 | 마지막 단계 `healthz 200` |
+
+> **4번 전까지 이 워크플로는 아무것도 안 하고 초록으로 끝난다.** 시크릿 셋(`GCP_PROJECT_ID` ·
+> `GCP_SA_KEY` · `DATABASE_URL`)이 다 있어야 배포로 들어간다 — 설정을 안 한 것은 고장이 아니라서,
+> `deploy` 브랜치에 밀 때마다 빨간 줄을 남기지 않는다. 로그의 `notice` 한 줄로 건너뛴 것을 알린다.
+
+| 7 | 도메인 `api.moncamp.kr` → Cloud Run 매핑 | `curl https://api.moncamp.kr/healthz` |
+| 8 | **2026-09-28 이후에** 저장소 **변수** `COLLECT_URL` = `https://api.moncamp.kr` | 다음 사이트 배포부터 수집이 켜진다 |
+
+**8번을 안 하면 아무것도 안 쌓인다.** 화면은 `COLLECT_URL` 이 비면 수집을 통째로 끈다 —
+`FIREBASE_CONFIG.apiKey` 가 없으면 로그인이 꺼지는 것과 같은 규칙이다. **1번을 안 했으면 6번을 하지 않는다.**
+
+### 지킬 것 둘 — 날짜와 리전
+
+**① `COLLECT_URL` 을 2026-09-28 전에 켜지 않는다.** 개인정보처리방침 10번이 "방침을 바꾸면 시행 7일 전에
+패치노트로 알린다" 고 약속했고, v4.7.1 의 패치노트가 그 알림이다. 시행일이 **2026-09-28** 이라고 방침에 적혀
+있으므로 그 전에 켜면 우리가 적어 둔 것과 다르게 행동하는 것이 된다. 1~7번은 미리 해 둬도 된다 —
+서버가 떠 있어도 `COLLECT_URL` 이 비면 브라우저가 한 건도 안 보낸다.
+
+**② Neon 리전은 `ap-southeast-1`(싱가포르) 로 만든다.** 방침 4번의 국외 이전 표에 그렇게 적혀 있다.
+다른 리전을 골랐으면 **표를 그 값으로 고친다** — 처리위탁 표는 실제와 달라지면 안 되는 자리다
+(`frontend/scripts/components/privacy.js` 와 `frontend-v4/src/screens/Legal.tsx` **둘 다**).
+
+### 16.2 잘 쌓이는지 보는 법
+
+```bash
+# 최근 7일 순위 (문턱 적용 — 초기에는 빈 표가 정상이다)
+curl -s 'https://api.moncamp.kr/v1/hot?days=7' | python3 -m json.tool
+
+# 문턱 없이 날것으로. 한 건이라도 들어왔는지는 이쪽으로 본다
+curl -s -H "Authorization: Bearer $ADMIN_TOKEN" 'https://api.moncamp.kr/v1/hot?days=7&raw=true' | python3 -m json.tool
+```
+
+브라우저에서는 콘솔에 `window.__collectLog` — 이 탭에서 무엇을 고쳤는지 그대로 보인다.
+**`__collectLog` 에는 쌓이는데 서버에는 없다**면 `COLLECT_URL` 이 비었거나 `Origin` 이 허용 목록에 없다 (`403`).
+
+### 16.3 GA4 와 견주기
+
+**둘을 나란히 두는 동안이 유일한 검증 기회다.** GA4 탐색 보고서의 `search` 이벤트 수와
+`/v1/hot?raw=true` 의 합이 **비슷한 자릿수**면 수집기가 제대로 붙은 것이다. 정확히 같을 수는 없다 —
+
+| 왜 다른가 | 어느 쪽이 더 많나 |
+| --- | --- |
+| GA4 는 봇 트래픽을 걸러낸다 (v2.37.0) | 내 DB |
+| 내 DB 는 사람당 한도(5)를 건다 | GA4 |
+| 광고 차단기가 GA 스크립트를 막는다 (`sendBeacon` 은 대체로 통과) | 내 DB |
+
+### 16.4 막혔을 때
+
+| 증상 | 먼저 볼 것 |
+| --- | --- |
+| `healthz` 가 503 | `DATABASE_URL`. Neon 컴퓨트가 자고 있으면 몇 초 뒤 200 이 된다 — 계속 503 이면 접속 문자열이다 |
+| 수집 요청이 403 | `ALLOWED_ORIGINS` 에 그 주소가 없다. `deploy-server.yml` 의 `ENV_VARS` 를 본다 |
+| 수집 요청이 400 | 스키마를 못 넘었다. Cloud Run 로그에 어느 칸인지 찍힌다 |
+| 배포가 `healthz` 에서 멈춘다 | 부팅에서 죽은 것이다 — 환경변수 관문(`src/env.ts`)이 무엇이 없다고 말한다 |
+| 집계 워크플로가 빨갛다 | `COLLECT_BASE_URL` · `ADMIN_TOKEN` 시크릿. 열쇠가 틀리면 401 이다 |
+
+**어느 경우에도 사이트는 멀쩡하다.** 화면은 이 서버를 런타임에 읽지 않는다 — 급하게 고칠 일이 아니다.
+
+### 16.5 정기 점검에 더할 줄
+
+[10장](#10-정기-점검-체크리스트) 에 함께 본다.
+
+- [ ] GCP 결제 대시보드가 **$0** 인가 (월 1회)
+- [ ] `/v1/hot?raw=true` 의 줄 수가 늘고 있는가 (월 1회) — 안 늘면 `COLLECT_URL` 부터 본다
+- [ ] Neon 저장 용량 (분기 1회). 0.5GB 에 가까워지면 `events` 의 오래된 줄을 자른다 — `search_daily` 에 역사가 남아 있다

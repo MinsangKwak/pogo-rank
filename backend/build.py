@@ -40,7 +40,7 @@ from names import name_ko, species, FORM_KO
 import guard
 
 # ── 설정 ─────────────────────────────────────────────────────────────────────
-APP_VERSION = 'v4.7.0'  # 월 일정 자동 수집 · ★ 저장 실패 되돌림 수정
+APP_VERSION = 'v4.7.2'  # 월 일정 자동 수집 · ★ 저장 실패 되돌림 수정
 # 2026-09-14 v3.28.0 index.html 의 색인 허용 줄 — dev 빌드가 이 줄을 noindex 로 바꿔 끼운다
 ROBOTS_INDEX_META = '<meta name="robots" content="index, follow, max-image-preview:large">'
 # 2026-09-05 v2.7.3 빌드 채널 — 'prod'(기본) / 'dev'. dev 브랜치 워크플로(.github/workflows/deploy-dev.yml)가 BUILD_CHANNEL=dev 로 부른다.
@@ -114,6 +114,9 @@ def read_config():
         'ADMIN_EMAIL': os.environ.get('ADMIN_EMAIL', ''),        # ADMIN_UID 가 없을 때의 폴백 (보통 비움)
         'ADMIN_UID': os.environ.get('ADMIN_UID', ''),            # firestore.rules 의 __ADMIN_UID__ 와 같은 값 (scripts/render_rules.sh)
         'CONTACT_EMAIL': os.environ.get('CONTACT_EMAIL', ''),    # 푸터·개인정보처리방침 문의 이메일. 비우면 문구가 빠진다
+        # 2026-09-21 v4.7.0 수집 서버 주소 (server/). 비우면 수집이 통째로 꺼진다 —
+        # 서버가 없던 때와 똑같이 돈다. 공개 식별자라 배포 HTML 에 그대로 실린다
+        'COLLECT_URL': os.environ.get('COLLECT_URL', '').rstrip('/'),
     }
     if not config['FIREBASE_CONFIG']:
         print('경고: FIREBASE_CONFIG_JSON 이 비어 있어 로그인 UI 없이 빌드됩니다 (.env.example 참고)')
@@ -740,7 +743,7 @@ def render_index_html(game_master, config, data_js):
     # 2026-09-10 v2.50.0 BUILD_VERSION — 지금 띄운 것이 어느 빌드인지 코드가 알아야 한다.
     # 헤더에 글자로 박아 두던 것(__VERSION__)은 app-shell.js 가 헤더를 통째로 갈아 끼우면서 사라진다.
     # 화면에서 긁어 오는 대신 값으로 넣는다 (components/freshness.js 가 build.json 과 견준다)
-    html = html.replace('__APP_CONFIG__', f"const FIREBASE_CONFIG = {json.dumps(config['FIREBASE_CONFIG'])};\nconst ADMIN_EMAIL = {json.dumps(config['ADMIN_EMAIL'])};\nconst ADMIN_UID = {json.dumps(config['ADMIN_UID'])};\nconst CONTACT_EMAIL = {json.dumps(config['CONTACT_EMAIL'])};\nconst BUILD_VERSION = {json.dumps(APP_VERSION)};\nconst LAZY_BUNDLE_URL = {json.dumps(lazy_url)};\nconst LAZY_DATA_URL = {json.dumps('' if INLINE else 'data-lazy.js')};")
+    html = html.replace('__APP_CONFIG__', f"const FIREBASE_CONFIG = {json.dumps(config['FIREBASE_CONFIG'])};\nconst ADMIN_EMAIL = {json.dumps(config['ADMIN_EMAIL'])};\nconst ADMIN_UID = {json.dumps(config['ADMIN_UID'])};\nconst CONTACT_EMAIL = {json.dumps(config['CONTACT_EMAIL'])};\nconst COLLECT_URL = {json.dumps(config['COLLECT_URL'])};\nconst BUILD_VERSION = {json.dumps(APP_VERSION)};\nconst LAZY_BUNDLE_URL = {json.dumps(lazy_url)};\nconst LAZY_DATA_URL = {json.dumps('' if INLINE else 'data-lazy.js')};")
     # 2026-09-05 v2.8.0 푸터 문의 이메일 — CONTACT_EMAIL 이 비어 있으면 문구 자체를 뺀다
     contact_email = config['CONTACT_EMAIL']
     contact_html = f'문의·건의: <a href="mailto:{contact_email}">{contact_email}</a> · ' if contact_email else ''
