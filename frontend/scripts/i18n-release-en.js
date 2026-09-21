@@ -20,6 +20,9 @@ const RELEASE_NOTES_EN = {
     '**Turning it off works the same way** — ☰ menu → Analytics & storage settings → "Turn off analytics" switches off visit analytics **and** search logging together. If you already turned it off, nothing is sent at all',
     '**The privacy policy has been revised** — effective September 28. It spells out what is kept, where it goes, and for how long. You will be asked to agree once more at your next sign-in',
   ],
+  '2026-09-21 · v4.6.4': [
+    '**The home poster is no longer cropped on phones** — it was clipped to a strip that hid the bosses; the full picture now shows',
+  ],
   '2026-09-20 · v4.6.3': [
     '**The Pokémon search ranking is down for now** — there are not enough searches yet to call it a ranking. Searches are still being counted, and it comes back once there are enough',
   ],

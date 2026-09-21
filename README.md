@@ -157,10 +157,10 @@ Pokémon과 관련 명칭·이미지의 권리는 The Pokémon Company, Nintendo
 
 ## 버전 이력
 
-전체 209개 릴리스를 `날짜 → 버전`의 2단계 접이식 목록으로 정리했습니다. 가장 최근 날짜만 기본으로 펼쳐지며, 설명이 한 줄인 초기 버전은 별도의 접이식 영역 없이 표시됩니다. 사용자용 요약은 서비스의 [🎉 패치 노트](https://moncamp.kr/#/release)에서, 변경 배경과 세부 구현 내용은 [변경 이력](CHANGELOG.md)에서 확인할 수 있습니다.
+전체 210개 릴리스를 `날짜 → 버전`의 2단계 접이식 목록으로 정리했습니다. 가장 최근 날짜만 기본으로 펼쳐지며, 설명이 한 줄인 초기 버전은 별도의 접이식 영역 없이 표시됩니다. 사용자용 요약은 서비스의 [🎉 패치 노트](https://moncamp.kr/#/release)에서, 변경 배경과 세부 구현 내용은 [변경 이력](CHANGELOG.md)에서 확인할 수 있습니다.
 
 <details open>
-<summary><b>2026-09-21</b> — 릴리스 2개 · <code>v4.7.1</code> · <code>v4.7.0</code></summary>
+<summary><b>2026-09-21</b> — 릴리스 3개 · <code>v4.7.1</code> · <code>v4.7.0</code> · <code>v4.6.4</code></summary>
 
 <details>
 <summary><b>v4.7.1</b> · 검색어 기록을 방침에 적었어요</summary>
@@ -173,6 +173,13 @@ Pokémon과 관련 명칭·이미지의 권리는 The Pokémon Company, Nintendo
 <summary><b>v4.7.0</b> · 수집·집계 서버</summary>
 
 GA4 가 돌려주지 않는 원본 이벤트를 남길 서버(`server/`)를 세웠습니다. 화면에 보이는 변화는 없고, 검색 기록이 GA4 와 내 DB 에 나란히 쌓이기 시작합니다. 화면은 이 서버를 런타임에 읽지 않으므로 서버가 죽어도 사이트는 그대로 섭니다.
+
+</details>
+
+<details>
+<summary><b>v4.6.4</b> · (긴급) 손에서 포스터 그림이 잘리던 것</summary>
+
+손에서 홈 포스터를 띠처럼 자르던 규칙을 걷어 그림 전체가 보이게 했습니다.
 
 </details>
 

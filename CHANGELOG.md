@@ -22,7 +22,7 @@
 ---
 
 <details open>
-<summary><b>2026-09-21</b> — 2판 · <code>v4.7.1</code> · <code>v4.7.0</code></summary>
+<summary><b>2026-09-21</b> — 3판 · <code>v4.7.1</code> · <code>v4.7.0</code> · <code>v4.6.4</code></summary>
 
 <details>
 <summary><b>v4.7.1</b> · 검색어 기록을 방침에 적고 9/28 시행을 공지한다</summary>
@@ -105,6 +105,13 @@ Data API 는 **집계만** 돌려주고(원본 이벤트를 못 꺼낸다), 지�
 **GCP 예산 알림을 걸기 전에는 배포하지 않는다.**
 
 **아직 안 한 것** — 검색순위 화면 되살리기(2판, 2주쯤 쌓인 뒤) · Firestore 백업 미러(3판) · 관리자 대시보드(4판).
+
+</details>
+
+<details>
+<summary><b>v4.6.4</b> · (긴급) 손에서 포스터 그림이 잘리던 것</summary>
+
+v4.6.0 의 손 규칙이 포스터 `img` 를 `aspect-ratio: 3 / 1.1` + `object-fit: cover` 로 띠처럼 잘라 보스 넷 중 둘이 화면 밖이었다(제보 스크린샷). 그 한 줄을 걷어 원래 비율(3:2)로 세운다. 손 배너는 310 → 약 420px 로 커지지만, 잘린 그림보다 낫다.
 
 </details>
 
