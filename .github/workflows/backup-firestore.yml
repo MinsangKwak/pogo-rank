@@ -163,12 +163,28 @@ jobs:
           BASE: ${{ secrets.COLLECT_BASE_URL }}
           TOKEN: ${{ secrets.ADMIN_TOKEN }}
         run: |
-          [ -n "$BASE" ] && [ -n "$TOKEN" ] || exit 0
+          set -e
           # **방금 올린 것만 보고 끝내지 않는다.** 수가 급감했거나 지난번을 걸렀으면 여기서 드러난다
-          out=$(curl -sS --max-time 60 "$BASE/v1/admin/backups" -H "Authorization: Bearer $TOKEN" || echo '{}')
-          python3 -c "
+          [ -n "$BASE" ] && [ -n "$TOKEN" ] || exit 0
+          # **못 물었으면 '괜찮음' 이 아니다** (v4.8.6 코드 리뷰). 연결이 끊기거나 500 이 와도
+          # 예전에는 빈 값으로 넘어가 problems 가 없다고 읽혔다 — 감시자가 조용히 초록이 됐다
+          rm -f /tmp/health.json   # 지난번 답이 남아 있으면 못 물은 것을 물은 것처럼 찍는다
+          code=$(curl -sS -o /tmp/health.json -w '%{http_code}' --max-time 60 \
+            "$BASE/v1/admin/backups" -H "Authorization: Bearer $TOKEN") || code=000
+          if [ "$code" != "200" ]; then
+            echo "::error::백업 상태를 물을 수 없습니다 (HTTP $code) — 판정이 없는 것은 괜찮음이 아닙니다"
+            cat /tmp/health.json 2>/dev/null || true
+            exit 1
+          fi
+          python3 -c '
           import json, sys
-          d = json.loads(sys.argv[1] or '{}')
-          for one in d.get('problems', []):
-              print(f'::warning::{one}')
-          print('백업 상태:', '괜찮음' if d.get('ok') else '볼 것 있음')" "$out"
+          try:
+              d = json.load(open("/tmp/health.json"))
+          except Exception as err:
+              print(f"::error::백업 상태 응답을 읽을 수 없습니다 ({err})"); sys.exit(1)
+          if not isinstance(d.get("ok"), bool):
+              print("::error::백업 상태 응답에 ok 가 없습니다 — 주소가 바뀌었거나 열쇠가 막혔습니다"); sys.exit(1)
+          for one in d.get("problems", []):
+              print(f"::warning::{one}")
+          print("백업 상태:", "괜찮음" if d["ok"] else "볼 것 있음")
+          '

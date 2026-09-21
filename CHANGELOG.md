@@ -22,7 +22,40 @@
 ---
 
 <details open>
-<summary><b>2026-09-21</b> — 12판 · <code>v4.8.5</code> · <code>v4.8.4</code> · <code>v4.8.3</code> · <code>v4.8.2</code> · <code>v4.8.1</code> · <code>v4.8.0</code> · <code>v4.7.4</code> · <code>v4.7.3</code> · <code>v4.7.2</code> · <code>v4.7.1</code> · <code>v4.7.0</code> · <code>v4.6.4</code></summary>
+<summary><b>2026-09-21</b> — 13판 · <code>v4.8.6</code> · <code>v4.8.5</code> · <code>v4.8.4</code> · <code>v4.8.3</code> · <code>v4.8.2</code> · <code>v4.8.1</code> · <code>v4.8.0</code> · <code>v4.7.4</code> · <code>v4.7.3</code> · <code>v4.7.2</code> · <code>v4.7.1</code> · <code>v4.7.0</code> · <code>v4.6.4</code></summary>
+
+<details>
+<summary><b>v4.8.6</b> · 리뷰 여덟 번째 판 — 못 물었으면 '괜찮음' 이 아니다</summary>
+
+**감시자가 조용히 초록이 되고 있었다.** 이번 것은 `backup_ack` 과 무관한 자리다.
+
+백업 상태를 묻는 두 단계가 이렇게 생겼었다.
+
+```bash
+out=$(curl -sS … || echo '{}')     # 연결이 끊기면 빈 값
+… d.get('problems', [])            # 빈 값에는 problems 가 없다
+… '괜찮음' if d.get('ok') else '볼 것 있음'   # 그리고 exit 0
+```
+
+`--fail` 이 없어 **HTTP 500 도 성공**으로 지나가고, 연결이 끊겨도 `{}` 로 대체된다.
+그러면 짚을 것이 없다고 읽혀 `::warning::` 이 하나도 안 나가고 단계는 초록으로 끝난다.
+**백업이 망가졌는지 알 수 없는 상태와, 백업이 멀쩡한 상태를 구분하지 못했다.**
+
+바로 앞 판에서 "워크플로가 멈추면 묻는 사람이 없어진다" 며 감시자를 하나 더 뒀는데,
+그 감시자 자신이 같은 병을 앓고 있었다.
+
+| 답 | 어떻게 되나 |
+| --- | --- |
+| `200` · `ok: true` | `백업 상태: 괜찮음` |
+| `200` · `ok: false` | 짚은 것마다 `::warning::` |
+| `500` · `401` · 연결 끊김 | `::error::` + **단계 실패** |
+| `200` 인데 `ok` 가 없음 | `::error::` + 단계 실패 — 주소가 바뀌었거나 열쇠가 막혔다 |
+
+두 워크플로(`backup-firestore.yml` · `server-rollup.yml`) 를 같은 모양으로 맞췄다.
+**여섯 경우를 가짜 서버로 실제로 돌려 확인했다** — 위 넷에 시크릿 없음(조용히 건너뜀),
+그리고 지난번 답이 남아 못 물은 것을 물은 것처럼 찍던 것(`rm -f` 로 지운다)까지.
+
+</details>
 
 <details>
 <summary><b>v4.8.5</b> · 리뷰 일곱 번째 판 — 창으로는 못 막는다. 잣대에서 창을 없앴다</summary>
