@@ -15,6 +15,9 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 const RELEASE_NOTES_EN = {
+  '2026-09-21 · v4.9.1': [
+    '**Your favorites now show up when they appear as Dynamax** — Max Mondays and Max Battle Days were never matched to your saved Pokémon. Save today\'s Articuno, Zapdos or Moltres and the event shows as [Now on]',
+  ],
   '2026-09-21 · v4.9.0': [
     '**Wording across the screens has been tidied up** — the same thing was described differently from screen to screen. Descriptions in the dex, planner and rankings, plus the Terms and Privacy Policy, now read consistently. Nothing about how the site works has changed',
   ],

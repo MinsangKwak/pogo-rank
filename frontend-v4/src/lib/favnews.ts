@@ -10,6 +10,10 @@ export const FAV_NEWS_LABEL: Record<string, string> = {
   'community-day': '커뮤니티 데이',
   'pokemon-spotlight-hour': '스포트라이트 아워',
   'raid-battles': '레이드 보스',
+  // v4.9.1 다이맥스로 올라오는 날도 챙긴다 — 이름이 제목에만 있어 여태 한 건도 안 걸렸다
+  // (backend/gameday_build.py title_dex_numbers). 말은 일정표가 쓰는 것과 같이 맞춘다
+  'max-mondays': '맥스 먼데이',
+  'max-battles': '맥스 배틀 데이',
 };
 
 // 이보다 먼 일정은 아직 챙길 일이 아니다 — 지금 할 수 있는 일만 남긴다
