@@ -60,25 +60,38 @@ describe('mergeSchedule', () => {
   });
 });
 
-// 꾸러미가 있으면 전량을 본다 — 빌드가 표 모양을 바꾸면 여기서 빨개진다
+// 실데이터 전량을 본다 — 빌드가 표 모양을 바꾸면 여기서 빨개진다.
+// 꾸러미(public/data, npm run data 뒤)를 먼저 보고, 없으면 v3 빌드 원본(data/schedule.json)을 본다 —
+// CI 는 npm test 를 npm run data 보다 먼저 돌려 그 시점엔 원본만 있다 (datasweep 과 같은 판단).
+// 읽기는 검사 안에서 한다 — describe 의 몸통은 skipIf 여도 실행된다
 const bundle = resolve(__dirname, '../../public/data/schedule.json');
-describe.skipIf(!existsSync(bundle))('실데이터 — 합쳐진 일정표 전량', () => {
-  const months = JSON.parse(readFileSync(bundle, 'utf-8')).SCHEDULE_MONTHS as Record<string, ScheduleMonth>;
-  const cats = JSON.parse(readFileSync(bundle, 'utf-8')).SCHEDULE_CATS as Record<string, unknown>;
+const raw = resolve(__dirname, '../../../data/schedule.json');
+const CATS = ['event', 'raid5', 'mega', 'dmax', 'hour', 'shadow'];
+function source(): { where: string; months: Record<string, ScheduleMonth>; cats: string[] } | null {
+  if (existsSync(bundle)) {
+    const data = JSON.parse(readFileSync(bundle, 'utf-8'));
+    return { where: 'public/data', months: data.SCHEDULE_MONTHS, cats: Object.keys(data.SCHEDULE_CATS) };
+  }
+  if (existsSync(raw)) return { where: 'data', months: JSON.parse(readFileSync(raw, 'utf-8')).months, cats: CATS };
+  return null;
+}
 
+describe.skipIf(!existsSync(bundle) && !existsSync(raw))('실데이터 — 일정표 전량', () => {
   it('모든 줄이 날짜·분류·제목을 갖춘다', () => {
+    const src = source()!;
     const bad: string[] = [];
-    for (const [key, one] of Object.entries(months)) {
+    for (const [key, one] of Object.entries(src.months)) {
       const [y, m] = key.split('-').map(Number);
       if (one.ym.y !== y || one.ym.m !== m) bad.push(`${key} ym 불일치`);
       const last = new Date(y!, m!, 0).getDate();
       for (const item of one.items) {
         if (!Number.isInteger(item.s) || !Number.isInteger(item.e) || item.s < 1 || item.e > last || item.s > item.e) bad.push(`${key} ${item.label} 날짜 ${item.s}–${item.e}`);
-        if (!(item.cat in cats)) bad.push(`${key} ${item.label} 분류 ${item.cat}`);
+        if (!src.cats.includes(item.cat)) bad.push(`${key} ${item.label} 분류 ${item.cat}`);
         if (!item.label || /undefined|NaN|null|\[object/.test(item.label)) bad.push(`${key} 제목 '${item.label}'`);
         if (item.source && !/^https?:\/\//.test(item.source)) bad.push(`${key} ${item.label} source '${item.source}'`);
       }
     }
+    expect(Object.keys(src.months).length, src.where).toBeGreaterThan(0);
     expect(bad).toEqual([]);
   });
 });
