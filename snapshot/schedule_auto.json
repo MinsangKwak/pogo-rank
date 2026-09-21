@@ -444,5 +444,13 @@
 "end": "2026-11-28",
 "cat": "event",
 "label": "슈퍼 메가 레이드 데이"
+},
+"world-space-week-2026": {
+"id": "world-space-week-2026",
+"type": "event",
+"start": "2026-10-04",
+"end": "2026-10-10",
+"cat": "event",
+"label": "World Space Week 2026"
 }
 }
