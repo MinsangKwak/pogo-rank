@@ -644,22 +644,37 @@ curl -s "$BASE/v1/admin/backups" -H "Authorization: Bearer $ADMIN_TOKEN" | pytho
 ```
 
 **백업의 진짜 실패는 조용하다.** 워크플로는 초록인데 받아 온 문서가 절반이 됐거나, 몇 주째 안 돌았는데
-아무도 모르는 쪽이다. 둘을 본다.
+아무도 모르는 쪽이다. 넷을 본다.
 
 | 판정 | 언제 | 무슨 뜻 |
 | --- | --- | --- |
 | `마지막 백업이 N일 전` | 8일 초과 | 주 1회인데 한 번은 걸렀다 |
-| `문서 수가 A → B 로 줄었습니다` | 30% 초과 감소 | **계정 삭제일 수도 있다** — 판정이 아니라 보라는 뜻 |
+| `지난번 백업과 N일 벌어졌습니다` | 8일 초과 | 그 사이 한 번은 걸렀다 (v4.8.1) |
+| `문서 수가 A → B 로 줄었습니다` | 총합 30% 초과 감소 | **계정 삭제일 수도 있다** — 판정이 아니라 보라는 뜻 |
+| `컬렉션 X 가 … / 아예 없습니다` | 컬렉션별 30% 초과 감소 | 총합이 가리던 자리다 (v4.8.1) |
 
-워크플로 마지막 단계가 같은 것을 되묻고, 문제가 있으면 실행 로그에 `warning` 으로 남긴다.
+**묻는 자리가 둘이다** (v4.8.1).
+
+| 어디서 | 언제 | 왜 |
+| --- | --- | --- |
+| `backup-firestore.yml` 마지막 단계 | 백업 직후, 주 1회 | 방금 올린 것이 이상한지 바로 본다 |
+| `server-rollup.yml` 마지막 단계 | **매일** | 백업 워크플로가 **멈춰 있으면 그쪽 경보도 멈춘다** |
+
+둘 다 문제가 있으면 실행 로그에 `warning` 으로 남긴다. 백업 워크플로 쪽은 기록을 **넣고 나서**
+묻기 때문에 '마지막 백업의 나이' 로는 걸른 주가 안 보인다 — 그래서 간격 판정이 따로 있다.
 
 ### 17.3 되돌리기
 
 바뀐 것이 없다 — 받는 곳만 하나 늘었다.
 
+**이름에 실행 번호가 붙는다** (v4.8.1) — `firestore-backup-<날짜>-r<실행ID>.<차수>.json.enc`.
+같은 날 다시 돌려도 앞선 사본을 덮지 않는다. 어느 것을 받을지는 `GET /v1/admin/backups` 의
+`location` 이 정확히 말해 준다.
+
 ```bash
-gcloud storage cp gs://<버킷>/firestore/firestore-backup-<날짜>.json.enc .
-openssl enc -d -aes-256-cbc -pbkdf2 -in firestore-backup-<날짜>.json.enc -out firestore-backup.json
+gcloud storage ls gs://<버킷>/firestore/           # 어떤 것이 있나
+gcloud storage cp gs://<버킷>/firestore/<위 location 의 파일> .
+openssl enc -d -aes-256-cbc -pbkdf2 -in firestore-backup-<날짜>-r<실행ID>.<차수>.json.enc -out firestore-backup.json
 python3 scripts/firestore_restore.py            # 미리보기
 python3 scripts/firestore_restore.py --apply    # 실제 쓰기
 ```

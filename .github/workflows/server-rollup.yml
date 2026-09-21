@@ -1,4 +1,4 @@
-name: server 일별 집계·파기
+name: server 일별 집계·파기·백업 점검
 
 # 2026-09-21 v4.7.0 원본 이벤트를 일별 표(search_daily)로 굳힌다.
 #
@@ -10,6 +10,10 @@ name: server 일별 집계·파기
 # **파기도 같은 부름에서 한다** (v4.7.2). 개인정보처리방침 5번이 "원본은 최대 12개월 뒤 지운다" 고
 # 약속했는데, 지우는 것을 따로 두면 그 워크플로를 빠뜨린 날이 생긴다 —
 # 적어 둔 기간은 누가 기억해서 돌리는 것이 아니라 저절로 지켜져야 한다 (server/src/lib/retention.ts).
+#
+# **백업 상태도 여기서 묻는다** (v4.8.1 코드 리뷰). 백업 워크플로는 기록을 넣고 나서 되묻기 때문에
+# 그 자리에서는 '걸른 주' 가 안 보이고, 워크플로가 아예 멈추면 묻는 사람 자체가 없어진다.
+# 매일 도는 이 워크플로가 **따로** 물으면 둘 다 드러난다 (server/src/lib/backup.ts).
 #
 # 저장소 시크릿: COLLECT_BASE_URL(예: https://api.moncamp.kr) · ADMIN_TOKEN
 on:
@@ -37,3 +41,20 @@ jobs:
           cat /tmp/rollup.json
           echo
           [ "$code" = "200" ] || { echo "집계 실패 ($code)"; exit 1; }
+
+      # **백업 워크플로 밖에서 묻는다.** 그쪽이 멈춰 있으면 그쪽 경보도 같이 멈춘다 —
+      # 매일 도는 이 자리가 조용한 실패를 잡는 유일한 곳이다
+      - name: 백업이 살아 있는지 묻기
+        if: always()
+        env:
+          BASE: ${{ secrets.COLLECT_BASE_URL }}
+          TOKEN: ${{ secrets.ADMIN_TOKEN }}
+        run: |
+          [ -n "$BASE" ] && [ -n "$TOKEN" ] || exit 0
+          out=$(curl -sS --max-time 60 "$BASE/v1/admin/backups" -H "Authorization: Bearer $TOKEN" || echo '{}')
+          python3 -c "
+          import json, sys
+          d = json.loads(sys.argv[1] or '{}')
+          for one in d.get('problems', []):
+              print(f'::warning::{one}')
+          print('백업 상태:', '괜찮음' if d.get('ok') else '볼 것 있음')" "$out"

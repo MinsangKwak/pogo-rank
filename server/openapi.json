@@ -318,16 +318,11 @@
                       "description": "센 날 수. 화면이 \"최근 N일\" 이라고 말을 바꾼다"
                     },
                     "country": {
-                      "type": [
-                        "null",
-                        "string"
-                      ]
+                      "type": "string",
+                      "nullable": true
                     },
                     "thresholds": {
-                      "type": [
-                        "null",
-                        "object"
-                      ],
+                      "type": "object",
                       "description": "`raw` 면 `null`",
                       "properties": {
                         "minHits": {
@@ -346,7 +341,8 @@
                           "type": "integer",
                           "description": "사람당 하루 이 횟수까지만 센다"
                         }
-                      }
+                      },
+                      "nullable": true
                     },
                     "generated": {
                       "type": "string",
@@ -587,10 +583,7 @@
                       }
                     },
                     "latest": {
-                      "type": [
-                        "null",
-                        "object"
-                      ],
+                      "type": "object",
                       "properties": {
                         "ran_at": {
                           "type": "string",
@@ -614,14 +607,13 @@
                           "description": "컬렉션별 문서 수"
                         },
                         "note": {
-                          "type": [
-                            "null",
-                            "string"
-                          ],
-                          "description": "돌린 워크플로 주소"
+                          "type": "string",
+                          "description": "돌린 워크플로 주소",
+                          "nullable": true
                         }
                       },
-                      "description": "마지막 한 벌. 한 번도 안 돌았으면 `null`"
+                      "description": "마지막 한 벌. 한 번도 안 돌았으면 `null`",
+                      "nullable": true
                     },
                     "runs": {
                       "type": "array",
@@ -650,11 +642,9 @@
                             "description": "컬렉션별 문서 수"
                           },
                           "note": {
-                            "type": [
-                              "null",
-                              "string"
-                            ],
-                            "description": "돌린 워크플로 주소"
+                            "type": "string",
+                            "description": "돌린 워크플로 주소",
+                            "nullable": true
                           }
                         }
                       },

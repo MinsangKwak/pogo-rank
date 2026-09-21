@@ -71,4 +71,27 @@ describe('OpenAPI 설명서', () => {
     walk(spec['paths'], 'paths');
     expect(bare).toEqual([]);
   });
+
+  // **3.0.3 문서에 3.1 문법을 섞지 않는다.** 배열 `type` 은 JSON Schema·OpenAPI 3.1 것이라
+  // 3.0 검증기와 클라이언트 생성기는 문서를 통째로 거부한다
+  it('없는 값은 3.0 문법(nullable)으로 적힌다', async () => {
+    const spec = await openapiSpec() as Record<string, any>;
+    expect(spec['openapi']).toBe('3.0.3');
+
+    const arrays: string[] = [];
+    const walk = (node: unknown, where: string): void => {
+      if (Array.isArray(node)) return node.forEach((one, i) => walk(one, `${where}[${i}]`));
+      if (!node || typeof node !== 'object') return;
+      const one = node as Record<string, unknown>;
+      if (Array.isArray(one['type'])) arrays.push(where);
+      for (const [key, value] of Object.entries(one)) walk(value, `${where}.${key}`);
+    };
+    walk(spec, '');
+    expect(arrays).toEqual([]);
+
+    // 바꿔 끼운 자리가 뜻을 잃지 않았는가 — 문턱은 raw 면 null 이다
+    const thresholds = spec['paths']['/v1/hot']['get']['responses']['200']
+      ['content']['application/json']['schema']['properties']['thresholds'];
+    expect(thresholds).toMatchObject({ type: 'object', nullable: true });
+  });
 });

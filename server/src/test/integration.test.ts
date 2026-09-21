@@ -343,6 +343,51 @@ describe.skipIf(!url)('통합 — 진짜 Postgres', () => {
     expect([body.staleDays, body.dropRatio]).toEqual([STALE_DAYS, DROP_RATIO]);
   });
 
+  // ── 백업 판정 (v4.8.1 코드 리뷰) ─────────────────────────────────────────
+  it('걸른 주를 잡는다 — 방금 넣은 기록이 그 사실을 지우지 못한다', async () => {
+    await sql`truncate backup_runs`;
+    // 워크플로가 하는 그대로다: 한 주를 거른 뒤 오늘 넣고, 그러고 나서 묻는다
+    await logRun(20, { users: 10 }, 'b');
+    await logRun(0, { users: 10 }, 'c');
+    const out = await backupHealth(sql);
+    // '마지막 백업의 나이' 로는 0일이라 절대 안 걸린다. 간격에만 남아 있다
+    expect(out.ok).toBe(false);
+    expect(out.problems.join(' ')).toContain('벌어졌습니다');
+  });
+
+  it('제때 돌았으면 간격으로 잡지 않는다', async () => {
+    await sql`truncate backup_runs`;
+    await logRun(7, { users: 10 }, 'd');
+    await logRun(0, { users: 10 }, 'e');
+    expect((await backupHealth(sql)).ok).toBe(true);
+  });
+
+  it('컬렉션 하나가 통째로 사라진 것을 총합이 가리지 못한다', async () => {
+    await sql`truncate backup_runs`;
+    // 총합은 200 → 200 으로 그대로다. 그래도 users 는 되돌릴 수 없는 상태다
+    await logRun(7, { users: 100, allowlist: 100 }, 'a');
+    await logRun(0, { users: 0, allowlist: 200 }, 'b');
+    const out = await backupHealth(sql);
+    expect(out.ok).toBe(false);
+    expect(out.problems.join(' ')).toContain('users');
+  });
+
+  it('키가 아예 빠진 것도 잡는다 — 0 으로 적히지 않고 사라질 수 있다', async () => {
+    await sql`truncate backup_runs`;
+    await logRun(7, { users: 100, trainers: 50 }, 'c');
+    await logRun(0, { users: 100 }, 'd');
+    const out = await backupHealth(sql);
+    expect(out.ok).toBe(false);
+    expect(out.problems.join(' ')).toContain('trainers');
+  });
+
+  it('한 컬렉션이 조금 준 것은 안 잡는다 — 시끄러우면 아무도 안 본다', async () => {
+    await sql`truncate backup_runs`;
+    await logRun(7, { users: 100, allowlist: 100 }, 'e');
+    await logRun(0, { users: 90, allowlist: 105 }, 'f');
+    expect((await backupHealth(sql)).ok).toBe(true);
+  });
+
   it('롤업이 일별 표를 채우고, 다시 돌려도 수가 안 부푼다', async () => {
     await sql`truncate events, search_daily`;
     for (let i = 0; i < 3; i += 1) await seed('굳은말', `r${i}`.padEnd(32, 'r'), 2);
