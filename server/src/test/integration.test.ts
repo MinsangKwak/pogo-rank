@@ -454,6 +454,24 @@ describe.skipIf(!url)('통합 — 진짜 Postgres', () => {
     expect((await backupHealth(sql)).ok).toBe(false);
   });
 
+  // **못 박은 뒤에 되살아났으면 그쪽을 따른다** (v4.8.5 코드 리뷰).
+  // 안 그러면 잣대가 낮은 채로 굳어, 옛 못이 새 사고를 덮는다
+  it('못 박은 뒤 되살아나면 잣대도 따라 올라간다', async () => {
+    await sql`truncate backup_runs, backup_ack`;
+    await sql`insert into backup_ack (collection, baseline, acked_at)
+              values ('users', 40, now() - (10 * interval '1 day'))`;
+    // 판 사이는 여드레 안이다 — 여기서 보려는 것은 간격이 아니다
+    await logRun(12, { users: 100 }, 'a');   // 못 박기(10일 전) 전
+    await logRun(5, { users: 100 }, 'b');    // 못 박은 뒤 되살아났다
+    expect((await backupHealth(sql)).ok).toBe(true);
+
+    // 다시 40 이 됐다. 옛 못은 40 이지만 그 뒤 100 을 봤으므로 이건 새 사고다
+    await logRun(0, { users: 40 }, 'c');
+    const out = await backupHealth(sql);
+    expect(out.ok).toBe(false);
+    expect(out.problems.join(' ')).toContain('users');
+  });
+
   it('롤업이 일별 표를 채우고, 다시 돌려도 수가 안 부푼다', async () => {
     await sql`truncate events, search_daily`;
     for (let i = 0; i < 3; i += 1) await seed('굳은말', `r${i}`.padEnd(32, 'r'), 2);

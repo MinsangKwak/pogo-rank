@@ -82,10 +82,22 @@ async function baselines(sql: Sql, before: Date): Promise<Map<string, number>> {
     where ran_at < ${before} and value ~ '^[0-9]+$'
     group by key`;
   const out = new Map(seen.map((one) => [one.name, one.best]));
-  // 사람이 "이만큼이면 됐다" 고 적어 둔 것은 여태 가장 컸던 수를 대신한다
-  const acked = await sql<{ collection: string; baseline: number }[]>`
-    select collection, baseline from backup_ack`;
-  for (const one of acked) out.set(one.collection, one.baseline);
+
+  // 사람이 "이만큼이면 됐다" 고 적어 둔 것이 여태 가장 컸던 수를 대신한다.
+  //
+  // **다만 못 박은 뒤에 되살아났으면 그쪽을 따른다** (v4.8.5 코드 리뷰).
+  // 안 그러면 잣대가 낮은 채로 굳는다 — 40 으로 못 박고 100 으로 돌아온 뒤
+  // 다시 40 이 되면, 그건 새 사고인데 옛 못이 덮어 버린다.
+  const acked = await sql<{ collection: string; baseline: number; since: number }[]>`
+    select b.collection, b.baseline,
+           coalesce(max(e.value::bigint), 0)::int as since
+    from backup_ack b
+    left join backup_runs r
+      on r.ran_at > b.acked_at and r.ran_at < ${before}
+    left join lateral jsonb_each_text(r.counts) e
+      on e.key = b.collection and e.value ~ '^[0-9]+$'
+    group by b.collection, b.baseline`;
+  for (const one of acked) out.set(one.collection, Math.max(one.baseline, one.since));
   return out;
 }
 
