@@ -520,10 +520,21 @@ FIREBASE_SA_JSON='<한 줄 JSON>' python3 scripts/firestore_restore.py firestore
 | 5 | 저장소 **시크릿** 넣기 | `GCP_PROJECT_ID` · `GCP_SA_KEY` · `DATABASE_URL` · `ADMIN_TOKEN` · `COLLECT_BASE_URL` |
 | 6 | `server 배포 (Cloud Run)` 수동 실행 | 마지막 단계 `healthz 200` |
 | 7 | 도메인 `api.moncamp.kr` → Cloud Run 매핑 | `curl https://api.moncamp.kr/healthz` |
-| 8 | 저장소 **변수** `COLLECT_URL` = `https://api.moncamp.kr` | 다음 사이트 배포부터 수집이 켜진다 |
+| 8 | **2026-09-28 이후에** 저장소 **변수** `COLLECT_URL` = `https://api.moncamp.kr` | 다음 사이트 배포부터 수집이 켜진다 |
 
 **8번을 안 하면 아무것도 안 쌓인다.** 화면은 `COLLECT_URL` 이 비면 수집을 통째로 끈다 —
 `FIREBASE_CONFIG.apiKey` 가 없으면 로그인이 꺼지는 것과 같은 규칙이다. **1번을 안 했으면 6번을 하지 않는다.**
+
+### 지킬 것 둘 — 날짜와 리전
+
+**① `COLLECT_URL` 을 2026-09-28 전에 켜지 않는다.** 개인정보처리방침 10번이 "방침을 바꾸면 시행 7일 전에
+패치노트로 알린다" 고 약속했고, v4.7.1 의 패치노트가 그 알림이다. 시행일이 **2026-09-28** 이라고 방침에 적혀
+있으므로 그 전에 켜면 우리가 적어 둔 것과 다르게 행동하는 것이 된다. 1~7번은 미리 해 둬도 된다 —
+서버가 떠 있어도 `COLLECT_URL` 이 비면 브라우저가 한 건도 안 보낸다.
+
+**② Neon 리전은 `ap-southeast-1`(싱가포르) 로 만든다.** 방침 4번의 국외 이전 표에 그렇게 적혀 있다.
+다른 리전을 골랐으면 **표를 그 값으로 고친다** — 처리위탁 표는 실제와 달라지면 안 되는 자리다
+(`frontend/scripts/components/privacy.js` 와 `frontend-v4/src/screens/Legal.tsx` **둘 다**).
 
 ### 16.2 잘 쌓이는지 보는 법
 

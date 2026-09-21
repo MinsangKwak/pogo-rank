@@ -123,6 +123,12 @@ WCAG 의 4.5 가 아니라 3.0 인 이유는, 여기서 찾는 것이 "읽기 �
 - **수집 서버는 IP 를 저장하지 않는다** (v4.7.0). 앞단이 판정해 둔 국가 코드만 읽는다
   ([`server/src/lib/country.ts`](server/src/lib/country.ts)) — 사람을 가리키는 값은 어느 표에도 두지 않는다.
   통계를 끈 사람(`pogo_consent=denied`)에게서는 GA4 와 마찬가지로 **한 건도 안 나간다.**
+- **약관·개인정보처리방침을 고칠 때는 v3·v4 를 같이 고친다.** 두 판이 같은 도메인을 쓰는 동안
+  한쪽만 개정되면 어느 화면을 열었느냐로 동의 범위가 갈린다. `frontend/scripts/components/privacy.js`·`terms.js`
+  와 `frontend-v4/src/screens/Legal.tsx`·`components/TermsConsent.tsx` 넷이다 —
+  `src/test/legalsync.test.ts` 가 문장 단위로 견준다.
+- **수집 항목이 늘면 시행 7일 전에 패치노트로 알린다.** 방침 10번에 적어 둔 약속이다.
+  시행일 전에는 그 기능을 켜지 않는다 (v4.7.1 의 `COLLECT_URL` 이 그 예 — [운영 §16](docs/OPERATIONS.md)).
 
 ## 4. 비밀
 
