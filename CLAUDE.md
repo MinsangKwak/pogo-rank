@@ -54,9 +54,14 @@
 | 층 | 무엇 | 언제 돈다 |
 | --- | --- | --- |
 | 관문 | `lib/cell.ts` — `num` · `word` · `lines` | 늘 (화면이 값을 찍을 때마다) |
-| 단위 | `src/test/rankcells.test.ts` 손으로 적은 줄 모양<br>`src/test/datasweep.test.ts` **실데이터 전량**(모든 표 · 모든 키 · 모든 줄) | `npm test` · CI 의 `v4 검사` |
+| 단위 | `src/test/cellgate.test.ts` **관문 자체**(깨진 값 열한 가지 × 세 함수)<br>`src/test/rankcells.test.ts` 손으로 적은 줄 모양<br>`src/test/datasweep.test.ts` **실데이터 전량**(모든 표 · 모든 키 · 모든 줄) | `npm test` · CI 의 `v4 검사` |
+| 조각 | `scripts/check-stories.mjs` — 스토리 전량을 라이트·다크로 훑는다 (§1-c) | 조각을 고칠 때 |
 | 화면 | `scripts/check_screens.mjs` — 46장을 돌며 그려진 글자를 훑는다 | 배포 전 (아래 참고) |
 | 색 | `scripts/check_contrast.mjs` — 42장의 글자가 바탕에 묻히지 않는지 본다 (§1-b) | 배포 전 |
+
+**관문 자체를 검사하는 층이 2026-09-21 에 생겼다.** 그전까지 `rankcells` 는 관문을 *쓰는 쪽*만 봤고
+관문 자체는 아무도 안 보고 있었다 — 그래서 `word(NaN)` 이 `'NaN'` 을, `num('   ')` 이 `'0'` 을
+그대로 내보내고 있었다. 스토리북에 빈 값을 늘어놓는 판(`parts-value--leaky`)을 세우자 드러났다.
 
 ```bash
 cd frontend-v4 && npm test                       # 관문 + 단위
@@ -101,6 +106,43 @@ WCAG 의 4.5 가 아니라 3.0 인 이유는, 여기서 찾는 것이 "읽기 �
 
 **게임 원작 타입색(`--t-*`)은 바꾸지 않는다.** 밝은 타입 위 흰 글자가 흐린 것은 알려진 한계다 —
 색을 바꾸면 게임과 어긋나므로, 필요하면 글자에 그늘을 깔아 윤곽을 남긴다.
+
+---
+
+## 1-c. 조각은 `src/ds/` 에서 만들고 스토리북으로 본다
+
+**격자 밖 값은 타입이 막는다.** 지침으로 적어 두면 또 샌다 — v4.3.4 에 크기 474군데 ·
+간격 1,484군데가 격자 밖이었다. 스냅만 해 두면 다음 화면이 또 적는다.
+
+- `<Stack gap>` · `<Inline gap>` 은 `none·xs·sm·md·lg·xl` 여섯 칸뿐이다 (4px 격자)
+- `<Text size>` 는 `sub·body·lead` (Pretendard 12·14·16)
+- `<Label size>` 는 `body·sec·title·hero` (Galmuri 14·22·28·42)
+- `<Label size="sub">` 는 **못 써진다** — Galmuri 12px 은 11·14 격자의 정수배가 아니다
+
+**새 클래스를 함부로 만들지 않는다.** 버튼 · 칩 · 세그먼트 · 뱃지는 v3 CSS 가 이미 계약
+(클래스명 · 태그 · 중첩)을 들고 있다. `ds/` 의 조각은 그 클래스를 **그대로 내보낸다** —
+같은 모양을 새 이름으로 다시 그리면 디자인이 두 벌이 되고 한쪽만 고쳐진다.
+없던 것(배치 · 글자 · 안내 · 카드 · 타입 알약)만 `src/styles/ds.css` 에서 만든다.
+
+**토큰 목록(`src/ds/tokens.ts`)에 없는 이름을 적으면 검사가 선다.** 없는 토큰을 쓰면
+화면에 `var(--없는것)` 이 나가 색이 통째로 빠지는데 **오류도 경고도 안 난다.**
+
+```bash
+cd frontend-v4
+npm run storybook                                  # :6006
+npm run build-storybook                            # storybook-static/
+node scripts/check-stories.mjs http://localhost:4189/   # 전량 × 라이트·다크
+```
+
+`check-stories.mjs` 는 배포 전 검문과 **같은 재는 자**를 쓴다
+(`scripts/lib/contrast_audit.mjs`). 잣대가 두 벌이면 한쪽만 따라온다.
+
+**쿼리스트링을 지우는 정적 서버를 쓰지 않는다** — `serve` 는 `cleanUrls` 로 `?id=` 를 버려서
+모든 스토리가 "No Preview" 로 열리고, 검문이 빈 화면을 훑고 통과한다.
+같은 이유로 **스토리 id 와 테마 전역값은 ASCII 로만 둔다** (보이는 이름은 한글 그대로다) —
+`?globals=theme:다크` 는 주소에서 지워져 라이트로 열렸다.
+
+**새 조각을 붙이면 스토리도 붙인다.** 안 붙이면 그 조각만 그물 밖이다.
 
 ---
 

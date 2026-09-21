@@ -10,6 +10,7 @@ import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { useDex } from '../lib/data';
 import { spriteSrc, spriteAnimSrc } from '../lib/sprite';
 import { PxIcon, PxLabel } from './PxIcon';
+import { ChipGroup, Segmented, type ChoiceItem } from '../ds';
 
 // ── 움직이는 그림 (v3 components/sprite.js spriteAnimate · fitAnimZoom 이식) ──────
 //
@@ -204,7 +205,14 @@ export function Sprite({ id, className }: { id: number; className?: string }) {
   );
 }
 
-/** 타입 알약 (도감 줄) — 색 점 + 한글 이름 */
+/**
+ * 타입 알약 (도감 줄) — 색 점 + 한글 이름.
+ *
+ * **`ds/TypePill` 로 넘기지 않는다.** 둘은 모양이 다르다 —
+ * v3 의 `.dex__type` 은 `pages.css` 가 이름을 꺼 두고 도감 격자와 넓은 화면에서만 다시 켠다.
+ * 도감 줄 보기에서 색 점만 남는 것이 **지금 디자인**이다. ds 쪽으로 옮기면 줄 보기에
+ * 이름과 옅은 칠이 갑자기 나타난다. 도감 밖에서 알약이 필요하면 `ds/TypePill` 을 쓴다.
+ */
 export function TypeDot({ type }: { type: string }) {
   const { data } = useDex();
   return (
@@ -215,33 +223,22 @@ export function TypeDot({ type }: { type: string }) {
   );
 }
 
-export interface ChipDef { id: string; label: string; type?: string }
+// 칩 한 칸의 모양은 디자인 시스템이 가진다 (ds/Chip.tsx). 이름은 화면들이 부르던 것을 남긴다 —
+// 스무 군데가 `ChipDef` 를 import 하고 있어, 이름을 바꾸면 이 갈래와 상관없는 파일이 다 흔들린다
+export type ChipDef = ChoiceItem;
 
 /**
  * 칩 줄 — 하나만 고른다. v3 는 타입 칩 앞에 색 점을 단다
  * (`<span class="dot" style="--c: var(--t-fire)">`). '전체' 칩에는 점이 없다.
+ *
+ * 2026-09-21 그리는 일은 `ds/ChipGroup` 이 한다 — 같은 모양이 두 벌이면 한쪽만 고쳐진다.
  */
 export function Chips({ items, value, onPick }: {
   items: ChipDef[];
   value: string;
   onPick: (id: string) => void;
 }) {
-  return (
-    <div className="chips">
-      {items.map((item) => (
-        <button
-          key={item.id}
-          type="button"
-          className="chips__item"
-          aria-pressed={item.id === value}
-          onClick={() => onPick(item.id)}
-        >
-          {item.type ? <span className="dot" style={{ ['--c' as string]: `var(--t-${item.type})` }} /> : null}
-          {item.label}
-        </button>
-      ))}
-    </div>
-  );
+  return <ChipGroup items={items} value={value} onPick={onPick} />;
 }
 
 /**
@@ -251,16 +248,7 @@ export function Chips({ items, value, onPick }: {
 export function Seg({ items, value, onPick, className, label }: {
   items: ChipDef[]; value: string; onPick: (id: string) => void; className?: string; label?: string;
 }) {
-  return (
-    <div className={`seg${className ? ` ${className}` : ''}`}
-      {...(label ? { role: 'group', 'aria-label': label } : {})}>
-      {items.map((item) => (
-        <button key={item.id} type="button" aria-pressed={item.id === value} onClick={() => onPick(item.id)}>
-          {item.label}
-        </button>
-      ))}
-    </div>
-  );
+  return <Segmented items={items} value={value} onPick={onPick} {...(className ? { className } : {})} {...(label ? { label } : {})} />;
 }
 
 /** 화면 위 세그먼트 — v3 는 #screen-tabs 안의 `.seg.js-screen-tab` 하나다 */
