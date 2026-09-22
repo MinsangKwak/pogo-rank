@@ -167,8 +167,15 @@ describe.skipIf(!url)('도메인 주소', () => {
       expect(users.every((one) => one.lastSeenAt === null)).toBe(true);
     });
 
-    it('★ 위임 관리자는 목록을 못 본다 (v3.41.0 이 좁힌 자리)', async () => {
-      expect((await app.inject({ method: 'GET', url: '/v1/admin/users', headers: await as('admin') })).statusCode).toBe(403);
+    it('★ 위임 관리자의 목록에는 승인 대기가 안 실린다', async () => {
+      const response = await app.inject({ method: 'GET', url: '/v1/admin/users', headers: await as('admin') });
+      expect(response.statusCode).toBe(200);
+      const { users } = response.json() as { users: { role: string }[] };
+      expect(users.some((one) => one.role === 'pending')).toBe(false);
+      expect(users).toHaveLength(3);
+    });
+
+    it('승인된 사람은 목록을 아예 못 본다', async () => {
       expect((await app.inject({ method: 'GET', url: '/v1/admin/users', headers: await as('approved') })).statusCode).toBe(403);
     });
 

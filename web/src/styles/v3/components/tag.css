@@ -1,0 +1,37 @@
+/* 이름 위 뱃지 줄 (G-MAX · 다이맥스 · 이벤트) */
+.row__badges { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-bottom: 0.4rem; }
+.tag { flex: 0 0 auto; display: inline-block; font-size: var(--fs-sub); font-weight: 600; letter-spacing: .02em; padding: 1px 0.4rem; border-radius: 0.4rem; border: 1px solid var(--line); color: var(--muted); }
+.tag.tag--gmax { color: var(--fg); border-color: var(--fg); }
+
+/* 2026-09-07 v2.13.0 (QA-42) 활용 N곳 — 2곳 이상만, 5곳 이상은 강조 */
+.tag.tag--use { color: var(--muted); }
+.tag.tag--use.tag--many { color: var(--brand-2); border-color: color-mix(in srgb, var(--brand-2) 55%, var(--line)); }
+
+/* 2026-09-04 시즌 기술 변경 예고 뱃지 — 적용일 전에만 붙는다 */
+.tag.tag--chg { border-style: dashed; }
+.tag.tag--chg.is-up { color: var(--good); border-color: color-mix(in srgb, var(--good) 55%, var(--line)); }
+.tag.tag--chg.is-down { color: var(--warn); border-color: color-mix(in srgb, var(--warn) 55%, var(--line)); }
+.tag.tag--chg.tag--mix { color: var(--fg); border-color: var(--fg); }
+
+/* 2026-09-16 v3.49.0 가상 순위 — [미구현] 을 켜면 표가 "이들이 나오면 어떻게 되나" 의 가정판이 된다.
+   hypo 는 표 제목 옆(이 표 전체가 가정이다), now 는 밀린 줄 위(지금은 몇 위였나) */
+.tag.tag--hypo { color: var(--warn); border-color: color-mix(in srgb, var(--warn) 55%, var(--line)); }
+.tag.tag--now { color: var(--muted); border-style: dashed; }
+
+/* 2026-09-04 순위 변동 ▲▼ — 순위 숫자 아래 한 줄 */
+.delta { display: block; font-size: var(--fs-sub); font-weight: 700; line-height: 1.2; letter-spacing: -.02em; }
+.delta.is-up { color: var(--good); }
+.delta.is-down { color: var(--warn); }
+
+/* 2026-09-06 v2.10.0 (QA-44) 폼 라벨 뱃지 — 이름 앞의 메가·원시·섀도우·다이맥스·리전 폼 (components/name.js)
+   종 이름은 <b>로 남기고 라벨만 작은 알약으로 떼어, 목록을 훑을 때 "메가"가 눈에 걸리게 한다 */
+.form-tag { display: inline-block; flex: 0 0 auto; font-size: var(--fs-sub); font-weight: 700; line-height: 1.5; padding: 0 0.4rem; border-radius: 0.4rem; letter-spacing: -.01em; vertical-align: 1px; white-space: nowrap;
+            color: var(--muted); background: var(--surface); border: 1px solid var(--line); }
+/* 2026-09-06 v2.11.0 메가·맥스는 게임 아이콘 색의 채움 뱃지(흰 글씨), 섀도우는 자주 테두리 (색 토큰은 tokens.css) */
+.form-tag.form-tag--mega { color: #fff; border-color: transparent; background: linear-gradient(135deg, var(--c-mega), var(--c-mega-2)); }
+.form-tag.form-tag--max { color: #fff; border-color: transparent; background: linear-gradient(135deg, var(--c-max), var(--c-max-2)); }
+.form-tag.form-tag--shadow { color: var(--c-shadow); border-color: color-mix(in srgb, var(--c-shadow) 50%, var(--line)); background: color-mix(in srgb, var(--c-shadow) 10%, var(--surface)); }
+.row__name .form-tag { margin-right: -0.4rem; }            /* .row__name 의 가로 gap(8px)을 라벨-이름 사이에서만 좁힌다 */
+.detail__head h2 .form-tag { font-size: var(--fs-sub); vertical-align: 0.3rem; margin-right: 0.4rem; }
+.sugg__item .form-tag, .boss__rec .form-tag { margin-right: 0.2rem; }
+.boss__rec b { font-weight: 500; }

@@ -1,0 +1,120 @@
+/* ─────────────────────────────────────────────────────────────────────────────
+   2026-09-10 v2.52.0 길이 단위를 px 에서 rem 으로 옮겼다.
+
+   html 을 62.5% 로 두면 1rem = 10px 이 된다 (브라우저 기본 16px × 0.625).
+   그래서 16px 은 1.6rem, 13.5px 은 1.35rem — 값을 읽을 때 머릿속 환산이 10으로 나누기 하나다.
+   기본 설정에서는 지금까지와 **똑같은 크기**로 그려지고, 브라우저 글자 크기를 키운 사람에게는
+   글자만이 아니라 여백·버튼·카드가 함께 커진다. px 로 박아 두면 글자만 커지고 상자는 그대로라
+   글자가 상자를 넘친다 — 그걸 없애려고 옮겼다.
+
+   px 로 남겨 둔 것 (각각 이유가 있다)
+     · @media 조건 — rem 이면 중단점이 사용자 글자 크기에 따라 움직인다. "모바일(1100px 미만)은
+       손대지 않는다" 는 약속이 깨지고, 폭을 못 박은 회귀 검사도 뜻이 달라진다
+     · 1px 선 — 테두리·구분선·포커스 링. 선은 굵기가 아니라 '있다/없다' 를 말한다.
+       0.1rem 으로 두면 글자를 키운 사람 화면에서 선까지 굵어진다
+   ───────────────────────────────────────────────────────────────────────────── */
+html { font-size: 62.5%; }
+
+/* 리셋과 문서 기본 스타일 */
+* { box-sizing: border-box; }
+/* 2026-09-08 v2.26.0 hidden 은 어떤 작성자 규칙보다 세게 감춘다 — 브라우저 기본값은
+   `header { display: flex }` 같은 흔한 규칙에 지고, 그러면 hidden 이 조용히 무시된다 */
+[hidden] { display: none !important; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0; background: var(--bg); color: var(--fg);
+  /* 2026-09-12 v3.6.0 도트 디자인 — 본문 글꼴이 픽셀 글꼴(Galmuri11)이었다.
+     2026-09-16 design 본문을 읽는 글꼴(Pretendard)로 되돌린다 — 시안 검토: "배경 도트, 도트 글꼴, 얇은 설명문이
+     함께 보여 정보보다 스타일이 먼저 읽힌다". 도트는 로고·제목·짧은 라벨(pixel.css)에 남긴다.
+     Galmuri 는 그 자리들이 직접 지정한다 (아래 h1·h2 규칙, pixel.css 라벨 목록) */
+  font-family: "Pretendard Variable", "Pretendard", "Apple SD Gothic Neo", system-ui, sans-serif;
+  letter-spacing: -0.01em;
+  /* 2026-09-12 v3.6.0 15px → 14px. Galmuri14 가 그려진 크기 그대로라야 픽셀이 선명하다.
+     줄 간격도 정수 픽셀로 떨어지게 1.5 → 1.5714(=22/14) 대신 22px 를 직접 준다 */
+  font-size: var(--fs-body); line-height: 1.7.2rem; font-feature-settings: "tnum" 1;
+}
+button { font: inherit; color: inherit; background: none; border: 0; padding: 0; cursor: pointer; }
+button:focus-visible { outline: 0.2rem solid var(--fg); outline-offset: 0.2rem; border-radius: 0.4rem; }
+.layout { max-width: 76rem; margin: 0 auto; padding: 0 2rem 8rem; }
+/* 2026-09-15 v3.44.0 그려지기 전에 자리를 잡아 둔다.
+   #content 가 비어 있는 동안은 푸터가 화면 한가운데쯤에 떠 있다가, 본문이 들어오는 순간
+   화면 밖으로 밀려난다 — 그 한 번이 **레이아웃 이동(CLS)** 으로 잡혔다(실측 0.199).
+   본문이 들어오면 :empty 가 풀려 규칙이 저절로 사라진다. JS 한 줄도 필요 없다 */
+#content:empty { min-height: 100vh; }
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   2026-09-08 v2.26.0 버튼 반응 — 누를 수 있다는 것을 손보다 눈이 먼저 알게 한다.
+
+   원칙 세 가지
+     1) 상시로 움직이는 것은 두지 않는다. 목록이 긴 화면에서 상시 애니메이션은 시선을 뺏고
+        배터리를 먹는다. 움직임은 **가리키거나 누를 때만**.
+     2) 레이아웃을 흔들지 않는다. width·height·margin 대신 transform·색만 바꾼다.
+        그래야 줄이 밀리지 않고, 브라우저도 다시 계산하지 않는다.
+     3) `prefers-reduced-motion` 을 존중한다. 움직임에 민감한 사용자에게는 색만 바뀐다.
+
+   움직임은 색·크기만 건드리고 **위치는 옮기지 않는다**. hover 로 버튼이 이동하면
+   가리키는 순간 목표가 달아나 조준이 어긋난다.
+
+   딱 하나 상시 움직이는 것: 새 소식 점(.dot-badge) — 알리는 게 목적이라 예외를 둔다.
+   점은 버튼 안에 있고 버튼 자체는 움직이지 않으므로 클릭을 방해하지 않는다.
+   ───────────────────────────────────────────────────────────────────────────── */
+@media (prefers-reduced-motion: no-preference) {
+  button, .drawer__item, .uchip, .icon-btn, .tool-btn, .chips__item, .tchips__item,
+  .tabs__item, .seg__item, .home__tile, .dex__row, .row {
+    transition: background-color .14s ease, border-color .14s ease, color .14s ease, transform .12s ease, box-shadow .14s ease;
+  }
+  /* 누르는 순간 살짝 눌린다 — 터치에서 "먹었나?" 하는 순간을 없앤다 */
+  button:active, .drawer__item:active, .home__tile:active { transform: scale(.97); }
+  .row:active, .dex__row:active { transform: scale(.995); }
+  /* 아이콘 버튼은 누를 때만 반응한다. hover 로 위치를 옮기면 가리키는 순간 버튼이
+     달아나 조준이 어긋난다 — 마우스에도, 자동화 테스트에도 나쁘다 */
+  .icon-btn:active { transform: scale(.92); }
+  /* 새 소식 점만 상시 — 알림이 목적이라 멈춰 있으면 뜻이 없다 */
+  /* 점(::after)만 깜박인다 — 버튼 자체에 걸면 ☰ 버튼이 통째로 늘었다 줄었다 해
+     가리키는 순간 목표가 흔들린다 (.dot-badge 는 버튼 자신에 붙는 클래스다) */
+  .dot-badge::after { animation: pulse-dot 2.4s ease-in-out infinite; }
+}
+/* 드로어 항목의 점은 transform 으로 세로 가운데를 잡고 있어(pages.css) 크기를 건드리면
+   자리가 틀어진다. 그래서 깜박임은 투명도만 쓴다 */
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; }
+  50% { opacity: .4; }
+}
+
+/* 움직임 없이도 상태는 보여야 한다 — 아래는 모션 설정과 무관하게 늘 적용된다 */
+.tool-btn:hover, .uchip:hover, .chips__item:hover, .tchips__item:hover { background: var(--hover); border-color: var(--fg); }
+.tabs__item:hover { color: var(--fg); }
+button:disabled, .drawer__item:disabled { cursor: not-allowed; transform: none; }
+
+/* 2026-09-08 v2.29.0 "이 화면은 한국어로만 둡니다" 안내 — 영어로 볼 때만 뜬다 (i18n.js setLang 이 lang 을 바꾼다) */
+/* :root 를 붙여 특정도를 올린다 — 뒤 파일의 .note(단일 클래스)와 같은 값이면 순서로 지고 만다 */
+:root:not([lang="en"]) .i18n-note { display: none; }
+:root[lang="en"] .i18n-note { display: block; margin: 0 0 1.2rem; }
+
+
+/* ── 2026-09-12 v3.6.0 도트 글꼴 세 벌 ──────────────────────────────────────
+   Galmuri 는 11px · 14px 격자에 그려진 글꼴이라 **정수배 크기**에서만 선명하다.
+   13px 이나 15px 로 쓰면 픽셀이 뭉개져 도트가 아니라 그냥 흐린 글씨가 된다.
+   그래서 토큰(--fs-*)도 11 · 14 · 22 · 28 · 44 로 다시 잡았다 (tokens.css) */
+
+/* 화면 제목 — 한 단 큰 격자(14px)를 22·28·44px 로 키워 쓴다 */
+h1, h2, .page-head h2, .detail__name, .home__intro h2 {
+  font-family: "Galmuri14", "Galmuri11", "Pretendard Variable", "Pretendard", system-ui, sans-serif;
+  font-weight: 400;   /* 픽셀 글꼴에 가짜 굵기를 씌우면 획이 번진다 — 굵기는 색과 크기로 낸다 */
+}
+
+/* 숫자 — CP · 순위 · 개체값. 2026-09-16 design 도트 고정폭 → 본문 글꼴의 고정폭 숫자(tnum) — 수치는 읽는 글이다 */
+.num, .row__score, .detail__cp-big b, .ivrank__rank, .ivrank__no, .dex__no, .plan__recent-sub {
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0;
+}
+
+/* 긴 산문은 도트를 벗는다 — 부제 · 안내문 · 패치노트 · 약관처럼 여러 줄을 읽는 글.
+   도트로 문단을 읽히면 글자마다 계단이 져 눈이 빨리 지친다. 읽는 글은 읽기 쉬워야 한다 */
+.prose, .page-head__desc, .note, .detail__foot, .dex__hint, .release__sec li, .legal p, .legal li, .empty {
+  font-family: "Pretendard Variable", "Pretendard", "Apple SD Gothic Neo", system-ui, sans-serif;
+  letter-spacing: -0.01em;
+}
+
+/* 구역 제목 옆 한 마디 — 도트에서는 기울이지 않는다(픽셀은 기울면 깨진다). 흐린 색으로만 물린다 */
+.font-display { color: var(--muted); }

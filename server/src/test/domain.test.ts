@@ -163,10 +163,19 @@ describe.skipIf(!url)('도메인 API', () => {
       expect(list.find((one) => one.email === 'pending@example.test')!.role).toBe('pending');
     });
 
-    it('★ 위임 관리자는 목록을 못 본다 (v3.41.0 이 좁힌 자리)', async () => {
-      // 규칙의 allow read: if isRootAdmin() 과 같은 답이어야 한다
-      expect(await refused(() => domain.listUsers('admin'))).toBe('forbidden');
+    it('★ 위임 관리자는 목록은 보되 승인 대기는 못 본다', async () => {
+      // Firestore 는 컬렉션이 둘이라 저절로 갈렸다 —
+      //   allowlist read: if isAdmin()      목록
+      //   requests  read: if isRootAdmin()  승인 대기
+      // 한 표가 됐으므로 서버가 가른다
+      const seen = await domain.listUsers('admin');
+      expect(seen.map((one) => one.email)).toEqual(['approved@example.test']);
+      expect(seen.some((one) => one.role === 'pending')).toBe(false);
+    });
+
+    it('승인된 사람은 목록을 아예 못 본다', async () => {
       expect(await refused(() => domain.listUsers('approved'))).toBe('forbidden');
+      expect(await refused(() => domain.listUsers('pending'))).toBe('forbidden');
     });
 
     it('루트가 승인한다', async () => {

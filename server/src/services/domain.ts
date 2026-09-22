@@ -12,7 +12,7 @@
 // ─────────────────────────────────────────────────────────────────────────────
 'use strict';
 import type { Sql } from '../db/client.ts';
-import { canApproveUsers, canWriteTrainers, favoriteCap, type Role } from '../lib/rbac.ts';
+import { atLeast, canApproveUsers, canWriteTrainers, favoriteCap, type Role } from '../lib/rbac.ts';
 
 /** 거부의 이유. HTTP 로 옮길 때 400 · 403 · 404 · 409 를 가르는 값이다 */
 export class DomainError extends Error {
@@ -131,18 +131,23 @@ export function makeDomain(sql: Sql): Domain {
 
     // ── 사람을 들이고 내보내기 ─────────────────────────────────────────────
     async listUsers(role) {
-      // **루트만 본다** (v3.41.0). 위임 관리자는 운영을 돕는 자리지 서비스의 주인이 아니다
-      if (!canApproveUsers(role)) throw new DomainError('forbidden', '루트 관리자만 볼 수 있습니다');
+      // **규칙이 갈라 둔 둘을 그대로 옮긴다.**
+      //   allowlist read: if isAdmin()      → 목록은 관리자 둘 다 본다
+      //   requests  read: if isRootAdmin()  → 승인 대기는 루트만 본다
+      // Firestore 에서는 컬렉션이 둘이라 저절로 갈렸다. 한 표가 됐으므로 여기서 가른다
+      if (!atLeast(role, 'admin')) throw new DomainError('forbidden', '관리자만 볼 수 있습니다');
       const rows = await sql<{
         id: string; email: string; display_name: string; photo_url: string;
         role: Role; beta: boolean; created_at: Date; last_seen_at: Date | null;
       }[]>`
         select id, email, display_name, photo_url, role, beta, created_at, last_seen_at
           from users order by role, created_at`;
-      return rows.map((row) => ({
+      const all = rows.map((row) => ({
         id: row.id, email: row.email, name: row.display_name, picture: row.photo_url,
         role: row.role, beta: row.beta, createdAt: row.created_at, lastSeenAt: row.last_seen_at,
       }));
+      // 위임 관리자에게는 승인 대기를 안 보여 준다 — 승인할 수 있는 사람만 볼 이유가 있다
+      return canApproveUsers(role) ? all : all.filter((one) => one.role !== 'pending');
     },
 
     async setRole(role, targetId, change) {

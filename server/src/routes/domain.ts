@@ -191,10 +191,10 @@ export function domainRoutes(app: FastifyInstance, deps: DomainRouteDeps): void 
   // ── 사람을 들이고 내보내기 ───────────────────────────────────────────────
   // **루트만** (v3.41.0). 위임 관리자가 할 수 있는 일은 트레이너 코드 쓰기뿐이다
   app.get('/v1/admin/users', {
-    preHandler: requireRole('root'),
+    preHandler: requireRole('admin'),
     schema: {
       tags: ['관리'],
-      summary: '사람 목록 — 루트 관리자만',
+      summary: '사람 목록 — 관리자 둘 다. **승인 대기는 루트에게만 실려 나간다**',
       security: [{ accessToken: [] }],
       response: {
         200: {

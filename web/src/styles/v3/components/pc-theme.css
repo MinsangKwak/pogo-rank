@@ -1,0 +1,861 @@
+/* ─────────────────────────────────────────────────────────────────────────────
+   components/pc-theme.css — 넓은 화면(1100px~) 전용 디자인 (2026-09-10 v2.42.0)
+
+   왜 파일을 따로 두나
+     이 개편은 **넓은 화면에만** 입힌다. 좁은 화면(휴대폰)은 지금까지 쓰던 배치 그대로다 —
+     한 파일에 섞으면 "이 규칙이 모바일에도 가나?" 를 매번 되짚어야 한다. 여기 있는 모든 규칙은
+     통째로 @media (min-width: 1100px) 안에 있고, 밖에는 아무것도 두지 않는다.
+
+   무엇을 바꾸나 (목업 기준)
+     상단 바   로고 + 검색 칸 + 액션. 검색이 아이콘 하나가 아니라 "칸" 으로 보인다
+     화면 머리 브레드크럼 · 큰 제목(32px) · 한 줄 설명
+     사이드바  항목이 카드 한 장의 줄로, 지금 화면은 브랜드색 칠
+     본문      카드 한 장이 기본 단위. 테두리 1px · 반경 --r-card · --surface 배경
+   ───────────────────────────────────────────────────────────────────────────── */
+@media (min-width: 1100px) {
+  /* ── 상단 바 ─────────────────────────────────────────────────────────────── */
+  .app-bar {
+    position: sticky; top: 0; z-index: 30;
+    align-items: center; gap: 2rem;
+    padding: 2rem 2rem; margin-bottom: 0;
+    background: var(--bg); border-bottom: 1px solid var(--line);
+  }
+  .app-bar__head { display: flex; align-items: center; gap: 1.2rem; }
+  .app-bar__logo, .app-bar h1 { font-size: var(--fs-sec); font-weight: 700; letter-spacing: -0.01em; }
+  /* 로고 아래 한 줄. 2026-09-15 v3.33.0 'YOUR POKÉMON COMPANION' 에서 바꿨다 —
+     무엇을 하는 곳인지가 이름 옆에서 바로 읽혀야 한다 (CSS content 라 검색 색인에는 안 잡힌다,
+     검색용 문구는 index.html 의 title·description 에 있다) */
+  .app-bar__head::after {
+    content: 'DYNAMAX · RAID · PVP RANKINGS';
+    position: absolute; margin-top: 3.6rem; margin-left: 0.2rem;
+    font-size: var(--fs-sub); font-weight: 600; letter-spacing: .14em; color: var(--muted); white-space: nowrap;
+  }
+  .app-bar__actions { padding-top: 0; }
+
+  /* 검색 칸 — 입력처럼 생긴 버튼 (components/app-shell.js appSearch) */
+  .app-search {
+    display: flex;   /* app-shell.css 가 좁은 화면에서 감춰 둔 것을 여기서 켠다 */
+    flex: 1 1 auto; max-width: 46rem; margin-left: auto;
+    display: flex; align-items: center; gap: 1.2rem;
+    min-height: 4.2rem; padding: 0 1.2rem;
+    border: 1px solid var(--line); border-radius: var(--r-chip); background: var(--surface);
+    color: var(--muted); font-size: var(--fs-body); text-align: left;
+  }
+  .app-search:hover { border-color: color-mix(in srgb, var(--brand) 45%, var(--line)); background: var(--hover); }
+  .app-search:focus-visible { outline: 0; border-color: var(--brand); color: var(--fg); }   /* 2026-09-16 design 시안 01 '키보드 포커스 — 테두리 컬러 변경' */
+  .app-search__ph { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .app-search__key {
+    flex: none; min-width: 2.2rem; padding: 1px 0.4rem; border: 1px solid var(--line); border-radius: 0.6rem;
+    background: var(--bg); font-family: inherit; font-size: var(--fs-sub); color: var(--muted); text-align: center;
+  }
+
+  /* ── 화면 머리 ───────────────────────────────────────────────────────────── */
+  /* padding 축약형을 쓰지 않는다 — app-shell.css 가 사이드바 자리로 잡아 둔 padding-left(262px)를 지운다 */
+  /* 2026-09-12 v2.65.0 아래 여백을 넓힌다 — 구분선(app-shell.css)이 글 아래 1.6rem 에 놓이므로,
+     선과 본문 사이 간격은 여기서 그만큼 뺀 만큼만 남는다 (선 위 1.6rem · 선 아래 2.8rem).
+     2026-09-12 v2.66.0 필터 줄이 있는 화면은 선이 그 아래로 내려가므로 여백을 도로 줄인다 */
+  .page-head { padding-top: 4.8rem; padding-bottom: 4.4rem; }
+  body:has(.layout:not([hidden]) #controls > *) .page-head,
+  body:has(#page:not([hidden]) .page__filters) .page-head { padding-bottom: 2.4rem; }
+  .page-head__crumb { display: flex;   /* 좁은 화면에서는 감춰져 있다 (app-shell.css) */ align-items: center; gap: 0.8rem; font-size: var(--fs-sub); color: var(--muted); }
+  .page-head__crumb a { color: var(--muted); text-decoration: none; }
+  .page-head__crumb a:hover { text-decoration: underline; }
+  .page-head__crumb [hidden] { display: none; }
+  .page-head__crumb a:hover { color: var(--fg); }
+  .page-head__crumb-now { color: var(--fg); font-weight: 500; }
+  .page-head h2 { margin: 1.2rem 0 0; font-size: var(--fs-title); font-weight: 700; letter-spacing: -0.02em; line-height: 1.2; }
+  .page-head__desc { display: block; margin: 0.8rem 0 0; max-width: 46em; font-size: var(--fs-body); line-height: 1.7; color: var(--muted); word-break: keep-all; }
+
+  /* ── 사이드바 ────────────────────────────────────────────────────────────── */
+  .app-nav { top: 12.9rem; }
+  .detail-panel { top: 12.9rem; }
+  body[data-home="true"] .layout { padding-top: 4.8rem; }
+  .app-nav .nav-menu { display: flex; flex-direction: column; gap: 0.4rem; }
+  .app-nav .nav-menu .drawer__item {
+    min-height: 4.6rem; gap: 1.2rem; padding: 0 1.2rem;
+    border: 0; border-radius: 1rem; background: transparent; font-size: var(--fs-body); font-weight: 500;
+  }
+  /* 2026-09-16 design 시안 01 '메뉴 아이템 상태' — 기본 · 호버(옅은 빨강 바탕 + 빨강 글자) · 선택(한 단 진한 바탕) ·
+     키보드 포커스(빨강 테두리). 호버와 선택이 둘 다 회색이던 것을 갈랐다 — 지금 어디인지와 어디를 가리키는지가 달라 보여야 한다 */
+  .app-nav .nav-menu .drawer__item:hover { background: color-mix(in srgb, var(--brand) 7%, transparent); color: var(--brand); }
+  .app-nav .nav-menu [aria-current="page"] {
+    background: color-mix(in srgb, var(--brand) 13%, transparent);
+    color: var(--brand); font-weight: 600;
+  }
+  .app-nav .nav-menu .drawer__item:focus-visible { outline: 0.2rem solid var(--brand); outline-offset: -0.2rem; }
+  .app-nav__extra { margin-top: 2.8rem; padding-top: 2rem; display: flex; flex-direction: column; gap: 0.4rem; }
+  /* 넓은 화면 — 헤더 버튼이 맡고, 메뉴 줄은 감춘다 (같은 일을 하는 문이 둘이면 안 된다) */
+  #theme-toggle { display: inline-flex; }
+  #menu-theme { display: none !important; }
+
+  .app-nav__extra .drawer__item:not([hidden]) {
+    min-height: 3.8rem; border-radius: 0.6rem; border: 0; background: transparent;
+    font-size: var(--fs-sub);
+  }
+
+  /* ── 카드 한 장 — 본문의 기본 단위 ───────────────────────────────────────── */
+  .home__tile, .plan__card, .schedule, .timeline, .cp__result, .account,
+  .dex__list.is-grid .dex__row, .row-list > .row, .detail-panel {
+    border-radius: var(--r-card);
+  }
+
+  /* ── 서비스 홈 ── 2026-09-16 design 홈 규칙은 home.css 한 곳에만 둔다 — 세 파일(home · pc-theme · pixel)에
+     흩어져 서로 덮어쓰던 것을 걷어냈다 (기획·디자인 시안 02 '새 규칙을 덧붙이기보다 적용 범위를 정리') */
+
+  /* 홈 푸터 — 목업의 카드 한 장 */
+  body[data-home="true"] footer {
+    margin-top: 3.6rem; padding: 2.8rem 3.2rem;
+    border: 1px solid var(--line); border-radius: var(--r-card); background: var(--surface);
+  }
+  body[data-home="true"] .foot-lead { font-size: var(--fs-sec); font-weight: 700; color: var(--fg); }
+
+  /* ── 목록 ────────────────────────────────────────────────────────────────── */
+  /* 줄 모드를 표처럼 — 목업 2의 도감 목록. 줄마다 카드 한 장이고 사이에 여백이 있다 */
+  .dex__list:not(.is-grid) { gap: 0.8rem; }
+  .dex__list:not(.is-grid) .dex__row {
+    gap: 1.2rem; padding: 1.2rem 1.6rem;
+    border: 1px solid var(--line); border-radius: 1.2rem; background: var(--surface);
+    font-size: var(--fs-body);
+  }
+  .dex__list:not(.is-grid) .dex__row:hover, .dex__list:not(.is-grid) .dex__row.is-selected {
+    border-color: color-mix(in srgb, var(--brand) 45%, var(--line)); background: var(--hover);
+  }
+  .dex__list:not(.is-grid) .dex__row .sprite { width: 4.4rem; height: 4.4rem; }
+  .dex__list:not(.is-grid) .dex__no { width: 5.8rem; font-size: var(--fs-sub); font-weight: 600; }
+  .dex__list:not(.is-grid) .dex__row b { font-size: var(--fs-lead); font-weight: 600; }
+  /* 눌러서 열리는 줄에는 화살표 — 메뉴와 같은 문법 */
+  .dex__list:not(.is-grid) .dex__row::after {
+    content: '›'; margin-left: 0.8rem; color: var(--muted); font-size: var(--fs-body); flex: none;
+  }
+
+  /* 카드 모드 */
+  .dex__list.is-grid .dex__row { padding: 2rem 1.2rem 1.6rem; background: var(--surface); }
+  .dex__list.is-grid .dex__row:hover, .dex__list.is-grid .dex__row.is-selected {
+    border-color: color-mix(in srgb, var(--brand) 55%, var(--line));
+    box-shadow: var(--shadow-hard) color-mix(in srgb, var(--brand) 45%, var(--line));
+  }
+  .dex__list.is-grid .dex__row .sprite { width: 7.6rem; height: 7.6rem; }
+  .dex__list.is-grid .dex__row b { font-size: var(--fs-body); }
+
+  /* 랭킹 카드 */
+  /* 2026-09-12 v3.9.1 줄 모드(.is-list)로 되돌리는 일은 여기서 속성을 하나씩 지우는 대신
+     list.css 의 카드 블록에 `:not(.is-list)` 를 달아 **아예 안 걸리게** 한다.
+     v3.3.0 에 여기 있던 되돌리기 묶음은 그래서 없앴다 — 카드 디자인이 바뀔 때마다
+     되돌릴 목록을 따라 늘려야 했고, 실제로 어긋나 있었다 */
+  .row-list:not(.is-list) > .row { background: var(--surface); }
+  .row-list:not(.is-list) > .row:hover {
+    border-color: color-mix(in srgb, var(--brand) 55%, var(--line));
+    box-shadow: var(--shadow-hard) color-mix(in srgb, var(--brand) 45%, var(--line));
+  }
+  .row-list:not(.is-list) > .row .row__score { color: var(--brand); }
+
+  /* ── 상세 패널 ───────────────────────────────────────────────────────────── */
+  .detail-panel { box-shadow: 0.4rem 0.4rem 0 0 rgba(0,0,0,.28); }
+  .detail-panel__close { border-radius: 1rem; }
+
+  /* ── 검색·필터 칸 ────────────────────────────────────────────────────────── */
+  .boss__search {
+    min-height: 4.8rem; padding: 0 1.6rem;
+    border-radius: var(--r-chip); background: var(--surface); font-size: var(--fs-body);
+  }
+  .boss__search:focus { border-color: var(--brand); outline: none; }
+  /* 거르기 칩 줄 + 보기 방식을 한 줄 좌우로 (components/pages.js .dex__toolbar) */
+  .dex__toolbar { display: flex; align-items: flex-start; justify-content: space-between; gap: 1.6rem; margin: 1.2rem 0 0.4rem; }
+  .dex__toolbar .tchips { flex: 1 1 auto; min-width: 0; }
+  .dex__toolbar .view-toggle { flex: none; margin-left: 0; }
+  /* 보기 전환의 아이콘 + 글자는 styles/components/seg.css 한 곳에서 (v3.35.0 부터 폭에 관계없이 보인다) */
+  /* 2026-09-10 v2.46.0 칩 높이를 34px → 22px 로 낮췄다. 두 줄로 접히면 줄 사이가 벌어져 보였는데,
+     원인은 여백이 아니라 **속이 빈 알약**이었다 — .uchip 은 align-items: baseline(modal.css)이라
+     글자가 아래에 붙고 위쪽 12px 이 그대로 빈다. 높이를 글자에 맞추고 가운데 정렬로 바꾼다.
+     손가락 대상(--tap 44px)은 좁은 화면 규칙이라 여기서 낮춰도 영향이 없다 */
+  .tchips .uchip { align-items: center; min-height: 2.2rem; padding: 0.4rem 1.2rem; border-radius: var(--r-chip); font-size: var(--fs-sub); }
+  .tchips .uchip[aria-pressed="true"], .tchips .uchip.is-on {
+    border-color: transparent; background: color-mix(in srgb, var(--brand) 16%, transparent); color: var(--brand); font-weight: 600;
+  }
+}
+
+/* 타입 알약 — 이름을 켜고 타입색으로 옅게 칠한다 (pages.css .dex__type 의 넓은 화면판) */
+@media (min-width: 1100px) {
+  .dex__types { gap: 0.4rem; }
+  .dex__type {
+    gap: 0.4rem; padding: 0.4rem 1.2rem 0.4rem 0.8rem; border-radius: var(--r-chip);
+    background: color-mix(in srgb, var(--c) 18%, transparent);
+    /* 2026-09-19 v4.3.9 타입 72% → 55%. 밝은 타입(전기·땅·강철·얼음)에서 글자가 바탕에 묻혔다
+       (실측 2.32~2.94, 기준 3.0). 타입색 자체는 원작 값이라 못 바꾸니 **섞는 비율**을 내렸다.
+       18개 타입을 라이트·다크 양쪽에서 계산해 최악(전기 라이트)이 3.5 가 되는 값이다 —
+       60% 면 3.10 이라 다음에 팔레트를 손질하면 다시 깨진다. 색기는 그대로 남는다 */
+    color: color-mix(in srgb, var(--c) 55%, var(--fg));
+  }
+  .dex__type b { display: inline; font-size: var(--fs-sub); font-weight: 600; }
+}
+
+/* 약점·내성 카드 (components/detail.js matchupCols) — 뜻이 반대인 두 덩이를 색으로 가른다 */
+@media (min-width: 1100px) {
+  .detail__matchrows { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem; }
+  .detail__match { padding: 1.2rem; border: 1px solid var(--line); border-radius: 1.2rem; }
+  .detail__match h3 { margin: 0 0 0.8rem; font-size: var(--fs-sub); font-weight: 600; }
+  .detail__match--weak { border-color: color-mix(in srgb, var(--warn) 32%, var(--line)); background: color-mix(in srgb, var(--warn) 7%, transparent); }
+  .detail__match--weak h3 { color: var(--warn); }
+  .detail__match--resist { border-color: color-mix(in srgb, var(--good) 32%, var(--line)); background: color-mix(in srgb, var(--good) 7%, transparent); }
+  .detail__match--resist h3 { color: var(--good); }
+  /* 상세 패널 안에서는 한 칸이 좁아 두 카드를 위아래로 쌓는다 */
+  .detail-panel .detail__matchrows { grid-template-columns: 1fr; }
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   2026-09-10 v2.43.0 티어표 (D-MAX · PvE · PvP 가 같은 조각을 쓴다)
+
+   목업의 D-MAX 화면을 기준으로 잡았지만, 여기 있는 것은 전부 **공용 조각**이다 —
+   티어 머리글(.tier__head)·랭킹 카드(.row-list > .row)·선정 근거(.row__why)는 세 화면이
+   같이 쓰므로, D-MAX 만 예쁘게 만들 수는 없고 그럴 이유도 없다.
+   ───────────────────────────────────────────────────────────────────────────── */
+@media (min-width: 1100px) {
+  /* 티어 머리글 — [S] S 티어 · 4종 · 한 줄 설명 */
+  .tier__head { align-items: center; gap: 1.2rem; padding: 2.8rem 0 1.2rem; flex-wrap: wrap; }
+  .tier__badge { width: 3.2rem; height: 3.2rem; border-radius: 1rem; font-size: var(--fs-body); }
+  .tier__badge--s { color: var(--point); background: color-mix(in srgb, var(--point) 16%, transparent); }
+  .tier__badge--a { color: var(--caution); background: color-mix(in srgb, var(--caution) 16%, transparent); }
+  .tier__badge--b { color: var(--brand); background: color-mix(in srgb, var(--brand) 16%, transparent); }
+  .tier__badge--c { color: var(--off); background: color-mix(in srgb, var(--off) 16%, transparent); }
+  .tier__name { font-size: var(--fs-lead); font-weight: 700; }
+  .tier__desc { flex: 1 1 100%; margin-left: 4.4rem; font-size: var(--fs-sub); color: var(--muted); }
+  .row-head { align-items: center; padding: 0.4rem 0 0.2rem; }
+  .row-head h2 { font-size: var(--fs-sec); font-weight: 700; }
+  .row-head .meta { font-size: var(--fs-sub); }
+
+  /* 랭킹 카드 — 순위는 동그란 배지, 그림은 빛나는 판 위, 점수는 크게.
+     2026-09-12 v3.9.1 여기도 줄 모드(.is-list)에는 안 걸린다 — list.css 의 카드 블록과 한 규칙이다 */
+  .row-list:not(.is-list) > .row { padding: 2rem 1.2rem 1.6rem; gap: 0.8rem; }
+  .row-list:not(.is-list) > .row > .row__rank {
+    top: 1.2rem; left: 1.2rem;
+    display: flex; align-items: center; justify-content: center; width: 2.6rem; height: 2.6rem;
+    border-radius: 50%; border: 1px solid var(--line); background: var(--bg);
+    font-size: var(--fs-sub); font-weight: 700; text-align: center;
+  }
+  /* 그 티어의 1위만 브랜드색 — "이 칸의 대표" 라는 뜻 */
+  .row-list:not(.is-list) > .row:first-child > .row__rank { border-color: var(--brand); color: var(--brand); }
+  /* 그림 아래 빛나는 판 — 목업의 발광 스테이지. 공식 아트워크가 없으므로 빛으로 자리를 만든다.
+     2026-09-10 v2.45.0 (버그) v2.43.0 에서 이 그라데이션은 실제로는 한 번도 안 나왔다 —
+     list.css 의 `.row-list:not(.is-list) > .row .sprite:not(.is-loading) { background: var(--bg) }` 가
+     **단축 속성**이라 background-image 까지 none 으로 되돌리는데, `:not()` 이 붙어 있어
+     특정도까지 더 높았다. 그래서 같은 선택자(:not 포함)로 받고 image·color 를 따로 적는다.
+     스켈레톤(.is-loading)이 도는 동안에는 판을 덮지 않는다(반짝임이 사라진다) */
+  .row-list:not(.is-list) > .row .sprite { width: 8.4rem; height: 8.4rem; padding: 1.2rem; border-radius: 50%; }
+  .row-list:not(.is-list) > .row .sprite:not(.is-loading) {
+    background-color: transparent;
+    background-image:
+      radial-gradient(60% 40% at 50% 88%, color-mix(in srgb, var(--brand) 40%, transparent), transparent 70%),
+      radial-gradient(70% 70% at 50% 42%, color-mix(in srgb, var(--brand-2) 12%, transparent), transparent 72%);
+  }
+  .row-list:not(.is-list) > .row .row__badges { margin-bottom: 0.4rem; }
+  .row-list:not(.is-list) > .row .row__name b { font-size: var(--fs-lead); }
+  .row-list:not(.is-list) > .row .row__moves { font-size: var(--fs-sub); color: var(--muted); }
+  .row-list:not(.is-list) > .row > .row__stats { padding-top: 1.2rem; }
+  .row-list:not(.is-list) > .row .row__score { font-size: var(--fs-title); font-weight: 700; letter-spacing: -0.02em; }
+  .row-list:not(.is-list) > .row .row__sub { font-size: var(--fs-sub); color: var(--muted); }
+  /* 활용 N곳 — 카드 위에서는 알약 하나로 또렷하게 */
+  .row-list:not(.is-list) > .row .tag--use {
+    padding: 0.4rem 1.2rem; border-radius: var(--r-chip);
+    border-color: transparent; background: color-mix(in srgb, var(--brand-2) 16%, transparent);
+    color: color-mix(in srgb, var(--brand-2) 75%, var(--fg)); font-size: var(--fs-sub);
+  }
+  .row-list:not(.is-list) > .row .tag--use.tag--many { background: color-mix(in srgb, var(--brand) 18%, transparent); color: var(--brand); }
+
+  /* 선정 근거 — 격자를 가로지르는 카드 한 장, 안은 두 칸 (views/max.js expandableRow).
+     order 로 카드 뒤로 보낸다: DOM 은 [카드][근거][카드][근거]… 순서라 그대로 두면 근거가 열릴 때마다
+     그 자리에서 줄이 끊겨 뒤 카드들이 아래로 밀린다. 목업처럼 그 티어의 카드가 다 놓인 **뒤에** 붙는다 */
+  .row-list:not(.is-list) > .row { order: 0; }
+  .row-list:not(.is-list) > .row__why { order: 1; padding: 1.6rem 2rem; border-radius: var(--r-card); }
+  .row-list:not(.is-list) > .row__more { order: 2; }
+  .row-list:not(.is-list) > .row__why.is-open { display: grid; grid-template-columns: 1.4fr 1fr; gap: 2rem; }
+  .row__why-col { min-width: 0; }
+  .row__why-title { display: block; margin-bottom: 0.4rem; font-size: var(--fs-body); font-weight: 700; color: var(--fg); }
+  .row__why-line { margin: 0 0 0.8rem; line-height: 1.7; }
+  .row__why-more { color: var(--brand); text-decoration: none; font-weight: 600; }
+  .row__why-more:hover { text-decoration: underline; }
+  .row__why-chips { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+  .row__why-chip {
+    padding: 0.4rem 1.2rem; border: 1px solid var(--line); border-radius: var(--r-chip);
+    background: var(--bg); font-size: var(--fs-sub); color: var(--fg);
+  }
+  .row__why-chip:hover { border-color: var(--brand); color: var(--brand); }
+
+  /* 화면 위 장식 띠 — 화면마다 그 화면의 색으로. 아무 데나 붙이지는 않는다 */
+  /* 2026-09-10 v2.46.0 도감도 붙인다 — 목업의 화면 머리마다 오른쪽에 빛 띠가 있다.
+     도감은 그 화면의 색이 따로 없으므로 브랜드 초록. 공식 아트워크가 없어 그림 대신 빛으로 채운다 */
+  /* 2026-09-15 v3.33.0 높이를 10.8rem 으로 못 박아 두어, 머리가 길어지면(보기 전환 버튼에 글자가
+     붙거나 부제가 두 줄이 되면) 띠가 검색칸 한참 위에서 **가로로 뚝 끊겼다**.
+     bottom: 0 으로 머리 아래 끝까지 이어 붙이고, 아래 15% 는 mask 로 흐려 경계선을 지운다 —
+     '채워져 있다' 로 읽혀야지 '띠가 하나 얹혀 있다' 로 읽히면 안 된다 */
+  .page-head[data-route="dex"], .page-head[data-route="dmax"] { position: relative; }
+  .page-head[data-route="dex"]::after,
+  .page-head[data-route="dmax"]::after {
+    content: ''; position: absolute; right: 0; top: 1.8rem; bottom: 0; width: 46%; pointer-events: none;
+    border-radius: var(--r-card);
+    -webkit-mask-image: linear-gradient(to bottom, #000 85%, transparent);
+    mask-image: linear-gradient(to bottom, #000 85%, transparent);
+  }
+  .page-head[data-route="dex"]::after {
+    background:
+      radial-gradient(70% 100% at 72% 100%, color-mix(in srgb, var(--brand) 22%, transparent), transparent 68%),
+      radial-gradient(50% 90% at 96% 55%, color-mix(in srgb, var(--brand-2) 16%, transparent), transparent 70%);
+  }
+  .page-head[data-route="dmax"]::after {
+    background:
+      radial-gradient(70% 100% at 70% 100%, color-mix(in srgb, var(--c-max) 26%, transparent), transparent 68%),
+      radial-gradient(50% 90% at 96% 60%, color-mix(in srgb, var(--c-max-2) 20%, transparent), transparent 70%);
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   2026-09-10 v2.45.0 도감 카드 — 티어표 카드(v2.43.0)와 같은 문법으로
+
+   왜 여기서 또 손대나
+     .dex__row 는 도감만의 것이 아니다 — ★ 즐겨찾기 · ⚔️ 레이드 보스 · 🥚 알 부화가
+     같은 조각을 빌려 쓴다(components/favs.js · gameday.js). 그래서 이 블록 하나로
+     네 화면이 같이 바뀐다. 티어표(D-MAX · 레이드 PvE · 배틀 PvP · 일반)만 새 옷을 입고
+     도감이 옛 옷으로 남아 있으면, 같은 앱 안에서 카드가 두 종류가 된다.
+
+   무엇을 맞췄나 (.row-list > .row 와 같은 값)
+     · 번호는 카드 왼쪽 위 모서리의 배지 — 티어표의 동그란 순위 배지와 같은 자리·같은 테두리.
+       다만 도감 번호는 #0001 처럼 다섯 자라 원이 아니라 알약이다
+     · 그림은 빛나는 판 위에 — 회색 네모 상자를 걷어냈다
+     · 이름은 var(--fs-lead), 굵게. 카드에서 제일 먼저 읽혀야 하는 글자다
+     · ★ 는 동그란 버튼 — 홈 타일의 화살표(.home__arrow)와 같은 문법
+   ───────────────────────────────────────────────────────────────────────────── */
+@media (min-width: 1100px) {
+  /* ── 카드 모드 ─────────────────────────────────────────────────────────────── */
+  .dex__list.is-grid .dex__row { gap: 0.8rem; padding: 2rem 1.2rem 1.6rem; }
+
+  /* 번호 배지 — 티어표 .row__rank 와 같은 테두리·바탕. 자릿수 때문에 알약 모양만 다르다 */
+  .dex__list.is-grid .dex__no {
+    top: 1.2rem; left: 1.2rem; padding: 0.4rem 0.8rem;
+    border: 1px solid var(--line); border-radius: var(--r-chip); background: var(--bg);
+    font-size: var(--fs-sub); font-weight: 700; letter-spacing: 0.02em; color: var(--muted);
+  }
+
+  /* 그림 판 — 티어표 카드와 같은 발광 그라데이션. 공식 아트워크가 없으므로 빛으로 자리를 만든다.
+     스켈레톤(.is-loading)이 도는 동안에는 판 색을 덮지 않는다(반짝임이 사라진다) */
+  .dex__list.is-grid .dex__row .sprite,
+  .dex__list.is-grid .fav__row .sprite { box-sizing: content-box; width: 8.4rem; height: 8.4rem; padding: 1.2rem; border-radius: 50%; }
+  /* :not(.is-loading) 을 함께 달아야 pages.css 의 단축 속성(background: var(--bg))을 이긴다 — 위 티어표 주석 참고 */
+  .dex__list.is-grid .dex__row .sprite:not(.is-loading),
+  .dex__list.is-grid .fav__row .sprite:not(.is-loading) {
+    background-color: transparent;
+    background-image:
+      radial-gradient(60% 40% at 50% 88%, color-mix(in srgb, var(--brand) 40%, transparent), transparent 70%),
+      radial-gradient(70% 70% at 50% 42%, color-mix(in srgb, var(--brand-2) 12%, transparent), transparent 72%);
+  }
+
+  /* 글 칸 — 그림과 글 사이의 얇은 선은 티어표 카드와 같다 */
+  .dex__list.is-grid .dex__row > b,
+  .dex__list.is-grid .fav__main,
+  .dex__list.is-grid .gameday__main { padding-top: 1.2rem; }
+  .dex__list.is-grid .dex__row b { font-size: var(--fs-lead); font-weight: 700; letter-spacing: -0.01em; }
+  .dex__list.is-grid .dex__types { gap: 0.4rem; margin-top: 0.2rem; }
+
+  /* ★ — 홈 타입의 화살표와 같은 동그란 버튼. 켜지면 브랜드가 아니라 '주의'색(금색)이다 */
+  .dex__list.is-grid .dex__fav {
+    top: 1rem; right: 1rem;
+    display: flex; align-items: center; justify-content: center; width: 2.8rem; height: 2.8rem;
+    border: 1px solid var(--line); border-radius: 50%; background: var(--bg); font-size: var(--fs-body);
+  }
+  .dex__list.is-grid .dex__fav:hover { border-color: var(--caution); color: var(--caution); }
+  .dex__list.is-grid .dex__fav.is-on { border-color: var(--caution); color: var(--caution); }
+  /* [미구현] 태그는 ★ 왼쪽으로 — 배지가 커진 만큼 자리를 비켜 준다 */
+  .dex__list.is-grid .dex__unrel { top: 1.4rem; right: 4.6rem; }
+
+  /* ── 줄 모드 ───────────────────────────────────────────────────────────────── */
+  /* 줄에서도 같은 조각을 쓴다 — 보기 방식만 바뀌었는데 그림·번호가 달라 보이면 안 된다 */
+  /* 줄 모드의 그림은 44px 뿐이라 발광 판을 그대로 줄이면 빛이 그림 밑에 고인 얼룩처럼 보인다.
+     여기서는 모양만 잇는다 — 네모 상자를 동그란 판으로 (카드 모드의 원과 같은 문법) */
+  .dex__list:not(.is-grid) .dex__row .sprite { box-sizing: content-box; width: 4.4rem; height: 4.4rem; padding: 0.4rem; border-radius: 50%; }
+  .dex__list:not(.is-grid) .dex__row .sprite:not(.is-loading) { background: var(--bg); }
+  .dex__list:not(.is-grid) .dex__no {
+    width: auto; flex: none; padding: 0.4rem 0.8rem;
+    border: 1px solid var(--line); border-radius: var(--r-chip); background: var(--bg);
+    font-size: var(--fs-sub); font-weight: 700; color: var(--muted);
+  }
+  .dex__list:not(.is-grid) .dex__row b { font-weight: 700; }
+  /* 이름과 타입 사이의 빈 칸에 읽을 값을 넣는다 — 세대 · CP 100% 기준 (components/pages.js dexRowStats).
+     줄 모드에서만. 카드 모드는 세로로 세운 카드라 이 줄이 들어갈 자리가 없다 */
+  .dex__list:not(.is-grid) .dex__stats { display: flex; align-items: center; gap: 2.4rem; margin-left: auto; }
+  /* 타입 칸에 최소 너비를 준다 — 한 타입인 줄과 두 타입인 줄이 섞여도 위 칸(세대·CP)이 어긋나지 않는다 */
+  .dex__list:not(.is-grid) .dex__types { flex: none; justify-content: flex-end; min-width: 12.4rem; margin-left: 2.4rem; }
+  .dex__stat { display: flex; flex-direction: column; gap: 1px; min-width: 6.2rem; text-align: right; }
+  .dex__stat em { font-style: normal; font-size: var(--fs-sub); letter-spacing: 0.02em; color: var(--muted); }
+  .dex__stat b { font-size: var(--fs-body); font-weight: 700; color: var(--fg); }
+
+  /* 카드 모드에도 CP 한 줄 — 목업(내 포켓몬 카드)이 카드마다 CP 를 크게 달고 있다.
+     세대는 뺀다: 카드 위에서는 번호 배지가 이미 그 자리를 말해 주고, 세대 칩이 목록 바로 위에 있다 */
+  .dex__list.is-grid .dex__stats { display: flex; justify-content: center; margin-top: 0.2rem; }
+  .dex__list.is-grid .dex__stat--gen { display: none; }
+  .dex__list.is-grid .dex__stat { flex-direction: row; align-items: baseline; gap: 0.4rem; min-width: 0; text-align: center; }
+  .dex__list.is-grid .dex__stat b { font-size: var(--fs-lead); letter-spacing: -0.02em; color: var(--brand); }
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   2026-09-10 v2.46.0 검색 결과 줄 · 상세 팝업 머리 — 목업(개체 추가 창 · 개체 비교 창) 문법
+
+   두 곳 다 "이 포켓몬이 내가 찾던 그건가"를 답하는 자리인데, 지금까지는 이름 한 줄뿐이었다.
+   그림을 키우고 타입·번호를 붙여 **고르기 전에** 판단할 수 있게 한다.
+   ───────────────────────────────────────────────────────────────────────────── */
+@media (min-width: 1100px) {
+  /* ── 검색 패널 결과 (components/search.js) ────────────────────────────────── */
+  .sugg__item { gap: 1.2rem; padding: 1.2rem 1.2rem 1.2rem 1.2rem; border-radius: 1.2rem; background: var(--surface); }
+  .sugg__item:hover {
+    border-color: color-mix(in srgb, var(--brand) 55%, var(--line));
+    background: var(--hover);
+  }
+  /* 그림 판은 도감 줄 모드와 같은 동그란 판 — 같은 뜻이면 같은 모양 */
+  .sugg__item .sprite { box-sizing: content-box; width: 4rem; height: 4rem; padding: 0.4rem; border-radius: 50%; }
+  .sugg__item .sprite:not(.is-loading) { background: var(--bg); }
+  .sugg__name { font-size: var(--fs-body); font-weight: 700; }
+  .sugg__meta { gap: 0.4rem; }
+  .sugg__no { padding: 0.2rem 0.8rem; border: 1px solid var(--line); border-radius: var(--r-chip); background: var(--bg); font-size: var(--fs-sub); font-weight: 700; }
+  .sugg__item:hover .sugg__go { color: var(--brand); }
+
+  /* ── 상세 팝업 머리 (components/detail.js) ────────────────────────────────── */
+  /* 그림을 티어표·도감 카드와 같은 발광 판 위로 */
+  /* 2026-09-16 v3.50.0 머리가 .detail__head 에서 .detail__side 로 — 크기는 modal.css 가 정하고 여기는 발광 판만 */
+  .detail__side .sprite-box:not(.sprite-box--mega):not(.sprite-box--max):not(.sprite-box--shadow) {
+    border-color: color-mix(in srgb, var(--brand) 26%, var(--line));
+    background-image:
+      radial-gradient(60% 40% at 50% 88%, color-mix(in srgb, var(--brand) 34%, transparent), transparent 72%),
+      radial-gradient(70% 70% at 50% 42%, color-mix(in srgb, var(--brand-2) 12%, transparent), transparent 74%);
+  }
+  .detail__info h2 { font-size: var(--fs-title); font-weight: 700; letter-spacing: -0.02em; }
+  /* 도감번호는 도감 카드와 같은 알약 배지 */
+  .detail__dexno {
+    padding: 0.4rem 0.8rem; border: 1px solid var(--line); border-radius: var(--r-chip); background: var(--bg);
+    font-size: var(--fs-sub); font-weight: 700; color: var(--muted);
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   2026-09-10 v2.47.0 육성 플래너 — 목업(육성 현황 · 내 포켓몬) 문법
+
+   메뉴에서 '내 포켓몬' 과 '육성 플래너' 를 한 줄로 합치면서(router.js) 두 화면이
+   한 화면의 두 탭이 됐다. 배치도 한 벌로 맞춘다.
+   좁은 화면은 planner.css 의 세로 쌓기 그대로다 — 여기 있는 것은 전부 넓은 화면 전용이다.
+   ───────────────────────────────────────────────────────────────────────────── */
+@media (min-width: 1100px) {
+  /* ── 히어로 ────────────────────────────────────────────────────────────────
+     목업은 오른쪽 절반이 공식 아트워크다. 이 저장소에 그 그림이 없으므로 빛으로 채운다 */
+  .plan__hero {
+    position: relative; overflow: hidden;
+    padding: 2.8rem 3.2rem 2.8rem;
+    border-radius: var(--r-card);
+    background:
+      radial-gradient(90% 140% at 88% 30%, color-mix(in srgb, var(--brand) 22%, transparent), transparent 62%),
+      radial-gradient(70% 120% at 100% 100%, color-mix(in srgb, var(--brand-2) 14%, transparent), transparent 64%),
+      color-mix(in srgb, var(--brand) 6%, var(--surface));
+  }
+  .plan__hero::after {
+    content: ''; position: absolute; right: -7rem; top: 50%; transform: translateY(-50%);
+    width: 26rem; height: 26rem; border-radius: 50%;
+    border: 2.8rem solid color-mix(in srgb, var(--brand) 14%, transparent);
+    pointer-events: none;
+  }
+  .plan__hero > * { position: relative; z-index: 1; }
+  .plan__hero-ico { font-size: var(--fs-title); }
+  .plan__hero h2 { font-size: var(--fs-title); letter-spacing: -0.02em; }
+  .plan__hero-desc { max-width: 46em; font-size: var(--fs-body); }
+  .plan__hero-go { min-height: 4.6rem; font-size: var(--fs-body); }
+
+  /* ── 요약 — 한 줄에 [내 포켓몬 N마리] [수치 세 칸] [바로가기] ─────────────── */
+  .plan__card { margin-top: 1.2rem; padding: 2rem 2.4rem; border-radius: var(--r-card); }
+  .plan__summary { display: flex; align-items: center; gap: 2.4rem; }
+  .plan__summary-main { flex: 1 1 auto; min-width: 0; }
+  .plan__summary-main b { font-size: var(--fs-sec); }
+  .plan__stats { flex: none; margin-top: 0; gap: 1.2rem; }
+  .plan__stat { flex: none; min-width: 13.2rem; padding: 1.2rem 1.6rem; border-radius: 1.2rem; }
+  .plan__stat b { font-size: var(--fs-sec); }
+  .plan__summary-go { flex: none; margin-top: 0; min-height: 4.2rem; padding: 0 2rem; border-radius: 1.2rem; font-size: var(--fs-body); }
+
+  /* ── 다음 걸음 — 목업처럼 가로 한 줄. 걸음 사이에 화살표를 CSS 로 그린다 ──── */
+  .plan__guide-head b { font-size: var(--fs-sec); }
+  .plan__steps { flex-direction: row; align-items: stretch; gap: 0; margin-top: 1.6rem; }
+  .plan__steps > li { flex: 1 1 0; min-width: 0; display: flex; align-items: stretch; }
+  .plan__steps > li + li::before {
+    content: '›'; flex: none; align-self: center; padding: 0 0.8rem; color: var(--muted); font-size: var(--fs-sec);
+  }
+  .plan__step { flex: 1 1 auto; flex-direction: column; align-items: flex-start; gap: 0.8rem; padding: 1.2rem; min-width: 0; }
+  .plan__step-no { width: 2.4rem; height: 2.4rem; }
+  .plan__step-ico { font-size: var(--fs-sec); }
+  .plan__step-main b { font-size: var(--fs-body); }
+
+  /* 번호와 아이콘을 한 줄로 — 세로 카드에서 둘이 위아래로 서면 카드가 너무 길어진다 */
+  .plan__step-no, .plan__step-ico { position: relative; }
+  .plan__step { display: grid; grid-template-columns: 2.4rem auto; grid-template-rows: auto auto; column-gap: 1.2rem; row-gap: 1.2rem; }
+  .plan__step-main { grid-column: 1 / -1; }
+
+  /* ── 최근 추가한 포켓몬 — 가로 넉 장 ──────────────────────────────────────── */
+  .plan__recent-list { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1.2rem; margin-top: 1.6rem; }
+  .plan__recent-item { align-items: flex-start; padding: 1.2rem; border-radius: 1.2rem; }
+  .plan__recent-item .sprite {
+    box-sizing: content-box; width: 4.8rem; height: 4.8rem; padding: 0.4rem; border-radius: 50%;
+  }
+  .plan__recent-item .sprite:not(.is-loading) {
+    background-color: transparent;
+    background-image: radial-gradient(60% 40% at 50% 88%, color-mix(in srgb, var(--brand) 34%, transparent), transparent 72%);
+  }
+  .plan__recent-name { font-size: var(--fs-body); font-weight: 700; }
+
+  /* ── 내 포켓몬 목록 — 목업처럼 정보 묶음 여섯 칸 ──────────────────────────── */
+  .plan__mons { gap: 1.2rem; }
+  .plan__mon {
+    grid-template-columns: 2.8rem 6rem minmax(0, 1fr) 8.4rem 20rem auto;
+    gap: 1.2rem; align-items: center; padding: 1.2rem 1.6rem; border-radius: var(--r-card);
+  }
+  /* (버그) 좁은 화면용 규칙이 여기까지 따라와 칸을 다 차지하고 있었다 —
+     planner.css 가 CP·기술 묶음에 grid-column: 1 / -1 을 주는데(좁은 화면은 아래로 눕히려고),
+     넓은 화면에서는 그 값이 남아 묶음마다 한 줄씩 차지해 카드가 세로로 길어졌다.
+     격자를 다시 쓰는 여기서 제자리로 되돌린다 */
+  .plan__mon-cp, .plan__mon-moves { grid-column: auto; }
+  .plan__mon:hover {
+    border-color: color-mix(in srgb, var(--brand) 45%, var(--line));
+    box-shadow: var(--shadow-hard) color-mix(in srgb, var(--brand) 45%, var(--line));
+  }
+  .plan__mon.is-picked { border-color: var(--brand); }
+  /* 순번 — 목업의 왼쪽 번호 배지. 티어표 순위 배지와 같은 문법(둥근 사각) */
+  .plan__mon-no {
+    display: flex; align-items: center; justify-content: center; width: 2.6rem; height: 2.6rem;
+    border: 1px solid var(--line); border-radius: 0.9rem; background: var(--bg);
+    font-size: var(--fs-sub); font-weight: 700; color: var(--muted);
+  }
+  .plan__mon:first-child .plan__mon-no { border-color: var(--brand); color: var(--brand); }
+  /* 그림 판 — 도감·티어표 카드와 같은 발광 판 */
+  .plan__mon > .sprite { box-sizing: content-box; width: 4.8rem; height: 4.8rem; padding: 0.4rem; border-radius: 50%; }
+  .plan__mon > .sprite:not(.is-loading) {
+    background-color: transparent;
+    background-image:
+      radial-gradient(60% 40% at 50% 88%, color-mix(in srgb, var(--brand) 38%, transparent), transparent 70%),
+      radial-gradient(70% 70% at 50% 42%, color-mix(in srgb, var(--brand-2) 12%, transparent), transparent 72%);
+  }
+  .plan__mon-main .row__name b { font-size: var(--fs-body); font-weight: 700; }
+  .plan__mon-types { margin-top: 0.4rem; }
+  .plan__mon-lv { margin-top: 0.4rem; }
+  .plan__mon-lv b { font-size: var(--fs-body); }
+  .plan__mon-bar { max-width: 26rem; height: 0.5rem; margin-top: 0.4rem; }
+  /* CP 한 칸 — 이 목록에서 제일 자주 견주는 숫자라 크게. 다만 카드 높이를 밀지 않는 선까지만 */
+  .plan__mon-cp { display: flex; flex-direction: column; align-items: flex-end; gap: 0; text-align: right; }
+  .plan__mon-cp em { font-style: normal; font-size: var(--fs-sub); color: var(--muted); }
+  .plan__mon-cp b { font-size: var(--fs-sec); font-weight: 700; letter-spacing: -0.02em; color: var(--brand); }
+  /* 주요 기술 — 스피드·차지 두 줄 */
+  .plan__mon-moves { display: block; }
+  .plan__mon-moves > em { display: block; font-style: normal; margin-bottom: 0.4rem; font-size: var(--fs-sub); color: var(--muted); }
+  .plan__mon-move-list { display: flex; flex-direction: column; gap: 0.4rem; }
+  .plan__move {
+    align-items: center; gap: 0.8rem; padding: 0.4rem 0.8rem;
+    border: 1px solid var(--line); border-radius: 0.8rem; background: var(--bg); font-size: var(--fs-sub);
+  }
+  .plan__move b { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .plan__move i { margin-left: auto; flex: none; font-size: var(--fs-sub); }
+  /* 동작 버튼 — 오른쪽 끝에 세로로 셋. 카드 높이 안에서 가지런히 서도록 폭을 못 박는다 */
+  .plan__mon-actions { gap: 0.4rem; width: 7.8rem; }
+  .plan__mon-actions .uchip { min-height: 2.6rem; padding: 0 0.8rem; border-radius: 0.8rem; font-size: var(--fs-sub); }
+}
+
+/* 임시 간격 시안: 헤더와 본문이 같은 유동형 외곽선을 공유한다. */
+@media (min-width: 1100px) {
+  :root { --shell-half: min(90rem, calc(50vw - 3.2rem)); }
+  .app-bar { padding-left: 0; padding-right: 0; }
+  .app-nav { left: max(2.4rem, calc(50vw - var(--shell-half))); }
+  .layout, #page, .page-head { padding-left: 26rem; padding-right: 0; }
+  .app-nav__extra .drawer__ico { font-size: var(--fs-sub); opacity: .65; }
+  .app-nav__extra .drawer__item:hover { background: var(--hover); }
+}
+
+/* 일정 이름은 넓은 전체 페이지에서만 표시한다. 모바일·드로어의 7열 폭을 보호한다. */
+.cal__events { display: none; }
+@media (min-width: 1100px) {
+  /* 1920px에서 외곽 60px, 달력은 날짜별 일정 3줄과 추가 건수가 보이는 높이. */
+  #page .schedule__cal { gap: 0.8rem; margin-top: 1.6rem; }
+  #page .cal__head { padding: 1.2rem 0; font-size: var(--fs-sub); }
+  #page .cal__day {
+    min-width: 0; min-height: 15.4rem; padding: 1.2rem; gap: 0.8rem;
+    border: 1px solid var(--line); border-radius: 1rem; background: var(--surface);
+  }
+  #page .cal__day:hover { background: var(--hover); }
+  #page .cal__num { font-size: var(--fs-body); font-weight: 600; }
+  #page .cal__dots { display: none; }
+  #page .cal__events { display: flex; flex-direction: column; gap: 0.4rem; width: 100%; min-width: 0; }
+  #page .cal__event {
+    display: block; padding: 0.4rem 0.4rem; border-left: 0.3rem solid var(--event-color);
+    background: color-mix(in srgb, var(--event-color) 8%, transparent);
+    font-size: var(--fs-sub); line-height: 1.5; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  #page .cal__more { font-size: var(--fs-sub); color: var(--muted); }
+  #page .schedule__detail { margin-top: 2.4rem; padding: 1.6rem 2rem; border: 1px solid var(--line); border-radius: 1.2rem; }
+  #page .schedule__detail .schedule__sec { margin-top: 0; }
+}
+
+/* 2026-09-12 v3.10.0 도감 안 검색 칸 — 결과 목록 바로 위. 헤더 검색은 조건을 받아 이리로 보내고,
+   그 결과를 한 글자씩 좁히는 일은 여기서 한다 (components/pages.js renderDexPage) */
+.dex__search { width: 100%; margin: 1.6rem 0 0; }
+.dex__search + .dex__found { margin-top: 0.8rem; }
+
+/* 2026-09-12 v3.9.0 도감이 검색 결과 화면을 겸한다 (components/pages.js renderDexPage).
+   머리 한 줄로 "무엇을 걸러 몇 마리인지" 와 전 종으로 돌아가는 길을 준다 —
+   화면 안에 입력칸을 다시 두지는 않는다 (v3.5.0 에 뺀 이유가 그대로다) */
+.dex__found {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 0.8rem 1.2rem;
+  margin: 1.6rem 0 0; padding: 1.2rem 1.2rem;
+  border: var(--px) solid var(--line); background: var(--surface);
+}
+.dex__found b { flex: 1 1 auto; min-width: 0; font-size: var(--fs-body); }
+.dex__found .dex__found-clear { flex: none; }
+
+/* 도감 필터를 보기 전환과 같은 40px 버튼·50px 컨테이너로 맞춘다.
+   좁은 폭에서는 필터가 자연스럽게 줄바꿈되며 보기 전환은 다음 줄에 놓인다. */
+.dex__toolbar { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 1.2rem; margin: 1.6rem 0; }
+.dex__toolbar .tchips {
+  display: flex; flex-wrap: wrap; gap: 0.4rem; padding: 0.4rem;
+  border: 1px solid var(--line); border-radius: 1.4rem; background: var(--surface);
+}
+.dex__toolbar .tchips .uchip {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-height: 4rem; padding: 0 1.2rem; border: 0; border-radius: 1rem;
+  background: transparent; font-size: var(--fs-body); font-weight: 500; color: var(--muted);
+}
+.dex__toolbar .tchips .uchip:hover { background: var(--hover); color: var(--fg); }
+@media (min-width: 1100px) {
+  .dex__toolbar .tchips { flex: 0 1 auto; }
+  .dex__toolbar .view-toggle { margin-left: auto; }
+}
+
+/* 도감 카드 시안: 큰 포켓몬 → 이름 → 타입 → 보조 CP 순서.
+   공용 dex__row를 쓰는 레이드·알·즐겨찾기에는 적용하지 않는다. */
+.dex-catalog.is-grid .dex__row { padding: 3.6rem 1.2rem 2rem; gap: 1.2rem; overflow: hidden; }
+.dex-catalog.is-grid .dex__row .sprite {
+  order: 0; box-sizing: border-box; width: 12.8rem; height: 12.8rem; padding: 0;
+  max-width: 100%; border-radius: 2.4rem; object-fit: contain;
+}
+.dex-catalog.is-grid .dex__row .sprite:not(.is-loading) {
+  background: radial-gradient(ellipse at 50% 80%, color-mix(in srgb, var(--brand) 14%, transparent), transparent 66%);
+}
+.dex-catalog.is-grid .dex__row > b { order: 1; padding: 0; border: 0; font-size: var(--fs-body); font-weight: 700; }
+.dex-catalog.is-grid .dex__types { order: 2; margin: 0; gap: 0.4rem; }
+.dex-catalog.is-grid .dex__type { display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.4rem 0.8rem; border-radius: 0.7rem; background: color-mix(in srgb, var(--c) 12%, transparent); }
+.dex-catalog.is-grid .dex__type b { display: inline; font-size: var(--fs-sub); font-weight: 500; }
+.dex-catalog.is-grid .dex__stats { order: 3; display: flex; justify-content: center; width: 100%; margin-top: 0.4rem; padding-top: 1.2rem; border-top: 1px solid var(--line); }
+.dex-catalog.is-grid .dex__stats .dex__stat--gen { display: none; }
+.dex-catalog.is-grid .dex__stat { display: flex; align-items: baseline; gap: 0.4rem; }
+.dex-catalog.is-grid .dex__stat em { font-size: var(--fs-sub); font-style: normal; color: var(--muted); }
+.dex-catalog.is-grid .dex__stat b { font-size: var(--fs-body); font-weight: 600; color: var(--muted); }
+@media (min-width: 1100px) {
+  .dex-catalog.is-grid { gap: 2rem; }
+  .dex-catalog.is-grid .dex__row { padding: 4.4rem 2.4rem 2rem; gap: 1.2rem; }
+  .dex-catalog.is-grid .dex__row .sprite { width: 18rem; height: 18rem; }
+  .dex-catalog.is-grid .dex__row > b { font-size: var(--fs-sec); }
+  .dex-catalog.is-grid .dex__type { padding: 0.4rem 1.2rem; }
+  .dex-catalog.is-grid .dex__type b { font-size: var(--fs-sub); }
+}
+
+/* 검색과 보기 전환은 전체 폭의 상단 도구 영역, 상세는 그 아래 목록 옆에 배치. */
+@media (min-width: 1100px) {
+  /* 2026-09-12 v3.5.0 도감 안 검색 칸을 뺐다 — 헤더 검색과 생김새가 같은 입력칸 둘이
+     한 화면에 있는 것 자체가 문제였다. 그 칸을 제목 옆으로 끌어올리던 규칙도 함께 지운다 */
+  body.has-detail-panel:has(.dex-page) #page,
+  body.has-detail-panel:has(.dex-page) .page-head { padding-right: 0; }
+  body.has-detail-panel .dex-page .dex-catalog,
+  body.has-detail-panel .dex-page > .more {
+    margin-right: calc(var(--panel-w) + var(--panel-gap));
+  }
+  body.has-dex-detail .detail-panel {
+    right: max(3.2rem, calc(50vw - var(--shell-half))); bottom: 2.4rem;
+    box-shadow: none;
+  }
+}
+
+/* 도감과 같은 이미지 중심 카드: 순위/기술/조건은 보조 정보로 보존한다.
+   2026-09-10 v2.53.0 이 카드는 **넓은 화면 전용** 이다 (1100px 이상).
+   전에는 미디어 쿼리 밖에 있어 휴대폰까지 2열 카드로 덮었다. 좁은 화면에서 한 칸이 반쪽이면
+   그림은 작아지고 이름은 두 줄로 접히고 기술은 더 접혀서, 한 화면에 두 마리밖에 안 들어온다.
+   티어표는 "위에서부터 순서대로 훑는" 화면이라 좁은 화면에서는 한 줄에 하나인 목록이 맞다.
+   그래서 D-MAX · 레이드 PvE · 배틀 PvP 는 1100px 미만에서 list.css 의 기본 줄 배치를 그대로 쓴다.
+   레이드 보스·알 부화(.dex__list.is-grid)는 사용자가 직접 켜고 끄는 토글이라 여기서 건드리지 않는다 */
+.dex__list.is-grid .gameday__row > .sprite {
+  box-sizing: border-box; width: 12.8rem; height: 12.8rem; max-width: 100%; padding: 0;
+  border-radius: 2.4rem; object-fit: contain;
+}
+.dex__list.is-grid .gameday__row > .sprite:not(.is-loading) {
+  background: radial-gradient(ellipse at 50% 80%, color-mix(in srgb, var(--brand) 14%, transparent), transparent 66%);
+}
+.dex__list.is-grid .gameday__row { padding: 3.6rem 1.2rem 2rem; gap: 1.2rem; }
+.dex__list.is-grid .gameday__main { padding: 0; border: 0; width: 100%; }
+.dex__list.is-grid .gameday__main > b { font-size: var(--fs-body); font-weight: 700; }
+.dex__list.is-grid .gameday__note { display: block; margin-top: 1.2rem; padding-top: 1.2rem; border-top: 1px solid var(--line); white-space: normal; }
+
+/* 2026-09-12 v3.9.1 (버그) 레이드 · PvE · D-MAX 의 보기 전환이 아무 일도 안 했다.
+   이 카드 규칙이 `body:is([data-route=…]) #content .row-list`(1,2,1) 인데, 되돌리려던
+   `.row-list.is-list`(0,2,0) 가 특정도에서 졌다. 클래스를 붙였다 뗐다 하고 있을 뿐
+   화면은 처음부터 끝까지 카드였다 — v3.3.0 · v3.5.0 에 넣은 토글이 나간 적이 없는 셈이다.
+
+   되돌리는 규칙을 더 세게 적는 대신, **카드 쪽에 .is-grid 를 요구**한다.
+   되돌릴 속성을 하나씩 세어 적을 일이 없어지고(카드 디자인이 바뀌어도 따라다닐 필요가 없다),
+   덤으로 미디어 쿼리를 뗄 수 있다 — 이제 "카드냐 줄이냐" 는 폭이 아니라 사용자의 선택이다.
+   두 클래스는 rowListLayout() 이 늘 하나씩 붙인다 (components/ui.js).
+   기본값은 그대로다: layoutInitial() 이 wideCards() 를 보므로 휴대폰은 줄, PC 는 카드로 연다.
+   휴대폰에서 카드를 켜면 --list-cols 가 1 이라 한 줄에 한 장 — 도감 그리드와 같은 모양이다 */
+body:is([data-route="dmax"], [data-route="pve"], [data-route="pvp"]) #content .row-list.is-grid {
+  display: grid; grid-template-columns: repeat(var(--list-cols), minmax(0, 1fr)); gap: 1.6rem; border-top: 0;
+}
+/* 2026-09-12 v3.10.0 휴대폰에서도 두 장씩. --list-cols 는 700px 미만이 1 이라 한 줄에 한 장이었는데,
+   그러면 한 화면에 두 마리도 안 들어와 티어표를 훑을 수가 없었다.
+   도감·레이드 보스 그리드(.dex__list.is-grid)가 이미 쓰는 값 그대로 1fr 1fr 이다 */
+@media (max-width: 699px) {
+  body:is([data-route="dmax"], [data-route="pve"], [data-route="pvp"]) #content .row-list.is-grid {
+    grid-template-columns: 1fr 1fr; gap: 1.2rem;
+  }
+}
+/* 2026-09-12 v3.10.0 카드 속을 85% 로 줄였다 — 1440px 에서 282×420 이 282×357 이 된다.
+   한 장이 화면 높이의 절반을 먹어 스크롤 한 번에 한 줄밖에 못 봤다.
+   그림·여백·글자를 같은 비율로 줄여야 균형이 그대로 남는다 (18 → 15.3rem · 4.2 → 3.6rem · 2.1 → 1.8rem …) */
+body:is([data-route="dmax"], [data-route="pve"], [data-route="pvp"]) #content .row-list.is-grid > .row {
+  position: relative; display: flex; flex-direction: column; align-items: center;
+  min-width: 0; padding: 3.6rem 2rem 1.6rem; gap: 1.2rem; text-align: center;
+  border: 1px solid var(--line); border-radius: 1.2rem; background: var(--surface);
+}
+body:is([data-route="dmax"], [data-route="pve"], [data-route="pvp"]) #content .row-list.is-grid > .row > .row__rank {
+  position: absolute; top: 0.85rem; left: 1rem; width: auto; height: auto; padding: 0.2rem 0.4rem;
+}
+body:is([data-route="dmax"], [data-route="pve"], [data-route="pvp"]) #content .row-list.is-grid > .row .sprite {
+  box-sizing: border-box; width: 14.2rem; height: 14.2rem; max-width: 100%; padding: 0;
+  border-radius: 2rem; object-fit: contain;
+}
+body:is([data-route="dmax"], [data-route="pve"], [data-route="pvp"]) #content .row-list.is-grid > .row .sprite:not(.is-loading) {
+  background: radial-gradient(ellipse at 50% 80%, color-mix(in srgb, var(--brand) 14%, transparent), transparent 66%);
+}
+body:is([data-route="dmax"], [data-route="pve"], [data-route="pvp"]) #content .row-list.is-grid .row__main {
+  display: flex; flex-direction: column; width: 100%; min-width: 0; padding: 0; border: 0; gap: 0.8rem;
+}
+body:is([data-route="dmax"], [data-route="pve"], [data-route="pvp"]) #content .row-list.is-grid .row__name { order: -1; justify-content: center; flex-wrap: wrap; }
+body:is([data-route="dmax"], [data-route="pve"], [data-route="pvp"]) #content .row-list.is-grid .row__name b { font-size: var(--fs-sec); font-weight: 700; white-space: normal; }
+body:is([data-route="dmax"], [data-route="pve"], [data-route="pvp"]) #content .row-list.is-grid .row__badges { justify-content: center; flex-wrap: wrap; }
+body:is([data-route="dmax"], [data-route="pve"], [data-route="pvp"]) #content .row-list.is-grid .row__moves { white-space: normal; overflow-wrap: anywhere; }
+/* 점수 칸은 세로로 — 좁은 화면(한 칸 170px)에서 "66점" 과 "DPS 14.3 · TDO 149" 가 나란히 서면
+   앞 칸이 눌려 "66 / 점" 으로 쪼개진다. 카드는 어느 폭에서나 점수 아래 근거다 */
+body:is([data-route="dmax"], [data-route="pve"], [data-route="pvp"]) #content .row-list.is-grid .row__stats {
+  display: flex; flex-direction: column; align-items: center; gap: 0.2rem;
+  width: 100%; margin-top: auto; padding-top: 0.8rem; border-top: 1px solid var(--line); text-align: center;
+}
+body:is([data-route="dmax"], [data-route="pve"], [data-route="pvp"]) #content .row-list.is-grid .row__sub { display: block; }
+body:is([data-route="dmax"], [data-route="pve"], [data-route="pvp"]) #content .row-list.is-grid .row__score { font-size: var(--fs-body); }
+body:is([data-route="dmax"], [data-route="pve"], [data-route="pvp"]) #content .row-list.is-grid > :is(.row__more, .row__why) { grid-column: 1 / -1; }
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   2026-09-14 v3.29.0 카드가 한 줄을 못 채우는 티어 묶음: 선정 근거를 카드 오른쪽 빈 칸에 넣는다.
+   S 티어는 대개 1종이라 1920(세 열)에서 두 칸이 비는데, 근거는 그 빈 칸을 두고 아래로 내려갔다.
+   CSS 에는 "이 줄의 남은 칸을 채워라" 가 없다 — `grid-column: auto / -1` 은 시작이 auto 라
+   span 1 로 해석돼 마지막 한 칸만 잡는다. 그래서 카드 수(:has 로 셈)와 열 수(미디어 쿼리)를
+   짝지어 **시작 열을 못 박는다**. 근거는 order:1 이라 카드보다 뒤에 놓이고, 그리드 자동 배치
+   커서가 아직 그 칸을 지나지 않았으므로 같은 줄 빈 칸에 그대로 들어간다(sparse 배치).
+   카드가 한 줄을 채우는 묶음(레이드·PvP 의 30줄 목록 등)은 건드리지 않는다 — 위 규칙 그대로 전체 폭.
+   2026-09-14 v3.30.1 세로는 stretch(기본) 로 카드 높이에 맞춘다 — align-self:start 로 두니 362px 카드 옆에
+   164px 상자가 떠 있어 깨져 보였다. 안쪽 두 단은 align-content:start 로 위에 붙인다.
+   ───────────────────────────────────────────────────────────────────────────── */
+@media (min-width: 1100px) {
+  /* 카드 한 장뿐인 묶음 — 열이 둘 이상이면 그 오른쪽 전부 */
+  body:is([data-route="dmax"], [data-route="pve"], [data-route="pvp"])
+    #content .row-list.is-grid:not(:has(> .row ~ .row)) > .row__why.is-open {
+    grid-column: 2 / -1; align-content: start;
+  }
+  /* 카드 두 장 — 패널이 닫혀 있으면 세 열 이상이라 셋째 칸부터 */
+  body:is([data-route="dmax"], [data-route="pve"], [data-route="pvp"]):not(.has-detail-panel)
+    #content .row-list.is-grid:has(> .row ~ .row):not(:has(> .row ~ .row ~ .row)) > .row__why.is-open {
+    grid-column: 3 / -1; align-content: start;
+  }
+}
+/* 패널이 열린 1440 미만은 한 열이라 빈 칸이 없다 — 전체 폭으로 되돌린다.
+   위 한 장짜리 규칙과 특이도를 맞춰야 이긴다(.has-detail-panel 한 칸을 더 얹는다) —
+   밀리면 없는 둘째 열이 암시적으로 생겨 카드가 42px 로 찌그러진다 */
+@media (min-width: 1100px) and (max-width: 1439px) {
+  body:is([data-route="dmax"], [data-route="pve"], [data-route="pvp"]).has-detail-panel
+    #content .row-list.is-grid:not(:has(> .row ~ .row)) > .row__why.is-open { grid-column: 1 / -1; }
+}
+/* 패널이 열린 1760 이상은 세 열 — 두 장 묶음도 오른쪽으로 (근거가 한 칸이라 안쪽은 한 단으로) */
+@media (min-width: 1760px) {
+  body:is([data-route="dmax"], [data-route="pve"], [data-route="pvp"]).has-detail-panel
+    #content .row-list.is-grid:has(> .row ~ .row):not(:has(> .row ~ .row ~ .row)) > .row__why.is-open {
+    grid-column: 3 / -1; align-content: start; grid-template-columns: 1fr;
+  }
+}
+/* 근거가 한 칸만 차지하는 나머지 두 자리도 안쪽을 한 단으로 —
+   두 단(1.4fr 1fr)을 340px 에 밀어 넣으면 '티어 점수 산정 방식' 문장이 글자 단위로 접힌다 */
+@media (min-width: 1440px) and (max-width: 1759px) {
+  body.has-detail-panel #content .row-list.is-grid:not(:has(> .row ~ .row)) > .row__why.is-open {
+    grid-template-columns: 1fr;
+  }
+}
+@media (min-width: 1100px) and (max-width: 1439px) {
+  body:not(.has-detail-panel) #content .row-list.is-grid:has(> .row ~ .row):not(:has(> .row ~ .row ~ .row)) > .row__why.is-open {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* 2026-09-14 v3.29.0 타입 필터 상자의 칩 줄은 PC 에서 접어 내린다.
+   `.chips` 는 휴대폰용 가로 스크롤 띠(overflow-x:auto, nowrap)인데, 상세 패널이 열리면
+   보이는 폭이 1194 → 662px 로 줄어 18타입 중 절반이 스크롤 뒤로 숨었다. 지금 고른 칩이
+   화면 밖에 있어 무엇을 거른 상태인지 읽히지 않았다. 상자는 접었다 펴는 것이라 세로 여유가 있다 */
+@media (min-width: 1100px) {
+  .filter-box .chips, .filter-box .submenu .chips {
+    flex-wrap: wrap; overflow: visible; margin: 0; padding: 0.2rem 0;
+    mask-image: none; -webkit-mask-image: none;
+  }
+  .filter-box .submenu { align-items: flex-start; }
+  .filter-box .submenu__label { padding-top: 0.8rem; }
+}
+@media (min-width: 1100px) {
+  .dex__list.is-grid .gameday__row { padding: 4.4rem 2.4rem 2rem; gap: 1.2rem; }
+  .dex__list.is-grid .gameday__row > .sprite { width: 18rem; height: 18rem; }
+  .dex__list.is-grid .gameday__main > b { font-size: var(--fs-sec); }
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   2026-09-11 v2.59.0 줄 모드가 여러 열로 흐른 뒤의 도감 줄
+   1100px 이상에서 줄 모드는 한 칸이 아니라 서너 칸(--list-cols)으로 나뉜다.
+   그런데 줄 조각들은 "한 줄이 화면 폭을 다 쓴다"는 전제로 짜여 있었다 —
+   타입 칸 min-width 12.4rem · 세대와 CP 두 칸 · 타입 이름 알약.
+   그대로 두면 한 칸(1920 기준 298px)에 다 들어가지 못해 이름이 한 글자씩 세로로 쪼개졌다.
+   알 부화 줄(.gameday__row)과 같은 두 줄 짜임으로 바꾼다 —
+     1줄: [그림] #0001  이상해씨      ★
+     2줄: [그림] CP 100% 1,260         ●●
+   세대는 뺀다: 목록 바로 위 세대 칩이 이미 그 값을 말하고 있다 */
+@media (min-width: 1100px) {
+  .dex__list:not(.is-grid) .dex__row {
+    position: relative;
+    display: grid; align-items: center;
+    grid-template-columns: auto auto minmax(0, 1fr) auto;
+    grid-template-areas:
+      "sprite no   name fav"
+      "sprite meta meta type";
+    column-gap: 1.2rem; row-gap: 0.4rem; padding: 1.2rem 1.2rem;
+  }
+  .dex__list:not(.is-grid) .dex__row > .sprite { grid-area: sprite; }
+  .dex__list:not(.is-grid) .dex__row > b { grid-area: name; min-width: 0; word-break: keep-all; }
+  .dex__list:not(.is-grid) .dex__row > .dex__no { grid-area: no; }
+  .dex__list:not(.is-grid) .dex__row > .dex__stats { grid-area: meta; }
+  .dex__list:not(.is-grid) .dex__row > .dex__types { grid-area: type; }
+  .dex__list:not(.is-grid) .dex__row > .dex__fav { grid-area: fav; justify-self: end; }
+  /* [미구현] 태그는 칸을 차지하지 않고 카드 오른쪽 위에 얹는다 */
+  .dex__list:not(.is-grid) .dex__row > .dex__unrel { position: absolute; top: 0.6rem; right: 0.6rem; }
+  /* 2026-09-15 v3.36.0 메가·원시 딱지도 같은 자리로. 이 격자는 칸 이름이 정해져 있는데(sprite/no/name/fav…)
+     v3.31.0 에 딱지를 붙이면서 자리를 안 줘, 남은 10px 짜리 칸에 눌려 글자가 '메 / 가' 로 세로로 누웠다.
+     둘이 같이 있으면 미구현을 왼쪽으로 비켜 준다 (카드 모드가 쓰는 규칙과 같다) */
+  .dex__list:not(.is-grid) .dex__row > .dex__mega { position: absolute; top: 0.6rem; right: 0.6rem; }
+  .dex__list:not(.is-grid) .dex__row:has(> .dex__mega) > .dex__unrel { right: 5rem; }
+  /* 화살표(::after)는 이름 자리를 먹기만 한다 — 누를 수 있다는 건 hover 로 이미 보인다 */
+  .dex__list:not(.is-grid) .dex__row::after { content: none; }
+  /* 세대는 접고 CP 만 남긴다 */
+  .dex__list:not(.is-grid) .dex__stat--gen { display: none; }
+  .dex__list:not(.is-grid) .dex__stats { display: flex; gap: 0; margin-left: 0; }
+  /* 'CP 100%' 는 접히면 두 줄이 되어 아래 줄만 키가 커진다 — 한 덩어리로 묶는다 */
+  .dex__list:not(.is-grid) .dex__stat { flex-direction: row; align-items: baseline; gap: 0.4rem; min-width: 0; text-align: left; white-space: nowrap; }
+  .dex__list:not(.is-grid) .dex__stat b { font-size: var(--fs-sub); }
+  /* 타입은 점으로 되돌린다 (pages.css 의 기본형) — 알약 두 개는 이 폭에 들어가지 않는다 */
+  .dex__list:not(.is-grid) .dex__types { min-width: 0; margin-left: 0; gap: 0.4rem; }
+  .dex__list:not(.is-grid) .dex__type { padding: 0; background: none; }
+  .dex__list:not(.is-grid) .dex__type b { display: none; }
+}

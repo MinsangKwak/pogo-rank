@@ -1,0 +1,294 @@
+/* 2026-09-19 v4.3.0 **채움 위 글자는 --bg 다.** 전에는 #fff · var(--surface) 로 적혀 있었는데,
+   둘 다 다크에서 어두워져 금색 채움 위 흰 글자가 어두운 글자로 뒤집혔다(실측 명암비 1.0 — 안 보임).
+   --bg 는 --brand 계열 채움과 언제나 반대 끝에 있어 테마가 뒤집혀도 같이 뒤집힌다. */
+/* 앱 셸 — 노트 테마 (2026-09-17 v3.56.0)
+   상단바·내비·푸터·바탕 무늬처럼 **모든 화면이 함께 쓰는 껍데기**의 생김새다.
+   홈 전용이 아니라 components/home.css 에서 빼냈다 — 홈 파일은 이제 홈만 말한다.
+
+   선택자 앞의 `body` 는 특이도 올림표다. 이 파일이 STYLES 에서 home.css 자리(앞쪽)에
+   실리기 때문에, 뒤에 오는 modal.css·app-shell.css·pc-theme.css 를 이기려면 아직 필요하다.
+   떼려면 파일을 뒤로 옮겨야 하는데, 옮기면 이기는 규칙이 바뀌어 겉모습이 달라진다
+   (실측: 상세 팝업 ✕ 가 2px 내려갔다). **순서를 옮기는 정리는 눈으로 확인하며 따로 한다.** */
+
+/* 머리카락 선은 px 로 적는다 — .1rem 은 기준 배율에서만 1px 이고,
+   글자를 키우면 같이 굵어진다. 선은 굵기가 아니라 '있다/없다' 를 말한다 (v2.52.0 회귀) */
+
+/* Pixel playground: arcade colours, open typography and modular brick details. */
+body { background: var(--notebook-canvas); }
+body #px-bg { opacity: .07; }
+body .app-bar { background:transparent; border:0; backdrop-filter:blur(1rem); }
+body .app-bar__logo { font-family:"Galmuri11",Pretendard,sans-serif; font-size: var(--fs-title); font-weight:950; font-style:normal; letter-spacing:-.08em; color:var(--brand); text-shadow:.16rem .16rem var(--foil-hi); }
+body .app-bar__head::after { letter-spacing:.08em; }
+body footer { margin-top:5.2rem; padding:3.2rem; background:var(--bg); border:0; border-top:8px solid var(--brand); box-shadow:.6rem .6rem 0 var(--foil-lo); }
+body footer::before { content:'moncamp / PLAY & GROW'; display:block; font:900 2rem/1.2 Pretendard,sans-serif; color:var(--brand); margin-bottom:2rem; }
+body footer .foot-lead { font-family:"Galmuri11",Pretendard,sans-serif; font-weight:800; }
+body .app-nav .nav-menu .drawer__item { border-left:4px solid transparent; }
+body .app-nav .nav-menu [aria-current="page"] { background:var(--brand); color:var(--bg); border-left:4px solid var(--foil-hi); box-shadow:.4rem .4rem 0 var(--foil-lo); }
+body .app-nav .nav-menu .drawer__item:hover { background:var(--foil-hi); color:var(--foil-lo); }
+body .app-nav__extra { border-top:5px solid var(--foil-hi); }
+/* Raised studs on the selected navigation brick; text remains unobstructed. */
+body .app-nav .nav-menu [aria-current="page"] { position:relative; margin-top:0.8rem; }
+body .app-nav .nav-menu [aria-current="page"]::before { content:''; position:absolute; top:-.7rem; left:1.4rem; width:calc(100% - 2.8rem); height:.6rem; background:repeating-linear-gradient(90deg,var(--brand) 0 2rem,transparent 2rem 3.4rem); }
+
+/* Red pixel notebook: flat dot textures and stepped corners, no brick studs. */
+body { background:var(--notebook-canvas); }
+body .app-bar__logo { font-family:"Galmuri11",sans-serif; font-size: var(--fs-sec); letter-spacing:-.07em; text-shadow:.2rem .2rem var(--foil-hi); }
+.home-dashboard .home__tile strong, body .app-nav .drawer__item { font-family:"Galmuri11",sans-serif; }
+.home-dashboard .home-updates__item::before, body .app-nav .nav-menu [aria-current="page"]::before { content:none; }
+body footer::before { color:var(--brand); font-family:"Galmuri11",sans-serif; }
+body .app-nav .nav-menu [aria-current="page"] { margin-top:0; }@media(max-width:699px) {
+ body .app-bar__logo { font-size: var(--fs-sec); }}
+
+/* Notebook index: quiet numbered sections and a pixel cursor for the active page. */
+body .app-nav .nav-menu { counter-reset:chapter; gap:0.4rem; padding:1.2rem 1.2rem; border-left:2px solid var(--brand); }
+body .app-nav .nav-menu__sec { counter-increment:chapter; display:flex; align-items:center; gap:0.8rem; margin:2rem 0 0.8rem; padding:0.8rem 0.4rem; border:0; color:var(--brand-2); font-family:"Galmuri11",sans-serif; font-size: var(--fs-body); }
+body .app-nav .nav-menu__sec::before { content:'0' counter(chapter); font-size: var(--fs-sub); padding:0.4rem; background:var(--notebook-tint); color:var(--brand-2); }
+body .app-nav .nav-menu .drawer__item { position:relative; padding:0.8rem 1.2rem 0.8rem 2rem; min-height:4.4rem; border:0; font-size: var(--fs-body); background:transparent; box-shadow:none; }
+body .app-nav .nav-menu .drawer__ico { display:none; }
+body .app-nav .nav-menu [aria-current="page"] { background:var(--notebook-tint); color:var(--brand-2); box-shadow:inset 0 -.2rem var(--accent); border:0; }
+body .app-nav .nav-menu [aria-current="page"]::before { content:''; position:absolute; left:.6rem; top:50%; width:.6rem; height:.6rem; transform:translateY(-50%); background:var(--brand); box-shadow:.3rem 0 var(--brand); }
+body .app-nav .nav-menu .drawer__item:hover { color:var(--brand-2); background:var(--notebook-tint); }
+body .app-nav__extra { margin-top:2.4rem; padding:1.6rem 1.2rem 0; border-top:2px dotted var(--line-2); }
+body .app-nav__extra::before { content:'기록과 안내'; display:block; padding:0 1.2rem 1.2rem; font-family:"Galmuri11",sans-serif; font-size: var(--fs-body); color:var(--muted); }
+body .app-nav__extra .drawer__item { font-size: var(--fs-sub); min-height:3.8rem; }
+/* Appendix: news index above a compact two-column utility directory. */
+body .app-nav__extra { padding:1.6rem 0 0; border-top:3px solid var(--brand-2); }
+body .app-nav__extra::before { content:'04 / 자료실'; padding:0 1.2rem 1.2rem; color:var(--fg); font-size: var(--fs-body); }
+body .app-nav__extra #drawer-extra { display:grid; grid-template-columns:1fr 1fr; gap:0.2rem 0.8rem; padding:0 1.2rem; }
+body .app-nav__extra .drawer__item:not([hidden]) { display:flex; align-items:center; min-width:0; min-height:4.4rem; padding:0.8rem 0; font-family:"Galmuri11",sans-serif; font-size: var(--fs-body); line-height: 1.7; border:0; background:transparent; color:var(--muted); text-align:left; }
+body .app-nav__extra .drawer__ico { display:none; }
+body .app-nav__extra :is(#menu-changes,#menu-release,#menu-game-updates,a[target="_blank"]) { grid-column:1 / -1; }
+body .app-nav__extra :is(#menu-release,#menu-game-updates) { color:var(--fg); font-size: var(--fs-body); border-bottom:1px solid var(--line); position:relative; padding-right:2rem; }
+body .app-nav__extra :is(#menu-release,#menu-game-updates)::after {
+  content:'↗'; position:static; display:block; flex:0 0 1.6rem; margin-left:auto;
+  width:1.6rem; height:auto; color:var(--brand-2); line-height: 1; text-align:center;
+  background:transparent; border-radius:0; transform:none; animation:none;
+}
+body .app-nav__extra :is(#menu-release,#menu-game-updates) .drawer__label {
+  display:inline-flex; align-items:center; gap:0.4rem; min-width:0;
+}
+body .app-nav__extra :is(#menu-release,#menu-game-updates).dot-badge .drawer__label::after {
+  content:''; display:block; flex:0 0 .6rem; width:.6rem; height:.6rem; background:var(--warn);
+}
+body .app-nav__extra #menu-changes { font-size: var(--fs-sub); min-height:3rem; color:var(--brand-2); }
+body .app-nav__extra a[target="_blank"] { margin-bottom:1.2rem; }
+body .app-nav__extra .drawer__item:hover { background:transparent; color:var(--brand); text-decoration:underline; text-underline-offset:.4rem; }
+body .app-nav__extra .drawer__meta { grid-column:1 / -1; margin:2rem 0 0; padding:1.2rem 0 0; border-top:2px dotted var(--line-2); font-size: var(--fs-sub); line-height: 1.7; opacity:.8; }
+/* Pixel masthead: CSS-only nameplate and tactile utility keys. */
+body .app-bar { padding-top:2rem; padding-bottom:2rem; border-bottom:2px dotted var(--line-2); }
+body .app-bar__head { position:relative; padding-bottom:1.2rem; }
+body .app-bar h1 { overflow:visible; }
+body .app-bar__logo:not(.app-bar__logo--brand) { display:inline-block; position:relative; padding:0.8rem 1.2rem; background:var(--brand); color:var(--surface); font-size: var(--fs-sec); line-height: 1.2; text-shadow:.15rem .15rem var(--brand-2); box-shadow:.3rem .3rem 0 var(--fg); letter-spacing:-.07em; }
+body .app-bar__logo:not(.app-bar__logo--brand)::before { content:''; display:inline-block; width:.6rem; height:.6rem; margin-right:0.8rem; vertical-align:middle; background:var(--foil-hi); box-shadow:0 -.6rem var(--foil-hi),.6rem 0 var(--foil-hi),0 .6rem var(--foil-hi),-.6rem 0 var(--foil-hi); transform:scale(.6); }
+body .app-bar__logo:not(.app-bar__logo--brand):hover { background:var(--brand-2); color:var(--surface); }
+body .app-bar__head::after { bottom:-.3rem; margin:0; font-size: var(--fs-sub); letter-spacing:.08em; color:var(--muted); }
+body .app-search { min-height:4.2rem; border:1.5px solid var(--line-2); border-bottom:3px solid var(--brand-2); padding:0 1.2rem; background:var(--bg); color:var(--fg); box-shadow:.3rem .3rem 0 var(--line); font-family:"Galmuri11",sans-serif; font-size: var(--fs-body); }
+body .app-search:hover { border-color:var(--brand); }
+body .app-bar__actions { gap:0.8rem; }
+body .app-bar__actions .icon-btn { border:1.5px solid var(--line-2); background:var(--bg); color:var(--fg); box-shadow:.3rem .3rem 0 var(--notebook-shadow); min-width:3.8rem; min-height:3.8rem; }
+body .app-bar__actions .icon-btn:hover { background:var(--notebook-tint); color:var(--brand-2); }
+body .app-bar__actions .icon-btn:active { transform:translate(.2rem,.2rem); box-shadow:.1rem .1rem 0 var(--notebook-shadow); }
+body .app-bar :is(button,a):focus-visible { outline:.2rem dashed var(--brand); outline-offset:.5rem; }@media(max-width:699px) {
+ body .app-bar { gap:0.8rem; padding:1.2rem 1.6rem; }
+ body .app-bar__head { padding-bottom:0; }
+ body .app-bar__logo:not(.app-bar__logo--brand) { font-size: var(--fs-sec); padding:0.4rem 0.8rem; }
+ body .app-bar__actions { gap:0.4rem; }
+ body .app-bar__actions .icon-btn { min-width:3.4rem; min-height:3.4rem; }}
+/* Utility popups share the red notebook chrome; Pokémon detail keeps its own layout. */
+body .modal { background:rgba(39,20,27,.62); backdrop-filter:blur(.3rem); }
+body .modal__wrap:not(:has(.detail--mon)) { max-width:52rem; padding-top:4.8rem; background:var(--brand-2); box-shadow:.7rem .7rem 0 var(--fg); border:2px solid var(--fg); }
+body .modal__wrap:not(:has(.detail--mon))::before { content:'MONCAMP'; position:absolute; top:1.6rem; left:2rem; color:var(--bg); font:1.4rem/1 "Galmuri11",sans-serif; letter-spacing:.12em; }
+/* 2026-09-19 v4.3.7 닫기 단추는 팝업마다 다르면 안 된다 — 상세 팝업(detail.css)과 같은 모양으로 맞춘다.
+   진한 빨강 채움 · --bg 글자 · 밝은 테두리 한 겹 · 계단 그림자, 그리고 44px 탭 타깃 */
+body .modal__wrap:not(:has(.detail--mon)) .modal__close {
+  top:.8rem; right:.8rem; z-index:2;
+  display:flex; align-items:center; justify-content:center;
+  width:var(--tap); height:var(--tap);
+  background:var(--brand-2); border:2px solid var(--bg); color:var(--bg);
+  font-size:var(--fs-sec); line-height:1;
+  box-shadow:var(--shadow-hard) rgb(0 0 0 / 30%); }
+body .modal__wrap:not(:has(.detail--mon)) .modal__close:hover {
+  background:var(--bg); border-color:var(--brand-2); color:var(--brand-2); }
+body .modal__wrap:not(:has(.detail--mon)) .modal__close:active {
+  transform:translate(var(--px), var(--px)); box-shadow:none; }
+body .modal__wrap:not(:has(.detail--mon)) .modal__close:focus-visible {
+  outline:2px solid var(--bg); outline-offset:2px; }
+body .modal__wrap:not(:has(.detail--mon)) .modal__box { box-sizing:border-box; padding:2.8rem; background:var(--bg); border:0; max-height:calc(85dvh - 4.8rem); }
+body .modal__box .admin > h2 { font-family:"Galmuri11",sans-serif; font-size: var(--fs-sec); padding-bottom:2rem; border-bottom:2px dotted var(--notebook-edge); }
+body .modal__box .admin .detail__sec { margin-top:2.4rem; }
+body .modal__box .admin h3 { font-family:"Galmuri11",sans-serif; color:var(--fg); font-size: var(--fs-body); margin-bottom:1.2rem; }
+body .modal__box .admin .empty { padding:2rem 1.2rem; border:1px dashed var(--notebook-edge); background:color-mix(in srgb,var(--notebook-accent-soft) 15%,var(--bg)); text-align:left; }
+body .modal__box .admin__row { padding:1.2rem; gap:1.2rem; background:color-mix(in srgb,var(--notebook-accent-soft) 12%,var(--bg)); border:0; border-bottom:1.5px solid var(--notebook-edge); flex-wrap:wrap; }
+body .modal__box .admin__who { overflow-wrap:anywhere; }
+body .modal__box .admin__row.is-admin { border-left:4px solid var(--brand); }
+body .modal__box .admin__acts { width:100%; padding-top:0.4rem; }
+body .modal__box .admin__act { padding:0.8rem 1.2rem; min-height:3.6rem; border:1.5px solid var(--notebook-btn-edge); box-shadow:.2rem .2rem 0 var(--notebook-shadow); }
+body .modal__box .admin__act.is-danger { color:var(--brand-2); border-color:var(--brand-2); }
+body .modal__box .admin__act.is-on { color:var(--good); border-color:var(--good); }
+/* 2026-09-17 v3.60.0 팝업 안의 버튼은 한 벌이다.
+   관리자 줄(.admin__act)만 공책 옷을 입고 있어서, 같은 팝업 문법을 쓰는 동의·로그인 유도·계정 팝업의
+   버튼은 맨 테두리 그대로 남아 있었다 — 한 서비스 안에서 버튼이 두 종류로 보였다.
+   팝업의 버튼은 전부 .drawer__item 을 다므로 그 하나로 묶는다 (드로어 .account__actions 와 같은 문법). */
+body .modal__box .drawer__item { min-height:4.4rem; padding:0.8rem 1.2rem; border:1.5px solid var(--notebook-btn-edge); border-radius:.6rem; background:var(--bg); box-shadow:.2rem .2rem 0 var(--notebook-shadow); font-family:"Galmuri11",sans-serif; font-size: var(--fs-body); }
+body .modal__box .drawer__item:hover { background:var(--notebook-tint); }
+/* 이 팝업에서 누를 것 하나 — 드로어의 .account__primary 와 같은 문법. [동의하고 로그인]·[로그인하기] 가 여기 든다 */
+body .modal__box .account__login { background:var(--notebook-red); color:var(--surface); border-color:var(--notebook-red-deep); }
+body .modal__box .account__login:hover { background:var(--notebook-red-deep); }
+body .modal__box .account__danger { color:var(--brand-2); border-color:var(--brand-2); }
+/* 아직 누를 수 없는 버튼은 종이에서 떠 있지 않다 — 그림자를 내려 "지금은 아니다" 를 보인다 */
+body .modal__box .drawer__item:disabled { background:var(--bg); color:var(--muted); border-color:var(--notebook-edge); box-shadow:none; }
+/* 동의 팝업 — 제목은 관리자 팝업과 같은 점선 밑줄, 체크 두 줄은 공책 칸 */
+body .modal__box .consent__modal > .detail__name { font-family:"Galmuri11",sans-serif; padding-bottom:2rem; border-bottom:2px dotted var(--notebook-edge); }
+body .modal__box .consent__check { padding:1.2rem 1.2rem; border:1.5px solid var(--notebook-edge); background:color-mix(in srgb,var(--notebook-accent-soft) 12%,var(--bg)); cursor:pointer; }
+body .modal__box .consent__check:has(input:checked) { border-color:var(--notebook-red); background:var(--notebook-tint); }
+body .modal__box .consent__check input { accent-color:var(--notebook-red); }
+/* 2026-09-19 v4.3.7 **좁은 화면의 팝업은 전부 바닥에 붙는다** (제보).
+   여기서 `align-items:center` 로 가운데에 띄우고 있었는데, 그 한 줄이 modal.css 의
+   바텀시트 규칙(`@media (max-width:640px)`)을 구체도로 이기고 있었다 — `body .modal`(0,1,1)
+   대 `.modal`(0,1,0). 그래서 좁은 화면에서도 팝업이 공중에 떠 있었다.
+
+   바닥에 붙이는 이유는 손이다 — 한 손으로 들면 엄지가 닿는 자리가 화면 아래쪽이고,
+   팝업의 행동 단추(닫기·계산기)가 거기 있어야 누르기 쉽다.
+
+   중단점을 **767px 로 맞췄다.** 전에는 셋이 제각각이었다 —
+   modal.css 640 · 이 파일 699 · detail.css 767. 그 사이 폭에서는 상세 팝업만 시트 모양이고
+   나머지는 가운데 떠 있어, 같은 화면에서 팝업마다 다르게 열렸다. */
+@media(max-width:767px) {
+ body .modal { padding:0; align-items:flex-end; }
+ body .modal__wrap { width:100%; max-width:none; margin:0; }
+ /* 바닥에 붙으므로 위 테두리만 남긴다 */
+ body .modal__box { max-height:85dvh; border-width:2px 0 0; }
+ body .modal__wrap:not(:has(.detail--mon)) .modal__box { padding:2rem 1.6rem; }
+ /* 홈 인디케이터에 단추가 가리지 않게 — 상세 팝업은 제 바닥 줄(.detail__dock)이 이미
+    안전영역을 물고 있으므로 두 번 주지 않는다 */
+ body .modal__wrap:not(:has(.detail--mon)) .modal__box { padding-bottom:max(2rem, env(safe-area-inset-bottom)); }}
+/* Drawer as the notebook's inside cover. */
+body .drawer { background:rgba(39,20,27,.58); backdrop-filter:blur(.3rem); }
+/* 2026-09-19 v4.3.8 폭 92vw → 80vw (제보). 92% 는 덮은 것에 가까워 뒤 화면이 거의 안 보였다 —
+   옆에 남는 한 뼘이 "이건 겹쳐 열린 판이고 바깥을 누르면 닫힌다" 를 말해 준다 */
+body .drawer__panel { box-sizing:border-box; width:min(39rem,80vw); padding:0 2.4rem 2.4rem; gap:2rem; border-left:3px solid var(--brand-2); background:var(--bg); box-shadow:-.7rem 0 0 var(--fg); }
+/* 머리는 패널 맨 위에 **붙어 있는다**(sticky). 메뉴가 길어 스크롤을 내리면 닫기가 화면 밖으로
+   나가 버렸다 — 열어 놓고 내려가면 닫을 방법이 사라진다(제보).
+   패널이 스크롤 통(.drawer__panel { overflow-y:auto })이라 top:0 이 그대로 먹는다.
+   바탕이 불투명해야 밑에서 올라오는 글자가 비치지 않는다 — --brand-2 채움이 그 역할을 한다 */
+body .drawer__head { position:sticky; top:0; z-index:3; margin:0 -2.4rem; padding:max(1.6rem,env(safe-area-inset-top)) 2.4rem 1.6rem;
+  /* 팝업 머리와 같은 박을 깐다 — 띠가 단색이면 같은 색인 닫기 단추가 테두리로만 갈려 잘 안 보인다.
+     **바탕색을 먼저 박는다**: 박은 그림이라 안 그려지면 밝은 글자가 밝은 바탕에 놓인다 (CLAUDE.md §1-b) */
+  background-color:var(--brand-2); background-image:var(--foil); background-size:cover; color:var(--bg); border-bottom:6px solid var(--brand-2); font-family:"Galmuri11",sans-serif; font-size: var(--fs-sec); }
+/* 닫기 단추는 팝업(detail.css · modal)과 같은 모양이어야 한다 — 같은 뜻이면 같게 생겨야 한다 */
+body .drawer__head .icon-btn {
+  display:flex; align-items:center; justify-content:center; flex:none;
+  width:var(--tap); height:var(--tap); font-size:var(--fs-sec); line-height:1; }
+
+/* 2026-09-19 v4.3.8 닫기 단추의 색·테두리·그림자는 **id 선택자**가 쥐고 있다(1,0,1) —
+   클래스 규칙으로는 못 이긴다. 그래서 여기서 바꾼다. 팝업 닫기(detail.css · modal)와 같은 모양이다 */
+body #drawer-close { background:var(--brand-2); color:var(--bg); border:2px solid var(--bg); box-shadow:var(--shadow-hard) rgb(0 0 0 / 30%); }
+body #drawer-close:hover { background:var(--bg); border-color:var(--brand-2); color:var(--brand-2); }
+body #drawer-close:active { transform:translate(var(--px),var(--px)); box-shadow:none; }
+body #drawer-close:focus-visible { outline:2px solid var(--bg); outline-offset:2px; }
+/* 구역 라벨(마이페이지 · 서비스 · 정보)이 메뉴 항목과 같은 14px Galmuri 였다 — 같은 크기·같은 글꼴이면
+   무엇이 제목이고 무엇이 누를 것인지 눈으로 안 갈린다. **라벨은 읽는 글이라 Pretendard 12px 로 내린다.**
+   내리는 대신 자간을 벌려 라벨답게 만든다 (CLAUDE.md §7 — 크기가 아니라 결로 가른다) */
+body .drawer__panel .drawer__sec { margin:1.6rem 0 -.4rem; font-family:inherit; font-size: var(--fs-sub); font-weight:700; color:var(--muted); letter-spacing:.08em; }
+body .drawer__panel .account { position:relative; padding:2rem; gap:1.6rem; border:1.5px solid var(--notebook-edge); border-top:5px solid var(--brand); background:color-mix(in srgb,var(--notebook-accent-soft) 12%,var(--bg)); box-shadow:.4rem .4rem 0 var(--notebook-shadow); }
+body .drawer__panel .account__who b { font-family:"Galmuri11",sans-serif; font-size: var(--fs-body); line-height: 1.7; }
+body .drawer__panel .avatar { width:4rem; height:4rem; background:var(--notebook-tint); border:1.5px solid var(--notebook-edge); }
+body .drawer__panel .account__stats { padding:1.2rem 0; border-top:1.5px dotted var(--notebook-edge); border-bottom:1.5px dotted var(--notebook-edge); }
+body .drawer__panel .account__actions { gap:1.2rem; }
+body .drawer__panel .account__actions .drawer__item { min-height:4.4rem; padding:0.8rem; border:1.5px solid var(--notebook-btn-edge); background:var(--bg); box-shadow:.2rem .2rem 0 var(--notebook-shadow); font-family:"Galmuri11",sans-serif; font-size: var(--fs-body); }
+body .drawer__panel .account__actions .account__primary { background:var(--notebook-red); color:var(--surface); border-color:var(--notebook-red-deep); }
+body .drawer__panel .schedule { border:0; border-top:2px solid var(--brand-2); border-bottom:1px solid var(--notebook-edge); background:transparent; }
+body .drawer__panel .schedule > summary { min-height:5.4rem; padding:1.6rem 3.6rem 1.6rem 1.2rem; font-family:"Galmuri11",sans-serif; font-size: var(--fs-body); }
+body .drawer__panel .schedule[open] { background:color-mix(in srgb,var(--notebook-accent-soft) 10%,var(--bg)); }
+body .drawer__panel .drawer__group, body .drawer__panel .nav-menu { border:0; background:transparent; }
+body .drawer__panel .nav-menu__sec { padding:1.2rem 1.2rem; color:var(--brand-2); font-family:"Galmuri11",sans-serif; border-top:2px dotted var(--notebook-edge); }
+body .drawer__panel .nav-menu .drawer__item { font-family:"Galmuri11",sans-serif; font-size: var(--fs-body); border-bottom:1px solid var(--line); }
+body .drawer__panel .nav-menu [aria-current="page"] { background:var(--notebook-tint); color:var(--brand-2); border-left:4px solid var(--brand); }
+body .drawer__panel > .drawer__meta { padding-top:1.6rem; border-top:2px dotted var(--notebook-edge); font-family:"Galmuri11",sans-serif; font-size: var(--fs-body); }
+body .drawer__panel :is(button,a,summary):focus-visible { outline:.2rem dashed var(--brand); outline-offset:.3rem; }@media(max-width:699px) {
+ body .drawer__panel { padding-left:2rem; padding-right:2rem; }
+ body .drawer__head { margin-left:-1.8rem; margin-right:-1.8rem; padding-left:2rem; padding-right:2rem; }}
+/* Shared notebook pages: planning, collection, tools and reference documents. */
+body { --notebook-red:var(--brand); --notebook-red-deep:var(--brand-2); --notebook-btn-edge:var(--foil-hi); --notebook-line:color-mix(in srgb,var(--notebook-edge) 65%,var(--line)); --notebook-paper:color-mix(in srgb,var(--notebook-accent-soft) 10%,var(--bg)); }
+body .page-head { background:transparent; border-bottom:2px dotted var(--notebook-line); padding-bottom:2.4rem; }
+body .page-head h2, body .page-head h1 { font-family:"Galmuri11",sans-serif; }
+body :is(.plan__title,.plan__hero h2,.plan__guide-head b,.page__sec,.finder .row-head h2) { font-family:"Galmuri11",sans-serif; line-height: 1.7; }
+body :is(.plan__card,.plan__hero,.finder__result) { background:var(--notebook-paper); border:1.5px solid var(--notebook-line); border-top:4px solid var(--notebook-red); padding:2.4rem; box-shadow:.3rem .3rem 0 color-mix(in srgb,var(--fg) 20%,transparent); }
+body .plan__hero { background:color-mix(in srgb,var(--notebook-accent-soft) 22%,var(--bg)); }
+body .plan__stat { padding:1.2rem 2rem; background:var(--bg); border:1.5px solid var(--notebook-line); border-bottom:3px solid var(--notebook-red); }
+body .plan__stat b { font-family:"Galmuri11",sans-serif; color:var(--notebook-red); }
+body .plan__steps { gap:1.2rem; }
+body :is(.plan__desc,.plan__hero-desc,.plan__summary-desc) { line-height: 1.7; }
+body :is(.plan__hero-go,.plan__summary-go,.finder__copy,.finder__flag,.finder__type,.finder__actions button) { min-height:4.4rem; padding:0.8rem 1.2rem; border:1.5px solid var(--notebook-line); background:var(--bg); }
+body .finder__result { margin-bottom:2.4rem; }
+body .finder__out { padding:1.6rem; background:var(--bg); border:1.5px dashed var(--notebook-line); line-height: 1.7; overflow-wrap:anywhere; }
+body :is(.finder__num,.finder__name) { min-height:4.4rem; border:1.5px solid var(--notebook-line); background:var(--bg); }
+body .page__body :is(input:not([type="checkbox"]):not([type="radio"]),select) { min-height:4.4rem; }
+body .page__body :is(.chips__item,.seg button,.view-toggle button) { min-height:4.4rem; }
+body .page__body :is(.chips__item.is-on,.finder__flag.is-on) { background:var(--brand-2); color:var(--surface); border-color:var(--brand-2); }
+body .page__body > .page__sec { padding:1.6rem 0; border-top:2.5px solid var(--notebook-red); margin-top:3.2rem; }
+body .page__body :is(.upd__card,.upd__item) { background:var(--notebook-paper); border-color:var(--notebook-line); padding:2rem; }
+body .page__body :is(.note,.detail__foot) { line-height: 1.7; }
+body .detail-panel { border:1.5px solid var(--notebook-line); border-top:4px solid var(--notebook-red); }
+body .modal__box:has(> .detail--mon) { border:2px solid var(--notebook-red); }
+body .detail--mon .detail__head { background:var(--notebook-paper); border-bottom:2px solid var(--notebook-red); }@media(max-width:699px) {
+ body :is(.plan__card,.plan__hero,.finder__result) { padding:1.6rem; margin-right:0.4rem; }
+ body .plan__stats { gap:0.8rem; }
+ body .plan__stat { padding:1.2rem; min-width:0; }
+ body .finder__actions { flex-wrap:wrap; }
+ body .finder__actions > * { flex:1 1 auto; }
+ body .page__body { overflow-wrap:anywhere; }
+ body .page-head { padding-bottom:1.6rem; }}
+/* 머리와 본문 사이 선은 지우지 않는다 — 여백만으로는 위계가 서지 않아 v2.65.0 에 그은 선이다.
+   위에서 점선으로 그어 놓고 여기서 다시 0 으로 껐었다.
+   다만 필터 줄이 있는 화면은 **그 아래**가 선 자리다 (v2.66.0: 제목·부제·필터가 한 덩이).
+   머리에도 그으면 한 화면에 선이 둘이 된다 */
+body:has(#page:not([hidden]) .page__filters) .page-head,
+body:has(.layout:not([hidden]) #controls > *) .page-head { border-bottom:0; }
+body :is(.plan__mon,.plan__recent-item,.plan__step,.settings__choice) { border:1.5px solid var(--notebook-line); background:var(--notebook-paper); }
+body .plan__mon { border-top:4px solid var(--notebook-red); padding:2rem; }
+body :is(.plan__recent-name,.settings__choice-main b) { font-family:"Galmuri11",sans-serif; line-height: 1.7; }
+body .settings__choice { padding:1.6rem; min-height:6rem; }
+body .settings__choice.is-on { border-color:var(--brand-2); background:color-mix(in srgb,var(--notebook-accent-soft) 22%,var(--bg)); box-shadow:inset .4rem 0 var(--brand-2); }
+body :is(.plan__mon-actions,.plan__row) { gap:1.2rem; }
+body :is(.plan__num,.plan__select) { min-height:4.4rem; border:1.5px solid var(--notebook-line); background:var(--bg); }
+body :is(#page-privacy,#page-terms,#page-release,#page-changes) { line-height: 1.7; }
+body :is(#page-privacy,#page-terms,#page-release,#page-changes) h2 { font-family:"Galmuri11",sans-serif; padding-top:1.6rem; border-top:2px solid var(--notebook-line); }@media(max-width:699px) {
+ body .plan__mon { padding:1.2rem; }
+ body .plan__mon-actions { flex-wrap:wrap; }
+ body .plan__mon-actions button { min-height:4.4rem; }}
+body .app-nav .nav-menu .drawer__item:hover, body .app-nav__extra .drawer__item:hover { color:var(--fg); background:var(--notebook-tint); }
+/* 지금 보고 있는 줄은 호버와 달라야 한다 — 앞 규칙들이 겹치며 둘 다 같은 색(--fg)이 됐다.
+   색은 --accent 한 곳에서 온다 (tokens.css) */
+body .app-nav .nav-menu [aria-current="page"] { color:var(--accent); font-weight:800; }
+body .app-nav .nav-menu__sec, body .app-nav__extra #menu-changes { color:var(--muted); }
+body .drawer__panel .nav-menu [aria-current="page"] { color:var(--accent); font-weight:800; }
+body .home-dashboard .home__tile:hover { background:var(--notebook-tint); color:var(--fg); }
+body .home-dashboard .home-updates__item { color:var(--fg); }
+body .home-dashboard .home-updates__sum { color:var(--muted); }
+body .home-dashboard .home-updates__item:hover { background:var(--notebook-tint); color:var(--fg); }
+body .home-dashboard .pick__hero { background-color:var(--notebook-portrait); }
+body .home-dashboard .pick__group--pve .pick__hero, body .home-dashboard .pick__group--usage .pick__hero { background-color:var(--notebook-tint); }
+body .plan__stat b, body footer::before { color:var(--fg); }
+body :is(.app-search,.app-bar__actions .icon-btn,.drawer__item,.row,.dex__row):focus-visible { outline:.2rem solid var(--fg); outline-offset:.3rem; }
+body .home-dashboard .home__welcome { box-shadow:.6rem .6rem 0 var(--notebook-shadow); }
+body .home-dashboard .home__pick-grid, body .home-dashboard .pick__group { border-color:var(--notebook-edge); }
+body .app-nav .nav-menu__sec::before { color:var(--fg); }
+body .home-dashboard .home__group-head::before { color:var(--muted); }
+body .home-dashboard .home__service-group .home__group-head::before {
+  grid-column:1; margin:0 0 0.4rem; color:var(--bg); opacity:.8; font-size: var(--fs-sub);
+}
+body .home-dashboard .home__service-group .home__tile {
+  box-sizing:border-box; min-width:0; min-height:4.8rem; padding:0.8rem 1.2rem;
+  border:1px solid var(--notebook-edge); background:var(--bg); color:var(--fg);
+  grid-template-columns:minmax(0,1fr) 2.6rem; gap:0.8rem;
+  box-shadow:0 .2rem 0 var(--notebook-shadow);
+  transition:background-color .15s,transform .15s,box-shadow .15s;
+}
+body .home-dashboard .home__service-group .home__tile:is(:hover,:focus-visible) {
+  background:var(--notebook-tint); color:var(--fg); border-color:var(--service-accent);
+  transform:translateY(-.2rem); box-shadow:0 .4rem 0 var(--service-accent);
+}
+body .home-dashboard .home__service-group .home__tile:active { transform:translateY(.1rem); box-shadow:none; }@media (prefers-reduced-motion:reduce) {
+  .home__starter,body .home-dashboard .home__service-group .home__tile { transition:none; }
+  .home__service-group:hover .home__starter,body .home-dashboard .home__service-group .home__tile:is(:hover,:focus-visible,:active) { transform:none; }}
