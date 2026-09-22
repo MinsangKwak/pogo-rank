@@ -48,3 +48,5 @@ import './styles/catalog.css';
 import './styles/finder.css';
 // v4.9.x 디자인 시스템 — ds/ 의 조각만 쓰는 규칙. v3 스킨 뒤에 실어야 덮이지 않는다
 import './styles/ds.css';
+// 11월 탱커 팝업 — 배치만. 조각은 ds 것이다
+import './styles/tankpop.css';
