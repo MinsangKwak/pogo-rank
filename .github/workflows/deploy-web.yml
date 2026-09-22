@@ -14,7 +14,10 @@ name: web 배포 (Vercel)
 #                                        빌드를 돌리는데, 화면 데이터가 저장소에 없어 매번
 #                                        실패한다. 빨간 배포가 쌓이면 진짜 고장과 구별이 안 된다
 #   ② 저장소 시크릿 VERCEL_TOKEN · VERCEL_ORG_ID · VERCEL_PROJECT_ID
-#   ③ Vercel 프로젝트 환경변수 NEXT_PUBLIC_API_URL (서버 주소)
+#
+# **화면 쪽 값은 Vercel 대시보드에 안 둔다.** web/.env.production 에 있다 —
+# NEXT_PUBLIC_ 값은 브라우저로 그대로 나가 숨길 수 있는 물건이 아니고, 저장소에 두면
+# 배포가 커밋 하나로 재현된다. 채널마다 달라야 하면 저장소 **변수** vars.API_URL 로 덮는다
 on:
   push:
     branches: [deploy]
@@ -65,6 +68,12 @@ jobs:
             data/sprites-anim
           key: sprites-v1-${{ github.run_id }}
           restore-keys: sprites-v1-
+
+      # 저장소 변수가 있을 때만 덮는다. **빈 값으로 덮지 않는다** —
+      # 비어 있으면 화면이 로그인을 통째로 끄고 뜬다 (src/lib/serverApi.ts)
+      - if: steps.ready.outputs.go == 'true' && vars.API_URL != ''
+        name: 서버 주소를 저장소 변수로 덮는다
+        run: echo "NEXT_PUBLIC_API_URL=${{ vars.API_URL }}" >> "$GITHUB_ENV"
 
       - if: steps.ready.outputs.go == 'true'
         name: 데이터 만들기 (파이썬 파이프라인)
