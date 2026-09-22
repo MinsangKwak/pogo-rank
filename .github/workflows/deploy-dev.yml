@@ -119,6 +119,12 @@ jobs:
         with:
           path: ~/.cache/firebase/emulators
           key: firestore-emulator-${{ runner.os }}-v1
+      # firebase-tools 15 는 JDK 21 이상을 요구한다 — 러너 기본(17)으로는 "no longer supports Java version before 21" (dev 배포 #304)
+      - uses: actions/setup-java@ # 
+        if: steps.v4deps.outcome == 'success' && github.event_name == 'push'
+        with:
+          distribution: temurin
+          java-version: '21'
       - name: Firestore 규칙 검사 (에뮬레이터) — 규칙이 바뀐 푸시만 · 빨개지면 배포를 세운다
         if: steps.v4deps.outcome == 'success' && github.event_name == 'push'
         env:
