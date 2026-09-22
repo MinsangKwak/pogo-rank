@@ -161,7 +161,14 @@ Pokémon과 관련 명칭·이미지의 권리는 The Pokémon Company, Nintendo
 전체 225개 릴리스를 `날짜 → 버전`의 2단계 접이식 목록으로 정리했습니다. 가장 최근 날짜만 기본으로 펼쳐지며, 설명이 한 줄인 초기 버전은 별도의 접이식 영역 없이 표시됩니다. 사용자용 요약은 서비스의 [🎉 패치 노트](https://moncamp.kr/#/release)에서, 변경 배경과 세부 구현 내용은 [변경 이력](CHANGELOG.md)에서 확인할 수 있습니다.
 
 <details open>
-<summary><b>2026-09-22</b> — 릴리스 2개 · <code>v4.9.4</code> · <code>v4.9.3</code></summary>
+<summary><b>2026-09-22</b> — 릴리스 3개 · <code>v4.9.5</code> · <code>v4.9.4</code> · <code>v4.9.3</code></summary>
+
+<details>
+<summary><b>v4.9.5</b> · 자료를 못 받아도 빈 화면이 안 나온다 — 경계 두 겹</summary>
+
+연결이 흔들려 자료를 못 받으면 화면이 빈 채로 남아 있었습니다. 이제 그 자리에 안내와 [다시 불러오기] 단추가 뜨고, 누르면 그 자리에서 다시 받습니다. 광고 트래픽을 앞둔 점검 결과는 [인프라 문서 8장](docs/INFRA.md#8-광고-트래픽을-앞두고-2026-09-22)에 있습니다.
+
+</details>
 
 <details>
 <summary><b>v4.9.4</b> · 「다양한 활용처」를 배너 옆으로 · 배너에 '아래로' · 도면 잠금</summary>

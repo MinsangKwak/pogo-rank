@@ -23,6 +23,7 @@
 - [5. 커졌을 때 로드맵 — 트리거와 순서](#5-커졌을-때-로드맵--트리거와-순서)
 - [6. 하지 않기로 한 것과 이유](#6-하지-않기로-한-것과-이유)
 - [7. 수집 서버 — 비용 0 을 유지하는 조건](#7-수집-서버--비용-0-을-유지하는-조건-2026-09-21-v470)
+- [8. 광고 트래픽을 앞두고](#8-광고-트래픽을-앞두고-2026-09-22)
 
 ---
 
@@ -80,7 +81,10 @@ GitHub Pages는 **파일을 나눠주기만 하는 호스팅**입니다. 우리�
 
 ### 판이 커지면 (반나절, 트리거는 5번)
 
-- [ ] **도메인 하나 구입** (연 1~2만원대). Cloudflare는 `*.github.io`를 대신 받아줄 수 없어서, **내 도메인이 있어야 방어 기능을 쓸 수 있습니다**
+> **2026-09-22 갱신** — 이 목록의 전제(도메인 구입)는 이미 끝났습니다(`moncamp.kr`). 광고를 띄우기로 한
+> 이상 트리거도 이미 당겨졌습니다. **실제로 무엇을 어떻게 넣는지는 [8장](#8-광고-트래픽을-앞두고-2026-09-22)에 적었습니다.**
+
+- [x] ~~**도메인 하나 구입**~~ — `moncamp.kr` 보유
 - [ ] **Cloudflare 무료 플랜에 도메인 연결** → 네임서버 이관 → DNS에서 GitHub Pages를 가리키고 **프록시(주황 구름) 켜기**
 - [ ] GitHub 저장소 Settings → Pages → **Custom domain**에 그 도메인 입력 + Enforce HTTPS
 - [ ] Cloudflare에서 켤 것: **Bot Fight Mode**(봇 차단), **Security Level: Medium**, **rate limiting 룰 1개**(무료 플랜 제공량 — 예: 같은 IP가 10초에 50요청 넘으면 10초 차단)
@@ -196,3 +200,127 @@ Cloudflare 에서 나오고, rate limiting 과 봇 차단도 거기가 제자리
 
 관련 문서: [운영 문서](OPERATIONS.md) · [개발 문서](DEVELOPMENT.md)
 출처: [GitHub Pages 사용 한도](https://docs.github.com/en/pages/getting-started-with-github-pages/github-pages-limits) · [Cloudflare Rate limiting rules](https://developers.cloudflare.com/waf/rate-limiting-rules/)
+
+
+---
+
+## 8. 광고 트래픽을 앞두고 (2026-09-22)
+
+**결론부터 — 지금 없는 것은 대역폭이 아니라 응답 헤더입니다.** 광고를 띄우기 전에 할 일은
+Cloudflare 를 GitHub Pages 앞에 두는 것 하나이고, 그것으로 보안 헤더·봇 차단·rate limit·캐시가 같이 붙습니다.
+
+### 먼저, 지금 상태를 숫자로
+
+측정일 2026-09-22 · 운영(`https://moncamp.kr`) 실측입니다.
+
+| 재 본 것 | 값 | 뜻 |
+| --- | --- | --- |
+| 첫 방문 1회 총 전송 | 1,606KB | 이 중 남의 CDN 이 절반 이상 |
+| 그중 **moncamp.kr** | **743KB** | GitHub 대역폭에 잡히는 것은 이것뿐 |
+| 그중 cdn.jsdelivr.net | 863KB | 글꼴. GitHub 대역폭과 무관하지만 **남의 서버에 걸린 절반** |
+| 앞단 | 없음 (`server: GitHub.com`) | Cloudflare 가 안 껴 있다 |
+| 응답 보안 헤더 | 없음 | HSTS · X-Frame-Options · X-Content-Type-Options · Referrer-Policy 전부 없음 |
+| CSP | `<meta>` 로만 | **`frame-ancestors` 를 못 쓴다** — 클릭재킹을 헤더 없이는 막을 수 없다 |
+| Firestore 익명 읽기 | 없음 | 광고 트래픽은 Firestore 쿼터를 **건드리지 않는다** |
+
+`100GB ÷ 0.743MB ≈ 월 13만 5천 첫방문`이 GitHub Pages 소프트 한도입니다. 재방문은 서비스워커가
+받아 내므로 실제 여유는 더 큽니다. **대역폭은 아직 병목이 아닙니다.**
+
+### 왜 Vercel 이 아니라 Cloudflare 인가
+
+| | Cloudflare 앞단 | Vercel Pro 이전 |
+| --- | --- | --- |
+| 비용 | **$0** | $20/월 — Hobby 는 광고를 금지합니다(아래) |
+| 응답 보안 헤더 | ✅ Transform Rules | ✅ `vercel.json` |
+| 대역폭 | GitHub 쪽이 **줄어든다**(캐시 적중분) | Hobby 도 100GB 로 동일 |
+| 작업량 | 네임서버 이관뿐, 배포 파이프라인 무수정 | 배포 워크플로 2개·DNS·CNAME 재배선 |
+| PR 미리보기 · `/storybook` 서버측 인증 | ❌ | ✅ |
+
+> Vercel Fair Use Guidelines, Commercial usage —
+> "**Hobby teams** are restricted to non-commercial personal use only. All commercial usage of the platform
+> requires either a Pro or Enterprise plan. … Examples include … **The inclusion of advertisements, including
+> but not limited to online advertising platforms like Google AdSense**"
+>
+> GitHub Pages 쪽 금지는 범위가 좁습니다 — "primarily directed at **facilitating commercial transactions**
+> or providing commercial SaaS". 광고가 붙은 콘텐츠 사이트는 여기 해당하지 않습니다.
+
+**광고 직전에 호스팅을 갈아타지 않습니다.** Cloudflare 로 구멍을 먼저 막고, Vercel Pro 는
+① 월 13만 첫방문을 넘거나 ② PR 미리보기·`/storybook` 서버측 인증이 필요해질 때 검토합니다.
+그때 Cloudflare DNS 는 Vercel 앞단으로 그대로 재사용됩니다.
+
+### 넣을 것 (순서대로)
+
+**1. 네임서버 이관** — Cloudflare 무료 플랜에 `moncamp.kr` 추가 → 도메인 등록처의 네임서버를 Cloudflare 것으로 교체.
+DNS 레코드는 지금 것을 그대로 가져오되 `moncamp.kr` · `dev.moncamp.kr` 의 **프록시(주황 구름)를 켭니다.**
+
+**2. SSL/TLS → Full (strict)** — GitHub Pages 가 제 인증서를 들고 있으므로 Flexible 로 두면 무한 리디렉션이 납니다.
+
+**3. 응답 헤더** (Rules → Transform Rules → Modify Response Header, 모든 요청에 적용)
+
+| 헤더 | 값 | 왜 |
+| --- | --- | --- |
+| `Strict-Transport-Security` | `max-age=31536000; includeSubDomains` | HTTPS 고정 |
+| `X-Content-Type-Options` | `nosniff` | 확장자와 다른 타입으로 읽히는 것을 막는다 |
+| `Referrer-Policy` | `strict-origin-when-cross-origin` | 광고 스크립트에 전체 주소를 안 넘긴다 |
+| `Content-Security-Policy` | `frame-ancestors 'self'` | **`<meta>` 로는 못 넣는 것.** 클릭재킹 방어 |
+| `Permissions-Policy` | `geolocation=(), microphone=(), camera=()` | 안 쓰는 권한을 닫는다 |
+
+> 나머지 CSP 지시문은 `index.html` 의 `<meta>` 가 이미 들고 있습니다. 헤더로 통째로 옮기려면
+> `backend/build.py` 의 `__CSP__` 자리와 값을 한 곳에서 맞춰야 하므로, **`frame-ancestors` 만 헤더로 더합니다.**
+
+**4. 캐시 규칙** (Rules → Caching Rules)
+
+| 대상 | 설정 | 왜 |
+| --- | --- | --- |
+| `/sprites/*` · `/sprites-anim/*` · `/assets/*` | Edge TTL 1년 · Browser TTL 1년 | 이름에 내용 해시가 있거나 id 별로 불변이다 |
+| `/data/*.json` | Edge TTL 1시간 | 주소에 `?v=해시` 가 붙어 바뀌면 키가 바뀐다 |
+| `/` · `*.html` | Edge TTL 5분 | GitHub 가 `max-age=600` 을 주는 것과 같은 결 |
+
+**5. 보안 기능** — Bot Fight Mode 켜기 · Security Level: Medium ·
+Rate limiting 룰 1개(무료 제공량): 같은 IP 가 10초에 50요청을 넘으면 10초 차단.
+
+**6. 켠 뒤 확인**
+
+```bash
+curl -sI https://moncamp.kr/ | grep -iE "cf-ray|strict-transport|x-content-type|referrer-policy|content-security"
+# cf-ray 가 보이면 프록시가 켜진 것이고, 나머지 넷이 보이면 헤더가 붙은 것이다
+bash scripts/verify_deploy.sh https://moncamp.kr/ prod
+```
+
+### 여기서 안 하기로 한 것
+
+| 안 한 것 | 이유 |
+| --- | --- |
+| Firebase App Check | 익명 읽기가 규칙에 **한 곳도 없다** — 광고 트래픽이 Firestore 에 닿지 않는다. 쓰기가 열린 자리가 생기면 그때 |
+| Blaze 전환 | 6장 그대로 — Spark 의 '멈춤' 이 Blaze 의 '청구서' 보다 안전하다 |
+| 서버 도입 | 수집 서버는 아직 미배포다(`COLLECT_URL` 이 비어 있고 `api.moncamp.kr` 는 무응답). 광고와 무관하다 |
+
+### 남은 숙제 — 글꼴 863KB
+
+첫 방문 무게의 절반이 남의 CDN 에 걸린 글꼴입니다.
+
+```
+493KB  cdn.jsdelivr.net/npm/galmuri@2.40.3/dist/Galmuri11.woff2   ← 한 파일. unicode-range 가 없어 통째로 받는다
+370KB  Pretendard 동적 서브셋 15개                                  ← 이쪽은 쓰는 범위만 받는 중(설계대로)
+```
+
+Galmuri 는 포켓몬 **이름**까지 그리므로(`base.css` 의 `.detail__name`) 글자를 골라 줄일 수 없습니다 —
+데이터가 바뀌면 없는 글자가 두부(□)로 납니다. 줄이려면 Pretendard 처럼 **`unicode-range` 로 쪼개**
+쓰는 구간만 받게 해야 하고, 그건 빌드 단계가 생기는 일이라 이 판에서는 하지 않았습니다.
+자체 호스팅으로 옮기면 jsdelivr 의존도 같이 끊깁니다 — 다음 판의 후보입니다.
+
+### 장애가 났을 때 (실측 2026-09-22)
+
+바깥을 하나씩 끊고 D-MAX 순위표가 그려지는지 봤습니다.
+
+| 끊은 것 | 결과 |
+| --- | --- |
+| jsdelivr (글꼴) | ✅ 그대로 그려짐 · JS 오류 0 |
+| Firebase | ✅ 그대로 · 오류 0 |
+| GA | ✅ 그대로 · 오류 0 |
+| 바깥 전부 | ✅ 그대로 · 오류 0 |
+| **제 데이터(`data/*.json`)** | ❌ **본문이 영원히 빈 채로 남았다** |
+
+마지막 하나가 진짜 구멍이었습니다. `useSuspenseQuery` 는 실패하면 던지는데 받는 경계가 없어,
+본문이 비거나(안쪽) 셸까지 통째로 사라졌습니다(`#content` 소멸). v4.9.5 에서 경계를 **두 겹**으로
+달았습니다 — `src/components/DataBoundary.tsx`, 검사는 `src/test/boundary.test.tsx`.
