@@ -15,6 +15,9 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 const RELEASE_NOTES_EN = {
+  '2026-09-22 · v4.9.5': [
+    '**A failed load now shows a message instead of an empty screen** — when the connection dropped, the page just stayed blank with nothing to act on. [Try again] now refetches in place',
+  ],
   '2026-09-22 · v4.9.4': [
     '**[Many uses] moved beside the home banner** — the space next to the banner sat empty on wide screens. It now shows without scrolling',
     '**The banner has a [Scroll down] button** — the banner filled the first screen, so what came below was easy to miss. It jumps to [Top Pokémon by use]',

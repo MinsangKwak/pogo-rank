@@ -159,3 +159,14 @@
 /* 점은 타입색 그대로, 이름은 판 위 글자색 — 원작 타입색 위에 글자를 얹지 않는다 (§1-b) */
 .ds-typepill i { width: 0.8rem; height: 0.8rem; border-radius: 50%; background: var(--c, var(--muted)); flex: none; }
 .ds-typepill b { font-weight: 600; }
+
+/* ── 자료를 못 받았을 때 (v4.9.5) ──────────────────────────────────────────────
+   빈 화면 대신 말과 단추를 남기는 자리 (components/DataBoundary.tsx).
+   .ds-empty 와 뜻이 다르다 — 그쪽은 "세울 줄이 없다", 이쪽은 "못 받았다" 다.
+   못 받은 것은 다시 받을 수 있으니 단추가 붙는다 */
+.data-boundary {
+  display: flex; flex-direction: column; align-items: center; gap: var(--space-md);
+  padding: var(--space-xl) var(--space-md); text-align: center;
+}
+.data-boundary__head { margin: 0; font-size: var(--fs-lead); font-weight: 700; color: var(--fg); }
+.data-boundary__body { margin: 0; max-width: 40em; font-size: var(--fs-body); line-height: 1.7; color: var(--muted); }
