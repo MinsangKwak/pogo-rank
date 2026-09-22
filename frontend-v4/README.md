@@ -25,10 +25,16 @@
 
 조각과 토큰은 `src/ds/` 한 곳에 있고, 스토리북이 그 도면입니다.
 
+**배포된 도면: https://dev.moncamp.kr/storybook/** — dev 가 올라갈 때 같이 올라갑니다.
+
 ```bash
-npm run storybook          # :6006
-npm run build-storybook    # storybook-static/ (배포물이 아니라 도면입니다)
+npm run storybook                                    # :6006
+npm run build-storybook                              # storybook-static/ (로컬은 루트 기준)
+STORYBOOK_BASE=/storybook/ npm run build-storybook   # dev 에 얹는 판과 같은 빌드
 ```
+
+**하위 주소에 얹을 때는 `STORYBOOK_BASE` 를 줍니다.** 없으면 자산 주소가 루트 기준(`/assets/…`)이라
+`/storybook/` 아래에서 통째로 404 입니다. 배포 워크플로가 빌드 결과에 그 주소가 박혀 있는지 검사합니다.
 
 | 층 | 자리 | 무엇 |
 | --- | --- | --- |

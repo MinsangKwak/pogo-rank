@@ -10,6 +10,10 @@
 // ─────────────────────────────────────────────────────────────────────────────
 import type { StorybookConfig } from '@storybook/react-vite';
 
+// 얹힐 주소. dev 배포는 STORYBOOK_BASE=/storybook/ 로 빌드한다 (.github/workflows/deploy-dev.yml).
+// 끝 슬래시가 없으면 마지막 칸이 파일 이름으로 읽혀 자산 주소가 한 칸 위로 붙는다
+const BASE = process.env['STORYBOOK_BASE'] || '/';
+
 const config: StorybookConfig = {
   stories: ['../src/**/*.mdx', '../src/**/*.stories.@(ts|tsx)'],
   addons: [
@@ -20,12 +24,19 @@ const config: StorybookConfig = {
   framework: { name: '@storybook/react-vite', options: {} },
   // 수집을 끈다 — 이 저장소는 사람을 가리키는 값을 어느 표에도 두지 않는다 (CLAUDE.md §3)
   core: { disableTelemetry: true },
-  // 스토리북의 정적 파일 뿌리는 앱과 같다 — 스프라이트·데이터가 같은 주소로 읽힌다
-  staticDirs: ['../public'],
   viteFinal: (vite) => {
     // src/styles.ts 가 `../../frontend/styles/*` 를 싣는다 — 뿌리 바깥이라 기본값으로는 막힌다.
     // v3 CSS 를 안 실으면 스토리북의 조각만 v3 스킨 없이 그려져, 도면과 화면이 달라진다
     vite.server = { ...vite.server, fs: { ...vite.server?.fs, allow: ['..', '../..'] } };
+    // 배포는 dev 사이트의 **하위 주소**(/storybook/)에 얹힌다 — 자산 주소가 루트 기준이면
+    // 통째로 404 가 난다. 로컬은 그대로 '/' 다 (env 가 없으면 기본값)
+    vite.base = BASE;
+    // **public/ 을 싣지 않는다.** 스토리가 거기서 읽는 파일이 하나도 없고(이 서비스 CSS 에는
+    // url() 이 한 줄도 없다), 빌드가 public/ 에 데이터 묶음·PWA 아이콘·서비스워커를 채워 넣는다.
+    // 그게 도면에 딸려 가면 배포본이 커지고 /storybook/sw.js 처럼 아무도 안 쓰는 자리가 생긴다 —
+    // 서비스워커 파일이 엉뚱한 범위에 놓이면 나중에 캐시 사고의 씨가 된다.
+    // 그림이나 데이터를 읽는 스토리를 붙이는 날 staticDirs 로 되살린다
+    vite.publicDir = false;
     return vite;
   },
 };

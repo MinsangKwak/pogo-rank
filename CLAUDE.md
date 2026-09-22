@@ -134,6 +134,16 @@ npm run build-storybook                            # storybook-static/
 node scripts/check-stories.mjs http://localhost:4189/   # 전량 × 라이트·다크
 ```
 
+**배포된 도면은 https://dev.moncamp.kr/storybook/ 이다** — dev 가 올라갈 때 같이 올라간다.
+하위 주소에 얹으므로 `STORYBOOK_BASE=/storybook/` 로 빌드해야 한다. 안 주면 자산 주소가
+루트 기준(`/assets/…`)이라 열자마자 빈 화면이다. 배포 워크플로가 그 주소와 noindex 메타를 검사한다.
+도면은 **서다 말아도 배포를 안 세운다** — 화면이 멀쩡한데 도면 때문에 dev 가 깜깜해지면 손해가 더 크다.
+
+**같은 도메인에 앱 밖의 판을 얹으면 서비스워커가 비켜 가게 한다** (`public/sw.js` 의 `OUTSIDE`).
+범위가 루트라 그냥 두면 들어온다 — 실측: `/storybook/` 을 열자 그 HTML 이 앱의 오프라인 자리에
+덮였고(도면 청크 9개까지 같이 들어왔다), 오프라인에서 `/storybook/` 이 앱 화면으로 답했다.
+`src/test/swscope.test.ts` 가 배포가 얹는 자리와 서비스워커가 비켜 가는 자리를 견준다.
+
 `check-stories.mjs` 는 배포 전 검문과 **같은 재는 자**를 쓴다
 (`scripts/lib/contrast_audit.mjs`). 잣대가 두 벌이면 한쪽만 따라온다.
 
