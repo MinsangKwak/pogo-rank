@@ -130,7 +130,11 @@ jobs:
           set -e
           npx --yes vercel@48 pull --yes --environment=production --token "$VERCEL_TOKEN"
           npx --yes vercel@48 build --prod --token "$VERCEL_TOKEN"
-          npx --yes vercel@48 deploy --prebuilt --prod --token "$VERCEL_TOKEN" > /tmp/url.txt
+          # **--archive=tgz 는 뺄 수 없다.** 한 번에 올릴 수 있는 파일이 5,000개인데
+          # 이 화면은 그걸 넘는다 — 스프라이트 1,153장 + 정적 HTML 1,172장 + 청크.
+          # 없이 돌렸더니 66MB 중 50MB 를 올리다 `api-upload-free` 로 끊겼다.
+          # 압축본 하나로 올리면 파일 수가 1이 되어 한도를 안 탄다.
+          npx --yes vercel@48 deploy --prebuilt --prod --archive=tgz --token "$VERCEL_TOKEN" > /tmp/url.txt
           echo "배포: $(cat /tmp/url.txt)"
 
       # 올라간 판이 실제로 **내용이 든 HTML** 을 주는지 본다.
