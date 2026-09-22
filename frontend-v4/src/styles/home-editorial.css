@@ -20,7 +20,7 @@ html body #root .home-dashboard .home__section h3 { font-size: var(--fs-title); 
 html body #root .home-dashboard .home__section h3::before { display: none; }
 html body #root .home-dashboard :is(.home__picks, .home__features, .home-updates) { margin-top: 6rem; }
 
-/* 용도별 상위 — 두 묶음이 나란히, 「다양한 활용처」는 한 줄 띠로 위에 */
+/* 용도별 상위 — 두 묶음이 나란히. 「다양한 활용처」는 v4.9.4 에 배너 옆으로 올라갔다 (맨 아래 블록) */
 html body #root .home-dashboard .home__pick-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 2.4rem; }
 html body #root .home-dashboard .pick__discover {
   grid-column: 1 / -1; min-height: 0; display: flex; flex-direction: row; align-items: center; gap: 2.4rem;
@@ -146,6 +146,20 @@ html body #root .home-dashboard .pick__hero .sprite { --ink-w: .1rem; }
 html body #root .home__top-layout { display: grid; grid-template-columns: minmax(0, 1fr); gap: 2.4rem; align-items: stretch; }
 html body #root .home__top-layout > * { min-width: 0; }
 
+/* 2026-09-22 v4.9.4 「다양한 활용처」가 배너 **옆**으로 올라온다.
+   전에는 아래 '용도별 상위' 안에서 한 줄 띠였는데, 1920 에서 그 띠가 가로를 다 쓰고도
+   글이 왼쪽 끝에만 몰려 빈 칸이 절반이었다. 배너도 같은 문제였다 — 세로 600 을 못 박은 뒤로
+   글칸 아래가 비었다. 둘을 나란히 세우면 그 빈 자리가 같이 없어진다.
+
+   **칸이 좁으면 안 나눈다.** 배너 안이 이미 두 칸(글 2 : 그림 3)이라, 폭이 모자란 채로
+   칸을 하나 더 만들면 제목이 글자마다 줄바꿈된다. 1440 아래에서는 배너 아래로 내려온다 */
+@media (min-width: 1440px) {
+  html body #root .home__top-layout { grid-template-columns: minmax(0, 1fr) 30rem; }
+}
+@media (min-width: 1760px) {
+  html body #root .home__top-layout { grid-template-columns: minmax(0, 1fr) 38rem; }
+}
+
 /* 포스터 — 어두운 판(--plate) 위. 세로 60rem 고정, 글 2 : 그림 3 (v4.9.3)
    v4.9.2 까지는 그림이 제 칸 폭을 따라 커져 화면이 넓을수록 배너가 같이 컸다. 높이를 못 박고
    그림이 그 안에 들어온다. 줄은 넷 — 위·아래 1fr 이 글(제목·단추)을 세로 가운데로 밀고, 그림은 넷을 다 걸친다 */
@@ -199,4 +213,74 @@ html body #root .nav-menu .drawer__item[data-parent][aria-current=page] { color:
   /* 바탕 규칙이 display: flex 라 grid-template-columns 만으로는 안 갈린다 — grid 로 바꿔야 두 칸이 된다 */
   html body #root .home__top-layout .home__cta { grid-row: 3; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .8rem; }
   html body #root .home__top-layout .home__btn { padding: 1.2rem .8rem; font-size: var(--fs-sub); }
+}
+
+/* ── 배너 옆 세로 칸 「다양한 활용처」 (v4.9.4) ────────────────────────────────
+   배너와 한 띠로 읽히게 같은 어두운 판 한 벌(--plate-2 계열)을 쓴다 — 테마를 안 타는
+   자리라 --bg·--fg 가 아니라 --plate 벌이다 (§1-b 4번).
+   아래 '한 줄 띠' 규칙(.pick__discover)이 같은 이름을 잡고 있어, 여기서는 모두
+   수식 클래스(--aside)로 이겨 다시 적는다 — 소식 카드의 변형(--updates)은 안 건드린다 */
+html body #root .home-dashboard .pick__discover--aside {
+  /* 띠 규칙(home.css)이 grid-column: 1 / -1 을 박아 둔다 — 그대로 두면 옆 칸이 아니라
+     전체 폭으로 떨어진다. 자동 배치로 되돌려 배너 옆 둘째 칸에 선다 */
+  grid-column: auto;
+  display: flex; flex-direction: column; align-items: stretch; gap: 1.2rem;
+  margin: 0; padding: 3.2rem; min-height: 0; text-align: left;
+  background: linear-gradient(160deg, var(--plate-2), var(--plate) 70%);
+  color: var(--plate-fg); border: 0; border-bottom: .4rem solid var(--plate-accent);
+  box-shadow: none;
+}
+html body #root .home-dashboard .pick__discover--aside .pick__discover-kicker {
+  color: var(--plate-accent); font-size: var(--fs-sub); font-weight: 700; letter-spacing: .16em;
+}
+html body #root .home-dashboard .pick__discover--aside strong {
+  margin: 0; font-size: var(--fs-sec); line-height: 1.5; color: var(--plate-fg);
+}
+/* 옆에 설 때는 두 줄 제목이 산다 — 띠에서는 죽였던 <br> 을 되살린다 */
+html body #root .home-dashboard .pick__discover--aside strong br { display: inline; }
+html body #root .home-dashboard .pick__discover--aside .pick__discover-copy {
+  color: var(--plate-muted); font-size: var(--fs-body); line-height: 1.7;
+}
+/* 마스코트를 되살린다 — 띠에서는 자리가 없어 껐던 그림이다.
+   v3 규칙이 절대 배치(오른쪽 아래 실루엣 · 복싱 애니메이션)를 이미 들고 있어 display 만 돌려준다 */
+html body #root .home-dashboard .pick__discover--aside .home-card-mascot { display: block; }
+/* 가는 곳은 판 위 주 버튼 모양 — 채움(--plate-cta) 위 글자는 --plate-fg 짝이다 */
+html body #root .home-dashboard .pick__discover--aside .pick__discover-action {
+  display: flex; align-items: center; justify-content: space-between; width: auto; flex: 0 0 auto;
+  /* 카드 바닥에 붙인다 — 글 밑에 두면 카드 아래 반이 비어 무게가 위로 쏠린다 */
+  margin: auto 0 0; padding: 1.2rem 1.6rem; min-height: var(--tap); box-sizing: border-box;
+  border: 0; background: var(--plate-cta); color: var(--plate-fg); font-weight: 700;
+}
+html body #root .home-dashboard .pick__discover--aside:hover { transform: none; box-shadow: none; }
+html body #root .home-dashboard .pick__discover--aside:hover .pick__discover-action {
+  background: color-mix(in srgb, var(--plate-cta) 82%, var(--plate-fg));
+}
+html body #root .home-dashboard .pick__discover--aside:focus-visible {
+  outline: .3rem solid var(--plate-accent); outline-offset: .2rem;
+}
+/* 좁은 화면 — 배너 아래 한 줄 카드. 마스코트는 다시 접는다 (세로가 아깝다) */
+@media (max-width: 1439px) {
+  html body #root .home-dashboard .pick__discover--aside .home-card-mascot { display: none; }
+  html body #root .home-dashboard .pick__discover--aside { padding: 2rem; }
+}
+
+/* ── 배너 바닥 '아래로' (v4.9.4) ──────────────────────────────────────────────
+   배너가 세로 600 이라 첫 화면이 배너 하나로 찬다 — 아래가 더 있다는 표식이자 단추다.
+   판 위라 --plate 벌을 쓴다. 넷째 줄(아래 1fr)의 바닥에 선다 */
+html body #root .home__top-layout .home__scroll {
+  grid-column: 1; grid-row: 4; align-self: end; justify-self: start; z-index: 2;
+  display: inline-flex; align-items: center; gap: .8rem;
+  min-height: var(--tap); padding: 0 1.6rem;
+  border: .1rem solid var(--plate-line); background: transparent; color: var(--plate-muted);
+  font-size: var(--fs-sub); font-weight: 700; letter-spacing: .08em; cursor: pointer;
+}
+html body #root .home__top-layout .home__scroll:hover { color: var(--plate-fg); border-color: var(--plate-fg); }
+html body #root .home__top-layout .home__scroll .pxi { width: 1.4rem; height: 1.4rem; }
+@media (prefers-reduced-motion: no-preference) {
+  html body #root .home__top-layout .home__scroll .pxi { animation: home-scroll-nudge 2s ease-in-out infinite; }
+  @keyframes home-scroll-nudge { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(.4rem); } }
+}
+/* 손에서는 접는다 — 배너가 반 화면이라 아래가 이미 보인다 */
+@media (max-width: 699px) {
+  html body #root .home__top-layout .home__scroll { display: none; }
 }
