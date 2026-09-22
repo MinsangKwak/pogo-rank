@@ -88,7 +88,7 @@ GitHub Pages는 **파일을 나눠주기만 하는 호스팅**입니다. 우리�
 - [x] ~~**도메인 하나 구입**~~ — `moncamp.kr` 보유
 - [ ] **Cloudflare 무료 플랜에 도메인 연결** → 네임서버 이관 → DNS에서 GitHub Pages를 가리키고 **프록시(주황 구름) 켜기**
 - [ ] GitHub 저장소 Settings → Pages → **Custom domain**에 그 도메인 입력 + Enforce HTTPS
-- [ ] Cloudflare에서 켤 것: **Bot Fight Mode**(봇 차단), **Security Level: Medium**, **rate limiting 룰 1개**(무료 플랜 제공량 — 예: 같은 IP가 10초에 50요청 넘으면 10초 차단)
+- [x] Cloudflare에서 켤 것: **Bot Fight Mode**(봇 차단), **Security Level: Medium**, **rate limiting 룰 1개**(무료 플랜 제공량 — 같은 IP가 10초에 **200**요청 넘으면 10초 차단. 50 으로 시작했다가 첫 방문 34건이 너무 가까워 올렸다, §8)
 - [ ] **Firebase App Check** 켜기 (reCAPTCHA) — 우리 사이트가 아닌 곳에서 우리 Firestore를 부르는 것을 막습니다. 로그인 기능이 있는 지금 구조에서 가장 값어치 있는 방어
 
 > 순서가 중요합니다. **도메인 → Cloudflare → 그 다음에야 쓰로틀링·IP 차단**입니다. 도메인 없이 되는 것은 없습니다.
@@ -274,11 +274,12 @@ DNS 레코드는 지금 것을 그대로 가져오되 `moncamp.kr` · `dev.monca
 | 대상 | 설정 | 왜 |
 | --- | --- | --- |
 | `/sprites/*` · `/sprites-anim/*` · `/assets/*` | Edge TTL 1년 · Browser TTL 1년 | 이름에 내용 해시가 있거나 id 별로 불변이다 |
-| `/data/*.json` | Edge TTL 1시간 | 주소에 `?v=해시` 가 붙어 바뀌면 키가 바뀐다 |
+| `/data/*` **이고 쿼리에 `v=`** | Edge TTL 1년 · Browser TTL 1년 (cache-control 무시) | 주소에 `?v=해시` 가 붙어 바뀌면 키가 바뀐다. **`manifest.json` 은 쿼리가 없어 이 규칙 밖** — 그게 새 배포를 알리는 열쇠라 원본으로 가야 한다 |
 | `/` · `*.html` | Edge TTL 5분 | GitHub 가 `max-age=600` 을 주는 것과 같은 결 |
 
 **5. 보안 기능** — Bot Fight Mode 켜기 · Security Level: Medium ·
-Rate limiting 룰 1개(무료 제공량): 같은 IP 가 10초에 50요청을 넘으면 10초 차단.
+Rate limiting 룰 1개(무료 제공량, 이름 `burst-guard`): 같은 IP 가 10초에 **200**요청을 넘으면 10초 차단.
+50 으로 시작했다가 올렸다 — 홈 첫 방문이 우리 도메인으로만 34건이고 Cloudflare 는 캐시에서 나가는 요청도 세므로, 50 은 정상 사용자를 잡는다.
 
 **6. 끄는 것** — 켜져 있으면 앱이 깨진다
 
@@ -315,7 +316,7 @@ bash scripts/verify_deploy.sh https://moncamp.kr/ prod
 | SSL/TLS | Full (strict) · Always Use HTTPS · HSTS 12개월 + includeSubDomains | `http://` → 301 · `strict-transport-security` 헤더 |
 | 응답 헤더 | 위 3번 표의 다섯 중 HSTS 를 뺀 넷을 Transform Rule 하나로 | 외부 노드(hackertarget)에서 헤더 넷 확인 |
 | 캐시 규칙 | `/assets/` · `/sprites/` · `/sprites-anim/` — Edge·Browser TTL 1년 | 자산 `cf-cache-status: HIT` |
-| 보안 | Bot Fight Mode 켬 · Rate limit `burst-guard` (IP 당 10초 50건 → 10초 차단) | 대시보드 Active |
+| 보안 | Bot Fight Mode 켬 · Rate limit `burst-guard` (IP 당 10초 200건 → 10초 차단; 오후엔 50, 저녁에 올림) | 대시보드 Active |
 | 끄는 것 | Rocket Loader · Email Obfuscation 끔 | 배포 검문 통과 (화면 46장 · 명암비 42장) |
 
 > **Claude 실행 환경에서는 `verify_cloudflare.sh` 가 계속 ❌ 다.** 프록시가 옛 DNS 를 캐시해 GitHub Pages 에 직접 붙는다.
