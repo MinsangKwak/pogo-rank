@@ -23,11 +23,10 @@ import type { MonPick, OpenMon } from './lib/mon';
 import { useLockReason } from './lib/useLocked';
 import { trackPageView, track } from './lib/track';
 import type { RouteDef } from './routes';
+// **홈과 상세만 정적이다.** 둘은 각자 주소의 첫 화면이라, 쪼개면 열자마자 한 번 더
+// 받으러 가야 한다. 나머지는 어느 주소에서도 첫 화면이 아니므로 첫 번들에 있을 이유가 없다 —
+// 넣어 두면 홈만 보려는 사람이 도감·티어표·일정 코드까지 내려받고 해석한다
 import Home from './screens/Home';
-import Dex from './screens/Dex';
-import { Dmax, Pve, Pvp } from './screens/Ranks';
-import { Eggs, Raids } from './screens/Gameday';
-import Schedule from './screens/Schedule';
 import { NotPorted } from './screens/Misc';
 import MonDetail from './screens/MonDetail';
 import ConsentDialog from './components/Consent';
@@ -51,6 +50,13 @@ const Settings = lazy(() => import('./screens/Settings'));
 const Planner = lazy(() => import('./screens/Planner'));
 const Finder = lazy(() => import('./screens/Finder'));
 const IvRankPage = lazy(() => import('./screens/IvRankPage'));
+const Dex = lazy(() => import('./screens/Dex'));
+const Dmax = lazy(() => import('./screens/Ranks').then((m) => ({ default: m.Dmax })));
+const Pve = lazy(() => import('./screens/Ranks').then((m) => ({ default: m.Pve })));
+const Pvp = lazy(() => import('./screens/Ranks').then((m) => ({ default: m.Pvp })));
+const Raids = lazy(() => import('./screens/Gameday').then((m) => ({ default: m.Raids })));
+const Eggs = lazy(() => import('./screens/Gameday').then((m) => ({ default: m.Eggs })));
+const Schedule = lazy(() => import('./screens/Schedule'));
 const PvpDeck = lazy(() => import('./screens/PvpDeck'));
 const DmaxDeck = lazy(() => import('./screens/DmaxDeck'));
 const SoloCalc = lazy(() => import('./screens/SoloCalc'));

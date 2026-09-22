@@ -9,17 +9,18 @@
 // ─────────────────────────────────────────────────────────────────────────────
 'use strict';
 import { useEffect } from 'react';
-import { useMeta } from '../lib/data';
+import { useMetaSoft } from '../lib/data';
 import { configureCollect, watchPageHide } from '../lib/collect';
 
 export default function CollectBridge() {
-  const { data: meta } = useMeta();
+  // 기다리지 않는다 — 이 조각도 Suspense 밖이라, 기다리면 화면 전체가 같이 선다
+  const meta = useMetaSoft();
   useEffect(() => {
-    const url = meta.COLLECT_URL ?? '';
+    const url = meta?.COLLECT_URL ?? '';
     if (!url) return;
-    configureCollect(url, meta.APP_VERSION ?? '');
+    configureCollect(url, meta?.APP_VERSION ?? '');
     // 탭을 떠날 때 남은 것을 보낸다 — 마지막 검색이 큐에 남은 채 사라지지 않게
     return watchPageHide();
-  }, [meta.COLLECT_URL, meta.APP_VERSION]);
+  }, [meta?.COLLECT_URL, meta?.APP_VERSION]);
   return null;
 }

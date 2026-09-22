@@ -91,6 +91,11 @@ export const useDexSoft = bundleSoftHook<DexBundle>('dex');
 export const useFavEvents = bundleHook<FavEventsBundle>('fav-events');
 export const useUpdates = bundleHook<UpdatesBundle>('updates');
 export const useMeta = bundleHook<MetaBundle>('meta');
+// **셸은 meta.json 을 기다리면 안 된다** (v5 Phase 7). 머리줄의 패치노트 빨간 점이 useMeta 를
+// 통해 이 묶음을 빨고 있었는데, useMeta 는 Suspense 라 묶음이 올 때까지 셸 전체가 안 그려졌다 —
+// 실측 1.6Mbps·CPU 4배에서, 스크립트는 1.6초에 다 받고도 화면은 3.5초에 떴다.
+// 점 하나는 한 박자 늦게 켜져도 된다. 화면이 2초 늦는 것과 바꿀 것이 아니다
+export const useMetaSoft = bundleSoftHook<MetaBundle>('meta');
 export const useUsage = bundleHook<UsageBundle>('usage');
 export const useSchedule = bundleHook<ScheduleBundle>('schedule');
 export const useRelease = bundleHook<ReleaseBundle>('release');

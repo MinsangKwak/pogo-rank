@@ -8,6 +8,7 @@
 import { go } from '../lib/nav';
 
 import { BASE } from '../lib/base';
+import { HERO_ART } from '../lib/heroArt';
 
 import { Suspense, type ReactNode } from 'react';
 import { ROUTE_GROUPS, ROUTE_NAV, routeDesc, routeHref, type RouteDef } from '../routes';
@@ -210,11 +211,11 @@ export default function Home({ onOpen }: { onOpen: OpenMon }) {
             캡션의 날짜·보스는 gameday 일정에서 온다 — 코드에 박아 두면 다음 주에 틀린 말이 된다 (§3) */}
         <figure className="max-battle-art">
           <img
-            src={`${BASE}images/max-battle-articuno-team-1200.webp`}
-            srcSet={`${BASE}images/max-battle-articuno-team-720.webp 720w, ${BASE}images/max-battle-articuno-team-1200.webp 1200w`}
-            sizes="(max-width: 699px) 100vw, (max-width: 999px) 90vw, 55vw"
+            src={HERO_ART.src}
+            srcSet={HERO_ART.srcSet}
+            sizes={HERO_ART.sizes}
             alt={`${dexSoft?.DEX_DATA.names['464'] ?? ''}·${dexSoft?.DEX_DATA.names['242'] ?? ''}·${dexSoft?.DEX_DATA.names['249'] ?? ''}·${dexSoft?.DEX_DATA.names['530'] ?? ''}가 다이맥스 ${dexSoft?.DEX_DATA.names['144'] ?? ''}와 맞서는 배틀 일러스트`}
-            width="1200" height="800" fetchPriority="high" decoding="async" />
+            width={HERO_ART.width} height={HERO_ART.height} fetchPriority="high" decoding="async" />
           <figcaption>
             {when ? <span>{when} · {kind}</span> : null}
             {bosses.length ? <b>{bosses.join(' · ')}</b> : null}

@@ -85,7 +85,14 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         <script dangerouslySetInnerHTML={{ __html: THEME_SCRIPT }} />
       </head>
       <body>
-        <Providers>{children}</Providers>
+        {/* **#root 를 없애면 안 된다.** v4 의 CSS 307군데가 `html body #root …` 로 시작한다 —
+            v3 스킨을 이기려고 올린 접두사다(styles.ts 주석). Next.js 로 옮기며 이 래퍼가
+            빠졌고, 그 순간 home-editorial(128) · catalog(60) · surfaces(52) · finder(34) ·
+            detail(23) 이 통째로 죽은 규칙이 됐다. 오류도 경고도 없이 배치와 색만 사라진다.
+            레이아웃에서는 `#root{display:contents}` 가 이 상자를 지운다 (root.css) */}
+        <div id="root">
+          <Providers>{children}</Providers>
+        </div>
       </body>
     </html>
   );

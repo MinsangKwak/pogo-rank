@@ -15,7 +15,7 @@ import { ROUTE_GROUPS, ROUTE_NAV, routeById, routeDesc, type RouteDef } from '..
 import { usePrefStore, themeIsDark, THEME_WORD, type Theme } from '../stores/pref';
 import { releaseSeen } from '../lib/release';
 import { setLang, useLang } from '../lib/useLang';
-import { useMeta } from '../lib/data';
+import { useMetaSoft } from '../lib/data';
 import { track } from '../lib/track';
 import { PxIcon } from './PxIcon';
 import { routeNote } from '../lib/notes';
@@ -151,7 +151,8 @@ export function AppNav({ now, onConsent }: { now: string; onConsent: () => void 
  * 이 줄이 통째로 없으면 넓은 화면에서 왼쪽 메뉴가 절반 높이로 끝나 화면이 비어 보인다.
  */
 function NavExtra({ onConsent }: { onConsent: () => void }) {
-  const { data: meta } = useMeta();
+  // 셸은 묶음을 기다리지 않는다 (lib/data.ts 의 useMetaSoft 주석)
+  const meta = useMetaSoft();
   const newRelease = useNewRelease();
   const goTo = (href: string) => () => { go(href); };
   return (
@@ -185,7 +186,10 @@ function NavExtra({ onConsent }: { onConsent: () => void }) {
         <span className="drawer__label">통계·저장소 설정</span>
       </button>
       <p className="drawer__meta">
-        PvPoke · PokeMiners 데이터<br />{`기준일 ${meta.DATA_TIMESTAMP} · 매일 00시 자동 갱신`}
+        {/* 기준일은 묶음이 와야 안다. **비면 그 줄만 안 쓴다** — 출처 표기는 값과 무관하게 늘 선다.
+            `기준일 undefined` 가 나가면 CLAUDE.md §1 위반이다 */}
+        PvPoke · PokeMiners 데이터
+        {meta?.DATA_TIMESTAMP ? <><br />{`기준일 ${meta.DATA_TIMESTAMP} · 매일 00시 자동 갱신`}</> : null}
       </p>
     </div>
   );
@@ -211,7 +215,8 @@ function ThemeItem() {
  * 패치노트를 열면 markReleaseSeen 이 알려 주므로 그때 다시 센다.
  */
 function useNewRelease(): boolean {
-  const { data: meta } = useMeta();
+  // 기다리지 않고 읽는다 — 아직 안 왔으면 점을 안 켤 뿐이다 (lib/data.ts 의 useMetaSoft 주석)
+  const meta = useMetaSoft();
   const [seen, setSeen] = useState(0);
   useEffect(() => {
     const onSeen = () => setSeen((n) => n + 1);
@@ -219,7 +224,7 @@ function useNewRelease(): boolean {
     return () => window.removeEventListener('moncamp:release-seen', onSeen);
   }, []);
   void seen;   // 알림을 받으면 다시 세기만 하면 된다
-  return !!meta.RELEASE_VER && !releaseSeen(meta.RELEASE_VER);
+  return !!meta?.RELEASE_VER && !releaseSeen(meta.RELEASE_VER);
 }
 
 /** 화면 머리 — 브레드크럼 · 제목 · 한 줄 설명 · 오른쪽 동작.
@@ -248,7 +253,8 @@ export function PageHead({ route, actionsRef }: { route: RouteDef; actionsRef: (
 }
 
 export function Footer({ onConsent }: { onConsent: () => void }) {
-  const { data: meta } = useMeta();
+  // 위와 같다 — 바닥글이 묶음을 기다리면 화면 전체가 같이 기다린다 (Suspense 밖이다)
+  const meta = useMetaSoft();
   return (
     <footer>
       <p className="foot-lead">포켓몬 GO의 정보 탐색부터 배틀 준비까지 함께하는 서비스예요.</p>
@@ -256,7 +262,7 @@ export function Footer({ onConsent }: { onConsent: () => void }) {
       <p>데이터는 PvPoke · PokeMiners · PokeAPI · LeekDuck의 공개 자료를 사용합니다. 코드는 열람용으로 공개하며 포크·재배포를 허용하지 않습니다. 데이터·이미지는 각 출처의 조건을 따릅니다 (저장소 LICENSE · NOTICE).</p>
       <p className="foot-links">
         {/* 문의 이메일은 빌드가 넣은 값이다 — 저장소에 적어 두지 않는다 (v3 index.html __CONTACT__) */}
-        {meta.CONTACT_EMAIL ? <>문의·건의: <a href={`mailto:${meta.CONTACT_EMAIL}`}>{meta.CONTACT_EMAIL}</a> · </> : null}
+        {meta?.CONTACT_EMAIL ? <>문의·건의: <a href={`mailto:${meta.CONTACT_EMAIL}`}>{meta.CONTACT_EMAIL}</a> · </> : null}
         <a href="/privacy">개인정보처리방침</a> · <a href="/terms">이용약관</a> ·{' '}
         <button type="button" id="foot-consent" onClick={onConsent}>통계·저장소 설정</button> ·{' '}
         <a href="https://github.com/MinsangKwak/pogo-rank" target="_blank" rel="noopener">GitHub</a>
@@ -327,7 +333,9 @@ export function Drawer({ open, onClose, now, onConsent }: { open: boolean; onClo
 
 /** 서랍 맨 아래 한 줄 (v3 versionMeta). 판 번호는 빌드가 실어 준 값만 쓴다 — 손으로 적지 않는다 */
 function Version() {
-  const { data: meta } = useMeta();
+  const meta = useMetaSoft();
+  // 판 번호가 오기 전에는 아무것도 안 쓴다 — `moncamp · undefined` 보다 빈 자리가 정직하다
+  if (!meta?.APP_VERSION) return null;
   return <p className="drawer__meta">{`moncamp · ${meta.APP_VERSION}`}</p>;
 }
 

@@ -165,4 +165,8 @@ jobs:
           printf '%s' "$body" | grep -q '<title>' || { echo '제목이 없습니다'; exit 1; }
           printf '%s' "$body" | grep -q '피카츄' || { echo '본문에 포켓몬 이름이 없습니다 — 빈 껍데기가 올라갔습니다'; exit 1; }
           printf '%s' "$body" | grep -q 'application/ld+json' || { echo 'JSON-LD 가 없습니다'; exit 1; }
+          # **글자만 재면 디자인이 빠진 판도 초록이다.** 실제로 그랬다 — `#root` 래퍼가 빠져
+          # CSS 307군데가 죽은 채로 배포됐는데, 제목·본문·JSON-LD 가 다 있어 이 검사가 통과했다.
+          # 그 자리를 여기서도 본다 (src/test/rootwrap.test.ts 와 같은 것을 지킨다)
+          printf '%s' "$body" | grep -q 'id="root"' || { echo '#root 래퍼가 없습니다 — CSS 가 통째로 안 걸립니다'; exit 1; }
           echo "OK — $SITE/mon/25 가 내용이 든 HTML 을 준다"
