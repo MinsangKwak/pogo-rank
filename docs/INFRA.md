@@ -305,6 +305,33 @@ bash scripts/verify_deploy.sh https://moncamp.kr/ prod
 
 전파는 보통 1~2시간, 길면 24시간. **광고가 26일이면 늦어도 24일에 네임서버를 옮긴다.**
 
+### 켠 뒤 실측 (2026-09-22 저녁)
+
+**전부 켰고, 바깥에서 재서 확인했다.** 한 장 요약은 [`hardening-2026-09-22.png`](hardening-2026-09-22.png) 다.
+
+| 항목 | 상태 | 어떻게 확인 |
+| --- | --- | --- |
+| 네임서버 | 가비아 → `ashton` · `harleigh` `.ns.cloudflare.com` | 1.1.1.1 · 8.8.8.8 이 Cloudflare 응답 |
+| SSL/TLS | Full (strict) · Always Use HTTPS · HSTS 12개월 + includeSubDomains | `http://` → 301 · `strict-transport-security` 헤더 |
+| 응답 헤더 | 위 3번 표의 다섯 중 HSTS 를 뺀 넷을 Transform Rule 하나로 | 외부 노드(hackertarget)에서 헤더 넷 확인 |
+| 캐시 규칙 | `/assets/` · `/sprites/` · `/sprites-anim/` — Edge·Browser TTL 1년 | 자산 `cf-cache-status: HIT` |
+| 보안 | Bot Fight Mode 켬 · Rate limit `burst-guard` (IP 당 10초 50건 → 10초 차단) | 대시보드 Active |
+| 끄는 것 | Rocket Loader · Email Obfuscation 끔 | 배포 검문 통과 (화면 46장 · 명암비 42장) |
+
+> **Claude 실행 환경에서는 `verify_cloudflare.sh` 가 계속 ❌ 다.** 프록시가 옛 DNS 를 캐시해 GitHub Pages 에 직접 붙는다.
+> 본인 PC 에서 돌리면 ✅ 다. 이 환경에서 잴 때는 외부 노드를 쓴다 — `https://api.hackertarget.com/httpheaders/?q=https://moncamp.kr/`.
+
+### 남은 둘 — 대규모 트래픽 전에 (2026-09-22 실측)
+
+운영 홈을 실제로 열어 재 보니 정적 화면은 준비됐고 둘이 남았다.
+
+| 무엇 | 왜 | 어떻게 |
+| --- | --- | --- |
+| **`/data/*.json` 캐시 규칙** | 캐시 규칙이 `/assets/` 계열만 잡았고 Cloudflare 는 `.json` 을 기본으로 캐시하지 않는다. 방문 한 번마다 `/data/` 7개(dex 354KB · pve 450KB, 합쳐 1MB 남짓)가 GitHub Pages 원본으로 간다 → 월 10만 방문쯤에서 100GB 소프트 한도 | 데이터는 이미 `?v=해시` 로 받으므로 **1년 캐시해도 안전**하다. `manifest.json` 만 해시가 없으니 1분 또는 제외 — 새 배포가 바로 보이는 열쇠다 |
+| **Rate limit 완화** | 홈 첫 로딩이 우리 도메인으로만 34건이고 랭킹 스크롤이 스프라이트를 더 붙인다. Cloudflare 한도는 **캐시에서 나가는 요청도 센다** — 정상 사용자가 10초 차단을 맞을 수 있다 | 10초 200건으로 올리거나, 규칙 조건에서 `/sprites/` · `/assets/` 를 뺀다 |
+
+Firestore(Spark) · Cloud Run(0~3 인스턴스) 은 그대로 둔다 — 광고 트래픽은 익명 읽기가 없어 Firestore 에 닿지 않고, 수집 서버는 아직 꺼져 있다.
+
 ### 여기서 안 하기로 한 것
 
 | 안 한 것 | 이유 |

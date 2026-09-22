@@ -40,6 +40,8 @@
 [INFRA §8](docs/INFRA.md)). 브랜치 보호 셋(`deploy` · `main` · `dev`, [OPERATIONS §18](docs/OPERATIONS.md)). Firestore 규칙 v4.9.7 콘솔 게시.
 `pogo-rank` 는 다시 public, `pogo-rank-dev` 는 private([INFRA §9](docs/INFRA.md)).
 
+**운영 반영 (같은 날 저녁)** — dev → main PR #142 → deploy `7fab346` → `verify_deploy.sh` 전 항목 통과. 한 장 요약 [`docs/hardening-2026-09-22.png`](docs/hardening-2026-09-22.png) · 절차 기록 [OPERATIONS §19](docs/OPERATIONS.md).
+
 </details>
 
 <details>
