@@ -1,0 +1,5 @@
+<!-- 도면은 검색에 잡히지 않는다. dev 의 robots.txt 가 전면 차단본이지만, 그 한 겹에만 기대지 않는다 —
+     운영 robots 가 잘못 실린 판에서도 이 메타는 남는다 (deploy-dev.yml 이 index.html 에 같은 검사를 건다) -->
+<meta name="robots" content="noindex, nofollow" />
+<!-- 배포된 도면은 관리자 로그인으로만 열린다 — 판정 전에는 아무것도 안 그린다 (static/gate.js) -->
+<script type="module" src="./gate.js"></script>

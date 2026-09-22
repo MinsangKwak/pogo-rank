@@ -176,7 +176,7 @@ Actions에서 빨간 X가 뜨면 **build 잡의 빨간 단계**를 펼쳐 마지
 
 > 손으로 준 깃발은 **그 사람이 다시 로그인해야** 적용됩니다 — 판정은 로그인 한 번에 한 번만 읽습니다.
 
-**계정 삭제(v2.18.0)** — 사용자가 ☰ → 계정 카드 → "계정 삭제"로 직접 지웁니다(`users`·`allowlist`·`requests` 본인 문서 + 인증 계정). 이메일로 요청이 오면 콘솔에서 같은 네 곳을 지우면 됩니다. **v2.18.0 규칙(`firestore.rules`)을 콘솔에 다시 게시해야** 본인 문서 delete가 허용됩니다 — 게시 전에는 삭제 버튼이 `permission-denied`로 실패하고 안내 문구가 뜹니다.
+**계정 삭제(v2.18.0 · v4.9.7)** — 사용자가 ☰ → 계정 카드 → "계정 삭제"로 직접 지웁니다(`users`·`allowlist`·`requests` 본인 문서 + 인증 계정). 이메일로 요청이 오면 콘솔에서 같은 네 곳을 지우면 됩니다. **v4.9.7 규칙(`firestore.rules`)을 콘솔에 다시 게시해야** `users` 문서 delete 가 허용됩니다 — 그전 규칙은 삭제 요청을 오류로 거부해 `permission-denied` 가 났습니다(삭제 요청에는 `request.resource` 가 없는데 본문 크기를 읽었다). 규칙을 고칠 때는 `cd frontend-v4 && npm run test:rules` 로 에뮬레이터 검사를 먼저 돌립니다.
 
 **관리자를 바꾸려면** `backend/build.py`의 `ADMIN_UID`와 `firestore.rules`의 `isAdmin()` uid를 **둘 다** 바꾸고, 규칙은 콘솔에서 다시 게시해야 합니다.
 
@@ -713,3 +713,20 @@ python3 scripts/firestore_restore.py --apply    # 실제 쓰기
 
 - [ ] `/v1/admin/backups` 의 `ok` 가 `true` 인가 (월 1회)
 - [ ] GCS 버킷에 파일이 매주 하나씩 늘고 있는가 · 365일 규칙이 살아 있는가 (분기 1회)
+
+## 18. 브랜치 보호 (2026-09-22 v4.9.7)
+
+**여덟 브랜치가 전부 무방비였다** (`protected: false`). `deploy` 는 운영 배포 방아쇠라 푸시 한 번에 사이트가 나간다.
+저장소가 private 이 되면서 보호 규칙은 Pro 에서만 쓸 수 있는데, Pro 라 문제없다.
+
+**설정은 저장소 Settings → Rules → Rulesets → New branch ruleset** 에서 한다. 코드로 못 하는 일이라 표로 둔다.
+
+| 브랜치 | 켤 것 | 안 켤 것과 이유 |
+| --- | --- | --- |
+| `deploy` | **Block force pushes** · **Restrict deletions** | *Require PR* 은 안 켠다 — 배포가 `main` 을 머지해 **직접 푸시**하는 흐름이다(§6). 빨리감기 푸시는 그대로 통한다 |
+| `main` | Block force pushes · Restrict deletions · **Require a pull request before merging** (approvals 0) | 혼자라 승인 수는 0. dev → main 이 PR 로만 가게 못 박는 것이 목적이다 |
+| `dev` | Block force pushes · Restrict deletions | 봇(`bot/game-update-candidates`)과 작업 가지가 PR 로 들어오는 자리라 PR 강제는 안 한다 |
+
+**Bypass list 에 자기 자신을 넣지 않는다.** 넣으면 규칙이 아무것도 안 막는다. 급할 때는 규칙을 잠시 끄고 다시 켠다 — 그 흔적이 남는 것이 규칙의 값이다.
+
+확인은 실제로 밀어 보지 않는다. Rulesets 화면에서 세 줄이 **Active** 인지 본다.

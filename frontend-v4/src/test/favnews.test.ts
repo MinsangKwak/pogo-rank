@@ -25,7 +25,12 @@ describe('즐겨찾기 소식 — 실데이터', () => {
   });
 
   it.skipIf(!EVENTS.length)('그 종을 담으면 소식에 걸린다', () => {
-    const withDex = EVENTS.filter((one) => String(one.type ?? '').startsWith('max-') && (one.dex ?? []).length);
+    // 소식은 끝난 것과 45일 밖은 안 보여 준다 — 꾸러미에는 지난 주 맥스 먼데이도 남아 있으니 그 창 안만 묻는다 (v4.9.3 · 9.21 판이 하루 지나 깨짐)
+    const now = Date.now();
+    const until = now + 45 * 24 * 60 * 60 * 1000;
+    const withDex = EVENTS.filter((one) => String(one.type ?? '').startsWith('max-') && (one.dex ?? []).length)
+      .filter((one) => Date.parse(one.end || one.start) >= now && Date.parse(one.start) <= until);
+    expect(withDex.length).toBeGreaterThan(0);
     for (const event of withDex) {
       const rows = favNewsList(EVENTS, [event.dex![0]!]);
       expect(rows.some((row) => row.event.id === event.id)).toBe(true);

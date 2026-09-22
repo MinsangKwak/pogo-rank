@@ -901,6 +901,36 @@ CP = `floor((공격+IV) × √(방어+IV) × √(체력+IV) × CPM² / 10)`, 최
 - 상세 팝업은 **여는 곳에 따라** 구성이 다르다: 도감에서 열면 능력치 육각형 포함, 순위표·검색에서는 기술 중심(`openDetail(p, isDex)`).
 - 새 CSS/JS 파일은 `backend/build.py`의 `STYLES` / `SCRIPTS` 목록에 등록해야 번들에 포함된다.
 
+### v4 디자인 시스템 (`frontend-v4/src/ds/`)
+
+2026-09-21 에 조각과 토큰을 한 자리로 모으고 스토리북을 붙였습니다.
+
+| 층 | 자리 | 무엇 |
+| --- | --- | --- |
+| 값 | `frontend/styles/tokens.css` | 토큰. 값은 여기 한 곳뿐입니다 |
+| 목록 | `frontend-v4/src/ds/tokens.ts` | 이름과 쓰임새. 값은 적지 않습니다 |
+| 조각 | `frontend-v4/src/ds/*.tsx` | Button · ChipGroup · Segmented · Card · Badge · FormBadge · Delta · TypeDots · TypePill · Num · Word · Lines · Callout · Empty · Text · Label · Stack · Inline |
+| 규칙 | `frontend-v4/src/styles/ds.css` | v3 에 짝이 없는 조각만 (배치 · 글자 · 안내 · 카드 · 타입 알약) |
+| 도면 | `frontend-v4/src/stories/` | 스토리 37개 (`npm run storybook`) |
+
+**왜 v3 클래스를 그대로 쓰나.** 버튼 · 칩 · 세그먼트 · 뱃지는 v3 CSS 가 이미 계약(클래스명 · 태그 · 중첩)을
+들고 있고 회귀 34 스위트가 그 계약을 붙잡고 있습니다. `ds/` 는 그 클래스를 **감싸기만** 합니다 —
+같은 모양을 새 이름으로 다시 그리면 디자인이 두 벌이 되고 한쪽만 고쳐집니다.
+
+**새로 만든 것은 다섯입니다.** `.ds-stack`·`.ds-inline`(간격을 격자 위에만 두는 배치),
+`.ds-text`(글꼴 줄기와 크기의 짝), `.ds-callout`(안내), `.ds-card`(카드 레시피 — surfaces.css 가
+도감·랭킹·홈 선택자마다 따로 박아 둬서 새 화면이 베낄 자리가 없었습니다),
+`.ds-typepill`(v3 `.dex__type` 은 `pages.css` 가 이름을 꺼 둬서 도감 밖에서는 색 점만 남습니다).
+
+**타입이 격자를 지킵니다.** `<Stack gap>` 은 4px 격자 여섯 칸, `<Text size>` 는 Pretendard 세 단,
+`<Label size>` 는 Galmuri 네 단뿐입니다. `<Label size="sub">`(Galmuri 12px)은 아예 써지지 않습니다.
+
+**관문을 컴포넌트로도 둡니다.** `<Num>`·`<Word>`·`<Lines>` 가 `lib/cell.ts` 를 부릅니다 —
+함수만 두면 화면에서 부르는 것을 잊을 수 있어서, 값을 그대로 꽂는 쪽이 오히려 더 손이 가게 만들었습니다.
+이 판(`parts-value--leaky`)을 세우자 관문 자체의 구멍 셋이 드러났습니다:
+`word(NaN)` → `'NaN'`, `word({})` → `'[object Object]'`, `num('   ')` → `'0'`.
+셋 다 막고 `src/test/cellgate.test.ts` 로 못 박았습니다.
+
 ### 캐싱 · 오프라인 (PWA)
 
 `sw.js`는 github.io 와 moncamp.kr(2026-09-14 v3.27.0 커스텀 도메인)에서만 등록되며, 페이지와 `data.js`는 **네트워크 우선**(항상 최신, 실패 시 캐시), `sprites/*.png`는 id별 불변이라 **캐시 우선**입니다. 재방문 시 실질 다운로드는 `data.js`뿐입니다. 스프라이트는 지연 로딩하지 않습니다(v2.16.1) — 평균 1KB라 이득이 없다. 스켈레톤의 load/error 처리는 **문서 캡처 리스너**로 둡니다: 티어표 행처럼 `cloneNode`로 복제되는 행에서는 요소 리스너가 사라져 스켈레톤이 안 벗겨졌다(첫 방문에서 그림이 안 뜨던 원인). 실패 시 `?r=n`으로 2회 재시도하고 SW는 쿼리를 뗀 키로 캐시합니다.
@@ -919,7 +949,7 @@ CP = `floor((공격+IV) × √(방어+IV) × √(체력+IV) × CPM² / 10)`, 최
 - 상태는 `anon` / `pending`(승인 대기) / `ok` 셋. 화면 요소는 상태에 따라 **숨기고**, 실제 차단은 규칙이 한다.
 - 관리자 판정은 `ADMIN_UID`(빌드 설정) ↔ `firestore.rules`의 `isAdmin()` 두 곳이 같은 uid일 때만 성립한다. 규칙은 **콘솔에서 다시 게시**해야 적용된다 — 코드만 배포하면 `permission-denied`.
 - 즐겨찾기는 종 단위(도감번호)로 저장해 폼이 달라도 한 마리로 센다.
-- **계정 삭제 셀프서비스(v2.18.0)** — `auth.js deleteAccount()`: `users/{uid}` → `allowlist/{email}` → `requests/{email}` → `user.delete()` 순. 인증 계정을 먼저 지우면 규칙이 문서 삭제를 막으므로 순서가 고정이다. `auth/requires-recent-login`이면 Google 재인증 뒤 재시도. 관리자 uid는 지우지 않는다.
+- **계정 삭제 셀프서비스(v2.18.0)** — `auth.js deleteAccount()`: `users/{uid}` → `allowlist/{email}` → `requests/{email}` → `user.delete()` 순. 인증 계정을 먼저 지우면 규칙이 문서 삭제를 막으므로 순서가 고정이다. `auth/requires-recent-login`이면 Google 재인증 뒤 재시도. 관리자 uid는 지우지 않는다. v4 는 `Account.tsx remove()` 가 같은 순서로 지운다 — v4.9.7 에 빠져 있던 `allowlist` 를 되살렸다. 규칙의 `users` delete 는 `create, update` 와 갈라 본문을 안 본다(삭제 요청에는 `request.resource` 가 없다). `frontend-v4/src/test/rules/` 가 에뮬레이터로 견준다(`npm run test:rules`).
 - **첫 로그인 동의(v2.18.0)** — `terms.js openTermsConsent()`: 약관·방침 동의 + 만 14세 체크가 모두 켜져야 로그인. 동의 버전은 `localStorage pogo_terms_ok`와 `requests` 문서에 남고, `TERMS_VER`를 올리면 다시 묻는다.
 - **통계 동의(v2.18.0)** — `consent.js`: build.py의 GA 스니펫은 `window.GA_PENDING_ID`만 남기고, `localStorage pogo_consent === 'granted'`일 때 `loadAnalytics()`가 gtag를 붙인다. 거부하면 `window.gtag`가 없어 `track()`이 전부 무시된다.
 - 내 포켓몬(`mons`)은 개체 단위 — `{ id, sprite(폼 id), shadow, level, ivs, fast, charged, status, memo, at }`. CP는 저장하지 않고 화면에서 계산한다. 배열 전체를 `set({ merge: true })`로 덮어쓴다(원소 수정이 있어 arrayUnion 부적합). 문서 1MB 한도 안에서 300마리 상한.

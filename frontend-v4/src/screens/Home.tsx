@@ -16,6 +16,7 @@ import type { GameUpdate } from '../types/data';
 import { track } from '../lib/track';
 import { UPDATE_CATS } from '../lib/notes';
 import type { OpenMon } from '../lib/mon';
+import { TankPopupEntry } from '../components/TankPopup';
 
 // 갈래마다 문 앞에 세우는 스타터 (v3 home.js 와 같은 번호 — 꼬부기 · 파이리 · 이상해씨)
 const STARTER: Record<string, number> = { today: 7, pick: 4, mine: 1 };
@@ -62,6 +63,30 @@ function Discover({ mascot, sprite, kicker, head, copy, extra, href }: {
       <strong>{head}</strong>
       <span className="pick__discover-copy">{copy}</span>
       <span className="pick__discover-action">전체 보기<span aria-hidden="true">↗</span></span>
+    </button>
+  );
+}
+
+/**
+ * 배너 바닥의 '아래로' — 배너가 세로 600 이라 첫 화면이 배너 하나로 찬다.
+ * 아래에 무엇이 더 있는지 몰라 스크롤을 안 하는 사람이 있어서, 갈 곳을 눈에 보이게 둔다.
+ *
+ * **자리(#home-more)가 아직 없을 수 있다.** 아래쪽은 데이터를 기다리는 Suspense 안이라
+ * 데이터가 오기 전에는 그 자리에 기다림 판만 있다 — 그때는 한 화면만큼 내린다.
+ */
+function ScrollDown() {
+  const go = () => {
+    const target = document.getElementById('home-more');
+    // 움직임을 줄여 달라고 한 사람에게는 부드럽게 흐르지 않는다 (§1-b 와 같은 결)
+    const smooth = !window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+    const behavior: ScrollBehavior = smooth ? 'smooth' : 'auto';
+    if (target) target.scrollIntoView({ behavior, block: 'start' });
+    else window.scrollTo({ top: window.innerHeight, behavior });
+  };
+  return (
+    <button className="home__scroll" type="button" onClick={go}>
+      <span>아래로</span>
+      <PxIcon emoji="↓" />
     </button>
   );
 }
@@ -198,7 +223,13 @@ export default function Home({ onOpen }: { onOpen: OpenMon }) {
           <a className="home__btn" href={routeHash('dmax-deck')}
             onClick={() => track('home_cta', { to: 'dmax-deck' })}>맥스 배틀 덱 짜기</a>
         </div>
+        <ScrollDown />
       </section>
+      {/* 배너 옆 세로 칸 — 넓은 화면에서만 옆에 서고, 좁으면 배너 아래로 내려온다 (home-editorial.css).
+          데이터를 안 쓰는 카드라 Suspense 밖에 둘 수 있다 — 그래서 첫 화면에 바로 선다 */}
+      <Discover mascot="machamp" sprite={68} kicker="다양한 활용처" extra="pick__discover--aside"
+        head={<>한 마리로<br />여러 배틀을.</>} copy="레이드부터 PvP까지, 두루 쓰이는 포켓몬"
+        href={routeHash('dex')} />
       </div>
       {/* 기다리는 자리도 한 화면을 채운다 — 바닥글이 먼저 보였다가 밀리면 CLS 다 */}
       <Suspense fallback={<div className="home__loading" aria-busy="true" />}>
@@ -231,17 +262,17 @@ function HomeData({ onOpen }: { onOpen: OpenMon }) {
 
   return (
     <>
-
-      <section className="home__picks">
+      {/* 11월 레이드 탱커 준비(예상) — 안내 띠 + 하루 한 번 열리는 팝업. 데이터가 있어야 그리므로 여기(Suspense 안)다 */}
+      <TankPopupEntry onOpen={onOpen} />
+      {/* id 는 배너의 '아래로' 단추가 내려가는 자리다 — 새 이름이라 home- 를 붙였다 (§2) */}
+      <section className="home__picks" id="home-more">
         <div className="home__section">
           <h3>용도별 상위 포켓몬</h3>
           <span>평가 조건에 따라 추천이 달라져요<span className="home__date"> · 기준일 {meta.DATA_FETCHED.slice(0, 10)}</span></span>
         </div>
-        {/* 카드 셋이 한 격자 안에 선다 — 감싸는 .home__pick-grid 가 없으면 카드가 한 줄에 하나씩 늘어선다 */}
+        {/* 카드 둘이 한 격자 안에 선다 — 감싸는 .home__pick-grid 가 없으면 카드가 한 줄에 하나씩 늘어선다.
+            「다양한 활용처」는 v4.9.4 에 배너 옆으로 올라갔다 (위 .home__top-layout) */}
         <div className="home__pick-grid">
-          <Discover mascot="machamp" sprite={68} kicker="다양한 활용처"
-            head={<>한 마리로<br />여러 배틀을.</>} copy="레이드부터 PvP까지, 두루 쓰이는 포켓몬"
-            href={routeHash('dex')} />
           <PickCard kind="dmax" title="다이맥스" hint="다이맥스 배틀에서 활약하는 포켓몬" rows={dmax}
             href={routeHash('dmax')} labels={dex.FORM_LABELS} onOpen={onOpen} />
           <PickCard kind="pve" title="레이드" hint="종합 점수 순 · 초당 피해량(DPS)과 총 피해량(TDO) 기준" rows={raid}

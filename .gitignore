@@ -10,3 +10,9 @@ __pycache__/
 .env
 firestore.rules.local
 snapshot/tables/
+
+# 2026-09-22 v4.9.7 Firestore 에뮬레이터(npm run test:rules)가 남기는 것
+firebase-debug.log
+firestore-debug.log
+ui-debug.log
+.firebase/

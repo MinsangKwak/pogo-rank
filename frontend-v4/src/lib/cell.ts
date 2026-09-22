@@ -18,17 +18,30 @@ export const DASH = '—';
 
 // 숫자 칸. digits 를 주면 자릿수를 맞추고, 안 주면 있는 그대로 편다.
 // 숫자가 아닌 것(undefined · null · NaN · Infinity · 빈 문자열)은 전부 대시로 접힌다.
+//
+// 2026-09-21 **공백뿐인 글자가 '0' 으로 찍히고 있었다.** `Number('   ')` 는 0 이라
+// 빈 칸이 "값이 0 이다" 라는 거짓말로 나갔다 — 대시보다 나쁘다. 앞뒤 공백을 먼저 뗀다.
+// 받는 것도 글자와 숫자로 좁힌다. `Number(true)` 는 1, `Number([5])` 는 5 라
+// 뜻이 없는 값이 숫자 행세를 하던 자리다.
 export function num(value: unknown, digits?: number): string {
-  if (value === null || value === undefined || value === '') return DASH;
-  const one = typeof value === 'number' ? value : Number(value);
+  if (typeof value !== 'number' && typeof value !== 'string') return DASH;
+  const raw = typeof value === 'string' ? value.trim() : value;
+  if (raw === '') return DASH;
+  const one = typeof raw === 'number' ? raw : Number(raw);
   if (!Number.isFinite(one)) return DASH;
   return digits === undefined ? String(one) : one.toFixed(digits);
 }
 
 // 글자 칸. 비어 있거나 공백뿐이면 대시로 접힌다.
+//
+// 2026-09-21 **이 관문이 새고 있었다.** 글자가 아닌 값을 `String()` 에 그대로 넘겨서,
+// `word(NaN)` 은 'NaN' 을, `word({})` 는 '[object Object]' 를 화면으로 내보냈다 —
+// LEAK 이 잡으라고 적어 둔 바로 그 글자들이다. 받는 것을 글자와 유한한 숫자로 좁힌다.
 export function word(value: unknown): string {
-  if (typeof value !== 'string') return value === null || value === undefined ? DASH : String(value);
-  return value.trim() || DASH;
+  if (typeof value === 'string') return value.trim() || DASH;
+  if (typeof value === 'number') return Number.isFinite(value) ? String(value) : DASH;
+  // 나머지(객체 · 불리언 · null · undefined)는 전부 대시. 지어낸 글자보다 빈 칸이 정직하다
+  return DASH;
 }
 
 // 줄 목록. 빈 줄은 대시로 때우지 않고 **아예 걷어낸다** —
