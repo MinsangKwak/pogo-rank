@@ -15,6 +15,10 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 const RELEASE_NOTES_EN = {
+  '2026-09-22 · v4.9.4': [
+    '**[Many uses] moved beside the home banner** — the space next to the banner sat empty on wide screens. It now shows without scrolling',
+    '**The banner has a [Scroll down] button** — the banner filled the first screen, so what came below was easy to miss. It jumps to [Top Pokémon by use]',
+  ],
   '2026-09-22 · v4.9.3': [
     '**The home banner was redrawn** — it stays under 600px tall on any screen, with a bigger illustration and smaller text. The date and boss names now sit on the picture',
   ],

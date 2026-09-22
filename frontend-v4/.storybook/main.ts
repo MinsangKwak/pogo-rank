@@ -24,6 +24,9 @@ const config: StorybookConfig = {
   framework: { name: '@storybook/react-vite', options: {} },
   // 수집을 끈다 — 이 저장소는 사람을 가리키는 값을 어느 표에도 두지 않는다 (CLAUDE.md §3)
   core: { disableTelemetry: true },
+  // 잠금 스크립트 하나만 싣는다 (gate.js — 배포된 도면은 관리자 로그인으로만 열린다).
+  // 앱의 public/ 은 여전히 안 싣는다 — 아래 viteFinal 의 publicDir: false 참고
+  staticDirs: ['./static'],
   viteFinal: (vite) => {
     // src/styles.ts 가 `../../frontend/styles/*` 를 싣는다 — 뿌리 바깥이라 기본값으로는 막힌다.
     // v3 CSS 를 안 실으면 스토리북의 조각만 v3 스킨 없이 그려져, 도면과 화면이 달라진다
