@@ -321,14 +321,23 @@ bash scripts/verify_deploy.sh https://moncamp.kr/ prod
 > **Claude 실행 환경에서는 `verify_cloudflare.sh` 가 계속 ❌ 다.** 프록시가 옛 DNS 를 캐시해 GitHub Pages 에 직접 붙는다.
 > 본인 PC 에서 돌리면 ✅ 다. 이 환경에서 잴 때는 외부 노드를 쓴다 — `https://api.hackertarget.com/httpheaders/?q=https://moncamp.kr/`.
 
-### 남은 둘 — 대규모 트래픽 전에 (2026-09-22 실측)
+### 남은 둘 — 대규모 트래픽 전에 (2026-09-22 실측 → 같은 날 저녁에 둘 다 끝냄)
 
-운영 홈을 실제로 열어 재 보니 정적 화면은 준비됐고 둘이 남았다.
+운영 홈을 실제로 열어 재 보니 정적 화면은 준비됐고 둘이 남았다. **둘 다 같은 날 저녁에 대시보드에서 끝냈다** — 아래 표는 왜 필요했는지의 기록이고, 한 것은 표 밑에 있다.
 
 | 무엇 | 왜 | 어떻게 |
 | --- | --- | --- |
 | **`/data/*.json` 캐시 규칙** | 캐시 규칙이 `/assets/` 계열만 잡았고 Cloudflare 는 `.json` 을 기본으로 캐시하지 않는다. 방문 한 번마다 `/data/` 7개(dex 354KB · pve 450KB, 합쳐 1MB 남짓)가 GitHub Pages 원본으로 간다 → 월 10만 방문쯤에서 100GB 소프트 한도 | 데이터는 이미 `?v=해시` 로 받으므로 **1년 캐시해도 안전**하다. `manifest.json` 만 해시가 없으니 1분 또는 제외 — 새 배포가 바로 보이는 열쇠다 |
 | **Rate limit 완화** | 홈 첫 로딩이 우리 도메인으로만 34건이고 랭킹 스크롤이 스프라이트를 더 붙인다. Cloudflare 한도는 **캐시에서 나가는 요청도 센다** — 정상 사용자가 10초 차단을 맞을 수 있다 | 10초 200건으로 올리거나, 규칙 조건에서 `/sprites/` · `/assets/` 를 뺀다 |
+
+**한 것 (2026-09-22 저녁)**
+
+| 규칙 | 설정 | 바깥 실측 |
+| --- | --- | --- |
+| Cache Rule `data-json` | `starts_with(http.request.uri.path, "/data/") and http.request.uri.query contains "v="` → Eligible · Edge TTL 1년(cache-control 무시) · Browser TTL 1년 | `dex.json?v=…` 두 번째부터 `cf-cache-status: HIT` · `manifest.json` 은 `DYNAMIC`(쿼리가 없어 규칙 밖, 10분 헤더 그대로) |
+| Rate limit `burst-guard` | 같은 IP 10초 **200건** 초과 시 10초 차단 (50 → 200) | 대시보드 Active |
+
+`manifest.json` 을 쿼리 조건으로 거른 것이 핵심이다 — 경로만 보면 그것까지 1년 캐시돼 새 배포가 안 보인다.
 
 Firestore(Spark) · Cloud Run(0~3 인스턴스) 은 그대로 둔다 — 광고 트래픽은 익명 읽기가 없어 Firestore 에 닿지 않고, 수집 서버는 아직 꺼져 있다.
 
