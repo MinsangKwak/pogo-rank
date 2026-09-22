@@ -125,6 +125,8 @@ Firebase uid 는 구글이 준 값이 아니다. 이관은 `google_sub` 자리�
 1. Vercel 프로젝트에 `moncamp.kr` 을 붙인다
 2. Cloudflare 에서 DNS 를 Vercel 로 돌린다
 3. 옛 GitHub Pages 배포는 그대로 둔다 — 되돌릴 곳이다
+4. **`deploy-web.yml` 의 `branches` 에서 `next` 를 뺀다.** 전환 기간에만 둔 자리다 —
+   그때부터는 `deploy` 브랜치가 운영의 유일한 입구여야 한다
 4. 하루 지켜본 뒤 `scripts/verify_deploy.sh https://moncamp.kr/ prod`
 
 ### 옛 주소는 두 겹으로 이어진다
