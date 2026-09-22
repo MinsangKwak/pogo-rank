@@ -949,7 +949,7 @@ CP = `floor((공격+IV) × √(방어+IV) × √(체력+IV) × CPM² / 10)`, 최
 - 상태는 `anon` / `pending`(승인 대기) / `ok` 셋. 화면 요소는 상태에 따라 **숨기고**, 실제 차단은 규칙이 한다.
 - 관리자 판정은 `ADMIN_UID`(빌드 설정) ↔ `firestore.rules`의 `isAdmin()` 두 곳이 같은 uid일 때만 성립한다. 규칙은 **콘솔에서 다시 게시**해야 적용된다 — 코드만 배포하면 `permission-denied`.
 - 즐겨찾기는 종 단위(도감번호)로 저장해 폼이 달라도 한 마리로 센다.
-- **계정 삭제 셀프서비스(v2.18.0)** — `auth.js deleteAccount()`: `users/{uid}` → `allowlist/{email}` → `requests/{email}` → `user.delete()` 순. 인증 계정을 먼저 지우면 규칙이 문서 삭제를 막으므로 순서가 고정이다. `auth/requires-recent-login`이면 Google 재인증 뒤 재시도. 관리자 uid는 지우지 않는다.
+- **계정 삭제 셀프서비스(v2.18.0)** — `auth.js deleteAccount()`: `users/{uid}` → `allowlist/{email}` → `requests/{email}` → `user.delete()` 순. 인증 계정을 먼저 지우면 규칙이 문서 삭제를 막으므로 순서가 고정이다. `auth/requires-recent-login`이면 Google 재인증 뒤 재시도. 관리자 uid는 지우지 않는다. v4 는 `Account.tsx remove()` 가 같은 순서로 지운다 — v4.9.7 에 빠져 있던 `allowlist` 를 되살렸다. 규칙의 `users` delete 는 `create, update` 와 갈라 본문을 안 본다(삭제 요청에는 `request.resource` 가 없다). `frontend-v4/src/test/rules/` 가 에뮬레이터로 견준다(`npm run test:rules`).
 - **첫 로그인 동의(v2.18.0)** — `terms.js openTermsConsent()`: 약관·방침 동의 + 만 14세 체크가 모두 켜져야 로그인. 동의 버전은 `localStorage pogo_terms_ok`와 `requests` 문서에 남고, `TERMS_VER`를 올리면 다시 묻는다.
 - **통계 동의(v2.18.0)** — `consent.js`: build.py의 GA 스니펫은 `window.GA_PENDING_ID`만 남기고, `localStorage pogo_consent === 'granted'`일 때 `loadAnalytics()`가 gtag를 붙인다. 거부하면 `window.gtag`가 없어 `track()`이 전부 무시된다.
 - 내 포켓몬(`mons`)은 개체 단위 — `{ id, sprite(폼 id), shadow, level, ivs, fast, charged, status, memo, at }`. CP는 저장하지 않고 화면에서 계산한다. 배열 전체를 `set({ merge: true })`로 덮어쓴다(원소 수정이 있어 arrayUnion 부적합). 문서 1MB 한도 안에서 300마리 상한.

@@ -176,6 +176,9 @@ node scripts/check-stories.mjs http://localhost:4189/   # 전량 × 라이트·�
   ([`server/src/lib/country.ts`](server/src/lib/country.ts)) — 사람을 가리키는 값은 어느 표에도 두지 않는다.
   **'안 본다' 와 '안 남긴다' 를 섞어 적지 않는다** — 분당 한도는 IP 를 보고 버린다. 방침에는 남기지 않는다고만 적는다.
   통계를 끈 사람(`pogo_consent=denied`)에게서는 GA4 와 마찬가지로 **한 건도 안 나간다.**
+- **`firestore.rules` 를 고치면 `cd frontend-v4 && npm run test:rules`** (v4.9.7). 에뮬레이터가 규칙을 실제로 돌려 본다.
+  삭제 요청에는 `request.resource` 가 없다 — `write` 하나로 묶어 본문을 읽으면 삭제가 **조용히** 막힌다.
+  계정 삭제가 그렇게 죽어 있었다. 규칙은 **콘솔에 게시해야** 적용된다 — 코드 배포와 별개다.
 - **서버 응답 스키마에 `object` 를 적을 때는 칸도 같이 적는다** (v4.8.1). `fast-json-stringify` 는
   적힌 칸만 내보낸다 — 칸 없는 `{ type: 'object' }` 는 값이 들어 있어도 `{}` 로 나가고
   **오류도 경고도 없다.** 설명서를 붙이는 일이 계약을 깨뜨린 자리다.

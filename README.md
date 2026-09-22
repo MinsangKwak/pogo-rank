@@ -161,7 +161,14 @@ Pokémon과 관련 명칭·이미지의 권리는 The Pokémon Company, Nintendo
 전체 225개 릴리스를 `날짜 → 버전`의 2단계 접이식 목록으로 정리했습니다. 가장 최근 날짜만 기본으로 펼쳐지며, 설명이 한 줄인 초기 버전은 별도의 접이식 영역 없이 표시됩니다. 사용자용 요약은 서비스의 [🎉 패치 노트](https://moncamp.kr/#/release)에서, 변경 배경과 세부 구현 내용은 [변경 이력](CHANGELOG.md)에서 확인할 수 있습니다.
 
 <details open>
-<summary><b>2026-09-22</b> — 릴리스 3개 · <code>v4.9.5</code> · <code>v4.9.4</code> · <code>v4.9.3</code></summary>
+<summary><b>2026-09-22</b> — 릴리스 4개 · <code>v4.9.7</code> · <code>v4.9.5</code> · <code>v4.9.4</code> · <code>v4.9.3</code></summary>
+
+<details>
+<summary><b>v4.9.7</b> · 계정 삭제가 실제로 지워진다 — 규칙의 삭제를 갈라 세우고 에뮬레이터로 본다</summary>
+
+계정 삭제를 누르면 `permission-denied` 로 실패하고 아무것도 지워지지 않았습니다. 규칙이 삭제 요청에 없는 본문을 읽다 오류로 거부한 것입니다. 삭제를 따로 갈라 본인이면 허용하고, v4 가 빠뜨린 승인 목록(`allowlist`) 삭제도 되살렸습니다. Firestore 에뮬레이터 검사(`npm run test:rules`)가 규칙을 실제로 돌려 봅니다. **콘솔에 규칙을 다시 게시해야 적용됩니다.**
+
+</details>
 
 <details>
 <summary><b>v4.9.5</b> · 자료를 못 받아도 빈 화면이 안 나온다 — 경계 두 겹</summary>

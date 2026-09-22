@@ -124,13 +124,17 @@ export default function Account({ onGo }: { onGo: () => void }) {
 }
 
 /**
- * 계정 삭제 — 본인 문서를 지운 뒤 인증 계정을 지운다.
+ * 계정 삭제 — 본인 문서 셋을 지운 뒤 인증 계정을 지운다.
  * 규칙(firestore.rules)의 본인 delete 허용이 전제다. 되돌릴 수 없으므로 한 번 더 묻는다.
  *
- * **세 걸음이 다 성공해야 지워진 것이다** (v4.2.0). 앞의 두 걸음은 실패를 삼키고 있었다 —
+ * **네 걸음이 다 성공해야 지워진 것이다** (v4.2.0). 앞의 걸음들은 실패를 삼키고 있었다 —
  * 규칙이 막거나 회선이 끊기면 문서는 남은 채 인증 계정만 지워져, 본인은 "지웠다" 고 알고
  * 서버에는 이메일·이름이 남는다. 그 상태는 본인이 다시 지울 길도 없다(로그인할 계정이 없다).
  * 그래서 문서가 안 지워지면 **인증 계정에 손대지 않고** 멈춘다 — 다시 눌러 볼 수 있게.
+ *
+ * **`allowlist/{email}` 도 지운다** (v4.9.7). v2.18.0 이 정한 순서(users → allowlist → requests)에
+ * v3 는 따르는데 v4 가 이 한 줄을 빠뜨려, 계정을 지워도 승인 목록에 이메일이 영원히 남았다.
+ * 방침은 "Firestore 문서와 인증 계정을 즉시 삭제" 라고 약속한다 — 이메일이 남으면 거짓이다.
  */
 async function remove(setMessage: (text: string) => void) {
   const { api, user } = useAuthStore.getState();
@@ -140,6 +144,7 @@ async function remove(setMessage: (text: string) => void) {
   const fail = (error: unknown) => setMessage(`삭제 실패: ${(error as { code?: string })?.code ?? error} — 아직 지워지지 않았어요. 다시 눌러 보고, 그래도 안 되면 관리자에게 알려주세요`);
   try {
     await api.deleteDoc(`users/${user.uid}`);
+    await api.deleteDoc(`allowlist/${user.email}`);
     await api.deleteDoc(`requests/${user.email}`);
   } catch (error) { fail(error); return; }
   await api.deleteUser().catch(fail);

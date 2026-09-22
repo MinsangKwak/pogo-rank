@@ -15,6 +15,9 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 const RELEASE_NOTES_EN = {
+  '2026-09-22 · v4.9.7': [
+    '**Account deletion now actually deletes** — pressing delete failed with "permission-denied" and nothing was removed. The server rule misread delete requests. Your saved data, approval record, sign-up request and Google login link are now all removed',
+  ],
   '2026-09-22 · v4.9.5': [
     '**A failed load now shows a message instead of an empty screen** — when the connection dropped, the page just stayed blank with nothing to act on. [Try again] now refetches in place',
   ],
