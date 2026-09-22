@@ -1,0 +1,85 @@
+name: web 검사
+
+# 2026-09-22 v5 Phase 6 — Next.js 앱(web/)의 그물.
+#
+# **왜 따로인가.** server 검사는 진짜 Postgres 를 띄워야 해서 무겁다. 화면 쪽은 DB 가
+# 필요 없고, 대신 **빌드가 실제로 도는지**가 제일 중요한 검사다 —
+# 타입이 맞아도 서버 렌더에서 터지는 자리가 있다 (실측: 모듈 최상위의 `document`).
+#
+# **빌드는 데이터를 먹는다.** `/mon/<id>` 1,184장을 구우려면 dex.json 이 있어야 하고,
+# 그것은 파이썬 파이프라인이 만든다. 그래서 여기서도 그 파이프라인을 돌린다.
+on:
+  push:
+    paths: ['web/**', 'frontend-v4/scripts/**', 'content/**', 'release/**', '.github/workflows/web-test.yml']
+  pull_request:
+    paths: ['web/**', 'frontend-v4/scripts/**', 'content/**', 'release/**', '.github/workflows/web-test.yml']
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+
+      # 데이터만 있으면 된다 — 그림 2,000여 장은 빌드가 안 읽는다(public/ 에 그냥 놓일 뿐).
+      # --no-sprites 로 건너뛰면 검사가 몇 분 짧아진다
+      - name: 데이터 만들기
+        run: |
+          set -e
+          bash scripts/build.sh --no-sprites
+
+      - name: 설치와 데이터 넣기
+        run: |
+          set -e
+          cd web
+          npm ci
+          npm run data
+
+      # 타입 검사 + 단위 검사. `npm test` 가 둘을 같이 돌린다
+      - name: 검사
+        run: cd web && npm test
+
+      # **빌드가 이 검사의 핵심이다.** 타입이 맞아도 서버 렌더에서 터지는 자리가 있고,
+      # 그 자리는 빌드를 돌려 봐야만 드러난다
+      - name: 빌드 (1,207장을 굽는다)
+        run: cd web && npm run build
+
+      # 구운 HTML 에 **내용이 들었는지** 본다. 빌드 성공만 보면 빈 껍데기가 나와도 초록이다 —
+      # 이 판의 목적이 그 내용이므로 그것을 잰다
+      - name: 색인될 HTML 인지 확인
+        run: |
+          set -e
+          cd web
+          f=.next/server/app/mon/25.html
+          [ -f "$f" ] || { echo "$f 가 없습니다 — 상세가 안 구워졌습니다"; exit 1; }
+          grep -q '<title>' "$f" || { echo '제목이 없습니다'; exit 1; }
+          grep -q '피카츄' "$f" || { echo '본문에 포켓몬 이름이 없습니다'; exit 1; }
+          grep -q 'application/ld+json' "$f" || { echo 'JSON-LD 가 없습니다'; exit 1; }
+          grep -q 'rel="canonical"' "$f" || { echo '정규 주소가 없습니다'; exit 1; }
+          echo 'OK — /mon/25 가 내용이 든 HTML 이다'
+
+      # 해시 주소가 되살아나지 않는지 본다. 되살아나면 이 판의 목적이 통째로 없어진다
+      - name: 해시 주소가 안 남았는지 확인
+        run: |
+          set -e
+          cd web
+          # 주석은 뺀다 — nav.ts 가 '전에는 이랬다' 를 주석으로 적고 있어, 안 빼면
+          # 그 설명이 검사를 빨갛게 만든다. 설명을 지우는 쪽이 아니라 검사를 겨누는 쪽이 맞다
+          code() { grep -rn "$1" src app 2>/dev/null | grep -vE ':[[:space:]]*(//|\*)'; }
+          if code 'href="#/'; then
+            echo '해시 링크가 남아 있습니다 — 그 주소는 서버로 안 가서 색인되지 않습니다'
+            exit 1
+          fi
+          if code 'location\.hash *='; then
+            echo '해시로 이동하는 자리가 남아 있습니다 (lib/nav.ts 의 go 를 씁니다)'
+            exit 1
+          fi
+          echo 'OK — 해시로 오가는 자리가 없다'
