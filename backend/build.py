@@ -228,8 +228,9 @@ SCRIPTS = [
 #   순서는 그대로 지킨다 — 사전이 먼저, 그다음 패치노트 본문.
 #   미리보기 빌드(INLINE)는 단일 HTML 이라 이 목록도 본 번들에 합친다 (아래 render_index_html)
 SCRIPTS_LAZY = [
-    'i18n-en.js', 'i18n-release-en.js',   # 영어 사전 · 패치노트 영문판 (EN 으로 바꿔야 쓴다)
-    'release-notes.js',                   # 패치노트 본문 160판 (#/release 를 열어야 쓴다)
+    # 2026-09-22 v5 Phase 1 — 사전·패치노트 본문은 content/ 로 옮겼다 (i18n.en.mjs · release-notes*.mjs).
+    # v3 화면은 이제 그 셋 없이 빌드된다. 읽는 쪽이 전부 typeof 로 막혀 있어 터지지 않고,
+    # v4 는 content/ 에서 직접 읽는다 (frontend-v4/scripts/extract-data.mjs)
 ]
 # 2026-09-09 v2.41.0 UI 목록(#/styleguide)은 dev 미리보기에만 — 방문자에게는 쓸모가 없고 번들만 키운다.
 # 라우트(ROUTES)·페이지(PAGES) 등록을 그 파일이 스스로 하므로, 빼면 주소 자체가 없는 빌드가 된다.

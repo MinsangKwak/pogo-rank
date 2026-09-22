@@ -17,6 +17,12 @@ import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import vm from 'node:vm';
 import { mergeSchedule } from './merge-schedule.mjs';
+// 2026-09-22 v5 Phase 1 — 손으로 적는 자료는 content/ 가 가진다.
+// 전에는 v3 화면 코드를 vm 으로 돌려 꺼냈다. 자료가 화면 코드 안에 살면 그 화면을 못 지운다
+import { SCHEDULE_CATS, SCHEDULE_MONTHS } from '../../content/schedule.mjs';
+import { RELEASE_NOTES } from '../../content/release-notes.mjs';
+import { RELEASE_NOTES_EN } from '../../content/release-notes.en.mjs';
+import { I18N_EN, I18N_PATTERNS } from '../../content/i18n.en.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const repo = resolve(here, '../..');
@@ -37,38 +43,18 @@ const sandbox = vm.createContext({});
 for (const name of ['data.js', 'data-lazy.js']) {
   vm.runInContext(readFileSync(resolve(distV3, name), 'utf8'), sandbox, { filename: name });
 }
-// 월 일정표는 data.js 가 아니라 **화면 코드 안**에 손으로 적혀 있다 (components/schedule.js SCHEDULE_MONTHS).
-// 그 파일은 맨 끝에서 renderSchedule() 을 불러 DOM 을 건드리므로, 표를 선언하는 앞부분만 잘라 실행한다.
-// 손으로 다시 옮겨 적지 않는다 — 실제 일정이라 한 글자만 어긋나도 틀린 날짜를 내보내게 된다
+// content/ 의 자료를 sandbox 에 넣는다. 아래 코드는 그대로 전역 이름으로 읽는다.
+// 정규식은 JSON 에 안 담기므로 본문·플래그로 펴 둔다 (읽는 쪽이 new RegExp 로 되세운다)
 {
-  const path = 'frontend/scripts/components/schedule.js';
-  const text = readFileSync(resolve(repo, path), 'utf8');
-  const cut = text.indexOf('const SCHEDULE_ITEMS');
-  // 못 찾으면 **여기서** 멈춘다. indexOf 가 -1 이면 slice 가 첫 줄만 잘라 내고,
-  // 그러면 아래 전역 검사가 'SCHEDULE_MONTHS 를 번들에서 못 찾았습니다' 라고 엉뚱한 곳을 가리킨다
-  if (cut < 0) {
-    console.error(`${path} 에서 'const SCHEDULE_ITEMS' 를 못 찾았습니다 — 그 앞까지가 표 선언이라 보고 자르는 중입니다.`);
-    console.error('v3 쪽에서 이름이나 차례가 바뀌었다면 이 자르는 기준도 같이 고쳐야 합니다.');
-    process.exit(1);
-  }
-  vm.runInContext(text.slice(0, text.indexOf('\n', cut)), sandbox, { filename: 'schedule.js' });
-}
-
-// 패치노트 본문과 판 번호도 **화면 코드 안**에 손으로 적혀 있다.
-//   scripts/release-notes.js        RELEASE_NOTES (160판)
-//   components/release.js           RELEASE_VER  (빨간 점 판정에 쓰는 문자열 하나)
-// 둘 다 파일 전체를 돌리면 화면을 건드리므로 필요한 선언만 잘라 실행한다.
-// 손으로 옮겨 적지 않는다 — 사용자가 그대로 읽는 문구라 한 글자만 어긋나도 기록이 틀어진다
-{
-  vm.runInContext(readFileSync(resolve(repo, 'frontend/scripts/release-notes.js'), 'utf8'), sandbox, { filename: 'release-notes.js' });
-  const path = 'frontend/scripts/components/release.js';
-  const text = readFileSync(resolve(repo, path), 'utf8');
-  const line = text.split('\n').find((one) => one.startsWith('const RELEASE_VER'));
-  if (!line) {
-    console.error(`${path} 에서 'const RELEASE_VER' 을 못 찾았습니다 — 이름이 바뀌었는지 확인하세요.`);
-    process.exit(1);
-  }
-  vm.runInContext(line, sandbox, { filename: 'release.js' });
+  const flatPatterns = I18N_PATTERNS.map((row) => [row[0].source, row[0].flags, row[1]]);
+  const put = {
+    SCHEDULE_CATS, SCHEDULE_MONTHS, RELEASE_NOTES, RELEASE_NOTES_EN, I18N_EN,
+    __i18nPatterns: flatPatterns,
+  };
+  vm.runInContext(
+    Object.entries(put).map(([name, value]) => `var ${name} = ${JSON.stringify(value)};`).join('\n'),
+    sandbox, { filename: 'content' },
+  );
 }
 
 // 문의 이메일은 저장소에 없다 — 빌드가 환경변수에서 읽어 dist/index.html 에 박아 넣는다.
@@ -96,17 +82,11 @@ for (const name of ['data.js', 'data-lazy.js']) {
   ].join('\n'), sandbox, { filename: 'index.html' });
 }
 
-// 영문 사전도 화면 코드 안에 있다 — i18n-en.js(사전 · 규칙) · i18n-release-en.js(패치노트 영문판).
-// 둘 다 선언뿐이라 파일을 통째로 돌려도 화면을 건드리지 않는다
+// 판 번호는 release/version.json 하나가 원본이다 (v5 Phase 1 — 전에는 components/release.js 였다)
 {
-  for (const name of ['i18n-en.js', 'i18n-release-en.js']) {
-    vm.runInContext(readFileSync(resolve(repo, 'frontend/scripts', name), 'utf8'), sandbox, { filename: name });
-  }
+  const version = JSON.parse(readFileSync(resolve(repo, 'release/version.json'), 'utf8'));
+  vm.runInContext(`var RELEASE_VER = ${JSON.stringify(version.release)};`, sandbox, { filename: 'version.json' });
 }
-
-// 정규식은 JSON 에 담기지 않는다 — 본문과 플래그로 펴 둔다 (읽는 쪽이 new RegExp 로 되세운다)
-vm.runInContext(`var __i18nPatterns = typeof I18N_PATTERNS === 'undefined' ? undefined
-  : I18N_PATTERNS.map(function (row) { return [row[0].source, row[0].flags, row[1]]; });`, sandbox, { filename: 'i18n-patterns' });
 
 const readGlobal = (key) => vm.runInContext(`typeof ${key} === 'undefined' ? undefined : ${key}`, sandbox);
 

@@ -20,7 +20,7 @@
 
 // 이름 + 꼬리말 꼴. $1·$2 로 잡은 조각은 엔진이 다시 번역해 끼운다 (이름 1,000개를 사전에 적지 않기 위해).
 // 위에서부터 먼저 맞는 것을 쓴다 — 좁은 규칙을 위에 둔다
-const I18N_PATTERNS = [
+export const I18N_PATTERNS = [
   // 2026-09-15 v3.32.0 D-MAX 덱 짜기
   [/^(.+) 보스에 데려갈 셋$/, 'The three to bring against a $1 boss'],
   [/^이번 주 (.+)$/, 'This week · $1'],
@@ -172,7 +172,7 @@ const I18N_PATTERNS = [
 // 포켓몬 GO 이벤트는 지역마다 날짜·시간이 다르다. 이 표는 한국 서버 공지를 옮긴 것이므로
 // 영어로 보는 사람이 자기 지역 일정으로 오해하면 실제로 이벤트를 놓친다
 
-const I18N_EN = {
+export const I18N_EN = {
   "포켓몬을 누르면 종족값과 상성을 볼 수 있어요.": "Tap a Pokémon to see its base stats and type matchups.",
   "즐겨찾기에 담은 포켓몬의 다가오는 일정을 확인해 보세요.": "Check upcoming events for the Pokémon you saved as favorites.",
   "딜러는 맥스 피해 × √내구, 탱커는 체력 × 방어 ÷ 받는 배율(EHP)을 기준으로 추천해요. 전체 탱커 순위는 [탱커] 탭에서 확인할 수 있어요": "Attackers are ranked by Max damage × √bulk, tanks by HP × Defense ÷ incoming multiplier (EHP). The full tank ranking is in the [Tank] tab.",
