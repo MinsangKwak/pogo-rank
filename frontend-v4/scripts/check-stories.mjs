@@ -30,6 +30,15 @@ const LEAK = /\bNaN\b|\bundefined\b|\bnull\b|\bInfinity\b|\[object Object\]/;
 // 스토리가 정말 그려졌는지 보는 말. 이게 보이면 서버나 주소가 잘못된 것이다
 const NO_PREVIEW = 'No Preview';
 
+// 스토리북이 스토리를 꽂는 자리. 자식이 생기면 그려진 것이다
+const READY = () => {
+  const root = document.querySelector('#storybook-root, #root');
+  return !!root && root.children.length > 0;
+};
+
+// 움직임을 멎게 한다 — 색을 **멎은 뒤에** 재려고
+const STILL = '*, *::before, *::after { transition: none !important; animation: none !important; }';
+
 // 깨진 값의 **이름**을 일부러 적어 둔 스토리. 샘 검사만 비켜 간다 (명암비는 그대로 받는다).
 // 구멍이 아니다 — 비켜 간 스토리를 아래에서 이름까지 찍는다. 조용한 예외가 그물을 헐게 한다
 const LEAK_DEMO = 'leak-demo';
@@ -54,7 +63,14 @@ for (const theme of ['light', 'dark']) {
     const url = `${BASE}iframe.html?viewMode=story&id=${encodeURIComponent(story.id)}&globals=theme:${encodeURIComponent(theme)}`;
     try {
       await page.goto(url, { waitUntil: 'load', timeout: 20000 });
-      await page.waitForTimeout(400);
+      // **그려질 때까지 기다린다.** 400ms 만 쉬고 재면 아직 빈 판을 훑고 통과한다 —
+      // 느린 회선에서는 'No Preview' 도 샌 글자도 없는 빈 화면이 깨끗해 보인다
+      await page.waitForFunction(READY, null, { timeout: 15000 }).catch(() => {});
+      // **트랜지션을 끈 뒤에 잰다.** 테마를 갈아 끼우면 색이 라이트에서 다크로 흘러가는데,
+      // 그 중간 프레임을 재면 있지도 않은 색이 잡힌다 (실측: 배포판에서 #e3665b/#746869 —
+      // 라이트와 다크를 섞은 값이었다. 멎은 뒤에는 #ff8a7d/#251518 로 기준을 훌쩍 넘는다)
+      await page.addStyleTag({ content: STILL }).catch(() => {});
+      await page.waitForTimeout(250);
       const text = await page.evaluate(() => document.body.innerText);
       if (text.includes(NO_PREVIEW)) { bad.push(`${theme} ${story.id} → [안 그려짐] 주소나 서버를 확인한다`); continue; }
       if (story.tags?.includes(LEAK_DEMO)) skipped.add(story.id);
