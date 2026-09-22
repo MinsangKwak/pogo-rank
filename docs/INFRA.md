@@ -88,7 +88,7 @@ GitHub Pages는 **파일을 나눠주기만 하는 호스팅**입니다. 우리�
 - [x] ~~**도메인 하나 구입**~~ — `moncamp.kr` 보유
 - [ ] **Cloudflare 무료 플랜에 도메인 연결** → 네임서버 이관 → DNS에서 GitHub Pages를 가리키고 **프록시(주황 구름) 켜기**
 - [ ] GitHub 저장소 Settings → Pages → **Custom domain**에 그 도메인 입력 + Enforce HTTPS
-- [ ] Cloudflare에서 켤 것: **Bot Fight Mode**(봇 차단), **Security Level: Medium**, **rate limiting 룰 1개**(무료 플랜 제공량 — 예: 같은 IP가 10초에 50요청 넘으면 10초 차단)
+- [x] Cloudflare에서 켤 것: **Bot Fight Mode**(봇 차단), **Security Level: Medium**, **rate limiting 룰 1개**(무료 플랜 제공량 — 같은 IP가 10초에 **200**요청 넘으면 10초 차단. 50 으로 시작했다가 첫 방문 34건이 너무 가까워 올렸다, §8)
 - [ ] **Firebase App Check** 켜기 (reCAPTCHA) — 우리 사이트가 아닌 곳에서 우리 Firestore를 부르는 것을 막습니다. 로그인 기능이 있는 지금 구조에서 가장 값어치 있는 방어
 
 > 순서가 중요합니다. **도메인 → Cloudflare → 그 다음에야 쓰로틀링·IP 차단**입니다. 도메인 없이 되는 것은 없습니다.
@@ -274,11 +274,12 @@ DNS 레코드는 지금 것을 그대로 가져오되 `moncamp.kr` · `dev.monca
 | 대상 | 설정 | 왜 |
 | --- | --- | --- |
 | `/sprites/*` · `/sprites-anim/*` · `/assets/*` | Edge TTL 1년 · Browser TTL 1년 | 이름에 내용 해시가 있거나 id 별로 불변이다 |
-| `/data/*.json` | Edge TTL 1시간 | 주소에 `?v=해시` 가 붙어 바뀌면 키가 바뀐다 |
+| `/data/*` **이고 쿼리에 `v=`** | Edge TTL 1년 · Browser TTL 1년 (cache-control 무시) | 주소에 `?v=해시` 가 붙어 바뀌면 키가 바뀐다. **`manifest.json` 은 쿼리가 없어 이 규칙 밖** — 그게 새 배포를 알리는 열쇠라 원본으로 가야 한다 |
 | `/` · `*.html` | Edge TTL 5분 | GitHub 가 `max-age=600` 을 주는 것과 같은 결 |
 
 **5. 보안 기능** — Bot Fight Mode 켜기 · Security Level: Medium ·
-Rate limiting 룰 1개(무료 제공량): 같은 IP 가 10초에 50요청을 넘으면 10초 차단.
+Rate limiting 룰 1개(무료 제공량, 이름 `burst-guard`): 같은 IP 가 10초에 **200**요청을 넘으면 10초 차단.
+50 으로 시작했다가 올렸다 — 홈 첫 방문이 우리 도메인으로만 34건이고 Cloudflare 는 캐시에서 나가는 요청도 세므로, 50 은 정상 사용자를 잡는다.
 
 **6. 끄는 것** — 켜져 있으면 앱이 깨진다
 
@@ -304,6 +305,42 @@ bash scripts/verify_deploy.sh https://moncamp.kr/ prod
 ```
 
 전파는 보통 1~2시간, 길면 24시간. **광고가 26일이면 늦어도 24일에 네임서버를 옮긴다.**
+
+### 켠 뒤 실측 (2026-09-22 저녁)
+
+**전부 켰고, 바깥에서 재서 확인했다.** 한 장 요약은 [`hardening-2026-09-22.png`](hardening-2026-09-22.png) 다.
+
+| 항목 | 상태 | 어떻게 확인 |
+| --- | --- | --- |
+| 네임서버 | 가비아 → `ashton` · `harleigh` `.ns.cloudflare.com` | 1.1.1.1 · 8.8.8.8 이 Cloudflare 응답 |
+| SSL/TLS | Full (strict) · Always Use HTTPS · HSTS 12개월 + includeSubDomains | `http://` → 301 · `strict-transport-security` 헤더 |
+| 응답 헤더 | 위 3번 표의 다섯 중 HSTS 를 뺀 넷을 Transform Rule 하나로 | 외부 노드(hackertarget)에서 헤더 넷 확인 |
+| 캐시 규칙 | `/assets/` · `/sprites/` · `/sprites-anim/` — Edge·Browser TTL 1년 | 자산 `cf-cache-status: HIT` |
+| 보안 | Bot Fight Mode 켬 · Rate limit `burst-guard` (IP 당 10초 200건 → 10초 차단; 오후엔 50, 저녁에 올림) | 대시보드 Active |
+| 끄는 것 | Rocket Loader · Email Obfuscation 끔 | 배포 검문 통과 (화면 46장 · 명암비 42장) |
+
+> **Claude 실행 환경에서는 `verify_cloudflare.sh` 가 계속 ❌ 다.** 프록시가 옛 DNS 를 캐시해 GitHub Pages 에 직접 붙는다.
+> 본인 PC 에서 돌리면 ✅ 다. 이 환경에서 잴 때는 외부 노드를 쓴다 — `https://api.hackertarget.com/httpheaders/?q=https://moncamp.kr/`.
+
+### 남은 둘 — 대규모 트래픽 전에 (2026-09-22 실측 → 같은 날 저녁에 둘 다 끝냄)
+
+운영 홈을 실제로 열어 재 보니 정적 화면은 준비됐고 둘이 남았다. **둘 다 같은 날 저녁에 대시보드에서 끝냈다** — 아래 표는 왜 필요했는지의 기록이고, 한 것은 표 밑에 있다.
+
+| 무엇 | 왜 | 어떻게 |
+| --- | --- | --- |
+| **`/data/*.json` 캐시 규칙** | 캐시 규칙이 `/assets/` 계열만 잡았고 Cloudflare 는 `.json` 을 기본으로 캐시하지 않는다. 방문 한 번마다 `/data/` 7개(dex 354KB · pve 450KB, 합쳐 1MB 남짓)가 GitHub Pages 원본으로 간다 → 월 10만 방문쯤에서 100GB 소프트 한도 | 데이터는 이미 `?v=해시` 로 받으므로 **1년 캐시해도 안전**하다. `manifest.json` 만 해시가 없으니 1분 또는 제외 — 새 배포가 바로 보이는 열쇠다 |
+| **Rate limit 완화** | 홈 첫 로딩이 우리 도메인으로만 34건이고 랭킹 스크롤이 스프라이트를 더 붙인다. Cloudflare 한도는 **캐시에서 나가는 요청도 센다** — 정상 사용자가 10초 차단을 맞을 수 있다 | 10초 200건으로 올리거나, 규칙 조건에서 `/sprites/` · `/assets/` 를 뺀다 |
+
+**한 것 (2026-09-22 저녁)**
+
+| 규칙 | 설정 | 바깥 실측 |
+| --- | --- | --- |
+| Cache Rule `data-json` | `starts_with(http.request.uri.path, "/data/") and http.request.uri.query contains "v="` → Eligible · Edge TTL 1년(cache-control 무시) · Browser TTL 1년 | `dex.json?v=…` 두 번째부터 `cf-cache-status: HIT` · `manifest.json` 은 `DYNAMIC`(쿼리가 없어 규칙 밖, 10분 헤더 그대로) |
+| Rate limit `burst-guard` | 같은 IP 10초 **200건** 초과 시 10초 차단 (50 → 200) | 대시보드 Active |
+
+`manifest.json` 을 쿼리 조건으로 거른 것이 핵심이다 — 경로만 보면 그것까지 1년 캐시돼 새 배포가 안 보인다.
+
+Firestore(Spark) · Cloud Run(0~3 인스턴스) 은 그대로 둔다 — 광고 트래픽은 익명 읽기가 없어 Firestore 에 닿지 않고, 수집 서버는 아직 꺼져 있다.
 
 ### 여기서 안 하기로 한 것
 

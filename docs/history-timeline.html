@@ -1,0 +1,139 @@
+<!doctype html><html lang="ko"><head><meta charset="utf-8"><title>moncamp 변천사 — 22일, 250판</title>
+<style>
+  :root{
+    --bg:#fff8f2; --fg:#0a0a0f; --muted:#64647a; --line:#e5e5eb; --surface:#fff; --line2:#d4d4dc;
+    --brand:#d63024; --brand2:#b3231b; --point:#2f6fd0; --caution:#d97706; --good:#0d9488; --off:#9b9bb0;
+    --e1:#9b9bb0; --e2:#2f6fd0; --e3:#d97706; --e4:#0d9488; --e5:#d63024;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{width:1600px;background:var(--bg);color:var(--fg);
+    font-family:"WenQuanYi Zen Hei","Noto Sans CJK KR",sans-serif;padding:44px 48px 40px;-webkit-font-smoothing:antialiased}
+  .head{display:flex;align-items:flex-end;gap:18px;border-bottom:4px solid var(--brand);padding-bottom:16px;margin-bottom:26px}
+  .logo{width:46px;height:46px;border:4px solid var(--fg);background:var(--brand);position:relative}
+  .logo::after{content:"";position:absolute;left:-4px;right:-4px;top:17px;height:4px;background:var(--fg)}
+  h1{font-size:40px;letter-spacing:-1px}
+  .ver{font-size:23px;font-weight:700;color:#fff;background:var(--brand);padding:4px 12px}
+  .when{margin-left:auto;font-size:17px;color:var(--muted);text-align:right;line-height:1.5}
+  .card{background:var(--surface);border:4px solid var(--fg);box-shadow:8px 8px 0 0 rgba(10,10,15,.14);padding:20px 22px;margin-bottom:26px}
+  .card > h2{font-size:23px;margin-bottom:4px}
+  .card > .sub{font-size:15px;color:var(--muted);margin-bottom:16px;line-height:1.5}
+  .eras{display:grid;grid-template-columns:minmax(240px,14fr) 49fr 76fr 57fr 62fr;gap:6px;margin-bottom:10px}
+  .era{border:3px solid var(--fg);padding:10px 12px;min-height:120px;position:relative;background:#fff}
+  .era .t{font-size:17px;font-weight:700;line-height:1.3}
+  .era .d{font-size:13px;color:var(--muted);margin:2px 0 6px}
+  .era .k{font-size:13.5px;line-height:1.5}
+  .era::before{content:"";position:absolute;left:0;top:0;right:0;height:8px}
+  .era.e1::before{background:var(--e1)} .era.e2::before{background:var(--e2)} .era.e3::before{background:var(--e3)} .era.e4::before{background:var(--e4)} .era.e5::before{background:var(--e5)}
+  .days{display:grid;grid-template-columns:repeat(22,1fr);gap:4px;margin-top:6px}
+  .day{border:2px solid var(--line2);padding:6px 4px;text-align:center;font-size:12px;line-height:1.35;background:#fff}
+  .day b{display:block;font-size:15px}
+  .day small{display:block;color:var(--muted);font-size:11px}
+  .day.e1{border-color:var(--e1)} .day.e2{border-color:var(--e2)} .day.e3{border-color:var(--e3)} .day.e4{border-color:var(--e4)} .day.e5{border-color:var(--e5)}
+  .day.hot{background:#fff1f0}
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:26px}
+  table{width:100%;border-collapse:collapse;font-size:14.5px}
+  th,td{border:2px solid var(--line2);padding:7px 9px;text-align:left;vertical-align:top;line-height:1.45}
+  th{background:#f4f1ee;font-size:13.5px;font-weight:700}
+  td.w{white-space:nowrap;font-weight:700}
+  .tag{display:inline-block;font-size:12px;font-weight:700;color:#fff;padding:1px 7px;margin-right:4px;vertical-align:middle}
+  .tag.e1{background:var(--e1)} .tag.e2{background:var(--e2)} .tag.e3{background:var(--e3)} .tag.e4{background:var(--e4)} .tag.e5{background:var(--e5)}
+  .flow{display:flex;align-items:center;gap:9px;flex-wrap:wrap;font-size:15px;margin-top:10px}
+  .b{border:3px solid var(--fg);padding:7px 12px;background:#fff;font-weight:700;white-space:nowrap;line-height:1.3}
+  .b small{display:block;font-weight:400;font-size:12px;color:var(--muted)}
+  .b.dim{border-color:var(--line2);color:var(--muted);font-weight:400}
+  .ar{color:var(--brand);font-weight:700;font-size:20px}
+  .foot{margin-top:6px;font-size:14px;color:var(--muted);border-top:2px solid var(--line2);padding-top:12px;line-height:1.6}
+</style></head><body>
+
+<div class="head">
+  <div class="logo"></div>
+  <h1>moncamp 변천사</h1>
+  <span class="ver">22일 · 250판</span>
+  <div class="when">2026-09-01 → 09-22<br>HTML 한 장 → React · Python · Node · Cloudflare</div>
+</div>
+
+<div class="card">
+  <h2>다섯 시대</h2>
+  <p class="sub">칸 너비가 판 수다. 하루 34판을 낸 09-12 가 ③ 에 있고, ⑤ 는 화면을 통째로 다시 쓴 뒤 서버와 앞단을 세운 시대다.</p>
+  <div class="eras">
+    <div class="era e1"><div class="t">① 한 장짜리 도감</div><div class="d">09-01 ~ 03 · v1.0 ~ v2.3 · 14판</div><div class="k">순위표 넷 · 상세 팝업 · 매일 00시 빌드 · 일정표 · 솔플 계산기 · PWA · <b>파일 분리</b>(v2.0.0) · <b>Google 로그인 + 승인제</b>(v2.2.0)</div></div>
+    <div class="era e2"><div class="t">② 공개 준비와 화면 재편</div><div class="d">09-04 ~ 08 · v2.4 ~ v2.31 · 49판</div><div class="k">개인정보처리방침 · 즐겨찾기 · <b>브랜치 셋 dev→main→deploy</b>(v2.7.3) · <b>verify_deploy.sh</b> · <b>식별자 제거 · git 이력 치환</b>(v2.8.0) · 서비스 홈 · 라우터 · BEM · CSP · 플래너</div></div>
+    <div class="era e3"><div class="t">③ 도트 디자인 v3</div><div class="d">09-09 ~ 13 · v2.32 ~ v3.24 · 76판</div><div class="k">PC 상세 패널 · 카드 · 검색식 만들기 · PvP 개체값 순위 · <b>v3.0.0 색 반전 → v3.6.0 도트 → v3.7.0 몬스터볼 빨강</b> · 회귀 162→117초 · 움직이는 그림 1,151종 · 홈 개편(답을 먼저) · 첫 화면 842→690KB</div></div>
+    <div class="era e4"><div class="t">④ moncamp 라는 이름</div><div class="d">09-14 ~ 17 · v3.26 ~ v3.61 · 57판</div><div class="k"><b>moncamp · moncamp.kr</b>(v3.27.0) · 검색 색인 · D-MAX 절대 기준 · 통계 옵트아웃 · <b>관리자 위임</b> · <b>주간 백업</b>(v3.47.0) · 상세 팝업 재설계 · 게임 업데이트 창구 · 첫 화면 462→278KB</div></div>
+    <div class="era e5"><div class="t">⑤ React · 서버 · 다지기</div><div class="d">09-17 ~ 22 · v4.0 ~ v4.9.8 · 62판</div><div class="k"><b>운영을 React 로</b>(v4.0.0) · NaN 그물 셋 · 카드(TCG) · 격자 · <b>src/ds + 스토리북</b> · <b>수집 서버 server/</b>(v4.7.0) · 백업 GCS 미러 · 일정 자동 수집 · <b>계정 삭제 규칙</b>(v4.9.7) · <b>Cloudflare · 룰셋 · Actions 고정</b>(09-22)</div></div>
+  </div>
+  <div class="days">
+    <div class="day e1"><b>1</b>1<small>v1.0</small></div>
+    <div class="day e1"><b>2</b>5<small>일정·솔플</small></div>
+    <div class="day e1"><b>3</b>9<small>로그인·PWA</small></div>
+    <div class="day e2"><b>4</b>2<small>문서 두 축</small></div>
+    <div class="day e2"><b>5</b>8<small>브랜치·공개</small></div>
+    <div class="day e2"><b>6</b>7<small>상성·뒤로가기</small></div>
+    <div class="day e2"><b>7</b>9<small>플래너</small></div>
+    <div class="day e2"><b>8</b>14<small>홈·라우터·CSP</small></div>
+    <div class="day e3"><b>9</b>12<small>PC 패널</small></div>
+    <div class="day e3"><b>10</b>14<small>rem·측정</small></div>
+    <div class="day e3"><b>11</b>9<small>검색식·개체값</small></div>
+    <div class="day e3 hot"><b>12</b>34<small>v3 도트</small></div>
+    <div class="day e3"><b>13</b>7<small>홈 개편</small></div>
+    <div class="day e4"><b>14</b>11<small>moncamp.kr</small></div>
+    <div class="day e4"><b>15</b>18<small>권한·옵트아웃</small></div>
+    <div class="day e4"><b>16</b>19<small>백업·팝업</small></div>
+    <div class="day e4"><b>17</b>9<small>v4 alpha</small></div>
+    <div class="day e5"><b>18</b>8<small>v4.0.0 운영</small></div>
+    <div class="day e5"><b>19</b>12<small>NaN 그물·카드</small></div>
+    <div class="day e5"><b>20</b>19<small>성능·일러스트</small></div>
+    <div class="day e5"><b>21</b>17<small>서버·DS</small></div>
+    <div class="day e5"><b>22</b>6<small>규칙·앞단</small></div>
+  </div>
+</div>
+
+<div class="two">
+  <div class="card">
+    <h2>구조물이 생긴 순서</h2>
+    <p class="sub">지금 저장소의 폴더가 곧 이 표다.</p>
+    <table>
+      <tr><th>무엇</th><th>언제</th><th>지금</th></tr>
+      <tr><td class="w"><span class="tag e1">①</span>backend/ (Python)</td><td>v1.0.0</td><td>4,170줄 · 매일 00시 순위를 굽는다 · v4 도 이걸 쓴다</td></tr>
+      <tr><td class="w"><span class="tag e1">①</span>frontend/ (바닐라 JS)</td><td>v1.0.0 → v2.0.0 분리</td><td>15,090줄 · 운영에서 내려옴 · 데이터·스프라이트·OG 굽는 단계로만</td></tr>
+      <tr><td class="w"><span class="tag e1">①</span>firestore.rules · Firebase</td><td>v2.2.0</td><td>콘솔 게시 · v4.9.7 부터 에뮬레이터 검사 11</td></tr>
+      <tr><td class="w"><span class="tag e2">②</span>snapshot/ · docs/ · scripts/</td><td>v2.4 ~ v2.7</td><td>순위 변동 · 문서 넷 · 검증 스크립트 20여 개</td></tr>
+      <tr><td class="w"><span class="tag e2">②</span>브랜치 셋 · dev 저장소</td><td>v2.7.3</td><td>dev → main(PR 필수) → deploy · 09-22 룰셋</td></tr>
+      <tr><td class="w"><span class="tag e3">③</span>tests/e2e 회귀</td><td>v2.x ~ v3.14</td><td>27스위트 · v3 빌드 단계를 지킨다</td></tr>
+      <tr><td class="w"><span class="tag e5">⑤</span>frontend-v4/ (React · TS)</td><td>09-17 alpha → v4.0.0</td><td>14,411줄 · 검사 파일 16 · 화면 46장 훑기</td></tr>
+      <tr><td class="w"><span class="tag e5">⑤</span>src/ds/ · .storybook/</td><td>09-21</td><td>dev 의 /storybook/ · 관리자 잠금</td></tr>
+      <tr><td class="w"><span class="tag e5">⑤</span>server/ (Fastify · PostgreSQL)</td><td>v4.7.0</td><td>2,274줄 · Cloud Run 0~3 · <b>9/28 시행 전이라 꺼짐</b></td></tr>
+      <tr><td class="w"><span class="tag e5">⑤</span>Cloudflare 앞단</td><td>09-22</td><td>무료 · 헤더 · 캐시 · 한도 · 배포 파이프라인 무수정</td></tr>
+    </table>
+  </div>
+  <div class="card">
+    <h2>보안 · 운영 조치 연표</h2>
+    <p class="sub">대부분 "약속(방침)과 실제가 어긋난 자리" 를 맞춘 것이다.</p>
+    <table>
+      <tr><th>판</th><th>무엇</th></tr>
+      <tr><td class="w">v2.2.0</td><td>규칙 · 승인제 · 트레이너 코드를 DB 로 · 친구 실명 삭제</td></tr>
+      <tr><td class="w">v2.3.0 · 2.8.0</td><td>관리자 uid · 식별자 .env · <b>git 이력 전체 치환</b>(공개 직전)</td></tr>
+      <tr><td class="w">v2.27.0 · 2.37.0</td><td>CSP · 막을 수 있는 것과 없는 것 · 봇 집계 제외</td></tr>
+      <tr><td class="w">v3.39 ~ 3.41</td><td>통계 옵트아웃 · 관리자 위임 · 승인은 루트만</td></tr>
+      <tr><td class="w">v3.47.0</td><td>빌드 검문 · Firestore 주간 암호화 백업</td></tr>
+      <tr><td class="w">v4.0.1</td><td>깃발 둘 — admin 과 beta 를 가름</td></tr>
+      <tr><td class="w">v4.7 ~ 4.8</td><td>수집 서버 IP 저장 없음 · 12개월 파기 · 7일 전 고지 · 백업 GCS 미러</td></tr>
+      <tr><td class="w">v4.9.4 · 4.9.7</td><td>도면 잠금 · <b>계정 삭제 규칙 고침</b>(방침의 "즉시 삭제" 가 안 지켜지고 있었다)</td></tr>
+      <tr><td class="w">09-22</td><td>Cloudflare(HTTPS 강제 · HSTS · 헤더 넷 · 캐시 · 봇 · 한도 200) · 브랜치 룰셋 · Actions SHA 고정 · public / private</td></tr>
+    </table>
+    <div class="flow">
+      <span class="b">브라우저</span><span class="ar">→</span>
+      <span class="b">Cloudflare<small>무료 앞단</small></span><span class="ar">→</span>
+      <span class="b">GitHub Pages<small>React + JSON</small></span>
+      <span class="ar">·</span>
+      <span class="b dim">Firebase<small>로그인한 사람만</small></span>
+      <span class="b dim">Python 빌드<small>매일 00시</small></span>
+      <span class="b dim">Node 수집 서버<small>만들어짐 · 9/28 전 꺼짐</small></span>
+    </div>
+  </div>
+</div>
+
+<div class="foot">
+  원본: docs/history-timeline.html → <code>node scripts/bake_html.mjs docs/history-timeline.html</code> · 글: docs/HISTORY.md · 판별 근거: CHANGELOG.md · 왜 그렇게 정했나: docs/DEVELOPMENT.md §2
+</div>
+</body></html>
