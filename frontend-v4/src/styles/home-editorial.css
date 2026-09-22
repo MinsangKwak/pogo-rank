@@ -146,49 +146,57 @@ html body #root .home-dashboard .pick__hero .sprite { --ink-w: .1rem; }
 html body #root .home__top-layout { display: grid; grid-template-columns: minmax(0, 1fr); gap: 2.4rem; align-items: stretch; }
 html body #root .home__top-layout > * { min-width: 0; }
 
-/* 포스터 — 어두운 판(--plate) 위. 그림이 오른쪽 두 줄을 다 차지한다 */
+/* 포스터 — 어두운 판(--plate) 위. 세로 60rem 고정, 글 2 : 그림 3 (v4.9.3)
+   v4.9.2 까지는 그림이 제 칸 폭을 따라 커져 화면이 넓을수록 배너가 같이 컸다. 높이를 못 박고
+   그림이 그 안에 들어온다. 줄은 넷 — 위·아래 1fr 이 글(제목·단추)을 세로 가운데로 밀고, 그림은 넷을 다 걸친다 */
 html body #root .home__top-layout .home__welcome {
-  margin: 0; min-height: 44rem; padding: 4rem; grid-template-columns: minmax(0, .85fr) minmax(0, 1.4fr); gap: 2.4rem; align-items: start;
+  margin: 0; height: 60rem; padding: 3.2rem; grid-template-columns: minmax(0, 2fr) minmax(0, 3fr);
+  grid-template-rows: 1fr auto auto 1fr; gap: 2.4rem 3.2rem; align-items: start;
   background: radial-gradient(ellipse at 90% 15%, color-mix(in srgb, var(--plate-accent) 34%, var(--plate-2)), transparent 65%), var(--plate);
   border-bottom: .4rem solid var(--plate-accent);
 }
-html body #root .home__top-layout .home__intro { min-width: 0; padding-right: 0; }
+html body #root .home__top-layout .home__intro { grid-row: 2; min-width: 0; padding-right: 0; }
 html body #root .home__top-layout .home__eyebrow { font-size: var(--fs-sub); font-weight: 700; line-height: 1.5; letter-spacing: .16em; }
-html body #root .home__top-layout .home__intro h2 { margin-top: 2.4rem; max-width: none; padding-right: 0; font-size: var(--fs-hero); line-height: 1.5; letter-spacing: -.04em; }
+/* 제목은 화면 제목(28)까지만 — 그림이 주인공이라 큰 숫자(42)는 그림과 다툰다 */
+html body #root .home__top-layout .home__intro h2 { margin-top: 1.6rem; max-width: none; padding-right: 0; font-size: var(--fs-title); line-height: 1.5; letter-spacing: -.04em; }
 html body #root .home__top-layout .home__intro h2 em { font-style: normal; color: var(--plate-accent); }
-html body #root .home__top-layout .home__intro p { margin-top: 2rem; max-width: none; padding-right: 0; font-size: var(--fs-body); }
-html body #root .home__top-layout .home__cta { gap: 1.2rem; }
-html body #root .home__top-layout .home__btn { min-height: 4.8rem; padding: 1.2rem 1.6rem; }
+html body #root .home__top-layout .home__intro p { margin-top: 1.6rem; max-width: 36rem; padding-right: 0; font-size: var(--fs-body); }
+/* 단추는 글 바로 아래(셋째 줄) — 바탕 규칙(align-self: end)대로 두면 배너 바닥에 떨어진다 */
+html body #root .home__top-layout .home__cta { grid-row: 3; align-self: start; gap: 1.2rem; }
+html body #root .home__top-layout .home__btn { min-height: var(--tap); padding: 1.2rem 1.6rem; }
 html body #root .home__top-layout .home__btn--primary { background: var(--plate-accent); color: var(--plate); border-color: var(--plate-accent); }
-html body #root .max-battle-art { grid-column: 2; grid-row: 1 / 3; align-self: center; margin: 0; min-width: 0; }
-html body #root .max-battle-art img { display: block; width: 100%; height: auto; border-radius: .8rem; }
-html body #root .max-battle-art figcaption { display: flex; flex-direction: column; gap: .8rem; padding: 1.6rem 0 0; color: var(--plate-fg); }
+/* 그림은 3:2 그대로 칸 세로(53.6rem)까지. 1920 에서만 위아래가 조금 잘리고 가운데 띠(보스 넷)를 남긴다 */
+html body #root .max-battle-art { position: relative; overflow: hidden; grid-column: 2; grid-row: 1 / 5; align-self: center; margin: 0; min-width: 0; max-height: 100%; border-radius: .8rem; }
+html body #root .max-battle-art img { display: block; width: 100%; height: auto; max-height: 53.6rem; object-fit: cover; object-position: center 40%; }
+/* 날짜·보스 줄은 그림 안 바닥에 — 그림 밑에 붙이면 그 줄만큼 그림이 작아진다 */
+html body #root .max-battle-art figcaption {
+  position: absolute; inset: auto 0 0 0; display: flex; flex-wrap: wrap; align-items: baseline; gap: .4rem 1.2rem;
+  padding: 4rem 1.6rem 1.6rem; color: var(--plate-fg);
+  background: linear-gradient(to top, color-mix(in srgb, var(--plate) 92%, transparent), transparent);
+}
 html body #root .max-battle-art figcaption span { color: var(--plate-accent); font-size: var(--fs-sub); letter-spacing: .1em; }
 html body #root .max-battle-art figcaption b { font-size: var(--fs-lead); }
-html body #root .max-battle-art figcaption small { color: var(--plate-muted); font-size: var(--fs-sub); }
+html body #root .max-battle-art figcaption small { width: 100%; color: var(--plate-muted); font-size: var(--fs-sub); }
 
 /* 이동 목록의 아래 항목(기술 변경 내역 → 게임 업데이트 아래) — 글자를 줄이지 않고 색으로 누른다(§7) */
 html body #root .nav-menu .drawer__item[data-parent] { min-height: var(--tap); padding-left: 3.2rem; color: var(--muted); }
 html body #root .nav-menu .drawer__item[data-parent] .drawer__label::before { content: '↳ '; margin-right: .4rem; }
 html body #root .nav-menu .drawer__item[data-parent][aria-current=page] { color: var(--brand); }
 
-@media (min-width: 1000px) and (max-width: 1399px) {
-  html body #root .home__top-layout .home__welcome { padding: 2.4rem; }
-  html body #root .home__top-layout .home__intro h2 { font-size: var(--fs-title); }
-}
 @media (max-width: 699px) {
   html body #root .home__top-layout { gap: 1.6rem; }
   /* 배너는 손에서 반이다(v4.5.11, 643 → ≈320px) — 장식(눈썹줄·설명·소제목)은 접고 그림은 띠처럼 자른다.
      남는 것은 제목·그림·날짜와 보스·단추 둘, 손에서 뜻이 서는 데 필요한 넷이다 */
-  html body #root .home__top-layout .home__welcome { grid-template-columns: minmax(0, 1fr); min-height: 0; padding: 1.6rem; gap: .8rem; }
+  html body #root .home__top-layout .home__welcome { grid-template-columns: minmax(0, 1fr); grid-template-rows: none; height: auto; min-height: 0; padding: 1.6rem; gap: .8rem; }
+  html body #root .home__top-layout .home__intro { grid-row: 1; }
   html body #root .home__top-layout .home__eyebrow { display: none; }
   html body #root .home__top-layout .home__intro h2 { margin-top: 0; font-size: var(--fs-sec); }
   html body #root .home__top-layout .home__intro p { display: none; }
-  html body #root .max-battle-art { grid-column: 1; grid-row: 2; }
+  html body #root .max-battle-art { grid-column: 1; grid-row: 2; overflow: visible; max-height: none; }
   /* 그림은 자르지 않는다 (v4.6.4) — 띠처럼 자르니 손에서 보스 넷 중 둘이 잘려 나갔다. 원래 비율(3:2) 그대로 세운다 */
-  html body #root .max-battle-art figcaption { flex-direction: row; flex-wrap: wrap; align-items: baseline; gap: .4rem 1.2rem; padding-top: .8rem; }
+  html body #root .max-battle-art figcaption { position: static; padding: .8rem 0 0; background: none; }
   html body #root .max-battle-art figcaption small { display: none; }
   /* 바탕 규칙이 display: flex 라 grid-template-columns 만으로는 안 갈린다 — grid 로 바꿔야 두 칸이 된다 */
-  html body #root .home__top-layout .home__cta { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .8rem; }
+  html body #root .home__top-layout .home__cta { grid-row: 3; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .8rem; }
   html body #root .home__top-layout .home__btn { padding: 1.2rem .8rem; font-size: var(--fs-sub); }
 }

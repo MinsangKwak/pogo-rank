@@ -15,6 +15,16 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 const RELEASE_NOTES_EN = {
+  '2026-09-22 · v4.9.3': [
+    '**The home banner was redrawn** — it stays under 600px tall on any screen, with a bigger illustration and smaller text. The date and boss names now sit on the picture',
+  ],
+  '2026-09-21 · v4.9.2': [
+    '**The home banner is shorter on desktop** — it grew with the window and hid everything below it. The rankings below the banner are now visible without scrolling',
+    '**Its buttons moved up under the text** — they used to sit at the very bottom of the banner, far from what they refer to',
+  ],
+  '2026-09-21 · v4.9.1': [
+    '**Your favorites now show up when they appear as Dynamax** — Max Mondays and Max Battle Days were never matched to your saved Pokémon. Save today\'s Articuno, Zapdos or Moltres and the event shows as [Now on]',
+  ],
   '2026-09-21 · v4.9.0': [
     '**Wording across the screens has been tidied up** — the same thing was described differently from screen to screen. Descriptions in the dex, planner and rankings, plus the Terms and Privacy Policy, now read consistently. Nothing about how the site works has changed',
   ],
