@@ -22,6 +22,7 @@ import { readEnv } from '../env.ts';
 import { makeAccessTokens } from '../lib/jwt.ts';
 import { makeRequireRole } from '../plugins/requireRole.ts';
 import { GoogleError, type GoogleOAuth } from '../lib/google.ts';
+import type { GoogleProfile } from '../services/auth.ts';
 import { LOGIN_COOKIE } from '../lib/loginState.ts';
 import { REFRESH_COOKIE } from '../routes/auth.ts';
 import { testDatabaseUrl } from './dbUrl.ts';
@@ -40,8 +41,13 @@ const env = readEnv({
 });
 const tokens = makeAccessTokens(env.auth.jwtSecret);
 
-/** 구글 대신 답하는 자리. 다음 exchange 가 무엇을 낼지 검사가 정한다 */
-const fakeGoogle = {
+/**
+ * 구글 대신 답하는 자리. 다음 exchange 가 무엇을 낼지 검사가 정한다.
+ *
+ * **타입을 손으로 적는다.** 메서드 안에서 제 이름을 다시 부르므로(fakeGoogle.next),
+ * 타입 추론이 제 꼬리를 문다 — TS7022. satisfies 만으로는 그 고리가 안 끊어진다
+ */
+const fakeGoogle: GoogleOAuth & { next: GoogleError | null; profile: GoogleProfile } = {
   next: null as null | GoogleError,
   profile: { sub: 'g-1', email: 'friend@example.test', name: '친구', picture: 'https://x.test/a.png' },
   authorizeUrl({ state }: { state: string }) {
@@ -51,7 +57,7 @@ const fakeGoogle = {
     if (fakeGoogle.next) throw fakeGoogle.next;
     return fakeGoogle.profile;
   },
-} satisfies GoogleOAuth & Record<string, unknown>;
+};
 
 let sql: Sql;
 let app: FastifyInstance;
