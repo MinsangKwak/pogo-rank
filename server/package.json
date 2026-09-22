@@ -19,6 +19,7 @@
     "openapi": "tsx scripts/openapi.ts"
   },
   "dependencies": {
+    "@fastify/cookie": "^11.1.2",
     "@fastify/cors": "^11.0.1",
     "@fastify/rate-limit": "^10.2.2",
     "@fastify/swagger": "^9.8.1",

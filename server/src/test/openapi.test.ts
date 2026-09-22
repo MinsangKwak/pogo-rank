@@ -23,7 +23,14 @@ describe('OpenAPI 설명서', () => {
   it('주소가 다 적혀 있다', async () => {
     const spec = await openapiSpec() as { paths: Record<string, unknown> };
     expect(Object.keys(spec.paths).sort()).toEqual(
-      ['/healthz', '/v1/admin/backups', '/v1/admin/rollup', '/v1/events', '/v1/hot'],
+      [
+        '/healthz',
+        '/v1/admin/backups', '/v1/admin/rollup',
+        // v5 Phase 4 — 로그인
+        '/v1/auth/google/callback', '/v1/auth/google/start',
+        '/v1/auth/logout', '/v1/auth/logout-all', '/v1/auth/refresh', '/v1/auth/sessions',
+        '/v1/events', '/v1/hot', '/v1/me',
+      ],
     );
   });
 

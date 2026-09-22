@@ -35,6 +35,15 @@ export interface Session {
   refreshExpiresAt: Date;
 }
 
+export interface Profile {
+  id: string;
+  email: string;
+  name: string;
+  picture: string;
+  role: Role;
+  beta: boolean;
+}
+
 export interface DeviceSession {
   id: string;
   userAgent: string;
@@ -66,6 +75,7 @@ export interface Auth {
   signOut(refreshToken: string): Promise<void>;
   signOutEverywhere(userId: string): Promise<void>;
   sessionsOf(userId: string): Promise<DeviceSession[]>;
+  profileOf(userId: string): Promise<Profile | null>;
   deleteAccount(userId: string): Promise<void>;
 }
 
@@ -227,6 +237,18 @@ export function makeAuth(sql: Sql, tokens: AccessTokens, options: AuthOptions): 
       return rows.map((row) => ({
         id: row.id, userAgent: row.user_agent, issuedAt: row.issued_at, expiresAt: row.expires_at,
       }));
+    },
+
+    async profileOf(userId) {
+      const [row] = await sql<{
+        id: string; email: string; display_name: string; photo_url: string; role: Role; beta: boolean;
+      }[]>`select id, email, display_name, photo_url, role, beta from users where id = ${userId}`;
+      if (!row) return null;
+      // 빈 값을 빈 글자로 내린다 — 화면이 `${undefined}` 를 찍는 일을 서버에서 막는다 (CLAUDE.md §1)
+      return {
+        id: row.id, email: row.email, name: row.display_name, picture: row.photo_url,
+        role: row.role, beta: row.beta,
+      };
     },
 
     async deleteAccount(userId) {

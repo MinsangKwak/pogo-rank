@@ -32,7 +32,16 @@ export const OPENAPI_TAGS = [
   { name: '조회', description: '빌드가 받아 가는 자리' },
   { name: '관리', description: '열쇠(`ADMIN_TOKEN`)가 있어야 열린다' },
   { name: '상태', description: 'Cloud Run 이 보는 자리' },
+  { name: '인증', description: '구글로 로그인하고 세션을 돌리는 자리 (v5 Phase 4)' },
 ] as const;
+
+/** 로그인한 사람이 쓰는 자리에 붙인다 (v5 Phase 4) */
+export const ACCESS_SCHEME = {
+  type: 'http',
+  scheme: 'bearer',
+  bearerFormat: 'JWT',
+  description: '`Authorization: Bearer <액세스 토큰>`. `POST /v1/auth/refresh` 가 준다',
+} as const;
 
 /** 열쇠를 쓰는 자리에 붙인다 */
 export const BEARER_SCHEME = {

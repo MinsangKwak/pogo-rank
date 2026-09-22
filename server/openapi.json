@@ -15,11 +15,417 @@
         "type": "http",
         "scheme": "bearer",
         "description": "`Authorization: Bearer <ADMIN_TOKEN>`. 운영에서는 32자 이상이어야 서버가 뜬다"
+      },
+      "accessToken": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "description": "`Authorization: Bearer <액세스 토큰>`. `POST /v1/auth/refresh` 가 준다"
       }
     },
     "schemas": {}
   },
   "paths": {
+    "/v1/auth/google/start": {
+      "get": {
+        "summary": "구글 로그인 화면으로 보낸다",
+        "tags": [
+          "인증"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "name": "next",
+            "required": false,
+            "description": "마치고 돌아갈 앱 안의 경로"
+          }
+        ],
+        "responses": {
+          "302": {
+            "description": "구글로"
+          }
+        }
+      }
+    },
+    "/v1/auth/google/callback": {
+      "get": {
+        "summary": "구글이 인가 코드를 돌려주는 자리",
+        "tags": [
+          "인증"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "name": "code",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "name": "state",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "name": "error",
+            "required": false,
+            "description": "사용자가 구글 화면에서 취소하면 온다"
+          }
+        ],
+        "responses": {
+          "302": {
+            "description": "앱으로"
+          }
+        }
+      }
+    },
+    "/v1/auth/refresh": {
+      "post": {
+        "summary": "리프레시 쿠키로 액세스 토큰을 받는다",
+        "tags": [
+          "인증"
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "access": {
+                      "type": "string",
+                      "description": "액세스 토큰. 메모리에만 두고 저장소에 안 담는다"
+                    },
+                    "expiresIn": {
+                      "type": "integer",
+                      "description": "초"
+                    },
+                    "role": {
+                      "type": "string",
+                      "enum": [
+                        "pending",
+                        "approved",
+                        "admin",
+                        "root"
+                      ]
+                    },
+                    "beta": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "access",
+                    "expiresIn",
+                    "role",
+                    "beta"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "reason": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/auth/logout": {
+      "post": {
+        "summary": "이 기기의 로그인을 끊는다",
+        "tags": [
+          "인증"
+        ],
+        "responses": {
+          "204": {
+            "description": "끊었다"
+          }
+        }
+      }
+    },
+    "/v1/auth/logout-all": {
+      "post": {
+        "summary": "모든 기기의 로그인을 끊는다",
+        "tags": [
+          "인증"
+        ],
+        "security": [
+          {
+            "accessToken": []
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "끊었다"
+          },
+          "401": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "reason": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/auth/sessions": {
+      "get": {
+        "summary": "어디서 로그인했는지 — IP 는 담지 않는다 (CLAUDE.md §3)",
+        "tags": [
+          "인증"
+        ],
+        "security": [
+          {
+            "accessToken": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "sessions": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string"
+                          },
+                          "userAgent": {
+                            "type": "string"
+                          },
+                          "issuedAt": {
+                            "type": "string"
+                          },
+                          "expiresAt": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "userAgent",
+                          "issuedAt",
+                          "expiresAt"
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "sessions"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "reason": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/me": {
+      "get": {
+        "summary": "내 정보",
+        "tags": [
+          "인증"
+        ],
+        "security": [
+          {
+            "accessToken": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "email": {
+                      "type": "string"
+                    },
+                    "name": {
+                      "type": "string"
+                    },
+                    "picture": {
+                      "type": "string"
+                    },
+                    "role": {
+                      "type": "string",
+                      "enum": [
+                        "pending",
+                        "approved",
+                        "admin",
+                        "root"
+                      ]
+                    },
+                    "beta": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "email",
+                    "name",
+                    "picture",
+                    "role",
+                    "beta"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "reason": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "reason": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "summary": "계정을 지운다 — 세션과 담아 둔 것이 같이 사라진다",
+        "tags": [
+          "인증"
+        ],
+        "security": [
+          {
+            "accessToken": []
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "지웠다"
+          },
+          "401": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "reason": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/healthz": {
       "get": {
         "summary": "살아 있는가, DB 에 닿는가",
@@ -708,6 +1114,10 @@
     {
       "name": "상태",
       "description": "Cloud Run 이 보는 자리"
+    },
+    {
+      "name": "인증",
+      "description": "구글로 로그인하고 세션을 돌리는 자리 (v5 Phase 4)"
     }
   ]
 }
