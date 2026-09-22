@@ -182,6 +182,60 @@ describe.skipIf(!url)('인증 서버', () => {
     });
   });
 
+  // ── 옮겨 온 사람 (v5 Phase 7) ────────────────────────────────────────────
+  describe('Firestore 에서 옮겨 온 줄', () => {
+    /** 이관 스크립트가 넣어 두는 모양 — 진짜 sub 이 없어 자리표시자를 둔다 */
+    const seedMigrated = async (email: string, role: string, beta = false) => {
+      const [row] = await sql<{ id: string }[]>`
+        insert into users (google_sub, email, display_name, role, beta)
+        values (${`firebase:uid-${email}`}, ${email}, '옛이름', ${role}, ${beta}) returning id`;
+      return row!.id;
+    };
+
+    it('★ 처음 로그인할 때 그 줄을 이어받는다', async () => {
+      // Firebase uid 는 구글이 준 값이 아니다 — 이관은 자리표시자를 두고, 이 순간 갈아 끼운다.
+      // 안 하면 승인도 담아 둔 것도 그대로인데 이메일이 겹쳐 로그인이 거부된다
+      const id = await seedMigrated(friend.email, 'approved');
+      const session = await auth.signIn(friend);
+
+      expect(session.userId).toBe(id);
+      expect(session.role).toBe('approved');
+      const rows = await sql<{ google_sub: string }[]>`select google_sub from users`;
+      expect(rows).toHaveLength(1);
+      expect(rows[0]!.google_sub).toBe(friend.sub);
+    });
+
+    it('이어받으면서 이름과 사진이 지금 것으로 갈린다', async () => {
+      await seedMigrated(friend.email, 'approved');
+      await auth.signIn(friend);
+      const [row] = await sql<{ display_name: string; photo_url: string }[]>`
+        select display_name, photo_url from users`;
+      expect(row!.display_name).toBe('친구');
+      expect(row!.photo_url).toBe(friend.picture);
+    });
+
+    it('담아 둔 것과 실험 깃발이 그대로 따라온다', async () => {
+      const id = await seedMigrated(friend.email, 'approved', true);
+      await sql`insert into favorites (user_id, dex) values (${id}, 25)`;
+      const session = await auth.signIn(friend);
+      expect(session.beta).toBe(true);
+      const [row] = await sql<{ n: string }[]>`
+        select count(*)::text as n from favorites where user_id = ${session.userId}`;
+      expect(row!.n).toBe('1');
+    });
+
+    it('★ 진짜 sub 이 붙은 줄은 못 이어받는다', async () => {
+      // 이것이 열려 있으면 이메일만 알면 남의 계정을 가져갈 수 있다
+      await auth.signIn(friend);
+      expect(await refused(() => auth.signIn({ ...friend, sub: 'g-impostor' }))).toBe('conflict');
+    });
+
+    it('옮겨 온 루트도 루트로 돌아온다', async () => {
+      await seedMigrated(ROOT_EMAIL, 'approved');
+      expect((await auth.signIn(owner)).role).toBe('root');
+    });
+  });
+
   // ── ③ 회전과 사슬 ────────────────────────────────────────────────────────
   describe('리프레시 토큰', () => {
     it('DB 에는 원문이 없다 — 해시만 둔다', async () => {

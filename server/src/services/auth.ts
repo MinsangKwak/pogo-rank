@@ -122,6 +122,30 @@ export function makeAuth(sql: Sql, tokens: AccessTokens, options: AuthOptions): 
       // **권한은 안 덮어쓴다.** upsert 가 role 까지 갈아엎으면 관리자가 로그인할 때마다 대기로 떨어진다.
       // 단 ROOT_EMAIL 은 예외다 — 끌어내려져 있어도 로그인에서 되돌아온다(잠금 방지)
       const isRoot = email === rootEmail;
+      // **옮겨 온 줄을 이어받는다** (v5 Phase 7).
+      //
+      // Firestore 에서 옮겨 온 사람에게는 진짜 google_sub 이 없다 — Firebase uid 는 구글이
+      // 준 값이 아니라 Firebase 가 제 안에서 쓰던 id 다. 이관 스크립트는 그 자리에
+      // `firebase:<uid>` 라는 **자리표시자**를 넣어 두고, 그 사람이 처음 로그인하는 이 순간
+      // 진짜 sub 으로 갈아 끼운다.
+      //
+      // 안 하면 승인·담아 둔 것이 그대로 있는데도 이메일이 겹쳐 로그인이 거부된다 —
+      // 옮겨 온 사람 전원이 그 상태가 된다.
+      //
+      // **자리표시자일 때만 이어받는다.** 진짜 sub 이 붙은 줄은 건드리지 않는다 —
+      // 그것을 이어받게 두면 이메일만 알면 남의 계정을 가져갈 수 있다
+      const [claimed] = await sql<UserRow[]>`
+        update users
+           set google_sub   = ${profile.sub},
+               display_name = ${profile.name},
+               photo_url    = ${profile.picture},
+               role         = case when ${isRoot} then 'root' else role end,
+               updated_at   = now(),
+               last_seen_at = now()
+         where email = ${email} and google_sub like 'firebase:%'
+        returning id, role, beta`;
+      if (claimed) return issue(claimed, userAgent);
+
       let user: UserRow | undefined;
       try {
         [user] = await sql<UserRow[]>`

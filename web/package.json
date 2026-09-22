@@ -3,13 +3,14 @@
   "private": true,
   "version": "5.0.0-alpha.1",
   "scripts": {
-    "data": "node ../frontend-v4/scripts/extract-data.mjs",
+    "data": "DATA_SITE=web node ../frontend-v4/scripts/extract-data.mjs",
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
     "typecheck": "tsc --noEmit",
     "test": "npm run typecheck && vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "prepare-assets": "node scripts/copy-assets.mjs"
   },
   "dependencies": {
     "@tanstack/react-query": "^5.62.0",

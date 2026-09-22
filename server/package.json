@@ -16,7 +16,8 @@
     "test:watch": "vitest",
     "db:up": "docker compose up -d",
     "db:migrate": "tsx src/db/migrate.ts",
-    "openapi": "tsx scripts/openapi.ts"
+    "openapi": "tsx scripts/openapi.ts",
+    "db:import": "tsx scripts/import-firestore.ts"
   },
   "dependencies": {
     "@fastify/cookie": "^11.1.2",

@@ -27,7 +27,12 @@ import { I18N_EN, I18N_PATTERNS } from '../../content/i18n.en.mjs';
 const here = dirname(fileURLToPath(import.meta.url));
 const repo = resolve(here, '../..');
 const distV3 = resolve(repo, 'dist');
-const out = resolve(here, '../public/data');
+// **어디에 쓸지는 부르는 쪽이 정한다** (v5 Phase 6).
+// v4(Vite)와 web(Next)이 같은 JSON 을 쓴다 — 뽑는 코드를 두 벌 두면 한쪽만 고쳐진다
+const site = process.env.DATA_SITE
+  ? resolve(repo, process.env.DATA_SITE)
+  : resolve(here, '..');
+const out = resolve(site, 'public/data');
 
 for (const name of ['data.js', 'data-lazy.js']) {
   if (!existsSync(resolve(distV3, name))) {
@@ -169,7 +174,7 @@ writeFileSync(resolve(out, 'manifest.json'), JSON.stringify(manifest, null, 1));
 // 데이터와 같은 규칙으로 빌드 때 가져온다 (public/ 의 이 파일들은 .gitignore 에 있다)
 {
   const from = resolve(repo, 'assets');
-  const to = resolve(here, '../public');
+  const to = resolve(site, 'public');
   for (const name of ['manifest.webmanifest', 'icon-192.png', 'icon-512.png', 'og.png', 'og-design.png', 'og-dev.png', 'logo.svg']) {
     copyFileSync(resolve(from, name), resolve(to, name));
   }
