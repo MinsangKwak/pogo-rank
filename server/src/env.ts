@@ -11,8 +11,18 @@
 'use strict';
 
 export interface Env {
-  /** Postgres 접속 문자열. Neon 은 `?sslmode=require` 가 붙는다 */
+  /**
+   * 평소 요청이 쓰는 주소. **풀링 쪽이 있으면 그쪽이다** —
+   * Cloud Run 은 인스턴스를 여럿 띄우고, 인스턴스마다 직접 연결을 잡으면 Neon 의
+   * 접속 한도를 몇 대로 다 먹는다
+   */
   databaseUrl: string;
+  /**
+   * 마이그레이션이 쓰는 주소. **직접 연결이어야 한다** —
+   * 풀러(PgBouncer)는 트랜잭션 단위로 연결을 돌려쓰므로 세션에 거는 잠금이 안 산다.
+   * `create index` 같은 문장이 조용히 어긋날 수 있는 자리다
+   */
+  migrationUrl: string;
   /** Cloud Run 이 넣어 주는 값. 로컬은 8080 */
   port: number;
   /** 수집을 받아 줄 출처. 여기 없는 Origin 은 CORS 에서 막힌다 */
@@ -115,6 +125,21 @@ function authOf(source: NodeJS.ProcessEnv, nodeEnv: Env['nodeEnv'], allowedOrigi
   };
 }
 
+/**
+ * 풀링 주소에서 직접 주소를 뽑는다.
+ *
+ * Neon 은 호스트에 `-pooler` 를 붙여 둘을 가른다 —
+ *   직접   ep-late-frog-12345.ap-southeast-1.aws.neon.tech
+ *   풀링   ep-late-frog-12345-pooler.ap-southeast-1.aws.neon.tech
+ *
+ * **왜 넣어 주나.** 시크릿은 넣고 나면 아무도 못 읽는다. 어느 쪽을 넣었는지 확인할 길이
+ * 없는데 틀리면 조용히 어긋나므로, 사람이 안 틀리기를 바라는 대신 기계가 맞춘다.
+ * 손으로 정하고 싶으면 MIGRATION_DATABASE_URL 을 주면 그쪽이 이긴다.
+ */
+export function directOf(url: string): string {
+  return url.replace(/-pooler(?=\.)/, '');
+}
+
 function nodeEnvOf(source: NodeJS.ProcessEnv): Env['nodeEnv'] {
   const raw = (source['NODE_ENV'] ?? 'development').trim();
   return raw === 'production' || raw === 'test' ? raw : 'development';
@@ -128,8 +153,13 @@ export function readEnv(source: NodeJS.ProcessEnv = process.env): Env {
     throw new EnvError('운영에서는 ADMIN_TOKEN 이 32자 이상이어야 합니다');
   }
   const allowedOrigins = origins(source, 'ALLOWED_ORIGINS');
+  // 둘 다 줘도 되고 하나만 줘도 된다 — 없는 쪽은 있는 쪽에서 만든다
+  const given = required(source, 'DATABASE_URL');
+  const pooled = (source['DATABASE_URL_POOLED'] ?? '').trim();
+  const migrationGiven = (source['MIGRATION_DATABASE_URL'] ?? '').trim();
   return {
-    databaseUrl: required(source, 'DATABASE_URL'),
+    databaseUrl: pooled || given,
+    migrationUrl: migrationGiven || directOf(given),
     port: positiveInt(source, 'PORT', 8080),
     allowedOrigins,
     adminToken,

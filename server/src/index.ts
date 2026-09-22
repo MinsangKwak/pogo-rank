@@ -12,11 +12,23 @@ import { migrate } from './db/migrate.ts';
 import { buildApp } from './app.ts';
 
 const env = readEnv();
+
+// **마이그레이션은 직접 연결로 돌리고 바로 닫는다** (v5 Phase 7).
+// 풀러(PgBouncer)는 트랜잭션마다 연결을 돌려쓰므로 세션에 거는 잠금이 안 산다 —
+// create index 같은 문장이 조용히 어긋날 수 있는 자리다.
+// 부팅에 한 번뿐이라 연결 하나를 따로 여는 값이 싸다
+{
+  const direct = makeDb(env.migrationUrl);
+  try {
+    const applied = await migrate(direct);
+    if (applied.length) console.log(`마이그레이션 적용: ${applied.join(', ')}`);
+  } finally {
+    await direct.end();
+  }
+}
+
+// 평소 요청은 풀링으로 간다 — 인스턴스가 여럿 뜨는 자리라 직접 연결을 아낀다
 const sql = makeDb(env.databaseUrl);
-
-const applied = await migrate(sql);
-if (applied.length) console.log(`마이그레이션 적용: ${applied.join(', ')}`);
-
 const app = await buildApp(env, sql);
 
 // Cloud Run 은 컨테이너 밖에서 들어온다 — 0.0.0.0 이 아니면 아무 요청도 안 닿는다

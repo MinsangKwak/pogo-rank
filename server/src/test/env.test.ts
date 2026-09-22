@@ -89,4 +89,42 @@ describe('env 관문', () => {
       expect(() => readEnv({ ...base, APP_ORIGIN: '' })).toThrow(/APP_ORIGIN/);
     });
   });
+
+  describe('풀링과 직접 연결을 갈라 쓴다 (v5 Phase 7)', () => {
+    // Neon 은 호스트에 -pooler 를 붙여 둘을 가른다. **시크릿은 넣고 나면 못 읽으므로**
+    // 어느 쪽을 넣었는지 확인할 길이 없다 — 사람이 안 틀리기를 바라는 대신 기계가 맞춘다
+    const POOLED = 'postgres://u:p@ep-late-frog-12345-pooler.ap-southeast-1.aws.neon.tech/db?sslmode=require';
+    const DIRECT = 'postgres://u:p@ep-late-frog-12345.ap-southeast-1.aws.neon.tech/db?sslmode=require';
+
+    it('풀링 주소만 줘도 마이그레이션은 직접으로 간다', () => {
+      // 풀러는 트랜잭션마다 연결을 돌려쓴다 — 세션에 거는 잠금이 안 살아 조용히 어긋난다
+      const env = readEnv({ ...base, DATABASE_URL: POOLED });
+      expect(env.databaseUrl).toBe(POOLED);
+      expect(env.migrationUrl).toBe(DIRECT);
+    });
+
+    it('직접 주소만 줘도 그대로 돈다', () => {
+      const env = readEnv({ ...base, DATABASE_URL: DIRECT });
+      expect(env.databaseUrl).toBe(DIRECT);
+      expect(env.migrationUrl).toBe(DIRECT);
+    });
+
+    it('둘 다 주면 평소 요청은 풀링으로 간다', () => {
+      // Cloud Run 은 인스턴스를 여럿 띄운다 — 직접 연결로 다니면 Neon 의 접속 한도를 금방 먹는다
+      const env = readEnv({ ...base, DATABASE_URL: DIRECT, DATABASE_URL_POOLED: POOLED });
+      expect(env.databaseUrl).toBe(POOLED);
+      expect(env.migrationUrl).toBe(DIRECT);
+    });
+
+    it('손으로 정하면 그쪽이 이긴다', () => {
+      const env = readEnv({ ...base, DATABASE_URL: POOLED, MIGRATION_DATABASE_URL: DIRECT });
+      expect(env.migrationUrl).toBe(DIRECT);
+    });
+
+    it('-pooler 가 이름 안에 있어도 호스트만 건드린다', () => {
+      // 사용자명이나 DB 이름에 그 글자가 들어갈 수 있다 — 점 앞에 있는 것만 호스트다
+      const odd = 'postgres://my-pooler-user:p@ep-abc.neon.tech/pooler-db';
+      expect(readEnv({ ...base, DATABASE_URL: odd }).migrationUrl).toBe(odd);
+    });
+  });
 });

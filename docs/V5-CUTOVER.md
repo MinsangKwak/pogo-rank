@@ -31,9 +31,18 @@
 | `ROOT_EMAIL` | 루트 관리자 이메일 | 서버 |
 | `GOOGLE_CLIENT_ID` | 구글 콘솔의 client_id | 서버 ✅ |
 | `GOOGLE_CLIENT_SECRET` | 구글 콘솔의 client_secret | 서버 ✅ |
-| `DATABASE_URL` | Neon **직접** 연결 문자열 | 서버 ✅ |
+| `ADMIN_TOKEN` | `openssl rand -hex 32` 결과 | 서버 |
+| `DATABASE_URL` | Neon 연결 문자열 — **풀링이든 직접이든 하나면 된다** | 서버 ✅ |
 | `GCP_PROJECT_ID` · `GCP_SA_KEY` | Cloud Run 배포용 | 서버 |
 | `VERCEL_TOKEN` · `VERCEL_ORG_ID` · `VERCEL_PROJECT_ID` | Vercel 배포용 | 화면 |
+
+**`ADMIN_TOKEN` 이 없으면 서버가 부팅을 못 한다.** 운영에서 32자 미만이면 `env.ts` 가 세운다 —
+롤업·관리 주소가 아무에게나 열린 채로 뜨는 것을 막는 자리다.
+
+**DB 주소는 둘 중 아무거나 넣어도 된다.** 시크릿은 넣고 나면 아무도 못 읽어서 어느 쪽을
+넣었는지 확인할 길이 없다. 그래서 서버가 맞춘다 — Neon 은 호스트에 `-pooler` 를 붙여
+둘을 가르므로, 평소 요청은 풀링으로 마이그레이션은 직접으로 알아서 간다
+(풀러 뒤에서는 세션에 거는 잠금이 안 살아 마이그레이션이 조용히 어긋난다).
 
 **`JWT_SECRET` 이 이 중 제일 중요하다.** 이 값을 아는 사람은 아무 권한의 로그인 토큰이든
 지어낼 수 있다 — 구글을 거치지 않고. 비밀번호 관리자에 같이 둔다.

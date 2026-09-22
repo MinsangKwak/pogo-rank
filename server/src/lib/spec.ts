@@ -17,6 +17,7 @@ const NO_DB = (() => Promise.resolve([])) as unknown as Sql;
 
 const ENV: Env = {
   databaseUrl: 'postgres://doc',
+  migrationUrl: 'postgres://doc',
   port: 8080,
   allowedOrigins: ['https://moncamp.kr'],
   adminToken: '',
