@@ -57,35 +57,44 @@ for (const name of ['data.js', 'data-lazy.js']) {
   );
 }
 
-// 문의 이메일은 저장소에 없다 — 빌드가 환경변수에서 읽어 dist/index.html 에 박아 넣는다.
-// 그 값을 그대로 꺼내 쓴다 (약관·개인정보처리방침의 문의처가 이 한 곳을 본다).
-// 비어 있으면 v3 와 같이 '사이트 운영자' 로 적힌다
-// 설정값은 저장소에 없다 — 빌드가 환경변수에서 읽어 dist/index.html 에 박아 넣는다.
-// 그 값을 그대로 꺼내 쓴다. 비어 있으면 v3 와 같이 그 기능이 조용히 꺼진다
-// (FIREBASE_CONFIG.apiKey 가 없으면 로그인 UI 자체가 안 뜬다 — authEnabled).
+// 2026-09-22 v5 Phase 1 — 설정은 환경변수가 원본이다.
+// 전에는 build.py 가 .env 를 읽어 dist/index.html 에 박아 넣은 값을 **정규식으로 도로 긁어내고**
+// 있었다. v3 의 HTML 이 v4 데이터의 전달자였던 셈이라, 그 HTML 을 못 지웠다.
+// 이제 같은 자리(.env · CI 시크릿)를 직접 본다 — build.py read_config() 와 같은 이름들이다.
 {
-  const html = readFileSync(resolve(distV3, 'index.html'), 'utf8');
-  const str = (name) => new RegExp(`const ${name} = "([^"]*)"`).exec(html)?.[1] ?? '';
-  const json = /const FIREBASE_CONFIG = (\{[^;]*\});/.exec(html)?.[1] ?? '{}';
-  vm.runInContext([
-    `var CONTACT_EMAIL = ${JSON.stringify(str('CONTACT_EMAIL'))};`,
-    `var ADMIN_UID = ${JSON.stringify(str('ADMIN_UID'))};`,
-    `var ADMIN_EMAIL = ${JSON.stringify(str('ADMIN_EMAIL'))};`,
-    // 2026-09-21 v4.7.0 수집 서버 주소. 비면 lib/collect.ts 가 통째로 꺼진다 (server/README.md)
-    `var COLLECT_URL = ${JSON.stringify(str('COLLECT_URL'))};`,
-    `var FIREBASE_CONFIG = ${json};`,
-    // 판 번호는 머리줄에 글자로 박혀 있다 — 선언이 아니라서 거기서 꺼낸다 (v3 app-shell.js 도 같은 자리를 읽는다)
-    `var APP_VERSION = ${JSON.stringify(/app-bar__version">([^<]*)</.exec(html)?.[1] ?? '')};`,
-    // 데이터 기준일도 마찬가지 — 빌드가 게임 마스터의 timestamp 를 서랍 글자에 박아 넣는다.
-    // **DATA_FETCHED 와 다른 값이다**(그쪽은 날짜만) — 같은 줄에 다른 값을 적으면 v3 와 어긋난다
-    `var DATA_TIMESTAMP = ${JSON.stringify(/기준일 ([^·]*) ·/.exec(html)?.[1]?.trim() ?? '')};`,
-  ].join('\n'), sandbox, { filename: 'index.html' });
-}
-
-// 판 번호는 release/version.json 하나가 원본이다 (v5 Phase 1 — 전에는 components/release.js 였다)
-{
+  // build.py load_dotenv() 와 같은 규칙. 이미 있는 환경변수를 덮지 않는다(CI 가 이긴다)
+  const envPath = resolve(repo, '.env');
+  if (existsSync(envPath)) {
+    for (const line of readFileSync(envPath, 'utf8').split('\n')) {
+      const text = line.trim();
+      if (!text || text.startsWith('#') || !text.includes('=')) continue;
+      const [key, ...rest] = text.split('=');
+      const value = rest.join('=').trim().replace(/^["']|["']$/g, '');
+      if (process.env[key.trim()] === undefined) process.env[key.trim()] = value;
+    }
+  }
+  const env = (name) => process.env[name] ?? '';
+  // 판 번호는 release/version.json 이 원본. dev 채널 접미사는 build.py 와 같은 규칙이다
   const version = JSON.parse(readFileSync(resolve(repo, 'release/version.json'), 'utf8'));
-  vm.runInContext(`var RELEASE_VER = ${JSON.stringify(version.release)};`, sandbox, { filename: 'version.json' });
+  const appVersion = version.app + (env('BUILD_CHANNEL') === 'dev' ? '-dev' : '');
+  // 데이터 기준일은 게임 마스터가 들고 있다 (build.py 도 같은 값을 HTML 에 박았다)
+  const gmPath = resolve(repo, 'data/gm.json');
+  const dataTimestamp = existsSync(gmPath) ? JSON.parse(readFileSync(gmPath, 'utf8')).timestamp ?? '' : '';
+
+  let firebase = {};
+  try { firebase = JSON.parse(env('FIREBASE_CONFIG_JSON') || '{}'); }
+  catch { console.error('FIREBASE_CONFIG_JSON 이 JSON 이 아닙니다 — 빈 값으로 둡니다 (로그인 UI 가 안 뜹니다)'); }
+
+  vm.runInContext([
+    `var CONTACT_EMAIL = ${JSON.stringify(env('CONTACT_EMAIL'))};`,
+    `var ADMIN_UID = ${JSON.stringify(env('ADMIN_UID'))};`,
+    `var ADMIN_EMAIL = ${JSON.stringify(env('ADMIN_EMAIL'))};`,
+    `var COLLECT_URL = ${JSON.stringify(env('COLLECT_URL').replace(/\/+$/, ''))};`,
+    `var FIREBASE_CONFIG = ${JSON.stringify(firebase)};`,
+    `var APP_VERSION = ${JSON.stringify(appVersion)};`,
+    `var DATA_TIMESTAMP = ${JSON.stringify(dataTimestamp)};`,
+    `var RELEASE_VER = ${JSON.stringify(version.release)};`,
+  ].join('\n'), sandbox, { filename: 'config' });
 }
 
 const readGlobal = (key) => vm.runInContext(`typeof ${key} === 'undefined' ? undefined : ${key}`, sandbox);
