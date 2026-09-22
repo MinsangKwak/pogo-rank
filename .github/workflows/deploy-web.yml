@@ -84,14 +84,23 @@ jobs:
           pip install --quiet Pillow
           bash scripts/build.sh
 
+      # **수집을 켠 채로 굽는다** (v5 Phase 8). 이 값이 비면 화면이 수집을 통째로 끈다 —
+      # 서버가 있어도 한 건도 안 나간다 (web/src/components/CollectBridge.tsx).
+      # 저장소 변수 vars.COLLECT_URL 이 있으면 그쪽이 이긴다 (채널마다 다를 수 있다)
       - if: steps.ready.outputs.go == 'true'
         name: web 준비 (데이터·그림)
+        env:
+          COLLECT_URL: ${{ vars.COLLECT_URL || 'https://api.moncamp.kr' }}
         run: |
           set -e
           cd web
           npm ci
           npm run data
           npm run prepare-assets
+          # 켜져서 구워졌는지 눈으로 본다 — 비어 있으면 조용히 안 나간다
+          node -e "const m=require('./public/data/meta.json');
+            if(!m.COLLECT_URL){console.error('meta.json 에 COLLECT_URL 이 없습니다 — 수집이 꺼진 채로 구워졌습니다');process.exit(1)}
+            console.log('수집 주소:', m.COLLECT_URL)"
 
       # **검사가 빨개지면 배포를 세운다.** 조용히 넘어가면 잘못된 판이 그대로 올라간다
       - if: steps.ready.outputs.go == 'true'

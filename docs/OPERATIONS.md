@@ -526,7 +526,7 @@ FIREBASE_SA_JSON='<한 줄 JSON>' python3 scripts/firestore_restore.py firestore
 > `deploy` 브랜치에 밀 때마다 빨간 줄을 남기지 않는다. 로그의 `notice` 한 줄로 건너뛴 것을 알린다.
 
 | 7 | 도메인 `api.moncamp.kr` → Cloud Run 매핑 | `curl https://api.moncamp.kr/healthz` |
-| 8 | **2026-09-28 이후에** 저장소 **변수** `COLLECT_URL` = `https://api.moncamp.kr` | 다음 사이트 배포부터 수집이 켜진다 |
+| 8 | ~~저장소 **변수** `COLLECT_URL`~~ → **v5 부터는 배포 워크플로가 켠 채로 굽는다** (`deploy-web.yml`). 변수는 덮어쓸 때만 쓴다 | 다음 사이트 배포부터 수집이 켜진다 |
 
 **8번을 안 하면 아무것도 안 쌓인다.** 화면은 `COLLECT_URL` 이 비면 수집을 통째로 끈다 —
 `FIREBASE_CONFIG.apiKey` 가 없으면 로그인이 꺼지는 것과 같은 규칙이다. **1번을 안 했으면 6번을 하지 않는다.**
