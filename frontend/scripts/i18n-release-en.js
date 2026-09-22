@@ -18,6 +18,10 @@ const RELEASE_NOTES_EN = {
   '2026-09-22 · v4.9.7': [
     '**Account deletion now actually deletes** — pressing delete failed with "permission-denied" and nothing was removed. The server rule misread delete requests. Your saved data, approval record, sign-up request and Google login link are now all removed',
   ],
+  '2026-09-22 · v4.9.6': [
+    '**[Scroll down] no longer lands the heading behind the app bar** — the [Top Pokemon by role] heading was hidden under the sticky bar after the jump',
+    '**[Many uses] is a single-line card again on narrow screens** — the tall side-card layout was leaking down to phones and stretching the card',
+  ],
   '2026-09-22 · v4.9.5': [
     '**A failed load now shows a message instead of an empty screen** — when the connection dropped, the page just stayed blank with nothing to act on. [Try again] now refetches in place',
   ],

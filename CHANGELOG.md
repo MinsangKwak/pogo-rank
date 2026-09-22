@@ -22,7 +22,7 @@
 ---
 
 <details open>
-<summary><b>2026-09-22</b> — 4판 · <code>v4.9.7</code> · <code>v4.9.5</code> · <code>v4.9.4</code> · <code>v4.9.3</code></summary>
+<summary><b>2026-09-22</b> — 5판 · <code>v4.9.7</code> · <code>v4.9.6</code> · <code>v4.9.5</code> · <code>v4.9.4</code> · <code>v4.9.3</code></summary>
 
 <details>
 <summary><b>v4.9.7</b> · 계정 삭제가 실제로 지워진다 — 규칙의 삭제를 갈라 세우고 에뮬레이터로 본다</summary>
@@ -57,6 +57,26 @@
 
 **⚠️ 콘솔에 규칙을 다시 게시해야 적용된다.** `bash scripts/render_rules.sh` 가 만드는 `firestore.rules.local` 을
 Firebase 콘솔 > Firestore > 규칙에 전체 교체로 붙여넣는다. 코드 배포와 별개다.
+
+</details>
+
+<details>
+<summary><b>v4.9.6</b> · '아래로' 가 닿는 자리와 좁은 화면 카드를 되돌린다</summary>
+
+**요청** — v4.9.4 리뷰에서 지적 두 건이 올라왔다. 둘 다 사실로 확인했다.
+
+**수정** — '아래로' 가 닿는 자리(`#home-more`)에 `scroll-margin-top` 을 준다.
+상단 바는 `position: sticky; top: 0` 이라 `scrollIntoView` 가 제목을 바 **뒤**에 놓는다 —
+실측 1920 에서 바 바닥 89px 에 제목 top 0 이었다. 바 높이(7.6rem)와 좁은 바(6.4rem)에
+각각 맞춰 10.4rem · 8.8rem 을 준다. 고친 뒤 틈은 15px · 24px 이다.
+
+**수정** — 배너 옆 세로 칸 규칙(`.pick__discover--aside`)을 `@media (min-width: 1440px)` 안으로 넣는다.
+둘째 칸은 1440 위에서만 생기는데 규칙은 조건 없이 적혀 있어, 그 아래 모든 폭에서
+원래의 한 줄 띠를 덮고 있었다. 손(390)에서 카드가 세로로 쌓이고 제목이 두 줄로 꺾이고
+단추가 폭을 다 먹었다 — v4.9.4 가 "좁은 화면과 손 화면은 그대로" 라고 적은 것이 어긋나 있었다.
+
+**확인** — 390 · 800 · 1280 은 띠(`flex/row`), 1920 은 세로 칸(`flex/column`).
+'아래로' 는 800 · 1024 · 1920 에서 제목이 바 아래에 선다.
 
 </details>
 

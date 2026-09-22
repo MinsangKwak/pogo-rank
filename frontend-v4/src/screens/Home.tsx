@@ -16,6 +16,7 @@ import type { GameUpdate } from '../types/data';
 import { track } from '../lib/track';
 import { UPDATE_CATS } from '../lib/notes';
 import type { OpenMon } from '../lib/mon';
+import { TankPopupEntry } from '../components/TankPopup';
 
 // 갈래마다 문 앞에 세우는 스타터 (v3 home.js 와 같은 번호 — 꼬부기 · 파이리 · 이상해씨)
 const STARTER: Record<string, number> = { today: 7, pick: 4, mine: 1 };
@@ -261,7 +262,8 @@ function HomeData({ onOpen }: { onOpen: OpenMon }) {
 
   return (
     <>
-
+      {/* 11월 레이드 탱커 준비(예상) — 안내 띠 + 하루 한 번 열리는 팝업. 데이터가 있어야 그리므로 여기(Suspense 안)다 */}
+      <TankPopupEntry onOpen={onOpen} />
       {/* id 는 배너의 '아래로' 단추가 내려가는 자리다 — 새 이름이라 home- 를 붙였다 (§2) */}
       <section className="home__picks" id="home-more">
         <div className="home__section">
