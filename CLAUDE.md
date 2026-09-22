@@ -197,22 +197,31 @@ node scripts/check-stories.mjs http://localhost:4189/   # 전량 × 라이트·�
 - `BACKUP_PASSPHRASE` 는 비밀번호 관리자에 둔다.
 - 규칙을 mock uid 로 렌더하지 않는다 — `scripts/render_rules.sh` 가 막는다.
 
-## 5. 버전을 올릴 때 고칠 여섯 곳
+## 5. 판 번호의 원본은 `release/version.json` 하나다
 
-한 군데라도 빠지면 화면과 문서가 어긋난다.
+**고칠 곳이 여섯이던 시절이 있었다** — build.py 의 상수, v3 의 `RELEASE_VER`, 패치노트 한글·영문,
+CHANGELOG, README. 한 군데만 빠져도 화면과 문서가 어긋났고, 사람이 여섯 번 안 틀리기를 바라는 것은
+규칙이 아니라 기대다. 2026-09-22 v5 Phase 1 에 원본을 하나로 모으고 나머지는 기계가 견준다.
 
-1. `backend/build.py` — `APP_VERSION`
-2. `frontend/scripts/components/release.js` — `RELEASE_VER`
-3. `frontend/scripts/release-notes.js`
-4. `frontend/scripts/i18n-release-en.js`
-5. `CHANGELOG.md` — 건수 + 날짜 묶음
-6. `README.md` — 건수 + 날짜 묶음
+| 자리 | 무엇 | 누가 지키나 |
+| --- | --- | --- |
+| **`release/version.json`** | `app`(화면 머리) · `release`(패치노트 빨간 점) | **여기만 손으로 고친다** |
+| `content/release-notes.mjs` | 한글 패치노트 본문 | `src/test/version.test.ts` |
+| `content/release-notes.en.mjs` | 영문 패치노트 — 키가 한글판 `date` 와 글자까지 같아야 한다 | 〃 |
+| `CHANGELOG.md` · `README.md` | 건수 + 날짜 묶음 | 〃 |
+
+`backend/build.py` 와 `frontend-v4/scripts/extract-data.mjs` 는 `version.json` 을 읽는다. 손으로 안 적는다.
+dev 채널의 `-dev` 접미사도 둘이 같은 규칙으로 붙인다.
+
+**릴리스는 묶어서 낸다.** 커밋마다 판을 올리지 않는다 — 22일에 250판(하루 최다 34판)을 낸 적이 있는데,
+그건 릴리스가 아니라 커밋에 번호를 붙인 것이다. 사용자가 읽을 만한 덩어리가 모이면 그때 올린다.
 
 ## 6. 빌드와 배포
 
 - **`scripts/build.sh` 는 v4 를 다시 빌드하지 않는다.** 화면을 확인하기 전에 `cd frontend-v4 && npm run build` 를 따로 돌린다.
 - 커밋 전에 `git checkout -- snapshot/` — 빌드가 스냅샷을 건드린다.
 - 빠른 길: `build.sh --meta-only`(2초) · `--no-fetch`(3초) · `--no-sprites`
+- **`build.sh` 는 화면을 안 만든다** (v5 Phase 1-C). `dist/` 에 나오는 것은 `data.js` · 스프라이트 · 부속 파일(robots · sitemap · 404 · build.json)뿐이고, 화면은 `frontend-v4` 가 만든다
 - 배포: dev → main PR 병합 → `deploy` 브랜치에 main 을 머지 → `bash scripts/verify_deploy.sh https://moncamp.kr/ prod`
 
 ## 7. 글과 코드의 결
