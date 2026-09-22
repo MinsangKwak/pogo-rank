@@ -176,7 +176,7 @@ Actions에서 빨간 X가 뜨면 **build 잡의 빨간 단계**를 펼쳐 마지
 
 > 손으로 준 깃발은 **그 사람이 다시 로그인해야** 적용됩니다 — 판정은 로그인 한 번에 한 번만 읽습니다.
 
-**계정 삭제(v2.18.0)** — 사용자가 ☰ → 계정 카드 → "계정 삭제"로 직접 지웁니다(`users`·`allowlist`·`requests` 본인 문서 + 인증 계정). 이메일로 요청이 오면 콘솔에서 같은 네 곳을 지우면 됩니다. **v2.18.0 규칙(`firestore.rules`)을 콘솔에 다시 게시해야** 본인 문서 delete가 허용됩니다 — 게시 전에는 삭제 버튼이 `permission-denied`로 실패하고 안내 문구가 뜹니다.
+**계정 삭제(v2.18.0 · v4.9.7)** — 사용자가 ☰ → 계정 카드 → "계정 삭제"로 직접 지웁니다(`users`·`allowlist`·`requests` 본인 문서 + 인증 계정). 이메일로 요청이 오면 콘솔에서 같은 네 곳을 지우면 됩니다. **v4.9.7 규칙(`firestore.rules`)을 콘솔에 다시 게시해야** `users` 문서 delete 가 허용됩니다 — 그전 규칙은 삭제 요청을 오류로 거부해 `permission-denied` 가 났습니다(삭제 요청에는 `request.resource` 가 없는데 본문 크기를 읽었다). 규칙을 고칠 때는 `cd frontend-v4 && npm run test:rules` 로 에뮬레이터 검사를 먼저 돌립니다.
 
 **관리자를 바꾸려면** `backend/build.py`의 `ADMIN_UID`와 `firestore.rules`의 `isAdmin()` uid를 **둘 다** 바꾸고, 규칙은 콘솔에서 다시 게시해야 합니다.
 

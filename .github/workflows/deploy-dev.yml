@@ -110,6 +110,31 @@ jobs:
           set -e
           cd frontend-v4
           npm test
+      # 2026-09-22 v4.9.7 Firestore 규칙을 에뮬레이터로 실제 돌려 본다 — 규칙이 움직인 푸시에서만.
+      #   계정 삭제가 규칙 오류로 죽어 있는데 아무 검사도 없었다. 에뮬레이터(Java)를 세우는 데
+      #   40초쯤 들고 저장소가 private 이 되어 Actions 분이 과금되므로, 매 푸시가 아니라
+      #   규칙·그 검사가 바뀐 푸시에만 값을 낸다. 비교할 앞 커밋을 못 받으면(강제 푸시·새 가지) 그냥 돈다.
+      - uses: actions/cache@v4
+        if: steps.v4deps.outcome == 'success' && github.event_name == 'push'
+        with:
+          path: ~/.cache/firebase/emulators
+          key: firestore-emulator-${{ runner.os }}-v1
+      - name: Firestore 규칙 검사 (에뮬레이터) — 규칙이 바뀐 푸시만 · 빨개지면 배포를 세운다
+        if: steps.v4deps.outcome == 'success' && github.event_name == 'push'
+        env:
+          BEFORE: ${{ github.event.before }}
+        run: |
+          set -e
+          WATCH="firestore.rules firebase.json frontend-v4/src/test/rules frontend-v4/vitest.rules.config.ts"
+          if git fetch --depth=1 origin "$BEFORE" 2>/dev/null; then
+            CHANGED=$(git diff --name-only "$BEFORE" HEAD -- $WATCH)
+            if [ -z "$CHANGED" ]; then echo "규칙이 안 바뀐 푸시 — 건너뛴다"; exit 0; fi
+            echo "바뀐 것:"; echo "$CHANGED"
+          else
+            echo "앞 커밋을 못 받았다 — 그냥 돈다"
+          fi
+          cd frontend-v4
+          npm run test:rules
       - name: v4 빌드
         if: steps.v4deps.outcome == 'success'
         continue-on-error: true

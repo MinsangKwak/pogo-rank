@@ -22,7 +22,43 @@
 ---
 
 <details open>
-<summary><b>2026-09-22</b> — 4판 · <code>v4.9.6</code> · <code>v4.9.5</code> · <code>v4.9.4</code> · <code>v4.9.3</code></summary>
+<summary><b>2026-09-22</b> — 5판 · <code>v4.9.7</code> · <code>v4.9.6</code> · <code>v4.9.5</code> · <code>v4.9.4</code> · <code>v4.9.3</code></summary>
+
+<details>
+<summary><b>v4.9.7</b> · 계정 삭제가 실제로 지워진다 — 규칙의 삭제를 갈라 세우고 에뮬레이터로 본다</summary>
+
+**요청** — 광고를 앞둔 점검(v4.9.5)에서 P0 로 잡힌 것. 계정 삭제가 `permission-denied` 로 실패한다.
+개인정보처리방침이 "삭제 요청 시 Firestore 문서와 인증 계정을 즉시 삭제" 라고 약속하는 자리다.
+
+**원인** — `users/{uid}` 규칙이 `allow write` 하나로 create·update·delete 를 묶고 본문 크기를
+검사했다(`smallDoc` · `favsOnly`). 삭제 요청에는 `request.resource` 가 없다(null). 본문을 읽는
+순간 규칙이 오류로 죽고, 오류는 거부다. 에뮬레이터가 그대로 찍었다 —
+`evaluation error at L94 for 'delete' — Null value error`. 쓰기 한도가 규칙에 들어온 뒤로
+계정 삭제가 `users` 문서를 한 번도 못 지웠다는 뜻이다. 콘솔도 코드도 조용했고, 규칙을
+기계로 읽는 자리가 없었다.
+
+둘째 — v4 의 `Account.tsx remove()` 가 `allowlist/{email}` 을 빠뜨렸다. v2.18.0 이 정한 순서
+(users → allowlist → requests)에 v3 는 따르는데 v4 가 한 줄을 잃어, 계정을 지워도 승인 목록에
+이메일이 영원히 남았다.
+
+**수정**
+- `firestore.rules` — `users` 의 `write` 를 `create, update`(본문 한도 그대로)와 `delete`(본인이면
+  된다, 승인 여부 무관)로 가른다.
+- `Account.tsx` — `allowlist/{email}` 을 함께 지운다. 문서 셋이 다 지워진 뒤에만 인증 계정을 지운다(v4.2.0 그대로).
+- **에뮬레이터 검사** `frontend-v4/src/test/rules/firestore.rules.test.ts` — `npm run test:rules`.
+  본인 삭제(승인·대기) 허용 · 남의 것·비로그인 거부 · 쓰기 한도 12필드/300마리/200즐겨찾기 그대로 ·
+  allowlist·requests 본인 삭제 · 계정 삭제 네 걸음. 자리표시자는 메모리에서만 채운다(§4).
+  기본 `npm test` 에서는 뺐다(에뮬레이터가 있어야 돈다) — `vitest.rules.config.ts` 로 따로.
+- CI(`deploy-dev.yml`) — 규칙이나 그 검사가 바뀐 푸시에서만 에뮬레이터를 세운다. 저장소가 private 이 되어
+  Actions 분이 과금되므로 매 푸시가 아니라 규칙이 움직인 푸시에만 값을 낸다.
+
+**확인** — 새 규칙으로 전부 초록. 고치기 전 규칙(dev 판)으로 돌리면 삭제 검사만 빨개진다 —
+검사가 그 버그를 잡는다는 증명이다.
+
+**⚠️ 콘솔에 규칙을 다시 게시해야 적용된다.** `bash scripts/render_rules.sh` 가 만드는 `firestore.rules.local` 을
+Firebase 콘솔 > Firestore > 규칙에 전체 교체로 붙여넣는다. 코드 배포와 별개다.
+
+</details>
 
 <details>
 <summary><b>v4.9.6</b> · '아래로' 가 닿는 자리와 좁은 화면 카드를 되돌린다</summary>

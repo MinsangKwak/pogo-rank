@@ -1,5 +1,6 @@
 /// <reference types="vitest/config" />
 import { defineConfig } from 'vite';
+import { configDefaults } from 'vitest/config';
 import react from '@vitejs/plugin-react';
 
 // 2026-09-17 v4.0.0-alpha.1 React 전환 미리보기
@@ -19,6 +20,8 @@ export default defineConfig({
     globals: true,
     setupFiles: ['./src/test/setup.ts'],
     css: false,
+    // 규칙 검사(src/test/rules/)는 Firestore 에뮬레이터가 있어야 돈다 — npm run test:rules 로 따로 (v4.9.7)
+    exclude: [...configDefaults.exclude, 'src/test/rules/**'],
   },
   build: {
     outDir: 'dist',
