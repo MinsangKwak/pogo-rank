@@ -16,8 +16,9 @@
 // ─────────────────────────────────────────────────────────────────────────────
 import { useEffect, useRef, useState } from 'react';
 import type { DexBundle, MaxBundle } from '../types/data';
-import type { OpenMon } from '../lib/mon';
+import type { MonPick, OpenMon } from '../lib/mon';
 import { useDex, useMax } from '../lib/data';
+import { useRoute } from '../lib/useRoute';
 import { spriteSrc } from '../lib/sprite';
 import { word } from '../lib/cell';
 import { track } from '../lib/track';
@@ -105,6 +106,19 @@ export function shouldAutoOpen(hide: string | null, seen: string | null, today: 
   return hide !== today && seen !== '1';
 }
 
+/** 여기서 열 것인가 — **홈 라우트에서만.** `#/mon/…` 은 상세 뒤에 홈이 깔리는 자리라(App 의 'mon' 갈래)
+ *  거기서도 열면 겹판이 둘이 되어 상세를 덮거나 상세를 닫자 팝업이 튀어나온다 (v4.9.x 리뷰 제보) */
+export function autoOpenHere(routeId: string, hide: string | null, seen: string | null, today: string): boolean {
+  return routeId === 'home' && shouldAutoOpen(hide, seen, today);
+}
+
+/** 닫음을 기록한다 — 저장과 통계를 한 자리에서, 통계는 **한 건**만 (v4.9.x 리뷰 제보: hide 가 close 까지 두 번 찍었다) */
+export function recordDismiss(action: 'close' | 'hide', today = todayKey()): void {
+  try { sessionStorage.setItem(SEEN_KEY, '1'); } catch { /* 저장소를 막은 브라우저 */ }
+  if (action === 'hide') { try { localStorage.setItem(HIDE_KEY, today); } catch { /* 저장소를 막은 브라우저 */ } }
+  track('home_popup', { id: 'novtank', action });
+}
+
 /** 우리 탱커 표(DMAX_TANK.overall)에서 이 종의 내구 순위 — 영문 이름으로 맞춘다(거다이맥스 폼은 스프라이트가 다르다) */
 export function ehpRank(max: MaxBundle, en: string | undefined): { rank: number; ehp: number } | null {
   if (!en) return null;
@@ -112,6 +126,22 @@ export function ehpRank(max: MaxBundle, en: string | undefined): { rank: number;
   const at = rows.findIndex((row) => row.en === en);
   const row = rows[at];
   return at >= 0 && row && typeof row.ehp === 'number' ? { rank: at + 1, ehp: row.ehp } : null;
+}
+
+/** 거다이맥스 폼의 스프라이트 — 우리 D-MAX 표에서 영문 이름으로 찾는다 (거다이맥스는 그림·항목이 따로다) */
+export function gmaxSprite(max: MaxBundle, en: string | undefined): number | null {
+  if (!en) return null;
+  const rows = [...(max.DMAX_TANK['overall'] ?? []), ...(max.DMAX_TIER['overall'] ?? [])];
+  const hit = rows.find((row) => row.en === en && row.gmax);
+  return hit ? hit.sprite : null;
+}
+
+/** 상세로 넘길 것 — 폼을 잃지 않는다. 스프라이트만 넘기면 상세가 접두어 없는 일반 폼을 고른다(monBySprite) */
+export function pickFor(dex: DexBundle, max: MaxBundle, id: number, form: Form): MonPick {
+  const base = dex.DEX_DATA.names[String(id)] ?? '';
+  const en = dex.DEX_DATA.en?.[String(id)];
+  const sprite = form === '거다이맥스' ? (gmaxSprite(max, en) ?? id) : id;
+  return { sprite, name: base ? `${form} ${base}` : `#${id}`, en: en ?? '', types: dex.DEX_DATA.forms[String(id)]?.types ?? [] };
 }
 
 /** 본문 — 데이터를 받아 그린다. 팝업 밖(스토리북)에서도 그대로 선다.
@@ -131,16 +161,19 @@ export function TankPopupBody({ dex, max, onOpen, onClose, onHide }: {
       : <span className="tankpop__nopic" aria-hidden="true" />;
   };
   // 이름을 누르면 팝업을 닫고 상세로 — 팝업 위에 팝업을 겹치지 않는다
-  const mon = (id: number, form: Form) => (
-    <button className="tankpop__mon" type="button" onClick={() => { onClose(); onOpen({ sprite: id }); }}>
-      {pic(id, 48)}
+  const mon = (id: number, form: Form) => {
+    const pick = pickFor(dex, max, id, form);
+    return (
+    <button className="tankpop__mon" type="button" onClick={() => { onClose(); onOpen(pick); }}>
+      {pic(pick.sprite, 48)}
       <span>
         <FormBadge kind="max">{form}</FormBadge>
         <b>{name(id)}</b>
         <TypePill types={types(id)} names={dex.TYPE_KO} />
       </span>
     </button>
-  );
+    );
+  };
 
   return (
     <div className="tankpop">
@@ -259,20 +292,13 @@ export function TankPopup({ onOpen, onClose, onHide }: { onOpen: OpenMon; onClos
 
 /** 홈에 서는 입구 — 안내 띠 하나와, 조건이 맞으면 처음에 열려 있는 팝업 */
 export function TankPopupEntry({ onOpen }: { onOpen: OpenMon }) {
+  const { route } = useRoute();
   const [open, setOpen] = useState(() => {
-    try { return shouldAutoOpen(localStorage.getItem(HIDE_KEY), sessionStorage.getItem(SEEN_KEY), todayKey()); }
+    try { return autoOpenHere(route.id, localStorage.getItem(HIDE_KEY), sessionStorage.getItem(SEEN_KEY), todayKey()); }
     catch { return false; }
   });
-  const close = () => {
-    setOpen(false);
-    try { sessionStorage.setItem(SEEN_KEY, '1'); } catch { /* 저장소를 막은 브라우저 */ }
-    track('home_popup', { id: 'novtank', action: 'close' });
-  };
-  const hide = () => {
-    try { localStorage.setItem(HIDE_KEY, todayKey()); } catch { /* 저장소를 막은 브라우저 */ }
-    close();
-    track('home_popup', { id: 'novtank', action: 'hide' });
-  };
+  const close = () => { setOpen(false); recordDismiss('close'); };
+  const hide = () => { setOpen(false); recordDismiss('hide'); };
   const show = () => { setOpen(true); track('home_popup', { id: 'novtank', action: 'open' }); };
   return (
     <>

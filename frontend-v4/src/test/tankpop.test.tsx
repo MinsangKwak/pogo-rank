@@ -7,9 +7,12 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { render } from '@testing-library/react';
-import { beforeAll, describe, expect, it } from 'vitest';
+import { beforeAll, describe, expect, it, vi } from 'vitest';
 import type { DexBundle, MaxBundle } from '../types/data';
-import { NOV_TANK, TankPopupBody, ehpRank, shouldAutoOpen, todayKey } from '../components/TankPopup';
+import { NOV_TANK, TankPopupBody, autoOpenHere, ehpRank, pickFor, recordDismiss, shouldAutoOpen, todayKey } from '../components/TankPopup';
+import { track } from '../lib/track';
+
+vi.mock('../lib/track', () => ({ track: vi.fn() }));
 
 // CI 는 `npm test` 를 `npm run data` 보다 **먼저** 돌려 public/data 가 없다 (dev 배포 #299 가 그래서 섰다).
 // 꾸러미가 없으면 데이터 묶음은 건너뛴다 — `npm run build` 안의 vitest 가 데이터를 갖고 한 번 더 돈다.
@@ -32,6 +35,18 @@ describe('자동으로 여는 조건', () => {
   });
   it('오늘 열쇠는 YYYY-MM-DD', () => {
     expect(todayKey(new Date(2026, 10, 5))).toBe('2026-11-05');
+  });
+  it('홈 라우트에서만 연다 — #/mon/… 뒤에 깔린 홈에서는 안 연다', () => {
+    expect(autoOpenHere('home', null, null, today)).toBe(true);
+    expect(autoOpenHere('mon', null, null, today)).toBe(false);
+  });
+  it('닫음 기록은 통계를 한 건만 찍는다 — 하루 숨김도 hide 하나', () => {
+    vi.mocked(track).mockClear();
+    recordDismiss('hide', today);
+    expect(track).toHaveBeenCalledTimes(1);
+    expect(track).toHaveBeenCalledWith('home_popup', { id: 'novtank', action: 'hide' });
+    expect(localStorage.getItem('pogo_novtank_hide')).toBe(today);
+    expect(sessionStorage.getItem('pogo_novtank_seen')).toBe('1');
   });
 });
 
@@ -59,6 +74,16 @@ describe.skipIf(!HAVE)('본문 — 실데이터로 빈 칸 없이 (public/data �
     // 보스 이름은 카드 머리에 — 둘 다 실명이어야 한다
     expect(text).toContain('디아루가');
     expect(text).toContain('펄기아');
+  });
+  it('상세로 넘길 때 폼을 잃지 않는다 — 거다이맥스는 제 스프라이트, 다이맥스는 종 번호', () => {
+    const snorlax = pickFor(dex, max, 143, '거다이맥스');
+    expect(snorlax.sprite).toBe(10206);
+    expect(snorlax.name).toBe('거다이맥스 잠만보');
+    expect(snorlax.en).toBe('Snorlax');
+    expect(snorlax.types?.length).toBeGreaterThan(0);
+    const blissey = pickFor(dex, max, 242, '다이맥스');
+    expect(blissey.sprite).toBe(242);
+    expect(blissey.name).toBe('다이맥스 해피너스');
   });
   it('우리 표의 EHP 순위가 붙는다 — 표에 없는 종은 칸을 세우지 않는다', () => {
     expect(ehpRank(max, 'Blissey')?.rank).toBe(1);

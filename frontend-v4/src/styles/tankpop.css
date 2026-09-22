@@ -13,7 +13,9 @@
 /* 한글 이름과 타입 알약은 한 줄 — 칸이 좁아지면 글자 단위로 꺾이는 것이 더 나쁘다 */
 .tankpop__mon b, .tankpop .ds-typepill, .tankpop .ds-card__head { white-space: nowrap; word-break: keep-all; }
 .tankpop__bosses, .tankpop__two { display: grid; grid-template-columns: minmax(0, 1fr); gap: 1.6rem; }
-@media (min-width: 700px) {
+/* 두 칸은 판이 88rem 으로 넓어지는 1000 부터 — 700~999 는 판이 52rem 이라 칸이 22rem 뿐이어서
+   한 줄로 못 박은 이름과 세 칸 줄이 눌린다 (리뷰 제보). 판 폭과 같은 문턱을 쓴다 */
+@media (min-width: 1000px) {
   .tankpop__bosses, .tankpop__two { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 .tankpop .ds-card__title .sprite { width: 3.2rem; height: 3.2rem; vertical-align: middle; margin-right: .4rem; }
