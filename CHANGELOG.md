@@ -22,6 +22,36 @@
 ---
 
 <details open>
+<summary><b>2026-09-22</b> — 1판 · <code>v4.9.3</code></summary>
+
+<details>
+<summary><b>v4.9.3</b> · 홈 배너를 세로 600 으로 못 박고 그림을 키움</summary>
+
+**요청** — v4.9.2 는 수치만 줄였어야 했는데 짜임이 바뀌어 보였다. 세로 600 으로 다시 그려 달라.
+
+**높이를 못 박고 그림이 그 안에 들어온다.** 지금까지는 그림이 제 칸 폭을 따라 커져 배너가 화면을 따라 자랐다.
+`height: 60rem` 을 박고 줄을 넷(`1fr auto auto 1fr`)으로 짠다 — 위·아래 `1fr` 이 글을 세로 가운데로 밀고,
+그림은 넷을 다 걸쳐 칸 세로(53.6rem)까지 선다. 1920 에서만 3:2 가 칸보다 길어 위아래 7% 를 자르고 가운데 띠(보스 넷)를 남긴다.
+
+| 항목 | v4.9.2 | v4.9.3 |
+| --- | --- | --- |
+| 칸 비율 (글 : 그림) | 1 : 1 | 2 : 3 |
+| 여백 | 4rem | 3.2rem |
+| 그림 (1920) | 710×473 | 866×536 |
+| 제목 | `--fs-hero` 42 | `--fs-title` 28 |
+| 단추 높이 | 4.8rem | `--tap` 4.4rem |
+| 날짜·보스 줄 | 그림 아래 | 그림 안 바닥, `--plate` 92% 그라데이션 위 |
+
+손(699 이하)은 그대로다 — 한 열, 그림은 자르지 않고, 설명 줄은 그림 아래로 내려온다 (v4.6.4).
+v4.9.2 의 1400 · 1000~1399 분기는 높이가 고정돼 필요 없어져 지웠다.
+
+`frontend-v4/src/styles/home-editorial.css` 한 파일.
+
+</details>
+
+</details>
+
+<details>
 <summary><b>2026-09-21</b> — 17판 · <code>v4.9.2</code> · <code>v4.9.1</code> · <code>v4.9.0</code> · <code>v4.8.7</code> · <code>v4.8.6</code> · <code>v4.8.5</code> · <code>v4.8.4</code> · <code>v4.8.3</code> · <code>v4.8.2</code> · <code>v4.8.1</code> · <code>v4.8.0</code> · <code>v4.7.4</code> · <code>v4.7.3</code> · <code>v4.7.2</code> · <code>v4.7.1</code> · <code>v4.7.0</code> · <code>v4.6.4</code></summary>
 
 <details>

@@ -15,6 +15,9 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 const RELEASE_NOTES_EN = {
+  '2026-09-22 · v4.9.3': [
+    '**The home banner was redrawn** — it stays under 600px tall on any screen, with a bigger illustration and smaller text. The date and boss names now sit on the picture',
+  ],
   '2026-09-21 · v4.9.2': [
     '**The home banner is shorter on desktop** — it grew with the window and hid everything below it. The rankings below the banner are now visible without scrolling',
     '**Its buttons moved up under the text** — they used to sit at the very bottom of the banner, far from what they refer to',
