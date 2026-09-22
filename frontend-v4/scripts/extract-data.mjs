@@ -165,15 +165,15 @@ for (const [name, keys] of Object.entries(BUNDLES)) {
 
 writeFileSync(resolve(out, 'manifest.json'), JSON.stringify(manifest, null, 1));
 // ── PWA 정적 파일 (아이콘 · manifest) ────────────────────────────────────────
-// v3 frontend/static/ 의 것을 그대로 옮긴다. 아이콘은 그림 파일이라 저장소에 두 벌 두지 않고,
+// assets/ 의 것을 그대로 옮긴다. 아이콘은 그림 파일이라 저장소에 두 벌 두지 않고,
 // 데이터와 같은 규칙으로 빌드 때 가져온다 (public/ 의 이 파일들은 .gitignore 에 있다)
 {
-  const from = resolve(repo, 'frontend/static');
+  const from = resolve(repo, 'assets');
   const to = resolve(here, '../public');
   for (const name of ['manifest.webmanifest', 'icon-192.png', 'icon-512.png', 'og.png', 'og-design.png', 'og-dev.png', 'logo.svg']) {
     copyFileSync(resolve(from, name), resolve(to, name));
   }
-  console.log('  PWA·브랜드 정적 파일 7개 (v3 static/ 에서)');
+  console.log('  PWA·브랜드 정적 파일 7개 (assets/ 에서)');
 }
 
 console.log(`데이터 ${Object.keys(BUNDLES).length}개 · 합계 ${(total / 1024).toFixed(0)}KB`);

@@ -2,7 +2,7 @@
 # og_gen.py — 공유 미리보기(OG) 이미지 생성기 (2026-09-08 v2.27.0)
 #
 # 무엇을 만드나
-#   frontend/static/og.png  1200 × 630, 도트(픽셀아트) 스타일.
+#   assets/og.png  1200 × 630, 도트(픽셀아트) 스타일.
 #   카카오톡·디스코드·X 에 링크를 붙이면 이 그림이 카드로 뜬다.
 #
 # 왜 도트인가
@@ -25,7 +25,7 @@ import os
 WIDTH, HEIGHT = 1200, 630
 CELL = 6                      # 도트 한 칸 = 6px. 200 × 105 칸짜리 격자가 된다
 
-# 다크 테마 토큰과 같은 값 (frontend/styles/tokens.css)
+# 다크 테마 토큰과 같은 값 (frontend-v4/src/styles/v3/tokens.css)
 # 2026-09-12 v3.7.0 팔레트가 두 번 바뀌는 동안(v3.0.0 인디고 · v3.7.0 몬스터볼 빨강)
 # 이 파일만 v2 시절 초록에 멈춰 있었다. 공유 카드가 서비스와 다른 색이면 눌러 들어온 순간 어긋난다
 BG = (10, 10, 15)             # --bg 다크 (잉크블랙)
@@ -148,8 +148,8 @@ def main():
     # 오른쪽: 몬스터볼
     draw_ball(canvas, cols - 42, rows // 2, 26)
 
-    os.makedirs('frontend/static', exist_ok=True)
-    write_png(canvas, 'frontend/static/og.png')
+    os.makedirs('assets', exist_ok=True)
+    write_png(canvas, 'assets/og.png')
 
 
 if __name__ == '__main__':

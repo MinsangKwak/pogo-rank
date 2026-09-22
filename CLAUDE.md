@@ -183,10 +183,10 @@ node scripts/check-stories.mjs http://localhost:4189/   # 전량 × 라이트·�
   적힌 칸만 내보낸다 — 칸 없는 `{ type: 'object' }` 는 값이 들어 있어도 `{}` 로 나가고
   **오류도 경고도 없다.** 설명서를 붙이는 일이 계약을 깨뜨린 자리다.
   `src/test/openapi.test.ts` 가 스펙 전체를 훑어 잡는다 — 새 주소를 붙여도 자동으로 걸린다.
-- **약관·개인정보처리방침을 고칠 때는 v3·v4 를 같이 고친다.** 두 판이 같은 도메인을 쓰는 동안
-  한쪽만 개정되면 어느 화면을 열었느냐로 동의 범위가 갈린다. `frontend/scripts/components/privacy.js`·`terms.js`
-  와 `frontend-v4/src/screens/Legal.tsx`·`components/TermsConsent.tsx` 넷이다 —
-  `src/test/legalsync.test.ts` 가 문장 단위로 견준다.
+- **약관·개인정보처리방침의 원본은 `frontend-v4/src/screens/Legal.tsx` 와 `components/TermsConsent.tsx` 둘이다.**
+  2026-09-22 v5 Phase 1-C 에 v3 화면을 지우면서 판이 하나가 됐다 — 전에는 v3 의 `privacy.js`·`terms.js` 와
+  넷이라 `legalsync.test.ts` 가 문장 단위로 견줬고, 지울 때 그 검사가 통과 상태였으므로 v4 본문이 온전하다.
+  **동의 범위를 고칠 때는 시행일과 패치노트 고지를 함께 본다** (아래 수집 항목 줄).
 - **수집 항목이 늘면 시행 7일 전에 패치노트로 알린다.** 방침 10번에 적어 둔 약속이다.
   시행일 전에는 그 기능을 켜지 않는다 (v4.7.1 의 `COLLECT_URL` 이 그 예 — [운영 §16](docs/OPERATIONS.md)).
 

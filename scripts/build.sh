@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
-# 전체 빌드: 데이터 → PvE 계산 → PvP 가공 → 맥스·가성비·활용처 → 도감 → 시즌 기술 변경 → 레이드·알 → 스프라이트 → dist/index.html
+# 전체 빌드: 데이터 → PvE 계산 → PvP 가공 → 맥스·가성비·활용처 → 도감 → 시즌 기술 변경 → 레이드·알 → 스프라이트 → dist/data.js · 부속 파일
 #
 # **단계마다 값이 다르다.** 화면 코드만 고쳤는데 스프라이트 1184장을 다시 만들 이유가 없다.
 # 무엇을 고쳤는지에 맞춰 골라 쓴다 — 건너뛴 단계의 산출물은 저장소에 있는 것을 그대로 쓴다.
 #
 #   bash scripts/build.sh              전부. 원본을 새로 받는다 (매일 정기 빌드·CI 가 쓰는 길)
 #   bash scripts/build.sh --no-fetch   받아 둔 원본으로 다시 계산한다 (계산 코드를 고쳤을 때)
-#   bash scripts/build.sh --meta-only  계산·스프라이트를 건드리지 않고 dist/index.html 만 다시 쓴다
+#   bash scripts/build.sh --meta-only  계산·스프라이트를 건드리지 않고 data.js · 부속 파일만 다시 쓴다
 #                                      (APP_VERSION·문구 등 build.py 안의 값만 바뀌었을 때)
 #
 # 화면(frontend-v4) 만 고쳤다면 **이 스크립트가 아예 필요 없다** — `cd frontend-v4 && npm run build` 로 끝난다.
@@ -58,4 +58,4 @@ fi
 
 # 2026-09-16 v3.47.0 마지막 조립에서만 검문한다 — 비거나 줄어든 표는 직전 정상본(snapshot/tables/)으로 대체 (backend/guard.py)
 BUILD_GATE=1 python3 backend/build.py
-echo "built dist/index.html"
+echo "built dist/data.js · 부속 파일"

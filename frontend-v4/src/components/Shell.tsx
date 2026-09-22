@@ -3,7 +3,7 @@
 //
 // **클래스명과 DOM id 를 v3 와 똑같이 쓴다.** 그것이 디자인을 그대로 유지하는 방법이고,
 // 회귀 34 스위트가 붙잡고 있는 계약이다 (`.app-bar` · `#app-nav` · `#page-head` · `#menu-planner` …).
-// CSS 는 frontend/styles 의 것을 한 줄도 안 고치고 그대로 쓴다 (src/styles.ts).
+// CSS 는 src/styles/v3/ 의 것을 한 줄도 안 고치고 그대로 쓴다 (src/styles.ts).
 //
 // 도트 아이콘도 v3 표를 그대로 쓴다 (components/PxIcon.tsx) — 이모지로 두면
 // 기기마다 다른 매끈한 그림이 도트 스프라이트 옆에 서서 결이 어긋난다.

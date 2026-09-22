@@ -126,123 +126,16 @@ def read_config():
     return config
 
 # 2026-09-07 v2.18.0 (공개 준비 3) GA 는 동의 뒤에만 붙는다 — 여기서는 측정 ID 만 남기고, 실제 gtag 삽입은
-# frontend/scripts/components/consent.js loadAnalytics() 가 localStorage pogo_consent 가 'granted' 일 때 한다.
+# v4 의 lib/consent.ts 가 localStorage pogo_consent 가 'granted' 일 때 한다.
 # 배포 도메인에서만 ID 를 노출해 로컬 미리보기·개발 중엔 동의해도 집계되지 않는다
 # 2026-09-15 v3.39.0 GA 를 **여기서 바로** 붙인다 (전에는 측정 ID 만 남기고 동의를 기다렸다).
 #   왜 옮겼나 — 번들의 initConsent() 는 첫 렌더가 끝난 뒤에 돈다. 그 사이에 떠나는 방문(이탈)이
 #   page_view 로 잡히지 않았다. head 에서 바로 붙이면 들어온 즉시 한 건이 찍힌다.
 #   끄는 길은 그대로다 — localStorage 의 pogo_consent 가 'denied' 면 아무것도 안 붙는다(옵트아웃).
 #   봇은 여기서도 거른다 (track.js IS_BOT_LIKE 와 같은 세 조건) — 번들보다 먼저 도므로 여기 한 벌이 더 있다.
-GA_SNIPPET = '''<script>
-(function () {
-  // 2026-09-17 v3.57.1 집계는 moncamp.kr 에서만. 전에는 github.io 도 허용했는데,
-  //   옛 주소(minsangkwak.github.io/pogo-rank)는 2026-09-14 부터 moncamp.kr 로 301 이고
-  //   그 호스트에는 **다른 사이트도 같이 얹혀 있다.** 실측에서 남의 글 제목이 우리 속성에 섞여 들어왔다.
-  //   이미 옛 주소에 캐시가 갇힌 사람에게는 이 줄이 닿지 않는다(그쪽은 옛 번들을 돈다) — 앞으로를 막는 것이다.
-  if (!location.hostname.endsWith('moncamp.kr')) return;
-  var id = '__GA_ID__';
-  window.GA_PENDING_ID = id;
-  if (!id) return;
-  try { if (localStorage.getItem('pogo_consent') === 'denied') return; } catch (e) {}
-  // 해시(#/dex?q=1)를 실제 경로처럼 만든다: https://moncamp.kr/dex
-  //   물음표 뒤는 떼고, 빈 해시(홈)는 '/' 로 둔다. track.js 의 같은 함수를 덮어쓰지 않도록 여기서 정의한다
-  window.gaVirtualUrl = function () {
-    var raw = (location.hash || '').replace(/^#\/?/, '').split('?')[0].replace(/\/+$/, '');
-    return location.origin + '/' + raw;
-  };
-  var bot = navigator.webdriver
-    || (window.screen && window.screen.width === 800 && window.screen.height === 600)
-    || /headless|puppeteer|playwright|bot|crawler|spider/i.test(navigator.userAgent || '');
-  if (bot) return;
-  window.dataLayer = window.dataLayer || [];
-  window.gtag = function () { window.dataLayer.push(arguments); };
-  window.gtag('consent', 'default', { analytics_storage: 'granted', ad_storage: 'denied', ad_user_data: 'denied', ad_personalization: 'denied' });
-  window.gtag('js', new Date());
-  // 2026-09-17 v3.57.0 해시 라우트를 **가상 경로**로 바꿔 보낸다.
-  //   GA4 의 '페이지 경로' 는 page_location 의 pathname 에서 뽑는데, 해시(#/dex)는 pathname 이 아니다.
-  //   그래서 어느 화면을 봐도 경로가 늘 '/' 하나로 뭉쳐 있었다 (실측: 조회수 60 이 전부 '/').
-  //
-  //   첫 조회를 **누가 보낼지는 들어온 주소가 가른다.**
-  //   홈(해시 없음)   여기서 바로 보낸다. <head> 라 번들보다 빨라 금방 떠나는 방문도 잡힌다.
-  //                  index.html 의 <title> 이 곧 홈 제목이라 이름도 맞다.
-  //   하위 화면(#/dex) 번들이 보낸다. 여기서 보내면 경로는 /dex 인데 제목은 홈 제목이 붙어
-  //                  **경로와 제목이 어긋난다.** 라우터가 제목을 세운 뒤 보내야 둘이 맞는다.
-  var atHome = !location.hash || location.hash === '#' || location.hash === '#/';
-  window.GA_SENT_FIRST = atHome;
-  window.gtag('config', id, atHome
-    ? { page_location: window.gaVirtualUrl() }
-    : { send_page_view: false });
-  window.GA_MEASUREMENT_ID = id;
-  var tag = document.createElement('script');
-  tag.async = true;
-  tag.src = 'https://www.googletagmanager.com/gtag/js?id=' + encodeURIComponent(id);
-  document.head.appendChild(tag);
-})();
-</script>'''
-
-# ── 번들 목록 — 순서가 곧 캐스케이드(CSS)·실행 순서(JS)이므로 새 파일은 여기 목록에 추가 ──
-STYLES = [
-    'tokens.css', 'base.css', 'layout.css',
-    'components/home.css',
-    # 2026-09-17 v3.56.0 앱 셸 노트 테마 — home.css 에 섞여 있던 상단바·내비·푸터 규칙.
-    #   home.css 바로 뒤에 둬 실리는 차례를 그대로 지킨다 (자리를 옮기면 이기는 규칙이 바뀐다)
-    'components/shell-notebook.css',
-    'components/tabs.css', 'components/seg.css', 'components/chips.css',
-    'components/list.css',
-    'components/finder.css', 'components/ivrank.css', 'components/tag.css', 'components/modal.css', 'components/search.css', 'components/drawer.css', 'components/pages.css',
-    'components/planner.css',  # 2026-09-07 v2.15.0 🌱 플래너 모드 (QA-53·54)
-    'components/updates.css',  # 2026-09-16 v3.51.0 📢 게임 업데이트
-    'components/consent.css',
-    'components/trial.css',    # 2026-09-12 v3.16.0 잠시 써보기 배지·버튼
-    'components/app-shell.css',
-    # 2026-09-10 v2.42.0 넓은 화면 전용 디자인 — 앞의 모든 규칙을 덮어써야 하므로 맨 끝
-    'components/pc-theme.css',
-    'pixel.css',   # 2026-09-12 v3.6.0 도트 디자인 — 생김새만 덮어쓴다. 되돌리려면 이 줄만 빼면 된다
-]
-SCRIPTS = [
-    'data.js', 'dom.js', 'track.js',  # 2026-09-03 track: GA4 이벤트 헬퍼 (가장 먼저 정의)
-    'components/pxicon.js',           # 2026-09-12 v3.6.0 도트 아이콘 — 라우터 표·홈 타일·버튼이 모두 본다 (dom 다음, 나머지보다 앞)
-    'lazy.js', 'i18n.js',  # 2026-09-08 v2.29.0 다국어 — 2026-09-16 v3.46.0 사전(i18n-en·i18n-release-en)은 SCRIPTS_LAZY 로 갔다. 엔진은 typeof 로 막혀 있어 사전이 늦어도 돈다
-    'router.js',              # 2026-09-08 v2.30.0 주소 표 — pages·planner·app-shell 이 모두 이 표를 본다
-    'components/ui.js',       # 2026-09-08 v2.30.0 재사용 조각 (uchip · iconBtn · pageBody · footNote · hintNote)
-    'components/home.js',
-    'components/type-dots.js', 'components/sprite.js', 'components/name.js', 'components/changes.js', 'components/row.js',  # 2026-09-04 changes: 기술 변경·순위 변동 뱃지 (row가 사용) · 2026-09-06 name: 폼 라벨 뱃지 (row·detail·search 가 사용)
-    'components/list.js', 'components/chips.js', 'components/seg.js',
-    'components/history.js', 'components/modal.js', 'components/auth.js', 'components/favnews.js', 'components/detail.js',  # 2026-09-03 v2.2.0 auth: 로그인·즐겨찾기 (detail보다 먼저) · 2026-09-06 v2.11.0 history: 뒤로가기가 팝업·드로어를 닫게 (modal·drawer 가 사용) · 2026-09-17 v3.60.0 favnews: ★ 담아 둔 포켓몬의 소식 배지 (auth 다음, detail 앞)
-    'components/schedule.js', 'components/release.js', 'components/terms.js', 'components/privacy.js', 'components/consent.js', 'components/search.js', 'components/drawer.js',  # 2026-09-07 v2.18.0 terms: 약관·동의 팝업·IP 고지 (privacy·auth 가 사용) · consent: GA 동의 배너  # 2026-09-02 9월 일정표 달력 · 업데이트 팝업
-    'components/favs.js', 'components/gameday.js', 'components/finder.js', 'components/ivrank.js', 'components/updates.js',  # 2026-09-16 v3.51.0 updates: 📢 게임 업데이트 (pages 가 PAGES 에 등록하므로 그 앞)  # 2026-09-11 v2.58.0 finder: 🔎 검색식 만들기 (pages 가 PAGES 에 등록하므로 그 앞) # 2026-09-05 favs: ★ 즐겨찾기 페이지 · 2026-09-08 gameday: ⚔️ 레이드 보스 · 🥚 알 부화 (pages가 PAGES에 등록하므로 그 앞)
-    'planner/shell.js', 'planner/home.js', 'planner/collection.js',  # 2026-09-07 v2.15.0 🌱 플래너 모드 (QA-53 셸 · QA-54 내 포켓몬) — pages.js 가 #/plan 라우팅에 쓰므로 그 앞
-    # 2026-09-12 v3.11.0 theme 는 pages 보다 **앞**이어야 한다. pages.js 는 파일 끝에서 renderPage() 를
-    # 한 번 부르는데, 주소가 #/settings 면 그 순간 settings.js 가 THEME_ORDER(const)를 읽는다.
-    # 번들은 <script> 하나라 함수 선언은 위아래로 다 보이지만 const 는 TDZ 라 실행 순서를 탄다
-    'components/theme.js',    # 2026-09-10 v2.47.0 밝게/어둡게 전환 (헤더 버튼 · 계정 저장)
-    'components/settings.js', # 2026-09-12 v3.11.0 설정 화면 — theme 다음, pages 앞
-    'components/trial.js',    # 2026-09-12 v3.16.0 잠시 써보기 — pages 앞 (첫 렌더의 routeLocked 가 trialActive 를 부른다)
-    'components/pages.js',
-    'components/trainers.js', 'components/totop.js',  # 2026-09-12 v3.4.0 favdigest 제거 — ★ 즐겨찾기 기능을 걷어냈다
-    'views/pvp.js', 'views/pve.js', 'views/max.js', 'views/maxdeck.js', 'views/tier.js', 'views/usage.js', 'views/ifsolo.js',  # 2026-09-02 if 탭 · 2026-09-15 v3.32.0 maxdeck
-    'components/freshness.js',  # 2026-09-10 v2.50.0 새 데이터·새 버전 알림 (설치형 앱이 옛 데이터를 붙들지 않게)
-    'app.js', 'components/app-shell.js',
-]
-
-# 2026-09-16 v3.46.0 **첫 화면이 안 쓰는 덩이** — dist/app-lazy.js 로 묶어 첫 렌더 뒤에 부른다.
-#   셋 합쳐 gzip 94KB 다. 홈에서는 한 글자도 안 쓰는데 늘 같이 받고 있었다.
-#   읽는 쪽이 전부 typeof 로 막혀 있어(i18n.js · components/release.js) 늦게 와도 터지지 않는다.
-#   순서는 그대로 지킨다 — 사전이 먼저, 그다음 패치노트 본문.
-#   미리보기 빌드(INLINE)는 단일 HTML 이라 이 목록도 본 번들에 합친다 (아래 render_index_html)
-SCRIPTS_LAZY = [
-    # 2026-09-22 v5 Phase 1 — 사전·패치노트 본문은 content/ 로 옮겼다 (i18n.en.mjs · release-notes*.mjs).
-    # v3 화면은 이제 그 셋 없이 빌드된다. 읽는 쪽이 전부 typeof 로 막혀 있어 터지지 않고,
-    # v4 는 content/ 에서 직접 읽는다 (frontend-v4/scripts/extract-data.mjs)
-]
-# 2026-09-09 v2.41.0 UI 목록(#/styleguide)은 dev 미리보기에만 — 방문자에게는 쓸모가 없고 번들만 키운다.
-# 라우트(ROUTES)·페이지(PAGES) 등록을 그 파일이 스스로 하므로, 빼면 주소 자체가 없는 빌드가 된다.
-# 자리가 정해져 있다: PAGES(components/pages.js)가 만들어진 **뒤**, 첫 렌더(app.js)보다 **앞**.
-# 맨 끝에 붙였더니 #/styleguide 로 바로 들어온 첫 화면이 라우트 등록 전에 그려져 홈으로 떨어졌다
-if BUILD_CHANNEL == 'dev':
-    STYLES.append('components/styleguide.css')
-    SCRIPTS.insert(SCRIPTS.index('components/pages.js') + 1, 'components/styleguide.js')
-
+# 2026-09-22 v5 Phase 1-C — v3 화면(HTML·CSS·JS 조립)을 걷어냈다.
+# 운영은 v4.0.0 부터 React 판이고, 이 자리는 v4 빌드가 실패했을 때의 대비책으로만 남아 있었다.
+# 이제 build.py 가 하는 일은 셋뿐이다 — 데이터(data.js) · 스프라이트 · 부속 파일(robots·sitemap·404·build.json).
 
 # ── PvP 표 가공 ───────────────────────────────────────────────────────────────
 def load_move_names():
@@ -318,107 +211,6 @@ def build_pvp_tables(game_master):
     return pvp
 
 
-# ── 배포본에서 주석 걷어내기 (2026-09-11 v2.57.0) ───────────────────────────
-# 이 저장소의 주석은 "왜 이렇게 했는가" 를 길게 적는다 — 그게 이 코드의 값어치다.
-# 다만 그건 **읽는 사람**에게 값어치가 있는 것이고, 브라우저는 매번 그만큼을 더 받아 더 읽는다.
-# 실측: 배포본 752KB 중 주석이 227KB(30%)였다. 원본은 그대로 두고 **나가는 것만** 걷어낸다.
-#
-# 안전선을 분명히 둔다 — 조금 덜 걷어내더라도 절대 깨뜨리지 않는다.
-#   · JS 는 **줄 전체가 주석인 줄만** 지운다. 코드 뒤에 붙은 주석(` // …`)은 문자열 안일 수 있어
-#     손대지 않는다 (실측 5.6KB 뿐이라 아낄 것도 별로 없다).
-#   · 여러 줄 백틱(템플릿 리터럴) 안은 통째로 건너뛴다 — 그 안의 `//` 로 시작하는 줄은 주석이 아니라 글자다.
-#   · CSS 는 문자열(' ")을 건너뛰며 /* */ 만 지운다 — content:"/*" 같은 것을 깨지 않는다.
-#   · @license · @preserve 가 든 줄은 남긴다.
-# 파일 머리말(`── 파일명 ──`)은 bundle() 이 **걷어낸 뒤에** 붙이므로 배포본에도 남는다 —
-# 합쳐진 코드에서 어느 파일에서 왔는지는 배포본에서도 알 수 있어야 한다.
-
-def _keep(line):
-    return '@license' in line or '@preserve' in line
-
-def _pack_blank_lines(lines):
-    # 걷어내고 남은 빈 줄이 잇따르면 하나로 줄인다 (읽기에도, 크기에도 낫다)
-    packed, blank = [], False
-    for line in lines:
-        if line.strip():
-            packed.append(line); blank = False
-        elif not blank:
-            packed.append(''); blank = True
-    return '\n'.join(packed)
-
-def strip_js_comments(src):
-    out, in_block, in_tpl = [], False, False
-    for line in src.split('\n'):
-        stripped = line.strip()
-        if in_tpl:                       # 템플릿 리터럴 안 — 글자다, 손대지 않는다
-            out.append(line)
-            if _backticks(line) % 2 == 1: in_tpl = False
-            continue
-        if in_block:
-            end = line.find('*/')
-            if end < 0: continue          # 아직 주석 안 — 줄째로 버린다
-            in_block = False
-            rest = line[end + 2:]
-            if rest.strip(): out.append(rest)
-            continue
-        if stripped.startswith('//') and not _keep(line):
-            continue
-        if stripped.startswith('/*') and not _keep(line):
-            end = line.find('*/', stripped.index('/*') + 2)
-            if end < 0:
-                in_block = True
-                continue
-            rest = line[end + 2:]
-            if rest.strip(): out.append(rest)
-            continue
-        out.append(line)
-        if _backticks(line) % 2 == 1: in_tpl = True
-    return _pack_blank_lines(out)
-
-def _backticks(line):
-    # 이스케이프되지 않은 백틱 수 — 홀수면 이 줄에서 템플릿이 열리거나 닫힌다
-    count, i = 0, 0
-    while i < len(line):
-        if line[i] == '\\': i += 2; continue
-        if line[i] == '`': count += 1
-        i += 1
-    return count
-
-def strip_css_comments(src):
-    out, i, n, quote = [], 0, len(src), None
-    while i < n:
-        char = src[i]
-        if quote:
-            out.append(char)
-            if char == '\\' and i + 1 < n: out.append(src[i + 1]); i += 2; continue
-            if char == quote: quote = None
-            i += 1; continue
-        if char in '"\'':
-            quote = char; out.append(char); i += 1; continue
-        if char == '/' and i + 1 < n and src[i + 1] == '*':
-            end = src.find('*/', i + 2)
-            block = src[i:(n if end < 0 else end + 2)]
-            if _keep(block): out.append(block)
-            i = n if end < 0 else end + 2
-            continue
-        out.append(char); i += 1
-    # 주석만 있던 줄이 빈 줄로 남는다 — 잇따른 빈 줄을 하나로
-    return _pack_blank_lines(line.rstrip() for line in ''.join(out).split('\n'))
-
-
-def bundle(folder, files, mark):
-    # frontend/<folder>/ 의 파일들을 목록 순서 그대로 이어붙인다.
-    # 조각마다 `── 파일명 ──` 머리말을 달아 합쳐진 뒤에도 어느 파일에서 온 코드인지 알 수 있게 한다.
-    # mark는 그 머리말에 쓸 주석 기호 — CSS는 '/*'(닫는 '*/'까지 붙임), JS는 '//'.
-    parts = []
-    for filename in files:
-        heading = f'{mark} ── {filename} ──{" */" if mark == "/*" else ""}\n'
-        raw = open(f'frontend/{folder}/{filename}', encoding='utf-8').read().strip()
-        cleaned = strip_css_comments(raw) if mark == '/*' else strip_js_comments(raw)
-        parts.append(heading + cleaned.strip())
-    return '\n\n'.join(parts)
-
-# 아직 만들어지지 않은 데이터 파일(build.py 1차 실행 시점)은 None — data.js 에는 빈 값으로 실린다.
-# 2026-09-16 v3.47.0 깨진 json 도 None 으로 본다 — 그래야 검문(guard.py)이 "없는 표" 로 다뤄 직전 정상본을 꺼낸다
 def load_table_file(path):
     if not os.path.exists(path):
         return None
@@ -510,7 +302,7 @@ GAME_UPDATE_CATEGORIES = {'gym', 'raid', 'pvp', 'catch', 'reward', 'bugfix'}
 GAME_UPDATE_EDITORIAL = {'draft', 'review', 'published', 'withdrawn'}
 GAME_UPDATE_EVIDENCE = {'official', 'observed', 'pending'}
 GAME_UPDATE_ROLLOUT = {'planned', 'rolling', 'live', 'withdrawn', 'unknown'}
-# related 에 적을 수 있는 화면 — frontend/scripts/router.js 의 ROUTES id 와 같아야 한다.
+# related 에 적을 수 있는 화면 — frontend-v4/src/routes.ts 의 ROUTES id 와 같아야 한다.
 # 표를 두 번 적는 셈이지만, 빌드가 프론트 소스를 파싱하게 만드는 쪽이 더 부서지기 쉽다.
 # 여기 없는 id 를 적으면 빌드가 선다 — 화면에서 죽은 링크가 되는 것보다 먼저 걸린다
 GAME_UPDATE_ROUTES = {'dex', 'dmax', 'pve', 'pvp', 'schedule', 'raids', 'eggs', 'finder',
@@ -674,90 +466,6 @@ const GAME_ARCHIVE = {js_data(tight(game_archive))};
     return core, lazy
 
 
-# ── index.html ────────────────────────────────────────────────────────────────
-
-# 2026-09-16 v3.46.0 배포본에서 설명을 걷어낸다.
-#   frontend/index.html 의 HTML 주석은 "왜 이렇게 했나" 를 남긴 개발 기록이라 소스에는 그대로 둔다.
-#   다만 방문자가 받을 이유는 없다 — 실측 54곳 15KB(gzip 뒤 6.6KB), 템플릿 <style> 안 CSS 주석이 10KB 더.
-#   번들 CSS·JS 는 bundle() 이 이미 strip_*_comments 로 지우고 있었고, 남은 것이 여기였다.
-#   ★ 치환보다 **먼저** 돌린다 — 그래야 주석 안에 적힌 '__STYLES__' 같은 글자가 자리표로 오인되지 않는다
-#     (v2.52.0~v3.23.0 사흘간 실제로 그 사고가 있었다)
-def strip_template_comments(html):
-    html = re.sub(r'<!--(?!\[if).*?-->', '', html, flags=re.S)
-    html = re.sub(r'<style>(.*?)</style>',
-                  lambda m: '<style>' + strip_css_comments(m.group(1)) + '</style>', html, flags=re.S)
-    return _pack_blank_lines(html.split('\n'))
-
-
-def render_index_html(game_master, config, data_js):
-    # index.html 템플릿의 자리표시자를 차례로 실제 내용으로 치환한다
-    html = strip_template_comments(open('frontend/index.html', encoding='utf-8').read())
-    # CSS·JS 번들 삽입
-    # 2026-09-13 v3.23.0 자리표는 **정확히 한 번**만 있어야 한다. 주석 안에 '__STYLES__' 라고 적어 둔 줄이 있어
-    # str.replace 가 거기에도 155KB 번들을 끼워 넣었다 — v2.52.0(9/10) 부터 사흘, index.html 이 862KB 였다 (같은 CSS 를 두 번 파싱)
-    for mark in ('__STYLES__', '__SCRIPTS__'):
-        assert html.count(mark) == 1, f'{mark} 자리표가 {html.count(mark)}개 — frontend/index.html 에 정확히 하나여야 한다'
-    styles_css = bundle('styles', STYLES, '/*')
-    # Content hashes change even when the release version stays the same.
-    def asset_url(name, content):
-        digest = hashlib.sha256(content.encode('utf-8')).hexdigest()[:16]
-        return f'{name}?v={digest}'
-
-    if INLINE:
-        html = html.replace('__STYLES__', styles_css)
-    else:
-        os.makedirs('dist', exist_ok=True)
-        open('dist/style.css', 'w', encoding='utf-8').write(styles_css)
-        style_tag = '<style>\n__STYLES__\n</style>'
-        assert html.count(style_tag) == 1, 'Expected one stylesheet placeholder'
-        html = html.replace(style_tag, f'<link rel="stylesheet" href="{asset_url("style.css", styles_css)}">')
-    scripts_js = bundle('scripts', SCRIPTS, '//')
-    lazy_js = bundle('scripts', SCRIPTS_LAZY, '//')
-    lazy_url = ''
-    if INLINE:
-        # 미리보기는 단일 HTML 을 지킨다 — 지연분도 그대로 합친다 (LAZY_BUNDLE_URL 이 비면 loadLazyBundle 이 바로 답한다)
-        html = html.replace('__SCRIPTS__', scripts_js + '\n\n' + lazy_js)
-    else:
-        os.makedirs('dist', exist_ok=True)
-        open('dist/app.js', 'w', encoding='utf-8').write(scripts_js)
-        open('dist/app-lazy.js', 'w', encoding='utf-8').write(lazy_js)
-        lazy_url = asset_url('app-lazy.js', lazy_js)
-        tag = '<script>\n__SCRIPTS__\n</script>'
-        assert html.count(tag) == 1, 'index.html 의 __SCRIPTS__ 블록이 정확히 하나여야 밖으로 뺄 수 있다'
-        html = html.replace(tag, f'<script src="{asset_url("app.js", scripts_js)}"></script>', 1)
-    # 데이터 기준일과 앱 버전 표시
-    html = html.replace('__TIMESTAMP__', game_master['timestamp']).replace('__VERSION__', APP_VERSION)
-    # 2026-09-03 GA4: 측정 ID가 있으면 스니펫 삽입, 없으면 자리표시자 제거
-    # dev 채널은 GA 를 끈다 (미리보기 트래픽이 실사용 통계에 섞이지 않게)
-    ga_id = config['GA_ID']
-    html = html.replace('__GA_SNIPPET__', GA_SNIPPET.replace('__GA_ID__', ga_id) if ga_id and BUILD_CHANNEL != 'dev' else '')
-    if BUILD_CHANNEL == 'dev':
-        # 2026-09-11 v2.59.0 탭 제목 앞에 [dev] — 실서비스 탭과 미리보기 탭이 나란히 떠 있을 때
-        # 둘을 제목만 보고 구분할 수 있어야 한다 (화면 안 버전 배지는 탭 목록에서 안 보인다).
-        # 화면을 옮길 때마다 다시 붙이는 쪽은 components/app-shell.js 가 맡는다
-        html = html.replace('<title>', '<title>[dev] ', 1)
-        # 2026-09-14 v3.28.0 index.html 의 색인 허용 줄을 noindex 로 바꿔 끼운다 (두 줄이 공존하지 않게)
-        assert html.count(ROBOTS_INDEX_META) == 1, 'index.html 의 robots 메타가 정확히 한 줄이어야 dev 가 noindex 로 바꿔 끼운다'
-        html = html.replace(ROBOTS_INDEX_META, '<meta name="robots" content="noindex, nofollow">', 1)
-        # 2026-09-08 v2.27.0 미리보기의 공유 카드가 실서비스를 가리키면 안 된다 — 주소를 dev 로 바꾼다.
-        # (색인은 어차피 막지만, 링크를 붙였을 때 엉뚱한 곳으로 가는 것을 막으려는 것)
-        html = html.replace(SITE_URL, DEV_SITE_URL)
-    # 2026-09-12 v3.6.0 실서비스 robots 색인 표시를 뺐다가 2026-09-14 v3.28.0 에 index.html 에 되살렸다 (도메인 생김)
-    # 2026-09-03 v2.2.0 앱 설정 주입
-    # 2026-09-10 v2.50.0 BUILD_VERSION — 지금 띄운 것이 어느 빌드인지 코드가 알아야 한다.
-    # 헤더에 글자로 박아 두던 것(__VERSION__)은 app-shell.js 가 헤더를 통째로 갈아 끼우면서 사라진다.
-    # 화면에서 긁어 오는 대신 값으로 넣는다 (components/freshness.js 가 build.json 과 견준다)
-    html = html.replace('__APP_CONFIG__', f"const FIREBASE_CONFIG = {json.dumps(config['FIREBASE_CONFIG'])};\nconst ADMIN_EMAIL = {json.dumps(config['ADMIN_EMAIL'])};\nconst ADMIN_UID = {json.dumps(config['ADMIN_UID'])};\nconst CONTACT_EMAIL = {json.dumps(config['CONTACT_EMAIL'])};\nconst COLLECT_URL = {json.dumps(config['COLLECT_URL'])};\nconst BUILD_VERSION = {json.dumps(APP_VERSION)};\nconst LAZY_BUNDLE_URL = {json.dumps(lazy_url)};\nconst LAZY_DATA_URL = {json.dumps('' if INLINE else 'data-lazy.js')};")
-    # 2026-09-05 v2.8.0 푸터 문의 이메일 — CONTACT_EMAIL 이 비어 있으면 문구 자체를 뺀다
-    contact_email = config['CONTACT_EMAIL']
-    contact_html = f'문의·건의: <a href="mailto:{contact_email}">{contact_email}</a> · ' if contact_email else ''
-    html = html.replace('__CONTACT__', contact_html)
-    if INLINE:
-        # 미리보기: data.js 내용을 그대로 인라인해 단일 파일 유지
-        html = html.replace('<script src="data.js"></script>', '<script>\n' + data_js + '\n</script>')
-    return html
-
-
 # ── 부속 파일 — build.json · PWA 정적 파일 · sitemap · security.txt · robots · 404 ──
 def write_site_files(game_master, config, tables, stale=()):
     # 2026-09-10 v2.50.0 아주 작은 빌드 표식 — 앱이 "지금 보고 있는 것이 최신인가" 를 물을 때 받는 파일.
@@ -770,9 +478,9 @@ def write_site_files(game_master, config, tables, stale=()):
     json.dump({'version': APP_VERSION, 'fetched': gameday_fetched, 'timestamp': game_master['timestamp'], 'stale': list(stale)},
               open('dist/build.json', 'w', encoding='utf-8'), ensure_ascii=False)
     # 2026-09-03 PWA 정적 파일(manifest·아이콘·서비스워커) 복사
-    if os.path.isdir('frontend/static'):
-        for filename in os.listdir('frontend/static'):
-            shutil.copy(f'frontend/static/{filename}', 'dist/')
+    if os.path.isdir('assets'):
+        for filename in os.listdir('assets'):
+            shutil.copy(f'assets/{filename}', 'dist/')
     # 2026-09-08 v2.27.0 검색·보안 부속 파일 — 빌드가 만든다(주소·날짜가 들어가 손으로 두면 낡는다)
     site_url = DEV_SITE_URL if BUILD_CHANNEL == 'dev' else SITE_URL
     # sitemap: 해시 라우팅이라 색인되는 주소는 사실상 첫 화면 하나뿐이다. 있는 것만 정직하게 적는다
@@ -838,7 +546,6 @@ def main():
     else:
         open('dist/data.js', 'w', encoding='utf-8').write(data_js)
         open('dist/data-lazy.js', 'w', encoding='utf-8').write(data_lazy_js)
-    open('dist/index.html', 'w', encoding='utf-8').write(render_index_html(game_master, config, data_js))
     write_site_files(game_master, config, tables, stale)
     # 리그별로 몇 줄이 실렸는지 요약 출력 (빌드 로그 확인용)
     print('ok', {league_id: len(league_rows) for league_id, league_rows in tables['pvp'].items()})

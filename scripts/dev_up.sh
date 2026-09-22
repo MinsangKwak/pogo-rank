@@ -15,7 +15,7 @@ PORT=5503
 QUIET=0; [[ ${1:-} == --quiet ]] && QUIET=1
 say() { [[ $QUIET -eq 1 ]] || echo "$1"; }
 
-# 목 모드 값 — 회귀는 로그인 흐름까지 보므로 값이 아무거나 있어야 한다 (tests/e2e/README.md)
+# 목 모드 값 — 회귀는 로그인 흐름까지 보므로 값이 아무거나 있어야 한다
 export FIREBASE_CONFIG_JSON=${FIREBASE_CONFIG_JSON:-'{"apiKey":"local-test","projectId":"local-test"}'}
 export ADMIN_UID=${ADMIN_UID:-mock-admin}
 python3 backend/build.py >/dev/null || { echo "dev_up: 빌드 실패"; exit 1; }

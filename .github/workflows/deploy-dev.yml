@@ -171,13 +171,14 @@ jobs:
         run: |
           set -e
           rm -rf site
-          if [ -f frontend-v4/dist/index.html ]; then
-            cp -r frontend-v4/dist site
-            echo "v4 를 올립니다"
-          else
-            cp -r dist site
-            echo "::warning::v4 빌드가 서서 v3 를 대신 올립니다 — frontend-v4 를 확인하세요"
+          # 2026-09-22 v5 Phase 1-C — v3 대비책을 없앴다.
+          # 전에는 v4 가 서면 v3 를 대신 올렸다. 이제 v3 화면이 없어 그 자리에 올릴 것이 없고,
+          # 반쪽짜리를 올리느니 **크게 실패해 직전 배포를 지키는 쪽**이 안전하다.
+          if [ ! -f frontend-v4/dist/index.html ]; then
+            echo "::error::frontend-v4 빌드 결과가 없습니다 — 배포를 세웁니다 (직전 판이 그대로 서 있습니다)"
+            exit 1
           fi
+          cp -r frontend-v4/dist site
           # 도면을 /storybook/ 에 얹는다 — 없으면 그냥 건너뛴다 (배포를 세우지 않는다)
           if [ -f frontend-v4/storybook-static/index.html ]; then
             cp -r frontend-v4/storybook-static site/storybook
@@ -185,7 +186,7 @@ jobs:
           else
             echo "::warning::스토리북 빌드가 없어 /storybook/ 을 건너뜁니다"
           fi
-          # 그림과 부속 파일은 v3 빌드가 만든 것을 그대로 쓴다 (v4 는 아직 제 것을 안 만든다).
+          # 그림과 부속 파일은 backend/ 빌드가 만든 것을 쓴다 (Phase 6 에서 Next.js 가 제 것을 만든다).
           # robots 는 dev 채널용 전면 차단본이라 반드시 따라와야 한다 — 미리보기가 색인되면 안 된다
           for keep in sprites sprites-anim robots.txt sitemap.xml 404.html build.json; do
             if [ -e "dist/$keep" ] && [ ! -e "site/$keep" ]; then cp -r "dist/$keep" "site/$keep"; fi

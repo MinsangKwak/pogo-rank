@@ -45,7 +45,7 @@ const meta = {
   id: 'foundations-tokens',
   title: '기초/토큰',
   parameters: {
-    docs: { description: { component: '값은 `frontend/styles/tokens.css` 한 곳이 가진다. 목록과 쓰임새는 `src/ds/tokens.ts` 다. 둘이 어긋나면 `src/test/dstokens.test.ts` 가 선다.' } },
+    docs: { description: { component: '값은 `src/styles/v3/tokens.css` 한 곳이 가진다. 목록과 쓰임새는 `src/ds/tokens.ts` 다. 둘이 어긋나면 `src/test/dstokens.test.ts` 가 선다.' } },
   },
 } satisfies Meta;
 export default meta;
