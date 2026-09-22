@@ -36,7 +36,6 @@ interface DexBundle {
     cls: Record<string, string>;
   };
   TYPE_KO: Record<string, string>;
-  SPRITE_IDS: number[];
 }
 
 let cache: DexBundle | null = null;
@@ -61,9 +60,22 @@ export interface MonFacts {
   charged: string[];
 }
 
-/** 정적으로 구울 스프라이트 번호 전부 */
+/**
+ * 정적으로 구울 스프라이트 번호 전부.
+ *
+ * **`SPRITE_IDS` 를 안 쓴다.** 그 목록은 `dist/sprites` 에 **파일이 있는 번호**다 —
+ * 그림을 안 만든 빌드에서는 비어 있고, 그러면 상세가 한 장도 안 구워진다
+ * (실측: CI 가 1,207장 대신 25장만 굽고도 성공으로 끝났다. HTML 내용 검사가 그것을 잡았다).
+ *
+ * 페이지를 만들 기준은 **자료가 있는가**지 그림이 있는가가 아니다. 그림은 꾸밈이고,
+ * 없으면 화면이 알아서 빈 자리로 그린다. 반대로 자료가 없으면 적을 것이 없다 —
+ * `monFacts()` 가 보는 것도 `forms` 다. 기준을 둘 두지 않는다.
+ */
 export function allSprites(): number[] {
-  return dex().SPRITE_IDS;
+  return Object.keys(dex().DEX_DATA.forms)
+    .map(Number)
+    .filter((one) => Number.isInteger(one) && one > 0)
+    .sort((a, b) => a - b);
 }
 
 /** 그 스프라이트의 사실. 모르는 번호면 null — 없는 주소는 굽지 않는다 */
