@@ -40,8 +40,11 @@ Cloud Run — Fastify + TypeScript
   · 도메인 API  즐겨찾기 · 내 포켓몬 · 트레이너 코드 · 가입 승인
   · 수집·집계 (이미 있는 것)
   ↓
-Neon — PostgreSQL
-  users · sessions · allowlist · requests · favorites · mons · trainers · search_logs
+Neon — PostgreSQL (싱가포르 · Postgres 18)
+  신원  users · sessions · favorites · trainers
+  수집  events · search_daily · backup_runs · backup_ack
+  * allowlist 와 requests 는 users.role 한 칸이 됐다 (Phase 3)
+  * mons 는 안 만들었다 — 규칙에 자리는 있으나 화면이 안 쓴다
 
 GitHub Actions — Python 데이터 파이프라인 (그대로 둔다)
   매일 00시 · 순위표 JSON 을 굽고 Next.js 빌드가 읽는다
@@ -58,8 +61,8 @@ GitHub Actions — Python 데이터 파이프라인 (그대로 둔다)
 | 단계 | 무엇 | 끝났다고 보는 기준 |
 | --- | --- | --- |
 | **0** ✅ | 목표 구조 확정 | 이 문서와 그림 |
-| **1** ✅ | v3 걷어내기 + 릴리스 규칙 (합침) | 버전이 한 곳에서 생성된다. 여섯 곳 수동 동기화가 사라진다 |
-| ~~2~~ | *1 과 합쳤다 — 버전이 흩어진 여섯 곳 중 셋이 v3 안에 있었다* | `frontend/` 가 지워지고 굽는 일이 `backend/` 로 옮겨진다. 빌드가 그대로 돈다 |
+| **1** ✅ | v3 걷어내기 + 릴리스 규칙 | `frontend/` 18,254줄 삭제 · 버전이 `release/version.json` 한 곳에서 나온다 |
+| ~~2~~ | *1 과 합쳤다* | 버전이 흩어진 여섯 곳 중 셋이 v3 안에 있어 따로 할 수 없었다 |
 | **3** ✅ | Neon 스키마 | 마이그레이션이 빈 DB 에서 끝까지 돈다. ERD 가 새로 구워진다 |
 | **4** | 인증·권한 서버 | **테스트를 먼저 쓴다.** Firestore 규칙 검사 11개가 지키던 것이 전부 서버 테스트로 옮겨진다 |
 | **5** | 도메인 API | 즐겨찾기·내 포켓몬·트레이너 코드·승인이 REST 로 돈다. 계정 삭제가 트랜잭션 하나다 |
@@ -93,5 +96,5 @@ Firestore 필드명은 예외다. 컬렉션이 통째로 사라지므로 이관 
 [HISTORY §4](HISTORY.md) 가 정리한 "정석과 어긋난 것" 중 셋을 여기서 고친다.
 
 - **테스트를 먼저 쓴다.** Phase 4 의 인증 서버가 그 자리다. 보안이 걸린 코드라 사후에 붙이면 늦다.
-- **릴리스를 묶는다.** 하루 34판 같은 일을 안 한다. Phase 1 에서 주기를 정한다.
-- **마이그레이션을 끝낸다.** Phase 2 에서 v3 를, Phase 7 에서 Firebase 를 완전히 지운다. 공존 상태로 남기지 않는다.
+- **릴리스를 묶는다.** 하루 34판 같은 일을 안 한다. Phase 1 에서 규칙을 [CLAUDE.md §5](../CLAUDE.md) 에 적었다.
+- **마이그레이션을 끝낸다.** Phase 1 에서 v3 를, Phase 7 에서 Firebase 를 완전히 지운다. 공존 상태로 남기지 않는다.
