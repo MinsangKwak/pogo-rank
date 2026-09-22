@@ -280,13 +280,30 @@ DNS 레코드는 지금 것을 그대로 가져오되 `moncamp.kr` · `dev.monca
 **5. 보안 기능** — Bot Fight Mode 켜기 · Security Level: Medium ·
 Rate limiting 룰 1개(무료 제공량): 같은 IP 가 10초에 50요청을 넘으면 10초 차단.
 
-**6. 켠 뒤 확인**
+**6. 끄는 것** — 켜져 있으면 앱이 깨진다
+
+| 자리 | 설정 | 왜 |
+| --- | --- | --- |
+| Speed → Optimization → **Rocket Loader** | 끔 | 스크립트 로딩 순서를 바꿔 React·서비스워커가 어긋난다 |
+| Speed → Content Optimization → **Email Address Obfuscation** | 끔 | HTML 을 고쳐 쓴다 — 바닥글 문의 주소가 스크립트로 바뀐다 |
+
+> **Bot Fight Mode 는 헤드리스 브라우저를 막을 수 있다.** 배포 검문(`check_screens.mjs https://moncamp.kr/`)이
+> 403 으로 막히기 시작하면 이것부터 의심한다. 끄면 된다 — Rate limiting 만으로도 충분하다.
+
+**7. 스토리북 잠금 (선택)** — Zero Trust → Access → Applications → Self-hosted: Domain `dev.moncamp.kr` · Path `storybook` ·
+Policy Allow → Emails 에 관리자 주소 · Login method **One-time PIN**. 무료 50명. 이러면 `/storybook/` 은
+Cloudflare 가 먼저 막고, 저장소를 닫아도 남아 있던 "주소를 아는 사람이 직접 받는" 길(§9)이 닫힌다.
+브라우저 게이트(v4.9.4)는 그 뒤의 둘째 겹으로 남는다.
+
+**8. 켠 뒤 확인** — 옮기기 전엔 전부 ❌, 옮긴 뒤 ✅ 가 정상이다
 
 ```bash
-curl -sI https://moncamp.kr/ | grep -iE "cf-ray|strict-transport|x-content-type|referrer-policy|content-security"
-# cf-ray 가 보이면 프록시가 켜진 것이고, 나머지 넷이 보이면 헤더가 붙은 것이다
+bash scripts/verify_cloudflare.sh                 # 프록시 · 보안 헤더 다섯 · HTTPS 강제 · 자산 캐시 HIT · Access
+bash scripts/verify_visibility.sh                 # 사이트 둘이 살아 있는지 (§9)
 bash scripts/verify_deploy.sh https://moncamp.kr/ prod
 ```
+
+전파는 보통 1~2시간, 길면 24시간. **광고가 26일이면 늦어도 24일에 네임서버를 옮긴다.**
 
 ### 여기서 안 하기로 한 것
 
