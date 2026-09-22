@@ -15,6 +15,9 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 const RELEASE_NOTES_EN = {
+  '2026-09-22 · v4.9.8': [
+    '**A November Dynamax raid tank-prep popup on the home screen** — per-boss tanks for Dialga (11/14) and Palkia (11/15, expected dates), a build order and an overall ranking. Shows once a day; reopen it with [View] above [Top Pokemon by role]. Tap a name for its detail',
+  ],
   '2026-09-22 · v4.9.7': [
     '**Account deletion now actually deletes** — pressing delete failed with "permission-denied" and nothing was removed. The server rule misread delete requests. Your saved data, approval record, sign-up request and Google login link are now all removed',
   ],
