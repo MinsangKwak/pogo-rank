@@ -21,6 +21,38 @@
 2. **클래스명·DOM id·`data-*`는 v3와 동일하게 유지합니다.** `.app-bar` · `#app-nav` · `#page-head` · `#menu-planner` · `body[data-route]` …
 3. **CSS가 참조하는 DOM 구조도 유지합니다.** 홈의 중간 요소를 생략했을 때 포켓몬 이름이 한 글자씩 줄바꿈되는 문제가 있었습니다. `.pick__row > .pick__body`가 flex 자식으로 지정되어 있으므로 해당 구조를 유지해야 합니다. (`src/screens/Home.tsx` 주석)
 
+## 디자인 시스템과 스토리북
+
+조각과 토큰은 `src/ds/` 한 곳에 있고, 스토리북이 그 도면입니다.
+
+**배포된 도면: https://dev.moncamp.kr/storybook/** — dev 가 올라갈 때 같이 올라갑니다.
+
+```bash
+npm run storybook                                    # :6006
+npm run build-storybook                              # storybook-static/ (로컬은 루트 기준)
+STORYBOOK_BASE=/storybook/ npm run build-storybook   # dev 에 얹는 판과 같은 빌드
+```
+
+**하위 주소에 얹을 때는 `STORYBOOK_BASE` 를 줍니다.** 없으면 자산 주소가 루트 기준(`/assets/…`)이라
+`/storybook/` 아래에서 통째로 404 입니다. 배포 워크플로가 빌드 결과에 그 주소가 박혀 있는지 검사합니다.
+
+| 층 | 자리 | 무엇 |
+| --- | --- | --- |
+| 값 | `../frontend/styles/tokens.css` | 토큰. **값은 여기 한 곳뿐입니다** |
+| 목록 | `src/ds/tokens.ts` | 이름과 쓰임새. 값은 적지 않습니다 |
+| 조각 | `src/ds/*.tsx` | 버튼 · 고르기 · 카드 · 표식 · 타입 · 값 관문 · 안내 |
+| 규칙 | `src/styles/ds.css` | v3 에 짝이 없는 조각만 |
+| 그물 | `src/test/dstokens.test.ts` · `src/test/cellgate.test.ts` | 토큰 목록과 값, 관문 |
+| 그물 | `scripts/check-stories.mjs` | 스토리 전량을 라이트·다크로 훑습니다 |
+
+`ds/` 의 조각은 **v3 CSS 의 클래스를 그대로 내보냅니다** (`.home__btn` · `.chips__item` · `.seg` · `.tag`).
+같은 모양을 새 이름으로 다시 그리면 디자인이 두 벌이 되고 한쪽만 고쳐집니다.
+없던 것(배치 · 글자 · 안내 · 카드 · 타입 알약)만 `ds.css` 에서 만듭니다.
+
+격자 밖 값은 **타입이 막습니다** — `<Stack gap>` 은 4px 격자 여섯 칸뿐이고,
+`<Text size>` 는 Pretendard 세 단, `<Label size>` 는 Galmuri 네 단입니다.
+`<Label size="sub">` 는 아예 써지지 않습니다 (Galmuri 12px 은 격자 밖이라 픽셀이 뭉개집니다).
+
 ## 돌려 보기
 
 ```bash

@@ -119,6 +119,20 @@ jobs:
           set -e
           cd frontend-v4
           npm run build
+      # 2026-09-22 도면(스토리북)을 dev 의 /storybook/ 에 얹는다.
+      #   **이건 서비스가 아니라 도면이다.** 그래서 서다 말아도 배포를 안 세운다 —
+      #   화면이 멀쩡한데 도면 때문에 dev 가 깜깜해지면 손해가 더 크다.
+      #   STORYBOOK_BASE 가 있어야 자산 주소가 /storybook/ 기준으로 잡힌다 —
+      #   없으면 루트 기준(/assets/…)이 되어 하위 주소에서 통째로 404 다 (.storybook/main.ts)
+      - name: 스토리북 빌드 (/storybook/)
+        if: steps.v4deps.outcome == 'success'
+        continue-on-error: true
+        env:
+          STORYBOOK_BASE: /storybook/
+        run: |
+          set -e
+          cd frontend-v4
+          npm run build-storybook
       # 올릴 폴더를 여기서 한 벌 만든다.
       #   v4 가 서면 그것을, 서다 말면 v3 를 올린다 — **어느 쪽이든 dev 가 깜깜해지지 않는다.**
       #   v4 는 v3 파일에 얹혀 살아서(CSS 23장 · dist/data.js · schedule.js) v3 쪽 이름만 바뀌어도 설 수 있다.
@@ -132,6 +146,13 @@ jobs:
           else
             cp -r dist site
             echo "::warning::v4 빌드가 서서 v3 를 대신 올립니다 — frontend-v4 를 확인하세요"
+          fi
+          # 도면을 /storybook/ 에 얹는다 — 없으면 그냥 건너뛴다 (배포를 세우지 않는다)
+          if [ -f frontend-v4/storybook-static/index.html ]; then
+            cp -r frontend-v4/storybook-static site/storybook
+            echo "스토리북을 /storybook/ 에 얹습니다"
+          else
+            echo "::warning::스토리북 빌드가 없어 /storybook/ 을 건너뜁니다"
           fi
           # 그림과 부속 파일은 v3 빌드가 만든 것을 그대로 쓴다 (v4 는 아직 제 것을 안 만든다).
           # robots 는 dev 채널용 전면 차단본이라 반드시 따라와야 한다 — 미리보기가 색인되면 안 된다
@@ -151,6 +172,13 @@ jobs:
           echo "robots 차단본 확인"
           # 그림이 통째로 빠지면 화면이 몬스터볼 자리표시로 도배된다 — 수로 확인한다
           test "$(ls site/sprites | wc -l)" -gt 500 || { echo "::error::스프라이트가 모자랍니다"; exit 1; }
+          # 도면이 실렸으면 그쪽도 본다. 얹힌 주소(/storybook/)가 자산에 박혀 있어야 하고
+          # (없으면 루트 기준이라 열자마자 빈 화면이다), 색인 금지 메타가 있어야 한다
+          if [ -d site/storybook ]; then
+            grep -q '/storybook/assets/' site/storybook/iframe.html || { echo "::error::스토리북이 /storybook/ 기준으로 안 빌드됐습니다 (STORYBOOK_BASE 확인)"; exit 1; }
+            grep -q 'name="robots" content="noindex' site/storybook/index.html || { echo "::error::스토리북에 noindex 메타가 없습니다"; exit 1; }
+            echo "스토리북 확인 — 주소 기준과 noindex"
+          fi
       - name: Publish to pogo-rank-dev (gh-pages)
         uses: peaceiris/actions-gh-pages@v4
         with:
