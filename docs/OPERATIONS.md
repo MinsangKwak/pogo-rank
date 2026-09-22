@@ -730,3 +730,30 @@ python3 scripts/firestore_restore.py --apply    # 실제 쓰기
 **Bypass list 에 자기 자신을 넣지 않는다.** 넣으면 규칙이 아무것도 안 막는다. 급할 때는 규칙을 잠시 끄고 다시 켠다 — 그 흔적이 남는 것이 규칙의 값이다.
 
 확인은 실제로 밀어 보지 않는다. Rulesets 화면에서 세 줄이 **Active** 인지 본다.
+
+**2026-09-22 저녁에 셋 다 Active 다.** 규칙 아래서 첫 병합이 #141(dev) · #142(main) 이고, `deploy` 는 머지 커밋 직접 푸시(7fab346)가 그대로 통했다 — 설계대로다.
+
+## 19. 2026-09-22 운영 반영 — v4.9.8 · 광고 앞 다지기
+
+**dev 에서 검증이 끝난 v4.9.2 ~ v4.9.8 을 한 번에 운영에 올렸다.** 한 장 요약은 [`docs/hardening-2026-09-22.png`](hardening-2026-09-22.png) 다.
+
+| 걸음 | 근거 |
+| --- | --- |
+| dev → main | PR #142 (merge commit `a9ba960`) — main 룰셋(PR 필수) 아래서 |
+| main → deploy | 머지 커밋 `7fab346` (deploy 는 스냅샷 커밋이 있어 빨리감기가 안 된다 — §1 의 "정상") |
+| 운영 Actions | run 35689783060 성공 |
+| 검증 | `bash scripts/verify_deploy.sh https://moncamp.kr/ prod v4.9.8` 전 항목 통과 — 화면 46장 `NaN`·`undefined` 없음 · 명암비 42장 0 |
+
+> `verify_deploy.sh` 는 기대 버전을 **작업 트리의 `backend/build.py`** 에서 읽는다. 작업 브랜치가 낡아 있으면
+> "판 번호가 v4.9.6 가 아님 (실제: v4.9.8)" 처럼 스크립트 쪽이 틀린다. 셋째 인자로 버전을 주거나 main 을 먼저 당긴다.
+
+### 같은 날 코드 밖에서 한 조치
+
+| 어디 | 무엇 | 자세히 |
+| --- | --- | --- |
+| Cloudflare | 네임서버 이관 · Full (strict) · HTTPS 강제 · HSTS · 보안 헤더 넷 · 자산 캐시 1년 · Bot Fight · Rate limit | [INFRA §8](INFRA.md) |
+| GitHub | 브랜치 룰셋 셋(`deploy` · `main` · `dev`) · 워크플로 7개의 액션을 커밋 SHA 로 고정 · `pogo-rank` public / `pogo-rank-dev` private | §18 · [INFRA §9](INFRA.md) |
+| Firebase | `firestore.rules` v4.9.7(삭제 분리)을 콘솔에 게시 — 루트 uid 는 콘솔에서만 채움 | §4 · [CLAUDE.md §4](../CLAUDE.md) |
+| CI | dev 배포가 규칙 파일이 바뀐 푸시에서만 에뮬레이터(JDK 21)로 규칙 검사 11개를 돈다 | `.github/workflows/deploy-dev.yml` |
+
+**남은 둘**(`/data/*.json` 캐시 규칙 · Rate limit 완화)도 같은 날 저녁에 대시보드에서 끝냈다 — [INFRA §8](INFRA.md) 의 "남은 둘" 밑 "한 것" 표. 이로써 광고 전 다지기 목록은 비었다.

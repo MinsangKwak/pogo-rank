@@ -44,6 +44,8 @@ bash scripts/test.sh --no-build nav dex-search    # 빌드 생략하고 일부�
 | 문서 | 확인할 내용 |
 | --- | --- |
 | [서비스 구조 한 장](docs/moncamp-structure.png) | 화면 구성·권한·데이터·배포 흐름 요약 |
+| [광고 앞 다지기 한 장](docs/hardening-2026-09-22.png) | 2026-09-22 — Cloudflare 앞단 · 브랜치 보호 · Firestore 규칙 · 남은 둘 |
+| [변천사](docs/HISTORY.md) · [타임라인 한 장](docs/history-timeline.png) | 22일 250판을 다섯 시대 · 날짜별 · 구조물 · 보안 연표로 |
 | [작업 지침](CLAUDE.md) | 어길 수 없는 규칙 — `NaN`·`undefined` 금지, 바꾸면 안 되는 이름, 버전 갱신 여섯 곳 |
 | [개발 문서](docs/DEVELOPMENT.md) | 설계 원칙, 의사결정 기록, 데이터 소스와 파이프라인, 계산식, 프런트엔드 구조, 알려진 한계 |
 | [운영 문서](docs/OPERATIONS.md) | 릴리스 절차, 버전 규칙, 배포 장애 대응, 가입 승인, Firebase 설정, GA4 통계, 점검 목록 |

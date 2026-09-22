@@ -1,6 +1,6 @@
 # 변경 이력
 
-[← README](README.md) · [개발 문서](docs/DEVELOPMENT.md) · [운영 문서](docs/OPERATIONS.md) · [인프라 문서](docs/INFRA.md) · **변경 이력**
+[← README](README.md) · [개발 문서](docs/DEVELOPMENT.md) · [운영 문서](docs/OPERATIONS.md) · [인프라 문서](docs/INFRA.md) · **변경 이력** · [변천사](docs/HISTORY.md)
 
 **버전별 변경 사항과 수정 배경을 최신 날짜부터 기록합니다.** 날짜를 펼친 뒤 버전을 선택하면 상세 내용을 읽을 수 있습니다. 가장 최근 날짜만 기본으로 펼쳐집니다.
 
@@ -39,6 +39,8 @@
 **다지기 (코드 밖)** — Cloudflare 앞단이 켜졌다(프록시 · 보안 헤더 다섯 · HSTS · 자산 캐시 1년 · Rate limit · Bot Fight, 바깥 노드에서 실측 —
 [INFRA §8](docs/INFRA.md)). 브랜치 보호 셋(`deploy` · `main` · `dev`, [OPERATIONS §18](docs/OPERATIONS.md)). Firestore 규칙 v4.9.7 콘솔 게시.
 `pogo-rank` 는 다시 public, `pogo-rank-dev` 는 private([INFRA §9](docs/INFRA.md)).
+
+**운영 반영 (같은 날 저녁)** — dev → main PR #142 → deploy `7fab346` → `verify_deploy.sh` 전 항목 통과. 한 장 요약 [`docs/hardening-2026-09-22.png`](docs/hardening-2026-09-22.png) · 절차 기록 [OPERATIONS §19](docs/OPERATIONS.md).
 
 </details>
 
