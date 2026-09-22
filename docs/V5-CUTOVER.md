@@ -94,10 +94,24 @@ Firebase uid 는 구글이 준 값이 아니다. 이관은 `google_sub` 자리�
 
 ## 4. 화면을 Vercel 에 올린다
 
-1. vercel.com 에서 프로젝트를 만든다 — **Root Directory 를 `web` 으로** 지정한다
-2. 프로젝트 환경변수에 `NEXT_PUBLIC_API_URL` = `https://api.moncamp.kr`
-3. 저장소 시크릿 셋을 넣는다 (1번 표)
-4. `deploy` 브랜치에 push → `deploy-web.yml` 이 돈다
+1. vercel.com 에서 프로젝트를 만든다.
+
+   **`web` 이 목록에 없을 수 있다.** Vercel 은 **기본 브랜치**를 읽는데, `web/` 은 아직
+   `next` 에만 있다. 그때는 뿌리를 고르고 만든 뒤 `Settings` 에서 고친다 —
+   `Git` → Production Branch 를 `next` 로 바꾸면 `General` → Root Directory 에 `web` 이 뜬다.
+
+2. **`Settings` → `Git` → `Ignored Build Step` 에 `exit 0` 을 넣는다.**
+
+   안 하면 Vercel 이 push 마다 스스로 빌드를 돌리는데, 화면 데이터(`public/data`)가
+   저장소에 없어 **매번 실패한다.** 빨간 배포가 쌓이면 진짜 고장과 구별이 안 된다.
+   빌드는 GitHub Actions 가 하고 여기는 다 구운 것만 받는다.
+
+3. 프로젝트 환경변수에 `NEXT_PUBLIC_API_URL` = `https://api.moncamp.kr`
+
+   **서버가 아직 없어도 지금 넣는다.** 비우면 화면이 로그인을 통째로 끄고 뜬다.
+
+4. 저장소 시크릿 셋을 넣는다 (1번 표)
+5. `deploy` 브랜치에 push → `deploy-web.yml` 이 돈다
 
 배포 뒤 워크플로가 **내용이 든 HTML 인지** 직접 확인한다 — `/mon/25` 를 받아 제목 ·
 '피카츄' · JSON-LD 가 다 있는지 본다. 200 만 보면 빈 껍데기가 올라가도 초록이다.
