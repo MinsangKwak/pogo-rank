@@ -4,16 +4,21 @@
 // 도감번호만 적어 두고 이름·타입·그림을 데이터에서 읽으니, 번호 하나가 틀리면 대시(—)가 뜬다.
 // 그 대시가 곧 사고다 — 실물 데이터로 본문을 그려 대시·NaN·undefined 가 없는지 본다.
 // ─────────────────────────────────────────────────────────────────────────────
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { render } from '@testing-library/react';
-import { describe, expect, it } from 'vitest';
+import { beforeAll, describe, expect, it } from 'vitest';
 import type { DexBundle, MaxBundle } from '../types/data';
 import { NOV_TANK, TankPopupBody, ehpRank, shouldAutoOpen, todayKey } from '../components/TankPopup';
 
-const load = <T,>(name: string): T => JSON.parse(readFileSync(resolve(__dirname, '../../public/data', name), 'utf8')) as T;
-const dex = load<DexBundle>('dex.json');
-const max = load<MaxBundle>('max.json');
+// CI 는 `npm test` 를 `npm run data` 보다 **먼저** 돌려 public/data 가 없다 (dev 배포 #299 가 그래서 섰다).
+// 꾸러미가 없으면 데이터 묶음은 건너뛴다 — `npm run build` 안의 vitest 가 데이터를 갖고 한 번 더 돈다.
+// 읽기는 beforeAll 안에서 — skipIf 여도 모듈 몸통은 실행되므로 위에서 읽으면 그 자리에서 터진다.
+const DATA = resolve(__dirname, '../../public/data');
+const HAVE = existsSync(resolve(DATA, 'dex.json')) && existsSync(resolve(DATA, 'max.json'));
+const load = <T,>(name: string): T => JSON.parse(readFileSync(resolve(DATA, name), 'utf8')) as T;
+let dex: DexBundle;
+let max: MaxBundle;
 
 describe('자동으로 여는 조건', () => {
   const today = '2026-11-01';
@@ -30,7 +35,8 @@ describe('자동으로 여는 조건', () => {
   });
 });
 
-describe('본문 — 실데이터로 빈 칸 없이', () => {
+describe.skipIf(!HAVE)('본문 — 실데이터로 빈 칸 없이 (public/data 가 있을 때)', () => {
+  beforeAll(() => { dex = load<DexBundle>('dex.json'); max = load<MaxBundle>('max.json'); });
   it('적어 둔 도감번호가 전부 도감에 있다', () => {
     const ids = new Set<number>();
     for (const boss of NOV_TANK.bosses) { ids.add(boss.dex); boss.picks.forEach((p) => ids.add(p.dex)); if (boss.aside) ids.add(boss.aside.dex); }
