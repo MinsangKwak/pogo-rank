@@ -49,3 +49,67 @@ jobs:
       # 이미지가 실제로 서는지도 본다 — Dockerfile 이 깨진 채 병합되면 배포에서야 안다
       - name: 이미지 빌드
         run: docker build -t moncamp-server:ci .
+
+  # ── 시크릿 모양 검사 (v5 Phase 4) ──────────────────────────────────────────
+  #
+  # **왜 필요한가.** GitHub 시크릿은 넣고 나면 아무도 못 되읽는다 — 사람도 우리도.
+  # 그래서 오타가 배포 때까지 안 드러나고, 드러날 때는 "로그인이 안 된다" 라는
+  # 증상으로만 온다. 자격증명이 틀린 것인지 코드가 틀린 것인지 구별이 안 된다.
+  #
+  # **값을 안 찍는다.** 길이와 앞뒤 몇 글자의 모양만 본다. 로그에 남는 것은 OK/NG 뿐이다.
+  # 없는 것은 실패가 아니다(아직 안 넣은 것이다) — **있는데 모양이 틀린 것**만 세운다.
+  secrets:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 값을 찍지 않고 모양만 본다
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+          ROOT_EMAIL: ${{ secrets.ROOT_EMAIL }}
+        run: |
+          bad=0
+
+          # 있는데 모양이 틀리면 세운다. 없으면 알리기만 한다
+          check() {
+            name="$1"; value="$2"; pattern="$3"; want="$4"
+            if [ -z "$value" ]; then
+              echo "::notice::$name — 아직 없습니다 ($want)"
+              return
+            fi
+            # 앞뒤 공백·줄바꿈이 붙었는지 먼저 본다. 눈에 안 보이는데 인증이 통째로 실패한다
+            trimmed="$(printf '%s' "$value" | tr -d '[:space:]')"
+            if [ "${#trimmed}" -ne "${#value}" ]; then
+              echo "::error::$name — 앞뒤에 공백이나 줄바꿈이 붙어 있습니다"
+              bad=1; return
+            fi
+            if printf '%s' "$value" | grep -qE "$pattern"; then
+              echo "$name — OK (${#value}자)"
+            else
+              echo "::error::$name — 모양이 다릅니다 ($want). 값은 안 찍습니다"
+              bad=1
+            fi
+          }
+
+          check GOOGLE_CLIENT_ID "$GOOGLE_CLIENT_ID" \
+            '^[0-9]+-[a-z0-9]+\.apps\.googleusercontent\.com$' \
+            '.apps.googleusercontent.com 으로 끝나야 합니다'
+          check GOOGLE_CLIENT_SECRET "$GOOGLE_CLIENT_SECRET" \
+            '^GOCSPX-.{10,}$' \
+            'GOCSPX- 로 시작해야 합니다'
+          check JWT_SECRET "$JWT_SECRET" \
+            '^.{32,}$' \
+            '32자 이상이어야 합니다 — openssl rand -hex 32'
+          check ROOT_EMAIL "$ROOT_EMAIL" \
+            '^[^@[:space:]]+@[^@[:space:]]+\.[^@[:space:]]+$' \
+            '이메일 모양이어야 합니다'
+
+          # 따옴표가 값에 섞여 들어오는 것이 제일 흔한 오타다 — JSON 문법을 같이 복사한 경우
+          for pair in "GOOGLE_CLIENT_ID=$GOOGLE_CLIENT_ID" "GOOGLE_CLIENT_SECRET=$GOOGLE_CLIENT_SECRET"; do
+            case "$pair" in
+              *'"'*|*','*) echo "::error::${pair%%=*} — 따옴표나 쉼표가 값에 섞여 있습니다"; bad=1 ;;
+            esac
+          done
+
+          [ "$bad" -eq 0 ] || { echo "시크릿 모양이 틀렸습니다 — 위 줄이 어느 것인지 말해 줍니다"; exit 1; }
+          echo "시크릿 모양 검사 끝"

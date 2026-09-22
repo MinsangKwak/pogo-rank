@@ -8,6 +8,7 @@ name: server 배포 (Cloud Run)
 #   ③ 서비스 계정에 roles/run.admin · roles/iam.serviceAccountUser · roles/artifactregistry.writer
 #
 # 저장소 시크릿: GCP_PROJECT_ID · GCP_SA_KEY · DATABASE_URL · ADMIN_TOKEN
+#              JWT_SECRET · ROOT_EMAIL · GOOGLE_CLIENT_ID · GOOGLE_CLIENT_SECRET (v5 Phase 4)
 #
 # 더 나은 길 둘 (지금은 시작을 단순하게 두려고 안 썼다)
 #   · 서비스 계정 키 대신 **Workload Identity Federation** — 키를 저장소에 두지 않는다
@@ -77,6 +78,10 @@ jobs:
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
           ADMIN_TOKEN: ${{ secrets.ADMIN_TOKEN }}
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+          ROOT_EMAIL: ${{ secrets.ROOT_EMAIL }}
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
         run: |
           set -e
           # **--set-env-vars 를 여러 번 적으면 마지막 것만 남는다.** 한 번에 넘겨야 한다.
@@ -85,6 +90,13 @@ jobs:
           ENV_VARS="$ENV_VARS##ALLOWED_ORIGINS=https://moncamp.kr,https://dev.moncamp.kr"
           ENV_VARS="$ENV_VARS##DATABASE_URL=$DATABASE_URL"
           ENV_VARS="$ENV_VARS##ADMIN_TOKEN=$ADMIN_TOKEN"
+          # v5 Phase 4 — 로그인. 서버가 이것 없이 뜨면 부팅에서 죽는다(server/src/env.ts)
+          ENV_VARS="$ENV_VARS##JWT_SECRET=$JWT_SECRET"
+          ENV_VARS="$ENV_VARS##ROOT_EMAIL=$ROOT_EMAIL"
+          ENV_VARS="$ENV_VARS##GOOGLE_CLIENT_ID=$GOOGLE_CLIENT_ID"
+          ENV_VARS="$ENV_VARS##GOOGLE_CLIENT_SECRET=$GOOGLE_CLIENT_SECRET"
+          ENV_VARS="$ENV_VARS##OAUTH_REDIRECT_URI=https://api.moncamp.kr/v1/auth/google/callback"
+          ENV_VARS="$ENV_VARS##APP_ORIGIN=https://moncamp.kr"
           gcloud run deploy "$SERVICE" \
             --image "$IMAGE" \
             --region "$REGION" \

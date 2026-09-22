@@ -5,6 +5,7 @@ import type { FastifyInstance } from 'fastify';
 import { buildApp } from '../app.ts';
 import { readEnv } from '../env.ts';
 import { makeFakeSql, type Captured } from './fakeSql.ts';
+import { TEST_AUTH_ENV } from './envFixture.ts';
 import { PERSON_CAP, MIN_VISITORS } from '../lib/hot.ts';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
@@ -14,6 +15,7 @@ const env = readEnv({
   ALLOWED_ORIGINS: 'https://moncamp.kr',
   NODE_ENV: 'test',
   RATE_LIMIT_PER_MINUTE: '1000',
+  ...TEST_AUTH_ENV,
 });
 
 const VISITOR = 'a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6';

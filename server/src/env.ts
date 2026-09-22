@@ -23,6 +23,21 @@ export interface Env {
   rateLimitPerMinute: number;
   /** 'production' 이면 운영 규칙(열쇠 없는 관리 엔드포인트 금지)을 강제한다 */
   nodeEnv: 'production' | 'development' | 'test';
+  /** 로그인·권한 (v5 Phase 4) */
+  auth: AuthEnv;
+}
+
+export interface AuthEnv {
+  /** 액세스 토큰 서명 열쇠. **이 값을 아는 사람은 아무 권한의 토큰이든 지어낼 수 있다** */
+  jwtSecret: string;
+  /** 이 주소로 로그인하면 언제나 루트다. Firestore 규칙에 uid 를 박던 자리를 대신한다 */
+  rootEmail: string;
+  clientId: string;
+  clientSecret: string;
+  /** 구글이 인가 코드를 돌려줄 주소. 구글 콘솔에 **글자까지 같게** 등록돼 있어야 한다 */
+  redirectUri: string;
+  /** 로그인을 마치고 브라우저를 돌려보낼 앱 주소 */
+  appOrigin: string;
 }
 
 class EnvError extends Error {}
@@ -57,6 +72,49 @@ function origins(source: NodeJS.ProcessEnv, key: string): string[] {
   return list;
 }
 
+/**
+ * 로그인 설정. **전부 필수다** — 하나라도 비면 인증이 반쯤 도는 서버가 뜨고,
+ * 그 상태는 '로그인이 안 된다' 가 아니라 '로그인이 되는데 안전하지 않다' 일 수 있다
+ */
+function authOf(source: NodeJS.ProcessEnv, nodeEnv: Env['nodeEnv'], allowedOrigins: string[]): AuthEnv {
+  const jwtSecret = required(source, 'JWT_SECRET');
+  // HS256 의 열쇠는 해시 출력(32바이트)보다 짧을 이유가 없다. lib/jwt.ts 도 같은 선을 본다 —
+  // 두 겹인 이유는 여기가 부팅이고 저기가 쓰는 자리이기 때문이다
+  if (Buffer.byteLength(jwtSecret) < 32) {
+    throw new EnvError('JWT_SECRET 이 32바이트보다 짧습니다 — openssl rand -hex 32 로 만듭니다');
+  }
+
+  const rootEmail = required(source, 'ROOT_EMAIL').toLowerCase();
+  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(rootEmail)) {
+    throw new EnvError(`ROOT_EMAIL 이 이메일 모양이 아닙니다 (받은 값: ${rootEmail})`);
+  }
+
+  const redirectUri = required(source, 'OAUTH_REDIRECT_URI');
+  let parsed: URL;
+  try { parsed = new URL(redirectUri); }
+  catch { throw new EnvError(`OAUTH_REDIRECT_URI 를 주소로 못 읽었습니다 (받은 값: ${redirectUri})`); }
+  // **운영에서 http 면 인가 코드가 평문으로 다닌다.** 로컬(localhost)만 예외다
+  if (nodeEnv === 'production' && parsed.protocol !== 'https:') {
+    throw new EnvError('운영에서 OAUTH_REDIRECT_URI 는 https 여야 합니다');
+  }
+
+  // **돌아갈 주소는 허용 목록 안이어야 한다.** 아니면 열린 리다이렉트가 된다 —
+  // 로그인 성공 뒤에 남의 사이트로 튕겨 보내는 길이 열린다
+  const appOrigin = required(source, 'APP_ORIGIN');
+  if (!allowedOrigins.includes(appOrigin)) {
+    throw new EnvError(`APP_ORIGIN(${appOrigin}) 이 ALLOWED_ORIGINS 에 없습니다 — 열린 리다이렉트가 됩니다`);
+  }
+
+  return {
+    jwtSecret,
+    rootEmail,
+    clientId: required(source, 'GOOGLE_CLIENT_ID'),
+    clientSecret: required(source, 'GOOGLE_CLIENT_SECRET'),
+    redirectUri,
+    appOrigin,
+  };
+}
+
 function nodeEnvOf(source: NodeJS.ProcessEnv): Env['nodeEnv'] {
   const raw = (source['NODE_ENV'] ?? 'development').trim();
   return raw === 'production' || raw === 'test' ? raw : 'development';
@@ -69,12 +127,14 @@ export function readEnv(source: NodeJS.ProcessEnv = process.env): Env {
   if (nodeEnv === 'production' && adminToken.length < 32) {
     throw new EnvError('운영에서는 ADMIN_TOKEN 이 32자 이상이어야 합니다');
   }
+  const allowedOrigins = origins(source, 'ALLOWED_ORIGINS');
   return {
     databaseUrl: required(source, 'DATABASE_URL'),
     port: positiveInt(source, 'PORT', 8080),
-    allowedOrigins: origins(source, 'ALLOWED_ORIGINS'),
+    allowedOrigins,
     adminToken,
     rateLimitPerMinute: positiveInt(source, 'RATE_LIMIT_PER_MINUTE', 60),
     nodeEnv,
+    auth: authOf(source, nodeEnv, allowedOrigins),
   };
 }
