@@ -10,12 +10,12 @@
 #                  → 새는 자리는 산출물이 아니라 원본 가지(main·dev)다
 #   pogo-rank-dev  gh-pages 브랜치에 빌드 결과만 실린다
 #
-#   bash scripts/verify_visibility.sh          # 둘 다 — 기대는 **둘 다 private** (2026-09-22 의 상태)
+#   bash scripts/verify_visibility.sh          # 둘 다 — 기대는 **운영 public · dev private** (2026-09-22 저녁부터)
 #   bash scripts/verify_visibility.sh dev      # dev 만
-#   PROD_VIS=public bash scripts/verify_visibility.sh   # pogo-rank 를 다시 연 뒤
+#   PROD_VIS=private bash scripts/verify_visibility.sh  # 운영을 다시 닫았을 때
 #
-# 기본값을 private 으로 둔 이유 — 기본이 public 이면 실수로 다시 열린 저장소가 ✅ 로 보인다.
-# 검사는 '지켜야 할 상태' 를 기본으로 물어야 어긋난 순간 빨개진다 (리뷰 제보).
+# 기본값은 '지켜야 할 상태' 다 — 어긋난 순간 빨개지려면 기본이 현재 결정과 같아야 한다 (리뷰 제보).
+# 다지기가 끝나 pogo-rank 는 구직용으로 다시 열었고, pogo-rank-dev 는 스토리북 때문에 닫아 둔다 (INFRA §9).
 set -u
 
 OWNER=MinsangKwak
@@ -84,9 +84,9 @@ dev() {
 }
 
 case "$WHICH" in
-  prod) prod "${2:-private}" ;;
+  prod) prod "${2:-public}" ;;
   dev)  dev  "${2:-private}" ;;
-  all)  prod "${PROD_VIS:-private}"; dev "${DEV_VIS:-private}" ;;
+  all)  prod "${PROD_VIS:-public}"; dev "${DEV_VIS:-private}" ;;
   *) echo "쓰임: $0 [all|prod|dev] [public|private]"; exit 2 ;;
 esac
 
