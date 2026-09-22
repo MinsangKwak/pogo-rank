@@ -8,6 +8,7 @@
 #   bash scripts/build.sh --no-fetch   받아 둔 원본으로 다시 계산한다 (계산 코드를 고쳤을 때)
 #   bash scripts/build.sh --meta-only  계산·스프라이트를 건드리지 않고 data.js · 부속 파일만 다시 쓴다
 #                                      (APP_VERSION·문구 등 build.py 안의 값만 바뀌었을 때)
+#   bash scripts/build.sh --data-only  **그림 없이** 데이터만. 그림을 안 읽는 검사가 쓴다 (web 검사)
 #
 # 화면(frontend-v4) 만 고쳤다면 **이 스크립트가 아예 필요 없다** — `cd frontend-v4 && npm run build` 로 끝난다.
 #
@@ -19,13 +20,19 @@ cd "$(dirname "$0")/.."   # 어디서 실행해도 저장소 루트 기준
 FETCH=1
 COMPUTE=1
 SPRITES=1
+# --no-sprites 와 다르다. 저것은 '지난번 것을 쓰겠다' 이고 이것은 '아예 필요 없다' 다 —
+# 그림을 안 읽는 자리(web 검사의 Next 빌드)가 쓴다. 뜻이 다르므로 이름도 다르다
+NEED_SPRITES=1
 for arg in "$@"; do
   case "$arg" in
     --no-fetch)   FETCH=0 ;;
     --no-sprites) SPRITES=0 ;;
     --meta-only)  FETCH=0; COMPUTE=0; SPRITES=0 ;;
-    -h|--help)    sed -n '2,18p' "$0"; exit 0 ;;
-    *) echo "모르는 옵션: $arg (--no-fetch · --no-sprites · --meta-only)" >&2; exit 2 ;;
+    --data-only)  SPRITES=0; NEED_SPRITES=0 ;;
+    # 줄 번호로 자르지 않는다 — 머리말이 한 줄 늘 때마다 도움말이 코드까지 찍는다.
+    # 첫 줄(#!) 뒤의 **주석 덩어리만** 낸다
+    -h|--help)    awk 'NR>1 && /^#/ {print; next} NR>1 {exit}' "$0"; exit 0 ;;
+    *) echo "모르는 옵션: $arg (--no-fetch · --no-sprites · --meta-only · --data-only)" >&2; exit 2 ;;
   esac
 done
 
@@ -37,7 +44,7 @@ need() {  # need <경로> <없을 때 할 말>
   fi
 }
 [ "$FETCH" = 1 ]   || need data/gm.json "원본을 건너뛰려면 먼저 한 번은 받아야 합니다 (옵션 없이 실행)"
-[ "$SPRITES" = 1 ] || need dist/sprites "스프라이트를 건너뛰려면 먼저 한 번은 만들어야 합니다"
+[ "$SPRITES" = 1 ] || [ "$NEED_SPRITES" = 0 ] || need dist/sprites "스프라이트를 건너뛰려면 먼저 한 번은 만들어야 합니다"
 [ "$COMPUTE" = 1 ] || need data/dex.json "계산을 건너뛰려면 먼저 한 번은 계산해야 합니다"
 
 [ "$FETCH" = 1 ] && bash scripts/fetch_data.sh

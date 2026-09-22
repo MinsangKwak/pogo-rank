@@ -29,12 +29,14 @@ jobs:
           cache: npm
           cache-dependency-path: web/package-lock.json
 
-      # 데이터만 있으면 된다 — 그림 2,000여 장은 빌드가 안 읽는다(public/ 에 그냥 놓일 뿐).
-      # --no-sprites 로 건너뛰면 검사가 몇 분 짧아진다
+      # 데이터만 있으면 된다 — 그림 2,000여 장은 Next 빌드가 안 읽는다(public/ 에 그냥 놓일 뿐).
+      #
+      # **--no-sprites 가 아니라 --data-only 다.** 저것은 '지난번 것을 쓰겠다' 라서
+      # dist/sprites 가 있어야 하는데, 새 체크아웃에는 없다 (실측: 이 검사가 그렇게 빨갰다).
       - name: 데이터 만들기
         run: |
           set -e
-          bash scripts/build.sh --no-sprites
+          bash scripts/build.sh --data-only
 
       - name: 설치와 데이터 넣기
         run: |
