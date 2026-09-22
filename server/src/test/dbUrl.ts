@@ -38,6 +38,12 @@ export function disposableReason(url: string): string | null {
  */
 export function testDatabaseUrl(): string {
   const url = (process.env['TEST_DATABASE_URL'] ?? '').trim();
+  // **CI 에서는 건너뛰기를 금지한다.** 이름이 안 맞아 DB 검사 50개가 여태 조용히
+  // 건너뛰어지고 있었다 (CI 는 DATABASE_URL 을 주는데 검사는 다른 이름을 읽었다).
+  // 초록색 CI 가 아무것도 안 본 상태를 다시는 안 만든다 — 없으면 선다
+  if (!url && process.env['REQUIRE_TEST_DB'] === '1') {
+    throw new Error('REQUIRE_TEST_DB=1 인데 TEST_DATABASE_URL 이 없습니다 — DB 검사가 통째로 건너뛰어질 참이었습니다');
+  }
   if (!url) return '';
   const reason = disposableReason(url);
   if (reason) throw new Error(`TEST_DATABASE_URL 이 위험합니다 — ${reason}`);
