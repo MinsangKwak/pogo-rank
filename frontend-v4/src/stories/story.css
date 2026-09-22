@@ -1,0 +1,38 @@
+/* ─────────────────────────────────────────────────────────────────────────────
+   stories/story.css — **도면을 그리는 자**의 스타일. 앱은 이 파일을 싣지 않는다.
+
+   토큰 견본 · 크기 사다리처럼 스토리북에만 있는 틀이다.
+   앱 CSS(ds.css)에 섞으면 배포물에 도면이 따라 들어간다.
+   여기서도 색은 토큰만 쓴다 — 견본판이 제 색을 지어내면 무엇을 보여 주는지 알 수 없다.
+   ───────────────────────────────────────────────────────────────────────────── */
+
+.sb-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(24rem, 1fr)); gap: var(--space-md); }
+
+/* 토큰 한 칸 — 색판 + 이름 + 쓰임새 */
+.sb-token { display: flex; gap: var(--space-sm); align-items: flex-start; min-width: 0; }
+.sb-token__chip {
+  flex: 0 0 auto; width: 4.8rem; height: 4.8rem;
+  background: var(--sb-fill, var(--surface));
+  border: 1px solid var(--line-2);
+}
+.sb-token__name {
+  display: block; font-size: var(--fs-sub); font-weight: 700; color: var(--fg);
+  font-family: "GalmuriMono11", ui-monospace, monospace; word-break: break-all;
+}
+.sb-token__use { display: block; margin-top: var(--space-xs); font-size: var(--fs-sub); color: var(--muted); line-height: 1.5; }
+
+/* 묶음 머리 — 제목과 그 묶음을 고르는 규칙 한 줄 */
+.sb-head { border-bottom: 1px solid var(--line); padding-bottom: var(--space-sm); }
+
+/* 크기 사다리 — 한 단씩 실제 크기로 찍는다. 숫자만 적으면 감이 안 온다 */
+.sb-ladder { display: flex; flex-direction: column; gap: var(--space-md); }
+.sb-ladder__row { display: flex; gap: var(--space-md); align-items: baseline; border-bottom: 1px dashed var(--line); padding-bottom: var(--space-sm); }
+.sb-ladder__key { flex: 0 0 12rem; font-size: var(--fs-sub); color: var(--muted); font-family: "GalmuriMono11", ui-monospace, monospace; }
+
+/* 간격 사다리 — 막대 길이가 곧 그 칸이다 */
+.sb-bar { height: 1.6rem; background: var(--brand); }
+
+/* 두 벌을 나란히 — 라이트·다크를 한 장에서 견줄 때 */
+.sb-pair { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-md); }
+@media (max-width: 700px) { .sb-pair { grid-template-columns: 1fr; } }
+.sb-pane { padding: var(--space-md); background: var(--bg); border: 1px solid var(--line); }

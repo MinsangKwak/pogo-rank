@@ -26,9 +26,10 @@ import { useState, type ReactNode } from 'react';
 import { useDex, useUsage, useMeta } from '../lib/data';
 import { Sprite } from './Bits';
 import { usageCountFor } from '../lib/usage';
+import { Delta, FormBadge, TypeDots as DsTypeDots, type FormKind } from '../ds';
 
 /** v3 name.js FORM_LABELS — 이름 앞에 붙는 폼 라벨을 작은 배지로 뗀다 */
-const FORM_KIND: Record<string, string> = {
+const FORM_KIND: Record<string, FormKind> = {
   메가: 'mega', 메가X: 'mega', 메가Y: 'mega', 원시: 'mega',
   다이맥스: 'max', 거다이맥스: 'max', 섀도우: 'shadow',
 };
@@ -52,24 +53,19 @@ export function NameNode({ name, en, labels }: { name: string; en?: string; labe
   }
   return (
     <>
-      {found.map((label) => (
-        <span key={label} className={`form-tag${FORM_KIND[label] ? ` form-tag--${FORM_KIND[label]}` : ''}`}>{label}</span>
-      ))}
+      {found.map((label) => <FormBadge key={label} kind={FORM_KIND[label]}>{label}</FormBadge>)}
       <b title={en}>{base}</b>
     </>
   );
 }
 
-/** 이름 옆 작은 색 점 — v3 typeDots 와 같은 마크업 (알약이 아니라 <i> 점이다) */
+/**
+ * 이름 옆 작은 색 점 — v3 typeDots 와 같은 마크업 (알약이 아니라 <i> 점이다).
+ * 2026-09-21 그리는 일은 `ds/TypeDots` 가 한다 — 한글 이름만 여기서 붙여 넘긴다.
+ */
 export function TypeDots({ types }: { types: readonly string[] }) {
   const { data } = useDex();
-  return (
-    <span className="row__types">
-      {types.map((type) => (
-        <i key={type} style={{ ['--c' as string]: `var(--t-${type})` }} title={data.TYPE_KO[type] ?? type} />
-      ))}
-    </span>
-  );
+  return <DsTypeDots types={types} names={data.TYPE_KO} />;
 }
 
 export interface RowProps {
@@ -104,10 +100,8 @@ function DeltaBadge({ delta }: { delta?: number }) {
   if (since < 0 || since > (meta.RANK_FRESH_DAYS ?? 14)) return null;
   const up = delta > 0;
   return (
-    <span className={`delta ${up ? 'is-up' : 'is-down'}`}
-      title={`${meta.RANK_DELTA_DATE} 갱신에서 ${Math.abs(delta)}계단 ${up ? '상승' : '하락'}`}>
-      {up ? '▲' : '▼'}{Math.abs(delta)}
-    </span>
+    <Delta value={delta}
+      title={`${meta.RANK_DELTA_DATE} 갱신에서 ${Math.abs(delta)}계단 ${up ? '상승' : '하락'}`} />
   );
 }
 

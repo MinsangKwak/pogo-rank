@@ -1,0 +1,50 @@
+/* ── 11월 탱커 팝업 (v4.9.x) ───────────────────────────────────────────────────
+   조각(ds)이 채우고, 여기서는 **배치와 팝업 판 폭**만 정한다. 간격은 0.4rem 격자 (§7). */
+.tankpop { display: flex; flex-direction: column; gap: 2.4rem; }
+/* 머리는 늘 어두운 판 — 테마를 안 타는 자리라 --plate 한 벌이다 (§1-b 4번).
+   판 여백에 기대어 밖으로 빼지 않는다 — 좁은 화면의 판 여백(1.6rem)이 넓은 화면(2.8rem)과 달라
+   음수 여백이 판을 넘치게 했다 (실측: 390px 에서 가로 스크롤). 여백 안에 서는 판으로 둔다 */
+.tankpop__head { padding: 2rem 2.4rem; background: var(--plate); color: var(--plate-fg); border-bottom: .4rem solid var(--plate-accent); }
+.tankpop__head > * + * { margin-top: .8rem; }
+.tankpop__head h2 { margin: 0; line-height: 1.2; color: var(--plate-fg); }
+.tankpop__head .ds-text--muted { color: var(--plate-muted); }
+/* 눈썹은 판의 강조색 — --brand 는 어두운 판 위에서 2.43 까지 떨어진다 (색 그물이 잡았다) */
+.tankpop__eyebrow { color: var(--plate-accent); letter-spacing: .08em; }
+/* 한글 이름과 타입 알약은 한 줄 — 칸이 좁아지면 글자 단위로 꺾이는 것이 더 나쁘다 */
+.tankpop__mon b, .tankpop .ds-typepill, .tankpop .ds-card__head { white-space: nowrap; word-break: keep-all; }
+.tankpop__bosses, .tankpop__two { display: grid; grid-template-columns: minmax(0, 1fr); gap: 1.6rem; }
+/* 두 칸은 판이 88rem 으로 넓어지는 1000 부터 — 700~999 는 판이 52rem 이라 칸이 22rem 뿐이어서
+   한 줄로 못 박은 이름과 세 칸 줄이 눌린다 (리뷰 제보). 판 폭과 같은 문턱을 쓴다 */
+@media (min-width: 1000px) {
+  .tankpop__bosses, .tankpop__two { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+.tankpop .ds-card__title .sprite { width: 3.2rem; height: 3.2rem; vertical-align: middle; margin-right: .4rem; }
+.tankpop__picks, .tankpop__list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+.tankpop__picks > li, .tankpop__list > li {
+  display: grid; grid-template-columns: 2.8rem minmax(0, 1fr) auto; align-items: center; gap: .4rem 1.2rem;
+  padding: .8rem 0; border-top: .1rem dashed var(--line);
+}
+.tankpop__picks > li > .tankpop__why { grid-column: 2 / -1; margin: 0; }
+.tankpop__rank { color: var(--brand); text-align: center; line-height: 1; }
+/* 이름 단추 — 누르는 것이니 tap 높이. 글자 모양은 본문 그대로 */
+.tankpop__mon {
+  display: inline-flex; align-items: center; gap: .8rem; min-width: 0; min-height: var(--tap);
+  padding: 0; border: 0; background: transparent; color: inherit; text-align: left; cursor: pointer; font: inherit;
+}
+.tankpop__mon .sprite, .tankpop__mon .tankpop__nopic { width: 4.8rem; height: 4.8rem; flex: 0 0 auto; }
+.tankpop__nopic { display: inline-block; border-radius: 50%; background: color-mix(in srgb, var(--fg) 8%, transparent); }
+.tankpop__mon > span { display: flex; flex-wrap: wrap; align-items: center; gap: .4rem .8rem; min-width: 0; }
+.tankpop__mon b { font-size: var(--fs-body); font-weight: 700; line-height: 1.5; }
+.tankpop__mon:hover b, .tankpop__mon:focus-visible b { color: var(--brand); text-decoration: underline; }
+.tankpop__tags { display: flex; flex-direction: column; align-items: flex-end; gap: .4rem; }
+/* 안내문 속 링크 — 브라우저 기본 파랑은 다크 카드 위에서 1.86 이다 (도면 그물이 잡았다). 상표색 + 밑줄 */
+.tankpop a { color: var(--brand); text-decoration: underline; text-underline-offset: .2rem; }
+.tankpop__foot { display: flex; flex-direction: column; gap: 1.2rem; }
+.tankpop__foot .i18n-note { margin: 0; }
+.tankpop-entry { margin: 0 0 2.4rem; }
+/* 팝업 판 — 보스 둘이 옆으로 서야 하니 기본 52rem 보다 넓게. v3 스킨을 이기는 접두사는 하나 (§7) */
+@media (min-width: 1000px) {
+  html body #root .modal__wrap:has(.tankpop) { max-width: 88rem; }
+  /* app-shell.css 가 .modal__box 에도 52rem 뚜껑을 씌운다 — 판만 넓히면 안쪽이 반만 찬다 (실측) */
+  html body #root .modal__wrap:has(.tankpop) .modal__box { max-width: none; }
+}

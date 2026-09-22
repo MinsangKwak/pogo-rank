@@ -15,6 +15,30 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 const RELEASE_NOTES_EN = {
+  '2026-09-22 · v4.9.8': [
+    '**A November Dynamax raid tank-prep popup on the home screen** — per-boss tanks for Dialga (11/14) and Palkia (11/15, expected dates), a build order and an overall ranking. Shows once a day; reopen it with [View] above [Top Pokemon by role]. Tap a name for its detail',
+  ],
+  '2026-09-22 · v4.9.7': [
+    '**Account deletion now actually deletes** — pressing delete failed with "permission-denied" and nothing was removed. The server rule misread delete requests. Your saved data, approval record, sign-up request and Google login link are now all removed',
+  ],
+  '2026-09-22 · v4.9.6': [
+    '**[Scroll down] no longer lands the heading behind the app bar** — the [Top Pokemon by role] heading was hidden under the sticky bar after the jump',
+    '**[Many uses] is a single-line card again on narrow screens** — the tall side-card layout was leaking down to phones and stretching the card',
+  ],
+  '2026-09-22 · v4.9.5': [
+    '**A failed load now shows a message instead of an empty screen** — when the connection dropped, the page just stayed blank with nothing to act on. [Try again] now refetches in place',
+  ],
+  '2026-09-22 · v4.9.4': [
+    '**[Many uses] moved beside the home banner** — the space next to the banner sat empty on wide screens. It now shows without scrolling',
+    '**The banner has a [Scroll down] button** — the banner filled the first screen, so what came below was easy to miss. It jumps to [Top Pokémon by use]',
+  ],
+  '2026-09-22 · v4.9.3': [
+    '**The home banner was redrawn** — it stays under 600px tall on any screen, with a bigger illustration and smaller text. The date and boss names now sit on the picture',
+  ],
+  '2026-09-21 · v4.9.2': [
+    '**The home banner is shorter on desktop** — it grew with the window and hid everything below it. The rankings below the banner are now visible without scrolling',
+    '**Its buttons moved up under the text** — they used to sit at the very bottom of the banner, far from what they refer to',
+  ],
   '2026-09-21 · v4.9.1': [
     '**Your favorites now show up when they appear as Dynamax** — Max Mondays and Max Battle Days were never matched to your saved Pokémon. Save today\'s Articuno, Zapdos or Moltres and the event shows as [Now on]',
   ],

@@ -54,9 +54,14 @@
 | 층 | 무엇 | 언제 돈다 |
 | --- | --- | --- |
 | 관문 | `lib/cell.ts` — `num` · `word` · `lines` | 늘 (화면이 값을 찍을 때마다) |
-| 단위 | `src/test/rankcells.test.ts` 손으로 적은 줄 모양<br>`src/test/datasweep.test.ts` **실데이터 전량**(모든 표 · 모든 키 · 모든 줄) | `npm test` · CI 의 `v4 검사` |
+| 단위 | `src/test/cellgate.test.ts` **관문 자체**(깨진 값 열한 가지 × 세 함수)<br>`src/test/rankcells.test.ts` 손으로 적은 줄 모양<br>`src/test/datasweep.test.ts` **실데이터 전량**(모든 표 · 모든 키 · 모든 줄) | `npm test` · CI 의 `v4 검사` |
+| 조각 | `scripts/check-stories.mjs` — 스토리 전량을 라이트·다크로 훑는다 (§1-c) | 조각을 고칠 때 |
 | 화면 | `scripts/check_screens.mjs` — 46장을 돌며 그려진 글자를 훑는다 | 배포 전 (아래 참고) |
 | 색 | `scripts/check_contrast.mjs` — 42장의 글자가 바탕에 묻히지 않는지 본다 (§1-b) | 배포 전 |
+
+**관문 자체를 검사하는 층이 2026-09-21 에 생겼다.** 그전까지 `rankcells` 는 관문을 *쓰는 쪽*만 봤고
+관문 자체는 아무도 안 보고 있었다 — 그래서 `word(NaN)` 이 `'NaN'` 을, `num('   ')` 이 `'0'` 을
+그대로 내보내고 있었다. 스토리북에 빈 값을 늘어놓는 판(`parts-value--leaky`)을 세우자 드러났다.
 
 ```bash
 cd frontend-v4 && npm test                       # 관문 + 단위
@@ -104,6 +109,53 @@ WCAG 의 4.5 가 아니라 3.0 인 이유는, 여기서 찾는 것이 "읽기 �
 
 ---
 
+## 1-c. 조각은 `src/ds/` 에서 만들고 스토리북으로 본다
+
+**격자 밖 값은 타입이 막는다.** 지침으로 적어 두면 또 샌다 — v4.3.4 에 크기 474군데 ·
+간격 1,484군데가 격자 밖이었다. 스냅만 해 두면 다음 화면이 또 적는다.
+
+- `<Stack gap>` · `<Inline gap>` 은 `none·xs·sm·md·lg·xl` 여섯 칸뿐이다 (4px 격자)
+- `<Text size>` 는 `sub·body·lead` (Pretendard 12·14·16)
+- `<Label size>` 는 `body·sec·title·hero` (Galmuri 14·22·28·42)
+- `<Label size="sub">` 는 **못 써진다** — Galmuri 12px 은 11·14 격자의 정수배가 아니다
+
+**새 클래스를 함부로 만들지 않는다.** 버튼 · 칩 · 세그먼트 · 뱃지는 v3 CSS 가 이미 계약
+(클래스명 · 태그 · 중첩)을 들고 있다. `ds/` 의 조각은 그 클래스를 **그대로 내보낸다** —
+같은 모양을 새 이름으로 다시 그리면 디자인이 두 벌이 되고 한쪽만 고쳐진다.
+없던 것(배치 · 글자 · 안내 · 카드 · 타입 알약)만 `src/styles/ds.css` 에서 만든다.
+
+**토큰 목록(`src/ds/tokens.ts`)에 없는 이름을 적으면 검사가 선다.** 없는 토큰을 쓰면
+화면에 `var(--없는것)` 이 나가 색이 통째로 빠지는데 **오류도 경고도 안 난다.**
+
+```bash
+cd frontend-v4
+npm run storybook                                  # :6006
+npm run build-storybook                            # storybook-static/
+node scripts/check-stories.mjs http://localhost:4189/   # 전량 × 라이트·다크
+```
+
+**배포된 도면은 https://dev.moncamp.kr/storybook/ 이다** — dev 가 올라갈 때 같이 올라간다.
+하위 주소에 얹으므로 `STORYBOOK_BASE=/storybook/` 로 빌드해야 한다. 안 주면 자산 주소가
+루트 기준(`/assets/…`)이라 열자마자 빈 화면이다. 배포 워크플로가 그 주소와 noindex 메타를 검사한다.
+도면은 **서다 말아도 배포를 안 세운다** — 화면이 멀쩡한데 도면 때문에 dev 가 깜깜해지면 손해가 더 크다.
+
+**같은 도메인에 앱 밖의 판을 얹으면 서비스워커가 비켜 가게 한다** (`public/sw.js` 의 `OUTSIDE`).
+범위가 루트라 그냥 두면 들어온다 — 실측: `/storybook/` 을 열자 그 HTML 이 앱의 오프라인 자리에
+덮였고(도면 청크 9개까지 같이 들어왔다), 오프라인에서 `/storybook/` 이 앱 화면으로 답했다.
+`src/test/swscope.test.ts` 가 배포가 얹는 자리와 서비스워커가 비켜 가는 자리를 견준다.
+
+`check-stories.mjs` 는 배포 전 검문과 **같은 재는 자**를 쓴다
+(`scripts/lib/contrast_audit.mjs`). 잣대가 두 벌이면 한쪽만 따라온다.
+
+**쿼리스트링을 지우는 정적 서버를 쓰지 않는다** — `serve` 는 `cleanUrls` 로 `?id=` 를 버려서
+모든 스토리가 "No Preview" 로 열리고, 검문이 빈 화면을 훑고 통과한다.
+같은 이유로 **스토리 id 와 테마 전역값은 ASCII 로만 둔다** (보이는 이름은 한글 그대로다) —
+`?globals=theme:다크` 는 주소에서 지워져 라이트로 열렸다.
+
+**새 조각을 붙이면 스토리도 붙인다.** 안 붙이면 그 조각만 그물 밖이다.
+
+---
+
 ## 2. 리팩토링해도 바꾸면 안 되는 이름
 
 바깥(브라우저 저장소 · 통계 · 문서)이 이미 이 이름으로 물려 있다. **바꾸면 남의 데이터가 끊긴다.**
@@ -124,6 +176,9 @@ WCAG 의 4.5 가 아니라 3.0 인 이유는, 여기서 찾는 것이 "읽기 �
   ([`server/src/lib/country.ts`](server/src/lib/country.ts)) — 사람을 가리키는 값은 어느 표에도 두지 않는다.
   **'안 본다' 와 '안 남긴다' 를 섞어 적지 않는다** — 분당 한도는 IP 를 보고 버린다. 방침에는 남기지 않는다고만 적는다.
   통계를 끈 사람(`pogo_consent=denied`)에게서는 GA4 와 마찬가지로 **한 건도 안 나간다.**
+- **`firestore.rules` 를 고치면 `cd frontend-v4 && npm run test:rules`** (v4.9.7). 에뮬레이터가 규칙을 실제로 돌려 본다.
+  삭제 요청에는 `request.resource` 가 없다 — `write` 하나로 묶어 본문을 읽으면 삭제가 **조용히** 막힌다.
+  계정 삭제가 그렇게 죽어 있었다. 규칙은 **콘솔에 게시해야** 적용된다 — 코드 배포와 별개다.
 - **서버 응답 스키마에 `object` 를 적을 때는 칸도 같이 적는다** (v4.8.1). `fast-json-stringify` 는
   적힌 칸만 내보낸다 — 칸 없는 `{ type: 'object' }` 는 값이 들어 있어도 `{}` 로 나가고
   **오류도 경고도 없다.** 설명서를 붙이는 일이 계약을 깨뜨린 자리다.

@@ -14,6 +14,14 @@
 // ─────────────────────────────────────────────────────────────────────────────
 const CACHE = 'moncamp-v4-1';
 
+// 2026-09-22 **도면(/storybook/)은 이 앱이 아니다 — 통째로 비켜 간다.**
+// 서비스워커의 범위가 루트라 같은 도메인의 다른 판까지 들어온다. 그대로 두면 둘이 어긋난다:
+//   · 온라인에서 /storybook/ 을 열면 navigate 갈래가 그 HTML 을 앱의 오프라인 자리('./')에 덮어쓴다
+//     → 다음에 오프라인으로 앱을 열면 스토리북이 뜬다
+//   · 오프라인에서 /storybook/ 을 열면 캐시의 './'(앱 화면)가 대신 나온다
+// 캐시 이름(CACHE)은 그대로 둔다 — 바꾸면 남의 그림 캐시가 통째로 지워진다 (CLAUDE.md §2)
+const OUTSIDE = /^\/storybook\//;
+
 self.addEventListener('install', () => self.skipWaiting());
 
 self.addEventListener('activate', (event) => event.waitUntil(
@@ -44,6 +52,8 @@ function networkFirst(request, key) {
 self.addEventListener('fetch', (event) => {
   const url = new URL(event.request.url);
   const mine = url.origin === location.origin;
+  // 앱 밖의 판은 손대지 않는다 — navigate 보다 먼저 걸러야 한다 (위 주석)
+  if (mine && OUTSIDE.test(url.pathname)) return;
   if (event.request.mode === 'navigate') {
     // 주소가 무엇이든 앱은 한 장이다 — './' 한 자리에만 담는다 (해시 라우팅)
     event.respondWith(networkFirst(event.request, './'));

@@ -14,6 +14,7 @@
 // 그 분기가 곧 빠뜨리는 자리가 된다. 데이터 기다림은 경계 하나가 맡는다.
 // ─────────────────────────────────────────────────────────────────────────────
 import { Suspense, lazy, useEffect, useState } from 'react';
+import { DataBoundary } from './components/DataBoundary';
 import { AppBar, AppNav, Drawer, Footer, PageHead, ToTop } from './components/Shell';
 import { SlotProvider } from './components/Slots';
 import { useRoute } from './lib/useRoute';
@@ -199,26 +200,33 @@ export default function App() {
           <div style={{ display: 'contents' }} ref={setBossEl} />
           <div className="controls" id="controls" ref={setControlsEl} />
           <div id="content">
-            <Suspense fallback={<Splash />}>
-              <Screen route={route} rest={rest} onOpen={openMon} />
-            </Suspense>
+            {/* 경계가 기다림 **밖**이다 — 안에 두면 실패했을 때 기다림이 먼저 잡아 영영 안 끝난다 */}
+            <DataBoundary>
+              <Suspense fallback={<Splash />}>
+                <Screen route={route} rest={rest} onOpen={openMon} />
+              </Suspense>
+            </DataBoundary>
           </div>
           <Footer onConsent={() => setConsentOpen(true)} />
         </div>
       ) : (
         <div id="page">
-          <Suspense fallback={<Splash />}>
-            <Screen route={route} rest={rest} onOpen={openMon} />
-          </Suspense>
+          <DataBoundary>
+            <Suspense fallback={<Splash />}>
+              <Screen route={route} rest={rest} onOpen={openMon} />
+            </Suspense>
+          </DataBoundary>
           {/* 약관·개인정보처리방침은 제 본문 끝에 같은 고지를 이미 달고 있다 — 여기서 한 번 더 붙이지 않는다 (v3 와 같다) */}
           {route.id === 'terms' || route.id === 'privacy' ? null : (
             <p className="ip-notice">moncamp는 비공식 팬 프로젝트입니다. Pokémon 및 관련 명칭·이미지의 권리는 The Pokémon Company · Nintendo · Creatures Inc. · GAME FREAK inc. 에, Pokémon GO 는 Scopely Explore, Inc. 에 있으며 이 서비스는 권리자와 무관합니다.</p>
           )}
         </div>
       )}
-      <Suspense fallback={null}>
-        {detail === null ? null : <MonDetail pick={detail} onClose={closeMon} />}
-      </Suspense>
+      <DataBoundary>
+        <Suspense fallback={null}>
+          {detail === null ? null : <MonDetail pick={detail} onClose={closeMon} />}
+        </Suspense>
+      </DataBoundary>
 
       {consentOpen ? <ConsentDialog onClose={() => setConsentOpen(false)} /> : null}
       {/* ★ 를 눌렀는데 로그인 전일 때 — 누른 곳과 그리는 곳이 멀어 stores/invite.ts 를 거친다 */}
