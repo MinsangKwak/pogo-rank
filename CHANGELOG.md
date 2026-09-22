@@ -1,6 +1,6 @@
 # 변경 이력
 
-[← README](README.md) · [개발 문서](docs/DEVELOPMENT.md) · [운영 문서](docs/OPERATIONS.md) · [인프라 문서](docs/INFRA.md) · **변경 이력**
+[← README](README.md) · [개발 문서](docs/DEVELOPMENT.md) · [운영 문서](docs/OPERATIONS.md) · [인프라 문서](docs/INFRA.md) · **변경 이력** · [변천사](docs/HISTORY.md)
 
 **버전별 변경 사항과 수정 배경을 최신 날짜부터 기록합니다.** 날짜를 펼친 뒤 버전을 선택하면 상세 내용을 읽을 수 있습니다. 가장 최근 날짜만 기본으로 펼쳐집니다.
 
