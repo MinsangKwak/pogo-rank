@@ -756,4 +756,4 @@ python3 scripts/firestore_restore.py --apply    # 실제 쓰기
 | Firebase | `firestore.rules` v4.9.7(삭제 분리)을 콘솔에 게시 — 루트 uid 는 콘솔에서만 채움 | §4 · [CLAUDE.md §4](../CLAUDE.md) |
 | CI | dev 배포가 규칙 파일이 바뀐 푸시에서만 에뮬레이터(JDK 21)로 규칙 검사 11개를 돈다 | `.github/workflows/deploy-dev.yml` |
 
-**남은 둘**(`/data/*.json` 캐시 규칙 · Rate limit 완화)은 [INFRA §8](INFRA.md) 의 "남은 둘" 에 있다. 대시보드 작업이라 코드로는 못 한다.
+**남은 둘**(`/data/*.json` 캐시 규칙 · Rate limit 완화)도 같은 날 저녁에 대시보드에서 끝냈다 — [INFRA §8](INFRA.md) 의 "남은 둘" 밑 "한 것" 표. 이로써 광고 전 다지기 목록은 비었다.

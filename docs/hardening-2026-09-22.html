@@ -65,7 +65,7 @@
       <tr><td class="w">응답 헤더 (Transform Rule)</td><td>X-Content-Type-Options nosniff · Referrer-Policy strict-origin-when-cross-origin · Permissions-Policy geolocation·microphone·camera 닫음 · CSP <code>frame-ancestors 'self'</code></td><td class="y">✅ 넷 다</td></tr>
       <tr><td class="w">캐시 규칙</td><td><code>/assets/</code> · <code>/sprites/</code> · <code>/sprites-anim/</code> — Edge·Browser TTL 1년</td><td class="y">✅ HIT</td></tr>
       <tr><td class="w">보안</td><td>Bot Fight Mode 켬 · Rate limit <code>burst-guard</code> IP 당 10초 50건 → 10초 차단</td><td class="y">✅</td></tr>
-      <tr><td class="w">남은 둘</td><td><span class="todo">① <code>/data/*.json</code> 캐시 규칙</span> — 지금은 방문마다 원본으로 간다(약 1MB). <code>?v=해시</code> 라 1년 캐시 가능, <code>manifest.json</code> 만 짧게 &nbsp; <span class="todo">② 한도 완화</span> — 첫 방문 34건이라 50 에 가깝다. 200 으로 올리거나 정적 경로 제외</td><td class="todo">할 일</td></tr>
+      <tr><td class="w">이어서 한 둘 (저녁)</td><td>① 캐시 규칙 <code>data-json</code> — <code>/data/</code> 이고 쿼리에 <code>v=</code> 가 있으면 1년. <code>manifest.json</code> 은 쿼리가 없어 제외되어 원본으로 간다 &nbsp; ② <code>burst-guard</code> 한도 50 → <b>200</b> / 10초 — 첫 방문 34건이 50 에 너무 가까웠다</td><td class="y">✅ HIT · DYNAMIC</td></tr>
     </table>
   </div>
 
