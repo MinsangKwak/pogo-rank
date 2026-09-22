@@ -22,7 +22,25 @@
 ---
 
 <details open>
-<summary><b>2026-09-22</b> — 5판 · <code>v4.9.7</code> · <code>v4.9.6</code> · <code>v4.9.5</code> · <code>v4.9.4</code> · <code>v4.9.3</code></summary>
+<summary><b>2026-09-22</b> — 6판 · <code>v4.9.8</code> · <code>v4.9.7</code> · <code>v4.9.6</code> · <code>v4.9.5</code> · <code>v4.9.4</code> · <code>v4.9.3</code></summary>
+
+<details>
+<summary><b>v4.9.8</b> · 홈에 11월 다이맥스 레이드 탱커 준비 팝업 — dev 시험판 · 광고 앞 다지기 마무리</summary>
+
+**요청** — 운영자가 준 그림 넷(디아루가 11/14 · 펄기아 11/15 예상 탱커 · 육성 순서 · 종합 순위)을 홈 팝업으로. dev 에 먼저 올려 다듬는다.
+
+**추가** — `src/components/TankPopup.tsx` (#136 · #137 · #138). 그림을 싣지 않고 글과 조각으로 다시 그렸다 —
+한 장 1MB 가 첫 방문 743KB 를 두 배로 만들고, 그림 속 글자는 검색·번역이 못 읽는다. 코드에는 도감번호 열둘뿐이고
+이름·타입·그림은 `DEX_DATA` 가 준다(§3). 종합 순위 옆에 우리 탱커 표(`DMAX_TANK`)의 EHP 순위를 나란히 찍는다 —
+그림의 순위는 편집 순위라 우리 표와 다르고, 어느 쪽인지 화면에 적었다. 하루 한 번 자동으로 열리고(`pogo_novtank_hide`)
+같은 세션에서는 다시 안 뜬다(`pogo_novtank_seen`). 홈 라우트에서만 연다 — `#/mon/…` 뒤에 깔린 홈에서 열면 겹판이 둘이 된다.
+거다이맥스는 제 스프라이트(잠만보 10206 등)로 상세에 간다. 검사 `src/test/tankpop.test.tsx` 11개 · 스토리 `screens-tankpop`.
+
+**다지기 (코드 밖)** — Cloudflare 앞단이 켜졌다(프록시 · 보안 헤더 다섯 · HSTS · 자산 캐시 1년 · Rate limit · Bot Fight, 바깥 노드에서 실측 —
+[INFRA §8](docs/INFRA.md)). 브랜치 보호 셋(`deploy` · `main` · `dev`, [OPERATIONS §18](docs/OPERATIONS.md)). Firestore 규칙 v4.9.7 콘솔 게시.
+`pogo-rank` 는 다시 public, `pogo-rank-dev` 는 private([INFRA §9](docs/INFRA.md)).
+
+</details>
 
 <details>
 <summary><b>v4.9.7</b> · 계정 삭제가 실제로 지워진다 — 규칙의 삭제를 갈라 세우고 에뮬레이터로 본다</summary>

@@ -161,7 +161,14 @@ Pokémon과 관련 명칭·이미지의 권리는 The Pokémon Company, Nintendo
 전체 225개 릴리스를 `날짜 → 버전`의 2단계 접이식 목록으로 정리했습니다. 가장 최근 날짜만 기본으로 펼쳐지며, 설명이 한 줄인 초기 버전은 별도의 접이식 영역 없이 표시됩니다. 사용자용 요약은 서비스의 [🎉 패치 노트](https://moncamp.kr/#/release)에서, 변경 배경과 세부 구현 내용은 [변경 이력](CHANGELOG.md)에서 확인할 수 있습니다.
 
 <details open>
-<summary><b>2026-09-22</b> — 릴리스 5개 · <code>v4.9.7</code> · <code>v4.9.6</code> · <code>v4.9.5</code> · <code>v4.9.4</code> · <code>v4.9.3</code></summary>
+<summary><b>2026-09-22</b> — 릴리스 6개 · <code>v4.9.8</code> · <code>v4.9.7</code> · <code>v4.9.6</code> · <code>v4.9.5</code> · <code>v4.9.4</code> · <code>v4.9.3</code></summary>
+
+<details>
+<summary><b>v4.9.8</b> · 홈에 11월 다이맥스 레이드 탱커 준비 팝업 — dev 시험판 · 광고 앞 다지기 마무리</summary>
+
+첫 화면에 11월 다이맥스 레이드(디아루가 · 펄기아, 예상 일정) 탱커 준비 팝업이 뜹니다 — 보스별 탱커 · 육성 순서 · 종합 순위. 하루 한 번 뜨고 [보기] 로 다시 엽니다. 코드 밖에서는 Cloudflare 앞단 · 브랜치 보호 · Firestore 규칙 게시가 끝났습니다 (인프라 문서 8 · 9장, 운영 문서 18장).
+
+</details>
 
 <details>
 <summary><b>v4.9.7</b> · 계정 삭제가 실제로 지워진다 — 규칙의 삭제를 갈라 세우고 에뮬레이터로 본다</summary>
