@@ -19,6 +19,8 @@ import { eventRoutes } from './routes/events.ts';
 import { hotRoutes } from './routes/hot.ts';
 import { backupRoutes } from './routes/backup.ts';
 import { authRoutes } from './routes/auth.ts';
+import { domainRoutes } from './routes/domain.ts';
+import { makeDomain } from './services/domain.ts';
 import { makeAccessTokens, type AccessTokens } from './lib/jwt.ts';
 import { makeAuth, type Auth } from './services/auth.ts';
 import { makeGoogleOAuth, type GoogleOAuth } from './lib/google.ts';
@@ -56,7 +58,7 @@ export async function buildApp(env: Env, sql: Sql, deps: AppDeps = {}): Promise<
   // 쿠키를 안 받으므로 credentials 도 켜지 않는다
   await app.register(cors, {
     origin: env.allowedOrigins,
-    methods: ['GET', 'POST', 'DELETE'],
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
     // **v5 Phase 4 에 켰다.** 로그인 쿠키가 앱(moncamp.kr)에서 api.moncamp.kr 로 실려 가야 한다.
     // 켜도 안전한 이유는 허용 주소를 하나씩 적기 때문이다 — 와일드카드를 안 받는 것(env.ts)이
     // 여기서 값을 한다. `*` 와 credentials 는 애초에 같이 못 쓰기도 한다
@@ -125,6 +127,7 @@ export async function buildApp(env: Env, sql: Sql, deps: AppDeps = {}): Promise<
 
   // ── 로그인 (v5 Phase 4) ──────────────────────────────────────────────────
   const tokens = deps.tokens ?? makeAccessTokens(env.auth.jwtSecret);
+  const requireRole = makeRequireRole(tokens);
   const auth = deps.auth ?? makeAuth(sql, tokens, { rootEmail: env.auth.rootEmail });
   const google = deps.google ?? makeGoogleOAuth({
     clientId: env.auth.clientId,
@@ -134,9 +137,11 @@ export async function buildApp(env: Env, sql: Sql, deps: AppDeps = {}): Promise<
   authRoutes(app, {
     auth, google,
     login: makeLoginState(env.auth.jwtSecret),
-    requireRole: makeRequireRole(tokens),
+    requireRole,
     env,
   });
+  // ── 도메인 (v5 Phase 5) ──────────────────────────────────────────────────
+  domainRoutes(app, { domain: makeDomain(sql), requireRole });
 
   healthRoutes(app, sql);
   eventRoutes(app, sql);

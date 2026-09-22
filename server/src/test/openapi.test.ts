@@ -30,7 +30,11 @@ describe('OpenAPI 설명서', () => {
         '/v1/auth/google/callback', '/v1/auth/google/start',
         '/v1/auth/logout', '/v1/auth/logout-all', '/v1/auth/refresh', '/v1/auth/sessions',
         '/v1/events', '/v1/hot', '/v1/me',
-      ],
+        // v5 Phase 5 — 도메인
+        '/v1/admin/users', '/v1/admin/users/{id}',
+        '/v1/me/favorites', '/v1/me/favorites/{dex}',
+        '/v1/trainers', '/v1/trainers/{name}',
+      ].sort(),
     );
   });
 
