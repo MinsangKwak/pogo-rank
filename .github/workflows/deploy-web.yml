@@ -138,14 +138,31 @@ jobs:
           echo "배포: $(cat /tmp/url.txt)"
 
       # 올라간 판이 실제로 **내용이 든 HTML** 을 주는지 본다.
-      # 200 만 보면 빈 껍데기가 올라가도 초록이다 — 이 판의 목적이 그 내용이므로 그것을 잰다
+      # 200 만 보면 빈 껍데기가 올라가도 초록이다 — 이 판의 목적이 그 내용이므로 그것을 잰다.
+      #
+      # **CLI 가 찍어 주는 주소를 재지 않는다.** 그것은 배포 고유 주소이고 접근 보호가 걸려 있어,
+      # 재 보면 Vercel 로그인 화면이 온다 — 실측 340KB 짜리 `<title>Login – Vercel</title>`.
+      # 검사가 내 화면 대신 남의 로그인 페이지를 훑고 "본문이 없다" 고 답했다.
+      # 사람이 보는 것은 운영 별칭이므로 **그쪽을 잰다.** 주소가 바뀌면 vars.SITE_URL 로 덮는다.
+      #
+      # 별칭이 붙는 데 몇 초 걸릴 수 있어 몇 번 다시 본다 — 한 번 보고 세우면 배포가 멀쩡한데
+      # 빨개진다
       - if: steps.ready.outputs.go == 'true'
         name: 색인될 HTML 인지 확인
+        env:
+          SITE: ${{ vars.SITE_URL || 'https://pogo-rank.vercel.app' }}
         run: |
           set -e
-          URL="$(cat /tmp/url.txt)"
-          body="$(curl -sSL "$URL/mon/25")"
-          echo "$body" | grep -q '<title>' || { echo '제목이 없습니다'; exit 1; }
-          echo "$body" | grep -q '피카츄' || { echo '본문에 포켓몬 이름이 없습니다 — 빈 껍데기가 올라갔습니다'; exit 1; }
-          echo "$body" | grep -q 'application/ld+json' || { echo 'JSON-LD 가 없습니다'; exit 1; }
-          echo 'OK — /mon/25 가 내용이 든 HTML 을 준다'
+          echo "배포 고유 주소: $(cat /tmp/url.txt)"
+          echo "재는 주소: $SITE"
+          body=''
+          for i in 1 2 3 4 5 6; do
+            body="$(curl -sSL "$SITE/mon/25" || true)"
+            printf '%s' "$body" | grep -q '피카츄' && break
+            echo "  아직입니다 ($i/6) — 20초 뒤 다시 봅니다"
+            sleep 20
+          done
+          printf '%s' "$body" | grep -q '<title>' || { echo '제목이 없습니다'; exit 1; }
+          printf '%s' "$body" | grep -q '피카츄' || { echo '본문에 포켓몬 이름이 없습니다 — 빈 껍데기가 올라갔습니다'; exit 1; }
+          printf '%s' "$body" | grep -q 'application/ld+json' || { echo 'JSON-LD 가 없습니다'; exit 1; }
+          echo "OK — $SITE/mon/25 가 내용이 든 HTML 을 준다"
