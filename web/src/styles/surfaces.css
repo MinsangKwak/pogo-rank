@@ -205,7 +205,9 @@ html body #root .schedule__source { display: inline-block; margin-left: .8rem; c
    Suspense 의 스플래시는 몇 십 px 라, 그 아래 바닥글이 첫 화면에 보였다가 본문이 오면 화면 밖으로
    밀린다 — 그 이동이 CLS 0.45~0.59 로 잡혔다. 본문 자리를 한 화면 높이로 잡아 두면 바닥글은
    처음부터 화면 밖이라 움직여도 세지 않는다. 본문이 오면 min-height 는 뜻을 잃는다 */
-#content > #splash, #page > #splash { min-height: 100dvh; box-sizing: border-box; }
+/* 페이지의 본문 틀은 칸 자리만 맞추려고 둔다 — 배치에는 끼지 않는다 (App.tsx 뼈대 머리말) */
+.page-body { display: contents; }
+#content > #splash, #page > .page-body > #splash { min-height: 100dvh; box-sizing: border-box; }
 /* 순위 셸(D-MAX·PvE·PvP)은 탭 줄·보스·필터가 데이터 뒤에 포털로 들어와 본문을 355px 밀었다(CLS 0.27).
    불러오는 동안 두 슬롯이 대강의 자리를 지킨다 — 탭 한 줄, 보스 줄 + 필터 상자 */
 body:is([data-route="dmax"], [data-route="pve"], [data-route="pvp"]) .layout:has(> #content > #splash) .screen-tabs:empty { display: block; min-height: 6.4rem; }

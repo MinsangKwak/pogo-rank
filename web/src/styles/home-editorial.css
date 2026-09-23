@@ -181,16 +181,18 @@ html body #root .home__top-layout .home__btn { min-height: var(--tap); padding: 
 html body #root .home__top-layout .home__btn--primary { background: var(--plate-accent); color: var(--plate); border-color: var(--plate-accent); }
 /* 그림은 3:2 그대로 칸 세로(53.6rem)까지. 1920 에서만 위아래가 조금 잘리고 가운데 띠(보스 넷)를 남긴다 */
 html body #root .max-battle-art { position: relative; overflow: hidden; grid-column: 2; grid-row: 1 / 5; align-self: center; margin: 0; min-width: 0; max-height: 100%; border-radius: .8rem; }
-html body #root .max-battle-art img { display: block; width: 100%; height: auto; max-height: 53.6rem; object-fit: cover; object-position: center 40%; }
+html body #root .max-battle-art { --swiper-theme-color: var(--plate-accent); }
+html body #root .max-hero { position: relative; margin: 0; }
+html body #root .max-hero img { display: block; width: 100%; height: auto; max-height: 53.6rem; object-fit: cover; object-position: center 40%; }
 /* 날짜·보스 줄은 그림 안 바닥에 — 그림 밑에 붙이면 그 줄만큼 그림이 작아진다 */
-html body #root .max-battle-art figcaption {
+html body #root .max-hero figcaption {
   position: absolute; inset: auto 0 0 0; display: flex; flex-wrap: wrap; align-items: baseline; gap: .4rem 1.2rem;
   padding: 4rem 1.6rem 1.6rem; color: var(--plate-fg);
   background: linear-gradient(to top, color-mix(in srgb, var(--plate) 92%, transparent), transparent);
 }
-html body #root .max-battle-art figcaption span { color: var(--plate-accent); font-size: var(--fs-sub); letter-spacing: .1em; }
-html body #root .max-battle-art figcaption b { font-size: var(--fs-lead); }
-html body #root .max-battle-art figcaption small { width: 100%; color: var(--plate-muted); font-size: var(--fs-sub); }
+html body #root .max-hero figcaption span { color: var(--plate-accent); font-size: var(--fs-sub); letter-spacing: .1em; }
+html body #root .max-hero figcaption b { font-size: var(--fs-lead); }
+html body #root .max-hero figcaption small { width: 100%; color: var(--plate-muted); font-size: var(--fs-sub); }
 
 /* 이동 목록의 아래 항목(기술 변경 내역 → 게임 업데이트 아래) — 글자를 줄이지 않고 색으로 누른다(§7) */
 html body #root .nav-menu .drawer__item[data-parent] { min-height: var(--tap); padding-left: 3.2rem; color: var(--muted); }
@@ -208,8 +210,10 @@ html body #root .nav-menu .drawer__item[data-parent][aria-current=page] { color:
   html body #root .home__top-layout .home__intro p { display: none; }
   html body #root .max-battle-art { grid-column: 1; grid-row: 2; overflow: visible; max-height: none; }
   /* 그림은 자르지 않는다 (v4.6.4) — 띠처럼 자르니 손에서 보스 넷 중 둘이 잘려 나갔다. 원래 비율(3:2) 그대로 세운다 */
-  html body #root .max-battle-art figcaption { position: static; padding: .8rem 0 0; background: none; }
-  html body #root .max-battle-art figcaption small { display: none; }
+  html body #root .max-hero figcaption { position: static; padding: .8rem 0 0; background: none; }
+  /* 캡션(날짜·보스)은 일정이 온 뒤에 찬다 — 한 줄(2.8rem) 자리를 미리 잡아 아래 단추가 2rem 밀리지 않게 (dev 실측 CLS 0.0045) */
+  html body #root .max-hero figcaption { min-height: 2.8rem; }
+  html body #root .max-hero figcaption small { display: none; }
   /* 바탕 규칙이 display: flex 라 grid-template-columns 만으로는 안 갈린다 — grid 로 바꿔야 두 칸이 된다 */
   html body #root .home__top-layout .home__cta { grid-row: 3; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .8rem; }
   html body #root .home__top-layout .home__btn { padding: 1.2rem .8rem; font-size: var(--fs-sub); }
@@ -291,4 +295,99 @@ html body #root #home-more { scroll-margin-top: 10.4rem; }
 /* 손에서는 접는다 — 배너가 반 화면이라 아래가 이미 보인다 */
 @media (max-width: 699px) {
   html body #root .home__top-layout .home__scroll { display: none; }
+}
+
+/* ── 배너 슬라이드 (2026-09-23) ───────────────────────────────────────────────
+   첫 장은 대표 일러스트, 그 뒤로 남은 다이맥스·거다이맥스 일정이 한 장씩 (components/MaxSlider.tsx).
+   **배너의 키는 일러스트 장 하나가 정한다.** 일정 장은 그 칸 위에 얹혀(absolute) 칸을 채울 뿐 키를 안 바꾼다 —
+   장마다 키가 다르면 넘어갈 때마다 아래가 들썩이고, 제일 큰 장에 맞추면 일러스트 밑이 빈다 (첫 시안에서 둘 다 봤다).
+   늘 어두운 판이라 --plate 벌만 쓴다 (§1-b 4번). 보스 타입색(--t-*)은 판 위 빛과 알약 테두리로만 쓴다 — 글자 바탕으로 안 쓴다.
+   빛은 30% 까지 — 40% 에서 전기 타입 빛 한가운데의 강조 글자가 2.91 로 떨어졌다 (18타입 × 글자색 실측, 30% 최저 3.38) */
+html body #root .max-slider { position: relative; }
+html body #root .max-slider .swiper { border-radius: .8rem; }
+/* 늘여서 일러스트 장의 키에 맞춘다 — 일정 장은 안이 전부 absolute 라 제 키가 0 이다 */
+html body #root .max-slider .swiper-slide { position: relative; height: auto; }
+/* 점 줄이 배너 아래에 한 줄(4.4rem) 선다 — 넓은 화면은 배너 키가 60rem 으로 박혀 있어 그림을 그만큼 줄인다 */
+html body #root .max-slider .max-hero img { max-height: 49.2rem; }
+/* 슬라이더가 오기 전(일러스트 한 장)에도 점 줄 자리를 미리 잡는다 — 안 잡으면 슬라이더가 붙는 순간 아래 단추가 4.4rem 밀린다 (CLS 0.017) */
+html body #root .max-battle-art > .max-hero { margin-bottom: var(--tap); }
+html body #root .max-battle-art > .max-hero img { max-height: 49.2rem; }
+html body #root .max-slide {
+  position: absolute; inset: 0; overflow: hidden; box-sizing: border-box; padding: 1.6rem;
+  display: flex; flex-direction: column; gap: .8rem;
+  color: var(--plate-fg); text-decoration: none; border-radius: .8rem;
+  /* 바탕색을 먼저 박는다 — 그림(빛)이 빠져도 글자가 읽힌다 (§1-b 2번) */
+  background-color: var(--plate-2);
+  background-image:
+    radial-gradient(circle at 80% 55%, color-mix(in srgb, var(--tint, var(--plate-accent)) 30%, transparent), transparent 60%),
+    linear-gradient(160deg, var(--plate-2), var(--plate) 72%);
+  border: .2rem solid var(--plate-line);
+}
+html body #root .max-slide--gmax { border-color: var(--plate-accent); }
+html body #root .max-slide__head { position: relative; z-index: 1; display: flex; align-items: center; gap: .8rem; }
+html body #root .max-slide__badge,
+html body #root .max-slide__kind,
+html body #root .max-slide__dday,
+html body #root .max-slide__cta,
+html body #root .max-slide__name { font-family: "Galmuri11", "Pretendard Variable", "Pretendard", system-ui, sans-serif; letter-spacing: 0; }
+html body #root .max-slide__badge,
+html body #root .max-slide__kind,
+html body #root .max-slide__dday,
+html body #root .max-slide__cta { font-size: var(--fs-body); line-height: 1.2; white-space: nowrap; }
+html body #root .max-slide__badge { padding: .4rem; background: var(--plate-accent); color: var(--plate); }
+html body #root .max-slide--gmax .max-slide__badge { background: var(--plate-fg); color: var(--plate); }
+html body #root .max-slide__kind { min-width: 0; overflow: hidden; text-overflow: ellipsis; color: var(--plate-accent); }
+html body #root .max-slide__dday { margin-left: auto; padding: .4rem; border: .2rem solid var(--plate-line); color: var(--plate-fg); }
+html body #root .max-slide__dday.is-live { background: var(--plate-accent); border-color: var(--plate-accent); color: var(--plate); }
+/* 글은 왼쪽 6할 — 오른쪽은 보스 그림 자리다 */
+html body #root .max-slide__body { position: relative; z-index: 1; flex: 1; display: flex; flex-direction: column; justify-content: center; gap: .4rem; max-width: 60%; min-width: 0; }
+html body #root .max-slide__name { font-size: var(--fs-sec); line-height: 1.2; }
+/* 보스 이름 하나는 안 쪼갠다 — 셋이면 '·' 에서만 줄이 바뀐다 */
+html body #root .max-slide__name > span { white-space: nowrap; }
+html body #root .max-slide__when { font-size: var(--fs-body); font-weight: 700; line-height: 1.5; }
+html body #root .max-slide__hours { color: var(--plate-muted); font-size: var(--fs-sub); line-height: 1.5; }
+html body #root .max-slide__types { display: flex; flex-wrap: wrap; gap: .4rem; margin-top: .4rem; }
+html body #root .max-slide__type {
+  padding: .2rem .4rem; font-size: var(--fs-sub); line-height: 1.2; color: var(--plate-fg);
+  background: color-mix(in srgb, var(--c) 28%, var(--plate)); border-left: .4rem solid var(--c);
+}
+/* 보스 그림 — 오른쪽 칸에 겹쳐 세운다. 셋이면 서로 반씩 겹친다 */
+html body #root .max-slide__stage {
+  position: absolute; top: 4.4rem; right: .8rem; bottom: 4rem; width: 40%;
+  display: flex; align-items: center; justify-content: center;
+}
+html body #root .max-slide__mon { flex: 0 1 auto; width: auto; height: min(100%, 20rem); aspect-ratio: 1; min-width: 0; filter: drop-shadow(0 .4rem .8rem color-mix(in srgb, var(--plate) 70%, transparent)); }
+html body #root .max-slide__stage[data-count="2"] .max-slide__mon { height: min(70%, 14rem); }
+html body #root .max-slide__stage[data-count="3"] .max-slide__mon { height: min(56%, 12rem); }
+html body #root .max-slide__stage[data-count="2"] .max-slide__mon + .max-slide__mon,
+html body #root .max-slide__stage[data-count="3"] .max-slide__mon + .max-slide__mon { margin-left: -30%; }
+/* 판 위에 흰 네모가 서지 않게 — 목록의 스프라이트 바탕(pixel.css, 2·3·1)을 한 칸 위에서 걷는다 */
+html:not(#_):not(#__) body #root .max-slide__mon.sprite { background: transparent; }
+html body #root .max-slide__cta { position: relative; z-index: 1; color: var(--plate-accent); }
+html body #root .max-slide:hover .max-slide__cta,
+html body #root .max-slide:focus-visible .max-slide__cta { text-decoration: underline; }
+html body #root .max-slide:focus-visible { outline: .2rem solid var(--plate-accent); outline-offset: -.4rem; }
+
+/* 점과 멈춤 단추 — 배너 아래 제 줄. 그림 위에 얹으면 일정 장의 머리줄(D-n)과 일러스트 캡션을 덮는다 */
+html body #root .max-slider .swiper { padding-bottom: var(--tap); }
+html body #root .max-slider .swiper-pagination {
+  position: absolute; inset: auto auto 0 0; width: auto; min-height: var(--tap);
+  display: flex; align-items: center;
+}
+html body #root .max-slider .swiper-pagination-bullet {
+  width: 1.2rem; height: 1.2rem; margin: 0 1.2rem 0 0; border-radius: 0; opacity: 1; background: var(--plate-muted);
+}
+html body #root .max-slider .swiper-pagination-bullet-active { background: var(--plate-accent); }
+html body #root .max-slider__toggle {
+  position: absolute; right: 0; bottom: 0; z-index: 2; width: var(--tap); height: var(--tap);
+  display: grid; place-items: center; padding: 0; border: 0; cursor: pointer;
+  background: none; color: var(--plate-fg); font-size: var(--fs-body);
+}
+html body #root .max-slider__toggle:focus-visible { outline: .2rem solid var(--plate-accent); outline-offset: -.2rem; }
+
+/* 넓은 배너(1760 위)는 칸이 커서 글도 한 단 키운다 */
+@media (min-width: 1760px) {
+  html body #root .max-slide { padding: 2.4rem; }
+  html body #root .max-slide__name { font-size: var(--fs-title); }
+  html body #root .max-slide__when { font-size: var(--fs-lead); }
 }

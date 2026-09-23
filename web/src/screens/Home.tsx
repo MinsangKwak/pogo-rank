@@ -10,10 +10,11 @@ import { go } from '../lib/nav';
 import { BASE } from '../lib/base';
 import { HERO_ART } from '../lib/heroArt';
 
-import { Suspense, type ReactNode } from 'react';
+import { Suspense, lazy, useMemo, type ReactNode } from 'react';
 import { ROUTE_GROUPS, ROUTE_NAV, routeDesc, routeHref, type RouteDef } from '../routes';
 import { useLockReason, lockedAttrs } from '../lib/useLocked';
-import { useMax, useUpdates, useMeta, usePve, useDex, useDexSoft, useGamedaySoft } from '../lib/data';
+import { useMax, useUpdates, useMeta, usePve, useDex, useDexSoft, useGamedaySoft, useMaxSoft } from '../lib/data';
+import { maxSlides } from '../lib/maxSlides';
 import { Sprite } from '../components/Bits';
 import { PxIcon } from '../components/PxIcon';
 import { NameNode } from '../components/Row';
@@ -22,6 +23,9 @@ import { track } from '../lib/track';
 import { UPDATE_CATS } from '../lib/notes';
 import type { OpenMon } from '../lib/mon';
 import { TankPopupEntry } from '../components/TankPopup';
+
+// 배너 슬라이드는 홈에서만 쓴다 — Swiper 30KB 를 모든 화면의 첫 묶음에 싣지 않는다 (components/MaxSlider.tsx)
+const MaxSlider = lazy(() => import('../components/MaxSlider'));
 
 // 갈래마다 문 앞에 세우는 스타터 (v3 home.js 와 같은 번호 — 꼬부기 · 파이리 · 이상해씨)
 const STARTER: Record<string, number> = { today: 7, pick: 4, mine: 1 };
@@ -195,6 +199,32 @@ export default function Home({ onOpen }: { onOpen: OpenMon }) {
     ? (monthDay(battle.start) === monthDay(battle.end) ? monthDay(battle.start) : `${monthDay(battle.start)} — ${monthDay(battle.end)}`)
     : '';
   const kind = battle?.type === 'max-battles' ? 'MAX BATTLE DAY' : 'MAX MONDAY';
+  // 남은 맥스 일정 — 한 장씩 배너가 된다. 오늘은 화면을 여는 순간으로 한 번 정한다
+  const maxSoft = useMaxSoft();
+  const slides = useMemo(() => maxSlides({
+    events: gameday?.GAMEDAY.events,
+    names: dexSoft?.DEX_DATA.names,
+    en: dexSoft?.DEX_DATA.en,
+    forms: dexSoft?.DEX_DATA.forms,
+    maxRows: maxSoft?.DMAX_DATA['overall'],
+  }, Date.now()), [gameday, dexSoft, maxSoft]);
+  // 손에는 720w, PC 에는 1200w — 원본 1536w·292KB 를 첫 그림(LCP)으로 실을 이유가 없다 (v4.4.2 의 성능 작업을 지키려고).
+  // 캡션의 날짜·보스는 gameday 일정에서 온다 — 코드에 박아 두면 다음 주에 틀린 말이 된다 (§3)
+  const hero = (
+    <figure className="max-hero">
+      <img
+        src={HERO_ART.src}
+        srcSet={HERO_ART.srcSet}
+        sizes={HERO_ART.sizes}
+        alt={`${dexSoft?.DEX_DATA.names['464'] ?? ''}·${dexSoft?.DEX_DATA.names['242'] ?? ''}·${dexSoft?.DEX_DATA.names['249'] ?? ''}·${dexSoft?.DEX_DATA.names['530'] ?? ''}가 다이맥스 ${dexSoft?.DEX_DATA.names['144'] ?? ''}와 맞서는 배틀 일러스트`}
+        width={HERO_ART.width} height={HERO_ART.height} fetchPriority="high" decoding="async" />
+      <figcaption>
+        {when ? <span>{when} · {kind}</span> : null}
+        {bosses.length ? <b>{bosses.join(' · ')}</b> : null}
+        <small>대표 보스 배틀 일러스트</small>
+      </figcaption>
+    </figure>
+  );
   return (
     <div className="home-dashboard">
       {/* 검색 보드는 v4.6.3 에 내렸다 — 검색이 모자라 순위가 서지 않는다 (ranking 브랜치 · 백로그). 포스터가 한 열을 다 쓴다 */}
@@ -207,21 +237,16 @@ export default function Home({ onOpen }: { onOpen: OpenMon }) {
           <h2>다음 맥스 배틀,<br /><em>누구와 갈까요?</em></h2>
           <p>티어를 비교하고, 나만의 팀을 준비하세요.<br />첫 선택부터 배틀 준비까지 함께해요.</p>
         </div>
-        {/* 손에는 720w, PC 에는 1200w — 원본 1536w·292KB 를 첫 그림(LCP)으로 실을 이유가 없다 (v4.4.2 의 성능 작업을 지키려고).
-            캡션의 날짜·보스는 gameday 일정에서 온다 — 코드에 박아 두면 다음 주에 틀린 말이 된다 (§3) */}
-        <figure className="max-battle-art">
-          <img
-            src={HERO_ART.src}
-            srcSet={HERO_ART.srcSet}
-            sizes={HERO_ART.sizes}
-            alt={`${dexSoft?.DEX_DATA.names['464'] ?? ''}·${dexSoft?.DEX_DATA.names['242'] ?? ''}·${dexSoft?.DEX_DATA.names['249'] ?? ''}·${dexSoft?.DEX_DATA.names['530'] ?? ''}가 다이맥스 ${dexSoft?.DEX_DATA.names['144'] ?? ''}와 맞서는 배틀 일러스트`}
-            width={HERO_ART.width} height={HERO_ART.height} fetchPriority="high" decoding="async" />
-          <figcaption>
-            {when ? <span>{when} · {kind}</span> : null}
-            {bosses.length ? <b>{bosses.join(' · ')}</b> : null}
-            <small>대표 보스 배틀 일러스트</small>
-          </figcaption>
-        </figure>
+        {/* 배너 — 대표 일러스트 한 장 뒤로 남은 맥스 일정이 한 장씩 넘어간다.
+            거다이맥스 폼 그림(max.json)까지 온 뒤에 굴린다 — 먼저 굴리면 보스 그림이 도중에 바뀐다 */}
+        <div className="max-battle-art">
+          {slides.length && dexSoft && maxSoft ? (
+            // 받는 동안은 일러스트 한 장 — 슬라이더의 첫 장과 같은 그림이라 자리가 안 흔들린다
+            <Suspense fallback={hero}>
+              <MaxSlider hero={hero} slides={slides} typeKo={dexSoft.TYPE_KO} />
+            </Suspense>
+          ) : hero}
+        </div>
         <div className="home__cta">
           <a className="home__btn home__btn--primary" href={routeHref('dmax')}
             onClick={() => track('home_cta', { to: 'dmax' })}>다이맥스 티어표 보기<span aria-hidden="true"> →</span></a>
