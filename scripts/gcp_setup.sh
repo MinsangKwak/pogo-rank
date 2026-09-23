@@ -2,8 +2,8 @@
 # ─────────────────────────────────────────────────────────────────────────────
 # scripts/gcp_setup.sh — 인증 서버를 올릴 GCP 자리를 한 번에 만든다 (v5 Phase 7)
 #
-# **Cloud Shell 에 통째로 붙여 넣어 돌린다.** 로컬에 gcloud 가 없어도 되게 하려는 것이다 —
-# 콘솔을 이리저리 누르면 메뉴 이름이 바뀌어 길을 잃는다. 명령은 안 바뀐다.
+# **gcloud 가 있는 곳 어디서든 한 번 돌린다** (Cloud Shell · 로컬 · 작업 세션). 콘솔을 이리저리
+# 누르면 메뉴 이름이 바뀌어 길을 잃는다. 명령은 안 바뀐다. 로그인은 `gcloud auth login` 한 번이다.
 #
 # 하는 일 (여러 번 돌려도 같은 결과다 — 이미 있는 것은 건너뛴다)
 #   ① 프로젝트 moncamp-api-* 를 만든다 — Firebase 프로젝트와 **따로** 둔다.
@@ -13,8 +13,12 @@
 #   ④ API 를 켜고 Artifact Registry 저장소 moncamp(서울)를 만든다.
 #      옛 이미지는 셋만 남긴다 — 쌓이면 0.5GB 무료 구간을 넘어 $1 예산을 먼저 먹는다
 #   ⑤ 배포용 서비스 계정에 역할 셋만 준다 (run.admin · iam.serviceAccountUser · artifactregistry.writer)
-#   ⑥ 열쇠 파일을 만든다 — **이 파일은 대화·노션·저장소 어디에도 붙이지 않는다** (CLAUDE.md §4).
-#      GitHub 시크릿 칸에만 넣고 Cloud Shell 에서 지운다
+#   ⑥ **열쇠 파일을 만들지 않는다** — Workload Identity 로 GitHub Actions 가 열쇠 없이 들어온다.
+#      이 저장소(MinsangKwak/pogo-rank)의 워크플로가 GitHub 에서 받은 짧은 신분증만 받아 준다.
+#      열쇠가 없으니 새어 나갈 것도, 시크릿 칸에 붙일 것도 없다 (CLAUDE.md §4 의 걱정 자체가 사라진다)
+#
+# 2026-09-23 — 처음에는 열쇠 파일을 만들어 시크릿에 붙이게 했다. 주인의 망에서 Cloud Shell 이
+# 막혀 있어 Claude 가 대신 돌리게 됐고, 그러면 열쇠를 사람에게 건넬 길이 대화뿐이라 방식을 바꿨다
 #
 # 지역은 **서울(asia-northeast3)** 이다. 개인정보처리방침 4번 표에 그렇게 적혀 있다 —
 # 바꾸면 방침을 고치고 고지해야 한다 (web/src/screens/Legal.tsx).
@@ -23,7 +27,8 @@ set -euo pipefail
 
 REGION=asia-northeast3
 SA_NAME=github-deployer
-KEY_FILE="$HOME/moncamp-gcp-key.json"
+REPO=MinsangKwak/pogo-rank
+POOL=github
 
 say() { printf '\n\033[1m%s\033[0m\n' "$*"; }
 
@@ -91,19 +96,25 @@ for role in roles/run.admin roles/iam.serviceAccountUser roles/artifactregistry.
 done
 echo "   $SA"
 
-# ⑥ 열쇠 — 한 번만 만든다. 이미 있으면 새로 안 만든다(열쇠가 늘면 어느 것이 새는지 모른다)
-say "⑥ 열쇠"
-if [ -f "$KEY_FILE" ]; then
-  echo "   이미 있음: $KEY_FILE"
-else
-  gcloud iam service-accounts keys create "$KEY_FILE" --iam-account="$SA" >/dev/null
-  echo "   만들었습니다: $KEY_FILE"
-fi
+# ⑥ Workload Identity — 이 저장소의 워크플로만 받아 준다
+say "⑥ 열쇠 없는 로그인 (Workload Identity)"
+gcloud services enable iamcredentials.googleapis.com sts.googleapis.com >/dev/null
+NUMBER="$(gcloud projects describe "$PROJECT" --format='value(projectNumber)')"
+gcloud iam workload-identity-pools describe "$POOL" --location=global >/dev/null 2>&1 \
+  || gcloud iam workload-identity-pools create "$POOL" --location=global --display-name='GitHub Actions' >/dev/null
+# **저장소 조건을 건다.** 빼면 GitHub 의 아무 저장소나 이 풀로 들어올 수 있다
+gcloud iam workload-identity-pools providers describe github --location=global --workload-identity-pool="$POOL" >/dev/null 2>&1 \
+  || gcloud iam workload-identity-pools providers create-oidc github --location=global --workload-identity-pool="$POOL" \
+       --display-name='GitHub OIDC' --issuer-uri='https://token.actions.githubusercontent.com' \
+       --attribute-mapping='google.subject=assertion.sub,attribute.repository=assertion.repository' \
+       --attribute-condition="assertion.repository == '$REPO'" >/dev/null
+gcloud iam service-accounts add-iam-policy-binding "$SA" --role=roles/iam.workloadIdentityUser \
+  --member="principalSet://iam.googleapis.com/projects/$NUMBER/locations/global/workloadIdentityPools/$POOL/attribute.repository/$REPO" \
+  --condition=None >/dev/null
+PROVIDER="projects/$NUMBER/locations/global/workloadIdentityPools/$POOL/providers/github"
+echo "   $REPO 만 받아 준다"
 
-say "끝 — GitHub 시크릿 두 칸에 넣어 주세요"
-echo "   GCP_PROJECT_ID  →  $PROJECT"
-echo "   GCP_SA_KEY      →  아래 명령으로 나온 JSON 전체 (중괄호 { 부터 } 까지)"
-echo
-echo "       cat $KEY_FILE"
-echo
-echo "   넣은 뒤에는 Cloud Shell 에서 지웁니다:  rm $KEY_FILE"
+say "끝 — 워크플로에 적을 값 (비밀이 아니다: 이름표일 뿐, 이 저장소 밖에서는 못 쓴다)"
+echo "   GCP_PROJECT   $PROJECT"
+echo "   GCP_PROVIDER  $PROVIDER"
+echo "   GCP_SA        $SA"
