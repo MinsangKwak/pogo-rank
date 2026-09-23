@@ -66,9 +66,6 @@ jobs:
 
       - if: steps.ready.outputs.go == 'true'
         name: 데이터 만들기 (파이썬 파이프라인, dev 채널)
-        env:
-          # 운영과 같은 문의처 (deploy-web.yml) — dev 에서도 방침 화면이 온전해야 먼저 본다
-          CONTACT_EMAIL: kmsdevwork@knou.ac.kr
         run: |
           set -e
           pip install --quiet Pillow
@@ -79,6 +76,8 @@ jobs:
         name: web 준비 (데이터·그림)
         env:
           COLLECT_URL: ${{ vars.COLLECT_URL || 'https://api.moncamp.kr' }}
+          # 운영과 같은 문의처 (deploy-web.yml) — dev 에서도 방침 화면이 온전해야 먼저 본다
+          CONTACT_EMAIL: kmsdevwork@knou.ac.kr
         run: |
           set -e
           cd web
@@ -152,6 +151,7 @@ jobs:
             printf '%s' "$body" | grep -q 'id="root"' || { echo "#root 래퍼가 없습니다 — CSS 가 통째로 안 걸립니다"; exit 1; }
             printf '%s' "$body" | grep -q 'name="robots" content="noindex' || { echo "dev 인데 noindex 메타가 없습니다 — 운영 채널로 구워졌습니다"; exit 1; }
             curl -sS "$base/robots.txt" | grep -qi '^Disallow: /$' || { echo "dev robots 가 전면 차단본이 아닙니다"; exit 1; }
+            curl -sS "$base/data/meta.json" | grep -q '"CONTACT_EMAIL":"[^"]' || { echo "meta.json 에 문의 이메일이 없습니다"; exit 1; }
             # 보안 헤더 — 운영과 같은 설정(next.config.ts)이 dev 에서 먼저 걸리는지 본다
             heads="$(curl -sSI "$base/" | tr -d '\r' | tr 'A-Z' 'a-z')"
             for name in strict-transport-security x-content-type-options referrer-policy content-security-policy permissions-policy; do

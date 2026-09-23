@@ -87,9 +87,6 @@ jobs:
         name: 데이터 만들기 (파이썬 파이프라인)
         env:
           BUILD_CHANNEL: prod
-          # 문의 이메일 — 개인정보처리방침의 문의처와 바닥글이 이 값을 쓴다. 비면 '사이트 운영자' 로만 찍힌다.
-          # v4 deploy.yml 과 같은 값(공개 주소)이다. v5 첫 판은 이 줄이 빠져 방침에 문의처가 없었다
-          CONTACT_EMAIL: kmsdevwork@knou.ac.kr
         run: |
           set -e
           pip install --quiet Pillow
@@ -102,6 +99,10 @@ jobs:
         name: web 준비 (데이터·그림)
         env:
           COLLECT_URL: ${{ vars.COLLECT_URL || 'https://api.moncamp.kr' }}
+          # 문의 이메일 — 개인정보처리방침의 문의처와 바닥글이 이 값을 쓴다. 비면 '사이트 운영자' 로만 찍힌다.
+          # v4 deploy.yml 과 같은 값(공개 주소)이다. **이 단계에 둔다** — meta.json 은 build.sh 가 아니라
+          # npm run data(extract-data.mjs)가 그 순간의 환경변수로 만든다. 앞 단계에 뒀더니 dev 에서 비었다
+          CONTACT_EMAIL: kmsdevwork@knou.ac.kr
         run: |
           set -e
           cd web
