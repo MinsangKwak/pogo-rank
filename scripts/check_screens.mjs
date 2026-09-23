@@ -12,7 +12,8 @@
 // 나가는 값: 한 군데라도 새면 1, 깨끗하면 0. 배포 전 확인에 그대로 쓴다.
 // ─────────────────────────────────────────────────────────────────────────────
 
-import pw from '/opt/node22/lib/node_modules/playwright/index.js';
+// 자리는 환경마다 다르다 — 작업 세션은 /opt/node22, GitHub 러너는 워크플로가 설치한 곳 (prod-smoke.yml)
+const pw = (await import(process.env.PLAYWRIGHT_MODULE || '/opt/node22/lib/node_modules/playwright/index.js')).default;
 const { chromium } = pw;
 // 앱이 다 붙은 뒤에 훑는다 — v4(해시)든 Next.js(경로)든 같은 방법으로 (lib/visit.mjs)
 import { detectRouting, labelOf, visit } from './lib/visit.mjs';

@@ -15,7 +15,8 @@
 //   node scripts/check_contrast.mjs https://dev.moncamp.kr/
 // ─────────────────────────────────────────────────────────────────────────────
 
-import pw from '/opt/node22/lib/node_modules/playwright/index.js';
+// 자리는 환경마다 다르다 — 작업 세션은 /opt/node22, GitHub 러너는 워크플로가 설치한 곳 (prod-smoke.yml)
+const pw = (await import(process.env.PLAYWRIGHT_MODULE || '/opt/node22/lib/node_modules/playwright/index.js')).default;
 const { chromium } = pw;
 
 import { AUDIT, MIN } from './lib/contrast_audit.mjs';
