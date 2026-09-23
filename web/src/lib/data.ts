@@ -88,6 +88,8 @@ export const usePvp = bundleHook<PvpBundle>('pvp');
 export const useGameday = bundleHook<GamedayBundle>('gameday');
 export const useGamedaySoft = bundleSoftHook<GamedayBundle>('gameday');
 export const useDexSoft = bundleSoftHook<DexBundle>('dex');
+// 홈 배너의 거다이맥스 폼 그림만 여기서 찾는다 — 없어도 도감 번호로 그리므로 배너를 세우지 않는다
+export const useMaxSoft = bundleSoftHook<MaxBundle>('max');
 export const useFavEvents = bundleHook<FavEventsBundle>('fav-events');
 export const useUpdates = bundleHook<UpdatesBundle>('updates');
 export const useMeta = bundleHook<MetaBundle>('meta');
