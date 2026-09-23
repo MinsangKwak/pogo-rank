@@ -14,6 +14,11 @@
 //   - **판정 중에는 잠그지 않는다** — 이 기기에 로그인 자취가 있을 때만 'loading' 이라 곧 열릴 화면이고,
 //     잠갔다 여는 깜빡임은 "로그아웃됐다" 로 읽힌다
 //   - 로그인을 쓸 수 없는 빌드에서는 잠그지 않는다 — 열 길이 없는 자물쇠는 고장과 같다
+//   - **판정 중에 잠긴 화면의 본문을 그리지도 않는다** (useLockChecking) — 메뉴 줄은 링크라
+//     누를 때마다 문서를 새로 열고, 그러면 늘 'loading' 에서 시작한다. 그때 본문을 그렸더니
+//     실험 기능이 없는 사람에게 '내 포켓몬' 이 떴다가 잠금 카드로 지워졌다 (2026-09-23 dev 제보)
+//   - **실험 기능 잠금은 누를 수 없다** (inert) — 로그인한 사람이 눌러 봐야 할 수 있는 일이 없다.
+//     로그인 잠금은 눌리게 둔다 — 누르면 로그인 버튼이 있는 카드로 간다
 //
 // 잠금 표시는 **막는 것이 아니라 보여 주는 것**이다. 실제 차단은 화면 본문이 하고,
 // 그보다 앞서 보안 규칙(firestore.rules)이 한다 (v3 syncLockedNav 머리말과 같은 전제).
@@ -40,11 +45,20 @@ export function useLockReason(routeId: string): LockReason {
   return '';
 }
 
+/** 로그인이 걸린 화면인데 아직 확인 중인가 — 이때는 본문 대신 '확인 중' 을 세운다 */
+export function useLockChecking(routeId: string): boolean {
+  const enabled = useAuthStore((s) => s.enabled);
+  const status = useAuthStore((s) => s.status);
+  return enabled && status === 'loading' && !!routeById(routeId)?.locked;
+}
+
 /** 잠긴 줄에 붙는 것들 — 클래스·aria·설명글을 한 벌로 (v3 syncLockedNav 와 같은 값) */
 export function lockedAttrs(reason: LockReason) {
   return {
     className: reason ? ' is-locked' : '',
     'aria-disabled': reason ? ('true' as const) : undefined,
     title: reason ? LOCK_TITLE[reason] : '',
+    // 주소를 떼면 링크가 아니다 — 눌러도, 길게 눌러 새 탭으로 열어도 아무 데도 안 간다
+    inert: reason === 'beta',
   };
 }

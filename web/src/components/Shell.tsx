@@ -28,12 +28,12 @@ import Trainers from './Trainers';
 // 내보내는 이유는 검사 하나뿐이다 — 잠금 표시가 붙는 자리를 데이터 없이 그려 보려면 필요하다
 export function NavItem({ route, now }: { route: RouteDef; now: string }) {
   // 잠긴 줄은 흐려지고 라벨 뒤에 🔒 가 붙는다 (planner.css .is-locked).
-  // 누르는 것 자체는 막지 않는다 — 누르면 왜 잠겼는지와 로그인 버튼이 있는 화면으로 간다
+  // 로그인 잠금은 눌린다 — 로그인 버튼이 있는 카드로 간다. 실험 기능 잠금은 주소가 없다 (useLocked 머리말)
   const reason = useLockReason(route.id);
   const lock = lockedAttrs(reason);
   return (
     <a
-      href={`/${route.path}`}
+      {...(lock.inert ? {} : { href: `/${route.path}` })}
       className={`drawer__item${lock.className}`}
       data-route={route.id}
       data-parent={route.parent}

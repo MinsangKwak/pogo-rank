@@ -20,7 +20,7 @@ import { AppBar, AppNav, Drawer, Footer, PageHead, ToTop } from './components/Sh
 import { SlotProvider } from './components/Slots';
 import { useRoute } from './lib/useRoute';
 import type { MonPick, OpenMon } from './lib/mon';
-import { useLockReason } from './lib/useLocked';
+import { useLockReason, useLockChecking } from './lib/useLocked';
 import { trackPageView, track } from './lib/track';
 import type { RouteDef } from './routes';
 // **홈과 상세만 정적이다.** 둘은 각자 주소의 첫 화면이라, 쪼개면 열자마자 한 번 더
@@ -84,9 +84,12 @@ function MonPage({ rest, onOpen }: { rest: string; onOpen: OpenMon }) {
 }
 
 /** 라우트 하나가 그리는 본문 */
-function Screen({ route, rest, onOpen }: { route: RouteDef; rest: string; onOpen: OpenMon }) {
+// 내보내는 이유는 검사 하나뿐이다 — 잠긴 화면이 판정 중에 본문을 안 그리는지 본다
+export function Screen({ route, rest, onOpen }: { route: RouteDef; rest: string; onOpen: OpenMon }) {
   // 판정은 lib/useLocked 하나가 한다 — 메뉴 줄·홈 타일도 같은 답을 쓴다
   const reason = useLockReason(route.id);
+  const checking = useLockChecking(route.id);
+  if (checking) return <LockCard reason="checking" />;
   if (reason) return <LockCard reason={reason} />;
   switch (route.id) {
     case 'home': return <Home onOpen={onOpen} />;

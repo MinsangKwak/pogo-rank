@@ -33,7 +33,7 @@ export function Tile({ route }: { route: RouteDef }) {
   const reason = useLockReason(route.id);
   const lock = lockedAttrs(reason);
   return (
-    <a className={`home__tile${lock.className}`} href={`/${route.path}`} data-route={route.id}
+    <a className={`home__tile${lock.className}`} {...(lock.inert ? {} : { href: `/${route.path}` })} data-route={route.id}
       title={reason ? lock.title : routeDesc(route.id)}
       {...(lock['aria-disabled'] ? { 'aria-disabled': lock['aria-disabled'] } : {})}
       {...(route.id === 'planner' ? { id: 'home-tile-planner' } : {})}>

@@ -16,7 +16,7 @@
 import type { Sql } from '../db/client.ts';
 import type { AccessTokens } from '../lib/jwt.ts';
 import { newRefreshToken, hashRefresh } from '../lib/refresh.ts';
-import type { Role } from '../lib/rbac.ts';
+import { hasBeta, type Role } from '../lib/rbac.ts';
 
 /** 구글이 id_token 으로 확인해 준 사람. **여기 오는 값은 이미 검증된 것이다** (lib/google.ts) */
 export interface GoogleProfile {
@@ -106,11 +106,12 @@ export function makeAuth(sql: Sql, tokens: AccessTokens, options: AuthOptions): 
     await sql`insert into sessions (user_id, refresh_hash, family_id, expires_at, user_agent)
               values (${user.id}, ${hashRefresh(refresh)}, gen_random_uuid(),
                       ${expiresAt}, ${userAgent.slice(0, UA_MAX)})`;
+    const beta = hasBeta(user.role, user.beta);
     return {
       userId: user.id,
       role: user.role,
-      beta: user.beta,
-      access: await tokens.sign({ sub: user.id, role: user.role, beta: user.beta }),
+      beta,
+      access: await tokens.sign({ sub: user.id, role: user.role, beta }),
       refresh,
       refreshExpiresAt: expiresAt,
     };
@@ -224,7 +225,7 @@ export function makeAuth(sql: Sql, tokens: AccessTokens, options: AuthOptions): 
 
         // **권한은 지금 다시 읽은 것을 담는다.** 승인되자마자 다시 로그인하지 않아도
         // 한 번의 회전으로 반영되고, 뺏긴 권한도 같은 길로 따라 내려온다
-        const beta = row.beta ?? false;
+        const beta = hasBeta(row.role, row.beta);
         return {
           fail: null,
           session: {
@@ -271,7 +272,7 @@ export function makeAuth(sql: Sql, tokens: AccessTokens, options: AuthOptions): 
       // 빈 값을 빈 글자로 내린다 — 화면이 `${undefined}` 를 찍는 일을 서버에서 막는다 (CLAUDE.md §1)
       return {
         id: row.id, email: row.email, name: row.display_name, picture: row.photo_url,
-        role: row.role, beta: row.beta,
+        role: row.role, beta: hasBeta(row.role, row.beta),
       };
     },
 

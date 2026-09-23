@@ -8,5 +8,5 @@
 #   mode = apply     실제로 옮긴다. 두 번 돌려도 같은 결과다 (전환 직전에 한 번 더 돌린다)
 #
 # 바꾸지 않고 push 하면 아무 일도 안 일어난다 — 아래 요청 번호가 바뀌어야 돈다.
-mode = apply
-request = 2
+mode = dry-run
+request = 3
