@@ -7,7 +7,7 @@ name: server 배포 (Cloud Run)
 #   ② Neon 프로젝트를 만들고 DATABASE_URL 을 시크릿에 넣는다
 #   ③ 서비스 계정에 roles/run.admin · roles/iam.serviceAccountUser · roles/artifactregistry.writer
 #
-# 저장소 시크릿: GCP_PROJECT_ID · GCP_SA_KEY · DATABASE_URL · ADMIN_TOKEN
+# 저장소 시크릿: DATABASE_URL · ADMIN_TOKEN
 #              JWT_SECRET · ROOT_EMAIL · GOOGLE_CLIENT_ID · GOOGLE_CLIENT_SECRET (v5 Phase 4)
 #              CLOUDFLARE_API_TOKEN — api.moncamp.kr 을 잇는 Worker (v5 Phase 7, infra/api-proxy)
 #
@@ -20,9 +20,19 @@ on:
     paths: ['server/**', '.github/workflows/deploy-server.yml']
   workflow_dispatch:
 
+# **열쇠 없이 GCP 에 들어간다** (Workload Identity, 2026-09-23). GitHub 이 이 실행에 준 짧은 신분증을
+# GCP 가 받아 준다 — 이 저장소(MinsangKwak/pogo-rank)에서 온 것만. 새어 나갈 열쇠 파일이 없다.
+# 아래 셋은 비밀이 아니라 이름표다 — 이 저장소 밖에서는 아무것도 못 한다. 만든 곳: scripts/gcp_setup.sh
+permissions:
+  contents: read
+  id-token: write   # GitHub 에게 신분증을 받는 권한 — 없으면 GCP 로그인이 안 된다
+
 env:
   SERVICE: moncamp-api
   REGION: asia-northeast3   # 서울. 사용자가 거의 한국이라 왕복이 짧다
+  GCP_PROJECT: moncamp-api-23767
+  GCP_PROVIDER: projects/930214645157/locations/global/workloadIdentityPools/github/providers/github
+  GCP_SA: github-deployer@moncamp-api-23767.iam.gserviceaccount.com
 
 jobs:
   deploy:
@@ -34,15 +44,13 @@ jobs:
       - name: 설정됐는지 본다
         id: ready
         env:
-          PROJECT: ${{ secrets.GCP_PROJECT_ID }}
-          KEY: ${{ secrets.GCP_SA_KEY }}
           DB: ${{ secrets.DATABASE_URL }}
         run: |
-          if [ -n "$PROJECT" ] && [ -n "$KEY" ] && [ -n "$DB" ]; then
+          if [ -n "$DB" ]; then
             echo "go=true" >> "$GITHUB_OUTPUT"
           else
             echo "go=false" >> "$GITHUB_OUTPUT"
-            echo "::notice::GCP·Neon 시크릿이 아직 없어 서버 배포를 건너뜁니다 (docs/OPERATIONS.md §16)"
+            echo "::notice::DATABASE_URL 이 없어 서버 배포를 건너뜁니다 (docs/OPERATIONS.md §16)"
           fi
 
       - if: steps.ready.outputs.go == 'true'
@@ -51,12 +59,13 @@ jobs:
       - if: steps.ready.outputs.go == 'true'
         uses: google-github-actions/auth@c200f3691d83b41bf9bbd8638997a462592937ed # v2.1.13
         with:
-          credentials_json: ${{ secrets.GCP_SA_KEY }}
+          workload_identity_provider: ${{ env.GCP_PROVIDER }}
+          service_account: ${{ env.GCP_SA }}
 
       - if: steps.ready.outputs.go == 'true'
         uses: google-github-actions/setup-gcloud@e427ad8a34f8676edf47cf7d7925499adf3eb74f # v2.2.1
         with:
-          project_id: ${{ secrets.GCP_PROJECT_ID }}
+          project_id: ${{ env.GCP_PROJECT }}
 
       - if: steps.ready.outputs.go == 'true'
         name: Artifact Registry 로그인
@@ -66,7 +75,7 @@ jobs:
         name: 이미지 빌드·올리기
         run: |
           set -e
-          IMAGE="${REGION}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/moncamp/${SERVICE}:${GITHUB_SHA::12}"
+          IMAGE="${REGION}-docker.pkg.dev/${GCP_PROJECT}/moncamp/${SERVICE}:${GITHUB_SHA::12}"
           docker build -t "$IMAGE" server
           docker push "$IMAGE"
           echo "IMAGE=$IMAGE" >> "$GITHUB_ENV"
