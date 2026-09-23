@@ -156,6 +156,9 @@ jobs:
           set -e
           # 붙일 때 딸려 온 공백·줄바꿈을 뗀다 — 토큰에는 공백이 없다 (secrets-check.yml 과 같다)
           export CLOUDFLARE_API_TOKEN="$(printf '%s' "$CLOUDFLARE_API_TOKEN" | tr -d '[:space:]')"
+          # 시험용 curl 명령째 붙였어도 토큰만 고른다 (secrets-check.yml 과 같은 규칙)
+          only="$(printf '%s' "$CLOUDFLARE_API_TOKEN" | grep -o 'cfut_[A-Za-z0-9_-]*' | head -1 || true)"
+          [ -n "$only" ] && export CLOUDFLARE_API_TOKEN="$only"
           if [ -z "$CLOUDFLARE_API_TOKEN" ]; then
             echo "::warning::CLOUDFLARE_API_TOKEN 이 없어 api.moncamp.kr 을 잇지 않았습니다 — 서버는 떠 있지만 화면에서 못 부릅니다"
             exit 0

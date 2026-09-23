@@ -17,6 +17,7 @@
 # ─────────────────────────────────────────────────────────────────────────────
 import json
 import os
+import re
 import sys
 import urllib.error
 import urllib.request
@@ -55,6 +56,9 @@ def vercel(method, path, body=None):
 def cloudflare(method, path, body=None):
     # 붙일 때 딸려 온 공백·줄바꿈을 뗀다 — 토큰에는 공백이 없다 (2026-09-23 폰에서 붙인 값이 그랬다)
     token = ''.join(os.environ['CLOUDFLARE_API_TOKEN'].split())
+    # 시험용 curl 명령째 붙였어도 토큰만 고른다 (secrets-check.yml 과 같은 규칙)
+    found = re.search(r'cfut_[A-Za-z0-9_-]+', token)
+    token = found.group(0) if found else token
     status, payload = call(method, f'https://api.cloudflare.com/client/v4{path}', token, body)
     if not payload.get('success', status < 300):
         fail(f'Cloudflare {method} {path} → {status} {payload.get("errors")}')
