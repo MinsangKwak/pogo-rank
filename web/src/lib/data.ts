@@ -100,4 +100,6 @@ export const useMeta = bundleHook<MetaBundle>('meta');
 export const useMetaSoft = bundleSoftHook<MetaBundle>('meta');
 export const useUsage = bundleHook<UsageBundle>('usage');
 export const useSchedule = bundleHook<ScheduleBundle>('schedule');
+// 홈 배너가 gameday 가 버린 이번 주 맥스 먼데이를 채울 때만 읽는다 — 배너를 세우지 않는다 (lib/maxSlides.ts weeksFromSchedule)
+export const useScheduleSoft = bundleSoftHook<ScheduleBundle>('schedule');
 export const useRelease = bundleHook<ReleaseBundle>('release');

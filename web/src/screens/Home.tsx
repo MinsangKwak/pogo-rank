@@ -14,8 +14,8 @@ import { HeroPoster, MaxPoster } from '../components/MaxPoster';
 import { Suspense, lazy, useMemo, type ReactNode } from 'react';
 import { ROUTE_GROUPS, ROUTE_NAV, routeDesc, routeHref, type RouteDef } from '../routes';
 import { useLockReason, lockedAttrs } from '../lib/useLocked';
-import { useMax, useUpdates, useMeta, usePve, useDex, useDexSoft, useGamedaySoft, useMaxSoft } from '../lib/data';
-import { maxSlides } from '../lib/maxSlides';
+import { useMax, useUpdates, useMeta, usePve, useDex, useDexSoft, useGamedaySoft, useMaxSoft, useScheduleSoft } from '../lib/data';
+import { maxSlides, weeksFromSchedule } from '../lib/maxSlides';
 import { Sprite } from '../components/Bits';
 import { PxIcon } from '../components/PxIcon';
 import { NameNode } from '../components/Row';
@@ -167,6 +167,7 @@ export default function Home({ onOpen }: { onOpen: OpenMon }) {
   const dexSoft = useDexSoft();
   const gameday = useGamedaySoft();
   const maxSoft = useMaxSoft();
+  const scheduleSoft = useScheduleSoft();
   const names = dexSoft?.DEX_DATA.names;
   // 남은 맥스 일정 — 한 장씩 배너가 된다. 오늘은 화면을 여는 순간으로 한 번 정한다
   const slides = useMemo(() => maxSlides({
@@ -175,10 +176,12 @@ export default function Home({ onOpen }: { onOpen: OpenMon }) {
     en: dexSoft?.DEX_DATA.en,
     forms: dexSoft?.DEX_DATA.forms,
     maxRows: maxSoft?.DMAX_DATA['overall'],
-  }, Date.now()), [gameday, dexSoft, maxSoft, names]);
+    weeks: weeksFromSchedule(scheduleSoft?.SCHEDULE_MONTHS),
+  }, Date.now()), [gameday, dexSoft, maxSoft, scheduleSoft, names]);
   // **캡션은 그림이 붙은 일정의 것이다.** 전에는 '다음 맥스 배틀' 을 따로 골라 적어서, 프리져 그림 아래
   // '9.28 울머기' 가 섰다 (제보). 이제 그림은 일정에 붙고(MAX_ART), 그림이 붙은 일정이 없으면 대표 일러스트가 제 말만 한다
-  const ready = slides.length > 0 && dexSoft !== undefined && maxSoft !== undefined;
+  // 일정표까지 온 뒤에 굴린다 — 먼저 굴리면 이번 주 장이 도중에 앞에 끼어든다
+  const ready = slides.length > 0 && dexSoft !== undefined && maxSoft !== undefined && scheduleSoft !== undefined;
   const items = useMemo(() => {
     const out = slides.map((slide, index) => ({
       key: slide.id,
