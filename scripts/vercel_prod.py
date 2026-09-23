@@ -34,7 +34,8 @@ VERCEL_CNAME = 'cname.vercel-dns.com'
 # 되돌릴 자리 — GitHub Pages 가 문서에 적은 주소 (docs.github.com, apex 도메인 설정).
 # 전환 전 레코드는 status 로 찍어 이것과 같은지 먼저 본다
 PAGES_A = ['185.199.108.153', '185.199.109.153', '185.199.110.153', '185.199.111.153']
-PAGES_AAAA = ['2606:50c0:8000::153', '2606:50c0:8001::153', '2606:50c0:8002::153', '2606:50c0:8003::153']
+# 2026-09-23 status 실측: 전환 전에는 A 넷뿐이었다(AAAA 없음). 되돌릴 때도 **그 모양 그대로** 둔다
+PAGES_AAAA: list[str] = []
 PAGES_WWW = 'minsangkwak.github.io'
 
 
