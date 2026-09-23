@@ -9,15 +9,18 @@
 
 ---
 
-## 0. 지금 어디까지 돼 있나
+## 0. 지금 어디까지 돼 있나 (2026-09-23)
 
 | | 상태 |
 | --- | --- |
-| Neon (PostgreSQL) | 프로젝트 있음 · 스키마 코드로 끝남 |
-| 구글 OAuth 클라이언트 | 만들어짐 (`pogo-note` 프로젝트) |
-| 인증·권한 서버 | 코드로 끝남 · 아직 **배포 안 됨** |
-| Next.js 앱 | 코드로 끝남 · 아직 **배포 안 됨** |
-| 운영 | v4.9.8 (GitHub Pages + Firebase) 그대로 |
+| Neon (PostgreSQL, 싱가포르) | ✅ 스키마 · 사람 7 · ★ 10 이관 |
+| 인증·권한 서버 | ✅ Cloud Run(서울) · `api.moncamp.kr` = Cloudflare Worker 중계 |
+| dev | ✅ dev.moncamp.kr = Vercel `moncamp-dev` (Next.js) |
+| 운영 화면 빌드 | ✅ Vercel `pogo-rank` (pogo-rank.vercel.app) — `deploy` 브랜치로만 올라간다 |
+| 운영 주소 | moncamp.kr = GitHub Pages(v4) → **5장에서 넘긴다** |
+
+**넘기기 전에 채운 빈자리 넷** (v5.0.0) — 이 문서의 옛 판에 없던 것이다. 넷 다 빠져도 화면은 멀쩡하다.
+보안 헤더(`web/next.config.ts`) · GA 조각(`web/src/lib/gaSnippet.ts`) · 문의 이메일(배포 워크플로의 `CONTACT_EMAIL`) · 만료 세션 파기(`server/src/lib/retention.ts`).
 
 ---
 
@@ -120,14 +123,19 @@ Firebase uid 는 구글이 준 값이 아니다. 이관은 `google_sub` 자리�
 
 ## 5. 주소를 넘긴다
 
-여기서부터 되돌리기가 어려워진다. **앞의 넷이 다 초록인 뒤에 한다.**
+여기서부터 되돌리기가 어려워진다. **앞의 넷이 다 초록인 뒤에 한다.** 누를 것은 워크플로 하나다 —
+`운영 주소 전환` (`.github/workflows/cutover-prod.yml`, 손으로만 돈다).
 
-1. Vercel 프로젝트에 `moncamp.kr` 을 붙인다
-2. Cloudflare 에서 DNS 를 Vercel 로 돌린다
-3. 옛 GitHub Pages 배포는 그대로 둔다 — 되돌릴 곳이다
-4. **`deploy-web.yml` 의 `branches` 에서 `next` 를 뺀다.** 전환 기간에만 둔 자리다 —
-   그때부터는 `deploy` 브랜치가 운영의 유일한 입구여야 한다
-4. 하루 지켜본 뒤 `scripts/verify_deploy.sh https://moncamp.kr/ prod`
+1. **`status`** — 지금 DNS 를 찍는다. 되돌릴 자리(GitHub Pages)가 `scripts/vercel_prod.py` 의 `PAGES_*` 와 같은지 본다
+2. **이관을 한 번 더** — `ops/migrate-firestore.request` 를 `mode = apply` 로. 이때부터 넘기기 전까지 v4 에서 누른 ★ 는 안 옮겨진다
+3. **`attach`** — moncamp.kr · www 를 `pogo-rank` 프로젝트에 붙이고 Cloudflare 레코드를 Vercel 로 돌린다(**프록시 끔**).
+   새 화면(`__next_f`) · 보안 헤더가 뜰 때까지 13분 기다린다. 넘기는 몇 분 동안 인증서 경고가 날 수 있다
+4. `bash scripts/verify_deploy.sh https://moncamp.kr/ prod` · 로그인 · ★ 를 손으로
+
+**되돌리기** — 같은 워크플로의 **`rollback`**. DNS 를 GitHub Pages 로 돌리고(프록시 켬) 옛 v4 가 뜰 때까지 잰다.
+옛 Pages 배포(`deploy.yml`)는 그대로 둔다 — 그것이 되돌릴 곳이다. 저장소 Settings → Pages 의 Custom domain 도 건드리지 않는다.
+
+**운영 배포의 입구는 `deploy` 하나다** — `deploy-web.yml` 의 `branches` 에서 전환 기간에 열어 둔 `next` 를 뺐다.
 
 ### 옛 주소는 두 겹으로 이어진다
 
@@ -159,6 +167,5 @@ Firebase uid 는 구글이 준 값이 아니다. 이관은 `google_sub` 자리�
 다른 주소로 보내고 싶을 때만 저장소 **변수**(시크릿이 아니다) `COLLECT_URL` 을 넣는다.
 그쪽이 이긴다.
 
-**패치노트에 적은 시행일은 2026-09-28 이다.** 새 화면이 그날 이후에 뜨면 적은 대로이고,
-그 전에 뜨면 `content/release-notes.mjs` 의 그 줄을 실제 날짜로 고친다 —
+**시행일은 2026-09-23 으로 고쳤다** (v4.9.9) — 적어 둔 9/28 보다 새 화면이 먼저 떠서다.
 고지와 실제가 어긋난 채로 두는 것이 제일 나쁘다.

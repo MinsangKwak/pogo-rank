@@ -161,10 +161,17 @@ Pokémon과 관련 명칭·이미지의 권리는 The Pokémon Company, Nintendo
 
 ## 버전 이력
 
-전체 226개 릴리스를 `날짜 → 버전`의 2단계 접이식 목록으로 정리했습니다. 가장 최근 날짜만 기본으로 펼쳐지며, 설명이 한 줄인 초기 버전은 별도의 접이식 영역 없이 표시됩니다. 사용자용 요약은 서비스의 [🎉 패치 노트](https://moncamp.kr/#/release)에서, 변경 배경과 세부 구현 내용은 [변경 이력](CHANGELOG.md)에서 확인할 수 있습니다.
+전체 227개 릴리스를 `날짜 → 버전`의 2단계 접이식 목록으로 정리했습니다. 가장 최근 날짜만 기본으로 펼쳐지며, 설명이 한 줄인 초기 버전은 별도의 접이식 영역 없이 표시됩니다. 사용자용 요약은 서비스의 [🎉 패치 노트](https://moncamp.kr/#/release)에서, 변경 배경과 세부 구현 내용은 [변경 이력](CHANGELOG.md)에서 확인할 수 있습니다.
 
 <details open>
-<summary><b>2026-09-23</b> — 릴리스 1개 · <code>v4.9.9</code></summary>
+<summary><b>2026-09-23</b> — 릴리스 2개 · <code>v5.0.0</code> · <code>v4.9.9</code></summary>
+
+<details>
+<summary><b>v5.0.0</b> · 운영을 v5 로 — moncamp.kr 이 Next.js · 자체 인증 서버 · Neon 으로</summary>
+
+moncamp.kr 이 새 화면(Next.js)으로 바뀌고 로그인이 새 인증 서버(api.moncamp.kr)로 갑니다. 계정 정보는 싱가포르(Neon)에 보관되어 개인정보처리방침을 고치고 동의를 다시 받습니다. 넘기기 전에 보안 헤더 · GA · 문의처 · 세션 파기 네 자리를 채웠습니다.
+
+</details>
 
 <details>
 <summary><b>v4.9.9</b> · dev 를 Next.js 로 — 인증 서버 · 이관 · 파이프라인 · 검사 · 수집 시행일 정정</summary>

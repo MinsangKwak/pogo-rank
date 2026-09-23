@@ -113,3 +113,15 @@ export async function purge(sql: Sql, months = KEEP_MONTHS): Promise<PurgeResult
     return { rolled: rolled.count, deleted: deleted.count, throughDay: edge.through };
   });
 }
+
+/**
+ * 만료된 로그인 세션을 지운다 (v5 운영 전환 — 방침 5번 "만료된 세션 기록은 주기적으로 삭제").
+ *
+ * **만료 하루 뒤에 지운다.** 세션 줄은 만료 전까지 도난 감지(같은 토큰이 두 번 쓰였는가)에 쓰인다.
+ * 만료된 뒤로는 어떤 요청도 그 줄을 찾지 않으므로 남겨 둘 까닭이 없고, 브라우저 종류(User-Agent)가
+ * 들어 있어 남길수록 쌓인다. 하루를 두는 것은 시계가 어긋난 회전 한 번을 살리려는 여유다
+ */
+export async function purgeSessions(sql: Queryable): Promise<number> {
+  const gone = await sql`delete from sessions where expires_at < now() - interval '1 day'`;
+  return gone.count;
+}

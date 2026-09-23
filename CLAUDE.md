@@ -195,6 +195,8 @@ node scripts/check-stories.mjs http://localhost:4189/   # 전량 × 라이트·�
   **2026-09-23 에 고쳤다** (v4.9.9) — 새 화면이 dev 에 뜨는 날이라 시행일을 9/23 으로 앞당겼다.
   옛 공지의 날짜를 고치고 **맨 위에 정정 항목을 따로 세웠다** — 조용히 고쳐 쓰면 9/28 로 읽은 사람이 모른다.
   방침 날짜는 web · frontend-v4 **두 벌**이다 (`legalMeta.ts` · `Legal.tsx`) — 둘을 견주던 검사가 지워졌으니 사람이 맞춘다.
+  **v5.0.0 부터 두 벌이 일부러 다르다** — 운영이 v5 로 넘어가 계정 저장소가 Neon(싱가포르)이 됐다. web 판만 고쳤고
+  (`TERMS_VER` `2026-09-23-v5`), frontend-v4 는 되돌릴 자리(GitHub Pages)의 옛 사실을 그대로 적는다.
 
 ## 4. 비밀
 
@@ -229,6 +231,7 @@ dev 채널의 `-dev` 접미사도 둘이 같은 규칙으로 붙인다.
 - 빠른 길: `build.sh --meta-only`(2초) · `--no-fetch`(3초) · `--no-sprites`
 - **`build.sh` 는 화면을 안 만든다** (v5 Phase 1-C). `dist/` 에 나오는 것은 `data.js` · 스프라이트 · 부속 파일(robots · sitemap · 404 · build.json)뿐이고, 화면은 `frontend-v4` 가 만든다
 - 배포: dev → main PR 병합 → `deploy` 브랜치에 main 을 머지 → `bash scripts/verify_deploy.sh https://moncamp.kr/ prod`
+- **v5 부터 운영 화면은 Vercel(`pogo-rank`)이다** — `deploy` push 에 `deploy-web.yml` 이 올린다. 주소를 오가는 일은 `cutover-prod.yml`(status · attach · rollback) 하나로 한다
 
 ## 7. 글과 코드의 결
 

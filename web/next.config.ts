@@ -10,6 +10,16 @@
 import type { NextConfig } from 'next';
 import { ROUTE_LEGACY } from './src/routes';
 
+// [이름, 값] — 값은 Cloudflare 에 넣었던 것과 글자까지 같다 (docs/INFRA.md §8 의 3번 표)
+export const SECURITY_HEADERS: ReadonlyArray<readonly [string, string]> = [
+  ['Strict-Transport-Security', 'max-age=31536000; includeSubDomains'],
+  ['X-Content-Type-Options', 'nosniff'],
+  ['Referrer-Policy', 'strict-origin-when-cross-origin'],
+  // <meta> 로는 못 넣는 것 — 클릭재킹 방어
+  ['Content-Security-Policy', "frame-ancestors 'self'"],
+  ['Permissions-Policy', 'geolocation=(), microphone=(), camera=()'],
+];
+
 const config: NextConfig = {
   reactStrictMode: true,
   // 그림은 v3 빌드가 만든 것을 그대로 쓴다 — 2,000장이 넘어 최적화를 거칠 이유가 없다
@@ -23,6 +33,16 @@ const config: NextConfig = {
       { source: '/storybook', destination: '/storybook/index.html' },
       { source: '/storybook/', destination: '/storybook/index.html' },
     ];
+  },
+
+  // **보안 헤더는 여기가 원본이다** (v5 운영 전환). 전에는 Cloudflare 가 GitHub Pages 앞에서
+  // Transform Rule 로 붙였다(docs/INFRA.md §8). Vercel 로 넘기며 프록시를 끄면 그 규칙이 더는 안 걸린다 —
+  // 헤더가 조용히 빠져도 화면은 멀쩡해서 아무도 모른다. 그래서 앱이 직접 붙이고 검사가 잰다
+  async headers() {
+    return [{
+      source: '/:path*',
+      headers: SECURITY_HEADERS.map(([key, value]) => ({ key, value })),
+    }];
   },
 
   async redirects() {

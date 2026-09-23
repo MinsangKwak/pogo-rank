@@ -23,7 +23,7 @@ export default function TermsConsent({ onClose, onAccept }: { onClose: () => voi
         <div className="modal__box">
           <div className="consent__modal">
             <h2 className="detail__name">로그인 전에 확인해 주세요</h2>
-            <p className="plan__desc">로그인 시 Google 계정의 이메일·이름·프로필 사진을 저장합니다. 관리자 승인 후 즐겨찾기와 내 포켓몬을 계정에 보관할 수 있습니다. 도감·순위표·계산기는 로그인 없이 이용할 수 있습니다.</p>
+            <p className="plan__desc">로그인 시 Google 계정의 이메일·이름·프로필 사진을 저장합니다. 계정 정보는 싱가포르의 데이터베이스(Neon)에 보관됩니다(개인정보처리방침 제4항). 관리자 승인 후 즐겨찾기와 내 포켓몬을 계정에 보관할 수 있습니다. 도감·순위표·계산기는 로그인 없이 이용할 수 있습니다.</p>
             <label className="consent__check">
               <input type="checkbox" checked={agree} onChange={(event) => setAgree(event.target.checked)} />
               <span><a href="/terms">이용약관</a>{'과 '}<a href="/privacy">개인정보처리방침</a>{'을 읽었고 동의합니다'}</span>
@@ -36,7 +36,7 @@ export default function TermsConsent({ onClose, onAccept }: { onClose: () => voi
               onClick={() => { markTermsAccepted(); track('terms_accept', { ver: TERMS_VER }); onAccept(); }}>
               동의하고 로그인
             </button>
-            <p className="detail__foot">{`약관 버전 ${TERMS_VER} · 동의 여부는 이 기기와 계정 카드(가입 요청)에 기록됩니다`}</p>
+            <p className="detail__foot">{`약관 버전 ${TERMS_VER} · 동의 여부는 이 기기에 기록됩니다`}</p>
           </div>
         </div>
       </div>

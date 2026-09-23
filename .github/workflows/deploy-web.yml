@@ -25,13 +25,10 @@ name: web 배포 (Vercel)
 # 배포가 커밋 하나로 재현된다. 채널마다 달라야 하면 저장소 **변수** vars.API_URL 로 덮는다
 on:
   push:
-    # **`next` 는 전환 기간에만 둔다.** 손으로 돌리려면(workflow_dispatch) 그 파일이 **기본
-    # 브랜치에 있어야** 하는데, 이 워크플로는 아직 next 에만 있다. 그래서 push 로 돈다.
-    #
-    # 지금 올라가는 자리는 pogo-rank.vercel.app 이고 moncamp.kr 은 아직 GitHub Pages 다 —
-    # 주소를 넘기기 전까지는 이 배포가 사람을 건드리지 않는다.
-    # **전환이 끝나면 `next` 를 뺀다** (docs/V5-CUTOVER.md §5).
-    branches: [deploy, next]
+    # **운영의 입구는 `deploy` 하나다** (v5 운영 전환, docs/V5-CUTOVER.md §5).
+    # 전환 기간에는 `next` 도 열어 두었다 — 그때는 이 배포가 pogo-rank.vercel.app 에만 닿았다.
+    # moncamp.kr 이 이 프로젝트에 붙은 뒤로는 next 에 push 하는 것이 곧 운영 배포가 된다
+    branches: [deploy]
     paths: ['web/**', 'frontend-v4/scripts/**', 'backend/**', 'content/**', 'release/**', '.github/workflows/deploy-web.yml']
   workflow_dispatch:
 
@@ -90,6 +87,9 @@ jobs:
         name: 데이터 만들기 (파이썬 파이프라인)
         env:
           BUILD_CHANNEL: prod
+          # 문의 이메일 — 개인정보처리방침의 문의처와 바닥글이 이 값을 쓴다. 비면 '사이트 운영자' 로만 찍힌다.
+          # v4 deploy.yml 과 같은 값(공개 주소)이다. v5 첫 판은 이 줄이 빠져 방침에 문의처가 없었다
+          CONTACT_EMAIL: kmsdevwork@knou.ac.kr
         run: |
           set -e
           pip install --quiet Pillow
@@ -170,3 +170,13 @@ jobs:
           # 그 자리를 여기서도 본다 (src/test/rootwrap.test.ts 와 같은 것을 지킨다)
           printf '%s' "$body" | grep -q 'id="root"' || { echo '#root 래퍼가 없습니다 — CSS 가 통째로 안 걸립니다'; exit 1; }
           echo "OK — $SITE/mon/25 가 내용이 든 HTML 을 준다"
+          # **헤더는 화면에 안 보인다** — 빠져도 아무도 모른다. Cloudflare 에서 옮겨 온 다섯을 잰다 (next.config.ts)
+          heads="$(curl -sSI "$SITE/" | tr -d '\r' | tr 'A-Z' 'a-z')"
+          for name in strict-transport-security x-content-type-options referrer-policy content-security-policy permissions-policy; do
+            printf '%s' "$heads" | grep -q "^$name:" || { echo "보안 헤더 $name 이 없습니다"; exit 1; }
+          done
+          echo "OK — 보안 헤더 다섯"
+          # 문의처와 GA 조각 — 둘 다 빠져도 화면은 멀쩡하다. v5 첫 판이 그랬다
+          curl -sS "$SITE/data/meta.json" | grep -q '"CONTACT_EMAIL":"[^"]' || { echo "meta.json 에 문의 이메일이 없습니다 — 방침에 문의처가 안 찍힙니다"; exit 1; }
+          printf '%s' "$body" | grep -q 'googletagmanager.com/gtag/js' || { echo "GA 조각이 없습니다 — 방문 통계가 한 건도 안 나갑니다"; exit 1; }
+          echo "OK — 문의처 · GA 조각"
