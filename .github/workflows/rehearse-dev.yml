@@ -1,0 +1,31 @@
+name: dev 파이프라인 예행
+
+# 2026-09-23 v5 Phase 7 — dev 에 올리기 전에 파이프라인을 끝까지 걸어 본다.
+#
+# dev-pipeline.yml 을 **그대로** 부르되 dev.moncamp.kr 은 안 건드린다. Vercel 의 moncamp-dev
+# 프로젝트 주소(*.vercel.app)에만 올리고 거기서 잰다 — 사람이 보는 dev 는 그대로다.
+# 그래서 dev 에 병합하는 날 처음 도는 코드가 '도메인 붙이기' 두 단계뿐이 된다.
+#
+# 파이프라인 파일이 바뀔 때만 돈다 — 저장소가 비공개라 Actions 분이 과금된다.
+on:
+  push:
+    branches: [next]
+    paths:
+      - '.github/workflows/dev-pipeline.yml'
+      - '.github/workflows/rehearse-dev.yml'
+      - '.github/workflows/deploy-dev.yml'
+      - 'scripts/vercel_dev.py'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: rehearse-dev
+  cancel-in-progress: true
+
+jobs:
+  dev:
+    uses: ./.github/workflows/dev-pipeline.yml
+    with:
+      attach_domain: false
+    secrets: inherit
