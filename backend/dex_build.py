@@ -297,7 +297,7 @@ dex_output = {
     'cls': cls_map,
     'rel': sorted(released_dex | extra_rel),  # 2026-09-03 도감 [미구현] 태그용 — PvPoke released + 수동 보정
     # ── 2026-09-08 v2.29.0 다국어(EN) 이름표 ─────────────────────────────────
-    # 화면 문구는 사전(frontend/scripts/i18n-en.js)이 맡고, **이름은 데이터가 맡는다.**
+    # 화면 문구는 사전(content/i18n.en.mjs)이 맡고, **이름은 데이터가 맡는다.**
     # 포켓몬·기술·폼 이름을 사전에 손으로 적으면 1,000종이 넘는 데다 새 종이 나올 때마다 사람이 따라 적어야 한다 —
     # 원본 표(PokeAPI species_names.csv · move_names.csv)에 이미 영문이 있으므로 그대로 굽는다.
     'en': {str(dex_number): en_species[dex_number] for dex_number in names if dex_number in en_species},

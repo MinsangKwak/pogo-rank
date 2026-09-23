@@ -1,4 +1,4 @@
-<!doctype html><html lang="ko"><head><meta charset="utf-8"><title>moncamp 수집 서버 ERD</title>
+<!doctype html><html lang="ko"><head><meta charset="utf-8"><title>moncamp 서버 ERD</title>
 <style>
   :root{
     --bg:#fff8f2; --fg:#0a0a0f; --muted:#64647a; --surface:#fff; --line2:#d4d4dc;
@@ -32,7 +32,9 @@
   td.n{width:150px;font-weight:700;font-family:ui-monospace,"DejaVu Sans Mono",monospace}
   td.t{width:132px;color:var(--point);font-family:ui-monospace,"DejaVu Sans Mono",monospace;font-size:13.5px}
   td.d{color:var(--muted);line-height:1.45;font-size:14px}
-  .pk{color:var(--brand)} .idx{color:var(--good)}
+  .pk{color:var(--brand)} .idx{color:var(--good)} .fk{color:var(--point)}
+  .sect{margin:30px 0 14px;font-size:24px;border-bottom:4px solid var(--fg);padding-bottom:8px}
+  .sect small{font-size:15px;color:var(--muted);font-weight:400;margin-left:10px}
   .tbl footer{border-top:3px solid var(--fg);padding:11px 16px;font-size:13.5px;color:var(--muted);line-height:1.6}
   .tbl footer b{color:var(--fg)}
 
@@ -60,10 +62,99 @@
 
 <div class="head">
   <div class="logo"></div>
-  <h1>수집 서버 ERD</h1>
-  <div class="ver">v4.8.5</div>
-  <div class="when">moncamp · <code>server/</code><br>Node 22 · Fastify · Postgres</div>
+  <h1>서버 ERD</h1>
+  <div class="ver">v5 Phase 3</div>
+  <div class="when">moncamp · <code>server/</code> · Neon(싱가포르)<br>Node 22 · Fastify · Postgres 18</div>
 </div>
+
+<h2 class="sect">① 신원 · 권한 · 개인 데이터 <small>v5 Phase 3 — Firebase Auth 와 Firestore 가 하던 일을 가져온다</small></h2>
+
+<div class="flow">
+  <div class="step">브라우저<small>구글 로그인 단추</small></div>
+  <div class="arrow">→</div>
+  <div class="step">Google OAuth 2.0<small>인가 코드</small></div>
+  <div class="arrow">→</div>
+  <div class="step">POST /v1/auth/google<small>코드를 토큰으로 바꿔 sub 를 얻는다</small></div>
+  <div class="arrow">→</div>
+  <div class="step">users<small>없으면 pending 으로 만든다</small></div>
+  <div class="arrow">→</div>
+  <div class="step">sessions<small>리프레시 해시 · 사슬</small></div>
+  <div class="arrow">→</div>
+  <div class="step off">쿠키 둘<small>짧은 접근 토큰 · 긴 리프레시</small></div>
+</div>
+
+<div class="grid">
+  <div>
+  <div class="tbl">
+    <header><b>users</b><span>사람 하나가 한 줄 — allowlist · requests 가 여기로 합쳐졌다</span></header>
+    <table>
+      <tr><td class="k pk">PK</td><td class="n">id</td><td class="t">bigint identity</td><td class="d"></td></tr>
+      <tr><td class="k idx">UQ</td><td class="n">google_sub</td><td class="t">text not null</td><td class="d"><b>신원의 축.</b> 이메일은 바뀌어도 이건 안 바뀐다</td></tr>
+      <tr><td class="k idx">UQ</td><td class="n">email</td><td class="t">text not null</td><td class="d"><b>소문자만</b> — 제약이 막는다 (규칙의 <code>.lower()</code> 와 같은 약속)</td></tr>
+      <tr><td class="k"></td><td class="n">display_name</td><td class="t">text ''</td><td class="d">구글이 준 이름</td></tr>
+      <tr><td class="k"></td><td class="n">photo_url</td><td class="t">text ''</td><td class="d"></td></tr>
+      <tr><td class="k idx">IX</td><td class="n">role</td><td class="t">넷 중 하나</td><td class="d"><code>pending</code> · <code>approved</code> · <code>admin</code> · <code>root</code></td></tr>
+      <tr><td class="k"></td><td class="n">beta</td><td class="t">bool false</td><td class="d"><b>권한과 다른 축</b> — 실험 기능 참가자 (v4.0.1)</td></tr>
+      <tr><td class="k"></td><td class="n">created_at</td><td class="t">timestamptz</td><td class="d"></td></tr>
+      <tr><td class="k"></td><td class="n">last_seen_at</td><td class="t">timestamptz</td><td class="d">마지막으로 온 때</td></tr>
+    </table>
+    <footer>
+      <b>왜 표가 하나인가.</b> Firestore 는 <code>allowlist/{이메일}</code> 과 <code>requests/{이메일}</code> 로 갈라 뒀다 —
+      보안 규칙이 <b>이메일로만</b> 문서를 찾을 수 있어서지, 뜻이 둘이어서가 아니었다.<br>
+      <b>잠금 방지.</b> 규칙에 루트 uid 를 박아 두던 자리는 서버의 <code>ROOT_EMAIL</code> 이 잇는다 — DB 가 어떻든 그 사람은 루트다
+    </footer>
+  </div>
+
+  <div class="tbl" style="margin-top:26px">
+    <header><b>favorites</b><span>담아 둔 포켓몬 — 배열이 아니라 줄</span></header>
+    <table>
+      <tr><td class="k pk">PK</td><td class="n">user_id</td><td class="t">bigint</td><td class="d">→ users <b>on delete cascade</b></td></tr>
+      <tr><td class="k pk">PK</td><td class="n">dex</td><td class="t">integer &gt; 0</td><td class="d">스프라이트 id — 폼마다 다른 값</td></tr>
+      <tr><td class="k"></td><td class="n">added_at</td><td class="t">timestamptz</td><td class="d"></td></tr>
+    </table>
+    <footer>
+      <b>왜 줄로 바꿨나.</b> Firestore 는 <code>users/{uid}.favs</code> 에 배열로 담아, 한 마리를 더할 때마다
+      배열을 통째로 덮어써서 기기끼리 부딪혔다 (그래서 <code>arrayEdit</code> 이 따로 있었다).<br>
+      <b>상한은 앱이 지킨다</b> — 승인된 사람 1,000 · 승인 대기 200 (규칙의 <code>favsOnly</code> 와 같은 값)
+    </footer>
+  </div>
+  </div>
+
+  <div>
+  <div class="tbl">
+    <header><b>sessions</b><span>로그인 하나가 한 줄 — 토큰은 없다</span></header>
+    <table>
+      <tr><td class="k pk">PK</td><td class="n">id</td><td class="t">uuid</td><td class="d"></td></tr>
+      <tr><td class="k fk">FK</td><td class="n">user_id</td><td class="t">bigint</td><td class="d">→ users <b>on delete cascade</b></td></tr>
+      <tr><td class="k idx">UQ</td><td class="n">refresh_hash</td><td class="t">bytea</td><td class="d"><b>sha256 만 담는다.</b> DB 가 새도 남의 세션을 못 쓴다</td></tr>
+      <tr><td class="k idx">IX</td><td class="n">family_id</td><td class="t">uuid</td><td class="d">회전 사슬 — 재사용이 잡히면 이 값으로 형제를 끊는다</td></tr>
+      <tr><td class="k"></td><td class="n">issued_at</td><td class="t">timestamptz</td><td class="d"></td></tr>
+      <tr><td class="k idx">IX</td><td class="n">expires_at</td><td class="t">timestamptz</td><td class="d">지난 것을 쓸어 담는다</td></tr>
+      <tr><td class="k"></td><td class="n">used_at</td><td class="t">timestamptz</td><td class="d">회전되어 쓰인 때. 값이 있는데 또 오면 <b>재사용</b></td></tr>
+      <tr><td class="k"></td><td class="n">revoked_at</td><td class="t">timestamptz</td><td class="d">끊은 때</td></tr>
+      <tr><td class="k"></td><td class="n">user_agent</td><td class="t">text ''</td><td class="d">'어디서 로그인했나' 를 본인에게 보여 주는 용도</td></tr>
+    </table>
+    <footer>
+      <b>IP 를 안 남긴다.</b> CLAUDE.md §3 은 수집 서버에만 하는 약속이 아니다 — 사람을 가리키는 값은 어느 표에도 두지 않는다.<br>
+      <b>재사용이 잡히면 사슬 전체를 끊는다.</b> 네트워크가 답을 잃어 두 번 보낸 것인지 누가 훔친 것인지
+      구분할 방법이 없다 — 훔친 쪽만 조용히 살아 있는 것보다 둘 다 다시 로그인하는 쪽이 낫다
+    </footer>
+  </div>
+
+  <div class="tbl" style="margin-top:26px">
+    <header><b>trainers</b><span>트레이너 코드 — 승인된 사람이 읽고 관리자가 쓴다</span></header>
+    <table>
+      <tr><td class="k pk">PK</td><td class="n">id</td><td class="t">bigint identity</td><td class="d"></td></tr>
+      <tr><td class="k idx">UQ</td><td class="n">name</td><td class="t">text not null</td><td class="d">친구 이름</td></tr>
+      <tr><td class="k"></td><td class="n">code</td><td class="t">text not null</td><td class="d">코드</td></tr>
+      <tr><td class="k idx">IX</td><td class="n">sort_order</td><td class="t">integer 0</td><td class="d">화면에 보이는 차례</td></tr>
+    </table>
+    <footer><b>저장소에 안 박는다</b> (CLAUDE.md §3). 전에는 Firestore 에만 뒀고 이제 여기에만 둔다</footer>
+  </div>
+  </div>
+</div>
+
+<h2 class="sect">② 수집 · 집계 · 백업 <small>v4.7.0 — 같은 DB 의 다른 구역</small></h2>
 
 <div class="flow">
   <div class="step">브라우저<small>lib/collect.ts</small></div>
@@ -181,7 +272,7 @@
 <div class="link">
   <div class="big">⇄</div>
   <div>
-    <b>표 넷 사이에 외래키가 하나도 없다.</b> <code>search_daily</code> 는 <code>events</code> 의 자식이 아니라
+    <b><b>②의</b> 표 넷 사이에는 외래키가 하나도 없다 (①은 다르다 — 사람이 사라지면 세션과 즐겨찾기가 같이 사라져야 해서 <code>on delete cascade</code> 가 걸려 있다).</b> <code>search_daily</code> 는 <code>events</code> 의 자식이 아니라
     <b>그것을 지우고 나서도 남을 요약</b>이다 — 부모가 사라지는 것이 설계다.
     <code>backup_runs</code>·<code>backup_ack</code> 는 아예 다른 일을 재는 자리라 이을 것이 없다.<br>
     앞의 둘을 이어 주는 것은 키가 아니라 <b>같은 셈</b>이다: 둘 다 <code>(KST 날짜, 말, 사람)</code> 으로 묶어

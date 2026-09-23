@@ -17,11 +17,22 @@ import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import vm from 'node:vm';
 import { mergeSchedule } from './merge-schedule.mjs';
+// 2026-09-22 v5 Phase 1 — 손으로 적는 자료는 content/ 가 가진다.
+// 전에는 v3 화면 코드를 vm 으로 돌려 꺼냈다. 자료가 화면 코드 안에 살면 그 화면을 못 지운다
+import { SCHEDULE_CATS, SCHEDULE_MONTHS } from '../../content/schedule.mjs';
+import { RELEASE_NOTES } from '../../content/release-notes.mjs';
+import { RELEASE_NOTES_EN } from '../../content/release-notes.en.mjs';
+import { I18N_EN, I18N_PATTERNS } from '../../content/i18n.en.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const repo = resolve(here, '../..');
 const distV3 = resolve(repo, 'dist');
-const out = resolve(here, '../public/data');
+// **어디에 쓸지는 부르는 쪽이 정한다** (v5 Phase 6).
+// v4(Vite)와 web(Next)이 같은 JSON 을 쓴다 — 뽑는 코드를 두 벌 두면 한쪽만 고쳐진다
+const site = process.env.DATA_SITE
+  ? resolve(repo, process.env.DATA_SITE)
+  : resolve(here, '..');
+const out = resolve(site, 'public/data');
 
 for (const name of ['data.js', 'data-lazy.js']) {
   if (!existsSync(resolve(distV3, name))) {
@@ -37,76 +48,59 @@ const sandbox = vm.createContext({});
 for (const name of ['data.js', 'data-lazy.js']) {
   vm.runInContext(readFileSync(resolve(distV3, name), 'utf8'), sandbox, { filename: name });
 }
-// 월 일정표는 data.js 가 아니라 **화면 코드 안**에 손으로 적혀 있다 (components/schedule.js SCHEDULE_MONTHS).
-// 그 파일은 맨 끝에서 renderSchedule() 을 불러 DOM 을 건드리므로, 표를 선언하는 앞부분만 잘라 실행한다.
-// 손으로 다시 옮겨 적지 않는다 — 실제 일정이라 한 글자만 어긋나도 틀린 날짜를 내보내게 된다
+// content/ 의 자료를 sandbox 에 넣는다. 아래 코드는 그대로 전역 이름으로 읽는다.
+// 정규식은 JSON 에 안 담기므로 본문·플래그로 펴 둔다 (읽는 쪽이 new RegExp 로 되세운다)
 {
-  const path = 'frontend/scripts/components/schedule.js';
-  const text = readFileSync(resolve(repo, path), 'utf8');
-  const cut = text.indexOf('const SCHEDULE_ITEMS');
-  // 못 찾으면 **여기서** 멈춘다. indexOf 가 -1 이면 slice 가 첫 줄만 잘라 내고,
-  // 그러면 아래 전역 검사가 'SCHEDULE_MONTHS 를 번들에서 못 찾았습니다' 라고 엉뚱한 곳을 가리킨다
-  if (cut < 0) {
-    console.error(`${path} 에서 'const SCHEDULE_ITEMS' 를 못 찾았습니다 — 그 앞까지가 표 선언이라 보고 자르는 중입니다.`);
-    console.error('v3 쪽에서 이름이나 차례가 바뀌었다면 이 자르는 기준도 같이 고쳐야 합니다.');
-    process.exit(1);
-  }
-  vm.runInContext(text.slice(0, text.indexOf('\n', cut)), sandbox, { filename: 'schedule.js' });
+  const flatPatterns = I18N_PATTERNS.map((row) => [row[0].source, row[0].flags, row[1]]);
+  const put = {
+    SCHEDULE_CATS, SCHEDULE_MONTHS, RELEASE_NOTES, RELEASE_NOTES_EN, I18N_EN,
+    __i18nPatterns: flatPatterns,
+  };
+  vm.runInContext(
+    Object.entries(put).map(([name, value]) => `var ${name} = ${JSON.stringify(value)};`).join('\n'),
+    sandbox, { filename: 'content' },
+  );
 }
 
-// 패치노트 본문과 판 번호도 **화면 코드 안**에 손으로 적혀 있다.
-//   scripts/release-notes.js        RELEASE_NOTES (160판)
-//   components/release.js           RELEASE_VER  (빨간 점 판정에 쓰는 문자열 하나)
-// 둘 다 파일 전체를 돌리면 화면을 건드리므로 필요한 선언만 잘라 실행한다.
-// 손으로 옮겨 적지 않는다 — 사용자가 그대로 읽는 문구라 한 글자만 어긋나도 기록이 틀어진다
+// 2026-09-22 v5 Phase 1 — 설정은 환경변수가 원본이다.
+// 전에는 build.py 가 .env 를 읽어 dist/index.html 에 박아 넣은 값을 **정규식으로 도로 긁어내고**
+// 있었다. v3 의 HTML 이 v4 데이터의 전달자였던 셈이라, 그 HTML 을 못 지웠다.
+// 이제 같은 자리(.env · CI 시크릿)를 직접 본다 — build.py read_config() 와 같은 이름들이다.
 {
-  vm.runInContext(readFileSync(resolve(repo, 'frontend/scripts/release-notes.js'), 'utf8'), sandbox, { filename: 'release-notes.js' });
-  const path = 'frontend/scripts/components/release.js';
-  const text = readFileSync(resolve(repo, path), 'utf8');
-  const line = text.split('\n').find((one) => one.startsWith('const RELEASE_VER'));
-  if (!line) {
-    console.error(`${path} 에서 'const RELEASE_VER' 을 못 찾았습니다 — 이름이 바뀌었는지 확인하세요.`);
-    process.exit(1);
+  // build.py load_dotenv() 와 같은 규칙. 이미 있는 환경변수를 덮지 않는다(CI 가 이긴다)
+  const envPath = resolve(repo, '.env');
+  if (existsSync(envPath)) {
+    for (const line of readFileSync(envPath, 'utf8').split('\n')) {
+      const text = line.trim();
+      if (!text || text.startsWith('#') || !text.includes('=')) continue;
+      const [key, ...rest] = text.split('=');
+      const value = rest.join('=').trim().replace(/^["']|["']$/g, '');
+      if (process.env[key.trim()] === undefined) process.env[key.trim()] = value;
+    }
   }
-  vm.runInContext(line, sandbox, { filename: 'release.js' });
-}
+  const env = (name) => process.env[name] ?? '';
+  // 판 번호는 release/version.json 이 원본. dev 채널 접미사는 build.py 와 같은 규칙이다
+  const version = JSON.parse(readFileSync(resolve(repo, 'release/version.json'), 'utf8'));
+  const appVersion = version.app + (env('BUILD_CHANNEL') === 'dev' ? '-dev' : '');
+  // 데이터 기준일은 게임 마스터가 들고 있다 (build.py 도 같은 값을 HTML 에 박았다)
+  const gmPath = resolve(repo, 'data/gm.json');
+  const dataTimestamp = existsSync(gmPath) ? JSON.parse(readFileSync(gmPath, 'utf8')).timestamp ?? '' : '';
 
-// 문의 이메일은 저장소에 없다 — 빌드가 환경변수에서 읽어 dist/index.html 에 박아 넣는다.
-// 그 값을 그대로 꺼내 쓴다 (약관·개인정보처리방침의 문의처가 이 한 곳을 본다).
-// 비어 있으면 v3 와 같이 '사이트 운영자' 로 적힌다
-// 설정값은 저장소에 없다 — 빌드가 환경변수에서 읽어 dist/index.html 에 박아 넣는다.
-// 그 값을 그대로 꺼내 쓴다. 비어 있으면 v3 와 같이 그 기능이 조용히 꺼진다
-// (FIREBASE_CONFIG.apiKey 가 없으면 로그인 UI 자체가 안 뜬다 — authEnabled).
-{
-  const html = readFileSync(resolve(distV3, 'index.html'), 'utf8');
-  const str = (name) => new RegExp(`const ${name} = "([^"]*)"`).exec(html)?.[1] ?? '';
-  const json = /const FIREBASE_CONFIG = (\{[^;]*\});/.exec(html)?.[1] ?? '{}';
+  let firebase = {};
+  try { firebase = JSON.parse(env('FIREBASE_CONFIG_JSON') || '{}'); }
+  catch { console.error('FIREBASE_CONFIG_JSON 이 JSON 이 아닙니다 — 빈 값으로 둡니다 (로그인 UI 가 안 뜹니다)'); }
+
   vm.runInContext([
-    `var CONTACT_EMAIL = ${JSON.stringify(str('CONTACT_EMAIL'))};`,
-    `var ADMIN_UID = ${JSON.stringify(str('ADMIN_UID'))};`,
-    `var ADMIN_EMAIL = ${JSON.stringify(str('ADMIN_EMAIL'))};`,
-    // 2026-09-21 v4.7.0 수집 서버 주소. 비면 lib/collect.ts 가 통째로 꺼진다 (server/README.md)
-    `var COLLECT_URL = ${JSON.stringify(str('COLLECT_URL'))};`,
-    `var FIREBASE_CONFIG = ${json};`,
-    // 판 번호는 머리줄에 글자로 박혀 있다 — 선언이 아니라서 거기서 꺼낸다 (v3 app-shell.js 도 같은 자리를 읽는다)
-    `var APP_VERSION = ${JSON.stringify(/app-bar__version">([^<]*)</.exec(html)?.[1] ?? '')};`,
-    // 데이터 기준일도 마찬가지 — 빌드가 게임 마스터의 timestamp 를 서랍 글자에 박아 넣는다.
-    // **DATA_FETCHED 와 다른 값이다**(그쪽은 날짜만) — 같은 줄에 다른 값을 적으면 v3 와 어긋난다
-    `var DATA_TIMESTAMP = ${JSON.stringify(/기준일 ([^·]*) ·/.exec(html)?.[1]?.trim() ?? '')};`,
-  ].join('\n'), sandbox, { filename: 'index.html' });
+    `var CONTACT_EMAIL = ${JSON.stringify(env('CONTACT_EMAIL'))};`,
+    `var ADMIN_UID = ${JSON.stringify(env('ADMIN_UID'))};`,
+    `var ADMIN_EMAIL = ${JSON.stringify(env('ADMIN_EMAIL'))};`,
+    `var COLLECT_URL = ${JSON.stringify(env('COLLECT_URL').replace(/\/+$/, ''))};`,
+    `var FIREBASE_CONFIG = ${JSON.stringify(firebase)};`,
+    `var APP_VERSION = ${JSON.stringify(appVersion)};`,
+    `var DATA_TIMESTAMP = ${JSON.stringify(dataTimestamp)};`,
+    `var RELEASE_VER = ${JSON.stringify(version.release)};`,
+  ].join('\n'), sandbox, { filename: 'config' });
 }
-
-// 영문 사전도 화면 코드 안에 있다 — i18n-en.js(사전 · 규칙) · i18n-release-en.js(패치노트 영문판).
-// 둘 다 선언뿐이라 파일을 통째로 돌려도 화면을 건드리지 않는다
-{
-  for (const name of ['i18n-en.js', 'i18n-release-en.js']) {
-    vm.runInContext(readFileSync(resolve(repo, 'frontend/scripts', name), 'utf8'), sandbox, { filename: name });
-  }
-}
-
-// 정규식은 JSON 에 담기지 않는다 — 본문과 플래그로 펴 둔다 (읽는 쪽이 new RegExp 로 되세운다)
-vm.runInContext(`var __i18nPatterns = typeof I18N_PATTERNS === 'undefined' ? undefined
-  : I18N_PATTERNS.map(function (row) { return [row[0].source, row[0].flags, row[1]]; });`, sandbox, { filename: 'i18n-patterns' });
 
 const readGlobal = (key) => vm.runInContext(`typeof ${key} === 'undefined' ? undefined : ${key}`, sandbox);
 
@@ -176,15 +170,15 @@ for (const [name, keys] of Object.entries(BUNDLES)) {
 
 writeFileSync(resolve(out, 'manifest.json'), JSON.stringify(manifest, null, 1));
 // ── PWA 정적 파일 (아이콘 · manifest) ────────────────────────────────────────
-// v3 frontend/static/ 의 것을 그대로 옮긴다. 아이콘은 그림 파일이라 저장소에 두 벌 두지 않고,
+// assets/ 의 것을 그대로 옮긴다. 아이콘은 그림 파일이라 저장소에 두 벌 두지 않고,
 // 데이터와 같은 규칙으로 빌드 때 가져온다 (public/ 의 이 파일들은 .gitignore 에 있다)
 {
-  const from = resolve(repo, 'frontend/static');
-  const to = resolve(here, '../public');
+  const from = resolve(repo, 'assets');
+  const to = resolve(site, 'public');
   for (const name of ['manifest.webmanifest', 'icon-192.png', 'icon-512.png', 'og.png', 'og-design.png', 'og-dev.png', 'logo.svg']) {
     copyFileSync(resolve(from, name), resolve(to, name));
   }
-  console.log('  PWA·브랜드 정적 파일 7개 (v3 static/ 에서)');
+  console.log('  PWA·브랜드 정적 파일 7개 (assets/ 에서)');
 }
 
 console.log(`데이터 ${Object.keys(BUNDLES).length}개 · 합계 ${(total / 1024).toFixed(0)}KB`);

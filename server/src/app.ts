@@ -10,15 +10,34 @@ import cors from '@fastify/cors';
 import rateLimit from '@fastify/rate-limit';
 import swagger from '@fastify/swagger';
 import swaggerUi from '@fastify/swagger-ui';
-import { OPENAPI_INFO, OPENAPI_TAGS, BEARER_SCHEME, toOas30 } from './lib/openapi.ts';
+import cookie from '@fastify/cookie';
+import { OPENAPI_INFO, OPENAPI_TAGS, BEARER_SCHEME, ACCESS_SCHEME, toOas30 } from './lib/openapi.ts';
 import type { Sql } from './db/client.ts';
 import type { Env } from './env.ts';
 import { healthRoutes } from './routes/health.ts';
 import { eventRoutes } from './routes/events.ts';
 import { hotRoutes } from './routes/hot.ts';
 import { backupRoutes } from './routes/backup.ts';
+import { authRoutes } from './routes/auth.ts';
+import { domainRoutes } from './routes/domain.ts';
+import { makeDomain } from './services/domain.ts';
+import { makeAccessTokens, type AccessTokens } from './lib/jwt.ts';
+import { makeAuth, type Auth } from './services/auth.ts';
+import { makeGoogleOAuth, type GoogleOAuth } from './lib/google.ts';
+import { makeLoginState } from './lib/loginState.ts';
+import { makeRequireRole } from './plugins/requireRole.ts';
 
-export async function buildApp(env: Env, sql: Sql): Promise<FastifyInstance> {
+/**
+ * 검사가 갈아 끼우는 자리. **진짜 구글을 부르는 검사는 CI 에서 못 돈다** —
+ * 못 도는 검사는 없는 검사라, 바꿔 끼울 수 있게 만든 것 자체가 설계다
+ */
+export interface AppDeps {
+  google?: GoogleOAuth;
+  tokens?: AccessTokens;
+  auth?: Auth;
+}
+
+export async function buildApp(env: Env, sql: Sql, deps: AppDeps = {}): Promise<FastifyInstance> {
   const app = Fastify({
     logger: env.nodeEnv === 'test' ? false : { level: env.nodeEnv === 'production' ? 'info' : 'debug' },
     // Cloud Run 이 앞에 있다. 프로토콜·호스트를 헤더에서 읽어야 생성되는 주소가 맞는다
@@ -39,10 +58,17 @@ export async function buildApp(env: Env, sql: Sql): Promise<FastifyInstance> {
   // 쿠키를 안 받으므로 credentials 도 켜지 않는다
   await app.register(cors, {
     origin: env.allowedOrigins,
-    methods: ['GET', 'POST'],
-    credentials: false,
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
+    // **v5 Phase 4 에 켰다.** 로그인 쿠키가 앱(moncamp.kr)에서 api.moncamp.kr 로 실려 가야 한다.
+    // 켜도 안전한 이유는 허용 주소를 하나씩 적기 때문이다 — 와일드카드를 안 받는 것(env.ts)이
+    // 여기서 값을 한다. `*` 와 credentials 는 애초에 같이 못 쓰기도 한다
+    credentials: true,
     maxAge: 86400,
   });
+
+  // 로그인 쿠키를 읽고 쓴다. **서명은 여기서 안 한다** — 담는 값이 이미 서명된 JWT 이거나
+  // (login) 추측할 수 없는 난수라서(refresh), 쿠키 서명을 더해도 늘 것이 없다
+  await app.register(cookie);
 
   // 인스턴스 안의 계수다 — Cloud Run 이 인스턴스를 늘리거나 재우면 초기화된다.
   // 정교한 방어가 아니라 **사고로 쏟아지는 것**(재시도 루프·잘못 짠 스크립트)을 막는 그물이다.
@@ -82,7 +108,7 @@ export async function buildApp(env: Env, sql: Sql): Promise<FastifyInstance> {
     openapi: {
       info: OPENAPI_INFO,
       tags: [...OPENAPI_TAGS],
-      components: { securitySchemes: { adminToken: BEARER_SCHEME } },
+      components: { securitySchemes: { adminToken: BEARER_SCHEME, accessToken: ACCESS_SCHEME } },
       servers: [
         { url: 'https://api.moncamp.kr', description: '운영' },
         { url: 'http://localhost:8080', description: '로컬' },
@@ -98,6 +124,24 @@ export async function buildApp(env: Env, sql: Sql): Promise<FastifyInstance> {
     // 검증·직렬화가 읽는 것이라 그대로 두고, 문서로 나가는 길목에서만 갈아 낀다
     transformSpecification: (spec) => toOas30(spec) as typeof spec,
   });
+
+  // ── 로그인 (v5 Phase 4) ──────────────────────────────────────────────────
+  const tokens = deps.tokens ?? makeAccessTokens(env.auth.jwtSecret);
+  const requireRole = makeRequireRole(tokens);
+  const auth = deps.auth ?? makeAuth(sql, tokens, { rootEmail: env.auth.rootEmail });
+  const google = deps.google ?? makeGoogleOAuth({
+    clientId: env.auth.clientId,
+    clientSecret: env.auth.clientSecret,
+    redirectUri: env.auth.redirectUri,
+  });
+  authRoutes(app, {
+    auth, google,
+    login: makeLoginState(env.auth.jwtSecret),
+    requireRole,
+    env,
+  });
+  // ── 도메인 (v5 Phase 5) ──────────────────────────────────────────────────
+  domainRoutes(app, { domain: makeDomain(sql), requireRole });
 
   healthRoutes(app, sql);
   eventRoutes(app, sql);

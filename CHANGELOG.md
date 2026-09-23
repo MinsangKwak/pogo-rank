@@ -22,6 +22,56 @@
 ---
 
 <details open>
+<summary><b>2026-09-23</b> — 2판 · <code>v5.0.0</code> · <code>v4.9.9</code></summary>
+
+<details>
+<summary><b>v5.0.0</b> · 운영을 v5 로 — moncamp.kr 이 Next.js · 자체 인증 서버 · Neon 으로</summary>
+
+**요청** — 운영 전환을 순차적으로 진행한다.
+
+**넘기기 전에 잡은 빈자리 넷** — 전환 계획서(`docs/V5-CUTOVER.md`)에 없던 것들이다. 넷 다 **빠져도 화면은 멀쩡해서** 아무도 모를 자리였다.
+① **보안 헤더** — Cloudflare 가 GitHub Pages 앞에서 붙이던 다섯(HSTS · nosniff · Referrer · `frame-ancestors` · Permissions)이 프록시를 끄면 빠진다 → `web/next.config.ts` 가 직접 붙이고 배포 워크플로가 잰다.
+② **GA 조각** — v5 에는 불러오는 조각이 아예 없었다(`track.ts` 가 `window.gtag` 를 기다리기만 했다) → `lib/gaSnippet.ts`, 운영 채널 · moncamp.kr 에서만, '통계 끄기' 면 안 불러온다.
+③ **문의 이메일** — 빌드에 안 넘어가 방침의 문의처가 "사이트 운영자" 로만 찍혔다.
+④ **세션 파기** — 방침에 적을 "만료 세션 삭제" 를 하는 코드가 없었다 → 매일 롤업이 만료 하루 지난 세션을 지운다.
+
+**개인정보처리방침** — 계정 저장소가 Firebase(서울) → moncamp 서버(Cloud Run 서울) + Neon(싱가포르). **계정 정보의 국외 이전**을 4번에 적고,
+로그인 유지 쿠키 · User-Agent · Vercel · Cloudflare 를 더하고, GA 로 계정 식별자를 안 보내는 것을 바로잡았다. `TERMS_VER` 을 `2026-09-23-v5` 로 올려 다시 동의를 받는다.
+
+**주소 넘기기** — `scripts/vercel_prod.py`(status · attach · rollback)와 손으로만 도는 `cutover-prod.yml`. 바꾸기 전에 옛 레코드를 찍고, 되돌리면 GitHub Pages(v4)가 그대로 선다.
+운영 배포의 입구는 `deploy` 하나다 — 전환 기간에 열어 둔 `next` 를 뺐다. `verify_deploy.sh` 가 Next 판을 알아본다.
+
+</details>
+
+<details>
+<summary><b>v4.9.9</b> · dev 를 Next.js 로 — 인증 서버 · 이관 · 파이프라인 · 검사 · 수집 시행일 정정</summary>
+
+**요청** — 인증 서버를 올리고, 기존 사용자 데이터를 옮기고, dev 파이프라인을 새로 짜고, 검사 스크립트를 맞추고, 패치노트를 고친 뒤 dev 에 올린다.
+
+**인증 서버** — `api.moncamp.kr` 을 **Cloudflare Worker 가 받아 Cloud Run(서울)으로 넘긴다** (`infra/api-proxy`). 서울은 Cloud Run 도메인 연결을 지원하지 않고
+(지원 지역에서도 '운영에 권하지 않는 미리보기'), 대안인 부하 분산기는 월 $18 이라 $1 예산과 안 맞는다. 방침 4번 표에 서울이라 적혀 있어 지역은 못 옮긴다.
+Worker 는 리다이렉트를 따라가지 않고(로그인 302 는 브라우저 몫), 접속 IP 를 Cloudflare 가 본 값으로 덮는다. `node --test` 8개.
+첫 배포 전에 셋을 잡았다 — **`/healthz` 는 Cloud Run 앞단이 가로챈다**(`/health` 로, 스펙 전체를 훑는 검사 추가) · **dev 에서 로그인하면 moncamp.kr 로 튕겼다**
+(시작한 origin 을 봉인하고 `ALLOWED_ORIGINS` 와 글자 그대로 견준다) · GCP 준비는 Cloud Shell 한 번(`scripts/gcp_setup.sh`, $1 예산을 배포보다 먼저).
+
+**이관** — Firestore → Neon, 사람 7 · ★ 10 (예행 뒤 실제, `migrate-firestore.yml`). 데이터는 러너 밖으로 안 나가고, 로그의 이메일은 가린다.
+옮기기 전에 구멍 하나 — **다시 돌리면 새 서버에서 승인된 사람을 옛 백업의 '대기' 로 강등시켰다.** 역할은 높은 쪽, 이름·사진은 아직 안 들어온 줄만 새로 한다.
+
+**dev 파이프라인** — `dev-pipeline.yml` 한 벌을 `deploy-dev.yml`(도메인까지)과 `rehearse-dev.yml`(예행, 도메인 안 건드림)이 부른다.
+운영과 다른 Vercel 프로젝트(`moncamp-dev`)라 로그인 벽이 없고, 프로젝트·도메인·DNS 는 `scripts/vercel_dev.py` 가 맞춘다. 스토리북은 `/storybook/` 에 그대로.
+
+**검사 스크립트** — `check_screens` · `check_contrast` 가 해시 주소로 열고 0.6초 뒤 훑었다. Next.js 에서는 이동 중의 문서나 사실 블록을 훑고
+**조용히 통과했다**(vercel 판에서 `/mon/149` 알려진 한계가 안 잡혔다). `scripts/lib/visit.mjs` 가 판을 알아보고 앱이 붙은 뒤에 연다 — 안 붙으면 그 자체를 실패로 적는다.
+
+**수집 시행일 정정** — 9/21 에 '9/28 부터' 라고 알렸다. 주인이 바로 켜기로 해(CLAUDE.md §3) 새 화면이 뜨는 9/23 으로 고쳤다.
+패치노트 맨 위에는 주인이 정한 한 줄 — "이제부터 개인정보를 수집합니다".
+`PRIVACY_VER`·`TERMS_VER` 이 바뀌어 다음 로그인 때 동의를 한 번 더 묻는다.
+
+</details>
+
+</details>
+
+<details>
 <summary><b>2026-09-22</b> — 6판 · <code>v4.9.8</code> · <code>v4.9.7</code> · <code>v4.9.6</code> · <code>v4.9.5</code> · <code>v4.9.4</code> · <code>v4.9.3</code></summary>
 
 <details>

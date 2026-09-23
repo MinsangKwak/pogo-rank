@@ -1,0 +1,211 @@
+/* ─────────────────────────────────────────────────────────────────────────────
+   detail.css — 포켓몬 팝업 (v4 가 그리는 화면)
+
+   **왜 modal.css 에 합치지 않았나.** 그 파일은 v3 와 함께 쓰는 자리다. v3 는 빌드가
+   깨졌을 때 대신 서는 판이라, 여기 규칙을 그쪽으로 옮기면 폴백의 생김새까지 같이 바뀐다.
+   v4 만 그리는 마크업(.detail__matchrows · details.detail__catch)도 섞여 있다.
+   그래서 **v4 가 소유한 화면의 디자인 계층**으로 따로 둔다.
+
+   PC 는 왼쪽 프로필 · 오른쪽 정보의 두 칸, 모바일은 프로필을 한 줄로 눕힌다.
+   ───────────────────────────────────────────────────────────────────────────── */
+.modal__wrap:has(.detail--mon) {
+  width: min(var(--detail-width), calc(100vw - 4.8rem));
+  max-width: var(--detail-width);
+  padding-top: 0;
+}
+/* 닫기 — **머리 띠 안에 들어앉는다.** 흰 상자를 얹으면 박에 구멍이 뚫린 것처럼 보이고,
+   44px 칸에 14px 짜리 ✕ 하나면 글자가 길을 잃는다(실측 14px).
+   채움은 진한 빨강, 글자는 --bg — 테마가 뒤집혀도 같이 뒤집힌다 (CLAUDE.md §1-b).
+   밝은 테두리 한 겹은 띠와 단추를 가르는 선이다. 누르면 그림자만큼 내려앉는다 */
+.modal__wrap:has(.detail--mon) .modal__close {
+  top: var(--space-sm); right: var(--space-sm); z-index: 5;
+  display: flex; align-items: center; justify-content: center;
+  width: var(--tap); height: var(--tap);
+  background: var(--brand-2); border: 2px solid var(--bg); color: var(--bg);
+  font-size: var(--fs-sec); line-height: 1;
+  box-shadow: var(--shadow-hard) rgb(0 0 0 / 30%);
+}
+.modal__wrap:has(.detail--mon) .modal__close:hover {
+  background: var(--bg); border-color: var(--brand-2); color: var(--brand-2);
+}
+.modal__wrap:has(.detail--mon) .modal__close:active {
+  transform: translate(var(--px), var(--px)); box-shadow: none;
+}
+/* **팝업이 열리면 이 단추로 포커스가 간다**(키보드로 닫을 수 있어야 해서다). 그래서 기본 포커스 링
+   `outline: 2px solid var(--fg)` 이 늘 그려져, 빨간 띠 위에 검은 네모가 하나 얹힌 것처럼 보였다(제보 사진).
+   링을 없애면 키보드로 도는 사람이 길을 잃는다 — **없애지 말고 디자인에 맞춘다.**
+   단추 테두리와 같은 색이라 두 겹 테두리로 읽힌다 */
+.modal__wrap:has(.detail--mon) .modal__close:focus-visible {
+  outline: 2px solid var(--bg); outline-offset: 2px;
+}
+.modal__box:has(> .detail--mon) {
+  width: 100%; max-width: none; padding: 0;
+  /* 2026-09-19 v4.3.6 화면의 85% 까지만. 꽉 채우면 뒤가 안 보여 팝업이 아니라 페이지로 읽힌다 —
+     테두리 밖으로 원래 화면이 조금 남아야 "덮여 있다" 가 전해진다 (제보) */
+  height: min(var(--detail-height), 85dvh); max-height: 85dvh;
+  /* 2026-09-19 v4.3.0 팝업이 곧 카드 앞면이다 — 박테 두 겹(테두리 + 바깥 링)에 둥근 모서리 */
+  border: var(--card-border); border-radius: var(--r-card); box-shadow: var(--card-shadow-up);
+}
+
+/* 머리줄 */
+.detail--mon .detail__bar {
+  min-height: 6rem;
+  padding: var(--space-sm) 6.4rem var(--space-sm) var(--space-lg);
+  /* 카드의 이름 줄 — 박 위에 흰 글자.
+     **바탕색을 먼저 어둡게 박는다.** 박은 그림(gradient)이라 무슨 이유로든 안 그려지면
+     흰 글자가 흰 바탕에 놓인다. 색을 깔아 두면 그림이 빠져도 글자는 읽힌다.
+     단축 `background` 를 쓰지 않는 것도 같은 이유다 — 뒤에 오는 단축이 그림을 지운다 */
+  background-color: var(--brand-2);
+  background-image: var(--foil); background-size: cover;
+  border-bottom: var(--card-border);
+}
+.detail--mon .detail__bar-title { display: block; color: var(--bg); text-shadow: 0 .1rem 0 var(--foil-lo); font-size: var(--fs-lead); letter-spacing: .04em; }
+
+/* 두 칸 — 왼쪽 프로필, 오른쪽 정보 */
+.detail--mon .detail__body { flex-direction: row; }
+.detail--mon .detail__side {
+  flex: 0 0 var(--detail-profile); flex-direction: column; align-items: stretch;
+  gap: var(--space-lg); padding: var(--space-lg);
+  background: var(--card-tint); border-right: var(--card-border); overflow-y: auto;
+}
+.detail--mon .detail__side .sprite-box {
+  width: 100%; height: auto; max-width: none; aspect-ratio: 1;
+  background-color: var(--surface);
+  background-image: var(--holo-soft), var(--dot-pattern);
+  background-size: cover, var(--dot-size);
+  border: 1px solid var(--foil-lo); border-radius: var(--r-card);
+  border: var(--card-border); box-shadow: none;
+}
+.detail--mon .detail__side .sprite-box .sprite { width: 82%; height: 82%; margin: 0; }
+.detail--mon .detail__info { gap: var(--space-sm); }
+.detail--mon .detail__info h2 { font-size: var(--fs-title); overflow-wrap: anywhere; }
+.detail--mon .detail__types { top: var(--space-sm); left: var(--space-sm); }
+.detail--mon .detail__main-detail { padding-top: var(--space-lg); }
+
+/* 탭 */
+.detail--mon .detail__tabs {
+  margin: 0 var(--space-lg); padding: 0; gap: 0;
+  background: transparent; border: 0; border-bottom: 2px solid var(--line-2);
+}
+.detail--mon .detail__tab { min-height: var(--tap); font-size: var(--fs-lead); }
+.detail--mon .detail__tab[aria-selected="true"] {
+  color: var(--brand); background: var(--card-tint); box-shadow: inset 0 -.3rem 0 var(--brand);
+}
+
+/* 본문 카드 */
+.detail--mon .detail__scroll,
+.detail--mon .detail__calc { padding: var(--space-md) var(--space-lg) var(--space-lg); scrollbar-gutter: stable; }
+.detail--mon .detail__card,
+.detail--mon .detail__cp-card,
+.detail--mon .detail__acc { background: var(--surface); border: var(--card-border); box-shadow: none; }
+.detail--mon .detail__card { margin-top: var(--space-md); padding: var(--space-md); }
+.detail--mon .detail__card h3 { font-size: var(--fs-lead); }
+.detail--mon .detail__pane > :first-child { margin-top: 0; }
+.detail--mon .detail__cp-card { margin-top: 0; background: var(--card-tint); }
+.detail--mon .detail__cp-line b { color: var(--brand); font-size: var(--detail-cp-size); font-variant-numeric: tabular-nums; }
+.detail--mon .detail__catch-row,
+.detail--mon .detail__rank-row { padding: var(--space-sm) var(--space-md); }
+.detail--mon .detail__back { margin: 0 var(--space-lg) var(--space-sm); }
+.detail--mon .detail__rec { min-height: var(--tap); }
+
+/* 요약 탭의 두 칸 — 만렙 CP 와 배틀 활용 순위를 나란히 */
+.detail--mon .detail__pane > .detail__matchrows {
+  display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: var(--space-md);
+}
+.detail--mon .detail__pane > .detail__matchrows > .detail__card { margin-top: 0; }
+.detail--mon .detail__pane > .detail__matchrows .detail__rank-crown { display: none; }
+.detail--mon .detail__pane > .detail__matchrows .detail__rank-row {
+  padding: var(--space-sm) 0; background: transparent; border-bottom: 1px solid var(--line);
+}
+
+/* 포획 CP — 접어 두고 필요할 때 편다 (요약 탭이 길어지지 않도록) */
+.detail--mon .detail__catch > summary {
+  display: flex; justify-content: space-between; align-items: center;
+  min-height: var(--tap); font-weight: 700; list-style: none; cursor: pointer;
+}
+.detail--mon .detail__catch > summary::after { content: '+'; color: var(--brand); font-size: var(--fs-sec); }
+.detail--mon .detail__catch[open] > summary::after { content: '−'; }
+.detail--mon .detail__catch > summary::-webkit-details-marker { display: none; }
+
+/* 아래 고정 줄 */
+.detail--mon .detail__dock {
+  padding: var(--space-md) var(--space-lg);
+  padding-bottom: max(var(--space-md), env(safe-area-inset-bottom));
+  background: var(--surface); border-top: var(--card-border);
+}
+.detail--mon .detail__dock-row { grid-auto-columns: minmax(0, 1fr); justify-content: stretch; gap: var(--space-sm); }
+.detail--mon .detail__dock-btn {
+  min-height: var(--tap); height: auto; padding: var(--space-sm);
+  border: var(--card-border); font-size: var(--fs-body);
+}
+.detail--mon .detail__dock-btn--accent { background: var(--brand); border-color: var(--brand); color: var(--surface); }
+
+@media (max-width: 767px) {
+  .modal:has(.detail--mon) { padding: 0; }
+  .modal__wrap:has(.detail--mon) { width: 100%; margin: 0; }
+  .modal__box:has(> .detail--mon) { height: 85dvh; max-height: 85dvh; border-width: 2px 0 0; }
+  /* 좁은 화면에서는 같은 여백이 너무 넓다 — 팝업 안에서만 한 칸 줄인다 */
+  .detail--mon { --space-lg: 1.6rem; }
+  .detail--mon .detail__body { flex-direction: column; }
+  .detail--mon .detail__side {
+    flex: none; flex-direction: row; align-items: center; gap: var(--space-md);
+    padding: var(--space-md); overflow: visible;
+    border-right: 0; border-bottom: var(--card-border);
+  }
+  .detail--mon .detail__side .sprite-box { flex: 0 0 8.8rem; width: 8.8rem; height: 8.8rem; }
+  .detail--mon .detail__side .sprite-box .sprite { width: 7.2rem; height: 7.2rem; }
+  .detail--mon .detail__side .sprite-box .detail__types { display: none; }
+  .detail--mon .detail__types--inline { position: static; display: flex; }
+  .detail--mon .detail__info { flex-direction: column; align-items: flex-start; gap: var(--space-xs); }
+  .detail--mon .detail__info h2 { font-size: var(--fs-sec); }
+  .detail--mon .detail__en-inline { font-size: var(--fs-sub); }
+  .detail--mon .detail__main-detail { padding-top: var(--space-sm); }
+  .detail--mon .detail__bar { min-height: 5.6rem; }
+  .detail--mon:not([data-screen="calc"]) .detail__bar-title { display: block; }
+  .detail--mon .detail__cp-line b { font-size: var(--fs-title); }
+  .detail--mon .detail__dock-btn { font-size: var(--fs-sub); }
+  .detail--mon .detail__share-icon { display: none; }
+  .detail--mon .detail__fav-label { display: inline; }
+}
+@media (max-width: 380px) {
+  .detail--mon .detail__pane > .detail__matchrows { grid-template-columns: 1fr; }
+}
+
+/* ── 팝업 표면을 평면으로 (v4.4.0) ───────────────────────────────────────────
+   박·홀로 대신 선과 옅은 판으로 구역을 가른다 — 정보가 많은 화면이라 장식이 글자와 다툰다.
+   그림자는 흐림 0(v4.3.3), 채움 위 글자는 --bg(§1-b): #fff 는 다크의 밝은 빨강 위에서 2.3 이었다 */
+html body #root .modal__box:has(> .detail--mon) {
+  border-color: color-mix(in srgb, var(--fg) 22%, var(--bg));
+  box-shadow: var(--shadow-hard) color-mix(in srgb, var(--fg) 25%, transparent);
+  background: var(--bg);
+}
+html body #root .detail--mon { --detail-rule: color-mix(in srgb, var(--fg) 14%, transparent); color: var(--fg); background: var(--bg); }
+/* 머리띠 — 단축 background 로 박(--foil)을 지우고 진한 빨강 한 색. 글자·닫기는 그 짝인 --bg */
+html body #root .detail--mon .detail__bar { background: var(--brand-2); border-bottom-color: var(--detail-rule); }
+html body #root .detail--mon .detail__bar-title { color: var(--bg); text-shadow: none; font-weight: 700; }
+html body #root .modal__wrap:has(.detail--mon) .modal__close { background: transparent; color: var(--bg); border-color: color-mix(in srgb, var(--bg) 35%, transparent); box-shadow: none; }
+html body #root .modal__wrap:has(.detail--mon) .modal__close:hover { background: color-mix(in srgb, var(--bg) 14%, transparent); }
+html body #root .modal__wrap:has(.detail--mon) .modal__close:focus-visible { outline-color: var(--bg); }
+html body #root .detail--mon .detail__side { background: color-mix(in srgb, var(--brand) 5%, var(--bg)); border-color: var(--detail-rule); }
+html body #root .detail--mon .detail__side .sprite-box {
+  background-color: transparent;
+  background-image: radial-gradient(circle, color-mix(in srgb, var(--brand) 18%, transparent) .06rem, transparent .08rem);
+  background-size: .8rem .8rem;
+  border-color: transparent; box-shadow: none;
+}
+html body #root .detail--mon .detail__tabs { border-color: var(--detail-rule); }
+html body #root .detail--mon .detail__tab { color: var(--muted); background: transparent; }
+html body #root .detail--mon .detail__tab[aria-selected="true"] { color: var(--brand); font-weight: 700; background: color-mix(in srgb, var(--brand) 6%, transparent); box-shadow: inset 0 -.4rem 0 var(--brand); }
+html body #root .detail--mon :is(.detail__card, .detail__cp-card, .detail__acc) { background: color-mix(in srgb, var(--fg) 2%, var(--bg)); border-color: var(--detail-rule); box-shadow: none; }
+html body #root .detail--mon .detail__cp-card { background: color-mix(in srgb, var(--brand) 8%, var(--bg)); border-color: color-mix(in srgb, var(--brand) 25%, transparent); }
+html body #root .detail--mon .detail__cp-line b { font-weight: 700; letter-spacing: -.04em; }
+html body #root .detail--mon :is(.detail__card h3, .detail__rank-pos) { font-weight: 700; }
+html body #root .detail--mon .move-chip { background: color-mix(in srgb, var(--fg) 5%, transparent); border-color: transparent; color: var(--fg); box-shadow: none; }
+html body #root .detail--mon .move-chip.is-legacy { color: var(--brand); background: color-mix(in srgb, var(--brand) 9%, transparent); }
+html body #root .detail--mon .detail__dock { background: var(--bg); border-color: var(--detail-rule); }
+html body #root .detail--mon .detail__dock-btn { background: color-mix(in srgb, var(--fg) 3%, transparent); border-color: var(--detail-rule); color: var(--fg); box-shadow: none; }
+html body #root .detail--mon .detail__dock-btn--accent { background: var(--brand); border-color: var(--brand); color: var(--bg); }
+html body #root .detail--mon .detail__dock-btn:hover { border-color: var(--brand); filter: brightness(.96); transform: none; }
+
+/* 만화식 잉크 선(list.css)의 굵은 판 — 상세의 대표 그림은 1px */
+html body #root .detail--mon .detail__side .sprite-box .sprite { --ink-w: .1rem; }

@@ -27,7 +27,7 @@
       사람이 읽고 판단해 game_updates.json 에 published 로 옮겨 적으면 기사가 된다.
 
   아카이브 → 기사 승격: 아카이브 항목이 곧 기사 후보다. 같은 원문으로 기사가 생기면 화면은 기사를 보이고
-  아카이브 쪽은 숨는다 (frontend/scripts/components/updates.js). 그래서 "전부 기사" 가 목표로 살아 있으면서
+  아카이브 쪽은 숨는다 (frontend-v4/src/screens/GameUpdates.tsx). 그래서 "전부 기사" 가 목표로 살아 있으면서
   검증 안 된 문장이 나가는 일은 없다.
 """
 import argparse

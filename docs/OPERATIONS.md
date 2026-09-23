@@ -519,28 +519,32 @@ FIREBASE_SA_JSON='<한 줄 JSON>' python3 scripts/firestore_restore.py firestore
 | 3 | `openssl rand -hex 32` → `ADMIN_TOKEN` | 64자다 |
 | 4 | GCP 서비스 계정 + Artifact Registry 저장소 `moncamp` | `roles/run.admin` · `roles/iam.serviceAccountUser` · `roles/artifactregistry.writer` |
 | 5 | 저장소 **시크릿** 넣기 | `GCP_PROJECT_ID` · `GCP_SA_KEY` · `DATABASE_URL` · `ADMIN_TOKEN` · `COLLECT_BASE_URL` |
-| 6 | `server 배포 (Cloud Run)` 수동 실행 | 마지막 단계 `healthz 200` |
+| 6 | `server 배포 (Cloud Run)` 수동 실행 | 마지막 단계 `health 200` |
 
 > **4번 전까지 이 워크플로는 아무것도 안 하고 초록으로 끝난다.** 시크릿 셋(`GCP_PROJECT_ID` ·
 > `GCP_SA_KEY` · `DATABASE_URL`)이 다 있어야 배포로 들어간다 — 설정을 안 한 것은 고장이 아니라서,
 > `deploy` 브랜치에 밀 때마다 빨간 줄을 남기지 않는다. 로그의 `notice` 한 줄로 건너뛴 것을 알린다.
 
-| 7 | 도메인 `api.moncamp.kr` → Cloud Run 매핑 | `curl https://api.moncamp.kr/healthz` |
-| 8 | **2026-09-28 이후에** 저장소 **변수** `COLLECT_URL` = `https://api.moncamp.kr` | 다음 사이트 배포부터 수집이 켜진다 |
+| 7 | 도메인 `api.moncamp.kr` → Cloud Run 매핑 | `curl https://api.moncamp.kr/health` |
+| 8 | ~~저장소 **변수** `COLLECT_URL`~~ → **v5 부터는 배포 워크플로가 켠 채로 굽는다** (`deploy-web.yml`). 변수는 덮어쓸 때만 쓴다 | 다음 사이트 배포부터 수집이 켜진다 |
 
 **8번을 안 하면 아무것도 안 쌓인다.** 화면은 `COLLECT_URL` 이 비면 수집을 통째로 끈다 —
 `FIREBASE_CONFIG.apiKey` 가 없으면 로그인이 꺼지는 것과 같은 규칙이다. **1번을 안 했으면 6번을 하지 않는다.**
 
 ### 지킬 것 둘 — 날짜와 리전
 
-**① `COLLECT_URL` 을 2026-09-28 전에 켜지 않는다.** 개인정보처리방침 10번이 "방침을 바꾸면 시행 7일 전에
-패치노트로 알린다" 고 약속했고, v4.7.1 의 패치노트가 그 알림이다. 시행일이 **2026-09-28** 이라고 방침에 적혀
-있으므로 그 전에 켜면 우리가 적어 둔 것과 다르게 행동하는 것이 된다. 1~7번은 미리 해 둬도 된다 —
+**① 방침에 적힌 시행일과 실제로 켜는 날이 같아야 한다.** 개인정보처리방침 10번이 "방침을 바꾸면 시행 7일 전에
+패치노트로 알린다" 고 약속했고, v4.7.1 의 패치노트가 그 알림이다. 1~7번은 미리 해 둬도 된다 —
 서버가 떠 있어도 `COLLECT_URL` 이 비면 브라우저가 한 건도 안 보낸다.
+
+> **2026-09-23 (v4.9.9) — 시행일을 9/28 에서 9/23 으로 앞당겼다.** 주인이 수집을 바로 켜기로 했다(CLAUDE.md §3).
+> 새 화면이 dev 에 뜨는 날부터 쌓이므로 방침 본문 · `PRIVACY_VER` · `TERMS_VER` · 옛 공지의 날짜를 9/23 으로 고치고,
+> 패치노트 맨 위에는 "이제부터 개인정보를 수집합니다" 한 줄을 세웠다 (주인이 정한 문구).
+> 날짜를 고치는 곳은 web · frontend-v4 **두 벌**이다 (`src/lib/legalMeta.ts` · `src/screens/Legal.tsx`).
 
 **② Neon 리전은 `ap-southeast-1`(싱가포르) 로 만든다.** 방침 4번의 국외 이전 표에 그렇게 적혀 있다.
 다른 리전을 골랐으면 **표를 그 값으로 고친다** — 처리위탁 표는 실제와 달라지면 안 되는 자리다
-(`frontend/scripts/components/privacy.js` 와 `frontend-v4/src/screens/Legal.tsx` **둘 다**).
+(`web/src/screens/Legal.tsx` 와 `frontend-v4/src/screens/Legal.tsx` **둘 다** — v3 의 `privacy.js` 는 Phase 1-C 에 지웠다).
 
 ### 16.2 잘 쌓이는지 보는 법
 
@@ -570,10 +574,10 @@ curl -s -H "Authorization: Bearer $ADMIN_TOKEN" 'https://api.moncamp.kr/v1/hot?d
 
 | 증상 | 먼저 볼 것 |
 | --- | --- |
-| `healthz` 가 503 | `DATABASE_URL`. Neon 컴퓨트가 자고 있으면 몇 초 뒤 200 이 된다 — 계속 503 이면 접속 문자열이다 |
+| `health` 가 503 | `DATABASE_URL`. Neon 컴퓨트가 자고 있으면 몇 초 뒤 200 이 된다 — 계속 503 이면 접속 문자열이다 |
 | 수집 요청이 403 | `ALLOWED_ORIGINS` 에 그 주소가 없다. `deploy-server.yml` 의 `ENV_VARS` 를 본다 |
 | 수집 요청이 400 | 스키마를 못 넘었다. Cloud Run 로그에 어느 칸인지 찍힌다 |
-| 배포가 `healthz` 에서 멈춘다 | 부팅에서 죽은 것이다 — 환경변수 관문(`src/env.ts`)이 무엇이 없다고 말한다 |
+| 배포가 `health` 에서 멈춘다 | 부팅에서 죽은 것이다 — 환경변수 관문(`src/env.ts`)이 무엇이 없다고 말한다 |
 | 집계 워크플로가 빨갛다 | `COLLECT_BASE_URL` · `ADMIN_TOKEN` 시크릿. 열쇠가 틀리면 401 이다 |
 
 **어느 경우에도 사이트는 멀쩡하다.** 화면은 이 서버를 런타임에 읽지 않는다 — 급하게 고칠 일이 아니다.

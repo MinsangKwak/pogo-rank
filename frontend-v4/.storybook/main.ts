@@ -28,8 +28,8 @@ const config: StorybookConfig = {
   // 앱의 public/ 은 여전히 안 싣는다 — 아래 viteFinal 의 publicDir: false 참고
   staticDirs: ['./static'],
   viteFinal: (vite) => {
-    // src/styles.ts 가 `../../frontend/styles/*` 를 싣는다 — 뿌리 바깥이라 기본값으로는 막힌다.
-    // v3 CSS 를 안 실으면 스토리북의 조각만 v3 스킨 없이 그려져, 도면과 화면이 달라진다
+    // 뿌리 바깥 파일을 읽을 수 있게 열어 둔다. v5 Phase 1-C 에 CSS 가 src/styles/v3/ 로 들어와
+    // 지금은 꼭 필요하진 않지만, 저장소 루트의 자료를 싣게 될 때를 위해 남겨 둔다
     vite.server = { ...vite.server, fs: { ...vite.server?.fs, allow: ['..', '../..'] } };
     // 배포는 dev 사이트의 **하위 주소**(/storybook/)에 얹힌다 — 자산 주소가 루트 기준이면
     // 통째로 404 가 난다. 로컬은 그대로 '/' 다 (env 가 없으면 기본값)

@@ -1,0 +1,19 @@
+node_modules/
+.next/
+out/
+next-env.d.ts
+*.tsbuildinfo
+
+# 데이터는 v3 빌드에서 뽑는다 (frontend-v4/scripts/extract-data.mjs) — 저장소에 두지 않는다
+public/data/
+
+# 그림과 PWA 정적 파일도 빌드가 옮긴다 (frontend-v4/.gitignore 와 같은 규칙)
+public/manifest.webmanifest
+public/icon-192.png
+public/icon-512.png
+public/og.png
+public/og-design.png
+public/og-dev.png
+public/logo.svg
+public/sprites/
+public/sprites-anim/

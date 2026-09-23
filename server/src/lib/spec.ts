@@ -17,11 +17,22 @@ const NO_DB = (() => Promise.resolve([])) as unknown as Sql;
 
 const ENV: Env = {
   databaseUrl: 'postgres://doc',
+  migrationUrl: 'postgres://doc',
   port: 8080,
   allowedOrigins: ['https://moncamp.kr'],
   adminToken: '',
   rateLimitPerMinute: 60,
   nodeEnv: 'test',
+  // 문서를 뽑는 데 진짜 자격증명은 필요 없다 — 주소와 스키마만 읽는다.
+  // 예약 도메인(.test)이라 누구의 값도 아니고, 이 판은 부팅하지 않는다
+  auth: {
+    jwtSecret: 'd'.repeat(48),
+    rootEmail: 'owner@example.test',
+    clientId: 'doc.apps.googleusercontent.com',
+    clientSecret: 'GOCSPX-doc',
+    redirectUri: 'https://api.moncamp.kr/v1/auth/google/callback',
+    appOrigin: 'https://moncamp.kr',
+  },
 };
 
 export async function openapiSpec(): Promise<Record<string, unknown>> {
