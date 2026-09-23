@@ -1,0 +1,12 @@
+# Firestore → Neon 이관 요청 (.github/workflows/migrate-firestore.yml)
+#
+# 이 파일을 고쳐 push 하면 이관이 돈다. 손으로 누르는 단추(workflow_dispatch)는 그 파일이
+# **기본 브랜치에** 있어야 뜨는데, 이 작업은 main 에 가기 전에 해야 해서 이 길을 쓴다.
+# 요청이 커밋으로 남으니 언제 누가 무엇을 돌렸는지가 이력에 그대로 있다.
+#
+#   mode = dry-run   다 해 보고 되돌린다. 몇 명이 오고 무엇이 버려지는지만 본다
+#   mode = apply     실제로 옮긴다. 두 번 돌려도 같은 결과다 (전환 직전에 한 번 더 돌린다)
+#
+# 바꾸지 않고 push 하면 아무 일도 안 일어난다 — 아래 요청 번호가 바뀌어야 돈다.
+mode = dry-run
+request = 1

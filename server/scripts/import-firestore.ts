@@ -1,48 +1,80 @@
 #!/usr/bin/env -S npx tsx
 // ─────────────────────────────────────────────────────────────────────────────
-// scripts/import-firestore.ts — 백업 파일을 DB 로 옮긴다 (v5 Phase 7)
+// scripts/import-firestore.ts — 백업 JSON 을 Neon 에 옮긴다 (v5 Phase 7)
 //
-//   npx tsx scripts/import-firestore.ts firestore-backup.json
-//   DRY_RUN=1 npx tsx scripts/import-firestore.ts firestore-backup.json   # 되돌린다
+//   DRY_RUN=1 tsx scripts/import-firestore.ts firestore-backup.json   예행 — 다 해 보고 되돌린다
+//             tsx scripts/import-firestore.ts firestore-backup.json   실제
 //
-// 백업 파일은 scripts/firestore_backup.py 가 만든다. **원본을 직접 안 읽는 이유**는
-// 옮기는 코드를 Firebase 없이 검사할 수 있게 하기 위해서다 (src/test/importFirestore.test.ts).
+// **통째로 한 트랜잭션이다.** 반쯤 옮겨진 상태가 제일 나쁘다 — 누구는 승인이 넘어왔는데
+// 담아 둔 ★ 는 없는 식이 된다. 중간에 실패하면 아무것도 안 바뀐다.
+// 예행도 같은 길을 끝까지 걷고 마지막에 되돌린다. 그래야 예행이 통과한 것이 실제도 통과한다 —
+// 예행만 따로 짜면 그 둘이 다른 코드가 된다.
 //
-// **DRY_RUN 을 먼저 돌린다.** 진짜로 넣어 보고 통째로 되돌리므로, 몇 명이 오고 무엇이
-// 버려지는지를 손해 없이 볼 수 있다 — 이관은 되돌릴 수 없는 일이다.
+// **로그에 사람을 안 남긴다.** 이메일은 앞 두 글자만 남기고 가린다 (CLAUDE.md §3).
+// Actions 로그는 저장소 권한이 있는 사람 모두가 본다.
 // ─────────────────────────────────────────────────────────────────────────────
 'use strict';
 import { readFileSync } from 'node:fs';
-import { makeDb } from '../src/db/client.ts';
-import { importBackup, type Backup } from '../src/db/importFirestore.ts';
-import { readEnv } from '../src/env.ts';
+import { makeDb, type Sql } from '../src/db/client.ts';
+import { migrate } from '../src/db/migrate.ts';
+import { importBackup, type Backup, type ImportReport } from '../src/db/importFirestore.ts';
+import { directOf } from '../src/env.ts';
 
-const file = process.argv[2];
-if (!file) {
-  console.error('쓰는 법: npx tsx scripts/import-firestore.ts <백업.json>');
+/** 예행을 되돌리려고 던지는 것 — 실패와 구별해야 보고를 살릴 수 있다 */
+class Rollback extends Error {
+  constructor(readonly report: ImportReport) { super('예행 — 되돌린다'); }
+}
+
+/** `mi***@gmail.com` — 누군지 알아볼 만큼은 안 남긴다 */
+function mask(text: string): string {
+  return text.replace(/([^\s@'"`(]{1,2})[^\s@'"`(]*@([^\s'"`),]+)/g, '$1***@$2');
+}
+
+async function main(): Promise<void> {
+  const file = process.argv[2] ?? 'firestore-backup.json';
+  const dry = process.env['DRY_RUN'] === '1';
+  const given = process.env['DATABASE_URL'] ?? '';
+  if (!given) throw new Error('DATABASE_URL 이 없습니다');
+
+  const backup = JSON.parse(readFileSync(file, 'utf-8')) as Backup;
+  const counts = Object.entries(backup.collections ?? {}).map(([name, docs]) => `${name} ${docs?.length ?? 0}`);
+  console.log(`백업: ${counts.join(' · ')}`);
+
+  // 풀링 주소로는 마이그레이션 잠금이 안 선다 — 직접 주소로 연다 (server/src/env.ts 의 directOf)
+  const sql: Sql = makeDb(directOf(given));
+  try {
+    const applied = await migrate(sql);
+    console.log(applied.length ? `스키마: ${applied.join(', ')} 적용` : '스키마: 최신');
+
+    let report: ImportReport;
+    try {
+      report = await sql.begin(async (tx) => {
+        const done = await importBackup(tx as unknown as Sql, backup, process.env['ROOT_EMAIL'] ?? '');
+        if (dry) throw new Rollback(done);
+        return done;
+      }) as ImportReport;
+    } catch (error) {
+      if (!(error instanceof Rollback)) throw error;
+      report = error.report;
+    }
+
+    console.log(`${dry ? '예행 (되돌림)' : '옮김'}: 사람 ${report.users} · ★ ${report.favorites} · 트레이너 ${report.trainers}`);
+    if (report.skipped.length) {
+      console.log(`건너뜀 ${report.skipped.length}건`);
+      for (const why of report.skipped) console.log(`  · ${mask(why)}`);
+    }
+    // 합계를 표에서 다시 센다 — 보고서가 말하는 것과 실제로 남은 것이 같아야 한다
+    const [row] = await sql<{ users: number; favorites: number; trainers: number }[]>`
+      select (select count(*)::int from users) as users,
+             (select count(*)::int from favorites) as favorites,
+             (select count(*)::int from trainers) as trainers`;
+    console.log(`표에 지금: 사람 ${row?.users} · ★ ${row?.favorites} · 트레이너 ${row?.trainers}`);
+  } finally {
+    await sql.end();
+  }
+}
+
+main().catch((error: unknown) => {
+  console.error(mask(error instanceof Error ? error.message : String(error)));
   process.exit(1);
-}
-
-const env = readEnv();
-const backup = JSON.parse(readFileSync(file, 'utf8')) as Backup;
-const sql = makeDb(env.databaseUrl);
-const dry = process.env['DRY_RUN'] === '1';
-
-try {
-  // 한 트랜잭션 안에서 한다 — 중간에 터지면 절반만 옮겨진 DB 가 남는 것이 제일 나쁘다
-  const report = await sql.begin(async (tx) => {
-    const out = await importBackup(tx as never, backup, env.auth.rootEmail);
-    if (dry) throw Object.assign(new Error('DRY_RUN'), { report: out });
-    return out;
-  });
-  console.log(`사람 ${report.users}명 · 담아 둔 것 ${report.favorites}개 · 트레이너 ${report.trainers}개`);
-  for (const line of report.skipped) console.log(`  버림: ${line}`);
-} catch (error) {
-  const report = (error as { report?: { users: number; favorites: number; trainers: number; skipped: string[] } }).report;
-  if (!report) throw error;
-  console.log('[DRY_RUN] 되돌렸습니다. 진짜로 돌리면 이렇게 됩니다:');
-  console.log(`사람 ${report.users}명 · 담아 둔 것 ${report.favorites}개 · 트레이너 ${report.trainers}개`);
-  for (const line of report.skipped) console.log(`  버림: ${line}`);
-} finally {
-  await sql.end();
-}
+});
