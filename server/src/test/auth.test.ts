@@ -224,6 +224,22 @@ describe.skipIf(!url)('인증 서버', () => {
       expect(row!.n).toBe('1');
     });
 
+    it('★ 루트는 깃발이 꺼져 있어도 실험 기능이 켜진다 — 로그인 · 회전 · 내 정보 셋 다', async () => {
+      // v4 는 루트를 늘 beta 로 쳤다. 칸만 그대로 내보냈더니 주인 계정의 '내 포켓몬' 이 잠겼다 (2026-09-23 dev)
+      await seedMigrated(friend.email, 'root', false);
+      const session = await auth.signIn(friend);
+      expect(session.beta).toBe(true);
+      expect((await auth.rotate(session.refresh)).beta).toBe(true);
+      expect((await auth.profileOf(session.userId))?.beta).toBe(true);
+    });
+
+    it('루트가 아니면 깃발 그대로다 — 관리자라고 실험 기능이 따라 열리지 않는다', async () => {
+      await seedMigrated(friend.email, 'admin', false);
+      const session = await auth.signIn(friend);
+      expect(session.beta).toBe(false);
+      expect((await auth.profileOf(session.userId))?.beta).toBe(false);
+    });
+
     it('★ 진짜 sub 이 붙은 줄은 못 이어받는다', async () => {
       // 이것이 열려 있으면 이메일만 알면 남의 계정을 가져갈 수 있다
       await auth.signIn(friend);

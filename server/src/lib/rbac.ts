@@ -35,6 +35,15 @@ export function canApproveUsers(role: Role): boolean {
   return role === 'root';
 }
 
+/**
+ * 실험 기능을 쓸 수 있는가 — **루트는 늘 켜져 있다** (v4 stores/auth.ts 의 `let beta = adminRoot`).
+ * 루트는 서비스를 만든 사람이라 자기에게 깃발을 달아 줄 자리가 없다. 칸만 그대로 내보냈더니
+ * v5 dev 에서 주인 계정의 '내 포켓몬' 이 잠겼다 (2026-09-23)
+ */
+export function hasBeta(role: Role, beta: boolean | null | undefined): boolean {
+  return role === 'root' || beta === true;
+}
+
 /** 트레이너 코드 쓰기 — 관리자 둘 다 */
 export function canWriteTrainers(role: Role): boolean {
   return atLeast(role, 'admin');

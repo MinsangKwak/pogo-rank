@@ -12,7 +12,7 @@
 // ─────────────────────────────────────────────────────────────────────────────
 'use strict';
 import { describe, it, expect } from 'vitest';
-import { ROLES, isRole, atLeast, canApproveUsers, canWriteTrainers, canReadTrainers, favoriteCap } from '../lib/rbac.ts';
+import { ROLES, isRole, atLeast, canApproveUsers, canWriteTrainers, canReadTrainers, favoriteCap, hasBeta } from '../lib/rbac.ts';
 
 describe('권한은 넷이고 차례가 있다', () => {
   it('스키마의 check 제약과 같은 넷이다', () => {
@@ -70,5 +70,18 @@ describe('담아 두기 한도 — 승인 대기도 담는다 (v3.60.0)', () => 
     expect(favoriteCap('approved')).toBe(1000);
     expect(favoriteCap('admin')).toBe(1000);
     expect(favoriteCap('root')).toBe(1000);
+  });
+});
+
+describe('실험 기능 — 루트는 늘, 나머지는 깃발대로 (v4 와 같다)', () => {
+  it('루트는 깃발이 없어도 켜진다', () => {
+    expect(hasBeta('root', false)).toBe(true);
+    expect(hasBeta('root', null)).toBe(true);
+  });
+  it('관리자도 깃발을 따라간다 — 운영 권한과 실험 기능은 따로 준다', () => {
+    expect(hasBeta('admin', false)).toBe(false);
+    expect(hasBeta('admin', true)).toBe(true);
+    expect(hasBeta('approved', true)).toBe(true);
+    expect(hasBeta('pending', undefined)).toBe(false);
   });
 });
