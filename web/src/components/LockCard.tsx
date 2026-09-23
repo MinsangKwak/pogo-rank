@@ -14,9 +14,12 @@ import { useState } from 'react';
 import { signInNow, useAuthStore } from '../stores/auth';
 import { termsAccepted } from '../lib/terms';
 import type { LockReason } from '../lib/useLocked';
+
+// 확인 중은 잠긴 까닭이 아니라 잠겼는지 모르는 때다 — 판정(useLocked)의 답에는 안 넣는다
+type CardReason = LockReason | 'checking';
 import TermsConsent from './TermsConsent';
 
-export default function LockCard({ reason = 'login' }: { reason?: LockReason }) {
+export default function LockCard({ reason = 'login' }: { reason?: CardReason }) {
   const status = useAuthStore((s) => s.status);
   const [consentOpen, setConsentOpen] = useState(false);
   const beta = reason === 'beta';
@@ -25,6 +28,15 @@ export default function LockCard({ reason = 'login' }: { reason?: LockReason }) 
     if (!termsAccepted()) { setConsentOpen(true); return; }
     void signInNow();
   };
+  // 판정이 끝나기 전 — 본문을 그렸다 지우지 않는다. 로그인 버튼도 안 내민다 (곧 돌아오는 사람이다)
+  if (reason === 'checking') {
+    return (
+      <section className="plan__lock" aria-busy="true">
+        <span className="plan__lock-ico" aria-hidden="true">🔄</span>
+        <h2>로그인을 확인하는 중이에요</h2>
+      </section>
+    );
+  }
   if (beta) {
     return (
       <section className="plan__lock">
