@@ -17,9 +17,10 @@
 import { useEffect, useState, type ReactNode } from 'react';
 import App from './App';
 
-export default function AppClient({ seo }: { seo?: ReactNode }) {
+// 페이지가 넘기는 것(검색엔진용 본문)을 children 으로 받는다 — 앱 자체는 레이아웃에 한 번 선다(app/layout.tsx)
+export default function AppClient({ children }: { children?: ReactNode }) {
   const [mounted, setMounted] = useState(false);
   useEffect(() => { setMounted(true); }, []);
-  if (!mounted) return <>{seo}</>;
-  return <App seo={seo} />;
+  if (!mounted) return <>{children}</>;
+  return <App seo={children} />;
 }

@@ -1,7 +1,6 @@
 // ─────────────────────────────────────────────────────────────────────────────
 // app/page.tsx — 홈 (v5 Phase 6)
 // ─────────────────────────────────────────────────────────────────────────────
-import AppClient from '../src/AppClient';
 import { HERO_ART } from '../src/lib/heroArt';
 import RouteIntro from '../src/components/RouteIntro';
 import { ROUTES } from '../src/routes';
@@ -14,7 +13,7 @@ export default function HomePage() {
           문서 머리로 올려 준다. 화면과 같은 주소를 쓴다 — lib/heroArt.ts 한 곳에 적혀 있다 */}
       <link rel="preload" as="image" href={HERO_ART.src}
         imageSrcSet={HERO_ART.srcSet} imageSizes={HERO_ART.sizes} fetchPriority="high" />
-      <AppClient seo={<RouteIntro route={ROUTES[0]} />} />
+      <RouteIntro route={ROUTES[0]} />
     </>
   );
 }
