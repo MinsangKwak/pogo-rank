@@ -18,3 +18,38 @@ export const HERO_ART = {
   width: 1200,
   height: 800,
 } as const;
+
+/**
+ * 맥스 일정별 일러스트 — 배너의 한 장이 그 일정의 그림이 된다.
+ *
+ * **그림에 그려진 보스가 그 일정에 다 있어야 붙는다** (`dex` ⊆ 일정의 보스).
+ * 그림과 캡션이 따로 가면 '울머기' 라고 적힌 장에 프리져가 선다 — 2026-09-23 제보가 그 자리였다.
+ * 그림이 없는 일정은 보스 도트로 같은 구도의 장면을 그린다 (components/MaxPoster.tsx).
+ *
+ * 새 그림을 붙일 때: public/images 에 720w·1200w webp 를 두고 여기 한 줄을 더한다.
+ */
+export interface MaxArt {
+  /** 그림 속 상대 보스의 도감 번호 */
+  dex: readonly number[];
+  src: string;
+  srcSet: string;
+  sizes: string;
+  width: number;
+  height: number;
+  /** 대체 글 — 이름은 도감 실데이터에서 받는다 (§3) */
+  alt: (names: Readonly<Record<string, string>>) => string;
+}
+
+export const MAX_ART: readonly MaxArt[] = [
+  {
+    // 레지락·해피너스·루기아·몰드류가 다이맥스 프리져와 맞선다 — 프리져·썬더·파이어 주간(2026-09-21)
+    dex: [144],
+    ...HERO_ART,
+    alt: (names) => `${names['464'] ?? ''}·${names['242'] ?? ''}·${names['249'] ?? ''}·${names['530'] ?? ''}가 다이맥스 ${names['144'] ?? ''}와 맞서는 배틀 일러스트`,
+  },
+];
+
+/** 이 일정의 그림 — 그림 속 보스가 일정에 다 있어야 준다 */
+export function maxArtFor(dex: readonly number[]): MaxArt | undefined {
+  return MAX_ART.find((art) => art.dex.every((one) => dex.includes(one)));
+}

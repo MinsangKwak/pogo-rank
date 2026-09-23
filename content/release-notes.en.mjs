@@ -15,6 +15,11 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 export const RELEASE_NOTES_EN = {
+  '2026-09-23 · v5.1.0': [
+    '**The home banner now rotates** — every upcoming Dynamax and Gigantamax event gets its own slide, changing every 5 seconds. Each shows the dates, the boss and whether it is live or how many days are left; tap to open the Dynamax tier list. The button at the bottom right pauses it',
+    '**This week\'s boss is shown correctly** — the Articuno art was captioned with next week\'s boss (Sobble). The first slide is now this week: Dynamax Articuno · Zapdos · Moltres',
+    '**No more flicker when switching screens** — every tap on the menu or a button reopened the whole page, which briefly looked broken. The new screen now swaps in at once, and a thin line at the top shows a screen that is still loading',
+  ],
   '2026-09-23 · v5.0.0': [
     '**moncamp has a new app** — every Pokémon now has its own address you can link to, and the first screen loads faster. Old saved links (like #/dex) still open',
     '**Please sign in once more** — sign-in moved to the new moncamp server. Approvals and ★ were carried over, so signing in with Google again picks them up',

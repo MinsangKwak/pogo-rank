@@ -1,0 +1,89 @@
+name: 운영 스모크 (moncamp.kr)
+
+# 2026-09-23 v5 운영 전환 뒤 — 운영을 **샌드박스 밖에서** 잰다.
+#
+# 전환 직후 작업 세션에서 코드 조각이 가끔 502 · 연결 끊김으로 떨어졌다. 받아 보면 늘 200 이었고
+# 실패는 모두 연결 단계였다 — 세션의 출구 프록시가 흔들린 것으로 보였지만, **짐작으로 넘기지 않는다.**
+# 사용자와 같은 인터넷(GitHub 러너)에서 조각 전부를 여러 번 받고 화면 46장 · 명암을 훑는다.
+#
+# 매일 한 번 돈다 — 배포가 없는 날에도 운영이 멀쩡한지 기계가 본다
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 1 * * *'   # 10:00 KST
+  push:
+    branches: [next]
+    paths: ['.github/workflows/prod-smoke.yml', 'scripts/check_screens.mjs', 'scripts/check_contrast.mjs', 'scripts/lib/**']
+
+permissions:
+  contents: read
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    env:
+      SITE: https://moncamp.kr
+      API: https://api.moncamp.kr
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+
+      # **조각 하나만 빠져도 그 화면은 통째로 안 뜬다** (ChunkLoadError). 화면마다 붙은 조각을 모아 세 번씩 받는다
+      - name: 코드 조각 전부 · 세 번
+        run: |
+          set -u
+          pages="/ /dex /mon/25 /dmax /pve /pvp /raids /eggs /schedule /planner /finder /privacy /terms /release /game-updates /settings"
+          : > /tmp/assets
+          for p in $pages; do
+            code=$(curl -sS -o /tmp/page.html -w '%{http_code}' "$SITE$p")
+            [ "$code" = 200 ] || { echo "::error::$p → $code"; exit 1; }
+            grep -o '/_next/static/[^"]*\.\(js\|css\)' /tmp/page.html >> /tmp/assets
+          done
+          sort -u /tmp/assets -o /tmp/assets
+          total=0; bad=0
+          for round in 1 2 3; do
+            while read -r a; do
+              total=$((total+1))
+              out=$(curl -sS -o /dev/null -w '%{http_code} %{content_type}' "$SITE$a" 2>&1 || true)
+              case "$out" in
+                "200 application/javascript"*|"200 text/css"*) ;;
+                *) bad=$((bad+1)); echo "::error::$a → $out" ;;
+              esac
+            done < /tmp/assets
+          done
+          echo "조각 $(wc -l < /tmp/assets)개 × 3 = $total 번 · 실패 $bad"
+          [ "$bad" -eq 0 ]
+
+      - name: 로그인 서버 · 출처 · 헤더
+        run: |
+          set -e
+          curl -sS "$API/health" | grep -q '"ok":true' || { echo "::error::서버 /health"; exit 1; }
+          allow=$(curl -sS -o /dev/null -D - -X OPTIONS "$API/v1/auth/refresh" -H "Origin: $SITE" -H 'Access-Control-Request-Method: POST' | tr -d '\r' | grep -i '^access-control-allow-origin:' || true)
+          [ -n "$allow" ] || { echo "::error::moncamp.kr 출처를 서버가 안 받는다"; exit 1; }
+          evil=$(curl -sS -o /dev/null -D - -X OPTIONS "$API/v1/auth/refresh" -H 'Origin: https://evil.example' -H 'Access-Control-Request-Method: POST' | tr -d '\r' | grep -i '^access-control-allow-origin:' || true)
+          [ -z "$evil" ] || { echo "::error::낯선 출처를 받는다: $evil"; exit 1; }
+          code=$(curl -sS -o /dev/null -w '%{http_code}' -X POST "$API/v1/auth/refresh" -H "Origin: $SITE")
+          [ "$code" = 401 ] || { echo "::error::쿠키 없는 refresh 가 $code"; exit 1; }
+          where=$(curl -sS -o /dev/null -w '%{redirect_url}' "$API/v1/auth/google/start?next=/&app=$SITE")
+          [[ "$where" == https://accounts.google.com/* ]] || { echo "::error::로그인 시작이 구글로 안 간다"; exit 1; }
+          heads=$(curl -sSI "$SITE/" | tr -d '\r' | tr 'A-Z' 'a-z')
+          for name in strict-transport-security x-content-type-options referrer-policy content-security-policy permissions-policy; do
+            grep -q "^$name:" <<<"$heads" || { echo "::error::보안 헤더 $name"; exit 1; }
+          done
+          echo "OK — 서버 · 출처(받을 곳만) · 401 · 로그인 시작 · 헤더 다섯"
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: '22'
+
+      - name: 브라우저 준비
+        run: |
+          mkdir -p /tmp/pw && cd /tmp/pw && npm init -y >/dev/null && npm i --silent playwright@1
+          npx playwright install --with-deps chromium >/dev/null
+          echo "PLAYWRIGHT_MODULE=/tmp/pw/node_modules/playwright/index.js" >> "$GITHUB_ENV"
+
+      # CLAUDE.md §1 · §1-b — NaN · undefined 와 안 보이는 글자
+      - name: 화면 46장 (NaN · undefined)
+        run: node scripts/check_screens.mjs "$SITE/"
+
+      - name: 명암 42장
+        run: node scripts/check_contrast.mjs "$SITE/"
