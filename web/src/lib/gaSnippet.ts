@@ -28,7 +28,9 @@ export function gaSnippet(id: string): string {
   window.gtag = function () { window.dataLayer.push(arguments); };
   window.gtag('consent', 'default', { analytics_storage: 'granted', ad_storage: 'denied', ad_user_data: 'denied', ad_personalization: 'denied' });
   window.gtag('js', new Date());
-  var atHome = location.pathname === '/' && (!location.hash || location.hash === '#' || location.hash === '#/');
+  // 해시는 한 번 담아 견준다 — 해시 대입을 막는 검사(web-test.yml)가 비교까지 대입으로 읽는다
+  var hash = location.hash;
+  var atHome = location.pathname === '/' && (!hash || hash === '#' || hash === '#/');
   window.GA_SENT_FIRST = atHome;
   window.gtag('config', id, atHome ? { page_location: location.origin + '/' } : { send_page_view: false });
   var tag = document.createElement('script');
