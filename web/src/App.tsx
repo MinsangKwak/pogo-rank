@@ -240,10 +240,13 @@ export default function App({ seo }: AppProps = {}) {
           홈(셸)에서 도감(페이지)으로 갈 때마다 본문이 임시 덩어리로 깨졌다가 다시 섰다 (2026-09-23 실측 18프레임).
           이어 쓴 경계는 새 화면이 준비될 때까지 앞 화면을 그대로 둔다 */}
       <div className={isShell ? 'layout' : undefined} id={isShell ? undefined : 'page'}>
-        {isShell ? <div className="screen-tabs" id="screen-tabs" ref={setTabsEl} /> : null}
+        {/* **자리 셋은 페이지에서도 세워 두고 숨긴다.** 페이지(도감)에서 셸(D-MAX)로 올 때 자리가 새로 서면
+            본문이 먼저 그려지고, 한 박자 뒤 탭·보스·필터가 들어오며 본문을 372px 밀었다 (dev 실측 CLS 0.27).
+            미리 있으면 포털이 본문과 같은 커밋에 들어간다 */}
+        <div className="screen-tabs" id="screen-tabs" ref={setTabsEl} hidden={!isShell} />
         {/* 이번 주 보스는 탭과 필터 **사이** — v3 의 자리 그대로다 (list.css 가 그 틈을 8px 로 좁힌다) */}
-        {isShell ? <div style={{ display: 'contents' }} ref={setBossEl} /> : null}
-        {isShell ? <div className="controls" id="controls" ref={setControlsEl} /> : null}
+        <div style={{ display: isShell ? 'contents' : 'none' }} ref={setBossEl} />
+        <div className="controls" id="controls" ref={setControlsEl} hidden={!isShell} />
         {/* 페이지에서는 틀이 없다(display: contents) — 칸 자리만 맞춘다 */}
         <div id={isShell ? 'content' : undefined} className={isShell ? undefined : 'page-body'}>
           {/* 경계가 기다림 **밖**이다 — 안에 두면 실패했을 때 기다림이 먼저 잡아 영영 안 끝난다 */}
