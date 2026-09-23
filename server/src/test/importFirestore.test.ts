@@ -132,6 +132,38 @@ describe.skipIf(!url)('Firestore 이관', () => {
     expect([users!.n, favs!.n, trainers!.n]).toEqual(['4', '3', '1']);
   });
 
+  // v5 Phase 7 — 전환 직전에 한 번 더 돌린다. 그 사이 새 서버에서 일어난 일을 옛 백업이 덮으면 안 된다.
+  // 전에는 이메일로 부딪히면 role 을 백업 값으로 덮어써서, 새 화면에서 승인된 사람이 대기로 강등됐다
+  it('★ 다시 돌려도 새 서버에서 올린 권한을 내리지 않는다', async () => {
+    await importBackup(sql, backup, ROOT);
+    // 새 서버의 관리자가 대기자를 승인하고 실험 기능을 열어 줬다 — 옛 Firestore 는 여전히 대기다
+    await sql`update users set role = 'approved', beta = true where email = 'waiting@example.test'`;
+    await importBackup(sql, backup, ROOT);
+    const [row] = await sql<{ role: string; beta: boolean }[]>`
+      select role, beta from users where email = 'waiting@example.test'`;
+    expect(row).toEqual({ role: 'approved', beta: true });
+  });
+
+  it('★ 다시 돌려도 백업 쪽이 더 높으면 올린다 — 옛 화면에서 그 사이 승인된 사람', async () => {
+    const before: Backup = { collections: { ...backup.collections,
+      allowlist: (backup.collections.allowlist ?? []).filter((doc) => doc.id !== 'friend@example.test') } };
+    await importBackup(sql, before, ROOT);
+    await importBackup(sql, backup, ROOT);
+    const [row] = await sql<{ role: string }[]>`select role from users where email = 'friend@example.test'`;
+    expect(row!.role).not.toBe('pending');
+  });
+
+  it('★ 새 서버로 들어온 사람의 이름·사진은 옛 백업이 덮지 않는다', async () => {
+    await importBackup(sql, backup, ROOT);
+    // 로그인하면 구글이 준 값으로 갈린다 (services/auth.ts) — 그게 옛 백업보다 새 값이다
+    await sql`update users set google_sub = 'real-sub', display_name = '구글 이름', photo_url = 'https://g.test/p.png'
+              where email = 'waiting@example.test'`;
+    await importBackup(sql, backup, ROOT);
+    const [row] = await sql<{ google_sub: string; display_name: string; photo_url: string }[]>`
+      select google_sub, display_name, photo_url from users where email = 'waiting@example.test'`;
+    expect(row).toEqual({ google_sub: 'real-sub', display_name: '구글 이름', photo_url: 'https://g.test/p.png' });
+  });
+
   it('승인 목록에 없는 루트도 루트로 선다', async () => {
     // 아직 한 번도 로그인 안 한 주인이 있을 수 있다 — 그래도 목록에는 있어야 한다
     const bare: Backup = { collections: { allowlist: [], requests: [], users: [], trainers: [] } };

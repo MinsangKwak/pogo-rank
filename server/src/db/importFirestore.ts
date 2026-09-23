@@ -19,7 +19,7 @@
 // ─────────────────────────────────────────────────────────────────────────────
 'use strict';
 import type { Sql } from './client.ts';
-import type { Role } from '../lib/rbac.ts';
+import { ROLES, type Role } from '../lib/rbac.ts';
 
 /** Firestore REST 가 주는 값 한 칸 */
 type Value = Record<string, unknown>;
@@ -115,6 +115,8 @@ export async function importBackup(sql: Sql, backup: Backup, rootEmail = ''): Pr
   }
   if (root && !people.has(root)) put(root, { role: 'root' });
 
+  // 역할의 높낮이는 rbac.ts 의 ROLES 한 곳에서 온다 — SQL 에 따로 적으면 두 벌이 된다
+  const roleOrder = sql.array([...ROLES]);
   const idOfEmail = new Map<string, string>();
   for (const person of people.values()) {
     // **자리표시자.** 처음 로그인할 때 진짜 sub 으로 갈린다 (services/auth.ts)
@@ -123,10 +125,18 @@ export async function importBackup(sql: Sql, backup: Backup, rootEmail = ''): Pr
       insert into users (google_sub, email, display_name, photo_url, role, beta)
       values (${sub}, ${person.email}, ${person.name}, ${person.photo}, ${person.role}, ${person.beta})
       on conflict (email) do update
-         set display_name = excluded.display_name,
-             photo_url    = excluded.photo_url,
-             role         = excluded.role,
-             beta         = excluded.beta,
+         -- **다시 돌릴 때 새 서버의 사실을 덮지 않는다** (v5 Phase 7). 전환 직전에 한 번 더 돌리는데,
+         -- 그 사이 새 서버에서 승인된 사람을 옛 백업의 '대기' 로 강등시키면 안 된다.
+         --   role   둘 중 높은 쪽 — 어느 쪽에서 올렸든 산다. 내리는 일은 이관이 아니라 관리자가 한다
+         --   beta   둘 중 하나라도 켜졌으면 켠다 — 같은 이유다
+         --   이름·사진  아직 새 서버로 안 들어온 줄(자리표시자)만 백업으로 새로 한다.
+         --              들어온 사람은 로그인 때 구글이 준 값이 더 새 값이다
+         set display_name = case when users.google_sub like 'firebase:%' then excluded.display_name else users.display_name end,
+             photo_url    = case when users.google_sub like 'firebase:%' then excluded.photo_url else users.photo_url end,
+             role         = case when array_position(${roleOrder}::text[], excluded.role)
+                                    > array_position(${roleOrder}::text[], users.role)
+                                 then excluded.role else users.role end,
+             beta         = users.beta or excluded.beta,
              updated_at   = now()
       returning id`;
     idOfEmail.set(person.email, row!.id);
