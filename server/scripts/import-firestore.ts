@@ -30,6 +30,39 @@ function mask(text: string): string {
   return text.replace(/([^\s@'"`(]{1,2})[^\s@'"`(]*@([^\s'"`),]+)/g, '$1***@$2');
 }
 
+/**
+ * 사람별로 **Firestore 에 적힌 권한**과 **지금 Neon 에 있는 권한**을 나란히 찍는다.
+ * 2026-09-23 dev 에서 로그인은 되는데 '내 포켓몬' 이 잠긴 계정이 나왔다 — 짐작으로 고치지 않고
+ * 원본과 사본을 견준다. 이관 전의 모습이라 예행으로 돌려도 같은 표가 나온다
+ */
+async function compare(sql: Sql, backup: Backup): Promise<void> {
+  const mail = (raw: string) => raw.trim().toLowerCase();
+  const yes = (doc: { fields?: Record<string, unknown> }, key: string) => {
+    const field = doc.fields?.[key] as { booleanValue?: boolean } | undefined;
+    return field?.booleanValue === true;
+  };
+  const source = new Map<string, string>();
+  for (const doc of backup.collections.requests ?? []) source.set(mail(doc.id), '대기');
+  for (const doc of backup.collections.allowlist ?? []) {
+    source.set(mail(doc.id), `승인${yes(doc, 'admin') ? '·관리자' : ''}${yes(doc, 'beta') ? '·beta' : ''}`);
+  }
+  const rows = await sql<{ email: string; role: string; beta: boolean; claimed: boolean; favs: number }[]>`
+    select u.email, u.role, u.beta, u.google_sub not like 'firebase:%' as claimed,
+           (select count(*)::int from favorites f where f.user_id = u.id) as favs
+      from users u order by u.email`;
+  const seen = new Set<string>();
+  console.log('── 사람별 대조 (Firestore → Neon 지금) ──');
+  for (const row of rows) {
+    seen.add(row.email);
+    const from = source.get(row.email) ?? '(Firestore 에 없음)';
+    const now = `${row.role}${row.beta ? '·beta' : ''} · ${row.claimed ? '로그인함' : '아직 로그인 안 함'} · ★ ${row.favs}`;
+    console.log(`  ${mask(row.email)}  ${from}  →  ${now}`);
+  }
+  for (const [email, from] of source) {
+    if (!seen.has(email)) console.log(`  ${mask(email)}  ${from}  →  (Neon 에 없음)`);
+  }
+}
+
 async function main(): Promise<void> {
   const file = process.argv[2] ?? 'firestore-backup.json';
   const dry = process.env['DRY_RUN'] === '1';
@@ -45,6 +78,7 @@ async function main(): Promise<void> {
   try {
     const applied = await migrate(sql);
     console.log(applied.length ? `스키마: ${applied.join(', ')} 적용` : '스키마: 최신');
+    await compare(sql, backup);
 
     let report: ImportReport;
     try {
