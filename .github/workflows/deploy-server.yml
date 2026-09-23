@@ -192,6 +192,9 @@ jobs:
             curl -sS -D /tmp/h -o /tmp/b https://api.moncamp.kr/health || true
             echo "── 응답 머리 ──"; grep -iE '^(HTTP|server|cf-mitigated|cf-ray|content-type|x-powered-by):' /tmp/h || true
             echo "── 본문 앞 ──"; head -c 300 /tmp/b | tr '\n' ' '; echo
+            if grep -qi '^cf-mitigated: challenge' /tmp/h; then
+              echo "::error::Cloudflare 가 확인 화면을 띄운다 — Bot Fight Mode 가 켜져 있다. 끈다 (docs/INFRA.md §8 의 6번 아래)"
+            fi
             echo "api.moncamp.kr 이 서버에 안 닿는다"; exit 1
           fi
           echo "api.moncamp.kr/health 200"
