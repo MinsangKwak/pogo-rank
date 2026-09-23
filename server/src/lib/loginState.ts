@@ -27,6 +27,12 @@ export interface LoginState {
   verifier: string;
   /** 로그인을 마치고 돌아갈 앱 안의 경로. **경로만 받는다** — 아래 safePath 참고 */
   next: string;
+  /**
+   * 로그인을 시작한 화면의 origin (v5 Phase 7). dev.moncamp.kr 에서 누르면 dev 로 돌아와야 한다.
+   * **여기서는 믿지 않는다** — 봉인은 위조를 막을 뿐 처음 넣은 값이 옳다는 뜻이 아니다.
+   * 돌려보내기 직전에 라우트가 ALLOWED_ORIGINS 로 다시 거른다. 옛 쿠키에는 없어 빈 문자열이다
+   */
+  origin: string;
 }
 
 export interface LoginStateCodec {
@@ -69,9 +75,9 @@ export function makeLoginState(secret: string): LoginStateCodec {
         const { payload } = await jwtVerify(sealed, key, {
           algorithms: ['HS256'], issuer: ISSUER, audience: AUDIENCE,
         });
-        const { state, nonce, verifier, next } = payload as Record<string, unknown>;
+        const { state, nonce, verifier, next, origin } = payload as Record<string, unknown>;
         if (typeof state !== 'string' || typeof nonce !== 'string' || typeof verifier !== 'string') return null;
-        return { state, nonce, verifier, next: safePath(next) };
+        return { state, nonce, verifier, next: safePath(next), origin: typeof origin === 'string' ? origin : '' };
       } catch (error) {
         // 만료도 위조도 여기서는 같은 답이다 — 어느 쪽이든 다시 시작해야 한다
         void (error instanceof errors.JWTExpired);

@@ -106,7 +106,10 @@ export const serverApi = {
    */
   signIn(next = '/'): void {
     if (!authEnabled()) return;
-    window.location.assign(`${API}/v1/auth/google/start?next=${encodeURIComponent(next)}`);
+    // 어느 화면에서 시작했는지도 넘긴다 — dev 에서 누르면 dev 로 돌아와야 한다.
+    // 서버가 ALLOWED_ORIGINS 로 거르므로 여기서 값을 꾸며도 밖으로는 못 나간다
+    const app = encodeURIComponent(window.location.origin);
+    window.location.assign(`${API}/v1/auth/google/start?next=${encodeURIComponent(next)}&app=${app}`);
   },
 
   refresh,

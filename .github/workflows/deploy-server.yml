@@ -9,6 +9,7 @@ name: server 배포 (Cloud Run)
 #
 # 저장소 시크릿: GCP_PROJECT_ID · GCP_SA_KEY · DATABASE_URL · ADMIN_TOKEN
 #              JWT_SECRET · ROOT_EMAIL · GOOGLE_CLIENT_ID · GOOGLE_CLIENT_SECRET (v5 Phase 4)
+#              CLOUDFLARE_API_TOKEN — api.moncamp.kr 을 잇는 Worker (v5 Phase 7, infra/api-proxy)
 #
 # 더 나은 길 둘 (지금은 시작을 단순하게 두려고 안 썼다)
 #   · 서비스 계정 키 대신 **Workload Identity Federation** — 키를 저장소에 두지 않는다
@@ -122,10 +123,57 @@ jobs:
           URL="$(gcloud run services describe "$SERVICE" --region "$REGION" --format 'value(status.url)')"
           echo "배포: $URL"
           for i in 1 2 3 4 5; do
-            code="$(curl -so /dev/null -w '%{http_code}' "$URL/healthz" || true)"
-            [ "$code" = "200" ] && echo "healthz 200" && exit 0
-            echo "healthz $code — 다시 (${i}/5)"
+            code="$(curl -so /dev/null -w '%{http_code}' "$URL/health" || true)"
+            [ "$code" = "200" ] && echo "health 200" && exit 0
+            echo "health $code — 다시 (${i}/5)"
             sleep 5
           done
-          echo "healthz 가 200 을 안 준다 — DB 접속(DATABASE_URL)부터 확인한다"
+          echo "health 가 200 을 안 준다 — DB 접속(DATABASE_URL)부터 확인한다"
           exit 1
+
+      # ── api.moncamp.kr 잇기 (v5 Phase 7) ────────────────────────────────────
+      # **Cloud Run 도메인 연결을 안 쓴다.** 서울은 지원하지 않고, 지원 지역에서도 '운영에 권하지
+      # 않는 미리보기' 다(공식 문서). 방침에 서울이라 적혀 있어 지역을 못 옮긴다.
+      # Cloudflare Worker 가 받아 넘긴다 — 0원이고 DNS·인증서까지 Worker 가 만든다 (infra/api-proxy)
+      - if: steps.ready.outputs.go == 'true'
+        name: Worker 검사 — 빨가면 잇지 않는다
+        run: node --test infra/api-proxy/worker.test.mjs
+
+      - if: steps.ready.outputs.go == 'true'
+        name: api.moncamp.kr → Cloud Run (Cloudflare Worker)
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: |
+          set -e
+          if [ -z "$CLOUDFLARE_API_TOKEN" ]; then
+            echo "::warning::CLOUDFLARE_API_TOKEN 이 없어 api.moncamp.kr 을 잇지 않았습니다 — 서버는 떠 있지만 화면에서 못 부릅니다"
+            exit 0
+          fi
+          URL="$(gcloud run services describe "$SERVICE" --region "$REGION" --format 'value(status.url)')"
+          # 계정이 여럿이면 wrangler 가 물어보고 멈춘다 — 토큰이 보는 첫 계정을 쓴다
+          export CLOUDFLARE_ACCOUNT_ID="$(curl -fsS -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
+            https://api.cloudflare.com/client/v4/accounts | python3 -c 'import sys,json;print(json.load(sys.stdin)["result"][0]["id"])')"
+          npx --yes wrangler@4 deploy --config infra/api-proxy/wrangler.toml --var "ORIGIN_URL:$URL"
+
+      # **이은 것을 사람이 쓰는 주소로 잰다.** 서버가 살아 있는 것과 api.moncamp.kr 이 서버에
+      # 닿는 것은 다른 일이다. 새 도메인은 인증서가 붙는 데 몇 분 걸릴 수 있어 넉넉히 기다린다
+      - if: steps.ready.outputs.go == 'true'
+        name: api.moncamp.kr 로 재 본다
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: |
+          [ -n "$CLOUDFLARE_API_TOKEN" ] || exit 0
+          for i in $(seq 1 20); do
+            code="$(curl -so /dev/null -w '%{http_code}' https://api.moncamp.kr/health || true)"
+            [ "$code" = "200" ] && break
+            echo "api.moncamp.kr/health $code — 인증서·DNS 를 기다린다 (${i}/20)"
+            sleep 15
+          done
+          [ "$code" = "200" ] || { echo "api.moncamp.kr 이 서버에 안 닿는다"; exit 1; }
+          echo "api.moncamp.kr/health 200"
+          # 로그인 시작이 **브라우저에게** 302 로 구글을 가리키는지 — Worker 가 따라가 버리면 여기가 200 이다
+          read -r code where < <(curl -so /dev/null -w '%{http_code} %{redirect_url}' \
+            'https://api.moncamp.kr/v1/auth/google/start?next=/&app=https://dev.moncamp.kr')
+          echo "로그인 시작: $code → ${where%%\?*}"
+          [ "$code" = "302" ] && [[ "$where" == https://accounts.google.com/* ]] \
+            || { echo "로그인 시작이 구글로 안 간다 — Worker 가 리다이렉트를 따라갔거나 OAuth 값이 비었다"; exit 1; }

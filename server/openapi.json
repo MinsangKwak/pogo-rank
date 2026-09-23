@@ -41,6 +41,15 @@
             "name": "next",
             "required": false,
             "description": "마치고 돌아갈 앱 안의 경로"
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "name": "app",
+            "required": false,
+            "description": "로그인을 시작한 화면의 origin. ALLOWED_ORIGINS 밖이면 기본 화면으로 돌아간다"
           }
         ],
         "responses": {
@@ -1030,7 +1039,7 @@
         }
       }
     },
-    "/healthz": {
+    "/health": {
       "get": {
         "summary": "살아 있는가, DB 에 닿는가",
         "tags": [

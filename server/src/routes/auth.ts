@@ -87,9 +87,16 @@ export function authRoutes(app: FastifyInstance, deps: AuthRouteDeps): void {
     path: REFRESH_PATH,
   };
 
-  /** 앱 안으로만 보낸다 — 밖으로 보내면 열린 리다이렉트다 (loginState.safePath) */
-  const backToApp = (next: string, error?: string) => {
-    const url = new URL(safePath(next), env.auth.appOrigin);
+  /**
+   * 돌아갈 화면을 고른다 — **허용 목록에 글자 그대로 있을 때만** 그쪽이다.
+   * 접두사·포함으로 견주면 `https://dev.moncamp.kr.evil.test` 가 통과한다. 아니면 기본 화면(APP_ORIGIN)
+   */
+  const originOf = (raw: string | undefined) =>
+    raw && env.allowedOrigins.includes(raw) ? raw : env.auth.appOrigin;
+
+  /** 앱 안으로만 보낸다 — 밖으로 보내면 열린 리다이렉트다 (loginState.safePath · originOf) */
+  const backToApp = (next: string, origin: string | undefined, error?: string) => {
+    const url = new URL(safePath(next), originOf(origin));
     if (error) url.searchParams.set('login', error);
     return url.toString();
   };
@@ -101,17 +108,20 @@ export function authRoutes(app: FastifyInstance, deps: AuthRouteDeps): void {
       summary: '구글 로그인 화면으로 보낸다',
       querystring: {
         type: 'object',
-        properties: { next: { type: 'string', description: '마치고 돌아갈 앱 안의 경로' } },
+        properties: {
+          next: { type: 'string', description: '마치고 돌아갈 앱 안의 경로' },
+          app: { type: 'string', description: '로그인을 시작한 화면의 origin. ALLOWED_ORIGINS 밖이면 기본 화면으로 돌아간다' },
+        },
       },
       response: { 302: { description: '구글로', type: 'null' } },
     },
   }, async (request, reply) => {
-    const { next } = request.query as { next?: string };
+    const { next, app: from } = request.query as { next?: string; app?: string };
     const state = randomToken();
     const nonce = randomToken();
     const verifier = newVerifier();
 
-    const sealed = await login.seal({ state, nonce, verifier, next: safePath(next) });
+    const sealed = await login.seal({ state, nonce, verifier, next: safePath(next), origin: originOf(from) });
     reply.setCookie(LOGIN_COOKIE, sealed, { ...cookieBase, maxAge: login.ttlSeconds });
     return reply.redirect(google.authorizeUrl({ state, nonce, codeChallenge: challengeOf(verifier) }), 302);
   });
@@ -139,26 +149,27 @@ export function authRoutes(app: FastifyInstance, deps: AuthRouteDeps): void {
     reply.clearCookie(LOGIN_COOKIE, cookieBase);
 
     const next = pending?.next ?? '/';
-    if (query.error) return reply.redirect(backToApp(next, 'cancelled'), 302);
+    const origin = pending?.origin;
+    if (query.error) return reply.redirect(backToApp(next, origin, 'cancelled'), 302);
     // 쿠키가 없거나 만료됐다. 구글 화면에서 10분 넘게 머물렀거나 다른 브라우저로 돌아왔다
-    if (!pending) return reply.redirect(backToApp(next, 'expired'), 302);
+    if (!pending) return reply.redirect(backToApp(next, origin, 'expired'), 302);
     // **state 를 견준다.** 남이 자기 인가 코드를 남의 브라우저에 밀어 넣는 로그인 CSRF 를 막는다
     if (!query.state || !sameSecret(query.state, pending.state)) {
-      return reply.redirect(backToApp(next, 'state'), 302);
+      return reply.redirect(backToApp(next, origin, 'state'), 302);
     }
-    if (!query.code) return reply.redirect(backToApp(next, 'nocode'), 302);
+    if (!query.code) return reply.redirect(backToApp(next, origin, 'nocode'), 302);
 
     try {
       const profile = await google.exchange(query.code, pending.verifier, pending.nonce);
       const session = await auth.signIn(profile, request.headers['user-agent'] ?? '');
       reply.setCookie(REFRESH_COOKIE, session.refresh, { ...cookieBase, maxAge: REFRESH_DAYS * 86400 });
       // **토큰을 주소에 안 싣는다.** 앱이 쿠키로 갱신을 한 번 불러 받아 간다
-      return reply.redirect(backToApp(next), 302);
+      return reply.redirect(backToApp(next, origin), 302);
     } catch (error) {
-      if (error instanceof GoogleError) return reply.redirect(backToApp(next, error.reason), 302);
-      if (error instanceof AuthError) return reply.redirect(backToApp(next, error.reason), 302);
+      if (error instanceof GoogleError) return reply.redirect(backToApp(next, origin, error.reason), 302);
+      if (error instanceof AuthError) return reply.redirect(backToApp(next, origin, error.reason), 302);
       app.log.error({ error }, '로그인 처리 실패');
-      return reply.redirect(backToApp(next, 'error'), 302);
+      return reply.redirect(backToApp(next, origin, 'error'), 302);
     }
   });
 

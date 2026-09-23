@@ -165,6 +165,36 @@ describe.skipIf(!url)('로그인 주소', () => {
       }
     });
 
+    // v5 Phase 7 — dev.moncamp.kr 에서 로그인하면 dev 로 돌아와야 한다.
+    // 전에는 APP_ORIGIN 하나로만 보내서, dev 에서 로그인한 사람이 moncamp.kr(옛 화면)로 튕겨 나갔다
+    it('로그인을 시작한 화면으로 돌아간다 (허용된 곳이면)', async () => {
+      const DEV = 'https://dev.moncamp.kr';
+      const start = await app.inject({ method: 'GET', url: `/v1/auth/google/start?next=/dex&app=${encodeURIComponent(DEV)}` });
+      const sealed = cookieOf(start, LOGIN_COOKIE)!.value;
+      const state = new URL(start.headers.location as string).searchParams.get('state')!;
+      const response = await app.inject({
+        method: 'GET',
+        url: `/v1/auth/google/callback?code=c&state=${encodeURIComponent(state)}`,
+        cookies: { [LOGIN_COOKIE]: sealed },
+      });
+      expect(response.headers.location).toBe(`${DEV}/dex`);
+    });
+
+    it('★ 허용 목록 밖의 화면으로는 안 보낸다 — 기본 화면으로 간다', async () => {
+      // app 을 그대로 믿으면 열린 리다이렉트다. ALLOWED_ORIGINS 가 문지기다
+      for (const other of ['https://evil.test', 'https://dev.moncamp.kr.evil.test', 'javascript:alert(1)', 'https://dev.moncamp.kr/']) {
+        const start = await app.inject({ method: 'GET', url: `/v1/auth/google/start?app=${encodeURIComponent(other)}` });
+        const sealed = cookieOf(start, LOGIN_COOKIE)!.value;
+        const state = new URL(start.headers.location as string).searchParams.get('state')!;
+        const response = await app.inject({
+          method: 'GET',
+          url: `/v1/auth/google/callback?code=c&state=${encodeURIComponent(state)}`,
+          cookies: { [LOGIN_COOKIE]: sealed },
+        });
+        expect(new URL(response.headers.location as string).origin, other).toBe(APP);
+      }
+    });
+
     it('state 가 다르면 로그인이 안 된다', async () => {
       // 남이 자기 인가 코드를 남의 브라우저에 밀어 넣는 로그인 CSRF 가 이 자리로 들어온다
       const start = await app.inject({ method: 'GET', url: '/v1/auth/google/start' });

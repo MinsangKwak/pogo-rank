@@ -519,13 +519,13 @@ FIREBASE_SA_JSON='<한 줄 JSON>' python3 scripts/firestore_restore.py firestore
 | 3 | `openssl rand -hex 32` → `ADMIN_TOKEN` | 64자다 |
 | 4 | GCP 서비스 계정 + Artifact Registry 저장소 `moncamp` | `roles/run.admin` · `roles/iam.serviceAccountUser` · `roles/artifactregistry.writer` |
 | 5 | 저장소 **시크릿** 넣기 | `GCP_PROJECT_ID` · `GCP_SA_KEY` · `DATABASE_URL` · `ADMIN_TOKEN` · `COLLECT_BASE_URL` |
-| 6 | `server 배포 (Cloud Run)` 수동 실행 | 마지막 단계 `healthz 200` |
+| 6 | `server 배포 (Cloud Run)` 수동 실행 | 마지막 단계 `health 200` |
 
 > **4번 전까지 이 워크플로는 아무것도 안 하고 초록으로 끝난다.** 시크릿 셋(`GCP_PROJECT_ID` ·
 > `GCP_SA_KEY` · `DATABASE_URL`)이 다 있어야 배포로 들어간다 — 설정을 안 한 것은 고장이 아니라서,
 > `deploy` 브랜치에 밀 때마다 빨간 줄을 남기지 않는다. 로그의 `notice` 한 줄로 건너뛴 것을 알린다.
 
-| 7 | 도메인 `api.moncamp.kr` → Cloud Run 매핑 | `curl https://api.moncamp.kr/healthz` |
+| 7 | 도메인 `api.moncamp.kr` → Cloud Run 매핑 | `curl https://api.moncamp.kr/health` |
 | 8 | ~~저장소 **변수** `COLLECT_URL`~~ → **v5 부터는 배포 워크플로가 켠 채로 굽는다** (`deploy-web.yml`). 변수는 덮어쓸 때만 쓴다 | 다음 사이트 배포부터 수집이 켜진다 |
 
 **8번을 안 하면 아무것도 안 쌓인다.** 화면은 `COLLECT_URL` 이 비면 수집을 통째로 끈다 —
@@ -570,10 +570,10 @@ curl -s -H "Authorization: Bearer $ADMIN_TOKEN" 'https://api.moncamp.kr/v1/hot?d
 
 | 증상 | 먼저 볼 것 |
 | --- | --- |
-| `healthz` 가 503 | `DATABASE_URL`. Neon 컴퓨트가 자고 있으면 몇 초 뒤 200 이 된다 — 계속 503 이면 접속 문자열이다 |
+| `health` 가 503 | `DATABASE_URL`. Neon 컴퓨트가 자고 있으면 몇 초 뒤 200 이 된다 — 계속 503 이면 접속 문자열이다 |
 | 수집 요청이 403 | `ALLOWED_ORIGINS` 에 그 주소가 없다. `deploy-server.yml` 의 `ENV_VARS` 를 본다 |
 | 수집 요청이 400 | 스키마를 못 넘었다. Cloud Run 로그에 어느 칸인지 찍힌다 |
-| 배포가 `healthz` 에서 멈춘다 | 부팅에서 죽은 것이다 — 환경변수 관문(`src/env.ts`)이 무엇이 없다고 말한다 |
+| 배포가 `health` 에서 멈춘다 | 부팅에서 죽은 것이다 — 환경변수 관문(`src/env.ts`)이 무엇이 없다고 말한다 |
 | 집계 워크플로가 빨갛다 | `COLLECT_BASE_URL` · `ADMIN_TOKEN` 시크릿. 열쇠가 틀리면 401 이다 |
 
 **어느 경우에도 사이트는 멀쩡하다.** 화면은 이 서버를 런타임에 읽지 않는다 — 급하게 고칠 일이 아니다.

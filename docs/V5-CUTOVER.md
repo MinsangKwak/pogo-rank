@@ -57,7 +57,7 @@
 1. GCP 예산 알림을 $1 로 걸어 둔다. **이 단계를 건너뛰고 배포하지 않는다.**
 2. 서비스 계정에 `roles/run.admin` · `roles/iam.serviceAccountUser` · `roles/artifactregistry.writer`
 3. `deploy` 브랜치에 push → `deploy-server.yml` 이 돈다
-4. `https://api.moncamp.kr/healthz` 가 200 이면 선 것이다
+4. `https://api.moncamp.kr/health` 가 200 이면 선 것이다
 
 구글 콘솔의 **승인된 리디렉션 URI** 에 `https://api.moncamp.kr/v1/auth/google/callback` 이
 글자까지 같게 들어 있어야 한다.

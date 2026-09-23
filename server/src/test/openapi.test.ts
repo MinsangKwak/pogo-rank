@@ -20,11 +20,20 @@ describe('OpenAPI 설명서', () => {
     expect(readFileSync(file, 'utf-8')).toBe(specText(await openapiSpec()));
   });
 
+  // v5 Phase 7 — 첫 배포 전에 잡았다. `/healthz` 가 Cloud Run 앞단에 가로채여 서버는 멀쩡한데
+  // 배포 검사가 '죽었다' 고 판정할 뻔했다. 공식 문서: '끝이 z 인 경로는 다 피하라', '/_ah/ 는 예약'.
+  // 새 주소를 붙일 때 같은 함정을 또 밟지 않게 스펙 전체를 훑는다
+  it('Cloud Run 이 가로채는 주소를 쓰지 않는다', async () => {
+    const spec = await openapiSpec() as { paths: Record<string, unknown> };
+    const bad = Object.keys(spec.paths).filter((path) => /z$/i.test(path) || path.startsWith('/_ah/'));
+    expect(bad, 'Cloud Run 예약 경로 — 끝이 z 이거나 /_ah/ 로 시작한다').toEqual([]);
+  });
+
   it('주소가 다 적혀 있다', async () => {
     const spec = await openapiSpec() as { paths: Record<string, unknown> };
     expect(Object.keys(spec.paths).sort()).toEqual(
       [
-        '/healthz',
+        '/health',
         '/v1/admin/backups', '/v1/admin/rollup',
         // v5 Phase 4 — 로그인
         '/v1/auth/google/callback', '/v1/auth/google/start',
