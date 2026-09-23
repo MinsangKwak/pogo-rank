@@ -18,7 +18,10 @@ import { describe, expect, it } from 'vitest';
 
 const read = (path: string) => readFileSync(resolve(__dirname, '../../', path), 'utf-8');
 const SW = read('public/sw.js');
-const DEPLOY = read('../.github/workflows/deploy-dev.yml');
+// 2026-09-23 v5 Phase 7 — 도면을 얹는 자리가 dev-pipeline.yml 로 옮겼다 (web/public/<이름>).
+// dev 에 서는 앱은 이제 web/ 이고 같은 검사가 web/src/test/swscope.test.ts 에도 있다.
+// 여기서도 지키는 것은 **되돌릴 자리**라서다 — DNS 를 옛 gh-pages 로 돌리면 이 서비스워커가 다시 선다
+const DEPLOY = read('../.github/workflows/dev-pipeline.yml');
 
 /** 서비스워커가 비켜 가기로 한 주소들 — `const OUTSIDE = /…/` 에서 뽑는다 */
 function outsidePaths(): string[] {
@@ -44,8 +47,8 @@ describe('서비스워커 범위', () => {
   });
 
   it('배포가 얹는 자리를 빠짐없이 비켜 간다', () => {
-    // deploy-dev.yml 이 site/<이름> 으로 복사하는 자리가 곧 앱 밖의 판이다
-    const landed = [...DEPLOY.matchAll(/cp -r \S+ site\/([a-z0-9-]+)/g)].map((hit) => `/${hit[1]}/`);
+    // dev-pipeline.yml 이 web/public/<이름> 으로 복사하는 자리가 곧 앱 밖의 판이다
+    const landed = [...DEPLOY.matchAll(/cp -r \S+ \S*web\/public\/([a-z0-9-]+)/g)].map((hit) => `/${hit[1]}/`);
     expect(landed.length).toBeGreaterThan(0);
     for (const one of landed) expect(outsidePaths(), `${one} 를 서비스워커가 안 비켜 간다`).toContain(one);
   });

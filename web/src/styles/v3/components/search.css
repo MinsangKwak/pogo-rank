@@ -1,0 +1,50 @@
+/* 2026-09-02 전역 포켓몬 검색의 조각들.
+   2026-09-12 v3.12.0 검색 패널(.search)은 걷어냈다 — 검색은 팝업이 아니라 포켓몬 도감에서 한다.
+   여기 남은 것은 **결과 한 줄**(.sugg__*)이고, 개체값 순위 · 플래너 개체 추가 · 홈의 활용처 순위가
+   같은 줄을 쓴다 (components/search.js monSuggestRow · views/usage.js) */
+/* 타입 칩 줄: 왼쪽 라벨 + 가로 스크롤 칩. .chips 의 페이지 가장자리 밀착(-20px)은 카드 안에서 쓰지 않는다 */
+/* 결과: 카드 안의 세로 목록. 이름·순위 근거가 한 줄로 읽히게 */
+.search__results { display: flex; flex-direction: column; gap: 0.4rem; }
+.search__results:empty { display: none; }
+.sugg__head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.4rem 1.2rem; padding: 0.4rem 0.2rem 0.2rem; font-size: var(--fs-body); color: var(--muted); }
+.sugg__head b { color: var(--fg); font-weight: 600; }
+.sugg__hint { font-size: var(--fs-body); color: var(--muted); padding: 0.2rem 0.2rem; }
+.sugg__item { display: flex; align-items: center; gap: 0.8rem; width: 100%; padding: 0.4rem 1.2rem 0.4rem 0.4rem; border: 1px solid var(--line); border-radius: 1rem; background: var(--bg); font-size: var(--fs-body); text-align: left; }
+.sugg__item:hover { border-color: var(--fg); }
+.sugg__item .sprite { width: 3rem; height: 3rem; flex: 0 0 auto; }
+/* 2026-09-10 v2.46.0 결과 한 줄이 카드 한 장이 됐다 — 이름 줄 아래에 타입·도감번호가 붙는다 (components/search.js) */
+.sugg__main { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 0.2rem; }
+.sugg__name { display: flex; flex-wrap: wrap; align-items: center; gap: 0.4rem; }
+.sugg__meta { display: flex; flex-wrap: wrap; align-items: center; gap: 0.4rem; font-size: var(--fs-sub); color: var(--muted); }
+.sugg__no { width: auto; flex: none; }
+/* 눌러서 열리는 줄에는 화살표 — 도감 줄(pages.css)·메뉴(drawer.css)와 같은 문법 */
+.sugg__go { flex: none; margin-left: 0.2rem; color: var(--muted); font-size: var(--fs-body); line-height: 1; }
+.sugg__item.is-unreleased { opacity: .55; }
+.sugg__item .tag { font-size: var(--fs-sub); padding: 0 0.4rem; }
+.sugg__none { font-size: var(--fs-body); color: var(--muted); padding: 0.2rem 0.4rem; }
+.sugg__rank { margin-left: auto; font-size: var(--fs-sub); color: var(--muted); text-align: right; }  /* 2026-09-06 v2.9.0 검색 후보 옆 순위 근거 */
+.sugg__more { align-self: flex-start; font-size: var(--fs-body); color: var(--fg); text-decoration: underline; padding: 0.4rem 0.2rem; }
+/* 2026-09-07 v2.16.0 검색 패널 빈 상태의 활용처 순위 (views/usage.js) */
+.usage__top { margin-top: 0.4rem; }
+.usage__rank { flex: 0 0 1.8rem; font-size: var(--fs-sub); font-weight: 600; color: var(--muted); text-align: right; }
+.usage__item > span:nth-of-type(2) { flex: 0 0 auto; white-space: nowrap; }  /* 이름은 한 줄, 오른쪽 활용처 텍스트가 줄바꿈 */
+.usage__item .sugg__rank { flex: 1 1 0; min-width: 0; line-height: 1.5; }
+.usage__item .sugg__rank b { color: var(--fg); font-weight: 600; }
+.sugg__item .tag.tag--use { flex: none; font-size: var(--fs-sub); padding: 0 0.4rem; }
+/* 헤더 🔍 버튼: 검색 시트가 열려 있으면 눌린 상태로 (v2.21.0 aria-expanded 로 바뀜) */
+#search-toggle[aria-expanded="true"] { background: var(--fg); color: var(--bg); }
+
+/* 2026-09-07 v2.21.0 검색은 <dialog> 시트로 연다 — 상세 팝업(.modal)과 같은 기하·같은 카드 모양 */
+#search-dialog { position: fixed; inset: 0; z-index: 50; display: flex; align-items: center; justify-content: center;
+                 width: 100%; max-width: none; height: 100%; max-height: none; margin: 0; border: 0; padding: 2rem;
+                 background: rgba(0,0,0,.45); color: var(--fg); }
+#search-dialog:not([open]) { display: none; }
+#search-dialog::backdrop { background: transparent; }
+#search-dialog .search { width: 100%; max-width: 44rem; max-height: 85vh; margin: 0; overflow-y: auto; }
+/* 결과를 내려도 제목·입력은 계속 보이게 */
+#search-dialog .search__head { position: sticky; top: -0.2rem; z-index: 2; padding-top: 0.2rem; background: var(--surface); }
+@media (max-width: 640px) {
+  #search-dialog { padding: 0; align-items: flex-end; }
+  #search-dialog .search { max-width: none; max-height: 88vh; border-radius: 1.4rem 1.4rem 0 0; border-bottom: 0; }
+}
+

@@ -46,6 +46,7 @@ bash scripts/test.sh --no-build nav dex-search    # 빌드 생략하고 일부�
 | [서비스 구조 한 장](docs/moncamp-structure.png) | 화면 구성·권한·데이터·배포 흐름 요약 |
 | [광고 앞 다지기 한 장](docs/hardening-2026-09-22.png) | 2026-09-22 — Cloudflare 앞단 · 브랜치 보호 · Firestore 규칙 · 남은 둘 |
 | [변천사](docs/HISTORY.md) · [타임라인 한 장](docs/history-timeline.png) | 22일 250판을 다섯 시대 · 날짜별 · 구조물 · 보안 연표로 |
+| [고도화 계획](docs/ROADMAP.md) · [목표 구조 한 장](docs/roadmap-target.png) | v5 로 가는 여덟 단계 — Next.js · 자체 인증 서버 · PostgreSQL |
 | [작업 지침](CLAUDE.md) | 어길 수 없는 규칙 — `NaN`·`undefined` 금지, 바꾸면 안 되는 이름, 버전 갱신 여섯 곳 |
 | [개발 문서](docs/DEVELOPMENT.md) | 설계 원칙, 의사결정 기록, 데이터 소스와 파이프라인, 계산식, 프런트엔드 구조, 알려진 한계 |
 | [운영 문서](docs/OPERATIONS.md) | 릴리스 절차, 버전 규칙, 배포 장애 대응, 가입 승인, Firebase 설정, GA4 통계, 점검 목록 |
@@ -160,9 +161,21 @@ Pokémon과 관련 명칭·이미지의 권리는 The Pokémon Company, Nintendo
 
 ## 버전 이력
 
-전체 225개 릴리스를 `날짜 → 버전`의 2단계 접이식 목록으로 정리했습니다. 가장 최근 날짜만 기본으로 펼쳐지며, 설명이 한 줄인 초기 버전은 별도의 접이식 영역 없이 표시됩니다. 사용자용 요약은 서비스의 [🎉 패치 노트](https://moncamp.kr/#/release)에서, 변경 배경과 세부 구현 내용은 [변경 이력](CHANGELOG.md)에서 확인할 수 있습니다.
+전체 226개 릴리스를 `날짜 → 버전`의 2단계 접이식 목록으로 정리했습니다. 가장 최근 날짜만 기본으로 펼쳐지며, 설명이 한 줄인 초기 버전은 별도의 접이식 영역 없이 표시됩니다. 사용자용 요약은 서비스의 [🎉 패치 노트](https://moncamp.kr/#/release)에서, 변경 배경과 세부 구현 내용은 [변경 이력](CHANGELOG.md)에서 확인할 수 있습니다.
 
 <details open>
+<summary><b>2026-09-23</b> — 릴리스 1개 · <code>v4.9.9</code></summary>
+
+<details>
+<summary><b>v4.9.9</b> · dev 를 Next.js 로 — 인증 서버 · 이관 · 파이프라인 · 검사 · 수집 시행일 정정</summary>
+
+dev.moncamp.kr 이 새 화면(Next.js)으로 바뀌고, 로그인이 새 인증 서버(api.moncamp.kr)로 갑니다. 기존 계정·승인·★ 는 그대로 옮겨졌습니다. 검색 기록과 새 개인정보처리방침의 시행일을 9월 23일로 앞당겼습니다 — 다음 로그인 때 동의를 한 번 더 묻습니다.
+
+</details>
+
+</details>
+
+<details>
 <summary><b>2026-09-22</b> — 릴리스 6개 · <code>v4.9.8</code> · <code>v4.9.7</code> · <code>v4.9.6</code> · <code>v4.9.5</code> · <code>v4.9.4</code> · <code>v4.9.3</code></summary>
 
 <details>

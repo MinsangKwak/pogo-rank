@@ -20,11 +20,11 @@ jobs:
     services:
       postgres:
         # 운영(Neon)과 같은 메이저 버전 — 로컬에서 도는 SQL 이 운영에서 안 도는 일을 줄인다
-        image: postgres:17-alpine
+        image: postgres:18-alpine
         env:
           POSTGRES_USER: moncamp
           POSTGRES_PASSWORD: moncamp
-          POSTGRES_DB: moncamp
+          POSTGRES_DB: moncamp_test
         ports: ['5432:5432']
         options: >-
           --health-cmd "pg_isready -U moncamp"
@@ -40,8 +40,16 @@ jobs:
       - run: npm run typecheck
       - name: 검사 (통합 포함)
         env:
-          DATABASE_URL: postgres://moncamp:moncamp@localhost:5432/moncamp
+          # 2026-09-22 v5 Phase 3 — DATABASE_URL 이 아니다. 그 이름은 서버가 운영에서 쓰고,
+          # 스키마 검사는 drop schema 로 시작한다 (server/src/test/dbUrl.ts)
+          TEST_DATABASE_URL: postgres://moncamp:moncamp@localhost:5432/moncamp_test
+          # 없으면 선다 — 초록색인데 아무것도 안 본 CI 를 다시 만들지 않는다
+          REQUIRE_TEST_DB: '1'
         run: npm test
       # 이미지가 실제로 서는지도 본다 — Dockerfile 이 깨진 채 병합되면 배포에서야 안다
       - name: 이미지 빌드
         run: docker build -t moncamp-server:ci .
+
+# 시크릿 모양 검사는 .github/workflows/secrets-check.yml 로 옮겼다 (v5 Phase 7).
+# 서버 것만 보던 자리인데 Vercel·GCP 것까지 늘어, server/** 경로에 묶여 있을 이유가 없어졌다.
+# 손으로 돌릴 수도 있다 (Actions 탭 → 시크릿 모양 검사 → Run workflow)

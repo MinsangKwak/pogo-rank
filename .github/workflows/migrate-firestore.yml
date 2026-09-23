@@ -1,0 +1,84 @@
+name: Firestore → Neon 이관
+
+# 2026-09-23 v5 Phase 7 — 사용자·승인·★·트레이너를 옮긴다.
+#
+# **데이터는 러너 밖으로 안 나간다.** 주간 백업과 같은 스크립트로 Firestore 를 읽어 러너의
+# 임시 폴더에 두고, 옮긴 뒤 지운다. 아티팩트로 올리지 않는다 — 이관에는 보관이 필요 없고,
+# 보관은 주간 백업(backup-firestore.yml)이 암호화해서 따로 한다.
+#
+# **돌리는 법** — ops/migrate-firestore.request 의 mode 와 request 번호를 고쳐 push.
+# 손 단추(workflow_dispatch)는 기본 브랜치에 파일이 있어야 떠서, main 에 가기 전인 지금은 못 쓴다.
+#
+# 쓰는 시크릿: FIREBASE_SA_JSON(주간 백업이 이미 씀) · DATABASE_URL · ROOT_EMAIL
+on:
+  push:
+    branches: [next, dev]
+    paths: ['ops/migrate-firestore.request']
+
+permissions:
+  contents: read
+
+# 둘이 겹쳐 돌면 한쪽 트랜잭션이 다른 쪽을 기다리다 죽는다
+concurrency:
+  group: migrate-firestore
+  cancel-in-progress: false
+
+jobs:
+  migrate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+
+      - name: 요청 읽기
+        id: req
+        run: |
+          set -e
+          mode="$(sed -n 's/^mode *= *//p' ops/migrate-firestore.request | tr -d '[:space:]')"
+          case "$mode" in
+            dry-run|apply) ;;
+            *) echo "::error::mode 는 dry-run 이나 apply 여야 합니다 (지금: '$mode')"; exit 1 ;;
+          esac
+          echo "mode=$mode" >> "$GITHUB_OUTPUT"
+          echo "요청: $mode"
+
+      - name: 시크릿 확인
+        env:
+          HAS_SA: ${{ secrets.FIREBASE_SA_JSON != '' }}
+          HAS_DB: ${{ secrets.DATABASE_URL != '' }}
+          HAS_ROOT: ${{ secrets.ROOT_EMAIL != '' }}
+        run: |
+          [ "$HAS_SA" = "true" ]   || { echo "::error::FIREBASE_SA_JSON 이 없습니다"; exit 1; }
+          [ "$HAS_DB" = "true" ]   || { echo "::error::DATABASE_URL 이 없습니다"; exit 1; }
+          # 없어도 돈다 — 그러면 root 가 한 명도 안 생겨 가입 승인을 할 사람이 없다
+          [ "$HAS_ROOT" = "true" ] || echo "::warning::ROOT_EMAIL 이 없어 root 가 안 정해집니다"
+
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+        with:
+          python-version: '3.12'
+      - run: pip install --quiet google-auth requests
+
+      - name: Firestore 읽기 (러너 임시 폴더에만)
+        env:
+          FIREBASE_SA_JSON: ${{ secrets.FIREBASE_SA_JSON }}
+        run: python3 scripts/firestore_backup.py "$RUNNER_TEMP/firestore-backup.json"
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: server/package-lock.json
+      - run: npm ci
+        working-directory: server
+
+      - name: 옮기기 (${{ steps.req.outputs.mode }})
+        working-directory: server
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          ROOT_EMAIL: ${{ secrets.ROOT_EMAIL }}
+          DRY_RUN: ${{ steps.req.outputs.mode == 'dry-run' && '1' || '0' }}
+        run: npx tsx scripts/import-firestore.ts "$RUNNER_TEMP/firestore-backup.json"
+
+      # 실패해도 지운다 — 러너는 버려지지만 '버려지니까 괜찮다' 에 기대지 않는다
+      - name: 읽어 온 것 지우기
+        if: always()
+        run: shred -u "$RUNNER_TEMP/firestore-backup.json" 2>/dev/null || rm -f "$RUNNER_TEMP/firestore-backup.json"

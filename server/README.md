@@ -47,7 +47,7 @@ npm run typecheck
 
 | 메서드 | 주소 | 누가 부르나 | 열쇠 |
 | --- | --- | --- | --- |
-| `GET` | `/healthz` | Cloud Run | — |
+| `GET` | `/health` | Cloud Run | — |
 | `POST` | `/v1/events` | 브라우저 (비동기 전송) | — (CORS · 한도) |
 | `GET` | `/v1/hot?days=7&limit=10&country=KR` | 배포 워크플로 | — (`raw=true` 는 필요) |
 | `POST` | `/v1/admin/rollup` | 집계 워크플로 | `Authorization: Bearer $ADMIN_TOKEN` |
