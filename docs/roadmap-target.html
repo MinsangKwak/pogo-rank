@@ -1,0 +1,127 @@
+<!doctype html><html lang="ko"><head><meta charset="utf-8"><title>moncamp 고도화 목표 구조</title>
+<style>
+  :root{
+    --bg:#fff8f2; --fg:#0a0a0f; --muted:#64647a; --line2:#d4d4dc; --surface:#fff;
+    --brand:#d63024; --brand2:#b3231b; --point:#2f6fd0; --caution:#d97706; --good:#0d9488; --off:#9b9bb0;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{width:1600px;background:var(--bg);color:var(--fg);
+    font-family:"WenQuanYi Zen Hei","Noto Sans CJK KR",sans-serif;padding:44px 48px 40px;-webkit-font-smoothing:antialiased}
+  .head{display:flex;align-items:flex-end;gap:18px;border-bottom:4px solid var(--brand);padding-bottom:16px;margin-bottom:26px}
+  .logo{width:46px;height:46px;border:4px solid var(--fg);background:var(--brand);position:relative}
+  .logo::after{content:"";position:absolute;left:-4px;right:-4px;top:17px;height:4px;background:var(--fg)}
+  h1{font-size:40px;letter-spacing:-1px}
+  .ver{font-size:23px;font-weight:700;color:#fff;background:var(--brand);padding:4px 12px}
+  .when{margin-left:auto;font-size:17px;color:var(--muted);text-align:right;line-height:1.5}
+  .card{background:var(--surface);border:4px solid var(--fg);box-shadow:8px 8px 0 0 rgba(10,10,15,.14);padding:20px 22px;margin-bottom:26px}
+  .card > h2{font-size:23px;margin-bottom:4px}
+  .card > .sub{font-size:15px;color:var(--muted);margin-bottom:16px;line-height:1.5}
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:26px}
+  .ba{display:grid;grid-template-columns:1fr auto 1fr;gap:20px;align-items:stretch}
+  .col{border:3px solid var(--line2);padding:14px 16px;background:#fcfcfd}
+  .col.now{border-color:var(--off)}
+  .col.next{border-color:var(--brand);background:#fffaf9}
+  .col h3{font-size:18px;margin-bottom:10px;display:flex;align-items:center;gap:8px}
+  .pill{font-size:12px;font-weight:700;color:#fff;background:var(--off);padding:2px 8px}
+  .col.next .pill{background:var(--brand)}
+  .node{border:3px solid var(--fg);background:#fff;padding:8px 11px;margin-bottom:7px;font-size:14.5px;line-height:1.4}
+  .node b{font-size:15px}
+  .node small{display:block;color:var(--muted);font-size:12.5px;margin-top:2px}
+  .node.gone{border-color:var(--line2);color:var(--off);text-decoration:line-through}
+  .node.keep{border-color:var(--good)}
+  .node.new{border-color:var(--brand)}
+  .mid{display:flex;align-items:center;justify-content:center;font-size:38px;color:var(--brand);font-weight:700}
+  table{width:100%;border-collapse:collapse;font-size:14.5px}
+  th,td{border:2px solid var(--line2);padding:7px 9px;text-align:left;vertical-align:top;line-height:1.45}
+  th{background:#f4f1ee;font-size:13.5px;font-weight:700}
+  td.w{white-space:nowrap;font-weight:700}
+  .n{display:inline-block;width:22px;height:22px;line-height:22px;text-align:center;color:#fff;background:var(--fg);font-size:13px;font-weight:700;margin-right:6px}
+  .n.a{background:var(--point)} .n.b{background:var(--caution)} .n.c{background:var(--brand)} .n.d{background:var(--good)}
+  .note{margin-top:13px;border-left:5px solid var(--caution);background:#fffaf0;padding:9px 12px;font-size:14px;line-height:1.6}
+  .foot{margin-top:6px;font-size:14px;color:var(--muted);border-top:2px solid var(--line2);padding-top:12px;line-height:1.6}
+  code{font-size:13.5px}
+</style></head><body>
+
+<div class="head">
+  <div class="logo"></div>
+  <h1>moncamp 고도화 목표 구조</h1>
+  <span class="ver">v4.9.8 → v5</span>
+  <div class="when">dev 에서 8단계로 쌓고 한 번에 올린다<br>운영은 그때까지 v4.9.8 로 서 있는다</div>
+</div>
+
+<div class="card">
+  <h2>지금과 목표</h2>
+  <p class="sub">정적 사이트에 BaaS 를 붙인 구조에서, 프레임워크와 자체 인증 서버를 갖춘 구조로 간다. Python 데이터 파이프라인만 그대로 남는다.</p>
+  <div class="ba">
+    <div class="col now">
+      <h3><span class="pill">지금</span> v4.9.8</h3>
+      <div class="node">브라우저<small>해시 라우팅 · 크롤러에게는 페이지가 1개</small></div>
+      <div class="node">Cloudflare<small>헤더 · 캐시 · 한도를 뒤에서 메움</small></div>
+      <div class="node">GitHub Pages<small>Vite SPA 정적 파일 + JSON</small></div>
+      <div class="node">Firebase Auth + Firestore<small>보안 규칙이 서버 역할 · 우리 코드에 인증이 없음</small></div>
+      <div class="node">Cloud Run + Neon<small>수집 서버 · 만들어만 두고 꺼져 있음</small></div>
+      <div class="node keep">GitHub Actions · Python<small>매일 00시 순위표를 굽는다</small></div>
+    </div>
+    <div class="mid">→</div>
+    <div class="col next">
+      <h3><span class="pill">목표</span> v5</h3>
+      <div class="node new">브라우저<small><code>/mon/25</code> · 1,100종이 각자 색인된다</small></div>
+      <div class="node new"><b>Vercel · Next.js App Router</b><small>SSG 1,100+ · ISR 순위표 하루 한 번 · Route Handler 가 세션 쿠키를 쥔다</small></div>
+      <div class="node new"><b>Cloud Run · Fastify</b><small>OAuth 2.0 · JWT · 리프레시 회전 · RBAC 넷 + beta · 도메인 API · 수집</small></div>
+      <div class="node new"><b>Neon · PostgreSQL</b><small>users · sessions · allowlist · requests · favorites · mons · trainers · search_logs</small></div>
+      <div class="node gone">Firebase Auth + Firestore</div>
+      <div class="node keep">GitHub Actions · Python<small>그대로. 굽는 일은 backend/ 로 모은다</small></div>
+    </div>
+  </div>
+  <div class="note">
+    <b>해시를 히스토리로 바꾸는 것만으로는 SEO 가 안 고쳐진다.</b> 크롤러가 받는 건 여전히 빈 <code>&lt;div id="root"&gt;</code> 이고, 네이버는 JS 실행이 특히 약하다.
+    미리 구워진 HTML 이 있어야 해서 라우팅 고치기와 Next.js 이관을 같은 일로 묶었다.
+  </div>
+</div>
+
+<div class="two">
+  <div class="card">
+    <h2>여덟 단계</h2>
+    <p class="sub">서버를 먼저 세우고 프론트를 나중에 만든다. 그래야 새 프론트가 처음부터 새 API 만 본다.</p>
+    <table>
+      <tr><th>단계</th><th>끝났다고 보는 기준</th></tr>
+      <tr><td class="w"><span class="n">0</span>목표 확정</td><td>이 그림과 <code>ROADMAP.md</code></td></tr>
+      <tr><td class="w"><span class="n a">1</span>릴리스 규칙</td><td>버전이 한 곳에서 생성된다. 여섯 곳 수동 동기화가 사라진다</td></tr>
+      <tr><td class="w"><span class="n a">2</span>v3 걷어내기</td><td><code>frontend/</code> 15,090줄이 지워지고 굽는 일이 <code>backend/</code> 로 간다</td></tr>
+      <tr><td class="w"><span class="n b">3</span>Neon 스키마</td><td>마이그레이션이 빈 DB 에서 끝까지 돈다. ERD 를 다시 굽는다</td></tr>
+      <tr><td class="w"><span class="n b">4</span>인증·권한 서버</td><td><b>테스트를 먼저 쓴다.</b> 규칙 검사 11개가 지키던 것이 서버 테스트로 옮겨진다</td></tr>
+      <tr><td class="w"><span class="n b">5</span>도메인 API</td><td>즐겨찾기·내 포켓몬·트레이너 코드·승인이 REST 로 돈다. 계정 삭제가 트랜잭션 하나</td></tr>
+      <tr><td class="w"><span class="n c">6</span>Next.js 앱</td><td><code>/mon/25</code> 가 완성된 HTML 로 온다. 옛 해시 주소가 전부 이어진다</td></tr>
+      <tr><td class="w"><span class="n c">7</span>배포 이관</td><td>Vercel + Cloud Run + Neon 으로 운영이 선다. Firebase 가 사라진다</td></tr>
+      <tr><td class="w"><span class="n d">8</span>수집과 지표</td><td><code>COLLECT_URL</code> 을 켠다. 색인된 페이지 수와 검색 유입을 본다</td></tr>
+    </table>
+  </div>
+
+  <div class="card">
+    <h2>바꾸는 것과 안 바꾸는 것</h2>
+    <p class="sub">저장소를 갈아엎어도 바깥이 물고 있는 이름은 그대로 둔다. CLAUDE.md §2 의 약속이다.</p>
+    <table>
+      <tr><th>그대로</th><th>왜</th></tr>
+      <tr><td class="w"><code>pogo_*</code> 저장 키와 값</td><td>브라우저에 이미 들어 있다</td></tr>
+      <tr><td class="w">GA4 이벤트명</td><td>지표가 끊긴다</td></tr>
+      <tr><td class="w">경로 문자열<br><code>dex</code> · <code>mon/25</code> · <code>dmax/deck</code></td><td>공유 링크와 북마크가 달려 있다. <b><code>#</code> 만 떼고 경로는 1:1</b></td></tr>
+      <tr><td class="w">저장소명 · 서비스워커 캐시</td><td>배포 키와 문서가 물려 있다</td></tr>
+    </table>
+    <div class="note">
+      <b>옛 해시 주소는 스크립트로 잇는다.</b> <code>#</code> 뒤는 서버로 안 가서 리다이렉트로 못 잡는다.
+      문서 머리의 작은 스크립트가 <code>location.hash</code> 를 읽어 같은 경로로 바꾼다. <code>routes.ts</code> 의 <code>legacy</code> 표도 그대로 가져간다.
+    </div>
+    <h2 style="margin-top:18px">이 판에서 고치는 프로세스</h2>
+    <table>
+      <tr><th>어긋나 있던 것</th><th>어디서 고치나</th></tr>
+      <tr><td class="w">테스트가 전부 사후</td><td>4단계 인증 서버를 테스트 먼저 쓴다</td></tr>
+      <tr><td class="w">22일 250판, 하루 최다 34판</td><td>1단계에서 릴리스 주기를 묶는다</td></tr>
+      <tr><td class="w">v3 와 v4 공존</td><td>2단계에서 v3, 7단계에서 Firebase 를 완전히 지운다</td></tr>
+    </table>
+  </div>
+</div>
+
+<div class="foot">
+  원본: docs/roadmap-target.html → <code>node scripts/bake_html.mjs docs/roadmap-target.html</code> · 글: docs/ROADMAP.md · 출발선: docs/HISTORY.md · 바꾸면 안 되는 이름: CLAUDE.md §2
+</div>
+</body></html>

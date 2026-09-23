@@ -19,6 +19,8 @@ import pw from '/opt/node22/lib/node_modules/playwright/index.js';
 const { chromium } = pw;
 
 import { AUDIT, MIN } from './lib/contrast_audit.mjs';
+// 앱이 다 붙은 뒤에 잰다 — v4(해시)든 Next.js(경로)든 같은 방법으로 (lib/visit.mjs)
+import { detectRouting, labelOf, visit } from './lib/visit.mjs';
 
 const BASE = (process.argv[2] || 'http://localhost:4173/').replace(/\/?$/, '/');
 
@@ -31,29 +33,31 @@ const PATHS = [
 const browser = await chromium.launch({ args: ['--ignore-certificate-errors'] });
 const bad = [], known = [];
 let visited = 0;
+let routing = 'hash';
 
 for (const theme of ['light', 'dark']) {
   const context = await browser.newContext({ viewport: { width: 1280, height: 900 }, ignoreHTTPSErrors: true, colorScheme: theme });
   const page = await context.newPage();
+  if (theme === 'light') routing = await detectRouting(page, BASE);
   for (const path of PATHS) {
+    const where = `${theme} ${labelOf(path)}`;
     try {
-      await page.goto(`${BASE}#/${path}`, { waitUntil: 'load', timeout: 20000 });
-      await page.waitForTimeout(700);
+      await visit(page, BASE, routing, path);
       // v4.4.2 content-visibility:auto 로 건너뛴 카드도 재게 전부 켠다 (check_screens 와 같은 이유)
       await page.addStyleTag({ content: '* { content-visibility: visible !important; }' }).catch(() => {});
       const found = await page.evaluate(AUDIT, MIN);
-      for (const one of found.bad) bad.push(`${theme} #/${path} → ${one}`);
-      for (const one of found.known) known.push(`${theme} #/${path} → ${one}`);
+      for (const one of found.bad) bad.push(`${where} → ${one}`);
+      for (const one of found.known) known.push(`${where} → ${one}`);
       visited += 1;
     } catch (error) {
-      bad.push(`${theme} #/${path} → [열리지 않음] ${error.message.split('\n')[0]}`);
+      bad.push(`${where} → [열리지 않음] ${error.message.split('\n')[0]}`);
     }
   }
   await context.close();
 }
 await browser.close();
 
-console.log(`훑은 화면 ${visited}장 · 기준 명암비 ${MIN} · ${BASE}`);
+console.log(`훑은 화면 ${visited}장 · 기준 명암비 ${MIN} · ${BASE} (${routing === 'path' ? '경로 주소 · Next.js' : '해시 주소 · v4'})`);
 if (known.length) {
   console.log(`\n알려진 한계 ${known.length}군데 (게임 원작 타입색 — CLAUDE.md §1-b, 고치지 않는다):`);
   for (const one of [...new Set(known)].slice(0, 8)) console.log(`  ${one}`);

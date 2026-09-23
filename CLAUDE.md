@@ -183,12 +183,20 @@ node scripts/check-stories.mjs http://localhost:4189/   # 전량 × 라이트·�
   적힌 칸만 내보낸다 — 칸 없는 `{ type: 'object' }` 는 값이 들어 있어도 `{}` 로 나가고
   **오류도 경고도 없다.** 설명서를 붙이는 일이 계약을 깨뜨린 자리다.
   `src/test/openapi.test.ts` 가 스펙 전체를 훑어 잡는다 — 새 주소를 붙여도 자동으로 걸린다.
-- **약관·개인정보처리방침을 고칠 때는 v3·v4 를 같이 고친다.** 두 판이 같은 도메인을 쓰는 동안
-  한쪽만 개정되면 어느 화면을 열었느냐로 동의 범위가 갈린다. `frontend/scripts/components/privacy.js`·`terms.js`
-  와 `frontend-v4/src/screens/Legal.tsx`·`components/TermsConsent.tsx` 넷이다 —
-  `src/test/legalsync.test.ts` 가 문장 단위로 견준다.
+- **약관·개인정보처리방침의 원본은 `frontend-v4/src/screens/Legal.tsx` 와 `components/TermsConsent.tsx` 둘이다.**
+  2026-09-22 v5 Phase 1-C 에 v3 화면을 지우면서 판이 하나가 됐다 — 전에는 v3 의 `privacy.js`·`terms.js` 와
+  넷이라 `legalsync.test.ts` 가 문장 단위로 견줬고, 지울 때 그 검사가 통과 상태였으므로 v4 본문이 온전하다.
+  **동의 범위를 고칠 때는 시행일과 패치노트 고지를 함께 본다** (아래 수집 항목 줄).
 - **수집 항목이 늘면 시행 7일 전에 패치노트로 알린다.** 방침 10번에 적어 둔 약속이다.
-  시행일 전에는 그 기능을 켜지 않는다 (v4.7.1 의 `COLLECT_URL` 이 그 예 — [운영 §16](docs/OPERATIONS.md)).
+  이번 건의 고지는 2026-09-21 에 나갔고 적은 시행일은 **2026-09-28** 이다.
+  **2026-09-22 에 주인이 수집을 바로 켜기로 했다** (v5 Phase 8). 새 화면이 그날 이후에 뜨면
+  적은 대로이고, 그 전에 뜨면 **패치노트의 날짜를 실제 날짜로 고친다** —
+  고지와 실제가 어긋난 채로 두는 것이 제일 나쁘다.
+  **2026-09-23 에 고쳤다** (v4.9.9) — 새 화면이 dev 에 뜨는 날이라 시행일을 9/23 으로 앞당겼다.
+  옛 공지의 날짜를 고치고 **맨 위에 정정 항목을 따로 세웠다** — 조용히 고쳐 쓰면 9/28 로 읽은 사람이 모른다.
+  방침 날짜는 web · frontend-v4 **두 벌**이다 (`legalMeta.ts` · `Legal.tsx`) — 둘을 견주던 검사가 지워졌으니 사람이 맞춘다.
+  **v5.0.0 부터 두 벌이 일부러 다르다** — 운영이 v5 로 넘어가 계정 저장소가 Neon(싱가포르)이 됐다. web 판만 고쳤고
+  (`TERMS_VER` `2026-09-23-v5`), frontend-v4 는 되돌릴 자리(GitHub Pages)의 옛 사실을 그대로 적는다.
 
 ## 4. 비밀
 
@@ -197,23 +205,33 @@ node scripts/check-stories.mjs http://localhost:4189/   # 전량 × 라이트·�
 - `BACKUP_PASSPHRASE` 는 비밀번호 관리자에 둔다.
 - 규칙을 mock uid 로 렌더하지 않는다 — `scripts/render_rules.sh` 가 막는다.
 
-## 5. 버전을 올릴 때 고칠 여섯 곳
+## 5. 판 번호의 원본은 `release/version.json` 하나다
 
-한 군데라도 빠지면 화면과 문서가 어긋난다.
+**고칠 곳이 여섯이던 시절이 있었다** — build.py 의 상수, v3 의 `RELEASE_VER`, 패치노트 한글·영문,
+CHANGELOG, README. 한 군데만 빠져도 화면과 문서가 어긋났고, 사람이 여섯 번 안 틀리기를 바라는 것은
+규칙이 아니라 기대다. 2026-09-22 v5 Phase 1 에 원본을 하나로 모으고 나머지는 기계가 견준다.
 
-1. `backend/build.py` — `APP_VERSION`
-2. `frontend/scripts/components/release.js` — `RELEASE_VER`
-3. `frontend/scripts/release-notes.js`
-4. `frontend/scripts/i18n-release-en.js`
-5. `CHANGELOG.md` — 건수 + 날짜 묶음
-6. `README.md` — 건수 + 날짜 묶음
+| 자리 | 무엇 | 누가 지키나 |
+| --- | --- | --- |
+| **`release/version.json`** | `app`(화면 머리) · `release`(패치노트 빨간 점) | **여기만 손으로 고친다** |
+| `content/release-notes.mjs` | 한글 패치노트 본문 | `src/test/version.test.ts` |
+| `content/release-notes.en.mjs` | 영문 패치노트 — 키가 한글판 `date` 와 글자까지 같아야 한다 | 〃 |
+| `CHANGELOG.md` · `README.md` | 건수 + 날짜 묶음 | 〃 |
+
+`backend/build.py` 와 `frontend-v4/scripts/extract-data.mjs` 는 `version.json` 을 읽는다. 손으로 안 적는다.
+dev 채널의 `-dev` 접미사도 둘이 같은 규칙으로 붙인다.
+
+**릴리스는 묶어서 낸다.** 커밋마다 판을 올리지 않는다 — 22일에 250판(하루 최다 34판)을 낸 적이 있는데,
+그건 릴리스가 아니라 커밋에 번호를 붙인 것이다. 사용자가 읽을 만한 덩어리가 모이면 그때 올린다.
 
 ## 6. 빌드와 배포
 
 - **`scripts/build.sh` 는 v4 를 다시 빌드하지 않는다.** 화면을 확인하기 전에 `cd frontend-v4 && npm run build` 를 따로 돌린다.
 - 커밋 전에 `git checkout -- snapshot/` — 빌드가 스냅샷을 건드린다.
 - 빠른 길: `build.sh --meta-only`(2초) · `--no-fetch`(3초) · `--no-sprites`
+- **`build.sh` 는 화면을 안 만든다** (v5 Phase 1-C). `dist/` 에 나오는 것은 `data.js` · 스프라이트 · 부속 파일(robots · sitemap · 404 · build.json)뿐이고, 화면은 `frontend-v4` 가 만든다
 - 배포: dev → main PR 병합 → `deploy` 브랜치에 main 을 머지 → `bash scripts/verify_deploy.sh https://moncamp.kr/ prod`
+- **v5 부터 운영 화면은 Vercel(`pogo-rank`)이다** — `deploy` push 에 `deploy-web.yml` 이 올린다. 주소를 오가는 일은 `cutover-prod.yml`(status · attach · rollback) 하나로 한다
 
 ## 7. 글과 코드의 결
 

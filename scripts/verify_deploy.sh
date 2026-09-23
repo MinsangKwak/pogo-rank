@@ -13,7 +13,8 @@
 set -uo pipefail
 URL=${1:?사용법: verify_deploy.sh <주소> <prod|dev> [기대 버전]}
 CHANNEL=${2:?채널(prod|dev)을 주세요}
-EXPECT=${3:-$(sed -n "s/^APP_VERSION = '\(v[0-9.]*\)'.*/\1/p" "$(dirname "$0")/../backend/build.py")}
+# 2026-09-23 판 번호의 원본이 release/version.json 으로 옮겨졌다(CLAUDE.md §5) — build.py 에는 더 없다
+EXPECT=${3:-$(sed -n 's/.*"app": *"\(v[0-9.]*\)".*/\1/p' "$(dirname "$0")/../release/version.json")}
 [[ $CHANNEL == dev ]] && EXPECT="${EXPECT}-dev"
 URL=${URL%/}/
 bust="?v=$(date +%s)"
@@ -26,12 +27,12 @@ echo "▶ $URL  채널=$CHANNEL  기대 버전=$EXPECT"
 html=$(get "$URL") || { echo "  ✗ index.html 응답 없음"; exit 1; }
 ok "index.html 200 ($(echo -n "$html" | wc -c | tr -d ' ') bytes)"
 
-# 0) 어느 판인가 — v4 는 #root 하나에 그린다
-if grep -q '<div id="root">' <<<"$html"; then V=v4; else V=v3; fi
+# 0) 어느 판인가 — v4 는 #root 하나에 그린다. v5(Next.js)도 #root 가 있고, 문서에 self.__next_f 를 심는다
+if grep -q '__next_f' <<<"$html"; then V=next; elif grep -q '<div id="root">' <<<"$html"; then V=v4; else V=v3; fi
 ok "판: $V"
 
 # 1) 판 번호 — v3 는 HTML 에 글자로 박혀 있고, v4 는 data/meta.json 의 APP_VERSION 이다
-if [[ $V == v4 ]]; then
+if [[ $V != v3 ]]; then
   meta=$(get "${URL}data/meta.json") || meta=""
   got=$(sed -n 's/.*"APP_VERSION":"\([^"]*\)".*/\1/p' <<<"$meta")
   [[ $got == "$EXPECT" ]] && ok "판 번호 $EXPECT" || bad "판 번호가 $EXPECT 가 아님 (실제: ${got:-없음})"
@@ -41,7 +42,7 @@ fi
 if [[ $CHANNEL == prod && ${got:-} == *-dev ]]; then bad "prod 인데 -dev 판이 올라가 있음"; fi
 
 # 1b) 문의 이메일 주입 (CONTACT_EMAIL) — 두 채널 모두 mailto 링크가 있어야 한다 (비워 둔 빌드라면 이 항목은 경고만)
-if [[ $V == v4 ]]; then
+if [[ $V != v3 ]]; then
   grep -q '"CONTACT_EMAIL":"[^"]' <<<"${meta:-}" && ok "문의 이메일 주입됨" || echo "  ! CONTACT_EMAIL 이 비어 있음"
 else
   grep -q 'href="mailto:' <<<"$html" && ok "문의 이메일(mailto) 링크 있음" || echo "  ! mailto 링크 없음 — CONTACT_EMAIL 이 비어 있는 빌드인지 확인"
@@ -52,7 +53,9 @@ has_noindex=$(grep -c 'name="robots" content="noindex' <<<"$html" || true)
 # 2026-09-07 v2.18.0 GA 는 동의 뒤에만 붙는다 — 번들(consent.js)에 gtag 주소 문자열이 항상 있으므로, 채널 표식은 build.py 가 넣는 측정 ID 자리(window.GA_PENDING_ID = 'G-…')로 본다
 # 2026-09-18 v4.0.0 스니펫은 `var id = 'G-…'; window.GA_PENDING_ID = id;` 라 리터럴이 붙는 자리는 `var id` 쪽이다.
 # 전에는 `GA_PENDING_ID = 'G-` 를 찾았는데 그 문자열은 v3 때부터 한 번도 있었던 적이 없다 — 늘 실패하던 검사였다
-has_ga=$(grep -c "var id = 'G-" <<<"$html" || true)
+# v5 는 조각을 lib/gaSnippet.ts 가 만든다 — 측정 ID 가 JSON 문자열로 실리고 로더 주소가 함께 있다
+if [[ $V == next ]]; then has_ga=$(grep -c 'googletagmanager.com/gtag/js' <<<"$html" || true)
+else has_ga=$(grep -c "var id = 'G-" <<<"$html" || true); fi
 if [[ $CHANNEL == dev ]]; then
   [[ $has_noindex -ge 1 ]] && ok "noindex 메타 있음" || bad "dev 인데 noindex 메타 없음"
   [[ $has_ga -eq 0 ]] && ok "GA 스니펫 없음" || bad "dev 인데 GA 스니펫이 들어 있음"
@@ -67,8 +70,8 @@ else
   grep -q '^Allow: /$' <<<"$robots" && ok "robots.txt 검색 허용" || bad "prod robots.txt 에 Allow: / 없음"
 fi
 
-# 3) 화면 데이터 — v3 는 data.js 한 덩이, v4 는 data/ 밑의 묶음들이다
-if [[ $V == v4 ]]; then
+# 3) 화면 데이터 — v3 는 data.js 한 덩이, v4·v5 는 data/ 밑의 묶음들이다
+if [[ $V != v3 ]]; then
   man=$(get "${URL}data/manifest.json") || man=""
   [[ -n $man ]] && ok "data/manifest.json 200" || bad "data/manifest.json 응답 없음"
   for one in dex max pve pvp; do
@@ -98,7 +101,18 @@ code=$(curl -s -o /dev/null -w '%{http_code}' "${URL}sprites/10070.png$bust")
 [[ $code == 200 ]] && ok "sprites/10070.png (메가 샤크니아) 200" || bad "sprites/10070.png $code — sprites.py 수집 범위 확인"
 # 2026-09-12 v3.14.0 상성 검색 페이지(renderTypeSearchPage)는 v3.9.0 에 도감 검색으로 합쳐져 사라졌다 — 그 뒤로 이 항목이 늘 실패했다.
 # 지금 검색 입구는 openSearch (components/search.js, v3.12.0) 하나다
-if [[ $V == v4 ]]; then
+if [[ $V == next ]]; then
+  # Next.js 는 번들을 /_next/static 밑에 둔다. 글꼴 선언은 HTML 이 아니라 CSS 에 있다
+  grep -q '_next/static/chunks/.*\.js' <<<"$html" && ok "v5 번들 연결됨" || bad "HTML 에 v5 번들 <script> 가 없음"
+  css=$(grep -o '/_next/static/css/[^"]*\.css' <<<"$html" | head -1)
+  [[ -n $css ]] && ok "v5 스타일 연결됨" || bad "HTML 에 v5 스타일이 없음"
+  [[ -n $css ]] && curl -fsSL "${URL%/}$css" | grep -q 'Galmuri' && ok "도트 글꼴(Galmuri) 선언 있음" || bad "글꼴 선언이 없음 — 화면이 시스템 글꼴로 그려집니다"
+  # 보안 헤더 — Cloudflare 에서 앱으로 옮겨 왔다 (web/next.config.ts)
+  heads=$(curl -sSI "$URL" | tr -d '\r' | tr 'A-Z' 'a-z')
+  for name in strict-transport-security x-content-type-options referrer-policy content-security-policy permissions-policy; do
+    grep -q "^$name:" <<<"$heads" && ok "헤더 $name" || bad "헤더 $name 없음"
+  done
+elif [[ $V == v4 ]]; then
   # 번들이 따로라 HTML 에는 함수 이름이 없다 — 대신 번들·스타일이 붙어 있는지로 본다
   grep -q 'assets/index-.*\.js' <<<"$html" && ok "v4 번들 연결됨" || bad "index.html 에 v4 번들 <script> 가 없음"
   grep -q 'assets/index-.*\.css' <<<"$html" && ok "v4 스타일 연결됨" || bad "index.html 에 v4 스타일이 없음"

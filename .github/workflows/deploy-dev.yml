@@ -1,24 +1,19 @@
 name: Build and deploy dev preview
 
-# 2026-09-05 v2.7.3 dev 브랜치 미리보기 배포 — https://minsangkwak.github.io/pogo-rank-dev/
-# GitHub Pages 는 저장소당 사이트 하나라서, 별도 URL(pogo-rank-dev)은 같은 이름의 별도 저장소가 필요하다.
-# 이 워크플로는 dev 브랜치를 BUILD_CHANNEL=dev 로 빌드해 MinsangKwak/pogo-rank-dev 의 gh-pages 브랜치에 밀어 넣고,
-# 그 저장소의 Pages(소스: gh-pages)가 그대로 서빙한다. 실서비스 저장소 자체의 Pages 는 건드리지 않는다.
+# 2026-09-23 v5 Phase 7 — dev 는 Next.js 다 (dev-pipeline.yml).
 #
-# 필요한 시크릿: DEV_DEPLOY_KEY — pogo-rank-dev 에 쓰기 권한이 있는 deploy key 의 개인키.
-#   최초 1회 scripts/setup_dev_deploy_key.sh 를 실행하면 키 생성·등록·시크릿 저장이 한 번에 된다.
-# dev 빌드는 GA 를 넣지 않고 robots/noindex 로 색인을 막는다 (backend/build.py BUILD_CHANNEL 참고).
-# 순위 스냅샷(snapshot/) 커밋은 하지 않는다 — ▲▼ 기준은 main 에서 머지된 스냅샷을 그대로 쓴다.
-
+# 전에는 frontend-v4(Vite)를 빌드해 pogo-rank-dev 저장소의 gh-pages 에 밀어 넣었다.
+# 이제는 web/(Next.js)을 Vercel 의 moncamp-dev 프로젝트에 올리고 dev.moncamp.kr 을 그리로 돌린다.
+# 옛 gh-pages 는 되돌릴 자리로 그대로 둔다 — DNS 를 되돌리면 옛 dev 가 다시 선다
+# (docs/V5-CUTOVER.md 의 되돌리기).
+#
+# **매일 다시 굽는 것은 main 에 이 파일이 들어간 뒤부터다.** 예약 실행(schedule)은 기본 브랜치의
+# 워크플로 파일로 돈다 — 그전까지는 main 의 옛 판이 옛 gh-pages 를 굽는다(아무도 안 보는 자리다).
 on:
   push:
     branches: [dev]
-  # 2026-09-10 v2.50.0 dev 도 매일 다시 빌드한다 — 알 부화 풀·레이드 보스는 게임 쪽에서 수시로 바뀌는데,
-  # 푸시가 없으면 dev 미리보기는 마지막 푸시 날짜의 데이터에 머문다. 확인하러 들어온 사람이
-  # "데이터가 안 바뀐다" 를 보게 되는데, 실제로는 배포가 아니라 빌드가 안 돈 것이다.
-  # 실서비스(deploy.yml)보다 30분 늦게 돌려 같은 시각에 겹치지 않게 한다
   schedule:
-    - cron: '30 15 * * *'   # 매일 00:30 KST (15:30 UTC)
+    - cron: '30 15 * * *'   # 매일 00:30 KST — 게임 데이터(알 부화·레이드 보스)가 수시로 바뀐다
   workflow_dispatch:
 
 permissions:
@@ -29,196 +24,8 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  build-deploy:
-    runs-on: ubuntu-latest
-    env:
-      HAS_DEPLOY_KEY: ${{ secrets.DEV_DEPLOY_KEY != '' }}
-    steps:
-      - name: 배포 키 확인
-        run: |
-          if [ "$HAS_DEPLOY_KEY" != "true" ]; then
-            echo "::error::시크릿 DEV_DEPLOY_KEY 가 없습니다. 저장소 루트에서 bash scripts/setup_dev_deploy_key.sh 를 한 번 실행하세요 (docs/OPERATIONS.md 1장)."
-            exit 1
-          fi
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
-      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
-        with:
-          python-version: '3.12'
-      # 2026-09-20 v4.5.0 스프라이트를 공식 일러스트로 바꾸며 축소(backend/sprites.py)에 Pillow 가 필요하다
-      - run: pip install --quiet Pillow
-      # v4 미리보기(/react/)를 같은 판에서 만들기 위해 (아래 'v4 미리보기' 단계)
-      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
-        with:
-          node-version: '22'
-          cache: npm
-          cache-dependency-path: frontend-v4/package-lock.json
-      # 스프라이트 캐시는 실서비스 워크플로와 같은 키 계열을 써서 서로 재사용한다
-      # 2026-09-12 v2.67.0 움직이는 그림(data/sprites-anim, 949장 51MB)도 같은 캐시에 —
-      # 빼 두면 매 빌드가 51MB 를 다시 받고 없는 223종에 404 를 다시 묻는다
-      - uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
-        with:
-          path: |
-            data/sprites
-            data/sprites-anim
-          key: sprites-v1-${{ github.run_id }}
-          restore-keys: sprites-v1-
-      # 2026-09-16 v3.47.0 직전 정상본 표 — 원본이 비거나 줄어든 날 이걸로 대체한다 (backend/guard.py).
-      # 저장소에 커밋하지 않는다(1.6MB 가 매일 바뀐다). 캐시를 잃으면 폴백이 한 번 없을 뿐이고, 그때는 빌드가 멈춰 직전 배포가 남는다
-      - uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
-        with:
-          path: snapshot/tables
-          key: tables-v1-${{ github.run_id }}
-          restore-keys: tables-v1-
-      - name: Build site (dev channel)
-        env:
-          BUILD_CHANNEL: dev
-          # 운영 설정값은 실서비스와 같은 Repository variables 를 쓴다 (GA 는 dev 채널이라 어차피 안 들어감)
-          GA_ID: G-1L6ENS8PVK   # 2026-09-14 v3.27.1 deploy.yml 과 같은 값 (dev 채널은 어차피 안 들어감) · 2026-09-15 v3.42.1 옛 스트림 삭제로 교체
-          ADMIN_UID: ${{ vars.ADMIN_UID }}
-          CONTACT_EMAIL: kmsdevwork@knou.ac.kr   # 2026-09-15 v3.32.0 학생 계정으로 교체. 저장소 변수 vars.CONTACT_EMAIL 은 더 읽지 않는다 (v3.27.1 GA_ID 와 같은 처리)
-          FIREBASE_CONFIG_JSON: ${{ vars.FIREBASE_CONFIG_JSON }}
-          # 2026-09-21 v4.7.0 수집 서버 (server/). **저장소 변수가 비면 수집이 통째로 꺼진다** —
-          # 서버를 세우기 전에는 비워 두면 되고, 그때 화면은 서버가 없던 때와 똑같이 돈다.
-          # 공개 식별자라 배포 HTML 에 그대로 실린다 (GA_ID 와 같은 성격)
-          COLLECT_URL: ${{ vars.COLLECT_URL }}
-        run: bash scripts/build.sh
-      # 2026-09-17 v4 미리보기를 **같은 dist 안에** 넣어 한 번에 올린다.
-      #   아래 발행은 force_orphan 이라 gh-pages 를 통째로 새로 쓴다 — 따로 올린 /react/ 는 그때 지워진다.
-      #   실제로 dev 배포가 한 번 돌 때마다 미리보기가 사라져 손으로 다시 돌려야 했다.
-      #   한 판에서 같이 만들어 한 번에 올리면 그 문제가 아예 없어진다 (경쟁도 없다).
-      #   데이터는 방금 만든 dist/data.js 에서 뽑는다 (frontend-v4/scripts/extract-data.mjs)
-      # 2026-09-17 **dev 미리보기는 통째로 v4 다.** 전에는 v3 가 루트, v4 가 /react/ 였는데
-      #   한 사이트에 두 앱이 살면 "지금 보는 게 어느 쪽이지" 가 늘 따라다닌다.
-      #
-      #   v3 빌드는 그대로 돈다 — v4 가 그 산출물에서 데이터(dist/data.js)를 뽑아 쓰고,
-      #   그림 2,000여 장도 거기서 가져온다. 올리는 것만 v4 쪽으로 바뀐 것이다.
-      # **설치 실패와 검사 실패는 뜻이 다르다.**
-      #   설치가 안 되면 그건 네트워크 사정이다 — v4 를 접고 v3 를 올려 화면을 지킨다.
-      #   검사가 빨개지면 규칙이 틀린 것이다 — 그때는 **배포를 세운다.** 조용히 v3 로
-      #   내려앉으면 잘못된 판을 막은 것이 아니라 아무도 모르게 되돌린 것이 된다.
-      #   세워 두면 GitHub Pages 가 직전 정상 판을 계속 서빙한다.
-      - name: v4 의존성 설치
-        id: v4deps
-        continue-on-error: true
-        run: |
-          set -e
-          cd frontend-v4
-          npm ci
-      - name: v4 검사 (권한·잠금) — 빨개지면 배포를 세운다
-        if: steps.v4deps.outcome == 'success'
-        run: |
-          set -e
-          cd frontend-v4
-          npm test
-      # 2026-09-22 v4.9.7 Firestore 규칙을 에뮬레이터로 실제 돌려 본다 — 규칙이 움직인 푸시에서만.
-      #   계정 삭제가 규칙 오류로 죽어 있는데 아무 검사도 없었다. 에뮬레이터(Java)를 세우는 데
-      #   40초쯤 들고 저장소가 private 이 되어 Actions 분이 과금되므로, 매 푸시가 아니라
-      #   규칙·그 검사가 바뀐 푸시에만 값을 낸다. 비교할 앞 커밋을 못 받으면(강제 푸시·새 가지) 그냥 돈다.
-      - uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
-        if: steps.v4deps.outcome == 'success' && github.event_name == 'push'
-        with:
-          path: ~/.cache/firebase/emulators
-          key: firestore-emulator-${{ runner.os }}-v1
-      # firebase-tools 15 는 JDK 21 이상을 요구한다 — 러너 기본(17)으로는 "no longer supports Java version before 21" (dev 배포 #304)
-      - uses: actions/setup-java@cf277c60eb25467037889841efdb72551f06f6c3 # v4.9.1
-        if: steps.v4deps.outcome == 'success' && github.event_name == 'push'
-        with:
-          distribution: temurin
-          java-version: '21'
-      - name: Firestore 규칙 검사 (에뮬레이터) — 규칙이 바뀐 푸시만 · 빨개지면 배포를 세운다
-        if: steps.v4deps.outcome == 'success' && github.event_name == 'push'
-        env:
-          BEFORE: ${{ github.event.before }}
-        run: |
-          set -e
-          WATCH="firestore.rules firebase.json frontend-v4/src/test/rules frontend-v4/vitest.rules.config.ts"
-          if git fetch --depth=1 origin "$BEFORE" 2>/dev/null; then
-            CHANGED=$(git diff --name-only "$BEFORE" HEAD -- $WATCH)
-            if [ -z "$CHANGED" ]; then echo "규칙이 안 바뀐 푸시 — 건너뛴다"; exit 0; fi
-            echo "바뀐 것:"; echo "$CHANGED"
-          else
-            echo "앞 커밋을 못 받았다 — 그냥 돈다"
-          fi
-          cd frontend-v4
-          npm run test:rules
-      - name: v4 빌드
-        if: steps.v4deps.outcome == 'success'
-        continue-on-error: true
-        env:
-          BUILD_CHANNEL: dev
-        run: |
-          set -e
-          cd frontend-v4
-          npm run build
-      # 2026-09-22 도면(스토리북)을 dev 의 /storybook/ 에 얹는다.
-      #   **이건 서비스가 아니라 도면이다.** 그래서 서다 말아도 배포를 안 세운다 —
-      #   화면이 멀쩡한데 도면 때문에 dev 가 깜깜해지면 손해가 더 크다.
-      #   STORYBOOK_BASE 가 있어야 자산 주소가 /storybook/ 기준으로 잡힌다 —
-      #   없으면 루트 기준(/assets/…)이 되어 하위 주소에서 통째로 404 다 (.storybook/main.ts)
-      - name: 스토리북 빌드 (/storybook/)
-        if: steps.v4deps.outcome == 'success'
-        continue-on-error: true
-        env:
-          STORYBOOK_BASE: /storybook/
-        run: |
-          set -e
-          cd frontend-v4
-          npm run build-storybook
-      # 올릴 폴더를 여기서 한 벌 만든다.
-      #   v4 가 서면 그것을, 서다 말면 v3 를 올린다 — **어느 쪽이든 dev 가 깜깜해지지 않는다.**
-      #   v4 는 v3 파일에 얹혀 살아서(CSS 23장 · dist/data.js · schedule.js) v3 쪽 이름만 바뀌어도 설 수 있다.
-      - name: 올릴 폴더 꾸리기 (site/)
-        run: |
-          set -e
-          rm -rf site
-          if [ -f frontend-v4/dist/index.html ]; then
-            cp -r frontend-v4/dist site
-            echo "v4 를 올립니다"
-          else
-            cp -r dist site
-            echo "::warning::v4 빌드가 서서 v3 를 대신 올립니다 — frontend-v4 를 확인하세요"
-          fi
-          # 도면을 /storybook/ 에 얹는다 — 없으면 그냥 건너뛴다 (배포를 세우지 않는다)
-          if [ -f frontend-v4/storybook-static/index.html ]; then
-            cp -r frontend-v4/storybook-static site/storybook
-            echo "스토리북을 /storybook/ 에 얹습니다"
-          else
-            echo "::warning::스토리북 빌드가 없어 /storybook/ 을 건너뜁니다"
-          fi
-          # 그림과 부속 파일은 v3 빌드가 만든 것을 그대로 쓴다 (v4 는 아직 제 것을 안 만든다).
-          # robots 는 dev 채널용 전면 차단본이라 반드시 따라와야 한다 — 미리보기가 색인되면 안 된다
-          for keep in sprites sprites-anim robots.txt sitemap.xml 404.html build.json; do
-            if [ -e "dist/$keep" ] && [ ! -e "site/$keep" ]; then cp -r "dist/$keep" "site/$keep"; fi
-          done
-          test -f site/index.html && test -f site/robots.txt
-          # **차단본인지 제대로 본다.** 처음엔 'Disallow: /' 만 찾았는데, 운영본에도
-          # 'Disallow: /data.js' 와 AI 크롤러용 'Disallow: /' 가 있어 그대로 통과했다 —
-          # 운영 robots 가 미리보기에 실리면 dev 가 검색에 잡힌다.
-          # dev 채널 robots 는 세 줄짜리 전면 차단본이고 'Allow:' 가 한 줄도 없다
-          grep -q '색인 금지' site/robots.txt || { echo "::error::robots 가 dev 차단본이 아닙니다"; cat site/robots.txt; exit 1; }
-          grep -q '^Allow:' site/robots.txt && { echo "::error::robots 에 Allow 가 있습니다 (운영본이 실렸습니다)"; exit 1; }
-          # 2026-09-18 index.html 쪽도 본다 — robots.txt 만 막고 메타가 색인 허용이면 미리보기가 잡힌다
-          # 낱말이 아니라 메타 태그를 본다 — 주석의 낱말로는 운영 빌드가 실려도 통과해 버린다 (deploy.yml 과 같은 패턴)
-          if ! grep -q 'name="robots" content="noindex' site/index.html; then echo "::error::index.html 에 noindex 메타가 없습니다 (운영 빌드가 실렸습니다)"; exit 1; fi
-          echo "robots 차단본 확인"
-          # 그림이 통째로 빠지면 화면이 몬스터볼 자리표시로 도배된다 — 수로 확인한다
-          test "$(ls site/sprites | wc -l)" -gt 500 || { echo "::error::스프라이트가 모자랍니다"; exit 1; }
-          # 도면이 실렸으면 그쪽도 본다. 얹힌 주소(/storybook/)가 자산에 박혀 있어야 하고
-          # (없으면 루트 기준이라 열자마자 빈 화면이다), 색인 금지 메타가 있어야 한다
-          if [ -d site/storybook ]; then
-            grep -q '/storybook/assets/' site/storybook/iframe.html || { echo "::error::스토리북이 /storybook/ 기준으로 안 빌드됐습니다 (STORYBOOK_BASE 확인)"; exit 1; }
-            grep -q 'name="robots" content="noindex' site/storybook/index.html || { echo "::error::스토리북에 noindex 메타가 없습니다"; exit 1; }
-            echo "스토리북 확인 — 주소 기준과 noindex"
-          fi
-      - name: Publish to pogo-rank-dev (gh-pages)
-        uses: peaceiris/actions-gh-pages@84c30a85c19949d7eee79c4ff27748b70285e453 # v4.1.0
-        with:
-          deploy_key: ${{ secrets.DEV_DEPLOY_KEY }}
-          external_repository: MinsangKwak/pogo-rank-dev
-          publish_branch: gh-pages
-          publish_dir: ./site
-          force_orphan: true   # 미리보기 저장소에 히스토리를 쌓지 않는다 (매번 한 커밋)
-          # 2026-09-14 v3.27.0 브랜치 배포라 gh-pages 루트의 CNAME 이 커스텀 도메인을 정한다 — force_orphan 이라 매 배포마다 다시 실려야 한다.
-          # 실서비스(deploy.yml)는 actions/deploy-pages 라 CNAME 파일을 무시하고 저장소 Settings → Pages 값만 쓴다.
-          cname: dev.moncamp.kr
-          commit_message: "dev preview ${{ github.sha }}"
+  dev:
+    uses: ./.github/workflows/dev-pipeline.yml
+    with:
+      attach_domain: true
+    secrets: inherit

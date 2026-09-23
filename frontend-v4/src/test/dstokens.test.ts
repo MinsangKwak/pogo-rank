@@ -16,7 +16,7 @@ import { TYPE_KO } from '../stories/typeNames';
 
 // legalsync.test.ts 와 같은 방식 — jsdom 에서 import.meta.url 은 file: 스킴이 아니다
 const read = (path: string) => readFileSync(resolve(__dirname, '../../', path), 'utf-8');
-const TOKENS_CSS = read('../frontend/styles/tokens.css');
+const TOKENS_CSS = read('src/styles/v3/tokens.css');
 const DS_CSS = read('src/styles/ds.css');
 
 /** CSS 에서 **선언된** 변수만 거둔다 — `var(--x)` 로 읽기만 한 이름은 세지 않는다 */

@@ -1,0 +1,276 @@
+/* 랭킹 리스트: 제목줄 · 행(순위/스프라이트/이름/기술/점수) · 더보기 */
+.row-head { display: flex; align-items: baseline; justify-content: space-between; padding: 1.2rem 0 0.4rem; }
+.row-head h2 { margin: 0; font-size: var(--fs-body); font-weight: 500; }
+.row-head .meta { font-size: var(--fs-sub); }
+
+.row-list { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--line); }
+.row { display: grid; grid-template-columns: 2.8rem 4rem 1fr auto;  /* 2026-09-03 v2.2.0 보유 ☆ 열 제거 */ align-items: center; gap: 1.2rem; padding: 0.8rem 0; border-bottom: 1px solid var(--line); cursor: pointer; }
+/* 2026-09-15 v3.36.0 아직 못 쓰는 줄 — 데이터만 등록되고 게임에는 안 나온 개체(미출시 거다이맥스 · 예정 다이맥스).
+   지우지 않고 남긴다: 지우면 "왜 없지" 를 아무도 모르고, 남겨 두면 "데이터는 이미 있다" 까지 전해진다.
+
+   2026-09-16 v3.49.0 **흐림(blur)과 오른쪽 들여쓰기를 걷었다.** (제보 — "블러를 풀고 대신에 테두리를")
+     · 흐림: v3.37.0 은 옅게(.4) + 초점 흐리기로 "지금 것이 아님" 을 말했는데, 읽으려면 눈을
+       찌푸려야 해서 정작 **무엇이 끼어들었는지**를 볼 수가 없었다. 표시가 정보를 가리면 안 된다.
+     · 들여쓰기: v3.49.0 부터 미구현도 순위 번호를 받는다(가상 순위 — views/max.js). 번호가 한 줄로
+       서야 1,2,3… 이 순서로 읽히므로 왼쪽 끝을 어긋내지 않는다.
+   이제 표시는 **왼쪽 빨간 막대 + 옅은 바탕 + [미구현] 딱지** 셋이고, 글자는 출시분과 똑같이 또렷하다.
+   막대는 ::before 로 얹는다 — border-left 로 그으면 그 두께만큼 내용이 밀려 번호 칸이 어긋난다 */
+.row.is-unreleased { position: relative; background: color-mix(in srgb, var(--warn) 9%, var(--bg)); }
+.row.is-unreleased::before {
+  content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 0.3rem;
+  background: var(--warn);
+}
+.row.is-unreleased .row__rank { color: var(--warn); }
+.row:hover { background: var(--hover); }
+/* 미구현 줄은 hover 에서도 제 바탕을 지킨다 — 스친 줄만 표시가 사라지면 훑는 중에 놓친다 */
+.row.is-unreleased:hover { background: color-mix(in srgb, var(--warn) 12%, var(--hover)); }
+
+/* 등급 색상 — PvE 평가 글자(.grade-mark)와 티어표 뱃지(.tier__badge)가 같은 색을 쓴다 */
+.grade-mark { font-weight: 600; }
+.grade-mark--s { color: var(--warn); }
+.grade-mark--a { color: #d98b0b; }
+.grade-mark--b { color: #4f9e57; }
+.grade-mark--c { color: #8c8f94; }
+
+/* 티어표: S/A/B/C 그룹 머리글 */
+/* 2026-09-10 v2.43.0 [뱃지] S 티어 · 4종 / 한 줄 설명 — 설명은 제 줄로 내린다(좁은 화면에서 뱃지 줄에
+   같이 두면 세 조각이 서로 밀어 글자가 한 자씩 끊긴다) */
+.tier__head { display: flex; align-items: center; flex-wrap: wrap; gap: 0.4rem 1.2rem; padding: 2rem 0 0.8rem; }
+.tier__name { font-size: var(--fs-body); font-weight: 600; }
+.tier__desc { flex: 1 1 100%; margin-left: 3.6rem; font-size: var(--fs-sub); line-height: 1.5; color: var(--muted); word-break: keep-all; }
+.tier__badge { width: 2.8rem; height: 2.8rem; border-radius: 0.9rem; display: flex; align-items: center; justify-content: center; font-size: var(--fs-body); font-weight: 700; background: var(--surface); }
+.tier__badge--s { color: var(--warn); }
+.tier__badge--a { color: #d98b0b; }
+.tier__badge--b { color: #4f9e57; }
+.tier__badge--c { color: #8c8f94; }
+
+/* 목록 하단 용어 설명 */
+.legend { display: flex; flex-direction: column; gap: 0.4rem; margin-top: 1.6rem; padding: 1.2rem 1.2rem; background: var(--surface); border-radius: 1rem; font-size: var(--fs-sub); color: var(--muted); line-height: 1.5; }
+.legend__item::before { content: "●"; font-size: var(--fs-sub); vertical-align: 0.2rem; margin-right: 0.8rem; }
+.legend__item b { font-weight: 600; color: var(--fg); }
+.row__rank { font-size: var(--fs-body); color: var(--muted); text-align: right; }
+.row:nth-child(-n+3) .row__rank { color: var(--fg); font-weight: 600; }
+/* 2026-09-20 v4.5.0 정지 그림이 96px 도트에서 공식 일러스트 축소본(256px)으로 바뀌었다 — pixelated 축소는 계단이 져 부드럽게 그린다.
+   도트로 남은 것은 움직이는 GIF(sprite--anim)뿐이라 그쪽만 pixelated 를 유지한다 */
+.sprite { width: 4rem; height: 4rem; image-rendering: auto; object-fit: contain; display: block; }
+/* 2026-09-20 v4.5.1 만화식 잉크 선 — drop-shadow 네 방향이 알파 실루엣을 따라 선을 두른다.
+   색은 --ink 로 두어 테마와 함께 뒤집히고(§1-b), 어두운 판 위(홈 히어로)는 그쪽 파일이 밝게 바꾼다.
+   굵기는 --ink-w 하나다 — 기본 0.5px, 큰 그림(그리드 카드·상세·홈 대표)은 각자 파일에서 1px 로 올린다 (v4.5.3 다시 반토막) */
+.sprite {
+  --ink: var(--fg); --ink-w: .05rem;
+  filter: drop-shadow(var(--ink-w) 0 0 var(--ink)) drop-shadow(calc(var(--ink-w) * -1) 0 0 var(--ink)) drop-shadow(0 var(--ink-w) 0 var(--ink)) drop-shadow(0 calc(var(--ink-w) * -1) 0 var(--ink));
+}
+.sprite.empty { filter: none; }  /* 몬스터볼 자리표시에는 선을 안 두른다 */
+.sprite.sprite--hd { image-rendering: auto; object-fit: contain; }  /* v2.7.2 게임 에셋 아이콘 — 이제 기본과 같지만 클래스는 상태 표식으로 남긴다 */
+/* 2026-09-12 v2.67.0 움직이는 그림(상세 화면) — 정지본과 화면 비율이 달라(가로 51~119px, 세로 62~105px)
+   상자에 맞춰 늘리면 찌그러진다. 원본 비율을 지키고 바닥에 세운다 — 포켓몬이 서 있는 그림이라
+   위가 아니라 아래를 맞춰야 발이 같은 선에 온다 */
+/* 2026-09-13 v3.20.0 도트 그림이라 확대는 **정수배까지만** — 그 한도는 sprite.js fitAnimZoom 이 padding 으로 정하고
+   여기서는 그 안을 비율대로 채운다. pixelated 로 그려 2배 확대에서도 도트가 뭉개지지 않는다(줄일 때는 JS 가 auto 로 되돌린다).
+   border-box — padding 이 상자를 늘리면 목록 줄 높이가 그림마다 달라진다 */
+.sprite.sprite--anim { image-rendering: pixelated; object-fit: contain; object-position: center bottom; box-sizing: border-box; }
+/* 2026-09-12 v3.19.0 움직이는 그림이 없는 종을 CSS 로 살짝 흔들던 규칙(sprite-idle)은 2026-09-16 v3.48.1 에 뺐다 —
+   "전부 움직인다" 를 지키려던 것인데, 실제로는 그림 수십 장이 제각각 움찔거려 목록이 어수선했다.
+   GIF 가 없는 종은 정지 그림 그대로 둔다. 설정 '움직이는 그림' 은 GIF 갈아 끼우기만 다룬다 */
+@media (prefers-reduced-motion: reduce) {
+  /* 움직임을 줄이는 설정이면 GIF 를 갈아 끼우지 않는다 — 재생을 CSS 로 멈출 수는 없어
+     sprite.js 가 이 설정을 직접 읽는다. 여기 규칙은 남은 표시만 지운다 */
+  .sprite.sprite--anim { image-rendering: pixelated; }
+}
+.sprite.empty { background: var(--surface); border-radius: 0.8rem; display: flex; align-items: center; justify-content: center; color: var(--muted); opacity: .45; }
+/* 2026-09-07 v2.14.0 (QA-52) 스프라이트 스켈레톤 — 이미지를 받는 동안 회색 판이 좌→우로 반짝인다. 받고 나면 sprite.js 가 .is-loading 을 뗀다 */
+.sprite.is-loading { border-radius: 0.8rem; background: linear-gradient(90deg, var(--surface) 25%, color-mix(in srgb, var(--muted) 18%, var(--surface)) 50%, var(--surface) 75%); background-size: 200% 100%; animation: sprite-shimmer 1.2s ease-in-out infinite; }
+@keyframes sprite-shimmer { from { background-position: 100% 0; } to { background-position: -100% 0; } }
+@media (prefers-reduced-motion: reduce) { .sprite.is-loading { animation: none; background: var(--surface); } }
+.row__main { min-width: 0; }
+.row__name { display: flex; align-items: center; flex-wrap: wrap; gap: 0.4rem 0.8rem; min-width: 0; }
+.row__name b { font-weight: 500; }
+.row__types { display: inline-flex; gap: 0.4rem; flex: 0 0 auto; }
+.row__types i { width: 0.7rem; height: 0.7rem; border-radius: 50%; background: var(--c); display: inline-block; }
+.row__moves { font-size: var(--fs-body); color: var(--muted); margin-top: 1px; }
+.row__moves span { display: inline; }
+.row__moves span + span::before { content: "·"; margin: 0 0.4rem; }
+/* 2026-09-03 PvP 카운터 이유 줄: 길어도 줄바꿈으로 다 보이게 */
+.row__counter { line-height: 1.5; word-break: keep-all; }
+/* 2026-09-03 추천 덱 카드: 이유 문장 · 덱 목록에선 보유 별 숨김(보유 체크는 PvP 탭에서) */
+.deck__reason { margin: 0.8rem 0.2rem 0.2rem; font-size: var(--fs-body); color: var(--muted); line-height: 1.7; word-break: keep-all; }
+.schedule__body.is-starless .row { padding-right: 0.4rem; }
+.row__stats { text-align: right; }
+/* 2026-09-19 v4.3.5 점수는 카드의 주인공이라 본문보다 커야 한다. v4.3.4 에서 격자로 스냅하며
+   1.5rem → 본문(1.4)으로 눌려 위계가 사라졌었다 — 강조 단(16px)으로 올린다 */
+.row__score { font-size: var(--fs-lead); font-weight: 600; }
+.row__sub { font-size: var(--fs-sub); color: var(--muted); display: block; }
+
+.row__more { width: 100%; padding: 1.2rem 0; font-size: var(--fs-body); color: var(--muted); border-bottom: 1px solid var(--line); }
+.row__more:hover { color: var(--fg); }
+
+.places { display: flex; flex-wrap: wrap; gap: 0.4rem 1.2rem; font-size: var(--fs-body); color: var(--muted); margin-top: 0.2rem; }
+.places span b { font-weight: 500; color: var(--fg); }
+.places__more { color: var(--muted); opacity: .8; }
+
+/* 640px 미만: 점수를 이름 아래로 내려 세로 배치. 말줄임 없이 전부 표시 */
+@media (max-width: 640px) {
+  .row { grid-template-columns: 2.4rem 3.6rem minmax(0, 1fr); gap: 0.2rem 1.2rem; align-items: start; padding: 1.2rem 0; }
+  .row__rank { grid-row: 1 / span 2; padding-top: 0.2rem; }
+  .sprite { grid-row: 1 / span 2; width: 3.6rem; height: 3.6rem; }
+  .row__stats { grid-column: 3; display: flex; align-items: baseline; gap: 0.8rem; text-align: left; }
+  .row__sub { display: inline; }
+}
+
+/* 2026-09-02 티어 근거 인라인(1B) · 이번 주 보스 카드(2A) */
+.row__why { display: none; padding: 0.4rem 1.2rem 1.2rem 4.4rem; font-size: var(--fs-body); color: var(--muted); line-height: 1.5; border-bottom: 1px solid var(--line); }
+.row__why.is-open { display: block; }
+.row__why-more { color: var(--fg); font-size: var(--fs-sub); text-decoration: underline; }
+/* 2026-09-10 v2.43.0 근거는 두 칸(계산식 · 카운터) — 좁은 화면에서는 위아래로 쌓인다 */
+.row__why-col + .row__why-col { margin-top: 1.2rem; }
+.row__why-title { display: block; margin-bottom: 0.4rem; font-size: var(--fs-body); font-weight: 600; color: var(--fg); }
+.row__why-line { margin: 0 0 0.4rem; }
+.row__why-chips { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+
+/* 2026-09-14 v3.30.0 제목 옆 ⓘ — 등급이 무슨 기준인지 native title 툴팁으로 밝힌다.
+   따로 팝업을 만들지 않는다: title 은 i18n 이 이미 번역하는 속성이고(I18N_ATTRS),
+   키보드로도 닿게 tabindex 만 준다. 손가락 과녁은 44px 규칙대로 여백으로 채운다 */
+/* 제목 + ⓘ 묶음 — 휴대폰에서 .row-head 가 block 이 돼도 둘은 한 줄에 남는다 */
+.row-head__title { display: flex; align-items: baseline; gap: 0.2rem; min-width: 0; }
+/* 제목 옆 딱지([가상 순위])는 ⓘ 보다 한 칸 떨어진다 — ⓘ 는 제목에 붙는 표식이고 딱지는 따로 읽는 말이다 */
+.row-head__title .tag { margin-left: 0.4rem; }
+.row-head__title h2 { min-width: 0; }
+.info-dot {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-width: 2.4rem; min-height: 2.4rem; margin-left: 0.2rem;
+  color: var(--muted); font-size: var(--fs-body); line-height: 1; cursor: help;
+}
+.info-dot:hover, .info-dot:focus-visible { color: var(--fg); }
+/* 2026-09-15 v3.32.0 D-MAX 덱 짜기 세 칸 — 목록(.row-list)을 그대로 쓰되 빈 칸과 [바꾸기] 만 더한다 */
+.deck-slot { cursor: pointer; }
+.deck-slot.is-empty { cursor: default; color: var(--muted); }
+.deck-slot__blank { display: inline-flex; align-items: center; justify-content: center; width: 4.8rem; height: 4.8rem; border: 1px dashed var(--line); border-radius: 1rem; color: var(--muted); }
+.deck-slot__swap { flex: none; margin-left: auto; }
+.deck-slot__picker { cursor: default; }
+.row__why-chip.is-on { border-color: var(--brand); color: var(--brand); font-weight: 600; }
+
+/* ⓘ 를 눌렀을 때 펼쳐지는 안내 — 툴팁과 같은 글 */
+.info-note { margin: 0 0 1.2rem; padding: 1.2rem 1.2rem; border: 1px solid var(--line); border-radius: 1rem; background: var(--surface); font-size: var(--fs-sub); line-height: 1.7; color: var(--muted); }
+.row__why-chip { padding: 0.4rem 0.8rem; border: 1px solid var(--line); border-radius: 99.9rem; font-size: var(--fs-sub); color: var(--fg); }
+.boss__card { margin: 0.4rem 0 1.6rem; padding: 1.2rem 1.6rem; border: 1px solid var(--line); border-radius: 1.2rem; background: var(--surface); }
+.boss__title { margin: 0 0 1.2rem; font-size: var(--fs-body); font-weight: 600; }
+/* overflow-y 를 함께 적는다 (v2.26.0) — 가로 스크롤만 의도한 줄이 세로 휠까지 먹지 않게 */
+.boss__recs { display: flex; gap: 0.8rem; overflow-x: auto; overflow-y: hidden; padding: 0.4rem 0; }
+/* 2026-09-08 v2.31.0 카드 배경이 페이지 배경과 같은 값(var(--bg))이라 카드가 안 보였다 —
+   테두리도 없어 그림이 배경에 그냥 떠 있는 것처럼 보였다. --surface 로 대비를 내고 얇은 테두리를 준다 */
+.boss__rec { flex: none; display: flex; flex-direction: column; align-items: center; gap: 0.4rem; padding: 0.8rem 1.2rem; border: 1px solid var(--line); border-radius: 1rem; background: var(--surface); font-size: var(--fs-sub); line-height: 1.5; }
+.boss__rec .sprite { width: 4rem; height: 4rem; }
+/* 2026-09-07 v2.14.0 (QA-52) 긴 이름(거다이맥스 ○○○)은 카드 폭 안에서 가운데 정렬로 줄바꿈 — 한 줄로 늘어져 격자가 깨지지 않게 */
+.boss__rec > span { max-width: 10.4rem; text-align: center; word-break: keep-all; overflow-wrap: anywhere; }
+.boss__rec .form-tag { display: inline-block; margin-bottom: 1px; }
+.boss__more { margin-top: 0.8rem; font-size: var(--fs-body); color: var(--muted); text-decoration: underline; }
+
+/* 2026-09-02 보스 아코디언 */
+/* 2026-09-12 v3.5.0 보스 아코디언과 그 아래 필터 줄 사이를 8px 로 좁힌다.
+   전에는 32px 이었다 — 이 마진 12px + .controls 의 위 패딩 20px(layout.css).
+   둘은 "이번 주 무엇이 도나" 와 "그중 무엇을 볼까" 로 이어지는 한 덩이라 멀 이유가 없다.
+   아코디언이 뜨는 화면(D-MAX)에서만 좁힌다 — .is-on 은 renderBossAcc 가 붙인다 */
+.boss__acc { margin: 0 0 0.8rem; }
+.boss__acc.is-on ~ .controls { padding-top: 0; }
+.recs-wrap { flex-wrap: wrap; overflow-x: visible; }
+/* 2026-09-07 v2.13.0 (QA-43) 이번 주 보스 파티 카드 — 딜러 2 + 탱커 1 */
+.party-card { margin-bottom: 1.2rem; padding: 0.8rem 1.2rem; border: 1px solid var(--line); border-radius: 1rem; background: var(--surface); }
+.party-card .boss__rec { background: var(--bg); }
+.party-card .boss__rec .row__sub { font-size: var(--fs-sub); }
+.boss__foot { display: flex; justify-content: space-between; align-items: center; margin-top: 1.2rem; gap: 0.8rem; }
+
+/* 2026-09-02 솔플 계산기 판정 카드 */
+.solo__card { margin: 0.4rem 0 2rem; padding: 1.6rem; border-radius: 1.2rem; border: 1px solid var(--line); background: var(--surface); }
+.solo__card.solo__ok { border-color: var(--t-grass); }
+.solo__card.solo__tight { border-color: var(--t-ground); }
+.solo__card.solo__no { border-color: var(--t-fighting); }
+.solo__verdict { margin: 0; font-size: var(--fs-sec); font-weight: 700; }
+.solo__why { margin: 0.4rem 0 0; font-size: var(--fs-body); line-height: 1.5; }
+.solo__stats { margin: 0.8rem 0 0; font-size: var(--fs-sub); color: var(--muted); line-height: 1.5; }
+
+/* 2026-09-02 솔플 계산기 보스 검색 */
+.boss__search { width: 100%; padding: 1.2rem 1.2rem; border: 1px solid var(--line); border-radius: 1rem; background: var(--bg); color: var(--fg); font: inherit; font-size: var(--fs-body); }  /* 2026-09-03 16px 미만이면 iOS가 포커스 시 자동 확대 */
+.boss__search:focus { outline: 0.2rem solid var(--fg); outline-offset: 1px; }
+.boss__sugg { display: flex; flex-wrap: wrap; gap: 0.8rem; }
+.boss__sugg:empty { display: none; }
+
+/* 2026-09-02 선택된 보스 유지 표시 */
+.boss__selected { display: flex; align-items: center; gap: 1.2rem; padding: 0.8rem 1.2rem; border: 1px solid var(--line); border-radius: 1rem; background: var(--surface); font-size: var(--fs-body); }
+.boss__selected .sprite { width: 3.6rem; height: 3.6rem; }
+.boss__clear { margin-left: auto; width: 2.8rem; height: 2.8rem; border-radius: 0.7rem; color: var(--muted); }
+.boss__clear:hover { background: var(--hover); color: var(--fg); }
+
+/* 2026-09-02 보스 CP 표기 */
+.boss__cp { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+.boss__cp .meta { font-size: var(--fs-sub); }
+
+/* 2026-09-02 솔플 계산기 옵션 줄 */
+.solo__opts { display: flex; flex-wrap: wrap; gap: 0.8rem; }
+
+/* 2026-09-03 v2.2.0 즐겨찾기 ★ (로그인 계정에 저장) — 도감 행·상세 팝업 */
+/* 2026-09-12 v3.14.0 .fav(★ 버튼) 규칙을 뺐다 — 그 버튼을 만드는 favBtn() 이 v3.4.0 부터 불리지 않았다 */
+
+/* 2026-09-03 PvP 덱 짜기 슬롯 UI */
+.deck__slots { display: flex; gap: 1.2rem; margin: 1.2rem 0 1.2rem; }
+/* 2026-09-03 추천 덱 3 아코디언: 일정표 아코디언 스타일 재사용, 위 간격만 */
+.deck__acc { margin: 0.8rem 0 0; }
+.deck__slot { flex: 1; min-height: 8.6rem; border: 0.15rem dashed var(--line); border-radius: 1.2rem; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.4rem; color: var(--muted); position: relative; }
+.deck__slot .slot__plus { font-size: var(--fs-title); line-height: 1; }
+.deck__slot.is-filled { border-style: solid; background: var(--surface); color: var(--fg); }
+.deck__slot .sprite { width: 4rem; height: 4rem; }
+.deck__slot .slot__name { font-size: var(--fs-sub); max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding: 0 0.4rem; }
+.deck__slot .slot__close { position: absolute; top: 0.5rem; right: 0.8rem; font-size: var(--fs-sub); color: var(--muted); }
+
+/* 2026-09-08 v2.28.0 PC 는 카드 격자 — 줄이 아니라 카드로 훑는다
+   왜 바꾸나
+     넓은 화면에서 한 줄짜리 목록은 가운데 760px 만 쓰고 좌우가 텅 빈다.
+     그 폭에 순위·그림·이름·기술·점수를 한 줄로 늘어놓으면 눈이 가로로 길게 움직이는데,
+     정작 고르는 대상(그림·이름)은 40px 짜리 그림 하나뿐이라 훑기가 안 됐다.
+     도감 2열에서 이미 쓰던 카드(pages.css .dex__list.is-grid)와 같은 규칙을 여기에도 적용해
+     "고르는 화면은 카드" 라는 한 가지 문법으로 맞춘다.
+   왜 CSS 만으로 하나
+     랭킹 목록은 모두 list.js 의 <ul class="row-list"> 를 거친다.
+     한 곳의 미디어 쿼리로 전부(D-MAX · 레이드 PvE · 배틀 PvP · 솔플 스쿼드 · 추천 덱) 바뀐다.
+     모바일은 손대지 않는다 — 1100px 미만은 기존 줄 그대로다
+   왜 선택자마다 .row 를 앞에 다나 (2026-09-08 v2.29.1 수정)
+     row__name · row__moves · row__sub 같은 조각은 랭킹 줄만 쓰는 게 아니다.
+     플래너 내 포켓몬(.plan__mon-main)과 보스 추천 카드(.boss__rec)가 같은 클래스를 빌려 쓴다.
+     맨 클래스로 적었더니 "이름 가운데 정렬" 같은 카드 전용 규칙이 그쪽 화면까지 끌려가 레이아웃이 깨졌다.
+     카드 규칙은 카드 안(.row / .row-list 자식)에서만 살아야 한다 */
+@media (min-width: 1100px) {
+  /* 2026-09-12 v3.9.1 줄 모드(.is-list)에는 이 카드 규칙을 걸지 않는다.
+     전에는 pc-theme.css 에서 속성을 하나씩 되돌리고 있었는데(display · padding · border …),
+     카드 디자인이 바뀔 때마다 되돌릴 목록도 같이 늘어나 결국 어긋났다.
+     아예 안 걸면 list.css 위쪽의 기본 줄 배치가 그대로 남는다 — 휴대폰에서 보는 그 줄이다.
+     PvP 처럼 토글이 없는 화면은 클래스가 안 붙으므로 지금까지와 똑같이 카드다 */
+  /* 2026-09-11 v2.59.0 열 개수는 tokens.css 의 --list-cols 한 곳에서 정한다 —
+     1920 다섯 · 1440 넷 · 1100 셋. 상세 패널이 열리면 그 값이 두 칸 내려간다.
+     (.dex__list 와 같은 값을 본다 — pages.css 참고) */
+  .row-list:not(.is-list) { display: grid; grid-template-columns: repeat(var(--list-cols), minmax(0, 1fr)); gap: 1.2rem; padding-top: 0.4rem; border-top: 0; }
+  .row-list:not(.is-list) > .row {
+    position: relative; display: flex; flex-direction: column; align-items: center; gap: 0.4rem;
+    padding: 2rem 1.2rem 1.2rem; text-align: center;
+    border: 1px solid var(--line); border-radius: 1.2rem; background: var(--surface);
+  }
+  .row-list:not(.is-list) > .row:hover { border-color: var(--fg); background: var(--hover); }
+  /* 순위는 카드 모서리로 — 세로로 세운 카드에서 순위가 한 칸을 차지하면 그림이 밀린다 */
+  .row-list:not(.is-list) > .row > .row__rank { position: absolute; top: 0.8rem; left: 1rem; text-align: left; font-size: var(--fs-sub); }
+  /* 그림 칸을 회색 판으로 떼고 아래에 얇은 선 — 도감 카드(pages.css)·상세 팝업(.sprite-box)과 같은 뜻 */
+  .row-list:not(.is-list) > .row .sprite { box-sizing: content-box; width: 6.4rem; height: 6.4rem; padding: 0.8rem; border-radius: 1.2rem; }
+  .row-list:not(.is-list) > .row .sprite:not(.is-loading) { background: var(--bg); }
+  .row-list:not(.is-list) > .row > .row__main { width: 100%; min-width: 0; padding-top: 0.8rem; border-top: 1px solid var(--line); }
+  .row-list:not(.is-list) > .row .row__badges { justify-content: center; margin-bottom: 0.4rem; }
+  .row-list:not(.is-list) > .row .row__name { justify-content: center; }
+  .row-list:not(.is-list) > .row .row__name b { font-size: var(--fs-body); font-weight: 600; line-height: 1.5; word-break: keep-all; }
+  .row-list:not(.is-list) > .row .row__moves { margin-top: 0.4rem; line-height: 1.5; word-break: keep-all; }
+  /* 점수는 카드 바닥에 붙인다 — 기술 줄 길이가 종마다 달라도 점수 높이가 가지런하다 */
+  .row-list:not(.is-list) > .row > .row__stats { display: flex; flex-direction: column; align-items: center; gap: 1px; margin-top: auto; padding-top: 0.8rem; text-align: center; }
+  .row-list:not(.is-list) > .row .row__score { font-size: var(--fs-lead); font-weight: 700; }
+  .row-list:not(.is-list) > .row .row__sub { display: block; }
+  /* 격자 폭을 다 쓰는 항목들 — 더보기 버튼과 티어표의 "선정 근거" 줄 */
+  .row-list:not(.is-list) > .row__more { grid-column: 1 / -1; border: 1px solid var(--line); border-radius: 1rem; }
+  .row-list:not(.is-list) > .row__more:hover { border-color: var(--fg); background: var(--hover); }
+  .row-list:not(.is-list) > .row__why { grid-column: 1 / -1; padding: 1.2rem 1.2rem; border: 1px solid var(--line); border-radius: 1rem; background: var(--surface); }
+  /* 순위가 없는 목록(덱 슬롯 등)은 3열이면 카드가 너무 홀쭉하다 */
+  .is-starless .row-list:not(.is-list) { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}

@@ -14,6 +14,8 @@
 
 import pw from '/opt/node22/lib/node_modules/playwright/index.js';
 const { chromium } = pw;
+// 앱이 다 붙은 뒤에 훑는다 — v4(해시)든 Next.js(경로)든 같은 방법으로 (lib/visit.mjs)
+import { detectRouting, labelOf, visit } from './lib/visit.mjs';
 
 const BASE = (process.argv[2] || 'http://localhost:4173/').replace(/\/?$/, '/');
 
@@ -59,6 +61,7 @@ async function clickThrough(page, where, selector, label, bad) {
 const browser = await chromium.launch({ args: ['--ignore-certificate-errors'] });
 const bad = [];
 let visited = 0;
+let routing = 'hash';
 
 for (const size of [{ width: 390, height: 844 }, { width: 1280, height: 900 }]) {
   const context = await browser.newContext({ viewport: size, ignoreHTTPSErrors: true });
@@ -69,12 +72,12 @@ for (const size of [{ width: 390, height: 844 }, { width: 1280, height: 900 }]) 
     window.addEventListener('error', (event) => window.__screenErrors.push(String(event.message)));
   });
   const tag = size.width < 500 ? '모바일' : 'PC';
+  if (tag === '모바일') routing = await detectRouting(page, BASE);
 
   for (const path of PATHS) {
-    const where = `${tag} #/${path}`;
+    const where = `${tag} ${labelOf(path)}`;
     try {
-      await page.goto(`${BASE}#/${path}`, { waitUntil: 'load', timeout: 20000 });
-      await page.waitForTimeout(600);
+      await visit(page, BASE, routing, path);
       await scan(page, where, bad);
       visited += 1;
       // 순위 화면만 탭·칩이 있다. 없으면 그냥 지나간다.
@@ -91,7 +94,7 @@ for (const size of [{ width: 390, height: 844 }, { width: 1280, height: 900 }]) 
 
 await browser.close();
 
-console.log(`훑은 화면 ${visited}장 · 기준 ${BASE}`);
+console.log(`훑은 화면 ${visited}장 · 기준 ${BASE} (${routing === 'path' ? '경로 주소 · Next.js' : '해시 주소 · v4'})`);
 if (bad.length) {
   console.error(`\n새는 자리 ${bad.length}군데:`);
   for (const one of bad.slice(0, 40)) console.error(`  ${one}`);

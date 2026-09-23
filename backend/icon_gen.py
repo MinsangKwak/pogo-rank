@@ -1,8 +1,8 @@
 # 2026-09-03 PWA 아이콘 생성기 (표준 라이브러리만): 어두운 바탕 + 몬스터볼 라인 아이콘
-# 한 번 실행해 frontend/static/icon-192.png, icon-512.png 를 만든다 (빌드마다 재생성하지 않음)
+# 한 번 실행해 assets/icon-192.png, icon-512.png 를 만든다 (빌드마다 재생성하지 않음)
 #
 # 입력 : 없음. 크기와 색만으로 픽셀을 직접 계산한다 (Pillow 같은 외부 의존성을 쓰지 않으려고 PNG를 손으로 쓴다)
-# 출력 : frontend/static/icon-192.png, frontend/static/icon-512.png (manifest 의 PWA 아이콘)
+# 출력 : assets/icon-192.png, assets/icon-512.png (manifest 의 PWA 아이콘)
 # 관계 : 빌드 파이프라인과 분리되어 있다. 아이콘 모양이나 테마 색을 바꿀 때만 다시 실행한다.
 
 import struct
@@ -72,6 +72,6 @@ def write_png(size, path):
     print(path, len(png_bytes), 'bytes')
 
 
-os.makedirs('frontend/static', exist_ok=True)
-write_png(192, 'frontend/static/icon-192.png')
-write_png(512, 'frontend/static/icon-512.png')
+os.makedirs('assets', exist_ok=True)
+write_png(192, 'assets/icon-192.png')
+write_png(512, 'assets/icon-512.png')
