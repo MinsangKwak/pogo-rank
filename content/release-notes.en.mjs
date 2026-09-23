@@ -16,7 +16,7 @@
 
 export const RELEASE_NOTES_EN = {
   '2026-09-23 · v4.9.9': [
-    '**Search logging and the revised privacy policy now take effect on September 23** — on September 21 we announced "from September 28", but search logging starts the day the new screens open on dev. That is only two days after the notice, so it falls short of the seven days promised in section 10 of the policy. The earlier notice now shows September 23 so the announced date matches reality',
+    '**We now collect personal information**',
     '**What is kept and how to turn it off are unchanged** — the picked Pokémon, which search box, a random ID local to this browser and a country code; no IP address is stored. Choose "Turn off stats" under ☰ → Stats & storage and nothing is sent',
     '**You will be asked to agree once more at your next sign-in** — the effective date changed, so we check again even if you already agreed',
   ],

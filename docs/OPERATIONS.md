@@ -539,7 +539,7 @@ FIREBASE_SA_JSON='<한 줄 JSON>' python3 scripts/firestore_restore.py firestore
 
 > **2026-09-23 (v4.9.9) — 시행일을 9/28 에서 9/23 으로 앞당겼다.** 주인이 수집을 바로 켜기로 했다(CLAUDE.md §3).
 > 새 화면이 dev 에 뜨는 날부터 쌓이므로 방침 본문 · `PRIVACY_VER` · `TERMS_VER` · 옛 공지의 날짜를 9/23 으로 고치고,
-> 패치노트 맨 위에 정정 항목을 따로 세웠다. 고지 이틀 만이라 '7일 전 알림' 을 다 채우지 못한 것도 그 항목에 적었다.
+> 패치노트 맨 위에는 "이제부터 개인정보를 수집합니다" 한 줄을 세웠다 (주인이 정한 문구).
 > 날짜를 고치는 곳은 web · frontend-v4 **두 벌**이다 (`src/lib/legalMeta.ts` · `src/screens/Legal.tsx`).
 
 **② Neon 리전은 `ap-southeast-1`(싱가포르) 로 만든다.** 방침 4번의 국외 이전 표에 그렇게 적혀 있다.
