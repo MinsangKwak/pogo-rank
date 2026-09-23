@@ -22,7 +22,26 @@
 ---
 
 <details open>
-<summary><b>2026-09-23</b> — 1판 · <code>v4.9.9</code></summary>
+<summary><b>2026-09-23</b> — 2판 · <code>v5.0.0</code> · <code>v4.9.9</code></summary>
+
+<details>
+<summary><b>v5.0.0</b> · 운영을 v5 로 — moncamp.kr 이 Next.js · 자체 인증 서버 · Neon 으로</summary>
+
+**요청** — 운영 전환을 순차적으로 진행한다.
+
+**넘기기 전에 잡은 빈자리 넷** — 전환 계획서(`docs/V5-CUTOVER.md`)에 없던 것들이다. 넷 다 **빠져도 화면은 멀쩡해서** 아무도 모를 자리였다.
+① **보안 헤더** — Cloudflare 가 GitHub Pages 앞에서 붙이던 다섯(HSTS · nosniff · Referrer · `frame-ancestors` · Permissions)이 프록시를 끄면 빠진다 → `web/next.config.ts` 가 직접 붙이고 배포 워크플로가 잰다.
+② **GA 조각** — v5 에는 불러오는 조각이 아예 없었다(`track.ts` 가 `window.gtag` 를 기다리기만 했다) → `lib/gaSnippet.ts`, 운영 채널 · moncamp.kr 에서만, '통계 끄기' 면 안 불러온다.
+③ **문의 이메일** — 빌드에 안 넘어가 방침의 문의처가 "사이트 운영자" 로만 찍혔다.
+④ **세션 파기** — 방침에 적을 "만료 세션 삭제" 를 하는 코드가 없었다 → 매일 롤업이 만료 하루 지난 세션을 지운다.
+
+**개인정보처리방침** — 계정 저장소가 Firebase(서울) → moncamp 서버(Cloud Run 서울) + Neon(싱가포르). **계정 정보의 국외 이전**을 4번에 적고,
+로그인 유지 쿠키 · User-Agent · Vercel · Cloudflare 를 더하고, GA 로 계정 식별자를 안 보내는 것을 바로잡았다. `TERMS_VER` 을 `2026-09-23-v5` 로 올려 다시 동의를 받는다.
+
+**주소 넘기기** — `scripts/vercel_prod.py`(status · attach · rollback)와 손으로만 도는 `cutover-prod.yml`. 바꾸기 전에 옛 레코드를 찍고, 되돌리면 GitHub Pages(v4)가 그대로 선다.
+운영 배포의 입구는 `deploy` 하나다 — 전환 기간에 열어 둔 `next` 를 뺐다. `verify_deploy.sh` 가 Next 판을 알아본다.
+
+</details>
 
 <details>
 <summary><b>v4.9.9</b> · dev 를 Next.js 로 — 인증 서버 · 이관 · 파이프라인 · 검사 · 수집 시행일 정정</summary>

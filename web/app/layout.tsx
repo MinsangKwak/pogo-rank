@@ -11,6 +11,7 @@ import type { Metadata, Viewport } from 'next';
 import type { ReactNode } from 'react';
 import '../src/styles';
 import Providers from './providers';
+import { gaSnippet } from '../src/lib/gaSnippet';
 
 const SITE = process.env['NEXT_PUBLIC_SITE_URL'] ?? 'https://moncamp.kr';
 
@@ -77,12 +78,16 @@ var p=h.slice(1);
 if(location.pathname!=='/'&&location.pathname!=='')return;
 location.replace(p);}catch(e){}})();`;
 
+// 운영 채널에서만 심는다 — dev 는 GA 를 안 쓴다(v4 와 같다). 값은 web/.env.production
+const GA_SCRIPT = process.env['NEXT_PUBLIC_CHANNEL'] === 'dev' ? '' : gaSnippet(process.env['NEXT_PUBLIC_GA_ID'] ?? '');
+
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="ko" data-theme="light">
       <head>
         <script dangerouslySetInnerHTML={{ __html: HASH_SCRIPT }} />
         <script dangerouslySetInnerHTML={{ __html: THEME_SCRIPT }} />
+        {GA_SCRIPT ? <script dangerouslySetInnerHTML={{ __html: GA_SCRIPT }} /> : null}
       </head>
       <body>
         {/* **#root 를 없애면 안 된다.** v4 의 CSS 307군데가 `html body #root …` 로 시작한다 —

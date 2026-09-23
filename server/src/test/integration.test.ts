@@ -16,7 +16,7 @@ import { readEnv } from '../env.ts';
 import { makeDb, type Sql } from '../db/client.ts';
 import { migrate } from '../db/migrate.ts';
 import { hotRows, rollup, PERSON_CAP, MIN_HITS, MIN_VISITORS } from '../lib/hot.ts';
-import { purge, retentionEdge, KEEP_MONTHS } from '../lib/retention.ts';
+import { purge, purgeSessions, retentionEdge, KEEP_MONTHS } from '../lib/retention.ts';
 import { backupHealth, STALE_DAYS, DROP_RATIO } from '../lib/backup.ts';
 import { testDatabaseUrl } from './dbUrl.ts';
 import { TEST_AUTH_ENV } from './envFixture.ts';
@@ -162,6 +162,21 @@ describe.skipIf(!url)('통합 — 진짜 Postgres', () => {
     const [kept] = await sql<{ hits: number; visitors: number }[]>`
       select hits, visitors from search_daily where term = '옛날말'`;
     expect(kept).toMatchObject({ hits: 3, visitors: 1 });
+  });
+
+  it('만료 하루가 지난 로그인 세션만 지운다 — 방침 5번', async () => {
+    const [user] = await sql<{ id: string }[]>`
+      insert into users (google_sub, email) values ('g-purge', 'purge@example.test') returning id`;
+    const seed = (hash: string, expires: string) => sql`
+      insert into sessions (user_id, refresh_hash, family_id, expires_at)
+      values (${user!.id}, ${Buffer.from(hash)}, gen_random_uuid(), now() + ${expires}::interval)`;
+    await seed('old', '-2 day');     // 지운다
+    await seed('edge', '-1 hour');   // 만료됐지만 하루가 안 됐다 — 남긴다
+    await seed('live', '10 day');    // 남긴다
+    expect(await purgeSessions(sql)).toBe(1);
+    const left = await sql<{ n: string }[]>`select count(*)::text as n from sessions where user_id = ${user!.id}`;
+    expect(left[0]!.n).toBe('2');
+    await sql`delete from users where id = ${user!.id}`;
   });
 
   it('이미 굳힌 날은 파기가 덮어쓰지 않는다', async () => {

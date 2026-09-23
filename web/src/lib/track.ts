@@ -2,7 +2,7 @@
 // lib/track.ts — GA4 이벤트 (v3 scripts/track.js 와 **같은 이벤트명·같은 가상 경로**)
 //
 // 이름을 바꾸면 v3.57.0 에 겨우 맞춰 놓은 지표가 끊긴다.
-// **지금 이 빌드에는 GA 조각이 없다** (index.html 에 안 넣었다) — 호출 자리만 갖춰 둔 상태다.
+// GA 조각은 app/layout.tsx 의 <head> 가 심는다 (lib/gaSnippet.ts). 운영 채널 · moncamp.kr 에서만 돈다.
 // ─────────────────────────────────────────────────────────────────────────────
 declare global {
   interface Window { gtag?: (...args: unknown[]) => void; __trackLog?: unknown[][]; GA_SENT_FIRST?: boolean }

@@ -11,7 +11,7 @@
 import type { FastifyInstance } from 'fastify';
 import type { Sql } from '../db/client.ts';
 import { hotRows, rollup, MIN_HITS, MIN_ROWS, MIN_VISITORS, PERSON_CAP } from '../lib/hot.ts';
-import { purge, KEEP_MONTHS } from '../lib/retention.ts';
+import { purge, purgeSessions, KEEP_MONTHS } from '../lib/retention.ts';
 
 interface HotQuery { days?: number; limit?: number; country?: string; raw?: boolean }
 
@@ -119,6 +119,8 @@ export function hotRoutes(app: FastifyInstance, sql: Sql, adminToken: string): v
         '방침에 적은 기간은 누가 기억해서 돌리는 것이 아니라 저절로 지켜져야 한다.',
         '',
         '`deleted` 가 0 인 것이 한동안 정상이다 — 첫 12개월은 지울 것이 없다.',
+        '',
+        '3. 만료 하루가 지난 로그인 세션을 지운다 (방침 5번) — `sessions` 가 지운 줄 수다',
       ].join('\n'),
       security: [{ adminToken: [] }],
       response: {
@@ -136,6 +138,7 @@ export function hotRoutes(app: FastifyInstance, sql: Sql, adminToken: string): v
               },
             },
             keepMonths: { type: 'integer' },
+            sessions: { type: 'integer', description: '지운 만료 세션 줄 수' },
           },
         },
         401: { type: 'object', properties: { error: { type: 'string' } } },
@@ -145,6 +148,7 @@ export function hotRoutes(app: FastifyInstance, sql: Sql, adminToken: string): v
     if (!authorized(req.headers.authorization)) return reply.code(401).send({ error: '열쇠가 필요합니다' });
     const written = await rollup(sql);
     const purged = await purge(sql);
-    return { ok: true, written, purged, keepMonths: KEEP_MONTHS };
+    const sessions = await purgeSessions(sql);
+    return { ok: true, written, purged, keepMonths: KEEP_MONTHS, sessions };
   });
 }

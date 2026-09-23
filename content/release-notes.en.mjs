@@ -15,6 +15,12 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 export const RELEASE_NOTES_EN = {
+  '2026-09-23 · v5.0.0': [
+    '**moncamp has a new app** — every Pokémon now has its own address you can link to, and the first screen loads faster. Old saved links (like #/dex) still open',
+    '**Please sign in once more** — sign-in moved to the new moncamp server. Approvals and ★ were carried over, so signing in with Google again picks them up',
+    '**Account data is now stored in Singapore** — your email, name, photo URL and ★ list are handled by the moncamp server (Seoul) instead of Firebase (Seoul) and kept in a Neon database (Singapore). Section 4 of the privacy policy says so, and we ask for your agreement again at sign-in',
+    '**One cookie keeps you signed in** — scripts cannot read it, it expires after 30 days, and signing out deletes it right away',
+  ],
   '2026-09-23 · v4.9.9': [
     '**We now collect personal information**',
     '**What is kept and how to turn it off are unchanged** — the picked Pokémon, which search box, a random ID local to this browser and a country code; no IP address is stored. Choose "Turn off stats" under ☰ → Stats & storage and nothing is sent',
