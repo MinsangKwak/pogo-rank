@@ -199,7 +199,8 @@ jobs:
           fi
           echo "api.moncamp.kr/health 200"
           # 로그인 시작이 **브라우저에게** 302 로 구글을 가리키는지 — Worker 가 따라가 버리면 여기가 200 이다
-          read -r code where < <(curl -so /dev/null -w '%{http_code} %{redirect_url}' \
+          # -w 끝에 줄바꿈을 붙인다 — 없으면 read 가 1 을 돌려 set -e 가 **말없이** 세운다 (2026-09-23 실측)
+          read -r code where < <(curl -so /dev/null -w '%{http_code} %{redirect_url}\n' \
             'https://api.moncamp.kr/v1/auth/google/start?next=/&app=https://dev.moncamp.kr')
           echo "로그인 시작: $code → ${where%%\?*}"
           [ "$code" = "302" ] && [[ "$where" == https://accounts.google.com/* ]] \
