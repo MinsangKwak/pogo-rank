@@ -13,7 +13,6 @@
 // ─────────────────────────────────────────────────────────────────────────────
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import AppClient from '../../src/AppClient';
 import RouteIntro from '../../src/components/RouteIntro';
 import { ROUTES, routeOfPath, routeDesc } from '../../src/routes';
 import { allSprites, monFacts } from '../../src/lib/facts.server';
@@ -89,10 +88,10 @@ export default async function Page({ params }: { params: Promise<{ slug: string[
     const facts = monFacts(sprite);
     // 모르는 번호면 404 다 — 200 으로 빈 화면을 주면 검색엔진이 그것을 색인한다
     if (!facts) notFound();
-    return <AppClient seo={<MonFacts facts={facts} />} />;
+    return <MonFacts facts={facts} />;
   }
 
   const found = routeOfPath(path);
   if (!found) notFound();
-  return <AppClient seo={<RouteIntro route={found.route} />} />;
+  return <RouteIntro route={found.route} />;
 }

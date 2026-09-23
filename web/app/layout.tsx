@@ -11,6 +11,7 @@ import type { Metadata, Viewport } from 'next';
 import type { ReactNode } from 'react';
 import '../src/styles';
 import Providers from './providers';
+import AppClient from '../src/AppClient';
 import { gaSnippet } from '../src/lib/gaSnippet';
 
 const SITE = process.env['NEXT_PUBLIC_SITE_URL'] ?? 'https://moncamp.kr';
@@ -96,7 +97,10 @@ export default function RootLayout({ children }: { children: ReactNode }) {
             detail(23) 이 통째로 죽은 규칙이 됐다. 오류도 경고도 없이 배치와 색만 사라진다.
             레이아웃에서는 `#root{display:contents}` 가 이 상자를 지운다 (root.css) */}
         <div id="root">
-          <Providers>{children}</Providers>
+          {/* **앱은 여기서 한 번만 선다.** 페이지마다 세우면 화면을 옮길 때마다 머리줄 · 메뉴 · 본문 틀이
+              통째로 다시 서고, 그 사이 검색엔진용 본문이 비쳐 '깨졌다가 다시 그려진다' (2026-09-23 dev 제보).
+              페이지는 그 본문(children)만 넘긴다 — 앱이 붙기 전에 보이고, 붙은 뒤에는 기다림 자리에만 쓰인다 */}
+          <Providers><AppClient>{children}</AppClient></Providers>
         </div>
       </body>
     </html>

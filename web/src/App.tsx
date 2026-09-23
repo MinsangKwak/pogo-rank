@@ -14,13 +14,14 @@
 // <Suspense> 를 한 곳에 두는 이유 — 화면마다 `if (isLoading)` 분기를 두면
 // 그 분기가 곧 빠뜨리는 자리가 된다. 데이터 기다림은 경계 하나가 맡는다.
 // ─────────────────────────────────────────────────────────────────────────────
-import { Suspense, lazy, useEffect, useState, type ReactNode } from 'react';
+import { Suspense, lazy, startTransition, useCallback, useEffect, useState, type ReactNode } from 'react';
 import { DataBoundary } from './components/DataBoundary';
 import { AppBar, AppNav, Drawer, Footer, PageHead, ToTop } from './components/Shell';
 import { SlotProvider } from './components/Slots';
 import { useRoute } from './lib/useRoute';
 import type { MonPick, OpenMon } from './lib/mon';
 import { useLockReason, useLockChecking } from './lib/useLocked';
+import { takeForward } from './lib/nav';
 import { trackPageView, track } from './lib/track';
 import type { RouteDef } from './routes';
 // **홈과 상세만 정적이다.** 둘은 각자 주소의 첫 화면이라, 쪼개면 열자마자 한 번 더
@@ -171,12 +172,21 @@ export default function App({ seo }: AppProps = {}) {
   // 화면을 옮기면 열려 있던 팝업·서랍은 닫는다 — <dialog> 가 새 화면 위에 그대로 떠 있으면
   // 아무 데도 눌리지 않는다 (상세 팝업에서 같은 자리를 이미 한 번 겪었다)
   useEffect(() => { setConsentOpen(false); setMenuOpen(false); closeInvite(); }, [route, rest, closeInvite]);
+  // 앞으로 옮겨 왔으면 맨 위에서 시작한다 — 앱이 한 번만 서므로 앞 화면의 스크롤이 그대로 남는다 (lib/nav.ts takeForward)
+  useEffect(() => { if (takeForward()) window.scrollTo(0, 0); }, [route, rest]);
 
   // 포털이 꽂힐 자리. ref 가 아니라 state 인 이유 — 붙은 뒤 한 번 더 그려야 포털이 들어간다
-  const [tabsEl, setTabsEl] = useState<HTMLDivElement | null>(null);
-  const [bossEl, setBossEl] = useState<HTMLDivElement | null>(null);
-  const [controlsEl, setControlsEl] = useState<HTMLDivElement | null>(null);
-  const [actionsEl, setActionsEl] = useState<HTMLDivElement | null>(null);
+  // **자리가 붙는 일도 전환으로 한다.** 페이지(도감)에서 셸(D-MAX)로 오면 자리가 새로 서고, 그 뒤 포털에 들어갈
+  // 조각(이번 주 보스 등)이 데이터를 기다린다. 급한 갱신으로 기다리면 이미 보이던 본문이 임시 덩어리로 바뀐다
+  // (2026-09-23 실측 19프레임) — 전환이면 데이터가 올 때까지 앞 그림을 그대로 둔다
+  const [tabsEl, setTabsNow] = useState<HTMLDivElement | null>(null);
+  const [bossEl, setBossNow] = useState<HTMLDivElement | null>(null);
+  const [controlsEl, setControlsNow] = useState<HTMLDivElement | null>(null);
+  const [actionsEl, setActionsNow] = useState<HTMLDivElement | null>(null);
+  const setTabsEl = useCallback((el: HTMLDivElement | null) => { startTransition(() => setTabsNow(el)); }, []);
+  const setBossEl = useCallback((el: HTMLDivElement | null) => { startTransition(() => setBossNow(el)); }, []);
+  const setControlsEl = useCallback((el: HTMLDivElement | null) => { startTransition(() => setControlsNow(el)); }, []);
+  const setActionsEl = useCallback((el: HTMLDivElement | null) => { startTransition(() => setActionsNow(el)); }, []);
 
   // body 의 data-* 는 CSS 선택자와 GA 가 읽는다 — v3 와 같은 값으로 채운다
   useEffect(() => {
@@ -225,35 +235,33 @@ export default function App({ seo }: AppProps = {}) {
           그 자리를 붙들던 state 가 null 이 되어 다시 그리고 → 또 기다리고 를 끝없이 돈다.
           D-MAX 의 '이번 주 보스' 가 일정 데이터를 기다리다 화면이 통째로 멎었다 (React #185).
           v3 도 셸은 붙박이 HTML 이고 본문만 갈아 끼운다 — 같은 모양이다. */}
-      {isShell ? (
-        <div className="layout">
-          <div className="screen-tabs" id="screen-tabs" ref={setTabsEl} />
-          {/* 이번 주 보스는 탭과 필터 **사이** — v3 의 자리 그대로다 (list.css 가 그 틈을 8px 로 좁힌다) */}
-          <div style={{ display: 'contents' }} ref={setBossEl} />
-          <div className="controls" id="controls" ref={setControlsEl} />
-          <div id="content">
-            {/* 경계가 기다림 **밖**이다 — 안에 두면 실패했을 때 기다림이 먼저 잡아 영영 안 끝난다 */}
-            <DataBoundary>
-              <Suspense fallback={seo ?? <Splash />}>
-                <Screen route={route} rest={rest} onOpen={openMon} />
-              </Suspense>
-            </DataBoundary>
-          </div>
-          <Footer onConsent={() => setConsentOpen(true)} />
-        </div>
-      ) : (
-        <div id="page">
+      {/* **셸과 페이지가 같은 뼈대를 쓴다** — 칸의 순서(탭·보스·필터·본문·꼬리)를 맞춰 두면 React 가 본문의
+          <Suspense> 를 새로 세우지 않고 이어 쓴다. 새로 선 경계는 전환 중에도 기다림을 바로 보이므로,
+          홈(셸)에서 도감(페이지)으로 갈 때마다 본문이 임시 덩어리로 깨졌다가 다시 섰다 (2026-09-23 실측 18프레임).
+          이어 쓴 경계는 새 화면이 준비될 때까지 앞 화면을 그대로 둔다 */}
+      <div className={isShell ? 'layout' : undefined} id={isShell ? undefined : 'page'}>
+        {/* **자리 셋은 페이지에서도 세워 두고 숨긴다.** 페이지(도감)에서 셸(D-MAX)로 올 때 자리가 새로 서면
+            본문이 먼저 그려지고, 한 박자 뒤 탭·보스·필터가 들어오며 본문을 372px 밀었다 (dev 실측 CLS 0.27).
+            미리 있으면 포털이 본문과 같은 커밋에 들어간다 */}
+        <div className="screen-tabs" id="screen-tabs" ref={setTabsEl} hidden={!isShell} />
+        {/* 이번 주 보스는 탭과 필터 **사이** — v3 의 자리 그대로다 (list.css 가 그 틈을 8px 로 좁힌다) */}
+        <div style={{ display: isShell ? 'contents' : 'none' }} ref={setBossEl} />
+        <div className="controls" id="controls" ref={setControlsEl} hidden={!isShell} />
+        {/* 페이지에서는 틀이 없다(display: contents) — 칸 자리만 맞춘다 */}
+        <div id={isShell ? 'content' : undefined} className={isShell ? undefined : 'page-body'}>
+          {/* 경계가 기다림 **밖**이다 — 안에 두면 실패했을 때 기다림이 먼저 잡아 영영 안 끝난다 */}
           <DataBoundary>
             <Suspense fallback={seo ?? <Splash />}>
               <Screen route={route} rest={rest} onOpen={openMon} />
             </Suspense>
           </DataBoundary>
-          {/* 약관·개인정보처리방침은 제 본문 끝에 같은 고지를 이미 달고 있다 — 여기서 한 번 더 붙이지 않는다 (v3 와 같다) */}
-          {route.id === 'terms' || route.id === 'privacy' ? null : (
+        </div>
+        {isShell ? <Footer onConsent={() => setConsentOpen(true)} />
+          // 약관·개인정보처리방침은 제 본문 끝에 같은 고지를 이미 달고 있다 — 여기서 한 번 더 붙이지 않는다 (v3 와 같다)
+          : route.id === 'terms' || route.id === 'privacy' ? null : (
             <p className="ip-notice">moncamp는 비공식 팬 프로젝트입니다. Pokémon 및 관련 명칭·이미지의 권리는 The Pokémon Company · Nintendo · Creatures Inc. · GAME FREAK inc. 에, Pokémon GO 는 Scopely Explore, Inc. 에 있으며 이 서비스는 권리자와 무관합니다.</p>
           )}
-        </div>
-      )}
+      </div>
       <DataBoundary>
         <Suspense fallback={null}>
           {detail === null ? null : <MonDetail pick={detail} onClose={closeMon} />}

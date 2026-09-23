@@ -181,16 +181,18 @@ html body #root .home__top-layout .home__btn { min-height: var(--tap); padding: 
 html body #root .home__top-layout .home__btn--primary { background: var(--plate-accent); color: var(--plate); border-color: var(--plate-accent); }
 /* 그림은 3:2 그대로 칸 세로(53.6rem)까지. 1920 에서만 위아래가 조금 잘리고 가운데 띠(보스 넷)를 남긴다 */
 html body #root .max-battle-art { position: relative; overflow: hidden; grid-column: 2; grid-row: 1 / 5; align-self: center; margin: 0; min-width: 0; max-height: 100%; border-radius: .8rem; }
-html body #root .max-battle-art img { display: block; width: 100%; height: auto; max-height: 53.6rem; object-fit: cover; object-position: center 40%; }
+html body #root .max-battle-art { --swiper-theme-color: var(--plate-accent); }
+html body #root .max-hero { position: relative; margin: 0; }
+html body #root .max-hero img { display: block; width: 100%; height: auto; max-height: 53.6rem; object-fit: cover; object-position: center 40%; }
 /* 날짜·보스 줄은 그림 안 바닥에 — 그림 밑에 붙이면 그 줄만큼 그림이 작아진다 */
-html body #root .max-battle-art figcaption {
+html body #root .max-hero figcaption {
   position: absolute; inset: auto 0 0 0; display: flex; flex-wrap: wrap; align-items: baseline; gap: .4rem 1.2rem;
   padding: 4rem 1.6rem 1.6rem; color: var(--plate-fg);
   background: linear-gradient(to top, color-mix(in srgb, var(--plate) 92%, transparent), transparent);
 }
-html body #root .max-battle-art figcaption span { color: var(--plate-accent); font-size: var(--fs-sub); letter-spacing: .1em; }
-html body #root .max-battle-art figcaption b { font-size: var(--fs-lead); }
-html body #root .max-battle-art figcaption small { width: 100%; color: var(--plate-muted); font-size: var(--fs-sub); }
+html body #root .max-hero figcaption > span { color: var(--plate-accent); font-size: var(--fs-sub); letter-spacing: .1em; }
+html body #root .max-hero figcaption b { font-size: var(--fs-lead); }
+html body #root .max-hero figcaption small { width: 100%; color: var(--plate-muted); font-size: var(--fs-sub); }
 
 /* 이동 목록의 아래 항목(기술 변경 내역 → 게임 업데이트 아래) — 글자를 줄이지 않고 색으로 누른다(§7) */
 html body #root .nav-menu .drawer__item[data-parent] { min-height: var(--tap); padding-left: 3.2rem; color: var(--muted); }
@@ -208,8 +210,8 @@ html body #root .nav-menu .drawer__item[data-parent][aria-current=page] { color:
   html body #root .home__top-layout .home__intro p { display: none; }
   html body #root .max-battle-art { grid-column: 1; grid-row: 2; overflow: visible; max-height: none; }
   /* 그림은 자르지 않는다 (v4.6.4) — 띠처럼 자르니 손에서 보스 넷 중 둘이 잘려 나갔다. 원래 비율(3:2) 그대로 세운다 */
-  html body #root .max-battle-art figcaption { position: static; padding: .8rem 0 0; background: none; }
-  html body #root .max-battle-art figcaption small { display: none; }
+  html body #root .max-hero figcaption { position: static; padding: .8rem 0 0; background: none; }
+  html body #root .max-hero figcaption small { display: none; }
   /* 바탕 규칙이 display: flex 라 grid-template-columns 만으로는 안 갈린다 — grid 로 바꿔야 두 칸이 된다 */
   html body #root .home__top-layout .home__cta { grid-row: 3; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .8rem; }
   html body #root .home__top-layout .home__btn { padding: 1.2rem .8rem; font-size: var(--fs-sub); }
@@ -291,4 +293,88 @@ html body #root #home-more { scroll-margin-top: 10.4rem; }
 /* 손에서는 접는다 — 배너가 반 화면이라 아래가 이미 보인다 */
 @media (max-width: 699px) {
   html body #root .home__top-layout .home__scroll { display: none; }
+}
+
+/* ── 배너 슬라이드 (2026-09-23) ───────────────────────────────────────────────
+   **모든 장이 대표 일러스트와 같은 구도다** — 그림 한 판 + 캡션(날짜·종류 / 보스 / 시간), 왼쪽 위에 D-MAX·D-n 표 (components/MaxPoster.tsx).
+   첫 시안은 일정 장만 카드 모양이라 일러스트 장과 딴 판으로 보였다 (제보).
+   그림이 없는 일정은 같은 3:2 판에 보스 도트로 장면을 세운다(.max-scene) — 일러스트의 상대 자리(오른쪽 위)에 보스가 선다.
+   늘 어두운 판이라 --plate 벌만 쓴다 (§1-b 4번). 보스 타입색(--t-*)은 판 위 빛으로만 깐다 — 글자 바탕으로 안 쓴다 */
+html body #root .max-slider { position: relative; }
+html body #root .max-slider .swiper { border-radius: .8rem; }
+/* 늘여서 제일 큰 장에 맞춘다 — 장마다 키가 다르면 넘어갈 때 아래가 들썩인다 */
+html body #root .max-slider .swiper-slide { height: auto; }
+html body #root .max-poster { display: block; height: 100%; color: var(--plate-fg); text-decoration: none; }
+html body #root .max-poster:focus-visible { outline: .2rem solid var(--plate-accent); outline-offset: -.2rem; }
+html body #root .max-poster:hover figcaption b,
+html body #root .max-poster:focus-visible figcaption b { text-decoration: underline; }
+/* 캡션의 보스 이름 하나는 안 쪼갠다 — 셋이면 '·' 에서만 줄이 바뀐다 */
+html body #root .max-hero figcaption b > span { white-space: nowrap; }
+/* 점 줄이 배너 아래에 한 줄(4.4rem) 선다 — 넓은 화면은 배너 키가 60rem 으로 박혀 있어 그림을 그만큼 줄인다 */
+html body #root .max-battle-art .max-hero img { max-height: 49.2rem; }
+/* 슬라이더가 오기 전(한 장)에도 점 줄 자리를 미리 잡는다 — 안 잡으면 슬라이더가 붙는 순간 아래 단추가 4.4rem 밀린다 (CLS 0.017) */
+html body #root .max-battle-art > .max-hero,
+html body #root .max-battle-art > .max-poster { margin-bottom: var(--tap); }
+
+/* 도트 장면 — 일러스트와 같은 3:2 판. 빛은 30% 까지 (40% 에서 전기 타입 한가운데 글자가 2.91 로 떨어졌다, 30% 최저 3.38) */
+html body #root .max-scene {
+  position: relative; display: flex; align-items: center; justify-content: flex-end;
+  width: 100%; aspect-ratio: 3 / 2; max-height: 49.2rem; box-sizing: border-box; padding: 2.4rem 6% 20% 0; overflow: hidden;
+  /* 바탕색을 먼저 박는다 — 그림(빛)이 빠져도 판이 선다 (§1-b 2번) */
+  background-color: var(--plate);
+  background-image:
+    radial-gradient(ellipse 46% 52% at 68% 40%, color-mix(in srgb, var(--tint, var(--plate-accent)) 30%, transparent), transparent 70%),
+    linear-gradient(to top, color-mix(in srgb, var(--plate) 88%, var(--plate-2)) 18%, transparent 42%),
+    linear-gradient(160deg, var(--plate-2), var(--plate) 70%);
+}
+/* 크기·바탕은 목록의 스프라이트 규칙(pixel.css 2·3·1 등)을 한 칸 위에서 이긴다 — 안 이기면 64px 규칙과 섞여 판 위로 넘쳤고 흰 네모가 섰다 */
+html:not(#_):not(#__) body #root .max-scene__mon.sprite {
+  flex: 0 1 auto; width: auto; height: 100%; max-width: 64%; aspect-ratio: 1; min-width: 0; margin: 0; object-fit: contain;
+  background: transparent; filter: drop-shadow(0 .8rem 1.2rem color-mix(in srgb, var(--plate) 80%, transparent));
+}
+html:not(#_):not(#__) body #root .max-scene[data-count="2"] .max-scene__mon.sprite { height: 84%; max-width: 40%; }
+html:not(#_):not(#__) body #root .max-scene[data-count="3"] .max-scene__mon.sprite { height: 68%; max-width: 30%; }
+html:not(#_):not(#__) body #root .max-scene .max-scene__mon.sprite + .max-scene__mon.sprite { margin-left: -6%; }
+
+/* 왼쪽 위 표 — 종류와 남은 날. 채움 위 글자는 판 색(--plate) */
+html body #root .max-poster__tags { position: absolute; top: 1.2rem; left: 1.2rem; z-index: 1; display: flex; gap: .4rem; }
+html body #root .max-poster__badge,
+html body #root .max-poster__dday {
+  padding: .4rem .8rem; font-family: "Galmuri11", "Pretendard Variable", "Pretendard", system-ui, sans-serif;
+  font-size: var(--fs-body); line-height: 1.2; letter-spacing: 0; white-space: nowrap;
+}
+html body #root .max-poster__badge { background: var(--plate-accent); color: var(--plate); }
+html body #root .max-poster__badge.is-gmax { background: var(--plate-fg); }
+html body #root .max-poster__dday { background: color-mix(in srgb, var(--plate) 86%, transparent); color: var(--plate-fg); }
+html body #root .max-poster__dday.is-live { background: var(--plate-accent); color: var(--plate); }
+
+/* 점과 멈춤 단추 — 배너 아래 제 줄. 그림 위에 얹으면 왼쪽 위 표와 캡션을 덮는다 */
+html body #root .max-slider .swiper { padding-bottom: var(--tap); }
+html body #root .max-slider .swiper-pagination {
+  position: absolute; inset: auto auto 0 0; width: auto; min-height: var(--tap);
+  display: flex; align-items: center;
+}
+html body #root .max-slider .swiper-pagination-bullet {
+  width: 1.2rem; height: 1.2rem; margin: 0 1.2rem 0 0; border-radius: 0; opacity: 1; background: var(--plate-muted);
+}
+html body #root .max-slider .swiper-pagination-bullet-active { background: var(--plate-accent); }
+html body #root .max-slider__toggle {
+  position: absolute; right: 0; bottom: 0; z-index: 2; width: var(--tap); height: var(--tap);
+  display: grid; place-items: center; padding: 0; border: 0; cursor: pointer;
+  background: none; color: var(--plate-fg); font-size: var(--fs-body);
+}
+html body #root .max-slider__toggle:focus-visible { outline: .2rem solid var(--plate-accent); outline-offset: -.2rem; }
+
+@media (max-width: 699px) {
+  /* 손에서 캡션은 그림 밑 두 줄로 못 박는다 — 날짜·종류 / 보스. 장마다 줄 수가 다르면 넘길 때 아래가 들썩인다.
+     자리는 5.4rem(위 여백 0.8 + 18 + 4 + 24, border-box) — 일정이 오기 전 빈 캡션도 같은 키라 첫 화면이 안 흔들린다 */
+  html body #root .max-hero figcaption { flex-direction: column; flex-wrap: nowrap; align-items: flex-start; gap: .4rem; min-height: 5.4rem; }
+  html body #root .max-hero figcaption > span,
+  html body #root .max-hero figcaption b { line-height: 1.5; }
+  html body #root .max-hero figcaption b { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  html body #root .max-poster__tags { top: .8rem; left: .8rem; }
+  /* 캡션이 그림 밖(아래)이라 발밑 여백만 남긴다 — 넓은 화면은 캡션이 그림 아래쪽에 얹혀 20% 를 비운다 */
+  html body #root .max-scene { padding-bottom: 6%; }
+  html body #root .max-poster__badge,
+  html body #root .max-poster__dday { padding: .4rem; }
 }
