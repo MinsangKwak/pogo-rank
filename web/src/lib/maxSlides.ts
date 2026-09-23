@@ -9,7 +9,7 @@
 //
 // 화면에 나갈 글자는 여기서 다 만든다 — 값이 비면 줄을 안 세운다 (CLAUDE.md §1)
 // ─────────────────────────────────────────────────────────────────────────────
-import type { GamedayEvent, DmaxRow } from '../types/data';
+import type { GamedayEvent, DmaxRow, ScheduleMonth } from '../types/data';
 
 export type MaxKind = 'monday' | 'battle';
 
@@ -47,6 +47,49 @@ export interface MaxSlideSource {
   forms: Readonly<Record<string, { types?: readonly string[] }>> | undefined;
   /** 거다이맥스 폼의 스프라이트를 찾는 표 (max.json DMAX_DATA.overall) — 없으면 도감 번호로 그린다 */
   maxRows?: readonly DmaxRow[] | undefined;
+  /** 일정표의 맥스 먼데이 주간 (weeksFromSchedule) — gameday 가 버린 이번 주를 채운다 */
+  weeks?: readonly MaxWeek[] | undefined;
+}
+
+/** 일정표(schedule.json)의 맥스 먼데이 한 주 */
+export interface MaxWeek {
+  /** 그 주 월요일 'YYYY-MM-DD' (한국) */
+  monday: string;
+  /** 보스 한글 이름 — 일정표에 적힌 그대로 */
+  names: string[];
+  /** '월 06:00–21:00' — 일정표에 시간이 적힌 주만 */
+  hours: string;
+}
+
+/**
+ * 일정표의 D-MAX 줄 → 주간 목록.
+ *
+ * **왜 두 원본을 보나.** gameday(LeekDuck)는 행사가 끝나면 줄을 지운다 — 맥스 먼데이는 월요일 21시에 끝나므로
+ * 화요일부터 그 주 보스가 사라진다. 그런데 보스는 일요일까지 파워 스폿에 서고, 일정표는 그 주를 통째로 들고 있다.
+ * 2026-09-23 dev 에서 이번 주(프리져·썬더·파이어)가 배너에서 통째로 빠져 알았다.
+ *
+ * 줄 모양: 'D-MAX 프리져 · 썬더 · 파이어 (맥스 먼데이 9/21)' · 'D-MAX 랄토스 (맥스 먼데이 9/7 06–21시)'
+ * 달을 넘는 주는 두 달에 나뉘어 적히지만 월요일 날짜가 같아 하나로 합친다.
+ */
+export function weeksFromSchedule(months: Readonly<Record<string, ScheduleMonth>> | undefined): MaxWeek[] {
+  const out = new Map<string, MaxWeek>();
+  for (const month of Object.values(months ?? {})) {
+    for (const item of month.items) {
+      if (item.cat !== 'dmax') continue;
+      const date = /맥스 먼데이 (\d{1,2})\/(\d{1,2})/.exec(item.label);
+      if (!date) continue;
+      const m = Number(date[1]);
+      const d = Number(date[2]);
+      // 1월 칸에 적힌 '12/29 주차' 는 지난해다
+      const y = m > month.ym.m ? month.ym.y - 1 : month.ym.y;
+      const monday = `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+      if (out.has(monday)) continue;
+      const names = item.label.replace(/^D-MAX\s*/, '').split(' (')[0]!.split('·').map((one) => one.trim()).filter(Boolean);
+      const time = /(\d{2})–(\d{2})시/.exec(item.label);
+      out.set(monday, { monday, names, hours: time ? `월 ${time[1]}:00–${time[2]}:00` : '' });
+    }
+  }
+  return [...out.values()];
 }
 
 const DAY = 24 * 60 * 60 * 1000;
@@ -137,6 +180,37 @@ export function maxSlides(src: MaxSlideSource, nowMs: number): MaxSlide[] {
       bosses: bossesOf(event, gmax, src),
       live: start <= nowMs,
       days,
+    } });
+  }
+  // gameday 가 버린 주는 일정표에서 채운다 — 같은 월요일이 이미 있으면 gameday 쪽(시각·번호가 정확하다)을 둔다
+  const mondays = new Set((src.events ?? []).filter((one) => one.type === 'max-mondays').map((one) => one.start.slice(0, 10)));
+  const byName = new Map<string, number>();
+  for (const [id, name] of Object.entries(src.names ?? {})) {
+    if (/^\d+$/.test(id) && !byName.has(name)) byName.set(name, Number(id));
+  }
+  for (const week of src.weeks ?? []) {
+    if (mondays.has(week.monday)) continue;
+    const start = kst(`${week.monday}T00:00:00`);
+    if (!Number.isFinite(start)) continue;
+    const until = weekEnd(start);
+    if (until < nowMs) continue;
+    // 이름을 도감 번호로 — 도감에 없는 이름은 세우지 않는다 (지어내지 않는다, §3)
+    const bosses: MaxBoss[] = [];
+    for (const name of week.names) {
+      const dex = byName.get(name);
+      if (dex !== undefined) bosses.push({ dex, sprite: dex, name, types: [...(src.forms?.[String(dex)]?.types ?? [])] });
+    }
+    out.push({ at: start, slide: {
+      id: `week-${week.monday}`,
+      kind: 'monday',
+      gmax: false,
+      label: 'MAX MONDAY',
+      when: `${dayLabel(start)} — ${dayLabel(until)}`,
+      short: `${shortDay(start)}–${shortDay(until)}`,
+      hours: week.hours,
+      bosses,
+      live: start <= nowMs,
+      days: Math.max(0, daysUntil(start, nowMs)),
     } });
   }
   return out.sort((left, right) => left.at - right.at).map((one) => one.slide);
