@@ -53,7 +53,9 @@ def vercel(method, path, body=None):
 
 
 def cloudflare(method, path, body=None):
-    status, payload = call(method, f'https://api.cloudflare.com/client/v4{path}', os.environ['CLOUDFLARE_API_TOKEN'], body)
+    # 붙일 때 딸려 온 공백·줄바꿈을 뗀다 — 토큰에는 공백이 없다 (2026-09-23 폰에서 붙인 값이 그랬다)
+    token = ''.join(os.environ['CLOUDFLARE_API_TOKEN'].split())
+    status, payload = call(method, f'https://api.cloudflare.com/client/v4{path}', token, body)
     if not payload.get('success', status < 300):
         fail(f'Cloudflare {method} {path} → {status} {payload.get("errors")}')
     return payload.get('result')
