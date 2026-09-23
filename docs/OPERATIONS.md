@@ -533,14 +533,18 @@ FIREBASE_SA_JSON='<한 줄 JSON>' python3 scripts/firestore_restore.py firestore
 
 ### 지킬 것 둘 — 날짜와 리전
 
-**① `COLLECT_URL` 을 2026-09-28 전에 켜지 않는다.** 개인정보처리방침 10번이 "방침을 바꾸면 시행 7일 전에
-패치노트로 알린다" 고 약속했고, v4.7.1 의 패치노트가 그 알림이다. 시행일이 **2026-09-28** 이라고 방침에 적혀
-있으므로 그 전에 켜면 우리가 적어 둔 것과 다르게 행동하는 것이 된다. 1~7번은 미리 해 둬도 된다 —
+**① 방침에 적힌 시행일과 실제로 켜는 날이 같아야 한다.** 개인정보처리방침 10번이 "방침을 바꾸면 시행 7일 전에
+패치노트로 알린다" 고 약속했고, v4.7.1 의 패치노트가 그 알림이다. 1~7번은 미리 해 둬도 된다 —
 서버가 떠 있어도 `COLLECT_URL` 이 비면 브라우저가 한 건도 안 보낸다.
+
+> **2026-09-23 (v4.9.9) — 시행일을 9/28 에서 9/23 으로 앞당겼다.** 주인이 수집을 바로 켜기로 했다(CLAUDE.md §3).
+> 새 화면이 dev 에 뜨는 날부터 쌓이므로 방침 본문 · `PRIVACY_VER` · `TERMS_VER` · 옛 공지의 날짜를 9/23 으로 고치고,
+> 패치노트 맨 위에 정정 항목을 따로 세웠다. 고지 이틀 만이라 '7일 전 알림' 을 다 채우지 못한 것도 그 항목에 적었다.
+> 날짜를 고치는 곳은 web · frontend-v4 **두 벌**이다 (`src/lib/legalMeta.ts` · `src/screens/Legal.tsx`).
 
 **② Neon 리전은 `ap-southeast-1`(싱가포르) 로 만든다.** 방침 4번의 국외 이전 표에 그렇게 적혀 있다.
 다른 리전을 골랐으면 **표를 그 값으로 고친다** — 처리위탁 표는 실제와 달라지면 안 되는 자리다
-(`frontend/scripts/components/privacy.js` 와 `frontend-v4/src/screens/Legal.tsx` **둘 다**).
+(`web/src/screens/Legal.tsx` 와 `frontend-v4/src/screens/Legal.tsx` **둘 다** — v3 의 `privacy.js` 는 Phase 1-C 에 지웠다).
 
 ### 16.2 잘 쌓이는지 보는 법
 

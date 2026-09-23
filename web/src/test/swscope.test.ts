@@ -1,5 +1,7 @@
 // ─────────────────────────────────────────────────────────────────────────────
-// test/swscope.test.ts — 앱 밖의 판을 서비스워커가 비켜 가는지 본다
+// test/swscope.test.ts — 앱 밖의 판을 서비스워커가 비켜 가는지 본다 (web — dev 에 서는 앱)
+//
+// frontend-v4/src/test/swscope.test.ts 에서 옮겨 왔다 (v5 Phase 7). 그쪽은 되돌릴 자리를 지킨다
 //
 // 2026-09-22 dev 에 도면(/storybook/)을 얹으면서 드러난 자리다.
 // 서비스워커의 범위는 루트라 **같은 도메인의 다른 판까지 들어온다.** 그대로 두면 둘이 어긋난다 —
@@ -18,9 +20,7 @@ import { describe, expect, it } from 'vitest';
 
 const read = (path: string) => readFileSync(resolve(__dirname, '../../', path), 'utf-8');
 const SW = read('public/sw.js');
-// 2026-09-23 v5 Phase 7 — 도면을 얹는 자리가 dev-pipeline.yml 로 옮겼다 (web/public/<이름>).
-// dev 에 서는 앱은 이제 web/ 이고 같은 검사가 web/src/test/swscope.test.ts 에도 있다.
-// 여기서도 지키는 것은 **되돌릴 자리**라서다 — DNS 를 옛 gh-pages 로 돌리면 이 서비스워커가 다시 선다
+// dev-pipeline.yml 이 도면을 web/public/storybook 에 얹는다 — 이 앱의 서비스워커가 비켜 가야 한다 (CLAUDE.md §1-c)
 const DEPLOY = read('../.github/workflows/dev-pipeline.yml');
 
 /** 서비스워커가 비켜 가기로 한 주소들 — `const OUTSIDE = /…/` 에서 뽑는다 */

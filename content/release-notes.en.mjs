@@ -15,6 +15,11 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 export const RELEASE_NOTES_EN = {
+  '2026-09-23 · v4.9.9': [
+    '**Search logging and the revised privacy policy now take effect on September 23** — on September 21 we announced "from September 28", but search logging starts the day the new screens open on dev. That is only two days after the notice, so it falls short of the seven days promised in section 10 of the policy. The earlier notice now shows September 23 so the announced date matches reality',
+    '**What is kept and how to turn it off are unchanged** — the picked Pokémon, which search box, a random ID local to this browser and a country code; no IP address is stored. Choose "Turn off stats" under ☰ → Stats & storage and nothing is sent',
+    '**You will be asked to agree once more at your next sign-in** — the effective date changed, so we check again even if you already agreed',
+  ],
   '2026-09-22 · v4.9.8': [
     '**A November Dynamax raid tank-prep popup on the home screen** — per-boss tanks for Dialga (11/14) and Palkia (11/15, expected dates), a build order and an overall ranking. Shows once a day; reopen it with [View] above [Top Pokemon by role]. Tap a name for its detail',
   ],
@@ -50,18 +55,18 @@ export const RELEASE_NOTES_EN = {
     '**Fixed favorites vanishing when one ★ save failed** — tapping several in a row and having one fail used to drop the others from the screen until a refresh; now only the one that failed is reverted',
   ],
   '2026-09-21 · v4.8.0': [
-    '**Account backups will be kept in one more place** — they are encrypted weekly and stored on GitHub, but those expire after 90 days, so no copy older than that existed. The same encrypted file now also goes to Google storage (Seoul) and is **deleted automatically after 12 months.** Effective September 28; sections 4 and 5 of the privacy policy say so',
+    '**Account backups will be kept in one more place** — they are encrypted weekly and stored on GitHub, but those expire after 90 days, so no copy older than that existed. The same encrypted file now also goes to Google storage (Seoul) and is **deleted automatically after 12 months.** Effective September 23; sections 4 and 5 of the privacy policy say so',
     '**Backups are encrypted** — nobody but us can open them. Deleting your account removes it from Firestore right away, but backups taken before that keep it for up to 12 months and then drop it',
   ],
   '2026-09-21 · v4.7.2': [
     '**The privacy policy now describes IP handling correctly** — your IP address is still never stored. But it is read for a moment on arrival, to stop a flood of requests, so the sentence saying it is **"never even seen" has been corrected.** It is still discarded immediately and kept nowhere',
   ],
   '2026-09-21 · v4.7.1': [
-    '**From September 28, searches are also logged on moncamp\'s own server** — they currently go only to Google Analytics, which hides Pokémon with few searches, so a ranking could never be built. This brings back the **search ranking** that was taken down on September 20',
+    '**From September 23, searches are also logged on moncamp\'s own server** — they currently go only to Google Analytics, which hides Pokémon with few searches, so a ranking could never be built. This brings back the **search ranking** that was taken down on September 20',
     '**Only four things are stored** — the Pokémon you picked, which search box you used, a random number that exists only in this browser, and a country code. **Your IP address is not stored**, your name and email are never sent, and signing in does not link searches to you',
     '**What you type is never sent** — type "Mew", pick Mewtwo, and only **Mewtwo** is counted. The keystrokes in between are not kept anywhere',
     '**Turning it off is still one switch** — ☰ menu → Analytics & storage settings → "Turn off analytics" switches off visit analytics **and** search logging together. If you already turned it off, nothing is sent at all',
-    '**The privacy policy has been revised** — effective September 28. It spells out what is kept, where it goes, and for how long. You will be asked to agree once more at your next sign-in',
+    '**The privacy policy has been revised** — effective September 23. It spells out what is kept, where it goes, and for how long. You will be asked to agree once more at your next sign-in',
   ],
   '2026-09-21 · v4.6.4': [
     '**The home poster is no longer cropped on phones** — it was clipped to a strip that hid the bosses; the full picture now shows',
