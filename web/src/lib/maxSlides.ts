@@ -29,6 +29,8 @@ export interface MaxSlide {
   label: string;
   /** '9.21 (월) — 9.27 (일)' · '10.3 (토)' */
   when: string;
+  /** '9.21–9.27' · '10.3' — 배너 캡션 한 줄에 들어가는 짧은 꼴 */
+  short: string;
   /** '월 06:00–21:00' · '14:00–17:00' — 행사 시간. 모르면 빈 글자 */
   hours: string;
   bosses: MaxBoss[];
@@ -59,6 +61,11 @@ function kst(iso: string): number {
 function kstDate(ms: number) {
   const shifted = new Date(ms + 9 * 60 * 60 * 1000);
   return { y: shifted.getUTCFullYear(), m: shifted.getUTCMonth() + 1, d: shifted.getUTCDate(), w: shifted.getUTCDay() };
+}
+
+function shortDay(ms: number): string {
+  const { m, d } = kstDate(ms);
+  return `${m}.${d}`;
 }
 
 function dayLabel(ms: number): string {
@@ -124,6 +131,7 @@ export function maxSlides(src: MaxSlideSource, nowMs: number): MaxSlide[] {
       gmax,
       label: kind === 'monday' ? 'MAX MONDAY' : 'MAX BATTLE DAY',
       when: kind === 'monday' ? `${dayLabel(start)} — ${dayLabel(until)}` : dayLabel(start),
+      short: kind === 'monday' ? `${shortDay(start)}–${shortDay(until)}` : shortDay(start),
       // 맥스 먼데이는 첫날(월)에만 시간이 걸린다 — 한 주 내내가 아니라는 것을 요일로 밝힌다
       hours: from && to ? `${kind === 'monday' ? '월 ' : ''}${from}–${to}` : '',
       bosses: bossesOf(event, gmax, src),
