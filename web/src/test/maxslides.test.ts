@@ -38,6 +38,7 @@ describe('maxSlides', () => {
     expect(dday(week!)).toBe('진행 중');
     expect(week?.when).toBe('9.21 (월) — 9.27 (일)');
     expect(week?.hours).toBe('월 06:00–21:00');
+    expect(week?.short).toBe('9.21–9.27');
     // 일요일 밤이 지나면 빠진다
     const monday = Date.parse('2026-09-28T00:00:01+09:00');
     expect(maxSlides(src, monday).map((one) => one.id)[0]).toBe('mm-0928');
@@ -93,7 +94,7 @@ describe('maxSlides', () => {
     for (let day = 0; day < 60; day++) {
       const at = Date.parse('2026-09-01T09:00:00+09:00') + day * 24 * 60 * 60 * 1000;
       for (const slide of maxSlides(real, at)) {
-        const text = [slide.label, slide.when, slide.hours, dday(slide), ...slide.bosses.map((one) => one.name)].join(' ');
+        const text = [slide.label, slide.when, slide.short, slide.hours, dday(slide), ...slide.bosses.map((one) => one.name)].join(' ');
         expect(text).not.toMatch(LEAK);
         for (const boss of slide.bosses) expect(Number.isFinite(boss.sprite)).toBe(true);
       }
