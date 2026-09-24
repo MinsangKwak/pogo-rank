@@ -476,5 +476,13 @@
 "end": "2027-02-28",
 "cat": "event",
 "label": "Pokémon GO Tour: Alola - Global 2027"
+},
+"pokemon-x-adidas-2026": {
+"id": "pokemon-x-adidas-2026",
+"type": "research",
+"start": "2026-09-25",
+"end": "2027-01-15",
+"cat": "event",
+"label": "adidas × Pokémon Timed Research"
 }
 }
