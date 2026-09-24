@@ -452,5 +452,29 @@
 "end": "2026-10-10",
 "cat": "event",
 "label": "World Space Week 2026"
+},
+"pokemon-go-tour-alola-kaohsiung-2027": {
+"id": "pokemon-go-tour-alola-kaohsiung-2027",
+"type": "pokemon-go-tour",
+"start": "2027-02-18",
+"end": "2027-02-21",
+"cat": "event",
+"label": "Pokémon GO Tour: Alola - Kaohsiung 2027"
+},
+"pokemon-go-tour-alola-los-angeles-2027": {
+"id": "pokemon-go-tour-alola-los-angeles-2027",
+"type": "pokemon-go-tour",
+"start": "2027-02-19",
+"end": "2027-02-22",
+"cat": "event",
+"label": "Pokémon GO Tour: Alola - Los Angeles 2027"
+},
+"pokemon-go-tour-alola-global-2027": {
+"id": "pokemon-go-tour-alola-global-2027",
+"type": "pokemon-go-tour",
+"start": "2027-02-27",
+"end": "2027-02-28",
+"cat": "event",
+"label": "Pokémon GO Tour: Alola - Global 2027"
 }
 }
