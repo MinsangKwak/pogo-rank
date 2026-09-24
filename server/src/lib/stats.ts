@@ -130,10 +130,13 @@ export function clampDays(days: number | undefined): number {
 
 export async function adminStats(sql: Sql, rawDays?: number): Promise<AdminStats> {
   const days = clampDays(rawDays);
+  // 살아 있는 로그인 = 사슬(family)마다 아직 안 쓴 토큰 하나. 회전된 옛 토큰은 used_at 만 찍히고 끊기지 않아
+  // 그것까지 세면 기기 수가 아니라 갱신 횟수가 된다 (2026-09-24 운영에서 7명에 38 로 보였다)
   const [users, sessions, favTotals, favTop, search, views] = await Promise.all([
     userStats(sql, days),
     sql<{ active: number }[]>`
-      select count(*)::int as active from sessions where revoked_at is null and expires_at > now()
+      select count(*)::int as active from sessions
+      where revoked_at is null and used_at is null and expires_at > now()
     `,
     sql<{ total: number; people: number }[]>`
       select count(*)::int as total, count(distinct user_id)::int as people from favorites
