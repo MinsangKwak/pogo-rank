@@ -42,6 +42,13 @@ export interface MaxArt {
 
 export const MAX_ART: readonly MaxArt[] = [
   {
+    dex: [816],
+    src: `${BASE}images/max-battle-sobble-panorama.png`,
+    srcSet: `${BASE}images/max-battle-sobble-panorama.png 2172w`,
+    sizes: '100vw', width: 2172, height: 724,
+    alt: (names) => `${names['812'] ?? '고릴타'}·${names['25'] ?? '피카츄'}의 풀·전기 기술에 맞서는 다이맥스 ${names['816'] ?? '울머기'} 배틀 일러스트`,
+  },
+  {
     // 레지락·해피너스·루기아·몰드류가 다이맥스 프리져와 맞선다 — 프리져·썬더·파이어 주간(2026-09-21)
     dex: [144],
     ...HERO_ART,

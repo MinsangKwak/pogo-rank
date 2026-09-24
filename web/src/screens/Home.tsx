@@ -26,13 +26,13 @@ import type { OpenMon } from '../lib/mon';
 import { TankPopupEntry } from '../components/TankPopup';
 
 // 대표 일러스트 — 머리에서 미리 받는 그 그림 (app/page.tsx 의 preload 와 같은 파일)
-const HERO_ART_ENTRY = MAX_ART[0]!;
+const HERO_ART_ENTRY = MAX_ART.find((art) => art.dex.includes(144))!;
 
 // 배너 슬라이드는 홈에서만 쓴다 — Swiper 30KB 를 모든 화면의 첫 묶음에 싣지 않는다 (components/MaxSlider.tsx)
 const MaxSlider = lazy(() => import('../components/MaxSlider'));
 
 // 갈래마다 문 앞에 세우는 스타터 (v3 home.js 와 같은 번호 — 꼬부기 · 파이리 · 이상해씨)
-const STARTER: Record<string, number> = { today: 7, pick: 4, mine: 1 };
+const SERVICE_ART: Record<string, string> = { today: 'service-explore-garden.png', pick: 'service-battle-pokeball.png', mine: 'service-grow-bulbasaur.png' };
 
 // 주소는 라우터 표의 path 에서 온다 — 손으로 조립하면 v3.61.0 의 죽은 링크가 되풀이된다
 // 내보내는 이유는 검사 하나뿐이다 (Shell 의 NavItem 과 같은 사정)
@@ -195,16 +195,16 @@ export default function Home({ onOpen }: { onOpen: OpenMon }) {
   // 일정이 오기 전 — 대표 일러스트 한 장, 캡션 자리만 잡는다 (오면 같은 자리에 찬다)
   const waiting = <HeroPoster art={HERO_ART_ENTRY} names={names} />;
   return (
-    <div className="home-dashboard">
+    <div className="home-dashboard home-dashboard--portal home-dashboard--cinema-portal">
       {/* 검색 보드는 v4.6.3 에 내렸다 — 검색이 모자라 순위가 서지 않는다 (ranking 브랜치 · 백로그). 포스터가 한 열을 다 쓴다 */}
       <div className="home__top-layout">
       {/* 마스코트와 버튼 줄은 .home__intro **밖**에 선다 — CSS 가 세 칸(글·그림·버튼)으로 잡는다.
           안에 넣었더니 그림이 글 아래로 내려가고 히어로 높이가 71px 줄었다 */}
       <section className="home__welcome" aria-label="소개">
         <div className="home__intro">
-          <span className="home__eyebrow"><span className="home__eyebrow-dot" aria-hidden="true" />BATTLE GUIDE / 01</span>
-          <h2>다음 맥스 배틀,<br /><em>누구와 갈까요?</em></h2>
-          <p>티어를 비교하고, 나만의 팀을 준비하세요.<br />첫 선택부터 배틀 준비까지 함께해요.</p>
+          <span className="home__eyebrow"><span className="home__eyebrow-dot" aria-hidden="true" />POKÉMON GO · BATTLE GUIDE</span>
+          <h2>내 포켓몬의 다음 배틀,<br /><em>여기서 준비하세요.</em></h2>
+          <p>포켓몬 정보와 배틀별 추천을 한눈에.<br />처음이라면 도감부터, 배틀을 앞뒀다면 추천부터 살펴보세요.</p>
         </div>
         {/* 배너 — 남은 맥스 일정이 한 장씩 넘어간다. 모든 장이 대표 일러스트와 같은 구도다 (components/MaxPoster.tsx).
             거다이맥스 폼 그림(max.json)까지 온 뒤에 굴린다 — 먼저 굴리면 보스 그림이 도중에 바뀐다 */}
@@ -219,19 +219,18 @@ export default function Home({ onOpen }: { onOpen: OpenMon }) {
         <div className="home__cta">
           <a className="home__btn home__btn--primary" href={routeHref('dmax')}
             onClick={() => track('home_cta', { to: 'dmax' })}>다이맥스 티어표 보기<span aria-hidden="true"> →</span></a>
-          <a className="home__btn" href={routeHref('dmax-deck')}
-            onClick={() => track('home_cta', { to: 'dmax-deck' })}>맥스 배틀 덱 짜기</a>
+          <a className="home__btn" href={routeHref('dex')}
+            onClick={() => track('home_cta', { to: 'dex' })}>포켓몬 도감 둘러보기</a>
         </div>
         <ScrollDown />
       </section>
       {/* 배너 옆 세로 칸 — 넓은 화면에서만 옆에 서고, 좁으면 배너 아래로 내려온다 (home-editorial.css).
           데이터를 안 쓰는 카드라 Suspense 밖에 둘 수 있다 — 그래서 첫 화면에 바로 선다 */}
-      <Discover mascot="machamp" sprite={68} kicker="다양한 활용처" extra="pick__discover--aside"
-        head={<>한 마리로<br />여러 배틀을.</>} copy="레이드부터 PvP까지, 두루 쓰이는 포켓몬"
-        href={routeHref('dex')} />
+
       </div>
       {/* 기다리는 자리도 한 화면을 채운다 — 바닥글이 먼저 보였다가 밀리면 CLS 다 */}
       <Suspense fallback={<div className="home__loading" aria-busy="true" />}>
+
         <HomeData onOpen={onOpen} />
       </Suspense>
     </div>
@@ -262,7 +261,6 @@ function HomeData({ onOpen }: { onOpen: OpenMon }) {
   return (
     <>
       {/* 11월 레이드 탱커 준비(예상) — 안내 띠 + 하루 한 번 열리는 팝업. 데이터가 있어야 그리므로 여기(Suspense 안)다 */}
-      <TankPopupEntry onOpen={onOpen} />
       {/* id 는 배너의 '아래로' 단추가 내려가는 자리다 — 새 이름이라 home- 를 붙였다 (§2) */}
       <section className="home__picks" id="home-more">
         <div className="home__section">
@@ -281,6 +279,14 @@ function HomeData({ onOpen }: { onOpen: OpenMon }) {
       </section>
 
 
+      <a className="portal-discovery" href={routeHref('dex')}>
+        <div><span className="portal-discovery__eyebrow">다양한 활용처</span><strong>한 마리의 가능성,<br />배틀 너머까지.</strong></div>
+        <div className="portal-discovery__copy"><p>레이드부터 PvP까지,<br />두루 활약할 포켓몬을 찾아보세요.</p><span>포켓몬 살펴보기 ↗</span></div>
+        <div className="portal-discovery__modes" aria-hidden="true"><span>MAX</span><span>RAID</span><span>PvP</span></div>
+      </a>
+        <div className="portal-motion"><span aria-hidden="true"><span>CHOOSE YOUR TEAM — READY FOR BATTLE — </span><span>CHOOSE YOUR TEAM — READY FOR BATTLE — </span></span><a href="/dmax/deck">나만의 배틀 팀 만들기 ↗</a></div>
+      <div className="portal-prep-note"><TankPopupEntry onOpen={onOpen} compact /></div>
+
       <section className="home__features" aria-label="서비스 기능">
         <div className="home__section">
           <h3>무엇이 필요한가요?</h3>
@@ -289,9 +295,8 @@ function HomeData({ onOpen }: { onOpen: OpenMon }) {
         <div className="home__service-grid">
           {ROUTE_GROUPS.map(([id, label, desc]) => (
             <section key={id} className={`home__service-group home__service-group--${id}`}>
+              <img className="home__service-art" src={`${BASE}images/${SERVICE_ART[id]}`} alt="" aria-hidden="true" loading="lazy" />
               <div className="home__group-head">
-                <img className="home__starter" src={`${BASE}sprites/${STARTER[id]}.png`}
-                  alt="" aria-hidden="true" width={96} height={96} />
                 <h4 className="home__group">{label}</h4>
                 <p className="home__group-desc">{desc}</p>
               </div>

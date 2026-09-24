@@ -36,7 +36,9 @@ export default function MaxSlider({ items, slides }: {
   const swiper = useRef<SwiperCore | null>(null);
   const [still] = useState(reducedMotion);
   const [playing, setPlaying] = useState(!still);
+  const progress = useRef<HTMLDivElement>(null);
   const total = items.length;
+  const [active, setActive] = useState(0);
 
   // 뒤 장의 보스 그림을 미리 받는다 — 그림은 화면에 들어올 때 받는데(loading=lazy), 옆으로 숨은 장은
   // 넘어오는 그 순간에야 들어와 빈 칸이 먼저 보인다
@@ -62,6 +64,8 @@ export default function MaxSlider({ items, slides }: {
       <Swiper
         modules={[A11y, Autoplay, Keyboard, Pagination]}
         onSwiper={(instance) => { swiper.current = instance; }}
+        onAutoplayTimeLeft={(_, __, remaining) => { progress.current?.style.setProperty("--banner-progress", String(1 - remaining)); }}
+        onSlideChange={(instance) => setActive(instance.realIndex)}
         slidesPerView={1}
         loop={total > 2}
         speed={500}
@@ -79,6 +83,7 @@ export default function MaxSlider({ items, slides }: {
       >
         {items.map((item) => <SwiperSlide key={item.key}>{item.node}</SwiperSlide>)}
       </Swiper>
+      <div ref={progress} className="portal-banner-tabs" aria-label="배너 선택">{items.map((item, index) => { const slide = slides.find(row => row.id === item.key); return <button key={item.key} type="button" aria-pressed={active === index} onClick={() => { swiper.current?.slideToLoop(index); setPlaying(false); }}><span className="banner-progress" aria-hidden="true"><i /></span><small>{slide?.short ?? "BATTLE GUIDE"}</small><strong>{slide?.bosses.map(boss => boss.name).join(" · ") || "맥스 배틀 준비하기"}</strong></button>; })}</div>
       {/* 움직임 줄이기를 켠 사람에게는 처음부터 안 넘기므로 멈출 것도 없다 */}
       {still ? null : (
         <button type="button" className="max-slider__toggle"

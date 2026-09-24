@@ -1,0 +1,48 @@
+/* Local alternative 02: field notes. Shares the existing home structure. */
+html body:has(.home-dashboard--field) { --bg:#f7f4f2; --fg:#302322; --muted:#796965; --line:#ded1cc; --surface:#fffdfa; --hover:#f3e4df; --brand:#bd302a; --brand-2:#a32621; --field-band:#f2e3de; --plate:var(--surface); --plate-2:var(--field-band); --plate-fg:var(--fg); --plate-muted:var(--muted); --plate-accent:var(--brand); --plate-cta:var(--brand); --plate-line:var(--line); background:var(--bg); }
+html[data-theme=dark] body:has(.home-dashboard--field) { --bg:#1b1415; --fg:#f6edeb; --muted:#c2aaa5; --line:#513735; --surface:#291c1d; --hover:#3c2928; --brand:#ff8477; --brand-2:#ffb0a6; --field-band:#352323; }
+@media(prefers-color-scheme:dark) { html:not([data-theme=light]) body:has(.home-dashboard--field) { --bg:#1b1415; --fg:#f6edeb; --muted:#c2aaa5; --line:#513735; --surface:#291c1d; --hover:#3c2928; --brand:#ff8477; --brand-2:#ffb0a6; --field-band:#352323; } }
+html body #root .design-preview { display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin-bottom:20px; color:var(--muted); font-size:12px; }
+html body #root .design-preview > span { letter-spacing:.16em; margin-right:auto; }
+html body #root .design-preview button { padding:8px 12px; border:1px solid var(--line); background:var(--surface); color:var(--fg); border-radius:4px; cursor:pointer; }
+html body #root .design-preview button[aria-pressed=true] { background:var(--brand); color:var(--bg); border-color:var(--brand); }
+html body:has(.home-dashboard--field) #root .app-bar { background:var(--bg); backdrop-filter:none; }
+html body:has(.home-dashboard--field) #root .app-search, html body:has(.home-dashboard--field) #root .icon-btn { border-radius:4px; }
+html body:has(.home-dashboard--field) #root .nav-menu .drawer__item { border-radius:0; font-weight:600; }
+html body:has(.home-dashboard--field) #root .nav-menu .drawer__item[aria-current=page] { background:var(--field-band); color:var(--brand); box-shadow:inset 3px 0 var(--brand); }
+html body:has(.home-dashboard--field) #root .home__top-layout .home__welcome { border-radius:4px; background:var(--surface); border:1px solid var(--line); border-top:4px solid var(--brand); box-shadow:8px 8px 0 var(--field-band); }
+html body:has(.home-dashboard--field) #root .home__top-layout .home__intro h2 { font-weight:650; font-size:42px; letter-spacing:-.06em; line-height:1.35; }
+html body:has(.home-dashboard--field) #root .home__top-layout .home__intro h2 em { color:var(--brand); text-decoration:underline; text-decoration-thickness:2px; text-underline-offset:10px; }
+html body:has(.home-dashboard--field) #root .home__top-layout .home__eyebrow { color:var(--brand); border-bottom:1px solid var(--line); padding-bottom:16px; display:block; }
+html body:has(.home-dashboard--field) #root .home__top-layout .home__btn { border-radius:4px; background:var(--surface); color:var(--fg); border-color:var(--line); box-shadow:none; }
+html body:has(.home-dashboard--field) #root .home__top-layout .home__btn--primary { background:var(--brand); color:var(--bg); border-color:var(--brand); }
+html body:has(.home-dashboard--field) #root .max-slider .swiper, html body:has(.home-dashboard--field) #root .max-hero, html body:has(.home-dashboard--field) #root .max-hero img { border-radius:2px; }
+html body:has(.home-dashboard--field) #root .max-hero figcaption { background:var(--surface); color:var(--fg); border-top:1px solid var(--line); padding:16px; }
+html body:has(.home-dashboard--field) #root .max-hero figcaption b, html body:has(.home-dashboard--field) #root .max-hero figcaption span { color:var(--fg); }
+html body:has(.home-dashboard--field) #root .home__scroll { border-radius:4px; }
+html body:has(.home-dashboard--field) #root .home-dashboard .pick__discover { border-radius:4px; background:var(--field-band); box-shadow:none; border:1px solid var(--line); }
+html body:has(.home-dashboard--field) #root .home-dashboard .pick__group { border-radius:4px; background:var(--surface); box-shadow:none; border:1px solid var(--line); border-top:3px solid var(--brand); }
+html body:has(.home-dashboard--field) #root .home-dashboard .pick__hero { border-radius:0; background:radial-gradient(var(--line) 1px,transparent 1px),var(--field-band); background-size:8px 8px; }
+html body:has(.home-dashboard--field) #root .home-dashboard .home__service-group { border-radius:4px; background:var(--surface); border:1px solid var(--line); border-left:4px solid var(--brand); }
+html body:has(.home-dashboard--field) #root .home-dashboard .home__tile { border-radius:4px; background:var(--bg); border-color:var(--line); }
+html body:has(.home-dashboard--field) #root .home-dashboard .home__tile:hover { background:var(--hover); }
+html body:has(.home-dashboard--field) #root .home-dashboard .home-updates__item { border-radius:4px; background:var(--surface); border-color:var(--line); }
+html body:has(.home-dashboard--field) #root .home-dashboard .tankpop-entry { border-radius:4px; background:var(--field-band); }
+html body:has(.home-dashboard--field) #root footer { border-radius:4px; }
+html body:has(.home-dashboard--field) #root .home-dashboard .home__section h3 { font-size:28px; font-weight:650; }
+@media(max-width:699px) { html body:has(.home-dashboard--field) #root .home__top-layout .home__intro h2 { font-size:28px; } html body:has(.home-dashboard--field) #root .home__top-layout .home__welcome { padding:20px; } html body:has(.home-dashboard--field) #root .home-dashboard .home__section h3 { font-size:22px; } }
+
+/* Every home action shares the same rounded rectangle, including icon/arrow controls. */
+html body:has(.home-dashboard) #root :is(button, [role="button"], .home__btn, .home__tile, .drawer__item, .pick__all, .pick__discover-action, .pick__discover-action > span, .home__arrow) { border-radius:8px !important; }
+html body:has(.home-dashboard) #root :is(.max-slider__toggle, .swiper-pagination-bullet, .home__arrow, .pick__discover-action > span) { display:inline-flex; align-items:center; justify-content:center; min-width:32px; min-height:32px; border:1px solid var(--line); background:var(--surface); color:var(--brand); box-shadow:none; }
+html body:has(.home-dashboard) #root .swiper-pagination-bullet { width:32px; height:32px; opacity:1; margin:0 4px; }
+html body:has(.home-dashboard) #root .swiper-pagination-bullet::after { content:""; width:8px; height:4px; border-radius:2px; background:var(--muted); }
+html body:has(.home-dashboard) #root .swiper-pagination-bullet-active { border-color:var(--brand); background:var(--hover); }
+html body:has(.home-dashboard) #root .swiper-pagination-bullet-active::after { background:var(--brand); width:16px; }
+html body:has(.home-dashboard) #root .pick__all { padding:8px 12px; border:1px solid var(--line); background:var(--surface); }
+
+html body #root .nav-branch__head { display:flex; align-items:center; gap:4px; }
+html body #root .nav-branch__head > .drawer__item { flex:1; min-width:0; }
+html body #root .nav-branch__toggle { display:flex; align-items:center; justify-content:center; flex:0 0 32px; height:32px; padding:0; border:1px solid var(--line); border-radius:8px; background:var(--surface); color:var(--brand); cursor:pointer; }
+html body #root .nav-branch__children { margin:4px 0 8px 16px; padding-left:8px; border-left:1px solid var(--line); }
+html body #root .nav-branch__children[hidden] { display:none; }

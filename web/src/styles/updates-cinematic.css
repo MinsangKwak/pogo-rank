@@ -1,0 +1,56 @@
+/* Journal shares the cinema palette while keeping long articles readable. */
+html body:has([data-route^="game-update"]) { --bg:#0b111c; --surface:#151e2d; --fg:#edf1fc; --muted:#b6bfd0; --line:#303b4e; --brand:#ff776b; --hover:#302334; background:radial-gradient(ellipse at top right,#302039,transparent 65%),var(--bg); color:var(--fg); }
+html body #root [data-route^="game-update"] { min-width:0; color:var(--fg); }
+html body #root .updates-intro { padding:40px; margin-bottom:32px; border:1px solid var(--line); border-radius:16px; background:linear-gradient(90deg,#0b111cef,#0b111c66),url('/images/discovery-meadow.png') center/cover; }
+html body #root .updates-intro > span { font-size:12px; letter-spacing:.2em; color:var(--brand); font-weight:700; }
+html body #root .updates-intro h2 { font-family:Pretendard,sans-serif; font-size:42px; line-height:1.2; letter-spacing:-.05em; margin:20px 0; }
+html body #root .updates-intro p { color:var(--muted); line-height:1.7; }
+html body #root [data-route^="game-update"] .page__sec { font-family:Pretendard,sans-serif; font-size:22px; margin:32px 0 20px; }
+html body #root [data-route^="game-update"] .upd__cards { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:16px; }
+html body #root [data-route^="game-update"] .upd__card { padding:28px; border:1px solid var(--line); border-radius:12px; background:linear-gradient(145deg,var(--surface),var(--bg)); box-shadow:none; cursor:pointer; transition:border-color .2s,transform .2s; }
+html body #root [data-route^="game-update"] .upd__card:hover { border-color:var(--brand); transform:translateY(-3px); }
+html body #root [data-route^="game-update"] .upd__cards--top .upd__card { border-top:3px solid var(--brand); background:linear-gradient(135deg,#36212c,var(--surface)); }
+html body #root [data-route^="game-update"] .upd__title { font-family:Pretendard,sans-serif; font-size:22px; line-height:1.5; margin:16px 0; }
+html body #root [data-route^="game-update"] .upd__title a { color:var(--fg); text-decoration:none; }
+html body #root [data-route^="game-update"] :is(.upd__summary,.upd__quote,.upd__head-sum) { color:var(--muted); line-height:1.7; }
+html body #root [data-route^="game-update"] .upd__tools { background:var(--surface); border:1px solid var(--line); padding:24px; border-radius:12px; margin-bottom:24px; }
+html body #root [data-route^="game-update"] :is(.upd__search,.uchip,.upd__back,.upd__more) { border:1px solid var(--line); border-radius:8px; background:var(--bg); color:var(--fg); min-height:44px; padding:12px 16px; }
+html body #root [data-route^="game-update"] .upd__search { width:100%; margin-bottom:16px; }
+html body #root [data-route^="game-update"] .uchip[aria-pressed=true] { background:var(--brand); border-color:var(--brand); color:var(--bg); }
+html body #root [data-route^="game-update"] :is(.upd__cat,.upd__badge) { border-radius:4px; background:var(--bg); color:var(--muted); border:1px solid var(--line); padding:4px 8px; }
+html body #root [data-route^="game-update"] .upd__dates { border-top:1px solid var(--line); padding-top:16px; margin-top:20px; color:var(--muted); }
+html body #root [data-route="game-update"] .upd__head { margin-top:24px; padding:40px; background:linear-gradient(130deg,#35202c,var(--surface)); border:1px solid var(--line); border-top:3px solid var(--brand); border-radius:12px; }
+html body #root [data-route="game-update"] .upd__head-title { font-family:Pretendard,sans-serif; font-size:28px; line-height:1.5; color:var(--fg); }
+html body #root [data-route="game-update"] .upd__sec { padding:28px; margin-top:16px; background:var(--surface); border:1px solid var(--line); border-radius:12px; line-height:1.7; }
+html body #root [data-route="game-update"] .upd__sec h3 { font-family:Pretendard,sans-serif; font-size:22px; color:var(--fg); margin-bottom:20px; }
+html body #root [data-route="game-update"] :is(.upd__source,.upd__advice,.upd__quote-box,.upd__ba-before,.upd__ba-after) { background:var(--bg); color:var(--fg); border-color:var(--line); border-radius:8px; }
+@media(max-width:700px) { html body #root [data-route^="game-update"] .upd__cards { grid-template-columns:minmax(0,1fr); } html body #root .updates-intro,html body #root [data-route="game-update"] :is(.upd__head,.upd__sec) { padding:24px; } html body #root .updates-intro h2 { font-size:28px; } }
+@media(prefers-reduced-motion:reduce) { html body #root [data-route^="game-update"] .upd__card { transition:none; } }
+html body #root [data-route^="game-update"] :is(.updates-intro,.upd__card,.upd__tools,.upd__head,.upd__sec) { border-radius:12px !important; }
+html body #root [data-route^="game-update"] :is(.uchip,.upd__search,.upd__back,.upd__more) { border-radius:8px !important; }
+/* Full-width reading hierarchy follows summary → changes → action → evidence. */
+html body #root #page-game-update { width:100%; max-width:none; }
+html body #root [data-route="game-update"] .upd__head { padding:40px; margin-bottom:28px; }
+html body #root [data-route="game-update"] .upd__head-title { font-size:42px; line-height:1.2; letter-spacing:-.04em; }
+html body #root [data-route="game-update"] .upd__head-sum { font-size:16px; max-width:80ch; }
+html body #root [data-route="game-update"] .upd__sec { display:grid; grid-template-columns:200px minmax(0,1fr); gap:32px; padding:28px 32px; margin-top:16px; }
+html body #root [data-route="game-update"] .upd__sec h3 { margin:0; padding-top:4px; }
+html body #root [data-route="game-update"] .upd__sec-content { min-width:0; }
+html body #root [data-route="game-update"] .upd__sec--key { background:linear-gradient(110deg,#38232e,var(--surface)); border-left:4px solid var(--brand); }
+html body #root [data-route="game-update"] .upd__sec--key h3 { color:var(--brand); }
+html body #root [data-route="game-update"] .upd__list--key { border:0; padding:0 0 0 20px; background:none; font-size:16px; }
+html body #root [data-route="game-update"] .upd__sec--changes { display:block; margin-top:28px; }
+html body #root [data-route="game-update"] .upd__sec--changes h3 { margin-bottom:24px; }
+html body #root [data-route="game-update"] .upd__ba-row { display:grid; grid-template-columns:160px minmax(0,1fr) 24px minmax(0,1fr); gap:16px; padding:20px; border:0; border-bottom:1px solid var(--line); }
+html body #root [data-route="game-update"] .upd__ba-row > em { grid-column:auto; font-weight:700; color:var(--muted); }
+html body #root [data-route="game-update"] .upd__ba-before { padding:12px; color:var(--muted); }
+html body #root [data-route="game-update"] .upd__ba-after { padding:12px; border-left:2px solid var(--brand); background:#30232e; }
+html body #root [data-route="game-update"] .upd__sec--reference { background:transparent; border:0; border-top:1px solid var(--line); border-radius:0 !important; margin-top:24px; }
+html body #root [data-route="game-update"] .upd__sec--reference h3 { font-size:16px; color:var(--muted); }
+html body #root [data-route="game-update"] .upd__sources { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; }
+@media(max-width:900px) { html body #root [data-route="game-update"] .upd__sec { grid-template-columns:1fr; gap:16px; padding:24px; } html body #root [data-route="game-update"] .upd__head-title { font-size:28px; } html body #root [data-route="game-update"] .upd__ba-row { grid-template-columns:minmax(0,1fr) 24px minmax(0,1fr); padding:16px 0; } html body #root [data-route="game-update"] .upd__ba-row > em { grid-column:1 / -1; } html body #root [data-route="game-update"] .upd__sources { grid-template-columns:1fr; } }
+html body #root [data-route="game-update"] .upd__ba-row > em { grid-column:1; grid-row:1; }
+html body #root [data-route="game-update"] .upd__ba-before { grid-column:2; grid-row:1; }
+html body #root [data-route="game-update"] .upd__ba-arrow { grid-column:3; grid-row:1; }
+html body #root [data-route="game-update"] .upd__ba-after { grid-column:4; grid-row:1; }
+@media(max-width:900px) { html body #root [data-route="game-update"] .upd__ba-row > em { grid-column:1 / -1; grid-row:1; } html body #root [data-route="game-update"] .upd__ba-before { grid-column:1; grid-row:2; } html body #root [data-route="game-update"] .upd__ba-arrow { grid-column:2; grid-row:2; } html body #root [data-route="game-update"] .upd__ba-after { grid-column:3; grid-row:2; } }

@@ -138,11 +138,9 @@ export function Raids({ onOpen }: { onOpen: OpenMon }) {
         {/* 이모지는 도트 아이콘으로 떼고 글자는 **이름만** 남긴다 — 사전이 '솔플 계산기' 를 찾게 하려면
             한 노드에 이모지가 섞여 있으면 안 된다 (v3 도 같은 이유로 pxIcon 을 따로 붙인다) */}
         <p className="note">
-          {'보스를 선택하면 약점과 추천 포켓몬을 확인할 수 있어요. 솔플 가능성은 '}
-          <a href="/pve/solo"><PxIcon emoji="🧮" />{' 솔플 계산기'}</a>
-          {' 에서, 앞으로의 일정은 '}
-          <a href="/schedule"><PxIcon emoji="📅" />{' 이벤트 일정'}</a>
-          {'에서 확인할 수 있어요.'}
+          <span>보스를 선택하면 약점과 추천 포켓몬을 확인할 수 있어요.</span>{' '}
+          <a href="/pve/solo"><PxIcon emoji="🧮" /><span>솔플 가능성 계산하기</span></a>{' · '}
+          <a href="/schedule"><PxIcon emoji="📅" /><span>예정된 레이드 일정 보기</span></a>
         </p>
       </div>
       <Grouped sections={Object.entries(data.GAMEDAY.raids).map(([tier, list]) => [`${tier} 레이드`, list])}

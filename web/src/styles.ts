@@ -54,3 +54,21 @@ import './styles/tankpop.css';
 import './styles/admin-stats.css';
 // 앱이 붙기 전 사람이 보는 화면. 맨 뒤다 — 이 블록은 앱이 붙으면 사라지므로 아무것도 안 덮는다
 import './styles/facts.css';
+
+import "./styles/home-cinematic.css";
+
+import "./styles/home-field.css";
+
+import "./styles/home-portal.css";
+
+import './styles/updates-cinematic.css';
+
+import "./styles/navigation-cinematic.css";
+
+import "./styles/schedule-cinematic.css";
+
+import "./styles/raids-cinematic.css";
+
+import "./styles/interior-cinematic.css";
+
+import './styles/light-cinematic.css';

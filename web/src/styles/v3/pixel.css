@@ -32,9 +32,9 @@
    :not(#_):not(#__) 는 우선순위를 id 두 칸만큼 올리려는 장치다 (둘 다 이 서비스에 없는 id).
    두 칸이나 올리는 이유: 넓은 화면 규칙에 `body:is([data-route=…]) #content .row > .sprite` 처럼
    id 한 칸 + 클래스 셋짜리 선택자가 있어서, 한 칸만으로는 못 덮는다 (v3.7.1 에서 실제로 새어 나왔다) */
-html:not(#_):not(#__) body *,
-html:not(#_):not(#__) body *::before,
-html:not(#_):not(#__) body *::after {
+html:not(#_):not(#__) body:not(:has(.home-dashboard)) *,
+html:not(#_):not(#__) body:not(:has(.home-dashboard)) *::before,
+html:not(#_):not(#__) body:not(:has(.home-dashboard)) *::after {
   border-radius: 0;
 }
 /* 되돌리는 것 — 진짜 동그란 것들.
