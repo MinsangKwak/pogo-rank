@@ -28,6 +28,8 @@
      계열까지 바꿀 이유가 없다. --good(teal) · --caution(앰버) 은 그대로다. */
 :root {
   /* 2026-09-25 새 디자인(ae64ee8) — 푸른 회색 바탕 위 흰 카드, 빨강 한 줄. 다크가 기본이고(pref.ts) 이 값은 라이트다 */
+  /* 브라우저가 그리는 조각(선택 목록 · 스크롤바 · 입력 틀)도 테마를 따라가게 — 없으면 기기 설정대로 그려 우리 색과 어긋난다 */
+  color-scheme: light;
   --bg: #f5f6fa; --fg: #202b3e; --muted: #58667c; --line: #d7dee9; --surface: #ffffff; --hover: #edf1f7;
   --surface-2: #edf1f7; /* 카드 안에 한 단 더 올린 칸 (입력·줄·표 머리) */
   --selected: #fff0ec;  /* 고른 칸의 바탕 — 브랜드를 옅게 깐 판 */
@@ -130,6 +132,7 @@
    빨강은 어두운 바탕에서 밝은 쪽(#ff8a7d)을 쓴다 — 라이트의 #b3261e 는 여기서 안 보인다 */
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
+    color-scheme: dark;
     --bg:#0b101c; --fg:#edf1fc; --muted:#b6bfd0; --line:#303b4e; --surface:#151e2d; --hover:#26324a;
     --surface-2:#202d43; --selected:#382634; --glow:#2c193b;
     --line-2:#46546c; --ink-2:#d2d9e7; --ink-4:#8390a6;
@@ -139,6 +142,7 @@
   }
 }
 :root[data-theme="dark"] {
+  color-scheme: dark;
   --bg:#0b101c; --fg:#edf1fc; --muted:#b6bfd0; --line:#303b4e; --surface:#151e2d; --hover:#26324a;
   --surface-2:#202d43; --selected:#382634; --glow:#2c193b;
   --line-2:#46546c; --ink-2:#d2d9e7; --ink-4:#8390a6;
