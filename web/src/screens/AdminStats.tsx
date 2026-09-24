@@ -43,8 +43,9 @@ export function sinceLabel(now: number = Date.now()): string {
   return daysSinceOpened(now) > DAYS_MAX ? `최근 ${DAYS_MAX}일` : '9/14부터';
 }
 
+// '9/14부터' 의 이름은 그릴 때 정한다 (periodItems) — 모듈에서 정하면 탭을 켜 둔 채 경계를 넘을 때 옛 이름이 남는다
 const PERIODS = [
-  { id: 'since', label: sinceLabel() },
+  { id: 'since', label: '9/14부터' },
   { id: '7', label: '7일' },
   { id: '30', label: '30일' },
   { id: '90', label: '90일' },
@@ -75,6 +76,9 @@ function Tile({ label, value, sub }: { label: string; value: string; sub?: strin
     </div>
   );
 }
+
+/** 받은 숫자의 시각으로 이름을 정한다 — 버튼과 요약이 같은 때를 본다 */
+const periodItems = (label: string) => PERIODS.map((one) => (one.id === 'since' ? { ...one, label } : one));
 
 const ranked = (rows: readonly StatRanked[], label: (key: string) => string): RankRow[] =>
   rows.map((row) => ({ key: row.key, label: label(row.key), value: row.hits, sub: row.visitors }));
@@ -115,18 +119,19 @@ export default function AdminStats() {
   }
 
   const { users, favorites, search, views, ga4 } = stats;
+  const since = sinceLabel(Date.parse(stats.generatedAt));
   return (
     <div className={`stat-page${busy ? ' is-busy' : ''}`}>
       {/* 고름은 한 줄, 맨 위 — 아래 모든 칸에 같이 걸린다 */}
       <div className="stat-page__filters">
-        <Segmented label="기간" items={PERIODS} value={days} onPick={setDays} />
+        <Segmented label="기간" items={periodItems(since)} value={days} onPick={setDays} />
         <button type="button" className="tool-btn" onClick={() => void load(days)} disabled={busy}>새로 받기</button>
         <span className="stat-page__stamp">{`${stats.generatedAt.slice(0, 16).replace('T', ' ')} UTC 기준 · 운영 채널만`}</span>
       </div>
       {error ? <Callout tone="warn" title={error} /> : null}
 
       <section className="stat-sec">
-        <h2 className="stat-sec__title">한눈에 <small>{days === 'since' && sinceLabel() === '9/14부터' ? `9/14부터 ${stats.days}일` : `최근 ${stats.days}일`}</small></h2>
+        <h2 className="stat-sec__title">한눈에 <small>{days === 'since' && since === '9/14부터' ? `9/14부터 ${stats.days}일` : `최근 ${stats.days}일`}</small></h2>
         <div className="stat-tiles">
           <Tile label="가입한 사람" value={count(users.total)} sub={`승인 대기 ${count(users.pending)} · 실험 기능 ${count(users.beta)}`} />
           <Tile label="7일 안에 로그인" value={count(users.active7d)} sub={`오늘 ${count(users.active1d)} · 30일 ${count(users.active30d)}`} />
