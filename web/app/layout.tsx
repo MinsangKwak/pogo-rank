@@ -58,10 +58,14 @@ export const metadata: Metadata = {
  *
  * 저장소를 막은 브라우저에서는 조용히 넘어간다. 값 이름은 `pogo_theme` 그대로다 —
  * 브라우저에 이미 들어 있어 바꾸면 남의 설정이 끊긴다 (CLAUDE.md §2).
+ *
+ * **고른 적이 없으면 어둡게 연다** (2026-09-25 새 디자인). 기기 설정을 따르는 것은 '기기 설정' 을 고른 사람뿐이다.
+ * 문서의 기본값도 dark 라, 스크립트가 못 돌아도(저장소 막힘) 어둡게 선다.
  */
 const THEME_SCRIPT = `(function(){try{var t=localStorage.getItem('pogo_theme');
 if(t==='dark'||t==='light'){document.documentElement.dataset.theme=t;return;}
-document.documentElement.dataset.theme=matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';
+if(t==='system'){document.documentElement.dataset.theme=matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';return;}
+document.documentElement.dataset.theme='dark';
 }catch(e){}})();`;
 
 /**
@@ -84,7 +88,7 @@ const GA_SCRIPT = process.env['NEXT_PUBLIC_CHANNEL'] === 'dev' ? '' : gaSnippet(
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="ko" data-theme="light">
+    <html lang="ko" data-theme="dark">
       <head>
         <script dangerouslySetInnerHTML={{ __html: HASH_SCRIPT }} />
         <script dangerouslySetInnerHTML={{ __html: THEME_SCRIPT }} />

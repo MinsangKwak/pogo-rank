@@ -1,0 +1,62 @@
+/* ─────────────────────────────────────────────────────────────────────────────
+   cinema/modal.css — 팝업 일곱 개(상세 · 11월 탱커 · 통계 설정 · 약관 동의 · 로그인 안내 · 관리자 둘)의 판
+
+   **메인과 같은 말로 그린다.** 판은 카드(--surface · 선 하나 · --r-panel), 제목은 화면 머리와 같은
+   그림 띠(--plate 한 벌), 단추는 parts.css 와 같은 모양이다. 팝업마다 제 머리를 따로 그리던 것을
+   제목 자리(.detail__name · .tankpop__head · .login-invite__head · .detail__bar)를 모아 한 규칙으로 둔다.
+   ───────────────────────────────────────────────────────────────────────────── */
+
+html body #root dialog.modal { background: color-mix(in srgb, var(--plate) 67%, transparent); backdrop-filter: blur(0.8rem); }
+html body #root .modal__box { border: 1px solid var(--line); border-radius: var(--r-panel); background: var(--surface); color: var(--fg); box-shadow: var(--shadow-pop); }
+/* 도구 팝업의 틀 — 옛 노트 스킨(shell-notebook.css)의 빨강 틀 · 계단 그림자를 카드 틀로 바꾼다.
+   위 띠(4.8rem)는 닫기 단추와 이름표 자리라 남긴다. 이름표는 메인 눈썹글과 같은 모양이다 */
+html body #root .modal__wrap:not(:has(.detail--mon)) { border: 1px solid var(--line); border-radius: var(--r-panel); background: var(--surface); box-shadow: var(--shadow-pop); overflow: hidden; }
+html body #root .modal__wrap:not(:has(.detail--mon))::before { color: var(--brand); font: 700 1.2rem Pretendard, sans-serif; letter-spacing: 0.2em; }
+html body #root .modal__wrap:not(:has(.detail--mon)) .modal__box { border: 0; border-top: 1px solid var(--line); border-radius: 0; box-shadow: none; }
+html body #root .modal__close {
+  display: inline-flex; align-items: center; justify-content: center; width: var(--tap); height: var(--tap);
+  border: 1px solid var(--line); border-radius: var(--r-ctl); background: var(--surface); color: var(--fg); box-shadow: none;
+}
+html body #root .modal__close:hover { border-color: var(--brand); background: var(--hover); }
+
+/* ── 제목 띠 — 화면 머리(shell.css .page-head)와 같은 그림 · 같은 판 ──────── */
+html body #root :is(.consent__modal:not(.login-invite) > .detail__name, .login-invite__head, .tankpop__head) {
+  margin: 0 0 2rem; padding: 2.8rem 2.4rem; border: 1px solid var(--plate-line); border-radius: var(--r-box); color: var(--plate-fg);
+  background: linear-gradient(90deg, color-mix(in srgb, var(--plate) 96%, transparent), color-mix(in srgb, var(--plate-2) 86%, transparent)), url('/images/rank-raid-gym-3d.webp') center / cover;
+}
+html body #root .consent__modal > .detail__name { font: 800 2.8rem/1.2 Pretendard, sans-serif; letter-spacing: -0.04em; }
+html body #root .login-invite__head .detail__name { color: var(--plate-fg); font: 800 2.8rem/1.2 Pretendard, sans-serif; letter-spacing: -0.04em; }
+html body #root .tankpop__head h2 { color: var(--plate-fg); }
+html body #root .tankpop__head .ds-text--muted { color: var(--plate-muted); }
+
+/* 포켓몬 상세 — 머리줄이 그림 띠다. 닫기는 띠 위라 판의 짝을 쓴다 */
+html body #root .modal__box:has(> .detail--mon) { border: 1px solid var(--line); border-radius: var(--r-panel); background: var(--surface); box-shadow: var(--shadow-pop); }
+html body #root .detail--mon { background: var(--surface); }
+html body #root .detail--mon .detail__bar {
+  border-bottom: 1px solid var(--plate-line);
+  background: linear-gradient(90deg, color-mix(in srgb, var(--plate) 96%, transparent), color-mix(in srgb, var(--plate-2) 86%, transparent)), url('/images/rank-raid-gym-3d.webp') center 40% / cover;
+}
+html body #root .detail--mon .detail__bar-title { color: var(--plate-fg); font-family: Pretendard, sans-serif; font-weight: 750; letter-spacing: -0.02em; }
+html body #root .detail--mon .detail__side { background: var(--surface-2); border-color: var(--line); }
+html body #root .modal__wrap:has(.detail--mon) .modal__close { border-color: var(--plate-line); background: color-mix(in srgb, var(--plate) 70%, transparent); color: var(--plate-fg); }
+html body #root .modal__wrap:has(.detail--mon) .modal__close:hover { border-color: var(--plate-accent); background: color-mix(in srgb, var(--plate-accent) 20%, var(--plate)); }
+html body #root .modal__wrap:has(.detail--mon) .modal__close:focus-visible { outline-color: var(--plate-accent); }
+
+/* ── 팝업 안 단추 — 서랍 줄(.drawer__item)을 빌려 쓰던 것을 parts.css 단추와 같게 ── */
+html body #root .modal__box .drawer__item {
+  min-height: var(--tap); padding: 1.2rem 1.6rem; border: 1px solid var(--line); border-radius: var(--r-ctl);
+  background: var(--surface-2); color: var(--fg); font: 600 1.4rem Pretendard, sans-serif; box-shadow: none;
+}
+html body #root .modal__box .drawer__item:hover { border-color: var(--brand); background: var(--hover); }
+/* 주 단추 — 채움 --brand, 글자 --bg (§1-b 1) */
+html body #root .modal__box .drawer__item:is(.account__login, .consent__go, .login-invite__go) { background: var(--brand); border-color: var(--brand); color: var(--bg); }
+html body #root .modal__box .uchip { border-radius: var(--r-ctl); }
+
+/* 11월 탱커 — 순위 숫자는 브랜드, 칸 사이는 선 하나 */
+html body #root .tankpop :is(.tankpop__picks, .tankpop__list) > li { border-top: 1px solid var(--line); }
+
+@media (max-width: 699px) {
+  html body #root :is(.modal__box, .modal__wrap:not(:has(.detail--mon))) { border-radius: var(--r-panel) var(--r-panel) 0 0; }
+  html body #root :is(.consent__modal:not(.login-invite) > .detail__name, .login-invite__head, .tankpop__head) { padding: 2.4rem 2rem; }
+  html body #root :is(.consent__modal > .detail__name, .login-invite__head .detail__name) { font-size: 2.2rem; }
+}

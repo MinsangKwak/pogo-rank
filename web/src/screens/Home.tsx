@@ -31,8 +31,10 @@ const HERO_ART_ENTRY = MAX_ART.find((art) => art.dex.includes(144))!;
 // 배너 슬라이드는 홈에서만 쓴다 — Swiper 30KB 를 모든 화면의 첫 묶음에 싣지 않는다 (components/MaxSlider.tsx)
 const MaxSlider = lazy(() => import('../components/MaxSlider'));
 
-// 갈래마다 문 앞에 세우는 스타터 (v3 home.js 와 같은 번호 — 꼬부기 · 파이리 · 이상해씨)
-const SERVICE_ART: Record<string, string> = { today: 'service-explore-garden.png', pick: 'service-battle-pokeball.png', mine: 'service-grow-bulbasaur.png' };
+// 갈래마다 포스터 한 장과 머리 표지 (2026-09-25 새 디자인). 그림은 1024×1536 WebP — PNG 2MB 를 줄였다
+// 표지 글은 CSS content 에 두지 않는다 — 글은 마크업에 있어야 번역 · 검사 그물이 본다
+const SERVICE_ART: Record<string, string> = { today: 'service-explore-garden.webp', pick: 'service-battle-pokeball.webp', mine: 'service-grow-bulbasaur.webp' };
+const SERVICE_KICKER: Record<string, string> = { today: '01 / EXPLORE', pick: '02 / BATTLE', mine: '03 / GROW' };
 
 // 주소는 라우터 표의 path 에서 온다 — 손으로 조립하면 v3.61.0 의 죽은 링크가 되풀이된다
 // 내보내는 이유는 검사 하나뿐이다 (Shell 의 NavItem 과 같은 사정)
@@ -282,9 +284,12 @@ function HomeData({ onOpen }: { onOpen: OpenMon }) {
       <a className="portal-discovery" href={routeHref('dex')}>
         <div><span className="portal-discovery__eyebrow">다양한 활용처</span><strong>한 마리의 가능성,<br />배틀 너머까지.</strong></div>
         <div className="portal-discovery__copy"><p>레이드부터 PvP까지,<br />두루 활약할 포켓몬을 찾아보세요.</p><span>포켓몬 살펴보기 ↗</span></div>
-        <div className="portal-discovery__modes" aria-hidden="true"><span>MAX</span><span>RAID</span><span>PvP</span></div>
       </a>
-        <div className="portal-motion"><span aria-hidden="true"><span>CHOOSE YOUR TEAM — READY FOR BATTLE — </span><span>CHOOSE YOUR TEAM — READY FOR BATTLE — </span></span><a href="/dmax/deck">나만의 배틀 팀 만들기 ↗</a></div>
+      {/* 흐르는 글자는 같은 줄 두 벌을 잇는다 — 반 바퀴 돌면 처음과 같은 그림이라 이음매가 안 보인다 */}
+      <div className="portal-motion">
+        <span aria-hidden="true"><span>CHOOSE YOUR TEAM — READY FOR BATTLE — </span><span>CHOOSE YOUR TEAM — READY FOR BATTLE — </span></span>
+        <a href={routeHref('dmax-deck')} onClick={() => track('home_cta', { to: 'dmax-deck' })}>나만의 배틀 팀 만들기 ↗</a>
+      </div>
       <div className="portal-prep-note"><TankPopupEntry onOpen={onOpen} compact /></div>
 
       <section className="home__features" aria-label="서비스 기능">
@@ -295,8 +300,10 @@ function HomeData({ onOpen }: { onOpen: OpenMon }) {
         <div className="home__service-grid">
           {ROUTE_GROUPS.map(([id, label, desc]) => (
             <section key={id} className={`home__service-group home__service-group--${id}`}>
-              <img className="home__service-art" src={`${BASE}images/${SERVICE_ART[id]}`} alt="" aria-hidden="true" loading="lazy" />
+              <img className="home__service-art" src={`${BASE}images/${SERVICE_ART[id]}`} alt="" aria-hidden="true"
+                loading="lazy" width={1024} height={1536} />
               <div className="home__group-head">
+                <span className="home__service-kicker" aria-hidden="true">{SERVICE_KICKER[id]}</span>
                 <h4 className="home__group">{label}</h4>
                 <p className="home__group-desc">{desc}</p>
               </div>

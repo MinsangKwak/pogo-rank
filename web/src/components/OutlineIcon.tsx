@@ -1,4 +1,5 @@
-/** Shell navigation icons use a consistent, unfilled 24px stroke grid. */
+// 머리줄 · 서랍 아이콘 — 채움 없는 24px 선 한 벌 (2026-09-25 새 디자인). 색은 글자색(currentColor)을 따른다
+// 표에 없는 이모지는 동그라미 십자로 둔다 — 빈 칸보다 '아이콘 자리' 가 보이는 편이 낫다
 const paths: Record<string,string> = {
  '🏠':'M3 10 12 3l9 7M5 9v12h5v-7h4v7h5V9',
  '📢':'M4 10h5l11-5v14L9 14H4zM7 14l2 7h4l-3-7M20 10h2v4h-2',

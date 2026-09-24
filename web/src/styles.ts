@@ -55,20 +55,12 @@ import './styles/admin-stats.css';
 // 앱이 붙기 전 사람이 보는 화면. 맨 뒤다 — 이 블록은 앱이 붙으면 사라지므로 아무것도 안 덮는다
 import './styles/facts.css';
 
-import "./styles/home-cinematic.css";
-
-import "./styles/home-field.css";
-
-import "./styles/home-portal.css";
-
-import './styles/updates-cinematic.css';
-
-import "./styles/navigation-cinematic.css";
-
-import "./styles/schedule-cinematic.css";
-
-import "./styles/raids-cinematic.css";
-
-import "./styles/interior-cinematic.css";
-
-import './styles/light-cinematic.css';
+// 2026-09-25 새 디자인(ae64ee8). 맨 뒤다 — 옛 v3 · v4 스킨 위에 얹는다.
+// 뼈대 → 조각 → 화면 → 팝업 차례. 조각(parts)은 모양 한 벌이고 화면 파일은 배치만 더한다
+import './styles/cinema/shell.css';
+import './styles/cinema/parts.css';
+import './styles/cinema/home.css';
+import './styles/cinema/journal.css';
+import './styles/cinema/schedule.css';
+import './styles/cinema/interior.css';
+import './styles/cinema/modal.css';
