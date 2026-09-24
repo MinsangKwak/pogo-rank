@@ -65,6 +65,21 @@
 구글 콘솔의 **승인된 리디렉션 URI** 에 `https://api.moncamp.kr/v1/auth/google/callback` 이
 글자까지 같게 들어 있어야 한다.
 
+**로그인 클라이언트는 옛 Firebase 프로젝트 `pogo-note`(번호 291922942424)에 있다** — 서버를 올린 `moncamp api` 가 아니다.
+client_id 앞자리가 곧 프로젝트 번호라, 로그인 주소(`/v1/auth/google/start` 의 302)에서 확인할 수 있다 (2026-09-23 실측).
+
+| 자리 | 값 (2026-09-23) |
+| --- | --- |
+| 클라이언트 | `moncamp server` · `291922942424-vhmu…` — 운영 · dev 로그인이 함께 쓴다 |
+| 리디렉션 URI | `https://api.moncamp.kr/v1/auth/google/callback` · `http://localhost:8080/…`(로컬 시험) |
+| 게시 상태 · 사용자 유형 | 프로덕션 단계 · 외부 — **'테스트로 돌아가기' 를 누르면 테스트 사용자 말고는 로그인이 막힌다** |
+| 브랜딩 | 앱 이름 moncamp · 홈 · 방침 · 약관 = moncamp.kr · 브랜딩 인증 · 게시 완료 (로고 없음 — 넣으면 다시 심사) |
+| 옆의 `Web client (auto created by Google Service)` | 옛 Firebase 로그인용 — 6장에서 지운다 |
+
+콘솔: [대상](https://console.cloud.google.com/auth/audience?project=pogo-note) ·
+[브랜딩](https://console.cloud.google.com/auth/branding?project=pogo-note) ·
+[클라이언트](https://console.cloud.google.com/auth/clients?project=pogo-note)
+
 ---
 
 ## 3. 데이터를 옮긴다
@@ -154,8 +169,14 @@ Firebase uid 는 구글이 준 값이 아니다. 이관은 `google_sub` 자리�
 
 1. Firestore 백업을 한 번 더 받아 보관한다
 2. Firebase 콘솔에서 Firestore 규칙을 전부 거부로 바꾼다 (지우지 말고 **막는다**)
-3. 한 주 더 두고 아무 일도 없으면 프로젝트를 지운다
+3. 한 주 더 두고 아무 일도 없으면 **Firestore 데이터와 Firebase 앱만 지운다 — 프로젝트(`pogo-note`)는 지우지 않는다.**
+   운영 로그인 클라이언트가 이 프로젝트에 있어서, 프로젝트를 지우면 moncamp.kr 로그인이 그 자리에서 멈춘다 (2장).
+   옛 `Web client (auto created by Google Service)` 와 승인된 도메인 `pogo-note.firebaseapp.com` 은 이때 지운다
 4. 저장소에서 `firestore.rules` · `frontend-v4/` · `FIREBASE_SA_JSON` 을 지운다
+
+프로젝트까지 비우고 싶으면 **로그인 클라이언트를 먼저 옮긴다** — `moncamp api` 에 새 클라이언트를 만들고
+(같은 리디렉션 URI · 브랜딩 다시 인증) `GOOGLE_CLIENT_ID` · `GOOGLE_CLIENT_SECRET` 을 바꿔 서버를 다시 올린 뒤,
+로그인이 되는 것을 보고 나서야 `pogo-note` 를 지운다.
 
 ---
 

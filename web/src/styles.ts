@@ -50,5 +50,7 @@ import './styles/finder.css';
 import './styles/ds.css';
 // 11월 탱커 팝업 — 배치만. 조각은 ds 것이다
 import './styles/tankpop.css';
+// 운영 통계 (루트만, 2026-09-24)
+import './styles/admin-stats.css';
 // 앱이 붙기 전 사람이 보는 화면. 맨 뒤다 — 이 블록은 앱이 붙으면 사라지므로 아무것도 안 덮는다
 import './styles/facts.css';

@@ -144,6 +144,10 @@ export default function AdminPanel({ onClose }: { onClose: () => void }) {
         <div className="modal__box">
           <div className="detail admin">
             <h2>{title}</h2>
+            {/* 운영 통계는 루트만 (2026-09-24) — 위임 관리자에게는 단추도 안 준다(눌러도 안 되는 단추는 고장과 같다) */}
+            {adminRoot ? (
+              <a className="drawer__item admin__stats" href="/admin/stats" onClick={onClose}>📊 운영 통계 보기</a>
+            ) : null}
             {adminRoot ? (
               <Section title="승인 대기" empty="대기 중인 요청이 없어요."
                 rows={pending.map((one) => (

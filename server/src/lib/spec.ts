@@ -33,6 +33,7 @@ const ENV: Env = {
     redirectUri: 'https://api.moncamp.kr/v1/auth/google/callback',
     appOrigin: 'https://moncamp.kr',
   },
+  ga4PropertyId: '',
 };
 
 export async function openapiSpec(): Promise<Record<string, unknown>> {

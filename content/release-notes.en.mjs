@@ -15,6 +15,11 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 export const RELEASE_NOTES_EN = {
+  '2026-09-24 · v5.2.0': [
+    '**From October 2 we also record which screens you open** — only the screen name (such as Dex or D-MAX) is kept; the full address, search words and the Pokémon number on a detail page are never sent. It is stored with the same random visitor ID and country code as search records, no IP address is stored, and it is never linked to your account. See sections 2, 3, 4, 5, 7 and 8 of the privacy policy',
+    '**Turning it off is unchanged** — choose "Turn off stats" under ☰ → Stats & storage and neither search nor screen records are sent',
+    '**You will be asked to agree once more at your next sign-in** — the privacy policy changed because a collected item was added',
+  ],
   '2026-09-23 · v5.1.0': [
     '**The home banner now rotates** — every upcoming Dynamax and Gigantamax event gets its own slide, changing every 5 seconds. Each shows the dates, the boss and whether it is live or how many days are left; tap to open the Dynamax tier list. The button at the bottom right pauses it',
     '**This week\'s boss is shown correctly** — the Articuno art was captioned with next week\'s boss (Sobble). The first slide is now this week: Dynamax Articuno · Zapdos · Moltres',

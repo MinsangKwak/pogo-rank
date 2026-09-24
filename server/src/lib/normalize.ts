@@ -8,7 +8,7 @@
 // 모양은 맞지만 뜻이 없는 줄(term 없는 search)은 저장하지 않는다.
 // ─────────────────────────────────────────────────────────────────────────────
 'use strict';
-import type { CollectBody } from './contract.ts';
+import { ROUTE_ID, VIEW_COLLECT_FROM, type CollectBody } from './contract.ts';
 
 export interface EventRow {
   name: string;
@@ -45,10 +45,17 @@ export function toRows(body: CollectBody, country: string, now: Date = new Date(
     const term = cleanText(one.term, 100);
     // 검색어 없는 search 는 셀 것이 없다 — 표에 두면 '무엇을 찾았는지 모르는 검색' 이 쌓인다
     if (one.name === 'search' && !term) continue;
+    if (one.name === 'view') {
+      // 시행일 전에는 한 건도 안 남긴다 (contract.ts VIEW_COLLECT_FROM) — 받은 시각(서버)으로 판정한다
+      if (now.getTime() < Date.parse(VIEW_COLLECT_FROM)) continue;
+      // 화면 id 꼴이 아니면 버린다 — 주소나 글이 섞여 들어오면 방침에 없는 것을 남기게 된다
+      if (!one.surface || !ROUTE_ID.test(one.surface)) continue;
+    }
     rows.push({
       name: one.name,
       visitor,
-      term,
+      // view 는 글을 안 남긴다 — 화면 id 만
+      term: one.name === 'view' ? null : term,
       surface: cleanText(one.surface, 40),
       country,
       channel,

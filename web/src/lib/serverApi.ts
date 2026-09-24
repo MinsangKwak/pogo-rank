@@ -31,6 +31,45 @@ export interface AdminUser extends Me {
   lastSeenAt: string | null;
 }
 
+/** 루트 통계 화면이 받는 모양 — server/src/routes/stats.ts 의 STATS_REPLY 와 같다 */
+export interface StatRanked { key: string; hits: number; visitors: number }
+export interface StatDay { day: string; hits: number; visitors: number }
+export interface StatEvents {
+  hits: number;
+  visitors: number;
+  perDay: StatDay[];
+  top: StatRanked[];
+  surfaces: StatRanked[];
+  countries: StatRanked[];
+}
+export interface Ga4Row { key: string; views: number; users: number }
+export type Ga4Stats =
+  | { status: 'off' | 'error'; reason: string }
+  | {
+    status: 'ok';
+    users: number;
+    newUsers: number;
+    views: number;
+    sessions: number;
+    perDay: { day: string; users: number; views: number; sessions: number }[];
+    pages: Ga4Row[];
+    countries: Ga4Row[];
+  };
+export interface AdminStats {
+  generatedAt: string;
+  days: number;
+  users: {
+    total: number; pending: number; approved: number; admin: number; root: number; beta: number;
+    active1d: number; active7d: number; active30d: number;
+    newPerDay: { day: string; count: number }[];
+  };
+  sessions: { active: number };
+  favorites: { total: number; people: number; top: { dex: number; users: number }[] };
+  search: StatEvents;
+  views: StatEvents;
+  ga4: Ga4Stats;
+}
+
 export interface Session { access: string; expiresIn: number; role: Role; beta: boolean }
 
 /** 서버 주소. 안 주면 로그인 기능이 통째로 꺼진다 (빌드마다 다를 수 있다) */
@@ -140,6 +179,9 @@ export const serverApi = {
     call<void>(`/v1/trainers/${encodeURIComponent(name)}`, { method: 'PUT', ...json({ code, sortOrder }) }),
   removeTrainer: (name: string) =>
     call<void>(`/v1/trainers/${encodeURIComponent(name)}`, { method: 'DELETE' }),
+
+  /** 루트 통계 (2026-09-24) — 모아 센 값만 온다. 기간 7~90일 */
+  adminStats: (days: number) => call<AdminStats>(`/v1/admin/stats?days=${days}`),
 
   listUsers: async () => (await call<{ users: AdminUser[] }>('/v1/admin/users')).users,
   setRole: (id: string, change: { role?: Role; beta?: boolean }) =>

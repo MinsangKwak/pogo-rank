@@ -26,22 +26,26 @@
 import { routeById } from '../routes';
 import { useAuthStore } from '../stores/auth';
 
-export type LockReason = '' | 'login' | 'beta';
+export type LockReason = '' | 'login' | 'beta' | 'root';
 
 const LOCK_TITLE: Record<Exclude<LockReason, ''>, string> = {
   login: '로그인하면 열려요',
   beta: '실험 기능이에요',
+  root: '루트 관리자만 볼 수 있어요',
 };
 
 export function useLockReason(routeId: string): LockReason {
   const enabled = useAuthStore((s) => s.enabled);
   const status = useAuthStore((s) => s.status);
   const beta = useAuthStore((s) => s.beta);
+  const role = useAuthStore((s) => s.role);
   const route = routeById(routeId);
   if (!route || !enabled) return '';
   if (status === 'loading') return '';
   if (route.locked && status !== 'ok') return 'login';
   if (route.beta && !beta) return 'beta';
+  // 화면은 막는 척일 뿐 — 실제 차단은 서버가 한다(/v1/admin/stats 루트 전용). 막힌 요청을 보내지 않으려고 여기서도 멈춘다
+  if ('root' in route && route.root && role !== 'root') return 'root';
   return '';
 }
 
@@ -59,6 +63,6 @@ export function lockedAttrs(reason: LockReason) {
     'aria-disabled': reason ? ('true' as const) : undefined,
     title: reason ? LOCK_TITLE[reason] : '',
     // 주소를 떼면 링크가 아니다 — 눌러도, 길게 눌러 새 탭으로 열어도 아무 데도 안 간다
-    inert: reason === 'beta',
+    inert: reason === 'beta' || reason === 'root',
   };
 }

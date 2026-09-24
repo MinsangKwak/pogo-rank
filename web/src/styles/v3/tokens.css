@@ -37,6 +37,9 @@
      명암비 4.1 이라 작은 글씨가 흐려 보인다. #d63024 는 4.7 로 기준을 넘으면서 같은 빨강이다 */
   --brand: #b3261e;     /* 브랜드 · 지금 보고 있는 곳. 카드 테두리의 빨강 */
   --brand-2: #7f1d1d;   /* 보조 — 다른 갈래를 구분할 때 (PvP 등). 같은 빨강 한 단 진하게 */
+  /* 그래프 한 줄(한 계열)의 막대 · 선 (2026-09-24 관리자 통계). 라이트는 브랜드 그대로,
+     다크는 브랜드(#ff8a7d)가 밝기 띠(OKLCH L 0.48–0.67)를 넘어 판 위에서 떠 보여 한 단 눌렀다 — dataviz 검사기 통과값 */
+  --chart-1: #b3261e;
   /* 브랜드가 빨강을 가져가면 자리가 겹치는 색이 둘이다 — v3.7.0 때와 같은 문제라 같은 답을 쓴다.
      point 는 빨강 바로 옆 색(보라)을 못 쓴다 → 정반대인 파랑. 특별한 것(메가·전설·S티어)이 확실히 튄다.
      warn 은 여전히 붉되 자주빛으로 내려 브랜드와 어둡기·색기를 가른다 — '선택됨' 과 '나쁨' 이 안 헷갈린다 */
@@ -114,7 +117,7 @@
     --bg:#1a0f12; --fg:#f7eee9; --muted:#b4a29c; --line:#3a1f24; --surface:#251518; --hover:#32191d;
     --line-2:#5c2f35; --ink-2:#ded0ca; --ink-4:#8a7069;
     --brand:#ff8a7d; --brand-2:#ff6b5e; --point:#7aa7ff; --warn:#fb7185; --caution:#fbbf24; --off:#8a7069;
-    --good:#4ade80; --accent:#ff8a7d;
+    --good:#4ade80; --accent:#ff8a7d; --chart-1:#f0564a;
     --c-shadow:#a78bfa;
     /* 테두리 박도 테마를 탄다 — 어두운 바탕에서는 밝은 쪽이 눈에 들어와야 카드가 선다 */
     --foil-hi:#ff6b5e; --foil-lo:#7f1d1d;
@@ -124,7 +127,7 @@
   --bg:#1a0f12; --fg:#f7eee9; --muted:#b4a29c; --line:#3a1f24; --surface:#251518; --hover:#32191d;
   --line-2:#5c2f35; --ink-2:#ded0ca; --ink-4:#8a7069;
   --brand:#ff8a7d; --brand-2:#ff6b5e; --point:#7aa7ff; --warn:#fb7185; --caution:#fbbf24; --off:#8a7069;
-  --good:#4ade80; --accent:#ff8a7d;
+  --good:#4ade80; --accent:#ff8a7d; --chart-1:#f0564a;
   --c-shadow:#a78bfa;
   /* 테두리 박도 테마를 탄다 — 어두운 바탕에서는 밝은 쪽이 눈에 들어와야 카드가 선다 */
   --foil-hi:#ff6b5e; --foil-lo:#7f1d1d;
