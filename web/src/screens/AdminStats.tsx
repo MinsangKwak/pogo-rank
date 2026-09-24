@@ -29,6 +29,15 @@ export function daysSinceOpened(now: number = Date.now()): number {
   return Math.round((Date.parse(today) - Date.parse(OPENED)) / 86_400_000) + 1;
 }
 
+// 서버가 받는 기간 끝 (server/src/lib/stats.ts STATS_LIMITS) — 밖의 값은 스키마가 400 으로 돌려보내 화면이 통째로 선다
+const DAYS_MIN = 7;
+const DAYS_MAX = 400;
+
+/** '9/14부터' 로 부를 일수 — 연 지 7일 전이거나 400일이 넘으면 끝에 붙인다 (2027-10 부터는 최근 400일) */
+export function sinceDays(now: number = Date.now()): number {
+  return Math.min(DAYS_MAX, Math.max(DAYS_MIN, daysSinceOpened(now)));
+}
+
 const PERIODS = [
   { id: 'since', label: '9/14부터' },
   { id: '7', label: '7일' },
@@ -76,8 +85,7 @@ export default function AdminStats() {
     setBusy(true);
     setError('');
     try {
-      // 서버는 7일보다 짧게 못 센다 — 연 지 7일이 안 됐을 때도 막히지 않게
-      setStats(await serverApi.adminStats(period === 'since' ? Math.max(7, daysSinceOpened()) : Number(period)));
+      setStats(await serverApi.adminStats(period === 'since' ? sinceDays() : Number(period)));
     } catch (caught) {
       setError(caught instanceof ApiError && caught.status === 403 ? '루트 관리자만 볼 수 있어요' : '통계를 받지 못했어요. 잠시 뒤 다시 눌러 주세요');
     } finally {
