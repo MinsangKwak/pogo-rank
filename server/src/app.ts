@@ -20,6 +20,7 @@ import { hotRoutes } from './routes/hot.ts';
 import { backupRoutes } from './routes/backup.ts';
 import { authRoutes } from './routes/auth.ts';
 import { domainRoutes } from './routes/domain.ts';
+import { statsRoutes } from './routes/stats.ts';
 import { makeDomain } from './services/domain.ts';
 import { makeAccessTokens, type AccessTokens } from './lib/jwt.ts';
 import { makeAuth, type Auth } from './services/auth.ts';
@@ -35,6 +36,8 @@ export interface AppDeps {
   google?: GoogleOAuth;
   tokens?: AccessTokens;
   auth?: Auth;
+  /** GA4 를 부르는 fetch — 검사가 가짜로 갈아 끼운다 */
+  ga4Fetch?: typeof fetch;
 }
 
 export async function buildApp(env: Env, sql: Sql, deps: AppDeps = {}): Promise<FastifyInstance> {
@@ -142,6 +145,8 @@ export async function buildApp(env: Env, sql: Sql, deps: AppDeps = {}): Promise<
   });
   // ── 도메인 (v5 Phase 5) ──────────────────────────────────────────────────
   domainRoutes(app, { domain: makeDomain(sql), requireRole });
+  // ── 루트 통계 화면 (2026-09-24) ─────────────────────────────────────────
+  statsRoutes(app, { sql, requireRole, ga4PropertyId: env.ga4PropertyId, ga4Fetch: deps.ga4Fetch });
 
   healthRoutes(app, sql);
   eventRoutes(app, sql);
