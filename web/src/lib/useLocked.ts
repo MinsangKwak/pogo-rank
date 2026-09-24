@@ -50,6 +50,18 @@ export function useLockReason(routeId: string): LockReason {
   return '';
 }
 
+/**
+ * 루트 화면의 이름을 드러내도 되는가 — **루트로 확인된 뒤에만** 참이다.
+ * useLockReason 은 확인 중에 '' 를 돌려주므로, 그것만 보면 확인 중(또는 갱신 실패)에 제목이 새어 나간다
+ */
+export function useRootShown(routeId: string): boolean {
+  const status = useAuthStore((s) => s.status);
+  const role = useAuthStore((s) => s.role);
+  const route = routeById(routeId);
+  if (!route || !('root' in route) || !route.root) return true;
+  return status === 'ok' && role === 'root';
+}
+
 /** 로그인이 걸린 화면인데 아직 확인 중인가 — 이때는 본문 대신 '확인 중' 을 세운다 */
 export function useLockChecking(routeId: string): boolean {
   const enabled = useAuthStore((s) => s.enabled);
