@@ -134,9 +134,10 @@
   display: flex; align-items: center; justify-content: space-between; gap: var(--space-sm);
   margin: calc(var(--space-md) * -1) calc(var(--space-md) * -1) var(--space-md);
   padding: var(--space-sm) var(--space-md);
-  background-color: var(--brand);
-  background-image: var(--foil);
-  color: var(--bg);
+  /* 2026-09-25 새 디자인 — 박 띠 대신 한 단 올린 판에 선 하나. 글자는 판 위 글자(--fg) */
+  background: var(--surface-2);
+  border-bottom: 1px solid var(--line);
+  color: var(--fg);
 }
 
 /* ── 타입 알약 ─────────────────────────────────────────────────────────────── */

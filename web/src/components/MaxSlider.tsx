@@ -64,7 +64,7 @@ export default function MaxSlider({ items, slides }: {
       <Swiper
         modules={[A11y, Autoplay, Keyboard, Pagination]}
         onSwiper={(instance) => { swiper.current = instance; }}
-        onAutoplayTimeLeft={(_, __, remaining) => { progress.current?.style.setProperty("--banner-progress", String(1 - remaining)); }}
+        onAutoplayTimeLeft={(_, __, remaining) => { progress.current?.style.setProperty('--banner-progress', String(1 - remaining)); }}
         onSlideChange={(instance) => setActive(instance.realIndex)}
         slidesPerView={1}
         loop={total > 2}
@@ -83,7 +83,20 @@ export default function MaxSlider({ items, slides }: {
       >
         {items.map((item) => <SwiperSlide key={item.key}>{item.node}</SwiperSlide>)}
       </Swiper>
-      <div ref={progress} className="portal-banner-tabs" aria-label="배너 선택">{items.map((item, index) => { const slide = slides.find(row => row.id === item.key); return <button key={item.key} type="button" aria-pressed={active === index} onClick={() => { swiper.current?.slideToLoop(index); setPlaying(false); }}><span className="banner-progress" aria-hidden="true"><i /></span><small>{slide?.short ?? "BATTLE GUIDE"}</small><strong>{slide?.bosses.map(boss => boss.name).join(" · ") || "맥스 배틀 준비하기"}</strong></button>; })}</div>
+      {/* 일정 탭 — 장마다 하나. 누르면 그 장으로 가고 넘기기를 멈춘다. 위 가는 선이 다음 장까지 남은 시간이다 */}
+      <div ref={progress} className="portal-banner-tabs" aria-label="배너 선택">
+        {items.map((item, index) => {
+          const slide = slides.find((row) => row.id === item.key);
+          return (
+            <button key={item.key} type="button" aria-pressed={active === index}
+              onClick={() => { swiper.current?.slideToLoop(index); setPlaying(false); }}>
+              <span className="banner-progress" aria-hidden="true"><i /></span>
+              <small>{slide?.short ?? 'BATTLE GUIDE'}</small>
+              <strong>{slide?.bosses.map((boss) => boss.name).join(' · ') || '맥스 배틀 준비하기'}</strong>
+            </button>
+          );
+        })}
+      </div>
       {/* 움직임 줄이기를 켠 사람에게는 처음부터 안 넘기므로 멈출 것도 없다 */}
       {still ? null : (
         <button type="button" className="max-slider__toggle"

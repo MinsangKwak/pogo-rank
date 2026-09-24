@@ -38,6 +38,9 @@ export const SURFACE: TokenGroup = {
     { name: '--hover', use: '포인터가 올라간 칸 · 눌린 칸' },
     { name: '--line', use: '보통 테두리' },
     { name: '--line-2', use: '한 단 진한 테두리 — 활성 입력처럼 경계를 세울 때' },
+    { name: '--surface-2', use: '카드 안에서 한 단 더 올린 칸 — 입력 · 줄 · 표 머리 (2026-09-25)' },
+    { name: '--selected', use: '고른 칸 · 강조 카드의 바탕 — 브랜드를 옅게 깐 판' },
+    { name: '--glow', use: '바탕 오른쪽 위에 번지는 빛 (body 배경 한 곳)' },
   ],
 };
 
@@ -84,6 +87,7 @@ export const PLATE: TokenGroup = {
     { name: '--plate-muted', use: '판 위 흐린 글자 — 명암비 7.9' },
     { name: '--plate-line', use: '판 위 선' },
     { name: '--plate-accent', use: '판 위 강조 — 글자로도 채움으로도 쓴다' },
+    { name: '--plate-accent-2', use: '판 위 둘째 강조 — 레이드 포스터의 순위 숫자' },
     { name: '--plate-cta', use: '판 위 주 버튼 채움 — --plate-fg 글자와 짝' },
   ],
 };
@@ -174,8 +178,14 @@ export const SHAPE: TokenGroup = {
   title: '모양',
   note: '반경은 두 단뿐이다. 누르는 것의 최소 높이는 --tap(44px) — Material 48dp · Apple 44pt',
   tokens: [
-    { name: '--r-card', use: '카드 모서리 (지금 0 — 도트 그림과 결을 맞춘다)' },
-    { name: '--r-chip', use: '칩 모서리' },
+    { name: '--r-panel', use: '포스터 · 큰 판 · 팝업 모서리 (1.6rem)' },
+    { name: '--r-box', use: '카드 · 구역 모서리 (1.2rem)' },
+    { name: '--r-ctl', use: '단추 · 입력 · 탭 · 목록 줄 모서리 (0.8rem)' },
+    { name: '--r-tag', use: '배지 · 키 표시 모서리 (0.4rem)' },
+    { name: '--r-card', use: '옛 카드 모서리 이름 — 이제 --r-box 를 가리킨다' },
+    { name: '--r-chip', use: '옛 칩 모서리 이름 — 이제 --r-tag 를 가리킨다' },
+    { name: '--shadow-box', use: '판 위에 놓인 카드 그림자' },
+    { name: '--shadow-pop', use: '팝업 · 서랍 그림자' },
     { name: '--px', use: '도트 한 칸 0.2rem — 테두리 · 그림자의 기본 단위' },
     { name: '--tap', use: '누르는 것의 최소 크기 44px' },
     { name: '--shadow-hard', use: '계단 그림자 굵기 (흐림 0). 색은 쓰는 쪽에서 붙인다' },
