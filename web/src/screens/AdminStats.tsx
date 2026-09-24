@@ -38,8 +38,13 @@ export function sinceDays(now: number = Date.now()): number {
   return Math.min(DAYS_MAX, Math.max(DAYS_MIN, daysSinceOpened(now)));
 }
 
+/** '9/14부터' 의 이름 — 400일이 넘으면 앞이 잘리므로 '최근 400일' 로 바꿔 부른다. 잘린 기간을 전 기간이라 적지 않는다 */
+export function sinceLabel(now: number = Date.now()): string {
+  return daysSinceOpened(now) > DAYS_MAX ? `최근 ${DAYS_MAX}일` : '9/14부터';
+}
+
 const PERIODS = [
-  { id: 'since', label: '9/14부터' },
+  { id: 'since', label: sinceLabel() },
   { id: '7', label: '7일' },
   { id: '30', label: '30일' },
   { id: '90', label: '90일' },
@@ -121,7 +126,7 @@ export default function AdminStats() {
       {error ? <Callout tone="warn" title={error} /> : null}
 
       <section className="stat-sec">
-        <h2 className="stat-sec__title">한눈에 <small>{days === 'since' ? `9/14부터 ${stats.days}일` : `최근 ${stats.days}일`}</small></h2>
+        <h2 className="stat-sec__title">한눈에 <small>{days === 'since' && sinceLabel() === '9/14부터' ? `9/14부터 ${stats.days}일` : `최근 ${stats.days}일`}</small></h2>
         <div className="stat-tiles">
           <Tile label="가입한 사람" value={count(users.total)} sub={`승인 대기 ${count(users.pending)} · 실험 기능 ${count(users.beta)}`} />
           <Tile label="7일 안에 로그인" value={count(users.active7d)} sub={`오늘 ${count(users.active1d)} · 30일 ${count(users.active30d)}`} />
