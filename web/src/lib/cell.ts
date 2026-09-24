@@ -32,6 +32,22 @@ export function num(value: unknown, digits?: number): string {
   return digits === undefined ? String(one) : one.toFixed(digits);
 }
 
+// 세는 수 칸 — 1,284 처럼 천 단위를 끊는다 (2026-09-24 관리자 통계). 관문은 num 과 같다 —
+// 숫자가 아니면 대시. 소수는 반올림해 정수로 편다 (사람 수 · 횟수에 소수가 없다)
+export function count(value: unknown): string {
+  const text = num(value);
+  if (text === DASH) return DASH;
+  return Math.round(Number(text)).toLocaleString('ko-KR');
+}
+
+// 비율 칸 — 0.25 → '25%'. 분모가 0 이거나 숫자가 아니면 대시 (0 으로 나눈 Infinity 가 새지 않게)
+export function percent(part: unknown, whole: unknown): string {
+  const a = num(part);
+  const b = num(whole);
+  if (a === DASH || b === DASH || Number(b) === 0) return DASH;
+  return `${Math.round((Number(a) / Number(b)) * 100)}%`;
+}
+
 // 글자 칸. 비어 있거나 공백뿐이면 대시로 접힌다.
 //
 // 2026-09-21 **이 관문이 새고 있었다.** 글자가 아닌 값을 `String()` 에 그대로 넘겨서,

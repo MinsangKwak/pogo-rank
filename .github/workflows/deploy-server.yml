@@ -9,6 +9,7 @@ name: server 배포 (Cloud Run)
 #
 # 저장소 시크릿: DATABASE_URL · ADMIN_TOKEN
 #              JWT_SECRET · ROOT_EMAIL · GOOGLE_CLIENT_ID · GOOGLE_CLIENT_SECRET (v5 Phase 4)
+# 저장소 변수:  GA4_PROPERTY_ID (관리자 통계의 GA4 칸 — 없으면 그 칸만 꺼진다)
 #              CLOUDFLARE_API_TOKEN — api.moncamp.kr 을 잇는 Worker (v5 Phase 7, infra/api-proxy)
 #
 # 더 나은 길 둘 (지금은 시작을 단순하게 두려고 안 썼다)
@@ -93,6 +94,8 @@ jobs:
           ROOT_EMAIL: ${{ secrets.ROOT_EMAIL }}
           GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
           GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          # 관리자 통계의 GA4 칸 (2026-09-24). 비밀이 아니라 저장소 **변수** 다 — 비어 있으면 그 칸만 '꺼짐'
+          GA4_PROPERTY_ID: ${{ vars.GA4_PROPERTY_ID }}
         run: |
           set -e
           # **--set-env-vars 를 여러 번 적으면 마지막 것만 남는다.** 한 번에 넘겨야 한다.
@@ -110,6 +113,7 @@ jobs:
           ENV_VARS="$ENV_VARS##GOOGLE_CLIENT_SECRET=$GOOGLE_CLIENT_SECRET"
           ENV_VARS="$ENV_VARS##OAUTH_REDIRECT_URI=https://api.moncamp.kr/v1/auth/google/callback"
           ENV_VARS="$ENV_VARS##APP_ORIGIN=https://moncamp.kr"
+          [ -n "$GA4_PROPERTY_ID" ] && ENV_VARS="$ENV_VARS##GA4_PROPERTY_ID=$GA4_PROPERTY_ID"
           gcloud run deploy "$SERVICE" \
             --image "$IMAGE" \
             --region "$REGION" \

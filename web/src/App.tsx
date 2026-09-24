@@ -23,6 +23,7 @@ import type { MonPick, OpenMon } from './lib/mon';
 import { useLockReason, useLockChecking } from './lib/useLocked';
 import { takeForward } from './lib/nav';
 import { trackPageView, track } from './lib/track';
+import { collectView } from './lib/collect';
 import type { RouteDef } from './routes';
 // **홈과 상세만 정적이다.** 둘은 각자 주소의 첫 화면이라, 쪼개면 열자마자 한 번 더
 // 받으러 가야 한다. 나머지는 어느 주소에서도 첫 화면이 아니므로 첫 번들에 있을 이유가 없다 —
@@ -61,6 +62,8 @@ const Schedule = lazy(() => import('./screens/Schedule'));
 const PvpDeck = lazy(() => import('./screens/PvpDeck'));
 const DmaxDeck = lazy(() => import('./screens/DmaxDeck'));
 const SoloCalc = lazy(() => import('./screens/SoloCalc'));
+// 루트만 여는 화면 — 누구의 첫 묶음에도 안 실린다
+const AdminStats = lazy(() => import('./screens/AdminStats'));
 
 function Splash() {
   return (
@@ -114,6 +117,7 @@ export function Screen({ route, rest, onOpen }: { route: RouteDef; rest: string;
     case 'privacy': return <Privacy />;
     case 'terms': return <Terms />;
     case 'settings': return <Settings />;
+    case 'admin-stats': return <AdminStats />;
     // /mon/<id> 는 상세가 곧 본문이다 — v5 Phase 6 에 바뀐 자리.
     // 전에는 홈을 깔고 그 위에 팝업을 띄웠는데, 그러면 크롤러가 받는 HTML 의 본문이 홈이고
     // 상세는 닫힌 <dialog> 안이다(그 안은 display:none 이다). 공유 링크로 들어온 사람에게도
@@ -196,6 +200,8 @@ export default function App({ seo }: AppProps = {}) {
     if (route.id === 'home') body['home'] = 'true'; else delete body['home'];
     trackPageView(route.title ?? route.nav ?? route.id);
     track('route_view', { route: route.id });
+    // 우리 수집기에도 화면 id 하나 — 방침 시행일(10/2) 전에는 안 나간다 (lib/collect.ts)
+    collectView(route.id);
   }, [route]);
 
   // #/mon/<id> 뒤에 깔리는 것은 홈이다 — 셸도 머리줄도 홈과 같게 둔다 (v3 detailSyncHash 가 둘을 같이 본다)

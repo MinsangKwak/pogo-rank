@@ -1,0 +1,64 @@
+/* ─────────────────────────────────────────────────────────────────────────────
+   admin-stats.css — 운영 통계 (루트만, 2026-09-24 · screens/AdminStats.tsx · components/StatChart.tsx)
+
+   그래프 규칙 — 데이터만 소리를 낸다. 기둥은 --chart-1 한 색, 격자·축은 --line · --muted 머리카락 선.
+   글자는 늘 글자 토큰이다(값을 기둥 색으로 칠하지 않는다). 간격은 0.4rem 격자, 글자는 격자 크기만.
+   `html body #root` 접두사는 home-editorial.css 머리말과 같은 이유 — v3 스킨을 이기는 장치 하나
+   ───────────────────────────────────────────────────────────────────────────── */
+html body #root .stat-page { display: flex; flex-direction: column; gap: 3.2rem; padding-bottom: 4.8rem; }
+/* 다시 받는 동안 — 앞 숫자를 흐리게 두고 틀은 그대로 (빈 틀로 깜빡이지 않는다) */
+html body #root .stat-page.is-busy { opacity: .56; transition: opacity .2s; }
+html body #root .stat-page__wait { color: var(--muted); font-size: var(--fs-body); }
+html body #root .stat-page__filters { display: flex; flex-wrap: wrap; align-items: center; gap: .8rem 1.2rem; }
+html body #root .stat-page__stamp,
+html body #root .stat-page__note { color: var(--muted); font-size: var(--fs-sub); line-height: 1.5; }
+
+html body #root .stat-sec { display: flex; flex-direction: column; gap: 1.6rem; }
+html body #root .stat-sec__title { margin: 0; font-size: var(--fs-sec); line-height: 1.2; }
+html body #root .stat-sec__title small { margin-left: .8rem; color: var(--muted); font-size: var(--fs-body); font-weight: 400; }
+
+/* 숫자 칸 — 넓으면 네 줄, 좁으면 두 줄 */
+html body #root .stat-tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(15.2rem, 1fr)); gap: 1.2rem; }
+html body #root .stat-tile {
+  display: flex; flex-direction: column; gap: .4rem; padding: 1.6rem;
+  background: var(--surface); border: .1rem solid var(--line);
+}
+html body #root .stat-tile__label { color: var(--muted); font-size: var(--fs-sub); line-height: 1.5; }
+html body #root .stat-tile__value { font-size: var(--fs-title); line-height: 1.2; font-variant-numeric: tabular-nums; }
+html body #root .stat-tile__sub { color: var(--muted); font-size: var(--fs-sub); line-height: 1.5; }
+
+html body #root .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(32rem, 1fr)); gap: 2.4rem; align-items: start; }
+
+/* 날짜별 기둥 */
+html body #root .stat-chart { display: flex; flex-direction: column; gap: .4rem; margin: 0; min-width: 0; }
+html body #root .stat-chart__head { display: flex; align-items: baseline; justify-content: space-between; gap: .8rem; font-size: var(--fs-body); }
+html body #root .stat-chart__total { color: var(--muted); font-size: var(--fs-sub); }
+html body #root .stat-chart__readout { margin: 0; color: var(--muted); font-size: var(--fs-sub); line-height: 1.5; font-variant-numeric: tabular-nums; }
+html body #root .stat-chart__readout b { color: var(--fg); font-size: var(--fs-body); }
+html body #root .stat-chart__plot { width: 100%; min-height: 16rem; }
+html body #root .stat-chart__plot:focus-visible { outline: .2rem solid var(--brand); outline-offset: .4rem; }
+html body #root .stat-chart__plot svg { display: block; overflow: visible; touch-action: pan-y; }
+html body #root .stat-chart__bar { fill: var(--chart-1); }
+/* 올린 날은 한 단 밝게 — 반응했다는 것만 보인다 */
+html body #root .stat-chart__bar.is-on { fill: color-mix(in srgb, var(--chart-1) 72%, var(--surface)); }
+html body #root .stat-chart__grid { stroke: var(--line); stroke-width: 1; shape-rendering: crispEdges; }
+html body #root .stat-chart__cross { stroke: var(--muted); stroke-width: 1; shape-rendering: crispEdges; }
+html body #root .stat-chart__axis { fill: var(--muted); font-size: 1.2rem; font-variant-numeric: tabular-nums; }
+html body #root .stat-chart__note { margin: 0; color: var(--muted); font-size: var(--fs-sub); line-height: 1.5; }
+html body #root .stat-chart__table summary { color: var(--muted); font-size: var(--fs-sub); cursor: pointer; min-height: var(--tap); display: flex; align-items: center; }
+html body #root .stat-chart__table table,
+html body #root .stat-rank table { width: 100%; border-collapse: collapse; font-size: var(--fs-sub); font-variant-numeric: tabular-nums; }
+html body #root .stat-chart__table :is(th, td),
+html body #root .stat-rank :is(th, td) { padding: .4rem .8rem; border-bottom: .1rem solid var(--line); text-align: left; font-weight: 400; }
+html body #root .stat-chart__table td:last-child { text-align: right; }
+
+/* 순위 표 — 이름 아래 가는 막대(1위가 끝) */
+html body #root .stat-rank { display: flex; flex-direction: column; gap: .8rem; min-width: 0; }
+html body #root .stat-rank__title { margin: 0; font-size: var(--fs-body); line-height: 1.5; }
+html body #root .stat-rank thead th { color: var(--muted); }
+html body #root .stat-rank tbody th { width: 100%; }
+html body #root .stat-rank__name { display: block; color: var(--fg); overflow-wrap: anywhere; }
+html body #root .stat-rank__bar { display: block; height: .4rem; margin-top: .4rem; background: var(--line); }
+html body #root .stat-rank__bar i { display: block; height: 100%; background: var(--chart-1); }
+html body #root .stat-rank__num { text-align: right; white-space: nowrap; }
+html body #root .stat-rank__empty { margin: 0; color: var(--muted); font-size: var(--fs-sub); }

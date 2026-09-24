@@ -1039,6 +1039,528 @@
         }
       }
     },
+    "/v1/admin/stats": {
+      "get": {
+        "summary": "운영 통계 — 루트 관리자만",
+        "tags": [
+          "관리"
+        ],
+        "description": "가입 · 로그인 · ★ · 검색 · 페이지뷰(우리 수집)와 GA4 방문자 · 페이지뷰를 한 번에 준다.\n\n- **모아 센 값만** 나간다. 이메일 · 이름 · 방문자 난수 ID 는 한 칸도 없다\n- 날짜는 한국 날짜, 빈 날은 0 으로 채운다\n- 기간은 7~90일 (기본 30)\n- GA4 가 안 되면 `ga4.status` 가 'off' · 'error' 이고 나머지는 그대로 선다",
+        "parameters": [
+          {
+            "schema": {
+              "type": "integer",
+              "minimum": 7,
+              "maximum": 90,
+              "default": 30
+            },
+            "in": "query",
+            "name": "days",
+            "required": false
+          }
+        ],
+        "security": [
+          {
+            "accessToken": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "generatedAt": {
+                      "type": "string"
+                    },
+                    "days": {
+                      "type": "integer"
+                    },
+                    "users": {
+                      "type": "object",
+                      "properties": {
+                        "total": {
+                          "type": "integer"
+                        },
+                        "pending": {
+                          "type": "integer"
+                        },
+                        "approved": {
+                          "type": "integer"
+                        },
+                        "admin": {
+                          "type": "integer"
+                        },
+                        "root": {
+                          "type": "integer"
+                        },
+                        "beta": {
+                          "type": "integer"
+                        },
+                        "active1d": {
+                          "type": "integer"
+                        },
+                        "active7d": {
+                          "type": "integer"
+                        },
+                        "active30d": {
+                          "type": "integer"
+                        },
+                        "newPerDay": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "day": {
+                                "type": "string"
+                              },
+                              "count": {
+                                "type": "integer"
+                              }
+                            },
+                            "required": [
+                              "day",
+                              "count"
+                            ]
+                          }
+                        }
+                      },
+                      "required": [
+                        "total",
+                        "pending",
+                        "approved",
+                        "admin",
+                        "root",
+                        "beta",
+                        "active1d",
+                        "active7d",
+                        "active30d",
+                        "newPerDay"
+                      ]
+                    },
+                    "sessions": {
+                      "type": "object",
+                      "properties": {
+                        "active": {
+                          "type": "integer"
+                        }
+                      },
+                      "required": [
+                        "active"
+                      ]
+                    },
+                    "favorites": {
+                      "type": "object",
+                      "properties": {
+                        "total": {
+                          "type": "integer"
+                        },
+                        "people": {
+                          "type": "integer"
+                        },
+                        "top": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "dex": {
+                                "type": "integer"
+                              },
+                              "users": {
+                                "type": "integer"
+                              }
+                            },
+                            "required": [
+                              "dex",
+                              "users"
+                            ]
+                          }
+                        }
+                      },
+                      "required": [
+                        "total",
+                        "people",
+                        "top"
+                      ]
+                    },
+                    "search": {
+                      "type": "object",
+                      "properties": {
+                        "hits": {
+                          "type": "integer"
+                        },
+                        "visitors": {
+                          "type": "integer"
+                        },
+                        "perDay": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "day": {
+                                "type": "string"
+                              },
+                              "hits": {
+                                "type": "integer"
+                              },
+                              "visitors": {
+                                "type": "integer"
+                              }
+                            },
+                            "required": [
+                              "day",
+                              "hits",
+                              "visitors"
+                            ]
+                          }
+                        },
+                        "top": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "key": {
+                                "type": "string"
+                              },
+                              "hits": {
+                                "type": "integer"
+                              },
+                              "visitors": {
+                                "type": "integer"
+                              }
+                            },
+                            "required": [
+                              "key",
+                              "hits",
+                              "visitors"
+                            ]
+                          }
+                        },
+                        "surfaces": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "key": {
+                                "type": "string"
+                              },
+                              "hits": {
+                                "type": "integer"
+                              },
+                              "visitors": {
+                                "type": "integer"
+                              }
+                            },
+                            "required": [
+                              "key",
+                              "hits",
+                              "visitors"
+                            ]
+                          }
+                        },
+                        "countries": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "key": {
+                                "type": "string"
+                              },
+                              "hits": {
+                                "type": "integer"
+                              },
+                              "visitors": {
+                                "type": "integer"
+                              }
+                            },
+                            "required": [
+                              "key",
+                              "hits",
+                              "visitors"
+                            ]
+                          }
+                        }
+                      },
+                      "required": [
+                        "hits",
+                        "visitors",
+                        "perDay",
+                        "top",
+                        "surfaces",
+                        "countries"
+                      ]
+                    },
+                    "views": {
+                      "type": "object",
+                      "properties": {
+                        "hits": {
+                          "type": "integer"
+                        },
+                        "visitors": {
+                          "type": "integer"
+                        },
+                        "perDay": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "day": {
+                                "type": "string"
+                              },
+                              "hits": {
+                                "type": "integer"
+                              },
+                              "visitors": {
+                                "type": "integer"
+                              }
+                            },
+                            "required": [
+                              "day",
+                              "hits",
+                              "visitors"
+                            ]
+                          }
+                        },
+                        "top": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "key": {
+                                "type": "string"
+                              },
+                              "hits": {
+                                "type": "integer"
+                              },
+                              "visitors": {
+                                "type": "integer"
+                              }
+                            },
+                            "required": [
+                              "key",
+                              "hits",
+                              "visitors"
+                            ]
+                          }
+                        },
+                        "surfaces": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "key": {
+                                "type": "string"
+                              },
+                              "hits": {
+                                "type": "integer"
+                              },
+                              "visitors": {
+                                "type": "integer"
+                              }
+                            },
+                            "required": [
+                              "key",
+                              "hits",
+                              "visitors"
+                            ]
+                          }
+                        },
+                        "countries": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "key": {
+                                "type": "string"
+                              },
+                              "hits": {
+                                "type": "integer"
+                              },
+                              "visitors": {
+                                "type": "integer"
+                              }
+                            },
+                            "required": [
+                              "key",
+                              "hits",
+                              "visitors"
+                            ]
+                          }
+                        }
+                      },
+                      "required": [
+                        "hits",
+                        "visitors",
+                        "perDay",
+                        "top",
+                        "surfaces",
+                        "countries"
+                      ]
+                    },
+                    "ga4": {
+                      "type": "object",
+                      "description": "status 가 'ok' 가 아니면 reason 만 온다 — 화면이 그 말을 그대로 적는다",
+                      "properties": {
+                        "status": {
+                          "type": "string",
+                          "enum": [
+                            "ok",
+                            "off",
+                            "error"
+                          ]
+                        },
+                        "reason": {
+                          "type": "string"
+                        },
+                        "users": {
+                          "type": "integer"
+                        },
+                        "newUsers": {
+                          "type": "integer"
+                        },
+                        "views": {
+                          "type": "integer"
+                        },
+                        "sessions": {
+                          "type": "integer"
+                        },
+                        "perDay": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "day": {
+                                "type": "string"
+                              },
+                              "users": {
+                                "type": "integer"
+                              },
+                              "views": {
+                                "type": "integer"
+                              },
+                              "sessions": {
+                                "type": "integer"
+                              }
+                            },
+                            "required": [
+                              "day",
+                              "users",
+                              "views",
+                              "sessions"
+                            ]
+                          }
+                        },
+                        "pages": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "key": {
+                                "type": "string"
+                              },
+                              "views": {
+                                "type": "integer"
+                              },
+                              "users": {
+                                "type": "integer"
+                              }
+                            },
+                            "required": [
+                              "key",
+                              "views",
+                              "users"
+                            ]
+                          }
+                        },
+                        "countries": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "key": {
+                                "type": "string"
+                              },
+                              "views": {
+                                "type": "integer"
+                              },
+                              "users": {
+                                "type": "integer"
+                              }
+                            },
+                            "required": [
+                              "key",
+                              "views",
+                              "users"
+                            ]
+                          }
+                        }
+                      },
+                      "required": [
+                        "status"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "generatedAt",
+                    "days",
+                    "users",
+                    "sessions",
+                    "favorites",
+                    "search",
+                    "views",
+                    "ga4"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "reason": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "reason": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/health": {
       "get": {
         "summary": "살아 있는가, DB 에 닿는가",
@@ -1138,7 +1660,8 @@
                         "name": {
                           "type": "string",
                           "enum": [
-                            "search"
+                            "search",
+                            "view"
                           ]
                         },
                         "term": {
@@ -1197,7 +1720,8 @@
                         "name": {
                           "type": "string",
                           "enum": [
-                            "search"
+                            "search",
+                            "view"
                           ]
                         },
                         "term": {
