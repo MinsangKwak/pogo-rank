@@ -37,6 +37,15 @@ export default function LockCard({ reason = 'login' }: { reason?: CardReason }) 
       </section>
     );
   }
+  if (reason === 'root') {
+    return (
+      <section className="plan__lock">
+        <span className="plan__lock-ico" aria-hidden="true">🔑</span>
+        <h2>루트 관리자만 볼 수 있어요</h2>
+        <p>운영 숫자라 위임 관리자와도 나누지 않아요.</p>
+      </section>
+    );
+  }
   if (beta) {
     return (
       <section className="plan__lock">

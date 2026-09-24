@@ -62,6 +62,7 @@ export const MEANING: TokenGroup = {
   tokens: [
     { name: '--brand', use: '브랜드 · 지금 보고 있는 곳. 몬스터볼 빨강' },
     { name: '--brand-2', use: '다른 갈래를 구분할 때 (PvP 등) — 같은 빨강 한 단 진하게' },
+    { name: '--chart-1', use: '그래프 한 계열의 막대 · 선 — 다크에서 브랜드보다 한 단 눌린 빨강 (관리자 통계)' },
     { name: '--point', use: '특별한 것 — 메가 · 전설 · S티어. 빨강의 정반대인 파랑' },
     { name: '--warn', use: '나쁨 — 하향 · 약점 · 삭제' },
     { name: '--caution', use: '주의 — 대기 · A티어' },

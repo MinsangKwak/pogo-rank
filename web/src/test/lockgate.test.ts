@@ -72,3 +72,26 @@ describe('판정 중에는 잠긴 화면의 본문을 그리지 않는다', () =
     expect(screen().textContent).toContain('로그인하면 열려요');
   });
 });
+
+describe('운영 통계는 루트만 (2026-09-24)', () => {
+  const stats = routeById('admin-stats') as RouteDef;
+  const screen = () => render(createElement(Screen, { route: stats, rest: '', onOpen: () => {} })).container;
+
+  it('위임 관리자에게는 루트 카드 — 통계를 부르지 않는다', () => {
+    useAuthStore.setState({ enabled: true, status: 'ok', beta: true, ready: true, role: 'admin' });
+    const box = screen();
+    expect(box.textContent).toContain('루트 관리자만 볼 수 있어요');
+    expect(box.querySelector('.stat-page')).toBeNull();
+  });
+
+  it('로그인 전이면 로그인 카드', () => {
+    useAuthStore.setState({ enabled: true, status: 'anon', beta: false, ready: true, role: null });
+    expect(screen().textContent).toContain('로그인하면 열려요');
+  });
+
+  it('메뉴 · 사이트맵에 안 오른다 — nav 도 group 도 없고 잠겨 있다', () => {
+    expect(stats).toMatchObject({ locked: true, root: true });
+    expect('nav' in stats).toBe(false);
+    expect('group' in stats).toBe(false);
+  });
+});
