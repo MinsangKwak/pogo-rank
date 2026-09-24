@@ -92,6 +92,12 @@ describe('운영 통계는 루트만 (2026-09-24)', () => {
     expect(text).not.toContain('로그인하면 열려요');
   });
 
+  it('정적 HTML 머리에도 이름이 없다', async () => {
+    const { default: RouteIntro } = await import('../components/RouteIntro');
+    const text = render(createElement(RouteIntro, { route: stats })).container.innerHTML;
+    expect(text).not.toMatch(/운영 통계|admin-stats/);
+  });
+
   it('메뉴 · 사이트맵에 안 오른다 — nav 도 group 도 없고 잠겨 있다', () => {
     expect(stats).toMatchObject({ locked: true, root: true });
     expect('nav' in stats).toBe(false);

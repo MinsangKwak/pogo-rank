@@ -11,6 +11,10 @@
 import { ROUTE_NAV, routeDesc, type RouteDef } from '../routes';
 
 export default function RouteIntro({ route }: { route: RouteDef }) {
+  // 루트 화면은 정적 HTML 에 이름 · id 를 안 싣는다 — 주소만 알아도 무엇이 있는지 드러난다 (2026-09-24 주인 요청)
+  if ('root' in route && route.root) {
+    return <div className="detail detail--facts"><p className="detail__foot">불러오는 중…</p></div>;
+  }
   const title = route.title ?? route.nav ?? 'moncamp';
   const desc = routeDesc(route.id);
   return (
