@@ -58,6 +58,13 @@ describe.skipIf(!url)('GET /v1/admin/stats', () => {
         returning id`;
       ids[role] = row!.id;
     }
+    // 한 기기에서 두 번 회전한 사슬 — 살아 있는 로그인은 1 이다 (쓴 토큰 둘은 세지 않는다)
+    const chain = '00000000-0000-4000-8000-000000000001';
+    await sql`insert into sessions (user_id, refresh_hash, family_id, expires_at, used_at) values
+      (${ids.root}, decode('01', 'hex'), ${chain}, now() + interval '30 days', now()),
+      (${ids.root}, decode('02', 'hex'), ${chain}, now() + interval '30 days', now())`;
+    await sql`insert into sessions (user_id, refresh_hash, family_id, expires_at) values
+      (${ids.root}, decode('03', 'hex'), ${chain}, now() + interval '30 days')`;
     await sql`insert into favorites (user_id, dex) values (${ids.approved}, 25), (${ids.admin}, 25), (${ids.root}, 150)`;
     const visitorA = 'a'.repeat(32);
     const visitorB = 'b'.repeat(32);
@@ -91,6 +98,7 @@ describe.skipIf(!url)('GET /v1/admin/stats', () => {
     expect(body.users).toMatchObject({ total: 4, pending: 1, approved: 1, admin: 1, root: 1, beta: 1, active1d: 4 });
     expect(body.users.newPerDay).toHaveLength(7);
     expect(body.users.newPerDay.at(-1).count).toBe(4);
+    expect(body.sessions).toEqual({ active: 1 });
     expect(body.favorites).toEqual({ total: 3, people: 3, top: [{ dex: 25, users: 2 }, { dex: 150, users: 1 }] });
     expect(body.search).toMatchObject({ hits: 4, visitors: 2 });
     expect(body.search.top[0]).toEqual({ key: '뮤츠', hits: 3, visitors: 2 });
