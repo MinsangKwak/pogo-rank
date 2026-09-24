@@ -16,7 +16,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { serverApi, ApiError, type AdminStats as Stats, type StatRanked } from '../lib/serverApi';
 import { useDexSoft } from '../lib/data';
 import { routeById } from '../routes';
-import { count, percent, DASH } from '../lib/cell';
+import { count, DASH } from '../lib/cell';
 import { Segmented, Callout } from '../ds';
 import { DayColumns, RankTable, type RankRow } from '../components/StatChart';
 
@@ -139,7 +139,8 @@ export default function AdminStats() {
           <Tile label="★ 담긴 수" value={count(favorites.total)} sub={`담은 사람 ${count(favorites.people)}`} />
           <Tile label="검색에서 고른 수" value={count(search.hits)} sub={`찾은 사람 ${count(search.visitors)}`} />
           <Tile label="방문자 (GA4)" value={ga4.status === 'ok' ? count(ga4.users) : DASH}
-            sub={ga4.status === 'ok' ? `처음 온 사람 ${count(ga4.newUsers)} (${percent(ga4.newUsers, ga4.users)})` : '아래 GA4 칸 참고'} />
+            // 비율을 안 적는다 — GA4 의 '처음 온 사람'(first_visit)과 '방문자'(활성 사용자)는 세는 법이 달라 100% 를 넘는다 (운영 101명에 104명)
+            sub={ga4.status === 'ok' ? `처음 온 사람 ${count(ga4.newUsers)}` : '아래 GA4 칸 참고'} />
           <Tile label="페이지뷰 (GA4)" value={ga4.status === 'ok' ? count(ga4.views) : DASH}
             sub={ga4.status === 'ok' ? `방문 ${count(ga4.sessions)}회` : '아래 GA4 칸 참고'} />
         </div>
