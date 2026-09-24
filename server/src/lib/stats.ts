@@ -52,7 +52,8 @@ export interface AdminStats {
 }
 
 /** 기간 · 목록 길이의 끝 — 요청이 무엇을 달라 해도 이 안에서 센다 */
-export const STATS_LIMITS = { minDays: 7, maxDays: 90, top: 15 } as const;
+// 긴 끝은 400일 — '서비스 시작(9/14)부터 오늘까지' 를 한 번에 본다 (2026-09-24 주인 요청). 표가 작아 한 번에 세도 가볍다
+export const STATS_LIMITS = { minDays: 7, maxDays: 400, top: 15 } as const;
 
 // '오늘' 을 포함해 days 일 — 한국 날짜로
 function span(sql: Sql, days: number) {

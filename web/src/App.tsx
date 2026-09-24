@@ -198,9 +198,11 @@ export default function App({ seo }: AppProps = {}) {
     body['route'] = route.id;
     body['mode'] = route.kind === 'plan' ? 'plan' : 'dex';
     if (route.id === 'home') body['home'] = 'true'; else delete body['home'];
+    // 루트 화면은 세지 않는다 — 운영자 자신이 보는 것이라 이용 현황이 아니고, 있다는 것도 남기지 않는다
+    if ('root' in route && route.root) return;
     trackPageView(route.title ?? route.nav ?? route.id);
     track('route_view', { route: route.id });
-    // 우리 수집기에도 화면 id 하나 — 방침 시행일(10/2) 전에는 안 나간다 (lib/collect.ts)
+    // 우리 수집기에도 화면 id 하나 (lib/collect.ts)
     collectView(route.id);
   }, [route]);
 
@@ -208,6 +210,8 @@ export default function App({ seo }: AppProps = {}) {
   const asHome = route.id === 'home' || route.id === 'mon';
   const isShell = route.kind === 'shell' || route.kind === 'plan' || asHome;
   const home = asHome;
+  // 루트 화면을 루트가 아닌 사람이 열면 제목줄도 안 세운다 — 제목이 '운영 통계' 라고 말해 버린다
+  const hideHead = useLockReason(route.id) === 'root';
   // **상세일 때 머리줄은 홈이 아니다.** 돌아갈 곳이 있으니 뒤로가기를 주고,
   // 그 자리에 로고까지 두면 같은 줄이 "여기가 처음" 과 "돌아갈 수 있다" 를 같이 말하게 된다.
   //
@@ -235,7 +239,7 @@ export default function App({ seo }: AppProps = {}) {
       <AppNav now={route.id} onConsent={() => setConsentOpen(true)} />
 
       {/* 홈에는 화면 머리가 없다 — 제목이 히어로 안에 있다 (v3 syncAppShell 과 같은 규칙) */}
-      {home ? null : <PageHead route={route} actionsRef={setActionsEl} />}
+      {home || hideHead ? null : <PageHead route={route} actionsRef={setActionsEl} />}
 
       {/* **자리(슬롯)는 기다림 밖에 둔다.** 안에 두면 데이터를 기다리는 동안 자리가 사라지고,
           그 자리를 붙들던 state 가 null 이 되어 다시 그리고 → 또 기다리고 를 끝없이 돈다.
