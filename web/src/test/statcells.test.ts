@@ -35,3 +35,13 @@ describe('그래프 눈금 · 날짜', () => {
     expect(dayLabel('oops')).toBe(DASH);
   });
 });
+
+describe('9/14부터 — 한국 날짜로 오늘까지 센다', () => {
+  it('오늘을 넣어 세고, 한국 자정에 하루가 는다', async () => {
+    const { daysSinceOpened } = await import('../screens/AdminStats');
+    expect(daysSinceOpened(Date.parse('2026-09-14T00:00:00+09:00'))).toBe(1);
+    expect(daysSinceOpened(Date.parse('2026-09-24T23:59:00+09:00'))).toBe(11);
+    // UTC 로는 아직 9/24 지만 한국은 9/25
+    expect(daysSinceOpened(Date.parse('2026-09-24T15:30:00Z'))).toBe(12);
+  });
+});

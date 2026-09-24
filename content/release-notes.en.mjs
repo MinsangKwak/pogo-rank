@@ -15,8 +15,12 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 export const RELEASE_NOTES_EN = {
+  '2026-09-24 · v5.2.1': [
+    '**[Correction] Screen records start today (September 24)** — v5.2.0 below said October 2, but the operator decided to turn it on right away, so the date moved up. That entry now shows the new date. What is recorded and how to turn it off are unchanged',
+    '**You will be asked to agree once more at your next sign-in** — the privacy policy\'s effective date changed',
+  ],
   '2026-09-24 · v5.2.0': [
-    '**From October 2 we also record which screens you open** — only the screen name (such as Dex or D-MAX) is kept; the full address, search words and the Pokémon number on a detail page are never sent. It is stored with the same random visitor ID and country code as search records, no IP address is stored, and it is never linked to your account. See sections 2, 3, 4, 5, 7 and 8 of the privacy policy',
+    '**From September 24 we also record which screens you open** (first announced as October 2 — see the v5.2.1 correction above) — only the screen name (such as Dex or D-MAX) is kept; the full address, search words and the Pokémon number on a detail page are never sent. It is stored with the same random visitor ID and country code as search records, no IP address is stored, and it is never linked to your account. See sections 2, 3, 4, 5, 7 and 8 of the privacy policy',
     '**Turning it off is unchanged** — choose "Turn off stats" under ☰ → Stats & storage and neither search nor screen records are sent',
     '**You will be asked to agree once more at your next sign-in** — the privacy policy changed because a collected item was added',
   ],
