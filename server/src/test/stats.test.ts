@@ -35,10 +35,11 @@ async function as(role: Role): Promise<{ authorization: string }> {
 }
 
 describe('기간 끝', () => {
-  it('7~90일 안으로 — 기본 30', () => {
+  it('7~400일 안으로 — 기본 30', () => {
     expect(clampDays(undefined)).toBe(30);
     expect(clampDays(1)).toBe(7);
-    expect(clampDays(365)).toBe(90);
+    expect(clampDays(365)).toBe(365);
+    expect(clampDays(1000)).toBe(400);
     expect(clampDays(Number.NaN)).toBe(30);
   });
 });
@@ -107,9 +108,10 @@ describe.skipIf(!url)('GET /v1/admin/stats', () => {
     expect(res.body).not.toMatch(/example\.test|이름-|aaaaaaaa|bbbbbbbb/);
   });
 
-  it('기간은 7~90일 — 밖이면 400', async () => {
+  it('기간은 7~400일 — 밖이면 400', async () => {
     const headers = await as('root');
     expect((await app.inject({ method: 'GET', url: '/v1/admin/stats?days=3', headers })).statusCode).toBe(400);
-    expect((await app.inject({ method: 'GET', url: '/v1/admin/stats?days=365', headers })).statusCode).toBe(400);
+    expect((await app.inject({ method: 'GET', url: '/v1/admin/stats?days=401', headers })).statusCode).toBe(400);
+    expect((await app.inject({ method: 'GET', url: '/v1/admin/stats?days=365', headers })).statusCode).toBe(200);
   });
 });

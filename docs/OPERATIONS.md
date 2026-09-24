@@ -764,14 +764,14 @@ python3 scripts/firestore_restore.py --apply    # 실제 쓰기
 
 ## 20. 운영 통계 화면 (2026-09-24 v5.2.0)
 
-**루트 관리자만 여는 `/admin/stats`.** 설정 → 🔑 가입 승인 팝업의 [📊 운영 통계 보기] 로 들어온다. 메뉴 · 사이트맵에 없고 검색에 안 잡힌다(noindex).
+**루트 관리자만 여는 `/admin/stats`.** 설정 창의 [📊 운영 통계] (또는 🔑 가입 승인 팝업의 [📊 운영 통계 보기]) 로 들어온다. 메뉴 · 사이트맵에 없고 검색에 안 잡힌다(noindex).
 서버 `GET /v1/admin/stats` 가 루트 토큰만 받고, **모아 센 값만** 준다(이메일 · 이름 · 방문자 ID 없음).
 
 | 칸 | 원본 | 켜는 데 필요한 것 |
 | --- | --- | --- |
 | 가입 · 로그인 · ★ | Neon `users` · `sessions` · `favorites` | 없음 |
 | 검색 | Neon `events` (name=search, 운영 채널) | 없음 |
-| 화면별 페이지뷰 | Neon `events` (name=view) — **2026-10-02 부터** (방침 개정 시행일, 그 전 것은 서버가 버린다) | 없음 |
+| 화면별 페이지뷰 | Neon `events` (name=view) — **2026-09-24 부터** (v5.2.1 바로 시행) | 없음 |
 | 방문자 · 페이지뷰 (GA4) | GA4 Data API | 아래 셋 |
 
 ### GA4 칸 켜기 — 한 번만
@@ -784,5 +784,8 @@ python3 scripts/firestore_restore.py --apply    # 실제 쓰기
 안 되면 화면의 GA4 칸이 이유를 적는다 — '뷰어 권한이 없습니다' 면 1, 'Data API 가 꺼져 있습니다' 면 2, 'GA4_PROPERTY_ID 가 설정되지 않았습니다' 면 3.
 성공한 값은 10분, 실패는 1분 동안 기억한다 — 권한을 고친 뒤 1분 안에 다시 받으면 이전 오류가 남아 있을 수 있다.
 
-**페이지뷰 시행일을 옮길 때는 넷을 같이** — `server/src/lib/contract.ts` · `web/src/lib/collect.ts` 의 `VIEW_COLLECT_FROM`, 방침(`web/src/screens/Legal.tsx`) · `legalMeta.ts`, 맨 위 패치노트.
-`web/src/test/viewgate.test.ts` 가 넷을 견주고, 패치노트가 시행일보다 7일 이상 먼저인지도 본다.
+**페이지뷰는 시행일 문 없이 바로 센다** (v5.2.1, 주인 결정). 방침(`Legal.tsx`) · `legalMeta.ts` 의 날짜가 9/24 이고,
+`web/src/test/viewgate.test.ts` 가 서버 · 브라우저에 날짜 문이 다시 생기지 않았는지와 방침 날짜 · 본문 · 정정 공지가 맞는지 본다.
+
+**루트가 아니면 없는 화면** — 로그인 전 · 위임 관리자 모두 🧭 '없는 화면이에요' 를 본다. 제목줄 · 정적 머리 제목도 '운영 통계' 를 말하지 않고,
+루트 화면은 GA4 · 우리 수집에 안 센다. 루트는 설정 창 [📊 운영 통계] 로 들어온다. 기본 기간은 '9/14부터'(서버 긴 끝 400일).

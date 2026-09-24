@@ -31,7 +31,7 @@ export type LockReason = '' | 'login' | 'beta' | 'root';
 const LOCK_TITLE: Record<Exclude<LockReason, ''>, string> = {
   login: '로그인하면 열려요',
   beta: '실험 기능이에요',
-  root: '루트 관리자만 볼 수 있어요',
+  root: '없는 화면이에요',
 };
 
 export function useLockReason(routeId: string): LockReason {
@@ -42,10 +42,11 @@ export function useLockReason(routeId: string): LockReason {
   const route = routeById(routeId);
   if (!route || !enabled) return '';
   if (status === 'loading') return '';
+  // 루트 화면은 로그인 전에도 '없는 화면' — '로그인하면 열려요' 라고 하면 있다는 것을 알려 주게 된다 (2026-09-24 주인 요청)
+  // 화면은 막는 척일 뿐 — 실제 차단은 서버가 한다(/v1/admin/stats 루트 전용). 막힌 요청을 보내지 않으려고 여기서도 멈춘다
+  if ('root' in route && route.root && (status !== 'ok' || role !== 'root')) return 'root';
   if (route.locked && status !== 'ok') return 'login';
   if (route.beta && !beta) return 'beta';
-  // 화면은 막는 척일 뿐 — 실제 차단은 서버가 한다(/v1/admin/stats 루트 전용). 막힌 요청을 보내지 않으려고 여기서도 멈춘다
-  if ('root' in route && route.root && role !== 'root') return 'root';
   return '';
 }
 

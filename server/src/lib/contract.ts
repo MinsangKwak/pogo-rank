@@ -10,19 +10,10 @@
 'use strict';
 
 /**
- * 검색어(1판) · 페이지뷰(2026-09-24).
+ * 검색어(1판) · 페이지뷰(2026-09-24 부터 — 주인 결정으로 바로 시행, 방침 · 패치노트 같은 날).
  * view 는 **화면 id 하나**만 받는다(surface) — 주소 · 질의 · 상세의 포켓몬 번호는 안 받는다.
  */
 export const EVENT_NAMES = ['search', 'view'] as const;
-
-/**
- * 페이지뷰를 저장하기 시작하는 때 — **방침 개정 시행일**이다.
- * 수집 항목이 늘면 시행 7일 전에 패치노트로 알린다(방침 10번 · CLAUDE.md §3). 고지는 2026-09-24 에
- * 운영 패치노트로 나가고, 그 전에 온 view 는 **서버가 버린다** — 번들은 누구나 고쳐 보낼 수 있어서
- * 날짜 판정을 브라우저에만 맡기면 없는 것과 같다. 날짜를 옮기면 프런트(web/src/lib/collect.ts) ·
- * 방침(web/src/screens/Legal.tsx) · 패치노트도 같이 — web 의 viewgate 검사가 셋을 견준다
- */
-export const VIEW_COLLECT_FROM = '2026-10-02T00:00:00+09:00';
 
 /** 화면 id 모양 — web/src/routes.ts 의 id 와 같은 꼴 */
 export const ROUTE_ID = /^[a-z0-9-]{1,40}$/;

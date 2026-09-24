@@ -28,13 +28,6 @@ const VISITOR_KEY = 'pogo_visitor';   // v3 부터 이어 온 pogo_ 접두사 (C
 
 interface Queued { name: 'search' | 'view'; term?: string; surface?: string; ts: string }
 
-/**
- * 페이지뷰를 보내기 시작하는 때 — **개인정보처리방침 개정 시행일**이다 (2026-09-24 고지, 7일 뒤).
- * server/src/lib/contract.ts VIEW_COLLECT_FROM 과 **같은 값**이다. 서버도 그 전의 것은 버린다 —
- * 여기는 보내지 않아서 요청을 아끼는 쪽이다. 방침 본문(screens/Legal.tsx)과 패치노트의 날짜도 같아야 한다
- * (src/test/viewgate.test.ts 가 넷을 견준다)
- */
-export const VIEW_COLLECT_FROM = '2026-10-02T00:00:00+09:00';
 const ROUTE_ID = /^[a-z0-9-]{1,40}$/;
 
 let endpoint = '';
@@ -126,10 +119,9 @@ let lastView = '';
 
 /**
  * 화면 하나를 연 것 — **화면 id 하나만** 보낸다(주소 · 질의 · 상세의 포켓몬 번호는 안 보낸다).
- * 시행일 전 · 통계를 끈 사람 · 주소 없는 빌드에서는 아무것도 안 나간다. 같은 화면을 연달아 열면 한 번만 센다
+ * 통계를 끈 사람 · 주소 없는 빌드에서는 아무것도 안 나간다. 같은 화면을 연달아 열면 한 번만 센다
  */
 export function collectView(routeId: string, now: number = Date.now()): void {
-  if (now < Date.parse(VIEW_COLLECT_FROM)) return;
   if (!ROUTE_ID.test(routeId) || routeId === lastView) return;
   lastView = routeId;
   if (!endpoint || !analyticsWanted()) return;

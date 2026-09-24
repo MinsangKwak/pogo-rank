@@ -37,12 +37,14 @@ export default function LockCard({ reason = 'login' }: { reason?: CardReason }) 
       </section>
     );
   }
+  // 루트 화면 — 루트가 아니면 **없는 화면**으로 보인다. 잠금 카드는 '여기 뭔가 있다' 를 알려 준다 (2026-09-24 주인 요청)
   if (reason === 'root') {
     return (
       <section className="plan__lock">
-        <span className="plan__lock-ico" aria-hidden="true">🔑</span>
-        <h2>루트 관리자만 볼 수 있어요</h2>
-        <p>운영 숫자라 위임 관리자와도 나누지 않아요.</p>
+        <span className="plan__lock-ico" aria-hidden="true">🧭</span>
+        <h2>없는 화면이에요</h2>
+        <p>주소를 다시 확인해 주세요.</p>
+        <a className="drawer__item plan__lock-go" href="/">🏠 처음으로</a>
       </section>
     );
   }
