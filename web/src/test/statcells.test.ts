@@ -44,4 +44,20 @@ describe('9/14부터 — 한국 날짜로 오늘까지 센다', () => {
     // UTC 로는 아직 9/24 지만 한국은 9/25
     expect(daysSinceOpened(Date.parse('2026-09-24T15:30:00Z'))).toBe(12);
   });
+
+  it('서버가 받는 7~400일 밖으로 안 나간다 — 2027-10 에도 화면이 안 선다', async () => {
+    const { sinceDays } = await import('../screens/AdminStats');
+    expect(sinceDays(Date.parse('2026-09-15T12:00:00+09:00'))).toBe(7);
+    expect(sinceDays(Date.parse('2027-10-19T12:00:00+09:00'))).toBe(400);
+    expect(sinceDays(Date.parse('2030-01-01T12:00:00+09:00'))).toBe(400);
+  });
+
+  it('화면의 끝이 서버의 끝과 같다 — 한쪽만 바꾸면 화면이 400 을 받는다', async () => {
+    const { readFileSync } = await import('node:fs');
+    const server = readFileSync(new URL('../../../server/src/lib/stats.ts', import.meta.url), 'utf8');
+    const screen = readFileSync(new URL('../screens/AdminStats.tsx', import.meta.url), 'utf8');
+    const [, min, max] = /minDays: (\d+), maxDays: (\d+)/.exec(server) ?? [];
+    expect(screen).toContain(`const DAYS_MIN = ${min};`);
+    expect(screen).toContain(`const DAYS_MAX = ${max};`);
+  });
 });

@@ -92,6 +92,21 @@ describe('운영 통계는 루트만 (2026-09-24)', () => {
     expect(text).not.toContain('로그인하면 열려요');
   });
 
+  it('확인 중 · 갱신 실패에는 이름을 드러내지 않는다 — 루트로 확인된 뒤에만', async () => {
+    const { useRootShown } = await import('../lib/useLocked');
+    const shown = () => {
+      let value = true;
+      render(createElement(() => { value = useRootShown('admin-stats'); return null; }));
+      return value;
+    };
+    for (const [status, role] of [['loading', null], ['loading', 'root'], ['ok', 'admin'], ['anon', null]] as const) {
+      useAuthStore.setState({ enabled: true, status, beta: true, ready: true, role });
+      expect(shown()).toBe(false);
+    }
+    useAuthStore.setState({ enabled: true, status: 'ok', beta: true, ready: true, role: 'root' });
+    expect(shown()).toBe(true);
+  });
+
   it('정적 HTML 머리에도 이름이 없다', async () => {
     const { default: RouteIntro } = await import('../components/RouteIntro');
     const text = render(createElement(RouteIntro, { route: stats })).container.innerHTML;

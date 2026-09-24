@@ -20,7 +20,7 @@ import { AppBar, AppNav, Drawer, Footer, PageHead, ToTop } from './components/Sh
 import { SlotProvider } from './components/Slots';
 import { useRoute } from './lib/useRoute';
 import type { MonPick, OpenMon } from './lib/mon';
-import { useLockReason, useLockChecking } from './lib/useLocked';
+import { useLockReason, useLockChecking, useRootShown } from './lib/useLocked';
 import { takeForward } from './lib/nav';
 import { trackPageView, track } from './lib/track';
 import { collectView } from './lib/collect';
@@ -210,8 +210,8 @@ export default function App({ seo }: AppProps = {}) {
   const asHome = route.id === 'home' || route.id === 'mon';
   const isShell = route.kind === 'shell' || route.kind === 'plan' || asHome;
   const home = asHome;
-  // 루트 화면을 루트가 아닌 사람이 열면 제목줄도 안 세운다 — 제목이 '운영 통계' 라고 말해 버린다
-  const hideHead = useLockReason(route.id) === 'root';
+  // 루트 화면은 루트로 확인되기 전까지 제목줄을 안 세운다 — 제목이 '운영 통계' 라고 말해 버린다 (확인 중 포함)
+  const hideHead = !useRootShown(route.id);
   // **상세일 때 머리줄은 홈이 아니다.** 돌아갈 곳이 있으니 뒤로가기를 주고,
   // 그 자리에 로고까지 두면 같은 줄이 "여기가 처음" 과 "돌아갈 수 있다" 를 같이 말하게 된다.
   //
