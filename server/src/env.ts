@@ -35,6 +35,11 @@ export interface Env {
   nodeEnv: 'production' | 'development' | 'test';
   /** 로그인·권한 (v5 Phase 4) */
   auth: AuthEnv;
+  /**
+   * 관리자 통계 화면이 방문자 · 페이지뷰를 읽는 GA4 속성 ID (숫자). 비면 GA 칸만 '꺼짐' 으로 선다 —
+   * 서버는 없어도 뜬다. 측정 ID(G-…)가 아니다 (lib/ga4.ts)
+   */
+  ga4PropertyId: string;
 }
 
 export interface AuthEnv {
@@ -166,5 +171,6 @@ export function readEnv(source: NodeJS.ProcessEnv = process.env): Env {
     rateLimitPerMinute: positiveInt(source, 'RATE_LIMIT_PER_MINUTE', 60),
     nodeEnv,
     auth: authOf(source, nodeEnv, allowedOrigins),
+    ga4PropertyId: (source['GA4_PROPERTY_ID'] ?? '').trim(),
   };
 }

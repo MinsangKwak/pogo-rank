@@ -34,7 +34,7 @@ describe('OpenAPI 설명서', () => {
     expect(Object.keys(spec.paths).sort()).toEqual(
       [
         '/health',
-        '/v1/admin/backups', '/v1/admin/rollup',
+        '/v1/admin/backups', '/v1/admin/rollup', '/v1/admin/stats',
         // v5 Phase 4 — 로그인
         '/v1/auth/google/callback', '/v1/auth/google/start',
         '/v1/auth/logout', '/v1/auth/logout-all', '/v1/auth/refresh', '/v1/auth/sessions',

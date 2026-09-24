@@ -67,8 +67,11 @@ export async function generateMetadata(
   if (!found) return {};
   const title = found.route.title ?? found.route.nav ?? 'moncamp';
   const description = routeDesc(found.route.id);
+  // 루트 화면은 검색에 안 올린다 — 사이트맵에도 없다(잠긴 화면)
+  const hidden = 'root' in found.route && found.route.root;
   return {
     title: `${title} | moncamp`,
+    ...(hidden ? { robots: { index: false, follow: false } } : {}),
     ...(description ? { description } : {}),
     alternates: { canonical: `/${found.route.path}` },
     openGraph: {

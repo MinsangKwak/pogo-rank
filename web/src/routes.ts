@@ -25,6 +25,7 @@ export interface RouteDef {
   title?: string;
   locked?: boolean;        // 로그인·승인이 있어야 열린다
   beta?: boolean;          // 실험 기능 — 승인 위에 beta 깃발이 하나 더 있어야 열린다
+  root?: boolean;          // 루트 관리자만 (2026-09-24 운영 통계) — 메뉴 · 사이트맵에 안 오르고 검색에 안 잡힌다
   legacy?: string[];
   actions?: boolean;       // 머리 오른쪽에 단추(보기 전환·도구)가 선다 — 좁은 화면은 그 줄 높이를 미리 비워 둔다 (CLS)
 }
@@ -54,6 +55,8 @@ export const ROUTES = [
   { id: 'privacy', path: 'privacy', kind: 'page', title: '개인정보처리방침', icon: '🔒' },
   { id: 'terms', path: 'terms', kind: 'page', title: '이용약관', icon: '📜' },
   { id: 'settings', path: 'settings', kind: 'page', title: '설정', icon: '🛠' },
+  // 루트만 — 설정의 관리 칸에서 단추 하나로 들어온다 (components/AdminPanel.tsx)
+  { id: 'admin-stats', path: 'admin/stats', kind: 'page', title: '운영 통계', icon: '📊', locked: true, root: true },
   { id: 'mon', path: 'mon', kind: 'detail' },
 ] as const satisfies readonly RouteDef[];
 

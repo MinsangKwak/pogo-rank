@@ -2,6 +2,7 @@
 'use strict';
 import { describe, it, expect } from 'vitest';
 import { toRows } from '../lib/normalize.ts';
+import { VIEW_COLLECT_FROM } from '../lib/contract.ts';
 
 const now = new Date('2026-09-21T12:00:00Z');
 
@@ -57,5 +58,32 @@ describe('줄 만들기', () => {
     expect(Object.keys(row ?? {})).toEqual(
       ['name', 'visitor', 'term', 'surface', 'country', 'channel', 'occurred_at'],
     );
+  });
+});
+
+describe('페이지뷰 (2026-09-24) — 방침 시행일 전에는 한 건도 안 남긴다', () => {
+  const visitor = 'v'.repeat(32);
+  const before = new Date(Date.parse(VIEW_COLLECT_FROM) - 1000);
+  const after = new Date(Date.parse(VIEW_COLLECT_FROM) + 1000);
+
+  it('시행일 전에 온 view 는 버린다 — 브라우저가 날짜를 속여도 서버 시각으로 판정한다', () => {
+    const rows = toRows({ visitor, events: [{ name: 'view', surface: 'dex', ts: after.toISOString() }] }, 'KR', before);
+    expect(rows).toEqual([]);
+  });
+
+  it('시행일 뒤에는 화면 id 하나만 남긴다 — 글은 안 남긴다', () => {
+    const [row] = toRows({ visitor, events: [{ name: 'view', surface: 'dmax', term: '몰래 실은 글' }] }, 'KR', after);
+    expect(row).toMatchObject({ name: 'view', surface: 'dmax', term: null, country: 'KR' });
+  });
+
+  it('화면 id 꼴이 아니면 버린다 — 주소 · 질의가 섞여 들어오지 못한다', () => {
+    for (const surface of ['/mon/25', 'dex?b=1', 'Dex', 'a b']) {
+      expect(toRows({ visitor, events: [{ name: 'view', surface }] }, 'KR', after)).toEqual([]);
+    }
+    expect(toRows({ visitor, events: [{ name: 'view' }] }, 'KR', after)).toEqual([]);
+  });
+
+  it('검색은 시행일과 무관하게 그대로다', () => {
+    expect(toRows({ visitor, events: [{ name: 'search', term: '뮤츠' }] }, 'KR', before)).toHaveLength(1);
   });
 });
