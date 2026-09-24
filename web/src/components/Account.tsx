@@ -96,6 +96,8 @@ export default function Account({ onGo }: { onGo: () => void }) {
               {adminRoot ? '🔑 가입 승인' : '👥 유저 관리'}
             </button>
           ) : null}
+          {/* 운영 통계는 루트에게만 길이 있다 — 메뉴 · 사이트맵에는 없다 */}
+          {adminRoot ? <a className="drawer__item" href={routeHref('admin-stats')} onClick={onGo}>📊 운영 통계</a> : null}
           <button className="drawer__item" onClick={() => void signOutNow()}>로그아웃</button>
           {admin ? null : <button className="drawer__item account__danger" onClick={() => void remove(setMessage)}>계정 삭제</button>}
         </div>

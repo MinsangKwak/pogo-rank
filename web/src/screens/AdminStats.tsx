@@ -2,11 +2,12 @@
 // screens/AdminStats.tsx — 운영 통계 (루트만, 2026-09-24)
 //
 // **한 화면에 세 원본.** 원본마다 세는 법이 달라 숫자를 섞지 않는다 — 칸마다 어디서 왔는지 적는다.
-//   우리 DB   가입 · 로그인 · ★ · 검색(v4.7.0~) · 페이지뷰(2026-10-02~)   — Neon, 서버가 모아 센 값
+//   우리 DB   가입 · 로그인 · ★ · 검색(v4.7.0~) · 페이지뷰(2026-09-24~)   — Neon, 서버가 모아 센 값
 //   GA4       방문자 · 페이지뷰                                             — 서버가 Data API 로 받아 준다
 // 방문자 수는 두 원본이 다를 수밖에 없다 — GA4 는 쿠키 기준이고 '통계 끄기' 면 둘 다 안 센다.
 //
-// **기간 하나가 전부를 정한다.** 7 · 30 · 90일 — 위 한 줄의 고름이 아래 모든 칸에 같이 걸려야 숫자끼리 맞는다.
+// **기간 하나가 전부를 정한다.** 9/14부터 · 7 · 30 · 90일 — 위 한 줄의 고름이 아래 모든 칸에 같이 걸려야 숫자끼리 맞는다.
+// 기본은 '9/14부터' — 서비스를 연 날부터 오늘까지 한 번에 본다 (2026-09-24 주인 요청).
 // 다시 받는 동안은 앞 숫자를 흐리게 둔다 — 빈 틀로 깜빡이지 않는다.
 //
 // 루트 판정은 화면(lib/useLocked 'root')과 서버(/v1/admin/stats) 둘 다 한다. 화면 쪽은 막힌 요청을 안 보내려는 것이다.
@@ -18,9 +19,18 @@ import { routeById } from '../routes';
 import { count, percent, DASH } from '../lib/cell';
 import { Segmented, Callout } from '../ds';
 import { DayColumns, RankTable, type RankRow } from '../components/StatChart';
-import { VIEW_COLLECT_FROM } from '../lib/collect';
+
+// 서비스를 연 날 (한국 날짜) — '9/14부터' 는 그날부터 오늘까지의 일수로 바꿔 부른다
+const OPENED = '2026-09-14';
+
+/** 한국 날짜로 OPENED 부터 오늘까지 — 오늘을 넣어 센다 */
+export function daysSinceOpened(now: number = Date.now()): number {
+  const today = new Date(now + 9 * 60 * 60 * 1000).toISOString().slice(0, 10);
+  return Math.round((Date.parse(today) - Date.parse(OPENED)) / 86_400_000) + 1;
+}
 
 const PERIODS = [
+  { id: 'since', label: '9/14부터' },
   { id: '7', label: '7일' },
   { id: '30', label: '30일' },
   { id: '90', label: '90일' },
@@ -56,7 +66,7 @@ const ranked = (rows: readonly StatRanked[], label: (key: string) => string): Ra
   rows.map((row) => ({ key: row.key, label: label(row.key), value: row.hits, sub: row.visitors }));
 
 export default function AdminStats() {
-  const [days, setDays] = useState('30');
+  const [days, setDays] = useState('since');
   const [stats, setStats] = useState<Stats | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
@@ -66,7 +76,8 @@ export default function AdminStats() {
     setBusy(true);
     setError('');
     try {
-      setStats(await serverApi.adminStats(Number(period)));
+      // 서버는 7일보다 짧게 못 센다 — 연 지 7일이 안 됐을 때도 막히지 않게
+      setStats(await serverApi.adminStats(period === 'since' ? Math.max(7, daysSinceOpened()) : Number(period)));
     } catch (caught) {
       setError(caught instanceof ApiError && caught.status === 403 ? '루트 관리자만 볼 수 있어요' : '통계를 받지 못했어요. 잠시 뒤 다시 눌러 주세요');
     } finally {
@@ -81,9 +92,6 @@ export default function AdminStats() {
     const route = routeById(id);
     return route ? (route.title ?? route.nav ?? id) : id;
   };
-  const viewsLive = Date.now() >= Date.parse(VIEW_COLLECT_FROM);
-  // 시행일은 한국 날짜 그대로 읽는다 — Date 로 바꾸면 보는 사람의 시간대로 하루 밀린다(UTC 에서 10/1 로 보였다)
-  const [, fromMonth, fromDay] = VIEW_COLLECT_FROM.slice(0, 10).split('-').map(Number);
 
   if (!stats) {
     return (
@@ -105,7 +113,7 @@ export default function AdminStats() {
       {error ? <Callout tone="warn" title={error} /> : null}
 
       <section className="stat-sec">
-        <h2 className="stat-sec__title">한눈에 <small>{`최근 ${stats.days}일`}</small></h2>
+        <h2 className="stat-sec__title">한눈에 <small>{days === 'since' ? `9/14부터 ${stats.days}일` : `최근 ${stats.days}일`}</small></h2>
         <div className="stat-tiles">
           <Tile label="가입한 사람" value={count(users.total)} sub={`승인 대기 ${count(users.pending)} · 실험 기능 ${count(users.beta)}`} />
           <Tile label="7일 안에 로그인" value={count(users.active7d)} sub={`오늘 ${count(users.active1d)} · 30일 ${count(users.active30d)}`} />
@@ -144,22 +152,14 @@ export default function AdminStats() {
 
       <section className="stat-sec">
         <h2 className="stat-sec__title">화면별 페이지뷰 <small>moncamp 수집</small></h2>
-        {viewsLive ? (
-          <>
-            <DayColumns title="페이지뷰" unit="회" rows={views.perDay.map((row) => ({ day: row.day, value: row.hits }))}
-              note="화면 id 만 셉니다 — 주소 · 검색어 · 상세의 포켓몬 번호는 안 받아요" />
-            <div className="stat-grid">
-              <RankTable title="많이 연 화면" valueHead="페이지뷰" subHead="방문자" empty="아직 없어요"
-                rows={ranked(views.top, routeName)} />
-              <RankTable title="나라" valueHead="페이지뷰" subHead="방문자" empty="아직 없어요"
-                rows={ranked(views.countries, countryName)} />
-            </div>
-          </>
-        ) : (
-          <Callout tone="info" title={`${fromMonth}월 ${fromDay}일부터 셉니다`}>
-            <p>개인정보처리방침 개정 시행일이에요. 수집 항목이 늘면 시행 7일 전에 알리기로 한 약속 때문에, 그 전에 온 것은 서버가 버려요.</p>
-          </Callout>
-        )}
+        <DayColumns title="페이지뷰" unit="회" rows={views.perDay.map((row) => ({ day: row.day, value: row.hits }))}
+          note="9월 24일부터 셉니다 · 화면 id 만 — 주소 · 검색어 · 상세의 포켓몬 번호는 안 받아요" />
+        <div className="stat-grid">
+          <RankTable title="많이 연 화면" valueHead="페이지뷰" subHead="방문자" empty="아직 없어요"
+            rows={ranked(views.top, routeName)} />
+          <RankTable title="나라" valueHead="페이지뷰" subHead="방문자" empty="아직 없어요"
+            rows={ranked(views.countries, countryName)} />
+        </div>
       </section>
 
       <section className="stat-sec">
