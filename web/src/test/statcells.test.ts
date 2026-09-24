@@ -52,6 +52,12 @@ describe('9/14부터 — 한국 날짜로 오늘까지 센다', () => {
     expect(sinceDays(Date.parse('2030-01-01T12:00:00+09:00'))).toBe(400);
   });
 
+  it('앞이 잘리면 이름도 바꾼다 — 잘린 기간을 9/14부터라 부르지 않는다', async () => {
+    const { sinceLabel } = await import('../screens/AdminStats');
+    expect(sinceLabel(Date.parse('2027-10-18T12:00:00+09:00'))).toBe('9/14부터');
+    expect(sinceLabel(Date.parse('2027-10-19T12:00:00+09:00'))).toBe('최근 400일');
+  });
+
   it('화면의 끝이 서버의 끝과 같다 — 한쪽만 바꾸면 화면이 400 을 받는다', async () => {
     const { readFileSync } = await import('node:fs');
     const server = readFileSync(new URL('../../../server/src/lib/stats.ts', import.meta.url), 'utf8');
