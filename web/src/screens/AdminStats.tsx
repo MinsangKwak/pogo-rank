@@ -149,6 +149,12 @@ export default function AdminStats() {
         <h2 className="stat-sec__title">방문 <small>GA4</small></h2>
         {ga4.status === 'ok' ? (
           <>
+            {/* 받기는 됐는데 기간 전체가 0 — 권한은 있으나 사이트가 쓰지 않는 속성일 때다 (2026-09-24 Firebase 속성으로 겪었다) */}
+            {ga4.views === 0 ? (
+              <Callout tone="warn" title="GA4 속성에 이 기간 기록이 없어요">
+                <p>권한은 있지만 비어 있는 속성이에요. 저장소 변수 GA4_PROPERTY_ID 가 사이트 측정 ID(G-…)를 가진 속성의 ID 인지 확인해 주세요.</p>
+              </Callout>
+            ) : null}
             <div className="stat-grid">
               <DayColumns title="방문자" unit="명" summable={false} rows={ga4.perDay.map((row) => ({ day: row.day, value: row.users }))} />
               <DayColumns title="페이지뷰" unit="회" rows={ga4.perDay.map((row) => ({ day: row.day, value: row.views }))} />
