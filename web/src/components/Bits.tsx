@@ -298,7 +298,7 @@ export function ToolBtn({ label, on = false, onClick }: {
 }) {
   return (
     <button type="button" className="tool-btn js-head-action" aria-pressed={on} onClick={onClick}>
-      <PxLabel label={label} />
+      <PxLabel label={label} textClass="tool-btn__text" />
     </button>
   );
 }
@@ -315,7 +315,7 @@ export function ViewToggle({ view, onToggle, extraClass = 'js-head-action' }: {
       onClick={onToggle}>
       {/* 아이콘은 **지금 보기**, 글자는 **누르면 될 보기** — v3 layoutToggle 과 같은 짝이다 */}
       <PxIcon emoji={view === 'grid' ? '⊞' : '▤'} />
-      <span className="view-toggle__text">{next}로 보기</span>
+      <span className="view-toggle__text">{view === 'grid' ? '리스트로 보기' : '그리드로 보기'}</span>
     </button>
   );
 }

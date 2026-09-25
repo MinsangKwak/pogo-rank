@@ -28,4 +28,8 @@ jobs:
     uses: ./.github/workflows/dev-pipeline.yml
     with:
       attach_domain: true
+      # **언제나 dev 를 굽는다.** 예약 실행은 기본 브랜치(main)에서 돌아 checkout 도 main 이 된다 —
+      # 2026-09-25 00:30 KST 예약이 dev.moncamp.kr 을 main 의 옛 화면으로 덮었다(새 디자인이 사라졌다).
+      # 이 줄은 main 에 들어가야 예약에도 먹힌다 — 예약은 main 의 이 파일로 돈다
+      ref: dev
     secrets: inherit

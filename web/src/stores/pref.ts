@@ -34,7 +34,8 @@ function readTheme(): Theme {
     const saved = localStorage.getItem(THEME_KEY);
     if (saved === 'system' || saved === 'light' || saved === 'dark') return saved;
   } catch { /* 저장 불가 환경(사생활 보호 모드) — 기본값으로 간다 */ }
-  return 'system';
+  // 고른 적이 없으면 어둡게 — 새 디자인(2026-09-25)의 기본 화면이 다크다. layout.tsx THEME_SCRIPT 와 같은 규칙
+  return 'dark';
 }
 
 /** 지금 실제로 어두운 화면인가 — '기기 설정' 은 기기에 물어봐야 안다 */

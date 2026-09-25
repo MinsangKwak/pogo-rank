@@ -32,11 +32,8 @@
    :not(#_):not(#__) 는 우선순위를 id 두 칸만큼 올리려는 장치다 (둘 다 이 서비스에 없는 id).
    두 칸이나 올리는 이유: 넓은 화면 규칙에 `body:is([data-route=…]) #content .row > .sprite` 처럼
    id 한 칸 + 클래스 셋짜리 선택자가 있어서, 한 칸만으로는 못 덮는다 (v3.7.1 에서 실제로 새어 나왔다) */
-html:not(#_):not(#__) body *,
-html:not(#_):not(#__) body *::before,
-html:not(#_):not(#__) body *::after {
-  border-radius: 0;
-}
+/* 2026-09-25 새 디자인(ae64ee8)에서 걷었다 — 새 디자인은 다시 둥글다. 이 뿌리 규칙을 남겨 두면 새 조각마다
+   `!important` 로 반경을 되살려야 했다(새 CSS 에 60군데). 반경은 이제 토큰(--r-panel · --r-box · --r-ctl · --r-tag)이 정한다 */
 /* 되돌리는 것 — 진짜 동그란 것들.
    프로필 사진은 사람 얼굴이고, 알림 점은 점이고, 바탕 몬스터볼은 공이다.
    타입 색 띠(.row__types i)는 되돌리지 않는다 — 카드 위를 가로지르는 띠라 각져야 테두리와 맞는다 */
@@ -48,21 +45,22 @@ html:not(#_):not(#__) .px-ball::after {
 }
 
 /* ── 2. 선을 세운다 ───────────────────────────────────────────────────────── */
+/* 2026-09-25 새 디자인 — 도트 두 칸(2px)에서 선 하나(1px)로. 새 카드(cinema/parts.css)와 같은 굵기다 */
 /* **상자**만 두껍게 한다. 목록 줄(.dex__row · .row-list > .row)은 줄 사이를 가르는
    밑줄 하나라 상자가 아니다 — 거기에 2px 사방 테두리를 두르면 목록이 격자무늬가 된다.
    줄이 카드가 되는 것은 격자 모드(.is-grid)뿐이라 그때만 세운다 */
 .filter-box, .modal__box, .detail-panel, .ivrank__card,
 .app-search, .boss__search, .seg, .view-toggle, input, select, textarea,
 .dex__list.is-grid .dex__row, .row-list:not(.is-list) > .row {
-  border-width: var(--px);
+  border-width: 1px;
   border-style: solid;
 }
 /* 목록 줄의 밑줄은 한 칸으로 또렷하게 */
-.dex__list:not(.is-grid) .dex__row, .row-list.is-list > .row { border-bottom-width: var(--px); }
+.dex__list:not(.is-grid) .dex__row, .row-list.is-list > .row { border-bottom-width: 1px; }
 /* 2026-09-12 v3.7.1 넓은 화면(1440~)의 티어표 카드는 `body:is([data-route=…]) #content .row` 로
    테두리를 1px 로 따로 적고 있었다 — 반경 때 겪은 것과 같은 자리다. 우선순위를 두 칸 올려 덮는다.
    한 서비스 안에서 카드 테두리가 두께가 둘이면 같은 종류로 안 읽힌다 */
-html:not(#_):not(#__) .row-list:not(.is-list) > .row { border-width: var(--px); border-style: solid; }
+html:not(#_):not(#__) .row-list:not(.is-list) > .row { border-width: 1px; border-style: solid; }
 
 /* ── 3. 그림자는 띄운다 ───────────────────────────────────────────────────── */
 /* v3.6.0 은 흐림 0 의 계단 그림자로 도트의 입체감을 만들었다. 카드는 반대다 —

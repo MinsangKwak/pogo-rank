@@ -83,7 +83,7 @@ export default function Planner() {
             <p className="empty">
               {favs.length
                 ? '즐겨찾기 포켓몬의 예정된 일정이 없어요. 새 일정이 등록되면 여기에 표시돼요.'
-                : '아직 담아 둔 포켓몬이 없어요. 도감에서 ★ 를 눌러 담아 보세요.'}
+                : '아직 즐겨찾기한 포켓몬이 없어요. 도감에서 ★를 눌러 추가해 보세요.'}
             </p>
           )}
       </Section>
@@ -114,7 +114,7 @@ export default function Planner() {
               })}
             </div>
           )
-          : <p className="empty">[도감에서 담을 포켓몬 찾기]를 눌러 즐겨찾기를 추가해 보세요.</p>}
+          : <p className="empty">도감에서 포켓몬을 찾아 즐겨찾기에 추가해 보세요.</p>}
       </Section>
     </>
   );

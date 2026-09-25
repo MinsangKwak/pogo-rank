@@ -127,18 +127,14 @@ function Timeline({ month, cats, items }: {
           ))}
         </div>
         {rows.map((item, index) => {
-          const late = (item.s - 1) / last > 0.6;
-          const label = late
-            ? { right: `${100 - (item.e / last) * 100}%`, maxWidth: `${(item.e / last) * 100}%` }
-            : { left: pct(item.s), maxWidth: `${100 - ((item.s - 1) / last) * 100}%` };
           return (
             <div key={index} className="timeline__row"
               title={`${m}/${item.s}${item.e !== item.s ? `–${item.e}` : ''} ${item.label}`}>
               <span className="timeline__bar"
                 style={{ left: pct(item.s), width: width(item.s, item.e), background: cats[item.cat]?.color }} />
               {/* 괄호 안 설명은 막대와 아래 목록이 이미 말해 준다 — 여기서는 떼고 title 로만 남긴다 */}
-              <span className={`timeline__label${late ? ' is-end' : ''}`} style={label}>
-                {item.label.split(' (')[0]}
+              <span className="timeline__label">
+                {`${m}/${item.s}${item.e !== item.s ? `–${item.e}` : ''} · ${item.label.split(' (')[0]}`}
               </span>
             </div>
           );
@@ -160,6 +156,7 @@ export default function Schedule() {
   const month = months[selectedMonth];
   const monthIndex = monthKeys.indexOf(selectedMonth);
   const cats = data.SCHEDULE_CATS;
+  const [view, setView] = useState<'list' | 'timeline'>('list');
   const [cat, setCat] = useState(() => {
     const saved = readCat();
     return saved === 'all' || cats[saved] ? saved : 'all';
@@ -206,8 +203,8 @@ export default function Schedule() {
       </div>
       {/* 달력과 ⚔️ 레이드 보스는 **다른 것**을 말한다 — 밝히지 않으면 두 화면이 서로 다른 보스를 가리켜 보인다 */}
       <p className="note schedule__bridge">
-        달력에서 <b>언제</b> 어떤 이벤트가 열리는지 확인해 보세요. <b>지금</b> 등장하는 보스는{' '}
-        <a href="/raids">⚔️ 레이드 보스</a>에서 확인할 수 있어요.
+        <span>날짜를 선택하면 그날의 이벤트를 확인할 수 있어요.</span>{' '}
+        <a href="/raids">현재 레이드 보스 보기</a>
       </p>
 
       <div>
@@ -236,20 +233,24 @@ export default function Schedule() {
         </div>
       </div>
 
-      <h2 className="page__sec">이벤트 기간 한눈에 보기</h2>
-      <div><Timeline month={month} cats={cats} items={items} /></div>
-
-      <h2 className="page__sec">{m}월 전체 일정</h2>
+      <div className="schedule__view-tabs" aria-label="일정 보기 방식">
+        <button type="button" aria-pressed={view === 'list'} onClick={() => setView('list')}>전체 일정</button>
+        <button type="button" aria-pressed={view === 'timeline'} onClick={() => setView('timeline')}>기간 한눈에 보기</button>
+      </div>
+      {view === 'timeline' ? <section aria-label="기간 한눈에 보기">
+        <div className="schedule__timeline-scroll"><Timeline month={month} cats={cats} items={items} /></div>
+      </section> : null}
+      <section hidden={view !== 'list'} aria-label={`${m}월 전체 일정`}>
       {/* 겉의 <div> 는 자리, 안의 <div> 가 목록이다 (v3 $list ← scheduleMonthList).
           한 겹으로 줄이면 `.schedule__page > p` 규칙이 걸려 문단 여백이 달라진다 */}
       <div>
-        <div>
+        <div className="schedule__catalog">
           {Object.entries(cats).map(([key, one]) => {
             if (cat !== 'all' && cat !== key) return null;
             const rows = month.items.filter((item) => item.cat === key);
             if (!rows.length) return null;
             return (
-              <div key={key} style={{ display: 'contents' }}>
+              <div key={key} className="schedule__category" style={{ ['--category-color' as string]: one.color }}>
                 <p className="schedule__sec">{one.name}</p>
                 {rows.map((item, index) => (
                   <p key={index} className="schedule__item">
@@ -263,6 +264,7 @@ export default function Schedule() {
           })}
         </div>
       </div>
+      </section>
     </div>
   );
 }
