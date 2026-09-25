@@ -13,7 +13,7 @@ html body #root :is(
   .upd__tools, .upd__card, .upd__sec, .schedule__cal, .schedule__timeline-scroll, .schedule__category,
   .settings__choice, .home-updates__item, .dex__row, .gameday__row, .row-list > .row,
   .filter-box, .boss__selected, .ivrank__picked, .row__why, .detail__card,
-  .drawer__panel .schedule, .drawer__panel .account
+  .drawer__panel .schedule, .drawer__panel .account, .portal-shortcut
 ) {
   border: 1px solid var(--line); border-radius: var(--r-box); background: var(--surface); color: var(--fg); box-shadow: none;
 }
@@ -27,13 +27,15 @@ html body #root :is(.priv__sec, .release__sec, .changes__sec, .plan__card, .solo
 /* 브랜드를 옅게 깐 판에서 카드 판으로 흐른다. 강조 띠(0.4rem)는 위 또는 왼쪽 — 자리가 정한다 */
 html body #root :is(
   .upd__cards--top .upd__card, .upd__head, .upd__sec--key, .finder__result, .plan__hero,
-  .schedule__month-nav, .schedule__detail
+  .schedule__month-nav, .schedule__detail, .portal-tank-link
 ) {
   border: 1px solid var(--line); border-radius: var(--r-box); color: var(--fg);
   background: linear-gradient(120deg, var(--selected), var(--surface) 65%);
 }
 html body #root :is(.upd__cards--top .upd__card, .upd__head) { border-top: 0.4rem solid var(--brand); }
-html body #root :is(.upd__sec--key, .schedule__detail) { border-left: 0.4rem solid var(--brand); }
+/* 왼쪽 띠는 위 묶음보다 무거워야 선다 — 묶음의 :is 가 가장 무거운 이름(.upd__cards--top .upd__card, 클래스 둘)을 따라가서 */
+/* 클래스 하나짜리 띠 규칙이 border 단축에 지워졌다 (주요 요약 · 고른 날에서 띠가 안 보였다). [class] 로 무게를 둘로 맞춘다 */
+html body #root :is(.upd__sec--key[class], .schedule__detail[class], .portal-tank-link[class]) { border-left: 0.4rem solid var(--brand); }
 
 /* ── 올린 칸 — 카드 안에서 한 단 더 올린 줄 ─────────────────────────────── */
 html body #root :is(.plan__fav-row, .favnews__main, .ivrank__pick, .detail__rec, .gameday__cp) {
@@ -45,14 +47,13 @@ html body #root :is(.upd__source, .upd__advice, .upd__quote-box, .upd__ba-before
 
 /* ── 단추 · 탭 — 누르는 것은 --tap 이상, 반경은 --r-ctl ─────────────────── */
 html body #root :is(
-  .uchip, .upd__back, .upd__more, .schedule__view-tabs button, .schedule__month-nav button,
-  .portal-tank-link, .tankpop-entry button
+  .uchip, .upd__back, .upd__more, .schedule__view-tabs button, .schedule__month-nav button, .tankpop-entry button
 ) {
   min-height: var(--tap); padding: 1.2rem 1.6rem; border: 1px solid var(--line); border-radius: var(--r-ctl);
   background: var(--surface); color: var(--fg); font: 600 1.4rem Pretendard, sans-serif; box-shadow: none; cursor: pointer;
 }
 @media (hover: hover) {
-  html body #root :is(.uchip, .upd__back, .upd__more, .schedule__view-tabs button, .schedule__month-nav button, .portal-tank-link, .tankpop-entry button):hover {
+  html body #root :is(.uchip, .upd__back, .upd__more, .schedule__view-tabs button, .schedule__month-nav button, .tankpop-entry button):hover {
     border-color: var(--brand); background: var(--hover);
   }
 }
@@ -66,7 +67,7 @@ html body #root :is(.screen-tabs, .controls, .finder__chips) button { border-rad
 /* 자리를 transform 으로 잡는 단추도 흐트러뜨리지 않는다. 배너 장은 밀어 넘기는 판이라 뺀다 */
 html body #root { -webkit-tap-highlight-color: transparent; }
 html body #root :is(a, button, summary, [role=button]):not(.max-poster, :disabled):active { scale: 0.97; }
-html body #root :is(.home__tile, .pick__row, .dex__row, .gameday__row, .row-list > .row, .upd__card, .home-updates__item, .pick__discover, .drawer__item, .portal-discovery):active { border-color: var(--brand); }
+html body #root :is(.home__tile, .pick__row, .dex__row, .gameday__row, .row-list > .row, .upd__card, .home-updates__item, .pick__discover, .drawer__item, .portal-shortcut, .portal-tank-link):active { border-color: var(--brand); }
 
 /* ── 입력 ───────────────────────────────────────────────────────────────── */
 html body #root :is(.finder__section, .ivrank__form, .solo__opts, .controls) :is(input, select),

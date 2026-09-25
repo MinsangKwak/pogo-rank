@@ -98,10 +98,17 @@ export default function MaxSlider({ items, slides }: {
       {/* 일정 탭 — 장마다 하나. 누르면 그 장으로 가고 넘기기를 멈춘다 */}
       {/* 위 막대가 다음 장까지 남은 시간이다 — 저절로 넘어간다는 것을 눈에 보이게 한다 */}
       <div ref={progress} className="portal-banner-nav">
+        {/* 움직임 줄이기를 켠 사람에게는 처음부터 안 넘기므로 막대도 멈출 것도 없다 */}
         {still ? null : (
-          <div className="portal-banner-bar" aria-hidden="true">
-            <span className="banner-progress"><i /></span>
-            <span className="portal-banner-count">{String(active + 1).padStart(2, '0')} / {String(total).padStart(2, '0')}</span>
+          <div className="portal-banner-bar">
+            <span className="banner-progress" aria-hidden="true"><i /></span>
+            <span className="portal-banner-count" aria-hidden="true">{String(active + 1).padStart(2, '0')} / {String(total).padStart(2, '0')}</span>
+            {/* 멈춤은 막대 바로 옆 — 무엇을 멈추는지가 붙어 있어야 읽힌다. 배너 오른쪽 위에 따로 서면 제목을 가렸다 */}
+            <button type="button" className="max-slider__toggle"
+              aria-label={playing ? '배너 넘기기 멈춤' : '배너 넘기기 다시 시작'}
+              onClick={() => setPlaying((now) => !now)}>
+              <span aria-hidden="true">{playing ? '❚❚' : '▶'}</span>
+            </button>
           </div>
         )}
         <div ref={strip} className="portal-banner-tabs" aria-label="배너 선택">
@@ -117,14 +124,6 @@ export default function MaxSlider({ items, slides }: {
           })}
         </div>
       </div>
-      {/* 움직임 줄이기를 켠 사람에게는 처음부터 안 넘기므로 멈출 것도 없다 */}
-      {still ? null : (
-        <button type="button" className="max-slider__toggle"
-          aria-label={playing ? '배너 넘기기 멈춤' : '배너 넘기기 다시 시작'}
-          onClick={() => setPlaying((now) => !now)}>
-          <span aria-hidden="true">{playing ? '❚❚' : '▶'}</span>
-        </button>
-      )}
     </div>
   );
 }
