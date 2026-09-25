@@ -125,10 +125,8 @@ html body #root .home-dashboard .pick__name b { min-width: 0; overflow: hidden; 
 
 /* ── 바로가기 두 장 — 도감 · 덱 짜기. 위는 그림, 아래는 카드 판 위 글자 (parts.css 카드와 같은 선 · 반경) ── */
 html body #root .portal-shortcuts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.2rem; margin-top: 2.8rem; }
-html body #root .portal-shortcut {
-  position: relative; display: flex; flex-direction: column; min-width: 0; overflow: hidden;
-  border: 1px solid var(--line); border-radius: var(--r-box); background: var(--surface); color: var(--fg); text-decoration: none;
-}
+/* 카드 모양(선 · 반경 · 판)은 parts.css 카드 묶음에 있다 — 여기는 배치만 */
+html body #root .portal-shortcut { position: relative; display: flex; flex-direction: column; min-width: 0; overflow: hidden; text-decoration: none; }
 html body #root .portal-shortcut__art { display: block; width: 100%; height: 12rem; object-fit: cover; object-position: center 40%; }
 html body #root .portal-shortcut__body { display: flex; flex-direction: column; gap: 0.4rem; min-width: 0; padding: 1.6rem 2rem 2rem; }
 html body #root .portal-shortcut__body small { color: var(--brand); font: 600 1.2rem/1.5 Pretendard, sans-serif; letter-spacing: 0.08em; }
@@ -141,12 +139,12 @@ html body #root .portal-shortcut__go {
 }
 @media (hover: hover) { html body #root .portal-shortcut:hover { border-color: var(--brand); } }
 
-/* 11월 탱커 준비 — 알림 한 줄. 강조 카드(parts.css)와 같은 판 · 왼쪽 띠, [방패] 제목 / 일정 … › */
+/* 11월 탱커 준비 — 알림 한 줄, [방패] 제목 / 일정 … › */
 html body #root .portal-prep-note { display: block; margin-top: 1.2rem; }
+/* 판 · 선 · 왼쪽 띠는 parts.css 강조 카드 묶음에 있다 — 여기는 배치만 */
 html body #root .portal-prep-note .portal-tank-link {
   box-sizing: border-box; display: flex; align-items: center; gap: 1.2rem; width: 100%; min-height: var(--tap); padding: 1.2rem 1.6rem;
-  border: 1px solid var(--line); border-left: 0.4rem solid var(--brand); border-radius: var(--r-box);
-  background: linear-gradient(120deg, var(--selected), var(--surface) 65%); color: var(--fg); text-align: left; box-shadow: none; cursor: pointer;
+  text-align: left; box-shadow: none; cursor: pointer;
 }
 html body #root .portal-tank-link__icon { display: inline-flex; flex: none; align-items: center; justify-content: center; width: 3.6rem; height: 3.6rem; border-radius: 50%; background: var(--surface-2); font-size: 1.6rem; line-height: 1; }
 html body #root .portal-tank-link__body { display: flex; flex: 1; flex-direction: column; gap: 0.4rem; min-width: 0; }
