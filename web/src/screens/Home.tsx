@@ -284,14 +284,29 @@ function HomeData({ onOpen }: { onOpen: OpenMon }) {
       </section>
 
 
-      <a className="portal-discovery" href={routeHref('dex')}>
-        <div><span className="portal-discovery__eyebrow">다양한 활용처</span><strong>한 마리의 가능성,<br />배틀 너머까지.</strong></div>
-        <div className="portal-discovery__copy"><p>레이드부터 PvP까지,<br />두루 활약할 포켓몬을 찾아보세요.</p><span>포켓몬 살펴보기 ↗</span></div>
-      </a>
-      {/* 흐르는 글자는 같은 줄 두 벌을 잇는다 — 반 바퀴 돌면 처음과 같은 그림이라 이음매가 안 보인다 */}
-      <div className="portal-motion">
-        <span aria-hidden="true"><span>CHOOSE YOUR TEAM — READY FOR BATTLE — </span><span>CHOOSE YOUR TEAM — READY FOR BATTLE — </span></span>
-        <a href={routeHref('dmax-deck')} onClick={() => track('home_cta', { to: 'dmax-deck' })}>나만의 배틀 팀 만들기 ↗</a>
+      {/* 바로가기 두 장 — 도감 · 덱 짜기를 같은 모양의 카드로 나란히 세운다 (2026-09-25 제보: 다른 디자인으로). */}
+      {/* 전에는 큰 그림 판과 흐르는 윤곽 글자 띠가 따로 서서 한 화면을 둘이 다 먹었다 */}
+      <div className="portal-shortcuts">
+        <a className="portal-shortcut" href={routeHref('dex')}>
+          <img className="portal-shortcut__art" src={`${BASE}images/discovery-meadow.webp`} alt="" aria-hidden="true"
+            loading="lazy" width={1600} height={533} />
+          <span className="portal-shortcut__body">
+            <small>다양한 활용처</small>
+            <b>한 마리의 가능성</b>
+            <span>레이드부터 PvP까지, 배틀 너머까지</span>
+          </span>
+          <span className="portal-shortcut__go" aria-hidden="true">↗</span>
+        </a>
+        <a className="portal-shortcut" href={routeHref('dmax-deck')} onClick={() => track('home_cta', { to: 'dmax-deck' })}>
+          <img className="portal-shortcut__art" src={`${BASE}images/rank-arena-crimson.webp`} alt="" aria-hidden="true"
+            loading="lazy" width={1536} height={1024} />
+          <span className="portal-shortcut__body">
+            <small>CHOOSE YOUR TEAM</small>
+            <b>나만의 배틀 팀 만들기</b>
+            <span>맥스 배틀 보스에 맞춰 덱을 짜 보세요</span>
+          </span>
+          <span className="portal-shortcut__go" aria-hidden="true">↗</span>
+        </a>
       </div>
       <div className="portal-prep-note"><TankPopupEntry onOpen={onOpen} compact /></div>
 
