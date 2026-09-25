@@ -51,6 +51,8 @@ html body #root .dex-catalog:not(.is-grid) .dex__title .dex__name { display: blo
 html body #root .dex-catalog:not(.is-grid) .dex__title b { display: block; overflow: hidden; color: var(--fg); font: 700 1.6rem/1.2 Pretendard, sans-serif; text-overflow: ellipsis; white-space: nowrap; }
 html body #root .dex-catalog:not(.is-grid) .dex__title :is(.dex__mega, .dex__unrel) { position: static; flex: none; }
 html body #root .dex-catalog:not(.is-grid) .dex__sub { display: flex; flex-wrap: wrap; align-items: center; gap: 0.4rem 0.8rem; min-width: 0; font-size: 1.2rem; }
+/* 타입 이름도 <b> 라 옛 넓은 화면 규칙(.dex__list:not(.is-grid) .dex__row b)이 이름 크기(1.6rem)를 준다 — 알약 크기로 되돌린다 (#187 Codex) */
+html body #root .dex-catalog:not(.is-grid) .dex__sub .ds-typepill b { color: inherit; font: 600 1.2rem/1.5 Pretendard, sans-serif; }
 html body #root .dex-catalog:not(.is-grid) .dex__no { width: auto; flex: none; color: var(--muted); font: 600 1.2rem/1.5 Pretendard, sans-serif; font-variant-numeric: tabular-nums; }
 /* 세대 · CP 는 줄 보기에서 뺀다 — 넓은 화면도 네 칸으로 갈려 카드가 좁고, 세대는 위 칩이 · CP 는 상세가 말한다 */
 html body #root .dex-catalog:not(.is-grid) .dex__stats { display: none; }
