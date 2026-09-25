@@ -18,6 +18,10 @@ on:
         description: dev.moncamp.kr 을 붙이고 DNS 를 돌린다
         type: boolean
         default: false
+      ref:
+        description: 구울 브랜치. 비우면 부른 쪽의 브랜치 (예행은 next 를 그대로 굽는다)
+        type: string
+        default: ''
 
 # 권한은 부르는 쪽이 정한다 (deploy-dev.yml · rehearse-dev.yml) — 불려 가는 쪽은 올릴 수 없다
 jobs:
@@ -40,6 +44,8 @@ jobs:
 
       - if: steps.ready.outputs.go == 'true'
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          ref: ${{ inputs.ref }}
 
       - if: steps.ready.outputs.go == 'true'
         uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
