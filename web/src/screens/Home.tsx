@@ -184,16 +184,19 @@ export default function Home({ onOpen }: { onOpen: OpenMon }) {
   // '9.28 울머기' 가 섰다 (제보). 이제 그림은 일정에 붙고(MAX_ART), 그림이 붙은 일정이 없으면 대표 일러스트가 제 말만 한다
   // 일정표까지 온 뒤에 굴린다 — 먼저 굴리면 이번 주 장이 도중에 앞에 끼어든다
   const ready = slides.length > 0 && dexSoft !== undefined && maxSoft !== undefined && scheduleSoft !== undefined;
+  // 그림이 붙은 일정만 배너가 된다 — 도트로 세운 장은 일러스트 장과 딴 판이라 뺐다 (2026-09-25 주인 결정).
+  // 새 그림을 MAX_ART 에 더하면 그 일정이 저절로 배너에 선다
+  const shown = useMemo(() => slides.filter((slide) => maxArtFor(slide.bosses.map((boss) => boss.dex))), [slides]);
   const items = useMemo(() => {
-    const out = slides.map((slide, index) => ({
+    const out = shown.map((slide, index) => ({
       key: slide.id,
       node: <MaxPoster slide={slide} art={maxArtFor(slide.bosses.map((boss) => boss.dex))} names={names} first={index === 0} />,
     }));
-    if (!out.length || !maxArtFor(slides[0]?.bosses.map((boss) => boss.dex) ?? [])) {
+    if (!out.length) {
       out.unshift({ key: 'hero', node: <HeroPoster art={HERO_ART_ENTRY} names={names} note="대표 보스 배틀 일러스트" /> });
     }
     return out;
-  }, [slides, names]);
+  }, [shown, names]);
   // 일정이 오기 전 — 대표 일러스트 한 장, 캡션 자리만 잡는다 (오면 같은 자리에 찬다)
   const waiting = <HeroPoster art={HERO_ART_ENTRY} names={names} />;
   return (
@@ -214,7 +217,7 @@ export default function Home({ onOpen }: { onOpen: OpenMon }) {
           {ready ? (
             // 슬라이더를 받는 동안은 그 첫 장을 그대로 세운다 — 같은 판이라 자리가 안 흔들린다
             <Suspense fallback={items[0]?.node}>
-              <MaxSlider items={items} slides={slides} />
+              <MaxSlider items={items} slides={shown} />
             </Suspense>
           ) : waiting}
         </div>
