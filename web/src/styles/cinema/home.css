@@ -216,6 +216,9 @@ html body #root .home-dashboard .home-updates__list > .pick__discover:hover .pic
   html body #root .home__cta { top: auto; bottom: 12rem; }
 }
 @media (max-width: 999px) {
+  /* 999px 아래는 배너가 세로 62rem 이라 그림 양옆이 잘린다 — 상대 보스가 선 자리를 보인다 */
+  /* 가운데를 자르면 울머기 장에 고릴타만 섰다 (2026-09-25 제보). 자리는 그림마다 lib/heroArt.ts 의 focus, 없으면 오른쪽 위 */
+  html body #root .home__welcome .max-hero img { object-position: var(--hero-focus, right top); }
   html body #root .home-dashboard .home__service-grid { grid-template-columns: minmax(0, 1fr); }
   html body #root .home-dashboard .home__service-group { min-height: 58rem; }
 }
@@ -224,9 +227,6 @@ html body #root .home-dashboard .home-updates__list > .pick__discover:hover .pic
   html body #root .home__intro h2 { font-size: 2.8rem; }
   html body #root .home__cta { top: auto; bottom: 12rem; left: 2.4rem; right: 2.4rem; display: flex; gap: 0.8rem; }
   html body #root .home-dashboard .home__cta > .home__btn { flex: 1; width: auto; height: 4.8rem; padding: 0 1.2rem; font-size: 1.2rem; }
-  /* 좁은 화면은 상대 보스가 선 자리를 보인다 — 가운데를 자르면 울머기 장에 고릴타만 섰다 (2026-09-25 제보) */
-  /* 자리는 그림마다 lib/heroArt.ts 의 focus 가 준다. 없으면 오른쪽 위 — 새 그림은 보스를 거기에 그린다 */
-  html body #root .home__welcome .max-hero img { object-position: var(--hero-focus, right top); }
   html body #root .home__welcome .max-hero::after { background: linear-gradient(color-mix(in srgb, var(--plate) 91%, transparent), color-mix(in srgb, var(--plate) 25%, transparent) 60%, color-mix(in srgb, var(--plate) 63%, transparent)); }
   html body #root .portal-banner-bar { padding: 1.2rem 2rem 0; }
   html body #root .portal-banner-tabs button { flex-basis: 50%; padding: 1.2rem 2rem 1.6rem; }
