@@ -129,12 +129,28 @@ const open = (id: string, from: string) => {
   go(routeHref('game-updates', id));
 };
 
+/** 카드 제목 — 카드와 같은 출처(from)로 센다. 'list' 로 박아 두면 맨 위 카드 · 아카이브 클릭이 목록으로 잡혔다 (#189 Codex) */
+function TitleLink({ id, title, from }: { id: string; title: string; from: string }) {
+  return (
+    <a href={routeHref('game-updates', id)} onClick={(event) => {
+      event.stopPropagation();
+      // Ctrl · Cmd · Shift · Alt 클릭은 브라우저에 맡긴다 — 새 탭으로 열려는 사람을 이 탭에서 옮기지 않는다
+      if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) {
+        track('game_update_open', { id, from });
+        return;
+      }
+      event.preventDefault();
+      open(id, from);
+    }}>{title}</a>
+  );
+}
+
 /** 목록 카드 — 결론형 제목 · 요약 · 분류 · 상태 · 날짜. 장식용 그림보다 문장과 날짜를 먼저 둔다 */
 function UpdateCard({ row, from = 'list' }: { row: GameUpdate; from?: string }) {
   return (
     <article className="upd__card" onClick={() => open(row.id, from)}>
       <CatChips row={row} />
-      <h3 className="upd__title"><a href={routeHref('game-updates', row.id)} onClick={(event) => { event.preventDefault(); event.stopPropagation(); open(row.id, 'list'); }}>{row.title}</a></h3>
+      <h3 className="upd__title"><TitleLink id={row.id} title={row.title} from={from} /></h3>
       <p className="upd__summary">{row.summary}</p>
       <Badges row={row} />
       <Dates row={row} />
@@ -147,7 +163,7 @@ function ArchiveCard({ row }: { row: ArchiveEntry }) {
   return (
     <article className="upd__card upd__card--archive" onClick={() => open(row.id, 'archive')}>
       <div className="upd__badges"><Badge text="원문 보기" kind="plain" /></div>
-      <h3 className="upd__title"><a href={routeHref('game-updates', row.id)} onClick={(event) => { event.preventDefault(); event.stopPropagation(); open(row.id, 'list'); }}>{row.title}</a></h3>
+      <h3 className="upd__title"><TitleLink id={row.id} title={row.title} from="archive" /></h3>
       {row.excerpt ? <p className="upd__quote">{row.excerpt}</p> : null}
       <Dates row={row} />
     </article>

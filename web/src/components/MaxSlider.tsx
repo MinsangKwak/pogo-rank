@@ -77,6 +77,8 @@ export default function MaxSlider({ items, slides }: {
         onAutoplayTimeLeft={(_, __, remaining) => { progress.current?.style.setProperty('--banner-progress', String(1 - remaining)); }}
         onSlideChange={(instance) => setActive(instance.realIndex)}
         slidesPerView={1}
+        // 세로로 넘기다 손가락이 조금만 옆으로 가도 장이 끌려 옆 장이 삐져나왔다 — 8px 까지는 끌지 않는다
+        threshold={8}
         loop={total > 2}
         speed={500}
         autoplay={still ? false : { delay: DELAY, disableOnInteraction: false, pauseOnMouseEnter: true }}

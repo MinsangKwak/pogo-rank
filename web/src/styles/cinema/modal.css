@@ -17,7 +17,7 @@ html body #root .modal__close {
   display: inline-flex; align-items: center; justify-content: center; width: var(--tap); height: var(--tap);
   border: 1px solid var(--line); border-radius: var(--r-ctl); background: var(--surface); color: var(--fg); box-shadow: none;
 }
-html body #root .modal__close:hover { border-color: var(--brand); background: var(--hover); }
+@media (hover: hover) { html body #root .modal__close:hover { border-color: var(--brand); background: var(--hover); } }
 
 /* ── 제목 띠 — 화면 머리(shell.css .page-head)와 같은 그림 · 같은 판 ──────── */
 html body #root :is(.consent__modal:not(.login-invite) > .detail__name, .login-invite__head, .tankpop__head) {
@@ -39,7 +39,7 @@ html body #root .detail--mon .detail__bar {
 html body #root .detail--mon .detail__bar-title { color: var(--plate-fg); font-family: Pretendard, sans-serif; font-weight: 750; letter-spacing: -0.02em; }
 html body #root .detail--mon .detail__side { background: var(--surface-2); border-color: var(--line); }
 html body #root .modal__wrap:has(.detail--mon) .modal__close { border-color: var(--plate-line); background: color-mix(in srgb, var(--plate) 70%, transparent); color: var(--plate-fg); }
-html body #root .modal__wrap:has(.detail--mon) .modal__close:hover { border-color: var(--plate-accent); background: color-mix(in srgb, var(--plate-accent) 20%, var(--plate)); }
+@media (hover: hover) { html body #root .modal__wrap:has(.detail--mon) .modal__close:hover { border-color: var(--plate-accent); background: color-mix(in srgb, var(--plate-accent) 20%, var(--plate)); } }
 html body #root .modal__wrap:has(.detail--mon) .modal__close:focus-visible { outline-color: var(--plate-accent); }
 
 /* ── 팝업 안 단추 — 서랍 줄(.drawer__item)을 빌려 쓰던 것을 parts.css 단추와 같게 ── */
@@ -47,7 +47,7 @@ html body #root .modal__box .drawer__item {
   min-height: var(--tap); padding: 1.2rem 1.6rem; border: 1px solid var(--line); border-radius: var(--r-ctl);
   background: var(--surface-2); color: var(--fg); font: 600 1.4rem Pretendard, sans-serif; box-shadow: none;
 }
-html body #root .modal__box .drawer__item:hover { border-color: var(--brand); background: var(--hover); }
+@media (hover: hover) { html body #root .modal__box .drawer__item:hover { border-color: var(--brand); background: var(--hover); } }
 /* 주 단추 — 채움 --brand, 글자 --bg (§1-b 1) */
 html body #root .modal__box .drawer__item:is(.account__login, .consent__go, .login-invite__go) { background: var(--brand); border-color: var(--brand); color: var(--bg); }
 html body #root .modal__box .uchip { border-radius: var(--r-ctl); }
