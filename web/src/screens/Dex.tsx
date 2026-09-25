@@ -11,6 +11,7 @@ import { useDex, useUsage } from '../lib/data';
 import { usePrefStore, readCols } from '../stores/pref';
 import { TypeDot, Sprite, ViewToggle } from '../components/Bits';
 import { Slot } from '../components/Slots';
+import { TypePill } from '../ds';
 import { track, trackSearchPick } from '../lib/track';
 import type { OpenMon } from '../lib/mon';
 
@@ -176,26 +177,51 @@ export default function Dex({ onOpen }: { onOpen: OpenMon }) {
             // 종족값이 아직 없는 종도 목록에는 선다 — 빈 칸으로 그릴 뿐 빼지 않는다 (v3 와 같다)
             const form = row.form;
             const gen = DEX_GENS.findIndex(([from, to]) => row.dex >= from && row.dex <= to);
+            const open = () => {
+              if (term.trim()) trackSearchPick(row.name, 'dex');
+              onOpen({ sprite: row.dex, name: row.name, types: form?.types ?? [] });
+            };
+            const stats = (
+              <span className="dex__stats">
+                {gen >= 0 ? <span className="dex__stat dex__stat--gen"><em>세대</em><b>{gen + 1}</b></span> : null}
+                {form ? (
+                  <span className="dex__stat dex__stat--cp">
+                    <em>CP 100%</em><b>{cpOf(form.atk, form.def, form.hp, cpm).toLocaleString()}</b>
+                  </span>
+                ) : null}
+              </span>
+            );
+            // 줄 보기는 두 줄 카드다 — 번호 · 그림 · 딱지 · 이름 · 알약 · 점이 한 줄에 서서 읽히지 않았다 (2026-09-25 제보).
+            // 1줄 이름 + 딱지, 2줄 번호 + 타입 이름, 오른쪽에 PvP · PvE 를 위아래로 세운다
+            if (saved !== 'grid') {
+              return (
+                <button key={row.dex} className={`dex__row${row.unrel ? ' is-unreleased' : ''}`} data-sprite={row.dex} onClick={open}>
+                  <Sprite id={row.dex} />
+                  <span className="dex__main">
+                    <span className="dex__title">
+                      <span className="dex__name"><b>{row.name}</b></span>
+                      <MegaTag megas={data.DEX_DATA.megas[String(row.dex)]} />
+                      {row.unrel ? <span className="tag dex__unrel">미구현</span> : null}
+                    </span>
+                    <span className="dex__sub">
+                      <span className="dex__no">{`#${String(row.dex).padStart(4, '0')}`}</span>
+                      <TypePill types={form?.types ?? []} names={data.TYPE_KO} />
+                    </span>
+                  </span>
+                  {stats}
+                  <DexUse name={row.name} />
+                </button>
+              );
+            }
             return (
-              <button key={row.dex} className={`dex__row${row.unrel ? ' is-unreleased' : ''}`} data-sprite={row.dex}
-                onClick={() => {
-                  if (term.trim()) trackSearchPick(row.name, 'dex');
-                  onOpen({ sprite: row.dex, name: row.name, types: form?.types ?? [] });
-                }}>
+              <button key={row.dex} className={`dex__row${row.unrel ? ' is-unreleased' : ''}`} data-sprite={row.dex} onClick={open}>
                 <span className="dex__no">{`#${String(row.dex).padStart(4, '0')}`}</span>
-                {saved === 'grid' ? <span className="dex__portrait"><Sprite id={row.dex} /></span> : <Sprite id={row.dex} />}
+                <span className="dex__portrait"><Sprite id={row.dex} /></span>
                 {row.unrel ? <span className="tag dex__unrel">미구현</span> : null}
                 {/* 메가 딱지는 그림 **바로 뒤**, 이름 앞에 선다 — 이름 안에 넣었더니 이름 줄이 밀렸다 */}
                 <MegaTag megas={data.DEX_DATA.megas[String(row.dex)]} />
                 <span className="dex__name"><b>{row.name}</b><DexUse name={row.name} /></span>
-                <span className="dex__stats">
-                  {gen >= 0 ? <span className="dex__stat dex__stat--gen"><em>세대</em><b>{gen + 1}</b></span> : null}
-                  {form ? (
-                    <span className="dex__stat dex__stat--cp">
-                      <em>CP 100%</em><b>{cpOf(form.atk, form.def, form.hp, cpm).toLocaleString()}</b>
-                    </span>
-                  ) : null}
-                </span>
+                {stats}
                 <span className="dex__types">
                   {(form?.types ?? []).map((type) => <TypeDot key={type} type={type} />)}
                 </span>
