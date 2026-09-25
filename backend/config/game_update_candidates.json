@@ -5,8 +5,76 @@
     "editorialStatus=published 로 옮겨 적어야 화면에 나간다.",
     "changeLines 는 공식 원문에서 \"규칙이 바뀐 것으로 보이는\" 줄을 그대로 옮긴 것이다. 요약이 아니다."
   ],
-  "collectedAt": "2026-09-17",
+  "collectedAt": "2026-09-25",
   "candidates": [
+    {
+      "slug": "pokemon-x-adidas-2026",
+      "sources": [
+        {
+          "lang": "ko",
+          "label": "\"ADIDAS | POKÉMON\" 컬렉션 의상 아이템이 \"Pokémon GO\"를 찾아옵니다!",
+          "url": "https://pokemongo.com/ko/news/pokemon-x-adidas-2026",
+          "image": "https://lh3.googleusercontent.com/L-Kp0mvhQ_6rxdgpFz0sKpRJ4pKeVhqqtWuOJsRXu2O1uU8_FmURLvbr8j0K24XcWggFoYItYc3Pb6RS8LVMOn2S5QvC4cBKSYHXV3reP58"
+        }
+      ],
+      "changeLines": {
+        "ko": [
+          "“Pokémon GO”를 플레이할 때는 주변 안전에 주의하고 나라와 지자체의 방침 등에 따라 플레이해주세요. 앞으로 진행되는 이벤트에 대해 개최 중지 또는 내용이 변경될 수 있습니다. 소셜미디어, 푸시 알림, 메일 등으로 최신 정보를 확인하세요."
+        ]
+      },
+      "announcedAt": "2026-09-24"
+    },
+    {
+      "slug": "fall-marathon-buddy-trek-2026",
+      "sources": [
+        {
+          "lang": "ko",
+          "label": "\"그푸리\"가 \"Pokémon GO\"에 처음으로 등장하는 \"가을 소풍: 파트너와 함께\" 이벤트!",
+          "url": "https://pokemongo.com/ko/news/fall-marathon-buddy-trek-2026",
+          "image": "https://lh3.googleusercontent.com/M4kOTm3cvwmzkibKybdE7ItO-lG_C4RpMeI-UQJdEH7kOGF36MjUUo_2VVd6QMHmGoUypowGKIzv2f7LBAXjT3qrtYNNYRhX4GszOYp3vw"
+        }
+      ],
+      "changeLines": {
+        "ko": [
+          "“Pokémon GO”를 플레이할 때는 주변 안전에 주의하고 나라와 지자체의 방침 등에 따라 플레이해주세요. 앞으로 진행되는 이벤트에 대해 개최 중지 또는 내용이 변경될 수 있습니다. 소셜미디어, 푸시 알림, 메일 등으로 최신 정보를 확인하세요."
+        ]
+      },
+      "announcedAt": "2026-09-23"
+    },
+    {
+      "slug": "hangul-nal-2026",
+      "sources": [
+        {
+          "lang": "ko",
+          "label": "“2026 한글날 이벤트”가 대한민국 전역에서 개최됩니다! — Pokémon GO",
+          "url": "https://pokemongo.com/ko/news/hangul-nal-2026",
+          "image": "https://lh3.googleusercontent.com/gcvhdePaU8DmxDMdRmNmR13Si3D_qNgEE74c-F4Tjw-c2qkVaS1KRcB3zNivL4NZDlT6h60LnMtAvc8K1xIGH2_IMwVqLEW9F-mvGYfbzw"
+        }
+      ],
+      "changeLines": {
+        "ko": [
+          "“Pokémon GO”를 플레이할 때는 주변 안전에 주의하고 나라와 지자체의 방침 등에 따라 플레이해주세요. 앞으로 진행되는 이벤트에 대해 개최 중지 또는 내용이 변경될 수 있습니다. 소셜미디어, 푸시 알림, 메일 등으로 최신 정보를 확인하세요."
+        ]
+      },
+      "announcedAt": "2026-09-22"
+    },
+    {
+      "slug": "world-space-week-2026",
+      "sources": [
+        {
+          "lang": "ko",
+          "label": "\"세계 우주 주간\" 이벤트에는 \"우주비행 피카츄\"와 우주로 떠나요! — Pokémon GO",
+          "url": "https://pokemongo.com/ko/news/world-space-week-2026",
+          "image": "https://lh3.googleusercontent.com/AiDIi-NAxX879TxCAX8X6I6EwjrUUajpCN18w4uPXAwSqgbR1y6_awmrDJFY31ljBfh4flc1v5Ma2by0Mt4y77-Q4LCPLnSBEMZIJSS0hvZx"
+        }
+      ],
+      "changeLines": {
+        "ko": [
+          "“Pokémon GO”를 플레이할 때는 주변 안전에 주의하고 나라와 지자체의 방침 등에 따라 플레이해주세요. 앞으로 진행되는 이벤트에 대해 개최 중지 또는 내용이 변경될 수 있습니다. 소셜미디어, 푸시 알림, 메일 등으로 최신 정보를 확인하세요."
+        ]
+      },
+      "announcedAt": "2026-09-21"
+    },
     {
       "slug": "choose-your-path-twilight-trails-2026",
       "sources": [
@@ -160,23 +228,6 @@
         ]
       },
       "announcedAt": "2026-08-27"
-    },
-    {
-      "slug": "mega-finale-korea-2026",
-      "sources": [
-        {
-          "lang": "ko",
-          "label": "모험의 시작! “Pokémon GO Fest 2026: 메가 피날레” 기념 한국 현장 이벤트",
-          "url": "https://pokemongo.com/ko/news/mega-finale-korea-2026",
-          "image": "https://lh3.googleusercontent.com/Qao6-KTgpm6RQk9cAGN-6XMJWPePPjwGjj9zZ7fvcqS_G17Unn6Vwv1MmexJf9SWe6dPj43uHUyMEUqQUoqK3HT_ZWP4-lWmB9nXIzT17g"
-        }
-      ],
-      "changeLines": {
-        "ko": [
-          "“Pokémon GO”를 플레이할 때는 주변 안전에 주의하고 나라와 지자체의 방침 등에 따라 플레이해주세요. 앞으로 진행되는 이벤트에 대해 개최 중지 또는 내용이 변경될 수 있습니다. 소셜미디어, 푸시 알림, 메일 등으로 최신 정보를 확인하세요."
-        ]
-      },
-      "announcedAt": "2026-08-24"
     },
     {
       "slug": "helpshift-5523",

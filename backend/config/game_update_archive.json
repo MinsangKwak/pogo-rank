@@ -5,8 +5,113 @@
     "여기에 있는 항목에 사람이 요약을 쓰면 backend/config/game_updates.json 의 기사가 되고,",
     "화면은 그때부터 기사를 보인다(같은 원문의 아카이브 항목은 숨는다)."
   ],
-  "collectedAt": "2026-09-17",
+  "collectedAt": "2026-09-25",
   "entries": [
+    {
+      "id": "sandile-hatch-day-2026",
+      "kind": "news",
+      "title": "\"깜눈크 부화데이\"에는 모래 속으로 파고들어 봐요!",
+      "date": "2026-09-24",
+      "excerpt": "한국시간 2026년 10월 17일 11:00부터 17:00까지",
+      "sources": [
+        {
+          "lang": "ko",
+          "label": "\"깜눈크 부화데이\"에는 모래 속으로 파고들어 봐요!",
+          "url": "https://pokemongo.com/ko/news/sandile-hatch-day-2026",
+          "image": "https://lh3.googleusercontent.com/r1sFIBAWuypbu790nY-nohK15pwrrz9wxabdnLn-equ2WbOzIF-1_H6L15URPfazMTlosJBnBe-PR_Wpdj6Q7GJ2JrShPTDUEc6_GMgtShxE"
+        }
+      ]
+    },
+    {
+      "id": "pokemon-x-adidas-2026",
+      "kind": "news",
+      "title": "\"ADIDAS | POKÉMON\" 컬렉션 의상 아이템이 \"Pokémon GO\"를 찾아옵니다!",
+      "date": "2026-09-24",
+      "excerpt": "의 기간 한정 협업 컬렉션이 발매됩니다! 전 세계 \"Pokémon GO\" 트레이너 여러분, 이벤트에 참여하는 adidas 점포를 방문하고 이벤트 테마 시간제한 리서치를 진행해 멋진 컬렉션의 발매를 함께 축하해 주세요.",
+      "sources": [
+        {
+          "lang": "ko",
+          "label": "\"ADIDAS | POKÉMON\" 컬렉션 의상 아이템이 \"Pokémon GO\"를 찾아옵니다!",
+          "url": "https://pokemongo.com/ko/news/pokemon-x-adidas-2026",
+          "image": "https://lh3.googleusercontent.com/L-Kp0mvhQ_6rxdgpFz0sKpRJ4pKeVhqqtWuOJsRXu2O1uU8_FmURLvbr8j0K24XcWggFoYItYc3Pb6RS8LVMOn2S5QvC4cBKSYHXV3reP58"
+        }
+      ]
+    },
+    {
+      "id": "save-the-date-go-tour-2027",
+      "kind": "news",
+      "title": "\"Pokémon GO Tour 2027\" 날짜를 기억해 주세요!",
+      "date": "2026-09-23",
+      "excerpt": "의 무대인 알로라지방을 기념하여 다시 돌아오게 되었다는 반가운 소식을 전해 드립니다!",
+      "sources": [
+        {
+          "lang": "ko",
+          "label": "\"Pokémon GO Tour 2027\" 날짜를 기억해 주세요!",
+          "url": "https://pokemongo.com/ko/news/save-the-date-go-tour-2027",
+          "image": "https://lh3.googleusercontent.com/ZD_ZnJIVRb8a2RWD8L9wF4UR3f0fBAT2ZKk9lLB58yOlXhKOrghIstmijArGABhFlVacGQU56R514Pl0NsA9tTqEpGxbIo4D4oipystojQ"
+        }
+      ]
+    },
+    {
+      "id": "fall-marathon-buddy-trek-2026",
+      "kind": "news",
+      "title": "\"그푸리\"가 \"Pokémon GO\"에 처음으로 등장하는 \"가을 소풍: 파트너와 함께\" 이벤트!",
+      "date": "2026-09-23",
+      "excerpt": "포켓몬의 메가레벨이 오르면 이 공격의 위력도 증가합니다!",
+      "sources": [
+        {
+          "lang": "ko",
+          "label": "\"그푸리\"가 \"Pokémon GO\"에 처음으로 등장하는 \"가을 소풍: 파트너와 함께\" 이벤트!",
+          "url": "https://pokemongo.com/ko/news/fall-marathon-buddy-trek-2026",
+          "image": "https://lh3.googleusercontent.com/M4kOTm3cvwmzkibKybdE7ItO-lG_C4RpMeI-UQJdEH7kOGF36MjUUo_2VVd6QMHmGoUypowGKIzv2f7LBAXjT3qrtYNNYRhX4GszOYp3vw"
+        }
+      ]
+    },
+    {
+      "id": "hangul-nal-2026",
+      "kind": "news",
+      "title": "“2026 한글날 이벤트”가 대한민국 전역에서 개최됩니다!",
+      "date": "2026-09-22",
+      "excerpt": "한글날과 어울리는 포켓몬들이 \"Pokémon GO\"에 대한민국 전역에 등장합니다! “2026 한글날 이벤트”와 어울리는 포켓몬을 만나고, 더 특별한 가을 추억을 만들어 보세요.",
+      "sources": [
+        {
+          "lang": "ko",
+          "label": "“2026 한글날 이벤트”가 대한민국 전역에서 개최됩니다!",
+          "url": "https://pokemongo.com/ko/news/hangul-nal-2026",
+          "image": "https://lh3.googleusercontent.com/gcvhdePaU8DmxDMdRmNmR13Si3D_qNgEE74c-F4Tjw-c2qkVaS1KRcB3zNivL4NZDlT6h60LnMtAvc8K1xIGH2_IMwVqLEW9F-mvGYfbzw"
+        }
+      ]
+    },
+    {
+      "id": "go-pass-october-2026",
+      "kind": "news",
+      "title": "\"가이오가\"가 파도를 일으키고, \"반짝이 참\"이 돌아오는 \"GO패스: 10월\"!",
+      "date": "2026-09-22",
+      "excerpt": "한국시간 10월 6일 10:00부터 11월 3일 10:00까지 “Pokémon GO”에서 10월의 “GO패스”와 “GO패스 디럭스”를 만날 수 있습니다!",
+      "sources": [
+        {
+          "lang": "ko",
+          "label": "\"가이오가\"가 파도를 일으키고, \"반짝이 참\"이 돌아오는 \"GO패스: 10월\"!",
+          "url": "https://pokemongo.com/ko/news/go-pass-october-2026",
+          "image": "https://lh3.googleusercontent.com/YI_hCo34fVtgznowncdPRDK3uObq-7nJkPTmsttNh2uBZGkKDqFWvPQFP-9lTLmjkvpb-iHQq-JERqqXXYbVsWryT2gNTWc5_xVf3H0H-3FN"
+        }
+      ]
+    },
+    {
+      "id": "world-space-week-2026",
+      "kind": "news",
+      "title": "\"세계 우주 주간\" 이벤트에는 \"우주비행 피카츄\"와 우주로 떠나요!",
+      "date": "2026-09-21",
+      "excerpt": "한국시간 2026년 10월 4일 00:00부터 10월 10일 23:59까지",
+      "sources": [
+        {
+          "lang": "ko",
+          "label": "\"세계 우주 주간\" 이벤트에는 \"우주비행 피카츄\"와 우주로 떠나요!",
+          "url": "https://pokemongo.com/ko/news/world-space-week-2026",
+          "image": "https://lh3.googleusercontent.com/AiDIi-NAxX879TxCAX8X6I6EwjrUUajpCN18w4uPXAwSqgbR1y6_awmrDJFY31ljBfh4flc1v5Ma2by0Mt4y77-Q4LCPLnSBEMZIJSS0hvZx"
+        }
+      ]
+    },
     {
       "id": "communityday-october-2026-zorua",
       "kind": "news",
@@ -297,7 +402,7 @@
       "kind": "news",
       "title": "\"삐삐\"와 함께 달빛 아래에서 춤을 춰요",
       "date": "2026-08-14",
-      "excerpt": "이번 이벤트는 한국, 일본, 대만, 인도네시아, 싱가포르, 홍콩, 말레이시아 각 현지 시간 2026년 9월 23일 10:00부터 9월 27일 23:59까지 진행됩니다.",
+      "excerpt": "이번 이벤트는 한국, 일본, 대만, 인도네시아, 싱가포르, 홍콩, 말레이시아 각 현지 시간 2026년 9월 23일 10:00부터 9월 28일 23:59까지 진행됩니다.",
       "sources": [
         {
           "lang": "ko",
