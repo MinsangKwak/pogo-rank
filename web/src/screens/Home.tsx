@@ -337,7 +337,7 @@ function HomeData({ onOpen }: { onOpen: OpenMon }) {
             </button>
           ))}
           <Discover mascot="gengar" sprite={94} kicker="게임 업데이트" extra="pick__discover--updates"
-            head={<>새로운 소식,<br />놓치지 마세요.</>} copy="패치부터 이벤트까지 한눈에 확인해요"
+            head="새로운 소식, 놓치지 마세요." copy="패치부터 이벤트까지 한눈에 확인해요"
             href={routeHref('game-updates')} />
         </div>
       </section>
