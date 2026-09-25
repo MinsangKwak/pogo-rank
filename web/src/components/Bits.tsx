@@ -298,7 +298,7 @@ export function ToolBtn({ label, on = false, onClick }: {
 }) {
   return (
     <button type="button" className="tool-btn js-head-action" aria-pressed={on} onClick={onClick}>
-      <PxLabel label={label} />
+      <PxLabel label={label} textClass="tool-btn__text" />
     </button>
   );
 }

@@ -32,6 +32,35 @@ html body #root #page-settings .settings__notes { display: flex; flex-direction:
 html body #root #page-settings .settings__notes :is(.dex__hint, .detail__foot) { margin: 0; padding: 0; font: 400 1.4rem/1.7 Pretendard, sans-serif; }
 
 /* 도감 · 레이드 줄 */
+/* 줄 보기의 카드 사이 — 카드끼리 붙어 한 덩어리로 읽혔다 (도감 · 레이드 · 알 부화 · 즐겨찾기, 2026-09-25 제보) */
+html body #root .dex__list:not(.is-grid) { gap: 0.8rem; }
+
+/* 도감 줄 보기 — 두 줄 카드. [그림] 이름 + 딱지 / 번호 + 타입 이름 … 오른쪽에 PvP · PvE 를 위아래로 */
+/* 한 줄에 번호 · 그림 · 딱지 · 이름 · 알약 · 점이 늘어서서 읽히지 않았다 (2026-09-25 제보) */
+html body #root .dex-catalog:not(.is-grid) .dex__row {
+  display: grid; grid-template-columns: auto minmax(0, 1fr) auto; grid-template-areas: none; align-items: center;
+  column-gap: 1.2rem; row-gap: 0; min-height: 7.2rem; padding: 1.2rem 1.6rem;
+}
+html body #root .dex-catalog:not(.is-grid) .dex__row::after { content: none; }
+/* 옛 넓은 화면 규칙(pc-theme.css)이 칸마다 이름 붙은 자리(grid-area)를 준다 — 풀지 않으면 그림이 카드 오른쪽 아래로 간다 */
+html body #root .dex-catalog:not(.is-grid) .dex__row > * { grid-area: auto; }
+html body #root .dex-catalog:not(.is-grid) .dex__row > .sprite { box-sizing: content-box; width: 4rem; height: 4rem; padding: 0.4rem; border-radius: var(--r-ctl); background: var(--surface-2); }
+html body #root .dex-catalog:not(.is-grid) .dex__main { display: flex; flex-direction: column; gap: 0.4rem; min-width: 0; }
+html body #root .dex-catalog:not(.is-grid) .dex__title { display: flex; align-items: center; gap: 0.8rem; min-width: 0; }
+html body #root .dex-catalog:not(.is-grid) .dex__title .dex__name { display: block; min-width: 0; }
+html body #root .dex-catalog:not(.is-grid) .dex__title b { display: block; overflow: hidden; color: var(--fg); font: 700 1.6rem/1.2 Pretendard, sans-serif; text-overflow: ellipsis; white-space: nowrap; }
+html body #root .dex-catalog:not(.is-grid) .dex__title :is(.dex__mega, .dex__unrel) { position: static; flex: none; }
+html body #root .dex-catalog:not(.is-grid) .dex__sub { display: flex; flex-wrap: wrap; align-items: center; gap: 0.4rem 0.8rem; min-width: 0; font-size: 1.2rem; }
+html body #root .dex-catalog:not(.is-grid) .dex__no { width: auto; flex: none; color: var(--muted); font: 600 1.2rem/1.5 Pretendard, sans-serif; font-variant-numeric: tabular-nums; }
+/* 세대 · CP 는 줄 보기에서 뺀다 — 넓은 화면도 네 칸으로 갈려 카드가 좁고, 세대는 위 칩이 · CP 는 상세가 말한다 */
+html body #root .dex-catalog:not(.is-grid) .dex__stats { display: none; }
+html body #root .dex-catalog:not(.is-grid) .dex__use { display: flex; flex-direction: column; gap: 0.4rem; flex: none; }
+html body #root .dex-catalog:not(.is-grid) .dex__use-pill {
+  display: flex; align-items: center; justify-content: space-between; gap: 0.8rem; min-width: 7.2rem; padding: 0.4rem 0.8rem;
+  border: 1px solid var(--line); border-radius: var(--r-tag); background: transparent; color: var(--muted); font-size: 1.2rem; line-height: 1.5;
+}
+html body #root .dex-catalog:not(.is-grid) .dex__use-pill.is-lead { border-color: var(--brand); background: var(--selected); color: var(--fg); }
+html body #root .dex-catalog:not(.is-grid) .dex__use-val { font-weight: 700; font-variant-numeric: tabular-nums; }
 /* 레이드 · 알 부화 카드 — 옛 노트 스킨이 id 선택자로 아래 굵은 빨강 띠를 박는다. 같은 무게(id)로 카드 한 벌에 맞춘다 */
 html body #root :is(#page-raids, #page-eggs) .dex__list .gameday__row { border: 1px solid var(--line); border-radius: var(--r-box); box-shadow: none; }
 html body #root :is(#page-raids, #page-eggs) .dex__list.is-grid .gameday__row { border-radius: var(--r-panel); background: linear-gradient(150deg, var(--surface-2), var(--surface)); }

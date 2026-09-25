@@ -621,10 +621,14 @@ export function PxIcon({ emoji }: { emoji: string }) {
  * '🧬 개체값 순위' 처럼 글자 앞에 이모지가 붙은 라벨을 [아이콘, 이름] 으로 가른다.
  * 표에 없는 이모지면 라벨을 통째로 돌려준다 (v3 pxIconLabelParts 와 같다)
  */
-export function PxLabel({ label }: { label: string }) {
+export function PxLabel({ label, textClass }: {
+  label: string;
+  /** 이름을 감쌀 클래스 — 좁은 화면에서 이름을 숨기고 아이콘만 남길 때 쓴다. 아이콘이 없으면 안 감싼다(빈 단추가 된다) */
+  textClass?: string;
+}) {
   const match = /^(\S+)\s+(.+)$/.exec(label);
   const lead = match?.[1];
   const rest = match?.[2];
   if (!lead || !rest || !hasPxIcon(lead)) return <>{label}</>;
-  return <><PxIcon emoji={lead} />{rest}</>;
+  return <><PxIcon emoji={lead} />{textClass ? <span className={textClass}>{rest}</span> : rest}</>;
 }
