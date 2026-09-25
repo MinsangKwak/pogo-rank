@@ -92,8 +92,8 @@ describe('새 디자인 — 규칙 안에 선다', () => {
 
   it('쓰는 토큰은 어딘가에 정의돼 있다 — 없는 이름은 색이 통째로 빠진다 (§1-c)', () => {
     const defined = new Set([...allCss(STYLES).matchAll(/(--[a-z0-9-]+)\s*:/g)].map((m) => m[1]!));
-    // 화면이 style 로 넣는 값 — MaxSlider(--banner-progress) · Schedule(--category-color)
-    for (const runtime of ['--banner-progress', '--category-color']) defined.add(runtime);
+    // 화면이 style 로 넣는 값 — MaxSlider(--banner-progress) · Schedule(--category-color) · MaxPoster(--hero-focus)
+    for (const runtime of ['--banner-progress', '--category-color', '--hero-focus']) defined.add(runtime);
     for (const { name, css } of sources) {
       for (const used of css.matchAll(/var\((--[a-z0-9-]+)/g)) {
         expect(defined.has(used[1]!), `${name}: ${used[1]} 가 정의돼 있지 않습니다`).toBe(true);

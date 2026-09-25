@@ -31,6 +31,11 @@ function BossLine({ slide }: { slide: MaxSlide }) {
 }
 
 /** 그림 없이 서는 대표 일러스트 — 일정이 오기 전, 또는 그림이 붙은 일정이 다 지난 뒤 */
+/** 좁은 화면에서 그림의 어느 자리를 보일지 — 값은 그림마다 다르고 CSS(cinema/home.css)가 좁은 화면에서만 읽는다 */
+function focusStyle(art: MaxArt): CSSProperties {
+  return { ['--hero-focus']: art.focus } as CSSProperties;
+}
+
 export function HeroPoster({ art, names, note }: {
   art: MaxArt;
   names: Readonly<Record<string, string>> | undefined;
@@ -40,7 +45,7 @@ export function HeroPoster({ art, names, note }: {
   return (
     <figure className="max-hero">
       <img src={art.src} srcSet={art.srcSet} sizes={art.sizes} alt={names ? art.alt(names) : ''}
-        width={art.width} height={art.height} fetchPriority="high" decoding="async" />
+        width={art.width} height={art.height} style={focusStyle(art)} fetchPriority="high" decoding="async" />
       <figcaption>{note ? <small>{note}</small> : null}</figcaption>
     </figure>
   );
@@ -62,7 +67,7 @@ export function MaxPoster({ slide, art, names, first }: {
       <figure className={`max-hero${art ? '' : ' max-hero--scene'}`} style={style}>
         {art ? (
           <img src={art.src} srcSet={art.srcSet} sizes={art.sizes} alt={names ? art.alt(names) : ''}
-            width={art.width} height={art.height} decoding="async"
+            width={art.width} height={art.height} style={focusStyle(art)} decoding="async"
             {...(first ? { fetchPriority: 'high' as const } : { loading: 'lazy' as const })} />
         ) : (
           <span className="max-scene" data-count={Math.min(slide.bosses.length, 3)} aria-hidden="true">
