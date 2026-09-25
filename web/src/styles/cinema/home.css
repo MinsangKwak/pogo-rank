@@ -43,15 +43,21 @@ html body #root .home__welcome :is(.max-poster__badge, .max-poster__dday) {
   display: inline-flex; align-items: center; min-height: 2.8rem; padding: 0.4rem 0.8rem;
   border: 1px solid var(--plate-line); border-radius: var(--r-tag); background: var(--plate-accent); color: var(--plate); font: 600 1.2rem/1.2 Pretendard, sans-serif;
 }
-/* 배너 아래 일정 탭 — 누르면 그 장으로 간다. 위 가는 선이 다음 장까지 남은 시간이다 */
-html body #root .portal-banner-tabs { position: absolute; bottom: 0; left: 0; right: 0; z-index: 5; display: flex; background: color-mix(in srgb, var(--plate) 79%, transparent); backdrop-filter: blur(1.2rem); }
-html body #root .portal-banner-tabs button { position: relative; flex: 1; min-width: 0; padding: 2rem 2.4rem; border: 0; border-radius: 0; background: transparent; color: var(--plate-fg); text-align: left; }
-html body #root .portal-banner-tabs button[aria-pressed=true] { background: color-mix(in srgb, var(--plate-fg) 4%, transparent); }
+/* 배너 아래 일정 — 진행 막대 한 줄 + 탭 띠. 탭은 넓으면 네 칸, 좁으면 두 칸만 보이고 옆으로 민다
+   여덟 칸을 한 줄에 다 세우면 날짜 · 이름이 '9.… 프‥' 로 잘려 하나도 안 읽혔다 (2026-09-25 제보) */
+html body #root .portal-banner-nav { position: absolute; bottom: 0; left: 0; right: 0; z-index: 5; background: color-mix(in srgb, var(--plate) 79%, transparent); backdrop-filter: blur(1.2rem); }
+html body #root .portal-banner-bar { display: flex; align-items: center; gap: 1.2rem; padding: 1.2rem 2.4rem 0; }
+html body #root .banner-progress { flex: 1; height: 0.4rem; overflow: hidden; border-radius: var(--r-tag); background: color-mix(in srgb, var(--plate-fg) 15%, transparent); }
+html body #root .banner-progress i { display: block; width: 100%; height: 100%; background: var(--plate-accent); transform: scaleX(var(--banner-progress, 0)); transform-origin: left; }
+html body #root .portal-banner-count { color: var(--plate-muted); font: 600 1.2rem/1 Pretendard, sans-serif; font-variant-numeric: tabular-nums; letter-spacing: 0.08em; }
+html body #root .portal-banner-tabs { position: relative; display: flex; overflow-x: auto; scroll-snap-type: x mandatory; overscroll-behavior-x: contain; scrollbar-width: none; }
+html body #root .portal-banner-tabs::-webkit-scrollbar { display: none; }
+html body #root .portal-banner-tabs button { position: relative; flex: 1 0 25%; min-width: 0; padding: 1.6rem 2.4rem 2rem; border: 0; border-radius: 0; background: transparent; color: var(--plate-muted); text-align: left; scroll-snap-align: start; }
+html body #root .portal-banner-tabs button[aria-pressed=true] { color: var(--plate-fg); }
+html body #root .portal-banner-tabs button[aria-pressed=true] small { color: var(--plate-accent); }
 html body #root .portal-banner-tabs :is(small, strong) { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-html body #root .portal-banner-tabs small { margin-bottom: 0.8rem; color: var(--plate-muted); }
-html body #root .banner-progress { position: absolute; top: 0; left: 0; width: 100%; height: 0.2rem; background: color-mix(in srgb, var(--plate-fg) 15%, transparent); }
-html body #root .banner-progress i { display: block; width: 100%; height: 100%; background: var(--plate-fg); transform: scaleX(0); transform-origin: left; }
-html body #root [aria-pressed=true] > .banner-progress i { transform: scaleX(var(--banner-progress, 0)); }
+html body #root .portal-banner-tabs small { margin-bottom: 0.4rem; color: var(--plate-muted); font-size: 1.2rem; }
+html body #root .portal-banner-tabs strong { font: 650 1.4rem/1.5 Pretendard, sans-serif; }
 html body #root .home__welcome .max-slider__toggle {
   top: 2rem; right: 2rem; bottom: auto; z-index: 6; display: inline-flex; align-items: center; justify-content: center; min-width: var(--tap); min-height: var(--tap);
   border: 1px solid var(--plate-line); border-radius: var(--r-ctl); background: color-mix(in srgb, var(--plate) 70%, transparent); color: var(--plate-fg); box-shadow: none;
@@ -107,6 +113,10 @@ html body #root .home-dashboard .pick__row::after { content: '↗'; flex: 0 0 1.
 html body #root .home-dashboard .pick__rank { flex: 0 0 3.2rem; width: 3.2rem; border: 0; background: transparent; color: var(--rank-glow); font: 700 2.8rem/1 Pretendard, sans-serif; box-shadow: none; }
 html body #root .home-dashboard .pick__body { flex: 1; min-width: 0; }
 html body #root .home-dashboard .pick__meta { display: block; margin-top: 0.8rem; color: var(--plate-muted); font-size: 1.2rem; }
+/* 배지와 이름은 한 줄 — 옛 스킨이 줄바꿈을 허용해 '섀도우' 배지만 위에 남고 이름이 아래로 떨어졌다 (2026-09-25 제보) */
+html body #root .home-dashboard .pick__name { display: flex; flex-wrap: nowrap; align-items: center; gap: 0.8rem; min-width: 0; }
+html body #root .home-dashboard .pick__name .form-tag { flex: none; margin: 0; }
+html body #root .home-dashboard .pick__name b { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
 /* ── 둘러보기 띠 — 도감으로 가는 한 장 ─────────────────────────────────── */
 html body #root .portal-discovery {
@@ -126,7 +136,7 @@ html body #root .portal-discovery__copy > span { display: inline-flex; align-ite
 
 /* ── 글자 띠 — 오른쪽으로 흐르는 윤곽 글자 ─────────────────────────────── */
 html body #root .portal-motion {
-  min-width: 0; max-width: 100%; min-height: 18rem; margin-top: 1.2rem; padding: 2.8rem 2.4rem; overflow: hidden; contain: inline-size;
+  min-width: 0; max-width: 100%; margin-top: 1.2rem; padding: 2.4rem; overflow: hidden; contain: inline-size;
   border: 1px solid var(--plate-line); border-radius: var(--r-box);
   background: linear-gradient(90deg, color-mix(in srgb, var(--plate) 85%, transparent), color-mix(in srgb, var(--plate) 44%, transparent)), url('/images/rank-arena-crimson.webp') center 38% / cover;
 }
@@ -182,11 +192,26 @@ html body #root .home-dashboard .home__arrow {
 html body #root .home-dashboard .home-updates__item { padding: 2.4rem; }
 html body #root .home-dashboard .home-updates__sum { color: var(--muted); line-height: 1.7; }
 html body #root .home-dashboard .upd__dates { border-top: 1px solid var(--line); }
+/* 「전체 보기」 끝 띠도 위 소식 카드와 같은 카드다 — 옛 스킨의 모서리 없는 붉은 띠 · 계단 그림자 화살표를 걷는다 */
+html body #root .home-dashboard .home-updates__list > .pick__discover {
+  display: flex; align-items: center; gap: 2rem; padding: 2.4rem;
+  border: 1px solid var(--line); border-radius: var(--r-box); background: linear-gradient(120deg, var(--selected), var(--surface) 65%); color: var(--fg); box-shadow: none;
+}
+html body #root .home-dashboard .home-updates__list > .pick__discover:hover { border-color: var(--brand); transform: none; box-shadow: none; }
+html body #root .home-dashboard .home-updates__list .pick__discover-kicker { flex: none; padding: 0; background: transparent; color: var(--brand); font: 600 1.2rem/1.5 Pretendard, sans-serif; letter-spacing: 0.08em; }
+html body #root .home-dashboard .home-updates__list .pick__discover strong { color: var(--fg); word-break: keep-all; font: 750 1.6rem/1.5 Pretendard, sans-serif; letter-spacing: -0.02em; }
+html body #root .home-dashboard .home-updates__list .pick__discover-copy { flex: 1; min-width: 0; color: var(--muted); font-size: 1.4rem; }
+html body #root .home-dashboard .home-updates__list .pick__discover-action { flex: none; display: inline-flex; align-items: center; gap: 1.2rem; margin: 0 0 0 auto; padding: 0; border: 0; color: var(--fg); font: 600 1.4rem Pretendard, sans-serif; }
+html body #root .home-dashboard .home-updates__list .pick__discover-action > span {
+  display: inline-flex; align-items: center; justify-content: center; width: var(--tap); height: var(--tap);
+  border: 1px solid var(--line); border-radius: var(--r-ctl); background: var(--surface-2); color: var(--brand); box-shadow: none;
+}
+html body #root .home-dashboard .home-updates__list > .pick__discover:hover .pick__discover-action > span { border-color: var(--brand); background: var(--hover); }
 
 @media (min-width: 1000px) {
   html body #root .home__top-layout .home__welcome { height: auto; aspect-ratio: 3 / 1; min-height: 44rem; }
   html body #root .home__intro { top: 12%; }
-  html body #root .home__cta { top: auto; bottom: 10rem; }
+  html body #root .home__cta { top: auto; bottom: 12rem; }
 }
 @media (max-width: 999px) {
   html body #root .home-dashboard .home__service-grid { grid-template-columns: minmax(0, 1fr); }
@@ -195,14 +220,28 @@ html body #root .home-dashboard .upd__dates { border-top: 1px solid var(--line);
 @media (max-width: 699px) {
   html body #root .home__intro { top: 8%; width: 90%; }
   html body #root .home__intro h2 { font-size: 2.8rem; }
-  html body #root .home__cta { top: auto; bottom: 11.2rem; left: 2.4rem; right: 2.4rem; display: flex; gap: 0.8rem; }
+  html body #root .home__cta { top: auto; bottom: 12rem; left: 2.4rem; right: 2.4rem; display: flex; gap: 0.8rem; }
   html body #root .home-dashboard .home__cta > .home__btn { flex: 1; width: auto; height: 4.8rem; padding: 0 1.2rem; font-size: 1.2rem; }
   html body #root .home__welcome .max-hero::after { background: linear-gradient(color-mix(in srgb, var(--plate) 91%, transparent), color-mix(in srgb, var(--plate) 25%, transparent) 60%, color-mix(in srgb, var(--plate) 63%, transparent)); }
-  html body #root .portal-banner-tabs button { padding: 1.6rem 1.2rem; }
+  html body #root .portal-banner-bar { padding: 1.2rem 2rem 0; }
+  html body #root .portal-banner-tabs button { flex-basis: 50%; padding: 1.2rem 2rem 1.6rem; }
   html body #root .home-dashboard .home__section h3 { font-size: 2.2rem; }
   html body #root .home-dashboard .pick__group { min-height: 44rem; padding: 2rem; }
   html body #root .home-dashboard .pick__list { padding: 0.4rem 1.2rem; }
-  html body #root .home-dashboard .pick__row { min-height: 6.4rem; }
+  html body #root .home-dashboard .pick__row { gap: 0.8rem; min-height: 6.4rem; }
+  /* 순위 숫자를 줄이고 이름 · 설명을 한 줄에 — 숫자 칸이 커서 배지와 이름이 두 줄로 갈라졌다 */
+  /* 자리가 모자라면 이름이 아니라 설명이 줄어든다. 줄 전체가 단추라 화살표는 뺀다 */
+  html body #root .home-dashboard .pick__row::after { content: none; }
+  html body #root .home-dashboard .pick__rank { flex: 0 0 1.6rem; width: 1.6rem; font-size: 2.2rem; }
+  html body #root .home-dashboard .pick__body { display: flex; flex-direction: row; align-items: center; gap: 0.8rem; }
+  html body #root .home-dashboard .pick__name { flex: 0 0 auto; max-width: 100%; gap: 0.4rem; font-size: 1.4rem; }
+  html body #root .home-dashboard .pick__meta { flex: 1 1 auto; min-width: 0; margin: 0; overflow: hidden; text-align: right; text-overflow: ellipsis; white-space: nowrap; }
+  html body #root .home-dashboard .home__cta > .home__btn { white-space: nowrap; }
+  html body #root .home-dashboard .home-updates__list > .pick__discover { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 0.4rem 1.6rem; padding: 2rem; }
+  html body #root .home-dashboard .home-updates__list .pick__discover-kicker { grid-column: 1; }
+  html body #root .home-dashboard .home-updates__list .pick__discover strong { grid-column: 1; }
+  html body #root .home-dashboard .home-updates__list .pick__discover-copy { display: none; }
+  html body #root .home-dashboard .home-updates__list .pick__discover-action { grid-column: 2; grid-row: 1 / 3; }
   html body #root .portal-discovery { grid-template-columns: 1fr; gap: 1.6rem; padding: 2.4rem; }
   html body #root .portal-motion > span { font-size: 2.8rem; }
   html body #root .home-dashboard .home__service-group { padding: 2.4rem; }
