@@ -1,0 +1,90 @@
+/* ─────────────────────────────────────────────────────────────────────────────
+   cinema/parts.css — 새 디자인의 **조각 한 벌**: 카드 · 강조 카드 · 올린 칸 · 단추 · 탭 · 입력 · 구역 제목 · 배지
+
+   **같은 모양은 한 규칙이다.** ae64ee8 은 화면마다 카드를 새로 그렸다 — 테두리 · 판 · 반경이 같은데
+   파일 여섯 곳에 따로 적혀 있었고, 한 곳만 고치면 한 화면만 바뀌었다. 여기서는 모양 하나에 규칙 하나를 두고,
+   그 모양을 쓰는 자리를 선택자 묶음으로 모은다. 새 자리가 같은 모양이면 **묶음에 이름을 더한다** — 새로 그리지 않는다.
+   화면마다 다른 것(안쪽 여백 · 격자 · 배치)만 화면 파일(home · journal · schedule · interior · modal)에 둔다.
+   ───────────────────────────────────────────────────────────────────────────── */
+
+/* ── 카드 — 판 위에 놓인 상자 ──────────────────────────────────────────── */
+html body #root :is(
+  .priv__sec, .release__sec, .changes__sec, .plan__card, .solo__card, .ivrank__form, .ivrank__out, .finder__section,
+  .upd__tools, .upd__card, .upd__sec, .schedule__cal, .schedule__timeline-scroll, .schedule__category,
+  .settings__choice, .home-updates__item, .dex__row, .gameday__row, .row-list > .row,
+  .filter-box, .boss__selected, .ivrank__picked, .row__why, .detail__card,
+  .drawer__panel .schedule, .drawer__panel .account
+) {
+  border: 1px solid var(--line); border-radius: var(--r-box); background: var(--surface); color: var(--fg); box-shadow: none;
+}
+/* 큰 판 — 한 화면의 주된 구역은 반경이 한 단 크고 그림자로 뜬다 */
+html body #root :is(.priv__sec, .release__sec, .changes__sec, .plan__card, .solo__card, .ivrank__form, .ivrank__out, .finder__section, .schedule__cal, .schedule__timeline-scroll) {
+  border-radius: var(--r-panel);
+}
+html body #root :is(.priv__sec, .release__sec, .changes__sec, .plan__card, .solo__card, .ivrank__form, .ivrank__out, .finder__section) { box-shadow: var(--shadow-box); }
+
+/* ── 강조 카드 — 지금 먼저 볼 것 (맨 위 소식 · 핵심 요약 · 결과 · 고른 날) ── */
+/* 브랜드를 옅게 깐 판에서 카드 판으로 흐른다. 강조 띠(0.4rem)는 위 또는 왼쪽 — 자리가 정한다 */
+html body #root :is(
+  .upd__cards--top .upd__card, .upd__head, .upd__sec--key, .finder__result, .plan__hero,
+  .schedule__month-nav, .schedule__detail
+) {
+  border: 1px solid var(--line); border-radius: var(--r-box); color: var(--fg);
+  background: linear-gradient(120deg, var(--selected), var(--surface) 65%);
+}
+html body #root :is(.upd__cards--top .upd__card, .upd__head) { border-top: 0.4rem solid var(--brand); }
+html body #root :is(.upd__sec--key, .schedule__detail) { border-left: 0.4rem solid var(--brand); }
+
+/* ── 올린 칸 — 카드 안에서 한 단 더 올린 줄 ─────────────────────────────── */
+html body #root :is(.plan__fav-row, .favnews__main, .ivrank__pick, .detail__rec, .gameday__cp) {
+  border: 1px solid var(--line); border-radius: var(--r-ctl); background: var(--surface-2); color: var(--fg); padding: 1.6rem;
+}
+html body #root :is(.upd__source, .upd__advice, .upd__quote-box, .upd__ba-before) {
+  border-color: var(--line); border-radius: var(--r-ctl); background: var(--bg); color: var(--fg);
+}
+
+/* ── 단추 · 탭 — 누르는 것은 --tap 이상, 반경은 --r-ctl ─────────────────── */
+html body #root :is(
+  .uchip, .upd__back, .upd__more, .schedule__view-tabs button, .schedule__month-nav button,
+  .portal-tank-link, .tankpop-entry button
+) {
+  min-height: var(--tap); padding: 1.2rem 1.6rem; border: 1px solid var(--line); border-radius: var(--r-ctl);
+  background: var(--surface); color: var(--fg); font: 600 1.4rem Pretendard, sans-serif; box-shadow: none; cursor: pointer;
+}
+html body #root :is(.uchip, .upd__back, .upd__more, .schedule__view-tabs button, .schedule__month-nav button, .portal-tank-link, .tankpop-entry button):hover {
+  border-color: var(--brand); background: var(--hover);
+}
+/* 눌린 탭 · 칩 — 채움 위 글자는 --bg (§1-b 1) */
+html body #root :is(.uchip, .schedule__view-tabs button)[aria-pressed=true] { background: var(--brand); border-color: var(--brand); color: var(--bg); }
+html body #root :is(.screen-tabs, .controls, .finder__chips) button { border-radius: var(--r-ctl); box-shadow: none; }
+
+/* ── 입력 ───────────────────────────────────────────────────────────────── */
+html body #root :is(.finder__section, .ivrank__form, .solo__opts, .controls) :is(input, select),
+html body #root :is(.boss__search, .dex__search) input,
+html body #root .upd__search {
+  box-sizing: border-box; min-height: var(--tap); padding: 0.8rem 1.2rem;
+  border: 1px solid var(--line); border-radius: var(--r-ctl); background: var(--surface); color: var(--fg);
+}
+html body #root :is(.boss__search, .dex__search) input,
+html body #root .upd__search { min-height: 4.8rem; padding: 1.2rem 1.6rem; }
+
+/* ── 구역 제목 — 화면 안의 소제목은 한 크기다 ────────────────────────────── */
+html body #root :is(
+  [data-route^="game-update"] .page__sec, #page-schedule .page__sec, #page-settings .page__sec, .gameday__sec > .page__sec,
+  :is(.priv__sec, .release__sec, .changes__sec, .plan__card, .finder__section) > .page__sec
+) {
+  border: 0; color: var(--fg); font: 750 2.2rem/1.5 Pretendard, sans-serif; letter-spacing: -0.02em;
+}
+
+/* ── 배지 · 칩 표시 ──────────────────────────────────────────────────────── */
+html body #root :is(.upd__cat, .upd__badge) {
+  padding: 0.4rem 0.8rem; border: 1px solid var(--line); border-radius: var(--r-tag); background: var(--bg); color: var(--muted); font-size: 1.2rem;
+}
+
+/* ── 설명 글 ────────────────────────────────────────────────────────────── */
+html body #root :is(.page__body, .layout):not(.home-dashboard) :is(.detail__foot, .dex__hint, .meta) { color: var(--muted); font-family: Pretendard, sans-serif; line-height: 1.7; }
+html body #root .i18n-note { color: var(--muted); }
+
+@media (prefers-reduced-motion: reduce) {
+  html body #root :is(.upd__card, .home__service-group, .home__tile) { transition: none; }
+}

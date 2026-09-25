@@ -291,7 +291,7 @@ export function TankPopup({ onOpen, onClose, onHide }: { onOpen: OpenMon; onClos
 }
 
 /** 홈에 서는 입구 — 안내 띠 하나와, 조건이 맞으면 처음에 열려 있는 팝업 */
-export function TankPopupEntry({ onOpen }: { onOpen: OpenMon }) {
+export function TankPopupEntry({ onOpen, compact = false }: { onOpen: OpenMon; compact?: boolean }) {
   const { route } = useRoute();
   const [open, setOpen] = useState(() => {
     try { return autoOpenHere(route.id, localStorage.getItem(HIDE_KEY), sessionStorage.getItem(SEEN_KEY), todayKey()); }
@@ -302,7 +302,7 @@ export function TankPopupEntry({ onOpen }: { onOpen: OpenMon }) {
   const show = () => { setOpen(true); track('home_popup', { id: 'novtank', action: 'open' }); };
   return (
     <>
-      <div className="tankpop-entry">
+      {compact ? <button className="portal-tank-link" type="button" onClick={show}>11월 탱커 준비 · 예상 일정 ↗</button> : <div className="tankpop-entry">
         <Callout tone="brand" icon="🛡" title="11월 다이맥스 레이드 탱커 준비 (예상 일정)">
           <Inline gap="sm" align="center" justify="between">
             <Text size="sub" tone="muted" as="span">11/14 · 11/15 — 보스별 탱커 · 육성 순서 · 종합 순위</Text>
@@ -310,6 +310,7 @@ export function TankPopupEntry({ onOpen }: { onOpen: OpenMon }) {
           </Inline>
         </Callout>
       </div>
+      }
       {open ? <TankPopup onOpen={onOpen} onClose={close} onHide={hide} /> : null}
     </>
   );

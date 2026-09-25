@@ -10,14 +10,14 @@
 // ─────────────────────────────────────────────────────────────────────────────
 import { go, goBack } from '../lib/nav';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useId } from 'react';
 import { ROUTE_GROUPS, ROUTE_NAV, routeById, routeDesc, type RouteDef } from '../routes';
 import { usePrefStore, themeIsDark, THEME_WORD, type Theme } from '../stores/pref';
 import { releaseSeen } from '../lib/release';
 import { setLang, useLang } from '../lib/useLang';
 import { useMetaSoft } from '../lib/data';
 import { track } from '../lib/track';
-import { PxIcon } from './PxIcon';
+import { OutlineIcon as PxIcon } from './OutlineIcon';
 import { routeNote } from '../lib/notes';
 import { useLockReason, lockedAttrs } from '../lib/useLocked';
 import Account from './Account';
@@ -47,6 +47,28 @@ export function NavItem({ route, now }: { route: RouteDef; now: string }) {
       <span className="drawer__label">{route.nav}</span>
     </a>
   );
+}
+
+function NavBranch({ route, now }: { route: RouteDef; now: string }) {
+  const children = ROUTE_NAV.filter((item) => item.parent === route.id);
+  const [open, setOpen] = useState(children.some((item) => item.id === now));
+  const panelId = useId();
+  useEffect(() => {
+    if (ROUTE_NAV.some((item) => item.parent === route.id && item.id === now)) setOpen(true);
+  }, [now, route.id]);
+  if (!children.length) return <NavItem route={route} now={now} />;
+  return <div className="nav-branch">
+    <div className="nav-branch__head">
+      <NavItem route={route} now={now} />
+      <button type="button" className="nav-branch__toggle" aria-expanded={open} aria-controls={panelId}
+        aria-label={`${route.nav} 하위 메뉴 ${open ? '접기' : '펼치기'}`} onClick={() => setOpen(!open)}>
+        <span aria-hidden="true">{open ? '⌃' : '⌄'}</span>
+      </button>
+    </div>
+    <div id={panelId} hidden={!open} className="nav-branch__children">
+      {children.map((child) => <NavItem key={child.id} route={child} now={now} />)}
+    </div>
+  </div>;
 }
 
 // [상태, 버튼 아이콘, 버튼이 말하는 것] — v3 components/theme.js THEME_FACE 그대로.
@@ -90,7 +112,7 @@ export function AppBar({ onMenu, home, onBack }: {
       </div>
       <button className="app-search" id="app-search" aria-label="포켓몬 검색"
         onClick={() => { go('/dex'); }}>
-        <span className="app-search__ico" aria-hidden="true">🔍</span>
+        <span className="app-search__ico" aria-hidden="true"><PxIcon emoji="🔍" /></span>
         <span className="app-search__ph">포켓몬을 검색하세요</span>
         <kbd className="app-search__key" aria-hidden="true">/</kbd>
       </button>
@@ -133,8 +155,8 @@ export function AppNav({ now, onConsent }: { now: string; onConsent: () => void 
         {ROUTE_GROUPS.map(([id, label]) => (
           <div key={id} style={{ display: 'contents' }}>
             <h3 className="nav-menu__sec">{label}</h3>
-            {ROUTE_NAV.filter((route) => route.group === id).map((route) => (
-              <NavItem key={route.id} route={route} now={now} />
+            {ROUTE_NAV.filter((route) => route.group === id && !route.parent).map((route) => (
+              <NavBranch key={route.id} route={route} now={now} />
             ))}
           </div>
         ))}
@@ -300,9 +322,9 @@ export function Drawer({ open, onClose, now, onConsent }: { open: boolean; onClo
           {ROUTE_GROUPS.map(([id, label]) => (
             <div key={id} style={{ display: 'contents' }}>
               <h3 className="nav-menu__sec">{label}</h3>
-              {ROUTE_NAV.filter((route) => route.group === id).map((route) => (
-                <div key={route.id} style={{ display: 'contents' }} onClick={onClose}>
-                  <NavItem route={route} now={now} />
+              {ROUTE_NAV.filter((route) => route.group === id && !route.parent).map((route) => (
+                <div key={route.id} style={{ display: 'contents' }} onClick={(event) => { if ((event.target as HTMLElement).closest('a')) onClose(); }}>
+                  <NavBranch route={route} now={now} />
                 </div>
               ))}
             </div>

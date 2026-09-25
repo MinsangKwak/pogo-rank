@@ -1,0 +1,257 @@
+/* ─────────────────────────────────────────────────────────────────────────────
+   cinema/home.css — 새 디자인의 첫 화면: 배너 · 순위 포스터 · 둘러보기 띠 · 글자 띠 · 서비스 포스터 · 소식
+
+   **그림 위는 모두 판(--plate) 한 벌이다.** 배너 · 포스터 · 띠는 그림이 배경이라 테마와 상관없이 어둡다.
+   그 위 글자를 --fg 로 두면 라이트에서 어두운 글자가 어두운 그림 위에 놓인다 (ae64ee8 라이트에서 실제로 사라졌다).
+   판 위 글자는 --plate-fg, 흐린 글자는 --plate-muted, 강조는 --plate-accent, 선은 --plate-line (§1-b 4).
+   카드 · 단추 모양은 parts.css 에 있다 — 여기에는 배치와 그림만 둔다.
+   ───────────────────────────────────────────────────────────────────────────── */
+
+html body #root .home-dashboard { min-width: 0; max-width: 100%; row-gap: 0; font-family: Pretendard, sans-serif; }
+html body #root .home-dashboard > * { min-width: 0; max-width: 100%; }
+html body #root .home-dashboard :is(h2, h3, h4) { font-family: Pretendard, sans-serif; font-weight: 750; letter-spacing: -0.04em; }
+
+/* ── 배너 — 일정 슬라이드가 한 판을 채우고 글 · 단추가 그 위에 뜬다 ─────── */
+html body #root .home__top-layout { display: block; margin: 0; padding: 0; }
+html body #root .home__top-layout .home__welcome {
+  position: relative; isolation: isolate; display: block; width: 100%; min-width: 0; height: 62rem; padding: 0; overflow: hidden;
+  border: 0; border-radius: var(--r-panel); background: var(--plate); box-shadow: none;
+}
+html body #root .home__intro { position: absolute; left: 2.4rem; top: 20%; z-index: 3; width: 52%; padding: 0; pointer-events: none; }
+html body #root .home__intro h2 { padding: 0; color: var(--plate-fg); font: 800 4.2rem/1.2 Pretendard, sans-serif; letter-spacing: -0.05em; }
+html body #root .home__intro h2 em { color: var(--plate-accent); font-style: normal; text-decoration: none; }
+html body #root .home__intro p { padding: 0; color: var(--plate-muted); font-size: 1.4rem; line-height: 1.7; }
+html body #root .home__eyebrow { color: var(--plate-accent); border: 0; font: 600 1.2rem Pretendard, sans-serif; letter-spacing: 0.18em; }
+html body #root .home__cta { position: absolute; left: 2.4rem; top: 67%; z-index: 4; }
+html body #root .home-dashboard .home__cta > .home__btn {
+  box-sizing: border-box; display: inline-flex; align-items: center; justify-content: center; width: 19.2rem; height: 5.2rem; padding: 0 1.6rem;
+  border: 1px solid var(--plate-line); border-radius: var(--r-ctl); background: color-mix(in srgb, var(--plate-2) 70%, var(--plate));
+  color: var(--plate-fg); font: 650 1.4rem/1.2 Pretendard, sans-serif; box-shadow: none;
+}
+/* 판 위 주 단추 — 채움 --plate-accent, 글자 --plate */
+/* 두 단추는 크기가 같다 — 주 단추에만 빛 번짐 그림자를 깔았더니 한쪽이 커 보였다 (2026-09-25 제보) */
+html body #root .home-dashboard .home__cta > .home__btn--primary { background: var(--plate-accent); border-color: var(--plate-accent); color: var(--plate); box-shadow: none; }
+html body #root .home__welcome .max-battle-art { position: absolute; inset: 0; display: block; width: 100%; height: 100%; max-width: none; margin: 0; }
+html body #root .home__welcome .max-battle-art :is(.max-slider, .swiper, .swiper-wrapper, .swiper-slide, .max-hero) { height: 100%; max-height: none; border-radius: 0; }
+html body #root .home__welcome .max-hero img { width: 100%; height: 100%; max-width: 100%; max-height: none; object-fit: cover; object-position: center top; border-radius: 0; }
+/* 글 쪽을 판 색으로 눌러 그림 위 글자가 읽힌다 */
+html body #root .home__welcome .max-hero::after {
+  content: ''; position: absolute; inset: 0; pointer-events: none;
+  background: linear-gradient(90deg, color-mix(in srgb, var(--plate) 96%, transparent), color-mix(in srgb, var(--plate) 81%, transparent) 27%, color-mix(in srgb, var(--plate) 25%, transparent) 62%, transparent);
+}
+html body #root .home__welcome :is(.max-hero figcaption, .swiper-pagination, .home__scroll) { display: none; }
+html body #root .home__welcome :is(.max-poster__badge, .max-poster__dday) {
+  display: inline-flex; align-items: center; min-height: 2.8rem; padding: 0.4rem 0.8rem;
+  border: 1px solid var(--plate-line); border-radius: var(--r-tag); background: var(--plate-accent); color: var(--plate); font: 600 1.2rem/1.2 Pretendard, sans-serif;
+}
+/* 배너 아래 일정 — 진행 막대 한 줄 + 탭 띠. 탭은 넓으면 네 칸, 좁으면 두 칸만 보이고 옆으로 민다
+   여덟 칸을 한 줄에 다 세우면 날짜 · 이름이 '9.… 프‥' 로 잘려 하나도 안 읽혔다 (2026-09-25 제보) */
+html body #root .portal-banner-nav { position: absolute; bottom: 0; left: 0; right: 0; z-index: 5; background: color-mix(in srgb, var(--plate) 79%, transparent); backdrop-filter: blur(1.2rem); }
+html body #root .portal-banner-bar { display: flex; align-items: center; gap: 1.2rem; padding: 1.2rem 2.4rem 0; }
+html body #root .banner-progress { flex: 1; height: 0.4rem; overflow: hidden; border-radius: var(--r-tag); background: color-mix(in srgb, var(--plate-fg) 15%, transparent); }
+html body #root .banner-progress i { display: block; width: 100%; height: 100%; background: var(--plate-accent); transform: scaleX(var(--banner-progress, 0)); transform-origin: left; }
+html body #root .portal-banner-count { color: var(--plate-muted); font: 600 1.2rem/1 Pretendard, sans-serif; font-variant-numeric: tabular-nums; letter-spacing: 0.08em; }
+html body #root .portal-banner-tabs { position: relative; display: flex; overflow-x: auto; scroll-snap-type: x mandatory; overscroll-behavior-x: contain; scrollbar-width: none; }
+html body #root .portal-banner-tabs::-webkit-scrollbar { display: none; }
+html body #root .portal-banner-tabs button { position: relative; flex: 1 0 25%; min-width: 0; padding: 1.6rem 2.4rem 2rem; border: 0; border-radius: 0; background: transparent; color: var(--plate-muted); text-align: left; scroll-snap-align: start; }
+html body #root .portal-banner-tabs button[aria-pressed=true] { color: var(--plate-fg); }
+html body #root .portal-banner-tabs button[aria-pressed=true] small { color: var(--plate-accent); }
+html body #root .portal-banner-tabs :is(small, strong) { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+html body #root .portal-banner-tabs small { margin-bottom: 0.4rem; color: var(--plate-muted); font-size: 1.2rem; }
+html body #root .portal-banner-tabs strong { font: 650 1.4rem/1.5 Pretendard, sans-serif; }
+html body #root .home__welcome .max-slider__toggle {
+  top: 2rem; right: 2rem; bottom: auto; z-index: 6; display: inline-flex; align-items: center; justify-content: center; min-width: var(--tap); min-height: var(--tap);
+  border: 1px solid var(--plate-line); border-radius: var(--r-ctl); background: color-mix(in srgb, var(--plate) 70%, transparent); color: var(--plate-fg); box-shadow: none;
+}
+
+/* ── 구역 머리 ─────────────────────────────────────────────────────────── */
+html body #root .home-dashboard .home__section { border: 0; padding-bottom: 2rem; margin-bottom: 0.8rem; }
+html body #root .home-dashboard .home__section h3 { color: var(--fg); font-size: 2.8rem; }
+html body #root .home-dashboard .home__section > span { color: var(--muted); font-size: 1.4rem; }
+html body #root .home-dashboard .home__picks { margin-top: 2.4rem; }
+
+/* ── 순위 포스터 — 무대 그림 위에 순위 판 ───────────────────────────────── */
+html body #root .home-dashboard .pick__group {
+  --rank-glow: var(--plate-accent);
+  position: relative; overflow: hidden; display: flex; flex-direction: column; min-height: 48rem; padding: 2.8rem;
+  border: 1px solid var(--plate-line); border-radius: var(--r-panel); color: var(--plate-fg); box-shadow: none;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--plate) 60%, transparent), transparent 35%, color-mix(in srgb, var(--plate) 40%, transparent)), url('/images/rank-rillaboom-3d.webp') left center / cover;
+}
+html body #root .home-dashboard .pick__group--pve {
+  --rank-glow: var(--plate-accent-2);
+  background-image: linear-gradient(180deg, color-mix(in srgb, var(--plate) 53%, transparent), transparent 35%, color-mix(in srgb, var(--plate) 40%, transparent)), url('/images/rank-raid-gym-3d.webp');
+}
+/* 무대 그림에 주인공이 그려져 있다 — 따로 세우는 스프라이트는 자리만 지킨다 */
+html body #root .home-dashboard .pick__group--dmax .pick__hero img,
+html body #root .home-dashboard .pick__group--pve .pick__hero { visibility: hidden; }
+html body #root .home-dashboard .pick__group--pve .pick__hero { pointer-events: none; }
+html body #root .home-dashboard .pick__head { margin-bottom: 8rem; padding: 0; border: 0; text-shadow: 0 0.2rem 1.2rem var(--plate); }
+html body #root .home-dashboard .pick__head h4 { color: var(--plate-fg); font-size: 2.8rem; letter-spacing: -0.03em; }
+html body #root .home-dashboard .pick__hint { color: var(--plate-fg); }
+html body #root .home-dashboard .pick__grid { margin-top: auto; align-items: end; }
+html body #root .home-dashboard .pick__hero { border: 0; background: transparent; box-shadow: none; }
+html body #root .home-dashboard .pick__hero img { filter: drop-shadow(0 0.8rem 2rem var(--plate)); }
+html body #root .home-dashboard .pick__spotlight { padding: 0.4rem 0.8rem; border: 1px solid var(--plate-line); border-radius: var(--r-tag); background: color-mix(in srgb, var(--plate) 80%, transparent); color: var(--plate-fg); opacity: 1; }
+html body #root .home-dashboard .pick__inspect { padding: 0.8rem 1.2rem; border-radius: var(--r-ctl); background: color-mix(in srgb, var(--plate) 80%, transparent); color: var(--plate-fg); }
+html body #root .home-dashboard .pick__all {
+  display: inline-flex; align-items: center; min-height: var(--tap); padding: 0.8rem 1.2rem;
+  border: 1px solid var(--plate-line); border-radius: var(--r-ctl); background: color-mix(in srgb, var(--plate) 80%, transparent); color: var(--plate-fg);
+}
+/* 순위 판 — 유리 한 장 위에 줄 셋 */
+html body #root .home-dashboard .pick__list {
+  display: flex; flex-direction: column; justify-content: center; gap: 0; padding: 0.8rem 1.6rem;
+  border: 1px solid var(--plate-line); border-radius: var(--r-box); box-shadow: var(--shadow-box); backdrop-filter: blur(2rem);
+  background: linear-gradient(125deg, color-mix(in srgb, var(--plate) 93%, transparent), color-mix(in srgb, var(--plate) 87%, transparent));
+}
+html body #root .home-dashboard .pick__row {
+  display: flex; flex-wrap: nowrap; align-items: center; gap: 1.2rem; width: 100%; min-height: 7.2rem; padding: 1.2rem 0;
+  border: 0; border-bottom: 1px solid color-mix(in srgb, var(--plate-fg) 12%, transparent); border-radius: 0;
+  background: transparent; color: var(--plate-fg); text-align: left; box-shadow: none; transition: background 0.2s;
+}
+html body #root .home-dashboard .pick__list li:last-child .pick__row { border-bottom: 0; }
+html body #root .home-dashboard .pick__row:hover { background: color-mix(in srgb, var(--plate-fg) 5%, transparent); }
+html body #root .home-dashboard .pick__row::after { content: '↗'; flex: 0 0 1.6rem; margin-left: auto; color: var(--plate-muted); font-size: 1.6rem; }
+html body #root .home-dashboard .pick__rank { flex: 0 0 3.2rem; width: 3.2rem; border: 0; background: transparent; color: var(--rank-glow); font: 700 2.8rem/1 Pretendard, sans-serif; box-shadow: none; }
+html body #root .home-dashboard .pick__body { flex: 1; min-width: 0; }
+html body #root .home-dashboard .pick__meta { display: block; margin-top: 0.8rem; color: var(--plate-muted); font-size: 1.2rem; }
+/* 배지와 이름은 한 줄 — 옛 스킨이 줄바꿈을 허용해 '섀도우' 배지만 위에 남고 이름이 아래로 떨어졌다 (2026-09-25 제보) */
+html body #root .home-dashboard .pick__name { display: flex; flex-wrap: nowrap; align-items: center; gap: 0.8rem; min-width: 0; }
+html body #root .home-dashboard .pick__name .form-tag { flex: none; margin: 0; }
+html body #root .home-dashboard .pick__name b { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* ── 둘러보기 띠 — 도감으로 가는 한 장 ─────────────────────────────────── */
+html body #root .portal-discovery {
+  position: relative; display: grid; grid-template-columns: 1fr 1fr; align-items: center; gap: 2.4rem; min-height: 22rem; margin-top: 2.8rem; padding: 3.2rem;
+  border: 1px solid var(--plate-line); border-radius: var(--r-box); color: var(--plate-fg); text-decoration: none;
+  background: linear-gradient(90deg, color-mix(in srgb, var(--plate) 53%, transparent), color-mix(in srgb, var(--plate) 40%, transparent) 60%, color-mix(in srgb, var(--plate) 13%, transparent)), url('/images/discovery-meadow.webp') center / cover;
+}
+html body #root .portal-discovery:hover { border-color: var(--plate-accent); }
+html body #root .portal-discovery__eyebrow { display: block; margin-bottom: 1.2rem; color: var(--plate-muted); font-size: 1.2rem; }
+html body #root .portal-discovery strong { display: block; font-size: 2.8rem; line-height: 1.2; letter-spacing: -0.04em; }
+html body #root .portal-discovery__copy {
+  padding: 2rem 2.4rem; border-left: 0.2rem solid var(--plate-accent); border-radius: 0 var(--r-box) var(--r-box) 0; backdrop-filter: blur(0.8rem);
+  background: linear-gradient(90deg, color-mix(in srgb, var(--plate) 80%, transparent), color-mix(in srgb, var(--plate) 47%, transparent));
+}
+html body #root .portal-discovery__copy p { margin: 0 0 1.6rem; color: var(--plate-fg); font-size: 1.6rem; line-height: 1.5; }
+html body #root .portal-discovery__copy > span { display: inline-flex; align-items: center; min-height: 4rem; padding: 0 1.6rem; border-radius: var(--r-ctl); background: var(--plate-accent); color: var(--plate); font: 700 1.2rem Pretendard, sans-serif; }
+
+/* ── 글자 띠 — 오른쪽으로 흐르는 윤곽 글자 ─────────────────────────────── */
+html body #root .portal-motion {
+  min-width: 0; max-width: 100%; margin-top: 1.2rem; padding: 2.4rem; overflow: hidden; contain: inline-size;
+  border: 1px solid var(--plate-line); border-radius: var(--r-box);
+  background: linear-gradient(90deg, color-mix(in srgb, var(--plate) 85%, transparent), color-mix(in srgb, var(--plate) 44%, transparent)), url('/images/rank-arena-crimson.webp') center 38% / cover;
+}
+html body #root .portal-motion > span {
+  display: flex; width: max-content; color: transparent; -webkit-text-stroke: 1px var(--plate-accent);
+  font-size: 4.2rem; font-weight: 900; line-height: 1.2; letter-spacing: -0.05em; animation: portal-flow-right 24s linear infinite;
+}
+html body #root .portal-motion > span > span { flex: none; white-space: nowrap; }
+html body #root .portal-motion:is(:hover, :focus-within) > span { animation-play-state: paused; }
+html body #root .portal-motion > a {
+  display: block; width: fit-content; margin-top: 1.2rem; padding: 1.2rem 1.6rem; border: 1px solid var(--plate-accent); border-radius: var(--r-ctl);
+  background: color-mix(in srgb, var(--plate) 85%, transparent); color: var(--plate-fg); font-weight: 700; text-decoration: none;
+}
+@keyframes portal-flow-right { from { transform: translateX(-50%); } to { transform: translateX(0); } }
+
+/* 11월 탱커 준비 — 띠 아래 오른쪽 작은 입구 (모양은 parts.css 단추) */
+html body #root .portal-prep-note { display: flex; justify-content: flex-end; margin-top: 1.2rem; }
+html body #root .portal-prep-note .portal-tank-link { color: var(--muted); font-size: 1.2rem; }
+
+/* ── 서비스 포스터 — 그림이 판을 채우고 아래로 갈수록 판 색에 잠긴다 ───── */
+html body #root .home-dashboard .home__service-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 2rem; }
+html body #root .home-dashboard .home__service-group {
+  position: relative; isolation: isolate; overflow: hidden; display: flex; flex-direction: column; justify-content: flex-start; gap: 2rem;
+  min-width: 0; min-height: 62rem; margin: 0; padding: 2.4rem;
+  border: 1px solid var(--plate-line); border-radius: var(--r-panel); background: var(--plate); color: var(--plate-fg);
+  box-shadow: var(--shadow-box); transition: transform 0.25s, border-color 0.25s;
+}
+html body #root .home-dashboard .home__service-group:hover { transform: translateY(-0.4rem); border-color: var(--plate-accent); }
+html body #root .home-dashboard .home__service-group::after {
+  content: ''; position: absolute; inset: 0; z-index: -1; pointer-events: none;
+  background: linear-gradient(180deg, transparent 0%, color-mix(in srgb, var(--plate) 19%, transparent) 25%, color-mix(in srgb, var(--plate) 91%, transparent) 52%, var(--plate) 100%);
+}
+html body #root .home-dashboard .home__service-art { position: absolute; inset: 0; z-index: -2; width: 100%; height: 100%; object-fit: cover; object-position: center top; }
+/* 옛 번호(v3 home.css 의 counter)는 끈다 — 표지는 마크업의 .home__service-kicker 한 줄이다 */
+html body #root .home-dashboard .home__group-head::before { content: none; display: none; }
+html body #root .home-dashboard .home__group-head { position: relative; min-height: 0; margin-top: 22rem; padding: 3.2rem 0 0; background: none; }
+html body #root .home-dashboard .home__service-kicker { position: absolute; top: 0; left: 0; color: var(--plate-accent); font-size: 1.2rem; letter-spacing: 0.2em; }
+html body #root .home-dashboard .home__group { position: relative; z-index: 1; color: var(--plate-fg); font-size: 2.8rem; }
+html body #root .home-dashboard .home__group-desc { position: relative; z-index: 1; margin-top: 1.6rem; color: var(--plate-muted); font-size: 1.4rem; line-height: 1.7; }
+/* 목적지 줄은 제목 · 설명과 같은 왼쪽 선에 선다 — 옛 스킨의 안쪽 여백(1.2rem)이 줄만 안으로 밀었다 */
+html body #root .home-dashboard .home__service-group .home__grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 1.2rem; width: 100%; margin-top: auto; padding: 0; }
+html body #root .home-dashboard .home__tile {
+  min-height: 5.6rem; padding: 1.6rem; border: 1px solid color-mix(in srgb, var(--plate-fg) 8%, transparent); border-radius: var(--r-ctl);
+  background: color-mix(in srgb, var(--plate) 85%, transparent); color: var(--plate-fg); box-shadow: none; transition: background 0.2s, border-color 0.2s;
+}
+html body #root .home-dashboard .home__tile:hover { border-color: var(--plate-accent); background: color-mix(in srgb, var(--plate-accent) 20%, var(--plate)); }
+html body #root .home-dashboard .home__tile strong { font-family: Pretendard, sans-serif; font-weight: 600; }
+html body #root .home-dashboard .home__arrow {
+  display: inline-flex; align-items: center; justify-content: center; min-width: 3.2rem; min-height: 3.2rem;
+  border: 1px solid var(--plate-line); border-radius: var(--r-ctl); background: color-mix(in srgb, var(--plate-fg) 8%, transparent); color: var(--plate-accent);
+}
+
+/* ── 소식 — 카드 모양은 parts.css ─────────────────────────────────────── */
+html body #root .home-dashboard .home-updates__item { padding: 2.4rem; }
+html body #root .home-dashboard .home-updates__sum { color: var(--muted); line-height: 1.7; }
+html body #root .home-dashboard .upd__dates { border-top: 1px solid var(--line); }
+/* 「전체 보기」 끝 띠도 위 소식 카드와 같은 카드다 — 옛 스킨의 모서리 없는 붉은 띠 · 계단 그림자 화살표를 걷는다 */
+html body #root .home-dashboard .home-updates__list > .pick__discover {
+  display: flex; align-items: center; gap: 2rem; padding: 2.4rem;
+  border: 1px solid var(--line); border-radius: var(--r-box); background: linear-gradient(120deg, var(--selected), var(--surface) 65%); color: var(--fg); box-shadow: none;
+}
+html body #root .home-dashboard .home-updates__list > .pick__discover:hover { border-color: var(--brand); transform: none; box-shadow: none; }
+html body #root .home-dashboard .home-updates__list .pick__discover-kicker { flex: none; padding: 0; background: transparent; color: var(--brand); font: 600 1.2rem/1.5 Pretendard, sans-serif; letter-spacing: 0.08em; }
+html body #root .home-dashboard .home-updates__list .pick__discover strong { color: var(--fg); word-break: keep-all; font: 750 1.6rem/1.5 Pretendard, sans-serif; letter-spacing: -0.02em; }
+html body #root .home-dashboard .home-updates__list .pick__discover-copy { flex: 1; min-width: 0; color: var(--muted); font-size: 1.4rem; }
+html body #root .home-dashboard .home-updates__list .pick__discover-action { flex: none; display: inline-flex; align-items: center; gap: 1.2rem; margin: 0 0 0 auto; padding: 0; border: 0; color: var(--fg); font: 600 1.4rem Pretendard, sans-serif; }
+html body #root .home-dashboard .home-updates__list .pick__discover-action > span {
+  display: inline-flex; align-items: center; justify-content: center; width: var(--tap); height: var(--tap);
+  border: 1px solid var(--line); border-radius: var(--r-ctl); background: var(--surface-2); color: var(--brand); box-shadow: none;
+}
+html body #root .home-dashboard .home-updates__list > .pick__discover:hover .pick__discover-action > span { border-color: var(--brand); background: var(--hover); }
+
+@media (min-width: 1000px) {
+  html body #root .home__top-layout .home__welcome { height: auto; aspect-ratio: 3 / 1; min-height: 44rem; }
+  html body #root .home__intro { top: 12%; }
+  html body #root .home__cta { top: auto; bottom: 12rem; }
+}
+@media (max-width: 999px) {
+  /* 999px 아래는 배너가 세로 62rem 이라 그림 양옆이 잘린다 — 상대 보스가 선 자리를 보인다 */
+  /* 가운데를 자르면 울머기 장에 고릴타만 섰다 (2026-09-25 제보). 자리는 그림마다 lib/heroArt.ts 의 focus, 없으면 오른쪽 위 */
+  html body #root .home__welcome .max-hero img { object-position: var(--hero-focus, right top); }
+  html body #root .home-dashboard .home__service-grid { grid-template-columns: minmax(0, 1fr); }
+  html body #root .home-dashboard .home__service-group { min-height: 58rem; }
+}
+@media (max-width: 699px) {
+  html body #root .home__intro { top: 8%; width: 90%; }
+  html body #root .home__intro h2 { font-size: 2.8rem; }
+  html body #root .home__cta { top: auto; bottom: 12rem; left: 2.4rem; right: 2.4rem; display: flex; gap: 0.8rem; }
+  html body #root .home-dashboard .home__cta > .home__btn { flex: 1; width: auto; height: 4.8rem; padding: 0 1.2rem; font-size: 1.2rem; }
+  html body #root .home__welcome .max-hero::after { background: linear-gradient(color-mix(in srgb, var(--plate) 91%, transparent), color-mix(in srgb, var(--plate) 25%, transparent) 60%, color-mix(in srgb, var(--plate) 63%, transparent)); }
+  html body #root .portal-banner-bar { padding: 1.2rem 2rem 0; }
+  html body #root .portal-banner-tabs button { flex-basis: 50%; padding: 1.2rem 2rem 1.6rem; }
+  html body #root .home-dashboard .home__section h3 { font-size: 2.2rem; }
+  html body #root .home-dashboard .pick__group { min-height: 44rem; padding: 2rem; }
+  html body #root .home-dashboard .pick__list { padding: 0.4rem 1.2rem; }
+  html body #root .home-dashboard .pick__row { gap: 0.8rem; min-height: 6.4rem; }
+  /* 순위 숫자를 줄이고 이름 · 설명을 한 줄에 — 숫자 칸이 커서 배지와 이름이 두 줄로 갈라졌다 */
+  /* 자리가 모자라면 이름이 아니라 설명이 줄어든다. 줄 전체가 단추라 화살표는 뺀다 */
+  html body #root .home-dashboard .pick__row::after { content: none; }
+  html body #root .home-dashboard .pick__rank { flex: 0 0 1.6rem; width: 1.6rem; font-size: 2.2rem; }
+  html body #root .home-dashboard .pick__body { display: flex; flex-direction: row; align-items: center; gap: 0.8rem; }
+  html body #root .home-dashboard .pick__name { flex: 0 0 auto; max-width: 100%; gap: 0.4rem; font-size: 1.4rem; }
+  html body #root .home-dashboard .pick__meta { flex: 1 1 auto; min-width: 0; margin: 0; overflow: hidden; text-align: right; text-overflow: ellipsis; white-space: nowrap; }
+  html body #root .home-dashboard .home__cta > .home__btn { white-space: nowrap; }
+  html body #root .home-dashboard .home-updates__list > .pick__discover { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 0.4rem 1.6rem; padding: 2rem; }
+  html body #root .home-dashboard .home-updates__list .pick__discover-kicker { grid-column: 1; }
+  html body #root .home-dashboard .home-updates__list .pick__discover strong { grid-column: 1; }
+  html body #root .home-dashboard .home-updates__list .pick__discover-copy { display: none; }
+  html body #root .home-dashboard .home-updates__list .pick__discover-action { grid-column: 2; grid-row: 1 / 3; }
+  html body #root .portal-discovery { grid-template-columns: 1fr; gap: 1.6rem; padding: 2.4rem; }
+  html body #root .portal-motion > span { font-size: 2.8rem; }
+  html body #root .home-dashboard .home__service-group { padding: 2.4rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+  html body #root .portal-motion > span { animation: none; }
+  html body #root .home-dashboard .home__service-group:hover { transform: none; }
+}

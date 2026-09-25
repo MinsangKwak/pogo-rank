@@ -134,7 +134,7 @@ function UpdateCard({ row, from = 'list' }: { row: GameUpdate; from?: string }) 
   return (
     <article className="upd__card" onClick={() => open(row.id, from)}>
       <CatChips row={row} />
-      <h3 className="upd__title">{row.title}</h3>
+      <h3 className="upd__title"><a href={routeHref('game-updates', row.id)} onClick={(event) => { event.preventDefault(); event.stopPropagation(); open(row.id, 'list'); }}>{row.title}</a></h3>
       <p className="upd__summary">{row.summary}</p>
       <Badges row={row} />
       <Dates row={row} />
@@ -147,7 +147,7 @@ function ArchiveCard({ row }: { row: ArchiveEntry }) {
   return (
     <article className="upd__card upd__card--archive" onClick={() => open(row.id, 'archive')}>
       <div className="upd__badges"><Badge text="원문 보기" kind="plain" /></div>
-      <h3 className="upd__title">{row.title}</h3>
+      <h3 className="upd__title"><a href={routeHref('game-updates', row.id)} onClick={(event) => { event.preventDefault(); event.stopPropagation(); open(row.id, 'list'); }}>{row.title}</a></h3>
       {row.excerpt ? <p className="upd__quote">{row.excerpt}</p> : null}
       <Dates row={row} />
     </article>
@@ -155,7 +155,8 @@ function ArchiveCard({ row }: { row: ArchiveEntry }) {
 }
 
 function Section({ title, children }: { title: string; children: ReactNode }) {
-  return <section className="upd__sec"><h3>{title}</h3>{children}</section>;
+  const level = title === '핵심 요약' ? 'key' : title === '변경 전 · 후' ? 'changes' : ['플레이에 미치는 영향', '확인할 사항', 'moncamp 추천'].includes(title) ? 'action' : 'reference';
+  return <section className={`upd__sec upd__sec--${level}`}><h3>{title}</h3><div className="upd__sec-content">{children}</div></section>;
 }
 
 function Bullets({ items, className }: { items: string[]; className?: string }) {
@@ -217,6 +218,11 @@ function UpdatesList() {
 
   return (
     <div className="page__body" id="page-game-updates" data-route="game-updates">
+      <header className="updates-intro">
+        <span>MONCAMP JOURNAL</span>
+        <h2>달라진 게임,<br />다음 플레이의 힌트.</h2>
+        <p>공식 소식부터 배틀에 미치는 영향까지.<br />확인된 변경 사항을 한곳에서 살펴보세요.</p>
+      </header>
       {featured.length && featured.length < all.length ? (
         <>
           <h2 className="page__sec">주요 변경</h2>
@@ -285,7 +291,7 @@ function ArchiveDetail({ row }: { row: ArchiveEntry }) {
       <Section title="공식 원문">
         <div className="upd__sources">{(row.sources ?? []).map((one) => <SourceCard key={one.url} source={one} />)}</div>
       </Section>
-      <p className="dex__hint">이 소식은 아직 moncamp 요약이 없어요. 위 문단은 공식 원문에서 그대로 옮긴 인용이고, 전체 내용은 원문에서 확인해 주세요.</p>
+      <p className="dex__hint">아직 요약이 준비되지 않은 소식이에요. 위 내용은 공식 발표의 일부이며, 전체 내용은 원문에서 확인할 수 있어요.</p>
     </div>
   );
 }
@@ -301,7 +307,7 @@ function UpdateDetail({ id }: { id: string }) {
     return (
       <div className="page__body" id="page-game-update" data-route="game-update">
         <Back />
-        <p className="dex__hint">소식을 찾을 수 없어요. 아직 공개되지 않았거나 게시가 중단된 글일 수 있어요.</p>
+        <p className="dex__hint">업데이트를 찾을 수 없어요. 아직 공개되지 않았거나 게시가 중단되었을 수 있어요.</p>
       </div>
     );
   }

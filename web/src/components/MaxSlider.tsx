@@ -36,7 +36,19 @@ export default function MaxSlider({ items, slides }: {
   const swiper = useRef<SwiperCore | null>(null);
   const [still] = useState(reducedMotion);
   const [playing, setPlaying] = useState(!still);
+  const progress = useRef<HTMLDivElement>(null);
+  const strip = useRef<HTMLDivElement>(null);
   const total = items.length;
+  const [active, setActive] = useState(0);
+
+  // 탭은 두 칸(넓으면 네 칸)만 보인다 — 여덟 칸을 한 줄에 다 세우면 글자가 '프‥' 로 잘려 하나도 안 읽힌다 (2026-09-25 제보).
+  // 넘어간 장의 탭을 맨 왼쪽으로 당겨 지금 장과 다음 장이 늘 보이게 한다. 페이지는 안 움직이게 띠만 민다
+  useEffect(() => {
+    const row = strip.current;
+    const tab = row?.children[active] as HTMLElement | undefined;
+    if (!row || !tab) return;
+    row.scrollTo({ left: tab.offsetLeft, behavior: still ? 'auto' : 'smooth' });
+  }, [active, still]);
 
   // 뒤 장의 보스 그림을 미리 받는다 — 그림은 화면에 들어올 때 받는데(loading=lazy), 옆으로 숨은 장은
   // 넘어오는 그 순간에야 들어와 빈 칸이 먼저 보인다
@@ -62,6 +74,8 @@ export default function MaxSlider({ items, slides }: {
       <Swiper
         modules={[A11y, Autoplay, Keyboard, Pagination]}
         onSwiper={(instance) => { swiper.current = instance; }}
+        onAutoplayTimeLeft={(_, __, remaining) => { progress.current?.style.setProperty('--banner-progress', String(1 - remaining)); }}
+        onSlideChange={(instance) => setActive(instance.realIndex)}
         slidesPerView={1}
         loop={total > 2}
         speed={500}
@@ -79,6 +93,28 @@ export default function MaxSlider({ items, slides }: {
       >
         {items.map((item) => <SwiperSlide key={item.key}>{item.node}</SwiperSlide>)}
       </Swiper>
+      {/* 일정 탭 — 장마다 하나. 누르면 그 장으로 가고 넘기기를 멈춘다 */}
+      {/* 위 막대가 다음 장까지 남은 시간이다 — 저절로 넘어간다는 것을 눈에 보이게 한다 */}
+      <div ref={progress} className="portal-banner-nav">
+        {still ? null : (
+          <div className="portal-banner-bar" aria-hidden="true">
+            <span className="banner-progress"><i /></span>
+            <span className="portal-banner-count">{String(active + 1).padStart(2, '0')} / {String(total).padStart(2, '0')}</span>
+          </div>
+        )}
+        <div ref={strip} className="portal-banner-tabs" aria-label="배너 선택">
+          {items.map((item, index) => {
+            const slide = slides.find((row) => row.id === item.key);
+            return (
+              <button key={item.key} type="button" aria-pressed={active === index}
+                onClick={() => { swiper.current?.slideToLoop(index); setPlaying(false); }}>
+                <small>{slide?.short ?? 'BATTLE GUIDE'}</small>
+                <strong>{slide?.bosses.map((boss) => boss.name).join(' · ') || '맥스 배틀 준비하기'}</strong>
+              </button>
+            );
+          })}
+        </div>
+      </div>
       {/* 움직임 줄이기를 켠 사람에게는 처음부터 안 넘기므로 멈출 것도 없다 */}
       {still ? null : (
         <button type="button" className="max-slider__toggle"

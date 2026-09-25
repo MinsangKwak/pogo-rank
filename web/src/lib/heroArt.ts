@@ -17,6 +17,8 @@ export const HERO_ART = {
   sizes: '(max-width: 699px) 100vw, (max-width: 999px) 90vw, 55vw',
   width: 1200,
   height: 800,
+  // 프리져가 그림 가운데보다 오른쪽(62%)에 있다 — 오른쪽 끝에 붙이면 날개만 남는다
+  focus: '70% top',
 } as const;
 
 /**
@@ -36,11 +38,22 @@ export interface MaxArt {
   sizes: string;
   width: number;
   height: number;
+  /** 좁은 화면에서 보일 자리(object-position) — 상대 보스가 서 있는 곳. 새 그림은 보스를 오른쪽 위에 그린다 */
+  focus: string;
   /** 대체 글 — 이름은 도감 실데이터에서 받는다 (§3) */
   alt: (names: Readonly<Record<string, string>>) => string;
 }
 
 export const MAX_ART: readonly MaxArt[] = [
+  {
+    // 고릴타·피카츄가 다이맥스 울머기와 맞선다 — 울머기 주간(2026-09-28). 2172w PNG(2.1MB)를 WebP 두 벌로 줄였다
+    dex: [816],
+    src: `${BASE}images/max-battle-sobble-panorama-1200.webp`,
+    srcSet: `${BASE}images/max-battle-sobble-panorama-720.webp 720w, ${BASE}images/max-battle-sobble-panorama-1200.webp 1200w`,
+    sizes: '100vw', width: 1200, height: 400, focus: 'right top',
+    // 이름은 도감 실데이터만 쓴다 — 없으면 비운다 (§3)
+    alt: (names) => `${names['812'] ?? ''}·${names['25'] ?? ''}의 풀·전기 기술에 맞서는 다이맥스 ${names['816'] ?? ''} 배틀 일러스트`,
+  },
   {
     // 레지락·해피너스·루기아·몰드류가 다이맥스 프리져와 맞선다 — 프리져·썬더·파이어 주간(2026-09-21)
     dex: [144],
