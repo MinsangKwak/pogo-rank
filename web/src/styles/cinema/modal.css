@@ -13,10 +13,12 @@ html body #root .modal__box { border: 1px solid var(--line); border-radius: var(
 html body #root .modal__wrap:not(:has(.detail--mon)) { border: 1px solid var(--line); border-radius: var(--r-panel); background: var(--surface); box-shadow: var(--shadow-pop); overflow: hidden; }
 html body #root .modal__wrap:not(:has(.detail--mon))::before { color: var(--brand); font: 700 1.2rem Pretendard, sans-serif; letter-spacing: 0.2em; }
 html body #root .modal__wrap:not(:has(.detail--mon)) .modal__box { border: 0; border-top: 1px solid var(--line); border-radius: 0; box-shadow: none; }
+/* 닫기 — 보이는 크기는 3.6rem 으로 한 단 작게 (2026-09-25 제보), 누르는 자리는 ::after 로 44px 를 지킨다 */
 html body #root .modal__close {
-  display: inline-flex; align-items: center; justify-content: center; width: var(--tap); height: var(--tap);
+  display: inline-flex; align-items: center; justify-content: center; width: 3.6rem; height: 3.6rem; font-size: 1.4rem;
   border: 1px solid var(--line); border-radius: var(--r-ctl); background: var(--surface); color: var(--fg); box-shadow: none;
 }
+html body #root .modal__close::after { content: ''; position: absolute; inset: -0.4rem; }
 @media (hover: hover) { html body #root .modal__close:hover { border-color: var(--brand); background: var(--hover); } }
 
 /* ── 제목 띠 — 화면 머리(shell.css .page-head)와 같은 그림 · 같은 판 ──────── */

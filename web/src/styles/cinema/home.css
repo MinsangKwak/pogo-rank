@@ -48,7 +48,7 @@ html body #root .home__welcome :is(.max-poster__badge, .max-poster__dday) {
 /* 배너 아래 일정 — 진행 막대 한 줄 + 탭 띠. 탭은 넓으면 네 칸, 좁으면 두 칸만 보이고 옆으로 민다
    여덟 칸을 한 줄에 다 세우면 날짜 · 이름이 '9.… 프‥' 로 잘려 하나도 안 읽혔다 (2026-09-25 제보) */
 html body #root .portal-banner-nav { position: absolute; bottom: 0; left: 0; right: 0; z-index: 5; background: color-mix(in srgb, var(--plate) 79%, transparent); backdrop-filter: blur(1.2rem); }
-html body #root .portal-banner-bar { display: flex; align-items: center; gap: 1.2rem; padding: 1.2rem 2.4rem 0; }
+html body #root .portal-banner-bar { display: flex; align-items: center; gap: 1.2rem; padding: 0.8rem 2.4rem 0; }
 html body #root .banner-progress { flex: 1; height: 0.4rem; overflow: hidden; border-radius: var(--r-tag); background: color-mix(in srgb, var(--plate-fg) 15%, transparent); }
 html body #root .banner-progress i { display: block; width: 100%; height: 100%; background: var(--plate-accent); transform: scaleX(var(--banner-progress, 0)); transform-origin: left; }
 html body #root .portal-banner-count { color: var(--plate-muted); font: 600 1.2rem/1 Pretendard, sans-serif; font-variant-numeric: tabular-nums; letter-spacing: 0.08em; }
@@ -60,10 +60,13 @@ html body #root .portal-banner-tabs button[aria-pressed=true] small { color: var
 html body #root .portal-banner-tabs :is(small, strong) { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 html body #root .portal-banner-tabs small { margin-bottom: 0.4rem; color: var(--plate-muted); font-size: 1.2rem; }
 html body #root .portal-banner-tabs strong { font: 650 1.4rem/1.5 Pretendard, sans-serif; }
+/* 멈춤 — 막대 오른쪽의 작은 단추. 보이는 크기는 2.8rem, 누르는 자리는 ::after 로 44px(--tap)까지 넓힌다 */
 html body #root .home__welcome .max-slider__toggle {
-  top: 2rem; right: 2rem; bottom: auto; z-index: 6; display: inline-flex; align-items: center; justify-content: center; min-width: var(--tap); min-height: var(--tap);
-  border: 1px solid var(--plate-line); border-radius: var(--r-ctl); background: color-mix(in srgb, var(--plate) 70%, transparent); color: var(--plate-fg); box-shadow: none;
+  position: relative; inset: auto; z-index: auto; display: inline-flex; flex: none; align-items: center; justify-content: center;
+  width: 2.8rem; height: 2.8rem; min-width: 0; min-height: 0; padding: 0;
+  border: 1px solid var(--plate-line); border-radius: var(--r-tag); background: transparent; color: var(--plate-fg); font-size: 1.2rem; line-height: 1; box-shadow: none;
 }
+html body #root .home__welcome .max-slider__toggle::after { content: ''; position: absolute; inset: -0.8rem; }
 
 /* ── 구역 머리 ─────────────────────────────────────────────────────────── */
 html body #root .home-dashboard .home__section { border: 0; padding-bottom: 2rem; margin-bottom: 0.8rem; }
@@ -154,9 +157,19 @@ html body #root .portal-motion > a {
 }
 @keyframes portal-flow-right { from { transform: translateX(-50%); } to { transform: translateX(0); } }
 
-/* 11월 탱커 준비 — 띠 아래 오른쪽 작은 입구 (모양은 parts.css 단추) */
-html body #root .portal-prep-note { display: flex; justify-content: flex-end; margin-top: 1.2rem; }
-html body #root .portal-prep-note .portal-tank-link { color: var(--muted); font-size: 1.2rem; }
+/* 11월 탱커 준비 — 알림 한 줄. 강조 카드(parts.css)와 같은 판 · 왼쪽 띠, [방패] 제목 / 일정 … › */
+html body #root .portal-prep-note { display: block; margin-top: 1.2rem; }
+html body #root .portal-prep-note .portal-tank-link {
+  box-sizing: border-box; display: flex; align-items: center; gap: 1.2rem; width: 100%; min-height: var(--tap); padding: 1.2rem 1.6rem;
+  border: 1px solid var(--line); border-left: 0.4rem solid var(--brand); border-radius: var(--r-box);
+  background: linear-gradient(120deg, var(--selected), var(--surface) 65%); color: var(--fg); text-align: left; box-shadow: none; cursor: pointer;
+}
+html body #root .portal-tank-link__icon { display: inline-flex; flex: none; align-items: center; justify-content: center; width: 3.6rem; height: 3.6rem; border-radius: 50%; background: var(--surface-2); font-size: 1.6rem; line-height: 1; }
+html body #root .portal-tank-link__body { display: flex; flex: 1; flex-direction: column; gap: 0.4rem; min-width: 0; }
+html body #root .portal-tank-link__body b { color: var(--fg); font: 700 1.4rem/1.5 Pretendard, sans-serif; }
+html body #root .portal-tank-link__body small { overflow: hidden; color: var(--muted); font: 400 1.2rem/1.5 Pretendard, sans-serif; text-overflow: ellipsis; white-space: nowrap; }
+html body #root .portal-tank-link__go { flex: none; color: var(--brand); font-size: 2.2rem; line-height: 1; }
+@media (hover: hover) { html body #root .portal-prep-note .portal-tank-link:hover { border-color: var(--brand); } }
 
 /* ── 서비스 포스터 — 그림이 판을 채우고 아래로 갈수록 판 색에 잠긴다 ───── */
 html body #root .home-dashboard .home__service-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 2rem; }
@@ -214,7 +227,7 @@ html body #root .home-dashboard .home-updates__list .pick__discover-action > spa
 @media (min-width: 1000px) {
   html body #root .home__top-layout .home__welcome { height: auto; aspect-ratio: 3 / 1; min-height: 44rem; }
   html body #root .home__intro { top: 12%; }
-  html body #root .home__cta { top: auto; bottom: 12rem; }
+  html body #root .home__cta { top: auto; bottom: 12.8rem; }
 }
 @media (max-width: 999px) {
   /* 999px 아래는 배너가 세로 62rem 이라 그림 양옆이 잘린다 — 상대 보스가 선 자리를 보인다 */
@@ -229,10 +242,10 @@ html body #root .home-dashboard .home-updates__list .pick__discover-action > spa
   html body #root .home__top-layout .home__welcome { height: 30rem; }
   html body #root .home__intro { top: 5.2rem; left: 2rem; width: calc(100% - 4rem); }
   html body #root .home__intro h2 { font-size: 2.2rem; }
-  html body #root .home__top-layout .home__cta { top: auto; bottom: 10rem; left: 2rem; right: 2rem; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.8rem; }
+  html body #root .home__top-layout .home__cta { top: auto; bottom: 10.8rem; left: 2rem; right: 2rem; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.8rem; }
   html body #root .home-dashboard .home__cta > .home__btn { width: auto; height: var(--tap); padding: 0 1.2rem; font-size: 1.2rem; white-space: nowrap; }
   html body #root .home__welcome .max-hero::after { background: linear-gradient(color-mix(in srgb, var(--plate) 91%, transparent), color-mix(in srgb, var(--plate) 25%, transparent) 60%, color-mix(in srgb, var(--plate) 63%, transparent)); }
-  html body #root .portal-banner-bar { padding: 1.2rem 2rem 0; }
+  html body #root .portal-banner-bar { padding: 0.8rem 2rem 0; }
   html body #root .portal-banner-tabs button { flex-basis: 50%; padding: 0.8rem 2rem 1.2rem; }
   html body #root .portal-banner-tabs small { margin-bottom: 0; }
   html body #root .home-dashboard .home__section h3 { font-size: 2.2rem; }
@@ -253,15 +266,16 @@ html body #root .home-dashboard .home-updates__list .pick__discover-action > spa
   html body #root .home-dashboard .pick__meta { flex: 1 1 auto; min-width: 0; margin: 0; overflow: hidden; text-align: right; text-overflow: ellipsis; white-space: nowrap; }
 
   /* 둘러보기 · 글자 띠 — 여백과 글자를 한 단씩 줄인다 */
-  html body #root .portal-discovery { grid-template-columns: 1fr; gap: 1.2rem; min-height: 0; margin-top: 2rem; padding: 2rem; }
-  html body #root .portal-discovery__eyebrow { margin-bottom: 0.8rem; }
-  html body #root .portal-discovery strong { font-size: 2.2rem; }
+  /* 한 단 더 작게 (2026-09-25 제보) — 카드 전체가 링크라 안의 단추 모양은 36px 로 줄여도 누를 자리는 카드다 */
+  html body #root .portal-discovery { grid-template-columns: 1fr; gap: 0.8rem; min-height: 0; margin-top: 2rem; padding: 1.6rem; }
+  html body #root .portal-discovery__eyebrow { margin-bottom: 0.4rem; }
+  html body #root .portal-discovery strong { font-size: 1.6rem; line-height: 1.5; }
   html body #root .portal-discovery__copy { padding: 1.2rem 1.6rem; }
-  html body #root .portal-discovery__copy p { margin-bottom: 1.2rem; font-size: 1.4rem; }
-  html body #root .portal-discovery__copy > span { min-height: var(--tap); }
-  html body #root .portal-motion { padding: 1.6rem 2rem; }
+  html body #root .portal-discovery__copy p { margin-bottom: 0.8rem; font-size: 1.2rem; line-height: 1.5; }
+  html body #root .portal-discovery__copy > span { min-height: 3.6rem; padding: 0 1.2rem; }
+  html body #root .portal-motion { padding: 1.2rem 1.6rem; }
   html body #root .portal-motion > span { font-size: 2.2rem; }
-  html body #root .portal-motion > a { display: inline-flex; align-items: center; min-height: var(--tap); margin-top: 0.8rem; padding: 0 1.6rem; }
+  html body #root .portal-motion > a { display: inline-flex; align-items: center; min-height: var(--tap); margin-top: 0.4rem; padding: 0 1.2rem; font-size: 1.2rem; }
 
   /* 서비스 카드 58 → 약 30rem: 그림은 머리 위 10rem 만 보이고, 목적지 줄은 누를 만큼(44px)만 */
   html body #root .home-dashboard .home__service-grid { gap: 1.2rem; }
