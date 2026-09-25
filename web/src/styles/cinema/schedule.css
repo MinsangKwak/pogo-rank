@@ -21,7 +21,7 @@ html body #root #page-schedule .cal__day {
   min-height: 14.8rem; gap: 0.8rem; padding: 1.2rem; border: 1px solid var(--line); border-radius: var(--r-ctl);
   background: var(--surface-2); transition: background 0.15s, border-color 0.15s;
 }
-html body #root #page-schedule .cal__day:hover { background: var(--hover); border-color: var(--brand); }
+@media (hover: hover) { html body #root #page-schedule .cal__day:hover { background: var(--hover); border-color: var(--brand); } }
 html body #root #page-schedule .cal__day.is-selected { background: var(--selected); border: 1px solid var(--brand); outline: 1px solid var(--brand); box-shadow: none; }
 html body #root #page-schedule .cal__num { color: var(--fg); font-size: 1.6rem; font-weight: 700; }
 html body #root #page-schedule .cal__day.is-today .cal__num { color: var(--brand); }
