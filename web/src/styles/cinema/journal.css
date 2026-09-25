@@ -19,7 +19,7 @@ html body #root .updates-intro p { color: var(--plate-muted); line-height: 1.7; 
 html body #root [data-route^="game-update"] .page__sec { margin: 3.2rem 0 2rem; }
 html body #root [data-route^="game-update"] .upd__cards { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.6rem; }
 html body #root [data-route^="game-update"] .upd__card { padding: 2.8rem; cursor: pointer; transition: border-color 0.2s, transform 0.2s; }
-html body #root [data-route^="game-update"] .upd__card:hover { border-color: var(--brand); transform: translateY(-0.4rem); }
+@media (hover: hover) { html body #root [data-route^="game-update"] .upd__card:hover { border-color: var(--brand); transform: translateY(-0.4rem); } }
 html body #root [data-route^="game-update"] .upd__title { margin: 1.6rem 0; font: 700 2.2rem/1.5 Pretendard, sans-serif; }
 html body #root [data-route^="game-update"] .upd__title a { color: var(--fg); text-decoration: none; }
 html body #root [data-route^="game-update"] :is(.upd__summary, .upd__quote, .upd__head-sum) { color: var(--muted); line-height: 1.7; }
