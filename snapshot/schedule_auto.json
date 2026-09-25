@@ -484,5 +484,13 @@
 "end": "2027-01-15",
 "cat": "event",
 "label": "adidas × Pokémon Timed Research"
+},
+"sandile-hatch-day-2026": {
+"id": "sandile-hatch-day-2026",
+"type": "event",
+"start": "2026-10-17",
+"end": "2026-10-17",
+"cat": "event",
+"label": "Sandile Hatch Day"
 }
 }
