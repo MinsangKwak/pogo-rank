@@ -302,7 +302,17 @@ export function TankPopupEntry({ onOpen, compact = false }: { onOpen: OpenMon; c
   const show = () => { setOpen(true); track('home_popup', { id: 'novtank', action: 'open' }); };
   return (
     <>
-      {compact ? <button className="portal-tank-link" type="button" onClick={show}>11월 탱커 준비 · 예상 일정 ↗</button> : <div className="tankpop-entry">
+      {compact ? (
+        // 홈의 입구는 알림 한 줄 — 오른쪽에 뜬 작은 단추는 무엇을 여는지 안 읽혔다 (2026-09-25 제보). 보스 이름은 팝업이 데이터에서 그린다
+        <button className="portal-tank-link" type="button" onClick={show}>
+          <span className="portal-tank-link__icon" aria-hidden="true">🛡</span>
+          <span className="portal-tank-link__body">
+            <b>11월 다이맥스 레이드 탱커 준비</b>
+            <small>예상 일정 11/14 · 11/15 — 보스별 탱커 · 육성 순서</small>
+          </span>
+          <span className="portal-tank-link__go" aria-hidden="true">›</span>
+        </button>
+      ) : <div className="tankpop-entry">
         <Callout tone="brand" icon="🛡" title="11월 다이맥스 레이드 탱커 준비 (예상 일정)">
           <Inline gap="sm" align="center" justify="between">
             <Text size="sub" tone="muted" as="span">11/14 · 11/15 — 보스별 탱커 · 육성 순서 · 종합 순위</Text>
