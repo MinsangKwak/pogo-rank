@@ -12,13 +12,13 @@
 import { BASE } from './base';
 
 export const HERO_ART = {
-  src: `${BASE}images/max-battle-articuno-team-1200.webp`,
-  srcSet: `${BASE}images/max-battle-articuno-team-720.webp 720w, ${BASE}images/max-battle-articuno-team-1200.webp 1200w`,
-  sizes: '(max-width: 699px) 100vw, (max-width: 999px) 90vw, 55vw',
+  src: `${BASE}images/max-battle-articuno-panorama-1200.webp`,
+  srcSet: `${BASE}images/max-battle-articuno-panorama-720.webp 720w, ${BASE}images/max-battle-articuno-panorama-1200.webp 1200w`,
+  sizes: '100vw',
   width: 1200,
-  height: 800,
-  // 프리져가 그림 가운데보다 오른쪽(62%)에 있다 — 오른쪽 끝에 붙이면 날개만 남는다
-  focus: '70% top',
+  height: 400,
+  // 새 3:1 구도는 프리져가 오른쪽에 선다. 모바일에서는 보스 얼굴을 중심으로 자른다.
+  focus: 'right top',
 } as const;
 
 /**
@@ -44,7 +44,23 @@ export interface MaxArt {
   alt: (names: Readonly<Record<string, string>>) => string;
 }
 
+/** 10월 신규 배너는 같은 3:1 구도와 반응형 WebP 규격을 쓴다. */
+function panorama(dex: number, file: string, gmax = false): MaxArt {
+  return {
+    dex: [dex],
+    src: `${BASE}images/max-battle-${file}-1200.webp`,
+    srcSet: `${BASE}images/max-battle-${file}-720.webp 720w, ${BASE}images/max-battle-${file}-1200.webp 1200w`,
+    sizes: '100vw', width: 1200, height: 400, focus: 'right top',
+    alt: (names) => `${gmax ? '거다이맥스' : '다이맥스'} ${names[String(dex)] ?? ''}의 맥스 배틀 경기장 일러스트`,
+  };
+}
+
 export const MAX_ART: readonly MaxArt[] = [
+  panorama(815, 'cinderace-panorama', true),
+  panorama(850, 'sizzlipede-panorama'),
+  panorama(821, 'rookidee-character-panorama'),
+  panorama(215, 'sneasel-panorama'),
+  panorama(302, 'sableye-character-panorama'),
   {
     // 고릴타·피카츄가 다이맥스 울머기와 맞선다 — 울머기 주간(2026-09-28). 2172w PNG(2.1MB)를 WebP 두 벌로 줄였다
     dex: [816],
@@ -55,14 +71,22 @@ export const MAX_ART: readonly MaxArt[] = [
     alt: (names) => `${names['812'] ?? ''}·${names['25'] ?? ''}의 풀·전기 기술에 맞서는 다이맥스 ${names['816'] ?? ''} 배틀 일러스트`,
   },
   {
-    // 레지락·해피너스·루기아·몰드류가 다이맥스 프리져와 맞선다 — 프리져·썬더·파이어 주간(2026-09-21)
+    // 거대코뿌리·해피너스·루기아·몰드류가 다이맥스 프리져와 맞선다 — 프리져·썬더·파이어 주간(2026-09-21)
     dex: [144],
     ...HERO_ART,
     alt: (names) => `${names['464'] ?? ''}·${names['242'] ?? ''}·${names['249'] ?? ''}·${names['530'] ?? ''}가 다이맥스 ${names['144'] ?? ''}와 맞서는 배틀 일러스트`,
   },
 ];
 
-/** 이 일정의 그림 — 그림 속 보스가 일정에 다 있어야 준다 */
-export function maxArtFor(dex: readonly number[]): MaxArt | undefined {
+/** 보스 미공개 행사는 특정 포켓몬 대신 알을 소재로 한 콘셉트 그림을 보여 준다. */
+const MAX_BATTLE_ARENA_ART: MaxArt = {
+  ...panorama(0, 'mystery-egg-panorama'),
+  dex: [],
+  alt: () => '미공개 맥스 배틀 보스를 상징하는 빛나는 알의 콘셉트 일러스트',
+};
+
+/** 알려진 보스가 있으면 해당 그림만 사용한다. 미공개 그림은 확인된 행사에만 붙인다. */
+export function maxArtFor(dex: readonly number[], eventId?: string): MaxArt | undefined {
+  if (!dex.length && eventId === 'max-battle-day-october-24-2026') return MAX_BATTLE_ARENA_ART;
   return MAX_ART.find((art) => art.dex.every((one) => dex.includes(one)));
 }

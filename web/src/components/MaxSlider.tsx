@@ -17,8 +17,7 @@ import type { Swiper as SwiperCore } from 'swiper';
 import 'swiper/css';
 import 'swiper/css/pagination';
 import type { MaxSlide } from '../lib/maxSlides';
-import { useDexSoft } from '../lib/data';
-import { spriteSrc } from '../lib/sprite';
+import { maxArtFor } from '../lib/heroArt';
 
 // 한 장에 머무는 시간 — 보스 이름과 날짜 두 줄을 읽기에 넉넉하게
 const DELAY = 5000;
@@ -30,7 +29,7 @@ function reducedMotion(): boolean {
 export default function MaxSlider({ items, slides }: {
   /** 장마다 그려진 판 (components/MaxPoster.tsx) — 첫 장이 홈이 받는 동안 세워 둔 그 장이다 */
   items: readonly { key: string; node: ReactNode }[];
-  /** 뒤 장 보스 그림을 미리 받는 데만 쓴다 */
+  /** 일정 탭과 다음 장의 일러스트를 미리 받는 데 쓴다 */
   slides: readonly MaxSlide[];
 }) {
   const swiper = useRef<SwiperCore | null>(null);
@@ -50,17 +49,18 @@ export default function MaxSlider({ items, slides }: {
     row.scrollTo({ left: tab.offsetLeft, behavior: still ? 'auto' : 'smooth' });
   }, [active, still]);
 
-  // 뒤 장의 보스 그림을 미리 받는다 — 그림은 화면에 들어올 때 받는데(loading=lazy), 옆으로 숨은 장은
-  // 넘어오는 그 순간에야 들어와 빈 칸이 먼저 보인다
-  const dex = useDexSoft();
+  // 다음 배너 한 장만 미리 받는다. 실제 표시하는 WebP의 화면 크기에 맞는 파일을 고른다.
   useEffect(() => {
-    if (!dex) return;
-    const ids = new Set(dex.SPRITE_IDS);
-    for (const boss of slides.flatMap((slide) => slide.bosses)) {
-      const src = spriteSrc(boss.sprite, ids);
-      if (src) new Image().src = src;
-    }
-  }, [dex, slides]);
+    const next = items[(active + 1) % total];
+    const slide = slides.find((one) => one.id === next?.key);
+    if (!slide) return;
+    const art = maxArtFor(slide.bosses.map((boss) => boss.dex), slide.id);
+    if (!art) return;
+    const image = new Image();
+    image.sizes = art.sizes;
+    image.srcset = art.srcSet;
+    image.src = art.src;
+  }, [active, items, slides, total]);
 
   // 멈춤은 사람이 고른 것이다 — 마우스를 올렸다 내려도 다시 굴리지 않는다
   useEffect(() => {
@@ -118,7 +118,7 @@ export default function MaxSlider({ items, slides }: {
               <button key={item.key} type="button" aria-pressed={active === index}
                 onClick={() => { swiper.current?.slideToLoop(index); setPlaying(false); }}>
                 <small>{slide?.short ?? 'BATTLE GUIDE'}</small>
-                <strong>{slide?.bosses.map((boss) => boss.name).join(' · ') || '맥스 배틀 준비하기'}</strong>
+                <strong>{slide?.bosses.map((boss) => boss.name).join(' · ') || (slide ? '보스 발표 전' : '맥스 배틀 준비하기')}</strong>
               </button>
             );
           })}
