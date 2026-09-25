@@ -25,25 +25,26 @@
 .tankpop .ds-card__title .sprite { width: 3.2rem; height: 3.2rem; vertical-align: middle; margin-right: .4rem; }
 .tankpop__picks, .tankpop__list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
 .tankpop__picks > li, .tankpop__list > li {
-  display: grid; grid-template-columns: 2.8rem minmax(0, 1fr) auto; align-items: center; gap: .4rem 1.2rem;
-  padding: .8rem 0; border-top: .1rem dashed var(--line);
+  display: grid; grid-template-columns: 2.8rem minmax(0, 1fr) auto; align-items: center; gap: .8rem 1.6rem;
+  padding: 1.6rem 0; border-top: .1rem dashed var(--line);
 }
+/* 줄 안도 한 칸씩 — 그림 · 딱지 · 이름 · 타입 알약 · 역할 배지가 맞붙어 한 덩어리로 읽혔다 (2026-09-25 제보) */
 .tankpop__picks > li > .tankpop__why { grid-column: 2 / -1; margin: 0; }
 .tankpop__rank { color: var(--brand); text-align: center; line-height: 1; }
 /* 이름 단추 — 누르는 것이니 tap 높이. 글자 모양은 본문 그대로 */
 .tankpop__mon {
-  display: inline-flex; align-items: center; gap: .8rem; min-width: 0; min-height: var(--tap);
+  display: inline-flex; align-items: center; gap: 1.2rem; min-width: 0; min-height: var(--tap);
   padding: 0; border: 0; background: transparent; color: inherit; text-align: left; cursor: pointer; font: inherit;
 }
 .tankpop__mon .sprite, .tankpop__mon .tankpop__nopic { width: 4.8rem; height: 4.8rem; flex: 0 0 auto; }
 .tankpop__nopic { display: inline-block; border-radius: 50%; background: color-mix(in srgb, var(--fg) 8%, transparent); }
-.tankpop__mon > span { display: flex; flex-wrap: wrap; align-items: center; gap: .4rem .8rem; min-width: 0; }
+.tankpop__mon > span { display: flex; flex-wrap: wrap; align-items: center; gap: .8rem; min-width: 0; }
 .tankpop__mon b { font-size: var(--fs-body); font-weight: 700; line-height: 1.5; }
 .tankpop__mon:hover b, .tankpop__mon:focus-visible b { color: var(--brand); text-decoration: underline; }
-.tankpop__tags { display: flex; flex-direction: column; align-items: flex-end; gap: .4rem; }
+.tankpop__tags { display: flex; flex-direction: column; align-items: flex-end; gap: .8rem; }
 /* 안내문 속 링크 — 브라우저 기본 파랑은 다크 카드 위에서 1.86 이다 (도면 그물이 잡았다). 상표색 + 밑줄 */
 .tankpop a { color: var(--brand); text-decoration: underline; text-underline-offset: .2rem; }
-.tankpop__foot { display: flex; flex-direction: column; gap: 1.2rem; }
+.tankpop__foot { display: flex; flex-direction: column; gap: 1.6rem; }
 .tankpop__foot .i18n-note { margin: 0; }
 .tankpop-entry { margin: 0 0 2.4rem; }
 /* 팝업 판 — 보스 둘이 옆으로 서야 하니 기본 52rem 보다 넓게. v3 스킨을 이기는 접두사는 하나 (§7) */
