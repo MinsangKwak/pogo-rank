@@ -79,8 +79,8 @@ for (const name of ['data.js', 'data-lazy.js']) {
     }
   }
   const env = (name) => process.env[name] ?? '';
-  // 판 번호는 release/version.json 이 원본. dev 채널 접미사는 build.py 와 같은 규칙이다
-  const version = JSON.parse(readFileSync(resolve(repo, 'release/version.json'), 'utf8'));
+  // 판 번호는 content/version.json 이 원본. dev 채널 접미사는 build.py 와 같은 규칙이다
+  const version = JSON.parse(readFileSync(resolve(repo, 'content/version.json'), 'utf8'));
   const appVersion = version.app + (env('BUILD_CHANNEL') === 'dev' ? '-dev' : '');
   // 데이터 기준일은 게임 마스터가 들고 있다 (build.py 도 같은 값을 HTML 에 박았다)
   const gmPath = resolve(repo, 'data/gm.json');

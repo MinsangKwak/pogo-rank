@@ -1,8 +1,8 @@
 # 변경 이력
 
-[프로젝트 소개](README.md) · [개발 이력 요약](docs/HISTORY.md) · [개발 가이드](docs/DEVELOPMENT.md) · [운영 가이드](docs/OPERATIONS.md)
+[프로젝트 소개](../README.md) · [개발 이력 요약](HISTORY.md) · [개발 가이드](DEVELOPMENT.md) · [운영 가이드](OPERATIONS.md)
 
-**버전별 변경과 검증 근거를 최신 날짜부터 기록합니다.** 프로젝트를 처음 검토한다면 [README](README.md)와 [개발 이력](docs/HISTORY.md)을 먼저 읽고, 수정 배경이 필요할 때 이 문서를 확인하세요.
+**버전별 변경과 검증 근거를 최신 날짜부터 기록합니다.** 프로젝트를 처음 검토한다면 [README](../README.md)와 [개발 이력](HISTORY.md)을 먼저 읽고, 수정 배경이 필요할 때 이 문서를 확인하세요.
 
 ## 읽는 방법
 
@@ -15,7 +15,7 @@
 
 날짜와 버전별로 접어서 표시합니다. 본문의 경로·비용·테스트 수·성능 수치는 **해당 릴리스 당시 기록**이며 현재 상태를 뜻하지 않습니다. 이전 계획은 뒤의 수정·정정 항목을 함께 확인합니다. 현재 실행 방법은 개발 가이드를 기준으로 합니다.
 
-버전 형식은 `vMAJOR.MINOR.PATCH`입니다. 구조 전환은 MAJOR, 새 기능은 MINOR, 수정은 PATCH로 구분하며, 원본은 [release/version.json](release/version.json)입니다. 문서 정리만으로 앱 버전을 올리지 않습니다.
+버전 형식은 `vMAJOR.MINOR.PATCH`입니다. 구조 전환은 MAJOR, 새 기능은 MINOR, 수정은 PATCH로 구분하며, 원본은 [release/version.json](../content/version.json)입니다. 문서 정리만으로 앱 버전을 올리지 않습니다.
 
 | 기록 항목 | 의미 |
 | --- | --- |
@@ -172,10 +172,10 @@ Worker 는 리다이렉트를 따라가지 않고(로그인 302 는 브라우저
 거다이맥스는 제 스프라이트(잠만보 10206 등)로 상세에 간다. 검사 `src/test/tankpop.test.tsx` 11개 · 스토리 `screens-tankpop`.
 
 **다지기 (코드 밖)** — Cloudflare 앞단이 켜졌다(프록시 · 보안 헤더 다섯 · HSTS · 자산 캐시 1년 · Rate limit · Bot Fight, 바깥 노드에서 실측 —
-[INFRA §8](docs/INFRA.md)). 브랜치 보호 셋(`deploy` · `main` · `dev`, [OPERATIONS §18](docs/OPERATIONS.md)). Firestore 규칙 v4.9.7 콘솔 게시.
-`pogo-rank` 는 다시 public, `pogo-rank-dev` 는 private([INFRA §9](docs/INFRA.md)).
+[INFRA §8](INFRA.md)). 브랜치 보호 셋(`deploy` · `main` · `dev`, [OPERATIONS §18](OPERATIONS.md)). Firestore 규칙 v4.9.7 콘솔 게시.
+`pogo-rank` 는 다시 public, `pogo-rank-dev` 는 private([INFRA §9](INFRA.md)).
 
-**운영 반영 (같은 날 저녁)** — dev → main PR #142 → deploy `7fab346` → `verify_deploy.sh` 전 항목 통과. 한 장 요약 [`docs/hardening-2026-09-22.png`](docs/hardening-2026-09-22.png) · 절차 기록 [OPERATIONS §19](docs/OPERATIONS.md).
+**운영 반영 (같은 날 저녁)** — dev → main PR #142 → deploy `7fab346` → `verify_deploy.sh` 전 항목 통과. 한 장 요약 [`docs/hardening-2026-09-22.png`](hardening-2026-09-22.png) · 절차 기록 [OPERATIONS §19](OPERATIONS.md).
 
 </details>
 
@@ -268,7 +268,7 @@ Firebase 콘솔 > Firestore > 규칙에 전체 교체로 붙여넣는다. 코드
 순위표 30줄이 돌아온다. `src/test/boundary.test.tsx` 가 넷을 못 박는다(받는가 · 되살리는가 ·
 성한 자료를 막지 않는가 · 경계 밖은 못 잡는다).
 
-**나머지 둘은 조치가 아니라 판단이다** — [인프라 8장](docs/INFRA.md#8-광고-트래픽을-앞두고-2026-09-22)에 적었다.
+**나머지 둘은 조치가 아니라 판단이다** — [인프라 8장](INFRA.md#8-광고-트래픽을-앞두고-2026-09-22)에 적었다.
 운영 헤더·대역폭·약관을 실측해 Cloudflare 앞단으로 정했고, Vercel 로 옮기지 않는 이유와
 그때가 언제인지를 같이 적었다.
 
@@ -654,7 +654,7 @@ v4.7.4 에서 설명서를 만들려고 응답 스키마를 붙였는데, 그 �
 **GCS 인 이유** — 수탁자가 Google LLC 로 이미 표에 있다(Firestore · Cloud Run). 새 업체가 늘지 않아
 방침 변경이 한 줄이고, **아직 9/28 시행 전이라 같은 공지에 얹을 수 있다.** 지나면 7일 사이클을 또 돌려야 했다.
 
-**추가 — `backup_runs` 표와 주소 둘** (`migrations/0002`, [`lib/backup.ts`](server/src/lib/backup.ts))
+**추가 — `backup_runs` 표와 주소 둘** (`migrations/0002`, [`lib/backup.ts`](../server/src/lib/backup.ts))
 - **개인정보가 없다.** 언제·어디에·몇 바이트·해시·컬렉션별 문서 **수**뿐이다. 이름도 이메일도 오지 않는다
 - `POST /v1/admin/backups` 워크플로가 올린 **뒤에** 잰 수를 보낸다
 - `GET /v1/admin/backups` 판정과 최근 열 판. 되돌릴 때 "언제 것을 받아야 하나" 도 여기서 답한다
@@ -688,16 +688,16 @@ v4.7.4 에서 설명서를 만들려고 응답 스키마를 붙였는데, 그 �
 
 | 무엇 | 어디 | 어떻게 만드나 |
 | --- | --- | --- |
-| API 설명서 (UI) | 서버 실행 후 `/docs` · [`docs/server-api.html`](docs/server-api.html) | `npm run openapi` |
-| API 설명서 (기계용) | [`server/openapi.json`](server/openapi.json) | 〃 |
-| 표·칸·제약과 **왜** | [`server/SCHEMA.md`](server/SCHEMA.md) | 손으로 |
-| 테이블 관계도 | [`docs/server-erd.png`](docs/server-erd.png) | `node scripts/bake_erd.mjs` |
+| API 설명서 (UI) | 서버 실행 후 `/docs` · [`docs/server-api.html`](server-api.html) | `npm run openapi` |
+| API 설명서 (기계용) | [`server/openapi.json`](../server/openapi.json) | 〃 |
+| 표·칸·제약과 **왜** | [`server/SCHEMA.md`](../server/SCHEMA.md) | 손으로 |
+| 테이블 관계도 | [`docs/server-erd.png`](server-erd.png) | `node scripts/bake_erd.mjs` |
 
 **한 장으로도 굽는다.** 운영에서는 `/docs` 가 같은 것을 서빙하지만, 리뷰하거나 남에게 보여 줄 때
 컨테이너를 띄우게 만들면 아무도 안 본다. `docs/server-api.html` 은 스펙을 박아 두어 **열면 바로 보인다.**
 
-**ERD 도 그림을 손으로 그리지 않는다.** [`docs/server-erd.html`](docs/server-erd.html) 을 고치고 다시 굽는다 —
-[`moncamp-structure`](docs/moncamp-structure.html) 과 같은 방식이다. 표가 바뀌었는데 그림만 옛것인 일을 막는다.
+**ERD 도 그림을 손으로 그리지 않는다.** [`docs/server-erd.html`](server-erd.html) 을 고치고 다시 굽는다 —
+[`moncamp-structure`](moncamp-structure.html) 과 같은 방식이다. 표가 바뀌었는데 그림만 옛것인 일을 막는다.
 
 **그물** — `src/test/openapi.test.ts` 4건. 저장소의 `openapi.json` 이 지금 코드와 **글자까지 같은지**
 대어 본다(어긋나면 `npm run openapi`). 주소 넷이 다 있는지, 열쇠가 필요한 자리에만 자물쇠가 붙었는지,
@@ -865,7 +865,7 @@ Data API 는 **집계만** 돌려주고(원본 이벤트를 못 꺼낸다), 지�
 
 **워크플로 셋** — `server-test.yml`(Postgres 서비스 컨테이너 + 이미지 빌드) ·
 `deploy-server.yml`(Cloud Run, `--min-instances 0`) · `server-rollup.yml`(매일 01:30 KST).
-배포 전 체크리스트는 [인프라 §7](docs/INFRA.md), 운영은 [운영 §16](docs/OPERATIONS.md) 에 있다 —
+배포 전 체크리스트는 [인프라 §7](INFRA.md), 운영은 [운영 §16](OPERATIONS.md) 에 있다 —
 **GCP 예산 알림을 걸기 전에는 배포하지 않는다.**
 
 **아직 안 한 것** — 검색순위 화면 되살리기(2판, 2주쯤 쌓인 뒤) · Firestore 백업 미러(3판) · 관리자 대시보드(4판).
@@ -2337,7 +2337,7 @@ v3.46.0 이 남긴 숫자 하나 — **LCP 3.5s**. 홈의 큰 그림은 `data.js
 
 되돌리기는 `scripts/firestore_restore.py` — 기본이 **미리보기**고 `--apply` 를 줘야 쓴다. `--only users --id <uid>` 로 문서 하나만도 된다. 백업에 있는 문서만 덮어쓰므로 백업 뒤 생긴 문서는 건드리지 않는다.
 
-필요한 시크릿 둘(`FIREBASE_SA_JSON` · `BACKUP_PASSPHRASE`)과 설정 순서는 [운영 문서 14장](docs/OPERATIONS.md#backup). **시크릿이 없으면 워크플로는 첫 단계에서 멈추고 무엇이 없는지 말한다.**
+필요한 시크릿 둘(`FIREBASE_SA_JSON` · `BACKUP_PASSPHRASE`)과 설정 순서는 [운영 문서 14장](OPERATIONS.md#backup). **시크릿이 없으면 워크플로는 첫 단계에서 멈추고 무엇이 없는지 말한다.**
 
 </details>
 

@@ -1,6 +1,6 @@
 # 개발 이력과 개선 사례
 
-[프로젝트 소개](../README.md) · [설계 결정](DEVELOPMENT.md#이전-버전의-설계-결정) · [로드맵](ROADMAP.md) · [전체 변경 이력](../CHANGELOG.md)
+[프로젝트 소개](../README.md) · [설계 결정](DEVELOPMENT.md#이전-버전의-설계-결정) · [로드맵](ROADMAP.md) · [전체 변경 이력](CHANGELOG.md)
 
 **moncamp는 단일 HTML 도구에서 Next.js·인증 API·데이터 파이프라인을 갖춘 서비스로 발전했습니다.** 이 문서는 구현의 변화와 그 이유를 요약합니다. 릴리스 횟수나 코드량 자체를 성과로 제시하기보다 검토 가능한 문제·해결 사례를 중심으로 정리했습니다.
 
@@ -20,7 +20,7 @@
 
 | 문제 | 해결 | 근거와 해석 |
 | --- | --- | --- |
-| 탱커 데이터가 딜러 형식으로 표시되어 `NaN` 노출 | 공통 표시 함수, 데이터별 필드 매핑, 화면 검증 | v4.2.4 이후 기록. [작업 지침](../CLAUDE.md) |
+| 탱커 데이터가 딜러 형식으로 표시되어 `NaN` 노출 | 공통 표시 함수, 데이터별 필드 매핑, 화면 검증 | v4.2.4 이후 기록. [작업 지침](../.claude/CLAUDE.md) |
 | 다른 테마에서 텍스트가 배경에 묻힘 | 색상 토큰과 이미지 위 전용 팔레트, 명암비 검사 | 밝은·어두운 테마를 함께 확인하는 회귀 검증 |
 | 역할과 실험 기능이 혼동됨 | `role`과 `beta` 분리 | [현재 RBAC](../server/src/lib/rbac.ts) |
 | 원본 데이터가 비어도 배포될 위험 | 정상 스냅샷과 비교, 대체 상태 표시, 필수 누락 중단 | [데이터 검증](../backend/guard.py) |
@@ -71,7 +71,7 @@
 
 </details>
 
-[이전 타임라인 이미지](history-timeline.png)와 [원본 HTML](history-timeline.html)은 2026-09-22까지의 기록입니다. 현재 구조는 [README](../README.md#구조), 세부 수정 사유는 [CHANGELOG](../CHANGELOG.md)를 확인하세요.
+[이전 타임라인 이미지](history-timeline.png)와 [원본 HTML](history-timeline.html)은 2026-09-22까지의 기록입니다. 현재 구조는 [README](../README.md#구조), 세부 수정 사유는 [CHANGELOG](CHANGELOG.md)를 확인하세요.
 
 ## 현재 남은 과제
 
