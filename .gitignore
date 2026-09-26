@@ -9,7 +9,8 @@ __pycache__/
 
 # 2026-09-05 v2.8.0 빌드 설정은 .env (커밋 안 함). 템플릿은 .env.example
 .env
-infra/firebase/firestore.rules.local
+# 슬래시 없는 패턴이라 어느 폴더에 있어도 가린다 — 옛 체크아웃의 루트 파일(관리자 uid 포함)도 함께
+firestore.rules.local
 snapshot/tables/
 
 # 2026-09-22 v4.9.7 Firestore 에뮬레이터(npm run test:rules)가 남기는 것
