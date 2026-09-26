@@ -5,10 +5,11 @@ __pycache__/
 # 2026-09-04 Claude Code 설정: 공유용 settings.json은 커밋, 개인 설정은 제외
 .claude/*
 !.claude/settings.json
+!.claude/CLAUDE.md
 
 # 2026-09-05 v2.8.0 빌드 설정은 .env (커밋 안 함). 템플릿은 .env.example
 .env
-firestore.rules.local
+infra/firebase/firestore.rules.local
 snapshot/tables/
 
 # 2026-09-22 v4.9.7 Firestore 에뮬레이터(npm run test:rules)가 남기는 것

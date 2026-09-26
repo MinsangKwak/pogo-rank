@@ -48,10 +48,10 @@ bash scripts/verify_deploy.sh https://moncamp.kr/ prod
 
 | 파일 | 역할 |
 | --- | --- |
-| `release/version.json` | 서비스 버전 원본 |
+| `content/version.json` | 서비스 버전 원본 |
 | `content/release-notes.mjs` | 한국어 사용자 안내 |
 | `content/release-notes.en.mjs` | 같은 날짜 키의 영어 안내 |
-| `CHANGELOG.md` | 개발 변경과 수정 근거 |
+| `docs/CHANGELOG.md` | 개발 변경과 수정 근거 |
 | `README.md` | 최신 릴리스 요약 |
 
 문서만 수정할 때 앱 버전을 올리지 않습니다. 최신 날짜·버전 표시는 `frontend-v4/src/test/version.test.ts`와 일치해야 합니다. 릴리스는 커밋마다 나누기보다 사용자에게 설명할 수 있는 단위로 묶습니다.
@@ -202,7 +202,7 @@ GA4는 메타데이터 서버의 서비스 계정 인증을 사용하며 별도 
 2. `</>` 웹 앱 등록 → 나오는 `firebaseConfig`를 `backend/build.py`의 `FIREBASE_CONFIG`에 파이썬 dict로 입력 (Firebase 호스팅 체크는 불필요 — GitHub Pages 사용)
 3. **Authentication** → 시작하기 → 로그인 방법 → **Google** 사용 설정 → 지원 이메일 선택
 4. Authentication → 설정 → **승인된 도메인**에 `minsangkwak.github.io` · `moncamp.kr` · `dev.moncamp.kr` 추가 (2026-09-14 v3.27.0 커스텀 도메인 — 12절)
-5. **Firestore Database** → 만들기 → 위치 `asia-northeast3(서울)` → 프로덕션 모드 → **규칙** 탭에 저장소의 [`firestore.rules`](../firestore.rules) 붙여넣고 **게시**
+5. **Firestore Database** → 만들기 → 위치 `asia-northeast3(서울)` → 프로덕션 모드 → **규칙** 탭에 저장소의 [`firestore.rules`](../infra/firebase/firestore.rules) 붙여넣고 **게시**
 
 `FIREBASE_CONFIG`가 비어 있으면 로그인 UI가 빌드에 들어가지 않아, 설정 전에 배포해도 나머지 기능은 정상입니다.
 `apiKey`는 비밀이 아니라 공개 식별자입니다 — 실제 방어선은 5번의 보안 규칙과 4번의 승인된 도메인입니다.
@@ -839,7 +839,7 @@ python3 scripts/firestore_restore.py --apply    # 실제 쓰기
 | --- | --- | --- |
 | Cloudflare | 네임서버 이관 · Full (strict) · HTTPS 강제 · HSTS · 보안 헤더 넷 · 자산 캐시 1년 · Bot Fight · Rate limit | [INFRA §8](INFRA.md) |
 | GitHub | 브랜치 룰셋 셋(`deploy` · `main` · `dev`) · 워크플로 7개의 액션을 커밋 SHA 로 고정 · `pogo-rank` public / `pogo-rank-dev` private | §18 · [INFRA §9](INFRA.md) |
-| Firebase | `firestore.rules` v4.9.7(삭제 분리)을 콘솔에 게시 — 루트 uid 는 콘솔에서만 채움 | §4 · [CLAUDE.md §4](../CLAUDE.md) |
+| Firebase | `firestore.rules` v4.9.7(삭제 분리)을 콘솔에 게시 — 루트 uid 는 콘솔에서만 채움 | §4 · [CLAUDE.md §4](../.claude/CLAUDE.md) |
 | CI | dev 배포가 규칙 파일이 바뀐 푸시에서만 에뮬레이터(JDK 21)로 규칙 검사 11개를 돈다 | `.github/workflows/deploy-dev.yml` |
 
 **남은 둘**(`/data/*.json` 캐시 규칙 · Rate limit 완화)도 같은 날 저녁에 대시보드에서 끝냈다 — [INFRA §8](INFRA.md) 의 "남은 둘" 밑 "한 것" 표. 이로써 광고 전 다지기 목록은 비었다.

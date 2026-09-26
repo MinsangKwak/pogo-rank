@@ -6,7 +6,7 @@
 //   문서가 어긋난다" 고 경고한다. 사람이 여섯 번 안 틀리기를 바라는 것은 규칙이 아니라 기대다.
 //
 //   Phase 1 에서 셋이 사라졌다 — build.py 의 상수와 components/release.js 의 RELEASE_VER 은
-//   release/version.json 을 읽게 됐고, v3 화면이 지워지며 그 자리도 없어졌다.
+//   content/version.json 을 읽게 됐고, v3 화면이 지워지며 그 자리도 없어졌다.
 //   남은 넷(version.json · 패치노트 한글·영문 · CHANGELOG · README)을 이 검사가 견준다.
 //
 // 무엇을 안 보나
@@ -20,10 +20,10 @@ import { resolve } from 'node:path';
 // jsdom 에서 import.meta.url 은 file: 스킴이 아니다 — dstokens.test.ts 와 같은 방식으로 연다
 const read = (path: string) => readFileSync(resolve(__dirname, '../../..', path), 'utf8');
 
-const version = JSON.parse(read('release/version.json')) as { app: string; release: string };
+const version = JSON.parse(read('content/version.json')) as { app: string; release: string };
 const notesKo = read('content/release-notes.mjs');
 const notesEn = read('content/release-notes.en.mjs');
-const changelog = read('CHANGELOG.md');
+const changelog = read('docs/CHANGELOG.md');
 const readme = read('README.md');
 
 /** 패치노트의 첫 묶음 머리 — `{ date: '2026-09-22 · v4.9.8', items: [` 의 date 만 */

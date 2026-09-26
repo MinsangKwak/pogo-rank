@@ -3,7 +3,7 @@
 **포켓몬 GO에서 어떤 포켓몬을 잡고, 키우고, 배틀에 사용할지 돕는 사이드 프로젝트입니다.**
 게임 데이터와 일정, 배틀별 추천을 한곳에 모으고 계산 기준을 함께 제공합니다. 데이터 수집부터 웹 UI, 인증 API, 배포·운영까지 연결한 프로젝트입니다.
 
-[서비스](https://moncamp.kr/) · [개발 미리보기](https://dev.moncamp.kr/) · [개발 가이드](docs/DEVELOPMENT.md) · [변경 이력](CHANGELOG.md)
+[서비스](https://moncamp.kr/) · [개발 미리보기](https://dev.moncamp.kr/) · [개발 가이드](docs/DEVELOPMENT.md) · [변경 이력](docs/CHANGELOG.md)
 
 > 문서 기준: 2026-09-26, **v5.3.0**. 현재 앱은 `web/`의 Next.js입니다. `frontend-v4/`는 이전 Vite 앱이며, 데이터 추출 도구와 Storybook에 계속 사용합니다.
 
@@ -27,7 +27,7 @@
 | --- | --- | --- |
 | 상세 주소가 해시 라우팅에 묶여 개별 문서를 제공하지 못함 | `/mon/[dex]` 정적 HTML, canonical과 JSON-LD 생성 | [상세 라우트](web/app/%5B...slug%5D/page.tsx) · [HTML 검증 CI](.github/workflows/web-test.yml) |
 | 외부 데이터가 비거나 축소되어 잘못된 순위를 배포할 수 있음 | 이전 정상 데이터와 비교하고 대체 여부를 표시. 필수 데이터와 대체본이 모두 없으면 빌드 중단 | [데이터 검증](backend/guard.py) |
-| 표마다 필드가 달라 잘못된 값이 UI에 노출됨 | 표시 값 변환 함수를 공통화하고 데이터·컴포넌트·화면 단계에서 검증 | [표시 함수](web/src/lib/cell.ts) · [작업 지침](CLAUDE.md) |
+| 표마다 필드가 달라 잘못된 값이 UI에 노출됨 | 표시 값 변환 함수를 공통화하고 데이터·컴포넌트·화면 단계에서 검증 | [표시 함수](web/src/lib/cell.ts) · [작업 지침](.claude/CLAUDE.md) |
 | 승인 권한과 실험 기능 권한이 섞임 | `role`과 `beta`를 분리하고 서버에서 인가 | [RBAC](server/src/lib/rbac.ts) · [인증 설계](server/AUTH.md) |
 | 리프레시 토큰 재사용과 동시 요청 처리 | 토큰 해시 저장, 회전, 재사용 시 세션 그룹 폐기 | [인증 구현](server/src/services/auth.ts) · [인증 테스트](server/src/test/auth.test.ts) |
 | 디자인 변경 후 테마별 가독성이 달라짐 | 공통 스타일과 화면 배치를 분리하고 토큰·격자·명암비 검사 | [디자인 문서](docs/design/README.md) · [스타일 검사](web/src/test/designgrid.test.ts) |
@@ -71,8 +71,10 @@ flowchart TD
 | [backend/](backend) | 수집 데이터 정규화, 순위·CP 관련 데이터 계산 |
 | [frontend-v4/](frontend-v4/README.md) | 이전 Vite 앱, 공용 데이터 추출과 Storybook |
 | [scripts/](scripts) | 빌드·검증·운영 도구 |
-| [content/](content) · [release/](release) | 한·영 릴리스 노트와 서비스 버전 원본 |
-| [docs/](docs/DEVELOPMENT.md) | 개발·운영·설계 기록 |
+| [content/](content) | 한·영 릴리스 노트 · 일정 · 서비스 버전 원본(`version.json`) |
+| [infra/](infra) | API 프록시 워커 · 이전 Firebase 규칙 · 이관 요청 |
+| [docs/](docs/README.md) | 개발·운영·설계 기록, 변경 이력, 저작물 고지 |
+| [.github/](.github) | 워크플로 · 기여 안내 · 보안 정책 |
 
 ## 로컬 실행
 
@@ -106,7 +108,7 @@ npm run dev -- --hostname 127.0.0.1 --port 5503
 
 ## 데이터와 한계
 
-PvP 순위는 PvPoke, 게임 수치는 PokeMiners, 한국어 명칭은 PokeAPI, 일정은 ScrapedDuck/LeekDuck과 공식 한국 발표를 참고합니다. PvE 외부 성능표와 자체 계산 결과는 구분합니다. [출처와 이용 조건](NOTICE.md), [계산 기준](docs/DEVELOPMENT.md#calculation)에서 자세히 확인할 수 있습니다.
+PvP 순위는 PvPoke, 게임 수치는 PokeMiners, 한국어 명칭은 PokeAPI, 일정은 ScrapedDuck/LeekDuck과 공식 한국 발표를 참고합니다. PvE 외부 성능표와 자체 계산 결과는 구분합니다. [출처와 이용 조건](docs/NOTICE.md), [계산 기준](docs/DEVELOPMENT.md#calculation)에서 자세히 확인할 수 있습니다.
 
 - 순위는 정해진 레벨·개체값·전투 가정에 따른 비교값입니다. 실제 결과를 보장하지 않습니다.
 - PvP 팀 추천은 상성 기반 근사이며 실드·기술 운용 전체를 시뮬레이션하지 않습니다.
@@ -122,21 +124,21 @@ PvP 순위는 PvPoke, 게임 수치는 PokeMiners, 한국어 명칭은 PokeAPI, 
 | 인증·DB 설계 검토 | [인증](server/AUTH.md) · [스키마](server/SCHEMA.md) |
 | 배포·장애 대응 | [운영](docs/OPERATIONS.md) · [인프라](docs/INFRA.md) |
 | 완료된 전환과 남은 과제 | [로드맵](docs/ROADMAP.md) · [v5 전환 기록](docs/V5-CUTOVER.md) |
-| 변경 제안·보안·권리 | [기여 안내](CONTRIBUTING.md) · [보안 정책](SECURITY.md) · [저작물 고지](NOTICE.md) |
+| 변경 제안·보안·권리 | [기여 안내](.github/CONTRIBUTING.md) · [보안 정책](.github/SECURITY.md) · [저작물 고지](docs/NOTICE.md) |
 
 ## 최근 릴리스
 
 <details>
 <summary><b>2026-09-26</b> — 릴리스 1개 · <code>v5.3.0</code></summary>
 
-공통 디자인과 밝은·어두운 테마를 정리하고, 10월 맥스 배틀 배너와 모바일 레이아웃을 개선했습니다. 상세 변경과 이전 버전 기록은 [CHANGELOG](CHANGELOG.md)에서 확인하세요.
+공통 디자인과 밝은·어두운 테마를 정리하고, 10월 맥스 배틀 배너와 모바일 레이아웃을 개선했습니다. 상세 변경과 이전 버전 기록은 [CHANGELOG](docs/CHANGELOG.md)에서 확인하세요.
 
 </details>
 
-버전의 원본은 [release/version.json](release/version.json)입니다. 문서만 정리하는 변경은 앱 버전을 올리지 않습니다.
+버전의 원본은 [content/version.json](content/version.json)입니다. 문서만 정리하는 변경은 앱 버전을 올리지 않습니다.
 
 ## 이용·기여
 
 이 저장소는 열람과 학습을 위해 공개한 소스이며, 일반적인 오픈소스 라이선스로 배포하지 않습니다. 포크·재배포·복제 서비스 운영·상업적 이용 제한은 [LICENSE](LICENSE)를 따릅니다. 2026-09-16 이전에 MIT 조건으로 받은 사본은 당시 조건이 유지됩니다.
 
-기여는 [기여 안내](CONTRIBUTING.md), 취약점 제보는 [보안 정책](SECURITY.md)을 확인해 주세요. 포켓몬 및 제3자 데이터·이미지의 권리는 각 권리자에게 있습니다.
+기여는 [기여 안내](.github/CONTRIBUTING.md), 취약점 제보는 [보안 정책](.github/SECURITY.md)을 확인해 주세요. 포켓몬 및 제3자 데이터·이미지의 권리는 각 권리자에게 있습니다.

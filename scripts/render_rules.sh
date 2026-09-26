@@ -41,11 +41,11 @@ MSG
 fi
 
 # 따옴표째로 바꾼다 — 설명 주석 안의 __ADMIN_UID__ 는 자리표시자라고 알려 주는 글이라 그대로 둔다
-sed "s/'__ADMIN_UID__'/'$ADMIN_UID'/g" firestore.rules > firestore.rules.local
+sed "s/'__ADMIN_UID__'/'$ADMIN_UID'/g" infra/firebase/firestore.rules > infra/firebase/firestore.rules.local
 
 # ── 3. 결과 확인 — 자리표시자가 남아 있으면 그대로 게시하면 안 된다 ──────────
-LEFT=$(grep -c "'__ADMIN_UID__'" firestore.rules.local || true)
+LEFT=$(grep -c "'__ADMIN_UID__'" infra/firebase/firestore.rules.local || true)
 [[ $LEFT -eq 0 ]] || { echo "✗ firestore.rules.local 에 자리표시자가 ${LEFT}곳 남았습니다 — 치환 규칙을 확인하세요" >&2; exit 1; }
 
-echo "✓ firestore.rules.local 생성 (uid $ADMIN_UID · $(grep -c "$ADMIN_UID" firestore.rules.local)곳 치환)"
+echo "✓ firestore.rules.local 생성 (uid $ADMIN_UID · $(grep -c "$ADMIN_UID" infra/firebase/firestore.rules.local)곳 치환)"
 echo "  Firebase 콘솔 > Firestore Database > 규칙 에 **전체 교체**로 붙여넣고 [게시] 하세요."
