@@ -24,12 +24,13 @@ describe('시행일 한 벌', () => {
     expect(legal).not.toContain('2026-10-02');
   });
 
-  it('맨 위 패치노트가 그날 나간 정정이고 그날부터라고 알린다', async () => {
+  // 개정일 묶음을 찾는다 — 처음엔 맨 위였지만 v5.3.0 부터 그 위에 새 판이 선다. 정정이 지워지지 않았는지가 보는 것이다
+  it('개정일에 나간 패치노트가 정정이고 그날부터라고 알린다', async () => {
     const { RELEASE_NOTES } = await import('../../../content/release-notes.mjs') as { RELEASE_NOTES: { date: string; items: string[] }[] };
-    const top = RELEASE_NOTES[0]!;
-    expect(top.date.slice(0, 10)).toBe(PRIVACY_VER);
-    expect(top.items.join(' ')).toContain('[정정]');
-    expect(top.items.join(' ')).toContain(`${m}월 ${d}일`);
+    const onDay = RELEASE_NOTES.find((note) => note.date.startsWith(PRIVACY_VER));
+    expect(onDay, `${PRIVACY_VER} 묶음이 패치노트에 없습니다`).toBeDefined();
+    expect(onDay!.items.join(' ')).toContain('[정정]');
+    expect(onDay!.items.join(' ')).toContain(`${m}월 ${d}일`);
   });
 });
 

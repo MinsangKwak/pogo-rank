@@ -15,6 +15,12 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 export const RELEASE_NOTES_EN = {
+  '2026-09-26 · v5.3.0': [
+    '**The home screen has a new design** — dark is the default. If you prefer light, pick it under ☰ → Settings; a theme you chose before is kept',
+    '**The banner now carries the October Max Battle schedule** — from this week\'s Articuno · Zapdos · Moltres to Sableye at the end of October, one slide each. The unannounced Max Battle Day on 10/24 shows an egg. The button next to the progress bar pauses it',
+    '**Smaller and denser on phones** — the banner, rankings and service cards are shorter, the Pokédex list is a two-line card, and the buttons in the screen header are icons only. Nothing stays highlighted after a tap',
+    '**The November tank popup is easier to read** — cards and rows that were touching now have room, and the entry on the home screen is a single notice line',
+  ],
   '2026-09-24 · v5.2.1': [
     '**[Correction] Screen records start today (September 24)** — v5.2.0 below said October 2, but the operator decided to turn it on right away, so the date moved up. That entry now shows the new date. What is recorded and how to turn it off are unchanged',
     '**You will be asked to agree once more at your next sign-in** — the privacy policy\'s effective date changed',
