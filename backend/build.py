@@ -40,10 +40,10 @@ from names import name_ko, species, FORM_KO
 import guard
 
 # ── 설정 ─────────────────────────────────────────────────────────────────────
-# 2026-09-22 v5 Phase 1 — 판 번호의 원본은 release/version.json 하나다.
+# 2026-09-22 v5 Phase 1 — 판 번호의 원본은 content/version.json 하나다.
 # 전에는 이 상수와 components/release.js 와 패치노트 본문 셋이 각자 적고 있어, 하나만 빠져도
 # 화면과 문서가 어긋났다 (CLAUDE.md §5 의 '여섯 곳').
-APP_VERSION = json.loads(open('release/version.json', encoding='utf-8').read())['app']
+APP_VERSION = json.loads(open('content/version.json', encoding='utf-8').read())['app']
 # 2026-09-14 v3.28.0 index.html 의 색인 허용 줄 — dev 빌드가 이 줄을 noindex 로 바꿔 끼운다
 ROBOTS_INDEX_META = '<meta name="robots" content="index, follow, max-image-preview:large">'
 # 2026-09-05 v2.7.3 빌드 채널 — 'prod'(기본) / 'dev'. dev 브랜치 워크플로(.github/workflows/deploy-dev.yml)가 BUILD_CHANNEL=dev 로 부른다.
@@ -499,7 +499,7 @@ def write_site_files(game_master, config, tables, stale=()):
             f'Contact: mailto:{contact_email}\n'
             f'Expires: {expires}T00:00:00.000Z\n'
             'Preferred-Languages: ko, en\n'
-            'Policy: https://github.com/minsangkwak/pogo-rank/blob/main/SECURITY.md\n')
+            'Policy: https://github.com/minsangkwak/pogo-rank/blob/main/.github/SECURITY.md\n')
     if BUILD_CHANNEL == 'dev':
         # dev 미리보기는 검색에 잡히면 안 된다 — 정적 robots.txt 를 전부 차단으로 덮어쓴다
         open('dist/robots.txt', 'w', encoding='utf-8').write('# moncamp dev 미리보기 — 색인 금지\nUser-agent: *\nDisallow: /\n')

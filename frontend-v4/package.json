@@ -12,7 +12,7 @@
     "build-storybook": "storybook build",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "test:rules": "npx --yes firebase-tools@15.30.2 emulators:exec --only firestore --project demo-moncamp \"vitest run --config vitest.rules.config.ts\"",
+    "test:rules": "npx --yes firebase-tools@15.30.2 emulators:exec --config ../infra/firebase/firebase.json --only firestore --project demo-moncamp \"vitest run --config vitest.rules.config.ts\"",
     "test:watch": "vitest"
   },
   "dependencies": {

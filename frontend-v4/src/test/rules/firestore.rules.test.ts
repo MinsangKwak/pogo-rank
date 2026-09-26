@@ -19,7 +19,7 @@ import { assertFails, assertSucceeds, initializeTestEnvironment, type RulesTestE
 import { deleteDoc, doc, getDoc, setDoc, type Firestore } from 'firebase/firestore';
 
 const ROOT = 'root-admin-uid';
-const RULES_PATH = process.env['RULES_PATH'] ?? resolve(__dirname, '../../../../firestore.rules');
+const RULES_PATH = process.env['RULES_PATH'] ?? resolve(__dirname, '../../../../infra/firebase/firestore.rules');
 const rules = readFileSync(RULES_PATH, 'utf8').replace("'__ADMIN_UID__'", `'${ROOT}'`);
 
 // 실데이터가 아니다 — 검사용 자리. 예약 도메인(.test)이라 누구의 주소도 아니다
