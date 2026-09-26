@@ -51,7 +51,7 @@ Pokémon 및 관련 명칭·캐릭터·이미지의 권리는 **The Pokémon Com
 | [Galmuri](https://github.com/quiple/galmuri) | 픽셀 웹폰트 (칩·탭·버튼·제목) | SIL OFL 1.1 | 번들·정적 자산 또는 CDN으로 제공. 폰트의 OFL 조건 적용 |
 | Firebase SDK · Google Analytics | 이전 앱의 로그인·저장소, 방문 통계 | Google 약관 | Firebase는 이전 앱에 남아 있고, 현재 인증은 Google OAuth를 사용 |
 
-AI로 제작한 배너도 포켓몬 캐릭터의 권리와 별개가 아닙니다. 공식 홍보물로 표시하지 않으며, 제작 범위와 이미지 사양은 [배너 기록](docs/design/max-battle-banners-2026-10.md)에 정리합니다.
+AI로 제작한 배너도 포켓몬 캐릭터의 권리와 별개가 아닙니다. 공식 홍보물로 표시하지 않으며, 제작 범위와 이미지 사양은 [배너 기록](design/max-battle-banners-2026-10.md)에 정리합니다.
 
 ## 4. 포크·재배포
 
