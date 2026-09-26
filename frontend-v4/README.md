@@ -50,7 +50,7 @@ npm run build
 
 `npm run build`에는 데이터 추출·타입 검사·테스트가 포함됩니다. Firebase 규칙을 수정한 경우에만 `npm run test:rules`로 에뮬레이터 검증을 추가합니다.
 
-새 UI 구성요소에는 스토리를 추가하고 두 테마를 확인합니다. `Stack`·`Inline`의 간격, `Text`·`Label`의 크기는 [토큰 정의](src/ds/tokens.ts)를 사용합니다. 자세한 화면 규칙은 [작업 지침](../CLAUDE.md)에 있습니다.
+새 UI 구성요소에는 스토리를 추가하고 두 테마를 확인합니다. `Stack`·`Inline`의 간격, `Text`·`Label`의 크기는 [토큰 정의](src/ds/tokens.ts)를 사용합니다. 자세한 화면 규칙은 [작업 지침](../.claude/CLAUDE.md)에 있습니다.
 
 ## 수정 시 주의
 

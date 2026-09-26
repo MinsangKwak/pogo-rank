@@ -13,8 +13,8 @@
 set -uo pipefail
 URL=${1:?사용법: verify_deploy.sh <주소> <prod|dev> [기대 버전]}
 CHANNEL=${2:?채널(prod|dev)을 주세요}
-# 2026-09-23 판 번호의 원본이 release/version.json 으로 옮겨졌다(CLAUDE.md §5) — build.py 에는 더 없다
-EXPECT=${3:-$(sed -n 's/.*"app": *"\(v[0-9.]*\)".*/\1/p' "$(dirname "$0")/../release/version.json")}
+# 2026-09-23 판 번호의 원본이 content/version.json 으로 옮겨졌다(CLAUDE.md §5) — build.py 에는 더 없다
+EXPECT=${3:-$(sed -n 's/.*"app": *"\(v[0-9.]*\)".*/\1/p' "$(dirname "$0")/../content/version.json")}
 [[ $CHANNEL == dev ]] && EXPECT="${EXPECT}-dev"
 URL=${URL%/}/
 bust="?v=$(date +%s)"
