@@ -38,7 +38,7 @@ STORYBOOK_BASE=/storybook/ npm run build-storybook
 # 산출물: storybook-static/
 ```
 
-개발 배포의 경로는 `/storybook/`입니다. 하위 경로용 빌드에는 `STORYBOOK_BASE`를 설정해야 합니다. 스토리 ID와 테마 URL 값은 ASCII를 사용하고, 미리보기 서버는 쿼리스트링을 보존해야 합니다.
+Storybook 배포 경로는 `/storybook/`입니다. 하위 경로용 빌드에는 `STORYBOOK_BASE`를 설정해야 합니다. 스토리 ID와 테마 URL 값은 ASCII를 사용하고, 미리보기 서버는 쿼리스트링을 보존해야 합니다.
 
 ## 검증
 

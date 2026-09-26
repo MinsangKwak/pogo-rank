@@ -8,7 +8,7 @@
 
 | 작업 | 참고 |
 | --- | --- |
-| dev·운영 배포 | [배포 흐름](#deployment) |
+| 배포 | [배포 흐름](#deployment) |
 | 계정·권한 문제 | [계정 운영](#accounts) · [인증 설계](../server/AUTH.md) |
 | 사이트·API 장애 | [장애 대응](#incidents) |
 | 수집·통계 확인 | [통계 운영](#analytics) |
@@ -19,7 +19,7 @@
 
 | 브랜치 | 역할 | 현재 웹 배포 |
 | --- | --- | --- |
-| `dev` | 작업·개발 미리보기 | `deploy-dev.yml` → `dev-pipeline.yml` → Vercel, dev.moncamp.kr |
+| `dev` | 작업·통합 전 검증 | `deploy-dev.yml` → `dev-pipeline.yml` → Vercel |
 | `main` | 검증된 변경 통합 | 운영 배포 승인 전 통합 단계 |
 | `deploy` | 운영 릴리스 | `deploy-web.yml` → Vercel, moncamp.kr |
 
@@ -27,18 +27,17 @@
 
 1. 최신 `dev`를 기준으로 변경과 diff를 검토합니다.
 2. 변경 영역에 맞는 [검증](DEVELOPMENT.md#verification)을 실행합니다.
-3. dev 반영 후 미리보기에서 해당 기능과 버전을 확인합니다.
+3. dev 반영 후 해당 기능과 버전을 확인합니다.
 4. 운영 릴리스로 승인된 변경만 `dev → main` PR로 통합합니다.
 5. 운영 배포 시 `main → deploy`를 병합하고 워크플로 결과와 실제 응답을 확인합니다.
 
-**dev만 요청한 작업은 dev에서 끝냅니다.** 운영 브랜치에 자동으로 이어서 병합하지 않습니다. 강제 푸시로 원격 변경을 덮지 않습니다.
+강제 푸시로 원격 변경을 덮지 않습니다.
 
 ```bash
 # 상태 확인
 bash scripts/status.sh
 
 # 배포된 서비스 확인
-bash scripts/verify_deploy.sh https://dev.moncamp.kr/ dev
 bash scripts/verify_deploy.sh https://moncamp.kr/ prod
 ```
 

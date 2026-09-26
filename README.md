@@ -3,7 +3,7 @@
 **포켓몬 GO에서 어떤 포켓몬을 잡고, 키우고, 배틀에 사용할지 돕는 사이드 프로젝트입니다.**
 게임 데이터와 일정, 배틀별 추천을 한곳에 모으고 계산 기준을 함께 제공합니다. 데이터 수집부터 웹 UI, 인증 API, 배포·운영까지 연결한 프로젝트입니다.
 
-[서비스](https://moncamp.kr/) · [개발 미리보기](https://dev.moncamp.kr/) · [개발 가이드](docs/DEVELOPMENT.md) · [변경 이력](CHANGELOG.md)
+[서비스](https://moncamp.kr/) · [개발 가이드](docs/DEVELOPMENT.md) · [변경 이력](CHANGELOG.md)
 
 > 문서 기준: 2026-09-26, **v5.3.0**. 현재 앱은 `web/`의 Next.js입니다. `frontend-v4/`는 이전 Vite 앱이며, 데이터 추출 도구와 Storybook에 계속 사용합니다.
 
