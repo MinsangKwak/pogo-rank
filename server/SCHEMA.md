@@ -1,323 +1,151 @@
-# 서버 스키마
+# PostgreSQL 스키마
 
-**표는 여덟입니다 — 신원 넷, 수집 넷.**
-신원 쪽(`users` · `sessions` · `favorites` · `trainers`)은 2026-09-22 v5 Phase 3 에 Firebase Auth 와
-Firestore 에서 가져왔습니다. 수집 쪽은 v4.7.0 부터 있던 것입니다.
+[서버 안내](README.md) · [인증 설계](AUTH.md) · [SQL 마이그레이션](migrations) · [운영 가이드](../docs/OPERATIONS.md)
 
-**수집 테이블은 네 개입니다.** `events`는 원본 이벤트, `search_daily`는 일별 집계, `backup_runs`는 백업 실행 결과를 저장합니다. backup_ack는 운영자가 확인한 데이터 감소 기준을 관리합니다.
+**업무 테이블 8개와 마이그레이션 기록 테이블 1개를 사용합니다.** 계정 데이터와 통계 데이터는 용도를 분리하며, 통계 방문자 ID를 계정 ID에 연결하지 않습니다. 컬럼·제약의 최종 기준은 SQL 마이그레이션입니다.
 
-[← server/README](README.md) · [API 설명서](openapi.json) · [개발 문서 §2.28](../docs/DEVELOPMENT.md) · [운영 문서 §16](../docs/OPERATIONS.md)
+## 테이블 개요
 
-[![수집 서버 ERD](../docs/server-erd.png)](../docs/server-erd.png)
-
-*원본은 [`docs/server-erd.html`](../docs/server-erd.html) 이며, 고칠 때는 그것을 고쳐 다시 굽습니다 —
-`node scripts/bake_erd.mjs` ([`moncamp-structure`](../docs/moncamp-structure.html) 과 같은 방식).*
-
----
-
-## 왜 표가 넷인가
-
-| 표 | 무엇 | 언제까지 |
+| 구분 | 테이블 | 역할 |
 | --- | --- | --- |
-| `events` | 검색 1회당 원본 이벤트 1건. GA4 집계와 별도로 보관 | **12개월** ([`lib/retention.ts`](src/lib/retention.ts)) |
-| `search_daily` | 날짜·이름·나라별 합계. 누가 찾았는지와 이어지지 않는다 | 계속 |
-| `backup_runs` | 백업 1회분의 **측정값** — 언제·어디에·몇 바이트·해시·문서 수 | 계속 |
-| `backup_ack` | "이 줄어듦은 사고가 아니다" 를 **운영자가** 확인하여 기록하는 테이블 (v4.8.5) | 계속 |
+| 계정 | `users` | Google 신원, 프로필, 역할, 실험 기능 권한 |
+| 계정 | `sessions` | 리프레시 토큰 해시, 회전 그룹, 만료·폐기 상태 |
+| 계정 | `favorites` | 사용자별 관심 포켓몬 |
+| 운영 | `trainers` | 권한으로 조회·수정을 제한하는 트레이너 코드 |
+| 통계 | `events` | 검색·페이지뷰 원본 이벤트 |
+| 통계 | `search_daily` | 한국 날짜별 검색 집계 |
+| 백업 진단 | `backup_runs` | 백업 실행 시각·위치·크기·해시·문서 수 |
+| 백업 진단 | `backup_ack` | 운영자가 확인한 데이터 감소 기준 |
+| 내부 관리 | `schema_migrations` | 적용한 SQL 파일명과 시각 |
 
-**`/v1/hot` 은 `events` 를 직접 센다.** `search_daily` 는 조회를 빠르게 하려는 캐시가 아니라
-**원본 삭제 후에도 집계값을 보존**하기 위한 테이블입니다. 지금 규모에서 원본을 직접 세는 쪽이 정확하고 충분히 빠르다.
-
----
-
-## 신원 · 권한 · 개인 데이터 (v5 Phase 3)
-
-**Firestore 네 컬렉션이 표 셋이 됩니다.**
-
-| 전 (Firestore) | 후 | 왜 |
-| --- | --- | --- |
-| `users/{uid}` | `users` + `favorites` | 즐겨찾기 배열을 줄로 폈다 |
-| `allowlist/{email}` | `users.role` · `users.beta` | 둘 다 "이 사람이 어디까지 할 수 있는가" 하나다 |
-| `requests/{email}` | `users.role = 'pending'` | 〃 |
-| `trainers/{name}` | `trainers` | 그대로 |
-
-**왜 둘이 하나가 되나.** Firestore 의 보안 규칙은 **이메일로만** 문서를 찾을 수 있었습니다.
-`request.auth.token.email` 로 `allowlist/{그 이메일}` 이 있는지 보는 것이 승인 판정의 전부였고,
-그래서 승인 여부와 요청 여부가 각자 컬렉션을 가져야 했습니다. 관계형에서는 사람 한 줄에 칸 하나입니다.
-
-### 설계에서 정한 넷
-
-**① 신원의 축은 이메일이 아니라 `google_sub` 입니다.**
-이메일은 바뀌고, 드물게 재사용됩니다. `sub` 는 구글이 그 계정에 영원히 붙여 두는 값이라
-이메일이 바뀌어도 같은 사람입니다. 이메일은 `unique` 로 두되 신원의 축은 아닙니다.
-
-**② 세션은 토큰이 아니라 해시를 담습니다.**
-`refresh_hash` 는 `sha256(리프레시 토큰)` 입니다. 토큰 자체는 브라우저 쿠키에만 있습니다.
-DB 가 통째로 새도 그것으로 로그인할 수 없습니다.
-
-**③ 리프레시는 회전하고 사슬을 가집니다.**
-한 번 쓰면 새것으로 갈립니다. 이미 쓴 것(`used_at` 이 있는 것)이 또 오면 둘 중 하나입니다 —
-네트워크가 답을 잃어 같은 것을 두 번 보냈거나, 누가 훔쳐 갔거나. 구분할 방법이 없으므로
-**그 `family_id` 의 세션을 전부 끊습니다.** 훔친 쪽만 조용히 살아 있는 것보다 둘 다 다시 로그인하는 편이 낫습니다.
-
-**④ IP 를 남기지 않습니다.**
-[CLAUDE.md §3](../CLAUDE.md) 은 수집 서버에만 하는 약속이 아닙니다. 세션이라고 예외가 되지 않습니다.
-`user_agent` 는 본인에게 "어디서 로그인했나" 를 보여 주는 용도로만 둡니다.
-
-### 잠금 방지 — 루트는 규칙 밖에 있다
-
-Firestore 규칙은 루트 관리자의 uid 를 **규칙 본문에 박아** 두었습니다 (`isRootAdmin()`).
-누구도 뺏을 수 없는 열쇠를 하나 남겨 두려는 것이었습니다. 서버에서는 그 자리를
-환경변수 `ROOT_EMAIL` 이 잇습니다 — DB 의 `role` 이 어떻게 되어 있든 그 이메일은 루트입니다.
-
-### 상한은 앱이 지킨다
-
-즐겨찾기 상한(승인 1,000 · 승인 대기 200)은 제약으로 적지 않았습니다. 줄 수를 세는 제약은
-SQL 로 깔끔하지 않고, 넣기 전에 한 번 세면 되는 일입니다. 규칙의 `smallDoc` · `favsOnly` 와 같은 값입니다.
-
-### `mons` 는 만들지 않았다
-
-Firestore 규칙에는 개체 300마리 자리가 있지만 **v4 화면이 한 번도 쓰지 않습니다.**
-개인정보처리방침도 `plan_guest_mons` 를 "브라우저에만 보관" 이라고 적습니다. 쓸 때 표를 더합니다.
-
----
-
-## `events` — 원본
-
-```sql
-create table events (
-  id          bigint generated always as identity primary key,
-  name        text        not null,
-  visitor     text        not null,
-  term        text,
-  surface     text,
-  country     char(2)     not null default 'ZZ',
-  channel     text        not null default 'prod',
-  props       jsonb       not null default '{}'::jsonb,
-  occurred_at timestamptz,
-  created_at  timestamptz not null default now()
-);
+```mermaid
+erDiagram
+    users ||--o{ sessions : owns
+    users ||--o{ favorites : saves
+    users {
+        bigint id PK
+        text google_sub UK
+        text email UK
+        text role
+        boolean beta
+    }
+    sessions {
+        uuid id PK
+        bigint user_id FK
+        bytea refresh_hash UK
+        uuid family_id
+        timestamptz expires_at
+    }
+    favorites {
+        bigint user_id PK,FK
+        integer dex PK
+    }
 ```
 
-| 칸 | 무엇 | 왜 이렇게 |
+`trainers`와 통계·백업 테이블은 위 계정 관계에 속하지 않습니다. 기존 [수집 서버 ERD](../docs/server-erd.png)는 작성 당시 자료이므로 현재 컬럼 확인에는 [마이그레이션](migrations)을 사용합니다.
+
+## 계정과 개인 데이터
+
+[0004_identity.sql](migrations/0004_identity.sql)에 정의합니다.
+
+| 테이블 | 주요 컬럼·제약 | 설계 이유 |
 | --- | --- | --- |
-| `name` | 이벤트 이름 | 지금은 `search` 하나. 늘릴 때는 [`lib/contract.ts`](src/lib/contract.ts) 의 `EVENT_NAMES` 한 줄이 는다 — 거기를 안 지난 이름은 저장되지 않는다 |
-| `visitor` | 브라우저가 만든 난수 ID (`pogo_visitor`) | **사람과 이어지지 않는다.** 이게 없으면 "같은 사람이 백 번" 을 구별 못 해 사람당 한도를 걸 수 없다 |
-| `term` | 고른 **완성어** | 친 글자가 아니다. '뮤' 를 치다 뮤츠를 고르면 남는 말은 `뮤츠` 다 ([v4.5.5](../CHANGELOG.md)) |
-| `surface` | 어느 검색창인가 | `dex` · `solo_boss` · `solo_deck` · `pvp_deck` · `iv_rank` |
-| `country` | ISO 3166-1 alpha-2, 모르면 `ZZ` | **IP 는 저장하지 않는다.** 앞단(Cloudflare · Google 프런트엔드)이 판정해 둔 코드를 읽을 뿐이다 ([`lib/country.ts`](src/lib/country.ts)) |
-| `channel` | `prod` \| `dev` | 미리보기가 운영 순위에 안 섞이게. 집계는 `prod` 만 본다 |
-| `props` | 아직 칸으로 승격 안 한 값 | 내년에 생길 이벤트를 위해 열어 둔다. 자주 쓰는 것만 칸으로 올린다 |
-| `occurred_at` | 브라우저가 말한 시각 | **믿지 않는다.** 오프라인에서 모아 보낼 때를 위해 남길 뿐이고, 7일 넘게 벗어나면 `null` 로 버린다 |
-| `created_at` | 서버가 받은 시각 | **집계는 이쪽을 쓴다** |
+| `users` | `google_sub` unique, 소문자 `email` unique, `role` check, `beta` boolean | 신원과 연락처를 구분하고 권한 값을 제한 |
+| `sessions` | `user_id` FK, `refresh_hash` unique, `family_id`, `used_at`, `revoked_at`, `expires_at` | 토큰 원문 없이 회전·재사용·만료 처리 |
+| `favorites` | 기본키 `(user_id, dex)`, 양수 `dex` | 사용자별 중복 방지. 폼 식별자를 포함 |
+| `trainers` | unique `name`, 길이 제한 `code`, `sort_order` | 표시 순서와 코드 관리 |
 
-### 제약 — 표도 같이 막는다
+세션과 즐겨찾기의 외래키에는 `ON DELETE CASCADE`를 적용합니다. 즐겨찾기 수량은 DB 제약 대신 [도메인 서비스](src/services/domain.ts)의 트랜잭션·행 잠금으로 제한합니다. 승인 대기는 200개, 나머지는 1,000개입니다.
 
-```sql
-check (char_length(name)    between 1 and 40)
-check (char_length(visitor) between 8 and 64)
-check (term    is null or char_length(term)    between 1 and 100)
-check (surface is null or char_length(surface) between 1 and 40)
-check (channel in ('prod', 'dev'))
-```
+개체별 보관함을 위한 `mons` 테이블은 만들지 않았습니다. 이전 규칙에 관련 항목이 있었어도 현재 사용하지 않는 기능을 이관 완료로 표시하지 않습니다.
 
-코드(`lib/contract.ts`)가 이미 막지만 **표에도 건다.** 스키마를 안 지나는 길(손으로 쓴 SQL ·
-마이그레이션 실수)이 언젠가 생기고, 그때 표가 마지막으로 잡는다.
+### Firebase에서 달라진 점
 
-### 인덱스
-
-| 인덱스 | 어느 질의가 타나 |
+| 이전 컬렉션 | 현재 저장 위치 |
 | --- | --- |
-| `events_name_created_idx (name, created_at desc)` | 순위·집계의 `where name='search' and created_at >= …`. 파기의 `created_at < horizon` 도 |
-| `events_term_visitor_idx (term, visitor) where term is not null` | 사람당 한도를 걸 때의 `group by term, visitor, day` |
+| `users/{uid}` | `users`와 `favorites` |
+| `allowlist/{email}` | `users.role`, `users.beta` |
+| `requests/{email}` | `users.role = 'pending'` |
+| `trainers/{name}` | `trainers` |
 
-**파기가 인덱스를 타게 하려고** 경계를 날짜가 아니라 `timestamptz` 로 만든다 —
-`(created_at at time zone 'Asia/Seoul')::date <= X` 로 쓰면 인덱스를 못 탄다 ([v4.7.3](../CHANGELOG.md)).
+이관은 [전환 기록](../docs/V5-CUTOVER.md), 신원 연결과 토큰 관리는 [인증 설계](AUTH.md)를 참고합니다.
 
----
+## 원본 이벤트: `events`
 
-## `search_daily` — 굳힌 역사
+[0001_init.sql](migrations/0001_init.sql)과 [요청 계약](src/lib/contract.ts)이 기준입니다.
 
-```sql
-create table search_daily (
-  day      date    not null,
-  term     text    not null,
-  country  char(2) not null,
-  hits     integer not null,
-  visitors integer not null,
-  primary key (day, term, country)
-);
-```
-
-| 칸 | 왜 |
+| 컬럼 | 의미와 처리 |
 | --- | --- |
-| `day` | **KST 기준 날짜.** 한국어 서비스라 '어제' 는 한국의 어제다. UTC 로 자르면 저녁 9시 이후가 다음 날로 넘어가 저녁 사용을 빠뜨린다 |
-| `country` | `not null`. 모르면 `ZZ` — 기본키에 `null` 을 둘 수 없어서다 |
-| `hits` | 사람당 **하루** 5회까지 센 합계 |
-| `visitors` | 그 날 그 말을 찾은 사람 수 |
+| `name` | 허용 이벤트는 `search`, `view` |
+| `visitor` | 브라우저 난수 ID. 계정 ID와 연결하지 않음 |
+| `term` | 검색에서 선택한 완성어. 입력 중인 문자열 전체를 저장하지 않음 |
+| `surface` | 검색 위치 또는 페이지뷰의 화면 ID |
+| `country` | ISO 국가 코드, 확인할 수 없으면 `ZZ` |
+| `channel` | `prod` 또는 `dev`. 운영 검색 순위는 `prod` 기준 |
+| `props` | DB의 JSONB 필드. 외부 요청에서 임의 속성을 모두 허용하는 의미는 아님 |
+| `occurred_at` | 브라우저가 보고한 시각. 서버 집계의 기준 시각으로 신뢰하지 않음 |
+| `created_at` | 서버 수신 시각, 집계 기준 |
 
-**`visitors` 는 날짜를 넘어 더하면 안 된다.** 같은 사람이 이틀 찾으면 2로 세어진다 —
-여러 날을 합친 사람 수가 필요하면 `events` 를 직접 세야 한다. `/v1/hot` 이 그렇게 한다.
+페이지뷰는 화면 ID를 받으며 전체 URL·검색 질의·상세 포켓몬 번호를 수집하지 않습니다. 요청은 허용 필드, 문자열 길이, 배치 크기를 검사합니다. DB에도 길이·채널 제약을 둡니다.
 
----
+IP는 저장하지 않지만 요청 빈도 제한에 일시적으로 사용합니다. 국가 코드는 [country.ts](src/lib/country.ts)에서 신뢰할 수 있는 앞단 정보를 처리합니다.
 
-## 순위를 세는 규칙
-
-[`lib/hot.ts`](src/lib/hot.ts) 의 상수 넷이 전부다.
-
-| 상수 | 값 | 무엇을 막나 |
-| --- | --- | --- |
-| `PERSON_CAP` | 5 | 한 사람이 **하루에** 한 말로 셀 수 있는 최대 횟수 |
-| `MIN_HITS` | 3 | 이 수를 못 넘긴 말은 안 세운다 (1회짜리 1위는 순위가 아니라 우연) |
-| `MIN_VISITORS` | 2 | **한 사람이 찾은 말은 안 세운다** — 하루 한도만으로는 긴 창을 못 막는다 |
-| `MIN_ROWS` | 3 | 줄이 이만큼 안 차면 표를 통째로 비운다 |
-
-**문턱은 자르기(`limit`) 전에 건다.** 받아 온 뒤에 거르면 한 사람이 밀어 올린 말들이
-열 자리를 다 먹고 그 뒤에 전부 걸러져 **표가 통째로 빈다** — 막으려던 일이 모양만 바꿔 일어난다.
-
-```sql
-with capped as (          -- ① 날 · 사람 · 말 로 묶어 한도를 건다
-  select term, visitor, (created_at at time zone 'Asia/Seoul')::date as day,
-         least(count(*), 5) as hits
-  from events where name='search' and channel='prod' and term is not null
-    and created_at >= now() - (:days * interval '1 day')
-  group by term, visitor, day
-), totals as (            -- ② 말 단위로 합친다
-  select term, sum(hits)::int as hits, count(distinct visitor)::int as visitors
-  from capped group by term
-)
-select term, hits, visitors from totals
-where hits >= 3 and visitors >= 2   -- ③ 자격을 먼저 본다
-order by hits desc, term asc
-limit :limit;                        -- ④ 그다음 자른다
-```
-
-**①에서 날을 빼면 `search_daily` 와 수가 어긋난다.** 한도가 '하루에 몇 번' 인데 날을 안 묶으면
-창 전체에 한 번만 걸려, 이레 동안 매일 다섯 번 찾은 사람이 35가 아니라 5로 세어진다.
-
----
-
-## 12개월 파기
-
-[`lib/retention.ts`](src/lib/retention.ts). 매일 01:30 KST 에 집계와 **한 부름에서** 돈다.
-
-1. `events` 에서 **KST 날짜가 경계 이하**인 것을 `search_daily` 로 굳힌다 (`on conflict do nothing`)
-2. 같은 것을 지운다
-
-넷이 중요하다.
-
-- **굳히고 나서 지운다.** 순서가 반대면 그 기간의 역사가 통째로 사라진다
-- **경계를 한 번만 잰다.** 문장마다 `now()` 를 다시 부르면 그 사이에 걸친 줄이 굳히기에는 안 들어가고 지우기에는 들어간다
-- **KST 날짜로 자른다.** 정확한 시각으로 자르면 ⓐ 하루 한 번 도는 일이 반나절을 넘기고
-  ⓑ 경계가 하루 가운데를 지나면 앞부분만 굳혀 둔 채 지워 뒷부분이 영영 사라진다
-- **경계를 빼서 구하지 않는다** (v4.8.1). `날짜 - interval '12 month'` 는 월말이 당겨 붙는다 —
-  아래 표의 두 날이 서로 반대쪽으로 샌다. `retentionEdge` 는 약속(`D + 12개월 <= 오늘`)이
-  참인 날 중 **가장 늦은 날**을 직접 골라, 당겨 붙든 말든 어느 쪽으로도 안 샌다
-
-| 오늘 | `- 12개월` | `+1일 -12개월 -1일` | 세어 고르기 |
-| --- | --- | --- | --- |
-| 2025-02-28 | 2024-02-28 ← 2/29 가 하루 더 산다 | 2024-02-29 | **2024-02-29** |
-| 2024-02-28 | 2023-02-28 | 2023-02-27 ← 하루를 더 살려 둔다 | **2023-02-28** |
-| 2026-06-15 | 2025-06-15 | 2025-06-15 | **2025-06-15** |
-
-응답으로 확인한다.
-
-```json
-{ "ok": true, "written": 12, "purged": { "rolled": 0, "deleted": 0, "throughDay": "2025-09-21" }, "keepMonths": 12 }
-```
-
----
-
-## `backup_runs` — 백업이 정말 돌았나
-
-```sql
-create table backup_runs (
-  id       bigint generated always as identity primary key,
-  ran_at   timestamptz not null default now(),
-  location text        not null,   -- 'gs://…' 또는 'actions-artifact://…'
-  bytes    bigint      not null,
-  sha256   char(64)    not null,
-  counts   jsonb       not null default '{}'::jsonb,
-  note     text
-);
-```
-
-**개인정보가 없다.** 백업 내용물은 암호화돼 다른 데(GCS)에 있고, 이 표에는 **잰 수**만 남는다 —
-언제, 어디에, 몇 바이트, 해시, 컬렉션별 문서 **수**. 이름도 이메일도 트레이너 코드도 오지 않는다.
-그래서 이 표가 생겨도 방침의 수집 항목은 늘지 않는다.
-
-### 왜 두나 — 백업의 진짜 실패는 조용하다
-
-워크플로는 초록인데 받아 온 문서가 절반이 됐거나, 몇 주째 안 돌았는데 아무도 모르는 쪽이다.
-**파일이 있다는 것과 그 안에 다 들어 있다는 것은 다른 말이고**, 아티팩트 목록은 뒤쪽을 말해 주지 않는다.
-
-[`lib/backup.ts`](src/lib/backup.ts) 가 넷을 본다.
-
-| 상수 | 값 | 무엇을 잡나 |
-| --- | --- | --- |
-| `STALE_DAYS` | 8 | ① 마지막 백업이 여드레가 넘었다 — 한 번은 걸렀다 |
-| `STALE_DAYS` | 8 | ② **지난번과 이번 사이**가 여드레가 넘었다 (v4.8.1) |
-| `DROP_RATIO` | 0.3 | ③ 문서 **총합**이 30% 넘게 줄었다 — ④가 아무것도 못 짚었을 때만 |
-| `DROP_RATIO` | 0.3 | ④ **컬렉션 하나**가 30% 넘게 줄었거나 아예 사라졌다 (v4.8.1) |
-
-**②를 따로 보는 이유** — 워크플로는 기록을 **넣고 나서** 되묻는다. 그 자리에서 ①은 언제나 0일이라
-한 주를 걸렀어도 안 걸린다. 걸렀다는 사실이 남아 있는 곳은 **간격**뿐이다.
-그래도 워크플로가 통째로 멈추면 묻는 사람이 없어지므로, 매일 도는 `server-rollup.yml` 이 **따로** 묻는다.
-
-**④를 따로 보는 이유** — 총합만 보면 `users` 가 100 → 0 이 돼도 `allowlist` 가 100 → 200 이면 통과한다.
-컬렉션은 각각 되돌리는 것이라 하나가 통째로 빈 것이 가려지면 안 된다.
-
-**③④는 최근 N회가 아닌 전체 기록의 최댓값을 기준으로 합니다** (v4.8.4·v4.8.5).
-
-| 잣대를 어떻게 잡나 | 무엇이 샜나 |
+| 인덱스 | 사용 목적 |
 | --- | --- |
-| 바로 앞 한 판 | `100 → 0 → 0` 이 **두 번째 판에서 통과한다** — 견줄 앞이 이미 0 이라서 |
-| 최근 N 판 | 망가진 판이 N 개 쌓이면 성한 판이 밀려나 **같은 일**이 벌어진다 |
-| **여태 최대** | 안 샌다. 대신 진짜로 줄었을 때 영영 시끄러워진다 → `backup_ack` 이 그 하나를 끊는다 |
+| `(name, created_at desc)` | 이벤트 종류·기간별 조회 |
+| `(term, visitor) where term is not null` | 검색어·방문자별 집계 |
 
-**감소 기준은 자동으로 낮추지 않으며, 운영자가 확인한 경우에만 조정합니다.**
+## 일별 집계: `search_daily`
 
-```sql
-insert into backup_ack (collection, baseline, reason)
-values ('users', 40, '2026-10-02 계정 정리 — 확인함')
-on conflict (collection) do update
-  set baseline = excluded.baseline, reason = excluded.reason, acked_at = now();
-```
+기본키는 `(day, term, country)`입니다. `hits`는 방문자·검색어·하루 단위 상한을 적용한 합계이고, `visitors`는 해당 날짜의 방문자 수입니다.
 
-운영자가 확인한 기준보다 더 줄어들면 다시 경고합니다. 데이터가 회복되면 별도 확인 없이 해당 실행에서 경고를 해제합니다.
+날짜는 `Asia/Seoul`로 변환합니다. UTC와 KST의 날짜 경계를 혼용하지 않습니다. **일별 방문자 수를 여러 날에 걸쳐 더해 기간 순방문자 수로 사용하지 않습니다.** 같은 방문자가 중복되기 때문입니다.
 
-**기준 조정 후 데이터가 회복되면 비교 기준도 함께 높입니다** (v4.8.5). 예를 들어 기준을 40으로 조정한 뒤 100까지 회복했다가 다시 40으로 줄었다면 새로운 감소로 감지해야 합니다. 따라서 확인한 기준값과 **`acked_at` 이후에 본 가장 큰 수** 중 큰 값을 사용합니다.
+`/v1/hot`은 원본 `events`를 조회합니다. `search_daily`는 현재 조회용 캐시가 아니라 원본 삭제 후 검색 집계 이력을 남기기 위한 테이블입니다.
 
-**④에 해당하는 항목이 없을 때만 ③을 검사합니다.** 같은 문제를 중복으로 경고하지 않습니다 —
-③이 잡는 것은 어느 하나도 문턱을 안 넘었는데 **여럿이 조금씩** 줄어든 경우다.
+### 공개 검색 순위 기준
 
-**데이터 감소를 곧바로 오류로 판단하지 않습니다.** 정상적인 계정 삭제일 수 있으므로, 운영자에게 **확인을 요청**합니다.
-정상적인 계정 삭제까지 경고하면 점검 효율이 떨어집니다.
+[hot.ts](src/lib/hot.ts)의 기준을 사용합니다.
 
-`GET /v1/admin/backups` 가 판정과 최근 열 판을 돌려준다. 되돌릴 일이 생겼을 때
-"언제 것을 받아야 하나" 도 여기서 답한다.
-
-### 백업 자체는 서버가 하지 않는다
-
-주간 워크플로(`backup-firestore.yml`)가 Firestore 를 받아 암호화해 올린다 —
-**기존 백업 흐름을 유지하여 장애 요인을 줄입니다.** 서버는 백업 실행 결과를 점검합니다. 워크플로는 업로드를 완료한 **뒤에** 측정값을 `POST /v1/admin/backups`로 전송합니다.
-
-| 어디에 | 언제까지 | 왜 |
+| 상수 | 값 | 목적 |
 | --- | --- | --- |
-| Actions 아티팩트 | 90일 | 원래 있던 것 |
-| **GCS** (v4.8.0) | 12개월 (버킷 수명 주기) | **90일보다 오래된 사본이 한 벌도 없었다** |
+| `PERSON_CAP` | 5 | 방문자·검색어별 하루 최대 집계 횟수 |
+| `MIN_HITS` | 3 | 최소 검색 횟수 |
+| `MIN_VISITORS` | 2 | 한 방문자만 만든 결과 제외 |
+| `MIN_ROWS` | 3 | 결과가 부족하면 전체 목록을 비움 |
 
----
+일자·방문자·검색어별 상한을 먼저 적용하고, 검색어별 합산과 최소 기준 필터 후 `limit`를 적용합니다. 필터보다 `limit`를 먼저 적용하면 유효한 결과가 누락될 수 있습니다. 브라우저 난수 ID에 기반한 제한이므로 실제 사람 수를 보장하지 않습니다.
 
-## 마이그레이션
+## 보존과 삭제
 
-`migrations/*.sql` 을 이름순으로 한 번씩 적용한다. **도구를 안 쓴다** — 규모에 비해 복잡한 도구를 추가하면
-그 도구의 상태 파일과 실제 DB 가 어긋나는 새 사고가 생긴다. 필요한 것은 '어디까지 적용했나' 한 줄이고,
-그건 표 하나(`schema_migrations`)면 된다. SQL 파일이 그대로 남아 리뷰에서 눈으로 읽힌다.
+[retention.ts](src/lib/retention.ts)는 다음 순서로 처리합니다.
 
-**부팅에서 돈다** ([`src/index.ts`](src/index.ts)). 배포에 단계를 하나 더 두면 해당 단계를 누락한 배포가
-언젠가 나고, 표가 없는 채로 뜬 서버는 이벤트를 받아 통째로 버린다.
+1. 한국 날짜 기준으로 12개월 보존 경계를 한 번 계산합니다.
+2. 삭제 대상 검색 기록을 `search_daily`에 집계합니다.
+3. 같은 트랜잭션에서 경계 이전의 모든 원본 이벤트를 삭제합니다. `view`와 `dev` 이벤트도 포함합니다.
+
+`search_daily`에 남는 것은 검색 집계이며 페이지뷰 원본을 같은 형태로 보존하지는 않습니다. 세션 기록은 만료 후 하루가 지난 항목을 별도로 삭제합니다.
+
+월말에는 단순히 `오늘 - 12개월`을 사용하지 않습니다. `D + 12개월 <= 오늘`인 마지막 날짜를 찾아 윤년 경계를 처리합니다. 예를 들어 2025-02-28의 삭제 경계에는 2024-02-29도 포함합니다. 날짜 경계는 조회 가능한 `timestamptz`로 변환합니다.
+
+## 백업 진단
+
+[0002_backup_runs.sql](migrations/0002_backup_runs.sql)과 [0003_backup_ack.sql](migrations/0003_backup_ack.sql)에 정의합니다. **이 테이블들은 백업 파일 자체를 보관하지 않습니다.**
+
+`backup_runs`에는 위치·용량·SHA-256·컬렉션별 문서 수만 저장합니다. [backup.ts](src/lib/backup.ts)는 최근 실행 누락과 30% 초과 감소를 확인합니다. 마지막 실행과 실행 사이의 간격을 모두 확인하며, 총합뿐 아니라 컬렉션별 감소도 확인합니다.
+
+감소 비교는 최근 몇 회만이 아니라 기존 최대값을 기준으로 합니다. 정상적인 삭제를 확인했다면 운영자가 `backup_ack`에 사유와 기준값을 기록합니다. 이후 회복한 최대값도 비교 기준에 포함하여 새 감소가 이전 확인에 가려지지 않도록 합니다.
+
+기존 `backup-firestore.yml`은 **이전 Firestore 백업**입니다. 이 결과가 정상이라고 현재 Neon 계정 데이터의 복구까지 검증된 것은 아닙니다. 현재 DB의 백업·복원 가능 여부는 별도로 확인해야 합니다.
+
+## 마이그레이션 실행
+
+SQL 파일을 이름순으로 적용하고 각 파일의 트랜잭션이 성공하면 `schema_migrations`에 기록합니다. 서버 부팅 시에도 미적용 파일을 실행합니다.
 
 ```bash
-npm run db:migrate                                   # 손으로 돌릴 때
-DATABASE_URL=… npm test                              # 통합 검사가 실제로 적용해 본다
+npm run db:migrate
 ```
+
+수동 명령은 `DATABASE_URL`을 사용합니다. 운영 부팅은 환경 설정에서 분리한 마이그레이션용 직접 연결을 사용하므로, 수동 실행 시에도 풀링 주소인지 확인합니다. 적용한 SQL을 수정하기보다 새 마이그레이션을 추가합니다.
+
+DB 통합 검증에는 `TEST_DATABASE_URL`을 사용합니다. 스키마를 초기화하므로 폐기 가능한 테스트 DB만 연결합니다. [테스트 설정](src/test/dbUrl.ts)과 [마이그레이션 테스트](src/test/migrate.test.ts)를 참고하세요.

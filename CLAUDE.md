@@ -1,282 +1,123 @@
-# moncamp — 작업 지침
+# moncamp 작업 지침
 
-이 파일은 세션마다 먼저 읽힌다. **어길 수 없는 규칙만** 둔다.
-자세한 설명은 [`docs/DEVELOPMENT.md`](docs/DEVELOPMENT.md) · [`docs/OPERATIONS.md`](docs/OPERATIONS.md) · [`docs/INFRA.md`](docs/INFRA.md) 에 있다.
+[개발 가이드](docs/DEVELOPMENT.md) · [운영 가이드](docs/OPERATIONS.md) · [디자인 가이드](docs/design/README.md)
 
----
+**코드·데이터·문서를 수정할 때 지켜야 하는 공통 규칙입니다.** 현재 앱은 `web/`, 이전 앱과 Storybook은 `frontend-v4/`, API는 `server/`입니다. 아래의 규칙은 현재 구조 기준이며 과거 장애 사례는 변경 이력에서 확인합니다.
 
-## 1. `NaN` · `undefined` 는 어떤 상태에서도 화면에 못 나간다
+## 1. 비정상 값을 화면에 표시하지 않는다
 
-**절대 규칙이다.** 로그인 전후 · 권한 있고 없고 · 데이터 있고 없고 · 어느 탭 어느 칩이든,
-사용자가 보는 글자에 `NaN` · `undefined` · `null` · `Infinity` · `[object Object]` 가 섞이면 안 된다.
+어떤 로그인·권한·데이터 상태에서도 사용자에게 `NaN`, `undefined`, `null`, `Infinity`, `[object Object]`가 노출되면 안 됩니다.
 
-### 왜 샜나
+1. 숫자·문자 표시에는 공통 `lib/cell.ts` 함수를 사용합니다. JSX에서 원시 값의 직접 문자열 보간이나 `.toFixed()`를 사용하지 않습니다.
+2. 데이터 형식이 다르면 표시 필드 선택을 한 함수로 모읍니다. `dmaxCells`, `pveCells`, `pvpCells`처럼 화면별 분기를 중복하지 않습니다.
+3. 값이 없으면 `—`를 표시하되, 빌드가 완전한 값을 보장하는 순위표에서 대시가 나오면 결함으로 처리합니다.
 
-표마다 줄 모양이 다르기 때문이다. D-MAX 만 해도 셋이다.
+| D-MAX 데이터 | 필드 예시 |
+| --- | --- |
+| 티어 | `pct`, `atk`, `power`, `stab`, `bulk` |
+| 딜러 | `dmg`, `bulk`, `fast`, `charged` |
+| 탱커 | `ehp`, `hp`, `def`, `mult`. 기술 필드 없음 |
 
-| 축 | 표 | 줄이 가진 칸 |
-| --- | --- | --- |
-| 티어표 | `dynamax_tier.json` | `pct` `atk` `power` `stab` `bulk` |
-| 딜러 | `dynamax.json` | `dmg` `bulk` `fast` `charged` |
-| 탱커 | `dynamax_tank.json` | `ehp` `hp` `def` `mult` — 기술 칸이 없다 |
+표시 함수, 행별 매핑, 실제 데이터 전체, 그려진 화면을 각각 검증합니다. 새 표·화면에는 관련 데이터 검사와 `scripts/check_screens.mjs`의 경로를 추가합니다. 이전 앱의 `cellgate`, `rankcells`, `datasweep` 검사도 해당 코드를 수정하면 유지합니다.
 
-탱커 줄이 딜러 문법을 타면서 `NaN 맥스 피해 · 내구 undefined` 가 그대로 찍혔다 (v4.2.4 제보).
-표는 바뀌었는데 읽는 쪽이 안 바뀐 것이다. 읽는 자리가 화면 곳곳에 흩어져 있으면 사람이 다 볼 수 없다.
+## 2. 색상과 스타일은 공통 규칙을 따른다
 
-### 그래서 지켜야 할 셋
+- 채움 위 글자와 배경의 대비를 함께 확인합니다. 테마에 따라 달라지는 `--bg`, `--fg`를 용도에 맞게 사용합니다.
+- 항상 어두운 콘솔·히어로·이미지 배너에는 `--plate` 팔레트를 사용합니다. 이미지 위에 일반 `--fg`를 적용해 밝은 모드에서 글자가 사라지게 하지 않습니다.
+- 하드코딩 색상 대신 토큰을 사용합니다. 배경 이미지가 없어도 읽을 수 있는 바탕색을 둡니다.
+- 공통 모양은 `web/src/styles/cinema/parts.css`에 모으고 화면별 파일에는 배치를 둡니다.
+- 반경은 `--r-panel`, `--r-box`, `--r-ctl`, `--r-tag`를 사용합니다. `!important`로 이전 스타일을 덮지 말고 관련 토큰 값을 조정합니다.
+- 테마를 선택한 적이 없는 경우 기본은 다크입니다. 밝은·어두운 모드를 함께 검증합니다.
+- 게임 타입색 `--t-*`는 임의로 바꾸지 않습니다. 대비가 부족하면 윤곽·배경 처리로 보완합니다.
 
-1. **값을 글자로 바꾸는 일은 [`lib/cell.ts`](frontend-v4/src/lib/cell.ts) 에서만 한다.**
-   화면(JSX)에서 `.toFixed()` 나 `` `${row.x}` `` 를 직접 쓰지 않는다.
+`designgrid.test.ts`의 토큰·격자 검사를 유지합니다. `scripts/check_contrast.mjs`의 3.0 기준은 보이지 않는 글자를 찾는 회귀 검사이며, WCAG 접근성 준수 전체를 보장하는 검사가 아닙니다.
 
-   ```tsx
-   // ✅ 관문을 통한다
-   sub={`DPS ${num(row.dps)} · TDO ${num(row.tdo)}`}
-   score={num(row.score, 1)}
-   lines={keep(row.fast, row.charged)}   // 빈 값은 줄 자체를 세우지 않는다
+## 3. UI 구성요소와 Storybook
 
-   // ❌ 값이 비면 그대로 샌다
-   sub={`DPS ${row.dps} · TDO ${row.tdo}`}
-   score={row.score.toFixed(1)}
-   ```
+공통 구성요소는 `src/ds/`를 재사용합니다. 같은 버튼·칩·배지를 새 클래스 체계로 중복 구현하지 않습니다. 기존 클래스명·태그·중첩 계약을 유지하고, 없는 구성만 추가합니다.
 
-2. **줄 모양이 갈리면 칸을 정하는 일을 한 함수로 뽑는다.**
-   `dmaxCells` · `pveCells` · `pvpCells` 가 그 본이다 (`screens/Ranks.tsx`).
-   화면에서 `if (axis === …)` 로 칸을 나누지 말고, 함수 안에서 나누고 함수를 검사한다.
+| 항목 | 허용 값 |
+| --- | --- |
+| `Stack`, `Inline` 간격 | `none`, `xs`, `sm`, `md`, `lg`, `xl` |
+| `Text` 크기 | `sub`, `body`, `lead` |
+| `Label` 크기 | `body`, `sec`, `title`, `hero` |
 
-3. **값이 비면 대시(`—`)를 찍는다.** 틀린 숫자를 지어내느니 빈 칸이 정직하다.
-   단, 이 표들은 빌드가 모든 칸을 채우므로 **대시가 보이면 그것도 사고다** — 데이터가 빈 게 아니라
-   읽는 쪽이 딴 키를 보고 있다는 뜻이다. 검사가 그래서 대시까지 잡는다.
-
-### 기계가 막는 그물 셋
-
-지침만 적어 두면 또 샌다. 층을 셋 둔다 — **위가 뚫려도 아래가 잡는다.**
-
-| 층 | 무엇 | 언제 돈다 |
-| --- | --- | --- |
-| 관문 | `lib/cell.ts` — `num` · `word` · `lines` | 늘 (화면이 값을 찍을 때마다) |
-| 단위 | `src/test/cellgate.test.ts` **관문 자체**(깨진 값 열한 가지 × 세 함수)<br>`src/test/rankcells.test.ts` 손으로 적은 줄 모양<br>`src/test/datasweep.test.ts` **실데이터 전량**(모든 표 · 모든 키 · 모든 줄) | `npm test` · CI 의 `v4 검사` |
-| 조각 | `scripts/check-stories.mjs` — 스토리 전량을 라이트·다크로 훑는다 (§1-c) | 조각을 고칠 때 |
-| 화면 | `scripts/check_screens.mjs` — 46장을 돌며 그려진 글자를 훑는다 | 배포 전 (아래 참고) |
-| 색 | `scripts/check_contrast.mjs` — 42장의 글자가 바탕에 묻히지 않는지 본다 (§1-b) | 배포 전 |
-
-**관문 자체를 검사하는 층이 2026-09-21 에 생겼다.** 그전까지 `rankcells` 는 관문을 *쓰는 쪽*만 봤고
-관문 자체는 아무도 안 보고 있었다 — 그래서 `word(NaN)` 이 `'NaN'` 을, `num('   ')` 이 `'0'` 을
-그대로 내보내고 있었다. 스토리북에 빈 값을 늘어놓는 판(`parts-value--leaky`)을 세우자 드러났다.
-
-```bash
-cd frontend-v4 && npm test                       # 관문 + 단위
-node scripts/check_screens.mjs                   # 로컬 미리보기(:4173) 훑기
-node scripts/check_screens.mjs https://dev.moncamp.kr/   # 배포된 화면 훑기
-```
-
-**새 표나 새 화면을 붙이면 셋 다 늘린다.** `datasweep` 에 표를 한 줄 더하고,
-`check_screens.mjs` 의 `PATHS` 에 주소를 더한다. 안 늘리면 그 자리만 그물 밖이다.
-
----
-
-## 1-b. 안 보이는 글자를 만들지 않는다
-
-**색을 한 벌 갈아끼우면 글자와 바탕이 따로 움직인다.** v4.3.0 카드 컨셉 작업에서 같은 사고를 두 번 냈다 —
-홈 타일과 상세 머리줄에서 **흰 글자가 흰 바탕에** 놓였다. 46장을 사람이 다 눈으로 볼 수는 없다.
-
-### 색을 고를 때 지켜야 할 셋
-
-1. **채움 위 글자는 `var(--bg)`, 판 위 글자는 `var(--fg)`.**
-   `#fff` 나 `var(--surface)` 를 글자색으로 쓰지 않는다 — 둘 다 다크에서 어두워져 뒤집힌다.
-   `--bg` 는 `--brand` 계열 채움과 언제나 반대 끝에 있어 테마가 뒤집혀도 같이 뒤집힌다.
-
-2. **글자색을 바꿀 때는 바탕도 같이 본다.** 배경만 밝히면 그 위 글자가 사라진다.
-   단축 `background` 는 뒤에 오면 앞의 `background-image` 를 지운다 —
-   그림(그라데이션) 위에 글자를 올릴 때는 **바탕색을 먼저 박아** 그림이 빠져도 읽히게 한다.
-
-3. **하드코딩 색은 토큰으로.** 색이 파일마다 박혀 있으면 팔레트를 갈아도 그 자리만 남는다.
-   v4.3.0 에서 `shell-notebook.css` · `home.css` 의 182군데를 토큰으로 돌렸다.
-
-4. **테마를 안 타고 늘 어두운 판(검색식 콘솔 · 홈 히어로)은 `--plate` 한 벌로.** `--bg`·`--fg` 는 다크에서
-   판이 밝아져 뒤집히고, hex 는 채움과 글자의 짝이 끊긴다 (v4.4.0).
-   **그림 위(배너 · 포스터 · 화면 머리 띠)도 판이다** — ae64ee8 이 그 위 글자를 `--fg` 로 두어 라이트에서 사라졌다.
-
-5. **새 디자인(2026-09-25)은 `src/styles/cinema/` 일곱 파일이 전부다.** 모양은 `parts.css` 한 곳
-   (카드 · 강조 카드 · 올린 칸 · 단추 · 탭 · 입력 · 구역 제목 · 배지) — 같은 모양이 또 필요하면 **선택자 묶음에 이름을 더한다.**
-   화면 파일(home · journal · schedule · interior · modal)에는 배치만 둔다. 반경은 `--r-panel · --r-box · --r-ctl · --r-tag` 넷.
-   `!important` 로 이기지 않는다 — 옛 스킨이 색 이름(`--notebook-*` · `--foil-*` · `--card-*`)으로 칠하면 **그 이름의 값을 바꾼다.**
-   `src/test/designgrid.test.ts` 가 hex · `!important` · 격자 밖 크기 · 없는 토큰을 세운다. **기본 테마는 다크다** (고른 적이 없으면).
-
-```bash
-node scripts/check_contrast.mjs                          # 로컬 미리보기(:4173)
-node scripts/check_contrast.mjs https://dev.moncamp.kr/   # 배포된 화면
-```
-
-42장(라이트·다크)을 열어 글자와 뒤바탕의 명암비를 재고 **3.0 아래**를 잡는다.
-WCAG 의 4.5 가 아니라 3.0 인 이유는, 여기서 찾는 것이 "읽기 불편함" 이 아니라 **"아예 안 보임"** 이라서다.
-접근성 감사는 따로 할 일이고, 이 그물은 배포를 세워야 할 사고만 건진다.
-
-**게임 원작 타입색(`--t-*`)은 바꾸지 않는다.** 밝은 타입 위 흰 글자가 흐린 것은 알려진 한계다 —
-색을 바꾸면 게임과 어긋나므로, 필요하면 글자에 그늘을 깔아 윤곽을 남긴다.
-
----
-
-## 1-c. 조각은 `src/ds/` 에서 만들고 스토리북으로 본다
-
-**격자 밖 값은 타입이 막는다.** 지침으로 적어 두면 또 샌다 — v4.3.4 에 크기 474군데 ·
-간격 1,484군데가 격자 밖이었다. 스냅만 해 두면 다음 화면이 또 적는다.
-
-- `<Stack gap>` · `<Inline gap>` 은 `none·xs·sm·md·lg·xl` 여섯 칸뿐이다 (4px 격자)
-- `<Text size>` 는 `sub·body·lead` (Pretendard 12·14·16)
-- `<Label size>` 는 `body·sec·title·hero` (Galmuri 14·22·28·42)
-- `<Label size="sub">` 는 **못 써진다** — Galmuri 12px 은 11·14 격자의 정수배가 아니다
-
-**새 클래스를 함부로 만들지 않는다.** 버튼 · 칩 · 세그먼트 · 뱃지는 v3 CSS 가 이미 계약
-(클래스명 · 태그 · 중첩)을 들고 있다. `ds/` 의 조각은 그 클래스를 **그대로 내보낸다** —
-같은 모양을 새 이름으로 다시 그리면 디자인이 두 벌이 되고 한쪽만 고쳐진다.
-없던 것(배치 · 글자 · 안내 · 카드 · 타입 알약)만 `src/styles/ds.css` 에서 만든다.
-
-**토큰 목록(`src/ds/tokens.ts`)에 없는 이름을 적으면 검사가 선다.** 없는 토큰을 쓰면
-화면에 `var(--없는것)` 이 나가 색이 통째로 빠지는데 **오류도 경고도 안 난다.**
+토큰 목록에 없는 이름은 사용하지 않습니다. 새 구성요소에는 스토리를 추가하고 두 테마를 확인합니다.
 
 ```bash
 cd frontend-v4
-npm run storybook                                  # :6006
-npm run build-storybook                            # storybook-static/
-node scripts/check-stories.mjs http://localhost:4189/   # 전량 × 라이트·다크
+npm run storybook
+STORYBOOK_BASE=/storybook/ npm run build-storybook
 ```
 
-**배포된 도면은 https://dev.moncamp.kr/storybook/ 이다** — dev 가 올라갈 때 같이 올라간다.
-하위 주소에 얹으므로 `STORYBOOK_BASE=/storybook/` 로 빌드해야 한다. 안 주면 자산 주소가
-루트 기준(`/assets/…`)이라 열자마자 빈 화면이다. 배포 워크플로가 그 주소와 noindex 메타를 검사한다.
-도면은 **서다 말아도 배포를 안 세운다** — 화면이 멀쩡한데 도면 때문에 dev 가 깜깜해지면 손해가 더 크다.
+Storybook 배포 경로는 `/storybook/`입니다. 앱 서비스워커가 이 경로를 캐시하지 않도록 제외 목록과 `swscope` 검사를 유지합니다. Storybook 검증 서버는 쿼리스트링을 보존해야 하고, 스토리 ID·테마 URL 값은 ASCII를 사용합니다. 표시 이름은 한국어를 사용할 수 있습니다.
 
-**같은 도메인에 앱 밖의 판을 얹으면 서비스워커가 비켜 가게 한다** (`public/sw.js` 의 `OUTSIDE`).
-범위가 루트라 그냥 두면 들어온다 — 실측: `/storybook/` 을 열자 그 HTML 이 앱의 오프라인 자리에
-덮였고(도면 청크 9개까지 같이 들어왔다), 오프라인에서 `/storybook/` 이 앱 화면으로 답했다.
-`src/test/swscope.test.ts` 가 배포가 얹는 자리와 서비스워커가 비켜 가는 자리를 견준다.
+Storybook 검증은 공통 명암비 검사기를 사용합니다. 배포에서 Storybook만 실패한 경우의 비차단 정책은 워크플로 설정을 유지합니다.
 
-`check-stories.mjs` 는 배포 전 검문과 **같은 재는 자**를 쓴다
-(`scripts/lib/contrast_audit.mjs`). 잣대가 두 벌이면 한쪽만 따라온다.
+## 4. 기존 계약을 임의로 바꾸지 않는다
 
-**쿼리스트링을 지우는 정적 서버를 쓰지 않는다** — `serve` 는 `cleanUrls` 로 `?id=` 를 버려서
-모든 스토리가 "No Preview" 로 열리고, 검문이 빈 화면을 훑고 통과한다.
-같은 이유로 **스토리 id 와 테마 전역값은 ASCII 로만 둔다** (보이는 이름은 한글 그대로다) —
-`?globals=theme:다크` 는 주소에서 지워져 라이트로 열렸다.
+다음 값은 기존 데이터·링크·통계와 연결됩니다.
 
-**새 조각을 붙이면 스토리도 붙인다.** 안 붙이면 그 조각만 그물 밖이다.
-
----
-
-## 2. 리팩토링해도 바꾸면 안 되는 이름
-
-바깥(브라우저 저장소 · 통계 · 문서)이 이미 이 이름으로 물려 있다. **바꾸면 남의 데이터가 끊긴다.**
-
-- 전역 이름 · `state` 키 · DOM id
-- localStorage 키 **그리고 값** (`pogo_*`)
+- 전역 이름, `state` 키, DOM ID
+- localStorage 키와 값, 특히 `pogo_*`
 - GA 이벤트명
-- Firestore 필드명
-- 저장소명 (`pogo-rank`, `pogo-rank-dev`) · 서비스워커 캐시 이름
+- 이전 Firestore 필드명
+- 저장소명 `pogo-rank`, `pogo-rank-dev`, 서비스워커 캐시 이름
 
-새로 만드는 것은 접두사를 달아 구분한다.
+새 이름에는 용도에 맞는 접두사를 사용합니다. 호환성을 바꿔야 한다면 이관과 기존 값 처리까지 포함합니다. v5의 Firestore→SQL 이관은 명시적인 예외이며 일반 이름 변경을 허용하는 규칙이 아닙니다.
 
-## 3. 데이터
+## 5. 실제 데이터와 개인정보
 
-- **한글 이름은 실데이터만 쓴다. 지어내지 않는다.**
-- 트레이너 코드 · 친구 이름은 **Firestore 에만** 둔다. 코드에 박지 않는다.
-- **수집 서버는 IP 를 저장하지 않는다** (v4.7.0). 나라는 앞단이 판정해 둔 코드를 읽는다
-  ([`server/src/lib/country.ts`](server/src/lib/country.ts)) — 사람을 가리키는 값은 어느 표에도 두지 않는다.
-  **'안 본다' 와 '안 남긴다' 를 섞어 적지 않는다** — 분당 한도는 IP 를 보고 버린다. 방침에는 남기지 않는다고만 적는다.
-  통계를 끈 사람(`pogo_consent=denied`)에게서는 GA4 와 마찬가지로 **한 건도 안 나간다.**
-- **`firestore.rules` 를 고치면 `cd frontend-v4 && npm run test:rules`** (v4.9.7). 에뮬레이터가 규칙을 실제로 돌려 본다.
-  삭제 요청에는 `request.resource` 가 없다 — `write` 하나로 묶어 본문을 읽으면 삭제가 **조용히** 막힌다.
-  계정 삭제가 그렇게 죽어 있었다. 규칙은 **콘솔에 게시해야** 적용된다 — 코드 배포와 별개다.
-- **서버 응답 스키마에 `object` 를 적을 때는 칸도 같이 적는다** (v4.8.1). `fast-json-stringify` 는
-  적힌 칸만 내보낸다 — 칸 없는 `{ type: 'object' }` 는 값이 들어 있어도 `{}` 로 나가고
-  **오류도 경고도 없다.** 설명서를 붙이는 일이 계약을 깨뜨린 자리다.
-  `src/test/openapi.test.ts` 가 스펙 전체를 훑어 잡는다 — 새 주소를 붙여도 자동으로 걸린다.
-- **약관·개인정보처리방침의 원본은 `frontend-v4/src/screens/Legal.tsx` 와 `components/TermsConsent.tsx` 둘이다.**
-  2026-09-22 v5 Phase 1-C 에 v3 화면을 지우면서 판이 하나가 됐다 — 전에는 v3 의 `privacy.js`·`terms.js` 와
-  넷이라 `legalsync.test.ts` 가 문장 단위로 견줬고, 지울 때 그 검사가 통과 상태였으므로 v4 본문이 온전하다.
-  **동의 범위를 고칠 때는 시행일과 패치노트 고지를 함께 본다** (아래 수집 항목 줄).
-- **수집 항목이 늘면 시행 7일 전에 패치노트로 알린다.** 방침 10번에 적어 둔 약속이다.
-  이번 건의 고지는 2026-09-21 에 나갔고 적은 시행일은 **2026-09-28** 이다.
-  **2026-09-22 에 주인이 수집을 바로 켜기로 했다** (v5 Phase 8). 새 화면이 그날 이후에 뜨면
-  적은 대로이고, 그 전에 뜨면 **패치노트의 날짜를 실제 날짜로 고친다** —
-  고지와 실제가 어긋난 채로 두는 것이 제일 나쁘다.
-  **2026-09-23 에 고쳤다** (v4.9.9) — 새 화면이 dev 에 뜨는 날이라 시행일을 9/23 으로 앞당겼다.
-  옛 공지의 날짜를 고치고 **맨 위에 정정 항목을 따로 세웠다** — 조용히 고쳐 쓰면 9/28 로 읽은 사람이 모른다.
-  방침 날짜는 web · frontend-v4 **두 벌**이다 (`legalMeta.ts` · `Legal.tsx`) — 둘을 견주던 검사가 지워졌으니 사람이 맞춘다.
-  **v5.0.0 부터 두 벌이 일부러 다르다** — 운영이 v5 로 넘어가 계정 저장소가 Neon(싱가포르)이 됐다. web 판만 고쳤고
-  (`TERMS_VER` `2026-09-23-v5`), frontend-v4 는 되돌릴 자리(GitHub Pages)의 옛 사실을 그대로 적는다.
+- 한국어 이름은 실제 데이터만 사용합니다. 미공개·미확인 정보를 만들어 채우지 않습니다.
+- 트레이너 코드·친구 이름은 DB에만 두고 소스·placeholder·문서 예시에 넣지 않습니다. 현재 저장소는 Neon이며 이전 앱은 Firestore입니다.
+- 수집·세션 테이블에 IP를 저장하지 않습니다. 빈도 제한에서 일시적으로 사용하는 것과 저장하지 않는 것을 구분하여 설명합니다.
+- `pogo_consent=denied`이면 자체 수집과 GA4 이벤트를 보내지 않습니다. 통계 방문자 ID를 계정 정보와 연결하지 않습니다.
+- Fastify 응답 스키마의 `object`에는 실제 속성을 명시합니다. 빈 object 스키마로 응답 필드가 제거되지 않도록 OpenAPI 검사를 유지합니다.
+- `firestore.rules`를 수정하면 `frontend-v4`의 `npm run test:rules`로 검증합니다. 삭제 요청에는 `request.resource`가 없다는 점을 고려하고, 콘솔 게시가 코드 배포와 별도임을 기록합니다.
 
-## 4. 비밀
+현재 약관·개인정보 고지는 `web/src/screens/Legal.tsx`, 동의 UI와 `web/src/lib/legalMeta.ts`를 함께 확인합니다. 이전 `frontend-v4` 고지는 복구 환경의 Firebase 사실을 설명하므로 현재 문구를 무조건 복사하지 않습니다.
 
-- `.env` 와 `firestore.rules.local` 은 gitignore 대상이다. **커밋하지 않는다.**
-- 서비스 계정 JSON 키는 대화 · 노션 · 저장소 어디에도 붙여 넣지 않는다.
-- `BACKUP_PASSPHRASE` 는 비밀번호 관리자에 둔다.
-- 규칙을 mock uid 로 렌더하지 않는다 — `scripts/render_rules.sh` 가 막는다.
+수집 항목이 늘면 시행 7일 전 패치노트 고지 약속을 확인합니다. 시행일·실제 동작·한영 안내를 일치시키고, 이전 공지를 정정할 때는 정정 항목을 별도로 남깁니다. 검색 수집과 페이지뷰의 과거 시행일 정정은 [CHANGELOG](CHANGELOG.md)에 보존합니다.
 
-## 5. 판 번호의 원본은 `release/version.json` 하나다
+## 6. 비밀 관리
 
-**고칠 곳이 여섯이던 시절이 있었다** — build.py 의 상수, v3 의 `RELEASE_VER`, 패치노트 한글·영문,
-CHANGELOG, README. 한 군데만 빠져도 화면과 문서가 어긋났고, 사람이 여섯 번 안 틀리기를 바라는 것은
-규칙이 아니라 기대다. 2026-09-22 v5 Phase 1 에 원본을 하나로 모으고 나머지는 기계가 견준다.
+`.env`, `firestore.rules.local`, 서비스 계정 JSON, DB 접속 정보와 서명 키를 커밋하거나 대화·문서에 붙이지 않습니다. `BACKUP_PASSPHRASE`는 비밀번호 관리자에 보관합니다. 공개 브라우저 식별자와 서버 비밀을 혼동하지 않습니다.
 
-| 자리 | 무엇 | 누가 지키나 |
-| --- | --- | --- |
-| **`release/version.json`** | `app`(화면 머리) · `release`(패치노트 빨간 점) | **여기만 손으로 고친다** |
-| `content/release-notes.mjs` | 한글 패치노트 본문 | `src/test/version.test.ts` |
-| `content/release-notes.en.mjs` | 영문 패치노트 — 키가 한글판 `date` 와 글자까지 같아야 한다 | 〃 |
-| `CHANGELOG.md` · `README.md` | 건수 + 날짜 묶음 | 〃 |
+Firestore 규칙을 mock UID로 렌더하지 않습니다. `scripts/render_rules.sh`의 방어를 우회하지 않습니다.
 
-`backend/build.py` 와 `frontend-v4/scripts/extract-data.mjs` 는 `version.json` 을 읽는다. 손으로 안 적는다.
-dev 채널의 `-dev` 접미사도 둘이 같은 규칙으로 붙인다.
+## 7. 버전과 배포
 
-**릴리스는 묶어서 낸다.** 커밋마다 판을 올리지 않는다 — 22일에 250판(하루 최다 34판)을 낸 적이 있는데,
-그건 릴리스가 아니라 커밋에 번호를 붙인 것이다. 사용자가 읽을 만한 덩어리가 모이면 그때 올린다.
+서비스 버전의 원본은 **`release/version.json` 하나**입니다. `backend/build.py`와 데이터 추출기는 이를 읽습니다.
 
-## 6. 빌드와 배포
+| 함께 확인할 문서 | 규칙 |
+| --- | --- |
+| `content/release-notes.mjs` | 최신 버전의 한국어 안내 |
+| `content/release-notes.en.mjs` | 한국어와 날짜 키 일치 |
+| `CHANGELOG.md`, `README.md` | 최신 날짜·버전·개수 일치, 기존 버전 검사 형식 유지 |
 
-- **`scripts/build.sh` 는 v4 를 다시 빌드하지 않는다.** 화면을 확인하기 전에 `cd frontend-v4 && npm run build` 를 따로 돌린다.
-- 커밋 전에 `git checkout -- snapshot/` — 빌드가 스냅샷을 건드린다.
-- 빠른 길: `build.sh --meta-only`(2초) · `--no-fetch`(3초) · `--no-sprites`
-- **`build.sh` 는 화면을 안 만든다** (v5 Phase 1-C). `dist/` 에 나오는 것은 `data.js` · 스프라이트 · 부속 파일(robots · sitemap · 404 · build.json)뿐이고, 화면은 `frontend-v4` 가 만든다
-- 배포: dev → main PR 병합 → `deploy` 브랜치에 main 을 머지 → `bash scripts/verify_deploy.sh https://moncamp.kr/ prod`
-- **v5 부터 운영 화면은 Vercel(`pogo-rank`)이다** — `deploy` push 에 `deploy-web.yml` 이 올린다. 주소를 오가는 일은 `cutover-prod.yml`(status · attach · rollback) 하나로 한다
+사용자에게 설명할 변경을 묶어 릴리스합니다. 커밋마다 버전을 올리지 않습니다.
 
-## 7. 글과 코드의 결
+`build.sh`는 데이터·이미지를 생성하며 현재 웹 화면은 `web`에서 별도로 빌드합니다. 데이터 빌드가 변경한 `snapshot/`은 diff를 확인하여 의도하지 않은 생성 변경만 제외합니다. 다른 작업자의 변경을 일괄 되돌리지 않습니다.
 
-- **두괄식으로 쓴다.** 결론 먼저, 근거는 뒤에. 겹치는 표현은 지운다.
-- 주석은 `//` 한 줄씩 단다. 여러 줄이면 `//` 를 줄마다 붙인다.
-- 주석은 **왜** 를 적는다. 무엇을 하는지는 코드가 말한다.
-- CSS: 1) 최대한 변수화 2) override 최소화 3) 컴포넌트화 4) 나머지는 성능에 문제 없으면 둔다.
-- v4 화면 규칙이 v3 스킨을 이겨야 하면 접두사는 **`html body #root` 하나만** 쓴다. 장치가 둘이면 셋이 된다
-  ([`docs/DEVELOPMENT.md` §2.26](docs/DEVELOPMENT.md)). `#page-head` 의 `margin`·`padding` 은 단축으로 적지 않는다 — 왼쪽 값(사이드바 자리)이 지워진다.
+운영 배포는 `dev → main PR → deploy` 흐름입니다. v5 운영 웹은 Vercel이며 `deploy-web.yml`이 처리합니다. 도메인 전환은 `cutover-prod.yml`의 status·attach·rollback 절차를 따릅니다.
 
-### 글자와 간격은 격자 위에만 둔다 (v4.3.4)
+## 8. 문장·코드·간격
 
-**글자 크기는 글꼴로 갈린다.** 이 서비스는 두 글꼴을 쓰고, 각자 쓸 수 있는 크기가 다르다.
+결론을 먼저 쓰고 중복을 줄입니다. 주석은 `//`를 줄마다 사용하며 구현 선택의 이유를 설명합니다. CSS는 변수화·공통화하고 override를 최소화합니다.
 
-| 줄기 | 글꼴 | 크기 | 쓰임 |
-| --- | --- | --- | --- |
-| 읽는 글 | Pretendard | `1.2` · `1.4` · `1.6` rem | 보조 · 본문 · 강조 |
-| 크롬 | Galmuri | `1.4` · `2.2` · `2.8` · `4.2` rem | 칩·탭·버튼 · 구역 제목 · 화면 제목 · 큰 숫자 |
-| 제목 (새 디자인) | Pretendard 굵게 | `2.2` · `2.8` · `4.2` rem | 구역 제목 · 카드 제목 · 배너 · 화면 머리 — Galmuri 와 같은 칸을 쓴다 |
+| 항목 | 기준 |
+| --- | --- |
+| Pretendard 본문 | 1.2 · 1.4 · 1.6rem |
+| Galmuri | 1.4 · 2.2 · 2.8 · 4.2rem |
+| 새 디자인 제목 | 굵은 Pretendard 2.2 · 2.8 · 4.2rem |
+| 간격 | 0.4rem 배수. 0.2rem은 가는 선에만 예외 |
+| 줄 높이 | 1 · 1.2 · 1.5 · 1.7 |
+| 조작 영역 | 최소 높이 `var(--tap)` 44px |
 
-- **`1.2`(12px)가 읽는 글의 최소선이다.** Material(Body S 12)도 네이버 가이드도 같고,
-  한글은 라틴보다 자소가 복잡해 11px 이하에서 판독이 급격히 나빠진다.
-- **Galmuri 에는 `1.2`·`1.6` 을 주지 않는다.** 11·14px 의 정수배가 아니라 픽셀이 뭉개진다.
-  Galmuri 쪽에서 본문보다 작은 글자가 필요하면 크기를 줄이지 말고 **색(`--muted`)으로 누른다.**
-- **본문(14)과 구역 제목(22) 사이에 칸이 없는 것은 글꼴의 성질이다.** 그 사이가 필요하면
-  크기가 아니라 **굵기**로 가른다.
+읽는 글은 12px보다 작게 만들지 않습니다. Galmuri에는 1.2·1.6rem을 사용하지 않고, 작은 위계는 크기 대신 색과 굵기로 구분합니다. 격자 중간 값은 더 넓은 쪽으로 맞춥니다.
 
-| 무엇 | 격자 | 왜 |
-| --- | --- | --- |
-| 간격 | `0.4rem` 배수 (0.2 는 머리카락 선 하나만 예외) | 4px 격자. 거리가 같으면 **넓은 쪽**으로 붙인다 |
-| 줄 높이 | `1` · `1.2` · `1.5` · `1.7` | 한 줄 · 제목 · 본문 · 긴 글 |
-| 누르는 것 | 최소 높이 `var(--tap)` = 44px | Material 48dp · Apple 44pt |
+이전 v4 스킨 우선순위 조정에는 `html body #root` 접두사 하나를 사용합니다. `#page-head`의 margin·padding 단축 속성으로 기존 좌측 배치를 지우지 않습니다. 현재 cinema 스타일에서는 공통 토큰과 구성요소를 먼저 확인합니다.
 
-v4.3.4 에 크기 474군데·간격 1484군데를 격자로 스냅했고, v4.3.5 에 11px 을 없앴다.
+## 9. 실행 환경
 
-## 8. 이 환경의 함정
-
-- `sleep N && …` 는 막힌다. `until <조건>; do sleep 20; done` 을 쓴다.
-- `pkill` 을 다른 명령과 `&&` 로 엮으면 셸이 같이 죽는다(exit 144). 혼자 돌린다.
-- Playwright 는 `/opt/node22/lib/node_modules/playwright/index.js` 를 직접 불러야 한다.
-  실서비스 주소를 열 때는 `args: ['--ignore-certificate-errors']` 가 필요하다.
+프로젝트 공통 실행 기준은 CI와 같은 Node 22·Python 3.12입니다. 특정 작업 환경의 Playwright 절대 경로나 인증서 우회 옵션을 공통 요건으로 추가하지 않습니다. 프로세스 종료 명령은 대상을 확인하고 다른 셸 작업과 묶어 실행하지 않습니다.
