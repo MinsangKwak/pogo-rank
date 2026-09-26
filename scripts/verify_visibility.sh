@@ -68,7 +68,7 @@ prod() {
   echo "  원본이 남에게 읽히나 (핵심 산식이 새는 자리)"
   check "github.com/$OWNER/pogo-rank"         "https://github.com/$OWNER/pogo-rank" "$w"
   check "raw main/backend/build.py"           "https://raw.githubusercontent.com/$OWNER/pogo-rank/main/backend/build.py" "$w"
-  check "raw dev/CLAUDE.md"                   "https://raw.githubusercontent.com/$OWNER/pogo-rank/dev/CLAUDE.md" "$w"
+  check "raw dev/.claude/CLAUDE.md"           "https://raw.githubusercontent.com/$OWNER/pogo-rank/dev/.claude/CLAUDE.md" "$w"
 }
 
 dev() {
