@@ -1,90 +1,86 @@
-# 2026년 10월 맥스 배틀 배너
+# 2026년 10월 맥스 배틀 배너 제작 기록
 
-제작일: 2026-09-25. 도구: 내장 image_gen, 참조 이미지 기반 신규 생성 및 태우지네 형태 수정. 원본 PNG는 생성 폴더에 보존하고 서비스에는 sharp로 변환한 720×240 / 1200×400 WebP(quality 86)를 사용한다.
+[디자인 가이드](README.md) · [프로젝트 소개](../../README.md) · [저작물 고지](../../NOTICE.md)
 
-## 일정
+**일정별 맥스 배틀 8개 항목에 사용할 배너를 제작했습니다.** 2026-09-25~26 제작 기록이며, 일정은 당시 수집 자료 기준입니다. 이미지 자체가 공식 발표나 실제 보스 확정 근거는 아닙니다.
 
-|기간|보스|이미지|
-|---|---|---|
-|9/21–27|프리져·썬더·파이어|신규 3D 프리져 배틀 팀|
-|9/28–10/4|울머기|기존 2번|
-|10/3|거다이맥스 에이스번|신규 캐릭터 배너|
-|10/5–11|태우지네|신규 캐릭터 배너|
-|10/12–18|파라꼬|신규 3D 캐릭터 배너|
-|10/19–25|포푸니|신규 캐릭터 배너|
-|10/24|보스 미공개|신규 빛나는 알 콘셉트 배너|
-|10/26–11/1|깜까미|신규 3D 캐릭터 배너|
+## 최종 구성
 
-원본 일정은 ScrapedDuck/LeekDuck의 max-mondays, max-battles 이벤트를 사용한다. 지나간 월요일의 주간 보스는 기존 schedule 주간 자료로 보완한다. 미공개 보스는 추정하지 않으며, 해당 행사에 보스가 추가되면 그 보스의 이미지 매핑을 우선한다.
+서비스 파일은 `web/public/images/`에 있으며 각 파일명 뒤에 `-720.webp`, `-1200.webp`를 붙입니다.
 
-출처: https://raw.githubusercontent.com/bigfoott/ScrapedDuck/data/events.min.json
-- https://leekduck.com/events/max-mondays-2026-10-05/
-- https://leekduck.com/events/max-mondays-2026-10-12/
-- https://leekduck.com/events/max-mondays-2026-10-19/
-- https://leekduck.com/events/max-mondays-2026-10-26/
-- https://leekduck.com/events/max-battle-day-october-24-2026/
+| 기간 | 표시 대상 | 파일명 접두사 |
+| --- | --- | --- |
+| 9/21~27 | 프리져·썬더·파이어, 프리져 중심 배틀 팀 | `max-battle-articuno-panorama` |
+| 9/28~10/4 | 울머기 | `max-battle-sobble-panorama` |
+| 10/3 | 거다이맥스 에이스번 | `max-battle-cinderace-panorama` |
+| 10/5~11 | 태우지네 | `max-battle-sizzlipede-panorama` |
+| 10/12~18 | 파라꼬 | `max-battle-rookidee-character-panorama` |
+| 10/19~25 | 포푸니 | `max-battle-sneasel-panorama` |
+| 10/24 | 보스 미공개, 콘셉트 알 이미지 | `max-battle-mystery-egg-panorama` |
+| 10/26~11/1 | 깜까미 | `max-battle-sableye-character-panorama` |
 
-## 제작 방향과 프롬프트
+울머기는 기존 배너를 사용하고 나머지는 새로 제작했습니다. 파라꼬·깜까미는 최종 캐릭터 버전으로 교체했습니다. 초기 경기장 대체안은 최종 구성에 포함하지 않습니다.
 
-공통: panoramic 3:1 cinematic premium 3D animated movie rendering, magenta Dynamax spiral clouds, blue stadium lights, reflective arena floor, subject on right two thirds, dark navy negative space on left third, no text or watermark. 참조: web/public/images/max-battle-sobble-panorama-1200.webp.
+## 이미지 사양
 
-- Cinderace: Gigantamax Cinderace standing atop an enormous fiery spherical football, tiny Blastoise and Inteleon in the foreground sending water streams. Crimson-magenta storm and sparks.
-- Sizzlipede: Short flat oval dark red segmented body, yellow circular heat organs on underside, curling yellow moustache-like antennae, small stubby red legs; Dynamax scale, Blastoise water stream. 첫 생성본의 진화형과 비슷한 몸 형태를 수정했다.
-- Sneasel: Original Johto dark teal form, asymmetric red feather ear, red feather tail, yellow forehead marking, white claws. Giant on right, small Pikachu below, cinematic lighting.
-- Rookidee environment: Empty open-roof fantasy sports stadium. Sweeping blue wind ribbons and small feathers spiral over a circular arena on the right. Deep navy sky and pink spiral clouds, cyan floodlights, wet reflective floor. No characters, silhouettes, eggs or text.
-- Sableye environment: Empty fantasy sports stadium with violet light and glowing blue/purple gemstones clustered around the right side. Purple aura rises from a circular platform under pink spiral clouds. No characters, silhouettes, eggs or text.
-- Unannounced: Empty Max Battle stadium, illuminated right circular platform and magenta beam, red storm and mist. No Pokémon, silhouettes or eggs.
+| 항목 | 기준 |
+| --- | --- |
+| 제작 | 내장 이미지 생성 도구, 참조 이미지 기반 신규 생성·형태 수정 |
+| 분위기 | 3D 애니메이션 영화풍 경기장, 마젠타 맥스 구름, 푸른 조명 |
+| 구도 | 피사체는 오른쪽 중심, 왼쪽은 제목을 위한 어두운 여백 |
+| 비율·크기 | 3:1, 720×240과 1200×400 |
+| 서비스 포맷 | WebP, sharp 변환, quality 86 |
+| 제외 | 이미지 안의 글자·워터마크 |
 
-초기 제작 당시 파라꼬·깜까미의 캐릭터 생성은 도구의 output moderation(other) 오류가 반복되어 실패했다. 이전 사용자가 허용한 경기장 배경 방식으로 각각 별도 이미지를 생성했다. 두 이미지는 캐릭터를 묘사하지 않으며 대체 텍스트에도 이를 반영한다.
+생성 원본은 작업 환경에서 별도 보관합니다. 개인 컴퓨터의 임시 경로는 재현 가능한 저장소 자산이 아니므로 문서에 의존 경로로 남기지 않습니다.
 
-## 파일
+## 일정과 이미지 연결
 
-서비스 파일: web/public/images/max-battle-{cinderace,sizzlipede,rookidee,sneasel,sableye,arena}-panorama-{720,1200}.webp
+[ScrapedDuck 이벤트 데이터](https://raw.githubusercontent.com/bigfoott/ScrapedDuck/data/events.min.json)의 max-mondays·max-battles를 사용하고, 지나간 주간 보스는 기존 일정 자료로 보완했습니다.
 
-생성 원본:
-- cinderace: /Users/minsang/.codex/generated_images/01a08b7a-58eb-7da1-b6a7-53e0df5e3bb4/exec-d8147b89-c020-45b3-ad5a-aa53657a1b93.png
-- sizzlipede: /Users/minsang/.codex/generated_images/01a08b7a-58eb-7da1-b6a7-53e0df5e3bb4/exec-637d7784-5a5f-40cf-9912-7bd2cb71d0a6.png
-- sneasel: /Users/minsang/.codex/generated_images/01a08b7a-58eb-7da1-b6a7-53e0df5e3bb4/exec-5f1df94e-97ad-4d98-ba31-a13603180520.png
-- arena: /Users/minsang/.codex/generated_images/01a08b7a-58eb-7da1-b6a7-53e0df5e3bb4/exec-0ef06492-f032-43bb-bdf0-2f0900c6f86b.png
-- rookidee: /Users/minsang/.codex/generated_images/01a08b7a-58eb-7da1-b6a7-53e0df5e3bb4/exec-a064e259-b208-4ac7-9c51-363f0c94300a.png
-- sableye: /Users/minsang/.codex/generated_images/01a08b7a-58eb-7da1-b6a7-53e0df5e3bb4/exec-e37ccbef-db95-4e56-abb2-3578f375a426.png
+- [10월 5일](https://leekduck.com/events/max-mondays-2026-10-05/)
+- [10월 12일](https://leekduck.com/events/max-mondays-2026-10-12/)
+- [10월 19일](https://leekduck.com/events/max-mondays-2026-10-19/)
+- [10월 26일](https://leekduck.com/events/max-mondays-2026-10-26/)
+- [10월 24일 맥스 배틀 데이](https://leekduck.com/events/max-battle-day-october-24-2026/)
 
-검증: 타입 검사, 8개 일정 정렬·이미지 연결·미공개 행사 제한·파일 존재 검사 및 기존 단위 테스트. 로컬 Node 환경에서는 NODE_OPTIONS=--no-experimental-webstorage를 사용한다.
+미공개 보스는 추정하지 않습니다. 알 이미지는 해당 미공개 행사에만 연결하고, 보스가 발표되어 매핑이 생기면 발표된 보스 이미지를 우선합니다.
 
-## 2026-09-26 교체 완료
+## 생성 방향
 
-내장 image_gen의 참조 이미지 기반 생성으로 파라꼬·깜까미 캐릭터 생성에 성공했다. 두 경기장 대체 이미지를 캐릭터 배너로 교체했다. 1번은 프리져와 기존 배틀 팀을 새로운 3:1 경기장 구도로 제작했다. 미공개 보스는 빛나는 알의 콘셉트 이미지이며 실제 보스나 공식 알 디자인을 확정하지 않는다.
+공통 지시문은 3:1 구도, 오른쪽 피사체, 왼쪽 제목 여백, 마젠타 구름·푸른 조명·반사 바닥을 유지하는 것입니다. 울머기 배너를 분위기 참조로 사용했습니다.
 
-### rookidee
+| 대상 | 구체적 시각 요소 |
+| --- | --- |
+| 에이스번 | 거대한 불꽃 공 위의 거다이맥스, 작은 물 타입 배틀 팀 |
+| 태우지네 | 짧고 납작한 분절 몸체, 노란 열기관·수염, 작은 다리. 진화형과 혼동되지 않도록 수정 |
+| 파라꼬 | 둥근 파란 몸, 검은 얼굴·노란 가슴, 펼친 날개 |
+| 포푸니 | 짙은 청록색 몸, 붉은 귀·꼬리 깃, 흰 발톱 |
+| 깜까미 | 보라색 몸, 푸른 보석 눈, 긴 귀, 붉은 가슴 보석 |
+| 프리져 | 오른쪽의 거대한 얼음 새와 아래쪽의 작은 배틀 팀 |
+| 미공개 | 식별 가능한 보스 없이 경기장 오른쪽에 빛나는 알 |
 
-최종 프롬프트:
+<details>
+<summary>최종 생성 지시문 예시</summary>
 
-> Create a panoramic 3:1 cinematic 3D rendition of the Pokémon Rookidee from reference 1, in the Max Battle stadium of reference 2. Preserve its round blue bird body, black face and yellow chest, red eyes and small feet. Make Rookidee giant on the right, wings extended in a lively pose. Dark left third for website text. Maintain beautiful pink storm clouds and blue stadium lighting. No text.
+**파라꼬**
 
-### sableye
+> Create a panoramic 3:1 cinematic 3D rendition of Rookidee using the character and stadium references. Preserve its round blue body, black face, yellow chest, red eyes and small feet. Place the giant bird on the right with wings extended. Keep the left third dark for website text. Use pink storm clouds and blue stadium lighting. No text.
 
-최종 프롬프트:
+**깜까미**
 
-> Make a cinematic 3D website banner featuring the exact Pokémon Sableye depicted in the first reference image. Preserve the recognizable purple body, blue faceted gemstone eyes, long pointed ears and red chest jewel. Translate the pixel sprite into a polished 3D animated movie character. Place a giant Sableye on the right of the stadium in the second reference, standing confidently with arms open; its full head and torso visible. Keep the stadium's magenta Dynamax clouds, violet jewel lighting and dark empty left third. Panoramic 3:1, no text.
+> Translate the referenced Sableye sprite into a polished cinematic 3D character. Preserve the purple body, blue gemstone eyes, pointed ears and red chest jewel. Place it on the right of the stadium with its head and torso visible. Use magenta clouds, violet jewel lighting and an uncluttered dark left third. Panoramic 3:1, no text.
 
-### birds
+**프리져**
 
-최종 프롬프트:
+> Recreate the referenced battle as a cinematic 3D stadium illustration. Place giant Articuno on the right and the small team of Rhyperior, Blissey, Lugia and Excadrill low in the middle. Leave a dark navy left third for headings. Use ice crystals, soft feathers, a reflective floor, blue lights and magenta clouds. Panoramic 3:1, no text or watermark.
 
-> Recreate reference 1 as a new cinematic 3D animated-movie Pokémon stadium illustration matching reference 2. Keep Articuno as the giant blue icy bird boss with the small team of Rhyperior, Blissey, Lugia and Excadrill facing it. Change the composition to a wide 3:1 banner: Articuno on the right two thirds, smaller team low in the middle, dark uncluttered navy left third for headings. Realistic soft feather material, ice crystals, reflective arena floor, blue stadium lights and magenta spiral Dynamax clouds. No text, no watermark.
+**미공개 행사**
 
-### arena
+> Create a panoramic 3:1 editorial illustration of a luminous pink raid egg above the right side of a nighttime Max Battle arena. Show no identifiable boss or silhouette. Use magenta energy, blue stadium lights and mist. Keep the left third dark and empty. This is a concept illustration, not an official event announcement. No lettering or watermark.
 
-최종 프롬프트:
+</details>
 
-> Create a brand new panoramic 3:1 Pokémon website banner in premium cinematic 3D animated-film style. A mysterious enormous luminous pink raid egg, a teaser illustration for a Pokémon Max Battle with an unannounced boss. Egg floating above the right side of the arena, glowing magenta energy spirals, no identifiable boss or silhouette. This is an editorial illustration not an official event announcement. An expansive nighttime sports stadium, huge crimson and magenta Dynamax spiral clouds, blue floodlights, reflective wet arena floor and atmospheric mist. Dark navy left third with no characters, reserved for website headline. Entire main subjects visible with some headroom. Dramatic but friendly fantasy game scene. No lettering, no watermark.
+## 검증 범위
 
-저장 파일 및 원본:
-- `web/public/images/max-battle-mystery-egg-panorama-{720,1200}.webp`
-  - 생성 원본: `/Users/minsang/.codex/generated_images/01a08b7a-58eb-7da1-b6a7-53e0df5e3bb4/exec-ee83391d-5fe7-4d21-9dfd-f522e29fd8f6.png`
-- `web/public/images/max-battle-rookidee-character-panorama-{720,1200}.webp`
-  - 생성 원본: `/Users/minsang/.codex/generated_images/01a08b7a-58eb-7da1-b6a7-53e0df5e3bb4/exec-5a9f76f8-6433-48f3-8da4-b86934c2d65b.png`
-- `web/public/images/max-battle-sableye-character-panorama-{720,1200}.webp`
-  - 생성 원본: `/Users/minsang/.codex/generated_images/01a08b7a-58eb-7da1-b6a7-53e0df5e3bb4/exec-d67d4b76-b402-4c16-87b8-159d29d297eb.png`
-- `web/public/images/max-battle-articuno-panorama-{720,1200}.webp`
-  - 생성 원본: `/Users/minsang/.codex/generated_images/01a08b7a-58eb-7da1-b6a7-53e0df5e3bb4/exec-ae0a2405-044d-484f-b473-86a6f84655eb.png`
+[배너 테스트](../../web/src/test/maxart.test.ts)와 [일정 테스트](../../web/src/test/maxslides.test.ts)에서 순서·이미지 연결·파일 존재·미공개 행사 제한을 확인합니다. 타입 검사와 모바일 피사체 잘림도 확인 대상입니다. 새 배너를 추가하면 파일뿐 아니라 매핑·대체 텍스트·초점 위치를 함께 검토합니다.
