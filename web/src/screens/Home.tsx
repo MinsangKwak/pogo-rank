@@ -186,11 +186,11 @@ export default function Home({ onOpen }: { onOpen: OpenMon }) {
   const ready = slides.length > 0 && dexSoft !== undefined && maxSoft !== undefined && scheduleSoft !== undefined;
   // 그림이 붙은 일정만 배너가 된다 — 도트로 세운 장은 일러스트 장과 딴 판이라 뺐다 (2026-09-25 주인 결정).
   // 새 그림을 MAX_ART 에 더하면 그 일정이 저절로 배너에 선다
-  const shown = useMemo(() => slides.filter((slide) => maxArtFor(slide.bosses.map((boss) => boss.dex))), [slides]);
+  const shown = useMemo(() => slides.filter((slide) => maxArtFor(slide.bosses.map((boss) => boss.dex), slide.id)), [slides]);
   const items = useMemo(() => {
     const out = shown.map((slide, index) => ({
       key: slide.id,
-      node: <MaxPoster slide={slide} art={maxArtFor(slide.bosses.map((boss) => boss.dex))} names={names} first={index === 0} />,
+      node: <MaxPoster slide={slide} art={maxArtFor(slide.bosses.map((boss) => boss.dex), slide.id)} names={names} first={index === 0} />,
     }));
     if (!out.length) {
       out.unshift({ key: 'hero', node: <HeroPoster art={HERO_ART_ENTRY} names={names} note="대표 보스 배틀 일러스트" /> });
