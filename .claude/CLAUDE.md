@@ -1,6 +1,6 @@
 # moncamp 작업 지침
 
-[개발 가이드](docs/DEVELOPMENT.md) · [운영 가이드](docs/OPERATIONS.md) · [디자인 가이드](docs/design/README.md)
+[개발 가이드](../docs/DEVELOPMENT.md) · [운영 가이드](../docs/OPERATIONS.md) · [디자인 가이드](../docs/design/README.md)
 
 **코드·데이터·문서를 수정할 때 지켜야 하는 공통 규칙입니다.** 현재 앱은 `web/`, 이전 앱과 Storybook은 `frontend-v4/`, API는 `server/`입니다. 아래의 규칙은 현재 구조 기준이며 과거 장애 사례는 변경 이력에서 확인합니다.
 
@@ -73,11 +73,11 @@ Storybook 검증은 공통 명암비 검사기를 사용합니다. 배포에서 
 - 수집·세션 테이블에 IP를 저장하지 않습니다. 빈도 제한에서 일시적으로 사용하는 것과 저장하지 않는 것을 구분하여 설명합니다.
 - `pogo_consent=denied`이면 자체 수집과 GA4 이벤트를 보내지 않습니다. 통계 방문자 ID를 계정 정보와 연결하지 않습니다.
 - Fastify 응답 스키마의 `object`에는 실제 속성을 명시합니다. 빈 object 스키마로 응답 필드가 제거되지 않도록 OpenAPI 검사를 유지합니다.
-- `firestore.rules`를 수정하면 `frontend-v4`의 `npm run test:rules`로 검증합니다. 삭제 요청에는 `request.resource`가 없다는 점을 고려하고, 콘솔 게시가 코드 배포와 별도임을 기록합니다.
+- `infra/firebase/firestore.rules`를 수정하면 `frontend-v4`의 `npm run test:rules`로 검증합니다. 삭제 요청에는 `request.resource`가 없다는 점을 고려하고, 콘솔 게시가 코드 배포와 별도임을 기록합니다.
 
 현재 약관·개인정보 고지는 `web/src/screens/Legal.tsx`, 동의 UI와 `web/src/lib/legalMeta.ts`를 함께 확인합니다. 이전 `frontend-v4` 고지는 복구 환경의 Firebase 사실을 설명하므로 현재 문구를 무조건 복사하지 않습니다.
 
-수집 항목이 늘면 시행 7일 전 패치노트 고지 약속을 확인합니다. 시행일·실제 동작·한영 안내를 일치시키고, 이전 공지를 정정할 때는 정정 항목을 별도로 남깁니다. 검색 수집과 페이지뷰의 과거 시행일 정정은 [CHANGELOG](CHANGELOG.md)에 보존합니다.
+수집 항목이 늘면 시행 7일 전 패치노트 고지 약속을 확인합니다. 시행일·실제 동작·한영 안내를 일치시키고, 이전 공지를 정정할 때는 정정 항목을 별도로 남깁니다. 검색 수집과 페이지뷰의 과거 시행일 정정은 [CHANGELOG](../docs/CHANGELOG.md)에 보존합니다.
 
 ## 6. 비밀 관리
 
@@ -87,7 +87,7 @@ Firestore 규칙을 mock UID로 렌더하지 않습니다. `scripts/render_rules
 
 ## 7. 버전과 배포
 
-서비스 버전의 원본은 **`release/version.json` 하나**입니다. `backend/build.py`와 데이터 추출기는 이를 읽습니다.
+서비스 버전의 원본은 **`content/version.json` 하나**입니다. `backend/build.py`와 데이터 추출기는 이를 읽습니다.
 
 | 함께 확인할 문서 | 규칙 |
 | --- | --- |

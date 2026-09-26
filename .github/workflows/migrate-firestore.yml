@@ -6,14 +6,14 @@ name: Firestore → Neon 이관
 # 임시 폴더에 두고, 옮긴 뒤 지운다. 아티팩트로 올리지 않는다 — 이관에는 보관이 필요 없고,
 # 보관은 주간 백업(backup-firestore.yml)이 암호화해서 따로 한다.
 #
-# **돌리는 법** — ops/migrate-firestore.request 의 mode 와 request 번호를 고쳐 push.
+# **돌리는 법** — infra/migrate-firestore.request 의 mode 와 request 번호를 고쳐 push.
 # 손 단추(workflow_dispatch)는 기본 브랜치에 파일이 있어야 떠서, main 에 가기 전인 지금은 못 쓴다.
 #
 # 쓰는 시크릿: FIREBASE_SA_JSON(주간 백업이 이미 씀) · DATABASE_URL · ROOT_EMAIL
 on:
   push:
     branches: [next, dev]
-    paths: ['ops/migrate-firestore.request']
+    paths: ['infra/migrate-firestore.request']
 
 permissions:
   contents: read
@@ -33,7 +33,7 @@ jobs:
         id: req
         run: |
           set -e
-          mode="$(sed -n 's/^mode *= *//p' ops/migrate-firestore.request | tr -d '[:space:]')"
+          mode="$(sed -n 's/^mode *= *//p' infra/migrate-firestore.request | tr -d '[:space:]')"
           case "$mode" in
             dry-run|apply) ;;
             *) echo "::error::mode 는 dry-run 이나 apply 여야 합니다 (지금: '$mode')"; exit 1 ;;

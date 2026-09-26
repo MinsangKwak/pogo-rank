@@ -1,6 +1,6 @@
 # 개발 가이드
 
-[프로젝트 소개](../README.md) · [작업 지침](../CLAUDE.md) · [운영](OPERATIONS.md) · [인증](../server/AUTH.md) · [변경 이력](../CHANGELOG.md)
+[프로젝트 소개](../README.md) · [작업 지침](../.claude/CLAUDE.md) · [운영](OPERATIONS.md) · [인증](../server/AUTH.md) · [변경 이력](CHANGELOG.md)
 
 **현재 v5 코드의 구조, 실행 방법, 계산 가정과 검증 위치를 정리합니다.** 문서 기준은 2026-09-26입니다. 과거 설계 결정은 하단에서 항목별로 펼쳐 볼 수 있습니다.
 
@@ -66,7 +66,7 @@
 | ScrapedDuck/LeekDuck | 이벤트·레이드·알 자료 자동 수집 |
 | 공식 한국 발표·수동 설정 | 한국 전용 일정과 출시 보정 |
 
-출처별 조건은 [NOTICE](../NOTICE.md)를 확인합니다. 한국어 이름이나 미공개 보스를 추정해서 채우지 않습니다.
+출처별 조건은 [NOTICE](NOTICE.md)를 확인합니다. 한국어 이름이나 미공개 보스를 추정해서 채우지 않습니다.
 
 ### 빌드 옵션
 
@@ -127,7 +127,7 @@ D-MAX 티어 = round(공격) × 기술 위력 × 자속 배율
 | 기존 앱·Storybook·버전 문서 | `frontend-v4`에서 `npm test` |
 | 시각적 변경 | 모바일·PC, 두 테마, 키보드·모달·긴 문구 확인 |
 
-[웹 CI](../.github/workflows/web-test.yml)는 최소 1,000개 상세 HTML과 `/mon/25`의 본문·canonical·JSON-LD를 검사합니다. [작업 지침](../CLAUDE.md)은 비정상 값 표시, 공통 토큰, 저장 키 호환성 검증을 규정합니다.
+[웹 CI](../.github/workflows/web-test.yml)는 최소 1,000개 상세 HTML과 `/mon/25`의 본문·canonical·JSON-LD를 검사합니다. [작업 지침](../.claude/CLAUDE.md)은 비정상 값 표시, 공통 토큰, 저장 키 호환성 검증을 규정합니다.
 
 현재 테스트 파일 수와 통과 건수는 실행 결과를 기준으로 적습니다. 과거 결과는 재실행하지 않은 현재 결과로 재사용하지 않습니다.
 
@@ -135,7 +135,7 @@ D-MAX 티어 = round(공격) × 기술 위력 × 자속 배율
 
 | 목적 | 위치 |
 | --- | --- |
-| 서비스 버전 | `release/version.json` |
+| 서비스 버전 | `content/version.json` |
 | 한국어·영어 릴리스 노트 | `content/release-notes.mjs`, `content/release-notes.en.mjs` |
 | 다이맥스·도감 출시 보정 | `backend/config/max_released.txt`, `backend/config/dex_released_extra.txt` |
 | 시즌 기술 변경 | `backend/config/move_changes.txt` |
