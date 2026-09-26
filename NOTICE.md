@@ -11,18 +11,20 @@
 | 포크·재배포 제한 | [4. 포크·재배포](#4-포크재배포) |
 | 권리자의 삭제 요청 | [5. 삭제 요청 정책](#5-takedown삭제-요청-정책) |
 
+이 문서는 기존 권리 조건을 요약하며 별도의 이용 허락을 부여하지 않습니다.
+
 문서 신설: 2026-09-07 · 라이선스 전환: 2026-09-16 (`v3.48.2`).
 
 ## 1. 경로별 라이선스 범위
 
 | 경로 | 내용 | 라이선스 |
 |---|---|---|
-| `backend/` · `frontend/` · `scripts/` · `docs/` · `.github/` · 루트 설정 파일 | 빌드 파이프라인, 화면 코드, 문서 | **저작권자 소유 · 포크·재배포 금지** |
+| `backend/` · `web/` · `frontend-v4/` · `server/` · `scripts/` · `docs/` · `.github/` · 루트 설정 파일 | 빌드 파이프라인, 화면 코드, 문서 | **저작권자 소유 · 포크·재배포 금지** |
 | `backend/config/*.txt` · `sheets.conf` | 수동 보정 목록 (출시 여부·기술 변경 등) | 저작권자 소유 (사실 정보 목록) |
 | `snapshot/` | 순위 스냅샷 — PvPoke·hawaii 시트·게임마스터에서 파생한 데이터 | **저장소 조건과 별개** — 각 원 출처의 조건 |
 | `data/` (빌드 산출, 커밋되지 않음) | 게임마스터 원본·가공 JSON·스프라이트 | **저장소 조건과 별개** — 각 원 출처의 조건 |
 | `dist/` (빌드 산출) | 배포 결과. 코드는 저장소 조건, 포함된 데이터·스프라이트는 위와 같음 | 혼합 |
-| `frontend/static/icon-*.png` | 서비스 아이콘 | 저작권자 소유 · 재사용 금지 |
+| 서비스 아이콘 자산 | 서비스 아이콘 | 저작권자 소유 · 재사용 금지 |
 
 ## 2. 포켓몬 지식재산
 
@@ -32,27 +34,31 @@ Pokémon 및 관련 명칭·캐릭터·이미지의 권리는 **The Pokémon Com
 
 ## 3. 데이터·이미지 출처별 조건
 
+아래는 저장소에서 사용해 온 자료와 적용 조건의 기록입니다. 공개된 자료라는 이유만으로 재배포 권한이 생기지는 않습니다. 제작자 허락 확인 중인 항목은 그 상태를 그대로 표시합니다.
+
 | 출처 | 쓰는 것 | 라이선스·조건 | 이 저장소에서의 취급 |
 |---|---|---|---|
 | [PvPoke](https://github.com/pvpoke/pvpoke) | PvP 순위·점수·추천 기술, 출시 여부 | MIT | 파생 데이터에 출처 표기 |
-| [PokeMiners game_masters](https://github.com/PokeMiners/game_masters) | 종족값·기술·상성·CPM·다이맥스 매핑 | 명시 라이선스 없음 (게임 추출 데이터) | 원본(`gm.json`·`pm.json`)은 **배포물(dist)에 포함하지 않음**. 가공 결과만 `data.js` 로 배포 |
+| [PokeMiners game_masters](https://github.com/PokeMiners/game_masters) | 종족값·기술·상성·CPM·다이맥스 매핑 | 명시 라이선스 없음 (게임 추출 데이터) | 원본(`gm.json`·`pm.json`)은 **배포물(dist)에 포함하지 않음**. 가공 결과만 화면용 데이터로 배포 |
 | [PokeAPI](https://github.com/PokeAPI/pokeapi) | 한글 종·기술 이름, 폼 인덱스 | BSD-3-Clause (코드) / 데이터는 fair use 고지 | CSV 원본 미배포, 이름만 사용 |
 | [PokeAPI sprites](https://github.com/PokeAPI/sprites) | 공식 일러스트(other/official-artwork) · B/W 애니메이션 GIF | 이미지 자체는 권리자 소유, 저장소 라이선스 없음 | 서비스용 축소본(최대 256px, 평균 11KB)만 배포. 원본(475px) 미포함 |
 | [Pokémon Showdown sprites](https://play.pokemonshowdown.com/sprites/) | PokeAPI 에 없는 종의 애니메이션 GIF (6~8세대·메가·리전 폼) | 팬 제작 스프라이트, 이미지 속 캐릭터의 권리는 권리자 소유 | 표시용으로만 사용. 서비스 안에서 판매·재배포하지 않음 |
-| [ScrapedDuck](https://github.com/bigfoott/ScrapedDuck) (LeekDuck) | 레이드 보스·알 부화 풀·이벤트 일정 | MIT (스크랩 결과) | 빌드가 자동 수집(`backend/gameday_build.py`) — 레이드·알 화면에 반영, 이벤트 일정표는 여전히 수동. 화면 하단에 출처 표기 |
+| [ScrapedDuck](https://github.com/bigfoott/ScrapedDuck) (LeekDuck) | 레이드 보스·알 부화 풀·이벤트 일정 | MIT (스크랩 결과) | 빌드가 자동 수집(`backend/gameday_build.py`) — 레이드·알 화면에 반영, 일정은 자동 수집과 한국 공식 발표 기반 수동 보정을 병합. 화면 하단에 출처 표기 |
 | hawaii 레이드 성능표 (구글 시트) | 속성별 레이드 DPS·TDO 평가 | 개인 공개 문서, 별도 라이선스 없음 | 출처 표기. 작성자 허락 확인 절차 진행 중 — 거절 시 해당 열 제거 |
 | [Bulbapedia](https://bulbapedia.bulbagarden.net/) | 다이맥스·거다이맥스 출시 목록 | CC BY-NC-SA 2.5 | 목록 사실만 사용, 문장 인용 없음 |
 | pogomate | D-MAX 티어 공식 기준점 | 참고 | 공식만 참고, 데이터 미사용 |
-| [Pretendard](https://github.com/orioncactus/pretendard) | 한글 웹폰트 | SIL OFL 1.1 | CDN 참조 |
-| [Galmuri](https://github.com/quiple/galmuri) | 픽셀 웹폰트 (칩·탭·버튼·제목) | SIL OFL 1.1 | CDN 참조 |
-| Firebase SDK · Google Analytics | 로그인·저장소·통계 | Google 약관 | CDN 참조 |
+| [Pretendard](https://github.com/orioncactus/pretendard) | 한글 웹폰트 | SIL OFL 1.1 | 번들·정적 자산 또는 CDN으로 제공. 폰트의 OFL 조건 적용 |
+| [Galmuri](https://github.com/quiple/galmuri) | 픽셀 웹폰트 (칩·탭·버튼·제목) | SIL OFL 1.1 | 번들·정적 자산 또는 CDN으로 제공. 폰트의 OFL 조건 적용 |
+| Firebase SDK · Google Analytics | 이전 앱의 로그인·저장소, 방문 통계 | Google 약관 | Firebase는 이전 앱에 남아 있고, 현재 인증은 Google OAuth를 사용 |
+
+AI로 제작한 배너도 포켓몬 캐릭터의 권리와 별개가 아닙니다. 공식 홍보물로 표시하지 않으며, 제작 범위와 이미지 사양은 [배너 기록](docs/design/max-battle-banners-2026-10.md)에 정리합니다.
 
 ## 4. 포크·재배포
 
 **포크와 재배포는 허용하지 않습니다.** (2026-09-16 v3.48.2)
 
-- 이 저장소는 코드 열람과 학습을 위해 공개합니다. 사본을 공개하거나 유지하는 것, 코드 전체·일부를 다른 이름으로 배포·호스팅하는 것, 복제 서비스를 운영하는 것, 상업적 이용은 허용하지 않습니다 (LICENSE).
-- 기여는 이 저장소에 이슈 또는 PR을 제출하는 방식으로 진행합니다 (CONTRIBUTING.md).
+- 이 저장소는 코드 열람과 학습을 위해 공개합니다. 사본을 공개하거나 유지하는 것, 코드 전체·일부를 다른 이름으로 배포·호스팅하는 것, 복제 서비스를 운영하는 것, 상업적 이용은 허용하지 않습니다 ([LICENSE](LICENSE)).
+- 기여는 이 저장소에 이슈 또는 PR을 제출하는 방식으로 진행합니다 ([기여 안내](CONTRIBUTING.md)).
 - 스프라이트·게임 데이터는 위 2·3의 권리자 조건이 별도로 적용됩니다. 그 데이터를 이 저장소 밖으로 옮겨 쓰는 것도 각 권리자의 조건을 따라야 합니다.
 - 서비스명 "moncamp" 와 아이콘은 이 프로젝트를 가리키는 표지라 다른 곳에 사용할 수 없습니다.
 
