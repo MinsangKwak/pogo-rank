@@ -181,21 +181,21 @@ function NavExtra({ onConsent }: { onConsent: () => void }) {
     <div id="drawer-extra">
       <button className={`drawer__item${newRelease ? ' dot-badge' : ''}`} id="menu-release" onClick={goTo('/release')}>
         <span className="drawer__ico" aria-hidden="true"><PxIcon emoji="🎉" /></span>
-        <span className="drawer__label">패치노트</span>
+        <span className="drawer__label">패치 노트</span>
       </button>
       {/* ⚠️ 이 주소는 **사용자 버그 제보용 트래커**다 — 내부 WBS 주소로 바꾸지 말 것 (쓰는 사람이 다르다) */}
       <a className="drawer__item" href="https://www.notion.so/a0472984122d4f25b9b445b57465568f"
         target="_blank" rel="noopener">
         <span className="drawer__ico" aria-hidden="true"><PxIcon emoji="🛠" /></span>
-        <span className="drawer__label">QA·버그 제보 (노션)</span>
+        <span className="drawer__label">QA · 버그 제보 (노션)</span>
       </a>
       <button className="drawer__item" onClick={goTo('/privacy')}>
         <span className="drawer__ico" aria-hidden="true"><PxIcon emoji="🔒" /></span>
-        <span className="drawer__label">개인정보처리방침</span>
+        <span className="drawer__label">개인정보 처리방침</span>
       </button>
       <button className="drawer__item" onClick={goTo('/terms')}>
         <span className="drawer__ico" aria-hidden="true"><PxIcon emoji="📜" /></span>
-        <span className="drawer__label">이용약관</span>
+        <span className="drawer__label">이용 약관</span>
       </button>
       <ThemeItem />
       <button className="drawer__item" id="menu-settings" onClick={goTo('/settings')}>
@@ -205,7 +205,7 @@ function NavExtra({ onConsent }: { onConsent: () => void }) {
       {/* 개인정보처리방침이 '메뉴 → 통계·저장소 설정' 이라고 적어 뒀다 — 이 줄이 없으면 방침이 거짓말이 된다 */}
       <button className="drawer__item" id="menu-consent" onClick={onConsent}>
         <span className="drawer__ico" aria-hidden="true"><PxIcon emoji="🍪" /></span>
-        <span className="drawer__label">통계·저장소 설정</span>
+        <span className="drawer__label">통계 · 저장소 설정</span>
       </button>
       <p className="drawer__meta">
         {/* 기준일은 묶음이 와야 안다. **비면 그 줄만 안 쓴다** — 출처 표기는 값과 무관하게 늘 선다.

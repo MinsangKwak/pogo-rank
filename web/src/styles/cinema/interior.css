@@ -89,3 +89,169 @@ html body #root .detail__card { padding: 2rem; }
   html body #root #page-settings .settings__choices { grid-template-columns: 1fr; gap: 1.2rem; }
   html body #root #page-settings .settings__choice { min-height: 10.4rem; padding: 2rem; }
 }
+
+/* 맥스 덱: 대상 선택과 팀 구성을 분리하고 세 역할을 같은 폭으로 비교한다. */
+html body #root .maxdeck-builder { display: grid; gap: 3.2rem; }
+html body #root .maxdeck-builder__setup { padding: 2.4rem; border: 1px solid var(--line); border-radius: var(--r-panel); background: var(--surface); }
+html body #root .maxdeck-builder .row-head { margin: 0 0 2rem; border: 0; }
+html body #root .maxdeck-builder__eyebrow { display: block; margin-bottom: 0.8rem; color: var(--brand); font: 700 1.2rem/1.5 Pretendard,sans-serif; letter-spacing: 0.12em; }
+html body #root .maxdeck-builder h2 { margin: 0; font: 750 2.2rem/1.5 Pretendard,sans-serif; }
+html body #root .maxdeck-builder .submenu { margin: 0; padding: 0; border: 0; flex-wrap: wrap; }
+html body #root .maxdeck-builder .controls__row { margin-top: 1.6rem; }
+html body #root .maxdeck-builder__heading { display: flex; align-items: center; justify-content: space-between; gap: 1.6rem; }
+html body #root .maxdeck-builder__heading p { margin: 0.8rem 0 0; color: var(--muted); font-size: 1.4rem; }
+html body #root .maxdeck-builder .uchip { min-height: var(--tap); }
+html body #root .maxdeck-builder .deck-slots { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 1.6rem; margin: 0; width: 100%; }
+html body #root .maxdeck-builder .deck-slot { position: relative; display: flex; flex-direction: column; align-items: stretch; gap: 1.6rem; width: auto; min-width: 0; padding: 2.4rem; border: 1px solid var(--line); border-radius: var(--r-panel); background: radial-gradient(ellipse at 50% 30%,var(--selected),transparent 65%),var(--surface); box-shadow: none; }
+html body #root .maxdeck-builder__role { display: flex; align-items: center; gap: 1.2rem; color: var(--muted); font-size: 1.4rem; }
+html body #root .maxdeck-builder__role > span { color: var(--brand); font: 750 2.2rem/1 Pretendard,sans-serif; }
+html body #root .maxdeck-builder .deck-slot > .sprite { align-self: center; width: 16rem; height: 16rem; margin: 0; }
+html body #root .maxdeck-builder .deck-slot .row__name { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.8rem; text-align: center; font-size: 1.6rem; }
+html body #root .maxdeck-builder .deck-slot .row__sub { flex-basis: 100%; margin: 0.4rem 0 0; color: var(--muted); font-size: 1.4rem; line-height: 1.7; white-space: normal; }
+html body #root .maxdeck-builder .deck-slot__swap { width: 100%; min-height: var(--tap); margin: auto 0 0; padding: 1.2rem; border: 1px solid var(--line); border-radius: var(--r-ctl); background: var(--surface-2); color: var(--fg); text-decoration: none; font-size: 1.4rem; }
+html body #root .maxdeck-builder .deck-slot__swap[aria-expanded=true] { border-color: var(--brand); color: var(--brand); }
+html body #root .maxdeck-builder .deck-slot__picker { grid-column: 1 / -1; padding: 2.4rem; border: 1px solid var(--brand); border-radius: var(--r-panel); background: var(--surface); }
+html body #root .maxdeck-builder .row__why-chips { display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); gap: 0.8rem; margin-top: 1.6rem; }
+html body #root .maxdeck-builder .row__why-chip { min-height: var(--tap); padding: 1.2rem; white-space: normal; }
+html body #root .maxdeck-builder__summary { display: grid; gap: 0.8rem; padding: 2.4rem; border-left: 0.4rem solid var(--brand); border-radius: var(--r-box); background: var(--surface); }
+html body #root .maxdeck-builder__summary .deck__reason { margin: 0; font-size: 1.6rem; }
+html body #root .maxdeck-builder__summary > span, html body #root .maxdeck-builder .detail__foot { color: var(--muted); font-size: 1.4rem; line-height: 1.7; }
+@media(max-width:699px) {
+ html body #root .maxdeck-builder { gap: 2.4rem; }
+ html body #root .maxdeck-builder__setup { padding: 1.6rem; }
+ html body #root .maxdeck-builder__heading { align-items: flex-start; flex-direction: column; }
+ html body #root .maxdeck-builder .deck-slots { grid-template-columns: minmax(0,1fr); }
+ html body #root .maxdeck-builder .deck-slot { display: grid; grid-template-columns: 8rem minmax(0,1fr); padding: 1.6rem; gap: 1.2rem; }
+ html body #root .maxdeck-builder__role { grid-column: 1 / -1; }
+ html body #root .maxdeck-builder .deck-slot > .sprite { width: 8rem; height: 8rem; }
+ html body #root .maxdeck-builder .deck-slot .row__name { align-content: center; justify-content: flex-start; text-align: left; }
+ html body #root .maxdeck-builder .deck-slot__swap { grid-column: 1 / -1; }
+ html body #root .maxdeck-builder .row__why-chips { grid-template-columns: repeat(2,minmax(0,1fr)); }
+ html body #root .maxdeck-builder .deck-slot__picker { padding: 1.6rem; }
+}
+
+@media(min-width:700px) {
+ html body #root .maxdeck-builder .deck-slot { grid-row: 1; }
+ html body #root .maxdeck-builder .deck-slot--0 { grid-column: 1; }
+ html body #root .maxdeck-builder .deck-slot--1 { grid-column: 2; }
+ html body #root .maxdeck-builder .deck-slot--2 { grid-column: 3; }
+ html body #root .maxdeck-builder .deck-slot__picker { grid-row: 2; }
+}
+html body #root .maxdeck-builder { width: 100%; min-width: 0; grid-template-columns: minmax(0,1fr); }
+html body #root .maxdeck-builder > *, html body #root .maxdeck-builder__setup > * { min-width: 0; max-width: 100%; box-sizing: border-box; }
+html body #root .maxdeck-builder .row-head__title { display: block; white-space: normal; }
+html body #root .maxdeck-builder .submenu .chips { display: flex; flex-wrap: wrap; width: 100%; max-width: 100%; min-width: 0; }
+html body #root .maxdeck-builder .deck-slot > .sprite { order: 0; }
+html body #root .maxdeck-builder .deck-slot .row__name { overflow: visible; }
+
+/* 솔플 계산기: 입력과 분석 결과를 나란히 배치한다. */
+html body #root .solo-workbench { display: grid; grid-template-columns: minmax(28rem,1fr) minmax(0,2fr); gap: 2.4rem; align-items: start; }
+html body #root .solo-workbench > * { min-width: 0; padding: 2.4rem; border: 1px solid var(--line); border-radius: var(--r-panel); background: var(--surface); }
+html body #root .solo-workbench__heading > span { display: block; color: var(--brand); font: 700 1.2rem/1.5 Pretendard,sans-serif; letter-spacing: 0.12em; margin-bottom: 0.8rem; }
+html body #root .solo-workbench__heading h2 { margin: 0; font: 750 2.2rem/1.5 Pretendard,sans-serif; }
+html body #root .solo-workbench__heading p { margin: 0.8rem 0 2.4rem; color: var(--muted); font-size: 1.4rem; line-height: 1.7; }
+html body #root .solo-workbench__label { display: block; margin-bottom: 0.8rem; color: var(--muted); font-size: 1.2rem; }
+html body #root .solo-workbench .boss__search { box-sizing: border-box; width: 100%; min-height: 5.2rem; margin: 0; padding: 1.2rem; border: 1px solid var(--line); border-radius: var(--r-ctl); background: var(--bg); color: var(--fg); font-size: 1.4rem; }
+html body #root .solo-workbench .boss__search:focus { outline: 2px solid var(--brand); outline-offset: 2px; }
+html body #root .solo-workbench .boss__sugg { display: grid; gap: 0.8rem; max-height: 32rem; overflow-y: auto; }
+html body #root .solo-workbench .boss__rec { width: 100%; min-height: var(--tap); padding: 0.8rem; border-radius: var(--r-ctl); text-align: left; }
+html body #root .solo-workbench .boss__selected { flex-wrap: wrap; gap: 1.2rem; padding: 1.6rem; margin-top: 1.6rem; background: var(--selected); border-radius: var(--r-box); }
+html body #root .solo-workbench__conditions { margin-top: 2.4rem; padding-top: 2.4rem; border-top: 1px solid var(--line); }
+html body #root .solo-workbench .solo__opts { display: grid; gap: 2rem; margin-top: 2rem; }
+html body #root .solo-workbench__option { display: grid; gap: 0.8rem; min-width: 0; }
+html body #root .solo-workbench__option > span { color: var(--muted); font-size: 1.4rem; }
+html body #root .solo-workbench__option > * { max-width: 100%; flex-wrap: wrap; }
+html body #root .solo-workbench__option button { min-height: var(--tap); flex: 1; padding: 0.8rem; }
+html body #root .solo-workbench__empty { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1.6rem; min-height: 36rem; padding: 2.4rem; text-align: center; background: radial-gradient(ellipse at center,var(--selected),transparent 70%); }
+html body #root .solo-workbench__target { font-size: 4.2rem; color: var(--brand); }
+html body #root .solo-workbench__empty h3 { margin: 0; font: 750 2.2rem/1.5 Pretendard,sans-serif; }
+html body #root .solo-workbench__empty p { margin: 0; color: var(--muted); font-size: 1.4rem; line-height: 1.7; }
+html body #root .solo-workbench__preview { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.8rem; }
+html body #root .solo-workbench__preview > span { padding: 0.8rem 1.2rem; border: 1px solid var(--line); border-radius: var(--r-tag); color: var(--muted); font-size: 1.2rem; }
+html body #root .solo-workbench .uchip { min-height: var(--tap); }
+html body #root .solo-workbench .solo__card { margin: 2rem 0; padding: 2.4rem; border-radius: var(--r-box); }
+html body #root .solo-workbench .solo__verdict { font: 750 2.2rem/1.5 Pretendard,sans-serif; }
+html body #root .solo-workbench :is(.solo__why,.solo__stats) { font-size: 1.4rem; line-height: 1.7; }
+html body #root .solo-workbench .row-list { margin-top: 1.6rem; }
+@media(max-width:999px) {
+ html body #root .solo-workbench { grid-template-columns: minmax(0,1fr); }
+ html body #root .solo-workbench > * { padding: 1.6rem; }
+ html body #root .solo-workbench__empty { min-height: 28rem; padding: 1.6rem 0; }
+ html body #root .solo-workbench .solo__opts { gap: 1.6rem; }
+}
+
+/* PvP 덱은 기존 추천·커스텀 순서를 유지하고 표면과 글의 위계를 정돈한다. */
+html body #root .pvp-deck-studio { min-width: 0; }
+html body #root .pvp-deck-studio > .row-head { margin: 2.4rem 0 1.6rem; padding: 0; border: 0; }
+html body #root .pvp-deck-studio > .row-head:first-child { margin-top: 0; }
+html body #root .pvp-deck-studio h2 { font: 750 2.2rem/1.5 Pretendard,sans-serif; letter-spacing: -0.04em; }
+html body #root .pvp-deck-studio .deck__acc { margin: 0 0 1.2rem; overflow: hidden; border: 1px solid var(--line); border-radius: var(--r-panel); background: var(--surface); box-shadow: none; }
+html body #root .pvp-deck-studio .deck__acc[open] { border-color: color-mix(in srgb,var(--brand) 45%,var(--line)); }
+html body #root .pvp-deck-studio .deck__acc > summary { display: flex; align-items: center; flex-wrap: wrap; gap: 0.8rem 1.6rem; min-height: var(--tap); padding: 1.6rem 2rem; background: transparent; color: var(--fg); font: 700 1.6rem/1.5 Pretendard,sans-serif; cursor: pointer; }
+html body #root .pvp-deck-studio__number { color: var(--brand); font: 750 2.2rem/1 Pretendard,sans-serif; }
+html body #root .pvp-deck-studio .schedule__today { margin: 0; color: var(--muted); font: 400 1.4rem/1.5 Pretendard,sans-serif; }
+html body #root .pvp-deck-studio .schedule__body { padding: 0 2rem 2rem; }
+html body #root .pvp-deck-studio .row-list { gap: 1.2rem; }
+html body #root .pvp-deck-studio .row { border: 1px solid var(--line); border-top: 0.4rem solid var(--brand); border-radius: var(--r-box); background: linear-gradient(160deg,var(--selected),var(--surface-2) 65%); box-shadow: none; padding: 2rem; transition: border-color 160ms ease, background 160ms ease; }
+html body #root .pvp-deck-studio .row:hover { border-color: var(--brand); }
+html body #root .pvp-deck-studio .row__name { font-size: 1.6rem; }
+html body #root .pvp-deck-studio .row__sub { color: var(--muted); font-size: 1.2rem; line-height: 1.7; }
+html body #root .pvp-deck-studio .deck__reason { margin: 1.6rem 0 0; padding: 1.6rem; border-left: 0.4rem solid var(--brand); border-radius: var(--r-box); background: var(--bg); color: var(--muted); font-size: 1.4rem; line-height: 1.7; }
+html body #root .pvp-deck-studio .deck__slots { gap: 1.2rem; margin-bottom: 1.6rem; }
+html body #root .pvp-deck-studio .deck__slot { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.8rem; min-height: 12rem; padding: 1.6rem; border: 1px dashed var(--line); border-radius: var(--r-box); background: var(--surface); color: var(--fg); }
+html body #root .pvp-deck-studio .deck__slot:hover { border-color: var(--brand); background: var(--selected); }
+html body #root .pvp-deck-studio .deck__slot.is-filled { border-style: solid; background: var(--selected); }
+html body #root .pvp-deck-studio .slot__plus { color: var(--brand); font: 400 2.8rem/1 Pretendard,sans-serif; }
+html body #root .pvp-deck-studio .slot__hint { color: var(--muted); font-size: 1.2rem; }
+html body #root .pvp-deck-studio .boss__search { box-sizing: border-box; width: 100%; min-height: 5.2rem; padding: 1.2rem 1.6rem; border: 1px solid var(--line); border-radius: var(--r-ctl); background: var(--surface); color: var(--fg); font-size: 1.4rem; }
+html body #root .pvp-deck-studio :is(button,input,summary):focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
+html body #root .pvp-deck-studio .empty { padding: 2rem; color: var(--muted); font-size: 1.4rem; line-height: 1.7; }
+html body #root .pvp-deck-studio .solo__card { padding: 2.4rem; border: 1px solid var(--line); border-radius: var(--r-panel); background: var(--surface); }
+@media(max-width:699px) {
+ html body #root .pvp-deck-studio .deck__acc > summary { padding: 1.6rem; gap: 0.8rem; }
+ html body #root .pvp-deck-studio .schedule__today { flex-basis: 100%; }
+ html body #root .pvp-deck-studio .schedule__body { padding: 0 1.2rem 1.2rem; }
+ html body #root .pvp-deck-studio .row { padding: 1.2rem; }
+ html body #root .pvp-deck-studio .deck__slots { gap: 0.8rem; }
+ html body #root .pvp-deck-studio .deck__slot { min-height: 10.4rem; padding: 0.8rem; }
+}
+
+html body #root .pvp-deck-leagues { padding: 0.8rem; border: 1px solid var(--line); border-radius: var(--r-panel); background: var(--surface); }
+html body #root .pvp-deck-leagues > * { border: 0; background: transparent; }
+html body #root .pvp-deck-leagues button { min-height: var(--tap); border-radius: var(--r-ctl); }
+html body #root .pvp-deck-leagues button[aria-pressed=true] { background: var(--brand); color: var(--bg); box-shadow: none; }
+
+/* 個体値の入力・比較レイアウトを保ち、数字と選択状態を強調する。 */
+html body #root #page-ivrank .note { margin: 0 0 2.4rem; padding: 1.6rem 2rem; border: 1px solid var(--line); border-left: 0.4rem solid var(--brand); border-radius: var(--r-box); background: var(--surface); color: var(--muted); font-size: 1.4rem; line-height: 1.7; }
+html body #root #page-ivrank .note b { color: var(--fg); }
+html body #root #page-ivrank :is(.ivrank__form,.ivrank__out) { padding: 2.4rem; border: 1px solid var(--line); border-radius: var(--r-panel); background: var(--surface); box-shadow: none; min-width: 0; }
+html body #root #page-ivrank .ivrank__form .row-head { display: flex; flex-wrap: wrap; gap: 0.4rem; margin: 2.4rem 0 1.2rem; padding: 0; border: 0; }
+html body #root #page-ivrank .ivrank__form > .row-head:first-child { margin-top: 0; }
+html body #root #page-ivrank h2 { font: 750 2.2rem/1.5 Pretendard,sans-serif; letter-spacing: -0.04em; }
+html body #root #page-ivrank .ivrank__form .row-head .meta { flex-basis: 100%; font-size: 1.2rem; color: var(--muted); }
+html body #root #page-ivrank .ivrank__pick { padding: 0; border: 0; background: transparent; }
+html body #root #page-ivrank .boss__search { box-sizing: border-box; width: 100%; min-height: 5.2rem; padding: 1.2rem; border: 1px solid var(--line); border-radius: var(--r-ctl); background: var(--bg); color: var(--fg); font-size: 1.4rem; }
+html body #root #page-ivrank .ivrank__ivs { gap: 0.8rem; }
+html body #root #page-ivrank .ivrank__ivbox { display: grid; gap: 0.8rem; padding: 1.2rem 0.8rem; border: 1px solid var(--line); border-radius: var(--r-box); background: var(--bg); text-align: center; }
+html body #root #page-ivrank .ivrank__iv { box-sizing: border-box; width: 100%; min-height: 4.4rem; border: 0; border-radius: var(--r-ctl); background: var(--surface-2); color: var(--fg); font: 750 2.8rem/1.2 Pretendard,sans-serif; text-align: center; }
+html body #root #page-ivrank .ivrank__floors { display: grid; grid-template-columns: minmax(0,1fr); gap: 0.8rem; }
+html body #root #page-ivrank .ivrank__floors .uchip { display: flex; align-items: center; justify-content: space-between; width: 100%; min-height: var(--tap); padding: 1.2rem; border: 1px solid var(--line); border-radius: var(--r-ctl); background: var(--surface-2); color: var(--fg); font-size: 1.4rem; text-align: left; }
+html body #root #page-ivrank .ivrank__floors .uchip.is-on { border-color: var(--brand); background: var(--selected); color: var(--brand); }
+html body #root #page-ivrank :is(input,button):focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
+html body #root #page-ivrank .ivrank__out > .empty { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2rem; min-height: 32rem; margin: 0; text-align: center; color: var(--muted); font-size: 1.6rem; line-height: 1.7; background: radial-gradient(ellipse at center,var(--selected),transparent 70%); }
+html body #root #page-ivrank .ivrank__out > .empty::before { content: 'IV'; display: grid; place-items: center; width: 8rem; height: 8rem; border: 1px solid var(--brand); border-radius: var(--r-panel); color: var(--brand); font: 750 2.8rem/1 Pretendard,sans-serif; }
+html body #root #page-ivrank .ivrank__verdict { margin: 0 0 2rem; padding: 2rem; border-left: 0.4rem solid var(--brand); border-radius: var(--r-box); background: var(--selected); color: var(--fg); font-size: 1.4rem; line-height: 1.7; }
+html body #root #page-ivrank .ivrank__verdict b { display: block; font-size: 1.6rem; margin-bottom: 0.8rem; }
+html body #root #page-ivrank .ivrank__cards > * { padding: 1.6rem; border: 1px solid var(--line); border-radius: var(--r-box); background: var(--bg); box-shadow: none; }
+html body #root #page-ivrank .ivrank__cards > .is-on { border-color: var(--brand); background: var(--selected); }
+html body #root #page-ivrank .ivrank__rank { display: block; margin: 1.2rem 0; color: var(--brand); font: 750 2.8rem/1.2 Pretendard,sans-serif; }
+html body #root #page-ivrank .ivrank__total { color: var(--muted); font-size: 1.2rem; }
+html body #root #page-ivrank .ivrank__list { display: grid; gap: 0.8rem; }
+html body #root #page-ivrank .ivrank__list li { padding: 1.2rem 1.6rem; border: 1px solid var(--line); border-radius: var(--r-ctl); background: var(--bg); font-size: 1.4rem; }
+html body #root #page-ivrank .ivrank__list li.is-mine { border-color: var(--brand); background: var(--selected); }
+html body #root #page-ivrank .detail__foot { padding: 1.6rem 0; color: var(--muted); font-size: 1.2rem; line-height: 1.7; }
+@media(max-width:699px) {
+ html body #root #page-ivrank :is(.ivrank__form,.ivrank__out) { padding: 1.6rem; }
+ html body #root #page-ivrank .ivrank__out > .empty { min-height: 24rem; }
+ html body #root #page-ivrank .ivrank__cards { grid-template-columns: repeat(2,minmax(0,1fr)); }
+}

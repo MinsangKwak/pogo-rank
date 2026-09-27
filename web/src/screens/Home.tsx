@@ -26,7 +26,7 @@ import type { OpenMon } from '../lib/mon';
 import { TankPopupEntry } from '../components/TankPopup';
 
 // 대표 일러스트 — 머리에서 미리 받는 그 그림 (app/page.tsx 의 preload 와 같은 파일)
-const HERO_ART_ENTRY = MAX_ART.find((art) => art.dex.includes(144))!;
+const HERO_ART_ENTRY = MAX_ART.find((art) => art.dex.includes(816))!;
 
 // 배너 슬라이드는 홈에서만 쓴다 — Swiper 30KB 를 모든 화면의 첫 묶음에 싣지 않는다 (components/MaxSlider.tsx)
 const MaxSlider = lazy(() => import('../components/MaxSlider'));
