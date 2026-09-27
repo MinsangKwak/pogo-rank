@@ -12,12 +12,12 @@
 import { BASE } from './base';
 
 export const HERO_ART = {
-  src: `${BASE}images/max-battle-articuno-panorama-1200.webp`,
-  srcSet: `${BASE}images/max-battle-articuno-panorama-720.webp 720w, ${BASE}images/max-battle-articuno-panorama-1200.webp 1200w`,
+  src: `${BASE}images/max-battle-sobble-panorama-1200.webp`,
+  srcSet: `${BASE}images/max-battle-sobble-panorama-720.webp 720w, ${BASE}images/max-battle-sobble-panorama-1200.webp 1200w`,
   sizes: '100vw',
   width: 1200,
   height: 400,
-  // 새 3:1 구도는 프리져가 오른쪽에 선다. 모바일에서는 보스 얼굴을 중심으로 자른다.
+  // 3:1 구도는 울머기가 오른쪽에 선다. 모바일에서는 보스 얼굴을 중심으로 자른다.
   focus: 'right top',
 } as const;
 
@@ -70,12 +70,7 @@ export const MAX_ART: readonly MaxArt[] = [
     // 이름은 도감 실데이터만 쓴다 — 없으면 비운다 (§3)
     alt: (names) => `${names['812'] ?? ''}·${names['25'] ?? ''}의 풀·전기 기술에 맞서는 다이맥스 ${names['816'] ?? ''} 배틀 일러스트`,
   },
-  {
-    // 거대코뿌리·해피너스·루기아·몰드류가 다이맥스 프리져와 맞선다 — 프리져·썬더·파이어 주간(2026-09-21)
-    dex: [144],
-    ...HERO_ART,
-    alt: (names) => `${names['464'] ?? ''}·${names['242'] ?? ''}·${names['249'] ?? ''}·${names['530'] ?? ''}가 다이맥스 ${names['144'] ?? ''}와 맞서는 배틀 일러스트`,
-  },
+
 ];
 
 /** 보스 미공개 행사는 특정 포켓몬 대신 알을 소재로 한 콘셉트 그림을 보여 준다. */

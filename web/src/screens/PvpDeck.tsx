@@ -156,14 +156,15 @@ export default function PvpDeck({ onOpen }: { onOpen: OpenMon }) {
   return (
     <>
       <Slot name="tabs">
-        <ScreenTabs items={LEAGUES.map((one) => ({ id: one.id, label: one.name }))} value={league}
-          onPick={(id) => set('league', id as LeagueKey)} />
+        <div className="pvp-deck-leagues"><ScreenTabs items={LEAGUES.map((one) => ({ id: one.id, label: one.name }))} value={league}
+          onPick={(id) => set('league', id as LeagueKey)} /></div>
       </Slot>
       <Slot name="headActions">
         <ToolBtn label="🃏 덱 짜기" on onClick={() => { track('tool_pvpdeck', { on: 0 }); go('/pvp'); }} />
         <ToolBtn label="🧬 개체값 순위" onClick={() => { track('tool_ivrank', { on: 1 }); go('/pvp/ivrank'); }} />
       </Slot>
 
+      <section className="pvp-deck-studio">
       <div className="row-head"><h2>PvP 덱 짜기</h2><span className="meta">실험 기능</span></div>
 
       {recs.map((rec, index) => (
@@ -175,7 +176,7 @@ export default function PvpDeck({ onOpen }: { onOpen: OpenMon }) {
             const open = (event.currentTarget as HTMLDetailsElement).open;
             setAccOpen((now) => ({ ...now, [index]: open }));
           }}>
-          <summary>{`🃏 추천 덱 ${index + 1} — ${rec.title}`}<span className="schedule__today">{rec.tag}</span></summary>
+          <summary><span className="pvp-deck-studio__number">0{index + 1}</span><span>{rec.title}</span><span className="schedule__today">{rec.tag}</span></summary>
           <div className="schedule__body is-starless">
             <ul className="row-list">
               {rec.deck.map((mon, slot) => deckRow(mon, slot, mon.score.toFixed(1), '리그 점수'))}
@@ -200,7 +201,7 @@ export default function PvpDeck({ onOpen }: { onOpen: OpenMon }) {
           ) : (
             <button key={index} className="deck__slot" aria-label="상대 추가"
               onClick={() => searchRef.current?.focus()}>
-              <span className="slot__plus">+</span>
+              <span className="slot__plus" aria-hidden="true">+</span><span className="slot__hint">상대 {index + 1} 추가</span>
             </button>
           );
         })}
@@ -268,6 +269,7 @@ export default function PvpDeck({ onOpen }: { onOpen: OpenMon }) {
           </Fragment>
         );
       })}
+      </section>
     </>
   );
 }

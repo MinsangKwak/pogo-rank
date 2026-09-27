@@ -102,8 +102,10 @@ export default function DmaxDeck({ onOpen }: { onOpen: OpenMon }) {
         <ToolBtn label="🧩 덱 짜기" on onClick={() => { track('tool_dmaxdeck', { on: 0 }); go('/dmax'); }} />
       </Slot>
 
+      <section className="maxdeck-builder">
+      <div className="maxdeck-builder__setup">
       <div className="row-head">
-        <div className="row-head__title"><h2>{`${typeLabel} 보스 상대 추천 3마리`}</h2></div>
+        <div className="row-head__title"><span className="maxdeck-builder__eyebrow">01 · BATTLE TARGET</span><h2>어떤 보스에 도전하나요?</h2></div>
         <span className="meta">{week && week.type === bossType ? (week.now ? `이번 주 ${week.label}` : `다음 보스 ${week.label}`) : ''}</span>
       </div>
 
@@ -120,6 +122,11 @@ export default function DmaxDeck({ onOpen }: { onOpen: OpenMon }) {
           onClick={() => { setDynaOnly(!dynaOnly); setPicked(null); setSwap(null); }}>다이맥스만</button>
       </div>
 
+      </div>
+      <div className="maxdeck-builder__heading">
+        <div><span className="maxdeck-builder__eyebrow">02 · YOUR TEAM</span><h2>{`${typeLabel} 보스 상대 추천 팀`}</h2><p>공격을 맡을 딜러 2마리와 버티는 탱커 1마리를 골라보세요.</p></div>
+        <button className="uchip" onClick={() => { setPicked({ key, deck: auto }); setSwap(null); }}>추천 팀으로 초기화</button>
+      </div>
       <ul className="row-list deck-slots">
         {MAX_DECK_SLOTS.map((slot, index) => {
           const row = maxDeckRowOf(max, index, bossType, deck[index] ?? null);
@@ -127,12 +134,12 @@ export default function DmaxDeck({ onOpen }: { onOpen: OpenMon }) {
           const candidates = open ? maxDeckCandidates(max, index, bossType, deck, dynaOnly).slice(0, 12) : [];
           return (
             <Fragment key={index}>
-              <li className={`row deck-slot${row ? '' : ' is-empty'}`}
+              <li className={`row deck-slot deck-slot--${index}${row ? '' : ' is-empty'}`}
                 onClick={(event) => {
                   if ((event.target as HTMLElement).closest('.deck-slot__swap')) return;
                   if (row) onOpen(row);
                 }}>
-                <span className="row__rank">{index + 1}</span>
+                <span className="maxdeck-builder__role"><span>0{index + 1}</span>{slot.role === 'tank' ? '방어 · 탱커' : '공격 · 딜러'}</span>
                 {row ? <Sprite id={row.sprite} /> : <span className="deck-slot__blank">—</span>}
                 <span className="row__name">
                   {/* nameNode 가 폼 뱃지 + <b>종 이름</b> 을 돌려준다 — 여기서 <b> 를 한 겹 더 씌우지 않는다 */}
@@ -140,7 +147,7 @@ export default function DmaxDeck({ onOpen }: { onOpen: OpenMon }) {
                   <span className="row__sub">{`${slot.label} · ${maxDeckWhy(index, row, bossType)}`}</span>
                 </span>
                 <button className="boss__more deck-slot__swap" aria-expanded={open}
-                  onClick={() => setSwap(open ? null : index)}>{open ? '닫기' : '바꾸기'}</button>
+                  onClick={() => setSwap(open ? null : index)}>{open ? '후보 닫기' : '포켓몬 교체'}</button>
               </li>
               {open ? (
                 <li className="row__why is-open deck-slot__picker">
@@ -167,9 +174,10 @@ export default function DmaxDeck({ onOpen }: { onOpen: OpenMon }) {
       </ul>
 
       {/* 지어낸 등급이 아니라 표에 있는 숫자를 그대로 더한 값이다 */}
-      <p className="deck__reason">{`💬 ${summary}`}</p>
+      <div className="maxdeck-builder__summary"><b>팀 요약</b><p className="deck__reason" aria-live="polite">{summary}</p><span>현재 팀은 주소에 자동으로 저장돼요. 링크를 보내면 같은 팀을 볼 수 있어요.</span></div>
 
       <p className="detail__foot">딜러는 맥스 피해 × √내구 순위, 탱커는 체력 × 방어 ÷ 받는 배율(EHP) 순위에서 골라요. 맥스가드·맥스스피릿 같은 방어·회복 역할은 아직 데이터가 없어 다루지 않아요. 주소를 그대로 보내면 상대도 같은 덱을 봅니다.</p>
+      </section>
     </>
   );
 }

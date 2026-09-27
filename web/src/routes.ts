@@ -46,11 +46,12 @@ export const ROUTES = [
   { id: 'eggs', path: 'eggs', kind: 'page', nav: '알 부화', icon: '🥚', group: 'today', actions: true },
   { id: 'finder', path: 'finder', kind: 'page', nav: '검색식 만들기', icon: '🔎', group: 'mine' },
 
-  // ── 화면 아래 화면 (메뉴에 없다 — 갈 길은 부모 화면의 버튼 하나뿐) ──────
-  { id: 'pvp-deck', path: 'pvp/deck', kind: 'shell', tab: 'pvp', tool: 'deck', parent: 'pvp', title: '덱 짜기', icon: '🃏' },
-  { id: 'dmax-deck', path: 'dmax/deck', kind: 'shell', tab: 'max', tool: 'deck', parent: 'dmax', title: '덱 짜기', icon: '🧩' },
-  { id: 'ivrank', path: 'pvp/ivrank', kind: 'shell', tab: 'pvp', tool: 'ivrank', parent: 'pvp', title: 'PvP 개체값 순위', icon: '🧬', legacy: ['ivrank'] },
-  { id: 'pve-solo', path: 'pve/solo', kind: 'shell', tab: 'pve', tool: 'solo', parent: 'pve', title: '솔플 계산기', icon: '🧮' },
+  // ── 화면 아래 화면 — 부모 화면의 머리 단추와 메뉴의 하위 줄, 두 길로 간다 ──────
+  // 2026-09-27 도구 넷은 메뉴의 하위 줄로도 선다 (기술 변경 내역과 같은 꼴) — 머리 단추만으로는 있는 줄 몰랐다
+  { id: 'pvp-deck', path: 'pvp/deck', kind: 'shell', tab: 'pvp', tool: 'deck', parent: 'pvp', nav: 'PvP 덱 짜기', group: 'pick', title: '덱 짜기', icon: '🃏' },
+  { id: 'dmax-deck', path: 'dmax/deck', kind: 'shell', tab: 'max', tool: 'deck', parent: 'dmax', nav: 'D-MAX 덱 짜기', group: 'pick', title: '덱 짜기', icon: '🧩' },
+  { id: 'ivrank', path: 'pvp/ivrank', kind: 'shell', tab: 'pvp', tool: 'ivrank', parent: 'pvp', nav: 'PvP 개체값 순위', group: 'pick', title: 'PvP 개체값 순위', icon: '🧬', legacy: ['ivrank'] },
+  { id: 'pve-solo', path: 'pve/solo', kind: 'shell', tab: 'pve', tool: 'solo', parent: 'pve', nav: '솔플 계산기', group: 'pick', title: '솔플 계산기', icon: '🧮' },
   { id: 'release', path: 'release', kind: 'page', title: '패치노트', icon: '🎉' },
   { id: 'privacy', path: 'privacy', kind: 'page', title: '개인정보처리방침', icon: '🔒' },
   { id: 'terms', path: 'terms', kind: 'page', title: '이용약관', icon: '📜' },

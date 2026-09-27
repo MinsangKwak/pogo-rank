@@ -80,15 +80,11 @@ export default function SoloCalc({ onOpen }: { onOpen: OpenMon }) {
       <Slot name="headActions">
         <ToolBtn label="🧮 솔플 계산기" on onClick={() => { track('tool_solo', { on: 0 }); go('/pve'); }} />
       </Slot>
-      <Slot name="controls">
-        <div className="solo__opts">
-          <Seg items={[{ id: 'auto', label: '추천 덱' }, { id: 'mine', label: '내 덱 검증' }]} value={mode}
-            onPick={(id) => setMode(id as 'auto' | 'mine')} />
-          <Seg items={[{ id: 'off', label: '레벨40' }, { id: 'on', label: '풀강50' }]} value={lv50 ? 'on' : 'off'}
-            onPick={(id) => setLv50(id === 'on')} />
-          <Seg items={BUFFS.map((one) => ({ id: one.id, label: one.label }))} value={buff} onPick={setBuff} />
-        </div>
-        <input className="boss__search" type="search" placeholder="보스 이름 검색 (예: 메가거북왕, 자시안)"
+      <section className="solo-workbench">
+      <div className="solo-workbench__setup">
+        <div className="solo-workbench__heading"><span>01 · RAID TARGET</span><h2>어떤 보스에 도전하나요?</h2><p>보스를 선택하면 현재 조건에 맞는 추천 덱과 예상 클리어 시간을 계산해요.</p></div>
+        <label className="solo-workbench__label" htmlFor="solo-boss-search">레이드 보스 검색</label>
+        <input id="solo-boss-search" className="boss__search" type="search" placeholder="보스 이름 검색 (예: 메가거북왕, 자시안)"
           value={bossTerm} onChange={(event) => setBossTerm(event.target.value)} />
         <div className="boss__sugg">
           {bossTerm.trim() ? (bossHits.length
@@ -117,12 +113,27 @@ export default function SoloCalc({ onOpen }: { onOpen: OpenMon }) {
               onClick={() => { setBoss(null); setTierOverride(null); setMyDeck([]); }}>✕</button>
           </div>
         ) : null}
-      </Slot>
-
-      <div className="row-head"><h2>솔플 레이드 계산기</h2><span className="meta">실험 기능 · 부활 후 재도전 기준</span></div>
+        <div className="solo-workbench__conditions"><div className="solo-workbench__heading"><span>02 · BATTLE CONDITIONS</span><h2>배틀 조건 설정</h2></div>
+        <div className="solo__opts">
+          <div className="solo-workbench__option"><span>계산 방식</span><Seg items={[{ id: 'auto', label: '추천 덱' }, { id: 'mine', label: '내 덱 검증' }]} value={mode}
+            onPick={(id) => setMode(id as 'auto' | 'mine')} /></div>
+          <div className="solo-workbench__option"><span>포켓몬 레벨</span><Seg items={[{ id: 'off', label: '레벨40' }, { id: 'on', label: '풀강50' }]} value={lv50 ? 'on' : 'off'}
+            onPick={(id) => setLv50(id === 'on')} /></div>
+          <div className="solo-workbench__option"><span>공격 보너스</span><Seg items={BUFFS.map((one) => ({ id: one.id, label: one.label }))} value={buff} onPick={setBuff} /></div>
+        </div>
+        </div>
+      </div>
+      <div className="solo-workbench__results">
+      <div className="solo-workbench__heading"><span>03 · SIMULATION</span><h2>솔플 분석 결과</h2><p>실험 기능 · 기절 전 이탈 후 부활해 재입장하는 조건으로 계산해요.</p></div>
 
       {!boss ? (
-        <p className="empty">잡고 싶은 보스를 검색해서 골라주세요. 예: 메가거북왕을 고르면 풀·전기 정예 덱이 나와요.</p>
+        <div className="solo-workbench__empty">
+          <span className="solo-workbench__target" aria-hidden="true">◎</span>
+          <h3>도전할 보스를 먼저 골라주세요</h3>
+          <p>추천 포켓몬부터 제한 시간 내 공략 가능성까지<br />한곳에서 확인할 수 있어요.</p>
+          <div className="solo-workbench__preview"><span>예상 클리어 시간</span><span>추천 출전 순서</span><span>부족한 피해량</span></div>
+          <button className="uchip" onClick={() => document.getElementById('solo-boss-search')?.focus()}>보스 검색하기 ↑</button>
+        </div>
       ) : mode === 'mine' ? (
         <>
           <div className="row-head"><h2>내 덱</h2><span className="meta">{`${myDeck.length}/6 · 넣는 순서대로 출전`}</span></div>
@@ -180,6 +191,8 @@ export default function SoloCalc({ onOpen }: { onOpen: OpenMon }) {
       ) : (
         <Result boss={boss} tier={tier} mode={mode} plan={buildSoloPlan(pool, tier)} typeKo={dex.TYPE_KO} onOpen={onOpen} />
       )}
+      </div>
+      </section>
     </>
   );
 }
