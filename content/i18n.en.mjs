@@ -512,6 +512,7 @@ export const I18N_EN = {
   '리그 상위 #마리 저격': 'Aimed at the league top #',
   '방어 타입 안 겹침': 'No overlapping defensive types',
   'PvP 덱 짜기': 'PvP team builder',
+  'D-MAX 덱 짜기': 'D-MAX team builder',   // 2026-09-27 메뉴 하위 줄
   'PvP 커스텀 덱 짜기': 'Custom PvP team builder',
   '상대 기준 맞춤 추천': 'Tailored to the opponents you enter',
   '실험 기능': 'Experimental',
@@ -691,12 +692,16 @@ export const I18N_EN = {
   // 이모지가 붙은 위 키들은 화면 제목(PAGES) 쪽에서 아직 그대로 쓰인다
   '기준 안내 (지금 보는 화면)': 'How this screen is calculated',
   '트레이너 코드': 'Trainer codes',
+  '패치 노트': 'Patch notes',   // 2026-09-27 메뉴 라벨 띄어쓰기 — 키는 글자 그대로라 둘 다 둔다
   '패치노트': 'Release notes',
   '기술 변경': 'Move changes',
+  'QA · 버그 제보 (노션)': 'QA and bug reports (Notion)',
   'QA·버그 제보 (노션)': 'QA and bug reports (Notion)',
   '서비스': 'Screens',
   '정보': 'About',
+  '개인정보 처리방침': 'Privacy policy',
   '개인정보처리방침': 'Privacy policy',
+  '이용 약관': 'Terms of use',
   '이용약관': 'Terms of use',
   '저장소·통계 안내': 'Storage and analytics',
   'PvPoke · PokeMiners 데이터': 'PvPoke · PokeMiners data',

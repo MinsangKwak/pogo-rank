@@ -36,18 +36,8 @@ export default function MaxSlider({ items, slides }: {
   const [still] = useState(reducedMotion);
   const [playing, setPlaying] = useState(!still);
   const progress = useRef<HTMLDivElement>(null);
-  const strip = useRef<HTMLDivElement>(null);
   const total = items.length;
   const [active, setActive] = useState(0);
-
-  // 탭은 두 칸(넓으면 네 칸)만 보인다 — 여덟 칸을 한 줄에 다 세우면 글자가 '프‥' 로 잘려 하나도 안 읽힌다 (2026-09-25 제보).
-  // 넘어간 장의 탭을 맨 왼쪽으로 당겨 지금 장과 다음 장이 늘 보이게 한다. 페이지는 안 움직이게 띠만 민다
-  useEffect(() => {
-    const row = strip.current;
-    const tab = row?.children[active] as HTMLElement | undefined;
-    if (!row || !tab) return;
-    row.scrollTo({ left: tab.offsetLeft, behavior: still ? 'auto' : 'smooth' });
-  }, [active, still]);
 
   // 다음 배너 한 장만 미리 받는다. 실제 표시하는 WebP의 화면 크기에 맞는 파일을 고른다.
   useEffect(() => {
@@ -68,6 +58,9 @@ export default function MaxSlider({ items, slides }: {
     if (!auto) return;
     if (playing) auto.start(); else auto.stop();
   }, [playing]);
+
+  // 자막은 지금 장의 일정 한 건만 본다 — 탭 띠는 2026-09-27 에 뺐고 일정 글은 그림 안에 선다
+  const current = slides.find((row) => row.id === items[active]?.key);
 
   return (
     <div className="max-slider">
@@ -95,34 +88,22 @@ export default function MaxSlider({ items, slides }: {
       >
         {items.map((item) => <SwiperSlide key={item.key}>{item.node}</SwiperSlide>)}
       </Swiper>
-      {/* 일정 탭 — 장마다 하나. 누르면 그 장으로 가고 넘기기를 멈춘다 */}
-      {/* 위 막대가 다음 장까지 남은 시간이다 — 저절로 넘어간다는 것을 눈에 보이게 한다 */}
+      <div className="portal-banner-caption">
+        <span>{current?.short ?? 'BATTLE GUIDE'}</span>
+        <strong>{current?.bosses.map((boss) => boss.name).join(' · ') || '보스 발표 전'}</strong>
+      </div>
+      {!still && <button type="button" className="max-slider__toggle"
+        aria-label={playing ? '배너 넘기기 멈춤' : '배너 넘기기 다시 시작'}
+        onClick={() => setPlaying((now) => !now)}>
+        <span aria-hidden="true">{playing ? '❚❚' : '▶'}</span>
+      </button>}
+      {/* 위 막대가 다음 장까지 남은 시간이다. 움직임 줄이기를 켠 사람에게는 처음부터 안 넘기므로 막대도 없다 */}
       <div ref={progress} className="portal-banner-nav">
-        {/* 움직임 줄이기를 켠 사람에게는 처음부터 안 넘기므로 막대도 멈출 것도 없다 */}
         {still ? null : (
           <div className="portal-banner-bar">
             <span className="banner-progress" aria-hidden="true"><i /></span>
-            <span className="portal-banner-count" aria-hidden="true">{String(active + 1).padStart(2, '0')} / {String(total).padStart(2, '0')}</span>
-            {/* 멈춤은 막대 바로 옆 — 무엇을 멈추는지가 붙어 있어야 읽힌다. 배너 오른쪽 위에 따로 서면 제목을 가렸다 */}
-            <button type="button" className="max-slider__toggle"
-              aria-label={playing ? '배너 넘기기 멈춤' : '배너 넘기기 다시 시작'}
-              onClick={() => setPlaying((now) => !now)}>
-              <span aria-hidden="true">{playing ? '❚❚' : '▶'}</span>
-            </button>
           </div>
         )}
-        <div ref={strip} className="portal-banner-tabs" aria-label="배너 선택">
-          {items.map((item, index) => {
-            const slide = slides.find((row) => row.id === item.key);
-            return (
-              <button key={item.key} type="button" aria-pressed={active === index}
-                onClick={() => { swiper.current?.slideToLoop(index); setPlaying(false); }}>
-                <small>{slide?.short ?? 'BATTLE GUIDE'}</small>
-                <strong>{slide?.bosses.map((boss) => boss.name).join(' · ') || (slide ? '보스 발표 전' : '맥스 배틀 준비하기')}</strong>
-              </button>
-            );
-          })}
-        </div>
       </div>
     </div>
   );

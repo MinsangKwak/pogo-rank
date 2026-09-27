@@ -7,7 +7,7 @@ import type { GamedayEvent } from '../types/data';
 const unknown = 'max-battle-day-october-24-2026';
 
 describe('맥스 배너 일정과 일러스트', () => {
-  it('9월 현재 주간부터 10월 마지막 주까지 8개를 날짜순으로 보여 준다', () => {
+  it('종료된 전설의 새 배너를 제외하고 7개를 날짜순으로 보여 준다', () => {
     const weeks = [
       ['09-21', 144], ['09-28', 816], ['10-05', 850], ['10-12', 821],
       ['10-19', 215], ['10-26', 302],
@@ -23,9 +23,12 @@ describe('맥스 배너 일정과 일러스트', () => {
     );
     const slides = maxSlides({ events, names, en: undefined, forms: undefined }, Date.parse('2026-09-25T12:00:00+09:00'));
     expect(slides.map((slide) => slide.bosses.map((boss) => boss.dex))).toEqual([[144], [816], [815], [850], [821], [215], [], [302]]);
-    const art = slides.map((slide) => maxArtFor(slide.bosses.map((boss) => boss.dex), slide.id));
+    expect(maxArtFor([144, 145, 146])).toBeUndefined();
+    const shown = slides.filter((slide) => maxArtFor(slide.bosses.map((boss) => boss.dex), slide.id));
+    expect(shown.map((slide) => slide.bosses.map((boss) => boss.dex))).toEqual([[816], [815], [850], [821], [215], [], [302]]);
+    const art = shown.map((slide) => maxArtFor(slide.bosses.map((boss) => boss.dex), slide.id));
     expect(art.every(Boolean)).toBe(true);
-    expect(new Set(art.map((one) => one?.src)).size).toBe(8);
+    expect(new Set(art.map((one) => one?.src)).size).toBe(7);
     expect(slides.at(-1)?.short).toBe('10.26–11.1');
   });
 
