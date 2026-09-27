@@ -59,6 +59,9 @@ export default function MaxSlider({ items, slides }: {
     if (playing) auto.start(); else auto.stop();
   }, [playing]);
 
+  // 자막은 지금 장의 일정 한 건만 본다 — 탭 띠는 2026-09-27 에 뺐고 일정 글은 그림 안에 선다
+  const current = slides.find((row) => row.id === items[active]?.key);
+
   return (
     <div className="max-slider">
       <Swiper
@@ -86,18 +89,21 @@ export default function MaxSlider({ items, slides }: {
         {items.map((item) => <SwiperSlide key={item.key}>{item.node}</SwiperSlide>)}
       </Swiper>
       <div className="portal-banner-caption">
-        <span>{slides.find((row) => row.id === items[active]?.key)?.short ?? 'BATTLE GUIDE'}</span>
-        <strong>{slides.find((row) => row.id === items[active]?.key)?.bosses.map((boss) => boss.name).join(' · ') || '보스 발표 전'}</strong>
+        <span>{current?.short ?? 'BATTLE GUIDE'}</span>
+        <strong>{current?.bosses.map((boss) => boss.name).join(' · ') || '보스 발표 전'}</strong>
       </div>
       {!still && <button type="button" className="max-slider__toggle"
         aria-label={playing ? '배너 넘기기 멈춤' : '배너 넘기기 다시 시작'}
         onClick={() => setPlaying((now) => !now)}>
         <span aria-hidden="true">{playing ? '❚❚' : '▶'}</span>
       </button>}
+      {/* 위 막대가 다음 장까지 남은 시간이다. 움직임 줄이기를 켠 사람에게는 처음부터 안 넘기므로 막대도 없다 */}
       <div ref={progress} className="portal-banner-nav">
-        <div className="portal-banner-bar">
-          <span className="banner-progress" aria-hidden="true"><i /></span>
-        </div>
+        {still ? null : (
+          <div className="portal-banner-bar">
+            <span className="banner-progress" aria-hidden="true"><i /></span>
+          </div>
+        )}
       </div>
     </div>
   );

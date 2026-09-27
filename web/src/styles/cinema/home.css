@@ -45,28 +45,17 @@ html body #root .home__welcome :is(.max-poster__badge, .max-poster__dday) {
   display: inline-flex; align-items: center; min-height: 2.8rem; padding: 0.4rem 0.8rem;
   border: 1px solid var(--plate-line); border-radius: var(--r-tag); background: var(--plate-accent); color: var(--plate); font: 600 1.2rem/1.2 Pretendard, sans-serif;
 }
-/* 배너 아래 일정 — 진행 막대 한 줄 + 탭 띠. 탭은 넓으면 네 칸, 좁으면 두 칸만 보이고 옆으로 민다
-   여덟 칸을 한 줄에 다 세우면 날짜 · 이름이 '9.… 프‥' 로 잘려 하나도 안 읽혔다 (2026-09-25 제보) */
-html body #root .portal-banner-nav { position: absolute; bottom: 0; left: 0; right: 0; z-index: 5; background: color-mix(in srgb, var(--plate) 79%, transparent); backdrop-filter: blur(1.2rem); }
-html body #root .portal-banner-bar { display: flex; align-items: center; gap: 1.2rem; padding: 0.8rem 2.4rem 0; }
+/* 배너 아래 — 다음 장까지 남은 시간 막대 하나. 일정 글은 그림 안 자막(.portal-banner-caption)이 맡는다 (2026-09-27) */
+html body #root .portal-banner-nav { position: absolute; bottom: 0; left: 0; right: 0; z-index: 5; }
+html body #root .portal-banner-bar { display: flex; align-items: center; gap: 1.2rem; padding: 0 2.4rem 1.6rem; }
 html body #root .banner-progress { flex: 1; height: 0.4rem; overflow: hidden; border-radius: var(--r-tag); background: color-mix(in srgb, var(--plate-fg) 15%, transparent); }
 html body #root .banner-progress i { display: block; width: 100%; height: 100%; background: var(--plate-accent); transform: scaleX(var(--banner-progress, 0)); transform-origin: left; }
-html body #root .portal-banner-count { color: var(--plate-muted); font: 600 1.2rem/1 Pretendard, sans-serif; font-variant-numeric: tabular-nums; letter-spacing: 0.08em; }
-html body #root .portal-banner-tabs { position: relative; display: flex; overflow-x: auto; scroll-snap-type: x mandatory; overscroll-behavior-x: contain; scrollbar-width: none; }
-html body #root .portal-banner-tabs::-webkit-scrollbar { display: none; }
-html body #root .portal-banner-tabs button { position: relative; flex: 1 0 25%; min-width: 0; padding: 1.6rem 2.4rem 2rem; border: 0; border-radius: 0; background: transparent; color: var(--plate-muted); text-align: left; scroll-snap-align: start; }
-html body #root .portal-banner-tabs button[aria-pressed=true] { color: var(--plate-fg); }
-html body #root .portal-banner-tabs button[aria-pressed=true] small { color: var(--plate-accent); }
-html body #root .portal-banner-tabs :is(small, strong) { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-html body #root .portal-banner-tabs small { margin-bottom: 0.4rem; color: var(--plate-muted); font-size: 1.2rem; }
-html body #root .portal-banner-tabs strong { font: 650 1.4rem/1.5 Pretendard, sans-serif; }
-/* 멈춤 — 막대 오른쪽의 작은 단추. 보이는 크기는 2.8rem, 누르는 자리는 ::after 로 44px(--tap)까지 넓힌다 */
-html body #root .home__welcome .max-slider__toggle {
-  position: relative; inset: auto; z-index: auto; display: inline-flex; flex: none; align-items: center; justify-content: center;
-  width: 2.8rem; height: 2.8rem; min-width: 0; min-height: 0; padding: 0;
-  border: 1px solid var(--plate-line); border-radius: var(--r-tag); background: transparent; color: var(--plate-fg); font-size: 1.2rem; line-height: 1; box-shadow: none;
+/* 멈춤 — 그림 오른쪽 위, 판 색 위의 --tap 단추 (WCAG 2.2.2) */
+html body #root .home__welcome .max-slider > .max-slider__toggle {
+  position: absolute; top: 1.6rem; right: 1.6rem; z-index: 5; display: inline-flex; align-items: center; justify-content: center;
+  width: var(--tap); height: var(--tap); min-width: 0; min-height: 0; padding: 0;
+  border: 1px solid var(--plate-line); border-radius: var(--r-tag); background: var(--plate); color: var(--plate-fg); font-size: 1.2rem; line-height: 1; box-shadow: none;
 }
-html body #root .home__welcome .max-slider__toggle::after { content: ''; position: absolute; inset: -0.8rem; }
 
 /* ── 구역 머리 ─────────────────────────────────────────────────────────── */
 html body #root .home-dashboard .home__section { border: 0; padding-bottom: 2rem; margin-bottom: 0.8rem; }
@@ -207,7 +196,7 @@ html body #root .home-dashboard .home-updates__list .pick__discover-action > spa
 @media (hover: hover) { html body #root .home-dashboard .home-updates__list > .pick__discover:hover .pick__discover-action > span { border-color: var(--brand); background: var(--hover); } }
 
 @media (max-width: 999px) {
-  /* 999px 아래는 배너가 세로 62rem 이라 그림 양옆이 잘린다 — 상대 보스가 선 자리를 보인다 */
+  /* 999px 아래는 배너가 세로로 서서 그림 양옆이 잘린다 — 상대 보스가 선 자리를 보인다 */
   /* 가운데를 자르면 울머기 장에 고릴타만 섰다 (2026-09-25 제보). 자리는 그림마다 lib/heroArt.ts 의 focus, 없으면 오른쪽 위 */
   html body #root .home__welcome .max-hero img { object-position: var(--hero-focus, right top); }
   html body #root .home-dashboard .home__service-grid { grid-template-columns: minmax(0, 1fr); }
@@ -220,9 +209,7 @@ html body #root .home-dashboard .home-updates__list .pick__discover-action > spa
   html body #root .home__top-layout .home__cta { grid-column: 1; grid-row: 2; grid-template-columns: repeat(2, minmax(0, 1fr)); padding: 0; }
   html body #root .home-dashboard .home__cta > .home__btn { height: var(--tap); padding: 0 0.8rem; font-size: 1.2rem; }
   html body #root .home__welcome .max-battle-art { grid-column: 1; grid-row: 3; height: 32rem; }
-  html body #root .portal-banner-bar { padding: 0.8rem 2rem 0; }
-  html body #root .portal-banner-tabs button { flex-basis: 50%; padding: 0.8rem 2rem 1.2rem; }
-  html body #root .portal-banner-tabs small { margin-bottom: 0; }
+  html body #root .portal-banner-bar { padding: 0 1.6rem 1.6rem; }
   html body #root .home-dashboard .home__section h3 { font-size: 2.2rem; }
   html body #root .home-dashboard :is(.home__picks, .home__features, .home-updates) { margin-top: 4rem; }
 
@@ -279,13 +266,9 @@ html body #root .home-dashboard .home-updates__list .pick__discover-action > spa
 html body #root .portal-banner-caption { position: absolute; z-index: 4; left: 2.4rem; bottom: 3.2rem; right: 7.2rem; display: grid; gap: 0.8rem; pointer-events: none; color: var(--plate-fg); text-shadow: 0 2px 8px var(--plate); }
 html body #root .portal-banner-caption > span { color: var(--plate-muted); font: 600 1.4rem/1.5 Pretendard,sans-serif; }
 html body #root .portal-banner-caption > strong { font: 750 2.8rem/1.2 Pretendard,sans-serif; }
-html body #root .portal-banner-nav { background: transparent; backdrop-filter: none; }
-html body #root .portal-banner-bar { padding: 0 2.4rem 1.6rem; }
-html body #root .home__welcome .max-slider > .max-slider__toggle { position: absolute; top: 1.6rem; right: 1.6rem; bottom: auto; left: auto; z-index: 5; width: var(--tap); height: var(--tap); background: var(--plate); }
 @media(max-width:699px) {
  html body #root .portal-banner-caption { left: 1.6rem; bottom: 3.2rem; }
  html body #root .portal-banner-caption > strong { font-size: 2.2rem; }
- html body #root .portal-banner-bar { padding: 0 1.6rem 1.6rem; }
 }
 
 /* 소개 카드의 위아래를 배너와 맞추고, 문구는 상단·행동은 하단에 배치한다. */
