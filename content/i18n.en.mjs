@@ -512,6 +512,7 @@ export const I18N_EN = {
   '리그 상위 #마리 저격': 'Aimed at the league top #',
   '방어 타입 안 겹침': 'No overlapping defensive types',
   'PvP 덱 짜기': 'PvP team builder',
+  'D-MAX 덱 짜기': 'D-MAX team builder',   // 2026-09-27 메뉴 하위 줄
   'PvP 커스텀 덱 짜기': 'Custom PvP team builder',
   '상대 기준 맞춤 추천': 'Tailored to the opponents you enter',
   '실험 기능': 'Experimental',
