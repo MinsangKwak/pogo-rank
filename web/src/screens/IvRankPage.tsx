@@ -196,8 +196,8 @@ export default function IvRankPage() {
   return (
     <div className="page__body" id="page-ivrank" data-route="ivrank">
       <Slot name="tabs">
-        <ScreenTabs items={LEAGUES.map((one) => ({ id: one.id, label: one.name }))} value={league}
-          onPick={(id) => set('league', id as LeagueKey)} />
+        <div className="pvp-deck-leagues"><ScreenTabs items={LEAGUES.map((one) => ({ id: one.id, label: one.name }))} value={league}
+          onPick={(id) => set('league', id as LeagueKey)} /></div>
       </Slot>
       <Slot name="headActions">
         {/* 켜 둔 도구가 그 줄의 제목 노릇을 한다 — 그래서 맨 앞이다 (v2.67.0 의 규칙) */}

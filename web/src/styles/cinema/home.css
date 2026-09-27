@@ -11,20 +11,20 @@ html body #root .home-dashboard { min-width: 0; max-width: 100%; row-gap: 0; fon
 html body #root .home-dashboard > * { min-width: 0; max-width: 100%; }
 html body #root .home-dashboard :is(h2, h3, h4) { font-family: Pretendard, sans-serif; font-weight: 750; letter-spacing: -0.04em; }
 
-/* ── 배너 — 일정 슬라이드가 한 판을 채우고 글 · 단추가 그 위에 뜬다 ─────── */
+/* 소개와 이벤트 아트를 1:3으로 분리한다. 모바일에서는 소개 다음에 배너가 온다. */
 html body #root .home__top-layout { display: block; margin: 0; padding: 0; }
 html body #root .home__top-layout .home__welcome {
-  position: relative; isolation: isolate; display: block; width: 100%; min-width: 0; height: 62rem; padding: 0; overflow: hidden;
-  border: 0; border-radius: var(--r-panel); background: var(--plate); box-shadow: none;
+  position: relative; isolation: isolate; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 3fr); grid-template-rows: 1fr auto; gap: 2.4rem; width: 100%; min-width: 0; min-height: 44rem; height: auto; padding: 0;
+  border: 0; border-radius: 0; background: transparent; box-shadow: none;
 }
-html body #root .home__intro { position: absolute; left: 2.4rem; top: 20%; z-index: 3; width: 52%; padding: 0; pointer-events: none; }
-html body #root .home__intro h2 { padding: 0; color: var(--plate-fg); font: 800 4.2rem/1.2 Pretendard, sans-serif; letter-spacing: -0.05em; }
-html body #root .home__intro h2 em { color: var(--plate-accent); font-style: normal; text-decoration: none; }
-html body #root .home__intro p { padding: 0; color: var(--plate-muted); font-size: 1.4rem; line-height: 1.7; }
+html body #root .home__top-layout .home__intro { position: static; grid-column: 1; grid-row: 1; align-self: center; width: auto; min-width: 0; padding: 2.4rem 0 0; }
+html body #root .home__top-layout .home__intro h2 { padding: 0; color: var(--fg); font: 800 2.8rem/1.2 Pretendard, sans-serif; letter-spacing: -0.05em; }
+html body #root .home__top-layout .home__intro h2 em { color: var(--plate-accent); font-style: normal; text-decoration: none; }
+html body #root .home__top-layout .home__intro p { padding: 0; color: var(--muted); font-size: 1.4rem; line-height: 1.7; }
 html body #root .home__eyebrow { color: var(--plate-accent); border: 0; font: 600 1.2rem Pretendard, sans-serif; letter-spacing: 0.18em; }
-html body #root .home__cta { position: absolute; left: 2.4rem; top: 67%; z-index: 4; }
+html body #root .home__top-layout .home__cta { position: static; grid-column: 1; grid-row: 2; align-self: end; display: grid; gap: 0.8rem; padding-bottom: 2.4rem; }
 html body #root .home-dashboard .home__cta > .home__btn {
-  box-sizing: border-box; display: inline-flex; align-items: center; justify-content: center; width: 19.2rem; height: 5.2rem; padding: 0 1.6rem;
+  box-sizing: border-box; display: inline-flex; align-items: center; justify-content: center; width: 100%; height: 5.2rem; padding: 0 1.6rem;
   border: 0; border-radius: var(--r-ctl); background: color-mix(in srgb, var(--plate-fg) 16%, var(--plate));
   color: var(--plate-fg); font: 650 1.4rem/1.2 Pretendard, sans-serif; box-shadow: none;
 }
@@ -32,41 +32,30 @@ html body #root .home-dashboard .home__cta > .home__btn {
 /* 두 단추는 크기가 같다 — 주 단추에만 빛 번짐 그림자를 깔았더니 한쪽이 커 보였다 (2026-09-25 제보) */
 /* 테두리도 뺐다 — 한쪽만 밝은 테두리가 안쪽에 선을 그어 같은 48px 인데 작아 보였다 (네 번째 제보). 이제 모양은 판 색 하나로만 갈린다 */
 html body #root .home-dashboard .home__cta > .home__btn--primary { background: var(--plate-accent); color: var(--plate); box-shadow: none; }
-html body #root .home__welcome .max-battle-art { position: absolute; inset: 0; display: block; width: 100%; height: 100%; max-width: none; margin: 0; }
+html body #root .home__welcome .max-battle-art { position: relative; grid-column: 2; grid-row: 1 / 3; display: block; width: 100%; height: 100%; min-width: 0; overflow: hidden; border-radius: var(--r-panel); background: var(--plate); max-width: none; margin: 0; }
 html body #root .home__welcome .max-battle-art :is(.max-slider, .swiper, .swiper-wrapper, .swiper-slide, .max-hero) { height: 100%; max-height: none; border-radius: 0; }
 html body #root .home__welcome .max-hero img { width: 100%; height: 100%; max-width: 100%; max-height: none; object-fit: cover; object-position: center top; border-radius: 0; }
 /* 글 쪽을 판 색으로 눌러 그림 위 글자가 읽힌다 */
 html body #root .home__welcome .max-hero::after {
   content: ''; position: absolute; inset: 0; pointer-events: none;
-  background: linear-gradient(90deg, color-mix(in srgb, var(--plate) 96%, transparent), color-mix(in srgb, var(--plate) 81%, transparent) 27%, color-mix(in srgb, var(--plate) 25%, transparent) 62%, transparent);
+  background: linear-gradient(0deg, color-mix(in srgb, var(--plate) 60%, transparent), transparent 40%);
 }
 html body #root .home__welcome :is(.max-hero figcaption, .swiper-pagination, .home__scroll) { display: none; }
 html body #root .home__welcome :is(.max-poster__badge, .max-poster__dday) {
   display: inline-flex; align-items: center; min-height: 2.8rem; padding: 0.4rem 0.8rem;
   border: 1px solid var(--plate-line); border-radius: var(--r-tag); background: var(--plate-accent); color: var(--plate); font: 600 1.2rem/1.2 Pretendard, sans-serif;
 }
-/* 배너 아래 일정 — 진행 막대 한 줄 + 탭 띠. 탭은 넓으면 네 칸, 좁으면 두 칸만 보이고 옆으로 민다
-   여덟 칸을 한 줄에 다 세우면 날짜 · 이름이 '9.… 프‥' 로 잘려 하나도 안 읽혔다 (2026-09-25 제보) */
-html body #root .portal-banner-nav { position: absolute; bottom: 0; left: 0; right: 0; z-index: 5; background: color-mix(in srgb, var(--plate) 79%, transparent); backdrop-filter: blur(1.2rem); }
-html body #root .portal-banner-bar { display: flex; align-items: center; gap: 1.2rem; padding: 0.8rem 2.4rem 0; }
+/* 배너 아래 — 다음 장까지 남은 시간 막대 하나. 일정 글은 그림 안 자막(.portal-banner-caption)이 맡는다 (2026-09-27) */
+html body #root .portal-banner-nav { position: absolute; bottom: 0; left: 0; right: 0; z-index: 5; }
+html body #root .portal-banner-bar { display: flex; align-items: center; gap: 1.2rem; padding: 0 2.4rem 1.6rem; }
 html body #root .banner-progress { flex: 1; height: 0.4rem; overflow: hidden; border-radius: var(--r-tag); background: color-mix(in srgb, var(--plate-fg) 15%, transparent); }
 html body #root .banner-progress i { display: block; width: 100%; height: 100%; background: var(--plate-accent); transform: scaleX(var(--banner-progress, 0)); transform-origin: left; }
-html body #root .portal-banner-count { color: var(--plate-muted); font: 600 1.2rem/1 Pretendard, sans-serif; font-variant-numeric: tabular-nums; letter-spacing: 0.08em; }
-html body #root .portal-banner-tabs { position: relative; display: flex; overflow-x: auto; scroll-snap-type: x mandatory; overscroll-behavior-x: contain; scrollbar-width: none; }
-html body #root .portal-banner-tabs::-webkit-scrollbar { display: none; }
-html body #root .portal-banner-tabs button { position: relative; flex: 1 0 25%; min-width: 0; padding: 1.6rem 2.4rem 2rem; border: 0; border-radius: 0; background: transparent; color: var(--plate-muted); text-align: left; scroll-snap-align: start; }
-html body #root .portal-banner-tabs button[aria-pressed=true] { color: var(--plate-fg); }
-html body #root .portal-banner-tabs button[aria-pressed=true] small { color: var(--plate-accent); }
-html body #root .portal-banner-tabs :is(small, strong) { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-html body #root .portal-banner-tabs small { margin-bottom: 0.4rem; color: var(--plate-muted); font-size: 1.2rem; }
-html body #root .portal-banner-tabs strong { font: 650 1.4rem/1.5 Pretendard, sans-serif; }
-/* 멈춤 — 막대 오른쪽의 작은 단추. 보이는 크기는 2.8rem, 누르는 자리는 ::after 로 44px(--tap)까지 넓힌다 */
-html body #root .home__welcome .max-slider__toggle {
-  position: relative; inset: auto; z-index: auto; display: inline-flex; flex: none; align-items: center; justify-content: center;
-  width: 2.8rem; height: 2.8rem; min-width: 0; min-height: 0; padding: 0;
-  border: 1px solid var(--plate-line); border-radius: var(--r-tag); background: transparent; color: var(--plate-fg); font-size: 1.2rem; line-height: 1; box-shadow: none;
+/* 멈춤 — 그림 오른쪽 위, 판 색 위의 --tap 단추 (WCAG 2.2.2) */
+html body #root .home__welcome .max-slider > .max-slider__toggle {
+  position: absolute; top: 1.6rem; right: 1.6rem; z-index: 5; display: inline-flex; align-items: center; justify-content: center;
+  width: var(--tap); height: var(--tap); min-width: 0; min-height: 0; padding: 0;
+  border: 1px solid var(--plate-line); border-radius: var(--r-tag); background: var(--plate); color: var(--plate-fg); font-size: 1.2rem; line-height: 1; box-shadow: none;
 }
-html body #root .home__welcome .max-slider__toggle::after { content: ''; position: absolute; inset: -0.8rem; }
 
 /* ── 구역 머리 ─────────────────────────────────────────────────────────── */
 html body #root .home-dashboard .home__section { border: 0; padding-bottom: 2rem; margin-bottom: 0.8rem; }
@@ -206,30 +195,21 @@ html body #root .home-dashboard .home-updates__list .pick__discover-action > spa
 }
 @media (hover: hover) { html body #root .home-dashboard .home-updates__list > .pick__discover:hover .pick__discover-action > span { border-color: var(--brand); background: var(--hover); } }
 
-@media (min-width: 1000px) {
-  html body #root .home__top-layout .home__welcome { height: auto; aspect-ratio: 3 / 1; min-height: 44rem; }
-  html body #root .home__intro { top: 12%; }
-  html body #root .home__cta { top: auto; bottom: 12.8rem; }
-}
 @media (max-width: 999px) {
-  /* 999px 아래는 배너가 세로 62rem 이라 그림 양옆이 잘린다 — 상대 보스가 선 자리를 보인다 */
+  /* 999px 아래는 배너가 세로로 서서 그림 양옆이 잘린다 — 상대 보스가 선 자리를 보인다 */
   /* 가운데를 자르면 울머기 장에 고릴타만 섰다 (2026-09-25 제보). 자리는 그림마다 lib/heroArt.ts 의 focus, 없으면 오른쪽 위 */
   html body #root .home__welcome .max-hero img { object-position: var(--hero-focus, right top); }
   html body #root .home-dashboard .home__service-grid { grid-template-columns: minmax(0, 1fr); }
   html body #root .home-dashboard .home__service-group { min-height: 58rem; }
 }
 @media (max-width: 699px) {
-  /* 모바일은 한 화면에 여러 구역이 보이게 — 배너 · 포스터 · 서비스 카드를 지금의 반쯤으로 줄인다 (2026-09-25 제보) */
-  /* 배너 62 → 30rem: 딱지(위) · 제목 · 단추 · 일정 띠(아래 8.8rem) 순으로 겹치지 않게 선다 */
-  html body #root .home__top-layout .home__welcome { height: 30rem; }
-  html body #root .home__intro { top: 5.2rem; left: 2rem; width: calc(100% - 4rem); }
-  html body #root .home__intro h2 { font-size: 2.2rem; }
-  html body #root .home__top-layout .home__cta { top: auto; bottom: 10.8rem; left: 2rem; right: 2rem; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.8rem; }
-  html body #root .home-dashboard .home__cta > .home__btn { width: auto; height: var(--tap); padding: 0 1.2rem; font-size: 1.2rem; white-space: nowrap; }
-  html body #root .home__welcome .max-hero::after { background: linear-gradient(color-mix(in srgb, var(--plate) 91%, transparent), color-mix(in srgb, var(--plate) 25%, transparent) 60%, color-mix(in srgb, var(--plate) 63%, transparent)); }
-  html body #root .portal-banner-bar { padding: 0.8rem 2rem 0; }
-  html body #root .portal-banner-tabs button { flex-basis: 50%; padding: 0.8rem 2rem 1.2rem; }
-  html body #root .portal-banner-tabs small { margin-bottom: 0; }
+  html body #root .home__top-layout .home__welcome { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto auto auto; min-height: 0; gap: 1.6rem; }
+  html body #root .home__top-layout .home__intro { padding: 0; }
+  html body #root .home__top-layout .home__intro h2 { font-size: 2.8rem; }
+  html body #root .home__top-layout .home__cta { grid-column: 1; grid-row: 2; grid-template-columns: repeat(2, minmax(0, 1fr)); padding: 0; }
+  html body #root .home-dashboard .home__cta > .home__btn { height: var(--tap); padding: 0 0.8rem; font-size: 1.2rem; }
+  html body #root .home__welcome .max-battle-art { grid-column: 1; grid-row: 3; height: 32rem; }
+  html body #root .portal-banner-bar { padding: 0 1.6rem 1.6rem; }
   html body #root .home-dashboard .home__section h3 { font-size: 2.2rem; }
   html body #root .home-dashboard :is(.home__picks, .home__features, .home-updates) { margin-top: 4rem; }
 
@@ -280,4 +260,28 @@ html body #root .home-dashboard .home-updates__list .pick__discover-action > spa
 }
 @media (prefers-reduced-motion: reduce) {
   html body #root .home-dashboard .home__service-group:hover { transform: none; }
+}
+
+/* 일정은 이미지 안에서 읽고 하단에는 진행 상태만 남긴다. */
+html body #root .portal-banner-caption { position: absolute; z-index: 4; left: 2.4rem; bottom: 3.2rem; right: 7.2rem; display: grid; gap: 0.8rem; pointer-events: none; color: var(--plate-fg); text-shadow: 0 2px 8px var(--plate); }
+html body #root .portal-banner-caption > span { color: var(--plate-muted); font: 600 1.4rem/1.5 Pretendard,sans-serif; }
+html body #root .portal-banner-caption > strong { font: 750 2.8rem/1.2 Pretendard,sans-serif; }
+@media(max-width:699px) {
+ html body #root .portal-banner-caption { left: 1.6rem; bottom: 3.2rem; }
+ html body #root .portal-banner-caption > strong { font-size: 2.2rem; }
+}
+
+/* 소개 카드의 위아래를 배너와 맞추고, 문구는 상단·행동은 하단에 배치한다. */
+html body #root .home__top-layout .home__welcome::before {
+ content: ''; display: block; position: absolute; inset: 0 auto 0 0; width: calc((100% - 2.4rem) / 4); z-index: -1;
+ border: 1px solid var(--line); border-radius: var(--r-panel); box-sizing: border-box;
+ background: linear-gradient(145deg,var(--selected),var(--surface) 65%);
+}
+html body #root .home__top-layout .home__intro { align-self: start; padding: 2.4rem 2.4rem 0; }
+html body #root .home__top-layout .home__intro .home__eyebrow { display: block; line-height: 1.7; }
+html body #root .home__top-layout .home__cta { padding: 0 2.4rem 2.4rem; }
+@media(max-width:699px) {
+ html body #root .home__top-layout .home__welcome::before { display: none; }
+ html body #root .home__top-layout .home__intro { padding: 2rem 2rem 0; border: 1px solid var(--line); border-bottom: 0; border-radius: var(--r-panel) var(--r-panel) 0 0; background: var(--surface); }
+ html body #root .home__top-layout .home__cta { margin-top: -1.6rem; padding: 1.6rem 2rem 2rem; border: 1px solid var(--line); border-top: 0; border-radius: 0 0 var(--r-panel) var(--r-panel); background: var(--surface); }
 }
