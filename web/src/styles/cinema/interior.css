@@ -122,10 +122,11 @@ html body #root .maxdeck-builder__summary > span, html body #root .maxdeck-build
  html body #root .maxdeck-builder__heading { align-items: flex-start; flex-direction: column; }
  html body #root .maxdeck-builder .deck-slots { grid-template-columns: minmax(0,1fr); }
  html body #root .maxdeck-builder .deck-slot { display: grid; grid-template-columns: 8rem minmax(0,1fr); padding: 1.6rem; gap: 1.2rem; }
- html body #root .maxdeck-builder__role { grid-column: 1 / -1; }
- html body #root .maxdeck-builder .deck-slot > .sprite { width: 8rem; height: 8rem; }
- html body #root .maxdeck-builder .deck-slot .row__name { align-content: center; justify-content: flex-start; text-align: left; }
- html body #root .maxdeck-builder .deck-slot__swap { grid-column: 1 / -1; }
+ /* 자리를 넷 다 못 박는다 — 옛 스킨이 스프라이트를 1행에 고정해 역할 줄이 2행으로 밀리고 이름이 8rem 칸에 갇혀 넉 줄로 꺾였다 (2026-09-27) */
+ html body #root .maxdeck-builder__role { grid-column: 1 / -1; grid-row: 1; }
+ html body #root .maxdeck-builder .deck-slot > .sprite { grid-column: 1; grid-row: 2; width: 8rem; height: 8rem; }
+ html body #root .maxdeck-builder .deck-slot .row__name { grid-column: 2; grid-row: 2; align-content: center; justify-content: flex-start; text-align: left; }
+ html body #root .maxdeck-builder .deck-slot__swap { grid-column: 1 / -1; grid-row: 3; }
  html body #root .maxdeck-builder .row__why-chips { grid-template-columns: repeat(2,minmax(0,1fr)); }
  html body #root .maxdeck-builder .deck-slot__picker { padding: 1.6rem; }
 }
@@ -193,13 +194,13 @@ html body #root .pvp-deck-studio .schedule__today { margin: 0; color: var(--mute
 html body #root .pvp-deck-studio .schedule__body { padding: 0 2rem 2rem; }
 html body #root .pvp-deck-studio .row-list { gap: 1.2rem; }
 html body #root .pvp-deck-studio .row { border: 1px solid var(--line); border-top: 0.4rem solid var(--brand); border-radius: var(--r-box); background: linear-gradient(160deg,var(--selected),var(--surface-2) 65%); box-shadow: none; padding: 2rem; transition: border-color 160ms ease, background 160ms ease; }
-html body #root .pvp-deck-studio .row:hover { border-color: var(--brand); }
+@media (hover: hover) { html body #root .pvp-deck-studio .row:hover { border-color: var(--brand); } }
 html body #root .pvp-deck-studio .row__name { font-size: 1.6rem; }
 html body #root .pvp-deck-studio .row__sub { color: var(--muted); font-size: 1.2rem; line-height: 1.7; }
 html body #root .pvp-deck-studio .deck__reason { margin: 1.6rem 0 0; padding: 1.6rem; border-left: 0.4rem solid var(--brand); border-radius: var(--r-box); background: var(--bg); color: var(--muted); font-size: 1.4rem; line-height: 1.7; }
 html body #root .pvp-deck-studio .deck__slots { gap: 1.2rem; margin-bottom: 1.6rem; }
 html body #root .pvp-deck-studio .deck__slot { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.8rem; min-height: 12rem; padding: 1.6rem; border: 1px dashed var(--line); border-radius: var(--r-box); background: var(--surface); color: var(--fg); }
-html body #root .pvp-deck-studio .deck__slot:hover { border-color: var(--brand); background: var(--selected); }
+@media (hover: hover) { html body #root .pvp-deck-studio .deck__slot:hover { border-color: var(--brand); background: var(--selected); } }
 html body #root .pvp-deck-studio .deck__slot.is-filled { border-style: solid; background: var(--selected); }
 html body #root .pvp-deck-studio .slot__plus { color: var(--brand); font: 400 2.8rem/1 Pretendard,sans-serif; }
 html body #root .pvp-deck-studio .slot__hint { color: var(--muted); font-size: 1.2rem; }
@@ -221,7 +222,7 @@ html body #root .pvp-deck-leagues > * { border: 0; background: transparent; }
 html body #root .pvp-deck-leagues button { min-height: var(--tap); border-radius: var(--r-ctl); }
 html body #root .pvp-deck-leagues button[aria-pressed=true] { background: var(--brand); color: var(--bg); box-shadow: none; }
 
-/* 個体値の入力・比較レイアウトを保ち、数字と選択状態を強調する。 */
+/* 개체값 순위: 입력·비교 배치는 그대로 두고 숫자와 고른 상태만 도드라지게 한다. */
 html body #root #page-ivrank .note { margin: 0 0 2.4rem; padding: 1.6rem 2rem; border: 1px solid var(--line); border-left: 0.4rem solid var(--brand); border-radius: var(--r-box); background: var(--surface); color: var(--muted); font-size: 1.4rem; line-height: 1.7; }
 html body #root #page-ivrank .note b { color: var(--fg); }
 html body #root #page-ivrank :is(.ivrank__form,.ivrank__out) { padding: 2.4rem; border: 1px solid var(--line); border-radius: var(--r-panel); background: var(--surface); box-shadow: none; min-width: 0; }
