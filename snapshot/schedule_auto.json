@@ -532,5 +532,13 @@
 "end": "2026-09-27",
 "cat": "event",
 "label": "Rio de Janeiro, Brazil - Pokémon GO City Safari"
+},
+"pokemon-tcg-30th-celebration": {
+"id": "pokemon-tcg-30th-celebration",
+"type": "event",
+"start": "2026-09-27",
+"end": "2026-10-20",
+"cat": "event",
+"label": "Pokémon TCG: 30th Celebration"
 }
 }
