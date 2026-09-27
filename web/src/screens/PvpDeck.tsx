@@ -201,7 +201,8 @@ export default function PvpDeck({ onOpen }: { onOpen: OpenMon }) {
           ) : (
             <button key={index} className="deck__slot" aria-label="상대 추가"
               onClick={() => searchRef.current?.focus()}>
-              <span className="slot__plus" aria-hidden="true">+</span><span className="slot__hint">상대 {index + 1} 추가</span>
+              <span className="slot__plus" aria-hidden="true">+</span>{/* 한 문자열로 — 글자 셋으로 쪼개면 번역 키(상대 # 추가)가 안 맞는다 */}
+              <span className="slot__hint">{`상대 ${index + 1} 추가`}</span>
             </button>
           );
         })}
