@@ -26,12 +26,53 @@ export function dayLabel(day: string): string {
   return `${Number(match[2])}.${Number(match[3])} (${WEEK_KO[date.getUTCDay()]})`;
 }
 
-/** 축 끝을 깔끔한 수로 — 1 · 2 · 5 × 10ⁿ */
+/**
+ * 축 끝을 깔끔한 수로 — 1 · 2 · 2.5 · 5 × 10ⁿ.
+ * 2.5 단을 두는 이유 — 하루 최대 21회에 축이 50이면 기둥이 판의 절반도 못 오른다 (2026-09-28 운영 화면 실측)
+ */
 export function niceMax(value: number): number {
   if (!Number.isFinite(value) || value <= 0) return 1;
   const power = 10 ** Math.floor(Math.log10(value));
-  for (const step of [1, 2, 5, 10]) if (value <= step * power) return step * power;
+  for (const step of [1, 2, 2.5, 5, 10]) if (value <= step * power) return step * power;
   return 10 * power;
+}
+
+/**
+ * 최근 7일과 그 앞 7일 — 숫자 칸 아래 한 줄이 이것을 읽는다.
+ * 14일이 안 차면(7일 창) 앞 7일이 없으니 `previous` 를 안 준다 — 있는 척 0 과 견주면 "+∞%" 가 선다
+ */
+export function weekTrend(rows: readonly DayValue[]): { recent: number; previous?: number } {
+  const clean = rows.map((row) => (Number.isFinite(row.value) ? row.value : 0));
+  const sum = (part: number[]) => part.reduce((total, value) => total + value, 0);
+  const recent = sum(clean.slice(-7));
+  if (clean.length < 14) return { recent };
+  return { recent, previous: sum(clean.slice(-14, -7)) };
+}
+
+/** 앞 7일 대비 — 앞이 0 이면 비율이 없다 (∞% 를 안 적는다). 같으면 '±0' */
+export function trendLabel(trend: { recent: number; previous?: number }): { text: string; tone: 'up' | 'down' | 'flat' | 'none' } {
+  if (trend.previous === undefined) return { text: '', tone: 'none' };
+  const diff = trend.recent - trend.previous;
+  if (diff === 0) return { text: '±0', tone: 'flat' };
+  const sign = diff > 0 ? '▲' : '▼';
+  const pct = trend.previous > 0 ? ` (${Math.round((Math.abs(diff) / trend.previous) * 100)}%)` : '';
+  return { text: `${sign}${count(Math.abs(diff))}${pct}`, tone: diff > 0 ? 'up' : 'down' };
+}
+
+/** 숫자 칸 안의 작은 선 — 최근 14일. 축도 글자도 없다, 모양만 보인다. 값 읽기는 아래 큰 그래프가 맡는다 */
+export function Spark({ rows }: { rows: readonly DayValue[] }) {
+  const last = rows.slice(-14);
+  if (last.length < 2) return null;
+  const W = 96;
+  const H = 24;
+  const top = Math.max(1, ...last.map((row) => (Number.isFinite(row.value) ? row.value : 0)));
+  const step = W / (last.length - 1);
+  const points = last.map((row, index) => `${(index * step).toFixed(1)},${(H - 2 - ((Number.isFinite(row.value) ? row.value : 0) / top) * (H - 4)).toFixed(1)}`);
+  return (
+    <svg className="stat-spark" viewBox={`0 0 ${W} ${H}`} width={W} height={H} aria-hidden="true" focusable="false">
+      <polyline points={points.join(' ')} />
+    </svg>
+  );
 }
 
 function useWidth<T extends HTMLElement>(): [React.RefObject<T | null>, number] {
@@ -157,44 +198,66 @@ export function DayColumns({ title, unit, rows, note, summable = true }: {
   );
 }
 
-export interface RankRow { key: string; label: string; value: number; sub?: number }
+export interface RankRow {
+  key: string;
+  label: string;
+  value: number;
+  sub?: number;
+  /** 줄 끝의 작은 딱지 — '문턱 ↑' 처럼 그 줄이 어떤 조건을 넘었다는 표시 */
+  flag?: string;
+}
 
-/** 순위 표 — 이름 · 막대 · 횟수 · 사람. 막대는 1위를 끝으로 잰다 */
-export function RankTable({ title, rows, valueHead, subHead, empty }: {
+/** 처음에 보이는 줄 수 — 그 아래는 '더 보기' 뒤에 있다. 열다섯 줄 표 여섯 개가 한 화면에 서면 스크롤이 5천 픽셀이다 */
+export const RANK_FOLD = 8;
+
+/** 순위 표 — 이름 · 막대 · 횟수 · 사람. 막대는 1위를 끝으로 잰다. 여덟 줄 넘게는 접어 둔다 */
+export function RankTable({ title, rows, valueHead, subHead, empty, fold = RANK_FOLD }: {
   title: string;
   rows: readonly RankRow[];
   valueHead: string;
   subHead?: string;
   empty: string;
+  fold?: number;
 }) {
+  const [open, setOpen] = useState(false);
   const top = Math.max(1, ...rows.map((row) => row.value));
+  const hidden = Math.max(0, rows.length - fold);
+  const shown = open || !hidden ? rows : rows.slice(0, fold);
   return (
     <section className="stat-rank">
       <h3 className="stat-rank__title">{title}</h3>
       {rows.length ? (
-        <table>
-          <thead>
-            <tr>
-              <th scope="col">이름</th>
-              <th scope="col" className="stat-rank__num">{valueHead}</th>
-              {subHead ? <th scope="col" className="stat-rank__num">{subHead}</th> : null}
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map((row) => (
-              <tr key={row.key}>
-                <th scope="row">
-                  <span className="stat-rank__name">{row.label}</span>
-                  <span className="stat-rank__bar" aria-hidden="true">
-                    <i style={{ width: `${Math.max(2, (row.value / top) * 100)}%` }} />
-                  </span>
-                </th>
-                <td className="stat-rank__num">{count(row.value)}</td>
-                {subHead ? <td className="stat-rank__num">{count(row.sub)}</td> : null}
+        <>
+          <table>
+            <thead>
+              <tr>
+                <th scope="col">이름</th>
+                <th scope="col" className="stat-rank__num">{valueHead}</th>
+                {subHead ? <th scope="col" className="stat-rank__num">{subHead}</th> : null}
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {shown.map((row, index) => (
+                <tr key={row.key}>
+                  <th scope="row">
+                    <span className="stat-rank__rank" aria-hidden="true">{count(index + 1)}</span>
+                    <span className="stat-rank__name">{row.label}{row.flag ? <em className="stat-rank__flag">{row.flag}</em> : null}</span>
+                    <span className="stat-rank__bar" aria-hidden="true">
+                      <i style={{ width: `${Math.max(2, (row.value / top) * 100)}%` }} />
+                    </span>
+                  </th>
+                  <td className="stat-rank__num">{count(row.value)}</td>
+                  {subHead ? <td className="stat-rank__num">{count(row.sub)}</td> : null}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          {hidden ? (
+            <button type="button" className="stat-rank__more" aria-expanded={open} onClick={() => setOpen((now) => !now)}>
+              {open ? '접기' : `${count(hidden)}줄 더 보기`}
+            </button>
+          ) : null}
+        </>
       ) : <p className="stat-rank__empty">{empty}</p>}
     </section>
   );

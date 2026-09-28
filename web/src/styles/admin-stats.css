@@ -62,3 +62,55 @@ html body #root .stat-rank__bar { display: block; height: .4rem; margin-top: .4r
 html body #root .stat-rank__bar i { display: block; height: 100%; background: var(--chart-1); }
 html body #root .stat-rank__num { text-align: right; white-space: nowrap; }
 html body #root .stat-rank__empty { margin: 0; color: var(--muted); font-size: var(--fs-sub); }
+
+/* ── 2026-09-28 개편 — 따라오는 고름 줄 · 구역 바로가기 · 숫자 칸의 추세 · 순위 준비도 · 접히는 표 ──────
+   따라오는 줄의 top 은 상단 바 높이다 — 폭마다 달라(68~93px) 화면이 재서 --stat-bar-top 으로 준다 (useBarOffset) */
+html body #root .stat-page__bar {
+  position: sticky; top: var(--stat-bar-top, 7.6rem); z-index: 30;
+  display: flex; flex-direction: column; gap: .8rem;
+  margin: 0 -1.6rem; padding: .8rem 1.6rem;
+  background: var(--bg); border-bottom: .1rem solid var(--line);
+}
+/* 구역 이름 줄 — 좁으면 가로로 흐른다. 해시 링크라 문서를 다시 열지 않는다 */
+html body #root .stat-jump { display: flex; gap: .4rem; overflow-x: auto; scrollbar-width: none; }
+html body #root .stat-jump a {
+  flex: none; display: inline-flex; align-items: center; min-height: 3.2rem; padding: 0 1.2rem;
+  color: var(--muted); font-size: var(--fs-sub); line-height: 1.5; text-decoration: none;
+  border: .1rem solid var(--line); border-radius: var(--r-tag);
+}
+@media (hover: hover) { html body #root .stat-jump a:hover { color: var(--fg); border-color: var(--muted); } }
+/* 바로가기로 닿는 자리 — 따라오는 줄 두 겹(상단 바 + 고름 줄) 아래에 제목이 선다 */
+html body #root .stat-sec { scroll-margin-top: calc(var(--stat-bar-top, 7.6rem) + var(--stat-bar-h, 9.2rem) + 1.6rem); }
+
+/* 숫자 칸의 추세 — 작은 선 하나, 그 아래 최근 7일과 방향. 글자는 글자 토큰, 선만 기둥 색 */
+html body #root .stat-tile__trend { display: flex; flex-direction: column; gap: .4rem; margin-top: .4rem; }
+html body #root .stat-spark { display: block; width: 100%; max-width: 9.6rem; height: 2.4rem; overflow: visible; }
+html body #root .stat-spark polyline { fill: none; stroke: var(--chart-1); stroke-width: 1.5; stroke-linejoin: round; stroke-linecap: round; }
+html body #root .stat-tile__week { display: flex; flex-wrap: wrap; gap: .4rem .8rem; color: var(--muted); font-size: var(--fs-sub); line-height: 1.5; font-variant-numeric: tabular-nums; }
+html body #root .stat-tile__delta { font-style: normal; font-weight: 700; }
+html body #root .stat-tile__delta.is-up { color: var(--good); }
+html body #root .stat-tile__delta.is-down { color: var(--warn); }
+html body #root .stat-tile__delta.is-flat { color: var(--muted); }
+
+/* 검색 순위 준비도 — 검색 구역 맨 위 한 판. 안의 숫자 칸은 셋이라 조금 촘촘하다 */
+html body #root .stat-ready { display: flex; flex-direction: column; gap: 1.2rem; padding: 1.6rem; background: var(--surface); border: .1rem solid var(--line); border-radius: var(--r-box); }
+html body #root .stat-ready__head { display: flex; flex-direction: column; gap: .4rem; }
+html body #root .stat-ready__head b { font-size: var(--fs-body); line-height: 1.5; }
+html body #root .stat-ready__head span { color: var(--muted); font-size: var(--fs-sub); line-height: 1.5; }
+html body #root .stat-tiles--tight { grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr)); }
+html body #root .stat-ready .stat-tile { background: var(--bg); }
+
+/* 순위 표 — 순위 번호 · 이름 · 막대를 한 줄에. 이름 아래 막대를 두던 두 줄 모양보다 줄 하나가 절반 높이다 */
+html body #root .stat-rank tbody th { display: grid; grid-template-columns: 2rem minmax(8rem, 50%) 1fr; align-items: center; column-gap: .8rem; }
+/* 이름은 한 줄 — 긴 주소는 줄임표. 딱지가 아래로 내려가면 그 줄만 두 배로 높아진다 */
+html body #root .stat-rank tbody th .stat-rank__name { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+html body #root .stat-rank__rank { color: var(--muted); font-size: var(--fs-sub); text-align: right; }
+html body #root .stat-rank__bar { margin-top: 0; }
+/* 딱지 — 문턱을 넘은 줄. 글자는 글자색, 테두리만 좋은 색 */
+html body #root .stat-rank__flag { display: inline-block; margin-left: .8rem; padding: 0 .4rem; color: var(--good); font-size: var(--fs-sub); font-style: normal; line-height: 1.5; border: .1rem solid var(--good); border-radius: var(--r-tag); white-space: nowrap; }
+html body #root .stat-rank__more { align-self: flex-start; min-height: var(--tap); padding: 0 .4rem; background: none; border: 0; color: var(--muted); font-size: var(--fs-sub); cursor: pointer; }
+@media (hover: hover) { html body #root .stat-rank__more:hover { color: var(--fg); } }
+@media (max-width: 599px) {
+  html body #root .stat-rank tbody th { grid-template-columns: 2rem 1fr; }
+  html body #root .stat-rank__bar { grid-column: 2; }
+}
