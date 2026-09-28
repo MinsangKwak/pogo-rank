@@ -178,7 +178,7 @@ export const I18N_PATTERNS = [
   [/^(\d+)번 만에 맞혔어요$/, 'Got it in $1 tries'],
   [/^· 🔥 (\d+)일 연속$/, '· 🔥 $1-day streak'],
   [/^틀린 횟수 (\d+) · 힌트 (\d+)\/3$/, '$1 wrong · hints $2/3'],
-  [/^— 아니에요\. 홈의 힌트를 보고 다시 찾아보세요$/, '— not it. Check the hints on Home and try again'],
+  [/^— 아니에요\. 배너의 힌트를 보고 다시 찾아보세요$/, '— not it. Check the hints in the banner and try again'],
 ];
 
 // 법률·콘텐츠 화면에 띄우는 안내 (privacy.js · terms.js · release.js)
@@ -1787,4 +1787,7 @@ export const I18N_EN = {
   '도감 번호': 'Dex number',
   '첫 글자': 'First letter',
   '오늘의 실루엣 — 이름을 검색해서 고르면 정답을 확인해요': "Today's silhouette — search a name and pick it to check your answer",
+  '오늘의 퀴즈 접기': "Hide today's quiz",
+  '누구일까요?': 'Who is it?',
+  '검색해서 맞히기': 'Search to answer',
 };

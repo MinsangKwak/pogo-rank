@@ -134,7 +134,7 @@ function Palette({ onOpen, onClose }: { onOpen: OpenMon; onClose: () => void }) 
           {quizMode ? (
             <p className={`palette__quiz${quizMiss ? ' is-miss' : ''}`} role="status">
               {quizMiss
-                ? <><b>{quizMiss}</b>{' — 아니에요. 홈의 힌트를 보고 다시 찾아보세요'}</>
+                ? <><b>{quizMiss}</b>{' — 아니에요. 배너의 힌트를 보고 다시 찾아보세요'}</>
                 : '오늘의 실루엣 — 이름을 검색해서 고르면 정답을 확인해요'}
             </p>
           ) : null}

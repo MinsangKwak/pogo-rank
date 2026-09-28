@@ -6,7 +6,7 @@
 // ─────────────────────────────────────────────────────────────────────────────
 'use strict';
 import { create } from 'zustand';
-import { kstDayKey, missRecord, readRecord, rollRecord, solveRecord, writeRecord, type QuizMon, type QuizRecord } from '../lib/dailyQuiz';
+import { hideRecord, kstDayKey, missRecord, readRecord, rollRecord, solveRecord, writeRecord, type QuizMon, type QuizRecord } from '../lib/dailyQuiz';
 
 interface QuizState {
   /** 오늘의 문제 — 홈이 데이터를 받아 정한다. 팔레트는 이것과 견준다 */
@@ -19,6 +19,8 @@ interface QuizState {
   load: () => void;
   solve: () => void;
   miss: (name: string) => void;
+  /** 배너를 오늘 하루 접는다 */
+  hide: () => void;
 }
 
 const storage = () => { try { return typeof localStorage === 'undefined' ? null : localStorage; } catch { return null; } };
@@ -38,5 +40,10 @@ export const useQuizStore = create<QuizState>((set, get) => ({
     const record = missRecord(rollRecord(get().record, kstDayKey()));
     writeRecord(storage(), record);
     set({ record, lastMiss: name });
+  },
+  hide: () => {
+    const record = hideRecord(rollRecord(get().record, kstDayKey()));
+    writeRecord(storage(), record);
+    set({ record });
   },
 }));
