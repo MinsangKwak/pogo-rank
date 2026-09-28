@@ -5,8 +5,8 @@
    위에 붙는다(align-items: start) — 가운데 띄우면 모바일 키보드가 올라올 때 칸이 가려진다
    ───────────────────────────────────────────────────────────────────────────── */
 html body #root dialog.palette { align-items: start; padding-top: 6.4rem; }
-html body #root .palette__wrap { width: min(56rem, calc(100vw - 3.2rem)); }
-html body #root .palette__box { display: flex; flex-direction: column; gap: 1.2rem; padding: 1.6rem; }
+html body #root .palette__wrap { width: min(68rem, calc(100vw - 3.2rem)); }
+html body #root .palette__box { display: flex; flex-direction: column; gap: 2.4rem; padding: 2.4rem; }
 
 /* 검색칸 — 글자 16px. 더 작으면 iOS 가 칸을 누를 때 화면을 키운다 (shell.css 의 규칙과 같다) */
 html body #root .palette__field {
@@ -63,3 +63,24 @@ html body #root .palette__more { align-self: flex-start; min-height: var(--tap);
 /* 퀴즈 모드 한 줄 — 맞히기로 열렸을 때. 틀리면 글자만 경고색 */
 html body #root .palette__quiz { margin: 0; padding: 0.8rem 1.2rem; border-radius: var(--r-ctl); background: var(--surface-2); color: var(--fg); font-size: 1.4rem; line-height: 1.5; }
 html body #root .palette__quiz.is-miss { color: var(--warn); }
+
+/* 검색 입력 · 탐색 후보 · 도감 이동을 명확한 세 구역으로 구분한다. */
+html body #root .palette__wrap { border: 1px solid var(--line); border-radius: var(--r-panel); overflow: hidden; background: var(--surface); box-shadow: var(--shadow-box); }
+html body #root .palette__field { min-height: 6.4rem; padding: 0 2rem; gap: 1.2rem; border-radius: var(--r-box); background: var(--bg); }
+html body #root .palette__field:focus-within { box-shadow: 0 0 0 0.4rem var(--selected); }
+html body #root .palette__ico { color: var(--brand); }
+html body #root .palette__group { gap: 1.2rem; }
+html body #root .palette__head { color: var(--fg); font-size: 1.4rem; }
+html body #root .palette__chip { padding: 0.8rem 1.6rem; gap: 0.8rem; border-radius: var(--r-box); background: var(--bg); }
+html body #root .palette__chip .palette__sprite { width: 3.2rem; height: 3.2rem; }
+html body #root .palette__hit { min-height: 6.4rem; padding: 0.8rem 1.6rem; border-radius: var(--r-box); }
+html body #root .palette__hit.is-on { background: var(--selected); border-color: var(--brand); }
+html body #root .palette__clear { min-height: var(--tap); }
+html body #root .palette__more { align-self: stretch; justify-content: space-between; padding: 1.6rem 0 0; border-top: 1px solid var(--line); font-weight: 700; }
+html body #root .palette__quiz { padding: 1.6rem; border-left: 0.4rem solid var(--brand); border-radius: var(--r-box); background: var(--selected); }
+html body #root .palette__empty { padding: 2.4rem 0; text-align: center; }
+@media(max-width:599px) {
+ html body #root .palette__box { padding: 1.6rem; gap: 2rem; }
+ html body #root .palette__field { min-height: 5.6rem; padding: 0 1.2rem; }
+ html body #root .palette__quiz { padding: 1.2rem; }
+}

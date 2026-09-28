@@ -313,3 +313,25 @@ html body #root .home__chip-sprite { width: 2.4rem; height: 2.4rem; image-render
 @media (max-width: 999px) {
   html body #root .home__search-key { display: none; }
 }
+
+/* 소개는 편집형 카드, 일정은 그림의 왼쪽 아래에 작은 명패로 배치한다. */
+html body #root .home__top-layout .home__welcome::before { background: radial-gradient(ellipse at top left,var(--selected),transparent 70%),var(--surface); box-shadow: var(--shadow-box); border-top: 0.4rem solid var(--brand); }
+html body #root .home__top-layout .home__intro { padding-top: 3.2rem; }
+html body #root .home__top-layout .home__intro h2 { margin-top: 2rem; margin-bottom: 2rem; line-height: 1.5; }
+html body #root .home__top-layout .home__intro h2 em { color: var(--brand); }
+html body #root .home__top-layout .home__eyebrow { color: var(--brand); letter-spacing: 0.08em; }
+html body #root .home__search { margin-top: 2.4rem; gap: 1.6rem; }
+html body #root .home__search-btn { min-height: 5.6rem; background: var(--bg); border-radius: var(--r-box); font-size: 1.4rem; }
+html body #root .home__search-chips { padding-top: 1.6rem; border-top: 1px solid var(--line); }
+html body #root .home__chip { border-radius: var(--r-ctl); background: var(--selected); }
+html body #root .home-dashboard .home__cta > .home__btn:not(.home__btn--primary) { background: transparent; border: 1px solid var(--line); color: var(--fg); }
+html body #root .portal-banner-caption { right: auto; max-width: calc(100% - 9.6rem); padding: 1.6rem 2rem; bottom: 4rem; border-left: 0.4rem solid var(--plate-accent); border-radius: 0 var(--r-box) var(--r-box) 0; background: linear-gradient(90deg,color-mix(in srgb,var(--plate) 92%,transparent),color-mix(in srgb,var(--plate) 55%,transparent)); backdrop-filter: blur(12px); gap: 0.8rem; text-shadow: none; }
+html body #root .portal-banner-caption > span { justify-self: start; color: var(--plate-accent); font-size: 1.6rem; font-weight: 750; letter-spacing: 0.04em; font-variant-numeric: tabular-nums; }
+html body #root .portal-banner-caption > strong { font-size: 2.8rem; letter-spacing: -0.04em; word-break: keep-all; }
+@media(max-width:699px) {
+ html body #root .home__top-layout .home__intro { padding-top: 2.4rem; border-top: 0.4rem solid var(--brand); }
+ html body #root .home__top-layout .home__intro h2 { margin: 1.2rem 0; }
+ html body #root .portal-banner-caption { padding: 1.2rem 1.6rem; max-width: calc(100% - 6.4rem); bottom: 3.2rem; }
+ html body #root .portal-banner-caption > span { font-size: 1.4rem; }
+ html body #root .portal-banner-caption > strong { font-size: 2.2rem; }
+}
