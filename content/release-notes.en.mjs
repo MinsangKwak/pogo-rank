@@ -15,6 +15,15 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 export const RELEASE_NOTES_EN = {
+  '2026-09-28 · v5.4.0': [
+    '**Search opens on any screen** — tap the search box at the top or [Find a Pokémon by name] on Home (or press / on a computer), type a name and the detail opens right away. An empty box shows this browser\'s recent searches and this week\'s bosses first',
+    '**Today\'s silhouette quiz** — a banner at the top shows a different Pokémon silhouette every day. Tap [Search to answer], find the name and pick it to check your answer; each miss unlocks a hint (type → Pokédex number → first letter). A correct answer reveals the Pokémon and extends your streak. ✕ hides it for today, and a new one comes tomorrow',
+    '**The November tank-prep popup is paused** — with the quiz banner there were two notices at once. It comes back when the dates get closer',
+    '**Tapping buttons on a phone no longer zooms the page** — the zoom on inputs and buttons, and pinch zoom, are turned off',
+    '**No more half-drawn screens on first load or when switching** — a short loading screen covers the page until it is ready',
+    '**Korean text left in English mode is fixed** — many strings in menus and tool screens now show in English',
+    '**The home screen is polished** — the intro card, the search box and the schedule plate on the banner',
+  ],
   '2026-09-26 · v5.3.0': [
     '**The home screen has a new design** — dark is the default. If you prefer light, pick it under ☰ → Settings; a theme you chose before is kept',
     '**The banner now carries the October Max Battle schedule** — from this week\'s Articuno · Zapdos · Moltres to Sableye at the end of October, one slide each. The unannounced Max Battle Day on 10/24 shows an egg. The button next to the progress bar pauses it',
