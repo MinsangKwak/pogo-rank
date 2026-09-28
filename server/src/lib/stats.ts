@@ -45,6 +45,11 @@ export interface EventStats {
    * (Codex, PR #221) — 준비도는 이 줄로 잰다. 줄 수가 모자라도 비우지 않는다 ("2 / 3" 을 보여야 한다)
    */
   hot: Ranked[];
+  /**
+   * 검색만 — **하루 창**(/v1/hot?days=1 과 같은 계산)에서 문턱을 넘은 줄. 기간 창의 `hot` 과 하루 평균을 섞으면
+   * 어느 하루도 이름 셋을 못 채웠는데 "하루 창을 켤 수 있다" 고 적을 수 있다 (Codex, PR #229) — 판정은 이 줄 수로 한다
+   */
+  hotToday: Ranked[];
   countries: Ranked[];
 }
 
@@ -127,10 +132,14 @@ async function eventStats(sql: Sql, name: 'search' | 'view', days: number): Prom
     group by 1 order by visitors desc, hits desc, key asc limit ${STATS_LIMITS.top}
   `;
   // 순위의 창은 '지금부터 days 일 전' 이라 한국 날짜로 자르는 위 표와 하루 안쪽이 다를 수 있다 — 준비도에는 그 차이가 뜻이 없다
-  const hot = name === 'search'
-    ? (await hotRows(sql, { days, limit: STATS_LIMITS.top, threshold: true, fold: false })).map((row) => ({ key: row.term, hits: row.hits, visitors: row.visitors }))
-    : [];
-  return { hits: total!.hits, visitors: total!.visitors, perDay, top, surfaces, countries, hot };
+  const asRanked = (row: { term: string; hits: number; visitors: number }): Ranked => ({ key: row.term, hits: row.hits, visitors: row.visitors });
+  const [hot, hotToday] = name === 'search'
+    ? await Promise.all([
+      hotRows(sql, { days, limit: STATS_LIMITS.top, threshold: true, fold: false }).then((rows) => rows.map(asRanked)),
+      hotRows(sql, { days: 1, limit: STATS_LIMITS.top, threshold: true, fold: false }).then((rows) => rows.map(asRanked)),
+    ])
+    : [[], []];
+  return { hits: total!.hits, visitors: total!.visitors, perDay, top, surfaces, countries, hot, hotToday };
 }
 
 /** 기간을 끝 안으로 — 스키마가 막지만 함수만 불러도 틀리지 않게 */
