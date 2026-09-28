@@ -24,7 +24,7 @@ export default function CatchCard({ form, sprite, seg, onSeg }: {
           <span className="meta">100% 기준</span>
           <b>{cpOf(form, m).toLocaleString()}</b>
           {floorIv != null
-            ? <span className="detail__catch-floor">최저 {Math.max(10, Math.floor((form.atk + floorIv) * Math.sqrt(form.def + floorIv) * Math.sqrt(form.hp + floorIv) * m * m / 10)).toLocaleString()}</span>
+            ? <span className="detail__catch-floor">{`최저 ${Math.max(10, Math.floor((form.atk + floorIv) * Math.sqrt(form.def + floorIv) * Math.sqrt(form.hp + floorIv) * m * m / 10)).toLocaleString()}`}</span>
             : <span className="meta">개체값 하한 없음</span>}
         </div>
       </div>

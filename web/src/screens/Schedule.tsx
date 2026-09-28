@@ -191,7 +191,7 @@ export default function Schedule() {
       <KoOnlyNote kind="kst" />
       <nav className="schedule__month-nav" aria-label="달력 월 이동">
         <button type="button" aria-label="이전 달" disabled={monthIndex <= 0} onClick={() => changeMonth(monthIndex - 1)}>‹</button>
-        <div aria-live="polite"><span>{month.ym.y}년</span><h2>{m}월 일정</h2></div>
+        <div aria-live="polite"><span>{`${month.ym.y}년`}</span><h2>{`${m}월 일정`}</h2></div>
         <button type="button" aria-label="다음 달" disabled={monthIndex >= monthKeys.length - 1} onClick={() => changeMonth(monthIndex + 1)}>›</button>
       </nav>
       <div className="page__filters">
