@@ -19,6 +19,9 @@ const SITE = process.env['NEXT_PUBLIC_SITE_URL'] ?? 'https://moncamp.kr';
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
+  // 모바일에서 단추 · 입력칸을 누르면 화면이 커지던 것을 막는다 (2026-09-28 제보). iOS 는 maximum-scale 이 있어야 입력칸 초점 확대를 안 한다
+  maximumScale: 1,
+  userScalable: false,
   viewportFit: 'cover',
   colorScheme: 'light dark',
 };
@@ -83,6 +86,14 @@ var p=h.slice(1);
 if(location.pathname!=='/'&&location.pathname!=='')return;
 location.replace(p);}catch(e){}})();`;
 
+/**
+ * **핀치 확대까지 막는다** (2026-09-28 제보). 뷰포트의 user-scalable=no 는 iOS 가 무시한다 —
+ * 손가락 둘의 움직임과 iOS 의 gesturestart 를 문서에서 끊는다. 두 번 탭은 CSS 의 touch-action 이 막는다
+ */
+const ZOOM_SCRIPT = `(function(){var stop=function(e){e.preventDefault();};
+document.addEventListener('gesturestart',stop,{passive:false});
+document.addEventListener('touchmove',function(e){if(e.touches&&e.touches.length>1)stop(e);},{passive:false});})();`;
+
 // 운영 채널에서만 심는다 — dev 는 GA 를 안 쓴다(v4 와 같다). 값은 web/.env.production
 const GA_SCRIPT = process.env['NEXT_PUBLIC_CHANNEL'] === 'dev' ? '' : gaSnippet(process.env['NEXT_PUBLIC_GA_ID'] ?? '');
 
@@ -92,9 +103,19 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       <head>
         <script dangerouslySetInnerHTML={{ __html: HASH_SCRIPT }} />
         <script dangerouslySetInnerHTML={{ __html: THEME_SCRIPT }} />
+        <script dangerouslySetInnerHTML={{ __html: ZOOM_SCRIPT }} />
         {GA_SCRIPT ? <script dangerouslySetInnerHTML={{ __html: GA_SCRIPT }} /> : null}
       </head>
       <body>
+        {/* **덮개 — 앱이 첫 화면을 세울 때까지 서버 본문(검색엔진용)을 가린다** (2026-09-28 제보).
+            서버가 그려야 붙기 전 구간을 덮는다. 걷는 것은 lib/veil.ts, 화면을 옮길 때도 같은 덮개를 다시 세운다.
+            JS 가 없으면 noscript 가 지우고, JS 가 죽어도 CSS 가 10초 뒤에 걷는다(shell.css .veil--boot) */}
+        <div id="veil" className="veil veil--boot" role="status" aria-live="polite" aria-busy="true">
+          <div className="veil__mark" aria-hidden="true">moncamp</div>
+          <div className="veil__spin" aria-hidden="true" />
+          <p className="veil__text">불러오는 중…</p>
+        </div>
+        <noscript><style>{'#veil{display:none}'}</style></noscript>
         {/* **#root 를 없애면 안 된다.** v4 의 CSS 307군데가 `html body #root …` 로 시작한다 —
             v3 스킨을 이기려고 올린 접두사다(styles.ts 주석). Next.js 로 옮기며 이 래퍼가
             빠졌고, 그 순간 home-editorial(128) · catalog(60) · surfaces(52) · finder(34) ·

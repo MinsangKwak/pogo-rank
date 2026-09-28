@@ -270,7 +270,7 @@ function HomeData({ onOpen }: { onOpen: OpenMon }) {
       <section className="home__picks" id="home-more">
         <div className="home__section">
           <h3>용도별 상위 포켓몬</h3>
-          <span>평가 조건에 따라 추천이 달라져요<span className="home__date"> · 기준일 {meta.DATA_FETCHED.slice(0, 10)}</span></span>
+          <span>평가 조건에 따라 추천이 달라져요<span className="home__date">{` · 기준일 ${meta.DATA_FETCHED.slice(0, 10)}`}</span></span>
         </div>
         {/* 카드 둘이 한 격자 안에 선다 — 감싸는 .home__pick-grid 가 없으면 카드가 한 줄에 하나씩 늘어선다.
             「다양한 활용처」는 v4.9.4 에 배너 옆으로 올라갔다 (위 .home__top-layout) */}

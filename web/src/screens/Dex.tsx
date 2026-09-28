@@ -234,7 +234,7 @@ export default function Dex({ onOpen }: { onOpen: OpenMon }) {
       {rows.length > shown
         ? (
           <button className="boss__more" onClick={() => setShown(shown + DEX_PAGE)}>
-            더 보기 ({shown}/{rows.length})
+            {`더 보기 (${shown}/${rows.length})`}
           </button>
         )
         : null}

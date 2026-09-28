@@ -256,3 +256,8 @@ html body #root #page-ivrank .detail__foot { padding: 1.6rem 0; color: var(--mut
  html body #root #page-ivrank .ivrank__out > .empty { min-height: 24rem; }
  html body #root #page-ivrank .ivrank__cards { grid-template-columns: repeat(2,minmax(0,1fr)); }
 }
+
+/* 검색칸은 shell.css 의 16px 규칙보다 위 화면 규칙들이 무거워 14px 로 남았다 — iOS 초점 확대를 막으려면 같은 무게로 뒤에서 올린다 (파일 끝에 둔 이유) */
+@media(max-width:999px) {
+ html body #root :is(.solo-workbench, .pvp-deck-studio, #page-ivrank) .boss__search { font-size: 1.6rem; }
+}
