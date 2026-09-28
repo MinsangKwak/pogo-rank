@@ -20,10 +20,12 @@ import { Sprite } from '../components/Bits';
 import { PxIcon } from '../components/PxIcon';
 import { NameNode } from '../components/Row';
 import type { GameUpdate } from '../types/data';
-import { track } from '../lib/track';
+import { track, trackSearchPick } from '../lib/track';
+import { openSearch } from '../stores/search';
+import { useWeekBosses } from '../lib/weekBosses';
 import { UPDATE_CATS } from '../lib/notes';
 import type { OpenMon } from '../lib/mon';
-import { TankPopupEntry } from '../components/TankPopup';
+import { TankPopupEntry, NOV_TANK_LIVE } from '../components/TankPopup';
 
 // 대표 일러스트 — 머리에서 미리 받는 그 그림 (app/page.tsx 의 preload 와 같은 파일)
 const HERO_ART_ENTRY = MAX_ART.find((art) => art.dex.includes(816))!;
@@ -89,6 +91,36 @@ function Discover({ mascot, sprite, kicker, head, copy, extra, href }: {
  * **자리(#home-more)가 아직 없을 수 있다.** 아래쪽은 데이터를 기다리는 Suspense 안이라
  * 데이터가 오기 전에는 그 자리에 기다림 판만 있다 — 그때는 한 화면만큼 내린다.
  */
+/**
+ * 첫 화면의 검색 — 단추 하나와 이번 주 보스 칩 (2026-09-28).
+ * 검색이 늘어야 순위가 선다(v4.6.3). 상단 바의 검색칸은 좁은 화면에서 숨어 있어(shell.css) 홈에서는 여기가 검색의 입구다.
+ * 칩은 "지금 사람들이 찾는 이름" 을 한 번의 탭으로 — 검색으로 세되 어디서 눌렀는지(home_chip) 남긴다
+ */
+function HomeSearch({ onOpen }: { onOpen: OpenMon }) {
+  const week = useWeekBosses();
+  return (
+    <div className="home__search">
+      <button type="button" className="home__search-btn" onClick={() => { track('home_cta', { to: 'search' }); openSearch('home'); }}>
+        <span className="home__search-ico" aria-hidden="true"><PxIcon emoji="🔍" /></span>
+        <span className="home__search-ph">포켓몬 이름으로 바로 찾기</span>
+        <kbd className="home__search-key" aria-hidden="true">/</kbd>
+      </button>
+      {week.bosses.length ? (
+        <div className="home__search-chips" role="group" aria-label={week.label}>
+          <span className="home__search-label">{week.label}</span>
+          {week.bosses.map((boss) => (
+            <button key={boss.name} type="button" className="home__chip"
+              onClick={() => { trackSearchPick(boss.name, 'home_chip'); onOpen({ sprite: boss.sprite, name: boss.detailName, types: boss.types }); }}>
+              <img className="home__chip-sprite" src={`${BASE}sprites/${boss.sprite}.png`} alt="" width="24" height="24" loading="lazy" decoding="async" />
+              {boss.name}
+            </button>
+          ))}
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
 function ScrollDown() {
   const go = () => {
     const target = document.getElementById('home-more');
@@ -210,6 +242,7 @@ export default function Home({ onOpen }: { onOpen: OpenMon }) {
           <span className="home__eyebrow"><span className="home__eyebrow-dot" aria-hidden="true" />POKÉMON GO · BATTLE GUIDE</span>
           <h2>내 포켓몬의 다음 배틀,<br /><em>여기서 준비하세요.</em></h2>
           <p>포켓몬 정보와 배틀별 추천을 한눈에.<br />처음이라면 도감부터, 배틀을 앞뒀다면 추천부터 살펴보세요.</p>
+          <HomeSearch onOpen={onOpen} />
         </div>
         {/* 배너 — 남은 맥스 일정이 한 장씩 넘어간다. 모든 장이 대표 일러스트와 같은 구도다 (components/MaxPoster.tsx).
             거다이맥스 폼 그림(max.json)까지 온 뒤에 굴린다 — 먼저 굴리면 보스 그림이 도중에 바뀐다 */}
@@ -308,7 +341,8 @@ function HomeData({ onOpen }: { onOpen: OpenMon }) {
           <span className="portal-shortcut__go" aria-hidden="true">↗</span>
         </a>
       </div>
-      <div className="portal-prep-note"><TankPopupEntry onOpen={onOpen} compact /></div>
+      {/* 11월 탱커 준비 띠 — 당분간 내렸다 (NOV_TANK_LIVE). 실루엣 퀴즈 배너가 위에 서면서 알림이 둘이 되었다 */}
+      {NOV_TANK_LIVE ? <div className="portal-prep-note"><TankPopupEntry onOpen={onOpen} compact /></div> : null}
 
       <section className="home__features" aria-label="서비스 기능">
         <div className="home__section">

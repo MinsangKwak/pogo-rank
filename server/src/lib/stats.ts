@@ -11,6 +11,7 @@
 // ─────────────────────────────────────────────────────────────────────────────
 'use strict';
 import type { Sql } from '../db/client.ts';
+import { hotRows } from './hot.ts';
 
 export interface DayCount { day: string; count: number }
 export interface DayHits { day: string; hits: number; visitors: number }
@@ -38,6 +39,12 @@ export interface EventStats {
   top: Ranked[];
   /** 검색은 검색창 구분, 페이지뷰는 비어 있다 */
   surfaces: Ranked[];
+  /**
+   * 검색만 — 순위(/v1/hot)와 **같은 계산**(사람당 하루 한도 · 문턱)으로 고른 줄. 페이지뷰는 비어 있다.
+   * `top` 은 한도 없이 센 상위 15 라, 한 사람이 밀어 올린 말이 자리를 다 먹으면 문턱을 넘은 말이 그 안에 없을 수 있다
+   * (Codex, PR #221) — 준비도는 이 줄로 잰다. 줄 수가 모자라도 비우지 않는다 ("2 / 3" 을 보여야 한다)
+   */
+  hot: Ranked[];
   countries: Ranked[];
 }
 
@@ -119,7 +126,11 @@ async function eventStats(sql: Sql, name: 'search' | 'view', days: number): Prom
     from events where ${scope}
     group by 1 order by visitors desc, hits desc, key asc limit ${STATS_LIMITS.top}
   `;
-  return { hits: total!.hits, visitors: total!.visitors, perDay, top, surfaces, countries };
+  // 순위의 창은 '지금부터 days 일 전' 이라 한국 날짜로 자르는 위 표와 하루 안쪽이 다를 수 있다 — 준비도에는 그 차이가 뜻이 없다
+  const hot = name === 'search'
+    ? (await hotRows(sql, { days, limit: STATS_LIMITS.top, threshold: true, fold: false })).map((row) => ({ key: row.term, hits: row.hits, visitors: row.visitors }))
+    : [];
+  return { hits: total!.hits, visitors: total!.visitors, perDay, top, surfaces, countries, hot };
 }
 
 /** 기간을 끝 안으로 — 스키마가 막지만 함수만 불러도 틀리지 않게 */

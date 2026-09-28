@@ -105,6 +105,9 @@ describe.skipIf(!url)('GET /v1/admin/stats', () => {
     expect(body.search.top.map((one: { key: string }) => one.key)).not.toContain('몰래');
     expect(body.search.top.map((one: { key: string }) => one.key)).not.toContain('옛날');
     expect(body.search.surfaces[0]).toEqual({ key: 'app', hits: 2, visitors: 1 });
+    // 순위와 같은 계산 — 문턱(3회 · 2명)을 넘은 뮤츠만, 줄이 하나뿐이어도 비우지 않는다
+    expect(body.search.hot).toEqual([{ key: '뮤츠', hits: 3, visitors: 2 }]);
+    expect(body.views.hot).toEqual([]);
     expect(body.search.perDay).toHaveLength(7);
     expect(body.search.perDay.at(-1)).toMatchObject({ hits: 4, visitors: 2 });
     expect(body.views).toMatchObject({ hits: 2, visitors: 2, top: [{ key: 'dmax', hits: 2, visitors: 2 }], surfaces: [] });
