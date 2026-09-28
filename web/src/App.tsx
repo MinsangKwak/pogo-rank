@@ -24,7 +24,9 @@ import { useLockReason, useLockChecking, useRootShown } from './lib/useLocked';
 import { takeForward } from './lib/nav';
 import { trackPageView, track } from './lib/track';
 import { collectView } from './lib/collect';
+import { settleVeilAfterFonts } from './lib/veil';
 import type { RouteDef } from './routes';
+import { routeById } from './routes';
 // **홈과 상세만 정적이다.** 둘은 각자 주소의 첫 화면이라, 쪼개면 열자마자 한 번 더
 // 받으러 가야 한다. 나머지는 어느 주소에서도 첫 화면이 아니므로 첫 번들에 있을 이유가 없다 —
 // 넣어 두면 홈만 보려는 사람이 도감·티어표·일정 코드까지 내려받고 해석한다
@@ -64,6 +66,15 @@ const DmaxDeck = lazy(() => import('./screens/DmaxDeck'));
 const SoloCalc = lazy(() => import('./screens/SoloCalc'));
 // 루트만 여는 화면 — 누구의 첫 묶음에도 안 실린다
 const AdminStats = lazy(() => import('./screens/AdminStats'));
+
+/**
+ * 화면이 섰다는 신호 — <Suspense> 안, 화면 뒤에 선다. 기다림은 안의 것을 한꺼번에 드러내므로
+ * 이 효과가 도는 순간이 곧 화면이 그려진 순간이다. 덮개(lib/veil.ts)는 그때 걷는다
+ */
+function Settled() {
+  useEffect(() => { settleVeilAfterFonts(); });
+  return null;
+}
 
 function Splash() {
   return (
@@ -200,7 +211,10 @@ export default function App({ seo }: AppProps = {}) {
     if (route.id === 'home') body['home'] = 'true'; else delete body['home'];
     // 루트 화면은 세지 않는다 — 운영자 자신이 보는 것이라 이용 현황이 아니고, 있다는 것도 남기지 않는다
     if ('root' in route && route.root) return;
-    trackPageView(route.title ?? route.nav ?? route.id);
+    // 자식 화면은 부모를 앞에 붙인다 — '덱 짜기' 가 D-MAX · PvP 둘이라 제목 보고서에서 한 줄로 합쳐졌다 (주소는 원래 다르다)
+    const own = route.title ?? route.nav ?? route.id;
+    const parent = route.parent ? routeById(route.parent) : undefined;
+    trackPageView(parent ? `${parent.title ?? parent.nav ?? parent.id} · ${own}` : own);
     track('route_view', { route: route.id });
     // 우리 수집기에도 화면 id 하나 (lib/collect.ts)
     collectView(route.id);
@@ -263,6 +277,7 @@ export default function App({ seo }: AppProps = {}) {
           <DataBoundary>
             <Suspense fallback={seo ?? <Splash />}>
               <Screen route={route} rest={rest} onOpen={openMon} />
+              <Settled key={`${route.id}/${rest}`} />
             </Suspense>
           </DataBoundary>
         </div>
