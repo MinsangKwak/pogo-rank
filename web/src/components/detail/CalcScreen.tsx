@@ -53,7 +53,7 @@ export default function CalcScreen({ form, inputs, onChange }: {
         <div className="detail__calc-big">
           <span className="detail__calc-cp-label">CP</span>
           <b className="detail__calc-cp">{cp.toLocaleString()}</b>
-          <span className="meta">입력값 기준 · Lv.{inputs.level}</span>
+          <span className="meta">{`입력값 기준 · Lv.${inputs.level}`}</span>
         </div>
         <div className="detail__calc-row detail__calc-row--max">
           <em>Lv.50 예상 CP</em>

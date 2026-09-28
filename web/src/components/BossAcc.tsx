@@ -89,7 +89,7 @@ export default function BossAcc({ onOpen, onGoBoss }: {
           </div>
         ) : null}
 
-        <p className="schedule__sec">{typeName} 보스 추천 딜러 (딜량순)</p>
+        <p className="schedule__sec">{`${typeName} 보스 추천 딜러 (딜량순)`}</p>
         <div className="boss__recs recs-wrap">
           {pool.slice(0, show).map((row, index) => rec(row, `${index + 1} `))}
         </div>
@@ -103,7 +103,7 @@ export default function BossAcc({ onOpen, onGoBoss }: {
             )
             : <span className="meta">{`전체 ${total}종 표시됨`}</span>}
           <button className="boss__more" onClick={(event) => { event.preventDefault(); onGoBoss(type); }}>
-            {typeName} 보스 딜러 순위 ▸
+            {`${typeName} 보스 딜러 순위 ▸`}
           </button>
         </div>
       </div>

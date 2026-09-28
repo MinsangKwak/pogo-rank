@@ -408,7 +408,7 @@ export default function MonDetail({ pick, onClose, inline = false }: MonDetailPr
                       {/* 적용 전후 모두 적는다 — 적용 뒤에도 "왜 순위가 움직였나" 의 답이 된다 */}
                       {changed && changes ? (
                         <section className="detail__card">
-                          <h3>⚔️ {changes.date} 기술 변경 적용됨</h3>
+                          <h3>{`⚔️ ${changes.date} 기술 변경 적용됨`}</h3>
                           <div>
                             <div className="changes__list">
                               {([['▲', changed.up, 'is-up'], ['▼', changed.down, 'is-down'],
