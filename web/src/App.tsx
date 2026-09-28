@@ -25,6 +25,8 @@ import { takeForward } from './lib/nav';
 import { trackPageView, track } from './lib/track';
 import { collectView } from './lib/collect';
 import { settleVeilAfterFonts } from './lib/veil';
+import SearchPalette from './components/SearchPalette';
+import { useSearchStore } from './stores/search';
 import type { RouteDef } from './routes';
 import { routeById } from './routes';
 // **홈과 상세만 정적이다.** 둘은 각자 주소의 첫 화면이라, 쪼개면 열자마자 한 번 더
@@ -190,7 +192,7 @@ export default function App({ seo }: AppProps = {}) {
   useEffect(() => { setDetail(null); }, [route, rest]);
   // 화면을 옮기면 열려 있던 팝업·서랍은 닫는다 — <dialog> 가 새 화면 위에 그대로 떠 있으면
   // 아무 데도 눌리지 않는다 (상세 팝업에서 같은 자리를 이미 한 번 겪었다)
-  useEffect(() => { setConsentOpen(false); setMenuOpen(false); closeInvite(); }, [route, rest, closeInvite]);
+  useEffect(() => { setConsentOpen(false); setMenuOpen(false); closeInvite(); useSearchStore.getState().hide(); }, [route, rest, closeInvite]);
   // 앞으로 옮겨 왔으면 맨 위에서 시작한다 — 앱이 한 번만 서므로 앞 화면의 스크롤이 그대로 남는다 (lib/nav.ts takeForward)
   useEffect(() => { if (takeForward()) window.scrollTo(0, 0); }, [route, rest]);
 
@@ -296,6 +298,8 @@ export default function App({ seo }: AppProps = {}) {
           {detail === null ? null : <MonDetail pick={detail} onClose={closeMon} />}
         </Suspense>
       </DataBoundary>
+      {/* 검색 팔레트 — 어느 화면에서든 / · Ctrl+K · 상단 바 · 홈 단추로 뜬다. 고르면 위의 상세 팝업이 연다 */}
+      <SearchPalette onOpen={openMon} />
 
       {consentOpen ? <ConsentDialog onClose={() => setConsentOpen(false)} /> : null}
       {/* ★ 를 눌렀는데 로그인 전일 때 — 누른 곳과 그리는 곳이 멀어 stores/invite.ts 를 거친다 */}

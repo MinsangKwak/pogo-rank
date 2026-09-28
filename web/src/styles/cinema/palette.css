@@ -1,0 +1,65 @@
+/* ─────────────────────────────────────────────────────────────────────────────
+   palette.css — 검색 팔레트 (components/SearchPalette.tsx · 2026-09-28)
+
+   틀은 modal.css 의 .modal 이다 — 여기는 검색칸 · 결과 줄 · 칩만 더한다. 색은 토큰, 간격은 0.4rem 격자.
+   위에 붙는다(align-items: start) — 가운데 띄우면 모바일 키보드가 올라올 때 칸이 가려진다
+   ───────────────────────────────────────────────────────────────────────────── */
+html body #root dialog.palette { align-items: start; padding-top: 6.4rem; }
+html body #root .palette__wrap { width: min(56rem, calc(100vw - 3.2rem)); }
+html body #root .palette__box { display: flex; flex-direction: column; gap: 1.2rem; padding: 1.6rem; }
+
+/* 검색칸 — 글자 16px. 더 작으면 iOS 가 칸을 누를 때 화면을 키운다 (shell.css 의 규칙과 같다) */
+html body #root .palette__field {
+  display: flex; align-items: center; gap: 0.8rem; min-height: var(--tap); padding: 0 1.2rem;
+  border: 0.1rem solid var(--line); border-radius: var(--r-ctl); background: var(--bg);
+}
+html body #root .palette__field:focus-within { border-color: var(--brand); }
+html body #root .palette__ico { display: inline-flex; color: var(--muted); }
+html body #root .palette__input {
+  flex: 1; min-width: 0; min-height: calc(var(--tap) - 0.2rem); padding: 0; border: 0; background: transparent;
+  color: var(--fg); font: 400 1.6rem/1.5 Pretendard, sans-serif; outline: 0;
+}
+html body #root .palette__input::placeholder { color: var(--muted); }
+html body #root .palette__input::-webkit-search-cancel-button { appearance: none; }
+
+/* 결과 — 한 줄에 그림 · 이름 · 영문 · 번호. 고른 줄은 바탕만 한 단 밝다 */
+html body #root .palette__list { display: flex; flex-direction: column; gap: 0.4rem; margin: 0; padding: 0; list-style: none; }
+html body #root .palette__hit {
+  display: flex; align-items: center; gap: 1.2rem; width: 100%; min-height: var(--tap); padding: 0.4rem 1.2rem;
+  border: 0.1rem solid transparent; border-radius: var(--r-ctl); background: transparent; color: var(--fg);
+  font: 400 1.4rem/1.5 Pretendard, sans-serif; text-align: left; cursor: pointer;
+}
+html body #root .palette__hit.is-on { border-color: var(--line); background: var(--surface-2); }
+html body #root .palette__sprite { flex: none; width: 3.2rem; height: 3.2rem; image-rendering: pixelated; }
+html body #root .palette__name { flex: 1; min-width: 0; font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+html body #root .palette__en { color: var(--muted); font-size: 1.2rem; }
+html body #root .palette__no { color: var(--muted); font-size: 1.2rem; font-variant-numeric: tabular-nums; }
+html body #root .palette__empty,
+html body #root .palette__hint { margin: 0; color: var(--muted); font-size: 1.4rem; line-height: 1.5; }
+
+/* 빈 칸일 때 — 최근 검색 · 이번 주 보스 칩 */
+html body #root .palette__group { display: flex; flex-direction: column; gap: 0.8rem; }
+html body #root .palette__head { display: flex; align-items: center; justify-content: space-between; gap: 0.8rem; margin: 0; color: var(--muted); font: 700 1.2rem/1.5 Pretendard, sans-serif; letter-spacing: 0.04em; }
+html body #root .palette__clear { min-height: 2.4rem; padding: 0 0.4rem; border: 0; background: transparent; color: var(--muted); font: 400 1.2rem/1.5 Pretendard, sans-serif; cursor: pointer; text-decoration: underline; }
+html body #root .palette__chips { display: flex; flex-wrap: wrap; gap: 0.8rem; }
+html body #root .palette__chip {
+  display: inline-flex; align-items: center; gap: 0.4rem; min-height: var(--tap); padding: 0 1.2rem 0 0.8rem;
+  border: 0.1rem solid var(--line); border-radius: var(--r-tag); background: var(--surface-2); color: var(--fg);
+  font: 500 1.4rem/1.5 Pretendard, sans-serif; cursor: pointer;
+}
+html body #root .palette__chip .palette__sprite { width: 2.4rem; height: 2.4rem; }
+html body #root .palette__more { align-self: flex-start; min-height: var(--tap); display: inline-flex; align-items: center; color: var(--brand); font-size: 1.4rem; text-decoration: none; }
+@media (hover: hover) {
+  html body #root .palette__hit:hover { border-color: var(--line); background: var(--surface-2); }
+  html body #root .palette__chip:hover,
+  html body #root .palette__clear:hover { border-color: var(--brand); color: var(--fg); }
+  html body #root .palette__more:hover { text-decoration: underline; }
+}
+@media (max-width: 599px) {
+  html body #root dialog.palette { padding-top: 1.6rem; }
+  html body #root .palette__en { display: none; }
+}
+
+/* 퀴즈 모드 한 줄 — 맞히기로 열렸을 때. 틀리면 글자만 경고색 */
+html body #root .palette__quiz { margin: 0; padding: 0.8rem 1.2rem; border-radius: var(--r-ctl); background: var(--surface-2); color: var(--fg); font-size: 1.4rem; line-height: 1.5; }
+html body #root .palette__quiz.is-miss { color: var(--warn); }
