@@ -19,6 +19,9 @@ const SITE = process.env['NEXT_PUBLIC_SITE_URL'] ?? 'https://moncamp.kr';
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
+  // 모바일에서 단추 · 입력칸을 누르면 화면이 커지던 것을 막는다 (2026-09-28 제보). iOS 는 maximum-scale 이 있어야 입력칸 초점 확대를 안 한다
+  maximumScale: 1,
+  userScalable: false,
   viewportFit: 'cover',
   colorScheme: 'light dark',
 };
