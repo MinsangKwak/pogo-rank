@@ -69,10 +69,14 @@ const AdminStats = lazy(() => import('./screens/AdminStats'));
 
 /**
  * 화면이 섰다는 신호 — <Suspense> 안, 화면 뒤에 선다. 기다림은 안의 것을 한꺼번에 드러내므로
- * 이 효과가 도는 순간이 곧 화면이 그려진 순간이다. 덮개(lib/veil.ts)는 그때 걷는다
+ * 이 효과가 도는 순간이 곧 화면이 그려진 순간이다. 덮개(lib/veil.ts)는 그때 걷는다.
+ *
+ * **처음 설 때 한 번만.** 화면마다 key 가 달라 새 화면이 서면 새로 선다. 의존성 없이 두면 전환이 도는 동안
+ * 앞 화면에 남아 있는 이것이 App 의 다른 그림(서랍 열기 등)마다 다시 돌아, 새 화면이 아직 안 왔는데 덮개를 걷는다
+ * (Codex, PR #217 · 실측: 느린 전환 중 서랍을 열면 39 표본 중 27 이 걷힌 상태)
  */
 function Settled() {
-  useEffect(() => { settleVeilAfterFonts(); });
+  useEffect(() => { settleVeilAfterFonts(); }, []);
   return null;
 }
 
