@@ -12,14 +12,25 @@
 import { useEffect, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import { bindRouter, internalHref, markForward } from '../lib/nav';
+import { showVeil, settleVeil } from '../lib/veil';
 
 export default function RouterBridge() {
   const router = useRouter();
   // 우리 전환 안에서 옮겨야 기다리는 동안을 안다 (isPending)
   const [pending, start] = useTransition();
   useEffect(() => {
-    bindRouter((href) => { markForward(); start(() => router.push(href, { scroll: false })); }, () => router.back());
+    bindRouter((href) => { markForward(); showVeil(); start(() => router.push(href, { scroll: false })); }, () => { showVeil(); router.back(); });
   }, [router]);
+
+  // 전환이 끝났다 = 새 화면이 섰다 (전환은 새 화면의 조각 · 데이터가 올 때까지 안 끝난다). 그때 덮개를 걷는다
+  useEffect(() => { if (!pending) settleVeil(); }, [pending]);
+
+  // 브라우저의 뒤로 · 앞으로는 전환 밖이다 — 덮고, App 의 <Settled> 가 새 화면에서 걷는다
+  useEffect(() => {
+    const onPop = () => showVeil();
+    window.addEventListener('popstate', onPop);
+    return () => window.removeEventListener('popstate', onPop);
+  }, []);
 
   // 앱 안의 <a href> 를 라우터로 옮긴다 — 문서를 다시 열지 않고 본문만 갈아 끼운다 (lib/nav.ts internalHref).
   // 라우터의 이동은 전환(transition)이라, 새 화면의 조각·데이터가 올 때까지 앞 화면을 그대로 두고 빈 틀을 안 보인다
@@ -31,6 +42,7 @@ export default function RouterBridge() {
       if (href === null) return;
       event.preventDefault();
       markForward();
+      showVeil();
       start(() => router.push(href, { scroll: false }));
     };
     document.addEventListener('click', onClick);
