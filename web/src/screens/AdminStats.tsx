@@ -129,27 +129,29 @@ const ranked = (rows: readonly StatRanked[], label: (key: string) => string, fla
 /**
  * 검색 순위 준비도 — "이 검색량으로 순위를 세울 수 있나" 를 숫자로.
  * 운영 순위는 기간이 아니라 **하루 · 이레** 창을 쓰므로, 이 기간에서 넘었다고 바로 서는 것은 아니다.
- * 그래서 하루 창의 최소 조건(이름 셋 × 3회 = 하루 9회)과 하루 평균을 나란히 적는다.
- * 넘은 이름은 서버가 순위와 같은 계산(사람당 한도 · 문턱)으로 고른 `hot` 으로 센다 — `top` 은 한도 없이 센 상위 15 라
- * 한 사람이 밀어 올린 말이 자리를 다 먹으면 문턱을 넘은 말이 그 안에 없을 수 있다 (Codex, PR #221)
+ * 넘은 이름은 서버가 순위와 같은 계산(사람당 한도 · 문턱)으로 고른 `hot`(이 기간) · `hotToday`(하루 창) 로 센다 —
+ * `top` 은 한도 없이 센 상위 15 라 한 사람이 밀어 올린 말이 자리를 다 먹으면 문턱을 넘은 말이 그 안에 없을 수 있다 (Codex, PR #221).
+ * 하루 창 판정은 **하루 창의 실제 줄 수**다 — 기간 줄 수와 하루 평균을 섞으면 어느 하루도 셋을 못 채웠는데 켤 수 있다고 적는다 (Codex, PR #229).
+ * 하루 평균(perDay)은 참고 숫자로만 적는다
  */
-export function hotReadiness(search: { hits: number; visitors: number; hot?: readonly StatRanked[] | undefined }, days: number): {
-  passing: number; perDay: number; dailyNeed: number; ready: boolean; dailyReady: boolean; known: boolean;
+export function hotReadiness(search: { hits: number; visitors: number; hot?: readonly StatRanked[] | undefined; hotToday?: readonly StatRanked[] | undefined }, days: number): {
+  passing: number; passingToday: number; perDay: number; dailyNeed: number; ready: boolean; dailyReady: boolean; known: boolean;
 } {
   // 옛 서버는 hot 을 안 준다 — 그때는 '모른다' 지 '0' 이 아니다
-  const known = search.hot !== undefined;
+  const known = search.hot !== undefined && search.hotToday !== undefined;
   const passing = search.hot?.length ?? 0;
+  const passingToday = search.hotToday?.length ?? 0;
   const perDay = days > 0 ? search.hits / days : 0;
   const dailyNeed = HOT_MIN_ROWS * HOT_MIN_HITS;
-  return { passing, perDay, dailyNeed, ready: passing >= HOT_MIN_ROWS, dailyReady: perDay >= dailyNeed, known };
+  return { passing, passingToday, perDay, dailyNeed, ready: passing >= HOT_MIN_ROWS, dailyReady: passingToday >= HOT_MIN_ROWS, known };
 }
 
 function Readiness({ search, days }: { search: Stats['search']; days: number }) {
   const ready = hotReadiness(search, days);
-  const verdict = ready.dailyReady && ready.ready
-    ? { tone: 'good' as const, title: '하루 창 순위를 세울 만한 검색량이에요' }
+  const verdict = ready.dailyReady
+    ? { tone: 'good' as const, title: '오늘 하루 창만으로 순위가 서요' }
     : ready.ready
-      ? { tone: 'caution' as const, title: '이 기간 전체로는 문턱을 넘지만, 하루 창은 아직이에요' }
+      ? { tone: 'caution' as const, title: '이 기간 전체로는 문턱을 넘지만, 오늘 하루 창은 아직이에요' }
       : { tone: 'info' as const, title: '아직 순위를 세울 검색량이 아니에요' };
   return (
     <div className="stat-ready">
@@ -160,18 +162,18 @@ function Readiness({ search, days }: { search: Stats['search']; days: number }) 
       <div className="stat-tiles stat-tiles--tight">
         <Tile label="이 기간에 문턱을 넘은 이름" value={ready.known ? `${count(ready.passing)} / ${count(HOT_MIN_ROWS)}` : DASH}
           sub={ready.known ? "아래 표에서 '문턱 ↑' 딱지 · 순위와 같은 계산(사람당 한도 · 문턱)이에요" : '서버가 아직 이 줄을 안 줘요 — 서버 배포 뒤에 채워져요'} />
+        <Tile label="오늘 하루 창에서 넘은 이름" value={ready.known ? `${count(ready.passingToday)} / ${count(HOT_MIN_ROWS)}` : DASH}
+          sub={ready.known ? '/v1/hot?days=1 과 같은 계산 — 순위를 켜면 이 수가 곧 오늘 표예요' : '서버 배포 뒤에 채워져요'} />
         <Tile label="하루 평균 고른 수" value={count(ready.perDay)}
-          sub={`하루 창 순위의 최소 조건 ${count(ready.dailyNeed)}회 (이름 ${count(HOT_MIN_ROWS)}개 × ${count(HOT_MIN_HITS)}회)`} />
-        <Tile label="하루 평균 찾은 사람" value={count(search.perDay.reduce((sum, row) => sum + row.visitors, 0) / Math.max(1, search.perDay.length))}
-          sub={`기간 전체 ${count(search.visitors)}명`} />
+          sub={`참고 — 하루 창이 서려면 어림잡아 ${count(ready.dailyNeed)}회는 넘어야 해요 (이름 ${count(HOT_MIN_ROWS)}개 × ${count(HOT_MIN_HITS)}회)`} />
       </div>
       {ready.known ? <Callout tone={verdict.tone} title={verdict.title}>
         {/* 성공 문구는 둘 다 넘을 때만 — 하루 9회를 넘어도 한 이름에 몰리면 제목은 '아직' 인데 본문이 '올릴 수 있다' 고 엇갈린다 (Codex, PR #221) */}
-        <p>{ready.dailyReady && ready.ready
-          ? '하루 창으로 순위를 올릴 수 있어요. 올리기 전에 /v1/hot?days=1 이 실제로 줄을 주는지 확인해요.'
+        <p>{ready.dailyReady
+          ? `오늘 하루 창에서 이름 ${count(ready.passingToday)}개가 문턱을 넘었어요 — 하루 창 순위를 올릴 수 있어요.`
           : !ready.ready
-            ? `문턱을 넘은 이름이 ${count(HOT_MIN_ROWS)}개는 돼야 표가 서요. 지금은 ${count(ready.passing)}개, 하루 평균 ${count(ready.perDay)}회예요.`
-            : `하루 창은 하루 ${count(ready.dailyNeed)}회가 넘어야 시작이고, 이레 창은 그 사이 값으로 먼저 열 수 있어요. 지금은 하루 ${count(ready.perDay)}회예요.`}</p>
+            ? `문턱을 넘은 이름이 ${count(HOT_MIN_ROWS)}개는 돼야 표가 서요. 이 기간 ${count(ready.passing)}개 · 오늘 ${count(ready.passingToday)}개, 하루 평균 ${count(ready.perDay)}회예요.`
+            : `오늘 하루 창은 ${count(ready.passingToday)}개라 아직이에요. 이레 창을 먼저 열 수 있고, 하루 창은 며칠 연속 ${count(HOT_MIN_ROWS)}개를 넘길 때 켜요.`}</p>
       </Callout> : (
         <Callout tone="info" title="순위 계산 줄을 아직 못 받았어요">
           <p>{`서버가 deploy 브랜치에서 올라가면 채워져요. 그때까지는 하루 평균 고른 수만 봐요 — 하루 창 최소 조건은 ${count(ready.dailyNeed)}회예요.`}</p>
