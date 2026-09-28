@@ -103,5 +103,8 @@ describe('검색 순위 준비도 — 문턱은 서버(lib/hot.ts)와 같은 값
     expect(hotReadiness({ hits: 300, visitors: 40, hot }, 15)).toMatchObject({ passing: 2, ready: false, dailyReady: true });
     expect(hotReadiness({ hits: 300, visitors: 40, hot: [...hot, { key: 'e', hits: 5, visitors: 3 }] }, 15)).toMatchObject({ passing: 3, ready: true, dailyReady: true });
     expect(hotReadiness({ hits: 0, visitors: 0, hot: [] }, 0).perDay).toBe(0);
+    // 옛 서버(hot 없음) — 0 이 아니라 모른다
+    expect(hotReadiness({ hits: 118, visitors: 23 }, 15)).toMatchObject({ known: false, passing: 0, ready: false });
+    expect(hotReadiness({ hits: 118, visitors: 23, hot }, 15).known).toBe(true);
   });
 });
