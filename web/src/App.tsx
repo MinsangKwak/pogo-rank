@@ -24,6 +24,7 @@ import { useLockReason, useLockChecking, useRootShown } from './lib/useLocked';
 import { takeForward } from './lib/nav';
 import { trackPageView, track } from './lib/track';
 import { collectView } from './lib/collect';
+import { settleVeilAfterFonts } from './lib/veil';
 import type { RouteDef } from './routes';
 import { routeById } from './routes';
 // **홈과 상세만 정적이다.** 둘은 각자 주소의 첫 화면이라, 쪼개면 열자마자 한 번 더
@@ -65,6 +66,15 @@ const DmaxDeck = lazy(() => import('./screens/DmaxDeck'));
 const SoloCalc = lazy(() => import('./screens/SoloCalc'));
 // 루트만 여는 화면 — 누구의 첫 묶음에도 안 실린다
 const AdminStats = lazy(() => import('./screens/AdminStats'));
+
+/**
+ * 화면이 섰다는 신호 — <Suspense> 안, 화면 뒤에 선다. 기다림은 안의 것을 한꺼번에 드러내므로
+ * 이 효과가 도는 순간이 곧 화면이 그려진 순간이다. 덮개(lib/veil.ts)는 그때 걷는다
+ */
+function Settled() {
+  useEffect(() => { settleVeilAfterFonts(); });
+  return null;
+}
 
 function Splash() {
   return (
@@ -267,6 +277,7 @@ export default function App({ seo }: AppProps = {}) {
           <DataBoundary>
             <Suspense fallback={seo ?? <Splash />}>
               <Screen route={route} rest={rest} onOpen={openMon} />
+              <Settled key={`${route.id}/${rest}`} />
             </Suspense>
           </DataBoundary>
         </div>

@@ -16,6 +16,7 @@
 // ─────────────────────────────────────────────────────────────────────────────
 import { Component, type ErrorInfo, type ReactNode } from 'react';
 import { QueryErrorResetBoundary } from '@tanstack/react-query';
+import { settleVeil } from '../lib/veil';
 
 interface Props { children: ReactNode; onReset: () => void }
 interface State { failed: boolean }
@@ -30,6 +31,8 @@ class Catcher extends Component<Props, State> {
   override componentDidCatch(error: Error, info: ErrorInfo) {
     // 콘솔에는 남긴다 — 제보를 받을 때 이 줄이 유일한 단서다
     console.error('[moncamp] 화면을 그리지 못했습니다', error, info.componentStack);
+    // 덮개 뒤에서 오류 안내가 안 보이면 안 된다 — 실패도 '섰다' 다
+    settleVeil();
   }
 
   retry = () => {
