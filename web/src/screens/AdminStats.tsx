@@ -1,5 +1,5 @@
 // ─────────────────────────────────────────────────────────────────────────────
-// screens/AdminStats.tsx — 운영 통계 (루트만, 2026-09-24)
+// screens/AdminStats.tsx — 운영 통계 (루트만, 2026-09-24 · 2026-09-28 개편)
 //
 // **한 화면에 세 원본.** 원본마다 세는 법이 달라 숫자를 섞지 않는다 — 칸마다 어디서 왔는지 적는다.
 //   우리 DB   가입 · 로그인 · ★ · 검색(v4.7.0~) · 페이지뷰(2026-09-24~)   — Neon, 서버가 모아 센 값
@@ -10,15 +10,22 @@
 // 기본은 '9/14부터' — 서비스를 연 날부터 오늘까지 한 번에 본다 (2026-09-24 주인 요청).
 // 다시 받는 동안은 앞 숫자를 흐리게 둔다 — 빈 틀로 깜빡이지 않는다.
 //
+// **2026-09-28 개편 — 숫자만 늘어놓지 않고 "그래서 어떤가" 를 읽어 준다.**
+//   - 고름 줄이 따라온다(sticky) — 다섯 구역 아래에서 기간을 바꾸려고 맨 위로 올라가지 않는다. 구역 바로가기도 그 줄에
+//   - 숫자 칸마다 최근 14일 작은 선과 '최근 7일 vs 앞 7일' 이 선다 — 31명이 많은지 적은지는 방향이 말한다
+//   - 검색 구역 맨 위에 **검색 순위 준비도** — 순위(/v1/hot)의 문턱을 이 기간의 검색에 대어 "세울 수 있나" 를 답한다.
+//     v4.6.3 이 순위를 내리며 남긴 조건("하루 3회 이상인 이름 셋")을 화면이 늘 재서, 다시 올릴 때를 놓치지 않는다
+//   - 순위 표는 여덟 줄에서 접는다 — 열다섯 줄 표 여섯 개가 한 화면에 서면 모바일이 5천 픽셀이었다
+//
 // 루트 판정은 화면(lib/useLocked 'root')과 서버(/v1/admin/stats) 둘 다 한다. 화면 쪽은 막힌 요청을 안 보내려는 것이다.
 // ─────────────────────────────────────────────────────────────────────────────
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { serverApi, ApiError, type AdminStats as Stats, type StatRanked } from '../lib/serverApi';
 import { useDexSoft } from '../lib/data';
 import { routeById } from '../routes';
 import { count, DASH } from '../lib/cell';
 import { Segmented, Callout } from '../ds';
-import { DayColumns, RankTable, type RankRow } from '../components/StatChart';
+import { DayColumns, RankTable, Spark, weekTrend, trendLabel, type RankRow, type DayValue } from '../components/StatChart';
 
 // 서비스를 연 날 (한국 날짜) — '9/14부터' 는 그날부터 오늘까지의 일수로 바꿔 부른다
 const OPENED = '2026-09-14';
@@ -51,6 +58,22 @@ const PERIODS = [
   { id: '90', label: '90일' },
 ];
 
+// 구역 바로가기 — 고름 줄에 붙어 따라온다. 해시 링크는 같은 주소 안이라 라우터가 안 잡는다 (lib/nav.ts internalHref)
+const SECTIONS = [
+  { id: 'stat-glance', label: '한눈에' },
+  { id: 'stat-visits', label: '방문' },
+  { id: 'stat-views', label: '화면' },
+  { id: 'stat-search', label: '검색' },
+  { id: 'stat-users', label: '가입 · ★' },
+];
+
+// 순위(/v1/hot)의 문턱 — server/src/lib/hot.ts 와 같은 값. 검사(statcells.test.ts)가 두 쪽을 맞춘다.
+// 한 사람이 순위를 못 만들게 두 겹이다: 한 이름이 이만큼 고른 수를 넘고, 그 이름을 찾은 사람이 이만큼 되고, 그런 이름이 이만큼 있어야 표가 선다
+const HOT_MIN_HITS = 3;
+const HOT_MIN_VISITORS = 2;
+const HOT_MIN_ROWS = 3;
+const HOT_PERSON_CAP = 5;
+
 // 검색창 구분 — lib/track.ts trackSearchPick 을 부르는 자리의 이름
 const SURFACE_KO: Record<string, string> = {
   dex: '도감 검색창',
@@ -67,12 +90,27 @@ function countryName(code: string): string {
   } catch { return code; }
 }
 
-function Tile({ label, value, sub }: { label: string; value: string; sub?: string }) {
+/**
+ * 숫자 칸. `rows` 를 주면 최근 14일 작은 선과 '최근 7일 · 앞 7일 대비' 한 줄이 선다.
+ * 방문자처럼 날마다 따로 센 사람 수도 7일 합은 뜻이 있다 — "지난주보다 늘었나" 는 그 합의 방향이다
+ */
+function Tile({ label, value, sub, rows }: { label: string; value: string; sub?: string; rows?: readonly DayValue[] }) {
+  const trend = rows ? weekTrend(rows) : null;
+  const delta = trend ? trendLabel(trend) : null;
   return (
     <div className="stat-tile">
       <span className="stat-tile__label">{label}</span>
       <b className="stat-tile__value">{value}</b>
       {sub ? <span className="stat-tile__sub">{sub}</span> : null}
+      {trend && delta ? (
+        <span className="stat-tile__trend">
+          <Spark rows={rows!} />
+          <span className="stat-tile__week">
+            {`최근 7일 ${count(trend.recent)}`}
+            {delta.tone !== 'none' ? <em className={`stat-tile__delta is-${delta.tone}`}>{delta.text}</em> : null}
+          </span>
+        </span>
+      ) : null}
     </div>
   );
 }
@@ -80,12 +118,89 @@ function Tile({ label, value, sub }: { label: string; value: string; sub?: strin
 /** 받은 숫자의 시각으로 이름을 정한다 — 버튼과 요약이 같은 때를 본다 */
 const periodItems = (label: string) => PERIODS.map((one) => (one.id === 'since' ? { ...one, label } : one));
 
-const ranked = (rows: readonly StatRanked[], label: (key: string) => string): RankRow[] =>
-  rows.map((row) => ({ key: row.key, label: label(row.key), value: row.hits, sub: row.visitors }));
+const ranked = (rows: readonly StatRanked[], label: (key: string) => string, flag?: (row: StatRanked) => boolean): RankRow[] =>
+  rows.map((row) => ({ key: row.key, label: label(row.key), value: row.hits, sub: row.visitors, ...(flag?.(row) ? { flag: '문턱 ↑' } : {}) }));
+
+/** 순위 문턱을 넘은 이름 — 고른 수와 찾은 사람 둘 다 */
+export const clearsHot = (row: { hits: number; visitors: number }): boolean =>
+  row.hits >= HOT_MIN_HITS && row.visitors >= HOT_MIN_VISITORS;
+
+/**
+ * 검색 순위 준비도 — "이 검색량으로 순위를 세울 수 있나" 를 숫자로.
+ * 운영 순위는 기간이 아니라 **하루 · 이레** 창을 쓰므로, 이 기간에서 넘었다고 바로 서는 것은 아니다.
+ * 그래서 하루 창의 최소 조건(이름 셋 × 3회 = 하루 9회)과 하루 평균을 나란히 적는다.
+ * 여기 top 은 사람당 한도 없이 센 값이라 실제 문턱은 이보다 조금 더 엄격하다 — 칸에 그 말을 적는다
+ */
+export function hotReadiness(search: { hits: number; visitors: number; top: readonly StatRanked[] }, days: number): {
+  passing: number; perDay: number; dailyNeed: number; ready: boolean; dailyReady: boolean;
+} {
+  const passing = search.top.filter(clearsHot).length;
+  const perDay = days > 0 ? search.hits / days : 0;
+  const dailyNeed = HOT_MIN_ROWS * HOT_MIN_HITS;
+  return { passing, perDay, dailyNeed, ready: passing >= HOT_MIN_ROWS, dailyReady: perDay >= dailyNeed };
+}
+
+function Readiness({ search, days }: { search: Stats['search']; days: number }) {
+  const ready = hotReadiness(search, days);
+  const verdict = ready.dailyReady && ready.ready
+    ? { tone: 'good' as const, title: '하루 창 순위를 세울 만한 검색량이에요' }
+    : ready.ready
+      ? { tone: 'caution' as const, title: '이 기간 전체로는 문턱을 넘지만, 하루 창은 아직이에요' }
+      : { tone: 'info' as const, title: '아직 순위를 세울 검색량이 아니에요' };
+  return (
+    <div className="stat-ready">
+      <div className="stat-ready__head">
+        <b>검색 순위 준비도</b>
+        <span>{`운영 순위 문턱 — 한 이름 ${count(HOT_MIN_HITS)}회 이상 · 찾은 사람 ${count(HOT_MIN_VISITORS)}명 이상 · 그런 이름 ${count(HOT_MIN_ROWS)}개 · 사람당 하루 ${count(HOT_PERSON_CAP)}회까지`}</span>
+      </div>
+      <div className="stat-tiles stat-tiles--tight">
+        <Tile label="이 기간에 문턱을 넘은 이름" value={`${count(ready.passing)} / ${count(HOT_MIN_ROWS)}`}
+          sub="위 표에서 '문턱 ↑' 딱지 · 사람당 한도 없이 센 값이라 실제는 조금 더 엄격해요" />
+        <Tile label="하루 평균 고른 수" value={count(ready.perDay)}
+          sub={`하루 창 순위의 최소 조건 ${count(ready.dailyNeed)}회 (이름 ${count(HOT_MIN_ROWS)}개 × ${count(HOT_MIN_HITS)}회)`} />
+        <Tile label="하루 평균 찾은 사람" value={count(search.perDay.reduce((sum, row) => sum + row.visitors, 0) / Math.max(1, search.perDay.length))}
+          sub={`기간 전체 ${count(search.visitors)}명`} />
+      </div>
+      <Callout tone={verdict.tone} title={verdict.title}>
+        <p>{ready.dailyReady
+          ? '하루 창으로 순위를 올릴 수 있어요. 올리기 전에 /v1/hot?days=1 이 실제로 줄을 주는지 확인해요.'
+          : `하루 창은 하루 ${count(ready.dailyNeed)}회가 넘어야 시작이고, 이레 창은 그 사이 값으로 먼저 열 수 있어요. 지금은 하루 ${count(ready.perDay)}회예요.`}</p>
+      </Callout>
+    </div>
+  );
+}
+
+/**
+ * 따라오는 고름 줄이 상단 바 바로 아래에 붙게 — 바 높이는 폭마다 다르다 (실측 68 · 88 · 93px).
+ * rem 하나로 못 맞추니 바와 고름 줄을 재서 CSS 변수 둘로 준다: 줄이 붙는 자리(--stat-bar-top)와
+ * 구역 바로가기가 제목을 세울 자리(--stat-bar-h). 바가 없으면 CSS 의 기본값이 선다.
+ * `loaded` 를 받는 이유 — 받는 동안의 틀과 받은 뒤의 틀이 다른 요소라, 받은 뒤에 다시 재야 한다
+ */
+function useBarOffset(loaded: boolean) {
+  const ref = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const bar = document.querySelector('.app-bar');
+    const page = ref.current;
+    if (!bar || !page) return;
+    const measure = () => {
+      page.style.setProperty('--stat-bar-top', `${Math.round(bar.getBoundingClientRect().height)}px`);
+      const tool = page.querySelector('.stat-page__bar');
+      if (tool) page.style.setProperty('--stat-bar-h', `${Math.round(tool.getBoundingClientRect().height)}px`);
+    };
+    measure();
+    const watch = new ResizeObserver(measure);
+    watch.observe(bar);
+    const tool = page.querySelector('.stat-page__bar');
+    if (tool) watch.observe(tool);
+    return () => watch.disconnect();
+  }, [loaded]);
+  return ref;
+}
 
 export default function AdminStats() {
   const [days, setDays] = useState('since');
   const [stats, setStats] = useState<Stats | null>(null);
+  const page = useBarOffset(stats !== null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const dex = useDexSoft();
@@ -120,33 +235,49 @@ export default function AdminStats() {
 
   const { users, favorites, search, views, ga4 } = stats;
   const since = sinceLabel(Date.parse(stats.generatedAt));
+  const periodName = days === 'since' && since === '9/14부터' ? `9/14부터 ${count(stats.days)}일` : `최근 ${count(stats.days)}일`;
+  // 숫자 칸의 작은 선이 읽는 모양으로 — 칸마다 어느 수를 그리는지 여기서 보인다
+  const daily = <T extends { day: string }>(rows: readonly T[], pick: (row: T) => number): DayValue[] =>
+    rows.map((row) => ({ day: row.day, value: pick(row) }));
   return (
-    <div className={`stat-page${busy ? ' is-busy' : ''}`}>
-      {/* 고름은 한 줄, 맨 위 — 아래 모든 칸에 같이 걸린다 */}
-      <div className="stat-page__filters">
-        <Segmented label="기간" items={periodItems(since)} value={days} onPick={setDays} />
-        <button type="button" className="tool-btn" onClick={() => void load(days)} disabled={busy}>새로 받기</button>
-        <span className="stat-page__stamp">{`${stats.generatedAt.slice(0, 16).replace('T', ' ')} UTC 기준 · 운영 채널만`}</span>
+    <div ref={page} className={`stat-page${busy ? ' is-busy' : ''}`}>
+      {/* 고름은 한 줄, 맨 위 — 아래 모든 칸에 같이 걸린다. 따라오는 줄이라 어느 구역에서든 바꾼다 */}
+      <div className="stat-page__bar">
+        <div className="stat-page__filters">
+          <Segmented label="기간" items={periodItems(since)} value={days} onPick={setDays} />
+          <button type="button" className="tool-btn" onClick={() => void load(days)} disabled={busy}>새로 받기</button>
+          <span className="stat-page__stamp">{`${stats.generatedAt.slice(0, 16).replace('T', ' ')} UTC 기준 · 운영 채널만`}</span>
+        </div>
+        <nav className="stat-jump" aria-label="구역 바로가기">
+          {SECTIONS.map((one) => <a key={one.id} href={`#${one.id}`}>{one.label}</a>)}
+        </nav>
       </div>
       {error ? <Callout tone="warn" title={error} /> : null}
 
-      <section className="stat-sec">
-        <h2 className="stat-sec__title">한눈에 <small>{days === 'since' && since === '9/14부터' ? `9/14부터 ${stats.days}일` : `최근 ${stats.days}일`}</small></h2>
+      <section className="stat-sec" id="stat-glance">
+        <h2 className="stat-sec__title">한눈에 <small>{periodName}</small></h2>
         <div className="stat-tiles">
-          <Tile label="가입한 사람" value={count(users.total)} sub={`승인 대기 ${count(users.pending)} · 실험 기능 ${count(users.beta)}`} />
+          <Tile label="가입한 사람" value={count(users.total)} sub={`승인 대기 ${count(users.pending)} · 실험 기능 ${count(users.beta)}`}
+            rows={daily(users.newPerDay, (row) => row.count)} />
           <Tile label="7일 안에 로그인" value={count(users.active7d)} sub={`오늘 ${count(users.active1d)} · 30일 ${count(users.active30d)}`} />
           <Tile label="살아 있는 로그인" value={count(stats.sessions.active)} sub="만료 · 로그아웃 안 된 기기" />
           <Tile label="★ 담긴 수" value={count(favorites.total)} sub={`담은 사람 ${count(favorites.people)}`} />
-          <Tile label="검색에서 고른 수" value={count(search.hits)} sub={`찾은 사람 ${count(search.visitors)}`} />
+          <Tile label="검색에서 고른 수" value={count(search.hits)} sub={`찾은 사람 ${count(search.visitors)}`}
+            rows={daily(search.perDay, (row) => row.hits)} />
+          <Tile label="페이지뷰 (moncamp)" value={count(views.hits)} sub={`방문자 ${count(views.visitors)} · 9월 24일부터`}
+            rows={daily(views.perDay, (row) => row.hits)} />
           <Tile label="방문자 (GA4)" value={ga4.status === 'ok' ? count(ga4.users) : DASH}
             // 비율을 안 적는다 — GA4 의 '처음 온 사람'(first_visit)과 '방문자'(활성 사용자)는 세는 법이 달라 100% 를 넘는다 (운영 101명에 104명)
-            sub={ga4.status === 'ok' ? `처음 온 사람 ${count(ga4.newUsers)}` : '아래 GA4 칸 참고'} />
+            sub={ga4.status === 'ok' ? `처음 온 사람 ${count(ga4.newUsers)}` : '아래 GA4 칸 참고'}
+            rows={ga4.status === 'ok' ? daily(ga4.perDay, (row) => row.users) : undefined} />
           <Tile label="페이지뷰 (GA4)" value={ga4.status === 'ok' ? count(ga4.views) : DASH}
-            sub={ga4.status === 'ok' ? `방문 ${count(ga4.sessions)}회` : '아래 GA4 칸 참고'} />
+            sub={ga4.status === 'ok' ? `방문 ${count(ga4.sessions)}회` : '아래 GA4 칸 참고'}
+            rows={ga4.status === 'ok' ? daily(ga4.perDay, (row) => row.views) : undefined} />
         </div>
+        <p className="stat-page__note">작은 선은 최근 14일, 화살표는 최근 7일을 그 앞 7일과 견준 값이에요. 7일 창에서는 앞 7일이 없어 화살표가 안 서요.</p>
       </section>
 
-      <section className="stat-sec">
+      <section className="stat-sec" id="stat-visits">
         <h2 className="stat-sec__title">방문 <small>GA4</small></h2>
         {ga4.status === 'ok' ? (
           <>
@@ -176,7 +307,7 @@ export default function AdminStats() {
         )}
       </section>
 
-      <section className="stat-sec">
+      <section className="stat-sec" id="stat-views">
         <h2 className="stat-sec__title">화면별 페이지뷰 <small>moncamp 수집</small></h2>
         <DayColumns title="페이지뷰" unit="회" rows={views.perDay.map((row) => ({ day: row.day, value: row.hits }))}
           note="9월 24일부터 셉니다 · 화면 id 만 — 주소 · 검색어 · 상세의 포켓몬 번호는 안 받아요" />
@@ -188,12 +319,13 @@ export default function AdminStats() {
         </div>
       </section>
 
-      <section className="stat-sec">
+      <section className="stat-sec" id="stat-search">
         <h2 className="stat-sec__title">검색 <small>moncamp 수집</small></h2>
+        <Readiness search={search} days={stats.days} />
         <DayColumns title="검색에서 고른 수" unit="회" rows={search.perDay.map((row) => ({ day: row.day, value: row.hits }))} />
         <div className="stat-grid">
           <RankTable title="많이 고른 포켓몬" valueHead="고른 수" subHead="사람" empty="아직 없어요"
-            rows={ranked(search.top, (key) => key)} />
+            rows={ranked(search.top, (key) => key, clearsHot)} />
           <RankTable title="검색창" valueHead="고른 수" subHead="사람" empty="아직 없어요"
             rows={ranked(search.surfaces, (key) => SURFACE_KO[key] ?? key)} />
           <RankTable title="나라" valueHead="고른 수" subHead="사람" empty="아직 없어요"
@@ -201,7 +333,7 @@ export default function AdminStats() {
         </div>
       </section>
 
-      <section className="stat-sec">
+      <section className="stat-sec" id="stat-users">
         <h2 className="stat-sec__title">가입 · ★</h2>
         <div className="stat-grid">
           <DayColumns title="새로 가입" unit="명" rows={users.newPerDay.map((row) => ({ day: row.day, value: row.count }))} />

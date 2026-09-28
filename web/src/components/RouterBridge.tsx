@@ -10,7 +10,7 @@
 // ─────────────────────────────────────────────────────────────────────────────
 'use client';
 import { useEffect, useRef, useTransition } from 'react';
-import { useRouter } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { bindRouter, internalHref, markForward } from '../lib/nav';
 import { showVeil, settleVeil } from '../lib/veil';
 
@@ -33,9 +33,18 @@ export default function RouterBridge() {
     settleVeil();
   }, [pending]);
 
-  // 브라우저의 뒤로 · 앞으로는 전환 밖이다 — 덮고, App 의 <Settled> 가 새 화면에서 걷는다
+  // 브라우저의 뒤로 · 앞으로는 전환 밖이다 — 덮고, App 의 <Settled> 가 새 화면에서 걷는다.
+  // **해시만 바뀐 popstate 는 덮지 않는다** — `#content`(건너뛰기 링크) · `#stat-search`(구역 바로가기)처럼
+  // 같은 화면 안의 이동도 popstate 를 내는데, 화면이 안 바뀌니 <Settled> 가 새로 서지 않아 덮개가 8초 동안 갇혔다
+  // (2026-09-28 운영 통계 바로가기에서 실측). 마지막으로 선 화면의 주소를 적어 두고, 그것과 같으면 지나간다
+  const pathname = usePathname();
+  const seen = useRef('');
+  useEffect(() => { seen.current = `${window.location.pathname}${window.location.search}`; }, [pathname]);
   useEffect(() => {
-    const onPop = () => showVeil();
+    const onPop = () => {
+      if (`${window.location.pathname}${window.location.search}` === seen.current) return;
+      showVeil();
+    };
     window.addEventListener('popstate', onPop);
     return () => window.removeEventListener('popstate', onPop);
   }, []);
