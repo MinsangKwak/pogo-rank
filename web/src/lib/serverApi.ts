@@ -46,6 +46,8 @@ export interface StatEvents {
    * 없을 수 있다 — 서버는 deploy 브랜치에서만 올라가므로(deploy-server.yml) dev 화면이 옛 서버를 볼 수 있다. 화면은 없으면 없다고 적는다
    */
   hot?: StatRanked[];
+  /** 검색만 — 하루 창(/v1/hot?days=1)에서 문턱을 넘은 줄. 하루 창을 켤 수 있는지는 이것으로 본다. 옛 서버는 안 준다 */
+  hotToday?: StatRanked[];
 }
 export interface Ga4Row { key: string; views: number; users: number }
 export type Ga4Stats =
