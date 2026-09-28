@@ -36,8 +36,9 @@ const EVENT_STATS = {
     top: { type: 'array', items: RANKED },
     surfaces: { type: 'array', items: RANKED },
     countries: { type: 'array', items: RANKED },
+    hot: { type: 'array', items: RANKED, description: '검색만 — 순위와 같은 계산(사람당 한도 · 문턱)으로 고른 줄. 줄 수가 모자라도 비우지 않는다' },
   },
-  required: ['hits', 'visitors', 'perDay', 'top', 'surfaces', 'countries'],
+  required: ['hits', 'visitors', 'perDay', 'top', 'surfaces', 'countries', 'hot'],
 } as const;
 
 const GA4_ROW = { type: 'object', properties: { key: str, views: int, users: int }, required: ['key', 'views', 'users'] } as const;
