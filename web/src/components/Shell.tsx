@@ -9,6 +9,7 @@
 // 기기마다 다른 매끈한 그림이 도트 스프라이트 옆에 서서 결이 어긋난다.
 // ─────────────────────────────────────────────────────────────────────────────
 import { go, goBack } from '../lib/nav';
+import { openSearch } from '../stores/search';
 
 import { useEffect, useState, useId } from 'react';
 import { ROUTE_GROUPS, ROUTE_NAV, routeById, routeDesc, type RouteDef } from '../routes';
@@ -110,15 +111,16 @@ export function AppBar({ onMenu, home, onBack }: {
           {!home ? <span className="app-bar__name">moncamp</span> : null}
         </h1>
       </div>
+      {/* 검색칸은 팔레트를 연다 (components/SearchPalette.tsx) — 전에는 도감으로 가는 링크라 검색이 아니라 이동이었다 (2026-09-28) */}
       <button className="app-search" id="app-search" aria-label="포켓몬 검색"
-        onClick={() => { go('/dex'); }}>
+        onClick={() => { openSearch('bar'); }}>
         <span className="app-search__ico" aria-hidden="true"><PxIcon emoji="🔍" /></span>
         <span className="app-search__ph">포켓몬을 검색하세요</span>
         <kbd className="app-search__key" aria-hidden="true">/</kbd>
       </button>
       <div className="app-bar__actions">
-        <button className="icon-btn" id="search-toggle" aria-label="포켓몬 검색 — 도감으로"
-          onClick={() => { go('/dex'); }}><PxIcon emoji="🔍" /></button>
+        <button className="icon-btn" id="search-toggle" aria-label="포켓몬 검색"
+          onClick={() => { openSearch('bar'); }}><PxIcon emoji="🔍" /></button>
         <button
           className="icon-btn"
           id="theme-toggle"

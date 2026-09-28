@@ -171,6 +171,14 @@ export const I18N_PATTERNS = [
   // 2026-09-16 v3.50.0 상세 팝업 재설계 (components/detail.js)
   [/^(.+?)(?:으로|로) 돌아가기$/, 'Back to $1'],
   [/^레이드 추천 후보 — (.+) 딜러$/, 'Raid picks — $1 attackers'],
+  // 2026-09-28 검색 팔레트 · 홈 검색 칩 — '9.28–10.4 보스'
+  [/^([\d.–]+) 보스$/, '$1 bosses'],
+  // 2026-09-28 오늘의 실루엣 퀴즈 (components/DailyQuiz.tsx)
+  [/^정답! (.+)$/, 'Correct! $1'],
+  [/^(\d+)번 만에 맞혔어요$/, 'Got it in $1 tries'],
+  [/^· 🔥 (\d+)일 연속$/, '· 🔥 $1-day streak'],
+  [/^틀린 횟수 (\d+) · 힌트 (\d+)\/3$/, '$1 wrong · hints $2/3'],
+  [/^— 아니에요\. 홈의 힌트를 보고 다시 찾아보세요$/, '— not it. Check the hints on Home and try again'],
 ];
 
 // 법률·콘텐츠 화면에 띄우는 안내 (privacy.js · terms.js · release.js)
@@ -1752,4 +1760,31 @@ export const I18N_EN = {
   '원문을 그대로 옮기지 않고 요약한 글이에요. 정확한 문구는 공식 원문에서 확인해 주세요.':
     'This is our summary, not a copy of the original. Check the official source for exact wording.',
   '원문 링크가 없어요.': 'No source link.',
+  // 2026-09-28 검색 팔레트 (components/SearchPalette.tsx) · 홈 검색 (screens/Home.tsx)
+  '포켓몬 이름으로 바로 찾기': 'Find a Pokémon by name',
+  '포켓몬 이름이나 영문명': 'Pokémon name, Korean or English',
+  '검색 닫기': 'Close search',
+  '검색 결과': 'Results',
+  '최근 검색': 'Recent searches',
+  '지우기': 'Clear',
+  '이번 주 보스': "This week's bosses",
+  '맞는 포켓몬이 없어요. 다른 이름으로 찾아보세요': 'No Pokémon matches. Try another name',
+  '이름을 치면 바로 찾아요': 'Start typing to search',
+  '↑↓ 로 고르고 Enter': '↑↓ to choose, Enter to open',
+  '도감에서 필터로 찾기': 'Browse the Pokédex with filters',
+  '검색 팔레트 · 입력': 'Search palette · typed',
+  '검색 팔레트 · 최근 검색': 'Search palette · recent',
+  '검색 팔레트 · 이번 주 보스': "Search palette · this week's bosses",
+  '홈 · 이번 주 보스 칩': "Home · this week's boss chips",
+  // 2026-09-28 오늘의 실루엣 퀴즈
+  '오늘의 실루엣 퀴즈': "Today's silhouette quiz",
+  '이 포켓몬은 누구일까요?': 'Which Pokémon is this?',
+  '이름을 검색해서 맞혀 보세요': 'Search its name to answer',
+  '한 번에 맞혔어요': 'Got it first try',
+  '내일 새 문제가 나와요': 'A new one tomorrow',
+  '정답 맞히기': 'Take a guess',
+  '힌트': 'Hints',
+  '도감 번호': 'Dex number',
+  '첫 글자': 'First letter',
+  '오늘의 실루엣 — 이름을 검색해서 고르면 정답을 확인해요': "Today's silhouette — search a name and pick it to check your answer",
 };

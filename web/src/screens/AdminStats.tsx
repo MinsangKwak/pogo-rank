@@ -81,6 +81,10 @@ const SURFACE_KO: Record<string, string> = {
   solo_deck: '솔플 계산기 · 덱',
   pvp_deck: 'PvP 덱 짜기',
   iv_rank: 'PvP 개체값 순위',
+  palette: '검색 팔레트 · 입력',
+  palette_recent: '검색 팔레트 · 최근 검색',
+  palette_boss: '검색 팔레트 · 이번 주 보스',
+  home_chip: '홈 · 이번 주 보스 칩',
 };
 
 function countryName(code: string): string {
