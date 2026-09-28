@@ -41,6 +41,11 @@ export interface StatEvents {
   top: StatRanked[];
   surfaces: StatRanked[];
   countries: StatRanked[];
+  /**
+   * 검색만 — 순위(/v1/hot)와 같은 계산으로 문턱을 넘은 줄. 페이지뷰는 비어 있다.
+   * 없을 수 있다 — 서버는 deploy 브랜치에서만 올라가므로(deploy-server.yml) dev 화면이 옛 서버를 볼 수 있다. 화면은 없으면 없다고 적는다
+   */
+  hot?: StatRanked[];
 }
 export interface Ga4Row { key: string; views: number; users: number }
 export type Ga4Stats =

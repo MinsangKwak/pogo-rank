@@ -64,3 +64,5 @@ import './styles/cinema/journal.css';
 import './styles/cinema/schedule.css';
 import './styles/cinema/interior.css';
 import './styles/cinema/modal.css';
+import './styles/cinema/palette.css';
+import './styles/cinema/quiz.css';

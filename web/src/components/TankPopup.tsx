@@ -92,6 +92,12 @@ export const NOV_TANK: {
   },
 };
 
+/**
+ * 팝업과 홈 안내 띠를 세울지. 2026-09-28 주인 결정으로 **당분간 내린다** — 홈 첫 화면에 실루엣 퀴즈 배너가 서면서
+ * 알림이 둘이 되었다. 되살릴 때는 이 값만 켠다. 저장 키(pogo_novtank_*)와 판정 함수는 그대로다
+ */
+export const NOV_TANK_LIVE = false;
+
 export const HIDE_KEY = 'pogo_novtank_hide';
 export const SEEN_KEY = 'pogo_novtank_seen';
 
@@ -294,6 +300,7 @@ export function TankPopup({ onOpen, onClose, onHide }: { onOpen: OpenMon; onClos
 export function TankPopupEntry({ onOpen, compact = false }: { onOpen: OpenMon; compact?: boolean }) {
   const { route } = useRoute();
   const [open, setOpen] = useState(() => {
+    if (!NOV_TANK_LIVE) return false;
     try { return autoOpenHere(route.id, localStorage.getItem(HIDE_KEY), sessionStorage.getItem(SEEN_KEY), todayKey()); }
     catch { return false; }
   });
