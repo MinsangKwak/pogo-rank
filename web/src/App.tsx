@@ -165,12 +165,16 @@ export default function App({ seo }: AppProps = {}) {
   // [스프라이트, 영문명]. 영문명은 **연 쪽이 들고 있던 것**만 넘긴다 —
   // v3 도 순위표 줄에서 열면 이름 아래에 Melmetal 이 서고, 도감에서 열면 서지 않는다
   const [detail, setDetail] = useState<MonPick | null>(null);
+  // 팝업은 열 때마다 새로 선다 — MonDetail 은 처음 받은 pick 을 state 로 잡아 두므로(useState(start)), 열린 팝업 위에서
+  // 팔레트로 다른 포켓몬을 고르면 prop 만 바뀌고 화면은 옛 포켓몬이었다 (Codex, PR #229). 번호가 같은 것을 다시 골라도 새로 선다
+  const [detailSeq, setDetailSeq] = useState(0);
   // 상세 본문(/mon/25) 위에서 팝업을 열면 주소를 팝업의 것으로 바꾼다 — 닫을 때 **원래 주소로** 되돌리려고 적어 둔다.
   // 전에는 홈('/')으로 돌렸다: 본문은 25 인데 주소가 '/' 라 새로고침하면 홈이 섰다 (Codex, PR #225 — 배너 · 팔레트가 어느 화면에서든 열게 되며 드러났다)
   const returnTo = useRef<string | null>(null);
   const openMon: OpenMon = (pick) => {
     const sprite = pick.sprite;
     setDetail(pick);
+    setDetailSeq((now) => now + 1);
     track('detail_open', { sprite });
     // 주소를 상세로 바꿔 두는 것은 **홈(과 상세) 위에서만** 이다 (v3 detailSyncHash 의 규칙).
     //   목록 위에서 바꾸면 뒤에 깔린 화면이 그 목록에서 홈으로 갈리고, ✕ 를 눌러도 목록으로 못 돌아온다.
@@ -307,7 +311,7 @@ export default function App({ seo }: AppProps = {}) {
       </div>
       <DataBoundary>
         <Suspense fallback={null}>
-          {detail === null ? null : <MonDetail pick={detail} onClose={closeMon} />}
+          {detail === null ? null : <MonDetail key={detailSeq} pick={detail} onClose={closeMon} />}
         </Suspense>
       </DataBoundary>
       {/* 검색 팔레트 — 어느 화면에서든 / · Ctrl+K · 상단 바 · 홈 단추로 뜬다. 고르면 위의 상세 팝업이 연다 */}

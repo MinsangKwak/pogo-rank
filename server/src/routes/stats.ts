@@ -37,8 +37,9 @@ const EVENT_STATS = {
     surfaces: { type: 'array', items: RANKED },
     countries: { type: 'array', items: RANKED },
     hot: { type: 'array', items: RANKED, description: '검색만 — 순위와 같은 계산(사람당 한도 · 문턱)으로 고른 줄. 줄 수가 모자라도 비우지 않는다' },
+    hotToday: { type: 'array', items: RANKED, description: '검색만 — 하루 창(/v1/hot?days=1 과 같은 계산)에서 문턱을 넘은 줄. 하루 창 순위를 켤 수 있는지는 이 줄 수로 본다' },
   },
-  required: ['hits', 'visitors', 'perDay', 'top', 'surfaces', 'countries', 'hot'],
+  required: ['hits', 'visitors', 'perDay', 'top', 'surfaces', 'countries', 'hot', 'hotToday'],
 } as const;
 
 const GA4_ROW = { type: 'object', properties: { key: str, views: int, users: int }, required: ['key', 'views', 'users'] } as const;

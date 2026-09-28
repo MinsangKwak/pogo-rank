@@ -94,17 +94,20 @@ describe('검색 순위 준비도 — 문턱은 서버(lib/hot.ts)와 같은 값
   it('문턱을 넘은 이름 수는 서버가 순위 계산으로 고른 hot 의 줄 수 · 하루 평균 · 판정', async () => {
     const { hotReadiness } = await import('../screens/AdminStats');
     const hot = [{ key: 'a', hits: 14, visitors: 6 }, { key: 'd', hits: 3, visitors: 2 }];
-    const ready = hotReadiness({ hits: 118, visitors: 23, hot }, 15);
+    const ready = hotReadiness({ hits: 118, visitors: 23, hot, hotToday: [] }, 15);
     expect(ready.passing).toBe(2);
+    expect(ready.passingToday).toBe(0);
     expect(ready.dailyNeed).toBe(9);
     expect(ready.ready).toBe(false);
     expect(ready.dailyReady).toBe(false);
-    // 하루 9회를 넘어도 이름이 셋이 안 되면 ready 가 아니다 — 성공 문구는 둘 다 봐야 한다
-    expect(hotReadiness({ hits: 300, visitors: 40, hot }, 15)).toMatchObject({ passing: 2, ready: false, dailyReady: true });
-    expect(hotReadiness({ hits: 300, visitors: 40, hot: [...hot, { key: 'e', hits: 5, visitors: 3 }] }, 15)).toMatchObject({ passing: 3, ready: true, dailyReady: true });
-    expect(hotReadiness({ hits: 0, visitors: 0, hot: [] }, 0).perDay).toBe(0);
-    // 옛 서버(hot 없음) — 0 이 아니라 모른다
+    // 하루 창 판정은 하루 창의 실제 줄 수다 — 기간 줄 수 · 하루 평균이 높아도 오늘 셋을 못 채우면 아니다 (Codex #229)
+    const three = [...hot, { key: 'e', hits: 5, visitors: 3 }];
+    expect(hotReadiness({ hits: 300, visitors: 40, hot: three, hotToday: hot }, 15)).toMatchObject({ passing: 3, ready: true, dailyReady: false });
+    expect(hotReadiness({ hits: 300, visitors: 40, hot: three, hotToday: three }, 15)).toMatchObject({ passing: 3, passingToday: 3, ready: true, dailyReady: true });
+    expect(hotReadiness({ hits: 0, visitors: 0, hot: [], hotToday: [] }, 0).perDay).toBe(0);
+    // 옛 서버(hot · hotToday 없음) — 0 이 아니라 모른다
     expect(hotReadiness({ hits: 118, visitors: 23 }, 15)).toMatchObject({ known: false, passing: 0, ready: false });
-    expect(hotReadiness({ hits: 118, visitors: 23, hot }, 15).known).toBe(true);
+    expect(hotReadiness({ hits: 118, visitors: 23, hot }, 15).known).toBe(false);
+    expect(hotReadiness({ hits: 118, visitors: 23, hot, hotToday: [] }, 15).known).toBe(true);
   });
 });
