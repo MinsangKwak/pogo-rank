@@ -25,6 +25,7 @@ import { takeForward } from './lib/nav';
 import { trackPageView, track } from './lib/track';
 import { collectView } from './lib/collect';
 import type { RouteDef } from './routes';
+import { routeById } from './routes';
 // **홈과 상세만 정적이다.** 둘은 각자 주소의 첫 화면이라, 쪼개면 열자마자 한 번 더
 // 받으러 가야 한다. 나머지는 어느 주소에서도 첫 화면이 아니므로 첫 번들에 있을 이유가 없다 —
 // 넣어 두면 홈만 보려는 사람이 도감·티어표·일정 코드까지 내려받고 해석한다
@@ -200,7 +201,10 @@ export default function App({ seo }: AppProps = {}) {
     if (route.id === 'home') body['home'] = 'true'; else delete body['home'];
     // 루트 화면은 세지 않는다 — 운영자 자신이 보는 것이라 이용 현황이 아니고, 있다는 것도 남기지 않는다
     if ('root' in route && route.root) return;
-    trackPageView(route.title ?? route.nav ?? route.id);
+    // 자식 화면은 부모를 앞에 붙인다 — '덱 짜기' 가 D-MAX · PvP 둘이라 제목 보고서에서 한 줄로 합쳐졌다 (주소는 원래 다르다)
+    const own = route.title ?? route.nav ?? route.id;
+    const parent = route.parent ? routeById(route.parent) : undefined;
+    trackPageView(parent ? `${parent.title ?? parent.nav ?? parent.id} · ${own}` : own);
     track('route_view', { route: route.id });
     // 우리 수집기에도 화면 id 하나 (lib/collect.ts)
     collectView(route.id);
