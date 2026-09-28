@@ -176,3 +176,11 @@ html body #root .drawer__panel .drawer__meta { margin-top: 1.2rem; padding-top: 
  html body #root .drawer__panel .drawer__item { padding: 1.2rem; }
  html body #root .drawer__panel .nav-menu__sec { margin-top: 1.2rem; }
 }
+
+/* ── 모바일 확대 막기 (2026-09-28 제보) ──────────────────────────────────── */
+/* 두 번 탭이 확대로 잡히지 않게 — v3 app-shell.css 는 button 에만 두었고 링크 · 요약줄 · 입력칸이 빠져 있었다 */
+html body #root :is(a, button, summary, label, input, select, textarea, [role=button]) { touch-action: manipulation; }
+/* iOS 는 글자가 16px 보다 작은 입력칸에 초점이 가면 화면을 키운다 — 손 화면의 입력칸은 1.6rem 으로 (Pretendard 격자 안) */
+@media (max-width: 999px) {
+  html body #root :is(input:not([type=checkbox], [type=radio], [type=range]), select, textarea) { font-size: 1.6rem; }
+}
