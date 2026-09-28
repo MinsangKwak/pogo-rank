@@ -5,7 +5,7 @@
 
 [서비스](https://moncamp.kr/) · [개발 미리보기](https://dev.moncamp.kr/) · [개발 가이드](docs/DEVELOPMENT.md) · [변경 이력](docs/CHANGELOG.md)
 
-> 문서 기준: 2026-09-26, **v5.3.0**. 현재 앱은 `web/`의 Next.js입니다. `frontend-v4/`는 이전 Vite 앱이며, 데이터 추출 도구와 Storybook에 계속 사용합니다.
+> 문서 기준: 2026-09-28, **v5.4.0**. 현재 앱은 `web/`의 Next.js입니다. `frontend-v4/`는 이전 Vite 앱이며, 데이터 추출 도구와 Storybook에 계속 사용합니다.
 
 ## 프로젝트 한눈에 보기
 
@@ -127,6 +127,13 @@ PvP 순위는 PvPoke, 게임 수치는 PokeMiners, 한국어 명칭은 PokeAPI, 
 | 변경 제안·보안·권리 | [기여 안내](.github/CONTRIBUTING.md) · [보안 정책](.github/SECURITY.md) · [저작물 고지](docs/NOTICE.md) |
 
 ## 최근 릴리스
+
+<details>
+<summary><b>2026-09-28</b> — 릴리스 1개 · <code>v5.4.0</code></summary>
+
+어느 화면에서든 뜨는 검색 팔레트와 오늘의 실루엣 퀴즈 배너를 넣고, 첫 화면 로딩 덮개 · 모바일 확대 차단 · 영문 문구를 정리했습니다. 루트 관리자의 운영 통계에 검색 순위 준비도가 생겼습니다. 상세 변경과 이전 버전 기록은 [CHANGELOG](docs/CHANGELOG.md)에서 확인하세요.
+
+</details>
 
 <details>
 <summary><b>2026-09-26</b> — 릴리스 1개 · <code>v5.3.0</code></summary>

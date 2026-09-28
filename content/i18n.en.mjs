@@ -1790,4 +1790,5 @@ export const I18N_EN = {
   '오늘의 퀴즈 접기': "Hide today's quiz",
   '누구일까요?': 'Who is it?',
   '검색해서 맞히기': 'Search to answer',
+  '실루엣 퀴즈 · 추측': 'Silhouette quiz · guesses',
 };
