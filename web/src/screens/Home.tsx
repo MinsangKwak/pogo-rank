@@ -23,10 +23,9 @@ import type { GameUpdate } from '../types/data';
 import { track, trackSearchPick } from '../lib/track';
 import { openSearch } from '../stores/search';
 import { useWeekBosses } from '../lib/weekBosses';
-import DailyQuiz from '../components/DailyQuiz';
 import { UPDATE_CATS } from '../lib/notes';
 import type { OpenMon } from '../lib/mon';
-import { TankPopupEntry } from '../components/TankPopup';
+import { TankPopupEntry, NOV_TANK_LIVE } from '../components/TankPopup';
 
 // 대표 일러스트 — 머리에서 미리 받는 그 그림 (app/page.tsx 의 preload 와 같은 파일)
 const HERO_ART_ENTRY = MAX_ART.find((art) => art.dex.includes(816))!;
@@ -244,7 +243,6 @@ export default function Home({ onOpen }: { onOpen: OpenMon }) {
           <h2>내 포켓몬의 다음 배틀,<br /><em>여기서 준비하세요.</em></h2>
           <p>포켓몬 정보와 배틀별 추천을 한눈에.<br />처음이라면 도감부터, 배틀을 앞뒀다면 추천부터 살펴보세요.</p>
           <HomeSearch onOpen={onOpen} />
-          <DailyQuiz onOpen={onOpen} />
         </div>
         {/* 배너 — 남은 맥스 일정이 한 장씩 넘어간다. 모든 장이 대표 일러스트와 같은 구도다 (components/MaxPoster.tsx).
             거다이맥스 폼 그림(max.json)까지 온 뒤에 굴린다 — 먼저 굴리면 보스 그림이 도중에 바뀐다 */}
@@ -343,7 +341,8 @@ function HomeData({ onOpen }: { onOpen: OpenMon }) {
           <span className="portal-shortcut__go" aria-hidden="true">↗</span>
         </a>
       </div>
-      <div className="portal-prep-note"><TankPopupEntry onOpen={onOpen} compact /></div>
+      {/* 11월 탱커 준비 띠 — 당분간 내렸다 (NOV_TANK_LIVE). 실루엣 퀴즈 배너가 위에 서면서 알림이 둘이 되었다 */}
+      {NOV_TANK_LIVE ? <div className="portal-prep-note"><TankPopupEntry onOpen={onOpen} compact /></div> : null}
 
       <section className="home__features" aria-label="서비스 기능">
         <div className="home__section">

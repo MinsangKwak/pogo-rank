@@ -78,6 +78,8 @@ export interface QuizRecord {
   streak: number;
   /** 마지막으로 맞힌 날 */
   lastSolved: string;
+  /** 배너를 ✕ 로 접은 날 — 그날만 안 보인다. 없으면 빈 글자 */
+  hiddenDay?: string;
 }
 
 export const QUIZ_KEY = 'pogo_quiz';
@@ -107,6 +109,10 @@ export function solveRecord(record: QuizRecord): QuizRecord {
 }
 
 export const missRecord = (record: QuizRecord): QuizRecord => (record.solved ? record : { ...record, misses: record.misses + 1 });
+
+/** 배너를 오늘 하루 접는다 — 내일은 다시 선다 (새 문제니까) */
+export const hideRecord = (record: QuizRecord): QuizRecord => ({ ...record, hiddenDay: record.day });
+export const isHidden = (record: QuizRecord): boolean => record.hiddenDay === record.day;
 
 const isRecord = (value: unknown): value is QuizRecord => {
   const one = value as QuizRecord | null;

@@ -14,7 +14,7 @@
 // <Suspense> 를 한 곳에 두는 이유 — 화면마다 `if (isLoading)` 분기를 두면
 // 그 분기가 곧 빠뜨리는 자리가 된다. 데이터 기다림은 경계 하나가 맡는다.
 // ─────────────────────────────────────────────────────────────────────────────
-import { Suspense, lazy, startTransition, useCallback, useEffect, useState, type ReactNode } from 'react';
+import { Suspense, lazy, startTransition, useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
 import { DataBoundary } from './components/DataBoundary';
 import { AppBar, AppNav, Drawer, Footer, PageHead, ToTop } from './components/Shell';
 import { SlotProvider } from './components/Slots';
@@ -26,6 +26,7 @@ import { trackPageView, track } from './lib/track';
 import { collectView } from './lib/collect';
 import { settleVeilAfterFonts } from './lib/veil';
 import SearchPalette from './components/SearchPalette';
+import QuizBanner from './components/QuizBanner';
 import { useSearchStore } from './stores/search';
 import type { RouteDef } from './routes';
 import { routeById } from './routes';
@@ -164,6 +165,9 @@ export default function App({ seo }: AppProps = {}) {
   // [스프라이트, 영문명]. 영문명은 **연 쪽이 들고 있던 것**만 넘긴다 —
   // v3 도 순위표 줄에서 열면 이름 아래에 Melmetal 이 서고, 도감에서 열면 서지 않는다
   const [detail, setDetail] = useState<MonPick | null>(null);
+  // 상세 본문(/mon/25) 위에서 팝업을 열면 주소를 팝업의 것으로 바꾼다 — 닫을 때 **원래 주소로** 되돌리려고 적어 둔다.
+  // 전에는 홈('/')으로 돌렸다: 본문은 25 인데 주소가 '/' 라 새로고침하면 홈이 섰다 (Codex, PR #225 — 배너 · 팔레트가 어느 화면에서든 열게 되며 드러났다)
+  const returnTo = useRef<string | null>(null);
   const openMon: OpenMon = (pick) => {
     const sprite = pick.sprite;
     setDetail(pick);
@@ -172,13 +176,19 @@ export default function App({ seo }: AppProps = {}) {
     //   목록 위에서 바꾸면 뒤에 깔린 화면이 그 목록에서 홈으로 갈리고, ✕ 를 눌러도 목록으로 못 돌아온다.
     //   기록에 쌓지 않고 바꿔치기한다 — ✕ 한 번으로 닫혀야 한다
     if (route.id === 'home' || route.id === 'mon') {
+      if (route.id === 'mon' && returnTo.current === null) returnTo.current = `${location.pathname}${location.search}`;
       try { history.replaceState(history.state, '', `/mon/${sprite}`); } catch { /* 파일 프로토콜 등 */ }
     }
   };
   const closeMon = () => {
     setDetail(null);
-    // 상세 주소에서 닫으면 홈으로 — 그 자리에 남기면 새로고침에 팝업이 되살아난다
-    if (location.pathname.startsWith('/mon/')) { try { history.replaceState(history.state, '', '/'); } catch { /* 위와 같다 */ } }
+    // 상세 주소에서 닫으면 원래 자리로 — 홈에서 열었으면 '/', 상세 본문 위에서 열었으면 그 본문의 주소.
+    // 팝업 주소에 남기면 새로고침에 팝업이 되살아난다
+    if (location.pathname.startsWith('/mon/')) {
+      const back = returnTo.current ?? '/';
+      returnTo.current = null;
+      try { history.replaceState(history.state, '', back); } catch { /* 위와 같다 */ }
+    }
   };
 
   // 주소가 바뀌면 팝업도 따라간다.
@@ -189,7 +199,7 @@ export default function App({ seo }: AppProps = {}) {
   // 화면을 옮기면 팝업은 닫는다. **주소가 /mon/… 이면 본문이 상세이므로 팝업을 안 띄운다** —
   // 안 닫으면 <dialog> 가 새 화면 위에 그대로 떠서 아무 데도 눌리지 않는다
   // (메뉴로 검색식 화면에 갔는데 클릭이 안 먹어 찾았다)
-  useEffect(() => { setDetail(null); }, [route, rest]);
+  useEffect(() => { setDetail(null); returnTo.current = null; }, [route, rest]);
   // 화면을 옮기면 열려 있던 팝업·서랍은 닫는다 — <dialog> 가 새 화면 위에 그대로 떠 있으면
   // 아무 데도 눌리지 않는다 (상세 팝업에서 같은 자리를 이미 한 번 겪었다)
   useEffect(() => { setConsentOpen(false); setMenuOpen(false); closeInvite(); useSearchStore.getState().hide(); }, [route, rest, closeInvite]);
@@ -258,6 +268,8 @@ export default function App({ seo }: AppProps = {}) {
         onBack={onDetail ? closeMon : undefined} />
       <AppNav now={route.id} onConsent={() => setConsentOpen(true)} />
 
+      {/* 오늘의 실루엣 퀴즈 — 어느 화면이든 상단 바 아래 한 줄. 화면 머리보다 위다 (2026-09-28 주인 결정: 배너로, 전체에) */}
+      <QuizBanner onOpen={openMon} />
       {/* 홈에는 화면 머리가 없다 — 제목이 히어로 안에 있다 (v3 syncAppShell 과 같은 규칙) */}
       {home || hideHead ? null : <PageHead route={route} actionsRef={setActionsEl} />}
 

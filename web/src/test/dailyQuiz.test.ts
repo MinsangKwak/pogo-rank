@@ -1,7 +1,7 @@
 'use strict';
 // 오늘의 실루엣 퀴즈 — 같은 날은 같은 문제, 힌트는 틀린 만큼, 연속 기록은 어제와만 잇는다 (lib/dailyQuiz.ts)
 import { describe, it, expect } from 'vitest';
-import { kstDayKey, pickDaily, quizPool, dexBand, quizHints, isAnswer, rollRecord, solveRecord, missRecord, freshRecord, readRecord, QUIZ_KEY } from '../lib/dailyQuiz';
+import { kstDayKey, pickDaily, quizPool, dexBand, quizHints, isAnswer, rollRecord, solveRecord, missRecord, hideRecord, isHidden, freshRecord, readRecord, QUIZ_KEY } from '../lib/dailyQuiz';
 
 const pool = quizPool(
   { '1': '이상해씨', '25': '피카츄', '150': '뮤츠', '10001': '메가 리자몽', '493': '아르세우스' },
@@ -64,6 +64,12 @@ describe('기록', () => {
     expect(solveRecord(solved)).toBe(solved);
     expect(missRecord(solved)).toBe(solved);
     expect(solveRecord(freshRecord('2026-09-28')).streak).toBe(1);
+  });
+  it('배너를 접으면 그날만 — 날이 바뀌면 다시 선다', () => {
+    const hidden = hideRecord(freshRecord('2026-09-28'));
+    expect(isHidden(hidden)).toBe(true);
+    expect(isHidden(rollRecord(hidden, '2026-09-29'))).toBe(false);
+    expect(isHidden(freshRecord('2026-09-28'))).toBe(false);
   });
   it('깨진 저장값은 없는 것으로', () => {
     expect(readRecord({ getItem: () => 'nope' })).toBeNull();
