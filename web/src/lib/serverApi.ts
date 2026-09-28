@@ -41,6 +41,8 @@ export interface StatEvents {
   top: StatRanked[];
   surfaces: StatRanked[];
   countries: StatRanked[];
+  /** 검색만 — 순위(/v1/hot)와 같은 계산으로 문턱을 넘은 줄. 페이지뷰는 비어 있다 */
+  hot: StatRanked[];
 }
 export interface Ga4Row { key: string; views: number; users: number }
 export type Ga4Stats =

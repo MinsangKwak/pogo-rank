@@ -36,10 +36,15 @@ export interface HotOptions {
   country?: string | undefined;
   /** 문턱을 적용할지. 운영 화면은 켜고, 관리자 진단은 끈다 */
   threshold?: boolean;
+  /**
+   * 문턱을 넘은 줄이 MIN_ROWS 에 못 미치면 표를 통째로 비울지. 운영 화면은 비운다(두 줄짜리 순위는 순위가 아니다).
+   * 관리자 통계의 '순위 준비도' 는 "지금 두 개 넘었다" 를 보여야 하므로 비우지 않는다 (2026-09-28)
+   */
+  fold?: boolean;
 }
 
 export async function hotRows(sql: Sql, options: HotOptions): Promise<HotRow[]> {
-  const { days, limit, country, threshold = true } = options;
+  const { days, limit, country, threshold = true, fold = true } = options;
   const narrow = country ? sql`and country = ${country}` : sql``;
   // capped: **날 · 사람 · 말** 단위로 먼저 묶어 한도를 건 뒤에 합친다.
   //
@@ -75,7 +80,7 @@ export async function hotRows(sql: Sql, options: HotOptions): Promise<HotRow[]> 
     order by hits desc, term asc
     limit ${limit}
   `;
-  if (!threshold) return rows;
+  if (!threshold || !fold) return rows;
   // 줄이 모자라면 **빈 표**를 준다. 화면은 표가 비면 구역 자체를 안 그린다 (v4.6.0 과 같은 약속)
   return rows.length >= MIN_ROWS ? rows : [];
 }

@@ -91,16 +91,17 @@ describe('검색 순위 준비도 — 문턱은 서버(lib/hot.ts)와 같은 값
       expect(screen).toContain(`const ${mine} = ${value};`);
     }
   });
-  it('문턱을 넘은 이름 수 · 하루 평균 · 판정', async () => {
-    const { hotReadiness, clearsHot } = await import('../screens/AdminStats');
-    const top = [{ key: 'a', hits: 14, visitors: 6 }, { key: 'b', hits: 3, visitors: 1 }, { key: 'c', hits: 2, visitors: 2 }, { key: 'd', hits: 3, visitors: 2 }];
-    expect(top.map(clearsHot)).toEqual([true, false, false, true]);
-    const ready = hotReadiness({ hits: 118, visitors: 23, top }, 15);
+  it('문턱을 넘은 이름 수는 서버가 순위 계산으로 고른 hot 의 줄 수 · 하루 평균 · 판정', async () => {
+    const { hotReadiness } = await import('../screens/AdminStats');
+    const hot = [{ key: 'a', hits: 14, visitors: 6 }, { key: 'd', hits: 3, visitors: 2 }];
+    const ready = hotReadiness({ hits: 118, visitors: 23, hot }, 15);
     expect(ready.passing).toBe(2);
     expect(ready.dailyNeed).toBe(9);
     expect(ready.ready).toBe(false);
     expect(ready.dailyReady).toBe(false);
-    expect(hotReadiness({ hits: 300, visitors: 40, top: [...top, { key: 'e', hits: 5, visitors: 3 }] }, 15)).toMatchObject({ passing: 3, ready: true, dailyReady: true });
-    expect(hotReadiness({ hits: 0, visitors: 0, top: [] }, 0).perDay).toBe(0);
+    // 하루 9회를 넘어도 이름이 셋이 안 되면 ready 가 아니다 — 성공 문구는 둘 다 봐야 한다
+    expect(hotReadiness({ hits: 300, visitors: 40, hot }, 15)).toMatchObject({ passing: 2, ready: false, dailyReady: true });
+    expect(hotReadiness({ hits: 300, visitors: 40, hot: [...hot, { key: 'e', hits: 5, visitors: 3 }] }, 15)).toMatchObject({ passing: 3, ready: true, dailyReady: true });
+    expect(hotReadiness({ hits: 0, visitors: 0, hot: [] }, 0).perDay).toBe(0);
   });
 });
