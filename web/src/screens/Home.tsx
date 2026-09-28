@@ -111,7 +111,7 @@ function HomeSearch({ onOpen }: { onOpen: OpenMon }) {
           <span className="home__search-label">{week.label}</span>
           {week.bosses.map((boss) => (
             <button key={boss.name} type="button" className="home__chip"
-              onClick={() => { trackSearchPick(boss.name, 'home_chip'); onOpen({ sprite: boss.sprite, name: boss.name, types: boss.types }); }}>
+              onClick={() => { trackSearchPick(boss.name, 'home_chip'); onOpen({ sprite: boss.sprite, name: boss.detailName, types: boss.types }); }}>
               <img className="home__chip-sprite" src={`${BASE}sprites/${boss.sprite}.png`} alt="" width="24" height="24" loading="lazy" decoding="async" />
               {boss.name}
             </button>

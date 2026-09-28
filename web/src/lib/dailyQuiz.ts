@@ -57,10 +57,14 @@ export function quizHints(mon: QuizMon, misses: number): { kind: 'type' | 'band'
   return all.slice(0, Math.max(0, Math.min(all.length, misses)));
 }
 
-/** 정답 판정 — 폼 이름('메가 리자몽')으로 맞혀도 기본 종이 같으면 정답. 공백을 무시한다 */
-export function isAnswer(mon: QuizMon, guess: { sprite: number; name: string }): boolean {
-  const norm = (text: string) => text.replace(/\s/g, '');
-  return guess.sprite === mon.sprite || norm(guess.name).endsWith(norm(mon.name));
+/**
+ * 정답 판정 — **종 번호**가 같아야 한다. 팔레트의 후보는 기본 종(1~9999)뿐이라 번호가 곧 종이다.
+ * 이름 꼬리 비교('…콘치')는 안 한다 — '왕콘치' 가 '콘치' 를 맞혔다 (Codex, PR #224).
+ * 폼(메가 · 섀도우)으로 맞히려면 `baseOf` 로 그 폼의 기본 종 번호를 알려 준다 (도감 dex 표)
+ */
+export function isAnswer(mon: QuizMon, guess: { sprite: number }, baseOf?: (sprite: number) => number | undefined): boolean {
+  if (guess.sprite === mon.sprite) return true;
+  return guess.sprite >= 10000 && baseOf?.(guess.sprite) === mon.sprite;
 }
 
 export interface QuizRecord {

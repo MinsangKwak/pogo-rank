@@ -185,7 +185,7 @@ function Palette({ onOpen, onClose }: { onOpen: OpenMon; onClose: () => void }) 
                   <h3 className="palette__head">{week.label}</h3>
                   <div className="palette__chips">
                     {week.bosses.map((boss) => (
-                      <button key={boss.name} type="button" className="palette__chip" onClick={() => pick({ sprite: boss.sprite, name: boss.name, en: '', types: boss.types }, 'palette_boss')}>
+                      <button key={boss.name} type="button" className="palette__chip" onClick={() => pick({ sprite: boss.sprite, name: boss.detailName, en: '', types: boss.types }, 'palette_boss')}>
                         {sprite(boss.sprite)}{boss.name}
                       </button>
                     ))}

@@ -8,7 +8,7 @@
 // 문제는 도감 이름표만 있으면 정한다(useDexSoft) — 데이터를 기다리는 동안은 카드 자체를 안 그린다.
 // 한 사람이 몇 번을 열어도 오늘 문제는 하나다 (lib/dailyQuiz.ts pickDaily)
 // ─────────────────────────────────────────────────────────────────────────────
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useDexSoft } from '../lib/data';
 import { BASE } from '../lib/base';
 import { kstDayKey, pickDaily, quizHints, quizPool } from '../lib/dailyQuiz';
@@ -25,9 +25,18 @@ export default function DailyQuiz({ onOpen }: { onOpen: OpenMon }) {
   const record = useQuizStore((s) => s.record);
   const setTarget = useQuizStore((s) => s.setTarget);
   const load = useQuizStore((s) => s.load);
-  const target = useMemo(() => (dex ? pickDaily(quizPool(dex.DEX_DATA.names, dex.DEX_DATA.forms), kstDayKey()) : null), [dex]);
-  // 저장소는 붙은 뒤에 읽는다 — 서버 그림과 첫 그림이 같아야 한다(하이드레이션)
-  useEffect(() => { load(); }, [load]);
+  // 오늘은 state 다 — 탭을 한국 자정 넘게 열어 두면 문제와 기록이 어제 것으로 남아, 오늘 문제가 안 풀고도 풀린 채로 섰다
+  // (Codex, PR #224). 1분마다 · 탭에 돌아올 때 날짜를 다시 본다
+  const [day, setDay] = useState(() => kstDayKey());
+  useEffect(() => {
+    const check = () => setDay((now) => { const next = kstDayKey(); return next === now ? now : next; });
+    const timer = setInterval(check, 60_000);
+    document.addEventListener('visibilitychange', check);
+    return () => { clearInterval(timer); document.removeEventListener('visibilitychange', check); };
+  }, []);
+  const target = useMemo(() => (dex ? pickDaily(quizPool(dex.DEX_DATA.names, dex.DEX_DATA.forms), day) : null), [dex, day]);
+  // 저장소는 붙은 뒤에 읽는다 — 서버 그림과 첫 그림이 같아야 한다(하이드레이션). 날이 바뀌어도 다시 굴린다
+  useEffect(() => { load(); }, [load, day]);
   useEffect(() => { setTarget(target); }, [target, setTarget]);
   if (!dex || !target) return null;
 

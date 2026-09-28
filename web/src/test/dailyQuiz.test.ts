@@ -37,11 +37,14 @@ describe('힌트 · 정답', () => {
     expect(dexBand(100)).toBe('#1~100');
     expect(dexBand(101)).toBe('#101~200');
   });
-  it('번호가 같거나 폼 이름이 기본 종으로 끝나면 정답', () => {
-    expect(isAnswer(mutu, { sprite: 150, name: '뮤츠' })).toBe(true);
-    expect(isAnswer(mutu, { sprite: 10150, name: '메가 뮤츠 Y' })).toBe(false);
-    expect(isAnswer(mutu, { sprite: 10150, name: '메가 뮤츠' })).toBe(true);
-    expect(isAnswer(mutu, { sprite: 151, name: '뮤' })).toBe(false);
+  it('종 번호가 같아야 정답 — 이름 꼬리가 같은 다른 종(왕콘치 · 콘치)은 아니다', () => {
+    expect(isAnswer(mutu, { sprite: 150 })).toBe(true);
+    expect(isAnswer(mutu, { sprite: 151 })).toBe(false);
+    const konchi = { sprite: 118, name: '콘치', types: ['water'] };
+    expect(isAnswer(konchi, { sprite: 119 })).toBe(false);
+    // 폼은 기본 종 번호를 알려 줄 때만 — 모르면 아니다
+    expect(isAnswer(mutu, { sprite: 10150 })).toBe(false);
+    expect(isAnswer(mutu, { sprite: 10150 }, (sprite) => (sprite === 10150 ? 150 : undefined))).toBe(true);
   });
 });
 
