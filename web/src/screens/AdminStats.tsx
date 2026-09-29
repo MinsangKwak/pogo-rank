@@ -85,6 +85,7 @@ const SURFACE_KO: Record<string, string> = {
   palette_recent: '검색 팔레트 · 최근 검색',
   palette_boss: '검색 팔레트 · 이번 주 보스',
   home_chip: '홈 · 이번 주 보스 칩',
+  hot_fill: '홈 · 많이 본 포켓몬의 보스 채움',
   // 실루엣 퀴즈는 v5.5.0 에 내렸다 — 9/28 ~ 9/29 의 기록이 남아 이름표는 둔다
   quiz: '실루엣 퀴즈 · 추측',
 };
