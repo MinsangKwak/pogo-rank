@@ -27,7 +27,20 @@
 ## 릴리스 기록
 
 <details open>
-<summary><b>2026-09-29</b> — 2판 · <code>v5.5.1</code> · <code>v5.5.0</code></summary>
+<summary><b>2026-09-29</b> — 3판 · <code>v5.5.2</code> · <code>v5.5.1</code> · <code>v5.5.0</code></summary>
+
+<details>
+<summary><b>v5.5.2</b> · 운영 통계 달력 기간 · 시간대별 많이 본 포켓몬 · 팝업 탭 반경 제거</summary>
+
+**배경** — 주인 제보: 홈 띠(최근 1시간)와 운영 통계 '많이 본 포켓몬'(기간 전체)이 다른 포켓몬을 보여 어긋나 보였다. 기간을 화면이 정한 넷(9/14부터 · 7 · 30 · 90일)으로만 볼 수 있어, 달력으로 직접 고르고 "몇 시에 보나" 를 읽을 표를 요청했다. 팝업 눌린 탭의 둥근 밑줄과 ☆ 가 글자보다 떠 보이는 것도 함께.
+
+**서버** — `GET /v1/admin/stats` 가 `days` 외에 `from` · `to`(한국 날짜 양끝, 오늘까지 · 400일 안)를 받는다(`resolveRange`). 검색 순위(`hot`) · 많이 본 포켓몬(`mons`) · GA4 도 같은 양끝(`hotRows` · `hotMons` 의 `range`, `ga4Stats` 의 날짜 범위), 하루 창(`hotToday`)만 그대로. 새 `GET /v1/admin/stats/hours?day=` — 하루를 24칸으로, 칸마다 상세 팝업을 연 포켓몬 상위 5줄(`hourlyMons`, 사람당 한 칸에 5회까지, 빈 칸도 0). 응답에 `from` · `to`. OpenAPI 갱신.
+
+**화면** — 운영 통계 기간 단추 '9/14부터' · 7 · 14 · 21 · 30일 · 직접 고르기. 직접 고르기는 시작일 · 종료일 달력(`input type=date`)과 [기간 적용], 서버와 같은 규칙(`customIssue`)으로 틀린 기간을 막는다. 화면 구역 아래 `StatHours` — 날짜 탭(기간의 최근 31일)마다 00~01시 … 23~24시 24칸, 오늘 탭은 지금 칸 강조, 받은 날은 기억한다. 좁은 폭에서 기간 단추가 가로로 흐른다. 팝업 탭 묶음 · 탭 반경 0, ☆ 는 잰 만큼(.2rem) 내린다. 패치노트 한 · 영 · i18n · 운영 가이드 20절.
+
+검사 — server(from·to 4사례 · 틀린 기간 6사례 · hours 24칸 · resolveRange · openapi) · web(customIssue · periodName · hourLabel · kstNow) · 빌드 · Playwright 가짜 루트 세션(기간 6단추 · 달력 · 적용 요청 · 날짜 탭 요청 · PC/모바일 누수 없음 · 탭 반경 0px · ☆ 중앙).
+
+</details>
 
 <details>
 <summary><b>v5.5.1</b> · 지금 많이 보는 포켓몬 — 최근 1시간 창 · 매시 갱신</summary>
