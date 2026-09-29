@@ -20,9 +20,6 @@ import { trackSearchPick } from '../lib/track';
 import { readRecent, pushRecent, clearRecent, type RecentPick } from '../lib/recentSearch';
 import { useWeekBosses } from '../lib/weekBosses';
 import { useSearchStore, openSearch } from '../stores/search';
-import { useQuizStore } from '../stores/quiz';
-import { isAnswer } from '../lib/dailyQuiz';
-import { track } from '../lib/track';
 import { BASE } from '../lib/base';
 import { PxIcon } from './PxIcon';
 import type { OpenMon } from '../lib/mon';
@@ -58,12 +55,6 @@ export default function SearchPalette({ onOpen }: { onOpen: OpenMon }) {
 }
 
 function Palette({ onOpen, onClose }: { onOpen: OpenMon; onClose: () => void }) {
-  // 퀴즈 모드 — 홈의 '정답 맞히기' 로 열렸고 오늘 문제가 있으면. 고른 이름을 정답과 견준다 (components/DailyQuiz.tsx)
-  const from = useSearchStore((s) => s.from);
-  const quiz = useQuizStore((s) => s.target);
-  const quizRecord = useQuizStore((s) => s.record);
-  const quizMiss = useQuizStore((s) => s.lastMiss);
-  const quizMode = from === 'quiz' && quiz !== null && !quizRecord.solved;
   const box = useRef<HTMLDialogElement>(null);
   const field = useRef<HTMLInputElement>(null);
   const [query, setQuery] = useState('');
@@ -93,23 +84,6 @@ function Palette({ onOpen, onClose }: { onOpen: OpenMon; onClose: () => void }) 
   const cursor = Math.min(active, Math.max(0, hits.length - 1));
 
   const pick = (mon: Candidate | RecentPick, surface: string) => {
-    if (quizMode && quiz) {
-      // 퀴즈의 추측도 검색이다 — 이름을 찾아 골랐다. 어디서인지(quiz)는 남긴다
-      trackSearchPick(mon.name, 'quiz');
-      if (!isAnswer(quiz, mon)) {
-        useQuizStore.getState().miss(mon.name);
-        track('quiz_miss', { misses: quizRecord.misses + 1 });
-        setQuery('');
-        setActive(0);
-        field.current?.focus();
-        return;
-      }
-      useQuizStore.getState().solve();
-      track('quiz_solve', { misses: quizRecord.misses });
-      onClose();
-      onOpen({ sprite: quiz.sprite, name: quiz.name, types: quiz.types });
-      return;
-    }
     trackSearchPick(mon.name, surface);
     setRecent(pushRecent({ sprite: mon.sprite, name: mon.name }));
     onClose();
@@ -131,13 +105,6 @@ function Palette({ onOpen, onClose }: { onOpen: OpenMon; onClose: () => void }) 
       <div className="modal__wrap palette__wrap">
         <button className="modal__close" aria-label="검색 닫기" onClick={onClose}>✕</button>
         <div className="modal__box palette__box">
-          {quizMode ? (
-            <p className={`palette__quiz${quizMiss ? ' is-miss' : ''}`} role="status">
-              {quizMiss
-                ? <><b>{quizMiss}</b>{' — 아니에요. 배너의 힌트를 보고 다시 찾아보세요'}</>
-                : '오늘의 실루엣 — 이름을 검색해서 고르면 정답을 확인해요'}
-            </p>
-          ) : null}
           <label className="palette__field">
             <span className="palette__ico" aria-hidden="true"><PxIcon emoji="🔍" /></span>
             <input ref={field} type="search" className="palette__input" placeholder="포켓몬 이름이나 영문명" aria-label="포켓몬 검색"

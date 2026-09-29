@@ -58,13 +58,9 @@ html body #root .palette__more { align-self: stretch; min-height: var(--tap); di
   html body #root .palette__clear:hover { border-color: var(--brand); color: var(--fg); }
   html body #root .palette__more:hover { text-decoration: underline; }
 }
-/* 퀴즈 모드 한 줄 — 맞히기로 열렸을 때. 브랜드 색 왼선. 틀리면 글자만 경고색 */
-html body #root .palette__quiz { margin: 0; padding: 1.6rem; border-left: 0.4rem solid var(--brand); border-radius: var(--r-box); background: var(--selected); color: var(--fg); font-size: 1.4rem; line-height: 1.5; }
-html body #root .palette__quiz.is-miss { color: var(--warn); }
 @media (max-width: 599px) {
   html body #root dialog.palette { padding-top: 1.6rem; }
   html body #root .palette__box { padding: 1.6rem; gap: 2rem; }
   html body #root .palette__field { min-height: 5.6rem; padding: 0 1.2rem; }
-  html body #root .palette__quiz { padding: 1.2rem; }
   html body #root .palette__en { display: none; }
 }

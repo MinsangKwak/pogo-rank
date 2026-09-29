@@ -26,7 +26,6 @@ import { trackPageView, track } from './lib/track';
 import { collectView, collectMonView } from './lib/collect';
 import { settleVeilAfterFonts } from './lib/veil';
 import SearchPalette from './components/SearchPalette';
-import QuizBanner from './components/QuizBanner';
 import { useSearchStore } from './stores/search';
 import type { RouteDef } from './routes';
 import { routeById } from './routes';
@@ -274,8 +273,6 @@ export default function App({ seo }: AppProps = {}) {
         onBack={onDetail ? closeMon : undefined} />
       <AppNav now={route.id} onConsent={() => setConsentOpen(true)} />
 
-      {/* 오늘의 실루엣 퀴즈 — 어느 화면이든 상단 바 아래 한 줄. 화면 머리보다 위다 (2026-09-28 주인 결정: 배너로, 전체에) */}
-      <QuizBanner onOpen={openMon} />
       {/* 홈에는 화면 머리가 없다 — 제목이 히어로 안에 있다 (v3 syncAppShell 과 같은 규칙) */}
       {home || hideHead ? null : <PageHead route={route} actionsRef={setActionsEl} />}
 
