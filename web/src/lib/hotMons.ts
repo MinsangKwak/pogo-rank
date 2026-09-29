@@ -9,7 +9,7 @@
 // ─────────────────────────────────────────────────────────────────────────────
 'use strict';
 import { useEffect, useMemo, useState } from 'react';
-import { useDexSoft } from './data';
+import { useDexSoft, useMetaSoft } from './data';
 import { fetchHotMons, type HotMon, type HotMons } from './serverApi';
 
 /** 화면 한 줄 — 순위표 줄에 이름 · 타입이 붙은 것 */
@@ -37,16 +37,23 @@ export function rankMons(
 
 let cached: Promise<HotMons> | null = null;
 
-/** 홈이 쓴다. 이름표가 오기 전에는 빈 줄 — 그때는 아직 구역을 안 그린다 */
+/** 미리보기 판(-dev)은 dev 채널의 기록을 본다 — 수집기(lib/collect.ts)가 채널을 가르는 것과 같은 규칙 */
+export const hotChannel = (appVersion: string | undefined): 'prod' | 'dev' => (appVersion?.endsWith('-dev') ? 'dev' : 'prod');
+
+/** 홈이 쓴다. 이름표 · 판 번호(meta)가 오기 전에는 빈 줄 — 그때는 아직 구역을 안 그린다 */
 export function useHotMons(): { rows: HotMonRow[]; window: number } {
   const dex = useDexSoft();
+  const meta = useMetaSoft();
+  const version = meta?.APP_VERSION;
   const [got, setGot] = useState<HotMons | null>(null);
   useEffect(() => {
+    // 판 번호가 와야 채널을 안다 — 먼저 운영으로 물었다가 dev 로 다시 묻지 않는다
+    if (version === undefined) return undefined;
     let alive = true;
-    cached ??= fetchHotMons(7, HOT_MON_MAX);
+    cached ??= fetchHotMons(7, HOT_MON_MAX, hotChannel(version));
     void cached.then((body) => { if (alive) setGot(body); });
     return () => { alive = false; };
-  }, []);
+  }, [version]);
   const rows = useMemo(() => rankMons(got?.rows ?? [], dex?.DEX_DATA.names, dex?.DEX_DATA.forms), [got, dex]);
   return { rows, window: got?.window ?? 7 };
 }

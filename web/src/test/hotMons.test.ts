@@ -1,7 +1,7 @@
 'use strict';
 // 이번 주 많이 본 포켓몬 — 번호를 이름표에 대고, 없는 번호는 버리고, 서버 순서를 지킨다 (lib/hotMons.ts)
 import { describe, it, expect } from 'vitest';
-import { rankMons, HOT_MON_MAX } from '../lib/hotMons';
+import { rankMons, hotChannel, HOT_MON_MAX } from '../lib/hotMons';
 
 const names = { '25': '피카츄', '150': '뮤츠', '6': '리자몽' };
 const forms = { '25': { types: ['electric'] }, '150': { types: ['psychic'] } };
@@ -28,5 +28,13 @@ describe('rankMons', () => {
     const many = Array.from({ length: 20 }, () => ({ dex: 25, hits: 1, visitors: 1 }));
     expect(rankMons(many, names, forms)).toHaveLength(HOT_MON_MAX);
     expect(rankMons(many, names, forms, 2)).toHaveLength(2);
+  });
+});
+
+describe('hotChannel', () => {
+  it('-dev 판은 dev 채널, 그 밖은 운영 — 수집기와 같은 규칙', () => {
+    expect(hotChannel('v5.5.0-dev')).toBe('dev');
+    expect(hotChannel('v5.5.0')).toBe('prod');
+    expect(hotChannel(undefined)).toBe('prod');
   });
 });
