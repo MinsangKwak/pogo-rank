@@ -53,8 +53,20 @@ export async function loadHotMons(channel: 'prod' | 'dev', fetcher: Fetcher = fe
 /** 미리보기 판(-dev)은 dev 채널의 기록을 본다 — 수집기(lib/collect.ts)가 채널을 가르는 것과 같은 규칙 */
 export const hotChannel = (appVersion: string | undefined): 'prod' | 'dev' => (appVersion?.endsWith('-dev') ? 'dev' : 'prod');
 
-/** 홈이 쓴다. 이름표 · 판 번호(meta)가 오기 전에는 빈 줄 — 그때는 아직 구역을 안 그린다. allTime 은 누적으로 떨어졌다는 뜻, fill 은 남은 자리를 메운 맥스 보스 */
-export function useHotMons(): { rows: HotMonRow[]; window: number; allTime: boolean; fill: FillBoss[] } {
+/** 넓은 화면은 폭을 채워야 한다 — 열 자리 뒤에도 보스를 계속 붙인다 (2026-09-29 주인 결정). 좁은 화면은 열 자리까지 */
+export const HOT_MON_WIDE_FILL = 999;
+
+/** 한 바퀴(pass)가 칸보다 좁으면 몇 바퀴를 이어 붙여야 폭이 차는지. 한 바퀴가 이미 칸보다 넓으면 한 바퀴 — 그땐 가로로 넘겨 본다 */
+export function passesToFill(container: number, pass: number, cap = 6): number {
+  if (!(container > 0) || !(pass > 0) || pass >= container) return 1;
+  return Math.min(cap, Math.ceil(container / pass));
+}
+
+/**
+ * 홈이 쓴다. 이름표 · 판 번호(meta)가 오기 전에는 빈 줄 — 그때는 아직 구역을 안 그린다.
+ * allTime 은 누적으로 떨어졌다는 뜻, fill 은 남은 자리를 메운 맥스 보스 — fillMax 까지(좁은 화면 10 · 넓은 화면 전부)
+ */
+export function useHotMons(fillMax = HOT_MON_MAX): { rows: HotMonRow[]; window: number; allTime: boolean; fill: FillBoss[] } {
   const dex = useDexSoft();
   const meta = useMetaSoft();
   const version = meta?.APP_VERSION;
@@ -70,7 +82,7 @@ export function useHotMons(): { rows: HotMonRow[]; window: number; allTime: bool
   const rows = useMemo(() => rankMons(got?.rows ?? [], dex?.DEX_DATA.names, dex?.DEX_DATA.forms), [got, dex]);
   const slides = useMaxSlidesSoft();
   // 응답이 오기 전엔 채우지 않는다 — 먼저 보스만 섰다가 순위가 끼어들면 칩이 밀린다
-  const fill = useMemo(() => (got ? fillBosses(slides, HOT_MON_MAX - rows.length, new Set(rows.map((row) => row.dex))) : []), [got, slides, rows]);
+  const fill = useMemo(() => (got ? fillBosses(slides, fillMax - rows.length, new Set(rows.map((row) => row.dex))) : []), [got, slides, rows, fillMax]);
   const window = got?.window ?? HOT_MON_WEEK;
   return { rows, window, allTime: window >= HOT_MON_ALL, fill };
 }
