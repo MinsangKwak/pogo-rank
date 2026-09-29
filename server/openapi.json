@@ -1327,6 +1327,29 @@
                             ]
                           },
                           "description": "검색만 — 하루 창(/v1/hot?days=1 과 같은 계산)에서 문턱을 넘은 줄. 하루 창 순위를 켤 수 있는지는 이 줄 수로 본다"
+                        },
+                        "mons": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "key": {
+                                "type": "string"
+                              },
+                              "hits": {
+                                "type": "integer"
+                              },
+                              "visitors": {
+                                "type": "integer"
+                              }
+                            },
+                            "required": [
+                              "key",
+                              "hits",
+                              "visitors"
+                            ]
+                          },
+                          "description": "페이지뷰만 — 상세 팝업을 연 포켓몬(key 는 도감 번호). /v1/mons/hot 과 같은 계산. 검색은 비어 있다"
                         }
                       },
                       "required": [
@@ -1337,7 +1360,8 @@
                         "surfaces",
                         "countries",
                         "hot",
-                        "hotToday"
+                        "hotToday",
+                        "mons"
                       ]
                     },
                     "views": {
@@ -1482,6 +1506,29 @@
                             ]
                           },
                           "description": "검색만 — 하루 창(/v1/hot?days=1 과 같은 계산)에서 문턱을 넘은 줄. 하루 창 순위를 켤 수 있는지는 이 줄 수로 본다"
+                        },
+                        "mons": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "key": {
+                                "type": "string"
+                              },
+                              "hits": {
+                                "type": "integer"
+                              },
+                              "visitors": {
+                                "type": "integer"
+                              }
+                            },
+                            "required": [
+                              "key",
+                              "hits",
+                              "visitors"
+                            ]
+                          },
+                          "description": "페이지뷰만 — 상세 팝업을 연 포켓몬(key 는 도감 번호). /v1/mons/hot 과 같은 계산. 검색은 비어 있다"
                         }
                       },
                       "required": [
@@ -1492,7 +1539,8 @@
                         "surfaces",
                         "countries",
                         "hot",
-                        "hotToday"
+                        "hotToday",
+                        "mons"
                       ]
                     },
                     "ga4": {
@@ -2021,6 +2069,81 @@
                   "properties": {
                     "error": {
                       "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/mons/hot": {
+      "get": {
+        "summary": "많이 본 포켓몬",
+        "tags": [
+          "조회"
+        ],
+        "description": "**브라우저가 받는 자리다** (홈 첫 화면 · 2026-09-29). 상세 팝업을 연 수(`view` · `mon-<도감 번호>`)를 도감 번호로 모은다.\n\n- 사람당 **하루** `5`회까지만 센다 — 검색 순위와 같은 한도\n- 문턱은 없다 — 지금 수치 그대로. 빈 표면 화면이 구역을 안 그린다\n- 본 사람 수 → 횟수 순",
+        "parameters": [
+          {
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 30,
+              "default": 7
+            },
+            "in": "query",
+            "name": "days",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 20,
+              "default": 10
+            },
+            "in": "query",
+            "name": "limit",
+            "required": false
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "window": {
+                      "type": "integer",
+                      "description": "센 날 수"
+                    },
+                    "generated": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "rows": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "dex": {
+                            "type": "integer",
+                            "description": "도감 번호 — 이름 · 그림은 화면이 도감표에서 찾는다"
+                          },
+                          "hits": {
+                            "type": "integer",
+                            "description": "사람당 하루 5회까지 센 합계"
+                          },
+                          "visitors": {
+                            "type": "integer",
+                            "description": "연 사람 수 (난수 ID 기준)"
+                          }
+                        }
+                      }
                     }
                   }
                 }
