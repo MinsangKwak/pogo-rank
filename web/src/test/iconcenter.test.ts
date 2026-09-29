@@ -32,3 +32,17 @@ describe('즐겨찾기 별은 SVG', () => {
     expect(src).not.toMatch(/isFav \? '★' : '☆'/);
   });
 });
+
+describe('아이콘 단추의 글자는 btn-label', () => {
+  it('상세 하단 · 즐겨찾기 글자가 깎인 상자를 쓴다', () => {
+    const detail = readFileSync(new URL('../screens/MonDetail.tsx', import.meta.url), 'utf8');
+    // 링크 복사는 아이콘이 이모지 **글자**라 글자끼리 같은 줄 상자에 서 있다 — 한쪽만 깎으면 2.7px 벌어진다(운영 빌드 실측)
+    const share = readFileSync(new URL('../components/detail/ShareBtn.tsx', import.meta.url), 'utf8');
+    const css = readFileSync(new URL('../styles/cinema/parts.css', import.meta.url), 'utf8');
+    expect(detail).toContain('<PxIcon emoji="📕" /><span className="btn-label">포켓몬 도감</span>');
+    expect(detail).toContain('<PxIcon emoji="🧮" /><span className="btn-label">CP 계산기</span>');
+    expect(detail).toContain('detail__fav-label btn-label');
+    expect(share).not.toContain('btn-label');
+    expect(css).toMatch(/\.btn-label \{ text-box: trim-both cap alphabetic; \}/);
+  });
+});
