@@ -12,13 +12,13 @@ import { useHotMons } from '../lib/hotMons';
 import type { OpenMon } from '../lib/mon';
 
 export default function HotMons({ onOpen }: { onOpen: OpenMon }) {
-  const { rows, window } = useHotMons();
+  const { rows, window, allTime } = useHotMons();
   if (!rows.length) return null;
   return (
     <section className="hot-mons" aria-label="이번 주 많이 본 포켓몬">
       <div className="hot-mons__head">
         <h3 className="hot-mons__title">이번 주 많이 본 포켓몬</h3>
-        <span className="hot-mons__sub">{`최근 ${count(window)}일`}</span>
+        <span className="hot-mons__sub">{allTime ? '누적' : `최근 ${count(window)}일`}</span>
       </div>
       <ol className="hot-mons__list">
         {rows.map((row, index) => (
