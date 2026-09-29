@@ -2,6 +2,8 @@
 // 이번 주 많이 본 포켓몬 — 번호를 이름표에 대고, 없는 번호는 버리고, 서버 순서를 지킨다 (lib/hotMons.ts)
 import { describe, it, expect } from 'vitest';
 import { rankMons, hotChannel, loadHotMons, HOT_MON_MAX, HOT_MON_WEEK, HOT_MON_ALL } from '../lib/hotMons';
+import { fillBosses } from '../lib/weekBosses';
+import type { MaxSlide } from '../lib/maxSlides';
 
 const names = { '25': '피카츄', '150': '뮤츠', '6': '리자몽' };
 const forms = { '25': { types: ['electric'] }, '150': { types: ['psychic'] } };
@@ -53,5 +55,24 @@ describe('loadHotMons — 이번 주가 비면 누적', () => {
     expect(asked).toEqual([HOT_MON_WEEK, HOT_MON_ALL]);
     expect(got.rows[0]!.dex).toBe(150);
     expect(HOT_MON_MAX).toBe(10);
+  });
+});
+
+describe('fillBosses — 남은 자리를 맥스 보스로', () => {
+  const slide = (id: string, gmax: boolean, bosses: [number, string][]): MaxSlide => ({
+    id, kind: 'monday', gmax, label: '', when: '', short: '', hours: '', live: false,
+    bosses: bosses.map(([dex, name]) => ({ dex, sprite: dex, name, types: [] })),
+  } as unknown as MaxSlide);
+  const slides = [slide('a', false, [[816, '울머기'], [150, '뮤츠']]), slide('b', true, [[6, '리자몽'], [816, '울머기']])];
+
+  it('가까운 장부터, 같은 종은 한 번, 순위에 선 번호는 빼고, 접두어로 상세를 연다', () => {
+    const out = fillBosses(slides, 3, new Set([150]));
+    expect(out.map((one) => one.detailName)).toEqual(['다이맥스 울머기', '거다이맥스 리자몽']);
+    expect(out[1]!.gmax).toBe(true);
+  });
+
+  it('자리가 없으면 빈 줄, 자리만큼만', () => {
+    expect(fillBosses(slides, 0)).toEqual([]);
+    expect(fillBosses(slides, 1).map((one) => one.name)).toEqual(['울머기']);
   });
 });

@@ -4,13 +4,15 @@
 // 서버가 상세 팝업을 연 수를 도감 번호로 모아 준다 (GET /v1/mons/hot · server/src/lib/hot.ts hotMons).
 // 여기서는 번호를 도감 이름표(useDexSoft)에 대어 이름 · 타입을 붙이고, 이름표에 없는 번호는 뺀다 —
 // 번호만 있는 줄을 그리면 화면에 '#0' 같은 것이 선다 (CLAUDE.md §1).
-// 문턱은 없다(주인 결정 — 지금 수치 그대로). 7일 창이 비면 누적(서비스 시작부터)을 다시 묻는다 — 그래도 비면 홈이 구역을 안 그린다.
+// 문턱은 없다(주인 결정 — 지금 수치 그대로). 7일 창이 비면 누적(서비스 시작부터)을 다시 묻는다.
+// 열 자리가 남으면 남은 맥스 일정의 다이맥스 · 거다이맥스 보스로 채운다(주인 결정 — 검색이 늘어야 한다). 그래도 비면 홈이 구역을 안 그린다.
 // 첫 그림은 서버 그림과 같아야 하므로(하이드레이션) 붙은 뒤에 한 번 받고, 탭이 살아 있는 동안은 다시 안 받는다
 // ─────────────────────────────────────────────────────────────────────────────
 'use strict';
 import { useEffect, useMemo, useState } from 'react';
 import { useDexSoft, useMetaSoft } from './data';
 import { fetchHotMons, type HotMon, type HotMons } from './serverApi';
+import { fillBosses, useMaxSlidesSoft, type FillBoss } from './weekBosses';
 
 /** 화면 한 줄 — 순위표 줄에 이름 · 타입이 붙은 것 */
 export interface HotMonRow extends HotMon { name: string; types: readonly string[] }
@@ -51,8 +53,8 @@ export async function loadHotMons(channel: 'prod' | 'dev', fetcher: Fetcher = fe
 /** 미리보기 판(-dev)은 dev 채널의 기록을 본다 — 수집기(lib/collect.ts)가 채널을 가르는 것과 같은 규칙 */
 export const hotChannel = (appVersion: string | undefined): 'prod' | 'dev' => (appVersion?.endsWith('-dev') ? 'dev' : 'prod');
 
-/** 홈이 쓴다. 이름표 · 판 번호(meta)가 오기 전에는 빈 줄 — 그때는 아직 구역을 안 그린다. allTime 은 누적으로 떨어졌다는 뜻 */
-export function useHotMons(): { rows: HotMonRow[]; window: number; allTime: boolean } {
+/** 홈이 쓴다. 이름표 · 판 번호(meta)가 오기 전에는 빈 줄 — 그때는 아직 구역을 안 그린다. allTime 은 누적으로 떨어졌다는 뜻, fill 은 남은 자리를 메운 맥스 보스 */
+export function useHotMons(): { rows: HotMonRow[]; window: number; allTime: boolean; fill: FillBoss[] } {
   const dex = useDexSoft();
   const meta = useMetaSoft();
   const version = meta?.APP_VERSION;
@@ -66,6 +68,9 @@ export function useHotMons(): { rows: HotMonRow[]; window: number; allTime: bool
     return () => { alive = false; };
   }, [version]);
   const rows = useMemo(() => rankMons(got?.rows ?? [], dex?.DEX_DATA.names, dex?.DEX_DATA.forms), [got, dex]);
+  const slides = useMaxSlidesSoft();
+  // 응답이 오기 전엔 채우지 않는다 — 먼저 보스만 섰다가 순위가 끼어들면 칩이 밀린다
+  const fill = useMemo(() => (got ? fillBosses(slides, HOT_MON_MAX - rows.length, new Set(rows.map((row) => row.dex))) : []), [got, slides, rows]);
   const window = got?.window ?? HOT_MON_WEEK;
-  return { rows, window, allTime: window >= HOT_MON_ALL };
+  return { rows, window, allTime: window >= HOT_MON_ALL, fill };
 }
