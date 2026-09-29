@@ -11,12 +11,17 @@
 
 /**
  * 검색어(1판) · 페이지뷰(2026-09-24 부터 — 주인 결정으로 바로 시행, 방침 · 패치노트 같은 날).
- * view 는 **화면 id 하나**만 받는다(surface) — 주소 · 질의 · 상세의 포켓몬 번호는 안 받는다.
+ * view 는 **화면 id 하나**만 받는다(surface) — 주소 · 질의는 안 받는다.
+ * 2026-09-29 부터 상세 팝업은 `mon-<도감 번호>` 로 센다 (MON_VIEW) — '이번 주 많이 본 포켓몬' 의 재료.
+ * 같은 view 이벤트라 이름은 안 늘었고, 화면 id 꼴(ROUTE_ID)에 그대로 들어맞아 옛 서버도 버리지 않는다
  */
 export const EVENT_NAMES = ['search', 'view'] as const;
 
 /** 화면 id 모양 — web/src/routes.ts 의 id 와 같은 꼴 */
 export const ROUTE_ID = /^[a-z0-9-]{1,40}$/;
+/** 상세 팝업 한 번 — 화면 id 자리에 도감 번호를 붙인다. web/src/lib/collect.ts 의 monView 와 같은 꼴 */
+export const MON_VIEW_PREFIX = 'mon-';
+export const MON_VIEW = /^mon-\d{1,5}$/;
 export type EventName = (typeof EVENT_NAMES)[number];
 
 export const LIMITS = {

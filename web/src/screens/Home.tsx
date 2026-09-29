@@ -26,6 +26,7 @@ import { useWeekBosses } from '../lib/weekBosses';
 import { UPDATE_CATS } from '../lib/notes';
 import type { OpenMon } from '../lib/mon';
 import { TankPopupEntry, NOV_TANK_LIVE } from '../components/TankPopup';
+import HotMons from '../components/HotMons';
 
 // 대표 일러스트 — 머리에서 미리 받는 그 그림 (app/page.tsx 의 preload 와 같은 파일)
 const HERO_ART_ENTRY = MAX_ART.find((art) => art.dex.includes(816))!;
@@ -233,6 +234,8 @@ export default function Home({ onOpen }: { onOpen: OpenMon }) {
   const waiting = <HeroPoster art={HERO_ART_ENTRY} names={names} />;
   return (
     <div className="home-dashboard home-dashboard--portal home-dashboard--cinema-portal">
+      {/* 이번 주 많이 본 포켓몬 — 홈 맨 위, 히어로보다 위 (2026-09-29 주인 결정). 서버 집계라 데이터 Suspense 밖이고, 줄이 없으면 안 그린다 */}
+      <HotMons onOpen={onOpen} />
       {/* 검색 보드는 v4.6.3 에 내렸다 — 검색이 모자라 순위가 서지 않는다 (ranking 브랜치 · 백로그). 포스터가 한 열을 다 쓴다 */}
       <div className="home__top-layout">
       {/* 마스코트와 버튼 줄은 .home__intro **밖**에 선다 — CSS 가 세 칸(글·그림·버튼)으로 잡는다.
