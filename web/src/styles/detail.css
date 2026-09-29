@@ -198,9 +198,8 @@ html body #root .detail--mon .detail__tab { color: var(--muted); background: tra
 html body #root .detail--mon .detail__tab[aria-selected="true"] { color: var(--brand); font-weight: 700; background: color-mix(in srgb, var(--brand) 6%, transparent); box-shadow: inset 0 -.4rem 0 var(--brand); }
 /* 2026-09-30 탭의 모서리를 없앤다 — v3 의 .6rem 반경이 눌린 탭의 밑줄 끝을 둥글게 만들었다 (주인 요청) */
 html body #root .detail--mon :is(.detail__tabs, .detail__tab) { border-radius: 0; }
-/* ☆ 를 글자와 세로 중앙에 — 상자는 가운데였지만 별 글리프의 잉크가 기준선 위 5.5px 에 서서(한글은 3.5px) 2px 위에 떠 보였다.
-   잰 만큼(.2rem) 내린다 — 글꼴 크기를 줄이면 별이 흐려져 크기는 그대로 둔다 (2026-09-30 주인 요청) */
-html body #root .detail--mon .detail__fav-star { display: inline-flex; align-items: center; line-height: 1.5; transform: translateY(.2rem); }
+/* ☆ 는 SVG 다 — 글자 별은 운영체제의 대체 글꼴에 따라 글자보다 떠 보였다(Windows). 상자로 그리면 flex 가운데가 곧 잉크 가운데다 (2026-09-30 주인 요청) */
+html body #root .detail--mon .detail__fav-star { display: block; width: 1.4rem; height: 1.4rem; flex: none; }
 html body #root .detail--mon :is(.detail__card, .detail__cp-card, .detail__acc) { background: color-mix(in srgb, var(--fg) 2%, var(--bg)); border-color: var(--detail-rule); box-shadow: none; }
 html body #root .detail--mon .detail__cp-card { background: color-mix(in srgb, var(--brand) 8%, var(--bg)); border-color: color-mix(in srgb, var(--brand) 25%, transparent); }
 html body #root .detail--mon .detail__cp-line b { font-weight: 700; letter-spacing: -.04em; }
