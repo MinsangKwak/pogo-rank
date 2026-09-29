@@ -1197,6 +1197,8 @@ export const I18N_EN = {
   '같은 종 두 마리를 골라 나란히 비교': 'Pick two of the same species to compare side by side',
   '상대 추가': 'Add an opponent',
   '개체값': 'IVs',
+  '정화': 'Purify',
+  '섀도우를 정화하면 공격 · 방어 · 체력이 2씩 올라요 (최대 15)': 'Purifying a Shadow Pokémon raises Attack, Defense and HP IVs by 2 each (up to 15)',
   '주요 기술': 'Main moves',
   '스페셜': 'Charged',
 

@@ -31,6 +31,12 @@ export const IVRANK_FLOORS: readonly (readonly [string, number, string])[] = [
   ['섀도우 (교환 전)', 6, '섀도우는 6 아래가 나오지 않아요'],
 ];
 
+/** 정화 — 섀도우를 정화하면 세 개체값이 2씩 오른다(게임 규칙 · 최대 15). 하한(IVRANK_FLOORS)과는 다른 일이다 */
+export const PURIFY_BONUS = 2;
+export function purifyIvs(ivs: readonly [number, number, number]): [number, number, number] {
+  return ivs.map((iv) => Math.min(15, iv + PURIFY_BONUS)) as [number, number, number];
+}
+
 export interface IvRow {
   ivs: [number, number, number];
   level: number;

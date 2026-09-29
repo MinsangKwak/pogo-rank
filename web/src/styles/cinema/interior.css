@@ -230,6 +230,7 @@ html body #root #page-ivrank .ivrank__form .row-head { display: flex; flex-wrap:
 html body #root #page-ivrank .ivrank__form > .row-head:first-child { margin-top: 0; }
 html body #root #page-ivrank h2 { font: 750 2.2rem/1.5 Pretendard,sans-serif; letter-spacing: -0.04em; }
 html body #root #page-ivrank .ivrank__form .row-head .meta { flex-basis: 100%; font-size: 1.2rem; color: var(--muted); }
+html body #root #page-ivrank .ivrank__purify { margin-left: auto; }
 html body #root #page-ivrank .ivrank__pick { padding: 0; border: 0; background: transparent; }
 html body #root #page-ivrank .boss__search { box-sizing: border-box; width: 100%; min-height: 5.2rem; padding: 1.2rem; border: 1px solid var(--line); border-radius: var(--r-ctl); background: var(--bg); color: var(--fg); font-size: 1.4rem; }
 html body #root #page-ivrank .ivrank__ivs { gap: 0.8rem; }
