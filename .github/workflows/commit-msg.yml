@@ -1,0 +1,23 @@
+# 커밋 제목 규칙(docs/COMMITS.md) — PR 의 커밋 제목을 모두 본다.
+# 어긋나면 이 검사만 실패로 표시한다. 병합을 막는 필수 검사로 두지 않는다 (사이드 프로젝트 — 눈에 띄게 하는 것이 목적)
+name: 커밋 제목 검사
+
+on:
+  pull_request:
+    branches: [dev, main, deploy]
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: PR 커밋 제목
+        run: node scripts/check_commit_msg.mjs --range "origin/${{ github.base_ref }}..HEAD"
