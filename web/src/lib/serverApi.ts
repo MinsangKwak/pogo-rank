@@ -94,11 +94,12 @@ export interface HotMons { window: number; generated: string; rows: HotMon[] }
  * 토큰 · 쿠키를 안 싣는다(call 과 다른 이유) — 익명 집계에 로그인 정보를 붙일 까닭이 없고, 캐시(10분)도 그래야 나뉘지 않는다.
  * 옛 서버(404) · 꺼진 빌드는 빈 줄 — 홈이 구역을 안 그린다. 실패도 빈 줄이다: 첫 화면이 이 한 줄 때문에 깨지면 안 된다
  */
-export async function fetchHotMons(days = 7, limit = 10): Promise<HotMons> {
+export async function fetchHotMons(days = 7, limit = 10, channel: 'prod' | 'dev' = 'prod'): Promise<HotMons> {
   const empty: HotMons = { window: days, generated: '', rows: [] };
   if (!API) return empty;
   try {
-    const response = await fetch(`${API}/v1/mons/hot?days=${days}&limit=${limit}`);
+    // 미리보기는 제 채널의 기록을 본다 — 수집이 -dev 판을 dev 채널로 보내는 것과 같은 규칙 (lib/collect.ts)
+    const response = await fetch(`${API}/v1/mons/hot?days=${days}&limit=${limit}&channel=${channel}`);
     if (!response.ok) return empty;
     const body = (await response.json()) as Partial<HotMons>;
     return { window: body.window ?? days, generated: body.generated ?? '', rows: Array.isArray(body.rows) ? body.rows : [] };

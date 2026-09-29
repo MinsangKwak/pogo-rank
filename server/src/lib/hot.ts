@@ -100,8 +100,9 @@ export interface HotMonRow { dex: number; hits: number; visitors: number }
  * 문턱은 없다 — 주인 결정으로 지금 수치 그대로 낸다. 빈 표면 화면이 구역을 안 그린다.
  * 정렬은 본 사람 수 → 횟수 — 열 번 연 한 사람보다 한 번씩 연 두 사람이 위다
  */
-export async function hotMons(sql: Sql, options: { days: number; limit: number }): Promise<HotMonRow[]> {
-  const { days, limit } = options;
+export async function hotMons(sql: Sql, options: { days: number; limit: number; channel?: 'prod' | 'dev' }): Promise<HotMonRow[]> {
+  // 채널 — 운영 화면은 운영 기록만. dev 미리보기는 제 기록(channel=dev)을 봐야 띠가 어떻게 서는지 볼 수 있다 (2026-09-29 주인 제보)
+  const { days, limit, channel = 'prod' } = options;
   const like = `${MON_VIEW_PREFIX}%`;
   return sql<HotMonRow[]>`
     with capped as (
@@ -110,7 +111,7 @@ export async function hotMons(sql: Sql, options: { days: number; limit: number }
              least(count(*), ${PERSON_CAP}) as hits
       from events
       where name = 'view'
-        and channel = 'prod'
+        and channel = ${channel}
         and surface like ${like}
         and surface ~ '^mon-[0-9]{1,5}$'
         and created_at >= now() - (${days} * interval '1 day')

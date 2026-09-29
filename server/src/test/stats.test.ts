@@ -144,6 +144,10 @@ describe.skipIf(!url)('GET /v1/admin/stats', () => {
       { dex: 25, hits: 2, visitors: 1 },
       { dex: 150, hits: 1, visitors: 1 },
     ]);
+    // dev 채널 — 미리보기가 제 기록을 본다. 위 seed 의 dev 줄(150) 하나
+    const dev = await app.inject({ method: 'GET', url: '/v1/mons/hot?channel=dev' });
+    expect(dev.json().rows).toEqual([{ dex: 150, hits: 1, visitors: 1 }]);
+    expect((await app.inject({ method: 'GET', url: '/v1/mons/hot?channel=test' })).statusCode).toBe(400);
     expect((await app.inject({ method: 'GET', url: '/v1/mons/hot?days=31' })).statusCode).toBe(400);
     expect((await app.inject({ method: 'GET', url: '/v1/mons/hot?limit=21' })).statusCode).toBe(400);
   });

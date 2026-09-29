@@ -14,7 +14,7 @@ import { hotRows, hotMons, rollup, MIN_HITS, MIN_ROWS, MIN_VISITORS, PERSON_CAP 
 import { purge, purgeSessions, KEEP_MONTHS } from '../lib/retention.ts';
 
 interface HotQuery { days?: number; limit?: number; country?: string; raw?: boolean }
-interface MonQuery { days?: number; limit?: number }
+interface MonQuery { days?: number; limit?: number; channel?: 'prod' | 'dev' }
 
 // 많이 본 포켓몬은 브라우저가 직접 받는다 (홈 첫 화면) — 창은 7일 고정에 가깝고 길어야 30일이다
 const monQuerySchema = {
@@ -23,6 +23,8 @@ const monQuerySchema = {
   properties: {
     days: { type: 'integer', minimum: 1, maximum: 30, default: 7 },
     limit: { type: 'integer', minimum: 1, maximum: 20, default: 10 },
+    // dev 미리보기가 제 기록을 본다 — 운영 순위에는 안 섞인다
+    channel: { type: 'string', enum: ['prod', 'dev'], default: 'prod' },
   },
 } as const;
 
@@ -124,6 +126,7 @@ export function hotRoutes(app: FastifyInstance, sql: Sql, adminToken: string): v
         `- 사람당 **하루** \`${PERSON_CAP}\`회까지만 센다 — 검색 순위와 같은 한도`,
         '- 문턱은 없다 — 지금 수치 그대로. 빈 표면 화면이 구역을 안 그린다',
         '- 본 사람 수 → 횟수 순',
+        '- `channel=dev` 는 미리보기(dev.moncamp.kr)가 제 기록을 볼 때. 기본은 운영 기록',
       ].join('\n'),
       querystring: monQuerySchema,
       response: {
@@ -148,8 +151,8 @@ export function hotRoutes(app: FastifyInstance, sql: Sql, adminToken: string): v
       },
     },
   }, async (req, reply) => {
-    const { days = 7, limit = 10 } = req.query;
-    const rows = await hotMons(sql, { days, limit });
+    const { days = 7, limit = 10, channel = 'prod' } = req.query;
+    const rows = await hotMons(sql, { days, limit, channel });
     reply.header('cache-control', 'public, max-age=600');
     return { window: days, generated: new Date().toISOString(), rows };
   });
