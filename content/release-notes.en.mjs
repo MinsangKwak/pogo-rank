@@ -20,6 +20,8 @@ export const RELEASE_NOTES_EN = {
     '**From September 29 we also record the Pokédex number of the Pokémon you open in the detail popup** — it feeds the ranking above. Until now only the screen name was kept and no Pokémon number was sent; now the Pokédex number (e.g. 25) is kept with it. The full URL and typed searches are still not sent; it is stored with the random visitor ID and country code, no IP is stored and nothing is linked to your account. Written into sections 2 and 4 of the privacy policy. By the operator\'s decision this starts today without the 7-day notice',
     '**Turning it off works the same** — ☰ menu → Statistics & storage → "Turn off statistics" stops search, screen and Pokémon number records alike',
     '**We will ask for consent once more at your next sign-in** — the policy changed because a new item is collected',
+    '**IV boxes in PvP IV Rank clear when you tap in** — typing 15 after a 0 used to give 015. Leaving a box empty restores the previous value',
+    '**New [Purify +2] button** — purifying a Shadow Pokémon raises Attack, Defense and HP IVs by 2 each (up to 15). The [Shadow] chip under acquisition sets the IV floor (6↑), which is why only Attack jumped to 6',
   ],
   '2026-09-28 · v5.4.0': [
     '**Search opens on any screen** — tap the search box at the top or [Find a Pokémon by name] on Home (or press / on a computer), type a name and the detail opens right away. An empty box shows this browser\'s recent searches and this week\'s bosses first',
