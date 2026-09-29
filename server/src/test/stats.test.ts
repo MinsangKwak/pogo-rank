@@ -10,7 +10,7 @@ import { buildApp } from '../app.ts';
 import { readEnv } from '../env.ts';
 import { makeAccessTokens } from '../lib/jwt.ts';
 import type { Role } from '../lib/rbac.ts';
-import { clampDays } from '../lib/stats.ts';
+import { clampDays, resolveRange, kstDay, shiftDay } from '../lib/stats.ts';
 import { PERSON_CAP } from '../lib/hot.ts';
 import { testDatabaseUrl } from './dbUrl.ts';
 import { TEST_AUTH_ENV } from './envFixture.ts';
@@ -100,6 +100,8 @@ describe.skipIf(!url)('GET /v1/admin/stats', () => {
     expect(res.headers['cache-control']).toBe('no-store');
     const body = res.json();
     expect(body.days).toBe(7);
+    expect(body.to).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+    expect(body.from < body.to).toBe(true);
     expect(body.users).toMatchObject({ total: 4, pending: 1, approved: 1, admin: 1, root: 1, beta: 1, active1d: 4 });
     expect(body.users.newPerDay).toHaveLength(7);
     expect(body.users.newPerDay.at(-1).count).toBe(4);
@@ -169,5 +171,91 @@ describe.skipIf(!url)('GET /v1/admin/stats', () => {
     expect((await app.inject({ method: 'GET', url: '/v1/admin/stats?days=3', headers })).statusCode).toBe(400);
     expect((await app.inject({ method: 'GET', url: '/v1/admin/stats?days=401', headers })).statusCode).toBe(400);
     expect((await app.inject({ method: 'GET', url: '/v1/admin/stats?days=365', headers })).statusCode).toBe(200);
+  });
+
+  it('from · to — 한국 날짜 양끝으로 자른다 (달력 기간)', async () => {
+    const headers = await as('root');
+    const today = kstDay();
+    const from = shiftDay(today, -9);
+    const res = await app.inject({ method: 'GET', url: `/v1/admin/stats?from=${from}&to=${today}`, headers });
+    expect(res.statusCode).toBe(200);
+    const body = res.json();
+    expect(body).toMatchObject({ from, to: today, days: 10 });
+    expect(body.search.perDay).toHaveLength(10);
+    expect(body.search.perDay[0].day).toBe(from);
+    expect(body.search.hits).toBe(4);
+    // 앞 검사(/v1/mons/hot)가 넣은 C 의 mon-6(한도 5회)까지 든다
+    expect(body.views.mons).toEqual([{ key: '6', hits: PERSON_CAP, visitors: 1 }, { key: '25', hits: 2, visitors: 1 }, { key: '150', hits: 1, visitors: 1 }]);
+    // 오늘을 뺀 기간 — 방금 넣은 줄이 안 든다. 순위 계산(hot · mons)도 같은 양끝을 쓴다
+    const past = await app.inject({ method: 'GET', url: `/v1/admin/stats?from=${shiftDay(today, -120)}&to=${shiftDay(today, -1)}`, headers });
+    expect(past.statusCode).toBe(200);
+    expect(past.json().search).toMatchObject({ hits: 1, hot: [], mons: [] });
+    expect(past.json().search.top).toEqual([{ key: '옛날', hits: 1, visitors: 1 }]);
+    expect(past.json().views).toMatchObject({ hits: 0, mons: [] });
+    // 하루 창은 기간과 무관하게 '지금부터 하루' 다
+    expect(past.json().search.hotToday).toEqual([{ key: '뮤츠', hits: 3, visitors: 2 }]);
+  });
+
+  it('from · to 가 틀리면 400 — 한쪽만 · 거꾸로 · 미래 · 400일 넘김 · 없는 날', async () => {
+    const headers = await as('root');
+    const today = kstDay();
+    const bad = [
+      `from=${today}`,
+      `from=${today}&to=${shiftDay(today, -1)}`,
+      `from=${today}&to=${shiftDay(today, 1)}`,
+      `from=${shiftDay(today, -400)}&to=${today}`,
+      `from=2026-02-30&to=${today}`,
+      `from=26-09-14&to=${today}`,
+    ];
+    for (const query of bad) {
+      const res = await app.inject({ method: 'GET', url: `/v1/admin/stats?${query}`, headers });
+      expect(res.statusCode, query).toBe(400);
+    }
+    expect((await app.inject({ method: 'GET', url: `/v1/admin/stats?from=${shiftDay(today, -399)}&to=${today}`, headers })).statusCode).toBe(200);
+  });
+
+  it('GET /v1/admin/stats/hours — 하루를 24칸으로, 칸마다 많이 본 포켓몬 (루트만 · 운영 채널만)', async () => {
+    expect((await app.inject({ method: 'GET', url: '/v1/admin/stats/hours' })).statusCode).toBe(401);
+    expect((await app.inject({ method: 'GET', url: '/v1/admin/stats/hours', headers: await as('admin') })).statusCode).toBe(403);
+    const headers = await as('root');
+    const today = kstDay();
+    const res = await app.inject({ method: 'GET', url: `/v1/admin/stats/hours?day=${today}`, headers });
+    expect(res.statusCode).toBe(200);
+    expect(res.headers['cache-control']).toBe('no-store');
+    const body = res.json();
+    expect(body.day).toBe(today);
+    expect(body.hours).toHaveLength(24);
+    expect(body.hours.map((one: { hour: number }) => one.hour)).toEqual(Array.from({ length: 24 }, (_, i) => i));
+    // 방금 넣은 줄은 지금 한국 시각의 칸에 든다 — 다른 칸은 0
+    const hour = (new Date().getUTCHours() + 9) % 24;
+    // A 의 25 두 번 · B 의 150 한 번 · C 의 6 여덟 번(칸 한도 5) — 합 8, 세 사람
+    expect(body.hours[hour]).toEqual({ hour, hits: PERSON_CAP + 3, visitors: 3, mons: [{ key: '6', hits: PERSON_CAP, visitors: 1 }, { key: '25', hits: 2, visitors: 1 }, { key: '150', hits: 1, visitors: 1 }] });
+    expect(body.hours.filter((one: { hits: number }) => one.hits > 0)).toHaveLength(1);
+    expect(res.body).not.toMatch(/aaaaaaaa|bbbbbbbb/);
+    // day 없으면 오늘, 미래 · 400일 밖 · 꼴 틀림은 400
+    expect((await app.inject({ method: 'GET', url: '/v1/admin/stats/hours', headers })).json().day).toBe(today);
+    expect((await app.inject({ method: 'GET', url: `/v1/admin/stats/hours?day=${shiftDay(today, 1)}`, headers })).statusCode).toBe(400);
+    expect((await app.inject({ method: 'GET', url: `/v1/admin/stats/hours?day=${shiftDay(today, -400)}`, headers })).statusCode).toBe(400);
+    expect((await app.inject({ method: 'GET', url: '/v1/admin/stats/hours?day=today', headers })).statusCode).toBe(400);
+  });
+});
+
+describe('resolveRange — 요청의 기간을 한국 날짜 양끝으로', () => {
+  const now = new Date('2026-09-29T16:00:00Z'); // 한국 9/30 01:00
+  it('days 는 오늘을 넣어 센다 · 끝 밖은 끝으로', () => {
+    expect(resolveRange({ days: 7 }, now)).toEqual({ from: '2026-09-24', to: '2026-09-30', days: 7 });
+    expect(resolveRange({}, now)).toEqual({ from: '2026-09-01', to: '2026-09-30', days: 30 });
+    expect(resolveRange({ days: 9999 }, now)).toMatchObject({ days: 400, to: '2026-09-30' });
+  });
+  it('from · to 는 그대로 — 하루짜리도 된다', () => {
+    expect(resolveRange({ from: '2026-09-14', to: '2026-09-30' }, now)).toEqual({ from: '2026-09-14', to: '2026-09-30', days: 17 });
+    expect(resolveRange({ from: '2026-09-30', to: '2026-09-30' }, now)).toEqual({ from: '2026-09-30', to: '2026-09-30', days: 1 });
+  });
+  it('틀린 기간은 이유를 준다', () => {
+    expect(resolveRange({ from: '2026-09-14' }, now)).toHaveProperty('error');
+    expect(resolveRange({ from: '2026-09-15', to: '2026-09-14' }, now)).toHaveProperty('error');
+    expect(resolveRange({ from: '2026-09-14', to: '2026-10-01' }, now)).toHaveProperty('error');
+    expect(resolveRange({ from: '2025-08-01', to: '2026-09-30' }, now)).toHaveProperty('error');
+    expect(resolveRange({ from: '2026-02-30', to: '2026-09-30' }, now)).toHaveProperty('error');
   });
 });
