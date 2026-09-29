@@ -3,6 +3,9 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { clearGa4Cache, fillDays, ga4Stats } from '../lib/ga4.ts';
 
+// 한국 날짜 양끝 — 라우트가 resolveRange 로 풀어 준다 (7일)
+const WEEK = { from: '2026-09-17', to: '2026-09-23' };
+
 type Reply = { status?: number; body: unknown };
 
 function fakeFetch(route: (url: string, init?: RequestInit) => Reply): { fetch: typeof fetch; calls: string[] } {
@@ -23,23 +26,23 @@ describe('GA4 칸', () => {
 
   it('속성 ID 가 없으면 꺼짐 — 부르지 않는다', async () => {
     const fake = fakeFetch(() => TOKEN);
-    expect(await ga4Stats('', 30, fake.fetch)).toEqual({ status: 'off', reason: expect.stringContaining('GA4_PROPERTY_ID') });
+    expect(await ga4Stats('', WEEK, fake.fetch)).toEqual({ status: 'off', reason: expect.stringContaining('GA4_PROPERTY_ID') });
     expect(fake.calls).toEqual([]);
   });
 
   it('측정 ID(G-…)를 넣으면 무엇이 틀렸는지 말한다', async () => {
-    const res = await ga4Stats('G-1L6ENS8PVK', 30, fakeFetch(() => TOKEN).fetch);
+    const res = await ga4Stats('G-1L6ENS8PVK', WEEK, fakeFetch(() => TOKEN).fetch);
     expect(res).toEqual({ status: 'error', reason: expect.stringContaining('속성 ID') });
   });
 
   it('권한이 없으면 뷰어 권한이 빠졌다고 적는다', async () => {
     const fake = fakeFetch((url) => url.includes('metadata') ? TOKEN : { status: 403, body: { error: { status: 'PERMISSION_DENIED', message: 'User does not have sufficient permissions' } } });
-    expect(await ga4Stats('123456789', 30, fake.fetch)).toEqual({ status: 'error', reason: expect.stringContaining('뷰어') });
+    expect(await ga4Stats('123456789', WEEK, fake.fetch)).toEqual({ status: 'error', reason: expect.stringContaining('뷰어') });
   });
 
   it('API 가 꺼져 있으면 그렇다고 적는다', async () => {
     const fake = fakeFetch((url) => url.includes('metadata') ? TOKEN : { status: 403, body: { error: { message: 'Google Analytics Data API has not been used in project 1 before or it is disabled' } } });
-    expect(await ga4Stats('123456789', 30, fake.fetch)).toEqual({ status: 'error', reason: expect.stringContaining('Data API') });
+    expect(await ga4Stats('123456789', WEEK, fake.fetch)).toEqual({ status: 'error', reason: expect.stringContaining('Data API') });
   });
 
   it('토큰은 analytics.readonly 로 받고 보고서 셋을 합친다 · 10분 동안 다시 안 부른다', async () => {
@@ -57,17 +60,16 @@ describe('GA4 칸', () => {
       if (dim === 'pagePath') return { body: { rows: [{ dimensionValues: [{ value: '/dmax' }], metricValues: [{ value: '20' }, { value: '9' }] }] } };
       return { body: { rows: [{ dimensionValues: [{ value: 'KR' }], metricValues: [{ value: '38' }, { value: '11' }] }] } };
     });
-    const res = await ga4Stats('123456789', 7, fake.fetch);
+    const res = await ga4Stats('123456789', WEEK, fake.fetch);
     expect(res).toMatchObject({ status: 'ok', users: 12, views: 40, sessions: 15, newUsers: 3, pages: [{ key: '/dmax', views: 20, users: 9 }], countries: [{ key: 'KR', views: 38, users: 11 }] });
     if (res.status === 'ok') expect(res.perDay).toHaveLength(7);
     const before = fake.calls.length;
-    await ga4Stats('123456789', 7, fake.fetch);
+    await ga4Stats('123456789', WEEK, fake.fetch);
     expect(fake.calls.length).toBe(before);
   });
 
   it('빈 날을 0 으로 채운다 — 한국 날짜 기준', () => {
-    const now = new Date('2026-09-23T16:00:00Z'); // 한국 9/24 01:00
-    const days = fillDays(3, [{ day: '2026-09-23', users: 5, views: 9, sessions: 6 }], now);
+    const days = fillDays('2026-09-22', '2026-09-24', [{ day: '2026-09-23', users: 5, views: 9, sessions: 6 }]);
     expect(days.map((one) => one.day)).toEqual(['2026-09-22', '2026-09-23', '2026-09-24']);
     expect(days[1]).toMatchObject({ users: 5 });
     expect(days[0]).toMatchObject({ users: 0, views: 0, sessions: 0 });

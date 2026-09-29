@@ -1785,5 +1785,15 @@ export const I18N_EN = {
   '홈 · 많이 본 포켓몬의 보스 채움': 'Home · most-viewed filler (Max bosses)',
   '상세 팝업': 'Detail popup',
   '많이 본 포켓몬': 'Most viewed Pokémon',
+  // 2026-09-30 운영 통계 — 달력 기간 · 시간대별 표 (screens/AdminStats.tsx · components/StatHours.tsx)
+  '14일': '14 days',
+  '21일': '21 days',
+  '직접 고르기': 'Custom',
+  '시작일': 'From',
+  '종료일': 'To',
+  '기간 적용': 'Apply',
+  '시간대별 많이 본 포켓몬': 'Most viewed Pokémon by hour',
+  '시간대': 'Hour',
+  '날짜': 'Date',
   '실루엣 퀴즈 · 추측': 'Silhouette quiz · guesses',
 };

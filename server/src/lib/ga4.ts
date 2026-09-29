@@ -62,12 +62,13 @@ function isoDay(value: string | undefined): string {
 
 // GA 는 방문이 없는 날의 줄을 안 준다 — 빈 날을 0 으로 채워야 그래프가 그날을 건너뛰지 않는다.
 // 날짜는 GA4 속성의 시간대(한국)로 온다 — 우리도 한국 날짜로 센다
-export function fillDays(days: number, rows: Ga4Day[], now: Date = new Date()): Ga4Day[] {
+// 기간은 한국 날짜 양끝('YYYY-MM-DD')이다 — 통계의 다른 표와 같은 자름 (lib/stats.ts resolveRange)
+export function fillDays(from: string, to: string, rows: Ga4Day[]): Ga4Day[] {
   const byDay = new Map(rows.map((row) => [row.day, row]));
   const out: Ga4Day[] = [];
-  const kstToday = new Date(now.getTime() + 9 * 60 * 60 * 1000);
-  for (let back = days - 1; back >= 0; back--) {
-    const day = new Date(Date.UTC(kstToday.getUTCFullYear(), kstToday.getUTCMonth(), kstToday.getUTCDate() - back)).toISOString().slice(0, 10);
+  const end = Date.parse(`${to}T00:00:00Z`);
+  for (let at = Date.parse(`${from}T00:00:00Z`); at <= end; at += 86_400_000) {
+    const day = new Date(at).toISOString().slice(0, 10);
     out.push(byDay.get(day) ?? { day, users: 0, views: 0, sessions: 0 });
   }
   return out;
@@ -103,16 +104,17 @@ async function report(fetchImpl: Fetch, access: string, property: string, body: 
   return (await res.json()) as Report;
 }
 
-export async function ga4Stats(property: string, days: number, fetchImpl: Fetch = fetch): Promise<Ga4Stats> {
+export async function ga4Stats(property: string, range: { from: string; to: string }, fetchImpl: Fetch = fetch): Promise<Ga4Stats> {
   if (!property) return { status: 'off', reason: 'GA4_PROPERTY_ID 가 설정되지 않았습니다' };
   if (!/^\d{5,15}$/.test(property)) return { status: 'error', reason: 'GA4_PROPERTY_ID 는 숫자여야 합니다 (측정 ID G-… 가 아니라 속성 ID)' };
-  const key = `${property}:${days}`;
+  const key = `${property}:${range.from}:${range.to}`;
   const hit = cache.get(key);
   if (hit && Date.now() - hit.at < (hit.value.status === 'ok' ? CACHE_MS : ERROR_CACHE_MS)) return hit.value;
   let value: Ga4Stats;
   try {
     const access = await token(fetchImpl);
-    const dateRanges = [{ startDate: `${days - 1}daysAgo`, endDate: 'today' }];
+    // GA4 속성의 시간대가 한국이라 날짜를 그대로 준다 — 'NdaysAgo' 는 오늘이 끝일 때만 맞는다
+    const dateRanges = [{ startDate: range.from, endDate: range.to }];
     const [daily, pages, countries] = await Promise.all([
       report(fetchImpl, access, property, {
         dateRanges,
@@ -148,7 +150,7 @@ export async function ga4Stats(property: string, days: number, fetchImpl: Fetch 
       views: n(totals[1]?.value),
       sessions: n(totals[2]?.value),
       newUsers: n(totals[3]?.value),
-      perDay: fillDays(days, (daily.rows ?? []).map((row) => ({
+      perDay: fillDays(range.from, range.to, (daily.rows ?? []).map((row) => ({
         day: isoDay(row.dimensionValues?.[0]?.value),
         users: n(row.metricValues?.[0]?.value),
         views: n(row.metricValues?.[1]?.value),
