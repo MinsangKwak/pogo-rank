@@ -38,24 +38,45 @@ export function weekBosses(slides: readonly MaxSlide[], max = WEEK_BOSS_MAX): { 
 /** 채움 칩 하나 — 홈 '많이 본 포켓몬' 의 빈 자리를 메우는 맥스 보스 (2026-09-29 주인 결정: 검색이 늘어야 한다) */
 export interface FillBoss extends WeekBoss { gmax: boolean }
 
+/** 씨앗 하나로 같은 순서를 내는 난수 — 같은 시간에는 같은 칩이 서고, 시간이 바뀌면 섞인다 (mulberry32) */
+function seeded(seed: number): () => number {
+  let state = seed >>> 0;
+  return () => {
+    state = (state + 0x6d2b79f5) >>> 0;
+    let t = state;
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
 /**
- * 남은 자리(need)를 앞으로 남은 맥스 일정의 보스로 채운다 — 진행 중인 장부터 가까운 순, 같은 종은 한 번, 순위에 이미 선 번호는 뺀다.
+ * 남은 자리(need)를 앞으로 남은 맥스 일정의 보스로 채운다 — 같은 종은 한 번, 순위에 이미 선 번호는 뺀다.
+ * seed 가 있으면 **임의의** 보스를 고른다(주인 결정 2026-09-29: 열 자리 미만이면 나머지는 임의의 거다이맥스 · 다이맥스) —
+ * 씨앗은 시간 단위라 한 시간 안에는 같은 칩, 시간이 바뀌면 다른 칩. 없으면 진행 중인 장부터 가까운 순.
  * 상세는 detailName(다이맥스 · 거다이맥스 접두어)으로 열어 맥스 전용 추천이 나오게 한다 (weekBosses 와 같은 이유)
  */
-export function fillBosses(slides: readonly MaxSlide[], need: number, exclude: ReadonlySet<number> = new Set()): FillBoss[] {
+export function fillBosses(slides: readonly MaxSlide[], need: number, exclude: ReadonlySet<number> = new Set(), seed?: number): FillBoss[] {
   if (need <= 0) return [];
   const seen = new Set<number>(exclude);
-  const out: FillBoss[] = [];
+  const pool: FillBoss[] = [];
   for (const slide of slides) {
     const prefix = slide.gmax ? '거다이맥스' : '다이맥스';
     for (const boss of slide.bosses) {
       if (!boss.name || seen.has(boss.dex)) continue;
       seen.add(boss.dex);
-      out.push({ ...boss, detailName: `${prefix} ${boss.name}`, gmax: slide.gmax });
-      if (out.length >= need) return out;
+      pool.push({ ...boss, detailName: `${prefix} ${boss.name}`, gmax: slide.gmax });
     }
   }
-  return out;
+  if (seed !== undefined) {
+    // 피셔-예이츠 — 씨앗이 같으면 같은 순서
+    const rand = seeded(seed);
+    for (let i = pool.length - 1; i > 0; i -= 1) {
+      const j = Math.floor(rand() * (i + 1));
+      [pool[i], pool[j]] = [pool[j]!, pool[i]!];
+    }
+  }
+  return pool.slice(0, need);
 }
 
 /** 남은 맥스 일정 — 홈 배너 · 보스 칩 · 채움 칩이 같은 장을 본다 */

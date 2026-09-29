@@ -14,7 +14,7 @@ import { hotRows, hotMons, rollup, MIN_HITS, MIN_ROWS, MIN_VISITORS, PERSON_CAP 
 import { purge, purgeSessions, KEEP_MONTHS } from '../lib/retention.ts';
 
 interface HotQuery { days?: number; limit?: number; country?: string; raw?: boolean }
-interface MonQuery { days?: number; limit?: number; channel?: 'prod' | 'dev' }
+interface MonQuery { days?: number; limit?: number; channel?: 'prod' | 'dev'; hours?: number }
 
 // 많이 본 포켓몬은 브라우저가 직접 받는다 (홈 첫 화면) — 창은 7일, 그 창이 비면 누적(400일 · 서비스 시작부터)을 다시 묻는다
 const monQuerySchema = {
@@ -25,6 +25,8 @@ const monQuerySchema = {
     limit: { type: 'integer', minimum: 1, maximum: 20, default: 10 },
     // dev 미리보기가 제 기록을 본다 — 운영 순위에는 안 섞인다
     channel: { type: 'string', enum: ['prod', 'dev'], default: 'prod' },
+    // 시간 창 — 있으면 days 대신 쓴다. 홈의 '최근 1시간'
+    hours: { type: 'integer', minimum: 1, maximum: 168 },
   },
 } as const;
 
@@ -127,14 +129,15 @@ export function hotRoutes(app: FastifyInstance, sql: Sql, adminToken: string): v
         '- 문턱은 없다 — 지금 수치 그대로. 빈 표면 화면이 구역을 안 그린다',
         '- 본 사람 수 → 횟수 순',
         '- `channel=dev` 는 미리보기(dev.moncamp.kr)가 제 기록을 볼 때. 기본은 운영 기록',
-        '- 화면은 7일 창을 먼저 묻고, 비면 `days=400`(누적)을 다시 묻는다',
+        '- 화면은 `hours=1`(최근 1시간)을 먼저 묻고, 비면 7일 · `days=400`(누적) 순으로 다시 묻는다',
       ].join('\n'),
       querystring: monQuerySchema,
       response: {
         200: {
           type: 'object',
           properties: {
-            window: { type: 'integer', description: '센 날 수' },
+            window: { type: 'integer', description: '센 날 수. hours 로 물었으면 0' },
+            hours: { type: 'integer', description: 'hours 로 물었을 때 그 시간 수. 날 창이면 없다' },
             generated: { type: 'string', format: 'date-time' },
             rows: {
               type: 'array',
@@ -152,10 +155,10 @@ export function hotRoutes(app: FastifyInstance, sql: Sql, adminToken: string): v
       },
     },
   }, async (req, reply) => {
-    const { days = 7, limit = 10, channel = 'prod' } = req.query;
-    const rows = await hotMons(sql, { days, limit, channel });
+    const { days = 7, limit = 10, channel = 'prod', hours } = req.query;
+    const rows = await hotMons(sql, { days, limit, channel, hours });
     reply.header('cache-control', 'public, max-age=600');
-    return { window: days, generated: new Date().toISOString(), rows };
+    return { window: hours ? 0 : days, ...(hours ? { hours } : {}), generated: new Date().toISOString(), rows };
   });
 
   // **집계와 파기를 한 자리에서 한다.** 파기를 따로 두면 그 워크플로를 빠뜨린 날이 생기고,

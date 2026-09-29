@@ -100,9 +100,11 @@ export interface HotMonRow { dex: number; hits: number; visitors: number }
  * 문턱은 없다 — 주인 결정으로 지금 수치 그대로 낸다. 빈 표면 화면이 구역을 안 그린다.
  * 정렬은 본 사람 수 → 횟수 — 열 번 연 한 사람보다 한 번씩 연 두 사람이 위다
  */
-export async function hotMons(sql: Sql, options: { days: number; limit: number; channel?: 'prod' | 'dev' }): Promise<HotMonRow[]> {
+export async function hotMons(sql: Sql, options: { days: number; limit: number; channel?: 'prod' | 'dev'; hours?: number | undefined }): Promise<HotMonRow[]> {
   // 채널 — 운영 화면은 운영 기록만. dev 미리보기는 제 기록(channel=dev)을 봐야 띠가 어떻게 서는지 볼 수 있다 (2026-09-29 주인 제보)
-  const { days, limit, channel = 'prod' } = options;
+  // hours 가 오면 시간 창이다 — 홈은 '최근 1시간' 을 먼저 묻고 비면 7일 · 누적으로 내려간다 (주인 결정: 실시간 검색어 꼴)
+  const { days, limit, channel = 'prod', hours } = options;
+  const span = hours ? sql`(${hours} * interval '1 hour')` : sql`(${days} * interval '1 day')`;
   const like = `${MON_VIEW_PREFIX}%`;
   return sql<HotMonRow[]>`
     with capped as (
@@ -114,7 +116,7 @@ export async function hotMons(sql: Sql, options: { days: number; limit: number; 
         and channel = ${channel}
         and surface like ${like}
         and surface ~ '^mon-[0-9]{1,5}$'
-        and created_at >= now() - (${days} * interval '1 day')
+        and created_at >= now() - ${span}
       group by surface, visitor, day
     )
     select dex, sum(hits)::int as hits, count(distinct visitor)::int as visitors
