@@ -1776,6 +1776,7 @@ export const I18N_EN = {
   '홈 · 이번 주 보스 칩': "Home · this week's boss chips",
   // 2026-09-29 이번 주 많이 본 포켓몬 (components/HotMons.tsx)
   '이번 주 많이 본 포켓몬': "This week's most viewed Pokémon",
+  '누적': 'All time',
   '상세 팝업': 'Detail popup',
   '많이 본 포켓몬': 'Most viewed Pokémon',
   '실루엣 퀴즈 · 추측': 'Silhouette quiz · guesses',
