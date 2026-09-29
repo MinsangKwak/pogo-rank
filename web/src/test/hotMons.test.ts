@@ -1,7 +1,7 @@
 'use strict';
 // 이번 주 많이 본 포켓몬 — 번호를 이름표에 대고, 없는 번호는 버리고, 서버 순서를 지킨다 (lib/hotMons.ts)
 import { describe, it, expect } from 'vitest';
-import { rankMons, hotChannel, loadHotMons, HOT_MON_MAX, HOT_MON_WEEK, HOT_MON_ALL } from '../lib/hotMons';
+import { rankMons, hotChannel, loadHotMons, passesToFill, HOT_MON_MAX, HOT_MON_WEEK, HOT_MON_ALL } from '../lib/hotMons';
 import { fillBosses } from '../lib/weekBosses';
 import type { MaxSlide } from '../lib/maxSlides';
 
@@ -74,5 +74,17 @@ describe('fillBosses — 남은 자리를 맥스 보스로', () => {
   it('자리가 없으면 빈 줄, 자리만큼만', () => {
     expect(fillBosses(slides, 0)).toEqual([]);
     expect(fillBosses(slides, 1).map((one) => one.name)).toEqual(['울머기']);
+  });
+});
+
+describe('passesToFill — 넓은 화면에서 폭을 채우는 바퀴 수', () => {
+  it('한 바퀴가 칸보다 좁으면 올림으로, 넓거나 같으면 한 바퀴, 잴 수 없으면 한 바퀴', () => {
+    expect(passesToFill(1400, 900)).toBe(2);
+    expect(passesToFill(1400, 300)).toBe(5);
+    expect(passesToFill(1400, 1400)).toBe(1);
+    expect(passesToFill(1400, 2000)).toBe(1);
+    expect(passesToFill(0, 300)).toBe(1);
+    expect(passesToFill(1400, 0)).toBe(1);
+    expect(passesToFill(9000, 100)).toBe(6);
   });
 });
