@@ -234,6 +234,8 @@ export default function Home({ onOpen }: { onOpen: OpenMon }) {
   const waiting = <HeroPoster art={HERO_ART_ENTRY} names={names} />;
   return (
     <div className="home-dashboard home-dashboard--portal home-dashboard--cinema-portal">
+      {/* 이번 주 많이 본 포켓몬 — 홈 맨 위, 히어로보다 위 (2026-09-29 주인 결정). 서버 집계라 데이터 Suspense 밖이고, 줄이 없으면 안 그린다 */}
+      <HotMons onOpen={onOpen} />
       {/* 검색 보드는 v4.6.3 에 내렸다 — 검색이 모자라 순위가 서지 않는다 (ranking 브랜치 · 백로그). 포스터가 한 열을 다 쓴다 */}
       <div className="home__top-layout">
       {/* 마스코트와 버튼 줄은 .home__intro **밖**에 선다 — CSS 가 세 칸(글·그림·버튼)으로 잡는다.
@@ -267,8 +269,6 @@ export default function Home({ onOpen }: { onOpen: OpenMon }) {
           데이터를 안 쓰는 카드라 Suspense 밖에 둘 수 있다 — 그래서 첫 화면에 바로 선다 */}
 
       </div>
-      {/* 이번 주 많이 본 포켓몬 — 히어로 바로 아래 (2026-09-29 주인 결정: 상단에). 서버 집계라 데이터 Suspense 밖이고, 줄이 없으면 안 그린다 */}
-      <HotMons onOpen={onOpen} />
       {/* 기다리는 자리도 한 화면을 채운다 — 바닥글이 먼저 보였다가 밀리면 CLS 다 */}
       <Suspense fallback={<div className="home__loading" aria-busy="true" />}>
 

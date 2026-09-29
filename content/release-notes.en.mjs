@@ -17,6 +17,7 @@
 export const RELEASE_NOTES_EN = {
   '2026-09-29 · v5.5.0': [
     '**This week\'s most viewed Pokémon at the top of Home** — the Pokémon whose detail people opened in the last 7 days, ordered by how many people opened it. Tap one to open its detail. The row stays hidden until someone has looked',
+    '**Today\'s silhouette quiz is gone** — the banner added yesterday in v5.4.0. The quiz mode in the search box went with it; search, recent searches and this week\'s bosses stay',
     '**From September 29 we also record the Pokédex number of the Pokémon you open in the detail popup** — it feeds the ranking above. Until now only the screen name was kept and no Pokémon number was sent; now the Pokédex number (e.g. 25) is kept with it. The full URL and typed searches are still not sent; it is stored with the random visitor ID and country code, no IP is stored and nothing is linked to your account. Written into sections 2 and 4 of the privacy policy. By the operator\'s decision this starts today without the 7-day notice',
     '**Turning it off works the same** — ☰ menu → Statistics & storage → "Turn off statistics" stops search, screen and Pokémon number records alike',
     '**We will ask for consent once more at your next sign-in** — the policy changed because a new item is collected',
