@@ -23,6 +23,9 @@
 export const I18N_PATTERNS = [
   // 2026-09-29 이번 주 많이 본 포켓몬
   [/^최근 (\d+)일$/, 'Last $1 days'],
+  [/^총 수집기간 (\d+)일 · 화면 표시 최근 (\d+)시간$/, 'Collected over $1 days · showing the last $2 hours'],
+  [/^총 수집기간 (\d+)일 · 화면 표시 최근 (\d+)일$/, 'Collected over $1 days · showing the last $2 days'],
+  [/^총 수집기간 (\d+)일 · 화면 표시 누적$/, 'Collected over $1 days · showing all time'],
   // 2026-09-15 v3.32.0 D-MAX 덱 짜기
   [/^(.+) 보스에 데려갈 셋$/, 'The three to bring against a $1 boss'],
   [/^이번 주 (.+)$/, 'This week · $1'],
@@ -1776,6 +1779,7 @@ export const I18N_EN = {
   '홈 · 이번 주 보스 칩': "Home · this week's boss chips",
   // 2026-09-29 이번 주 많이 본 포켓몬 (components/HotMons.tsx)
   '이번 주 많이 본 포켓몬': "This week's most viewed Pokémon",
+  '지금 많이 보는 포켓몬': 'Trending Pokémon right now',
   '누적': 'All time',
   '이번 시즌 맥스 배틀 보스': 'This season\'s Max Battle bosses',
   '홈 · 많이 본 포켓몬의 보스 채움': 'Home · most-viewed filler (Max bosses)',

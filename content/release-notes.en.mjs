@@ -15,6 +15,9 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 export const RELEASE_NOTES_EN = {
+  '2026-09-29 · v5.5.1': [
+    '**The ranking at the top of Home is now "Trending Pokémon right now"** — Pokémon whose detail was opened in the last hour come first; if nobody opened one in that hour it falls back to the last 7 days, then all time. The caption says which window you are looking at, e.g. "Collected over 7 days · showing the last 1 hours". A tab left open refreshes every hour. Ten ranked Pokémon fill the row as is; any slots left are filled with random Dynamax and Gigantamax bosses for that hour',
+  ],
   '2026-09-29 · v5.5.0': [
     '**This week\'s most viewed Pokémon at the top of Home** — up to ten Pokémon whose detail people opened in the last 7 days, ordered by how many people opened it. Tap one to open its detail. If nobody opened one this week it shows the all-time list, and any of the ten slots left over are filled with this season\'s Dynamax and Gigantamax bosses (D-MAX · G-MAX tag). Up to ten in one row that scrolls sideways',
     '**Today\'s silhouette quiz is gone** — the banner added yesterday in v5.4.0. The quiz mode in the search box went with it; search, recent searches and this week\'s bosses stay',

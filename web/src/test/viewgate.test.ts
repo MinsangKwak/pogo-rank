@@ -40,9 +40,10 @@ describe('시행일 한 벌', () => {
 
   it('상세 번호 기록 시행일에 나간 패치노트가 그날부터 번호를 센다고 알린다', async () => {
     const { RELEASE_NOTES } = await import('../../../content/release-notes.mjs') as Notes;
-    const onDay = RELEASE_NOTES.find((note) => note.date.startsWith(MON_VIEW_FROM));
-    expect(onDay, `${MON_VIEW_FROM} 묶음이 패치노트에 없습니다`).toBeDefined();
-    const text = onDay!.items.join(' ');
+    // 같은 날 판이 둘 이상일 수 있다(v5.5.0 · v5.5.1) — 그날 묶음을 다 모아 본다
+    const onDay = RELEASE_NOTES.filter((note) => note.date.startsWith(MON_VIEW_FROM));
+    expect(onDay.length, `${MON_VIEW_FROM} 묶음이 패치노트에 없습니다`).toBeGreaterThan(0);
+    const text = onDay.flatMap((note) => note.items).join(' ');
     expect(text).toContain(`${mm}월 ${md}일`);
     expect(text).toContain('도감 번호');
   });
