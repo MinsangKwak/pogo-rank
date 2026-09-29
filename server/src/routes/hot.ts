@@ -10,10 +10,21 @@
 'use strict';
 import type { FastifyInstance } from 'fastify';
 import type { Sql } from '../db/client.ts';
-import { hotRows, rollup, MIN_HITS, MIN_ROWS, MIN_VISITORS, PERSON_CAP } from '../lib/hot.ts';
+import { hotRows, hotMons, rollup, MIN_HITS, MIN_ROWS, MIN_VISITORS, PERSON_CAP } from '../lib/hot.ts';
 import { purge, purgeSessions, KEEP_MONTHS } from '../lib/retention.ts';
 
 interface HotQuery { days?: number; limit?: number; country?: string; raw?: boolean }
+interface MonQuery { days?: number; limit?: number }
+
+// 많이 본 포켓몬은 브라우저가 직접 받는다 (홈 첫 화면) — 창은 7일 고정에 가깝고 길어야 30일이다
+const monQuerySchema = {
+  type: 'object',
+  additionalProperties: false,
+  properties: {
+    days: { type: 'integer', minimum: 1, maximum: 30, default: 7 },
+    limit: { type: 'integer', minimum: 1, maximum: 20, default: 10 },
+  },
+} as const;
 
 const hotQuerySchema = {
   type: 'object',
@@ -101,6 +112,46 @@ export function hotRoutes(app: FastifyInstance, sql: Sql, adminToken: string): v
       generated: new Date().toISOString(),
       rows,
     };
+  });
+
+  app.get<{ Querystring: MonQuery }>('/v1/mons/hot', {
+    schema: {
+      tags: ['조회'],
+      summary: '많이 본 포켓몬',
+      description: [
+        '**브라우저가 받는 자리다** (홈 첫 화면 · 2026-09-29). 상세 팝업을 연 수(`view` · `mon-<도감 번호>`)를 도감 번호로 모은다.',
+        '',
+        `- 사람당 **하루** \`${PERSON_CAP}\`회까지만 센다 — 검색 순위와 같은 한도`,
+        '- 문턱은 없다 — 지금 수치 그대로. 빈 표면 화면이 구역을 안 그린다',
+        '- 본 사람 수 → 횟수 순',
+      ].join('\n'),
+      querystring: monQuerySchema,
+      response: {
+        200: {
+          type: 'object',
+          properties: {
+            window: { type: 'integer', description: '센 날 수' },
+            generated: { type: 'string', format: 'date-time' },
+            rows: {
+              type: 'array',
+              items: {
+                type: 'object',
+                properties: {
+                  dex: { type: 'integer', description: '도감 번호 — 이름 · 그림은 화면이 도감표에서 찾는다' },
+                  hits: { type: 'integer', description: `사람당 하루 ${PERSON_CAP}회까지 센 합계` },
+                  visitors: { type: 'integer', description: '연 사람 수 (난수 ID 기준)' },
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+  }, async (req, reply) => {
+    const { days = 7, limit = 10 } = req.query;
+    const rows = await hotMons(sql, { days, limit });
+    reply.header('cache-control', 'public, max-age=600');
+    return { window: days, generated: new Date().toISOString(), rows };
   });
 
   // **집계와 파기를 한 자리에서 한다.** 파기를 따로 두면 그 워크플로를 빠뜨린 날이 생기고,
