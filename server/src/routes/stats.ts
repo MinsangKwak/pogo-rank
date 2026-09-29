@@ -38,8 +38,9 @@ const EVENT_STATS = {
     countries: { type: 'array', items: RANKED },
     hot: { type: 'array', items: RANKED, description: '검색만 — 순위와 같은 계산(사람당 한도 · 문턱)으로 고른 줄. 줄 수가 모자라도 비우지 않는다' },
     hotToday: { type: 'array', items: RANKED, description: '검색만 — 하루 창(/v1/hot?days=1 과 같은 계산)에서 문턱을 넘은 줄. 하루 창 순위를 켤 수 있는지는 이 줄 수로 본다' },
+    mons: { type: 'array', items: RANKED, description: '페이지뷰만 — 상세 팝업을 연 포켓몬(key 는 도감 번호). /v1/mons/hot 과 같은 계산. 검색은 비어 있다' },
   },
-  required: ['hits', 'visitors', 'perDay', 'top', 'surfaces', 'countries', 'hot', 'hotToday'],
+  required: ['hits', 'visitors', 'perDay', 'top', 'surfaces', 'countries', 'hot', 'hotToday', 'mons'],
 } as const;
 
 const GA4_ROW = { type: 'object', properties: { key: str, views: int, users: int }, required: ['key', 'views', 'users'] } as const;

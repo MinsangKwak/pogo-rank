@@ -11,6 +11,7 @@ import { readEnv } from '../env.ts';
 import { makeAccessTokens } from '../lib/jwt.ts';
 import type { Role } from '../lib/rbac.ts';
 import { clampDays } from '../lib/stats.ts';
+import { PERSON_CAP } from '../lib/hot.ts';
 import { testDatabaseUrl } from './dbUrl.ts';
 import { TEST_AUTH_ENV } from './envFixture.ts';
 
@@ -75,7 +76,11 @@ describe.skipIf(!url)('GET /v1/admin/stats', () => {
       ('search', ${visitorB}, '피카츄', 'app', 'JP', 'prod'),
       ('search', ${visitorB}, '몰래', 'app', 'JP', 'dev'),
       ('view', ${visitorA}, null, 'dmax', 'KR', 'prod'),
-      ('view', ${visitorB}, null, 'dmax', 'JP', 'prod')`;
+      ('view', ${visitorB}, null, 'dmax', 'JP', 'prod'),
+      ('view', ${visitorA}, null, 'mon-25', 'KR', 'prod'),
+      ('view', ${visitorA}, null, 'mon-25', 'KR', 'prod'),
+      ('view', ${visitorB}, null, 'mon-150', 'JP', 'prod'),
+      ('view', ${visitorB}, null, 'mon-150', 'JP', 'dev')`;
     // 지난 기간 — 안 세야 한다
     await sql`insert into events (name, visitor, term, surface, country, channel, created_at)
       values ('search', ${visitorA}, '옛날', 'dex', 'KR', 'prod', now() - interval '100 days')`;
@@ -113,8 +118,39 @@ describe.skipIf(!url)('GET /v1/admin/stats', () => {
     expect(body.views.hotToday).toEqual([]);
     expect(body.search.perDay).toHaveLength(7);
     expect(body.search.perDay.at(-1)).toMatchObject({ hits: 4, visitors: 2 });
-    expect(body.views).toMatchObject({ hits: 2, visitors: 2, top: [{ key: 'dmax', hits: 2, visitors: 2 }], surfaces: [] });
+    // 상세 팝업(mon-<번호>)은 화면 표에서 'mon' 하나로 접히고, 포켓몬별로는 mons 에 선다 — dev 채널은 안 센다
+    expect(body.views).toMatchObject({ hits: 5, visitors: 2, top: [{ key: 'mon', hits: 3, visitors: 2 }, { key: 'dmax', hits: 2, visitors: 2 }], surfaces: [] });
+    expect(body.views.mons).toEqual([{ key: '25', hits: 2, visitors: 1 }, { key: '150', hits: 1, visitors: 1 }]);
+    expect(body.search.mons).toEqual([]);
     expect(body.ga4).toEqual({ status: 'off', reason: expect.any(String) });
+  });
+
+  it('GET /v1/mons/hot — 상세 팝업 view 를 도감 번호로 모은다 (사람당 하루 한도 · 문턱 없음 · dev 제외)', async () => {
+    const visitorC = 'c'.repeat(32);
+    // 한 사람이 한도(PERSON_CAP)를 넘게 열어도 그만큼만 센다 — 순위를 혼자 만들지 못한다
+    for (let i = 0; i < PERSON_CAP + 3; i += 1) {
+      await sql`insert into events (name, visitor, term, surface, country, channel) values ('view', ${visitorC}, null, 'mon-6', 'KR', 'prod')`;
+    }
+    await sql`insert into events (name, visitor, term, surface, country, channel) values
+      ('view', ${visitorC}, null, 'mon-999999', 'KR', 'prod')`;
+    const res = await app.inject({ method: 'GET', url: '/v1/mons/hot?days=7&limit=5' });
+    expect(res.statusCode).toBe(200);
+    expect(res.headers['cache-control']).toBe('public, max-age=600');
+    const body = res.json() as { window: number; rows: { dex: number; hits: number; visitors: number }[] };
+    expect(body.window).toBe(7);
+    // 본 사람 수가 같으면 횟수 순 — 25(A 두 번) · 6(C 한도만큼) · 150(B 한 번). 여섯 자리 번호 · dev 줄은 없다
+    expect(body.rows).toEqual([
+      { dex: 6, hits: PERSON_CAP, visitors: 1 },
+      { dex: 25, hits: 2, visitors: 1 },
+      { dex: 150, hits: 1, visitors: 1 },
+    ]);
+    // dev 채널 — 미리보기가 제 기록을 본다. 위 seed 의 dev 줄(150) 하나
+    const dev = await app.inject({ method: 'GET', url: '/v1/mons/hot?channel=dev' });
+    expect(dev.json().rows).toEqual([{ dex: 150, hits: 1, visitors: 1 }]);
+    expect((await app.inject({ method: 'GET', url: '/v1/mons/hot?channel=test' })).statusCode).toBe(400);
+    expect((await app.inject({ method: 'GET', url: '/v1/mons/hot?days=400' })).statusCode).toBe(200);
+    expect((await app.inject({ method: 'GET', url: '/v1/mons/hot?days=401' })).statusCode).toBe(400);
+    expect((await app.inject({ method: 'GET', url: '/v1/mons/hot?limit=21' })).statusCode).toBe(400);
   });
 
   it('사람을 가리키는 값은 한 칸도 안 나간다 — 이메일 · 이름 · 방문자 ID', async () => {
