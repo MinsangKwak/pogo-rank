@@ -97,6 +97,8 @@ Firestore 규칙을 mock UID로 렌더하지 않습니다. `scripts/render_rules
 
 사용자에게 설명할 변경을 묶어 릴리스합니다. 커밋마다 버전을 올리지 않습니다.
 
+작업 브랜치와 동기화 브랜치는 병합이 끝나면 로컬과 원격에서 모두 지웁니다. 남기는 것은 `dev` · `main` · `deploy`와 자동화 봇의 브랜치뿐입니다.
+
 `build.sh`는 데이터·이미지를 생성하며 현재 웹 화면은 `web`에서 별도로 빌드합니다. 데이터 빌드가 변경한 `snapshot/`은 diff를 확인하여 의도하지 않은 생성 변경만 제외합니다. 다른 작업자의 변경을 일괄 되돌리지 않습니다.
 
 운영 배포는 `dev → main PR → deploy` 흐름입니다. v5 운영 웹은 Vercel이며 `deploy-web.yml`이 처리합니다. 도메인 전환은 `cutover-prod.yml`의 status·attach·rollback 절차를 따릅니다.
