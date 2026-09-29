@@ -14,15 +14,14 @@ import { useHotMons } from '../lib/hotMons';
 import type { OpenMon } from '../lib/mon';
 
 export default function HotMons({ onOpen }: { onOpen: OpenMon }) {
-  const { rows, window, allTime, fill } = useHotMons();
+  const { rows, caption, fill } = useHotMons();
   if (!rows.length && !fill.length) return null;
-  // 순위가 하나도 없으면 부제는 보스 얘기다 — '최근 7일' 이라 적고 보스만 서면 거짓말이 된다
-  const sub = !rows.length ? '이번 시즌 맥스 배틀 보스' : allTime ? '누적' : `최근 ${count(window)}일`;
+  // 부제는 lib/hotMons.ts 가 정한다 — 순위가 하나도 없으면 보스 얘기, 있으면 '총 수집기간 7일 · 화면 표시 최근 1시간' 처럼 어느 창인지
   return (
-    <section className="hot-mons" aria-label="이번 주 많이 본 포켓몬">
+    <section className="hot-mons" aria-label="지금 많이 보는 포켓몬">
       <div className="hot-mons__head">
-        <h3 className="hot-mons__title">이번 주 많이 본 포켓몬</h3>
-        <span className="hot-mons__sub">{sub}</span>
+        <h3 className="hot-mons__title">지금 많이 보는 포켓몬</h3>
+        <span className="hot-mons__sub">{caption}</span>
       </div>
       <ol className="hot-mons__list">
         {rows.map((row, index) => (

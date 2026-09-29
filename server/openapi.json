@@ -2084,7 +2084,7 @@
         "tags": [
           "조회"
         ],
-        "description": "**브라우저가 받는 자리다** (홈 첫 화면 · 2026-09-29). 상세 팝업을 연 수(`view` · `mon-<도감 번호>`)를 도감 번호로 모은다.\n\n- 사람당 **하루** `5`회까지만 센다 — 검색 순위와 같은 한도\n- 문턱은 없다 — 지금 수치 그대로. 빈 표면 화면이 구역을 안 그린다\n- 본 사람 수 → 횟수 순\n- `channel=dev` 는 미리보기(dev.moncamp.kr)가 제 기록을 볼 때. 기본은 운영 기록\n- 화면은 7일 창을 먼저 묻고, 비면 `days=400`(누적)을 다시 묻는다",
+        "description": "**브라우저가 받는 자리다** (홈 첫 화면 · 2026-09-29). 상세 팝업을 연 수(`view` · `mon-<도감 번호>`)를 도감 번호로 모은다.\n\n- 사람당 **하루** `5`회까지만 센다 — 검색 순위와 같은 한도\n- 문턱은 없다 — 지금 수치 그대로. 빈 표면 화면이 구역을 안 그린다\n- 본 사람 수 → 횟수 순\n- `channel=dev` 는 미리보기(dev.moncamp.kr)가 제 기록을 볼 때. 기본은 운영 기록\n- 화면은 `hours=1`(최근 1시간)을 먼저 묻고, 비면 7일 · `days=400`(누적) 순으로 다시 묻는다",
         "parameters": [
           {
             "schema": {
@@ -2120,6 +2120,16 @@
             "in": "query",
             "name": "channel",
             "required": false
+          },
+          {
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 168
+            },
+            "in": "query",
+            "name": "hours",
+            "required": false
           }
         ],
         "responses": {
@@ -2132,7 +2142,11 @@
                   "properties": {
                     "window": {
                       "type": "integer",
-                      "description": "센 날 수"
+                      "description": "센 날 수. hours 로 물었으면 0"
+                    },
+                    "hours": {
+                      "type": "integer",
+                      "description": "hours 로 물었을 때 그 시간 수. 날 창이면 없다"
                     },
                     "generated": {
                       "type": "string",

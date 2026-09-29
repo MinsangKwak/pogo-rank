@@ -1,7 +1,7 @@
 'use strict';
 // 이번 주 많이 본 포켓몬 — 번호를 이름표에 대고, 없는 번호는 버리고, 서버 순서를 지킨다 (lib/hotMons.ts)
 import { describe, it, expect } from 'vitest';
-import { rankMons, hotChannel, loadHotMons, HOT_MON_MAX, HOT_MON_WEEK, HOT_MON_ALL } from '../lib/hotMons';
+import { rankMons, hotChannel, loadHotMons, hotMonsCaption, HOT_MON_MAX, HOT_MON_WEEK, HOT_MON_ALL, HOT_MON_HOURS } from '../lib/hotMons';
 import { fillBosses } from '../lib/weekBosses';
 import type { MaxSlide } from '../lib/maxSlides';
 
@@ -41,20 +41,30 @@ describe('hotChannel', () => {
   });
 });
 
-describe('loadHotMons — 이번 주가 비면 누적', () => {
-  const body = (window: number, rows: { dex: number; hits: number; visitors: number }[]) => ({ window, generated: '', rows });
-  it('이번 주에 줄이 있으면 그것으로 끝 — 한 번만 묻는다', async () => {
-    const asked: number[] = [];
-    const got = await loadHotMons('prod', async (days) => { asked.push(days); return body(days, [{ dex: 25, hits: 1, visitors: 1 }]); });
-    expect(asked).toEqual([HOT_MON_WEEK]);
-    expect(got.window).toBe(HOT_MON_WEEK);
+describe('loadHotMons — 최근 1시간 → 이번 주 → 누적', () => {
+  const body = (days: number, hours: number | undefined, rows: { dex: number; hits: number; visitors: number }[]) => ({ window: hours ? 0 : days, ...(hours ? { hours } : {}), generated: '', rows });
+  it('최근 1시간에 줄이 있으면 그것으로 끝 — 한 번만 묻는다', async () => {
+    const asked: string[] = [];
+    const got = await loadHotMons('prod', async (days, _limit, _ch, hours) => { asked.push(hours ? `h${hours}` : `d${days}`); return body(days, hours, [{ dex: 25, hits: 1, visitors: 1 }]); });
+    expect(asked).toEqual([`h${HOT_MON_HOURS}`]);
+    expect(got.hours).toBe(HOT_MON_HOURS);
   });
-  it('이번 주가 비면 누적(400일)을 다시 묻고, 열 줄까지', async () => {
-    const asked: number[] = [];
-    const got = await loadHotMons('dev', async (days) => { asked.push(days); return body(days, days === HOT_MON_WEEK ? [] : [{ dex: 150, hits: 3, visitors: 2 }]); });
-    expect(asked).toEqual([HOT_MON_WEEK, HOT_MON_ALL]);
+  it('한 시간이 비면 이번 주, 그마저 비면 누적(400일)을 묻고, 열 줄까지', async () => {
+    const asked: string[] = [];
+    const got = await loadHotMons('dev', async (days, _limit, _ch, hours) => { asked.push(hours ? `h${hours}` : `d${days}`); return body(days, hours, !hours && days === HOT_MON_ALL ? [{ dex: 150, hits: 3, visitors: 2 }] : []); });
+    expect(asked).toEqual([`h${HOT_MON_HOURS}`, `d${HOT_MON_WEEK}`, `d${HOT_MON_ALL}`]);
     expect(got.rows[0]!.dex).toBe(150);
     expect(HOT_MON_MAX).toBe(10);
+  });
+});
+
+describe('hotMonsCaption — 어느 창을 보여 주는지', () => {
+  it('시간 창 · 날 창 · 누적 · 보스만', () => {
+    expect(hotMonsCaption({ window: 0, hours: 1 }, true)).toBe('총 수집기간 7일 · 화면 표시 최근 1시간');
+    expect(hotMonsCaption({ window: 7 }, true)).toBe('총 수집기간 7일 · 화면 표시 최근 7일');
+    expect(hotMonsCaption({ window: 400 }, true)).toBe('총 수집기간 7일 · 화면 표시 누적');
+    expect(hotMonsCaption({ window: 0, hours: 1 }, false)).toBe('이번 시즌 맥스 배틀 보스');
+    expect(hotMonsCaption(null, false)).toBe('이번 시즌 맥스 배틀 보스');
   });
 });
 
@@ -74,5 +84,14 @@ describe('fillBosses — 남은 자리를 맥스 보스로', () => {
   it('자리가 없으면 빈 줄, 자리만큼만', () => {
     expect(fillBosses(slides, 0)).toEqual([]);
     expect(fillBosses(slides, 1).map((one) => one.name)).toEqual(['울머기']);
+  });
+
+  it('씨앗이 있으면 임의의 순서 — 같은 씨앗이면 같은 순서, 종은 그대로 셋', () => {
+    const a = fillBosses(slides, 3, new Set(), 42).map((one) => one.dex);
+    const b = fillBosses(slides, 3, new Set(), 42).map((one) => one.dex);
+    expect(a).toEqual(b);
+    expect([...a].sort()).toEqual([150, 6, 816].sort());
+    const orders = new Set([1, 2, 3, 4, 5, 6, 7, 8].map((seed) => fillBosses(slides, 3, new Set(), seed).map((one) => one.dex).join(',')));
+    expect(orders.size).toBeGreaterThan(1);
   });
 });
