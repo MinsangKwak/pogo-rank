@@ -35,20 +35,49 @@ export function weekBosses(slides: readonly MaxSlide[], max = WEEK_BOSS_MAX): { 
   return { label: slide.live ? '이번 주 보스' : `${slide.short} 보스`, bosses };
 }
 
-/** 홈과 팔레트가 같은 계산을 쓴다 — 두 곳의 칩이 다르면 어느 쪽이 맞는지 알 수 없다 */
-export function useWeekBosses(): { label: string; bosses: WeekBoss[] } {
+/** 채움 칩 하나 — 홈 '많이 본 포켓몬' 의 빈 자리를 메우는 맥스 보스 (2026-09-29 주인 결정: 검색이 늘어야 한다) */
+export interface FillBoss extends WeekBoss { gmax: boolean }
+
+/**
+ * 남은 자리(need)를 앞으로 남은 맥스 일정의 보스로 채운다 — 진행 중인 장부터 가까운 순, 같은 종은 한 번, 순위에 이미 선 번호는 뺀다.
+ * 상세는 detailName(다이맥스 · 거다이맥스 접두어)으로 열어 맥스 전용 추천이 나오게 한다 (weekBosses 와 같은 이유)
+ */
+export function fillBosses(slides: readonly MaxSlide[], need: number, exclude: ReadonlySet<number> = new Set()): FillBoss[] {
+  if (need <= 0) return [];
+  const seen = new Set<number>(exclude);
+  const out: FillBoss[] = [];
+  for (const slide of slides) {
+    const prefix = slide.gmax ? '거다이맥스' : '다이맥스';
+    for (const boss of slide.bosses) {
+      if (!boss.name || seen.has(boss.dex)) continue;
+      seen.add(boss.dex);
+      out.push({ ...boss, detailName: `${prefix} ${boss.name}`, gmax: slide.gmax });
+      if (out.length >= need) return out;
+    }
+  }
+  return out;
+}
+
+/** 남은 맥스 일정 — 홈 배너 · 보스 칩 · 채움 칩이 같은 장을 본다 */
+export function useMaxSlidesSoft(): MaxSlide[] {
   // '지금' 은 처음 그릴 때 한 번 — 그릴 때마다 새로 재면 useMemo 가 매번 다시 돈다
   const [nowMs] = useState(() => Date.now());
   const dex = useDexSoft();
   const gameday = useGamedaySoft();
   const max = useMaxSoft();
   const schedule = useScheduleSoft();
-  return useMemo(() => weekBosses(maxSlides({
+  return useMemo(() => maxSlides({
     events: gameday?.GAMEDAY.events,
     names: dex?.DEX_DATA.names,
     en: dex?.DEX_DATA.en,
     forms: dex?.DEX_DATA.forms,
     maxRows: max?.DMAX_DATA['overall'],
     weeks: weeksFromSchedule(schedule?.SCHEDULE_MONTHS),
-  }, nowMs)), [dex, gameday, max, schedule, nowMs]);
+  }, nowMs), [dex, gameday, max, schedule, nowMs]);
+}
+
+/** 홈과 팔레트가 같은 계산을 쓴다 — 두 곳의 칩이 다르면 어느 쪽이 맞는지 알 수 없다 */
+export function useWeekBosses(): { label: string; bosses: WeekBoss[] } {
+  const slides = useMaxSlidesSoft();
+  return useMemo(() => weekBosses(slides), [slides]);
 }
