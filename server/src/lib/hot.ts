@@ -30,9 +30,21 @@ export const MIN_VISITORS = 2;
 
 export interface HotRow { term: string; hits: number; visitors: number }
 
+/** 한국 날짜 양끝 'YYYY-MM-DD' — 관리자 통계가 달력으로 고른 기간 */
+export interface DateRange { from: string; to: string }
+
+/** 창 — range 가 오면 한국 날짜 양끝(통계 표와 같은 자름), 없으면 '지금부터 days 일(또는 hours 시간)' */
+function timeWindow(sql: Sql, options: { days: number; hours?: number | undefined; range?: DateRange | undefined }) {
+  if (options.range) return sql`(created_at at time zone 'Asia/Seoul')::date between ${options.range.from}::date and ${options.range.to}::date`;
+  const span = options.hours ? sql`(${options.hours} * interval '1 hour')` : sql`(${options.days} * interval '1 day')`;
+  return sql`created_at >= now() - ${span}`;
+}
+
 export interface HotOptions {
   days: number;
   limit: number;
+  /** 한국 날짜 양끝으로 자른다 — 관리자 통계의 기간 표와 같은 창. 없으면 '지금부터 days 일' */
+  range?: DateRange | undefined;
   /** 'KR' 처럼 나라를 좁힌다. 없으면 전 세계 */
   country?: string | undefined;
   /** 문턱을 적용할지. 운영 화면은 켜고, 관리자 진단은 끈다 */
@@ -45,7 +57,7 @@ export interface HotOptions {
 }
 
 export async function hotRows(sql: Sql, options: HotOptions): Promise<HotRow[]> {
-  const { days, limit, country, threshold = true, fold = true } = options;
+  const { days, limit, country, range, threshold = true, fold = true } = options;
   const narrow = country ? sql`and country = ${country}` : sql``;
   // capped: **날 · 사람 · 말** 단위로 먼저 묶어 한도를 건 뒤에 합친다.
   //
@@ -67,7 +79,7 @@ export async function hotRows(sql: Sql, options: HotOptions): Promise<HotRow[]> 
       where name = 'search'
         and channel = 'prod'
         and term is not null
-        and created_at >= now() - (${days} * interval '1 day')
+        and ${timeWindow(sql, { days, range })}
         ${narrow}
       group by term, visitor, day
     ), totals as (
@@ -100,11 +112,10 @@ export interface HotMonRow { dex: number; hits: number; visitors: number }
  * 문턱은 없다 — 주인 결정으로 지금 수치 그대로 낸다. 빈 표면 화면이 구역을 안 그린다.
  * 정렬은 본 사람 수 → 횟수 — 열 번 연 한 사람보다 한 번씩 연 두 사람이 위다
  */
-export async function hotMons(sql: Sql, options: { days: number; limit: number; channel?: 'prod' | 'dev'; hours?: number | undefined }): Promise<HotMonRow[]> {
+export async function hotMons(sql: Sql, options: { days: number; limit: number; channel?: 'prod' | 'dev'; hours?: number | undefined; range?: DateRange | undefined }): Promise<HotMonRow[]> {
   // 채널 — 운영 화면은 운영 기록만. dev 미리보기는 제 기록(channel=dev)을 봐야 띠가 어떻게 서는지 볼 수 있다 (2026-09-29 주인 제보)
   // hours 가 오면 시간 창이다 — 홈은 '최근 1시간' 을 먼저 묻고 비면 7일 · 누적으로 내려간다 (주인 결정: 실시간 검색어 꼴)
-  const { days, limit, channel = 'prod', hours } = options;
-  const span = hours ? sql`(${hours} * interval '1 hour')` : sql`(${days} * interval '1 day')`;
+  const { days, limit, channel = 'prod', hours, range } = options;
   const like = `${MON_VIEW_PREFIX}%`;
   return sql<HotMonRow[]>`
     with capped as (
@@ -116,7 +127,7 @@ export async function hotMons(sql: Sql, options: { days: number; limit: number; 
         and channel = ${channel}
         and surface like ${like}
         and surface ~ '^mon-[0-9]{1,5}$'
-        and created_at >= now() - ${span}
+        and ${timeWindow(sql, { days, hours, range })}
       group by surface, visitor, day
     )
     select dex, sum(hits)::int as hits, count(distinct visitor)::int as visitors

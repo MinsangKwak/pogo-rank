@@ -9,7 +9,10 @@ name: web 검사
 # **빌드는 데이터를 먹는다.** `/mon/<id>` 1,184장을 구우려면 dex.json 이 있어야 하고,
 # 그것은 파이썬 파이프라인이 만든다. 그래서 여기서도 그 파이프라인을 돌린다.
 on:
+  # push 는 dev · main · deploy 만 — 작업 브랜치는 pull_request 로 한 번만 돈다.
+  # 전에는 모든 push 에 돌아 PR 브랜치의 커밋마다 push · pull_request 두 판이 같은 제목으로 섰다 (2026-09-29 주인 제보)
   push:
+    branches: [dev, main, deploy]
     paths: ['web/**', 'frontend-v4/scripts/**', 'content/**', 'release/**', '.github/workflows/web-test.yml']
   pull_request:
     paths: ['web/**', 'frontend-v4/scripts/**', 'content/**', 'release/**', '.github/workflows/web-test.yml']

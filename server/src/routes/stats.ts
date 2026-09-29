@@ -10,7 +10,7 @@
 import type { FastifyInstance, preHandlerHookHandler } from 'fastify';
 import type { Sql } from '../db/client.ts';
 import type { Role } from '../lib/rbac.ts';
-import { adminStats, STATS_LIMITS } from '../lib/stats.ts';
+import { adminStats, hourlyMons, resolveRange, isDay, kstDay, STATS_LIMITS } from '../lib/stats.ts';
 import { ga4Stats } from '../lib/ga4.ts';
 
 interface Deps {
@@ -70,6 +70,8 @@ const STATS_REPLY = {
   properties: {
     generatedAt: str,
     days: int,
+    from: { type: 'string', description: '기간 시작 — 한국 날짜 YYYY-MM-DD' },
+    to: { type: 'string', description: '기간 끝 — 한국 날짜 YYYY-MM-DD, 오늘까지' },
     users: {
       type: 'object',
       properties: {
@@ -93,8 +95,22 @@ const STATS_REPLY = {
     views: EVENT_STATS,
     ga4: GA4,
   },
-  required: ['generatedAt', 'days', 'users', 'sessions', 'favorites', 'search', 'views', 'ga4'],
+  required: ['generatedAt', 'days', 'from', 'to', 'users', 'sessions', 'favorites', 'search', 'views', 'ga4'],
 } as const;
+
+const HOUR_SLOT = {
+  type: 'object',
+  properties: { hour: int, hits: int, visitors: int, mons: { type: 'array', items: RANKED } },
+  required: ['hour', 'hits', 'visitors', 'mons'],
+} as const;
+
+const HOURS_REPLY = {
+  type: 'object',
+  properties: { generatedAt: str, day: str, hours: { type: 'array', items: HOUR_SLOT } },
+  required: ['generatedAt', 'day', 'hours'],
+} as const;
+
+const DAY = { type: 'string', pattern: '^\\d{4}-\\d{2}-\\d{2}$' } as const;
 
 const ERROR_REPLY = {
   type: 'object',
@@ -103,7 +119,7 @@ const ERROR_REPLY = {
 } as const;
 
 export function statsRoutes(app: FastifyInstance, deps: Deps): void {
-  app.get<{ Querystring: { days?: number } }>('/v1/admin/stats', {
+  app.get<{ Querystring: { days?: number; from?: string; to?: string } }>('/v1/admin/stats', {
     preHandler: deps.requireRole('root'),
     schema: {
       tags: ['관리'],
@@ -113,24 +129,56 @@ export function statsRoutes(app: FastifyInstance, deps: Deps): void {
         '',
         '- **모아 센 값만** 나간다. 이메일 · 이름 · 방문자 난수 ID 는 한 칸도 없다',
         '- 날짜는 한국 날짜, 빈 날은 0 으로 채운다',
-        `- 기간은 ${STATS_LIMITS.minDays}~${STATS_LIMITS.maxDays}일 (기본 30)`,
+        `- 기간은 \`days\` (${STATS_LIMITS.minDays}~${STATS_LIMITS.maxDays}일, 기본 30 · 오늘까지) 또는 \`from\` · \`to\` (한국 날짜 양끝, 오늘까지 · ${STATS_LIMITS.maxDays}일 안)`,
         "- GA4 가 안 되면 `ga4.status` 가 'off' · 'error' 이고 나머지는 그대로 선다",
       ].join('\n'),
       security: [{ accessToken: [] }],
       querystring: {
         type: 'object',
         additionalProperties: false,
-        properties: { days: { type: 'integer', minimum: STATS_LIMITS.minDays, maximum: STATS_LIMITS.maxDays, default: 30 } },
+        properties: {
+          days: { type: 'integer', minimum: STATS_LIMITS.minDays, maximum: STATS_LIMITS.maxDays, default: 30 },
+          from: DAY,
+          to: DAY,
+        },
       },
-      response: { 200: STATS_REPLY, 401: ERROR_REPLY, 403: ERROR_REPLY },
+      response: { 200: STATS_REPLY, 400: ERROR_REPLY, 401: ERROR_REPLY, 403: ERROR_REPLY },
     },
   }, async (request, reply) => {
-    const days = request.query.days ?? 30;
+    const range = resolveRange(request.query);
+    if ('error' in range) return reply.code(400).send({ error: 'bad_range', reason: range.error });
     const [ours, ga4] = await Promise.all([
-      adminStats(deps.sql, days),
-      ga4Stats(deps.ga4PropertyId, days, deps.ga4Fetch ?? fetch),
+      adminStats(deps.sql, range),
+      ga4Stats(deps.ga4PropertyId, range, deps.ga4Fetch ?? fetch),
     ]);
     // 숫자는 바뀌어도 곧 다시 볼 것이라 저장하지 않는다 — 운영 숫자가 브라우저 캐시에 남지 않게
     return reply.header('cache-control', 'no-store').send({ ...ours, ga4 });
+  });
+
+  app.get<{ Querystring: { day?: string } }>('/v1/admin/stats/hours', {
+    preHandler: deps.requireRole('root'),
+    schema: {
+      tags: ['관리'],
+      summary: '시간대별 많이 본 포켓몬 — 루트 관리자만',
+      description: [
+        '하루(한국 날짜)를 00~01시 … 23~24시 24칸으로 나눠, 칸마다 상세 팝업을 연 포켓몬 상위를 준다.',
+        '',
+        `- 사람당 한 칸에 같은 포켓몬 5회까지 센다. 칸마다 상위 ${STATS_LIMITS.hourTop}줄, 빈 칸도 0 으로 온다`,
+        '- `day` 는 오늘(한국 날짜)까지 어느 날이든. 없으면 오늘',
+        '- 운영 채널만, 모아 센 값만',
+      ].join('\n'),
+      security: [{ accessToken: [] }],
+      querystring: { type: 'object', additionalProperties: false, properties: { day: DAY } },
+      response: { 200: HOURS_REPLY, 400: ERROR_REPLY, 401: ERROR_REPLY, 403: ERROR_REPLY },
+    },
+  }, async (request, reply) => {
+    // 어느 날이든 받는다 — 기간 표(from · to)는 길이만 400일로 막고 옛날은 안 막으므로, 그 표의 날짜 탭이 여기서 400 을 받으면 안 된다 (Codex, PR #253)
+    const today = kstDay();
+    const day = request.query.day ?? today;
+    if (!isDay(day) || day > today) {
+      return reply.code(400).send({ error: 'bad_range', reason: 'day 는 YYYY-MM-DD · 오늘(한국 날짜)까지예요' });
+    }
+    const hours = await hourlyMons(deps.sql, day);
+    return reply.header('cache-control', 'no-store').send({ generatedAt: new Date().toISOString(), day, hours });
   });
 }

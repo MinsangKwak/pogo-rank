@@ -111,3 +111,41 @@ describe('검색 순위 준비도 — 문턱은 서버(lib/hot.ts)와 같은 값
     expect(hotReadiness({ hits: 118, visitors: 23, hot, hotToday: [] }, 15).known).toBe(true);
   });
 });
+
+describe('달력 기간 · 시간대 표 (2026-09-30)', () => {
+  it('달력 기간 — 서버(resolveRange)와 같은 규칙으로 막는다', async () => {
+    const { customIssue } = await import('../screens/AdminStats');
+    const today = '2026-09-30';
+    expect(customIssue({ from: '2026-09-14', to: '2026-09-30' }, today)).toBe('');
+    expect(customIssue({ from: '2026-09-30', to: '2026-09-30' }, today)).toBe('');
+    expect(customIssue({ from: '', to: '2026-09-30' }, today)).toMatch(/골라/);
+    expect(customIssue({ from: '2026-09-15', to: '2026-09-14' }, today)).toMatch(/늦어요/);
+    expect(customIssue({ from: '2026-09-14', to: '2026-10-01' }, today)).toMatch(/오늘까지/);
+    expect(customIssue({ from: '2025-08-01', to: '2026-09-30' }, today)).toMatch(/400일/);
+  });
+  it('기간 이름 — 직접 고른 기간은 양끝과 날 수', async () => {
+    const { periodName } = await import('../screens/AdminStats');
+    expect(periodName('custom', { days: 17, from: '2026-09-14', to: '2026-09-30' }, '9/14부터')).toBe('9/14 ~ 9/30 17일');
+    expect(periodName('since', { days: 17 }, '9/14부터')).toBe('9/14부터 17일');
+    expect(periodName('7', { days: 7 }, '9/14부터')).toBe('최근 7일');
+    expect(periodName('custom', { days: 7 }, '9/14부터')).toBe('최근 7일');
+  });
+  it('시간 칸 이름 — 24시 기준, 밖은 대시', async () => {
+    const { hourLabel, tabLabel, hourDays, monLine, HOUR_DAYS_MAX } = await import('../components/StatHours');
+    expect(hourLabel(0)).toBe('00~01시');
+    expect(hourLabel(23)).toBe('23~24시');
+    expect([hourLabel(24), hourLabel(-1), hourLabel(Number.NaN)]).toEqual([DASH, DASH, DASH]);
+    expect(tabLabel('2026-09-30')).toBe('9/30');
+    expect(tabLabel('oops')).toBe(DASH);
+    const days = Array.from({ length: 40 }, (_, i) => `2026-08-${String(i + 1).padStart(2, '0')}`);
+    expect(hourDays(days)).toHaveLength(HOUR_DAYS_MAX);
+    expect(hourDays(days).at(-1)).toBe(days.at(-1));
+    expect(monLine([{ key: '373', hits: 4, visitors: 1 }, { key: '149', hits: 2, visitors: 1 }], (dex) => `#${dex}`)).toBe('#373 4 · #149 2');
+    expect(monLine([], () => '')).toBe(DASH);
+  });
+  it('지금의 한국 날짜 · 시각', async () => {
+    const { kstNow } = await import('../components/StatHours');
+    expect(kstNow(Date.parse('2026-09-29T16:30:00Z'))).toEqual({ day: '2026-09-30', hour: 1 });
+    expect(kstNow(Date.parse('2026-09-30T14:59:00Z'))).toEqual({ day: '2026-09-30', hour: 23 });
+  });
+});
