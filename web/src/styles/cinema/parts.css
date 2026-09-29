@@ -47,7 +47,8 @@ html body #root :is(.upd__source, .upd__advice, .upd__quote-box, .upd__ba-before
 
 /* ── 아이콘 단추의 글자 — 상자를 대문자 높이 ~ 기준선으로 깎는다 ─────────────
    Pretendard 한글은 줄 상자 안에서 잉크가 위로 치우쳐, flex 로 상자를 가운데 두어도 아이콘보다 1~1.5px 떴다.
-   깎은 상자는 글자 잉크와 거의 같아 flex 가운데가 곧 잉크 가운데다 — 아이콘과 나란한 글자 span 에 붙인다.
+   깎은 상자는 글자 잉크와 거의 같아 flex 가운데가 곧 잉크 가운데다 — **SVG 아이콘**과 나란한 글자 span 에만 붙인다.
+   아이콘이 이모지 글자면 붙이지 않는다 — 둘 다 같은 줄 상자라 한쪽만 깎으면 오히려 벌어진다(링크 복사 2.7px).
    text-box 를 모르는 브라우저(Firefox)는 그대로다 (2026-09-30 주인 요청: 아이콘 단추 세로 중앙) */
 @supports (text-box: trim-both cap alphabetic) {
   html body #root .btn-label { text-box: trim-both cap alphabetic; }

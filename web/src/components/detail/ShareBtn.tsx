@@ -21,7 +21,7 @@ export default function ShareBtn({ mon }: { mon: MonRef }) {
     <button className={`detail__share detail__dock-btn${copied ? ' is-copied' : ''}`}
       aria-label="링크 공유" title="이 포켓몬 링크 공유" onClick={click}>
       <span className="detail__share-icon">{copied ? '✓' : '🔗'}</span>
-      <span className="detail__share-text btn-label">{copied ? '복사됨 ✓' : '링크 복사'}</span>
+      <span className="detail__share-text">{copied ? '복사됨 ✓' : '링크 복사'}</span>
     </button>
   );
 }
