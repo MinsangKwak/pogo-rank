@@ -15,6 +15,11 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 export const RELEASE_NOTES_EN = {
+  '2026-09-29 · v5.5.2': [
+    '**Detail popup tabs have square corners** — the underline of the pressed tab no longer ends in a curve, and the ☆ on the favorite button sits level with its label',
+    '**Root admin stats can take a calendar range** — buttons for since 9/14 · 7 · 14 · 21 · 30 days plus [Custom]: pick a start and end date, press [Apply] and every panel follows that range',
+    '**Admin stats gained a most-viewed-by-hour table** — each day tab lists 00–01h … 23–24h with the Pokémon whose detail was opened in that hour, the same figure as "Trending Pokémon right now" on Home',
+  ],
   '2026-09-29 · v5.5.1': [
     '**The ranking at the top of Home is now "Trending Pokémon right now"** — Pokémon whose detail was opened in the last hour come first; if nobody opened one in that hour it falls back to the last 7 days, then all time. The caption says which window you are looking at, e.g. "Collected over 7 days · showing the last 1 hours". A tab left open refreshes every hour. Ten ranked Pokémon fill the row as is; any slots left are filled with random Dynamax and Gigantamax bosses for that hour',
   ],
