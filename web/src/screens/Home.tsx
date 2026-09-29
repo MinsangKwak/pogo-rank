@@ -26,6 +26,7 @@ import { useWeekBosses } from '../lib/weekBosses';
 import { UPDATE_CATS } from '../lib/notes';
 import type { OpenMon } from '../lib/mon';
 import { TankPopupEntry, NOV_TANK_LIVE } from '../components/TankPopup';
+import HotMons from '../components/HotMons';
 
 // 대표 일러스트 — 머리에서 미리 받는 그 그림 (app/page.tsx 의 preload 와 같은 파일)
 const HERO_ART_ENTRY = MAX_ART.find((art) => art.dex.includes(816))!;
@@ -266,6 +267,8 @@ export default function Home({ onOpen }: { onOpen: OpenMon }) {
           데이터를 안 쓰는 카드라 Suspense 밖에 둘 수 있다 — 그래서 첫 화면에 바로 선다 */}
 
       </div>
+      {/* 이번 주 많이 본 포켓몬 — 히어로 바로 아래 (2026-09-29 주인 결정: 상단에). 서버 집계라 데이터 Suspense 밖이고, 줄이 없으면 안 그린다 */}
+      <HotMons onOpen={onOpen} />
       {/* 기다리는 자리도 한 화면을 채운다 — 바닥글이 먼저 보였다가 밀리면 CLS 다 */}
       <Suspense fallback={<div className="home__loading" aria-busy="true" />}>
 

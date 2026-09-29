@@ -118,7 +118,7 @@ export function collectSearch(term: string, surface: string): void {
 let lastView = '';
 
 /**
- * 화면 하나를 연 것 — **화면 id 하나만** 보낸다(주소 · 질의 · 상세의 포켓몬 번호는 안 보낸다).
+ * 화면 하나를 연 것 — **화면 id 하나만** 보낸다(주소 · 질의는 안 보낸다).
  * 통계를 끈 사람 · 주소 없는 빌드에서는 아무것도 안 나간다. 같은 화면을 연달아 열면 한 번만 센다
  */
 export function collectView(routeId: string, now: number = Date.now()): void {
@@ -126,6 +126,19 @@ export function collectView(routeId: string, now: number = Date.now()): void {
   lastView = routeId;
   if (!endpoint || !analyticsWanted()) return;
   enqueue({ name: 'view', surface: routeId, ts: new Date(now).toISOString() });
+}
+
+/** 상세 팝업의 화면 id — server/src/lib/contract.ts 의 MON_VIEW 와 같은 꼴 */
+export const MON_VIEW_PREFIX = 'mon-';
+export const monView = (dex: number): string => `${MON_VIEW_PREFIX}${dex}`;
+
+/**
+ * 상세 팝업을 연 것 — 화면 id 자리에 도감 번호를 붙여 보낸다 (2026-09-29 · 방침 2항).
+ * '이번 주 많이 본 포켓몬' 의 재료다. 같은 view 이벤트라 동의 · 주소 규칙은 화면과 같고, 같은 포켓몬을 연달아 열면 한 번만 센다
+ */
+export function collectMonView(dex: number, now: number = Date.now()): void {
+  if (!Number.isInteger(dex) || dex <= 0 || dex > 99999) return;
+  collectView(monView(dex), now);
 }
 
 /**
