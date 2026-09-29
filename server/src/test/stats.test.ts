@@ -232,10 +232,12 @@ describe.skipIf(!url)('GET /v1/admin/stats', () => {
     expect(body.hours[hour]).toEqual({ hour, hits: PERSON_CAP + 3, visitors: 3, mons: [{ key: '6', hits: PERSON_CAP, visitors: 1 }, { key: '25', hits: 2, visitors: 1 }, { key: '150', hits: 1, visitors: 1 }] });
     expect(body.hours.filter((one: { hits: number }) => one.hits > 0)).toHaveLength(1);
     expect(res.body).not.toMatch(/aaaaaaaa|bbbbbbbb/);
-    // day 없으면 오늘, 미래 · 400일 밖 · 꼴 틀림은 400
+    // day 없으면 오늘, 미래 · 꼴 틀림은 400. 옛날은 받는다 — 기간 표가 옛 기간을 허용하므로 그 날짜 탭도 서야 한다
     expect((await app.inject({ method: 'GET', url: '/v1/admin/stats/hours', headers })).json().day).toBe(today);
     expect((await app.inject({ method: 'GET', url: `/v1/admin/stats/hours?day=${shiftDay(today, 1)}`, headers })).statusCode).toBe(400);
-    expect((await app.inject({ method: 'GET', url: `/v1/admin/stats/hours?day=${shiftDay(today, -400)}`, headers })).statusCode).toBe(400);
+    const old = await app.inject({ method: 'GET', url: `/v1/admin/stats/hours?day=${shiftDay(today, -400)}`, headers });
+    expect(old.statusCode).toBe(200);
+    expect(old.json().hours.every((one: { hits: number }) => one.hits === 0)).toBe(true);
     expect((await app.inject({ method: 'GET', url: '/v1/admin/stats/hours?day=today', headers })).statusCode).toBe(400);
   });
 });

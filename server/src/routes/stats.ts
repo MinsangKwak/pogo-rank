@@ -10,7 +10,7 @@
 import type { FastifyInstance, preHandlerHookHandler } from 'fastify';
 import type { Sql } from '../db/client.ts';
 import type { Role } from '../lib/rbac.ts';
-import { adminStats, hourlyMons, resolveRange, isDay, kstDay, shiftDay, STATS_LIMITS } from '../lib/stats.ts';
+import { adminStats, hourlyMons, resolveRange, isDay, kstDay, STATS_LIMITS } from '../lib/stats.ts';
 import { ga4Stats } from '../lib/ga4.ts';
 
 interface Deps {
@@ -164,7 +164,7 @@ export function statsRoutes(app: FastifyInstance, deps: Deps): void {
         '하루(한국 날짜)를 00~01시 … 23~24시 24칸으로 나눠, 칸마다 상세 팝업을 연 포켓몬 상위를 준다.',
         '',
         `- 사람당 한 칸에 같은 포켓몬 5회까지 센다. 칸마다 상위 ${STATS_LIMITS.hourTop}줄, 빈 칸도 0 으로 온다`,
-        `- \`day\` 는 오늘(한국 날짜)까지 · ${STATS_LIMITS.maxDays}일 안. 없으면 오늘`,
+        '- `day` 는 오늘(한국 날짜)까지 어느 날이든. 없으면 오늘',
         '- 운영 채널만, 모아 센 값만',
       ].join('\n'),
       security: [{ accessToken: [] }],
@@ -172,10 +172,11 @@ export function statsRoutes(app: FastifyInstance, deps: Deps): void {
       response: { 200: HOURS_REPLY, 400: ERROR_REPLY, 401: ERROR_REPLY, 403: ERROR_REPLY },
     },
   }, async (request, reply) => {
+    // 어느 날이든 받는다 — 기간 표(from · to)는 길이만 400일로 막고 옛날은 안 막으므로, 그 표의 날짜 탭이 여기서 400 을 받으면 안 된다 (Codex, PR #253)
     const today = kstDay();
     const day = request.query.day ?? today;
-    if (!isDay(day) || day > today || day < shiftDay(today, -(STATS_LIMITS.maxDays - 1))) {
-      return reply.code(400).send({ error: 'bad_range', reason: `day 는 오늘(한국 날짜)까지 · ${STATS_LIMITS.maxDays}일 안이어야 해요` });
+    if (!isDay(day) || day > today) {
+      return reply.code(400).send({ error: 'bad_range', reason: 'day 는 YYYY-MM-DD · 오늘(한국 날짜)까지예요' });
     }
     const hours = await hourlyMons(deps.sql, day);
     return reply.header('cache-control', 'no-store').send({ generatedAt: new Date().toISOString(), day, hours });

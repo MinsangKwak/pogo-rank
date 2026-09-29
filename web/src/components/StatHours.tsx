@@ -48,29 +48,35 @@ export function kstNow(now: number = Date.now()): { day: string; hour: number } 
 
 const EMPTY_HOURS = Array.from({ length: 24 }, (_, hour) => ({ hour, hits: 0, visitors: 0, mons: [] as StatRanked[] }));
 
-export function StatHours({ days, monName }: { days: readonly string[]; monName: (dex: number) => string }) {
+/**
+ * `stamp` 는 위 통계를 받은 시각(generatedAt) — [새로 받기] 로 위가 새로 오면 기억한 날도 다시 받는다.
+ * 받은 날은 `stamp|day` 로 기억하고 실패는 기억하지 않는다 — 실패 줄의 [다시 받기] 가 같은 날을 다시 묻는다 (Codex, PR #253)
+ */
+export function StatHours({ days, monName, stamp }: { days: readonly string[]; monName: (dex: number) => string; stamp: string }) {
   const tabs = hourDays(days);
   const last = tabs[tabs.length - 1] ?? '';
   const [picked, setPicked] = useState(last);
   // 기간이 바뀌어 고른 날이 탭에서 사라지면 마지막 날로 — 없는 날을 붙들고 있지 않는다
   const day = tabs.includes(picked) ? picked : last;
+  const key = `${stamp}|${day}`;
   const [got, setGot] = useState<Record<string, Hours>>({});
+  const [retry, setRetry] = useState(0);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
 
   useEffect(() => {
-    if (!day || got[day]) return;
+    if (!day || got[key]) return;
     let live = true;
     setBusy(true);
     setError('');
     serverApi.adminStatsHours(day)
-      .then((hours) => { if (live) setGot((prev) => ({ ...prev, [day]: hours })); })
-      .catch(() => { if (live) setError('시간대 표를 받지 못했어요. 잠시 뒤 다시 눌러 주세요'); })
+      .then((hours) => { if (live) setGot((prev) => ({ ...prev, [key]: hours })); })
+      .catch(() => { if (live) setError('시간대 표를 받지 못했어요.'); })
       .finally(() => { if (live) setBusy(false); });
     return () => { live = false; };
-  }, [day, got]);
+  }, [day, key, got, retry]);
 
-  const hours = got[day]?.hours ?? EMPTY_HOURS;
+  const hours = got[key]?.hours ?? EMPTY_HOURS;
   const total = hours.reduce((sum, one) => sum + one.hits, 0);
   const now = kstNow();
   return (
@@ -83,7 +89,12 @@ export function StatHours({ days, monName }: { days: readonly string[]; monName:
         <Segmented className="stat-hours__days" label="날짜" value={day} onPick={setPicked}
           items={tabs.map((one) => ({ id: one, label: tabLabel(one) }))} />
       ) : null}
-      {error ? <p className="stat-rank__empty">{error}</p> : null}
+      {error ? (
+        <p className="stat-rank__empty" role="alert">
+          {error}
+          <button type="button" className="stat-rank__more" onClick={() => setRetry((n) => n + 1)} disabled={busy}>다시 받기</button>
+        </p>
+      ) : null}
       <table>
         <thead>
           <tr>

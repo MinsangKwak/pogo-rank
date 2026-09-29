@@ -395,7 +395,7 @@ export default function AdminStats() {
             rows={ranked(views.countries, countryName)} />
         </div>
         {/* 날짜 탭마다 24칸 — 홈 띠와 같은 수치를 "언제" 로 읽는다 */}
-        <StatHours days={views.perDay.map((row) => row.day)} monName={monName} />
+        <StatHours days={views.perDay.map((row) => row.day)} monName={monName} stamp={stats.generatedAt} />
       </section>
 
       <section className="stat-sec" id="stat-search">

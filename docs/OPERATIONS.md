@@ -884,7 +884,7 @@ python3 scripts/firestore_restore.py --apply    # 실제 쓰기
 하루 창(`hotToday`)만 기간과 무관하게 '지금부터 하루' 다.
 
 **시간대별 많이 본 포켓몬** — 화면 구역 아래에 날짜 탭(기간의 최근 31일)마다 00~01시 … 23~24시 24칸.
-`GET /v1/admin/stats/hours?day=YYYY-MM-DD` 가 칸마다 상세 팝업을 연 포켓몬 상위 5줄을 준다 — 홈의 '지금 많이 보는 포켓몬' 과 같은 수치(`mon-<번호>` view).
+`GET /v1/admin/stats/hours?day=YYYY-MM-DD`(오늘까지 어느 날이든)가 칸마다 상세 팝업을 연 포켓몬 상위 5줄을 준다 — 홈의 '지금 많이 보는 포켓몬' 과 같은 수치(`mon-<번호>` view).
 사람당 한 칸에 같은 포켓몬 5회까지 센다.
 
 </details>
