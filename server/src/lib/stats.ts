@@ -11,7 +11,7 @@
 // ─────────────────────────────────────────────────────────────────────────────
 'use strict';
 import type { Sql } from '../db/client.ts';
-import { hotRows } from './hot.ts';
+import { hotRows, hotMons } from './hot.ts';
 
 export interface DayCount { day: string; count: number }
 export interface DayHits { day: string; hits: number; visitors: number }
@@ -50,6 +50,8 @@ export interface EventStats {
    * 어느 하루도 이름 셋을 못 채웠는데 "하루 창을 켤 수 있다" 고 적을 수 있다 (Codex, PR #229) — 판정은 이 줄 수로 한다
    */
   hotToday: Ranked[];
+  /** 페이지뷰만 — 상세 팝업을 연 포켓몬(`mon-<번호>`)을 /v1/mons/hot 과 같은 계산으로 모은 줄. key 는 도감 번호. 검색은 비어 있다 */
+  mons: Ranked[];
   countries: Ranked[];
 }
 
@@ -98,8 +100,9 @@ async function userStats(sql: Sql, days: number): Promise<UserStats> {
 }
 
 async function eventStats(sql: Sql, name: 'search' | 'view', days: number): Promise<EventStats> {
-  // 검색은 고른 이름(term), 페이지뷰는 화면 id(surface)가 '무엇' 이다
-  const what = name === 'search' ? sql`term` : sql`surface`;
+  // 검색은 고른 이름(term), 페이지뷰는 화면 id(surface)가 '무엇' 이다.
+  // 상세 팝업(`mon-<번호>`)은 화면 표에서 'mon' 하나로 접는다 — 포켓몬별 줄은 아래 mons 가 따로 센다 (2026-09-29)
+  const what = name === 'search' ? sql`term` : sql`(case when surface like 'mon-%' then 'mon' else surface end)`;
   const scope = sql`
     name = ${name} and channel = 'prod'
     and (created_at at time zone 'Asia/Seoul')::date > (now() at time zone 'Asia/Seoul')::date - ${days}::int
@@ -139,7 +142,10 @@ async function eventStats(sql: Sql, name: 'search' | 'view', days: number): Prom
       hotRows(sql, { days: 1, limit: STATS_LIMITS.top, threshold: true, fold: false }).then((rows) => rows.map(asRanked)),
     ])
     : [[], []];
-  return { hits: total!.hits, visitors: total!.visitors, perDay, top, surfaces, countries, hot, hotToday };
+  const mons = name === 'view'
+    ? (await hotMons(sql, { days, limit: STATS_LIMITS.top })).map((row) => ({ key: String(row.dex), hits: row.hits, visitors: row.visitors }))
+    : [];
+  return { hits: total!.hits, visitors: total!.visitors, perDay, top, surfaces, countries, hot, hotToday, mons };
 }
 
 /** 기간을 끝 안으로 — 스키마가 막지만 함수만 불러도 틀리지 않게 */
