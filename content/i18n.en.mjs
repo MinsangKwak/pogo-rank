@@ -21,6 +21,8 @@
 // 이름 + 꼬리말 꼴. $1·$2 로 잡은 조각은 엔진이 다시 번역해 끼운다 (이름 1,000개를 사전에 적지 않기 위해).
 // 위에서부터 먼저 맞는 것을 쓴다 — 좁은 규칙을 위에 둔다
 export const I18N_PATTERNS = [
+  // 2026-09-29 이번 주 많이 본 포켓몬
+  [/^최근 (\d+)일$/, 'Last $1 days'],
   // 2026-09-15 v3.32.0 D-MAX 덱 짜기
   [/^(.+) 보스에 데려갈 셋$/, 'The three to bring against a $1 boss'],
   [/^이번 주 (.+)$/, 'This week · $1'],
@@ -173,12 +175,6 @@ export const I18N_PATTERNS = [
   [/^레이드 추천 후보 — (.+) 딜러$/, 'Raid picks — $1 attackers'],
   // 2026-09-28 검색 팔레트 · 홈 검색 칩 — '9.28–10.4 보스'
   [/^([\d.–]+) 보스$/, '$1 bosses'],
-  // 2026-09-28 오늘의 실루엣 퀴즈 (components/DailyQuiz.tsx)
-  [/^정답! (.+)$/, 'Correct! $1'],
-  [/^(\d+)번 만에 맞혔어요$/, 'Got it in $1 tries'],
-  [/^· 🔥 (\d+)일 연속$/, '· 🔥 $1-day streak'],
-  [/^틀린 횟수 (\d+) · 힌트 (\d+)\/3$/, '$1 wrong · hints $2/3'],
-  [/^— 아니에요\. 배너의 힌트를 보고 다시 찾아보세요$/, '— not it. Check the hints in the banner and try again'],
 ];
 
 // 법률·콘텐츠 화면에 띄우는 안내 (privacy.js · terms.js · release.js)
@@ -1194,6 +1190,8 @@ export const I18N_EN = {
   '같은 종 두 마리를 골라 나란히 비교': 'Pick two of the same species to compare side by side',
   '상대 추가': 'Add an opponent',
   '개체값': 'IVs',
+  '정화': 'Purify',
+  '섀도우를 정화하면 공격 · 방어 · 체력이 2씩 올라요 (최대 15)': 'Purifying a Shadow Pokémon raises Attack, Defense and HP IVs by 2 each (up to 15)',
   '주요 기술': 'Main moves',
   '스페셜': 'Charged',
 
@@ -1776,19 +1774,12 @@ export const I18N_EN = {
   '검색 팔레트 · 최근 검색': 'Search palette · recent',
   '검색 팔레트 · 이번 주 보스': "Search palette · this week's bosses",
   '홈 · 이번 주 보스 칩': "Home · this week's boss chips",
-  // 2026-09-28 오늘의 실루엣 퀴즈
-  '오늘의 실루엣 퀴즈': "Today's silhouette quiz",
-  '이 포켓몬은 누구일까요?': 'Which Pokémon is this?',
-  '이름을 검색해서 맞혀 보세요': 'Search its name to answer',
-  '한 번에 맞혔어요': 'Got it first try',
-  '내일 새 문제가 나와요': 'A new one tomorrow',
-  '정답 맞히기': 'Take a guess',
-  '힌트': 'Hints',
-  '도감 번호': 'Dex number',
-  '첫 글자': 'First letter',
-  '오늘의 실루엣 — 이름을 검색해서 고르면 정답을 확인해요': "Today's silhouette — search a name and pick it to check your answer",
-  '오늘의 퀴즈 접기': "Hide today's quiz",
-  '누구일까요?': 'Who is it?',
-  '검색해서 맞히기': 'Search to answer',
+  // 2026-09-29 이번 주 많이 본 포켓몬 (components/HotMons.tsx)
+  '이번 주 많이 본 포켓몬': "This week's most viewed Pokémon",
+  '누적': 'All time',
+  '이번 시즌 맥스 배틀 보스': 'This season\'s Max Battle bosses',
+  '홈 · 많이 본 포켓몬의 보스 채움': 'Home · most-viewed filler (Max bosses)',
+  '상세 팝업': 'Detail popup',
+  '많이 본 포켓몬': 'Most viewed Pokémon',
   '실루엣 퀴즈 · 추측': 'Silhouette quiz · guesses',
 };
