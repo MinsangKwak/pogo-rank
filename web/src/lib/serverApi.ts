@@ -64,9 +64,19 @@ export type Ga4Stats =
     pages: Ga4Row[];
     countries: Ga4Row[];
   };
+/** 하루의 한 시간 칸 — hour 는 한국 시각 0~23, `hour시 ~ hour+1시` 창. mons 의 key 는 도감 번호 */
+export interface StatHour { hour: number; hits: number; visitors: number; mons: StatRanked[] }
+export interface StatHours { generatedAt: string; day: string; hours: StatHour[] }
+
+/** 통계 기간 — 오늘까지 days 일, 또는 한국 날짜 양끝(달력) */
+export type StatRange = { days: number } | { from: string; to: string };
+
 export interface AdminStats {
   generatedAt: string;
   days: number;
+  /** 기간의 한국 날짜 양끝 — 옛 서버는 안 준다 */
+  from?: string;
+  to?: string;
   users: {
     total: number; pending: number; approved: number; admin: number; root: number; beta: number;
     active1d: number; active7d: number; active30d: number;
@@ -213,7 +223,11 @@ export const serverApi = {
     call<void>(`/v1/trainers/${encodeURIComponent(name)}`, { method: 'DELETE' }),
 
   /** 루트 통계 (2026-09-24) — 모아 센 값만 온다. 기간 7~90일 */
-  adminStats: (days: number) => call<AdminStats>(`/v1/admin/stats?days=${days}`),
+  adminStats: (range: StatRange) => call<AdminStats>(
+    'days' in range ? `/v1/admin/stats?days=${range.days}` : `/v1/admin/stats?from=${range.from}&to=${range.to}`,
+  ),
+  /** 하루를 24칸으로 — 칸마다 상세 팝업을 연 포켓몬 상위 (루트만) */
+  adminStatsHours: (day: string) => call<StatHours>(`/v1/admin/stats/hours?day=${day}`),
 
   listUsers: async () => (await call<{ users: AdminUser[] }>('/v1/admin/users')).users,
   setRole: (id: string, change: { role?: Role; beta?: boolean }) =>

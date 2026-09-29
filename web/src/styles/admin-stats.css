@@ -114,3 +114,33 @@ html body #root .stat-rank__more { align-self: flex-start; min-height: var(--tap
   html body #root .stat-rank tbody th { grid-template-columns: 2rem 1fr; }
   html body #root .stat-rank__bar { grid-column: 2; }
 }
+
+/* ── 2026-09-30 달력 기간 · 시간대별 표 ──────────────────────────────────────
+   달력 — 시작 · 끝 날짜와 적용. 날짜 입력은 조작 영역 높이(--tap), 반경은 --r-ctl. 틀린 기간은 옆에 까닭 한 줄 */
+/* 기간 단추 여섯이 좁은 폭에서 글자를 꺾지 않게 — 줄이 가로로 흐른다 (v3 .seg 는 inline-flex 에 flex:1 이다) */
+html body #root .stat-page__filters .seg { display: flex; max-width: 100%; overflow-x: auto; scrollbar-width: none; }
+html body #root .stat-page__filters .seg button { flex: none; white-space: nowrap; }
+html body #root .stat-page__dates { display: flex; flex: 1 1 auto; flex-wrap: wrap; align-items: center; gap: .4rem .8rem; margin: 0; min-width: 0; }
+html body #root .stat-page__dates label { display: inline-flex; flex: 1 1 14rem; align-items: center; gap: .4rem; color: var(--muted); font-size: var(--fs-sub); white-space: nowrap; }
+html body #root .stat-page__dates input {
+  flex: 1 1 auto; min-width: 0; min-height: var(--tap); padding: 0 .8rem; background: var(--surface); color: var(--fg);
+  border: .1rem solid var(--line); border-radius: var(--r-ctl); font: inherit; font-size: var(--fs-sub);
+}
+html body #root .stat-page__dates input:focus-visible { outline: .2rem solid var(--brand); outline-offset: .2rem; }
+html body #root .stat-page__issue { color: var(--caution); font-size: var(--fs-sub); }
+
+/* 시간대별 표 — 날짜 탭은 한 줄에서 가로로 흐른다(서른한 개까지). 24줄은 늘 같은 자리 */
+html body #root .stat-hours { display: flex; flex-direction: column; gap: .8rem; min-width: 0; }
+html body #root .stat-hours.is-busy table { opacity: .56; transition: opacity .2s; }
+html body #root .stat-hours__head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: .4rem .8rem; }
+html body #root .stat-hours__sub { color: var(--muted); font-size: var(--fs-sub); font-variant-numeric: tabular-nums; }
+html body #root .stat-hours__days { display: flex; max-width: 100%; overflow-x: auto; scrollbar-width: thin; }
+html body #root .stat-hours__days button { flex: none; }
+html body #root .stat-hours table { width: 100%; border-collapse: collapse; font-size: var(--fs-sub); font-variant-numeric: tabular-nums; }
+html body #root .stat-hours :is(th, td) { padding: .4rem .8rem; border-bottom: .1rem solid var(--line); text-align: left; font-weight: 400; vertical-align: top; line-height: 1.5; }
+html body #root .stat-hours thead th { color: var(--muted); }
+html body #root .stat-hours tbody th { color: var(--fg); white-space: nowrap; }
+html body #root .stat-hours__num { text-align: right; white-space: nowrap; }
+html body #root .stat-hours__mons { overflow-wrap: anywhere; }
+/* 오늘 탭의 지금 칸 — 글자색만 바꾼다, 채움 위 글자가 아니라 대비 문제가 없다 */
+html body #root .stat-hours tr.is-now th { color: var(--brand); font-weight: 700; }

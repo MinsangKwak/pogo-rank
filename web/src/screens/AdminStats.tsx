@@ -6,8 +6,10 @@
 //   GA4       방문자 · 페이지뷰                                             — 서버가 Data API 로 받아 준다
 // 방문자 수는 두 원본이 다를 수밖에 없다 — GA4 는 쿠키 기준이고 '통계 끄기' 면 둘 다 안 센다.
 //
-// **기간 하나가 전부를 정한다.** 9/14부터 · 7 · 30 · 90일 — 위 한 줄의 고름이 아래 모든 칸에 같이 걸려야 숫자끼리 맞는다.
+// **기간 하나가 전부를 정한다.** 9/14부터 · 7 · 14 · 21 · 30일 · 달력으로 직접 — 위 한 줄의 고름이 아래 모든 칸에 같이 걸려야 숫자끼리 맞는다.
 // 기본은 '9/14부터' — 서비스를 연 날부터 오늘까지 한 번에 본다 (2026-09-24 주인 요청).
+// '직접 고르기' 는 시작 · 끝 날짜를 달력(input type=date)으로 받아 서버에 from · to 로 묻는다 (2026-09-30 주인 요청).
+// 화면 구역의 '시간대별 많이 본 포켓몬' 은 날짜 탭마다 24칸 — components/StatHours.tsx.
 // 다시 받는 동안은 앞 숫자를 흐리게 둔다 — 빈 틀로 깜빡이지 않는다.
 //
 // **2026-09-28 개편 — 숫자만 늘어놓지 않고 "그래서 어떤가" 를 읽어 준다.**
@@ -20,20 +22,30 @@
 // 루트 판정은 화면(lib/useLocked 'root')과 서버(/v1/admin/stats) 둘 다 한다. 화면 쪽은 막힌 요청을 안 보내려는 것이다.
 // ─────────────────────────────────────────────────────────────────────────────
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { serverApi, ApiError, type AdminStats as Stats, type StatRanked } from '../lib/serverApi';
+import { serverApi, ApiError, type AdminStats as Stats, type StatRanked, type StatRange } from '../lib/serverApi';
 import { useDexSoft } from '../lib/data';
 import { routeById } from '../routes';
 import { count, DASH } from '../lib/cell';
 import { Segmented, Callout } from '../ds';
 import { DayColumns, RankTable, Spark, weekTrend, trendLabel, type RankRow, type DayValue } from '../components/StatChart';
+import { StatHours } from '../components/StatHours';
 
 // 서비스를 연 날 (한국 날짜) — '9/14부터' 는 그날부터 오늘까지의 일수로 바꿔 부른다
 const OPENED = '2026-09-14';
 
+/** 지금의 한국 날짜 'YYYY-MM-DD' — 달력의 끝(max)이자 '오늘' */
+export function kstToday(now: number = Date.now()): string {
+  return new Date(now + 9 * 60 * 60 * 1000).toISOString().slice(0, 10);
+}
+
+/** 두 날짜 사이의 날 수 — 양끝을 넣는다. 꼴이 틀리면 NaN */
+function daysBetween(from: string, to: string): number {
+  return Math.round((Date.parse(`${to}T00:00:00Z`) - Date.parse(`${from}T00:00:00Z`)) / 86_400_000) + 1;
+}
+
 /** 한국 날짜로 OPENED 부터 오늘까지 — 오늘을 넣어 센다 */
 export function daysSinceOpened(now: number = Date.now()): number {
-  const today = new Date(now + 9 * 60 * 60 * 1000).toISOString().slice(0, 10);
-  return Math.round((Date.parse(today) - Date.parse(OPENED)) / 86_400_000) + 1;
+  return daysBetween(OPENED, kstToday(now));
 }
 
 // 서버가 받는 기간 끝 (server/src/lib/stats.ts STATS_LIMITS) — 밖의 값은 스키마가 400 으로 돌려보내 화면이 통째로 선다
@@ -54,9 +66,33 @@ export function sinceLabel(now: number = Date.now()): string {
 const PERIODS = [
   { id: 'since', label: '9/14부터' },
   { id: '7', label: '7일' },
+  { id: '14', label: '14일' },
+  { id: '21', label: '21일' },
   { id: '30', label: '30일' },
-  { id: '90', label: '90일' },
+  { id: 'custom', label: '직접 고르기' },
 ];
+
+/** 달력으로 고른 시작 · 끝이 서버가 받는 기간인지 — 틀리면 그 까닭. 서버(resolveRange)와 같은 규칙 */
+export function customIssue(draft: { from: string; to: string }, today: string = kstToday()): string {
+  const days = daysBetween(draft.from, draft.to);
+  if (!draft.from || !draft.to || !Number.isFinite(days)) return '시작과 끝 날짜를 골라 주세요';
+  if (draft.from > draft.to) return '시작이 끝보다 늦어요';
+  if (draft.to > today) return '끝은 오늘까지예요';
+  if (days > DAYS_MAX) return `기간은 ${DAYS_MAX}일까지예요`;
+  return '';
+}
+
+/** 고른 기간의 이름 — '9/14부터 17일' · '최근 7일' · '9/14 ~ 9/30 17일' */
+export function periodName(period: string, stats: { days: number; from?: string | undefined; to?: string | undefined }, since: string): string {
+  if (period === 'custom' && stats.from && stats.to) return `${shortDay(stats.from)} ~ ${shortDay(stats.to)} ${count(stats.days)}일`;
+  return period === 'since' && since === '9/14부터' ? `9/14부터 ${count(stats.days)}일` : `최근 ${count(stats.days)}일`;
+}
+
+// '2026-09-30' → '9/30'
+function shortDay(day: string): string {
+  const match = /^\d{4}-(\d{2})-(\d{2})$/.exec(day);
+  return match ? `${Number(match[1])}/${Number(match[2])}` : DASH;
+}
 
 // 구역 바로가기 — 고름 줄에 붙어 따라온다. 해시 링크는 같은 주소 안이라 라우터가 안 잡는다 (lib/nav.ts internalHref)
 const SECTIONS = [
@@ -213,18 +249,21 @@ function useBarOffset(loaded: boolean) {
 }
 
 export default function AdminStats() {
-  const [days, setDays] = useState('since');
+  const [period, setPeriod] = useState('since');
+  // 달력의 시작 · 끝 — 기본은 연 날부터 오늘. '적용' 을 눌러야 range 가 된다 (날짜를 고르는 중에 받지 않는다)
+  const [draft, setDraft] = useState({ from: OPENED, to: kstToday() });
+  const [range, setRange] = useState<StatRange>({ days: sinceDays() });
   const [stats, setStats] = useState<Stats | null>(null);
   const page = useBarOffset(stats !== null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const dex = useDexSoft();
 
-  const load = useCallback(async (period: string) => {
+  const load = useCallback(async (which: StatRange) => {
     setBusy(true);
     setError('');
     try {
-      setStats(await serverApi.adminStats(period === 'since' ? sinceDays() : Number(period)));
+      setStats(await serverApi.adminStats(which));
     } catch (caught) {
       setError(caught instanceof ApiError && caught.status === 403 ? '루트 관리자만 볼 수 있어요' : '통계를 받지 못했어요. 잠시 뒤 다시 눌러 주세요');
     } finally {
@@ -232,7 +271,15 @@ export default function AdminStats() {
     }
   }, []);
 
-  useEffect(() => { void load(days); }, [days, load]);
+  useEffect(() => { void load(range); }, [range, load]);
+
+  const issue = customIssue(draft);
+  const pick = (id: string) => {
+    setPeriod(id);
+    if (id === 'custom') { if (!issue) setRange({ ...draft }); return; }
+    setRange({ days: id === 'since' ? sinceDays() : Number(id) });
+  };
+  const today = kstToday();
 
   const monName = useCallback((id: number) => dex?.DEX_DATA.names[String(id)] ?? `#${id}`, [dex]);
   const routeName = (id: string) => {
@@ -254,7 +301,7 @@ export default function AdminStats() {
   // 순위 계산으로 문턱을 넘은 이름 — 표의 딱지가 이것을 본다
   const hotKeys = new Set((search.hot ?? []).map((row) => row.key));
   const since = sinceLabel(Date.parse(stats.generatedAt));
-  const periodName = days === 'since' && since === '9/14부터' ? `9/14부터 ${count(stats.days)}일` : `최근 ${count(stats.days)}일`;
+  const name = periodName(period, stats, since);
   // 숫자 칸의 작은 선이 읽는 모양으로 — 칸마다 어느 수를 그리는지 여기서 보인다
   const daily = <T extends { day: string }>(rows: readonly T[], pick: (row: T) => number): DayValue[] =>
     rows.map((row) => ({ day: row.day, value: pick(row) }));
@@ -263,8 +310,16 @@ export default function AdminStats() {
       {/* 고름은 한 줄, 맨 위 — 아래 모든 칸에 같이 걸린다. 따라오는 줄이라 어느 구역에서든 바꾼다 */}
       <div className="stat-page__bar">
         <div className="stat-page__filters">
-          <Segmented label="기간" items={periodItems(since)} value={days} onPick={setDays} />
-          <button type="button" className="tool-btn" onClick={() => void load(days)} disabled={busy}>새로 받기</button>
+          <Segmented label="기간" items={periodItems(since)} value={period} onPick={pick} />
+          {period === 'custom' ? (
+            <form className="stat-page__dates" onSubmit={(event) => { event.preventDefault(); if (!issue) setRange({ ...draft }); }}>
+              <label>시작일 <input type="date" value={draft.from} max={today} onChange={(event) => setDraft({ ...draft, from: event.target.value })} /></label>
+              <label>종료일 <input type="date" value={draft.to} max={today} onChange={(event) => setDraft({ ...draft, to: event.target.value })} /></label>
+              <button type="submit" className="tool-btn" disabled={busy || !!issue}>기간 적용</button>
+              {issue ? <span className="stat-page__issue" role="alert">{issue}</span> : null}
+            </form>
+          ) : null}
+          <button type="button" className="tool-btn" onClick={() => void load(range)} disabled={busy}>새로 받기</button>
           <span className="stat-page__stamp">{`${stats.generatedAt.slice(0, 16).replace('T', ' ')} UTC 기준 · 운영 채널만`}</span>
         </div>
         <nav className="stat-jump" aria-label="구역 바로가기">
@@ -274,7 +329,7 @@ export default function AdminStats() {
       {error ? <Callout tone="warn" title={error} /> : null}
 
       <section className="stat-sec" id="stat-glance">
-        <h2 className="stat-sec__title">한눈에 <small>{periodName}</small></h2>
+        <h2 className="stat-sec__title">한눈에 <small>{name}</small></h2>
         <div className="stat-tiles">
           <Tile label="가입한 사람" value={count(users.total)} sub={`승인 대기 ${count(users.pending)} · 실험 기능 ${count(users.beta)}`}
             rows={daily(users.newPerDay, (row) => row.count)} />
@@ -339,6 +394,8 @@ export default function AdminStats() {
           <RankTable title="나라" valueHead="페이지뷰" subHead="방문자" empty="아직 없어요"
             rows={ranked(views.countries, countryName)} />
         </div>
+        {/* 날짜 탭마다 24칸 — 홈 띠와 같은 수치를 "언제" 로 읽는다 */}
+        <StatHours days={views.perDay.map((row) => row.day)} monName={monName} />
       </section>
 
       <section className="stat-sec" id="stat-search">
