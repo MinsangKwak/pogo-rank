@@ -23,7 +23,7 @@ import type { MonPick, OpenMon } from './lib/mon';
 import { useLockReason, useLockChecking, useRootShown } from './lib/useLocked';
 import { takeForward } from './lib/nav';
 import { trackPageView, track } from './lib/track';
-import { collectView } from './lib/collect';
+import { collectView, collectMonView } from './lib/collect';
 import { settleVeilAfterFonts } from './lib/veil';
 import SearchPalette from './components/SearchPalette';
 import QuizBanner from './components/QuizBanner';
@@ -176,6 +176,8 @@ export default function App({ seo }: AppProps = {}) {
     setDetail(pick);
     setDetailSeq((now) => now + 1);
     track('detail_open', { sprite });
+    // 우리 수집기에도 — 어느 포켓몬을 열었는지 (lib/collect.ts · 홈의 '이번 주 많이 본 포켓몬')
+    collectMonView(sprite);
     // 주소를 상세로 바꿔 두는 것은 **홈(과 상세) 위에서만** 이다 (v3 detailSyncHash 의 규칙).
     //   목록 위에서 바꾸면 뒤에 깔린 화면이 그 목록에서 홈으로 갈리고, ✕ 를 눌러도 목록으로 못 돌아온다.
     //   기록에 쌓지 않고 바꿔치기한다 — ✕ 한 번으로 닫혀야 한다

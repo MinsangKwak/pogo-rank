@@ -11,6 +11,7 @@
 // ─────────────────────────────────────────────────────────────────────────────
 'use strict';
 import type { Sql } from '../db/client.ts';
+import { MON_VIEW_PREFIX } from './contract.ts';
 
 /** 한 사람이 **하루에** 한 말로 셀 수 있는 최대 횟수 */
 export const PERSON_CAP = 5;
@@ -90,6 +91,39 @@ export async function hotRows(sql: Sql, options: HotOptions): Promise<HotRow[]> 
  * **지우고 다시 넣는다** — 늦게 도착한 이벤트가 있으면 전에 센 수가 틀리기 때문이다.
  * 한 판(transaction)이라 중간에 끊겨도 반쯤 지워진 표가 남지 않는다.
  */
+export interface HotMonRow { dex: number; hits: number; visitors: number }
+
+/**
+ * 이번 주 많이 본 포켓몬 — 상세 팝업을 연 수(view · `mon-<번호>`)를 도감 번호로 모은다 (2026-09-29).
+ *
+ * 검색 순위와 **같은 한도**(사람당 하루 PERSON_CAP)를 걸어 한 사람이 순위를 만들지 못하게 한다.
+ * 문턱은 없다 — 주인 결정으로 지금 수치 그대로 낸다. 빈 표면 화면이 구역을 안 그린다.
+ * 정렬은 본 사람 수 → 횟수 — 열 번 연 한 사람보다 한 번씩 연 두 사람이 위다
+ */
+export async function hotMons(sql: Sql, options: { days: number; limit: number }): Promise<HotMonRow[]> {
+  const { days, limit } = options;
+  const like = `${MON_VIEW_PREFIX}%`;
+  return sql<HotMonRow[]>`
+    with capped as (
+      select substr(surface, ${MON_VIEW_PREFIX.length + 1})::int as dex, visitor,
+             (created_at at time zone 'Asia/Seoul')::date as day,
+             least(count(*), ${PERSON_CAP}) as hits
+      from events
+      where name = 'view'
+        and channel = 'prod'
+        and surface like ${like}
+        and surface ~ '^mon-[0-9]{1,5}$'
+        and created_at >= now() - (${days} * interval '1 day')
+      group by surface, visitor, day
+    )
+    select dex, sum(hits)::int as hits, count(distinct visitor)::int as visitors
+    from capped
+    group by dex
+    order by visitors desc, hits desc, dex asc
+    limit ${limit}
+  `;
+}
+
 export async function rollup(sql: Sql, days = 3): Promise<number> {
   return sql.begin(async (tx) => {
     const since = tx`(now() at time zone 'Asia/Seoul')::date - ${days}::int`;

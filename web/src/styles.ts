@@ -66,3 +66,5 @@ import './styles/cinema/interior.css';
 import './styles/cinema/modal.css';
 import './styles/cinema/palette.css';
 import './styles/cinema/quiz.css';
+// 홈 상단 '이번 주 많이 본 포켓몬' (2026-09-29)
+import './styles/cinema/hotmons.css';

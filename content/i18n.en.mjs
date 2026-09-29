@@ -21,6 +21,9 @@
 // 이름 + 꼬리말 꼴. $1·$2 로 잡은 조각은 엔진이 다시 번역해 끼운다 (이름 1,000개를 사전에 적지 않기 위해).
 // 위에서부터 먼저 맞는 것을 쓴다 — 좁은 규칙을 위에 둔다
 export const I18N_PATTERNS = [
+  // 2026-09-29 이번 주 많이 본 포켓몬
+  [/^최근 (\d+)일 · 상세를 연 사람 수$/, 'Last $1 days · people who opened the detail'],
+  [/^([\d,]+)명$/, '$1 people'],
   // 2026-09-15 v3.32.0 D-MAX 덱 짜기
   [/^(.+) 보스에 데려갈 셋$/, 'The three to bring against a $1 boss'],
   [/^이번 주 (.+)$/, 'This week · $1'],
@@ -1776,6 +1779,10 @@ export const I18N_EN = {
   '검색 팔레트 · 최근 검색': 'Search palette · recent',
   '검색 팔레트 · 이번 주 보스': "Search palette · this week's bosses",
   '홈 · 이번 주 보스 칩': "Home · this week's boss chips",
+  // 2026-09-29 이번 주 많이 본 포켓몬 (components/HotMons.tsx)
+  '이번 주 많이 본 포켓몬': "This week's most viewed Pokémon",
+  '상세 팝업': 'Detail popup',
+  '많이 본 포켓몬': 'Most viewed Pokémon',
   // 2026-09-28 오늘의 실루엣 퀴즈
   '오늘의 실루엣 퀴즈': "Today's silhouette quiz",
   '이 포켓몬은 누구일까요?': 'Which Pokémon is this?',

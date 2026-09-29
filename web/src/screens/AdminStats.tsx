@@ -234,6 +234,8 @@ export default function AdminStats() {
 
   const monName = useCallback((id: number) => dex?.DEX_DATA.names[String(id)] ?? `#${id}`, [dex]);
   const routeName = (id: string) => {
+    // 상세 팝업(mon-<번호>)은 서버가 'mon' 하나로 접어 준다 — 라우터 표의 mon 은 이름이 없다
+    if (id === 'mon') return '상세 팝업';
     const route = routeById(id);
     return route ? (route.title ?? route.nav ?? id) : id;
   };
@@ -325,10 +327,13 @@ export default function AdminStats() {
       <section className="stat-sec" id="stat-views">
         <h2 className="stat-sec__title">화면별 페이지뷰 <small>moncamp 수집</small></h2>
         <DayColumns title="페이지뷰" unit="회" rows={views.perDay.map((row) => ({ day: row.day, value: row.hits }))}
-          note="9월 24일부터 셉니다 · 화면 id 만 — 주소 · 검색어 · 상세의 포켓몬 번호는 안 받아요" />
+          note="9월 24일부터 셉니다 · 화면 id 만 — 주소 · 검색어는 안 받아요. 9월 29일부터 상세 팝업은 도감 번호로 세요" />
         <div className="stat-grid">
           <RankTable title="많이 연 화면" valueHead="페이지뷰" subHead="방문자" empty="아직 없어요"
             rows={ranked(views.top, routeName)} />
+          {/* 홈의 '이번 주 많이 본 포켓몬' 과 같은 계산(/v1/mons/hot) — 옛 서버는 이 칸을 안 준다 */}
+          <RankTable title="많이 본 포켓몬" valueHead="페이지뷰" subHead="방문자" empty={views.mons ? '아직 없어요' : '서버가 아직 안 줘요'}
+            rows={ranked(views.mons ?? [], (key) => monName(Number(key)))} />
           <RankTable title="나라" valueHead="페이지뷰" subHead="방문자" empty="아직 없어요"
             rows={ranked(views.countries, countryName)} />
         </div>

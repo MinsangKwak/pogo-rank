@@ -27,6 +27,28 @@
 ## 릴리스 기록
 
 <details open>
+<summary><b>2026-09-29</b> — 1판 · <code>v5.5.0</code></summary>
+
+<details>
+<summary><b>v5.5.0</b> · 이번 주 많이 본 포켓몬 · 상세 팝업 도감 번호 수집 · 방침 개정</summary>
+
+**배경** — 지표 중 화면에 내놓을 만한 것을 찾았다. 화면별 페이지뷰는 화면이 열 몇 개라 순위가 굳고, 검색 순위는 문턱을 못 넘어 비어 있다. 사람들이 반응할 것은 포켓몬 단위인데 상세 팝업은 화면 id `mon` 하나로만 찍혀 어느 포켓몬인지 남지 않았다. 주인 결정 — 홈 상단에 '이번 주 많이 본 포켓몬' 을 지금 수치 그대로 세우고, 수집 항목 추가는 7일 예고 없이 바로 시행(사이드 프로젝트).
+
+**수집** — 상세 팝업을 열 때 `view` 이벤트의 surface 로 `mon-<도감 번호>` 를 보낸다(`web/src/lib/collect.ts` `collectMonView`, `App.openMon`). 같은 이벤트 · 같은 화면 id 꼴(`ROUTE_ID`)이라 서버 계약(`EVENT_NAMES`)은 안 늘었고 옛 서버도 버리지 않는다. 동의 게이트 · 같은 포켓몬 연달아 한 번 규칙은 화면과 같다.
+
+**서버** — `GET /v1/mons/hot?days=7&limit=10` 공개 집계(`lib/hot.ts` `hotMons`): 사람당 하루 `PERSON_CAP` 한도, 문턱 없음, 본 사람 수 → 횟수 순, 캐시 10분. 관리자 통계는 화면 표에서 `mon-*` 를 'mon'(상세 팝업) 하나로 접고 `views.mons` 에 포켓몬별 줄을 따로 준다. OpenAPI 재생성.
+
+**홈** — 히어로 바로 아래 `components/HotMons.tsx`: 순위 · 그림 · 이름 · 본 사람 수 칩 한 줄(좁으면 가로 넘김), 누르면 상세. 이름표(`useDexSoft`)에 없는 번호는 버리고 줄이 없으면 구역을 안 그린다. 서버 응답은 탭당 한 번(`lib/hotMons.ts`). 관리자 통계 '많이 본 포켓몬' 표.
+
+**방침** — `PRIVACY_VER` 2026-09-29(`VIEW_FROM` 9/24 · `MON_VIEW_FROM` 9/29 상수 분리). 방침 2 · 4항과 개정 이력에 상세 번호 기록을 적고 다음 로그인에 다시 동의. 패치노트 한 · 영. `viewgate.test.ts` 가 두 시행일을 방침 · 패치노트와 견준다.
+
+검사 — server 288(mons 순위 · 관리자 접기) · web(rankMons 3 · 수집 1 · 시행일 3 추가) · designgrid · 명암비 · Playwright(홈 띠 두 테마 · 393 / 1440px · 누르면 상세).
+
+</details>
+
+</details>
+
+<details>
 <summary><b>2026-09-28</b> — 1판 · <code>v5.4.0</code></summary>
 
 <details>

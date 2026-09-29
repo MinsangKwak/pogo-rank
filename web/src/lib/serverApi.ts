@@ -46,6 +46,8 @@ export interface StatEvents {
    * 없을 수 있다 — 서버는 deploy 브랜치에서만 올라가므로(deploy-server.yml) dev 화면이 옛 서버를 볼 수 있다. 화면은 없으면 없다고 적는다
    */
   hot?: StatRanked[];
+  /** 페이지뷰만 — 상세 팝업을 연 포켓몬(key 는 도감 번호), /v1/mons/hot 과 같은 계산. 옛 서버는 안 준다 */
+  mons?: StatRanked[];
   /** 검색만 — 하루 창(/v1/hot?days=1)에서 문턱을 넘은 줄. 하루 창을 켤 수 있는지는 이것으로 본다. 옛 서버는 안 준다 */
   hotToday?: StatRanked[];
 }
@@ -83,6 +85,27 @@ export interface Session { access: string; expiresIn: number; role: Role; beta: 
 const API = (process.env['NEXT_PUBLIC_API_URL'] ?? '').replace(/\/+$/, '');
 
 export const authEnabled = (): boolean => API !== '';
+
+export interface HotMon { dex: number; hits: number; visitors: number }
+export interface HotMons { window: number; generated: string; rows: HotMon[] }
+
+/**
+ * 이번 주 많이 본 포켓몬 — 로그인 없이 누구나 받는 공개 집계 (GET /v1/mons/hot).
+ * 토큰 · 쿠키를 안 싣는다(call 과 다른 이유) — 익명 집계에 로그인 정보를 붙일 까닭이 없고, 캐시(10분)도 그래야 나뉘지 않는다.
+ * 옛 서버(404) · 꺼진 빌드는 빈 줄 — 홈이 구역을 안 그린다. 실패도 빈 줄이다: 첫 화면이 이 한 줄 때문에 깨지면 안 된다
+ */
+export async function fetchHotMons(days = 7, limit = 10): Promise<HotMons> {
+  const empty: HotMons = { window: days, generated: '', rows: [] };
+  if (!API) return empty;
+  try {
+    const response = await fetch(`${API}/v1/mons/hot?days=${days}&limit=${limit}`);
+    if (!response.ok) return empty;
+    const body = (await response.json()) as Partial<HotMons>;
+    return { window: body.window ?? days, generated: body.generated ?? '', rows: Array.isArray(body.rows) ? body.rows : [] };
+  } catch {
+    return empty;
+  }
+}
 
 /** 실패를 삼키지 않는다 — '없다' 와 '못 읽었다' 는 화면에서 정반대다 */
 export class ApiError extends Error {
