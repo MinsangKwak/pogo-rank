@@ -284,8 +284,12 @@ export default function MonDetail({ pick, onClose, inline = false }: MonDetailPr
                       // 지표는 useFavs 안에서 한 번만 찍는다 — 여기서 또 찍으면 한 번 누른 것이 두 건이 된다
                       toggleFav(dexNo, '포켓몬 상세');
                     }}>
-                    <span className="detail__fav-star" aria-hidden="true">{isFav ? '★' : '☆'}</span>
-                    <span className="detail__fav-label">{isFav ? '담음' : '즐겨찾기'}</span>
+                    {/* 별은 글자가 아니라 SVG — 글자 ★ 는 운영체제마다 다른 글꼴로 그려져 Windows 에서 글자보다 위에 떴다 (2026-09-30 주인 제보) */}
+                    <svg className="detail__fav-star" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                      <path d="M12 2.6 14.9 8.5l6.5.9-4.7 4.6 1.1 6.5L12 17.4l-5.8 3.1 1.1-6.5L2.6 9.4l6.5-.9z"
+                        fill={isFav ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" />
+                    </svg>
+                    <span className="detail__fav-label btn-label">{isFav ? '담음' : '즐겨찾기'}</span>
                   </button>
                 ) : null}
 
@@ -512,11 +516,11 @@ export default function MonDetail({ pick, onClose, inline = false }: MonDetailPr
               <div className="detail__dock-row detail__dock-row--detail">
                 <ShareBtn mon={mon} />
                 <button className="detail__dock-btn detail__bar-dex" onClick={() => { go('/dex'); onClose?.(); }}>
-                  <PxIcon emoji="📕" />포켓몬 도감
+                  <PxIcon emoji="📕" /><span className="btn-label">포켓몬 도감</span>
                 </button>
                 {form ? (
                   <button className="detail__dock-btn detail__dock-btn--accent detail__dock-calc"
-                    onClick={() => setScreen('calc')}><PxIcon emoji="🧮" />CP 계산기</button>
+                    onClick={() => setScreen('calc')}><PxIcon emoji="🧮" /><span className="btn-label">CP 계산기</span></button>
                 ) : null}
               </div>
               <div className="detail__dock-row detail__dock-row--calc">

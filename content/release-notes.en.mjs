@@ -15,6 +15,9 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 export const RELEASE_NOTES_EN = {
+  '2026-09-29 · v5.5.3': [
+    '**Icons and labels on buttons now sit at the same height** — the ★ on the favorite button no longer floats above its label (Windows). The pixel icons on Copy link · CP calculator · Pokédex · the search button, and the moncamp logo in the header, are centered too',
+  ],
   '2026-09-29 · v5.5.2': [
     '**Detail popup tabs have square corners** — the underline of the pressed tab no longer ends in a curve, and the ☆ on the favorite button sits level with its label',
     '**Root admin stats can take a calendar range** — buttons for since 9/14 · 7 · 14 · 21 · 30 days plus [Custom]: pick a start and end date, press [Apply] and every panel follows that range',

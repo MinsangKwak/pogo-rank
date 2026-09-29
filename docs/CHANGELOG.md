@@ -27,7 +27,18 @@
 ## 릴리스 기록
 
 <details open>
-<summary><b>2026-09-29</b> — 3판 · <code>v5.5.2</code> · <code>v5.5.1</code> · <code>v5.5.0</code></summary>
+<summary><b>2026-09-29</b> — 4판 · <code>v5.5.3</code> · <code>v5.5.2</code> · <code>v5.5.1</code> · <code>v5.5.0</code></summary>
+
+<details>
+<summary><b>v5.5.3</b> · 아이콘 단추 세로 중앙</summary>
+
+**배경** — 주인 제보(Windows 화면): v5.5.2 에서 ☆ 를 .2rem 내렸는데도 즐겨찾기 [★ 담음] 의 별이 글자보다 떠 보였다. 글자 별은 운영체제의 대체 글꼴이 그려 높이가 기기마다 다르다 — 이 환경의 글꼴로 잰 보정은 Windows 에 맞지 않았다. 주인 요청: 아이콘이 있는 모든 단추는 세로 중앙.
+
+**수정** — 즐겨찾기 별을 글자가 아닌 SVG(빈 별 · 채운 별)로 그려 flex 가운데가 곧 잉크 가운데가 되게 했다(`.detail__fav-star` 1.4rem 상자). 도트 아이콘(`PxIcon`)은 그림을 고치지 않고 칠한 줄의 위아래로 보기 창을 옮겨(`pxInkShift`) 잉크를 12칸 가운데에 세운다 — 🔍 · 📕 · 🧮 처럼 한쪽에 빈 줄이 있는 그림이 1~1.5px 떴다 가라앉던 것. 머리의 moncamp 글자 로고는 `text-box: trim-both ex alphabetic` 으로 소문자 몸통을 기호 가운데에(모르는 브라우저는 .4rem 올림). dev 실측에서 도감 · CP 계산기 글자가 아이콘보다 1.3px 떠 있어(Pretendard 한글 잉크가 줄 상자 위로 치우침) 공통 `.btn-label`(`text-box: trim-both cap alphabetic`)을 SVG 아이콘 옆 글자에 붙였다 — 이모지 글자 아이콘(링크 복사)은 둘 다 같은 줄 상자라 붙이지 않는다.
+
+검사 — web(pxInkShift 4사례 · 별이 SVG 인지) · 화소 점검: 13개 화면의 아이콘+글자 단추를 3배로 찍어 아이콘 잉크와 글자 잉크의 세로 가운데 차를 쟀다 — 운영 빌드 기준 즐겨찾기 0.67px, 도감 · CP 계산기 0.83 · 0.67px, 나머지 아이콘 단추 전부 0.83px 이하. 홈 띠의 포켓몬 칩은 스프라이트마다 그림 자리가 달라 최대 1.8px 로 남는다(단추가 아니라 그림의 차이).
+
+</details>
 
 <details>
 <summary><b>v5.5.2</b> · 운영 통계 달력 기간 · 시간대별 많이 본 포켓몬 · 팝업 탭 반경 제거</summary>
