@@ -21,6 +21,9 @@ html body #root .hot-mons__btn {
   font: 500 1.4rem/1.5 Pretendard, sans-serif; white-space: nowrap; cursor: pointer;
 }
 html body #root .hot-mons__rank { color: var(--brand); font-weight: 700; font-variant-numeric: tabular-nums; }
+/* 채움 칩 — 순위 숫자 자리에 D-MAX · G-MAX 표. 바탕은 순위 칩보다 한 단 가라앉혀 구분한다 */
+html body #root .hot-mons__btn--fill { background: var(--surface); }
+html body #root .hot-mons__tag { color: var(--brand); font-size: 1.2rem; font-weight: 700; letter-spacing: 0.04em; }
 html body #root .hot-mons__sprite { width: 4rem; height: 4rem; image-rendering: pixelated; }
 html body #root .hot-mons__name { font-weight: 700; }
 @media (hover: hover) {

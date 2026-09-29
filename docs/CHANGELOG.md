@@ -38,7 +38,7 @@
 
 **서버** — `GET /v1/mons/hot?days=7&limit=10` 공개 집계(`lib/hot.ts` `hotMons`): 사람당 하루 `PERSON_CAP` 한도, 문턱 없음, 본 사람 수 → 횟수 순, 캐시 10분. `channel=dev` 면 미리보기(dev.moncamp.kr)가 제 채널의 기록을 본다 — 판 번호 `-dev` 로 가른다(수집기와 같은 규칙). 관리자 통계는 화면 표에서 `mon-*` 를 'mon'(상세 팝업) 하나로 접고 `views.mons` 에 포켓몬별 줄을 따로 준다. OpenAPI 재생성.
 
-**홈** — 맨 위(히어로보다 위) `components/HotMons.tsx`: 순위 · 그림 · 이름 칩 한 줄(좁으면 가로 넘김), 누르면 상세. 본 사람 수는 당분간 안 적는다(초기엔 '1명' 이 줄줄이 선다). 열 줄까지, 7일 창이 비면 `days=400`(누적)을 다시 묻는다(`loadHotMons`) — 서버 `days` 상한 30 → 400. **오늘의 실루엣 퀴즈(v5.4.0)는 내렸다** — `QuizBanner` · `stores/quiz` · `lib/dailyQuiz` · 팔레트 퀴즈 모드 · quiz.css 삭제(주인 결정, 같은 날). 통계의 `quiz` surface 이름표는 옛 기록용으로 둔다. 이름표(`useDexSoft`)에 없는 번호는 버리고 줄이 없으면 구역을 안 그린다. 서버 응답은 탭당 한 번(`lib/hotMons.ts`). 관리자 통계 '많이 본 포켓몬' 표.
+**홈** — 맨 위(히어로보다 위) `components/HotMons.tsx`: 순위 · 그림 · 이름 칩 한 줄(좁으면 가로 넘김), 누르면 상세. 본 사람 수는 당분간 안 적는다(초기엔 '1명' 이 줄줄이 선다). 열 줄까지, 7일 창이 비면 `days=400`(누적)을 다시 묻는다(`loadHotMons`) — 서버 `days` 상한 30 → 400. 열 자리가 남으면 남은 맥스 일정의 보스로 채운다(`fillBosses` · D-MAX / G-MAX 표 · 맥스 상세로 열고 검색 surface `hot_fill`) — 검색을 늘리려는 주인 결정. **오늘의 실루엣 퀴즈(v5.4.0)는 내렸다** — `QuizBanner` · `stores/quiz` · `lib/dailyQuiz` · 팔레트 퀴즈 모드 · quiz.css 삭제(주인 결정, 같은 날). 통계의 `quiz` surface 이름표는 옛 기록용으로 둔다. 이름표(`useDexSoft`)에 없는 번호는 버리고 줄이 없으면 구역을 안 그린다. 서버 응답은 탭당 한 번(`lib/hotMons.ts`). 관리자 통계 '많이 본 포켓몬' 표.
 
 **PvP 개체값 순위** — 입력칸에 들어가면 비운다(draft 상태, 빈 채 나가면 저장값 복원 — 0 뒤 15 가 015 가 되던 제보). `purifyIvs` [정화 +2] 단추(15 상한). 획득 경로 [섀도우] 는 하한 6 칩이라 공격만 6 이 되던 것은 그 규칙이었다.
 

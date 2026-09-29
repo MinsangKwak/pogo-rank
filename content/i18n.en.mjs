@@ -1777,6 +1777,8 @@ export const I18N_EN = {
   // 2026-09-29 이번 주 많이 본 포켓몬 (components/HotMons.tsx)
   '이번 주 많이 본 포켓몬': "This week's most viewed Pokémon",
   '누적': 'All time',
+  '이번 시즌 맥스 배틀 보스': 'This season\'s Max Battle bosses',
+  '홈 · 많이 본 포켓몬의 보스 채움': 'Home · most-viewed filler (Max bosses)',
   '상세 팝업': 'Detail popup',
   '많이 본 포켓몬': 'Most viewed Pokémon',
   '실루엣 퀴즈 · 추측': 'Silhouette quiz · guesses',
