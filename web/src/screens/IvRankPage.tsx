@@ -20,7 +20,7 @@ import { LEAGUES } from '../lib/leagues';
 import { buildSearchIndex, monSearch, searchVisible, type SearchEntry } from '../lib/search';
 import {
   IVRANK_FLOORS, IVRANK_LEAGUES, IVRANK_MAX_LEVEL, IVRANK_STORE, LEAGUE_KO,
-  ivRankOf, ivRankTable,
+  ivRankOf, ivRankTable, purifyIvs,
 } from '../lib/ivrank';
 import { calcCp } from '../lib/cp';
 import { track, trackSearchPick } from '../lib/track';
@@ -172,6 +172,8 @@ export default function IvRankPage() {
   const league = useRankStore((s) => s.league);
   const set = useRankStore((s) => s.set);
   const [picked, setPicked] = useState<Picked>(readPicked);
+  // 지금 치고 있는 칸 — [칸, 글자]. 들어가면 비우고, 나가면 저장된 값으로 돌아간다
+  const [draft, setDraft] = useState<[number, string] | null>(null);
   const [term, setTerm] = useState('');
 
   useEffect(() => { track('ivrank_view'); }, []);
@@ -243,15 +245,29 @@ export default function IvRankPage() {
             )}
           </div>
 
-          <div className="row-head"><h2>개체값</h2><span className="meta">공격 · 방어 · 체력</span></div>
+          <div className="row-head">
+            <h2>개체값</h2>
+            {/* 정화 — 섀도우를 정화하면 세 칸이 2씩 오른다(15 까지). 하한 칩(획득 경로)과 다른 일이라 따로 둔다 (2026-09-29 제보) */}
+            <button type="button" className="uchip ivrank__purify" title="섀도우를 정화하면 공격 · 방어 · 체력이 2씩 올라요 (최대 15)"
+              onClick={() => { track('ivrank_purify', {}); save({ ...picked, ivs: purifyIvs(picked.ivs) }); }}>
+              정화<b> +2</b>
+            </button>
+            <span className="meta">공격 · 방어 · 체력</span>
+          </div>
           <div className="ivrank__ivs">
             {(['공격', '방어', '체력'] as const).map((label, index) => (
               <label key={label} className="ivrank__ivbox">
                 <span className="meta">{label}</span>
+                {/* 칸에 들어가면 비운다 — 0 뒤에 15 를 치면 015 가 되던 것(제보). 비운 채 나가면 원래 값이 돌아온다 */}
                 <input className="ivrank__iv" type="number" min="0" max="15" inputMode="numeric"
-                  value={String(picked.ivs[index])}
+                  value={draft?.[0] === index ? draft[1] : String(picked.ivs[index])}
+                  onFocus={() => setDraft([index, ''])}
+                  onBlur={() => setDraft(null)}
                   onChange={(event) => {
-                    const value = Math.max(0, Math.min(15, Number(event.target.value) || 0));
+                    const raw = event.target.value;
+                    setDraft([index, raw]);
+                    if (raw === '') return;
+                    const value = Math.max(0, Math.min(15, Number(raw) || 0));
                     const ivs = [...picked.ivs] as [number, number, number];
                     ivs[index] = value;
                     save({ ...picked, ivs });
