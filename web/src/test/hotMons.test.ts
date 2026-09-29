@@ -1,7 +1,7 @@
 'use strict';
 // 이번 주 많이 본 포켓몬 — 번호를 이름표에 대고, 없는 번호는 버리고, 서버 순서를 지킨다 (lib/hotMons.ts)
 import { describe, it, expect } from 'vitest';
-import { rankMons, hotChannel, HOT_MON_MAX } from '../lib/hotMons';
+import { rankMons, hotChannel, loadHotMons, HOT_MON_MAX, HOT_MON_WEEK, HOT_MON_ALL } from '../lib/hotMons';
 
 const names = { '25': '피카츄', '150': '뮤츠', '6': '리자몽' };
 const forms = { '25': { types: ['electric'] }, '150': { types: ['psychic'] } };
@@ -36,5 +36,22 @@ describe('hotChannel', () => {
     expect(hotChannel('v5.5.0-dev')).toBe('dev');
     expect(hotChannel('v5.5.0')).toBe('prod');
     expect(hotChannel(undefined)).toBe('prod');
+  });
+});
+
+describe('loadHotMons — 이번 주가 비면 누적', () => {
+  const body = (window: number, rows: { dex: number; hits: number; visitors: number }[]) => ({ window, generated: '', rows });
+  it('이번 주에 줄이 있으면 그것으로 끝 — 한 번만 묻는다', async () => {
+    const asked: number[] = [];
+    const got = await loadHotMons('prod', async (days) => { asked.push(days); return body(days, [{ dex: 25, hits: 1, visitors: 1 }]); });
+    expect(asked).toEqual([HOT_MON_WEEK]);
+    expect(got.window).toBe(HOT_MON_WEEK);
+  });
+  it('이번 주가 비면 누적(400일)을 다시 묻고, 열 줄까지', async () => {
+    const asked: number[] = [];
+    const got = await loadHotMons('dev', async (days) => { asked.push(days); return body(days, days === HOT_MON_WEEK ? [] : [{ dex: 150, hits: 3, visitors: 2 }]); });
+    expect(asked).toEqual([HOT_MON_WEEK, HOT_MON_ALL]);
+    expect(got.rows[0]!.dex).toBe(150);
+    expect(HOT_MON_MAX).toBe(10);
   });
 });

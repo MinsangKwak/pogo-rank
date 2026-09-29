@@ -148,7 +148,8 @@ describe.skipIf(!url)('GET /v1/admin/stats', () => {
     const dev = await app.inject({ method: 'GET', url: '/v1/mons/hot?channel=dev' });
     expect(dev.json().rows).toEqual([{ dex: 150, hits: 1, visitors: 1 }]);
     expect((await app.inject({ method: 'GET', url: '/v1/mons/hot?channel=test' })).statusCode).toBe(400);
-    expect((await app.inject({ method: 'GET', url: '/v1/mons/hot?days=31' })).statusCode).toBe(400);
+    expect((await app.inject({ method: 'GET', url: '/v1/mons/hot?days=400' })).statusCode).toBe(200);
+    expect((await app.inject({ method: 'GET', url: '/v1/mons/hot?days=401' })).statusCode).toBe(400);
     expect((await app.inject({ method: 'GET', url: '/v1/mons/hot?limit=21' })).statusCode).toBe(400);
   });
 
