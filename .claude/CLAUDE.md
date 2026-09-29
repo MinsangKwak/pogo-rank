@@ -105,6 +105,8 @@ Firestore 규칙을 mock UID로 렌더하지 않습니다. `scripts/render_rules
 
 결론을 먼저 쓰고 중복을 줄입니다. 주석은 `//`를 줄마다 사용하며 구현 선택의 이유를 설명합니다. CSS는 변수화·공통화하고 override를 최소화합니다.
 
+커밋 제목은 [docs/COMMITS.md](../docs/COMMITS.md)의 `종류(범위): 제목` 꼴을 따릅니다. PR 제목도 같습니다.
+
 | 항목 | 기준 |
 | --- | --- |
 | Pretendard 본문 | 1.2 · 1.4 · 1.6rem |
