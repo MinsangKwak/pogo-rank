@@ -2,8 +2,8 @@
    hotmons.css — 홈 상단 '이번 주 많이 본 포켓몬' 띠 (components/HotMons.tsx · 2026-09-29)
 
    홈 맨 위 한 줄(히어로보다 위 · 2026-09-29 주인 결정). 칩은 홈 검색 칩(.home__chip)과 같은 결 — 순위 숫자 · 그림 · 이름.
-   좁으면 열 자리까지, 가로로 넘겨 본다(overflow-x) — 줄바꿈으로 세 줄이 되면 첫 화면을 다 먹는다.
-   넓으면(1000px↑) 한 줄이 폭을 다 채운다 — 보스를 계속 붙이고 모자라면 같은 바퀴를 이어 붙여 끝을 자른다. 한 바퀴가 칸보다 넓으면 가는 스크롤바로 넘긴다
+   어느 폭이든 열 자리까지, 가로로 넘겨 본다(overflow-x · 가는 스크롤바를 남긴다 — PC 는 그게 없으면 끝에 못 닿는다).
+   줄바꿈으로 세 줄이 되면 첫 화면을 다 먹는다
    색은 토큰, 간격은 0.4rem 격자, 글자는 1.2 · 1.4 · 2.2rem
    ───────────────────────────────────────────────────────────────────────────── */
 html body #root .hot-mons { display: flex; flex-direction: column; gap: 1.2rem; margin: 0 0 2.4rem; }
@@ -12,9 +12,8 @@ html body #root .hot-mons__title { margin: 0; color: var(--fg); font: 700 2.2rem
 html body #root .hot-mons__sub { color: var(--muted); font-size: 1.4rem; line-height: 1.5; }
 html body #root .hot-mons__list {
   display: flex; gap: 0.8rem; margin: 0; padding: 0 0 0.4rem; list-style: none;
-  overflow-x: auto; scrollbar-width: none; -webkit-overflow-scrolling: touch;
+  overflow-x: auto; scrollbar-width: thin; -webkit-overflow-scrolling: touch;
 }
-html body #root .hot-mons__list::-webkit-scrollbar { display: none; }
 html body #root .hot-mons__item { flex: none; }
 html body #root .hot-mons__btn {
   display: inline-flex; align-items: center; gap: 0.8rem; min-height: var(--tap); padding: 0.4rem 1.6rem 0.4rem 1.2rem;
@@ -29,10 +28,6 @@ html body #root .hot-mons__sprite { width: 4rem; height: 4rem; image-rendering: 
 html body #root .hot-mons__name { font-weight: 700; }
 @media (hover: hover) {
   html body #root .hot-mons__btn:hover { border-color: var(--brand); }
-}
-@media (min-width: 1000px) {
-  html body #root .hot-mons__list { overflow: hidden; }
-  html body #root .hot-mons__list[data-overflow] { overflow-x: auto; scrollbar-width: thin; }
 }
 @media (max-width: 599px) {
   html body #root .hot-mons { margin-bottom: 1.6rem; }
