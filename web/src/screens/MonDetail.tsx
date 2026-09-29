@@ -289,7 +289,7 @@ export default function MonDetail({ pick, onClose, inline = false }: MonDetailPr
                       <path d="M12 2.6 14.9 8.5l6.5.9-4.7 4.6 1.1 6.5L12 17.4l-5.8 3.1 1.1-6.5L2.6 9.4l6.5-.9z"
                         fill={isFav ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" />
                     </svg>
-                    <span className="detail__fav-label">{isFav ? '담음' : '즐겨찾기'}</span>
+                    <span className="detail__fav-label btn-label">{isFav ? '담음' : '즐겨찾기'}</span>
                   </button>
                 ) : null}
 
@@ -516,11 +516,11 @@ export default function MonDetail({ pick, onClose, inline = false }: MonDetailPr
               <div className="detail__dock-row detail__dock-row--detail">
                 <ShareBtn mon={mon} />
                 <button className="detail__dock-btn detail__bar-dex" onClick={() => { go('/dex'); onClose?.(); }}>
-                  <PxIcon emoji="📕" />포켓몬 도감
+                  <PxIcon emoji="📕" /><span className="btn-label">포켓몬 도감</span>
                 </button>
                 {form ? (
                   <button className="detail__dock-btn detail__dock-btn--accent detail__dock-calc"
-                    onClick={() => setScreen('calc')}><PxIcon emoji="🧮" />CP 계산기</button>
+                    onClick={() => setScreen('calc')}><PxIcon emoji="🧮" /><span className="btn-label">CP 계산기</span></button>
                 ) : null}
               </div>
               <div className="detail__dock-row detail__dock-row--calc">

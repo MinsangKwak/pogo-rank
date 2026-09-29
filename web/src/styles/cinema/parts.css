@@ -45,6 +45,14 @@ html body #root :is(.upd__source, .upd__advice, .upd__quote-box, .upd__ba-before
   border-color: var(--line); border-radius: var(--r-ctl); background: var(--bg); color: var(--fg);
 }
 
+/* ── 아이콘 단추의 글자 — 상자를 대문자 높이 ~ 기준선으로 깎는다 ─────────────
+   Pretendard 한글은 줄 상자 안에서 잉크가 위로 치우쳐, flex 로 상자를 가운데 두어도 아이콘보다 1~1.5px 떴다.
+   깎은 상자는 글자 잉크와 거의 같아 flex 가운데가 곧 잉크 가운데다 — 아이콘과 나란한 글자 span 에 붙인다.
+   text-box 를 모르는 브라우저(Firefox)는 그대로다 (2026-09-30 주인 요청: 아이콘 단추 세로 중앙) */
+@supports (text-box: trim-both cap alphabetic) {
+  html body #root .btn-label { text-box: trim-both cap alphabetic; }
+}
+
 /* ── 단추 · 탭 — 누르는 것은 --tap 이상, 반경은 --r-ctl ─────────────────── */
 html body #root :is(
   .uchip, .upd__back, .upd__more, .schedule__view-tabs button, .schedule__month-nav button, .tankpop-entry button
