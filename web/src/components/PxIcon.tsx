@@ -605,13 +605,28 @@ export function hasPxIcon(emoji: string): boolean {
   return pxIconKey(emoji) !== null;
 }
 
+/**
+ * 그림의 칠한 줄이 12칸 가운데에 오도록 보기 창을 세로로 옮길 값 — 그림은 한 칸도 안 고친다.
+ * 표의 그림은 위나 아래에 빈 줄이 한쪽만 있는 것이 많아(🔍 는 아래가, 📕 는 위가 빈다)
+ * 단추가 flex 로 상자를 가운데 두어도 잉크가 글자보다 1~1.5px 떴다 가라앉았다 (2026-09-30 주인 요청: 아이콘 단추 세로 중앙)
+ */
+export function pxInkShift(rows: readonly string[]): number {
+  let top = -1;
+  let bottom = -1;
+  rows.forEach((row, y) => {
+    if (/[^.]/.test(row)) { if (top < 0) top = y; bottom = y; }
+  });
+  if (top < 0) return 0;
+  return (top + bottom + 1) / 2 - 6;
+}
+
 /** 표에 있으면 도트 SVG, 없으면 이모지 그대로 */
 export function PxIcon({ emoji }: { emoji: string }) {
   const key = pxIconKey(emoji);
   const rows = key ? PXI_ART[key] : null;
   if (!rows) return <>{emoji}</>;
   return (
-    <svg viewBox="0 0 12 12" className="pxi" aria-hidden="true" focusable="false" shapeRendering="crispEdges">
+    <svg viewBox={`0 ${pxInkShift(rows)} 12 12`} className="pxi" aria-hidden="true" focusable="false" shapeRendering="crispEdges">
       {rects(rows)}
     </svg>
   );
