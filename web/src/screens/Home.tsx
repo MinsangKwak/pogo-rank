@@ -20,7 +20,7 @@ import { Sprite } from '../components/Bits';
 import { PxIcon } from '../components/PxIcon';
 import { NameNode } from '../components/Row';
 import type { GameUpdate } from '../types/data';
-import { track, trackSearchPick } from '../lib/track';
+import { track } from '../lib/track';
 import { openSearch } from '../stores/search';
 import { useWeekBosses } from '../lib/weekBosses';
 import { UPDATE_CATS } from '../lib/notes';
@@ -93,31 +93,21 @@ function Discover({ mascot, sprite, kicker, head, copy, extra, href }: {
  * 데이터가 오기 전에는 그 자리에 기다림 판만 있다 — 그때는 한 화면만큼 내린다.
  */
 /**
- * 첫 화면의 검색 — 단추 하나와 이번 주 보스 칩 (2026-09-28).
+ * 첫 화면의 검색 — 단추 하나 (2026-09-28).
  * 검색이 늘어야 순위가 선다(v4.6.3). 상단 바의 검색칸은 좁은 화면에서 숨어 있어(shell.css) 홈에서는 여기가 검색의 입구다.
- * 칩은 "지금 사람들이 찾는 이름" 을 한 번의 탭으로 — 검색으로 세되 어디서 눌렀는지(home_chip) 남긴다
+ * 이번 주 보스는 칩 줄 대신 **안내 글자(placeholder)** 로 둔다 — 칩 줄만큼 세로가 줄고, 무엇을 찾으면 되는지는 그대로 보인다
+ * (2026-09-30 주인 요청). 보스가 없으면 원래 안내 글자
  */
-function HomeSearch({ onOpen }: { onOpen: OpenMon }) {
+function HomeSearch() {
   const week = useWeekBosses();
+  const boss = week.bosses[0]?.name;
   return (
     <div className="home__search">
       <button type="button" className="home__search-btn" onClick={() => { track('home_cta', { to: 'search' }); openSearch('home'); }}>
         <span className="home__search-ico" aria-hidden="true"><PxIcon emoji="🔍" /></span>
-        <span className="home__search-ph">포켓몬 이름으로 바로 찾기</span>
+        <span className="home__search-ph">{boss ? `${boss} · ${week.label}` : '포켓몬 이름으로 바로 찾기'}</span>
         <kbd className="home__search-key" aria-hidden="true">/</kbd>
       </button>
-      {week.bosses.length ? (
-        <div className="home__search-chips" role="group" aria-label={week.label}>
-          <span className="home__search-label">{week.label}</span>
-          {week.bosses.map((boss) => (
-            <button key={boss.name} type="button" className="home__chip"
-              onClick={() => { trackSearchPick(boss.name, 'home_chip'); onOpen({ sprite: boss.sprite, name: boss.detailName, types: boss.types }); }}>
-              <img className="home__chip-sprite" src={`${BASE}sprites/${boss.sprite}.png`} alt="" width="24" height="24" loading="lazy" decoding="async" />
-              {boss.name}
-            </button>
-          ))}
-        </div>
-      ) : null}
     </div>
   );
 }
@@ -234,19 +224,9 @@ export default function Home({ onOpen }: { onOpen: OpenMon }) {
   const waiting = <HeroPoster art={HERO_ART_ENTRY} names={names} />;
   return (
     <div className="home-dashboard home-dashboard--portal home-dashboard--cinema-portal">
-      {/* 이번 주 많이 본 포켓몬 — 홈 맨 위, 히어로보다 위 (2026-09-29 주인 결정). 서버 집계라 데이터 Suspense 밖이고, 줄이 없으면 안 그린다 */}
-      <HotMons onOpen={onOpen} />
-      {/* 검색 보드는 v4.6.3 에 내렸다 — 검색이 모자라 순위가 서지 않는다 (ranking 브랜치 · 백로그). 포스터가 한 열을 다 쓴다 */}
+      {/* 첫 화면 차례 (2026-09-30 주인 결정): 배너 → 지금 많이 보는 포켓몬 → 소개 · 검색.
+          지금 열리는 맥스 배틀이 가장 먼저, 사람들이 찾는 이름이 그다음, 내가 찾을 칸이 그 아래다 */}
       <div className="home__top-layout">
-      {/* 마스코트와 버튼 줄은 .home__intro **밖**에 선다 — CSS 가 세 칸(글·그림·버튼)으로 잡는다.
-          안에 넣었더니 그림이 글 아래로 내려가고 히어로 높이가 71px 줄었다 */}
-      <section className="home__welcome" aria-label="소개">
-        <div className="home__intro">
-          <span className="home__eyebrow"><span className="home__eyebrow-dot" aria-hidden="true" />POKÉMON GO · BATTLE GUIDE</span>
-          <h2>내 포켓몬의 다음 배틀,<br /><em>여기서 준비하세요.</em></h2>
-          <p>포켓몬 정보와 배틀별 추천을 한눈에.<br />처음이라면 도감부터, 배틀을 앞뒀다면 추천부터 살펴보세요.</p>
-          <HomeSearch onOpen={onOpen} />
-        </div>
         {/* 배너 — 남은 맥스 일정이 한 장씩 넘어간다. 모든 장이 대표 일러스트와 같은 구도다 (components/MaxPoster.tsx).
             거다이맥스 폼 그림(max.json)까지 온 뒤에 굴린다 — 먼저 굴리면 보스 그림이 도중에 바뀐다 */}
         <div className="max-battle-art">
@@ -257,17 +237,23 @@ export default function Home({ onOpen }: { onOpen: OpenMon }) {
             </Suspense>
           ) : waiting}
         </div>
-        <div className="home__cta">
-          <a className="home__btn home__btn--primary" href={routeHref('dmax')}
-            onClick={() => track('home_cta', { to: 'dmax' })}>다이맥스 티어표 보기<span aria-hidden="true"> →</span></a>
-          <a className="home__btn" href={routeHref('dex')}
-            onClick={() => track('home_cta', { to: 'dex' })}>포켓몬 도감 둘러보기</a>
-        </div>
-        <ScrollDown />
-      </section>
-      {/* 배너 옆 세로 칸 — 넓은 화면에서만 옆에 서고, 좁으면 배너 아래로 내려온다 (home-editorial.css).
-          데이터를 안 쓰는 카드라 Suspense 밖에 둘 수 있다 — 그래서 첫 화면에 바로 선다 */}
-
+        {/* 서버 집계라 데이터 Suspense 밖이고, 줄이 없으면 안 그린다 */}
+        <HotMons onOpen={onOpen} />
+        <section className="home__welcome" aria-label="소개">
+          <div className="home__intro">
+            <span className="home__eyebrow"><span className="home__eyebrow-dot" aria-hidden="true" />POKÉMON GO · BATTLE GUIDE</span>
+            <h2>내 포켓몬의 다음 배틀,<br /><em>여기서 준비하세요.</em></h2>
+            <p>포켓몬 정보와 배틀별 추천을 한눈에.<br />처음이라면 도감부터, 배틀을 앞뒀다면 추천부터 살펴보세요.</p>
+            <HomeSearch />
+          </div>
+          <div className="home__cta">
+            <a className="home__btn home__btn--primary" href={routeHref('dmax')}
+              onClick={() => track('home_cta', { to: 'dmax' })}>다이맥스 티어표 보기<span aria-hidden="true"> →</span></a>
+            <a className="home__btn" href={routeHref('dex')}
+              onClick={() => track('home_cta', { to: 'dex' })}>포켓몬 도감 둘러보기</a>
+          </div>
+          <ScrollDown />
+        </section>
       </div>
       {/* 기다리는 자리도 한 화면을 채운다 — 바닥글이 먼저 보였다가 밀리면 CLS 다 */}
       <Suspense fallback={<div className="home__loading" aria-busy="true" />}>
