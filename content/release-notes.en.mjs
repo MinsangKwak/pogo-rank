@@ -15,6 +15,11 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 export const RELEASE_NOTES_EN = {
+  '2026-09-30 · v5.5.4': [
+    '**Text over photos is easier to read in the light theme** — page headers, the detail popup header and the game update intro now lay a light veil over the photo and use dark text in the light theme. The dark theme is unchanged',
+    '**The search string builder shows its hints and [Copy] in the light theme** — they were white text on a white card',
+    '**Type matchups in the detail popup have more room** — on narrow screens the grey band behind the weakness and resistance headings is gone and the rows are spaced apart',
+  ],
   '2026-09-29 · v5.5.3': [
     '**Icons and labels on buttons now sit at the same height** — the ★ on the favorite button no longer floats above its label (Windows). The pixel icons on Copy link · CP calculator · Pokédex · the search button, and the moncamp logo in the header, are centered too',
   ],

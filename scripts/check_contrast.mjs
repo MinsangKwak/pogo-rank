@@ -38,6 +38,9 @@ let routing = 'hash';
 
 for (const theme of ['light', 'dark']) {
   const context = await browser.newContext({ viewport: { width: 1280, height: 900 }, ignoreHTTPSErrors: true, colorScheme: theme });
+  // 고른 테마를 이 기기에 적어 둔다 — 앱은 고른 적이 없으면 다크로 시작해서(web/src/stores/pref.ts), 기기 설정만 바꾸면
+  // 'light' 회차도 다크 화면을 쟀다 (2026-09-30 라이트 가독성 점검에서 발견). 키 · 값은 v3 와 같은 날값이다
+  await context.addInitScript((choice) => { try { localStorage.setItem('pogo_theme', choice); } catch { /* 저장소가 막혀도 기기 설정으로 잰다 */ } }, theme);
   const page = await context.newPage();
   if (theme === 'light') routing = await detectRouting(page, BASE);
   for (const path of PATHS) {
