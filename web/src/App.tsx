@@ -176,14 +176,15 @@ export default function App({ seo }: AppProps = {}) {
   const openMon: OpenMon = (pick) => {
     // 도감을 거쳐 연다 — 화면을 도감으로 옮기고, 옮긴 뒤의 효과가 자세한 팝업을 연다 (도감 화면이면 그 자리에서)
     if (pick.via === 'dex' && route.id !== 'dex') {
-      pendingFull.current = { ...pick, via: undefined, view: 'full' };
+      pendingFull.current = { ...pick, via: undefined, view: 'brief' };
       closeMon();
       go('/dex');
       return;
     }
     const sprite = pick.sprite;
-    // 깊이는 연 화면이 정한다 — 홈(과 공유 링크 본문)은 입구라 요약, 도감 · 순위 화면은 이미 찾아 들어온 곳이라 자세히 (2026-09-30 주인 결정)
-    setDetail({ ...pick, view: pick.view ?? (route.id === 'home' || route.id === 'mon' ? 'brief' : 'full') });
+    // **팝업은 어디서 열든 요약이다** — 검색에서 연 것과 같은 판 (2026-09-30 주인 결정: 도감 · 순위 화면에서 연 팝업도 '맨 처음 검색해서 나오는 팝업처럼').
+    // 자세한 것은 팝업이 아니라 상세 페이지(/mon/<번호>)다 — 팝업 바닥의 '도감에서 자세히'가 그리로 간다
+    setDetail({ ...pick, view: 'brief' });
     setDetailSeq((now) => now + 1);
     track('detail_open', { sprite });
     // 우리 수집기에도 — 어느 포켓몬을 열었는지 (lib/collect.ts · 홈의 '이번 주 많이 본 포켓몬')
@@ -227,9 +228,11 @@ export default function App({ seo }: AppProps = {}) {
     }
     returnTo.current = null;
   }, [route, rest]);
+  // 요약 팝업의 '도감에서 자세히' — 상세 페이지(/mon/<번호>)로 옮긴다. 육성 추천 · 배틀 정보 · CP · 기술이 모두 거기 있다
   const openDeep = (pick: MonPick) => {
-    track('detail_more', { to: 'dex', mon: pick.name ?? String(pick.sprite) });
-    openMon({ ...pick, view: 'full', via: 'dex' });
+    track('detail_more', { to: 'mon', mon: pick.name ?? String(pick.sprite) });
+    closeMon();
+    go(`/mon/${pick.sprite}`);
   };
   // 화면을 옮기면 열려 있던 팝업·서랍은 닫는다 — <dialog> 가 새 화면 위에 그대로 떠 있으면
   // 아무 데도 눌리지 않는다 (상세 팝업에서 같은 자리를 이미 한 번 겪었다)
