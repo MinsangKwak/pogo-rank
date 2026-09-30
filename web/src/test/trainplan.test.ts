@@ -43,6 +43,21 @@ describe('trainPlan', () => {
     expect(ranks).toEqual([...ranks].sort((a, b) => a - b));
     expect(plan.pve!.base.every((one) => one.note.startsWith('땅 보스 레이드'))).toBe(true);
   });
+  it('맥스 폼으로 열면 순위가 없어도 맥스 배틀 · 레이드 추천이 먼저 (다이맥스 태우지네)', () => {
+    const dexNo = idOf('태우지네');
+    const family: number[][] | undefined = dex.DEX_DATA.evo[String(dexNo)];
+    const plan = trainPlan({
+      stems: [...new Set(['태우지네', ...(family?.flat().map((id) => names[String(id)]).filter(Boolean) ?? [])])] as string[],
+      types: dex.DEX_DATA.forms[String(dexNo)]?.types ?? [],
+      places: usage.USAGE_PLACES, meter: usage.METER, dmax: max.DMAX_DATA, pve: pve.PVE_DATA, pvp: pvp.PVP_DATA,
+      chart: dex.DEX_DATA.chart, typeKo: dex.TYPE_KO,
+      dexOf: (sprite) => dex.DEX_DATA.dex[String(sprite)] ?? (sprite < 10000 ? sprite : null),
+      maxForm: true,
+    });
+    expect(plan.roles).toEqual(['pve']);
+    expect(plan.pve?.max.length).toBeGreaterThan(0);
+    expect(plan.pvp).toBeNull();
+  });
   it('레이드 · 맥스에도 쓰이면 PvP 추천은 없다', () => {
     const plan = planFor('리자몽');
     expect(plan.roles).toEqual(['pve']);

@@ -114,8 +114,9 @@ export function TrainCard({ mon, dexNo, stem, onSwitch }: { mon: MonRef; dexNo: 
       dmax: max.DMAX_DATA, pve: pve.PVE_DATA, pvp: pvp.PVP_DATA,
       chart: dex.DEX_DATA.chart, typeKo: dex.TYPE_KO,
       dexOf: (sprite) => dex.DEX_DATA.dex[String(sprite)] ?? (sprite < 10000 ? sprite : null),
+      maxForm: formKeyOf(mon.name) === 'dmax' || formKeyOf(mon.name) === 'gmax',
     });
-  }, [dex, max, usage, pve, pvp, dexNo, stem, mon.types]);
+  }, [dex, max, usage, pve, pvp, dexNo, stem, mon.types, mon.name]);
   // 판 이름은 제목 옆 작은 글자로 — 제목에 이어 붙이면 좁은 화면에서 두 줄로 꺾였다 (390px 실측)
   const boss = (type: string) => (type === 'overall' ? null : <span className="detail__train-where">{`${dex.TYPE_KO[type] ?? type} 보스 상대`}</span>);
 
@@ -268,7 +269,8 @@ export function FormStats({ mon, dexNo, baseLabel, onLeave }: { mon: MonRef; dex
     // 곧 맥스 배틀이 열리면 그 날짜가 가장 궁금한 것이다 (2026-09-30 주인 제보: 태우지네)
     const row = idx.get(mon.name);
     if (!row || (row.unrel && !withUnrel)) {
-      const soon = dexNo != null ? bossNow(slides, new Set([dexNo])) : null;
+      // 보고 있는 폼과 같은 종류(다이맥스 ↔ 거다이맥스)의 일정만 — 다른 폼의 배틀을 이 폼의 첫 등장으로 알리지 않는다 (Codex, PR #269)
+      const soon = dexNo != null ? bossNow(slides.filter((one) => one.gmax === (key === 'gmax')), new Set([dexNo])) : null;
       return (
         <section className="detail__card detail__formstats">
           <h3><span className="form-tag form-tag--max">{FORM_KO[key]}</span> 이 폼의 성적</h3>
