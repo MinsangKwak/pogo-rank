@@ -94,13 +94,23 @@ html body #root .detail--mon .detail__formguide-evo-label { color: var(--muted);
 
 /* 육성 추천 (2026-09-30) — 1순위(맥스) · 2순위(레이드 일반 · 전설) 묶음. 후보 줄은 '보스로 만났을 때' 의 .detail__rec 를 빌린다 */
 html body #root .detail--mon .detail__evo-card + .detail__train { margin-top: 2.4rem; }
-html body #root .detail--mon .detail__train-part { display: grid; gap: 0.8rem; }
-html body #root .detail--mon .detail__train-part + .detail__train-part { margin-top: 1.6rem; }
-html body #root .detail--mon .detail__train .detail__card-sub { margin: 0; }
-html body #root .detail--mon .detail__train-head { display: flex; align-items: center; gap: 0.8rem; margin: 0.8rem 0 0; color: var(--fg); font: 700 1.4rem/1.5 Pretendard, sans-serif; }
+html body #root .detail--mon .detail__train > h3 { margin-bottom: 1.2rem; }
+/* 묶음마다 접는다 — 머리줄이 누르는 자리(--tap 높이), 꺾쇠는 폼별 정보 줄과 같은 모양 (2026-09-30) */
+html body #root .detail--mon .detail__train-group { border: 1px solid var(--line); border-radius: var(--r-box); background: var(--surface-2); }
+html body #root .detail--mon .detail__train-group + .detail__train-group { margin-top: 0.8rem; }
+html body #root .detail--mon .detail__train-group > .detail__recs { padding: 0 1.2rem 1.2rem; }
+html body #root .detail--mon .detail__train-group > .detail__train-head {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 0.4rem 0.8rem; min-height: var(--tap); margin: 0; padding: 0.8rem 1.2rem;
+  color: var(--fg); font: 700 1.4rem/1.5 Pretendard, sans-serif; list-style: none; cursor: pointer;
+}
+html body #root .detail--mon .detail__train-group > .detail__train-head::-webkit-details-marker { display: none; }
+html body #root .detail--mon .detail__train-group > .detail__train-head::after { content: '›'; margin-left: auto; color: var(--muted); font-size: 1.6rem; line-height: 1; transition: transform .15s ease; }
+html body #root .detail--mon .detail__train-group[open] > .detail__train-head::after { transform: rotate(90deg); }
+@media (hover: hover) { html body #root .detail--mon .detail__train-group > .detail__train-head:hover { background: var(--hover); border-radius: var(--r-box); } }
+html body #root .detail--mon .detail__train-head { display: flex; align-items: center; gap: 0.8rem; margin: 0; color: var(--fg); font: 700 1.4rem/1.5 Pretendard, sans-serif; }
 html body #root .detail--mon .detail__pick { min-height: var(--tap); text-align: left; }
 html body #root .detail--mon .detail__pick-main { display: grid; flex: 1 1 auto; min-width: 0; }
-html body #root .detail--mon .detail__pick-note { color: var(--muted); font-size: 1.2rem; font-weight: 600; }
+html body #root .detail--mon .detail__pick-note { display: flex; flex-wrap: wrap; align-items: center; gap: 0.4rem; color: var(--muted); font-size: 1.2rem; font-weight: 600; }
 html body #root .detail--mon .detail__train-where { color: var(--muted); font-size: 1.2rem; font-weight: 600; }
 
 /* 이 폼의 성적 — 배틀 정보 맨 위 */

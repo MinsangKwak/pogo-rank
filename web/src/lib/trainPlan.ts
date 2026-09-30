@@ -47,7 +47,6 @@ export interface PlanSource {
 
 export const PLAN_MAX = 3;
 
-const LEAGUE_KO: Record<string, string> = { little: '리틀컵', great: '슈퍼리그', ultra: '하이퍼리그', master: '마스터리그' };
 const MAX_PREFIX = /^(거다이맥스|다이맥스) /;
 // '일반 · 전설' 만 — 메가 · 원시 · 섀도우는 이 칸의 뜻(오래 두고 키울 개체)과 다르다
 const NOT_BASE = /^(메가X?Y?|원시|섀도우|다이맥스|거다이맥스) /;
@@ -107,19 +106,19 @@ export function trainPlan(src: PlanSource): TrainPlan {
     const fallback = Object.keys(src.typeKo).find((boss) => (src.chart[src.types[0] ?? '']?.[boss] ?? 1) >= 1.5) ?? 'overall';
     const maxType = typeOf('max:') ?? typeOf('pve:') ?? fallback;
     const raidType = typeOf('pve:') ?? typeOf('max:') ?? fallback;
-    const ko = (type: string) => (type === 'overall' ? '전체' : (src.typeKo[type] ?? type));
 
     // ① 맥스 배틀 순위표 — 계열의 맥스 폼이 그 판에 서 있으면 먼저 (검색한 것을 키우는 길이 있으면 그것부터)
     const skip = new Set<number | string>();
     const dmaxRows = (src.dmax[maxType] ?? []).filter((row) => !row.unrel);
     const own = takeUnique(dmaxRows, PLAN_MAX, skip, src.dexOf, (row) => isOwn(row.name));
     const others = takeUnique(dmaxRows, PLAN_MAX - own.length, skip, src.dexOf, (row) => !isOwn(row.name));
-    const max = [...own, ...others].map(({ row, rank }) => pick(row, `${ko(maxType)} 보스 맥스 ${rank}위`, isOwn(row.name)));
+    // 줄 글자는 순위만 — 어느 판의 순위인지는 묶음 제목('물 타입 보스에 강한 순')이 한 번 말한다 (2026-09-30 주인 제보: '물 보스 상대 · 물 보스 맥스 3위' 를 못 알아본다)
+    const max = [...own, ...others].map(({ row, rank }) => pick(row, `딜러 ${rank}위`, isOwn(row.name)));
 
     // ② 레이드 순위표 — 일반 · 전설만. 여기서는 계열을 앞세우지 않는다: 레이드에서 더 나은 것을 그대로 권한다
     const baseRows = src.pve[raidType] ?? [];
     const base = takeUnique(baseRows, PLAN_MAX, new Set(), src.dexOf, (row) => !NOT_BASE.test(row.name))
-      .map(({ row, rank }) => pick(row, `${ko(raidType)} 보스 레이드 ${rank}위`, isOwn(row.name)));
+      .map(({ row, rank }) => pick(row, `딜러 ${rank}위`, isOwn(row.name)));
     pve = { maxType, max, raidType, base };
   }
 
@@ -131,8 +130,7 @@ export function trainPlan(src: PlanSource): TrainPlan {
     const test = (row: Row) => !NOT_BASE.test(row.name);
     const own = takeUnique(rows, 1, skip, src.dexOf, (row) => test(row) && isOwn(row.name));
     const others = takeUnique(rows, PLAN_MAX - own.length, skip, src.dexOf, (row) => test(row) && !isOwn(row.name));
-    const leagueKo = LEAGUE_KO[league] ?? league;
-    pvp = { league, base: [...own, ...others].map(({ row, rank }) => pick(row, `${leagueKo} ${rank}위`, isOwn(row.name))) };
+    pvp = { league, base: [...own, ...others].map(({ row, rank }) => pick(row, `${rank}위`, isOwn(row.name))) };
   }
   return { roles, pve, pvp };
 }

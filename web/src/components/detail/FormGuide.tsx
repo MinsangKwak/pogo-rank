@@ -9,7 +9,7 @@
 // 요약만 보이고 자세한 것은 더보기로 — 순위 화면에서 그 줄을 찾아 밝힌다 (stores/rank.ts focus)
 // ─────────────────────────────────────────────────────────────────────────────
 'use strict';
-import { useMemo } from 'react';
+import { useMemo, type ReactNode } from 'react';
 import { useDex, useMax, usePve, usePvp, useUsage } from '../../lib/data';
 import { dday } from '../../lib/maxSlides';
 import { useMaxSlidesSoft } from '../../lib/weekBosses';
@@ -88,7 +88,10 @@ function Picks({ rows, onSwitch }: { rows: readonly PlanPick[]; onSwitch: Switch
           <Sprite id={row.sprite} />
           <span className="detail__pick-main">
             <span className="detail__rec-name"><NameNode name={row.name} labels={data.FORM_LABELS} /></span>
-            <span className="detail__pick-note">{row.own ? `이 계열 · ${row.note}` : row.note}</span>
+            <span className="detail__pick-note">
+              {/* 검색한 계열은 꼬리표로 따로 — 순위 글자에 섞으면 '이 계열 · 물 보스 맥스 3위' 처럼 읽기 어려웠다 */}
+              {row.own ? <span className="tag detail__pick-own">이 계열</span> : null}{row.note}
+            </span>
           </span>
           <span className="detail__rec-go" aria-hidden="true">›</span>
         </button>
@@ -117,40 +120,30 @@ export function TrainCard({ mon, dexNo, stem, onSwitch }: { mon: MonRef; dexNo: 
       maxForm: formKeyOf(mon.name) === 'dmax' || formKeyOf(mon.name) === 'gmax',
     });
   }, [dex, max, usage, pve, pvp, dexNo, stem, mon.types, mon.name]);
-  // 판 이름은 제목 옆 작은 글자로 — 제목에 이어 붙이면 좁은 화면에서 두 줄로 꺾였다 (390px 실측)
-  const boss = (type: string) => (type === 'overall' ? null : <span className="detail__train-where">{`${dex.TYPE_KO[type] ?? type} 보스 상대`}</span>);
+  // 묶음 제목이 기준을 한 번만 말한다 — '물 타입 보스에 강한 순'. 줄마다 '물 보스 맥스 3위' 를 되풀이하면 무슨 순위인지 안 읽혔다.
+  // 카드 밑 설명 줄('PvP용 — … 다이맥스하지 않아요')도 뺐다 — 헷갈린다는 주인 판단 (2026-09-30)
+  const basis = (type: string) => (type === 'overall' ? '모든 보스 기준' : `${dex.TYPE_KO[type] ?? type} 타입 보스에 강한 순`);
+  // 좁은 화면이라 묶음마다 접는다 — 첫 묶음만 펼쳐 두고 나머지는 눌러서 (2026-09-30 주인 요청)
+  const group = (key: string, open: boolean, tag: ReactNode, title: string, sub: string, rows: readonly PlanPick[]) => (
+    <details key={key} className="detail__train-group" open={open}>
+      <summary className="detail__train-head">
+        {tag}
+        <span className="detail__train-title">{title}</span>
+        <span className="detail__train-where">{sub}</span>
+      </summary>
+      <Picks rows={rows} onSwitch={onSwitch} />
+    </details>
+  );
+  const maxFirst = !!plan.pve?.max.length;
 
   return (
     <section className="detail__card detail__train">
       <h3>육성 추천</h3>
-      {plan.pve ? (
-        <div className="detail__train-part">
-          <p className="detail__card-sub">맥스 배틀 · 레이드용 — 다이맥스 · 거다이맥스부터 키우세요</p>
-          {plan.pve.max.length ? (
-            <>
-              <h4 className="detail__train-head">
-                <span className="form-tag form-tag--max">1순위</span>다이맥스 · 거다이맥스{boss(plan.pve.maxType)}
-              </h4>
-              <Picks rows={plan.pve.max} onSwitch={onSwitch} />
-            </>
-          ) : null}
-          {plan.pve.base.length ? (
-            <>
-              <h4 className="detail__train-head">
-                <span className="form-tag">{plan.pve.max.length ? '2순위' : '추천'}</span>레이드 · 일반 · 전설{boss(plan.pve.raidType)}
-              </h4>
-              <Picks rows={plan.pve.base} onSwitch={onSwitch} />
-            </>
-          ) : null}
-        </div>
-      ) : null}
-      {plan.pvp ? (
-        <div className="detail__train-part">
-          <p className="detail__card-sub">PvP용 — 일반 · 전설 개체로 키우세요 (맥스 폼은 트레이너 배틀에서 다이맥스하지 않아요)</p>
-          <h4 className="detail__train-head"><span className="form-tag">PvP</span>{`${LEAGUE_KO[plan.pvp.league] ?? plan.pvp.league} · 일반 · 전설`}</h4>
-          <Picks rows={plan.pvp.base} onSwitch={onSwitch} />
-        </div>
-      ) : null}
+      {plan.pve && maxFirst ? group('max', true, <span className="form-tag form-tag--max">1순위</span>, '다이맥스 · 거다이맥스', basis(plan.pve.maxType), plan.pve.max) : null}
+      {plan.pve?.base.length
+        ? group('raid', !maxFirst, <span className="form-tag">{maxFirst ? '2순위' : '추천'}</span>, '레이드용 일반 · 전설', basis(plan.pve.raidType), plan.pve.base)
+        : null}
+      {plan.pvp ? group('pvp', true, <span className="form-tag">PvP</span>, `${LEAGUE_KO[plan.pvp.league] ?? plan.pvp.league} 일반 · 전설`, '리그 순위', plan.pvp.base) : null}
     </section>
   );
 }

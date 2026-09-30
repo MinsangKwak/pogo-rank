@@ -35,13 +35,14 @@ describe('trainPlan', () => {
     expect(plan.pve?.maxType).toBe('fire');
     expect(plan.pve?.raidType).toBe('ground');
     expect(plan.pve?.max[0]).toMatchObject({ name: '거다이맥스 인텔리레온', own: true });
-    expect(plan.pve?.max[0]?.note).toBe('불꽃 보스 맥스 1위');
+    expect(plan.pve?.max[0]?.note).toBe('딜러 1위');
   });
   it('판마다 순위표가 따로 — 레이드 추천은 레이드 순위, 계열을 앞세우지 않는다', () => {
     const plan = planFor('울머기');
     const ranks = plan.pve!.base.map((one) => Number(/(\d+)위$/.exec(one.note)?.[1]));
     expect(ranks).toEqual([...ranks].sort((a, b) => a - b));
-    expect(plan.pve!.base.every((one) => one.note.startsWith('땅 보스 레이드'))).toBe(true);
+    // 줄 글자는 순위만 — 어느 판인지는 묶음 제목(raidType)이 말한다
+    expect(plan.pve!.base.every((one) => /^딜러 \d+위$/.test(one.note))).toBe(true);
   });
   it('맥스 폼으로 열면 순위가 없어도 맥스 배틀 · 레이드 추천이 먼저 (다이맥스 태우지네)', () => {
     const dexNo = idOf('태우지네');
