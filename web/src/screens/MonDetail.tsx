@@ -35,15 +35,17 @@ import CalcScreen, { CALC_DEFAULT, type CalcInputs } from '../components/detail/
 import { Evo, MegaCompare } from '../components/detail/Evo';
 import CatchCard from '../components/detail/CatchCard';
 import UsageRanks from '../components/detail/UsageRanks';
-import FormGuide from '../components/detail/FormGuide';
+import FormGuide, { BossLine, FormStats, TrainCard } from '../components/detail/FormGuide';
+import { speciesOf } from '../lib/formGuide';
 
 export type { MonRef } from '../lib/mon';
 
 /** 팝업 한 화면의 상태 — 떠날 때 통째로 쌓았다가 ← 로 돌아올 때 그대로 되돌린다 (v3 detailState) */
 interface View { mon: MonRef; tab: Tab; screen: 'detail' | 'calc'; calc: CalcInputs; catchSeg: string }
 
-type Tab = 'summary' | 'battle' | 'evo';
-const TABS: [Tab, string][] = [['summary', '요약'], ['battle', '배틀 정보'], ['evo', '진화']];
+// 탭은 둘 — 진화 계열이 요약 맨 위로 올라왔다. 진화 탭만 따로 두면 '이 종이 무엇이 되는가' 를 보려고 탭을 한 번 더 넘겼다 (2026-09-30 주인 요청)
+type Tab = 'summary' | 'battle';
+const TABS: [Tab, string][] = [['summary', '진화 · 요약'], ['battle', '배틀 정보']];
 
 const FORM_KIND: Record<string, string> = {
   메가: 'mega', 메가X: 'mega', 메가Y: 'mega', 원시: 'mega',
@@ -179,7 +181,10 @@ export default function MonDetail({ pick, onClose, inline = false }: MonDetailPr
   const cpm = data.DEX_DATA.cpm;
   const { labels: formLabels, base: baseName } = splitName(mon.name, data.FORM_LABELS);
   const formKind = formLabels.map((label) => FORM_KIND[label]).find(Boolean) ?? '';
-  const otherLabels = formLabels.filter((label) => label !== '다이맥스' && label !== '거다이맥스');
+  // 일반 줄의 이름표 — 맥스 · 메가는 제 줄이 따로 있으니 빼고 남은 라벨(섀도우 · 리전 폼)만
+  const otherLabels = formLabels.filter((label) => !/^(다이맥스|거다이맥스|메가X?|메가Y|원시)$/.test(label));
+  // 종 이름 — '거다이맥스 인텔리레온' → '인텔리레온', '메가X 리자몽' → '리자몽', '섀도우 리자몽' 은 그대로
+  const stemOfName = speciesOf(mon.name);
 
   const isFav = dexNo != null && favs.includes(dexNo);
   const news = dexNo != null ? favNewsFor(favEvents.FAV_EVENTS, dexNo) : [];
@@ -363,21 +368,24 @@ export default function MonDetail({ pick, onClose, inline = false }: MonDetailPr
 
                     {/* ── 요약: CP · 포획 CP · 기술 · (기술 변경) · 능력치 */}
                     <div className="detail__pane" role="tabpanel" data-pane="summary" id="detail-pane-summary" aria-labelledby="detail-tab-summary" hidden={tab !== 'summary'}>
-                      {/* 일반 · 다이맥스 · 거다이맥스는 '폼별 쓰임새' 카드가 한 번에 보여 주고 누르면 그 폼으로 바뀐다.
-                          그 밖의 폼(메가 · 섀도우 …)만 머리줄에서 내려와 요약 맨 위 한 줄에 선다 */}
-                      <FormGuide mon={mon} dexNo={dexNo} onSwitch={switchTo} />
-                      {otherLabels.length ? (
-                        <p className="detail__forms">
-                          <span className="detail__forms-label">폼</span>
-                          {otherLabels.map((label) => (
-                            <span key={label} className={`form-tag${FORM_KIND[label] ? ` form-tag--${FORM_KIND[label]}` : ''}`}>{label}</span>
-                          ))}
-                        </p>
-                      ) : null}
+                      {/* 맨 위는 진화 계열 — 이 종이 무엇이 되는지 · 계열에서 무엇을 키울지 · 지금 잡을 수 있는지 */}
+                      <section className="detail__card detail__evo-card">
+                        <h3>진화 계열</h3>
+                        {dexNo != null
+                          ? <Evo dex={dexNo} sprite={sprite} onSwitch={switchTo} />
+                          : <p className="detail__none-text">진화가 없는 포켓몬이에요.</p>}
+                        <BossLine dexNo={dexNo} />
+                      </section>
+                      {/* 육성 추천 — 서비스의 목표(다이맥스 · 거다이맥스 우선 육성)를 팝업의 첫 답으로 둔다.
+                          검색한 것의 쓰임새가 1번: 맥스 배틀 · 레이드에서 쓰이면 맥스 폼부터, PvP 에서만 쓰이면 일반 · 전설 */}
+                      <TrainCard mon={mon} dexNo={dexNo} stem={stemOfName} onSwitch={switchTo} />
+                      {/* 폼별 정보 — 요약 한 줄씩. 일반은 펼치고, 맥스 폼은 D-MAX 화면의 그 줄로.
+                          메가 · 섀도우를 보고 있으면 일반 줄의 이름표가 그 라벨이다 */}
+                      <FormGuide mon={mon} dexNo={dexNo} baseLabel={otherLabels.join(' ') || '일반'} onSwitch={switchTo} onLeave={onClose} />
                       {form && cpm['l50'] ? (
                         <>
-                          {/* 만렙 큰 숫자는 접혀도 보이고 2×2 표만 접힌다 (v2.32.0) */}
-                          <div className="detail__matchrows">
+                          {/* 만렙 큰 숫자는 접혀도 보이고 2×2 표만 접힌다 (v2.32.0).
+                              옆에 있던 '배틀 활용 순위' 는 폼별 정보가 폼마다 나눠 보여 준다 — 세 폼을 합친 목록은 배틀 정보 탭에 */}
                           <details className="detail__cp-card">
                             <summary>
                               <div className="detail__cp-big">
@@ -397,19 +405,15 @@ export default function MonDetail({ pick, onClose, inline = false }: MonDetailPr
                               ))}
                             </div>
                           </details>
-                            <section className="detail__card">
-                              <h3>배틀 활용 순위</h3>
-                              <UsageRanks name={mon.name} compact />
-                            </section>
-                          </div>
                           <CatchCard form={form} sprite={sprite} seg={catchSeg} onSeg={setCatchSeg} />
                         </>
                       ) : null}
 
+                      {/* 요약은 한눈에 — 기술 목록은 눌러서 펼친다 (2026-09-30 주인 요청) */}
                       {form ? (
-                        <section className="detail__card">
-                          <h3>배울 수 있는 기술</h3>
-                          <div className="detail__moves">
+                        <details className="detail__acc detail__acc--moves">
+                          <summary>배울 수 있는 기술</summary>
+                          <div className="detail__acc-body detail__moves">
                             <div>
                               {([['일반 기술', form.fast], ['스페셜 기술', form.charged]] as const).map(([label, moves]) => (
                                 <div key={label} className="move-list__row">
@@ -426,7 +430,7 @@ export default function MonDetail({ pick, onClose, inline = false }: MonDetailPr
                                 : null}
                             </div>
                           </div>
-                        </section>
+                        </details>
                       ) : null}
 
                       {/* 적용 전후 모두 적는다 — 적용 뒤에도 "왜 순위가 움직였나" 의 답이 된다 */}
@@ -465,6 +469,8 @@ export default function MonDetail({ pick, onClose, inline = false }: MonDetailPr
 
                     {/* ── 배틀 정보: 타입 상성 · 활용 순위 · PvP 개체값 · 메가 비교 · 보스로 만났을 때 */}
                     <div className="detail__pane" role="tabpanel" data-pane="battle" id="detail-pane-battle" aria-labelledby="detail-tab-battle" hidden={tab !== 'battle'}>
+                      {/* 맨 위는 지금 보는 폼의 성적 — D-MAX 에서 열었으면 맥스 표, PvP · 레이드에서 열었으면 그쪽 순위 */}
+                      <FormStats mon={mon} baseLabel={otherLabels.join(' ') || '일반'} onLeave={onClose} />
                       {types.length ? (
                         <section className="detail__card">
                           <h3>타입 상성</h3>
@@ -488,11 +494,12 @@ export default function MonDetail({ pick, onClose, inline = false }: MonDetailPr
                       ) : null}
 
                       <section className="detail__card">
-                        <h3>활용 순위</h3>
+                        <h3>모든 폼 활용 순위</h3>
                         <UsageRanks name={mon.name} />
                       </section>
 
-                      {form ? <IvRank form={form} sprite={sprite} /> : null}
+                      {/* PvP 개체값은 일반 폼에서만 — 맥스 폼은 PvP 에서 다이맥스하지 않아 따로 볼 까닭이 없다 */}
+                      {form && !/^(거다이맥스|다이맥스) /.test(mon.name) ? <IvRank form={form} sprite={sprite} /> : null}
                       {dexNo != null ? (
                         <MegaCompareCard dexNo={dexNo} />
                       ) : null}
@@ -509,18 +516,6 @@ export default function MonDetail({ pick, onClose, inline = false }: MonDetailPr
                       ) : null}
                     </div>
 
-                    {/* ── 진화 */}
-                    <div className="detail__pane" role="tabpanel" data-pane="evo" id="detail-pane-evo" aria-labelledby="detail-tab-evo" hidden={tab !== 'evo'}>
-                      <section className="detail__card">
-                        <h3>진화 계열</h3>
-                        {dexNo != null
-                          ? <Evo dex={dexNo} sprite={sprite} onSwitch={switchTo} />
-                          : <p className="detail__none-text">진화가 없는 포켓몬이에요.</p>}
-                      </section>
-                      <p className="dex__hint">
-                        진화 계열과 메가·맥스 폼을 구분해서 보여 줘요 · 포켓몬을 누르면 이 창에서 상세가 바뀌고, ← 로 돌아오면 보던 탭과 위치가 그대로예요
-                      </p>
-                    </div>
                   </div>
                 </div>
                 {form ? (
