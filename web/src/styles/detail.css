@@ -108,6 +108,14 @@
 .detail--mon .detail__back { margin: 0 var(--space-lg) var(--space-sm); }
 .detail--mon .detail__rec { min-height: var(--tap); }
 
+/* 타입 상성의 약점 · 내성 — 좁은 폭(1100px 아래)은 테두리 없는 줄이라, 바탕 띠(--bg)가 제목 줄에 붙은 회색 띠로만 보였다.
+   두 테마 모두 바탕을 지우고 칸 사이 · 제목 아래를 띄운다 (2026-09-30 주인 요청). PC 는 테두리 상자라 그대로 둔다 (pc-theme.css) */
+@media (max-width: 1099px) {
+  html body #root .detail--mon .detail__card .detail__matchrows { gap: 2.4rem; }
+  html body #root .detail--mon .detail__card .detail__match { background: transparent; }
+  html body #root .detail--mon .detail__card .detail__match h3 { margin: 0 0 1.2rem; }
+}
+
 /* 요약 탭의 두 칸 — 만렙 CP 와 배틀 활용 순위를 나란히 */
 .detail--mon .detail__pane > .detail__matchrows {
   display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: var(--space-md);
