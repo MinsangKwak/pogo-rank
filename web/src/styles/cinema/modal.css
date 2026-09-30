@@ -6,7 +6,7 @@
    제목 자리(.detail__name · .tankpop__head · .login-invite__head · .detail__bar)를 모아 한 규칙으로 둔다.
    ───────────────────────────────────────────────────────────────────────────── */
 
-html body #root dialog.modal { background: color-mix(in srgb, var(--plate) 67%, transparent); backdrop-filter: blur(0.8rem); }
+html body #root dialog.modal { background: color-mix(in srgb, var(--night) 67%, transparent); backdrop-filter: blur(0.8rem); }
 html body #root .modal__box { border: 1px solid var(--line); border-radius: var(--r-panel); background: var(--surface); color: var(--fg); box-shadow: var(--shadow-pop); }
 /* 도구 팝업의 틀 — 옛 노트 스킨(shell-notebook.css)의 빨강 틀 · 계단 그림자를 카드 틀로 바꾼다.
    위 띠(4.8rem)는 닫기 단추와 이름표 자리라 남긴다. 이름표는 메인 눈썹글과 같은 모양이다 */

@@ -7,6 +7,8 @@
 
    `html body #root` 접두사는 home-editorial.css 머리말과 같은 이유다.
    ───────────────────────────────────────────────────────────────────────────── */
+/* 2026-09-30 — 새 디자인에서 콘솔 바탕은 강조 카드(cinema/parts.css, 밝은 판)가 칠한다. 글자는 판 토큰을 따르므로
+   라이트의 판이 밝아진 뒤로 진한 글자가 된다 — 전에는 흰 글자(--plate-fg)가 흰 카드 위에 서서 자리표시 · 도움말 · 복사가 안 보였다 */
 html body #root .finder { --finder-rule: color-mix(in srgb, var(--fg) 16%, transparent); }
 html body #root .finder > .note { color: var(--muted); margin-bottom: 1.6rem; }
 

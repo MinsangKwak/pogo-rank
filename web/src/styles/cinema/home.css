@@ -274,7 +274,8 @@ html body #root .portal-banner-caption {
   position: absolute; z-index: 4; left: 2.4rem; bottom: 4rem; right: auto; max-width: calc(100% - 9.6rem);
   display: grid; gap: 0.8rem; padding: 1.6rem 2rem; pointer-events: none; color: var(--plate-fg);
   border-left: 0.4rem solid var(--plate-accent); border-radius: 0 var(--r-box) var(--r-box) 0;
-  background: linear-gradient(90deg, color-mix(in srgb, var(--plate) 92%, transparent), color-mix(in srgb, var(--plate) 55%, transparent));
+  /* 끝까지 80% 는 덮는다 — 55% 였을 때 날짜(강조색)가 뒤 그림에 섞여 명암비 3.7(라이트) · 4.0(다크 모바일)까지 떨어졌다 (2026-09-30 실측) */
+  background: linear-gradient(90deg, color-mix(in srgb, var(--plate) 92%, transparent), color-mix(in srgb, var(--plate) 80%, transparent));
   backdrop-filter: blur(1.2rem);
 }
 html body #root .portal-banner-caption > span { justify-self: start; color: var(--plate-accent); font: 700 1.6rem/1.5 Pretendard, sans-serif; letter-spacing: 0.04em; font-variant-numeric: tabular-nums; }
