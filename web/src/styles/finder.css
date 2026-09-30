@@ -7,6 +7,11 @@
 
    `html body #root` 접두사는 home-editorial.css 머리말과 같은 이유다.
    ───────────────────────────────────────────────────────────────────────────── */
+/* 콘솔은 테마를 안 타는 밤 판이다 — 라이트의 그림 판(--plate)이 밝아져도(2026-09-30) 여기서는 밤 판 값으로 다시 묶는다 */
+html body #root .finder__result {
+  --plate: var(--night); --plate-fg: var(--night-fg); --plate-muted: var(--night-muted);
+  --plate-line: var(--night-line); --plate-accent: var(--night-accent);
+}
 html body #root .finder { --finder-rule: color-mix(in srgb, var(--fg) 16%, transparent); }
 html body #root .finder > .note { color: var(--muted); margin-bottom: 1.6rem; }
 

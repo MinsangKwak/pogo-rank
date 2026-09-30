@@ -112,19 +112,30 @@
   --px: 0.2rem;                       /* 도트 한 칸 — 테두리·그림자·간격의 기본 단위 */
   --shadow-hard: 0.4rem 0.4rem 0 0;   /* 흐림 0 — 색은 쓰는 쪽에서 붙인다 */
 
-  /* 2026-09-20 v4.4.0 어두운 판 — 검색식 콘솔·홈 히어로처럼 **테마를 안 타고 늘 어두운** 자리.
-     --bg·--fg 를 쓰면 다크에서 판이 밝아져 뒤집히고, hex 를 직접 적으면 §1-b 의 짝(채움↔글자)이 끊긴다.
-     판 위 글자는 --plate-fg, 흐린 글자는 --plate-muted, 선은 --plate-line, 강조는 --plate-accent.
-     테마와 무관하므로 다크 블록에 다시 적지 않는다 — 여기 한 벌이 전부다 */
-  /* 2026-09-25 새 디자인 — 그림(배너·포스터·머리 배경) 위의 판이 모두 이 한 벌이다. 라이트에서도 그림은 어둡다 */
-  --plate: #101725;
-  --plate-2: #291c36;
-  --plate-fg: #f7f8ff;        /* 판 위 글자 */
-  --plate-muted: #c9d4e5;     /* 판 위 흐린 글자 */
-  --plate-line: #ffffff30;
-  --plate-accent: #ff776b;    /* 판 위 강조 — 글자로도 채움(글자 --plate)으로도 쓴다 */
-  --plate-accent-2: #c49bd2;  /* 판 위 둘째 강조 — 레이드 포스터의 순위 숫자 */
-  --plate-cta: #d23f35;       /* 판 위 주 버튼 채움 — --plate-fg 글자와 4.6 */
+  /* 밤 판 — **테마를 안 타고 늘 어두운** 자리(검색식 콘솔 · 팝업 · 서랍 뒤 가림막)의 한 벌 (2026-09-20 v4.4.0).
+     다크 테마의 그림 판(--plate)도 이 값을 가리킨다 — 어두운 판의 색은 여기 한 곳에만 적는다 */
+  --night: #101725;
+  --night-2: #291c36;
+  --night-fg: #f7f8ff;
+  --night-muted: #c9d4e5;
+  --night-line: #ffffff30;
+  --night-accent: #ff776b;
+  --night-accent-2: #c49bd2;
+  --night-cta: #d23f35;
+
+  /* 그림 판 — 배너 · 포스터 · 화면 머리 · 팝업 머리처럼 **그림 위에 글자가 서는** 자리. 판 색을 그림 위에 90% 안팎으로 덮는다.
+     판 위 글자는 --plate-fg, 흐린 글자는 --plate-muted, 선은 --plate-line, 강조는 --plate-accent. --bg·--fg 를 쓰지 않는다 — §1-b 의 짝이 끊긴다.
+     2026-09-30 주인 요청 — **라이트에서는 판이 밝다.** 밝은 화면 한가운데 어두운 그림 판이 서면 글자가 흐리고 눈이 부신다.
+     밝은 판을 덮으면 그림은 옅어지고 글자는 진해진다. 다크 블록은 밤 판(--night)을 가리킨다 */
+  --plate: #f7f8fc;
+  --plate-2: #f6e8ee;
+  --plate-fg: #1c2638;        /* 판 위 글자 — 판과 14.9 */
+  --plate-muted: #3f4b60;     /* 판 위 흐린 글자 — 판과 8.6. 옅은 그림이 비쳐도 4.5 를 넘게 한 단 진하다 */
+  --plate-line: #1c263824;
+  --plate-accent: #b9372d;    /* 판 위 강조 — 글자로도 채움(글자 --plate)으로도 쓴다. 판과 5.8 */
+  --plate-accent-2: #7b3f8f;  /* 판 위 둘째 강조 — 레이드 포스터의 순위 숫자 */
+  --plate-cta: #b9372d;       /* 판 위 주 버튼 채움 — 글자는 --plate-cta-fg */
+  --plate-cta-fg: #ffffff;    /* 주 버튼 채움 위 글자 — 테마와 무관하게 흰색 (라이트 5.9 · 다크 4.6) */
 }
 /* 다크 — 2026-09-19 v4.3.1 TCG 카드(빨강). 깊은 적갈색(#1a0f12) 위에 밝은 빨강이 올라간다 —
    중성 회색 대신 붉은 기가 도는 검정을 쓰는 이유는, 그 위의 빨강이 탁해지지 않아서다.
@@ -139,6 +150,8 @@
     --brand:#ff776b; --brand-2:#ffaaa0; --point:#7aa7ff; --warn:#fb7185; --caution:#fbbf24; --off:#8390a6;
     --good:#4ade80; --accent:#ff776b; --chart-1:#f0564a;
     --c-shadow:#a78bfa;
+    --plate: var(--night); --plate-2: var(--night-2); --plate-fg: var(--night-fg); --plate-muted: var(--night-muted);
+    --plate-line: var(--night-line); --plate-accent: var(--night-accent); --plate-accent-2: var(--night-accent-2); --plate-cta: var(--night-cta);
   }
 }
 :root[data-theme="dark"] {
@@ -149,6 +162,8 @@
   --brand:#ff776b; --brand-2:#ffaaa0; --point:#7aa7ff; --warn:#fb7185; --caution:#fbbf24; --off:#8390a6;
   --good:#4ade80; --accent:#ff776b; --chart-1:#f0564a;
   --c-shadow:#a78bfa;
+  --plate: var(--night); --plate-2: var(--night-2); --plate-fg: var(--night-fg); --plate-muted: var(--night-muted);
+  --plate-line: var(--night-line); --plate-accent: var(--night-accent); --plate-accent-2: var(--night-accent-2); --plate-cta: var(--night-cta);
 }
 
 /* 2026-09-11 v2.59.0 목록 격자 사다리 — 한 줄에 몇 개를 놓을지 여기 한 곳에서만 정한다.

@@ -2,7 +2,7 @@
    cinema/shell.css — 새 디자인(2026-09-25 ae64ee8)의 뼈대: 바탕 · 머리줄 · 서랍 · 화면 머리 · 바닥글
 
    **색은 토큰만 쓴다** (tokens.css). 라이트·다크가 같은 규칙을 탄다 — 테마마다 규칙을 두 벌 적지 않는다.
-   그림 위에 놓이는 판(화면 머리 배경 · 서랍 첫 줄)은 --plate 한 벌이다 — 라이트에서도 그림은 어둡다 (§1-b 4).
+   그림 위에 놓이는 판(화면 머리 배경 · 서랍 첫 줄)은 --plate 한 벌이다 — 라이트는 밝은 판, 다크는 밤 판(--night) (§1-b 4, 2026-09-30).
    크기 · 간격은 격자(0.4rem) 위, 반경은 --r-panel · --r-box · --r-ctl · --r-tag 넷뿐이다.
    ───────────────────────────────────────────────────────────────────────────── */
 
@@ -64,7 +64,7 @@ html body #root .app-bar #menu-toggle::after { display: none; }
 html body #root .outline-icon { flex-shrink: 0; display: inline-block; vertical-align: middle; }
 
 /* ── 서랍 ───────────────────────────────────────────────────────────────── */
-html body #root .drawer { background: color-mix(in srgb, var(--plate) 67%, transparent); backdrop-filter: blur(1.2rem); }
+html body #root .drawer { background: color-mix(in srgb, var(--night) 67%, transparent); backdrop-filter: blur(1.2rem); }
 html body #root .drawer__panel {
   box-sizing: border-box; width: min(48rem, 100vw); max-width: 100%; gap: 1.6rem; padding: 0 2.4rem 2.4rem;
   color: var(--fg); background: radial-gradient(ellipse at top right, var(--glow), transparent 60%), var(--bg);
