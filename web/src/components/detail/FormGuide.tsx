@@ -9,7 +9,7 @@
 // 요약만 보이고 자세한 것은 더보기로 — 순위 화면에서 그 줄을 찾아 밝힌다 (stores/rank.ts focus)
 // ─────────────────────────────────────────────────────────────────────────────
 'use strict';
-import { useMemo } from 'react';
+import { useMemo, type ReactNode } from 'react';
 import { useDex, useMax, usePve, usePvp, useUsage } from '../../lib/data';
 import { dday } from '../../lib/maxSlides';
 import { useMaxSlidesSoft } from '../../lib/weekBosses';
@@ -88,7 +88,10 @@ function Picks({ rows, onSwitch }: { rows: readonly PlanPick[]; onSwitch: Switch
           <Sprite id={row.sprite} />
           <span className="detail__pick-main">
             <span className="detail__rec-name"><NameNode name={row.name} labels={data.FORM_LABELS} /></span>
-            <span className="detail__pick-note">{row.own ? `이 계열 · ${row.note}` : row.note}</span>
+            <span className="detail__pick-note">
+              {/* 검색한 계열은 꼬리표로 따로 — 순위 글자에 섞으면 '이 계열 · 물 보스 맥스 3위' 처럼 읽기 어려웠다 */}
+              {row.own ? <span className="tag detail__pick-own">이 계열</span> : null}{row.note}
+            </span>
           </span>
           <span className="detail__rec-go" aria-hidden="true">›</span>
         </button>
@@ -117,40 +120,31 @@ export function TrainCard({ mon, dexNo, stem, onSwitch }: { mon: MonRef; dexNo: 
       maxForm: formKeyOf(mon.name) === 'dmax' || formKeyOf(mon.name) === 'gmax',
     });
   }, [dex, max, usage, pve, pvp, dexNo, stem, mon.types, mon.name]);
-  // 판 이름은 제목 옆 작은 글자로 — 제목에 이어 붙이면 좁은 화면에서 두 줄로 꺾였다 (390px 실측)
-  const boss = (type: string) => (type === 'overall' ? null : <span className="detail__train-where">{`${dex.TYPE_KO[type] ?? type} 보스 상대`}</span>);
+  // 묶음 제목이 기준을 한 번만 말한다 — '물 타입 보스 기준'. 줄마다 '물 보스 맥스 3위' 를 되풀이하면 무슨 순위인지 안 읽혔다.
+  // 카드 밑 설명 줄('PvP용 — … 다이맥스하지 않아요')도 뺐다 — 헷갈린다는 주인 판단 (2026-09-30)
+  const basis = (type: string) => (type === 'overall' ? '모든 보스 기준' : `${dex.TYPE_KO[type] ?? type} 타입 보스 기준`);
+  // '강한 순' 이라 적지 않는다 — 이 계열 폼을 앞에 세우므로 줄 순서가 순위 순이 아니다. 순위는 줄마다 '딜러 N위' 로 (Codex, PR #272)
+  // 좁은 화면이라 묶음마다 접는다 — 첫 묶음만 펼쳐 두고 나머지는 눌러서 (2026-09-30 주인 요청)
+  const group = (key: string, open: boolean, tag: ReactNode, title: string, sub: string, rows: readonly PlanPick[]) => (
+    <details key={key} className="detail__train-group" open={open}>
+      <summary className="detail__train-head">
+        {tag}
+        <span className="detail__train-title">{title}</span>
+        <span className="detail__train-where">{sub}</span>
+      </summary>
+      <Picks rows={rows} onSwitch={onSwitch} />
+    </details>
+  );
+  const maxFirst = !!plan.pve?.max.length;
 
   return (
     <section className="detail__card detail__train">
       <h3>육성 추천</h3>
-      {plan.pve ? (
-        <div className="detail__train-part">
-          <p className="detail__card-sub">맥스 배틀 · 레이드용 — 다이맥스 · 거다이맥스부터 키우세요</p>
-          {plan.pve.max.length ? (
-            <>
-              <h4 className="detail__train-head">
-                <span className="form-tag form-tag--max">1순위</span>다이맥스 · 거다이맥스{boss(plan.pve.maxType)}
-              </h4>
-              <Picks rows={plan.pve.max} onSwitch={onSwitch} />
-            </>
-          ) : null}
-          {plan.pve.base.length ? (
-            <>
-              <h4 className="detail__train-head">
-                <span className="form-tag">{plan.pve.max.length ? '2순위' : '추천'}</span>레이드 · 일반 · 전설{boss(plan.pve.raidType)}
-              </h4>
-              <Picks rows={plan.pve.base} onSwitch={onSwitch} />
-            </>
-          ) : null}
-        </div>
-      ) : null}
-      {plan.pvp ? (
-        <div className="detail__train-part">
-          <p className="detail__card-sub">PvP용 — 일반 · 전설 개체로 키우세요 (맥스 폼은 트레이너 배틀에서 다이맥스하지 않아요)</p>
-          <h4 className="detail__train-head"><span className="form-tag">PvP</span>{`${LEAGUE_KO[plan.pvp.league] ?? plan.pvp.league} · 일반 · 전설`}</h4>
-          <Picks rows={plan.pvp.base} onSwitch={onSwitch} />
-        </div>
-      ) : null}
+      {plan.pve && maxFirst ? group('max', true, <span className="form-tag form-tag--max">1순위</span>, '다이맥스 · 거다이맥스', basis(plan.pve.maxType), plan.pve.max) : null}
+      {plan.pve?.base.length
+        ? group('raid', !maxFirst, <span className="form-tag">{maxFirst ? '2순위' : '추천'}</span>, '레이드용 일반 · 전설', basis(plan.pve.raidType), plan.pve.base)
+        : null}
+      {plan.pvp ? group('pvp', true, <span className="form-tag">PvP</span>, `${LEAGUE_KO[plan.pvp.league] ?? plan.pvp.league} 일반 · 전설`, '리그 순위', plan.pvp.base) : null}
     </section>
   );
 }
@@ -218,7 +212,7 @@ export default function FormGuide({ mon, dexNo, baseLabel, onSwitch, onLeave }: 
                       </div>
                     ))}
                   </div>
-                ) : <p className="detail__none-text">순위표 상위 30위에 이 폼이 선 곳이 없어요.</p>}
+                ) : <p className="detail__none-text">순위표 상위 30위 밖이에요.</p>}
                 {!on ? (
                   <button type="button" className="detail__form-go" onClick={() => onSwitch(toMon(row))}>{`${label} 폼으로 보기 ›`}</button>
                 ) : null}
@@ -267,7 +261,7 @@ export function FormStats({ mon, dexNo, baseLabel, onLeave }: { mon: MonRef; dex
         <section className="detail__card detail__formstats">
           <h3><span className="form-tag form-tag--max">{FORM_KO[key]}</span> 이 폼의 성적</h3>
           <p className="detail__none-text">
-            {soon?.slide.live ? '이번 주 맥스 배틀에서 처음 만날 수 있어요 — 순위표에는 아직 없어요.' : '아직 다이맥스로 나온 적이 없어요.'}
+            {soon?.slide.live ? '이번 주 맥스 배틀에서 처음 등장해요 · 수치는 등장 후 계산 예정이에요.' : '추후 등장 후 수치 계산 예정이에요.'}
           </p>
           {soon ? (
             <p className="detail__formguide-boss">
@@ -286,7 +280,7 @@ export function FormStats({ mon, dexNo, baseLabel, onLeave }: { mon: MonRef; dex
         <h3><span className="form-tag form-tag--max">{FORM_KO[key]}</span> 이 폼의 성적</h3>
         {lines.length
           ? <ul className="detail__stat-lines">{lines.map((line) => <li key={line}>{line}</li>)}</ul>
-          : <p className="detail__none-text">D-MAX 순위표 상위에 이 폼이 선 곳이 없어요.</p>}
+          : <p className="detail__none-text">D-MAX 순위표 상위권 밖이에요.</p>}
         <button type="button" className="detail__form-go" onClick={() => board.toMax({ name: mon.name, places, moveType, tier: spot })}>D-MAX 더보기 ›</button>
       </section>
     );
