@@ -78,18 +78,36 @@ export function maxIndex(max: Pick<MaxBundle, 'DMAX_DATA' | 'DMAX_TANK' | 'DMAX_
  */
 export interface TierSpot { type: string; tier: string; rank: number }
 
-/** 이름 → 기술 타입 칸의 자리. D-MAX 화면처럼 미구현 줄은 빼고 센다(withUnrel 이면 넣는다). '전체' 칸은 보지 않는다 */
+/**
+ * 이름 → 기술 타입 칸의 자리. D-MAX 화면처럼 미구현 줄은 빼고 센다(withUnrel 이면 넣는다).
+ * **한 폼이 여러 칸에 선다** — 데이터 빌더가 자속 맥스어택 타입마다 한 줄을 만든다(backend/value_build.py). 다이맥스 리자몽은
+ * 불꽃 · 비행 두 칸에 같은 점수로 선다. 표 순서대로 첫 칸을 쓰면 비행이 잡혀 '불꽃에서 몇 티어' 가 아니게 된다 (Codex, PR #271).
+ * 대표 칸은 ① 전체 칸 줄의 맥스 기술 타입 ② 그 폼의 첫 타입 칸 ③ 순위가 가장 높은 칸 순으로 고른다
+ */
 export function tierIndex(max: Pick<MaxBundle, 'DMAX_TIER'>, withUnrel = false): Map<string, TierSpot> {
-  const out = new Map<string, TierSpot>();
+  const spots = new Map<string, TierSpot[]>();
+  const lead = new Map<string, string>();
+  const firstType = new Map<string, string>();
   for (const [key, rows] of Object.entries(max.DMAX_TIER)) {
-    if (key === 'overall') continue;
     let rank = 0;
     for (const row of rows) {
       if (row.unrel && !withUnrel) continue;
       rank += 1;
+      if (!firstType.has(row.name) && row.types[0]) firstType.set(row.name, row.types[0]);
+      if (key === 'overall') {
+        if (!lead.has(row.name) && row.charged) lead.set(row.name, row.charged);
+        continue;
+      }
       const tier = (row as DmaxRow & { tier?: string }).tier ?? '';
-      if (!out.has(row.name)) out.set(row.name, { type: key, tier, rank });
+      spots.set(row.name, [...(spots.get(row.name) ?? []), { type: key, tier, rank }]);
     }
+  }
+  const out = new Map<string, TierSpot>();
+  for (const [name, list] of spots) {
+    const pick = list.find((one) => one.type === lead.get(name))
+      ?? list.find((one) => one.type === firstType.get(name))
+      ?? [...list].sort((left, right) => left.rank - right.rank)[0];
+    if (pick) out.set(name, pick);
   }
   return out;
 }

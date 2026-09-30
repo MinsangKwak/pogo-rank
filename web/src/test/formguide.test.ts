@@ -79,6 +79,11 @@ describe('formRows', () => {
     expect(gmax.tier!.rank).toBeLessThan(dmax.tier!.rank);
     expect(formSummary(dmax, typeKo)).toMatch(/^풀 [SABC]티어 · \d+위$/);
   });
+  it('여러 칸에 서는 폼은 대표 칸 — 다이맥스 리자몽은 비행이 아니라 불꽃 (Codex, PR #271)', () => {
+    const rows = rowsFor('리자몽');
+    expect(rows.find((row) => row.key === 'dmax')?.tier?.type).toBe('fire');
+    expect(rows.find((row) => row.key === 'gmax')?.tier?.type).toBe('fire');
+  });
   it('티어표 순위는 D-MAX 화면처럼 미구현을 빼고 센다', () => {
     const released = tierIndex(max);
     const all = tierIndex(max, true);
