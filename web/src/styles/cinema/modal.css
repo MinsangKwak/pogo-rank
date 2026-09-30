@@ -129,7 +129,7 @@ html body #root .detail--mon .detail__stat-go { width: 100%; min-height: var(--t
    v3 modal.css 는 1099px 아래에서 배틀 정보 · 계산기일 때 그림을 6.4rem 으로 접었고, 높이도 1100px 부터만 고정했다 —
    그 접기는 한 칸(세로) 배치를 위한 것이라 두 칸에서는 크기가 흔들리기만 한다 */
 @media (min-width: 768px) {
-  html body #root .modal__box:has(> .detail--mon) { height: min(86vh, 80rem); max-height: 80rem; }
+  html body #root .modal__box:has(> .detail--mon) { height: min(86vh, 80rem); height: min(86dvh, 80rem); max-height: 80rem; }
   html body #root .detail--mon .detail__side { align-items: stretch; }
   html body #root .detail--mon .detail__side .sprite-box { width: 100%; height: auto; aspect-ratio: 1; border-radius: var(--r-box); }
   html body #root .detail--mon .detail__side .sprite-box .sprite { width: 82%; height: 82%; margin: 0; }

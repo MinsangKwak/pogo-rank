@@ -112,7 +112,7 @@ export function trainPlan(src: PlanSource): TrainPlan {
     const dmaxRows = (src.dmax[maxType] ?? []).filter((row) => !row.unrel);
     const own = takeUnique(dmaxRows, PLAN_MAX, skip, src.dexOf, (row) => isOwn(row.name));
     const others = takeUnique(dmaxRows, PLAN_MAX - own.length, skip, src.dexOf, (row) => !isOwn(row.name));
-    // 줄 글자는 순위만 — 어느 판의 순위인지는 묶음 제목('물 타입 보스에 강한 순')이 한 번 말한다 (2026-09-30 주인 제보: '물 보스 상대 · 물 보스 맥스 3위' 를 못 알아본다)
+    // 줄 글자는 순위만 — 어느 판의 순위인지는 묶음 제목('물 타입 보스 기준')이 한 번 말한다 (2026-09-30 주인 제보: '물 보스 상대 · 물 보스 맥스 3위' 를 못 알아본다)
     const max = [...own, ...others].map(({ row, rank }) => pick(row, `딜러 ${rank}위`, isOwn(row.name)));
 
     // ② 레이드 순위표 — 일반 · 전설만. 여기서는 계열을 앞세우지 않는다: 레이드에서 더 나은 것을 그대로 권한다

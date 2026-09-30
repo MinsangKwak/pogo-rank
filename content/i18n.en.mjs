@@ -27,7 +27,7 @@ export const I18N_PATTERNS = [
   [/^(.+) (\d+)위$/, '$1 #$2'],
   [/^(.+) \(같은 진화 계열\)$/, '$1 (same evolution line)'],
   [/^D-MAX ([SABC])티어$/, 'D-MAX $1 tier'],
-  [/^(.+) 타입 보스에 강한 순$/, 'Best vs $1-type bosses'],
+  [/^(.+) 타입 보스 기준$/, 'Against $1-type bosses'],
   [/^(리틀컵|슈퍼리그|하이퍼리그|마스터리그) 일반 · 전설$/, '$1 · standard · legendary'],
   [/^(.+) ([SABC])티어$/, '$1 $2 tier'],
   [/^(.+) 맥스 (\d+)위$/, '$1 Max #$2'],

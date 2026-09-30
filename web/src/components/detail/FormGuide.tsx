@@ -120,9 +120,10 @@ export function TrainCard({ mon, dexNo, stem, onSwitch }: { mon: MonRef; dexNo: 
       maxForm: formKeyOf(mon.name) === 'dmax' || formKeyOf(mon.name) === 'gmax',
     });
   }, [dex, max, usage, pve, pvp, dexNo, stem, mon.types, mon.name]);
-  // 묶음 제목이 기준을 한 번만 말한다 — '물 타입 보스에 강한 순'. 줄마다 '물 보스 맥스 3위' 를 되풀이하면 무슨 순위인지 안 읽혔다.
+  // 묶음 제목이 기준을 한 번만 말한다 — '물 타입 보스 기준'. 줄마다 '물 보스 맥스 3위' 를 되풀이하면 무슨 순위인지 안 읽혔다.
   // 카드 밑 설명 줄('PvP용 — … 다이맥스하지 않아요')도 뺐다 — 헷갈린다는 주인 판단 (2026-09-30)
-  const basis = (type: string) => (type === 'overall' ? '모든 보스 기준' : `${dex.TYPE_KO[type] ?? type} 타입 보스에 강한 순`);
+  const basis = (type: string) => (type === 'overall' ? '모든 보스 기준' : `${dex.TYPE_KO[type] ?? type} 타입 보스 기준`);
+  // '강한 순' 이라 적지 않는다 — 이 계열 폼을 앞에 세우므로 줄 순서가 순위 순이 아니다. 순위는 줄마다 '딜러 N위' 로 (Codex, PR #272)
   // 좁은 화면이라 묶음마다 접는다 — 첫 묶음만 펼쳐 두고 나머지는 눌러서 (2026-09-30 주인 요청)
   const group = (key: string, open: boolean, tag: ReactNode, title: string, sub: string, rows: readonly PlanPick[]) => (
     <details key={key} className="detail__train-group" open={open}>
