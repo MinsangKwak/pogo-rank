@@ -15,17 +15,18 @@ import type { DmaxRow } from '../types/data';
 
 export type Role = 'pve' | 'pvp';
 
-export interface PlanPick { name: string; sprite: number; en: string; types: readonly string[]; note: string; own: boolean }
+export interface PlanPick { name: string; sprite: number; en: string; types: readonly string[]; note: string; own: boolean; rank: number }
 
 export interface TrainPlan {
   roles: Role[];
   /** 레이드 · 맥스 — 판마다 보스 타입이 따로다 (맥스 배틀의 최고 판 ≠ 레이드의 최고 판) */
-  pve: { maxType: string; max: PlanPick[]; raidType: string; base: PlanPick[] } | null;
+  // atkType — 계열이 그 보스를 때리는 기술 타입. 카드 첫 문장('풀 타입 기술로 물 타입 보스를 잘 잡아요')이 쓴다. 모르면 ''
+  pve: { maxType: string; atkType: string; max: PlanPick[]; raidType: string; base: PlanPick[] } | null;
   /** PvP — 리그 · 일반 추천 */
   pvp: { league: string; base: PlanPick[] } | null;
 }
 
-interface Row { sprite: number; name: string; en?: string; types: readonly string[]; unrel?: boolean }
+interface Row { sprite: number; name: string; en?: string; types: readonly string[]; unrel?: boolean; charged?: string }
 
 export interface PlanSource {
   /** 계열의 종 이름들 (검색한 폼 이름 포함) */
@@ -51,8 +52,8 @@ const MAX_PREFIX = /^(거다이맥스|다이맥스) /;
 // '일반 · 전설' 만 — 메가 · 원시 · 섀도우는 이 칸의 뜻(오래 두고 키울 개체)과 다르다
 const NOT_BASE = /^(메가X?Y?|원시|섀도우|다이맥스|거다이맥스) /;
 
-const pick = (row: Row, note: string, own: boolean): PlanPick =>
-  ({ name: row.name, sprite: row.sprite, en: row.en ?? '', types: row.types, note, own });
+const pick = (row: Row, rank: number, note: string, own: boolean): PlanPick =>
+  ({ name: row.name, sprite: row.sprite, en: row.en ?? '', types: row.types, note, own, rank });
 
 /** 계열 각 이름의 세 변형(일반 · 다이맥스 · 거다이맥스)이 선 자리 전부 */
 function familyPlaces(src: PlanSource): { name: string; place: string; rank: number }[] {
@@ -112,14 +113,18 @@ export function trainPlan(src: PlanSource): TrainPlan {
     const dmaxRows = (src.dmax[maxType] ?? []).filter((row) => !row.unrel);
     const own = takeUnique(dmaxRows, PLAN_MAX, skip, src.dexOf, (row) => isOwn(row.name));
     const others = takeUnique(dmaxRows, PLAN_MAX - own.length, skip, src.dexOf, (row) => !isOwn(row.name));
-    // 줄 글자는 순위만 — 어느 판의 순위인지는 묶음 제목('물 타입 보스 기준')이 한 번 말한다 (2026-09-30 주인 제보: '물 보스 상대 · 물 보스 맥스 3위' 를 못 알아본다)
-    const max = [...own, ...others].map(({ row, rank }) => pick(row, `딜러 ${rank}위`, isOwn(row.name)));
+    // 계열 폼은 목록에 꼭 넣되 **순위 순으로** 세운다 — 계열을 앞에 세우면 3위가 1위 위에 서서 '강한 순' 으로 읽히지 않았다 (Codex, PR #272)
+    const max = [...own, ...others].sort((left, right) => left.rank - right.rank)
+      .map(({ row, rank }) => pick(row, rank, `${rank}위`, isOwn(row.name)));
+    // 때리는 타입 — 계열 맥스 폼의 기술 타입(맥스 표의 charged 는 타입 키다), 없으면 검색한 종 타입 중 그 보스에 효과가 굉장한 것
+    const atkType = own[0]?.row.charged
+      ?? src.types.find((type) => (src.chart[type]?.[maxType] ?? 1) >= 1.5) ?? '';
 
     // ② 레이드 순위표 — 일반 · 전설만. 여기서는 계열을 앞세우지 않는다: 레이드에서 더 나은 것을 그대로 권한다
     const baseRows = src.pve[raidType] ?? [];
     const base = takeUnique(baseRows, PLAN_MAX, new Set(), src.dexOf, (row) => !NOT_BASE.test(row.name))
-      .map(({ row, rank }) => pick(row, `딜러 ${rank}위`, isOwn(row.name)));
-    pve = { maxType, max, raidType, base };
+      .map(({ row, rank }) => pick(row, rank, `${rank}위`, isOwn(row.name)));
+    pve = { maxType, atkType: maxType === 'overall' ? '' : atkType, max, raidType, base };
   }
 
   let pvp: TrainPlan['pvp'] = null;
@@ -130,7 +135,7 @@ export function trainPlan(src: PlanSource): TrainPlan {
     const test = (row: Row) => !NOT_BASE.test(row.name);
     const own = takeUnique(rows, 1, skip, src.dexOf, (row) => test(row) && isOwn(row.name));
     const others = takeUnique(rows, PLAN_MAX - own.length, skip, src.dexOf, (row) => test(row) && !isOwn(row.name));
-    pvp = { league, base: [...own, ...others].map(({ row, rank }) => pick(row, `${rank}위`, isOwn(row.name))) };
+    pvp = { league, base: [...own, ...others].sort((left, right) => left.rank - right.rank).map(({ row, rank }) => pick(row, rank, `${rank}위`, isOwn(row.name))) };
   }
   return { roles, pve, pvp };
 }

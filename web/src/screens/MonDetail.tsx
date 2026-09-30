@@ -35,7 +35,7 @@ import CalcScreen, { CALC_DEFAULT, type CalcInputs } from '../components/detail/
 import { Evo, MegaCompare } from '../components/detail/Evo';
 import CatchCard from '../components/detail/CatchCard';
 import UsageRanks from '../components/detail/UsageRanks';
-import FormGuide, { BossLine, FormStats, TrainCard } from '../components/detail/FormGuide';
+import FormGuide, { BossLine, DeepDock, FormStats, TrainCard } from '../components/detail/FormGuide';
 import { speciesOf } from '../lib/formGuide';
 
 export type { MonRef } from '../lib/mon';
@@ -118,9 +118,14 @@ export interface MonDetailProps {
    * 안쪽 CSS 계약(.modal__wrap > .modal__box > .detail)이 그대로 산다
    */
   inline?: boolean;
+  /** 요약 팝업의 '도감에서 자세히' — 도감 화면으로 옮겨 자세한 팝업을 연다 (App.tsx openDeep) */
+  onDeep?: (pick: MonPick) => void;
 }
 
-export default function MonDetail({ pick, onClose, inline = false }: MonDetailProps) {
+export default function MonDetail({ pick, onClose, inline = false, onDeep }: MonDetailProps) {
+  // 요약 팝업 — 전체 검색 · 홈에서 열었다. 진화 · 폼별 정보만 두고, 나머지(육성 추천 · 배틀 정보 · CP · 기술)는 아래 '도감에서 자세히' 로 넘긴다.
+  // 페이지(공유 링크 본문)는 늘 자세히다 — 옮겨 갈 곳이 아니라 그 자체가 도착한 곳이다
+  const brief = pick.view === 'brief' && !inline;
   const { data } = useDex();
   const { data: pve } = usePve();
   const { data: max } = useMax();
@@ -274,7 +279,7 @@ export default function MonDetail({ pick, onClose, inline = false }: MonDetailPr
         <div className="modal__box">
           <div className="detail detail--mon" id={`detail-${sprite}`}
             data-route="mon" data-sprite={sprite} data-dex={dexNo ?? ''} data-mon={mon.name}
-            data-form={formKind || 'base'} data-view="list" data-tab={tab} data-screen={screen}>
+            data-form={formKind || 'base'} data-view="list" data-tab={tab} data-screen={screen} data-depth={brief ? 'brief' : 'full'}>
 
             <div className="detail__bar">
               <button className="detail__bar-back" aria-label="상세로 돌아가기" onClick={() => setScreen('detail')}>‹ 상세로</button>
@@ -363,7 +368,8 @@ export default function MonDetail({ pick, onClose, inline = false }: MonDetailPr
                   {previous ? (
                     <button className="detail__back" onClick={back}>← {previous.mon.name}로 돌아가기</button>
                   ) : null}
-                  <DetailTabs tabs={TABS} value={tab} onChange={setTab} />
+                  {/* 요약 팝업에는 탭이 없다 — 배틀 정보는 자세히 보기에서 */}
+                  {brief ? null : <DetailTabs tabs={TABS} value={tab} onChange={setTab} />}
                   <div className="detail__scroll">
 
                     {/* ── 요약: CP · 포획 CP · 기술 · (기술 변경) · 능력치 */}
@@ -378,15 +384,17 @@ export default function MonDetail({ pick, onClose, inline = false }: MonDetailPr
                       </section>
                       {/* 육성 추천 — 서비스의 목표(다이맥스 · 거다이맥스 우선 육성)를 팝업의 첫 답으로 둔다.
                           검색한 것의 쓰임새가 1번: 맥스 배틀 · 레이드에서 쓰이면 맥스 폼부터, PvP 에서만 쓰이면 일반 · 전설 */}
-                      <TrainCard mon={mon} dexNo={dexNo} stem={stemOfName} onSwitch={switchTo} />
+                      {/* 육성 추천은 자세히 보기에서만 — 도감 · 순위 화면에서 찾아 연 팝업의 답이다. 전체 검색의 요약 팝업에는 세우지 않는다 (2026-09-30 주인 결정) */}
+                      {brief ? null : <TrainCard mon={mon} dexNo={dexNo} stem={stemOfName} onSwitch={switchTo} />}
                       {/* 폼별 정보 — 요약 한 줄씩. 일반은 펼치고, 맥스 폼은 D-MAX 화면의 그 줄로.
                           메가 · 섀도우를 보고 있으면 일반 줄의 이름표가 그 라벨이다 */}
                       <FormGuide mon={mon} dexNo={dexNo} baseLabel={otherLabels.join(' ') || '일반'} onSwitch={switchTo} onLeave={onClose} />
-                      {form && cpm['l50'] ? (
+                      {/* 여기부터는 자세히 보기에서만 — 펼쳐 둔다 (도감 · 순위 화면에서 연 팝업은 다 보려고 연 것이다) */}
+                      {!brief && form && cpm['l50'] ? (
                         <>
                           {/* 만렙 큰 숫자는 접혀도 보이고 2×2 표만 접힌다 (v2.32.0).
                               옆에 있던 '배틀 활용 순위' 는 폼별 정보가 폼마다 나눠 보여 준다 — 세 폼을 합친 목록은 배틀 정보 탭에 */}
-                          <details className="detail__cp-card">
+                          <details className="detail__cp-card" open>
                             <summary>
                               <div className="detail__cp-big">
                                 <span className="meta">Lv.50 · 개체값 15/15/15</span>
@@ -410,8 +418,8 @@ export default function MonDetail({ pick, onClose, inline = false }: MonDetailPr
                       ) : null}
 
                       {/* 요약은 한눈에 — 기술 목록은 눌러서 펼친다 (2026-09-30 주인 요청) */}
-                      {form ? (
-                        <details className="detail__acc detail__acc--moves">
+                      {!brief && form ? (
+                        <details className="detail__acc detail__acc--moves" open>
                           <summary>배울 수 있는 기술</summary>
                           <div className="detail__acc-body detail__moves">
                             <div>
@@ -434,7 +442,7 @@ export default function MonDetail({ pick, onClose, inline = false }: MonDetailPr
                       ) : null}
 
                       {/* 적용 전후 모두 적는다 — 적용 뒤에도 "왜 순위가 움직였나" 의 답이 된다 */}
-                      {changed && changes ? (
+                      {!brief && changed && changes ? (
                         <section className="detail__card">
                           <h3>{`⚔️ ${changes.date} 기술 변경 적용됨`}</h3>
                           <div>
@@ -459,8 +467,8 @@ export default function MonDetail({ pick, onClose, inline = false }: MonDetailPr
                       ) : null}
 
                       {/* 자주 보는 값이 아니라 접어 둔다 — 도감에서 보던 사람을 위해 남긴다 */}
-                      {form ? (
-                        <details className="detail__acc detail__acc--hex">
+                      {brief ? null : form ? (
+                        <details className="detail__acc detail__acc--hex" open>
                           <summary>능력치 육각형</summary>
                           <div className="detail__acc-body"><Hex form={form} name={mon.name} types={types} /></div>
                         </details>
@@ -531,7 +539,9 @@ export default function MonDetail({ pick, onClose, inline = false }: MonDetailPr
 
             {/* ── 하단 고정 — 상세: [링크 복사] [CP 계산기] · 계산기: [초기화] [상세로 돌아가기] */}
             <div className="detail__dock">
-              <div className="detail__dock-row detail__dock-row--detail">
+              {/* 요약 팝업의 바닥은 '더 알아보기' 입구다 — 자세한 것은 도감(자세한 팝업) · D-MAX · PvP 화면으로 (2026-09-30 주인 요청) */}
+              {brief ? <DeepDock mon={mon} dexNo={dexNo} onDeep={onDeep} onLeave={onClose} /> : null}
+              <div className="detail__dock-row detail__dock-row--detail" hidden={brief}>
                 <ShareBtn mon={mon} />
                 <button className="detail__dock-btn detail__bar-dex" onClick={() => { go('/dex'); onClose?.(); }}>
                   <PxIcon emoji="📕" /><span className="btn-label">포켓몬 도감</span>

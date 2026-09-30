@@ -112,6 +112,19 @@ html body #root .detail--mon .detail__pick { min-height: var(--tap); text-align:
 html body #root .detail--mon .detail__pick-main { display: grid; flex: 1 1 auto; min-width: 0; }
 html body #root .detail--mon .detail__pick-note { display: flex; flex-wrap: wrap; align-items: center; gap: 0.4rem; color: var(--muted); font-size: 1.2rem; font-weight: 600; }
 html body #root .detail--mon .detail__train-where { color: var(--muted); font-size: 1.2rem; font-weight: 600; }
+/* 문장으로 푼 설명 — 왜(첫 문장) → 그래서(묶음 첫 줄) → 순위(줄). 문장은 한 줄씩 따로 그려 사이를 띄운다 (2026-09-30 주인 제보: 기승전결이 없다) */
+html body #root .detail--mon .detail__train-lead { margin: 0 0 1.2rem; color: var(--fg); font-size: 1.4rem; line-height: 1.7; }
+html body #root .detail--mon .detail__train-say { margin: 0; padding: 0 1.2rem 0.8rem; color: var(--muted); font-size: 1.4rem; line-height: 1.5; }
+html body #root .detail--mon :is(.detail__train-lead, .detail__train-say) > span + span { margin-left: 0.4rem; }
+/* 순위는 줄 맨 앞 — 목록이 순위 순이라 숫자만 내려 읽으면 된다. 이 계열 줄은 테두리로 짚는다 */
+html body #root .detail--mon .detail__picks { margin: 0; list-style: none; }
+html body #root .detail--mon .detail__picks > li > .detail__pick { width: 100%; }
+html body #root .detail--mon .detail__pick-rank { flex: none; min-width: 3.2rem; color: var(--fg); font: 700 1.4rem/1 Pretendard, sans-serif; text-align: center; }
+html body #root .detail--mon .detail__pick.is-own { border-color: var(--brand); }
+
+/* 요약 팝업의 바닥 — '자세한 건 도감을 참고하세요!' 와 옮겨 갈 곳 셋 (2026-09-30 주인 요청) */
+html body #root .detail--mon .detail__deep-hint { margin: 0 0 0.8rem; color: var(--fg); font-size: 1.4rem; font-weight: 700; text-align: center; }
+html body #root .detail--mon .detail__dock-row[hidden] { display: none; }
 
 /* 이 폼의 성적 — 배틀 정보 맨 위 */
 /* 제목 · 본문 · 단추 사이를 띄운다 — 한 덩어리로 붙어 단추가 글에 딸린 것처럼 보였다 (2026-09-30 주인 제보) */
