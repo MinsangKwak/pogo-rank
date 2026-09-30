@@ -83,6 +83,8 @@ html body #root .detail--mon .detail__formguide-evo-label { color: var(--muted);
   html body #root .detail--mon .detail__side :is(.sprite-box, .detail__en-inline) { display: none; }
   /* 폼 줄의 '보는 중' 글자는 뺀다 — 테두리가 이미 말하고, 글자까지 두면 활용처가 두 줄로 꺾였다 (390px 실측) */
   html body #root .detail--mon .detail__formrow.is-now .detail__formrow-go { display: none; }
+  /* 계산기 머리는 그림 · 이름만 — 'CP 계산기' 글자까지 두면 폼 이름이 잘렸다 (390px 실측). 계산기인 것은 아래 판이 말한다 */
+  html body #root .detail--mon[data-screen="calc"] .detail__bar-dex { display: none; }
 }
 html body #root .modal__wrap:has(.detail--mon) .modal__close { border-color: var(--plate-line); background: color-mix(in srgb, var(--plate) 70%, transparent); color: var(--plate-fg); }
 @media (hover: hover) { html body #root .modal__wrap:has(.detail--mon) .modal__close:hover { border-color: var(--plate-accent); background: color-mix(in srgb, var(--plate-accent) 20%, var(--plate)); } }

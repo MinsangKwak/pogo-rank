@@ -275,7 +275,15 @@ export default function MonDetail({ pick, onClose, inline = false }: MonDetailPr
               <button className="detail__bar-back" aria-label="상세로 돌아가기" onClick={() => setScreen('detail')}>‹ 상세로</button>
               {/* 머리줄이 곧 이름표다 — '포켓몬 상세' 제목과 아래 묶음(번호 · 이름 · 타입)이 같은 말을 두 번 했다.
                   한 줄에 #번호 · 이름 · 타입만 두고 폼(다이맥스 등)은 요약 탭 맨 위로 보낸다 (2026-09-30 주인 요청: 내용이 더 보이게) */}
-              {screen === 'calc' ? <p className="detail__bar-title">CP 계산기</p> : (
+              {/* 계산기에서도 이름표를 남긴다 — 좁은 화면은 옆 칸이 숨어서, 제목만 두면 어느 폼의 CP 인지 알 수 없었다 (Codex, PR #266).
+                  폼까지 붙인 이름을 쓴다 — 요약의 폼 줄로 바꿔 왔으면 그 폼이 계산 대상이다 */}
+              {screen === 'calc' ? (
+                <p className="detail__bar-title detail__bar-id">
+                  <Sprite id={sprite} className="detail__bar-sprite" />
+                  <span className="detail__bar-dex">CP 계산기</span>
+                  <b className="detail__bar-name">{mon.name}</b>
+                </p>
+              ) : (
                 <p className="detail__bar-title detail__bar-id">
                   <Sprite id={sprite} className="detail__bar-sprite" />
                   {dexNo != null ? <span className="detail__bar-dex">#{dexNo}</span> : null}

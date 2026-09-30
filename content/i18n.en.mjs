@@ -21,6 +21,11 @@
 // 이름 + 꼬리말 꼴. $1·$2 로 잡은 조각은 엔진이 다시 번역해 끼운다 (이름 1,000개를 사전에 적지 않기 위해).
 // 위에서부터 먼저 맞는 것을 쓴다 — 좁은 규칙을 위에 둔다
 export const I18N_PATTERNS = [
+  // 2026-09-30 폼별 쓰임새 카드 — '땅 2위 외 13곳' · '다이맥스 울머기 (같은 진화 계열)'.
+  // 줄 전체는 ' · ' 로 나뉘어 조각마다 다시 번역된다 — 무리(맥스·레이드)와 타입 이름은 이름표가 맡는다
+  [/^(.+) (\d+)위 외 (\d+)곳$/, '$1 #$2 · +$3 more'],
+  [/^(.+) (\d+)위$/, '$1 #$2'],
+  [/^(.+) \(같은 진화 계열\)$/, '$1 (same evolution line)'],
   // 2026-09-29 이번 주 많이 본 포켓몬
   [/^최근 (\d+)일$/, 'Last $1 days'],
   [/^총 수집기간 (\d+)일 · 화면 표시 최근 (\d+)시간$/, 'Collected over $1 days · showing the last $2 hours'],
@@ -611,6 +616,14 @@ export const I18N_EN = {
   '달라진 게임,': 'What changed in the game,',
   '다음 플레이의 힌트.': 'and hints for your next play.',
   '배틀 활용 순위': 'Battle usage rankings',
+  // 2026-09-30 폼별 쓰임새 카드
+  '폼별 쓰임새': 'Uses by form',
+  '보는 중': 'Viewing',
+  '진화 계열 추천': 'Best in this evolution line',
+  '순위표 상위 30위 밖': 'Outside the top 30',
+  '미출시': 'Not in GO yet',
+  '맥스 개체는 레이드·트레이너 배틀에도 쓸 수 있어요 — 얻을 기회가 드문 맥스 개체부터 키우고, PvP용은 공격 개체값이 낮은 일반 개체를 따로 준비하세요.':
+    'Max Pokémon also work in raids and Trainer Battles — power up the rarer Max catch first, and keep a separate low-Attack-IV standard one for PvP.',
   '현재 순위표에서 상위 30위에 해당하는 활용처가 없어요.': 'No top-30 placement in the current rankings.',
   '각 순위표 상위 30위 기준 · 상위 3위는 👑 표시': 'Top 30 of each ranking · top 3 marked 👑',
   '포획 CP 확인': 'Catch CP',
