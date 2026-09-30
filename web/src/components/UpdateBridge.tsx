@@ -4,11 +4,12 @@
 // ─────────────────────────────────────────────────────────────────────────────
 'use strict';
 import { useEffect } from 'react';
-import { CHECK_EVERY, RELOAD_KEY, latestBuilt, needsReload, reloadFor, safeNow } from '../lib/autoUpdate';
+import { BUNDLE_BUILT, CHECK_EVERY, RELOAD_KEY, latestBuilt, needsReload, reloadFor, safeNow } from '../lib/autoUpdate';
 
 export default function UpdateBridge() {
   useEffect(() => {
-    let first = '';
+    // 기준은 이 번들이 구워진 판 — 켤 때 이미 새 판이 올라와 있었어도 알아챈다
+    let first = BUNDLE_BUILT;
     let pending = '';
     let alive = true;
     const done = () => { try { return sessionStorage.getItem(RELOAD_KEY); } catch { return null; } };
