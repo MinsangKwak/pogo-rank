@@ -35,6 +35,7 @@ import CalcScreen, { CALC_DEFAULT, type CalcInputs } from '../components/detail/
 import { Evo, MegaCompare } from '../components/detail/Evo';
 import CatchCard from '../components/detail/CatchCard';
 import UsageRanks from '../components/detail/UsageRanks';
+import FormGuide from '../components/detail/FormGuide';
 
 export type { MonRef } from '../lib/mon';
 
@@ -178,6 +179,7 @@ export default function MonDetail({ pick, onClose, inline = false }: MonDetailPr
   const cpm = data.DEX_DATA.cpm;
   const { labels: formLabels, base: baseName } = splitName(mon.name, data.FORM_LABELS);
   const formKind = formLabels.map((label) => FORM_KIND[label]).find(Boolean) ?? '';
+  const otherLabels = formLabels.filter((label) => label !== '다이맥스' && label !== '거다이맥스');
 
   const isFav = dexNo != null && favs.includes(dexNo);
   const news = dexNo != null ? favNewsFor(favEvents.FAV_EVENTS, dexNo) : [];
@@ -353,11 +355,13 @@ export default function MonDetail({ pick, onClose, inline = false }: MonDetailPr
 
                     {/* ── 요약: CP · 포획 CP · 기술 · (기술 변경) · 능력치 */}
                     <div className="detail__pane" role="tabpanel" data-pane="summary" id="detail-pane-summary" aria-labelledby="detail-tab-summary" hidden={tab !== 'summary'}>
-                      {/* 폼(다이맥스 · 거다이맥스 · 메가 · 섀도우 …)은 머리줄에서 내려와 요약 맨 위 한 줄에 선다 */}
-                      {formLabels.length ? (
+                      {/* 일반 · 다이맥스 · 거다이맥스는 '폼별 쓰임새' 카드가 한 번에 보여 주고 누르면 그 폼으로 바뀐다.
+                          그 밖의 폼(메가 · 섀도우 …)만 머리줄에서 내려와 요약 맨 위 한 줄에 선다 */}
+                      <FormGuide mon={mon} dexNo={dexNo} onSwitch={switchTo} />
+                      {otherLabels.length ? (
                         <p className="detail__forms">
                           <span className="detail__forms-label">폼</span>
-                          {formLabels.map((label) => (
+                          {otherLabels.map((label) => (
                             <span key={label} className={`form-tag${FORM_KIND[label] ? ` form-tag--${FORM_KIND[label]}` : ''}`}>{label}</span>
                           ))}
                         </p>

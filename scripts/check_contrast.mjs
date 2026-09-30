@@ -29,6 +29,8 @@ const PATHS = [
   '', 'dex', 'dmax', 'pve', 'pvp', 'game-updates', 'schedule', 'raids', 'eggs',
   'finder', 'planner', 'pvp/deck', 'dmax/deck', 'pvp/ivrank', 'pve/solo',
   'release', 'changes', 'privacy', 'terms', 'settings', 'mon/149',
+  // 폼별 쓰임새 카드(일반 · 다이맥스 · 거다이맥스 줄)가 서는 상세
+  'mon/818',
 ];
 
 const browser = await chromium.launch({ args: ['--ignore-certificate-errors'] });

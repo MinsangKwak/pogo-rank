@@ -1,18 +1,13 @@
 import { useState } from 'react';
 import { useUsage, useDex } from '../../lib/data';
-import { usagePlacesFor } from '../../lib/usage';
-const LEAGUE_KO: Record<string, string> = { little: '리틀', great: '슈퍼', ultra: '하이퍼', master: '마스터' };
-const GROUP_KO: Record<string, string> = { pvp: 'PvP', pve: '레이드', max: '맥스' };
+import { placeParts, usagePlacesFor } from '../../lib/usage';
 export default function UsageRanks({ name, compact = false }: { name: string; compact?: boolean }) {
   const { data: usage } = useUsage();
   const { data: dex } = useDex();
   const [open, setOpen] = useState(false);
-  const rows = usagePlacesFor(usage.USAGE_PLACES, name).map(({ place, rank, mark }) => {
-    const [group, key] = place.split(':');
-    const where = group === 'pvp' ? `${LEAGUE_KO[key ?? ''] ?? key}리그`
-      : key === 'overall' ? '전체' : (dex.TYPE_KO[key ?? ''] ?? key);
-    return { group: group ?? '', where: where ?? '', rank, mark };
-  }).sort((a, b) => a.rank - b.rank);
+  const rows = usagePlacesFor(usage.USAGE_PLACES, name)
+    .map(({ place, rank, mark }) => ({ ...placeParts(place, dex.TYPE_KO), rank, mark }))
+    .sort((a, b) => a.rank - b.rank);
   if (!rows.length) return <p className="detail__none-text">현재 순위표에서 상위 30위에 해당하는 활용처가 없어요.</p>;
 
   const SHOWN = compact ? 2 : 3;
@@ -20,7 +15,7 @@ export default function UsageRanks({ name, compact = false }: { name: string; co
     <div key={index} className={`detail__rank-row${row.rank <= 3 ? ' is-top' : ''}`}>
       <span className="detail__rank-crown" aria-hidden="true">{row.rank <= 3 ? '👑' : ''}</span>
       <span className="detail__rank-where">
-        {GROUP_KO[row.group] ?? row.group}{' · '}{row.where}
+        {row.group}{' · '}{row.where}
         {row.mark ? <span className="tag">{row.mark === 'G' ? '거다이맥스' : '다이맥스'}</span> : null}
       </span>
       <b className="detail__rank-no">{`${row.rank}위`}</b>
