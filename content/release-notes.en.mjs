@@ -15,6 +15,13 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 export const RELEASE_NOTES_EN = {
+  '2026-09-30 · v5.6.0': [
+    '**The Pokémon detail popup now comes in a summary and a full version** — opening from search shows a summary with the evolution line and each form at a glance, with [Full details in Pokédex] [D-MAX ranks] [PvP ranks] at the bottom. Opening from the Pokédex or a ranking shows the full popup with training picks, battle info, CP and moves expanded',
+    '**Training picks put Dynamax and Gigantamax first** — the popup explains which bosses this Pokémon hits hard and with which move type, then lists the best Dynamax · Gigantamax and raid standard · legendary Pokémon against those bosses, strongest first',
+    '**Forms at a glance** — standard · Mega · Dynamax · Gigantamax each get one line. Max forms show their tier within their move type (e.g. Fire S tier · #2); forms not in the game yet say their stats will be calculated after release',
+    '**A lighter home screen** — Most viewed now sits right under the banner and duplicate entry points are gone. Tapping a most viewed Pokémon opens its full details in the Pokédex. Search slides up from the bottom in the same style as the detail popup',
+    '**Calmer rank badges on ranking cards** — the rank chip matches the card and ▲▼ changes are shown as colored text only. On PC the popup keeps its size when you switch tabs',
+  ],
   '2026-09-30 · v5.5.4': [
     '**Text over photos is easier to read in the light theme** — page headers, the detail popup header and the game update intro now lay a light veil over the photo and use dark text in the light theme. The dark theme is unchanged',
     '**The search string builder shows its hints and [Copy] in the light theme** — they were white text on a white card',

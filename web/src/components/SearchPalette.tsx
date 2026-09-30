@@ -10,8 +10,9 @@
 // 후보는 도감 이름표만 쓴다(useDexSoft) — 셸에 붙는 조각이라 순위표 넷을 기다리게 하지 않는다.
 // 고르면 어디서 골랐는지 surface 로 남긴다 (palette · palette_recent · palette_boss) — 통계에서 갈라 본다.
 //
-// <dialog> 로 열어 Esc · 배경 잠금을 브라우저에 맡긴다 (TankPopup 과 같은 틀). 모양은 modal.css 의 .modal 을 잇고
-// 검색칸 · 목록만 palette.css 가 더한다
+// <dialog> 로 열어 Esc · 배경 잠금을 브라우저에 맡긴다. **포켓몬 상세 팝업과 같은 판이다** (2026-09-30 주인 결정) —
+// 그림 띠 머리줄 · 같은 닫기 · 좁은 화면에서는 아래에서 올라오는 시트. 도구 팝업의 'MONCAMP' 띠 틀은 쓰지 않는다.
+// 검색칸 · 목록은 palette.css 가 더한다
 // ─────────────────────────────────────────────────────────────────────────────
 import { useEffect, useMemo, useRef, useState, type KeyboardEvent } from 'react';
 import { useDexSoft } from '../lib/data';
@@ -87,7 +88,8 @@ function Palette({ onOpen, onClose }: { onOpen: OpenMon; onClose: () => void }) 
     trackSearchPick(mon.name, surface);
     setRecent(pushRecent({ sprite: mon.sprite, name: mon.name }));
     onClose();
-    onOpen({ sprite: mon.sprite, name: mon.name, ...('en' in mon ? { en: mon.en, types: mon.types } : {}) });
+    // 전체 검색의 답은 요약 팝업이다 — 자세한 것은 팝업 아래 '도감에서 자세히' 로 (2026-09-30 주인 결정)
+    onOpen({ sprite: mon.sprite, name: mon.name, view: 'brief', ...('en' in mon ? { en: mon.en, types: mon.types } : {}) });
   };
 
   const onKey = (event: KeyboardEvent<HTMLInputElement>) => {
@@ -105,6 +107,9 @@ function Palette({ onOpen, onClose }: { onOpen: OpenMon; onClose: () => void }) 
       <div className="modal__wrap palette__wrap">
         <button className="modal__close" aria-label="검색 닫기" onClick={onClose}>✕</button>
         <div className="modal__box palette__box">
+          {/* 머리줄 — 상세 팝업의 이름표 줄(.detail__bar)과 같은 그림 띠 */}
+          <div className="palette__bar"><p className="palette__title">포켓몬 검색</p></div>
+          <div className="palette__body">
           <label className="palette__field">
             <span className="palette__ico" aria-hidden="true"><PxIcon emoji="🔍" /></span>
             <input ref={field} type="search" className="palette__input" placeholder="포켓몬 이름이나 영문명" aria-label="포켓몬 검색"
@@ -163,6 +168,7 @@ function Palette({ onOpen, onClose }: { onOpen: OpenMon; onClose: () => void }) 
             </>
           )}
           <a className="palette__more" href="/dex" onClick={onClose}>도감에서 필터로 찾기<span aria-hidden="true"> ›</span></a>
+          </div>
         </div>
       </div>
     </dialog>

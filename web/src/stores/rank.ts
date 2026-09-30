@@ -20,6 +20,9 @@ interface RankState {
   maxAxis: MaxAxis;
   pveMode: PveMode;
   maxShowUnrel: boolean;    // [미구현] 체크 — 데이터만 있고 아직 못 쓰는 줄을 보일지
+  // 상세의 '더보기' 가 넘긴 이름 — 순위 화면이 그 줄로 내려가 한 번 밝히고 비운다 (2026-09-30).
+  // 저장하지 않는다 — 다음에 열 때까지 남으면 엉뚱한 줄이 밝아진다
+  focus: string;
   set: <K extends keyof RankState>(key: K, value: RankState[K]) => void;
 }
 
@@ -47,6 +50,7 @@ export const useRankStore = create<RankState>((set) => ({
   maxAxis: 'all',
   pveMode: 'easy',
   maxShowUnrel: readUnrel(),
+  focus: '',
   set: (key, value) => {
     if (key === 'maxShowUnrel') {
       try { localStorage.setItem(UNREL_KEY, value ? '1' : '0'); } catch { /* 저장 불가 환경 */ }

@@ -108,3 +108,6 @@ html body #root .i18n-note { color: var(--muted); }
 @media (prefers-reduced-motion: reduce) {
   html body #root :is(.upd__card, .home__service-group, .home__tile) { transition: none; }
 }
+
+/* 상세의 '더보기' 로 들어온 줄 — 잠깐 테두리로 밝힌다 (components/Row.tsx useFocusRow, 2026-09-30) */
+html body #root .row.is-focus { outline: 2px solid var(--brand); outline-offset: -2px; background: var(--hover); }
