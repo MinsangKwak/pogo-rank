@@ -66,6 +66,9 @@ function useBoard(onLeave?: () => void) {
   };
 }
 
+// 티어 글자 → 순서. 글자가 없는 칸(티어 미정)은 맨 뒤
+const tierOrder = (tier: string) => { const at = 'SABC'.indexOf(tier); return at < 0 ? 4 : at; };
+
 /**
  * 요약 팝업의 바닥 — '자세한 건 도감을 참고하세요!' 와 옮겨 갈 곳 셋.
  *   도감에서 자세히  도감 화면으로 옮겨 이 포켓몬의 자세한 팝업을 연다 (App.tsx openDeep)
@@ -85,7 +88,8 @@ export function DeepDock({ mon, dexNo, onDeep, onLeave }: { mon: MonRef; dexNo: 
   const maxPick = stems.flatMap((stem) => [`거다이맥스 ${stem}`, `다이맥스 ${stem}`])
     .map((name) => ({ name, tier: tiers.get(name) ?? null }))
     .filter((one) => one.tier)
-    .sort((left, right) => left.tier!.rank - right.tier!.rank)[0];
+    // 티어(S · A · B · C)가 먼저다 — 순위는 칸 안의 순서라 칸이 다르면 견줄 수 없다 (한산한 칸의 C티어 1위가 붐비는 칸의 S티어 3위를 이긴다) (Codex, PR #273)
+    .sort((left, right) => tierOrder(left.tier!.tier) - tierOrder(right.tier!.tier) || left.tier!.rank - right.tier!.rank)[0];
   const pvpPick = stems.flatMap((name) => (Object.keys(LEAGUE_KO) as LeagueKey[])
     .map((league) => ({ name, league, at: (pvp.PVP_DATA[league] ?? []).findIndex((row) => row.name === name) })))
     .filter((one) => one.at >= 0)
