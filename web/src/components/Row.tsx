@@ -127,7 +127,8 @@ export function Row({ sprite, name, en, types, rank, score, sub, lines, linesCla
         onOpen?.();
       }}
     >
-      <span className="row__rank">{rank}<DeltaBadge delta={delta} /></span>
+      {/* 1위 표시는 번호로 가린다 — 티어마다 목록이 갈리는 화면(D-MAX 전체)에서 :first-child 는 7위 · 15위도 잡았다 (Codex, PR #274) */}
+      <span className={`row__rank${rank === '1' ? ' is-first' : ''}`}>{rank}<DeltaBadge delta={delta} /></span>
       <span className="row__portrait"><Sprite id={sprite} /></span>
       <div className="row__main">
         {badges ? (

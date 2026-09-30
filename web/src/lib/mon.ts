@@ -22,6 +22,8 @@ export interface MonPick {
   // 팝업의 깊이 (2026-09-30 주인 결정) — 'brief' 는 요약(전체 검색 · 홈에서 열 때), 'full' 은 자세히(도감 · 순위 화면에서 열 때).
   // 안 적으면 연 화면이 정한다 (App.tsx openMon)
   view?: MonView;
+  // 'dex' 면 도감 화면으로 옮긴 **뒤** 연다 — 홈의 '지금 많이 보는 포켓몬' 이 도감 진입을 늘리려고 쓴다 (2026-09-30 주인 요청)
+  via?: 'dex';
 }
 
 export type MonView = 'brief' | 'full';
