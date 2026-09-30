@@ -27,7 +27,7 @@ export default function HotMons({ onOpen }: { onOpen: OpenMon }) {
         {rows.map((row, index) => (
           <li key={row.dex} className="hot-mons__item">
             <button type="button" className="hot-mons__btn"
-              onClick={() => { track('hot_mon_open', { sprite: row.dex, rank: index + 1 }); onOpen({ sprite: row.dex, name: row.name, types: row.types }); }}>
+              onClick={() => { track('hot_mon_open', { sprite: row.dex, rank: index + 1 }); onOpen({ sprite: row.dex, name: row.name, types: row.types, via: 'dex' }); }}>
               <span className="hot-mons__rank" aria-hidden="true">{count(index + 1)}</span>
               <img className="hot-mons__sprite" src={`${BASE}sprites/${row.dex}.png`} alt="" width="40" height="40" loading="lazy" decoding="async" />
               <span className="hot-mons__name">{row.name}</span>
@@ -37,7 +37,7 @@ export default function HotMons({ onOpen }: { onOpen: OpenMon }) {
         {fill.map((boss) => (
           <li key={`fill-${boss.dex}`} className="hot-mons__item">
             <button type="button" className="hot-mons__btn hot-mons__btn--fill"
-              onClick={() => { trackSearchPick(boss.name, 'hot_fill'); onOpen({ sprite: boss.sprite, name: boss.detailName, types: boss.types }); }}>
+              onClick={() => { trackSearchPick(boss.name, 'hot_fill'); onOpen({ sprite: boss.sprite, name: boss.detailName, types: boss.types, via: 'dex' }); }}>
               <span className="hot-mons__tag" aria-hidden="true">{boss.gmax ? 'G-MAX' : 'D-MAX'}</span>
               <img className="hot-mons__sprite" src={`${BASE}sprites/${boss.sprite}.png`} alt="" width="40" height="40" loading="lazy" decoding="async" />
               <span className="hot-mons__name">{boss.name}</span>

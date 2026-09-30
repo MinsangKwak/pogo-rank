@@ -21,7 +21,7 @@ import { SlotProvider } from './components/Slots';
 import { useRoute } from './lib/useRoute';
 import type { MonPick, OpenMon } from './lib/mon';
 import { useLockReason, useLockChecking, useRootShown } from './lib/useLocked';
-import { takeForward } from './lib/nav';
+import { go, takeForward } from './lib/nav';
 import { trackPageView, track } from './lib/track';
 import { collectView, collectMonView } from './lib/collect';
 import { settleVeilAfterFonts } from './lib/veil';
@@ -170,9 +170,19 @@ export default function App({ seo }: AppProps = {}) {
   // 상세 본문(/mon/25) 위에서 팝업을 열면 주소를 팝업의 것으로 바꾼다 — 닫을 때 **원래 주소로** 되돌리려고 적어 둔다.
   // 전에는 홈('/')으로 돌렸다: 본문은 25 인데 주소가 '/' 라 새로고침하면 홈이 섰다 (Codex, PR #225 — 배너 · 팔레트가 어느 화면에서든 열게 되며 드러났다)
   const returnTo = useRef<string | null>(null);
+  // 도감에서 자세히 — 화면을 도감으로 옮긴 **뒤** 자세한 팝업을 연다. 화면이 바뀌면 팝업을 닫는 효과(아래)가 이것을 받아 연다
+  const pendingFull = useRef<MonPick | null>(null);
   const openMon: OpenMon = (pick) => {
+    // 도감을 거쳐 연다 — 화면을 도감으로 옮기고, 옮긴 뒤의 효과가 자세한 팝업을 연다 (도감 화면이면 그 자리에서)
+    if (pick.via === 'dex' && route.id !== 'dex') {
+      pendingFull.current = { ...pick, via: undefined, view: 'full' };
+      closeMon();
+      go('/dex');
+      return;
+    }
     const sprite = pick.sprite;
-    setDetail(pick);
+    // 깊이는 연 화면이 정한다 — 홈(과 공유 링크 본문)은 입구라 요약, 도감 · 순위 화면은 이미 찾아 들어온 곳이라 자세히 (2026-09-30 주인 결정)
+    setDetail({ ...pick, view: pick.view ?? (route.id === 'home' || route.id === 'mon' ? 'brief' : 'full') });
     setDetailSeq((now) => now + 1);
     track('detail_open', { sprite });
     // 우리 수집기에도 — 어느 포켓몬을 열었는지 (lib/collect.ts · 홈의 '이번 주 많이 본 포켓몬')
@@ -204,7 +214,22 @@ export default function App({ seo }: AppProps = {}) {
   // 화면을 옮기면 팝업은 닫는다. **주소가 /mon/… 이면 본문이 상세이므로 팝업을 안 띄운다** —
   // 안 닫으면 <dialog> 가 새 화면 위에 그대로 떠서 아무 데도 눌리지 않는다
   // (메뉴로 검색식 화면에 갔는데 클릭이 안 먹어 찾았다)
-  useEffect(() => { setDetail(null); returnTo.current = null; }, [route, rest]);
+  useEffect(() => {
+    const next = pendingFull.current;
+    pendingFull.current = null;
+    setDetail(next);
+    if (next) {
+      setDetailSeq((now) => now + 1);
+      // 옮겨 가서 연 것도 연 것이다 — 지표 · 수집(홈의 '지금 많이 보는 포켓몬' 이 이 수를 센다)을 openMon 과 같게
+      track('detail_open', { sprite: next.sprite });
+      collectMonView(next.sprite);
+    }
+    returnTo.current = null;
+  }, [route, rest]);
+  const openDeep = (pick: MonPick) => {
+    track('detail_more', { to: 'dex', mon: pick.name ?? String(pick.sprite) });
+    openMon({ ...pick, view: 'full', via: 'dex' });
+  };
   // 화면을 옮기면 열려 있던 팝업·서랍은 닫는다 — <dialog> 가 새 화면 위에 그대로 떠 있으면
   // 아무 데도 눌리지 않는다 (상세 팝업에서 같은 자리를 이미 한 번 겪었다)
   useEffect(() => { setConsentOpen(false); setMenuOpen(false); closeInvite(); useSearchStore.getState().hide(); }, [route, rest, closeInvite]);
@@ -310,7 +335,7 @@ export default function App({ seo }: AppProps = {}) {
       </div>
       <DataBoundary>
         <Suspense fallback={null}>
-          {detail === null ? null : <MonDetail key={detailSeq} pick={detail} onClose={closeMon} />}
+          {detail === null ? null : <MonDetail key={detailSeq} pick={detail} onClose={closeMon} onDeep={openDeep} />}
         </Suspense>
       </DataBoundary>
       {/* 검색 팔레트 — 어느 화면에서든 / · Ctrl+K · 상단 바 · 홈 단추로 뜬다. 고르면 위의 상세 팝업이 연다 */}

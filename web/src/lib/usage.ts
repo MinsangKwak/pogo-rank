@@ -20,6 +20,16 @@ export function usagePlacesFor(places: Places, name: string): Placement[] {
   return out;
 }
 
+const LEAGUE_KO: Record<string, string> = { little: '리틀', great: '슈퍼', ultra: '하이퍼', master: '마스터' };
+const GROUP_KO: Record<string, string> = { pvp: 'PvP', pve: '레이드', max: '맥스' };
+
+/** 'pvp:great' → PvP · 슈퍼리그, 'max:overall' → 맥스 · 전체 — 활용 순위와 폼 카드가 같은 글자를 쓴다 */
+export function placeParts(place: string, typeKo: Readonly<Record<string, string>>): { group: string; where: string } {
+  const [group = '', key = ''] = place.split(':');
+  const where = group === 'pvp' ? `${LEAGUE_KO[key] ?? key}리그` : key === 'overall' ? '전체' : (typeKo[key] ?? key);
+  return { group: GROUP_KO[group] ?? group, where };
+}
+
 export function usageCountFor(places: Places, name: string): number {
   return usagePlacesFor(places, name).length;
 }

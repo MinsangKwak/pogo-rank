@@ -35,14 +35,17 @@ import CalcScreen, { CALC_DEFAULT, type CalcInputs } from '../components/detail/
 import { Evo, MegaCompare } from '../components/detail/Evo';
 import CatchCard from '../components/detail/CatchCard';
 import UsageRanks from '../components/detail/UsageRanks';
+import FormGuide, { BossLine, DeepDock, FormStats, TrainCard } from '../components/detail/FormGuide';
+import { speciesOf } from '../lib/formGuide';
 
 export type { MonRef } from '../lib/mon';
 
 /** 팝업 한 화면의 상태 — 떠날 때 통째로 쌓았다가 ← 로 돌아올 때 그대로 되돌린다 (v3 detailState) */
 interface View { mon: MonRef; tab: Tab; screen: 'detail' | 'calc'; calc: CalcInputs; catchSeg: string }
 
-type Tab = 'summary' | 'battle' | 'evo';
-const TABS: [Tab, string][] = [['summary', '요약'], ['battle', '배틀 정보'], ['evo', '진화']];
+// 탭은 둘 — 진화 계열이 요약 맨 위로 올라왔다. 진화 탭만 따로 두면 '이 종이 무엇이 되는가' 를 보려고 탭을 한 번 더 넘겼다 (2026-09-30 주인 요청)
+type Tab = 'summary' | 'battle';
+const TABS: [Tab, string][] = [['summary', '진화 · 요약'], ['battle', '배틀 정보']];
 
 const FORM_KIND: Record<string, string> = {
   메가: 'mega', 메가X: 'mega', 메가Y: 'mega', 원시: 'mega',
@@ -115,9 +118,14 @@ export interface MonDetailProps {
    * 안쪽 CSS 계약(.modal__wrap > .modal__box > .detail)이 그대로 산다
    */
   inline?: boolean;
+  /** 요약 팝업의 '도감에서 자세히' — 도감 화면으로 옮겨 자세한 팝업을 연다 (App.tsx openDeep) */
+  onDeep?: (pick: MonPick) => void;
 }
 
-export default function MonDetail({ pick, onClose, inline = false }: MonDetailProps) {
+export default function MonDetail({ pick, onClose, inline = false, onDeep }: MonDetailProps) {
+  // 요약 팝업 — 전체 검색 · 홈에서 열었다. 진화 · 폼별 정보만 두고, 나머지(육성 추천 · 배틀 정보 · CP · 기술)는 아래 '도감에서 자세히' 로 넘긴다.
+  // 페이지(공유 링크 본문)는 늘 자세히다 — 옮겨 갈 곳이 아니라 그 자체가 도착한 곳이다
+  const brief = pick.view === 'brief' && !inline;
   const { data } = useDex();
   const { data: pve } = usePve();
   const { data: max } = useMax();
@@ -178,6 +186,10 @@ export default function MonDetail({ pick, onClose, inline = false }: MonDetailPr
   const cpm = data.DEX_DATA.cpm;
   const { labels: formLabels, base: baseName } = splitName(mon.name, data.FORM_LABELS);
   const formKind = formLabels.map((label) => FORM_KIND[label]).find(Boolean) ?? '';
+  // 일반 줄의 이름표 — 맥스 · 메가는 제 줄이 따로 있으니 빼고 남은 라벨(섀도우 · 리전 폼)만
+  const otherLabels = formLabels.filter((label) => !/^(다이맥스|거다이맥스|메가X?|메가Y|원시)$/.test(label));
+  // 종 이름 — '거다이맥스 인텔리레온' → '인텔리레온', '메가X 리자몽' → '리자몽', '섀도우 리자몽' 은 그대로
+  const stemOfName = speciesOf(mon.name);
 
   const isFav = dexNo != null && favs.includes(dexNo);
   const news = dexNo != null ? favNewsFor(favEvents.FAV_EVENTS, dexNo) : [];
@@ -267,17 +279,34 @@ export default function MonDetail({ pick, onClose, inline = false }: MonDetailPr
         <div className="modal__box">
           <div className="detail detail--mon" id={`detail-${sprite}`}
             data-route="mon" data-sprite={sprite} data-dex={dexNo ?? ''} data-mon={mon.name}
-            data-form={formKind || 'base'} data-view="list" data-tab={tab} data-screen={screen}>
+            data-form={formKind || 'base'} data-view="list" data-tab={tab} data-screen={screen} data-depth={brief ? 'brief' : 'full'}>
 
             <div className="detail__bar">
               <button className="detail__bar-back" aria-label="상세로 돌아가기" onClick={() => setScreen('detail')}>‹ 상세로</button>
-              <p className="detail__bar-title">{screen === 'calc' ? 'CP 계산기' : '포켓몬 상세'}</p>
+              {/* 머리줄이 곧 이름표다 — '포켓몬 상세' 제목과 아래 묶음(번호 · 이름 · 타입)이 같은 말을 두 번 했다.
+                  한 줄에 #번호 · 이름 · 타입만 두고 폼(다이맥스 등)은 요약 탭 맨 위로 보낸다 (2026-09-30 주인 요청: 내용이 더 보이게) */}
+              {/* 계산기에서도 이름표를 남긴다 — 좁은 화면은 옆 칸이 숨어서, 제목만 두면 어느 폼의 CP 인지 알 수 없었다 (Codex, PR #266).
+                  폼까지 붙인 이름을 쓴다 — 요약의 폼 줄로 바꿔 왔으면 그 폼이 계산 대상이다 */}
+              {screen === 'calc' ? (
+                <p className="detail__bar-title detail__bar-id">
+                  <Sprite id={sprite} className="detail__bar-sprite" />
+                  <span className="detail__bar-dex">CP 계산기</span>
+                  <b className="detail__bar-name">{mon.name}</b>
+                </p>
+              ) : (
+                <p className="detail__bar-title detail__bar-id">
+                  <Sprite id={sprite} className="detail__bar-sprite" />
+                  {dexNo != null ? <span className="detail__bar-dex">#{dexNo}</span> : null}
+                  <b className="detail__bar-name">{baseName}</b>
+                  {types.length ? <span className="detail__bar-types">{typePills()}</span> : null}
+                </p>
+              )}
               <div className="detail__top-actions">
                 {/* ★ 입구는 **여기 하나뿐**이다 (v3.60.0 의 규칙) — 목록 카드에는 달지 않는다.
                     담아 두면 그 포켓몬의 커뮤니티 데이·스포트라이트·레이드 일정을 챙겨 준다 */}
                 {dexNo != null ? (
                   <button className={`detail__bar-btn detail__fav${isFav ? ' is-on' : ''}`} data-dex={dexNo}
-                    aria-pressed={isFav}
+                    aria-pressed={isFav} aria-label="즐겨찾기"
                     title={isFav ? '즐겨찾기에서 빼기' : '즐겨찾기에 추가 — 관련 일정을 확인할 수 있어요'}
                     onClick={(event) => {
                       event.stopPropagation();
@@ -298,21 +327,11 @@ export default function MonDetail({ pick, onClose, inline = false }: MonDetailPr
 
             <div className="detail__body">
               <div className="detail__side">
+                {/* 번호 · 이름 · 타입은 머리줄에 있다 — 여기는 큰 그림과 영문 이름 · 즐겨찾기 소식만 (2026-09-30) */}
                 <div className={`sprite-box${formKind ? ` sprite-box--${formKind}` : ''}`}>
                   <Sprite id={sprite} />
-                  {types.length ? <div className="detail__types">{typePills()}</div> : null}
                 </div>
                 <div className="detail__info">
-                  {/* 좁은 화면의 접힌 머리에서는 그림이 작아 모서리에 배지를 걸 자리가 없다 —
-                      같은 배지를 이름 왼쪽에 한 벌 더 두고 어느 쪽을 보일지는 CSS 가 data-tab 으로 고른다 */}
-                  {types.length ? <div className="detail__types detail__types--inline" aria-hidden="true">{typePills()}</div> : null}
-                  <div className="detail__tags">
-                    {dexNo != null ? <span className="tag detail__dexno">#{String(dexNo).padStart(4, '0')}</span> : null}
-                    {formLabels.map((label) => (
-                      <span key={label} className={`form-tag${FORM_KIND[label] ? ` form-tag--${FORM_KIND[label]}` : ''}`}>{label}</span>
-                    ))}
-                  </div>
-                  <h2>{baseName}</h2>
                   {/* 이 줄은 늘 **반대 언어의 이름**이다 — 한국어 화면엔 Metagross, 영어 화면엔 메타그로스.
                       사전을 태우면(data-i18n 없이 두면) 영어 화면에서 이름 줄과 똑같은 Metagross 가 두 번 선다.
                       엔진이 data-alt-ko/en 을 보고 갈아 끼운다 (lib/i18n.ts) */}
@@ -349,16 +368,33 @@ export default function MonDetail({ pick, onClose, inline = false }: MonDetailPr
                   {previous ? (
                     <button className="detail__back" onClick={back}>← {previous.mon.name}로 돌아가기</button>
                   ) : null}
-                  <DetailTabs tabs={TABS} value={tab} onChange={setTab} />
+                  {/* 요약 팝업에는 탭이 없다 — 배틀 정보는 자세히 보기에서 */}
+                  {brief ? null : <DetailTabs tabs={TABS} value={tab} onChange={setTab} />}
                   <div className="detail__scroll">
 
                     {/* ── 요약: CP · 포획 CP · 기술 · (기술 변경) · 능력치 */}
                     <div className="detail__pane" role="tabpanel" data-pane="summary" id="detail-pane-summary" aria-labelledby="detail-tab-summary" hidden={tab !== 'summary'}>
-                      {form && cpm['l50'] ? (
+                      {/* 맨 위는 진화 계열 — 이 종이 무엇이 되는지 · 계열에서 무엇을 키울지 · 지금 잡을 수 있는지 */}
+                      <section className="detail__card detail__evo-card">
+                        <h3>진화 계열</h3>
+                        {dexNo != null
+                          ? <Evo dex={dexNo} sprite={sprite} onSwitch={switchTo} />
+                          : <p className="detail__none-text">진화가 없는 포켓몬이에요.</p>}
+                        <BossLine dexNo={dexNo} />
+                      </section>
+                      {/* 육성 추천 — 서비스의 목표(다이맥스 · 거다이맥스 우선 육성)를 팝업의 첫 답으로 둔다.
+                          검색한 것의 쓰임새가 1번: 맥스 배틀 · 레이드에서 쓰이면 맥스 폼부터, PvP 에서만 쓰이면 일반 · 전설 */}
+                      {/* 육성 추천은 자세히 보기에서만 — 도감 · 순위 화면에서 찾아 연 팝업의 답이다. 전체 검색의 요약 팝업에는 세우지 않는다 (2026-09-30 주인 결정) */}
+                      {brief ? null : <TrainCard mon={mon} dexNo={dexNo} stem={stemOfName} onSwitch={switchTo} />}
+                      {/* 폼별 정보 — 요약 한 줄씩. 일반은 펼치고, 맥스 폼은 D-MAX 화면의 그 줄로.
+                          메가 · 섀도우를 보고 있으면 일반 줄의 이름표가 그 라벨이다 */}
+                      <FormGuide mon={mon} dexNo={dexNo} baseLabel={otherLabels.join(' ') || '일반'} onSwitch={switchTo} onLeave={onClose} />
+                      {/* 여기부터는 자세히 보기에서만 — 펼쳐 둔다 (도감 · 순위 화면에서 연 팝업은 다 보려고 연 것이다) */}
+                      {!brief && form && cpm['l50'] ? (
                         <>
-                          {/* 만렙 큰 숫자는 접혀도 보이고 2×2 표만 접힌다 (v2.32.0) */}
-                          <div className="detail__matchrows">
-                          <details className="detail__cp-card">
+                          {/* 만렙 큰 숫자는 접혀도 보이고 2×2 표만 접힌다 (v2.32.0).
+                              옆에 있던 '배틀 활용 순위' 는 폼별 정보가 폼마다 나눠 보여 준다 — 세 폼을 합친 목록은 배틀 정보 탭에 */}
+                          <details className="detail__cp-card" open>
                             <summary>
                               <div className="detail__cp-big">
                                 <span className="meta">Lv.50 · 개체값 15/15/15</span>
@@ -377,19 +413,15 @@ export default function MonDetail({ pick, onClose, inline = false }: MonDetailPr
                               ))}
                             </div>
                           </details>
-                            <section className="detail__card">
-                              <h3>배틀 활용 순위</h3>
-                              <UsageRanks name={mon.name} compact />
-                            </section>
-                          </div>
                           <CatchCard form={form} sprite={sprite} seg={catchSeg} onSeg={setCatchSeg} />
                         </>
                       ) : null}
 
-                      {form ? (
-                        <section className="detail__card">
-                          <h3>배울 수 있는 기술</h3>
-                          <div className="detail__moves">
+                      {/* 요약은 한눈에 — 기술 목록은 눌러서 펼친다 (2026-09-30 주인 요청) */}
+                      {!brief && form ? (
+                        <details className="detail__acc detail__acc--moves" open>
+                          <summary>배울 수 있는 기술</summary>
+                          <div className="detail__acc-body detail__moves">
                             <div>
                               {([['일반 기술', form.fast], ['스페셜 기술', form.charged]] as const).map(([label, moves]) => (
                                 <div key={label} className="move-list__row">
@@ -406,11 +438,11 @@ export default function MonDetail({ pick, onClose, inline = false }: MonDetailPr
                                 : null}
                             </div>
                           </div>
-                        </section>
+                        </details>
                       ) : null}
 
                       {/* 적용 전후 모두 적는다 — 적용 뒤에도 "왜 순위가 움직였나" 의 답이 된다 */}
-                      {changed && changes ? (
+                      {!brief && changed && changes ? (
                         <section className="detail__card">
                           <h3>{`⚔️ ${changes.date} 기술 변경 적용됨`}</h3>
                           <div>
@@ -435,8 +467,8 @@ export default function MonDetail({ pick, onClose, inline = false }: MonDetailPr
                       ) : null}
 
                       {/* 자주 보는 값이 아니라 접어 둔다 — 도감에서 보던 사람을 위해 남긴다 */}
-                      {form ? (
-                        <details className="detail__acc detail__acc--hex">
+                      {brief ? null : form ? (
+                        <details className="detail__acc detail__acc--hex" open>
                           <summary>능력치 육각형</summary>
                           <div className="detail__acc-body"><Hex form={form} name={mon.name} types={types} /></div>
                         </details>
@@ -445,6 +477,8 @@ export default function MonDetail({ pick, onClose, inline = false }: MonDetailPr
 
                     {/* ── 배틀 정보: 타입 상성 · 활용 순위 · PvP 개체값 · 메가 비교 · 보스로 만났을 때 */}
                     <div className="detail__pane" role="tabpanel" data-pane="battle" id="detail-pane-battle" aria-labelledby="detail-tab-battle" hidden={tab !== 'battle'}>
+                      {/* 맨 위는 지금 보는 폼의 성적 — D-MAX 에서 열었으면 맥스 표, PvP · 레이드에서 열었으면 그쪽 순위 */}
+                      <FormStats mon={mon} dexNo={dexNo} baseLabel={otherLabels.join(' ') || '일반'} onLeave={onClose} />
                       {types.length ? (
                         <section className="detail__card">
                           <h3>타입 상성</h3>
@@ -468,11 +502,15 @@ export default function MonDetail({ pick, onClose, inline = false }: MonDetailPr
                       ) : null}
 
                       <section className="detail__card">
-                        <h3>활용 순위</h3>
-                        <UsageRanks name={mon.name} />
+                        <h3>모든 폼 활용 순위</h3>
+                        {/* 종 이름으로 일반 · 다이맥스 · 거다이맥스를, 메가 라벨로 메가 폼을 모은다 — 메가를 보고 있어도 같은 목록 */}
+                        <UsageRanks name={stemOfName}
+                          megas={dexNo != null && stemOfName === data.DEX_DATA.names[String(dexNo)]
+                            ? (data.DEX_DATA.megas[String(dexNo)] ?? []).map((one) => one.label) : []} />
                       </section>
 
-                      {form ? <IvRank form={form} sprite={sprite} /> : null}
+                      {/* PvP 개체값은 일반 폼에서만 — 맥스 폼은 PvP 에서 다이맥스하지 않아 따로 볼 까닭이 없다 */}
+                      {form && !/^(거다이맥스|다이맥스) /.test(mon.name) ? <IvRank form={form} sprite={sprite} /> : null}
                       {dexNo != null ? (
                         <MegaCompareCard dexNo={dexNo} />
                       ) : null}
@@ -489,18 +527,6 @@ export default function MonDetail({ pick, onClose, inline = false }: MonDetailPr
                       ) : null}
                     </div>
 
-                    {/* ── 진화 */}
-                    <div className="detail__pane" role="tabpanel" data-pane="evo" id="detail-pane-evo" aria-labelledby="detail-tab-evo" hidden={tab !== 'evo'}>
-                      <section className="detail__card">
-                        <h3>진화 계열</h3>
-                        {dexNo != null
-                          ? <Evo dex={dexNo} sprite={sprite} onSwitch={switchTo} />
-                          : <p className="detail__none-text">진화가 없는 포켓몬이에요.</p>}
-                      </section>
-                      <p className="dex__hint">
-                        진화 계열과 메가·맥스 폼을 구분해서 보여 줘요 · 포켓몬을 누르면 이 창에서 상세가 바뀌고, ← 로 돌아오면 보던 탭과 위치가 그대로예요
-                      </p>
-                    </div>
                   </div>
                 </div>
                 {form ? (
@@ -513,7 +539,9 @@ export default function MonDetail({ pick, onClose, inline = false }: MonDetailPr
 
             {/* ── 하단 고정 — 상세: [링크 복사] [CP 계산기] · 계산기: [초기화] [상세로 돌아가기] */}
             <div className="detail__dock">
-              <div className="detail__dock-row detail__dock-row--detail">
+              {/* 요약 팝업의 바닥은 '더 알아보기' 입구다 — 자세한 것은 도감(자세한 팝업) · D-MAX · PvP 화면으로 (2026-09-30 주인 요청) */}
+              {brief ? <DeepDock mon={mon} dexNo={dexNo} onDeep={onDeep} onLeave={onClose} /> : null}
+              <div className="detail__dock-row detail__dock-row--detail" hidden={brief}>
                 <ShareBtn mon={mon} />
                 <button className="detail__dock-btn detail__bar-dex" onClick={() => { go('/dex'); onClose?.(); }}>
                   <PxIcon emoji="📕" /><span className="btn-label">포켓몬 도감</span>

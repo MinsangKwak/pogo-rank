@@ -76,11 +76,19 @@ html body #root .row-list.is-grid .row__name { font-size: var(--fs-sec); justify
 html body #root .row-list.is-grid .row__stats { background: color-mix(in srgb, var(--brand) 6%, var(--bg)); border: 0; padding: 1.6rem; width: 100%; box-sizing: border-box; }
 html body #root .row-list.is-grid .row__score { font-size: var(--fs-title); font-weight: 700; line-height: 1.2; font-variant-numeric: tabular-nums; color: var(--brand); }
 html body #root .row-list.is-grid .row__sub { font-size: var(--fs-sub); line-height: 1.7; }
-/* 순위와 등락은 서로 다른 것 — 한 배지에 붙이되 등락을 제 색 알약으로 뗀다 */
+/* 순위와 등락은 한 칩 안에 — 등락은 바탕 없이 제 색 글자만, 순위와는 가는 선으로 가른다.
+   전에는 등락이 어두운 상자로 떠서 산호색 순위 알약 안에 또 하나의 판이 섰다 (2026-09-30 주인 제보: 분위기와 안 맞는다) */
 html body #root .row__rank { display: inline-flex; align-items: center; gap: .8rem; width: auto; min-width: 2.8rem; padding: .4rem .8rem; line-height: 1.5; font-variant-numeric: tabular-nums; }
-html body #root .row__rank .delta { display: inline-flex; align-items: center; padding: .4rem .8rem; margin: 0; border: 0; font-size: var(--fs-sub); font-weight: 600; line-height: 1.2; letter-spacing: .05em; background: var(--bg); box-shadow: none; white-space: nowrap; }
-html body #root .row__rank .delta.is-up { color: var(--good); background: color-mix(in srgb, var(--good) 10%, var(--bg)); }
-html body #root .row__rank .delta.is-down { color: var(--muted); background: var(--bg); }
+html body #root .row__rank .delta { display: inline-flex; align-items: center; gap: .2rem; padding: 0 0 0 .8rem; margin: 0; border: 0; border-left: 1px solid var(--line); border-radius: 0; font-size: var(--fs-sub); font-weight: 700; line-height: 1.2; background: none; box-shadow: none; white-space: nowrap; }
+html body #root .row__rank .delta.is-up { color: var(--good); }
+html body #root .row__rank .delta.is-down { color: var(--muted); }
+/* 카드 목록의 순위 칩 — 산호색 알약(v3 home.css)을 카드와 같은 차분한 칩으로. 1위만 브랜드색 테두리로 짚는다.
+   v3 규칙이 #content 에 걸려 있어 #root 를 하나 더 붙여 이긴다 (!important 대신) */
+html body[data-route] #root #content .row-list.is-grid > .row > .row__rank {
+  padding: .4rem .8rem; border: 1px solid var(--line); border-radius: var(--r-tag); background: var(--surface-2); color: var(--fg);
+  font-family: inherit; font-size: var(--fs-sub); font-weight: 700; line-height: 1.2; box-shadow: none;
+}
+html body[data-route] #root #content .row-list.is-grid > .row > .row__rank.is-first { border-color: var(--brand); }
 /* 폼 딱지와 이름 사이 — 붙으면 「메가뮤츠」로 읽힌다 */
 html body #root .form-tag + b { margin-inline-start: .4rem; }
 
