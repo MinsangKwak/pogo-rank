@@ -88,7 +88,7 @@ html body[data-route] #root #content .row-list.is-grid > .row > .row__rank {
   padding: .4rem .8rem; border: 1px solid var(--line); border-radius: var(--r-tag); background: var(--surface-2); color: var(--fg);
   font-family: inherit; font-size: var(--fs-sub); font-weight: 700; line-height: 1.2; box-shadow: none;
 }
-html body[data-route] #root #content .row-list.is-grid > .row:first-child > .row__rank { border-color: var(--brand); }
+html body[data-route] #root #content .row-list.is-grid > .row > .row__rank.is-first { border-color: var(--brand); }
 /* 폼 딱지와 이름 사이 — 붙으면 「메가뮤츠」로 읽힌다 */
 html body #root .form-tag + b { margin-inline-start: .4rem; }
 
