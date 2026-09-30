@@ -88,7 +88,8 @@ function Palette({ onOpen, onClose }: { onOpen: OpenMon; onClose: () => void }) 
     trackSearchPick(mon.name, surface);
     setRecent(pushRecent({ sprite: mon.sprite, name: mon.name }));
     onClose();
-    onOpen({ sprite: mon.sprite, name: mon.name, ...('en' in mon ? { en: mon.en, types: mon.types } : {}) });
+    // 전체 검색의 답은 요약 팝업이다 — 자세한 것은 팝업 아래 '도감에서 자세히' 로 (2026-09-30 주인 결정)
+    onOpen({ sprite: mon.sprite, name: mon.name, view: 'brief', ...('en' in mon ? { en: mon.en, types: mon.types } : {}) });
   };
 
   const onKey = (event: KeyboardEvent<HTMLInputElement>) => {

@@ -35,14 +35,23 @@ describe('trainPlan', () => {
     expect(plan.pve?.maxType).toBe('fire');
     expect(plan.pve?.raidType).toBe('ground');
     expect(plan.pve?.max[0]).toMatchObject({ name: '거다이맥스 인텔리레온', own: true });
-    expect(plan.pve?.max[0]?.note).toBe('딜러 1위');
+    expect(plan.pve?.max[0]).toMatchObject({ note: '1위', rank: 1 });
+    // 첫 문장이 쓰는 때리는 타입 — 인텔리레온의 거다이맥스 기술은 물
+    expect(plan.pve?.atkType).toBe('water');
+  });
+  it('맥스 추천은 계열을 꼭 넣되 순위 순 — 이상해꽃(3위)이 고릴타(1위) 위에 서지 않는다 (Codex, PR #272)', () => {
+    const plan = planFor('이상해꽃');
+    const ranks = plan.pve!.max.map((one) => one.rank);
+    expect(ranks).toEqual([...ranks].sort((a, b) => a - b));
+    expect(plan.pve!.max.some((one) => one.own)).toBe(true);
+    expect(plan.pve?.atkType).toBe('grass');
   });
   it('판마다 순위표가 따로 — 레이드 추천은 레이드 순위, 계열을 앞세우지 않는다', () => {
     const plan = planFor('울머기');
-    const ranks = plan.pve!.base.map((one) => Number(/(\d+)위$/.exec(one.note)?.[1]));
+    const ranks = plan.pve!.base.map((one) => one.rank);
     expect(ranks).toEqual([...ranks].sort((a, b) => a - b));
     // 줄 글자는 순위만 — 어느 판인지는 묶음 제목(raidType)이 말한다
-    expect(plan.pve!.base.every((one) => /^딜러 \d+위$/.test(one.note))).toBe(true);
+    expect(plan.pve!.base.every((one) => one.note === `${one.rank}위`)).toBe(true);
   });
   it('맥스 폼으로 열면 순위가 없어도 맥스 배틀 · 레이드 추천이 먼저 (다이맥스 태우지네)', () => {
     const dexNo = idOf('태우지네');
@@ -73,11 +82,11 @@ describe('trainPlan', () => {
       }
     }
   });
-  it('PvP 에서만 쓰이는 종 — 일반 · 전설 추천만, 검색한 종이 먼저', () => {
+  it('PvP 에서만 쓰이는 종 — 일반 · 전설 추천만, 검색한 종을 꼭 넣는다', () => {
     const plan = planFor('따라큐');
     expect(plan.roles).toEqual(['pvp']);
     expect(plan.pve).toBeNull();
-    expect(plan.pvp?.base[0]).toMatchObject({ name: '따라큐', own: true });
+    expect(plan.pvp?.base.find((one) => one.own)?.name).toBe('따라큐');
     expect(plan.pvp!.base.length).toBeLessThanOrEqual(PLAN_MAX);
   });
   it('실제 도감 전체 — 추천 글자에 새는 값이 없고 한 칸에 같은 종이 두 번 서지 않는다', () => {

@@ -18,7 +18,9 @@ import { num } from '../../lib/cell';
 import { go } from '../../lib/nav';
 import { track } from '../../lib/track';
 import { useRankStore } from '../../stores/rank';
+import { josa } from '../../lib/deck';
 import { Sprite } from '../Bits';
+import { PxIcon } from '../PxIcon';
 import { NameNode } from '../Row';
 import { bossNow, formKeyOf, formRows, formSummary, FORM_KO, maxBoardOf, maxIndex, placesOf, speciesOf, tierIndex, tierLine, type FormRow } from '../../lib/formGuide';
 import { useAuthStore } from '../../stores/auth';
@@ -64,6 +66,62 @@ function useBoard(onLeave?: () => void) {
   };
 }
 
+// 티어 글자 → 순서. 글자가 없는 칸(티어 미정)은 맨 뒤
+const tierOrder = (tier: string) => { const at = 'SABC'.indexOf(tier); return at < 0 ? 4 : at; };
+
+/**
+ * 요약 팝업의 바닥 — '자세한 건 도감을 참고하세요!' 와 옮겨 갈 곳 셋.
+ *   도감에서 자세히  도감 화면으로 옮겨 이 포켓몬의 자세한 팝업을 연다 (App.tsx openDeep)
+ *   D-MAX          계열의 맥스 폼 중 티어표에서 가장 높은 것의 칸 · 줄로. 맥스 폼이 없으면 D-MAX 첫 화면
+ *   PvP            계열에서 가장 높은 리그 순위의 줄로. 없으면 PvP 첫 화면
+ */
+export function DeepDock({ mon, dexNo, onDeep, onLeave }: { mon: MonRef; dexNo: number | null; onDeep?: (pick: MonRef) => void; onLeave?: () => void }) {
+  const { data: dex } = useDex();
+  const { data: max } = useMax();
+  const { data: pvp } = usePvp();
+  const board = useBoard(onLeave);
+  const index = useMemo(() => maxIndex(max), [max]);
+  const tiers = useMemo(() => tierIndex(max), [max]);
+  const family = (dexNo != null ? dex.DEX_DATA.evo[String(dexNo)]?.flat() : undefined) ?? (dexNo != null ? [dexNo] : []);
+  const stems = [...new Set([speciesOf(mon.name), ...family.map((id) => dex.DEX_DATA.names[String(id)]).filter(Boolean) as string[]])];
+  // 계열의 맥스 폼 중 티어표 순위가 가장 높은 것 — 요약의 폼별 정보가 말한 그 칸으로 간다
+  const maxPick = stems.flatMap((stem) => [`거다이맥스 ${stem}`, `다이맥스 ${stem}`])
+    .map((name) => ({ name, tier: tiers.get(name) ?? null }))
+    .filter((one) => one.tier)
+    // 티어(S · A · B · C)가 먼저다 — 순위는 칸 안의 순서라 칸이 다르면 견줄 수 없다 (한산한 칸의 C티어 1위가 붐비는 칸의 S티어 3위를 이긴다) (Codex, PR #273)
+    .sort((left, right) => tierOrder(left.tier!.tier) - tierOrder(right.tier!.tier) || left.tier!.rank - right.tier!.rank)[0];
+  const pvpPick = stems.flatMap((name) => (Object.keys(LEAGUE_KO) as LeagueKey[])
+    .map((league) => ({ name, league, at: (pvp.PVP_DATA[league] ?? []).findIndex((row) => row.name === name) })))
+    .filter((one) => one.at >= 0)
+    .sort((left, right) => left.at - right.at)[0];
+  return (
+    <div className="detail__deep">
+      <p className="detail__deep-hint">자세한 건 도감을 참고하세요!</p>
+      <div className="detail__dock-row">
+        <button type="button" className="detail__dock-btn detail__dock-btn--accent detail__deep-dex" onClick={() => onDeep?.(mon)}>
+          <PxIcon emoji="📕" /><span className="btn-label">도감에서 자세히</span>
+        </button>
+        <button type="button" className="detail__dock-btn detail__deep-max" onClick={() => {
+          if (maxPick) { board.toMax({ name: maxPick.name, places: [], moveType: index.get(maxPick.name)?.charged ?? '', tier: maxPick.tier }); return; }
+          track('detail_more', { to: 'dmax', mon: mon.name });
+          onLeave?.();
+          go('/dmax');
+        }}>
+          <PxIcon emoji="⚡" /><span className="btn-label">D-MAX 순위</span>
+        </button>
+        <button type="button" className="detail__dock-btn detail__deep-pvp" onClick={() => {
+          if (pvpPick) { board.toPvp(pvpPick.name, pvpPick.league); return; }
+          track('detail_more', { to: 'pvp', mon: mon.name });
+          onLeave?.();
+          go('/pvp');
+        }}>
+          <PxIcon emoji="⚔️" /><span className="btn-label">PvP 순위</span>
+        </button>
+      </div>
+    </div>
+  );
+}
+
 /** 이 계열이 보스로 서는 가장 이른 맥스 일정 — 없으면 아무것도 안 그린다 */
 export function BossLine({ dexNo }: { dexNo: number | null }) {
   const { data: dex } = useDex();
@@ -82,21 +140,22 @@ export function BossLine({ dexNo }: { dexNo: number | null }) {
 function Picks({ rows, onSwitch }: { rows: readonly PlanPick[]; onSwitch: Switch }) {
   const { data } = useDex();
   return (
-    <div className="detail__recs">
+    <ol className="detail__recs detail__picks">
       {rows.map((row) => (
-        <button key={row.name} type="button" className="detail__rec detail__pick" onClick={() => onSwitch(toMon(row))}>
-          <Sprite id={row.sprite} />
-          <span className="detail__pick-main">
-            <span className="detail__rec-name"><NameNode name={row.name} labels={data.FORM_LABELS} /></span>
-            <span className="detail__pick-note">
-              {/* 검색한 계열은 꼬리표로 따로 — 순위 글자에 섞으면 '이 계열 · 물 보스 맥스 3위' 처럼 읽기 어려웠다 */}
-              {row.own ? <span className="tag detail__pick-own">이 계열</span> : null}{row.note}
+        <li key={row.name}>
+          <button type="button" className={`detail__rec detail__pick${row.own ? ' is-own' : ''}`} onClick={() => onSwitch(toMon(row))}>
+            {/* 순위는 줄 맨 앞 — 목록이 순위 순이라 숫자만 보고 내려 읽으면 된다 */}
+            <b className="detail__pick-rank">{row.note}</b>
+            <Sprite id={row.sprite} />
+            <span className="detail__pick-main">
+              <span className="detail__rec-name"><NameNode name={row.name} labels={data.FORM_LABELS} /></span>
+              {row.own ? <span className="detail__pick-note"><span className="tag detail__pick-own">이 계열</span></span> : null}
             </span>
-          </span>
-          <span className="detail__rec-go" aria-hidden="true">›</span>
-        </button>
+            <span className="detail__rec-go" aria-hidden="true">›</span>
+          </button>
+        </li>
       ))}
-    </div>
+    </ol>
   );
 }
 
@@ -120,31 +179,62 @@ export function TrainCard({ mon, dexNo, stem, onSwitch }: { mon: MonRef; dexNo: 
       maxForm: formKeyOf(mon.name) === 'dmax' || formKeyOf(mon.name) === 'gmax',
     });
   }, [dex, max, usage, pve, pvp, dexNo, stem, mon.types, mon.name]);
-  // 묶음 제목이 기준을 한 번만 말한다 — '물 타입 보스 기준'. 줄마다 '물 보스 맥스 3위' 를 되풀이하면 무슨 순위인지 안 읽혔다.
-  // 카드 밑 설명 줄('PvP용 — … 다이맥스하지 않아요')도 뺐다 — 헷갈린다는 주인 판단 (2026-09-30)
-  const basis = (type: string) => (type === 'overall' ? '모든 보스 기준' : `${dex.TYPE_KO[type] ?? type} 타입 보스 기준`);
-  // '강한 순' 이라 적지 않는다 — 이 계열 폼을 앞에 세우므로 줄 순서가 순위 순이 아니다. 순위는 줄마다 '딜러 N위' 로 (Codex, PR #272)
-  // 좁은 화면이라 묶음마다 접는다 — 첫 묶음만 펼쳐 두고 나머지는 눌러서 (2026-09-30 주인 요청)
-  const group = (key: string, open: boolean, tag: ReactNode, title: string, sub: string, rows: readonly PlanPick[]) => (
-    <details key={key} className="detail__train-group" open={open}>
+  // **문장으로 푼다 — 왜 → 그래서 → 순위** (2026-09-30 주인 제보: '물 타입 보스 기준' 제목과 순위만으로는 기승전결이 없어 무슨 말인지 모른다).
+  //   첫 문장: 이 포켓몬이 어떤 타입 기술로 어떤 타입 보스를 잘 잡는지
+  //   묶음 첫 줄: 그래서 이 목록이 무엇의 순위인지, 이 계열은 몇 위인지
+  // 문장은 한 줄씩 따로 그린다 — 영어 화면의 사전이 문장 단위로 찾는다 (content/i18n.en.mjs)
+  const ko = (type: string) => dex.TYPE_KO[type] ?? type;
+  const target = (type: string) => (type === 'overall' ? '모든 보스' : `${ko(type)} 타입 보스`);
+  const lead: string[] = (() => {
+    if (plan.pve) {
+      const { maxType, atkType } = plan.pve;
+      if (maxType === 'overall') return [`${josa(stem, '은', '는')} 한 타입에 치우치지 않고 여러 보스를 두루 상대해요.`, '그래서 모든 보스를 기준으로 강한 딜러를 골랐어요.'];
+      return [
+        atkType ? `${josa(stem, '은', '는')} ${ko(atkType)} 타입 기술로 ${ko(maxType)} 타입 보스를 잘 잡아요.` : `${josa(stem, '이', '가')} 가장 활약하는 상대는 ${ko(maxType)} 타입 보스예요.`,
+        `그래서 ${ko(maxType)} 타입 보스를 잡을 때 키우면 좋은 포켓몬을 강한 순서로 골랐어요.`,
+      ];
+    }
+    return [];
+  })();
+  const ownLine = (rows: readonly PlanPick[], none: string) => {
+    const own = rows.find((row) => row.own);
+    return own ? `이 계열에서는 ${josa(own.name, '이', '가')} ${own.note}예요.` : none;
+  };
+  const say = (lines: readonly string[]) => lines.filter(Boolean).map((line) => <span key={line}>{line}</span>);
+  // 좁은 화면이라 묶음마다 접을 수 있게 두되 처음엔 모두 펼친다 — 자세히 보기(도감 · 순위 화면에서 연 팝업)에서만 서는 카드라 다 보려고 연 것이다
+  const group = (key: string, tag: ReactNode, title: string, lines: readonly string[], rows: readonly PlanPick[]) => (
+    <details key={key} className="detail__train-group" open>
       <summary className="detail__train-head">
         {tag}
         <span className="detail__train-title">{title}</span>
-        <span className="detail__train-where">{sub}</span>
       </summary>
+      <p className="detail__train-say">{say(lines)}</p>
       <Picks rows={rows} onSwitch={onSwitch} />
     </details>
   );
   const maxFirst = !!plan.pve?.max.length;
+  const raidLines = (() => {
+    if (!plan.pve) return [];
+    const { maxType, raidType } = plan.pve;
+    const head = raidType === maxType || !maxFirst
+      ? [`레이드에서 ${target(raidType)}를 잡는 일반·전설 딜러 순위예요.`]
+      : [`레이드에서는 ${target(raidType)}를 상대로 더 많이 쓰여요.`, '그 보스를 잡는 일반·전설 딜러 순위예요.'];
+    return [...head, ownLine(plan.pve.base, '다이맥스 없이 오래 쓸 개체를 고를 때 보세요.')];
+  })();
+  // PvP 에서만 쓰이는 계열은 카드를 세우지 않는다 — 리그 순위 목록을 보여 줄 까닭이 없다 (2026-09-30 주인 결정).
+  // 이 서비스의 육성 추천은 레이드 · 맥스(다이맥스 우선) 답이다. PvP 성적은 자세히 보기의 배틀 정보에 있다
+  if (!plan.pve) return null;
 
   return (
     <section className="detail__card detail__train">
       <h3>육성 추천</h3>
-      {plan.pve && maxFirst ? group('max', true, <span className="form-tag form-tag--max">1순위</span>, '다이맥스 · 거다이맥스', basis(plan.pve.maxType), plan.pve.max) : null}
-      {plan.pve?.base.length
-        ? group('raid', !maxFirst, <span className="form-tag">{maxFirst ? '2순위' : '추천'}</span>, '레이드용 일반 · 전설', basis(plan.pve.raidType), plan.pve.base)
+      {lead.length ? <p className="detail__train-lead">{say(lead)}</p> : null}
+      {maxFirst ? group('max', <span className="form-tag form-tag--max">먼저 키우기</span>, '다이맥스 · 거다이맥스',
+        [`맥스 배틀에서 ${target(plan.pve.maxType)}를 잡는 딜러 순위예요.`, ownLine(plan.pve.max, '이 계열의 맥스 폼은 아직 이 순위에 없어요.')],
+        plan.pve.max) : null}
+      {plan.pve.base.length
+        ? group('raid', <span className="form-tag">{maxFirst ? '다음으로' : '추천'}</span>, '레이드용 일반 · 전설', raidLines, plan.pve.base)
         : null}
-      {plan.pvp ? group('pvp', true, <span className="form-tag">PvP</span>, `${LEAGUE_KO[plan.pvp.league] ?? plan.pvp.league} 일반 · 전설`, '리그 순위', plan.pvp.base) : null}
     </section>
   );
 }
