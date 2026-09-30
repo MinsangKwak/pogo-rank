@@ -1,13 +1,20 @@
 import { useState } from 'react';
 import { useUsage, useDex } from '../../lib/data';
 import { placeParts, usagePlacesFor } from '../../lib/usage';
-export default function UsageRanks({ name, compact = false }: { name: string; compact?: boolean }) {
+/**
+ * name 의 일반 · 다이맥스 · 거다이맥스 활용처 + megas 로 넘긴 메가 라벨들('메가X' …)의 활용처.
+ * 메가는 이름에 접두어가 붙는 별도 줄이라 usagePlacesFor 가 모른다 — 목록 배지(usageCountFor)는 그대로 두고 여기서만 더한다 (Codex, PR #267)
+ */
+export default function UsageRanks({ name, megas = [], compact = false }: { name: string; megas?: readonly string[]; compact?: boolean }) {
   const { data: usage } = useUsage();
   const { data: dex } = useDex();
   const [open, setOpen] = useState(false);
-  const rows = usagePlacesFor(usage.USAGE_PLACES, name)
-    .map(({ place, rank, mark }) => ({ ...placeParts(place, dex.TYPE_KO), rank, mark }))
-    .sort((a, b) => a.rank - b.rank);
+  const maxTag = { '': '', D: '다이맥스', G: '거다이맥스' } as const;
+  const rows = [
+    ...usagePlacesFor(usage.USAGE_PLACES, name).map(({ place, rank, mark }) => ({ ...placeParts(place, dex.TYPE_KO), rank, tag: maxTag[mark] })),
+    ...megas.flatMap((label) => (usage.USAGE_PLACES[`${label} ${name}`] ?? [])
+      .map(([place, rank]) => ({ ...placeParts(place, dex.TYPE_KO), rank, tag: label }))),
+  ].sort((a, b) => a.rank - b.rank);
   if (!rows.length) return <p className="detail__none-text">현재 순위표에서 상위 30위에 해당하는 활용처가 없어요.</p>;
 
   const SHOWN = compact ? 2 : 3;
@@ -16,7 +23,7 @@ export default function UsageRanks({ name, compact = false }: { name: string; co
       <span className="detail__rank-crown" aria-hidden="true">{row.rank <= 3 ? '👑' : ''}</span>
       <span className="detail__rank-where">
         {row.group}{' · '}{row.where}
-        {row.mark ? <span className="tag">{row.mark === 'G' ? '거다이맥스' : '다이맥스'}</span> : null}
+        {row.tag ? <span className="tag">{row.tag}</span> : null}
       </span>
       <b className="detail__rank-no">{`${row.rank}위`}</b>
     </div>

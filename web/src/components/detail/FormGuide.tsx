@@ -20,7 +20,8 @@ import { track } from '../../lib/track';
 import { useRankStore } from '../../stores/rank';
 import { Sprite } from '../Bits';
 import { NameNode } from '../Row';
-import { bossNow, formKeyOf, formRows, formSummary, FORM_KO, maxBoardOf, maxIndex, placesOf, tierIndex, type FormRow } from '../../lib/formGuide';
+import { bossNow, formKeyOf, formRows, formSummary, FORM_KO, maxBoardOf, maxIndex, placesOf, speciesOf, tierIndex, type FormRow } from '../../lib/formGuide';
+import { useAuthStore } from '../../stores/auth';
 import { trainPlan, type PlanPick } from '../../lib/trainPlan';
 import type { MonRef } from '../../lib/mon';
 import type { LeagueKey } from '../../types/data';
@@ -166,9 +167,12 @@ export default function FormGuide({ mon, dexNo, baseLabel, onSwitch, onLeave }: 
   const board = useBoard(onLeave);
   const index = useMemo(() => maxIndex(max), [max]);
   const tiers = useMemo(() => tierIndex(max), [max]);
-  const megas = (dexNo != null ? dex.DEX_DATA.megas[String(dexNo)] ?? [] : [])
+  const species = dexNo != null ? dex.DEX_DATA.names[String(dexNo)] : undefined;
+  // 메가 줄은 원종 이름일 때만 — 섀도우 리자몽에서 '메가X 섀도우 리자몽' 같은 없는 폼을 만들지 않는다 (Codex, PR #267)
+  const megas = (dexNo != null && speciesOf(mon.name) === species ? dex.DEX_DATA.megas[String(dexNo)] ?? [] : [])
     .map((one) => ({ ...one, types: dex.DEX_DATA.forms[String(one.sprite)]?.types ?? [] }));
-  const rows = formRows({ ...mon, dexNo }, index, usage.USAGE_PLACES, dex.TYPE_KO, tiers, megas);
+  const baseTypes = dexNo != null ? dex.DEX_DATA.forms[String(dexNo)]?.types : undefined;
+  const rows = formRows({ ...mon, dexNo, baseTypes }, index, usage.USAGE_PLACES, dex.TYPE_KO, tiers, megas);
 
   return (
     <section className="detail__card detail__formguide">
@@ -234,14 +238,22 @@ export function FormStats({ mon, baseLabel, onLeave }: { mon: MonRef; baseLabel:
   const { data: usage } = useUsage();
   const board = useBoard(onLeave);
   const idx = useMemo(() => maxIndex(max), [max]);
+  // 미구현 체크는 실험 기능(beta)에서만 산다 — Ranks.tsx Dmax 와 같은 판정
+  const showUnrel = useRankStore((s) => s.maxShowUnrel);
+  const beta = useAuthStore((s) => s.beta);
+  const withUnrel = showUnrel && beta;
   const key = formKeyOf(mon.name);
 
   if (key === 'dmax' || key === 'gmax') {
     const tierRow = (max.DMAX_TIER['overall'] ?? []).find((row) => row.name === mon.name) as { tier?: string; pct?: number } | undefined;
-    const dealAt = (max.DMAX_DATA['overall'] ?? []).findIndex((row) => row.name === mon.name);
-    const tankAt = (max.DMAX_TANK['overall'] ?? []).findIndex((row) => row.name === mon.name);
-    const deal = dealAt >= 0 ? max.DMAX_DATA['overall']?.[dealAt] : undefined;
-    const tank = tankAt >= 0 ? max.DMAX_TANK['overall']?.[tankAt] : undefined;
+    // D-MAX 화면과 같은 줄 세우기 — 미구현을 켜지 않았으면 미구현 줄을 빼고 센다 (Codex, PR #267)
+    const shown = (rows: readonly { name: string; unrel?: boolean }[] = []) => rows.filter((row) => withUnrel || !row.unrel);
+    const dealRows = shown(max.DMAX_DATA['overall']);
+    const tankRows = shown(max.DMAX_TANK['overall']);
+    const dealAt = dealRows.findIndex((row) => row.name === mon.name);
+    const tankAt = tankRows.findIndex((row) => row.name === mon.name);
+    const deal = dealAt >= 0 ? max.DMAX_DATA['overall']?.find((row) => row.name === mon.name) : undefined;
+    const tank = tankAt >= 0 ? max.DMAX_TANK['overall']?.find((row) => row.name === mon.name) : undefined;
     const places = placesOf(usage.USAGE_PLACES, mon.name, dex.TYPE_KO).filter((one) => one.group === '맥스');
     const best = places.find((one) => !one.key.endsWith(':overall'));
     const lines = [

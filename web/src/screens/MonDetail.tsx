@@ -495,7 +495,10 @@ export default function MonDetail({ pick, onClose, inline = false }: MonDetailPr
 
                       <section className="detail__card">
                         <h3>모든 폼 활용 순위</h3>
-                        <UsageRanks name={mon.name} />
+                        {/* 종 이름으로 일반 · 다이맥스 · 거다이맥스를, 메가 라벨로 메가 폼을 모은다 — 메가를 보고 있어도 같은 목록 */}
+                        <UsageRanks name={stemOfName}
+                          megas={dexNo != null && stemOfName === data.DEX_DATA.names[String(dexNo)]
+                            ? (data.DEX_DATA.megas[String(dexNo)] ?? []).map((one) => one.label) : []} />
                       </section>
 
                       {/* PvP 개체값은 일반 폼에서만 — 맥스 폼은 PvP 에서 다이맥스하지 않아 따로 볼 까닭이 없다 */}

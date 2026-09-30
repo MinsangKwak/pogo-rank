@@ -56,6 +56,13 @@ describe('formRows', () => {
     expect(formKeyOf('메가X 리자몽')).toBe('mega');
     expect(speciesOf('거다이맥스 리자몽')).toBe('리자몽');
   });
+  it('메가를 보고 있어도 일반 줄은 도감의 일반 타입 — 메가 보스로라(강철)에서 보스로라(강철 · 바위) (Codex, PR #267)', () => {
+    const megas = dex.DEX_DATA.megas['306'].map((one: { sprite: number; label: string }) => ({ ...one, types: dex.DEX_DATA.forms[String(one.sprite)]?.types ?? [] }));
+    const rows = formRows({ name: '메가 보스로라', sprite: megas[0].sprite, en: '', types: megas[0].types, dexNo: 306, baseTypes: dex.DEX_DATA.forms['306'].types },
+      index, places, typeKo, tiers, megas);
+    expect(rows[0]!.types).toEqual(dex.DEX_DATA.forms['306'].types);
+    expect(rows[0]!.types).not.toEqual(megas[0].types);
+  });
   it('폼마다 제 이름의 활용처만 — 일반 줄에 거다이맥스 순위가 섞이지 않는다', () => {
     const [base, , gmax] = rowsFor('인텔리레온');
     expect(base!.places).toEqual(placesOf(places, '인텔리레온', typeKo));

@@ -100,6 +100,8 @@ export interface FormSource {
   types: readonly string[];
   /** 원종 도감 번호 — 일반 폼 그림을 못 찾을 때 쓴다 */
   dexNo: number | null;
+  /** 일반 폼의 타입 (도감) — 메가를 보고 있을 때 일반 줄에 메가 타입을 물려주지 않게 (Codex, PR #267) */
+  baseTypes?: readonly string[];
 }
 
 /**
@@ -118,7 +120,8 @@ export function formRows(
   const gmax = index.get(`거다이맥스 ${stem}`);
   // 일반 줄의 그림 · 타입 — 일반을 보고 있으면 그대로, 아니면 다이맥스 줄(원종 그림) · 도감 번호
   const baseSprite = now === 'base' ? src.sprite : (dmax?.sprite ?? src.dexNo ?? src.sprite);
-  const baseTypes = now === 'base' && src.types.length ? src.types : (dmax?.types ?? gmax?.types ?? src.types);
+  const baseTypes = now === 'base' && src.types.length ? src.types
+    : (src.baseTypes?.length ? src.baseTypes : (dmax?.types ?? gmax?.types ?? src.types));
   const rows: FormRow[] = [{
     key: 'base', label: FORM_KO.base, name: stem, sprite: baseSprite, en: src.en || dmax?.en || gmax?.en || '',
     types: baseTypes, places: placesOf(places, stem, typeKo), unrel: false, tier: '', moveType: '',
