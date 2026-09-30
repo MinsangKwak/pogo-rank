@@ -116,7 +116,7 @@ describe('formSummary', () => {
   it('티어표에 없으면 활용처 한 곳, 없으면 상위 30위 밖, 미출시면 그렇게', () => {
     expect(formSummary({ tier: null, places: [at('레이드', '땅', 27)], unrel: false })).toBe('레이드 · 땅 27위');
     expect(formSummary({ tier: null, places: [], unrel: false })).toBe('순위표 상위 30위 밖');
-    expect(formSummary({ tier: null, places: [], unrel: true })).toBe('아직 게임에 나오지 않았어요');
+    expect(formSummary({ tier: null, places: [], unrel: true })).toBe('추후 등장 후 수치 계산 예정이에요');
   });
 });
 

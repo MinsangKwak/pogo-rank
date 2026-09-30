@@ -196,7 +196,7 @@ export function placeLine(places: readonly FormPlace[], shown = 2): string {
  */
 export function formSummary(row: Pick<FormRow, 'tier' | 'places' | 'unrel'>, typeKo: Readonly<Record<string, string>> = {}): string {
   if (row.tier) return tierLine(row.tier, typeKo);
-  if (row.unrel) return '아직 게임에 나오지 않았어요';
+  if (row.unrel) return '추후 등장 후 수치 계산 예정이에요';
   return placeLine(row.places, 1);
 }
 

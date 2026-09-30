@@ -211,7 +211,7 @@ export default function FormGuide({ mon, dexNo, baseLabel, onSwitch, onLeave }: 
                       </div>
                     ))}
                   </div>
-                ) : <p className="detail__none-text">순위표 상위 30위에 이 폼이 선 곳이 없어요.</p>}
+                ) : <p className="detail__none-text">순위표 상위 30위 밖이에요.</p>}
                 {!on ? (
                   <button type="button" className="detail__form-go" onClick={() => onSwitch(toMon(row))}>{`${label} 폼으로 보기 ›`}</button>
                 ) : null}
@@ -260,7 +260,7 @@ export function FormStats({ mon, dexNo, baseLabel, onLeave }: { mon: MonRef; dex
         <section className="detail__card detail__formstats">
           <h3><span className="form-tag form-tag--max">{FORM_KO[key]}</span> 이 폼의 성적</h3>
           <p className="detail__none-text">
-            {soon?.slide.live ? '이번 주 맥스 배틀에서 처음 만날 수 있어요 — 순위표에는 아직 없어요.' : '아직 다이맥스로 나온 적이 없어요.'}
+            {soon?.slide.live ? '이번 주 맥스 배틀에서 처음 등장해요 · 수치는 등장 후 계산 예정이에요.' : '추후 등장 후 수치 계산 예정이에요.'}
           </p>
           {soon ? (
             <p className="detail__formguide-boss">
@@ -279,7 +279,7 @@ export function FormStats({ mon, dexNo, baseLabel, onLeave }: { mon: MonRef; dex
         <h3><span className="form-tag form-tag--max">{FORM_KO[key]}</span> 이 폼의 성적</h3>
         {lines.length
           ? <ul className="detail__stat-lines">{lines.map((line) => <li key={line}>{line}</li>)}</ul>
-          : <p className="detail__none-text">D-MAX 순위표 상위에 이 폼이 선 곳이 없어요.</p>}
+          : <p className="detail__none-text">D-MAX 순위표 상위권 밖이에요.</p>}
         <button type="button" className="detail__form-go" onClick={() => board.toMax({ name: mon.name, places, moveType, tier: spot })}>D-MAX 더보기 ›</button>
       </section>
     );
