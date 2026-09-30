@@ -12,18 +12,26 @@ import type { DmaxRow, MaxBundle } from '../types/data';
 import type { MaxSlide } from './maxSlides';
 import { placeParts } from './usage';
 
-export type FormKey = 'base' | 'dmax' | 'gmax';
+export type FormKey = 'base' | 'mega' | 'dmax' | 'gmax';
 
-export const FORM_KO: Record<FormKey, string> = { base: '일반', dmax: '다이맥스', gmax: '거다이맥스' };
+export const FORM_KO: Record<FormKey, string> = { base: '일반', mega: '메가', dmax: '다이맥스', gmax: '거다이맥스' };
 
 const MAX_PREFIX = /^(거다이맥스|다이맥스)\s+/;
+// 메가 · 원시도 한 종의 폼이다 — 메가 리자몽을 보고 있어도 일반 · 다이맥스 · 거다이맥스 줄이 함께 서야 한다 (2026-09-30 리자몽 점검)
+const MEGA_PREFIX = /^(메가X|메가Y|메가|원시)\s+/;
+
+/** 도감의 메가 폼 하나 — 라벨('메가X') · 그림 번호 · 타입 · 출시 여부 */
+export interface MegaForm { label: string; sprite: number; types: readonly string[]; rel?: boolean }
 
 type Places = Readonly<Record<string, readonly (readonly [string, number])[]>>;
 
-export interface FormPlace { group: string; where: string; label: string; rank: number }
+/** key 는 원래 자리 글자('max:fire') — 더보기가 어느 판을 열지 정한다 */
+export interface FormPlace { key: string; group: string; where: string; label: string; rank: number }
 
 export interface FormRow {
   key: FormKey;
+  /** 줄의 이름표 — '일반' · '메가X' · '다이맥스' … */
+  label: string;
   /** 상세를 열 이름 — '거다이맥스 인텔리레온' */
   name: string;
   sprite: number;
@@ -33,12 +41,20 @@ export interface FormRow {
   places: FormPlace[];
   /** 데이터만 있고 아직 게임에 없는 폼 */
   unrel: boolean;
+  /** D-MAX 티어 글자 (전 종 순위표에 선 맥스 폼만) */
+  tier: string;
+  /** 맥스 기술 타입 ('water') — 맥스 폼만, 일반은 빈 글자 */
+  moveType: string;
 }
 
 /** '다이맥스 울머기' → '울머기' */
 export const stemOf = (name: string): string => name.replace(MAX_PREFIX, '');
 
+/** 종 이름 — 맥스 · 메가 접두어를 뗀다. '메가X 리자몽' → '리자몽', '섀도우 리자몽' 은 그대로 */
+export const speciesOf = (name: string): string => stemOf(name).replace(MEGA_PREFIX, '');
+
 export function formKeyOf(name: string): FormKey {
+  if (MEGA_PREFIX.test(name)) return 'mega';
   if (name.startsWith('거다이맥스 ')) return 'gmax';
   if (name.startsWith('다이맥스 ')) return 'dmax';
   return 'base';
@@ -55,13 +71,23 @@ export function maxIndex(max: Pick<MaxBundle, 'DMAX_DATA' | 'DMAX_TANK' | 'DMAX_
   return out;
 }
 
+/** D-MAX 전 종 티어표 — 이름 → 'S' · 'A' … (상위 줄만 실린다) */
+export function tierIndex(max: Pick<MaxBundle, 'DMAX_TIER'>): Map<string, string> {
+  const out = new Map<string, string>();
+  for (const row of max.DMAX_TIER['overall'] ?? []) {
+    const tier = (row as DmaxRow & { tier?: string }).tier;
+    if (tier && !out.has(row.name)) out.set(row.name, tier);
+  }
+  return out;
+}
+
 /** 한 이름의 활용처 — 'max:fire' 는 '맥스 · 불꽃' */
 export function placesOf(places: Places, name: string, typeKo: Readonly<Record<string, string>>): FormPlace[] {
   return (places[name] ?? [])
     .filter(([, rank]) => Number.isFinite(rank) && rank > 0)
     .map(([place, rank]) => {
       const { group, where } = placeParts(place, typeKo);
-      return { group, where, label: `${group} · ${where}`, rank };
+      return { key: place, group, where, label: `${group} · ${where}`, rank };
     })
     .sort((left, right) => left.rank - right.rank);
 }
@@ -74,73 +100,47 @@ export interface FormSource {
   types: readonly string[];
   /** 원종 도감 번호 — 일반 폼 그림을 못 찾을 때 쓴다 */
   dexNo: number | null;
+  /** 일반 폼의 타입 (도감) — 메가를 보고 있을 때 일반 줄에 메가 타입을 물려주지 않게 (Codex, PR #267) */
+  baseTypes?: readonly string[];
 }
 
 /**
- * 세 폼 줄. **맥스 폼이 하나도 없으면 빈 배열** — 일반 한 줄만 있는 카드는 머리줄과 같은 말이다.
+ * 폼 줄 — 일반은 늘 서고, 맥스 폼은 맥스 순위표에 이름이 있을 때만 선다.
+ * 줄마다 **그 폼 이름의 활용처만** 싣는다 — 일반 줄에 거다이맥스 순위를 섞으면 어느 폼이 쓸 만한지 가릴 수 없다 (2026-09-30 주인 제보).
  * 일반 폼 그림은 다이맥스 줄의 스프라이트가 곧 원종 그림이다 (거다이맥스만 10195~ 전용 번호).
  */
-export function formRows(src: FormSource, index: ReadonlyMap<string, DmaxRow>, places: Places, typeKo: Readonly<Record<string, string>>): FormRow[] {
-  const stem = stemOf(src.name);
+export function formRows(
+  src: FormSource, index: ReadonlyMap<string, DmaxRow>, places: Places, typeKo: Readonly<Record<string, string>>,
+  tiers: ReadonlyMap<string, string> = new Map(),
+  megas: readonly MegaForm[] = [],
+): FormRow[] {
+  const stem = speciesOf(src.name);
   const now = formKeyOf(src.name);
   const dmax = index.get(`다이맥스 ${stem}`);
   const gmax = index.get(`거다이맥스 ${stem}`);
-  if (!dmax && !gmax) return [];
+  // 일반 줄의 그림 · 타입 — 일반을 보고 있으면 그대로, 아니면 다이맥스 줄(원종 그림) · 도감 번호
   const baseSprite = now === 'base' ? src.sprite : (dmax?.sprite ?? src.dexNo ?? src.sprite);
+  const baseTypes = now === 'base' && src.types.length ? src.types
+    : (src.baseTypes?.length ? src.baseTypes : (dmax?.types ?? gmax?.types ?? src.types));
   const rows: FormRow[] = [{
-    key: 'base', name: stem, sprite: baseSprite, en: src.en || dmax?.en || gmax?.en || '',
-    types: src.types.length ? src.types : (dmax?.types ?? gmax?.types ?? []),
-    places: placesOf(places, stem, typeKo), unrel: false,
+    key: 'base', label: FORM_KO.base, name: stem, sprite: baseSprite, en: src.en || dmax?.en || gmax?.en || '',
+    types: baseTypes, places: placesOf(places, stem, typeKo), unrel: false, tier: '', moveType: '',
   }];
+  for (const mega of megas) {
+    const name = `${mega.label} ${stem}`;
+    rows.push({
+      key: 'mega', label: mega.label, name, sprite: mega.sprite, en: src.en, types: mega.types,
+      places: placesOf(places, name, typeKo), unrel: mega.rel === false, tier: '', moveType: '',
+    });
+  }
   for (const [key, row] of [['dmax', dmax], ['gmax', gmax]] as const) {
     if (!row) continue;
     rows.push({
-      key, name: row.name, sprite: row.sprite, en: row.en, types: row.types,
-      places: placesOf(places, row.name, typeKo), unrel: !!row.unrel,
+      key, label: FORM_KO[key], name: row.name, sprite: row.sprite, en: row.en, types: row.types,
+      places: placesOf(places, row.name, typeKo), unrel: !!row.unrel, tier: tiers.get(row.name) ?? '', moveType: row.charged ?? '',
     });
   }
   return rows;
-}
-
-export interface EvoBest { name: string; sprite: number; en: string; types: readonly string[]; place: FormPlace }
-
-/**
- * 진화 계열에서 지금 보는 종보다 순위가 높은 폼 하나 — 울머기를 찾은 사람이 실제로 쓸 것은 거다이맥스 인텔리레온이다.
- * 지금 종의 가장 좋은 순위보다 **엄격히** 높을 때만 준다 — 같으면 굳이 옮겨 가라고 할 이유가 없다.
- */
-export function evoBest(
-  family: readonly (readonly number[])[] | undefined,
-  names: Readonly<Record<string, string>>,
-  current: string,
-  index: ReadonlyMap<string, DmaxRow>,
-  places: Places,
-  typeKo: Readonly<Record<string, string>>,
-  forms: Readonly<Record<string, { types?: readonly string[] }>>,
-): EvoBest | null {
-  if (!family || family.length < 2) return null;
-  const stem = stemOf(current);
-  const bestOf = (name: string) => placesOf(places, name, typeKo)[0];
-  const own = [stem, `다이맥스 ${stem}`, `거다이맥스 ${stem}`].map(bestOf).filter(Boolean) as FormPlace[];
-  let limit = own.length ? Math.min(...own.map((one) => one.rank)) : Infinity;
-  let found: EvoBest | null = null;
-  for (const id of family.flat()) {
-    const base = names[String(id)];
-    if (!base || base === stem) continue;
-    for (const name of [base, `다이맥스 ${base}`, `거다이맥스 ${base}`]) {
-      const place = bestOf(name);
-      if (!place || place.rank >= limit) continue;
-      const row = index.get(name);
-      if (name !== base && !row) continue;
-      limit = place.rank;
-      found = {
-        name, place,
-        sprite: row?.sprite ?? id,
-        en: row?.en ?? '',
-        types: row?.types ?? forms[String(id)]?.types ?? [],
-      };
-    }
-  }
-  return found;
 }
 
 /** 활용처 몇 곳을 한 줄로 — 같은 무리가 이어지면 무리 이름을 한 번만 ('맥스 · 불꽃 1위 · 땅 2위 외 13곳') */
@@ -151,6 +151,23 @@ export function placeLine(places: readonly FormPlace[], shown = 2): string {
     .join(' · ');
   const rest = places.length - shown;
   return rest > 0 ? `${head} 외 ${rest}곳` : head;
+}
+
+/** 접힌 줄 한 줄 — D-MAX 티어가 있으면 앞에, 활용처는 가장 높은 한 곳 (좁은 화면에서 한 줄에 들어가게) */
+export function formSummary(row: Pick<FormRow, 'tier' | 'places'>): string {
+  const tier = row.tier ? `D-MAX ${row.tier}티어` : '';
+  if (!row.places.length) return tier || placeLine([]);
+  return [tier, placeLine(row.places, 1)].filter(Boolean).join(' · ');
+}
+
+/**
+ * 맥스 폼의 '더보기' 가 열 D-MAX 판 — 가장 높게 선 보스 타입의 딜러 표, 없으면 맥스 기술 타입의 티어표.
+ * 거기서 그 줄을 찾아 밝힌다 (stores/rank.ts focus)
+ */
+export function maxBoardOf(row: Pick<FormRow, 'places' | 'moveType'>): { axis: 'all' | 'dealer'; boss: string } {
+  const typed = row.places.find((one) => one.key.startsWith('max:') && !one.key.endsWith(':overall'));
+  if (typed) return { axis: 'dealer', boss: typed.key.slice(4) };
+  return { axis: 'all', boss: row.moveType || 'overall' };
 }
 
 export interface BossNow { slide: MaxSlide; name: string; dex: number }

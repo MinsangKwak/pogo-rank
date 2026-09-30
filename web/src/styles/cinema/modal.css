@@ -43,32 +43,73 @@ html body #root .detail--mon .detail__side { background: var(--surface-2); borde
 
 /* ── 머리줄 = 이름표 (2026-09-30 주인 요청: 팝업에서 내용이 더 보이게) ─────────────────────────
    '포켓몬 상세' 제목과 아래 묶음(그림 · 번호 · 폼 · 이름 · 타입)이 같은 말을 두 번 했다. 머리줄 한 줄에
-   #번호 · 이름 · 타입만 두고, 폼은 요약 맨 위(.detail__forms)로 내린다. 그림 띠 위라 판 짝(--plate-*)을 쓴다 */
+   #번호 · 이름 · 타입만 두고, 폼은 요약의 폼별 정보(.detail__formguide)가 맡는다. 그림 띠 위라 판 짝(--plate-*)을 쓴다 */
 html body #root .detail--mon .detail__bar-id { display: flex; align-items: center; gap: 0.8rem; min-width: 0; margin: 0; overflow: hidden; }
 html body #root .detail--mon .detail__bar-sprite { display: none; flex: none; width: 4rem; height: 4rem; margin: 0; }
 html body #root .detail--mon .detail__bar-dex { flex: none; color: var(--plate-muted); font: 600 1.4rem/1.2 Pretendard, sans-serif; font-variant-numeric: tabular-nums; }
 html body #root .detail--mon .detail__bar-name { min-width: 0; overflow: hidden; color: var(--plate-fg); font: 800 2.2rem/1.2 Pretendard, sans-serif; letter-spacing: -0.04em; white-space: nowrap; text-overflow: ellipsis; }
 html body #root .detail--mon .detail__bar-types { display: flex; flex: none; gap: 0.4rem; }
-/* 폼 한 줄 — 요약 맨 위. 이름표가 아니라 '이 포켓몬이 무엇이 되는가' 라 본문 글자 짝을 쓴다 */
-html body #root .detail--mon .detail__forms { display: flex; flex-wrap: wrap; align-items: center; gap: 0.8rem; margin: 0 0 1.2rem; }
-html body #root .detail--mon .detail__forms-label { color: var(--muted); font-size: 1.2rem; font-weight: 700; }
+/* 진화 · 요약 탭 맨 위 진화 계열 카드 — 아래 폼별 정보와 사이를 띄운다 (2026-09-30 주인 요청: 간격) */
+html body #root .detail--mon .detail__evo-card { margin-top: 0; }
+html body #root .detail--mon :is(.detail__evo-card, .detail__train) + .detail__formguide { margin-top: 2.4rem; }
+html body #root .detail--mon .detail__linenotes { display: grid; gap: 0.8rem; margin-top: 1.2rem; }
+/* CP 카드는 옆 칸(배틀 활용 순위)과 한 줄이던 시절 위 여백이 0 이었다 — 이제 홀로 서니 카드 사이 간격을 준다 */
+html body #root .detail--mon .detail__pane > .detail__cp-card { margin-top: var(--space-md); }
 
-/* 폼별 쓰임새 (2026-09-30) — 일반 · 다이맥스 · 거다이맥스 한 줄씩. 줄 전체가 그 폼으로 바꾸는 단추다.
-   지금 보는 폼은 테두리를 --brand 로 두고 누를 수 없게 한다 (같은 폼으로 바꿀 이유가 없다) */
-html body #root .detail--mon .detail__formrows { display: grid; gap: 0.4rem; }
+/* 폼별 정보 (2026-09-30) — 일반 · 다이맥스 · 거다이맥스를 접어 두고 요약 한 줄만. 누르면 그 폼의 것만 펼친다.
+   지금 보는 폼은 테두리를 --brand 로 둔다 */
+html body #root .detail--mon .detail__formrows { display: grid; gap: 0.8rem; }
+html body #root .detail--mon .detail__form { border: 1px solid var(--line); border-radius: var(--r-box); background: var(--surface-2); }
+html body #root .detail--mon .detail__form.is-now { border-color: var(--brand); }
 html body #root .detail--mon :is(.detail__formrow, .detail__formguide-evo) {
   display: flex; align-items: center; gap: 0.8rem; width: 100%; min-height: var(--tap); padding: 0.8rem 1.2rem;
-  border: 1px solid var(--line); border-radius: var(--r-box); background: var(--surface-2); color: var(--fg);
-  font: 500 1.4rem/1.5 Pretendard, sans-serif; text-align: left; cursor: pointer;
+  color: var(--fg); font: 500 1.4rem/1.5 Pretendard, sans-serif; text-align: left; cursor: pointer;
 }
-html body #root .detail--mon .detail__formrow.is-now { border-color: var(--brand); cursor: default; opacity: 1; }
-@media (hover: hover) { html body #root .detail--mon :is(.detail__formrow:not(.is-now), .detail__formguide-evo):hover { border-color: var(--brand); background: var(--hover); } }
+html body #root .detail--mon .detail__formrow { list-style: none; }
+html body #root .detail--mon button.detail__form { border: 1px solid var(--line); }
+html body #root .detail--mon button.detail__form.is-now { border-color: var(--brand); }
+html body #root .detail--mon button.detail__formrow::after { content: none; }
+html body #root .detail--mon .detail__formrow::-webkit-details-marker { display: none; }
+html body #root .detail--mon .detail__formrow::after { content: '›'; flex: none; margin-left: auto; color: var(--muted); font-size: 1.6rem; line-height: 1; transition: transform .15s ease; }
+html body #root .detail--mon .detail__form[open] > .detail__formrow::after { transform: rotate(90deg); }
+html body #root .detail--mon .detail__formguide-evo { border: 1px solid var(--line); border-radius: var(--r-box); background: var(--surface-2); flex-wrap: wrap; }
+@media (hover: hover) {
+  html body #root .detail--mon .detail__formrow:hover { background: var(--hover); border-radius: var(--r-box); }
+  html body #root .detail--mon .detail__formguide-evo:hover { border-color: var(--brand); background: var(--hover); }
+}
 html body #root .detail--mon .detail__formrow .form-tag { min-width: 6.4rem; text-align: center; }
 html body #root .detail--mon .detail__formrow-use { flex: 1 1 auto; min-width: 0; }
-html body #root .detail--mon .detail__formrow-go { flex: none; margin-left: auto; color: var(--muted); font-size: 1.2rem; font-weight: 700; }
-html body #root .detail--mon .detail__formguide-boss { display: flex; flex-wrap: wrap; align-items: center; gap: 0.8rem; margin: 1.2rem 0 0; color: var(--fg); font-size: 1.4rem; }
-html body #root .detail--mon .detail__formguide-evo { flex-wrap: wrap; margin-top: 0.8rem; }
+html body #root .detail--mon :is(.detail__formrow-now, .detail__formrow-go) { flex: none; color: var(--muted); font-size: 1.2rem; font-weight: 700; }
+html body #root .detail--mon .detail__formrow-go { margin-left: auto; }
+html body #root .detail--mon .detail__form-body { display: grid; gap: 0.8rem; padding: 0 1.2rem 1.2rem; }
+html body #root .detail--mon .detail__form-body .detail__foot { margin: 0; }
+html body #root .detail--mon .detail__form-meter { margin: 0; color: var(--muted); font-size: 1.2rem; font-weight: 700; }
+html body #root .detail--mon .detail__form-go {
+  justify-self: start; min-height: var(--tap); padding: 0 1.6rem; border: 1px solid var(--brand); border-radius: var(--r-ctl);
+  background: transparent; color: var(--brand); font: 700 1.4rem/1.2 Pretendard, sans-serif; cursor: pointer;
+}
+@media (hover: hover) { html body #root .detail--mon .detail__form-go:hover { background: var(--hover); } }
+html body #root .detail--mon .detail__formguide-boss { display: flex; flex-wrap: wrap; align-items: center; gap: 0.8rem; margin: 0; color: var(--fg); font-size: 1.4rem; }
 html body #root .detail--mon .detail__formguide-evo-label { color: var(--muted); font-size: 1.2rem; font-weight: 700; }
+
+/* 육성 추천 (2026-09-30) — 1순위(맥스) · 2순위(레이드 일반 · 전설) 묶음. 후보 줄은 '보스로 만났을 때' 의 .detail__rec 를 빌린다 */
+html body #root .detail--mon .detail__evo-card + .detail__train { margin-top: 2.4rem; }
+html body #root .detail--mon .detail__train-part { display: grid; gap: 0.8rem; }
+html body #root .detail--mon .detail__train-part + .detail__train-part { margin-top: 1.6rem; }
+html body #root .detail--mon .detail__train .detail__card-sub { margin: 0; }
+html body #root .detail--mon .detail__train-head { display: flex; align-items: center; gap: 0.8rem; margin: 0.8rem 0 0; color: var(--fg); font: 700 1.4rem/1.5 Pretendard, sans-serif; }
+html body #root .detail--mon .detail__pick { min-height: var(--tap); text-align: left; }
+html body #root .detail--mon .detail__pick-main { display: grid; flex: 1 1 auto; min-width: 0; }
+html body #root .detail--mon .detail__pick-note { color: var(--muted); font-size: 1.2rem; font-weight: 600; }
+html body #root .detail--mon .detail__train-where { color: var(--muted); font-size: 1.2rem; font-weight: 600; }
+
+/* 이 폼의 성적 — 배틀 정보 맨 위 */
+html body #root .detail--mon .detail__formstats h3 { display: flex; align-items: center; gap: 0.8rem; }
+html body #root .detail--mon .detail__stat-lines { display: grid; gap: 0.4rem; margin: 0 0 1.2rem; padding: 0; list-style: none; color: var(--fg); font-size: 1.4rem; }
+html body #root .detail--mon .detail__stat-group { display: grid; gap: 0.4rem; margin-top: 1.2rem; }
+html body #root .detail--mon .detail__stat-group .detail__train-head { margin: 0; }
+html body #root .detail--mon .detail__stat-go { width: 100%; min-height: var(--tap); border: 1px solid var(--line); color: var(--fg); font: inherit; text-align: left; cursor: pointer; }
+@media (hover: hover) { html body #root .detail--mon .detail__stat-go:hover { border-color: var(--brand); background: var(--hover); } }
 
 /* 좁은 화면 — 아래 묶음은 즐겨찾기 소식이 있을 때만 그 한 줄로 선다. 그림은 머리줄 앞에 작게 */
 @media (max-width: 767px) {
@@ -81,8 +122,12 @@ html body #root .detail--mon .detail__formguide-evo-label { color: var(--muted);
   html body #root .detail--mon .detail__fav { width: var(--tap); justify-content: center; padding: 0; }
   html body #root .detail--mon .detail__side:not(:has(.detail__favnews)) { display: none; }
   html body #root .detail--mon .detail__side :is(.sprite-box, .detail__en-inline) { display: none; }
-  /* 폼 줄의 '보는 중' 글자는 뺀다 — 테두리가 이미 말하고, 글자까지 두면 활용처가 두 줄로 꺾였다 (390px 실측) */
-  html body #root .detail--mon .detail__formrow.is-now .detail__formrow-go { display: none; }
+  /* 폼 줄의 '보는 중' 글자는 뺀다 — 테두리가 이미 말하고, 글자까지 두면 요약이 두 줄로 꺾였다 (390px 실측) */
+  html body #root .detail--mon .detail__formrow-now { display: none; }
+  /* 좁은 화면에서는 요약이 먼저 — 맥스 줄의 'D-MAX 더보기' 는 줄 아래 오른쪽으로 내리고,
+     펼치는 줄은 꺾쇠(›)가 이미 말하므로 '더보기' 글자를 뺀다 */
+  html body #root .detail--mon button.detail__formrow { flex-wrap: wrap; }
+  html body #root .detail--mon summary.detail__formrow .detail__formrow-go { display: none; }
   /* 계산기 머리는 그림 · 이름만 — 'CP 계산기' 글자까지 두면 폼 이름이 잘렸다 (390px 실측). 계산기인 것은 아래 판이 말한다 */
   html body #root .detail--mon[data-screen="calc"] .detail__bar-dex { display: none; }
 }

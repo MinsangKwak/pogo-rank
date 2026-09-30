@@ -26,12 +26,12 @@ import { usePrefStore, readCols } from '../stores/pref';
 import { Chips, CheckToggle, FilterBox, ScreenTabs, ToolBtn, ViewToggle, type ChipDef } from '../components/Bits';
 import { Slot } from '../components/Slots';
 import BossAcc from '../components/BossAcc';
-import { Row, RowHead, RowList, RowMore, ROW_SHOW, TierHead, TIER_ORDER, useExpanded } from '../components/Row';
+import { Row, RowHead, RowList, RowMore, ROW_SHOW, TierHead, TIER_ORDER, useExpanded, useFocusRow } from '../components/Row';
 import { track } from '../lib/track';
 import { useAuthStore } from '../stores/auth';
 import { LEAGUES } from '../lib/leagues';
 import type { OpenMon } from '../lib/mon';
-import { Fragment } from 'react';
+import { Fragment, useCallback, useEffect } from 'react';
 import type { DmaxRow, PveRow, PvpRow, LeagueKey } from '../types/data';
 import { num, word, lines as keep } from '../lib/cell';
 
@@ -131,6 +131,10 @@ export function Dmax({ onOpen }: { onOpen: OpenMon }) {
   //   가상 순위에서는 어제 대비 변동(▲▼)을 감춘다 — 그 숫자는 **실제 순위**가 움직인 이야기라,
   //   가정으로 매긴 번호 바로 아래 놓이면 한 줄에서 두 '움직임' 이 서로 다른 말을 한다
   const rows = all.filter((row) => unrel || !row.unrel);
+  // 상세의 '더보기' 로 왔으면 그 줄로 내려가 밝힌다 — 표는 전부 그려지므로 펼칠 것이 없다
+  const focus = useRankStore((s) => s.focus);
+  const clearFocus = useCallback(() => set('focus', ''), [set]);
+  useFocusRow(focus, clearFocus, rows.length > 0);
   // 보이는 차례(shown) ↔ 출시분만 센 차례(released). 체크가 꺼져 있으면 둘이 같은 값이다
   const nowRankOf = new Map<number, number>();
   if (unrel) {
@@ -355,6 +359,15 @@ export function Pvp({ onOpen }: { onOpen: OpenMon }) {
   const title = pvpType === 'all' ? `${name}리그 전체 순위` : `${name}리그 · ${dex.TYPE_KO[pvpType] ?? pvpType} 타입`;
   // 리그나 속성을 바꾸면 키가 달라져 저절로 접힌다 (v3 list() 의 키 규칙과 같다)
   const listKey = `pvp-${league}-${pvpType}`;
+  // 상세의 '더보기' 로 왔으면 그 줄로 — 접힌 꼬리(ROW_SHOW 밖)에 있으면 먼저 펼친다
+  const focus = useRankStore((s) => s.focus);
+  const clearFocus = useCallback(() => set('focus', ''), [set]);
+  const focusAt = focus ? rows.findIndex((row) => row.name === focus) : -1;
+  const open = isOpen(listKey);
+  useEffect(() => {
+    if (focusAt >= ROW_SHOW && !open) toggleMore(listKey);
+  }, [focusAt, open, listKey, toggleMore]);
+  useFocusRow(focus, clearFocus, rows.length > 0 && (focusAt < ROW_SHOW || open));
 
   return (
     <>
