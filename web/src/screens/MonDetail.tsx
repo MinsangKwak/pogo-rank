@@ -271,13 +271,22 @@ export default function MonDetail({ pick, onClose, inline = false }: MonDetailPr
 
             <div className="detail__bar">
               <button className="detail__bar-back" aria-label="상세로 돌아가기" onClick={() => setScreen('detail')}>‹ 상세로</button>
-              <p className="detail__bar-title">{screen === 'calc' ? 'CP 계산기' : '포켓몬 상세'}</p>
+              {/* 머리줄이 곧 이름표다 — '포켓몬 상세' 제목과 아래 묶음(번호 · 이름 · 타입)이 같은 말을 두 번 했다.
+                  한 줄에 #번호 · 이름 · 타입만 두고 폼(다이맥스 등)은 요약 탭 맨 위로 보낸다 (2026-09-30 주인 요청: 내용이 더 보이게) */}
+              {screen === 'calc' ? <p className="detail__bar-title">CP 계산기</p> : (
+                <p className="detail__bar-title detail__bar-id">
+                  <Sprite id={sprite} className="detail__bar-sprite" />
+                  {dexNo != null ? <span className="detail__bar-dex">#{dexNo}</span> : null}
+                  <b className="detail__bar-name">{baseName}</b>
+                  {types.length ? <span className="detail__bar-types">{typePills()}</span> : null}
+                </p>
+              )}
               <div className="detail__top-actions">
                 {/* ★ 입구는 **여기 하나뿐**이다 (v3.60.0 의 규칙) — 목록 카드에는 달지 않는다.
                     담아 두면 그 포켓몬의 커뮤니티 데이·스포트라이트·레이드 일정을 챙겨 준다 */}
                 {dexNo != null ? (
                   <button className={`detail__bar-btn detail__fav${isFav ? ' is-on' : ''}`} data-dex={dexNo}
-                    aria-pressed={isFav}
+                    aria-pressed={isFav} aria-label="즐겨찾기"
                     title={isFav ? '즐겨찾기에서 빼기' : '즐겨찾기에 추가 — 관련 일정을 확인할 수 있어요'}
                     onClick={(event) => {
                       event.stopPropagation();
@@ -298,21 +307,11 @@ export default function MonDetail({ pick, onClose, inline = false }: MonDetailPr
 
             <div className="detail__body">
               <div className="detail__side">
+                {/* 번호 · 이름 · 타입은 머리줄에 있다 — 여기는 큰 그림과 영문 이름 · 즐겨찾기 소식만 (2026-09-30) */}
                 <div className={`sprite-box${formKind ? ` sprite-box--${formKind}` : ''}`}>
                   <Sprite id={sprite} />
-                  {types.length ? <div className="detail__types">{typePills()}</div> : null}
                 </div>
                 <div className="detail__info">
-                  {/* 좁은 화면의 접힌 머리에서는 그림이 작아 모서리에 배지를 걸 자리가 없다 —
-                      같은 배지를 이름 왼쪽에 한 벌 더 두고 어느 쪽을 보일지는 CSS 가 data-tab 으로 고른다 */}
-                  {types.length ? <div className="detail__types detail__types--inline" aria-hidden="true">{typePills()}</div> : null}
-                  <div className="detail__tags">
-                    {dexNo != null ? <span className="tag detail__dexno">#{String(dexNo).padStart(4, '0')}</span> : null}
-                    {formLabels.map((label) => (
-                      <span key={label} className={`form-tag${FORM_KIND[label] ? ` form-tag--${FORM_KIND[label]}` : ''}`}>{label}</span>
-                    ))}
-                  </div>
-                  <h2>{baseName}</h2>
                   {/* 이 줄은 늘 **반대 언어의 이름**이다 — 한국어 화면엔 Metagross, 영어 화면엔 메타그로스.
                       사전을 태우면(data-i18n 없이 두면) 영어 화면에서 이름 줄과 똑같은 Metagross 가 두 번 선다.
                       엔진이 data-alt-ko/en 을 보고 갈아 끼운다 (lib/i18n.ts) */}
@@ -354,6 +353,15 @@ export default function MonDetail({ pick, onClose, inline = false }: MonDetailPr
 
                     {/* ── 요약: CP · 포획 CP · 기술 · (기술 변경) · 능력치 */}
                     <div className="detail__pane" role="tabpanel" data-pane="summary" id="detail-pane-summary" aria-labelledby="detail-tab-summary" hidden={tab !== 'summary'}>
+                      {/* 폼(다이맥스 · 거다이맥스 · 메가 · 섀도우 …)은 머리줄에서 내려와 요약 맨 위 한 줄에 선다 */}
+                      {formLabels.length ? (
+                        <p className="detail__forms">
+                          <span className="detail__forms-label">폼</span>
+                          {formLabels.map((label) => (
+                            <span key={label} className={`form-tag${FORM_KIND[label] ? ` form-tag--${FORM_KIND[label]}` : ''}`}>{label}</span>
+                          ))}
+                        </p>
+                      ) : null}
                       {form && cpm['l50'] ? (
                         <>
                           {/* 만렙 큰 숫자는 접혀도 보이고 2×2 표만 접힌다 (v2.32.0) */}
