@@ -41,6 +41,8 @@ export interface PlanSource {
   typeKo: Readonly<Record<string, string>>;
   /** 스프라이트 → 도감 번호 (폼 번호 10000~ 를 종으로 묶는다) */
   dexOf: (sprite: number) => number | null;
+  /** 다이맥스 · 거다이맥스 폼으로 연 팝업 — 쓰임새는 맥스 배틀이다 (아직 순위가 없어도, 예: 곧 나올 다이맥스 태우지네) */
+  maxForm?: boolean;
 }
 
 export const PLAN_MAX = 3;
@@ -84,7 +86,7 @@ export function trainPlan(src: PlanSource): TrainPlan {
   const pveHits = hits.filter((one) => one.place.startsWith('pve:') || one.place.startsWith('max:'));
   const pvpHits = hits.filter((one) => one.place.startsWith('pvp:'));
   const roles: Role[] = [];
-  if (pveHits.length) roles.push('pve');
+  if (pveHits.length || src.maxForm) roles.push('pve');
   // PvP 는 레이드 · 맥스 쓰임새가 없을 때만 — 둘 다 있으면 레이드 · 맥스가 먼저다 (주인 결정)
   if (pvpHits.length && !pveHits.length) roles.push('pvp');
   if (!roles.length) {

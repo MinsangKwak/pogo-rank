@@ -104,9 +104,13 @@ html body #root .detail--mon .detail__pick-note { color: var(--muted); font-size
 html body #root .detail--mon .detail__train-where { color: var(--muted); font-size: 1.2rem; font-weight: 600; }
 
 /* 이 폼의 성적 — 배틀 정보 맨 위 */
+/* 제목 · 본문 · 단추 사이를 띄운다 — 한 덩어리로 붙어 단추가 글에 딸린 것처럼 보였다 (2026-09-30 주인 제보) */
+html body #root .detail--mon .detail__formstats { display: grid; gap: 1.2rem; }
+html body #root .detail--mon .detail__formstats > * { margin: 0; }
 html body #root .detail--mon .detail__formstats h3 { display: flex; align-items: center; gap: 0.8rem; }
-html body #root .detail--mon .detail__stat-lines { display: grid; gap: 0.4rem; margin: 0 0 1.2rem; padding: 0; list-style: none; color: var(--fg); font-size: 1.4rem; }
-html body #root .detail--mon .detail__stat-group { display: grid; gap: 0.4rem; margin-top: 1.2rem; }
+html body #root .detail--mon .detail__formstats > .detail__form-go { margin-top: 0.4rem; }
+html body #root .detail--mon .detail__stat-lines { display: grid; gap: 0.4rem; margin: 0; padding: 0; list-style: none; color: var(--fg); font-size: 1.4rem; }
+html body #root .detail--mon .detail__stat-group { display: grid; gap: 0.4rem; }
 html body #root .detail--mon .detail__stat-group .detail__train-head { margin: 0; }
 html body #root .detail--mon .detail__stat-go { width: 100%; min-height: var(--tap); border: 1px solid var(--line); color: var(--fg); font: inherit; text-align: left; cursor: pointer; }
 @media (hover: hover) { html body #root .detail--mon .detail__stat-go:hover { border-color: var(--brand); background: var(--hover); } }

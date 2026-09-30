@@ -114,8 +114,9 @@ export function TrainCard({ mon, dexNo, stem, onSwitch }: { mon: MonRef; dexNo: 
       dmax: max.DMAX_DATA, pve: pve.PVE_DATA, pvp: pvp.PVP_DATA,
       chart: dex.DEX_DATA.chart, typeKo: dex.TYPE_KO,
       dexOf: (sprite) => dex.DEX_DATA.dex[String(sprite)] ?? (sprite < 10000 ? sprite : null),
+      maxForm: formKeyOf(mon.name) === 'dmax' || formKeyOf(mon.name) === 'gmax',
     });
-  }, [dex, max, usage, pve, pvp, dexNo, stem, mon.types]);
+  }, [dex, max, usage, pve, pvp, dexNo, stem, mon.types, mon.name]);
   // 판 이름은 제목 옆 작은 글자로 — 제목에 이어 붙이면 좁은 화면에서 두 줄로 꺾였다 (390px 실측)
   const boss = (type: string) => (type === 'overall' ? null : <span className="detail__train-where">{`${dex.TYPE_KO[type] ?? type} 보스 상대`}</span>);
 
@@ -231,8 +232,9 @@ export default function FormGuide({ mon, dexNo, baseLabel, onSwitch, onLeave }: 
 }
 
 /** 지금 보는 폼의 성적 — 배틀 정보 맨 위. 맥스 폼은 D-MAX 표, 일반은 PvP 리그 · 레이드 */
-export function FormStats({ mon, baseLabel, onLeave }: { mon: MonRef; baseLabel: string; onLeave?: () => void }) {
+export function FormStats({ mon, dexNo, baseLabel, onLeave }: { mon: MonRef; dexNo: number | null; baseLabel: string; onLeave?: () => void }) {
   const { data: dex } = useDex();
+  const slides = useMaxSlidesSoft();
   const { data: max } = useMax();
   const { data: pvp } = usePvp();
   const { data: usage } = useUsage();
@@ -263,6 +265,30 @@ export function FormStats({ mon, baseLabel, onLeave }: { mon: MonRef; baseLabel:
       best ? `가장 강한 판 · ${best.where} 보스 ${best.rank}위` : '',
     ].filter(Boolean);
     const moveType = idx.get(mon.name)?.charged ?? '';
+    // 게임에 아직 없는 맥스 폼 — 맥스 표에 줄이 없거나 미구현 줄뿐이다. '순위에 없다' 가 아니라 '아직 안 나왔다' 가 맞는 말이고,
+    // 곧 맥스 배틀이 열리면 그 날짜가 가장 궁금한 것이다 (2026-09-30 주인 제보: 태우지네)
+    const row = idx.get(mon.name);
+    if (!row || (row.unrel && !withUnrel)) {
+      // 보고 있는 폼과 같은 종류(다이맥스 ↔ 거다이맥스)의 일정만 — 다른 폼의 배틀을 이 폼의 첫 등장으로 알리지 않는다 (Codex, PR #269)
+      const soon = dexNo != null ? bossNow(slides.filter((one) => one.gmax === (key === 'gmax')), new Set([dexNo])) : null;
+      return (
+        <section className="detail__card detail__formstats">
+          <h3><span className="form-tag form-tag--max">{FORM_KO[key]}</span> 이 폼의 성적</h3>
+          <p className="detail__none-text">
+            {soon?.slide.live ? '이번 주 맥스 배틀에서 처음 만날 수 있어요 — 순위표에는 아직 없어요.' : '아직 다이맥스로 나온 적이 없어요.'}
+          </p>
+          {soon ? (
+            <p className="detail__formguide-boss">
+              <span className="tag">{dday(soon.slide)}</span>
+              <span>{`${soon.slide.live ? '맥스 배틀 진행 중' : '곧 맥스 배틀 시작'} · ${soon.name} · ${soon.slide.short}`}</span>
+            </p>
+          ) : null}
+          {soon ? (
+            <button type="button" className="detail__form-go" onClick={() => { track('detail_more', { to: 'schedule', mon: mon.name }); onLeave?.(); go('/schedule'); }}>일정 보기 ›</button>
+          ) : null}
+        </section>
+      );
+    }
     return (
       <section className="detail__card detail__formstats">
         <h3><span className="form-tag form-tag--max">{FORM_KO[key]}</span> 이 폼의 성적</h3>

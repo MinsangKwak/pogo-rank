@@ -470,7 +470,7 @@ export default function MonDetail({ pick, onClose, inline = false }: MonDetailPr
                     {/* ── 배틀 정보: 타입 상성 · 활용 순위 · PvP 개체값 · 메가 비교 · 보스로 만났을 때 */}
                     <div className="detail__pane" role="tabpanel" data-pane="battle" id="detail-pane-battle" aria-labelledby="detail-tab-battle" hidden={tab !== 'battle'}>
                       {/* 맨 위는 지금 보는 폼의 성적 — D-MAX 에서 열었으면 맥스 표, PvP · 레이드에서 열었으면 그쪽 순위 */}
-                      <FormStats mon={mon} baseLabel={otherLabels.join(' ') || '일반'} onLeave={onClose} />
+                      <FormStats mon={mon} dexNo={dexNo} baseLabel={otherLabels.join(' ') || '일반'} onLeave={onClose} />
                       {types.length ? (
                         <section className="detail__card">
                           <h3>타입 상성</h3>

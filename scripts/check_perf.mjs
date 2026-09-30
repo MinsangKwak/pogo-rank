@@ -14,7 +14,7 @@ import pw from '/opt/node22/lib/node_modules/playwright/index.js';
 const SITES = process.argv.slice(2).length ? process.argv.slice(2) : ['http://localhost:4173/'];
 // 화면 → 「본문이 왔다」고 볼 요소. 스플래시·바닥글이 아니라 데이터가 있어야 서는 것
 const PAGES = [
-  ['home', '', '.pick__group'], ['hero', '', '.home__welcome h2'], ['dex', 'dex', '.dex__row'],
+  ['home', '', '.pick__group'], ['hero', '', '.max-battle-art .max-hero'], ['dex', 'dex', '.dex__row'],
   ['dmax', 'dmax', '#boss-acc-title'], ['raids', 'raids', '.gameday__intro .note'], ['schedule', 'schedule', '.schedule__month-nav'],
 ];
 const RUNS = 3;
