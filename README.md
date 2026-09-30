@@ -5,7 +5,7 @@
 
 [서비스](https://moncamp.kr/) · [개발 가이드](docs/DEVELOPMENT.md) · [변경 이력](docs/CHANGELOG.md)
 
-> 문서 기준: 2026-09-30, **v5.6.0**. 현재 앱은 `web/`의 Next.js입니다. `frontend-v4/`는 이전 Vite 앱이며, 데이터 추출 도구와 Storybook에 계속 사용합니다.
+> 문서 기준: 2026-09-30, **v5.6.1**. 현재 앱은 `web/`의 Next.js입니다. `frontend-v4/`는 이전 Vite 앱이며, 데이터 추출 도구와 Storybook에 계속 사용합니다.
 
 ## 프로젝트 한눈에 보기
 
@@ -129,7 +129,9 @@ PvP 순위는 PvPoke, 게임 수치는 PokeMiners, 한국어 명칭은 PokeAPI, 
 ## 최근 릴리스
 
 <details>
-<summary><b>2026-09-30</b> — 릴리스 2개 · <code>v5.6.0</code> · <code>v5.5.4</code></summary>
+<summary><b>2026-09-30</b> — 릴리스 3개 · <code>v5.6.1</code> · <code>v5.6.0</code> · <code>v5.5.4</code></summary>
+
+설치한 앱(PWA)이 새 판이 올라오면 다시 열 때 스스로 새로 고치도록 고쳤습니다.
 
 상세 팝업을 요약(전체 검색 · 홈)과 자세히(도감 · 순위 화면)로 나누고, 다이맥스 · 거다이맥스 우선 육성 추천과 폼별 정보를 더했습니다. 홈은 배너 아래 '지금 많이 보는 포켓몬' 중심으로 정리했고, 순위 카드의 순위 칩을 차분하게 바꿨습니다.
 

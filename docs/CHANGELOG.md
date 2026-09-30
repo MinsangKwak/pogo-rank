@@ -27,7 +27,18 @@
 ## 릴리스 기록
 
 <details open>
-<summary><b>2026-09-30</b> — 2판 · <code>v5.6.0</code> · <code>v5.5.4</code></summary>
+<summary><b>2026-09-30</b> — 3판 · <code>v5.6.1</code> · <code>v5.6.0</code> · <code>v5.5.4</code></summary>
+
+<details>
+<summary><b>v5.6.1</b> · 설치한 앱(PWA)이 새 판으로 스스로 새로 고친다</summary>
+
+**배경** — 주인 제보: PWA 가 업데이트되지 않는다. 설치한 앱은 닫히지 않고 백그라운드에서 되살아나 한 번 불러온 번들을 며칠이고 붙들었다. 새 빌드를 알아보는 훅(`useFreshness`)은 v5 전환 때부터 있었지만 어디에도 걸려 있지 않았다.
+
+**수정** — `lib/autoUpdate.ts` · `components/UpdateBridge.tsx`. `next.config.ts` 가 굽는 순간의 `data/manifest.json` `built` 를 `NEXT_PUBLIC_DATA_BUILT` 로 번들에 새기고(배포는 데이터를 만든 뒤 굽는다), 서버의 manifest(`no-store`)와 켤 때 · 되살아날 때(`visibilitychange` · `pageshow`) · 5분마다 견준다. 달라졌으면 새로 고친다 — 되살아난 때는 바로, 보고 있는 중이면 열린 팝업(공유 링크 본문 `.modal--page` 제외) · 입력칸이 없을 때 30초마다 다시 본다. 같은 빌드로는 한 번만(`sessionStorage` `pogo_reload_built`), 새로 고치기 전 남은 서비스워커(v4 에서 설치한 앱)에 `update()`. 서비스워커 파일 · 캐시 이름은 그대로. Codex 지적 둘(첫 응답이 아니라 번들 값 기준 · 공유 페이지 제외) 반영.
+
+검사 — web 140(`autoupdate.test.ts`) · Playwright 로 manifest 를 바꿔 새 빌드 흉내: 같은 빌드 0회 · 새 빌드로 켤 때 1회 · 되살아날 때 팝업이 열려 있어도 1회 · 공유 페이지 1회 · 같은 빌드로 두 번은 안 고침.
+
+</details>
 
 <details>
 <summary><b>v5.6.0</b> · 상세 팝업 v2 — 요약 · 자세히 · 다이맥스 우선 육성 추천 · 홈 정리 · 순위 칩</summary>

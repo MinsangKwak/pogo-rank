@@ -8,6 +8,8 @@
 // 표를 손으로 두 번 적지 않는다 — `src/routes.ts` 의 legacy 에서 뒤집어 만든 것을 그대로 읽는다.
 // ─────────────────────────────────────────────────────────────────────────────
 import type { NextConfig } from 'next';
+import { existsSync, readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { ROUTE_LEGACY } from './src/routes';
 
 // [이름, 값] — 값은 Cloudflare 에 넣었던 것과 글자까지 같다 (docs/INFRA.md §8 의 3번 표)
@@ -20,8 +22,20 @@ export const SECURITY_HEADERS: ReadonlyArray<readonly [string, string]> = [
   ['Permissions-Policy', 'geolocation=(), microphone=(), camera=()'],
 ];
 
+// 이 판의 데이터 빌드 시각 — 번들에 새긴다. 앱이 서버의 manifest.json 과 견줘 새 판이 올라왔는지 안다 (components/UpdateBridge.tsx).
+// 첫 서버 응답을 기준으로 삼으면 옛 번들이 새 배포 뒤에 켜졌을 때 끝내 못 알아챈다 (Codex, PR #278).
+// 배포는 데이터(npm run data)를 만든 **뒤** 굽는다 — 같은 값이다. 데이터가 없으면(로컬 · 검사) 비운다
+function dataBuilt(): string {
+  for (const path of [join(process.cwd(), 'public/data/manifest.json'), join(process.cwd(), 'web/public/data/manifest.json')]) {
+    if (!existsSync(path)) continue;
+    try { return String(JSON.parse(readFileSync(path, 'utf8')).built ?? ''); } catch { return ''; }
+  }
+  return '';
+}
+
 const config: NextConfig = {
   reactStrictMode: true,
+  env: { NEXT_PUBLIC_DATA_BUILT: dataBuilt() },
   // 그림은 v3 빌드가 만든 것을 그대로 쓴다 — 2,000장이 넘어 최적화를 거칠 이유가 없다
   images: { unoptimized: true },
 
