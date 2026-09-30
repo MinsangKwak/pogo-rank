@@ -27,6 +27,8 @@ export const I18N_PATTERNS = [
   [/^(.+) (\d+)위$/, '$1 #$2'],
   [/^(.+) \(같은 진화 계열\)$/, '$1 (same evolution line)'],
   [/^D-MAX ([SABC])티어$/, 'D-MAX $1 tier'],
+  [/^곧 맥스 배틀 시작 · (.+) · ([\d.–]+)$/, 'Max Battles start soon · $1 · $2'],
+  [/^맥스 배틀 진행 중 · (.+) · ([\d.–]+)$/, 'Max Battles now · $1 · $2'],
   [/^D-MAX ([SABC])티어 · 전 종 1위 대비 ([\d.]+)%$/, 'D-MAX $1 tier · $2% of the best'],
   [/^(.+) 보스 상대 · (.+)$/, 'vs $1 bosses · $2'],
   [/^(.+) 보스 상대$/, 'vs $1 bosses'],
@@ -632,6 +634,9 @@ export const I18N_EN = {
   // 2026-09-30 폼별 쓰임새 카드
   '폼별 쓰임새': 'Uses by form',
   '폼별 정보': 'By form',
+  '아직 다이맥스로 나온 적이 없어요.': 'Not released as Dynamax yet.',
+  '이번 주 맥스 배틀에서 처음 만날 수 있어요 — 순위표에는 아직 없어요.': 'Debuting in this week’s Max Battles — not in the rankings yet.',
+  '일정 보기 ›': 'View schedule ›',
   '육성 추천': 'What to train',
   '맥스 배틀 · 레이드용 — 다이맥스 · 거다이맥스부터 키우세요': 'For Max Battles and raids — train Dynamax and Gigantamax first',
   'PvP용 — 일반 · 전설 개체로 키우세요 (맥스 폼은 트레이너 배틀에서 다이맥스하지 않아요)': 'For PvP — train standard or legendary Pokémon (Max forms do not Dynamax in Trainer Battles)',
