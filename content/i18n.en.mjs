@@ -27,6 +27,9 @@ export const I18N_PATTERNS = [
   [/^(.+) (\d+)위$/, '$1 #$2'],
   [/^(.+) \(같은 진화 계열\)$/, '$1 (same evolution line)'],
   [/^D-MAX ([SABC])티어$/, 'D-MAX $1 tier'],
+  [/^(.+) ([SABC])티어$/, '$1 $2 tier'],
+  [/^(.+) 맥스 (\d+)위$/, '$1 Max #$2'],
+  [/^(.+) 보스 딜러 (\d+)위$/, 'Attacker #$2 vs $1 bosses'],
   [/^곧 맥스 배틀 시작 · (.+) · ([\d.–]+)$/, 'Max Battles start soon · $1 · $2'],
   [/^맥스 배틀 진행 중 · (.+) · ([\d.–]+)$/, 'Max Battles now · $1 · $2'],
   [/^D-MAX ([SABC])티어 · 전 종 1위 대비 ([\d.]+)%$/, 'D-MAX $1 tier · $2% of the best'],
@@ -634,6 +637,8 @@ export const I18N_EN = {
   // 2026-09-30 폼별 쓰임새 카드
   '폼별 쓰임새': 'Uses by form',
   '폼별 정보': 'By form',
+  '아직 게임에 나오지 않았어요': 'Not in the game yet',
+  '가장 강한 상대': 'Strongest against',
   '아직 다이맥스로 나온 적이 없어요.': 'Not released as Dynamax yet.',
   '이번 주 맥스 배틀에서 처음 만날 수 있어요 — 순위표에는 아직 없어요.': 'Debuting in this week’s Max Battles — not in the rankings yet.',
   '일정 보기 ›': 'View schedule ›',

@@ -2,7 +2,7 @@
 // 폼별 쓰임새 — 세 폼 줄 · 진화 계열 추천 · 맥스 일정, 실제 데이터 전체에서 새는 글자 없이 (lib/formGuide.ts)
 import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
-import { bossNow, formKeyOf, formRows, formSummary, maxBoardOf, maxIndex, speciesOf, placeLine, placesOf, stemOf, tierIndex } from '../lib/formGuide';
+import { bossNow, formKeyOf, formRows, formSummary, maxBoardOf, maxIndex, speciesOf, placeLine, placesOf, stemOf, tierIndex, tierLine } from '../lib/formGuide';
 import { LEAK } from '../lib/cell';
 import type { MaxSlide } from '../lib/maxSlides';
 
@@ -69,10 +69,25 @@ describe('formRows', () => {
     expect(gmax!.places).toEqual(placesOf(places, '거다이맥스 인텔리레온', typeKo));
     expect(base!.places.some((one) => one.group === '맥스')).toBe(false);
   });
-  it('티어는 전 종 티어표에 선 맥스 폼에만', () => {
+  it('맥스 폼의 티어는 기술 타입 칸의 티어 · 순위 — 다이맥스 이상해꽃은 딜러 표 밖이어도 풀 칸에 있다 (2026-09-30 제보)', () => {
     const rows = rowsFor('이상해꽃');
-    expect(rows[0]!.tier).toBe('');
-    expect(rows.find((row) => row.key === 'gmax')?.tier).toMatch(/^[SABC]$/);
+    expect(rows[0]!.tier).toBeNull();
+    const dmax = rows.find((row) => row.key === 'dmax')!;
+    const gmax = rows.find((row) => row.key === 'gmax')!;
+    expect(dmax.tier).toMatchObject({ type: 'grass', tier: expect.stringMatching(/^[SABC]$/) });
+    expect(gmax.tier?.type).toBe('grass');
+    expect(gmax.tier!.rank).toBeLessThan(dmax.tier!.rank);
+    expect(formSummary(dmax, typeKo)).toMatch(/^풀 [SABC]티어 · \d+위$/);
+  });
+  it('여러 칸에 서는 폼은 대표 칸 — 다이맥스 리자몽은 비행이 아니라 불꽃 (Codex, PR #271)', () => {
+    const rows = rowsFor('리자몽');
+    expect(rows.find((row) => row.key === 'dmax')?.tier?.type).toBe('fire');
+    expect(rows.find((row) => row.key === 'gmax')?.tier?.type).toBe('fire');
+  });
+  it('티어표 순위는 D-MAX 화면처럼 미구현을 빼고 센다', () => {
+    const released = tierIndex(max);
+    const all = tierIndex(max, true);
+    for (const [name, spot] of released) expect(all.get(name)!.rank).toBeGreaterThanOrEqual(spot.rank);
   });
   it('활용처는 순위 오름차순', () => {
     const ranks = rowsFor('리자몽').flatMap((row) => row.places.map((one) => one.rank));
@@ -94,19 +109,26 @@ describe('placeLine', () => {
 
 describe('formSummary', () => {
   const at = (group: string, where: string, rank: number) => ({ key: `${group}:${where}`, group, where, label: `${group} · ${where}`, rank });
-  it('티어 · 가장 높은 한 곳', () => {
-    expect(formSummary({ tier: 'A', places: [at('맥스', '물', 3), at('맥스', '풀', 9)] })).toBe('D-MAX A티어 · 맥스 · 물 3위 외 1곳');
-    expect(formSummary({ tier: 'C', places: [] })).toBe('D-MAX C티어');
-    expect(formSummary({ tier: '', places: [] })).toBe('순위표 상위 30위 밖');
+  it('맥스 폼은 기술 타입 칸의 티어 · 순위가 먼저', () => {
+    expect(formSummary({ tier: { type: 'fire', tier: 'S', rank: 2 }, places: [at('맥스', '풀', 3)], unrel: false }, typeKo)).toBe('불꽃 S티어 · 2위');
+    expect(tierLine({ type: 'grass', tier: '', rank: 6 }, typeKo)).toBe('풀 맥스 6위');
+  });
+  it('티어표에 없으면 활용처 한 곳, 없으면 상위 30위 밖, 미출시면 그렇게', () => {
+    expect(formSummary({ tier: null, places: [at('레이드', '땅', 27)], unrel: false })).toBe('레이드 · 땅 27위');
+    expect(formSummary({ tier: null, places: [], unrel: false })).toBe('순위표 상위 30위 밖');
+    expect(formSummary({ tier: null, places: [], unrel: true })).toBe('아직 게임에 나오지 않았어요');
   });
 });
 
 describe('maxBoardOf', () => {
-  it('맥스 순위가 선 보스 타입의 딜러 표, 없으면 맥스 기술 타입 티어표', () => {
+  it('티어표 칸 → 딜러 표 → 기술 타입 티어표 순', () => {
+    // 티어표의 기술 타입 칸이 먼저 — 요약이 말한 그 줄로 간다
     const gmax = rowsFor('거다이맥스 인텔리레온').find((row) => row.key === 'gmax')!;
-    expect(maxBoardOf(gmax)).toEqual({ axis: 'dealer', boss: 'fire' });
+    expect(maxBoardOf(gmax)).toEqual({ axis: 'all', boss: gmax.tier!.type });
+    // 티어표에 없고 딜러 표 자리만 있으면 딜러 표
+    expect(maxBoardOf({ ...gmax, tier: null })).toEqual({ axis: 'dealer', boss: 'fire' });
     const dmax = rowsFor('울머기').find((row) => row.key === 'dmax')!;
-    expect(maxBoardOf(dmax)).toEqual({ axis: 'all', boss: 'water' });
+    expect(maxBoardOf({ ...dmax, tier: null, places: [] })).toEqual({ axis: 'all', boss: 'water' });
   });
 });
 
@@ -135,7 +157,7 @@ describe('실제 데이터 전체', () => {
         expect(row.name).not.toMatch(LEAK);
         expect(Number.isFinite(row.sprite)).toBe(true);
         expect(placeLine(row.places)).not.toMatch(LEAK);
-        expect(formSummary(row)).not.toMatch(LEAK);
+        expect(formSummary(row, typeKo)).not.toMatch(LEAK);
       }
     }
     expect(seen).toBeGreaterThan(1000);
