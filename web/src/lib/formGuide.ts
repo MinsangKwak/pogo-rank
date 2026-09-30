@@ -41,8 +41,8 @@ export interface FormRow {
   places: FormPlace[];
   /** 데이터만 있고 아직 게임에 없는 폼 */
   unrel: boolean;
-  /** D-MAX 티어 글자 (전 종 순위표에 선 맥스 폼만) */
-  tier: string;
+  /** D-MAX 티어표에서의 자리 — 맥스 폼만, 티어표에 없으면 null */
+  tier: TierSpot | null;
   /** 맥스 기술 타입 ('water') — 맥스 폼만, 일반은 빈 글자 */
   moveType: string;
 }
@@ -71,14 +71,33 @@ export function maxIndex(max: Pick<MaxBundle, 'DMAX_DATA' | 'DMAX_TANK' | 'DMAX_
   return out;
 }
 
-/** D-MAX 전 종 티어표 — 이름 → 'S' · 'A' … (상위 줄만 실린다) */
-export function tierIndex(max: Pick<MaxBundle, 'DMAX_TIER'>): Map<string, string> {
-  const out = new Map<string, string>();
-  for (const row of max.DMAX_TIER['overall'] ?? []) {
-    const tier = (row as DmaxRow & { tier?: string }).tier;
-    if (tier && !out.has(row.name)) out.set(row.name, tier);
+/**
+ * D-MAX 티어표에서의 자리 — **맥스 기술 타입 칸 안에서의 티어와 순위**.
+ * 사람들이 궁금한 것은 '이상해꽃이 전체 몇 위' 가 아니라 '풀에서 몇 티어' 다 (리자몽이면 불꽃에서 몇 티어 · 2026-09-30 주인 결정).
+ * 활용처(usage.json)는 딜러 표만 세서, 딜러 표 30위 밖인 다이맥스 이상해꽃이 '상위 30위 밖' 으로 보였다 — 티어표에서는 풀 6위다
+ */
+export interface TierSpot { type: string; tier: string; rank: number }
+
+/** 이름 → 기술 타입 칸의 자리. D-MAX 화면처럼 미구현 줄은 빼고 센다(withUnrel 이면 넣는다). '전체' 칸은 보지 않는다 */
+export function tierIndex(max: Pick<MaxBundle, 'DMAX_TIER'>, withUnrel = false): Map<string, TierSpot> {
+  const out = new Map<string, TierSpot>();
+  for (const [key, rows] of Object.entries(max.DMAX_TIER)) {
+    if (key === 'overall') continue;
+    let rank = 0;
+    for (const row of rows) {
+      if (row.unrel && !withUnrel) continue;
+      rank += 1;
+      const tier = (row as DmaxRow & { tier?: string }).tier ?? '';
+      if (!out.has(row.name)) out.set(row.name, { type: key, tier, rank });
+    }
   }
   return out;
+}
+
+/** '풀 C티어 · 6위' */
+export function tierLine(spot: TierSpot, typeKo: Readonly<Record<string, string>>): string {
+  const type = typeKo[spot.type] ?? spot.type;
+  return spot.tier ? `${type} ${spot.tier}티어 · ${spot.rank}위` : `${type} 맥스 ${spot.rank}위`;
 }
 
 /** 한 이름의 활용처 — 'max:fire' 는 '맥스 · 불꽃' */
@@ -111,7 +130,7 @@ export interface FormSource {
  */
 export function formRows(
   src: FormSource, index: ReadonlyMap<string, DmaxRow>, places: Places, typeKo: Readonly<Record<string, string>>,
-  tiers: ReadonlyMap<string, string> = new Map(),
+  tiers: ReadonlyMap<string, TierSpot> = new Map(),
   megas: readonly MegaForm[] = [],
 ): FormRow[] {
   const stem = speciesOf(src.name);
@@ -124,20 +143,20 @@ export function formRows(
     : (src.baseTypes?.length ? src.baseTypes : (dmax?.types ?? gmax?.types ?? src.types));
   const rows: FormRow[] = [{
     key: 'base', label: FORM_KO.base, name: stem, sprite: baseSprite, en: src.en || dmax?.en || gmax?.en || '',
-    types: baseTypes, places: placesOf(places, stem, typeKo), unrel: false, tier: '', moveType: '',
+    types: baseTypes, places: placesOf(places, stem, typeKo), unrel: false, tier: null, moveType: '',
   }];
   for (const mega of megas) {
     const name = `${mega.label} ${stem}`;
     rows.push({
       key: 'mega', label: mega.label, name, sprite: mega.sprite, en: src.en, types: mega.types,
-      places: placesOf(places, name, typeKo), unrel: mega.rel === false, tier: '', moveType: '',
+      places: placesOf(places, name, typeKo), unrel: mega.rel === false, tier: null, moveType: '',
     });
   }
   for (const [key, row] of [['dmax', dmax], ['gmax', gmax]] as const) {
     if (!row) continue;
     rows.push({
       key, label: FORM_KO[key], name: row.name, sprite: row.sprite, en: row.en, types: row.types,
-      places: placesOf(places, row.name, typeKo), unrel: !!row.unrel, tier: tiers.get(row.name) ?? '', moveType: row.charged ?? '',
+      places: placesOf(places, row.name, typeKo), unrel: !!row.unrel, tier: tiers.get(row.name) ?? null, moveType: row.charged ?? '',
     });
   }
   return rows;
@@ -153,18 +172,22 @@ export function placeLine(places: readonly FormPlace[], shown = 2): string {
   return rest > 0 ? `${head} 외 ${rest}곳` : head;
 }
 
-/** 접힌 줄 한 줄 — D-MAX 티어가 있으면 앞에, 활용처는 가장 높은 한 곳 (좁은 화면에서 한 줄에 들어가게) */
-export function formSummary(row: Pick<FormRow, 'tier' | 'places'>): string {
-  const tier = row.tier ? `D-MAX ${row.tier}티어` : '';
-  if (!row.places.length) return tier || placeLine([]);
-  return [tier, placeLine(row.places, 1)].filter(Boolean).join(' · ');
+/**
+ * 접힌 줄 한 줄. 맥스 폼은 **기술 타입 칸의 티어 · 순위**('풀 C티어 · 6위')가 먼저다 — D-MAX 티어표에서 그 타입 칩을 눌렀을 때와 같은 숫자.
+ * 티어표에 없으면 활용처 가장 높은 한 곳, 그것도 없으면 '상위 30위 밖'. 아직 게임에 없는 폼은 그렇게 말한다
+ */
+export function formSummary(row: Pick<FormRow, 'tier' | 'places' | 'unrel'>, typeKo: Readonly<Record<string, string>> = {}): string {
+  if (row.tier) return tierLine(row.tier, typeKo);
+  if (row.unrel) return '아직 게임에 나오지 않았어요';
+  return placeLine(row.places, 1);
 }
 
 /**
- * 맥스 폼의 '더보기' 가 열 D-MAX 판 — 가장 높게 선 보스 타입의 딜러 표, 없으면 맥스 기술 타입의 티어표.
- * 거기서 그 줄을 찾아 밝힌다 (stores/rank.ts focus)
+ * 맥스 폼의 '더보기' 가 열 D-MAX 판 — 요약이 말한 **티어표의 기술 타입 칸**이 먼저,
+ * 티어표에 없으면 가장 높게 선 보스 타입의 딜러 표, 그것도 없으면 맥스 기술 타입의 티어표. 거기서 그 줄을 밝힌다 (stores/rank.ts focus)
  */
-export function maxBoardOf(row: Pick<FormRow, 'places' | 'moveType'>): { axis: 'all' | 'dealer'; boss: string } {
+export function maxBoardOf(row: Pick<FormRow, 'places' | 'moveType'> & { tier?: TierSpot | null }): { axis: 'all' | 'dealer'; boss: string } {
+  if (row.tier) return { axis: 'all', boss: row.tier.type };
   const typed = row.places.find((one) => one.key.startsWith('max:') && !one.key.endsWith(':overall'));
   if (typed) return { axis: 'dealer', boss: typed.key.slice(4) };
   return { axis: 'all', boss: row.moveType || 'overall' };

@@ -20,7 +20,7 @@ import { track } from '../../lib/track';
 import { useRankStore } from '../../stores/rank';
 import { Sprite } from '../Bits';
 import { NameNode } from '../Row';
-import { bossNow, formKeyOf, formRows, formSummary, FORM_KO, maxBoardOf, maxIndex, placesOf, speciesOf, tierIndex, type FormRow } from '../../lib/formGuide';
+import { bossNow, formKeyOf, formRows, formSummary, FORM_KO, maxBoardOf, maxIndex, placesOf, speciesOf, tierIndex, tierLine, type FormRow } from '../../lib/formGuide';
 import { useAuthStore } from '../../stores/auth';
 import { trainPlan, type PlanPick } from '../../lib/trainPlan';
 import type { MonRef } from '../../lib/mon';
@@ -44,7 +44,7 @@ const LEAGUE_KO: Record<string, string> = { little: '리틀컵', great: '슈퍼�
 function useBoard(onLeave?: () => void) {
   const set = useRankStore((s) => s.set);
   return {
-    toMax(row: Pick<FormRow, 'name' | 'places' | 'moveType'>) {
+    toMax(row: Pick<FormRow, 'name' | 'places' | 'moveType' | 'tier'>) {
       const board = maxBoardOf(row);
       set('maxAxis', board.axis);
       set('maxBoss', board.boss);
@@ -190,7 +190,7 @@ export default function FormGuide({ mon, dexNo, baseLabel, onSwitch, onLeave }: 
               <button key={row.name} type="button" className={`detail__form detail__formrow${on ? ' is-now' : ''}`}
                 onClick={() => board.toMax(row)}>
                 {tag}
-                <span className="detail__formrow-use">{formSummary(row)}</span>
+                <span className="detail__formrow-use">{formSummary(row, dex.TYPE_KO)}</span>
                 {row.unrel ? <span className="tag">미출시</span> : null}
                 <span className="detail__formrow-go">D-MAX 더보기 ›</span>
               </button>
@@ -202,7 +202,7 @@ export default function FormGuide({ mon, dexNo, baseLabel, onSwitch, onLeave }: 
             <details key={row.name} className={`detail__form${on ? ' is-now' : ''}`}>
               <summary className="detail__formrow">
                 {tag}
-                <span className="detail__formrow-use">{!row.places.length && meter ? meter : formSummary(row)}</span>
+                <span className="detail__formrow-use">{!row.places.length && meter ? meter : formSummary(row, dex.TYPE_KO)}</span>
                 {row.unrel ? <span className="tag">미출시</span> : null}
                 <span className="detail__formrow-go">더보기</span>
               </summary>
@@ -240,29 +240,21 @@ export function FormStats({ mon, dexNo, baseLabel, onLeave }: { mon: MonRef; dex
   const { data: usage } = useUsage();
   const board = useBoard(onLeave);
   const idx = useMemo(() => maxIndex(max), [max]);
-  // 미구현 체크는 실험 기능(beta)에서만 산다 — Ranks.tsx Dmax 와 같은 판정
+  // 미구현 체크는 실험 기능(beta)에서만 산다 — Ranks.tsx Dmax 와 같은 판정 (순위를 D-MAX 화면과 같게 센다)
   const showUnrel = useRankStore((s) => s.maxShowUnrel);
   const beta = useAuthStore((s) => s.beta);
   const withUnrel = showUnrel && beta;
+  const tiers = useMemo(() => tierIndex(max, withUnrel), [max, withUnrel]);
   const key = formKeyOf(mon.name);
 
   if (key === 'dmax' || key === 'gmax') {
-    const tierRow = (max.DMAX_TIER['overall'] ?? []).find((row) => row.name === mon.name) as { tier?: string; pct?: number } | undefined;
-    // D-MAX 화면과 같은 줄 세우기 — 미구현을 켜지 않았으면 미구현 줄을 빼고 센다 (Codex, PR #267)
-    const shown = (rows: readonly { name: string; unrel?: boolean }[] = []) => rows.filter((row) => withUnrel || !row.unrel);
-    const dealRows = shown(max.DMAX_DATA['overall']);
-    const tankRows = shown(max.DMAX_TANK['overall']);
-    const dealAt = dealRows.findIndex((row) => row.name === mon.name);
-    const tankAt = tankRows.findIndex((row) => row.name === mon.name);
-    const deal = dealAt >= 0 ? max.DMAX_DATA['overall']?.find((row) => row.name === mon.name) : undefined;
-    const tank = tankAt >= 0 ? max.DMAX_TANK['overall']?.find((row) => row.name === mon.name) : undefined;
+    // 맨 앞은 기술 타입 칸의 티어 · 순위 ('풀 A티어 · 2위') — 전체 순위가 아니라 그 타입에서 몇 티어인지가 궁금한 것이다 (2026-09-30 주인 결정)
+    const spot = tiers.get(mon.name) ?? null;
     const places = placesOf(usage.USAGE_PLACES, mon.name, dex.TYPE_KO).filter((one) => one.group === '맥스');
     const best = places.find((one) => !one.key.endsWith(':overall'));
     const lines = [
-      tierRow?.tier ? `D-MAX ${tierRow.tier}티어${tierRow.pct != null ? ` · 전 종 1위 대비 ${num(tierRow.pct)}%` : ''}` : '',
-      deal ? `딜러 전체 ${dealAt + 1}위 · 맥스 피해 ${num(deal.dmg)}` : '',
-      tank ? `탱커 전체 ${tankAt + 1}위 · EHP ${num(tank.ehp)}` : '',
-      best ? `가장 강한 판 · ${best.where} 보스 ${best.rank}위` : '',
+      spot ? tierLine(spot, dex.TYPE_KO) : '',
+      best ? `가장 강한 상대 · ${best.where} 보스 딜러 ${best.rank}위` : '',
     ].filter(Boolean);
     const moveType = idx.get(mon.name)?.charged ?? '';
     // 게임에 아직 없는 맥스 폼 — 맥스 표에 줄이 없거나 미구현 줄뿐이다. '순위에 없다' 가 아니라 '아직 안 나왔다' 가 맞는 말이고,
@@ -295,7 +287,7 @@ export function FormStats({ mon, dexNo, baseLabel, onLeave }: { mon: MonRef; dex
         {lines.length
           ? <ul className="detail__stat-lines">{lines.map((line) => <li key={line}>{line}</li>)}</ul>
           : <p className="detail__none-text">D-MAX 순위표 상위에 이 폼이 선 곳이 없어요.</p>}
-        <button type="button" className="detail__form-go" onClick={() => board.toMax({ name: mon.name, places, moveType })}>D-MAX 더보기 ›</button>
+        <button type="button" className="detail__form-go" onClick={() => board.toMax({ name: mon.name, places, moveType, tier: spot })}>D-MAX 더보기 ›</button>
       </section>
     );
   }
