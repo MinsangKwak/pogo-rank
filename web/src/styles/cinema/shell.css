@@ -196,7 +196,8 @@ html, body { touch-action: manipulation; }
 }
 
 /* ── 덮개 — 첫 화면과 화면 이동의 그리는 시간을 가린다 (2026-09-28 제보, lib/veil.ts) ─── */
-/* 문서(app/layout.tsx)가 정적으로 세우고 JS 가 걷는다. 늘 어두운 판이라 --plate 한 벌 (§1-b 4) */
+/* 문서(app/layout.tsx)가 정적으로 세우고 JS 가 걷는다. 판(--plate) 한 벌이라 테마를 따른다 — 라이트에서 화면을 옮길 때마다
+   어두운 판이 번쩍이지 않게 (2026-09-30). 테마는 첫 그림 전에 머리 스크립트가 정하므로 덮개도 처음부터 맞는 색이다 */
 html body .veil {
   position: fixed; inset: 0; z-index: 1000; display: grid; align-content: center; justify-items: center; gap: 1.6rem;
   background: var(--plate); color: var(--plate-fg); opacity: 1; transition: opacity 200ms ease;
