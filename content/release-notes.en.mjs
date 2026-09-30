@@ -15,6 +15,9 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 export const RELEASE_NOTES_EN = {
+  '2026-09-30 · v5.6.1': [
+    '**The installed app (moncamp on your home screen) now updates itself** — reopening it without closing used to keep the old version. When a new version is out, the app reloads once as you reopen it; if you are in the middle of something, it waits until popups are closed and you have finished typing',
+  ],
   '2026-09-30 · v5.6.0': [
     '**The Pokémon detail popup now comes in a summary and a full version** — opening from search shows a summary with the evolution line and each form at a glance, with [Full details in Pokédex] [D-MAX ranks] [PvP ranks] at the bottom. Opening from the Pokédex or a ranking shows the full popup with training picks, battle info, CP and moves expanded',
     '**Training picks put Dynamax and Gigantamax first** — the popup explains which bosses this Pokémon hits hard and with which move type, then lists the best Dynamax · Gigantamax and raid standard · legendary Pokémon against those bosses, strongest first',
