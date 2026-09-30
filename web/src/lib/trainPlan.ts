@@ -21,7 +21,8 @@ export interface TrainPlan {
   roles: Role[];
   /** 레이드 · 맥스 — 판마다 보스 타입이 따로다 (맥스 배틀의 최고 판 ≠ 레이드의 최고 판) */
   // atkType — 계열이 그 보스를 때리는 기술 타입. 카드 첫 문장('풀 타입 기술로 물 타입 보스를 잘 잡아요')이 쓴다. 모르면 ''
-  pve: { maxType: string; atkType: string; max: PlanPick[]; raidType: string; base: PlanPick[] } | null;
+  // raidAtk — 레이드 순위 화면(공격 타입 칩)으로 보낼 때 고를 칸. 레이드 보스 타입에 효과가 굉장한 계열 타입
+  pve: { maxType: string; atkType: string; max: PlanPick[]; raidType: string; raidAtk: string; base: PlanPick[] } | null;
   /** PvP — 리그 · 일반 추천 */
   pvp: { league: string; base: PlanPick[] } | null;
 }
@@ -124,7 +125,9 @@ export function trainPlan(src: PlanSource): TrainPlan {
     const baseRows = src.pve[raidType] ?? [];
     const base = takeUnique(baseRows, PLAN_MAX, new Set(), src.dexOf, (row) => !NOT_BASE.test(row.name))
       .map(({ row, rank }) => pick(row, rank, `${rank}위`, isOwn(row.name)));
-    pve = { maxType, atkType: maxType === 'overall' ? '' : atkType, max, raidType, base };
+    // 레이드 순위 화면의 칩은 **때리는 쪽 타입**이다(PVE_BY_TYPE) — 보스 타입이 아니라 그 보스에 효과가 굉장한 계열 타입으로 보낸다
+    const raidAtk = src.types.find((type) => (src.chart[type]?.[raidType] ?? 1) >= 1.5) ?? (atkType || src.types[0] || 'overall');
+    pve = { maxType, atkType: maxType === 'overall' ? '' : atkType, max, raidType, raidAtk, base };
   }
 
   let pvp: TrainPlan['pvp'] = null;

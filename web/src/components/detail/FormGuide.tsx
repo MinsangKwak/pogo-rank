@@ -19,9 +19,7 @@ import { go } from '../../lib/nav';
 import { track } from '../../lib/track';
 import { useRankStore } from '../../stores/rank';
 import { josa } from '../../lib/deck';
-import { Sprite } from '../Bits';
 import { PxIcon } from '../PxIcon';
-import { NameNode } from '../Row';
 import { bossNow, formKeyOf, formRows, formSummary, FORM_KO, maxBoardOf, maxIndex, placesOf, speciesOf, tierIndex, tierLine, type FormRow } from '../../lib/formGuide';
 import { useAuthStore } from '../../stores/auth';
 import { trainPlan, type PlanPick } from '../../lib/trainPlan';
@@ -54,6 +52,24 @@ function useBoard(onLeave?: () => void) {
       track('detail_more', { to: 'dmax', mon: row.name });
       onLeave?.();
       go('/dmax');
+    },
+    // 육성 추천의 맥스 묶음 — 그 보스 타입의 딜러 표. 이 계열 맥스 폼이 서 있으면 그 줄을 밝힌다
+    toMaxBoss(boss: string, name: string) {
+      set('maxAxis', 'dealer');
+      set('maxBoss', boss);
+      set('focus', name);
+      track('detail_more', { to: 'dmax', mon: name || boss });
+      onLeave?.();
+      go('/dmax');
+    },
+    // 육성 추천의 레이드 묶음 — 레이드 '전체' 탭의 그 공격 타입 칸(전설 포함).
+    // focus 는 두지 않는다 — 레이드 화면은 그 줄을 밝히지 않아, 남겨 두면 다음에 연 D-MAX · PvP 가 엉뚱한 줄을 밝힌다
+    toPve(type: string, name: string) {
+      set('pveMode', 'all');
+      set('boss', type);
+      track('detail_more', { to: 'pve', mon: name });
+      onLeave?.();
+      go('/pve');
     },
     toPvp(name: string, league: LeagueKey) {
       set('league', league);
@@ -137,31 +153,10 @@ export function BossLine({ dexNo }: { dexNo: number | null }) {
   );
 }
 
-function Picks({ rows, onSwitch }: { rows: readonly PlanPick[]; onSwitch: Switch }) {
-  const { data } = useDex();
-  return (
-    <ol className="detail__recs detail__picks">
-      {rows.map((row) => (
-        <li key={row.name}>
-          <button type="button" className={`detail__rec detail__pick${row.own ? ' is-own' : ''}`} onClick={() => onSwitch(toMon(row))}>
-            {/* 순위는 줄 맨 앞 — 목록이 순위 순이라 숫자만 보고 내려 읽으면 된다 */}
-            <b className="detail__pick-rank">{row.note}</b>
-            <Sprite id={row.sprite} />
-            <span className="detail__pick-main">
-              <span className="detail__rec-name"><NameNode name={row.name} labels={data.FORM_LABELS} /></span>
-              {row.own ? <span className="detail__pick-note"><span className="tag detail__pick-own">이 계열</span></span> : null}
-            </span>
-            <span className="detail__rec-go" aria-hidden="true">›</span>
-          </button>
-        </li>
-      ))}
-    </ol>
-  );
-}
-
 /** 육성 추천 — 계열 전체가 어디서 쓰이는지로 갈라 권한다 (lib/trainPlan.ts) */
-export function TrainCard({ mon, dexNo, stem, onSwitch }: { mon: MonRef; dexNo: number | null; stem: string; onSwitch: Switch }) {
+export function TrainCard({ mon, dexNo, stem, onLeave }: { mon: MonRef; dexNo: number | null; stem: string; onLeave?: () => void }) {
   const { data: dex } = useDex();
+  const board = useBoard(onLeave);
   const { data: max } = useMax();
   const { data: usage } = useUsage();
   const { data: pve } = usePve();
@@ -188,10 +183,10 @@ export function TrainCard({ mon, dexNo, stem, onSwitch }: { mon: MonRef; dexNo: 
   const lead: string[] = (() => {
     if (plan.pve) {
       const { maxType, atkType } = plan.pve;
-      if (maxType === 'overall') return [`${josa(stem, '은', '는')} 한 타입에 치우치지 않고 여러 보스를 두루 상대해요.`, '그래서 모든 보스를 기준으로 강한 딜러를 골랐어요.'];
+      if (maxType === 'overall') return [`${josa(stem, '은', '는')} 한 타입에 치우치지 않고 여러 보스를 두루 상대해요.`, '그래서 모든 보스 기준 딜러 순위를 바로 찾아볼 수 있어요.'];
       return [
         atkType ? `${josa(stem, '은', '는')} ${ko(atkType)} 타입 기술로 ${ko(maxType)} 타입 보스를 잘 잡아요.` : `${josa(stem, '이', '가')} 가장 활약하는 상대는 ${ko(maxType)} 타입 보스예요.`,
-        `그래서 ${ko(maxType)} 타입 보스를 잡을 때 키우면 좋은 포켓몬을 강한 순서로 골랐어요.`,
+        `그래서 ${ko(maxType)} 타입 보스를 잡을 때 키울 포켓몬을 순위 화면에서 바로 찾아볼 수 있어요.`,
       ];
     }
     return [];
@@ -201,15 +196,16 @@ export function TrainCard({ mon, dexNo, stem, onSwitch }: { mon: MonRef; dexNo: 
     return own ? `이 계열에서는 ${josa(own.name, '이', '가')} ${own.note}예요.` : none;
   };
   const say = (lines: readonly string[]) => lines.filter(Boolean).map((line) => <span key={line}>{line}</span>);
-  // 좁은 화면이라 묶음마다 접을 수 있게 두되 처음엔 모두 펼친다 — 자세히 보기(도감 · 순위 화면에서 연 팝업)에서만 서는 카드라 다 보려고 연 것이다
-  const group = (key: string, tag: ReactNode, title: string, lines: readonly string[], rows: readonly PlanPick[]) => (
+  // **목록은 팝업에 두지 않는다 — 순위 화면으로 옮겨 가는 단추만** (2026-09-30 주인 결정: 여기서 다 보여 주면 순위 화면을 안 쓴다).
+  // 설명(왜 · 그래서 · 이 계열은 몇 위)만 두고, 나머지는 그 판의 그 칸으로 보낸다
+  const group = (key: string, tag: ReactNode, title: string, lines: readonly string[], go: ReactNode) => (
     <details key={key} className="detail__train-group" open>
       <summary className="detail__train-head">
         {tag}
         <span className="detail__train-title">{title}</span>
       </summary>
       <p className="detail__train-say">{say(lines)}</p>
-      <Picks rows={rows} onSwitch={onSwitch} />
+      <div className="detail__train-go">{go}</div>
     </details>
   );
   const maxFirst = !!plan.pve?.max.length;
@@ -217,9 +213,9 @@ export function TrainCard({ mon, dexNo, stem, onSwitch }: { mon: MonRef; dexNo: 
     if (!plan.pve) return [];
     const { maxType, raidType } = plan.pve;
     const head = raidType === maxType || !maxFirst
-      ? [`레이드에서 ${target(raidType)}를 잡는 일반·전설 딜러 순위예요.`]
-      : [`레이드에서는 ${target(raidType)}를 상대로 더 많이 쓰여요.`, '그 보스를 잡는 일반·전설 딜러 순위예요.'];
-    return [...head, ownLine(plan.pve.base, '다이맥스 없이 오래 쓸 개체를 고를 때 보세요.')];
+      ? [`레이드에서도 ${target(raidType)}를 잡을 때 쓰여요.`]
+      : [`레이드에서는 ${target(raidType)}를 상대로 더 많이 쓰여요.`];
+    return [...head, ownLine(plan.pve.base, ''), '다이맥스 없이 오래 쓸 일반·전설 딜러는 레이드 순위에서 골라 보세요.'];
   })();
   // PvP 에서만 쓰이는 계열은 카드를 세우지 않는다 — 리그 순위 목록을 보여 줄 까닭이 없다 (2026-09-30 주인 결정).
   // 이 서비스의 육성 추천은 레이드 · 맥스(다이맥스 우선) 답이다. PvP 성적은 자세히 보기의 배틀 정보에 있다
@@ -230,10 +226,11 @@ export function TrainCard({ mon, dexNo, stem, onSwitch }: { mon: MonRef; dexNo: 
       <h3>육성 추천</h3>
       {lead.length ? <p className="detail__train-lead">{say(lead)}</p> : null}
       {maxFirst ? group('max', <span className="form-tag form-tag--max">먼저 키우기</span>, '다이맥스 · 거다이맥스',
-        [`맥스 배틀에서 ${target(plan.pve.maxType)}를 잡는 딜러 순위예요.`, ownLine(plan.pve.max, '이 계열의 맥스 폼은 아직 이 순위에 없어요.')],
-        plan.pve.max) : null}
+        [ownLine(plan.pve.max, '이 계열의 맥스 폼은 아직 이 순위에 없어요.'), `맥스 배틀에서 ${target(plan.pve.maxType)}를 잡는 딜러 순위는 D-MAX 화면에서 볼 수 있어요.`],
+        <button type="button" className="detail__form-go" onClick={() => board.toMaxBoss(plan.pve!.maxType, plan.pve!.max.find((row) => row.own)?.name ?? '')}>D-MAX 순위에서 보기 ›</button>) : null}
       {plan.pve.base.length
-        ? group('raid', <span className="form-tag">{maxFirst ? '다음으로' : '추천'}</span>, '레이드용 일반 · 전설', raidLines, plan.pve.base)
+        ? group('raid', <span className="form-tag">{maxFirst ? '다음으로' : '추천'}</span>, '레이드용 일반 · 전설', raidLines,
+          <button type="button" className="detail__form-go" onClick={() => board.toPve(plan.pve!.raidAtk, stem)}>레이드 순위에서 보기 ›</button>)
         : null}
     </section>
   );
