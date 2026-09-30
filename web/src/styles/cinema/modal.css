@@ -125,6 +125,18 @@ html body #root .detail--mon .detail__stat-group .detail__train-head { margin: 0
 html body #root .detail--mon .detail__stat-go { width: 100%; min-height: var(--tap); border: 1px solid var(--line); color: var(--fg); font: inherit; text-align: left; cursor: pointer; }
 @media (hover: hover) { html body #root .detail--mon .detail__stat-go:hover { border-color: var(--brand); background: var(--hover); } }
 
+/* 두 칸(768px~)에서는 탭을 바꿔도 팝업 크기와 왼쪽 그림이 그대로다 (2026-09-30 주인 제보: PC 에서 배틀 정보를 누르면 그림이 줄었다).
+   v3 modal.css 는 1099px 아래에서 배틀 정보 · 계산기일 때 그림을 6.4rem 으로 접었고, 높이도 1100px 부터만 고정했다 —
+   그 접기는 한 칸(세로) 배치를 위한 것이라 두 칸에서는 크기가 흔들리기만 한다 */
+@media (min-width: 768px) {
+  html body #root .modal__box:has(> .detail--mon) { height: min(86vh, 80rem); max-height: 80rem; }
+  html body #root .detail--mon .detail__side { align-items: stretch; }
+  html body #root .detail--mon .detail__side .sprite-box { width: 100%; height: auto; aspect-ratio: 1; border-radius: var(--r-box); }
+  html body #root .detail--mon .detail__side .sprite-box .sprite { width: 82%; height: 82%; margin: 0; }
+  html body #root .detail--mon .detail__info { flex-direction: column; align-items: flex-start; }
+  html body #root .detail--mon .detail__en-inline { flex-basis: auto; font-size: 1.4rem; }
+}
+
 /* 좁은 화면 — 아래 묶음은 즐겨찾기 소식이 있을 때만 그 한 줄로 선다. 그림은 머리줄 앞에 작게 */
 @media (max-width: 767px) {
   html body #root .detail--mon .detail__bar-id { gap: 0.4rem; }
