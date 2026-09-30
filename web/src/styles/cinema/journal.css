@@ -9,12 +9,12 @@ html body #root [data-route^="game-update"] { min-width: 0; color: var(--fg); }
 /* 여는 띠 — 그림 위라 판 한 벌 */
 html body #root .updates-intro {
   margin-bottom: 3.2rem; padding: 4rem; border: 1px solid var(--plate-line); border-radius: var(--r-box); color: var(--plate-fg);
-  /* 글자가 선 왼쪽 절반은 88% 이상 덮고 그 뒤로 그림을 연다 — 94%→40% 한 번에 흐렸을 때 설명 글이 명암비 3.0 이었다 (2026-09-30 라이트 실측) */
-  background: linear-gradient(90deg, color-mix(in srgb, var(--plate) 94%, transparent), color-mix(in srgb, var(--plate) 88%, transparent) 45%, color-mix(in srgb, var(--plate) 40%, transparent)), url('/images/discovery-meadow.webp') center / cover;
+  /* 글자가 선 왼쪽 60% 는 88% 이상 덮고 그 뒤로 그림을 연다 — 94%→40% 한 번에 흐렸을 때 설명 글이 명암비 3.0 이었다 (2026-09-30 라이트 실측) */
+  background: linear-gradient(90deg, color-mix(in srgb, var(--plate) 94%, transparent), color-mix(in srgb, var(--plate) 88%, transparent) 60%, color-mix(in srgb, var(--plate) 40%, transparent)), url('/images/discovery-meadow.webp') center / cover;
 }
 /* 좁은 폭은 글자가 판 전체에 퍼진다 — 그림은 고르게 옅게 */
 @media (max-width: 699px) {
-  html body #root .updates-intro { background: linear-gradient(color-mix(in srgb, var(--plate) 90%, transparent), color-mix(in srgb, var(--plate) 90%, transparent)), url('/images/discovery-meadow.webp') center / cover; }
+  html body #root .updates-intro { background: linear-gradient(color-mix(in srgb, var(--plate) 92%, transparent), color-mix(in srgb, var(--plate) 92%, transparent)), url('/images/discovery-meadow.webp') center / cover; }
 }
 html body #root .updates-intro > span { color: var(--plate-accent); font-size: 1.2rem; font-weight: 700; letter-spacing: 0.2em; }
 html body #root .updates-intro h2 { margin: 2rem 0; font: 800 4.2rem/1.2 Pretendard, sans-serif; letter-spacing: -0.05em; }
