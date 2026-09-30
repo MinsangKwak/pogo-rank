@@ -15,6 +15,10 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 export const RELEASE_NOTES_EN = {
+  '2026-09-30 · v5.7.0': [
+    '**The Pokémon popup is now always a quick summary** — tapping a Pokémon in the Pokédex, D-MAX, raid or PvP rankings opens the same popup as search. Training picks, battle info, CP and moves are on the Pokémon page opened with [Full details in Pokédex]',
+    '**Training picks lead straight to the rankings** — after explaining which bosses it handles well, [See D-MAX rankings] and [See raid rankings] open that type right away',
+  ],
   '2026-09-30 · v5.6.1': [
     '**The installed app (moncamp on your home screen) now updates itself** — reopening it without closing used to keep the old version. When a new version is out, the app reloads once as you reopen it; if you are in the middle of something, it waits until popups are closed and you have finished typing',
   ],
