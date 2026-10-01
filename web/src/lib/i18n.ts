@@ -30,6 +30,7 @@ const ATTRS = ['aria-label', 'placeholder', 'title', 'alt', 'aria-placeholder'];
 
 export const KO_ONLY_NOTE = 'This section is kept in Korean. The Korean text is the authoritative version.';
 export const KST_NOTE = 'Dates and times follow the Korean server schedule (KST, UTC+9) and may differ in your region. This section is kept in Korean.';
+export const CET_NOTE = 'Dates follow Central European Time (CET/CEST, daylight saving applied). Only events in European cities and worldwide events are listed. This section is kept in Korean.';
 
 let DICT: Record<string, string> = {};
 let PATTERNS: [RegExp, string][] = [];

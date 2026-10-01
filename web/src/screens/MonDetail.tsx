@@ -385,7 +385,7 @@ export default function MonDetail({ pick, onClose, inline = false, onDeep }: Mon
                       {/* 육성 추천 — 서비스의 목표(다이맥스 · 거다이맥스 우선 육성)를 팝업의 첫 답으로 둔다.
                           검색한 것의 쓰임새가 1번: 맥스 배틀 · 레이드에서 쓰이면 맥스 폼부터, PvP 에서만 쓰이면 일반 · 전설 */}
                       {/* 육성 추천은 자세히 보기에서만 — 도감 · 순위 화면에서 찾아 연 팝업의 답이다. 전체 검색의 요약 팝업에는 세우지 않는다 (2026-09-30 주인 결정) */}
-                      {brief ? null : <TrainCard mon={mon} dexNo={dexNo} stem={stemOfName} onSwitch={switchTo} />}
+                      {brief ? null : <TrainCard mon={mon} dexNo={dexNo} stem={stemOfName} onLeave={onClose} />}
                       {/* 폼별 정보 — 요약 한 줄씩. 일반은 펼치고, 맥스 폼은 D-MAX 화면의 그 줄로.
                           메가 · 섀도우를 보고 있으면 일반 줄의 이름표가 그 라벨이다 */}
                       <FormGuide mon={mon} dexNo={dexNo} baseLabel={otherLabels.join(' ') || '일반'} onSwitch={switchTo} onLeave={onClose} />

@@ -3,7 +3,7 @@
 import { describe, it, expect } from 'vitest';
 import { readFileSync, existsSync } from 'node:fs';
 import { resolve } from 'node:path';
-import { mergeSchedule } from '../../scripts/merge-schedule.mjs';
+import { KOREA_PLACES, mergeSchedule, titlesForRegion } from '../../scripts/merge-schedule.mjs';
 import { weekBoss } from '../lib/schedule';
 import type { ScheduleMonth, ScheduleItem } from '../types/data';
 
@@ -67,12 +67,17 @@ describe('mergeSchedule', () => {
 const bundle = resolve(__dirname, '../../public/data/schedule.json');
 const raw = resolve(__dirname, '../../../data/schedule.json');
 const CATS = ['event', 'raid5', 'mega', 'dmax', 'hour', 'shadow'];
-function source(): { where: string; months: Record<string, ScheduleMonth>; cats: string[] } | null {
+// 한국 표와 유럽 표(2026-10-01 지역 토글)를 같은 잣대로 본다 — 화면은 둘 중 하나를 그대로 그린다
+type Tables = Record<string, Record<string, ScheduleMonth>>;
+function source(): { where: string; tables: Tables; cats: string[] } | null {
   if (existsSync(bundle)) {
     const data = JSON.parse(readFileSync(bundle, 'utf-8'));
-    return { where: 'public/data', months: data.SCHEDULE_MONTHS, cats: Object.keys(data.SCHEDULE_CATS) };
+    return { where: 'public/data', tables: { kr: data.SCHEDULE_MONTHS, eu: data.SCHEDULE_MONTHS_EU ?? {} }, cats: Object.keys(data.SCHEDULE_CATS) };
   }
-  if (existsSync(raw)) return { where: 'data', months: JSON.parse(readFileSync(raw, 'utf-8')).months, cats: CATS };
+  if (existsSync(raw)) {
+    const data = JSON.parse(readFileSync(raw, 'utf-8'));
+    return { where: 'data', tables: { kr: data.months, eu: data.months_eu ?? {} }, cats: CATS };
+  }
   return null;
 }
 
@@ -80,8 +85,9 @@ describe.skipIf(!existsSync(bundle) && !existsSync(raw))('실데이터 — 일�
   it('모든 줄이 날짜·분류·제목을 갖춘다', () => {
     const src = source()!;
     const bad: string[] = [];
-    for (const [key, one] of Object.entries(src.months)) {
-      const [y, m] = key.split('-').map(Number);
+    for (const [key, one] of Object.entries(src.tables).flatMap(([region, months]) => Object.entries(months).map(([ym, month]) => [`${region} ${ym}`, month] as const))) {
+      const ym = key.split(' ')[1]!;
+      const [y, m] = ym.split('-').map(Number);
       if (one.ym.y !== y || one.ym.m !== m) bad.push(`${key} ym 불일치`);
       const last = new Date(y!, m!, 0).getDate();
       for (const item of one.items) {
@@ -91,7 +97,68 @@ describe.skipIf(!existsSync(bundle) && !existsSync(raw))('실데이터 — 일�
         if (item.source && !/^https?:\/\//.test(item.source)) bad.push(`${key} ${item.label} source '${item.source}'`);
       }
     }
-    expect(Object.keys(src.months).length, src.where).toBeGreaterThan(0);
+    expect(Object.keys(src.tables['kr'] ?? {}).length, src.where).toBeGreaterThan(0);
     expect(bad).toEqual([]);
+  });
+});
+
+// 2026-10-01 지역 토글 — 유럽 달력도 공식 한국어 제목을 쓴다 (주인 제보: 'EU 를 누르면 영어로 바뀐다').
+// 제목 · 출처만 옮기고 날짜는 유럽 것을 지킨다, 한국 한정 손 줄은 옮기지 않는다 (Codex, PR #290)
+describe('유럽 달력의 한국어 제목', () => {
+  const ym = { y: 2026, m: 10 };
+  const hand = { '2026-10': { ym, note: '', items: [
+    { s: 1, e: 5, cat: 'event', label: '수확 축제: 과사삭벌레 모으기 (9/29 10시 ~ 10/5 20시)', source: 'https://pokemongo.com/ko/news/harvest-festival-2026' },
+    { s: 1, e: 11, cat: 'event', label: '피카츄의 가을 소풍 (9/18~10/11 · 서울 종로·중구, 인천공항 한정)' },
+    { s: 23, e: 29, cat: 'raid5', label: '울트라비스트 — 한국(아시아·태평양): 전수목' },
+    { s: 12, e: 12, cat: 'event', label: '대구 사파리 존' },
+  ] } };
+  const autoKr = { '2026-10': { ym, note: '', items: [
+    { s: 1, e: 5, cat: 'event', label: 'Harvest Festival 2026: Applin Picking', auto: true },
+    { s: 23, e: 29, cat: 'raid5', label: '매시붕 · 페로코체 · 전수목', auto: true },
+    { s: 12, e: 12, cat: 'event', label: 'Safari Zone: Daegu', auto: true },
+  ] } };
+  // UTC 행사라 유럽은 하루 앞선다고 치자 — 날짜는 유럽 것이 그대로 남아야 한다
+  const autoEu = { '2026-10': { ym, note: 'CET', items: [
+    { s: 1, e: 4, cat: 'event', label: 'Harvest Festival 2026: Applin Picking', auto: true },
+    { s: 23, e: 29, cat: 'raid5', label: '매시붕 · 페로코체 · 전수목', auto: true },
+  ] } };
+  const eu = titlesForRegion(hand, autoKr, autoEu)['2026-10']!.items;
+  it('제목 · 출처만 옮기고 날짜는 유럽 것', () => {
+    expect(eu[0]).toEqual({ s: 1, e: 4, cat: 'event', auto: true, label: '수확 축제: 과사삭벌레 모으기 (9/29 10시 ~ 10/5 20시)', source: 'https://pokemongo.com/ko/news/harvest-festival-2026' });
+  });
+  it('한국 한정 손 줄(서울 · 아시아 · 대구 …)은 옮기지 않는다', () => {
+    expect(eu[1]!.label).toBe('매시붕 · 페로코체 · 전수목');
+    expect(eu.map((item) => item.label).join(' ')).not.toMatch(/대구|서울|아시아/);
+  });
+  it('짝은 행사 한 번 단위 — 다른 달의 같은 원제에는 붙지 않는다 (Codex, PR #290)', () => {
+    const one = (m: number, s: number) => ({ ym: { y: 2026, m }, note: '', items: [{ s, e: s, cat: 'event', label: '슈퍼 메가 레이드 데이', auto: true }] });
+    const handOct = { '2026-10': { ym, note: '', items: [{ s: 31, e: 31, cat: 'event', label: '슈퍼 메가 레이드 데이 (날짜 확정 · 세부 내용 미발표)', source: 'https://pokemongo.com/ko/news/save-the-date-s24' }] } };
+    const autoBoth = { '2026-10': one(10, 31), '2026-11': one(11, 28) };
+    const out = titlesForRegion(handOct, autoBoth, autoBoth);
+    expect(out['2026-10']!.items[0]!.label).toBe('슈퍼 메가 레이드 데이 (날짜 확정 · 세부 내용 미발표)');
+    expect(out['2026-11']!.items[0]).toEqual({ s: 28, e: 28, cat: 'event', label: '슈퍼 메가 레이드 데이', auto: true });
+  });
+  it('달이 갈린 같은 행사도 짝짓는다 — 한국 3/1 · 유럽 2/28 (Codex, PR #291)', () => {
+    const at = (m: number, s: number, label: string, extra = {}) => ({ ym: { y: 2027, m }, note: '', items: [{ s, e: s, cat: 'event', label, ...extra }] });
+    const handMar = { '2027-03': at(3, 1, '커뮤니티 데이 (14–17시)', { source: 'https://pokemongo.com/ko/news/x' }) };
+    const autoKrMar = { '2027-03': at(3, 1, 'Community Day', { auto: true }) };
+    const autoEuFeb = { '2027-02': at(2, 28, 'Community Day', { auto: true }) };
+    expect(titlesForRegion(handMar, autoKrMar, autoEuFeb)['2027-02']!.items[0]).toEqual({ s: 28, e: 28, cat: 'event', auto: true, label: '커뮤니티 데이 (14–17시)', source: 'https://pokemongo.com/ko/news/x' });
+  });
+  it('한국 한정 장소 목록이 백엔드(PLACE_REGION kr)와 같다', () => {
+    const py = readFileSync(resolve(__dirname, '../../../backend/schedule_build.py'), 'utf-8');
+    const kr = py.match(/'kr':\s*\[([^\]]*)\]/)?.[1] ?? '';
+    const cities = [...kr.matchAll(/'([^']+)'/g)].map((one) => one[1]);
+    expect(cities.length).toBeGreaterThan(5);
+    expect(cities.filter((city) => !(city! in KOREA_PLACES))).toEqual([]);
+  });
+  it.skipIf(!existsSync(bundle))('실데이터 — 유럽 달력의 영문 제목은 한국 달력에도 영문이거나 유럽에만 있는 것뿐, 한국 한정 손 줄은 없다', () => {
+    const data = JSON.parse(readFileSync(bundle, 'utf-8'));
+    const items = (months: Record<string, ScheduleMonth>) => Object.values(months).flatMap((month) => month.items);
+    const krLabels = new Set(items(data.SCHEDULE_MONTHS).map((item) => item.label));
+    const krEnglish = new Set([...krLabels].filter((label) => !/[가-힣]/.test(label)));
+    const euEnglish = items(data.SCHEDULE_MONTHS_EU).filter((item) => !/[가-힣]/.test(item.label) && krLabels.has(item.label));
+    expect(euEnglish.filter((item) => !krEnglish.has(item.label)).map((item) => item.label)).toEqual([]);
+    expect(items(data.SCHEDULE_MONTHS_EU).filter((item) => /서울|인천|아시아/.test(item.label)).map((item) => item.label)).toEqual([]);
   });
 });

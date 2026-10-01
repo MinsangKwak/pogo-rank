@@ -39,12 +39,27 @@ import json
 import os
 import re
 import sys
-from datetime import date, datetime, timedelta
+from datetime import date, datetime, timedelta, timezone
+from zoneinfo import ZoneInfo
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from names import FORM_KO, normalize_form_token  # noqa: E402
 
 OUT = 'data/schedule.json'
+# 지역별 달력 — 한국(KST)과 유럽(중부 유럽 시간, 서머타임 반영) (2026-10-01 주인 결정: 지역 토글)
+# 대부분의 이벤트는 '각자 현지 시각' 이라 날짜가 같다. 원본 시각에 'Z'(UTC)가 붙은 것만 지역 시간대로 옮긴다
+REGION_TZ = {'kr': 'Asia/Seoul', 'eu': 'Europe/Berlin'}
+# 장소 행사(와일드 에어리어 · GO 투어 · GO Fest · 사파리)는 이름 끝에 도시가 붙는다 — 'Global' 이 아니면 그 도시의 권역에만 싣는다.
+# 원본에 지역 칸이 없어 이름으로 가른다. 모르는 도시는 어느 지역 달력에도 싣지 않는다(멕시코시티 · 센다이 · LA …)
+PLACE_TYPES = {'wild-area', 'pokemon-go-tour', 'pokemon-go-fest', 'city-safari', 'safari-zone', 'location-specific'}
+PLACE_REGION = {
+    'kr': ['seoul', 'busan', 'incheon', 'daegu', 'daejeon', 'gwangju', 'ulsan', 'jeju', 'suwon', 'korea'],
+    'eu': ['europe', 'london', 'paris', 'madrid', 'barcelona', 'berlin', 'amsterdam', 'milan', 'rome', 'lisbon', 'stockholm',
+           'copenhagen', 'prague', 'vienna', 'warsaw', 'dublin', 'brussels', 'hamburg', 'munich', 'dortmund', 'cologne', 'frankfurt',
+           'valencia', 'seville', 'sevilla', 'manchester', 'birmingham', 'liverpool', 'edinburgh', 'glasgow', 'lyon', 'marseille',
+           'nice', 'zurich', 'geneva', 'oslo', 'helsinki', 'athens', 'budapest', 'bucharest', 'krakow', 'kraków',
+           'united kingdom', 'germany', 'france', 'spain', 'italy', 'netherlands', 'portugal', 'sweden', 'poland'],
+}
 SNAPSHOT = 'snapshot/schedule_auto.json'
 # 이보다 오래 끝난 이벤트는 스냅샷에서 지운다 — 달력은 지난 몇 달만 보면 된다
 KEEP_DAYS = 120
@@ -162,14 +177,30 @@ def join_ko(names):
     return ' · '.join(names)
 
 
-def local_date(value):
-    # '2026-09-21T06:00:00.000' 은 현지 시각(KST 기준 표기). 'Z' 가 붙은 것은 UTC 라 하루가 밀릴 수 있어 날짜만 쓴다
+def local_date(value, tz='Asia/Seoul'):
+    # '2026-09-21T06:00:00.000' 은 현지 시각 — 어느 지역이든 같은 날짜다.
+    # 'Z' 가 붙은 것은 UTC 한 순간이라 지역 시간대로 옮겨 날짜를 잡는다 (전에는 UTC 날짜를 그대로 써 한국에서 하루 밀렸다)
     if not value:
         return None
     try:
-        return datetime.fromisoformat(value.replace('Z', '')).date()
+        if value.endswith('Z'):
+            return datetime.fromisoformat(value[:-1]).replace(tzinfo=timezone.utc).astimezone(ZoneInfo(tz)).date()
+        return datetime.fromisoformat(value).date()
     except ValueError:
         return None
+
+
+def region_of(kind, name):
+    """이벤트의 지역 — 'global'(어디서나) · 'kr' · 'eu' · 'other'(다른 권역의 장소 행사)"""
+    if kind not in PLACE_TYPES:
+        return 'global'
+    low = (name or '').lower()
+    if 'global' in low:
+        return 'global'
+    for region, places in PLACE_REGION.items():
+        if any(re.search(rf'\b{re.escape(place)}\b', low) for place in places):
+            return region
+    return 'other'
 
 
 def normalize(item, namer):
@@ -187,6 +218,10 @@ def normalize(item, namer):
         return None
     extra = item.get('extraData') or {}
     row = {'id': item.get('eventID') or name, 'type': kind, 'start': start.isoformat(), 'end': end.isoformat(), 'cat': 'event', 'label': name}
+    # 유럽 달력의 날짜 — 현지 시각 이벤트는 한국과 같고, UTC 이벤트만 다르다
+    start_eu = local_date(item.get('start'), REGION_TZ['eu']) or start
+    end_eu = local_date(item.get('end'), REGION_TZ['eu']) or start_eu
+    row['start_eu'], row['end_eu'] = start_eu.isoformat(), end_eu.isoformat()
 
     if kind == 'raid-battles':
         bosses = [boss.get('name', '') for boss in (extra.get('raidbattles') or {}).get('bosses') or []]
@@ -212,6 +247,7 @@ def normalize(item, namer):
         korean = [ko for ko, _ in found if ko] if all(found) and found else []
         row['cat'] = 'dmax'
         row['end'] = (start + timedelta(days=6)).isoformat()
+        row['end_eu'] = (start_eu + timedelta(days=6)).isoformat()
         if korean:
             # 'D-MAX ' 접두어는 weekBoss 가 떼어 읽는다. 라벨 안의 폼 접두어(다이맥스)는 D-MAX 와 겹쳐 뺀다
             plain = [re.sub(r'^다이맥스 ', '', ko) for ko in korean]
@@ -259,9 +295,12 @@ def normalize(item, namer):
     return row
 
 
-def month_slices(row):
-    """이벤트 하나를 달별 (키, s, e) 로 자른다 — 달을 넘기는 일정은 달 안에서 끊어 적는다"""
-    start, end = date.fromisoformat(row['start']), date.fromisoformat(row['end'])
+def month_slices(row, region='kr'):
+    """이벤트 하나를 달별 (키, s, e) 로 자른다 — 달을 넘기는 일정은 달 안에서 끊어 적는다.
+    유럽 달력은 유럽 날짜(start_eu)를 쓴다 — 예전 스냅샷 줄에는 없어 한국 날짜로 대신한다(현지 시각 이벤트라 같다)"""
+    suffix = '_eu' if region == 'eu' else ''
+    start = date.fromisoformat(row.get('start' + suffix) or row['start'])
+    end = date.fromisoformat(row.get('end' + suffix) or row['end'])
     cursor = date(start.year, start.month, 1)
     while cursor <= end:
         next_month = date(cursor.year + (cursor.month == 12), cursor.month % 12 + 1, 1)
@@ -272,14 +311,23 @@ def month_slices(row):
         cursor = next_month
 
 
-def build_months(rows, fetched):
+NOTE = {
+    'kr': 'LeekDuck(ScrapedDuck) 자동 수집 · {fetched} 기준 · 한국 시간. 영문 제목은 한글 이름표에 없는 항목이에요.',
+    'eu': 'LeekDuck(ScrapedDuck) 자동 수집 · {fetched} 기준 · 중부 유럽 시간(CET/CEST, 서머타임 반영). 유럽 도시 행사와 전 세계 이벤트만 실어요.',
+}
+
+
+def build_months(rows, fetched, region='kr'):
     months = {}
     for row in rows.values():
-        for key, s, e in month_slices(row):
+        # 지역은 이름에서 매번 다시 가른다 — 예전 스냅샷 줄에도 같은 규칙이 걸린다
+        if region_of(row.get('type'), row.get('label')) not in ('global', region):
+            continue
+        for key, s, e in month_slices(row, region):
             year, month = (int(part) for part in key.split('-'))
             bucket = months.setdefault(key, {
                 'ym': {'y': year, 'm': month},
-                'note': f'LeekDuck(ScrapedDuck) 자동 수집 · {fetched} 기준 · 한국 시간. 영문 제목은 한글 이름표에 없는 항목이에요.',
+                'note': NOTE[region].format(fetched=fetched),
                 'items': [],
             })
             # source 는 화면이 '공식 공지 ↗' 링크(href)로 그린다 — 자동분은 공지가 아니라 표식만 단다
@@ -318,8 +366,9 @@ def main():
     rows = merge_snapshot(load_json(SNAPSHOT), fresh, today)
     os.makedirs('snapshot', exist_ok=True)
     json.dump(rows, open(SNAPSHOT, 'w', encoding='utf-8'), ensure_ascii=False, indent=0)
-    months = build_months(rows, today.isoformat())
-    json.dump({'fetched': today.isoformat(), 'months': months}, open(OUT, 'w', encoding='utf-8'), ensure_ascii=False)
+    months = build_months(rows, today.isoformat(), 'kr')
+    months_eu = build_months(rows, today.isoformat(), 'eu')
+    json.dump({'fetched': today.isoformat(), 'months': months, 'months_eu': months_eu}, open(OUT, 'w', encoding='utf-8'), ensure_ascii=False)
     english = sum(1 for bucket in months.values() for item in bucket['items'] if re.search(r'[A-Za-z]{3,}', item['label']) and not re.search(r'[가-힣]', item['label']))
     print(f'schedule: 원본 {len(raw)}건 → 정규화 {len(fresh)}건, 누적 {len(rows)}건, 달 {len(months)}개 ({", ".join(months)}), 영문 그대로 {english}건')
 

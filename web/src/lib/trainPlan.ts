@@ -21,12 +21,13 @@ export interface TrainPlan {
   roles: Role[];
   /** 레이드 · 맥스 — 판마다 보스 타입이 따로다 (맥스 배틀의 최고 판 ≠ 레이드의 최고 판) */
   // atkType — 계열이 그 보스를 때리는 기술 타입. 카드 첫 문장('풀 타입 기술로 물 타입 보스를 잘 잡아요')이 쓴다. 모르면 ''
-  pve: { maxType: string; atkType: string; max: PlanPick[]; raidType: string; base: PlanPick[] } | null;
+  // raidAtk — 레이드 순위 화면(공격 타입 칩)으로 보낼 때 고를 칸. 레이드 보스 타입에 효과가 굉장한 계열 타입
+  pve: { maxType: string; atkType: string; max: PlanPick[]; raidType: string; raidAtk: string; base: PlanPick[] } | null;
   /** PvP — 리그 · 일반 추천 */
   pvp: { league: string; base: PlanPick[] } | null;
 }
 
-interface Row { sprite: number; name: string; en?: string; types: readonly string[]; unrel?: boolean; charged?: string }
+interface Row { sprite: number; name: string; en?: string; types: readonly string[]; unrel?: boolean; charged?: string; ftype?: string }
 
 export interface PlanSource {
   /** 계열의 종 이름들 (검색한 폼 이름 포함) */
@@ -124,7 +125,26 @@ export function trainPlan(src: PlanSource): TrainPlan {
     const baseRows = src.pve[raidType] ?? [];
     const base = takeUnique(baseRows, PLAN_MAX, new Set(), src.dexOf, (row) => !NOT_BASE.test(row.name))
       .map(({ row, rank }) => pick(row, rank, `${rank}위`, isOwn(row.name)));
-    pve = { maxType, atkType: maxType === 'overall' ? '' : atkType, max, raidType, base };
+    // 레이드 순위 화면의 칩은 **때리는 쪽 타입**이다(PVE_BY_TYPE) — 보스 타입이 아니라 계열이 그 보스를 때리는 타입으로 보낸다.
+    // 연 폼의 타입이 아니라 **그 판에 선 계열 포켓몬**의 공격 타입(ftype, 없으면 첫 타입)이다 — 이브이처럼 진화마다 타입이 다르면
+    // 연 폼 타입으로는 추천한 진화형이 없는 칸으로 갔다 (Codex, PR #284). '모든 보스' 기준이면 전체 칸
+    // raidType 을 만든 기록 — 레이드 판이 먼저, 없으면 맥스 판(레이드 순위에 선 적 없는 계열은 맥스 기록이 타입을 정한다)
+    const raidHit = pveHits.find((one) => one.place === `pve:${raidType}`) ?? pveHits.find((one) => one.place === `max:${raidType}`);
+    // 칸은 **그 포켓몬 자신의 타입** 안에서 고른다 — 레이드 순위 칸은 종 타입으로 묶여, 타입 밖 기술(바위 기가이어스의
+    // 노말 기술)로 고르면 그 포켓몬이 없는 칸으로 갔다 (Codex, PR #289). 기술 타입이 제 타입이면 그것, 아니면 그 보스에
+    // 효과가 굉장한 제 타입, 그것도 없으면 첫 타입. 맥스 줄에는 종 타입이 없어 레이드 표에서 같은 이름의 줄을 찾는다
+    const typesOf = (name: string) => Object.values(src.pve).flat().find((one) => one.name === name.replace(MAX_PREFIX, ''))?.types;
+    const ownType = (want: string | undefined, types: readonly string[] | undefined) => (!types?.length ? undefined
+      : want && types.includes(want) ? want
+        : types.find((type) => (src.chart[type]?.[raidType] ?? 1) >= 1.5) ?? types[0]);
+    const hitAtk = !raidHit ? undefined
+      : raidHit.place.startsWith('pve:')
+        ? (() => { const row = (src.pve[raidType] ?? []).find((one) => one.name === raidHit.name); return ownType(row?.ftype, row?.types); })()
+        : ownType((src.dmax[raidType] ?? []).find((one) => one.name === raidHit.name)?.charged, typesOf(raidHit.name));
+    // 마지막 기댈 곳도 기술 타입(atkType)이 아니라 연 폼의 제 타입이다 — 같은 까닭
+    const raidAtk = raidType === 'overall' ? 'overall'
+      : hitAtk ?? ownType(undefined, src.types) ?? 'overall';
+    pve = { maxType, atkType: maxType === 'overall' ? '' : atkType, max, raidType, raidAtk, base };
   }
 
   let pvp: TrainPlan['pvp'] = null;
