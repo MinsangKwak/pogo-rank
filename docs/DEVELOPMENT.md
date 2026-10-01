@@ -204,7 +204,7 @@ D-MAX 티어 = round(공격) × 기술 위력 × 자속 배율
 
 **결정** — LeekDuck 원본 JSON(ScrapedDuck)을 기준선으로 삼되, 한국 공식 발표를 **수동으로 덧대는** 방식으로 바꿨다. 스포트라이트 아워 요일처럼 해마다 바뀌는 값은 출처를 재검증해 반영한다(2026년은 목요일).
 
-**남은 부채** — `schedule.js`에 월 데이터가 하드코딩돼 있어 달이 바뀌면 손이 필요하다. v2.13.0(QA-20)부터는 `SCHEDULE_MONTHS`에 달별로 쌓아 두고 로드 시 오늘 달을 고르므로 "달이 바뀌는 순간 빈 달력"은 없어졌지만, 새 달 일정을 적는 일은 여전히 사람 몫이었다. v4.7.2(WBS-224)부터 `backend/schedule_build.py`가 같은 ScrapedDuck 원본(`sd_events.json`)을 달별 표(`data/schedule.json`)로 굽고 `frontend-v4/scripts/merge-schedule.mjs`가 손 표와 합친다 — 같은 자리는 손 줄이 이기고, 자동분은 빈 자리만 채운다. 한글 이름표에 없는 이벤트는 영문 제목 그대로 실린다(지어내지 않는다). 지난 달은 `snapshot/schedule_auto.json`에 누적된다(운영 워크플로가 커밋).
+**남은 부채** — `schedule.js`에 월 데이터가 하드코딩돼 있어 달이 바뀌면 손이 필요하다. v2.13.0(QA-20)부터는 `SCHEDULE_MONTHS`에 달별로 쌓아 두고 로드 시 오늘 달을 고르므로 "달이 바뀌는 순간 빈 달력"은 없어졌지만, 새 달 일정을 적는 일은 여전히 사람 몫이었다. v4.7.2(WBS-224)부터 `backend/schedule_build.py`가 같은 ScrapedDuck 원본(`sd_events.json`)을 달별 표(`data/schedule.json`)로 굽고 `frontend-v4/scripts/merge-schedule.mjs`가 손 표와 합친다 — 같은 자리는 손 줄이 이기고, 자동분은 빈 자리만 채운다. 한글 이름표에 없는 이벤트는 영문 제목 그대로 실린다(지어내지 않는다). 지난 달은 `snapshot/schedule_auto.json`에 누적된다(운영 워크플로가 커밋). v5.8.0부터는 지역마다 표를 굽는다 — `months`(한국, `Asia/Seoul`)와 `months_eu`(유럽, `Europe/Berlin`, 서머타임 반영). UTC 시각은 그 지역 날짜로 바꾸고, 현장 행사는 도시 이름으로 권역을 가려 그 권역 표에만 싣는다. 유럽 표(`SCHEDULE_MONTHS_EU`)에는 손 표를 합치지 않는다 — 손 표는 한국 시각 · 한국 한정 행사다. 화면은 머리줄 지역 단추(`pogo_region`)를 따라 이벤트 일정 화면만 바꾼다.
 
 </details>
 

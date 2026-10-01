@@ -225,6 +225,10 @@ export const I18N_EN = {
   "그리드로 보기": "Grid view",
   "이름 · 영문명 · 도감번호로 찾기": "Search by name or Pok\u00e9dex number",
   "날짜를 선택하면 그날의 이벤트를 확인할 수 있어요.": "Select a date to see its events.",
+  // 2026-10-01 일정 지역 토글
+  "유럽 기준 일정이에요. 중부 유럽 시간(서머타임 반영)으로 날짜를 맞추고, 유럽 도시 행사와 전 세계 이벤트만 실어요.": "This is the Europe schedule. Dates follow Central European Time (daylight saving applied), and only events in European cities and worldwide events are listed.",
+  "한국 기준 일정이에요. 한국 시간으로 날짜를 맞춰요.": "This is the Korea schedule. Dates follow Korean time.",
+  "오른쪽 위 지역 단추로 바꿀 수 있어요.": "Switch it with the region button at the top right.",
   "현재 레이드 보스 보기": "View current raid bosses",
   "보스를 선택하면 약점과 추천 포켓몬을 확인할 수 있어요.": "Select a boss to see its weaknesses and recommended counters.",
   "솔플 가능성 계산하기": "Check solo raid feasibility",

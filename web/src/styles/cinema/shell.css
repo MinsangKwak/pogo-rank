@@ -61,6 +61,10 @@ html body #root :is(.app-bar, .drawer__head) .icon-btn {
 /* 채움 위 글자는 --bg (§1-b 1) */
 html body #root .app-bar #menu-toggle { background: var(--brand); border-color: var(--brand); color: var(--bg); }
 html body #root .app-bar #menu-toggle::after { display: none; }
+/* 지역 단추 — 지구본 아래 지역 글자. 아이콘을 줄여 44px 칸에 두 줄을 세운다 */
+html body #root .app-bar .region-toggle { display: inline-flex; flex-direction: column; align-items: center; justify-content: center; gap: 0; line-height: 1; }
+html body #root .app-bar .region-toggle .outline-icon { width: 1.6rem; height: 1.6rem; }
+html body #root .app-bar .region-toggle__code { font: 700 1.2rem Pretendard, sans-serif; letter-spacing: 0.02em; }
 html body #root .outline-icon { flex-shrink: 0; display: inline-block; vertical-align: middle; }
 
 /* ── 서랍 ───────────────────────────────────────────────────────────────── */
@@ -218,3 +222,8 @@ html body .veil.veil--boot { animation: veil-timeout 0s linear 10s forwards; }
   html body .veil { transition: none; }
   html body .veil__spin { animation: none; }
 }
+
+/* 360px 아래 안쪽 화면은 뒤로가기 · 로고(96px)와 단추 넷(188px)이 288px 안에 서야 한다 —
+   묶음 사이 간격을 줄여 로고가 제 칸 밖으로 밀리지 않게 한다 (지역 단추를 더하며 생긴 자리) */
+/* 699px 규칙보다 뒤에 둔다 — 같은 무게라 뒤가 이긴다 */
+@media (max-width: 359px) { html body #root .app-bar { gap: 0.4rem; } }
