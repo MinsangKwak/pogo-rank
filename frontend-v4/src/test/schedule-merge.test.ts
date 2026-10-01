@@ -3,7 +3,7 @@
 import { describe, it, expect } from 'vitest';
 import { readFileSync, existsSync } from 'node:fs';
 import { resolve } from 'node:path';
-import { mergeSchedule } from '../../scripts/merge-schedule.mjs';
+import { handForRegion, mergeSchedule } from '../../scripts/merge-schedule.mjs';
 import { weekBoss } from '../lib/schedule';
 import type { ScheduleMonth, ScheduleItem } from '../types/data';
 
@@ -99,5 +99,33 @@ describe.skipIf(!existsSync(bundle) && !existsSync(raw))('실데이터 — 일�
     }
     expect(Object.keys(src.tables['kr'] ?? {}).length, src.where).toBeGreaterThan(0);
     expect(bad).toEqual([]);
+  });
+});
+
+// 2026-10-01 지역 토글 — 유럽 달력도 공식 한국어 제목을 쓰고, 한국 한정 줄만 뺀다 (주인 제보: 'EU 를 누르면 영어로 바뀐다')
+describe('유럽 달력의 손 표', () => {
+  const hand = { '2026-10': { ym: { y: 2026, m: 10 }, note: '한국시간 기준', items: [
+    { s: 1, e: 5, cat: 'event', label: '수확 축제: 과사삭벌레 모으기 (9/29 10시 ~ 10/5 20시)' },
+    { s: 1, e: 11, cat: 'event', label: '피카츄의 가을 소풍 (9/18~10/11 · 서울 종로·중구, 인천공항 한정)' },
+    { s: 23, e: 29, cat: 'raid5', label: '울트라비스트 — 한국(아시아·태평양): 전수목' },
+  ] } };
+  it('한국 한정 줄만 덜어 낸다 · 한국 달력은 그대로', () => {
+    expect(handForRegion(hand, 'eu')['2026-10'].items.map((item) => item.label)).toEqual(['수확 축제: 과사삭벌레 모으기 (9/29 10시 ~ 10/5 20시)']);
+    expect(handForRegion(hand, 'kr')).toBe(hand);
+  });
+  it('같은 행사는 한국어 제목이 이기고, 뺀 자리는 유럽 자동분이 채운다', () => {
+    const auto = { '2026-10': { ym: { y: 2026, m: 10 }, note: '', items: [
+      { s: 1, e: 5, cat: 'event', label: 'Harvest Festival 2026: Applin Picking', auto: true },
+      { s: 23, e: 29, cat: 'raid5', label: '매시붕 · 페로코체 · 전수목', auto: true },
+    ] } };
+    const labels = mergeSchedule(handForRegion(hand, 'eu'), auto)['2026-10'].items.map((item) => item.label);
+    expect(labels).toEqual(['수확 축제: 과사삭벌레 모으기 (9/29 10시 ~ 10/5 20시)', '매시붕 · 페로코체 · 전수목']);
+  });
+  it.skipIf(!existsSync(bundle))('실데이터 — 유럽 달력이 한국 달력보다 영문 제목이 많지 않고, 한국 한정 줄이 없다', () => {
+    const data = JSON.parse(readFileSync(bundle, 'utf-8'));
+    const english = (months: Record<string, ScheduleMonth>) => Object.values(months).flatMap((month) => month.items).filter((item) => !/[가-힣]/.test(item.label)).length;
+    const euItems = Object.values(data.SCHEDULE_MONTHS_EU as Record<string, ScheduleMonth>).flatMap((month) => month.items);
+    expect(english(data.SCHEDULE_MONTHS_EU)).toBeLessThanOrEqual(english(data.SCHEDULE_MONTHS));
+    expect(euItems.filter((item) => !item.auto && /한국|아시아|서울|인천/.test(item.label)).map((item) => item.label)).toEqual([]);
   });
 });

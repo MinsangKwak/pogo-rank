@@ -22,6 +22,21 @@ function covered(auto, hand) {
 
 const order = (item) => (CAT_ORDER.includes(item.cat) ? CAT_ORDER.indexOf(item.cat) : CAT_ORDER.length);
 
+// 한국 한정 줄 — 서울 · 인천 한정 행사, 아시아 한정, 한국(아시아 · 태평양)에만 나오는 보스.
+// 유럽 달력에 서면 틀리므로 빼고, 그 자리는 유럽 자동분이 채운다 (2026-10-01)
+const KOREA_ONLY = /한국|아시아|서울|인천|부산|제주|종로/;
+
+/**
+ * 지역 달력에 쓸 손 표. 유럽은 한국 한정 줄만 덜어 낸다 — 나머지는 전 세계 공통 행사의 공식 한국어 제목이고,
+ * 행사 시각은 각자 현지 시각이라 '10시 ~ 20시' 같은 표기도 유럽에서 그대로 맞다.
+ * 손 표를 통째로 빼면 같은 행사가 영문 원제로 나와 '유럽을 누르면 영어가 된다' 로 읽혔다 (주인 제보)
+ */
+export function handForRegion(hand, region) {
+  if (region !== 'eu') return hand;
+  return Object.fromEntries(Object.entries(hand ?? {}).map(([key, month]) =>
+    [key, { ...month, items: month.items.filter((item) => !KOREA_ONLY.test(item.label)) }]));
+}
+
 export function mergeSchedule(hand, auto) {
   const months = {};
   const first = Object.keys(hand ?? {}).sort()[0] ?? '';

@@ -16,7 +16,7 @@ import { createHash } from 'node:crypto';
 import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import vm from 'node:vm';
-import { mergeSchedule } from './merge-schedule.mjs';
+import { handForRegion, mergeSchedule } from './merge-schedule.mjs';
 // 2026-09-22 v5 Phase 1 — 손으로 적는 자료는 content/ 가 가진다.
 // 전에는 v3 화면 코드를 vm 으로 돌려 꺼냈다. 자료가 화면 코드 안에 살면 그 화면을 못 지운다
 import { SCHEDULE_CATS, SCHEDULE_MONTHS } from '../../content/schedule.mjs';
@@ -114,10 +114,11 @@ const readGlobal = (key) => vm.runInContext(`typeof ${key} === 'undefined' ? und
   const hand = readGlobal('SCHEDULE_MONTHS');
   const merged = mergeSchedule(hand, auto);
   const autoCount = Object.values(merged).reduce((sum, month) => sum + month.items.filter((item) => item.auto).length, 0);
-  // 유럽 표는 자동분만 싣는다 — 손으로 적은 줄은 한국 시각 · 한국 한정 행사라 유럽 달력에 서면 틀린다.
-  // 손 표가 시작되기 전 달은 한국 표와 같은 이유로 세우지 않는다 (merge-schedule.mjs)
-  const first = Object.keys(hand ?? {}).sort()[0] ?? '';
-  const eu = Object.fromEntries(Object.entries(built.months_eu ?? {}).filter(([key]) => key >= first));
+  // 유럽 표 — 유럽 자동분에 손 표에서 한국 한정 줄만 뺀 것을 합친다. 같은 행사는 공식 한국어 제목이 이긴다.
+  // 안내 한 줄은 유럽 자동분의 것(중부 유럽 시간)을 쓴다 — 손 표의 '한국시간 기준' 이 유럽 달력에 서면 틀린다
+  const autoEu = built.months_eu ?? {};
+  const eu = Object.fromEntries(Object.entries(mergeSchedule(handForRegion(hand, 'eu'), autoEu)).map(([key, month]) =>
+    [key, { ...month, note: `${autoEu[key]?.note ?? '중부 유럽 시간(CET/CEST, 서머타임 반영) 기준이에요.'} 같은 행사는 한국 공지의 한국어 제목으로 실어요.` }]));
   vm.runInContext(`var __scheduleMerged = ${JSON.stringify(merged)}; var __scheduleEu = ${JSON.stringify(eu)};`, sandbox, { filename: 'schedule-merge' });
   console.log(`  일정표: 손 ${Object.keys(hand ?? {}).length}달 + 자동 ${Object.keys(auto).length}달 → ${Object.keys(merged).length}달, 자동 줄 ${autoCount}개 · 유럽 ${Object.keys(eu).length}달`);
 }
