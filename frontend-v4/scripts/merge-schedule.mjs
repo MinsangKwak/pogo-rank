@@ -22,19 +22,40 @@ function covered(auto, hand) {
 
 const order = (item) => (CAT_ORDER.includes(item.cat) ? CAT_ORDER.indexOf(item.cat) : CAT_ORDER.length);
 
-// 한국 한정 줄 — 서울 · 인천 한정 행사, 아시아 한정, 한국(아시아 · 태평양)에만 나오는 보스.
-// 유럽 달력에 서면 틀리므로 빼고, 그 자리는 유럽 자동분이 채운다 (2026-10-01)
-const KOREA_ONLY = /한국|아시아|서울|인천|부산|제주|종로/;
+// 한국 한정 줄을 가르는 장소 — backend/schedule_build.py PLACE_REGION['kr'] 의 도시를 한글로 옮긴 것이다.
+// 두 거름망이 어긋나면 한쪽에만 걸러진 줄이 유럽 달력으로 샌다 — 검사(schedule-merge.test.ts)가 두 목록을 견준다 (Codex, PR #290)
+export const KOREA_PLACES = {
+  seoul: '서울', busan: '부산', incheon: '인천', daegu: '대구', daejeon: '대전',
+  gwangju: '광주', ulsan: '울산', jeju: '제주', suwon: '수원', korea: '한국',
+};
+// 도시 말고도 한국에만 걸리는 말 — '아시아 한정', 한국(아시아 · 태평양) 보스, 서울 안 구 이름
+const KOREA_ONLY = new RegExp([...Object.values(KOREA_PLACES), '아시아', '종로'].join('|'));
 
 /**
- * 지역 달력에 쓸 손 표. 유럽은 한국 한정 줄만 덜어 낸다 — 나머지는 전 세계 공통 행사의 공식 한국어 제목이고,
- * 행사 시각은 각자 현지 시각이라 '10시 ~ 20시' 같은 표기도 유럽에서 그대로 맞다.
- * 손 표를 통째로 빼면 같은 행사가 영문 원제로 나와 '유럽을 누르면 영어가 된다' 로 읽혔다 (주인 제보)
+ * 다른 지역 달력의 제목을 한국어로 — 한국 달력에서 자동 줄과 짝지어진 손 줄(같은 자리, covered)의 **제목 · 출처만** 옮긴다.
+ * 짝은 원제(자동 줄 label)로 잇는다 — 두 지역의 자동 줄은 같은 원본에서 같은 이름으로 나온다.
+ * 날짜는 그 지역 자동 줄의 것을 그대로 둔다: UTC 행사는 지역마다 날짜가 달라, 손 줄을 통째로 옮기면
+ * 한국 날짜가 유럽 달력에 서거나 보스 칸에서 제 날짜의 유럽 줄을 가렸다 (Codex, PR #290).
+ * 한국 한정 손 줄은 짝에서 뺀다 — 유럽 자동 줄이 원제(한국어 보스 이름 등) 그대로 선다.
+ * 자동 줄이 없는 손 줄(미공개 이벤트 등)은 옮기지 않는다. 처음에는 유럽 표를 자동분만으로 세워 같은 행사가 영문 원제로
+ * 나와 '유럽을 누르면 영어가 된다' 로 읽혔다 (주인 제보)
  */
-export function handForRegion(hand, region) {
-  if (region !== 'eu') return hand;
-  return Object.fromEntries(Object.entries(hand ?? {}).map(([key, month]) =>
-    [key, { ...month, items: month.items.filter((item) => !KOREA_ONLY.test(item.label)) }]));
+export function titlesForRegion(hand, autoKr, autoRegion) {
+  const titles = new Map();
+  for (const [key, month] of Object.entries(autoKr ?? {})) {
+    const handItems = (hand?.[key]?.items ?? []).filter((item) => !KOREA_ONLY.test(item.label));
+    for (const item of month.items) {
+      const match = handItems.find((one) => covered(item, one));
+      if (match && !titles.has(item.label)) titles.set(item.label, match);
+    }
+  }
+  return Object.fromEntries(Object.entries(autoRegion ?? {}).map(([key, month]) => [key, {
+    ...month,
+    items: month.items.map((item) => {
+      const match = titles.get(item.label);
+      return match ? { ...item, label: match.label, ...(match.source ? { source: match.source } : {}) } : item;
+    }),
+  }]));
 }
 
 export function mergeSchedule(hand, auto) {
