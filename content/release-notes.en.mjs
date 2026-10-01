@@ -15,6 +15,10 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 export const RELEASE_NOTES_EN = {
+  '2026-10-01 · v5.8.0': [
+    '**The event schedule can now follow Europe** — switch the region with the globe button at the top right (KR · EU). Dates then follow Central European Time (daylight saving applied), and only events in European cities and worldwide events are listed. The region is chosen separately from the language (Korean · English)',
+    '**The Korea schedule no longer lists on-site events in other countries** — city-only events such as Mexico City, Sendai and Los Angeles used to show up. Worldwide days (Global) are still listed',
+  ],
   '2026-09-30 · v5.7.0': [
     '**The Pokémon popup is now always a quick summary** — tapping a Pokémon in the Pokédex, D-MAX, raid or PvP rankings opens the same popup as search. Training picks, battle info, CP and moves are on the Pokémon page opened with [Full details in Pokédex]',
     '**Training picks lead straight to the rankings** — after explaining which bosses it handles well, [See D-MAX rankings] and [See raid rankings] open that type right away',
