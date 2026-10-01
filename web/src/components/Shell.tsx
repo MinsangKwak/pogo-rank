@@ -16,6 +16,7 @@ import { ROUTE_GROUPS, ROUTE_NAV, routeById, routeDesc, type RouteDef } from '..
 import { usePrefStore, themeIsDark, THEME_WORD, type Theme } from '../stores/pref';
 import { releaseSeen } from '../lib/release';
 import { setLang, useLang } from '../lib/useLang';
+import { setRegion, useRegion } from '../lib/region';
 import { useMetaSoft } from '../lib/data';
 import { track } from '../lib/track';
 import { OutlineIcon as PxIcon } from './OutlineIcon';
@@ -88,6 +89,7 @@ export function AppBar({ onMenu, home, onBack }: {
   const [icon, label] = THEME_FACE[theme];
   const newRelease = useNewRelease();
   const now = useLang();
+  const region = useRegion();
   return (
     <header className="app-bar">
       <div className="app-bar__head">
@@ -138,6 +140,14 @@ export function AppBar({ onMenu, home, onBack }: {
           aria-label={now === 'en' ? 'View in Korean (한국어로 보기)' : 'View in English (영어로 보기)'}
           onClick={() => { const next = now === 'en' ? 'ko' : 'en'; void setLang(next); track('lang_switch', { lang: next }); }}>
           {now === 'en' ? 'KR' : 'EN'}
+        </button>
+        {/* 지역은 언어와 따로 돈다 (2026-10-01). 언어 단추와 달리 **지금 지역**을 적는다 —
+            둘 다 '갈 곳' 을 적으면 영어 화면에서 KR 이 두 개 서서 어느 쪽이 언어인지 모른다 */}
+        <button className="icon-btn region-toggle" id="region-toggle" aria-live="polite" data-i18n="off"
+          aria-label={region === 'eu' ? '일정 기준 지역: 유럽 (누르면 한국 기준) · Schedule region: Europe' : '일정 기준 지역: 한국 (누르면 유럽 기준) · Schedule region: Korea'}
+          onClick={() => { const next = region === 'eu' ? 'kr' : 'eu'; setRegion(next); track('region_switch', { region: next }); }}>
+          <PxIcon emoji="🌐" />
+          <span className="region-toggle__code">{region === 'eu' ? 'EU' : 'KR'}</span>
         </button>
         <button className={`icon-btn${newRelease ? ' dot-badge' : ''}`} id="menu-toggle" aria-label="메뉴" aria-haspopup="dialog"
           aria-expanded={false} aria-controls="drawer-backdrop" onClick={onMenu}><PxIcon emoji="☰" /></button>

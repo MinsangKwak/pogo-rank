@@ -22,6 +22,53 @@ function covered(auto, hand) {
 
 const order = (item) => (CAT_ORDER.includes(item.cat) ? CAT_ORDER.indexOf(item.cat) : CAT_ORDER.length);
 
+// 한국 한정 줄을 가르는 장소 — backend/schedule_build.py PLACE_REGION['kr'] 의 도시를 한글로 옮긴 것이다.
+// 두 거름망이 어긋나면 한쪽에만 걸러진 줄이 유럽 달력으로 샌다 — 검사(schedule-merge.test.ts)가 두 목록을 견준다 (Codex, PR #290)
+export const KOREA_PLACES = {
+  seoul: '서울', busan: '부산', incheon: '인천', daegu: '대구', daejeon: '대전',
+  gwangju: '광주', ulsan: '울산', jeju: '제주', suwon: '수원', korea: '한국',
+};
+// 도시 말고도 한국에만 걸리는 말 — '아시아 한정', 한국(아시아 · 태평양) 보스, 서울 안 구 이름
+const KOREA_ONLY = new RegExp([...Object.values(KOREA_PLACES), '아시아', '종로'].join('|'));
+
+/**
+ * 다른 지역 달력의 제목을 한국어로 — 한국 달력에서 자동 줄과 짝지어진 손 줄(같은 자리, covered)의 **제목 · 출처만** 옮긴다.
+ * 짝은 원제(자동 줄 label)와 분류 · 실제 시작일로 잇는다 — 두 지역의 자동 줄은 같은 원본에서 같은 이름으로 나온다.
+ * 날짜는 그 지역 자동 줄의 것을 그대로 둔다: UTC 행사는 지역마다 날짜가 달라, 손 줄을 통째로 옮기면
+ * 한국 날짜가 유럽 달력에 서거나 보스 칸에서 제 날짜의 유럽 줄을 가렸다 (Codex, PR #290).
+ * 한국 한정 손 줄은 짝에서 뺀다 — 유럽 자동 줄이 원제(한국어 보스 이름 등) 그대로 선다.
+ * 자동 줄이 없는 손 줄(미공개 이벤트 등)은 옮기지 않는다. 처음에는 유럽 표를 자동분만으로 세워 같은 행사가 영문 원제로
+ * 나와 '유럽을 누르면 영어가 된다' 로 읽혔다 (주인 제보)
+ */
+export function titlesForRegion(hand, autoKr, autoRegion) {
+  // 짝은 **행사 한 번** 단위다 — 같은 분류 · 같은 원제에 시작일이 하루 안(UTC 행사는 지역마다 하루 갈린다).
+  // 원제 하나로만 묶었더니 10월 손 줄('슈퍼 메가 레이드 데이 · 세부 내용 미발표')이 11월의 같은 원제 줄에까지 붙었다 (Codex, PR #290).
+  // 날짜는 달 안의 일(s)이 아니라 실제 날짜로 견준다 — 한국 3/1 · 유럽 2/28 처럼 달이 갈려도 같은 행사다 (Codex, PR #291).
+  // 같은 달 짝이 있으면 그것이 먼저다 — 달을 넘는 일정은 달마다 잘려 손 줄 제목이 달마다 다를 수 있다
+  const dayOf = (month, s) => Date.UTC(month.ym.y, month.ym.m - 1, s) / 86400000;
+  const pairs = [];
+  for (const [key, month] of Object.entries(autoKr ?? {})) {
+    const handItems = (hand?.[key]?.items ?? []).filter((item) => !KOREA_ONLY.test(item.label));
+    for (const item of month.items) {
+      const match = handItems.find((one) => covered(item, one));
+      if (match) pairs.push({ key, item, day: dayOf(month, item.s), match });
+    }
+  }
+  const titleOf = (key, month, item) => {
+    const day = dayOf(month, item.s);
+    return pairs
+      .filter((one) => one.item.label === item.label && one.item.cat === item.cat && Math.abs(one.day - day) <= 1)
+      .sort((left, right) => (left.key === key ? 0 : 1) - (right.key === key ? 0 : 1) || Math.abs(left.day - day) - Math.abs(right.day - day))[0]?.match;
+  };
+  return Object.fromEntries(Object.entries(autoRegion ?? {}).map(([key, month]) => [key, {
+    ...month,
+    items: month.items.map((item) => {
+      const match = titleOf(key, month, item);
+      return match ? { ...item, label: match.label, ...(match.source ? { source: match.source } : {}) } : item;
+    }),
+  }]));
+}
+
 export function mergeSchedule(hand, auto) {
   const months = {};
   const first = Object.keys(hand ?? {}).sort()[0] ?? '';
