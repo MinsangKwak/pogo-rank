@@ -33,7 +33,7 @@ const KOREA_ONLY = new RegExp([...Object.values(KOREA_PLACES), '아시아', '종
 
 /**
  * 다른 지역 달력의 제목을 한국어로 — 한국 달력에서 자동 줄과 짝지어진 손 줄(같은 자리, covered)의 **제목 · 출처만** 옮긴다.
- * 짝은 원제(자동 줄 label)와 달 · 분류 · 시작일로 잇는다 — 두 지역의 자동 줄은 같은 원본에서 같은 이름으로 나온다.
+ * 짝은 원제(자동 줄 label)와 분류 · 실제 시작일로 잇는다 — 두 지역의 자동 줄은 같은 원본에서 같은 이름으로 나온다.
  * 날짜는 그 지역 자동 줄의 것을 그대로 둔다: UTC 행사는 지역마다 날짜가 달라, 손 줄을 통째로 옮기면
  * 한국 날짜가 유럽 달력에 서거나 보스 칸에서 제 날짜의 유럽 줄을 가렸다 (Codex, PR #290).
  * 한국 한정 손 줄은 짝에서 뺀다 — 유럽 자동 줄이 원제(한국어 보스 이름 등) 그대로 선다.
@@ -41,19 +41,29 @@ const KOREA_ONLY = new RegExp([...Object.values(KOREA_PLACES), '아시아', '종
  * 나와 '유럽을 누르면 영어가 된다' 로 읽혔다 (주인 제보)
  */
 export function titlesForRegion(hand, autoKr, autoRegion) {
-  // 짝은 **행사 한 번** 단위다 — 같은 달 · 같은 분류 · 같은 원제에 시작일이 하루 안(UTC 행사는 지역마다 하루 갈린다).
-  // 원제 하나로만 묶었더니 10월 손 줄('슈퍼 메가 레이드 데이 · 세부 내용 미발표')이 11월의 같은 원제 줄에까지 붙었다 (Codex, PR #290)
-  const pairs = {};
+  // 짝은 **행사 한 번** 단위다 — 같은 분류 · 같은 원제에 시작일이 하루 안(UTC 행사는 지역마다 하루 갈린다).
+  // 원제 하나로만 묶었더니 10월 손 줄('슈퍼 메가 레이드 데이 · 세부 내용 미발표')이 11월의 같은 원제 줄에까지 붙었다 (Codex, PR #290).
+  // 날짜는 달 안의 일(s)이 아니라 실제 날짜로 견준다 — 한국 3/1 · 유럽 2/28 처럼 달이 갈려도 같은 행사다 (Codex, PR #291).
+  // 같은 달 짝이 있으면 그것이 먼저다 — 달을 넘는 일정은 달마다 잘려 손 줄 제목이 달마다 다를 수 있다
+  const dayOf = (month, s) => Date.UTC(month.ym.y, month.ym.m - 1, s) / 86400000;
+  const pairs = [];
   for (const [key, month] of Object.entries(autoKr ?? {})) {
     const handItems = (hand?.[key]?.items ?? []).filter((item) => !KOREA_ONLY.test(item.label));
-    pairs[key] = month.items.map((item) => ({ item, match: handItems.find((one) => covered(item, one)) })).filter((one) => one.match);
+    for (const item of month.items) {
+      const match = handItems.find((one) => covered(item, one));
+      if (match) pairs.push({ key, item, day: dayOf(month, item.s), match });
+    }
   }
-  const titleOf = (key, item) => pairs[key]?.find((one) =>
-    one.item.label === item.label && one.item.cat === item.cat && Math.abs(one.item.s - item.s) <= 1)?.match;
+  const titleOf = (key, month, item) => {
+    const day = dayOf(month, item.s);
+    return pairs
+      .filter((one) => one.item.label === item.label && one.item.cat === item.cat && Math.abs(one.day - day) <= 1)
+      .sort((left, right) => (left.key === key ? 0 : 1) - (right.key === key ? 0 : 1) || Math.abs(left.day - day) - Math.abs(right.day - day))[0]?.match;
+  };
   return Object.fromEntries(Object.entries(autoRegion ?? {}).map(([key, month]) => [key, {
     ...month,
     items: month.items.map((item) => {
-      const match = titleOf(key, item);
+      const match = titleOf(key, month, item);
       return match ? { ...item, label: match.label, ...(match.source ? { source: match.source } : {}) } : item;
     }),
   }]));
