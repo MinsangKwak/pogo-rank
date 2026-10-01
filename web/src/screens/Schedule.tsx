@@ -195,11 +195,14 @@ function ScheduleBody({ region }: { region: Region }) {
   return (
     <div className="page__body schedule__page" id="page-schedule" data-route="schedule">
       <KoOnlyNote kind={region === 'eu' ? 'cet' : 'kst'} />
-      {/* 어느 지역 달력인지 늘 밝힌다 — 같은 행사가 지역에 따라 하루 다르게 설 수 있다 */}
+      {/* 어느 지역 달력인지 늘 밝힌다 — 같은 행사가 지역에 따라 하루 다르게 설 수 있다.
+          지역별 일정은 시험 기능이라 **한국 · 유럽 모두** 실제와 다를 수 있음을 먼저 알린다 (2026-10-01 주인 결정) */}
       <p className="note schedule__region">
+        <b>지역별 일정은 시험 중인 기능이에요.</b>{' '}
         {region === 'eu'
           ? '유럽 기준 일정이에요. 중부 유럽 시간(서머타임 반영)으로 날짜를 맞추고, 유럽 도시 행사와 전 세계 이벤트만 실어요.'
           : '한국 기준 일정이에요. 한국 시간으로 날짜를 맞춰요.'}
+        {' '}자동으로 모은 일정이 섞여 있어 실제 날짜 · 시간과 다를 수 있으니, 게임 안 공지로 한 번 더 확인해 주세요.
         {' '}오른쪽 위 지역 단추로 바꿀 수 있어요.
       </p>
       <nav className="schedule__month-nav" aria-label="달력 월 이동">

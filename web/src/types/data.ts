@@ -329,7 +329,7 @@ export interface ScheduleCat {
 
 export interface ScheduleBundle {
   SCHEDULE_MONTHS: Record<string, ScheduleMonth>;
-  // 유럽 기준 표 — 자동 수집분만 싣는다 (손으로 적은 표는 한국 시각 · 한국 한정 행사라서)
+  // 유럽 기준 표 — 유럽 자동분(유럽 날짜)에 같은 행사의 공식 한국어 제목만 옮겨 단 것 (frontend-v4/scripts/merge-schedule.mjs titlesForRegion)
   SCHEDULE_MONTHS_EU?: Record<string, ScheduleMonth>;
   SCHEDULE_CATS: Record<string, ScheduleCat>;
 }

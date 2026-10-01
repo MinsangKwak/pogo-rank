@@ -16,7 +16,7 @@
 
 export const RELEASE_NOTES_EN = {
   '2026-10-01 · v5.8.0': [
-    '**The event schedule can now follow Europe** — switch the region with the globe button at the top right (KR · EU). Dates then follow Central European Time (daylight saving applied), and only events in European cities and worldwide events are listed. The region is chosen separately from the language (Korean · English)',
+    '**The event schedule can now follow Europe** — switch the region with the globe button at the top right (KR · EU). Dates then follow Central European Time (daylight saving applied), and only events in European cities and worldwide events are listed. The region is chosen separately from the language (Korean · English). Regional schedules are a test feature, so dates and times may differ from the actual ones in both Korea and Europe — please double-check with the in-game news',
     '**The Korea schedule no longer lists on-site events in other countries** — city-only events such as Mexico City, Sendai and Los Angeles used to show up. Worldwide days (Global) are still listed',
   ],
   '2026-09-30 · v5.7.0': [

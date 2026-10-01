@@ -91,8 +91,6 @@ class MonthTest(unittest.TestCase):
         self.assertEqual(merged['seen']['label'], 'y2')
 
 
-if __name__ == '__main__':
-    unittest.main()
 
 
 class RegionTest(unittest.TestCase):
@@ -122,3 +120,7 @@ class RegionTest(unittest.TestCase):
         eu = build_months(rows, '2026-10-01', 'eu')
         self.assertEqual([item['label'] for item in kr['2026-11']['items']], ['Global thing'])
         self.assertEqual({item['label']: item['s'] for item in eu['2026-11']['items']}, {'Pokémon GO Fest 2026: Paris': 6, 'Global thing': 10})
+
+
+if __name__ == '__main__':
+    unittest.main()
