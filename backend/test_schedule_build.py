@@ -3,7 +3,7 @@
 import unittest
 from datetime import date
 
-from backend.schedule_build import Namer, build_months, merge_snapshot, month_slices, normalize, split_names
+from backend.schedule_build import Namer, build_months, local_date, merge_snapshot, month_slices, normalize, region_of, split_names
 
 NAMES = {'144': '프리져', '145': '썬더', '146': '파이어', '487': '기라티나', '642': '볼트로스', '6': '리자몽', '816': '울머기', '570': '조로아'}
 FORMS = {'816': {'types': ['water']}, '144': {'types': ['ice', 'flying']}}
@@ -93,3 +93,32 @@ class MonthTest(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+
+
+class RegionTest(unittest.TestCase):
+    # 2026-10-01 지역 토글 — 장소 행사는 그 도시의 권역 달력에만, 'Global' 은 어디나
+    def test_place_events(self):
+        self.assertEqual(region_of('wild-area', 'Pokémon GO Wild Area 2026: Mexico City'), 'other')
+        self.assertEqual(region_of('wild-area', 'Pokémon GO Wild Area 2026: Global'), 'global')
+        self.assertEqual(region_of('pokemon-go-tour', 'Pokémon GO Tour: Alola - Los Angeles 2027'), 'other')
+        self.assertEqual(region_of('pokemon-go-fest', 'Pokémon GO Fest 2026: Paris'), 'eu')
+        self.assertEqual(region_of('city-safari', 'Pokémon GO City Safari: Seoul'), 'kr')
+        # 장소 행사가 아닌 유형은 이름에 도시가 있어도 전 세계
+        self.assertEqual(region_of('event', 'Harvest Festival 2026'), 'global')
+
+    def test_utc_dates_follow_region(self):
+        # UTC 한 순간 — 한국은 다음 날, 유럽은 같은 날
+        self.assertEqual(local_date('2026-11-06T16:00:00.000Z', 'Asia/Seoul'), date(2026, 11, 7))
+        self.assertEqual(local_date('2026-11-06T16:00:00.000Z', 'Europe/Berlin'), date(2026, 11, 6))
+        # 현지 시각은 지역과 상관없이 같은 날
+        self.assertEqual(local_date('2026-09-21T06:00:00.000', 'Europe/Berlin'), date(2026, 9, 21))
+
+    def test_months_by_region(self):
+        rows = {
+            'a': {'id': 'a', 'type': 'wild-area', 'start': '2026-11-07', 'end': '2026-11-09', 'start_eu': '2026-11-06', 'end_eu': '2026-11-08', 'cat': 'event', 'label': 'Pokémon GO Fest 2026: Paris'},
+            'b': {'id': 'b', 'type': 'event', 'start': '2026-11-10', 'end': '2026-11-12', 'cat': 'event', 'label': 'Global thing'},
+        }
+        kr = build_months(rows, '2026-10-01', 'kr')
+        eu = build_months(rows, '2026-10-01', 'eu')
+        self.assertEqual([item['label'] for item in kr['2026-11']['items']], ['Global thing'])
+        self.assertEqual({item['label']: item['s'] for item in eu['2026-11']['items']}, {'Pokémon GO Fest 2026: Paris': 6, 'Global thing': 10})

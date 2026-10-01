@@ -67,12 +67,17 @@ describe('mergeSchedule', () => {
 const bundle = resolve(__dirname, '../../public/data/schedule.json');
 const raw = resolve(__dirname, '../../../data/schedule.json');
 const CATS = ['event', 'raid5', 'mega', 'dmax', 'hour', 'shadow'];
-function source(): { where: string; months: Record<string, ScheduleMonth>; cats: string[] } | null {
+// 한국 표와 유럽 표(2026-10-01 지역 토글)를 같은 잣대로 본다 — 화면은 둘 중 하나를 그대로 그린다
+type Tables = Record<string, Record<string, ScheduleMonth>>;
+function source(): { where: string; tables: Tables; cats: string[] } | null {
   if (existsSync(bundle)) {
     const data = JSON.parse(readFileSync(bundle, 'utf-8'));
-    return { where: 'public/data', months: data.SCHEDULE_MONTHS, cats: Object.keys(data.SCHEDULE_CATS) };
+    return { where: 'public/data', tables: { kr: data.SCHEDULE_MONTHS, eu: data.SCHEDULE_MONTHS_EU ?? {} }, cats: Object.keys(data.SCHEDULE_CATS) };
   }
-  if (existsSync(raw)) return { where: 'data', months: JSON.parse(readFileSync(raw, 'utf-8')).months, cats: CATS };
+  if (existsSync(raw)) {
+    const data = JSON.parse(readFileSync(raw, 'utf-8'));
+    return { where: 'data', tables: { kr: data.months, eu: data.months_eu ?? {} }, cats: CATS };
+  }
   return null;
 }
 
@@ -80,8 +85,9 @@ describe.skipIf(!existsSync(bundle) && !existsSync(raw))('실데이터 — 일�
   it('모든 줄이 날짜·분류·제목을 갖춘다', () => {
     const src = source()!;
     const bad: string[] = [];
-    for (const [key, one] of Object.entries(src.months)) {
-      const [y, m] = key.split('-').map(Number);
+    for (const [key, one] of Object.entries(src.tables).flatMap(([region, months]) => Object.entries(months).map(([ym, month]) => [`${region} ${ym}`, month] as const))) {
+      const ym = key.split(' ')[1]!;
+      const [y, m] = ym.split('-').map(Number);
       if (one.ym.y !== y || one.ym.m !== m) bad.push(`${key} ym 불일치`);
       const last = new Date(y!, m!, 0).getDate();
       for (const item of one.items) {
@@ -91,7 +97,7 @@ describe.skipIf(!existsSync(bundle) && !existsSync(raw))('실데이터 — 일�
         if (item.source && !/^https?:\/\//.test(item.source)) bad.push(`${key} ${item.label} source '${item.source}'`);
       }
     }
-    expect(Object.keys(src.months).length, src.where).toBeGreaterThan(0);
+    expect(Object.keys(src.tables['kr'] ?? {}).length, src.where).toBeGreaterThan(0);
     expect(bad).toEqual([]);
   });
 });
