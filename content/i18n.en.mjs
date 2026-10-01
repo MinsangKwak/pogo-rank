@@ -229,6 +229,8 @@ export const I18N_EN = {
   "유럽 기준 일정이에요. 중부 유럽 시간(서머타임 반영)으로 날짜를 맞추고, 유럽 도시 행사와 전 세계 이벤트만 실어요.": "This is the Europe schedule. Dates follow Central European Time (daylight saving applied), and only events in European cities and worldwide events are listed.",
   "한국 기준 일정이에요. 한국 시간으로 날짜를 맞춰요.": "This is the Korea schedule. Dates follow Korean time.",
   "오른쪽 위 지역 단추로 바꿀 수 있어요.": "Switch it with the region button at the top right.",
+  "지역별 일정은 시험 중인 기능이에요.": "Regional schedules are a test feature.",
+  "자동으로 모은 일정이 섞여 있어 실제 날짜 · 시간과 다를 수 있으니, 게임 안 공지로 한 번 더 확인해 주세요.": "Some entries are collected automatically and may differ from the actual dates and times, so please double-check with the in-game news.",
   "현재 레이드 보스 보기": "View current raid bosses",
   "보스를 선택하면 약점과 추천 포켓몬을 확인할 수 있어요.": "Select a boss to see its weaknesses and recommended counters.",
   "솔플 가능성 계산하기": "Check solo raid feasibility",
