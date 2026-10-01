@@ -69,3 +69,7 @@ html body #root #page-schedule .schedule__source { display: inline-block; margin
   html body #root #page-schedule :is(.schedule__detail, .schedule__category) { padding: 2rem; }
   html body #root #page-schedule .schedule__view-tabs button { flex: 1; padding: 0 1.2rem; }
 }
+
+/* 지역 안내 — 시험 기능 주의가 먼저 읽히게 판으로 세운다. 첫 문장(b)은 본문색으로 올린다 */
+html body #root #page-schedule .schedule__region { padding: 1.6rem 2rem; border-left: 0.4rem solid var(--brand); border-radius: var(--r-box); background: var(--surface); color: var(--muted); line-height: 1.7; }
+html body #root #page-schedule .schedule__region b { color: var(--fg); }

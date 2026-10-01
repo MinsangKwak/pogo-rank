@@ -4,3 +4,9 @@ export function mergeSchedule(
   hand: Record<string, ScheduleMonth> | undefined,
   auto: Record<string, ScheduleMonth> | undefined,
 ): Record<string, ScheduleMonth>;
+export const KOREA_PLACES: Readonly<Record<string, string>>;
+export function titlesForRegion(
+  hand: Record<string, ScheduleMonth> | undefined,
+  autoKr: Record<string, ScheduleMonth> | undefined,
+  autoRegion: Record<string, ScheduleMonth> | undefined,
+): Record<string, ScheduleMonth>;

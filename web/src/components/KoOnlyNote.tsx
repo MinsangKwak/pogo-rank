@@ -9,8 +9,10 @@
 // 그래서 줄은 늘 서고, 안의 글자는 사전을 타지 않는다(data-i18n="off").
 // kind='kst' 는 일정표용 — 한국 서버 기준임을 함께 밝힌다 (지역마다 이벤트 날짜가 다르다).
 // ─────────────────────────────────────────────────────────────────────────────
-import { KO_ONLY_NOTE, KST_NOTE } from '../lib/i18n';
+import { CET_NOTE, KO_ONLY_NOTE, KST_NOTE } from '../lib/i18n';
 
-export default function KoOnlyNote({ kind }: { kind?: 'kst' | 'ko' }) {
-  return <p className="note i18n-note" data-i18n="off">{kind === 'kst' ? KST_NOTE : KO_ONLY_NOTE}</p>;
+const NOTE = { kst: KST_NOTE, cet: CET_NOTE, ko: KO_ONLY_NOTE };
+
+export default function KoOnlyNote({ kind = 'ko' }: { kind?: 'kst' | 'cet' | 'ko' }) {
+  return <p className="note i18n-note" data-i18n="off">{NOTE[kind]}</p>;
 }

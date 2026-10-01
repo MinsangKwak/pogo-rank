@@ -53,6 +53,36 @@ describe('trainPlan', () => {
     // 줄 글자는 순위만 — 어느 판인지는 묶음 제목(raidType)이 말한다
     expect(plan.pve!.base.every((one) => one.note === `${one.rank}위`)).toBe(true);
   });
+  it('레이드 단추의 칸은 그 판을 만든 계열 포켓몬이 때리는 타입 — 연 폼 타입이 아니다 (Codex, PR #284)', () => {
+    // 울머기(물)를 열면 레이드 땅 보스 판에 선 인텔리레온의 물 칸
+    expect(planFor('울머기').pve?.raidAtk).toBe('water');
+    // 계열 전체에서 — 레이드 판에 선 계열 포켓몬이 있으면 그 줄이 레이드 표에 있는 타입 칸을 고른다
+    let checked = 0;
+    for (const name of new Set(Object.values(names))) {
+      const plan = planFor(name);
+      if (!plan.pve || plan.pve.raidType === 'overall') continue;
+      expect(plan.pve.raidAtk).toMatch(/^[a-z]+$/);
+      expect(plan.pve.raidAtk).not.toBe('overall');
+      checked += 1;
+    }
+    expect(checked).toBeGreaterThan(100);
+  });
+  it('레이드 단추의 칸은 판을 만든 포켓몬 자신의 타입이다 — 타입 밖 기술이면 그 포켓몬이 없는 칸으로 간다 (Codex, PR #289)', () => {
+    // 레이드 순위 칸(PVE_BY_TYPE)은 종 타입으로 묶인다 — 칸 타입이 그 포켓몬 타입 중 하나여야 목록에 선다
+    const typesByName = new Map<string, string[]>();
+    for (const rows of Object.values(pve.PVE_DATA) as { name: string; types: string[] }[][]) {
+      for (const row of rows) typesByName.set(row.name, row.types);
+    }
+    const off: string[] = [];
+    for (const name of new Set(Object.values(names))) {
+      const plan = planFor(name);
+      if (!plan.pve || plan.pve.raidAtk === 'overall') continue;
+      const hit = [...plan.pve.base, ...plan.pve.max].find((one) => one.own);
+      const types = hit ? typesByName.get(hit.name.replace(/^(다이맥스|거다이맥스) /, '')) : undefined;
+      if (types && !types.includes(plan.pve.raidAtk)) off.push(`${name}: ${hit!.name} ${types.join('/')} → ${plan.pve.raidAtk}`);
+    }
+    expect(off).toEqual([]);
+  });
   it('맥스 폼으로 열면 순위가 없어도 맥스 배틀 · 레이드 추천이 먼저 (다이맥스 태우지네)', () => {
     const dexNo = idOf('태우지네');
     const family: number[][] | undefined = dex.DEX_DATA.evo[String(dexNo)];
