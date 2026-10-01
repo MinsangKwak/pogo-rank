@@ -130,6 +130,14 @@ describe('유럽 달력의 한국어 제목', () => {
     expect(eu[1]!.label).toBe('매시붕 · 페로코체 · 전수목');
     expect(eu.map((item) => item.label).join(' ')).not.toMatch(/대구|서울|아시아/);
   });
+  it('짝은 행사 한 번 단위 — 다른 달의 같은 원제에는 붙지 않는다 (Codex, PR #290)', () => {
+    const one = (m: number, s: number) => ({ ym: { y: 2026, m }, note: '', items: [{ s, e: s, cat: 'event', label: '슈퍼 메가 레이드 데이', auto: true }] });
+    const handOct = { '2026-10': { ym, note: '', items: [{ s: 31, e: 31, cat: 'event', label: '슈퍼 메가 레이드 데이 (날짜 확정 · 세부 내용 미발표)', source: 'https://pokemongo.com/ko/news/save-the-date-s24' }] } };
+    const autoBoth = { '2026-10': one(10, 31), '2026-11': one(11, 28) };
+    const out = titlesForRegion(handOct, autoBoth, autoBoth);
+    expect(out['2026-10']!.items[0]!.label).toBe('슈퍼 메가 레이드 데이 (날짜 확정 · 세부 내용 미발표)');
+    expect(out['2026-11']!.items[0]).toEqual({ s: 28, e: 28, cat: 'event', label: '슈퍼 메가 레이드 데이', auto: true });
+  });
   it('한국 한정 장소 목록이 백엔드(PLACE_REGION kr)와 같다', () => {
     const py = readFileSync(resolve(__dirname, '../../../backend/schedule_build.py'), 'utf-8');
     const kr = py.match(/'kr':\s*\[([^\]]*)\]/)?.[1] ?? '';
