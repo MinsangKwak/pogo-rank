@@ -329,6 +329,8 @@ export interface ScheduleCat {
 
 export interface ScheduleBundle {
   SCHEDULE_MONTHS: Record<string, ScheduleMonth>;
+  // 유럽 기준 표 — 자동 수집분만 싣는다 (손으로 적은 표는 한국 시각 · 한국 한정 행사라서)
+  SCHEDULE_MONTHS_EU?: Record<string, ScheduleMonth>;
   SCHEDULE_CATS: Record<string, ScheduleCat>;
 }
 

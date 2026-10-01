@@ -18,6 +18,7 @@ import { useSchedule } from '../lib/data';
 import { Chips, type ChipDef } from '../components/Bits';
 import { track } from '../lib/track';
 import KoOnlyNote from '../components/KoOnlyNote';
+import { regionMonths, regionToday, useRegion, type Region } from '../lib/region';
 import type { ScheduleCat, ScheduleItem, ScheduleMonth } from '../types/data';
 
 const SCHED_CAT_KEY = 'pogo_sched_cat';   // v3 와 같은 키
@@ -28,7 +29,7 @@ const WEEKDAYS = ['일', '월', '화', '수', '목', '금', '토'];
  *   1) 오늘이 속한 달 → 2) 없으면 오늘보다 앞선 달 중 가장 늦은 달 → 3) 그것도 없으면 등재된 첫 달.
  * 미래 달로는 가지 않는다 — 다음 달 일정은 이번 달 달력이 끝난 뒤에 자연히 나타난다.
  */
-function pickMonth(months: Record<string, ScheduleMonth>, today = new Date()): ScheduleMonth | undefined {
+function pickMonth(months: Record<string, ScheduleMonth>, today: Date): ScheduleMonth | undefined {
   const keys = Object.keys(months).sort();
   const todayKey = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}`;
   if (months[todayKey]) return months[todayKey];
@@ -42,12 +43,11 @@ const readCat = () => {
 };
 
 /** 달력 — 날짜를 누르면 아래 상세가 그날 일정으로 바뀐다 */
-function Cal({ month, cats, items, picked, onPick }: {
+function Cal({ month, cats, items, picked, onPick, today }: {
   month: ScheduleMonth; cats: Record<string, ScheduleCat>; items: ScheduleItem[];
-  picked: number; onPick: (day: number) => void;
+  picked: number; onPick: (day: number) => void; today: Date;
 }) {
   const { y, m } = month.ym;
-  const today = new Date();
   const isThisMonth = today.getFullYear() === y && today.getMonth() + 1 === m;
   const todayDay = isThisMonth ? today.getDate() : 0;
   const offset = new Date(y, m - 1, 1).getDay();        // 1일을 제 요일 칸으로 밀어낸다
@@ -91,11 +91,10 @@ function Cal({ month, cats, items, picked, onPick }: {
  * 기간 막대 — 한 줄이 일정 하나. 막대 위치는 (s-1)/일수, 폭은 (e-s+1)/일수 의 백분율이라
  * 화면 폭이 달라도 그대로 맞는다. 시작이 달 후반(60% 이후)이면 라벨을 막대 끝에 오른쪽 정렬해 잘리지 않게 한다.
  */
-function Timeline({ month, cats, items }: {
-  month: ScheduleMonth; cats: Record<string, ScheduleCat>; items: ScheduleItem[];
+function Timeline({ month, cats, items, today }: {
+  month: ScheduleMonth; cats: Record<string, ScheduleCat>; items: ScheduleItem[]; today: Date;
 }) {
   const { y, m } = month.ym;
-  const today = new Date();
   const todayDay = today.getFullYear() === y && today.getMonth() + 1 === m ? today.getDate() : 0;
   const last = new Date(y, m, 0).getDate();
   const pct = (day: number) => `${((day - 1) / last) * 100}%`;
@@ -145,12 +144,20 @@ function Timeline({ month, cats, items }: {
   );
 }
 
+// 지역을 바꾸면 달 · 고른 날을 처음부터 다시 고른다 — key 로 화면을 새로 세운다
 export default function Schedule() {
+  const region = useRegion();
+  return <ScheduleBody key={region} region={region} />;
+}
+
+function ScheduleBody({ region }: { region: Region }) {
   const { data } = useSchedule();
-  const months = data.SCHEDULE_MONTHS;
+  const months = regionMonths(data, region);
   const monthKeys = Object.keys(months).sort();
+  // 오늘은 고른 지역의 날짜다 — 브라우저 시계가 어느 나라에 있든 달력이 같은 날을 가리킨다
+  const [today] = useState(() => regionToday(region));
   const [selectedMonth, setSelectedMonth] = useState(() => {
-    const initial = pickMonth(months);
+    const initial = pickMonth(months, today);
     return monthKeys.find((key) => months[key] === initial) ?? '';
   });
   const month = months[selectedMonth];
@@ -161,7 +168,6 @@ export default function Schedule() {
     const saved = readCat();
     return saved === 'all' || cats[saved] ? saved : 'all';
   });
-  const today = new Date();
   const [day, setDay] = useState(() => {
     if (!month) return 1;
     const thisMonth = today.getFullYear() === month.ym.y && today.getMonth() + 1 === month.ym.m;
@@ -188,7 +194,14 @@ export default function Schedule() {
 
   return (
     <div className="page__body schedule__page" id="page-schedule" data-route="schedule">
-      <KoOnlyNote kind="kst" />
+      <KoOnlyNote kind={region === 'eu' ? 'cet' : 'kst'} />
+      {/* 어느 지역 달력인지 늘 밝힌다 — 같은 행사가 지역에 따라 하루 다르게 설 수 있다 */}
+      <p className="note schedule__region">
+        {region === 'eu'
+          ? '유럽 기준 일정이에요. 중부 유럽 시간(서머타임 반영)으로 날짜를 맞추고, 유럽 도시 행사와 전 세계 이벤트만 실어요.'
+          : '한국 기준 일정이에요. 한국 시간으로 날짜를 맞춰요.'}
+        {' '}오른쪽 위 지역 단추로 바꿀 수 있어요.
+      </p>
       <nav className="schedule__month-nav" aria-label="달력 월 이동">
         <button type="button" aria-label="이전 달" disabled={monthIndex <= 0} onClick={() => changeMonth(monthIndex - 1)}>‹</button>
         <div aria-live="polite"><span>{`${month.ym.y}년`}</span><h2>{`${m}월 일정`}</h2></div>
@@ -209,7 +222,7 @@ export default function Schedule() {
 
       <div>
         <div>
-          <Cal month={month} cats={cats} items={items} picked={day} onPick={setDay} />
+          <Cal month={month} cats={cats} items={items} picked={day} onPick={setDay} today={today} />
           {/* 점과 이름은 감싸지 않고 나란히 둔다 — 감싸면 한 덩이가 돼 줄바꿈 자리가 달라진다 */}
           <p className="schedule__legend">
             {Object.values(cats).map((one) => (
@@ -238,7 +251,7 @@ export default function Schedule() {
         <button type="button" aria-pressed={view === 'timeline'} onClick={() => setView('timeline')}>기간 한눈에 보기</button>
       </div>
       {view === 'timeline' ? <section aria-label="기간 한눈에 보기">
-        <div className="schedule__timeline-scroll"><Timeline month={month} cats={cats} items={items} /></div>
+        <div className="schedule__timeline-scroll"><Timeline month={month} cats={cats} items={items} today={today} /></div>
       </section> : null}
       <section hidden={view !== 'list'} aria-label={`${m}월 전체 일정`}>
       {/* 겉의 <div> 는 자리, 안의 <div> 가 목록이다 (v3 $list ← scheduleMonthList).
