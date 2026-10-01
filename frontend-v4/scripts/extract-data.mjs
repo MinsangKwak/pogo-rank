@@ -16,7 +16,7 @@ import { createHash } from 'node:crypto';
 import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import vm from 'node:vm';
-import { mergeSchedule } from './merge-schedule.mjs';
+import { mergeSchedule, titlesForRegion } from './merge-schedule.mjs';
 // 2026-09-22 v5 Phase 1 — 손으로 적는 자료는 content/ 가 가진다.
 // 전에는 v3 화면 코드를 vm 으로 돌려 꺼냈다. 자료가 화면 코드 안에 살면 그 화면을 못 지운다
 import { SCHEDULE_CATS, SCHEDULE_MONTHS } from '../../content/schedule.mjs';
@@ -109,11 +109,18 @@ const readGlobal = (key) => vm.runInContext(`typeof ${key} === 'undefined' ? und
 // 빌드를 --meta-only 로 돌린 자리에서도 v4 가 서야 한다
 {
   const path = resolve(repo, 'data/schedule.json');
-  const auto = existsSync(path) ? JSON.parse(readFileSync(path, 'utf8')).months ?? {} : {};
-  const merged = mergeSchedule(readGlobal('SCHEDULE_MONTHS'), auto);
+  const built = existsSync(path) ? JSON.parse(readFileSync(path, 'utf8')) : {};
+  const auto = built.months ?? {};
+  const hand = readGlobal('SCHEDULE_MONTHS');
+  const merged = mergeSchedule(hand, auto);
   const autoCount = Object.values(merged).reduce((sum, month) => sum + month.items.filter((item) => item.auto).length, 0);
-  vm.runInContext(`var __scheduleMerged = ${JSON.stringify(merged)};`, sandbox, { filename: 'schedule-merge' });
-  console.log(`  일정표: 손 ${Object.keys(readGlobal('SCHEDULE_MONTHS') ?? {}).length}달 + 자동 ${Object.keys(auto).length}달 → ${Object.keys(merged).length}달, 자동 줄 ${autoCount}개`);
+  // 유럽 표 — 유럽 자동분(유럽 날짜)에 같은 행사의 공식 한국어 제목만 옮겨 단다 (titlesForRegion).
+  // 손 표가 시작되기 전 달은 한국 표와 같은 이유로 세우지 않는다. 안내 한 줄은 유럽 자동분의 것(중부 유럽 시간)을 쓴다
+  const first = Object.keys(hand ?? {}).sort()[0] ?? '';
+  const eu = Object.fromEntries(Object.entries(titlesForRegion(hand, auto, built.months_eu)).filter(([key]) => key >= first).map(([key, month]) =>
+    [key, { ...month, note: `${month.note} 같은 행사는 한국 공지의 한국어 제목으로 실어요.` }]));
+  vm.runInContext(`var __scheduleMerged = ${JSON.stringify(merged)}; var __scheduleEu = ${JSON.stringify(eu)};`, sandbox, { filename: 'schedule-merge' });
+  console.log(`  일정표: 손 ${Object.keys(hand ?? {}).length}달 + 자동 ${Object.keys(auto).length}달 → ${Object.keys(merged).length}달, 자동 줄 ${autoCount}개 · 유럽 ${Object.keys(eu).length}달`);
 }
 
 // 파일 하나 = 같이 바뀌는 표 묶음.
@@ -141,7 +148,7 @@ const BUNDLES = {
   // [본문, 플래그, 번역틀] 로 펴서 싣고 읽는 쪽이 다시 세운다 (lib/i18n.ts)
   i18n: ['I18N_EN', ['I18N_PATTERNS', '__i18nPatterns']],
   // 손으로 적은 표에 자동 수집분을 합친 것 — 위 병합 블록이 만든다 (v4.7.2 WBS-224)
-  schedule: [['SCHEDULE_MONTHS', '__scheduleMerged'], 'SCHEDULE_CATS'],
+  schedule: [['SCHEDULE_MONTHS', '__scheduleMerged'], ['SCHEDULE_MONTHS_EU', '__scheduleEu'], 'SCHEDULE_CATS'],
 };
 
 mkdirSync(out, { recursive: true });
