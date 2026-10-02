@@ -98,16 +98,19 @@ jobs:
       # dev 가 깜깜해지면 손해가 더 크다. STORYBOOK_BASE 가 없으면 자산이 루트 기준이라 빈 화면이다
       # **도면이 안 바뀌었으면 굽지 않는다** (2026-10-02). 스토리북은 frontend-v4 의 조각 · 설정만 읽는데,
       # 화면만 고친 판에도 매번 설치 + 빌드로 30초를 썼다 (dev 배포의 4분의 1). 읽는 파일의 해시가 같으면 지난 결과를 쓴다
+      # **받기와 남기기를 나눈다.** 한 번에 쓰는 캐시는 일이 끝날 때 저장하는데, 아래 빌드는 실패해도 계속이라
+      # 반쯤 만든 결과가 같은 키로 저장되고 다음 판부터 그 깨진 도면을 계속 썼다 (Codex #306). 빌드 · 검증이 통과했을 때만 남긴다
       - if: steps.ready.outputs.go == 'true'
-        name: 스토리북 캐시
+        name: 스토리북 캐시 받기
         id: storybook
-        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+        uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
         with:
           path: frontend-v4/storybook-static
           key: storybook-${{ hashFiles('frontend-v4/src/**', 'frontend-v4/.storybook/**', 'frontend-v4/package-lock.json', 'frontend-v4/package.json', 'content/**') }}
 
       - if: steps.ready.outputs.go == 'true'
         name: 스토리북 (/storybook/) — 실패해도 계속
+        id: storybook_build
         continue-on-error: true
         env:
           STORYBOOK_BASE: /storybook/
@@ -126,6 +129,13 @@ jobs:
           rm -rf ../web/public/storybook
           cp -r storybook-static ../web/public/storybook
           echo "스토리북을 /storybook/ 에 얹습니다"
+
+      - if: steps.ready.outputs.go == 'true' && steps.storybook.outputs.cache-hit != 'true' && steps.storybook_build.outcome == 'success'
+        name: 스토리북 캐시 남기기
+        uses: actions/cache/save@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+        with:
+          path: frontend-v4/storybook-static
+          key: ${{ steps.storybook.outputs.cache-primary-key }}
 
       - if: steps.ready.outputs.go == 'true'
         name: 검사
