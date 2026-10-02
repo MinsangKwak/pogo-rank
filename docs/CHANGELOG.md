@@ -27,7 +27,18 @@
 ## 릴리스 기록
 
 <details open>
-<summary><b>2026-10-02</b> — 2판 · <code>v5.8.2</code> · <code>v5.8.1</code></summary>
+<summary><b>2026-10-02</b> — 3판 · <code>v5.8.3</code> · <code>v5.8.2</code> · <code>v5.8.1</code></summary>
+
+<details>
+<summary><b>v5.8.3</b> · 메테노 유성우 등 10 · 11월 한국어 제목 · 게임 업데이트 게시판 최신화</summary>
+
+**배경** — 주인 제보: ① '메테오 뭐시기' 행사가 있는데 화면에서 못 찾겠다 ② 게임 업데이트 게시판이 8월 31일 뒤로 새 글이 없다. ①은 일정에 이미 있었지만 영문 원제 'Minior Showers: Orionids 2026' 로만 서 있었다(기간 10/19~10/24 은 맞음). ②는 맨 위 '주요 변경' 두 글의 발표일이 8/31 이고, 아래 목록의 아카이브도 9/15 에서 멈춰 있었다. 매일 도는 수집 워크플로(`collect-game-updates.yml`)는 정상으로 돌며 후보 PR(#286)을 올렸지만, 그 PR 이 병합되지 않아 화면에 닿지 못했다.
+
+**변경** — `content/schedule.mjs` 에 공식 한국어 공지가 나온 행사의 손 줄을 더했다(확인일 2026-10-02): 메테노 샤워 오리온자리 유성우 10/19 17시 ~ 10/24 23:59 · 사자자리 유성우 11/14 ~ 11/19(매일 17–21시 출현 증가 — [공지](https://pokemongo.com/ko/news/minior-meteor-showers-2026)), 세계 우주 주간 10/4~10/10([공지](https://pokemongo.com/ko/news/world-space-week-2026)), 가을 소풍: 파트너와 함께 10/13~10/19([공지](https://pokemongo.com/ko/news/fall-marathon-buddy-trek-2026)), "ADIDAS | POKÉMON" 컬렉션 시간제한 리서치 9/25 ~ 2027/1/15([공지](https://pokemongo.com/ko/news/pokemon-x-adidas-2026)). 11월 손 표를 새로 열어 발표된 두 줄만 싣고 나머지는 자동 수집분이 채운다. 같은 행사 짝 짓기(`titlesForRegion`)로 유럽 달력도 한국어 제목을 쓴다. 게임 업데이트 아카이브를 수집기로 다시 모아 9/21~10/1 공식 소식 11건을 더했다(32 → 43건). 수집기(`scripts/collect_game_updates.py`)가 `<i>` · `<a>` 같은 글자 꾸밈 태그에서도 줄을 끊어 인용이 '의 무대인 알로라지방을 …' 처럼 문장 중간부터 나오던 것을 고쳤고, '자세한 내용은 … 에서 확인하세요' 안내 줄은 인용에서 뺀다.
+
+검사 — web · frontend-v4 테스트 · 한국 · 유럽 10 · 11월 실데이터 확인 · 아카이브 인용 전후 비교(토막 인용 2건 → 0건).
+
+</details>
 
 <details>
 <summary><b>v5.8.2</b> · 10월 일정 공지 반영 — 다이맥스 유크시 맥스배틀 데이 · 깜눈크 부화데이 · 한글날</summary>

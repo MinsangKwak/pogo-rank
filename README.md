@@ -5,7 +5,7 @@
 
 [서비스](https://moncamp.kr/) · [개발 미리보기](https://dev.moncamp.kr/) · [개발 가이드](docs/DEVELOPMENT.md) · [변경 이력](docs/CHANGELOG.md)
 
-> 문서 기준: 2026-10-02, **v5.8.2**. 현재 앱은 `web/`의 Next.js입니다. `frontend-v4/`는 이전 Vite 앱이며, 데이터 추출 도구와 Storybook에 계속 사용합니다.
+> 문서 기준: 2026-10-02, **v5.8.3**. 현재 앱은 `web/`의 Next.js입니다. `frontend-v4/`는 이전 Vite 앱이며, 데이터 추출 도구와 Storybook에 계속 사용합니다.
 
 ## 프로젝트 한눈에 보기
 
@@ -129,7 +129,9 @@ PvP 순위는 PvPoke, 게임 수치는 PokeMiners, 한국어 명칭은 PokeAPI, 
 ## 최근 릴리스
 
 <details>
-<summary><b>2026-10-02</b> — 릴리스 2개 · <code>v5.8.2</code> · <code>v5.8.1</code></summary>
+<summary><b>2026-10-02</b> — 릴리스 3개 · <code>v5.8.3</code> · <code>v5.8.2</code> · <code>v5.8.1</code></summary>
+
+메테노 유성우 등 10 · 11월 행사를 공식 한국어 제목으로 바꾸고, 게임 업데이트 게시판을 최신 공식 소식까지 채웠습니다.
 
 10월 일정에 새 공지(10/24 다이맥스 유크시 맥스배틀 데이 · 10/17 깜눈크 부화데이 · 한글날 이벤트)를 반영했습니다.
 
