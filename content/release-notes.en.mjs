@@ -15,6 +15,12 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 export const RELEASE_NOTES_EN = {
+  '2026-10-02 · v5.9.4': [
+    '**On the D-MAX and PvP screens, \'D-MAX ranks\' and \'PvP ranks\' in the popup now show that form\'s battle info** — you are already on that ranking screen, so the popup no longer closes and jumps back to the same row. Use \'Back\' at the top to return to the summary',
+    '**The info window opened from the Pokédex no longer has a \'Pokédex\' button** — you are already there, so it only closed the window',
+    '**Tapping the same menu again no longer stacks up history** — one Back now returns to the previous screen instead of several',
+    '**Calendar bar colors stay the same when you pick a category** (event, 5-star, etc.) — the same event used to change color with every pick',
+  ],
   '2026-10-02 · v5.9.3': [
     '**Tapping a Pokémon in the Pokédex opens the full details right away** — no need to press \'More in Pokédex\' again when you are already there',
     '**On the D-MAX screen, \'More on D-MAX\' now shows that form\'s battle info** — instead of closing the popup and jumping back to the same row, it shows the tier, attacker and tank ranks and matchups in place. Use \'Back\' at the top to return to the summary',

@@ -19,13 +19,17 @@ import { showVeil } from '../lib/veil';
 
 /**
  * 주소만 바꾼다 — 새 화면은 App 이 그리고, 덮개는 그 화면의 <Settled> 가 걷는다(뒤로 가기와 같은 길).
- * **경로가 같으면 덮지 않는다** — 질의만 바뀐 이동은 화면이 새로 서지 않아 <Settled> 가 안 돌고, 덮개가 갇힌다
+ * **경로가 같으면 덮지 않는다** — 질의만 바뀐 이동은 화면이 새로 서지 않아 <Settled> 가 안 돌고, 덮개가 갇힌다.
+ * **주소가 통째로 같으면 기록에 쌓지 않는다** — 도감에서 '도감' 메뉴를 또 누를 때마다 같은 칸이 쌓여 뒤로를 여러 번 눌러야 했다
+ * (2026-10-02 점검). router.push 시절에도 Next 가 같은 주소는 쌓지 않고 바꿔치기했다
  */
 export function pushPath(href: string): void {
-  markForward();
   const next = new URL(href, window.location.href);
+  const target = `${next.pathname}${next.search}${next.hash}`;
+  if (target === `${window.location.pathname}${window.location.search}${window.location.hash}`) return;
+  markForward();
   if (next.pathname !== window.location.pathname) showVeil();
-  window.history.pushState(null, '', `${next.pathname}${next.search}${next.hash}`);
+  window.history.pushState(null, '', target);
 }
 
 export default function RouterBridge() {

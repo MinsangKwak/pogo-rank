@@ -278,12 +278,23 @@ export default function AdminStats() {
   useEffect(() => { void load(range); }, [range, load]);
 
   const issue = customIssue(draft);
+  // 고른 기간의 범위 — 오늘은 부르는 순간의 한국 날짜, '9/14부터' 는 그날까지의 날 수
+  const rangeOf = (id: string): StatRange => {
+    if (id === 'today') { const day = kstToday(); return { from: day, to: day }; }
+    return { days: id === 'since' ? sinceDays() : Number(id) };
+  };
   const pick = (id: string) => {
     setPeriod(id);
     if (id === 'custom') { if (!issue) setRange({ ...draft }); return; }
-    // 오늘은 고르는 순간의 한국 날짜 — 자정을 넘겨 다시 누르면 새 날로 묻는다
-    if (id === 'today') { const day = kstToday(); setRange({ from: day, to: day }); return; }
-    setRange({ days: id === 'since' ? sinceDays() : Number(id) });
+    setRange(rangeOf(id));
+  };
+  // '새로 받기' 도 범위를 다시 정한다 — 탭을 켜 둔 채 자정을 넘기면 '오늘' 이 어제 날짜로 다시 받았다 (2026-10-02 점검).
+  // 범위가 그대로면 상태가 안 바뀌어 효과가 안 도니 직접 받는다
+  const reload = () => {
+    if (period === 'custom') { void load(range); return; }
+    const next = rangeOf(period);
+    if (JSON.stringify(next) === JSON.stringify(range)) void load(range);
+    else setRange(next);
   };
   const today = kstToday();
 
@@ -317,7 +328,7 @@ export default function AdminStats() {
       <div className="stat-page__bar">
         <div className="stat-page__filters">
           <Segmented className="stat-page__periods" label="기간" items={periodItems(since)} value={period} onPick={pick} />
-          <button type="button" className="tool-btn stat-page__reload" onClick={() => void load(range)} disabled={busy}>{busy ? '받는 중…' : '새로 받기'}</button>
+          <button type="button" className="tool-btn stat-page__reload" onClick={reload} disabled={busy}>{busy ? '받는 중…' : '새로 받기'}</button>
           {period === 'custom' ? (
             <form className="stat-page__dates" onSubmit={(event) => { event.preventDefault(); if (!issue) setRange({ ...draft }); }}>
               <label>시작일 <input type="date" value={draft.from} max={today} onChange={(event) => setDraft({ ...draft, from: event.target.value })} /></label>

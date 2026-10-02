@@ -5,7 +5,7 @@
 
 [서비스](https://moncamp.kr/) · [개발 미리보기](https://dev.moncamp.kr/) · [개발 가이드](docs/DEVELOPMENT.md) · [변경 이력](docs/CHANGELOG.md)
 
-> 문서 기준: 2026-10-02, **v5.9.3**. 현재 앱은 `web/`의 Next.js입니다. `frontend-v4/`는 이전 Vite 앱이며, 데이터 추출 도구와 Storybook에 계속 사용합니다.
+> 문서 기준: 2026-10-02, **v5.9.4**. 현재 앱은 `web/`의 Next.js입니다. `frontend-v4/`는 이전 Vite 앱이며, 데이터 추출 도구와 Storybook에 계속 사용합니다.
 
 ## 프로젝트 한눈에 보기
 
@@ -129,7 +129,9 @@ PvP 순위는 PvPoke, 게임 수치는 PokeMiners, 한국어 명칭은 PokeAPI, 
 ## 최근 릴리스
 
 <details>
-<summary><b>2026-10-02</b> — 릴리스 7개 · <code>v5.9.3</code> · <code>v5.9.2</code> · <code>v5.9.1</code> · <code>v5.9.0</code> · <code>v5.8.3</code> · <code>v5.8.2</code> · <code>v5.8.1</code></summary>
+<summary><b>2026-10-02</b> — 릴리스 8개 · <code>v5.9.4</code> · <code>v5.9.3</code> · <code>v5.9.2</code> · <code>v5.9.1</code> · <code>v5.9.0</code> · <code>v5.8.3</code> · <code>v5.8.2</code> · <code>v5.8.1</code></summary>
+
+전체 시나리오 점검으로 순위 화면 위 팝업 단추 · 같은 메뉴 기록 · 달력 색을 바로잡았습니다.
 
 도감에서 연 팝업은 처음부터 자세히, D-MAX 화면의 'D-MAX 더보기' 는 팝업 안에서 그 폼의 배틀 정보를 보여 줍니다.
 

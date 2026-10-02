@@ -365,7 +365,7 @@ export default function App({ seo }: AppProps = {}) {
       </div>
       <DataBoundary>
         <Suspense fallback={null}>
-          {detail === null ? null : <MonDetail key={detailSeq} pick={detail} onClose={closeMon} onDeep={openDeep} maxHere={route.id === 'dmax'} />}
+          {detail === null ? null : <MonDetail key={detailSeq} pick={detail} onClose={closeMon} onDeep={openDeep} here={route.id} />}
         </Suspense>
       </DataBoundary>
       {/* 검색 팔레트 — 어느 화면에서든 / · Ctrl+K · 상단 바 · 홈 단추로 뜬다. 고르면 위의 상세 팝업이 연다 */}
