@@ -712,5 +712,15 @@
 "label": "맥스 배틀 데이",
 "start_eu": "2026-10-24",
 "end_eu": "2026-10-24"
+},
+"pokemon-night-out-2026-twitch-drops": {
+"id": "pokemon-night-out-2026-twitch-drops",
+"type": "twitch-drops",
+"start": "2026-10-25",
+"end": "2026-10-25",
+"cat": "event",
+"label": "Twitch Drops for Pokémon Night Out 2026",
+"start_eu": "2026-10-25",
+"end_eu": "2026-10-25"
 }
 }
