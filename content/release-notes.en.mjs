@@ -15,6 +15,9 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 export const RELEASE_NOTES_EN = {
+  '2026-10-02 · v5.9.0': [
+    '**Multi-day events now run as one bar on the calendar** — an event like Oct 3–20 no longer repeats in every day cell; it spans from its first day to its last as a single bar. Events take the top rows before boss rotations, and month-long events give way to short ones. On phones the bars become thin lines',
+  ],
   '2026-10-02 · v5.8.3': [
     '**Minior meteor showers added to the schedule** — Minior Showers (Orionids Oct 19 17:00 – Oct 24 23:59 · Leonids Nov 14 – Nov 19, more Minior daily 17:00–21:00) now appear under their official Korean titles. World Space Week, Fall Marathon: Buddy Trek and the "ADIDAS | POKÉMON" collection also show Korean titles instead of English',
     '**Game Updates board brought up to date** — official news after Sep 15 (World Space Week, Hangul Day, GO Pass: October, GO Tour 2027, Minior, Uxie Max Battle Day and more) was missing. Quotes that started mid-sentence are fixed too',

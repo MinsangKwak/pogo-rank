@@ -6,7 +6,8 @@
 //   GA4       방문자 · 페이지뷰                                             — 서버가 Data API 로 받아 준다
 // 방문자 수는 두 원본이 다를 수밖에 없다 — GA4 는 쿠키 기준이고 '통계 끄기' 면 둘 다 안 센다.
 //
-// **기간 하나가 전부를 정한다.** 9/14부터 · 7 · 14 · 21 · 30일 · 달력으로 직접 — 위 한 줄의 고름이 아래 모든 칸에 같이 걸려야 숫자끼리 맞는다.
+// **기간 하나가 전부를 정한다.** 오늘 · 9/14부터 · 7 · 14 · 21 · 30일 · 달력으로 직접 — 위 한 줄의 고름이 아래 모든 칸에 같이 걸려야 숫자끼리 맞는다.
+// '오늘' 은 한국 날짜 오늘 하루만 서버에 from = to 로 묻는다 (2026-10-02 주인 요청). 하루짜리라 숫자 칸의 7일 추세는 세우지 않는다.
 // 기본은 '9/14부터' — 서비스를 연 날부터 오늘까지 한 번에 본다 (2026-09-24 주인 요청).
 // '직접 고르기' 는 시작 · 끝 날짜를 달력(input type=date)으로 받아 서버에 from · to 로 묻는다 (2026-09-30 주인 요청).
 // 화면 구역의 '시간대별 많이 본 포켓몬' 은 날짜 탭마다 24칸 — components/StatHours.tsx.
@@ -64,6 +65,7 @@ export function sinceLabel(now: number = Date.now()): string {
 
 // '9/14부터' 의 이름은 그릴 때 정한다 (periodItems) — 모듈에서 정하면 탭을 켜 둔 채 경계를 넘을 때 옛 이름이 남는다
 const PERIODS = [
+  { id: 'today', label: '오늘' },
   { id: 'since', label: '9/14부터' },
   { id: '7', label: '7일' },
   { id: '14', label: '14일' },
@@ -82,8 +84,9 @@ export function customIssue(draft: { from: string; to: string }, today: string =
   return '';
 }
 
-/** 고른 기간의 이름 — '9/14부터 17일' · '최근 7일' · '9/14 ~ 9/30 17일' */
+/** 고른 기간의 이름 — '오늘 10/2' · '9/14부터 17일' · '최근 7일' · '9/14 ~ 9/30 17일' */
 export function periodName(period: string, stats: { days: number; from?: string | undefined; to?: string | undefined }, since: string): string {
+  if (period === 'today' && stats.to) return `오늘 ${shortDay(stats.to)}`;
   if (period === 'custom' && stats.from && stats.to) return `${shortDay(stats.from)} ~ ${shortDay(stats.to)} ${count(stats.days)}일`;
   return period === 'since' && since === '9/14부터' ? `9/14부터 ${count(stats.days)}일` : `최근 ${count(stats.days)}일`;
 }
@@ -138,7 +141,8 @@ function countryName(code: string): string {
  * 방문자처럼 날마다 따로 센 사람 수도 7일 합은 뜻이 있다 — "지난주보다 늘었나" 는 그 합의 방향이다
  */
 function Tile({ label, value, sub, rows }: { label: string; value: string; sub?: string; rows?: readonly DayValue[] }) {
-  const trend = rows ? weekTrend(rows) : null;
+  // 일주일이 안 되는 기간(오늘 하루 등)은 '최근 7일' 이 기간보다 길어 거짓말이 된다 — 추세를 세우지 않는다
+  const trend = rows && rows.length >= 7 ? weekTrend(rows) : null;
   const delta = trend ? trendLabel(trend) : null;
   return (
     <div className="stat-tile">
@@ -277,6 +281,8 @@ export default function AdminStats() {
   const pick = (id: string) => {
     setPeriod(id);
     if (id === 'custom') { if (!issue) setRange({ ...draft }); return; }
+    // 오늘은 고르는 순간의 한국 날짜 — 자정을 넘겨 다시 누르면 새 날로 묻는다
+    if (id === 'today') { const day = kstToday(); setRange({ from: day, to: day }); return; }
     setRange({ days: id === 'since' ? sinceDays() : Number(id) });
   };
   const today = kstToday();
@@ -310,7 +316,8 @@ export default function AdminStats() {
       {/* 고름은 한 줄, 맨 위 — 아래 모든 칸에 같이 걸린다. 따라오는 줄이라 어느 구역에서든 바꾼다 */}
       <div className="stat-page__bar">
         <div className="stat-page__filters">
-          <Segmented label="기간" items={periodItems(since)} value={period} onPick={pick} />
+          <Segmented className="stat-page__periods" label="기간" items={periodItems(since)} value={period} onPick={pick} />
+          <button type="button" className="tool-btn stat-page__reload" onClick={() => void load(range)} disabled={busy}>{busy ? '받는 중…' : '새로 받기'}</button>
           {period === 'custom' ? (
             <form className="stat-page__dates" onSubmit={(event) => { event.preventDefault(); if (!issue) setRange({ ...draft }); }}>
               <label>시작일 <input type="date" value={draft.from} max={today} onChange={(event) => setDraft({ ...draft, from: event.target.value })} /></label>
@@ -319,9 +326,8 @@ export default function AdminStats() {
               {issue ? <span className="stat-page__issue" role="alert">{issue}</span> : null}
             </form>
           ) : null}
-          <button type="button" className="tool-btn" onClick={() => void load(range)} disabled={busy}>새로 받기</button>
-          <span className="stat-page__stamp">{`${stats.generatedAt.slice(0, 16).replace('T', ' ')} UTC 기준 · 운영 채널만`}</span>
         </div>
+        <p className="stat-page__stamp">{`${name} · ${stats.generatedAt.slice(0, 16).replace('T', ' ')} UTC 기준 · 운영 채널만`}</p>
         <nav className="stat-jump" aria-label="구역 바로가기">
           {SECTIONS.map((one) => <a key={one.id} href={`#${one.id}`}>{one.label}</a>)}
         </nav>
@@ -348,7 +354,9 @@ export default function AdminStats() {
             sub={ga4.status === 'ok' ? `방문 ${count(ga4.sessions)}회` : '아래 GA4 칸 참고'}
             rows={ga4.status === 'ok' ? daily(ga4.perDay, (row) => row.views) : undefined} />
         </div>
-        <p className="stat-page__note">작은 선은 최근 14일, 화살표는 최근 7일을 그 앞 7일과 견준 값이에요. 7일 창에서는 앞 7일이 없어 화살표가 안 서요.</p>
+        <p className="stat-page__note">{stats.days >= 7
+          ? '작은 선은 최근 14일, 화살표는 최근 7일을 그 앞 7일과 견준 값이에요. 7일 창에서는 앞 7일이 없어 화살표가 안 서요.'
+          : '하루 · 며칠만 고르면 추세(작은 선 · 화살표)는 세우지 않아요. 7일 이상을 고르면 보여요.'}</p>
       </section>
 
       <section className="stat-sec" id="stat-visits">
