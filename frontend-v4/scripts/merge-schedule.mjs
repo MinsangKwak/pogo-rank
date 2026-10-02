@@ -48,7 +48,9 @@ export function titlesForRegion(hand, autoKr, autoRegion) {
   const dayOf = (month, s) => Date.UTC(month.ym.y, month.ym.m - 1, s) / 86400000;
   const pairs = [];
   for (const [key, month] of Object.entries(autoKr ?? {})) {
-    const handItems = (hand?.[key]?.items ?? []).filter((item) => !KOREA_ONLY.test(item.label));
+    // 지역마다 다른 행사(예: 맥스배틀 데이 — 한국 유크시 · 유럽 엠라이트)는 손 줄에 그 지역 제목(eu)을 따로 적는다 —
+    // 한국 제목에 '한국' 이 들어 있어도 지역 제목이 있으면 짝을 짓는다
+    const handItems = (hand?.[key]?.items ?? []).filter((item) => item.eu || !KOREA_ONLY.test(item.label));
     for (const item of month.items) {
       const match = handItems.find((one) => covered(item, one));
       if (match) pairs.push({ key, item, day: dayOf(month, item.s), match });
@@ -60,12 +62,27 @@ export function titlesForRegion(hand, autoKr, autoRegion) {
       .filter((one) => one.item.label === item.label && one.item.cat === item.cat && Math.abs(one.day - day) <= 1)
       .sort((left, right) => (left.key === key ? 0 : 1) - (right.key === key ? 0 : 1) || Math.abs(left.day - day) - Math.abs(right.day - day))[0]?.match;
   };
-  return Object.fromEntries(Object.entries(autoRegion ?? {}).map(([key, month]) => [key, {
-    ...month,
-    items: month.items.map((item) => {
+  return Object.fromEntries(Object.entries(autoRegion ?? {}).map(([key, month]) => {
+    const items = month.items.map((item) => {
       const match = titleOf(key, month, item);
-      return match ? { ...item, label: match.label, ...(match.source ? { source: match.source } : {}) } : item;
-    }),
+      return match ? { ...item, label: match.eu ?? match.label, ...(match.source ? { source: match.source } : {}) } : item;
+    });
+    // 같은 행사가 원본에 두 이름으로 남은 경우(이름이 'Hatch Day' → 'Sandile Hatch Day' 로 바뀐 누적분) 한국어 제목을 달면 같은 줄이 둘이 된다 —
+    // 분류 · 날짜 · 제목이 같은 줄은 하나만 둔다 (2026-10-02)
+    const seen = new Set();
+    return [key, { ...month, items: items.filter((item) => {
+      const id = `${item.cat}|${item.s}|${item.e}|${item.label}`;
+      if (seen.has(id)) return false;
+      seen.add(id);
+      return true;
+    }) }];
+  }));
+}
+
+/** 손 표에서 지역 제목(eu)을 떼어 낸다 — 한국 표에는 실리지 않아야 한다 */
+export function stripRegionTitles(months) {
+  return Object.fromEntries(Object.entries(months ?? {}).map(([key, month]) => [key, month && {
+    ...month, items: month.items.map(({ eu: _eu, ...item }) => item),
   }]));
 }
 
