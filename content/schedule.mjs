@@ -125,6 +125,11 @@ export const SCHEDULE_MONTHS = {
       { s: 1, e: 11, cat: 'event', label: '피카츄의 가을 소풍 (9/18~10/11 · 서울 종로·중구, 인천공항 한정)' },
       { s: 2, e: 5, cat: 'event', label: '수확 축제: 점령 (10/2 00시 ~ 10/5 20시 · 그림자 제크로무)', source: 'https://pokemongo.com/ko/news/harvest-festival-tgr-2026' },
       { s: 3, e: 3, cat: 'event', label: '거다이맥스 에이스번 맥스배틀 데이 (14–17시)', source: 'https://pokemongo.com/ko/news/gigantamax-cinderace-max-battle-day-2026' },
+      // 2026-10-02 공식 한국어 공지가 나온 행사 — 영문 원제(World Space Week · Fall Marathon · Minior Showers · adidas)를 한국어 제목으로 덮는다
+      { s: 1, e: 31, cat: 'event', label: '"ADIDAS | POKÉMON" 컬렉션 시간제한 리서치 (9/25 ~ 2027/1/15 · 참여 adidas 매장 방문)', source: 'https://pokemongo.com/ko/news/pokemon-x-adidas-2026' },
+      { s: 4, e: 10, cat: 'event', label: '세계 우주 주간 (10/4 0시 ~ 10/10 23:59 · 우주비행 피카츄)', source: 'https://pokemongo.com/ko/news/world-space-week-2026' },
+      { s: 13, e: 19, cat: 'event', label: '가을 소풍: 파트너와 함께 (10/13 10시 ~ 10/19 20시 · 그푸리 첫 등장)', source: 'https://pokemongo.com/ko/news/fall-marathon-buddy-trek-2026' },
+      { s: 19, e: 24, cat: 'event', label: '메테노 샤워: 오리온자리 유성우 (10/19 17시 ~ 10/24 23:59 · 매일 17–21시 메테노 출현 증가)', source: 'https://pokemongo.com/ko/news/minior-meteor-showers-2026' },
       // 2026-10-02 공식 공지 반영 — 한글날 이벤트 · 깜눈크 부화데이 · 다이맥스 유크시 맥스배틀 데이(지역마다 다른 포켓몬, 한국은 유크시)
       { s: 6, e: 9, cat: 'event', label: '2026 한글날 이벤트 (10/6 10시 ~ 10/9 20시 · 대한민국 전역)', source: 'https://pokemongo.com/ko/news/hangul-nal-2026' },
       { s: 10, e: 10, cat: 'event', label: '조로아 커뮤니티 데이 (14–17시)', source: 'https://pokemongo.com/ko/news/communityday-october-2026-zorua' },
@@ -135,6 +140,15 @@ export const SCHEDULE_MONTHS = {
       { s: 1, e: 6, cat: 'mega', label: '메가 우츠보트 (9/30~10/6)' },
       { s: 1, e: 4, cat: 'dmax', label: 'D-MAX 울머기 (맥스 먼데이 9/28 주차, ~10/4)', t: 'water' },
       { s: 1, e: 6, cat: 'shadow', label: '주말 섀도우 레이드: 볼트로스 (화신폼, 9/9~10/6)' },
+    ],
+  },
+  '2026-11': {
+    ym: { y: 2026, m: 11 },
+    // 2026-10-02 11월은 발표된 행사만 먼저 싣는다 — 나머지(보스 로테이션 등)는 자동 수집분이 채운다
+    note: '공식 한국 공지 확인: 2026-10-02 · 한국시간 기준. 11월은 발표된 일정만 먼저 실었어요.',
+    items: [
+      { s: 1, e: 30, cat: 'event', label: '"ADIDAS | POKÉMON" 컬렉션 시간제한 리서치 (9/25 ~ 2027/1/15 · 참여 adidas 매장 방문)', source: 'https://pokemongo.com/ko/news/pokemon-x-adidas-2026' },
+      { s: 14, e: 19, cat: 'event', label: '메테노 샤워: 사자자리 유성우 (11/14 17시 ~ 11/19 23:59 · 매일 17–21시 메테노 출현 증가)', source: 'https://pokemongo.com/ko/news/minior-meteor-showers-2026' },
     ],
   },
 };

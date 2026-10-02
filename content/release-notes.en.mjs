@@ -15,6 +15,10 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 export const RELEASE_NOTES_EN = {
+  '2026-10-02 · v5.8.3': [
+    '**Minior meteor showers added to the schedule** — Minior Showers (Orionids Oct 19 17:00 – Oct 24 23:59 · Leonids Nov 14 – Nov 19, more Minior daily 17:00–21:00) now appear under their official Korean titles. World Space Week, Fall Marathon: Buddy Trek and the "ADIDAS | POKÉMON" collection also show Korean titles instead of English',
+    '**Game Updates board brought up to date** — official news after Sep 15 (World Space Week, Hangul Day, GO Pass: October, GO Tour 2027, Minior, Uxie Max Battle Day and more) was missing. Quotes that started mid-sentence are fixed too',
+  ],
   '2026-10-02 · v5.8.2': [
     '**October schedule updated with the latest announcements** — the Oct 24 Max Battle Day features Dynamax Uxie (Korea · Asia-Pacific); Europe gets Mesprit and the Americas get Azelf. The Oct 17 Sandile Hatch Day (11:00–17:00) and the Oct 6–9 Hangul Day event (all of Korea) are listed too. Details of the Oct 31 Super Mega Raid Day are not announced yet',
   ],
