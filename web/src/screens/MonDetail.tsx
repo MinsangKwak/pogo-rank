@@ -122,13 +122,14 @@ export interface MonDetailProps {
   /** 요약 팝업의 '도감에서 자세히' — 도감 화면으로 옮겨 자세한 팝업을 연다 (App.tsx openDeep) */
   onDeep?: (pick: MonPick) => void;
   /**
-   * D-MAX 화면 위에서 열렸다 — 폼별 정보의 'D-MAX 더보기' 가 화면을 옮기지 않고 이 팝업을 그 폼의 배틀 정보로 바꾼다.
-   * 옮겨 가 봐야 방금 누른 그 줄로 되돌아와 2.4초 밝히고 끝이라 '그 다음이 없다' 로 읽혔다 (2026-10-02 주인 결정)
+   * 팝업 뒤에 깔린 화면(route id). 그 화면으로 옮겨 가는 단추는 화면을 옮기지 않고 이 팝업을 배틀 정보로 바꾼다 —
+   * D-MAX 화면의 'D-MAX 더보기' 가 방금 누른 그 줄로 되돌아와 2.4초 밝히고 끝이라 '그 다음이 없다' 로 읽혔다 (2026-10-02 주인 결정).
+   * 바닥의 'D-MAX 순위' · 'PvP 순위' 도 같은 자리라 같게 하고, 도감 화면에서는 '포켓몬 도감' 단추를 두지 않는다 (2026-10-02 점검)
    */
-  maxHere?: boolean;
+  here?: string;
 }
 
-export default function MonDetail({ pick, onClose, inline = false, onDeep, maxHere = false }: MonDetailProps) {
+export default function MonDetail({ pick, onClose, inline = false, onDeep, here = '' }: MonDetailProps) {
   // 요약 팝업 — 전체 검색 · 홈에서 열었다. 진화 · 폼별 정보만 두고, 나머지(육성 추천 · 배틀 정보 · CP · 기술)는 아래 '도감에서 자세히' 로 넘긴다.
   // 페이지(공유 링크 본문)는 늘 자세히다 — 옮겨 갈 곳이 아니라 그 자체가 도착한 곳이다
   // 요약으로 열었어도 D-MAX 화면의 'D-MAX 더보기' 로 자세히 들어가면(deep) 자세한 판이 된다
@@ -150,10 +151,8 @@ export default function MonDetail({ pick, onClose, inline = false, onDeep, maxHe
   // 이름이 없는 길은 공유 링크 하나뿐이고, 그때만 검색 색인에서 찾는다 (v3 openDetailBySprite).
   // 도감 이름표만 보던 시절에는 폼 스프라이트(10000번대)가 표에 없어 '#10209' 라고 적혔고,
   // 그 한 값이 활용 순위(이름으로 찾는다)와 '보스로 만났을 때'(이름 앞 '거다이맥스' 로 가른다)를 같이 무너뜨렸다
-  const start = useMemo<MonRef>(
-    () => resolveMon(pick, buildSearchIndex(data, max, pve, pvpData), data.DEX_DATA),
-    [pick, data, max, pve, pvpData],
-  );
+  const searchIndex = useMemo(() => buildSearchIndex(data, max, pve, pvpData), [data, max, pve, pvpData]);
+  const start = useMemo<MonRef>(() => resolveMon(pick, searchIndex, data.DEX_DATA), [pick, searchIndex, data]);
   const [stack, setStack] = useState<View[]>([]);
   const [mon, setMon] = useState<MonRef>(start);
   const [tab, setTab] = useState<Tab>('summary');
@@ -175,8 +174,8 @@ export default function MonDetail({ pick, onClose, inline = false, onDeep, maxHe
     setTab('summary');
     setScreen('detail');
   };
-  // D-MAX 화면 위의 'D-MAX 더보기' — 그 폼의 배틀 정보(티어 · 딜러 · 탱커 순위)로. ← 로 요약에 돌아온다
-  const showMaxHere = (next: MonRef) => {
+  // 뒤에 깔린 화면으로 가는 단추 — 그 폼의 배틀 정보(D-MAX 티어 · 딜러 · 탱커, PvP 리그 순위)로. ← 로 요약에 돌아온다
+  const showHere = (next: MonRef) => {
     setStack((now) => [...now, { mon, tab, screen, calc, catchSeg, deep }]);
     setMon(next);
     setTab('battle');
@@ -412,7 +411,7 @@ export default function MonDetail({ pick, onClose, inline = false, onDeep, maxHe
                       {/* 폼별 정보 — 요약 한 줄씩. 일반은 펼치고, 맥스 폼은 D-MAX 화면의 그 줄로.
                           메가 · 섀도우를 보고 있으면 일반 줄의 이름표가 그 라벨이다 */}
                       <FormGuide mon={mon} dexNo={dexNo} baseLabel={otherLabels.join(' ') || '일반'} onSwitch={switchTo} onLeave={onClose}
-                        {...(maxHere ? { onMaxHere: showMaxHere } : {})} />
+                        {...(here === 'dmax' ? { onMaxHere: showHere } : {})} />
                       {/* 여기부터는 자세히 보기에서만 — 펼쳐 둔다 (도감 · 순위 화면에서 연 팝업은 다 보려고 연 것이다) */}
                       {!brief && form && cpm['l50'] ? (
                         <>
@@ -502,7 +501,7 @@ export default function MonDetail({ pick, onClose, inline = false, onDeep, maxHe
                     {/* ── 배틀 정보: 타입 상성 · 활용 순위 · PvP 개체값 · 메가 비교 · 보스로 만났을 때 */}
                     <div className="detail__pane" role="tabpanel" data-pane="battle" id="detail-pane-battle" aria-labelledby="detail-tab-battle" hidden={tab !== 'battle'}>
                       {/* 맨 위는 지금 보는 폼의 성적 — D-MAX 에서 열었으면 맥스 표, PvP · 레이드에서 열었으면 그쪽 순위 */}
-                      <FormStats mon={mon} dexNo={dexNo} baseLabel={otherLabels.join(' ') || '일반'} onLeave={onClose} />
+                      <FormStats mon={mon} dexNo={dexNo} baseLabel={otherLabels.join(' ') || '일반'} onLeave={onClose} here={here} />
                       {types.length ? (
                         <section className="detail__card">
                           <h3>타입 상성</h3>
@@ -564,12 +563,21 @@ export default function MonDetail({ pick, onClose, inline = false, onDeep, maxHe
             {/* ── 하단 고정 — 상세: [링크 복사] [CP 계산기] · 계산기: [초기화] [상세로 돌아가기] */}
             <div className="detail__dock">
               {/* 요약 팝업의 바닥은 '더 알아보기' 입구다 — 자세한 것은 도감(자세한 팝업) · D-MAX · PvP 화면으로 (2026-09-30 주인 요청) */}
-              {brief ? <DeepDock mon={mon} dexNo={dexNo} onDeep={onDeep} onLeave={onClose} /> : null}
+              {brief ? (
+                <DeepDock mon={mon} dexNo={dexNo} onDeep={onDeep} onLeave={onClose} here={here}
+                  onHere={(name) => {
+                    const found = searchIndex.find((one) => one.name === name);
+                    showHere(found ? { sprite: found.sprite, name: found.name, en: found.en, types: found.types } : mon);
+                  }} />
+              ) : null}
               <div className="detail__dock-row detail__dock-row--detail" hidden={brief}>
                 <ShareBtn mon={mon} />
-                <button className="detail__dock-btn detail__bar-dex" onClick={() => { go('/dex'); onClose?.(); }}>
-                  <PxIcon emoji="📕" /><span className="btn-label">포켓몬 도감</span>
-                </button>
+                {/* 도감 화면 위의 팝업이면 두지 않는다 — 누르면 팝업만 닫혀 ✕ 와 같았다 */}
+                {here === 'dex' ? null : (
+                  <button className="detail__dock-btn detail__bar-dex" onClick={() => { go('/dex'); onClose?.(); }}>
+                    <PxIcon emoji="📕" /><span className="btn-label">포켓몬 도감</span>
+                  </button>
+                )}
                 {form ? (
                   <button className="detail__dock-btn detail__dock-btn--accent detail__dock-calc"
                     onClick={() => setScreen('calc')}><PxIcon emoji="🧮" /><span className="btn-label">CP 계산기</span></button>

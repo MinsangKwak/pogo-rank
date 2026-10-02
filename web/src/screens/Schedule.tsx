@@ -56,7 +56,8 @@ function Cal({ month, cats, items, picked, onPick, today }: {
   const isThisMonth = today.getFullYear() === y && today.getMonth() + 1 === m;
   const todayDay = isThisMonth ? today.getDate() : 0;
   const weeks = useMemo(() => calWeeks(y, m, items, 3, Object.keys(cats)), [y, m, items, cats]);
-  const colors = useMemo(() => barColors(items), [items]);
+  // 색은 분류 필터와 상관없이 그달 전체 일정으로 정한다 — 거른 목록으로 정하면 '이벤트' 만 골랐을 때 같은 행사의 색이 바뀌었다 (2026-10-02 점검)
+  const colors = useMemo(() => barColors(month.items), [month.items]);
   const count = (day: number) => items.filter((item) => day >= item.s && day <= item.e);
 
   return (
