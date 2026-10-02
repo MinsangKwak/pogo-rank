@@ -25,8 +25,36 @@ html body #root #page-schedule .cal__day {
 html body #root #page-schedule .cal__day.is-selected { background: var(--selected); border: 1px solid var(--brand); outline: 1px solid var(--brand); box-shadow: none; }
 html body #root #page-schedule .cal__num { color: var(--fg); font-size: 1.6rem; font-weight: 700; }
 html body #root #page-schedule .cal__day.is-today .cal__num { color: var(--brand); }
-html body #root #page-schedule .cal__event { padding: 0.4rem 0.8rem; border-radius: var(--r-tag); font-size: 1.2rem; line-height: 1.5; }
 html body #root #page-schedule .cal__more { color: var(--muted); font-size: 1.2rem; }
+
+/* 주 한 줄 — 날짜 칸 위에 일정 막대를 겹쳐 그리는 격자다 (Schedule.tsx Cal · lib/calBars.ts).
+   열은 달력 격자를 그대로 물려받아(subgrid) 막대가 칸 사이 틈을 건너 이어진다.
+   행은 [날짜 머리 · 막대 세 줄 · 더 보기] — 날짜 칸(button)은 모든 행에 걸쳐 바탕이 되고, 막대는 그 위에 선다 */
+html body #root #page-schedule .cal__week {
+  --cal-head: 4.4rem; --cal-lane: 2.8rem; --cal-foot: 3.2rem;
+  display: grid; grid-column: 1 / -1; grid-template-columns: subgrid;
+  grid-template-rows: var(--cal-head) repeat(3, var(--cal-lane)) var(--cal-foot); row-gap: 0.4rem;
+}
+html body #root #page-schedule .cal__week > :is(.cal__day, .cal__pad) { grid-row: 1 / -1; min-height: 0; }
+html body #root #page-schedule .cal__bar {
+  position: relative; z-index: 1; display: flex; align-items: center; min-width: 0; padding: 0 0.8rem;
+  background: color-mix(in srgb, var(--event-color) 18%, var(--surface-2));
+  color: var(--fg); font-size: 1.2rem; line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  pointer-events: none;
+}
+/* 실제 시작 · 끝인 쪽만 칸 안으로 들이고 둥글린다 — 앞 · 다음 주로 이어지는 쪽은 칸 끝까지 닿는다 */
+html body #root #page-schedule .cal__bar.is-head { margin-left: 0.8rem; border-left: 0.4rem solid var(--event-color); border-top-left-radius: var(--r-tag); border-bottom-left-radius: var(--r-tag); }
+html body #root #page-schedule .cal__bar.is-tail { margin-right: 0.8rem; border-top-right-radius: var(--r-tag); border-bottom-right-radius: var(--r-tag); }
+html body #root #page-schedule .cal__week > .cal__more { position: relative; z-index: 1; grid-row: -2; align-self: start; padding: 0.4rem 1.2rem 0; pointer-events: none; }
+
+/* 좁은 화면 — 이름 대신 얇은 선으로 이어짐만 보인다. 분류 점은 그대로 둔다(세 줄 밖 일정의 분류까지 알린다) */
+@media (max-width: 1099px) {
+  html body #root #page-schedule .cal__week { --cal-head: 4.8rem; --cal-lane: 0.4rem; --cal-foot: 0.4rem; }
+  html body #root #page-schedule .cal__bar { padding: 0; border: 0; font-size: 0; background: var(--event-color); }
+  html body #root #page-schedule .cal__bar.is-head { margin-left: 0.4rem; border: 0; }
+  html body #root #page-schedule .cal__bar.is-tail { margin-right: 0.4rem; }
+  html body #root #page-schedule .cal__week > .cal__more { display: none; }
+}
 html body #root #page-schedule .schedule__legend { padding: 1.2rem 0.4rem; color: var(--muted); line-height: 1.7; }
 
 /* 고른 날 */
@@ -61,9 +89,10 @@ html body #root #page-schedule .schedule__source { display: inline-block; margin
   html body #root #page-schedule .schedule__month-nav { gap: 1.2rem; padding: 2rem 1.6rem; }
   html body #root #page-schedule .schedule__month-nav h2 { font-size: 2.8rem; }
   html body #root #page-schedule .schedule__cal { gap: 0.4rem; padding: 0.8rem; }
-  html body #root #page-schedule .cal__day { min-height: 7.2rem; padding: 0.8rem; }
+  html body #root #page-schedule .cal__day { padding: 0.8rem; }
+  /* 칸이 좁아 분류 점이 두 줄로 접힌다 — 머리 행을 그만큼 늘려 선이 점을 덮지 않게 한다 */
+  html body #root #page-schedule .cal__week { --cal-head: 5.6rem; }
   html body #root #page-schedule .cal__head { padding: 0.8rem 0; }
-  html body #root #page-schedule .cal__events { display: none; }
   html body #root #page-schedule .cal__num { font-size: 1.4rem; }
   html body #root #page-schedule .schedule__catalog { grid-template-columns: 1fr; }
   html body #root #page-schedule :is(.schedule__detail, .schedule__category) { padding: 2rem; }

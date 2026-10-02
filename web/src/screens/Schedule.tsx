@@ -6,7 +6,7 @@
 // 이 화면의 물음은 "무엇이 있나" 가 아니라 **"언제 무엇이 열리나"** 이고, 그 답은 달력 모양이어야 한다.
 //
 // 세 벌이 같은 분류 필터(cat)를 본다:
-//   달력      날짜 칸에 그날 걸친 일정의 분류 점 + 이름 최대 셋
+//   달력      주마다 한 줄 — 여러 날 일정은 시작~끝 칸을 막대 하나로 잇고, 보이는 줄은 셋까지
 //   기간 막대  한 줄에 일정 하나, 시작~종료를 분류 색으로 잇는다 (좁은 드로어에는 안 들어가 이 화면 전용)
 //   전체 목록  분류별로 묶은 날짜 + 문구
 //
@@ -19,6 +19,7 @@ import { Chips, type ChipDef } from '../components/Bits';
 import { track } from '../lib/track';
 import KoOnlyNote from '../components/KoOnlyNote';
 import { regionMonths, regionToday, useRegion, type Region } from '../lib/region';
+import { calWeeks } from '../lib/calBars';
 import type { ScheduleCat, ScheduleItem, ScheduleMonth } from '../types/data';
 
 const SCHED_CAT_KEY = 'pogo_sched_cat';   // v3 와 같은 키
@@ -42,7 +43,11 @@ const readCat = () => {
   try { return localStorage.getItem(SCHED_CAT_KEY) || 'all'; } catch { return 'all'; }
 };
 
-/** 달력 — 날짜를 누르면 아래 상세가 그날 일정으로 바뀐다 */
+/**
+ * 달력 — 날짜를 누르면 아래 상세가 그날 일정으로 바뀐다.
+ * 주마다 한 줄(cal__week)이고, 여러 날 일정은 시작 칸부터 끝 칸까지 막대 하나로 잇는다 (lib/calBars.ts).
+ * 막대는 누름을 받지 않는다 — 막대 위를 눌러도 그 아래 날짜 칸이 골라진다
+ */
 function Cal({ month, cats, items, picked, onPick, today }: {
   month: ScheduleMonth; cats: Record<string, ScheduleCat>; items: ScheduleItem[];
   picked: number; onPick: (day: number) => void; today: Date;
@@ -50,39 +55,44 @@ function Cal({ month, cats, items, picked, onPick, today }: {
   const { y, m } = month.ym;
   const isThisMonth = today.getFullYear() === y && today.getMonth() + 1 === m;
   const todayDay = isThisMonth ? today.getDate() : 0;
-  const offset = new Date(y, m - 1, 1).getDay();        // 1일을 제 요일 칸으로 밀어낸다
-  const last = new Date(y, m, 0).getDate();             // 다음 달 0일 = 이 달 마지막 날
-  const on = (day: number) => items.filter((item) => day >= item.s && day <= item.e);
+  const weeks = useMemo(() => calWeeks(y, m, items, 3, Object.keys(cats)), [y, m, items, cats]);
+  const count = (day: number) => items.filter((item) => day >= item.s && day <= item.e);
 
   return (
     <div className="schedule__cal">
       {WEEKDAYS.map((name) => <span key={name} className="cal__head">{name}</span>)}
-      {Array.from({ length: offset }, (_, index) => <span key={`pad-${index}`} />)}
-      {Array.from({ length: last }, (_, index) => {
-        const day = index + 1;
-        const dayItems = on(day);
-        const keys = [...new Set(dayItems.map((item) => item.cat))];
-        const klass = `cal__day${day === todayDay ? ' is-today' : ''}${day === picked ? ' is-selected' : ''}`;
-        return (
-          <button key={day} className={klass} aria-label={`${m}월 ${day}일, 일정 ${dayItems.length}개`}
-            onClick={() => onPick(day)}>
-            <span className="cal__num">{day}</span>
-            <span className="cal__dots">
-              {keys.map((key) => <span key={key} className="dot" style={{ background: cats[key]?.color }} />)}
-            </span>
-            {/* 넓은 화면은 칸 안에서 이름을 셋까지 읽는다 — 나머지 건수는 아래 상세로 안내한다 */}
-            <span className="cal__events" aria-hidden="true">
-              {dayItems.slice(0, 3).map((item, i) => (
-                <span key={i} className="cal__event" title={item.label}
-                  style={{ ['--event-color' as string]: cats[item.cat]?.color }}>
-                  {item.label.split(' (')[0]}
+      {weeks.map((week) => (
+        <div key={week.days.find(Boolean)} className="cal__week">
+          {week.days.map((day, index) => {
+            if (!day) return <span key={`pad-${index}`} className="cal__pad" style={{ gridColumn: index + 1 }} />;
+            const dayItems = count(day);
+            const keys = [...new Set(dayItems.map((item) => item.cat))];
+            const klass = `cal__day${day === todayDay ? ' is-today' : ''}${day === picked ? ' is-selected' : ''}`;
+            return (
+              <button key={day} className={klass} style={{ gridColumn: index + 1 }}
+                aria-label={`${m}월 ${day}일, 일정 ${dayItems.length}개`} onClick={() => onPick(day)}>
+                <span className="cal__num">{day}</span>
+                <span className="cal__dots">
+                  {keys.map((key) => <span key={key} className="dot" style={{ background: cats[key]?.color }} />)}
                 </span>
-              ))}
-              {dayItems.length > 3 ? <span className="cal__more">{`+${dayItems.length - 3}개 더 보기`}</span> : null}
+              </button>
+            );
+          })}
+          {week.segments.map((seg) => (
+            <span key={`${seg.lane}-${seg.col}`} aria-hidden="true" title={seg.item.label}
+              className={`cal__bar${seg.head ? ' is-head' : ''}${seg.tail ? ' is-tail' : ''}`}
+              style={{ gridColumn: `${seg.col} / span ${seg.span}`, gridRow: seg.lane + 2, ['--event-color' as string]: cats[seg.item.cat]?.color }}>
+              {/* 앞 주에서 이어진 막대에도 이름을 단다 — 주마다 줄이 바뀌어 앞 줄을 보지 않고도 읽혀야 한다 */}
+              {seg.item.label.split(' (')[0]}
             </span>
-          </button>
-        );
-      })}
+          ))}
+          {week.days.map((day, index) => (day && week.hidden[day] ? (
+            <span key={`more-${day}`} aria-hidden="true" className="cal__more" style={{ gridColumn: index + 1 }}>
+              {`+${week.hidden[day]}개 더 보기`}
+            </span>
+          ) : null))}
+        </div>
+      ))}
     </div>
   );
 }
