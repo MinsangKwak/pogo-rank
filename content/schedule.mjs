@@ -59,6 +59,7 @@ export const SCHEDULE_CATS = {
 };
 
 // 일정 한 건의 모양: { s: 시작일, e: 종료일, cat: 분류, label: 표시 문구, t?: 타입키 }
+// 지역마다 다른 행사는 eu?: 유럽 달력 제목을 따로 적는다 (frontend-v4/scripts/merge-schedule.mjs titlesForRegion) — 한국 표에는 실리지 않는다
 //   s·e는 "이 달의 몇 일"이며 양끝 포함(inclusive)이다. 달을 넘기는 일정은 이 달 안에서 끊어 적는다.
 //   t는 dmax 분류에만 붙는 보스 속성 키로, max.js가 이번 주 보스 카드를 만들 때 쓴다.
 // ※ 사용자에게 그대로 보이는 실제 일정이므로 날짜·문구를 임의로 고치지 않는다.
@@ -118,15 +119,17 @@ export const SCHEDULE_MONTHS = {
     ym: { y: 2026, m: 10 },
     // 2026-09-07 v2.13.0 (QA-20) 9월 발표분에서 10월로 넘어가는 확정 일정만 먼저 등재. 10/6 이후 로테이션(5성·메가·D-MAX·스포트라이트)은
     // 대략 9월 말 발표되므로 발표 뒤 이 배열을 채운다
-    note: '공식 한국 공지 확인: 2026-09-20 · 한국시간 기준. 확인된 일정만 수록했으며, 세부 내용 미발표 행사는 날짜만 확정된 상태예요. 미등재 일정은 추후 공지 확인이 필요해요.',
+    note: '공식 한국 공지 확인: 2026-10-02 · 한국시간 기준. 확인된 일정만 수록했으며, 세부 내용 미발표 행사는 날짜만 확정된 상태예요. 미등재 일정은 추후 공지 확인이 필요해요.',
     items: [
       { s: 1, e: 5, cat: 'event', label: '수확 축제: 과사삭벌레 모으기 (9/29 10시 ~ 10/5 20시)', source: 'https://pokemongo.com/ko/news/harvest-festival-2026' },
       { s: 1, e: 11, cat: 'event', label: '피카츄의 가을 소풍 (9/18~10/11 · 서울 종로·중구, 인천공항 한정)' },
       { s: 2, e: 5, cat: 'event', label: '수확 축제: 점령 (10/2 00시 ~ 10/5 20시 · 그림자 제크로무)', source: 'https://pokemongo.com/ko/news/harvest-festival-tgr-2026' },
       { s: 3, e: 3, cat: 'event', label: '거다이맥스 에이스번 맥스배틀 데이 (14–17시)', source: 'https://pokemongo.com/ko/news/gigantamax-cinderace-max-battle-day-2026' },
+      // 2026-10-02 공식 공지 반영 — 한글날 이벤트 · 깜눈크 부화데이 · 다이맥스 유크시 맥스배틀 데이(지역마다 다른 포켓몬, 한국은 유크시)
+      { s: 6, e: 9, cat: 'event', label: '2026 한글날 이벤트 (10/6 10시 ~ 10/9 20시 · 대한민국 전역)', source: 'https://pokemongo.com/ko/news/hangul-nal-2026' },
       { s: 10, e: 10, cat: 'event', label: '조로아 커뮤니티 데이 (14–17시)', source: 'https://pokemongo.com/ko/news/communityday-october-2026-zorua' },
-      { s: 17, e: 17, cat: 'event', label: '부화데이 (날짜 확정 · 세부 내용 미발표)', source: 'https://pokemongo.com/ko/news/save-the-date-s24' },
-      { s: 24, e: 24, cat: 'event', label: '맥스배틀 데이 (날짜 확정 · 세부 내용 미발표)', source: 'https://pokemongo.com/ko/news/save-the-date-s24' },
+      { s: 17, e: 17, cat: 'event', label: '깜눈크 부화데이 (11–17시)', source: 'https://pokemongo.com/ko/news/sandile-hatch-day-2026' },
+      { s: 24, e: 24, cat: 'event', label: '다이맥스 유크시 맥스배틀 데이 (14–17시 · 한국은 유크시, 유럽 엠라이트 · 아메리카 아그놈)', eu: '다이맥스 엠라이트 맥스배틀 데이 (14–17시 · 유럽 · 중동 · 아프리카 · 인도는 엠라이트)', source: 'https://pokemongo.com/ko/news/dynamax-uxie-mesprit-azelf-max-battle-day-2026' },
       { s: 31, e: 31, cat: 'event', label: '슈퍼 메가 레이드 데이 (날짜 확정 · 세부 내용 미발표)', source: 'https://pokemongo.com/ko/news/save-the-date-s24' },
       { s: 1, e: 6, cat: 'raid5', label: '제르네아스 (9/30~10/6)' },
       { s: 1, e: 6, cat: 'mega', label: '메가 우츠보트 (9/30~10/6)' },
