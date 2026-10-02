@@ -19,7 +19,7 @@ import { Chips, type ChipDef } from '../components/Bits';
 import { track } from '../lib/track';
 import KoOnlyNote from '../components/KoOnlyNote';
 import { regionMonths, regionToday, useRegion, type Region } from '../lib/region';
-import { calWeeks } from '../lib/calBars';
+import { BAR_COLORS, barColors, calWeeks } from '../lib/calBars';
 import type { ScheduleCat, ScheduleItem, ScheduleMonth } from '../types/data';
 
 const SCHED_CAT_KEY = 'pogo_sched_cat';   // v3 와 같은 키
@@ -56,6 +56,7 @@ function Cal({ month, cats, items, picked, onPick, today }: {
   const isThisMonth = today.getFullYear() === y && today.getMonth() + 1 === m;
   const todayDay = isThisMonth ? today.getDate() : 0;
   const weeks = useMemo(() => calWeeks(y, m, items, 3, Object.keys(cats)), [y, m, items, cats]);
+  const colors = useMemo(() => barColors(items), [items]);
   const count = (day: number) => items.filter((item) => day >= item.s && day <= item.e);
 
   return (
@@ -81,7 +82,10 @@ function Cal({ month, cats, items, picked, onPick, today }: {
           {week.segments.map((seg) => (
             <span key={`${seg.lane}-${seg.col}`} aria-hidden="true" title={seg.item.label}
               className={`cal__bar${seg.head ? ' is-head' : ''}${seg.tail ? ' is-tail' : ''}`}
-              style={{ gridColumn: `${seg.col} / span ${seg.span}`, gridRow: seg.lane + 2, ['--event-color' as string]: cats[seg.item.cat]?.color }}>
+              style={{ gridColumn: `${seg.col} / span ${seg.span}`, gridRow: seg.lane + 2,
+                ['--event-color' as string]: BAR_COLORS[colors.get(seg.item) ?? 0], ['--cat-color' as string]: cats[seg.item.cat]?.color }}>
+              {/* 막대 색은 일정마다 다르다 — 분류는 앞의 점(분류 색)이 말한다. 범례의 점과 같은 색이다 */}
+              <i className="cal__bar-cat" />
               {/* 앞 주에서 이어진 막대에도 이름을 단다 — 주마다 줄이 바뀌어 앞 줄을 보지 않고도 읽혀야 한다 */}
               {seg.item.label.split(' (')[0]}
             </span>

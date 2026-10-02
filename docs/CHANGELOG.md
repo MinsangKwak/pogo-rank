@@ -27,7 +27,18 @@
 ## 릴리스 기록
 
 <details open>
-<summary><b>2026-10-02</b> — 4판 · <code>v5.9.0</code> · <code>v5.8.3</code> · <code>v5.8.2</code> · <code>v5.8.1</code></summary>
+<summary><b>2026-10-02</b> — 5판 · <code>v5.9.1</code> · <code>v5.9.0</code> · <code>v5.8.3</code> · <code>v5.8.2</code> · <code>v5.8.1</code></summary>
+
+<details>
+<summary><b>v5.9.1</b> · 달력 막대를 일정마다 다른 색으로</summary>
+
+**배경** — 주인 제보: 막대가 다 똑같은 색이라 구분이 안 된다(모바일 실화면 — 행사 분류가 모두 주황 선). v5.9.0 은 막대를 분류 색으로 칠했고, 한 달 일정의 절반 이상이 '이벤트' 라 같은 색 선이 겹쳐 섰다.
+
+**변경** — `web/src/lib/calBars.ts barColors` 가 일정마다 색 번호를 준다: 시작일 순으로 같은 날에 걸치는 일정이 쓰지 않은 가장 앞 색(그래프 칠하기). 달 전체에서 한 번 정해 같은 일정은 주가 바뀌어도 같은 색이다. 색은 새로 만들지 않고 테마마다 맞춘 게임 타입 색 토큰 열둘(`--t-fire · water · grass · psychic · electric · dragon · ice · fighting · poison · fairy · ground · ghost`, 이웃끼리 색상환에서 멀게)에서 고른다. 분류는 넓은 화면에서 막대 앞 작은 점(`--cat-color`, 범례와 같은 색)이 맡고, 좁은 화면은 날짜 칸의 분류 점이 그대로 맡는다.
+
+검사 — web 153(막대 색 2건 추가) · 명암비 · 1440 · 900 · 390px 두 테마 실측.
+
+</details>
 
 <details>
 <summary><b>v5.9.0</b> · 달력 여러 날 행사를 한 줄 막대로 · 운영 통계 '오늘' · 고름 줄 개편</summary>

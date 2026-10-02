@@ -78,3 +78,27 @@ export function calWeeks(y: number, m: number, items: ScheduleItem[], lanes = 3,
   }
   return weeks;
 }
+
+// 막대 색 — 분류 색 하나로 칠했더니 행사가 모두 같은 주황이라 겹치면 구분이 안 됐다 (주인 제보, 2026-10-02).
+// 일정마다 색을 따로 주되, 테마마다 맞춰 둔 게임 타입 색 토큰에서 고른다(새 색을 만들지 않는다).
+// 차례는 이웃한 색끼리 색상환에서 멀게 — 주황 · 파랑 · 초록 · 분홍 · 노랑 · 보라 …
+export const BAR_COLORS = ['fire', 'water', 'grass', 'psychic', 'electric', 'dragon', 'ice', 'fighting', 'poison', 'fairy', 'ground', 'ghost']
+  .map((type) => `var(--t-${type})`);
+
+/**
+ * 일정마다 막대 색 번호. 같은 날에 걸치는 일정끼리는 겹치지 않는 가장 앞 색을 받는다(그래프 칠하기를 앞에서부터 욕심껏).
+ * 달 전체에서 한 번 정하므로 같은 일정은 주가 바뀌어도 같은 색이다
+ */
+export function barColors(items: ScheduleItem[]): Map<ScheduleItem, number> {
+  const picked = new Map<ScheduleItem, number>();
+  const order = [...items].sort((a, b) => a.s - b.s || (b.e - b.s) - (a.e - a.s));
+  for (const item of order) {
+    const used = new Set<number>();
+    for (const [other, color] of picked) if (other.s <= item.e && other.e >= item.s) used.add(color);
+    let color = 0;
+    while (used.has(color) && color < BAR_COLORS.length - 1) color += 1;
+    // 색이 모자라면(한 날에 열둘 넘게 겹치면) 겹친 수로 돌려 쓴다 — 바로 옆 막대와는 여전히 다르다
+    picked.set(item, used.has(color) ? used.size % BAR_COLORS.length : color);
+  }
+  return picked;
+}
