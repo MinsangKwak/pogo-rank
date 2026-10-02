@@ -273,7 +273,6 @@ html:not(#_):not(#__) .home-dashboard .home__art::before { border-radius:0; }@me
 #page #page-schedule .cal__day:hover { border-color:var(--brand-2); background:var(--field-paper); }
 #page-schedule .cal__num { font-family:"Galmuri11",sans-serif; font-size: var(--fs-body); }
 #page #page-schedule .cal__day.is-today { border:2px solid var(--brand-2); box-shadow:inset 0 .4rem var(--brand-2); }
-#page-schedule .cal__event { padding:0.4rem 0.4rem; margin-top:0.4rem; line-height: 1.5; }
 #page-schedule .schedule__detail { margin-top:2rem; padding:2rem; border-left:4px solid var(--field-red); background:var(--field-paper); }
 #page-schedule .schedule__sec { font-family:"Galmuri11",sans-serif; font-size: var(--fs-body); margin-bottom:1.2rem; }
 #page-schedule .schedule__item { line-height: 1.7; }

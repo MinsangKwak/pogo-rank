@@ -17,6 +17,7 @@ import RouteIntro from '../../src/components/RouteIntro';
 import { ROUTES, routeOfPath, routeDesc } from '../../src/routes';
 import { allSprites, monFacts } from '../../src/lib/facts.server';
 import MonFacts, { monTitle, monDescription } from '../../src/components/MonFacts';
+import { routeDocTitle } from '../../src/lib/docTitle';
 
 /**
  * 표에 없는 주소도 그린다. 라우트 아래의 자유로운 뒷부분(`/game-updates/<id>` ·
@@ -66,12 +67,13 @@ export async function generateMetadata(
   const found = routeOfPath(path);
   if (!found) return {};
   const title = found.route.title ?? found.route.nav ?? 'moncamp';
+  // 탭 제목은 브라우저가 화면을 옮길 때도 같은 함수로 고친다 (lib/docTitle.ts)
   const description = routeDesc(found.route.id);
   // 루트 화면은 검색에 안 올린다 — 사이트맵에도 없다(잠긴 화면)
   // 루트 화면은 정적 머리에도 이름을 안 적는다 — 주소만 알아도 '운영 통계' 가 있다는 것이 드러난다. 검색 · 사이트맵에도 없다
   if ('root' in found.route && found.route.root) return { title: 'moncamp', robots: { index: false, follow: false } };
   return {
-    title: `${title} | moncamp`,
+    title: routeDocTitle(found.route),
     ...(description ? { description } : {}),
     alternates: { canonical: `/${found.route.path}` },
     openGraph: {

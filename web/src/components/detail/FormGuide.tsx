@@ -90,8 +90,12 @@ const tierOrder = (tier: string) => { const at = 'SABC'.indexOf(tier); return at
  *   도감에서 자세히  도감 화면으로 옮겨 이 포켓몬의 자세한 팝업을 연다 (App.tsx openDeep)
  *   D-MAX          계열의 맥스 폼 중 티어표에서 가장 높은 것의 칸 · 줄로. 맥스 폼이 없으면 D-MAX 첫 화면
  *   PvP            계열에서 가장 높은 리그 순위의 줄로. 없으면 PvP 첫 화면
+ * 이미 그 화면 위의 팝업이면(here) 옮기지 않고 그 폼의 배틀 정보를 연다(onHere) — 옮겨 봐야 방금 누른 줄로 되돌아올 뿐이다 (2026-10-02 점검)
  */
-export function DeepDock({ mon, dexNo, onDeep, onLeave }: { mon: MonRef; dexNo: number | null; onDeep?: (pick: MonRef) => void; onLeave?: () => void }) {
+export function DeepDock({ mon, dexNo, onDeep, onLeave, here = '', onHere }: {
+  mon: MonRef; dexNo: number | null; onDeep?: (pick: MonRef) => void; onLeave?: () => void;
+  here?: string; onHere?: (name: string) => void;
+}) {
   const { data: dex } = useDex();
   const { data: max } = useMax();
   const { data: pvp } = usePvp();
@@ -118,6 +122,7 @@ export function DeepDock({ mon, dexNo, onDeep, onLeave }: { mon: MonRef; dexNo: 
           <PxIcon emoji="📕" /><span className="btn-label">도감에서 자세히</span>
         </button>
         <button type="button" className="detail__dock-btn detail__deep-max" onClick={() => {
+          if (here === 'dmax' && onHere) { onHere(maxPick?.name ?? mon.name); return; }
           if (maxPick) { board.toMax({ name: maxPick.name, places: [], moveType: index.get(maxPick.name)?.charged ?? '', tier: maxPick.tier }); return; }
           track('detail_more', { to: 'dmax', mon: mon.name });
           onLeave?.();
@@ -126,6 +131,7 @@ export function DeepDock({ mon, dexNo, onDeep, onLeave }: { mon: MonRef; dexNo: 
           <PxIcon emoji="⚡" /><span className="btn-label">D-MAX 순위</span>
         </button>
         <button type="button" className="detail__dock-btn detail__deep-pvp" onClick={() => {
+          if (here === 'pvp' && onHere) { onHere(pvpPick?.name ?? mon.name); return; }
           if (pvpPick) { board.toPvp(pvpPick.name, pvpPick.league); return; }
           track('detail_more', { to: 'pvp', mon: mon.name });
           onLeave?.();
@@ -240,8 +246,10 @@ export function TrainCard({ mon, dexNo, stem, onLeave }: { mon: MonRef; dexNo: n
  * 폼별 정보 — 일반 · 메가 · 다이맥스 · 거다이맥스를 한 목록에. 어느 폼을 보고 있어도 같은 목록이 선다.
  * baseLabel 은 일반 줄의 이름표 (섀도우 폼을 보고 있으면 그 라벨)
  */
-export default function FormGuide({ mon, dexNo, baseLabel, onSwitch, onLeave }: {
+export default function FormGuide({ mon, dexNo, baseLabel, onSwitch, onLeave, onMaxHere }: {
   mon: MonRef; dexNo: number | null; baseLabel: string; onSwitch: Switch; onLeave?: () => void;
+  /** D-MAX 화면 위의 팝업 — 'D-MAX 더보기' 가 화면을 옮기지 않고 팝업을 그 폼의 배틀 정보로 바꾼다 (MonDetail here) */
+  onMaxHere?: Switch;
 }) {
   const { data: dex } = useDex();
   const { data: max } = useMax();
@@ -266,10 +274,11 @@ export default function FormGuide({ mon, dexNo, baseLabel, onSwitch, onLeave }: 
           const kind = row.key === 'mega' ? ' form-tag--mega' : row.key === 'base' ? '' : ' form-tag--max';
           const tag = <span className={`form-tag${kind}`}>{label}</span>;
           if (row.key === 'dmax' || row.key === 'gmax') {
-            // 맥스 폼은 팝업에서 요약만 — 더보기는 D-MAX 화면의 그 줄 (2026-09-30 주인 요청)
+            // 맥스 폼은 팝업에서 요약만 — 더보기는 D-MAX 화면의 그 줄 (2026-09-30 주인 요청).
+            // 이미 D-MAX 화면이면 옮길 곳이 없다 — 팝업 안에서 그 폼의 배틀 정보로 (2026-10-02 주인 결정)
             return (
               <button key={row.name} type="button" className={`detail__form detail__formrow${on ? ' is-now' : ''}`}
-                onClick={() => board.toMax(row)}>
+                onClick={() => (onMaxHere ? onMaxHere(toMon(row)) : board.toMax(row))}>
                 {tag}
                 <span className="detail__formrow-use">{formSummary(row, dex.TYPE_KO)}</span>
                 {row.unrel ? <span className="tag">미출시</span> : null}
@@ -313,7 +322,7 @@ export default function FormGuide({ mon, dexNo, baseLabel, onSwitch, onLeave }: 
 }
 
 /** 지금 보는 폼의 성적 — 배틀 정보 맨 위. 맥스 폼은 D-MAX 표, 일반은 PvP 리그 · 레이드 */
-export function FormStats({ mon, dexNo, baseLabel, onLeave }: { mon: MonRef; dexNo: number | null; baseLabel: string; onLeave?: () => void }) {
+export function FormStats({ mon, dexNo, baseLabel, onLeave, here = '' }: { mon: MonRef; dexNo: number | null; baseLabel: string; onLeave?: () => void; here?: string }) {
   const { data: dex } = useDex();
   const slides = useMaxSlidesSoft();
   const { data: max } = useMax();
@@ -368,7 +377,10 @@ export function FormStats({ mon, dexNo, baseLabel, onLeave }: { mon: MonRef; dex
         {lines.length
           ? <ul className="detail__stat-lines">{lines.map((line) => <li key={line}>{line}</li>)}</ul>
           : <p className="detail__none-text">D-MAX 순위표 상위권 밖이에요.</p>}
-        <button type="button" className="detail__form-go" onClick={() => board.toMax({ name: mon.name, places, moveType, tier: spot })}>D-MAX 더보기 ›</button>
+        {/* D-MAX 화면 위에서는 이미 이 폼의 D-MAX 정보를 보고 있다 — '더보기' 가 아니라 표의 그 줄로 가는 단추다 (2026-10-02 점검) */}
+        <button type="button" className="detail__form-go" onClick={() => board.toMax({ name: mon.name, places, moveType, tier: spot })}>
+          {here === 'dmax' ? 'D-MAX 표에서 이 줄 보기 ›' : 'D-MAX 더보기 ›'}
+        </button>
       </section>
     );
   }

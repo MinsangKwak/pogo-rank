@@ -93,6 +93,8 @@ def meta_of(page, prop):
 def text_lines(page):
     """태그를 걷어낸 본문 줄. 붙어 있는 중복 줄은 한 줄로 줄인다 (머리말 메뉴가 두 번 나온다)."""
     body = re.sub(r'<script.*?</script>|<style.*?</style>', ' ', page, flags=re.S)
+    # 글자 꾸밈 태그(<i>「포켓몬스터썬·문」</i> 등)는 문장 안에 있다 — 줄을 끊으면 인용이 '의 무대인 …' 처럼 토막 난다
+    body = re.sub(r'</?(?:i|b|em|strong|span|a|sup|sub|u|small)(?:\s[^>]*)?>', '', body, flags=re.I)
     body = html.unescape(re.sub(r'<[^>]+>', '\n', body))
     lines = [line.strip() for line in body.split('\n') if len(line.strip()) > 2]
     out = []
@@ -152,7 +154,8 @@ def excerpt_of(lines, title='', lang='ko'):
     for line in lines:
         if len(line) < 25 or len(line) > 400:
             continue
-        if re.match(r'^(트레이너|Trainers|콘텐츠로|Skip to)', line):
+        # '자세한 내용은 … 에서 확인하세요' 는 다른 곳으로 보내는 안내라 그 글의 내용이 아니다
+        if re.match(r'^(트레이너|Trainers|콘텐츠로|Skip to|자세한 내용은|For more (details|information))', line):
             continue
         if BOILERPLATE.search(line):
             continue
@@ -369,6 +372,17 @@ def main():
     notes = collect_helpshift(done)
     candidates.extend(notes)
     print(f'  (릴리스 노트 {len(notes)}건 포함)')
+    # 아직 게시되지 않은 지난 후보는 남긴다 — 공식 색인 · 30일 창에서 내려갔다고 검토 대기열에서 지우면
+    # 다시 받을 길이 없다(메가 헬가 '악의파동+' 변경이 담긴 mega-squads-2026 이 그렇게 빠졌다, Codex #303).
+    # 사람이 파일에서 지운 후보는 색인에 다시 오르지 않는 한 돌아오지 않는다
+    fresh = {entry['slug'] for entry in candidates}
+    kept = 0
+    if os.path.exists(CANDIDATES_PATH):
+        for entry in json.load(open(CANDIDATES_PATH, encoding='utf-8')).get('candidates', []):
+            if entry.get('slug') and entry['slug'] not in fresh and entry['slug'] not in done:
+                candidates.append(entry)
+                kept += 1
+    print(f'  (지난 후보 {kept}건 유지)')
     candidates.sort(key=lambda entry: entry.get('announcedAt', ''), reverse=True)
     print(f'후보 {len(candidates)}건 · 건너뜀 ' + ' · '.join(f'{k} {v}' for k, v in skipped.items() if v))
     for entry in candidates:
