@@ -15,6 +15,9 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 export const RELEASE_NOTES_EN = {
+  '2026-10-02 · v5.8.2': [
+    '**October schedule updated with the latest announcements** — the Oct 24 Max Battle Day features Dynamax Uxie (Korea · Asia-Pacific); Europe gets Mesprit and the Americas get Azelf. The Oct 17 Sandile Hatch Day (11:00–17:00) and the Oct 6–9 Hangul Day event (all of Korea) are listed too. Details of the Oct 31 Super Mega Raid Day are not announced yet',
+  ],
   '2026-10-02 · v5.8.1': [
     '**[Full details in Pokédex] now takes you to the Pokédex and opens the full details there** — training picks, battle info, CP and moves appear over the Pokédex, and the list stays when you close them',
     '**The favorite and close buttons at the top right of the Pokémon window are now the same size and lined up**',
