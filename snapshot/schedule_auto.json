@@ -642,5 +642,65 @@
 "label": "Pokémon TCG: 30th Celebration",
 "start_eu": "2026-09-27",
 "end_eu": "2026-10-20"
+},
+"minior-showers-orionids-2026": {
+"id": "minior-showers-orionids-2026",
+"type": "event",
+"start": "2026-10-19",
+"end": "2026-10-24",
+"cat": "event",
+"label": "Minior Showers: Orionids 2026",
+"start_eu": "2026-10-19",
+"end_eu": "2026-10-24"
+},
+"minior-showers-leonids-2026": {
+"id": "minior-showers-leonids-2026",
+"type": "event",
+"start": "2026-11-14",
+"end": "2026-11-19",
+"cat": "event",
+"label": "Minior Showers: Leonids 2026",
+"start_eu": "2026-11-14",
+"end_eu": "2026-11-19"
+},
+"minior-showers-geminids-2026": {
+"id": "minior-showers-geminids-2026",
+"type": "event",
+"start": "2026-12-11",
+"end": "2026-12-16",
+"cat": "event",
+"label": "Minior Showers: Geminids 2026",
+"start_eu": "2026-12-11",
+"end_eu": "2026-12-16"
+},
+"minior-showers-eta-aquariids-2027": {
+"id": "minior-showers-eta-aquariids-2027",
+"type": "event",
+"start": "2027-05-03",
+"end": "2027-05-08",
+"cat": "event",
+"label": "Minior Showers: Eta Aquariids 2027",
+"start_eu": "2027-05-03",
+"end_eu": "2027-05-08"
+},
+"minior-showers-southern-delta-aquariids-2027": {
+"id": "minior-showers-southern-delta-aquariids-2027",
+"type": "event",
+"start": "2027-07-28",
+"end": "2027-08-02",
+"cat": "event",
+"label": "Minior Showers: Southern Delta Aquariids 2027",
+"start_eu": "2027-07-28",
+"end_eu": "2027-08-02"
+},
+"minior-showers-perseids-2027": {
+"id": "minior-showers-perseids-2027",
+"type": "event",
+"start": "2027-08-10",
+"end": "2027-08-15",
+"cat": "event",
+"label": "Minior Showers: Perseids 2027",
+"start_eu": "2027-08-10",
+"end_eu": "2027-08-15"
 }
 }
