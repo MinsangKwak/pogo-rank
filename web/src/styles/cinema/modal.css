@@ -164,6 +164,13 @@ html body #root .detail--mon .detail__stat-go { width: 100%; min-height: var(--t
   /* 계산기 머리는 그림 · 이름만 — 'CP 계산기' 글자까지 두면 폼 이름이 잘렸다 (390px 실측). 계산기인 것은 아래 판이 말한다 */
   html body #root .detail--mon[data-screen="calc"] .detail__bar-dex { display: none; }
 }
+/* 머리줄 오른쪽 단추 둘(즐겨찾기 · 닫기)은 한 줄로 선다 — 같은 3.6rem 칸, 같은 세로 가운데, 사이 0.8rem (2026-10-02 주인 요청).
+   닫기는 띠 밖 절대 위치라 띠 위 여백(1.2rem)과 상자 테두리(1px)만큼 내려 즐겨찾기와 가운데를 맞춘다.
+   띠의 오른쪽 여백 = 닫기 오른쪽 0.8rem + 닫기 3.6rem + 사이 0.8rem */
+html body #root .detail--mon .detail__bar { min-height: 6rem; padding-right: 5.2rem; }
+html body #root .detail--mon .detail__top-actions { gap: 0.8rem; }
+html body #root .detail--mon .detail__fav { height: 3.6rem; border-radius: var(--r-ctl); }
+html body #root .modal__wrap:has(.detail--mon) .modal__close { top: calc(1.2rem + 1px); right: 0.8rem; }
 html body #root .modal__wrap:has(.detail--mon) .modal__close { border-color: var(--plate-line); background: color-mix(in srgb, var(--plate) 70%, transparent); color: var(--plate-fg); }
 @media (hover: hover) { html body #root .modal__wrap:has(.detail--mon) .modal__close:hover { border-color: var(--plate-accent); background: color-mix(in srgb, var(--plate-accent) 20%, var(--plate)); } }
 html body #root .modal__wrap:has(.detail--mon) .modal__close:focus-visible { outline-color: var(--plate-accent); }
@@ -185,4 +192,12 @@ html body #root .tankpop :is(.tankpop__picks, .tankpop__list) > li { border-top:
   html body #root :is(.modal__box, .modal__wrap:not(:has(.detail--mon))) { border-radius: var(--r-panel) var(--r-panel) 0 0; }
   html body #root :is(.consent__modal:not(.login-invite) > .detail__name, .login-invite__head, .tankpop__head) { padding: 2.4rem 2rem; }
   html body #root :is(.consent__modal > .detail__name, .login-invite__head .detail__name) { font-size: 2.2rem; }
+}
+
+/* 좁은 화면의 팝업은 아래에서 올라오는 판이라 위 테두리가 없다 — 닫기를 1px 덜 내려 즐겨찾기와 가운데를 맞춘다 */
+@media (max-width: 767px) {
+  html body #root .modal__wrap:has(.detail--mon) .modal__close { top: 1.2rem; }
+  /* 글자 없는 즐겨찾기는 닫기와 같은 3.6rem 정사각 — 누르는 자리는 닫기처럼 ::after 로 44px 를 지킨다 */
+  html body #root .detail--mon .detail__fav { position: relative; width: 3.6rem; }
+  html body #root .detail--mon .detail__fav::after { content: ''; position: absolute; inset: -0.4rem; }
 }
