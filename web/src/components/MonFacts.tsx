@@ -10,9 +10,10 @@
 // JSON-LD 를 같이 박는다. 이름·설명·그림을 구조화해 두면 검색 결과의 생김새가 달라진다.
 // ─────────────────────────────────────────────────────────────────────────────
 import type { MonFacts as Facts } from '../lib/facts.server';
+import { monDocTitle } from '../lib/docTitle';
 
 export function monTitle(facts: Facts): string {
-  return `${facts.name} — 종족값·타입 상성·기술 | 포켓몬고 도감`;
+  return monDocTitle(facts.name);
 }
 
 export function monDescription(facts: Facts): string {

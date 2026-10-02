@@ -23,6 +23,7 @@ import type { MonPick, OpenMon } from './lib/mon';
 import { useLockReason, useLockChecking, useRootShown } from './lib/useLocked';
 import { go, takeForward } from './lib/nav';
 import { trackPageView, track } from './lib/track';
+import { routeDocTitle } from './lib/docTitle';
 import { collectView, collectMonView } from './lib/collect';
 import { settleVeilAfterFonts } from './lib/veil';
 import SearchPalette from './components/SearchPalette';
@@ -80,6 +81,15 @@ const AdminStats = lazy(() => import('./screens/AdminStats'));
  */
 function Settled() {
   useEffect(() => { settleVeilAfterFonts(); }, []);
+  return null;
+}
+
+/**
+ * 탭 제목 — 화면 이동이 서버를 거치지 않으므로(components/RouterBridge.tsx) 메타데이터 대신 여기서 고친다.
+ * 상세 본문(/mon/<번호>)은 이름을 아는 MonDetail 이 고친다 — 여기서는 건드리지 않는다
+ */
+function DocTitle({ route }: { route: RouteDef }) {
+  useEffect(() => { if (route.id !== 'mon') document.title = routeDocTitle(route); }, [route]);
   return null;
 }
 
@@ -342,6 +352,7 @@ export default function App({ seo }: AppProps = {}) {
             <Suspense fallback={seo ?? <Splash />}>
               <Screen route={route} rest={rest} onOpen={openMon} />
               <Settled key={`${route.id}/${rest}`} />
+              <DocTitle route={route} />
             </Suspense>
           </DataBoundary>
         </div>

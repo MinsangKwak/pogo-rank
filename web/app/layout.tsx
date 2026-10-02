@@ -13,6 +13,7 @@ import '../src/styles';
 import Providers from './providers';
 import AppClient from '../src/AppClient';
 import { gaSnippet } from '../src/lib/gaSnippet';
+import { HOME_TITLE } from '../src/lib/docTitle';
 
 const SITE = process.env['NEXT_PUBLIC_SITE_URL'] ?? 'https://moncamp.kr';
 
@@ -28,7 +29,7 @@ export const viewport: Viewport = {
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE),
-  title: '포켓몬고 다이맥스 티어표 · 맥스 배틀 덱 · 도감 | moncamp',
+  title: HOME_TITLE,
   description: '포켓몬고 다이맥스·거다이맥스 티어표, 맥스 배틀 덱 짜기, 레이드·PvP 순위, 전 종 도감과 타입 상성, 이벤트 일정을 한 화면에서. 무료 비공식 팬 도구 (Pokémon GO Dynamax tier list · Max Battle deck · Pokédex).',
   // keywords 는 구글이 무시하지만 **네이버는 아직 참고한다** — 한 줄이라 비용이 없다.
   // 띄어쓰기 변형과 줄임말을 넣는다: 사람들은 '맥스배틀' 을 붙여 쓰고 포켓몬고를 '포고' 라 부른다

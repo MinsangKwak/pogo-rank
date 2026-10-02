@@ -27,7 +27,24 @@
 ## 릴리스 기록
 
 <details open>
-<summary><b>2026-10-02</b> — 5판 · <code>v5.9.1</code> · <code>v5.9.0</code> · <code>v5.8.3</code> · <code>v5.8.2</code> · <code>v5.8.1</code></summary>
+<summary><b>2026-10-02</b> — 6판 · <code>v5.9.2</code> · <code>v5.9.1</code> · <code>v5.9.0</code> · <code>v5.8.3</code> · <code>v5.8.2</code> · <code>v5.8.1</code></summary>
+
+<details>
+<summary><b>v5.9.2</b> · 화면 이동이 서버를 거치지 않는다 · 빌드 속도</summary>
+
+**배경** — 주인 제보: ① Next.js 로 바꾼 뒤 렌더링이 엄청 느려졌다(React + Vite 로 나누는 것도 고려) ② 빌드 속도가 점점 느려진다.
+
+**원인 ①** — 운영 실측: 메뉴를 누르면 주소가 바뀌기까지만 0.4~1초. `router.push` 가 이동마다 새 주소의 서버 조각(`/dex?_rsc=…`)을 Vercel 에서 받아 온 뒤에야 주소를 바꿨다. 그런데 화면은 레이아웃의 App 한 덩어리가 주소만 보고 그리고, 페이지 조각은 검색엔진용 본문이라 앱이 붙은 뒤에는 화면에 없다 — 받을 까닭이 없는 왕복이었다. React 가 느린 것이 아니다.
+
+**변경 ①** — `components/RouterBridge.tsx` 가 `history.pushState` 로 주소만 바꾼다(Next 14.1~ 가 usePathname 에 이어 준다). 덮개는 새 화면의 `<Settled>` 가 걷고(뒤로 가기와 같은 길), 경로가 같은 이동(질의만 바뀜)은 덮지 않는다. 탭 제목은 서버 메타데이터 대신 브라우저가 고친다 — `lib/docTitle.ts` 한 벌을 서버(layout · [...slug] 메타데이터)와 App(`DocTitle`) · 상세 본문(MonDetail)이 같이 쓴다. 쓰지 않게 된 이동 중 띠(`.nav-pending`)는 지웠다. 첫 문서 · 새로고침 · 공유 링크는 전과 같이 구운 HTML 이라 색인은 그대로다. 실측(로컬 운영 빌드): 이동 시 서버 요청 0건, 주소 12~99ms(운영 430~980ms), 덮개 걷힘 0.5~0.6초(dev 0.6~1초), 뒤로 · 앞으로 · 새로고침 · 제목 정상.
+
+**변경 ② 빌드** — 로컬 실측(4코어) 51초 → 26초. ⓐ 빌드 안의 타입 검사를 뺀다(`next.config.ts` `typescript.ignoreBuildErrors`) — 같은 검사를 `npm test`(tsc)가 빌드 **앞에서** 세 길(PR 검사 · dev · 운영) 모두 돌리고, 빌드 속 검사는 증분 없이 13초를 썼다(tsc 단독 3초). ⓑ `.next/cache` 를 세 워크플로가 다음 판에 남긴다(처음부터 36초 → 캐시가 있으면 26초). ⓒ dev 의 스토리북은 읽는 파일 해시가 같으면 지난 결과를 쓴다(매번 30초). Turbopack 빌드(24초)도 쟀으나 CSS 를 다른 순서로 묶어 화면이 2~4px 어긋나(상세 진화 카드 · D-MAX 필터 등) 쓰지 않는다.
+
+**같은지 확인** — 기존 dev(78d3ffd)를 같은 데이터로 따로 구워 견줬다: 구운 HTML 1,175장 본문 · 제목 모두 같음(스크립트 · 해시 제외), CSS 는 지운 `.nav-pending` 규칙 말고 같음, 화면 11곳 × 두 테마 × 1280 · 390px 44장 — 33장 픽셀 일치, 나머지는 배너 진행 막대 · 글꼴 들어오는 순간 차이라 의심 화면을 세 번씩 다시 찍어 새 판이 기존 판의 결과와 픽셀까지 같음을 확인.
+
+검사 — web 153 · tsc · `check_screens` 52장.
+
+</details>
 
 <details>
 <summary><b>v5.9.1</b> · 달력 막대를 일정마다 다른 색으로</summary>
