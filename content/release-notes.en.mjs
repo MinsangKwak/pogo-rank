@@ -15,6 +15,9 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 export const RELEASE_NOTES_EN = {
+  '2026-10-02 · v5.9.1': [
+    '**Each calendar bar now has its own color** — events were all the same orange and blurred together when they overlapped. Events on the same day always get different colors, and the category (event, 5-star, etc.) shows as a small dot at the start of the bar',
+  ],
   '2026-10-02 · v5.9.0': [
     '**Multi-day events now run as one bar on the calendar** — an event like Oct 3–20 no longer repeats in every day cell; it spans from its first day to its last as a single bar. Events take the top rows before boss rotations, and month-long events give way to short ones. On phones the bars become thin lines',
   ],

@@ -37,20 +37,23 @@ html body #root #page-schedule .cal__week {
 }
 html body #root #page-schedule .cal__week > :is(.cal__day, .cal__pad) { grid-row: 1 / -1; min-height: 0; }
 html body #root #page-schedule .cal__bar {
-  position: relative; z-index: 1; display: flex; align-items: center; min-width: 0; padding: 0 0.8rem;
-  background: color-mix(in srgb, var(--event-color) 18%, var(--surface-2));
+  position: relative; z-index: 1; display: flex; align-items: center; gap: 0.4rem; min-width: 0; padding: 0 0.8rem;
+  background: color-mix(in srgb, var(--event-color) 24%, var(--surface-2));
   color: var(--fg); font-size: 1.2rem; line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   pointer-events: none;
 }
 /* 실제 시작 · 끝인 쪽만 칸 안으로 들이고 둥글린다 — 앞 · 다음 주로 이어지는 쪽은 칸 끝까지 닿는다 */
 html body #root #page-schedule .cal__bar.is-head { margin-left: 0.8rem; border-left: 0.4rem solid var(--event-color); border-top-left-radius: var(--r-tag); border-bottom-left-radius: var(--r-tag); }
 html body #root #page-schedule .cal__bar.is-tail { margin-right: 0.8rem; border-top-right-radius: var(--r-tag); border-bottom-right-radius: var(--r-tag); }
+/* 분류 점 — 막대 색은 일정마다 달라 분류는 이 점이 맡는다(범례 · 좁은 화면의 점과 같은 색) */
+html body #root #page-schedule .cal__bar-cat { flex: none; width: 0.8rem; height: 0.8rem; border-radius: 50%; background: var(--cat-color); box-shadow: 0 0 0 1px var(--surface-2); }
 html body #root #page-schedule .cal__week > .cal__more { position: relative; z-index: 1; grid-row: -2; align-self: start; padding: 0.4rem 1.2rem 0; pointer-events: none; }
 
 /* 좁은 화면 — 이름 대신 얇은 선으로 이어짐만 보인다. 분류 점은 그대로 둔다(세 줄 밖 일정의 분류까지 알린다) */
 @media (max-width: 1099px) {
   html body #root #page-schedule .cal__week { --cal-head: 4.8rem; --cal-lane: 0.4rem; --cal-foot: 0.4rem; }
   html body #root #page-schedule .cal__bar { padding: 0; border: 0; font-size: 0; background: var(--event-color); }
+  html body #root #page-schedule .cal__bar-cat { display: none; }
   html body #root #page-schedule .cal__bar.is-head { margin-left: 0.4rem; border: 0; }
   html body #root #page-schedule .cal__bar.is-tail { margin-right: 0.4rem; }
   html body #root #page-schedule .cal__week > .cal__more { display: none; }

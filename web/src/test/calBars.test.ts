@@ -1,7 +1,7 @@
 'use strict';
 // 2026-10-02 달력 막대 — 여러 날 일정을 주마다 막대 하나로 잇는다 (lib/calBars.ts)
 import { describe, expect, it } from 'vitest';
-import { calWeeks } from '../lib/calBars';
+import { BAR_COLORS, barColors, calWeeks } from '../lib/calBars';
 import type { ScheduleItem } from '../types/data';
 
 const item = (s: number, e: number, label: string): ScheduleItem => ({ s, e, cat: 'event', label });
@@ -41,5 +41,26 @@ describe('달력 막대', () => {
     const [, second] = calWeeks(2026, 10, [item(4, 4, '가'), item(4, 4, '나'), item(4, 4, '다'), item(4, 5, '라')], 3);
     expect(second!.segments.map((seg) => seg.item.label)).toEqual(['라', '가', '나']);
     expect(second!.hidden).toEqual({ 4: 1 });
+  });
+});
+
+describe('달력 막대 색', () => {
+  it('같은 날 겹치는 일정끼리는 색이 다르고, 안 겹치면 앞 색을 다시 쓴다', () => {
+    const a = item(1, 10, '가');
+    const b = item(5, 12, '나');
+    const c = item(3, 6, '다');
+    const d = item(20, 25, '라');
+    const colors = barColors([a, b, c, d]);
+    expect(new Set([colors.get(a), colors.get(b), colors.get(c)]).size).toBe(3);
+    expect(colors.get(d)).toBe(0);
+  });
+
+  it('열둘 넘게 겹치면 색을 고루 돌려 쓴다 — 한 색에 몰리지 않는다', () => {
+    const many = Array.from({ length: 15 }, (_, i) => item(1, 31, `일정 ${i}`));
+    const uses = BAR_COLORS.map(() => 0);
+    for (const color of barColors(many).values()) uses[color]! += 1;
+    // 열다섯을 열두 색에 — 세 색만 두 번, 나머지는 한 번
+    expect(Math.max(...uses)).toBe(2);
+    expect(uses.filter((count) => count === 2)).toHaveLength(3);
   });
 });
