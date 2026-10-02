@@ -4,7 +4,7 @@
 // 가로채면 안 되는 것을 가로채면 사람이 원하던 일(새 탭 · 다운로드 · 도면)이 조용히 사라진다.
 // 가로채야 할 것을 놓치면 문서를 다시 열어 '깨졌다가 다시 그려진다' (2026-09-23 dev 제보).
 // ─────────────────────────────────────────────────────────────────────────────
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { internalHref } from '../lib/nav';
 
 const here = { origin: 'https://moncamp.kr', pathname: '/', search: '' };
@@ -48,5 +48,21 @@ describe('브라우저에 맡긴다', () => {
   });
   it('같은 문서 안의 건너뛰기 링크(#content)', () => {
     expect(internalHref(click(), a('/#content'), here)).toBeNull();
+  });
+});
+
+// 2026-10-02 점검 — 도감에서 '도감' 메뉴를 또 누르면 같은 칸이 기록에 쌓여, 뒤로를 여러 번 눌러야 앞 화면이 나왔다
+describe('주소만 바꾸는 이동 (RouterBridge pushPath)', () => {
+  it('지금과 같은 주소는 기록에 쌓지 않고, 다른 주소 · 질의만 다른 주소는 쌓는다', async () => {
+    const pushed: string[] = [];
+    const location = { href: 'https://moncamp.kr/dex', pathname: '/dex', search: '', hash: '' };
+    vi.stubGlobal('window', { location, history: { pushState: (_: unknown, __: string, url: string) => { pushed.push(url); } } });
+    vi.stubGlobal('document', { getElementById: () => null });
+    const { pushPath } = await import('../components/RouterBridge');
+    pushPath('/dex');
+    pushPath('/dex?q=1');
+    pushPath('/pvp');
+    expect(pushed).toEqual(['/dex?q=1', '/pvp']);
+    vi.unstubAllGlobals();
   });
 });

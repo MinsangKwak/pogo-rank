@@ -52,6 +52,16 @@ jobs:
       - name: 검사
         run: cd web && npm test
 
+      # **빌드 캐시를 다음 판에 남긴다** (2026-10-02 '빌드가 점점 느려진다' 주인 제보).
+      # 웹팩은 .next/cache 에 모듈별 결과를 쌓아 두면 바뀐 것만 다시 묶는다 — 로컬 실측 처음부터 36초 → 캐시가 있으면 26초.
+      # 코드가 바뀌면 키가 바뀌어 새로 저장하고, 앞 판의 캐시(restore-keys)에서 이어 쓴다
+      - name: Next 빌드 캐시 (.next/cache)
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+        with:
+          path: web/.next/cache
+          key: next-test-${{ hashFiles('web/package-lock.json') }}-${{ hashFiles('web/src/**', 'web/app/**', 'web/next.config.ts') }}
+          restore-keys: next-test-${{ hashFiles('web/package-lock.json') }}-
+
       # **빌드가 이 검사의 핵심이다.** 타입이 맞아도 서버 렌더에서 터지는 자리가 있고,
       # 그 자리는 빌드를 돌려 봐야만 드러난다
       - name: 빌드 (1,207장을 굽는다)
