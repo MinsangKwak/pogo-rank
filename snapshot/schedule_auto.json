@@ -702,5 +702,15 @@
 "label": "Minior Showers: Perseids 2027",
 "start_eu": "2027-08-10",
 "end_eu": "2027-08-15"
+},
+"dynamax-uxie-mesprit-azelf-max-battle-day-2026": {
+"id": "dynamax-uxie-mesprit-azelf-max-battle-day-2026",
+"type": "max-battles",
+"start": "2026-10-24",
+"end": "2026-10-24",
+"cat": "event",
+"label": "맥스 배틀 데이",
+"start_eu": "2026-10-24",
+"end_eu": "2026-10-24"
 }
 }
