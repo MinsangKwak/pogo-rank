@@ -42,7 +42,7 @@ import { speciesOf } from '../lib/formGuide';
 export type { MonRef } from '../lib/mon';
 
 /** 팝업 한 화면의 상태 — 떠날 때 통째로 쌓았다가 ← 로 돌아올 때 그대로 되돌린다 (v3 detailState) */
-interface View { mon: MonRef; tab: Tab; screen: 'detail' | 'calc'; calc: CalcInputs; catchSeg: string }
+interface View { mon: MonRef; tab: Tab; screen: 'detail' | 'calc'; calc: CalcInputs; catchSeg: string; deep: boolean }
 
 // 탭은 둘 — 진화 계열이 요약 맨 위로 올라왔다. 진화 탭만 따로 두면 '이 종이 무엇이 되는가' 를 보려고 탭을 한 번 더 넘겼다 (2026-09-30 주인 요청)
 type Tab = 'summary' | 'battle';
@@ -121,12 +121,19 @@ export interface MonDetailProps {
   inline?: boolean;
   /** 요약 팝업의 '도감에서 자세히' — 도감 화면으로 옮겨 자세한 팝업을 연다 (App.tsx openDeep) */
   onDeep?: (pick: MonPick) => void;
+  /**
+   * D-MAX 화면 위에서 열렸다 — 폼별 정보의 'D-MAX 더보기' 가 화면을 옮기지 않고 이 팝업을 그 폼의 배틀 정보로 바꾼다.
+   * 옮겨 가 봐야 방금 누른 그 줄로 되돌아와 2.4초 밝히고 끝이라 '그 다음이 없다' 로 읽혔다 (2026-10-02 주인 결정)
+   */
+  maxHere?: boolean;
 }
 
-export default function MonDetail({ pick, onClose, inline = false, onDeep }: MonDetailProps) {
+export default function MonDetail({ pick, onClose, inline = false, onDeep, maxHere = false }: MonDetailProps) {
   // 요약 팝업 — 전체 검색 · 홈에서 열었다. 진화 · 폼별 정보만 두고, 나머지(육성 추천 · 배틀 정보 · CP · 기술)는 아래 '도감에서 자세히' 로 넘긴다.
   // 페이지(공유 링크 본문)는 늘 자세히다 — 옮겨 갈 곳이 아니라 그 자체가 도착한 곳이다
-  const brief = pick.view === 'brief' && !inline;
+  // 요약으로 열었어도 D-MAX 화면의 'D-MAX 더보기' 로 자세히 들어가면(deep) 자세한 판이 된다
+  const [deep, setDeep] = useState(false);
+  const brief = pick.view === 'brief' && !inline && !deep;
   const { data } = useDex();
   const { data: pve } = usePve();
   const { data: max } = useMax();
@@ -163,10 +170,19 @@ export default function MonDetail({ pick, onClose, inline = false, onDeep }: Mon
   }, [inline]);
 
   const switchTo = (next: MonRef) => {
-    setStack((now) => [...now, { mon, tab, screen, calc, catchSeg }]);
+    setStack((now) => [...now, { mon, tab, screen, calc, catchSeg, deep }]);
     setMon(next);
     setTab('summary');
     setScreen('detail');
+  };
+  // D-MAX 화면 위의 'D-MAX 더보기' — 그 폼의 배틀 정보(티어 · 딜러 · 탱커 순위)로. ← 로 요약에 돌아온다
+  const showMaxHere = (next: MonRef) => {
+    setStack((now) => [...now, { mon, tab, screen, calc, catchSeg, deep }]);
+    setMon(next);
+    setTab('battle');
+    setScreen('detail');
+    setDeep(true);
+    track('detail_more', { to: 'battle', mon: next.name });
   };
   const back = () => {
     const previous = stack.at(-1);
@@ -177,6 +193,7 @@ export default function MonDetail({ pick, onClose, inline = false, onDeep }: Mon
     setScreen(previous.screen);
     setCalc(previous.calc);
     setCatchSeg(previous.catchSeg);
+    setDeep(previous.deep);
   };
 
   const sprite = mon.sprite;
@@ -394,7 +411,8 @@ export default function MonDetail({ pick, onClose, inline = false, onDeep }: Mon
                       {brief ? null : <TrainCard mon={mon} dexNo={dexNo} stem={stemOfName} onLeave={onClose} />}
                       {/* 폼별 정보 — 요약 한 줄씩. 일반은 펼치고, 맥스 폼은 D-MAX 화면의 그 줄로.
                           메가 · 섀도우를 보고 있으면 일반 줄의 이름표가 그 라벨이다 */}
-                      <FormGuide mon={mon} dexNo={dexNo} baseLabel={otherLabels.join(' ') || '일반'} onSwitch={switchTo} onLeave={onClose} />
+                      <FormGuide mon={mon} dexNo={dexNo} baseLabel={otherLabels.join(' ') || '일반'} onSwitch={switchTo} onLeave={onClose}
+                        {...(maxHere ? { onMaxHere: showMaxHere } : {})} />
                       {/* 여기부터는 자세히 보기에서만 — 펼쳐 둔다 (도감 · 순위 화면에서 연 팝업은 다 보려고 연 것이다) */}
                       {!brief && form && cpm['l50'] ? (
                         <>

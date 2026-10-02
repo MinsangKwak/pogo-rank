@@ -27,7 +27,18 @@
 ## 릴리스 기록
 
 <details open>
-<summary><b>2026-10-02</b> — 6판 · <code>v5.9.2</code> · <code>v5.9.1</code> · <code>v5.9.0</code> · <code>v5.8.3</code> · <code>v5.8.2</code> · <code>v5.8.1</code></summary>
+<summary><b>2026-10-02</b> — 7판 · <code>v5.9.3</code> · <code>v5.9.2</code> · <code>v5.9.1</code> · <code>v5.9.0</code> · <code>v5.8.3</code> · <code>v5.8.2</code> · <code>v5.8.1</code></summary>
+
+<details>
+<summary><b>v5.9.3</b> · 도감 팝업은 처음부터 자세히 · D-MAX 화면의 'D-MAX 더보기' 는 팝업 안 배틀 정보</summary>
+
+**배경** — 주인 제보: ① 도감을 보고 있는데 팝업에 '도감에서 자세히' 가 나와 한 번 더 눌러야 한다 ② D-MAX 화면에서 'D-MAX 더보기' 를 누르면 그 다음이 없다. ②는 운영 · dev · 로컬 모두 같게 동작했다 — 팝업이 닫히고 방금 누른 그 줄로 되돌아가 2.4초 밝히고 끝(버그가 아니라 옮길 곳이 없는 구조).
+
+**변경** — ① `App.tsx openMon` 이 도감 화면에서는 `view: 'full'`(자세한 팝업)로 연다. 홈 '지금 많이 보는 포켓몬'(`via: 'dex'`)도 도감으로 옮긴 뒤 자세한 팝업이다. ② D-MAX 화면 위의 팝업(`MonDetail maxHere`)에서는 폼별 정보의 'D-MAX 더보기' 가 화면을 옮기지 않고 그 폼의 배틀 정보(티어 · 딜러 · 탱커 · 상성)로 바꾼다 — 요약이었어도 자세한 판으로(`deep`), ← 로 요약에 돌아온다(주인 결정: 세 안 중 '자세한 D-MAX 정보'). 다른 화면에서는 전과 같이 D-MAX 화면의 그 줄로 간다. `.claude/CLAUDE.md` §3-1 표를 같이 고쳤다.
+
+검사 — web · tsc · 도감 팝업(`data-depth=full`, '도감에서 자세히' 없음) · D-MAX 팝업 더보기 → 다이맥스 인텔리레온 배틀 정보(물 B티어 5위), 배경 스크롤 그대로 · 돌아가기 있음.
+
+</details>
 
 <details>
 <summary><b>v5.9.2</b> · 화면 이동이 서버를 거치지 않는다 · 빌드 속도</summary>
