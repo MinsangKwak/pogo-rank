@@ -171,7 +171,8 @@ export default function App({ seo }: AppProps = {}) {
   // 상세 본문(/mon/25) 위에서 팝업을 열면 주소를 팝업의 것으로 바꾼다 — 닫을 때 **원래 주소로** 되돌리려고 적어 둔다.
   // 전에는 홈('/')으로 돌렸다: 본문은 25 인데 주소가 '/' 라 새로고침하면 홈이 섰다 (Codex, PR #225 — 배너 · 팔레트가 어느 화면에서든 열게 되며 드러났다)
   const returnTo = useRef<string | null>(null);
-  // 도감에서 자세히 — 화면을 도감으로 옮긴 **뒤** 자세한 팝업을 연다. 화면이 바뀌면 팝업을 닫는 효과(아래)가 이것을 받아 연다
+  // 도감을 거쳐 여는 팝업 — 화면을 도감으로 옮긴 **뒤** 연다. 화면이 바뀌면 팝업을 닫는 효과(아래)가 이것을 받아 연다.
+  // 많이 보는 포켓몬(via: 'dex')은 요약, '도감에서 자세히'(openDeep)는 자세한 팝업이다
   const pendingFull = useRef<MonPick | null>(null);
   const openMon: OpenMon = (pick) => {
     // 도감을 거쳐 연다 — 화면을 도감으로 옮기고, 옮긴 뒤의 효과가 자세한 팝업을 연다 (도감 화면이면 그 자리에서)
@@ -228,11 +229,23 @@ export default function App({ seo }: AppProps = {}) {
     }
     returnTo.current = null;
   }, [route, rest]);
-  // 요약 팝업의 '도감에서 자세히' — 상세 페이지(/mon/<번호>)로 옮긴다. 육성 추천 · 배틀 정보 · CP · 기술이 모두 거기 있다
+  // 요약 팝업의 '도감에서 자세히' — **도감 화면으로 옮긴 뒤 자세한 팝업**을 연다 (2026-10-02 주인 결정: 도감 진입을 늘리는 길).
+  // v5.7.0 은 상세 페이지(/mon/<번호>)로 보냈는데 도감을 거치지 않아 '내부 내용만 뜬다' 로 읽혔다(주인 제보).
+  // 자세한 팝업(view: 'full')에 육성 추천 · 배틀 정보 · CP · 기술이 모두 있다. 상세 페이지는 공유 링크 · 검색 유입용으로 남는다
   const openDeep = (pick: MonPick) => {
-    track('detail_more', { to: 'mon', mon: pick.name ?? String(pick.sprite) });
+    track('detail_more', { to: 'dex', mon: pick.name ?? String(pick.sprite) });
+    const full: MonPick = { ...pick, via: undefined, view: 'full' };
     closeMon();
-    go(`/mon/${pick.sprite}`);
+    // 이미 도감이면 화면이 안 바뀌어 아래 효과가 돌지 않는다 — 그 자리에서 연다
+    if (route.id === 'dex') {
+      setDetail(full);
+      setDetailSeq((now) => now + 1);
+      track('detail_open', { sprite: full.sprite });
+      collectMonView(full.sprite);
+      return;
+    }
+    pendingFull.current = full;
+    go('/dex');
   };
   // 화면을 옮기면 열려 있던 팝업·서랍은 닫는다 — <dialog> 가 새 화면 위에 그대로 떠 있으면
   // 아무 데도 눌리지 않는다 (상세 팝업에서 같은 자리를 이미 한 번 겪었다)
