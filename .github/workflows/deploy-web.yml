@@ -119,6 +119,17 @@ jobs:
         name: 검사
         run: cd web && npm test
 
+      # **빌드 캐시를 다음 판에 남긴다** (2026-10-02 '빌드가 점점 느려진다' 주인 제보).
+      # 웹팩은 .next/cache 에 모듈별 결과를 쌓아 두면 바뀐 것만 다시 묶는다 — 로컬 실측 처음부터 36초 → 캐시가 있으면 26초.
+      # 코드가 바뀌면 키가 바뀌어 새로 저장하고, 앞 판의 캐시(restore-keys)에서 이어 쓴다
+      - if: steps.ready.outputs.go == 'true'
+        name: Next 빌드 캐시 (.next/cache)
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+        with:
+          path: web/.next/cache
+          key: next-prod-${{ hashFiles('web/package-lock.json') }}-${{ hashFiles('web/src/**', 'web/app/**', 'web/next.config.ts') }}
+          restore-keys: next-prod-${{ hashFiles('web/package-lock.json') }}-
+
       # **저장소 뿌리에서 부른다.** Vercel 프로젝트의 Root Directory 가 `web` 이라
       # CLI 도 같은 자리에서 봐야 한다 — web/ 안에서 부르면 web/web 을 찾는다
       - if: steps.ready.outputs.go == 'true'

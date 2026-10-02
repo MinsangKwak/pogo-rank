@@ -23,6 +23,7 @@ import type { MonPick, OpenMon } from './lib/mon';
 import { useLockReason, useLockChecking, useRootShown } from './lib/useLocked';
 import { go, takeForward } from './lib/nav';
 import { trackPageView, track } from './lib/track';
+import { routeDocTitle } from './lib/docTitle';
 import { collectView, collectMonView } from './lib/collect';
 import { settleVeilAfterFonts } from './lib/veil';
 import SearchPalette from './components/SearchPalette';
@@ -80,6 +81,15 @@ const AdminStats = lazy(() => import('./screens/AdminStats'));
  */
 function Settled() {
   useEffect(() => { settleVeilAfterFonts(); }, []);
+  return null;
+}
+
+/**
+ * 탭 제목 — 화면 이동이 서버를 거치지 않으므로(components/RouterBridge.tsx) 메타데이터 대신 여기서 고친다.
+ * 상세 본문(/mon/<번호>)은 이름을 아는 MonDetail 이 고친다 — 여기서는 건드리지 않는다
+ */
+function DocTitle({ route }: { route: RouteDef }) {
+  useEffect(() => { if (route.id !== 'mon') document.title = routeDocTitle(route); }, [route]);
   return null;
 }
 
@@ -172,20 +182,21 @@ export default function App({ seo }: AppProps = {}) {
   // 전에는 홈('/')으로 돌렸다: 본문은 25 인데 주소가 '/' 라 새로고침하면 홈이 섰다 (Codex, PR #225 — 배너 · 팔레트가 어느 화면에서든 열게 되며 드러났다)
   const returnTo = useRef<string | null>(null);
   // 도감을 거쳐 여는 팝업 — 화면을 도감으로 옮긴 **뒤** 연다. 화면이 바뀌면 팝업을 닫는 효과(아래)가 이것을 받아 연다.
-  // 많이 보는 포켓몬(via: 'dex')은 요약, '도감에서 자세히'(openDeep)는 자세한 팝업이다
+  // 도감에서 여는 팝업은 늘 자세한 팝업이다(아래 openMon) — 많이 보는 포켓몬(via: 'dex') · '도감에서 자세히'(openDeep) 둘 다
   const pendingFull = useRef<MonPick | null>(null);
   const openMon: OpenMon = (pick) => {
     // 도감을 거쳐 연다 — 화면을 도감으로 옮기고, 옮긴 뒤의 효과가 자세한 팝업을 연다 (도감 화면이면 그 자리에서)
     if (pick.via === 'dex' && route.id !== 'dex') {
-      pendingFull.current = { ...pick, via: undefined, view: 'brief' };
+      pendingFull.current = { ...pick, via: undefined, view: 'full' };
       closeMon();
       go('/dex');
       return;
     }
     const sprite = pick.sprite;
-    // **팝업은 어디서 열든 요약이다** — 검색에서 연 것과 같은 판 (2026-09-30 주인 결정: 도감 · 순위 화면에서 연 팝업도 '맨 처음 검색해서 나오는 팝업처럼').
-    // 자세한 것은 팝업이 아니라 상세 페이지(/mon/<번호>)다 — 팝업 바닥의 '도감에서 자세히'가 그리로 간다
-    setDetail({ ...pick, view: 'brief' });
+    // **팝업은 요약이다 — 도감 화면만 빼고.** 순위 · 홈 · 전체 검색에서 연 팝업은 요약이고(2026-09-30 주인 결정),
+    // 바닥의 '도감에서 자세히' 가 도감으로 옮겨 자세한 팝업을 연다(openDeep).
+    // 도감 화면에서는 처음부터 자세한 팝업이다 — 이미 도감에 있는 사람에게 '도감에서 자세히' 를 한 번 더 누르게 하지 않는다 (2026-10-02 주인 결정)
+    setDetail({ ...pick, view: route.id === 'dex' ? 'full' : 'brief' });
     setDetailSeq((now) => now + 1);
     track('detail_open', { sprite });
     // 우리 수집기에도 — 어느 포켓몬을 열었는지 (lib/collect.ts · 홈의 '이번 주 많이 본 포켓몬')
@@ -342,6 +353,7 @@ export default function App({ seo }: AppProps = {}) {
             <Suspense fallback={seo ?? <Splash />}>
               <Screen route={route} rest={rest} onOpen={openMon} />
               <Settled key={`${route.id}/${rest}`} />
+              <DocTitle route={route} />
             </Suspense>
           </DataBoundary>
         </div>
@@ -353,7 +365,7 @@ export default function App({ seo }: AppProps = {}) {
       </div>
       <DataBoundary>
         <Suspense fallback={null}>
-          {detail === null ? null : <MonDetail key={detailSeq} pick={detail} onClose={closeMon} onDeep={openDeep} />}
+          {detail === null ? null : <MonDetail key={detailSeq} pick={detail} onClose={closeMon} onDeep={openDeep} here={route.id} />}
         </Suspense>
       </DataBoundary>
       {/* 검색 팔레트 — 어느 화면에서든 / · Ctrl+K · 상단 바 · 홈 단추로 뜬다. 고르면 위의 상세 팝업이 연다 */}
