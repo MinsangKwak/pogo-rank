@@ -3,7 +3,7 @@
 import { describe, it, expect } from 'vitest';
 import { readFileSync, existsSync } from 'node:fs';
 import { resolve } from 'node:path';
-import { KOREA_PLACES, mergeSchedule, titlesForRegion } from '../../scripts/merge-schedule.mjs';
+import { KOREA_PLACES, mergeSchedule, stripRegionTitles, titlesForRegion } from '../../scripts/merge-schedule.mjs';
 import { weekBoss } from '../lib/schedule';
 import type { ScheduleMonth, ScheduleItem } from '../types/data';
 
@@ -144,6 +144,21 @@ describe('유럽 달력의 한국어 제목', () => {
     const autoKrMar = { '2027-03': at(3, 1, 'Community Day', { auto: true }) };
     const autoEuFeb = { '2027-02': at(2, 28, 'Community Day', { auto: true }) };
     expect(titlesForRegion(handMar, autoKrMar, autoEuFeb)['2027-02']!.items[0]).toEqual({ s: 28, e: 28, cat: 'event', auto: true, label: '커뮤니티 데이 (14–17시)', source: 'https://pokemongo.com/ko/news/x' });
+  });
+  it('지역 제목(eu)이 있으면 한국 한정 손 줄이어도 유럽 달력에 그 제목을 단다 · 한국 표에서는 뗀다', () => {
+    const at = (label: string, extra = {}) => ({ '2026-10': { ym, note: '', items: [{ s: 24, e: 24, cat: 'event', label, ...extra }] } });
+    const handDay = at('다이맥스 유크시 맥스배틀 데이 (한국은 유크시)', { eu: '다이맥스 엠라이트 맥스배틀 데이' });
+    const auto = at('Dynamax Max Battle Day', { auto: true });
+    expect(titlesForRegion(handDay, auto, auto)['2026-10']!.items[0]!.label).toBe('다이맥스 엠라이트 맥스배틀 데이');
+    expect(stripRegionTitles(handDay)['2026-10']!.items[0]).not.toHaveProperty('eu');
+  });
+  it('같은 행사가 두 원제로 남아도 한국어 제목을 단 뒤 한 줄만 둔다', () => {
+    const handHatch = { '2026-10': { ym, note: '', items: [{ s: 17, e: 17, cat: 'event', label: '깜눈크 부화데이 (11–17시)' }] } };
+    const auto = { '2026-10': { ym, note: '', items: [
+      { s: 17, e: 17, cat: 'event', label: 'Hatch Day', auto: true },
+      { s: 17, e: 17, cat: 'event', label: 'Sandile Hatch Day', auto: true },
+    ] } };
+    expect(titlesForRegion(handHatch, auto, auto)['2026-10']!.items.map((item) => item.label)).toEqual(['깜눈크 부화데이 (11–17시)']);
   });
   it('한국 한정 장소 목록이 백엔드(PLACE_REGION kr)와 같다', () => {
     const py = readFileSync(resolve(__dirname, '../../../backend/schedule_build.py'), 'utf-8');

@@ -16,7 +16,7 @@ import { createHash } from 'node:crypto';
 import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import vm from 'node:vm';
-import { mergeSchedule, titlesForRegion } from './merge-schedule.mjs';
+import { mergeSchedule, stripRegionTitles, titlesForRegion } from './merge-schedule.mjs';
 // 2026-09-22 v5 Phase 1 — 손으로 적는 자료는 content/ 가 가진다.
 // 전에는 v3 화면 코드를 vm 으로 돌려 꺼냈다. 자료가 화면 코드 안에 살면 그 화면을 못 지운다
 import { SCHEDULE_CATS, SCHEDULE_MONTHS } from '../../content/schedule.mjs';
@@ -112,7 +112,7 @@ const readGlobal = (key) => vm.runInContext(`typeof ${key} === 'undefined' ? und
   const built = existsSync(path) ? JSON.parse(readFileSync(path, 'utf8')) : {};
   const auto = built.months ?? {};
   const hand = readGlobal('SCHEDULE_MONTHS');
-  const merged = mergeSchedule(hand, auto);
+  const merged = stripRegionTitles(mergeSchedule(hand, auto));
   const autoCount = Object.values(merged).reduce((sum, month) => sum + month.items.filter((item) => item.auto).length, 0);
   // 유럽 표 — 유럽 자동분(유럽 날짜)에 같은 행사의 공식 한국어 제목만 옮겨 단다 (titlesForRegion).
   // 손 표가 시작되기 전 달은 한국 표와 같은 이유로 세우지 않는다. 안내 한 줄은 유럽 자동분의 것(중부 유럽 시간)을 쓴다
