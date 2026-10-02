@@ -240,8 +240,10 @@ export function TrainCard({ mon, dexNo, stem, onLeave }: { mon: MonRef; dexNo: n
  * 폼별 정보 — 일반 · 메가 · 다이맥스 · 거다이맥스를 한 목록에. 어느 폼을 보고 있어도 같은 목록이 선다.
  * baseLabel 은 일반 줄의 이름표 (섀도우 폼을 보고 있으면 그 라벨)
  */
-export default function FormGuide({ mon, dexNo, baseLabel, onSwitch, onLeave }: {
+export default function FormGuide({ mon, dexNo, baseLabel, onSwitch, onLeave, onMaxHere }: {
   mon: MonRef; dexNo: number | null; baseLabel: string; onSwitch: Switch; onLeave?: () => void;
+  /** D-MAX 화면 위의 팝업 — 'D-MAX 더보기' 가 화면을 옮기지 않고 팝업을 그 폼의 배틀 정보로 바꾼다 (MonDetail maxHere) */
+  onMaxHere?: Switch;
 }) {
   const { data: dex } = useDex();
   const { data: max } = useMax();
@@ -266,10 +268,11 @@ export default function FormGuide({ mon, dexNo, baseLabel, onSwitch, onLeave }: 
           const kind = row.key === 'mega' ? ' form-tag--mega' : row.key === 'base' ? '' : ' form-tag--max';
           const tag = <span className={`form-tag${kind}`}>{label}</span>;
           if (row.key === 'dmax' || row.key === 'gmax') {
-            // 맥스 폼은 팝업에서 요약만 — 더보기는 D-MAX 화면의 그 줄 (2026-09-30 주인 요청)
+            // 맥스 폼은 팝업에서 요약만 — 더보기는 D-MAX 화면의 그 줄 (2026-09-30 주인 요청).
+            // 이미 D-MAX 화면이면 옮길 곳이 없다 — 팝업 안에서 그 폼의 배틀 정보로 (2026-10-02 주인 결정)
             return (
               <button key={row.name} type="button" className={`detail__form detail__formrow${on ? ' is-now' : ''}`}
-                onClick={() => board.toMax(row)}>
+                onClick={() => (onMaxHere ? onMaxHere(toMon(row)) : board.toMax(row))}>
                 {tag}
                 <span className="detail__formrow-use">{formSummary(row, dex.TYPE_KO)}</span>
                 {row.unrel ? <span className="tag">미출시</span> : null}

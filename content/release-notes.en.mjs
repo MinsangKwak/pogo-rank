@@ -15,6 +15,10 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 export const RELEASE_NOTES_EN = {
+  '2026-10-02 · v5.9.3': [
+    '**Tapping a Pokémon in the Pokédex opens the full details right away** — no need to press \'More in Pokédex\' again when you are already there',
+    '**On the D-MAX screen, \'More on D-MAX\' now shows that form\'s battle info** — instead of closing the popup and jumping back to the same row, it shows the tier, attacker and tank ranks and matchups in place. Use \'Back\' at the top to return to the summary',
+  ],
   '2026-10-02 · v5.9.2': [
     '**Switching screens from the menu is much faster** — every move used to make a round trip to the server and wait 0.4–1 s. Now the new screen is drawn right away without the server. The design stays exactly the same',
   ],
