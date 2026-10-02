@@ -35,6 +35,11 @@ function dataBuilt(): string {
 
 const config: NextConfig = {
   reactStrictMode: true,
+  // **빌드 안에서 타입을 다시 재지 않는다** (2026-10-02 빌드 속도). 같은 검사를 `npm test`(tsc)가 빌드 **앞에서** 이미 돌리고,
+  // 빨개지면 배포가 선다 — PR 검사(web-test.yml) · dev(dev-pipeline.yml) · 운영(deploy-web.yml) 세 길 모두.
+  // 빌드 속 검사는 증분 정보 없이 처음부터 다시 재서 13초를 썼다(tsc 단독은 3초). 린트는 이 앱에 설정이 없다
+  typescript: { ignoreBuildErrors: true },
+  eslint: { ignoreDuringBuilds: true },
   env: { NEXT_PUBLIC_DATA_BUILT: dataBuilt() },
   // 그림은 v3 빌드가 만든 것을 그대로 쓴다 — 2,000장이 넘어 최적화를 거칠 이유가 없다
   images: { unoptimized: true },
