@@ -27,7 +27,18 @@
 ## 릴리스 기록
 
 <details open>
-<summary><b>2026-10-02</b> — 1판 · <code>v5.8.1</code></summary>
+<summary><b>2026-10-02</b> — 2판 · <code>v5.8.2</code> · <code>v5.8.1</code></summary>
+
+<details>
+<summary><b>v5.8.2</b> · 10월 일정 공지 반영 — 다이맥스 유크시 맥스배틀 데이 · 깜눈크 부화데이 · 한글날</summary>
+
+**배경** — 주인 제보: 10월 일정이 새로 발표됐는데(10/24 유크시 · 아그놈) 화면에는 '세부 내용 미발표' 로 남아 있었다. 수집 원본(ScrapedDuck)은 아직 'Dynamax Max Battle Day' 로만 적어 손 일정이 따라가야 했다.
+
+**변경** — `content/schedule.mjs` 10월을 공식 한국 공지로 고쳤다(확인일 2026-10-02): 10/24 다이맥스 유크시 맥스배틀 데이 14–17시(한국 · 아시아 태평양 유크시, 유럽 · 중동 · 아프리카 · 인도 엠라이트, 아메리카 · 그린란드 아그놈 — [공지](https://pokemongo.com/ko/news/dynamax-uxie-mesprit-azelf-max-battle-day-2026)), 10/17 깜눈크 부화데이 11–17시([공지](https://pokemongo.com/ko/news/sandile-hatch-day-2026)), 10/6~10/9 한글날 이벤트(대한민국 전역 — [공지](https://pokemongo.com/ko/news/hangul-nal-2026)). 10/31 슈퍼 메가 레이드 데이는 아직 미발표라 그대로 둔다. 지역마다 다른 행사는 손 줄에 유럽 제목(`eu`)을 따로 적어 유럽 달력이 엠라이트를 싣는다(`titlesForRegion`, 한국 표에서는 `stripRegionTitles` 로 뗀다). 원본에 같은 행사가 두 원제('Hatch Day' · 'Sandile Hatch Day')로 남아 유럽 달력에 같은 줄이 둘 서던 것도 한 줄로 거른다.
+
+검사 — web 146 · frontend-v4 156(유럽 제목 · 같은 줄 거르기 2건 추가) · 한국 · 유럽 10월 실데이터 확인.
+
+</details>
 
 <details>
 <summary><b>v5.8.1</b> · '도감에서 자세히'는 도감 화면 + 자세한 팝업 · 팝업 머리 단추 정렬</summary>

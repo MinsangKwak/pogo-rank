@@ -10,3 +10,4 @@ export function titlesForRegion(
   autoKr: Record<string, ScheduleMonth> | undefined,
   autoRegion: Record<string, ScheduleMonth> | undefined,
 ): Record<string, ScheduleMonth>;
+export function stripRegionTitles(months: Record<string, ScheduleMonth> | undefined): Record<string, ScheduleMonth>;
