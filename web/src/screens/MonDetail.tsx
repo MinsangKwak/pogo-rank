@@ -13,6 +13,7 @@
 //     .detail__body  .detail__side (그림·이름) + .detail__main (탭 · 내용 · 계산기)
 //     .detail__dock  링크 복사 · CP 계산기 / 초기화 · 상세로 돌아가기
 // ─────────────────────────────────────────────────────────────────────────────
+import { monDocTitle } from '../lib/docTitle';
 import { go } from '../lib/nav';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
@@ -261,6 +262,11 @@ export default function MonDetail({ pick, onClose, inline = false, onDeep }: Mon
   const changed = changes?.affected?.[String(sprite)] ?? null;
 
   const previous = stack.at(-1);
+
+  // 상세 본문(/mon/<번호>)의 탭 제목 — 화면 이동이 서버를 거치지 않아(components/RouterBridge.tsx) 여기서 고친다. 팝업은 제목을 안 바꾼다
+  useEffect(() => {
+    if (inline && mon.name !== `#${sprite}`) document.title = monDocTitle(mon.name);
+  }, [inline, mon.name, sprite]);
 
   // 모르는 스프라이트 번호면 아무것도 열지 않는다 — v3 openDetailBySprite 도 조용히 돌아간다.
   // (틀린 공유 링크에 빈 팝업이 뜨면 '데이터가 없는 종' 처럼 읽힌다)

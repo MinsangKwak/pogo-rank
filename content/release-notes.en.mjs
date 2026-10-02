@@ -15,6 +15,9 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 export const RELEASE_NOTES_EN = {
+  '2026-10-02 · v5.9.2': [
+    '**Switching screens from the menu is much faster** — every move used to make a round trip to the server and wait 0.4–1 s. Now the new screen is drawn right away without the server. The design stays exactly the same',
+  ],
   '2026-10-02 · v5.9.1': [
     '**Each calendar bar now has its own color** — events were all the same orange and blurred together when they overlapped. Events on the same day always get different colors, and the category (event, 5-star, etc.) shows as a small dot at the start of the bar',
   ],
