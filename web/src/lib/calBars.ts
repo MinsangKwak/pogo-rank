@@ -87,18 +87,18 @@ export const BAR_COLORS = ['fire', 'water', 'grass', 'psychic', 'electric', 'dra
 
 /**
  * 일정마다 막대 색 번호. 같은 날에 걸치는 일정끼리는 겹치지 않는 가장 앞 색을 받는다(그래프 칠하기를 앞에서부터 욕심껏).
+ * 색이 모자라면 겹친 일정들 사이에서 가장 적게 쓴 색을 받는다.
  * 달 전체에서 한 번 정하므로 같은 일정은 주가 바뀌어도 같은 색이다
  */
 export function barColors(items: ScheduleItem[]): Map<ScheduleItem, number> {
   const picked = new Map<ScheduleItem, number>();
   const order = [...items].sort((a, b) => a.s - b.s || (b.e - b.s) - (a.e - a.s));
   for (const item of order) {
-    const used = new Set<number>();
-    for (const [other, color] of picked) if (other.s <= item.e && other.e >= item.s) used.add(color);
-    let color = 0;
-    while (used.has(color) && color < BAR_COLORS.length - 1) color += 1;
-    // 색이 모자라면(한 날에 열둘 넘게 겹치면) 겹친 수로 돌려 쓴다 — 바로 옆 막대와는 여전히 다르다
-    picked.set(item, used.has(color) ? used.size % BAR_COLORS.length : color);
+    // 겹치는 일정이 이미 쓴 색마다 몇 번 썼나 — 가장 적게 쓴 색을 고른다(같으면 앞 색).
+    // 안 쓴 색이 있으면 그것이 0번이라 그대로 '안 쓴 가장 앞 색' 이 되고, 열둘 넘게 겹쳐도 한 색에 몰리지 않고 고루 돌아간다 (Codex #305)
+    const uses = BAR_COLORS.map(() => 0);
+    for (const [other, color] of picked) if (other.s <= item.e && other.e >= item.s) uses[color]! += 1;
+    picked.set(item, uses.indexOf(Math.min(...uses)));
   }
   return picked;
 }

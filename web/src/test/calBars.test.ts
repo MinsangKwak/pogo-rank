@@ -55,9 +55,12 @@ describe('달력 막대 색', () => {
     expect(colors.get(d)).toBe(0);
   });
 
-  it('열둘 넘게 겹쳐도 색 번호가 팔레트 안에 있다', () => {
+  it('열둘 넘게 겹치면 색을 고루 돌려 쓴다 — 한 색에 몰리지 않는다', () => {
     const many = Array.from({ length: 15 }, (_, i) => item(1, 31, `일정 ${i}`));
-    const colors = barColors(many);
-    for (const color of colors.values()) expect(color).toBeLessThan(BAR_COLORS.length);
+    const uses = BAR_COLORS.map(() => 0);
+    for (const color of barColors(many).values()) uses[color]! += 1;
+    // 열다섯을 열두 색에 — 세 색만 두 번, 나머지는 한 번
+    expect(Math.max(...uses)).toBe(2);
+    expect(uses.filter((count) => count === 2)).toHaveLength(3);
   });
 });
