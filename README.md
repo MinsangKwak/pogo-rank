@@ -5,7 +5,7 @@
 
 [서비스](https://moncamp.kr/) · [개발 가이드](docs/DEVELOPMENT.md) · [변경 이력](docs/CHANGELOG.md)
 
-> 문서 기준: 2026-10-02, **v5.9.4**. 현재 앱은 `web/`의 Next.js입니다. `frontend-v4/`는 이전 Vite 앱이며, 데이터 추출 도구와 Storybook에 계속 사용합니다.
+> 문서 기준: 2026-10-02, **v5.9.5**. 현재 앱은 `web/`의 Next.js입니다. `frontend-v4/`는 이전 Vite 앱이며, 데이터 추출 도구와 Storybook에 계속 사용합니다.
 
 ## 프로젝트 한눈에 보기
 
@@ -129,7 +129,9 @@ PvP 순위는 PvPoke, 게임 수치는 PokeMiners, 한국어 명칭은 PokeAPI, 
 ## 최근 릴리스
 
 <details>
-<summary><b>2026-10-02</b> — 릴리스 8개 · <code>v5.9.4</code> · <code>v5.9.3</code> · <code>v5.9.2</code> · <code>v5.9.1</code> · <code>v5.9.0</code> · <code>v5.8.3</code> · <code>v5.8.2</code> · <code>v5.8.1</code></summary>
+<summary><b>2026-10-02</b> — 릴리스 9개 · <code>v5.9.5</code> · <code>v5.9.4</code> · <code>v5.9.3</code> · <code>v5.9.2</code> · <code>v5.9.1</code> · <code>v5.9.0</code> · <code>v5.8.3</code> · <code>v5.8.2</code> · <code>v5.8.1</code></summary>
+
+스크립트 조각을 못 받으면 'Application error' 에 멈추지 않고 스스로 한 번 새로 고칩니다.
 
 전체 시나리오 점검으로 순위 화면 위 팝업 단추 · 같은 메뉴 기록 · 달력 색을 바로잡았습니다.
 

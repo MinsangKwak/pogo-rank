@@ -27,7 +27,20 @@
 ## 릴리스 기록
 
 <details open>
-<summary><b>2026-10-02</b> — 8판 · <code>v5.9.4</code> · <code>v5.9.3</code> · <code>v5.9.2</code> · <code>v5.9.1</code> · <code>v5.9.0</code> · <code>v5.8.3</code> · <code>v5.8.2</code> · <code>v5.8.1</code></summary>
+<summary><b>2026-10-02</b> — 9판 · <code>v5.9.5</code> · <code>v5.9.4</code> · <code>v5.9.3</code> · <code>v5.9.2</code> · <code>v5.9.1</code> · <code>v5.9.0</code> · <code>v5.8.3</code> · <code>v5.8.2</code> · <code>v5.8.1</code></summary>
+
+<details>
+<summary><b>v5.9.5</b> · 스크립트 조각을 못 받으면 스스로 한 번 새로 고친다</summary>
+
+**배경** — v5.9.4 운영 점검에서 `/planner` 가 'Application error: a client-side exception has occurred' 로 한 번 섰다. 회선이 잠깐 끊겨 레이아웃 조각(`_next/static/chunks/app/layout-*.js`)을 502 로 못 받았고(`Loading chunk 177 failed`), Next 는 조각을 다시 받지 않는다. 운영 서버는 같은 파일을 늘 200 으로 준다 — 받는 쪽 회선 문제다. 새 판을 올린 뒤 옛 탭이 지워진 옛 조각을 찾을 때도 같은 모양이 된다. 주인 요청: 청크를 못 받으면 자동으로 새로 고친다.
+
+**변경** — `lib/chunkReload.ts` 의 `CHUNK_SCRIPT` 를 문서 머리 맨 앞에 심는다(`app/layout.tsx`). 못 받는 조각이 듣개를 담은 조각일 수 있어 번들이 아니라 HTML 안에 둔다. ① `_next/static/` 의 `<script>` 가 못 받히거나 ② 던져진 오류 · 처리 안 된 약속이 조각 실패(ChunkLoadError · 'Loading (CSS) chunk … failed' · 동적 import 실패 문구)면 새로 고친다. 스타일시트는 미리 받기가 끊길 때도 오류가 나서 보지 않는다. 새로 고친 시각을 `sessionStorage` 의 새 키 `pogo_chunk_reload` 에 적고 1분 안에는 다시 고치지 않는다 — 조각이 정말 없으면 한 번만 돌고, 저장소를 막은 브라우저에서는 고치지 않는다.
+
+**실측(로컬 운영 빌드, 조각을 502 로 끊음)** — 정상: 새로 고침 없음 · 레이아웃 조각 한 번 끊김: 한 번 새로 고쳐 화면이 섬 · 계속 끊김: 한 번만 새로 고치고 멈춤(구운 본문과 다른 화면 링크는 남음) · 화면 이동 중 지연 조각 한 번 끊김: 새로 고쳐 가려던 화면(`/dmax/deck`)에 섬.
+
+검사 — web 159(조각 감시 5건 추가) · tsc · 운영 빌드 실측.
+
+</details>
 
 <details>
 <summary><b>v5.9.4</b> · 최근 변경 전체 시나리오 점검 — 순위 화면 위 팝업 단추 · 같은 주소 기록 · 달력 색 · '오늘' 새로 받기</summary>
