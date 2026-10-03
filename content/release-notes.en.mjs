@@ -15,6 +15,9 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 export const RELEASE_NOTES_EN = {
+  '2026-10-02 · v5.9.5': [
+    '**If a brief connection drop stops part of the page from loading, the page now reloads itself once** — it used to stop at a one-line \'Application error\' until you refreshed by hand. The same applies when you switch screens in a tab left open across a new release',
+  ],
   '2026-10-02 · v5.9.4': [
     '**On the D-MAX and PvP screens, \'D-MAX ranks\' and \'PvP ranks\' in the popup now show that form\'s battle info** — you are already on that ranking screen, so the popup no longer closes and jumps back to the same row. Use \'Back\' at the top to return to the summary',
     '**The info window opened from the Pokédex no longer has a \'Pokédex\' button** — you are already there, so it only closed the window',

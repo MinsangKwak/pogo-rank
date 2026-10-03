@@ -14,6 +14,7 @@ import Providers from './providers';
 import AppClient from '../src/AppClient';
 import { gaSnippet } from '../src/lib/gaSnippet';
 import { HOME_TITLE } from '../src/lib/docTitle';
+import { CHUNK_SCRIPT } from '../src/lib/chunkReload';
 
 const SITE = process.env['NEXT_PUBLIC_SITE_URL'] ?? 'https://moncamp.kr';
 
@@ -102,6 +103,8 @@ export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="ko" data-theme="dark">
       <head>
+        {/* 맨 앞 — 어떤 조각보다 먼저 듣는다. 조각을 못 받으면 한 번 새로 고친다 (lib/chunkReload.ts) */}
+        <script dangerouslySetInnerHTML={{ __html: CHUNK_SCRIPT }} />
         <script dangerouslySetInnerHTML={{ __html: HASH_SCRIPT }} />
         <script dangerouslySetInnerHTML={{ __html: THEME_SCRIPT }} />
         <script dangerouslySetInnerHTML={{ __html: ZOOM_SCRIPT }} />
