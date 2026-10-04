@@ -15,6 +15,10 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 export const RELEASE_NOTES_EN = {
+  '2026-10-04 · v5.9.6': [
+    '**The home banner now shows the Dynamax Uxie · Mesprit · Azelf Max Battle Day on Oct 24** — the three bosses have no artwork yet, so it uses the glowing-egg concept art',
+    '**Pokémon opened as a Mega or Gigantamax form now count toward their base species** — \'Trending Pokémon\' and the admin stats used to show those forms as bare numbers',
+  ],
   '2026-10-02 · v5.9.5': [
     '**If a brief connection drop stops part of the page from loading, the page now reloads itself once** — it used to stop at a one-line \'Application error\' until you refreshed by hand. The same applies when you switch screens in a tab left open across a new release',
   ],

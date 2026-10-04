@@ -35,6 +35,14 @@ export type OpenMon = (mon: MonPick) => void;
  * 섀도우·다이맥스는 일반 폼과 스프라이트 id 가 같다 — 색인에서 먼저 만난 항목이 아니라
  * **그 접두어가 없는 항목을 우선한다.** 없으면(섀도우만 등재된 종) 첫 항목을 쓴다.
  */
+/**
+ * 스프라이트 id → 도감번호. 폼 전용 번호(10000번대)는 **DEX_DATA.dex 표**가 원종을 알려 준다(메가 · 거다이맥스 포함).
+ * 표에 없고 10000 미만이면 그 번호가 곧 도감번호다. 모르는 번호는 null — 지어내지 않는다
+ */
+export function dexNoOf(sprite: number, table: Readonly<Record<string, number>>): number | null {
+  return table[String(sprite)] ?? (sprite < 10000 ? sprite : null);
+}
+
 export function monBySprite(index: readonly SearchEntry[], dex: DexData, sprite: number): MonRef | null {
   const hits = index.filter((one) => Number(one.sprite) === Number(sprite));
   const found = hits.find((one) => !/^(섀도우|다이맥스|거다이맥스) /.test(one.name)) ?? hits[0];
