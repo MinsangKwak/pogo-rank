@@ -5,7 +5,7 @@
 
 [서비스](https://moncamp.kr/) · [개발 가이드](docs/DEVELOPMENT.md) · [변경 이력](docs/CHANGELOG.md)
 
-> 문서 기준: 2026-10-02, **v5.9.5**. 현재 앱은 `web/`의 Next.js입니다. `frontend-v4/`는 이전 Vite 앱이며, 데이터 추출 도구와 Storybook에 계속 사용합니다.
+> 문서 기준: 2026-10-04, **v5.9.6**. 현재 앱은 `web/`의 Next.js입니다. `frontend-v4/`는 이전 Vite 앱이며, 데이터 추출 도구와 Storybook에 계속 사용합니다.
 
 ## 프로젝트 한눈에 보기
 
@@ -127,6 +127,13 @@ PvP 순위는 PvPoke, 게임 수치는 PokeMiners, 한국어 명칭은 PokeAPI, 
 | 변경 제안·보안·권리 | [기여 안내](.github/CONTRIBUTING.md) · [보안 정책](.github/SECURITY.md) · [저작물 고지](docs/NOTICE.md) |
 
 ## 최근 릴리스
+
+<details>
+<summary><b>2026-10-04</b> — 릴리스 1개 · <code>v5.9.6</code></summary>
+
+홈 배너에 10/24 유크시 · 엠라이트 · 아그놈 맥스배틀 데이를 세우고, 메가 · 거다이맥스 폼으로 연 팝업을 원종으로 세도록 고쳤습니다.
+
+</details>
 
 <details>
 <summary><b>2026-10-02</b> — 릴리스 9개 · <code>v5.9.5</code> · <code>v5.9.4</code> · <code>v5.9.3</code> · <code>v5.9.2</code> · <code>v5.9.1</code> · <code>v5.9.0</code> · <code>v5.8.3</code> · <code>v5.8.2</code> · <code>v5.8.1</code></summary>

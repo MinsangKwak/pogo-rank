@@ -62,6 +62,13 @@ export const MAX_ART: readonly MaxArt[] = [
   panorama(215, 'sneasel-panorama'),
   panorama(302, 'sableye-character-panorama'),
   {
+    // 유크시 · 엠라이트 · 아그놈 맥스배틀 데이(2026-10-24) — 세 보스를 그린 그림이 아직 없어 빛나는 알 콘셉트 그림을 쓴다 (2026-10-04 주인 요청).
+    // 세 번호가 모두 그 행사에 있어야 붙으므로 다른 일정에는 서지 않는다
+    ...panorama(0, 'mystery-egg-panorama'),
+    dex: [480, 481, 482],
+    alt: (names) => `다이맥스 ${names['480'] ?? ''}·${names['481'] ?? ''}·${names['482'] ?? ''} 맥스배틀 데이 — 빛나는 알 콘셉트 일러스트`,
+  },
+  {
     // 고릴타·피카츄가 다이맥스 울머기와 맞선다 — 울머기 주간(2026-09-28). 2172w PNG(2.1MB)를 WebP 두 벌로 줄였다
     dex: [816],
     src: `${BASE}images/max-battle-sobble-panorama-1200.webp`,
