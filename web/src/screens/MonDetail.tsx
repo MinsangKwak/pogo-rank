@@ -26,7 +26,7 @@ import { counterTypes, matchups } from '../lib/matchup';
 import { favNewsFor, favNewsWhen, FAV_NEWS_LABEL } from '../lib/favnews';
 import { useFavs } from '../lib/useFavs';
 import { buildSearchIndex } from '../lib/search';
-import { resolveMon, type MonPick, type MonRef } from '../lib/mon';
+import { resolveMon, type MonPick, type MonRef, dexNoOf } from '../lib/mon';
 import { track } from '../lib/track';
 import ShareBtn from '../components/detail/ShareBtn';
 import DetailTabs from '../components/detail/DetailTabs';
@@ -52,15 +52,6 @@ const FORM_KIND: Record<string, string> = {
   메가: 'mega', 메가X: 'mega', 메가Y: 'mega', 원시: 'mega',
   다이맥스: 'max', 거다이맥스: 'max', 섀도우: 'shadow',
 };
-
-/**
- * 스프라이트 id → 도감번호. 폼 전용 번호(10000번대)는 **DEX_DATA.dex 표**가 원종을 알려 준다.
- * 폼 데이터에서 찾으려 했더니 그 칸이 없어 늘 null 이었고, 그러면 종 중복 제거가 이름 단위로 떨어져
- * '보스로 만났을 때' 에 화이트 큐레무와 블랙 큐레무가 나란히 섰다 (v3 는 한 마리만 남긴다).
- */
-function dexOf(sprite: number, table: Record<string, number>): number | null {
-  return table[String(sprite)] ?? (sprite < 10000 ? sprite : null);
-}
 
 /** 이름 앞의 폼 라벨을 뗀다 (v3 splitFormName) */
 function splitName(name: string, labels: readonly string[]) {
@@ -196,7 +187,7 @@ export default function MonDetail({ pick, onClose, inline = false, onDeep, here 
   };
 
   const sprite = mon.sprite;
-  const dexNo = dexOf(sprite, data.DEX_DATA.dex);
+  const dexNo = dexNoOf(sprite, data.DEX_DATA.dex);
   // 폼 데이터는 스프라이트 id 로 먼저 찾고(메가·리전 폼), 없으면 원종 도감번호로 되돌아간다
   const form = data.DEX_DATA.forms[String(sprite)] ?? (dexNo != null ? data.DEX_DATA.forms[String(dexNo)] : undefined);
   const types = mon.types.length ? mon.types : (form?.types ?? []);
@@ -247,7 +238,7 @@ export default function MonDetail({ pick, onClose, inline = false, onDeep, here 
     const seen = new Set<string | number>();
     const picked: MonRef[] = [];
     for (const row of merged) {
-      const key = dexOf(row.sprite, data.DEX_DATA.dex) ?? row.name;
+      const key = dexNoOf(row.sprite, data.DEX_DATA.dex) ?? row.name;
       if (seen.has(key)) continue;
       seen.add(key);
       picked.push({ sprite: row.sprite, name: row.name, en: row.en, types: row.types });
