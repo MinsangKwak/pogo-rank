@@ -25,6 +25,8 @@ import { go, takeForward } from './lib/nav';
 import { trackPageView, track } from './lib/track';
 import { routeDocTitle } from './lib/docTitle';
 import { collectView, collectMonView } from './lib/collect';
+import { useDexSoft } from './lib/data';
+import { dexNoOf } from './lib/mon';
 import { settleVeilAfterFonts } from './lib/veil';
 import SearchPalette from './components/SearchPalette';
 import { useSearchStore } from './stores/search';
@@ -178,6 +180,14 @@ export default function App({ seo }: AppProps = {}) {
   // 팝업은 열 때마다 새로 선다 — MonDetail 은 처음 받은 pick 을 state 로 잡아 두므로(useState(start)), 열린 팝업 위에서
   // 팔레트로 다른 포켓몬을 고르면 prop 만 바뀌고 화면은 옛 포켓몬이었다 (Codex, PR #229). 번호가 같은 것을 다시 골라도 새로 선다
   const [detailSeq, setDetailSeq] = useState(0);
+  // 팝업 조회 수집은 **도감 번호**로 센다(서버 계약 `mon-<도감 번호>`). 메가 · 거다이맥스 폼의 스프라이트(10000번대)를
+  // 그대로 보냈더니 운영 통계 · '지금 많이 보는 포켓몬' 이 `#10210` 처럼 번호로만 섰다 (2026-10-04 주인 제보).
+  // 도감표가 아직 안 왔으면 원종 번호(10000 미만)만 세고, 모르는 폼 번호는 세지 않는다
+  const dexSoft = useDexSoft();
+  const collectMon = (sprite: number) => {
+    const dexNo = dexSoft ? dexNoOf(sprite, dexSoft.DEX_DATA.dex) : (sprite < 10000 ? sprite : null);
+    if (dexNo != null) collectMonView(dexNo);
+  };
   // 상세 본문(/mon/25) 위에서 팝업을 열면 주소를 팝업의 것으로 바꾼다 — 닫을 때 **원래 주소로** 되돌리려고 적어 둔다.
   // 전에는 홈('/')으로 돌렸다: 본문은 25 인데 주소가 '/' 라 새로고침하면 홈이 섰다 (Codex, PR #225 — 배너 · 팔레트가 어느 화면에서든 열게 되며 드러났다)
   const returnTo = useRef<string | null>(null);
@@ -200,7 +210,7 @@ export default function App({ seo }: AppProps = {}) {
     setDetailSeq((now) => now + 1);
     track('detail_open', { sprite });
     // 우리 수집기에도 — 어느 포켓몬을 열었는지 (lib/collect.ts · 홈의 '이번 주 많이 본 포켓몬')
-    collectMonView(sprite);
+    collectMon(sprite);
     // 주소를 상세로 바꿔 두는 것은 **홈(과 상세) 위에서만** 이다 (v3 detailSyncHash 의 규칙).
     //   목록 위에서 바꾸면 뒤에 깔린 화면이 그 목록에서 홈으로 갈리고, ✕ 를 눌러도 목록으로 못 돌아온다.
     //   기록에 쌓지 않고 바꿔치기한다 — ✕ 한 번으로 닫혀야 한다
@@ -236,7 +246,7 @@ export default function App({ seo }: AppProps = {}) {
       setDetailSeq((now) => now + 1);
       // 옮겨 가서 연 것도 연 것이다 — 지표 · 수집(홈의 '지금 많이 보는 포켓몬' 이 이 수를 센다)을 openMon 과 같게
       track('detail_open', { sprite: next.sprite });
-      collectMonView(next.sprite);
+      collectMon(next.sprite);
     }
     returnTo.current = null;
   }, [route, rest]);
@@ -252,7 +262,7 @@ export default function App({ seo }: AppProps = {}) {
       setDetail(full);
       setDetailSeq((now) => now + 1);
       track('detail_open', { sprite: full.sprite });
-      collectMonView(full.sprite);
+      collectMon(full.sprite);
       return;
     }
     pendingFull.current = full;

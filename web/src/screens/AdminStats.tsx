@@ -25,6 +25,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { serverApi, ApiError, type AdminStats as Stats, type StatRanked, type StatRange } from '../lib/serverApi';
 import { useDexSoft } from '../lib/data';
+import { dexNoOf } from '../lib/mon';
 import { routeById } from '../routes';
 import { count, DASH } from '../lib/cell';
 import { Segmented, Callout } from '../ds';
@@ -298,7 +299,15 @@ export default function AdminStats() {
   };
   const today = kstToday();
 
-  const monName = useCallback((id: number) => dex?.DEX_DATA.names[String(id)] ?? `#${id}`, [dex]);
+  // 키는 도감 번호지만, 2026-10-04 전에는 폼 스프라이트(10000번대)가 그대로 쌓였다 — 그 기록도 원종 이름으로 보여 준다
+  const monName = useCallback((id: number) => {
+    const table = dex?.DEX_DATA;
+    const dexNo = table ? dexNoOf(id, table.dex) : null;
+    const base = dexNo != null ? table?.names[String(dexNo)] : undefined;
+    if (!base) return `#${id}`;
+    const form = table?.forms[String(id)]?.name;
+    return form && id !== dexNo ? `${form} ${base}` : base;
+  }, [dex]);
   const routeName = (id: string) => {
     // 상세 팝업(mon-<번호>)은 서버가 'mon' 하나로 접어 준다 — 라우터 표의 mon 은 이름이 없다
     if (id === 'mon') return '상세 팝업';
