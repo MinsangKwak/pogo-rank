@@ -15,6 +15,9 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 export const RELEASE_NOTES_EN = {
+  '2026-10-05 · v5.9.7': [
+    '**Dynamax Sizzlipede and Centiskorch are now on the D-MAX tables** — released at the Oct 5 Max Monday, so their tier, attacker and tank numbers are computed. The Pokédex \'Max Battle ready\' mark comes with it',
+  ],
   '2026-10-04 · v5.9.6': [
     '**The home banner now shows the Dynamax Uxie · Mesprit · Azelf Max Battle Day on Oct 24** — the three bosses have no artwork yet, so it uses the glowing-egg concept art',
     '**Pokémon opened as a Mega or Gigantamax form now count toward their base species** — \'Trending Pokémon\' and the admin stats used to show those forms as bare numbers',

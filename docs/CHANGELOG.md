@@ -27,6 +27,22 @@
 ## 릴리스 기록
 
 <details open>
+<summary><b>2026-10-05</b> — 1판 · <code>v5.9.7</code></summary>
+
+<details>
+<summary><b>v5.9.7</b> · 다이맥스 태우지네 · 다태우지네 출시 등록</summary>
+
+**배경** — 10/5 맥스 먼데이에 다이맥스 태우지네가 출시됐다(LeekDuck: Dynamax Sizzlipede during Max Monday 2026-10-05 06–21시). D-MAX 표는 `backend/config/max_released.txt` 활성 줄에 있는 폼만 싣는다 — 전까지 '예정' 블록 주석이라 화면에 '추후 등장 후 수치 계산 예정' 으로 서 있었다.
+
+**변경** — `D SIZZLIPEDE` · `D CENTISKORCH`(진화형, 뿔카노 계열과 같은 처리)를 활성 줄로 올렸다(일정 작업, 날짜가 지난 뒤). 받아 둔 원본으로 데이터를 다시 계산해 다이맥스 다태우지네가 딜러(벌레 · 강철 · 풀 · 에스퍼 · 얼음 · 악 칸, dmg 313) · 탱커 표에 수치와 함께 서는 것을 확인했다. 운영 수치는 배포의 데이터 빌드가 최신 게임마스터로 다시 계산한다.
+
+검사 — web 161 · tsc · frontend-v4 `version` 6 · 로컬 데이터 재계산(`build.sh --no-fetch --data-only` → `npm run data`).
+
+</details>
+
+</details>
+
+<details>
 <summary><b>2026-10-04</b> — 1판 · <code>v5.9.6</code></summary>
 
 <details>
