@@ -153,6 +153,11 @@ D RHYHORN          # 2026-09-14
 D RHYDON           # 2026-09-14
 D RHYPERIOR        # 2026-09-14
 
+# 2026-10-05 맥스 먼데이 — 다이맥스 태우지네 출시 (LeekDuck: Dynamax Sizzlipede during Max Monday 2026-10-05 06–21시).
+# 진화형 다태우지네도 다이맥스 유지(뿔카노 계열과 같은 처리). 일정 작업이 날짜가 지난 뒤 올렸다
+D SIZZLIPEDE       # 2026-10-05
+D CENTISKORCH      # 2026-10-05
+
 # 예정 (출시 후 주석 해제)
 # D DURALUDON     # 2026-09-14 되돌림 — 다이맥스 두랄루돈은 아직 출시 전인데 활성 줄에 들어가 있었다.
 #                   게임마스터에 거다이맥스 두랄루돈 기술이 있는 것과 헷갈린 것으로 보인다(아래 미출시 거다이맥스 목록에도 이름이 있다).
@@ -162,8 +167,6 @@ D RHYPERIOR        # 2026-09-14
 # D UXIE           # 2026 TBA
 # D MESPRIT        # 2026 TBA
 # D AZELF          # 2026 TBA
-# D SIZZLIPEDE     # 2026 TBA
-# D CENTISKORCH    # 2026 TBA
 
 # ---- 거다이맥스 (17종) ----
 G VENUSAUR
