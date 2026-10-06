@@ -36,7 +36,7 @@ import type { DmaxRow, PveRow, PvpRow, LeagueKey } from '../types/data';
 import { num, word, lines as keep } from '../lib/cell';
 
 // ⓘ 안내 — v3 티어표 머리의 정보점과 같은 글이다 (등급 기준이 탭이 아니라 전 종이라는 오해가 잦았다)
-const DMAX_INFO = '등급은 전체 포켓몬의 최고 점수를 기준으로 정해요. 최고 점수 대비 90% 이상은 S, 80% 이상은 A, 70% 이상은 B, 그 미만은 C예요. 타입 탭을 바꿔도 등급은 같고, 순위만 해당 탭 안에서 다시 표시해요. 점수 = 공격 × 맥스무브 위력(거다이 450 · 다이 350) × 자속 1.2 × 내구 보정(방어 × 체력 ÷ 1000의 네제곱근). 맥스 페이즈를 반복해서 사용할 수 있는 생존력을 고려해 내구를 일부 반영해요.';
+const DMAX_INFO = '등급은 전체 포켓몬의 최고 점수를 기준으로 정해요. 최고 점수 대비 90% 이상은 S, 80% 이상은 A, 70% 이상은 B, 그 미만은 C예요. 타입 탭을 바꿔도 등급은 같고, 순위만 해당 탭 안에서 다시 표시해요. 점수 = 공격 × 맥스무브 위력(거다이 450 · 다이 350) × 자속 1.2 × 내구 보정(방어 × 체력 ÷ 1000의 네제곱근). 맥스 페이즈를 반복해서 사용할 수 있는 생존력을 고려해 내구를 일부 반영해요. 검왕 자시안 · 방패왕 자마젠타 · 무한다이노는 다이맥스를 못 하지만 맥스 배틀에 참가해 전용 기술(거수참 · 거수탄 · 다이맥스포)을 써요 — 위력은 다이맥스의 맥스어택과 같은 350으로 계산해요.';
 
 /**
  * 속성 칩 — **표에 있는 키가 아니라 18타입 전부**를 세운다 (v3 maxSubmenu · pve bossItems).
@@ -64,17 +64,19 @@ function useView(screen: string) {
  * 세 축을 한 함수에 두고 검사(test/rankcells.test.ts)가 실데이터 모양으로 확인한다.
  */
 export function dmaxCells(axis: 'all' | 'dealer' | 'tank', boss: string, row: DmaxRow, typeKo: Record<string, string>) {
+  // 다이맥스 없이 참가하는 종은 이름에 접두어가 없어 표 안에서 설명이 필요하다 — 기술 줄 끝에 한 마디 (2026-10-06)
+  const joinNote = row.join ? '다이맥스 없이 참가' : '';
   if (axis === 'tank') {
     const body = `체력 ${num(row.hp)} × 방어 ${num(row.def)}`;
     return {
       score: num(row.ehp),
       // 보스를 고르면 그 타입에 받는 배율이 한 칸 더 붙는다
       sub: boss === 'overall' ? `EHP · ${body}` : `EHP · 받는 배율 ×${num(row.mult)} · ${body}`,
-      lines: [] as string[],
+      lines: keep(joinNote),
     };
   }
   // 기술이 비어 있으면 줄 자체를 세우지 않는다 — `— 타입` 은 없는 정보를 있는 척한다
-  const moves = keep(row.fast, row.charged && `${word(typeKo[row.charged] ?? row.charged)} 타입`);
+  const moves = keep(row.fast, row.charged && `${word(typeKo[row.charged] ?? row.charged)} 타입`, joinNote);
   if (axis === 'all') {
     return {
       score: `${num(row.pct ?? Math.round(row.score))}%`,

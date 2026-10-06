@@ -36,6 +36,17 @@ describe('formRows', () => {
   it('울머기 — 일반 · 다이맥스 두 줄', () => {
     expect(rowsFor('울머기').map((row) => row.key)).toEqual(['base', 'dmax']);
   });
+  it('검왕 자시안 — 다이맥스 없이 맥스 배틀에 참가: 일반 · 맥스 배틀 두 줄, 맥스 자리는 맥스 줄에만', () => {
+    const rows = rowsFor('검왕 자시안');
+    expect(rows.map((row) => row.key)).toEqual(['base', 'join']);
+    const [base, join] = rows;
+    expect(join!.label).toBe('맥스 배틀');
+    expect(join!.name).toBe('검왕 자시안');
+    expect(join!.tier).toMatchObject({ type: 'steel', tier: 'S' });
+    expect(join!.places.every((one) => one.key.startsWith('max:'))).toBe(true);
+    expect(base!.places.some((one) => one.key.startsWith('max:'))).toBe(false);
+    expect(formSummary(join!, typeKo)).toBe('강철 S티어 · 1위');
+  });
   it('인텔리레온 — 세 줄, 거다이맥스는 전용 그림 번호', () => {
     const rows = rowsFor('다이맥스 인텔리레온');
     expect(rows.map((row) => row.key)).toEqual(['base', 'dmax', 'gmax']);
