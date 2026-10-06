@@ -2,6 +2,7 @@
 # 출처: Bulbapedia "Dynamax (GO)", "Gigantamax (GO)" — 2026-08-25 기준 · 2026-09-14 뿔카노 계열 추가
 # 형식: D POKEMON_ID [FORM]  → 다이맥스 가능
 #       G POKEMON_ID [FORM]  → 거다이맥스 가능
+#       M POKEMON_ID [FORM]  → 다이맥스 없이 맥스 배틀 참가 (전용 맥스 기술 사용)
 # 새로 출시되면 한 줄 추가. '#' 뒤는 주석.
 # ★ D 와 G 는 별개다. 게임마스터에 거다이맥스 기술이 있다고 다이맥스가 출시된 것이 아니다 —
 #   이 파일에 적힌 줄만 도감의 '맥스 배틀 가능' 표시와 D-MAX 티어표·딜러·탱커에 오른다.
@@ -167,6 +168,16 @@ D CENTISKORCH      # 2026-10-05
 # D UXIE           # 2026 TBA
 # D MESPRIT        # 2026 TBA
 # D AZELF          # 2026 TBA
+
+# ---- 다이맥스 없이 맥스 배틀에 참가하는 종 (2026-10-06 이용자 제보로 등록) ----
+# 공식 안내(pokemongo.com 'Crowned Sword and Crowned Shield Energy' · 무한다이노 출시 안내): 검왕 자시안 · 방패왕 자마젠타 ·
+# 무한다이노는 다이맥스 · 거다이맥스를 못 하지만 맥스 배틀에 들어가, 맥스 페이즈에 전용 기술(거수참 · 거수탄 · 다이맥스포)을 쓴다.
+# 전용 기술은 '다른 맥스어택과 같이' 레벨을 올린다고 안내돼 위력은 맥스어택(350)과 같게 둔다 — 거다이맥스(450)가 아니다.
+# 게임마스터는 이 기술도 거다이맥스 기술 표(SOURDOUGH_MOVE_MAPPING_SETTINGS)에 두므로, 여기 적지 않으면
+# '미구현 거다이맥스' 로 잘못 선다(2026-10-06 전까지 그랬다). 마이티폼(자시안 · 자마젠타 기본 폼)은 참가하지 못한다
+M ZACIAN ZACIAN_CROWNED_SWORD
+M ZAMAZENTA ZAMAZENTA_CROWNED_SHIELD
+M ETERNATUS
 
 # ---- 거다이맥스 (17종) ----
 G VENUSAUR
