@@ -5,7 +5,7 @@
 
 [서비스](https://moncamp.kr/) · [개발 가이드](docs/DEVELOPMENT.md) · [변경 이력](docs/CHANGELOG.md)
 
-> 문서 기준: 2026-10-06, **v5.9.10**. 현재 앱은 `web/`의 Next.js입니다. `frontend-v4/`는 이전 Vite 앱이며, 데이터 추출 도구와 Storybook에 계속 사용합니다.
+> 문서 기준: 2026-10-07, **v5.9.11**. 현재 앱은 `web/`의 Next.js입니다. `frontend-v4/`는 이전 Vite 앱이며, 데이터 추출 도구와 Storybook에 계속 사용합니다.
 
 ## 프로젝트 한눈에 보기
 
@@ -127,6 +127,13 @@ PvP 순위는 PvPoke, 게임 수치는 PokeMiners, 한국어 명칭은 PokeAPI, 
 | 변경 제안·보안·권리 | [기여 안내](.github/CONTRIBUTING.md) · [보안 정책](.github/SECURITY.md) · [저작물 고지](docs/NOTICE.md) |
 
 ## 최근 릴리스
+
+<details>
+<summary><b>2026-10-07</b> — 릴리스 1개 · <code>v5.9.11</code></summary>
+
+문의 메일을 학교 계정에서 서비스 도메인 주소 `contact@moncamp.kr` 로 옮겼습니다(Cloudflare Email Routing 전달). 바닥글과 방침 · 약관 문의처가 함께 바뀌고, 수집 항목은 그대로입니다.
+
+</details>
 
 <details>
 <summary><b>2026-10-06</b> — 릴리스 3개 · <code>v5.9.8</code> · <code>v5.9.9</code> · <code>v5.9.10</code></summary>
