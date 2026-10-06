@@ -5,7 +5,7 @@
     "editorialStatus=published 로 옮겨 적어야 화면에 나간다.",
     "changeLines 는 공식 원문에서 \"규칙이 바뀐 것으로 보이는\" 줄을 그대로 옮긴 것이다. 요약이 아니다."
   ],
-  "collectedAt": "2026-10-02",
+  "collectedAt": "2026-10-06",
   "candidates": [
     {
       "slug": "dynamax-uxie-mesprit-azelf-max-battle-day-2026",
@@ -281,35 +281,6 @@
       "announcedAt": "2026-08-24"
     },
     {
-      "slug": "helpshift-5523",
-      "kind": "release-note",
-      "title": "일부 트레이너들이 구매하지 않은 아바타 아이템을 착용할 수 없는 현상",
-      "snippet": "문제 설명: 다른 문제 관련 임시 조치가 진행된 후 일부 트레이너들이 포켓코인으로 구매하지 않아도 프리미엄 아바타 아이템을 착용할 수 있는 오류가 발생했습니다. 관련 아바타 아이템들은 유저의 아이템 가방에 추가되지 않았습니다. 다른 문제에 대한 정식 ...",
-      "announcedAt": "",
-      "sources": [
-        {
-          "lang": "ko",
-          "label": "일부 트레이너들이 구매하지 않은 아바타 아이템을 착용할 수 없는 현상",
-          "url": "https://niantic.helpshift.com/hc/ko/6-pokemon-go/faq/5523-some-trainers-lost-access-to-unpaid-avatar-items/",
-          "image": ""
-        },
-        {
-          "lang": "en",
-          "label": "Some Trainers lost access to unpaid avatar items",
-          "url": "https://niantic.helpshift.com/hc/en/6-pokemon-go/faq/5523-some-trainers-lost-access-to-unpaid-avatar-items/",
-          "image": ""
-        }
-      ],
-      "changeLines": {
-        "ko": [
-          "문제 설명: 다른 문제 관련 임시 조치가 진행된 후 일부 트레이너들이 포켓코인으로 구매하지 않아도 프리미엄 아바타 아이템을 착용할 수 있는 오류가 발생했습니다. 관련 아바타 아이템들은 유저의 아이템 가방에 추가되지 않았습니다. 다른 문제에 대한 정식 ..."
-        ],
-        "en": [
-          "Issue description: Following a recent mitigation for an unrelated issue, a small subset of Trainers were temporarily able to equip premium a..."
-        ]
-      }
-    },
-    {
       "slug": "helpshift-5521",
       "kind": "release-note",
       "title": "Incubators unavailable for purchase in Brazil",
@@ -393,6 +364,35 @@
         ],
         "en": [
           "Issue description: Some Trainers see an error message when trying to claim an Amazon Prime code.Issue status: Investigating. Changing your w..."
+        ]
+      }
+    },
+    {
+      "slug": "helpshift-5523",
+      "kind": "release-note",
+      "title": "일부 트레이너들이 구매하지 않은 아바타 아이템을 착용할 수 없는 현상",
+      "snippet": "문제 설명: 다른 문제 관련 임시 조치가 진행된 후 일부 트레이너들이 포켓코인으로 구매하지 않아도 프리미엄 아바타 아이템을 착용할 수 있는 오류가 발생했습니다. 관련 아바타 아이템들은 유저의 아이템 가방에 추가되지 않았습니다. 다른 문제에 대한 정식 ...",
+      "announcedAt": "",
+      "sources": [
+        {
+          "lang": "ko",
+          "label": "일부 트레이너들이 구매하지 않은 아바타 아이템을 착용할 수 없는 현상",
+          "url": "https://niantic.helpshift.com/hc/ko/6-pokemon-go/faq/5523-some-trainers-lost-access-to-unpaid-avatar-items/",
+          "image": ""
+        },
+        {
+          "lang": "en",
+          "label": "Some Trainers lost access to unpaid avatar items",
+          "url": "https://niantic.helpshift.com/hc/en/6-pokemon-go/faq/5523-some-trainers-lost-access-to-unpaid-avatar-items/",
+          "image": ""
+        }
+      ],
+      "changeLines": {
+        "ko": [
+          "문제 설명: 다른 문제 관련 임시 조치가 진행된 후 일부 트레이너들이 포켓코인으로 구매하지 않아도 프리미엄 아바타 아이템을 착용할 수 있는 오류가 발생했습니다. 관련 아바타 아이템들은 유저의 아이템 가방에 추가되지 않았습니다. 다른 문제에 대한 정식 ..."
+        ],
+        "en": [
+          "Issue description: Following a recent mitigation for an unrelated issue, a small subset of Trainers were temporarily able to equip premium a..."
         ]
       }
     }
