@@ -27,6 +27,22 @@
 ## 릴리스 기록
 
 <details open>
+<summary><b>2026-10-07</b> — 1판 · <code>v5.9.11</code></summary>
+
+<details>
+<summary><b>v5.9.11</b> · 문의 메일 contact@moncamp.kr — 학교 계정에서 서비스 도메인 주소로</summary>
+
+**배경** — 문의처 `kmsdevwork@knou.ac.kr`(v3.32.0, 2026-09-15)는 학생 계정이라 졸업 뒤 수신이 끊길 수 있다. 서비스 도메인의 주소로 옮기면 받는 메일함을 바꿔도 공개 주소는 그대로다.
+
+**변경** — Cloudflare Email Routing 으로 `contact@moncamp.kr` → 운영자 메일함 전달 규칙을 만들고(MX 3개 · SPF 는 Cloudflare 가 잠근 레코드, 목적지 주소 인증 완료, catch-all 은 Drop), 네이버에서 보낸 시험 메일 수신을 확인한 뒤 `CONTACT_EMAIL` 값을 바꿨다 — `deploy-web.yml`(운영) · `dev-pipeline.yml`(dev) · `deploy.yml`(v4 GitHub Pages) 세 곳. 화면 바닥글과 방침 · 약관 문의처는 `meta.CONTACT_EMAIL` 을 읽으므로 문구 수정은 없다. 운영 가이드의 "고칠 곳" 안내도 현재 세 파일로 바로잡았다. 전달 상태가 `Syncing` 인 동안 보낸 시험 메일 둘은 `550 5.1.1` 로 반송됐고 `Enabled` 로 바뀐 뒤 첫 메일부터 도착했다 — 설정 직후 반송은 전파 대기다.
+
+검사 — frontend-v4 `version` 6 · 배포 뒤 `curl https://moncamp.kr/data/meta.json` 의 `CONTACT_EMAIL` 과 `/privacy` 화면 문의처 확인(deploy-web.yml 의 meta.json 검사가 비어 있음을 막는다).
+
+</details>
+
+</details>
+
+<details>
 <summary><b>2026-10-06</b> — 3판 · <code>v5.9.8</code> · <code>v5.9.9</code> · <code>v5.9.10</code></summary>
 
 <details>
