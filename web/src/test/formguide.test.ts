@@ -28,7 +28,8 @@ describe('이름 → 폼', () => {
   it('맥스 접두어만 뗀다', () => {
     expect(stemOf('거다이맥스 인텔리레온')).toBe('인텔리레온');
     expect(stemOf('섀도우 리자몽')).toBe('섀도우 리자몽');
-    expect(['울머기', '다이맥스 울머기', '거다이맥스 리자몽'].map(formKeyOf)).toEqual(['base', 'dmax', 'gmax']);
+    expect(['울머기', '다이맥스 울머기', '거다이맥스 리자몽', '맥스 참가 검왕 자시안'].map(formKeyOf)).toEqual(['base', 'dmax', 'gmax', 'join']);
+    expect(stemOf('맥스 참가 검왕 자시안')).toBe('검왕 자시안');
   });
 });
 
@@ -36,16 +37,18 @@ describe('formRows', () => {
   it('울머기 — 일반 · 다이맥스 두 줄', () => {
     expect(rowsFor('울머기').map((row) => row.key)).toEqual(['base', 'dmax']);
   });
-  it('검왕 자시안 — 다이맥스 없이 맥스 배틀에 참가: 일반 · 맥스 배틀 두 줄, 맥스 자리는 맥스 줄에만', () => {
-    const rows = rowsFor('검왕 자시안');
-    expect(rows.map((row) => row.key)).toEqual(['base', 'join']);
-    const [base, join] = rows;
-    expect(join!.label).toBe('맥스 배틀');
-    expect(join!.name).toBe('검왕 자시안');
-    expect(join!.tier).toMatchObject({ type: 'steel', tier: 'S' });
-    expect(join!.places.every((one) => one.key.startsWith('max:'))).toBe(true);
-    expect(base!.places.some((one) => one.key.startsWith('max:'))).toBe(false);
-    expect(formSummary(join!, typeKo)).toBe('강철 S티어 · 1위');
+  it('검왕 자시안 — 다이맥스 없이 맥스 배틀에 참가: 일반 · 맥스 참가 두 줄, 맥스 자리는 맥스 참가 줄에만', () => {
+    for (const opened of ['검왕 자시안', '맥스 참가 검왕 자시안']) {
+      const rows = rowsFor(opened);
+      expect(rows.map((row) => row.key)).toEqual(['base', 'join']);
+      const [base, join] = rows;
+      expect(join!.label).toBe('맥스 참가');
+      expect(join!.name).toBe('맥스 참가 검왕 자시안');
+      expect(join!.tier).toMatchObject({ type: 'steel', tier: 'S' });
+      expect(join!.places.every((one) => one.key.startsWith('max:'))).toBe(true);
+      expect(base!.places.some((one) => one.key.startsWith('max:'))).toBe(false);
+      expect(formSummary(join!, typeKo)).toBe('강철 S티어 · 1위');
+    }
   });
   it('인텔리레온 — 세 줄, 거다이맥스는 전용 그림 번호', () => {
     const rows = rowsFor('다이맥스 인텔리레온');

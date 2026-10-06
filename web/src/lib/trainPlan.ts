@@ -49,18 +49,19 @@ export interface PlanSource {
 
 export const PLAN_MAX = 3;
 
-const MAX_PREFIX = /^(거다이맥스|다이맥스) /;
+// '맥스 참가' = 다이맥스 없이 맥스 배틀에 참가하는 종의 분류 (2026-10-06)
+const MAX_PREFIX = /^(거다이맥스|다이맥스|맥스 참가) /;
 // '일반 · 전설' 만 — 메가 · 원시 · 섀도우는 이 칸의 뜻(오래 두고 키울 개체)과 다르다
-const NOT_BASE = /^(메가X?Y?|원시|섀도우|다이맥스|거다이맥스) /;
+const NOT_BASE = /^(메가X?Y?|원시|섀도우|다이맥스|거다이맥스|맥스 참가) /;
 
 const pick = (row: Row, rank: number, note: string, own: boolean): PlanPick =>
   ({ name: row.name, sprite: row.sprite, en: row.en ?? '', types: row.types, note, own, rank });
 
-/** 계열 각 이름의 세 변형(일반 · 다이맥스 · 거다이맥스)이 선 자리 전부 */
+/** 계열 각 이름의 네 변형(일반 · 다이맥스 · 거다이맥스 · 맥스 참가)이 선 자리 전부 */
 function familyPlaces(src: PlanSource): { name: string; place: string; rank: number }[] {
   const out: { name: string; place: string; rank: number }[] = [];
   for (const stem of src.stems) {
-    for (const name of [stem, `다이맥스 ${stem}`, `거다이맥스 ${stem}`]) {
+    for (const name of [stem, `다이맥스 ${stem}`, `거다이맥스 ${stem}`, `맥스 참가 ${stem}`]) {
       for (const [place, rank] of src.places[name] ?? []) {
         if (Number.isFinite(rank) && rank > 0) out.push({ name, place, rank });
       }

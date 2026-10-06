@@ -50,7 +50,7 @@ const TABS: [Tab, string][] = [['summary', '진화 · 요약'], ['battle', '배�
 
 const FORM_KIND: Record<string, string> = {
   메가: 'mega', 메가X: 'mega', 메가Y: 'mega', 원시: 'mega',
-  다이맥스: 'max', 거다이맥스: 'max', 섀도우: 'shadow',
+  다이맥스: 'max', 거다이맥스: 'max', '맥스 참가': 'max', 섀도우: 'shadow',
 };
 
 /** 이름 앞의 폼 라벨을 뗀다 (v3 splitFormName) */
@@ -195,7 +195,7 @@ export default function MonDetail({ pick, onClose, inline = false, onDeep, here 
   const { labels: formLabels, base: baseName } = splitName(mon.name, data.FORM_LABELS);
   const formKind = formLabels.map((label) => FORM_KIND[label]).find(Boolean) ?? '';
   // 일반 줄의 이름표 — 맥스 · 메가는 제 줄이 따로 있으니 빼고 남은 라벨(섀도우 · 리전 폼)만
-  const otherLabels = formLabels.filter((label) => !/^(다이맥스|거다이맥스|메가X?|메가Y|원시)$/.test(label));
+  const otherLabels = formLabels.filter((label) => !/^(다이맥스|거다이맥스|맥스 참가|메가X?|메가Y|원시)$/.test(label));
   // 종 이름 — '거다이맥스 인텔리레온' → '인텔리레온', '메가X 리자몽' → '리자몽', '섀도우 리자몽' 은 그대로
   const stemOfName = speciesOf(mon.name);
 
@@ -524,7 +524,7 @@ export default function MonDetail({ pick, onClose, inline = false, onDeep, here 
                       </section>
 
                       {/* PvP 개체값은 일반 폼에서만 — 맥스 폼은 PvP 에서 다이맥스하지 않아 따로 볼 까닭이 없다 */}
-                      {form && !/^(거다이맥스|다이맥스) /.test(mon.name) ? <IvRank form={form} sprite={sprite} /> : null}
+                      {form && !/^(거다이맥스|다이맥스|맥스 참가) /.test(mon.name) ? <IvRank form={form} sprite={sprite} /> : null}
                       {dexNo != null ? (
                         <MegaCompareCard dexNo={dexNo} />
                       ) : null}

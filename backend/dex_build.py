@@ -272,7 +272,7 @@ for move_identifier, korean_move in ko_move.items():
     if english_move and korean_move not in ko_to_en_move:
         ko_to_en_move[korean_move] = english_move
 # 다이맥스·거다이맥스는 폼 토큰이 아니라 화면이 붙이는 라벨이라(build.py FORM_LABELS) 여기서 채운다
-ko_to_en_form = {'다이맥스': 'Dynamax', '거다이맥스': 'Gigantamax'}
+ko_to_en_form = {'다이맥스': 'Dynamax', '거다이맥스': 'Gigantamax', '맥스 참가': 'Max Entrant'}
 for form_token, korean_form in FORM_KO.items():
     english_form = FORM_EN.get(form_token)
     if korean_form and english_form:

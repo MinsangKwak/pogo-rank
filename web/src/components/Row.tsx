@@ -31,7 +31,7 @@ import { Delta, FormBadge, TypeDots as DsTypeDots, type FormKind } from '../ds';
 /** v3 name.js FORM_LABELS — 이름 앞에 붙는 폼 라벨을 작은 배지로 뗀다 */
 const FORM_KIND: Record<string, FormKind> = {
   메가: 'mega', 메가X: 'mega', 메가Y: 'mega', 원시: 'mega',
-  다이맥스: 'max', 거다이맥스: 'max', 섀도우: 'shadow',
+  다이맥스: 'max', 거다이맥스: 'max', '맥스 참가': 'max', 섀도우: 'shadow',
 };
 
 /** 이름을 [라벨 배지…] + <b>종 이름</b> 으로 가른다 (v3 nameNode 와 같은 규칙) */
