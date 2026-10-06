@@ -19,10 +19,13 @@ import type { OpenMon } from '../lib/mon';
 import { Sprite } from './Bits';
 import { NameNode } from './Row';
 import type { DmaxRow } from '../types/data';
+import { maxVisible } from '../lib/maxVisible';
+import { useRankStore } from '../stores/rank';
 
 const BOSS_STEP = 5;   // [더보기] 한 번에 다섯 (v3 state.bossShow)
 
-const released = (rows: DmaxRow[] | undefined) => (rows ?? []).filter((row) => !row.unrel);
+// 미구현은 늘 빼고, '맥스 참가' 는 D-MAX 화면의 체크를 따른다 (lib/maxVisible.ts)
+const released = (rows: DmaxRow[] | undefined, join: boolean) => maxVisible(rows, { join });
 
 export default function BossAcc({ onOpen, onGoBoss }: {
   onOpen: OpenMon;
@@ -31,6 +34,8 @@ export default function BossAcc({ onOpen, onGoBoss }: {
   const { data: schedule } = useSchedule();
   const { data: max } = useMax();
   const { data: dex } = useDex();
+  // D-MAX 화면의 [맥스 참가 가능 다른 유닛] 체크와 같은 값
+  const showJoin = useRankStore((s) => s.maxShowJoin);
   const [show, setShow] = useState(BOSS_STEP);
 
   const today = new Date();
@@ -51,11 +56,11 @@ export default function BossAcc({ onOpen, onGoBoss }: {
   const type = boss.t;
   // 일정 label 에서 보스 이름만 뽑는다 — 괄호 설명을 떼고 'D-MAX ' 접두어도 지운다
   const bossName = boss.label.split(' (')[0]?.replace('D-MAX ', '') ?? '';
-  const pool = released(max.DMAX_DATA[type]);
+  const pool = released(max.DMAX_DATA[type], showJoin);
   const total = pool.length;
   const dealers = pool.slice(0, 2);
   const names = new Set(dealers.map((row) => row.name));
-  const tank = released(max.DMAX_TANK[type]).find((row) => !names.has(row.name));
+  const tank = released(max.DMAX_TANK[type], showJoin).find((row) => !names.has(row.name));
   const typeName = dex.TYPE_KO[type] ?? type;
 
   const rec = (row: DmaxRow, lead: string, sub?: string) => (

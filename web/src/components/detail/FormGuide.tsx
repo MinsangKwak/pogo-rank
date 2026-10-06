@@ -23,6 +23,7 @@ import { PxIcon } from '../PxIcon';
 import { bossNow, formKeyOf, formRows, formSummary, FORM_KO, maxBoardOf, maxIndex, placesOf, speciesOf, tierIndex, tierLine, type FormRow } from '../../lib/formGuide';
 import { useAuthStore } from '../../stores/auth';
 import { trainPlan, type PlanPick } from '../../lib/trainPlan';
+import { maxVisible } from '../../lib/maxVisible';
 import type { MonRef } from '../../lib/mon';
 import type { LeagueKey } from '../../types/data';
 
@@ -101,12 +102,13 @@ export function DeepDock({ mon, dexNo, onDeep, onLeave, here = '', onHere }: {
   const { data: pvp } = usePvp();
   const board = useBoard(onLeave);
   const index = useMemo(() => maxIndex(max), [max]);
-  const tiers = useMemo(() => tierIndex(max), [max]);
+  const showJoin = useRankStore((s) => s.maxShowJoin);
+  const tiers = useMemo(() => tierIndex(max, false, showJoin), [max, showJoin]);
   const family = (dexNo != null ? dex.DEX_DATA.evo[String(dexNo)]?.flat() : undefined) ?? (dexNo != null ? [dexNo] : []);
   const stems = [...new Set([speciesOf(mon.name), ...family.map((id) => dex.DEX_DATA.names[String(id)]).filter(Boolean) as string[]])];
   // 계열의 맥스 폼 중 티어표 순위가 가장 높은 것 — 요약의 폼별 정보가 말한 그 칸으로 간다.
-  // 다이맥스 없이 참가하는 종(검왕 자시안 등)은 접두어 없는 이름 그대로 맥스 표에 선다 — 그 줄도 후보다 (Codex, PR #322)
-  const maxPick = stems.flatMap((stem) => [`거다이맥스 ${stem}`, `다이맥스 ${stem}`, ...(index.get(stem)?.join ? [stem] : [])])
+  // '맥스 참가 검왕 자시안'(다이맥스 없이 참가하는 종) 도 후보다 (Codex, PR #322 → 2026-10-06 분류 이름표)
+  const maxPick = stems.flatMap((stem) => [`거다이맥스 ${stem}`, `다이맥스 ${stem}`, `맥스 참가 ${stem}`])
     .map((name) => ({ name, tier: tiers.get(name) ?? null }))
     .filter((one) => one.tier)
     // 티어(S · A · B · C)가 먼저다 — 순위는 칸 안의 순서라 칸이 다르면 견줄 수 없다 (한산한 칸의 C티어 1위가 붐비는 칸의 S티어 3위를 이긴다) (Codex, PR #273)
@@ -168,6 +170,7 @@ export function TrainCard({ mon, dexNo, stem, onLeave }: { mon: MonRef; dexNo: n
   const { data: usage } = useUsage();
   const { data: pve } = usePve();
   const { data: pvp } = usePvp();
+  const showJoin = useRankStore((s) => s.maxShowJoin);
   const plan = useMemo(() => {
     const family = dexNo != null ? dex.DEX_DATA.evo[String(dexNo)] : undefined;
     const names = family?.flat().map((id) => dex.DEX_DATA.names[String(id)]).filter(Boolean) as string[] | undefined;
@@ -175,12 +178,14 @@ export function TrainCard({ mon, dexNo, stem, onLeave }: { mon: MonRef; dexNo: n
       stems: [...new Set([stem, ...(names ?? [])])],
       types: mon.types,
       places: usage.USAGE_PLACES, meter: usage.METER,
-      dmax: max.DMAX_DATA, pve: pve.PVE_DATA, pvp: pvp.PVP_DATA,
+      // 육성 추천의 맥스 후보도 체크를 따른다 — 꺼져 있으면 '맥스 참가' 줄은 추천하지 않는다 (2026-10-06)
+      dmax: showJoin ? max.DMAX_DATA : Object.fromEntries(Object.entries(max.DMAX_DATA).map(([type, rows]) => [type, maxVisible(rows)])),
+      pve: pve.PVE_DATA, pvp: pvp.PVP_DATA,
       chart: dex.DEX_DATA.chart, typeKo: dex.TYPE_KO,
       dexOf: (sprite) => dex.DEX_DATA.dex[String(sprite)] ?? (sprite < 10000 ? sprite : null),
-      maxForm: formKeyOf(mon.name) === 'dmax' || formKeyOf(mon.name) === 'gmax',
+      maxForm: formKeyOf(mon.name) === 'dmax' || formKeyOf(mon.name) === 'gmax' || formKeyOf(mon.name) === 'join',
     });
-  }, [dex, max, usage, pve, pvp, dexNo, stem, mon.types, mon.name]);
+  }, [dex, max, usage, pve, pvp, dexNo, stem, mon.types, mon.name, showJoin]);
   // **문장으로 푼다 — 왜 → 그래서 → 순위** (2026-09-30 주인 제보: '물 타입 보스 기준' 제목과 순위만으로는 기승전결이 없어 무슨 말인지 모른다).
   //   첫 문장: 이 포켓몬이 어떤 타입 기술로 어떤 타입 보스를 잘 잡는지
   //   묶음 첫 줄: 그래서 이 목록이 무엇의 순위인지, 이 계열은 몇 위인지
@@ -257,7 +262,8 @@ export default function FormGuide({ mon, dexNo, baseLabel, onSwitch, onLeave, on
   const { data: usage } = useUsage();
   const board = useBoard(onLeave);
   const index = useMemo(() => maxIndex(max), [max]);
-  const tiers = useMemo(() => tierIndex(max), [max]);
+  const showJoin = useRankStore((s) => s.maxShowJoin);
+  const tiers = useMemo(() => tierIndex(max, false, showJoin), [max, showJoin]);
   const species = dexNo != null ? dex.DEX_DATA.names[String(dexNo)] : undefined;
   // 메가 줄은 원종 이름일 때만 — 섀도우 리자몽에서 '메가X 섀도우 리자몽' 같은 없는 폼을 만들지 않는다 (Codex, PR #267)
   const megas = (dexNo != null && speciesOf(mon.name) === species ? dex.DEX_DATA.megas[String(dexNo)] ?? [] : [])
@@ -337,10 +343,11 @@ export function FormStats({ mon, dexNo, baseLabel, onLeave, here = '' }: { mon: 
   const showUnrel = useRankStore((s) => s.maxShowUnrel);
   const beta = useAuthStore((s) => s.beta);
   const withUnrel = showUnrel && beta;
-  const tiers = useMemo(() => tierIndex(max, withUnrel), [max, withUnrel]);
+  const showJoin = useRankStore((s) => s.maxShowJoin);
+  const tiers = useMemo(() => tierIndex(max, withUnrel, showJoin), [max, withUnrel, showJoin]);
   const key = formKeyOf(mon.name);
 
-  if (key === 'dmax' || key === 'gmax') {
+  if (key === 'dmax' || key === 'gmax' || key === 'join') {
     // 맨 앞은 기술 타입 칸의 티어 · 순위 ('풀 A티어 · 2위') — 전체 순위가 아니라 그 타입에서 몇 티어인지가 궁금한 것이다 (2026-09-30 주인 결정)
     const spot = tiers.get(mon.name) ?? null;
     const places = placesOf(usage.USAGE_PLACES, mon.name, dex.TYPE_KO).filter((one) => one.group === '맥스');
@@ -394,31 +401,13 @@ export function FormStats({ mon, dexNo, baseLabel, onLeave, here = '' }: { mon: 
     .filter((one) => one.at >= 0);
   const raids = placesOf(usage.USAGE_PLACES, mon.name, dex.TYPE_KO).filter((one) => one.group === '레이드').slice(0, 3);
   const meter = meterText(usageMeterOf(usage.METER, mon.name));
-  // 다이맥스 없이 맥스 배틀에 참가하는 종(검왕 자시안 등)은 일반 폼이 곧 맥스 배틀 폼이다 — 맥스 성적도 이 카드에서 말한다 (2026-10-06)
-  const joinRow = idx.get(mon.name)?.join ? idx.get(mon.name) : undefined;
-  const joinPlaces = joinRow ? placesOf(usage.USAGE_PLACES, mon.name, dex.TYPE_KO).filter((one) => one.group === '맥스') : [];
-  const joinSpot = joinRow ? (tiers.get(mon.name) ?? null) : null;
-  if (!leagues.length && !raids.length && !meter && !joinRow) return null;
+  if (!leagues.length && !raids.length && !meter) return null;
   // 메가를 보고 있으면 그 라벨 ('메가X') — 일반이라고 적으면 어느 폼의 성적인지 틀린다
   const label = key === 'mega' ? (mon.name.split(' ')[0] ?? FORM_KO.mega) : baseLabel;
   return (
     <section className="detail__card detail__formstats">
       <h3><span className={`form-tag${key === 'mega' ? ' form-tag--mega' : ''}`}>{label}</span> 이 폼의 성적</h3>
       {meter ? <p className="detail__form-meter">{meter}</p> : null}
-      {joinRow ? (
-        <div className="detail__stat-group">
-          <h4 className="detail__train-head">맥스 배틀</h4>
-          <p className="detail__foot">{`다이맥스 없이 참가해요 · 전용 맥스 기술 ${joinRow.fast}`}</p>
-          <div className="detail__rank-row">
-            <span className="detail__rank-where">{joinSpot ? `${dex.TYPE_KO[joinSpot.type] ?? joinSpot.type} 맥스무브 ${joinSpot.tier}티어` : '맥스 배틀'}</span>
-            <b className="detail__rank-no">{joinSpot ? `${joinSpot.rank}위` : formSummary({ tier: null, places: joinPlaces, unrel: false }, dex.TYPE_KO)}</b>
-          </div>
-          {/* 맥스 카드와 같은 단추 — D-MAX 화면 위에서는 표의 그 줄로, 아니면 D-MAX 로 옮긴다 */}
-          <button type="button" className="detail__form-go" onClick={() => board.toMax({ name: mon.name, places: joinPlaces, moveType: joinRow.charged ?? '', tier: joinSpot })}>
-            {here === 'dmax' ? 'D-MAX 표에서 이 줄 보기 ›' : 'D-MAX 더보기 ›'}
-          </button>
-        </div>
-      ) : null}
       {raids.length ? (
         <div className="detail__stat-group">
           <h4 className="detail__train-head">레이드</h4>

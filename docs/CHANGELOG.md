@@ -27,7 +27,22 @@
 ## 릴리스 기록
 
 <details open>
-<summary><b>2026-10-06</b> — 1판 · <code>v5.9.8</code></summary>
+<summary><b>2026-10-06</b> — 2판 · <code>v5.9.8</code> ~ <code>v5.9.9</code></summary>
+
+<details>
+<summary><b>v5.9.9</b> · '맥스 참가' 분류 — 다이맥스 없이 참가하는 종을 이름 접두어로</summary>
+
+**배경** — v5.9.8 은 검왕 자시안 · 방패왕 자마젠타 · 무한다이노를 접두어 없는 일반 이름으로 세우고 표 안의 글 한 줄('다이맥스 없이 참가')로만 갈랐다. 주인 결정: "다이맥스로 나오지 않았는데 다이맥스를 뛰는 거니까" 다이맥스 · 거다이맥스처럼 **새 분류**로 둔다. 이름표는 '맥스 참가', 다이맥스 · 거다이맥스와 같이 **데이터 이름의 접두어**로 넣는다('맥스 참가 검왕 자시안').
+
+**변경** — `value_build.py` `JOIN_PREFIX = '맥스 참가'` · `join_name()` 으로 딜러 · 탱커 · 티어 세 표의 이름을 짓는다(`join: true` 는 유지). `build.py FORM_LABELS` 에 '맥스 참가' 를 넣어 `NameNode` 가 [맥스 참가][검왕] 자시안으로 가르고, `dex_build.py ko_to_en_form` 에 영문 'Max Entrant'. 웹은 접두어를 다루는 자리 전부를 넓혔다 — `formGuide.ts`(`MAX_PREFIX` · `formKeyOf` · `FORM_KO.join = '맥스 참가'` · `formRows` 가 `맥스 참가 ${stem}` 줄을 찾음) · `trainPlan.ts`(`MAX_PREFIX` · `NOT_BASE` · 계열 네 변형) · `usage.ts`(`mark: 'M'` 변형) · `UsageRanks`(이름표) · `Row.tsx` · `MonDetail.tsx` 의 `FORM_KIND` · 라벨 거름 · IvRank 조건 · `FormGuide.tsx`(`maxPick` 후보 · `maxForm` · `FormStats` 의 맥스 가지). v5.9.8 에서 일반 카드에 끼워 넣었던 '맥스 배틀' 묶음과 `join` 플래그로 이름을 찾던 우회는 뺐다 — 이제 '맥스 참가 검왕 자시안' 을 열면 다이맥스 폼과 같은 맥스 카드가 선다. 활용처는 '검왕 자시안'(레이드 · PvP)과 '맥스 참가 검왕 자시안'(맥스)으로 갈려 쌓이고, 팝업의 활용 순위는 네 변형을 합쳐 보여 준다.
+
+**체크로 켜는 분류(주인 결정, 같은 날)** — "다이맥스만 보고 싶어하는 사람도 있어서 초기에 보여주지 말고 체크되면 보여지게". D-MAX 화면 머리에 `[맥스 참가 가능 다른 유닛]` 체크(`stores/rank.ts maxShowJoin`, 새 키 `pogo_max_join`, 기본 끔). 거르는 곳은 `lib/maxVisible.ts` 한 군데 — 순위표 · 보스 아코디언 · 덱 짜기(`maxDeckCandidates` 의 `showJoin`, '다이맥스만' 은 맥스 참가도 뺀다) · 팝업의 '보스로 만났을 때' · 육성 추천 · 폼별 정보의 티어 순위(`tierIndex(max, withUnrel, withJoin)` — 꺼져 있으면 맥스 참가 줄은 번호를 차지하지 않고 자기 자리는 '넣으면 몇 위')가 같은 값을 본다. 홈 미리보기는 체크가 없으니 늘 뺀다. `value_build.py absolute_tier` 의 100% 기준에서 `join` 줄을 뺀다 — 기본으로 숨기는 줄이 보이는 줄의 등급을 끌어내리면 안 된다. v5.9.8 에서 한 단계씩 내려갔던 18줄의 등급이 되돌아오고, 검왕 자시안은 100% 를 넘는 S 로 선다.
+
+검사 — web 164(maxVisible · tierIndex withJoin 추가) · tsc · 로컬 데이터 재계산 · 화면 캡처(체크 끔/켬 · 요약 팝업 폼별 정보 · 배틀 정보).
+
+**Codex 리뷰 반영(main 동기화 PR #325)** — 레이드 보스 · PvP 상대 검색 풀(`search.ts makeBossIndex`)과 PvP 개체값 찾기(`IvRankPage`)가 다이맥스 · 거다이맥스만 빼고 있어 '맥스 참가 검왕 자시안' 이 레이드 · PvP 포켓몬처럼 검색됐다 — 두 거름에 '맥스 참가' 를 더했다.
+
+</details>
 
 <details>
 <summary><b>v5.9.8</b> · 다이맥스 없이 맥스 배틀에 참가하는 검왕 자시안 · 방패왕 자마젠타 · 무한다이노 등재</summary>

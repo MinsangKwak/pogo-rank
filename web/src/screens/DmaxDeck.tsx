@@ -21,6 +21,7 @@ import { NameNode } from '../components/Row';
 import { weekBoss } from '../lib/schedule';
 import { MAX_DECK_SIZE, MAX_DECK_SLOTS, maxDeckAutoFill, maxDeckCandidates, maxDeckRowOf, maxDeckWhy, type MaxDeck } from '../lib/maxdeck';
 import { track } from '../lib/track';
+import { useRankStore } from '../stores/rank';
 import type { OpenMon } from '../lib/mon';
 
 /**
@@ -53,16 +54,18 @@ export default function DmaxDeck({ onOpen }: { onOpen: OpenMon }) {
   // 주소(?b=)가 가장 세고, 없으면 이번 주 보스, 끝으로 '전체' (v3 maxDeckBossType)
   const [chosen, setChosen] = useState<string | null>(() => readHashBoss(dex.TYPE_KO));
   const [dynaOnly, setDynaOnly] = useState(false);
+  // D-MAX 화면의 [맥스 참가 가능 다른 유닛] 체크와 같은 값 — 덱 후보도 같은 규칙으로 (2026-10-06)
+  const showJoin = useRankStore((s) => s.maxShowJoin);
   const [swap, setSwap] = useState<number | null>(null);
   const [picked, setPicked] = useState<{ key: string; deck: MaxDeck } | null>(null);
   const [hashIds] = useState(readHashIds);
 
   const bossType = chosen ?? week?.type ?? 'overall';
-  const key = `${bossType}|${dynaOnly}`;
+  const key = `${bossType}|${dynaOnly}|${showJoin}`;
   const firstKey = useRef<string | null>(null);
   if (firstKey.current === null) firstKey.current = key;
 
-  const auto = useMemo(() => maxDeckAutoFill(max, bossType, dynaOnly), [max, bossType, dynaOnly]);
+  const auto = useMemo(() => maxDeckAutoFill(max, bossType, dynaOnly, showJoin), [max, bossType, dynaOnly, showJoin]);
   // 칸 수가 안 맞거나 그 표에 없는 id 면 그 칸만 비운다
   const fromHash = useMemo(() => {
     if (!hashIds || key !== firstKey.current) return null;
@@ -131,7 +134,7 @@ export default function DmaxDeck({ onOpen }: { onOpen: OpenMon }) {
         {MAX_DECK_SLOTS.map((slot, index) => {
           const row = maxDeckRowOf(max, index, bossType, deck[index] ?? null);
           const open = swap === index;
-          const candidates = open ? maxDeckCandidates(max, index, bossType, deck, dynaOnly).slice(0, 12) : [];
+          const candidates = open ? maxDeckCandidates(max, index, bossType, deck, dynaOnly, showJoin).slice(0, 12) : [];
           return (
             <Fragment key={index}>
               <li className={`row deck-slot deck-slot--${index}${row ? '' : ' is-empty'}`}
