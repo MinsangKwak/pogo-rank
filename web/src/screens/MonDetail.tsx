@@ -14,6 +14,8 @@
 //     .detail__dock  링크 복사 · CP 계산기 / 초기화 · 상세로 돌아가기
 // ─────────────────────────────────────────────────────────────────────────────
 import { monDocTitle } from '../lib/docTitle';
+import { maxVisible } from '../lib/maxVisible';
+import { useRankStore } from '../stores/rank';
 import { go } from '../lib/nav';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
@@ -129,6 +131,8 @@ export default function MonDetail({ pick, onClose, inline = false, onDeep, here 
   const { data } = useDex();
   const { data: pve } = usePve();
   const { data: max } = useMax();
+  // '보스로 만났을 때' 추천 풀 — D-MAX 화면의 [맥스 참가 가능 다른 유닛] 체크를 따른다 (2026-10-06)
+  const showJoin = useRankStore((s) => s.maxShowJoin);
   const { data: pvpData } = usePvp();
   const { data: gameday } = useGameday();
   const { data: favEvents } = useFavEvents();
@@ -215,7 +219,7 @@ export default function MonDetail({ pick, onClose, inline = false, onDeep, here 
     if (bossKind(mon.name) === 'max') {
       // 맥스 배틀에는 다이맥스·거다이맥스와, 다이맥스 없이 참가하는 검왕 자시안·방패왕 자마젠타·무한다이노(join)만 들어간다 —
       // 메가·원시·섀도우는 참전할 수 없다. 미구현은 추천하지 않는다: 지금 데려갈 수 있는 것만 보여 준다
-      const rows = (max.DMAX_DATA[first] ?? []).filter((row) => !row.unrel).slice(0, 5)
+      const rows = maxVisible(max.DMAX_DATA[first], { join: showJoin }).slice(0, 5)
         .map((row) => ({ sprite: row.sprite, name: row.name, en: row.en, types: row.types }));
       if (!rows.length) return null;
       return {

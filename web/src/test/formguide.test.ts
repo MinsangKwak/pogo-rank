@@ -103,6 +103,19 @@ describe('formRows', () => {
     const all = tierIndex(max, true);
     for (const [name, spot] of released) expect(all.get(name)!.rank).toBeGreaterThanOrEqual(spot.rank);
   });
+  it('맥스 참가 줄은 체크가 꺼져 있으면 번호를 차지하지 않는다 — 켜면 다른 줄이 한 칸씩 민다', () => {
+    const off = tierIndex(max);
+    const on = tierIndex(max, false, true);
+    // 강철 칸: 검왕 자시안이 1위 — 꺼져 있어도 '넣으면 1위', 켜면 1위
+    expect(off.get('맥스 참가 검왕 자시안')).toMatchObject({ type: 'steel', rank: 1 });
+    expect(on.get('맥스 참가 검왕 자시안')).toMatchObject({ type: 'steel', rank: 1 });
+    const steelOff = [...off].filter(([, spot]) => spot.type === 'steel' && !spot.tier.startsWith('x'));
+    for (const [name, spot] of steelOff) {
+      if (name.startsWith('맥스 참가 ')) continue;
+      expect(on.get(name)!.rank).toBeGreaterThanOrEqual(spot.rank);
+    }
+    expect(on.get('맥스 참가 방패왕 자마젠타')!.rank).toBeGreaterThan(off.get('맥스 참가 방패왕 자마젠타')!.rank - 1);
+  });
   it('활용처는 순위 오름차순', () => {
     const ranks = rowsFor('리자몽').flatMap((row) => row.places.map((one) => one.rank));
     for (const row of rowsFor('리자몽')) {
