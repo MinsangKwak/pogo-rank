@@ -104,8 +104,9 @@ export function DeepDock({ mon, dexNo, onDeep, onLeave, here = '', onHere }: {
   const tiers = useMemo(() => tierIndex(max), [max]);
   const family = (dexNo != null ? dex.DEX_DATA.evo[String(dexNo)]?.flat() : undefined) ?? (dexNo != null ? [dexNo] : []);
   const stems = [...new Set([speciesOf(mon.name), ...family.map((id) => dex.DEX_DATA.names[String(id)]).filter(Boolean) as string[]])];
-  // 계열의 맥스 폼 중 티어표 순위가 가장 높은 것 — 요약의 폼별 정보가 말한 그 칸으로 간다
-  const maxPick = stems.flatMap((stem) => [`거다이맥스 ${stem}`, `다이맥스 ${stem}`])
+  // 계열의 맥스 폼 중 티어표 순위가 가장 높은 것 — 요약의 폼별 정보가 말한 그 칸으로 간다.
+  // 다이맥스 없이 참가하는 종(검왕 자시안 등)은 접두어 없는 이름 그대로 맥스 표에 선다 — 그 줄도 후보다 (Codex, PR #322)
+  const maxPick = stems.flatMap((stem) => [`거다이맥스 ${stem}`, `다이맥스 ${stem}`, ...(index.get(stem)?.join ? [stem] : [])])
     .map((name) => ({ name, tier: tiers.get(name) ?? null }))
     .filter((one) => one.tier)
     // 티어(S · A · B · C)가 먼저다 — 순위는 칸 안의 순서라 칸이 다르면 견줄 수 없다 (한산한 칸의 C티어 1위가 붐비는 칸의 S티어 3위를 이긴다) (Codex, PR #273)
@@ -278,7 +279,8 @@ export default function FormGuide({ mon, dexNo, baseLabel, onSwitch, onLeave, on
             // 'join'(다이맥스 없이 참가) 줄도 같다 — 일반 폼 그대로 맥스 표에 선다 (2026-10-06)
             // 이미 D-MAX 화면이면 옮길 곳이 없다 — 팝업 안에서 그 폼의 배틀 정보로 (2026-10-02 주인 결정)
             return (
-              <button key={row.name} type="button" className={`detail__form detail__formrow${on ? ' is-now' : ''}`}
+              // 일반 줄과 join 줄은 이름이 같다 — 키에 폼 종류를 붙여 가른다 (Codex, PR #322)
+              <button key={`${row.key}-${row.name}`} type="button" className={`detail__form detail__formrow${on ? ' is-now' : ''}`}
                 onClick={() => (onMaxHere ? onMaxHere(toMon(row)) : board.toMax(row))}>
                 {tag}
                 <span className="detail__formrow-use">{formSummary(row, dex.TYPE_KO)}</span>
@@ -290,7 +292,7 @@ export default function FormGuide({ mon, dexNo, baseLabel, onSwitch, onLeave, on
           const meter = meterText(usageMeterOf(usage.METER, row.name));
           return (
             // 일반 · 메가는 눌러서 펼친다 — 활용처 전부와 전 종 점수, 그 폼으로 바꿔 보기
-            <details key={row.name} className={`detail__form${on ? ' is-now' : ''}`}>
+            <details key={`${row.key}-${row.name}`} className={`detail__form${on ? ' is-now' : ''}`}>
               <summary className="detail__formrow">
                 {tag}
                 <span className="detail__formrow-use">{!row.places.length && meter ? meter : formSummary(row, dex.TYPE_KO)}</span>
