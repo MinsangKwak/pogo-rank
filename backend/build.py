@@ -419,7 +419,8 @@ def render_data_js(game_master, tables, stale, rank_delta_date, rank_fresh_days,
                   for e in ((gameday or {}).get('events') or []) if e.get('dex')]
     # 긴 라벨부터 — name.js 가 앞에서부터 맞춰 보므로 '가라르 달마모드' 가 '가라르' 보다 먼저 와야 한다.
     # 2026-09-12 v3.14.0 같은 길이 안은 가나다순 — 집합 순서를 그대로 쓰면 빌드마다 data.js 가 달라졌다(해시 무작위화)
-    form_labels = sorted({label for label in FORM_KO.values() if label} | {'섀도우', '다이맥스', '거다이맥스'}, key=lambda label: (-len(label), label))
+    # 2026-10-06 '맥스 참가' = 다이맥스 없이 맥스 배틀에 참가하는 종의 분류 (value_build.py JOIN_PREFIX)
+    form_labels = sorted({label for label in FORM_KO.values() if label} | {'섀도우', '다이맥스', '거다이맥스', '맥스 참가'}, key=lambda label: (-len(label), label))
     core = f'''// 빌드 생성 데이터 (backend/build.py) — 기준일 {game_master['timestamp']}
 const TYPE_KO = {tight(TYPE_KO)};
 // 2026-09-08 v2.29.0 다국어 — 타입 이름 영문. TYPE_KO 와 키가 같아야 typeName(t) 이 한 줄로 갈린다
