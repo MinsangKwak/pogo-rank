@@ -136,6 +136,8 @@ export const SCHEDULE_MONTHS = {
       { s: 17, e: 17, cat: 'event', label: '깜눈크 부화데이 (11–17시)', source: 'https://pokemongo.com/ko/news/sandile-hatch-day-2026' },
       { s: 24, e: 24, cat: 'event', label: '다이맥스 유크시 맥스배틀 데이 (14–17시 · 한국은 유크시, 유럽 엠라이트 · 아메리카 아그놈)', eu: '다이맥스 엠라이트 맥스배틀 데이 (14–17시 · 유럽 · 중동 · 아프리카 · 인도는 엠라이트)', source: 'https://pokemongo.com/ko/news/dynamax-uxie-mesprit-azelf-max-battle-day-2026' },
       { s: 31, e: 31, cat: 'event', label: '슈퍼 메가 레이드 데이 (날짜 확정 · 세부 내용 미발표)', source: 'https://pokemongo.com/ko/news/save-the-date-s24' },
+      // 2026-10-06 공식 한국어 공지 — 핼러윈 2026 파트 1 (자동분 영문 원제 'Pokémon GO Halloween 2026 Part I' 를 덮는다 · 11/1 10시까지라 11월에도 한 줄)
+      { s: 27, e: 31, cat: 'event', label: '핼러윈 2026 파트 1 (10/27 10시 ~ 11/1 10시 · 해트와 케이프의 피카츄 · 톱 해트를 쓴 주뱃 · 리본을 단 데인차)', source: 'https://pokemongo.com/ko/news/halloween-part-1-2026' },
       { s: 1, e: 6, cat: 'raid5', label: '제르네아스 (9/30~10/6)' },
       { s: 1, e: 6, cat: 'mega', label: '메가 우츠보트 (9/30~10/6)' },
       { s: 1, e: 4, cat: 'dmax', label: 'D-MAX 울머기 (맥스 먼데이 9/28 주차, ~10/4)', t: 'water' },
@@ -148,6 +150,8 @@ export const SCHEDULE_MONTHS = {
     note: '공식 한국 공지 확인: 2026-10-02 · 한국시간 기준. 11월은 발표된 일정만 먼저 실었어요.',
     items: [
       { s: 1, e: 30, cat: 'event', label: '"ADIDAS | POKÉMON" 컬렉션 시간제한 리서치 (9/25 ~ 2027/1/15 · 참여 adidas 매장 방문)', source: 'https://pokemongo.com/ko/news/pokemon-x-adidas-2026' },
+      // 2026-10-06 핼러윈 2026 파트 1 의 꼬리 (10/27 10시 ~ 11/1 10시) — 자동분 영문 원제를 덮는다
+      { s: 1, e: 1, cat: 'event', label: '핼러윈 2026 파트 1 (~11/1 10시)', source: 'https://pokemongo.com/ko/news/halloween-part-1-2026' },
       { s: 14, e: 19, cat: 'event', label: '메테노 샤워: 사자자리 유성우 (11/14 17시 ~ 11/19 23:59 · 매일 17–21시 메테노 출현 증가)', source: 'https://pokemongo.com/ko/news/minior-meteor-showers-2026' },
     ],
   },
