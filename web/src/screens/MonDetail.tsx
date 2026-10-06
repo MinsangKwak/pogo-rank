@@ -213,13 +213,13 @@ export default function MonDetail({ pick, onClose, inline = false, onDeep, here 
     if (!types.length) return null;
     const first = types[0]!;
     if (bossKind(mon.name) === 'max') {
-      // 맥스 배틀에는 다이맥스·거다이맥스만 들어간다 — 메가·원시·섀도우는 참전할 수 없다.
-      // 미구현은 추천하지 않는다: 지금 데려갈 수 있는 것만 보여 준다
+      // 맥스 배틀에는 다이맥스·거다이맥스와, 다이맥스 없이 참가하는 검왕 자시안·방패왕 자마젠타·무한다이노(join)만 들어간다 —
+      // 메가·원시·섀도우는 참전할 수 없다. 미구현은 추천하지 않는다: 지금 데려갈 수 있는 것만 보여 준다
       const rows = (max.DMAX_DATA[first] ?? []).filter((row) => !row.unrel).slice(0, 5)
         .map((row) => ({ sprite: row.sprite, name: row.name, en: row.en, types: row.types }));
       if (!rows.length) return null;
       return {
-        sub: '맥스 배틀 추천 후보 — 다이맥스·거다이맥스만 참전',
+        sub: '맥스 배틀 추천 후보 — 다이맥스·거다이맥스와 다이맥스 없이 참가하는 전설만 참전',
         rows,
         foot: `${data.TYPE_KO[first] ?? first} 속성 맥스 배틀 보스 기준 · 메가·원시·섀도우는 맥스 배틀에 참전할 수 없어 제외`,
       };
@@ -418,7 +418,7 @@ export default function MonDetail({ pick, onClose, inline = false, onDeep, here 
                               </div>
                             </summary>
                             <div className="detail__cp-grid">
-                              {([[max.MAX_POOL[String(sprite)] ? '레이드·맥스' : '레이드', 'l20'],
+                              {([[/^[GD]$/.test(max.MAX_POOL[String(sprite)] ?? '') ? '레이드·맥스' : '레이드', 'l20'],
                                  ['부스트', 'l25'], ['야생', 'l30'], ['부스트', 'l35']] as const).map(([label, key], index) => (
                                 <div key={index} className="detail__cp-tile">
                                   <span className="meta">{label}</span>

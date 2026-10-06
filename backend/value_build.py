@@ -26,6 +26,8 @@
 #   data/r500|r1500|r2500|r10000.json  리그별 PvPoke 랭킹 (리틀·슈퍼·하이퍼·마스터)
 #   data/pvp_all.json                build.py 산출물 — 리그별 전체 순위
 #   data/species_names.csv           PokeAPI 종 이름 (한국어 = local_language_id 3)
+#   data/move_names.csv              PokeAPI 기술 이름 — 전용 맥스 기술(거수참 등)의 한글 이름 (2026-10-06)
+#   backend/config/max_released.txt  다이맥스(D) · 거다이맥스(G) · 다이맥스 없이 참가(M) 출시 목록
 #
 # 출력
 #   data/dynamax.json       {'overall' | 보스속성: [행]} — sprite/name/en/types/fast/charged/
@@ -82,6 +84,9 @@ meta, scores = pve_full['meta'], pve_full['scores']
 # 출시 목록은 검증된 외부 소스(max_released.txt)를 따르고, 거다이맥스 기술 타입만 게임마스터에서 읽는다
 # (게임마스터에는 "누가 다이맥스 가능한가"가 들어있지 않다)
 dynamax_released, gmax_released = set(), set()
+# 2026-10-06 (이용자 제보) 'M' = 다이맥스 없이 맥스 배틀에 참가하는 종 — 검왕 자시안 · 방패왕 자마젠타 · 무한다이노.
+# 전용 맥스 기술 한 가지로만 때리고, 다이맥스 · 거다이맥스 줄에는 서지 않는다
+maxjoin_released = set()
 # 2026-09-15 v3.36.0 '예정' 블록(주석 처리된 D/G 줄)도 읽는다 — 지우지 않고 '미구현' 으로 밝히려면 목록이 필요하다
 dynamax_pending = set()
 for line in open('backend/config/max_released.txt', encoding='utf-8'):
@@ -94,11 +99,27 @@ for line in open('backend/config/max_released.txt', encoding='utf-8'):
         continue
     # 형식: "D POKEMON_ID [FORM]" = 다이맥스, "G POKEMON_ID [FORM]" = 거다이맥스
     kind, pokemon_id, *form_tokens = body.split()
-    (dynamax_released if kind == 'D' else gmax_released).add((pokemon_id, form_tokens[0] if form_tokens else None))
+    {'D': dynamax_released, 'G': gmax_released, 'M': maxjoin_released}[kind].add((pokemon_id, form_tokens[0] if form_tokens else None))
 # 거다이맥스 기술 타입: 게임마스터의 sourdough(거다이맥스) 기술 매핑에서 (종, 폼) → 기술 타입
-gmax_move_types = {}
+# 2026-10-06 같은 표에 검왕 자시안 · 방패왕 자마젠타 · 무한다이노의 **전용 맥스 기술**(거수참 · 거수탄 · 다이맥스포)도 들어 있다.
+# 효과 이름이 'gmax_' 로 시작하면 거다이맥스 기술, 'max_' 로 시작하면 전용 맥스 기술이다 — 갈라 두지 않으면
+# 셋이 '미구현 거다이맥스' 로 잘못 선다(실제로는 다이맥스를 못 하는 대신 지금 바로 참가한다)
+gmax_move_types, signature_moves = {}, {}
 for mapping in templates_by_id['SOURDOUGH_MOVE_MAPPING_SETTINGS']['sourdoughMoveMappingSettings']['mappings']:
-    gmax_move_types[(mapping['pokemonId'], mapping.get('form'))] = moves[mapping['move']]['pokemonType'].replace('POKEMON_TYPE_','')
+    move = moves[mapping['move']]
+    move_type = move['pokemonType'].replace('POKEMON_TYPE_','')
+    vfx_name = move.get('vfxName', '')
+    if vfx_name.startswith('max_'):
+        signature_moves[(mapping['pokemonId'], mapping.get('form'))] = (move_type, vfx_name[len('max_'):])
+    else:
+        gmax_move_types[(mapping['pokemonId'], mapping.get('form'))] = move_type
+# 전용 맥스 기술의 한글 이름 — 게임마스터에는 이름이 없어 효과 이름('behemoth_blade')을 PokeAPI 영문명과 맞춰 한글을 찾는다
+move_id_by_english, korean_move_names = {}, {}
+for row in csv.DictReader(open('data/move_names.csv', encoding='utf-8')):
+    if row['local_language_id'] == '9': move_id_by_english[re.sub(r'[^a-z0-9]', '', row['name'].lower())] = row['move_id']
+    if row['local_language_id'] == '3': korean_move_names[row['move_id']] = row['name']
+def signature_move_name(vfx_stem):
+    return korean_move_names.get(move_id_by_english.get(vfx_stem.replace('_', '')), '')
 
 def is_base_form(pokemon_id, form):
     # 기본 폼 표기는 소스마다 다르다: 빈 문자열 / None / 'PIKACHU_NORMAL'. 이 셋만 "원종 줄"과 같은 것으로 본다
@@ -123,6 +144,17 @@ def in_release_set(release_set, pokemon_id, form):
     return (pokemon_id, form) in release_set
 def is_dynamax(pokemon_id, form):
     return in_release_set(dynamax_released, pokemon_id, form)
+def signature_move(pokemon_id, form):
+    # 다이맥스 없이 맥스 배틀에 참가하는 종(max_released.txt 의 M 줄)의 전용 맥스 기술 (타입, 한글 이름). 아니면 None.
+    # 등재돼 있는데 게임마스터에 기술이 없으면 None — 수치를 지어내지 않는다
+    if not in_release_set(maxjoin_released, pokemon_id, form): return None
+    if is_base_form(pokemon_id, form):
+        found = next((value for (candidate_id, candidate_form), value in signature_moves.items() if candidate_id == pokemon_id and base_form_matches(candidate_id, candidate_form)), None)
+    else:
+        found = signature_moves.get((pokemon_id, form))
+    if not found: return None
+    move_type, vfx_stem = found
+    return (move_type, signature_move_name(vfx_stem) or vfx_stem)
 def registered_gmax_type(pokemon_id, form):
     # 출시 여부와 무관하게 게임마스터에 등록된 거다이맥스 기술 타입
     # 기본 폼은 자신이 대표하는 폼의 키를, 그 밖의 폼은 그 폼 키만 본다
@@ -189,6 +221,16 @@ def dyna_rank(boss_types, limit=TOP):
         # _S(에이펙스) 폼은 맥스 배틀 대상이 아니라 제외
         if entry['form'] and entry['form'].endswith('_S'): continue
         own_types = [type_name.upper() for type_name in entry['types']]
+        bulk = entry['def'] * entry['hp'] / 1000
+        # 2026-10-06 다이맥스 없이 참가하는 종 — 전용 맥스 기술 한 발(위력 350)로 한 줄. 이름에 접두어를 안 붙인다:
+        # 변신이 없어 레이드 · PvP 와 같은 개체이고, 활용처도 한 이름에 모이는 것이 맞다. 'join' 으로 화면이 안내 글을 붙인다
+        signature = signature_move(entry['pid'], entry['form'])
+        if signature:
+            move_type, move_name = signature
+            dealt = damage(MAX_ATTACK_POWER, entry['atk'], (STAB if move_type in own_types else 1) * type_mult(move_type, boss_types))
+            out.append({'sprite': entry['sprite'], 'name': entry['name'], 'en': entry['en'], 'types': entry['types'],
+                        'fast': move_name, 'charged': move_type.lower(), 'dmg': dealt, 'bulk': round(bulk), 'score': round(dealt * bulk ** 0.5), 'gmax': False, 'join': True})
+            continue
         # 출시분(unrel=False)과 미구현분(unrel=True)을 각각 한 줄씩 낸다.
         # 둘 다 있는 종(예: 다이맥스는 출시 · 거다이맥스는 미출시)은 두 줄로 갈려 서로를 가리지 않는다
         for unrel in (False, True):
@@ -199,7 +241,6 @@ def dyna_rank(boss_types, limit=TOP):
             best = best_max_hit(entry, boss_types, own_types, dynamax_ok, gmax_move_type)
             if not best: continue
             # 내구 지표 = 방어력 x HP / 1000, 점수에는 제곱근으로 완화해 반영(딜 비중을 크게 둔다)
-            bulk = entry['def'] * entry['hp'] / 1000
             score = best[0] * bulk ** 0.5
             # 2026-09-06 v2.10.0 (QA-44) 이름에 맥스 종류를 붙인다 — '거다이맥스 에이스번' / '다이맥스 에이스번'.
             # 일반 에이스번(PvE·PvP 표)과 이름이 같으면 검색 색인(이름 기준 중복 제거)·활용처(이름 기준 합산)에서
@@ -225,6 +266,11 @@ def tank_rank(boss_types, limit=TOP):
         own_types = [type_name.upper() for type_name in entry['types']]
         multiplier = max(type_mult(boss_type, own_types) for boss_type in boss_types) if boss_types else 1.0
         bulk = entry['def'] * entry['hp'] / 1000
+        # 다이맥스 없이 참가하는 종도 맥스 페이즈를 버티는 건 같다 — 접두어 없는 이름 한 줄 (딜러 표와 같은 꼴)
+        if signature_move(entry['pid'], entry['form']):
+            out.append({'sprite': entry['sprite'], 'name': entry['name'], 'en': entry['en'], 'types': entry['types'],
+                        'fast': '', 'charged': '', 'ehp': round(bulk / multiplier), 'mult': round(multiplier, 2), 'hp': round(entry['hp']), 'def': round(entry['def']), 'gmax': False, 'join': True})
+            continue
         # 딜러 표와 같은 규칙 — 출시분과 미구현분을 각각 한 줄씩 (탱커 지표는 기술과 무관해 자격 판정만 갈린다)
         for unrel in (False, True):
             dynamax_ok = pending_dynamax(entry['pid'], entry['form']) if unrel else is_dynamax(entry['pid'], entry['form'])
@@ -248,6 +294,10 @@ max_pool = {}
 for entry in base_meta.values():
     if entry['form'] and entry['form'].endswith('_S'): continue   # 에이펙스 폼은 맥스 배틀 대상이 아니다
     is_gmax = gmax_type(entry['pid'], entry['form']) is not None
+    # 'M' = 다이맥스 없이 참가 — 맥스 배틀에서 잡는 종이 아니라 포획 CP 안내에는 안 쓰지만, 도감 · CP 표의 '맥스' 표시는 받는다
+    if signature_move(entry['pid'], entry['form']):
+        max_pool[str(entry['sprite'])] = 'M'
+        continue
     if not is_dynamax(entry['pid'], entry['form']) and not is_gmax: continue
     max_pool[str(entry['sprite'])] = 'G' if is_gmax else 'D'
     if is_gmax:
@@ -286,6 +336,16 @@ def tier_rows():
         bulk = entry['def'] * entry['hp'] / 1000
         bulk_mul = bulk ** 0.25
         attack = round(entry['atk'])
+        # 다이맥스 없이 참가하는 종 — 전용 맥스 기술 타입 한 칸, 위력은 맥스어택과 같은 350 (공식 안내: 다른 맥스어택처럼 레벨을 올린다)
+        signature = signature_move(entry['pid'], entry['form'])
+        if signature:
+            move_type, move_name = signature
+            score = attack * MAX_ATTACK_POWER * (1.2 if move_type in own_types else 1) * bulk_mul
+            out.append({'sprite': entry['sprite'], 'name': entry['name'], 'en': entry['en'], 'types': entry['types'],
+                        'fast': move_name, 'charged': move_type.lower(), 'atk': attack, 'power': MAX_ATTACK_POWER,
+                        'stab': move_type in own_types, 'bulk': round(bulk), 'bulkMul': round(bulk_mul, 2),
+                        'score': round(score), 'gmax': False, 'join': True})
+            continue
         # 출시분과 미구현분을 각각 낸다 (unrel 표시만 다르고 계산은 같다)
         for unrel in (False, True):
             unrel_mark = {'unrel': True} if unrel else {}

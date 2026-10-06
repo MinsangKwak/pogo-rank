@@ -15,6 +15,9 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 export const RELEASE_NOTES_EN = {
+  '2026-10-06 · v5.9.8': [
+    '**Crowned Sword Zacian, Crowned Shield Zamazenta and Eternatus are now on the D-MAX tables** — they cannot Dynamax, but they join Max Battles with their signature moves (Behemoth Blade, Behemoth Bash, Dynamax Cannon). They had been misfiled as \'unreleased Gigantamax\' and stayed hidden (reported by a user, thank you). Their move power is computed as 350, the same as a Dynamax Max Attack, and the tables and popup say \'joins without Dynamax\'. Crowned Sword Zacian now sets the 100% baseline of the tier table, so other Pokémon may drop one tier — tiers are always relative to the strongest one',
+  ],
   '2026-10-05 · v5.9.7': [
     '**Dynamax Sizzlipede and Centiskorch are now on the D-MAX tables** — released at the Oct 5 Max Monday, so their tier, attacker and tank numbers are computed. The Pokédex \'Max Battle ready\' mark comes with it',
   ],

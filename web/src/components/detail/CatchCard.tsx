@@ -8,7 +8,9 @@ export default function CatchCard({ form, sprite, seg, onSeg }: {
   const { data } = useDex();
   const { data: max } = useMax();
   const cpm = data.DEX_DATA.cpm;
-  const maxKind = max.MAX_POOL[String(sprite)] ?? null;
+  // 'M'(다이맥스 없이 참가 — 검왕 자시안 등)은 레이드에서 잡는 종이라 맥스 배틀 포획 경로를 세우지 않는다 (2026-10-06)
+  const pool = max.MAX_POOL[String(sprite)] ?? null;
+  const maxKind = pool === 'G' || pool === 'D' ? pool : null;
   const segs: [string, string][] = [...(maxKind ? [['max', '맥스 배틀'] as [string, string]] : []), ['raid', '레이드'], ['wild', '야생']];
   const now = segs.some(([id]) => id === seg) ? seg : segs[0]![0];
   const maxLabel = maxKind === 'G' ? '거다이맥스·다이맥스' : '다이맥스';
