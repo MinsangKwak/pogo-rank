@@ -27,7 +27,7 @@
 ## 릴리스 기록
 
 <details open>
-<summary><b>2026-10-06</b> — 3판 · <code>v5.9.8</code> ~ <code>v5.9.10</code></summary>
+<summary><b>2026-10-06</b> — 3판 · <code>v5.9.8</code> · <code>v5.9.9</code> · <code>v5.9.10</code></summary>
 
 <details>
 <summary><b>v5.9.10</b> · 달력 '핼러윈 2026 파트 1' 한국어 제목 · 게임 업데이트 수집 병합</summary>
