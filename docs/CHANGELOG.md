@@ -42,6 +42,8 @@
 
 검사 — web 162(formguide 1 추가) · tsc · 로컬 데이터 재계산(`build.sh --no-fetch --data-only` → `npm run data`).
 
+**Codex 리뷰 반영(main 동기화 PR #322)** — ① 요약 팝업 바닥 'D-MAX 순위' 가 고르는 맥스 폼(`DeepDock.maxPick`)에 접두어 없는 `join` 줄도 후보로 넣었다 — 전에는 검왕 자시안에서 티어를 못 찾아 표의 그 줄로 가지 못했다 ② 일반 줄과 `join` 줄의 이름이 같아 React 키가 겹치던 것을 `폼 종류-이름` 으로 갈랐다.
+
 </details>
 
 </details>
