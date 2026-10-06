@@ -34,9 +34,10 @@ import type { OpenMon } from '../lib/mon';
 import { Fragment, useCallback, useEffect } from 'react';
 import type { DmaxRow, PveRow, PvpRow, LeagueKey } from '../types/data';
 import { num, word, lines as keep } from '../lib/cell';
+import { maxVisible } from '../lib/maxVisible';
 
 // ⓘ 안내 — v3 티어표 머리의 정보점과 같은 글이다 (등급 기준이 탭이 아니라 전 종이라는 오해가 잦았다)
-const DMAX_INFO = '등급은 전체 포켓몬의 최고 점수를 기준으로 정해요. 최고 점수 대비 90% 이상은 S, 80% 이상은 A, 70% 이상은 B, 그 미만은 C예요. 타입 탭을 바꿔도 등급은 같고, 순위만 해당 탭 안에서 다시 표시해요. 점수 = 공격 × 맥스무브 위력(거다이 450 · 다이 350) × 자속 1.2 × 내구 보정(방어 × 체력 ÷ 1000의 네제곱근). 맥스 페이즈를 반복해서 사용할 수 있는 생존력을 고려해 내구를 일부 반영해요. 검왕 자시안 · 방패왕 자마젠타 · 무한다이노는 다이맥스를 못 하지만 맥스 배틀에 참가해 전용 기술(거수참 · 거수탄 · 다이맥스포)을 써요 — 위력은 다이맥스의 맥스어택과 같은 350으로 계산해요.';
+const DMAX_INFO = '등급은 전체 포켓몬의 최고 점수를 기준으로 정해요. 최고 점수 대비 90% 이상은 S, 80% 이상은 A, 70% 이상은 B, 그 미만은 C예요. 타입 탭을 바꿔도 등급은 같고, 순위만 해당 탭 안에서 다시 표시해요. 점수 = 공격 × 맥스무브 위력(거다이 450 · 다이 350) × 자속 1.2 × 내구 보정(방어 × 체력 ÷ 1000의 네제곱근). 맥스 페이즈를 반복해서 사용할 수 있는 생존력을 고려해 내구를 일부 반영해요. \'맥스 참가\' 검왕 자시안 · 방패왕 자마젠타 · 무한다이노는 다이맥스를 못 하지만 맥스 배틀에 참가해 전용 기술(거수참 · 거수탄 · 다이맥스포)을 써요 — 위력은 다이맥스의 맥스어택과 같은 350으로 계산하고, [맥스 참가 가능 다른 유닛] 체크를 켜면 함께 보여요. 등급의 100% 기준은 다이맥스 · 거다이맥스 출시분 1위라 맥스 참가 줄은 100%를 넘을 수 있어요.';
 
 /**
  * 속성 칩 — **표에 있는 키가 아니라 18타입 전부**를 세운다 (v3 maxSubmenu · pve bossItems).
@@ -124,6 +125,8 @@ export function Dmax({ onOpen }: { onOpen: OpenMon }) {
   // 게임에 없는 개체가 일반 화면에 뜨는 것은 v3.61.2 에 긴급으로 막았던 바로 그 자리다
   const beta = useAuthStore((s) => s.beta);
   const unrel = checked && beta;
+  // [맥스 참가 가능 다른 유닛] — 다이맥스 없이 참가하는 종은 체크를 켜야 보인다 (lib/maxVisible.ts)
+  const showJoin = useRankStore((s) => s.maxShowJoin);
 
   const table = axis === 'tank' ? max.DMAX_TANK : axis === 'dealer' ? max.DMAX_DATA : max.DMAX_TIER;
   const all = table[boss] ?? [];
@@ -132,7 +135,7 @@ export function Dmax({ onOpen }: { onOpen: OpenMon }) {
   //   밀린 줄에는 [지금 N위] 딱지가 붙어 무엇이 바뀌었는지를 줄에서 바로 읽게 한다.
   //   가상 순위에서는 어제 대비 변동(▲▼)을 감춘다 — 그 숫자는 **실제 순위**가 움직인 이야기라,
   //   가정으로 매긴 번호 바로 아래 놓이면 한 줄에서 두 '움직임' 이 서로 다른 말을 한다
-  const rows = all.filter((row) => unrel || !row.unrel);
+  const rows = maxVisible(all, { unrel, join: showJoin });
   // 상세의 '더보기' 로 왔으면 그 줄로 내려가 밝힌다 — 표는 전부 그려지므로 펼칠 것이 없다
   const focus = useRankStore((s) => s.focus);
   const clearFocus = useCallback(() => set('focus', ''), [set]);
@@ -151,6 +154,8 @@ export function Dmax({ onOpen }: { onOpen: OpenMon }) {
   // 보고 있는 표만 보면 축을 옮길 때 체크가 나타났다 사라진다
   const hasUnrel = [max.DMAX_TIER, max.DMAX_DATA, max.DMAX_TANK]
     .some((one) => (one?.[boss] ?? []).some((row) => row.unrel));
+  const hasJoin = [max.DMAX_TIER, max.DMAX_DATA, max.DMAX_TANK]
+    .some((one) => (one?.[boss] ?? []).some((row) => row.join));
   const typeName = boss === 'overall' ? '' : (dex.TYPE_KO[boss] ?? boss);
   const title = axis === 'tank'
     ? (boss === 'overall' ? 'D-MAX 탱커 (중립 · 순수 내구)' : `${typeName} 보스 상대 D-MAX 탱커`)
@@ -175,8 +180,23 @@ export function Dmax({ onOpen }: { onOpen: OpenMon }) {
       </Slot>
       <Slot name="controls">
         {/* 라벨이 축마다 다르다 — 전체는 **맥스무브** 속성, 딜러·탱커는 **보스** 속성이다 */}
-        <FilterBox label={axis === 'all' ? '맥스무브 속성' : '보스 속성'}>
-          <Chips items={typeChips(dex.TYPE_KO)} value={boss} onPick={(id) => set('maxBoss', id)} />
+        <FilterBox>
+          <div className="submenu">
+            <span className="submenu__label">{axis === 'all' ? '맥스무브 속성' : '보스 속성'}</span>
+            <Chips items={typeChips(dex.TYPE_KO)} value={boss} onPick={(id) => set('maxBoss', id)} />
+          </div>
+          {/* [맥스 참가 가능 다른 유닛] 은 필터 상자 둘째 줄 — 머리 단추 자리에 두면 휴대폰에서 제목이 두 줄로 꺾인다 (2026-10-06) */}
+          {hasJoin ? (
+            <div className="submenu">
+              <span className="submenu__label">함께 보기</span>
+              <CheckToggle
+                text="맥스 참가 가능 다른 유닛"
+                title="다이맥스는 못 하지만 맥스 배틀에 참가하는 검왕 자시안 · 방패왕 자마젠타 · 무한다이노를 함께 보여요"
+                checked={showJoin}
+                onChange={(next) => set('maxShowJoin', next)}
+              />
+            </div>
+          ) : null}
         </FilterBox>
       </Slot>
       <Slot name="headActions">

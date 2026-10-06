@@ -180,6 +180,11 @@ def pending_gmax_type(pokemon_id, form):
 # 2026-09-06 v2.10.0 (QA-44) 맥스 배틀 행의 표시 이름: 거다이맥스/다이맥스 접두어를 붙여 일반 폼과 구분한다
 def max_name(name, is_gmax):
     return f"{'거다이맥스' if is_gmax else '다이맥스'} {name}"
+# 2026-10-06 다이맥스 없이 참가하는 종의 분류 이름표 — '맥스 참가 검왕 자시안'. 다이맥스 · 거다이맥스처럼 이름 앞에 붙여
+# 검색 · 활용처 · 팝업 폼별 정보 · 덱 짜기가 한 분류로 다룬다 (주인 결정: 다이맥스로 나온 게 아닌데 맥스 배틀을 뛰니 새 분류)
+JOIN_PREFIX = '맥스 참가'
+def join_name(name):
+    return f'{JOIN_PREFIX} {name}'
 
 def damage(power, attack, multiplier):
     # 포켓몬고 피해 공식: floor(0.5 x 위력 x 공격/보스방어 x 배율) + 1
@@ -222,13 +227,13 @@ def dyna_rank(boss_types, limit=TOP):
         if entry['form'] and entry['form'].endswith('_S'): continue
         own_types = [type_name.upper() for type_name in entry['types']]
         bulk = entry['def'] * entry['hp'] / 1000
-        # 2026-10-06 다이맥스 없이 참가하는 종 — 전용 맥스 기술 한 발(위력 350)로 한 줄. 이름에 접두어를 안 붙인다:
-        # 변신이 없어 레이드 · PvP 와 같은 개체이고, 활용처도 한 이름에 모이는 것이 맞다. 'join' 으로 화면이 안내 글을 붙인다
+        # 2026-10-06 다이맥스 없이 참가하는 종 — 전용 맥스 기술 한 발(위력 350)로 한 줄. 이름은 '맥스 참가 검왕 자시안' (join_name).
+        # 'join' 으로 화면이 안내 글을 붙인다
         signature = signature_move(entry['pid'], entry['form'])
         if signature:
             move_type, move_name = signature
             dealt = damage(MAX_ATTACK_POWER, entry['atk'], (STAB if move_type in own_types else 1) * type_mult(move_type, boss_types))
-            out.append({'sprite': entry['sprite'], 'name': entry['name'], 'en': entry['en'], 'types': entry['types'],
+            out.append({'sprite': entry['sprite'], 'name': join_name(entry['name']), 'en': entry['en'], 'types': entry['types'],
                         'fast': move_name, 'charged': move_type.lower(), 'dmg': dealt, 'bulk': round(bulk), 'score': round(dealt * bulk ** 0.5), 'gmax': False, 'join': True})
             continue
         # 출시분(unrel=False)과 미구현분(unrel=True)을 각각 한 줄씩 낸다.
@@ -268,7 +273,7 @@ def tank_rank(boss_types, limit=TOP):
         bulk = entry['def'] * entry['hp'] / 1000
         # 다이맥스 없이 참가하는 종도 맥스 페이즈를 버티는 건 같다 — 접두어 없는 이름 한 줄 (딜러 표와 같은 꼴)
         if signature_move(entry['pid'], entry['form']):
-            out.append({'sprite': entry['sprite'], 'name': entry['name'], 'en': entry['en'], 'types': entry['types'],
+            out.append({'sprite': entry['sprite'], 'name': join_name(entry['name']), 'en': entry['en'], 'types': entry['types'],
                         'fast': '', 'charged': '', 'ehp': round(bulk / multiplier), 'mult': round(multiplier, 2), 'hp': round(entry['hp']), 'def': round(entry['def']), 'gmax': False, 'join': True})
             continue
         # 딜러 표와 같은 규칙 — 출시분과 미구현분을 각각 한 줄씩 (탱커 지표는 기술과 무관해 자격 판정만 갈린다)
@@ -316,8 +321,10 @@ json.dump(max_pool, open('data/max_pool.json', 'w', encoding='utf-8'), ensure_as
 def absolute_tier(rows):
     if not rows: return
     # 2026-09-15 v3.36.0 기준선(100%)은 **출시분 1위**다. 미구현을 기준에 넣으면 아직 못 쓰는
-    # 개체(거다이맥스 자시안 등) 하나가 전체 등급을 끌어내린다 — 흐린 줄은 100% 를 넘을 수 있다
-    released = [row for row in rows if not row.get('unrel')]
+    # 개체(거다이맥스 자시안 등) 하나가 전체 등급을 끌어내린다 — 흐린 줄은 100% 를 넘을 수 있다.
+    # 2026-10-06 '맥스 참가'(join) 줄도 기준에서 뺀다 — 화면이 기본으로 숨기는 줄(다이맥스만 보고 싶은 사람)이
+    # 보이는 줄의 등급을 끌어내리면 안 된다. 검왕 자시안은 100% 를 넘는 S 로 선다
+    released = [row for row in rows if not row.get('unrel') and not row.get('join')]
     best = max(row['score'] for row in (released or rows))
     for row in rows:
         row['pct'] = round(row['score'] / best * 100)
@@ -341,7 +348,7 @@ def tier_rows():
         if signature:
             move_type, move_name = signature
             score = attack * MAX_ATTACK_POWER * (1.2 if move_type in own_types else 1) * bulk_mul
-            out.append({'sprite': entry['sprite'], 'name': entry['name'], 'en': entry['en'], 'types': entry['types'],
+            out.append({'sprite': entry['sprite'], 'name': join_name(entry['name']), 'en': entry['en'], 'types': entry['types'],
                         'fast': move_name, 'charged': move_type.lower(), 'atk': attack, 'power': MAX_ATTACK_POWER,
                         'stab': move_type in own_types, 'bulk': round(bulk), 'bulkMul': round(bulk_mul, 2),
                         'score': round(score), 'gmax': False, 'join': True})

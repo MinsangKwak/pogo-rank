@@ -9,6 +9,7 @@
 // 그래서 세 번째 칸을 '탱커' 라고만 부르고 '힐러' 라고 쓰지 않는다.
 // ─────────────────────────────────────────────────────────────────────────────
 import type { DmaxRow, MaxBundle } from '../types/data';
+import { maxVisible } from './maxVisible';
 
 export const MAX_DECK_SIZE = 3;
 
@@ -34,21 +35,22 @@ function tableOf(max: MaxBundle, slotIndex: number, bossType: string): DmaxRow[]
  * 같은 종을 두 칸에 넣는 덱은 맥스 배틀에서 뜻이 없다.
  * 미구현(데이터만 있고 게임에 없는 개체)도 후보가 아니다 — 덱은 **지금 데려갈 수 있는** 것만 담는다.
  */
-export function maxDeckCandidates(max: MaxBundle, slotIndex: number, bossType: string, deck: MaxDeck, dynaOnly: boolean): DmaxRow[] {
+// showJoin — '맥스 참가'(다이맥스 없이 참가하는 종)를 후보에 넣을지. D-MAX 화면의 체크와 같은 값 (2026-10-06).
+// '다이맥스만' 은 거다이맥스와 함께 맥스 참가도 뺀다 — 둘 다 다이맥스가 아니다
+export function maxDeckCandidates(max: MaxBundle, slotIndex: number, bossType: string, deck: MaxDeck, dynaOnly: boolean, showJoin = false): DmaxRow[] {
   const taken = new Set(deck.filter((sprite, index) => sprite != null && index !== slotIndex).map(Number));
-  return tableOf(max, slotIndex, bossType).filter((row) => {
+  return maxVisible(tableOf(max, slotIndex, bossType), { join: showJoin && !dynaOnly }).filter((row) => {
     if (taken.has(Number(row.sprite))) return false;
     if (dynaOnly && row.gmax) return false;
-    if (row.unrel) return false;
     return true;
   });
 }
 
 /** 세 칸을 자동으로 채운다 — 각 칸의 후보 1위. 뒤 칸은 앞이 가져간 종을 피한다 */
-export function maxDeckAutoFill(max: MaxBundle, bossType: string, dynaOnly: boolean): MaxDeck {
+export function maxDeckAutoFill(max: MaxBundle, bossType: string, dynaOnly: boolean, showJoin = false): MaxDeck {
   const deck: MaxDeck = [null, null, null];
   for (let index = 0; index < MAX_DECK_SIZE; index += 1) {
-    deck[index] = maxDeckCandidates(max, index, bossType, deck, dynaOnly)[0]?.sprite ?? null;
+    deck[index] = maxDeckCandidates(max, index, bossType, deck, dynaOnly, showJoin)[0]?.sprite ?? null;
   }
   return deck;
 }

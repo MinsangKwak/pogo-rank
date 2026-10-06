@@ -14,6 +14,8 @@
 //     .detail__dock  링크 복사 · CP 계산기 / 초기화 · 상세로 돌아가기
 // ─────────────────────────────────────────────────────────────────────────────
 import { monDocTitle } from '../lib/docTitle';
+import { maxVisible } from '../lib/maxVisible';
+import { useRankStore } from '../stores/rank';
 import { go } from '../lib/nav';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
@@ -50,7 +52,7 @@ const TABS: [Tab, string][] = [['summary', '진화 · 요약'], ['battle', '배�
 
 const FORM_KIND: Record<string, string> = {
   메가: 'mega', 메가X: 'mega', 메가Y: 'mega', 원시: 'mega',
-  다이맥스: 'max', 거다이맥스: 'max', 섀도우: 'shadow',
+  다이맥스: 'max', 거다이맥스: 'max', '맥스 참가': 'max', 섀도우: 'shadow',
 };
 
 /** 이름 앞의 폼 라벨을 뗀다 (v3 splitFormName) */
@@ -129,6 +131,8 @@ export default function MonDetail({ pick, onClose, inline = false, onDeep, here 
   const { data } = useDex();
   const { data: pve } = usePve();
   const { data: max } = useMax();
+  // '보스로 만났을 때' 추천 풀 — D-MAX 화면의 [맥스 참가 가능 다른 유닛] 체크를 따른다 (2026-10-06)
+  const showJoin = useRankStore((s) => s.maxShowJoin);
   const { data: pvpData } = usePvp();
   const { data: gameday } = useGameday();
   const { data: favEvents } = useFavEvents();
@@ -195,7 +199,7 @@ export default function MonDetail({ pick, onClose, inline = false, onDeep, here 
   const { labels: formLabels, base: baseName } = splitName(mon.name, data.FORM_LABELS);
   const formKind = formLabels.map((label) => FORM_KIND[label]).find(Boolean) ?? '';
   // 일반 줄의 이름표 — 맥스 · 메가는 제 줄이 따로 있으니 빼고 남은 라벨(섀도우 · 리전 폼)만
-  const otherLabels = formLabels.filter((label) => !/^(다이맥스|거다이맥스|메가X?|메가Y|원시)$/.test(label));
+  const otherLabels = formLabels.filter((label) => !/^(다이맥스|거다이맥스|맥스 참가|메가X?|메가Y|원시)$/.test(label));
   // 종 이름 — '거다이맥스 인텔리레온' → '인텔리레온', '메가X 리자몽' → '리자몽', '섀도우 리자몽' 은 그대로
   const stemOfName = speciesOf(mon.name);
 
@@ -215,7 +219,7 @@ export default function MonDetail({ pick, onClose, inline = false, onDeep, here 
     if (bossKind(mon.name) === 'max') {
       // 맥스 배틀에는 다이맥스·거다이맥스와, 다이맥스 없이 참가하는 검왕 자시안·방패왕 자마젠타·무한다이노(join)만 들어간다 —
       // 메가·원시·섀도우는 참전할 수 없다. 미구현은 추천하지 않는다: 지금 데려갈 수 있는 것만 보여 준다
-      const rows = (max.DMAX_DATA[first] ?? []).filter((row) => !row.unrel).slice(0, 5)
+      const rows = maxVisible(max.DMAX_DATA[first], { join: showJoin }).slice(0, 5)
         .map((row) => ({ sprite: row.sprite, name: row.name, en: row.en, types: row.types }));
       if (!rows.length) return null;
       return {
@@ -524,7 +528,7 @@ export default function MonDetail({ pick, onClose, inline = false, onDeep, here 
                       </section>
 
                       {/* PvP 개체값은 일반 폼에서만 — 맥스 폼은 PvP 에서 다이맥스하지 않아 따로 볼 까닭이 없다 */}
-                      {form && !/^(거다이맥스|다이맥스) /.test(mon.name) ? <IvRank form={form} sprite={sprite} /> : null}
+                      {form && !/^(거다이맥스|다이맥스|맥스 참가) /.test(mon.name) ? <IvRank form={form} sprite={sprite} /> : null}
                       {dexNo != null ? (
                         <MegaCompareCard dexNo={dexNo} />
                       ) : null}

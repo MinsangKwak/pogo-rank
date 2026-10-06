@@ -9,7 +9,7 @@ export default function UsageRanks({ name, megas = [], compact = false }: { name
   const { data: usage } = useUsage();
   const { data: dex } = useDex();
   const [open, setOpen] = useState(false);
-  const maxTag = { '': '', D: '다이맥스', G: '거다이맥스' } as const;
+  const maxTag = { '': '', D: '다이맥스', G: '거다이맥스', M: '맥스 참가' } as const;
   const rows = [
     ...usagePlacesFor(usage.USAGE_PLACES, name).map(({ place, rank, mark }) => ({ ...placeParts(place, dex.TYPE_KO), rank, tag: maxTag[mark] })),
     ...megas.flatMap((label) => (usage.USAGE_PLACES[`${label} ${name}`] ?? [])
