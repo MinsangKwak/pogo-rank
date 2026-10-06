@@ -12,9 +12,11 @@ import type { DmaxRow, MaxBundle } from '../types/data';
 import type { MaxSlide } from './maxSlides';
 import { placeParts } from './usage';
 
-export type FormKey = 'base' | 'mega' | 'dmax' | 'gmax';
+// 'join' = 다이맥스 없이 맥스 배틀에 참가하는 종의 맥스 줄 (검왕 자시안 · 방패왕 자마젠타 · 무한다이노, 2026-10-06).
+// 변신이 없어 맥스 표의 이름이 일반과 같다 — 줄을 따로 세우는 건 "맥스 배틀에서 몇 티어" 를 보여 주기 위해서다
+export type FormKey = 'base' | 'mega' | 'dmax' | 'gmax' | 'join';
 
-export const FORM_KO: Record<FormKey, string> = { base: '일반', mega: '메가', dmax: '다이맥스', gmax: '거다이맥스' };
+export const FORM_KO: Record<FormKey, string> = { base: '일반', mega: '메가', dmax: '다이맥스', gmax: '거다이맥스', join: '맥스 배틀' };
 
 const MAX_PREFIX = /^(거다이맥스|다이맥스)\s+/;
 // 메가 · 원시도 한 종의 폼이다 — 메가 리자몽을 보고 있어도 일반 · 다이맥스 · 거다이맥스 줄이 함께 서야 한다 (2026-09-30 리자몽 점검)
@@ -155,13 +157,16 @@ export function formRows(
   const now = formKeyOf(src.name);
   const dmax = index.get(`다이맥스 ${stem}`);
   const gmax = index.get(`거다이맥스 ${stem}`);
+  // 다이맥스 없이 참가하는 종 — 맥스 표에 일반 이름 그대로 선다. 활용처도 한 이름에 쌓이므로 맥스 자리는 이 줄로 옮긴다
+  const joined = index.get(stem);
+  const join = joined?.join ? joined : undefined;
   // 일반 줄의 그림 · 타입 — 일반을 보고 있으면 그대로, 아니면 다이맥스 줄(원종 그림) · 도감 번호
   const baseSprite = now === 'base' ? src.sprite : (dmax?.sprite ?? src.dexNo ?? src.sprite);
   const baseTypes = now === 'base' && src.types.length ? src.types
     : (src.baseTypes?.length ? src.baseTypes : (dmax?.types ?? gmax?.types ?? src.types));
   const rows: FormRow[] = [{
     key: 'base', label: FORM_KO.base, name: stem, sprite: baseSprite, en: src.en || dmax?.en || gmax?.en || '',
-    types: baseTypes, places: placesOf(places, stem, typeKo), unrel: false, tier: null, moveType: '',
+    types: baseTypes, places: placesOf(places, stem, typeKo).filter((one) => !join || !one.key.startsWith('max:')), unrel: false, tier: null, moveType: '',
   }];
   for (const mega of megas) {
     const name = `${mega.label} ${stem}`;
@@ -170,11 +175,12 @@ export function formRows(
       places: placesOf(places, name, typeKo), unrel: mega.rel === false, tier: null, moveType: '',
     });
   }
-  for (const [key, row] of [['dmax', dmax], ['gmax', gmax]] as const) {
+  for (const [key, row] of [['dmax', dmax], ['gmax', gmax], ['join', join]] as const) {
     if (!row) continue;
     rows.push({
       key, label: FORM_KO[key], name: row.name, sprite: row.sprite, en: row.en, types: row.types,
-      places: placesOf(places, row.name, typeKo), unrel: !!row.unrel, tier: tiers.get(row.name) ?? null, moveType: row.charged ?? '',
+      places: placesOf(places, row.name, typeKo).filter((one) => key !== 'join' || one.key.startsWith('max:')),
+      unrel: !!row.unrel, tier: tiers.get(row.name) ?? null, moveType: row.charged ?? '',
     });
   }
   return rows;

@@ -27,6 +27,26 @@
 ## 릴리스 기록
 
 <details open>
+<summary><b>2026-10-06</b> — 1판 · <code>v5.9.8</code></summary>
+
+<details>
+<summary><b>v5.9.8</b> · 다이맥스 없이 맥스 배틀에 참가하는 검왕 자시안 · 방패왕 자마젠타 · 무한다이노 등재</summary>
+
+**배경** — 이용자 메일(10/3): "치고마, 자시안, 자마젠타 같은 건 다이맥스에 쓸 수는 있는데 다이맥스가 아니어서 그런지 목록에 없다. 일부러 등록이 안 된 건가". 조사 결과 ① 치고마는 `D KUBFU` 로 등재돼 티어표에 '다이맥스 치고마' 로 서 있었다(딜러 표 30위 밖) ② 검왕 자시안 · 방패왕 자마젠타 · 무한다이노는 데이터에 있었지만 **'미구현 거다이맥스'** 로 잘못 분류돼 기본 화면에서 숨겨져 있었다. 게임마스터가 이들의 전용 맥스 기술(거수참 · 거수탄 · 다이맥스포, `VN_BM_060~062`)을 거다이맥스 기술과 같은 표(`SOURDOUGH_MOVE_MAPPING_SETTINGS`)에 두기 때문이다. 공식 안내(pokemongo.com 'Crowned Sword and Crowned Shield Energy')는 셋이 다이맥스 · 거다이맥스를 못 하지만 맥스 배틀에 참가해 전용 기술을 쓰고, 그 기술은 "다른 맥스어택처럼" 레벨을 올린다고 적는다.
+
+**변경** — `backend/config/max_released.txt` 에 세 번째 종류 `M POKEMON_ID [FORM]`(다이맥스 없이 참가)을 두고 `M ZACIAN ZACIAN_CROWNED_SWORD` · `M ZAMAZENTA ZAMAZENTA_CROWNED_SHIELD` · `M ETERNATUS` 를 적었다. `value_build.py` 는 sourdough 매핑을 효과 이름으로 가른다(`gmax_*` = 거다이맥스 기술, `max_*` = 전용 맥스 기술) — 전용 기술은 `signature_move()` 가 돌려주고, 딜러 · 탱커 · 티어 세 표에 **접두어 없는 일반 이름** 한 줄(`fast` = 한글 기술명, `power` 350, `join: true`)로 선다. 접두어를 안 붙이는 이유: 변신이 없어 레이드 · PvP 와 같은 개체이고, 활용처(`usage_places`)도 한 이름에 모이는 것이 맞다. `max_pool.json` 은 이들을 `'M'` 으로 적는다 — 맥스 배틀에서 잡는 종이 아니라 포획 CP 의 맥스 경로는 세우지 않는다.
+
+**화면** — D-MAX 표 기술 줄 끝에 '다이맥스 없이 참가'(`dmaxCells`), 도움말에 위력 기준 한 문장. 팝업 '폼별 정보' 에 `join` 줄(이름표 '맥스 배틀')을 세워 D-MAX 로 이어지고, 일반 줄의 활용처에서는 맥스 자리를 뺀다(`formGuide.ts formRows`). '이 폼의 성적' 일반 카드에 '맥스 배틀' 묶음(티어 · 순위 + D-MAX 단추). '보스로 만났을 때' 문구를 '다이맥스 · 거다이맥스와 다이맥스 없이 참가하는 전설만 참전' 으로.
+
+**결과(로컬 재계산)** — 검왕 자시안 티어표 전체 1위(S · 100%, 강철 1위) · 무한다이노 A 87%(드래곤 1위, 딜러 드래곤 보스 390) · 방패왕 자마젠타 A 80%(강철 3위, 탱커 강철 보스 1위). 100% 기준이 검왕 자시안으로 바뀌어 다른 줄의 % 가 함께 내려간다. 위력 350 은 공식 안내의 '다른 맥스어택처럼 레벨을 올린다' 를 근거로 한 가정이며, 실측 수치가 나오면 `MAX_ATTACK_POWER` 와 별도 상수로 가를 수 있다.
+
+검사 — web 162(formguide 1 추가) · tsc · 로컬 데이터 재계산(`build.sh --no-fetch --data-only` → `npm run data`).
+
+</details>
+
+</details>
+
+<details>
 <summary><b>2026-10-05</b> — 1판 · <code>v5.9.7</code></summary>
 
 <details>

@@ -55,6 +55,8 @@ export interface RankRow {
   charged: string;
   gmax?: boolean;
   unrel?: boolean;              // 데이터만 있고 아직 게임에 없는 줄
+  /** 다이맥스 없이 맥스 배틀에 참가하는 종(검왕 자시안 · 방패왕 자마젠타 · 무한다이노) — 이름에 맥스 접두어가 없다 (2026-10-06) */
+  join?: boolean;
   /** 지난 갱신 대비 순위 변동 (backend/rank_diff.py). 양수면 상승, 음수면 하락. 안 움직였으면 없다 */
   d?: number;
 }
@@ -108,7 +110,8 @@ export interface MaxBundle {
   DMAX_DATA: Record<string, DmaxRow[]>;
   DMAX_TANK: Record<string, DmaxRow[]>;
   DMAX_TIER: Record<string, DmaxRow[]>;
-  MAX_POOL: Record<string, 'G' | 'D'>;
+  /** 'G' 거다이맥스까지 · 'D' 다이맥스만 · 'M' 다이맥스 없이 참가(맥스 배틀에서 잡는 종은 아니다) */
+  MAX_POOL: Record<string, 'G' | 'D' | 'M'>;
 }
 
 export interface PveBundle {
