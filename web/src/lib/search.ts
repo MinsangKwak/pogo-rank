@@ -109,8 +109,8 @@ function makeBossIndex(dex: DexBundle, max: MaxBundle, pve: PveBundle, pvp: PvpB
   const byName = new Map<string, BossEntry>();
   const add = (mon: MonLike) => {
     const name = typeof mon.name === 'string' ? mon.name : '';
-    // 맥스 배틀 행은 레이드 보스가 아니다 — 같은 종이 BOSS_LIST 에 이미 있다
-    if (/^(거다이맥스|다이맥스) /.test(name)) return;
+    // 맥스 배틀 행은 레이드 보스가 아니다 — 같은 종이 BOSS_LIST 에 이미 있다 ('맥스 참가' 도 맥스 분류, Codex PR #325)
+    if (/^(거다이맥스|다이맥스|맥스 참가) /.test(name)) return;
     const types = Array.isArray(mon.types) ? (mon.types as string[]) : [];
     if (!name || !types.length || byName.has(name)) return;
     byName.set(name, {

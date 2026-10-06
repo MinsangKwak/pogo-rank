@@ -186,7 +186,8 @@ export default function IvRankPage() {
     const query = term.trim();
     if (!query) return [];
     const pool = searchVisible(buildSearchIndex(dex, max, pve, pvp))
-      .filter((entry) => !/^(다이맥스|거다이맥스) /.test(entry.name));
+      // 맥스 분류(다이맥스 · 거다이맥스 · 맥스 참가)는 PvP 개체값 찾기의 대상이 아니다 (Codex, PR #325)
+      .filter((entry) => !/^(다이맥스|거다이맥스|맥스 참가) /.test(entry.name));
     return monSearch(pool, query, 8);
   }, [term, dex, max, pve, pvp]);
 
