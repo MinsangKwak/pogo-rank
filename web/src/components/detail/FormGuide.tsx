@@ -23,6 +23,7 @@ import { PxIcon } from '../PxIcon';
 import { bossNow, formKeyOf, formRows, formSummary, FORM_KO, maxBoardOf, maxIndex, placesOf, speciesOf, tierIndex, tierLine, type FormRow } from '../../lib/formGuide';
 import { useAuthStore } from '../../stores/auth';
 import { trainPlan, type PlanPick } from '../../lib/trainPlan';
+import { maxVisible } from '../../lib/maxVisible';
 import type { MonRef } from '../../lib/mon';
 import type { LeagueKey } from '../../types/data';
 
@@ -101,7 +102,8 @@ export function DeepDock({ mon, dexNo, onDeep, onLeave, here = '', onHere }: {
   const { data: pvp } = usePvp();
   const board = useBoard(onLeave);
   const index = useMemo(() => maxIndex(max), [max]);
-  const tiers = useMemo(() => tierIndex(max), [max]);
+  const showJoin = useRankStore((s) => s.maxShowJoin);
+  const tiers = useMemo(() => tierIndex(max, false, showJoin), [max, showJoin]);
   const family = (dexNo != null ? dex.DEX_DATA.evo[String(dexNo)]?.flat() : undefined) ?? (dexNo != null ? [dexNo] : []);
   const stems = [...new Set([speciesOf(mon.name), ...family.map((id) => dex.DEX_DATA.names[String(id)]).filter(Boolean) as string[]])];
   // 계열의 맥스 폼 중 티어표 순위가 가장 높은 것 — 요약의 폼별 정보가 말한 그 칸으로 간다.
@@ -168,6 +170,7 @@ export function TrainCard({ mon, dexNo, stem, onLeave }: { mon: MonRef; dexNo: n
   const { data: usage } = useUsage();
   const { data: pve } = usePve();
   const { data: pvp } = usePvp();
+  const showJoin = useRankStore((s) => s.maxShowJoin);
   const plan = useMemo(() => {
     const family = dexNo != null ? dex.DEX_DATA.evo[String(dexNo)] : undefined;
     const names = family?.flat().map((id) => dex.DEX_DATA.names[String(id)]).filter(Boolean) as string[] | undefined;
@@ -175,12 +178,14 @@ export function TrainCard({ mon, dexNo, stem, onLeave }: { mon: MonRef; dexNo: n
       stems: [...new Set([stem, ...(names ?? [])])],
       types: mon.types,
       places: usage.USAGE_PLACES, meter: usage.METER,
-      dmax: max.DMAX_DATA, pve: pve.PVE_DATA, pvp: pvp.PVP_DATA,
+      // 육성 추천의 맥스 후보도 체크를 따른다 — 꺼져 있으면 '맥스 참가' 줄은 추천하지 않는다 (2026-10-06)
+      dmax: showJoin ? max.DMAX_DATA : Object.fromEntries(Object.entries(max.DMAX_DATA).map(([type, rows]) => [type, maxVisible(rows)])),
+      pve: pve.PVE_DATA, pvp: pvp.PVP_DATA,
       chart: dex.DEX_DATA.chart, typeKo: dex.TYPE_KO,
       dexOf: (sprite) => dex.DEX_DATA.dex[String(sprite)] ?? (sprite < 10000 ? sprite : null),
       maxForm: formKeyOf(mon.name) === 'dmax' || formKeyOf(mon.name) === 'gmax' || formKeyOf(mon.name) === 'join',
     });
-  }, [dex, max, usage, pve, pvp, dexNo, stem, mon.types, mon.name]);
+  }, [dex, max, usage, pve, pvp, dexNo, stem, mon.types, mon.name, showJoin]);
   // **문장으로 푼다 — 왜 → 그래서 → 순위** (2026-09-30 주인 제보: '물 타입 보스 기준' 제목과 순위만으로는 기승전결이 없어 무슨 말인지 모른다).
   //   첫 문장: 이 포켓몬이 어떤 타입 기술로 어떤 타입 보스를 잘 잡는지
   //   묶음 첫 줄: 그래서 이 목록이 무엇의 순위인지, 이 계열은 몇 위인지
@@ -257,7 +262,8 @@ export default function FormGuide({ mon, dexNo, baseLabel, onSwitch, onLeave, on
   const { data: usage } = useUsage();
   const board = useBoard(onLeave);
   const index = useMemo(() => maxIndex(max), [max]);
-  const tiers = useMemo(() => tierIndex(max), [max]);
+  const showJoin = useRankStore((s) => s.maxShowJoin);
+  const tiers = useMemo(() => tierIndex(max, false, showJoin), [max, showJoin]);
   const species = dexNo != null ? dex.DEX_DATA.names[String(dexNo)] : undefined;
   // 메가 줄은 원종 이름일 때만 — 섀도우 리자몽에서 '메가X 섀도우 리자몽' 같은 없는 폼을 만들지 않는다 (Codex, PR #267)
   const megas = (dexNo != null && speciesOf(mon.name) === species ? dex.DEX_DATA.megas[String(dexNo)] ?? [] : [])
@@ -337,7 +343,8 @@ export function FormStats({ mon, dexNo, baseLabel, onLeave, here = '' }: { mon: 
   const showUnrel = useRankStore((s) => s.maxShowUnrel);
   const beta = useAuthStore((s) => s.beta);
   const withUnrel = showUnrel && beta;
-  const tiers = useMemo(() => tierIndex(max, withUnrel), [max, withUnrel]);
+  const showJoin = useRankStore((s) => s.maxShowJoin);
+  const tiers = useMemo(() => tierIndex(max, withUnrel, showJoin), [max, withUnrel, showJoin]);
   const key = formKeyOf(mon.name);
 
   if (key === 'dmax' || key === 'gmax' || key === 'join') {

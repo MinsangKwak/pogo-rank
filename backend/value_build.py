@@ -321,8 +321,10 @@ json.dump(max_pool, open('data/max_pool.json', 'w', encoding='utf-8'), ensure_as
 def absolute_tier(rows):
     if not rows: return
     # 2026-09-15 v3.36.0 기준선(100%)은 **출시분 1위**다. 미구현을 기준에 넣으면 아직 못 쓰는
-    # 개체(거다이맥스 자시안 등) 하나가 전체 등급을 끌어내린다 — 흐린 줄은 100% 를 넘을 수 있다
-    released = [row for row in rows if not row.get('unrel')]
+    # 개체(거다이맥스 자시안 등) 하나가 전체 등급을 끌어내린다 — 흐린 줄은 100% 를 넘을 수 있다.
+    # 2026-10-06 '맥스 참가'(join) 줄도 기준에서 뺀다 — 화면이 기본으로 숨기는 줄(다이맥스만 보고 싶은 사람)이
+    # 보이는 줄의 등급을 끌어내리면 안 된다. 검왕 자시안은 100% 를 넘는 S 로 선다
+    released = [row for row in rows if not row.get('unrel') and not row.get('join')]
     best = max(row['score'] for row in (released or rows))
     for row in rows:
         row['pct'] = round(row['score'] / best * 100)

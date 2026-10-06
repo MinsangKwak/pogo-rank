@@ -87,7 +87,7 @@ export interface TierSpot { type: string; tier: string; rank: number }
  * 불꽃 · 비행 두 칸에 같은 점수로 선다. 표 순서대로 첫 칸을 쓰면 비행이 잡혀 '불꽃에서 몇 티어' 가 아니게 된다 (Codex, PR #271).
  * 대표 칸은 ① 전체 칸 줄의 맥스 기술 타입 ② 그 폼의 첫 타입 칸 ③ 순위가 가장 높은 칸 순으로 고른다
  */
-export function tierIndex(max: Pick<MaxBundle, 'DMAX_TIER'>, withUnrel = false): Map<string, TierSpot> {
+export function tierIndex(max: Pick<MaxBundle, 'DMAX_TIER'>, withUnrel = false, withJoin = false): Map<string, TierSpot> {
   const spots = new Map<string, TierSpot[]>();
   const lead = new Map<string, string>();
   const firstType = new Map<string, string>();
@@ -95,14 +95,17 @@ export function tierIndex(max: Pick<MaxBundle, 'DMAX_TIER'>, withUnrel = false):
     let rank = 0;
     for (const row of rows) {
       if (row.unrel && !withUnrel) continue;
-      rank += 1;
+      // '맥스 참가' 줄은 체크가 꺼져 있으면 번호를 차지하지 않는다(D-MAX 화면과 같게) — 자기 자리는 '넣으면 몇 위' 로 적는다 (2026-10-06)
+      const hidden = !!row.join && !withJoin;
+      if (!hidden) rank += 1;
+      const at = hidden ? rank + 1 : rank;
       if (!firstType.has(row.name) && row.types[0]) firstType.set(row.name, row.types[0]);
       if (key === 'overall') {
         if (!lead.has(row.name) && row.charged) lead.set(row.name, row.charged);
         continue;
       }
       const tier = (row as DmaxRow & { tier?: string }).tier ?? '';
-      spots.set(row.name, [...(spots.get(row.name) ?? []), { type: key, tier, rank }]);
+      spots.set(row.name, [...(spots.get(row.name) ?? []), { type: key, tier, rank: at }]);
     }
   }
   const out = new Map<string, TierSpot>();

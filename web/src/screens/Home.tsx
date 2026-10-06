@@ -25,6 +25,7 @@ import { UPDATE_CATS } from '../lib/notes';
 import type { OpenMon } from '../lib/mon';
 import { TankPopupEntry, NOV_TANK_LIVE } from '../components/TankPopup';
 import HotMons from '../components/HotMons';
+import { maxVisible } from '../lib/maxVisible';
 
 // 대표 일러스트 — 머리에서 미리 받는 그 그림 (app/page.tsx 의 preload 와 같은 파일)
 const HERO_ART_ENTRY = MAX_ART.find((art) => art.dex.includes(816))!;
@@ -217,7 +218,8 @@ function HomeData({ onOpen }: { onOpen: OpenMon }) {
   //   제보: 홈 1위에 아직 게임에 없는 '거다이맥스 검왕 자시안' 이 서 있었다.
   //   v3 home.js 의 HOME_PICKS.dmax 가 같은 필터를 이미 걸고 있었는데 그걸 빠뜨렸다.
   //   D-MAX 화면 쪽은 [미구현 포함] 체크가 따로 있어 거기서는 고를 수 있다 (v3 와 같은 규칙).
-  const dmax = (max.DMAX_TIER['overall'] ?? []).filter((row) => !row.unrel).slice(0, 3)
+  //   '맥스 참가'(다이맥스 없이 참가하는 종)도 뺀다 — 홈에는 체크가 없으니 기본(다이맥스 · 거다이맥스)만 (2026-10-06)
+  const dmax = maxVisible(max.DMAX_TIER['overall']).slice(0, 3)
     // 티어표는 공격 × 맥스무브 위력 × 자속이라 내구가 안 들어간다 — 그래서 티어와 맥스무브 속성을 적는다
     .map((row) => ({ sprite: row.sprite, name: row.name, en: row.en, meta: `${row.tier} 티어 · ${dex.TYPE_KO[row.charged] ?? ''} 맥스` }));
   const raid = (pve.PVE_DATA['overall'] ?? []).slice(0, 3)
