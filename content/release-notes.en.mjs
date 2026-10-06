@@ -16,7 +16,7 @@
 
 export const RELEASE_NOTES_EN = {
   '2026-10-06 · v5.9.10': [
-    '**\'Halloween 2026 Part 1\' (Oct 27 10:00 – Nov 1 10:00 KST) now has its Korean title on the calendar** — Pikachu in a hat and cape, Zubat in a top hat and Deino with a ribbon debut. The game-updates board collected the notice too',
+    '**\'Halloween 2026 Part 1\' (Oct 27 10:00 – Nov 1 10:00 KST) now has its Korean title on the calendar** — Pikachu in a hat and cape, Zubat in a top hat and Sinistea with a ribbon debut. The game-updates board collected the notice too',
   ],
   '2026-10-06 · v5.9.9': [
     '**Crowned Sword Zacian, Crowned Shield Zamazenta and Eternatus now have their own \'Max Entrant\' class** — like Dynamax and Gigantamax, the label sits in front of the name, and search, usage places and the popup\'s form list treat them as one class. They are not Dynamax Pokémon, but they do fight in Max Battles. On the D-MAX tables they appear only when the \'Other Max Battle entrants\' box is checked — it is off by default for those who want Dynamax and Gigantamax only, and the 100% tier baseline stays the top Dynamax or Gigantamax row',
