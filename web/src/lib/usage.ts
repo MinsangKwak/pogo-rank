@@ -6,13 +6,14 @@
 // 그래서 접두어를 뗀 뒤 **세 변형**을 합치고, 맥스 칩에는 어느 쪽 순위인지 D/G 를 남긴다.
 // 순위표 줄의 '활용 N곳' 배지와 이 목록의 길이가 늘 같아야 한다.
 // ─────────────────────────────────────────────────────────────────────────────
-export interface Placement { place: string; rank: number; mark: '' | 'D' | 'G' }
+// 'M' = 맥스 참가(다이맥스 없이 맥스 배틀에 참가하는 종, 2026-10-06)
+export interface Placement { place: string; rank: number; mark: '' | 'D' | 'G' | 'M' }
 
 type Places = Record<string, [string, number][]>;
 
 export function usagePlacesFor(places: Places, name: string): Placement[] {
-  const base = name.replace(/^(거다이맥스|다이맥스)\s+/, '');
-  const variants: [string, Placement['mark']][] = [[base, ''], [`다이맥스 ${base}`, 'D'], [`거다이맥스 ${base}`, 'G']];
+  const base = name.replace(/^(거다이맥스|다이맥스|맥스 참가)\s+/, '');
+  const variants: [string, Placement['mark']][] = [[base, ''], [`다이맥스 ${base}`, 'D'], [`거다이맥스 ${base}`, 'G'], [`맥스 참가 ${base}`, 'M']];
   const out: Placement[] = [];
   for (const [variant, mark] of variants) {
     for (const [place, rank] of places[variant] ?? []) out.push({ place, rank, mark });

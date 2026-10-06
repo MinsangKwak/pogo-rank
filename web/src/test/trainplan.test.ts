@@ -13,7 +13,6 @@ const pve = read('pve');
 const pvp = read('pvp');
 const names: Record<string, string> = dex.DEX_DATA.names;
 const idOf = (name: string) => Number(Object.keys(names).find((id) => names[id] === name));
-const joinNames = new Set((Object.values(max.DMAX_DATA) as { name: string; join?: boolean }[][]).flat().filter((row) => row.join).map((row) => row.name));
 
 // 팝업과 같게 — 계열 이름들 + 검색한 이름
 const planFor = (name: string) => {
@@ -107,10 +106,9 @@ describe('trainPlan', () => {
   it('맥스 추천은 맥스 폼만, 일반 추천에는 메가 · 원시 · 섀도우 · 맥스가 없다', () => {
     for (const name of ['울머기', '리자몽', '이상해씨', '뮤츠', '고릴타']) {
       const plan = planFor(name);
-      // 다이맥스 없이 참가하는 종(검왕 자시안 등)은 접두어 없이 맥스 표에 선다 — 그 이름만 예외
-      for (const one of plan.pve?.max ?? []) if (!joinNames.has(one.name)) expect(one.name).toMatch(/^(다이맥스|거다이맥스) /);
+      for (const one of plan.pve?.max ?? []) expect(one.name).toMatch(/^(다이맥스|거다이맥스|맥스 참가) /);
       for (const one of [...(plan.pve?.base ?? []), ...(plan.pvp?.base ?? [])]) {
-        expect(one.name).not.toMatch(/^(메가|원시|섀도우|다이맥스|거다이맥스)/);
+        expect(one.name).not.toMatch(/^(메가|원시|섀도우|다이맥스|거다이맥스|맥스 참가)/);
       }
     }
   });
