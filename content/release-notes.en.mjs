@@ -15,6 +15,9 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 export const RELEASE_NOTES_EN = {
+  '2026-10-07 · v5.9.11': [
+    '**The contact address is now contact@moncamp.kr** — the footer and the contact lines in the privacy policy and terms change together. The old address was a school account that may stop working after graduation, so it moved to the service domain. Nothing about what we collect changes',
+  ],
   '2026-10-06 · v5.9.10': [
     '**\'Halloween 2026 Part 1\' (Oct 27 10:00 – Nov 1 10:00 KST) now has its Korean title on the calendar** — Pikachu in a hat and cape, Zubat in a top hat and Sinistea with a ribbon debut. The game-updates board collected the notice too',
   ],

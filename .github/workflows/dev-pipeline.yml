@@ -83,7 +83,7 @@ jobs:
         env:
           COLLECT_URL: ${{ vars.COLLECT_URL || 'https://api.moncamp.kr' }}
           # 운영과 같은 문의처 (deploy-web.yml) — dev 에서도 방침 화면이 온전해야 먼저 본다
-          CONTACT_EMAIL: kmsdevwork@knou.ac.kr
+          CONTACT_EMAIL: contact@moncamp.kr
         run: |
           set -e
           cd web
