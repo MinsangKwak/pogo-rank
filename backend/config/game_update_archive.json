@@ -5,8 +5,23 @@
     "여기에 있는 항목에 사람이 요약을 쓰면 backend/config/game_updates.json 의 기사가 되고,",
     "화면은 그때부터 기사를 보인다(같은 원문의 아카이브 항목은 숨는다)."
   ],
-  "collectedAt": "2026-10-02",
+  "collectedAt": "2026-10-06",
   "entries": [
+    {
+      "id": "halloween-part-1-2026",
+      "kind": "news",
+      "title": "\"핼러윈 2026 파트 1\"에는 의상을 입은 \"피카츄\", \"주뱃\", \"데인차\"와 함께 사탕을 받으러 가 봐요!",
+      "date": "2026-10-05",
+      "excerpt": "한국시간 2026년 10월 27일 10:00부터 11월 1일 10:00까지",
+      "sources": [
+        {
+          "lang": "ko",
+          "label": "\"핼러윈 2026 파트 1\"에는 의상을 입은 \"피카츄\", \"주뱃\", \"데인차\"와 함께 사탕을 받으러 가 봐요!",
+          "url": "https://pokemongo.com/ko/news/halloween-part-1-2026",
+          "image": "https://lh3.googleusercontent.com/_-kCe3YnQqLlPgLfqe6BZN6v8dIhuuhVzbOSgExE5XjKL__BcqBCbch1V2Z4fOEh18nYEX6O5rqBgWmNmU7kmvy92Yd2u8RBIxDbe79p3kU"
+        }
+      ]
+    },
     {
       "id": "minior-meteor-showers-2026",
       "kind": "news",
