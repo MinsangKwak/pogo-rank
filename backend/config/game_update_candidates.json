@@ -5,7 +5,7 @@
     "editorialStatus=published 로 옮겨 적어야 화면에 나간다.",
     "changeLines 는 공식 원문에서 \"규칙이 바뀐 것으로 보이는\" 줄을 그대로 옮긴 것이다. 요약이 아니다."
   ],
-  "collectedAt": "2026-10-06",
+  "collectedAt": "2026-10-07",
   "candidates": [
     {
       "slug": "dynamax-uxie-mesprit-azelf-max-battle-day-2026",
@@ -279,6 +279,35 @@
         ]
       },
       "announcedAt": "2026-08-24"
+    },
+    {
+      "slug": "helpshift-5554",
+      "kind": "release-note",
+      "title": "포켓몬 상세 정보 페이지 하단의 장소 배경 부분에 검은 그레이디언트가 표시되는 문제",
+      "snippet": "문제 설명: 포켓몬 상세 정보 페이지에서 포켓몬의 장소 배경이 있는 부분의 하단에 검은 그레이디언트가 표시되는 문제가 확인됩니다.문제 상태: 이 문제는 0.433 버전에서 해결될 예정입니다.",
+      "announcedAt": "",
+      "sources": [
+        {
+          "lang": "ko",
+          "label": "포켓몬 상세 정보 페이지 하단의 장소 배경 부분에 검은 그레이디언트가 표시되는 문제",
+          "url": "https://niantic.helpshift.com/hc/ko/6-pokemon-go/faq/5554-a-dark-gradient-may-appear-near-the-bottom-of-location-backgrounds-in-the-pokemon-details-page/",
+          "image": ""
+        },
+        {
+          "lang": "en",
+          "label": "A dark gradient may appear near the bottom of Location Backgrounds in the Pokémon Details Page",
+          "url": "https://niantic.helpshift.com/hc/en/6-pokemon-go/faq/5554-a-dark-gradient-may-appear-near-the-bottom-of-location-backgrounds-in-the-pokemon-details-page/",
+          "image": ""
+        }
+      ],
+      "changeLines": {
+        "ko": [
+          "문제 설명: 포켓몬 상세 정보 페이지에서 포켓몬의 장소 배경이 있는 부분의 하단에 검은 그레이디언트가 표시되는 문제가 확인됩니다.문제 상태: 이 문제는 0.433 버전에서 해결될 예정입니다."
+        ],
+        "en": [
+          "Issue Description:There may be a dark gradient seen near the bottom of the Location Background of the Pokémon in the Pokémon Details Page.Is..."
+        ]
+      }
     },
     {
       "slug": "helpshift-5521",
