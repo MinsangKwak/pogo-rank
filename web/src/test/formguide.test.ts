@@ -50,6 +50,14 @@ describe('formRows', () => {
       expect(formSummary(join!, typeKo)).toBe('강철 S티어 · 1위');
     }
   });
+  it('체크가 꺼져 있으면(withJoin=false) 맥스 참가 줄을 세우지 않는다 — 무한다이노 · 검왕 자시안 같게', () => {
+    for (const name of ['무한다이노', '검왕 자시안']) {
+      const dexNo = idOf(name);
+      const src = { name, sprite: Number.isFinite(dexNo) ? dexNo : 0, en: '', types: [], dexNo: Number.isFinite(dexNo) ? dexNo : null };
+      expect(formRows(src, index, places, typeKo, tiers, [], true).map((row) => row.key)).toEqual(['base', 'join']);
+      expect(formRows(src, index, places, typeKo, tiers, [], false).map((row) => row.key)).toEqual(['base']);
+    }
+  });
   it('인텔리레온 — 세 줄, 거다이맥스는 전용 그림 번호', () => {
     const rows = rowsFor('다이맥스 인텔리레온');
     expect(rows.map((row) => row.key)).toEqual(['base', 'dmax', 'gmax']);

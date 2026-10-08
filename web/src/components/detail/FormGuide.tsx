@@ -108,7 +108,7 @@ export function DeepDock({ mon, dexNo, onDeep, onLeave, here = '', onHere }: {
   const stems = [...new Set([speciesOf(mon.name), ...family.map((id) => dex.DEX_DATA.names[String(id)]).filter(Boolean) as string[]])];
   // 계열의 맥스 폼 중 티어표 순위가 가장 높은 것 — 요약의 폼별 정보가 말한 그 칸으로 간다.
   // '맥스 참가 검왕 자시안'(다이맥스 없이 참가하는 종) 도 후보다 (Codex, PR #322 → 2026-10-06 분류 이름표)
-  const maxPick = stems.flatMap((stem) => [`거다이맥스 ${stem}`, `다이맥스 ${stem}`, `맥스 참가 ${stem}`])
+  const maxPick = stems.flatMap((stem) => [`거다이맥스 ${stem}`, `다이맥스 ${stem}`, ...(showJoin ? [`맥스 참가 ${stem}`] : [])])
     .map((name) => ({ name, tier: tiers.get(name) ?? null }))
     .filter((one) => one.tier)
     // 티어(S · A · B · C)가 먼저다 — 순위는 칸 안의 순서라 칸이 다르면 견줄 수 없다 (한산한 칸의 C티어 1위가 붐비는 칸의 S티어 3위를 이긴다) (Codex, PR #273)
@@ -171,6 +171,8 @@ export function TrainCard({ mon, dexNo, stem, onLeave }: { mon: MonRef; dexNo: n
   const { data: pve } = usePve();
   const { data: pvp } = usePvp();
   const showJoin = useRankStore((s) => s.maxShowJoin);
+  // 체크가 꺼져 숨은 '맥스 참가' 줄이 있는 종(무한다이노)은 '순위에 없다' 가 아니라 체크를 켜면 보인다고 말한다 (2026-10-09)
+  const hiddenJoin = !showJoin && Object.values(max.DMAX_DATA).some((rows) => rows.some((row) => row.join && row.name === `맥스 참가 ${stem}`));
   const plan = useMemo(() => {
     const family = dexNo != null ? dex.DEX_DATA.evo[String(dexNo)] : undefined;
     const names = family?.flat().map((id) => dex.DEX_DATA.names[String(id)]).filter(Boolean) as string[] | undefined;
@@ -238,7 +240,7 @@ export function TrainCard({ mon, dexNo, stem, onLeave }: { mon: MonRef; dexNo: n
       <h3>육성 추천</h3>
       {lead.length ? <p className="detail__train-lead">{say(lead)}</p> : null}
       {maxFirst ? group('max', <span className="form-tag form-tag--max">먼저 키우기</span>, '다이맥스 · 거다이맥스',
-        [ownLine(plan.pve.max, '이 계열의 맥스 폼은 아직 이 순위에 없어요.'), `맥스 배틀에서 ${target(plan.pve.maxType)}를 잡는 딜러 순위는 D-MAX 화면에서 볼 수 있어요.`],
+        [ownLine(plan.pve.max, hiddenJoin ? 'D-MAX 화면에서 [맥스 참가 가능 다른 유닛] 체크를 켜면 이 계열의 맥스 참가 순위가 보여요.' : '이 계열의 맥스 폼은 아직 이 순위에 없어요.'), `맥스 배틀에서 ${target(plan.pve.maxType)}를 잡는 딜러 순위는 D-MAX 화면에서 볼 수 있어요.`],
         <button type="button" className="detail__form-go" onClick={() => board.toMaxBoss(plan.pve!.maxType, plan.pve!.max.find((row) => row.own)?.name ?? '')}>D-MAX 순위에서 보기 ›</button>) : null}
       {plan.pve.base.length
         ? group('raid', <span className="form-tag">{maxFirst ? '다음으로' : '추천'}</span>, '레이드용 일반 · 전설', raidLines,
@@ -269,7 +271,8 @@ export default function FormGuide({ mon, dexNo, baseLabel, onSwitch, onLeave, on
   const megas = (dexNo != null && speciesOf(mon.name) === species ? dex.DEX_DATA.megas[String(dexNo)] ?? [] : [])
     .map((one) => ({ ...one, types: dex.DEX_DATA.forms[String(one.sprite)]?.types ?? [] }));
   const baseTypes = dexNo != null ? dex.DEX_DATA.forms[String(dexNo)]?.types : undefined;
-  const rows = formRows({ ...mon, dexNo, baseTypes }, index, usage.USAGE_PLACES, dex.TYPE_KO, tiers, megas);
+  // 체크가 꺼져 있으면 '맥스 참가' 줄을 세우지 않는다 — 무한다이노도 검왕 자시안 · 방패왕 자마젠타와 같게 (2026-10-09 주인 지시)
+  const rows = formRows({ ...mon, dexNo, baseTypes }, index, usage.USAGE_PLACES, dex.TYPE_KO, tiers, megas, showJoin);
 
   return (
     <section className="detail__card detail__formguide">
