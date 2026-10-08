@@ -155,6 +155,10 @@ export const SCHEDULE_MONTHS = {
       // 2026-10-06 핼러윈 2026 파트 1 의 꼬리 (10/27 10시 ~ 11/1 10시) — 자동분 영문 원제를 덮는다
       { s: 1, e: 1, cat: 'event', label: '핼러윈 2026 파트 1 (~11/1 10시)', source: 'https://pokemongo.com/ko/news/halloween-part-1-2026' },
       { s: 14, e: 19, cat: 'event', label: '메테노 샤워: 사자자리 유성우 (11/14 17시 ~ 11/19 23:59 · 매일 17–21시 메테노 출현 증가)', source: 'https://pokemongo.com/ko/news/minior-meteor-showers-2026' },
+      // 2026-10-09 와일드 에리어 2026: 글로벌 — 거다이맥스 두랄루돈 첫 등장 · 14일 다이맥스 디아루가 · 15일 다이맥스 펄기아 (LeekDuck · GO Hub 10/8).
+      // 공식 한국어 공지는 아직 없어 자동분 영문 원제('Pokémon GO Wild Area 2026: Global')를 공식 한국어 표기 꼴('Pokémon GO 와일드 에리어: 센다이, 도호쿠')에 맞춰 덮는다 — 주인 지시로 dev 선반영
+      { s: 14, e: 15, cat: 'event', label: 'Pokémon GO 와일드 에리어 2026: 글로벌 (11/14~15 10시 ~ 18시 · 거다이맥스 두랄루돈 첫 등장 · 14일 다이맥스 디아루가 · 15일 다이맥스 펄기아)', source: 'https://leekduck.com/events/pokemon-go-wild-area-2026-global/' },
+      { s: 14, e: 15, cat: 'dmax', label: 'D-MAX 거다이맥스 두랄루돈 (와일드 에리어 글로벌 11/14~15 · 6성 맥스 배틀)', t: 'steel' },
     ],
   },
 };

@@ -15,6 +15,10 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 export const RELEASE_NOTES_EN = {
+  '2026-10-09 · v5.9.13': [
+    '**Gigantamax Duraludon and Dynamax Duraludon are on the D-MAX tables ahead of release** — they debut at \'Pokémon GO Wild Area 2026: Global\' on Nov 14–15, so tier, attacker and tank numbers are computed early. The November calendar lists the event and its boss line too',
+    '**Eternatus\'s \'Max Entrant\' info now shows only when the checkbox is on** — with [Other Max Battle entrants] off on the D-MAX screen, the popup\'s form info, training advice and bottom buttons hide the Max Entrant row as well, the same rule as Crowned Sword Zacian and Crowned Shield Zamazenta',
+  ],
   '2026-10-08 · v5.9.12': [
     '**\'2026 FC Seoul Event\' (Oct 24, 9:00 – 20:00 KST, around Seoul World Cup Stadium) is now on the calendar** — Fire-type Pokémon appear more often and Charmander is in 1-star raids. It overlaps the Dynamax Uxie Max Battle Day (14:00 – 17:00) the same day, so check both',
   ],
