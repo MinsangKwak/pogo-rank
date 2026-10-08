@@ -39,7 +39,8 @@ function tableOf(max: MaxBundle, slotIndex: number, bossType: string): DmaxRow[]
 // '다이맥스만' 은 거다이맥스와 함께 맥스 참가도 뺀다 — 둘 다 다이맥스가 아니다
 export function maxDeckCandidates(max: MaxBundle, slotIndex: number, bossType: string, deck: MaxDeck, dynaOnly: boolean, showJoin = false): DmaxRow[] {
   const taken = new Set(deck.filter((sprite, index) => sprite != null && index !== slotIndex).map(Number));
-  return maxVisible(tableOf(max, slotIndex, bossType), { join: showJoin && !dynaOnly }).filter((row) => {
+  // now: 출시 예정(soon) 폼도 아직 데려갈 수 없다 — 후보 · 자동 채우기에서 뺀다 (Codex, PR #341)
+  return maxVisible(tableOf(max, slotIndex, bossType), { join: showJoin && !dynaOnly, now: true }).filter((row) => {
     if (taken.has(Number(row.sprite))) return false;
     if (dynaOnly && row.gmax) return false;
     return true;
@@ -55,10 +56,15 @@ export function maxDeckAutoFill(max: MaxBundle, bossType: string, dynaOnly: bool
   return deck;
 }
 
-/** 스프라이트 id 로 그 칸의 표에서 행을 찾는다 (후보에서 빠진 뒤에도 찾게 표 전체를 본다) */
-export function maxDeckRowOf(max: MaxBundle, slotIndex: number, bossType: string, sprite: number | null): DmaxRow | null {
+/**
+ * 스프라이트 id 로 그 칸의 표에서 행을 찾는다 (후보에서 빠진 뒤에도 찾게 표 전체를 본다).
+ * usable — 주소(`?p=`)로 받은 덱을 검사할 때 true. 미구현 · 출시 예정(soon) 줄은 '지금 데려갈 수 있는 것' 이 아니라 받지 않는다 —
+ * 고치기 전에 만든 공유 링크나 손으로 만든 링크가 거름을 비켜 가지 않게 (Codex, PR #343). 맥스 참가 줄은 체크와 무관하게 받는다
+ */
+export function maxDeckRowOf(max: MaxBundle, slotIndex: number, bossType: string, sprite: number | null, usable = false): DmaxRow | null {
   if (sprite == null) return null;
-  return tableOf(max, slotIndex, bossType).find((row) => Number(row.sprite) === Number(sprite)) ?? null;
+  const table = usable ? maxVisible(tableOf(max, slotIndex, bossType), { join: true, now: true }) : tableOf(max, slotIndex, bossType);
+  return table.find((row) => Number(row.sprite) === Number(sprite)) ?? null;
 }
 
 /** 그 칸의 근거 한 줄 — 지어낸 등급이 아니라 표에 있는 숫자 그대로다 */

@@ -159,10 +159,16 @@ D RHYPERIOR        # 2026-09-14
 D SIZZLIPEDE       # 2026-10-05
 D CENTISKORCH      # 2026-10-05
 
+# 2026-11-14~15 와일드 에리어 2026: 글로벌 — 거다이맥스 두랄루돈 첫 등장(6성 맥스 배틀, LeekDuck · GO Hub 10/8 보도), 다이맥스 두랄루돈도 함께(주인 확인 2026-10-09).
+# 출시 전이지만 주인 지시로 먼저 올린다. 줄 끝의 날짜가 출시일 — 그날까지는 순위표에만 서고('출시 예정' 표시)
+# 포획 풀(CP 라벨 · 맥스 배틀 포획 경로)에는 안 들어간다. 날짜가 지나면 저절로 출시분이 된다 (Codex, PR #341)
+# (2026-09-14 에는 다이맥스 두랄루돈이 게임마스터의 거다이맥스 기술과 헷갈려 활성 줄에 잘못 들어가 되돌린 적이 있다 — D 와 G 는 별개다)
+D DURALUDON 2026-11-14
+G DURALUDON 2026-11-14
+
 # 예정 (출시 후 주석 해제)
-# D DURALUDON     # 2026-09-14 되돌림 — 다이맥스 두랄루돈은 아직 출시 전인데 활성 줄에 들어가 있었다.
-#                   게임마스터에 거다이맥스 두랄루돈 기술이 있는 것과 헷갈린 것으로 보인다(아래 미출시 거다이맥스 목록에도 이름이 있다).
-#                   D 와 G 는 별개다 — 게임마스터에 데이터가 있어도 둘 다 미출시일 수 있다
+# D DIALGA         # 2026-11-14 와일드 에리어 글로벌 (LeekDuck)
+# D PALKIA         # 2026-11-15 와일드 에리어 글로벌 (LeekDuck)
 # D SNEASEL        # 2026 TBA
 # D WEAVILE        # 2026 TBA
 # D UXIE           # 2026 TBA
@@ -200,4 +206,4 @@ G TOXTRICITY TOXTRICITY_LOW_KEY
 G GRIMMSNARL
 
 # 미출시 거다이맥스 (게임마스터에는 있음): EEVEE MELMETAL CORVIKNIGHT ORBEETLE DREDNAW COALOSSAL
-#   FLAPPLE APPLETUN SANDACONDA CENTISKORCH HATTERENE ALCREMIE COPPERAJAH DURALUDON URSHIFU
+#   FLAPPLE APPLETUN SANDACONDA CENTISKORCH HATTERENE ALCREMIE COPPERAJAH URSHIFU (두랄루돈은 2026-11-14 출시 예정으로 위에 올림)
