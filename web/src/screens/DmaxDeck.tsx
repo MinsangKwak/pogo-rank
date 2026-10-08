@@ -66,12 +66,12 @@ export default function DmaxDeck({ onOpen }: { onOpen: OpenMon }) {
   if (firstKey.current === null) firstKey.current = key;
 
   const auto = useMemo(() => maxDeckAutoFill(max, bossType, dynaOnly, showJoin), [max, bossType, dynaOnly, showJoin]);
-  // 칸 수가 안 맞거나 그 표에 없는 id 면 그 칸만 비운다
+  // 칸 수가 안 맞거나 그 표에 없는 id 면 그 칸만 비운다. 미구현 · 출시 예정 줄도 받지 않는다(usable) — 지금 데려갈 수 있는 것만 (Codex, PR #343)
   const fromHash = useMemo(() => {
     if (!hashIds || key !== firstKey.current) return null;
     const deck: MaxDeck = [null, null, null];
     hashIds.slice(0, MAX_DECK_SIZE).forEach((id, index) => {
-      if (maxDeckRowOf(max, index, bossType, id)) deck[index] = id;
+      if (maxDeckRowOf(max, index, bossType, id, true)) deck[index] = id;
     });
     return deck;
   }, [hashIds, key, max, bossType]);
