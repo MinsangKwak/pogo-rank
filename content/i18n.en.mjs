@@ -27,6 +27,7 @@ export const I18N_PATTERNS = [
   [/^(.+) (\d+)위$/, '$1 #$2'],
   [/^(.+) \(같은 진화 계열\)$/, '$1 (same evolution line)'],
   [/^D-MAX ([SABC])티어$/, 'D-MAX $1 tier'],
+  [/^(\d{1,2}\/\d{1,2}) 출시 예정$/, 'Releases $1'],
   [/^(.+) 타입 보스 기준$/, 'Against $1-type bosses'],
   // 2026-09-30 육성 추천 문장 — 왜 → 그래서 → 순위. 문장은 한 줄씩 따로 그려진다
   [/^(.+)[은는] (.+) 타입 기술로 (.+) 타입 보스를 잘 잡아요\.$/, '$1 hits $3-type bosses hard with $2-type moves.'],
@@ -697,6 +698,12 @@ export const I18N_EN = {
   '진화 계열 추천': 'Best in this evolution line',
   '순위표 상위 30위 밖': 'Outside the top 30',
   '미출시': 'Not in GO yet',
+  '출시 예정': 'Coming soon',
+  // D-MAX 표의 '맥스 참가' 체크 묶음 (2026-10-06 · 2026-10-09)
+  '함께 보기': 'Also show',
+  '맥스 참가 가능 다른 유닛': 'Other Max Battle entrants',
+  '다이맥스 없이 참가': 'Joins without Dynamax',
+  'D-MAX 화면에서 [맥스 참가 가능 다른 유닛] 체크를 켜면 이 계열의 맥스 참가 순위가 보여요.': 'Turn on [Other Max Battle entrants] on the D-MAX screen to see this line’s Max Entrant ranking.',
   '맥스 개체는 레이드·트레이너 배틀에도 쓸 수 있어요 — 얻을 기회가 드문 맥스 개체부터 키우고, PvP용은 공격 개체값이 낮은 일반 개체를 따로 준비하세요.':
     'Max Pokémon also work in raids and Trainer Battles — power up the rarer Max catch first, and keep a separate low-Attack-IV standard one for PvP.',
   '현재 순위표에서 상위 30위에 해당하는 활용처가 없어요.': 'No top-30 placement in the current rankings.',

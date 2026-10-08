@@ -64,20 +64,28 @@ function useView(screen: string) {
  * 탱커가 딜러 가지를 그대로 타서 `NaN 맥스 피해 · 내구 undefined` 로 나왔다 (2026-09-19 제보).
  * 세 축을 한 함수에 두고 검사(test/rankcells.test.ts)가 실데이터 모양으로 확인한다.
  */
+/** 'YYYY-MM-DD' → '11/14' — 출시 예정 표식에 쓴다 */
+export function soonLabel(iso: string): string {
+  const [, month, day] = iso.split('-');
+  return `${Number(month)}/${Number(day)}`;
+}
+
 export function dmaxCells(axis: 'all' | 'dealer' | 'tank', boss: string, row: DmaxRow, typeKo: Record<string, string>) {
   // 다이맥스 없이 참가하는 종은 이름에 접두어가 없어 표 안에서 설명이 필요하다 — 기술 줄 끝에 한 마디 (2026-10-06)
   const joinNote = row.join ? '다이맥스 없이 참가' : '';
+  // 공지된 출시일 전에 먼저 올린 폼 — '11/14 출시 예정' (2026-10-09)
+  const soonNote = row.soon ? `${soonLabel(row.soon)} 출시 예정` : '';
   if (axis === 'tank') {
     const body = `체력 ${num(row.hp)} × 방어 ${num(row.def)}`;
     return {
       score: num(row.ehp),
       // 보스를 고르면 그 타입에 받는 배율이 한 칸 더 붙는다
       sub: boss === 'overall' ? `EHP · ${body}` : `EHP · 받는 배율 ×${num(row.mult)} · ${body}`,
-      lines: keep(joinNote),
+      lines: keep(joinNote, soonNote),
     };
   }
   // 기술이 비어 있으면 줄 자체를 세우지 않는다 — `— 타입` 은 없는 정보를 있는 척한다
-  const moves = keep(row.fast, row.charged && `${word(typeKo[row.charged] ?? row.charged)} 타입`, joinNote);
+  const moves = keep(row.fast, row.charged && `${word(typeKo[row.charged] ?? row.charged)} 타입`, joinNote, soonNote);
   if (axis === 'all') {
     return {
       score: `${num(row.pct ?? Math.round(row.score))}%`,
