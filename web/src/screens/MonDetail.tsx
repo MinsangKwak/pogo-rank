@@ -218,8 +218,8 @@ export default function MonDetail({ pick, onClose, inline = false, onDeep, here 
     const first = types[0]!;
     if (bossKind(mon.name) === 'max') {
       // 맥스 배틀에는 다이맥스·거다이맥스와, 다이맥스 없이 참가하는 검왕 자시안·방패왕 자마젠타·무한다이노(join)만 들어간다 —
-      // 메가·원시·섀도우는 참전할 수 없다. 미구현은 추천하지 않는다: 지금 데려갈 수 있는 것만 보여 준다
-      const rows = maxVisible(max.DMAX_DATA[first], { join: showJoin }).slice(0, 5)
+      // 메가·원시·섀도우는 참전할 수 없다. 미구현 · 출시 예정(now)은 추천하지 않는다: 지금 데려갈 수 있는 것만 보여 준다 (Codex, PR #341)
+      const rows = maxVisible(max.DMAX_DATA[first], { join: showJoin, now: true }).slice(0, 5)
         .map((row) => ({ sprite: row.sprite, name: row.name, en: row.en, types: row.types }));
       if (!rows.length) return null;
       return {

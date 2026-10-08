@@ -5,7 +5,7 @@
 
 [서비스](https://moncamp.kr/) · [개발 가이드](docs/DEVELOPMENT.md) · [변경 이력](docs/CHANGELOG.md)
 
-> 문서 기준: 2026-10-08, **v5.9.12**. 현재 앱은 `web/`의 Next.js입니다. `frontend-v4/`는 이전 Vite 앱이며, 데이터 추출 도구와 Storybook에 계속 사용합니다.
+> 문서 기준: 2026-10-09, **v5.9.13**. 현재 앱은 `web/`의 Next.js입니다. `frontend-v4/`는 이전 Vite 앱이며, 데이터 추출 도구와 Storybook에 계속 사용합니다.
 
 ## 프로젝트 한눈에 보기
 
@@ -127,6 +127,13 @@ PvP 순위는 PvPoke, 게임 수치는 PokeMiners, 한국어 명칭은 PokeAPI, 
 | 변경 제안·보안·권리 | [기여 안내](.github/CONTRIBUTING.md) · [보안 정책](.github/SECURITY.md) · [저작물 고지](docs/NOTICE.md) |
 
 ## 최근 릴리스
+
+<details>
+<summary><b>2026-10-09</b> — 릴리스 1개 · <code>v5.9.13</code></summary>
+
+출시 예정이 확정된 거다이맥스 · 다이맥스 두랄루돈을 D-MAX 표에 먼저 올리고(11/14~15 와일드 에리어 2026: 글로벌 첫 등장, `max_released.txt` 활성 줄 · 달력 11월 줄), 무한다이노의 '맥스 참가' 정보가 팝업에서도 D-MAX 화면의 [맥스 참가 가능 다른 유닛] 체크를 따르게 했습니다(검왕 자시안 · 방패왕 자마젠타와 같은 기준).
+
+</details>
 
 <details>
 <summary><b>2026-10-08</b> — 릴리스 1개 · <code>v5.9.12</code></summary>

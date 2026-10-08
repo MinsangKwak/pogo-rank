@@ -43,6 +43,8 @@ export interface FormRow {
   places: FormPlace[];
   /** 데이터만 있고 아직 게임에 없는 폼 */
   unrel: boolean;
+  /** 출시 예정일 — 공지된 출시일 전에 먼저 올린 맥스 폼 (2026-10-09) */
+  soon?: string;
   /** D-MAX 티어표에서의 자리 — 맥스 폼만, 티어표에 없으면 null */
   tier: TierSpot | null;
   /** 맥스 기술 타입 ('water') — 맥스 폼만, 일반은 빈 글자 */
@@ -156,13 +158,15 @@ export function formRows(
   src: FormSource, index: ReadonlyMap<string, DmaxRow>, places: Places, typeKo: Readonly<Record<string, string>>,
   tiers: ReadonlyMap<string, TierSpot> = new Map(),
   megas: readonly MegaForm[] = [],
+  // '맥스 참가' 줄은 D-MAX 화면의 [맥스 참가 가능 다른 유닛] 체크를 따른다 — 꺼져 있으면 팝업에도 세우지 않는다 (2026-10-09 주인 지시: 무한다이노도 검왕 자시안과 같게)
+  withJoin = true,
 ): FormRow[] {
   const stem = speciesOf(src.name);
   const now = formKeyOf(src.name);
   const dmax = index.get(`다이맥스 ${stem}`);
   const gmax = index.get(`거다이맥스 ${stem}`);
   // 다이맥스 없이 참가하는 종 — '맥스 참가 검왕 자시안' 줄 (2026-10-06)
-  const join = index.get(`맥스 참가 ${stem}`);
+  const join = withJoin ? index.get(`맥스 참가 ${stem}`) : undefined;
   // 일반 줄의 그림 · 타입 — 일반을 보고 있으면 그대로, 아니면 다이맥스 줄(원종 그림) · 도감 번호
   const baseSprite = now === 'base' ? src.sprite : (dmax?.sprite ?? src.dexNo ?? src.sprite);
   const baseTypes = now === 'base' && src.types.length ? src.types
@@ -182,7 +186,7 @@ export function formRows(
     if (!row) continue;
     rows.push({
       key, label: FORM_KO[key], name: row.name, sprite: row.sprite, en: row.en, types: row.types,
-      places: placesOf(places, row.name, typeKo), unrel: !!row.unrel, tier: tiers.get(row.name) ?? null, moveType: row.charged ?? '',
+      places: placesOf(places, row.name, typeKo), unrel: !!row.unrel, soon: row.soon, tier: tiers.get(row.name) ?? null, moveType: row.charged ?? '',
     });
   }
   return rows;
