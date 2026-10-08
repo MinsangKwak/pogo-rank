@@ -6,11 +6,18 @@
 //   join  — '맥스 참가'(다이맥스 없이 맥스 배틀에 참가하는 검왕 자시안 · 방패왕 자마젠타 · 무한다이노).
 //           다이맥스 · 거다이맥스만 보고 싶은 사람이 있어 [맥스 참가 가능 다른 유닛] 체크가 켜져야 보인다 (주인 결정)
 // 거르는 곳을 여기 하나로 둔다 — 순위표 · 보스 아코디언 · 홈 미리보기 · 덱 짜기 · 팝업 추천이 같은 규칙을 쓴다
+// soon — 공지된 출시일 전에 먼저 올린 폼(두랄루돈 11/14). 순위표에는 늘 보이지만, '지금 데려갈 수 있는 것' 만 담는 덱 짜기는
+//        now: true 로 뺀다 (Codex, PR #341 · 2026-10-09)
 // ─────────────────────────────────────────────────────────────────────────────
 'use strict';
 
-export interface MaxShow { unrel?: boolean; join?: boolean }
+export interface MaxShow {
+  unrel?: boolean;
+  join?: boolean;
+  /** true 면 출시 예정(soon) 줄도 뺀다 — 지금 데려갈 수 있는 것만 고를 때 */
+  now?: boolean;
+}
 
-export function maxVisible<T extends { unrel?: boolean; join?: boolean }>(rows: readonly T[] | undefined, show: MaxShow = {}): T[] {
-  return (rows ?? []).filter((row) => (show.unrel || !row.unrel) && (show.join || !row.join));
+export function maxVisible<T extends { unrel?: boolean; join?: boolean; soon?: string }>(rows: readonly T[] | undefined, show: MaxShow = {}): T[] {
+  return (rows ?? []).filter((row) => (show.unrel || !row.unrel) && (show.join || !row.join) && !(show.now && row.soon));
 }
