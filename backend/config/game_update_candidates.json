@@ -5,8 +5,25 @@
     "editorialStatus=published 로 옮겨 적어야 화면에 나간다.",
     "changeLines 는 공식 원문에서 \"규칙이 바뀐 것으로 보이는\" 줄을 그대로 옮긴 것이다. 요약이 아니다."
   ],
-  "collectedAt": "2026-10-07",
+  "collectedAt": "2026-10-08",
   "candidates": [
+    {
+      "slug": "fc-seoul-2026",
+      "sources": [
+        {
+          "lang": "ko",
+          "label": "오직 단 하루, “2026 FC서울 이벤트”를 즐겨보세요! — Pokémon GO",
+          "url": "https://pokemongo.com/ko/news/fc-seoul-2026",
+          "image": "https://lh3.googleusercontent.com/_GIA-pzD5gRIeLQWCXwTobfQQeGptaQD7pFyP53Wjkt__fbniGUoPdNe44zD7ar-8WOS9pMYoPvy6Qx7OC36Ezw98mmEGPNJKhdkYwHChc4"
+        }
+      ],
+      "changeLines": {
+        "ko": [
+          "“Pokémon GO”를 플레이할 때는 주변 안전에 주의하고 나라와 지자체의 방침 등에 따라 플레이해주세요. 앞으로 진행되는 이벤트에 대해 개최 중지 또는 내용이 변경될 수 있습니다. 소셜미디어, 푸시 알림, 메일 등으로 최신 정보를 확인하세요."
+        ]
+      },
+      "announcedAt": "2026-10-08"
+    },
     {
       "slug": "dynamax-uxie-mesprit-azelf-max-battle-day-2026",
       "sources": [
