@@ -39,7 +39,8 @@ function tableOf(max: MaxBundle, slotIndex: number, bossType: string): DmaxRow[]
 // '다이맥스만' 은 거다이맥스와 함께 맥스 참가도 뺀다 — 둘 다 다이맥스가 아니다
 export function maxDeckCandidates(max: MaxBundle, slotIndex: number, bossType: string, deck: MaxDeck, dynaOnly: boolean, showJoin = false): DmaxRow[] {
   const taken = new Set(deck.filter((sprite, index) => sprite != null && index !== slotIndex).map(Number));
-  return maxVisible(tableOf(max, slotIndex, bossType), { join: showJoin && !dynaOnly }).filter((row) => {
+  // now: 출시 예정(soon) 폼도 아직 데려갈 수 없다 — 후보 · 자동 채우기에서 뺀다 (Codex, PR #341)
+  return maxVisible(tableOf(max, slotIndex, bossType), { join: showJoin && !dynaOnly, now: true }).filter((row) => {
     if (taken.has(Number(row.sprite))) return false;
     if (dynaOnly && row.gmax) return false;
     return true;
