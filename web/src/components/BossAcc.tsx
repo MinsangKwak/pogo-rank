@@ -24,8 +24,8 @@ import { useRankStore } from '../stores/rank';
 
 const BOSS_STEP = 5;   // [더보기] 한 번에 다섯 (v3 state.bossShow)
 
-// 미구현은 늘 빼고, '맥스 참가' 는 D-MAX 화면의 체크를 따른다 (lib/maxVisible.ts)
-const released = (rows: DmaxRow[] | undefined, join: boolean) => maxVisible(rows, { join });
+// 미구현 · 출시 예정(now)은 늘 빼고 — 보스별 추천 파티는 지금 데려갈 수 있는 것만 —, '맥스 참가' 는 D-MAX 화면의 체크를 따른다 (lib/maxVisible.ts · Codex, PR #341)
+const released = (rows: DmaxRow[] | undefined, join: boolean) => maxVisible(rows, { join, now: true });
 
 export default function BossAcc({ onOpen, onGoBoss }: {
   onOpen: OpenMon;
