@@ -168,7 +168,9 @@ def max_variants(pokemon_id, form, dynamax_ok, gmax_move_type):
     # 딜러 · 탱커 표는 종마다 가장 센 쪽(거다이맥스 > 다이맥스) 한 줄만 내는데, 거다이맥스가 '출시 예정' 이고 다이맥스는 이미 출시됐으면
     # 그 한 줄이 soon 으로 가려져 지금 쓸 수 있는 다이맥스까지 사라진다 — 둘을 따로 낸다 (Codex, PR #341)
     if gmax_move_type and dynamax_ok and soon_date('G', pokemon_id, form) and not soon_date('D', pokemon_id, form):
-        return [(True, None), (dynamax_ok, gmax_move_type)]
+        # 둘째 줄은 거다이맥스만 — 다이맥스를 함께 켜 두면 보스가 거다이맥스 기술을 반감할 때 일반 맥스어택이 다시 뽑혀
+        # 같은 다이맥스 줄이 둘 서고 거다이맥스(soon) 줄이 빠진다 (Codex, PR #345)
+        return [(True, None), (False, gmax_move_type)]
     return [(dynamax_ok, gmax_move_type)]
 def is_dynamax(pokemon_id, form):
     return in_release_set(dynamax_released, pokemon_id, form)
