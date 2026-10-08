@@ -45,6 +45,7 @@
 import json
 import re
 import csv
+from datetime import datetime, timedelta, timezone
 from sprite import sprite_id, gmax_sprite_id
 korean_species_names = {int(row['pokemon_species_id']): row['name'] for row in csv.DictReader(open('data/species_names.csv', encoding='utf-8')) if row['local_language_id']=='3'}
 # 다이맥스/거다이맥스 랭킹과 가성비 티어를 계산한다
@@ -89,6 +90,12 @@ dynamax_released, gmax_released = set(), set()
 maxjoin_released = set()
 # 2026-09-15 v3.36.0 '예정' 블록(주석 처리된 D/G 줄)도 읽는다 — 지우지 않고 '미구현' 으로 밝히려면 목록이 필요하다
 dynamax_pending = set()
+# 2026-10-09 출시 '예정' 줄 — "D POKEMON_ID [FORM] YYYY-MM-DD" 처럼 날짜를 적으면, 빌드일(한국 시간)보다 뒤인 동안은
+# 순위표에는 올리되(unrel 아님) 포획 풀(max_pool)에는 넣지 않고 줄마다 soon(출시일)을 적는다 — '지금 잡을 수 있다' 로 보이지 않게.
+# 날짜가 지나면 저절로 출시분이 된다 (Codex, PR #341: 활성 줄만 올리면 상세의 CP 라벨 · 포획 경로가 출시된 종처럼 섰다)
+max_soon = {}
+DATE_RE = re.compile(r'^\d{4}-\d{2}-\d{2}$')
+TODAY_KST = datetime.now(timezone(timedelta(hours=9))).date().isoformat()
 for line in open('backend/config/max_released.txt', encoding='utf-8'):
     body, _, remark = line.partition('#')
     if not body.strip():
@@ -98,8 +105,11 @@ for line in open('backend/config/max_released.txt', encoding='utf-8'):
             dynamax_pending.add((tokens[1], tokens[2] if len(tokens) == 3 else None))
         continue
     # 형식: "D POKEMON_ID [FORM]" = 다이맥스, "G POKEMON_ID [FORM]" = 거다이맥스
-    kind, pokemon_id, *form_tokens = body.split()
-    {'D': dynamax_released, 'G': gmax_released, 'M': maxjoin_released}[kind].add((pokemon_id, form_tokens[0] if form_tokens else None))
+    kind, pokemon_id, *rest = body.split()
+    form = next((token for token in rest if not DATE_RE.match(token)), None)
+    release_date = next((token for token in rest if DATE_RE.match(token)), None)
+    {'D': dynamax_released, 'G': gmax_released, 'M': maxjoin_released}[kind].add((pokemon_id, form))
+    if release_date and release_date > TODAY_KST: max_soon[(kind, pokemon_id, form)] = release_date
 # 거다이맥스 기술 타입: 게임마스터의 sourdough(거다이맥스) 기술 매핑에서 (종, 폼) → 기술 타입
 # 2026-10-06 같은 표에 검왕 자시안 · 방패왕 자마젠타 · 무한다이노의 **전용 맥스 기술**(거수참 · 거수탄 · 다이맥스포)도 들어 있다.
 # 효과 이름이 'gmax_' 로 시작하면 거다이맥스 기술, 'max_' 로 시작하면 전용 맥스 기술이다 — 갈라 두지 않으면
@@ -142,6 +152,18 @@ def in_release_set(release_set, pokemon_id, form):
     if is_base_form(pokemon_id, form):
         return any(candidate_id == pokemon_id and base_form_matches(candidate_id, candidate_form) for candidate_id, candidate_form in release_set)
     return (pokemon_id, form) in release_set
+def soon_date(kind, pokemon_id, form):
+    # 출시 예정 줄의 날짜 — 폼 매칭은 in_release_set 과 같은 규칙. 날짜가 지났으면 파서가 넣지 않아 None
+    for (candidate_kind, candidate_id, candidate_form), release_date in max_soon.items():
+        if candidate_kind != kind or candidate_id != pokemon_id: continue
+        if is_base_form(pokemon_id, form):
+            if base_form_matches(candidate_id, candidate_form): return release_date
+        elif candidate_form == form: return release_date
+    return None
+def soon_mark(is_gmax, pokemon_id, form):
+    # 행에 붙이는 출시 예정 표식 — 화면이 '11/14 출시 예정' 으로 그린다
+    release_date = soon_date('G' if is_gmax else 'D', pokemon_id, form)
+    return {'soon': release_date} if release_date else {}
 def is_dynamax(pokemon_id, form):
     return in_release_set(dynamax_released, pokemon_id, form)
 def signature_move(pokemon_id, form):
@@ -252,7 +274,7 @@ def dyna_rank(boss_types, limit=TOP):
             # 서로 다른 세 항목이 하나로 뭉개졌다. 이름 자체를 갈라 두면 화면 어디서든 자연히 분리된다.
             # (rank_diff 비교 키가 '스프라이트|이름'이라 이번 빌드 한 번은 맥스 표의 ▲▼ 가 비어 있다가 다음 갱신부터 다시 붙는다)
             out.append({'sprite': gmax_sprite_id(entry['dex'], entry['form']) if best[2] == '거다이맥스' else entry['sprite'], 'name': max_name(entry['name'], best[2] == '거다이맥스'), 'en': entry['en'], 'types': entry['types'],
-                        'fast': best[2], 'charged': f"{best[1].lower()}", 'dmg': best[0], 'bulk': round(bulk), 'score': round(score), 'gmax': best[2] == '거다이맥스', **({'unrel': True} if unrel else {})})
+                        'fast': best[2], 'charged': f"{best[1].lower()}", 'dmg': best[0], 'bulk': round(bulk), 'score': round(score), 'gmax': best[2] == '거다이맥스', **({'unrel': True} if unrel else {}), **soon_mark(best[2] == '거다이맥스', entry['pid'], entry['form'])})
     out.sort(key=lambda row: -row['score'])
     return cut_with_unreleased(out, limit)
 dynamax_ranking = {'overall': dyna_rank([])}
@@ -283,7 +305,7 @@ def tank_rank(boss_types, limit=TOP):
             if not dynamax_ok and not gmax_move_type: continue
             is_gmax = gmax_move_type is not None
             out.append({'sprite': gmax_sprite_id(entry['dex'], entry['form']) if is_gmax else entry['sprite'], 'name': max_name(entry['name'], is_gmax), 'en': entry['en'], 'types': entry['types'],
-                        'fast': '', 'charged': '', 'ehp': round(bulk / multiplier), 'mult': round(multiplier, 2), 'hp': round(entry['hp']), 'def': round(entry['def']), 'gmax': is_gmax, **({'unrel': True} if unrel else {})})
+                        'fast': '', 'charged': '', 'ehp': round(bulk / multiplier), 'mult': round(multiplier, 2), 'hp': round(entry['hp']), 'def': round(entry['def']), 'gmax': is_gmax, **({'unrel': True} if unrel else {}), **soon_mark(is_gmax, entry['pid'], entry['form'])})
     out.sort(key=lambda row: -row['ehp'])
     return cut_with_unreleased(out, limit, 'ehp')
 dynamax_tank = {'overall': tank_rank([])}
@@ -298,12 +320,14 @@ print('tank:', [(row['name'], row['ehp'], row['mult']) for row in dynamax_tank['
 max_pool = {}
 for entry in base_meta.values():
     if entry['form'] and entry['form'].endswith('_S'): continue   # 에이펙스 폼은 맥스 배틀 대상이 아니다
-    is_gmax = gmax_type(entry['pid'], entry['form']) is not None
+    # 출시 예정(soon) 폼은 아직 잡을 수 없다 — 풀에서 뺀다 (Codex, PR #341)
+    is_gmax = gmax_type(entry['pid'], entry['form']) is not None and not soon_date('G', entry['pid'], entry['form'])
     # 'M' = 다이맥스 없이 참가 — 맥스 배틀에서 잡는 종이 아니라 포획 CP 안내에는 안 쓰지만, 도감 · CP 표의 '맥스' 표시는 받는다
     if signature_move(entry['pid'], entry['form']):
         max_pool[str(entry['sprite'])] = 'M'
         continue
-    if not is_dynamax(entry['pid'], entry['form']) and not is_gmax: continue
+    is_dyna = is_dynamax(entry['pid'], entry['form']) and not soon_date('D', entry['pid'], entry['form'])
+    if not is_dyna and not is_gmax: continue
     max_pool[str(entry['sprite'])] = 'G' if is_gmax else 'D'
     if is_gmax:
         max_pool[str(gmax_sprite_id(entry['dex'], entry['form']))] = 'G'
@@ -373,14 +397,14 @@ def tier_rows():
                     out.append({'sprite': entry['sprite'], 'name': max_name(entry['name'], False), 'en': entry['en'], 'types': entry['types'],
                                 'fast': '맥스어택', 'charged': move_type.lower(), 'atk': attack, 'power': 350,
                                 'stab': move_type in own_types, 'bulk': round(bulk), 'bulkMul': round(bulk_mul, 2),
-                                'score': round(score), 'gmax': False, **unrel_mark})
+                                'score': round(score), 'gmax': False, **unrel_mark, **soon_mark(False, entry['pid'], entry['form'])})
             if gmax_move_type:
                 # 450 = GMAX_POWER(거다이맥스 전용 기술 위력), 1.2 = 자속 보정, 내구^0.25
                 score = attack * 450 * (1.2 if gmax_move_type in own_types else 1) * bulk_mul
                 out.append({'sprite': gmax_sprite_id(entry['dex'], entry['form']), 'name': max_name(entry['name'], True), 'en': entry['en'], 'types': entry['types'],
                             'fast': '거다이맥스', 'charged': gmax_move_type.lower(), 'atk': attack, 'power': 450,
                             'stab': gmax_move_type in own_types, 'bulk': round(bulk), 'bulkMul': round(bulk_mul, 2),
-                            'score': round(score), 'gmax': True, **unrel_mark})
+                            'score': round(score), 'gmax': True, **unrel_mark, **soon_mark(True, entry['pid'], entry['form'])})
     out.sort(key=lambda row: -row['score'])
     return out
 

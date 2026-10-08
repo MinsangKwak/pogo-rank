@@ -293,7 +293,7 @@ export default function FormGuide({ mon, dexNo, baseLabel, onSwitch, onLeave, on
                 onClick={() => (onMaxHere ? onMaxHere(toMon(row)) : board.toMax(row))}>
                 {tag}
                 <span className="detail__formrow-use">{formSummary(row, dex.TYPE_KO)}</span>
-                {row.unrel ? <span className="tag">미출시</span> : null}
+                {row.unrel ? <span className="tag">미출시</span> : row.soon ? <span className="tag">출시 예정</span> : null}
                 <span className="detail__formrow-go">D-MAX 더보기 ›</span>
               </button>
             );

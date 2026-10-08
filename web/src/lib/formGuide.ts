@@ -43,6 +43,8 @@ export interface FormRow {
   places: FormPlace[];
   /** 데이터만 있고 아직 게임에 없는 폼 */
   unrel: boolean;
+  /** 출시 예정일 — 공지된 출시일 전에 먼저 올린 맥스 폼 (2026-10-09) */
+  soon?: string;
   /** D-MAX 티어표에서의 자리 — 맥스 폼만, 티어표에 없으면 null */
   tier: TierSpot | null;
   /** 맥스 기술 타입 ('water') — 맥스 폼만, 일반은 빈 글자 */
@@ -184,7 +186,7 @@ export function formRows(
     if (!row) continue;
     rows.push({
       key, label: FORM_KO[key], name: row.name, sprite: row.sprite, en: row.en, types: row.types,
-      places: placesOf(places, row.name, typeKo), unrel: !!row.unrel, tier: tiers.get(row.name) ?? null, moveType: row.charged ?? '',
+      places: placesOf(places, row.name, typeKo), unrel: !!row.unrel, soon: row.soon, tier: tiers.get(row.name) ?? null, moveType: row.charged ?? '',
     });
   }
   return rows;
