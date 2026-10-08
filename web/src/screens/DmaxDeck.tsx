@@ -29,12 +29,13 @@ import type { OpenMon } from '../lib/mon';
  * **서버에는 주소가 없다** — 빌드가 이 화면을 그릴 때는 빈 덱으로 시작하고,
  * 브라우저에서 첫 효과가 돌 때 주소를 읽는다 (v5 Phase 6)
  */
-function readHashIds(): number[] | null {
+function readHashIds(): (number | null)[] | null {
   if (typeof location === 'undefined') return null;
   const query = location.search.slice(1);
   const raw = query ? new URLSearchParams(query).get('p') : null;
   if (!raw) return null;
-  const ids = raw.split(',').map((piece) => Number(piece.trim())).filter((value) => Number.isFinite(value));
+  // 빈 조각은 빈 칸 — 앞 칸이 걸러져 비어도 뒤 칸이 앞으로 밀리지 않게 자리를 지킨다 (Codex, PR #343)
+  const ids = raw.split(',').map((piece) => { const value = Number(piece.trim()); return piece.trim() && Number.isFinite(value) ? value : null; });
   return ids.length ? ids : null;
 }
 
@@ -83,7 +84,9 @@ export default function DmaxDeck({ onOpen }: { onOpen: OpenMon }) {
   useEffect(() => {
     const next = new URLSearchParams();
     next.set('b', bossType);
-    const ids = deck.filter((sprite) => sprite != null);
+    // 빈 칸은 빈 조각으로 자리를 남긴다(뒤쪽 빈 칸만 잘라 낸다) — 걸러진 앞 칸 때문에 뒤 포켓몬이 다른 칸으로 옮겨 가지 않게 (Codex, PR #343)
+    const ids = deck.map((sprite) => (sprite == null ? '' : String(sprite)));
+    while (ids.length && ids[ids.length - 1] === '') ids.pop();
     if (ids.length) next.set('p', ids.join(','));
     try { history.replaceState(history.state, '', `/dmax/deck?${next.toString()}`); } catch { /* 주소 못 바꾸는 환경 */ }
   }, [bossType, deck]);
