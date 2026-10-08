@@ -164,6 +164,12 @@ def soon_mark(is_gmax, pokemon_id, form):
     # 행에 붙이는 출시 예정 표식 — 화면이 '11/14 출시 예정' 으로 그린다
     release_date = soon_date('G' if is_gmax else 'D', pokemon_id, form)
     return {'soon': release_date} if release_date else {}
+def max_variants(pokemon_id, form, dynamax_ok, gmax_move_type):
+    # 딜러 · 탱커 표는 종마다 가장 센 쪽(거다이맥스 > 다이맥스) 한 줄만 내는데, 거다이맥스가 '출시 예정' 이고 다이맥스는 이미 출시됐으면
+    # 그 한 줄이 soon 으로 가려져 지금 쓸 수 있는 다이맥스까지 사라진다 — 둘을 따로 낸다 (Codex, PR #341)
+    if gmax_move_type and dynamax_ok and soon_date('G', pokemon_id, form) and not soon_date('D', pokemon_id, form):
+        return [(True, None), (dynamax_ok, gmax_move_type)]
+    return [(dynamax_ok, gmax_move_type)]
 def is_dynamax(pokemon_id, form):
     return in_release_set(dynamax_released, pokemon_id, form)
 def signature_move(pokemon_id, form):
@@ -265,16 +271,17 @@ def dyna_rank(boss_types, limit=TOP):
             gmax_move_type = pending_gmax_type(entry['pid'], entry['form']) if unrel else gmax_type(entry['pid'], entry['form'])
             # 다이맥스도 거다이맥스도 못 하면 후보가 아니다
             if not dynamax_ok and not gmax_move_type: continue
-            best = best_max_hit(entry, boss_types, own_types, dynamax_ok, gmax_move_type)
-            if not best: continue
-            # 내구 지표 = 방어력 x HP / 1000, 점수에는 제곱근으로 완화해 반영(딜 비중을 크게 둔다)
-            score = best[0] * bulk ** 0.5
-            # 2026-09-06 v2.10.0 (QA-44) 이름에 맥스 종류를 붙인다 — '거다이맥스 에이스번' / '다이맥스 에이스번'.
-            # 일반 에이스번(PvE·PvP 표)과 이름이 같으면 검색 색인(이름 기준 중복 제거)·활용처(이름 기준 합산)에서
-            # 서로 다른 세 항목이 하나로 뭉개졌다. 이름 자체를 갈라 두면 화면 어디서든 자연히 분리된다.
-            # (rank_diff 비교 키가 '스프라이트|이름'이라 이번 빌드 한 번은 맥스 표의 ▲▼ 가 비어 있다가 다음 갱신부터 다시 붙는다)
-            out.append({'sprite': gmax_sprite_id(entry['dex'], entry['form']) if best[2] == '거다이맥스' else entry['sprite'], 'name': max_name(entry['name'], best[2] == '거다이맥스'), 'en': entry['en'], 'types': entry['types'],
-                        'fast': best[2], 'charged': f"{best[1].lower()}", 'dmg': best[0], 'bulk': round(bulk), 'score': round(score), 'gmax': best[2] == '거다이맥스', **({'unrel': True} if unrel else {}), **soon_mark(best[2] == '거다이맥스', entry['pid'], entry['form'])})
+            for variant_dynamax_ok, variant_gmax_type in max_variants(entry['pid'], entry['form'], dynamax_ok, gmax_move_type):
+                best = best_max_hit(entry, boss_types, own_types, variant_dynamax_ok, variant_gmax_type)
+                if not best: continue
+                # 내구 지표 = 방어력 x HP / 1000, 점수에는 제곱근으로 완화해 반영(딜 비중을 크게 둔다)
+                score = best[0] * bulk ** 0.5
+                # 2026-09-06 v2.10.0 (QA-44) 이름에 맥스 종류를 붙인다 — '거다이맥스 에이스번' / '다이맥스 에이스번'.
+                # 일반 에이스번(PvE·PvP 표)과 이름이 같으면 검색 색인(이름 기준 중복 제거)·활용처(이름 기준 합산)에서
+                # 서로 다른 세 항목이 하나로 뭉개졌다. 이름 자체를 갈라 두면 화면 어디서든 자연히 분리된다.
+                # (rank_diff 비교 키가 '스프라이트|이름'이라 이번 빌드 한 번은 맥스 표의 ▲▼ 가 비어 있다가 다음 갱신부터 다시 붙는다)
+                out.append({'sprite': gmax_sprite_id(entry['dex'], entry['form']) if best[2] == '거다이맥스' else entry['sprite'], 'name': max_name(entry['name'], best[2] == '거다이맥스'), 'en': entry['en'], 'types': entry['types'],
+                            'fast': best[2], 'charged': f"{best[1].lower()}", 'dmg': best[0], 'bulk': round(bulk), 'score': round(score), 'gmax': best[2] == '거다이맥스', **({'unrel': True} if unrel else {}), **soon_mark(best[2] == '거다이맥스', entry['pid'], entry['form'])})
     out.sort(key=lambda row: -row['score'])
     return cut_with_unreleased(out, limit)
 dynamax_ranking = {'overall': dyna_rank([])}
@@ -303,9 +310,10 @@ def tank_rank(boss_types, limit=TOP):
             dynamax_ok = pending_dynamax(entry['pid'], entry['form']) if unrel else is_dynamax(entry['pid'], entry['form'])
             gmax_move_type = pending_gmax_type(entry['pid'], entry['form']) if unrel else gmax_type(entry['pid'], entry['form'])
             if not dynamax_ok and not gmax_move_type: continue
-            is_gmax = gmax_move_type is not None
-            out.append({'sprite': gmax_sprite_id(entry['dex'], entry['form']) if is_gmax else entry['sprite'], 'name': max_name(entry['name'], is_gmax), 'en': entry['en'], 'types': entry['types'],
-                        'fast': '', 'charged': '', 'ehp': round(bulk / multiplier), 'mult': round(multiplier, 2), 'hp': round(entry['hp']), 'def': round(entry['def']), 'gmax': is_gmax, **({'unrel': True} if unrel else {}), **soon_mark(is_gmax, entry['pid'], entry['form'])})
+            for _variant_dynamax_ok, variant_gmax_type in max_variants(entry['pid'], entry['form'], dynamax_ok, gmax_move_type):
+                is_gmax = variant_gmax_type is not None
+                out.append({'sprite': gmax_sprite_id(entry['dex'], entry['form']) if is_gmax else entry['sprite'], 'name': max_name(entry['name'], is_gmax), 'en': entry['en'], 'types': entry['types'],
+                            'fast': '', 'charged': '', 'ehp': round(bulk / multiplier), 'mult': round(multiplier, 2), 'hp': round(entry['hp']), 'def': round(entry['def']), 'gmax': is_gmax, **({'unrel': True} if unrel else {}), **soon_mark(is_gmax, entry['pid'], entry['form'])})
     out.sort(key=lambda row: -row['ehp'])
     return cut_with_unreleased(out, limit, 'ehp')
 dynamax_tank = {'overall': tank_rank([])}
