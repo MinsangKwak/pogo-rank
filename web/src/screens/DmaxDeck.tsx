@@ -74,7 +74,8 @@ export default function DmaxDeck({ onOpen }: { onOpen: OpenMon }) {
     hashIds.slice(0, MAX_DECK_SIZE).forEach((id, index) => {
       if (maxDeckRowOf(max, index, bossType, id, true)) deck[index] = id;
     });
-    return deck;
+    // 전부 걸러진 링크는 빈 덱이 아니라 자동 추천 덱으로 — 빈 덱은 보여 줄 까닭이 없고, 주소(p 없음)와도 맞는다 (Codex, PR #343)
+    return deck.some((id) => id != null) ? deck : null;
   }, [hashIds, key, max, bossType]);
   const deck = picked?.key === key ? picked.deck : (fromHash ?? auto);
 
