@@ -15,6 +15,9 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 export const RELEASE_NOTES_EN = {
+  '2026-10-08 · v5.9.12': [
+    '**\'2026 FC Seoul Event\' (Oct 24, 9:00 – 20:00 KST, around Seoul World Cup Stadium) is now on the calendar** — Fire-type Pokémon appear more often and Charmander is in 1-star raids. It overlaps the Dynamax Uxie Max Battle Day (14:00 – 17:00) the same day, so check both',
+  ],
   '2026-10-07 · v5.9.11': [
     '**The contact address is now contact@moncamp.kr** — the footer and the contact lines in the privacy policy and terms change together. The old address was a school account that may stop working after graduation, so it moved to the service domain. Nothing about what we collect changes',
   ],

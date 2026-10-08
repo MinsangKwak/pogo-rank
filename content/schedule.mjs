@@ -138,6 +138,8 @@ export const SCHEDULE_MONTHS = {
       { s: 31, e: 31, cat: 'event', label: '슈퍼 메가 레이드 데이 (날짜 확정 · 세부 내용 미발표)', source: 'https://pokemongo.com/ko/news/save-the-date-s24' },
       // 2026-10-06 공식 한국어 공지 — 핼러윈 2026 파트 1 (자동분 영문 원제 'Pokémon GO Halloween 2026 Part I' 를 덮는다 · 11/1 10시까지라 11월에도 한 줄)
       { s: 27, e: 31, cat: 'event', label: '핼러윈 2026 파트 1 (10/27 10시 ~ 11/1 10시 · 해트와 케이프의 피카츄 · 톱 해트를 쓴 주뱃 · 리본을 단 데인차)', source: 'https://pokemongo.com/ko/news/halloween-part-1-2026' },
+      // 2026-10-08 공식 한국어 공지 — 2026 FC서울 이벤트(서울월드컵경기장 일대 하루 행사, 자동분에 없는 한국 한정 행사라 손 줄로 세운다)
+      { s: 24, e: 24, cat: 'event', label: '2026 FC서울 이벤트 (10/24 9시 ~ 20시 · 서울월드컵경기장 일대 · 불꽃 타입 포켓몬 · 1성 레이드 파이리)', source: 'https://pokemongo.com/ko/news/fc-seoul-2026' },
       { s: 1, e: 6, cat: 'raid5', label: '제르네아스 (9/30~10/6)' },
       { s: 1, e: 6, cat: 'mega', label: '메가 우츠보트 (9/30~10/6)' },
       { s: 1, e: 4, cat: 'dmax', label: 'D-MAX 울머기 (맥스 먼데이 9/28 주차, ~10/4)', t: 'water' },
