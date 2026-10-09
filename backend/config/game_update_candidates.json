@@ -5,7 +5,7 @@
     "editorialStatus=published 로 옮겨 적어야 화면에 나간다.",
     "changeLines 는 공식 원문에서 \"규칙이 바뀐 것으로 보이는\" 줄을 그대로 옮긴 것이다. 요약이 아니다."
   ],
-  "collectedAt": "2026-10-09",
+  "collectedAt": "2026-10-10",
   "candidates": [
     {
       "slug": "fc-seoul-2026",
@@ -19,8 +19,7 @@
       ],
       "changeLines": {
         "ko": [
-          "※해당 레이드배틀에서 “리모트 레이드패스”는 사용할 수 없습니다.",
-          "“Pokémon GO”를 플레이할 때는 주변 안전에 주의하고 나라와 지자체의 방침 등에 따라 플레이해주세요. 앞으로 진행되는 이벤트에 대해 개최 중지 또는 내용이 변경될 수 있습니다. 소셜미디어, 푸시 알림, 메일 등으로 최신 정보를 확인하세요."
+          "※해당 레이드배틀에서 “리모트 레이드패스”는 사용할 수 없습니다."
         ]
       },
       "announcedAt": "2026-10-08"
@@ -37,7 +36,11 @@
       ],
       "changeLines": {
         "ko": [
-          "“Pokémon GO”를 플레이할 때는 주변 안전에 주의하고 나라와 지자체의 방침 등에 따라 플레이해주세요. 앞으로 진행되는 이벤트에 대해 개최 중지 또는 내용이 변경될 수 있습니다. 소셜미디어, 푸시 알림, 메일 등으로 최신 정보를 확인하세요."
+          "운이 좋으면 “Pokémon GO”에 처음으로 등장하는 색이 다른 “망망이”를 만날 수 있습니다! 야생에서 또는 “GO패스” 및 필드리서치 과제를 완료했을 때 “망망이”가 등장할 수 있습니다.",
+          "“핼러윈 2026 파트2” 이벤트부터 “Pokémon GO”에서 처음으로 “메가깜까미”의 메가레벨을 슈퍼 맥스까지 올릴 수 있습니다! 자세한 정보는 여기서 확인하세요.",
+          "“메가 피날레” 이벤트에서 밝혀진 대로, 슈퍼 맥스 레벨에 도달할 수 있는 포켓몬은 메가진화한 상태일 때 스페셜 어택을 추가로 배울 수 있습니다! 자세한 정보는 여기서 확인하세요.",
+          "메가진화한 “깜까미”는 스페셜 어택 “나이트헤드+”를 추가로 사용할 수 있습니다.",
+          "이벤트 동안 “GO패스”용 보너스 과제를 추가로 받을 수 있으니 잘 살펴보세요!"
         ]
       },
       "announcedAt": "2026-10-08"
@@ -58,284 +61,10 @@
           "최근 “Pokémon GO”에 도입한 게임 플레이 조정 내역과 편의성 업데이트를 간단하게 소개해 드리니, 확인해 보세요!",
           "나침반 아이콘과 날씨 아이콘: 나침반 아이콘과 날씨 아이콘을 플레이어의 활동에 따라 변경되는 동적 아이콘 1개로 합쳤습니다. 나침반 아이콘은 회전하거나 확대할 때 표시되며 날씨 아이콘은 그 외 상황에 표시됩니다. 날씨 아이콘을 탭하면 활성화된 날씨 조건 및 부스트를 볼 수 있고, 화면에 나침반 아이콘이 떠 있을 때 탭하면 맵에서 시야 방향이 전환됩니다.",
           "맵뷰 디스플레이 개선: 맵뷰의 간격을 조정하는 개선 작업을 진행했습니다. 야생 포켓몬 등장, 체육관, 파워스폿, 포켓스톱 사이의 영역 중첩을 줄여 원하는 요소를 더 쉽게 선택할 수 있습니다.",
-          "앞으로도 “Pokémon GO”를 개선해 나갈 예정이니, 많은 피드백 부탁드립니다!",
-          "“Pokémon GO”를 플레이할 때는 주변 안전에 주의하고 나라와 지자체의 방침 등에 따라 플레이해주세요. 앞으로 진행되는 이벤트에 대해 개최 중지 또는 내용이 변경될 수 있습니다. 소셜미디어, 푸시 알림, 메일 등으로 최신 정보를 확인하세요."
+          "앞으로도 “Pokémon GO”를 개선해 나갈 예정이니, 많은 피드백 부탁드립니다!"
         ]
       },
       "announcedAt": "2026-10-08"
-    },
-    {
-      "slug": "dynamax-uxie-mesprit-azelf-max-battle-day-2026",
-      "sources": [
-        {
-          "lang": "ko",
-          "label": "잊혀진 물결 사이에서 다이맥스한 \"유크시\", \"엠라이트\", \"아그놈\"이 처음으로 모습을 드러냅니다! — Pokémon GO",
-          "url": "https://pokemongo.com/ko/news/dynamax-uxie-mesprit-azelf-max-battle-day-2026",
-          "image": "https://lh3.googleusercontent.com/lKvMVkt13VprgaVCCdWqglwACCNc_F4rLJMuuZg_MqZSHjDIkEm3dldHcnyv7OPdDmJYAdfYC9xZef00Jfna7R1B8QJLLBMOigqW_89obec"
-        }
-      ],
-      "changeLines": {
-        "ko": [
-          "“Pokémon GO”를 플레이할 때는 주변 안전에 주의하고 나라와 지자체의 방침 등에 따라 플레이해주세요. 앞으로 진행되는 이벤트에 대해 개최 중지 또는 내용이 변경될 수 있습니다. 소셜미디어, 푸시 알림, 메일 등으로 최신 정보를 확인하세요."
-        ]
-      },
-      "announcedAt": "2026-10-01"
-    },
-    {
-      "slug": "minior-meteor-showers-2026",
-      "sources": [
-        {
-          "lang": "ko",
-          "label": "유성우가 쏟아지는 밤, 별빛 아래서 탐험하며 \"메테노\"를 만나요! — Pokémon GO",
-          "url": "https://pokemongo.com/ko/news/minior-meteor-showers-2026",
-          "image": "https://lh3.googleusercontent.com/u0gcBk4WxvszF4cKKAseYnVDOT8ombVKElMwM2f8545aa98EHjJADmhiyJ6EGXDRhLSlJn6SE4ESV6WVVRLfuQUTIM5Hx7wsKN80mLYxW4rt"
-        }
-      ],
-      "changeLines": {
-        "ko": [
-          "“Pokémon GO”를 플레이할 때는 주변 안전에 주의하고 나라와 지자체의 방침 등에 따라 플레이해주세요. 앞으로 진행되는 이벤트에 대해 개최 중지 또는 내용이 변경될 수 있습니다. 소셜미디어, 푸시 알림, 메일 등으로 최신 정보를 확인하세요."
-        ]
-      },
-      "announcedAt": "2026-10-01"
-    },
-    {
-      "slug": "pokemon-x-adidas-2026",
-      "sources": [
-        {
-          "lang": "ko",
-          "label": "\"ADIDAS | POKÉMON\" 컬렉션 의상 아이템이 \"Pokémon GO\"를 찾아옵니다!",
-          "url": "https://pokemongo.com/ko/news/pokemon-x-adidas-2026",
-          "image": "https://lh3.googleusercontent.com/L-Kp0mvhQ_6rxdgpFz0sKpRJ4pKeVhqqtWuOJsRXu2O1uU8_FmURLvbr8j0K24XcWggFoYItYc3Pb6RS8LVMOn2S5QvC4cBKSYHXV3reP58"
-        }
-      ],
-      "changeLines": {
-        "ko": [
-          "“Pokémon GO”를 플레이할 때는 주변 안전에 주의하고 나라와 지자체의 방침 등에 따라 플레이해주세요. 앞으로 진행되는 이벤트에 대해 개최 중지 또는 내용이 변경될 수 있습니다. 소셜미디어, 푸시 알림, 메일 등으로 최신 정보를 확인하세요."
-        ]
-      },
-      "announcedAt": "2026-09-24"
-    },
-    {
-      "slug": "fall-marathon-buddy-trek-2026",
-      "sources": [
-        {
-          "lang": "ko",
-          "label": "\"그푸리\"가 \"Pokémon GO\"에 처음으로 등장하는 \"가을 소풍: 파트너와 함께\" 이벤트!",
-          "url": "https://pokemongo.com/ko/news/fall-marathon-buddy-trek-2026",
-          "image": "https://lh3.googleusercontent.com/M4kOTm3cvwmzkibKybdE7ItO-lG_C4RpMeI-UQJdEH7kOGF36MjUUo_2VVd6QMHmGoUypowGKIzv2f7LBAXjT3qrtYNNYRhX4GszOYp3vw"
-        }
-      ],
-      "changeLines": {
-        "ko": [
-          "“Pokémon GO”를 플레이할 때는 주변 안전에 주의하고 나라와 지자체의 방침 등에 따라 플레이해주세요. 앞으로 진행되는 이벤트에 대해 개최 중지 또는 내용이 변경될 수 있습니다. 소셜미디어, 푸시 알림, 메일 등으로 최신 정보를 확인하세요."
-        ]
-      },
-      "announcedAt": "2026-09-23"
-    },
-    {
-      "slug": "hangul-nal-2026",
-      "sources": [
-        {
-          "lang": "ko",
-          "label": "“2026 한글날 이벤트”가 대한민국 전역에서 개최됩니다! — Pokémon GO",
-          "url": "https://pokemongo.com/ko/news/hangul-nal-2026",
-          "image": "https://lh3.googleusercontent.com/gcvhdePaU8DmxDMdRmNmR13Si3D_qNgEE74c-F4Tjw-c2qkVaS1KRcB3zNivL4NZDlT6h60LnMtAvc8K1xIGH2_IMwVqLEW9F-mvGYfbzw"
-        }
-      ],
-      "changeLines": {
-        "ko": [
-          "“Pokémon GO”를 플레이할 때는 주변 안전에 주의하고 나라와 지자체의 방침 등에 따라 플레이해주세요. 앞으로 진행되는 이벤트에 대해 개최 중지 또는 내용이 변경될 수 있습니다. 소셜미디어, 푸시 알림, 메일 등으로 최신 정보를 확인하세요."
-        ]
-      },
-      "announcedAt": "2026-09-22"
-    },
-    {
-      "slug": "world-space-week-2026",
-      "sources": [
-        {
-          "lang": "ko",
-          "label": "\"세계 우주 주간\" 이벤트에는 \"우주비행 피카츄\"와 우주로 떠나요! — Pokémon GO",
-          "url": "https://pokemongo.com/ko/news/world-space-week-2026",
-          "image": "https://lh3.googleusercontent.com/AiDIi-NAxX879TxCAX8X6I6EwjrUUajpCN18w4uPXAwSqgbR1y6_awmrDJFY31ljBfh4flc1v5Ma2by0Mt4y77-Q4LCPLnSBEMZIJSS0hvZx"
-        }
-      ],
-      "changeLines": {
-        "ko": [
-          "“Pokémon GO”를 플레이할 때는 주변 안전에 주의하고 나라와 지자체의 방침 등에 따라 플레이해주세요. 앞으로 진행되는 이벤트에 대해 개최 중지 또는 내용이 변경될 수 있습니다. 소셜미디어, 푸시 알림, 메일 등으로 최신 정보를 확인하세요."
-        ]
-      },
-      "announcedAt": "2026-09-21"
-    },
-    {
-      "slug": "choose-your-path-twilight-trails-2026",
-      "sources": [
-        {
-          "lang": "ko",
-          "label": "\"황혼의 여정\" 시즌에는 새로운 시간제한 리서치를 활용해 나만의 모험을 떠나 보세요! — Pokémon GO",
-          "url": "https://pokemongo.com/ko/news/choose-your-path-twilight-trails-2026",
-          "image": "https://lh3.googleusercontent.com/_yKVtZhYNjg2v6GwFtgVR-r4J_DaJL_Q16g0UhSOWH78D0WtXKOBZ-opQJzNB6bS-AxYjnZmHyDxGdg34p98fTe1p_NSyVOfgaR1ACHMM70"
-        }
-      ],
-      "changeLines": {
-        "ko": [
-          "“Pokémon GO”를 플레이할 때는 주변 안전에 주의하고 나라와 지자체의 방침 등에 따라 플레이해주세요. 앞으로 진행되는 이벤트에 대해 개최 중지 또는 내용이 변경될 수 있습니다. 소셜미디어, 푸시 알림, 메일 등으로 최신 정보를 확인하세요."
-        ]
-      },
-      "announcedAt": "2026-09-14"
-    },
-    {
-      "slug": "gigantamax-cinderace-max-battle-day-2026",
-      "sources": [
-        {
-          "lang": "ko",
-          "label": "\"맥스배틀 데이\"에 \"거다이맥스 에이스번\"이 거대한 불꽃 볼을 슛! — Pokémon GO",
-          "url": "https://pokemongo.com/ko/news/gigantamax-cinderace-max-battle-day-2026",
-          "image": "https://lh3.googleusercontent.com/WT8oI0oxsVj0AVZ1qD58MMbCPc8di-ajTXg2IBD3OcFshTR025JQIKbJnlMYVUBw96yMdeyMlosgQliCxVxgyTCJPtiN53G05HUMcdshAw"
-        }
-      ],
-      "changeLines": {
-        "ko": [
-          "“Pokémon GO”를 플레이할 때는 주변 안전에 주의하고 나라와 지자체의 방침 등에 따라 플레이해주세요. 앞으로 진행되는 이벤트에 대해 개최 중지 또는 내용이 변경될 수 있습니다. 소셜미디어, 푸시 알림, 메일 등으로 최신 정보를 확인하세요."
-        ]
-      },
-      "announcedAt": "2026-09-09"
-    },
-    {
-      "slug": "harvest-festival-2026",
-      "sources": [
-        {
-          "lang": "ko",
-          "label": "풍성한 \"수확 축제\"와 색이 다른 \"과사삭벌레\"의 \"Pokémon GO\" 첫 등장을 즐겨요!",
-          "url": "https://pokemongo.com/ko/news/harvest-festival-2026",
-          "image": "https://lh3.googleusercontent.com/xNJ7JKQK3J1NgJXra1tCGw0XmW9r9vQBiNy1ZpDL683M_1GjMZDTONVKpVcrUd2U2dPeV2X5UGhbQjSnr8aApqqbwHZAD60u-H68Go-R"
-        }
-      ],
-      "changeLines": {
-        "ko": [
-          "“Pokémon GO”를 플레이할 때는 주변 안전에 주의하고 나라와 지자체의 방침 등에 따라 플레이해주세요. 앞으로 진행되는 이벤트에 대해 개최 중지 또는 내용이 변경될 수 있습니다. 소셜미디어, 푸시 알림, 메일 등으로 최신 정보를 확인하세요."
-        ]
-      },
-      "announcedAt": "2026-09-07"
-    },
-    {
-      "slug": "harvest-festival-tgr-2026",
-      "sources": [
-        {
-          "lang": "ko",
-          "label": "수확 축제: 점령 이벤트에는 \"그림자 제크로무\"를 구해 주세요! — Pokémon GO",
-          "url": "https://pokemongo.com/ko/news/harvest-festival-tgr-2026",
-          "image": "https://lh3.googleusercontent.com/papryPKXMu6SdbGgSZRDSZURigphJVWB5Am87oJJ4BqEfpLfqD4kStG47AFnLnl9Dxi-f0CaRK2mp8A_kWqMfx5D3mFVMqmVjsvaSqa0SIiS"
-        }
-      ],
-      "changeLines": {
-        "ko": [
-          "“Pokémon GO”를 플레이할 때는 주변 안전에 주의하고 나라와 지자체의 방침 등에 따라 플레이해주세요. 앞으로 진행되는 이벤트에 대해 개최 중지 또는 내용이 변경될 수 있습니다. 소셜미디어, 푸시 알림, 메일 등으로 최신 정보를 확인하세요."
-        ]
-      },
-      "announcedAt": "2026-09-07"
-    },
-    {
-      "slug": "weekly-branching-tr-korea-2026",
-      "sources": [
-        {
-          "lang": "ko",
-          "label": "주간 릴레이 시간제한 리서치가 찾아옵니다! — Pokémon GO",
-          "url": "https://pokemongo.com/ko/news/weekly-branching-tr-korea-2026",
-          "image": "https://lh3.googleusercontent.com/YTWdPxzC8pivOHHqNqkA5VYuXBhfFinH38ENvIZ7f9LfkMDoyXrXRnh5kd-ibfKJHequDEp7sbd6Ahwnvh2ct8REj7kjdvJQkCkIXabrFikr"
-        }
-      ],
-      "changeLines": {
-        "ko": [
-          "“Pokémon GO”를 플레이할 때는 주변 안전에 주의하고 나라와 지자체의 방침 등에 따라 플레이해주세요. 앞으로 진행되는 이벤트에 대해 개최 중지 또는 내용이 변경될 수 있습니다. 소셜미디어, 푸시 알림, 메일 등으로 최신 정보를 확인하세요."
-        ]
-      },
-      "announcedAt": "2026-09-07"
-    },
-    {
-      "slug": "mega-finale-2026-community",
-      "sources": [
-        {
-          "lang": "ko",
-          "label": "\"Pokémon GO Fest 2026: 메가 피날레\" 글로벌 챌린지 #PokemonGOFest2026",
-          "url": "https://pokemongo.com/ko/news/mega-finale-2026-community",
-          "image": "https://lh3.googleusercontent.com/-Ns_XObB98FxmTuaRiYADkjTxnuDb5QY33a0ua1JNbKO4YvZ9B3-Dc0TL22cOu3Vvja9yWxoC2VwRll-BmAJ___0YHVwNctDHXe0Ewerm_LW"
-        }
-      ],
-      "changeLines": {
-        "ko": [
-          "“Pokémon GO”를 플레이할 때는 주변 안전에 주의하고 나라와 지자체의 방침 등에 따라 플레이해주세요. 앞으로 진행되는 이벤트에 대해 개최 중지 또는 내용이 변경될 수 있습니다. 소셜미디어, 푸시 알림, 메일 등으로 최신 정보를 확인하세요."
-        ]
-      },
-      "announcedAt": "2026-08-31"
-    },
-    {
-      "slug": "mega-squads-2026",
-      "sources": [
-        {
-          "lang": "ko",
-          "label": "\"메가 피날레\"에 이어 힘차게 \"팀 메가\" 이벤트를 즐겨요! — Pokémon GO",
-          "url": "https://pokemongo.com/ko/news/mega-squads-2026",
-          "image": "https://lh3.googleusercontent.com/YTPMYhNExmtm88g0AR6OFQcNYVEP8zIi2KAxSpOT1EGMP3YPJNwJJpWa4-hyxIUxlg53x8JYbmsJfvJF7qRhiz4LVYHmDFPTfjS8phqTcQ"
-        }
-      ],
-      "changeLines": {
-        "ko": [
-          "메가진화한 상태의 “헬가”는 스페셜 어택 **악의파동+**을 추가로 사용할 수 있게 됩니다.",
-          "“Pokémon GO”를 플레이할 때는 주변 안전에 주의하고 나라와 지자체의 방침 등에 따라 플레이해주세요. 앞으로 진행되는 이벤트에 대해 개최 중지 또는 내용이 변경될 수 있습니다. 소셜미디어, 푸시 알림, 메일 등으로 최신 정보를 확인하세요."
-        ]
-      },
-      "announcedAt": "2026-08-31"
-    },
-    {
-      "slug": "megafinale-2026-armored-mewtwo",
-      "sources": [
-        {
-          "lang": "ko",
-          "label": "\"메가 피날레\"에 \"아머드 뮤츠\"가 돌아옵니다 — Pokémon GO",
-          "url": "https://pokemongo.com/ko/news/megafinale-2026-armored-mewtwo",
-          "image": "https://lh3.googleusercontent.com/0u1yH85M9mb35sOkETn7o6lZTh4I876A4PjI1tc_G6837FcJKfQpbADPyTBAJYYstn4_PevYQ0R9UGfPlbs2jPFo8kJm2Xl4PdEQ1kDUcSeR"
-        }
-      ],
-      "changeLines": {
-        "ko": [
-          "“Pokémon GO”를 플레이할 때는 주변 안전에 주의하고 나라와 지자체의 방침 등에 따라 플레이해주세요. 앞으로 진행되는 이벤트에 대해 개최 중지 또는 내용이 변경될 수 있습니다. 소셜미디어, 푸시 알림, 메일 등으로 최신 정보를 확인하세요."
-        ]
-      },
-      "announcedAt": "2026-08-31"
-    },
-    {
-      "slug": "catch-mastery-phantump-2026",
-      "sources": [
-        {
-          "lang": "ko",
-          "label": "그루터기포켓몬 \"나목령\"이 등장하는 \"마스터리 시리즈\" 이벤트에 대비하세요! — Pokémon GO",
-          "url": "https://pokemongo.com/ko/news/catch-mastery-phantump-2026",
-          "image": "https://lh3.googleusercontent.com/-6L35plf6_QjX-LQvygJFlGvnQFcb4aRUq_wFXeAFWrq507sS-btYiff_-vTL2S5Y--x16sFEbpFgfhn18-Mhrnwf02faW4zege2Njp6Z2s"
-        }
-      ],
-      "changeLines": {
-        "ko": [
-          "“Pokémon GO”를 플레이할 때는 주변 안전에 주의하고 나라와 지자체의 방침 등에 따라 플레이해주세요. 앞으로 진행되는 이벤트에 대해 개최 중지 또는 내용이 변경될 수 있습니다. 소셜미디어, 푸시 알림, 메일 등으로 최신 정보를 확인하세요."
-        ]
-      },
-      "announcedAt": "2026-08-27"
-    },
-    {
-      "slug": "mega-finale-korea-2026",
-      "sources": [
-        {
-          "lang": "ko",
-          "label": "모험의 시작! “Pokémon GO Fest 2026: 메가 피날레” 기념 한국 현장 이벤트",
-          "url": "https://pokemongo.com/ko/news/mega-finale-korea-2026",
-          "image": "https://lh3.googleusercontent.com/Qao6-KTgpm6RQk9cAGN-6XMJWPePPjwGjj9zZ7fvcqS_G17Unn6Vwv1MmexJf9SWe6dPj43uHUyMEUqQUoqK3HT_ZWP4-lWmB9nXIzT17g"
-        }
-      ],
-      "changeLines": {
-        "ko": [
-          "“Pokémon GO”를 플레이할 때는 주변 안전에 주의하고 나라와 지자체의 방침 등에 따라 플레이해주세요. 앞으로 진행되는 이벤트에 대해 개최 중지 또는 내용이 변경될 수 있습니다. 소셜미디어, 푸시 알림, 메일 등으로 최신 정보를 확인하세요."
-        ]
-      },
-      "announcedAt": "2026-08-24"
     },
     {
       "slug": "helpshift-5554",
@@ -343,6 +72,7 @@
       "title": "포켓몬 상세 정보 페이지 하단의 장소 배경 부분에 검은 그레이디언트가 표시되는 문제",
       "snippet": "문제 설명: 포켓몬 상세 정보 페이지에서 포켓몬의 장소 배경이 있는 부분의 하단에 검은 그레이디언트가 표시되는 문제가 확인됩니다.문제 상태: 이 문제는 0.433 버전에서 해결될 예정입니다.",
       "announcedAt": "",
+      "checkedAt": "2026-10-07",
       "sources": [
         {
           "lang": "ko",
@@ -367,11 +97,85 @@
       }
     },
     {
+      "slug": "halloween-part-1-2026",
+      "sources": [
+        {
+          "lang": "ko",
+          "label": "\"핼러윈 2026 파트 1\"에는 의상을 입은 \"피카츄\", \"주뱃\", \"데인차\"와 함께 사탕을 받으러 가 봐요! — Pokémon GO",
+          "url": "https://pokemongo.com/ko/news/halloween-part-1-2026",
+          "image": "https://lh3.googleusercontent.com/_-kCe3YnQqLlPgLfqe6BZN6v8dIhuuhVzbOSgExE5XjKL__BcqBCbch1V2Z4fOEh18nYEX6O5rqBgWmNmU7kmvy92Yd2u8RBIxDbe79p3kU"
+        }
+      ],
+      "changeLines": {
+        "ko": [
+          "이벤트 동안 “GO패스”용 보너스 과제를 추가로 받을 수 있으니 잘 살펴보세요!"
+        ]
+      },
+      "announcedAt": "2026-10-05"
+    },
+    {
+      "slug": "dynamax-uxie-mesprit-azelf-max-battle-day-2026",
+      "sources": [
+        {
+          "lang": "ko",
+          "label": "잊혀진 물결 사이에서 다이맥스한 \"유크시\", \"엠라이트\", \"아그놈\"이 처음으로 모습을 드러냅니다! — Pokémon GO",
+          "url": "https://pokemongo.com/ko/news/dynamax-uxie-mesprit-azelf-max-battle-day-2026",
+          "image": "https://lh3.googleusercontent.com/lKvMVkt13VprgaVCCdWqglwACCNc_F4rLJMuuZg_MqZSHjDIkEm3dldHcnyv7OPdDmJYAdfYC9xZef00Jfna7R1B8QJLLBMOigqW_89obec"
+        }
+      ],
+      "changeLines": {
+        "ko": [
+          "다음 다이맥스 포켓몬이 별5 맥스배틀을 통해 “Pokémon GO”에 처음으로 등장합니다!"
+        ]
+      },
+      "announcedAt": "2026-10-01"
+    },
+    {
+      "slug": "minior-meteor-showers-2026",
+      "sources": [
+        {
+          "lang": "ko",
+          "label": "유성우가 쏟아지는 밤, 별빛 아래서 탐험하며 \"메테노\"를 만나요! — Pokémon GO",
+          "url": "https://pokemongo.com/ko/news/minior-meteor-showers-2026",
+          "image": "https://lh3.googleusercontent.com/u0gcBk4WxvszF4cKKAseYnVDOT8ombVKElMwM2f8545aa98EHjJADmhiyJ6EGXDRhLSlJn6SE4ESV6WVVRLfuQUTIM5Hx7wsKN80mLYxW4rt"
+        }
+      ],
+      "changeLines": {
+        "ko": [
+          "유성포켓몬 “메테노”가 “Pokémon GO”에 처음으로 등장합니다!",
+          "아래의 유성우가 쏟아지는 기간마다 다른 색의 코어를 가진 “메테노”가 “Pokémon GO”에 처음으로 등장합니다!",
+          "북반구와 남반구에서 각기 다른 색의 코어를 가진 “메테노”가 한 종류씩 “Pokémon GO”에 처음으로 등장합니다."
+        ]
+      },
+      "announcedAt": "2026-10-01"
+    },
+    {
+      "slug": "fall-marathon-buddy-trek-2026",
+      "sources": [
+        {
+          "lang": "ko",
+          "label": "\"그푸리\"가 \"Pokémon GO\"에 처음으로 등장하는 \"가을 소풍: 파트너와 함께\" 이벤트!",
+          "url": "https://pokemongo.com/ko/news/fall-marathon-buddy-trek-2026",
+          "image": "https://lh3.googleusercontent.com/M4kOTm3cvwmzkibKybdE7ItO-lG_C4RpMeI-UQJdEH7kOGF36MjUUo_2VVd6QMHmGoUypowGKIzv2f7LBAXjT3qrtYNNYRhX4GszOYp3vw"
+        }
+      ],
+      "changeLines": {
+        "ko": [
+          "운이 좋으면 “Pokémon GO”에 처음으로 등장하는 “그푸리”를 만날 수 있습니다! “GO패스”의 패스 태스크를 완료하거나 “향로”를 사용했을 때 “그푸리”가 등장할 수 있습니다.",
+          "“가을 소풍: 파트너와 함께” 이벤트부터 “Pokémon GO”에서 처음으로 “메가썬더볼트”의 메가레벨을 슈퍼 맥스까지 올릴 수 있습니다! 자세한 정보는 여기서 확인하세요.",
+          "“썬더볼트”가 메가진화하면 스페셜 어택 “방전+”를 추가로 사용할 수 있습니다.",
+          "이벤트 동안 “GO패스”용 보너스 과제를 추가로 받을 수 있으니 잘 살펴보세요!"
+        ]
+      },
+      "announcedAt": "2026-09-23"
+    },
+    {
       "slug": "helpshift-5521",
       "kind": "release-note",
       "title": "Incubators unavailable for purchase in Brazil",
       "snippet": "Issue Description: In Brazil, paid Incubators and Super Incubators are unavailable for individual purchase. This change was made to ensure t...",
       "announcedAt": "",
+      "checkedAt": "2026-09-16",
       "sources": [
         {
           "lang": "ko",
@@ -401,6 +205,7 @@
       "title": "스탬프 랠리 포켓몬의 포획을 종료하면 포켓몬 포획 보상이 사라지는 문제",
       "snippet": "문제 설명: 스탬프를 수집한 후 포켓몬을 바로 포획하지 않고 포획 보상을 종료하면 포켓몬 포획 보상이 사라지는 문제가 확인되었습니다.만약 이미 관련 장소에서 떠나셔서 포획을 진행하지 못하신다면 고객센터에 문의해주세요.일시적인 문제 해결 방법: 스탬프 ...",
       "announcedAt": "",
+      "checkedAt": "2026-09-16",
       "sources": [
         {
           "lang": "ko",
@@ -430,6 +235,7 @@
       "title": "일부 트레이너에게 Amazon Prime 코드가 오류 메시지를 표시합니다.",
       "snippet": "일부 트레이너에게 Amazon Prime 코드가 오류 메시지를 표시합니다. 문제 설명:  일부 트레이너는 Amazon Prime 코드를 청구하려고 할 때 오류 메시지가 나타납니다. 문제 상태:  조사 중입니다. 웹 브라우저나 기기를 변경하면 이 문제...",
       "announcedAt": "",
+      "checkedAt": "2026-09-16",
       "sources": [
         {
           "lang": "ko",
@@ -459,6 +265,7 @@
       "title": "일부 트레이너들이 구매하지 않은 아바타 아이템을 착용할 수 없는 현상",
       "snippet": "문제 설명: 다른 문제 관련 임시 조치가 진행된 후 일부 트레이너들이 포켓코인으로 구매하지 않아도 프리미엄 아바타 아이템을 착용할 수 있는 오류가 발생했습니다. 관련 아바타 아이템들은 유저의 아이템 가방에 추가되지 않았습니다. 다른 문제에 대한 정식 ...",
       "announcedAt": "",
+      "checkedAt": "2026-09-16",
       "sources": [
         {
           "lang": "ko",
@@ -481,6 +288,40 @@
           "Issue description: Following a recent mitigation for an unrelated issue, a small subset of Trainers were temporarily able to equip premium a..."
         ]
       }
+    },
+    {
+      "slug": "gigantamax-cinderace-max-battle-day-2026",
+      "sources": [
+        {
+          "lang": "ko",
+          "label": "\"맥스배틀 데이\"에 \"거다이맥스 에이스번\"이 거대한 불꽃 볼을 슛! — Pokémon GO",
+          "url": "https://pokemongo.com/ko/news/gigantamax-cinderace-max-battle-day-2026",
+          "image": "https://lh3.googleusercontent.com/WT8oI0oxsVj0AVZ1qD58MMbCPc8di-ajTXg2IBD3OcFshTR025JQIKbJnlMYVUBw96yMdeyMlosgQliCxVxgyTCJPtiN53G05HUMcdshAw"
+        }
+      ],
+      "changeLines": {
+        "ko": [
+          "운이 좋으면 “Pokémon GO”에 처음으로 등장하는 색이 다른 “거다이맥스 에이스번”을 만날 수 있습니다!"
+        ]
+      },
+      "announcedAt": "2026-09-09"
+    },
+    {
+      "slug": "mega-squads-2026",
+      "sources": [
+        {
+          "lang": "ko",
+          "label": "\"메가 피날레\"에 이어 힘차게 \"팀 메가\" 이벤트를 즐겨요! — Pokémon GO",
+          "url": "https://pokemongo.com/ko/news/mega-squads-2026",
+          "image": "https://lh3.googleusercontent.com/YTPMYhNExmtm88g0AR6OFQcNYVEP8zIi2KAxSpOT1EGMP3YPJNwJJpWa4-hyxIUxlg53x8JYbmsJfvJF7qRhiz4LVYHmDFPTfjS8phqTcQ"
+        }
+      ],
+      "changeLines": {
+        "ko": [
+          "메가진화한 상태의 “헬가”는 스페셜 어택 **악의파동+**을 추가로 사용할 수 있게 됩니다."
+        ]
+      },
+      "announcedAt": "2026-08-31"
     }
   ]
 }

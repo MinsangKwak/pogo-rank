@@ -5,7 +5,7 @@
 
 [서비스](https://moncamp.kr/) · [개발 가이드](docs/DEVELOPMENT.md) · [변경 이력](docs/CHANGELOG.md)
 
-> 문서 기준: 2026-10-09, **v5.9.14**. 현재 앱은 `web/`의 Next.js입니다. `frontend-v4/`는 이전 Vite 앱이며, 데이터 추출 도구와 Storybook에 계속 사용합니다.
+> 문서 기준: 2026-10-10, **v5.9.15**. 현재 앱은 `web/`의 Next.js입니다. `frontend-v4/`는 이전 Vite 앱이며, 데이터 추출 도구와 Storybook에 계속 사용합니다.
 
 ## 프로젝트 한눈에 보기
 
@@ -127,6 +127,13 @@ PvP 순위는 PvPoke, 게임 수치는 PokeMiners, 한국어 명칭은 PokeAPI, 
 | 변경 제안·보안·권리 | [기여 안내](.github/CONTRIBUTING.md) · [보안 정책](.github/SECURITY.md) · [저작물 고지](docs/NOTICE.md) |
 
 ## 최근 릴리스
+
+<details>
+<summary><b>2026-10-10</b> — 릴리스 1개 · <code>v5.9.15</code></summary>
+
+게임 업데이트 수집기(`scripts/collect_game_updates.py`)를 고쳤습니다. 기사 후보의 근거에서 안전 안내 상용구를 빼고 본문 앞 절(핼러윈 파트 2 의 슈퍼 맥스 레벨)을 잃지 않으며, 게시판 인용은 기간 줄 대신 본문 첫 문장으로, 발표일이 없는 공식 릴리스 노트에는 처음 확인한 날(`checkedAt`)을 붙여 정렬 · 기간 거름에 넣었습니다(Codex #349 · #334).
+
+</details>
 
 <details>
 <summary><b>2026-10-09</b> — 릴리스 2개 · <code>v5.9.13</code> · <code>v5.9.14</code></summary>

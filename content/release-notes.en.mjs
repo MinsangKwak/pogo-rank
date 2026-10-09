@@ -15,6 +15,10 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 export const RELEASE_NOTES_EN = {
+  '2026-10-10 · v5.9.15': [
+    '**Game update board quotes now use the first sentence of the notice** — some entries used to quote a date range like \'From Oct 4 00:00 …\' or the generic safety reminder. The board now shows the official notice\'s first sentence verbatim (Halloween Part 2 reads \'you may encounter Shiny Greavard!\')',
+    '**Official release notes (known issues) now carry a checked date** — they have no announcement date, so they sank to the bottom of the list. The day we first saw each note is shown as \'Checked\' and drives ordering and the 7-day / 30-day filters',
+  ],
   '2026-10-09 · v5.9.14': [
     '**The calendar now shows \'Halloween 2026 Part 2\' (Nov 1 10:00 – Nov 5 20:00) with its Korean title** — Mega Sableye can reach the Super Max mega level for the first time, and Shiny Greavard debuts. Litwick and Halloween-costume Rowlet appear in the wild too. The game update board collected the notice as well',
   ],
