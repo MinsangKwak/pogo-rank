@@ -134,8 +134,9 @@ BOILERPLATE = re.compile(
     r'개최 중지 또는 내용이 변경|subject to change|'
     # 지원 언어 목록 — 거의 모든 글 끝에 붙는 안내라 그 글의 내용이 아니다
     r'는 영어, 프랑스어|is available in English')
-# 다른 곳으로 보내는 안내 — 머리말 인사 · '자세한 내용은 … 에서 확인하세요'. 그 글의 내용이 아니다
-REDIRECT = re.compile(r'^(트레이너|Trainers|콘텐츠로|Skip to|자세한 내용은|For more (details|information))')
+# 다른 곳으로 보내는 안내 — 머리말 인사 · '자세한 내용은 … 에서 확인하세요'. 그 글의 내용이 아니다.
+# 인사는 '트레이너 여러분' · 'Trainers,' 꼴만 — '트레이너 배틀: 위력 55' · 'Trainers can now …' 는 본문이다(Codex #351)
+REDIRECT = re.compile(r'^(트레이너 여러분|Trainers[,!]|콘텐츠로 건너뛰기|Skip to|자세한 내용은|For more (details|information))')
 
 
 
@@ -340,16 +341,18 @@ def main():
                         help='이 날짜부터의 옛 글을 웹 아카이브로 찾아 아카이브 색인에 채운다 (예: 20200101)')
     args = parser.parse_args()
 
-    from datetime import date, timedelta
-    cutoff = (date.today() - timedelta(days=args.days)).isoformat()
+    from datetime import datetime, timedelta, timezone
+    # 날짜는 전부 한국 기준 — 워크플로는 21:00 UTC(06:00 KST)에 돌아 runner 의 오늘은 한국보다 하루 전이고,
+    # 화면은 날짜만 있는 값을 +09:00 으로 읽는다(Codex #351)
+    today = datetime.now(timezone(timedelta(hours=9))).date()
+    cutoff = (today - timedelta(days=args.days)).isoformat()
     done = already_published(PUBLISHED_PATH)
 
     slugs = {}
     # 백필 — 공식 색인이 안 내놓는 옛 주소를 웹 아카이브에서 먼저 모은다 (--backfill 일 때만)
     if args.backfill:
-        today = date.today().strftime('%Y%m%d')
         for lang, _ in INDEX_URLS:
-            for slug in backfill_slugs(lang, args.backfill, today):
+            for slug in backfill_slugs(lang, args.backfill, today.strftime('%Y%m%d')):
                 slugs.setdefault(slug, set()).add(lang)
     for lang, url in INDEX_URLS:
         try:
@@ -381,6 +384,7 @@ def main():
             skipped['이벤트'] += 1
             continue
         entry = {'slug': slug, 'sources': [], 'changeLines': {}}
+        fetched_all = True
         for lang in ('ko', 'en'):
             if lang not in slugs[slug]:
                 continue
@@ -388,6 +392,7 @@ def main():
                 page = fetch(ARTICLE_URL.format(lang=lang, slug=slug))
             except (urllib.error.URLError, TimeoutError) as error:
                 print(f'  못 받음 {lang}/{slug}: {error}', file=sys.stderr)
+                fetched_all = False
                 continue
             lines = text_lines(page)
             entry['sources'].append({
@@ -408,13 +413,15 @@ def main():
             continue
         if not entry['changeLines']:
             skipped['변경 없음'] += 1
-            # 이번에 다시 읽어 '변경 없음' 이 된 글은 지난 후보 파일에서 되살리지 않는다 — 상용구만 남은 옛 줄이 돌아온다
-            dropped.add(slug)
+            # 이번에 다시 읽어 '변경 없음' 이 된 글은 지난 후보 파일에서 되살리지 않는다 — 상용구만 남은 옛 줄이 돌아온다.
+            # 단, 한쪽 언어판을 못 받은 글은 다 읽은 것이 아니라 지난 후보를 지킨다
+            if fetched_all:
+                dropped.add(slug)
             continue
         candidates.append(entry)
 
     # 릴리스 노트 — 실제 변경이 쌓이는 곳이라 뉴스와 함께 모은다. 처음 본 날은 지난 두 파일에서 이어받는다
-    notes = collect_helpshift(done, first_seen(), date.today().isoformat())
+    notes = collect_helpshift(done, first_seen(), today.isoformat())
     candidates.extend(notes)
     print(f'  (릴리스 노트 {len(notes)}건 포함)')
     # 아직 게시되지 않은 지난 후보는 남긴다 — 공식 색인 · 30일 창에서 내려갔다고 검토 대기열에서 지우면
@@ -466,7 +473,7 @@ def main():
                 '여기에 있는 항목에 사람이 요약을 쓰면 backend/config/game_updates.json 의 기사가 되고,',
                 '화면은 그때부터 기사를 보인다(같은 원문의 아카이브 항목은 숨는다).',
             ],
-            'collectedAt': date.today().isoformat(),
+            'collectedAt': today.isoformat(),
             'entries': entries,
         }, ensure_ascii=False, indent=2) + '\n')
         print(f'아카이브 {len(entries)}건 → {ARCHIVE_PATH}')
@@ -477,7 +484,7 @@ def main():
             'editorialStatus=published 로 옮겨 적어야 화면에 나간다.',
             'changeLines 는 공식 원문에서 "규칙이 바뀐 것으로 보이는" 줄을 그대로 옮긴 것이다. 요약이 아니다.',
         ],
-        'collectedAt': date.today().isoformat(),
+        'collectedAt': today.isoformat(),
         'candidates': candidates,
     }
     os.makedirs(os.path.dirname(CANDIDATES_PATH), exist_ok=True)
