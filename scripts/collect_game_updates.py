@@ -354,12 +354,14 @@ def main():
         for lang, _ in INDEX_URLS:
             for slug in backfill_slugs(lang, args.backfill, today.strftime('%Y%m%d')):
                 slugs.setdefault(slug, set()).add(lang)
+    index_failed = set()
     for lang, url in INDEX_URLS:
         try:
             page = fetch(url)
         except (urllib.error.URLError, TimeoutError) as error:
             # 색인을 못 받으면 **그 언어만** 건너뛴다 — 한쪽만 살아 있어도 후보는 만들 수 있다
             print(f'색인 실패 {lang}: {error}', file=sys.stderr)
+            index_failed.add(lang)
             continue
         for slug in index_slugs(page, lang):
             slugs.setdefault(slug, set()).add(lang)
@@ -384,7 +386,8 @@ def main():
             skipped['이벤트'] += 1
             continue
         entry = {'slug': slug, 'sources': [], 'changeLines': {}}
-        fetched_all = True
+        # 한쪽 색인을 못 받았으면 그 언어판은 slugs 에 아예 없어 아래 고리가 조용히 건너뛴다 — 그때도 '다 읽은 것' 이 아니다
+        fetched_all = not index_failed
         for lang in ('ko', 'en'):
             if lang not in slugs[slug]:
                 continue
