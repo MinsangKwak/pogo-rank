@@ -236,6 +236,8 @@ export interface ArchiveEntry {
   kind?: string;
   title: string;
   date?: string;
+  // 발표일이 없는 공식 릴리스 노트의 '처음 본 날' — 화면은 발표 대신 확인으로 보이고 정렬 · 기간 거름에 쓴다
+  checkedAt?: string;
   excerpt?: string;
   sources?: UpdateSource[];
 }
