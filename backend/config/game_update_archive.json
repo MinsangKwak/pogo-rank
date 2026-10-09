@@ -27,7 +27,7 @@
       "kind": "news",
       "title": "\"메가깜까미\"가 더욱 강력해지고 색이 다른 \"망망이\"가 \"Pokémon GO\"에 처음으로 등장하는 \"핼러윈 2026 파트2\" 이벤트!",
       "date": "2026-10-08",
-      "excerpt": "포켓몬의 메가레벨이 오르면 이 공격의 위력도 증가합니다!",
+      "excerpt": "운이 좋으면 “Pokémon GO”에 처음으로 등장하는 색이 다른 “망망이”를 만날 수 있습니다! 야생에서 또는 “GO패스” 및 필드리서치 과제를 완료했을 때 “망망이”가 등장할 수 있습니다.",
       "sources": [
         {
           "lang": "ko",
@@ -53,11 +53,33 @@
       ]
     },
     {
+      "id": "helpshift-5554",
+      "kind": "release-note",
+      "title": "포켓몬 상세 정보 페이지 하단의 장소 배경 부분에 검은 그레이디언트가 표시되는 문제",
+      "date": "",
+      "checkedAt": "2026-10-07",
+      "excerpt": "문제 설명: 포켓몬 상세 정보 페이지에서 포켓몬의 장소 배경이 있는 부분의 하단에 검은 그레이디언트가 표시되는 문제가 확인됩니다.문제 상태: 이 문제는 0.433 버전에서 해결될 예정입니다.",
+      "sources": [
+        {
+          "lang": "ko",
+          "label": "포켓몬 상세 정보 페이지 하단의 장소 배경 부분에 검은 그레이디언트가 표시되는 문제",
+          "url": "https://niantic.helpshift.com/hc/ko/6-pokemon-go/faq/5554-a-dark-gradient-may-appear-near-the-bottom-of-location-backgrounds-in-the-pokemon-details-page/",
+          "image": ""
+        },
+        {
+          "lang": "en",
+          "label": "A dark gradient may appear near the bottom of Location Backgrounds in the Pokémon Details Page",
+          "url": "https://niantic.helpshift.com/hc/en/6-pokemon-go/faq/5554-a-dark-gradient-may-appear-near-the-bottom-of-location-backgrounds-in-the-pokemon-details-page/",
+          "image": ""
+        }
+      ]
+    },
+    {
       "id": "halloween-part-1-2026",
       "kind": "news",
       "title": "\"핼러윈 2026 파트 1\"에는 의상을 입은 \"피카츄\", \"주뱃\", \"데인차\"와 함께 사탕을 받으러 가 봐요!",
       "date": "2026-10-05",
-      "excerpt": "한국시간 2026년 10월 27일 10:00부터 11월 1일 10:00까지",
+      "excerpt": "이번 이벤트 기간 동안 새로운 의상을 입은 포켓몬이 등장합니다!",
       "sources": [
         {
           "lang": "ko",
@@ -87,7 +109,7 @@
       "kind": "news",
       "title": "잊혀진 물결 사이에서 다이맥스한 \"유크시\", \"엠라이트\", \"아그놈\"이 처음으로 모습을 드러냅니다!",
       "date": "2026-10-01",
-      "excerpt": "다이맥스한 유크시, 엠라이트, 아그놈의 맥스배틀 데이",
+      "excerpt": "다음 다이맥스 포켓몬이 별5 맥스배틀을 통해 “Pokémon GO”에 처음으로 등장합니다!",
       "sources": [
         {
           "lang": "ko",
@@ -102,7 +124,7 @@
       "kind": "news",
       "title": "\"깜눈크 부화데이\"에는 모래 속으로 파고들어 봐요!",
       "date": "2026-09-24",
-      "excerpt": "한국시간 2026년 10월 17일 11:00부터 17:00까지",
+      "excerpt": "“깜눈크”가 2km 알에서 더 자주 부화합니다. 색이 다른 “깜눈크”를 부화시킬 확률도 높아집니다!",
       "sources": [
         {
           "lang": "ko",
@@ -147,7 +169,7 @@
       "kind": "news",
       "title": "\"그푸리\"가 \"Pokémon GO\"에 처음으로 등장하는 \"가을 소풍: 파트너와 함께\" 이벤트!",
       "date": "2026-09-23",
-      "excerpt": "포켓몬의 메가레벨이 오르면 이 공격의 위력도 증가합니다!",
+      "excerpt": "운이 좋으면 “Pokémon GO”에 처음으로 등장하는 “그푸리”를 만날 수 있습니다! “GO패스”의 패스 태스크를 완료하거나 “향로”를 사용했을 때 “그푸리”가 등장할 수 있습니다.",
       "sources": [
         {
           "lang": "ko",
@@ -192,7 +214,7 @@
       "kind": "news",
       "title": "\"세계 우주 주간\" 이벤트에는 \"우주비행 피카츄\"와 우주로 떠나요!",
       "date": "2026-09-21",
-      "excerpt": "한국시간 2026년 10월 4일 00:00부터 10월 10일 23:59까지",
+      "excerpt": "이번 이벤트에서는 새로운 의상을 입은 포켓몬이 등장합니다! 레이드배틀 또는 시간제한 리서치를 통해 만나볼 수 있습니다.",
       "sources": [
         {
           "lang": "ko",
@@ -203,11 +225,99 @@
       ]
     },
     {
+      "id": "helpshift-5523",
+      "kind": "release-note",
+      "title": "일부 트레이너들이 구매하지 않은 아바타 아이템을 착용할 수 없는 현상",
+      "date": "",
+      "checkedAt": "2026-09-16",
+      "excerpt": "문제 설명: 다른 문제 관련 임시 조치가 진행된 후 일부 트레이너들이 포켓코인으로 구매하지 않아도 프리미엄 아바타 아이템을 착용할 수 있는 오류가 발생했습니다. 관련 아바타 아이템들은 유저의 아이템 가방에 추가되지 않았습니다. 다른 문제에 대한 정식 ...",
+      "sources": [
+        {
+          "lang": "ko",
+          "label": "일부 트레이너들이 구매하지 않은 아바타 아이템을 착용할 수 없는 현상",
+          "url": "https://niantic.helpshift.com/hc/ko/6-pokemon-go/faq/5523-some-trainers-lost-access-to-unpaid-avatar-items/",
+          "image": ""
+        },
+        {
+          "lang": "en",
+          "label": "Some Trainers lost access to unpaid avatar items",
+          "url": "https://niantic.helpshift.com/hc/en/6-pokemon-go/faq/5523-some-trainers-lost-access-to-unpaid-avatar-items/",
+          "image": ""
+        }
+      ]
+    },
+    {
+      "id": "helpshift-5521",
+      "kind": "release-note",
+      "title": "Incubators unavailable for purchase in Brazil",
+      "date": "",
+      "checkedAt": "2026-09-16",
+      "excerpt": "Issue Description: In Brazil, paid Incubators and Super Incubators are unavailable for individual purchase. This change was made to ensure t...",
+      "sources": [
+        {
+          "lang": "ko",
+          "label": "Incubators unavailable for purchase in Brazil",
+          "url": "https://niantic.helpshift.com/hc/ko/6-pokemon-go/faq/5521-incubators-unavailable-for-purchase-in-brazil/",
+          "image": ""
+        },
+        {
+          "lang": "en",
+          "label": "Incubators unavailable for purchase in Brazil",
+          "url": "https://niantic.helpshift.com/hc/en/6-pokemon-go/faq/5521-incubators-unavailable-for-purchase-in-brazil/",
+          "image": ""
+        }
+      ]
+    },
+    {
+      "id": "helpshift-5283",
+      "kind": "release-note",
+      "title": "스탬프 랠리 포켓몬의 포획을 종료하면 포켓몬 포획 보상이 사라지는 문제",
+      "date": "",
+      "checkedAt": "2026-09-16",
+      "excerpt": "문제 설명: 스탬프를 수집한 후 포켓몬을 바로 포획하지 않고 포획 보상을 종료하면 포켓몬 포획 보상이 사라지는 문제가 확인되었습니다.만약 이미 관련 장소에서 떠나셔서 포획을 진행하지 못하신다면 고객센터에 문의해주세요.일시적인 문제 해결 방법: 스탬프 ...",
+      "sources": [
+        {
+          "lang": "ko",
+          "label": "스탬프 랠리 포켓몬의 포획을 종료하면 포켓몬 포획 보상이 사라지는 문제",
+          "url": "https://niantic.helpshift.com/hc/ko/6-pokemon-go/faq/5283-exiting-the-stamp-rally-catch-encounter-appears-to-dismiss-the-pokemon-encounter/",
+          "image": ""
+        },
+        {
+          "lang": "en",
+          "label": "Exiting the Stamp Rally catch encounter appears to dismiss the Pokémon encounter.",
+          "url": "https://niantic.helpshift.com/hc/en/6-pokemon-go/faq/5283-exiting-the-stamp-rally-catch-encounter-appears-to-dismiss-the-pokemon-encounter/",
+          "image": ""
+        }
+      ]
+    },
+    {
+      "id": "helpshift-4172",
+      "kind": "release-note",
+      "title": "일부 트레이너에게 Amazon Prime 코드가 오류 메시지를 표시합니다.",
+      "date": "",
+      "checkedAt": "2026-09-16",
+      "excerpt": "일부 트레이너에게 Amazon Prime 코드가 오류 메시지를 표시합니다. 문제 설명:  일부 트레이너는 Amazon Prime 코드를 청구하려고 할 때 오류 메시지가 나타납니다. 문제 상태:  조사 중입니다. 웹 브라우저나 기기를 변경하면 이 문제...",
+      "sources": [
+        {
+          "lang": "ko",
+          "label": "일부 트레이너에게 Amazon Prime 코드가 오류 메시지를 표시합니다.",
+          "url": "https://niantic.helpshift.com/hc/ko/6-pokemon-go/faq/4172-amazon-prime-codes-show-error-message-for-some-trainers/",
+          "image": ""
+        },
+        {
+          "lang": "en",
+          "label": "Amazon Prime codes show error message for some Trainers",
+          "url": "https://niantic.helpshift.com/hc/en/6-pokemon-go/faq/4172-amazon-prime-codes-show-error-message-for-some-trainers/",
+          "image": ""
+        }
+      ]
+    },
+    {
       "id": "communityday-october-2026-zorua",
       "kind": "news",
       "title": "2026년 10월 커뮤니티 데이: 조로아",
       "date": "2026-09-15",
-      "excerpt": "이벤트 기간 동안 “향로” 효과 3시간 지속(“산책향로” 제외)",
+      "excerpt": "10월 “커뮤니티 데이”에는 나쁜여우포켓몬 “조로아”가 대량발생합니다!",
       "sources": [
         {
           "lang": "ko",
@@ -222,7 +332,7 @@
       "kind": "news",
       "title": "\"황혼의 여정\" 시즌에는 새로운 시간제한 리서치를 활용해 나만의 모험을 떠나 보세요!",
       "date": "2026-09-14",
-      "excerpt": "",
+      "excerpt": "이벤트가 없는 주에는 “선택 시간제한 리서치”를 활용해 나만의 스타일로 자유롭게 “Pokémon GO”를 탐험해 보세요.",
       "sources": [
         {
           "lang": "ko",
@@ -237,7 +347,7 @@
       "kind": "news",
       "title": "\"맥스배틀 데이\"에 \"거다이맥스 에이스번\"이 거대한 불꽃 볼을 슛!",
       "date": "2026-09-09",
-      "excerpt": "한국시간 2026년 10월 3일 14:00부터 17:00까지",
+      "excerpt": "운이 좋으면 “Pokémon GO”에 처음으로 등장하는 색이 다른 “거다이맥스 에이스번”을 만날 수 있습니다!",
       "sources": [
         {
           "lang": "ko",
@@ -267,7 +377,7 @@
       "kind": "news",
       "title": "수확 축제: 점령 이벤트에는 \"그림자 제크로무\"를 구해 주세요!",
       "date": "2026-09-07",
-      "excerpt": "한국시간 2026년 10월 2일 00:00부터 10월 5일 20:00까지",
+      "excerpt": "운이 좋으면 “Pokémon GO”에 처음으로 등장하는 색이 다른 “땃쭈르”를 알에서 부화시킬 수 있습니다!",
       "sources": [
         {
           "lang": "ko",
@@ -282,7 +392,7 @@
       "kind": "news",
       "title": "풍성한 \"수확 축제\"와 색이 다른 \"과사삭벌레\"의 \"Pokémon GO\" 첫 등장을 즐겨요!",
       "date": "2026-09-07",
-      "excerpt": "한국시간 2026년 9월 29일 10:00부터 10월 5일 20:00까지",
+      "excerpt": "운이 좋으면 “Pokémon GO”에 처음으로 등장하는 색이 다른 “과사삭벌레”를 만날 수도 있습니다!",
       "sources": [
         {
           "lang": "ko",
@@ -312,7 +422,7 @@
       "kind": "news",
       "title": "\"애니메이션 콜라보\" 이벤트가 돌아옵니다!",
       "date": "2026-09-02",
-      "excerpt": "한국시간 2026년 9월 16일 10:00부터 9월 22일 20:00까지",
+      "excerpt": "이번 이벤트에서는 새로운 의상을 입은 포켓몬이 등장합니다! 새롭게 등장하는 포켓몬은 야생에서 또는 필드리서치, 활성화된 “루어모듈” 및 “GO패스”를 통해 만나볼 수 있습니다.",
       "sources": [
         {
           "lang": "ko",
@@ -327,7 +437,7 @@
       "kind": "news",
       "title": "\"찌르호크 슈퍼 메가 레이드 데이\"에는 용감하게 도전할 준비를 하세요!",
       "date": "2026-09-01",
-      "excerpt": "포켓몬의 메가레벨이 오르면 이 기술의 위력도 증가합니다!",
+      "excerpt": "다음 포켓몬이 슈퍼 메가 레이드를 통해 “Pokémon GO”에 처음으로 등장합니다!",
       "sources": [
         {
           "lang": "ko",
@@ -372,7 +482,7 @@
       "kind": "news",
       "title": "\"메가 피날레\"에 이어 힘차게 \"팀 메가\" 이벤트를 즐겨요!",
       "date": "2026-08-31",
-      "excerpt": "포켓몬의 메가레벨이 오르면 이 기술의 위력도 증가합니다!",
+      "excerpt": "애송이포켓몬 “오라티프”와 두목포켓몬 “마피티프”가 “Pokémon GO”에 처음으로 등장합니다! “오라티프”는 알 부화, 필드리서치, “GO패스”를 통해 만나볼 수 있습니다.",
       "sources": [
         {
           "lang": "ko",
@@ -417,7 +527,7 @@
       "kind": "news",
       "title": "2026년 9월 커뮤니티 데이(복각): 딥상어동",
       "date": "2026-08-31",
-      "excerpt": "$1.99(또는 동일한 가치의 현지 통화)로 “딥상어동 커뮤니티 데이(복각)” 한정 스페셜리서치를 진행할 수 있습니다. 이 스페셜리서치를 완료하면 다음을 포함해 다양한 리워드를 받을 수 있습니다.",
+      "excerpt": "9월 “커뮤니티 데이(복각)”에는 육지상어포켓몬 “딥상어동”이 대량발생합니다!",
       "sources": [
         {
           "lang": "ko",
@@ -432,7 +542,7 @@
       "kind": "news",
       "title": "“Pokémon GO”에서 “2026 피카츄의 가을 소풍\" 이벤트 및 “2026 피카츄의 한국 나들이\" 이벤트와 함께 특별한 가을을 맞이하세요!",
       "date": "2026-08-27",
-      "excerpt": "“2026 피카츄의 가을 소풍” 이벤트 - 일부 지역 한정",
+      "excerpt": "“2026 피카츄의 가을 소풍” 이벤트를 기념하여 “주황색 한복의 피카츄”가 처음으로 “Pokémon GO”에  등장합니다!",
       "sources": [
         {
           "lang": "ko",
@@ -447,7 +557,7 @@
       "kind": "news",
       "title": "그루터기포켓몬 \"나목령\"이 등장하는 \"마스터리 시리즈\" 이벤트에 대비하세요!",
       "date": "2026-08-27",
-      "excerpt": "한국시간 2026년 9월 26일 10:00부터 20:00까지",
+      "excerpt": "그루터기포켓몬 “나목령”이 필드리서치, 무료 시간제한 리서치, 유료 시간제한 리서치에 등장합니다.*",
       "sources": [
         {
           "lang": "ko",
@@ -649,111 +759,6 @@
           "label": "\"반짝이 참\"이 돌아오고 \"라티아스\"가 날아오르는 \"GO패스: 8월\"!",
           "url": "https://pokemongo.com/ko/news/go-pass-august-2026",
           "image": "https://lh3.googleusercontent.com/zGNNUVZJjG7sNgAZB5IgU8v9-glz6IQW50ui-c2WXrw81jwVon9XAFjnzq1jb1e2E_mHuTPnjh5yofSn4NFFK4gwLA_fbzjYg2fqDnMWsO1H"
-        }
-      ]
-    },
-    {
-      "id": "helpshift-5554",
-      "kind": "release-note",
-      "title": "포켓몬 상세 정보 페이지 하단의 장소 배경 부분에 검은 그레이디언트가 표시되는 문제",
-      "date": "",
-      "excerpt": "문제 설명: 포켓몬 상세 정보 페이지에서 포켓몬의 장소 배경이 있는 부분의 하단에 검은 그레이디언트가 표시되는 문제가 확인됩니다.문제 상태: 이 문제는 0.433 버전에서 해결될 예정입니다.",
-      "sources": [
-        {
-          "lang": "ko",
-          "label": "포켓몬 상세 정보 페이지 하단의 장소 배경 부분에 검은 그레이디언트가 표시되는 문제",
-          "url": "https://niantic.helpshift.com/hc/ko/6-pokemon-go/faq/5554-a-dark-gradient-may-appear-near-the-bottom-of-location-backgrounds-in-the-pokemon-details-page/",
-          "image": ""
-        },
-        {
-          "lang": "en",
-          "label": "A dark gradient may appear near the bottom of Location Backgrounds in the Pokémon Details Page",
-          "url": "https://niantic.helpshift.com/hc/en/6-pokemon-go/faq/5554-a-dark-gradient-may-appear-near-the-bottom-of-location-backgrounds-in-the-pokemon-details-page/",
-          "image": ""
-        }
-      ]
-    },
-    {
-      "id": "helpshift-5523",
-      "kind": "release-note",
-      "title": "일부 트레이너들이 구매하지 않은 아바타 아이템을 착용할 수 없는 현상",
-      "date": "",
-      "excerpt": "문제 설명: 다른 문제 관련 임시 조치가 진행된 후 일부 트레이너들이 포켓코인으로 구매하지 않아도 프리미엄 아바타 아이템을 착용할 수 있는 오류가 발생했습니다. 관련 아바타 아이템들은 유저의 아이템 가방에 추가되지 않았습니다. 다른 문제에 대한 정식 ...",
-      "sources": [
-        {
-          "lang": "ko",
-          "label": "일부 트레이너들이 구매하지 않은 아바타 아이템을 착용할 수 없는 현상",
-          "url": "https://niantic.helpshift.com/hc/ko/6-pokemon-go/faq/5523-some-trainers-lost-access-to-unpaid-avatar-items/",
-          "image": ""
-        },
-        {
-          "lang": "en",
-          "label": "Some Trainers lost access to unpaid avatar items",
-          "url": "https://niantic.helpshift.com/hc/en/6-pokemon-go/faq/5523-some-trainers-lost-access-to-unpaid-avatar-items/",
-          "image": ""
-        }
-      ]
-    },
-    {
-      "id": "helpshift-5521",
-      "kind": "release-note",
-      "title": "Incubators unavailable for purchase in Brazil",
-      "date": "",
-      "excerpt": "Issue Description: In Brazil, paid Incubators and Super Incubators are unavailable for individual purchase. This change was made to ensure t...",
-      "sources": [
-        {
-          "lang": "ko",
-          "label": "Incubators unavailable for purchase in Brazil",
-          "url": "https://niantic.helpshift.com/hc/ko/6-pokemon-go/faq/5521-incubators-unavailable-for-purchase-in-brazil/",
-          "image": ""
-        },
-        {
-          "lang": "en",
-          "label": "Incubators unavailable for purchase in Brazil",
-          "url": "https://niantic.helpshift.com/hc/en/6-pokemon-go/faq/5521-incubators-unavailable-for-purchase-in-brazil/",
-          "image": ""
-        }
-      ]
-    },
-    {
-      "id": "helpshift-5283",
-      "kind": "release-note",
-      "title": "스탬프 랠리 포켓몬의 포획을 종료하면 포켓몬 포획 보상이 사라지는 문제",
-      "date": "",
-      "excerpt": "문제 설명: 스탬프를 수집한 후 포켓몬을 바로 포획하지 않고 포획 보상을 종료하면 포켓몬 포획 보상이 사라지는 문제가 확인되었습니다.만약 이미 관련 장소에서 떠나셔서 포획을 진행하지 못하신다면 고객센터에 문의해주세요.일시적인 문제 해결 방법: 스탬프 ...",
-      "sources": [
-        {
-          "lang": "ko",
-          "label": "스탬프 랠리 포켓몬의 포획을 종료하면 포켓몬 포획 보상이 사라지는 문제",
-          "url": "https://niantic.helpshift.com/hc/ko/6-pokemon-go/faq/5283-exiting-the-stamp-rally-catch-encounter-appears-to-dismiss-the-pokemon-encounter/",
-          "image": ""
-        },
-        {
-          "lang": "en",
-          "label": "Exiting the Stamp Rally catch encounter appears to dismiss the Pokémon encounter.",
-          "url": "https://niantic.helpshift.com/hc/en/6-pokemon-go/faq/5283-exiting-the-stamp-rally-catch-encounter-appears-to-dismiss-the-pokemon-encounter/",
-          "image": ""
-        }
-      ]
-    },
-    {
-      "id": "helpshift-4172",
-      "kind": "release-note",
-      "title": "일부 트레이너에게 Amazon Prime 코드가 오류 메시지를 표시합니다.",
-      "date": "",
-      "excerpt": "일부 트레이너에게 Amazon Prime 코드가 오류 메시지를 표시합니다. 문제 설명:  일부 트레이너는 Amazon Prime 코드를 청구하려고 할 때 오류 메시지가 나타납니다. 문제 상태:  조사 중입니다. 웹 브라우저나 기기를 변경하면 이 문제...",
-      "sources": [
-        {
-          "lang": "ko",
-          "label": "일부 트레이너에게 Amazon Prime 코드가 오류 메시지를 표시합니다.",
-          "url": "https://niantic.helpshift.com/hc/ko/6-pokemon-go/faq/4172-amazon-prime-codes-show-error-message-for-some-trainers/",
-          "image": ""
-        },
-        {
-          "lang": "en",
-          "label": "Amazon Prime codes show error message for some Trainers",
-          "url": "https://niantic.helpshift.com/hc/en/6-pokemon-go/faq/4172-amazon-prime-codes-show-error-message-for-some-trainers/",
-          "image": ""
         }
       ]
     }

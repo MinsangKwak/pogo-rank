@@ -340,12 +340,14 @@ def load_game_archive(published, path='backend/config/game_update_archive.json')
         assert entry.get('sources'), f'{where}: 출처가 없다'
         for source in entry['sources']:
             assert source.get('url', '').startswith('https://'), f'{where}: 출처 URL 은 https'
-        date_value = entry.get('date', '')
-        assert date_value == '' or DATE_RE.fullmatch(date_value), f'{where}: date={date_value!r} 는 YYYY-MM-DD'
+        # checkedAt 은 발표일이 없는 릴리스 노트의 '처음 본 날' — 화면이 발표일 대신 보이고 정렬에도 쓴다
+        for key in ('date', 'checkedAt'):
+            date_value = entry.get(key, '')
+            assert date_value == '' or DATE_RE.fullmatch(date_value), f'{where}: {key}={date_value!r} 는 YYYY-MM-DD'
         if entry['id'] in taken:
             continue
         out.append({key: value for key, value in entry.items() if not key.startswith('_')})
-    out.sort(key=lambda entry: (entry.get('date') or '', entry['id']), reverse=True)
+    out.sort(key=lambda entry: (entry.get('date') or entry.get('checkedAt') or '', entry['id']), reverse=True)
     return out
 
 

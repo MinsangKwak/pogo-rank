@@ -63,10 +63,13 @@ CHANGE_HINTS_KO = [
     '변경', '조정', '수정', '개선', '적용됩니다', '적용됐', '바뀝니다', '바뀌었',
     '늘어납니다', '줄어듭니다', '상향', '하향', '사용할 수 없', '사용할 수 있게',
     '더 이상', '이제부터', '추가됩니다', '삭제', '종료됩니다', '알려진 문제', '오류',
+    # 2026-10-10 '처음으로 … 올릴 수 있습니다' · '추가로 배울 수 있습니다' — 새 규칙을 처음 여는 문장도 변경이다(Codex #349)
+    '처음으로', '추가로',
 ]
 CHANGE_HINTS_EN = [
     'change', 'update to', 'now available', 'no longer', 'will increase', 'will decrease',
     'adjust', 'fixed', 'bug', 'known issue', 'removed', 'starting with', 'won’t be able',
+    'for the first time', 'additional',
 ]
 # 이벤트 안내로만 보이는 글 — 제목에 이것만 있으면 후보에서 내린다 (기획: 단순 이벤트는 기사로 만들지 않는다)
 EVENT_ONLY_SLUG = re.compile(
@@ -102,7 +105,13 @@ def text_lines(page):
         if out and out[-1] == line:
             continue
         out.append(line)
-    # 머리말(전역 메뉴)을 지난 뒤부터 — '업데이트' 나 '트레이너' 로 본문이 시작한다
+    # 머리말(전역 메뉴)을 지난 뒤부터 — 본문은 제목(h1)을 한 번 더 쓴 줄 바로 뒤에서 시작한다(첫 줄은 <title>).
+    # '트레이너' 로 시작하는 줄부터 보던 옛 규칙은 인사말 앞의 본문(핼러윈 파트 2 의 '슈퍼 맥스 레벨' 절)을 통째로 잘랐고,
+    # '트레이너 배틀: 위력 55' 같은 표 줄에 먼저 걸리기도 했다(Codex #349)
+    head = clean_title(out[0])[:20] if out else ''
+    for index in range(1, min(len(out), 80)):
+        if head and clean_title(out[index]).startswith(head):
+            return out[index + 1:]
     for index, line in enumerate(out):
         if line.startswith('트레이너') or line.startswith('Trainers'):
             return out[index:]
@@ -112,19 +121,6 @@ def text_lines(page):
 def published_date(page):
     found = re.search(r'datePublished"?\s*[:=]\s*"([^"]{10,})"', page)
     return found.group(1)[:10] if found else ''
-
-
-def change_lines(lines, lang):
-    """규칙이 바뀐 것으로 보이는 줄만. 사람이 읽을 근거라 원문 그대로 남긴다."""
-    hints = CHANGE_HINTS_KO if lang == 'ko' else CHANGE_HINTS_EN
-    picked = []
-    for line in lines:
-        if len(line) < 10 or len(line) > 400:
-            continue
-        low = line.lower()
-        if any(hint.lower() in low for hint in hints):
-            picked.append(line)
-    return picked[:12]
 
 
 # 공식 페이지 제목 꼬리표 — 사이트 이름은 우리 목록에서 군더더기다
@@ -138,6 +134,30 @@ BOILERPLATE = re.compile(
     r'개최 중지 또는 내용이 변경|subject to change|'
     # 지원 언어 목록 — 거의 모든 글 끝에 붙는 안내라 그 글의 내용이 아니다
     r'는 영어, 프랑스어|is available in English')
+# 다른 곳으로 보내는 안내 — 머리말 인사 · '자세한 내용은 … 에서 확인하세요'. 그 글의 내용이 아니다
+REDIRECT = re.compile(r'^(트레이너|Trainers|콘텐츠로|Skip to|자세한 내용은|For more (details|information))')
+
+
+
+def change_lines(lines, lang):
+    """규칙이 바뀐 것으로 보이는 줄만. 사람이 읽을 근거라 원문 그대로 남긴다."""
+    hints = CHANGE_HINTS_KO if lang == 'ko' else CHANGE_HINTS_EN
+    picked = []
+    for paragraph in lines:
+        # 글자 꾸밈 태그(<a> 등)를 줄바꿈 없이 떼므로 문단 하나가 400자를 넘기도 한다 — 통째로 버리면
+        # '처음으로 … 슈퍼 맥스까지 올릴 수 있습니다' 같은 규칙 문장이 사라진다. 긴 문단만 문장으로 나눠 본다(Codex #349)
+        pieces = [paragraph] if len(paragraph) <= 400 else re.split(r'(?<=[.!?])\s+', paragraph)
+        for line in pieces:
+            if len(line) < 10 or len(line) > 400:
+                continue
+            # 어느 글에나 붙는 안전 안내 · 일정 변경 고지 · 다른 곳으로 보내는 안내는 '변경' 이 아니다 —
+            # '내용이 변경될 수 있습니다' 가 힌트 '변경' 에 걸려 모든 후보의 근거가 같은 줄이 됐다(Codex #349)
+            if BOILERPLATE.search(line) or REDIRECT.match(line):
+                continue
+            low = line.lower()
+            if any(hint.lower() in low for hint in hints):
+                picked.append(line)
+    return picked[:12]
 
 
 def clean_title(title):
@@ -154,14 +174,16 @@ def excerpt_of(lines, title='', lang='ko'):
     for line in lines:
         if len(line) < 25 or len(line) > 400:
             continue
-        # '자세한 내용은 … 에서 확인하세요' 는 다른 곳으로 보내는 안내라 그 글의 내용이 아니다
-        if re.match(r'^(트레이너|Trainers|콘텐츠로|Skip to|자세한 내용은|For more (details|information))', line):
+        if REDIRECT.match(line):
             continue
         if BOILERPLATE.search(line):
             continue
         if head and (line.startswith(head[:20]) or clean_title(line) == head):
             continue
         if lang == 'ko' and not re.search(r'[가-힣]', line):
+            continue
+        # '한국시간 2026년 11월 1일 10:00부터 …' 같은 기간 줄은 문장이 아니다 — 인용은 마침표 · 느낌표가 있는 문장으로
+        if not re.search(r'[.!?]', line):
             continue
         return line if len(line) <= 220 else line[:219].rstrip() + '…'
     return ''
@@ -215,8 +237,13 @@ def helpshift_entries(lang):
     return out
 
 
-def collect_helpshift(done):
-    """릴리스 노트 항목을 후보로. 한국어 제목을 기준으로 삼고 영어판을 짝지어 붙인다."""
+def collect_helpshift(done, seen, today):
+    """릴리스 노트 항목을 후보로. 한국어 제목을 기준으로 삼고 영어판을 짝지어 붙인다.
+
+    이 목록은 날짜를 내놓지 않는다(페이지 안에 발표일 · 수정일이 없다, 2026-10-10 확인). 발표일을 지어내지 않고
+    **우리가 처음 본 날**을 `checkedAt` 으로 적는다 — 화면은 발표일이 없는 글에 확인일을 대신 보이고, 정렬과
+    7 · 30일 거름도 그 날짜로 한다. `seen` 은 지난 파일에 적힌 slug → checkedAt 이라 날짜가 매번 오늘로 밀리지 않는다.
+    """
     ko = {entry['faq']: entry for entry in helpshift_entries('ko')}
     en = {entry['faq']: entry for entry in helpshift_entries('en')}
     candidates = []
@@ -231,12 +258,14 @@ def collect_helpshift(done):
         if not sources:
             continue
         head = ko.get(faq_id) or en.get(faq_id)
+        slug = f'helpshift-{faq_id}'
         candidates.append({
-            'slug': f'helpshift-{faq_id}',
+            'slug': slug,
             'kind': 'release-note',
             'title': head['title'],
             'snippet': head['snippet'],
             'announcedAt': '',          # 이 목록은 날짜를 적지 않는다 — 사람이 항목을 열어 확인한다
+            'checkedAt': seen.get(slug) or today,
             'sources': sources,
             'changeLines': {lang: [table[faq_id]['snippet']] for lang, table in (('ko', ko), ('en', en))
                             if faq_id in table and table[faq_id]['snippet']},
@@ -267,6 +296,19 @@ def backfill_slugs(lang, frm, to):
 
 def index_slugs(page, lang):
     return sorted(set(re.findall(rf'href="/{lang}/news/([a-z0-9\-]+)"', page)))
+
+
+def first_seen():
+    """지난 후보 · 아카이브 파일에 적힌 slug → checkedAt. 릴리스 노트의 '처음 본 날' 을 수집마다 지키기 위해서다."""
+    seen = {}
+    for path, key in ((ARCHIVE_PATH, 'entries'), (CANDIDATES_PATH, 'candidates')):
+        if not os.path.exists(path):
+            continue
+        for row in json.load(open(path, encoding='utf-8')).get(key, []):
+            slug = row.get('id') or row.get('slug')
+            if slug and row.get('checkedAt'):
+                seen[slug] = min(seen.get(slug) or row['checkedAt'], row['checkedAt'])
+    return seen
 
 
 def already_published(path):
@@ -330,6 +372,7 @@ def main():
     archive = collect_archive(slugs, order)
 
     candidates, skipped = [], {'게시됨': 0, '이벤트': 0, '오래됨': 0, '변경 없음': 0, '못 받음': 0}
+    dropped = set()
     for slug in order:
         if slug in done:
             skipped['게시됨'] += 1
@@ -365,11 +408,13 @@ def main():
             continue
         if not entry['changeLines']:
             skipped['변경 없음'] += 1
+            # 이번에 다시 읽어 '변경 없음' 이 된 글은 지난 후보 파일에서 되살리지 않는다 — 상용구만 남은 옛 줄이 돌아온다
+            dropped.add(slug)
             continue
         candidates.append(entry)
 
-    # 릴리스 노트 — 실제 변경이 쌓이는 곳이라 뉴스와 함께 모은다
-    notes = collect_helpshift(done)
+    # 릴리스 노트 — 실제 변경이 쌓이는 곳이라 뉴스와 함께 모은다. 처음 본 날은 지난 두 파일에서 이어받는다
+    notes = collect_helpshift(done, first_seen(), date.today().isoformat())
     candidates.extend(notes)
     print(f'  (릴리스 노트 {len(notes)}건 포함)')
     # 아직 게시되지 않은 지난 후보는 남긴다 — 공식 색인 · 30일 창에서 내려갔다고 검토 대기열에서 지우면
@@ -379,14 +424,22 @@ def main():
     kept = 0
     if os.path.exists(CANDIDATES_PATH):
         for entry in json.load(open(CANDIDATES_PATH, encoding='utf-8')).get('candidates', []):
-            if entry.get('slug') and entry['slug'] not in fresh and entry['slug'] not in done:
-                candidates.append(entry)
-                kept += 1
+            if not entry.get('slug') or entry['slug'] in fresh or entry['slug'] in done or entry['slug'] in dropped:
+                continue
+            # 다시 받지 않는 옛 후보도 지금 기준으로 상용구를 걷어낸다 — 근거가 안전 안내뿐이던 줄은 여기서 빠진다
+            entry['changeLines'] = {lang: [line for line in rows if not (BOILERPLATE.search(line) or REDIRECT.match(line))]
+                                    for lang, rows in entry.get('changeLines', {}).items()}
+            entry['changeLines'] = {lang: rows for lang, rows in entry['changeLines'].items() if rows}
+            if not entry['changeLines']:
+                skipped['변경 없음'] += 1
+                continue
+            candidates.append(entry)
+            kept += 1
     print(f'  (지난 후보 {kept}건 유지)')
-    candidates.sort(key=lambda entry: entry.get('announcedAt', ''), reverse=True)
+    candidates.sort(key=lambda entry: entry.get('announcedAt') or entry.get('checkedAt') or '', reverse=True)
     print(f'후보 {len(candidates)}건 · 건너뜀 ' + ' · '.join(f'{k} {v}' for k, v in skipped.items() if v))
     for entry in candidates:
-        print(f"  [{entry.get('announcedAt', '????-??-??')}] {entry['slug']} — 변경 줄 "
+        print(f"  [{entry.get('announcedAt') or entry.get('checkedAt') or '????-??-??'}] {entry['slug']} — 변경 줄 "
               f"{sum(len(v) for v in entry['changeLines'].values())}개")
     if args.dry_run:
         return 0
@@ -394,8 +447,8 @@ def main():
         # 릴리스 노트도 아카이브에 — 제목·주소·인용은 이미 손에 있다
         for note in notes:
             archive.append({'id': note['slug'], 'kind': 'release-note', 'title': note['title'],
-                            'date': note.get('announcedAt', ''), 'excerpt': note.get('snippet', ''),
-                            'sources': note['sources']})
+                            'date': note.get('announcedAt', ''), 'checkedAt': note['checkedAt'],
+                            'excerpt': note.get('snippet', ''), 'sources': note['sources']})
         # 기존 아카이브와 합친다 — 공식 색인에서 내려간 옛 글을 잃지 않기 위해서다.
         # 같은 id 는 이번에 받은 것으로 덮는다 (제목·주소가 바뀌었을 수 있다)
         merged = {}
@@ -404,7 +457,8 @@ def main():
                 merged[row['id']] = row
         for row in archive:
             merged[row['id']] = row
-        entries = sorted(merged.values(), key=lambda row: (row.get('date') or '', row['id']), reverse=True)
+        entries = sorted(merged.values(), key=lambda row: (row.get('date') or row.get('checkedAt') or '', row['id']),
+                         reverse=True)
         open(ARCHIVE_PATH, 'w', encoding='utf-8').write(json.dumps({
             '_comment': [
                 '**아카이브 색인** — 자동 수집 (scripts/collect_game_updates.py).',
