@@ -278,14 +278,15 @@ def backfill_slugs(lang, frm, to):
     """웹 아카이브에서 그 기간의 공식 뉴스 주소를 훑어 slug 목록을 얻는다.
 
     이 컨테이너에서는 이그레스 정책에 막혀 403 이 난다(2026-09-16 확인) — Actions 러너에서만 돈다.
-    막히면 빈 목록을 돌려주고 나머지 수집은 그대로 진행한다. 백필이 안 됐다고 주간 수집까지 세울 이유가 없다.
+    막히면 None 을 돌려주고 나머지 수집은 그대로 진행한다. 백필이 안 됐다고 주간 수집까지 세울 이유가 없다 —
+    다만 부르는 쪽은 그 언어를 '못 받은 색인' 으로 적어 그 수집에서는 후보를 버리지 않는다(Codex #351).
     """
     url = CDX_URL.format(lang=lang, frm=frm, to=to)
     try:
         rows = json.loads(fetch(url, timeout=120))
     except Exception as error:                      # 403 · 타임아웃 · JSON 아님 모두 같은 처방
         print(f'백필 색인 실패 {lang}: {error}', file=sys.stderr)
-        return []
+        return None
     found = set()
     for row in rows[1:]:
         hit = re.search(rf'/{lang}/news/([a-z0-9\-]+)', row[0])
@@ -349,12 +350,17 @@ def main():
     done = already_published(PUBLISHED_PATH)
 
     slugs = {}
+    # 색인(백필 · 공식)을 못 받은 언어 — 이 수집에서는 '다 읽은 것' 이 없으므로 지난 후보를 하나도 버리지 않는다
+    index_failed = set()
     # 백필 — 공식 색인이 안 내놓는 옛 주소를 웹 아카이브에서 먼저 모은다 (--backfill 일 때만)
     if args.backfill:
         for lang, _ in INDEX_URLS:
-            for slug in backfill_slugs(lang, args.backfill, today.strftime('%Y%m%d')):
+            found = backfill_slugs(lang, args.backfill, today.strftime('%Y%m%d'))
+            if found is None:
+                index_failed.add(lang)
+                continue
+            for slug in found:
                 slugs.setdefault(slug, set()).add(lang)
-    index_failed = set()
     for lang, url in INDEX_URLS:
         try:
             page = fetch(url)
