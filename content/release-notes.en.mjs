@@ -15,6 +15,9 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 export const RELEASE_NOTES_EN = {
+  '2026-10-09 · v5.9.14': [
+    '**The calendar now shows \'Halloween 2026 Part 2\' (Nov 1 10:00 – Nov 5 20:00) with its Korean title** — Mega Sableye can reach the Super Max mega level for the first time, and Shiny Greavard debuts. Litwick and Halloween-costume Rowlet appear in the wild too. The game update board collected the notice as well',
+  ],
   '2026-10-09 · v5.9.13': [
     '**Gigantamax Duraludon and Dynamax Duraludon are on the D-MAX tables ahead of release** — they debut at \'Pokémon GO Wild Area 2026: Global\' on Nov 14–15, so tier, attacker and tank numbers are computed early. The tables show \'Releases 11/14\' next to them, and catch CP and Max Battle catch notes attach after release. The November calendar lists the event and its boss line too',
     '**Eternatus\'s \'Max Entrant\' info now shows only when the checkbox is on** — with [Other Max Battle entrants] off on the D-MAX screen, the popup\'s form info, training advice and bottom buttons hide the Max Entrant row as well, the same rule as Crowned Sword Zacian and Crowned Shield Zamazenta',

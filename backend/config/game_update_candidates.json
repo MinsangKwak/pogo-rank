@@ -5,7 +5,7 @@
     "editorialStatus=published 로 옮겨 적어야 화면에 나간다.",
     "changeLines 는 공식 원문에서 \"규칙이 바뀐 것으로 보이는\" 줄을 그대로 옮긴 것이다. 요약이 아니다."
   ],
-  "collectedAt": "2026-10-08",
+  "collectedAt": "2026-10-09",
   "candidates": [
     {
       "slug": "fc-seoul-2026",
@@ -19,6 +19,46 @@
       ],
       "changeLines": {
         "ko": [
+          "※해당 레이드배틀에서 “리모트 레이드패스”는 사용할 수 없습니다.",
+          "“Pokémon GO”를 플레이할 때는 주변 안전에 주의하고 나라와 지자체의 방침 등에 따라 플레이해주세요. 앞으로 진행되는 이벤트에 대해 개최 중지 또는 내용이 변경될 수 있습니다. 소셜미디어, 푸시 알림, 메일 등으로 최신 정보를 확인하세요."
+        ]
+      },
+      "announcedAt": "2026-10-08"
+    },
+    {
+      "slug": "halloween-part-2-2026",
+      "sources": [
+        {
+          "lang": "ko",
+          "label": "\"메가깜까미\"가 더욱 강력해지고 색이 다른 \"망망이\"가 \"Pokémon GO\"에 처음으로 등장하는 \"핼러윈 2026 파트2\" 이벤트!",
+          "url": "https://pokemongo.com/ko/news/halloween-part-2-2026",
+          "image": "https://lh3.googleusercontent.com/4QN-7EtDk7S7dxL9bKLbsUF7lbTaUTntnGzOG8qDk4xxOQFyY4dKt3tQQ2msv37JhacLDFrawLGXVAv_kv3tzE_kTXiIh_HbskFdKhNCHjlh"
+        }
+      ],
+      "changeLines": {
+        "ko": [
+          "“Pokémon GO”를 플레이할 때는 주변 안전에 주의하고 나라와 지자체의 방침 등에 따라 플레이해주세요. 앞으로 진행되는 이벤트에 대해 개최 중지 또는 내용이 변경될 수 있습니다. 소셜미디어, 푸시 알림, 메일 등으로 최신 정보를 확인하세요."
+        ]
+      },
+      "announcedAt": "2026-10-08"
+    },
+    {
+      "slug": "pgo-gameplay-update-oct-2026",
+      "sources": [
+        {
+          "lang": "ko",
+          "label": "\"Pokémon GO\" 게임 플레이 및 편의성 업데이트",
+          "url": "https://pokemongo.com/ko/news/pgo-gameplay-update-oct-2026",
+          "image": "https://lh3.googleusercontent.com/YTWdPxzC8pivOHHqNqkA5VYuXBhfFinH38ENvIZ7f9LfkMDoyXrXRnh5kd-ibfKJHequDEp7sbd6Ahwnvh2ct8REj7kjdvJQkCkIXabrFikr"
+        }
+      ],
+      "changeLines": {
+        "ko": [
+          "모두와 함께하는 모험에 보내 주신 한결같은 열정과 성원에 감사드립니다. “Pokémon GO” 10주년을 기념하는 올해에도 저희는 여러분께 재밌고, 직관적이며, 모두가 쉽게 즐길 수 있는 모험을 선사할 수 있도록 게임을 개선하고자 꾸준히 노력하고 있습니다.",
+          "최근 “Pokémon GO”에 도입한 게임 플레이 조정 내역과 편의성 업데이트를 간단하게 소개해 드리니, 확인해 보세요!",
+          "나침반 아이콘과 날씨 아이콘: 나침반 아이콘과 날씨 아이콘을 플레이어의 활동에 따라 변경되는 동적 아이콘 1개로 합쳤습니다. 나침반 아이콘은 회전하거나 확대할 때 표시되며 날씨 아이콘은 그 외 상황에 표시됩니다. 날씨 아이콘을 탭하면 활성화된 날씨 조건 및 부스트를 볼 수 있고, 화면에 나침반 아이콘이 떠 있을 때 탭하면 맵에서 시야 방향이 전환됩니다.",
+          "맵뷰 디스플레이 개선: 맵뷰의 간격을 조정하는 개선 작업을 진행했습니다. 야생 포켓몬 등장, 체육관, 파워스폿, 포켓스톱 사이의 영역 중첩을 줄여 원하는 요소를 더 쉽게 선택할 수 있습니다.",
+          "앞으로도 “Pokémon GO”를 개선해 나갈 예정이니, 많은 피드백 부탁드립니다!",
           "“Pokémon GO”를 플레이할 때는 주변 안전에 주의하고 나라와 지자체의 방침 등에 따라 플레이해주세요. 앞으로 진행되는 이벤트에 대해 개최 중지 또는 내용이 변경될 수 있습니다. 소셜미디어, 푸시 알림, 메일 등으로 최신 정보를 확인하세요."
         ]
       },
