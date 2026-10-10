@@ -478,6 +478,9 @@ def main():
 
     # 릴리스 노트 — 실제 변경이 쌓이는 곳이라 뉴스와 함께 모은다. 처음 본 날은 지난 두 파일에서 이어받는다
     notes = collect_helpshift(done, first_seen(), today.isoformat())
+    # 릴리스 노트도 한쪽 언어판 목록이 잠깐 비면 반쪽 후보가 된다 — 지난 후보에서 그 언어판의 출처 · 인용 · 변경 줄을 이어받는다(Codex #354)
+    for note in notes:
+        carry_over(note, previous.get(note['slug']))
     candidates.extend(notes)
     print(f'  (릴리스 노트 {len(notes)}건 포함)')
     # 아직 게시되지 않은 지난 후보는 남긴다 — 공식 색인 · 30일 창에서 내려갔다고 검토 대기열에서 지우면
