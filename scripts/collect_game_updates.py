@@ -303,6 +303,33 @@ def index_slugs(page, lang):
     return sorted(set(re.findall(rf'href="/{prefix}news/([a-z0-9\-]+)"', page)))
 
 
+def carry_over(row, prev):
+    """이번에 못 받은 언어판의 출처 · 변경 줄 · 제목을 지난 행에서 이어받는다.
+
+    한쪽 색인이나 본문이 잠깐 비면 다른 쪽만으로 행이 새로 만들어져 지난번에 받아 둔 영문(또는 한국어)
+    출처와 변경 줄이 통째로 사라진다(Codex #354). 지난 행에 있던 언어판은 이번에 못 받았어도 실제로 있던
+    것이라 그대로 둔다. 한국어판을 못 받았으면 제목 · 인용도 지난 한국어 것을 지킨다.
+    """
+    if not prev:
+        return row
+    got = {source['lang'] for source in row.get('sources', [])}
+    for source in prev.get('sources', []):
+        if source['lang'] not in got:
+            row.setdefault('sources', []).append(source)
+    row['sources'].sort(key=lambda source: source['lang'] != 'ko')
+    for lang, lines in (prev.get('changeLines') or {}).items():
+        if lines and lang not in (row.get('changeLines') or {}):
+            row.setdefault('changeLines', {})[lang] = lines
+    if 'ko' not in got and any(source['lang'] == 'ko' for source in prev.get('sources', [])):
+        for key in ('title', 'excerpt'):
+            if prev.get(key):
+                row[key] = prev[key]
+    for key in ('date', 'announcedAt'):
+        if not row.get(key) and prev.get(key):
+            row[key] = prev[key]
+    return row
+
+
 def first_seen():
     """지난 후보 · 아카이브 파일에 적힌 slug → checkedAt. 릴리스 노트의 '처음 본 날' 을 수집마다 지키기 위해서다."""
     seen = {}
@@ -445,11 +472,17 @@ def main():
     # 아직 게시되지 않은 지난 후보는 남긴다 — 공식 색인 · 30일 창에서 내려갔다고 검토 대기열에서 지우면
     # 다시 받을 길이 없다(메가 헬가 '악의파동+' 변경이 담긴 mega-squads-2026 이 그렇게 빠졌다, Codex #303).
     # 사람이 파일에서 지운 후보는 색인에 다시 오르지 않는 한 돌아오지 않는다
+    previous = {}
+    if os.path.exists(CANDIDATES_PATH):
+        previous = {entry['slug']: entry for entry in json.load(open(CANDIDATES_PATH, encoding='utf-8')).get('candidates', [])
+                    if entry.get('slug')}
+    for entry in candidates:
+        carry_over(entry, previous.get(entry['slug']))
     fresh = {entry['slug'] for entry in candidates}
     kept = 0
-    if os.path.exists(CANDIDATES_PATH):
-        for entry in json.load(open(CANDIDATES_PATH, encoding='utf-8')).get('candidates', []):
-            if not entry.get('slug') or entry['slug'] in fresh or entry['slug'] in done or entry['slug'] in dropped:
+    if previous:
+        for entry in previous.values():
+            if entry['slug'] in fresh or entry['slug'] in done or entry['slug'] in dropped:
                 continue
             # 다시 받지 않는 옛 후보도 지금 기준으로 상용구를 걷어낸다 — 근거가 안전 안내뿐이던 줄은 여기서 빠진다
             entry['changeLines'] = {lang: [line for line in rows if not (BOILERPLATE.search(line) or REDIRECT.match(line))]
@@ -481,7 +514,7 @@ def main():
             for row in json.load(open(ARCHIVE_PATH, encoding='utf-8')).get('entries', []):
                 merged[row['id']] = row
         for row in archive:
-            merged[row['id']] = row
+            merged[row['id']] = carry_over(row, merged.get(row['id']))
         entries = sorted(merged.values(), key=lambda row: (row.get('date') or row.get('checkedAt') or '', row['id']),
                          reverse=True)
         open(ARCHIVE_PATH, 'w', encoding='utf-8').write(json.dumps({
