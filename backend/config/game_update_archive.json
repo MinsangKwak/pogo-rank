@@ -19,6 +19,12 @@
           "label": "\"Pokémon GO\" 게임 플레이 및 편의성 업데이트",
           "url": "https://pokemongo.com/ko/news/pgo-gameplay-update-oct-2026",
           "image": "https://lh3.googleusercontent.com/YTWdPxzC8pivOHHqNqkA5VYuXBhfFinH38ENvIZ7f9LfkMDoyXrXRnh5kd-ibfKJHequDEp7sbd6Ahwnvh2ct8REj7kjdvJQkCkIXabrFikr"
+        },
+        {
+          "lang": "en",
+          "label": "Pokémon GO Gameplay and Quality-of-Life Updates",
+          "url": "https://pokemongo.com/en/news/pgo-gameplay-update-oct-2026",
+          "image": "https://lh3.googleusercontent.com/YTWdPxzC8pivOHHqNqkA5VYuXBhfFinH38ENvIZ7f9LfkMDoyXrXRnh5kd-ibfKJHequDEp7sbd6Ahwnvh2ct8REj7kjdvJQkCkIXabrFikr"
         }
       ]
     },
@@ -33,6 +39,12 @@
           "lang": "ko",
           "label": "\"메가깜까미\"가 더욱 강력해지고 색이 다른 \"망망이\"가 \"Pokémon GO\"에 처음으로 등장하는 \"핼러윈 2026 파트2\" 이벤트!",
           "url": "https://pokemongo.com/ko/news/halloween-part-2-2026",
+          "image": "https://lh3.googleusercontent.com/4QN-7EtDk7S7dxL9bKLbsUF7lbTaUTntnGzOG8qDk4xxOQFyY4dKt3tQQ2msv37JhacLDFrawLGXVAv_kv3tzE_kTXiIh_HbskFdKhNCHjlh"
+        },
+        {
+          "lang": "en",
+          "label": "Mega Sableye powers up and Shiny Greavard makes its Pokémon GO debut during Halloween 2026 Part II!",
+          "url": "https://pokemongo.com/en/news/halloween-part-2-2026",
           "image": "https://lh3.googleusercontent.com/4QN-7EtDk7S7dxL9bKLbsUF7lbTaUTntnGzOG8qDk4xxOQFyY4dKt3tQQ2msv37JhacLDFrawLGXVAv_kv3tzE_kTXiIh_HbskFdKhNCHjlh"
         }
       ]
@@ -75,6 +87,21 @@
       ]
     },
     {
+      "id": "event-singapore-30th-anniversary-2026",
+      "kind": "news",
+      "title": "PokéXciting! lands at Changi Airport and Jewel — get ready, Singapore!",
+      "date": "2026-10-07",
+      "excerpt": "PokéXciting! continues its 30th anniversary celebration with its next stop: Singapore! From November 7 to 8, 2026, Changi Airport and Jewel welcome Trainers for two days of festivities, including the debut of Singapore’…",
+      "sources": [
+        {
+          "lang": "en",
+          "label": "PokéXciting! lands at Changi Airport and Jewel — get ready, Singapore!",
+          "url": "https://pokemongo.com/en/news/event-singapore-30th-anniversary-2026",
+          "image": "https://lh3.googleusercontent.com/2MjiTTHSr_Vao03G3MxlKLsDlrZvGrsM1RE38Kxv23qi0DGCozAaP2lFV5-sjtwhPe6G9uG5urCo7rRpHZVYo__bc--idrRrIsKZbDMDOGs"
+        }
+      ]
+    },
+    {
       "id": "halloween-part-1-2026",
       "kind": "news",
       "title": "\"핼러윈 2026 파트 1\"에는 의상을 입은 \"피카츄\", \"주뱃\", \"데인차\"와 함께 사탕을 받으러 가 봐요!",
@@ -86,6 +113,27 @@
           "label": "\"핼러윈 2026 파트 1\"에는 의상을 입은 \"피카츄\", \"주뱃\", \"데인차\"와 함께 사탕을 받으러 가 봐요!",
           "url": "https://pokemongo.com/ko/news/halloween-part-1-2026",
           "image": "https://lh3.googleusercontent.com/_-kCe3YnQqLlPgLfqe6BZN6v8dIhuuhVzbOSgExE5XjKL__BcqBCbch1V2Z4fOEh18nYEX6O5rqBgWmNmU7kmvy92Yd2u8RBIxDbe79p3kU"
+        },
+        {
+          "lang": "en",
+          "label": "Trick or Treat with costumed Pikachu, Zubat, and Sinistea during Halloween 2026 Part I!",
+          "url": "https://pokemongo.com/en/news/halloween-part-1-2026",
+          "image": "https://lh3.googleusercontent.com/_-kCe3YnQqLlPgLfqe6BZN6v8dIhuuhVzbOSgExE5XjKL__BcqBCbch1V2Z4fOEh18nYEX6O5rqBgWmNmU7kmvy92Yd2u8RBIxDbe79p3kU"
+        }
+      ]
+    },
+    {
+      "id": "pokemon-night-out-twitch-drops2026",
+      "kind": "news",
+      "title": "Get codes for exclusive Timed Research during the Pokémon Night Out Twitch broadcast!",
+      "date": "2026-10-02",
+      "excerpt": "To celebrate the exciting Pokémon Night Out event taking place at Intuit Dome in Los Angeles, USA, on October 24, 2026, we’re excited to share that Trainers globally will have the opportunity to join in on the fun and r…",
+      "sources": [
+        {
+          "lang": "en",
+          "label": "Get codes for exclusive Timed Research during the Pokémon Night Out Twitch broadcast!",
+          "url": "https://pokemongo.com/en/news/pokemon-night-out-twitch-drops2026",
+          "image": "https://lh3.googleusercontent.com/j57haqLgq-cJEc1zh6_1jassToZ0zyuOvp3qcRAaROOH9KN83O6aOjwPcJMn0p0XtVCT5xd0bmbbaEi84t_T9sK1JLRpQj4ID7EGrMf7kZ8"
         }
       ]
     },
@@ -100,6 +148,12 @@
           "lang": "ko",
           "label": "유성우가 쏟아지는 밤, 별빛 아래서 탐험하며 \"메테노\"를 만나요!",
           "url": "https://pokemongo.com/ko/news/minior-meteor-showers-2026",
+          "image": "https://lh3.googleusercontent.com/u0gcBk4WxvszF4cKKAseYnVDOT8ombVKElMwM2f8545aa98EHjJADmhiyJ6EGXDRhLSlJn6SE4ESV6WVVRLfuQUTIM5Hx7wsKN80mLYxW4rt"
+        },
+        {
+          "lang": "en",
+          "label": "Explore by starlight during meteor showers for a chance to encounter Minior!",
+          "url": "https://pokemongo.com/en/news/minior-meteor-showers-2026",
           "image": "https://lh3.googleusercontent.com/u0gcBk4WxvszF4cKKAseYnVDOT8ombVKElMwM2f8545aa98EHjJADmhiyJ6EGXDRhLSlJn6SE4ESV6WVVRLfuQUTIM5Hx7wsKN80mLYxW4rt"
         }
       ]
@@ -116,6 +170,57 @@
           "label": "잊혀진 물결 사이에서 다이맥스한 \"유크시\", \"엠라이트\", \"아그놈\"이 처음으로 모습을 드러냅니다!",
           "url": "https://pokemongo.com/ko/news/dynamax-uxie-mesprit-azelf-max-battle-day-2026",
           "image": "https://lh3.googleusercontent.com/lKvMVkt13VprgaVCCdWqglwACCNc_F4rLJMuuZg_MqZSHjDIkEm3dldHcnyv7OPdDmJYAdfYC9xZef00Jfna7R1B8QJLLBMOigqW_89obec"
+        },
+        {
+          "lang": "en",
+          "label": "Rising from the forgotten tides, Uxie, Mesprit, and Azelf make their Dynamax debut!",
+          "url": "https://pokemongo.com/en/news/dynamax-uxie-mesprit-azelf-max-battle-day-2026",
+          "image": "https://lh3.googleusercontent.com/lKvMVkt13VprgaVCCdWqglwACCNc_F4rLJMuuZg_MqZSHjDIkEm3dldHcnyv7OPdDmJYAdfYC9xZef00Jfna7R1B8QJLLBMOigqW_89obec"
+        }
+      ]
+    },
+    {
+      "id": "city-safari-boston-rescheduled",
+      "kind": "news",
+      "title": "Pokémon GO City Safari: Boston Update",
+      "date": "2026-10-01",
+      "excerpt": "Thank you for your patience as we navigated the severe weather that took place in the greater Boston area last weekend. Pokémon GO City Safari: Boston has been rescheduled, and it will now take place primarily as a glob…",
+      "sources": [
+        {
+          "lang": "en",
+          "label": "Pokémon GO City Safari: Boston Update",
+          "url": "https://pokemongo.com/en/news/city-safari-boston-rescheduled",
+          "image": "https://lh3.googleusercontent.com/5SAHXmMPUCpY_TUiDA81oiN00LXrIbsOXN9CTFtZbjI4pz_0RbQr0tmSACr1JErfEvZqM131RfCU8-LA2uskPRaP7YAom1uS216jhW_JpQ"
+        }
+      ]
+    },
+    {
+      "id": "tcg-30th-celebration-event",
+      "kind": "news",
+      "title": "Pokémon TCG 30th Celebration Event",
+      "date": "2026-09-27",
+      "excerpt": "Commemorate the release of the Pokémon Trading Card Game’s 30th Celebration collection! Pokémon GO Trainers can take part in this release by visiting select retail locations in the United States and participating in Meg…",
+      "sources": [
+        {
+          "lang": "en",
+          "label": "Pokémon TCG 30th Celebration Event",
+          "url": "https://pokemongo.com/en/news/tcg-30th-celebration-event",
+          "image": "https://lh3.googleusercontent.com/gu1IHS_f2PGLsp57UvnfXLT3fugx6jlQbECfFUQfU5GIEGQfjVspMMywEamItPc6BA36X6bv4rYC1bVoLzjyvLC-ddmUXbkPD5CurRnP8w"
+        }
+      ]
+    },
+    {
+      "id": "festival-of-lights-2026",
+      "kind": "news",
+      "title": "Celebrate the Festival of Lights with the return of Pikachu wearing a saree and Pikachu wearing a kurta!",
+      "date": "2026-09-25",
+      "excerpt": "The Festival of Lights is coming back to Pokémon GO! For this year’s celebrations—exclusive to Trainers in India—get ready for the return of Pikachu wearing a saree and Pikachu wearing a kurta!",
+      "sources": [
+        {
+          "lang": "en",
+          "label": "Celebrate the Festival of Lights with the return of Pikachu wearing a saree and Pikachu wearing a kurta!",
+          "url": "https://pokemongo.com/en/news/festival-of-lights-2026",
+          "image": "https://lh3.googleusercontent.com/CecgAXRzLOF4ifTP3Ufl01if11xzdVEI6R169xxEXw095LM8_lhhWydeV5VNDpXF9Ax-U8N1Zxq6SlKpwsft03DRYjsekc05qpxF8EyqcnU"
         }
       ]
     },
@@ -130,6 +235,12 @@
           "lang": "ko",
           "label": "\"깜눈크 부화데이\"에는 모래 속으로 파고들어 봐요!",
           "url": "https://pokemongo.com/ko/news/sandile-hatch-day-2026",
+          "image": "https://lh3.googleusercontent.com/r1sFIBAWuypbu790nY-nohK15pwrrz9wxabdnLn-equ2WbOzIF-1_H6L15URPfazMTlosJBnBe-PR_Wpdj6Q7GJ2JrShPTDUEc6_GMgtShxE"
+        },
+        {
+          "lang": "en",
+          "label": "Dig in during Sandile Hatch Day!",
+          "url": "https://pokemongo.com/en/news/sandile-hatch-day-2026",
           "image": "https://lh3.googleusercontent.com/r1sFIBAWuypbu790nY-nohK15pwrrz9wxabdnLn-equ2WbOzIF-1_H6L15URPfazMTlosJBnBe-PR_Wpdj6Q7GJ2JrShPTDUEc6_GMgtShxE"
         }
       ]
@@ -146,6 +257,27 @@
           "label": "\"ADIDAS | POKÉMON\" 컬렉션 의상 아이템이 \"Pokémon GO\"를 찾아옵니다!",
           "url": "https://pokemongo.com/ko/news/pokemon-x-adidas-2026",
           "image": "https://lh3.googleusercontent.com/L-Kp0mvhQ_6rxdgpFz0sKpRJ4pKeVhqqtWuOJsRXu2O1uU8_FmURLvbr8j0K24XcWggFoYItYc3Pb6RS8LVMOn2S5QvC4cBKSYHXV3reP58"
+        },
+        {
+          "lang": "en",
+          "label": "Avatar items from the adidas | Pokémon collection are coming to Pokémon GO!",
+          "url": "https://pokemongo.com/en/news/pokemon-x-adidas-2026",
+          "image": "https://lh3.googleusercontent.com/L-Kp0mvhQ_6rxdgpFz0sKpRJ4pKeVhqqtWuOJsRXu2O1uU8_FmURLvbr8j0K24XcWggFoYItYc3Pb6RS8LVMOn2S5QvC4cBKSYHXV3reP58"
+        }
+      ]
+    },
+    {
+      "id": "city-safari-boston-update",
+      "kind": "news",
+      "title": "Event Update: City Safari Boston",
+      "date": "2026-09-24",
+      "excerpt": "The Pokémon GO team has been monitoring the weather forecasts for the Boston metropolitan area. Due to the projected severity of the incoming storm, the City Safari Boston event will be rescheduled to a later date. Tick…",
+      "sources": [
+        {
+          "lang": "en",
+          "label": "Event Update: City Safari Boston",
+          "url": "https://pokemongo.com/en/news/city-safari-boston-update",
+          "image": "https://lh3.googleusercontent.com/5SAHXmMPUCpY_TUiDA81oiN00LXrIbsOXN9CTFtZbjI4pz_0RbQr0tmSACr1JErfEvZqM131RfCU8-LA2uskPRaP7YAom1uS216jhW_JpQ"
         }
       ]
     },
@@ -160,6 +292,12 @@
           "lang": "ko",
           "label": "\"Pokémon GO Tour 2027\" 날짜를 기억해 주세요!",
           "url": "https://pokemongo.com/ko/news/save-the-date-go-tour-2027",
+          "image": "https://lh3.googleusercontent.com/ZD_ZnJIVRb8a2RWD8L9wF4UR3f0fBAT2ZKk9lLB58yOlXhKOrghIstmijArGABhFlVacGQU56R514Pl0NsA9tTqEpGxbIo4D4oipystojQ"
+        },
+        {
+          "lang": "en",
+          "label": "Save the Date: Pokémon GO Tour 2027",
+          "url": "https://pokemongo.com/en/news/save-the-date-go-tour-2027",
           "image": "https://lh3.googleusercontent.com/ZD_ZnJIVRb8a2RWD8L9wF4UR3f0fBAT2ZKk9lLB58yOlXhKOrghIstmijArGABhFlVacGQU56R514Pl0NsA9tTqEpGxbIo4D4oipystojQ"
         }
       ]
@@ -176,6 +314,27 @@
           "label": "\"그푸리\"가 \"Pokémon GO\"에 처음으로 등장하는 \"가을 소풍: 파트너와 함께\" 이벤트!",
           "url": "https://pokemongo.com/ko/news/fall-marathon-buddy-trek-2026",
           "image": "https://lh3.googleusercontent.com/M4kOTm3cvwmzkibKybdE7ItO-lG_C4RpMeI-UQJdEH7kOGF36MjUUo_2VVd6QMHmGoUypowGKIzv2f7LBAXjT3qrtYNNYRhX4GszOYp3vw"
+        },
+        {
+          "lang": "en",
+          "label": "Fall Marathon: Buddy Trek will bring Bramblin’s Pokémon GO debut!",
+          "url": "https://pokemongo.com/en/news/fall-marathon-buddy-trek-2026",
+          "image": "https://lh3.googleusercontent.com/M4kOTm3cvwmzkibKybdE7ItO-lG_C4RpMeI-UQJdEH7kOGF36MjUUo_2VVd6QMHmGoUypowGKIzv2f7LBAXjT3qrtYNNYRhX4GszOYp3vw"
+        }
+      ]
+    },
+    {
+      "id": "apac-mall-exploration-2026",
+      "kind": "news",
+      "title": "Pokémon GO joins Pokémon 30th Anniversary Mall Exploration!",
+      "date": "2026-09-23",
+      "excerpt": "Get ready! Celebrate with Pokémon GO at the Pokémon 30th Anniversary Mall Explorations event! Head to these locations during the event and embark on an exciting adventure with Pikachu wearing a party hat!",
+      "sources": [
+        {
+          "lang": "en",
+          "label": "Pokémon GO joins Pokémon 30th Anniversary Mall Exploration!",
+          "url": "https://pokemongo.com/en/news/apac-mall-exploration-2026",
+          "image": "https://lh3.googleusercontent.com/dFl-bn3on9Th9YzRT-Bs14neMfLhAsomPudR7lZ0l1j-1WERlgWfMrgd-pG9Kk5sVl1L9u3viOCWpGnVSlaLwwBcDrCayaXwSkC-eex8Qg"
         }
       ]
     },
@@ -206,6 +365,12 @@
           "label": "\"가이오가\"가 파도를 일으키고, \"반짝이 참\"이 돌아오는 \"GO패스: 10월\"!",
           "url": "https://pokemongo.com/ko/news/go-pass-october-2026",
           "image": "https://lh3.googleusercontent.com/YI_hCo34fVtgznowncdPRDK3uObq-7nJkPTmsttNh2uBZGkKDqFWvPQFP-9lTLmjkvpb-iHQq-JERqqXXYbVsWryT2gNTWc5_xVf3H0H-3FN"
+        },
+        {
+          "lang": "en",
+          "label": "Kyogre makes waves and the Lucky Trinket returns in GO Pass: October!",
+          "url": "https://pokemongo.com/en/news/go-pass-october-2026",
+          "image": "https://lh3.googleusercontent.com/YI_hCo34fVtgznowncdPRDK3uObq-7nJkPTmsttNh2uBZGkKDqFWvPQFP-9lTLmjkvpb-iHQq-JERqqXXYbVsWryT2gNTWc5_xVf3H0H-3FN"
         }
       ]
     },
@@ -221,6 +386,42 @@
           "label": "\"세계 우주 주간\" 이벤트에는 \"우주비행 피카츄\"와 우주로 떠나요!",
           "url": "https://pokemongo.com/ko/news/world-space-week-2026",
           "image": "https://lh3.googleusercontent.com/AiDIi-NAxX879TxCAX8X6I6EwjrUUajpCN18w4uPXAwSqgbR1y6_awmrDJFY31ljBfh4flc1v5Ma2by0Mt4y77-Q4LCPLnSBEMZIJSS0hvZx"
+        },
+        {
+          "lang": "en",
+          "label": "Blast off with Astronaut Pikachu during World Space Week!",
+          "url": "https://pokemongo.com/en/news/world-space-week-2026",
+          "image": "https://lh3.googleusercontent.com/AiDIi-NAxX879TxCAX8X6I6EwjrUUajpCN18w4uPXAwSqgbR1y6_awmrDJFY31ljBfh4flc1v5Ma2by0Mt4y77-Q4LCPLnSBEMZIJSS0hvZx"
+        }
+      ]
+    },
+    {
+      "id": "pokemongo-iitdelhi-2026",
+      "kind": "news",
+      "title": "Pokémon GO is coming to IIT-Delhi for Rendezvous 2026!",
+      "date": "2026-09-21",
+      "excerpt": "Pokémon GO will be coming to IIT-Delhi for Rendezvous 2026 from September 28 to October 1, 2026. Trainers can look forward to exciting in-game bonuses and an official Pokémon GO booth on the campus of IIT-Delhi in New D…",
+      "sources": [
+        {
+          "lang": "en",
+          "label": "Pokémon GO is coming to IIT-Delhi for Rendezvous 2026!",
+          "url": "https://pokemongo.com/en/news/pokemongo-iitdelhi-2026",
+          "image": "https://lh3.googleusercontent.com/p1c_ao2Gj5JRfWVMIiME-H7Inyug7essJkakMvraAgvfrP-6buFtwt0ZY0Z_SwLvWcH4JDOxaNCilYkqt351qt70B_JRbDBKun_K9bJSv-k"
+        }
+      ]
+    },
+    {
+      "id": "european-space-agency-event",
+      "kind": "news",
+      "title": "Pokémon GO partners with the European Space Agency",
+      "date": "2026-09-19",
+      "excerpt": "Get ready to blast off for adventure! Pokémon GO is teaming up with the European Space Agency (ESA) for a special celebration of space and exploration across Europe.",
+      "sources": [
+        {
+          "lang": "en",
+          "label": "Pokémon GO partners with the European Space Agency",
+          "url": "https://pokemongo.com/en/news/european-space-agency-event",
+          "image": "https://lh3.googleusercontent.com/7CITEYsKb4CAwdYOln7q7h5K6U1cIVu2cnWRbDZtixs10PkfYfHzPn5Iz9wwbMFE3bosgBEiKnZlEZJZmGiyl-YqYRKHlIL8d7VAzR4DjA"
         }
       ]
     },
@@ -313,6 +514,21 @@
       ]
     },
     {
+      "id": "city-safari-brisbane-know-before-you-go",
+      "kind": "news",
+      "title": "Pokémon GO City Safari: Brisbane – Know Before You GO!",
+      "date": "2026-09-16",
+      "excerpt": "Tips for discovering Brisbane with your new Eevee as a Buddy Pokémon!",
+      "sources": [
+        {
+          "lang": "en",
+          "label": "Pokémon GO City Safari: Brisbane – Know Before You GO!",
+          "url": "https://pokemongo.com/en/news/city-safari-brisbane-know-before-you-go",
+          "image": "https://lh3.googleusercontent.com/o8jvdwEPkxtY4vnEQ54snT5Tn-lxn-_vV0_PTWtY2IW4Jh18RLWRB_UDL7do0zkr4HuAIFKQI5PyAOUVFyklR3fWPv4Z8EeHWoGasKu0IWGE"
+        }
+      ]
+    },
+    {
       "id": "communityday-october-2026-zorua",
       "kind": "news",
       "title": "2026년 10월 커뮤니티 데이: 조로아",
@@ -324,6 +540,27 @@
           "label": "2026년 10월 커뮤니티 데이: 조로아",
           "url": "https://pokemongo.com/ko/news/communityday-october-2026-zorua",
           "image": "https://lh3.googleusercontent.com/HJT-iQ6qMUmoXYCmtwOqp-68HQFXJFzEiw6R_eqgY9KhKQLdihsIsIIY_Px9DE8-oBEzB0Cr7CKoyk5pX8tyWklwJyyRyH0GiBrBNRc82YA"
+        },
+        {
+          "lang": "en",
+          "label": "October 2026 Community Day: Zorua",
+          "url": "https://pokemongo.com/en/news/communityday-october-2026-zorua",
+          "image": "https://lh3.googleusercontent.com/HJT-iQ6qMUmoXYCmtwOqp-68HQFXJFzEiw6R_eqgY9KhKQLdihsIsIIY_Px9DE8-oBEzB0Cr7CKoyk5pX8tyWklwJyyRyH0GiBrBNRc82YA"
+        }
+      ]
+    },
+    {
+      "id": "city-safaris-europe-2026",
+      "kind": "news",
+      "title": "Pokémon GO City Safaris in Europe: Venues and Activities",
+      "date": "2026-09-14",
+      "excerpt": "Get ready for an exciting adventure at the Pokémon GO City Safari events in Lisbon, Portugal; Marseille, France; and Munich, Germany, on September 26 and 27, 2026, from 10:00 a.m. to 6:00 p.m. local time!",
+      "sources": [
+        {
+          "lang": "en",
+          "label": "Pokémon GO City Safaris in Europe: Venues and Activities",
+          "url": "https://pokemongo.com/en/news/city-safaris-europe-2026",
+          "image": "https://lh3.googleusercontent.com/KknW_8YdoU1P1ocW2ALGLhaJkL9bSwSmV7KHpNhBJ9HQSlH4w834UimK2poxaRO6yd3VhPc2WeE8pzSeksADy2KYrZKv6Mr4EJQM8Ar-AFE"
         }
       ]
     },
@@ -339,6 +576,42 @@
           "label": "\"황혼의 여정\" 시즌에는 새로운 시간제한 리서치를 활용해 나만의 모험을 떠나 보세요!",
           "url": "https://pokemongo.com/ko/news/choose-your-path-twilight-trails-2026",
           "image": "https://lh3.googleusercontent.com/_yKVtZhYNjg2v6GwFtgVR-r4J_DaJL_Q16g0UhSOWH78D0WtXKOBZ-opQJzNB6bS-AxYjnZmHyDxGdg34p98fTe1p_NSyVOfgaR1ACHMM70"
+        },
+        {
+          "lang": "en",
+          "label": "Blaze your own trail with new Timed Research during Twilight Trails!",
+          "url": "https://pokemongo.com/en/news/choose-your-path-twilight-trails-2026",
+          "image": "https://lh3.googleusercontent.com/_yKVtZhYNjg2v6GwFtgVR-r4J_DaJL_Q16g0UhSOWH78D0WtXKOBZ-opQJzNB6bS-AxYjnZmHyDxGdg34p98fTe1p_NSyVOfgaR1ACHMM70"
+        }
+      ]
+    },
+    {
+      "id": "patterns-of-the-wild-2026",
+      "kind": "news",
+      "title": "Patterns of the Wild brings Pikachu wearing a batik shirt with a Special Background!",
+      "date": "2026-09-11",
+      "excerpt": "Friday, October 2, 2026, from 10:00 a.m. to 8:00 p.m. local time in Indonesia",
+      "sources": [
+        {
+          "lang": "en",
+          "label": "Patterns of the Wild brings Pikachu wearing a batik shirt with a Special Background!",
+          "url": "https://pokemongo.com/en/news/patterns-of-the-wild-2026",
+          "image": "https://lh3.googleusercontent.com/LHsRwwQEAN3GxZ6e18YJdAXKKvkh_Xmthky9mx20Y4CLUnh1dvvhXFv1iVYW_BX-IhqDQjSwZS8vxVS8bLVhYShvL6hLFyn_relJvHFL"
+        }
+      ]
+    },
+    {
+      "id": "boston-city-safari-know-before-you-go",
+      "kind": "news",
+      "title": "Pokémon GO City Safari: Boston – Know Before You GO!",
+      "date": "2026-09-10",
+      "excerpt": "City Safari: Boston has been postponed. Check out the blog for more information, and stay tuned for further details.",
+      "sources": [
+        {
+          "lang": "en",
+          "label": "Pokémon GO City Safari: Boston – Know Before You GO!",
+          "url": "https://pokemongo.com/en/news/boston-city-safari-know-before-you-go",
+          "image": "https://lh3.googleusercontent.com/5SAHXmMPUCpY_TUiDA81oiN00LXrIbsOXN9CTFtZbjI4pz_0RbQr0tmSACr1JErfEvZqM131RfCU8-LA2uskPRaP7YAom1uS216jhW_JpQ"
         }
       ]
     },
@@ -353,6 +626,12 @@
           "lang": "ko",
           "label": "\"맥스배틀 데이\"에 \"거다이맥스 에이스번\"이 거대한 불꽃 볼을 슛!",
           "url": "https://pokemongo.com/ko/news/gigantamax-cinderace-max-battle-day-2026",
+          "image": "https://lh3.googleusercontent.com/WT8oI0oxsVj0AVZ1qD58MMbCPc8di-ajTXg2IBD3OcFshTR025JQIKbJnlMYVUBw96yMdeyMlosgQliCxVxgyTCJPtiN53G05HUMcdshAw"
+        },
+        {
+          "lang": "en",
+          "label": "Fireball of fury as Gigantamax Cinderace storms into Max Battle Day!",
+          "url": "https://pokemongo.com/en/news/gigantamax-cinderace-max-battle-day-2026",
           "image": "https://lh3.googleusercontent.com/WT8oI0oxsVj0AVZ1qD58MMbCPc8di-ajTXg2IBD3OcFshTR025JQIKbJnlMYVUBw96yMdeyMlosgQliCxVxgyTCJPtiN53G05HUMcdshAw"
         }
       ]
@@ -384,6 +663,12 @@
           "label": "수확 축제: 점령 이벤트에는 \"그림자 제크로무\"를 구해 주세요!",
           "url": "https://pokemongo.com/ko/news/harvest-festival-tgr-2026",
           "image": "https://lh3.googleusercontent.com/papryPKXMu6SdbGgSZRDSZURigphJVWB5Am87oJJ4BqEfpLfqD4kStG47AFnLnl9Dxi-f0CaRK2mp8A_kWqMfx5D3mFVMqmVjsvaSqa0SIiS"
+        },
+        {
+          "lang": "en",
+          "label": "Rescue Shadow Zekrom during Harvest Festival: Taken Over!",
+          "url": "https://pokemongo.com/en/news/harvest-festival-tgr-2026",
+          "image": "https://lh3.googleusercontent.com/papryPKXMu6SdbGgSZRDSZURigphJVWB5Am87oJJ4BqEfpLfqD4kStG47AFnLnl9Dxi-f0CaRK2mp8A_kWqMfx5D3mFVMqmVjsvaSqa0SIiS"
         }
       ]
     },
@@ -399,6 +684,12 @@
           "label": "풍성한 \"수확 축제\"와 색이 다른 \"과사삭벌레\"의 \"Pokémon GO\" 첫 등장을 즐겨요!",
           "url": "https://pokemongo.com/ko/news/harvest-festival-2026",
           "image": "https://lh3.googleusercontent.com/xNJ7JKQK3J1NgJXra1tCGw0XmW9r9vQBiNy1ZpDL683M_1GjMZDTONVKpVcrUd2U2dPeV2X5UGhbQjSnr8aApqqbwHZAD60u-H68Go-R"
+        },
+        {
+          "lang": "en",
+          "label": "Enjoy a bountiful Harvest Festival event with Shiny Applin’s Pokémon GO debut!",
+          "url": "https://pokemongo.com/en/news/harvest-festival-2026",
+          "image": "https://lh3.googleusercontent.com/xNJ7JKQK3J1NgJXra1tCGw0XmW9r9vQBiNy1ZpDL683M_1GjMZDTONVKpVcrUd2U2dPeV2X5UGhbQjSnr8aApqqbwHZAD60u-H68Go-R"
         }
       ]
     },
@@ -413,6 +704,12 @@
           "lang": "ko",
           "label": "\"Pokémon GO 와일드 에리어: 센다이, 도호쿠\" 티켓팅 최신 소식",
           "url": "https://pokemongo.com/ko/news/gowildarea-sendai-ticket-update",
+          "image": "https://lh3.googleusercontent.com/1gLekpJ6ufDdk-OksjycvqaJIQREQ6qlsP5Lt8HoMhZyJTiwNVuV8mqI0n-fjF3N7hhOhSYoDnZ9qEJq2unSlISul2f4W87piqz23PKSspw"
+        },
+        {
+          "lang": "en",
+          "label": "Ticketing Update: Pokémon GO Wild Area: Sendai • Tohoku",
+          "url": "https://pokemongo.com/en/news/gowildarea-sendai-ticket-update",
           "image": "https://lh3.googleusercontent.com/1gLekpJ6ufDdk-OksjycvqaJIQREQ6qlsP5Lt8HoMhZyJTiwNVuV8mqI0n-fjF3N7hhOhSYoDnZ9qEJq2unSlISul2f4W87piqz23PKSspw"
         }
       ]

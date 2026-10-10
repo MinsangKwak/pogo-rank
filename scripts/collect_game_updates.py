@@ -297,7 +297,10 @@ def backfill_slugs(lang, frm, to):
 
 
 def index_slugs(page, lang):
-    return sorted(set(re.findall(rf'href="/{lang}/news/([a-z0-9\-]+)"', page)))
+    # 영문 색인은 기본 언어라 링크가 '/news/<slug>' 꼴이다(2026-10-10 확인) — '/en/news/' 만 찾으면 0건이라
+    # 영문 원문이 한 번도 짝지어지지 않았다. 한국어 색인은 '/ko/news/' 뿐이다
+    prefix = '(?:en/)?' if lang == 'en' else f'{lang}/'
+    return sorted(set(re.findall(rf'href="/{prefix}news/([a-z0-9\-]+)"', page)))
 
 
 def first_seen():
