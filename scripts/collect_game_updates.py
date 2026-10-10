@@ -423,6 +423,11 @@ def main():
 
     candidates, skipped = [], {'게시됨': 0, '이벤트': 0, '오래됨': 0, '변경 없음': 0, '못 받음': 0}
     dropped = set()
+    # 지난 후보 — 이번에 못 받은 언어판의 증거를 이어받는 데 쓴다
+    previous = {}
+    if os.path.exists(CANDIDATES_PATH):
+        previous = {entry['slug']: entry for entry in json.load(open(CANDIDATES_PATH, encoding='utf-8')).get('candidates', [])
+                    if entry.get('slug')}
     for slug in order:
         if slug in done:
             skipped['게시됨'] += 1
@@ -459,6 +464,9 @@ def main():
         if not args.backfill and entry.get('announcedAt') and entry['announcedAt'] < cutoff:
             skipped['오래됨'] += 1
             continue
+        # 이번에 못 받은 언어판(한쪽 색인에만 실렸거나 본문이 끊긴 쪽)의 출처 · 변경 줄은 지난 후보에서 이어받는다 —
+        # 받은 쪽에 변경 줄이 없다고 해서 다른 쪽에 있던 증거까지 버리면 안 된다(Codex #354)
+        carry_over(entry, previous.get(slug))
         if not entry['changeLines']:
             skipped['변경 없음'] += 1
             # 이번에 다시 읽어 '변경 없음' 이 된 글은 지난 후보 파일에서 되살리지 않는다 — 상용구만 남은 옛 줄이 돌아온다.
@@ -475,12 +483,6 @@ def main():
     # 아직 게시되지 않은 지난 후보는 남긴다 — 공식 색인 · 30일 창에서 내려갔다고 검토 대기열에서 지우면
     # 다시 받을 길이 없다(메가 헬가 '악의파동+' 변경이 담긴 mega-squads-2026 이 그렇게 빠졌다, Codex #303).
     # 사람이 파일에서 지운 후보는 색인에 다시 오르지 않는 한 돌아오지 않는다
-    previous = {}
-    if os.path.exists(CANDIDATES_PATH):
-        previous = {entry['slug']: entry for entry in json.load(open(CANDIDATES_PATH, encoding='utf-8')).get('candidates', [])
-                    if entry.get('slug')}
-    for entry in candidates:
-        carry_over(entry, previous.get(entry['slug']))
     fresh = {entry['slug'] for entry in candidates}
     kept = 0
     if previous:
