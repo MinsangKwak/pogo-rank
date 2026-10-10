@@ -32,6 +32,12 @@
           "label": "\"메가깜까미\"가 더욱 강력해지고 색이 다른 \"망망이\"가 \"Pokémon GO\"에 처음으로 등장하는 \"핼러윈 2026 파트2\" 이벤트!",
           "url": "https://pokemongo.com/ko/news/halloween-part-2-2026",
           "image": "https://lh3.googleusercontent.com/4QN-7EtDk7S7dxL9bKLbsUF7lbTaUTntnGzOG8qDk4xxOQFyY4dKt3tQQ2msv37JhacLDFrawLGXVAv_kv3tzE_kTXiIh_HbskFdKhNCHjlh"
+        },
+        {
+          "lang": "en",
+          "label": "Mega Sableye powers up and Shiny Greavard makes its Pokémon GO debut during Halloween 2026 Part II!",
+          "url": "https://pokemongo.com/en/news/halloween-part-2-2026",
+          "image": "https://lh3.googleusercontent.com/4QN-7EtDk7S7dxL9bKLbsUF7lbTaUTntnGzOG8qDk4xxOQFyY4dKt3tQQ2msv37JhacLDFrawLGXVAv_kv3tzE_kTXiIh_HbskFdKhNCHjlh"
         }
       ],
       "changeLines": {
@@ -41,6 +47,16 @@
           "“메가 피날레” 이벤트에서 밝혀진 대로, 슈퍼 맥스 레벨에 도달할 수 있는 포켓몬은 메가진화한 상태일 때 스페셜 어택을 추가로 배울 수 있습니다! 자세한 정보는 여기서 확인하세요.",
           "메가진화한 “깜까미”는 스페셜 어택 “나이트헤드+”를 추가로 사용할 수 있습니다.",
           "이벤트 동안 “GO패스”용 보너스 과제를 추가로 받을 수 있으니 잘 살펴보세요!"
+        ],
+        "en": [
+          "For the first time in Pokémon GO, you’ll be able to encounter Shiny Greavard—if you’re lucky! You may encounter Greavard in the wild or when you complete GO Pass and Field Research tasks.",
+          "Starting with the Halloween 2026 Part II event, you’ll be able to increase Mega Sableye’s Mega Level all the way up to Super Max Level for the first time in Pokémon GO! Learn more here.",
+          "As discovered during Mega Finale, Pokémon that are eligible to unlock Super Max Level can learn an additional Charged Attack while they’re Mega Evolved! Learn more here",
+          "Sableye will now be able to use an additional Charged Attack,  Night Shade+, when it’s Mega Evolved.",
+          "The power of this attack will increase with the Pokémon’s Mega Level!",
+          "Trainers will automatically receive GO Pass: Halloween 2026 on Tuesday, October 27, at 10:00 a.m. local time. You can collect GO Points and rank up to get additional rewards through Thursday, November 5, 2026, at 8:00 p.m. local time.",
+          "Additional encounters with even more event-themed Pokémon!",
+          "Keep an eye out for additional bonus tasks for this GO Pass during the event!"
         ]
       },
       "announcedAt": "2026-10-08"
@@ -53,6 +69,12 @@
           "label": "\"Pokémon GO\" 게임 플레이 및 편의성 업데이트",
           "url": "https://pokemongo.com/ko/news/pgo-gameplay-update-oct-2026",
           "image": "https://lh3.googleusercontent.com/YTWdPxzC8pivOHHqNqkA5VYuXBhfFinH38ENvIZ7f9LfkMDoyXrXRnh5kd-ibfKJHequDEp7sbd6Ahwnvh2ct8REj7kjdvJQkCkIXabrFikr"
+        },
+        {
+          "lang": "en",
+          "label": "Pokémon GO Gameplay and Quality-of-Life Updates",
+          "url": "https://pokemongo.com/en/news/pgo-gameplay-update-oct-2026",
+          "image": "https://lh3.googleusercontent.com/YTWdPxzC8pivOHHqNqkA5VYuXBhfFinH38ENvIZ7f9LfkMDoyXrXRnh5kd-ibfKJHequDEp7sbd6Ahwnvh2ct8REj7kjdvJQkCkIXabrFikr"
         }
       ],
       "changeLines": {
@@ -62,9 +84,30 @@
           "나침반 아이콘과 날씨 아이콘: 나침반 아이콘과 날씨 아이콘을 플레이어의 활동에 따라 변경되는 동적 아이콘 1개로 합쳤습니다. 나침반 아이콘은 회전하거나 확대할 때 표시되며 날씨 아이콘은 그 외 상황에 표시됩니다. 날씨 아이콘을 탭하면 활성화된 날씨 조건 및 부스트를 볼 수 있고, 화면에 나침반 아이콘이 떠 있을 때 탭하면 맵에서 시야 방향이 전환됩니다.",
           "맵뷰 디스플레이 개선: 맵뷰의 간격을 조정하는 개선 작업을 진행했습니다. 야생 포켓몬 등장, 체육관, 파워스폿, 포켓스톱 사이의 영역 중첩을 줄여 원하는 요소를 더 쉽게 선택할 수 있습니다.",
           "앞으로도 “Pokémon GO”를 개선해 나갈 예정이니, 많은 피드백 부탁드립니다!"
+        ],
+        "en": [
+          "We’re excited to share a summary of recent gameplay adjustments and quality-of-life updates that have recently rolled out in Pokémon GO!",
+          "Compass and Weather Icons: The Compass and Weather icons have been combined into a single dynamic icon that adjusts based on your actions."
         ]
       },
       "announcedAt": "2026-10-08"
+    },
+    {
+      "slug": "event-singapore-30th-anniversary-2026",
+      "sources": [
+        {
+          "lang": "en",
+          "label": "PokéXciting! lands at Changi Airport and Jewel — get ready, Singapore! — Pokémon GO",
+          "url": "https://pokemongo.com/en/news/event-singapore-30th-anniversary-2026",
+          "image": "https://lh3.googleusercontent.com/2MjiTTHSr_Vao03G3MxlKLsDlrZvGrsM1RE38Kxv23qi0DGCozAaP2lFV5-sjtwhPe6G9uG5urCo7rRpHZVYo__bc--idrRrIsKZbDMDOGs"
+        }
+      ],
+      "changeLines": {
+        "en": [
+          "2 additional Special Trades"
+        ]
+      },
+      "announcedAt": "2026-10-07"
     },
     {
       "slug": "helpshift-5554",
@@ -104,14 +147,43 @@
           "label": "\"핼러윈 2026 파트 1\"에는 의상을 입은 \"피카츄\", \"주뱃\", \"데인차\"와 함께 사탕을 받으러 가 봐요! — Pokémon GO",
           "url": "https://pokemongo.com/ko/news/halloween-part-1-2026",
           "image": "https://lh3.googleusercontent.com/_-kCe3YnQqLlPgLfqe6BZN6v8dIhuuhVzbOSgExE5XjKL__BcqBCbch1V2Z4fOEh18nYEX6O5rqBgWmNmU7kmvy92Yd2u8RBIxDbe79p3kU"
+        },
+        {
+          "lang": "en",
+          "label": "Trick or Treat with costumed Pikachu, Zubat, and Sinistea during Halloween 2026 Part I! — Pokémon GO",
+          "url": "https://pokemongo.com/en/news/halloween-part-1-2026",
+          "image": "https://lh3.googleusercontent.com/_-kCe3YnQqLlPgLfqe6BZN6v8dIhuuhVzbOSgExE5XjKL__BcqBCbch1V2Z4fOEh18nYEX6O5rqBgWmNmU7kmvy92Yd2u8RBIxDbe79p3kU"
         }
       ],
       "changeLines": {
         "ko": [
           "이벤트 동안 “GO패스”용 보너스 과제를 추가로 받을 수 있으니 잘 살펴보세요!"
+        ],
+        "en": [
+          "Keep an eye out for additional bonus tasks for this GO Pass during the event!",
+          "Trainers will automatically receive GO Pass: Halloween 2026 on Tuesday, October 27, at 10:00 a.m. local time. You can collect GO Points and rank up to get additional rewards through Thursday, November 5, 2026, at 8:00 p.m. local time.",
+          "Additional encounters with even more event-themed Pokémon!"
         ]
       },
       "announcedAt": "2026-10-05"
+    },
+    {
+      "slug": "city-safari-boston-rescheduled",
+      "sources": [
+        {
+          "lang": "en",
+          "label": "Pokémon GO City Safari: Boston Update",
+          "url": "https://pokemongo.com/en/news/city-safari-boston-rescheduled",
+          "image": "https://lh3.googleusercontent.com/5SAHXmMPUCpY_TUiDA81oiN00LXrIbsOXN9CTFtZbjI4pz_0RbQr0tmSACr1JErfEvZqM131RfCU8-LA2uskPRaP7YAom1uS216jhW_JpQ"
+        }
+      ],
+      "changeLines": {
+        "en": [
+          "Additionally, ticket holders will receive supplementary Special Research with tasks to spin PokéStops in Boston, which will award up to nine encounters with Eevee wearing an explorer hat that have a Boston Location Background.",
+          "No additional tickets for this event will be released at a later date."
+        ]
+      },
+      "announcedAt": "2026-10-01"
     },
     {
       "slug": "dynamax-uxie-mesprit-azelf-max-battle-day-2026",
@@ -121,11 +193,23 @@
           "label": "잊혀진 물결 사이에서 다이맥스한 \"유크시\", \"엠라이트\", \"아그놈\"이 처음으로 모습을 드러냅니다! — Pokémon GO",
           "url": "https://pokemongo.com/ko/news/dynamax-uxie-mesprit-azelf-max-battle-day-2026",
           "image": "https://lh3.googleusercontent.com/lKvMVkt13VprgaVCCdWqglwACCNc_F4rLJMuuZg_MqZSHjDIkEm3dldHcnyv7OPdDmJYAdfYC9xZef00Jfna7R1B8QJLLBMOigqW_89obec"
+        },
+        {
+          "lang": "en",
+          "label": "Rising from the forgotten tides, Uxie, Mesprit, and Azelf make their Dynamax debut! — Pokémon GO",
+          "url": "https://pokemongo.com/en/news/dynamax-uxie-mesprit-azelf-max-battle-day-2026",
+          "image": "https://lh3.googleusercontent.com/lKvMVkt13VprgaVCCdWqglwACCNc_F4rLJMuuZg_MqZSHjDIkEm3dldHcnyv7OPdDmJYAdfYC9xZef00Jfna7R1B8QJLLBMOigqW_89obec"
         }
       ],
       "changeLines": {
         "ko": [
           "다음 다이맥스 포켓몬이 별5 맥스배틀을 통해 “Pokémon GO”에 처음으로 등장합니다!"
+        ],
+        "en": [
+          "Additional Power Spots will be active",
+          "Two additional Special Trades can be made for a maximum of three for the day",
+          "From October 23 at 5:00 p.m. to October 24 at 8:00 p.m. PDT (GMT −7), the daily Remote Raid Pass limit will increase from 10 to 20",
+          "If you’ve never attended a meetup before, Max Battles are a great reason to go out and meet your local community of Trainers for the first time. Coordinate more easily with friends, family, and other Trainers to raise the odds of success in battle together!"
         ]
       },
       "announcedAt": "2026-10-01"
@@ -138,6 +222,12 @@
           "label": "유성우가 쏟아지는 밤, 별빛 아래서 탐험하며 \"메테노\"를 만나요! — Pokémon GO",
           "url": "https://pokemongo.com/ko/news/minior-meteor-showers-2026",
           "image": "https://lh3.googleusercontent.com/u0gcBk4WxvszF4cKKAseYnVDOT8ombVKElMwM2f8545aa98EHjJADmhiyJ6EGXDRhLSlJn6SE4ESV6WVVRLfuQUTIM5Hx7wsKN80mLYxW4rt"
+        },
+        {
+          "lang": "en",
+          "label": "Explore by starlight during meteor showers for a chance to encounter Minior! — Pokémon GO",
+          "url": "https://pokemongo.com/en/news/minior-meteor-showers-2026",
+          "image": "https://lh3.googleusercontent.com/u0gcBk4WxvszF4cKKAseYnVDOT8ombVKElMwM2f8545aa98EHjJADmhiyJ6EGXDRhLSlJn6SE4ESV6WVVRLfuQUTIM5Hx7wsKN80mLYxW4rt"
         }
       ],
       "changeLines": {
@@ -145,6 +235,10 @@
           "유성포켓몬 “메테노”가 “Pokémon GO”에 처음으로 등장합니다!",
           "아래의 유성우가 쏟아지는 기간마다 다른 색의 코어를 가진 “메테노”가 “Pokémon GO”에 처음으로 등장합니다!",
           "북반구와 남반구에서 각기 다른 색의 코어를 가진 “메테노”가 한 종류씩 “Pokémon GO”에 처음으로 등장합니다."
+        ],
+        "en": [
+          "Minior will burst into Pokémon GO, changing the way you battle! Minior will battle in its Meteor Form until its health is reduced to below 50%, when it will change its form and expose its core.",
+          "Initially, Minior will only be able to change forms when battling Team GO Rocket, team leaders, or in the GO Battle League.*"
         ]
       },
       "announcedAt": "2026-10-01"
@@ -157,6 +251,12 @@
           "label": "\"그푸리\"가 \"Pokémon GO\"에 처음으로 등장하는 \"가을 소풍: 파트너와 함께\" 이벤트!",
           "url": "https://pokemongo.com/ko/news/fall-marathon-buddy-trek-2026",
           "image": "https://lh3.googleusercontent.com/M4kOTm3cvwmzkibKybdE7ItO-lG_C4RpMeI-UQJdEH7kOGF36MjUUo_2VVd6QMHmGoUypowGKIzv2f7LBAXjT3qrtYNNYRhX4GszOYp3vw"
+        },
+        {
+          "lang": "en",
+          "label": "Fall Marathon: Buddy Trek will bring Bramblin’s Pokémon GO debut!",
+          "url": "https://pokemongo.com/en/news/fall-marathon-buddy-trek-2026",
+          "image": "https://lh3.googleusercontent.com/M4kOTm3cvwmzkibKybdE7ItO-lG_C4RpMeI-UQJdEH7kOGF36MjUUo_2VVd6QMHmGoUypowGKIzv2f7LBAXjT3qrtYNNYRhX4GszOYp3vw"
         }
       ],
       "changeLines": {
@@ -165,6 +265,15 @@
           "“가을 소풍: 파트너와 함께” 이벤트부터 “Pokémon GO”에서 처음으로 “메가썬더볼트”의 메가레벨을 슈퍼 맥스까지 올릴 수 있습니다! 자세한 정보는 여기서 확인하세요.",
           "“썬더볼트”가 메가진화하면 스페셜 어택 “방전+”를 추가로 사용할 수 있습니다.",
           "이벤트 동안 “GO패스”용 보너스 과제를 추가로 받을 수 있으니 잘 살펴보세요!"
+        ],
+        "en": [
+          "For the first time in Pokémon GO, you’ll be able to encounter Bramblin—if you’re lucky! You may encounter Bramblin when you complete GO Pass tasks or use Incense.",
+          "Starting with the Fall Marathon: Buddy Trek event, you’ll be able to increase Mega Manectric’s Mega Level all the way up to Super Max Level for the first time in Pokémon GO! Learn more here.",
+          "Manectric will now be able to use an additional Charged Attack, Discharge+, when it’s Mega Evolved.",
+          "The power of this attack will increase with the Pokémon’s Mega Level!",
+          "Keep an eye out for additional bonus tasks for this GO Pass during the event!",
+          "Trainers will automatically receive GO Pass: Fall Marathon on Tuesday, October 13 at 10:00 a.m. local time. You can collect GO Points and rank up to get additional rewards through Monday, October 19, 2026, at 8:00 p.m. local time.",
+          "Additional encounters with even more event-themed Pokémon!"
         ]
       },
       "announcedAt": "2026-09-23"
@@ -288,6 +397,23 @@
           "Issue description: Following a recent mitigation for an unrelated issue, a small subset of Trainers were temporarily able to equip premium a..."
         ]
       }
+    },
+    {
+      "slug": "patterns-of-the-wild-2026",
+      "sources": [
+        {
+          "lang": "en",
+          "label": "Patterns of the Wild brings Pikachu wearing a batik shirt with a Special Background! — Pokémon GO",
+          "url": "https://pokemongo.com/en/news/patterns-of-the-wild-2026",
+          "image": "https://lh3.googleusercontent.com/LHsRwwQEAN3GxZ6e18YJdAXKKvkh_Xmthky9mx20Y4CLUnh1dvvhXFv1iVYW_BX-IhqDQjSwZS8vxVS8bLVhYShvL6hLFyn_relJvHFL"
+        }
+      ],
+      "changeLines": {
+        "en": [
+          "For the first time in Pokémon GO, you’ll be able to encounter Pikachu wearing a batik shirt with a Special Background.*"
+        ]
+      },
+      "announcedAt": "2026-09-11"
     },
     {
       "slug": "gigantamax-cinderace-max-battle-day-2026",

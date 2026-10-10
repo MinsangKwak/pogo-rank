@@ -183,8 +183,9 @@ def excerpt_of(lines, title='', lang='ko'):
             continue
         if lang == 'ko' and not re.search(r'[가-힣]', line):
             continue
-        # '한국시간 2026년 11월 1일 10:00부터 …' 같은 기간 줄은 문장이 아니다 — 인용은 마침표 · 느낌표가 있는 문장으로
-        if not re.search(r'[.!?]', line):
+        # '한국시간 2026년 11월 1일 10:00부터 …' · 'Friday, October 2, 2026, from 10:00 a.m. to 8:00 p.m. local time' 같은
+        # 기간 줄은 문장이 아니다 — 인용은 문장 부호로 **끝나는** 줄로('a.m.' 의 마침표가 가운데 있어도 통과하지 않게, Codex #354)
+        if not re.search(r'[.!?]["”’)\]]?\s*$', line):
             continue
         return line if len(line) <= 220 else line[:219].rstrip() + '…'
     return ''
@@ -297,7 +298,39 @@ def backfill_slugs(lang, frm, to):
 
 
 def index_slugs(page, lang):
-    return sorted(set(re.findall(rf'href="/{lang}/news/([a-z0-9\-]+)"', page)))
+    # 영문 색인은 기본 언어라 링크가 '/news/<slug>' 꼴이다(2026-10-10 확인) — '/en/news/' 만 찾으면 0건이라
+    # 영문 원문이 한 번도 짝지어지지 않았다. 한국어 색인은 '/ko/news/' 뿐이다
+    prefix = '(?:en/)?' if lang == 'en' else f'{lang}/'
+    return sorted(set(re.findall(rf'href="/{prefix}news/([a-z0-9\-]+)"', page)))
+
+
+def carry_over(row, prev):
+    """이번에 못 받은 언어판의 출처 · 변경 줄 · 제목을 지난 행에서 이어받는다.
+
+    한쪽 색인이나 본문이 잠깐 비면 다른 쪽만으로 행이 새로 만들어져 지난번에 받아 둔 영문(또는 한국어)
+    출처와 변경 줄이 통째로 사라진다(Codex #354). 지난 행에 있던 언어판은 이번에 못 받았어도 실제로 있던
+    것이라 그대로 둔다. 한국어판을 못 받았으면 제목 · 인용도 지난 한국어 것을 지킨다.
+    """
+    if not prev:
+        return row
+    got = {source['lang'] for source in row.get('sources', [])}
+    for source in prev.get('sources', []):
+        if source['lang'] not in got:
+            row.setdefault('sources', []).append(source)
+    row['sources'].sort(key=lambda source: source['lang'] != 'ko')
+    for lang, lines in (prev.get('changeLines') or {}).items():
+        # 이번에 받은 언어판은 다시 읽은 결과가 답이다 — 줄이 없어진 것도 결과이지 빠진 것이 아니다(Codex #354)
+        if lines and lang not in got and lang not in (row.get('changeLines') or {}):
+            row.setdefault('changeLines', {})[lang] = lines
+    if 'ko' not in got and any(source['lang'] == 'ko' for source in prev.get('sources', [])):
+        # snippet 은 릴리스 노트 후보의 인용 — 한국어 제목에 영문 인용이 섞이지 않게 같이 지킨다(Codex #354)
+        for key in ('title', 'excerpt', 'snippet'):
+            if prev.get(key):
+                row[key] = prev[key]
+    for key in ('date', 'announcedAt'):
+        if not row.get(key) and prev.get(key):
+            row[key] = prev[key]
+    return row
 
 
 def first_seen():
@@ -369,7 +402,13 @@ def main():
             print(f'색인 실패 {lang}: {error}', file=sys.stderr)
             index_failed.add(lang)
             continue
-        for slug in index_slugs(page, lang):
+        found = index_slugs(page, lang)
+        if not found:
+            # 200 인데 주소가 하나도 없으면 마크업이 바뀌었거나 반쪽 응답이다 — 못 받은 것과 같이 다룬다(Codex #353)
+            print(f'색인 비어 있음 {lang}: 주소 0개', file=sys.stderr)
+            index_failed.add(lang)
+            continue
+        for slug in found:
             slugs.setdefault(slug, set()).add(lang)
     if not slugs:
         print('색인을 하나도 못 받았다 — 기존 후보 파일을 그대로 둔다', file=sys.stderr)
@@ -384,6 +423,11 @@ def main():
 
     candidates, skipped = [], {'게시됨': 0, '이벤트': 0, '오래됨': 0, '변경 없음': 0, '못 받음': 0}
     dropped = set()
+    # 지난 후보 — 이번에 못 받은 언어판의 증거를 이어받는 데 쓴다
+    previous = {}
+    if os.path.exists(CANDIDATES_PATH):
+        previous = {entry['slug']: entry for entry in json.load(open(CANDIDATES_PATH, encoding='utf-8')).get('candidates', [])
+                    if entry.get('slug')}
     for slug in order:
         if slug in done:
             skipped['게시됨'] += 1
@@ -420,6 +464,9 @@ def main():
         if not args.backfill and entry.get('announcedAt') and entry['announcedAt'] < cutoff:
             skipped['오래됨'] += 1
             continue
+        # 이번에 못 받은 언어판(한쪽 색인에만 실렸거나 본문이 끊긴 쪽)의 출처 · 변경 줄은 지난 후보에서 이어받는다 —
+        # 받은 쪽에 변경 줄이 없다고 해서 다른 쪽에 있던 증거까지 버리면 안 된다(Codex #354)
+        carry_over(entry, previous.get(slug))
         if not entry['changeLines']:
             skipped['변경 없음'] += 1
             # 이번에 다시 읽어 '변경 없음' 이 된 글은 지난 후보 파일에서 되살리지 않는다 — 상용구만 남은 옛 줄이 돌아온다.
@@ -431,6 +478,9 @@ def main():
 
     # 릴리스 노트 — 실제 변경이 쌓이는 곳이라 뉴스와 함께 모은다. 처음 본 날은 지난 두 파일에서 이어받는다
     notes = collect_helpshift(done, first_seen(), today.isoformat())
+    # 릴리스 노트도 한쪽 언어판 목록이 잠깐 비면 반쪽 후보가 된다 — 지난 후보에서 그 언어판의 출처 · 인용 · 변경 줄을 이어받는다(Codex #354)
+    for note in notes:
+        carry_over(note, previous.get(note['slug']))
     candidates.extend(notes)
     print(f'  (릴리스 노트 {len(notes)}건 포함)')
     # 아직 게시되지 않은 지난 후보는 남긴다 — 공식 색인 · 30일 창에서 내려갔다고 검토 대기열에서 지우면
@@ -438,9 +488,9 @@ def main():
     # 사람이 파일에서 지운 후보는 색인에 다시 오르지 않는 한 돌아오지 않는다
     fresh = {entry['slug'] for entry in candidates}
     kept = 0
-    if os.path.exists(CANDIDATES_PATH):
-        for entry in json.load(open(CANDIDATES_PATH, encoding='utf-8')).get('candidates', []):
-            if not entry.get('slug') or entry['slug'] in fresh or entry['slug'] in done or entry['slug'] in dropped:
+    if previous:
+        for entry in previous.values():
+            if entry['slug'] in fresh or entry['slug'] in done or entry['slug'] in dropped:
                 continue
             # 다시 받지 않는 옛 후보도 지금 기준으로 상용구를 걷어낸다 — 근거가 안전 안내뿐이던 줄은 여기서 빠진다
             entry['changeLines'] = {lang: [line for line in rows if not (BOILERPLATE.search(line) or REDIRECT.match(line))]
@@ -472,7 +522,7 @@ def main():
             for row in json.load(open(ARCHIVE_PATH, encoding='utf-8')).get('entries', []):
                 merged[row['id']] = row
         for row in archive:
-            merged[row['id']] = row
+            merged[row['id']] = carry_over(row, merged.get(row['id']))
         entries = sorted(merged.values(), key=lambda row: (row.get('date') or row.get('checkedAt') or '', row['id']),
                          reverse=True)
         open(ARCHIVE_PATH, 'w', encoding='utf-8').write(json.dumps({
