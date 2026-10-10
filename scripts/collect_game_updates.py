@@ -369,7 +369,13 @@ def main():
             print(f'색인 실패 {lang}: {error}', file=sys.stderr)
             index_failed.add(lang)
             continue
-        for slug in index_slugs(page, lang):
+        found = index_slugs(page, lang)
+        if not found:
+            # 200 인데 주소가 하나도 없으면 마크업이 바뀌었거나 반쪽 응답이다 — 못 받은 것과 같이 다룬다(Codex #353)
+            print(f'색인 비어 있음 {lang}: 주소 0개', file=sys.stderr)
+            index_failed.add(lang)
+            continue
+        for slug in found:
             slugs.setdefault(slug, set()).add(lang)
     if not slugs:
         print('색인을 하나도 못 받았다 — 기존 후보 파일을 그대로 둔다', file=sys.stderr)
