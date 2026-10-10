@@ -27,7 +27,20 @@
 ## 릴리스 기록
 
 <details open>
-<summary><b>2026-10-10</b> — 1판 · <code>v5.9.15</code></summary>
+<summary><b>2026-10-10</b> — 2판 · <code>v5.9.15</code> · <code>v5.9.16</code></summary>
+
+<details>
+<summary><b>v5.9.16</b> · 수집기 — 빈 색인은 못 받은 언어로 · 영문 색인 링크 꼴 수정(영문 원문 짝 복구)</summary>
+
+**배경** — Codex 가 #353 에 남긴 P1: 색인 요청이 200 이어도 `index_slugs()` 가 빈 목록이면 `index_failed` 에 들지 않아 다른 언어판만으로 '다 읽은 것' 이 되고 지난 후보가 지워질 수 있다. 그 가드를 넣고 `--dry-run` 을 돌리자 **영문 색인이 실제로 0건**이었다 — 영문 색인은 기본 언어라 링크가 `/news/<slug>` 꼴인데 수집기는 `/en/news/` 만 찾았다. 그래서 아카이브 48건 중 영문 출처가 있는 글이 헬프시프트 5건뿐이었고, 기사 후보의 영문 변경 줄도 한 번도 모이지 않았다.
+
+**변경(`scripts/collect_game_updates.py`)** — 주소를 하나도 못 뽑은 색인은 `index_failed` 에 넣어 그 수집에서는 어떤 후보도 버리지 않는다. `index_slugs` 가 영문에서는 `/news/` · `/en/news/` 둘 다 받는다.
+
+**데이터** — 수집기를 다시 돌려 아카이브 48 → 61건(영문 출처 있는 글 5 → 35건 · 영문으로만 나온 해외 지역 행사 13건이 영문 제목으로 새로 섬: 시티 사파리 보스턴 · 브리즈번 · 유럽, 싱가포르 30주년, IIT 델리, ESA, TCG 30주년, Patterns of the Wild, 빛의 축제, Twitch Drops), 후보 14 → 17건(영문 변경 줄 있는 후보 14건, 핼러윈 파트 2 는 영문 줄도 'Starting with the Halloween 2026 Part II event, you’ll be able to incr…'). 달력이 영문 원제를 그대로 세우는 정책과 같게 영문 전용 글은 영문 제목이다 — 뺄지는 주인 결정.
+
+검사 — frontend-v4 `version` 6 · web 169 · 로컬 데이터 재계산(아카이브 59건 공개 · 기사 11건).
+
+</details>
 
 <details>
 <summary><b>v5.9.15</b> · 게임 업데이트 수집기 — 상용구 제외 · 본문 앞 절 보존 · 릴리스 노트 확인일</summary>
