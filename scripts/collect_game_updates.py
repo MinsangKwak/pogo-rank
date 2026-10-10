@@ -183,8 +183,9 @@ def excerpt_of(lines, title='', lang='ko'):
             continue
         if lang == 'ko' and not re.search(r'[가-힣]', line):
             continue
-        # '한국시간 2026년 11월 1일 10:00부터 …' 같은 기간 줄은 문장이 아니다 — 인용은 마침표 · 느낌표가 있는 문장으로
-        if not re.search(r'[.!?]', line):
+        # '한국시간 2026년 11월 1일 10:00부터 …' · 'Friday, October 2, 2026, from 10:00 a.m. to 8:00 p.m. local time' 같은
+        # 기간 줄은 문장이 아니다 — 인용은 문장 부호로 **끝나는** 줄로('a.m.' 의 마침표가 가운데 있어도 통과하지 않게, Codex #354)
+        if not re.search(r'[.!?]["”’)\]]?\s*$', line):
             continue
         return line if len(line) <= 220 else line[:219].rstrip() + '…'
     return ''
@@ -318,7 +319,8 @@ def carry_over(row, prev):
             row.setdefault('sources', []).append(source)
     row['sources'].sort(key=lambda source: source['lang'] != 'ko')
     for lang, lines in (prev.get('changeLines') or {}).items():
-        if lines and lang not in (row.get('changeLines') or {}):
+        # 이번에 받은 언어판은 다시 읽은 결과가 답이다 — 줄이 없어진 것도 결과이지 빠진 것이 아니다(Codex #354)
+        if lines and lang not in got and lang not in (row.get('changeLines') or {}):
             row.setdefault('changeLines', {})[lang] = lines
     if 'ko' not in got and any(source['lang'] == 'ko' for source in prev.get('sources', [])):
         # snippet 은 릴리스 노트 후보의 인용 — 한국어 제목에 영문 인용이 섞이지 않게 같이 지킨다(Codex #354)
