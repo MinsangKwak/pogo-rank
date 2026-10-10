@@ -185,7 +185,8 @@ def excerpt_of(lines, title='', lang='ko'):
             continue
         # '한국시간 2026년 11월 1일 10:00부터 …' · 'Friday, October 2, 2026, from 10:00 a.m. to 8:00 p.m. local time' 같은
         # 기간 줄은 문장이 아니다 — 인용은 문장 부호로 **끝나는** 줄로('a.m.' 의 마침표가 가운데 있어도 통과하지 않게, Codex #354)
-        if not re.search(r'[.!?]["”’)\]]?\s*$', line):
+        # 문장 뒤 각주 표시('등장합니다.*' · '있습니다!※')와 닫는 따옴표 · 괄호는 허용한다(Codex #355)
+        if not re.search(r'[.!?]["”’)\]*※]*\s*$', line):
             continue
         return line if len(line) <= 220 else line[:219].rstrip() + '…'
     return ''
