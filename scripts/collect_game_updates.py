@@ -321,7 +321,8 @@ def carry_over(row, prev):
         if lines and lang not in (row.get('changeLines') or {}):
             row.setdefault('changeLines', {})[lang] = lines
     if 'ko' not in got and any(source['lang'] == 'ko' for source in prev.get('sources', [])):
-        for key in ('title', 'excerpt'):
+        # snippet 은 릴리스 노트 후보의 인용 — 한국어 제목에 영문 인용이 섞이지 않게 같이 지킨다(Codex #354)
+        for key in ('title', 'excerpt', 'snippet'):
             if prev.get(key):
                 row[key] = prev[key]
     for key in ('date', 'announcedAt'):
