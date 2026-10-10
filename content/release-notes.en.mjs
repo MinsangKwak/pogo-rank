@@ -15,6 +15,9 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 export const RELEASE_NOTES_EN = {
+  '2026-10-10 · v5.9.16': [
+    '**Game update board entries now link the English notice too** — the official English index uses a different link shape, so only Korean sources had been collected. Each entry now pairs the English notice with the Korean one, and English-only regional events (City Safari and the like) appear with their English titles',
+  ],
   '2026-10-10 · v5.9.15': [
     '**Game update board quotes now use the first sentence of the notice** — some entries used to quote a date range like \'From Oct 4 00:00 …\' or the generic safety reminder. The board now shows the official notice\'s first sentence verbatim (Halloween Part 2 reads \'you may encounter Shiny Greavard!\')',
     '**Official release notes (known issues) now carry a checked date** — they have no announcement date, so they sank to the bottom of the list. The day we first saw each note is shown as \'Checked\' and drives ordering and the 7-day / 30-day filters',
