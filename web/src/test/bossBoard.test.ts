@@ -129,6 +129,14 @@ describe('폼 — 제목의 폼을 버리지 않는다 (Codex, PR #361)', () => 
     // 같은 폼은 여전히 한 번
     expect(board2.filter((card) => card.detailName === '오리진폼 기라티나')).toHaveLength(1);
   });
+  it('같은 보스라도 5성 레이드와 섀도우 레이드는 다른 카드 (Codex, PR #361)', () => {
+    const both = [
+      ...events,
+      ev('r5-land', 'raid-battles', 'Landorus (Incarnate Forme) in 5-star Raid Battles', '2026-10-13T10:00:00.000', '2026-10-20T10:00:00.000', [645]),
+    ];
+    const board2 = bossBoard({ ...src(), events: both }, now);
+    expect(board2.filter((card) => card.detailName === '화신폼 랜드로스').map((card) => card.kind).sort()).toEqual(['raid5', 'shadow']);
+  });
   it('찾는 재료가 없으면 이름은 폼째 두고 그림 · 타입은 원종으로', () => {
     const later = Date.parse('2026-10-30T12:00:00+09:00');
     const board2 = bossBoard({ slides: [], events, names, forms, megas }, later);

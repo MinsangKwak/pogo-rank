@@ -254,11 +254,12 @@ export function bossBoard(src: BossBoardSource, nowMs: number, options: BossBoar
   // 진행 중 → 남은 날 → 종류(맥스 먼저 — 서비스의 축) 순
   const order: Record<BoardKind, number> = { gmax: 0, dmax: 1, raid5: 2, mega: 3, shadow: 4, raid: 5 };
   cards.sort((left, right) => Number(right.live) - Number(left.live) || left.days - right.days || order[left.kind] - order[right.kind]);
-  // 같은 보스는 한 번 — 열쇠는 그림 번호가 아니라 판 · 폼째 이름이다. 오리진폼 · 어나더폼 기라티나는 그림(487)이 같아도 다른 보스다 (Codex, PR #361)
+  // 같은 보스는 한 번 — 열쇠는 그림 번호가 아니라 종류 · 폼째 이름이다. 오리진폼 · 어나더폼 기라티나는 그림(487)이 같아도 다른 보스고,
+  // 같은 랜드로스라도 5성 레이드와 주말 섀도우 레이드는 다른 카드다(창 · 안내가 다르다) (Codex, PR #361)
   const seen = new Set<string>();
   const out: BossCard[] = [];
   for (const card of cards) {
-    const key = `${card.battle}:${card.detailName}`;
+    const key = `${card.kind}:${card.detailName}`;
     if (seen.has(key)) continue;
     seen.add(key);
     out.push(card);
