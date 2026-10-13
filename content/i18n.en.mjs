@@ -218,6 +218,7 @@ export const I18N_PATTERNS = [
   [/^(.+) 보스$/, '$1 boss'],
   [/^월 (\d{2}:\d{2}–\d{2}:\d{2})$/, 'Mon $1'],
   [/^토·일 (\d{2}:\d{2}–\d{2}:\d{2})$/, 'Sat·Sun $1'],
+  [/^덱 짜기는 (.+) 타입 보스 기준이에요\. 여기 추천은 두 타입을 함께 봤어요\.$/, 'The team builder targets a $1-type boss. The picks here account for both types.'],
 ];
 
 // 법률·콘텐츠 화면에 띄우는 안내 (privacy.js · terms.js · release.js)

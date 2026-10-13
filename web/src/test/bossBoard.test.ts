@@ -2,7 +2,7 @@
 // 이번 주 보스판 — 맥스 일정과 레이드를 한 줄로, 진행 중이 먼저, 모르는 이름은 안 세우고, 새는 글자 없이 (lib/bossBoard.ts)
 import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
-import { bossBoard, cardDday, cardFor, cardWhen, formLabelOf, formsFor, raidKindOf, raidTierOf, reasonFor, shadowWindow, BOARD_MAX, SHADOW_HOURS } from '../lib/bossBoard';
+import { bossBoard, cardDday, cardFor, cardWhen, formLabelOf, formsFor, raidKindOf, raidTierOf, reasonFor, shadowWindow, BOARD_MAX } from '../lib/bossBoard';
 import { maxSlides, weeksFromSchedule } from '../lib/maxSlides';
 import { LEAK } from '../lib/cell';
 import type { GamedayEvent } from '../types/data';
@@ -22,18 +22,18 @@ const events: GamedayEvent[] = [
   ev('mm-1012', 'max-mondays', 'Dynamax Rookidee during Max Monday', '2026-10-12T06:00:00.000', '2026-10-12T21:00:00.000', [821]),
   ev('gmax-1017', 'max-battles', 'Gigantamax Inteleon Max Battle Day', '2026-10-17T14:00:00.000', '2026-10-17T17:00:00.000', [812]),
   ev('mm-1026', 'max-mondays', 'Dynamax Sobble during Max Monday', '2026-10-26T06:00:00.000', '2026-10-26T21:00:00.000', [816]),
-  ev('r5-1007', 'raid-battles', 'Mewtwo in 5-star Raid Battles', '2026-10-07T10:00:00.000', '2026-10-13T10:00:00.000', [150]),
-  ev('sh-1007', 'raid-battles', 'Shadow Landorus (Incarnate Forme) in Shadow Raids', '2026-10-07T10:00:00.000', '2026-11-03T10:00:00.000', [645]),
-  ev('r5-1014', 'raid-battles', 'Dialga in 5-star Raid Battles', '2026-10-14T10:00:00.000', '2026-10-20T10:00:00.000', [483]),
-  ev('mega-1021', 'raid-battles', 'Mega Charizard X and Mega Charizard Y in Mega Raid', '2026-10-21T10:00:00.000', '2026-10-27T10:00:00.000', [6]),
-  ev('mega-1028', 'raid-battles', 'Mega Charizard Y in Mega Raids', '2026-10-28T10:00:00.000', '2026-11-03T10:00:00.000', [6]),
-  ev('r5-1028', 'raid-battles', 'Giratina (Origin Forme) in 5-star Raid Battles', '2026-10-28T10:00:00.000', '2026-11-03T10:00:00.000', [487]),
-  ev('r5-1104', 'raid-battles', 'Primal Groudon in Primal Raids', '2026-11-04T10:00:00.000', '2026-11-10T10:00:00.000', [383]),
-  ev('r5-9999', 'raid-battles', 'Unknown in 5-star Raid Battles', '2026-10-14T10:00:00.000', '2026-10-20T10:00:00.000', [9999]),
+  ev('r5-1007', 'raid-battles', 'Mewtwo in 5-star Raid Battles', '2026-10-07T06:00:00.000', '2026-10-13T22:00:00.000', [150]),
+  ev('sh-1007', 'raid-battles', 'Shadow Landorus (Incarnate Forme) in Shadow Raids', '2026-10-07T06:00:00.000', '2026-11-03T22:00:00.000', [645]),
+  ev('r5-1014', 'raid-battles', 'Dialga in 5-star Raid Battles', '2026-10-14T06:00:00.000', '2026-10-20T22:00:00.000', [483]),
+  ev('mega-1021', 'raid-battles', 'Mega Charizard X and Mega Charizard Y in Mega Raid', '2026-10-21T06:00:00.000', '2026-10-27T22:00:00.000', [6]),
+  ev('mega-1028', 'raid-battles', 'Mega Charizard Y in Mega Raids', '2026-10-28T06:00:00.000', '2026-11-03T22:00:00.000', [6]),
+  ev('r5-1028', 'raid-battles', 'Giratina (Origin Forme) in 5-star Raid Battles', '2026-10-28T06:00:00.000', '2026-11-03T22:00:00.000', [487]),
+  ev('r5-1104', 'raid-battles', 'Primal Groudon in Primal Raids', '2026-11-04T06:00:00.000', '2026-11-10T22:00:00.000', [383]),
+  ev('r5-9999', 'raid-battles', 'Unknown in 5-star Raid Battles', '2026-10-14T06:00:00.000', '2026-10-20T22:00:00.000', [9999]),
   ev('cd-1010', 'community-day', 'Zorua Community Day', '2026-10-10T14:00:00.000', '2026-10-10T17:00:00.000', [570, 571]),
   ev('cd-1018', 'community-day', 'Sobble Community Day', '2026-10-18T14:00:00.000', '2026-10-18T17:00:00.000', [816]),
 ];
-// 2026-10-13 12:00 한국 — 파라꼬 주(10.12~10.18) 진행 중, 뮤츠 5성은 10시에 끝났다, 디아루가는 내일
+// 2026-10-13 12:00 한국 — 파라꼬 주(10.12~10.18) 진행 중, 뮤츠 5성은 오늘 22시까지, 디아루가는 내일
 const now = Date.parse('2026-10-13T12:00:00+09:00');
 const src = () => ({ slides: maxSlides({ events, names, en, forms, weeks: weeksFromSchedule(undefined) }, now), events, names, forms, megas, dexTable, lookup });
 
@@ -71,19 +71,20 @@ describe('bossBoard', () => {
 
   it('진행 중이 먼저(맥스 → 레이드), 그다음 가까운 것. 끝난 레이드 · 7일 밖 · 모르는 이름은 없다', () => {
     // 화요일 — 섀도우 랜드로스는 주말(토 10/17)까지 D-4 라 진행 중이 아니다
-    expect(board.map((card) => card.detailName)).toEqual(['다이맥스 파라꼬', '디아루가', '거다이맥스 인텔리레온', '화신폼 랜드로스']);
-    expect(board[3]).toMatchObject({ name: '랜드로스', form: '화신폼', sprite: 645, days: 4, hours: SHADOW_HOURS });
-    expect(board.map((card) => card.kind)).toEqual(['dmax', 'raid5', 'gmax', 'shadow']);
-    expect(board.map((card) => card.live)).toEqual([true, false, false, false]);
-    // 10.26 울머기(13일 뒤) · 10.21 메가 리자몽(8일 뒤) · 끝난 뮤츠 · 9999 는 안 선다
-    expect(board.some((card) => /울머기|리자몽|뮤츠/.test(card.detailName))).toBe(false);
+    expect(board.map((card) => card.detailName)).toEqual(['다이맥스 파라꼬', '뮤츠', '디아루가', '거다이맥스 인텔리레온', '화신폼 랜드로스']);
+    expect(board[4]).toMatchObject({ name: '랜드로스', form: '화신폼', sprite: 645, days: 4, hours: '토·일 06:00–22:00' });
+    expect(board.map((card) => card.kind)).toEqual(['dmax', 'raid5', 'raid5', 'gmax', 'shadow']);
+    expect(board.map((card) => card.live)).toEqual([true, true, false, false, false]);
+    // 10.26 울머기(13일 뒤) · 10.21 메가 리자몽(8일 뒤) · 9999 는 안 선다. 오늘 22시에 끝나는 뮤츠는 그 뒤에 빠진다
+    expect(board.some((card) => /울머기|리자몽/.test(card.detailName))).toBe(false);
+    expect(bossBoard(src(), Date.parse('2026-10-13T22:30:00+09:00')).some((card) => card.detailName === '뮤츠')).toBe(false);
   });
 
   it('카드 글 — 기간 · 남은 날 · 종류, 새는 글자 없이', () => {
-    const [rookidee, dialga, inteleon, landorus] = board;
+    const [rookidee, , dialga, inteleon, landorus] = board;
     expect(cardDday(rookidee!)).toBe('진행 중');
     expect(cardWhen(rookidee!)).toBe('다이맥스 보스 · 10.12 (월) — 10.18 (일) · 월 06:00–21:00');
-    expect(cardWhen(landorus!)).toBe('섀도우 레이드 보스 · 10.7 (수) — 11.3 (화) · 토·일 10:00–20:00');
+    expect(cardWhen(landorus!)).toBe('섀도우 레이드 보스 · 10.7 (수) — 11.3 (화) · 토·일 06:00–22:00');
     expect(cardDday(landorus!)).toBe('D-4');
     expect(cardDday(dialga!)).toBe('D-1');
     expect(dialga!.short).toBe('10.14–10.20');
@@ -141,7 +142,7 @@ describe('폼 — 제목의 폼을 버리지 않는다 (Codex, PR #361)', () => 
   it('그림이 같아도 폼이 다르면 다른 카드 — 오리진폼 · 어나더폼 기라티나 (Codex, PR #361)', () => {
     const both = [
       ...events,
-      ev('r5-1028b', 'raid-battles', 'Giratina (Altered Forme) in 5-star Raid Battles', '2026-10-28T10:00:00.000', '2026-11-03T10:00:00.000', [487]),
+      ev('r5-1028b', 'raid-battles', 'Giratina (Altered Forme) in 5-star Raid Battles', '2026-10-28T06:00:00.000', '2026-11-03T22:00:00.000', [487]),
     ];
     const later = Date.parse('2026-10-30T12:00:00+09:00');
     const board2 = bossBoard({ ...src(), events: both }, later, { horizonDays: 7 });
@@ -152,7 +153,7 @@ describe('폼 — 제목의 폼을 버리지 않는다 (Codex, PR #361)', () => 
   it('같은 보스라도 5성 레이드와 섀도우 레이드는 다른 카드 (Codex, PR #361)', () => {
     const both = [
       ...events,
-      ev('r5-land', 'raid-battles', 'Landorus (Incarnate Forme) in 5-star Raid Battles', '2026-10-13T10:00:00.000', '2026-10-20T10:00:00.000', [645]),
+      ev('r5-land', 'raid-battles', 'Landorus (Incarnate Forme) in 5-star Raid Battles', '2026-10-13T06:00:00.000', '2026-10-20T22:00:00.000', [645]),
     ];
     const board2 = bossBoard({ ...src(), events: both }, now);
     expect(board2.filter((card) => card.detailName === '화신폼 랜드로스').map((card) => card.kind).sort()).toEqual(['raid5', 'shadow']);
@@ -177,8 +178,8 @@ describe('보스가 여럿인 제목 — 폼을 보스마다 읽는다 (Codex, P
   });
   it('블랙 · 화이트 큐레무가 각각 카드로, 검왕 자시안 · 방패왕 자마젠타가 제 폼으로', () => {
     const more = [
-      ev('r5-k', 'raid-battles', 'Black Kyurem and White Kyurem in 5-star Raid Battles', '2026-10-13T10:00:00.000', '2026-10-20T10:00:00.000', [646]),
-      ev('r5-z', 'raid-battles', 'Crowned Sword Zacian and Crowned Shield Zamazenta in 5-star Raids', '2026-10-13T10:00:00.000', '2026-10-20T10:00:00.000', [888, 889]),
+      ev('r5-k', 'raid-battles', 'Black Kyurem and White Kyurem in 5-star Raid Battles', '2026-10-13T06:00:00.000', '2026-10-20T22:00:00.000', [646]),
+      ev('r5-z', 'raid-battles', 'Crowned Sword Zacian and Crowned Shield Zamazenta in 5-star Raids', '2026-10-13T06:00:00.000', '2026-10-20T22:00:00.000', [888, 889]),
     ];
     const names2 = { ...names, '646': '큐레무', '888': '자시안', '889': '자마젠타' };
     const forms2 = { ...forms, '646': { name: '', types: ['dragon', 'ice'] }, '888': { name: '', types: ['fairy'] }, '10188': { name: '검왕', types: ['fairy', 'steel'] }, '889': { name: '', types: ['fighting'] }, '10189': { name: '방패왕', types: ['fighting', 'steel'] } };
@@ -198,20 +199,26 @@ describe('보스가 여럿인 제목 — 폼을 보스마다 읽는다 (Codex, P
   });
 });
 
-describe('shadowWindow — 주말 섀도우 레이드는 토 · 일 10–20시에만 선다 (Codex, PR #361)', () => {
-  const start = Date.parse('2026-10-07T10:00:00+09:00');
-  const end = Date.parse('2026-11-03T10:00:00+09:00');
-  it('평일은 다음 토요일까지 남은 날, 토요일 낮은 진행 중, 토요일 밤은 일요일(D-1), 일요일 밤은 다음 토요일(D-6)', () => {
+describe('shadowWindow — 주말 섀도우 레이드는 토 · 일, 행사의 시작 · 끝 시각(06:00–22:00)에만 선다 (Codex, PR #361)', () => {
+  const start = Date.parse('2026-10-07T06:00:00+09:00');
+  const end = Date.parse('2026-11-03T22:00:00+09:00');
+  it('평일은 다음 토요일까지 남은 날, 토요일 낮은 진행 중, 토요일 밤은 일요일(D-1), 일요일 새벽은 오늘, 일요일 밤은 다음 토요일(D-6)', () => {
     expect(shadowWindow(Date.parse('2026-10-13T12:00:00+09:00'), start, end)).toEqual({ live: false, days: 4 });
-    expect(shadowWindow(Date.parse('2026-10-17T12:00:00+09:00'), start, end)).toEqual({ live: true, days: 0 });
-    expect(shadowWindow(Date.parse('2026-10-17T21:00:00+09:00'), start, end)).toEqual({ live: false, days: 1 });
-    expect(shadowWindow(Date.parse('2026-10-18T09:00:00+09:00'), start, end)).toEqual({ live: false, days: 0 });
-    expect(shadowWindow(Date.parse('2026-10-18T21:00:00+09:00'), start, end)).toEqual({ live: false, days: 6 });
+    expect(shadowWindow(Date.parse('2026-10-17T07:00:00+09:00'), start, end)).toEqual({ live: true, days: 0 });
+    expect(shadowWindow(Date.parse('2026-10-17T21:30:00+09:00'), start, end)).toEqual({ live: true, days: 0 });
+    expect(shadowWindow(Date.parse('2026-10-17T22:30:00+09:00'), start, end)).toEqual({ live: false, days: 1 });
+    expect(shadowWindow(Date.parse('2026-10-18T05:00:00+09:00'), start, end)).toEqual({ live: false, days: 0 });
+    expect(shadowWindow(Date.parse('2026-10-18T23:00:00+09:00'), start, end)).toEqual({ live: false, days: 6 });
+  });
+  it('시각은 행사에서 — 10:00–20:00 행사면 09:00 은 오늘, 10:00 은 진행 중', () => {
+    expect(shadowWindow(Date.parse('2026-10-17T09:00:00+09:00'), start, end, '10:00', '20:00')).toEqual({ live: false, days: 0 });
+    expect(shadowWindow(Date.parse('2026-10-17T10:00:00+09:00'), start, end, '10:00', '20:00')).toEqual({ live: true, days: 0 });
+    expect(shadowWindow(Date.parse('2026-10-17T20:30:00+09:00'), start, end, '10:00', '20:00')).toEqual({ live: false, days: 1 });
   });
   it('로테이션이 끝나기 전 마지막 주말이 지나면 창이 없다 — 카드를 안 세운다', () => {
     // 11/1(일) 밤 → 다음 창 11/7(토)은 11/3 끝 뒤
-    expect(shadowWindow(Date.parse('2026-11-01T21:00:00+09:00'), start, end)).toBeNull();
-    const board2 = bossBoard(src(), Date.parse('2026-11-01T21:00:00+09:00'));
+    expect(shadowWindow(Date.parse('2026-11-01T23:00:00+09:00'), start, end)).toBeNull();
+    const board2 = bossBoard(src(), Date.parse('2026-11-01T23:00:00+09:00'));
     expect(board2.some((card) => card.kind === 'shadow')).toBe(false);
   });
   it('로테이션 시작 전의 주말은 세지 않는다', () => {

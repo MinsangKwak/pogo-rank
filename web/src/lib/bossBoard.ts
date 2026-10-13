@@ -179,25 +179,34 @@ function megaFormsOf(title: string, forms: readonly { sprite: number; label: str
 }
 
 const HOUR = 60 * 60 * 1000;
-/** 주말 섀도우 레이드 창 — 토 · 일 10:00–20:00 (한국). 일정표의 '주말 섀도우 레이드' 와 같은 말 */
-export const SHADOW_HOURS = '토·일 10:00–20:00';
+/** 주말 섀도우 레이드 창의 시간 글 — '토·일 06:00–22:00'. 시각은 행사 원본(gameday)의 시작 · 끝 시각이다 */
+export const shadowHours = (from: string, to: string): string => `토·일 ${from}–${to}`;
+
+/** 'HH:MM' → [시, 분]. 못 읽으면 null */
+function clockOf(text: string): [number, number] | null {
+  const match = /^(\d{2}):(\d{2})$/.exec(text);
+  return match ? [Number(match[1]), Number(match[2])] : null;
+}
 
 /**
- * 섀도우 레이드의 다음 창 — gameday 는 로테이션의 양끝(10/7 ~ 11/3)만 주지만 보스는 **주말 낮에만** 선다.
+ * 섀도우 레이드의 다음 창 — gameday 는 로테이션의 양끝(10/7 06:00 ~ 11/3 22:00)만 주지만 보스는 **주말 낮에만** 선다.
  * 양끝으로 '진행 중' 을 찍으면 평일에도 진행 중이라고 말한다 (Codex, PR #361).
+ * 하루 창의 여닫는 시각은 행사 원본의 시작 · 끝 시각(06:00 · 22:00)에서 읽는다 — 손으로 박은 10–20시는 원본과 어긋났다 (Codex, PR #361).
  * 지금이 창 안이면 live, 아니면 로테이션 안의 다음 창까지 남은 날. 남은 창이 없으면 null(카드를 안 세운다)
  */
-export function shadowWindow(nowMs: number, startMs: number, endMs: number): { live: boolean; days: number } | null {
+export function shadowWindow(nowMs: number, startMs: number, endMs: number, from = '06:00', to = '22:00'): { live: boolean; days: number } | null {
+  const open = clockOf(from) ?? [6, 0];
+  const close = clockOf(to) ?? [22, 0];
   const today = kstDate(nowMs);
   for (let offset = 0; offset < 14; offset += 1) {
     const weekday = (today.w + offset) % 7;
     if (weekday !== 0 && weekday !== 6) continue;
-    const open = Date.UTC(today.y, today.m - 1, today.d + offset, 10) - 9 * HOUR;
-    const close = open + 10 * HOUR;
-    if (close <= startMs) continue;
-    if (open >= endMs) return null;
-    if (nowMs >= close) continue;
-    return { live: nowMs >= open, days: offset };
+    const opensAt = Date.UTC(today.y, today.m - 1, today.d + offset, open[0], open[1]) - 9 * HOUR;
+    const closesAt = Date.UTC(today.y, today.m - 1, today.d + offset, close[0], close[1]) - 9 * HOUR;
+    if (closesAt <= startMs) continue;
+    if (opensAt >= endMs) return null;
+    if (nowMs >= closesAt) continue;
+    return { live: nowMs >= opensAt, days: offset };
   }
   return null;
 }
@@ -214,15 +223,15 @@ function raidCards(src: BossBoardSource, nowMs: number, horizonMs: number): Boss
     const from = hhmm(event.start);
     const to = hhmm(event.end);
     const sameDay = shortDay(start) === shortDay(end);
-    // 섀도우는 주말 창으로 센다 — 창이 더 없으면 안 세운다
-    const shadow = kind === 'shadow' ? shadowWindow(nowMs, start, end) : null;
+    // 섀도우는 주말 창으로 센다 — 창이 더 없으면 안 세운다. 창의 여닫는 시각은 행사의 시작 · 끝 시각
+    const shadow = kind === 'shadow' ? shadowWindow(nowMs, start, end, from || '06:00', to || '22:00') : null;
     if (kind === 'shadow' && (!shadow || shadow.days * 24 * HOUR > horizonMs)) continue;
     const base = {
       kind, battle: 'raid' as const, tier: raidTierOf(event.title),
       when: sameDay ? dayLabel(start) : `${dayLabel(start)} — ${dayLabel(end)}`,
       short: sameDay ? shortDay(start) : `${shortDay(start)}–${shortDay(end)}`,
       // 레이드 로테이션은 일주일 내내라 시간을 안 적는다 — 하루 행사(레이드 데이)와 주말 섀도우만 시간이 뜻이 있다
-      hours: shadow ? SHADOW_HOURS : (sameDay && from && to ? `${from}–${to}` : ''),
+      hours: shadow ? shadowHours(from || '06:00', to || '22:00') : (sameDay && from && to ? `${from}–${to}` : ''),
       live: shadow ? shadow.live : start <= nowMs,
       days: shadow ? shadow.days : Math.max(0, daysUntil(start, nowMs)),
       at: start,

@@ -66,6 +66,8 @@ export default function VsCard({ mon, dexNo, onSwitch, onLeave }: {
           <Recs rows={counters.rows} onSwitch={onSwitch} />
           <p className="detail__foot">{counters.foot}</p>
           {isShadow ? <p className="detail__foot">섀도우 레이드는 격노 · 정화 결정이 있어 솔플 계산기의 셈과 달라요. 추천은 타입 상성 기준이에요.</p> : null}
+          {/* 덱 짜기는 보스 타입 하나 기준으로 짜인 화면이다(타입 칩 · ?b= · 탱커 표) — 두 타입 보스는 첫 타입으로 가니 그 사실을 적는다 (Codex, PR #361) */}
+          {isMax && card.types.length > 1 ? <p className="detail__foot">{`덱 짜기는 ${dex.TYPE_KO[card.types[0]!] ?? card.types[0]} 타입 보스 기준이에요. 여기 추천은 두 타입을 함께 봤어요.`}</p> : null}
         </>
       ) : (
         // 타입을 모르는 보스(발표 전) — 추천 대신 무엇을 언제 알 수 있는지 적는다
