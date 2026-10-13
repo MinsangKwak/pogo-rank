@@ -191,7 +191,7 @@ function raidCards(src: BossBoardSource, nowMs: number, horizonMs: number): Boss
 }
 
 /**
- * 이번 주 보스판 — 진행 중인 것이 먼저(이른 것부터), 그다음 가까운 것. 같은 폼(그림 번호)은 한 번만.
+ * 이번 주 보스판 — 진행 중인 것이 먼저(이른 것부터), 그다음 가까운 것. 같은 보스(판 · 폼째 이름)는 한 번만.
  * 맥스 일정은 홈 배너와 같은 `slides` 를 받는다 — 배너 · 보스판 · 팝업이 같은 장을 봐야 한다
  */
 export function bossBoard(src: BossBoardSource, nowMs: number, options: BossBoardOptions = {}): BossCard[] {
@@ -203,11 +203,13 @@ export function bossBoard(src: BossBoardSource, nowMs: number, options: BossBoar
   // 진행 중 → 남은 날 → 종류(맥스 먼저 — 서비스의 축) 순
   const order: Record<BoardKind, number> = { gmax: 0, dmax: 1, raid5: 2, mega: 3, shadow: 4, raid: 5 };
   cards.sort((left, right) => Number(right.live) - Number(left.live) || left.days - right.days || order[left.kind] - order[right.kind]);
-  const seen = new Set<number>();
+  // 같은 보스는 한 번 — 열쇠는 그림 번호가 아니라 판 · 폼째 이름이다. 오리진폼 · 어나더폼 기라티나는 그림(487)이 같아도 다른 보스다 (Codex, PR #361)
+  const seen = new Set<string>();
   const out: BossCard[] = [];
   for (const card of cards) {
-    if (seen.has(card.sprite)) continue;
-    seen.add(card.sprite);
+    const key = `${card.battle}:${card.detailName}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
     out.push(card);
     if (out.length >= (options.max ?? BOARD_MAX)) break;
   }

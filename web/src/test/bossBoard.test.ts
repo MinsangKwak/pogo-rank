@@ -116,6 +116,17 @@ describe('폼 — 제목의 폼을 버리지 않는다 (Codex, PR #361)', () => 
     const groudon = board2.find((card) => card.dex === 383)!;
     expect(groudon).toMatchObject({ name: '그란돈', form: '원시', detailName: '원시 그란돈', sprite: 10078, types: ['ground', 'fire'] });
   });
+  it('그림이 같아도 폼이 다르면 다른 카드 — 오리진폼 · 어나더폼 기라티나 (Codex, PR #361)', () => {
+    const both = [
+      ...events,
+      ev('r5-1028b', 'raid-battles', 'Giratina (Altered Forme) in 5-star Raid Battles', '2026-10-28T10:00:00.000', '2026-11-03T10:00:00.000', [487]),
+    ];
+    const later = Date.parse('2026-10-30T12:00:00+09:00');
+    const board2 = bossBoard({ ...src(), events: both }, later, { horizonDays: 7 });
+    expect(board2.filter((card) => card.dex === 487).map((card) => card.detailName).sort()).toEqual(['어나더폼 기라티나', '오리진폼 기라티나']);
+    // 같은 폼은 여전히 한 번
+    expect(board2.filter((card) => card.detailName === '오리진폼 기라티나')).toHaveLength(1);
+  });
   it('찾는 재료가 없으면 이름은 폼째 두고 그림 · 타입은 원종으로', () => {
     const later = Date.parse('2026-10-30T12:00:00+09:00');
     const board2 = bossBoard({ slides: [], events, names, forms, megas }, later);
