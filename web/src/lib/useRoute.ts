@@ -23,7 +23,7 @@ export interface CurrentRoute {
  * 통째로 정적 생성에서 빠진다 — 서버는 주소의 질의를 모르기 때문이다. 셸 전체가 빠지면
  * 이 판의 목적(미리 구워진 HTML)이 사라진다.
  *
- * 질의를 쓰는 화면은 하나뿐이고(덱 주소), 그쪽은 제자리에서 `location.search` 를 읽는다.
+ * 질의를 쓰는 화면은 둘뿐이고(덱 주소 `?b=` · 솔플 계산기 `?boss=`), 그쪽은 제자리에서 `location.search` 를 읽는다.
  */
 export function useRoute(): CurrentRoute {
   const pathname = usePathname() ?? '/';

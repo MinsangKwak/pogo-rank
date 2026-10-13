@@ -8,10 +8,14 @@
 // 배지를 탭하면 한 단계씩 수동으로 돌린다. 셈은 lib/solo.ts 에 있다.
 //
 // [내 덱 검증] 은 넣은 순서 그대로 시뮬레이션한다 — 그 순서가 곧 출전 순서다.
+//
+// 주소가 보스를 싣는다(/pve/solo?boss=이름) — 팝업의 '상대할 때' 카드가 이 주소로 보내면 도착하자마자 그 보스가 골라져 있다 (2026-10-13).
+// 이 화면 위에서 팝업을 열고 또 누르면 경로는 그대로이고 질의만 바뀐다 — 그래서 처음 한 번이 아니라 이동 때마다 읽는다 (lib/useSearch.ts, Codex PR #361).
+// 같은 보스면 다시 고르지 않는다(덱 · 난이도가 날아간다). 주소에서 보스를 지운 뒤에는 되돌리지 않는다 — 검색창이 답한다
 // ─────────────────────────────────────────────────────────────────────────────
 import { go } from '../lib/nav';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useDex, useMax, usePve, usePvp } from '../lib/data';
 import { Slot } from '../components/Slots';
 import { Seg, Sprite, ToolBtn } from '../components/Bits';
@@ -24,7 +28,20 @@ import {
 import { useFavs } from '../lib/useFavs';
 import type { OpenMon } from '../lib/mon';
 import { track, trackSearchPick } from '../lib/track';
+import { useSearch } from '../lib/useSearch';
 import type { PveRow } from '../types/data';
+
+/** 주소의 보스 이름(?boss=) — 없으면 null */
+export function readHashBoss(search: string): string | null {
+  const raw = search.startsWith('?') ? new URLSearchParams(search.slice(1)).get('boss') : null;
+  return raw?.trim() || null;
+}
+
+/** 주소의 난이도(?tier=t5 · mega …) — SOLO_TIERS 에 있는 것만. 보스판 카드가 아는 난이도를 넘긴다 (Codex, PR #361) */
+export function readHashTier(search: string): string | null {
+  const raw = search.startsWith('?') ? new URLSearchParams(search.slice(1)).get('tier') : null;
+  return raw && SOLO_TIERS.some((one) => one.id === raw) ? raw : null;
+}
 
 export default function SoloCalc({ onOpen }: { onOpen: OpenMon }) {
   const { data: dex } = useDex();
@@ -71,6 +88,25 @@ export default function SoloCalc({ onOpen }: { onOpen: OpenMon }) {
     setFillNote('');
     track('solo_calc_boss', { boss: next.name });
   };
+
+  // 주소에 실린 보스(?boss=) — 이름이 정확히 맞는 것만. 모르는 이름이면 빈 화면 그대로(검색창이 답한다)
+  const search = useSearch();
+  useEffect(() => {
+    const wanted = readHashBoss(search);
+    if (!wanted) return;
+    // 주소가 난이도를 알면 자동 판정 대신 그것 — 5성 레이드는 15,000, 자동 판정은 전설을 4성(9,000)으로 본다.
+    // 같은 보스라도 주소의 난이도를 그대로 따른다 — 옛 링크(?boss=디아루가)로 4성에 서 있다가 카드의 &tier=t5 로 오면 15,000,
+    // 뒤로 가서 다시 ?boss=디아루가 가 되면 자동 판정으로 되돌린다. 같은 주소는 어디서 왔든 같은 셈이어야 한다 (Codex, PR #361)
+    const tier = readHashTier(search);
+    if (wanted !== boss?.name) {
+      const found = buildBossIndex(dex, max, pve, pvp).find((one) => one.name === wanted);
+      if (!found) return;
+      pickBoss(found);
+    }
+    setTierOverride(tier);
+    // 주소가 바뀔 때만 — 보스 · 묶음이 바뀌어도 주소의 것으로 되돌리지 않는다
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [search]);
 
   const raid = boss ? raidCp(dex.DEX_DATA, boss, tier) : null;
   const full = boss ? maxCp(dex.DEX_DATA, boss) : null;

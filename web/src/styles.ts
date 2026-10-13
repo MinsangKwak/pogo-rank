@@ -67,3 +67,5 @@ import './styles/cinema/modal.css';
 import './styles/cinema/palette.css';
 // 홈 상단 '이번 주 많이 본 포켓몬' (2026-09-29)
 import './styles/cinema/hotmons.css';
+// 홈 배너 아래 '이번 주 보스' 카드 줄 (2026-10-13)
+import './styles/cinema/weekbosses.css';

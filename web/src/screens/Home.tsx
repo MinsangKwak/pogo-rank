@@ -25,6 +25,7 @@ import { UPDATE_CATS } from '../lib/notes';
 import type { OpenMon } from '../lib/mon';
 import { TankPopupEntry, NOV_TANK_LIVE } from '../components/TankPopup';
 import HotMons from '../components/HotMons';
+import WeekBosses from '../components/WeekBosses';
 import { maxVisible } from '../lib/maxVisible';
 
 // 대표 일러스트 — 머리에서 미리 받는 그 그림 (app/page.tsx 의 preload 와 같은 파일)
@@ -180,7 +181,10 @@ export default function Home({ onOpen }: { onOpen: OpenMon }) {
   const waiting = <HeroPoster art={HERO_ART_ENTRY} names={names} />;
   return (
     <div className="home-dashboard home-dashboard--portal home-dashboard--cinema-portal">
-      {/* 첫 화면 차례 (2026-09-30 주인 결정): 배너 → 지금 많이 보는 포켓몬.
+      {/* 첫 화면 차례 (2026-10-13 통계 개편): 배너 → 이번 주 보스 → 지금 많이 보는 포켓몬.
+          이번 주 보스가 많이 보는 포켓몬 앞에 선다 — 10월 통계에서 많이 본 포켓몬 10 중 8 이 이번 주 보스 자신이었다.
+          보스 카드는 기간 · 추천 세 마리 · 상세까지 들고, 많이 보는 줄에는 이유 한 마디가 붙는다 (components/WeekBosses.tsx · HotMons.tsx).
+          (2026-09-30 주인 결정: 배너 → 지금 많이 보는 포켓몬.
           소개 카드(검색 · 티어표 · 도감 단추)는 뺐다 — 검색은 상단 바 돋보기, 티어표는 아래 '용도별 상위 포켓몬' 의 전체 보기,
           도감은 '무엇이 필요한가요?' 와 같은 곳으로 가는 같은 기능이었다 (주인 결정: 같은 기능은 한 곳 한 모양) */}
       <div className="home__top-layout">
@@ -194,6 +198,8 @@ export default function Home({ onOpen }: { onOpen: OpenMon }) {
             </Suspense>
           ) : waiting}
         </div>
+        {/* 이번 주 보스 — 일정 · 레이드 묶음(soft)으로 서고, 추천 줄은 순위 묶음이 온 뒤 찬다. 줄이 없으면 안 그린다 */}
+        <WeekBosses onOpen={onOpen} />
         {/* 서버 집계라 데이터 Suspense 밖이고, 줄이 없으면 안 그린다 */}
         <HotMons onOpen={onOpen} />
       </div>

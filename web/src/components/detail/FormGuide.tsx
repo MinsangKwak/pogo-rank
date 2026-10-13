@@ -2,7 +2,7 @@
 // components/detail/FormGuide.tsx — 상세 팝업 v2 의 카드들 (2026-09-30)
 //
 // 서비스의 목표는 **다이맥스 · 거다이맥스 우선 육성**이다 (주인 결정). 팝업은 그 답을 먼저 준다.
-//   BossLine   진화 계열 아래 — 이 계열이 보스로 서는 맥스 일정 (지금 잡을 수 있는가)
+//   (BossLine 은 2026-10-13 에 팝업 맨 위 '상대할 때' 카드(VsCard.tsx)로 옮겼다 — 기간 · 추천 · 셈 단추가 한 카드다)
 //   TrainCard  육성 추천 — 맥스 배틀 · 레이드용이면 ① 다이맥스 · 거다이맥스 ② 일반 · 전설, PvP 에서만 쓰이면 일반 · 전설
 //   FormGuide  폼별 정보 — 요약 한 줄씩. 일반은 눌러 펼치고, 다이맥스 · 거다이맥스는 D-MAX 화면의 그 줄로 간다
 //   FormStats  배틀 정보 맨 위 — 지금 보는 폼의 성적 (맥스 폼: 티어 · 딜러 · 탱커 / 일반: PvP 리그 · 레이드)
@@ -144,21 +144,6 @@ export function DeepDock({ mon, dexNo, onDeep, onLeave, here = '', onHere }: {
         </button>
       </div>
     </div>
-  );
-}
-
-/** 이 계열이 보스로 서는 가장 이른 맥스 일정 — 없으면 아무것도 안 그린다 */
-export function BossLine({ dexNo }: { dexNo: number | null }) {
-  const { data: dex } = useDex();
-  const slides = useMaxSlidesSoft();
-  const family = dexNo != null ? dex.DEX_DATA.evo[String(dexNo)] : undefined;
-  const boss = bossNow(slides, new Set<number>(family?.flat() ?? (dexNo != null ? [dexNo] : [])));
-  if (!boss) return null;
-  return (
-    <p className="detail__formguide-boss">
-      <span className="tag">{dday(boss.slide)}</span>
-      <span>{`맥스 배틀 · ${boss.name}${boss.dex !== dexNo ? ' (같은 진화 계열)' : ''} · ${boss.slide.short}`}</span>
-    </p>
   );
 }
 

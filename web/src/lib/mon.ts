@@ -24,6 +24,11 @@ export interface MonPick {
   view?: MonView;
   // 'dex' 면 도감 화면으로 옮긴 **뒤** 연다 — 홈의 '지금 많이 보는 포켓몬' 이 도감 진입을 늘리려고 쓴다 (2026-09-30 주인 요청)
   via?: 'dex';
+  /**
+   * 홈 '이번 주 보스' 카드에서 열었을 때 그 카드의 종류(lib/bossBoard.ts BoardKind: 'raid5' · 'shadow' …).
+   * 같은 폼이 5성 레이드와 주말 섀도우에 같이 설 때 어느 카드를 눌렀는지 팝업의 '상대할 때' 가 알아야 한다 (Codex, PR #361)
+   */
+  boss?: string;
 }
 
 export type MonView = 'brief' | 'full';
