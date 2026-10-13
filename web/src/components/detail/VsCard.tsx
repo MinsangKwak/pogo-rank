@@ -43,10 +43,13 @@ export default function VsCard({ mon, dexNo, onSwitch, onLeave }: {
   if (!card) return null;
   const isMax = card.battle === 'max';
   const goLabel = isMax ? 'D-MAX 덱 짜기' : '솔플 계산기';
-  // 맥스는 덱 짜기가 보스 타입(?b=)을, 레이드는 솔플 계산기가 보스 이름(?boss=)을 주소로 받는다 — 도착하면 그 보스가 골라져 있다
+  // 레이드 난이도 — 카드가 아는 것을 계산기에 넘긴다. 계산기의 자동 판정은 전설을 4성(체력 9,000)으로 보는데 5성 레이드는 15,000 이라
+  // 보스 이름만 넘기면 솔플 가능이 거짓으로 뜬다 (Codex, PR #361). 섀도우 레이드는 전설(cls)일 때만 5성 — 1 · 3성 섀도우도 있다
+  const tier = card.kind === 'raid5' ? 't5' : card.kind === 'mega' ? 'mega' : card.kind === 'shadow' && dex.DEX_DATA.cls?.[String(card.dex)] ? 't5' : '';
+  // 맥스는 덱 짜기가 보스 타입(?b=)을, 레이드는 솔플 계산기가 보스 이름(?boss=)과 난이도(?tier=)를 주소로 받는다 — 도착하면 그 보스가 골라져 있다
   const href = isMax
     ? `${routeHref('dmax-deck')}?b=${encodeURIComponent(card.types[0] ?? 'overall')}`
-    : `${routeHref('pve-solo')}?boss=${encodeURIComponent(card.detailName)}`;
+    : `${routeHref('pve-solo')}?boss=${encodeURIComponent(card.detailName)}${tier ? `&tier=${tier}` : ''}`;
   return (
     <section className={`detail__card detail__vs${card.live ? ' is-live' : ''}`} data-boss={card.detailName}>
       <p className="detail__vs-when">

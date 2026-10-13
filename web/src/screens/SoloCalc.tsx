@@ -37,6 +37,12 @@ export function readHashBoss(search: string): string | null {
   return raw?.trim() || null;
 }
 
+/** 주소의 난이도(?tier=t5 · mega …) — SOLO_TIERS 에 있는 것만. 보스판 카드가 아는 난이도를 넘긴다 (Codex, PR #361) */
+export function readHashTier(search: string): string | null {
+  const raw = search.startsWith('?') ? new URLSearchParams(search.slice(1)).get('tier') : null;
+  return raw && SOLO_TIERS.some((one) => one.id === raw) ? raw : null;
+}
+
 export default function SoloCalc({ onOpen }: { onOpen: OpenMon }) {
   const { data: dex } = useDex();
   const { data: max } = useMax();
@@ -89,7 +95,11 @@ export default function SoloCalc({ onOpen }: { onOpen: OpenMon }) {
     const wanted = readHashBoss(search);
     if (!wanted || wanted === boss?.name) return;
     const found = buildBossIndex(dex, max, pve, pvp).find((one) => one.name === wanted);
-    if (found) pickBoss(found);
+    if (!found) return;
+    pickBoss(found);
+    // 주소가 난이도를 알면 자동 판정 대신 그것 — 5성 레이드는 15,000, 자동 판정은 전설을 4성(9,000)으로 본다
+    const tier = readHashTier(search);
+    if (tier) setTierOverride(tier);
     // 주소가 바뀔 때만 — 보스 · 묶음이 바뀌어도 주소의 것으로 되돌리지 않는다
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [search]);
