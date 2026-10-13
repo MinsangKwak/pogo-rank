@@ -337,7 +337,7 @@ export default function MonDetail({ pick, onClose, inline = false, onDeep, here 
                     <div className="detail__pane" role="tabpanel" data-pane="summary" id="detail-pane-summary" aria-labelledby="detail-tab-summary" hidden={tab !== 'summary'}>
                       {/* 맨 위는 '상대할 때' — 이 계열이 지금(또는 7일 안에) 맥스 · 레이드 보스로 서면 기간 · 추천 세 마리 · 셈 단추.
                           보스가 아니면 카드가 없다. 요약 팝업에도 선다 — 홈 · 검색에서 보스를 연 사람의 첫 물음이라서 (2026-10-13 통계 개편) */}
-                      <VsCard mon={mon} dexNo={dexNo} onSwitch={switchTo} onLeave={onClose} />
+                      <VsCard mon={mon} dexNo={dexNo} kind={mon.name === start.name && mon.sprite === start.sprite ? pick.boss : undefined} onSwitch={switchTo} onLeave={onClose} />
                       {/* 진화 계열 — 이 종이 무엇이 되는지 · 계열에서 무엇을 키울지 · 지금 잡을 수 있는지 */}
                       <section className="detail__card detail__evo-card">
                         <h3>진화 계열</h3>

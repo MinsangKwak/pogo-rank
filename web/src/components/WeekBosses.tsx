@@ -39,7 +39,7 @@ function Card({ card, src, labels, onOpen }: { card: BossCard; src: CounterSourc
   return (
     <li className={`week-bosses__card${card.live ? ' is-live' : ''} week-bosses__card--${card.kind}`} data-boss={card.detailName}>
       <button type="button" className="week-bosses__boss"
-        onClick={() => { track('week_boss_open', { boss: card.detailName, kind: card.kind }); onOpen({ sprite: card.sprite, name: card.detailName, types: card.types }); }}>
+        onClick={() => { track('week_boss_open', { boss: card.detailName, kind: card.kind }); onOpen({ sprite: card.sprite, name: card.detailName, types: card.types, boss: card.kind }); }}>
         <span className="week-bosses__tags">
           <span className={`week-bosses__dday${card.live ? ' is-live' : ''}`}>{cardDday(card)}</span>
           <span className="week-bosses__kind">{BOARD_KIND_KO[card.kind]}</span>

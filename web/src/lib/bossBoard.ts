@@ -17,11 +17,11 @@ import { dayLabel, daysUntil, hhmm, kst, kstDate, shortDay, type MaxSlide } from
 import type { BossKind } from './bossCounters';
 import type { GamedayEvent } from '../types/data';
 
-export type BoardKind = 'gmax' | 'dmax' | 'raid5' | 'mega' | 'shadow' | 'raid';
+export type BoardKind = 'gmax' | 'dmax' | 'raid5' | 'mega' | 'primal' | 'shadow' | 'raid';
 
 /** 카드의 종류 글 — 머리의 작은 표 */
 export const BOARD_KIND_KO: Readonly<Record<BoardKind, string>> = {
-  gmax: '거다이맥스', dmax: '다이맥스', raid5: '5성 레이드', mega: '메가 레이드', shadow: '섀도우 레이드', raid: '레이드',
+  gmax: '거다이맥스', dmax: '다이맥스', raid5: '5성 레이드', mega: '메가 레이드', primal: '원시 레이드', shadow: '섀도우 레이드', raid: '레이드',
 };
 
 export interface BossCard {
@@ -131,7 +131,8 @@ export function formsFor(title: string, en: string | undefined): string[] {
  */
 export function raidTierOf(title: string): string {
   if (/\bshadow\b/i.test(title)) return '';
-  if (/\bmega\b/i.test(title)) return 'mega';
+  // 원시 레이드는 메가와 같은 난이도(체력 15,000 · 계산기의 'mega') — 솔플 계산기의 자동 판정(inferTier)과 같은 분류 (Codex, PR #361)
+  if (/\bmega\b|\bprimal\b/i.test(title)) return 'mega';
   // '5-star' · 'five-star' · '5★' — 종류 판정(raidKindOf)이 아는 철자는 난이도도 다 안다 (Codex, PR #361)
   const star = /\b([1345])(?:-star\b|★)/i.exec(title)?.[1] ?? (/\bfive-star\b/i.test(title) ? '5' : '');
   return star ? `t${star}` : '';
@@ -141,6 +142,7 @@ export function raidTierOf(title: string): string {
 export function raidKindOf(title: string): BoardKind {
   if (/\bshadow\b/i.test(title)) return 'shadow';
   if (/\bmega\b/i.test(title)) return 'mega';
+  if (/\bprimal\b/i.test(title)) return 'primal';
   // 5성 판정은 난이도 읽기와 같은 철자 표를 쓴다 — 둘이 어긋나면 카드는 5성인데 계산기는 4성이 된다
   if (raidTierOf(title) === 't5') return 'raid5';
   return 'raid';
@@ -276,7 +278,7 @@ export function bossBoard(src: BossBoardSource, nowMs: number, options: BossBoar
     ...raidCards(src, nowMs, horizonDays * 24 * 60 * 60 * 1000),
   ];
   // 진행 중 → 남은 날 → 종류(맥스 먼저 — 서비스의 축) 순
-  const order: Record<BoardKind, number> = { gmax: 0, dmax: 1, raid5: 2, mega: 3, shadow: 4, raid: 5 };
+  const order: Record<BoardKind, number> = { gmax: 0, dmax: 1, raid5: 2, mega: 3, primal: 4, shadow: 5, raid: 6 };
   cards.sort((left, right) => Number(right.live) - Number(left.live) || left.days - right.days || order[left.kind] - order[right.kind]);
   // 같은 보스는 한 번 — 열쇠는 그림 번호가 아니라 종류 · 폼째 이름이다. 오리진폼 · 어나더폼 기라티나는 그림(487)이 같아도 다른 보스고,
   // 같은 랜드로스라도 5성 레이드와 주말 섀도우 레이드는 다른 카드다(창 · 안내가 다르다) (Codex, PR #361)
@@ -297,8 +299,11 @@ export function bossBoard(src: BossBoardSource, nowMs: number, options: BossBoar
  * **열린 폼이 먼저다**: 폼째 이름(detailName)이 같은 카드 → 같은 그림 번호의 카드 → 같은 도감 번호 → 진화 계열 순.
  * 메가X · 메가Y 리자몽 카드가 같이 있을 때 메가Y 를 열었는데 X 카드가 서면 추천 타입 · 계산기 보스가 틀린다 (Codex, PR #361)
  */
-export function cardFor(board: readonly BossCard[], dexNos: ReadonlySet<number>, self?: { name?: string; sprite?: number; dex?: number | null }): BossCard | null {
+export function cardFor(board: readonly BossCard[], dexNos: ReadonlySet<number>, self?: { name?: string; sprite?: number; dex?: number | null; kind?: string }): BossCard | null {
   if (self?.name) {
+    // 누른 카드의 종류를 알면 그것부터 — 같은 폼이 5성 레이드와 주말 섀도우에 같이 서면 이름만으로는 못 가른다 (Codex, PR #361)
+    const byKind = self.kind ? board.find((card) => card.detailName === self.name && card.kind === self.kind) : undefined;
+    if (byKind) return byKind;
     const byName = board.find((card) => card.detailName === self.name);
     if (byName) return byName;
   }

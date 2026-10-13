@@ -232,6 +232,7 @@ export const I18N_EN = {
   '거다이맥스': 'Gigantamax',
   '5성 레이드': '5-star raid',
   '메가 레이드': 'Mega raid',
+  '원시 레이드': 'Primal raid',
   '섀도우 레이드': 'Shadow raid',
   '레이드 데이': 'Raid Day',
   '상대할 때': 'When you face it',

@@ -46,6 +46,8 @@ describe('raidTierOf — 제목의 난이도를 계산기 id 로 (Codex, PR #361
     expect(raidKindOf('Yveltal in 5★ Raids')).toBe('raid5');
     expect(raidTierOf('Mega Blastoise in Mega Raids')).toBe('mega');
     expect(raidTierOf('Something in 1-star Raids')).toBe('t1');
+    expect(raidTierOf('Primal Groudon in Primal Raids')).toBe('mega');
+    expect(raidKindOf('Primal Groudon in Primal Raids')).toBe('primal');
     expect(raidTierOf('Shadow Landorus (Incarnate Forme) in Shadow Raids')).toBe('');
     expect(raidTierOf('Raid Weekend')).toBe('');
   });
@@ -137,7 +139,7 @@ describe('폼 — 제목의 폼을 버리지 않는다 (Codex, PR #361)', () => 
     const giratina = board2.find((card) => card.dex === 487)!;
     expect(giratina).toMatchObject({ name: '기라티나', form: '오리진폼', detailName: '오리진폼 기라티나', sprite: 487, kind: 'raid5' });
     const groudon = board2.find((card) => card.dex === 383)!;
-    expect(groudon).toMatchObject({ name: '그란돈', form: '원시', detailName: '원시 그란돈', sprite: 10078, types: ['ground', 'fire'] });
+    expect(groudon).toMatchObject({ name: '그란돈', form: '원시', detailName: '원시 그란돈', sprite: 10078, types: ['ground', 'fire'], kind: 'primal', tier: 'mega' });
   });
   it('그림이 같아도 폼이 다르면 다른 카드 — 오리진폼 · 어나더폼 기라티나 (Codex, PR #361)', () => {
     const both = [
@@ -157,6 +159,9 @@ describe('폼 — 제목의 폼을 버리지 않는다 (Codex, PR #361)', () => 
     ];
     const board2 = bossBoard({ ...src(), events: both }, now);
     expect(board2.filter((card) => card.detailName === '화신폼 랜드로스').map((card) => card.kind).sort()).toEqual(['raid5', 'shadow']);
+    // 누른 카드의 종류로 찾는다 — 종류 없이는 먼저 선 5성, 'shadow' 를 주면 섀도우 카드 (Codex, PR #361)
+    expect(cardFor(board2, new Set([645]), { name: '화신폼 랜드로스', sprite: 645, dex: 645 })?.kind).toBe('raid5');
+    expect(cardFor(board2, new Set([645]), { name: '화신폼 랜드로스', sprite: 645, dex: 645, kind: 'shadow' })?.kind).toBe('shadow');
   });
   it('찾는 재료가 없으면 이름은 폼째 두고 그림 · 타입은 원종으로', () => {
     const later = Date.parse('2026-10-30T12:00:00+09:00');
