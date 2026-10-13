@@ -24,7 +24,9 @@ import type { MonRef } from '../../lib/mon';
 /** 카드가 보여 주는 추천 수 — 목록이 아니라 '세 마리' 다 */
 export const VS_RECS = 3;
 
-export default function VsCard({ dexNo, onSwitch, onLeave }: {
+export default function VsCard({ mon, dexNo, onSwitch, onLeave }: {
+  /** 지금 열린 포켓몬 — 폼째 이름 · 그림 번호로 그 폼의 카드를 먼저 찾는다 (메가X · 메가Y 가 같이 선 주) */
+  mon: Pick<MonRef, 'name' | 'sprite'>;
   dexNo: number | null;
   /** 추천 후보를 누르면 같은 창에서 그 포켓몬으로 */
   onSwitch: (mon: MonRef) => void;
@@ -36,7 +38,7 @@ export default function VsCard({ dexNo, onSwitch, onLeave }: {
   const src = useCounterSource();
   // 진화 계열까지 본다 — 파크로우를 열어도 이번 주 파라꼬 다이맥스가 보인다 (BossLine 이 하던 일)
   const family = useMemo(() => new Set<number>(dexNo != null ? (dex.DEX_DATA.evo[String(dexNo)]?.flat() ?? [dexNo]) : []), [dex, dexNo]);
-  const card = useMemo(() => cardFor(board, family), [board, family]);
+  const card = useMemo(() => cardFor(board, family, { name: mon.name, sprite: mon.sprite, dex: dexNo }), [board, family, mon.name, mon.sprite, dexNo]);
   const counters = useMemo(() => (card ? countersOf(src, card.battle, card.types, VS_RECS) : null), [card, src]);
   if (!card) return null;
   const isMax = card.battle === 'max';

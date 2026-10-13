@@ -2,13 +2,13 @@
 // 이번 주 보스판 — 맥스 일정과 레이드를 한 줄로, 진행 중이 먼저, 모르는 이름은 안 세우고, 새는 글자 없이 (lib/bossBoard.ts)
 import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
-import { bossBoard, cardDday, cardFor, cardWhen, formLabelOf, raidKindOf, reasonFor, BOARD_MAX } from '../lib/bossBoard';
+import { bossBoard, cardDday, cardFor, cardWhen, formLabelOf, formsFor, raidKindOf, reasonFor, BOARD_MAX } from '../lib/bossBoard';
 import { maxSlides, weeksFromSchedule } from '../lib/maxSlides';
 import { LEAK } from '../lib/cell';
 import type { GamedayEvent } from '../types/data';
 
 const names = { '6': '리자몽', '150': '뮤츠', '383': '그란돈', '483': '디아루가', '487': '기라티나', '570': '조로아', '571': '조로아크', '645': '랜드로스', '812': '인텔리레온', '816': '울머기', '821': '파라꼬', '822': '파크로우' };
-const en = { '812': 'Inteleon' };
+const en = { '6': 'Charizard', '383': 'Groudon', '487': 'Giratina', '645': 'Landorus', '646': 'Kyurem', '812': 'Inteleon', '888': 'Zacian', '889': 'Zamazenta' };
 const forms = { '6': { name: '', types: ['fire', 'flying'] }, '10034': { name: '메가X', types: ['fire', 'dragon'] }, '10035': { name: '메가Y', types: ['fire', 'flying'] }, '150': { types: ['psychic'] }, '383': { name: '', types: ['ground'] }, '10078': { name: '원시', types: ['ground', 'fire'] }, '483': { types: ['steel', 'dragon'] }, '487': { name: '', types: ['ghost', 'dragon'] }, '645': { types: ['ground', 'flying'] }, '812': { types: ['water'] }, '816': { types: ['water'] }, '821': { types: ['flying'] } };
 const dexTable = { '10034': 6, '10035': 6, '10078': 383 };
 // 순위표가 아는 폼 이름 — 오리진폼 기라티나는 원종과 그림이 같고, 화신폼 랜드로스도 같다
@@ -132,6 +132,39 @@ describe('폼 — 제목의 폼을 버리지 않는다 (Codex, PR #361)', () => 
     const board2 = bossBoard({ slides: [], events, names, forms, megas }, later);
     expect(board2.find((card) => card.dex === 487)).toMatchObject({ detailName: '오리진폼 기라티나', sprite: 487 });
     expect(board2.find((card) => card.dex === 383)).toMatchObject({ detailName: '원시 그란돈', sprite: 383 });
+  });
+});
+
+describe('보스가 여럿인 제목 — 폼을 보스마다 읽는다 (Codex, PR #361)', () => {
+  it('formsFor — 영문 이름이 든 조각마다', () => {
+    expect(formsFor('Black Kyurem and White Kyurem in 5-star Raid Battles', 'Kyurem')).toEqual(['블랙', '화이트']);
+    expect(formsFor('Crowned Sword Zacian and Crowned Shield Zamazenta in 5-star Raids', 'Zacian')).toEqual(['검왕']);
+    expect(formsFor('Crowned Sword Zacian and Crowned Shield Zamazenta in 5-star Raids', 'Zamazenta')).toEqual(['방패왕']);
+    expect(formsFor('Giratina (Origin Forme) in 5-star Raid Battles', 'Giratina')).toEqual(['오리진폼']);
+    expect(formsFor('Yveltal in 5-star Raid Battles', 'Yveltal')).toEqual(['']);
+    // 영문 이름을 모르면 제목 전체로 한 번
+    expect(formsFor('Black Kyurem and White Kyurem in 5-star Raid Battles', undefined)).toEqual(['블랙']);
+  });
+  it('블랙 · 화이트 큐레무가 각각 카드로, 검왕 자시안 · 방패왕 자마젠타가 제 폼으로', () => {
+    const more = [
+      ev('r5-k', 'raid-battles', 'Black Kyurem and White Kyurem in 5-star Raid Battles', '2026-10-13T10:00:00.000', '2026-10-20T10:00:00.000', [646]),
+      ev('r5-z', 'raid-battles', 'Crowned Sword Zacian and Crowned Shield Zamazenta in 5-star Raids', '2026-10-13T10:00:00.000', '2026-10-20T10:00:00.000', [888, 889]),
+    ];
+    const names2 = { ...names, '646': '큐레무', '888': '자시안', '889': '자마젠타' };
+    const forms2 = { ...forms, '646': { name: '', types: ['dragon', 'ice'] }, '888': { name: '', types: ['fairy'] }, '10188': { name: '검왕', types: ['fairy', 'steel'] }, '889': { name: '', types: ['fighting'] }, '10189': { name: '방패왕', types: ['fighting', 'steel'] } };
+    const dexTable2 = { ...dexTable, '10188': 888, '10189': 889 };
+    const board2 = bossBoard({ slides: [], events: more, names: names2, en, forms: forms2, dexTable: dexTable2 }, now);
+    expect(board2.map((card) => card.detailName).sort()).toEqual(['검왕 자시안', '방패왕 자마젠타', '블랙 큐레무', '화이트 큐레무'].sort());
+    expect(board2.find((card) => card.detailName === '검왕 자시안')).toMatchObject({ sprite: 10188, types: ['fairy', 'steel'] });
+    expect(board2.find((card) => card.detailName === '방패왕 자마젠타')).toMatchObject({ sprite: 10189 });
+  });
+  it('cardFor — 열린 폼이 먼저: 메가Y 리자몽을 열면 Y 카드, 리자몽을 열면 첫 카드, 파크로우는 계열로', () => {
+    const later = Date.parse('2026-10-21T12:00:00+09:00');
+    const board2 = bossBoard(src(), later, { horizonDays: 7 });
+    expect(cardFor(board2, new Set([6]), { name: '메가Y 리자몽', sprite: 10035, dex: 6 })?.detailName).toBe('메가Y 리자몽');
+    expect(cardFor(board2, new Set([6]), { name: '리자몽', sprite: 6, dex: 6 })?.detailName).toBe('메가X 리자몽');
+    const board3 = bossBoard(src(), now);
+    expect(cardFor(board3, new Set([822, 821]), { name: '파크로우', sprite: 822, dex: 822 })?.detailName).toBe('다이맥스 파라꼬');
   });
 });
 

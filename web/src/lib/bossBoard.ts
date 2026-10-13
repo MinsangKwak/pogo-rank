@@ -58,6 +58,8 @@ export interface BossBoardSource {
   /** gameday 행사 — raid-battles 만 읽는다 */
   events: readonly GamedayEvent[] | undefined;
   names: Readonly<Record<string, string>> | undefined;
+  /** 영문 이름 (DEX_DATA.en) — 'Black Kyurem and White Kyurem' 처럼 보스가 여럿인 제목에서 폼을 보스마다 가르는 데 쓴다 */
+  en?: Readonly<Record<string, string>> | undefined;
   forms: Readonly<Record<string, { name?: string; types?: readonly string[] }>> | undefined;
   /** 메가 폼 표 (DEX_DATA.megas) — 메가 레이드 카드의 그림 · 이름 */
   megas?: Readonly<Record<string, readonly { sprite: number; label: string }[]>> | undefined;
@@ -102,6 +104,23 @@ const FORM_EN_KO: readonly (readonly [RegExp, string])[] = [
 export function formLabelOf(title: string): string {
   for (const [pattern, label] of FORM_EN_KO) if (pattern.test(title)) return label;
   return '';
+}
+
+const escapeRe = (text: string) => text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+/**
+ * 한 보스(영문 이름)의 폼 이름표들 — 제목을 ', ' · ' and ' · ' & ' 로 조각내고 그 이름이 든 조각마다 폼을 읽는다.
+ * 'Black Kyurem and White Kyurem …' → ['블랙', '화이트'] · 'Giratina (Origin Forme) …' → ['오리진폼'] · 'Yveltal …' → [''].
+ * 영문 이름을 모르거나 어느 조각에도 없으면 제목 전체로 한 번 (폼이 없으면 빈 글자 하나)
+ */
+export function formsFor(title: string, en: string | undefined): string[] {
+  if (en) {
+    const nameRe = new RegExp(`\\b${escapeRe(en)}\\b`, 'i');
+    const labels = new Set<string>();
+    for (const piece of title.split(/\s*(?:,|\band\b|&)\s*/i)) if (nameRe.test(piece)) labels.add(formLabelOf(piece));
+    if (labels.size) return [...labels];
+  }
+  return [formLabelOf(title)];
 }
 
 /** 레이드 행사 제목 → 종류. 'Shadow Landorus in Shadow Raids' · 'Mega Blastoise in Mega Raids' · 'Yveltal in 5-star Raid Battles' */
@@ -179,12 +198,16 @@ function raidCards(src: BossBoardSource, nowMs: number, horizonMs: number): Boss
           continue;
         }
       }
-      // 제목의 폼(오리진폼 · 화신폼 · 원시 …) — 그림은 도감 폼 표(원시 그란돈 10078)에서, 거기 없으면(오리진폼 기라티나는 원종과 같은 그림) 이름으로 찾는다
-      const form = formLabelOf(event.title);
-      const detailName = form ? `${form} ${name}` : name;
-      const formSprite = form ? Object.keys(src.forms ?? {}).find((key) => src.dexTable?.[key] === dex && src.forms?.[key]?.name === form) : undefined;
-      const found = formSprite ? { sprite: Number(formSprite), types: typesOf(Number(formSprite)) } : (form ? src.lookup?.(detailName) : null);
-      out.push({ ...base, id: `${event.id}-${found?.sprite ?? dex}`, dex, sprite: found?.sprite ?? dex, name, form, detailName, types: found ? [...found.types] : typesOf(dex) });
+      // 제목의 폼(오리진폼 · 화신폼 · 원시 …) — 보스마다 따로 읽는다. 'Black Kyurem and White Kyurem' 은 dex 가 646 하나뿐이라
+      // 제목 전체로 읽으면 블랙만 남고, 'Crowned Sword Zacian and Crowned Shield Zamazenta' 는 둘 다 검왕이 된다 (Codex, PR #361).
+      // 영문 이름이 든 조각만 그 보스의 것으로 보고, 어느 조각에도 없으면 제목 전체로 한 번
+      for (const form of formsFor(event.title, src.en?.[String(dex)])) {
+        const detailName = form ? `${form} ${name}` : name;
+        // 그림은 도감 폼 표(원시 그란돈 10078)에서, 거기 없으면(오리진폼 기라티나는 원종과 같은 그림) 이름으로 찾는다
+        const formSprite = form ? Object.keys(src.forms ?? {}).find((key) => src.dexTable?.[key] === dex && src.forms?.[key]?.name === form) : undefined;
+        const found = formSprite ? { sprite: Number(formSprite), types: typesOf(Number(formSprite)) } : (form ? src.lookup?.(detailName) : null);
+        out.push({ ...base, id: `${event.id}-${found?.sprite ?? dex}-${form}`, dex, sprite: found?.sprite ?? dex, name, form, detailName, types: found ? [...found.types] : typesOf(dex) });
+      }
     }
   }
   return out;
@@ -216,8 +239,24 @@ export function bossBoard(src: BossBoardSource, nowMs: number, options: BossBoar
   return out;
 }
 
-/** 이 종(또는 그 진화 계열)이 서는 카드 — 진행 중이 먼저, 없으면 가장 가까운 것. 판은 이미 그 순서다 */
-export function cardFor(board: readonly BossCard[], dexNos: ReadonlySet<number>): BossCard | null {
+/**
+ * 이 포켓몬이 서는 카드 — 진행 중이 먼저, 없으면 가장 가까운 것(판은 이미 그 순서다).
+ * **열린 폼이 먼저다**: 폼째 이름(detailName)이 같은 카드 → 같은 그림 번호의 카드 → 같은 도감 번호 → 진화 계열 순.
+ * 메가X · 메가Y 리자몽 카드가 같이 있을 때 메가Y 를 열었는데 X 카드가 서면 추천 타입 · 계산기 보스가 틀린다 (Codex, PR #361)
+ */
+export function cardFor(board: readonly BossCard[], dexNos: ReadonlySet<number>, self?: { name?: string; sprite?: number; dex?: number | null }): BossCard | null {
+  if (self?.name) {
+    const byName = board.find((card) => card.detailName === self.name);
+    if (byName) return byName;
+  }
+  if (self?.sprite !== undefined && self.sprite >= 10000) {
+    const bySprite = board.find((card) => card.sprite === self.sprite);
+    if (bySprite) return bySprite;
+  }
+  if (self?.dex != null) {
+    const byDex = board.find((card) => card.dex === self.dex);
+    if (byDex) return byDex;
+  }
   return board.find((card) => dexNos.has(card.dex)) ?? null;
 }
 

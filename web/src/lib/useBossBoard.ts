@@ -34,6 +34,7 @@ export function useBossBoard(): { board: BossCard[]; nowMs: number } {
     slides,
     events: gameday?.GAMEDAY.events,
     names: dex?.DEX_DATA.names,
+    en: dex?.DEX_DATA.en,
     forms: dex?.DEX_DATA.forms,
     megas: dex?.DEX_DATA.megas,
     dexTable: dex?.DEX_DATA.dex,
