@@ -1,0 +1,58 @@
+/* ─────────────────────────────────────────────────────────────────────────────
+   cinema/ads.css — 광고 자리: 넓은 화면 양옆 세로 띠 · 휴대폰 바닥 띠 (2026-10-14)
+
+   자리는 position: fixed 라 본문 흐름 밖이다. 본문이 비켜서는 규칙은 `html[data-ads="on"]` 에만 건다 —
+   로그인한 사람 · 광고를 끈 빌드에서는 본문이 그대로다.
+   크기 토큰은 Google 표준 단위(160×600 · 320×50)를 rem 으로 옮긴 것. 색은 토큰만, 반경은 --r-box · --r-tag.
+   ───────────────────────────────────────────────────────────────────────────── */
+html body {
+  --ad-rail-w: 16rem;    /* 세로 띠 폭 (160px) */
+  --ad-rail-h: 60rem;    /* 세로 띠 높이 (600px) */
+  --ad-bar-h: 5rem;      /* 바닥 띠 높이 (50px) */
+  --ad-gap: 2.4rem;      /* 띠와 본문 · 화면 끝 사이 */
+  --ad-rail-zone: calc(var(--ad-rail-w) + var(--ad-gap) * 2);   /* 한쪽 띠가 차지하는 폭 */
+}
+
+/* ── 자리 공통 — 빈 자리는 점선 상자에 '준비 중' 을 적는다. 광고가 들어오면 상자 안이 바뀔 뿐 틀은 같다 ── */
+html body #root .ad-slot { display: none; position: fixed; z-index: 30; box-sizing: border-box; }
+html body #root .ad-slot__box {
+  box-sizing: border-box; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.8rem;
+  max-width: 100%; max-height: 100%; padding: 0.8rem;
+  border: 1px dashed var(--line); border-radius: var(--r-box); background: var(--surface); color: var(--muted);
+}
+html body #root .ad-slot__label {
+  padding: 0.2rem 0.8rem; border: 1px solid var(--line); border-radius: var(--r-tag);
+  font: 700 1.2rem/1.5 Pretendard, sans-serif; letter-spacing: 0.04em; color: var(--muted);
+}
+html body #root .ad-slot__text { font: 400 1.2rem/1.5 Pretendard, sans-serif; text-align: center; }
+
+/* ── 넓은 화면 — 양옆 세로 띠. 본문 폭(160rem)과 띠 둘이 같이 서야 하므로 1400px 부터, 세로 600px 이 다 들어가는 높이에서만 ── */
+@media (min-width: 1400px) and (min-height: 760px) {
+  html body #root :is(.ad-slot--left, .ad-slot--right) {
+    display: block; top: calc(8.8rem + var(--ad-gap)); width: var(--ad-rail-w); height: var(--ad-rail-h);
+  }
+  /* 본문이 160rem 보다 좁아지면 띠는 화면 끝에서 --ad-gap, 넓으면 본문 옆에서 --ad-gap (100% 는 스크롤바를 뺀 폭이라 100vw 대신 쓴다) */
+  html body #root .ad-slot--left { left: max(var(--ad-gap), calc((100% - 160rem) / 2 - var(--ad-rail-zone) + var(--ad-gap))); }
+  html body #root .ad-slot--right { right: max(var(--ad-gap), calc((100% - 160rem) / 2 - var(--ad-rail-zone) + var(--ad-gap))); }
+  html body #root .ad-slot--bottom { display: none; }
+  /* 본문이 띠만큼 비켜선다 — 머리줄의 좌우 끝도 본문 끝과 계속 맞춘다 (shell.css 의 머리줄 padding 식과 같은 꼴) */
+  html[data-ads="on"] body #root :is(.layout, #page, .page-head) { max-width: min(160rem, calc(100% - var(--ad-rail-zone) * 2)); }
+  html[data-ads="on"] body #root .app-bar {
+    padding-left: max(calc(var(--ad-rail-zone) + 3.2rem), calc((100% - 160rem) / 2 + 3.2rem));
+    padding-right: max(calc(var(--ad-rail-zone) + 3.2rem), calc((100% - 160rem) / 2 + 3.2rem));
+  }
+}
+
+/* ── 휴대폰 — 바닥 띠. 홈 표시줄(safe-area) 위에 선다 ── */
+@media (max-width: 999px) {
+  html body #root .ad-slot--bottom {
+    display: flex; justify-content: center; left: 0; right: 0; bottom: 0;
+    padding: 0.4rem 1.6rem calc(0.4rem + env(safe-area-inset-bottom, 0px));
+    background: color-mix(in srgb, var(--bg) 94%, transparent); border-top: 1px solid var(--line); backdrop-filter: blur(1.2rem);
+  }
+  html body #root .ad-slot--bottom .ad-slot__box { flex-direction: row; gap: 1.2rem; height: var(--ad-bar-h); padding: 0 1.2rem; }
+  html body #root :is(.ad-slot--left, .ad-slot--right) { display: none; }
+  /* 띠가 바닥을 덮으므로 문서 끝과 '맨 위로' 단추를 띠 높이만큼 올린다 */
+  html[data-ads="on"] body { padding-bottom: calc(var(--ad-bar-h) + 0.8rem + env(safe-area-inset-bottom, 0px)); }
+  html[data-ads="on"] body #root .totop { bottom: calc(2.2rem + var(--ad-bar-h) + 0.8rem + env(safe-area-inset-bottom, 0px)); }
+}
