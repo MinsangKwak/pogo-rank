@@ -11,7 +11,7 @@
 // ─────────────────────────────────────────────────────────────────────────────
 'use strict';
 import { BASE } from '../lib/base';
-import { BOARD_KIND_KO, cardDday, type BossCard } from '../lib/bossBoard';
+import { BOARD_KIND_KO, BOARD_MAX, cardDday, type BossCard } from '../lib/bossBoard';
 import { countersOf, useBossBoard, useCounterSource } from '../lib/useBossBoard';
 import { useDexSoft } from '../lib/data';
 import { track } from '../lib/track';
@@ -81,7 +81,8 @@ export default function WeekBosses({ onOpen }: { onOpen: OpenMon }) {
         <span className="week-bosses__sub">진행 중이거나 7일 안에 시작하는 맥스 배틀 · 레이드 보스와 추천 포켓몬</span>
       </div>
       <ul className="week-bosses__list">
-        {board.map((card) => <Card key={card.id} card={card} src={src} labels={labels} onOpen={onOpen} />)}
+        {/* 여섯 장까지 — 자르는 것은 여기뿐이다. 판 자체는 다 들고 있어야 팝업 · 이유가 일곱 번째 보스도 안다 (Codex, PR #361) */}
+        {board.slice(0, BOARD_MAX).map((card) => <Card key={card.id} card={card} src={src} labels={labels} onOpen={onOpen} />)}
       </ul>
     </section>
   );

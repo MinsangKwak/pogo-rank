@@ -12,7 +12,11 @@ import { bossBoard, type BossCard } from './bossBoard';
 import { bossCounters, type BossCounters, type BossKind, type CounterSource } from './bossCounters';
 import { useMaxSlidesSoft } from './weekBosses';
 
-/** 이번 주 보스판 — 홈 배너와 같은 맥스 일정 + gameday 레이드. '지금' 은 처음 그릴 때 한 번 */
+/**
+ * 이번 주 보스판 — 홈 배너와 같은 맥스 일정 + gameday 레이드. '지금' 은 처음 그릴 때 한 번.
+ * **다 돌려준다** — 장 수 상한(BOARD_MAX)은 홈 카드 줄이 그릴 때만 자른다. 여기서 자르면 일곱 번째 보스의 팝업 '상대할 때' 카드와
+ * '많이 보는 포켓몬' 의 이유가 같이 사라진다 (Codex, PR #361)
+ */
 export function useBossBoard(): { board: BossCard[]; nowMs: number } {
   const [nowMs] = useState(() => Date.now());
   const slides = useMaxSlidesSoft();
@@ -34,7 +38,7 @@ export function useBossBoard(): { board: BossCard[]; nowMs: number } {
     megas: dex?.DEX_DATA.megas,
     dexTable: dex?.DEX_DATA.dex,
     lookup,
-  }, nowMs), [slides, gameday, dex, lookup, nowMs]);
+  }, nowMs, { max: Infinity }), [slides, gameday, dex, lookup, nowMs]);
   return { board, nowMs };
 }
 
