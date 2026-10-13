@@ -8,10 +8,13 @@
 // 배지를 탭하면 한 단계씩 수동으로 돌린다. 셈은 lib/solo.ts 에 있다.
 //
 // [내 덱 검증] 은 넣은 순서 그대로 시뮬레이션한다 — 그 순서가 곧 출전 순서다.
+//
+// 주소가 보스를 싣는다(/pve/solo?boss=이름) — 팝업의 '상대할 때' 카드가 이 주소로 보내면 도착하자마자 그 보스가 골라져 있다 (2026-10-13).
+// 덱 짜기(?b=)와 같은 규칙으로 **처음 들어올 때 한 번만** 읽는다. 서버에는 주소가 없으니 브라우저의 첫 효과에서 읽는다
 // ─────────────────────────────────────────────────────────────────────────────
 import { go } from '../lib/nav';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useDex, useMax, usePve, usePvp } from '../lib/data';
 import { Slot } from '../components/Slots';
 import { Seg, Sprite, ToolBtn } from '../components/Bits';
@@ -25,6 +28,14 @@ import { useFavs } from '../lib/useFavs';
 import type { OpenMon } from '../lib/mon';
 import { track, trackSearchPick } from '../lib/track';
 import type { PveRow } from '../types/data';
+
+/** 주소의 보스 이름(?boss=) — 없으면 null */
+function readHashBoss(): string | null {
+  if (typeof location === 'undefined') return null;
+  const query = location.search.slice(1);
+  const raw = query ? new URLSearchParams(query).get('boss') : null;
+  return raw?.trim() || null;
+}
 
 export default function SoloCalc({ onOpen }: { onOpen: OpenMon }) {
   const { data: dex } = useDex();
@@ -71,6 +82,16 @@ export default function SoloCalc({ onOpen }: { onOpen: OpenMon }) {
     setFillNote('');
     track('solo_calc_boss', { boss: next.name });
   };
+
+  // 주소에 실린 보스(?boss=) — 이름이 정확히 맞는 것만. 모르는 이름이면 빈 화면 그대로(검색창이 답한다)
+  useEffect(() => {
+    const wanted = readHashBoss();
+    if (!wanted) return;
+    const found = buildBossIndex(dex, max, pve, pvp).find((one) => one.name === wanted);
+    if (found) pickBoss(found);
+    // 처음 한 번만 — 그 뒤 보스를 바꾸거나 지워도 주소의 것으로 되돌리지 않는다
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const raid = boss ? raidCp(dex.DEX_DATA, boss, tier) : null;
   const full = boss ? maxCp(dex.DEX_DATA, boss) : null;

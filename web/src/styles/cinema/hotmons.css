@@ -26,6 +26,9 @@ html body #root .hot-mons__btn--fill { background: var(--surface); }
 html body #root .hot-mons__tag { color: var(--brand); font-size: 1.2rem; font-weight: 700; letter-spacing: 0.04em; }
 html body #root .hot-mons__sprite { width: 4rem; height: 4rem; image-rendering: pixelated; }
 html body #root .hot-mons__name { font-weight: 700; }
+/* 이름 아래 이유 한 마디 (2026-10-13) — '거다이맥스 보스' · '커뮤니티 데이 · D-3'. 없는 줄은 이름만 선다 */
+html body #root .hot-mons__text { display: flex; flex-direction: column; align-items: flex-start; gap: 0.2rem; line-height: 1.2; }
+html body #root .hot-mons__why { color: var(--muted); font-size: 1.2rem; font-weight: 600; }
 @media (hover: hover) {
   html body #root .hot-mons__btn:hover { border-color: var(--brand); }
 }

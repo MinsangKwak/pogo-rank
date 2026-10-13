@@ -27,6 +27,30 @@
 ## 릴리스 기록
 
 <details open>
+<summary><b>2026-10-13</b> — 1판 · <code>v5.10.0</code></summary>
+
+<details>
+<summary><b>v5.10.0</b> · 통계 개편 ①② — 상세 '상대할 때' 카드 · 홈 '이번 주 보스' 카드 줄 · 많이 보는 포켓몬 이유</summary>
+
+**배경** — 수집 통계(9/23~10/13) 분석. 10월 상세 조회 상위 10 중 8 이 거다이맥스 · 레이드 보스 자신(인텔리레온 · 메타그로스 · 고릴타 · 에이스번 …)이었고, 검색어는 그 주 일정의 포켓몬(조로아크 · 파라꼬 · 유크시)을 따라갔다. 조회 288 회에 검색 86 회 — 사람들은 검색보다 목록에서 눌러 들어온다. 그런데 팝업은 '키울 때'(육성 추천) 한 면뿐이고 '어떻게 잡나' 는 배틀 정보 탭 맨 아래와 솔플 계산기 · 덱 짜기 안쪽에만 있었다. 주인 지시(10/13): 제안 1 · 2 를 dev 에 올린다.
+
+**추가 — `web/src/lib/bossBoard.ts` · `useBossBoard.ts`** — '이번 주 보스판'. 홈 배너와 같은 맥스 일정(`maxSlides`)과 gameday 의 `raid-battles` 행사(제목으로 5성 · 메가 · 섀도우를 가름)를 한 줄로 합친다. 진행 중이 먼저, 그다음 7일 안에 시작하는 것, 같은 폼은 한 번, 여섯 장까지. 메가 레이드는 제목의 X · Y 폼만 그 폼 그림으로 세운다. 이름 없는 번호는 세우지 않는다. `reasonFor` 가 '많이 보는 포켓몬' 줄의 이유('거다이맥스 보스' · '커뮤니티 데이 · D-3')를 낸다 — 없으면 빈 글자.
+
+**추가 — `web/src/lib/bossCounters.ts`** — 상세 팝업 '보스로 만났을 때' 가 품고 있던 추천 셈을 한 곳으로 꺼냈다(맥스: 보스 첫 타입의 딜러 표 `maxVisible(now)` · 레이드: 잘 때리는 타입 둘의 시트 → 자체 계산 상위, 종 중복 제거). 팝업 맨 위 카드 · 홈 카드 · 배틀 정보 탭이 같은 후보를 센다.
+
+**추가 — `web/src/components/detail/VsCard.tsx`** — 팝업 요약 탭 맨 위 '상대할 때' 카드. 그 종(또는 진화 계열)의 카드가 있을 때만 선다: 남은 날 표 · '거다이맥스 보스 · 10.17 (토) · 14:00–17:00' · 추천 세 마리(`Recs`) · 단추 하나(맥스 → `/dmax/deck?b=<타입>` · 레이드 → `/pve/solo?boss=<이름>`). 요약 팝업에도 선다 — 순위 목록은 펼치지 않는다(CLAUDE.md 3-1). `FormGuide.tsx` 의 `BossLine`(진화 계열 아래 맥스 일정 한 줄)은 이 카드로 흡수. `Recs` 는 `components/detail/Recs.tsx` 로 분리. `SoloCalc.tsx` 가 처음 들어올 때 한 번 `?boss=` 를 읽어 그 보스를 고른다(덱 짜기 `?b=` 와 같은 규칙).
+
+**추가 — `web/src/components/WeekBosses.tsx` · `styles/cinema/weekbosses.css`** — 홈 배너 바로 아래 카드 줄(가로 넘김). 카드 = 표(남은 날 · 종류) · 그림 · 이름 · 기간 + 추천 세 마리. 보스를 누르면 그 보스 상세(맨 위가 '상대할 때'), 추천을 누르면 그 포켓몬 상세. 추천 묶음(pve · pvp · max)이 오기 전에는 보스만 세운다(`usePveSoft` · `usePvpSoft` 추가). `HotMons.tsx` 는 줄마다 이유 한 마디(`.hot-mons__why`). 홈 차례: 배너 → 이번 주 보스 → 지금 많이 보는 포켓몬.
+
+**지표** — GA 이벤트 `week_boss_open` · `week_boss_rec` · `vs_go` 추가. 수집 항목은 늘지 않는다(화면 id · 상세 번호 그대로).
+
+검사 — web 197(새 `bossBoard` 8 · `bossCounters` 6) · tsc · frontend-v4 `version` 6 · `next build` · `check_screens`(로컬) · 두 테마 화면 확인.
+
+</details>
+
+</details>
+
+<details>
 <summary><b>2026-10-10</b> — 2판 · <code>v5.9.15</code> · <code>v5.9.16</code></summary>
 
 <details>
