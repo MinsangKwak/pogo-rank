@@ -18,13 +18,23 @@ export function useBossBoard(): { board: BossCard[]; nowMs: number } {
   const slides = useMaxSlidesSoft();
   const gameday = useGamedaySoft();
   const dex = useDexSoft();
+  const pve = usePveSoft();
+  // 폼 이름('오리진폼 기라티나')으로 그림 · 타입 찾기 — 지금 레이드 목록(gameday)과 레이드 성능표(pve)에서. 둘 다 안 왔으면 원종으로 선다
+  const lookup = useMemo(() => {
+    const table = new Map<string, { sprite: number; types: readonly string[] }>();
+    for (const rows of Object.values(pve?.PVE_DATA ?? {})) for (const row of rows) if (!table.has(row.name)) table.set(row.name, { sprite: row.sprite, types: row.types });
+    for (const rows of Object.values(gameday?.GAMEDAY.raids ?? {})) for (const row of rows) if (!table.has(row.name)) table.set(row.name, { sprite: row.sprite, types: row.types ?? [] });
+    return (name: string) => table.get(name) ?? null;
+  }, [pve, gameday]);
   const board = useMemo(() => bossBoard({
     slides,
     events: gameday?.GAMEDAY.events,
     names: dex?.DEX_DATA.names,
     forms: dex?.DEX_DATA.forms,
     megas: dex?.DEX_DATA.megas,
-  }, nowMs), [slides, gameday, dex, nowMs]);
+    dexTable: dex?.DEX_DATA.dex,
+    lookup,
+  }, nowMs), [slides, gameday, dex, lookup, nowMs]);
   return { board, nowMs };
 }
 

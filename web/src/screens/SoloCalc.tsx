@@ -10,7 +10,8 @@
 // [내 덱 검증] 은 넣은 순서 그대로 시뮬레이션한다 — 그 순서가 곧 출전 순서다.
 //
 // 주소가 보스를 싣는다(/pve/solo?boss=이름) — 팝업의 '상대할 때' 카드가 이 주소로 보내면 도착하자마자 그 보스가 골라져 있다 (2026-10-13).
-// 덱 짜기(?b=)와 같은 규칙으로 **처음 들어올 때 한 번만** 읽는다. 서버에는 주소가 없으니 브라우저의 첫 효과에서 읽는다
+// 이 화면 위에서 팝업을 열고 또 누르면 경로는 그대로이고 질의만 바뀐다 — 그래서 처음 한 번이 아니라 이동 때마다 읽는다 (lib/useSearch.ts, Codex PR #361).
+// 같은 보스면 다시 고르지 않는다(덱 · 난이도가 날아간다). 주소에서 보스를 지운 뒤에는 되돌리지 않는다 — 검색창이 답한다
 // ─────────────────────────────────────────────────────────────────────────────
 import { go } from '../lib/nav';
 
@@ -27,13 +28,12 @@ import {
 import { useFavs } from '../lib/useFavs';
 import type { OpenMon } from '../lib/mon';
 import { track, trackSearchPick } from '../lib/track';
+import { useSearch } from '../lib/useSearch';
 import type { PveRow } from '../types/data';
 
 /** 주소의 보스 이름(?boss=) — 없으면 null */
-function readHashBoss(): string | null {
-  if (typeof location === 'undefined') return null;
-  const query = location.search.slice(1);
-  const raw = query ? new URLSearchParams(query).get('boss') : null;
+export function readHashBoss(search: string): string | null {
+  const raw = search.startsWith('?') ? new URLSearchParams(search.slice(1)).get('boss') : null;
   return raw?.trim() || null;
 }
 
@@ -84,14 +84,15 @@ export default function SoloCalc({ onOpen }: { onOpen: OpenMon }) {
   };
 
   // 주소에 실린 보스(?boss=) — 이름이 정확히 맞는 것만. 모르는 이름이면 빈 화면 그대로(검색창이 답한다)
+  const search = useSearch();
   useEffect(() => {
-    const wanted = readHashBoss();
-    if (!wanted) return;
+    const wanted = readHashBoss(search);
+    if (!wanted || wanted === boss?.name) return;
     const found = buildBossIndex(dex, max, pve, pvp).find((one) => one.name === wanted);
     if (found) pickBoss(found);
-    // 처음 한 번만 — 그 뒤 보스를 바꾸거나 지워도 주소의 것으로 되돌리지 않는다
+    // 주소가 바뀔 때만 — 보스 · 묶음이 바뀌어도 주소의 것으로 되돌리지 않는다
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [search]);
 
   const raid = boss ? raidCp(dex.DEX_DATA, boss, tier) : null;
   const full = boss ? maxCp(dex.DEX_DATA, boss) : null;

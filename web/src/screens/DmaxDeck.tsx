@@ -21,6 +21,7 @@ import { NameNode } from '../components/Row';
 import { weekBoss } from '../lib/schedule';
 import { MAX_DECK_SIZE, MAX_DECK_SLOTS, maxDeckAutoFill, maxDeckCandidates, maxDeckRowOf, maxDeckWhy, type MaxDeck } from '../lib/maxdeck';
 import { track } from '../lib/track';
+import { useSearch } from '../lib/useSearch';
 import { useRankStore } from '../stores/rank';
 import type { OpenMon } from '../lib/mon';
 
@@ -39,10 +40,8 @@ function readHashIds(): (number | null)[] | null {
   return ids.length ? ids : null;
 }
 
-function readHashBoss(typeKo: Record<string, string>): string | null {
-  if (typeof location === 'undefined') return null;
-  const query = location.search.slice(1);
-  const raw = query ? new URLSearchParams(query).get('b') : null;
+function readHashBoss(typeKo: Record<string, string>, search: string = typeof location === 'undefined' ? '' : location.search): string | null {
+  const raw = search.startsWith('?') ? new URLSearchParams(search.slice(1)).get('b') : null;
   return raw && (raw === 'overall' || typeKo[raw]) ? raw : null;
 }
 
@@ -54,6 +53,13 @@ export default function DmaxDeck({ onOpen }: { onOpen: OpenMon }) {
   const week = useMemo(() => weekBoss(schedule.SCHEDULE_MONTHS), [schedule]);
   // 주소(?b=)가 가장 세고, 없으면 이번 주 보스, 끝으로 '전체' (v3 maxDeckBossType)
   const [chosen, setChosen] = useState<string | null>(() => readHashBoss(dex.TYPE_KO));
+  // 이 화면 위에서 팝업의 'D-MAX 덱 짜기에서 자세히' 를 누르면 경로는 그대로이고 질의만 바뀐다 — 이동 때마다 다시 읽는다
+  // (lib/useSearch.ts, Codex PR #361). 이 화면이 제자리에서 바꾼 주소(replaceState)는 이동이 아니라 다시 읽지 않는다
+  const search = useSearch();
+  useEffect(() => {
+    const next = readHashBoss(dex.TYPE_KO, search);
+    if (next) setChosen((now) => (now === next ? now : next));
+  }, [search, dex]);
   const [dynaOnly, setDynaOnly] = useState(false);
   // D-MAX 화면의 [맥스 참가 가능 다른 유닛] 체크와 같은 값 — 덱 후보도 같은 규칙으로 (2026-10-06)
   const showJoin = useRankStore((s) => s.maxShowJoin);

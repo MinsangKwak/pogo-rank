@@ -45,6 +45,7 @@ function Card({ card, src, labels, onOpen }: { card: BossCard; src: CounterSourc
           <span className="week-bosses__kind">{BOARD_KIND_KO[card.kind]}</span>
         </span>
         <img className="week-bosses__sprite" src={`${BASE}sprites/${card.sprite}.png`} alt="" width="72" height="72" loading="lazy" decoding="async" />
+        {card.form ? <span className="week-bosses__form">{card.form}</span> : null}
         <b className="week-bosses__name">{card.name}</b>
         <span className="week-bosses__when">{[card.short, card.hours].filter(Boolean).join(' · ')}</span>
       </button>

@@ -44,7 +44,9 @@
 
 **지표** — GA 이벤트 `week_boss_open` · `week_boss_rec` · `vs_go` 추가. 수집 항목은 늘지 않는다(화면 id · 상세 번호 그대로).
 
-검사 — web 197(새 `bossBoard` 8 · `bossCounters` 6) · tsc · frontend-v4 `version` 6 · `next build` · `check_screens`(로컬) · 두 테마 화면 확인.
+**Codex(#361) 반영** — ① 같은 화면 위에서 질의만 바뀌는 이동(`/pve/solo?boss=…` · `/dmax/deck?b=…`)은 `usePathname` 이 모르고 첫 효과도 다시 돌지 않아 보스가 안 바뀌었다. `lib/nav.ts go()` 가 이동 알림을 내고 `lib/useSearch.ts`(`useSyncExternalStore` · popstate)가 그때의 질의를 돌려준다 — 솔플 계산기 · 덱 짜기가 이동 때마다 다시 읽는다. ② 레이드 제목의 폼(`Giratina (Origin Forme)` · `Shadow Landorus (Incarnate Forme)` · `Primal Groudon`)을 버리고 원종으로 세웠다. `formLabelOf` 가 표(FORM_LABELS 에 있는 말만)로 폼 이름표를 읽어 `detailName` 을 폼째 만들고, 그림은 도감 폼 표(원시 그란돈 10078) → 이름 찾기(`lookup`: 레이드 성능표 · 지금 레이드 목록) → 원종 순으로 찾는다. 홈 카드에 폼 줄(`.week-bosses__form`).
+
+검사 — web 186(새 `bossBoard` 11 · `bossCounters` 6) · tsc · frontend-v4 `version` 6 · `next build` · `check_screens`(로컬 52장) · 두 테마 PC · 모바일 화면 확인.
 
 </details>
 
