@@ -57,13 +57,24 @@ export function bossCounters(kind: BossKind, bossTypes: readonly string[], src: 
   if (!bossTypes.length) return null;
   const ko = (type: string) => src.typeKo[type] ?? type;
   if (kind === 'max') {
-    const first = bossTypes[0]!;
-    const rows = maxVisible(src.dmax?.[first], { join: src.showJoin ?? false, now: true }).slice(0, limit).map(toRef);
+    // 딜러 표는 보스 타입 하나 기준이다 — 두 타입 보스(불·비행 거다이맥스 리자몽)는 두 표를 합쳐 다른 타입의 상성을 곱해 다시 세운다.
+    // 불 표 1위가 땅 기술이면 비행에 ×0.39 라 내려가고, 바위 기술은 ×1.6 이라 올라간다 (Codex, PR #361)
+    const seen = new Map<string, { row: DmaxRow; score: number }>();
+    for (const [table, other] of (bossTypes.length > 1 ? [[bossTypes[0]!, bossTypes[1]!], [bossTypes[1]!, bossTypes[0]!]] : [[bossTypes[0]!, undefined]]) as [string, string | undefined][]) {
+      for (const row of maxVisible(src.dmax?.[table], { join: src.showJoin ?? false, now: true })) {
+        const mult = other ? (src.chart[row.charged]?.[other] ?? 1) : 1;
+        const score = (row.score ?? 0) * mult;
+        const had = seen.get(row.name);
+        if (!had || had.score < score) seen.set(row.name, { row, score });
+      }
+    }
+    const rows = [...seen.values()].sort((a, b) => b.score - a.score).slice(0, limit).map((one) => toRef(one.row));
     if (!rows.length) return null;
+    const typeLabel = bossTypes.map(ko).join('·');
     return {
-      kind, rows, types: [first],
+      kind, rows, types: [...bossTypes],
       sub: '맥스 배틀 추천 후보 — 다이맥스·거다이맥스와 다이맥스 없이 참가하는 전설만 참전',
-      foot: `${ko(first)} 속성 맥스 배틀 보스 기준 · 메가·원시·섀도우는 맥스 배틀에 참전할 수 없어 제외`,
+      foot: `${typeLabel} 속성 맥스 배틀 보스 기준 · 메가·원시·섀도우는 맥스 배틀에 참전할 수 없어 제외`,
     };
   }
   const attackTypes = counterTypes(src.chart, src.typeKo as Record<string, string>, bossTypes, 2);

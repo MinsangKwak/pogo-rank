@@ -45,9 +45,9 @@ export default function VsCard({ mon, dexNo, onSwitch, onLeave }: {
   // 섀도우 레이드는 격노 · 정화 결정이 있어 솔플 계산기의 셈(일반 레이드 체력 · 피해)이 맞지 않는다 — 계산기 대신 레이드 순위로 보낸다 (Codex, PR #361)
   const isShadow = card.kind === 'shadow';
   const goLabel = isMax ? 'D-MAX 덱 짜기' : isShadow ? '레이드 순위' : '솔플 계산기';
-  // 레이드 난이도 — 카드가 아는 것을 계산기에 넘긴다. 계산기의 자동 판정은 전설을 4성(체력 9,000)으로 보는데 5성 레이드는 15,000 이라
-  // 보스 이름만 넘기면 솔플 가능이 거짓으로 뜬다 (Codex, PR #361). 섀도우 레이드는 전설(cls)일 때만 5성 — 1 · 3성 섀도우도 있다
-  const tier = card.kind === 'raid5' ? 't5' : card.kind === 'mega' ? 'mega' : '';
+  // 레이드 난이도 — 카드가 제목에서 읽은 것(1 · 3 · 4 · 5성 · 메가)을 계산기에 넘긴다. 계산기의 자동 판정은 전설을 4성(체력 9,000),
+  // 미진화 종을 1성으로 보는데 5성은 15,000 · 3성 피카츄는 3,600 이라 이름만 넘기면 솔플 판정이 틀린다 (Codex, PR #361)
+  const tier = card.tier;
   // 맥스는 덱 짜기가 보스 타입(?b=)을, 레이드는 솔플 계산기가 보스 이름(?boss=)과 난이도(?tier=)를 주소로 받는다 — 도착하면 그 보스가 골라져 있다
   const href = isMax
     ? `${routeHref('dmax-deck')}?b=${encodeURIComponent(card.types[0] ?? 'overall')}`

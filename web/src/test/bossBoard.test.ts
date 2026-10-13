@@ -2,7 +2,7 @@
 // 이번 주 보스판 — 맥스 일정과 레이드를 한 줄로, 진행 중이 먼저, 모르는 이름은 안 세우고, 새는 글자 없이 (lib/bossBoard.ts)
 import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
-import { bossBoard, cardDday, cardFor, cardWhen, formLabelOf, formsFor, raidKindOf, reasonFor, shadowWindow, BOARD_MAX, SHADOW_HOURS } from '../lib/bossBoard';
+import { bossBoard, cardDday, cardFor, cardWhen, formLabelOf, formsFor, raidKindOf, raidTierOf, reasonFor, shadowWindow, BOARD_MAX, SHADOW_HOURS } from '../lib/bossBoard';
 import { maxSlides, weeksFromSchedule } from '../lib/maxSlides';
 import { LEAK } from '../lib/cell';
 import type { GamedayEvent } from '../types/data';
@@ -36,6 +36,23 @@ const events: GamedayEvent[] = [
 // 2026-10-13 12:00 한국 — 파라꼬 주(10.12~10.18) 진행 중, 뮤츠 5성은 10시에 끝났다, 디아루가는 내일
 const now = Date.parse('2026-10-13T12:00:00+09:00');
 const src = () => ({ slides: maxSlides({ events, names, en, forms, weeks: weeksFromSchedule(undefined) }, now), events, names, forms, megas, dexTable, lookup });
+
+describe('raidTierOf — 제목의 난이도를 계산기 id 로 (Codex, PR #361)', () => {
+  it('1 · 3 · 4 · 5성 · 메가, 섀도우 · 모르면 빈 글자', () => {
+    expect(raidTierOf('Pikachu in 3-star Raids')).toBe('t3');
+    expect(raidTierOf('Yveltal in 5-star Raid Battles')).toBe('t5');
+    expect(raidTierOf('Mega Blastoise in Mega Raids')).toBe('mega');
+    expect(raidTierOf('Something in 1-star Raids')).toBe('t1');
+    expect(raidTierOf('Shadow Landorus (Incarnate Forme) in Shadow Raids')).toBe('');
+    expect(raidTierOf('Raid Weekend')).toBe('');
+  });
+  it('카드가 난이도를 든다', () => {
+    const board = bossBoard(src(), now);
+    expect(board.find((card) => card.detailName === '디아루가')?.tier).toBe('t5');
+    expect(board.find((card) => card.detailName === '다이맥스 파라꼬')?.tier).toBe('');
+    expect(board.find((card) => card.kind === 'shadow')?.tier).toBe('');
+  });
+});
 
 describe('raidKindOf', () => {
   it('제목으로 섀도우 · 메가 · 5성을 가른다', () => {

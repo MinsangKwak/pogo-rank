@@ -48,6 +48,8 @@ export interface BossCard {
   live: boolean;
   /** 시작까지 남은 날 (진행 중이면 0) */
   days: number;
+  /** 레이드 난이도 — 솔플 계산기의 SOLO_TIERS id('t1' · 't3' · 't4' · 't5' · 'mega'). 제목에 없으면 빈 글자 (맥스 · 섀도우도 빈 글자) */
+  tier: string;
   /** 시작 시각(ms) — 정렬용 */
   at: number;
 }
@@ -123,6 +125,17 @@ export function formsFor(title: string, en: string | undefined): string[] {
   return [formLabelOf(title)];
 }
 
+/**
+ * 레이드 행사 제목 → 솔플 계산기 난이도. 'Pikachu in 3-star Raids' 는 3성(체력 3,600)인데 계산기의 자동 판정은
+ * 진화 단계로 1성(600)을 고른다 — 제목이 아는 난이도를 카드가 들고 간다 (Codex, PR #361). 섀도우는 계산기로 안 보내니 빈 글자
+ */
+export function raidTierOf(title: string): string {
+  if (/\bshadow\b/i.test(title)) return '';
+  if (/\bmega\b/i.test(title)) return 'mega';
+  const star = /\b([1345])-star\b/i.exec(title)?.[1] ?? (/\bfive-star\b/i.test(title) ? '5' : '');
+  return star ? `t${star}` : '';
+}
+
 /** 레이드 행사 제목 → 종류. 'Shadow Landorus in Shadow Raids' · 'Mega Blastoise in Mega Raids' · 'Yveltal in 5-star Raid Battles' */
 export function raidKindOf(title: string): BoardKind {
   if (/\bshadow\b/i.test(title)) return 'shadow';
@@ -141,7 +154,7 @@ function maxCards(slides: readonly MaxSlide[]): BossCard[] {
         id: `${slide.id}-${boss.dex}`,
         kind: slide.gmax ? 'gmax' : 'dmax',
         battle: 'max',
-        dex: boss.dex, sprite: boss.sprite, name: boss.name, form: '', detailName: `${prefix} ${boss.name}`,
+        dex: boss.dex, sprite: boss.sprite, name: boss.name, form: '', detailName: `${prefix} ${boss.name}`, tier: '',
         types: [...boss.types],
         when: slide.when, short: slide.short, hours: slide.hours,
         live: slide.live, days: slide.days,
@@ -203,7 +216,7 @@ function raidCards(src: BossBoardSource, nowMs: number, horizonMs: number): Boss
     const shadow = kind === 'shadow' ? shadowWindow(nowMs, start, end) : null;
     if (kind === 'shadow' && (!shadow || shadow.days * 24 * HOUR > horizonMs)) continue;
     const base = {
-      kind, battle: 'raid' as const,
+      kind, battle: 'raid' as const, tier: raidTierOf(event.title),
       when: sameDay ? dayLabel(start) : `${dayLabel(start)} — ${dayLabel(end)}`,
       short: sameDay ? shortDay(start) : `${shortDay(start)}–${shortDay(end)}`,
       // 레이드 로테이션은 일주일 내내라 시간을 안 적는다 — 하루 행사(레이드 데이)와 주말 섀도우만 시간이 뜻이 있다
