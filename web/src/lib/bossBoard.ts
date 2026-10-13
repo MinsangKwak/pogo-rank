@@ -132,7 +132,8 @@ export function formsFor(title: string, en: string | undefined): string[] {
 export function raidTierOf(title: string): string {
   if (/\bshadow\b/i.test(title)) return '';
   if (/\bmega\b/i.test(title)) return 'mega';
-  const star = /\b([1345])-star\b/i.exec(title)?.[1] ?? (/\bfive-star\b/i.test(title) ? '5' : '');
+  // '5-star' · 'five-star' · '5★' — 종류 판정(raidKindOf)이 아는 철자는 난이도도 다 안다 (Codex, PR #361)
+  const star = /\b([1345])(?:-star\b|★)/i.exec(title)?.[1] ?? (/\bfive-star\b/i.test(title) ? '5' : '');
   return star ? `t${star}` : '';
 }
 
@@ -140,7 +141,8 @@ export function raidTierOf(title: string): string {
 export function raidKindOf(title: string): BoardKind {
   if (/\bshadow\b/i.test(title)) return 'shadow';
   if (/\bmega\b/i.test(title)) return 'mega';
-  if (/5-star|five-star|\b5★/i.test(title)) return 'raid5';
+  // 5성 판정은 난이도 읽기와 같은 철자 표를 쓴다 — 둘이 어긋나면 카드는 5성인데 계산기는 4성이 된다
+  if (raidTierOf(title) === 't5') return 'raid5';
   return 'raid';
 }
 

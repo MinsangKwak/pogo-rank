@@ -41,6 +41,9 @@ describe('raidTierOf — 제목의 난이도를 계산기 id 로 (Codex, PR #361
   it('1 · 3 · 4 · 5성 · 메가, 섀도우 · 모르면 빈 글자', () => {
     expect(raidTierOf('Pikachu in 3-star Raids')).toBe('t3');
     expect(raidTierOf('Yveltal in 5-star Raid Battles')).toBe('t5');
+    expect(raidTierOf('Yveltal in 5★ Raids')).toBe('t5');
+    expect(raidTierOf('Legendary in Five-Star Raids')).toBe('t5');
+    expect(raidKindOf('Yveltal in 5★ Raids')).toBe('raid5');
     expect(raidTierOf('Mega Blastoise in Mega Raids')).toBe('mega');
     expect(raidTierOf('Something in 1-star Raids')).toBe('t1');
     expect(raidTierOf('Shadow Landorus (Incarnate Forme) in Shadow Raids')).toBe('');
