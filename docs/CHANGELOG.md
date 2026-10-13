@@ -27,7 +27,20 @@
 ## 릴리스 기록
 
 <details open>
-<summary><b>2026-10-13</b> — 1판 · <code>v5.10.0</code></summary>
+<summary><b>2026-10-13</b> — 2판 · <code>v5.10.0</code> · <code>v5.10.1</code></summary>
+
+<details>
+<summary><b>v5.10.1</b> · 도감 — 그푸리 · 공푸리 출시 반영</summary>
+
+**배경** — 매일 23:50 루틴(10/13). 공식 한국어 공지 '가을 소풍: 파트너와 함께'(10/13 10:00 ~ 10/19 20:00)에서 그푸리가 처음 등장했고, 공푸리는 그푸리를 파트너로 20km 걸은 뒤 50개 사탕으로 진화(LeekDuck 행사 안내). 도감은 PvPoke released 플래그를 따르므로 둘 다 '[미구현]' 으로 서 있었다.
+
+**데이터** — `backend/config/dex_released_extra.txt` 에 946 · 947. `bash scripts/build.sh --no-fetch --data-only` → `dex.json` 의 `rel` 에 두 번호가 든다(`snapshot/` 의 생성 변경은 되돌림).
+
+**운영 보류** — 주인 지시(10/13 "main deploy 올리면 안돼"): v5.10.0 과 함께 dev 까지만. main · deploy 는 보류.
+
+검사 — frontend-v4 `version` 6 · 로컬 데이터 재계산.
+
+</details>
 
 <details>
 <summary><b>v5.10.0</b> · 통계 개편 ①② — 상세 '상대할 때' 카드 · 홈 '이번 주 보스' 카드 줄 · 많이 보는 포켓몬 이유</summary>
