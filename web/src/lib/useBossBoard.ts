@@ -28,7 +28,8 @@ export function useBossBoard(): { board: BossCard[]; nowMs: number } {
     const timer = setInterval(() => setNowMs(Date.now()), BOARD_TICK_MS);
     return () => clearInterval(timer);
   }, []);
-  const slides = useMaxSlidesSoft();
+  // 맥스 일정도 같은 시계로 — 따로 얼어 있으면 레이드만 넘어가고 맥스 먼데이는 옛 남은 날로 남는다
+  const slides = useMaxSlidesSoft(nowMs);
   const gameday = useGamedaySoft();
   const dex = useDexSoft();
   const pve = usePveSoft();

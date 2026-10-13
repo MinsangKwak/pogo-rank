@@ -95,14 +95,15 @@ export default function SoloCalc({ onOpen }: { onOpen: OpenMon }) {
     const wanted = readHashBoss(search);
     if (!wanted) return;
     // 주소가 난이도를 알면 자동 판정 대신 그것 — 5성 레이드는 15,000, 자동 판정은 전설을 4성(9,000)으로 본다.
-    // 같은 보스라도 난이도가 새로 왔으면 받는다 — 옛 링크(?boss=디아루가)로 4성에 서 있다가 카드의 &tier=t5 로 오면 15,000 이어야 한다 (Codex, PR #361)
+    // 같은 보스라도 주소의 난이도를 그대로 따른다 — 옛 링크(?boss=디아루가)로 4성에 서 있다가 카드의 &tier=t5 로 오면 15,000,
+    // 뒤로 가서 다시 ?boss=디아루가 가 되면 자동 판정으로 되돌린다. 같은 주소는 어디서 왔든 같은 셈이어야 한다 (Codex, PR #361)
     const tier = readHashTier(search);
     if (wanted !== boss?.name) {
       const found = buildBossIndex(dex, max, pve, pvp).find((one) => one.name === wanted);
       if (!found) return;
       pickBoss(found);
     }
-    if (tier) setTierOverride(tier);
+    setTierOverride(tier);
     // 주소가 바뀔 때만 — 보스 · 묶음이 바뀌어도 주소의 것으로 되돌리지 않는다
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [search]);
