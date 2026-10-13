@@ -102,7 +102,7 @@ export function kst(iso: string): number {
 }
 
 // 한국 날짜의 연·월·일·요일 — 시간대를 옮기지 않고 한국 기준으로 센다
-function kstDate(ms: number) {
+export function kstDate(ms: number) {
   const shifted = new Date(ms + 9 * 60 * 60 * 1000);
   return { y: shifted.getUTCFullYear(), m: shifted.getUTCMonth() + 1, d: shifted.getUTCDate(), w: shifted.getUTCDay() };
 }

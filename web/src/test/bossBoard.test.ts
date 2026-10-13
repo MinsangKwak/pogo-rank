@@ -2,7 +2,7 @@
 // 이번 주 보스판 — 맥스 일정과 레이드를 한 줄로, 진행 중이 먼저, 모르는 이름은 안 세우고, 새는 글자 없이 (lib/bossBoard.ts)
 import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
-import { bossBoard, cardDday, cardFor, cardWhen, formLabelOf, formsFor, raidKindOf, reasonFor, BOARD_MAX } from '../lib/bossBoard';
+import { bossBoard, cardDday, cardFor, cardWhen, formLabelOf, formsFor, raidKindOf, reasonFor, shadowWindow, BOARD_MAX, SHADOW_HOURS } from '../lib/bossBoard';
 import { maxSlides, weeksFromSchedule } from '../lib/maxSlides';
 import { LEAK } from '../lib/cell';
 import type { GamedayEvent } from '../types/data';
@@ -50,19 +50,21 @@ describe('bossBoard', () => {
   const board = bossBoard(src(), now);
 
   it('진행 중이 먼저(맥스 → 레이드), 그다음 가까운 것. 끝난 레이드 · 7일 밖 · 모르는 이름은 없다', () => {
-    expect(board.map((card) => card.detailName)).toEqual(['다이맥스 파라꼬', '화신폼 랜드로스', '디아루가', '거다이맥스 인텔리레온']);
-    expect(board[1]).toMatchObject({ name: '랜드로스', form: '화신폼', sprite: 645 });
-    expect(board.map((card) => card.kind)).toEqual(['dmax', 'shadow', 'raid5', 'gmax']);
-    expect(board.map((card) => card.live)).toEqual([true, true, false, false]);
+    // 화요일 — 섀도우 랜드로스는 주말(토 10/17)까지 D-4 라 진행 중이 아니다
+    expect(board.map((card) => card.detailName)).toEqual(['다이맥스 파라꼬', '디아루가', '거다이맥스 인텔리레온', '화신폼 랜드로스']);
+    expect(board[3]).toMatchObject({ name: '랜드로스', form: '화신폼', sprite: 645, days: 4, hours: SHADOW_HOURS });
+    expect(board.map((card) => card.kind)).toEqual(['dmax', 'raid5', 'gmax', 'shadow']);
+    expect(board.map((card) => card.live)).toEqual([true, false, false, false]);
     // 10.26 울머기(13일 뒤) · 10.21 메가 리자몽(8일 뒤) · 끝난 뮤츠 · 9999 는 안 선다
     expect(board.some((card) => /울머기|리자몽|뮤츠/.test(card.detailName))).toBe(false);
   });
 
   it('카드 글 — 기간 · 남은 날 · 종류, 새는 글자 없이', () => {
-    const [rookidee, landorus, dialga, inteleon] = board;
+    const [rookidee, dialga, inteleon, landorus] = board;
     expect(cardDday(rookidee!)).toBe('진행 중');
     expect(cardWhen(rookidee!)).toBe('다이맥스 보스 · 10.12 (월) — 10.18 (일) · 월 06:00–21:00');
-    expect(cardWhen(landorus!)).toBe('섀도우 레이드 보스 · 10.7 (수) — 11.3 (화)');
+    expect(cardWhen(landorus!)).toBe('섀도우 레이드 보스 · 10.7 (수) — 11.3 (화) · 토·일 10:00–20:00');
+    expect(cardDday(landorus!)).toBe('D-4');
     expect(cardDday(dialga!)).toBe('D-1');
     expect(dialga!.short).toBe('10.14–10.20');
     expect(cardDday(inteleon!)).toBe('D-4');
@@ -165,6 +167,28 @@ describe('보스가 여럿인 제목 — 폼을 보스마다 읽는다 (Codex, P
     expect(cardFor(board2, new Set([6]), { name: '리자몽', sprite: 6, dex: 6 })?.detailName).toBe('메가X 리자몽');
     const board3 = bossBoard(src(), now);
     expect(cardFor(board3, new Set([822, 821]), { name: '파크로우', sprite: 822, dex: 822 })?.detailName).toBe('다이맥스 파라꼬');
+  });
+});
+
+describe('shadowWindow — 주말 섀도우 레이드는 토 · 일 10–20시에만 선다 (Codex, PR #361)', () => {
+  const start = Date.parse('2026-10-07T10:00:00+09:00');
+  const end = Date.parse('2026-11-03T10:00:00+09:00');
+  it('평일은 다음 토요일까지 남은 날, 토요일 낮은 진행 중, 토요일 밤은 일요일(D-1), 일요일 밤은 다음 토요일(D-6)', () => {
+    expect(shadowWindow(Date.parse('2026-10-13T12:00:00+09:00'), start, end)).toEqual({ live: false, days: 4 });
+    expect(shadowWindow(Date.parse('2026-10-17T12:00:00+09:00'), start, end)).toEqual({ live: true, days: 0 });
+    expect(shadowWindow(Date.parse('2026-10-17T21:00:00+09:00'), start, end)).toEqual({ live: false, days: 1 });
+    expect(shadowWindow(Date.parse('2026-10-18T09:00:00+09:00'), start, end)).toEqual({ live: false, days: 0 });
+    expect(shadowWindow(Date.parse('2026-10-18T21:00:00+09:00'), start, end)).toEqual({ live: false, days: 6 });
+  });
+  it('로테이션이 끝나기 전 마지막 주말이 지나면 창이 없다 — 카드를 안 세운다', () => {
+    // 11/1(일) 밤 → 다음 창 11/7(토)은 11/3 끝 뒤
+    expect(shadowWindow(Date.parse('2026-11-01T21:00:00+09:00'), start, end)).toBeNull();
+    const board2 = bossBoard(src(), Date.parse('2026-11-01T21:00:00+09:00'));
+    expect(board2.some((card) => card.kind === 'shadow')).toBe(false);
+  });
+  it('로테이션 시작 전의 주말은 세지 않는다', () => {
+    // 10/4(일) 낮 — 10/7(수) 시작 전이라 첫 창은 10/10(토)
+    expect(shadowWindow(Date.parse('2026-10-04T12:00:00+09:00'), start, end)).toEqual({ live: false, days: 6 });
   });
 });
 

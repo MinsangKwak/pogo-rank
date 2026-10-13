@@ -217,6 +217,7 @@ export const I18N_PATTERNS = [
   // 2026-10-13 이번 주 보스 · 상대할 때 — '거다이맥스 보스 · 10.17 (토) · 14:00–17:00' 는 ' · ' 조각마다 본다
   [/^(.+) 보스$/, '$1 boss'],
   [/^월 (\d{2}:\d{2}–\d{2}:\d{2})$/, 'Mon $1'],
+  [/^토·일 (\d{2}:\d{2}–\d{2}:\d{2})$/, 'Sat·Sun $1'],
 ];
 
 // 법률·콘텐츠 화면에 띄우는 안내 (privacy.js · terms.js · release.js)
@@ -236,6 +237,8 @@ export const I18N_EN = {
   '보스의 타입이 확인되면 추천 포켓몬을 보여 드려요.': "Recommended counters appear once the boss's type is confirmed.",
   'D-MAX 덱 짜기에서 자세히': 'More in the D-MAX team builder',
   '솔플 계산기에서 자세히': 'More in the Solo calculator',
+  '레이드 순위에서 자세히': 'More in the raid rankings',
+  '섀도우 레이드는 격노 · 정화 결정이 있어 솔플 계산기의 셈과 달라요. 추천은 타입 상성 기준이에요.': 'Shadow raids have enrage and Purified Gems, so the Solo calculator does not model them. Picks here are by type matchup.',
   '맥스 배틀 추천 후보 — 다이맥스·거다이맥스와 다이맥스 없이 참가하는 전설만 참전': 'Max Battle picks — only Dynamax · Gigantamax and the legendaries that join without Dynamax',
   // 요일 — '10.17 (토)' 의 꼬리. 날짜 글은 띄어쓰기로 끊겨 낱말마다 본다
   '(월)': '(Mon)', '(화)': '(Tue)', '(수)': '(Wed)', '(목)': '(Thu)', '(금)': '(Fri)', '(토)': '(Sat)', '(일)': '(Sun)',
