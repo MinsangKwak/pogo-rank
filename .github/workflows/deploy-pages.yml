@@ -19,8 +19,9 @@ name: web 배포 (Cloudflare Pages)
 on:
   push:
     branches: [deploy, pages-preview]
-    # scripts/ — 이 배포가 부르는 build.sh · fetch_data.sh 가 바뀌어도 운영 판을 다시 굽는다 (Codex, PR #371)
-    paths: ['web/**', 'scripts/**', 'frontend-v4/scripts/**', 'backend/**', 'content/**', 'release/**', '.github/workflows/deploy-pages.yml']
+    # 빌드가 읽는 자리 전부 — scripts/(build.sh · fetch_data.sh) · assets/(아이콘 · manifest · sw.js 원본, backend/build.py 가 옮긴다) (Codex, PR #371).
+    # dist/ · data/ 는 빌드가 만드는 결과, snapshot/ 은 배포 봇이 [skip ci] 로만 바꾼다
+    paths: ['web/**', 'scripts/**', 'assets/**', 'frontend-v4/scripts/**', 'backend/**', 'content/**', 'release/**', '.github/workflows/deploy-pages.yml']
   schedule:
     - cron: '40 15 * * *'   # 매일 00:40 KST — deploy.yml(00:00) · deploy-dev.yml(00:30) 뒤
   workflow_dispatch:
