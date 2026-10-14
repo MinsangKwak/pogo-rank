@@ -1,0 +1,55 @@
+name: 운영 주소 전환 (moncamp.kr ↔ Cloudflare Pages)
+
+# 2026-10-15 — moncamp.kr 을 Vercel 에서 Cloudflare Pages 로 넘긴다 (cutover-prod.yml 과 같은 꼴).
+#
+# **손으로만 돈다.** 주소가 오가는 일은 사람이 고른 때에 한다.
+#   status    지금 DNS · Pages 도메인만 찍는다 (아무것도 안 바꾼다) — 되돌릴 자리를 먼저 눈으로 본다
+#   attach    moncamp.kr · www 를 Pages 에 붙이고 DNS 를 돌린 뒤, Pages 판이 뜰 때까지 잰다
+#   rollback  DNS 를 Vercel 로 되돌리고, Vercel 판이 뜰 때까지 잰다
+#
+# 쓰는 시크릿: CLOUDFLARE_API_TOKEN · (rollback 때) VERCEL_TOKEN · VERCEL_ORG_ID
+on:
+  workflow_dispatch:
+    inputs:
+      action:
+        description: status · attach · rollback
+        type: choice
+        options: [status, attach, rollback]
+        default: status
+
+permissions:
+  contents: read
+
+concurrency:
+  group: cutover-prod
+  cancel-in-progress: false
+
+jobs:
+  cutover:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+
+      - name: DNS · 도메인 (${{ inputs.action }})
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          PAGES_PROJECT: moncamp
+        run: python3 scripts/pages_prod.py "${{ inputs.action }}"
+
+      # **어느 호스팅이 답하는지는 응답 머리가 말한다** — Vercel 은 server: Vercel, Pages 는 server: cloudflare 에 x-vercel-id 가 없다
+      - if: inputs.action != 'status'
+        name: moncamp.kr 로 재기
+        env:
+          WANT: ${{ inputs.action == 'attach' && 'pages' || 'vercel' }}
+        run: |
+          for i in $(seq 1 40); do
+            heads="$(curl -sSI "https://moncamp.kr/mon/25?t=$(date +%s)" 2>/dev/null | tr -d '\r' | tr 'A-Z' 'a-z' || true)"
+            if printf '%s' "$heads" | grep -q '^x-vercel-id:'; then got=vercel; elif printf '%s' "$heads" | grep -q '^server: cloudflare'; then got=pages; else got=''; fi
+            if [ "$got" = "$WANT" ] && curl -sS "https://moncamp.kr/mon/25" | grep -q '피카츄'; then
+              echo "OK — https://moncamp.kr 이 $got 에서 답한다"; exit 0
+            fi
+            echo "  DNS · 인증서를 기다린다 (${i}/40, 지금 ${got:-?})"; sleep 20
+          done
+          echo "moncamp.kr 이 13분 안에 $WANT 로 안 넘어간다"; exit 1
