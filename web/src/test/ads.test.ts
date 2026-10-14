@@ -7,7 +7,7 @@ import { AD_SLOT_SIZE, adsMode, adsVisible } from '../lib/ads';
 describe('adsMode', () => {
   it('placeholder 만 켜진 모드, 나머지(빈 값 · 오타 · live)는 off', () => {
     expect(adsMode('placeholder')).toBe('placeholder');
-    expect(adsMode(undefined)).toBe('off');
+    // undefined 는 넘기지 않는다 — 기본 인자가 process.env 를 읽어 dev 파이프라인(NEXT_PUBLIC_ADS=placeholder)에서 깨진다 (Codex, PR #364)
     expect(adsMode('')).toBe('off');
     expect(adsMode('on')).toBe('off');
     expect(adsMode('live')).toBe('off');
