@@ -70,30 +70,36 @@ def token():
 
 
 def redirect_rules(zid):
-    """영역의 리다이렉트 단계 규칙. 단계가 아직 없으면(404) 빈 목록 — cloudflare() 는 404 를 실패로 세우므로 직접 부른다"""
+    """영역의 리다이렉트 단계 규칙과, 그 단계의 규칙 묶음이 이미 있는지.
+    단계가 아직 없으면(404) 빈 목록 · 없음 — cloudflare() 는 404 를 실패로 세우므로 직접 부른다"""
     status, payload = call('GET', f'https://api.cloudflare.com/client/v4/zones/{zid}/rulesets/phases/{REDIRECT_PHASE}/entrypoint', token())
     if status == 404:
-        return []
+        return [], False
     if status >= 300 or not payload.get('success'):
         fail(f'리다이렉트 규칙을 못 읽었습니다: {status} {payload.get("errors")} — 토큰에 Zone · Single Redirect · Edit 가 있는지 봅니다')
-    return payload['result'].get('rules') or []
+    return payload['result'].get('rules') or [], True
 
 
-def put_rules(zid, rules):
+def put_rules(zid, rules, exists):
     keep = [{key: value for key, value in rule.items() if key in ('ref', 'description', 'expression', 'action', 'action_parameters', 'enabled')}
             for rule in rules]
-    cloudflare('PUT', f'/zones/{zid}/rulesets/phases/{REDIRECT_PHASE}/entrypoint', {'rules': keep})
+    if exists:
+        cloudflare('PUT', f'/zones/{zid}/rulesets/phases/{REDIRECT_PHASE}/entrypoint', {'rules': keep})
+        return
+    # 영역에 리다이렉트 규칙이 한 번도 없었으면 묶음부터 만든다 — 없는 묶음에 PUT 하면 실패할 수 있다 (Codex, PR #372)
+    cloudflare('POST', f'/zones/{zid}/rulesets', {
+        'name': 'default', 'kind': 'zone', 'phase': REDIRECT_PHASE, 'rules': keep})
 
 
 def set_www_redirect(zid, on):
-    rules = redirect_rules(zid)
+    rules, exists = redirect_rules(zid)
     others = [rule for rule in rules if rule.get('ref') != WWW_RULE_REF]
     had = len(others) != len(rules)
     if on and not had:
-        put_rules(zid, others + [WWW_RULE])
+        put_rules(zid, others + [WWW_RULE], exists)
         print(f'   {WWW} → {APEX} 308 규칙을 걸었습니다')
     elif not on and had:
-        put_rules(zid, others)
+        put_rules(zid, others, exists)
         print(f'   {WWW} → {APEX} 규칙을 걷었습니다 (Vercel 이 www 를 다시 옮긴다)')
     else:
         print(f'   {WWW} 규칙: 이미 {"있음" if on else "없음"}')
@@ -170,7 +176,7 @@ def main():
     for name in (APEX, WWW):
         one = have.get(name)
         print(f'   {name}: {one["status"] if one else "(안 붙음)"}')
-    rules = [rule.get('ref') for rule in redirect_rules(zid)]
+    rules = [rule.get('ref') for rule in redirect_rules(zid)[0]]
     print(f'   www → apex 규칙: {"있음" if WWW_RULE_REF in rules else "없음"}')
     print('── 프록시를 켜면 moncamp.kr 에 걸릴 영역 규칙 ──')
     zone_report(zid)
@@ -182,12 +188,14 @@ def main():
         if name not in have:
             cloudflare('POST', f'/accounts/{acc}/pages/projects/{PROJECT}/domains', {'name': name})
             print(f'   붙였습니다: {name}')
+    # **www 규칙을 DNS 보다 먼저 건다.** 규칙은 프록시를 지나는 요청에만 걸리므로 지금(www 가 Vercel · 프록시 끔)은 아무 일도 안 한다.
+    # DNS 를 바꾼 뒤에 걸다 실패하면 apex · www 는 넘어갔는데 www 가 안 옮겨지는 반쯤 넘어간 상태가 남는다 (Codex, PR #372)
+    print('── www 는 apex 로 ──')
+    set_www_redirect(zid, True)
     print(f'── DNS 를 돌린다 (CNAME {target} · 프록시 켬) ──')
     # apex 의 CNAME 은 Cloudflare 가 펴서(flattening) 답한다 — 같은 계정의 Pages 라 그대로 된다
     replace(zid, APEX, [{'type': 'CNAME', 'content': target, 'proxied': True}])
     replace(zid, WWW, [{'type': 'CNAME', 'content': target, 'proxied': True}])
-    print('── www 는 apex 로 ──')
-    set_www_redirect(zid, True)
     print('── 바뀐 DNS ──')
     show(zid)
     for name, one in domains(acc).items():
