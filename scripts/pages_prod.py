@@ -99,6 +99,47 @@ def set_www_redirect(zid, on):
         print(f'   {WWW} 규칙: 이미 {"있음" if on else "없음"}')
 
 
+ZONE_PHASES = [
+    ('http_ratelimit', 'rate limit'),
+    ('http_request_cache_settings', '캐시 규칙'),
+    ('http_response_headers_transform', '응답 헤더 규칙'),
+]
+# 켜져 있으면 앱이 깨지는 설정 (docs/INFRA.md §8 의 6번) — 프록시를 켜는 순간 moncamp.kr 에도 걸린다
+ZONE_OFF = ('rocket_loader', 'email_obfuscation')
+
+
+def zone_report(zid):
+    """**프록시를 켜면 영역 규칙이 moncamp.kr 에 새로 걸린다.** Vercel 때는 프록시가 꺼져 하나도 안 걸렸다.
+    GitHub Pages 시절 규칙(rate limit burst-guard · 캐시 규칙 · 헤더 Transform Rule)이 그대로 살아나므로 바꾸기 전에 찍는다.
+    읽기만 한다 — 토큰에 읽기 권한이 없으면 '못 읽음' 으로 적고 넘어간다(전환을 세울 일은 아니다)"""
+    base = f'https://api.cloudflare.com/client/v4/zones/{zid}'
+    for phase, label in ZONE_PHASES:
+        status, payload = call('GET', f'{base}/rulesets/phases/{phase}/entrypoint', token())
+        if status == 404:
+            print(f'   {label}: 없음')
+            continue
+        if status >= 300 or not payload.get('success'):
+            print(f'   {label}: 못 읽음 ({status} — 토큰에 읽기 권한이 없으면 대시보드에서 봅니다)')
+            continue
+        rules = payload['result'].get('rules') or []
+        print(f'   {label}: {len(rules)}개')
+        for rule in rules:
+            limit = rule.get('ratelimit') or {}
+            extra = (f' · {limit.get("period")}초에 {limit.get("requests_per_period")}건 넘으면 {limit.get("mitigation_timeout")}초 {rule.get("action")}'
+                     if limit else f' · {rule.get("action")}')
+            print(f'     - [{"켬" if rule.get("enabled", True) else "끔"}] {rule.get("description") or rule.get("ref") or "(이름 없음)"}{extra}')
+            print(f'       조건: {str(rule.get("expression", ""))[:200]}')
+    for name in ZONE_OFF:
+        status, payload = call('GET', f'{base}/settings/{name}', token())
+        value = (payload.get('result') or {}).get('value') if status < 300 else None
+        if value is None:
+            print(f'   {name}: 못 읽음 ({status})')
+        elif value == 'off':
+            print(f'   {name}: 끔')
+        else:
+            print(f'::warning::{name} 가 {value} 입니다 — 프록시를 켜면 앱이 깨질 수 있습니다(docs/INFRA.md §8 의 6번). 대시보드에서 끕니다')
+
+
 def main():
     step = sys.argv[1] if len(sys.argv) > 1 else ''
     if step not in ('status', 'attach', 'rollback'):
@@ -131,6 +172,8 @@ def main():
         print(f'   {name}: {one["status"] if one else "(안 붙음)"}')
     rules = [rule.get('ref') for rule in redirect_rules(zid)]
     print(f'   www → apex 규칙: {"있음" if WWW_RULE_REF in rules else "없음"}')
+    print('── 프록시를 켜면 moncamp.kr 에 걸릴 영역 규칙 ──')
+    zone_report(zid)
     if step == 'status':
         return
 
