@@ -139,6 +139,10 @@ jobs:
 
       - if: steps.ready.outputs.go == 'true'
         name: 정적 빌드 (out/)
+        env:
+          # 미리보기는 dev 채널로 굽는다 — 색인 금지(robots · meta) · GA 없음. 운영 채널로 구우면 공개된 *.pages.dev 미리보기가
+          # 운영과 같은 글로 색인되고 운영 통계에 섞인다(dev-pipeline.yml 과 같은 규칙, Codex PR #371). 운영 판은 .env.production 의 prod 그대로
+          NEXT_PUBLIC_CHANNEL: ${{ env.PAGES_PROD == 'true' && 'prod' || 'dev' }}
         run: cd web && npm run build:static
 
       - if: steps.ready.outputs.go == 'true'
@@ -183,7 +187,13 @@ jobs:
           printf '%s' "$body" | grep -q '<title>' || { echo "제목이 없습니다"; exit 1; }
           printf '%s' "$body" | grep -q 'application/ld+json' || { echo "JSON-LD 가 없습니다"; exit 1; }
           printf '%s' "$body" | grep -q 'id="root"' || { echo "#root 래퍼가 없습니다 — CSS 가 통째로 안 걸립니다"; exit 1; }
-          printf '%s' "$body" | grep -q 'googletagmanager.com/gtag/js' || { echo "GA 조각이 없습니다 — 방문 통계가 한 건도 안 나갑니다"; exit 1; }
+          if [ "$PAGES_PROD" = "true" ]; then
+            printf '%s' "$body" | grep -q 'googletagmanager.com/gtag/js' || { echo "GA 조각이 없습니다 — 방문 통계가 한 건도 안 나갑니다"; exit 1; }
+          else
+            # 미리보기는 거꾸로 — GA 가 없고 색인을 막아야 한다
+            printf '%s' "$body" | grep -q 'googletagmanager.com/gtag/js' && { echo "미리보기에 GA 조각이 있습니다 — 운영 통계에 섞입니다"; exit 1; }
+            curl -sS "$BASE/robots.txt" | grep -qi 'disallow: /' || { echo "미리보기 robots.txt 가 색인을 막지 않습니다"; exit 1; }
+          fi
           curl -sS "$BASE/data/meta.json" | grep -q '"CONTACT_EMAIL":"[^"]' || { echo "meta.json 에 문의 이메일이 없습니다"; exit 1; }
           [ "$(curl -so /dev/null -w '%{http_code}' "$BASE/sw.js")" = 200 ] || { echo "sw.js 가 없습니다 — 옛 서비스워커가 새 판을 못 받는다"; exit 1; }
           # ads.txt 는 있으면 한 줄 꼴이어야 하고, 없으면 404 여야 한다 — 200 'Not Found' 는 AdSense 가 잘못 읽는다
