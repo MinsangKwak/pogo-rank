@@ -75,6 +75,15 @@ jobs:
           key: sprites-v1-${{ github.run_id }}
           restore-keys: sprites-v1-
 
+      # 직전 정상본 표 — 원본이 비거나 줄어든 날 이걸로 대체한다(backend/guard.py). deploy.yml 과 같은 캐시를 이어 받는다.
+      # 없으면 빈 러너마다 견줄 기준이 없어 잘린 표도 '첫 정상본' 으로 통과한다 — 매일 밤 다시 굽는 운영 판에서는 더 위험하다 (Codex, PR #371)
+      - if: steps.ready.outputs.go == 'true'
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+        with:
+          path: snapshot/tables
+          key: tables-v1-${{ github.run_id }}
+          restore-keys: tables-v1-
+
       - if: steps.ready.outputs.go == 'true' && vars.API_URL != ''
         name: 서버 주소를 저장소 변수로 덮는다
         run: echo "NEXT_PUBLIC_API_URL=${{ vars.API_URL }}" >> "$GITHUB_ENV"
