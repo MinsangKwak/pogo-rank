@@ -9,7 +9,7 @@
 // 지금은 '준비 중' 을 적은 빈 자리다. 실제 광고를 붙이는 절차는 docs/ADS.md
 // ─────────────────────────────────────────────────────────────────────────────
 'use strict';
-import { useLayoutEffect, useSyncExternalStore } from 'react';
+import { useLayoutEffect, useSyncExternalStore, useState, useEffect } from 'react';
 import { onSignInTrace, signInTrace, useAuthStore } from '../stores/auth';
 import { consentDenied, onConsentChange } from '../lib/consent';
 import { useRoute } from '../lib/useRoute';
@@ -22,15 +22,20 @@ function Slot({ id }: { id: AdSlotId }) {
   const size = AD_SLOT_SIZE[id];
   return (
     <aside className={`ad-slot ad-slot--${id}`} data-ad-slot={id} aria-label="광고">
-      <div className="ad-slot__box" style={{ width: size.w, height: size.h }}>
+      {id === 'bottom' ? <p className="ad-slot__notice" role="status">로그인하면 광고 없이 이용할 수 있어요.</p> : null}
+      <div className="ad-slot__box" style={id === 'bottom' ? undefined : { width: size.w, height: size.h }}>
         <span className="ad-slot__label">광고</span>
-        <span className="ad-slot__text">광고 자리예요 · 준비 중</span>
+        <span className="ad-slot__text">광고 영역</span>
       </div>
     </aside>
   );
 }
 
 export default function AdSlots() {
+  const [preview, setPreview] = useState(false);
+  useEffect(() => {
+    setPreview(process.env.NODE_ENV === 'development' && new URLSearchParams(window.location.search).get('adPreview') === '1');
+  }, []);
   const status = useAuthStore((s) => s.status);
   const ready = useAuthStore((s) => s.ready);
   const recheckError = useAuthStore((s) => s.recheckError);
@@ -45,7 +50,7 @@ export default function AdSlots() {
   const lockChecking = useLockChecking(route.id);
   const locked = lockReason !== '' || lockChecking;
   const adFree = adFreeRoute(route) || locked;
-  const visible = adsVisible(adsMode(), { status, ready, recheckError, trace, consentDenied: denied, adFree });
+  const visible = adsVisible(preview ? 'placeholder' : adsMode(), { status, ready, recheckError, trace, consentDenied: denied, adFree });
   // 본문이 비켜설지는 문서 속성 하나로 알린다 — 첫 그림 전에는 layout.tsx 의 인라인 스크립트가 로그인 자취로 같은 값을 미리 적는다(CLS 방지).
   // 자취 없이 쿠키만 남은 드문 경우(로그인 직후 첫 화면 · 저장소 지움)는 확인이 끝난 뒤 여기서 off 로 되돌린다.
   // useLayoutEffect 인 이유 — 자취는 남았는데 세션이 끝난 경우는 off 로 시작했다가 확인 뒤 on 이 된다. 그 커밋에서 자리가 먼저 서고
