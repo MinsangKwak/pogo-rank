@@ -12,15 +12,9 @@ import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { ROUTE_LEGACY } from './src/routes';
 
-// [이름, 값] — 값은 Cloudflare 에 넣었던 것과 글자까지 같다 (docs/INFRA.md §8 의 3번 표)
-export const SECURITY_HEADERS: ReadonlyArray<readonly [string, string]> = [
-  ['Strict-Transport-Security', 'max-age=31536000; includeSubDomains'],
-  ['X-Content-Type-Options', 'nosniff'],
-  ['Referrer-Policy', 'strict-origin-when-cross-origin'],
-  // <meta> 로는 못 넣는 것 — 클릭재킹 방어
-  ['Content-Security-Policy', "frame-ancestors 'self'"],
-  ['Permissions-Policy', 'geolocation=(), microphone=(), camera=()'],
-];
+// 보안 헤더 표의 원본은 src/lib/hosting.ts — Cloudflare Pages 의 _headers 도 같은 표로 굽는다. 검사(headers.test.ts)를 위해 여기서도 내보낸다
+export { SECURITY_HEADERS } from './src/lib/hosting';
+import { SECURITY_HEADERS } from './src/lib/hosting';
 
 // 이 판의 데이터 빌드 시각 — 번들에 새긴다. 앱이 서버의 manifest.json 과 견줘 새 판이 올라왔는지 안다 (components/UpdateBridge.tsx).
 // 첫 서버 응답을 기준으로 삼으면 옛 번들이 새 배포 뒤에 켜졌을 때 끝내 못 알아챈다 (Codex, PR #278).
@@ -33,8 +27,14 @@ function dataBuilt(): string {
   return '';
 }
 
+// **정적 내보내기** (2026-10-15 Cloudflare Pages 이전). BUILD_TARGET=static 이면 out/ 에 HTML 만 굽는다 —
+// 그 호스팅에는 서버가 없어 rewrites · headers · redirects 가 안 돈다. 같은 일은 out/_headers · out/_redirects 가 한다(src/lib/hosting.ts).
+// 값이 없으면(Vercel) 지금과 똑같이 서버가 붙인다
+const STATIC = process.env['BUILD_TARGET'] === 'static';
+
 const config: NextConfig = {
   reactStrictMode: true,
+  ...(STATIC ? { output: 'export' as const } : {}),
   // **빌드 안에서 타입을 다시 재지 않는다** (2026-10-02 빌드 속도). 같은 검사를 `npm test`(tsc)가 빌드 **앞에서** 이미 돌리고,
   // 빨개지면 배포가 선다 — PR 검사(web-test.yml) · dev(dev-pipeline.yml) · 운영(deploy-web.yml) 세 길 모두.
   // 빌드 속 검사는 증분 정보 없이 처음부터 다시 재서 13초를 썼다(tsc 단독은 3초). 린트는 이 앱에 설정이 없다
@@ -48,6 +48,7 @@ const config: NextConfig = {
   // public/ 의 폴더 주소는 index.html 로 안 풀린다 — 그대로 두면 [...slug] 가 받아 앱의 404 가 된다.
   // 운영에는 이 폴더가 없어 이 규칙이 아무것도 안 한다
   async rewrites() {
+    if (STATIC) return [];
     return [
       { source: '/storybook', destination: '/storybook/index.html' },
       { source: '/storybook/', destination: '/storybook/index.html' },
@@ -58,6 +59,7 @@ const config: NextConfig = {
   // Transform Rule 로 붙였다(docs/INFRA.md §8). Vercel 로 넘기며 프록시를 끄면 그 규칙이 더는 안 걸린다 —
   // 헤더가 조용히 빠져도 화면은 멀쩡해서 아무도 모른다. 그래서 앱이 직접 붙이고 검사가 잰다
   async headers() {
+    if (STATIC) return [];
     return [{
       source: '/:path*',
       headers: SECURITY_HEADERS.map(([key, value]) => ({ key, value })),
@@ -65,6 +67,7 @@ const config: NextConfig = {
   },
 
   async redirects() {
+    if (STATIC) return [];
     return [...ROUTE_LEGACY].flatMap(([old, next]) => [
       // 정확히 그 주소
       { source: `/${old}`, destination: `/${next}`, permanent: true },
