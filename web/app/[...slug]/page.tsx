@@ -15,15 +15,16 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import RouteIntro from '../../src/components/RouteIntro';
 import { ROUTES, routeOfPath, routeDesc } from '../../src/routes';
-import { allSprites, monFacts } from '../../src/lib/facts.server';
+import { allSprites, monFacts, updateIds } from '../../src/lib/facts.server';
 import MonFacts, { monTitle, monDescription } from '../../src/components/MonFacts';
 import { routeDocTitle } from '../../src/lib/docTitle';
 
 /**
- * 표에 없는 주소도 그린다. 라우트 아래의 자유로운 뒷부분(`/game-updates/<id>` ·
- * `/dmax/deck`)이 있어서다 — 아래 page 가 라우트를 못 찾으면 그때 404 를 낸다
+ * **구운 주소만 있다** (2026-10-15 Cloudflare Pages 이전). 정적 호스팅에는 요청마다 그리는 서버가 없어
+ * `output: 'export'` 가 true 를 거부한다 — 이 값은 글자 그대로여야 해서 빌드 대상에 따라 가를 수도 없다.
+ * 전에 요청 때 그리던 뒷부분 주소(`/game-updates/<id>`)는 아래 목록에 넣어 미리 굽는다. 목록 밖은 404 다
  */
-export const dynamicParams = true;
+export const dynamicParams = false;
 
 export function generateStaticParams(): { slug: string[] }[] {
   const pages = ROUTES
@@ -31,7 +32,9 @@ export function generateStaticParams(): { slug: string[] }[] {
     .map((route) => ({ slug: route.path.split('/') }));
   // **1,184장.** 이것이 이 판의 목적이다 — 종마다 색인될 주소가 하나씩 생긴다
   const mons = allSprites().map((sprite) => ({ slug: ['mon', String(sprite)] }));
-  return [...pages, ...mons];
+  // 게임 업데이트 글 — 홈 · 게시판에서 여는 주소다. 새로 고침하거나 공유 링크로 들어와도 열려야 한다
+  const updates = updateIds().map((id) => ({ slug: ['game-updates', id] }));
+  return [...pages, ...mons, ...updates];
 }
 
 function spriteOf(slug: string[]): number | null {

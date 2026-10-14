@@ -7,6 +7,9 @@
 // ─────────────────────────────────────────────────────────────────────────────
 import type { MetadataRoute } from 'next';
 
+// 빌드 때 한 번 굽는다 — 정적 내보내기(Cloudflare Pages)는 요청마다 도는 경로를 못 싣는다
+export const dynamic = 'force-static';
+
 const SITE = process.env['NEXT_PUBLIC_SITE_URL'] ?? 'https://moncamp.kr';
 const isDev = process.env['NEXT_PUBLIC_CHANNEL'] === 'dev';
 

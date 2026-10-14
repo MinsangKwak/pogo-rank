@@ -17,3 +17,6 @@ public/og-dev.png
 public/logo.svg
 public/sprites/
 public/sprites-anim/
+
+# wrangler pages dev 가 남기는 로컬 상태 (Cloudflare Pages 를 로컬에서 재 볼 때)
+.wrangler/
