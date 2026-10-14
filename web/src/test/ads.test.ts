@@ -14,20 +14,26 @@ describe('adsMode', () => {
   });
 });
 
+const auth = (status: 'anon' | 'loading' | 'pending' | 'ok', ready = true, recheckError = '') => ({ status, ready, recheckError });
+
 describe('adsVisible', () => {
   it('켜진 모드에서 첫 확인이 끝난 뒤 로그인 전(anon)에게만 보인다', () => {
-    expect(adsVisible('placeholder', 'anon', true)).toBe(true);
-    expect(adsVisible('placeholder', 'loading', true)).toBe(false);
-    expect(adsVisible('placeholder', 'pending', true)).toBe(false);
-    expect(adsVisible('placeholder', 'ok', true)).toBe(false);
+    expect(adsVisible('placeholder', auth('anon'))).toBe(true);
+    expect(adsVisible('placeholder', auth('loading'))).toBe(false);
+    expect(adsVisible('placeholder', auth('pending'))).toBe(false);
+    expect(adsVisible('placeholder', auth('ok'))).toBe(false);
   });
   it('첫 확인이 끝나기 전에는 anon 이어도 안 보인다 — 로그인 직후 첫 화면은 자취 없이 anon 으로 시작한다 (Codex, PR #364)', () => {
-    expect(adsVisible('placeholder', 'anon', false)).toBe(false);
+    expect(adsVisible('placeholder', auth('anon', false))).toBe(false);
+  });
+  it('확인이 회선 문제로 실패했으면 anon 이어도 안 보인다 — 쿠키만 살아 있는 로그인 사용자일 수 있다 (Codex, PR #364)', () => {
+    expect(adsVisible('placeholder', auth('anon', true, 'network'))).toBe(false);
+    expect(adsVisible('placeholder', auth('ok', true, 'network'))).toBe(false);
   });
   it('꺼진 모드에서는 아무에게도 안 보인다', () => {
     for (const status of ['anon', 'loading', 'pending', 'ok'] as const) {
-      expect(adsVisible('off', status, true)).toBe(false);
-      expect(adsVisible('off', status, false)).toBe(false);
+      expect(adsVisible('off', auth(status))).toBe(false);
+      expect(adsVisible('off', auth(status, false))).toBe(false);
     }
   });
 });

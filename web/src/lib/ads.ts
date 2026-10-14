@@ -13,6 +13,9 @@
 'use strict';
 import type { AuthStatus } from '../stores/auth';
 
+/** 판정에 쓰는 로그인 상태 조각 (stores/auth.ts) — ready 는 첫 확인이 끝났는가, recheckError 는 그 확인이 실패했는가 */
+export interface AdsAuth { status: AuthStatus; ready: boolean; recheckError: string }
+
 export type AdsMode = 'off' | 'placeholder';
 
 /** 자리 이름 — CSS 와 검사가 같은 글자를 쓴다 */
@@ -35,8 +38,10 @@ export function adsMode(raw: string | undefined = process.env['NEXT_PUBLIC_ADS']
  * loading(이 기기에 로그인 자취가 있어 확인 중) · pending(승인 대기) · ok 는 모두 '로그인한 사람' 으로 본다 —
  * 확인 중에 보였다가 사라지면 로그인한 사람이 광고를 한 번 보게 된다.
  * ready 를 함께 보는 이유 — 로그인 직후 첫 화면이나 사이트 저장소를 지운 뒤에는 자취(pogo_signed_in)가 없어 상태가 anon 으로
- * 시작하고, 쿠키로 확인이 끝난 뒤에야 ok 가 된다. 그 사이에도 자리가 서면 안 된다 (Codex, PR #364)
+ * 시작하고, 쿠키로 확인이 끝난 뒤에야 ok 가 된다. 그 사이에도 자리가 서면 안 된다 (Codex, PR #364).
+ * recheckError 까지 보는 이유 — 확인이 회선 문제로 실패하면 ready 는 true 가 되지만 상태는 anon 그대로다. 그 사람이 실제로는
+ * 로그인돼 있을 수 있으니(쿠키는 살아 있는데 자취만 없음) 확인에 실패한 동안은 아무에게도 세우지 않는다 (Codex, PR #364)
  */
-export function adsVisible(mode: AdsMode, status: AuthStatus, ready: boolean): boolean {
-  return mode !== 'off' && ready && status === 'anon';
+export function adsVisible(mode: AdsMode, auth: AdsAuth): boolean {
+  return mode !== 'off' && auth.ready && !auth.recheckError && auth.status === 'anon';
 }
