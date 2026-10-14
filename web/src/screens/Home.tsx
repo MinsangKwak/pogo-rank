@@ -34,9 +34,7 @@ const HERO_ART_ENTRY = MAX_ART.find((art) => art.dex.includes(816))!;
 // 배너 슬라이드는 홈에서만 쓴다 — Swiper 30KB 를 모든 화면의 첫 묶음에 싣지 않는다 (components/MaxSlider.tsx)
 const MaxSlider = lazy(() => import('../components/MaxSlider'));
 
-// 갈래마다 포스터 한 장과 머리 표지 (2026-09-25 새 디자인). 그림은 1024×1536 WebP — PNG 2MB 를 줄였다
-// 표지 글은 CSS content 에 두지 않는다 — 글은 마크업에 있어야 번역 · 검사 그물이 본다
-const SERVICE_ART: Record<string, string> = { today: 'service-explore-garden.webp', pick: 'service-battle-pokeball.webp', mine: 'service-grow-bulbasaur.webp' };
+// 갈래 표지는 같은 정보 위계로 읽히도록 번호와 이름만 사용한다.
 const SERVICE_KICKER: Record<string, string> = { today: '01 / EXPLORE', pick: '02 / BATTLE', mine: '03 / GROW' };
 
 // 주소는 라우터 표의 path 에서 온다 — 손으로 조립하면 v3.61.0 의 죽은 링크가 되풀이된다
@@ -50,7 +48,7 @@ export function Tile({ route }: { route: RouteDef }) {
       title={reason ? lock.title : routeDesc(route.id)}
       {...(lock['aria-disabled'] ? { 'aria-disabled': lock['aria-disabled'] } : {})}
       {...(route.id === 'planner' ? { id: 'home-tile-planner' } : {})}>
-      <span className="home__icon" aria-hidden="true">{route.icon}</span>
+      <span className="home__icon" aria-hidden="true"><PxIcon emoji={route.icon ?? '↗'} /></span>
       <strong>{route.nav}</strong>
       <span className="home__arrow" aria-hidden="true">›</span>
     </a>
@@ -95,21 +93,17 @@ function PickCard({ kind, title, hint, rows, href, labels, onOpen }: {
   return (
     <section className={`pick__group pick__group--${kind}`} aria-label={title}>
       <div className="pick__head">
-        <h4><span className="pick__crown" aria-hidden="true">👑</span>{title}</h4>
+        <h4><span className="pick__crown" aria-hidden="true"><PxIcon emoji={kind === 'dmax' ? '⚡' : '⚔️'} /></span>{title}</h4>
         <p className="pick__hint">{hint}</p>
         {href ? <a className="pick__all" href={href}>전체 보기 <PxIcon emoji="↗" /></a> : null}
       </div>
       <div className="pick__grid">
-        <button className="pick__hero" type="button" aria-label={`1위 ${first.name}`} onClick={() => onOpen(first)}>
-          <span className="pick__spotlight" aria-hidden="true">NO.01</span>
-          <Sprite id={first.sprite} />
-          <span className="pick__inspect" aria-hidden="true">상세 보기 ↗</span>
-        </button>
         <ol className="pick__list">
           {rows.map((row, index) => (
             <li key={`${row.sprite}-${index}`}>
               <button className="pick__row" type="button" onClick={() => onOpen(row)}>
                 <span className="pick__rank">{index + 1}</span>
+                <Sprite id={row.sprite} />
                 <span className="pick__body">
                   <span className="pick__name"><NameNode name={row.name} labels={labels} /></span>
                   <span className="pick__meta">{row.meta}</span>
@@ -181,12 +175,7 @@ export default function Home({ onOpen }: { onOpen: OpenMon }) {
   const waiting = <HeroPoster art={HERO_ART_ENTRY} names={names} />;
   return (
     <div className="home-dashboard home-dashboard--portal home-dashboard--cinema-portal">
-      {/* 첫 화면 차례 (2026-10-13 통계 개편): 배너 → 이번 주 보스 → 지금 많이 보는 포켓몬.
-          이번 주 보스가 많이 보는 포켓몬 앞에 선다 — 10월 통계에서 많이 본 포켓몬 10 중 8 이 이번 주 보스 자신이었다.
-          보스 카드는 기간 · 추천 세 마리 · 상세까지 들고, 많이 보는 줄에는 이유 한 마디가 붙는다 (components/WeekBosses.tsx · HotMons.tsx).
-          (2026-09-30 주인 결정: 배너 → 지금 많이 보는 포켓몬.
-          소개 카드(검색 · 티어표 · 도감 단추)는 뺐다 — 검색은 상단 바 돋보기, 티어표는 아래 '용도별 상위 포켓몬' 의 전체 보기,
-          도감은 '무엇이 필요한가요?' 와 같은 곳으로 가는 같은 기능이었다 (주인 결정: 같은 기능은 한 곳 한 모양) */}
+      {/* 배너 · 인기 포켓몬 · 주간 보스를 하나의 반응형 대시보드로 묶는다. */}
       <div className="home__top-layout">
         {/* 배너 — 남은 맥스 일정이 한 장씩 넘어간다. 모든 장이 대표 일러스트와 같은 구도다 (components/MaxPoster.tsx).
             거다이맥스 폼 그림(max.json)까지 온 뒤에 굴린다 — 먼저 굴리면 보스 그림이 도중에 바뀐다 */}
@@ -198,10 +187,8 @@ export default function Home({ onOpen }: { onOpen: OpenMon }) {
             </Suspense>
           ) : waiting}
         </div>
-        {/* 이번 주 보스 — 일정 · 레이드 묶음(soft)으로 서고, 추천 줄은 순위 묶음이 온 뒤 찬다. 줄이 없으면 안 그린다 */}
-        <WeekBosses onOpen={onOpen} />
-        {/* 서버 집계라 데이터 Suspense 밖이고, 줄이 없으면 안 그린다 */}
         <HotMons onOpen={onOpen} />
+        <WeekBosses onOpen={onOpen} />
       </div>
       {/* 기다리는 자리도 한 화면을 채운다 — 바닥글이 먼저 보였다가 밀리면 CLS 다 */}
       <Suspense fallback={<div className="home__loading" aria-busy="true" />}>
@@ -259,8 +246,11 @@ function HomeData({ onOpen }: { onOpen: OpenMon }) {
           덱 짜기는 D-MAX 아래 도구라 서비스 칸(부모 없는 화면만)에 없어 여기 남는다 */}
       <div className="portal-shortcuts">
         <a className="portal-shortcut" href={routeHref('dmax-deck')} onClick={() => track('home_cta', { to: 'dmax-deck' })}>
-          <img className="portal-shortcut__art" src={`${BASE}images/rank-arena-crimson.webp`} alt="" aria-hidden="true"
-            loading="lazy" width={1536} height={1024} />
+          <span className="portal-shortcut__deck" aria-hidden="true">
+            <span><PxIcon emoji="◓" /></span>
+            <span><PxIcon emoji="◓" /></span>
+            <span><PxIcon emoji="◓" /></span>
+          </span>
           <span className="portal-shortcut__body">
             <small>CHOOSE YOUR TEAM</small>
             <b>나만의 배틀 팀 만들기</b>
@@ -278,12 +268,13 @@ function HomeData({ onOpen }: { onOpen: OpenMon }) {
           <span>필요한 기능을 선택해 바로 시작해 보세요</span>
         </div>
         <div className="home__service-grid">
-          {ROUTE_GROUPS.map(([id, label, desc]) => (
+          {ROUTE_GROUPS.map(([id, label, desc, icon]) => (
             <section key={id} className={`home__service-group home__service-group--${id}`}>
-              <img className="home__service-art" src={`${BASE}images/${SERVICE_ART[id]}`} alt="" aria-hidden="true"
-                loading="lazy" width={1024} height={1536} />
               <div className="home__group-head">
-                <span className="home__service-kicker" aria-hidden="true">{SERVICE_KICKER[id]}</span>
+                <div className="home__service-label">
+                  <span className="home__service-symbol" aria-hidden="true"><PxIcon emoji={icon} /></span>
+                  <span className="home__service-kicker" aria-hidden="true">{SERVICE_KICKER[id]}</span>
+                </div>
                 <h4 className="home__group">{label}</h4>
                 <p className="home__group-desc">{desc}</p>
               </div>
