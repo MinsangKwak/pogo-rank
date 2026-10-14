@@ -14,7 +14,7 @@ describe('adsMode', () => {
   });
 });
 
-const auth = (status: 'anon' | 'loading' | 'pending' | 'ok', ready = true, recheckError = '') => ({ status, ready, recheckError });
+const auth = (status: 'anon' | 'loading' | 'pending' | 'ok', ready = true, recheckError = '', trace = false) => ({ status, ready, recheckError, trace });
 
 describe('adsVisible', () => {
   it('켜진 모드에서 첫 확인이 끝난 뒤 로그인 전(anon)에게만 보인다', () => {
@@ -29,6 +29,9 @@ describe('adsVisible', () => {
   it('확인이 회선 문제로 실패했으면 anon 이어도 안 보인다 — 쿠키만 살아 있는 로그인 사용자일 수 있다 (Codex, PR #364)', () => {
     expect(adsVisible('placeholder', auth('anon', true, 'network'))).toBe(false);
     expect(adsVisible('placeholder', auth('ok', true, 'network'))).toBe(false);
+  });
+  it('다른 탭에서 로그인해 자취가 생기면 이 탭이 anon 이어도 안 보인다 (Codex, PR #364)', () => {
+    expect(adsVisible('placeholder', auth('anon', true, '', true))).toBe(false);
   });
   it('꺼진 모드에서는 아무에게도 안 보인다', () => {
     for (const status of ['anon', 'loading', 'pending', 'ok'] as const) {
