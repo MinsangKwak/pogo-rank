@@ -138,7 +138,23 @@ jobs:
           for i in $(seq 1 20); do
             code="$(curl -so /dev/null -w '%{http_code}' "$BASE/mon/25" || true)"; [ "$code" = 200 ] && break; sleep 6
           done
-          curl -sS "$BASE/mon/25" | grep -q '피카츄' || { echo "/mon/25 에 본문이 없습니다"; exit 1; }
+          # 본문은 한 번 받아 둔다 — `curl | grep -q` 는 grep 이 먼저 끝나 curl 이 (23) 을 찍는다
+          body="$(curl -sS "$BASE/mon/25")"
+          printf '%s' "$body" | grep -q '피카츄' || { echo "/mon/25 에 본문이 없습니다"; exit 1; }
+          # deploy-web.yml(Vercel) 의 검사와 같은 그물 — 글자만 재면 디자인 · 색인 · 통계가 빠진 판도 초록이다
+          printf '%s' "$body" | grep -q '<title>' || { echo "제목이 없습니다"; exit 1; }
+          printf '%s' "$body" | grep -q 'application/ld+json' || { echo "JSON-LD 가 없습니다"; exit 1; }
+          printf '%s' "$body" | grep -q 'id="root"' || { echo "#root 래퍼가 없습니다 — CSS 가 통째로 안 걸립니다"; exit 1; }
+          printf '%s' "$body" | grep -q 'googletagmanager.com/gtag/js' || { echo "GA 조각이 없습니다 — 방문 통계가 한 건도 안 나갑니다"; exit 1; }
+          curl -sS "$BASE/data/meta.json" | grep -q '"CONTACT_EMAIL":"[^"]' || { echo "meta.json 에 문의 이메일이 없습니다"; exit 1; }
+          [ "$(curl -so /dev/null -w '%{http_code}' "$BASE/sw.js")" = 200 ] || { echo "sw.js 가 없습니다 — 옛 서비스워커가 새 판을 못 받는다"; exit 1; }
+          # ads.txt 는 있으면 한 줄 꼴이어야 하고, 없으면 404 여야 한다 — 200 'Not Found' 는 AdSense 가 잘못 읽는다
+          ads="$(curl -sS -w '\n%{http_code}' "$BASE/ads.txt")"
+          case "$(printf '%s' "$ads" | tail -1)" in
+            200) printf '%s' "$ads" | head -1 | grep -qE '^google\.com, pub-[0-9]{16}, DIRECT, f08c47fec0942fa0$' || { echo "ads.txt 가 한 줄 꼴이 아닙니다"; exit 1; } ;;
+            404) ;;
+            *) echo "ads.txt 응답이 이상합니다: $(printf '%s' "$ads" | tail -1)"; exit 1 ;;
+          esac
           [ "$(curl -so /dev/null -w '%{http_code}' "$BASE/mon/999999")" = 404 ] || { echo "없는 주소가 404 가 아닙니다"; exit 1; }
           [ "$(curl -so /dev/null -w '%{http_code}' "$BASE/plan")" = 308 ] || { echo "옛 주소 /plan 이 308 로 안 옮겨집니다"; exit 1; }
           heads="$(curl -sSI "$BASE/dex" | tr -d '\r' | tr 'A-Z' 'a-z')"

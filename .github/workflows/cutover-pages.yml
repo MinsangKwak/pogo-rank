@@ -53,7 +53,14 @@ jobs:
               for j in $(seq 1 15); do
                 loc="$(curl -sSI "https://www.moncamp.kr/dex?x=1" 2>/dev/null | tr -d '\r' | awk 'tolower($1)=="location:"{print $2}' || true)"
                 code="$(curl -so /dev/null -w '%{http_code}' "https://www.moncamp.kr/dex?x=1" || true)"
-                if [ "$code" = 308 ] && [ "$loc" = "https://moncamp.kr/dex?x=1" ]; then echo "OK — www → $loc (308)"; exit 0; fi
+                if [ "$code" = 308 ] && [ "$loc" = "https://moncamp.kr/dex?x=1" ]; then
+                  echo "OK — www → $loc (308)"
+                  # AdSense 가 읽는 자리 — 전환 실패는 아니라 알림만 남긴다(게시자 ID 를 안 넣은 판이면 404 가 맞다)
+                  ads="$(curl -sS "https://moncamp.kr/ads.txt?t=$(date +%s)" || true)"
+                  if printf '%s' "$ads" | grep -qE '^google\.com, pub-[0-9]{16}, DIRECT, f08c47fec0942fa0$'; then echo "OK — ads.txt: $ads"
+                  else echo "::warning::moncamp.kr/ads.txt 가 한 줄 꼴이 아닙니다 — AdSense 확인 전에 봅니다"; fi
+                  exit 0
+                fi
                 echo "  www 를 기다린다 (${j}/15, 지금 $code $loc)"; sleep 20
               done
               echo "www.moncamp.kr 이 moncamp.kr 로 308 을 안 준다"; exit 1
