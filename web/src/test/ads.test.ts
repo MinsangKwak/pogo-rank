@@ -92,6 +92,10 @@ describe('ads.txt (2026-10-14 수익화 전 점검)', () => {
     expect(adsTxtLine('ca-pub-123')).toBeNull();
     expect(adsTxtLine('ca-pub-1234567890123456\nevil')).toBeNull();
   });
+  it('운영 빌드 값의 게시자 ID 가 AdSense 가 준 한 줄과 같다 (2026-10-15 주인 계정)', () => {
+    const client = /^NEXT_PUBLIC_ADSENSE_CLIENT=(.*)$/m.exec(readFileSync('.env.production', 'utf8'))?.[1];
+    expect(adsTxtLine(client)).toBe('google.com, pub-6881629275458768, DIRECT, f08c47fec0942fa0');
+  });
   it('주소는 빌드 값에서 만든다 — 손으로 둔 public/ads.txt 가 없다 (있으면 경로가 겹친다)', () => {
     expect(() => readFileSync('public/ads.txt', 'utf8')).toThrow();
     expect(readFileSync('app/ads.txt/route.ts', 'utf8')).toContain("adsTxtLine(process.env['NEXT_PUBLIC_ADSENSE_CLIENT'])");
