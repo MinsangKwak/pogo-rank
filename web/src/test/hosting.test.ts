@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import config, { SECURITY_HEADERS } from '../../next.config';
 import { headersFile, redirectsFile } from '../lib/hosting';
-import { ROUTE_LEGACY } from '../routes';
+import { ROUTES, ROUTE_LEGACY } from '../routes';
 
 describe('_headers', () => {
   it('모든 주소에 보안 헤더 다섯 — next.config 의 headers() 와 같은 이름 · 값', async () => {
@@ -26,8 +26,17 @@ describe('_redirects', () => {
     expect(lines).toHaveLength(ROUTE_LEGACY.size * 2);
     const served = await config.redirects!();
     for (const rule of served) {
-      const line = `${rule.source.replace('/:rest*', '/*')} ${rule.destination.replace('/:rest*', '/:splat')} 308`;
+      // 그 아래 주소는 맨 주소로 — 정적 빌드에는 뒷부분 주소가 구워져 있지 않다
+      const line = `${rule.source.replace('/:rest*', '/*')} ${rule.destination.replace('/:rest*', '')} 308`;
       expect(lines, line).toContain(line);
+    }
+  });
+  it('옮겨 간 곳은 모두 구운 주소 — 뒷부분을 붙여 404 로 보내지 않는다 (Codex, PR #372)', () => {
+    const paths = new Set<string>(ROUTES.map((route) => route.path));
+    for (const line of redirectsFile().trim().split('\n')) {
+      const to = line.split(' ')[1]!;
+      expect(to, line).not.toContain(':splat');
+      expect(paths.has(to.slice(1)), line).toBe(true);
     }
   });
   it('Cloudflare 한도(정적 2,000줄) 안', () => {
