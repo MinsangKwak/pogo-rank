@@ -183,15 +183,16 @@ def main():
     if step == 'status':
         return
 
+    # **www 규칙을 무엇보다 먼저 건다.** 규칙은 프록시를 지나는 요청에만 걸리므로 지금(www 가 Vercel · 프록시 끔)은 아무 일도 안 한다.
+    # 도메인을 Pages 에 붙이는 순간 Cloudflare 가 CNAME 을 저절로 만들 수 있고, 그 뒤 DNS 도 바꾼다 — 그 다음에 규칙이 실패하면
+    # apex · www 는 넘어갔는데 www 가 안 옮겨지는 반쯤 넘어간 상태가 남는다. 여기서 실패하면 아무것도 안 바뀐 채 선다 (Codex, PR #372)
+    print('── www 는 apex 로 ──')
+    set_www_redirect(zid, True)
     print('── Pages 에 도메인을 붙인다 ──')
     for name in (APEX, WWW):
         if name not in have:
             cloudflare('POST', f'/accounts/{acc}/pages/projects/{PROJECT}/domains', {'name': name})
             print(f'   붙였습니다: {name}')
-    # **www 규칙을 DNS 보다 먼저 건다.** 규칙은 프록시를 지나는 요청에만 걸리므로 지금(www 가 Vercel · 프록시 끔)은 아무 일도 안 한다.
-    # DNS 를 바꾼 뒤에 걸다 실패하면 apex · www 는 넘어갔는데 www 가 안 옮겨지는 반쯤 넘어간 상태가 남는다 (Codex, PR #372)
-    print('── www 는 apex 로 ──')
-    set_www_redirect(zid, True)
     print(f'── DNS 를 돌린다 (CNAME {target} · 프록시 켬) ──')
     # apex 의 CNAME 은 Cloudflare 가 펴서(flattening) 답한다 — 같은 계정의 Pages 라 그대로 된다
     replace(zid, APEX, [{'type': 'CNAME', 'content': target, 'proxied': True}])
