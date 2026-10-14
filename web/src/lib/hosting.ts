@@ -30,12 +30,16 @@ export function headersFile(): string {
 
 /**
  * Cloudflare Pages `_redirects` — 옛 주소를 308 로 옮긴다 (next.config.ts 의 redirects() 와 같은 짝).
- * 정확히 그 주소 한 줄, 그 아래 주소(`/rank/pve/뭐든`) 한 줄
+ * 정확히 그 주소 한 줄, 그 아래 주소(`/rank/pve/뭐든`) 한 줄.
+ *
+ * **그 아래 주소는 새 화면의 맨 주소로 보낸다.** Vercel 에서는 `/pve/뭐든` 을 요청 때 그려 `/pve` 화면을 냈지만,
+ * 정적 빌드에는 구운 주소만 있어 뒷부분을 붙여 옮기면 404 가 된다(Codex, PR #372).
+ * 뒷부분을 읽는 화면은 상세(`/mon/<번호>`) · 게임 업데이트 글뿐이고, 옛 주소 표에는 둘 다 없다 — 버려도 잃는 것이 없다
  */
 export function redirectsFile(): string {
   const lines = [...ROUTE_LEGACY].flatMap(([old, next]) => [
     `/${old} /${next} 308`,
-    `/${old}/* /${next}/:splat 308`,
+    `/${old}/* /${next} 308`,
   ]);
   return `${lines.join('\n')}\n`;
 }
