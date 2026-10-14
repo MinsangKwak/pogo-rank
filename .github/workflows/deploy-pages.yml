@@ -86,13 +86,22 @@ jobs:
       # 예약 실행(main)과 deploy push(deploy)가 각자 저장하면 기준이 두 갈래가 된다. 그래서 여기서는 받기만 하고,
       # 저장은 맨 끝에서 main 범위의 운영 실행(매일 밤 예약 · 손으로 운영 판)만 한다 — deploy push 도 그 기준을 읽는다 (Codex, PR #374)
       - if: steps.ready.outputs.go == 'true' && env.PAGES_PROD == 'true'
+        id: tables
         uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
         with:
           path: snapshot/tables
           key: tables-pages-prod-${{ github.run_id }}
-          restore-keys: |
-            tables-pages-prod-
-            tables-v1-
+          restore-keys: tables-pages-prod-
+
+      # 운영 기준이 아직 하나도 없을 때만(첫 운영 실행) deploy.yml 의 기준으로 시작한다.
+      # 한 단계에 두 접두사를 함께 적으면 GitHub 는 실행 가지의 키를 모두 먼저 찾아, deploy push 에서는 deploy 범위의 옛 tables-v1- 가
+      # main 의 최신 운영 기준을 가린다 — 그래서 따로 둔다 (Codex, PR #374)
+      - if: steps.ready.outputs.go == 'true' && env.PAGES_PROD == 'true' && steps.tables.outputs.cache-matched-key == ''
+        uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+        with:
+          path: snapshot/tables
+          key: tables-v1-${{ github.run_id }}
+          restore-keys: tables-v1-
 
       - if: steps.ready.outputs.go == 'true' && vars.API_URL != ''
         name: 서버 주소를 저장소 변수로 덮는다
