@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import config, { SECURITY_HEADERS } from '../../next.config';
 import { headersFile, redirectsFile } from '../lib/hosting';
-import { ROUTE_LEGACY } from '../routes';
+import { ROUTES } from '../routes';
 
 describe('_headers', () => {
   it('모든 주소에 보안 헤더 다섯 — next.config 의 headers() 와 같은 이름 · 값', async () => {
@@ -21,13 +21,29 @@ describe('_headers', () => {
 });
 
 describe('_redirects', () => {
-  it('옛 주소마다 정확히 그 주소 · 그 아래 두 줄, 308 — next.config 의 redirects() 와 같은 짝', async () => {
+  it('Vercel(next.config redirects) 과 _redirects 가 같은 차례 · 같은 줄 — 두 호스팅이 한 표를 쓴다 (Codex, PR #372)', async () => {
     const lines = redirectsFile().trim().split('\n');
-    expect(lines).toHaveLength(ROUTE_LEGACY.size * 2);
-    const served = await config.redirects!();
-    for (const rule of served) {
-      const line = `${rule.source.replace('/:rest*', '/*')} ${rule.destination.replace('/:rest*', '/:splat')} 308`;
-      expect(lines, line).toContain(line);
+    const served = (await config.redirects!()).map((rule) => `${rule.source.replace('/:rest*', '/*')} ${rule.destination} 308`);
+    expect(served).toEqual(lines);
+    // Vercel 쪽도 뒷부분을 붙여 옮기지 않는다 — 구운 주소만 있는 판이라 404 가 된다
+    for (const rule of await config.redirects!()) expect(rule.destination, rule.source).not.toContain(':rest');
+  });
+  it('뒷부분이 구운 화면이면 그 화면으로 — 와일드카드보다 먼저 (Codex, PR #374)', () => {
+    const lines = redirectsFile().trim().split('\n');
+    const cases: [string, string][] = [['rank/pve/solo', 'pve/solo'], ['rank/pvp/deck', 'pvp/deck'], ['rank/pvp/ivrank', 'pvp/ivrank'], ['rank/max/deck', 'dmax/deck']];
+    for (const [from, to] of cases) {
+      const exact = lines.indexOf(`/${from} /${to} 308`);
+      expect(exact, from).toBeGreaterThanOrEqual(0);
+      const parent = from.slice(0, from.lastIndexOf('/'));
+      expect(exact, from).toBeLessThan(lines.indexOf(`/${parent}/* /${to.slice(0, to.indexOf('/'))} 308`));
+    }
+  });
+  it('옮겨 간 곳은 모두 구운 주소 — 뒷부분을 붙여 404 로 보내지 않는다 (Codex, PR #372)', () => {
+    const paths = new Set<string>(ROUTES.map((route) => route.path));
+    for (const line of redirectsFile().trim().split('\n')) {
+      const to = line.split(' ')[1]!;
+      expect(to, line).not.toContain(':splat');
+      expect(paths.has(to.slice(1)), line).toBe(true);
     }
   });
   it('Cloudflare 한도(정적 2,000줄) 안', () => {

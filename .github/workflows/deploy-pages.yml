@@ -19,7 +19,9 @@ name: web 배포 (Cloudflare Pages)
 on:
   push:
     branches: [deploy, pages-preview]
-    paths: ['web/**', 'frontend-v4/scripts/**', 'backend/**', 'content/**', 'release/**', '.github/workflows/deploy-pages.yml']
+    # 빌드가 읽는 자리 전부 — scripts/(build.sh · fetch_data.sh) · assets/(아이콘 · manifest · sw.js 원본, backend/build.py 가 옮긴다) (Codex, PR #371).
+    # dist/ · data/ 는 빌드가 만드는 결과, snapshot/ 은 배포 봇이 [skip ci] 로만 바꾼다
+    paths: ['web/**', 'scripts/**', 'assets/**', 'frontend-v4/scripts/**', 'backend/**', 'content/**', 'release/**', '.github/workflows/deploy-pages.yml']
   schedule:
     - cron: '40 15 * * *'   # 매일 00:40 KST — deploy.yml(00:00) · deploy-dev.yml(00:30) 뒤
   workflow_dispatch:
@@ -39,6 +41,8 @@ jobs:
     runs-on: ubuntu-latest
     env:
       PAGES_PROJECT: moncamp
+      # 운영 판으로 올리는 실행인가 — 아래 '올리기' 단계의 PREVIEW 와 정확히 반대다
+      PAGES_PROD: ${{ github.event_name == 'schedule' || (github.event_name == 'push' && github.ref == 'refs/heads/deploy') || (github.event_name == 'workflow_dispatch' && !inputs.preview) }}
     steps:
       - name: 설정됐는지 본다
         id: ready
@@ -74,6 +78,31 @@ jobs:
             data/sprites-anim
           key: sprites-v1-${{ github.run_id }}
           restore-keys: sprites-v1-
+
+      # 직전 정상본 표 — 원본이 비거나 줄어든 날 이걸로 대체한다(backend/guard.py).
+      # 없으면 빈 러너마다 견줄 기준이 없어 잘린 표도 '첫 정상본' 으로 통과한다 — 매일 밤 다시 굽는 운영 판에서는 더 위험하다 (Codex, PR #371).
+      # **운영 실행만 쓰고 운영 이름으로 저장한다.** 미리보기(main · dev 코드)가 남긴 표가 운영의 기준이 되면, 새 코드가 만든 모양으로
+      # deploy 코드의 표를 '잘렸다' 고 보고 바꿔 넣을 수 있다 (Codex, PR #374). 첫 운영 실행은 deploy.yml(deploy 코드)의 기준을 이어 받는다.
+      # **기준은 한 줄로만 쌓는다.** 캐시는 가지마다 따로 보관되고 다른 가지는 기본 가지(main)의 것만 읽는다 —
+      # 예약 실행(main)과 deploy push(deploy)가 각자 저장하면 기준이 두 갈래가 된다. 그래서 여기서는 받기만 하고,
+      # 저장은 맨 끝에서 main 범위의 운영 실행(매일 밤 예약 · 손으로 운영 판)만 한다 — deploy push 도 그 기준을 읽는다 (Codex, PR #374)
+      - if: steps.ready.outputs.go == 'true' && env.PAGES_PROD == 'true'
+        id: tables
+        uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+        with:
+          path: snapshot/tables
+          key: tables-pages-prod-${{ github.run_id }}
+          restore-keys: tables-pages-prod-
+
+      # 운영 기준이 아직 하나도 없을 때만(첫 운영 실행) deploy.yml 의 기준으로 시작한다.
+      # 한 단계에 두 접두사를 함께 적으면 GitHub 는 실행 가지의 키를 모두 먼저 찾아, deploy push 에서는 deploy 범위의 옛 tables-v1- 가
+      # main 의 최신 운영 기준을 가린다 — 그래서 따로 둔다 (Codex, PR #374)
+      - if: steps.ready.outputs.go == 'true' && env.PAGES_PROD == 'true' && steps.tables.outputs.cache-matched-key == ''
+        uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+        with:
+          path: snapshot/tables
+          key: tables-v1-${{ github.run_id }}
+          restore-keys: tables-v1-
 
       - if: steps.ready.outputs.go == 'true' && vars.API_URL != ''
         name: 서버 주소를 저장소 변수로 덮는다
@@ -171,3 +200,10 @@ jobs:
             printf '%s' "$heads" | grep -q "^$name:" || { echo "보안 헤더 $name 이 없습니다"; exit 1; }
           done
           echo "OK — $BASE"
+
+      # 올린 판이 검사를 다 통과한 뒤에만 그 표를 다음 운영 빌드의 직전 정상본으로 남긴다 — main 범위 하나에만(위 받기 단계의 주석)
+      - if: steps.ready.outputs.go == 'true' && env.PAGES_PROD == 'true' && github.ref == 'refs/heads/main'
+        uses: actions/cache/save@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+        with:
+          path: snapshot/tables
+          key: tables-pages-prod-${{ github.run_id }}
