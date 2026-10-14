@@ -11,12 +11,17 @@ name: web 배포 (Cloudflare Pages)
 #   pages-preview 에 push     미리보기 주소(<해시>.<프로젝트>.pages.dev)에만 — 운영과 무관하게 실제 Cloudflare 에서 재 보는 길.
 #                             손으로 돌리는 워크플로는 기본 가지(main)에 있어야 보이는데, push 는 그 가지에 이 파일만 있으면 돈다
 #   손으로(workflow_dispatch) preview 입력대로
+#   매일 00:40 KST(schedule)    deploy 가지를 받아 운영 판으로 다시 굽는다 — 레이드 보스 · 일정 같은 바깥 데이터는 빌드 때 받는다.
+#                             push 가 없는 날에도 운영 데이터가 묵지 않게 (dev 의 deploy-dev.yml 과 같은 결, Codex PR #371).
+#                             예약 실행은 기본 가지(main)의 이 파일로 돌므로 checkout 이 deploy 를 집어 받는다
 #
 # 쓰는 시크릿: CLOUDFLARE_API_TOKEN (Account · Cloudflare Pages · Edit). 계정 id 는 토큰으로 찾는다
 on:
   push:
     branches: [deploy, pages-preview]
     paths: ['web/**', 'frontend-v4/scripts/**', 'backend/**', 'content/**', 'release/**', '.github/workflows/deploy-pages.yml']
+  schedule:
+    - cron: '40 15 * * *'   # 매일 00:40 KST — deploy.yml(00:00) · deploy-dev.yml(00:30) 뒤
   workflow_dispatch:
     inputs:
       preview:
@@ -25,7 +30,8 @@ on:
         default: true
 
 concurrency:
-  group: deploy-pages-${{ github.ref }}
+  # 운영 판은 하나의 줄로 — 예약 실행 · deploy push · 손으로 preview=false 가 겹쳐도 차례로 올린다 (Codex, PR #373)
+  group: deploy-pages-${{ (github.event_name == 'schedule' || github.ref == 'refs/heads/deploy' || (github.event_name == 'workflow_dispatch' && !inputs.preview)) && 'prod' || github.ref }}
   cancel-in-progress: false
 
 jobs:
@@ -44,6 +50,9 @@ jobs:
 
       - if: steps.ready.outputs.go == 'true'
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          # 예약 실행 · 손으로 올리는 운영 판은 main 에서 시작해도 언제나 deploy 가지를 굽는다(deploy.yml 과 같은 규칙). 그 밖은 일으킨 가지 그대로
+          ref: ${{ (github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && !inputs.preview)) && 'deploy' || '' }}
 
       - if: steps.ready.outputs.go == 'true'
         uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
