@@ -29,8 +29,10 @@ function Slot({ id }: { id: AdSlotId }) {
 
 export default function AdSlots() {
   const status = useAuthStore((s) => s.status);
-  const visible = adsVisible(adsMode(), status);
-  // 본문이 비켜설지는 문서 속성 하나로 알린다 — 첫 그림 전에는 layout.tsx 의 인라인 스크립트가 같은 값을 미리 적는다(CLS 방지)
+  const ready = useAuthStore((s) => s.ready);
+  const visible = adsVisible(adsMode(), status, ready);
+  // 본문이 비켜설지는 문서 속성 하나로 알린다 — 첫 그림 전에는 layout.tsx 의 인라인 스크립트가 로그인 자취로 같은 값을 미리 적는다(CLS 방지).
+  // 자취 없이 쿠키만 남은 드문 경우(로그인 직후 첫 화면 · 저장소 지움)는 확인이 끝난 뒤 여기서 off 로 되돌린다
   useEffect(() => {
     document.documentElement.dataset['ads'] = visible ? 'on' : 'off';
   }, [visible]);

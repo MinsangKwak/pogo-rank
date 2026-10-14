@@ -31,10 +31,12 @@ export function adsMode(raw: string | undefined = process.env['NEXT_PUBLIC_ADS']
 }
 
 /**
- * 광고 자리를 보일지. 모드가 꺼져 있으면 아무에게도, 켜져 있어도 **로그인 전(anon)인 사람에게만**.
+ * 광고 자리를 보일지. 모드가 꺼져 있으면 아무에게도, 켜져 있어도 **첫 확인이 끝난(ready) 뒤 로그인 전(anon)인 사람에게만**.
  * loading(이 기기에 로그인 자취가 있어 확인 중) · pending(승인 대기) · ok 는 모두 '로그인한 사람' 으로 본다 —
- * 확인 중에 보였다가 사라지면 로그인한 사람이 광고를 한 번 보게 된다
+ * 확인 중에 보였다가 사라지면 로그인한 사람이 광고를 한 번 보게 된다.
+ * ready 를 함께 보는 이유 — 로그인 직후 첫 화면이나 사이트 저장소를 지운 뒤에는 자취(pogo_signed_in)가 없어 상태가 anon 으로
+ * 시작하고, 쿠키로 확인이 끝난 뒤에야 ok 가 된다. 그 사이에도 자리가 서면 안 된다 (Codex, PR #364)
  */
-export function adsVisible(mode: AdsMode, status: AuthStatus): boolean {
-  return mode !== 'off' && status === 'anon';
+export function adsVisible(mode: AdsMode, status: AuthStatus, ready: boolean): boolean {
+  return mode !== 'off' && ready && status === 'anon';
 }

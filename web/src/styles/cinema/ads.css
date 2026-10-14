@@ -26,8 +26,9 @@ html body #root .ad-slot__label {
 }
 html body #root .ad-slot__text { font: 400 1.2rem/1.5 Pretendard, sans-serif; text-align: center; }
 
-/* ── 넓은 화면 — 양옆 세로 띠. 본문 폭(160rem)과 띠 둘이 같이 서야 하므로 1400px 부터, 세로 600px 이 다 들어가는 높이에서만 ── */
-@media (min-width: 1400px) and (min-height: 760px) {
+/* ── 넓은 화면 — 양옆 세로 띠. 본문 폭(160rem)과 띠 둘이 같이 서야 하므로 1400px 부터.
+   높이는 띠 바닥(8.8rem + 2.4rem + 60rem = 71.2rem)과 '맨 위로' 단추(바닥에서 6.4rem)가 겹치지 않는 80rem 부터 — 76rem 이면 단추가 띠의 오른쪽 아래 귀퉁이를 가렸다 (Codex, PR #364) ── */
+@media (min-width: 1400px) and (min-height: 800px) {
   html body #root :is(.ad-slot--left, .ad-slot--right) {
     display: block; top: calc(8.8rem + var(--ad-gap)); width: var(--ad-rail-w); height: var(--ad-rail-h);
   }
