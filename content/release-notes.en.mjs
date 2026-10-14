@@ -15,6 +15,9 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 export const RELEASE_NOTES_EN = {
+  '2026-10-14 · v5.10.2': [
+    "**The calendar now shows 'Chandelure Super Mega Raid Day' on Oct 31 (2–5 p.m.)** — the date had been announced without a boss; it is now Mega Chandelure, making its debut with Mega Level up to Super Max. The notice is also collected on the Game Updates board",
+  ],
   '2026-10-13 · v5.10.1': [
     "**Bramblin and Brambleghast are now listed as released in the Pokédex** — Bramblin debuted on Oct 13 in the 'Fall Marathon: Buddy Trek' event, and it evolves into Brambleghast after walking 20 km as your buddy and spending 50 Candy. Both had been wrongly tagged [unreleased]",
   ],
