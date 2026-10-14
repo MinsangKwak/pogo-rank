@@ -40,6 +40,7 @@ import { NotPorted } from './screens/Misc';
 import MonDetail from './screens/MonDetail';
 import ConsentDialog from './components/Consent';
 import LoginInvite from './components/LoginInvite';
+import AdSlots from './components/AdSlots';
 import { useInviteStore } from './stores/invite';
 import LangBridge from './components/LangBridge';
 import AuthBridge from './components/AuthBridge';
@@ -386,6 +387,8 @@ export default function App({ seo }: AppProps = {}) {
       {invite !== null ? <LoginInvite screen={invite} onClose={closeInvite} /> : null}
 
       <ToTop />
+      {/* 광고 자리 — 로그인 전인 사람에게만, 빌드 모드가 켜져 있을 때만 선다 (lib/ads.ts). 셸 순서 뒤의 고정 자리라 본문 흐름에 안 낀다 */}
+      <AdSlots />
       <Drawer open={menuOpen} onClose={() => setMenuOpen(false)} now={route.id} onConsent={() => setConsentOpen(true)} />
     </SlotProvider>
   );

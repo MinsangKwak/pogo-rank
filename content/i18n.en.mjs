@@ -227,6 +227,9 @@ export const I18N_PATTERNS = [
 // 영어로 보는 사람이 자기 지역 일정으로 오해하면 실제로 이벤트를 놓친다
 
 export const I18N_EN = {
+  // 2026-10-14 광고 자리 (components/AdSlots.tsx)
+  '광고': 'Ad',
+  '광고 자리예요 · 준비 중': 'Ad space · coming soon',
   // 2026-10-13 홈 '이번 주 보스' 카드 줄 · 상세 '상대할 때' 카드 (PR #361)
   '진행 중이거나 #일 안에 시작하는 맥스 배틀 · 레이드 보스와 추천 포켓몬': 'Live now or starting within # days — Max Battle and raid bosses, with recommended counters',
   '거다이맥스': 'Gigantamax',
