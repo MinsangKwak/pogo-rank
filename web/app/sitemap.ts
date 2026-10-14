@@ -7,6 +7,9 @@
 // 우선순위는 **바뀌는 빈도**로 가른다. 순위표는 매일 다시 굽고 도감은 거의 안 바뀐다
 // ─────────────────────────────────────────────────────────────────────────────
 import type { MetadataRoute } from 'next';
+
+// 빌드 때 한 번 굽는다 — 정적 내보내기(Cloudflare Pages)는 요청마다 도는 경로를 못 싣는다
+export const dynamic = 'force-static';
 import { ROUTES, type RouteDef } from '../src/routes';
 import { allSprites } from '../src/lib/facts.server';
 
