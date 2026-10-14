@@ -189,7 +189,9 @@ def main():
     print('── www 는 apex 로 ──')
     set_www_redirect(zid, True)
     print('── Pages 에 도메인을 붙인다 ──')
-    for name in (APEX, WWW):
+    # **www 먼저, apex 는 맨 나중.** 붙이는 순간 CNAME 이 저절로 생길 수 있다 — apex 를 먼저 붙였다가 www 가 실패하면 moncamp.kr 만
+    # 넘어간 채 선다. www 가 먼저 넘어가면 위의 규칙이 moncamp.kr(아직 Vercel)로 308 하므로 apex 가 실패해도 그대로 쓸 수 있다 (Codex, PR #371)
+    for name in (WWW, APEX):
         if name not in have:
             cloudflare('POST', f'/accounts/{acc}/pages/projects/{PROJECT}/domains', {'name': name})
             print(f'   붙였습니다: {name}')
