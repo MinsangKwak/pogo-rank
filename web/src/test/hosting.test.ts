@@ -21,14 +21,12 @@ describe('_headers', () => {
 });
 
 describe('_redirects', () => {
-  it('옛 주소마다 정확히 그 주소 · 그 아래 두 줄, 308 — next.config 의 redirects() 와 같은 짝', async () => {
+  it('Vercel(next.config redirects) 과 _redirects 가 같은 차례 · 같은 줄 — 두 호스팅이 한 표를 쓴다 (Codex, PR #372)', async () => {
     const lines = redirectsFile().trim().split('\n');
-    const served = await config.redirects!();
-    for (const rule of served) {
-      // 그 아래 주소는 맨 주소로 — 정적 빌드에는 뒷부분 주소가 구워져 있지 않다
-      const line = `${rule.source.replace('/:rest*', '/*')} ${rule.destination.replace('/:rest*', '')} 308`;
-      expect(lines, line).toContain(line);
-    }
+    const served = (await config.redirects!()).map((rule) => `${rule.source.replace('/:rest*', '/*')} ${rule.destination} 308`);
+    expect(served).toEqual(lines);
+    // Vercel 쪽도 뒷부분을 붙여 옮기지 않는다 — 구운 주소만 있는 판이라 404 가 된다
+    for (const rule of await config.redirects!()) expect(rule.destination, rule.source).not.toContain(':rest');
   });
   it('뒷부분이 구운 화면이면 그 화면으로 — 와일드카드보다 먼저 (Codex, PR #374)', () => {
     const lines = redirectsFile().trim().split('\n');
