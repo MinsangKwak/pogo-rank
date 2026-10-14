@@ -9,12 +9,20 @@
 //   off          — 자리 자체를 안 만든다. 운영 기본값 (약관이 아직 '광고 없음' 이라 운영은 끈 채 둔다)
 //   placeholder  — 자리만 잡고 '준비 중' 을 적는다. dev 에서 배치를 보는 용도
 // 실제 광고(Google AdSense)는 docs/ADS.md 의 절차를 밟은 뒤 모드 하나를 더해 붙인다
+//
+// **광고를 세우지 않는 화면이 있다** (AdSense '게시자 콘텐츠가 없는 화면' 정책, 2026-10-14 점검) — 약관 · 개인정보처리방침 · 설정과,
+// 로그인해야 열리는 화면(로그아웃한 사람에게는 잠금 카드뿐이다). 판정은 adFreeRoute 하나 — 화면 안 판정과 첫 그림 전 스크립트가 같이 쓴다
 // ─────────────────────────────────────────────────────────────────────────────
 'use strict';
 import type { AuthStatus } from '../stores/auth';
+import { ROUTES } from '../routes';
 
-/** 판정에 쓰는 로그인 상태 조각 (stores/auth.ts) — ready 는 첫 확인이 끝났는가, recheckError 는 그 확인이 실패했는가 */
-export interface AdsAuth { status: AuthStatus; ready: boolean; recheckError: string; trace: boolean }
+/**
+ * 판정에 쓰는 상태 — 로그인(stores/auth.ts) · 통계 동의(lib/consent.ts) · 지금 화면.
+ * ready 는 첫 확인이 끝났는가, recheckError 는 그 확인이 실패했는가, trace 는 이 기기의 로그인 자취,
+ * consentDenied 는 '통계 끄기' 를 골랐는가, adFree 는 광고를 세우지 않는 화면인가(잠금 카드가 선 화면 포함)
+ */
+export interface AdsAuth { status: AuthStatus; ready: boolean; recheckError: string; trace: boolean; consentDenied: boolean; adFree: boolean }
 
 export type AdsMode = 'off' | 'placeholder';
 
@@ -45,5 +53,26 @@ export function adsMode(raw: string | undefined = process.env['NEXT_PUBLIC_ADS']
  * 자취가 있으면 로그인한 사람으로 보고 내린다 (Codex, PR #364)
  */
 export function adsVisible(mode: AdsMode, auth: AdsAuth): boolean {
-  return mode !== 'off' && auth.ready && !auth.recheckError && !auth.trace && auth.status === 'anon';
+  // 통계를 끈 사람에게도 세우지 않는다 — '끄면 아무것도 보내지 않는다'(CLAUDE.md §5)와 같은 결. 광고 스크립트가 붙으면 Google 로 요청이 나간다
+  return mode !== 'off' && auth.ready && !auth.recheckError && !auth.trace && !auth.consentDenied && !auth.adFree && auth.status === 'anon';
+}
+
+/** 내용 없이 광고만 서면 안 되는 화면 — 약관 · 방침 · 설정 (정책상 '탐색 · 법적 고지' 화면) */
+const AD_FREE_IDS: ReadonlySet<string> = new Set(['privacy', 'terms', 'settings']);
+
+/** 이 화면에 광고를 세우지 않는가 — 위 셋과, 로그인해야 열리는 화면(로그아웃한 사람에게는 잠금 카드만 선다) */
+export function adFreeRoute(route: { id: string; locked?: boolean }): boolean {
+  return AD_FREE_IDS.has(route.id) || route.locked === true;
+}
+
+/** 첫 그림 전 스크립트가 주소로 가르는 목록 — '/privacy' · '/planner' 꼴 */
+export const AD_FREE_PATHS: readonly string[] = ROUTES.filter((route) => adFreeRoute(route)).map((route) => `/${route.path}`);
+
+/**
+ * ads.txt 한 줄 — AdSense 게시자 ID(ca-pub-16자리)가 있을 때만. 없거나 꼴이 틀리면 null(→ 404).
+ * 마지막 값은 Google 의 인증 기관 ID 로 모든 게시자에게 같다 (AdSense 도움말 'ads.txt 가이드')
+ */
+export function adsTxtLine(client: string | undefined): string | null {
+  const found = /^ca-pub-(\d{16})$/.exec(client ?? '');
+  return found ? `google.com, pub-${found[1]}, DIRECT, f08c47fec0942fa0` : null;
 }
