@@ -9,7 +9,7 @@
 // 지금은 '준비 중' 을 적은 빈 자리다. 실제 광고를 붙이는 절차는 docs/ADS.md
 // ─────────────────────────────────────────────────────────────────────────────
 'use strict';
-import { useEffect } from 'react';
+import { useLayoutEffect } from 'react';
 import { useAuthStore } from '../stores/auth';
 import { AD_SLOT_SIZE, adsMode, adsVisible, type AdSlotId } from '../lib/ads';
 
@@ -33,8 +33,10 @@ export default function AdSlots() {
   const recheckError = useAuthStore((s) => s.recheckError);
   const visible = adsVisible(adsMode(), { status, ready, recheckError });
   // 본문이 비켜설지는 문서 속성 하나로 알린다 — 첫 그림 전에는 layout.tsx 의 인라인 스크립트가 로그인 자취로 같은 값을 미리 적는다(CLS 방지).
-  // 자취 없이 쿠키만 남은 드문 경우(로그인 직후 첫 화면 · 저장소 지움)는 확인이 끝난 뒤 여기서 off 로 되돌린다
-  useEffect(() => {
+  // 자취 없이 쿠키만 남은 드문 경우(로그인 직후 첫 화면 · 저장소 지움)는 확인이 끝난 뒤 여기서 off 로 되돌린다.
+  // useLayoutEffect 인 이유 — 자취는 남았는데 세션이 끝난 경우는 off 로 시작했다가 확인 뒤 on 이 된다. 그 커밋에서 자리가 먼저 서고
+  // 속성이 한 박자 뒤에 붙으면 한 프레임 동안 띠가 본문을 덮는다. 그리기 전에 같이 바꾼다 (Codex, PR #364)
+  useLayoutEffect(() => {
     document.documentElement.dataset['ads'] = visible ? 'on' : 'off';
   }, [visible]);
   if (!visible) return null;
