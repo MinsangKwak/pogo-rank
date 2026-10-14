@@ -12,16 +12,35 @@
 # **바꾸기 전에 옛 레코드를 먼저 찍는다** — vercel_prod.py 와 같은 규칙. 되돌릴 자리가 로그에 남는다.
 # **프록시(주황 구름)를 켠다** — Pages 는 Cloudflare 안이라 Vercel 때와 달리 켜야 인증서 · 캐시가 바로 붙는다.
 #
-# 쓰는 값: CLOUDFLARE_API_TOKEN(Account · Cloudflare Pages · Edit + Zone · DNS · Edit) ·
+# **www 는 apex 로 308** — Vercel 때(vercel_prod.py 의 redirectStatusCode 308)와 같다. 주소가 둘이면 검색엔진이 같은 글을 두 번 센다.
+# Pages 의 _redirects 는 주소의 경로만 보고 호스트는 못 본다 — 영역의 Single Redirect 규칙(엣지에서 도는 것)으로 건다 (Codex, PR #368)
+#
+# 쓰는 값: CLOUDFLARE_API_TOKEN(Account · Cloudflare Pages · Edit + Zone · DNS · Edit + Zone · Single Redirect · Edit) ·
 #          되돌릴 때만 VERCEL_TOKEN · VERCEL_ORG_ID (Vercel 이 권하는 A · CNAME 을 읽는다, 없으면 문서 기본값)
 # ─────────────────────────────────────────────────────────────────────────────
 import os
+import re
 import sys
 
-from vercel_dev import cloudflare, fail
+from vercel_dev import call, cloudflare, fail
 from vercel_prod import APEX, VERCEL_CNAME, VERCEL_IP, WWW, recommended, replace, show, zone_id
 
 PROJECT = os.environ.get('PAGES_PROJECT', 'moncamp')
+
+# www → apex 규칙. ref 로 우리 규칙만 찾아 바꾼다 — 같은 단계(phase)에 다른 규칙이 있어도 건드리지 않는다
+WWW_RULE_REF = 'moncamp_www_to_apex'
+WWW_RULE = {
+    'ref': WWW_RULE_REF,
+    'description': 'www.moncamp.kr → moncamp.kr (308, scripts/pages_prod.py)',
+    'expression': f'(http.host eq "{WWW}")',
+    'action': 'redirect',
+    'action_parameters': {'from_value': {
+        'status_code': 308,
+        'target_url': {'expression': f'concat("https://{APEX}", http.request.uri.path)'},
+        'preserve_query_string': True,
+    }},
+}
+REDIRECT_PHASE = 'http_request_dynamic_redirect'
 
 
 def account_id():
@@ -43,6 +62,43 @@ def domains(acc):
     return {one['name']: one for one in (cloudflare('GET', f'/accounts/{acc}/pages/projects/{PROJECT}/domains') or [])}
 
 
+def token():
+    # vercel_dev.cloudflare 와 같은 정리 — 공백을 떼고 토큰만 고른다
+    raw = ''.join(os.environ['CLOUDFLARE_API_TOKEN'].split())
+    found = re.search(r'cfut_[A-Za-z0-9_-]+', raw)
+    return found.group(0) if found else raw
+
+
+def redirect_rules(zid):
+    """영역의 리다이렉트 단계 규칙. 단계가 아직 없으면(404) 빈 목록 — cloudflare() 는 404 를 실패로 세우므로 직접 부른다"""
+    status, payload = call('GET', f'https://api.cloudflare.com/client/v4/zones/{zid}/rulesets/phases/{REDIRECT_PHASE}/entrypoint', token())
+    if status == 404:
+        return []
+    if status >= 300 or not payload.get('success'):
+        fail(f'리다이렉트 규칙을 못 읽었습니다: {status} {payload.get("errors")} — 토큰에 Zone · Single Redirect · Edit 가 있는지 봅니다')
+    return payload['result'].get('rules') or []
+
+
+def put_rules(zid, rules):
+    keep = [{key: value for key, value in rule.items() if key in ('ref', 'description', 'expression', 'action', 'action_parameters', 'enabled')}
+            for rule in rules]
+    cloudflare('PUT', f'/zones/{zid}/rulesets/phases/{REDIRECT_PHASE}/entrypoint', {'rules': keep})
+
+
+def set_www_redirect(zid, on):
+    rules = redirect_rules(zid)
+    others = [rule for rule in rules if rule.get('ref') != WWW_RULE_REF]
+    had = len(others) != len(rules)
+    if on and not had:
+        put_rules(zid, others + [WWW_RULE])
+        print(f'   {WWW} → {APEX} 308 규칙을 걸었습니다')
+    elif not on and had:
+        put_rules(zid, others)
+        print(f'   {WWW} → {APEX} 규칙을 걷었습니다 (Vercel 이 www 를 다시 옮긴다)')
+    else:
+        print(f'   {WWW} 규칙: 이미 {"있음" if on else "없음"}')
+
+
 def main():
     step = sys.argv[1] if len(sys.argv) > 1 else ''
     if step not in ('status', 'attach', 'rollback'):
@@ -59,6 +115,8 @@ def main():
         print(f'── Vercel 로 되돌린다 (A {ip} · CNAME {cname} · 프록시 끔 — 전환 전과 같은 모양) ──')
         replace(zid, APEX, [{'type': 'A', 'content': ip, 'proxied': False}])
         replace(zid, WWW, [{'type': 'CNAME', 'content': cname, 'proxied': False}])
+        # 프록시를 끄면 규칙도 안 걸리지만, 남겨 두면 다음에 누가 켰을 때 엉뚱하게 돈다 — 걷는다
+        set_www_redirect(zid, False)
         print('── 바뀐 DNS ──')
         show(zid)
         return
@@ -71,6 +129,8 @@ def main():
     for name in (APEX, WWW):
         one = have.get(name)
         print(f'   {name}: {one["status"] if one else "(안 붙음)"}')
+    rules = [rule.get('ref') for rule in redirect_rules(zid)]
+    print(f'   www → apex 규칙: {"있음" if WWW_RULE_REF in rules else "없음"}')
     if step == 'status':
         return
 
@@ -83,6 +143,8 @@ def main():
     # apex 의 CNAME 은 Cloudflare 가 펴서(flattening) 답한다 — 같은 계정의 Pages 라 그대로 된다
     replace(zid, APEX, [{'type': 'CNAME', 'content': target, 'proxied': True}])
     replace(zid, WWW, [{'type': 'CNAME', 'content': target, 'proxied': True}])
+    print('── www 는 apex 로 ──')
+    set_www_redirect(zid, True)
     print('── 바뀐 DNS ──')
     show(zid)
     for name, one in domains(acc).items():

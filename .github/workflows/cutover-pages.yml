@@ -48,7 +48,15 @@ jobs:
             heads="$(curl -sSI "https://moncamp.kr/mon/25?t=$(date +%s)" 2>/dev/null | tr -d '\r' | tr 'A-Z' 'a-z' || true)"
             if printf '%s' "$heads" | grep -q '^x-vercel-id:'; then got=vercel; elif printf '%s' "$heads" | grep -q '^server: cloudflare'; then got=pages; else got=''; fi
             if [ "$got" = "$WANT" ] && curl -sS "https://moncamp.kr/mon/25" | grep -q '피카츄'; then
-              echo "OK — https://moncamp.kr 이 $got 에서 답한다"; exit 0
+              echo "OK — https://moncamp.kr 이 $got 에서 답한다"
+              # www 는 apex 로 308 — 어느 호스팅이든 같아야 한다 (Pages 는 Single Redirect 규칙, Vercel 은 프로젝트 설정)
+              for j in $(seq 1 15); do
+                loc="$(curl -sSI "https://www.moncamp.kr/dex?x=1" 2>/dev/null | tr -d '\r' | awk 'tolower($1)=="location:"{print $2}' || true)"
+                code="$(curl -so /dev/null -w '%{http_code}' "https://www.moncamp.kr/dex?x=1" || true)"
+                if [ "$code" = 308 ] && [ "$loc" = "https://moncamp.kr/dex?x=1" ]; then echo "OK — www → $loc (308)"; exit 0; fi
+                echo "  www 를 기다린다 (${j}/15, 지금 $code $loc)"; sleep 20
+              done
+              echo "www.moncamp.kr 이 moncamp.kr 로 308 을 안 준다"; exit 1
             fi
             echo "  DNS · 인증서를 기다린다 (${i}/40, 지금 ${got:-?})"; sleep 20
           done
