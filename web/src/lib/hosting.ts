@@ -29,20 +29,25 @@ export function headersFile(): string {
 }
 
 /**
- * Cloudflare Pages `_redirects` — 옛 주소를 308 로 옮긴다 (next.config.ts 의 redirects() 와 같은 짝).
- * 정확히 그 주소 한 줄, 그 아래 주소(`/rank/pve/뭐든`) 한 줄.
+ * 옛 주소 → 새 주소, 위에서부터 처음 맞는 줄을 쓴다. `/*` 는 그 아래 주소 전부.
+ * **두 호스팅이 이 표 하나를 쓴다** — Cloudflare Pages 는 `_redirects`(redirectsFile), Vercel 은 next.config.ts 의 redirects().
+ * Vercel 판도 `dynamicParams = false` 로 구운 주소만 있어, 뒷부분을 붙여 옮기면 전환 전 · rollback 뒤에도 404 다 (Codex, PR #372)
  *
  * **그 아래 주소는 구운 화면이면 그대로, 아니면 새 화면의 맨 주소로 보낸다.** Vercel 에서는 `/pve/뭐든` 을 요청 때 그려
  * `/pve` 화면을 냈지만, 정적 빌드에는 구운 주소만 있어 뒷부분을 붙여 옮기면 404 가 된다(Codex, PR #372).
  * 다만 `/rank/pve/solo` 처럼 뒷부분이 그 자체로 구운 화면(`/pve/solo`)이면 그 화면으로 보낸다 — 맨 주소로 뭉개면 다른 화면이 뜬다(Codex, PR #374).
  * 정확한 줄을 와일드카드보다 먼저 적는다 — Cloudflare 는 위에서부터 처음 맞는 줄을 쓴다
  */
-export function redirectsFile(): string {
+export function legacyRedirects(): ReadonlyArray<readonly [string, string]> {
   const baked = ROUTES.filter((route) => route.path && route.kind !== 'detail').map((route) => route.path);
-  const lines = [...ROUTE_LEGACY].flatMap(([old, next]) => [
-    `/${old} /${next} 308`,
-    ...baked.filter((path) => path.startsWith(`${next}/`)).map((path) => `/${old}/${path.slice(next.length + 1)} /${path} 308`),
-    `/${old}/* /${next} 308`,
+  return [...ROUTE_LEGACY].flatMap(([old, next]): (readonly [string, string])[] => [
+    [`/${old}`, `/${next}`],
+    ...baked.filter((path) => path.startsWith(`${next}/`)).map((path) => [`/${old}/${path.slice(next.length + 1)}`, `/${path}`] as const),
+    [`/${old}/*`, `/${next}`],
   ]);
-  return `${lines.join('\n')}\n`;
+}
+
+/** Cloudflare Pages `_redirects` — legacyRedirects() 를 308 줄로 */
+export function redirectsFile(): string {
+  return `${legacyRedirects().map(([from, to]) => `${from} ${to} 308`).join('\n')}\n`;
 }

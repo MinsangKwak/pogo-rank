@@ -10,11 +10,10 @@
 import type { NextConfig } from 'next';
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { ROUTE_LEGACY } from './src/routes';
 
 // 보안 헤더 표의 원본은 src/lib/hosting.ts — Cloudflare Pages 의 _headers 도 같은 표로 굽는다. 검사(headers.test.ts)를 위해 여기서도 내보낸다
 export { SECURITY_HEADERS } from './src/lib/hosting';
-import { SECURITY_HEADERS } from './src/lib/hosting';
+import { SECURITY_HEADERS, legacyRedirects } from './src/lib/hosting';
 
 // 이 판의 데이터 빌드 시각 — 번들에 새긴다. 앱이 서버의 manifest.json 과 견줘 새 판이 올라왔는지 안다 (components/UpdateBridge.tsx).
 // 첫 서버 응답을 기준으로 삼으면 옛 번들이 새 배포 뒤에 켜졌을 때 끝내 못 알아챈다 (Codex, PR #278).
@@ -68,12 +67,8 @@ const config: NextConfig = {
 
   async redirects() {
     if (STATIC) return [];
-    return [...ROUTE_LEGACY].flatMap(([old, next]) => [
-      // 정확히 그 주소
-      { source: `/${old}`, destination: `/${next}`, permanent: true },
-      // 그 아래 (예: rank/pve/뭐든 → pve/뭐든)
-      { source: `/${old}/:rest*`, destination: `/${next}/:rest*`, permanent: true },
-    ]);
+    // _redirects 와 같은 표(src/lib/hosting.ts) — 그 아래 주소는 구운 화면이면 그 화면, 아니면 새 화면의 맨 주소로 (Codex, PR #372)
+    return legacyRedirects().map(([from, to]) => ({ source: from.replace(/\/\*$/, '/:rest*'), destination: to, permanent: true }));
   },
 };
 
