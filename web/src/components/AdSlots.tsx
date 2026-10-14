@@ -11,7 +11,10 @@
 'use strict';
 import { useLayoutEffect, useSyncExternalStore } from 'react';
 import { onSignInTrace, signInTrace, useAuthStore } from '../stores/auth';
-import { AD_SLOT_SIZE, adsMode, adsVisible, type AdSlotId } from '../lib/ads';
+import { consentDenied, onConsentChange } from '../lib/consent';
+import { useRoute } from '../lib/useRoute';
+import { useLockChecking, useLockReason } from '../lib/useLocked';
+import { AD_SLOT_SIZE, adFreeRoute, adsMode, adsVisible, type AdSlotId } from '../lib/ads';
 
 const SLOTS: readonly AdSlotId[] = ['left', 'right', 'bottom'];
 
@@ -33,7 +36,16 @@ export default function AdSlots() {
   const recheckError = useAuthStore((s) => s.recheckError);
   // 다른 탭에서 로그인하면 이 탭은 anon 그대로다 — 자취(storage 이벤트)로 알아채 내린다. 서버에서는 자취가 없다
   const trace = useSyncExternalStore(onSignInTrace, signInTrace, () => false);
-  const visible = adsVisible(adsMode(), { status, ready, recheckError, trace });
+  // 통계를 끄면 광고도 없다 — 설정 창에서 바꾸면 이 탭에서 바로, 다른 탭에서 바꿔도 따라온다
+  const denied = useSyncExternalStore(onConsentChange, consentDenied, () => false);
+  // 약관 · 방침 · 설정과 잠금 카드가 선 화면에는 세우지 않는다 (AdSense '게시자 콘텐츠가 없는 화면')
+  const { route } = useRoute();
+  // 훅은 둘 다 늘 부른다 — 단락 평가(||) 안에 두면 렌더마다 부르는 훅 수가 달라진다. 잠금 사유는 없으면 '' 다
+  const lockReason = useLockReason(route.id);
+  const lockChecking = useLockChecking(route.id);
+  const locked = lockReason !== '' || lockChecking;
+  const adFree = adFreeRoute(route) || locked;
+  const visible = adsVisible(adsMode(), { status, ready, recheckError, trace, consentDenied: denied, adFree });
   // 본문이 비켜설지는 문서 속성 하나로 알린다 — 첫 그림 전에는 layout.tsx 의 인라인 스크립트가 로그인 자취로 같은 값을 미리 적는다(CLS 방지).
   // 자취 없이 쿠키만 남은 드문 경우(로그인 직후 첫 화면 · 저장소 지움)는 확인이 끝난 뒤 여기서 off 로 되돌린다.
   // useLayoutEffect 인 이유 — 자취는 남았는데 세션이 끝난 경우는 off 로 시작했다가 확인 뒤 on 이 된다. 그 커밋에서 자리가 먼저 서고

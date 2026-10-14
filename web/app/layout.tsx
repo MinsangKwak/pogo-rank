@@ -12,6 +12,7 @@ import type { ReactNode } from 'react';
 import '../src/styles';
 import Providers from './providers';
 import AppClient from '../src/AppClient';
+import { AD_FREE_PATHS, adsMode } from '../src/lib/ads';
 import { gaSnippet } from '../src/lib/gaSnippet';
 import { HOME_TITLE } from '../src/lib/docTitle';
 import { CHUNK_SCRIPT } from '../src/lib/chunkReload';
@@ -99,11 +100,15 @@ document.addEventListener('touchmove',function(e){if(e.touches&&e.touches.length
 /**
  * **첫 그림 전에 광고 자리를 알린다** (2026-10-14). 광고 자리는 로그인 전인 사람에게만 서고(src/lib/ads.ts),
  * 넓은 화면에서는 본문이 띠만큼 비켜선다. 번들이 붙은 뒤에 비켜서면 본문이 한 번 움직인다(CLS) —
- * 테마 스크립트와 같은 이유로 문서 머리에서 미리 적는다. 로그인 자취(`pogo_signed_in`, stores/auth.ts)가 있으면
- * 로그인한 사람으로 보고 안 적는다. 모드가 꺼진 빌드에서는 스크립트 자체를 안 심는다
+ * 테마 스크립트와 같은 이유로 문서 머리에서 미리 적는다. 화면 안 판정(adsVisible)과 같은 것을 본다:
+ * 로그인 자취(`pogo_signed_in`, stores/auth.ts) · 통계 끄기(`pogo_consent`, lib/consent.ts) · 광고 없는 화면(AD_FREE_PATHS).
+ * 하나라도 걸리면 off. 모드가 꺼진 빌드에서는 스크립트 자체를 안 심는다.
+ * 켤지는 adsMode 로 가른다 — 'placeholder' 글자와 견주면 나중에 실제 광고 모드를 더할 때 이 문이 안 열려 본문이 붙은 뒤 움직인다 (Codex, PR #365)
  */
-const ADS_SCRIPT = process.env['NEXT_PUBLIC_ADS'] === 'placeholder'
-  ? `(function(){try{document.documentElement.dataset.ads=localStorage.getItem('pogo_signed_in')==='1'?'off':'on';}catch(e){document.documentElement.dataset.ads='on';}})();`
+const ADS_SCRIPT = adsMode(process.env['NEXT_PUBLIC_ADS']) !== 'off'
+  ? `(function(){var d=document.documentElement;try{var p=location.pathname.replace(/\\/+$/,'')||'/';var free=${JSON.stringify(AD_FREE_PATHS)};
+var hit=free.some(function(f){return p===f||p.indexOf(f+'/')===0;});
+d.dataset.ads=hit||localStorage.getItem('pogo_signed_in')==='1'||localStorage.getItem('pogo_consent')==='denied'?'off':'on';}catch(e){d.dataset.ads='on';}})();`
   : '';
 
 // 운영 채널에서만 심는다 — dev 는 GA 를 안 쓴다(v4 와 같다). 값은 web/.env.production

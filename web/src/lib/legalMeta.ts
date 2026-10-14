@@ -29,8 +29,17 @@
 // **2026-09-29 (v5.5.0) 상세 팝업에서 본 포켓몬의 도감 번호를 더했다** — 홈의 '이번 주 많이 본 포켓몬' 의 재료.
 // 수집 항목이 늘어나는 변경이라 방침을 개정하고 다시 동의를 받는다. 7일 전 고지 없이 바로 시행 — 주인 결정(사이드 프로젝트).
 // 화면별 페이지뷰(9/24) · 상세 번호(9/29) 두 시행일은 각각의 상수로 두고 src/test/viewgate.test.ts 가 방침 · 패치노트와 견준다
-export const PRIVACY_VER = '2026-09-29';
-export const TERMS_VER = '2026-09-24';
+//
+// **2026-10-14 광고 조항을 미리 써 두고 날짜 하나로 켠다** (수익화 전 점검, docs/ADS.md).
+// 약관은 '광고 없음', 방침은 '상업적 목적 없음' 이라 적혀 있어 광고를 붙이는 순간 둘 다 거짓말이 된다.
+// 조항은 screens/Legal.tsx 에 이미 있고 ADS_FROM 이 null 인 동안은 하나도 안 보인다. 시행일을 정하면 —
+//   · 약관 · 방침에 광고 조항이 서고 두 판(TERMS_VER · PRIVACY_VER)이 그 날로 올라 다음 로그인 때 다시 묻는다
+//   · src/test/adslegal.test.ts 가 그 날보다 7일 이상 앞선 패치노트 고지를 찾는다(방침 10번의 약속)
+// 운영 빌드의 광고 모드(.env.production)는 이 값이 null 인 동안 off 여야 한다 — 같은 검사가 지킨다
+/** 광고(Google AdSense) 조항 시행일 — null 이면 광고 조항이 없다(지금) */
+export const ADS_FROM: string | null = null;
+export const PRIVACY_VER = ADS_FROM ?? '2026-09-29';
+export const TERMS_VER = ADS_FROM ?? '2026-09-24';
 /** 화면별 페이지뷰를 세기 시작한 날 (v5.2.1) */
 export const VIEW_FROM = '2026-09-24';
 /** 상세 팝업의 포켓몬 번호를 세기 시작한 날 (v5.5.0) */
