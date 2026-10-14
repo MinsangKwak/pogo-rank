@@ -77,7 +77,7 @@
 | 자리 | 넣을 것 |
 | --- | --- |
 | `web/.env.production` | `NEXT_PUBLIC_ADS=live` · `NEXT_PUBLIC_ADSENSE_CLIENT=ca-pub-…` · 슬롯 ID 셋. 모두 공개 식별자(비밀 아님). dev 도 `dev-pipeline.yml` 에서 먼저 `live` 로 본다 |
-| `web/src/lib/ads.ts` | `AdsMode` 에 `'live'` — 게시자 ID 가 없으면 `off` 로 읽는다 |
+| `web/src/lib/ads.ts` | `AdsMode` 에 `'live'` — 게시자 ID 가 없으면 `off` 로 읽는다. 첫 그림 전 스크립트(`app/layout.tsx`)는 `adsMode(...) !== 'off'` 로 켜지므로 따로 손댈 것이 없다 |
 | `web/src/components/AdSlots.tsx` | `live` 면 상자 안에 `<ins class="adsbygoogle">`(고정 크기 · `data-ad-client` · `data-ad-slot`)를 두고 마운트 때 `push({})` 한 번. 스크립트(`pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=…`)는 **자리가 보일 때만 동적으로 한 번** 심는다 — 로그인한 사람 · 통계를 끈 사람 · 광고 없는 화면에서는 Google 에 요청이 안 나간다. 심기 전에 `requestNonPersonalizedAds = 1` |
 | `web/src/lib/legalMeta.ts` | `ADS_FROM` 에 시행일(3-1 에서 이미 넣음) |
 | 검사 | `ads.test.ts` 에 `live` 판정 · 스크립트 한 번만 · 비개인 광고 줄. 운영 `.env.production` 의 `live` 는 `ADS_FROM` 이 있을 때만 허용 |

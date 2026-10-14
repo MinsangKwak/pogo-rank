@@ -73,6 +73,9 @@ describe('광고 없는 화면 (2026-10-14 수익화 전 점검)', () => {
     expect(AD_FREE_PATHS).toEqual(expect.arrayContaining(['/privacy', '/terms', '/settings', '/planner', '/admin/stats']));
     const layout = readFileSync('app/layout.tsx', 'utf8');
     expect(layout).toContain('JSON.stringify(AD_FREE_PATHS)');
+    // 켤지는 adsMode 한 곳으로 — 모드를 더해도 첫 그림 전 문이 같이 열린다 (Codex, PR #365)
+    expect(layout).toContain("adsMode(process.env['NEXT_PUBLIC_ADS']) !== 'off'");
+    expect(layout).not.toContain("process.env['NEXT_PUBLIC_ADS'] === 'placeholder'");
     expect(layout).toContain("localStorage.getItem('pogo_signed_in')==='1'");
     expect(layout).toContain("localStorage.getItem('pogo_consent')==='denied'");
     expect(readFileSync('src/stores/auth.ts', 'utf8')).toContain("TRACE_KEY = 'pogo_signed_in'");
