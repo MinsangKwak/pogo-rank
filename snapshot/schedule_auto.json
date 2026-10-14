@@ -722,5 +722,25 @@
 "label": "Twitch Drops for Pokémon Night Out 2026",
 "start_eu": "2026-10-25",
 "end_eu": "2026-10-25"
+},
+"pokemon-go-city-safari-boston-2026-rescheduled": {
+"id": "pokemon-go-city-safari-boston-2026-rescheduled",
+"type": "city-safari",
+"start": "2026-10-24",
+"end": "2026-10-25",
+"cat": "event",
+"label": "Pokémon GO City Safari: Boston (Rescheduled)",
+"start_eu": "2026-10-24",
+"end_eu": "2026-10-25"
+},
+"chandelure-super-mega-raid-day-2026": {
+"id": "chandelure-super-mega-raid-day-2026",
+"type": "raid-day",
+"start": "2026-10-31",
+"end": "2026-10-31",
+"cat": "event",
+"label": "샹델라 슈퍼 메가 레이드 데이",
+"start_eu": "2026-10-31",
+"end_eu": "2026-10-31"
 }
 }
