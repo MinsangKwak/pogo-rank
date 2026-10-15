@@ -67,5 +67,7 @@ import './styles/cinema/modal.css';
 import './styles/cinema/palette.css';
 // 홈 상단 '이번 주 많이 본 포켓몬' (2026-09-29)
 import './styles/cinema/hotmons.css';
+// 홈 배너 아래 '이번 주 보스' 카드 줄 (2026-10-13)
+import './styles/cinema/weekbosses.css';
 // 광고 자리 — 넓은 화면 양옆 · 휴대폰 바닥 (2026-10-14). 본문 폭을 줄이는 규칙이 있어 shell.css 뒤여야 한다
 import './styles/cinema/ads.css';

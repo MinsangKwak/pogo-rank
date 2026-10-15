@@ -37,9 +37,23 @@ export function takeForward(): boolean {
   return was;
 }
 
+// 이동을 듣는 쪽 (2026-10-13) — 같은 화면 안에서 질의만 바뀌는 이동(/pve/solo?boss=…)은 usePathname 이 모른다.
+// 질의를 읽는 화면(솔플 계산기 · 덱 짜기)이 여기서 알림을 받아 주소를 다시 읽는다 (lib/useSearch.ts)
+const listeners = new Set<() => void>();
+
+/** 이동이 일어날 때마다 부른다. 돌려주는 함수로 뗀다 */
+export function onNavigate(listener: () => void): () => void {
+  listeners.add(listener);
+  return () => { listeners.delete(listener); };
+}
+
 /** 앱 안의 다른 화면으로 */
 export function go(href: string): void {
-  if (push) { push(href); return; }
+  if (push) {
+    push(href);
+    for (const listener of listeners) listener();
+    return;
+  }
   if (typeof window !== 'undefined') window.location.assign(href);
 }
 

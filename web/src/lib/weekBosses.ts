@@ -79,10 +79,15 @@ export function fillBosses(slides: readonly MaxSlide[], need: number, exclude: R
   return pool.slice(0, need);
 }
 
-/** 남은 맥스 일정 — 홈 배너 · 보스 칩 · 채움 칩이 같은 장을 본다 */
-export function useMaxSlidesSoft(): MaxSlide[] {
+/**
+ * 남은 맥스 일정 — 홈 배너 · 보스 칩 · 채움 칩이 같은 장을 본다.
+ * `at` 을 주면 그 시각으로 센다 — 보스판(lib/useBossBoard.ts)은 1분마다 다시 재는 시계를 넘겨 맥스 먼데이 · 맥스배틀 데이의
+ * 경계도 탭을 열어 둔 채 넘긴다 (Codex, PR #361). 안 주면 처음 그릴 때 한 번
+ */
+export function useMaxSlidesSoft(at?: number): MaxSlide[] {
   // '지금' 은 처음 그릴 때 한 번 — 그릴 때마다 새로 재면 useMemo 가 매번 다시 돈다
-  const [nowMs] = useState(() => Date.now());
+  const [firstMs] = useState(() => Date.now());
+  const nowMs = at ?? firstMs;
   const dex = useDexSoft();
   const gameday = useGamedaySoft();
   const max = useMaxSoft();
