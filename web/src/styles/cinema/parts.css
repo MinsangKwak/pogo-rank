@@ -13,7 +13,7 @@ html body #root :is(
   .upd__tools, .upd__card, .upd__sec, .schedule__cal, .schedule__timeline-scroll, .schedule__category,
   .settings__choice, .home-updates__item, .dex__row, .gameday__row, .row-list > .row,
   .filter-box, .boss__selected, .ivrank__picked, .row__why, .detail__card,
-  .drawer__panel .schedule, .drawer__panel .account, .portal-shortcut
+  .drawer__panel .schedule, .drawer__panel .account, .portal-shortcut, .pick__group, .home__service-grid
 ) {
   border: 1px solid var(--line); border-radius: var(--r-box); background: var(--surface); color: var(--fg); box-shadow: none;
 }
@@ -111,3 +111,14 @@ html body #root .i18n-note { color: var(--muted); }
 
 /* 상세의 '더보기' 로 들어온 줄 — 잠깐 테두리로 밝힌다 (components/Row.tsx useFocusRow, 2026-09-30) */
 html body #root .row.is-focus { outline: 2px solid var(--brand); outline-offset: -2px; background: var(--hover); }
+
+/* 블록 풍경 위의 정보 면 — 기존 팔레트로 글자의 대비를 유지한다. */
+html body #root .home-dashboard :is(.home__top-layout, .pick__group, .home__service-grid, .home-updates__item, .portal-shortcut) {
+  border: 1px solid var(--line); border-radius: var(--r-box);
+  background: color-mix(in srgb, var(--surface) 86%, transparent);
+  box-shadow: inset 0 1px 0 color-mix(in srgb, var(--fg) 7%, transparent), 0 .4rem 0 color-mix(in srgb, var(--bg) 80%, transparent);
+}
+html body #root .home-dashboard :is(.pick__all, .portal-shortcut__go, .pick__discover-action > span) {
+  border: 1px solid var(--line-2); border-radius: var(--r-ctl); background: var(--surface-2); color: var(--fg); box-shadow: none;
+}
+html body:has(.home-dashboard) #root .app-bar :is(.app-search, .icon-btn) { box-shadow: none; }

@@ -15,6 +15,16 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 export const RELEASE_NOTES_EN = {
+  '2026-10-14 · v5.10.2': [
+    "**The calendar now shows 'Chandelure Super Mega Raid Day' on Oct 31 (2–5 p.m.)** — the date had been announced without a boss; it is now Mega Chandelure, making its debut with Mega Level up to Super Max. The notice is also collected on the Game Updates board",
+  ],
+  '2026-10-13 · v5.10.1': [
+    "**Bramblin and Brambleghast are now listed as released in the Pokédex** — Bramblin debuted on Oct 13 in the 'Fall Marathon: Buddy Trek' event, and it evolves into Brambleghast after walking 20 km as your buddy and spending 50 Candy. Both had been wrongly tagged [unreleased]",
+  ],
+  '2026-10-13 · v5.10.0': [
+    "**A 'This week's bosses' card row now sits under the home banner** — every Dynamax, Gigantamax, 5-star, Mega and Shadow raid boss that is live or starts within 7 days gets a card with its countdown, dates and three recommended counters. Tap the boss or a counter to open its detail. Rows in 'Trending Pokémon' now say why they're trending ('Gigantamax boss', 'Community Day · D-3')",
+    "**A 'When you face it' card now tops the Pokémon detail** — when that Pokémon (or its evolution family) is a current boss, the card shows the dates and three recommended counters, with a button to the D-MAX Deck Builder (Max bosses) or the Solo Raid Calculator (raid bosses) that arrives with the boss preselected. Pokémon that are not bosses get no card",
+  ],
   '2026-10-10 · v5.9.16': [
     '**Game update board entries now link the English notice too** — the official English index uses a different link shape, so only Korean sources had been collected. Each entry now pairs the English notice with the Korean one, and English-only regional events (City Safari and the like) appear with their English titles',
   ],

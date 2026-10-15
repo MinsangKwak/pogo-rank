@@ -14,7 +14,6 @@
 //     .detail__dock  링크 복사 · CP 계산기 / 초기화 · 상세로 돌아가기
 // ─────────────────────────────────────────────────────────────────────────────
 import { monDocTitle } from '../lib/docTitle';
-import { maxVisible } from '../lib/maxVisible';
 import { useRankStore } from '../stores/rank';
 import { go } from '../lib/nav';
 
@@ -22,9 +21,9 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { useDex, useFavEvents, useGameday, useMax, usePve, usePvp } from '../lib/data';
 import { Sprite } from '../components/Bits';
 import { PxIcon } from '../components/PxIcon';
-import { NameNode } from '../components/Row';
 import { cpOf } from '../lib/cp';
-import { counterTypes, matchups } from '../lib/matchup';
+import { matchups } from '../lib/matchup';
+import { bossCounters, bossKindOf } from '../lib/bossCounters';
 import { favNewsFor, favNewsWhen, FAV_NEWS_LABEL } from '../lib/favnews';
 import { useFavs } from '../lib/useFavs';
 import { buildSearchIndex } from '../lib/search';
@@ -38,7 +37,9 @@ import CalcScreen, { CALC_DEFAULT, type CalcInputs } from '../components/detail/
 import { Evo, MegaCompare } from '../components/detail/Evo';
 import CatchCard from '../components/detail/CatchCard';
 import UsageRanks from '../components/detail/UsageRanks';
-import FormGuide, { BossLine, DeepDock, FormStats, TrainCard } from '../components/detail/FormGuide';
+import FormGuide, { DeepDock, FormStats, TrainCard } from '../components/detail/FormGuide';
+import Recs from '../components/detail/Recs';
+import VsCard from '../components/detail/VsCard';
 import { speciesOf } from '../lib/formGuide';
 
 export type { MonRef } from '../lib/mon';
@@ -68,9 +69,6 @@ function splitName(name: string, labels: readonly string[]) {
   return { labels: found, base };
 }
 
-/** 보스 이름이 다이맥스·거다이맥스로 시작하면 맥스 배틀, 아니면 레이드 (참전 가능한 풀이 다르다) */
-const bossKind = (name: string) => (/^(거다이맥스|다이맥스)\s/.test(name) ? 'max' : 'raid');
-
 function TypeChip({ type, extra, className }: { type: string; extra?: string; className?: string }) {
   const { data } = useDex();
   return (
@@ -78,22 +76,6 @@ function TypeChip({ type, extra, className }: { type: string; extra?: string; cl
       <span className="dot" style={{ ['--c' as string]: `var(--t-${type})` }} />
       {data.TYPE_KO[type] ?? type}{extra ? <small>{extra}</small> : null}
     </span>
-  );
-}
-
-/** 추천 후보 줄 — 누르면 같은 창에서 그 포켓몬으로 바뀐다 */
-function Recs({ rows, onSwitch }: { rows: MonRef[]; onSwitch: (mon: MonRef) => void }) {
-  const { data } = useDex();
-  return (
-    <div className="detail__recs">
-      {rows.map((row, index) => (
-        <button key={`${row.sprite}-${index}`} className="detail__rec" onClick={() => onSwitch(row)}>
-          <Sprite id={row.sprite} />
-          <span className="detail__rec-name"><NameNode name={row.name} labels={data.FORM_LABELS} /></span>
-          <span className="detail__rec-go" aria-hidden="true">›</span>
-        </button>
-      ))}
-    </div>
   );
 }
 
@@ -212,50 +194,12 @@ export default function MonDetail({ pick, onClose, inline = false, onDeep, here 
     </span>
   ));
 
-  // ── 보스로 만났을 때 — 보스 종류에 따라 참전 가능한 풀이 다르다 (v2.13.0 QA-49)
-  const counter = (() => {
-    if (!types.length) return null;
-    const first = types[0]!;
-    if (bossKind(mon.name) === 'max') {
-      // 맥스 배틀에는 다이맥스·거다이맥스와, 다이맥스 없이 참가하는 검왕 자시안·방패왕 자마젠타·무한다이노(join)만 들어간다 —
-      // 메가·원시·섀도우는 참전할 수 없다. 미구현 · 출시 예정(now)은 추천하지 않는다: 지금 데려갈 수 있는 것만 보여 준다 (Codex, PR #341)
-      const rows = maxVisible(max.DMAX_DATA[first], { join: showJoin, now: true }).slice(0, 5)
-        .map((row) => ({ sprite: row.sprite, name: row.name, en: row.en, types: row.types }));
-      if (!rows.length) return null;
-      return {
-        sub: '맥스 배틀 추천 후보 — 다이맥스·거다이맥스와 다이맥스 없이 참가하는 전설만 참전',
-        rows,
-        foot: `${data.TYPE_KO[first] ?? first} 속성 맥스 배틀 보스 기준 · 메가·원시·섀도우는 맥스 배틀에 참전할 수 없어 제외`,
-      };
-    }
-    const attackTypes = counterTypes(data.DEX_DATA.chart, data.TYPE_KO, types, 2);
-    if (!attackTypes.length) return null;
-    // **시트를 먼저 본다** (v3 raidDealerRows) — 그 속성 최강 대비 %(score)라 타입이 달라도 견줄 수 있다.
-    //   자체 계산(PVE_DATA)은 같은 보스 가정의 절대 점수라 역시 타입 사이 비교가 된다. 둘을 섞지는 않는다.
-    //   자체 계산만 쓰다가 v3 와 추천 순서가 달라져 찾았다 (뮤츠·마폭시·리자몽 → 다른 차례)
-    const sheet = pvpData.SHEET_DATA.pve;
-    const useSheet = attackTypes.every((type) => Array.isArray(sheet?.[type]) && sheet![type]!.length > 0);
-    const source: Record<string, { sprite: number; name: string; en: string; types: readonly string[]; score?: number }[]> =
-      useSheet ? sheet! : pve.PVE_DATA;
-    const merged = attackTypes.flatMap((type) => (source[type] ?? []).slice(0, 15));
-    merged.sort((a, b) => (b.score ?? 0) - (a.score ?? 0));
-    const seen = new Set<string | number>();
-    const picked: MonRef[] = [];
-    for (const row of merged) {
-      const key = dexNoOf(row.sprite, data.DEX_DATA.dex) ?? row.name;
-      if (seen.has(key)) continue;
-      seen.add(key);
-      picked.push({ sprite: row.sprite, name: row.name, en: row.en, types: row.types });
-      if (picked.length >= 5) break;
-    }
-    if (!picked.length) return null;
-    const typeLabel = attackTypes.map((type) => data.TYPE_KO[type] ?? type).join('·');
-    return {
-      sub: `레이드 추천 후보 — ${typeLabel} 딜러`,
-      rows: picked,
-      foot: `일반·전설·메가 레이드는 전체 포켓몬 참전 · ${typeLabel} 타입 레이드 성능표 상위 (종 중복 제거)`,
-    };
-  })();
+  // ── 보스로 만났을 때 — 보스 종류에 따라 참전 가능한 풀이 다르다 (v2.13.0 QA-49). 셈은 lib/bossCounters.ts 한 곳이다 —
+  //    맨 위 '상대할 때' 카드(VsCard) · 홈 '이번 주 보스' 와 같은 후보가 서야 한다 (2026-10-13)
+  const counter = useMemo(() => bossCounters(bossKindOf(mon.name), types, {
+    chart: data.DEX_DATA.chart, typeKo: data.TYPE_KO, dexTable: data.DEX_DATA.dex,
+    dmax: max.DMAX_DATA, pve: pve.PVE_DATA, sheet: pvpData.SHEET_DATA.pve, showJoin,
+  }, 5), [mon.name, types, data, max, pve, pvpData, showJoin]);
 
   const match = types.length ? matchups(data.DEX_DATA.chart, data.TYPE_KO, types) : { weak: [], resist: [] };
   const chipList = (rows: { type: string; mult: number }[]) => rows.length ? (
@@ -391,13 +335,15 @@ export default function MonDetail({ pick, onClose, inline = false, onDeep, here 
 
                     {/* ── 요약: CP · 포획 CP · 기술 · (기술 변경) · 능력치 */}
                     <div className="detail__pane" role="tabpanel" data-pane="summary" id="detail-pane-summary" aria-labelledby="detail-tab-summary" hidden={tab !== 'summary'}>
-                      {/* 맨 위는 진화 계열 — 이 종이 무엇이 되는지 · 계열에서 무엇을 키울지 · 지금 잡을 수 있는지 */}
+                      {/* 맨 위는 '상대할 때' — 이 계열이 지금(또는 7일 안에) 맥스 · 레이드 보스로 서면 기간 · 추천 세 마리 · 셈 단추.
+                          보스가 아니면 카드가 없다. 요약 팝업에도 선다 — 홈 · 검색에서 보스를 연 사람의 첫 물음이라서 (2026-10-13 통계 개편) */}
+                      <VsCard mon={mon} dexNo={dexNo} kind={mon.name === start.name && mon.sprite === start.sprite ? pick.boss : undefined} onSwitch={switchTo} onLeave={onClose} />
+                      {/* 진화 계열 — 이 종이 무엇이 되는지 · 계열에서 무엇을 키울지 · 지금 잡을 수 있는지 */}
                       <section className="detail__card detail__evo-card">
                         <h3>진화 계열</h3>
                         {dexNo != null
                           ? <Evo dex={dexNo} sprite={sprite} onSwitch={switchTo} />
                           : <p className="detail__none-text">진화가 없는 포켓몬이에요.</p>}
-                        <BossLine dexNo={dexNo} />
                       </section>
                       {/* 육성 추천 — 서비스의 목표(다이맥스 · 거다이맥스 우선 육성)를 팝업의 첫 답으로 둔다.
                           검색한 것의 쓰임새가 1번: 맥스 배틀 · 레이드에서 쓰이면 맥스 폼부터, PvP 에서만 쓰이면 일반 · 전설 */}
