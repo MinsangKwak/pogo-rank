@@ -21,9 +21,9 @@
 | --- | --- | --- |
 | `dev` | 작업·개발 미리보기 | `deploy-dev.yml` → `dev-pipeline.yml` → Vercel, dev.moncamp.kr |
 | `main` | 검증된 변경 통합 | 운영 배포 승인 전 통합 단계 |
-| `deploy` | 운영 릴리스 | `deploy-web.yml` → Vercel, moncamp.kr |
+| `deploy` | 운영 릴리스 | `deploy-pages.yml` → Cloudflare Pages, moncamp.kr (2026-10-15부터. `deploy-web.yml`(Vercel)은 되돌리기용으로 손으로만) |
 
-서버 배포는 `deploy-server.yml`에서 별도로 처리합니다. GitHub Pages 관련 워크플로와 이전 산출물은 전환·복구 맥락으로 남아 있습니다. 현재 웹을 Vite 앱으로 배포하지 않습니다.
+서버 배포는 `deploy-server.yml`에서 별도로 처리합니다. 운영 도메인을 Pages ↔ Vercel 로 오가는 일은 `cutover-pages.yml`(status · attach · rollback)이 하며 절차는 [INFRA 10장](INFRA.md#pages)입니다. GitHub Pages 관련 워크플로와 이전 산출물은 전환·복구 맥락으로 남아 있습니다. 현재 웹을 Vite 앱으로 배포하지 않습니다.
 
 1. 최신 `dev`를 기준으로 변경과 diff를 검토합니다.
 2. 변경 영역에 맞는 [검증](DEVELOPMENT.md#verification)을 실행합니다.
@@ -587,7 +587,7 @@ FIREBASE_SA_JSON='<한 줄 JSON>' python3 scripts/firestore_restore.py firestore
 > `deploy` 브랜치에 밀 때마다 빨간 줄을 남기지 않는다. 로그의 `notice` 한 줄로 건너뛴 것을 알린다.
 
 | 7 | 도메인 `api.moncamp.kr` → Cloud Run 매핑 | `curl https://api.moncamp.kr/health` |
-| 8 | ~~저장소 **변수** `COLLECT_URL`~~ → **v5 부터는 배포 워크플로가 켠 채로 굽는다** (`deploy-web.yml`). 변수는 덮어쓸 때만 쓴다 | 다음 사이트 배포부터 수집이 켜진다 |
+| 8 | ~~저장소 **변수** `COLLECT_URL`~~ → **v5 부터는 배포 워크플로가 켠 채로 굽는다** (`deploy-pages.yml`, 2026-10-14 까지는 `deploy-web.yml`). 변수는 덮어쓸 때만 쓴다 | 다음 사이트 배포부터 수집이 켜진다 |
 
 **8번을 안 하면 아무것도 안 쌓인다.** 화면은 `COLLECT_URL` 이 비면 수집을 통째로 끈다 —
 `FIREBASE_CONFIG.apiKey` 가 없으면 로그인이 꺼지는 것과 같은 규칙이다. **1번을 안 했으면 6번을 하지 않는다.**
