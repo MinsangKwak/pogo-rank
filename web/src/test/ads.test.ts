@@ -46,10 +46,16 @@ describe('시행일 문 — 약관이 말한 날 전에는 어느 모드든 off'
     expect(adsModeNow('placeholder', start, start)).toBe('placeholder');
     expect(adsModeNow('live', start - 1, start)).toBe('off');
   });
+  it('live 는 moncamp.kr 에서만 — pages.dev · 미리보기 · Vercel 주소에서는 off, 빈 자리(placeholder)는 주소를 안 본다', () => {
+    expect(adsModeNow('live', start, start, 'moncamp.kr')).toBe('live');
+    expect(adsModeNow('live', start, start, 'moncamp.pages.dev')).toBe('off');
+    expect(adsModeNow('live', start, start, 'www.moncamp.kr')).toBe('off');
+    expect(adsModeNow('placeholder', start, start, 'dev.moncamp.kr')).toBe('placeholder');
+  });
   it('첫 그림 전 스크립트도 같은 시각을 본다 — 시각 전이면 off 를 적고 끝낸다', () => {
     const layout = readFileSync('app/layout.tsx', 'utf8');
     expect(layout).toContain("ADS_START_MS !== null");
-    expect(layout).toContain("if(Date.now()<${ADS_START_MS}){d.dataset.ads='off';return;}");
+    expect(layout).toContain("if(Date.now()<${ADS_START_MS}${ADS_LIVE ? `||location.hostname!==${JSON.stringify(ADS_HOST)}` : ''}){d.dataset.ads='off';return;}");
   });
   it('AdSlots 는 시각을 얹은 모드(adsModeNow)로 판정하고, 비개인 광고만 요청한 뒤 스크립트를 한 번만 심는다', () => {
     const slots = readFileSync('src/components/AdSlots.tsx', 'utf8');

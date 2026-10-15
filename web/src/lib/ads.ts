@@ -78,9 +78,21 @@ export function adsStarted(now: number = Date.now(), start: number | null = ADS_
   return start !== null && now >= start;
 }
 
-/** 빌드 모드에 시작 시각을 얹는다 — 시작 전이면 off. 화면 안 판정과 첫 그림 전 스크립트가 같은 시각을 본다 */
-export function adsModeNow(mode: AdsMode = adsMode(), now: number = Date.now(), start: number | null = ADS_START_MS): AdsMode {
-  return adsStarted(now, start) ? mode : 'off';
+/**
+ * 실제 광고가 서는 주소 — AdSense 에 등록 · 승인된 사이트 하나. moncamp.pages.dev · 미리보기 · 남은 Vercel 주소에서는 live 를 off 로 본다.
+ * 승인 안 된 주소에서 광고 요청이 나가면 AdSense 정책 경고가 쌓이고, Vercel Hobby 는 광고가 붙은 판을 금지한다(docs/INFRA.md §8)
+ */
+export const ADS_HOST = 'moncamp.kr';
+
+/** 빌드 모드에 시작 시각 · 주소를 얹는다 — 시작 전이면 off, live 는 moncamp.kr 에서만. 화면 안 판정과 첫 그림 전 스크립트가 같은 것을 본다 */
+export function adsModeNow(
+  mode: AdsMode = adsMode(),
+  now: number = Date.now(),
+  start: number | null = ADS_START_MS,
+  host: string = typeof location === 'undefined' ? '' : location.hostname,
+): AdsMode {
+  if (!adsStarted(now, start)) return 'off';
+  return mode === 'live' && host !== ADS_HOST ? 'off' : mode;
 }
 
 /**
