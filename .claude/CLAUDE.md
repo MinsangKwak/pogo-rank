@@ -57,7 +57,7 @@ Storybook 검증은 공통 명암비 검사기를 사용합니다. 배포에서 
 
 ## 3-1. 팝업은 요약, 자세한 것은 상세 화면
 
-팝업은 요약, 자세한 것은 도감 화면의 자세한 팝업입니다. 새 정보를 더할 때 어느 쪽에 둘지 먼저 정합니다.
+빠른 탐색에는 요약 팝업을, 자세한 비교에는 도감의 상세 팝업을 사용합니다. 새 정보를 추가하기 전에 사용자가 어떤 단계에서 그 정보를 읽는지 먼저 정합니다.
 
 | 자리 | 깊이 | 담는 것 |
 | --- | --- | --- |
@@ -119,7 +119,7 @@ Firestore 규칙을 mock UID로 렌더하지 않습니다. `scripts/render_rules
 
 `build.sh`는 데이터·이미지를 생성하며 현재 웹 화면은 `web`에서 별도로 빌드합니다. 데이터 빌드가 변경한 `snapshot/`은 diff를 확인하여 의도하지 않은 생성 변경만 제외합니다. 다른 작업자의 변경을 일괄 되돌리지 않습니다.
 
-운영 배포는 `dev → main PR → deploy` 흐름입니다. 운영 웹은 2026-10-15부터 Cloudflare Pages이며 `deploy-pages.yml`이 처리합니다(dev 미리보기는 Vercel `dev-pipeline.yml`). `deploy-web.yml`(Vercel 운영)은 되돌리기용으로 손으로만 돌립니다. 도메인 전환은 `cutover-pages.yml`의 status·attach·rollback 절차를 따릅니다([INFRA 10장](../docs/INFRA.md#pages)). 사용자 요청이 dev까지만이면 거기서 종료합니다.
+운영 배포는 `dev → main PR → deploy` 흐름입니다. 운영 웹은 2026-10-15부터 Cloudflare Pages이며 `deploy-pages.yml`이 처리합니다(dev 미리보기는 Vercel `dev-pipeline.yml`). `deploy-web.yml`(Vercel 운영)은 되돌리기용으로 수동으로만 실행합니다. 도메인 전환은 `cutover-pages.yml`의 status·attach·rollback 절차를 따릅니다([INFRA 10장](../docs/INFRA.md#pages)). 사용자 요청이 dev까지만이면 거기서 종료합니다.
 
 ## 8. 문장·코드·간격
 
