@@ -96,7 +96,9 @@ html body #root .ad-slot__notice { margin: 0; color: var(--muted); text-align: c
 html body #root .ad-slot--live:is(.ad-slot--left, .ad-slot--right) { position: absolute; }
 @media (max-width: 999px) {
   html body #root .ad-slot--live.ad-slot--bottom {
-    position: relative; z-index: 0; margin: 3.2rem auto; padding: 1.6rem;
+    /* 좌우 여백 0 — 320px 단위가 폭 320 ~ 351px 휴대폰에서도 줄지 않고 다 들어간다 (Codex, PR #381) */
+    position: relative; z-index: 0; margin: 3.2rem auto; padding: 1.6rem 0;
     background: none; backdrop-filter: none;
   }
+  html body #root .ad-slot--live.ad-slot--bottom .ad-slot__box { max-width: none; }
 }
