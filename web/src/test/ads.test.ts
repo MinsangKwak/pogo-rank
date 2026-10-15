@@ -77,6 +77,9 @@ describe('시행일 문 — 약관이 말한 날 전에는 어느 모드든 off'
   it('AdSlots 는 시각을 얹은 모드(adsModeNow)로 판정하고, 비개인 광고만 요청한 뒤 스크립트를 한 번만 심는다', () => {
     const slots = readFileSync('src/components/AdSlots.tsx', 'utf8');
     expect(slots).toContain("preview ? 'placeholder' : adsModeNow()");
+    // 시작 시각 전에 연 탭도 그 시각에 다시 그린다 (Codex, PR #381)
+    expect(slots).toContain('ADS_START_MS - Date.now()');
+    expect(slots).toContain('window.setTimeout(() => wake((n) => n + 1), wait + 50)');
     expect(slots).toContain('queue.requestNonPersonalizedAds = 1');
     expect(slots).toContain("document.querySelector('script[data-moncamp-ads]')");
   });
