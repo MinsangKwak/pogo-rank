@@ -6,7 +6,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { collectView, collectMonView, configureCollect, resetCollect, flushCollect } from '../lib/collect';
-import { PRIVACY_VER, VIEW_FROM, MON_VIEW_FROM } from '../lib/legalMeta';
+import { ADS_FROM, PRIVACY_VER, VIEW_FROM, MON_VIEW_FROM } from '../lib/legalMeta';
 
 const read = (path: string) => readFileSync(new URL(path, import.meta.url), 'utf8');
 const [, m, d] = VIEW_FROM.split('-').map(Number);
@@ -25,8 +25,8 @@ describe('시행일 한 벌', () => {
     expect(legal).toContain(`${VIEW_FROM}부터 서비스에서 연 화면의 이름`);
     expect(legal).toContain(`${MON_VIEW_FROM}부터는 상세 팝업에서 본 포켓몬의 도감 번호`);
     expect(legal).not.toContain('2026-10-02');
-    // 방침 판은 마지막 개정(상세 번호)의 날이다 — lib/terms.ts 가 이 값으로 다시 묻는다
-    expect(PRIVACY_VER).toBe(MON_VIEW_FROM);
+    // 방침 판은 마지막 개정(상세 번호, 광고 시행일이 정해지면 그 날)의 날이다 — lib/terms.ts 가 이 값으로 다시 묻는다
+    expect(PRIVACY_VER).toBe(ADS_FROM ?? MON_VIEW_FROM);
   });
 
   // 개정일 묶음을 찾는다 — 처음엔 맨 위였지만 v5.3.0 부터 그 위에 새 판이 선다. 정정이 지워지지 않았는지가 보는 것이다

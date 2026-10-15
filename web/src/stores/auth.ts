@@ -39,6 +39,16 @@ function storedUser(): boolean {
   try { return localStorage.getItem(TRACE_KEY) === '1'; } catch { return false; }
 }
 
+/** 지금 이 기기에 로그인 자취가 있는가 — 다른 탭에서 로그인하면 이 탭의 상태는 anon 그대로지만 자취는 바뀐다 (광고 자리가 본다) */
+export const signInTrace = storedUser;
+
+/** 자취가 **다른 탭에서** 바뀌면 알린다 — storage 이벤트는 다른 탭의 변경에만 온다 */
+export function onSignInTrace(listener: () => void): () => void {
+  const onStorage = (event: StorageEvent) => { if (event.key === null || event.key === TRACE_KEY) listener(); };
+  window.addEventListener('storage', onStorage);
+  return () => window.removeEventListener('storage', onStorage);
+}
+
 export interface AuthUser { uid: string; email: string; displayName: string; photoURL: string }
 
 interface AuthState {

@@ -222,6 +222,12 @@ export const I18N_PATTERNS = [
 // 영어로 보는 사람이 자기 지역 일정으로 오해하면 실제로 이벤트를 놓친다
 
 export const I18N_EN = {
+  // 2026-10-14 광고 자리 (components/AdSlots.tsx)
+  '광고': 'Ad',
+  '광고 자리예요 · 준비 중': 'Ad space · coming soon',
+  // 2026-10-15 광고 자리 새 디자인(PR #369) — 자리 이름 · 휴대폰 바닥의 로그인 안내
+  '광고 영역': 'Ad space',
+  '로그인하면 광고 없이 이용할 수 있어요.': 'Sign in to use the site without ads.',
   "리스트로 보기": "List view",
   "그리드로 보기": "Grid view",
   "이름 · 영문명 · 도감번호로 찾기": "Search by name or Pok\u00e9dex number",
