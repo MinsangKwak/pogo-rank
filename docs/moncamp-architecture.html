@@ -1,0 +1,206 @@
+<!doctype html><html lang="ko"><head><meta charset="utf-8"><title>moncamp 서비스 구성도</title>
+<!-- 원본은 이 html 이다. 고친 뒤 node scripts/bake_html.mjs docs/moncamp-architecture.html 로 png 를 다시 굽는다 -->
+<style>
+  :root{
+    --bg:#fff8f2; --fg:#0a0a0f; --muted:#64647a; --line:#e5e5eb; --surface:#fff; --line2:#d4d4dc;
+    --brand:#d63024; --brand2:#b3231b; --point:#2f6fd0; --caution:#d97706; --good:#0d9488; --off:#9b9bb0;
+    --cf:#f38020; --cfbg:#fff4ea; --gcp:#2f6fd0; --gcpbg:#eef4ff; --db:#0d9488; --dbbg:#eafaf7; --vc:#0a0a0f; --vcbg:#f4f4f6;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{width:1600px;background:var(--bg);color:var(--fg);
+    font-family:"WenQuanYi Zen Hei","Noto Sans CJK KR",sans-serif;padding:44px 48px 40px;-webkit-font-smoothing:antialiased}
+  .head{display:flex;align-items:flex-end;gap:18px;border-bottom:4px solid var(--brand);padding-bottom:16px;margin-bottom:26px}
+  .logo{width:46px;height:46px;border:4px solid var(--fg);background:var(--brand);position:relative}
+  .logo::after{content:"";position:absolute;left:-4px;right:-4px;top:17px;height:4px;background:var(--fg)}
+  h1{font-size:40px;letter-spacing:-1px}
+  .ver{font-size:20px;font-weight:700;color:#fff;background:var(--brand);padding:4px 12px}
+  .ver.dim{background:var(--fg)}
+  .when{margin-left:auto;font-size:17px;color:var(--muted);text-align:right;line-height:1.5}
+  .card{background:var(--surface);border:4px solid var(--fg);box-shadow:8px 8px 0 0 rgba(10,10,15,.14);padding:20px 22px;margin-bottom:26px}
+  .card > h2{font-size:23px;margin-bottom:4px}
+  .card > .sub{font-size:15px;color:var(--muted);margin-bottom:16px;line-height:1.5}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:26px}
+  .grid .card{margin-bottom:0}
+
+  /* 요청 흐름 — 열 다섯: 누가 · 화살 · 가장자리 · 화살 · 응답 · 화살 · 뒤 */
+  .lanes{display:grid;grid-template-columns:190px 44px 300px 44px 340px 44px 1fr;row-gap:16px;align-items:center}
+  .colh{font-size:13px;font-weight:700;color:var(--muted);letter-spacing:.5px;padding-bottom:4px;border-bottom:2px dashed var(--line2)}
+  .n{border:3px solid var(--fg);background:#fff;padding:9px 12px;font-size:15px;line-height:1.45}
+  .n b{font-size:16px;display:block}
+  .n .p{font-size:13px;color:var(--muted);display:block}
+  .n code{font-family:"DejaVu Sans Mono",monospace;font-size:13px;background:#f4f1ee;padding:0 4px}
+  .n.cf{border-color:var(--cf);background:var(--cfbg)}
+  .n.gcp{border-color:var(--gcp);background:var(--gcpbg)}
+  .n.db{border-color:var(--db);background:var(--dbbg)}
+  .n.vc{border-color:var(--vc);background:var(--vcbg)}
+  .n.ext{border-style:dashed;border-color:var(--line2);background:#fff}
+  .n.wait{border-color:var(--caution);background:#fffaf0}
+  .arr{text-align:center;font-size:22px;font-weight:700;color:var(--brand)}
+  .stack{display:flex;flex-direction:column;gap:8px}
+  .tag{display:inline-block;font-size:12px;font-weight:700;color:#fff;padding:1px 7px;margin-right:6px;vertical-align:2px}
+  .tag.cf{background:var(--cf)} .tag.gcp{background:var(--gcp)} .tag.db{background:var(--db)} .tag.vc{background:var(--vc)} .tag.gh{background:#57606a}
+  .legend{display:flex;gap:18px;font-size:14px;color:var(--muted);margin-top:16px;flex-wrap:wrap;align-items:center}
+
+  .flow{display:flex;align-items:center;gap:9px;flex-wrap:wrap;font-size:15px}
+  .b{border:3px solid var(--fg);padding:6px 11px;background:#fff;font-weight:700;white-space:nowrap}
+  .b.dim{border-color:var(--line2);color:var(--muted);font-weight:400}
+  .b.hot{border-color:var(--brand);color:var(--brand)}
+  .ar{color:var(--brand);font-weight:700;font-size:17px}
+  .kv{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;font-size:15px;line-height:1.55}
+  .kv b{white-space:nowrap;color:var(--brand2)}
+  .kv code{font-family:"DejaVu Sans Mono",monospace;font-size:13px}
+  table{width:100%;border-collapse:collapse;font-size:15px}
+  th,td{border:2px solid var(--line2);padding:7px 9px;text-align:left;vertical-align:top;line-height:1.45}
+  th{background:#f4f1ee;font-size:14px;font-weight:700}
+  td.w{white-space:nowrap;font-weight:700}
+  td code{font-family:"DejaVu Sans Mono",monospace;font-size:13px}
+  .note{margin-top:13px;border-left:5px solid var(--caution);background:#fffaf0;padding:9px 12px;font-size:14px;line-height:1.6}
+  .gap{height:14px}
+  .foot{margin-top:4px;font-size:14px;color:var(--muted);border-top:2px solid var(--line2);padding-top:12px;line-height:1.6}
+  .foot code{font-family:"DejaVu Sans Mono",monospace;font-size:13px}
+</style></head><body>
+
+<div class="head">
+  <div class="logo"></div>
+  <h1>moncamp 서비스 구성도</h1>
+  <span class="ver">운영 v5.9.16</span>
+  <span class="ver dim">dev v5.10.2</span>
+  <div class="when">2026-10-15 기준 — 운영 웹 Cloudflare Pages 전환 직후<br>Next.js 정적 내보내기 · Fastify · PostgreSQL</div>
+</div>
+
+<div class="card">
+  <h2>요청이 흐르는 길</h2>
+  <p class="sub">화면과 게임 데이터는 <b>빌드 때 구운 정적 파일</b>이라 서버 없이 Pages 가 바로 응답합니다. 로그인 · 즐겨찾기 · 통계처럼 사람마다 다른 것만 API 를 탑니다 — API 가 멈춰도 도감 · 순위 · 일정은 보입니다.</p>
+
+  <div class="lanes">
+    <div class="colh">누가</div><div></div>
+    <div class="colh">Cloudflare 가장자리</div><div></div>
+    <div class="colh">응답하는 곳</div><div></div>
+    <div class="colh">뒤에서 받치는 곳</div>
+
+    <div class="n"><b>방문자 브라우저</b><span class="p">화면 · 도감 · 순위 보기</span></div>
+    <div class="arr">→</div>
+    <div class="n cf"><b><span class="tag cf">CF</span>moncamp.kr</b><span class="p">DNS · 프록시 · 영역 규칙<br>www → apex 308 (경로 · 쿼리 유지)</span></div>
+    <div class="arr">→</div>
+    <div class="n cf"><b><span class="tag cf">CF</span>Pages <code>moncamp</code></b><span class="p">정적 HTML · 데이터 JSON · 이미지<br><code>_headers</code>(보안 헤더) · <code>_redirects</code>(옛 주소 308)</span></div>
+    <div></div>
+    <div class="n ext"><b>정적 파일뿐</b><span class="p">서버 계산 없음 — 매일 밤 새로 구워 올린다</span></div>
+
+    <div class="n"><b>로그인한 사람</b><span class="p">즐겨찾기 · 트레이너 코드 · 관리자 통계</span></div>
+    <div class="arr">→</div>
+    <div class="n cf"><b><span class="tag cf">CF</span>api.moncamp.kr · Worker</b><span class="p"><code>infra/api-proxy</code> — 같은 사이트 쿠키로 로그인 유지<br>접속 IP 덮어쓰기(저장 안 함) · 나라 코드 전달</span></div>
+    <div class="arr">→</div>
+    <div class="n gcp"><b><span class="tag gcp">GCP</span>Cloud Run · Fastify (서울)</b><span class="p">인증 · 권한 · 즐겨찾기 · 트레이너 코드<br>검색 · 페이지뷰 자체 수집 · '많이 보는 포켓몬'</span></div>
+    <div class="arr">→</div>
+    <div class="stack">
+      <div class="n db"><b><span class="tag db">DB</span>Neon PostgreSQL</b><span class="p">계정 · 세션 · 즐겨찾기 · 통계 집계</span></div>
+      <div class="n ext"><b>Google OAuth · GA4 Data API</b><span class="p">로그인 · 관리자 통계의 방문자 수</span></div>
+    </div>
+
+    <div class="n"><b>만드는 사람</b><span class="p">미리보기 · 검토</span></div>
+    <div class="arr">→</div>
+    <div class="n vc"><b><span class="tag vc">VC</span>dev.moncamp.kr</b><span class="p">DNS 는 Cloudflare</span></div>
+    <div class="arr">→</div>
+    <div class="n vc"><b><span class="tag vc">VC</span>Vercel dev 프로젝트</b><span class="p">dev 가지 미리보기<br>검색 차단 · 통계 없음</span></div>
+    <div></div>
+    <div class="n ext"><b>preview.moncamp.pages.dev</b><span class="p">Pages 미리보기 가지 · noindex · GA 없음</span></div>
+
+    <div class="n"><b>브라우저가 직접</b><span class="p">우리 서버를 거치지 않음</span></div>
+    <div class="arr">→</div>
+    <div class="n ext"><b>GA4 (gtag)</b><span class="p">동의 거부(<code>pogo_consent=denied</code>)면 안 보냄</span></div>
+    <div></div>
+    <div class="n wait"><b>AdSense — 승인 대기</b><span class="p">자리는 숨김. 승인 당일 moncamp.kr 에서만 켬<br>비개인화 광고 · 화면에 붙는 광고 없음</span></div>
+    <div></div>
+    <div class="n ext"><b>ads.txt</b><span class="p">Pages 가 moncamp.kr/ads.txt 로 응답</span></div>
+  </div>
+
+  <div class="legend">
+    <span><span class="tag cf">CF</span>Cloudflare</span>
+    <span><span class="tag gcp">GCP</span>Google Cloud</span>
+    <span><span class="tag db">DB</span>Neon</span>
+    <span><span class="tag vc">VC</span>Vercel (dev 만)</span>
+    <span>점선 = 우리가 운영하지 않는 외부 · 주황 = 기다리는 중</span>
+  </div>
+</div>
+
+<div class="grid">
+
+  <div class="card">
+    <h2>만들고 내보내는 길</h2>
+    <p class="sub">게임 자료는 GitHub Actions 가 모아 계산하고, 화면은 그 산출물을 받아 정적으로 굽습니다.</p>
+
+    <div class="flow">
+      <span class="b dim">원본</span><span class="ar">→</span>
+      <span class="b"><span class="tag gh">GH</span>Python 계산</span><span class="ar">→</span>
+      <span class="b">JSON · 이미지</span><span class="ar">→</span>
+      <span class="b">Next.js 빌드</span><span class="ar">→</span>
+      <span class="b hot">Pages</span>
+    </div>
+    <div class="gap"></div>
+    <div class="kv">
+      <b>원본</b><span>PokeMiners 게임마스터 · PvPoke · PokeAPI(한국어 이름) · ScrapedDuck/LeekDuck(일정) · 공식 한국 발표</span>
+      <b>데이터</b><span><code>backend/</code> · <code>scripts/build.sh</code> — 원본 검증, 빠지면 정상본으로 대체하거나 멈춤</span>
+      <b>화면</b><span><code>web/</code> Next.js — <code>BUILD_TARGET=static</code> → <code>out/</code></span>
+      <b>API</b><span><code>server/</code> Fastify → <code>deploy-server.yml</code> → Cloud Run</span>
+      <b>판 번호</b><span><code>content/version.json</code> 한 곳</span>
+    </div>
+    <div class="gap"></div>
+    <div class="flow">
+      <span class="b">dev</span><span class="ar">→</span>
+      <span class="b dim">PR</span><span class="ar">→</span>
+      <span class="b">main</span><span class="ar">→</span>
+      <span class="b dim">PR</span><span class="ar">→</span>
+      <span class="b">deploy</span><span class="ar">→</span>
+      <span class="b hot">moncamp.kr</span>
+    </div>
+    <div class="note">dev 가지는 dev.moncamp.kr(Vercel)로, deploy 가지는 moncamp.kr(Pages)로 나갑니다. 새 디자인과 v5.10.x 는 아직 dev 에만 있습니다.</div>
+  </div>
+
+  <div class="card">
+    <h2>매일 저절로 도는 일 (KST)</h2>
+    <p class="sub">사람 손 없이 도는 GitHub Actions 일정입니다. 데이터 빌드와 겹치지 않게 시각을 나눴습니다.</p>
+    <table>
+      <tr><th>시각</th><th>일</th><th>워크플로</th></tr>
+      <tr><td class="w">00:30</td><td>dev 미리보기 다시 굽기</td><td><code>deploy-dev.yml</code></td></tr>
+      <tr><td class="w">00:40</td><td><b>운영 데이터 · 화면 다시 굽고 Pages 배포</b> → 배포 뒤 검사</td><td><code>deploy-pages.yml</code></td></tr>
+      <tr><td class="w">01:30</td><td>통계 일별 집계 · 원본 파기 · 백업 점검</td><td><code>server-rollup.yml</code></td></tr>
+      <tr><td class="w">06:00</td><td>게임 업데이트 후보 수집</td><td><code>collect-game-updates.yml</code></td></tr>
+      <tr><td class="w">10:00</td><td>운영 스모크 (moncamp.kr 실제 응답)</td><td><code>prod-smoke.yml</code></td></tr>
+      <tr><td class="w">월 01:00</td><td>이전 Firestore 백업 (복구용)</td><td><code>backup-firestore.yml</code></td></tr>
+    </table>
+    <div class="note">PR 마다 커밋 제목 검사가 돌고, <code>web-test</code> · <code>server-test</code> 는 해당 폴더가 바뀐 PR 에서만 돕니다. 시크릿 모양 검사는 손 실행입니다.</div>
+  </div>
+
+  <div class="card">
+    <h2>지키는 규칙</h2>
+    <p class="sub">Pages 로 옮기며 프록시를 켜서 Cloudflare 영역 규칙이 다시 걸립니다.</p>
+    <table>
+      <tr><th>자리</th><th>규칙</th></tr>
+      <tr><td class="w">요청 제한</td><td><code>burst-guard</code> — 같은 IP 10초 200회 넘으면 막음</td></tr>
+      <tr><td class="w">캐시</td><td><code>immutable-assets</code>(/assets · /sprites · /sprites-anim 1년) · <code>data-json</code>(/data/*?v= 1년). /_next/static 1년은 Pages <code>_headers</code></td></tr>
+      <tr><td class="w">헤더</td><td><code>security-headers</code> + Pages <code>_headers</code> 보안 헤더 다섯</td></tr>
+      <tr><td class="w">끈 것</td><td>Email Obfuscation · Rocket Loader — Cloudflare 가 HTML 을 고쳐 써서 화면이 깨질 수 있어</td></tr>
+      <tr><td class="w">API</td><td>허용 Origin · 스키마 검사 · 분당 한도 · JWT 역할 검사 · IP 저장 안 함</td></tr>
+    </table>
+  </div>
+
+  <div class="card">
+    <h2>되돌리기용으로만 남긴 것</h2>
+    <p class="sub">평소엔 아무것도 받지 않습니다. 문제가 생기면 한 번에 되돌릴 수 있게 둡니다.</p>
+    <div class="kv">
+      <b>Vercel 운영</b><span><code>deploy-web.yml</code> 손 실행만 — 광고 코드가 든 판을 Hobby 에 올리지 않기 위해</span>
+      <b>전환 · 복구</b><span><code>cutover-pages.yml</code> — <code>status</code>(읽기) · <code>attach</code> · <code>rollback</code>(Vercel A · CNAME 복구)</span>
+      <b>GitHub Pages</b><span>v4 이전 앱 — <code>deploy.yml</code> 이 deploy 가지를 계속 굽는다</span>
+      <b>Firebase</b><span>Firestore 이전 사용자 데이터 · 규칙 — Neon 으로 옮긴 뒤 주 1회 백업만</span>
+    </div>
+    <div class="note">Vercel · GitHub Pages · Firebase 자원 정리는 복구 기간이 끝난 뒤 따로 합니다.</div>
+  </div>
+
+</div>
+
+<div class="foot">
+  이 그림은 저장소와 실제 응답을 대조해 그렸습니다 — 근거는 <code>docs/INFRA.md</code>(10장 Pages) · <code>.github/workflows/</code> · <code>infra/api-proxy/worker.js</code> · <code>web/src/lib/hosting.ts</code> · <code>scripts/pages_prod.py</code> 입니다.<br>
+  이전 v4 구조는 <code>docs/moncamp-structure.png</code>(2026-09-18) 에 남아 있습니다.
+</div>
+
+</body></html>

@@ -90,6 +90,9 @@ export const useGamedaySoft = bundleSoftHook<GamedayBundle>('gameday');
 export const useDexSoft = bundleSoftHook<DexBundle>('dex');
 // 홈 배너의 거다이맥스 폼 그림만 여기서 찾는다 — 없어도 도감 번호로 그리므로 배너를 세우지 않는다
 export const useMaxSoft = bundleSoftHook<MaxBundle>('max');
+// 홈 '이번 주 보스' 카드의 추천 세 마리만 여기서 찾는다 — 오기 전엔 보스만 세우고 추천 줄은 비워 둔다 (lib/useBossBoard.ts)
+export const usePveSoft = bundleSoftHook<PveBundle>('pve');
+export const usePvpSoft = bundleSoftHook<PvpBundle>('pvp');
 export const useFavEvents = bundleHook<FavEventsBundle>('fav-events');
 export const useUpdates = bundleHook<UpdatesBundle>('updates');
 export const useMeta = bundleHook<MetaBundle>('meta');

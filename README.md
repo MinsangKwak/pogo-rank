@@ -3,9 +3,9 @@
 **포켓몬 GO에서 어떤 포켓몬을 잡고, 키우고, 배틀에 사용할지 돕는 사이드 프로젝트입니다.**
 게임 데이터와 일정, 배틀별 추천을 한곳에 모으고 계산 기준을 함께 제공합니다. 데이터 수집부터 웹 UI, 인증 API, 배포·운영까지 연결한 프로젝트입니다.
 
-[서비스](https://moncamp.kr/) · [개발 가이드](docs/DEVELOPMENT.md) · [변경 이력](docs/CHANGELOG.md)
+[서비스](https://moncamp.kr/) · [개발 미리보기](https://dev.moncamp.kr/) · [개발 가이드](docs/DEVELOPMENT.md) · [변경 이력](docs/CHANGELOG.md)
 
-> 문서 기준: 2026-10-10, **v5.9.16**. 현재 앱은 `web/`의 Next.js입니다. `frontend-v4/`는 이전 Vite 앱이며, 데이터 추출 도구와 Storybook에 계속 사용합니다.
+> 문서 기준: 2026-10-14, **v5.10.2**. 현재 앱은 `web/`의 Next.js입니다. `frontend-v4/`는 이전 Vite 앱이며, 데이터 추출 도구와 Storybook에 계속 사용합니다.
 
 ## 프로젝트 한눈에 보기
 
@@ -128,6 +128,20 @@ PvP 순위는 PvPoke, 게임 수치는 PokeMiners, 한국어 명칭은 PokeAPI, 
 | 변경 제안·보안·권리 | [기여 안내](.github/CONTRIBUTING.md) · [보안 정책](.github/SECURITY.md) · [저작물 고지](docs/NOTICE.md) |
 
 ## 최근 릴리스
+
+<details>
+<summary><b>2026-10-14</b> — 릴리스 1개 · <code>v5.10.2</code></summary>
+
+v5.10.2 는 달력 10/31 에 '샹델라 슈퍼 메가 레이드 데이'(14–17시 · 메가샹델라 첫 등장 · 메가레벨 슈퍼 맥스)를 공식 한국어 제목으로 세웁니다. 날짜만 알려졌던 자리를 10/13 공지로 채웠고, 게임 업데이트 게시판에도 같은 공지가 모였습니다. 주인 지시로 dev 까지만 반영했고 운영(main · deploy)은 보류 중입니다.
+
+</details>
+
+<details>
+<summary><b>2026-10-13</b> — 릴리스 2개 · <code>v5.10.0</code> · <code>v5.10.1</code></summary>
+
+v5.10.1 은 10/13 첫 등장한 그푸리와 그 진화형 공푸리를 도감에 출시된 종으로 표시합니다(`dex_released_extra.txt`). 두 판 모두 주인 지시로 dev 까지만 반영했고 운영(main · deploy)은 보류 중입니다. 수집 통계 분석(10월 상세 조회 상위 10 중 8 이 보스 자신)에 따른 개편 첫 두 가지입니다. 홈 배너 아래에 '이번 주 보스' 카드 줄(진행 중 · 7일 안의 맥스 · 레이드 보스, 남은 날 · 기간 · 추천 세 마리)이 서고, '지금 많이 보는 포켓몬' 줄에 이유 한 마디가 붙습니다. 포켓몬 상세 맨 위에는 그 종이 보스로 서는 기간이면 '상대할 때' 카드(추천 세 마리 · D-MAX 덱 짜기 / 솔플 계산기 단추, 도착하면 보스가 골라져 있음)가 섭니다. 추천 셈은 `lib/bossCounters.ts` 한 곳으로 모았습니다.
+
+</details>
 
 <details>
 <summary><b>2026-10-10</b> — 릴리스 2개 · <code>v5.9.15</code> · <code>v5.9.16</code></summary>

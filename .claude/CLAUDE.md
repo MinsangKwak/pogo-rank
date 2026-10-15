@@ -51,7 +51,7 @@ npm run storybook
 STORYBOOK_BASE=/storybook/ npm run build-storybook
 ```
 
-Storybook 배포 경로는 `/storybook/`입니다. 앱 서비스워커가 이 경로를 캐시하지 않도록 제외 목록과 `swscope` 검사를 유지합니다. Storybook 검증 서버는 쿼리스트링을 보존해야 하고, 스토리 ID·테마 URL 값은 ASCII를 사용합니다. 표시 이름은 한국어를 사용할 수 있습니다.
+개발 배포의 Storybook 경로는 `/storybook/`입니다. 앱 서비스워커가 이 경로를 캐시하지 않도록 제외 목록과 `swscope` 검사를 유지합니다. Storybook 검증 서버는 쿼리스트링을 보존해야 하고, 스토리 ID·테마 URL 값은 ASCII를 사용합니다. 표시 이름은 한국어를 사용할 수 있습니다.
 
 Storybook 검증은 공통 명암비 검사기를 사용합니다. 배포에서 Storybook만 실패한 경우의 비차단 정책은 워크플로 설정을 유지합니다.
 
@@ -105,7 +105,7 @@ Firestore 규칙을 mock UID로 렌더하지 않습니다. `scripts/render_rules
 
 ## 7. 버전과 배포
 
-서비스 버전의 원본은 **`content/version.json` 하나**입니다. `backend/build.py`와 데이터 추출기는 이를 읽습니다.
+서비스 버전의 원본은 **`content/version.json` 하나**입니다. `backend/build.py`와 데이터 추출기는 이를 읽습니다. dev의 `-dev` 접미사 규칙을 유지합니다.
 
 | 함께 확인할 문서 | 규칙 |
 | --- | --- |
@@ -119,7 +119,7 @@ Firestore 규칙을 mock UID로 렌더하지 않습니다. `scripts/render_rules
 
 `build.sh`는 데이터·이미지를 생성하며 현재 웹 화면은 `web`에서 별도로 빌드합니다. 데이터 빌드가 변경한 `snapshot/`은 diff를 확인하여 의도하지 않은 생성 변경만 제외합니다. 다른 작업자의 변경을 일괄 되돌리지 않습니다.
 
-운영 배포는 `dev → main PR → deploy` 흐름입니다. 운영 웹은 2026-10-15부터 Cloudflare Pages이며 `deploy-pages.yml`이 처리합니다(dev 미리보기는 Vercel `dev-pipeline.yml`). `deploy-web.yml`(Vercel 운영)은 되돌리기용으로 손으로만 돌립니다. 도메인 전환은 `cutover-pages.yml`의 status·attach·rollback 절차를 따릅니다([INFRA 10장](../docs/INFRA.md#pages)).
+운영 배포는 `dev → main PR → deploy` 흐름입니다. 운영 웹은 2026-10-15부터 Cloudflare Pages이며 `deploy-pages.yml`이 처리합니다(dev 미리보기는 Vercel `dev-pipeline.yml`). `deploy-web.yml`(Vercel 운영)은 되돌리기용으로 손으로만 돌립니다. 도메인 전환은 `cutover-pages.yml`의 status·attach·rollback 절차를 따릅니다([INFRA 10장](../docs/INFRA.md#pages)). 사용자 요청이 dev까지만이면 거기서 종료합니다.
 
 ## 8. 문장·코드·간격
 
