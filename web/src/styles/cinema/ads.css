@@ -25,6 +25,9 @@ html body #root .ad-slot__label {
   font: 700 1.2rem/1.5 Pretendard, sans-serif; letter-spacing: 0.04em; color: var(--muted);
 }
 html body #root .ad-slot__text { font: 400 1.2rem/1.5 Pretendard, sans-serif; text-align: center; }
+/* 실제 광고 — 단위가 자리 크기를 그대로 채운다. 점선 · 안쪽 여백 · 우리 '광고' 표시를 걷는다(광고 안에 Google 의 표시가 붙고, 단위를 덮거나 밀면 안 된다) */
+html body #root .ad-slot__box--live { padding: 0; gap: 0; border: 0; background: transparent; }
+html body #root .ad-slot__box--live .ad-slot__label { display: none; }
 
 /* ── 넓은 화면 — 양옆 세로 띠. 본문 폭(160rem)과 띠 둘이 같이 서야 하므로 1280px 부터.
    높이는 띠 바닥(8.8rem + 2.4rem + 60rem = 71.2rem)과 '맨 위로' 단추(바닥에서 6.4rem)가 겹치지 않는 76rem 부터 — 76rem 이면 단추가 띠의 오른쪽 아래 귀퉁이를 가렸다 (Codex, PR #364) ── */

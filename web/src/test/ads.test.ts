@@ -2,7 +2,7 @@
 // 광고 자리 — 누구에게 · 어느 모드로 보이는가 (lib/ads.ts). 주인 결정: 로그인한 사람에게는 광고가 없다
 import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
-import { AD_FREE_PATHS, AD_SLOT_SIZE, adFreeRoute, adsMode, adsTxtLine, adsVisible } from '../lib/ads';
+import { AD_FREE_PATHS, AD_SLOT_SIZE, adFreeRoute, adsClient, adsMode, adsModeNow, adsScriptSrc, adsSlotUnit, adsStarted, adsTxtLine, adsVisible } from '../lib/ads';
 import { ROUTES } from '../routes';
 
 describe('adsMode', () => {
@@ -17,6 +17,47 @@ describe('adsMode', () => {
 
 const auth = (status: 'anon' | 'loading' | 'pending' | 'ok', ready = true, recheckError = '', trace = false, consentDenied = false, adFree = false) =>
   ({ status, ready, recheckError, trace, consentDenied, adFree });
+
+describe('live 모드 (2026-10-15 — 승인 당일 켤 준비)', () => {
+  const units = { left: '1234567890', right: '2234567890', bottom: '3234567890' };
+  it('게시자 ID 와 단위 셋이 모두 꼴에 맞을 때만 live — 하나라도 없으면 off (빈 띠 · 본문만 비켜서는 일을 막는다)', () => {
+    expect(adsMode('live', 'ca-pub-6881629275458768')).toBe('off');
+    expect(adsMode('live', 'ca-pub-123')).toBe('off');
+    expect(adsClient('ca-pub-6881629275458768')).toBe('ca-pub-6881629275458768');
+    expect(adsClient('pub-6881629275458768')).toBeNull();
+  });
+  it('단위 ID 는 숫자만 — 꼴이 틀리면 그 자리는 안 선다', () => {
+    expect(adsSlotUnit('left', units)).toBe('1234567890');
+    expect(adsSlotUnit('bottom', { ...units, bottom: 'abc' })).toBeNull();
+    expect(adsSlotUnit('right', { left: units.left })).toBeNull();
+  });
+  it('스크립트 주소는 게시자 ID 를 붙인 AdSense 주소 하나', () => {
+    expect(adsScriptSrc('ca-pub-6881629275458768')).toBe('https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6881629275458768');
+  });
+});
+
+describe('시행일 문 — 약관이 말한 날 전에는 어느 모드든 off', () => {
+  const start = Date.parse('2026-10-20T00:00:00+09:00');
+  it('시행일이 없으면 영영 off, 있으면 한국 시간 0시부터 연다', () => {
+    expect(adsStarted(Date.now(), null)).toBe(false);
+    expect(adsStarted(start - 1, start)).toBe(false);
+    expect(adsStarted(start, start)).toBe(true);
+    expect(adsModeNow('placeholder', start - 1, start)).toBe('off');
+    expect(adsModeNow('placeholder', start, start)).toBe('placeholder');
+    expect(adsModeNow('live', start - 1, start)).toBe('off');
+  });
+  it('첫 그림 전 스크립트도 같은 시각을 본다 — 시각 전이면 off 를 적고 끝낸다', () => {
+    const layout = readFileSync('app/layout.tsx', 'utf8');
+    expect(layout).toContain("ADS_START_MS !== null");
+    expect(layout).toContain("if(Date.now()<${ADS_START_MS}){d.dataset.ads='off';return;}");
+  });
+  it('AdSlots 는 시각을 얹은 모드(adsModeNow)로 판정하고, 비개인 광고만 요청한 뒤 스크립트를 한 번만 심는다', () => {
+    const slots = readFileSync('src/components/AdSlots.tsx', 'utf8');
+    expect(slots).toContain("preview ? 'placeholder' : adsModeNow()");
+    expect(slots).toContain('queue.requestNonPersonalizedAds = 1');
+    expect(slots).toContain("document.querySelector('script[data-moncamp-ads]')");
+  });
+});
 
 describe('adsVisible', () => {
   it('켜진 모드에서 첫 확인이 끝난 뒤 로그인 전(anon)에게만 보인다', () => {

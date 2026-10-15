@@ -34,8 +34,12 @@
 // 약관은 '광고 없음', 방침은 '상업적 목적 없음' 이라 적혀 있어 광고를 붙이는 순간 둘 다 거짓말이 된다.
 // 조항은 screens/Legal.tsx 에 이미 있고 ADS_FROM 이 null 인 동안은 하나도 안 보인다. 시행일을 정하면 —
 //   · 약관 · 방침에 광고 조항이 서고 두 판(TERMS_VER · PRIVACY_VER)이 그 날로 올라 다음 로그인 때 다시 묻는다
-//   · src/test/adslegal.test.ts 가 그 날보다 7일 이상 앞선 패치노트 고지를 찾는다(방침 10번의 약속)
+//   · src/test/adslegal.test.ts 가 그 날(또는 그 전)의 패치노트 고지를 찾는다
 // 운영 빌드의 광고 모드(.env.production)는 이 값이 null 인 동안 off 여야 한다 — 같은 검사가 지킨다
+//
+// **2026-10-15 주인 결정 — 사전 고지 없이 AdSense 승인 당일에 켠다.** 처음엔 10/22 시행 · 7일 전 고지로 잡았다가 같은 날 바꿨다.
+// 승인 메일이 온 날 이 값에 그 날짜를 넣으면 약관 · 방침의 광고 조항과 '시행일에 알린다' 문장, 광고 자리(lib/ads.ts adsModeNow)가 함께 켜진다.
+// 그 전까지는 빌드 모드가 켜져 있어도 자리가 안 선다 — dev 에서 배치를 보려면 주소 끝에 ?adPreview=1
 /** 광고(Google AdSense) 조항 시행일 — null 이면 광고 조항이 없다(지금) */
 export const ADS_FROM: string | null = null;
 export const PRIVACY_VER = ADS_FROM ?? '2026-09-29';

@@ -2,7 +2,7 @@
 // 광고 조항 — 약관 · 방침 · 운영 광고 모드 · 패치노트 고지가 시행일 하나(ADS_FROM)로 같이 움직인다 (2026-10-14 수익화 전 점검)
 //
 // 지금은 ADS_FROM 이 null 이라 약관은 '광고 없음' 그대로, 운영 광고 모드는 off 여야 한다.
-// 시행일을 정하면 두 판이 그 날로 오르고, 그 날보다 7일 이상 앞선 패치노트 고지가 있어야 한다(방침 10번 · CLAUDE.md §5)
+// 시행일을 정하면 두 판이 그 날로 오르고, 그 날(또는 그 전)의 패치노트 고지가 있어야 한다 — 사전 고지 없이 승인 당일 시행(주인 결정 2026-10-15)
 import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { ADS_FROM, MON_VIEW_FROM, PRIVACY_VER, TERMS_VER } from '../lib/legalMeta';
@@ -10,7 +10,6 @@ import { ADS_FROM, MON_VIEW_FROM, PRIVACY_VER, TERMS_VER } from '../lib/legalMet
 const legal = readFileSync('src/screens/Legal.tsx', 'utf8');
 const envProd = readFileSync('.env.production', 'utf8');
 type Notes = { RELEASE_NOTES: { date: string; items: string[] }[] };
-const DAY = 24 * 60 * 60 * 1000;
 
 describe('국외 이전 고지 (지금부터)', () => {
   it('방문 통계(Google Analytics 4)가 미국(Google LLC)으로 간다고 적는다 — 표에만 있고 국외 이전 문단에 빠져 있었다', () => {
@@ -33,6 +32,11 @@ describe('광고 조항 — 시행일 하나로', () => {
     expect(legal).toContain("광고 스크립트도 불러오지 않습니다");
   });
 
+  it('시행일이 생기면 7일 전 고지 약속 대신 시행일에 알린다는 문장으로 바뀐다 — 약관 · 방침이 실제와 같아야 한다', () => {
+    expect(legal).toContain('이 방침을 개정하는 경우 시행일에 메뉴의 패치노트로 알립니다');
+    expect(legal).toContain('약관을 개정하면 시행일에 패치노트로 알리고');
+  });
+
   if (ADS_FROM === null) {
     it('시행일이 없으면 두 판은 지난 개정일 그대로, 운영 광고 모드는 off', () => {
       expect(TERMS_VER).toBe('2026-09-24');
@@ -45,7 +49,8 @@ describe('광고 조항 — 시행일 하나로', () => {
       expect(TERMS_VER).toBe(ADS_FROM);
       expect(PRIVACY_VER).toBe(ADS_FROM);
     });
-    it('시행일보다 7일 이상 앞선 패치노트에 광고 고지가 있다', async () => {
+    // 사전 고지 없이 승인 당일 시행 — 주인 결정(2026-10-15). 고지는 시행일 당일까지 패치노트에 있으면 된다
+    it('시행일(또는 그 전) 패치노트에 광고 고지가 있다', async () => {
       const { RELEASE_NOTES } = await import('../../../content/release-notes.mjs') as Notes;
       const from = Date.parse(`${ADS_FROM}T00:00:00+09:00`);
       const notice = RELEASE_NOTES.find((note) => {
@@ -53,9 +58,9 @@ describe('광고 조항 — 시행일 하나로', () => {
         // 날짜는 패치노트 꼴 셋 중 하나로 적는다 — '2026-11-01' · '11월 1일' · '11/1'
         const [, m, d] = ADS_FROM!.split('-').map(Number);
         const said = (item: string) => [ADS_FROM!, `${m}월 ${d}일`, `${m}/${d}`].some((one) => item.includes(one));
-        return from - day >= 7 * DAY && note.items.some((item) => item.includes('광고') && said(item));
+        return from - day >= 0 && note.items.some((item) => item.includes('광고') && said(item));
       });
-      expect(notice, `${ADS_FROM} 시행 7일 전 광고 고지가 패치노트에 없습니다`).toBeDefined();
+      expect(notice, `${ADS_FROM} 광고 시행 고지가 패치노트에 없습니다`).toBeDefined();
     });
   }
 });
