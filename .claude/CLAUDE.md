@@ -119,7 +119,7 @@ Firestore 규칙을 mock UID로 렌더하지 않습니다. `scripts/render_rules
 
 `build.sh`는 데이터·이미지를 생성하며 현재 웹 화면은 `web`에서 별도로 빌드합니다. 데이터 빌드가 변경한 `snapshot/`은 diff를 확인하여 의도하지 않은 생성 변경만 제외합니다. 다른 작업자의 변경을 일괄 되돌리지 않습니다.
 
-운영 배포는 `dev → main PR → deploy` 흐름입니다. v5 운영 웹은 Vercel이며 `deploy-web.yml`이 처리합니다. 도메인 전환은 `cutover-prod.yml`의 status·attach·rollback 절차를 따릅니다.
+운영 배포는 `dev → main PR → deploy` 흐름입니다. 운영 웹은 2026-10-15부터 Cloudflare Pages이며 `deploy-pages.yml`이 처리합니다(dev 미리보기는 Vercel `dev-pipeline.yml`). `deploy-web.yml`(Vercel 운영)은 되돌리기용으로 손으로만 돌립니다. 도메인 전환은 `cutover-pages.yml`의 status·attach·rollback 절차를 따릅니다([INFRA 10장](../docs/INFRA.md#pages)).
 
 ## 8. 문장·코드·간격
 
