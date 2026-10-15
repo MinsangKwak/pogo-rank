@@ -168,7 +168,7 @@
       <tr><td class="w">10:00</td><td>운영 스모크 (moncamp.kr 실제 응답)</td><td><code>prod-smoke.yml</code></td></tr>
       <tr><td class="w">월 01:00</td><td>이전 Firestore 백업 (복구용)</td><td><code>backup-firestore.yml</code></td></tr>
     </table>
-    <div class="note">PR 마다 <code>web-test</code> · <code>server-test</code> · 커밋 제목 · 시크릿 모양 검사가 돕니다.</div>
+    <div class="note">PR 마다 커밋 제목 검사가 돌고, <code>web-test</code> · <code>server-test</code> 는 해당 폴더가 바뀐 PR 에서만 돕니다. 시크릿 모양 검사는 손 실행입니다.</div>
   </div>
 
   <div class="card">
@@ -177,7 +177,7 @@
     <table>
       <tr><th>자리</th><th>규칙</th></tr>
       <tr><td class="w">요청 제한</td><td><code>burst-guard</code> — 같은 IP 10초 200회 넘으면 막음</td></tr>
-      <tr><td class="w">캐시</td><td><code>immutable-assets</code>(/_next/static 1년) · <code>data-json</code></td></tr>
+      <tr><td class="w">캐시</td><td><code>immutable-assets</code>(/assets · /sprites · /sprites-anim 1년) · <code>data-json</code>(/data/*?v= 1년). /_next/static 1년은 Pages <code>_headers</code></td></tr>
       <tr><td class="w">헤더</td><td><code>security-headers</code> + Pages <code>_headers</code> 보안 헤더 다섯</td></tr>
       <tr><td class="w">끈 것</td><td>Email Obfuscation · Rocket Loader — Cloudflare 가 HTML 을 고쳐 써서 화면이 깨질 수 있어</td></tr>
       <tr><td class="w">API</td><td>허용 Origin · 스키마 검사 · 분당 한도 · JWT 역할 검사 · IP 저장 안 함</td></tr>
