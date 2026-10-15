@@ -22,6 +22,14 @@ describe('국외 이전 고지 (지금부터)', () => {
   });
 });
 
+describe('처리위탁 — 운영 호스팅 (2026-10-15 Cloudflare Pages 전환)', () => {
+  it('화면 파일 전송은 Cloudflare 가 한다고 적고, 운영 호스팅으로 Vercel 을 적지 않는다 — 실제와 달라지면 방침이 거짓이 된다 (Codex, PR #379)', () => {
+    expect(legal).toContain("Cloudflare, Inc. — 웹 호스팅(Pages) · DNS · API 중계");
+    expect(legal).not.toContain('Vercel Inc. — 웹 호스팅');
+    expect(legal).toContain('2026-10-15 (웹 호스팅이 Vercel 에서 Cloudflare Pages 로 바뀌어 처리위탁 표를 바로잡음)');
+  });
+});
+
 describe('광고 조항 — 시행일 하나로', () => {
   it('조항은 Legal.tsx 에 써 두고 ADS_FROM 으로만 켠다 (약관 1항 · 방침 머리 · 2 · 3 · 4 · 7항)', () => {
     expect(legal).toContain('서비스는 무료이며, 광고나 유료 기능을 제공하지 않습니다');
