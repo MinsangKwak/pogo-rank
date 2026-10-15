@@ -123,6 +123,7 @@ PvP 순위는 PvPoke, 게임 수치는 PokeMiners, 한국어 명칭은 PokeAPI, 
 | 구조·계산·실행 방법 | [개발 가이드](docs/DEVELOPMENT.md) |
 | 인증·DB 설계 검토 | [인증](server/AUTH.md) · [스키마](server/SCHEMA.md) |
 | 배포·장애 대응 | [운영](docs/OPERATIONS.md) · [인프라](docs/INFRA.md) |
+| 광고 도입 절차(AdSense) | [광고](docs/ADS.md) |
 | 완료된 전환과 남은 과제 | [로드맵](docs/ROADMAP.md) · [v5 전환 기록](docs/V5-CUTOVER.md) |
 | 변경 제안·보안·권리 | [기여 안내](.github/CONTRIBUTING.md) · [보안 정책](.github/SECURITY.md) · [저작물 고지](docs/NOTICE.md) |
 

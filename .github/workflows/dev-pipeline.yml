@@ -32,6 +32,8 @@ jobs:
       # 환경변수를 .env 파일이 못 덮는다. 굽힌 뒤 robots 와 noindex 메타로 다시 확인한다
       NEXT_PUBLIC_CHANNEL: dev
       BUILD_CHANNEL: dev
+      # 광고 자리를 빈 상자로 세워 배치를 본다 — 운영(.env.production)은 off (web/src/lib/ads.ts)
+      NEXT_PUBLIC_ADS: placeholder
     steps:
       - name: 설정됐는지 본다
         id: ready

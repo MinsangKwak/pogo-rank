@@ -8,7 +8,8 @@
 // 모드는 빌드 때 박힌다 (NEXT_PUBLIC_ADS, web/.env.production · dev-pipeline.yml):
 //   off          — 자리 자체를 안 만든다. 운영 기본값 (약관이 아직 '광고 없음' 이라 운영은 끈 채 둔다)
 //   placeholder  — 자리만 잡고 '준비 중' 을 적는다. dev 에서 배치를 보는 용도
-// 실제 광고(Google AdSense)는 docs/ADS.md 의 절차를 밟은 뒤 모드 하나를 더해 붙인다
+//   live         — 실제 광고(Google AdSense). 게시자 ID 가 없으면 off 로 읽는다 (2026-10-15)
+// **어느 모드든 약관의 시행일(legalMeta ADS_FROM) 0시 전에는 off** — 주인 결정: AdSense 승인 당일 시행일을 넣고 그날부터 켠다(사전 고지 없음)
 //
 // **광고를 세우지 않는 화면이 있다** (AdSense '게시자 콘텐츠가 없는 화면' 정책, 2026-10-14 점검) — 약관 · 개인정보처리방침 · 설정과,
 // 로그인해야 열리는 화면(로그아웃한 사람에게는 잠금 카드뿐이다). 판정은 adFreeRoute 하나 — 화면 안 판정과 첫 그림 전 스크립트가 같이 쓴다
@@ -16,6 +17,7 @@
 'use strict';
 import type { AuthStatus } from '../stores/auth';
 import { ROUTES } from '../routes';
+import { ADS_FROM } from './legalMeta';
 
 /**
  * 판정에 쓰는 상태 — 로그인(stores/auth.ts) · 통계 동의(lib/consent.ts) · 지금 화면.
@@ -24,10 +26,13 @@ import { ROUTES } from '../routes';
  */
 export interface AdsAuth { status: AuthStatus; ready: boolean; recheckError: string; trace: boolean; consentDenied: boolean; adFree: boolean }
 
-export type AdsMode = 'off' | 'placeholder';
+export type AdsMode = 'off' | 'placeholder' | 'live';
 
 /** 자리 이름 — CSS 와 검사가 같은 글자를 쓴다 */
 export type AdSlotId = 'left' | 'right' | 'bottom';
+
+/** 세로 띠가 서는 화면 — styles/cinema/ads.css 의 미디어 조건과 같은 글자여야 한다 */
+export const ADS_RAIL_QUERY = '(min-width: 1280px) and (min-height: 760px)';
 
 /** 자리마다 비워 두는 크기(px). Google 표준 단위 — 넓은 화면 세로 띠 160×600, 휴대폰 바닥 띠 320×50 */
 export const AD_SLOT_SIZE: Readonly<Record<AdSlotId, { w: number; h: number }>> = {
@@ -36,9 +41,61 @@ export const AD_SLOT_SIZE: Readonly<Record<AdSlotId, { w: number; h: number }>> 
   bottom: { w: 320, h: 50 },
 };
 
-/** 빌드가 박은 모드. 모르는 글자는 off 로 읽는다 — 오타로 광고가 켜지지 않게 */
-export function adsMode(raw: string | undefined = process.env['NEXT_PUBLIC_ADS']): AdsMode {
-  return raw === 'placeholder' ? 'placeholder' : 'off';
+/** 빌드가 박은 모드. 모르는 글자는 off 로 읽는다 — 오타로 광고가 켜지지 않게. live 는 게시자 ID 와 단위 셋이 모두 꼴에 맞을 때만 */
+export function adsMode(raw: string | undefined = process.env['NEXT_PUBLIC_ADS'], client: string | undefined = process.env['NEXT_PUBLIC_ADSENSE_CLIENT']): AdsMode {
+  if (raw === 'placeholder') return 'placeholder';
+  // 단위가 하나라도 없으면 live 로 안 연다 — 자리 없이 본문만 비켜서거나(첫 그림 전 스크립트) 빈 띠가 서는 일을 막는다
+  if (raw === 'live' && adsClient(client) !== null && (['left', 'right', 'bottom'] as const).every((id) => adsSlotUnit(id) !== null)) return 'live';
+  return 'off';
+}
+
+/** 게시자 ID(ca-pub-16자리) — 꼴이 틀리면 null */
+export function adsClient(client: string | undefined = process.env['NEXT_PUBLIC_ADSENSE_CLIENT']): string | null {
+  return /^ca-pub-\d{16}$/.test(client ?? '') ? client! : null;
+}
+
+/** 자리마다의 광고 단위 ID(숫자) — AdSense 승인 뒤 만든 단위. 없거나 꼴이 틀리면 null 이고 그 자리는 live 에서 안 선다 */
+export function adsSlotUnit(id: AdSlotId, env: Readonly<Record<string, string | undefined>> = {
+  left: process.env['NEXT_PUBLIC_ADSENSE_SLOT_LEFT'],
+  right: process.env['NEXT_PUBLIC_ADSENSE_SLOT_RIGHT'],
+  bottom: process.env['NEXT_PUBLIC_ADSENSE_SLOT_BOTTOM'],
+}): string | null {
+  const unit = env[id];
+  return unit && /^\d{6,12}$/.test(unit) ? unit : null;
+}
+
+/** AdSense 스크립트 주소 — 자리가 보일 때만 한 번 심는다(components/AdSlots.tsx) */
+export function adsScriptSrc(client: string): string {
+  return `https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${encodeURIComponent(client)}`;
+}
+
+/**
+ * 광고 시작 시각(ms) — 약관의 시행일(ADS_FROM) 한국 시간 0시. 시행일이 없으면 null(영영 안 연다).
+ * **약관이 말한 날보다 먼저 자리가 서면 안 된다** — 빌드 모드가 켜져 있어도 이 시각 전에는 off 로 본다 (2026-10-15 주인 결정: 10/22 까지 가려 둔다).
+ * 정적 빌드라 날짜는 빌드 때가 아니라 보는 사람의 시계로 가른다 — 10/22 0시에 다시 배포하지 않아도 저절로 열린다
+ */
+export const ADS_START_MS: number | null = ADS_FROM ? Date.parse(`${ADS_FROM}T00:00:00+09:00`) : null;
+
+/** 지금 광고를 세울 수 있는 때인가 */
+export function adsStarted(now: number = Date.now(), start: number | null = ADS_START_MS): boolean {
+  return start !== null && now >= start;
+}
+
+/**
+ * 실제 광고가 서는 주소 — AdSense 에 등록 · 승인된 사이트 하나. moncamp.pages.dev · 미리보기 · 남은 Vercel 주소에서는 live 를 off 로 본다.
+ * 승인 안 된 주소에서 광고 요청이 나가면 AdSense 정책 경고가 쌓이고, Vercel Hobby 는 광고가 붙은 판을 금지한다(docs/INFRA.md §8)
+ */
+export const ADS_HOST = 'moncamp.kr';
+
+/** 빌드 모드에 시작 시각 · 주소를 얹는다 — 시작 전이면 off, live 는 moncamp.kr 에서만. 화면 안 판정과 첫 그림 전 스크립트가 같은 것을 본다 */
+export function adsModeNow(
+  mode: AdsMode = adsMode(),
+  now: number = Date.now(),
+  start: number | null = ADS_START_MS,
+  host: string = typeof location === 'undefined' ? '' : location.hostname,
+): AdsMode {
+  if (!adsStarted(now, start)) return 'off';
+  return mode === 'live' && host !== ADS_HOST ? 'off' : mode;
 }
 
 /**
