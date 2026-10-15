@@ -16,7 +16,7 @@
 | 주요 기능 | 도감, 이벤트·레이드·알 일정, D-MAX·PvE·PvP 순위, CP·개체값 계산, 팀 구성, 즐겨찾기, 검색식 만들기 |
 | 웹 | Next.js App Router · React · TypeScript · TanStack Query · Zustand |
 | 서버 | Fastify · TypeScript · Google OAuth · JWT · PostgreSQL |
-| 데이터·배포 | Python 파이프라인 · GitHub Actions · Vercel · Cloud Run · Neon |
+| 데이터·배포 | Python 파이프라인 · GitHub Actions · Cloudflare Pages(운영) · Vercel(dev) · Cloud Run · Neon |
 | 이용 조건 | 비공식 팬 프로젝트. 소스 열람·학습과 기여를 허용하며, 포크·재배포는 제한합니다. [LICENSE](LICENSE) 참고 |
 
 ## 검토할 만한 구현
@@ -52,7 +52,7 @@
 flowchart TD
     Sources[외부 게임 데이터와 수동 보정] --> Pipeline[Python 데이터 파이프라인]
     Pipeline --> Data[검증된 JSON과 이미지]
-    Data --> Next[Next.js 빌드 · Vercel]
+    Data --> Next[Next.js 정적 빌드 · Cloudflare Pages]
     Next --> Browser[브라우저]
     Browser --> API[Fastify API · Cloud Run]
     API --> Google[Google OAuth]
