@@ -10,7 +10,8 @@
     "typecheck": "tsc --noEmit",
     "test": "npm run typecheck && vitest run",
     "test:watch": "vitest",
-    "prepare-assets": "node scripts/copy-assets.mjs"
+    "prepare-assets": "node scripts/copy-assets.mjs",
+    "build:static": "BUILD_TARGET=static next build && node scripts/static-finish.mjs"
   },
   "dependencies": {
     "@tanstack/react-query": "^5.62.0",
