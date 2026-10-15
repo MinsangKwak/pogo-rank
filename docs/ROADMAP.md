@@ -22,7 +22,7 @@
 | 인증·권한 | OAuth, JWT, 리프레시 회전, 역할과 beta 분리 | [인증](../server/AUTH.md) |
 | 도메인 API | 즐겨찾기·트레이너·가입 승인 처리 | [도메인 라우트](../server/src/routes/domain.ts) |
 | 웹 전환 | Next.js 상세 HTML, 기존 주소 호환, 앱 내 이동 | [현재 개발 가이드](DEVELOPMENT.md) |
-| 배포 구성 | dev·운영 Vercel 배포와 도메인 전환 절차 | [운영 가이드](OPERATIONS.md) |
+| 배포 구성 | dev Vercel · 운영 Cloudflare Pages 배포와 도메인 전환 절차 | [운영 가이드](OPERATIONS.md) · [INFRA 10장](INFRA.md#pages) |
 | 통계 | 검색·페이지뷰 수집, 루트 관리자 통계 화면 | [통계 라우트](../server/src/routes/stats.ts) |
 
 v5.0.0 전환은 [변경 이력](CHANGELOG.md)에 기록되어 있습니다. 이 표는 저장소의 구현·릴리스 기록을 설명하며 클라우드 콘솔의 현재 설정을 실시간 확인한 결과는 아닙니다.
