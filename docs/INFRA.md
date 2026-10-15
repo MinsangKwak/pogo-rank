@@ -6,6 +6,8 @@
 
 ## 구성과 책임
 
+전체 그림 한 장은 [서비스 구성도](moncamp-architecture.png)(원본 [html](moncamp-architecture.html), `node scripts/bake_html.mjs docs/moncamp-architecture.html` 로 다시 굽기)입니다.
+
 | 구성 | 책임 | 저장소 근거 |
 | --- | --- | --- |
 | Cloudflare Pages · Next.js 정적 내보내기 | 운영(moncamp.kr) 정적 상세 HTML과 앱 제공 | `web/`(`BUILD_TARGET=static`), `deploy-pages.yml` |
