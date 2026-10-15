@@ -20,7 +20,11 @@ const CACHE = 'moncamp-v4-1';
 //     → 다음에 오프라인으로 앱을 열면 스토리북이 뜬다
 //   · 오프라인에서 /storybook/ 을 열면 캐시의 './'(앱 화면)가 대신 나온다
 // 캐시 이름(CACHE)은 그대로 둔다 — 바꾸면 남의 그림 캐시가 통째로 지워진다 (CLAUDE.md §2)
-const OUTSIDE = /^\/storybook\//;
+//
+// 2026-10-14 **루트의 글자 파일(ads.txt · robots.txt · sitemap.xml)도 앱이 아니다** (수익화 전 점검).
+// 광고 심사 중에 브라우저로 moncamp.kr/ads.txt 를 열면 navigate 갈래가 그 글자를 앱의 오프라인 자리('./')에 덮어써,
+// 다음 오프라인 실행 때 앱 대신 ads.txt 한 줄이 뜬다 — 도면과 같은 구멍이다
+const OUTSIDE = /^\/storybook\/|^\/ads\.txt$|^\/robots\.txt$|^\/sitemap\.xml$/;
 
 self.addEventListener('install', () => self.skipWaiting());
 

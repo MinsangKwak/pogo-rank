@@ -8,7 +8,10 @@
 //
 // 저장 값은 'granted' | 'denied'. **값이 없으면 켜짐**(기본).
 // ─────────────────────────────────────────────────────────────────────────────
-const CONSENT_KEY = 'pogo_consent';   // v3 와 같은 키
+export const CONSENT_KEY = 'pogo_consent';   // v3 와 같은 키
+
+/** 같은 탭에서 바꿨을 때 알리는 이름 — storage 이벤트는 다른 탭의 변경에만 온다 (광고 자리가 듣는다) */
+const CONSENT_EVENT = 'moncamp:consent';
 
 export function consentValue(): 'granted' | 'denied' | null {
   try {
@@ -24,6 +27,18 @@ export function analyticsWanted(): boolean {
 
 export function setConsent(value: 'granted' | 'denied') {
   try { localStorage.setItem(CONSENT_KEY, value); } catch { /* 저장 불가 환경 */ }
+  try { window.dispatchEvent(new Event(CONSENT_EVENT)); } catch { /* 창이 없는 환경(검사) */ }
+}
+
+/** '통계 끄기' 를 골랐는가 — 광고 자리가 읽는다 */
+export const consentDenied = (): boolean => consentValue() === 'denied';
+
+/** 동의가 바뀌면 알린다 — 이 탭(설정 창)과 다른 탭(storage) 모두 */
+export function onConsentChange(listener: () => void): () => void {
+  const onStorage = (event: StorageEvent) => { if (event.key === null || event.key === CONSENT_KEY) listener(); };
+  window.addEventListener('storage', onStorage);
+  window.addEventListener(CONSENT_EVENT, listener);
+  return () => { window.removeEventListener('storage', onStorage); window.removeEventListener(CONSENT_EVENT, listener); };
 }
 
 /**

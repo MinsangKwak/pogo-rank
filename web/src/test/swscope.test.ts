@@ -37,6 +37,13 @@ describe('서비스워커 범위', () => {
     expect(outsidePaths()).toContain('/storybook/');
   });
 
+  it('루트의 글자 파일(ads.txt · robots.txt · sitemap.xml)도 비켜 간다 — 브라우저로 열면 앱의 오프라인 자리를 덮어쓴다 (2026-10-14)', () => {
+    const body = /const OUTSIDE = \/(.*)\/;/.exec(SW)![1]!;
+    const outside = new RegExp(body);
+    for (const path of ['/ads.txt', '/robots.txt', '/sitemap.xml', '/storybook/index.html']) expect(outside.test(path), path).toBe(true);
+    for (const path of ['/', '/dex', '/mon/25', '/ads.txt/x', '/data/manifest.json']) expect(outside.test(path), path).toBe(false);
+  });
+
   it('비켜 가기를 navigate 갈래보다 **먼저** 본다', () => {
     // 순서가 뒤집히면 도면 HTML 이 앱의 오프라인 자리에 덮인다 — 이 검사의 이유가 그것이다
     const skip = SW.indexOf('OUTSIDE.test(');
