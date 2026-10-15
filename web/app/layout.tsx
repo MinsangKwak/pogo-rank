@@ -111,7 +111,7 @@ const ADS_LIVE = adsMode(process.env['NEXT_PUBLIC_ADS']) === 'live';
 const ADS_SCRIPT = adsMode(process.env['NEXT_PUBLIC_ADS']) !== 'off' && ADS_START_MS !== null
   ? `(function(){var d=document.documentElement;if(Date.now()<${ADS_START_MS}${ADS_LIVE ? `||location.hostname!==${JSON.stringify(ADS_HOST)}` : ''}){d.dataset.ads='off';return;}try{var p=location.pathname.replace(/\\/+$/,'')||'/';var free=${JSON.stringify(AD_FREE_PATHS)};
 var hit=free.some(function(f){return p===f||p.indexOf(f+'/')===0;});
-d.dataset.ads=hit||localStorage.getItem('pogo_signed_in')==='1'||localStorage.getItem('pogo_consent')==='denied'?'off':'on';}catch(e){d.dataset.ads='on';}})();`
+d.dataset.ads=hit||localStorage.getItem('pogo_signed_in')==='1'||localStorage.getItem('pogo_consent')==='denied'?'off':'on';${ADS_LIVE ? "if(d.dataset.ads==='on')d.dataset.adsLive='1';" : ''}}catch(e){d.dataset.ads='on';}})();`
   : '';
 
 // 운영 채널에서만 심는다 — dev 는 GA 를 안 쓴다(v4 와 같다). 값은 web/.env.production
