@@ -14,7 +14,7 @@ import { onSignInTrace, signInTrace, useAuthStore } from '../stores/auth';
 import { consentDenied, onConsentChange } from '../lib/consent';
 import { useRoute } from '../lib/useRoute';
 import { useLockChecking, useLockReason } from '../lib/useLocked';
-import { AD_SLOT_SIZE, ADS_RAIL_QUERY, adFreeRoute, adsClient, adsModeNow, adsScriptSrc, adsSlotUnit, adsVisible, type AdSlotId, type AdsMode } from '../lib/ads';
+import { AD_SLOT_SIZE, ADS_RAIL_QUERY, ADS_START_MS, adFreeRoute, adsClient, adsModeNow, adsScriptSrc, adsSlotUnit, adsVisible, type AdSlotId, type AdsMode } from '../lib/ads';
 
 const SLOTS: readonly AdSlotId[] = ['left', 'right', 'bottom'];
 
@@ -105,6 +105,15 @@ export default function AdSlots() {
   const locked = lockReason !== '' || lockChecking;
   const adFree = adFreeRoute(route) || locked;
   // 시작일(약관의 ADS_FROM) 전에는 모드가 켜져 있어도 off — 날짜는 보는 사람의 시계로 가른다 (lib/ads.ts adsModeNow)
+  // 시작 시각 전에 열어 둔 탭도 그 시각에 켜진다 — 남은 시간만큼 기다렸다 한 번 다시 그린다 (Codex, PR #381).
+  // setTimeout 한도(약 24.8일)를 넘게 남았으면 걸지 않는다 — 그만큼 열어 둔 탭은 화면을 옮길 때 다시 판정된다
+  const [, wake] = useState(0);
+  useEffect(() => {
+    const wait = ADS_START_MS === null ? -1 : ADS_START_MS - Date.now();
+    if (wait <= 0 || wait > 2 ** 31 - 1) return undefined;
+    const timer = window.setTimeout(() => wake((n) => n + 1), wait + 50);
+    return () => window.clearTimeout(timer);
+  }, []);
   const mode: AdsMode = preview ? 'placeholder' : adsModeNow();
   const visible = adsVisible(mode, { status, ready, recheckError, trace, consentDenied: denied, adFree });
   // 본문이 비켜설지는 문서 속성 하나로 알린다 — 첫 그림 전에는 layout.tsx 의 인라인 스크립트가 로그인 자취로 같은 값을 미리 적는다(CLS 방지).
