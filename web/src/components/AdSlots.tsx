@@ -14,7 +14,7 @@ import { onSignInTrace, signInTrace, useAuthStore } from '../stores/auth';
 import { consentDenied, onConsentChange } from '../lib/consent';
 import { useRoute } from '../lib/useRoute';
 import { useLockChecking, useLockReason } from '../lib/useLocked';
-import { AD_SLOT_SIZE, adFreeRoute, adsClient, adsModeNow, adsScriptSrc, adsSlotUnit, adsVisible, type AdSlotId, type AdsMode } from '../lib/ads';
+import { AD_SLOT_SIZE, ADS_RAIL_QUERY, adFreeRoute, adsClient, adsModeNow, adsScriptSrc, adsSlotUnit, adsVisible, type AdSlotId, type AdsMode } from '../lib/ads';
 
 const SLOTS: readonly AdSlotId[] = ['left', 'right', 'bottom'];
 
@@ -53,14 +53,27 @@ function LiveUnit({ id, client, unit }: { id: AdSlotId; client: string; unit: st
   return <ins className="adsbygoogle ad-slot__unit" style={{ display: 'inline-block', width: size.w, height: size.h }} data-ad-client={client} data-ad-slot={unit} />;
 }
 
+/** 화면 크기 조건이 지금 맞는가 — 서버 · 첫 그림에서는 false(광고 단위는 마운트 뒤에만 붙는다) */
+function useMedia(query: string): boolean {
+  return useSyncExternalStore(
+    (listen) => { const list = window.matchMedia(query); list.addEventListener('change', listen); return () => list.removeEventListener('change', listen); },
+    () => window.matchMedia(query).matches,
+    () => false,
+  );
+}
+
 function Slot({ id, mode }: { id: AdSlotId; mode: AdsMode }) {
   const size = AD_SLOT_SIZE[id];
   const client = adsClient();
   const unit = adsSlotUnit(id);
+  // 실제 광고 단위는 그 자리가 **지금 화면에서 보일 때만** 붙인다 — CSS 로 감춘 자리(폭 0)에 단위를 채우면 AdSense 가 오류를 내고 빈 요청이 쌓인다
+  // 바닥 자리는 어느 폭에서나 문서 흐름 안에 선다. 양옆 띠는 넓은 화면에서만
+  const wide = useMedia(ADS_RAIL_QUERY);
+  const shown = id === 'bottom' || wide;
   // live 인데 이 자리의 단위가 없으면 자리를 세우지 않는다 — 빈 점선 상자가 운영에 서면 안 된다
-  if (mode === 'live' && (!client || !unit)) return null;
+  if (mode === 'live' && (!client || !unit || !shown)) return null;
   return (
-    <aside className={`ad-slot ad-slot--${id}`} data-ad-slot={id} aria-label="광고">
+    <aside className={`ad-slot ad-slot--${id}${mode === 'live' ? ' ad-slot--live' : ''}`} data-ad-slot={id} aria-label="광고">
       {id === 'bottom' ? <p className="ad-slot__notice" role="status">로그인하면 광고 없이 이용할 수 있어요.</p> : null}
       <div className={`ad-slot__box${mode === 'live' ? ' ad-slot__box--live' : ''}`} style={id === 'bottom' ? undefined : { width: size.w, height: size.h }}>
         <span className="ad-slot__label">광고</span>
@@ -100,7 +113,10 @@ export default function AdSlots() {
   // 속성이 한 박자 뒤에 붙으면 한 프레임 동안 띠가 본문을 덮는다. 그리기 전에 같이 바꾼다 (Codex, PR #364)
   useLayoutEffect(() => {
     document.documentElement.dataset['ads'] = visible ? 'on' : 'off';
-  }, [visible]);
+    // 실제 광고는 고정(sticky) 자리를 쓰지 않는다 — 휴대폰 바닥 여백 · '맨 위로' 올림을 이 표시로 끈다 (styles/cinema/ads.css)
+    if (visible && mode === 'live') document.documentElement.dataset['adsLive'] = '1';
+    else delete document.documentElement.dataset['adsLive'];
+  }, [visible, mode]);
   if (!visible) return null;
   return <>{SLOTS.map((id) => <Slot key={id} id={id} mode={mode} />)}</>;
 }
