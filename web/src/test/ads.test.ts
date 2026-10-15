@@ -42,6 +42,10 @@ describe('실제 광고는 고정(sticky) 자리를 쓰지 않는다 (Codex, PR 
   it('live 양옆 띠는 페이지와 함께 흐르고(absolute), 휴대폰 바닥 자리는 문서 흐름 안(relative)에 선다', () => {
     expect(css).toContain('.ad-slot--live:is(.ad-slot--left, .ad-slot--right) { position: absolute; }');
     expect(css).toMatch(/\.ad-slot--live\.ad-slot--bottom \{[^}]*position: relative;[^}]*padding: 1\.6rem 0;/);
+    // live 상자는 단위 크기 그대로 — 휴대폰 바닥 상자의 안쪽 여백보다 뒤에 같은 무게로 선다 (Codex, PR #379)
+    const reset = css.lastIndexOf('.ad-slot--live .ad-slot__box {');
+    expect(reset).toBeGreaterThan(css.lastIndexOf('.ad-slot--bottom .ad-slot__box {'));
+    expect(css.slice(reset)).toMatch(/padding: 0; gap: 0;/);
   });
   it('휴대폰 바닥 여백 · 맨 위로 올림은 live 가 아닐 때만 — 고정 띠가 없으면 비워 둘 이유가 없다', () => {
     expect(css).not.toMatch(/html\[data-ads="on"\] body \{ padding-bottom/);
