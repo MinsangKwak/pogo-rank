@@ -1,0 +1,219 @@
+name: web 배포 (Cloudflare Pages)
+
+# 2026-10-15 — 운영 호스팅을 Vercel 에서 Cloudflare Pages 로 옮긴다 (Vercel Hobby 는 광고 금지, docs/INFRA.md §8).
+#
+# **다 구운 것만 올린다** — deploy-web.yml(Vercel)과 같은 이유다. 데이터는 파이썬 파이프라인이 만들고,
+# 화면은 `npm run build:static`(정적 내보내기 → out/)이 굽는다. 서버가 없으니 보안 헤더 · 옛 주소 이동은
+# out/_headers · out/_redirects 가 맡는다(web/src/lib/hosting.ts 한 벌).
+#
+# 어디로 올리나:
+#   deploy 에 push            운영 판(Pages 의 production 가지 main). moncamp.kr 은 cutover-pages.yml 이 붙인다
+#   pages-preview 에 push     미리보기 주소(<해시>.<프로젝트>.pages.dev)에만 — 운영과 무관하게 실제 Cloudflare 에서 재 보는 길.
+#                             손으로 돌리는 워크플로는 기본 가지(main)에 있어야 보이는데, push 는 그 가지에 이 파일만 있으면 돈다
+#   손으로(workflow_dispatch) preview 입력대로
+#   매일 00:40 KST(schedule)    deploy 가지를 받아 운영 판으로 다시 굽는다 — 레이드 보스 · 일정 같은 바깥 데이터는 빌드 때 받는다.
+#                             push 가 없는 날에도 운영 데이터가 묵지 않게 (dev 의 deploy-dev.yml 과 같은 결, Codex PR #371).
+#                             예약 실행은 기본 가지(main)의 이 파일로 돌므로 checkout 이 deploy 를 집어 받는다
+#
+# 쓰는 시크릿: CLOUDFLARE_API_TOKEN (Account · Cloudflare Pages · Edit). 계정 id 는 토큰으로 찾는다
+on:
+  push:
+    branches: [deploy, pages-preview]
+    # 빌드가 읽는 자리 전부 — scripts/(build.sh · fetch_data.sh) · assets/(아이콘 · manifest · sw.js 원본, backend/build.py 가 옮긴다) (Codex, PR #371).
+    # dist/ · data/ 는 빌드가 만드는 결과, snapshot/ 은 배포 봇이 [skip ci] 로만 바꾼다
+    paths: ['web/**', 'scripts/**', 'assets/**', 'frontend-v4/scripts/**', 'backend/**', 'content/**', 'release/**', '.github/workflows/deploy-pages.yml']
+  schedule:
+    - cron: '40 15 * * *'   # 매일 00:40 KST — deploy.yml(00:00) · deploy-dev.yml(00:30) 뒤
+  workflow_dispatch:
+    inputs:
+      preview:
+        description: 미리보기 주소에만 올린다 (운영 판을 건드리지 않는다)
+        type: boolean
+        default: true
+
+concurrency:
+  # 운영 판은 하나의 줄로 — 예약 실행 · deploy push · 손으로 preview=false 가 겹쳐도 차례로 올린다 (Codex, PR #373)
+  group: deploy-pages-${{ (github.event_name == 'schedule' || github.ref == 'refs/heads/deploy' || (github.event_name == 'workflow_dispatch' && !inputs.preview)) && 'prod' || github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      PAGES_PROJECT: moncamp
+      # 운영 판으로 올리는 실행인가 — 아래 '올리기' 단계의 PREVIEW 와 정확히 반대다
+      PAGES_PROD: ${{ github.event_name == 'schedule' || (github.event_name == 'push' && github.ref == 'refs/heads/deploy') || (github.event_name == 'workflow_dispatch' && !inputs.preview) }}
+    steps:
+      - name: 설정됐는지 본다
+        id: ready
+        env:
+          TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: |
+          if [ -n "$TOKEN" ]; then echo "go=true" >> "$GITHUB_OUTPUT"; else
+            echo "go=false" >> "$GITHUB_OUTPUT"; echo "::notice::CLOUDFLARE_API_TOKEN 이 없어 Pages 배포를 건너뜁니다"; fi
+
+      - if: steps.ready.outputs.go == 'true'
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          # 예약 실행 · 손으로 올리는 운영 판은 main 에서 시작해도 언제나 deploy 가지를 굽는다(deploy.yml 과 같은 규칙). 그 밖은 일으킨 가지 그대로
+          ref: ${{ (github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && !inputs.preview)) && 'deploy' || '' }}
+
+      - if: steps.ready.outputs.go == 'true'
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+        with:
+          python-version: '3.12'
+
+      - if: steps.ready.outputs.go == 'true'
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+
+      - if: steps.ready.outputs.go == 'true'
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+        with:
+          path: |
+            data/sprites
+            data/sprites-anim
+          key: sprites-v1-${{ github.run_id }}
+          restore-keys: sprites-v1-
+
+      # 직전 정상본 표 — 원본이 비거나 줄어든 날 이걸로 대체한다(backend/guard.py).
+      # 없으면 빈 러너마다 견줄 기준이 없어 잘린 표도 '첫 정상본' 으로 통과한다 — 매일 밤 다시 굽는 운영 판에서는 더 위험하다 (Codex, PR #371).
+      # **운영 실행만 쓰고 운영 이름으로 저장한다.** 미리보기(main · dev 코드)가 남긴 표가 운영의 기준이 되면, 새 코드가 만든 모양으로
+      # deploy 코드의 표를 '잘렸다' 고 보고 바꿔 넣을 수 있다 (Codex, PR #374). 첫 운영 실행은 deploy.yml(deploy 코드)의 기준을 이어 받는다.
+      # **기준은 한 줄로만 쌓는다.** 캐시는 가지마다 따로 보관되고 다른 가지는 기본 가지(main)의 것만 읽는다 —
+      # 예약 실행(main)과 deploy push(deploy)가 각자 저장하면 기준이 두 갈래가 된다. 그래서 여기서는 받기만 하고,
+      # 저장은 맨 끝에서 main 범위의 운영 실행(매일 밤 예약 · 손으로 운영 판)만 한다 — deploy push 도 그 기준을 읽는다 (Codex, PR #374)
+      - if: steps.ready.outputs.go == 'true' && env.PAGES_PROD == 'true'
+        id: tables
+        uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+        with:
+          path: snapshot/tables
+          key: tables-pages-prod-${{ github.run_id }}
+          restore-keys: tables-pages-prod-
+
+      # 운영 기준이 아직 하나도 없을 때만(첫 운영 실행) deploy.yml 의 기준으로 시작한다.
+      # 한 단계에 두 접두사를 함께 적으면 GitHub 는 실행 가지의 키를 모두 먼저 찾아, deploy push 에서는 deploy 범위의 옛 tables-v1- 가
+      # main 의 최신 운영 기준을 가린다 — 그래서 따로 둔다 (Codex, PR #374)
+      - if: steps.ready.outputs.go == 'true' && env.PAGES_PROD == 'true' && steps.tables.outputs.cache-matched-key == ''
+        uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+        with:
+          path: snapshot/tables
+          key: tables-v1-${{ github.run_id }}
+          restore-keys: tables-v1-
+
+      - if: steps.ready.outputs.go == 'true' && vars.API_URL != ''
+        name: 서버 주소를 저장소 변수로 덮는다
+        run: echo "NEXT_PUBLIC_API_URL=${{ vars.API_URL }}" >> "$GITHUB_ENV"
+
+      - if: steps.ready.outputs.go == 'true'
+        name: 데이터 만들기 (파이썬 파이프라인)
+        env:
+          BUILD_CHANNEL: prod
+        run: |
+          set -e
+          pip install --quiet Pillow
+          bash scripts/build.sh
+
+      # deploy-web.yml 과 같은 값 — 수집 주소 · 문의 메일 (meta.json 은 npm run data 가 이 순간의 환경변수로 만든다)
+      - if: steps.ready.outputs.go == 'true'
+        name: web 준비 (데이터·그림)
+        env:
+          COLLECT_URL: ${{ vars.COLLECT_URL || 'https://api.moncamp.kr' }}
+          CONTACT_EMAIL: contact@moncamp.kr
+        run: |
+          set -e
+          cd web
+          npm ci
+          npm run data
+          npm run prepare-assets
+          node -e "const m=require('./public/data/meta.json');
+            if(!m.COLLECT_URL){console.error('meta.json 에 COLLECT_URL 이 없습니다 — 수집이 꺼진 채로 구워졌습니다');process.exit(1)}
+            console.log('수집 주소:', m.COLLECT_URL)"
+
+      - if: steps.ready.outputs.go == 'true'
+        name: 검사
+        run: cd web && npm test
+
+      - if: steps.ready.outputs.go == 'true'
+        name: 정적 빌드 (out/)
+        env:
+          # 미리보기는 dev 채널로 굽는다 — 색인 금지(robots · meta) · GA 없음. 운영 채널로 구우면 공개된 *.pages.dev 미리보기가
+          # 운영과 같은 글로 색인되고 운영 통계에 섞인다(dev-pipeline.yml 과 같은 규칙, Codex PR #371). 운영 판은 .env.production 의 prod 그대로
+          NEXT_PUBLIC_CHANNEL: ${{ env.PAGES_PROD == 'true' && 'prod' || 'dev' }}
+        run: cd web && npm run build:static
+
+      - if: steps.ready.outputs.go == 'true'
+        name: Cloudflare Pages 에 올리기
+        id: up
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          # 운영 판은 deploy 가지의 push 또는 손으로 preview=false 일 때만 — 그 밖은 전부 미리보기
+          PREVIEW: ${{ (github.event_name == 'workflow_dispatch' && inputs.preview) || (github.event_name == 'push' && github.ref != 'refs/heads/deploy') }}
+        run: |
+          set -e
+          # 붙일 때 딸려 온 공백 · 줄바꿈을 떼고 토큰만 고른다 (deploy-server.yml 과 같은 규칙)
+          export CLOUDFLARE_API_TOKEN="$(printf '%s' "$CLOUDFLARE_API_TOKEN" | tr -d '[:space:]')"
+          only="$(printf '%s' "$CLOUDFLARE_API_TOKEN" | grep -o 'cfut_[A-Za-z0-9_-]*' | head -1 || true)"
+          [ -n "$only" ] && export CLOUDFLARE_API_TOKEN="$only"
+          export CLOUDFLARE_ACCOUNT_ID="$(curl -fsS -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
+            https://api.cloudflare.com/client/v4/accounts | python3 -c 'import sys,json;print(json.load(sys.stdin)["result"][0]["id"])')"
+          # 프로젝트가 없으면 만든다 — 운영 가지 이름은 main(배포 명령의 --branch 와 짝)
+          npx --yes wrangler@4 pages project list | grep -q "$PAGES_PROJECT" \
+            || npx --yes wrangler@4 pages project create "$PAGES_PROJECT" --production-branch=main
+          if [ "$PREVIEW" = "true" ]; then BRANCH=preview; else BRANCH=main; fi
+          npx --yes wrangler@4 pages deploy web/out --project-name="$PAGES_PROJECT" --branch="$BRANCH" --commit-dirty=true | tee /tmp/pages.log
+          url="$(grep -o 'https://[a-z0-9.-]*\.pages\.dev' /tmp/pages.log | tail -1)"
+          echo "url=$url" >> "$GITHUB_OUTPUT"
+          echo "올린 주소: $url"
+
+      # **올린 주소로 잰다** — 화면 · 404 · 옛 주소 이동 · 보안 헤더 (Vercel 에서 서버가 하던 일을 정적 파일이 하는지)
+      - if: steps.ready.outputs.go == 'true'
+        name: 올린 판 재기
+        env:
+          BASE: ${{ steps.up.outputs.url }}
+        run: |
+          set -e
+          [ -n "$BASE" ] || { echo "올린 주소를 못 읽었습니다"; exit 1; }
+          for i in $(seq 1 20); do
+            code="$(curl -so /dev/null -w '%{http_code}' "$BASE/mon/25" || true)"; [ "$code" = 200 ] && break; sleep 6
+          done
+          # 본문은 한 번 받아 둔다 — `curl | grep -q` 는 grep 이 먼저 끝나 curl 이 (23) 을 찍는다
+          body="$(curl -sS "$BASE/mon/25")"
+          printf '%s' "$body" | grep -q '피카츄' || { echo "/mon/25 에 본문이 없습니다"; exit 1; }
+          # deploy-web.yml(Vercel) 의 검사와 같은 그물 — 글자만 재면 디자인 · 색인 · 통계가 빠진 판도 초록이다
+          printf '%s' "$body" | grep -q '<title>' || { echo "제목이 없습니다"; exit 1; }
+          printf '%s' "$body" | grep -q 'application/ld+json' || { echo "JSON-LD 가 없습니다"; exit 1; }
+          printf '%s' "$body" | grep -q 'id="root"' || { echo "#root 래퍼가 없습니다 — CSS 가 통째로 안 걸립니다"; exit 1; }
+          if [ "$PAGES_PROD" = "true" ]; then
+            printf '%s' "$body" | grep -q 'googletagmanager.com/gtag/js' || { echo "GA 조각이 없습니다 — 방문 통계가 한 건도 안 나갑니다"; exit 1; }
+          else
+            # 미리보기는 거꾸로 — GA 가 없고 색인을 막아야 한다
+            printf '%s' "$body" | grep -q 'googletagmanager.com/gtag/js' && { echo "미리보기에 GA 조각이 있습니다 — 운영 통계에 섞입니다"; exit 1; }
+            curl -sS "$BASE/robots.txt" | grep -qi 'disallow: /' || { echo "미리보기 robots.txt 가 색인을 막지 않습니다"; exit 1; }
+          fi
+          curl -sS "$BASE/data/meta.json" | grep -q '"CONTACT_EMAIL":"[^"]' || { echo "meta.json 에 문의 이메일이 없습니다"; exit 1; }
+          [ "$(curl -so /dev/null -w '%{http_code}' "$BASE/sw.js")" = 200 ] || { echo "sw.js 가 없습니다 — 옛 서비스워커가 새 판을 못 받는다"; exit 1; }
+          # ads.txt 는 있으면 한 줄 꼴이어야 하고, 없으면 404 여야 한다 — 200 'Not Found' 는 AdSense 가 잘못 읽는다
+          ads="$(curl -sS -w '\n%{http_code}' "$BASE/ads.txt")"
+          case "$(printf '%s' "$ads" | tail -1)" in
+            200) printf '%s' "$ads" | head -1 | grep -qE '^google\.com, pub-[0-9]{16}, DIRECT, f08c47fec0942fa0$' || { echo "ads.txt 가 한 줄 꼴이 아닙니다"; exit 1; } ;;
+            404) ;;
+            *) echo "ads.txt 응답이 이상합니다: $(printf '%s' "$ads" | tail -1)"; exit 1 ;;
+          esac
+          [ "$(curl -so /dev/null -w '%{http_code}' "$BASE/mon/999999")" = 404 ] || { echo "없는 주소가 404 가 아닙니다"; exit 1; }
+          [ "$(curl -so /dev/null -w '%{http_code}' "$BASE/plan")" = 308 ] || { echo "옛 주소 /plan 이 308 로 안 옮겨집니다"; exit 1; }
+          heads="$(curl -sSI "$BASE/dex" | tr -d '\r' | tr 'A-Z' 'a-z')"
+          for name in strict-transport-security x-content-type-options referrer-policy content-security-policy permissions-policy; do
+            printf '%s' "$heads" | grep -q "^$name:" || { echo "보안 헤더 $name 이 없습니다"; exit 1; }
+          done
+          echo "OK — $BASE"
+
+      # 올린 판이 검사를 다 통과한 뒤에만 그 표를 다음 운영 빌드의 직전 정상본으로 남긴다 — main 범위 하나에만(위 받기 단계의 주석)
+      - if: steps.ready.outputs.go == 'true' && env.PAGES_PROD == 'true' && github.ref == 'refs/heads/main'
+        uses: actions/cache/save@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+        with:
+          path: snapshot/tables
+          key: tables-pages-prod-${{ github.run_id }}

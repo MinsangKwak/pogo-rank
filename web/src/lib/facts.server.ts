@@ -104,3 +104,17 @@ export function monFacts(sprite: number): MonFacts | null {
     charged: form.charged.map(([label]) => label),
   };
 }
+
+/**
+ * 게임 업데이트 글 주소(`/game-updates/<id>`) — 기사와 아카이브의 id 전부 (2026-10-15 Cloudflare Pages).
+ * 정적 호스팅에는 요청마다 그리는 서버가 없다 — 글 주소도 빌드 때 한 장씩 굽는다. 자료가 없으면(검사 · 첫 빌드) 빈 목록
+ */
+export function updateIds(): string[] {
+  try {
+    const data = JSON.parse(readFileSync(resolve(DIR, 'updates.json'), 'utf8')) as { GAME_UPDATES?: { id: string }[]; GAME_ARCHIVE?: { id: string }[] };
+    const ids = [...(data.GAME_UPDATES ?? []), ...(data.GAME_ARCHIVE ?? [])].map((one) => one.id).filter((id) => /^[a-z0-9-]+$/.test(id));
+    return [...new Set(ids)];
+  } catch {
+    return [];
+  }
+}
