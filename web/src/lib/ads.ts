@@ -31,6 +31,9 @@ export type AdsMode = 'off' | 'placeholder' | 'live';
 /** 자리 이름 — CSS 와 검사가 같은 글자를 쓴다 */
 export type AdSlotId = 'left' | 'right' | 'bottom';
 
+/** 세로 띠가 서는 화면 — styles/cinema/ads.css 의 미디어 조건과 같은 글자여야 한다 */
+export const ADS_RAIL_QUERY = '(min-width: 1280px) and (min-height: 760px)';
+
 /** 자리마다 비워 두는 크기(px). Google 표준 단위 — 넓은 화면 세로 띠 160×600, 휴대폰 바닥 띠 320×50 */
 export const AD_SLOT_SIZE: Readonly<Record<AdSlotId, { w: number; h: number }>> = {
   left: { w: 160, h: 600 },

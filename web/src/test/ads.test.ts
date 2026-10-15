@@ -2,7 +2,7 @@
 // 광고 자리 — 누구에게 · 어느 모드로 보이는가 (lib/ads.ts). 주인 결정: 로그인한 사람에게는 광고가 없다
 import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
-import { AD_FREE_PATHS, AD_SLOT_SIZE, adFreeRoute, adsClient, adsMode, adsModeNow, adsScriptSrc, adsSlotUnit, adsStarted, adsTxtLine, adsVisible } from '../lib/ads';
+import { AD_FREE_PATHS, AD_SLOT_SIZE, ADS_RAIL_QUERY, adFreeRoute, adsClient, adsMode, adsModeNow, adsScriptSrc, adsSlotUnit, adsStarted, adsTxtLine, adsVisible } from '../lib/ads';
 import { ROUTES } from '../routes';
 
 describe('adsMode', () => {
@@ -33,6 +33,23 @@ describe('live 모드 (2026-10-15 — 승인 당일 켤 준비)', () => {
   });
   it('스크립트 주소는 게시자 ID 를 붙인 AdSense 주소 하나', () => {
     expect(adsScriptSrc('ca-pub-6881629275458768')).toBe('https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6881629275458768');
+  });
+});
+
+describe('실제 광고는 고정(sticky) 자리를 쓰지 않는다 (Codex, PR #379 · AdSense 고정 광고 요건)', () => {
+  const css = readFileSync('src/styles/cinema/ads.css', 'utf8');
+  const slots = readFileSync('src/components/AdSlots.tsx', 'utf8');
+  it('live 양옆 띠는 페이지와 함께 흐르고(absolute), 휴대폰 바닥 자리는 문서 흐름 안(relative)에 선다', () => {
+    expect(css).toContain('.ad-slot--live:is(.ad-slot--left, .ad-slot--right) { position: absolute; }');
+    expect(css).toMatch(/\.ad-slot--live\.ad-slot--bottom \{\s*position: relative;/);
+  });
+  it('휴대폰 바닥 여백 · 맨 위로 올림은 live 가 아닐 때만 — 고정 띠가 없으면 비워 둘 이유가 없다', () => {
+    expect(css).not.toMatch(/html\[data-ads="on"\] body \{ padding-bottom/);
+    expect(css.match(/html\[data-ads="on"\]:not\(\[data-ads-live\]\) body \{ padding-bottom/g)?.length).toBe(2);
+  });
+  it('띠 단위는 띠가 보이는 화면에서만 붙인다 — 화면 조건 글자가 CSS 와 같다', () => {
+    expect(css).toContain(`@media ${ADS_RAIL_QUERY}`);
+    expect(slots).toContain('useMedia(ADS_RAIL_QUERY)');
   });
 });
 
