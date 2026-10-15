@@ -1,19 +1,38 @@
 # 문서 안내
 
-[프로젝트 소개](../README.md) · [작업 지침](../.claude/CLAUDE.md) · [기여 안내](../.github/CONTRIBUTING.md) · [보안 정책](../.github/SECURITY.md)
+[프로젝트 소개](../README.md) · [기여 안내](../.github/CONTRIBUTING.md) · [보안 정책](../.github/SECURITY.md)
 
-**무엇을 보려는지에 따라 아래에서 고릅니다.** 현재 구조와 절차는 앞의 다섯 문서가 기준이고, 기록·고지·설계 자료는 그 아래입니다.
+**프로젝트를 처음 검토한다면 포트폴리오 세 장부터 읽어 주세요.** 구현을 확인하거나 운영 작업이 필요할 때는 아래 가이드로 이어집니다.
+
+## 포트폴리오
+
+| 문서 | 핵심 질문 |
+| --- | --- |
+| [01. 발전 과정](portfolio/01-journey.md) | 어떤 필요에 따라 프로젝트가 발전했나요? |
+| [02. 서비스 기획](portfolio/02-product.md) | 사용자의 문제를 어떤 흐름으로 해결했나요? |
+| [03. 풀스택 구조](portfolio/03-architecture.md) | 웹·API·데이터를 어떻게 나누고 검증했나요? |
+
+## 구현과 운영
 
 | 목적 | 문서 |
 | --- | --- |
-| 구조 · 계산 기준 · 실행과 검증 | [DEVELOPMENT.md](DEVELOPMENT.md) |
-| 배포 · 계정 · 장애 대응 · 백업 | [OPERATIONS.md](OPERATIONS.md) |
-| 인프라 구성과 비용 판단 | [INFRA.md](INFRA.md) |
-| 완료된 전환과 남은 과제 | [ROADMAP.md](ROADMAP.md) · [V5-CUTOVER.md](V5-CUTOVER.md) |
-| 디자인 규칙과 검증 | [design/README.md](design/README.md) |
-| 개발 이력 (측정값 있는 개선 기록) | [HISTORY.md](HISTORY.md) |
-| 판별 변경 이력 | [CHANGELOG.md](CHANGELOG.md) |
-| 커밋 메시지 규칙 | [COMMITS.md](COMMITS.md) |
-| 데이터 · 이미지 출처와 이용 조건 | [NOTICE.md](NOTICE.md) |
+| 웹 구조·데이터 처리·계산 기준 | [개발 가이드](DEVELOPMENT.md) |
+| API 실행·인증·DB 설계 | [서버 안내](../server/README.md) · [인증](../server/AUTH.md) · [스키마](../server/SCHEMA.md) |
+| 공통 UI와 반응형 검증 | [디자인 가이드](design/README.md) |
+| 배포·계정·장애 대응·백업 | [운영 가이드](OPERATIONS.md) |
+| 호스팅 구성과 전환 절차 | [인프라](INFRA.md) |
+| 광고 준비와 활성화 조건 | [광고 운영](ADS.md) |
 
-`*.html` · `*.png` 는 위 문서에서 참조하는 그림(구조도 · 타임라인 · ERD)입니다. 원본 HTML 을 고치고 `node scripts/bake_html.mjs <파일>` 로 PNG 를 다시 굽습니다.
+## 변경 기록과 참고 자료
+
+| 목적 | 문서 |
+| --- | --- |
+| 단계별 변화와 측정 기록 | [개발 이력](HISTORY.md) |
+| 버전별 수정·검증 근거 | [변경 이력](CHANGELOG.md) |
+| 완료한 전환과 남은 작업 | [로드맵](ROADMAP.md) · [v5 전환 기록](V5-CUTOVER.md) |
+| 작업·커밋 기준 | [작업 지침](../.claude/CLAUDE.md) · [커밋 규칙](COMMITS.md) |
+| 데이터·이미지의 출처와 이용 조건 | [저작물 고지](NOTICE.md) |
+
+현재 절차는 각 문서 앞부분에서 설명하고, 작성 당시의 설정과 판단은 접힌 기록에 보관합니다. 과거 수치에는 측정 시점이 적용됩니다.
+
+구성도는 Markdown의 Mermaid 도식으로 관리합니다. 기존 HTML·PNG 자료는 해당 문서에 적힌 시점의 참고 자료이며, 현재 구조는 포트폴리오의 풀스택 구조와 개발·인프라 가이드를 기준으로 읽습니다.
