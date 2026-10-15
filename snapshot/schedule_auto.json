@@ -742,5 +742,15 @@
 "label": "샹델라 슈퍼 메가 레이드 데이",
 "start_eu": "2026-10-31",
 "end_eu": "2026-10-31"
+},
+"into-the-wild-2026": {
+"id": "into-the-wild-2026",
+"type": "event",
+"start": "2026-11-09",
+"end": "2026-11-13",
+"cat": "event",
+"label": "Into the Wild",
+"start_eu": "2026-11-09",
+"end_eu": "2026-11-13"
 }
 }
