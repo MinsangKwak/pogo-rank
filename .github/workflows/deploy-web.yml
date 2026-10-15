@@ -23,13 +23,10 @@ name: web 배포 (Vercel)
 # **화면 쪽 값은 Vercel 대시보드에 안 둔다.** web/.env.production 에 있다 —
 # NEXT_PUBLIC_ 값은 브라우저로 그대로 나가 숨길 수 있는 물건이 아니고, 저장소에 두면
 # 배포가 커밋 하나로 재현된다. 채널마다 달라야 하면 저장소 **변수** vars.API_URL 로 덮는다
+# **2026-10-15 운영이 Cloudflare Pages 로 옮겨 push 로는 더 돌지 않는다** (deploy-pages.yml 이 운영 입구).
+# Vercel Hobby 는 광고가 붙은 판을 금지한다(docs/INFRA.md §8) — 광고 코드가 든 deploy 를 Vercel 에 계속 올리면 그 자체로 위반이다.
+# 손으로만 돈다: cutover-pages.yml 의 rollback 으로 moncamp.kr 을 Vercel 로 되돌렸을 때, 그 판을 새로 올릴 일이 있을 때만
 on:
-  push:
-    # **운영의 입구는 `deploy` 하나다** (v5 운영 전환, docs/V5-CUTOVER.md §5).
-    # 전환 기간에는 `next` 도 열어 두었다 — 그때는 이 배포가 pogo-rank.vercel.app 에만 닿았다.
-    # moncamp.kr 이 이 프로젝트에 붙은 뒤로는 next 에 push 하는 것이 곧 운영 배포가 된다
-    branches: [deploy]
-    paths: ['web/**', 'frontend-v4/scripts/**', 'backend/**', 'content/**', 'release/**', '.github/workflows/deploy-web.yml']
   workflow_dispatch:
 
 jobs:
