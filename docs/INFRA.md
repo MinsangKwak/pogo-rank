@@ -2,17 +2,18 @@
 
 [프로젝트 소개](../README.md) · [개발 가이드](DEVELOPMENT.md) · [운영 가이드](OPERATIONS.md) · [전환 기록](V5-CUTOVER.md)
 
-**현재 웹은 Vercel, API는 Cloud Run, 사용자 데이터는 Neon을 사용합니다.** 이 문서는 각 서비스의 책임과 확장 판단 기준을 설명합니다. 2026-09-26의 저장소 구성 기준이며 클라우드 콘솔의 실시간 상태·요금 조회 결과는 아닙니다.
+**현재 운영 웹은 Cloudflare Pages, dev 미리보기는 Vercel, API는 Cloud Run, 사용자 데이터는 Neon을 사용합니다.** 운영 웹은 2026-10-15 Vercel Hobby(상업적 이용 금지)에서 Cloudflare Pages로 옮겼습니다 — 절차와 실측은 [10장](#pages)입니다. 이 문서는 각 서비스의 책임과 확장 판단 기준을 설명하며, 클라우드 콘솔의 실시간 상태·요금 조회 결과는 아닙니다.
 
 ## 구성과 책임
 
 | 구성 | 책임 | 저장소 근거 |
 | --- | --- | --- |
-| Vercel · Next.js | 정적 상세 HTML과 앱 제공 | `web/`, `deploy-web.yml`, `dev-pipeline.yml` |
+| Cloudflare Pages · Next.js 정적 내보내기 | 운영(moncamp.kr) 정적 상세 HTML과 앱 제공 | `web/`(`BUILD_TARGET=static`), `deploy-pages.yml` |
+| Vercel · Next.js | dev 미리보기(dev.moncamp.kr). 운영은 되돌리기용으로만 남김(`deploy-web.yml` 손으로만) | `dev-pipeline.yml`, `deploy-web.yml` |
 | Cloud Run · Fastify | 인증·인가·개인 데이터·통계 API | `server/`, `deploy-server.yml` |
 | Neon · PostgreSQL | 계정·세션·즐겨찾기·통계 저장 | `server/migrations/` |
 | GitHub Actions · Python | 게임 자료 수집·검증·재빌드 | `scripts/build.sh`, `backend/` |
-| Cloudflare | DNS·API 중계와 전환 설정 | `cutover-prod.yml`, 관련 운영 스크립트 |
+| Cloudflare | DNS · api.moncamp.kr 중계(Worker) · 운영 프록시와 영역 규칙(www→apex · 요청 제한 · 캐시 · 헤더) | `cutover-pages.yml` · `scripts/pages_prod.py` |
 | 이전 Pages·Firebase | 전환 당시 복구 자원과 이전 앱 | `frontend-v4/`, `firestore.rules` |
 
 브라우저가 보는 게임 데이터는 빌드 산출물입니다. 계정·저장 기능은 API를 호출하므로 API 장애가 발생하면 해당 기능이 영향을 받습니다. 이전 “수집 서버 장애는 사이트에 영향이 없다”는 설명을 현재 계정 기능에 적용하지 않습니다.
@@ -319,6 +320,9 @@ Cloudflare 를 GitHub Pages 앞에 두는 것 하나이고, 그것으로 보안 
 
 ### 왜 Vercel 이 아니라 Cloudflare 인가
 
+> **2026-10-15 이후** — 이 절은 GitHub Pages 시절의 판단입니다. 그 뒤 v5 에서 운영을 Vercel(Hobby)로 옮겼다가, Hobby 가 상업적 이용(광고)을 금지해 운영을 Cloudflare Pages 로 다시 옮겼습니다([10장](#pages)).
+
+
 | | Cloudflare 앞단 | Vercel Pro 이전 |
 | --- | --- | --- |
 | 비용 | **$0** | $20/월 — Hobby 는 광고를 금지합니다(아래) |
@@ -541,3 +545,36 @@ bash scripts/verify_visibility.sh dev        # dev 만
 경고를 찍고, 못 재는 자리를 사람 몫으로 넘깁니다.
 
 </details>
+
+<a id="pages"></a>
+## 10. 운영 웹을 Cloudflare Pages 로 (2026-10-15)
+
+**결론 — moncamp.kr 은 Cloudflare Pages(프로젝트 `moncamp`)가 응답하고, Vercel 운영 프로젝트는 되돌리기용으로만 남깁니다.** AdSense 를 붙이려면 상업적 이용이 허용된 호스팅이어야 하는데 Vercel Hobby 는 금지합니다. 화면은 이미 정적 내보내기가 가능해(`BUILD_TARGET=static` → `out/`) 서버 없이 Pages 에 올립니다. API(Cloud Run) · DB(Neon) · dev(Vercel)는 그대로입니다.
+
+| 자리 | 지금 | 근거 |
+| --- | --- | --- |
+| 운영 배포 | `deploy` push · 매일 00:40 KST · 손 실행(**`preview=false` 필수** — 기본값 `true` 면 `preview` 가지에만 올라가 moncamp.kr 이 안 바뀐다) → `deploy-pages.yml` 이 데이터 · 정적 빌드 → `wrangler pages deploy --branch=main` → 배포 뒤 검사 | PR #371 · #372 |
+| 미리보기 | `pages-preview` push 또는 손 실행(preview) → `preview.moncamp.pages.dev`. noindex · robots 차단 · GA 없음 | PR #376 |
+| 리다이렉트 · 헤더 | `web/src/lib/hosting.ts` 한 곳에서 `_redirects`(옛 주소 308) · `_headers`(보안 헤더 다섯 · `/_next/static` 1년 캐시)를 굽는다. Vercel 의 `redirects()` 와 같은 표 | `hosting.test.ts` |
+| www → apex | Cloudflare Single Redirect 규칙 `moncamp_www_to_apex`(308, 경로 · 쿼리 유지) | `scripts/pages_prod.py` |
+| 전환 · 되돌리기 | `cutover-pages.yml` — `status`(읽기만) · `attach` · `rollback`(Vercel A · CNAME 복구, www 규칙 걷음) | 아래 표 |
+| Vercel 운영 | `deploy-web.yml` 의 push 를 걷었다 — 손으로만. 광고 코드가 든 판을 Hobby 에 올리지 않기 위해서 | PR #380 · #381 |
+| 표 캐시 | `tables-pages-prod-*` 를 매일 밤 실행이 main 에 저장 — 다른 가지에서도 읽힌다(가지 범위 캐시) | PR #373 · #374 |
+
+**attach 순서 (반쯤 넘어간 상태를 줄이는 순서)** — 되돌림 처리가 없는 순차 실행이라 중간에 실패하면 앞 단계는 남는다. 실패하면 `status` 로 어디까지 바뀌었는지 보고 필요하면 `rollback` 한다. ① www → apex 규칙을 먼저 건다(프록시 전이라 아무 영향 없음, 여기서 실패하면 아무것도 안 바뀜) ② 도메인을 www, apex 순서로 Pages 에 붙인다 ③ DNS 를 `moncamp.pages.dev` CNAME(프록시 켬)으로 돌린다 ④ 최대 13분 동안 `server: cloudflare` · 피카츄 상세 · www 308 · ads.txt 를 잰다.
+
+**토큰 권한** — `CLOUDFLARE_API_TOKEN`(GitHub 시크릿, 사용자 토큰 'Edit Cloudflare Workers')에 Pages · DNS 외에 Zone **Single Redirect: Edit** 이 있어야 attach 가 돈다. 영역 규칙 점검용으로 Zone WAF · Cache Rules · Transform Rules · Zone Settings 읽기를 더했다(2026-10-15).
+
+**프록시를 켜면 다시 걸리는 영역 규칙** — Vercel 때는 프록시를 꺼 하나도 안 걸렸다. `status` 가 매번 찍는다.
+
+| 규칙 | 설정 | 판단 |
+| --- | --- | --- |
+| Rate limit `burst-guard` | 같은 IP 10초 200건 → 10초 차단(캐시 응답도 셈) | 그대로. 전환 뒤 Security Events 에서 정상 사용자 차단이 보이면 `/_next/static` · `/sprites/` 를 조건에서 뺀다 |
+| Cache Rule `immutable-assets` · `data-json` | `/assets/` · `/sprites/` · `/sprites-anim/` 1년, `/data/*?v=` 1년 | 그대로(GitHub Pages 시절과 같은 값) |
+| Transform Rule `security-headers` | 헤더 넷 덮어쓰기 | `_headers` 와 값이 같아 그대로 |
+| Rocket Loader · Email Obfuscation | 끔 | **Email Obfuscation 이 켜져 있어 전환 전에 껐다**(HTML 의 문의 주소를 스크립트로 바꿔 React 가 어긋난다) |
+
+**전환 실측 (2026-10-15 10:50 ~ 10:55 KST, run 38667802446)** — DNS 를 돌린 뒤 약 5분 동안은 Vercel 이 계속 답했고(끊김 없음) 그 뒤 Pages 로 넘어갔다. 바깥에서: `server: cloudflare` · 보안 헤더 다섯 · `/mon/25` 피카츄 · GA · noindex 없음 · `ads.txt` 한 줄 200 · `http` → `https` 301 · `www.moncamp.kr/raid?a=1` → `moncamp.kr/raid?a=1` 308 · `/plan` → `/planner` 308 · 없는 주소 404 · api.moncamp.kr CORS 그대로 · dev 는 Vercel 그대로.
+
+**남은 확인** — ① `burst-guard` 에 정상 사용자가 막히는지(이 실행 환경의 브라우저는 인증서 재서명 때문에 운영을 못 열어 실측 못 함) ② dev 도 Vercel Hobby 라 dev 에서 실제 광고를 켜지 않는다(live 는 `ADS_HOST` = moncamp.kr 에서만 열린다) ③ Vercel 운영 프로젝트 · 옛 GitHub Pages 자원의 정리 시점.
+

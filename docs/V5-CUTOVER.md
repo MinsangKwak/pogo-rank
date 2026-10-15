@@ -4,6 +4,8 @@
 
 **GitHub Pages·Firebase에서 Vercel·Fastify·Neon으로 전환한 절차와 복구 시 주의점을 정리합니다.** v5.0.0 전환은 2026-09-23 릴리스에 기록되어 있습니다. 이 문서는 초기 상태로 다시 설치하라는 실행 지시가 아닙니다.
 
+> **2026-10-15 이후** — 운영 웹은 Vercel에서 Cloudflare Pages로 다시 옮겼습니다(광고 허용 호스팅). 아래 Vercel 운영 절차는 되돌리기(`cutover-pages.yml rollback`) 맥락으로만 읽습니다. 현재 절차는 [INFRA 10장](INFRA.md#pages)입니다.
+
 ## 구성과 확인 범위
 
 | 구성 | 전환 결과·용도 |
