@@ -1,0 +1,57 @@
+/* ─────────────────────────────────────────────────────────────────────────────
+   weekbosses.css — 홈 배너 아래 '이번 주 보스' 카드 줄 (components/WeekBosses.tsx · 2026-10-13)
+
+   카드 한 장 = 보스(표 · 그림 · 이름 · 기간) + 추천 세 마리. '많이 보는 포켓몬' 칩(hotmons.css)과 같은 결 —
+   카드 바탕 --selected, 선 --line, 반경 --r-box, 글자 1.2 · 1.4 · 2.2rem, 간격 0.4rem 격자.
+   진행 중인 카드는 테두리를 --brand 로 둔다. 어느 폭이든 가로로 넘겨 본다(hotmons 와 같은 이유 — 줄바꿈이면 첫 화면을 다 먹는다)
+   ───────────────────────────────────────────────────────────────────────────── */
+html body #root .week-bosses { display: flex; flex-direction: column; gap: 1.2rem; margin: 0; }
+html body #root .week-bosses__head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.4rem 1.2rem; }
+html body #root .week-bosses__title { margin: 0; color: var(--fg); font: 700 2.2rem/1.2 Pretendard, sans-serif; letter-spacing: -0.02em; }
+html body #root .week-bosses__sub { color: var(--muted); font-size: 1.4rem; line-height: 1.5; }
+html body #root .week-bosses__list {
+  display: flex; gap: 1.2rem; margin: 0; padding: 0 0 0.4rem; list-style: none;
+  overflow-x: auto; scrollbar-width: thin; -webkit-overflow-scrolling: touch;
+}
+html body #root .week-bosses__card {
+  display: flex; flex: none; flex-direction: column; width: 24rem;
+  border: 0.1rem solid var(--line); border-radius: var(--r-box); background: var(--selected); color: var(--fg);
+}
+html body #root .week-bosses__card.is-live { border-color: var(--brand); }
+/* 보스 자리 — 누르면 상세. 그림은 가운데, 표는 위 줄 */
+html body #root .week-bosses__boss {
+  display: flex; flex-direction: column; align-items: center; gap: 0.4rem; width: 100%; min-height: var(--tap); padding: 1.2rem 1.2rem 0.8rem;
+  border: 0; background: transparent; color: var(--fg); font: 500 1.4rem/1.5 Pretendard, sans-serif; text-align: center; cursor: pointer;
+}
+html body #root .week-bosses__tags { display: flex; gap: 0.4rem; align-self: stretch; justify-content: space-between; }
+html body #root .week-bosses__dday, html body #root .week-bosses__kind {
+  display: inline-flex; align-items: center; min-height: 2.4rem; padding: 0 0.8rem;
+  border: 0.1rem solid var(--line); border-radius: var(--r-tag); color: var(--muted); font-size: 1.2rem; font-weight: 700; line-height: 1.2; white-space: nowrap;
+}
+html body #root .week-bosses__dday.is-live { border-color: var(--brand); color: var(--brand); }
+html body #root .week-bosses__sprite { width: 7.2rem; height: 7.2rem; image-rendering: pixelated; }
+html body #root .week-bosses__form { color: var(--muted); font-size: 1.2rem; font-weight: 700; }
+html body #root .week-bosses__name { font-size: 1.6rem; font-weight: 700; letter-spacing: -0.02em; }
+html body #root .week-bosses__when { color: var(--muted); font-size: 1.2rem; font-weight: 600; }
+/* 추천 세 마리 — 보스 아래 한 줄. 그림 + 폼(작게) + 이름(두 줄까지, 넘치면 줄임표) */
+html body #root .week-bosses__vs { display: flex; align-items: center; gap: 0.4rem; padding: 0.8rem; border-top: 0.1rem solid var(--line); }
+html body #root .week-bosses__vs-label { flex: none; color: var(--muted); font-size: 1.2rem; font-weight: 700; }
+html body #root .week-bosses__rec {
+  display: flex; flex: 1 1 0; flex-direction: column; align-items: center; gap: 0.2rem; min-width: 0; min-height: var(--tap); padding: 0.4rem 0.2rem;
+  border: 0; border-radius: var(--r-tag); background: transparent; color: var(--fg); font: 500 1.2rem/1.2 Pretendard, sans-serif; cursor: pointer;
+}
+html body #root .week-bosses__rec-sprite { width: 3.2rem; height: 3.2rem; image-rendering: pixelated; }
+html body #root .week-bosses__rec-form { max-width: 100%; overflow: hidden; color: var(--muted); font-weight: 700; white-space: nowrap; text-overflow: ellipsis; }
+html body #root .week-bosses__rec-name { display: -webkit-box; max-width: 100%; overflow: hidden; -webkit-box-orient: vertical; -webkit-line-clamp: 2; word-break: keep-all; overflow-wrap: anywhere; font-weight: 600; }
+@media (hover: hover) {
+  html body #root .week-bosses__card:hover { border-color: var(--brand); }
+  html body #root .week-bosses__rec:hover { background: var(--hover); }
+}
+@media (max-width: 599px) {
+  html body #root .week-bosses__title { font-size: 1.6rem; }
+  html body #root .week-bosses__card { width: 20rem; }
+  html body #root .week-bosses__sprite { width: 5.6rem; height: 5.6rem; }
+  /* 좁은 카드에서는 '추천' 표를 윗줄로 올려 칩 셋이 폼 이름(다이맥스)을 다 적을 폭을 갖는다 */
+  html body #root .week-bosses__vs { flex-wrap: wrap; gap: 0.4rem 0; }
+  html body #root .week-bosses__vs-label { flex: 1 0 100%; }
+}

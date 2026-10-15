@@ -40,13 +40,13 @@ import { NotPorted } from './screens/Misc';
 import MonDetail from './screens/MonDetail';
 import ConsentDialog from './components/Consent';
 import LoginInvite from './components/LoginInvite';
+import AdSlots from './components/AdSlots';
 import { useInviteStore } from './stores/invite';
 import LangBridge from './components/LangBridge';
 import AuthBridge from './components/AuthBridge';
 import CollectBridge from './components/CollectBridge';
 import UpdateBridge from './components/UpdateBridge';
 import LockCard from './components/LockCard';
-import AdSlots from './components/AdSlots';
 
 // ── 눌러 들어가는 화면은 **누를 때 받는다** ────────────────────────────────────
 // 첫 화면(홈·도감·티어표)에 없는 것을 첫 묶음에 넣을 이유가 없다. v3 도 같은 이유로
@@ -387,7 +387,7 @@ export default function App({ seo }: AppProps = {}) {
       {invite !== null ? <LoginInvite screen={invite} onClose={closeInvite} /> : null}
 
       <ToTop />
-      {/* 광고 자리 — 로그인 전인 사람에게만, 빌드 모드가 켜져 있고 약관 시행일이 지났을 때만 선다 (lib/ads.ts). 셸 순서 뒤의 고정 자리라 본문 흐름에 안 낀다 */}
+      {/* 광고 자리 — 로그인 전인 사람에게만, 빌드 모드가 켜져 있을 때만 선다 (lib/ads.ts). 셸 순서 뒤의 고정 자리라 본문 흐름에 안 낀다 */}
       <AdSlots />
       <Drawer open={menuOpen} onClose={() => setMenuOpen(false)} now={route.id} onConsent={() => setConsentOpen(true)} />
     </SlotProvider>

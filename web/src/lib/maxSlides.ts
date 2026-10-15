@@ -95,34 +95,35 @@ export function weeksFromSchedule(months: Readonly<Record<string, ScheduleMonth>
 const DAY = 24 * 60 * 60 * 1000;
 const WEEK_KO = ['일', '월', '화', '수', '목', '금', '토'];
 
-// 원본 시각은 시간대 표기 없는 한국 시간이다 — 보는 사람의 시간대로 읽으면 해외에서 하루가 밀린다
-function kst(iso: string): number {
+// 원본 시각은 시간대 표기 없는 한국 시간이다 — 보는 사람의 시간대로 읽으면 해외에서 하루가 밀린다.
+// 아래 날짜 도우미는 이번 주 보스판(lib/bossBoard.ts)도 같이 쓴다 — 같은 행사의 날짜 글이 두 곳에서 다르면 안 된다
+export function kst(iso: string): number {
   return Date.parse(`${iso.slice(0, 19)}+09:00`);
 }
 
 // 한국 날짜의 연·월·일·요일 — 시간대를 옮기지 않고 한국 기준으로 센다
-function kstDate(ms: number) {
+export function kstDate(ms: number) {
   const shifted = new Date(ms + 9 * 60 * 60 * 1000);
   return { y: shifted.getUTCFullYear(), m: shifted.getUTCMonth() + 1, d: shifted.getUTCDate(), w: shifted.getUTCDay() };
 }
 
-function shortDay(ms: number): string {
+export function shortDay(ms: number): string {
   const { m, d } = kstDate(ms);
   return `${m}.${d}`;
 }
 
-function dayLabel(ms: number): string {
+export function dayLabel(ms: number): string {
   const { m, d, w } = kstDate(ms);
   return `${m}.${d} (${WEEK_KO[w]})`;
 }
 
-function hhmm(iso: string): string {
+export function hhmm(iso: string): string {
   const match = /T(\d{2}):(\d{2})/.exec(iso);
   return match ? `${match[1]}:${match[2]}` : '';
 }
 
 // 한국 날짜로 며칠 남았나 — 시각이 아니라 날짜를 센다 (오늘 밤 행사도 'D-0' 이 아니라 '오늘' 이 되게)
-function daysUntil(startMs: number, nowMs: number): number {
+export function daysUntil(startMs: number, nowMs: number): number {
   const a = kstDate(startMs);
   const b = kstDate(nowMs);
   return Math.round((Date.UTC(a.y, a.m - 1, a.d) - Date.UTC(b.y, b.m - 1, b.d)) / DAY);

@@ -135,7 +135,8 @@ export const SCHEDULE_MONTHS = {
       { s: 10, e: 10, cat: 'event', label: '조로아 커뮤니티 데이 (14–17시)', source: 'https://pokemongo.com/ko/news/communityday-october-2026-zorua' },
       { s: 17, e: 17, cat: 'event', label: '깜눈크 부화데이 (11–17시)', source: 'https://pokemongo.com/ko/news/sandile-hatch-day-2026' },
       { s: 24, e: 24, cat: 'event', label: '다이맥스 유크시 맥스배틀 데이 (14–17시 · 한국은 유크시, 유럽 엠라이트 · 아메리카 아그놈)', eu: '다이맥스 엠라이트 맥스배틀 데이 (14–17시 · 유럽 · 중동 · 아프리카 · 인도는 엠라이트)', source: 'https://pokemongo.com/ko/news/dynamax-uxie-mesprit-azelf-max-battle-day-2026' },
-      { s: 31, e: 31, cat: 'event', label: '슈퍼 메가 레이드 데이 (날짜 확정 · 세부 내용 미발표)', source: 'https://pokemongo.com/ko/news/save-the-date-s24' },
+      // 2026-10-14 공식 한국어 공지(10/13 게시, 확인일 10/14) — 날짜만 알려졌던 10/31 슈퍼 메가 레이드 데이의 보스가 메가샹델라로 정해졌다
+      { s: 31, e: 31, cat: 'event', label: '샹델라 슈퍼 메가 레이드 데이 (14–17시 · 메가샹델라 첫 등장 · 메가레벨 슈퍼 맥스)', source: 'https://pokemongo.com/ko/news/chandelure-super-mega-raid-day-2026' },
       // 2026-10-06 공식 한국어 공지 — 핼러윈 2026 파트 1 (자동분 영문 원제 'Pokémon GO Halloween 2026 Part I' 를 덮는다 · 11/1 10시까지라 11월에도 한 줄)
       { s: 27, e: 31, cat: 'event', label: '핼러윈 2026 파트 1 (10/27 10시 ~ 11/1 10시 · 해트와 케이프의 피카츄 · 톱 해트를 쓴 주뱃 · 리본을 단 데인차)', source: 'https://pokemongo.com/ko/news/halloween-part-1-2026' },
       // 2026-10-08 공식 한국어 공지 — 2026 FC서울 이벤트(서울월드컵경기장 일대 하루 행사, 자동분에 없는 한국 한정 행사라 손 줄로 세운다)
