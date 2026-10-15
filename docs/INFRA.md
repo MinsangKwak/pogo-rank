@@ -553,7 +553,7 @@ bash scripts/verify_visibility.sh dev        # dev 만
 
 | 자리 | 지금 | 근거 |
 | --- | --- | --- |
-| 운영 배포 | `deploy` push · 매일 00:40 KST · 손 실행 → `deploy-pages.yml` 이 데이터 · 정적 빌드 → `wrangler pages deploy --branch=main` → 배포 뒤 검사 | PR #371 · #372 |
+| 운영 배포 | `deploy` push · 매일 00:40 KST · 손 실행(**`preview=false` 필수** — 기본값 `true` 면 `preview` 가지에만 올라가 moncamp.kr 이 안 바뀐다) → `deploy-pages.yml` 이 데이터 · 정적 빌드 → `wrangler pages deploy --branch=main` → 배포 뒤 검사 | PR #371 · #372 |
 | 미리보기 | `pages-preview` push 또는 손 실행(preview) → `preview.moncamp.pages.dev`. noindex · robots 차단 · GA 없음 | PR #376 |
 | 리다이렉트 · 헤더 | `web/src/lib/hosting.ts` 한 곳에서 `_redirects`(옛 주소 308) · `_headers`(보안 헤더 다섯 · `/_next/static` 1년 캐시)를 굽는다. Vercel 의 `redirects()` 와 같은 표 | `hosting.test.ts` |
 | www → apex | Cloudflare Single Redirect 규칙 `moncamp_www_to_apex`(308, 경로 · 쿼리 유지) | `scripts/pages_prod.py` |
@@ -561,7 +561,7 @@ bash scripts/verify_visibility.sh dev        # dev 만
 | Vercel 운영 | `deploy-web.yml` 의 push 를 걷었다 — 손으로만. 광고 코드가 든 판을 Hobby 에 올리지 않기 위해서 | PR #380 · #381 |
 | 표 캐시 | `tables-pages-prod-*` 를 매일 밤 실행이 main 에 저장 — 다른 가지에서도 읽힌다(가지 범위 캐시) | PR #373 · #374 |
 
-**attach 순서 (실패해도 반쯤 넘어간 상태가 안 남게)** — ① www → apex 규칙을 먼저 건다(프록시 전이라 아무 영향 없음, 여기서 실패하면 아무것도 안 바뀜) ② 도메인을 www, apex 순서로 Pages 에 붙인다 ③ DNS 를 `moncamp.pages.dev` CNAME(프록시 켬)으로 돌린다 ④ 최대 13분 동안 `server: cloudflare` · 피카츄 상세 · www 308 · ads.txt 를 잰다.
+**attach 순서 (반쯤 넘어간 상태를 줄이는 순서)** — 되돌림 처리가 없는 순차 실행이라 중간에 실패하면 앞 단계는 남는다. 실패하면 `status` 로 어디까지 바뀌었는지 보고 필요하면 `rollback` 한다. ① www → apex 규칙을 먼저 건다(프록시 전이라 아무 영향 없음, 여기서 실패하면 아무것도 안 바뀜) ② 도메인을 www, apex 순서로 Pages 에 붙인다 ③ DNS 를 `moncamp.pages.dev` CNAME(프록시 켬)으로 돌린다 ④ 최대 13분 동안 `server: cloudflare` · 피카츄 상세 · www 308 · ads.txt 를 잰다.
 
 **토큰 권한** — `CLOUDFLARE_API_TOKEN`(GitHub 시크릿, 사용자 토큰 'Edit Cloudflare Workers')에 Pages · DNS 외에 Zone **Single Redirect: Edit** 이 있어야 attach 가 돈다. 영역 규칙 점검용으로 Zone WAF · Cache Rules · Transform Rules · Zone Settings 읽기를 더했다(2026-10-15).
 
