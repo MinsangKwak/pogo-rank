@@ -16,6 +16,8 @@
 
 ## 로그인 흐름
 
+Google은 사용자 신원을 확인하고, API는 moncamp의 세션을 만듭니다. 브라우저로 돌아온 뒤에는 토큰 갱신을 통해 API 호출에 사용할 액세스 JWT를 받습니다.
+
 ```mermaid
 sequenceDiagram
     participant B as 브라우저
