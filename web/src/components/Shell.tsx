@@ -9,7 +9,7 @@
 import { go, goBack } from '../lib/nav';
 import { openSearch } from '../stores/search';
 
-import { useEffect, useState, type ReactNode } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
 import { ROUTE_GROUPS, ROUTE_NAV, ROUTE_EYEBROW, routeById, routeDesc, routeHref, type RouteDef, type RouteId } from '../routes';
 import { usePrefStore, themeIsDark, THEME_WORD, type Theme } from '../stores/pref';
 import { useAuthStore } from '../stores/auth';
@@ -118,14 +118,30 @@ const THEME_FACE: Record<Theme, [PixelIconName, string]> = {
 
 /** 머리줄 — 검색과 빠른 표시 설정. 계정·서비스 이동은 왼쪽 레일이 맡는다. */
 export function AppBar({ onMenu, onBack }: { onMenu: () => void; home?: boolean; onBack?: () => void }) {
+  const barRef = useRef<HTMLElement>(null);
   const theme = usePrefStore((s) => s.theme);
   const toggleTheme = usePrefStore((s) => s.toggleTheme);
   const [icon, label] = THEME_FACE[theme];
   const newRelease = useNewRelease();
   const now = useLang();
   const region = useRegion();
+  // 헤더는 글꼴·창 폭에 따라 최소 높이보다 커질 수 있다. 레일은 실제 아래쪽에서 시작한다.
+  useLayoutEffect(() => {
+    const bar = barRef.current;
+    if (!bar) return;
+    const syncHeight = () => document.body.style.setProperty('--app-bar-height', `${bar.getBoundingClientRect().height}px`);
+    syncHeight();
+    const observer = typeof ResizeObserver === 'undefined' ? undefined : new ResizeObserver(syncHeight);
+    observer?.observe(bar);
+    window.addEventListener('resize', syncHeight);
+    return () => {
+      observer?.disconnect();
+      window.removeEventListener('resize', syncHeight);
+      document.body.style.removeProperty('--app-bar-height');
+    };
+  }, []);
   return (
-    <header className="app-bar">
+    <header className="app-bar" ref={barRef}>
       <div className="app-bar__head">
         {/* 홈에는 뒤로가기가 없다 — 돌아갈 앞 화면이 없고, 있는 버튼은 "누를 수 있다" 는 약속이다 */}
         <button className="px-btn px-btn--icon px-skin icon-btn" aria-label="상세 닫기" hidden={!onBack}

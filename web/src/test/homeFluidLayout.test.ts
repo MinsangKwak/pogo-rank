@@ -6,6 +6,18 @@ const css = readFileSync(join(__dirname, '../styles/pixel/home.css'), 'utf8');
 const rule = (name: string) => new RegExp(`html body #root \\.${name} \\{([^}]+)\\}`).exec(css)![1]!;
 
 describe('홈 유동형 배치', () => {
+  it('320px 브리핑의 페이지 표시와 이동 단추는 다음 줄로 흐르고 터치 크기를 유지한다', () => {
+    expect(rule('home__brief-pager')).toContain('flex-wrap: wrap');
+    expect(rule('home__brief-pager')).toContain('min-width: 0');
+    expect(rule('home__brief-nav')).toContain('flex: none');
+    expect(rule('home__brief-nav')).toContain('margin-left: auto');
+    const label = /\.home__brief-pager > \[aria-hidden\] \{([^}]+)\}/.exec(css)![1]!;
+    expect(label).toContain('max-width: 100%');
+    expect(label).toContain('white-space: pre-wrap');
+    const buttons = /\.home__brief-nav > button \{([^}]+)\}/.exec(css)![1]!;
+    expect(buttons).toContain('min-width: var(--tap)');
+    expect(buttons).toContain('min-height: var(--tap)');
+  });
   it('팀 판은 여섯 보스의 높이를 따라 늘어나지 않는다', () => {
     expect(rule('home__week-row2')).toContain('align-items: start');
     expect(rule('home__team')).toContain('align-self: start');

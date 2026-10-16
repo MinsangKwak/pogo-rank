@@ -12,8 +12,10 @@ html body #root .home__brief { display: flex; flex-direction: column; gap: 2rem;
 html body #root .home__brief-row { display: flex; align-items: center; gap: 2rem; }
 html body #root .home__brief-copy { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1.2rem; }
 html body #root .home__brief-actions { display: flex; flex-wrap: wrap; gap: 1.2rem; }
-html body #root .home__brief-pager { display: flex; align-items: center; justify-content: space-between; gap: 1.2rem; color: var(--muted); font-size: 1.2rem; white-space: pre; }
-html body #root .home__brief-nav { display: flex; gap: 0.8rem; }
+html body #root .home__brief-pager { display: flex; flex-wrap: wrap; min-width: 0; align-items: center; justify-content: space-between; gap: 1.2rem; color: var(--muted); font-size: 1.2rem; white-space: pre; }
+html body #root .home__brief-nav { display: flex; flex: none; gap: 0.8rem; margin-left: auto; }
+html body #root .home__brief-pager > [aria-hidden] { min-width: 0; max-width: 100%; white-space: pre-wrap; overflow-wrap: anywhere; }
+html body #root .home__brief-nav > button { min-width: var(--tap); min-height: var(--tap); }
 html body #root .home__ball-btn { padding: 0; border: 0; background: url('/images/pixel/pokeball.svg') center / contain no-repeat; cursor: pointer; }
 html body #root .home__check { display: flex; flex-direction: column; gap: 1.6rem; }
 html body #root .home__check .px-badge { align-self: flex-start; }
