@@ -240,6 +240,7 @@ html body #root .nw-boss-grid[data-view="list"] { grid-template-columns: minmax(
   /* 목록이나 단일 보스처럼 판 자체가 넓을 때는 추천을 옆에 두어 긴 빈 행을 없앤다. */
   @container (min-width: 84rem) {
     html body #root .nw-boss { grid-template-columns: 16rem minmax(0, 1fr) minmax(28rem, 0.8fr); gap: 1.6rem 2.4rem; }
+    html body #root .nw-boss:not(:has(.nw-boss__counters)) { grid-template-columns: 16rem minmax(0, 1fr); }
     html body #root .nw-boss__schedule { grid-column: 2; }
     html body #root .nw-boss__identity { grid-column: 2; }
     html body #root .nw-boss__art { grid-column: 1; grid-row: 1 / 5; justify-self: center; --ball: 16rem; }

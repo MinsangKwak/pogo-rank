@@ -139,6 +139,7 @@ describe('모바일 레이드 보스 정보와 리본', () => {
     expect(desktop).toMatch(/\.nw-boss__main, html body #root \.nw-boss__side \{ display: contents/);
     expect(desktop).toMatch(/\.nw-counters \{[^}]*repeat\(3, minmax\(0, 1fr\)\)/);
     expect(desktop).toContain('@container (min-width: 84rem)');
+    expect(desktop).toMatch(/\.nw-boss:not\(:has\(\.nw-boss__counters\)\) \{ grid-template-columns: 16rem minmax\(0, 1fr\)/);
     expect(desktop).toMatch(/\.nw-boss__counters \{[^}]*grid-column: 3; grid-row: 1 \/ 5/);
   });
 
