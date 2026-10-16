@@ -42,6 +42,8 @@ html body #root .pxp-result__out {
 }
 html body #root .pxp-result__out.is-empty { color: var(--muted); font-family: var(--font-body); font-weight: 400; }
 html body #root .pxp-result__actions { display: flex; flex-wrap: wrap; gap: 1.2rem; }
+/* 공용 PxChips 는 한 줄 스크롤인데 검색식은 조건이 많아 줄을 바꾼다 */
+html body #root .pxp-finder .px-chips--scroll { flex-wrap: wrap; overflow: visible; padding-bottom: 0; }
 html body #root .pxp-groups { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1.6rem; }
 html body #root .pxp-group { display: flex; flex-direction: column; gap: 1.6rem; min-width: 0; }
 html body #root .pxp-extra { display: flex; flex-direction: column; gap: 1.6rem; }
@@ -120,7 +122,9 @@ html body #root .pxp-lock .px-note__actions { margin-top: 0.8rem; }
 /* ── 모바일 (393px) — 1열 · 2열, 표는 카드, 입력 16px ─────────────────────── */
 @media (max-width: 1099px) {
   html body #root .pxp-plan__top { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  html body #root .pxp-groups { grid-template-columns: 1fr; }
+  /* 공용 PxChips 는 한 줄 스크롤인데 검색식은 조건이 많아 줄을 바꾼다 */
+html body #root .pxp-finder .px-chips--scroll { flex-wrap: wrap; overflow: visible; padding-bottom: 0; }
+html body #root .pxp-groups { grid-template-columns: 1fr; }
   html body #root .pxp-toc__list { grid-template-columns: 1fr; }
 }
 @media (max-width: 699px) {

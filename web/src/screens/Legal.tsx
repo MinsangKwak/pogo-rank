@@ -16,6 +16,7 @@
 import { Children, isValidElement, useState, type ReactElement, type ReactNode } from 'react';
 import { useMeta } from '../lib/data';
 import KoOnlyNote from '../components/KoOnlyNote';
+import { PxBadge, PxNote, PxPanel, PxTable } from '../components/PxParts';
 
 // 날짜는 lib/legalMeta.ts 에 있다 — 그래야 날짜만 쓰는 쪽이 이 본문을 끌고 오지 않는다
 export { PRIVACY_VER, TERMS_VER } from '../lib/legalMeta';
@@ -38,13 +39,13 @@ function Sec({ title, children }: { title: string; children: ReactNode }) {
   const no = clauseNo(title);
   const label = no ? title.slice(no.length + 1).trim() : title;
   return (
-    <section className="px-panel px-skin px-drop pxp-clause priv__sec" id={anchorOf(title)}>
+    <PxPanel className="pxp-clause priv__sec" id={anchorOf(title)}>
       <h2 className="pxp-clause__title">
-        {no ? <span className="px-badge px-skin px-mono pxp-clause__no">{no.padStart(2, '0')}</span> : null}
+        {no ? <PxBadge className="pxp-clause__no">{no.padStart(2, '0')}</PxBadge> : null}
         <span className="px-heading">{label}</span>
       </h2>
       <div className="pxp-clause__body">{children}</div>
-    </section>
+    </PxPanel>
   );
 }
 
@@ -65,12 +66,10 @@ function Doc({ id, route, lead, dated, children, foot }: {
     <div className="pxp pxp-legal" id={id} data-route={route}>
       <KoOnlyNote />
       <p className="px-body pxp-legal__lead">{lead}</p>
-      <div className="px-note px-skin px-skin--sunk pxp-legal__dated">
-        <p className="px-eyebrow">LAST REVISED</p>
-        <p className="px-sub">최종 개정 · 시행일</p>
+      <PxNote tone="sunk" drop={false} className="pxp-legal__dated" eyebrow="LAST REVISED" title="최종 개정 · 시행일">
         <p className="px-caption">{dated}</p>
-      </div>
-      <details className="px-panel px-skin px-drop pxp-toc" open={wide}>
+      </PxNote>
+      <PxPanel as="details" pad="none" className="pxp-toc" open={wide}>
         <summary className="pxp-toc__sum"><span className="px-sub">목차</span><span className="px-caption">조항을 누르면 그 자리로 이동해요</span></summary>
         <ol className="pxp-toc__list">
           {titles.map((title) => {
@@ -90,7 +89,7 @@ function Doc({ id, route, lead, dated, children, foot }: {
             );
           })}
         </ol>
-      </details>
+      </PxPanel>
       <div className="pxp-legal__clauses">{children}</div>
       <div className="pxp-legal__foot">{foot}</div>
     </div>
@@ -100,17 +99,8 @@ function Doc({ id, route, lead, dated, children, foot }: {
 function Bullets({ items }: { items: ReactNode[] }) {
   return <ul className="pxp-list priv__list">{items.map((one, index) => <li key={index}>{one}</li>)}</ul>;
 }
-/** 표 — 좁은 화면에서는 줄마다 카드가 된다. 칸의 머리말(data-label)을 CSS 가 앞에 붙인다 */
-function Table({ head, rows }: { head: string[]; rows: string[][] }) {
-  return (
-    <div className="pxp-table-wrap">
-      <table className="px-table pxp-table">
-        <thead><tr>{head.map((one) => <th key={one}>{one}</th>)}</tr></thead>
-        <tbody>{rows.map((row, index) => <tr key={index}>{row.map((cell, at) => <td key={at} data-label={head[at]}>{cell}</td>)}</tr>)}</tbody>
-      </table>
-    </div>
-  );
-}
+// 표는 공용 PxTable — 좁은 화면에서 줄마다 카드가 된다
+const Table = PxTable;
 function useContact(): ReactNode {
   const { data } = useMeta();
   const email = data.CONTACT_EMAIL;

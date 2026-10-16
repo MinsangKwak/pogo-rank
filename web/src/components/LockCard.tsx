@@ -18,6 +18,7 @@ import { termsAccepted } from '../lib/terms';
 import type { LockReason } from '../lib/useLocked';
 import { PixelIcon, type PixelIconName } from './PixelIcon';
 import TermsConsent from './TermsConsent';
+import { PxButton, PxNote } from './PxParts';
 
 // 확인 중은 잠긴 까닭이 아니라 잠겼는지 모르는 때다 — 판정(useLocked)의 답에는 안 넣는다
 type CardReason = LockReason | 'checking';
@@ -27,12 +28,12 @@ function Card({ icon, eyebrow, title, body, children, busy }: {
   icon: PixelIconName; eyebrow: string; title: string; body?: string; children?: ReactNode; busy?: boolean;
 }) {
   return (
-    <section className="px-note px-skin px-drop pxp-lock plan__lock" {...(busy ? { 'aria-busy': true } : {})}>
-      <p className="px-eyebrow pxp-lock__eyebrow"><PixelIcon name={icon} /> {eyebrow}</p>
+    <PxNote className="pxp-lock plan__lock" {...(busy ? { 'aria-busy': true } : {})}
+      eyebrow={<span className="pxp-lock__eyebrow"><PixelIcon name={icon} /> {eyebrow}</span>}>
       <h2 className="px-heading">{title}</h2>
       {body ? <p className="px-note__body">{body}</p> : null}
       {children}
-    </section>
+    </PxNote>
   );
 }
 
@@ -53,7 +54,7 @@ export default function LockCard({ reason = 'login' }: { reason?: CardReason }) 
   if (reason === 'root') {
     return (
       <Card icon="info" eyebrow="NOT FOUND" title="없는 화면이에요" body="주소를 다시 확인해 주세요.">
-        <div className="px-note__actions"><a className="px-btn px-skin plan__lock-go" href="/"><PixelIcon name="home" /> 처음으로</a></div>
+        <div className="px-note__actions"><PxButton className="plan__lock-go" href="/"><PixelIcon name="home" /> 처음으로</PxButton></div>
       </Card>
     );
   }
@@ -66,7 +67,7 @@ export default function LockCard({ reason = 'login' }: { reason?: CardReason }) 
       body={pending ? '관리자가 승인하면 바로 열려요.' : '로그인 후 관리자 승인을 받으면 이용할 수 있어요.'}>
       {pending ? null : (
         <div className="px-note__actions">
-          <button type="button" className="px-btn px-btn--primary px-skin account__login plan__lock-go" onClick={start}><PixelIcon name="user" /> Google로 로그인</button>
+          <PxButton kind="primary" className="account__login plan__lock-go" onClick={start}><PixelIcon name="user" /> Google로 로그인</PxButton>
         </div>
       )}
       <p className="px-caption">첫 로그인 때 이용약관·개인정보처리방침에 대한 동의를 받아요.</p>

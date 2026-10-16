@@ -14,6 +14,7 @@ import { markReleaseSeen } from '../lib/release';
 import { useLang } from '../lib/useLang';
 import KoOnlyNote from '../components/KoOnlyNote';
 import type { ReleaseGroup } from '../types/data';
+import { PxBadge, PxPanel } from '../components/PxParts';
 
 /** 묶음 제목 '2026-10-15 · v5.10.3' 을 날짜와 판 번호로 가른다 — 초기 묶음은 날짜만 있어 판이 비어 있다 */
 function splitDate(date: string): { day: string; ver: string } {
@@ -60,14 +61,14 @@ export default function Release() {
         {data.RELEASE_NOTES.map((group, index) => {
           const { day, ver } = splitDate(group.date);
           return (
-            <section key={group.date} className="px-card px-skin px-drop pxp-rel release__sec" aria-label={group.date}>
+            <PxPanel key={group.date} pad="card" className="pxp-rel release__sec" aria-label={group.date}>
               <div className="pxp-rel__head">
-                <span className={`px-badge px-skin ${index === 0 ? 'px-badge--fill' : 'px-badge--muted'}`}>{index === 0 ? 'NEW' : 'PREVIOUS'}</span>
-                {ver ? <span className="px-badge px-skin px-badge--blue pxp-rel__ver">{ver}</span> : null}
+                <PxBadge tone={index === 0 ? 'fill' : 'muted'}>{index === 0 ? 'NEW' : 'PREVIOUS'}</PxBadge>
+                {ver ? <PxBadge tone="blue" className="pxp-rel__ver">{ver}</PxBadge> : null}
                 <span className="px-caption px-mono pxp-rel__date">{day}</span>
               </div>
               <ul className="pxp-rel__items">{items(group).map((text, at) => <Item key={at} text={text} />)}</ul>
-            </section>
+            </PxPanel>
           );
         })}
       </div>

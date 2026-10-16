@@ -7,7 +7,7 @@
 //
 //   (0) 지표 판 둘 + 안내 판   담은 수 · 다가오는 일정 수 · 담는 법(도감으로 가는 단추)
 //   (1) 관련 소식 카드          담아 둔 종에 잡힌 일정 — 진행 중 · D-day 배지와 기간
-//   (2) 즐겨찾는 포켓몬 격자    4열 포켓몬 카드(모바일 2열). ★ 를 다시 누르면 해제
+//   (2) 즐겨찾는 포켓몬 격자    공용 MonCard 4열(모바일 2열). ★ 를 다시 누르면 해제
 //
 // ★ 는 로그인하면 계정, 로그인 전이면 이 기기에 둔다 (lib/useFavs.ts).
 // 🎒 내 개체는 v3 에서도 스위치가 내려가 있다 (PLAN_MONS_ENABLED=false) — 옮기지 않았다.
@@ -18,9 +18,10 @@ import { favNewsFor, favNewsList, favNewsWhen, FAV_NEWS_LABEL, type FavNewsRow }
 import { count, DASH } from '../lib/cell';
 import { Sprite } from '../components/Bits';
 import MonCard from '../components/MonCard';
-import { go } from '../lib/nav';
+import { PxBadge, PxButton, PxMetric, PxNote, PxPanel, PxSectionHead } from '../components/PxParts';
 import { PixelIcon } from '../components/PixelIcon';
 import { routeHref } from '../routes';
+import { go } from '../lib/nav';
 
 /** 날짜 한 토막 — '10.12'. 못 읽는 날짜는 대시 (빈 값에 NaN 을 내지 않는다, CLAUDE.md §1) */
 function dayOf(iso: string): string {
@@ -36,28 +37,32 @@ function spanOf(row: FavNewsRow): string {
   return from === to ? from : `${from}–${to}`;
 }
 
+/** D-day 배지 — 진행 중은 빨강 채움, 다가오는 것은 민트. 지금 할 수 있는 일이 먼저 보인다 */
+function WhenBadge({ row, className }: { row: FavNewsRow; className?: string }) {
+  return <PxBadge ko tone={row.days <= 0 ? 'fill' : 'mint'} className={className}>{favNewsWhen(row)}</PxBadge>;
+}
+
 /** 소식 카드 — 상세의 배지와 달리 여기서는 **누구인지**가 먼저다 (여러 마리가 한 줄씩 서므로) */
 function NewsCard({ row, nameOf }: { row: FavNewsRow; nameOf: (dex: number) => string }) {
-  const now = row.days <= 0;
+  const who = row.dex.map(nameOf).join(' · ');
   return (
-    <article className={`px-card px-skin px-drop pxp-news${now ? ' is-now' : ''}`}>
+    <PxPanel as="article" pad="card" className={`pxp-news${row.days <= 0 ? ' is-now' : ''}`}>
       <div className="pxp-news__head">
-        {/* 진행 중은 빨강 채움, 다가오는 것은 민트 — 지금 할 수 있는 일이 먼저 보인다 */}
-        <span className={`px-badge px-skin px-badge--ko ${now ? 'px-badge--fill' : 'px-badge--mint'}`}>{favNewsWhen(row)}</span>
-        <span className="px-badge px-skin px-badge--ko px-badge--muted">{FAV_NEWS_LABEL[row.event.type] ?? '일정'}</span>
+        <WhenBadge row={row} />
+        <PxBadge ko tone="muted">{FAV_NEWS_LABEL[row.event.type] ?? '일정'}</PxBadge>
       </div>
       <div className="pxp-news__body">
         <span className="pxp-news__mons" aria-hidden="true">{row.dex.map((dex) => <Sprite key={dex} id={dex} />)}</span>
         <div className="pxp-news__text">
-          <h4 className="px-sub">{row.event.title || row.dex.map(nameOf).join(' · ')}</h4>
-          <p className="px-caption">{row.dex.map(nameOf).join(' · ')}</p>
+          <h4 className="px-sub">{row.event.title || who}</h4>
+          <p className="px-caption">{who}</p>
         </div>
       </div>
       <div className="pxp-news__foot">
         <span className="px-caption"><span className="px-muted">기간 </span><span className="px-mono">{spanOf(row)}</span></span>
-        <a className="px-btn px-btn--sm px-skin" href="/schedule">일정 보기 <PixelIcon name="arrow" /></a>
+        <PxButton size="sm" href="/schedule">일정 보기 <PixelIcon name="arrow" /></PxButton>
       </div>
-    </article>
+    </PxPanel>
   );
 }
 
@@ -70,49 +75,32 @@ export default function Planner() {
   // 이름표에 없으면 번호를 그대로 쓴다 — 이름을 지어내지 않는다
   const nameOf = (id: number) => dex.DEX_DATA.names[String(id)] ?? `#${id}`;
   const news = favNewsList(fav.FAV_EVENTS, favs);
+  const toDex = <PxButton kind="primary" href={routeHref('dex')}>도감에서 담을 포켓몬 찾기 <PixelIcon name="arrow" /></PxButton>;
 
   return (
     <div className="pxp pxp-plan" id="page-planner" data-route="planner">
       {/* (0) 지표 판 둘 + 안내 판 */}
       <div className="pxp-plan__top">
-        <div className="px-metric px-skin px-drop">
-          <p className="px-metric__label">즐겨찾기</p>
-          <p className="px-metric__value">{count(favs.length)}</p>
-          <p className="px-metric__note">같은 계정으로 로그인하면 이어서 볼 수 있어요.</p>
-        </div>
-        <div className="px-metric px-skin px-drop pxp-metric--mint">
-          <p className="px-metric__label">다가오는 관련 일정</p>
-          <p className="px-metric__value">{count(news.length)}</p>
-          <p className="px-metric__note">관심 포켓몬과 연결된 소식</p>
-        </div>
-        <div className="px-note px-skin px-drop pxp-plan__guide">
-          <p className="px-note__title">작게 시작하는 육성 계획</p>
-          <p className="px-note__body">포켓몬 상세에서 ☆를 눌러 즐겨찾기에 추가하세요. 해당 포켓몬의 커뮤니티 데이·스포트라이트 아워·레이드 일정이 등록되면 아래에 표시돼요.</p>
-          <div className="px-note__actions">
-            <a className="px-btn px-btn--primary px-skin" href={routeHref('dex')}>도감에서 담을 포켓몬 찾기 <PixelIcon name="arrow" /></a>
-          </div>
-        </div>
+        <PxMetric label="즐겨찾기" value={count(favs.length)} note="같은 계정으로 로그인하면 이어서 볼 수 있어요." />
+        <PxMetric label="다가오는 관련 일정" value={count(news.length)} note="관심 포켓몬과 연결된 소식" tone="mint" />
+        <PxNote className="pxp-plan__guide" title="작게 시작하는 육성 계획"
+          body="포켓몬 상세에서 ☆를 눌러 즐겨찾기에 추가하세요. 해당 포켓몬의 커뮤니티 데이·스포트라이트 아워·레이드 일정이 등록되면 아래에 표시돼요."
+          actions={toDex} />
       </div>
 
       {/* (1) 소식 */}
       <section className="pxp-sec" aria-labelledby="planner-news-title">
-        <h3 className="px-sec"><span className="px-heading" id="planner-news-title">내 포켓몬과 관련된 소식</span><span className="px-sec__note">놓치기 전에 확인하세요.</span></h3>
+        <PxSectionHead id="planner-news-title" title="내 포켓몬과 관련된 소식" note="놓치기 전에 확인하세요." />
         {news.length
           ? <div className="px-grid px-grid--3 pxp-news-grid">{news.map((row, index) => <NewsCard key={index} row={row} nameOf={nameOf} />)}</div>
-          : (
-            <div className="px-note px-skin px-drop">
-              <p className="px-note__body">
-                {favs.length
-                  ? '즐겨찾기 포켓몬의 예정된 일정이 없어요. 새 일정이 등록되면 여기에 표시돼요.'
-                  : '아직 즐겨찾기한 포켓몬이 없어요. 도감에서 ★를 눌러 추가해 보세요.'}
-              </p>
-            </div>
-          )}
+          : <PxNote body={favs.length
+              ? '즐겨찾기 포켓몬의 예정된 일정이 없어요. 새 일정이 등록되면 여기에 표시돼요.'
+              : '아직 즐겨찾기한 포켓몬이 없어요. 도감에서 ★를 눌러 추가해 보세요.'} />}
       </section>
 
       {/* (2) 담아 둔 포켓몬 */}
       <section className="pxp-sec" aria-labelledby="planner-favs-title">
-        <h3 className="px-sec"><span className="px-heading" id="planner-favs-title">즐겨찾는 포켓몬</span><span className="px-sec__note">별표를 눌러 해제할 수 있어요.</span></h3>
+        <PxSectionHead id="planner-favs-title" title="즐겨찾는 포켓몬" note="별표를 눌러 해제할 수 있어요." />
         {favs.length
           ? (
             <div className="px-grid pxp-fav-grid">
@@ -124,22 +112,15 @@ export default function Planner() {
                 return (
                   <MonCard key={id} sprite={id} dex={id} name={nameOf(id)} from="내 포켓몬"
                     types={dex.DEX_DATA.forms[String(id)]?.types ?? []}
-                    badges={soon ? <span className={`px-badge px-skin px-badge--ko px-mon__rank ${soon.days <= 0 ? 'px-badge--fill' : 'px-badge--mint'}`}>{favNewsWhen(soon)}</span> : null}
+                    badges={soon ? <WhenBadge row={soon} className="px-mon__rank" /> : null}
                     meta={soon ? `${FAV_NEWS_LABEL[soon.event.type] ?? '일정'} · ${favNewsWhen(soon)}` : undefined}
                     onOpen={() => go(`/mon/${id}`)} />
                 );
               })}
             </div>
           )
-          : (
-            <div className="px-note px-skin px-drop">
-              <p className="px-note__title">아직 즐겨찾기가 없나요?</p>
-              <p className="px-note__body">포켓몬 상세에서 ☆를 누르면 이곳에 모을 수 있어요.</p>
-              <div className="px-note__actions">
-                <a className="px-btn px-skin" href={routeHref('dex')}>포켓몬 도감 열기 <PixelIcon name="arrow" /></a>
-              </div>
-            </div>
-          )}
+          : <PxNote title="아직 즐겨찾기가 없나요?" body="포켓몬 상세에서 ☆를 누르면 이곳에 모을 수 있어요."
+              actions={<PxButton href={routeHref('dex')}>포켓몬 도감 열기 <PixelIcon name="arrow" /></PxButton>} />}
       </section>
     </div>
   );

@@ -18,6 +18,8 @@ import TermsConsent from '../components/TermsConsent';
 import ConsentDialog from '../components/Consent';
 import DeleteAccountDialog from '../components/DeleteAccountDialog';
 import { PixelIcon } from '../components/PixelIcon';
+import { PxChips, PxSwitch } from '../components/Bits';
+import { PxBadge, PxButton, PxPanel } from '../components/PxParts';
 
 // 세 갈래의 이름과 한 줄 설명. 순서는 THEME_ORDER 그대로다
 const THEME_TEXT: Record<Theme, [string, string]> = {
@@ -35,13 +37,13 @@ const ANIM_TEXT: Record<'on' | 'off', string> = {
 /** 판 하나 — 제목 · 설명 · 내용. 설정 화면은 이 판을 세로로 쌓는다 */
 function Panel({ id, title, desc, children }: { id: string; title: string; desc?: string; children: ReactNode }) {
   return (
-    <section className="px-panel px-skin px-drop pxp-set" aria-labelledby={`${id}-title`}>
+    <PxPanel className="pxp-set" aria-labelledby={`${id}-title`}>
       <div className="pxp-set__head">
         <h3 className="px-heading" id={`${id}-title`}>{title}</h3>
         {desc ? <p className="px-body px-muted">{desc}</p> : null}
       </div>
       {children}
-    </section>
+    </PxPanel>
   );
 }
 
@@ -55,7 +57,7 @@ function MyPage({ onLogin }: { onLogin: () => void }) {
     return (
       <div className="pxp-set__row">
         <p className="px-body px-muted">로그인하면 즐겨찾기를 기기 간에 이어서 볼 수 있어요. 첫 로그인 시 <a href="/terms">이용약관</a>·<a href="/privacy">개인정보처리방침</a>에 대한 동의를 받아요.</p>
-        <button type="button" className="px-btn px-btn--primary px-skin account__login" onClick={onLogin}><PixelIcon name="user" /> Google로 로그인</button>
+        <PxButton kind="primary" className="account__login" onClick={onLogin}><PixelIcon name="user" /> Google로 로그인</PxButton>
       </div>
     );
   }
@@ -67,9 +69,7 @@ function MyPage({ onLogin }: { onLogin: () => void }) {
           <p className="px-sub">{user.displayName || '(이름 없음)'}</p>
           <p className="px-caption px-mono">{authEmail()}</p>
         </div>
-        {status === 'pending'
-          ? <span className="px-badge px-skin px-badge--ko px-badge--yellow">승인 대기</span>
-          : <span className="px-badge px-skin px-badge--ko px-badge--mint">로그인됨</span>}
+        {status === 'pending' ? <PxBadge ko tone="yellow">승인 대기</PxBadge> : <PxBadge ko tone="mint">로그인됨</PxBadge>}
       </div>
       {status === 'pending'
         ? <p className="px-caption">관리자가 승인하면 내 포켓몬을 계정에 저장할 수 있어요. 관리자에게 알려주세요!</p>
@@ -118,24 +118,15 @@ export default function Settings() {
       ) : null}
 
       <Panel id="settings-theme" title="화면 테마" desc={`현재 기기의 화면 테마: ${deviceNow}`}>
-        <div className="px-chips" role="radiogroup" aria-label="화면 테마">
-          {THEME_ORDER.map((choice) => (
-            <button key={choice} type="button" className="px-chip px-skin" role="radio" aria-checked={choice === theme} aria-pressed={choice === theme}
-              onClick={() => { setTheme(choice); track('theme_set', { to: choice }); }}>
-              {THEME_TEXT[choice][0]}
-            </button>
-          ))}
-        </div>
+        <PxChips label="화면 테마" items={THEME_ORDER.map((choice) => ({ id: choice, label: THEME_TEXT[choice][0] }))} value={theme}
+          onPick={(choice) => { setTheme(choice as Theme); track('theme_set', { to: choice }); }} />
         <p className="px-body px-muted">{THEME_TEXT[theme][1]}</p>
         <p className="px-caption">현재 설정은 이 브라우저에 저장돼요. 헤더의 테마 버튼으로 밝은 모드와 다크 모드를 전환할 수 있어요. 기기 설정을 따르려면 위에서 선택해 주세요.</p>
       </Panel>
 
       <Panel id="settings-animation" title="포켓몬 애니메이션">
         <div className="pxp-set__toggle">
-          <button type="button" className="px-toggle" role="switch" aria-checked={anim === 'on'} onClick={() => pickAnim(anim === 'on' ? 'off' : 'on')}>
-            <span className="px-toggle__track" aria-hidden="true" />
-            <span>{anim === 'on' ? '켜짐' : '꺼짐'}</span>
-          </button>
+          <PxSwitch text={anim === 'on' ? '켜짐' : '꺼짐'} checked={anim === 'on'} onChange={(next) => pickAnim(next ? 'on' : 'off')} />
           <p className="px-body px-muted">{ANIM_TEXT[anim]}</p>
         </div>
         <p className="px-caption">변경한 설정은 다음에 여는 화면부터 적용돼요. 기기의 동작 줄이기 설정이 켜져 있으면 정지 이미지를 표시해요.</p>
@@ -143,17 +134,17 @@ export default function Settings() {
 
       <Panel id="settings-stats" title="통계 · 저장소" desc="방문 통계를 켜고 끄거나, 오프라인용 캐시를 비울 수 있어요. 이메일·이름은 전송하지 않아요.">
         <div className="px-note__actions">
-          <button type="button" className="px-btn px-skin" onClick={() => setStatsOpen(true)}><PixelIcon name="gear" /> 통계 · 저장소 설정 열기</button>
+          <PxButton onClick={() => setStatsOpen(true)}><PixelIcon name="gear" /> 통계 · 저장소 설정 열기</PxButton>
         </div>
       </Panel>
 
       {enabled && user ? (
         <Panel id="settings-manage" title="계정 관리">
           <div className="px-note__actions">
-            <button type="button" className="px-btn px-skin" onClick={() => void signOutNow()}>로그아웃</button>
+            <PxButton onClick={() => void signOutNow()}>로그아웃</PxButton>
             {/* 관리자는 여기서 지우지 않는다 — Account.tsx 와 같은 규칙 */}
             {admin ? null : (
-              <button type="button" className="px-btn px-skin pxp-btn--danger account__danger" onClick={() => setDeleteOpen(true)}>계정 삭제</button>
+              <PxButton kind="danger" className="account__danger" onClick={() => setDeleteOpen(true)}>계정 삭제</PxButton>
             )}
           </div>
           <p className="px-caption">계정 삭제 전, 삭제되는 데이터와 복구 가능 여부를 확인합니다.</p>
