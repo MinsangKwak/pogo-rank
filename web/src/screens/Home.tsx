@@ -24,7 +24,7 @@ import { dexNoOf as dexNo } from '../lib/mon';
 import { track } from '../lib/track';
 import { UPDATE_CATS } from '../lib/notes';
 import type { OpenMon } from '../lib/mon';
-import MonCard from '../components/MonCard';
+import MonCard, { PokemonNumberRibbon } from '../components/MonCard';
 import { PixelIcon } from '../components/PixelIcon';
 import { TankPopupEntry, NOV_TANK_LIVE } from '../components/TankPopup';
 
@@ -165,7 +165,7 @@ function HotFour({ onOpen }: { onOpen: OpenMon }) {
       <h2 className="px-sec"><span className="px-heading">지금 많이 보는 포켓몬</span><span className="px-sec__note">{caption}</span></h2>
       <div className="px-grid">
         {shown.map((row, index) => (
-          <MonCard key={row.dex} sprite={row.dex} dex={row.dex} name={row.name} types={row.types} from="home_hot"
+          <MonCard key={row.dex} sprite={row.dex} dex={row.dex} rank={index + 1} name={row.name} types={row.types} from="home_hot"
             meta={whyOf(row.dex) || '육성 · 순위 · 진화 한 번에 보기'}
             onOpen={(pick) => { track('hot_mon_open', { sprite: row.dex, rank: index + 1 }); onOpen({ ...pick, via: 'dex' }); }} />
         ))}
@@ -191,28 +191,31 @@ export function WeekList({ board, onOpen }: { board: BossCard[]; onOpen: OpenMon
           {rows.map((card) => {
             const counter = countersOf(src, card.battle, card.types, 1)?.rows[0];
             return (
-              <li key={card.id} className="home__week-row px-skin px-skin--sunk">
-                <button type="button" className="home__week-boss" onClick={() => { track('week_boss_open', { boss: card.detailName, kind: card.kind }); onOpen({ sprite: card.sprite, name: card.detailName, types: card.types, boss: card.kind }); }}>
-                  <Ball sprite={card.sprite} size="sm" />
-                  <span className="home__week-text">
-                    <b className="px-sub">{card.form ? `${card.form} ${card.name}` : card.name}</b>
-                    <span className="home__week-meta">
-                      <span className="px-caption">{BOARD_KIND_KO[card.kind]}</span>
-                      <span className={`home__week-status px-badge px-skin px-badge--ko${card.live ? '' : ' px-badge--muted'}`}>{cardDday(card)}</span>
+              <li key={card.id} className="home__week-row">
+                <PokemonNumberRibbon dex={card.dex} />
+                <div className="home__week-panel px-skin px-skin--sunk">
+                  <button type="button" className="home__week-boss" onClick={() => { track('week_boss_open', { boss: card.detailName, kind: card.kind }); onOpen({ sprite: card.sprite, name: card.detailName, types: card.types, boss: card.kind }); }}>
+                    <Ball sprite={card.sprite} size="sm" />
+                    <span className="home__week-text">
+                      <b className="px-sub">{card.form ? `${card.form} ${card.name}` : card.name}</b>
+                      <span className="home__week-meta">
+                        <span className="px-caption">{BOARD_KIND_KO[card.kind]}</span>
+                        <span className={`home__week-status px-badge px-skin px-badge--ko${card.live ? '' : ' px-badge--muted'}`}>{cardDday(card)}</span>
+                      </span>
+                      <span className="home__week-when px-caption">
+                        <span>{card.short}</span>{card.hours ? <span>{card.hours}</span> : null}
+                      </span>
                     </span>
-                    <span className="home__week-when px-caption">
-                      <span>{card.short}</span>{card.hours ? <span>{card.hours}</span> : null}
-                    </span>
-                  </span>
-                </button>
-                {counter ? (
-                  <button type="button" className="home__week-rec" title={`추천 · ${counter.name}`}
-                    onClick={() => { track('week_boss_rec', { boss: card.detailName, mon: counter.name }); onOpen({ sprite: counter.sprite, name: counter.name, en: counter.en, types: counter.types }); }}>
-                    <span className="home__week-rec-label px-caption">추천</span>
-                    <img className="home__week-rec-sprite" src={`${BASE}sprites/${counter.sprite}.png`} alt="" width="32" height="32" loading="lazy" decoding="async" />
-                    <span className="home__week-rec-name px-caption">{counter.name}</span>
                   </button>
-                ) : null}
+                  {counter ? (
+                    <button type="button" className="home__week-rec" title={`추천 · ${counter.name}`}
+                      onClick={() => { track('week_boss_rec', { boss: card.detailName, mon: counter.name }); onOpen({ sprite: counter.sprite, name: counter.name, en: counter.en, types: counter.types }); }}>
+                      <span className="home__week-rec-label px-caption">추천</span>
+                      <img className="home__week-rec-sprite" src={`${BASE}sprites/${counter.sprite}.png`} alt="" width="32" height="32" loading="lazy" decoding="async" />
+                      <span className="home__week-rec-name px-caption">{counter.name}</span>
+                    </button>
+                  ) : null}
+                </div>
               </li>
             );
           })}
@@ -273,9 +276,9 @@ function HomeData({ board, onOpen }: { board: BossCard[]; onOpen: OpenMon }) {
   const typeKo = (key: string | undefined) => (key ? dex.TYPE_KO[key as keyof typeof dex.TYPE_KO] ?? '' : '');
 
   const shortcuts = [
-    { id: 'dmax', title: 'D-MAX', sub: '맥스 기술 · 딜러와 탱커', row: dmaxTop[0], href: routeHref('dmax') },
-    { id: 'pve', title: '레이드 · PvE', sub: 'DPS · TDO로 비교', row: pveTop[0], href: routeHref('pve') },
-    { id: 'pvp', title: '배틀 · PvP', sub: '리그별 추천과 기술', row: pvpTop[0], href: routeHref('pvp') },
+    { id: 'dmax', title: 'D-MAX', sub: '맥스 기술 · 딜러와 탱커', row: dmaxTop[0], rank: dmaxTop.length ? 1 : undefined, href: routeHref('dmax') },
+    { id: 'pve', title: '레이드 · PvE', sub: 'DPS · TDO로 비교', row: pveTop[0], rank: pveTop.length ? 1 : undefined, href: routeHref('pve') },
+    { id: 'pvp', title: '배틀 · PvP', sub: '리그별 추천과 기술', row: pvpTop[0], rank: pvpTop[0]?.rank, href: routeHref('pvp') },
   ];
 
   return (
@@ -299,19 +302,25 @@ function HomeData({ board, onOpen }: { board: BossCard[]; onOpen: OpenMon }) {
         <h2 className="px-sec"><span className="px-heading">용도별 상위 포켓몬</span><span className="px-sec__note">어디에서 활약하는지 먼저 확인하세요.</span></h2>
         <div className="px-grid px-grid--3">
           {shortcuts.map((one) => (
-            <article key={one.id} className="home__rank px-skin px-drop px-card" data-kind={one.id}>
-              <div className="home__rank-head">
-                {one.row ? <Ball sprite={one.row.sprite} size="sm" label={`${one.row.name} 상세 보기`} onClick={() => onOpen({ sprite: one.row!.sprite, name: one.row!.name, en: one.row!.en, types: one.row!.types })} /> : null}
-                <h3 className="px-heading">{one.title}</h3>
+            <article key={one.id} className="home__rank" data-kind={one.id}>
+              {one.row ? <PokemonNumberRibbon rank={one.rank} dex={dexNo(one.row.sprite, dex.DEX_DATA.dex) ?? undefined} /> : null}
+              <div className="home__rank-panel px-skin px-drop px-card">
+                <p className="home__rank-kind px-caption">{one.title}</p>
+                <div className="home__rank-head">
+                  {one.row ? <Ball sprite={one.row.sprite} size="sm" label={`${one.row.name} 상세 보기`} onClick={() => onOpen({ sprite: one.row!.sprite, name: one.row!.name, en: one.row!.en, types: one.row!.types })} /> : null}
+                  <div className="home__rank-copy">
+                    <h3 className="px-sub">{one.row?.name ?? one.title}</h3>
+                    {one.row ? <p className="px-caption">{one.row.types.map(typeKo).filter(Boolean).join(' · ')}</p> : null}
+                  </div>
+                </div>
+                <p className="px-caption">
+                  {one.sub}
+                  {one.id === 'pve' && one.row && 'dps' in one.row ? ` · DPS ${num(one.row.dps, 1)}` : ''}
+                  {one.id === 'dmax' && one.row && 'charged' in one.row ? ` · ${typeKo(one.row.charged)} 맥스` : ''}
+                  {one.id === 'pvp' && one.row && 'score' in one.row ? ` · ${count(one.row.score)}점` : ''}
+                </p>
+                <a className="px-btn px-btn--block px-skin" href={one.href} onClick={() => track('home_cta', { to: one.id })}>순위 보기 →</a>
               </div>
-              <p className="px-caption">
-                {one.sub}
-                {one.row ? ` · 1위 ${one.row.name}` : ''}
-                {one.id === 'pve' && one.row && 'dps' in one.row ? ` · DPS ${num(one.row.dps, 1)}` : ''}
-                {one.id === 'dmax' && one.row && 'charged' in one.row ? ` · ${typeKo(one.row.charged)} 맥스` : ''}
-                {one.id === 'pvp' && one.row && 'score' in one.row ? ` · ${count(one.row.score)}점` : ''}
-              </p>
-              <a className="px-btn px-btn--block px-skin" href={one.href} onClick={() => track('home_cta', { to: one.id })}>순위 보기 →</a>
             </article>
           ))}
         </div>

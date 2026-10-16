@@ -39,12 +39,14 @@ html body #root .rk-boss__acc > summary::-webkit-details-marker { display: none;
 html body #root .rk-boss__acc[open] > summary { --px-fill: var(--brand-subtle); }
 html body #root .rk-boss__body { display: flex; flex-direction: column; gap: 1.2rem; margin-top: 1.6rem; }
 html body #root .rk-recs { display: grid; grid-template-columns: repeat(auto-fill, minmax(24rem, 1fr)); gap: 1.2rem; margin: 0; padding: 0; list-style: none; }
-html body #root .rk-rec { display: flex; align-items: center; gap: 1.2rem; box-sizing: border-box; width: 100%; min-height: var(--tap); padding: 0.8rem 1.2rem; --px-fill: var(--panel-2); color: var(--fg); font: 500 1.4rem/1.5 var(--font-body); text-align: left; cursor: pointer; }
+html body #root .rk-rec__wrap { position: relative; display: flex; min-width: 0; margin-top: 0.4rem; }
+html body #root .rk-rec { display: flex; align-items: center; gap: 1.2rem; box-sizing: border-box; width: 100%; min-width: 0; min-height: var(--tap); padding: 2.8rem 1.2rem 1.2rem; --px-fill: var(--panel-2); color: var(--fg); font: 500 1.4rem/1.5 var(--font-body); text-align: left; cursor: pointer; }
 @media (hover: hover) { html body #root .rk-rec:hover { --px-line: var(--brand-text); } }
 html body #root .rk-rec .px-ball { --ball: 5.6rem; }
 html body #root .rk-rec__main { display: flex; flex-direction: column; gap: 0.4rem; min-width: 0; }
 html body #root .rk-rec__name { display: flex; flex-wrap: wrap; align-items: center; gap: 0.4rem; }
-html body #root .rk-rec__sub { color: var(--muted); font: 400 1.2rem/1.5 var(--font-body); }
+html body #root .rk-rec__name > b { max-width: 100%; overflow-wrap: anywhere; }
+html body #root .rk-rec__sub { color: var(--muted); font: 400 1.2rem/1.5 var(--font-body); overflow-wrap: anywhere; }
 
 /* ── 구역 제목 — 제목 + 한 마디 + (도감) 지우기 ─────────────────────────────── */
 html body #root .rk-head { margin-top: 0.8rem; }
@@ -91,19 +93,26 @@ html body #root .rk-row__meta, html body #root .rk-row__badges { display: flex; 
 html body #root .rk-row__meta:empty, html body #root .rk-row__badges:empty { display: none; }
 html body #root .rk-row__metric { display: flex; flex-direction: column; align-items: flex-end; gap: 0.4rem; }
 html body #root .rk-row--ranked .rk-row__sub { max-width: 24rem; overflow-wrap: anywhere; }
+/* 도감도 같은 리본을 쓰되, 단일 CP 수치는 오른쪽에 두어 빈 하단 줄을 만들지 않는다. */
+html body #root .rk-row--dex { position: relative; margin-top: 0.4rem; }
+html body #root .rk-row--dex > .rk-row__btn { display: grid; grid-template-columns: 5.6rem minmax(0, 1fr) auto; gap: 1.2rem; padding: 1.6rem; }
+html body #root .rk-row--dex .rk-row__art { --ball: 5.6rem; align-self: start; margin-top: 1.2rem; }
+html body #root .rk-row--dex .rk-row__main { gap: 0.4rem; }
+html body #root .rk-row--dex .rk-row__name, html body #root .rk-row--dex .rk-row__lines > span { min-width: 0; overflow-wrap: anywhere; }
+html body #root .rk-row--dex .rk-row__stats { align-self: start; min-width: 0; margin-top: 1.2rem; }
+html body #root .rk-row--dex .rk-row__sub { max-width: 16rem; overflow-wrap: anywhere; }
 /* 미구현 줄 · 카드는 흐리게 남긴다 — 지우지 않는다 (v3.36.0 의 판단) */
 html body #root :is(.rk-row, .rk-grid > li, .rk-table tr).is-unreleased { opacity: 0.6; }
 /* 상세의 '더보기' 로 내려온 줄 — 잠깐 밝힌다 (Row.tsx useFocusRow) */
 html body #root :is(.rk-row, .rk-grid > li).is-focus, html body #root :is(.rk-row, .rk-grid > li).is-focus > .px-mon { --px-line: var(--brand-focus); }
 html body #root .rk-more { margin-top: 0.8rem; }
 
-/* 카드 머리의 배지들 — 번호 · 순위 · 폼 배지 · ☆ 가 한 줄에 선다. 좁으면 배지가 줄을 바꾼다 */
-html body #root .px-mon__head { flex-wrap: wrap; row-gap: 0.4rem; }
 html body #root .px-mon__meta .dex__use { color: var(--muted); }
 
 /* ── 레이드 표 — 데스크톱은 표, 699px 아래는 줄이 카드가 된다 ─────────────────── */
 html body #root .rk-tablewrap { --px-fill: var(--panel); padding: 0.4rem 0.8rem; overflow-x: auto; margin-bottom: var(--px-drop); }
 html body #root .rk-table tbody tr { cursor: pointer; }
+html body #root .rk-table__rank .px-mon-ribbon { position: relative; top: auto; left: auto; }
 @media (hover: hover) { html body #root .rk-table tbody tr:hover td { background: var(--panel-2); } }
 html body #root .rk-table tbody tr:focus-visible { outline: var(--px-stroke) solid var(--brand-focus); outline-offset: -0.2rem; }
 html body #root .rk-table__mon { display: flex; align-items: center; gap: 1.2rem; min-width: 22rem; }
@@ -112,18 +121,22 @@ html body #root .rk-table__moves { color: var(--muted); font-size: 1.2rem; max-w
 html body #root .rk-table td.is-num { font: 500 1.4rem/1.5 var(--font-mono); font-variant-numeric: tabular-nums; }
 html body #root .rk-table td.rk-table__score { color: var(--mint); font-weight: 700; }
 @media (max-width: 699px) {
-  html body #root .rk-tablewrap { --px-fill: transparent; padding: 0; border: 0; overflow: visible; margin: 0; }
+  html body #root .rk-tablewrap { --px-fill: transparent; padding: 0; border: 0; overflow: visible; clip-path: none; margin: 0; }
   html body #root .rk-tablewrap::before { display: none; }
   html body #root .rk-table, html body #root .rk-table tbody { display: block; }
   html body #root .rk-table thead { display: none; }
-  html body #root .rk-table tbody { display: flex; flex-direction: column; gap: 0.8rem; padding-bottom: var(--px-drop); }
-  html body #root .rk-table tbody tr { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 0.8rem 1.2rem; box-sizing: border-box; padding: 1.2rem 1.6rem; border: var(--px-stroke) solid var(--px-edge); background: var(--panel); filter: drop-shadow(var(--px-drop) var(--px-drop) 0 var(--px-shadow)); }
-  html body #root .rk-table tbody td { display: block; padding: 0; border: 0; background: transparent; }
-  html body #root .rk-table tbody td:first-child { grid-row: 1; }
-  html body #root .rk-table__mon { grid-column: 2; grid-row: 1; min-width: 0; }
-  html body #root .rk-table tbody td:nth-child(n+3) { grid-column: 1 / -1; display: flex; justify-content: space-between; gap: 1.2rem; text-align: left; }
-  html body #root .rk-table tbody td:nth-child(n+3)::before { content: attr(data-label); color: var(--muted); font: 500 1.2rem/1.5 var(--font-body); }
-  html body #root .rk-table__moves { max-width: none; }
+  html body #root .rk-table tbody { display: flex; flex-direction: column; gap: 1.2rem; padding: 0.4rem 0 var(--px-drop); }
+  html body #root .rk-table tbody tr { position: relative; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1.2rem; box-sizing: border-box; padding: 2.8rem 1.2rem 1.2rem; border: var(--px-stroke) solid var(--px-edge); background: var(--panel); filter: drop-shadow(var(--px-drop) var(--px-drop) 0 var(--px-shadow)); }
+  html body #root .rk-table tbody td { display: block; min-width: 0; padding: 0; border: 0; background: transparent; }
+  html body #root .rk-table tbody td.rk-table__rank { position: absolute; top: 0; left: 0; }
+  html body #root .rk-table__rank .px-mon-ribbon { position: absolute; top: -0.4rem; left: -0.4rem; }
+  html body #root .rk-table tbody td.rk-table__mon { display: flex; align-items: center; grid-column: 1 / -1; min-width: 0; }
+  html body #root .rk-table__mon .px-ball { --ball: 6.4rem; }
+  html body #root .rk-table__mon .rk-row__name { overflow-wrap: anywhere; }
+  html body #root .rk-table tbody td.rk-table__moves { display: flex; flex-direction: column; gap: 0.4rem; grid-column: 1 / -1; max-width: none; color: var(--fg); overflow-wrap: anywhere; }
+  html body #root .rk-table tbody td.rk-table__metric { display: flex; flex-direction: column; align-items: flex-start; gap: 0.4rem; padding-top: 0.8rem; border-top: var(--px-stroke) solid var(--line); font-size: 1.6rem; text-align: left; overflow-wrap: anywhere; }
+  html body #root .rk-table tbody :is(.rk-table__moves, .rk-table__metric)::before { content: attr(data-label); color: var(--muted); font: 500 1.2rem/1.5 var(--font-body); }
+  html body #root .rk-table tbody td.rk-table__score { color: var(--mint); font-weight: 700; }
 }
 
 /* ── 안내 판 · 바닥 판 ───────────────────────────────────────────────────────── */
@@ -166,6 +179,10 @@ html body #root .dex__found-clear { margin-left: auto; }
   html body #root .rk-row--ranked .rk-row__stats { grid-column: 1 / -1; align-items: center; justify-content: space-between; gap: 0.8rem 1.6rem; padding-top: 0.8rem; border-top: var(--px-stroke) solid var(--line); }
   html body #root .rk-row__metric { flex: none; flex-direction: row; align-items: baseline; gap: 0.8rem; }
   html body #root .rk-row--ranked .rk-row__sub { min-width: 0; max-width: none; text-align: right; }
+  html body #root .rk-row--dex > .rk-row__btn { grid-template-columns: 5.6rem minmax(0, 1fr) auto; gap: 0.8rem; padding: 1.2rem; }
+  html body #root .rk-row--dex .rk-row__stats { flex-direction: column; align-items: flex-end; gap: 0.4rem; }
+  html body #root .rk-row--dex .rk-row__metric { flex-direction: column; align-items: flex-end; gap: 0.4rem; }
+  html body #root .rk-row--dex .rk-row__sub { max-width: 10rem; }
   html body #root .rk-recs { grid-template-columns: minmax(0, 1fr); }
   html body #root .dx-search > .px-view { width: 100%; }
   html body #root .dx-search > .px-view > .px-btn { flex: 1; }

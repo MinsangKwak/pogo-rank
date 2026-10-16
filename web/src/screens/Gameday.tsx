@@ -17,7 +17,7 @@ import { useState, type ReactNode } from 'react';
 import { useGameday, useDex } from '../lib/data';
 import { PxChips, PxViewSwitch, Sprite } from '../components/Bits';
 import { NwBadge, NwFoot, NwMetric, NwNote, NwNoteBody, NwSecHead } from '../components/NewsBits';
-import MonCard from '../components/MonCard';
+import MonCard, { PokemonNumberRibbon } from '../components/MonCard';
 import { PixelIcon } from '../components/PixelIcon';
 import type { OpenMon } from '../lib/mon';
 import { Slot } from '../components/Slots';
@@ -69,9 +69,11 @@ function Card({ mon, kind, onOpen }: { mon: GamedayMon; kind: 'raid' | 'egg'; on
 function RowItem({ mon, kind, onOpen }: { mon: GamedayMon; kind: 'raid' | 'egg'; onOpen: OpenMon }) {
   const { data } = useDex();
   const types = (mon.types ?? []).map((type) => data.TYPE_KO[type] ?? type).join(' · ');
+  const no = data.DEX_DATA.dex[String(mon.sprite)];
   return (
-    <li>
-      <button type="button" className="nw-row px-skin px-card--tap" onClick={() => onOpen({ sprite: mon.sprite, name: mon.name, types: mon.types })}>
+    <li className="nw-row-item">
+      <PokemonNumberRibbon dex={no} className="nw-row__dex" />
+      <button type="button" className="nw-row px-skin px-card--tap" aria-label={`${mon.name} 상세 보기`} onClick={() => onOpen({ sprite: mon.sprite, name: mon.name, types: mon.types })}>
         <span className="px-ball px-ball--sm"><Sprite id={mon.sprite} /></span>
         <span className="nw-row__body">
           <b className="px-sub"><NameNode name={mon.name} labels={data.FORM_LABELS} /></b>
@@ -108,46 +110,50 @@ function Hero({ mon, onOpen }: { mon: GamedayMon; onOpen: OpenMon }) {
   const types = (mon.types ?? []).map((type) => data.TYPE_KO[type] ?? type);
   const no = data.DEX_DATA.dex[String(mon.sprite)];
   return (
-    <section className="nw-boss px-skin px-drop px-panel" aria-label={`${mon.name} 전설 레이드`}>
-      <div className="nw-boss__main">
-        <div className="nw-badges">
-          <NwBadge text="★★★★★ 전설 레이드" tone="yellow" />
-          {card ? <NwBadge text={card.when} tone="muted" /> : null}
-        </div>
-        <p className="px-caption nw-boss__types">{[no !== undefined ? `#${String(no).padStart(3, '0')}` : '', types.join(' · ')].filter(Boolean).join(' · ')}</p>
-        <h2 className="px-display nw-boss__name"><NameNode name={mon.name} labels={data.FORM_LABELS} /></h2>
-        <div className="nw-badges">
-          {mon.weather?.length ? <NwBadge text={`${mon.weather.join(' · ')} 부스트`} tone="blue" /> : null}
-          {mon.shiny ? <NwBadge text="이로치 가능" tone="mint" /> : null}
-        </div>
-        <div className="nw-boss__metrics">
-          <NwMetric sunk label="포획 CP" value={cpRange(mon.cp)} note="개체값 100% 기준 범위" />
-          <NwMetric sunk label="날씨 부스트 CP" value={cpRange(mon.cpBoost)} color="var(--blue)"
-            note={mon.weather?.length ? `${mon.weather.join(' · ')} 날씨일 때` : '부스트 날씨 미확인'} />
-        </div>
-        <div className="nw-boss__actions">
-          <button type="button" className="px-btn px-skin px-btn--primary" onClick={() => onOpen({ sprite: mon.sprite, name: mon.name, types: mon.types })}>보스 상세 보기</button>
-          <a className="px-btn px-skin" href="/pve/solo">솔플 계산기</a>
-        </div>
-      </div>
-      <div className="nw-boss__side">
-        <span className="px-ball px-ball--lg nw-boss__art"><Sprite id={mon.sprite} /></span>
-        {counters ? (
-          <div className="nw-boss__counters">
-            <p className="px-caption">{`추천 카운터 · ${counters.types.map((type) => data.TYPE_KO[type] ?? type).join(' · ')} 딜러`}</p>
-            <ul className="nw-counters">
-              {counters.rows.map((row, index) => (
-                <li key={row.sprite}>
-                  <button type="button" className="nw-counter px-skin px-skin--sunk px-card--tap" onClick={() => onOpen({ sprite: row.sprite, name: row.name, en: row.en, types: [...row.types] })}>
-                    <span className="px-mono nw-counter__rank">{index + 1}</span>
-                    <span className="px-ball px-ball--sm"><Sprite id={row.sprite} /></span>
-                    <span className="px-body nw-counter__name"><NameNode name={row.name} labels={data.FORM_LABELS} /></span>
-                  </button>
-                </li>
-              ))}
-            </ul>
+    <section className="nw-boss-frame" aria-label={`${mon.name} 전설 레이드`}>
+      <PokemonNumberRibbon dex={no} className="nw-boss__dex" />
+      <div className="nw-boss px-skin px-drop px-panel">
+        <div className="nw-boss__main">
+          <div className="nw-badges nw-boss__schedule">
+            <NwBadge text="★★★★★ 전설 레이드" tone="yellow" />
+            {card ? <NwBadge text={card.when} tone="muted" /> : null}
           </div>
-        ) : null}
+          <div className="nw-boss__identity">
+            <h2 className="px-display nw-boss__name"><NameNode name={mon.name} labels={data.FORM_LABELS} /></h2>
+            <p className="px-caption nw-boss__types">{types.join(' · ')}</p>
+            <div className="nw-badges nw-boss__conditions">
+              {mon.weather?.length ? <NwBadge text={`${mon.weather.join(' · ')} 부스트`} tone="blue" /> : null}
+              {mon.shiny ? <NwBadge text="이로치 가능" tone="mint" /> : null}
+            </div>
+          </div>
+          <div className="nw-boss__metrics">
+            <NwMetric sunk label="포획 CP" value={cpRange(mon.cp)} note="Lv.20" />
+            <NwMetric sunk label="날씨 부스트 CP" value={cpRange(mon.cpBoost)} color="var(--blue)" note="Lv.25" />
+          </div>
+          <div className="nw-boss__actions">
+            <button type="button" className="px-btn px-skin px-btn--primary" onClick={() => onOpen({ sprite: mon.sprite, name: mon.name, types: mon.types })}>보스 상세 보기</button>
+            <a className="px-btn px-skin" href="/pve/solo">솔플 계산기</a>
+          </div>
+        </div>
+        <div className="nw-boss__side">
+          <span className="px-ball px-ball--lg nw-boss__art"><Sprite id={mon.sprite} /></span>
+          {counters ? (
+            <div className="nw-boss__counters">
+              <p className="px-caption">{`추천 카운터 · ${counters.types.map((type) => data.TYPE_KO[type] ?? type).join(' · ')} 딜러`}</p>
+              <ul className="nw-counters">
+                {counters.rows.map((row, index) => (
+                  <li className="nw-counter-item" key={row.sprite}>
+                    <PokemonNumberRibbon rank={index + 1} className="nw-counter__rank" />
+                    <button type="button" className="nw-counter px-skin px-skin--sunk px-card--tap" aria-label={`${row.name} 상세 보기`} onClick={() => onOpen({ sprite: row.sprite, name: row.name, en: row.en, types: [...row.types] })}>
+                      <span className="px-ball px-ball--sm"><Sprite id={row.sprite} /></span>
+                      <span className="px-body nw-counter__name"><NameNode name={row.name} labels={data.FORM_LABELS} /></span>
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ) : null}
+        </div>
       </div>
     </section>
   );
@@ -183,7 +189,6 @@ export function Raids({ onOpen }: { onOpen: OpenMon }) {
         </p>
       </div>
       {legends.map((mon, index) => <Hero key={`${mon.sprite}-${index}`} mon={mon} onOpen={onOpen} />)}
-      {legends.length && view === 'list' ? <Group title="★★★★★ 5성 레이드" mons={legends} kind="raid" view="list" onOpen={onOpen} /> : null}
       {others.map(([tier, mons]) => (
         <Group key={tier} title={RAID_HEAD[tier]?.title ?? `${tier} 레이드`} {...(RAID_HEAD[tier]?.note ? { note: RAID_HEAD[tier]!.note } : {})}
           mons={mons} kind="raid" view={view} onOpen={onOpen} />

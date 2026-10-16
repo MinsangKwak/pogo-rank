@@ -38,7 +38,7 @@ html body #root .app-bar .v4-mark, html body #root .app-bar .app-bar__logo--bran
 /* 로고 글자 — 픽셀 글꼴 한 줄. 이미지 로고(BrandLogo)는 접고 글자가 선다 */
 html body #root .app-bar .app-bar__logo--brand span { font: 400 1.4rem/1 var(--font-pixel); color: var(--brand-text); letter-spacing: 0.04em; transform: none; }
 html body #root .app-bar .app-search {
-  display: flex; align-items: center; gap: 1.2rem; flex: 1 1 auto; width: auto; max-width: 58rem; min-height: 4.8rem; margin: 0; padding: 0 1.6rem;
+  display: flex; align-items: center; gap: 1.2rem; flex: 1 1 auto; width: auto; min-width: 0; max-width: 58rem; min-height: 4.8rem; margin: 0; padding: 0 1.6rem;
   --px-fill: var(--panel); color: var(--muted); font: 500 1.4rem/1.2 var(--font-body); box-shadow: none; cursor: text; text-align: left;
 }
 @media (hover: hover) { html body #root .app-bar .app-search:hover { --px-line: var(--brand-text); } }
@@ -48,7 +48,7 @@ html body #root .app-bar__actions { display: flex; align-items: center; gap: 1.2
 html body #root .app-bar .icon-btn, html body #root .app-bar .px-btn { min-height: var(--tap); }
 html body #root .app-bar #menu-toggle { display: none; }
 html body #root .app-bar .lang-toggle, html body #root .app-bar .region-toggle { font: 500 1.4rem/1.2 var(--font-body); }
-html body #root .app-bar .region-toggle { flex-direction: row; gap: 0.8rem; }
+html body #root .app-bar .region-toggle { flex: none; width: auto; min-width: var(--tap); padding: 0 1.2rem; flex-direction: row; gap: 0.8rem; }
 html body #root .app-bar .region-toggle__code { font: 500 1.4rem/1.2 var(--font-body); letter-spacing: 0; }
 html body #root .app-bar .outline-icon { display: none; }
 /* 안쪽 화면의 뒤로가기 — 상세 팝업 위에서만 선다 */
@@ -72,7 +72,8 @@ html body #root .px-nav__item--child::before { content: '↳'; color: var(--fain
 html body #root .px-nav__item .px-icon { color: inherit; }
 @media (hover: hover) { html body #root .px-nav__item:hover { color: var(--fg); background: var(--panel-2); } }
 html body #root .px-nav__item[aria-current="page"] { color: var(--fg); background: var(--brand-subtle); border-color: var(--brand-text); }
-html body #root .px-nav__item[aria-disabled="true"] { opacity: 0.55; cursor: not-allowed; }
+/* 잠긴 항목도 읽을 수 있게 유지한다. 상태는 점선과 가라앉은 판으로 구분한다. */
+html body #root .px-nav__item[aria-disabled="true"] { opacity: 1; color: var(--muted); background: var(--panel-2); border-color: var(--line); border-style: dashed; cursor: not-allowed; }
 html body #root .px-nav__item:focus-visible { outline: var(--px-stroke) solid var(--brand-focus); outline-offset: 0; }
 html body #root .px-nav__item .dot-badge::after, html body #root .px-nav__item.dot-badge::after { content: ''; width: 0.8rem; height: 0.8rem; margin-left: auto; background: var(--brand-text); }
 html body #root .px-nav__label { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -101,12 +102,13 @@ html body #root .page-head .page-head__desc { grid-column: 1 / -1; grid-row: 3; 
 html body #root .page-head .page-head__actions { position: static; display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 1.2rem; grid-column: 2; grid-row: 1 / 3; align-self: start; min-height: 0; margin: 0; padding: 0; }
 html body #root .page-head .page-head__actions button { position: relative; display: inline-flex; align-items: center; gap: 0.8rem; min-height: var(--tap); padding: 0 1.6rem; --px-fill: var(--panel-2); background: var(--px-fill); border: var(--px-stroke) solid var(--px-line, var(--px-edge)); border-radius: 0; box-shadow: none; color: var(--fg); font: 500 1.4rem/1.2 var(--font-body); white-space: nowrap; }
 html body #root .page-head .page-head__actions button[aria-pressed="true"] { --px-fill: var(--brand-primary); --px-line: var(--px-red-edge); color: var(--on-brand); }
+html body #root .page-head .page-head__actions button:is(:disabled, [aria-disabled="true"]) { --px-fill: var(--panel-2); --px-line: var(--line); color: var(--muted); border-style: dashed; opacity: 1; cursor: not-allowed; }
 
 /* ── 바닥글 ─────────────────────────────────────────────────────────────── */
 html body #root footer { margin-top: 2.4rem; padding: 2.4rem 0 0; border: 0; border-top: var(--px-stroke) solid var(--line); background: transparent; color: var(--muted); box-shadow: none; font: 400 1.2rem/1.7 var(--font-body); }
 html body #root footer .foot-lead { margin: 0 0 1.2rem; color: var(--muted); font: 400 1.2rem/1.5 var(--font-pixel); letter-spacing: 0.04em; }
 html body #root footer p { margin: 0 0 0.8rem; }
-html body #root footer a, html body #root footer button { color: var(--brand-text); text-decoration: underline; text-underline-offset: 0.4rem; font: inherit; }
+html body #root footer .foot-links a, html body #root footer .foot-links button { color: var(--brand-text); text-decoration: underline; text-underline-offset: 0.4rem; font: inherit; }
 html body #root .ip-notice { margin: 2.4rem 0 0; color: var(--muted); font: 400 1.2rem/1.7 var(--font-body); }
 html body #root :focus-visible { outline: var(--px-stroke) solid var(--brand-focus); outline-offset: var(--px-stroke); }
 html body #root :is(input, select, textarea)::placeholder { color: var(--muted); opacity: 1; }
@@ -136,16 +138,22 @@ html body #root .drawer__head small { display: block; margin-top: 0.4rem; color:
 html body #root .drawer__head .icon-btn { margin-left: auto; }
 html body #root .drawer__sec { margin: 0.8rem 0 0; color: var(--muted); font: 500 1.2rem/1.5 var(--font-body); letter-spacing: 0.04em; }
 html body #root .drawer__panel .nav-menu { display: flex; flex-direction: column; gap: 0.4rem; margin: 0; padding: 0; border: 0; }
-html body #root .drawer__panel .drawer__group { display: flex; flex-direction: column; gap: 0.4rem; padding: 0; border: 0; }
+html body #root .drawer__panel .drawer__group { display: flex; flex-direction: column; gap: 0.4rem; padding: 0; border: 0; border-radius: 0; }
 html body #root .drawer__locale .px-nav__item { min-height: var(--tap); padding: 0.8rem 1.2rem; color: var(--fg); background: var(--panel); border-color: var(--line); }
 html body #root .drawer__locale .px-nav__label { white-space: normal; overflow: visible; }
 html body #root .drawer__locale .drawer__value { flex: none; color: var(--brand-text); white-space: nowrap; font: inherit; }
 html body #root .drawer__panel .drawer__meta { margin: 1.2rem 0 0; padding: 1.2rem 0 0; border-top: var(--px-stroke) solid var(--line); color: var(--muted); font: 400 1.2rem/1.7 var(--font-body); }
 /* 시트 안 마이페이지 카드 (components/Account.tsx) — 판 한 장 */
-html body #root .drawer__panel .account { display: flex; flex-direction: column; gap: 1.2rem; padding: 1.6rem; --px-fill: var(--panel); }
-html body #root .drawer__panel .account .drawer__item, html body #root .drawer__panel .account .account__login { display: flex; align-items: center; justify-content: center; gap: 0.8rem; min-height: var(--tap); padding: 0 1.6rem; --px-fill: var(--panel-2); color: var(--fg); font: 500 1.4rem/1.2 var(--font-body); text-decoration: none; cursor: pointer; }
+html body #root .drawer__panel .account { display: flex; flex-direction: column; gap: 1.2rem; padding: 1.6rem; --px-fill: var(--panel); background: var(--px-fill); }
+/* Account의 기존 단추는 px-skin이 없다. 채움 변수를 실제 배경에 연결해야 밝은 글자가 옛 크림색 판 위에 남지 않는다. */
+html body #root .drawer__panel .account .drawer__item, html body #root .drawer__panel .account .account__login { display: flex; align-items: center; justify-content: center; gap: 0.8rem; min-height: var(--tap); padding: 0 1.6rem; --px-fill: var(--panel-2); background: var(--px-fill); border: var(--px-stroke) solid var(--px-line, var(--px-edge)); border-radius: 0; box-shadow: none; color: var(--fg); font: 500 1.4rem/1.2 var(--font-body); text-decoration: none; cursor: pointer; }
 html body #root .drawer__panel .account .account__login, html body #root .drawer__panel .account .account__primary { --px-fill: var(--brand-primary); --px-line: var(--px-red-edge); --px-shine: var(--px-red-glint); color: var(--on-brand); }
-html body #root .drawer__panel .account .account__danger { color: var(--danger-action); }
+html body #root .drawer__panel .account .account__danger { --px-fill: var(--danger-surface); --px-line: var(--danger-action); color: var(--danger-action); }
+@media (hover: hover) {
+  html body #root .drawer__panel .account .drawer__item:not(:disabled):not([aria-disabled="true"]):hover { --px-line: var(--brand-text); }
+  html body #root .drawer__panel .account :is(.account__login, .account__primary):not(:disabled):not([aria-disabled="true"]):hover { --px-fill: var(--brand-hover); --px-line: var(--px-red-edge); }
+}
+html body #root .drawer__panel .account .drawer__item:is(:disabled, [aria-disabled="true"]) { --px-fill: var(--panel-2); --px-line: var(--line); color: var(--muted); border-style: dashed; opacity: 1; cursor: not-allowed; }
 html body #root .drawer__panel .account__sub { margin: 0; color: var(--muted); font: 400 1.2rem/1.7 var(--font-body); }
 html body #root .drawer__panel .account__sub a { color: var(--brand-text); }
 html body #root .drawer__panel .account__who { display: flex; align-items: center; gap: 1.2rem; }

@@ -19,6 +19,7 @@ import { go } from '../lib/nav';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useDex, useFavEvents, useGameday, useMax, usePve, usePvp } from '../lib/data';
 import { Sprite } from '../components/Bits';
+import { PokemonNumberRibbon } from '../components/MonCard';
 import { PxIcon } from '../components/PxIcon';
 import { PixelIcon } from '../components/PixelIcon';
 import { cpOf } from '../lib/cp';
@@ -272,24 +273,27 @@ export default function MonDetail({ pick, onClose, inline = false, onDeep, here 
     <Metric key={label} className="pxd-stat" sunk label={label} value={num(value)} />
   )) : null;
   const profile = (
-    <aside className={`pxd-profile px-skin${inline ? ' px-drop' : ' px-skin--sunk'}`} aria-label="프로필">
-      <div className={`px-ball px-ball--lg pxd-profile__art`} data-form-kind={formKind || undefined}><Sprite id={sprite} /></div>
-      <div className="pxd-profile__text">
-        {/* 이 줄은 늘 **반대 언어의 이름**이다 — 한국어 화면엔 Charizard, 영어 화면엔 리자몽. 엔진이 data-alt-ko/en 을 보고 갈아 끼운다 (lib/i18n.ts) */}
-        {mon.en ? <span className="px-badge px-skin pxd-profile__en" data-i18n="alt" data-alt-ko={mon.en} data-alt-en={baseName}>{mon.en}</span> : null}
-        {formLabels.length ? <p className="px-caption">{formLabels.join(' · ')} 폼</p> : null}
-        {inline ? <p className="px-body px-muted">{typeLine}</p> : null}
-        {maxCp != null ? (
-          <div className="pxd-profile__cp">
-            <p className="px-eyebrow">MAX CP · LV.50</p>
-            <p className="px-number pxd-profile__cp-value">{count(maxCp)}</p>
-          </div>
-        ) : <p className="px-caption">이 폼은 능력치 데이터가 없어요.</p>}
-        {inline ? null : form ? <p className="px-body px-muted pxd-profile__stats">{`공격 ${num(form.atk)} · 방어 ${num(form.def)} · 체력 ${num(form.hp)}`}</p> : null}
-        {favNews}
-      </div>
-      {inline && statTiles ? <div className="px-grid px-grid--3 pxd-profile__tiles">{statTiles}</div> : null}
-    </aside>
+    <div className="pxd-profile-wrap">
+      <PokemonNumberRibbon dex={dexNo ?? undefined} />
+      <aside className={`pxd-profile px-skin${inline ? ' px-drop' : ' px-skin--sunk'}`} aria-label="프로필">
+        <div className={`px-ball px-ball--lg pxd-profile__art`} data-form-kind={formKind || undefined}><Sprite id={sprite} /></div>
+        <div className="pxd-profile__text">
+          {/* 이 줄은 늘 **반대 언어의 이름**이다 — 한국어 화면엔 Charizard, 영어 화면엔 리자몽. 엔진이 data-alt-ko/en 을 보고 갈아 끼운다 (lib/i18n.ts) */}
+          {mon.en ? <span className="px-badge px-skin pxd-profile__en" data-i18n="alt" data-alt-ko={mon.en} data-alt-en={baseName}>{mon.en}</span> : null}
+          {formLabels.length ? <p className="px-caption">{formLabels.join(' · ')} 폼</p> : null}
+          {inline ? <p className="px-body px-muted">{typeLine}</p> : null}
+          {maxCp != null ? (
+            <div className="pxd-profile__cp">
+              <p className="px-eyebrow">MAX CP · LV.50</p>
+              <p className="px-number pxd-profile__cp-value">{count(maxCp)}</p>
+            </div>
+          ) : <p className="px-caption">이 폼은 능력치 데이터가 없어요.</p>}
+          {inline ? null : form ? <p className="px-body px-muted pxd-profile__stats">{`공격 ${num(form.atk)} · 방어 ${num(form.def)} · 체력 ${num(form.hp)}`}</p> : null}
+          {favNews}
+        </div>
+        {inline && statTiles ? <div className="px-grid px-grid--3 pxd-profile__tiles">{statTiles}</div> : null}
+      </aside>
+    </div>
   );
 
   // ── 요약 탭 (D01) — 상대할 때 · 진화 계열 · 육성 추천 · 폼별 정보 · 포획 CP · 기술 · (기술 변경) · 육각형

@@ -23,7 +23,8 @@ import { BASE } from '../lib/base';
 import { PixelIcon } from './PixelIcon';
 import { PxDialog, PxDialogBody, PxDialogFoot, PxDialogHead } from './PxDialog';
 import { NoteBox } from './detail/Pieces';
-import type { OpenMon } from '../lib/mon';
+import { PokemonNumberRibbon } from './MonCard';
+import { dexNoOf, type OpenMon } from '../lib/mon';
 
 interface Candidate { sprite: number; name: string; en: string; types: string[] }
 
@@ -136,13 +137,14 @@ function Palette({ onOpen, onClose }: { onOpen: OpenMon; onClose: () => void }) 
           hits.length ? (
             <ul className="pxd-palette__list" id="palette-list" role="listbox" aria-label="검색 결과">
               {hits.map((mon, index) => (
-                <li key={mon.sprite} id={`palette-opt-${mon.sprite}`} role="option" aria-selected={index === cursor}>
+                <li key={mon.sprite} id={`palette-opt-${mon.sprite}`} className="pxd-palette__result" role="option" aria-selected={index === cursor}>
+                  <PokemonNumberRibbon dex={dexNoOf(mon.sprite, dex?.DEX_DATA.dex ?? {}) ?? undefined} />
                   <button type="button" className={`px-card px-card--tap px-skin px-skin--sunk pxd-palette__hit${index === cursor ? ' is-on' : ''}`}
-                    onMouseMove={() => setActive(index)} onClick={() => pick(mon, 'palette')}>
+                    onMouseMove={() => setActive(index)} onClick={() => pick(mon, 'palette')} aria-label={`${mon.name} 상세 보기`}>
                     <Art id={mon.sprite} />
                     <span className="pxd-palette__text">
                       <span className="px-sub">{mon.name}{mon.en ? <span className="px-caption px-mono" data-i18n="off">{` ${mon.en}`}</span> : null}</span>
-                      <span className="px-caption" data-i18n="off">{[`#${String(mon.sprite).padStart(3, '0')}`, typeLine(mon.types)].filter(Boolean).join(' · ')}</span>
+                      {typeLine(mon.types) ? <span className="px-caption" data-i18n="off">{typeLine(mon.types)}</span> : null}
                     </span>
                     <span className="px-mono px-muted pxd-palette__enter" aria-hidden="true">↵</span>
                   </button>

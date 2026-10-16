@@ -18,9 +18,10 @@
 import { useState } from 'react';
 import { useDex, useMax, useSchedule } from '../lib/data';
 import { pickMonth } from '../lib/schedule';
-import type { OpenMon } from '../lib/mon';
+import { dexNoOf, type OpenMon } from '../lib/mon';
 import { Sprite } from './Bits';
 import { NameNode } from './Row';
+import { PokemonNumberRibbon } from './MonCard';
 import type { DmaxRow } from '../types/data';
 import { maxVisible } from '../lib/maxVisible';
 import { useRankStore } from '../stores/rank';
@@ -74,10 +75,10 @@ export default function BossAcc({ onOpen, onGoBoss }: {
   const mm = String(month.ym.m).padStart(2, '0');
   const dd = (value: number) => String(value).padStart(2, '0');
 
-  const rec = (row: DmaxRow, rank: string, sub?: string) => (
-    <li key={`${row.sprite}-${rank}`}>
-      <button type="button" className="rk-rec px-skin" onClick={() => onOpen(row)}>
-        {rank ? <span className="px-badge px-skin rk-rec__rank">{rank}</span> : null}
+  const rec = (row: DmaxRow, rank?: number, sub?: string) => (
+    <li key={`${row.sprite}-${rank ?? 'party'}`} className="rk-rec__wrap">
+      <PokemonNumberRibbon rank={rank} dex={dexNoOf(row.sprite, dex.DEX_DATA.dex) ?? undefined} />
+      <button type="button" className="rk-rec px-skin" onClick={() => onOpen(row)} aria-label={`${row.name} 상세 보기`}>
         <span className="px-ball px-ball--sm"><Sprite id={row.sprite} /></span>
         <span className="rk-rec__main">
           <span className="rk-rec__name"><NameNode name={row.name} labels={dex.FORM_LABELS} /></span>
@@ -106,8 +107,8 @@ export default function BossAcc({ onOpen, onGoBoss }: {
             <>
               <p className="px-sub">추천 파티 — 딜러 2 + 탱커 1</p>
               <ul className="rk-recs">
-                {dealers.map((row) => rec(row, '', `딜러 · 맥스 피해 ${num(row.dmg)}`))}
-                {rec(tank, '', `탱커 · EHP ${num(tank.ehp)}${type === 'overall' ? '' : ` · 받는 배율 ×${num(tank.mult)}`}`)}
+                {dealers.map((row) => rec(row, undefined, `딜러 · 맥스 피해 ${num(row.dmg)}`))}
+                {rec(tank, undefined, `탱커 · EHP ${num(tank.ehp)}${type === 'overall' ? '' : ` · 받는 배율 ×${num(tank.mult)}`}`)}
               </ul>
               <p className="px-caption">
                 딜러는 맥스 피해 × √내구, 탱커는 체력 × 방어 ÷ 받는 배율(EHP)을 기준으로 추천해요. 전체 탱커 순위는 [탱커] 탭에서 확인할 수 있어요
@@ -116,7 +117,7 @@ export default function BossAcc({ onOpen, onGoBoss }: {
           ) : null}
           <p className="px-sub">{`${typeName} 보스 추천 딜러 (딜량순)`}</p>
           <ul className="rk-recs">
-            {pool.slice(0, show).map((row, index) => rec(row, String(index + 1).padStart(2, '0')))}
+            {pool.slice(0, show).map((row, index) => rec(row, index + 1))}
           </ul>
           <div className="px-note__actions">
             {show < total

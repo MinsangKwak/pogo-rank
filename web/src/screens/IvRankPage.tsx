@@ -180,7 +180,7 @@ export default function IvRankPage() {
                 {hits.map((hit) => (
                   <CandRow key={hit.name} sprite={hit.sprite} name={word(hit.name)}
                     badge={hit.unrel ? <span className="px-badge px-skin px-badge--ko px-badge--muted">미구현</span> : null}
-                    lines={[`${hit.types.map(ko).join(' · ')} · #${String(hit.sprite).padStart(4, '0')}`]}
+                    lines={[hit.types.map(ko).join(' · ')]}
                     ops={<button type="button" className="px-btn px-btn--sm px-skin"
                       onClick={() => { trackSearchPick(hit.name, 'iv_rank'); setTerm(''); save({ ...picked, sprite: hit.sprite }); }}>선택</button>} />
                 ))}

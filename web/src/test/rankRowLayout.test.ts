@@ -70,16 +70,20 @@ describe('순위 목록의 리본과 정보 위계', () => {
     expect(container.querySelector('.rk-row__sub')?.textContent).toBe(expected);
   });
 
-  it('순위가 없는 도감 행은 리본 없이 기존 번호·배지·수치 구조를 유지한다', () => {
+  it('순위가 없는 도감 행도 실제 도감 번호 리본과 같은 정보 위계를 쓴다', () => {
     const { container } = render(createElement(RankRow, { ...row, rank: undefined, no: 815 }));
     const item = container.querySelector('.rk-row')!;
-    expect(item.classList.contains('px-skin')).toBe(true);
-    expect(item.classList.contains('rk-row--ranked')).toBe(false);
+    expect(item.classList.contains('px-skin')).toBe(false);
+    expect(item.classList.contains('rk-row--dex')).toBe(true);
     expect(item.querySelector('.rk-row__rank')).toBeNull();
-    expect(item.querySelector('.rk-row__btn')?.classList.contains('px-skin')).toBe(false);
-    expect(item.querySelector('.rk-row__no')?.textContent).toBe('#0815');
-    expect(item.querySelector('.rk-row__name')?.textContent).toContain('활용 15곳');
-    expect(item.querySelector('.rk-row__metric')).toBeNull();
+    expect(item.querySelector('.rk-row__btn')?.classList.contains('px-skin')).toBe(true);
+    const ribbon = item.querySelector('.rk-row__no')!;
+    expect(ribbon.parentElement).toBe(item);
+    expect(ribbon.textContent).toBe('#815');
+    expect(ribbon.getAttribute('aria-label')).toBe('도감 번호 815');
+    expect(item.querySelector('.rk-row__name')?.textContent).not.toContain('활용');
+    expect(item.querySelector('.rk-row__badges')?.textContent).toContain('활용 15곳');
+    expect(item.querySelector('.rk-row__metric')).not.toBeNull();
     expect(item.querySelector('.rk-row__sub')?.textContent).toBe('맥스 피해 · 내구 23');
   });
 

@@ -79,6 +79,8 @@ export default function DmaxDeck({ onOpen }: { onOpen: OpenMon }) {
   const [hashIds] = useState(readHashIds);
   const [term, setTerm] = useState('');
   const [copied, setCopied] = useState(false);
+  const [typesOpen, setTypesOpen] = useState(false);
+  const typeToggle = useRef<HTMLButtonElement>(null);
 
   const bossType = chosen ?? week?.type ?? 'overall';
   const key = `${bossType}|${dynaOnly}|${showJoin}`;
@@ -112,7 +114,10 @@ export default function DmaxDeck({ onOpen }: { onOpen: OpenMon }) {
   }, [bossType, deck]);
 
   // 보스 고르기 — 타입 칩 하나가 답이다. 검색창은 그 칩을 좁히고, 보스 이름을 치면 그 보스의 첫 타입으로 안내한다
-  const pickType = (id: string) => { setChosen(id); setPicked(null); setSwap(null); setTerm(''); };
+  const pickType = (id: string) => {
+    setChosen(id); setPicked(null); setSwap(null); setTerm(''); setTypesOpen(false);
+    if (typesOpen) typeToggle.current?.focus();
+  };
   const query = term.trim();
   const typeKeys = Object.keys(dex.TYPE_KO);
   const shownTypes = query ? typeKeys.filter((type) => (dex.TYPE_KO[type] ?? type).includes(query)) : typeKeys;
@@ -169,7 +174,7 @@ export default function DmaxDeck({ onOpen }: { onOpen: OpenMon }) {
         {/* 01 · 보스 고르기 — 검색 · 이번 주 칩 · 다이맥스만 · 타입 칩 */}
         <section className="px-panel px-skin px-drop pxt-target" aria-label="상대 보스">
           <div className="pxt-target__row">
-            <SearchBox className="pxt-target__search" value={term} placeholder="상대 보스 검색" onChange={setTerm} />
+            <SearchBox className="pxt-target__search" value={term} placeholder="상대 보스 검색" onChange={(next) => { setTerm(next); setTypesOpen(Boolean(next.trim())); }} />
             {week ? (
               <button type="button" className="px-chip px-skin" aria-pressed={bossType === week.type} title={`${week.now ? '이번 주' : '다음'} 보스의 타입으로 고르기`}
                 onClick={() => pickType(week.type)}>{`${week.now ? '이번 주' : '다음 보스'} · ${week.label}`}</button>
@@ -180,7 +185,15 @@ export default function DmaxDeck({ onOpen }: { onOpen: OpenMon }) {
               onChange={(next) => { setDynaOnly(next); setPicked(null); setSwap(null); }} />
           </div>
           {bossHits.length ? <PxChips label="보스 이름으로 타입 고르기" items={bossChips} onPick={pickType} /> : null}
-          <PxChips label="보스 타입" items={typeChips} value={bossType} onPick={pickType} />
+          <div className="pxt-type-picker">
+            <button ref={typeToggle} type="button" className="pxt-type-picker__toggle px-caption" aria-label={`보스 타입 ${typeLabel} ${typesOpen ? '접기' : '변경'}`} aria-expanded={typesOpen} aria-controls="dmax-boss-types"
+              onClick={() => setTypesOpen((open) => !open)}>
+              <span>보스 타입</span><b>{typeLabel}</b><span>{typesOpen ? '접기 −' : '변경 +'}</span>
+            </button>
+            <div id="dmax-boss-types" hidden={!typesOpen}>
+              <PxChips label="보스 타입" items={typeChips} value={bossType} onPick={pickType} />
+            </div>
+          </div>
         </section>
 
         {/* 02 · 내 배틀 팀 — 슬롯 셋 */}
@@ -191,7 +204,7 @@ export default function DmaxDeck({ onOpen }: { onOpen: OpenMon }) {
               const row = rows[index];
               const tank = slot.role === 'tank';
               return (
-                <SlotCard key={index} index={index} role={slot.label} roleTone={tank ? 'blue' : 'orange'}
+                <SlotCard key={index} compact index={index} role={slot.label} roleTone={tank ? 'blue' : 'orange'}
                   sprite={row?.sprite ?? null} name={row ? word(row.name) : '비어 있어요'}
                   types={row ? row.types.map((type) => dex.TYPE_KO[type] ?? type).join(' · ') : ''}
                   moves={row ? (moveSet(index, row) || (tank ? '방어 · 교체 지원' : '')) : ''}

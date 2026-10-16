@@ -16,6 +16,11 @@ describe('공통 스킨의 의미 있는 글자색', () => {
     }
     document.head.innerHTML = ''; document.body.innerHTML = '';
   });
+  it('사이트 하단 링크 색은 상세 팝업의 주 행동을 덮지 않는다', () => {
+    const shell = readFileSync(join(__dirname, '../styles/pixel/shell.css'), 'utf8');
+    expect(shell).not.toContain('html body #root footer a, html body #root footer button {');
+    expect(shell).toContain('footer .foot-links a, html body #root footer .foot-links button {');
+  });
   it('긴 제목은 한국어 어절을 우선 보존하되 좁은 판에서 넘치지 않는다', () => {
     for (const cls of ['px-title', 'px-display', 'px-heading', 'px-mon__name']) {
       const rule = new RegExp('html body \\.' + cls + ' \\{([^}]+)\\}').exec(parts)![1]!;

@@ -26,9 +26,10 @@ html body #root .home .px-sec { margin-bottom: 1.6rem; }
 /* 이번 주 보스 + 팀 CTA — 672 : 440 */
 html body #root .home__week-row2 { display: grid; grid-template-columns: minmax(0, 1fr) 44rem; gap: 2.4rem; align-items: stretch; }
 html body #root .home__week { display: flex; flex-direction: column; gap: 1.6rem; }
-html body #root .home__week-list { display: flex; flex-direction: column; gap: 1.2rem; margin: 0; padding: 0; list-style: none; }
+html body #root .home__week-list { display: flex; flex-direction: column; gap: 1.6rem; margin: 0; padding: 0; list-style: none; }
 /* 보스는 큰 그림 + 이름, 추천은 아래의 작은 보조 줄로 구분한다. */
-html body #root .home__week-row { display: flex; flex-direction: column; align-items: stretch; gap: 1.2rem; min-width: 0; padding: 1.2rem; }
+html body #root .home__week-row { position: relative; min-width: 0; }
+html body #root .home__week-panel { display: flex; flex-direction: column; align-items: stretch; gap: 1.2rem; min-width: 0; padding: 2.8rem 1.2rem 1.2rem; }
 html body #root .home__week-boss { display: flex; align-items: center; gap: 1.2rem; min-width: 0; min-height: var(--tap); padding: 0; border: 0; background: none; color: var(--fg); font: inherit; text-align: left; cursor: pointer; }
 html body #root .home__week-boss > .px-ball { --ball: 6.4rem; }
 html body #root .home__week-text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 0.4rem; }
@@ -47,7 +48,10 @@ html body #root .home__team { display: flex; flex-direction: column; gap: 1.2rem
 html body #root .home__team-balls { display: flex; gap: 1.6rem; margin: 0.8rem 0 1.6rem; --ball: 8rem; }
 
 /* 용도별 상위 셋 */
-html body #root .home__rank { gap: 1.2rem; padding: 2.4rem; }
+html body #root .home__rank { position: relative; display: flex; min-width: 0; }
+html body #root .home__rank-panel { width: 100%; gap: 1.2rem; padding: 3.2rem 2.4rem 2.4rem; }
+html body #root .home__rank-kind { color: var(--brand-text); font-weight: 700; }
+html body #root .home__rank-copy { display: flex; flex-direction: column; gap: 0.4rem; min-width: 0; overflow-wrap: anywhere; }
 html body #root .home__rank-head { display: flex; align-items: center; gap: 1.6rem; --ball: 7.2rem; }
 html body #root .home__rank .px-btn { margin-top: auto; }
 
