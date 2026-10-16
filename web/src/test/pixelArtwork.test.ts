@@ -35,10 +35,20 @@ describe('픽셀 포켓몬 그림과 모바일 이동 회귀', () => {
     expect(ballLayer).toContain('/images/pixel/pokeball.svg');
     expect(ballLayer).toContain('filter: saturate(0.25)');
     expect(ballLayer).toContain('pointer-events: none');
-    expect(parts).toContain('.px-ball .sprite:not(.is-loading):not(.empty) { background: transparent; }');
+    expect(parts).toContain('.px-ball .sprite { background: transparent; animation: none; }');
     expect(parts).toMatch(/\.px-ball > img[^{}]*\{[^}]*object-fit: contain/);
     document.head.innerHTML = '';
     document.body.innerHTML = '';
+  });
+
+  it('캐시된 그림에 로딩 상태가 남아도 검은 스켈레톤 받침을 만들지 않는다', () => {
+    const transparent = /html:not\(#_\):not\(#__\) body #root \.px-ball \.sprite \{[^}]+\}/.exec(parts)![0];
+    document.head.innerHTML = `<style>.sprite.is-loading { background: #000; animation: shimmer 1s infinite; }${transparent}</style>`;
+    document.body.innerHTML = '<div id="root"><span class="px-ball"><img class="sprite is-loading" alt=""></span></div>';
+    const image = getComputedStyle(document.querySelector('img')!);
+    expect(image.backgroundColor).toBe('rgba(0, 0, 0, 0)');
+    expect(image.animation).toBe('none');
+    document.head.innerHTML = ''; document.body.innerHTML = '';
   });
 
   it('하단 이동이 나오는 구간에서만 머리의 중복 이동을 숨긴다', () => {
