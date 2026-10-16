@@ -131,6 +131,15 @@ describe('모바일 레이드 보스 정보와 리본', () => {
     expect(container.textContent).not.toMatch(/NaN|undefined|Infinity|\[object Object\]/);
   });
 
+  it('PC 일반 레이드 카드는 그림과 정보를 좌우로 배치하고 다른 화면은 건드리지 않는다', () => {
+    const desktop = css.slice(css.indexOf('@media (min-width: 700px)'), css.lastIndexOf('@media (max-width: 699px)'));
+    expect(desktop).toMatch(/\.nw-raids \.nw-gsec > \.px-grid \{[^}]*repeat\(auto-fill, minmax\(min\(100%, 32rem\), 1fr\)\)/);
+    expect(desktop).toMatch(/\.nw-raids \.px-mon__body \{[^}]*flex-direction: row; align-items: center/);
+    expect(desktop).toMatch(/\.nw-raids \.px-mon__body \.px-mon__art \{[^}]*flex: 0 0 8.8rem/);
+    expect(desktop).toMatch(/\.nw-raids \.px-mon__main \{[^}]*flex: 1; width: auto/);
+    expect(css.slice(css.lastIndexOf('@media (max-width: 699px)'))).not.toContain('.px-mon__body');
+  });
+
   it('PC 격자는 가용 폭에 따라 채우고 넓은 단일 판은 추천을 옆에 배치한다', () => {
     const { container } = render(createElement(Raids, { onOpen: vi.fn() }));
     expect(container.querySelector('.nw-boss-grid > .nw-boss-frame')).not.toBeNull();
