@@ -1,1 +1,68 @@
-/* pixel/home.css — v6 화면 배치. 조각(parts.css)은 모양, 여기는 자리만 둔다 */
+/* pixel/home.css — v6 홈 배치 (피그마 '01 · 서비스 홈'). 조각(parts.css)은 모양, 여기는 자리만 둔다
+   풍경은 뼈대(shell.css body::before)가 깐다 — 히어로는 그 위에 글자만 선다 */
+html body #root .home { display: flex; flex-direction: column; gap: 2.4rem; padding-top: 4rem; }
+html body #root .home__hero { display: flex; flex-direction: column; gap: 1.6rem; min-height: 38rem; max-width: 62rem; padding: 0 0 2.4rem; }
+html body #root .home__hero .px-eyebrow { margin-bottom: 0.8rem; }
+html body #root .home__lead { color: var(--muted); font-size: 1.6rem; }
+html body #root .home__hero-actions { display: flex; flex-wrap: wrap; gap: 1.6rem; margin-top: 0.8rem; }
+
+/* 주간 브리핑 + 체크포인트 — 720 : 392 */
+html body #root .home__adventure { display: grid; grid-template-columns: minmax(0, 1fr) 39.2rem; gap: 2.4rem; align-items: stretch; }
+html body #root .home__brief { display: flex; flex-direction: column; gap: 2rem; padding: 3.2rem; }
+html body #root .home__brief-row { display: flex; align-items: center; gap: 2rem; }
+html body #root .home__brief-copy { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1.2rem; }
+html body #root .home__brief-actions { display: flex; flex-wrap: wrap; gap: 1.2rem; }
+html body #root .home__brief-pager { display: flex; align-items: center; justify-content: space-between; gap: 1.2rem; color: var(--muted); font-size: 1.2rem; white-space: pre; }
+html body #root .home__brief-nav { display: flex; gap: 0.8rem; }
+html body #root .home__ball-btn { padding: 0; border: 0; background: url('/images/pixel/pokeball.svg') center / contain no-repeat; cursor: pointer; }
+html body #root .home__check { display: flex; flex-direction: column; gap: 1.6rem; }
+html body #root .home__check .px-badge { align-self: flex-start; }
+html body #root .home__check-next { color: var(--blue); }
+html body #root .home__check-more { color: var(--muted); text-decoration: none; }
+
+/* 구역 제목 줄 간격 */
+html body #root .home .px-sec { margin-bottom: 1.6rem; }
+
+/* 이번 주 보스 + 팀 CTA — 672 : 440 */
+html body #root .home__week-row2 { display: grid; grid-template-columns: minmax(0, 1fr) 44rem; gap: 2.4rem; align-items: stretch; }
+html body #root .home__week { display: flex; flex-direction: column; gap: 1.6rem; }
+html body #root .home__week-list { display: flex; flex-direction: column; gap: 1.2rem; margin: 0; padding: 0; list-style: none; }
+html body #root .home__week-row { display: flex; align-items: center; gap: 1.2rem; padding: 1.2rem 1.6rem; }
+html body #root .home__week-boss { flex: 1; display: flex; align-items: center; gap: 1.2rem; min-width: 0; padding: 0; border: 0; background: none; color: inherit; font: inherit; text-align: left; cursor: pointer; }
+html body #root .home__week-text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 0.4rem; }
+html body #root .home__week-rec { display: flex; align-items: center; gap: 0.8rem; padding: 0; border: 0; background: none; color: var(--muted); font: inherit; cursor: pointer; }
+html body #root .home__week-actions { display: flex; flex-wrap: wrap; gap: 1.2rem; margin-top: auto; }
+html body #root .home__team { display: flex; flex-direction: column; gap: 1.2rem; }
+html body #root .home__team-balls { display: flex; gap: 1.6rem; margin: 0.8rem 0 1.6rem; --ball: 8rem; }
+
+/* 용도별 상위 셋 */
+html body #root .home__rank { gap: 1.2rem; padding: 2.4rem; }
+html body #root .home__rank-head { display: flex; align-items: center; gap: 1.6rem; --ball: 7.2rem; }
+html body #root .home__rank .px-btn { margin-top: auto; }
+
+/* 소식 한 장 */
+html body #root .home__news-card { gap: 0.8rem; padding: 2rem; }
+html body #root .home__news-cats { display: flex; flex-wrap: wrap; gap: 0.8rem; }
+html body #root .home__loading { min-height: 40rem; }
+
+@media (max-width: 1099px) {
+  html body #root .home__adventure, html body #root .home__week-row2 { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 699px) {
+  html body #root .home { gap: 2.4rem; padding-top: 2rem; }
+  html body #root .home__hero { min-height: 30rem; gap: 1.2rem; }
+  html body #root .home__title { font-size: 2.8rem; }
+  html body #root .home__lead { font-size: 1.4rem; }
+  html body #root .home__hero-actions .px-btn { width: 100%; }
+  html body #root .home__brief { padding: 2.4rem; }
+  html body #root .home__brief-row { flex-direction: column-reverse; align-items: center; text-align: center; }
+  html body #root .home__brief-actions .px-btn { width: 100%; }
+  html body #root .home__week-row { flex-wrap: wrap; }
+  html body #root .home__team-balls { justify-content: center; }
+}
+/* 보스 줄의 이름은 한 덩어리 — 폭이 좁아도 글자를 세로로 쪼개지 않는다 */
+html body #root .home__week-text > b { display: block; word-break: keep-all; }
+@media (max-width: 699px) {
+  html body #root .home__week-boss { flex: 1 1 100%; }
+  html body #root .home__week-rec { margin-left: 8.4rem; }
+}

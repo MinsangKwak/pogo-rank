@@ -204,3 +204,5 @@ html body #root .totop { position: fixed; right: 2.4rem; bottom: 2.4rem; z-index
 @media (max-width: 1099px) { html body #root .totop { bottom: calc(var(--bottom-bar) + 1.2rem + env(safe-area-inset-bottom)); } }
 /* 옛 노트 스킨의 바닥글 명패('moncamp / PLAY & GROW')는 걷는다 */
 html body #root footer::before { display: none; content: none; }
+/* 옛 스킨이 갈래 제목 앞에 붙이던 번호('01')는 걷는다 */
+html body #root .px-nav__group::before, html body #root .px-nav__group::after { content: none; display: none; }

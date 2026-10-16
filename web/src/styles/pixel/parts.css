@@ -261,3 +261,8 @@ html body .px-notelist__no { flex: none; color: var(--brand-text); }
   html body .px-dialog__body { padding: 1.6rem 2rem; }
   html body .px-dialog__foot { padding: 1.6rem 2rem calc(1.6rem + env(safe-area-inset-bottom)); }
 }
+
+/* 카드 본문 단추 (components/MonCard.tsx) — 상자 전체가 눌린다, 모양은 글자 그대로 */
+html body .px-mon__body { display: flex; flex-direction: column; align-items: flex-start; gap: 0.8rem; width: 100%; margin: 0; padding: 0; border: 0; background: none; color: inherit; font: inherit; text-align: left; cursor: pointer; }
+html body .px-mon__body .px-mon__art { width: 100%; }
+html body .px-mon__body:focus-visible { outline: var(--px-stroke) solid var(--brand-focus); outline-offset: 0.4rem; }
