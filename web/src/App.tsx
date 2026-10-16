@@ -18,6 +18,7 @@ import { Suspense, lazy, startTransition, useCallback, useEffect, useRef, useSta
 import { DataBoundary } from './components/DataBoundary';
 import { AppBar, AppNav, BottomBar, Drawer, Footer, PageHead, ToTop } from './components/Shell';
 import NoteDialog from './components/NoteDialog';
+import Toast from './components/Toast';
 import { SlotProvider } from './components/Slots';
 import { useRoute } from './lib/useRoute';
 import type { MonPick, OpenMon } from './lib/mon';
@@ -352,6 +353,7 @@ export default function App({ seo }: AppProps = {}) {
           </Suspense>
         </DataBoundary>
         {noteOpen ? <NoteDialog route={route.id} onClose={() => setNoteOpen(false)} /> : null}
+        <Toast />
       </SlotProvider>
     );
   }
@@ -420,6 +422,8 @@ export default function App({ seo }: AppProps = {}) {
 
       {consentOpen ? <ConsentDialog onClose={() => setConsentOpen(false)} /> : null}
       {noteOpen ? <NoteDialog route={route.id} onClose={() => setNoteOpen(false)} /> : null}
+      {/* 토스트는 한 장 — 링크 복사 · 저장 같은 짧은 알림을 바닥에 띄운다 (lib/toast) */}
+      <Toast />
       {/* ★ 를 눌렀는데 로그인 전일 때 — 누른 곳과 그리는 곳이 멀어 stores/invite.ts 를 거친다 */}
       {invite !== null ? <LoginInvite screen={invite} onClose={closeInvite} /> : null}
 
