@@ -62,7 +62,8 @@ html body #root .rk-grid > li > .px-mon { flex: 1; }
 html body #root .rk-list { display: flex; flex-direction: column; gap: 0.8rem; margin: 0; padding: 0 0 var(--px-drop); list-style: none; }
 html body #root .rk-row { --px-fill: var(--panel); }
 @media (hover: hover) { html body #root .rk-row:hover { --px-line: var(--brand-text); } }
-html body #root .rk-row__btn { display: flex; align-items: center; gap: 1.2rem; box-sizing: border-box; width: 100%; min-height: 6.4rem; margin: 0; padding: 0.8rem 1.6rem; border: 0; background: none; color: var(--fg); font: inherit; text-align: left; cursor: pointer; }
+html body #root .rk-row__btn { display: flex; align-items: center; gap: 1.2rem; box-sizing: border-box; width: 100%; min-height: 6.4rem; margin: 0; padding: 0.8rem 1.6rem; color: var(--fg); font: inherit; text-align: left; cursor: pointer; }
+html body #root .rk-row__btn:not(.px-skin) { border: 0; background: none; }
 html body #root .rk-row__btn:focus-visible { outline: var(--px-stroke) solid var(--brand-focus); outline-offset: -0.4rem; }
 html body #root .rk-row__rank { flex: none; min-width: 4.4rem; justify-content: center; }
 html body #root .rk-row__rank.is-first { --px-fill: var(--brand-primary); --px-line: var(--px-red-edge); --px-badge-c: var(--on-brand); }
@@ -77,6 +78,19 @@ html body #root .rk-row__stats { flex: none; display: flex; flex-direction: colu
 html body #root .rk-row__label { color: var(--muted); font: 500 1.2rem/1.5 var(--font-body); }
 html body #root .rk-row__score { color: var(--mint); font: 700 2.2rem/1.2 var(--font-mono); font-variant-numeric: tabular-nums; }
 html body #root .rk-row__sub { color: var(--muted); font: 400 1.2rem/1.5 var(--font-body); }
+/* 순위 리본은 판의 바깥에 겹치고, 본문은 그림 · 이름/정보 · 수치 세 칸으로 읽는다. */
+html body #root .rk-row--ranked { position: relative; margin-top: 0.4rem; }
+html body #root .rk-row--ranked > .rk-row__rank { position: absolute; z-index: 2; top: -0.4rem; left: -0.4rem; min-width: 4.8rem; pointer-events: none; }
+html body #root .rk-row--ranked > .rk-row__rank.is-first { --px-shine: var(--px-red-glint); }
+html body #root .rk-row--ranked > .rk-row__btn { display: grid; grid-template-columns: 6.4rem minmax(0, 1fr) auto; gap: 1.2rem; padding: 1.6rem; }
+html body #root .rk-row--ranked .rk-row__art { --ball: 6.4rem; align-self: start; margin-top: 1.2rem; }
+html body #root .rk-row--ranked .rk-row__main { gap: 0.8rem; }
+html body #root .rk-row--ranked .rk-row__name { overflow-wrap: anywhere; }
+html body #root .rk-row--ranked .rk-row__lines > span { min-width: 0; overflow-wrap: anywhere; }
+html body #root .rk-row__meta, html body #root .rk-row__badges { display: flex; flex-wrap: wrap; align-items: center; gap: 0.4rem 0.8rem; min-width: 0; }
+html body #root .rk-row__meta:empty, html body #root .rk-row__badges:empty { display: none; }
+html body #root .rk-row__metric { display: flex; flex-direction: column; align-items: flex-end; gap: 0.4rem; }
+html body #root .rk-row--ranked .rk-row__sub { max-width: 24rem; overflow-wrap: anywhere; }
 /* 미구현 줄 · 카드는 흐리게 남긴다 — 지우지 않는다 (v3.36.0 의 판단) */
 html body #root :is(.rk-row, .rk-grid > li, .rk-table tr).is-unreleased { opacity: 0.6; }
 /* 상세의 '더보기' 로 내려온 줄 — 잠깐 밝힌다 (Row.tsx useFocusRow) */
@@ -147,6 +161,11 @@ html body #root .dex__found-clear { margin-left: auto; }
   html body #root .rk-row__btn { flex-wrap: wrap; padding: 1.2rem; }
   html body #root .rk-row__no { min-width: 0; }
   html body #root .rk-row__stats { flex-basis: 100%; flex-direction: row; align-items: baseline; justify-content: flex-end; gap: 0.8rem; min-width: 0; }
+  /* 휴대폰은 그림+내용 두 칸, 수치는 전체 너비의 별도 줄. 긴 보조 문구도 카드 안에서 줄을 바꾼다. */
+  html body #root .rk-row--ranked > .rk-row__btn { grid-template-columns: 6.4rem minmax(0, 1fr); padding: 1.2rem; }
+  html body #root .rk-row--ranked .rk-row__stats { grid-column: 1 / -1; align-items: center; justify-content: space-between; gap: 0.8rem 1.6rem; padding-top: 0.8rem; border-top: var(--px-stroke) solid var(--line); }
+  html body #root .rk-row__metric { flex: none; flex-direction: row; align-items: baseline; gap: 0.8rem; }
+  html body #root .rk-row--ranked .rk-row__sub { min-width: 0; max-width: none; text-align: right; }
   html body #root .rk-recs { grid-template-columns: minmax(0, 1fr); }
   html body #root .dx-search > .px-view { width: 100%; }
   html body #root .dx-search > .px-view > .px-btn { flex: 1; }
