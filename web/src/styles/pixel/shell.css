@@ -189,6 +189,9 @@ html body #root .drawer__panel .schedule .note { margin: 1.2rem 0 0; color: var(
   html body #root .app-bar .lang-toggle, html body #root .app-bar .region-toggle, html body #root .app-bar #theme-toggle,
   html body #root .app-bar #search-toggle, html body #root .app-bar #menu-toggle { display: none; }
   html body #root .app-bar .app-bar__account { display: inline-flex; }
+  /* 옛 brand.css 가 999px 아래에서 로고 글자를 지우고 svg 자리(44px)만 남긴다 — v6 머리줄은 글자 로고라 글자를 되살리고 빈 칸을 걷는다 */
+  html body #root .app-bar .app-bar__logo--brand { width: auto; min-width: 0; height: auto; padding: 0; }
+  html body #root .app-bar .app-bar__logo--brand > span { display: block; }
   /* 모바일 머리: 부모 화면은 윗줄, 영문 설명은 아랫줄. 두 언어가 서로 폭을 빼앗지 않는다. */
   html body #root .page-head { min-width: 0; grid-template-columns: minmax(0, 1fr); }
   html body #root .page-head .page-head__crumb { min-width: 0; flex-direction: column; align-items: flex-start; gap: 0.4rem; }
@@ -206,7 +209,7 @@ html body #root .drawer__panel .schedule .note { margin: 1.2rem 0 0; color: var(
   html body { --inset: 2rem; }
   html body #root .app-bar .app-search { display: none; }
   html body #root .app-bar .app-bar__actions { gap: 1.2rem; }
-  html body #root .app-bar #search-toggle { display: inline-flex; }
+  /* 휴대폰의 검색은 하단 바 한 곳이다 — 머리줄에도 검색 단추를 세우던 옛 줄을 걷었다 (머리줄을 지우던 때의 잔재, Codex #408) */
   html body #root .app-bar .px-settings { display: none; }
   html body #root .page-head { padding-top: 2.4rem; padding-bottom: 1.6rem; column-gap: 0.8rem; grid-template-columns: minmax(0, 1fr); }
   html body #root .page-head h2 { margin-top: 1.2rem; font-size: clamp(2.4rem, 6.5vw, 2.8rem); }

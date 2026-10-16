@@ -57,6 +57,9 @@ describe('픽셀 포켓몬 그림과 모바일 이동 회귀', () => {
     // 머리줄 자체는 남는다(브랜드 · 계정) — 하단 바와 겹치는 검색 · 메뉴 단추만 감춘다
     expect(mobile).toMatch(/#search-toggle, html body #root \.app-bar #menu-toggle \{ display: none; \}/);
     expect(mobile).toMatch(/\.app-search \{ display: none; \}/);
+    // 699px 아래 블록이 검색 단추를 되살리면 하단 바와 두 번 선다 — 거기서도 안 켠다
+    const phone = /@media \(max-width: 699px\) \{([\s\S]*?)\n\}/.exec(shell)![1]!;
+    expect(phone).not.toMatch(/#search-toggle[^{}]*\{ display: inline-flex/);
     expect(shell).toContain('.app-bar__actions { display: flex;');
     const component = readFileSync(join(__dirname, '../components/Shell.tsx'), 'utf8');
     const bottom = component.slice(component.indexOf('export function BottomBar'), component.indexOf('export function Drawer'));
