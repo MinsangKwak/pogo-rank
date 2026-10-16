@@ -252,8 +252,15 @@ export default function MonDetail({ pick, onClose, inline = false, onDeep, here 
 
   // 📣 소식 — **담아 둔 포켓몬에만** 선다 (v3 favNewsNode 가 isFav 를 먼저 묻는다). ★ 를 누를 이유가 여기서 생긴다.
   //    가장 가까운 한 건만 쓰고 나머지는 개수로 접는다
+  const favNewsContent = news.length ? <>
+    <PixelIcon name="calendar" />
+    <b>{FAV_NEWS_LABEL[news[0]!.event.type] ?? '일정'}</b>
+    <span>{favNewsWhen(news[0]!)}</span>
+    {news.length > 1 ? <span className="px-caption">외 {num(news.length - 1)}</span> : null}
+  </> : null;
   const favNews = isFav && news.length ? (
-    <button type="button" className="px-btn px-btn--sm px-skin pxd-favnews"
+    <>
+    <button type="button" className="px-btn px-btn--sm px-skin pxd-favnews pxd-route-cta"
       title={news.map((row) => `${FAV_NEWS_LABEL[row.event.type] ?? '일정'} ${favNewsWhen(row)} — ${row.event.title}`).join('\n')}
       onClick={(event) => {
         event.stopPropagation();
@@ -261,11 +268,10 @@ export default function MonDetail({ pick, onClose, inline = false, onDeep, here 
         onClose?.();
         go('/schedule');
       }}>
-      <PixelIcon name="calendar" />
-      <b >{FAV_NEWS_LABEL[news[0]!.event.type] ?? '일정'}</b>
-      <span >{favNewsWhen(news[0]!)}</span>
-      {news.length > 1 ? <span className="px-caption">외 {num(news.length - 1)}</span> : null}
+      {favNewsContent}
     </button>
+    <div className="px-caption pxd-favnews pxd-route-summary">{favNewsContent}</div>
+    </>
   ) : null;
 
   // ── 프로필 판 — 큰 몬스터볼 그림 · 영문명 배지 · 폼 라벨 · MAX CP · 종족값 (요약 팝업에는 없다)

@@ -75,7 +75,7 @@ export interface RankItem {
 }
 
 /** '어디 · 몇 위' 줄 목록 */
-export function RankList({ items, className = '' }: { items: readonly RankItem[]; className?: string }) {
+export function RankList({ items, className = '', routeOnly = false }: { items: readonly RankItem[]; className?: string; routeOnly?: boolean }) {
   return (
     <ul className={`pxd-ranks__list${className ? ` ${className}` : ''}`}>
       {items.map((item) => {
@@ -89,7 +89,10 @@ export function RankList({ items, className = '' }: { items: readonly RankItem[]
         return (
           <li key={item.key} className={item.onPick ? '' : `pxd-rank detail__rank-row${item.top ? ' is-top' : ''}`}>
             {item.onPick
-              ? <button type="button" className={`pxd-rank pxd-rank--tap${item.top ? ' is-top' : ''}`} onClick={item.onPick}>{inner}</button>
+              ? <>
+                  <button type="button" className={`pxd-rank pxd-rank--tap${item.top ? ' is-top' : ''}${routeOnly ? ' pxd-route-cta' : ''}`} onClick={item.onPick}>{inner}</button>
+                  {routeOnly ? <div className={`pxd-rank pxd-route-summary${item.top ? ' is-top' : ''}`}>{inner}</div> : null}
+                </>
               : inner}
           </li>
         );
@@ -118,6 +121,6 @@ export function Foot({ children }: { children: ReactNode }) {
 }
 
 /** 단추 줄 — 판 안의 동작 */
-export function Actions({ children }: { children: ReactNode }) {
-  return <div className="px-note__actions">{children}</div>;
+export function Actions({ children, routeOnly = false }: { children: ReactNode; routeOnly?: boolean }) {
+  return <div className={`px-note__actions${routeOnly ? ' pxd-route-cta' : ''}`}>{children}</div>;
 }

@@ -45,15 +45,18 @@ describe('모바일 보조 페이지 이동 단추', () => {
       <dialog class="px-dialog pxd-dialog--brief" open><footer id="brief-foot" class="px-dialog__foot pxd__foot pxd-route-cta"><p>자세한 건 도감을 참고하세요!</p><button id="deep">도감에서 자세히</button><button>D-MAX 순위</button><button>PvP 순위</button></footer></dialog>
       <dialog class="px-dialog" open><footer class="px-dialog__foot pxd__foot"><button id="dex" class="pxd-route-cta">포켓몬 도감</button><button id="share">링크 복사</button><button id="calc">CP 계산기</button></footer></dialog>
       <dialog class="px-dialog pxd-dialog--brief" open><footer id="calc-foot" class="px-dialog__foot pxd__foot"><button id="reset">초기화</button><button id="return">상세로 돌아가기</button></footer></dialog>
+      <dialog class="px-dialog" open><div class="px-note__actions pxd-route-cta"><button id="body-solo">솔플 계산기에서 자세히</button></div><button id="form-route" class="pxd-form pxd-route-cta">불꽃 S티어 · 1위 · D-MAX 더보기</button><div id="form-summary" class="pxd-form pxd-route-summary">불꽃 S티어 · 1위</div><button id="form-local" class="pxd-form">D-MAX 더보기</button><details><summary id="form-expand">일반 더보기</summary><button id="form-switch">메가X 폼으로 보기</button></details></dialog>
+      <div class="pxd--page"><div class="pxd-route-cta"><button id="page-solo">솔플 계산기에서 자세히</button></div><div id="page-summary" class="pxd-route-summary">슈퍼리그 · 12위</div></div>
       <button id="card">포켓몬 상세 보기</button><button id="select">선택</button><button id="remove">삭제</button><nav><a id="drawer" href="/pve/solo">솔플 계산기</a></nav>
     </div>`;
     atWidth(width);
-    for (const id of ['dmax', 'pve-tools', 'pve', 'pvp-deck', 'pvp-iv', 'solo', 'brief-foot', 'deep', 'dex']) {
+    for (const id of ['dmax', 'pve-tools', 'pve', 'pvp-deck', 'pvp-iv', 'solo', 'brief-foot', 'deep', 'dex', 'body-solo', 'form-route', 'page-solo']) {
       expect(visible(id), id).toBe(width > 699);
     }
-    for (const id of ['info', 'boss', 'share', 'calc', 'calc-foot', 'reset', 'return', 'card', 'select', 'remove', 'drawer']) {
+    for (const id of ['info', 'boss', 'share', 'calc', 'calc-foot', 'reset', 'return', 'card', 'select', 'remove', 'drawer', 'form-local', 'form-expand', 'form-switch']) {
       expect(visible(id), id).toBe(true);
     }
+    for (const id of ['form-summary', 'page-summary']) expect(visible(id), id).toBe(width <= 699);
     if (width <= 699) expect(getComputedStyle(document.querySelector('.nw-boss__actions')!).gridTemplateColumns).toBe('minmax(0, 1fr)');
   });
 

@@ -9,7 +9,7 @@
 // 요약만 보이고 자세한 것은 더보기로 — 순위 화면에서 그 줄을 찾아 밝힌다 (stores/rank.ts focus)
 // ─────────────────────────────────────────────────────────────────────────────
 'use strict';
-import { useMemo, type ReactNode } from 'react';
+import { Fragment, useMemo, type ReactNode } from 'react';
 import { useDex, useMax, usePve, usePvp, useUsage } from '../../lib/data';
 import { dday } from '../../lib/maxSlides';
 import { useMaxSlidesSoft } from '../../lib/weekBosses';
@@ -203,7 +203,7 @@ export function TrainCard({ mon, dexNo, stem, onLeave }: { mon: MonRef; dexNo: n
         <span className="px-sub">{title}</span>
       </p>
       <p className="px-body px-muted pxd-train__say">{say(lines)}</p>
-      <Actions>{go}</Actions>
+      <Actions routeOnly>{go}</Actions>
     </div>
   );
   const maxFirst = !!plan.pve?.max.length;
@@ -269,16 +269,22 @@ export default function FormGuide({ mon, dexNo, baseLabel, onSwitch, onLeave, on
             // 맥스 폼은 팝업에서 요약만 — 더보기는 D-MAX 화면의 그 줄 (2026-09-30 주인 요청).
             // 'join'(다이맥스 없이 참가) 줄도 같다 — 일반 폼 그대로 맥스 표에 선다 (2026-10-06)
             // 이미 D-MAX 화면이면 옮길 곳이 없다 — 팝업 안에서 그 폼의 배틀 정보로 (2026-10-02 주인 결정)
+            const summary = <>
+              {tag}
+              <span className="px-caption pxd-form__use">{formSummary(row, dex.TYPE_KO)}</span>
+              {row.unrel ? <span className="px-badge px-skin px-badge--ko px-badge--muted">미출시</span> : row.soon ? <span className="px-badge px-skin px-badge--ko px-badge--yellow">출시 예정</span> : null}
+            </>;
             return (
               // 일반 줄과 join 줄은 이름이 같다 — 키에 폼 종류를 붙여 가른다 (Codex, PR #322)
-              <button key={`${row.key}-${row.name}`} type="button" className={`pxd-form${on ? ' is-now' : ''}`}
-                aria-current={on ? 'true' : undefined}
-                onClick={() => (onMaxHere ? onMaxHere(toMon(row)) : board.toMax(row))}>
-                {tag}
-                <span className="px-caption pxd-form__use">{formSummary(row, dex.TYPE_KO)}</span>
-                {row.unrel ? <span className="px-badge px-skin px-badge--ko px-badge--muted">미출시</span> : row.soon ? <span className="px-badge px-skin px-badge--ko px-badge--yellow">출시 예정</span> : null}
-                <span className="pxd-form__go">D-MAX 더보기 <PixelIcon name="arrow" /></span>
-              </button>
+              <Fragment key={`${row.key}-${row.name}`}>
+                <button type="button" className={`pxd-form${on ? ' is-now' : ''}${onMaxHere ? '' : ' pxd-route-cta'}`}
+                  aria-current={on ? 'true' : undefined}
+                  onClick={() => (onMaxHere ? onMaxHere(toMon(row)) : board.toMax(row))}>
+                  {summary}
+                  <span className="pxd-form__go">D-MAX 더보기 <PixelIcon name="arrow" /></span>
+                </button>
+                {onMaxHere ? null : <div className={`pxd-form pxd-route-summary${on ? ' is-now' : ''}`} aria-current={on ? 'true' : undefined}>{summary}</div>}
+              </Fragment>
             );
           }
           const meter = meterText(usageMeterOf(usage.METER, row.name));
@@ -365,7 +371,7 @@ export function FormStats({ mon, dexNo, baseLabel, onLeave, here = '' }: { mon: 
             </p>
           ) : null}
           {soon ? (
-            <Actions><button type="button" className="px-btn px-btn--sm px-skin" onClick={() => { track('detail_more', { to: 'schedule', mon: mon.name }); onLeave?.(); go('/schedule'); }}>일정 보기 <PixelIcon name="arrow" /></button></Actions>
+            <Actions routeOnly><button type="button" className="px-btn px-btn--sm px-skin" onClick={() => { track('detail_more', { to: 'schedule', mon: mon.name }); onLeave?.(); go('/schedule'); }}>일정 보기 <PixelIcon name="arrow" /></button></Actions>
           ) : null}
         </Sec>
       );
@@ -381,7 +387,7 @@ export function FormStats({ mon, dexNo, baseLabel, onLeave, here = '' }: { mon: 
           ? <div className="px-grid px-grid--3 pxd-metrics">{tiles}</div>
           : <p className="px-body px-muted">D-MAX 순위표 상위권 밖이에요.</p>}
         {/* D-MAX 화면 위에서는 이미 이 폼의 D-MAX 정보를 보고 있다 — '더보기' 가 아니라 표의 그 줄로 가는 단추다 (2026-10-02 점검) */}
-        <Actions>
+        <Actions routeOnly>
           <button type="button" className="px-btn px-btn--sm px-skin" onClick={() => board.toMax({ name: mon.name, places, moveType, tier: spot })}>
             {here === 'dmax' ? 'D-MAX 표에서 이 줄 보기' : 'D-MAX 더보기'} <PixelIcon name="arrow" />
           </button>
@@ -417,8 +423,8 @@ export function FormStats({ mon, dexNo, baseLabel, onLeave, here = '' }: { mon: 
       ) : null}
       {leagues.length ? (
         <div className="pxd-stat-group">
-          <h4 className="px-caption">PvP · 리그별 순위 (누르면 그 줄로)</h4>
-          <RankList items={leagues.map(({ league, at }) => ({
+          <h4 className="px-caption">PvP · 리그별 순위<span className="pxd-route-cta"> (누르면 그 줄로)</span></h4>
+          <RankList routeOnly items={leagues.map(({ league, at }) => ({
             key: league, where: `${LEAGUE_KO[league]} · 점수 ${num(pvp.PVP_DATA[league]?.[at]?.score)}`, rank: at + 1,
             onPick: () => board.toPvp(mon.name, league),
           }))} />
