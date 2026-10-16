@@ -85,6 +85,7 @@ describe('모바일 레이드 보스 정보와 리본', () => {
     for (const mode of ['목록', '카드', '목록']) {
       fireEvent.click(getByRole('button', { name: new RegExp(mode) }));
       expect(container.querySelectorAll('.nw-boss-frame')).toHaveLength(1);
+      expect(container.querySelector('.nw-boss-grid')?.getAttribute('data-view')).toBe(mode === '카드' ? 'grid' : 'list');
       expect(container.querySelectorAll('.nw-row')).toHaveLength(0);
       expect(container.querySelectorAll('.nw-counter-item')).toHaveLength(3);
     }
@@ -128,6 +129,17 @@ describe('모바일 레이드 보스 정보와 리본', () => {
     fireEvent.click(getByRole('button', { name: '보스 상세 보기' }));
     expect(onOpen).toHaveBeenCalledTimes(1);
     expect(container.textContent).not.toMatch(/NaN|undefined|Infinity|\[object Object\]/);
+  });
+
+  it('PC 격자는 가용 폭에 따라 채우고 넓은 단일 판은 추천을 옆에 배치한다', () => {
+    const { container } = render(createElement(Raids, { onOpen: vi.fn() }));
+    expect(container.querySelector('.nw-boss-grid > .nw-boss-frame')).not.toBeNull();
+    expect(css).toMatch(/\.nw-boss-grid \{[^}]*repeat\(auto-fit, minmax\(min\(100%, 48rem\), 1fr\)\)/);
+    const desktop = css.slice(css.indexOf('@media (min-width: 700px)'), css.lastIndexOf('@media (max-width: 699px)'));
+    expect(desktop).toMatch(/\.nw-boss__main, html body #root \.nw-boss__side \{ display: contents/);
+    expect(desktop).toMatch(/\.nw-counters \{[^}]*repeat\(3, minmax\(0, 1fr\)\)/);
+    expect(desktop).toContain('@container (min-width: 84rem)');
+    expect(desktop).toMatch(/\.nw-boss__counters \{[^}]*grid-column: 3; grid-row: 1 \/ 5/);
   });
 
   it('모바일은 이미지가 이름 옆, CP 두 칸, 추천 세 칸으로 배치되고 터치 영역을 유지한다', () => {
