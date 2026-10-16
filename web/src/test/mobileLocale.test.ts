@@ -27,7 +27,7 @@ beforeEach(async () => {
 afterEach(() => { cleanup(); vi.unstubAllGlobals(); });
 
 describe('모바일 전체 메뉴의 언어·일정 지역', () => {
-  it('머리줄 없이도 메뉴 상단에서 두 설정을 찾고 누를 수 있다', () => {
+  it('머리줄이 두 토글을 감추는 모바일에서도 메뉴 상단에서 두 설정을 찾고 누를 수 있다', () => {
     const { container } = render(createElement(Drawer, props));
     const controls = container.querySelector('.drawer__locale')!;
     expect(controls.querySelector('#menu-language')?.textContent).toContain('한국어');
@@ -36,7 +36,9 @@ describe('모바일 전체 메뉴의 언어·일정 지역', () => {
     expect(controls.getAttribute('data-i18n')).toBe('off');
     expect(shell).toMatch(/\.drawer__locale \.px-nav__item \{ min-height: var\(--tap\)/);
     expect(shell).toMatch(/\.drawer__locale \.px-nav__label \{ white-space: normal/);
-    expect(shell).toContain('.app-bar { display: none; min-height: 0; padding: 0; border: 0; }');
+    // 모바일 머리줄은 남지만 언어 · 지역 토글은 감춘다 — 그래서 전체 메뉴가 두 설정을 들고 있어야 한다
+    const mobile = /@media \(max-width: 1099px\) \{([\s\S]*?)\n\}/.exec(shell)![1]!;
+    expect(mobile).toMatch(/\.app-bar \.lang-toggle, html body #root \.app-bar \.region-toggle,[^{}]*\{ display: none; \}/);
   });
 
   it('언어를 왕복 전환해 저장하며 일정 지역과 열린 메뉴는 유지한다', async () => {
