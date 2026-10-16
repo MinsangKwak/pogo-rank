@@ -1,0 +1,239 @@
+/* ─────────────────────────────────────────────────────────────────────────────
+   pixel/parts.css — v6 픽셀 조각 한 벌: 판(스킨) · 단추 · 탭 · 칩 · 입력 · 배지 · 토글 · 카드 · 몬스터볼 · 지표 · 안내 · 토스트
+
+   **스킨은 네 겹이다** (피그마 'Pixel skin / shadow · outline · inset · stepped glint') —
+   계단 그림자(4px 오프셋) · 2px 테두리 · 판 채움 · 왼쪽 위 빛줄(L 자). 네 겹을 CSS 하나로 그린다:
+   테두리는 border, 모서리 계단은 clip-path, 그림자는 filter: drop-shadow (clip-path 모양을 그대로 따라간다 —
+   box-shadow 는 clip 에 잘린다), 빛줄은 ::before. 같은 모양은 한 규칙이다 — 새 자리는 클래스를 더 붙인다.
+   색은 토큰만(pixel/tokens.css). 크기 · 간격은 0.4rem 격자, 글자 크기는 여섯 칸, 반경은 0 뿐이다.
+   ───────────────────────────────────────────────────────────────────────────── */
+
+/* ── 스킨 ───────────────────────────────────────────────────────────────── */
+html body #root .px-skin, html body .px-skin {
+  position: relative; box-sizing: border-box;
+  background: var(--px-fill, var(--panel)); color: var(--fg);
+  border: var(--px-stroke) solid var(--px-line, var(--px-edge));
+  clip-path: polygon(
+    0 var(--px-cut), var(--px-cut) var(--px-cut), var(--px-cut) 0,
+    calc(100% - var(--px-cut)) 0, calc(100% - var(--px-cut)) var(--px-cut), 100% var(--px-cut),
+    100% calc(100% - var(--px-cut)), calc(100% - var(--px-cut)) calc(100% - var(--px-cut)), calc(100% - var(--px-cut)) 100%,
+    var(--px-cut) 100%, var(--px-cut) calc(100% - var(--px-cut)), 0 calc(100% - var(--px-cut))
+  );
+}
+/* 그림자는 바깥 상자에 — clip 안쪽 요소에 filter 를 걸면 그림자까지 잘린다. 판 자체가 filter 를 가지면 position: fixed 자식이 깨지므로
+   팝업 판(.px-dialog)은 그림자를 안 단다 */
+html body .px-drop { filter: drop-shadow(var(--px-drop) var(--px-drop) 0 var(--px-shade, var(--px-shadow))); }
+html body .px-skin::before {
+  content: ''; position: absolute; top: 0; left: 0; z-index: 0; pointer-events: none;
+  width: var(--px-glint-w, 8rem); height: var(--px-glint-h, 3.6rem);
+  border-top: var(--px-stroke) solid var(--px-shine, var(--px-glint)); border-left: var(--px-stroke) solid var(--px-shine, var(--px-glint));
+}
+html body .px-skin > * { position: relative; z-index: 1; }
+/* 빨강 판 — 주 단추 · 강조 카드. 테두리 · 그림자 · 빛줄이 빨강 계열로 바뀐다 */
+html body .px-skin--brand { --px-fill: var(--brand-primary); --px-line: var(--px-red-edge); --px-shine: var(--px-red-glint); --px-shade: var(--px-red-shadow); color: var(--on-brand); }
+html body .px-skin--sunk { --px-fill: var(--panel-2); }
+html body .px-skin--bg { --px-fill: var(--bg); }
+html body .px-skin--danger { --px-fill: var(--danger-surface); --px-line: var(--danger-action); }
+
+/* ── 판 · 카드 ───────────────────────────────────────────────────────────── */
+html body .px-panel { padding: 2.4rem; }
+html body .px-card { padding: 1.6rem; display: flex; flex-direction: column; gap: 0.8rem; }
+html body .px-card--tap { cursor: pointer; text-align: left; width: 100%; font: inherit; }
+@media (hover: hover) { html body .px-card--tap:hover { --px-line: var(--brand-text); } }
+html body .px-divider { height: 0.2rem; margin: 0; border: 0; background: var(--line); }
+
+/* ── 글자 ───────────────────────────────────────────────────────────────── */
+html body .px-eyebrow { margin: 0; color: var(--muted); font: 400 1.2rem/1.5 var(--font-pixel); letter-spacing: 0.08em; text-transform: uppercase; }
+html body .px-eyebrow--brand { color: var(--brand-text); }
+html body .px-title { margin: 0; color: var(--fg); font: 700 2.8rem/1.2 var(--font-body); letter-spacing: -0.02em; word-break: keep-all; }
+html body .px-display { margin: 0; color: var(--fg); font: 700 4.2rem/1.2 var(--font-body); letter-spacing: -0.03em; word-break: keep-all; }
+html body .px-heading { margin: 0; color: var(--fg); font: 700 2.2rem/1.5 var(--font-body); letter-spacing: -0.02em; word-break: keep-all; }
+html body .px-sub { margin: 0; color: var(--fg); font: 700 1.6rem/1.5 var(--font-body); }
+html body .px-body { margin: 0; color: var(--fg); font: 400 1.4rem/1.7 var(--font-body); }
+html body .px-muted { color: var(--muted); }
+html body .px-faint { color: var(--faint); }
+html body .px-caption { margin: 0; color: var(--muted); font: 400 1.2rem/1.5 var(--font-body); }
+html body .px-mono { font-family: var(--font-mono); font-variant-numeric: tabular-nums; letter-spacing: 0; }
+html body .px-number { margin: 0; color: var(--fg); font: 700 2.8rem/1.2 var(--font-mono); font-variant-numeric: tabular-nums; }
+/* 구역 제목 줄 — 제목 + 한 마디 (피그마 '지금 많이 보는 포켓몬  최근 조회 흐름') */
+html body .px-sec { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.4rem 1.2rem; margin: 0; }
+html body .px-sec > .px-sec__note { color: var(--muted); font: 400 1.2rem/1.5 var(--font-body); }
+html body .px-sec > .px-sec__more { margin-left: auto; color: var(--brand-text); font: 500 1.2rem/1.5 var(--font-body); text-decoration: none; }
+
+/* ── 단추 ───────────────────────────────────────────────────────────────── */
+/* 누르는 것은 44px 이상. 기본은 가라앉은 판(panel-2), 주 행동은 빨강 판. 눌림은 :active, 비활성은 흐리게 */
+html body .px-btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 0.8rem;
+  box-sizing: border-box; min-height: var(--tap); padding: 0 1.6rem; margin: 0;
+  --px-fill: var(--panel-2); --px-glint-w: 4rem; --px-glint-h: 1.6rem;
+  color: var(--fg); font: 500 1.4rem/1.2 var(--font-body); text-decoration: none; white-space: nowrap; cursor: pointer;
+  transition: filter 0.12s ease, color 0.12s ease;
+}
+html body .px-btn--primary { --px-fill: var(--brand-primary); --px-line: var(--px-red-edge); --px-shine: var(--px-red-glint); --px-shade: var(--px-red-shadow); color: var(--on-brand); }
+html body .px-btn--ghost { --px-fill: var(--panel); }
+html body .px-btn--block { width: 100%; }
+html body .px-btn--icon { width: var(--tap); padding: 0; }
+html body .px-btn--sm { min-height: 3.6rem; padding: 0 1.2rem; font-size: 1.2rem; }
+@media (hover: hover) {
+  html body .px-btn:hover { --px-line: var(--brand-text); }
+  html body .px-btn--primary:hover { --px-fill: var(--brand-hover); --px-line: var(--px-red-edge); }
+}
+html body .px-btn:active { translate: var(--px-cut) var(--px-cut); }
+html body .px-btn:disabled, html body .px-btn[aria-disabled="true"] { opacity: 0.45; cursor: not-allowed; translate: none; }
+html body .px-btn:focus-visible, html body .px-input:focus-visible, html body .px-tab:focus-visible, html body .px-chip:focus-visible { outline: var(--px-stroke) solid var(--brand-focus); outline-offset: var(--px-stroke); }
+/* 단추 안 아이콘은 글자색 */
+html body .px-btn .px-icon { flex: none; }
+
+/* ── 탭 · 칩 ────────────────────────────────────────────────────────────── */
+html body .px-tabs, html body .px-chips { display: flex; flex-wrap: wrap; gap: 0.8rem; margin: 0; padding: 0; list-style: none; }
+html body .px-tabs--scroll, html body .px-chips--scroll { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; padding-bottom: var(--px-drop); }
+html body .px-tab, html body .px-chip {
+  display: inline-flex; align-items: center; justify-content: center; gap: 0.4rem; box-sizing: border-box;
+  min-height: 4rem; padding: 0 1.6rem; --px-fill: var(--panel-2); --px-glint-w: 4rem; --px-glint-h: 1.6rem;
+  color: var(--muted); font: 500 1.4rem/1.2 var(--font-body); white-space: nowrap; cursor: pointer; text-decoration: none;
+}
+html body .px-chip { min-height: 3.6rem; padding: 0 1.2rem; font-size: 1.2rem; }
+@media (hover: hover) { html body :is(.px-tab, .px-chip):hover { color: var(--fg); --px-line: var(--brand-text); } }
+html body :is(.px-tab, .px-chip):is([aria-selected="true"], [aria-pressed="true"], [aria-current="page"], .is-on) {
+  --px-fill: var(--brand-primary); --px-line: var(--px-red-edge); --px-shine: var(--px-red-glint); --px-shade: var(--px-red-shadow); color: var(--on-brand);
+}
+/* 세 갈래 칩 (검색식: 포함 → 제외 → 해제) — 제외는 가라앉은 빨강 판 */
+html body .px-chip[data-mode="exclude"] { --px-fill: var(--brand-subtle); --px-line: var(--brand-text); color: var(--brand-text); }
+
+/* ── 입력 ───────────────────────────────────────────────────────────────── */
+html body .px-input {
+  display: flex; align-items: center; gap: 0.8rem; box-sizing: border-box; width: 100%;
+  min-height: 4.8rem; padding: 0 1.6rem; --px-fill: var(--panel); --px-glint-w: 6rem; --px-glint-h: 1.6rem;
+  color: var(--fg); font: 500 1.4rem/1.2 var(--font-body);
+}
+html body .px-input input, html body .px-input select, html body .px-input textarea {
+  flex: 1; min-width: 0; margin: 0; padding: 0; border: 0; background: transparent; color: inherit; font: inherit; outline: 0;
+}
+html body .px-input input::placeholder { color: var(--muted); opacity: 1; }
+html body .px-input:focus-within { --px-line: var(--brand-focus); }
+html body .px-input--error { --px-line: var(--danger-action); }
+html body .px-input--sm { min-height: var(--tap); }
+html body .px-input textarea { resize: vertical; padding: 1.2rem 0; line-height: 1.5; }
+html body .px-input--area { align-items: stretch; min-height: 0; }
+/* ± 스테퍼 (개체값 · 레벨) */
+html body .px-stepper { display: grid; grid-template-columns: var(--tap) minmax(0, 1fr) var(--tap); align-items: center; gap: 0.8rem; }
+html body .px-stepper__value { text-align: center; font: 700 2.2rem/1.2 var(--font-mono); font-variant-numeric: tabular-nums; }
+
+/* ── 배지 ───────────────────────────────────────────────────────────────── */
+html body .px-badge {
+  display: inline-flex; align-items: center; gap: 0.4rem; box-sizing: border-box; min-height: 2.8rem; padding: 0 1.2rem;
+  --px-fill: var(--panel-2); --px-glint-w: 2.4rem; --px-glint-h: 1.2rem; --px-cut: 0.2rem;
+  color: var(--px-badge-c, var(--brand-text)); font: 400 1.2rem/1 var(--font-mono); letter-spacing: 0.04em; white-space: nowrap; text-transform: uppercase;
+}
+html body .px-badge--mint { --px-badge-c: var(--mint); }
+html body .px-badge--blue { --px-badge-c: var(--blue); }
+html body .px-badge--orange { --px-badge-c: var(--orange); }
+html body .px-badge--purple { --px-badge-c: var(--purple); }
+html body .px-badge--yellow { --px-badge-c: var(--yellow); }
+html body .px-badge--muted { --px-badge-c: var(--muted); }
+html body .px-badge--fill { --px-fill: var(--brand-primary); --px-line: var(--px-red-edge); --px-shine: var(--px-red-glint); --px-badge-c: var(--on-brand); }
+html body .px-badge--ko { font-family: var(--font-body); font-weight: 500; text-transform: none; letter-spacing: 0; }
+
+/* ── 토글 ───────────────────────────────────────────────────────────────── */
+html body .px-toggle {
+  display: inline-flex; align-items: center; gap: 1.2rem; min-height: var(--tap); padding: 0; margin: 0; cursor: pointer;
+  color: var(--fg); font: 500 1.4rem/1.2 var(--font-body); background: none; border: 0;
+}
+html body .px-toggle__track {
+  position: relative; display: inline-block; flex: none; width: 4.4rem; height: 2.8rem; box-sizing: border-box;
+  border: var(--px-stroke) solid var(--px-edge); background: var(--panel-2);
+}
+html body .px-toggle__track::after { content: ''; position: absolute; top: 0.4rem; left: 0.4rem; width: 1.6rem; height: 1.6rem; background: var(--muted); transition: left 0.12s ease, background 0.12s ease; }
+html body .px-toggle[aria-checked="true"] .px-toggle__track { background: var(--brand-primary); border-color: var(--px-red-edge); }
+html body .px-toggle[aria-checked="true"] .px-toggle__track::after { left: 2rem; background: var(--on-brand); }
+html body .px-toggle:focus-visible { outline: var(--px-stroke) solid var(--brand-focus); outline-offset: var(--px-stroke); }
+/* 확인란 · 라디오 — 네모 한 칸 */
+html body .px-check { display: flex; align-items: center; gap: 1.2rem; min-height: var(--tap); cursor: pointer; color: var(--fg); font: 500 1.4rem/1.5 var(--font-body); }
+html body .px-check input { appearance: none; flex: none; width: 2rem; height: 2rem; margin: 0; border: var(--px-stroke) solid var(--px-edge); background: var(--panel); cursor: pointer; }
+html body .px-check input:checked { background: var(--brand-primary); border-color: var(--px-red-edge); box-shadow: inset 0 0 0 0.4rem var(--panel); }
+html body .px-check input:focus-visible { outline: var(--px-stroke) solid var(--brand-focus); outline-offset: var(--px-stroke); }
+
+/* ── 몬스터볼 틀 + 원본 그림 ─────────────────────────────────────────────
+   47×47 셀 볼(public/images/pixel/pokeball.svg) 위에 API 원본 그림을 67% 로 띄운다. 그림을 다시 그리지 않는다 */
+html body .px-ball { position: relative; flex: none; width: var(--ball, 13rem); height: var(--ball, 13rem); background: url('/images/pixel/pokeball.svg') center / contain no-repeat; }
+html body .px-ball > img, html body .px-ball > picture, html body .px-ball > .sprite { position: absolute; inset: 16.5%; width: 67%; height: 67%; object-fit: contain; image-rendering: auto; }
+html body .px-ball--sm { --ball: 7.2rem; }
+html body .px-ball--lg { --ball: 18.8rem; }
+
+/* ── 포켓몬 카드 (피그마 'Pokémon card' 272×282) ─────────────────────────── */
+html body .px-mon { display: flex; flex-direction: column; gap: 0.8rem; padding: 1.6rem; min-width: 0; }
+html body .px-mon__head { display: flex; align-items: center; gap: 0.8rem; min-height: 2.8rem; }
+html body .px-mon__no { color: var(--muted); font: 400 1.2rem/1 var(--font-mono); }
+html body .px-mon__fav { margin-left: auto; width: var(--tap); height: var(--tap); margin-top: -0.8rem; margin-bottom: -0.8rem; margin-right: -1.2rem; display: grid; place-items: center; color: var(--muted); background: none; border: 0; cursor: pointer; }
+html body .px-mon__fav[aria-pressed="true"] { color: var(--brand-text); }
+html body .px-mon__art { display: flex; justify-content: center; padding: 0.4rem 0; }
+html body .px-mon__name { margin: 0; color: var(--fg); font: 700 1.6rem/1.5 var(--font-body); word-break: keep-all; }
+html body .px-mon__types { margin: 0; color: var(--muted); font: 400 1.2rem/1.5 var(--font-body); }
+html body .px-mon__meta { margin: 0; color: var(--mint); font: 400 1.2rem/1.5 var(--font-body); }
+html body .px-mon__rank { --px-badge-c: var(--brand-text); }
+/* 4열 → 2열 → 1열 격자 (피그마: 데스크톱 4열 · 모바일 2열) */
+html body .px-grid { display: grid; grid-template-columns: repeat(var(--cols, 4), minmax(0, 1fr)); gap: 1.6rem; margin: 0; padding: 0; list-style: none; }
+html body .px-grid--2 { --cols: 2; }
+html body .px-grid--3 { --cols: 3; }
+@media (max-width: 1099px) { html body .px-grid { --cols: 2; gap: 1.2rem; } html body .px-grid--3 { --cols: 1; } }
+@media (max-width: 699px) { html body .px-grid--1m { --cols: 1; } }
+
+/* ── 지표 타일 · 안내 판 ────────────────────────────────────────────────── */
+html body .px-metric { display: flex; flex-direction: column; gap: 0.8rem; padding: 2rem; }
+html body .px-metric__label { margin: 0; color: var(--muted); font: 500 1.4rem/1.5 var(--font-body); }
+html body .px-metric__value { margin: 0; color: var(--px-metric-c, var(--fg)); font: 700 2.8rem/1.2 var(--font-mono); font-variant-numeric: tabular-nums; }
+html body .px-metric__note { margin: 0; color: var(--muted); font: 400 1.2rem/1.5 var(--font-body); }
+html body .px-note { display: flex; flex-direction: column; gap: 0.8rem; padding: 2rem; }
+html body .px-note__title { margin: 0; color: var(--fg); font: 700 1.6rem/1.5 var(--font-body); }
+html body .px-note__body { margin: 0; color: var(--muted); font: 400 1.4rem/1.7 var(--font-body); }
+html body .px-note__actions { display: flex; flex-wrap: wrap; gap: 0.8rem; margin-top: 0.4rem; }
+
+/* ── 세그먼트 막대 (피그마 'Pixel / Segmented stat') ───────────────────────── */
+html body .px-stat { position: relative; height: 1.2rem; border: var(--px-stroke) solid var(--px-shadow); background: repeating-linear-gradient(90deg, var(--line) 0 0.8rem, transparent 0.8rem 1.2rem); }
+html body .px-stat > i { position: absolute; inset: 0; width: var(--pct, 0%); background: repeating-linear-gradient(90deg, var(--px-stat-c, var(--red)) 0 0.8rem, transparent 0.8rem 1.2rem); }
+
+/* ── 모서리 장식 — 빨강 6px 세 칸 ───────────────────────────────────────── */
+html body .px-corner { position: absolute; top: 1.2rem; right: 1.2rem; width: 1.2rem; height: 1.2rem; pointer-events: none; background: conic-gradient(from 90deg at 50% 50%, var(--brand-primary) 0 25%, transparent 0 50%, var(--brand-primary) 0 75%, var(--brand-primary) 0); }
+
+/* ── 풍경 판 — 홈 · 상세 · 화면 머리 뒤의 픽셀 그림 ────────────────────────
+   그림 위에 읽기용 안개(scene-ink)를 위 88% → 가운데 45% → 아래 6% 로 깐다 (피그마 'readable atmosphere'). 라이트는 판 색이 밝아 글자가 진하게 선다 */
+html body .px-scene { position: relative; isolation: isolate; }
+html body .px-scene::before {
+  content: ''; position: absolute; inset: 0; z-index: -1; pointer-events: none;
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--scene-ink) 88%, transparent) 0%, color-mix(in srgb, var(--scene-ink) 45%, transparent) 57%, color-mix(in srgb, var(--scene-ink) 6%, transparent) 100%),
+    var(--scene, url('/images/pixel/scene-forest-camp.png')) center top / cover no-repeat var(--bg);
+  image-rendering: pixelated;
+}
+/* 바닥은 판 색으로 녹아든다 — 그림 아래 본문이 그림 위에 떠 있지 않게 */
+html body .px-scene::after { content: ''; position: absolute; left: 0; right: 0; bottom: 0; z-index: -1; height: var(--scene-fade, 22rem); background: linear-gradient(180deg, transparent, var(--bg)); pointer-events: none; }
+html body .px-scene--lake { --scene: url('/images/pixel/scene-field-lake.png'); }
+html body .px-scene--quiet::before { background-image: linear-gradient(180deg, color-mix(in srgb, var(--scene-ink) 92%, transparent), color-mix(in srgb, var(--scene-ink) 70%, transparent)), var(--scene, url('/images/pixel/scene-field-lake.png')); }
+@media (max-width: 699px) { html body .px-scene::before { background-image: linear-gradient(180deg, color-mix(in srgb, var(--scene-ink) 88%, transparent) 0%, color-mix(in srgb, var(--scene-ink) 45%, transparent) 57%, color-mix(in srgb, var(--scene-ink) 6%, transparent) 100%), var(--scene-m, url('/images/pixel/scene-forest-camp-640.png')); } html body .px-scene--lake { --scene-m: url('/images/pixel/scene-field-lake-640.png'); } }
+
+/* ── 스켈레톤 · 토스트 ───────────────────────────────────────────────────── */
+html body .px-skel { display: block; min-height: 1.6rem; background: var(--panel-2); }
+@media (prefers-reduced-motion: no-preference) { html body .px-skel { animation: px-skel 1.2s ease-in-out infinite alternate; } }
+@keyframes px-skel { to { opacity: 0.55; } }
+html body .px-toast {
+  position: fixed; left: 50%; bottom: calc(2.4rem + env(safe-area-inset-bottom)); z-index: 1200; translate: -50% 0;
+  display: flex; align-items: center; gap: 1.2rem; max-width: min(48rem, calc(100vw - 3.2rem)); padding: 1.2rem 1.6rem;
+  --px-fill: var(--panel); color: var(--fg); font: 500 1.4rem/1.5 var(--font-body);
+}
+html body .px-toast--good { --px-line: var(--mint); }
+html body .px-toast--warn { --px-line: var(--danger-action); }
+@media (max-width: 699px) { html body .px-toast { bottom: calc(var(--bottom-bar) + 1.2rem + env(safe-area-inset-bottom)); } }
+
+/* ── 표 (레이드 PvE · 개체값 TOP10) ─────────────────────────────────────── */
+html body .px-table { width: 100%; border-collapse: collapse; font: 400 1.4rem/1.5 var(--font-body); }
+html body .px-table th { padding: 1.2rem 1.2rem; text-align: left; color: var(--muted); font: 500 1.2rem/1.5 var(--font-body); border-bottom: var(--px-stroke) solid var(--line); white-space: nowrap; }
+html body .px-table td { padding: 1.2rem 1.2rem; border-bottom: 0.2rem solid color-mix(in srgb, var(--line) 50%, transparent); vertical-align: middle; }
+html body .px-table tr:last-child td { border-bottom: 0; }
+html body .px-table .px-mono { font-variant-numeric: tabular-nums; }
+html body .px-table th.is-num, html body .px-table td.is-num { text-align: right; font-family: var(--font-mono); }
+
+/* ── 아이콘 ─────────────────────────────────────────────────────────────── */
+html body .px-icon { flex: none; display: inline-block; vertical-align: middle; }
+
+/* ── 줄이기 설정 ─────────────────────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) { html body :is(.px-btn, .px-toggle__track::after) { transition: none; } }

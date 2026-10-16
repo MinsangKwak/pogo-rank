@@ -71,3 +71,9 @@ import './styles/cinema/hotmons.css';
 import './styles/cinema/weekbosses.css';
 // 광고 자리 — 넓은 화면 양옆 · 휴대폰 바닥 (2026-10-14). 본문 폭을 줄이는 규칙이 있어 shell.css 뒤여야 한다
 import './styles/cinema/ads.css';
+
+// 2026-10-16 v6 '픽셀 필드 시스템' (피그마 MONCAMP · Trainer OS). **맨 뒤다** — 토큰이 옛 이름(--bg · --surface · --brand …)을
+// 새 값으로 다시 매기고, 조각(parts)이 새 모양 한 벌을 둔다. 옛 cinema 규칙은 화면이 옮겨 가는 대로 걷어 낸다
+import './styles/pixel/fonts.css';
+import './styles/pixel/tokens.css';
+import './styles/pixel/parts.css';
