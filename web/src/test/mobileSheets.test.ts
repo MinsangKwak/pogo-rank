@@ -25,7 +25,7 @@ describe('모바일 머리와 바텀 시트 회귀', () => {
     document.head.innerHTML = ''; document.body.innerHTML = '';
   });
   it('모바일 판은 하단 기준, 최대85vh이며 머리·바닥 대신 본문만 스크롤한다', () => {
-    const mobile = /@media \(max-width: 699px\) \{([\s\S]*?)\n\}/.exec(parts.slice(parts.indexOf('/* ── 팝업 판')))![1]!;
+    const mobile = /@media \(max-width: 699px\) \{([\s\S]*?)\n\}/.exec(parts.slice(parts.indexOf('html body #root .px-dialog {')))![1]!;
     expect(mobile).toContain('place-items: end stretch');
     expect(mobile).toContain('max-height: min(85vh, calc(100dvh - env(safe-area-inset-top)))');
     expect(mobile).toContain('height: auto');
