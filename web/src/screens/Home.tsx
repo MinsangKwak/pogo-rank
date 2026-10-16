@@ -180,7 +180,7 @@ function HotFour({ onOpen }: { onOpen: OpenMon }) {
 }
 
 /** 이번 주 보스 목록 — 보스 한 줄에 종류 · 기간 · 추천 첫 마리. 누르면 보스 상세(상대할 때) */
-function WeekList({ board, onOpen }: { board: BossCard[]; onOpen: OpenMon }) {
+export function WeekList({ board, onOpen }: { board: BossCard[]; onOpen: OpenMon }) {
   const src = useCounterSource();
   const rows = board.slice(0, BOARD_MAX);
   return (
@@ -196,14 +196,21 @@ function WeekList({ board, onOpen }: { board: BossCard[]; onOpen: OpenMon }) {
                   <Ball sprite={card.sprite} size="sm" />
                   <span className="home__week-text">
                     <b className="px-sub">{card.form ? `${card.form} ${card.name}` : card.name}</b>
-                    <span className="px-caption">{`${BOARD_KIND_KO[card.kind]} · ${card.short}${card.hours ? ` · ${card.hours}` : ''}`}</span>
+                    <span className="home__week-meta">
+                      <span className="px-caption">{BOARD_KIND_KO[card.kind]}</span>
+                      <span className={`home__week-status px-badge px-skin px-badge--ko${card.live ? '' : ' px-badge--muted'}`}>{cardDday(card)}</span>
+                    </span>
+                    <span className="home__week-when px-caption">
+                      <span>{card.short}</span>{card.hours ? <span>{card.hours}</span> : null}
+                    </span>
                   </span>
-                  <span className={`px-badge px-skin px-badge--ko${card.live ? '' : ' px-badge--muted'}`}>{cardDday(card)}</span>
                 </button>
                 {counter ? (
                   <button type="button" className="home__week-rec" title={`추천 · ${counter.name}`}
                     onClick={() => { track('week_boss_rec', { boss: card.detailName, mon: counter.name }); onOpen({ sprite: counter.sprite, name: counter.name, en: counter.en, types: counter.types }); }}>
-                    <span className="px-caption">추천</span><Ball sprite={counter.sprite} size="sm" /><span className="px-caption">{counter.name}</span>
+                    <span className="home__week-rec-label px-caption">추천</span>
+                    <img className="home__week-rec-sprite" src={`${BASE}sprites/${counter.sprite}.png`} alt="" width="32" height="32" loading="lazy" decoding="async" />
+                    <span className="home__week-rec-name px-caption">{counter.name}</span>
                   </button>
                 ) : null}
               </li>
