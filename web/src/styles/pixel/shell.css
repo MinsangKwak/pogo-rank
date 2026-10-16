@@ -137,6 +137,9 @@ html body #root .drawer__head .icon-btn { margin-left: auto; }
 html body #root .drawer__sec { margin: 0.8rem 0 0; color: var(--muted); font: 500 1.2rem/1.5 var(--font-body); letter-spacing: 0.04em; }
 html body #root .drawer__panel .nav-menu { display: flex; flex-direction: column; gap: 0.4rem; margin: 0; padding: 0; border: 0; }
 html body #root .drawer__panel .drawer__group { display: flex; flex-direction: column; gap: 0.4rem; padding: 0; border: 0; }
+html body #root .drawer__locale .px-nav__item { min-height: var(--tap); padding: 0.8rem 1.2rem; color: var(--fg); background: var(--panel); border-color: var(--line); }
+html body #root .drawer__locale .px-nav__label { white-space: normal; overflow: visible; }
+html body #root .drawer__locale .drawer__value { flex: none; color: var(--brand-text); white-space: nowrap; font: inherit; }
 html body #root .drawer__panel .drawer__meta { margin: 1.2rem 0 0; padding: 1.2rem 0 0; border-top: var(--px-stroke) solid var(--line); color: var(--muted); font: 400 1.2rem/1.7 var(--font-body); }
 /* 시트 안 마이페이지 카드 (components/Account.tsx) — 판 한 장 */
 html body #root .drawer__panel .account { display: flex; flex-direction: column; gap: 1.2rem; padding: 1.6rem; --px-fill: var(--panel); }

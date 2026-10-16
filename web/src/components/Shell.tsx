@@ -284,6 +284,7 @@ export function Drawer({ open, onClose, now, onConsent, onNote }: { open: boolea
         </div>
         {/* 로그인 상태는 여기 한 곳에서만 보인다 */}
         <Account onGo={onClose} />
+        <LocaleItems />
         <nav className="nav-menu" aria-label="서비스 이동">
           <a href="/" className="px-nav__item" onClick={onClose} {...(now === 'home' ? { 'aria-current': 'page' as const } : {})}>
             <PixelIcon name="home" /><span className="px-nav__label">서비스 홈</span>
@@ -302,6 +303,30 @@ export function Drawer({ open, onClose, now, onConsent, onNote }: { open: boolea
         </div>
         <Version />
       </aside>
+    </div>
+  );
+}
+
+// 모바일에서 머리줄을 숨겨도 언어와 일정 지역은 메뉴 첫 화면에서 각각 바꿀 수 있다.
+function LocaleItems() {
+  const language = useLang();
+  const region = useRegion();
+  return (
+    <div className="drawer__group drawer__locale" role="group" aria-label={language === 'en' ? 'Language and schedule region' : '언어 및 일정 지역'} data-i18n="off">
+      <button type="button" className="px-nav__item" id="menu-language" aria-live="polite"
+        aria-label={language === 'en' ? 'View in Korean (한국어로 보기)' : 'View in English (영어로 보기)'}
+        onClick={() => { const next = language === 'en' ? 'ko' : 'en'; void setLang(next); track('lang_switch', { lang: next }); }}>
+        <PixelIcon name="globe" />
+        <span className="px-nav__label">{language === 'en' ? 'Language' : '언어'}</span>
+        <span className="drawer__value">{language === 'en' ? 'English' : '한국어'}</span>
+      </button>
+      <button type="button" className="px-nav__item" id="menu-region" aria-live="polite"
+        aria-label={region === 'eu' ? '일정 기준 지역: 유럽 (누르면 한국 기준) · Schedule region: Europe' : '일정 기준 지역: 한국 (누르면 유럽 기준) · Schedule region: Korea'}
+        onClick={() => { const next = region === 'eu' ? 'kr' : 'eu'; setRegion(next); track('region_switch', { region: next }); }}>
+        <PixelIcon name="globe" />
+        <span className="px-nav__label">{language === 'en' ? 'Schedule region' : '일정 기준 지역'}</span>
+        <span className="drawer__value">{region === 'eu' ? (language === 'en' ? 'EU · Europe' : 'EU · 유럽') : (language === 'en' ? 'KR · Korea' : 'KR · 한국')}</span>
+      </button>
     </div>
   );
 }
