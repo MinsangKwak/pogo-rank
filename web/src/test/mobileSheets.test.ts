@@ -14,6 +14,8 @@ describe('모바일 머리와 바텀 시트 회귀', () => {
     expect(mobile).toContain('.app-bar { display: flex; min-height: 5.6rem;');
     expect(mobile).toContain('.app-bar .app-bar__account { display: inline-flex; }');
     expect(mobile).toMatch(/#search-toggle, html body #root \.app-bar #menu-toggle \{ display: none; \}/);
+    // 옛 brand.css 가 좁은 폭에서 로고 글자를 지운다 — 머리줄을 남기는 지금은 글자 로고가 보여야 한다
+    expect(mobile).toContain('.app-bar .app-bar__logo--brand > span { display: block; }');
     expect(mobile).toContain('html body::before { top: 0; left: 0; }');
     expect(shell).not.toContain('min-height: 8.4rem');
   });
