@@ -29,7 +29,13 @@ describe('픽셀 포켓몬 그림과 모바일 이동 회귀', () => {
     expect(imageFrame.filter).not.toContain('blur');
     expect(imageFrame.display).toBe('inline-block');
     expect(imageFrame.position).toBe('relative');
-    expect(artwork).toContain('/images/pixel/pokeball.svg');
+    expect(artwork).toContain('background: none');
+    expect(artwork).not.toContain('filter:');
+    const ballLayer = /html body #root \.px-ball::before\s*\{([^}]+)\}/.exec(parts)![0];
+    expect(ballLayer).toContain('/images/pixel/pokeball.svg');
+    expect(ballLayer).toContain('filter: saturate(0.25)');
+    expect(ballLayer).toContain('pointer-events: none');
+    expect(parts).toContain('.px-ball .sprite:not(.is-loading):not(.empty) { background: transparent; }');
     expect(parts).toMatch(/\.px-ball > img[^{}]*\{[^}]*object-fit: contain/);
     document.head.innerHTML = '';
     document.body.innerHTML = '';
