@@ -237,3 +237,27 @@ html body .px-icon { flex: none; display: inline-block; vertical-align: middle; 
 
 /* ── 줄이기 설정 ─────────────────────────────────────────────────────────── */
 @media (prefers-reduced-motion: reduce) { html body :is(.px-btn, .px-toggle__track::after) { transition: none; } }
+
+/* ── 팝업 판 (D01~D13 공통) ─────────────────────────────────────────────────
+   <dialog> 하나. 데스크톱은 가운데 판(최대 86vh, 본문만 세로 스크롤, 바닥 동작 고정), 모바일은 전체 높이 시트.
+   판에는 drop-shadow 를 안 건다 — filter 가 걸린 요소 안의 fixed 자식이 깨진다 */
+html body .px-dialog { position: fixed; inset: 0; z-index: 100; width: 100%; max-width: none; height: 100%; max-height: none; margin: 0; padding: 2.4rem; border: 0; background: transparent; color: var(--fg); display: none; place-items: center; }
+html body .px-dialog[open] { display: grid; }
+html body .px-dialog::backdrop { background: color-mix(in srgb, var(--night) 72%, transparent); backdrop-filter: blur(0.4rem); }
+html body .px-dialog__panel { display: flex; flex-direction: column; box-sizing: border-box; width: min(var(--dialog-w, 72rem), 100%); max-height: min(86vh, 80rem); --px-fill: var(--panel); }
+html body .px-dialog__head { display: flex; align-items: flex-start; gap: 1.6rem; padding: 2.4rem 2.4rem 1.6rem; border-bottom: var(--px-stroke) solid var(--line); }
+html body .px-dialog__head > div { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 0.4rem; }
+html body .px-dialog__body { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; display: flex; flex-direction: column; gap: 1.6rem; padding: 2rem 2.4rem; }
+html body .px-dialog__foot { display: flex; flex-wrap: wrap; gap: 1.2rem; padding: 1.6rem 2.4rem 2.4rem; border-top: var(--px-stroke) solid var(--line); }
+html body .px-dialog__foot > .px-btn { flex: 1; }
+html body .px-dialog__foot > .px-btn--primary { flex: 2; }
+html body .px-notelist { display: flex; flex-direction: column; gap: 1.2rem; margin: 0; padding: 0; list-style: none; }
+html body .px-notelist li { display: flex; gap: 1.2rem; color: var(--fg); font: 400 1.4rem/1.7 var(--font-body); }
+html body .px-notelist__no { flex: none; color: var(--brand-text); }
+@media (max-width: 699px) {
+  html body .px-dialog { padding: 0; place-items: end stretch; }
+  html body .px-dialog__panel { width: 100%; max-height: 100%; height: 100%; --px-cut: 0; }
+  html body .px-dialog__head { padding: max(2rem, env(safe-area-inset-top)) 2rem 1.6rem; }
+  html body .px-dialog__body { padding: 1.6rem 2rem; }
+  html body .px-dialog__foot { padding: 1.6rem 2rem calc(1.6rem + env(safe-area-inset-bottom)); }
+}

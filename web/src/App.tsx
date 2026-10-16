@@ -16,7 +16,8 @@
 // ─────────────────────────────────────────────────────────────────────────────
 import { Suspense, lazy, startTransition, useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
 import { DataBoundary } from './components/DataBoundary';
-import { AppBar, AppNav, Drawer, Footer, PageHead, ToTop } from './components/Shell';
+import { AppBar, AppNav, BottomBar, Drawer, Footer, PageHead, ToTop } from './components/Shell';
+import NoteDialog from './components/NoteDialog';
 import { SlotProvider } from './components/Slots';
 import { useRoute } from './lib/useRoute';
 import type { MonPick, OpenMon } from './lib/mon';
@@ -173,6 +174,8 @@ export default function App({ seo }: AppProps = {}) {
   const { route, rest } = useRoute();
   const [menuOpen, setMenuOpen] = useState(false);
   const [consentOpen, setConsentOpen] = useState(false);
+  // 기준 안내 팝업(D11) — 레일 · 시트의 '기준 안내' 줄이 연다
+  const [noteOpen, setNoteOpen] = useState(false);
   const invite = useInviteStore((s) => s.screen);
   const closeInvite = useInviteStore((s) => s.close);
   // [스프라이트, 영문명]. 영문명은 **연 쪽이 들고 있던 것**만 넘긴다 —
@@ -271,7 +274,7 @@ export default function App({ seo }: AppProps = {}) {
   };
   // 화면을 옮기면 열려 있던 팝업·서랍은 닫는다 — <dialog> 가 새 화면 위에 그대로 떠 있으면
   // 아무 데도 눌리지 않는다 (상세 팝업에서 같은 자리를 이미 한 번 겪었다)
-  useEffect(() => { setConsentOpen(false); setMenuOpen(false); closeInvite(); useSearchStore.getState().hide(); }, [route, rest, closeInvite]);
+  useEffect(() => { setConsentOpen(false); setMenuOpen(false); setNoteOpen(false); closeInvite(); useSearchStore.getState().hide(); }, [route, rest, closeInvite]);
   // 앞으로 옮겨 왔으면 맨 위에서 시작한다 — 앱이 한 번만 서므로 앞 화면의 스크롤이 그대로 남는다 (lib/nav.ts takeForward)
   useEffect(() => { if (takeForward()) window.scrollTo(0, 0); }, [route, rest]);
 
@@ -336,7 +339,7 @@ export default function App({ seo }: AppProps = {}) {
           상세에서 뒤로가기는 **팝업을 닫는다** — 화면을 떠나면 뒤에 보던 목록까지 잃는다 */}
       <AppBar onMenu={() => setMenuOpen(true)} home={home && !onDetail}
         onBack={onDetail ? closeMon : undefined} />
-      <AppNav now={route.id} onConsent={() => setConsentOpen(true)} />
+      <AppNav now={route.id} onConsent={() => setConsentOpen(true)} onMenu={() => setMenuOpen(true)} onNote={() => setNoteOpen(true)} />
 
       {/* 홈에는 화면 머리가 없다 — 제목이 히어로 안에 있다 (v3 syncAppShell 과 같은 규칙) */}
       {home || hideHead ? null : <PageHead route={route} actionsRef={setActionsEl} />}
@@ -383,13 +386,16 @@ export default function App({ seo }: AppProps = {}) {
       <SearchPalette onOpen={openMon} />
 
       {consentOpen ? <ConsentDialog onClose={() => setConsentOpen(false)} /> : null}
+      {noteOpen ? <NoteDialog route={route.id} onClose={() => setNoteOpen(false)} /> : null}
       {/* ★ 를 눌렀는데 로그인 전일 때 — 누른 곳과 그리는 곳이 멀어 stores/invite.ts 를 거친다 */}
       {invite !== null ? <LoginInvite screen={invite} onClose={closeInvite} /> : null}
 
       <ToTop />
       {/* 광고 자리 — 로그인 전인 사람에게만, 빌드 모드가 켜져 있을 때만 선다 (lib/ads.ts). 셸 순서 뒤의 고정 자리라 본문 흐름에 안 낀다 */}
       <AdSlots />
-      <Drawer open={menuOpen} onClose={() => setMenuOpen(false)} now={route.id} onConsent={() => setConsentOpen(true)} />
+      {/* 좁은 화면의 하단 바로가기 — 레일이 접힌 자리를 이 네 칸이 맡는다 (CSS 가 1100px 아래에서만 보인다) */}
+      <BottomBar now={route.id} onMenu={() => setMenuOpen(true)} />
+      <Drawer open={menuOpen} onClose={() => setMenuOpen(false)} now={route.id} onConsent={() => setConsentOpen(true)} onNote={() => setNoteOpen(true)} />
     </SlotProvider>
   );
 }

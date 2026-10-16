@@ -77,3 +77,12 @@ import './styles/cinema/ads.css';
 import './styles/pixel/fonts.css';
 import './styles/pixel/tokens.css';
 import './styles/pixel/parts.css';
+import './styles/pixel/shell.css';
+// 화면별 배치 — 조각은 parts, 여기는 자리. 팝업(modal)은 화면 뒤, 관리자는 맨 뒤
+import './styles/pixel/home.css';
+import './styles/pixel/ranks.css';
+import './styles/pixel/tools.css';
+import './styles/pixel/news.css';
+import './styles/pixel/info.css';
+import './styles/pixel/modal.css';
+import './styles/pixel/admin.css';

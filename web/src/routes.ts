@@ -93,6 +93,32 @@ export const ROUTE_DESC: Partial<Record<RouteId, string>> = {
   settings: '화면 테마와 포켓몬 이미지의 움직임을 설정할 수 있어요.',
 };
 
+/** 화면 머리의 영문 이름표 (v6 피그마 'MAX BATTLE / RANKINGS'). 로고와 같은 픽셀 글꼴로 한 줄 — 번역하지 않는다 */
+export const ROUTE_EYEBROW: Partial<Record<RouteId, string>> = {
+  home: 'YOUR ADVENTURE STARTS HERE',
+  'game-updates': 'FIELD NOTES / GAME UPDATES',
+  changes: 'MOVE PATCH / CHANGELOG',
+  schedule: 'EVENT MAP',
+  raids: 'RAID RADAR / THIS WEEK',
+  eggs: 'INCUBATOR / HATCH GUIDE',
+  dex: 'POKÉDEX / DISCOVERY',
+  dmax: 'MAX BATTLE / RANKINGS',
+  'dmax-deck': 'TEAM LAB / MAX BATTLE',
+  pve: 'RAID / DAMAGE INTELLIGENCE',
+  'pve-solo': 'RAID SIMULATOR / EXPERIMENTAL',
+  pvp: 'GO BATTLE LEAGUE / META',
+  'pvp-deck': 'TEAM LAB / GO BATTLE LEAGUE',
+  ivrank: 'IV ANALYZER / LEAGUE FIT',
+  planner: 'MY COLLECTION / PLANNER',
+  finder: 'BOX TOOLS / QUERY BUILDER',
+  settings: 'PREFERENCES / ACCOUNT',
+  release: 'SERVICE LOG / RELEASES',
+  privacy: 'SERVICE INFORMATION / POLICY',
+  terms: 'SERVICE INFORMATION / POLICY',
+  'admin-stats': 'INSIGHTS / ROOT',
+  mon: 'POKÉMON PROFILE',
+};
+
 const byId = new Map<string, RouteDef>(ROUTES.map((route) => [route.id, route]));
 
 /** 옛 경로 → 새 경로. 표를 손으로 두 번 적지 않도록 legacy 에서 뒤집어 만든다 (v3 와 같은 규칙) */
