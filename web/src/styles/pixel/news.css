@@ -192,6 +192,8 @@ html body #root .nw-boss__types { margin: 0; }
 html body #root .nw-boss__name { margin: 0; }
 html body #root .nw-boss__metrics { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.2rem; margin-top: 0.4rem; }
 html body #root .nw-boss__metrics .px-metric { padding: 1.6rem; }
+/* 큰 보스판의 광택 폭이 작은 CP·추천 판에 상속되어 가로 스크롤을 만들지 않게 한다. */
+html body #root .nw-boss :is(.px-metric, .nw-counter)::before { max-width: 100%; box-sizing: border-box; }
 html body #root .nw-boss__actions { display: flex; flex-wrap: wrap; gap: 1.2rem; margin-top: 0.4rem; }
 html body #root .nw-boss__side { display: flex; flex-direction: column; align-items: center; gap: 1.6rem; }
 html body #root .nw-boss__art { --ball: 18.8rem; }
