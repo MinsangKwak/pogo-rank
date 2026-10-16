@@ -23,13 +23,17 @@ html body #root .pxt-target__row { display: flex; flex-wrap: wrap; align-items: 
 html body #root .pxt-target__search { flex: 1 1 28rem; width: auto; }
 
 /* 고른 보스 · 고른 포켓몬 한 줄 — 몬스터볼 · 이름 · 메타 · ✕ */
-html body #root .pxt-boss { display: flex; align-items: center; gap: 1.6rem; --ball: 9.6rem; }
+html body #root .pxt-boss { position: relative; min-width: 0; --ball: 9.6rem; }
+html body #root .pxt-boss__panel { display: flex; align-items: center; gap: 1.6rem; padding: 3.2rem 1.6rem 1.6rem; }
+html body #root .pxt-boss__panel > .px-btn { flex: none; }
 html body #root .pxt-boss__text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 0.4rem; }
 
 /* 후보 줄 목록 — 검색 결과 · 교체 후보 · 카운터 TOP 3 */
-html body #root .pxt-cands { display: flex; flex-direction: column; gap: 0.8rem; margin: 0; padding: 0; list-style: none; }
-html body #root .pxt-cand { display: flex; align-items: center; gap: 1.2rem; padding: 0.8rem 1.2rem; min-height: var(--tap); }
-html body #root .pxt-cand__no { flex: none; width: 2.4rem; }
+html body #root .pxt-cands { display: flex; flex-direction: column; gap: 1.6rem; margin: 0; padding: 0; list-style: none; }
+html body #root .pxt-cand { position: relative; display: flex; min-width: 0; }
+html body #root .pxt-cand__panel { display: flex; flex: 1; align-items: center; gap: 1.2rem; min-width: 0; padding: 2.8rem 1.2rem 1.2rem; min-height: var(--tap); }
+html body #root .pxt-cand.is-empty .pxt-cand__panel { padding-top: 1.2rem; }
+html body #root .pxt-cand__no { color: var(--muted); }
 html body #root .pxt-cand__text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 0.4rem; margin: 0; padding: 0; border: 0; background: none; color: inherit; font: inherit; text-align: left; }
 html body #root button.pxt-cand__open { cursor: pointer; }
 html body #root button.pxt-cand__open:focus-visible { outline: var(--px-stroke) solid var(--brand-focus); outline-offset: 0.4rem; }
@@ -40,7 +44,8 @@ html body #root :is(.pxt-cand__text, .pxt-boss__text, .pxt-slot__body, .pxt-slot
 html body #root .pxt-cand__text > .px-sub { display: flex; flex-wrap: wrap; align-items: center; gap: 0.8rem; }
 
 /* ── 슬롯 카드 (D-MAX 팀 · PvP 덱) ────────────────────────────────────────── */
-html body #root .pxt-slot { gap: 1.2rem; }
+html body #root .pxt-slot { position: relative; display: flex; min-width: 0; }
+html body #root .pxt-slot__panel { flex: 1; gap: 1.2rem; padding-top: 3.2rem; }
 html body #root .pxt-slot__head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.8rem; min-height: 2.8rem; }
 html body #root .pxt-slot__body { display: flex; flex-direction: column; align-items: center; gap: 0.4rem; width: 100%; margin: 0; padding: 0.4rem 0; border: 0; background: none; color: inherit; font: inherit; text-align: center; }
 html body #root button.pxt-slot__body { cursor: pointer; }
@@ -50,6 +55,21 @@ html body #root .pxt-slot__moves { min-height: 1.8rem; }
 html body #root .pxt-slot.is-empty .pxt-slot__body { color: var(--muted); }
 html body #root .pxt-slot__metric { display: flex; flex-direction: column; gap: 0.4rem; padding: 1.2rem 0 0.4rem; border-top: var(--px-stroke) solid var(--line); }
 html body #root .pxt-slot .px-btn { margin-top: auto; }
+html body #root .pxt-slot__details { min-width: 0; }
+html body #root .pxt-slot__details > summary { display: flex; align-items: center; justify-content: center; gap: 0.4rem; min-height: var(--tap); color: var(--brand-text); cursor: pointer; list-style: none; }
+html body #root .pxt-slot__details > summary::-webkit-details-marker { display: none; }
+html body #root .pxt-slot__details > summary::after { content: '+'; flex: none; }
+html body #root .pxt-slot__details[open] > summary::after { content: '−'; }
+html body #root .pxt-slot__details > summary:focus-visible, html body #root .pxt-type-picker__toggle:focus-visible { outline: var(--px-stroke) solid var(--brand-focus); outline-offset: 0.4rem; }
+html body #root .pxt-slot__detail-text { display: flex; flex-direction: column; gap: 0.8rem; padding-bottom: 0.8rem; overflow-wrap: anywhere; }
+/* 조건 칩을 접으면 먼저 세 마리 팀을 볼 수 있다. 선택값은 닫아도 남는다. */
+html body #root .pxt-type-picker__toggle { display: flex; align-items: center; gap: 0.8rem; width: 100%; min-height: var(--tap); padding: 0; border: 0; background: none; color: var(--fg); font: inherit; text-align: left; cursor: pointer; }
+html body #root .pxt-type-picker__toggle > span:last-child { margin-left: auto; color: var(--brand-text); }
+html body #root .pxt-type-picker .px-chips { padding-top: 0.8rem; }
+html body #root .pxt-dmax .pxt-slots { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+html body #root .pxt-slot--compact .pxt-slot__metric { text-align: center; }
+html body #root .pxt-slot--compact .pxt-slot__body { flex: 1; }
+html body #root .pxt-slot--compact .pxt-slot__head { align-items: flex-start; }
 
 /* 팀 구성 요약 — 역할 둘 */
 html body #root .pxt-summary__roles { display: flex; flex-wrap: wrap; gap: 0.8rem 2.4rem; margin: 0; padding: 0; list-style: none; }
@@ -108,10 +128,26 @@ html body #root .pxt-swap .pxt-cand:has([aria-pressed="true"]) { --px-line: var(
   html body #root .pxt { gap: 2rem; }
   html body #root .pxt-actions .px-btn { flex: 1 1 100%; }
   html body #root .pxt-target__search { flex-basis: 100%; }
-  html body #root .pxt-boss { --ball: 7.2rem; gap: 1.2rem; }
+  html body #root .pxt-boss { --ball: 7.2rem; }
+  html body #root .pxt-boss__panel { flex-wrap: wrap; gap: 1.2rem; }
+  html body #root .pxt-boss__panel > .px-btn { margin-left: auto; }
   html body #root .pxt-iv__tiles { --cols: 1; }
+  /* D-MAX는 카드 세 장이 한 팀이다. 다른 도구의 슬롯 수·배치는 바꾸지 않는다. */
+  html body #root .pxt-dmax .pxt-slots { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.8rem; }
+  html body #root .pxt-dmax .pxt-target { padding: 1.2rem; gap: 0.8rem; }
+  html body #root .pxt-dmax .pxt-target__row { gap: 0.8rem; }
+  html body #root .pxt-slot--compact .pxt-slot__panel { padding: 3.2rem 0.8rem 0.8rem; gap: 0.4rem; }
+  html body #root .pxt-slot--compact .pxt-slot__head { flex-direction: column; align-items: center; gap: 0.4rem; }
+  html body #root .pxt-slot--compact .pxt-slot__head .px-badge { max-width: 100%; padding: 0.4rem; white-space: normal; text-align: center; }
+  html body #root .pxt-slot--compact .pxt-slot__body .px-ball { --ball: 6.4rem; margin-bottom: 0.4rem; }
+  html body #root .pxt-slot--compact .pxt-slot__body > .px-sub { font-size: 1.4rem; line-height: 1.5; word-break: keep-all; }
+  html body #root .pxt-slot--compact .pxt-slot__metric { padding-top: 0.8rem; }
+  html body #root .pxt-slot--compact .pxt-slot__metric .px-number { font-size: 2.2rem; overflow-wrap: anywhere; }
+  html body #root .pxt-slot--compact .pxt-slot__swap { padding: 0 0.4rem; font-size: 1.2rem; white-space: normal; }
+  html body #root .pxt-slot--compact .pxt-slot__details > summary { flex-wrap: wrap; gap: 0; }
   /* 기술·조건도 선택 근거라 숨기지 않는다. 동작을 다음 줄로 보내 이름과 함께 읽게 한다. */
   html body #root .pxt-cand { flex-wrap: wrap; }
+  html body #root .pxt-cand__panel { flex-wrap: wrap; }
   html body #root .pxt-cand__ops { flex-basis: 100%; justify-content: flex-end; }
   html body #root .pxt-cand__ops .px-btn { min-height: var(--tap); max-width: 100%; white-space: normal; overflow-wrap: anywhere; }
   html body #root .pxt-cand__text .px-caption.px-muted { display: block; }
@@ -129,6 +165,7 @@ html body #root .pxt-swap .pxt-cand:has([aria-pressed="true"]) { --px-line: var(
 
 /* 320px 화면에서도 레이블과 − 값 + 를 서로 누르지 않게 별도 줄에 둔다. */
 @media (max-width: 399px) {
+  html body #root .pxt-slot--compact .pxt-slot__metric .px-number { font-size: 1.6rem; }
   html body #root .pxt-ivbox { grid-template-columns: minmax(0, 1fr); gap: 0.8rem; }
   html body #root .pxt-ivbox .px-stepper { grid-template-columns: var(--tap) minmax(0, 1fr) var(--tap); }
   html body #root .pxt-table tr { grid-template-columns: minmax(0, 1fr); }

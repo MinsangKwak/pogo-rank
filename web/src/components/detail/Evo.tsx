@@ -10,7 +10,8 @@ import { Sprite } from '../Bits';
 import { cpOf } from '../../lib/cp';
 import { count, num } from '../../lib/cell';
 import { Foot } from './Pieces';
-import type { MonRef } from '../../screens/MonDetail';
+import { PokemonNumberRibbon } from '../MonCard';
+import { dexNoOf, type MonRef } from '../../lib/mon';
 
 export function Evo({ dex, sprite, onSwitch }: {
   dex: number; sprite: number; onSwitch: (mon: MonRef) => void;
@@ -40,13 +41,17 @@ export function Evo({ dex, sprite, onSwitch }: {
       {hasFamily ? family.map((stage, index) => (
         <div key={index} className="pxd-evo__stage">
           {stage.map((id) => (
-            <button key={id} type="button" className={`pxd-evo__mon${id === dex && id === sprite ? ' is-now' : ''}`}
-              aria-current={id === dex && id === sprite ? 'true' : undefined}
-              onClick={() => onSwitch(monOf(id, data.DEX_DATA.names[String(id)] ?? String(id)))}>
-              <span className="px-ball px-ball--sm"><Sprite id={id} /></span>
-              <span className="pxd-evo__name">{data.DEX_DATA.names[String(id)] ?? id}</span>
-              <span className="px-caption pxd-evo__note">{stageNote(index)}{index < last ? ' →' : ''}</span>
-            </button>
+            <div key={id} className="pxd-evo__card">
+              <PokemonNumberRibbon dex={dexNoOf(id, data.DEX_DATA.dex) ?? undefined} />
+              <button type="button" className={`px-skin pxd-evo__mon${id === dex && id === sprite ? ' is-now' : ''}`}
+                aria-current={id === dex && id === sprite ? 'true' : undefined}
+                aria-label={`${data.DEX_DATA.names[String(id)] ?? id} 상세 보기`}
+                onClick={() => onSwitch(monOf(id, data.DEX_DATA.names[String(id)] ?? String(id)))}>
+                <span className="px-ball px-ball--sm"><Sprite id={id} /></span>
+                <span className="pxd-evo__name">{data.DEX_DATA.names[String(id)] ?? id}</span>
+                <span className="px-caption pxd-evo__note">{stageNote(index)}{index < last ? ' →' : ''}</span>
+              </button>
+            </div>
           ))}
         </div>
       )) : null}
@@ -57,14 +62,18 @@ export function Evo({ dex, sprite, onSwitch }: {
             const unrel = one.rel === false;
             const name = `${one.label} ${data.DEX_DATA.names[String(dex)] ?? dex}`;
             return (
-              <button key={one.sprite} type="button"
-                className={`pxd-evo__mon${one.sprite === sprite ? ' is-now' : ''}${unrel ? ' is-unreleased' : ''}`}
-                aria-current={one.sprite === sprite ? 'true' : undefined}
-                onClick={() => onSwitch(monOf(one.sprite, name))}>
-                <span className="px-ball px-ball--sm"><Sprite id={one.sprite} /></span>
-                <span className="pxd-evo__name">{one.label}</span>
-                <span className="px-caption pxd-evo__note">{unrel ? '미구현' : one.label === '원시' ? '원시회귀' : '메가진화'}</span>
-              </button>
+              <div key={one.sprite} className="pxd-evo__card">
+                <PokemonNumberRibbon dex={dex} />
+                <button type="button"
+                  className={`px-skin pxd-evo__mon${one.sprite === sprite ? ' is-now' : ''}${unrel ? ' is-unreleased' : ''}`}
+                  aria-current={one.sprite === sprite ? 'true' : undefined}
+                  aria-label={`${name} 상세 보기`}
+                  onClick={() => onSwitch(monOf(one.sprite, name))}>
+                  <span className="px-ball px-ball--sm"><Sprite id={one.sprite} /></span>
+                  <span className="pxd-evo__name">{one.label}</span>
+                  <span className="px-caption pxd-evo__note">{unrel ? '미구현' : one.label === '원시' ? '원시회귀' : '메가진화'}</span>
+                </button>
+              </div>
             );
           })}
         </div>

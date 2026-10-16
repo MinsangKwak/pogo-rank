@@ -28,7 +28,7 @@ import { PxChips, PxSwitch, PxTabs, PxViewSwitch, Sprite, type ChipDef } from '.
 import { Slot } from '../components/Slots';
 import BossAcc from '../components/BossAcc';
 import { NameNode, RankList, RankMore, RankRow, RowHead, ROW_SHOW, TierHead, TIER_ORDER, useExpanded, useFocusRow } from '../components/Row';
-import MonCard from '../components/MonCard';
+import MonCard, { PokemonNumberRibbon } from '../components/MonCard';
 import { PixelIcon } from '../components/PixelIcon';
 import { dexNoOf } from '../lib/mon';
 import { usageCountFor } from '../lib/usage';
@@ -338,7 +338,7 @@ export function Dmax({ onOpen }: { onOpen: OpenMon }) {
 }
 
 /** 레이드 표 — 데스크톱은 열 여섯(순위 · 포켓몬 · 추천 기술 · DPS · TDO · 점수), 휴대폰은 CSS 가 줄을 카드로 편다 (data-label) */
-function PveTable({ rows, mode, dexTable, onOpen }: { rows: PveRow[]; mode: 'easy' | 'all'; dexTable: Readonly<Record<string, number>>; onOpen: OpenMon }) {
+export function PveTable({ rows, mode, dexTable, rankOf, onOpen }: { rows: PveRow[]; mode: 'easy' | 'all'; dexTable: Readonly<Record<string, number>>; rankOf: (row: PveRow, index: number) => number; onOpen: OpenMon }) {
   const { data: dex } = useDex();
   const typeLine = (types: readonly string[]) => types.map((type) => dex.TYPE_KO[type] ?? type).join(' · ');
   return (
@@ -359,18 +359,19 @@ function PveTable({ rows, mode, dexTable, onOpen }: { rows: PveRow[]; mode: 'eas
               <tr key={`${row.sprite}-${row.name}`} className={row.unrel ? 'is-unreleased' : undefined} tabIndex={0} role="button"
                 aria-label={`${row.name} 상세 보기`} onClick={() => onOpen(row)}
                 onKeyDown={(event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); onOpen(row); } }}>
-                <td data-label="순위"><span className={`px-badge px-skin rk-row__rank${index === 0 ? ' is-first' : ''}`}>{String(index + 1).padStart(2, '0')}</span></td>
+                <td data-label="순위" className="rk-table__rank"><PokemonNumberRibbon rank={rankOf(row, index)} /></td>
                 <td data-label="포켓몬" className="rk-table__mon">
                   <span className="px-ball px-ball--sm"><Sprite id={row.sprite} /></span>
                   <span className="rk-row__main">
-                    <span className="rk-row__name"><NameNode name={row.name} en={row.en} labels={dex.FORM_LABELS} /><RankBadges name={row.name} unrel={row.unrel} /></span>
-                    <span className="rk-row__types">{no !== null ? `#${String(no).padStart(4, '0')} · ` : ''}{typeLine(row.types)}</span>
+                    <span className="rk-row__name"><NameNode name={row.name} en={row.en} labels={dex.FORM_LABELS} /></span>
+                    <span className="rk-row__types">{no !== null ? `#${String(no).padStart(3, '0')} · ` : ''}{typeLine(row.types)}</span>
+                    <span className="rk-row__badges"><RankBadges name={row.name} unrel={row.unrel} /></span>
                   </span>
                 </td>
                 <td data-label="추천 기술" className="rk-table__moves">{cells.lines.length ? cells.lines.join(' · ') : '—'}</td>
-                <td data-label="DPS" className="is-num">{num(row.dps, 1)}</td>
-                <td data-label="TDO" className="is-num">{num(row.tdo)}</td>
-                {mode === 'easy' ? <td data-label="점수" className="is-num rk-table__score">{cells.score}</td> : null}
+                <td data-label="DPS" className="is-num rk-table__metric">{num(row.dps, 1)}</td>
+                <td data-label="TDO" className="is-num rk-table__metric">{num(row.tdo)}</td>
+                {mode === 'easy' ? <td data-label="점수" className="is-num rk-table__metric rk-table__score">{cells.score}</td> : null}
               </tr>
             );
           })}
@@ -416,7 +417,7 @@ export function Pve({ onOpen }: { onOpen: OpenMon }) {
   );
   const list = (group: PveRow[], rankOf: (row: PveRow, index: number) => number) => (view === 'grid'
     ? <RankList view="grid">{group.map((row, index) => card(row, rankOf(row, index)))}</RankList>
-    : <PveTable rows={group} mode={mode} dexTable={dex.DEX_DATA.dex} onOpen={onOpen} />);
+    : <PveTable rows={group} mode={mode} dexTable={dex.DEX_DATA.dex} rankOf={rankOf} onOpen={onOpen} />);
 
   return (
     <>

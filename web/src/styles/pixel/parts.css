@@ -81,7 +81,8 @@ html body .px-btn[aria-pressed="true"] { --px-fill: var(--brand-primary); --px-l
   html body .px-btn--primary:hover { --px-fill: var(--brand-hover); --px-line: var(--px-red-edge); }
 }
 html body .px-btn:active { translate: var(--px-cut) var(--px-cut); }
-html body .px-btn:disabled, html body .px-btn[aria-disabled="true"] { opacity: 0.45; cursor: not-allowed; translate: none; }
+/* 비활성도 읽을 수 있게 유지한다. 점선과 중립색으로 구분하며 hover의 빨강 채움을 이긴다. */
+html body #root .px-btn:is(:disabled, [aria-disabled="true"]) { opacity: 1; --px-fill: var(--panel-2); --px-line: var(--line); --px-shine: var(--line); --px-shade: var(--px-shadow); color: var(--muted); border-style: dashed; cursor: not-allowed; translate: none; }
 html body .px-btn:focus-visible, html body .px-input:focus-visible, html body .px-tab:focus-visible, html body .px-chip:focus-visible { outline: var(--px-stroke) solid var(--brand-focus); outline-offset: var(--px-stroke); }
 /* 단추 안 아이콘은 글자색 */
 html body .px-btn .px-icon { flex: none; }
@@ -166,16 +167,22 @@ html body .px-ball > img, html body .px-ball > picture, html body .px-ball > .sp
 html body .px-ball--sm { --ball: 7.2rem; }
 html body .px-ball--lg { --ball: 18.8rem; }
 
-/* ── 포켓몬 카드 (피그마 'Pokémon card' 272×282) ─────────────────────────── */
-html body .px-mon { display: flex; flex-direction: column; gap: 0.8rem; padding: 1.6rem; min-width: 0; }
-html body .px-mon__head { display: flex; align-items: center; gap: 0.8rem; min-height: 2.8rem; }
+/* ── 포켓몬 카드 — 번호는 겹치는 리본, 본문은 원본 그림 · 이름 · 정보 순서 ───────── */
+html body .px-mon { position: relative; display: flex; min-width: 0; margin-top: 0.4rem; }
+/* 바깥 부모에는 clip-path를 두지 않는다. 잘리는 픽셀 판과 리본은 형제다. */
+html body #root .px-mon-ribbon { position: absolute; z-index: 2; top: -0.4rem; left: -0.4rem; min-width: 4.8rem; justify-content: center; pointer-events: none; }
+html body #root .px-mon-ribbon.is-first { --px-fill: var(--brand-primary); --px-line: var(--px-red-edge); --px-shine: var(--px-red-glint); --px-badge-c: var(--on-brand); }
 html body .px-mon__no { color: var(--muted); font: 400 1.2rem/1 var(--font-mono); }
-html body .px-mon__fav { margin-left: auto; width: var(--tap); height: var(--tap); margin-top: -0.8rem; margin-bottom: -0.8rem; margin-right: -1.2rem; display: grid; place-items: center; color: var(--muted); background: none; border: 0; cursor: pointer; }
+html body .px-mon__fav { position: absolute; z-index: 2; top: 0; right: 0; width: var(--tap); height: var(--tap); margin: 0; display: grid; place-items: center; color: var(--muted); background: none; border: 0; cursor: pointer; }
 html body .px-mon__fav[aria-pressed="true"] { color: var(--brand-text); }
-html body .px-mon__art { display: flex; justify-content: center; padding: 0.4rem 0; }
+html body .px-mon__fav:focus-visible { outline: var(--px-stroke) solid var(--brand-focus); outline-offset: -0.4rem; }
+html body .px-mon__art { display: flex; justify-content: center; --ball: 8.8rem; }
+html body .px-mon__main { display: flex; flex-direction: column; align-items: flex-start; gap: 0.4rem; min-width: 0; width: 100%; }
 html body .px-mon__name { margin: 0; color: var(--fg); font: 700 1.6rem/1.5 var(--font-body); word-break: keep-all; overflow-wrap: anywhere; }
-html body .px-mon__types { margin: 0; color: var(--muted); font: 400 1.2rem/1.5 var(--font-body); }
-html body .px-mon__meta { margin: 0; color: var(--mint); font: 400 1.2rem/1.5 var(--font-body); }
+html body .px-mon__types { margin: 0; color: var(--muted); font: 400 1.2rem/1.5 var(--font-body); overflow-wrap: anywhere; }
+html body .px-mon__badges { display: flex; flex-wrap: wrap; gap: 0.4rem; min-width: 0; }
+html body .px-mon__badges:empty { display: none; }
+html body .px-mon__meta { margin: 0; color: var(--mint); font: 400 1.2rem/1.5 var(--font-body); overflow-wrap: anywhere; }
 html body .px-mon__rank { --px-badge-c: var(--brand-text); }
 /* 4열 → 2열 → 1열 격자 (피그마: 데스크톱 4열 · 모바일 2열) */
 html body .px-grid { display: grid; grid-template-columns: repeat(var(--cols, 4), minmax(0, 1fr)); gap: 1.6rem; margin: 0; padding: 0; list-style: none; }
@@ -269,6 +276,6 @@ html body .px-notelist__no { flex: none; color: var(--brand-text); }
 }
 
 /* 카드 본문 단추 (components/MonCard.tsx) — 상자 전체가 눌린다, 모양은 글자 그대로 */
-html body .px-mon__body { display: flex; flex-direction: column; align-items: flex-start; gap: 0.8rem; width: 100%; margin: 0; padding: 0; border: 0; background: none; color: inherit; font: inherit; text-align: left; cursor: pointer; }
+html body .px-mon__body { display: flex; flex: 1; flex-direction: column; align-items: flex-start; gap: 0.8rem; width: 100%; min-width: 0; margin: 0; padding: 2.4rem 1.2rem 1.2rem; color: var(--fg); font: inherit; text-align: left; cursor: pointer; }
 html body .px-mon__body .px-mon__art { width: 100%; }
-html body .px-mon__body:focus-visible { outline: var(--px-stroke) solid var(--brand-focus); outline-offset: 0.4rem; }
+html body .px-mon__body:focus-visible { outline: var(--px-stroke) solid var(--brand-focus); outline-offset: -0.4rem; }

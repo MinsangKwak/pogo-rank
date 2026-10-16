@@ -184,8 +184,10 @@ html body #root .nw-intro { margin: 0; padding: 0; }
 html body #root :is(#page-raids, #page-eggs) .nw-intro .note { margin: 0; padding: 0; border: 0; border-radius: 0; background: none; box-shadow: none; color: var(--muted); font-size: 1.2rem; line-height: 1.5; }
 html body #root .nw-intro .note .px-mono { color: var(--fg); }
 html body #root .nw-gsec { display: flex; flex-direction: column; gap: 1.6rem; }
-html body #root .nw-boss { display: grid; grid-template-columns: minmax(0, 1fr) 28rem; gap: 2.4rem; --px-glint-w: 12rem; --px-glint-h: 4.8rem; --px-fill: var(--panel); }
+html body #root .nw-boss-frame { position: relative; min-width: 0; margin-top: 0.4rem; }
+html body #root .nw-boss { display: grid; grid-template-columns: minmax(0, 1fr) 28rem; gap: 2.4rem; padding-top: 3.6rem; --px-glint-w: 12rem; --px-glint-h: 4.8rem; --px-fill: var(--panel); }
 html body #root .nw-boss__main { display: flex; flex-direction: column; gap: 1.2rem; min-width: 0; }
+html body #root .nw-boss__identity { display: flex; flex-direction: column; gap: 0.8rem; min-width: 0; }
 html body #root .nw-boss__types { margin: 0; }
 html body #root .nw-boss__name { margin: 0; }
 html body #root .nw-boss__metrics { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.2rem; margin-top: 0.4rem; }
@@ -195,11 +197,15 @@ html body #root .nw-boss__side { display: flex; flex-direction: column; align-it
 html body #root .nw-boss__art { --ball: 18.8rem; }
 html body #root .nw-boss__counters { display: flex; flex-direction: column; gap: 0.8rem; width: 100%; }
 html body #root .nw-counters { display: flex; flex-direction: column; gap: 0.8rem; margin: 0; padding: 0; list-style: none; }
-html body #root .nw-counter { display: flex; align-items: center; gap: 1.2rem; width: 100%; min-height: var(--tap); padding: 0.4rem 1.2rem; --ball: 4rem; }
-html body #root .nw-counter__rank { color: var(--brand-text); font-weight: 700; }
-html body #root .nw-counter__name { font-weight: 500; }
+html body #root .nw-counter-item { position: relative; min-width: 0; padding-top: 0.4rem; }
+html body #root .nw-counter { display: flex; align-items: center; gap: 1.2rem; box-sizing: border-box; width: 100%; min-height: var(--tap); padding: 1.2rem; text-align: left; }
+html body #root .nw-counter .px-ball { --ball: 4.8rem; flex: none; margin-top: 0.8rem; }
+html body #root .nw-counter__name { min-width: 0; font-weight: 500; overflow-wrap: anywhere; }
+html body #root .nw-counter__name b { white-space: normal; }
 html body #root .nw-rows { display: flex; flex-direction: column; gap: 0.8rem; margin: 0; padding: 0; list-style: none; }
-html body #root .nw-row { display: flex; align-items: center; gap: 1.6rem; width: 100%; min-height: var(--tap); padding: 0.8rem 1.6rem; --ball: 5.6rem; --px-fill: var(--panel); }
+html body #root .nw-row-item { position: relative; min-width: 0; margin-top: 0.4rem; }
+html body #root .nw-row { display: flex; align-items: center; gap: 1.2rem; width: 100%; min-height: var(--tap); padding: 1.6rem 1.2rem 0.8rem; --px-fill: var(--panel); }
+html body #root .nw-row .px-ball { --ball: 4.8rem; flex: none; margin-top: 0.8rem; }
 html body #root .nw-row__body { display: flex; flex-direction: column; gap: 0.4rem; min-width: 0; }
 /* 화면 머리 오른쪽 단추(Slot headActions) — 옛 shell 이 button 만 잡아 a 에도 같은 값을 준다 */
 html body #root .page-head .page-head__actions .px-btn { min-height: var(--tap); }
@@ -218,7 +224,7 @@ html body #root .nw-eggsum .px-metric__value { --px-metric-c: var(--brand-text);
 }
 @media (max-width: 699px) {
   html body #root :is(.nw-upd, .nw-changes, .nw-sched, .nw-raids, .nw-eggs) { gap: 1.6rem; }
-  html body #root .nw-cards, html body #root .nw-sources, html body #root .nw-ba, html body #root .nw-boss__metrics { grid-template-columns: minmax(0, 1fr); }
+  html body #root .nw-cards, html body #root .nw-sources, html body #root .nw-ba { grid-template-columns: minmax(0, 1fr); }
   html body #root .nw-eggsum { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.2rem; }
   html body #root .nw-eggsum .px-metric { padding: 1.2rem; }
   html body #root .nw-eggsum .px-metric__value { font-size: 2.2rem; }
@@ -240,8 +246,39 @@ html body #root .nw-eggsum .px-metric__value { --px-metric-c: var(--brand-text);
   html body #root .nw-cal__day { align-items: center; padding: 0.4rem; }
   html body #root .nw-cal__dots { display: flex; justify-content: center; }
   html body #root .nw-cal__bar, html body #root .nw-cal__more { display: none; }
-  html body #root .nw-boss { padding: 1.6rem; }
-  html body #root .nw-boss__name { font-size: 2.8rem; }
-  html body #root .nw-boss__art { --ball: 13rem; }
+  /* 보스는 이름 옆 그림, CP 두 칸, 추천 세 칸으로 읽는다. 상세 정보와 터치 영역은 남긴다. */
+  html body #root .nw-boss { grid-template-columns: minmax(0, 1fr) 8rem; gap: 1.2rem 0.8rem; padding: 3.2rem 1.2rem 1.2rem; }
+  html body #root .nw-boss__main, html body #root .nw-boss__side { display: contents; }
+  html body #root .nw-boss__schedule { grid-column: 1 / -1; grid-row: 1; gap: 0.4rem; }
+  html body #root .nw-boss .px-badge { min-height: 2.4rem; padding: 0.4rem 0.8rem; }
+  html body #root .nw-boss__identity { grid-column: 1; grid-row: 2; gap: 0.4rem; }
+  html body #root .nw-boss__name { display: flex; flex-wrap: wrap; align-items: center; gap: 0.4rem; font-size: 2.2rem; line-height: 1.2; overflow-wrap: anywhere; }
+  html body #root .nw-boss__name b { white-space: normal; }
+  html body #root .nw-boss__conditions { gap: 0.4rem; margin-top: 0.4rem; }
+  html body #root .nw-boss__conditions .px-badge { padding: 0.4rem; white-space: normal; line-height: 1.2; }
+  html body #root .nw-boss__art { grid-column: 2; grid-row: 2; align-self: center; --ball: 8rem; }
+  html body #root .nw-boss__metrics { grid-column: 1 / -1; grid-row: 3; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.8rem; margin: 0; }
+  html body #root .nw-boss__metrics .px-metric { min-width: 0; gap: 0.4rem; padding: 0.8rem; }
+  html body #root .nw-boss__metrics .px-metric__label { font-size: 1.2rem; }
+  html body #root .nw-boss__metrics .px-metric__value { font-size: 2.2rem; white-space: nowrap; letter-spacing: -0.04em; }
+  html body #root .nw-boss__actions { grid-column: 1 / -1; grid-row: 4; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.8rem; margin: 0; }
+  html body #root .nw-boss__actions > .px-btn { min-width: 0; min-height: var(--tap); padding: 0.8rem; font-size: 1.2rem; }
+  html body #root .nw-boss__counters { grid-column: 1 / -1; grid-row: 5; min-width: 0; gap: 0.8rem; padding-top: 0.8rem; border-top: var(--px-stroke) solid var(--line); }
+  html body #root .nw-counters { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.8rem; }
+  html body #root .nw-counter-item { display: flex; }
+  html body #root .nw-counter { flex-direction: column; gap: 0.4rem; height: 100%; padding: 2.4rem 0.4rem 0.8rem; text-align: center; }
+  html body #root .nw-counter .px-ball { --ball: 4.8rem; margin: 0; }
+  html body #root .nw-counter__name { font-size: 1.4rem; line-height: 1.5; }
+  html body #root .nw-counter__name .form-tag { display: block; width: fit-content; max-width: 100%; margin: 0 auto 0.4rem; white-space: normal; }
+  html body[data-route="raids"] #root .page-head { padding-top: 1.6rem; padding-bottom: 1.2rem; }
+  html body[data-route="raids"] #root .page-head h2 { margin-top: 0.8rem; }
+  html body[data-route="raids"] #root .page-head .page-head__desc { margin-top: 0.8rem; }
+  html body[data-route="raids"] #root .page-head .page-head__actions { gap: 0.8rem; margin-top: 1.2rem; }
+  html body[data-route="raids"] #root .page-head .page-head__actions > .px-btn { flex: 1 1 auto; }
+  html body[data-route="raids"] #root .page-head .page-head__actions > .px-view { display: flex; gap: 0.8rem; }
   html body #root .nw-ev { flex-direction: column; gap: 0.8rem; }
+}
+
+@media (max-width: 359px) {
+  html body #root .nw-boss__metrics .px-metric__value { font-size: 1.6rem; letter-spacing: 0; }
 }

@@ -9,15 +9,17 @@ import { useDex } from '../../lib/data';
 import { Sprite } from '../Bits';
 import { NameNode } from '../Row';
 import { PixelIcon } from '../PixelIcon';
-import type { MonRef } from '../../lib/mon';
+import { PokemonNumberRibbon } from '../MonCard';
+import { dexNoOf, type MonRef } from '../../lib/mon';
 
 export default function Recs({ rows, onSwitch }: { rows: readonly MonRef[]; onSwitch: (mon: MonRef) => void }) {
   const { data } = useDex();
   return (
     <ul className="pxd-recs">
       {rows.map((row, index) => (
-        <li key={`${row.sprite}-${index}`}>
-          <button type="button" className="px-card px-card--tap px-skin px-skin--sunk pxd-rec" onClick={() => onSwitch(row)}>
+        <li key={`${row.sprite}-${index}`} className="pxd-rec__wrap">
+          <PokemonNumberRibbon dex={dexNoOf(row.sprite, data.DEX_DATA.dex) ?? undefined} />
+          <button type="button" className="px-card px-card--tap px-skin px-skin--sunk pxd-rec" onClick={() => onSwitch(row)} aria-label={`${row.name} 상세 보기`}>
             <span className="px-ball px-ball--sm pxd-rec__art"><Sprite id={row.sprite} /></span>
             <span className="pxd-rec__name"><NameNode name={row.name} labels={data.FORM_LABELS} /></span>
             <PixelIcon name="arrow" className="pxd-rec__go" />

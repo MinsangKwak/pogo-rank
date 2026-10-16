@@ -29,6 +29,7 @@ html body #root .pxd-back { align-self: flex-start; }
 html body #root .pxd-brief__line { margin: 0; }
 
 /* 프로필 판 — 큰 몬스터볼 · 영문명 배지 · MAX CP · 종족값 */
+html body #root .pxd-profile-wrap { position: relative; min-width: 0; margin-top: 0.4rem; }
 html body #root .pxd-profile { display: flex; flex-direction: column; align-items: center; gap: 1.6rem; padding: 2.4rem 1.6rem; text-align: center; }
 html body #root .pxd-profile__art { --ball: 18.8rem; }
 html body #root .pxd-profile__text { display: flex; flex-direction: column; align-items: center; gap: 0.8rem; width: 100%; }
@@ -47,10 +48,14 @@ html body #root .pxd-metric .px-metric__value { font-size: 2.2rem; }
 html body #root .pxd-evo { display: flex; flex-wrap: wrap; gap: 1.6rem 2.4rem; }
 html body #root .pxd-evo__stage { display: flex; flex-wrap: wrap; gap: 1.6rem; }
 html body #root .pxd-evo__stage--mega { flex-basis: 100%; padding-top: 1.6rem; border-top: var(--px-stroke) solid var(--line); }
-html body #root .pxd-evo__mon { display: flex; flex-direction: column; align-items: flex-start; gap: 0.4rem; min-width: 9.6rem; padding: 0.4rem; border: 0; background: none; color: var(--fg); font: 500 1.4rem/1.5 var(--font-body); text-align: left; cursor: pointer; }
+html body #root .pxd-evo__card { position: relative; display: flex; width: 10.4rem; min-width: 0; margin-top: 0.4rem; }
+html body #root .pxd-evo__card > .px-mon-ribbon { min-width: 4.4rem; min-height: 2.4rem; padding: 0 0.4rem; }
+html body #root .pxd-evo__mon { display: flex; flex-direction: column; align-items: flex-start; gap: 0.4rem; width: 100%; min-width: 0; min-height: var(--tap); padding: 2.4rem 0.8rem 0.8rem; --px-fill: var(--panel-2); color: var(--fg); font: 500 1.4rem/1.5 var(--font-body); text-align: left; cursor: pointer; }
 html body #root .pxd-evo__mon .px-ball { --ball: 7.2rem; }
+html body #root .pxd-evo__name { max-width: 100%; overflow-wrap: anywhere; }
+html body #root .pxd-evo__mon.is-now { --px-line: var(--brand-text); }
 html body #root .pxd-evo__mon.is-now .pxd-evo__name { color: var(--brand-text); }
-html body #root .pxd-evo__mon.is-unreleased { opacity: 0.6; }
+html body #root .pxd-evo__mon.is-unreleased { opacity: 1; }
 html body #root .pxd-evo__mon:focus-visible { outline: var(--px-stroke) solid var(--brand-focus); outline-offset: var(--px-stroke); }
 html body #root .pxd-evo .detail__foot { flex-basis: 100%; }
 
@@ -86,10 +91,12 @@ html body #root .pxd-stat-group { display: flex; flex-direction: column; gap: 0.
 html body #root .pxd-stat-group > h4 { margin: 0; }
 
 /* 추천 후보 줄 (보스로 만났을 때 · 상대할 때) */
-html body #root .pxd-recs { display: flex; flex-direction: column; gap: 0.8rem; margin: 0; padding: 0; list-style: none; }
-html body #root .pxd-rec { flex-direction: row; align-items: center; gap: 1.2rem; padding: 0.8rem 1.2rem; }
+html body #root .pxd-recs { display: flex; flex-direction: column; gap: 1.2rem; margin: 0; padding: 0; list-style: none; }
+html body #root .pxd-rec__wrap { position: relative; min-width: 0; margin-top: 0.4rem; }
+html body #root .pxd-rec { flex-direction: row; align-items: center; gap: 1.2rem; min-height: var(--tap); padding: 2.8rem 1.2rem 1.2rem; }
 html body #root .pxd-rec__art { --ball: 5.6rem; }
-html body #root .pxd-rec__name { flex: 1; min-width: 0; font: 500 1.4rem/1.5 var(--font-body); }
+html body #root .pxd-rec__name { display: flex; flex: 1; flex-wrap: wrap; align-items: center; gap: 0.4rem; min-width: 0; font: 500 1.4rem/1.5 var(--font-body); }
+html body #root .pxd-rec__name > b { max-width: 100%; overflow-wrap: anywhere; }
 html body #root .pxd-rec__go { margin-left: auto; color: var(--muted); }
 html body #root .pxd-vs__when { display: flex; flex-wrap: wrap; align-items: center; gap: 0.8rem; margin: 0; flex-basis: 100%; }
 
@@ -163,11 +170,13 @@ html body #root .pxd--page .pxd-sec, html body #root .pxd--page .pxd-profile { -
 /* ── 검색 팔레트 (D05) ────────────────────────────────────────────────── */
 html body #root .pxd-palette__field { min-height: 5.6rem; font-size: 1.6rem; }
 html body #root .pxd-palette__field input { font-size: 1.6rem; }
-html body #root .pxd-palette__list { display: flex; flex-direction: column; gap: 0.8rem; margin: 0; padding: 0; list-style: none; }
-html body #root .pxd-palette__hit { flex-direction: row; align-items: center; gap: 1.2rem; padding: 0.8rem 1.2rem; }
+html body #root .pxd-palette__list { display: flex; flex-direction: column; gap: 1.2rem; margin: 0; padding: 0; list-style: none; }
+html body #root .pxd-palette__result { position: relative; min-width: 0; margin-top: 0.4rem; }
+html body #root .pxd-palette__hit { flex-direction: row; align-items: center; gap: 1.2rem; min-height: var(--tap); padding: 2.8rem 1.2rem 1.2rem; }
 html body #root .pxd-palette__hit.is-on { --px-line: var(--brand-text); }
 html body #root .pxd-palette__hit .px-ball { --ball: 4.8rem; }
 html body #root .pxd-palette__text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 0.4rem; }
+html body #root .pxd-palette__text > .px-sub { overflow-wrap: anywhere; }
 html body #root .pxd-palette__enter { margin-left: auto; }
 html body #root .pxd-palette__group { display: flex; flex-direction: column; gap: 1.2rem; }
 html body #root .pxd-palette__clear { padding: 0; border: 0; background: none; cursor: pointer; }
@@ -231,9 +240,10 @@ html body #root .pxd-dock__compact { display: none; }
   html body #root .pxd-evo { column-gap: 0.8rem; }
   html body #root .pxd-evo__stage { flex: 1 1 0; min-width: 0; flex-direction: column; gap: 0.8rem; }
   html body #root .pxd-evo__stage--mega { flex: 1 0 100%; flex-direction: row; }
-  html body #root .pxd-evo__mon { min-width: 0; width: 100%; align-items: center; text-align: center; font-size: 1.2rem; }
-  html body #root .pxd-evo__mon .px-ball { --ball: 6.4rem; max-width: 100%; }
-  html body #root .pxd-evo__stage--mega .pxd-evo__mon { width: auto; }
+  html body #root .pxd-evo__card { width: 100%; }
+  html body #root .pxd-evo__mon { min-width: 0; width: 100%; align-items: center; padding: 2.4rem 0.4rem 0.8rem; text-align: center; font-size: 1.4rem; }
+  html body #root .pxd-evo__mon .px-ball { --ball: 6.4rem; width: min(6.4rem, 100%); height: auto; aspect-ratio: 1; }
+  html body #root .pxd-evo__stage--mega .pxd-evo__card { width: calc((100% - 1.6rem) / 3); }
   html body #root .pxd-evo__note { font-size: 1.2rem; }
   html body #root .pxd-dialog--brief .pxd__foot { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.8rem; padding: 1.2rem 1.2rem calc(1.2rem + env(safe-area-inset-bottom)); }
   html body #root .pxd-dialog--brief .px-dialog__hint { grid-column: 1 / -1; }

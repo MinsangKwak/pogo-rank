@@ -8,6 +8,15 @@
 import type { CSSProperties, ReactNode } from 'react';
 import { BASE } from '../lib/base';
 import { PixelIcon } from './PixelIcon';
+import { useDexSoft } from '../lib/data';
+import { dexNoOf } from '../lib/mon';
+import { PokemonNumberRibbon } from './MonCard';
+
+/** 폼 그림 번호를 도감 번호로 바꾼다. 팀의 슬롯 순서는 포켓몬 순위가 아니다. */
+function ToolNumberRibbon({ sprite }: { sprite: number }) {
+  const dex = useDexSoft();
+  return <PokemonNumberRibbon dex={dexNoOf(sprite, dex?.DEX_DATA?.dex ?? {}) ?? undefined} />;
+}
 
 /** 몬스터볼 틀 위 그림 — 빈 칸(null)은 틀만. 없는 그림 주소를 불러 깨진 그림을 띄우지 않는다 */
 export function Ball({ sprite, size }: { sprite: number | null; size?: 'sm' | 'lg' }) {
@@ -64,18 +73,21 @@ export function CandRow({ sprite, name, badge, lines = [], no, ops, muted, onOpe
 }) {
   const text = (
     <>
+      {no ? <span className="px-mono px-caption pxt-cand__no">{`SLOT ${no}`}</span> : null}
       <b className={`px-sub${muted ? ' px-muted' : ''}`}>{name}{badge}</b>
       {lines.filter(Boolean).map((line, index) => <span key={index} className={`px-caption${index ? ' px-muted' : ''}`}>{line}</span>)}
     </>
   );
   return (
-    <li className={`pxt-cand px-skin px-skin--sunk${sprite == null ? ' is-empty' : ''}`}>
-      {no ? <span className="px-mono px-caption pxt-cand__no">{no}</span> : null}
-      <Ball sprite={sprite} size="sm" />
-      {onOpen
-        ? <button type="button" className="pxt-cand__text pxt-cand__open" onClick={onOpen} aria-label={`${name} 상세 보기`}>{text}</button>
-        : <span className="pxt-cand__text">{text}</span>}
-      {ops ? <span className="pxt-cand__ops">{ops}</span> : null}
+    <li className={`pxt-cand${sprite == null ? ' is-empty' : ''}`}>
+      {sprite != null ? <ToolNumberRibbon sprite={sprite} /> : null}
+      <div className="pxt-cand__panel px-skin px-skin--sunk">
+        <Ball sprite={sprite} size="sm" />
+        {onOpen
+          ? <button type="button" className="pxt-cand__text pxt-cand__open" onClick={onOpen} aria-label={`${name} 상세 보기`}>{text}</button>
+          : <span className="pxt-cand__text">{text}</span>}
+        {ops ? <span className="pxt-cand__ops">{ops}</span> : null}
+      </div>
     </li>
   );
 }
@@ -90,46 +102,64 @@ export function PickedCard({ sprite, name, lines, onClear, clearLabel = '선택 
 }) {
   return (
     <div className="pxt-boss">
-      <Ball sprite={sprite} />
-      <div className="pxt-boss__text">
-        <b className="px-heading">{name}</b>
-        {lines.filter(Boolean).map((line, index) => <span key={index} className="px-caption">{line}</span>)}
+      <ToolNumberRibbon sprite={sprite} />
+      <div className="pxt-boss__panel px-skin px-skin--sunk">
+        <Ball sprite={sprite} />
+        <div className="pxt-boss__text">
+          <b className="px-heading">{name}</b>
+          {lines.filter(Boolean).map((line, index) => <span key={index} className="px-caption">{line}</span>)}
+        </div>
+        <button type="button" className="px-btn px-btn--icon px-skin" aria-label={clearLabel} onClick={onClear}><PixelIcon name="close" /></button>
       </div>
-      <button type="button" className="px-btn px-btn--icon px-skin" aria-label={clearLabel} onClick={onClear}><PixelIcon name="close" /></button>
     </div>
   );
 }
 
 /** 슬롯 판 — SLOT 01 · 역할 배지 · 그림 · 이름 · 타입 · 기술 · 지표 · 교체 단추 (D-MAX 팀 · PvP 덱) */
-export function SlotCard({ index, role, roleTone = 'orange', sprite, name, types, moves, metric, value, note, onOpen, onSwap, emptyText }: {
+export function SlotCard({ index, role, roleTone = 'orange', sprite, name, types, moves, metric, value, note, onOpen, onSwap, emptyText, compact = false }: {
   index: number; role: string; roleTone?: 'orange' | 'blue' | 'purple';
   sprite: number | null; name: string; types?: string; moves?: string;
   metric: string; value: string; note: string;
   onOpen?: () => void; onSwap?: () => void; emptyText?: string;
+  /** D-MAX 팀은 작은 화면에서도 셋을 한 줄에 비교한다. 설명은 직접 펼쳐 읽는다. */
+  compact?: boolean;
 }) {
   const body = (
     <>
       <Ball sprite={sprite} />
       <b className="px-sub">{name}</b>
-      <span className="px-caption">{sprite == null ? emptyText : types}</span>
-      <span className="px-caption pxt-slot__moves">{moves}</span>
+      {!compact || sprite == null ? <span className="px-caption">{sprite == null ? emptyText : types}</span> : null}
+      {!compact ? <span className="px-caption pxt-slot__moves">{moves}</span> : null}
     </>
   );
   return (
-    <article className={`px-skin px-drop px-card pxt-slot${sprite == null ? ' is-empty' : ''}`} data-slot={index}>
-      <div className="pxt-slot__head">
-        <span className="px-mono px-caption">{`SLOT 0${index + 1}`}</span>
-        <span className={`px-badge px-skin px-badge--ko px-badge--${roleTone}`}>{role}</span>
+    <article className={`pxt-slot${compact ? ' pxt-slot--compact' : ''}${sprite == null ? ' is-empty' : ''}`} data-slot={index}>
+      {sprite != null ? <ToolNumberRibbon sprite={sprite} /> : null}
+      <div className="pxt-slot__panel px-skin px-drop px-card">
+        <div className="pxt-slot__head">
+          <span className="px-mono px-caption">{`SLOT 0${index + 1}`}</span>
+          <span className={`px-badge px-skin px-badge--ko px-badge--${roleTone}`}>{role}</span>
+        </div>
+        {sprite != null && onOpen
+          ? <button type="button" className="pxt-slot__body" onClick={onOpen} aria-label={`${name} 상세 보기`}>{body}</button>
+          : <div className="pxt-slot__body">{body}</div>}
+        <div className="pxt-slot__metric">
+          <span className="px-mono px-caption">{metric}</span>
+          <b className="px-number">{value}</b>
+          {!compact ? <span className="px-caption">{note}</span> : null}
+        </div>
+        {compact && sprite != null ? (
+          <details className="pxt-slot__details">
+            <summary className="px-caption" aria-label={`${name} 타입과 기술 정보`}>정보 보기</summary>
+            <div className="pxt-slot__detail-text">
+              {types ? <span className="px-caption">{types}</span> : null}
+              {moves ? <span className="px-caption pxt-slot__moves">{moves}</span> : null}
+              <span className="px-caption">{note}</span>
+            </div>
+          </details>
+        ) : null}
+        {onSwap ? <button type="button" className="px-btn px-btn--block px-skin pxt-slot__swap" aria-label={`${name} 교체`} onClick={onSwap}>{compact ? '교체 ↗' : '포켓몬 교체 ↗'}</button> : null}
       </div>
-      {sprite != null && onOpen
-        ? <button type="button" className="pxt-slot__body" onClick={onOpen} aria-label={`${name} 상세 보기`}>{body}</button>
-        : <div className="pxt-slot__body">{body}</div>}
-      <div className="pxt-slot__metric">
-        <span className="px-mono px-caption">{metric}</span>
-        <b className="px-number">{value}</b>
-        <span className="px-caption">{note}</span>
-      </div>
-      {onSwap ? <button type="button" className="px-btn px-btn--block px-skin" onClick={onSwap}>포켓몬 교체 ↗</button> : null}
     </article>
   );
 }
