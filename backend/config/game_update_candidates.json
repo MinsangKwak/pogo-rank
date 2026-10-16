@@ -5,8 +5,44 @@
     "editorialStatus=published 로 옮겨 적어야 화면에 나간다.",
     "changeLines 는 공식 원문에서 \"규칙이 바뀐 것으로 보이는\" 줄을 그대로 옮긴 것이다. 요약이 아니다."
   ],
-  "collectedAt": "2026-10-14",
+  "collectedAt": "2026-10-15",
   "candidates": [
+    {
+      "slug": "into-the-wild-2026",
+      "sources": [
+        {
+          "lang": "ko",
+          "label": "강철타입, 드래곤타입 포켓몬과 모험을 떠나는 \"와일드 위크\" 이벤트! — Pokémon GO",
+          "url": "https://pokemongo.com/ko/news/into-the-wild-2026",
+          "image": "https://lh3.googleusercontent.com/xQzYXbxguNWaaSXG5thVM5x44Luvbb5Pi8rPlYSPIV6kePCzoS_5NWzlM0yzNGIVs1NzhXIPLcg2HKS0iuizGsHZUvSS_ZcemC5-i4My5yA"
+        },
+        {
+          "lang": "en",
+          "label": "It’s time to head back Into the Wild for a Steel- and Dragon-type adventure! — Pokémon GO",
+          "url": "https://pokemongo.com/en/news/into-the-wild-2026",
+          "image": "https://lh3.googleusercontent.com/xQzYXbxguNWaaSXG5thVM5x44Luvbb5Pi8rPlYSPIV6kePCzoS_5NWzlM0yzNGIVs1NzhXIPLcg2HKS0iuizGsHZUvSS_ZcemC5-i4My5yA"
+        }
+      ],
+      "changeLines": {
+        "ko": [
+          "^이 보너스는 한국시간 11월 9일 10:00부터 11월 15일 18:00까지 적용됩니다.",
+          "^이 보너스는 한국시간 11월 9일 10:00부터 11월 15일 18:00까지 적용됩니다.",
+          "*그림자 포켓몬이나 이미 능력치를 최대로 단련한 포켓몬에는 \"대단한 특훈\"을 사용할 수 없습니다."
+        ],
+        "en": [
+          "The Remote Raid limit will increase to 30 from Monday, November 9, to Friday, November 13, 2026.",
+          "Trainers will automatically receive GO Pass: Into the Wild at no cost on Monday, November 9, at 10:00 a.m. local time. You can collect GO Points and rank up to get additional rewards through Sunday, November 15, at 6:00 p.m. local time.",
+          "Reach Major Milestones on your GO Pass Deluxe: Into the Wild to unlock the following additional bonuses.",
+          "Additional 5,000 XP from completed raids",
+          "Additional 5,000 XP from completed Max Battles",
+          "1 additional Candy awarded for completing raids",
+          "1 additional Candy XL awarded for completing raids (Trainers level 31+)",
+          "1 additional Candy awarded for completing Max Battles",
+          "1 additional Candy XL awarded for completing Max Battles (Trainers level 31+)"
+        ]
+      },
+      "announcedAt": "2026-10-14"
+    },
     {
       "slug": "fc-seoul-2026",
       "sources": [

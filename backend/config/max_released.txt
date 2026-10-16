@@ -169,6 +169,8 @@ G DURALUDON 2026-11-14
 # 예정 (출시 후 주석 해제)
 # D DIALGA         # 2026-11-14 와일드 에리어 글로벌 (LeekDuck)
 # D PALKIA         # 2026-11-15 와일드 에리어 글로벌 (LeekDuck)
+# D MELTAN         # 2026-11-09 와일드 위크 GO패스 보상 (공식 한국어 공지 into-the-wild-2026)
+# D REGIDRAGO      # 2026-11-12 와일드 위크 별5 맥스배틀 첫 등장 (같은 공지)
 # D SNEASEL        # 2026 TBA
 # D WEAVILE        # 2026 TBA
 # D UXIE           # 2026 TBA

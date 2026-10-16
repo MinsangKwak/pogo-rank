@@ -157,6 +157,11 @@ export const SCHEDULE_MONTHS = {
       { s: 1, e: 1, cat: 'event', label: '핼러윈 2026 파트 1 (~11/1 10시)', source: 'https://pokemongo.com/ko/news/halloween-part-1-2026' },
       // 2026-10-09 공식 한국어 공지 — 핼러윈 2026 파트 2 (자동분 영문 원제 'Halloween 2026 Part II' 를 덮는다)
       { s: 1, e: 5, cat: 'event', label: '핼러윈 2026 파트 2 (11/1 10시 ~ 11/5 20시 · 메가깜까미 슈퍼 맥스 레벨 · 색이 다른 망망이 첫 등장 · 불켜미 · 핼러윈 의상의 나몰빼미)', source: 'https://pokemongo.com/ko/news/halloween-part-2-2026' },
+      // 2026-10-15 공식 한국어 공지 — 와일드 위크 (자동분 영문 원제 'Into the Wild' 를 덮는다). 맥스배틀 별5 는 날마다 한 종, 같은 날 18–19시 맥스배틀 아워
+      { s: 9, e: 13, cat: 'event', label: '와일드 위크 (11/9 10시 ~ 11/13 20시 · 다이맥스 레지드래고 첫 등장 · GO패스 다이맥스 멜탄 · 전설 레이드 자시안(검왕) · 자마젠타(방패왕))', source: 'https://pokemongo.com/ko/news/into-the-wild-2026' },
+      { s: 11, e: 11, cat: 'dmax', label: 'D-MAX 레지스틸 (와일드 위크 11/11 · 별5 맥스배틀)', t: 'steel' },
+      { s: 12, e: 12, cat: 'dmax', label: 'D-MAX 레지드래고 첫 등장 (와일드 위크 11/12 · 별5 맥스배틀)', t: 'dragon' },
+      { s: 13, e: 13, cat: 'dmax', label: 'D-MAX 라티아스 · 라티오스 (와일드 위크 11/13 · 별5 맥스배틀)', t: 'dragon' },
       { s: 14, e: 19, cat: 'event', label: '메테노 샤워: 사자자리 유성우 (11/14 17시 ~ 11/19 23:59 · 매일 17–21시 메테노 출현 증가)', source: 'https://pokemongo.com/ko/news/minior-meteor-showers-2026' },
       // 2026-10-09 와일드 에리어 2026: 글로벌 — 거다이맥스 두랄루돈 첫 등장 · 14일 다이맥스 디아루가 · 15일 다이맥스 펄기아 (LeekDuck · GO Hub 10/8).
       // 공식 한국어 공지는 아직 없어 자동분 영문 원제('Pokémon GO Wild Area 2026: Global')를 공식 한국어 표기 꼴('Pokémon GO 와일드 에리어: 센다이, 도호쿠')에 맞춰 덮는다 — 주인 지시로 dev 선반영

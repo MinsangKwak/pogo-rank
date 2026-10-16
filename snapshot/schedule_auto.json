@@ -241,9 +241,7 @@
 "start": "2026-10-14",
 "end": "2026-10-14",
 "cat": "hour",
-"label": "레이드 아워: 디아루가",
-"start_eu": "2026-10-14",
-"end_eu": "2026-10-14"
+"label": "레이드 아워: 디아루가"
 },
 "pokemonspotlighthour2026-10-15": {
 "id": "pokemonspotlighthour2026-10-15",
@@ -251,9 +249,7 @@
 "start": "2026-10-15",
 "end": "2026-10-15",
 "cat": "hour",
-"label": "스포트라이트: 포곰곰 — 전송 사탕 2배",
-"start_eu": "2026-10-15",
-"end_eu": "2026-10-15"
+"label": "스포트라이트: 포곰곰 — 전송 사탕 2배"
 },
 "hatch-day-october-2026": {
 "id": "hatch-day-october-2026",
@@ -269,9 +265,7 @@
 "start": "2026-10-13",
 "end": "2026-10-19",
 "cat": "event",
-"label": "Fall Marathon: Buddy Trek",
-"start_eu": "2026-10-13",
-"end_eu": "2026-10-19"
+"label": "Fall Marathon: Buddy Trek"
 },
 "max-mondays-2026-10-19": {
 "id": "max-mondays-2026-10-19",
@@ -280,8 +274,6 @@
 "end": "2026-10-25",
 "cat": "dmax",
 "label": "D-MAX 포푸니 (맥스 먼데이 10/19)",
-"start_eu": "2026-10-19",
-"end_eu": "2026-10-25",
 "t": "dark"
 },
 "dialga-in-5-star-raid-battles-october-2026": {
@@ -290,9 +282,7 @@
 "start": "2026-10-14",
 "end": "2026-10-20",
 "cat": "raid5",
-"label": "디아루가",
-"start_eu": "2026-10-14",
-"end_eu": "2026-10-20"
+"label": "디아루가"
 },
 "mega-dragonite-in-mega-raids-october-2026": {
 "id": "mega-dragonite-in-mega-raids-october-2026",
@@ -300,9 +290,7 @@
 "start": "2026-10-14",
 "end": "2026-10-20",
 "cat": "mega",
-"label": "메가 망나뇽",
-"start_eu": "2026-10-14",
-"end_eu": "2026-10-20"
+"label": "메가 망나뇽"
 },
 "raidhour20261021": {
 "id": "raidhour20261021",
@@ -310,9 +298,7 @@
 "start": "2026-10-21",
 "end": "2026-10-21",
 "cat": "hour",
-"label": "레이드 아워: 펄기아",
-"start_eu": "2026-10-21",
-"end_eu": "2026-10-21"
+"label": "레이드 아워: 펄기아"
 },
 "pokemonspotlighthour2026-10-22": {
 "id": "pokemonspotlighthour2026-10-22",
@@ -320,9 +306,7 @@
 "start": "2026-10-22",
 "end": "2026-10-22",
 "cat": "hour",
-"label": "스포트라이트: 자마슈 — 포획 별의모래 2배",
-"start_eu": "2026-10-22",
-"end_eu": "2026-10-22"
+"label": "스포트라이트: 자마슈 — 포획 별의모래 2배"
 },
 "max-battle-day-october-24-2026": {
 "id": "max-battle-day-october-24-2026",
@@ -339,8 +323,6 @@
 "end": "2026-11-01",
 "cat": "dmax",
 "label": "D-MAX 깜까미 (맥스 먼데이 10/26)",
-"start_eu": "2026-10-26",
-"end_eu": "2026-11-01",
 "t": "dark"
 },
 "mega-charizard-x-mega-charizard-y-in-mega-raids-october-2026": {
@@ -349,9 +331,7 @@
 "start": "2026-10-21",
 "end": "2026-10-27",
 "cat": "mega",
-"label": "메가X 리자몽 · 메가Y 리자몽",
-"start_eu": "2026-10-21",
-"end_eu": "2026-10-27"
+"label": "메가X 리자몽 · 메가Y 리자몽"
 },
 "palkia-in-5-star-raid-battles-october-2026": {
 "id": "palkia-in-5-star-raid-battles-october-2026",
@@ -359,9 +339,7 @@
 "start": "2026-10-21",
 "end": "2026-10-27",
 "cat": "raid5",
-"label": "펄기아",
-"start_eu": "2026-10-21",
-"end_eu": "2026-10-27"
+"label": "펄기아"
 },
 "raidhour20261028": {
 "id": "raidhour20261028",
@@ -369,9 +347,7 @@
 "start": "2026-10-28",
 "end": "2026-10-28",
 "cat": "hour",
-"label": "레이드 아워: 기라티나 (오리진폼)",
-"start_eu": "2026-10-28",
-"end_eu": "2026-10-28"
+"label": "레이드 아워: 기라티나 (오리진폼)"
 },
 "pokemonspotlighthour2026-10-29": {
 "id": "pokemonspotlighthour2026-10-29",
@@ -379,9 +355,7 @@
 "start": "2026-10-29",
 "end": "2026-10-29",
 "cat": "hour",
-"label": "스포트라이트: 고오스 — 진화 XP 2배",
-"start_eu": "2026-10-29",
-"end_eu": "2026-10-29"
+"label": "스포트라이트: 고오스 — 진화 XP 2배"
 },
 "super-mega-raid-day-october-2026": {
 "id": "super-mega-raid-day-october-2026",
@@ -395,11 +369,9 @@
 "id": "halloween-2026-part-1",
 "type": "event",
 "start": "2026-10-27",
-"end": "2026-11-01",
+"end": "2026-10-31",
 "cat": "event",
-"label": "Pokémon GO Halloween 2026 Part I",
-"start_eu": "2026-10-27",
-"end_eu": "2026-11-01"
+"label": "Halloween 2026 Part I"
 },
 "shadow-landorus-incarnate-forme-in-shadow-raids-october-2026": {
 "id": "shadow-landorus-incarnate-forme-in-shadow-raids-october-2026",
@@ -407,9 +379,7 @@
 "start": "2026-10-07",
 "end": "2026-11-03",
 "cat": "shadow",
-"label": "주말 섀도우 레이드: 섀도우 랜드로스 (화신폼)",
-"start_eu": "2026-10-07",
-"end_eu": "2026-11-03"
+"label": "주말 섀도우 레이드: 섀도우 랜드로스 (화신폼)"
 },
 "giratina-origin-forme-in-5-star-raid-battles-october-2026": {
 "id": "giratina-origin-forme-in-5-star-raid-battles-october-2026",
@@ -417,9 +387,7 @@
 "start": "2026-10-28",
 "end": "2026-11-03",
 "cat": "raid5",
-"label": "기라티나 (오리진폼)",
-"start_eu": "2026-10-28",
-"end_eu": "2026-11-03"
+"label": "기라티나 (오리진폼)"
 },
 "mega-sableye-in-mega-raids-october-2026": {
 "id": "mega-sableye-in-mega-raids-october-2026",
@@ -427,9 +395,7 @@
 "start": "2026-10-28",
 "end": "2026-11-03",
 "cat": "mega",
-"label": "메가 깜까미",
-"start_eu": "2026-10-28",
-"end_eu": "2026-11-03"
+"label": "메가 깜까미"
 },
 "halloween-2026-part-2": {
 "id": "halloween-2026-part-2",
@@ -437,9 +403,7 @@
 "start": "2026-11-01",
 "end": "2026-11-05",
 "cat": "event",
-"label": "Pokémon GO Halloween 2026 Part II",
-"start_eu": "2026-11-01",
-"end_eu": "2026-11-05"
+"label": "Halloween 2026 Part II"
 },
 "pokemon-go-wild-area-2026-sendai-japan": {
 "id": "pokemon-go-wild-area-2026-sendai-japan",
@@ -447,19 +411,15 @@
 "start": "2026-11-06",
 "end": "2026-11-08",
 "cat": "event",
-"label": "Pokémon GO Wild Area 2026: Sendai • Tohoku",
-"start_eu": "2026-11-06",
-"end_eu": "2026-11-08"
+"label": "Pokémon GO Wild Area 2026: Sendai • Tohoku"
 },
 "pokemon-go-wild-area-2026-mexico-city": {
 "id": "pokemon-go-wild-area-2026-mexico-city",
 "type": "wild-area",
-"start": "2026-11-07",
+"start": "2026-11-06",
 "end": "2026-11-09",
 "cat": "event",
-"label": "Pokémon GO Wild Area 2026: Mexico City",
-"start_eu": "2026-11-06",
-"end_eu": "2026-11-09"
+"label": "Pokémon GO Wild Area 2026: Mexico City"
 },
 "pokemon-go-wild-area-2026-global": {
 "id": "pokemon-go-wild-area-2026-global",
@@ -467,9 +427,7 @@
 "start": "2026-11-14",
 "end": "2026-11-15",
 "cat": "event",
-"label": "Pokémon GO Wild Area 2026: Global",
-"start_eu": "2026-11-14",
-"end_eu": "2026-11-15"
+"label": "Pokémon GO Wild Area 2026: Global"
 },
 "november-communityday2026": {
 "id": "november-communityday2026",
@@ -477,9 +435,7 @@
 "start": "2026-11-21",
 "end": "2026-11-21",
 "cat": "event",
-"label": "11월 커뮤니티 데이",
-"start_eu": "2026-11-21",
-"end_eu": "2026-11-21"
+"label": "11월 커뮤니티 데이"
 },
 "super-mega-raid-day-november-2026": {
 "id": "super-mega-raid-day-november-2026",
@@ -487,178 +443,6 @@
 "start": "2026-11-28",
 "end": "2026-11-28",
 "cat": "event",
-"label": "슈퍼 메가 레이드 데이",
-"start_eu": "2026-11-28",
-"end_eu": "2026-11-28"
-},
-"sandile-hatch-day-2026": {
-"id": "sandile-hatch-day-2026",
-"type": "event",
-"start": "2026-10-17",
-"end": "2026-10-17",
-"cat": "event",
-"label": "Sandile Hatch Day",
-"start_eu": "2026-10-17",
-"end_eu": "2026-10-17"
-},
-"pokemon-tcg-30th-celebration": {
-"id": "pokemon-tcg-30th-celebration",
-"type": "event",
-"start": "2026-09-27",
-"end": "2026-10-20",
-"cat": "event",
-"label": "Pokémon TCG: 30th Celebration",
-"start_eu": "2026-09-27",
-"end_eu": "2026-10-20"
-},
-"dynamax-uxie-mesprit-azelf-max-battle-day-2026": {
-"id": "dynamax-uxie-mesprit-azelf-max-battle-day-2026",
-"type": "max-battles",
-"start": "2026-10-24",
-"end": "2026-10-24",
-"cat": "event",
-"label": "맥스 배틀 데이",
-"start_eu": "2026-10-24",
-"end_eu": "2026-10-24"
-},
-"pokemon-night-out-2026-twitch-drops": {
-"id": "pokemon-night-out-2026-twitch-drops",
-"type": "twitch-drops",
-"start": "2026-10-25",
-"end": "2026-10-25",
-"cat": "event",
-"label": "Twitch Drops for Pokémon Night Out 2026",
-"start_eu": "2026-10-25",
-"end_eu": "2026-10-25"
-},
-"minior-showers-orionids-2026": {
-"id": "minior-showers-orionids-2026",
-"type": "event",
-"start": "2026-10-19",
-"end": "2026-10-24",
-"cat": "event",
-"label": "Minior Showers: Orionids 2026",
-"start_eu": "2026-10-19",
-"end_eu": "2026-10-24"
-},
-"pokemon-go-city-safari-boston-2026-rescheduled": {
-"id": "pokemon-go-city-safari-boston-2026-rescheduled",
-"type": "city-safari",
-"start": "2026-10-24",
-"end": "2026-10-25",
-"cat": "event",
-"label": "Pokémon GO City Safari: Boston (Rescheduled)",
-"start_eu": "2026-10-24",
-"end_eu": "2026-10-25"
-},
-"chandelure-super-mega-raid-day-2026": {
-"id": "chandelure-super-mega-raid-day-2026",
-"type": "raid-day",
-"start": "2026-10-31",
-"end": "2026-10-31",
-"cat": "event",
-"label": "샹델라 슈퍼 메가 레이드 데이",
-"start_eu": "2026-10-31",
-"end_eu": "2026-10-31"
-},
-"into-the-wild-2026": {
-"id": "into-the-wild-2026",
-"type": "event",
-"start": "2026-11-09",
-"end": "2026-11-13",
-"cat": "event",
-"label": "Into the Wild",
-"start_eu": "2026-11-09",
-"end_eu": "2026-11-13"
-},
-"minior-showers-leonids-2026": {
-"id": "minior-showers-leonids-2026",
-"type": "event",
-"start": "2026-11-14",
-"end": "2026-11-19",
-"cat": "event",
-"label": "Minior Showers: Leonids 2026",
-"start_eu": "2026-11-14",
-"end_eu": "2026-11-19"
-},
-"minior-showers-geminids-2026": {
-"id": "minior-showers-geminids-2026",
-"type": "event",
-"start": "2026-12-11",
-"end": "2026-12-16",
-"cat": "event",
-"label": "Minior Showers: Geminids 2026",
-"start_eu": "2026-12-11",
-"end_eu": "2026-12-16"
-},
-"pokemon-x-adidas-2026": {
-"id": "pokemon-x-adidas-2026",
-"type": "research",
-"start": "2026-09-25",
-"end": "2027-01-15",
-"cat": "event",
-"label": "adidas × Pokémon Timed Research",
-"start_eu": "2026-09-25",
-"end_eu": "2027-01-15"
-},
-"pokemon-go-tour-alola-kaohsiung-2027": {
-"id": "pokemon-go-tour-alola-kaohsiung-2027",
-"type": "pokemon-go-tour",
-"start": "2027-02-19",
-"end": "2027-02-22",
-"cat": "event",
-"label": "Pokémon GO Tour: Alola - Kaohsiung 2027",
-"start_eu": "2027-02-18",
-"end_eu": "2027-02-21"
-},
-"pokemon-go-tour-alola-los-angeles-2027": {
-"id": "pokemon-go-tour-alola-los-angeles-2027",
-"type": "pokemon-go-tour",
-"start": "2027-02-19",
-"end": "2027-02-22",
-"cat": "event",
-"label": "Pokémon GO Tour: Alola - Los Angeles 2027",
-"start_eu": "2027-02-19",
-"end_eu": "2027-02-22"
-},
-"pokemon-go-tour-alola-global-2027": {
-"id": "pokemon-go-tour-alola-global-2027",
-"type": "pokemon-go-tour",
-"start": "2027-02-27",
-"end": "2027-02-28",
-"cat": "event",
-"label": "Pokémon GO Tour: Alola - Global 2027",
-"start_eu": "2027-02-27",
-"end_eu": "2027-02-28"
-},
-"minior-showers-eta-aquariids-2027": {
-"id": "minior-showers-eta-aquariids-2027",
-"type": "event",
-"start": "2027-05-03",
-"end": "2027-05-08",
-"cat": "event",
-"label": "Minior Showers: Eta Aquariids 2027",
-"start_eu": "2027-05-03",
-"end_eu": "2027-05-08"
-},
-"minior-showers-southern-delta-aquariids-2027": {
-"id": "minior-showers-southern-delta-aquariids-2027",
-"type": "event",
-"start": "2027-07-28",
-"end": "2027-08-02",
-"cat": "event",
-"label": "Minior Showers: Southern Delta Aquariids 2027",
-"start_eu": "2027-07-28",
-"end_eu": "2027-08-02"
-},
-"minior-showers-perseids-2027": {
-"id": "minior-showers-perseids-2027",
-"type": "event",
-"start": "2027-08-10",
-"end": "2027-08-15",
-"cat": "event",
-"label": "Minior Showers: Perseids 2027",
-"start_eu": "2027-08-10",
-"end_eu": "2027-08-15"
+"label": "슈퍼 메가 레이드 데이"
 }
 }

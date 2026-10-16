@@ -5,8 +5,29 @@
     "여기에 있는 항목에 사람이 요약을 쓰면 backend/config/game_updates.json 의 기사가 되고,",
     "화면은 그때부터 기사를 보인다(같은 원문의 아카이브 항목은 숨는다)."
   ],
-  "collectedAt": "2026-10-14",
+  "collectedAt": "2026-10-15",
   "entries": [
+    {
+      "id": "into-the-wild-2026",
+      "kind": "news",
+      "title": "강철타입, 드래곤타입 포켓몬과 모험을 떠나는 \"와일드 위크\" 이벤트!",
+      "date": "2026-10-14",
+      "excerpt": "다음 다이맥스 포켓몬이 별5 맥스배틀을 통해 “Pokémon GO”에 처음 등장합니다!",
+      "sources": [
+        {
+          "lang": "ko",
+          "label": "강철타입, 드래곤타입 포켓몬과 모험을 떠나는 \"와일드 위크\" 이벤트!",
+          "url": "https://pokemongo.com/ko/news/into-the-wild-2026",
+          "image": "https://lh3.googleusercontent.com/xQzYXbxguNWaaSXG5thVM5x44Luvbb5Pi8rPlYSPIV6kePCzoS_5NWzlM0yzNGIVs1NzhXIPLcg2HKS0iuizGsHZUvSS_ZcemC5-i4My5yA"
+        },
+        {
+          "lang": "en",
+          "label": "It’s time to head back Into the Wild for a Steel- and Dragon-type adventure!",
+          "url": "https://pokemongo.com/en/news/into-the-wild-2026",
+          "image": "https://lh3.googleusercontent.com/xQzYXbxguNWaaSXG5thVM5x44Luvbb5Pi8rPlYSPIV6kePCzoS_5NWzlM0yzNGIVs1NzhXIPLcg2HKS0iuizGsHZUvSS_ZcemC5-i4My5yA"
+        }
+      ]
+    },
     {
       "id": "chandelure-super-mega-raid-day-2026",
       "kind": "news",
