@@ -157,7 +157,7 @@ html body .px-check input:focus-visible { outline: var(--px-stroke) solid var(--
 
 /* ── 몬스터볼 틀 + 원본 그림 ─────────────────────────────────────────────
    47×47 셀 볼(public/images/pixel/pokeball.svg) 위에 API 원본 그림을 67% 로 띄운다. 그림을 다시 그리지 않는다 */
-html body .px-ball { position: relative; flex: none; width: var(--ball, 13rem); height: var(--ball, 13rem); background: url('/images/pixel/pokeball.svg') center / contain no-repeat; }
+html body .px-ball { display: inline-block; position: relative; flex: none; width: var(--ball, 13rem); height: var(--ball, 13rem); background: url('/images/pixel/pokeball.svg') center / contain no-repeat; }
 html body .px-ball > img, html body .px-ball > picture, html body .px-ball > .sprite { position: absolute; inset: 16.5%; width: 67%; height: 67%; object-fit: contain; image-rendering: auto; }
 html body .px-ball--sm { --ball: 7.2rem; }
 html body .px-ball--lg { --ball: 18.8rem; }
