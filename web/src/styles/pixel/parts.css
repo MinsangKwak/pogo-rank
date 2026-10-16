@@ -161,7 +161,7 @@ html body .px-ball { display: inline-block; position: relative; flex: none; widt
 /* 장식만 저채도로: 원본 포켓몬 이미지에는 필터를 적용하지 않는다. */
 html body #root .px-ball::before { content: ''; position: absolute; inset: 0; background: url('/images/pixel/pokeball.svg') center / contain no-repeat; filter: saturate(0.25); pointer-events: none; }
 /* 옛 스프라이트 받침의 검은 사각형을 볼 안에서만 제거한다. */
-html:not(#_):not(#__) body #root .px-ball .sprite:not(.is-loading):not(.empty) { background: transparent; }
+html:not(#_):not(#__) body #root .px-ball .sprite { background: transparent; animation: none; }
 html body .px-ball > img, html body .px-ball > picture, html body .px-ball > .sprite { position: absolute; inset: 16.5%; width: 67%; height: 67%; object-fit: contain; image-rendering: auto; }
 html body .px-ball--sm { --ball: 7.2rem; }
 html body .px-ball--lg { --ball: 18.8rem; }
