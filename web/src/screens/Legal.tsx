@@ -1,5 +1,5 @@
 // ─────────────────────────────────────────────────────────────────────────────
-// screens/Legal.tsx — 🔒 개인정보처리방침 · 📜 이용약관 (v3 components/privacy.js · terms.js)
+// screens/Legal.tsx — 🔒 개인정보처리방침 · 📜 이용약관 (v3 components/privacy.js · terms.js · v6 피그마 19 · 20 판)
 //
 // **실제로 하는 것만 적는다.** 문구만 그럴싸한 표준 약관 복붙 금지 — 새 기능이 개인정보를
 // 더 만지면 이 파일도 같이 고친다. 한국어 원문이 효력을 갖는 문서라 번역하지 않는다.
@@ -13,7 +13,7 @@
 // 문의 이메일은 저장소에 없다 — 빌드가 넣은 값을 데이터 묶음에서 읽는다(meta.CONTACT_EMAIL).
 // 비어 있으면 v3 와 같이 '사이트 운영자' 라고 적힌다.
 // ─────────────────────────────────────────────────────────────────────────────
-import type { ReactNode } from 'react';
+import { Children, isValidElement, useState, type ReactElement, type ReactNode } from 'react';
 import { useMeta } from '../lib/data';
 import KoOnlyNote from '../components/KoOnlyNote';
 
@@ -23,18 +23,90 @@ import { ADS_FROM, MON_VIEW_FROM, TERMS_VER } from '../lib/legalMeta';
 // 권리자 표기는 '상용·오픈소스 전환 점검' 의 결정 — Pokémon GO 는 Scopely Explore, Inc.
 export const IP_NOTICE = 'moncamp는 비공식 팬 프로젝트입니다. Pokémon 및 관련 명칭·이미지의 권리는 The Pokémon Company · Nintendo · Creatures Inc. · GAME FREAK inc.에, Pokémon GO는 Scopely Explore, Inc.에 있으며 이 서비스는 권리자와 무관합니다.';
 
+/** 조항 번호 — '1. 수집하는 개인정보' → '1', '문의처' → '' */
+function clauseNo(title: string): string {
+  return /^(\d+)\./.exec(title)?.[1] ?? '';
+}
+/** 앵커 id — 번호가 있으면 'sec-1', 없으면 제목 그대로 (한글 id 도 유효하다) */
+function anchorOf(title: string): string {
+  const no = clauseNo(title);
+  return no ? `sec-${no}` : `sec-${title}`;
+}
+
+/** 조항 한 판 — 번호 + 제목 + 본문. 문장은 한 글자도 바꾸지 않는다 */
 function Sec({ title, children }: { title: string; children: ReactNode }) {
-  return <section className="priv__sec"><h2 className="page__sec">{title}</h2>{children}</section>;
+  const no = clauseNo(title);
+  const label = no ? title.slice(no.length + 1).trim() : title;
+  return (
+    <section className="px-panel px-skin px-drop pxp-clause priv__sec" id={anchorOf(title)}>
+      <h2 className="pxp-clause__title">
+        {no ? <span className="px-badge px-skin px-mono pxp-clause__no">{no.padStart(2, '0')}</span> : null}
+        <span className="px-heading">{label}</span>
+      </h2>
+      <div className="pxp-clause__body">{children}</div>
+    </section>
+  );
 }
+
+/**
+ * 문서 한 벌 — 머리 글 · 시행일 · 목차 · 조항들 · 바닥 고지.
+ * 목차는 아래 조항(Sec)의 제목을 그대로 읽는다 — 따로 적어 두면 한쪽만 고쳐지는 날이 온다.
+ * 모바일은 목차를 접어 둔다(details) — 긴 목록이 본문보다 먼저 서면 읽기 전에 스크롤부터 한다
+ */
+function Doc({ id, route, lead, dated, children, foot }: {
+  id: string; route: string; lead: ReactNode; dated: string; children: ReactNode; foot: ReactNode;
+}) {
+  const titles = Children.toArray(children)
+    .filter((one): one is ReactElement<{ title: string }> => isValidElement(one) && one.type === Sec)
+    .map((one) => one.props.title);
+  // 넓은 화면은 펼쳐 두고, 좁은 화면은 접어 둔다 — 처음 그릴 때 한 번만 본다 (details 는 그 뒤 사람이 연다)
+  const [wide] = useState(() => !!window.matchMedia?.('(min-width: 700px)').matches);
+  return (
+    <div className="pxp pxp-legal" id={id} data-route={route}>
+      <KoOnlyNote />
+      <p className="px-body pxp-legal__lead">{lead}</p>
+      <div className="px-note px-skin px-skin--sunk pxp-legal__dated">
+        <p className="px-eyebrow">LAST REVISED</p>
+        <p className="px-sub">최종 개정 · 시행일</p>
+        <p className="px-caption">{dated}</p>
+      </div>
+      <details className="px-panel px-skin px-drop pxp-toc" open={wide}>
+        <summary className="pxp-toc__sum"><span className="px-sub">목차</span><span className="px-caption">조항을 누르면 그 자리로 이동해요</span></summary>
+        <ol className="pxp-toc__list">
+          {titles.map((title) => {
+            const no = clauseNo(title);
+            return (
+              <li key={title}>
+                <a className="pxp-toc__link" href={`#${anchorOf(title)}`}
+                  onClick={(event) => {
+                    // 라우터가 해시를 읽지 않게 막고 직접 내린다 — 주소는 그대로 둔다
+                    event.preventDefault();
+                    document.getElementById(anchorOf(title))?.scrollIntoView({ block: 'start' });
+                  }}>
+                  <span className="px-mono pxp-toc__no">{no ? no.padStart(2, '0') : '·'}</span>
+                  <span>{no ? title.slice(no.length + 1).trim() : title}</span>
+                </a>
+              </li>
+            );
+          })}
+        </ol>
+      </details>
+      <div className="pxp-legal__clauses">{children}</div>
+      <div className="pxp-legal__foot">{foot}</div>
+    </div>
+  );
+}
+
 function Bullets({ items }: { items: ReactNode[] }) {
-  return <ul className="priv__list">{items.map((one, index) => <li key={index}>{one}</li>)}</ul>;
+  return <ul className="pxp-list priv__list">{items.map((one, index) => <li key={index}>{one}</li>)}</ul>;
 }
+/** 표 — 좁은 화면에서는 줄마다 카드가 된다. 칸의 머리말(data-label)을 CSS 가 앞에 붙인다 */
 function Table({ head, rows }: { head: string[]; rows: string[][] }) {
   return (
-    <div className="priv__table-wrap">
-      <table className="priv__table">
+    <div className="pxp-table-wrap">
+      <table className="px-table pxp-table">
         <thead><tr>{head.map((one) => <th key={one}>{one}</th>)}</tr></thead>
-        <tbody>{rows.map((row, index) => <tr key={index}>{row.map((cell, at) => <td key={at}>{cell}</td>)}</tr>)}</tbody>
+        <tbody>{rows.map((row, index) => <tr key={index}>{row.map((cell, at) => <td key={at} data-label={head[at]}>{cell}</td>)}</tr>)}</tbody>
       </table>
     </div>
   );
@@ -48,10 +120,13 @@ function useContact(): ReactNode {
 export function Privacy() {
   const contact = useContact();
   return (
-    <div className="page__body" id="page-privacy" data-route="privacy">
-      <KoOnlyNote />
-      <p>이 개인정보처리방침은 moncamp(이하 "서비스")가 수집하는 정보와 이용 목적, 보관 장소 및 기간을 안내합니다. 로그인하지 않으면 이름·이메일 등 계정 정보를 수집하지 않습니다. Google 로그인 후 운영자의 승인을 받은 이용자에게 즐겨찾기·내 포켓몬 저장 기능을 제공합니다. 2026-09-23부터는 로그인 여부와 관계없이 포켓몬 검색 결과를, 2026-09-24부터는 어떤 화면을 열었는지(화면 이름)를, 2026-09-29부터는 상세 팝업에서 본 포켓몬의 도감 번호를 계정과 연결하지 않고 집계합니다. 통계를 끄면 모두 기록하지 않습니다.{ADS_FROM ? ` ${ADS_FROM}부터는 로그인하지 않은 화면에 광고(Google AdSense)를 표시합니다.` : ''} 자세한 내용은 제2항에서 확인할 수 있습니다.</p>
-      <p className="detail__foot">{`시행일 2026-09-04 · 개정 2026-09-06 (이용 통계에 계정 식별자 연결) · 2026-09-07 (플래너 개체 정보 항목) · 2026-09-07 v2.18.0 (처리위탁·국외이전·보유기간·14세·보호책임자·자동수집·셀프 삭제 명시) · 2026-09-23 v4.7.1 (검색어 기록과 수집 서버) · 2026-09-23 v5.0.0 (계정 저장소를 Firebase 에서 moncamp 서버로 · 로그인 유지 쿠키 · 처리위탁 추가) · 2026-09-24 v5.2.0·v5.2.1 (화면별 페이지뷰 기록) · ${MON_VIEW_FROM} v5.5.0 (상세에서 본 포켓몬 번호 기록) · 2026-10-14 (국외 이전에 방문 통계 Google Analytics 4 · 미국을 명시 — 빠져 있던 것을 바로잡음) · 2026-10-15 (웹 호스팅이 Vercel 에서 Cloudflare Pages 로 바뀌어 처리위탁 표를 바로잡음)${ADS_FROM ? ` · ${ADS_FROM} (광고 — Google AdSense). 서비스는 개인이 무료로 운영하며, 운영비를 충당하기 위해 로그인하지 않은 화면에 광고를 표시합니다.` : '. 서비스는 개인이 무료로 운영하며 상업적 목적이 없습니다.'}`}</p>
+    <Doc id="page-privacy" route="privacy"
+      lead={<>이 개인정보처리방침은 moncamp(이하 "서비스")가 수집하는 정보와 이용 목적, 보관 장소 및 기간을 안내합니다. 로그인하지 않으면 이름·이메일 등 계정 정보를 수집하지 않습니다. Google 로그인 후 운영자의 승인을 받은 이용자에게 즐겨찾기·내 포켓몬 저장 기능을 제공합니다. 2026-09-23부터는 로그인 여부와 관계없이 포켓몬 검색 결과를, 2026-09-24부터는 어떤 화면을 열었는지(화면 이름)를, 2026-09-29부터는 상세 팝업에서 본 포켓몬의 도감 번호를 계정과 연결하지 않고 집계합니다. 통계를 끄면 모두 기록하지 않습니다.{ADS_FROM ? ` ${ADS_FROM}부터는 로그인하지 않은 화면에 광고(Google AdSense)를 표시합니다.` : ''} 자세한 내용은 제2항에서 확인할 수 있습니다.</>}
+      dated={`시행일 2026-09-04 · 개정 2026-09-06 (이용 통계에 계정 식별자 연결) · 2026-09-07 (플래너 개체 정보 항목) · 2026-09-07 v2.18.0 (처리위탁·국외이전·보유기간·14세·보호책임자·자동수집·셀프 삭제 명시) · 2026-09-23 v4.7.1 (검색어 기록과 수집 서버) · 2026-09-23 v5.0.0 (계정 저장소를 Firebase 에서 moncamp 서버로 · 로그인 유지 쿠키 · 처리위탁 추가) · 2026-09-24 v5.2.0·v5.2.1 (화면별 페이지뷰 기록) · ${MON_VIEW_FROM} v5.5.0 (상세에서 본 포켓몬 번호 기록) · 2026-10-14 (국외 이전에 방문 통계 Google Analytics 4 · 미국을 명시 — 빠져 있던 것을 바로잡음) · 2026-10-15 (웹 호스팅이 Vercel 에서 Cloudflare Pages 로 바뀌어 처리위탁 표를 바로잡음)${ADS_FROM ? ` · ${ADS_FROM} (광고 — Google AdSense). 서비스는 개인이 무료로 운영하며, 운영비를 충당하기 위해 로그인하지 않은 화면에 광고를 표시합니다.` : '. 서비스는 개인이 무료로 운영하며 상업적 목적이 없습니다.'}`}
+      foot={<>
+        <p className="px-caption">더 자세한 내용은 <a href="https://app.notion.com/p/3d1cbbdd109b81a9b5dcf344e4432ae2" target="_blank" rel="noopener">노션 상세 페이지</a>에서도 확인할 수 있습니다. 서비스 이용 조건은 <a href="/terms">이용약관</a>에서 확인해 주세요.</p>
+        <p className="ip-notice px-caption">{IP_NOTICE}</p>
+      </>}>
 
       <Sec title="1. 수집하는 개인정보">
         <p>아래 정보는 메뉴의 마이페이지에서 Google 계정으로 로그인한 후, 해당 기능을 이용할 때 수집·저장합니다. 로그인 없이 도감·순위표·계산기를 이용하는 경우에는 수집하지 않습니다. 로그인 여부와 관계없이 처리되는 검색어 기록은 제2항을 참고해 주세요.</p>
@@ -154,19 +229,17 @@ export function Privacy() {
         <p>{ADS_FROM ? '이 방침을 개정하는 경우 시행일에 메뉴의 패치노트로 알립니다. 수집 항목이 추가되는 경우 다음 로그인 시 다시 동의를 받습니다.' : '이 방침을 개정하는 경우 시행 7일 전에 메뉴의 패치노트로 공지합니다. 수집 항목이 추가되는 경우 다음 로그인 시 다시 동의를 받습니다.'}</p>
       </Sec>
 
-      <p className="detail__foot">더 자세한 내용은 <a href="https://app.notion.com/p/3d1cbbdd109b81a9b5dcf344e4432ae2" target="_blank" rel="noopener">노션 상세 페이지</a>에서도 확인할 수 있습니다. 서비스 이용 조건은 <a href="/terms">이용약관</a>에서 확인해 주세요.</p>
-      <p className="ip-notice detail__foot">{IP_NOTICE}</p>
-    </div>
+    </Doc>
   );
 }
 
 export function Terms() {
   const contact = useContact();
   return (
-    <div className="page__body" id="page-terms" data-route="terms">
-      <KoOnlyNote />
-      <p>이 약관은 moncamp(이하 "서비스")의 이용 조건과 이용자·운영자의 권리 및 책임을 안내합니다. 서비스는 개인이 무료로 운영하는 비공식 팬 프로젝트입니다. 이용 전에 내용을 확인해 주세요.</p>
-      <p className="detail__foot">{`시행일 ${TERMS_VER} (${ADS_FROM ? '광고 조항 개정 · 처음 시행 v2.18.0' : 'v2.18.0 신설'}). ${ADS_FROM ? '약관을 개정하면 시행일에 패치노트로 알리고' : '약관 개정 시 시행 7일 전에 패치노트로 공지하고'}, 다음 로그인 시 다시 동의를 받습니다.`}</p>
+    <Doc id="page-terms" route="terms"
+      lead={'이 약관은 moncamp(이하 "서비스")의 이용 조건과 이용자·운영자의 권리 및 책임을 안내합니다. 서비스는 개인이 무료로 운영하는 비공식 팬 프로젝트입니다. 이용 전에 내용을 확인해 주세요.'}
+      dated={`시행일 ${TERMS_VER} (${ADS_FROM ? '광고 조항 개정 · 처음 시행 v2.18.0' : 'v2.18.0 신설'}). ${ADS_FROM ? '약관을 개정하면 시행일에 패치노트로 알리고' : '약관 개정 시 시행 7일 전에 패치노트로 공지하고'}, 다음 로그인 시 다시 동의를 받습니다.`}
+      foot={<p className="ip-notice px-caption">{IP_NOTICE}</p>}>
 
       <Sec title="1. 서비스 소개">
         <p>포켓몬 GO의 순위표(D-MAX · PvE · PvP), 도감, 일정표, 계산기 및 플래너(내 개체 저장·비교)를 제공하는 웹앱입니다. 홈 화면에 설치(PWA)하여 앱처럼 이용할 수 있습니다.</p>
@@ -225,7 +298,6 @@ export function Terms() {
       <Sec title="문의처">
         <p>약관 관련 문의: {contact}</p>
       </Sec>
-      <p className="ip-notice detail__foot">{IP_NOTICE}</p>
-    </div>
+    </Doc>
   );
 }

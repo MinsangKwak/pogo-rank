@@ -1,5 +1,5 @@
 // ─────────────────────────────────────────────────────────────────────────────
-// screens/Release.tsx — 🎉 패치노트 (v3 components/pages.js renderReleasePage)
+// screens/Release.tsx — 🎉 패치노트 (v3 components/pages.js renderReleasePage · v6 피그마 18 판)
 //
 // moncamp 이 바뀐 일을 적는다. 게임 쪽 변경(📢 게임 업데이트)과는 따로 센다.
 //
@@ -14,6 +14,12 @@ import { markReleaseSeen } from '../lib/release';
 import { useLang } from '../lib/useLang';
 import KoOnlyNote from '../components/KoOnlyNote';
 import type { ReleaseGroup } from '../types/data';
+
+/** 묶음 제목 '2026-10-15 · v5.10.3' 을 날짜와 판 번호로 가른다 — 초기 묶음은 날짜만 있어 판이 비어 있다 */
+function splitDate(date: string): { day: string; ver: string } {
+  const [day = '', ver = ''] = String(date).split(' · ');
+  return { day, ver };
+}
 
 /** `**굵게**` 를 실제 <b> 로 — 문법이 하나뿐이라 파서도 한 줄이면 된다 (v3 releaseItemNode) */
 function Item({ text }: { text: string }) {
@@ -46,15 +52,25 @@ export default function Release() {
   // 본문은 사전을 타지 않는다(data-i18n="off") — 옮기는 일은 영문판이 통째로 한다.
   // 사전에 맡기면 문장이 노드로 쪼개져 반쯤 영어인 줄이 나온다
   return (
-    <div className="page__body" id="page-release" data-route="release" data-i18n="off">
+    <div className="pxp pxp-release" id="page-release" data-route="release" data-i18n="off">
       {koreanLeft ? <KoOnlyNote /> : null}
-      {data.RELEASE_NOTES.map((group, index) => (
-        <section key={group.date} className="release__sec">
-          {/* 맨 위(가장 최신) 묶음에만 NEW 를 단다 */}
-          <h2>{group.date}{index === 0 ? <span className="tag tag--gmax">NEW</span> : ''}</h2>
-          <ul>{items(group).map((text, at) => <Item key={at} text={text} />)}</ul>
-        </section>
-      ))}
+      {/* 카드 한 장이 한 묶음 — 맨 위(가장 최신)에만 NEW, 나머지는 PREVIOUS.
+          '관련 화면 보기' 단추는 데이터(ReleaseGroup)에 링크가 없어 두지 않는다 — 없는 길을 그리지 않는다 */}
+      <div className="pxp-release__list">
+        {data.RELEASE_NOTES.map((group, index) => {
+          const { day, ver } = splitDate(group.date);
+          return (
+            <section key={group.date} className="px-card px-skin px-drop pxp-rel release__sec" aria-label={group.date}>
+              <div className="pxp-rel__head">
+                <span className={`px-badge px-skin ${index === 0 ? 'px-badge--fill' : 'px-badge--muted'}`}>{index === 0 ? 'NEW' : 'PREVIOUS'}</span>
+                {ver ? <span className="px-badge px-skin px-badge--blue pxp-rel__ver">{ver}</span> : null}
+                <span className="px-caption px-mono pxp-rel__date">{day}</span>
+              </div>
+              <ul className="pxp-rel__items">{items(group).map((text, at) => <Item key={at} text={text} />)}</ul>
+            </section>
+          );
+        })}
+      </div>
     </div>
   );
 }
