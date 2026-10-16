@@ -1,0 +1,91 @@
+/* ─────────────────────────────────────────────────────────────────────────────
+   pixel/tokens.css — v6 'PIXEL FIELD SYSTEM' 토큰 (피그마 MONCAMP · Semantic, Dark 3:1 / Light 31:0)
+
+   **이 파일이 v6 의 색 원본이다.** v3/tokens.css 의 옛 이름(--bg · --fg · --surface · --brand …)도 여기서
+   같은 값으로 다시 매긴다 — 옛 조각(ds · v3 스킨)이 새 판 위에서도 한 벌로 보이게. 값을 두 곳에 적지 않는다.
+   숲 캠프 콘셉트: 어두운 밤 숲(Dark) · 들판 수첩(Light). 빨강은 행동 신호 하나뿐이다.
+
+   픽셀 규칙 — 4px 격자 · 2px 테두리 · 4px 계단 그림자 · 각진 모서리(반경 0). 옛 반경 토큰도 0 으로 돌린다.
+   ───────────────────────────────────────────────────────────────────────────── */
+:root {
+  /* 글꼴 세 벌 — 본문은 Pretendard(가이드가 허용), 숫자는 Geist Mono, 로고·짧은 영문 라벨만 Press Start 2P */
+  --font-body: "Pretendard Variable", "Pretendard", "Noto Sans KR", "Apple SD Gothic Neo", system-ui, sans-serif;
+  --font-mono: "Geist Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  --font-pixel: "Press Start 2P", "Galmuri11", monospace;
+
+  /* 픽셀 치수 */
+  --px-stroke: 0.2rem;      /* 테두리 */
+  --px-cut: 0.2rem;         /* 모서리 계단 한 칸 */
+  --px-drop: 0.4rem;        /* 계단 그림자 오프셋 */
+  --rail-w: 22.4rem;        /* 데스크톱 고정 메뉴 레일 */
+  --content-w: 121.6rem;    /* 본문 최대 폭 (1216) */
+  --inset: 4rem;            /* 데스크톱 본문 안쪽 여백 */
+  --bottom-bar: 7.6rem;     /* 모바일 하단 바로가기 높이 */
+  --scene-fade: 22rem;      /* 풍경 판 바닥이 판 색으로 녹는 높이 */
+  --ball: 13rem;            /* 몬스터볼 틀 기본 크기 */
+  --dialog-w: 72rem;        /* 팝업 판 기본 폭 */
+
+  /* 반경 — 픽셀 판은 각지다. 옛 이름도 0 을 가리킨다 */
+  --r-panel: 0; --r-box: 0; --r-ctl: 0; --r-tag: 0; --r-card: 0; --r-chip: 0;
+  --shadow-box: var(--px-drop) var(--px-drop) 0 var(--px-shadow);
+  --shadow-pop: 0.8rem 0.8rem 0 var(--px-shadow);
+
+  /* ── Dark (기본) ───────────────────────────────────────────────────────── */
+  color-scheme: dark;
+  --bg: #081923; --rail: #0b181f; --panel: #102a33; --panel-2: #183a43; --line: #35545a;
+  --fg: #f5f0da; --muted: #a3b5b4; --faint: #829a9a; --ink: #081923;
+  --brand-primary: #c64535; --brand-text: #ff8f7c; --brand-focus: #ffaa7e; --brand-hover: #ae3329; --brand-subtle: #4a292b; --on-brand: #fff7e8;
+  --mint: #a4d4a6; --yellow: #f1c37b; --orange: #f4b181; --red: #f08b7a; --blue: #8ac9d2; --purple: #c7b7e8;
+  --danger-surface: #48272b; --danger-action: #ee8d7b;
+  --px-edge: #48676d; --px-shadow: #06141c; --px-glint: #799a96;
+  --px-red-edge: #8f332f; --px-red-glint: #ffaa7e; --px-red-shadow: #602b2c;
+  --scene-ink: #081923;
+
+  /* 옛 이름 → 새 값 */
+  --surface: var(--panel); --surface-2: var(--panel-2); --hover: var(--panel-2); --selected: var(--brand-subtle); --glow: transparent;
+  --line-2: var(--px-edge); --ink-2: var(--muted); --ink-4: var(--faint);
+  --brand: var(--brand-text); --brand-2: var(--brand-primary); --accent: var(--brand-text); --chart-1: var(--brand-primary);
+  --point: var(--blue); --warn: var(--red); --caution: var(--orange); --good: var(--mint); --off: var(--faint);
+  --good-bright: var(--mint); --warn-bright: var(--red);
+  /* 밤 판 — 테마를 안 타고 늘 어두운 자리(가림막 · 라이트의 팝업 머리 그림) */
+  --night: #081923; --night-2: #102a33; --night-fg: #f5f0da; --night-muted: #a3b5b4; --night-line: #35545a;
+  --night-accent: #ff8f7c; --night-accent-2: #c7b7e8; --night-cta: #c64535;
+  /* 그림 판 — 다크는 밤 판 그대로 */
+  --plate: var(--night); --plate-2: var(--night-2); --plate-fg: var(--night-fg); --plate-muted: var(--night-muted);
+  --plate-line: var(--night-line); --plate-accent: var(--night-accent); --plate-accent-2: var(--night-accent-2);
+  --plate-cta: var(--night-cta); --plate-cta-fg: var(--on-brand);
+}
+
+/* ── Light ─────────────────────────────────────────────────────────────── */
+:root[data-theme="light"] {
+  color-scheme: light;
+  --bg: #edf2e9; --rail: #f7f3e5; --panel: #fff9e8; --panel-2: #e2eadf; --line: #a6b7aa;
+  --fg: #17343c; --muted: #506462; --faint: #687a71; --ink: #17343c;
+  --brand-primary: #ba3b2e; --brand-text: #a62f25; --brand-focus: #b3342a; --brand-hover: #a12e24; --brand-subtle: #f4d9c7; --on-brand: #fff7e8;
+  --mint: #286443; --yellow: #805422; --orange: #85411c; --red: #a62f25; --blue: #27616e; --purple: #645184;
+  --danger-surface: #f8ddd4; --danger-action: #ab3027;
+  --px-edge: #55716e; --px-shadow: #c2cebe; --px-glint: #ffffff;
+  --px-red-edge: #782d27; --px-red-glint: #f3a682; --px-red-shadow: #d4aa91;
+  --scene-ink: #edf2e9;
+  /* 라이트의 그림 판은 밝은 판 — 그림을 옅게 덮고 글자는 진하게 (CLAUDE.md §2) */
+  --plate: var(--panel); --plate-2: var(--panel-2); --plate-fg: var(--fg); --plate-muted: var(--muted);
+  --plate-line: var(--line); --plate-accent: var(--brand-text); --plate-accent-2: var(--purple);
+  --plate-cta: var(--brand-primary); --plate-cta-fg: var(--on-brand);
+}
+/* '기기 설정' 은 data-theme 를 뗀다 (stores/pref.ts) — 속성이 없고 기기가 밝으면 라이트. 고른 적이 없으면 머리 스크립트가 dark 를 적는다 */
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) {
+    color-scheme: light;
+    --bg: #edf2e9; --rail: #f7f3e5; --panel: #fff9e8; --panel-2: #e2eadf; --line: #a6b7aa;
+    --fg: #17343c; --muted: #506462; --faint: #687a71; --ink: #17343c;
+    --brand-primary: #ba3b2e; --brand-text: #a62f25; --brand-focus: #b3342a; --brand-hover: #a12e24; --brand-subtle: #f4d9c7; --on-brand: #fff7e8;
+    --mint: #286443; --yellow: #805422; --orange: #85411c; --red: #a62f25; --blue: #27616e; --purple: #645184;
+    --danger-surface: #f8ddd4; --danger-action: #ab3027;
+    --px-edge: #55716e; --px-shadow: #c2cebe; --px-glint: #ffffff;
+    --px-red-edge: #782d27; --px-red-glint: #f3a682; --px-red-shadow: #d4aa91;
+    --scene-ink: #edf2e9;
+    --plate: var(--panel); --plate-2: var(--panel-2); --plate-fg: var(--fg); --plate-muted: var(--muted);
+    --plate-line: var(--line); --plate-accent: var(--brand-text); --plate-accent-2: var(--purple);
+    --plate-cta: var(--brand-primary); --plate-cta-fg: var(--on-brand);
+  }
+}

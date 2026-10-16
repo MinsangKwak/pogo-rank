@@ -1,0 +1,155 @@
+/* ─────────────────────────────────────────────────────────────────────────────
+   pixel/info.css — v6 화면 배치: 내 포켓몬(15) · 검색식(16) · 설정(17) · 패치노트(18) · 방침 · 약관(19 · 20) · 잠금 카드 · 계정 삭제 팝업(D10)
+   조각(parts.css)은 모양, 여기는 자리만 둔다. 접두사 `html body #root` 는 옛 v3 · cinema 스킨을 이기는 장치 하나다
+   ───────────────────────────────────────────────────────────────────────────── */
+
+/* ── 공통 — 화면 본문은 판을 세로로 쌓는다 ─────────────────────────────────── */
+html body #root .pxp { display: flex; flex-direction: column; gap: 2.4rem; padding-top: 0.8rem; }
+/* 옛 cinema 규칙이 #page-settings 같은 id 로 간격을 더 크게 잡는다 — 같은 접두사 + id 로 되덮는다 */
+html body #root :is(#page-planner, #page-finder, #page-settings, #page-release, #page-privacy, #page-terms).pxp { gap: 2.4rem; padding-top: 0.8rem; }
+html body #root .pxp-sec { display: flex; flex-direction: column; gap: 1.6rem; }
+/* 라벨 + 입력 한 쌍 (검색식 · 계정 삭제) */
+html body #root .pxp-field { display: flex; flex-direction: column; gap: 0.8rem; min-width: 0; }
+html body #root .pxp-field > .px-input { margin-bottom: var(--px-drop); }
+/* 옛 스킨이 모든 .note 에 선 · 배경을 주던 것을 걷는다 — 한국어 전용 안내 한 줄만 남긴다 */
+html body #root .pxp > .i18n-note { margin: 0; padding: 0; border: 0; background: none; box-shadow: none; color: var(--muted); font: 400 1.4rem/1.7 var(--font-body); }
+/* 위험 단추 — 가라앉은 빨강 판 (parts 의 --danger 판과 같은 색) */
+html body #root .pxp-btn--danger { --px-fill: var(--danger-surface); --px-line: var(--danger-action); color: var(--danger-action); }
+/* 민트 지표 */
+html body #root .pxp-metric--mint { --px-metric-c: var(--mint); }
+
+/* ── 15 내 포켓몬 ────────────────────────────────────────────────────────── */
+html body #root .pxp-plan__top { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1.6rem; }
+html body #root .pxp-plan__guide { grid-column: span 2; }
+html body #root .pxp-news { gap: 1.2rem; }
+html body #root .pxp-news__head { display: flex; flex-wrap: wrap; gap: 0.8rem; }
+html body #root .pxp-news__body { display: flex; align-items: center; gap: 1.2rem; min-width: 0; }
+html body #root .pxp-news__mons { display: flex; flex: none; }
+html body #root .pxp-news__mons .sprite { width: 4.8rem; height: 4.8rem; margin-right: -1.2rem; }
+html body #root .pxp-news__mons .sprite:last-child { margin-right: 0; }
+html body #root .pxp-news__text { display: flex; flex-direction: column; gap: 0.4rem; min-width: 0; }
+html body #root .pxp-news__foot { display: flex; align-items: center; justify-content: space-between; gap: 1.2rem; margin-top: 0.4rem; }
+/* 공용 카드의 ★ — 이 화면은 전부 담긴 것이라 늘 빨강 */
+html body #root .pxp-fav-grid .px-mon__fav[aria-pressed="true"] { color: var(--brand-text); }
+
+/* ── 16 검색식 ───────────────────────────────────────────────────────────── */
+html body #root .pxp-result { display: flex; flex-direction: column; gap: 1.6rem; }
+html body #root .pxp-result__head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.8rem 1.6rem; }
+html body #root .pxp-result__out {
+  display: block; box-sizing: border-box; min-height: 5.6rem; padding: 1.6rem;
+  border: var(--px-stroke) solid var(--line); background: var(--panel-2); color: var(--fg);
+  font: 500 1.6rem/1.5 var(--font-mono); overflow-wrap: anywhere; white-space: pre-wrap;
+}
+html body #root .pxp-result__out.is-empty { color: var(--muted); font-family: var(--font-body); font-weight: 400; }
+html body #root .pxp-result__actions { display: flex; flex-wrap: wrap; gap: 1.2rem; }
+/* 공용 PxChips 는 한 줄 스크롤인데 검색식은 조건이 많아 줄을 바꾼다 */
+html body #root .pxp-finder .px-chips--scroll { flex-wrap: wrap; overflow: visible; padding-bottom: 0; }
+html body #root .pxp-groups { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1.6rem; }
+html body #root .pxp-group { display: flex; flex-direction: column; gap: 1.6rem; min-width: 0; }
+html body #root .pxp-extra { display: flex; flex-direction: column; gap: 1.6rem; }
+html body #root .pxp-extra__row { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.8rem 1.2rem; }
+html body #root .pxp-extra__fields { display: grid; grid-template-columns: 1fr 1fr 2fr; gap: 1.6rem; }
+html body #root .pxp-field--wide { grid-column: span 1; }
+html body #root .pxp-foot { max-width: 72rem; }
+/* 옛 finder · 폼 스킨이 칩 · 입력에 둥근 모양 · 안쪽 상자를 주던 것을 걷는다 — 픽셀 입력 틀 안의 <input> 은 맨 글자다 */
+html body #root #page-finder :is(.px-chip, .px-btn, .px-input) { border-radius: 0; box-shadow: none; }
+html body #root :is(.pxp, .pxp-delete) .px-input input { width: auto; min-height: 0; height: auto; margin: 0; padding: 0; border: 0; border-radius: 0; background: transparent; box-shadow: none; outline: 0; }
+
+/* ── 17 설정 ─────────────────────────────────────────────────────────────── */
+html body #root .pxp-set { display: flex; flex-direction: column; gap: 1.6rem; }
+html body #root .pxp-set__head { display: flex; flex-direction: column; gap: 0.8rem; }
+html body #root .pxp-set__row { display: flex; flex-direction: column; gap: 1.2rem; }
+html body #root .pxp-set__row .px-btn { align-self: flex-start; }
+html body #root .pxp-set__toggle { display: flex; align-items: center; gap: 1.6rem; }
+html body #root .pxp-set__toggle .px-toggle { flex: none; }
+html body #root .pxp-who { display: flex; align-items: center; gap: 1.2rem; }
+html body #root .pxp-who__avatar { display: grid; place-items: center; flex: none; width: 4.4rem; height: 4.4rem; border: var(--px-stroke) solid var(--px-edge); background: var(--panel-2); color: var(--muted); object-fit: cover; }
+html body #root .pxp-who > div { display: flex; flex-direction: column; gap: 0.4rem; min-width: 0; }
+html body #root .pxp-who > .px-badge { margin-left: auto; }
+html body #root #page-settings .px-chip { min-height: var(--tap); }
+
+/* ── D10 계정 삭제 팝업 ───────────────────────────────────────────────────── */
+html body #root .pxp-delete { --dialog-w: 52rem; }
+html body #root .pxp-delete .px-skin--danger .px-eyebrow { color: var(--danger-action); }
+html body #root .pxp-delete__error { color: var(--danger-action); }
+
+/* ── 18 패치노트 ─────────────────────────────────────────────────────────── */
+html body #root .pxp-release__list { display: flex; flex-direction: column; gap: 1.6rem; }
+html body #root .pxp-rel { gap: 1.2rem; padding: 2rem 2.4rem; }
+html body #root .pxp-rel__head { display: flex; flex-wrap: wrap; align-items: center; gap: 0.8rem; }
+html body #root .pxp-rel__date { margin-left: 0.4rem; }
+/* 판 번호는 'v5.10.3' 그대로 — 배지의 대문자화를 끈다 */
+html body #root .pxp-rel__ver { text-transform: none; }
+html body #root .pxp-rel__items { display: flex; flex-direction: column; gap: 0.8rem; margin: 0; padding: 0 0 0 1.6rem; color: var(--fg); font: 400 1.4rem/1.7 var(--font-body); }
+html body #root .pxp-rel__items li { margin: 0; padding: 0; overflow-wrap: anywhere; }
+html body #root .pxp-rel__items li::marker { color: var(--brand-text); }
+/* 옛 shell-notebook 규칙이 제목에 Galmuri · 윗선을 걸던 것을 걷는다 */
+html body #root :is(#page-release, #page-privacy, #page-terms) h2 { padding-top: 0; border-top: 0; font-family: var(--font-body); }
+
+/* ── 19 · 20 방침 · 약관 ─────────────────────────────────────────────────── */
+html body #root .pxp-legal__lead { max-width: 80rem; font-size: 1.6rem; }
+html body #root .pxp-legal__dated { gap: 0.4rem; padding: 1.6rem 2rem; }
+html body #root .pxp-toc { padding: 0; }
+html body #root .pxp-toc__sum { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.4rem 1.2rem; min-height: var(--tap); padding: 1.6rem 2.4rem; cursor: pointer; list-style: none; }
+html body #root .pxp-toc__sum::-webkit-details-marker { display: none; }
+html body #root .pxp-toc__sum::after { content: '+'; margin-left: auto; color: var(--muted); font: 400 1.6rem/1 var(--font-mono); }
+html body #root .pxp-toc[open] > .pxp-toc__sum::after { content: '−'; }
+html body #root .pxp-toc__list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.4rem 2.4rem; margin: 0; padding: 0 2.4rem 2rem; list-style: none; }
+html body #root .pxp-toc__link { display: flex; align-items: center; gap: 1.2rem; min-height: 3.6rem; color: var(--fg); font: 500 1.4rem/1.5 var(--font-body); text-decoration: none; }
+html body #root .pxp-toc__link:hover { color: var(--brand-text); }
+html body #root .pxp-toc__no { flex: none; color: var(--brand-text); font-size: 1.2rem; }
+html body #root .pxp-legal__clauses { display: flex; flex-direction: column; gap: 1.6rem; }
+html body #root .pxp-clause { display: flex; flex-direction: column; gap: 1.6rem; scroll-margin-top: 2.4rem; }
+html body #root .pxp-clause__title { display: flex; align-items: center; gap: 1.2rem; margin: 0; }
+html body #root .pxp-clause__no { flex: none; }
+html body #root .pxp-clause__body { display: flex; flex-direction: column; gap: 1.2rem; color: var(--fg); font: 400 1.4rem/1.7 var(--font-body); }
+html body #root .pxp-clause__body p { margin: 0; }
+html body #root .pxp-clause__body a, html body #root .pxp-legal__foot a, html body #root .pxp-set a { color: var(--brand-text); }
+html body #root .pxp-list { display: flex; flex-direction: column; gap: 0.8rem; margin: 0; padding: 0 0 0 1.6rem; }
+html body #root .pxp-list li { margin: 0; padding: 0; }
+html body #root .pxp-list li::marker { color: var(--brand-text); }
+html body #root .pxp-table-wrap { overflow-x: auto; border: var(--px-stroke) solid var(--line); }
+html body #root .pxp-table td { color: var(--fg); vertical-align: top; }
+html body #root .pxp-table th { background: var(--panel-2); }
+html body #root .pxp-legal__foot { display: flex; flex-direction: column; gap: 0.8rem; max-width: 80rem; }
+html body #root .pxp-legal__foot p { margin: 0; }
+
+/* ── 잠금 카드 ───────────────────────────────────────────────────────────── */
+html body #root .pxp-lock { max-width: 64rem; margin: 0.8rem 0 0; gap: 1.2rem; padding: 2.4rem; border-radius: 0; text-align: left; align-items: flex-start; }
+html body #root .pxp-lock__eyebrow { display: inline-flex; align-items: center; gap: 0.8rem; }
+html body #root .pxp-lock .px-note__actions { margin-top: 0.8rem; }
+
+/* ── 모바일 (393px) — 1열 · 2열, 표는 카드, 입력 16px ─────────────────────── */
+@media (max-width: 1099px) {
+  html body #root .pxp-plan__top { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  /* 공용 PxChips 는 한 줄 스크롤인데 검색식은 조건이 많아 줄을 바꾼다 */
+html body #root .pxp-finder .px-chips--scroll { flex-wrap: wrap; overflow: visible; padding-bottom: 0; }
+html body #root .pxp-groups { grid-template-columns: 1fr; }
+  html body #root .pxp-toc__list { grid-template-columns: 1fr; }
+}
+@media (max-width: 699px) {
+  html body #root .pxp { gap: 2rem; }
+  html body #root .pxp-plan__top { grid-template-columns: 1fr; gap: 1.2rem; }
+  html body #root .pxp-plan__guide { grid-column: auto; }
+  html body #root .pxp-news__foot { flex-direction: column; align-items: flex-start; }
+  html body #root .pxp-extra__fields { grid-template-columns: 1fr 1fr; }
+  html body #root .pxp-field--wide { grid-column: span 2; }
+  /* iOS 가 작은 글자의 입력을 확대하지 않게 */
+  html body #root :is(.pxp, .pxp-delete) .px-input input { font-size: 1.6rem; }
+  html body #root .pxp-set__toggle { flex-direction: column; align-items: flex-start; gap: 1.2rem; }
+  html body #root .pxp-who { flex-wrap: wrap; }
+  html body #root .pxp-rel { padding: 1.6rem; }
+  html body #root .pxp-toc__sum { padding: 1.2rem 1.6rem; }
+  html body #root .pxp-toc__list { padding: 0 1.6rem 1.6rem; }
+  html body #root .pxp-clause { padding: 2rem 1.6rem; }
+  html body #root .pxp-clause__title { flex-wrap: wrap; }
+  /* 표 → 줄마다 카드: 머리말은 숨기고 칸 앞에 data-label 을 붙인다 */
+  html body #root .pxp-table-wrap { overflow: visible; border: 0; }
+  html body #root .pxp-table, html body #root .pxp-table tbody, html body #root .pxp-table tr, html body #root .pxp-table td { display: block; }
+  html body #root .pxp-table thead { display: none; }
+  html body #root .pxp-table tr { margin-bottom: 1.2rem; border: var(--px-stroke) solid var(--line); background: var(--panel-2); }
+  html body #root .pxp-table tr:last-child { margin-bottom: 0; }
+  html body #root .pxp-table td { padding: 0.8rem 1.2rem; border-bottom: 0; }
+  html body #root .pxp-table td::before { content: attr(data-label); display: block; margin-bottom: 0.4rem; color: var(--muted); font: 500 1.2rem/1.5 var(--font-body); }
+  html body #root .pxp-lock { padding: 2rem 1.6rem; }
+}

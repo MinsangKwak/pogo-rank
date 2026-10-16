@@ -1,0 +1,247 @@
+/* ─────────────────────────────────────────────────────────────────────────────
+   pixel/news.css — v6 '지금 뭐 하지' 화면 배치: 게임 업데이트(02 · 21) · 기술 변경(03) · 이벤트 일정(04) · 레이드 보스(05) · 알 부화(06)
+
+   조각(pixel/parts.css)은 모양, 여기는 자리만 둔다. 클래스는 nw-* 하나로 묶어 옛 규칙(cinema/journal · schedule · v3 updates)과 이름이 겹치지 않게 했다 —
+   같은 이름을 쓰면 옛 파일의 `html body[data-route]` 규칙이 겹쳐 이긴다. 옛 이름 중 남긴 것은 check_perf 가 기다리는 .gameday__intro .note · .schedule__month-nav 뿐이다.
+   규칙은 `html body #root` 접두사로 시작한다(옛 스킨을 이기는 장치). 모바일(699px 아래)은 칩 가로 스크롤 · 카드 2열 · 달력은 점만.
+   ───────────────────────────────────────────────────────────────────────────── */
+
+/* ── 공통 — 화면 본문은 세로 한 줄로 쌓인다 ──────────────────────────────── */
+html body #root :is(.nw-upd, .nw-changes, .nw-sched, .nw-raids, .nw-eggs) { display: flex; flex-direction: column; gap: 2.4rem; margin: 0; padding: 0; }
+html body #root :is(.nw-upd, .nw-changes, .nw-sched, .nw-raids, .nw-eggs) > .i18n-note { margin: 0; }
+html body #root .nw-badges { display: flex; flex-wrap: wrap; align-items: center; gap: 0.8rem; }
+html body #root .nw-chips { margin: 0; }
+html body #root .nw-sechead { margin: 0.8rem 0 0; }
+html body #root .nw-sechead > .px-heading { font-size: 2.2rem; }
+html body #root .nw-foot { margin: 0; }
+html body #root .nw-foot a, html body #root .nw-bridge a, html body #root .nw-ev__link { color: var(--brand-text); text-decoration: underline; text-underline-offset: 0.4rem; }
+/* 안내 판(px-note)은 panel 색 — 바탕(bg) 위에 서야 판이 읽힌다 */
+html body #root :is(.nw-upd, .nw-changes, .nw-sched, .nw-raids, .nw-eggs) .px-note { --px-fill: var(--panel); }
+
+/* ── 02 게임 업데이트 — 히어로 · 도구 · 카드 ────────────────────────────── */
+html body #root .nw-hero { display: flex; flex-direction: column; gap: 1.6rem; --px-glint-w: 12rem; --px-glint-h: 4.8rem; }
+html body #root .nw-hero .px-title a { color: inherit; text-decoration: none; }
+html body #root .nw-hero__sum { max-width: 72rem; font-size: 1.6rem; }
+html body #root .nw-hero__actions { display: flex; flex-wrap: wrap; align-items: center; gap: 1.2rem 2.4rem; }
+html body #root .nw-tools { display: flex; flex-wrap: wrap; align-items: center; gap: 1.2rem 2.4rem; }
+html body #root .nw-search { flex: 1 1 32rem; max-width: 56rem; color: var(--muted); }
+html body #root .nw-search input { color: var(--fg); }
+html body #root .nw-search input::-webkit-search-cancel-button { appearance: none; }
+html body #root .nw-cards { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.6rem; }
+html body #root .nw-card { gap: 1.2rem; }
+html body #root .nw-card--archive { --px-line: var(--line); }
+html body #root .nw-card__title { font-size: 2.2rem; }
+html body #root .nw-card__title a { color: inherit; text-decoration: none; }
+@media (hover: hover) { html body #root .nw-card__title a:hover, html body #root .nw-hero .px-title a:hover { color: var(--brand-text); } }
+html body #root .nw-card__sum { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3; overflow: hidden; }
+html body #root .nw-card__foot { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.8rem 1.6rem; margin-top: auto; }
+html body #root .nw-card__go, html body #root .nw-source__go { color: var(--brand-text); font: 500 1.2rem/1.5 var(--font-body); white-space: nowrap; }
+html body #root .nw-dates { display: flex; flex-wrap: wrap; gap: 0.4rem 1.6rem; }
+html body #root .nw-date { display: inline-flex; align-items: baseline; gap: 0.8rem; color: var(--muted); font: 400 1.2rem/1.5 var(--font-body); }
+html body #root .nw-date em { font-style: normal; }
+html body #root .nw-date b { color: var(--fg); font-weight: 500; }
+html body #root .nw-quote { margin: 0; padding-left: 1.2rem; border-left: var(--px-stroke) solid var(--line); font-style: normal; }
+html body #root .nw-quote--box { padding: 1.6rem; border: 0; --px-fill: var(--panel-2); background: var(--panel-2); color: var(--fg); }
+html body #root .nw-more { margin: 0.8rem 0 0; }
+html body #root .nw-empty { grid-column: 1 / -1; }
+
+/* ── 21 상세 — 머리 · 구역 판 · 변경 전 후 두 칸 · 출처 ────────────────── */
+html body #root .nw-detail { gap: 1.6rem; }
+html body #root .nw-back { align-self: flex-start; }
+html body #root .nw-head { display: flex; flex-direction: column; gap: 1.2rem; padding: 0.8rem 0 1.6rem; border-bottom: var(--px-stroke) solid var(--line); }
+html body #root .nw-head__sum { max-width: 72rem; font-size: 1.6rem; }
+html body #root .nw-sec { display: flex; flex-direction: column; gap: 1.2rem; }
+html body #root .nw-sec--key { --px-line: var(--brand-text); --px-glint-w: 12rem; --px-glint-h: 4.8rem; }
+html body #root .nw-sec__title { color: var(--muted); }
+html body #root .nw-sec--key .nw-sec__title { color: var(--brand-text); }
+html body #root .nw-sec__content { display: flex; flex-direction: column; gap: 1.2rem; }
+html body #root .nw-list { display: flex; flex-direction: column; gap: 0.8rem; margin: 0; padding: 0; list-style: none; }
+html body #root .nw-list li { display: flex; align-items: flex-start; gap: 1.2rem; }
+html body #root .nw-list li i { flex: none; display: inline-block; margin-top: 0.8rem; width: 0.8rem; height: 0.8rem; background: var(--brand-text); }
+/* 확인할 사항 — □ 한 칸 */
+html body #root .nw-list--check li i { margin-top: 0.4rem; width: 1.6rem; height: 1.6rem; border: var(--px-stroke) solid var(--px-edge); background: var(--panel-2); box-sizing: border-box; }
+html body #root .nw-ba { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.2rem; }
+html body #root .nw-ba__col { display: flex; flex-direction: column; gap: 1.2rem; padding: 1.6rem; }
+html body #root .nw-ba__col--after { --px-line: var(--mint); }
+html body #root .nw-ba__colhead { font-family: var(--font-pixel); letter-spacing: 0.08em; text-transform: uppercase; }
+html body #root .nw-ba__col--after .nw-ba__colhead { color: var(--mint); }
+html body #root .nw-ba__cell { display: flex; flex-direction: column; gap: 0.4rem; }
+html body #root .nw-ba__cell em { font-style: normal; }
+html body #root .nw-advice { padding: 1.2rem 1.6rem; border-left: 0.4rem solid var(--brand-primary); background: var(--panel-2); }
+html body #root .nw-sources { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.2rem; }
+html body #root .nw-source { display: flex; flex-direction: column; gap: 0; color: var(--fg); text-decoration: none; }
+html body #root .nw-source__img { display: block; width: 100%; aspect-ratio: 16 / 9; object-fit: cover; border-bottom: var(--px-stroke) solid var(--line); }
+html body #root .nw-source__body { display: flex; flex-direction: column; gap: 0.8rem; padding: 1.6rem; }
+html body #root .nw-source__meta { display: flex; flex-wrap: wrap; gap: 0.4rem 1.2rem; }
+@media (hover: hover) { html body #root .nw-source:hover { --px-line: var(--brand-text); } }
+
+/* ── 03 기술 변경 — 시즌 머리 · 그룹 판 · 줄 ─────────────────────────────── */
+html body #root .nw-season { display: flex; flex-direction: column; gap: 0.8rem; }
+html body #root .nw-season.px-skin--brand :is(.nw-season__eyebrow, .nw-season__name, .nw-season__date) { color: var(--on-brand); }
+html body #root .nw-season__date { font-size: 1.4rem; }
+html body #root .nw-group { display: flex; flex-direction: column; gap: 1.6rem; }
+html body #root .nw-group__head { margin: 0; }
+html body #root .nw-group__mark { display: inline-grid; place-items: center; width: 2.8rem; height: 2.8rem; margin-right: 0.4rem; border: var(--px-stroke) solid var(--px-edge); background: var(--panel-2); color: var(--fg); font: 700 1.6rem/1 var(--font-mono); }
+html body #root .nw-group__mark--mint { color: var(--mint); border-color: var(--mint); }
+html body #root .nw-group__mark--orange { color: var(--orange); border-color: var(--orange); }
+html body #root .nw-group__mark--blue { color: var(--blue); border-color: var(--blue); }
+html body #root .nw-moves { display: flex; flex-direction: column; margin: 0; padding: 0; list-style: none; }
+html body #root .nw-move { display: flex; flex-direction: column; gap: 0.8rem; padding: 1.2rem 0; border-top: 0.2rem solid color-mix(in srgb, var(--line) 50%, transparent); }
+html body #root .nw-move:first-child { border-top: 0; padding-top: 0; }
+html body #root .nw-move:last-child { padding-bottom: 0; }
+html body #root .nw-move__line { display: flex; flex-wrap: wrap; align-items: center; gap: 0.8rem 1.2rem; width: 100%; margin: 0; padding: 0; border: 0; background: none; color: inherit; font: inherit; text-align: left; }
+html body #root .nw-move__tap { cursor: pointer; min-height: var(--tap); }
+@media (hover: hover) { html body #root .nw-move__tap:hover .nw-move__name { color: var(--brand-text); } }
+html body #root .nw-move__name { min-width: 12rem; }
+html body #root .nw-move__amount { color: var(--fg); font-size: 1.4rem; }
+html body #root .is-up .nw-move__amount { color: var(--mint); }
+html body #root .is-down .nw-move__amount { color: var(--orange); }
+html body #root .nw-move__note { font-style: normal; }
+html body #root .nw-move__rel { margin-left: auto; }
+html body #root .nw-move__rels { padding-left: 0; }
+html body #root .nw-move__art { --ball: 4rem; }
+html body #root .nw-rel { gap: 0.8rem; }
+html body #root .nw-move__relmore { align-self: center; }
+/* 신규 기술은 줄이 짧아 넓은 화면에서 두 열로 */
+html body #root .nw-moves--new { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 2.4rem; }
+html body #root .nw-moves--new .nw-move:nth-child(2) { border-top: 0; padding-top: 0; }
+html body #root .nw-rel .sprite { width: 2.8rem; height: 2.8rem; }
+
+/* ── 04 이벤트 일정 — 월 이동 · 달력 · 선택일 · 전체 목록 ─────────────────── */
+/* 옛 cinema/schedule.css 가 #page-schedule .schedule__month-nav 를 격자로 잡는다 — 같은 무게로 되덮는다 */
+html body #root #page-schedule .nw-monthnav { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 1.2rem 2.4rem; margin: 0; padding: 0; border: 0; background: none; }
+html body #root #page-schedule .nw-monthnav > div { grid-column: auto; grid-row: auto; text-align: inherit; }
+html body #root #page-schedule .nw-monthnav h2 { font-size: 2.2rem; letter-spacing: -0.02em; }
+html body #root .nw-monthnav__move { display: flex; align-items: center; gap: 1.2rem; }
+html body #root .nw-monthnav__title { display: flex; flex-direction: column; align-items: center; min-width: 16rem; text-align: center; }
+html body #root .nw-monthnav__tools { display: flex; flex-wrap: wrap; align-items: center; gap: 0.8rem; }
+/* 옛 cinema/parts.css 가 .schedule__month-nav button 을 44px 정사각으로 잡는다 — 도구 단추는 글자 폭대로 */
+html body #root #page-schedule .nw-monthnav__tools .px-btn { width: auto; height: auto; min-height: 3.6rem; padding: 0 1.2rem; }
+html body #root .nw-bridge { margin: 0; }
+html body #root .nw-cal__dot { display: inline-block; flex: none; width: 0.8rem; height: 0.8rem; margin-right: 0.4rem; vertical-align: middle; }
+html body #root .nw-legend { display: flex; flex-wrap: wrap; align-items: center; gap: 0.4rem 1.2rem; margin: 0; white-space: pre-wrap; }
+html body #root .nw-monthnote { margin: 0; }
+/* 7열 달력 판 — 머리 한 줄 + 주마다 줄. 칸은 날짜 + 점, 막대는 칸 위 세 줄(lib/calBars)에 얹힌다 */
+html body #root .nw-cal { display: flex; flex-direction: column; padding: 1.6rem; --px-fill: var(--panel); }
+html body #root .nw-cal__heads { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); padding-bottom: 0.8rem; border-bottom: var(--px-stroke) solid var(--line); }
+html body #root .nw-cal__head { text-align: center; }
+html body #root .nw-cal__head.is-sun { color: var(--red); }
+html body #root .nw-cal__head.is-sat { color: var(--blue); }
+html body #root .nw-cal__week { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); grid-template-rows: 3.2rem repeat(3, 2.4rem) 2.4rem; column-gap: 0.4rem; padding: 0.4rem 0; border-bottom: 0.2rem solid color-mix(in srgb, var(--line) 50%, transparent); }
+html body #root .nw-cal__week:last-child { border-bottom: 0; }
+html body #root .nw-cal__pad { grid-row: 1 / -1; min-height: 11.2rem; }
+/* 숫자 칸은 1행에만 — 막대 줄(2~4행)까지 걸치면 칸 채움이 막대를 가린다. 고른 칸의 테두리는 투명 단추가 그린다 */
+html body #root .nw-cal__day { grid-row: 1; }
+html body #root .nw-cal__day { display: flex; flex-direction: column; align-items: flex-start; gap: 0.4rem; box-sizing: border-box; margin: 0; padding: 0.4rem 0.8rem; border: var(--px-stroke) solid transparent; background: transparent; color: var(--fg); text-align: left; }
+/* 누름 단추 — 칸 전체를 덮는 투명 단추. 칠 · 테두리 · 그림자를 주면 크롬이 막대를 그 칸에서 끊어 그린다 — 아무것도 칠하지 않는다 */
+html body #root .nw-cal__hit { grid-row: 1 / -1; position: relative; z-index: 3; margin: 0; padding: 0; border: 0; background: transparent; appearance: none; cursor: pointer; }
+/* 단추에는 테두리 · 그림자 · 채움을 주지 않는다(위 주석). 올림 표시는 커서로 충분하다 */
+html body #root .nw-cal__day.is-today .nw-cal__num { color: var(--brand-text); }
+html body #root .nw-cal__day.is-selected { border-color: var(--brand-text); background: var(--brand-subtle); }
+
+html body #root .nw-cal__hit:focus-visible { outline: var(--px-stroke) solid var(--brand-focus); outline-offset: calc(-1 * var(--px-stroke)); }
+html body #root .nw-cal__num { font-size: 1.4rem; line-height: 1.2; }
+/* 넓은 화면에서는 막대가 분류를 말한다 — 점은 좁은 화면에서만 */
+html body #root .nw-cal__dots { display: none; flex-wrap: wrap; gap: 0.4rem; }
+html body #root .nw-cal__dots .nw-cal__dot { margin: 0; }
+/* 막대 — 일정마다 다른 색(--event-color 는 타입 키), 앞의 점은 분류 색. 칸(z 1) 위에 뜨고 누름은 칸이 받는다 */
+html body #root .nw-cal__bar { position: relative; z-index: 2; display: flex; align-items: center; gap: 0.4rem; box-sizing: border-box; height: 2rem; margin-top: 0.2rem; padding: 0 0.8rem; overflow: hidden; pointer-events: none; color: var(--fg); font: 500 1.2rem/1 var(--font-body); white-space: nowrap; text-overflow: ellipsis; background: color-mix(in srgb, var(--panel-2) 70%, var(--line)); border-left: 0.4rem solid var(--cat-color, var(--line)); }
+html body #root .nw-cal__bar.is-head { margin-left: 0.4rem; }
+html body #root .nw-cal__bar.is-tail { margin-right: 0.4rem; }
+html body #root .nw-cal__bar-cat { display: none; }
+html body #root .nw-cal__more { grid-row: 5; align-self: end; padding: 0 0.8rem 0.4rem; color: var(--muted); }
+/* 기간 막대(Timeline) */
+html body #root .nw-tlwrap { padding: 1.6rem; }
+html body #root .nw-tl__scroll { overflow-x: auto; }
+html body #root .nw-tl { min-width: 64rem; }
+html body #root .nw-tl__ruler { position: relative; height: 2.4rem; border-bottom: var(--px-stroke) solid var(--line); }
+html body #root .nw-tl__tick { position: absolute; top: 0; height: 100%; }
+html body #root .nw-tl__tick i { position: absolute; left: 0; top: 0; color: var(--muted); font-style: normal; font-size: 1.2rem; line-height: 1.5; }
+html body #root .nw-tl__tick.is-today i { color: var(--brand-text); }
+html body #root .nw-tl__body { position: relative; display: flex; flex-direction: column; gap: 0.4rem; padding-top: 0.8rem; }
+html body #root .nw-tl__grid { position: absolute; inset: 0; pointer-events: none; }
+html body #root .nw-tl__col { position: absolute; top: 0; bottom: 0; }
+html body #root .nw-tl__col.is-weekend { background: color-mix(in srgb, var(--line) 20%, transparent); }
+html body #root .nw-tl__col.is-today { border-left: var(--px-stroke) solid var(--brand-text); }
+html body #root .nw-tl__row { position: relative; height: 2.8rem; }
+html body #root .nw-tl__bar { position: absolute; top: 0.4rem; height: 2rem; opacity: 0.85; }
+html body #root .nw-tl__label { position: absolute; left: 0; top: 0; display: flex; align-items: center; height: 2.8rem; padding-left: 0.4rem; color: var(--fg); white-space: nowrap; }
+/* 선택일 판 · 일정 줄 */
+html body #root .nw-day { display: flex; flex-direction: column; gap: 1.6rem; }
+html body #root .nw-evs { display: flex; flex-direction: column; gap: 1.2rem; margin: 0; padding: 0; list-style: none; }
+html body #root .nw-ev { display: flex; align-items: flex-start; gap: 1.2rem; }
+html body #root .nw-ev__cat { flex: none; }
+html body #root .nw-ev__body { display: flex; flex-direction: column; gap: 0.4rem; min-width: 0; }
+html body #root .nw-ev__name { font-weight: 500; word-break: keep-all; }
+html body #root .nw-ev__meta { display: flex; flex-wrap: wrap; gap: 0.4rem 1.2rem; }
+html body #root .nw-catalog { display: flex; flex-direction: column; gap: 1.6rem; }
+html body #root .nw-catsec { display: flex; flex-direction: column; gap: 1.6rem; --px-line: var(--category-color, var(--px-edge)); }
+html body #root .nw-catsec .px-sec { align-items: center; }
+
+/* ── 05 레이드 보스 — 머리 단추 · 히어로 · 격자 · 줄 보기 ─────────────────── */
+html body #root .nw-intro { margin: 0; padding: 0; }
+/* 옛 cinema/shell.css 가 #page-raids .gameday__intro .note 를 빨강 띠 판으로 잡는다 — 같은 무게로 되덮는다 */
+html body #root :is(#page-raids, #page-eggs) .nw-intro .note { margin: 0; padding: 0; border: 0; border-radius: 0; background: none; box-shadow: none; color: var(--muted); font-size: 1.2rem; line-height: 1.5; }
+html body #root .nw-intro .note .px-mono { color: var(--fg); }
+html body #root .nw-gsec { display: flex; flex-direction: column; gap: 1.6rem; }
+html body #root .nw-boss { display: grid; grid-template-columns: minmax(0, 1fr) 28rem; gap: 2.4rem; --px-glint-w: 12rem; --px-glint-h: 4.8rem; --px-fill: var(--panel); }
+html body #root .nw-boss__main { display: flex; flex-direction: column; gap: 1.2rem; min-width: 0; }
+html body #root .nw-boss__types { margin: 0; }
+html body #root .nw-boss__name { margin: 0; }
+html body #root .nw-boss__metrics { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.2rem; margin-top: 0.4rem; }
+html body #root .nw-boss__metrics .px-metric { padding: 1.6rem; }
+html body #root .nw-boss__actions { display: flex; flex-wrap: wrap; gap: 1.2rem; margin-top: 0.4rem; }
+html body #root .nw-boss__side { display: flex; flex-direction: column; align-items: center; gap: 1.6rem; }
+html body #root .nw-boss__art { --ball: 18.8rem; }
+html body #root .nw-boss__counters { display: flex; flex-direction: column; gap: 0.8rem; width: 100%; }
+html body #root .nw-counters { display: flex; flex-direction: column; gap: 0.8rem; margin: 0; padding: 0; list-style: none; }
+html body #root .nw-counter { display: flex; align-items: center; gap: 1.2rem; width: 100%; min-height: var(--tap); padding: 0.4rem 1.2rem; --ball: 4rem; }
+html body #root .nw-counter__rank { color: var(--brand-text); font-weight: 700; }
+html body #root .nw-counter__name { font-weight: 500; }
+html body #root .nw-rows { display: flex; flex-direction: column; gap: 0.8rem; margin: 0; padding: 0; list-style: none; }
+html body #root .nw-row { display: flex; align-items: center; gap: 1.6rem; width: 100%; min-height: var(--tap); padding: 0.8rem 1.6rem; --ball: 5.6rem; --px-fill: var(--panel); }
+html body #root .nw-row__body { display: flex; flex-direction: column; gap: 0.4rem; min-width: 0; }
+/* 화면 머리 오른쪽 단추(Slot headActions) — 옛 shell 이 button 만 잡아 a 에도 같은 값을 준다 */
+html body #root .page-head .page-head__actions .px-btn { min-height: var(--tap); }
+
+/* ── 06 알 부화 — 거리 요약 판 세 장 ─────────────────────────────────────── */
+html body #root .nw-eggsum { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1.6rem; }
+html body #root .nw-eggsum .px-metric { align-items: flex-start; gap: 0.4rem; --px-fill: var(--panel); }
+html body #root .nw-eggsum .px-metric[aria-pressed="true"] { --px-line: var(--brand-text); }
+html body #root .nw-eggsum .px-metric__value { --px-metric-c: var(--brand-text); }
+
+/* ── 좁은 화면 — 칩 가로 스크롤 · 카드 1열 · 달력은 점만 · 히어로 한 줄 ─────── */
+@media (max-width: 1099px) {
+  html body #root .nw-boss { grid-template-columns: minmax(0, 1fr); }
+  html body #root .nw-boss__side { flex-direction: row; flex-wrap: wrap; align-items: flex-start; justify-content: center; }
+  html body #root .nw-boss__counters { flex: 1 1 24rem; }
+}
+@media (max-width: 699px) {
+  html body #root :is(.nw-upd, .nw-changes, .nw-sched, .nw-raids, .nw-eggs) { gap: 1.6rem; }
+  html body #root .nw-cards, html body #root .nw-sources, html body #root .nw-ba, html body #root .nw-boss__metrics { grid-template-columns: minmax(0, 1fr); }
+  html body #root .nw-eggsum { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.2rem; }
+  html body #root .nw-eggsum .px-metric { padding: 1.2rem; }
+  html body #root .nw-eggsum .px-metric__value { font-size: 2.2rem; }
+  html body #root .nw-card__title { font-size: 1.6rem; }
+  html body #root .nw-hero .px-title { font-size: 2.2rem; }
+  html body #root .nw-tools { gap: 1.2rem; }
+  html body #root .nw-search { flex-basis: 100%; max-width: none; }
+  html body #root .nw-monthnav__title { min-width: 0; }
+  html body #root #page-schedule .nw-monthnav { flex-direction: column; align-items: stretch; }
+  html body #root .nw-monthnav__move { justify-content: space-between; }
+  html body #root .nw-move__name { min-width: 0; }
+  html body #root .nw-move__rel { margin-left: 0; }
+  html body #root .nw-moves--new { grid-template-columns: minmax(0, 1fr); }
+  html body #root .nw-moves--new .nw-move:nth-child(2) { border-top: 0.2rem solid color-mix(in srgb, var(--line) 50%, transparent); padding-top: 1.2rem; }
+  /* 달력 — 칸을 낮추고 막대 · 더보기는 접는다. 그날 일정은 아래 선택일 판이 말한다 */
+  html body #root .nw-cal { padding: 0.8rem; }
+  html body #root .nw-cal__week { grid-template-rows: auto; column-gap: 0; }
+  html body #root .nw-cal__day, html body #root .nw-cal__pad { grid-row: 1 / -1; min-height: 5.6rem; }
+  html body #root .nw-cal__day { align-items: center; padding: 0.4rem; }
+  html body #root .nw-cal__dots { display: flex; justify-content: center; }
+  html body #root .nw-cal__bar, html body #root .nw-cal__more { display: none; }
+  html body #root .nw-boss { padding: 1.6rem; }
+  html body #root .nw-boss__name { font-size: 2.8rem; }
+  html body #root .nw-boss__art { --ball: 13rem; }
+  html body #root .nw-ev { flex-direction: column; gap: 0.8rem; }
+}

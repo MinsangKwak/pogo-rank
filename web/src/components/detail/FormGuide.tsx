@@ -19,7 +19,8 @@ import { go } from '../../lib/nav';
 import { track } from '../../lib/track';
 import { useRankStore } from '../../stores/rank';
 import { josa } from '../../lib/deck';
-import { PxIcon } from '../PxIcon';
+import { PixelIcon } from '../PixelIcon';
+import { Actions, Metric, RankList, Sec } from './Pieces';
 import { bossNow, formKeyOf, formRows, formSummary, FORM_KO, maxBoardOf, maxIndex, placesOf, speciesOf, tierIndex, tierLine, type FormRow } from '../../lib/formGuide';
 import { useAuthStore } from '../../stores/auth';
 import { trainPlan, type PlanPick } from '../../lib/trainPlan';
@@ -118,32 +119,30 @@ export function DeepDock({ mon, dexNo, onDeep, onLeave, here = '', onHere }: {
     .filter((one) => one.at >= 0)
     .sort((left, right) => left.at - right.at)[0];
   return (
-    <div className="detail__deep">
-      <p className="detail__deep-hint">자세한 건 도감을 참고하세요!</p>
-      <div className="detail__dock-row">
-        <button type="button" className="detail__dock-btn detail__dock-btn--accent detail__deep-dex" onClick={() => onDeep?.(mon)}>
-          <PxIcon emoji="📕" /><span className="btn-label">도감에서 자세히</span>
-        </button>
-        <button type="button" className="detail__dock-btn detail__deep-max" onClick={() => {
+    <>
+      {/* '자세한 건 도감을 참고하세요!' 는 바닥 판(PxDialogFoot hint)이 적는다 — 여기는 단추 셋 */}
+      <button type="button" className="px-btn px-btn--primary px-skin" onClick={() => onDeep?.(mon)}>
+        <PixelIcon name="dex" />도감에서 자세히 보기 <PixelIcon name="arrow" />
+      </button>
+      <button type="button" className="px-btn px-skin" onClick={() => {
           if (here === 'dmax' && onHere) { onHere(maxPick?.name ?? mon.name); return; }
           if (maxPick) { board.toMax({ name: maxPick.name, places: [], moveType: index.get(maxPick.name)?.charged ?? '', tier: maxPick.tier }); return; }
           track('detail_more', { to: 'dmax', mon: mon.name });
           onLeave?.();
           go('/dmax');
         }}>
-          <PxIcon emoji="⚡" /><span className="btn-label">D-MAX 순위</span>
+          <PixelIcon name="bolt" />D-MAX 순위
         </button>
-        <button type="button" className="detail__dock-btn detail__deep-pvp" onClick={() => {
+        <button type="button" className="px-btn px-skin" onClick={() => {
           if (here === 'pvp' && onHere) { onHere(pvpPick?.name ?? mon.name); return; }
           if (pvpPick) { board.toPvp(pvpPick.name, pvpPick.league); return; }
           track('detail_more', { to: 'pvp', mon: mon.name });
           onLeave?.();
           go('/pvp');
         }}>
-          <PxIcon emoji="⚔️" /><span className="btn-label">PvP 순위</span>
+          <PixelIcon name="trophy" />PvP 순위
         </button>
-      </div>
-    </div>
+    </>
   );
 }
 
@@ -198,14 +197,14 @@ export function TrainCard({ mon, dexNo, stem, onLeave }: { mon: MonRef; dexNo: n
   // **목록은 팝업에 두지 않는다 — 순위 화면으로 옮겨 가는 단추만** (2026-09-30 주인 결정: 여기서 다 보여 주면 순위 화면을 안 쓴다).
   // 설명(왜 · 그래서 · 이 계열은 몇 위)만 두고, 나머지는 그 판의 그 칸으로 보낸다
   const group = (key: string, tag: ReactNode, title: string, lines: readonly string[], go: ReactNode) => (
-    <details key={key} className="detail__train-group" open>
-      <summary className="detail__train-head">
+    <div key={key} className="pxd-train">
+      <p className="pxd-train__head">
         {tag}
-        <span className="detail__train-title">{title}</span>
-      </summary>
-      <p className="detail__train-say">{say(lines)}</p>
-      <div className="detail__train-go">{go}</div>
-    </details>
+        <span className="px-sub">{title}</span>
+      </p>
+      <p className="px-body px-muted pxd-train__say">{say(lines)}</p>
+      <Actions>{go}</Actions>
+    </div>
   );
   const maxFirst = !!plan.pve?.max.length;
   const raidLines = (() => {
@@ -221,17 +220,16 @@ export function TrainCard({ mon, dexNo, stem, onLeave }: { mon: MonRef; dexNo: n
   if (!plan.pve) return null;
 
   return (
-    <section className="detail__card detail__train">
-      <h3>육성 추천</h3>
-      {lead.length ? <p className="detail__train-lead">{say(lead)}</p> : null}
-      {maxFirst ? group('max', <span className="form-tag form-tag--max">먼저 키우기</span>, '다이맥스 · 거다이맥스',
+    <Sec  title="육성 추천">
+      {lead.length ? <p className="px-body pxd-train__lead">{say(lead)}</p> : null}
+      {maxFirst ? group('max', <span className="px-badge px-skin px-badge--ko px-badge--fill">먼저 키우기</span>, '다이맥스 · 거다이맥스',
         [ownLine(plan.pve.max, hiddenJoin ? 'D-MAX 화면에서 [맥스 참가 가능 다른 유닛] 체크를 켜면 이 계열의 맥스 참가 순위가 보여요.' : '이 계열의 맥스 폼은 아직 이 순위에 없어요.'), `맥스 배틀에서 ${target(plan.pve.maxType)}를 잡는 딜러 순위는 D-MAX 화면에서 볼 수 있어요.`],
-        <button type="button" className="detail__form-go" onClick={() => board.toMaxBoss(plan.pve!.maxType, plan.pve!.max.find((row) => row.own)?.name ?? '')}>D-MAX 순위에서 보기 ›</button>) : null}
+        <button type="button" className="px-btn px-btn--sm px-skin" onClick={() => board.toMaxBoss(plan.pve!.maxType, plan.pve!.max.find((row) => row.own)?.name ?? '')}>D-MAX 순위에서 보기 <PixelIcon name="arrow" /></button>) : null}
       {plan.pve.base.length
-        ? group('raid', <span className="form-tag">{maxFirst ? '다음으로' : '추천'}</span>, '레이드용 일반 · 전설', raidLines,
-          <button type="button" className="detail__form-go" onClick={() => board.toPve(plan.pve!.raidAtk, stem)}>레이드 순위에서 보기 ›</button>)
+        ? group('raid', <span className="px-badge px-skin px-badge--ko px-badge--mint">{maxFirst ? '다음으로' : '추천'}</span>, '레이드용 일반 · 전설', raidLines,
+          <button type="button" className="px-btn px-btn--sm px-skin" onClick={() => board.toPve(plan.pve!.raidAtk, stem)}>레이드 순위에서 보기 <PixelIcon name="arrow" /></button>)
         : null}
-    </section>
+    </Sec>
   );
 }
 
@@ -260,65 +258,63 @@ export default function FormGuide({ mon, dexNo, baseLabel, onSwitch, onLeave, on
   const rows = formRows({ ...mon, dexNo, baseTypes }, index, usage.USAGE_PLACES, dex.TYPE_KO, tiers, megas, showJoin);
 
   return (
-    <section className="detail__card detail__formguide">
-      <h3>폼별 정보</h3>
-      <div className="detail__formrows">
+    <Sec  title="폼별 정보">
+      <div className="pxd-forms">
         {rows.map((row) => {
           const on = row.name === mon.name;
           const label = row.key === 'base' ? baseLabel : row.label;
-          const kind = row.key === 'mega' ? ' form-tag--mega' : row.key === 'base' ? '' : ' form-tag--max';
-          const tag = <span className={`form-tag${kind}`}>{label}</span>;
+          const kind = row.key === 'mega' ? ' px-badge--purple' : row.key === 'base' ? ' px-badge--muted' : ' px-badge--fill';
+          const tag = <span className={`px-badge px-skin px-badge--ko pxd-form__tag${kind}`}>{label}</span>;
           if (row.key === 'dmax' || row.key === 'gmax' || row.key === 'join') {
             // 맥스 폼은 팝업에서 요약만 — 더보기는 D-MAX 화면의 그 줄 (2026-09-30 주인 요청).
             // 'join'(다이맥스 없이 참가) 줄도 같다 — 일반 폼 그대로 맥스 표에 선다 (2026-10-06)
             // 이미 D-MAX 화면이면 옮길 곳이 없다 — 팝업 안에서 그 폼의 배틀 정보로 (2026-10-02 주인 결정)
             return (
               // 일반 줄과 join 줄은 이름이 같다 — 키에 폼 종류를 붙여 가른다 (Codex, PR #322)
-              <button key={`${row.key}-${row.name}`} type="button" className={`detail__form detail__formrow${on ? ' is-now' : ''}`}
+              <button key={`${row.key}-${row.name}`} type="button" className={`pxd-form${on ? ' is-now' : ''}`}
+                aria-current={on ? 'true' : undefined}
                 onClick={() => (onMaxHere ? onMaxHere(toMon(row)) : board.toMax(row))}>
                 {tag}
-                <span className="detail__formrow-use">{formSummary(row, dex.TYPE_KO)}</span>
-                {row.unrel ? <span className="tag">미출시</span> : row.soon ? <span className="tag">출시 예정</span> : null}
-                <span className="detail__formrow-go">D-MAX 더보기 ›</span>
+                <span className="px-caption pxd-form__use">{formSummary(row, dex.TYPE_KO)}</span>
+                {row.unrel ? <span className="px-badge px-skin px-badge--ko px-badge--muted">미출시</span> : row.soon ? <span className="px-badge px-skin px-badge--ko px-badge--yellow">출시 예정</span> : null}
+                <span className="pxd-form__go">D-MAX 더보기 <PixelIcon name="arrow" /></span>
               </button>
             );
           }
           const meter = meterText(usageMeterOf(usage.METER, row.name));
           return (
             // 일반 · 메가는 눌러서 펼친다 — 활용처 전부와 전 종 점수, 그 폼으로 바꿔 보기
-            <details key={`${row.key}-${row.name}`} className={`detail__form${on ? ' is-now' : ''}`}>
-              <summary className="detail__formrow">
+            <details key={`${row.key}-${row.name}`} className={`pxd-form-acc${on ? ' is-now' : ''}`}>
+              <summary className={`pxd-form${on ? ' is-now' : ''}`} aria-current={on ? 'true' : undefined}>
                 {tag}
-                <span className="detail__formrow-use">{!row.places.length && meter ? meter : formSummary(row, dex.TYPE_KO)}</span>
-                {row.unrel ? <span className="tag">미출시</span> : null}
-                <span className="detail__formrow-go">더보기</span>
+                <span className="px-caption pxd-form__use">{!row.places.length && meter ? meter : formSummary(row, dex.TYPE_KO)}</span>
+                {row.unrel ? <span className="px-badge px-skin px-badge--ko px-badge--muted">미출시</span> : null}
+                <span className="pxd-form__go">더보기</span>
               </summary>
-              <div className="detail__form-body">
+              <div className="pxd-form__body">
                 {/* 요약 줄이 이미 점수를 말했으면 펼친 곳에서 되풀이하지 않는다 */}
-                {meter && row.places.length ? <p className="detail__form-meter">{meter}</p> : null}
-                {row.places.length ? (
-                  <div className="detail__ranks">
-                    {row.places.map((one) => (
-                      <div key={one.key} className={`detail__rank-row${one.rank <= 3 ? ' is-top' : ''}`}>
-                        <span className="detail__rank-where">{one.label}</span>
-                        <b className="detail__rank-no">{`${one.rank}위`}</b>
-                      </div>
-                    ))}
-                  </div>
-                ) : <p className="detail__none-text">순위표 상위 30위 밖이에요.</p>}
+                {meter && row.places.length ? <p className="px-caption">{meter}</p> : null}
+                {row.places.length
+                  ? <RankList  items={row.places.map((one) => ({ key: one.key, where: one.label, rank: one.rank, top: one.rank <= 3 }))} />
+                  : <p className="px-caption">순위표 상위 30위 밖이에요.</p>}
                 {!on ? (
-                  <button type="button" className="detail__form-go" onClick={() => onSwitch(toMon(row))}>{`${label} 폼으로 보기 ›`}</button>
+                  <Actions><button type="button" className="px-btn px-btn--sm px-skin" onClick={() => onSwitch(toMon(row))}>{`${label} 폼으로 보기`} <PixelIcon name="arrow" /></button></Actions>
                 ) : null}
               </div>
             </details>
           );
         })}
       </div>
-    </section>
+    </Sec>
   );
 }
 
-/** 지금 보는 폼의 성적 — 배틀 정보 맨 위. 맥스 폼은 D-MAX 표, 일반은 PvP 리그 · 레이드 */
+/**
+ * 지금 보는 폼의 성적 — 배틀 정보 맨 위의 지표 판 셋 (v6 D02).
+ *   맥스 폼  D-MAX 티어('S TIER' + 타입 칸 몇 위) · 가장 강한 상대 · 전 종 점수
+ *   일반     레이드(가장 높은 보스 상대 순위) · PvP(가장 높은 리그 순위) · 전 종 점수. 나머지 리그 · 레이드 줄은 아래에 목록으로
+ * 없는 칸은 '—' 가 아니라 판을 세우지 않는다 — 셋 다 없으면 한 줄로 '순위표 상위권 밖' 을 말한다
+ */
 export function FormStats({ mon, dexNo, baseLabel, onLeave, here = '' }: { mon: MonRef; dexNo: number | null; baseLabel: string; onLeave?: () => void; here?: string }) {
   const { data: dex } = useDex();
   const slides = useMaxSlidesSoft();
@@ -334,17 +330,23 @@ export function FormStats({ mon, dexNo, baseLabel, onLeave, here = '' }: { mon: 
   const showJoin = useRankStore((s) => s.maxShowJoin);
   const tiers = useMemo(() => tierIndex(max, withUnrel, showJoin), [max, withUnrel, showJoin]);
   const key = formKeyOf(mon.name);
+  const meterNow = usageMeterOf(usage.METER, mon.name);
+  // 지표 판 하나 — 라벨 · 큰 값 · 한 줄 설명 (Pieces.tsx Metric)
+  const metric = (label: string, value: string, note: string, color?: string) => (
+    <Metric key={label} label={label} value={value} note={note} {...(color ? { color } : {})} />
+  );
+  const meterTiles = meterNow
+    ? [meterNow.pve > 0 ? metric('전 종 점수 · 레이드', num(meterNow.pve), '가장 잘 통하는 보스 3종 평균 (0–100)') : null,
+       meterNow.pvp > 0 ? metric('전 종 점수 · PvP', num(meterNow.pvp), '리그 상위 2개 평균 (0–100)') : null].filter(Boolean)
+    : [];
 
   if (key === 'dmax' || key === 'gmax' || key === 'join') {
     // 맨 앞은 기술 타입 칸의 티어 · 순위 ('풀 A티어 · 2위') — 전체 순위가 아니라 그 타입에서 몇 티어인지가 궁금한 것이다 (2026-09-30 주인 결정)
     const spot = tiers.get(mon.name) ?? null;
     const places = placesOf(usage.USAGE_PLACES, mon.name, dex.TYPE_KO).filter((one) => one.group === '맥스');
     const best = places.find((one) => !one.key.endsWith(':overall'));
-    const lines = [
-      spot ? tierLine(spot, dex.TYPE_KO) : '',
-      best ? `가장 강한 상대 · ${best.where} 보스 딜러 ${best.rank}위` : '',
-    ].filter(Boolean);
     const moveType = idx.get(mon.name)?.charged ?? '';
+    const tag = <span className="px-badge px-skin px-badge--ko px-badge--fill">{FORM_KO[key]}</span>;
     // 게임에 아직 없는 맥스 폼 — 맥스 표에 줄이 없거나 미구현 줄뿐이다. '순위에 없다' 가 아니라 '아직 안 나왔다' 가 맞는 말이고,
     // 곧 맥스 배틀이 열리면 그 날짜가 가장 궁금한 것이다 (2026-09-30 주인 제보: 태우지네)
     const row = idx.get(mon.name);
@@ -352,34 +354,39 @@ export function FormStats({ mon, dexNo, baseLabel, onLeave, here = '' }: { mon: 
       // 보고 있는 폼과 같은 종류(다이맥스 ↔ 거다이맥스)의 일정만 — 다른 폼의 배틀을 이 폼의 첫 등장으로 알리지 않는다 (Codex, PR #269)
       const soon = dexNo != null ? bossNow(slides.filter((one) => one.gmax === (key === 'gmax')), new Set([dexNo])) : null;
       return (
-        <section className="detail__card detail__formstats">
-          <h3><span className="form-tag form-tag--max">{FORM_KO[key]}</span> 이 폼의 성적</h3>
-          <p className="detail__none-text">
+        <Sec  title={<>{tag} 이 폼의 성적</>}>
+          <p className="px-body px-muted">
             {soon?.slide.live ? '이번 주 맥스 배틀에서 처음 등장해요 · 수치는 등장 후 계산 예정이에요.' : '추후 등장 후 수치 계산 예정이에요.'}
           </p>
           {soon ? (
-            <p className="detail__formguide-boss">
-              <span className="tag">{dday(soon.slide)}</span>
-              <span>{`${soon.slide.live ? '맥스 배틀 진행 중' : '곧 맥스 배틀 시작'} · ${soon.name} · ${soon.slide.short}`}</span>
+            <p className="pxd-vs__when">
+              <span className="px-badge px-skin px-badge--ko px-badge--yellow">{dday(soon.slide)}</span>
+              <span className="px-caption">{`${soon.slide.live ? '맥스 배틀 진행 중' : '곧 맥스 배틀 시작'} · ${soon.name} · ${soon.slide.short}`}</span>
             </p>
           ) : null}
           {soon ? (
-            <button type="button" className="detail__form-go" onClick={() => { track('detail_more', { to: 'schedule', mon: mon.name }); onLeave?.(); go('/schedule'); }}>일정 보기 ›</button>
+            <Actions><button type="button" className="px-btn px-btn--sm px-skin" onClick={() => { track('detail_more', { to: 'schedule', mon: mon.name }); onLeave?.(); go('/schedule'); }}>일정 보기 <PixelIcon name="arrow" /></button></Actions>
           ) : null}
-        </section>
+        </Sec>
       );
     }
+    const tiles = [
+      spot ? metric('D-MAX', `${spot.tier} TIER`, tierLine(spot, dex.TYPE_KO), 'var(--brand-text)') : null,
+      best ? metric('가장 강한 상대', `${num(best.rank)}위`, `${best.where} 보스 딜러`) : null,
+      ...meterTiles,
+    ].filter(Boolean);
     return (
-      <section className="detail__card detail__formstats">
-        <h3><span className="form-tag form-tag--max">{FORM_KO[key]}</span> 이 폼의 성적</h3>
-        {lines.length
-          ? <ul className="detail__stat-lines">{lines.map((line) => <li key={line}>{line}</li>)}</ul>
-          : <p className="detail__none-text">D-MAX 순위표 상위권 밖이에요.</p>}
+      <Sec  title={<>{tag} 이 폼의 성적</>}>
+        {tiles.length
+          ? <div className="px-grid px-grid--3 pxd-metrics">{tiles}</div>
+          : <p className="px-body px-muted">D-MAX 순위표 상위권 밖이에요.</p>}
         {/* D-MAX 화면 위에서는 이미 이 폼의 D-MAX 정보를 보고 있다 — '더보기' 가 아니라 표의 그 줄로 가는 단추다 (2026-10-02 점검) */}
-        <button type="button" className="detail__form-go" onClick={() => board.toMax({ name: mon.name, places, moveType, tier: spot })}>
-          {here === 'dmax' ? 'D-MAX 표에서 이 줄 보기 ›' : 'D-MAX 더보기 ›'}
-        </button>
-      </section>
+        <Actions>
+          <button type="button" className="px-btn px-btn--sm px-skin" onClick={() => board.toMax({ name: mon.name, places, moveType, tier: spot })}>
+            {here === 'dmax' ? 'D-MAX 표에서 이 줄 보기' : 'D-MAX 더보기'} <PixelIcon name="arrow" />
+          </button>
+        </Actions>
+      </Sec>
     );
   }
 
@@ -388,37 +395,35 @@ export function FormStats({ mon, dexNo, baseLabel, onLeave, here = '' }: { mon: 
     .map((league) => ({ league, at: (pvp.PVP_DATA[league] ?? []).findIndex((row) => row.name === mon.name) }))
     .filter((one) => one.at >= 0);
   const raids = placesOf(usage.USAGE_PLACES, mon.name, dex.TYPE_KO).filter((one) => one.group === '레이드').slice(0, 3);
-  const meter = meterText(usageMeterOf(usage.METER, mon.name));
-  if (!leagues.length && !raids.length && !meter) return null;
+  if (!leagues.length && !raids.length && !meterTiles.length) return null;
   // 메가를 보고 있으면 그 라벨 ('메가X') — 일반이라고 적으면 어느 폼의 성적인지 틀린다
   const label = key === 'mega' ? (mon.name.split(' ')[0] ?? FORM_KO.mega) : baseLabel;
+  const topRaid = raids[0];
+  // 가장 높은 리그 — 순위(at)가 가장 작은 것
+  const topLeague = [...leagues].sort((left, right) => left.at - right.at)[0];
+  const tiles = [
+    topRaid ? metric('레이드 · PvE', `${num(topRaid.rank)}위`, `${topRaid.where} 보스 상대`, 'var(--brand-text)') : null,
+    topLeague ? metric(`PvP · ${LEAGUE_KO[topLeague.league]}`, `#${num(topLeague.at + 1)}`, `점수 ${num(pvp.PVP_DATA[topLeague.league]?.[topLeague.at]?.score)}`) : null,
+    ...meterTiles,
+  ].filter(Boolean).slice(0, 3);
   return (
-    <section className="detail__card detail__formstats">
-      <h3><span className={`form-tag${key === 'mega' ? ' form-tag--mega' : ''}`}>{label}</span> 이 폼의 성적</h3>
-      {meter ? <p className="detail__form-meter">{meter}</p> : null}
-      {raids.length ? (
-        <div className="detail__stat-group">
-          <h4 className="detail__train-head">레이드</h4>
-          {raids.map((one) => (
-            <div key={one.key} className="detail__rank-row">
-              <span className="detail__rank-where">{`${one.where} 보스 상대`}</span>
-              <b className="detail__rank-no">{`${one.rank}위`}</b>
-            </div>
-          ))}
+    <Sec  title={<><span className={`px-badge px-skin px-badge--ko${key === 'mega' ? ' px-badge--purple' : ' px-badge--muted'}`}>{label}</span> 이 폼의 성적</>}>
+      {tiles.length ? <div className="px-grid px-grid--3 pxd-metrics">{tiles}</div> : null}
+      {raids.length > 1 ? (
+        <div className="pxd-stat-group">
+          <h4 className="px-caption">레이드</h4>
+          <RankList items={raids.map((one) => ({ key: one.key, where: `${one.where} 보스 상대`, rank: one.rank }))} />
         </div>
       ) : null}
       {leagues.length ? (
-        <div className="detail__stat-group">
-          <h4 className="detail__train-head">PvP</h4>
-          {leagues.map(({ league, at }) => (
-            <button key={league} type="button" className="detail__rank-row detail__stat-go" onClick={() => board.toPvp(mon.name, league)}>
-              <span className="detail__rank-where">{`${LEAGUE_KO[league]} · 점수 ${num(pvp.PVP_DATA[league]?.[at]?.score)}`}</span>
-              <b className="detail__rank-no">{`${at + 1}위`}</b>
-              <span className="detail__rec-go" aria-hidden="true">›</span>
-            </button>
-          ))}
+        <div className="pxd-stat-group">
+          <h4 className="px-caption">PvP · 리그별 순위 (누르면 그 줄로)</h4>
+          <RankList items={leagues.map(({ league, at }) => ({
+            key: league, where: `${LEAGUE_KO[league]} · 점수 ${num(pvp.PVP_DATA[league]?.[at]?.score)}`, rank: at + 1,
+            onPick: () => board.toPvp(mon.name, league),
+          }))} />
         </div>
       ) : null}
-    </section>
+    </Sec>
   );
 }
