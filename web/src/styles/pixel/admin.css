@@ -1,1 +1,28 @@
-/* pixel/admin.css — v6 화면 배치. 조각(parts.css)은 모양, 여기는 자리만 둔다 */
+/* pixel/admin.css — v6 관리자 캠프 배치 (피그마 '06~10 · ADMIN'). 조각(parts.css)은 모양, 여기는 자리만 둔다
+   머리줄 80 · 레일 224 · 본문(최대 1216, 안쪽 여백 40). 1100px 아래는 레일이 머리줄 단추로 열리는 서랍이 된다 */
+html body #root .admin-shell { position: relative; z-index: 1; min-height: 100vh; }
+html body #root .admin-shell__bar { position: sticky; top: 0; z-index: 30; display: flex; align-items: center; gap: 2.4rem; min-height: 8rem; padding: 1.6rem 2.4rem; background: color-mix(in srgb, var(--rail) 92%, transparent); border-bottom: var(--px-stroke) solid var(--line); backdrop-filter: blur(1.2rem); }
+html body #root .admin-shell__logo { display: flex; align-items: center; gap: 1.6rem; margin: 0; }
+html body #root .admin-shell__sub { color: var(--muted); font: 500 1.4rem/1.2 var(--font-body); }
+html body #root .admin-shell__menu { display: none; }
+html body #root .admin-shell__rail { position: fixed; z-index: 20; top: 8rem; bottom: 0; left: 0; box-sizing: border-box; width: var(--rail-w); display: flex; flex-direction: column; gap: 1.2rem; padding: 2.4rem 1.6rem; overflow-y: auto; background: var(--rail); border-right: var(--px-stroke) solid var(--line); }
+html body #root .admin-shell__rail .nav-menu { display: flex; flex-direction: column; gap: 0.4rem; }
+html body #root .admin-shell__rail .px-nav__item { min-height: 4rem; }
+html body #root .admin-shell__role { margin-top: -0.8rem; }
+html body #root .admin-shell__main { box-sizing: border-box; max-width: var(--content-w); margin-left: var(--rail-w); padding: 4rem var(--inset) 6.4rem; display: flex; flex-direction: column; gap: 2.4rem; }
+html body #root .admin__head { display: flex; flex-direction: column; gap: 1.2rem; }
+html body #root .admin__desc { max-width: 72rem; }
+html body #root .admin__head-actions { display: flex; flex-wrap: wrap; gap: 1.2rem; }
+/* 관리자 화면에는 바탕 풍경을 머리 띠에만 — 조용한 호수 */
+html body:has(.admin-shell)::before { height: 36rem; }
+@media (max-width: 1099px) {
+  html body #root .admin-shell__rail { display: none; }
+  html body #root .admin-shell[data-open] .admin-shell__rail { display: flex; width: min(32rem, 100vw); }
+  html body #root .admin-shell__menu { display: inline-flex; }
+  html body #root .admin-shell__main { margin-left: 0; }
+}
+@media (max-width: 699px) {
+  html body #root .admin-shell__bar { gap: 1.2rem; padding: 2rem; }
+  html body #root .admin-shell__sub { display: none; }
+  html body #root .admin-shell__main { padding: 2.4rem 2rem 6.4rem; }
+}

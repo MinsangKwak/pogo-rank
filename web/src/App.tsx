@@ -32,7 +32,7 @@ import { settleVeilAfterFonts } from './lib/veil';
 import SearchPalette from './components/SearchPalette';
 import { useSearchStore } from './stores/search';
 import type { RouteDef } from './routes';
-import { routeById } from './routes';
+import { routeById, routeHidden } from './routes';
 // **홈과 상세만 정적이다.** 둘은 각자 주소의 첫 화면이라, 쪼개면 열자마자 한 번 더
 // 받으러 가야 한다. 나머지는 어느 주소에서도 첫 화면이 아니므로 첫 번들에 있을 이유가 없다 —
 // 넣어 두면 홈만 보려는 사람이 도감·티어표·일정 코드까지 내려받고 해석한다
@@ -74,6 +74,11 @@ const DmaxDeck = lazy(() => import('./screens/DmaxDeck'));
 const SoloCalc = lazy(() => import('./screens/SoloCalc'));
 // 루트만 여는 화면 — 누구의 첫 묶음에도 안 실린다
 const AdminStats = lazy(() => import('./screens/AdminStats'));
+// v6 관리자 캠프 — 셸이 다르다 (components/AdminShell.tsx)
+const AdminHome = lazy(() => import('./screens/AdminHome'));
+const AdminUsers = lazy(() => import('./screens/AdminUsers'));
+const AdminTrainers = lazy(() => import('./screens/AdminTrainers'));
+import AdminShell from './components/AdminShell';
 
 /**
  * 화면이 섰다는 신호 — <Suspense> 안, 화면 뒤에 선다. 기다림은 안의 것을 한꺼번에 드러내므로
@@ -150,6 +155,9 @@ export function Screen({ route, rest, onOpen }: { route: RouteDef; rest: string;
     case 'terms': return <Terms />;
     case 'settings': return <Settings />;
     case 'admin-stats': return <AdminStats />;
+    case 'admin': return <AdminHome />;
+    case 'admin-users': return <AdminUsers rest={rest} />;
+    case 'admin-trainers': return <AdminTrainers />;
     // /mon/<id> 는 상세가 곧 본문이다 — v5 Phase 6 에 바뀐 자리.
     // 전에는 홈을 깔고 그 위에 팝업을 띄웠는데, 그러면 크롤러가 받는 HTML 의 본문이 홈이고
     // 상세는 닫힌 <dialog> 안이다(그 안은 display:none 이다). 공유 링크로 들어온 사람에게도
@@ -298,7 +306,7 @@ export default function App({ seo }: AppProps = {}) {
     body['mode'] = route.kind === 'plan' ? 'plan' : 'dex';
     if (route.id === 'home') body['home'] = 'true'; else delete body['home'];
     // 루트 화면은 세지 않는다 — 운영자 자신이 보는 것이라 이용 현황이 아니고, 있다는 것도 남기지 않는다
-    if ('root' in route && route.root) return;
+    if (routeHidden(route)) return;
     // 자식 화면은 부모를 앞에 붙인다 — '덱 짜기' 가 D-MAX · PvP 둘이라 제목 보고서에서 한 줄로 합쳐졌다 (주소는 원래 다르다)
     const own = route.title ?? route.nav ?? route.id;
     const parent = route.parent ? routeById(route.parent) : undefined;
@@ -321,7 +329,32 @@ export default function App({ seo }: AppProps = {}) {
   // (목록 위에서 바꾸면 ✕ 를 눌러도 목록으로 못 돌아온다 — openMon 머리말).
   // 그래서 route.id 만 보면 도감·티어표에서 연 상세는 그대로 로고가 남는다.
   const onDetail = detail !== null;
+  // 관리자 화면은 제 셸을 쓴다 — 머리줄 · 레일 · 하단 바 · 바닥글이 다르다. 잠금 판정(Screen)은 같다
+  const isAdmin = route.id === 'admin' || route.id.startsWith('admin-');
 
+  if (isAdmin) {
+    return (
+      <SlotProvider value={{ tabs: tabsEl, bossAcc: bossEl, controls: controlsEl, headActions: actionsEl }}>
+        <a className="skip-link" href="#page">본문으로 건너뛰기</a>
+        <LangBridge /><AuthBridge /><CollectBridge /><UpdateBridge />
+        <AdminShell now={route.id}>
+          <DataBoundary>
+            <Suspense fallback={seo ?? <Splash />}>
+              <Screen route={route} rest={rest} onOpen={openMon} />
+              <Settled key={`${route.id}/${rest}`} />
+              <DocTitle route={route} />
+            </Suspense>
+          </DataBoundary>
+        </AdminShell>
+        <DataBoundary>
+          <Suspense fallback={null}>
+            {detail === null ? null : <MonDetail key={detailSeq} pick={detail} onClose={closeMon} onDeep={openDeep} here={route.id} />}
+          </Suspense>
+        </DataBoundary>
+        {noteOpen ? <NoteDialog route={route.id} onClose={() => setNoteOpen(false)} /> : null}
+      </SlotProvider>
+    );
+  }
   return (
     <SlotProvider value={{ tabs: tabsEl, bossAcc: bossEl, controls: controlsEl, headActions: actionsEl }}>
       <a className="skip-link" href="#content">본문으로 건너뛰기</a>
