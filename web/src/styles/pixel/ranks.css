@@ -167,6 +167,7 @@ html body #root .dex__found-clear { margin-left: auto; }
   html body #root .rk-bar > .px-tabs { flex-basis: 100%; }
   html body #root .rk-bar__tools { margin-left: 0; }
   html body #root .rk-bar__tools > .px-btn { flex: 1; }
+  html body #root .rk-route-cta { display: none; }
   html body #root .px-tab { min-width: 0; }
   html body #root .rk-toggles { gap: 0.8rem 1.6rem; }
   html body #root .rk-toggles > .px-view { margin-left: 0; width: 100%; }

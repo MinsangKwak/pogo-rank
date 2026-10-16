@@ -4,7 +4,7 @@ import { createElement, type ReactNode } from 'react';
 import { cleanup, fireEvent, render, within } from '@testing-library/react';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { Raids } from '../screens/Gameday';
+import { Eggs, Raids } from '../screens/Gameday';
 import { usePrefStore } from '../stores/pref';
 
 const fixtures = vi.hoisted(() => ({
@@ -18,11 +18,15 @@ const fixtures = vi.hoisted(() => ({
   showOther: false,
 }));
 vi.mock('../lib/data', () => ({
-  useGameday: () => ({ data: { GAMEDAY: { fetched: '2026-10-16', raids: { '5성': fixtures.mons, ...(fixtures.showOther ? { '3성': [{ sprite: 127, name: '쁘사이저', types: ['bug'], cp: { min: 1613, max: 1690 } }] } : {}) }, eggs: {} } } }),
+  useGameday: () => ({ data: { GAMEDAY: { fetched: '2026-10-16', raids: { '5성': fixtures.mons, ...(fixtures.showOther ? {
+    '3성': [{ sprite: 127, name: '쁘사이저', types: ['bug'], cp: { min: 1613, max: 1690 } }],
+    '메가': [{ sprite: 10040, name: '메가 쁘사이저', types: ['bug', 'flying'] }],
+  } : {}) }, eggs: { '2km': [{ sprite: 172, name: '피츄', types: ['electric'], shiny: true, cp: { min: 240, max: 270 } }] } } } }),
   useDex: () => ({ data: {
-    TYPE_KO: { steel: '강철', dragon: '드래곤', ground: '땅', fighting: '격투', flying: '비행', bug: '벌레' },
+    TYPE_KO: { steel: '강철', dragon: '드래곤', ground: '땅', fighting: '격투', flying: '비행', bug: '벌레', electric: '전기' },
     FORM_LABELS: ['섀도우', '영물폼', '원시', '메가'],
-    DEX_DATA: { dex: { '483': 483, '127': 127 } }, SPRITE_IDS: [483, 383, 448, 645], SPRITE_ANIM_IDS: [],
+    // 실제 dex.json처럼 폼 번호만 매핑한다. 일반 종 번호는 dexNoOf의 fallback이 맡는다.
+    DEX_DATA: { dex: { '10040': 127 } }, SPRITE_IDS: [483, 383, 448, 645, 127, 10040, 172], SPRITE_ANIM_IDS: [],
   } }),
 }));
 vi.mock('../lib/useBossBoard', () => ({
@@ -98,8 +102,21 @@ describe('모바일 레이드 보스 정보와 리본', () => {
     expect(ribbon.getAttribute('data-number-kind')).toBe('dex');
     expect(item.textContent).toContain('벌레');
     expect(item.textContent).toContain('1613–1690');
+    expect([...container.querySelectorAll('.nw-row__dex')].map((node) => node.textContent)).toEqual(['#127', '#127']);
+    expect(getByRole('button', { name: '메가 쁘사이저 상세 보기' }).querySelector('img')?.getAttribute('src')).toBe('/sprites/10040.png');
     fireEvent.click(getByRole('button', { name: '쁘사이저 상세 보기' }));
     expect(onOpen).toHaveBeenLastCalledWith(expect.objectContaining({ sprite: 127, name: '쁘사이저' }));
+  });
+
+  it('일반 종 매핑이 없는 알 목록도 도감 리본·부화 정보·상세 동작을 유지한다', () => {
+    usePrefStore.setState({ cols: { eggs: 'list' } });
+    const onOpen = vi.fn();
+    const { container, getByRole } = render(createElement(Eggs, { onOpen }));
+    const item = container.querySelector('.nw-row-item')!;
+    expect(item.querySelector('.nw-row__dex')?.textContent).toBe('#172');
+    for (const text of ['피츄', '전기', '부화 CP 240–270', '이로치']) expect(item.textContent).toContain(text);
+    fireEvent.click(getByRole('button', { name: '피츄 상세 보기' }));
+    expect(onOpen).toHaveBeenCalledWith(expect.objectContaining({ sprite: 172, name: '피츄' }));
   });
 
   it('추천 데이터가 아직 없어도 보스의 CP와 상세 동작은 남긴다', () => {

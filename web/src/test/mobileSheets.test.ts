@@ -36,9 +36,9 @@ describe('모바일 머리와 바텀 시트 회귀', () => {
     expect(parts).toMatch(/\.px-dialog__foot \{ flex: none/);
     expect(modal).toContain('env(safe-area-inset-bottom)');
   });
-  it('진화 단계와 요약 이동 단추는 한 줄에 맞고 긴 분기는 단계 안에 쌓인다', () => {
+  it('진화 단계는 한 줄에 맞고 요약 이동 단추와 빈 바닥은 모바일에서 접는다', () => {
     expect(modal).toMatch(/\.pxd-evo__stage \{ flex: 1 1 0; min-width: 0; flex-direction: column/);
-    expect(modal).toMatch(/\.pxd-dialog--brief \.pxd__foot \{ display: grid; grid-template-columns: repeat\(3, minmax\(0, 1fr\)\)/);
-    expect(modal).toContain('.pxd-dialog--brief .px-dialog__hint { grid-column: 1 / -1; }');
+    expect(modal).toContain('.px-dialog .pxd-route-cta { display: none; }');
+    expect(modal).not.toContain('.pxd-dialog--brief .pxd__foot { display: grid;');
   });
 });

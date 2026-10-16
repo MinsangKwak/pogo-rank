@@ -76,7 +76,7 @@ export default function VsCard({ mon, dexNo, kind, onSwitch, onLeave }: {
         // 타입을 모르는 보스(발표 전) — 추천 대신 무엇을 언제 알 수 있는지 적는다
         <p className="px-body px-muted">보스의 타입이 확인되면 추천 포켓몬을 보여 드려요.</p>
       )}
-      <Actions>
+      <Actions routeOnly>
         <button type="button" className="px-btn px-btn--sm px-skin" onClick={() => {
           track('vs_go', { to: isMax ? 'dmax-deck' : isShadow ? 'pve' : 'pve-solo', boss: card.detailName });
           onLeave?.();

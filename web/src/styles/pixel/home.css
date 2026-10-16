@@ -6,8 +6,8 @@ html body #root .home__hero .px-eyebrow { margin-bottom: 0.8rem; }
 html body #root .home__lead { color: var(--muted); font-size: 1.6rem; }
 html body #root .home__hero-actions { display: flex; flex-wrap: wrap; gap: 1.6rem; margin-top: 0.8rem; }
 
-/* 주간 브리핑 + 체크포인트 — 720 : 392 */
-html body #root .home__adventure { display: grid; grid-template-columns: minmax(0, 1fr) 39.2rem; gap: 2.4rem; align-items: stretch; }
+/* 넓은 화면은 본문을 늘리고 보조 판의 너비는 읽기 좋은 범위로 제한한다. */
+html body #root .home__adventure { display: grid; grid-template-columns: minmax(0, 1fr) clamp(28rem, 27vw, 44rem); gap: 2.4rem; align-items: stretch; }
 html body #root .home__brief { display: flex; flex-direction: column; gap: 2rem; padding: 3.2rem; }
 html body #root .home__brief-row { display: flex; align-items: center; gap: 2rem; }
 html body #root .home__brief-copy { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1.2rem; }
@@ -23,13 +23,13 @@ html body #root .home__check-more { color: var(--muted); text-decoration: none; 
 /* 구역 제목 줄 간격 */
 html body #root .home .px-sec { margin-bottom: 1.6rem; }
 
-/* 이번 주 보스 + 팀 CTA — 672 : 440 */
-html body #root .home__week-row2 { display: grid; grid-template-columns: minmax(0, 1fr) 44rem; gap: 2.4rem; align-items: stretch; }
-html body #root .home__week { display: flex; flex-direction: column; gap: 1.6rem; }
-html body #root .home__week-list { display: flex; flex-direction: column; gap: 1.6rem; margin: 0; padding: 0; list-style: none; }
+/* 보스 목록은 가용 폭에 따라 여러 열, 팀 CTA는 내용 높이만 사용한다. */
+html body #root .home__week-row2 { display: grid; grid-template-columns: minmax(0, 1fr) clamp(28rem, 24vw, 36rem); gap: 2.4rem; align-items: start; }
+html body #root .home__week { display: flex; flex-direction: column; gap: 1.6rem; min-width: 0; }
+html body #root .home__week-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 24rem), 1fr)); gap: 1.6rem; margin: 0; padding: 0; list-style: none; }
 /* 보스는 큰 그림 + 이름, 추천은 아래의 작은 보조 줄로 구분한다. */
 html body #root .home__week-row { position: relative; min-width: 0; }
-html body #root .home__week-panel { display: flex; flex-direction: column; align-items: stretch; gap: 1.2rem; min-width: 0; padding: 2.8rem 1.2rem 1.2rem; }
+html body #root .home__week-panel { height: 100%; box-sizing: border-box; display: flex; flex-direction: column; align-items: stretch; gap: 1.2rem; min-width: 0; padding: 2.8rem 1.2rem 1.2rem; }
 html body #root .home__week-boss { display: flex; align-items: center; gap: 1.2rem; min-width: 0; min-height: var(--tap); padding: 0; border: 0; background: none; color: var(--fg); font: inherit; text-align: left; cursor: pointer; }
 html body #root .home__week-boss > .px-ball { --ball: 6.4rem; }
 html body #root .home__week-text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 0.4rem; }
@@ -39,13 +39,14 @@ html body #root .home__week-meta > .px-caption { white-space: nowrap; }
 html body #root .home__week-status { flex: none; padding: 0.4rem 0.8rem; }
 html body #root .home__week-when { display: flex; flex-wrap: wrap; gap: 0.4rem 0.8rem; }
 html body #root .home__week-when > span { white-space: nowrap; }
-html body #root .home__week-rec { display: grid; grid-template-columns: auto 3.2rem minmax(0, 1fr); align-items: center; gap: 0.8rem; min-width: 0; min-height: var(--tap); padding: 0.8rem; border: 0; border-top: var(--px-stroke) solid var(--line); background: var(--panel); color: var(--muted); font: inherit; text-align: left; cursor: pointer; }
+html body #root .home__week-rec { margin-top: auto; display: grid; grid-template-columns: auto 3.2rem minmax(0, 1fr); align-items: center; gap: 0.8rem; min-width: 0; min-height: var(--tap); padding: 0.8rem; border: 0; border-top: var(--px-stroke) solid var(--line); background: var(--panel); color: var(--muted); font: inherit; text-align: left; cursor: pointer; }
 html body #root .home__week-rec-label { white-space: nowrap; }
 html body #root .home__week-rec-sprite { display: block; width: 3.2rem; height: 3.2rem; object-fit: contain; }
 html body #root .home__week-rec-name { min-width: 0; word-break: keep-all; overflow-wrap: anywhere; }
 html body #root .home__week-actions { display: flex; flex-wrap: wrap; gap: 1.2rem; margin-top: auto; }
-html body #root .home__team { display: flex; flex-direction: column; gap: 1.2rem; }
-html body #root .home__team-balls { display: flex; gap: 1.6rem; margin: 0.8rem 0 1.6rem; --ball: 8rem; }
+html body #root .home__team { display: flex; flex-direction: column; gap: 1.2rem; min-width: 0; align-self: start; }
+html body #root .home__team-balls { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1.6rem; width: 100%; max-width: 27.2rem; margin: 0.8rem 0 1.6rem; }
+html body #root .home__team-balls > .px-ball { width: 100%; height: auto; aspect-ratio: 1; min-width: 0; }
 
 /* 용도별 상위 셋 */
 html body #root .home__rank { position: relative; display: flex; min-width: 0; }
@@ -72,5 +73,5 @@ html body #root .home__loading { min-height: 40rem; }
   html body #root .home__brief { padding: 2.4rem; }
   html body #root .home__brief-row { flex-direction: column-reverse; align-items: center; text-align: center; }
   html body #root .home__brief-actions .px-btn { width: 100%; }
-  html body #root .home__team-balls { justify-content: center; }
+  html body #root .home__team-balls { align-self: center; }
 }

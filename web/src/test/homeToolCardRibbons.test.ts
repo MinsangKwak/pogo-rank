@@ -121,6 +121,28 @@ describe('D-MAX 세 칸을 한눈에 보는 모바일 구성', () => {
     expect(document.activeElement).toBe(toggle);
   });
 
+  it('검색 라벨과 입력의 최소 너비를 풀어 좁은 보스 판 안으로 줄어들게 한다', () => {
+    const css = readFileSync(join(__dirname, '../styles/pixel/tools.css'), 'utf8');
+    const row = /html body #root \.pxt-target__row \{[^}]+\}/.exec(css)![0];
+    const label = /html body #root \.pxt-target__search \{[^}]+\}/.exec(css)![0];
+    const input = /html body #root \.pxt-target__search input \{[^}]+\}/.exec(css)![0];
+    expect(row).toContain('min-width: 0');
+    expect(label).toContain('flex: 1 1 28rem');
+    expect(label).toContain('min-width: 0');
+    expect(label).toContain('max-width: 100%');
+    expect(input).toContain('min-width: 0');
+    const style = document.createElement('style');
+    style.textContent = `${row}${label}${input}`;
+    document.head.append(style);
+    try {
+      const { container } = render(createElement('div', { id: 'root' }, createElement(DmaxDeck, { onOpen: vi.fn() })));
+      const search = container.querySelector('.pxt-target__search')!;
+      expect(getComputedStyle(search).minWidth).toBe('0px');
+      expect(getComputedStyle(search).maxWidth).toBe('100%');
+      expect(getComputedStyle(search.querySelector('input')!).minWidth).toBe('0px');
+    } finally { style.remove(); }
+  });
+
   it('모바일 3열은 D-MAX에 한정하고 기존 후보 메타 줄바꿈을 유지한다', () => {
     const css = readFileSync(join(__dirname, '../styles/pixel/tools.css'), 'utf8');
     expect(css).toMatch(/\.pxt-dmax \.pxt-slots \{ grid-template-columns: repeat\(3, minmax\(0, 1fr\)\)/);

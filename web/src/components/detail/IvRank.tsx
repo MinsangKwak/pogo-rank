@@ -47,7 +47,7 @@ export default function IvRank({ form, sprite, onLeave }: { form: DexForm; sprit
         where: <>{`${LEAGUE_KO[row.league]}리그`}<span className="px-caption">{` 순위 ${num(row.rank)}위`}</span></>,
         rank: row.ivs, note: `Lv${num(row.level)} · CP ${count(row.cp)}`,
       }))} />
-      <Actions>
+      <Actions routeOnly>
         <button type="button" className="px-btn px-btn--sm px-skin"
           onClick={() => { track('detail_more', { to: 'ivrank', mon: String(sprite) }); onLeave?.(); go(routeHref('ivrank')); }}>
           PvP 개체값 순위 열기 <PixelIcon name="arrow" />
