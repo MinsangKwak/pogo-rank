@@ -1,7 +1,7 @@
 // ─────────────────────────────────────────────────────────────────────────────
 // components/Shell.tsx — v6 뼈대: 머리줄 · 왼쪽 메뉴 레일 · 화면 머리 · 바닥글 · 모바일 하단 바로가기 · 전체 메뉴 시트
 //
-// 피그마 '01 · 서비스 홈' 의 틀 그대로다 — 머리줄(로고 · 검색 · 로그인 · 설정 · 언어 · 지역 · 테마), 224px 레일(마이페이지 단추,
+// 피그마 '01 · 서비스 홈' 의 틀을 따른다 — 머리줄(로고 · 검색 · 언어 · 지역 · 테마), 224px 레일(계정 · 설정,
 // 네 갈래 "지금 뭐 하지 / 뭘 데려갈까 / 뭘 키울까 / 정보", 하위 줄은 ↳), 1100px 아래는 레일 대신 하단 네 칸(홈 · 검색 · 내 포켓몬 · 전체 메뉴).
 // DOM id 는 그대로다 (`#app-nav` · `#page-head` · `#menu-toggle` · `#drawer-backdrop` · `#menu-planner` …) — 회귀 검사와 지표가 본다 (CLAUDE.md §4).
 // 메뉴 순서는 routes.ts 의 표 하나에서 온다 — 여기서 손으로 줄을 적지 않는다.
@@ -65,7 +65,7 @@ function NavGroup({ id, label, now, onGo }: { id: string; label: string; now: st
   );
 }
 
-/** '정보' 갈래 — 라우트 표의 갈래가 아니라 셸의 줄이다 (기준 안내 · 패치 노트 · 제보 · 방침 · 약관 · 설정 · 통계 설정) */
+/** '정보' 갈래 — 라우트 표의 갈래가 아니라 셸의 줄이다 (기준 안내 · 패치 노트 · 제보 · 방침 · 약관 · 통계 설정) */
 function NavInfo({ now, onGo, onConsent, onNote }: { now: string; onGo?: () => void; onConsent: () => void; onNote: () => void }) {
   const newRelease = useNewRelease();
   const goTo = (href: string) => () => { onGo?.(); go(href); };
@@ -89,14 +89,23 @@ function NavInfo({ now, onGo, onConsent, onNote }: { now: string; onGo?: () => v
       <button type="button" className="px-nav__item" onClick={goTo('/terms')} {...current('terms')}>
         <PixelIcon name="shield" /><span className="px-nav__label">이용 약관</span>
       </button>
-      <button type="button" className="px-nav__item" id="menu-settings" onClick={goTo('/settings')} {...current('settings')}>
-        <PixelIcon name="gear" /><span className="px-nav__label">설정</span>
-      </button>
       {/* 개인정보처리방침이 '메뉴 → 통계·저장소 설정' 이라고 적어 뒀다 — 이 줄이 없으면 방침이 거짓말이 된다 */}
       <button type="button" className="px-nav__item" id="menu-consent" onClick={() => { onGo?.(); onConsent(); }}>
         <PixelIcon name="gear" /><span className="px-nav__label">통계 · 저장소 설정</span>
       </button>
     </>
+  );
+}
+
+/** 계정과 가까운 설정 진입 — 레일과 전체 메뉴에서 각각 한 번만 둔다. */
+function SettingsItem({ now, onGo }: { now: string; onGo?: () => void }) {
+  const language = useLang();
+  return (
+    <button type="button" className="px-nav__item" id="menu-settings" data-i18n="off"
+      {...(now === 'settings' ? { 'aria-current': 'page' as const } : {})}
+      onClick={() => { onGo?.(); go('/settings'); }}>
+      <PixelIcon name="gear" /><span className="px-nav__label">{language === 'en' ? 'Settings' : '설정'}</span>
+    </button>
   );
 }
 
@@ -107,7 +116,7 @@ const THEME_FACE: Record<Theme, [PixelIconName, string]> = {
   dark: ['moon', '화면 테마: 어둡게 — 누르면 밝게'],
 };
 
-/** 머리줄 — 로고 · 검색 · 로그인 · 설정 · 언어 · 지역 · 테마 · (좁은 화면) 메뉴 */
+/** 머리줄 — 검색과 빠른 표시 설정. 계정·서비스 이동은 왼쪽 레일이 맡는다. */
 export function AppBar({ onMenu, onBack }: { onMenu: () => void; home?: boolean; onBack?: () => void }) {
   const theme = usePrefStore((s) => s.theme);
   const toggleTheme = usePrefStore((s) => s.toggleTheme);
@@ -115,8 +124,6 @@ export function AppBar({ onMenu, onBack }: { onMenu: () => void; home?: boolean;
   const newRelease = useNewRelease();
   const now = useLang();
   const region = useRegion();
-  const { enabled, user } = useAuthStore();
-  const openInvite = useInviteStore((s) => s.open);
   return (
     <header className="app-bar">
       <div className="app-bar__head">
@@ -140,13 +147,6 @@ export function AppBar({ onMenu, onBack }: { onMenu: () => void; home?: boolean;
       </button>
       <div className="app-bar__actions">
         <button className="px-btn px-btn--icon px-skin icon-btn" id="search-toggle" aria-label="포켓몬 검색" onClick={() => { openSearch('bar'); }}><PixelIcon name="search" /></button>
-        {/* 로그인은 머리줄에서 바로 — 안내 팝업(D07)이 승인제를 먼저 말한다. 로그인한 사람에게는 마이페이지(시트)가 선다 */}
-        {enabled ? (
-          user
-            ? <button className="px-btn px-skin px-login" id="bar-account" onClick={onMenu}><PixelIcon name="user" />마이페이지</button>
-            : <button className="px-btn px-skin px-login" id="bar-login" onClick={() => { openInvite('bar'); }}>로그인</button>
-        ) : null}
-        <button className="px-btn px-skin px-settings" id="bar-settings" onClick={() => { go('/settings'); }}>설정</button>
         {/* 버튼 글자는 "지금 누르면 갈 언어" 다 — 행동 표시. 이 글자는 사전을 타지 않는다 */}
         <button className="px-btn px-skin icon-btn lang-toggle" id="lang-toggle" aria-live="polite" data-i18n="off"
           aria-label={now === 'en' ? 'View in Korean (한국어로 보기)' : 'View in English (영어로 보기)'}
@@ -158,7 +158,7 @@ export function AppBar({ onMenu, onBack }: { onMenu: () => void; home?: boolean;
           aria-label={region === 'eu' ? '일정 기준 지역: 유럽 (누르면 한국 기준) · Schedule region: Europe' : '일정 기준 지역: 한국 (누르면 유럽 기준) · Schedule region: Korea'}
           onClick={() => { const next = region === 'eu' ? 'kr' : 'eu'; setRegion(next); track('region_switch', { region: next }); }}>
           <PixelIcon name="globe" />
-          <span className="region-toggle__code">{region === 'eu' ? 'EU · 유럽' : 'KR · 한국'}</span>
+          <span className="region-toggle__code">{region === 'eu' ? 'EU' : 'KR'}</span>
         </button>
         <button className="px-btn px-btn--icon px-skin icon-btn" id="theme-toggle" aria-label={label} aria-live="polite" data-icon={icon} title={label}
           onClick={() => { toggleTheme(); track('theme_switch', { to: themeIsDark(theme) ? 'light' : 'dark' }); }}>
@@ -171,12 +171,18 @@ export function AppBar({ onMenu, onBack }: { onMenu: () => void; home?: boolean;
   );
 }
 
-/** 왼쪽 메뉴 레일 (1100px 이상). 마이페이지 단추는 시트를 연다 — 계정 카드가 거기 산다 */
+/** 왼쪽 메뉴 레일 (1100px 이상). 계정과 설정을 먼저 찾고 그 아래에서 서비스로 이동한다. */
 export function AppNav({ now, onConsent, onMenu, onNote }: { now: string; onConsent: () => void; onMenu: () => void; onNote: () => void }) {
+  const { enabled, user, status } = useAuthStore();
   return (
     <aside className="app-nav" id="app-nav">
       <nav className="nav-menu" aria-label="서비스 이동">
-        <button type="button" className="px-btn px-btn--block px-skin px-nav__mypage" id="nav-mypage" onClick={onMenu}>마이페이지</button>
+        <div className="px-nav__utilities">
+          {enabled ? <button type="button" className="px-btn px-btn--block px-skin px-nav__mypage" id="nav-mypage" aria-haspopup="dialog" aria-controls="drawer-backdrop" onClick={onMenu}>
+            <PixelIcon name="user" />{user || status === 'loading' ? '마이페이지' : '로그인'}
+          </button> : null}
+          <SettingsItem now={now} />
+        </div>
         <a href="/" className="px-nav__item" {...(now === 'home' ? { 'aria-current': 'page' as const } : {})}>
           <PixelIcon name="home" /><span className="px-nav__label">서비스 홈</span>
         </a>
@@ -279,12 +285,12 @@ export function Drawer({ open, onClose, now, onConsent, onNote }: { open: boolea
     <div className="drawer" id="drawer-backdrop" onClick={onClose}>
       <aside className="drawer__panel" role="dialog" aria-modal="true" aria-label="전체 메뉴" onClick={(event) => event.stopPropagation()}>
         <div className="drawer__head">
-          <div><b>전체 메뉴</b><small>기존 메뉴 순서와 하위 구조 유지</small></div>
+          <div><b>전체 메뉴</b><small>계정 · 화면 설정 · 서비스 이동</small></div>
           <button className="px-btn px-btn--icon px-skin icon-btn" id="drawer-close" aria-label="닫기" onClick={onClose}><PixelIcon name="close" /></button>
         </div>
         {/* 로그인 상태는 여기 한 곳에서만 보인다 */}
         <Account onGo={onClose} />
-        <LocaleItems />
+        <LocaleItems now={now} onGo={onClose} />
         <nav className="nav-menu" aria-label="서비스 이동">
           <a href="/" className="px-nav__item" onClick={onClose} {...(now === 'home' ? { 'aria-current': 'page' as const } : {})}>
             <PixelIcon name="home" /><span className="px-nav__label">서비스 홈</span>
@@ -299,7 +305,6 @@ export function Drawer({ open, onClose, now, onConsent, onNote }: { open: boolea
             <p className="note" id="note">{routeNote(now)}</p>
           </details>
           <Trainers />
-          <ThemeItem />
         </div>
         <Version />
       </aside>
@@ -307,12 +312,12 @@ export function Drawer({ open, onClose, now, onConsent, onNote }: { open: boolea
   );
 }
 
-// 모바일에서 머리줄을 숨겨도 언어와 일정 지역은 메뉴 첫 화면에서 각각 바꿀 수 있다.
-function LocaleItems() {
+// 모바일에서 머리줄을 숨겨도 계정 바로 아래에서 표시 설정과 전체 설정을 찾을 수 있다.
+function LocaleItems({ now, onGo }: { now: string; onGo: () => void }) {
   const language = useLang();
   const region = useRegion();
   return (
-    <div className="drawer__group drawer__locale" role="group" aria-label={language === 'en' ? 'Language and schedule region' : '언어 및 일정 지역'} data-i18n="off">
+    <div className="drawer__group drawer__locale" role="group" aria-label={language === 'en' ? 'Display settings' : '화면 설정'} data-i18n="off">
       <button type="button" className="px-nav__item" id="menu-language" aria-live="polite"
         aria-label={language === 'en' ? 'View in Korean (한국어로 보기)' : 'View in English (영어로 보기)'}
         onClick={() => { const next = language === 'en' ? 'ko' : 'en'; void setLang(next); track('lang_switch', { lang: next }); }}>
@@ -327,20 +332,25 @@ function LocaleItems() {
         <span className="px-nav__label">{language === 'en' ? 'Schedule region' : '일정 기준 지역'}</span>
         <span className="drawer__value">{region === 'eu' ? (language === 'en' ? 'EU · Europe' : 'EU · 유럽') : (language === 'en' ? 'KR · Korea' : 'KR · 한국')}</span>
       </button>
+      <ThemeItem />
+      <SettingsItem now={now} onGo={onGo} />
     </div>
   );
 }
 
 /** 좁은 화면에는 머리줄에 테마 버튼 자리가 없다 — 이 줄이 그 일을 한다 (v3 #menu-theme) */
 function ThemeItem() {
+  const language = useLang();
   const theme = usePrefStore((s) => s.theme);
   const toggleTheme = usePrefStore((s) => s.toggleTheme);
   const [icon, label] = THEME_FACE[theme];
   return (
-    <button type="button" className="px-nav__item" id="menu-theme" onClick={toggleTheme} aria-label={label}>
+    <button type="button" className="px-nav__item" id="menu-theme" aria-live="polite"
+      onClick={() => { toggleTheme(); track('theme_switch', { to: themeIsDark(theme) ? 'light' : 'dark' }); }}
+      aria-label={language === 'en' ? `Theme: ${theme === 'system' ? 'System setting' : theme === 'dark' ? 'Dark (switch to Light)' : 'Light (switch to Dark)'}` : label}>
       <PixelIcon name={icon} />
-      <span className="px-nav__label">화면 테마</span>
-      <span className="drawer__value" id="menu-theme-value">{THEME_WORD[theme]}</span>
+      <span className="px-nav__label">{language === 'en' ? 'Theme' : '화면 테마'}</span>
+      <span className="drawer__value" id="menu-theme-value">{language === 'en' ? ({ system: 'System', light: 'Light', dark: 'Dark' } as const)[theme] : THEME_WORD[theme]}</span>
     </button>
   );
 }

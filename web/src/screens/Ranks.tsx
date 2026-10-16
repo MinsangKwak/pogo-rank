@@ -183,11 +183,11 @@ function RankItem({ view, row, rank, cells, nowRank, delta, unrel, dexTable, onO
 }
 
 /** 탭 줄 — 왼쪽 탭, 오른쪽 도구 단추 (피그마 08 'D-MAX 덱 짜기 →' · '계산 기준 ⓘ') */
-function TabBar({ tabs, tools }: { tabs: ReactNode; tools?: ReactNode }) {
+function TabBar({ tabs, tools, routeToolsOnly = false }: { tabs: ReactNode; tools?: ReactNode; routeToolsOnly?: boolean }) {
   return (
     <div className="rk-bar">
       {tabs}
-      {tools ? <div className="rk-bar__tools">{tools}</div> : null}
+      {tools ? <div className={`rk-bar__tools${routeToolsOnly ? ' rk-route-cta' : ''}`}>{tools}</div> : null}
     </div>
   );
 }
@@ -275,7 +275,7 @@ export function Dmax({ onOpen }: { onOpen: OpenMon }) {
           tabs={<PxTabs label="역할" items={axes} value={axis} onPick={(id) => { set('maxAxis', id as 'all' | 'dealer' | 'tank'); track('sub_max_' + id); }} />}
           tools={(
             <>
-              <button type="button" className="px-btn px-btn--primary px-skin" onClick={() => { go('/dmax/deck'); }}>D-MAX 덱 짜기 →</button>
+              <button type="button" className="px-btn px-btn--primary px-skin rk-route-cta" onClick={() => { go('/dmax/deck'); }}>D-MAX 덱 짜기 →</button>
               <button type="button" className="px-btn px-skin" aria-expanded={info} aria-controls="rk-info" onClick={() => setInfo(!info)}>
                 계산 기준 <PixelIcon name="info" />
               </button>
@@ -425,6 +425,7 @@ export function Pve({ onOpen }: { onOpen: OpenMon }) {
         <TabBar
           tabs={<PxTabs label="범위" items={[{ id: 'easy', label: '일반' }, { id: 'all', label: '전체' }]} value={mode}
             onPick={(id) => { set('pveMode', id as 'easy' | 'all'); track('sub_pve_' + id); }} />}
+          routeToolsOnly
           tools={<button type="button" className="px-btn px-btn--primary px-skin" onClick={() => { go('/pve/solo'); }}>솔플 계산기 →</button>}
         />
       </Slot>
@@ -536,7 +537,7 @@ export function Pvp({ onOpen }: { onOpen: OpenMon }) {
                 </li>
               ))}
             </ul>
-            <div className="px-note__actions">
+            <div className="px-note__actions rk-route-cta">
               <button type="button" className="px-btn px-btn--primary px-skin" onClick={() => { go('/pvp/deck'); }}>PvP 덱 짜기 →</button>
             </div>
           </div>
@@ -544,7 +545,7 @@ export function Pvp({ onOpen }: { onOpen: OpenMon }) {
         <section className="px-note px-skin px-drop">
           <p className="px-note__title">내 개체값도 확인해 보세요</p>
           <p className="px-note__body">같은 포켓몬도 개체값에 따라 리그 적합도가 달라집니다.</p>
-          <div className="px-note__actions">
+          <div className="px-note__actions rk-route-cta">
             <button type="button" className="px-btn px-skin" onClick={() => { go('/pvp/ivrank'); }}>PvP 개체값 순위 →</button>
           </div>
         </section>

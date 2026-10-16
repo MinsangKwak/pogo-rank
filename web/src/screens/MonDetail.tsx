@@ -446,7 +446,7 @@ export default function MonDetail({ pick, onClose, inline = false, onDeep, here 
       <ShareBtn mon={mon} />
       {/* 도감 화면 위의 팝업이면 두지 않는다 — 누르면 팝업만 닫혀 ✕ 와 같았다. 페이지는 맨 위 줄의 '← 도감으로' 가 그 자리다 */}
       {here === 'dex' || inline ? null : (
-        <button type="button" className="px-btn px-skin" onClick={() => { go('/dex'); onClose?.(); }}>
+        <button type="button" className="px-btn px-skin pxd-route-cta" onClick={() => { go('/dex'); onClose?.(); }}>
           <PxIcon emoji="📕" /><span className="btn-label">포켓몬 도감</span>
         </button>
       )}
@@ -503,7 +503,7 @@ export default function MonDetail({ pick, onClose, inline = false, onDeep, here 
           </div>
         )}
       </PxDialogBody>
-      <PxDialogFoot className="pxd__foot" hint={brief ? '자세한 건 도감을 참고하세요!' : undefined}>{dock}</PxDialogFoot>
+      <PxDialogFoot className={`pxd__foot${brief && screen !== 'calc' ? ' pxd-route-cta' : ''}`} hint={brief ? '자세한 건 도감을 참고하세요!' : undefined}>{dock}</PxDialogFoot>
     </PxDialog>
   );
 }

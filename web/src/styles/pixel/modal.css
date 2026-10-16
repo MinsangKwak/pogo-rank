@@ -234,7 +234,7 @@ html body #root .pxd-palette__field input { border: 0; outline: 0; box-shadow: n
 
 html body #root .pxd-dock__compact { display: none; }
 
-/* 모바일 상세 — 세 진화 단계와 이동 단추를 각각 한 줄에 둔다.
+/* 모바일 상세 — 세 진화 단계는 한 줄, 다른 화면으로 가는 보조 단추는 접는다.
    분기 진화는 단계 안에서 세로로 쌓아 순서를 유지한다. */
 @media (max-width: 699px) {
   html body #root .pxd-evo { column-gap: 0.8rem; }
@@ -245,10 +245,7 @@ html body #root .pxd-dock__compact { display: none; }
   html body #root .pxd-evo__mon .px-ball { --ball: 6.4rem; width: min(6.4rem, 100%); height: auto; aspect-ratio: 1; }
   html body #root .pxd-evo__stage--mega .pxd-evo__card { width: calc((100% - 1.6rem) / 3); }
   html body #root .pxd-evo__note { font-size: 1.2rem; }
-  html body #root .pxd-dialog--brief .pxd__foot { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.8rem; padding: 1.2rem 1.2rem calc(1.2rem + env(safe-area-inset-bottom)); }
-  html body #root .pxd-dialog--brief .px-dialog__hint { grid-column: 1 / -1; }
-  html body #root .pxd-dialog--brief .pxd__foot > .px-btn { min-width: 0; padding: 0 0.4rem; gap: 0.4rem; font-size: 1.2rem; white-space: nowrap; }
-  html body #root .pxd-dialog--brief .pxd__foot .px-icon { display: none; }
+  html body #root .px-dialog .pxd-route-cta { display: none; }
   html body #root .pxd-dock__wide { display: none; }
   html body #root .pxd-dock__compact { display: inline; }
   html body #root .px-dialog .px-dialog__head { gap: 0.8rem; padding: 1.6rem 1.2rem 1.2rem; }

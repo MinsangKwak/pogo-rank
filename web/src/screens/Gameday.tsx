@@ -19,7 +19,7 @@ import { PxChips, PxViewSwitch, Sprite } from '../components/Bits';
 import { NwBadge, NwFoot, NwMetric, NwNote, NwNoteBody, NwSecHead } from '../components/NewsBits';
 import MonCard, { PokemonNumberRibbon } from '../components/MonCard';
 import { PixelIcon } from '../components/PixelIcon';
-import type { OpenMon } from '../lib/mon';
+import { dexNoOf, type OpenMon } from '../lib/mon';
 import { Slot } from '../components/Slots';
 import { NameNode } from '../components/Row';
 import { usePrefStore, readCols } from '../stores/pref';
@@ -58,7 +58,7 @@ function metaOf(mon: GamedayMon, kind: 'raid' | 'egg'): string {
 /** 격자 카드 — 공용 MonCard 에 번호 · 메타를 얹는다. 폼 번호(10000대)는 도감 표에서 원종 번호를 찾는다 */
 function Card({ mon, kind, onOpen }: { mon: GamedayMon; kind: 'raid' | 'egg'; onOpen: OpenMon }) {
   const { data } = useDex();
-  const no = data.DEX_DATA.dex[String(mon.sprite)];
+  const no = dexNoOf(mon.sprite, data.DEX_DATA.dex) ?? undefined;
   return (
     <MonCard sprite={mon.sprite} {...(no !== undefined ? { dex: no } : {})} name={mon.name} types={mon.types ?? []}
       meta={metaOf(mon, kind)} from={kind === 'raid' ? 'raids' : 'eggs'} onOpen={onOpen} />
@@ -69,7 +69,7 @@ function Card({ mon, kind, onOpen }: { mon: GamedayMon; kind: 'raid' | 'egg'; on
 function RowItem({ mon, kind, onOpen }: { mon: GamedayMon; kind: 'raid' | 'egg'; onOpen: OpenMon }) {
   const { data } = useDex();
   const types = (mon.types ?? []).map((type) => data.TYPE_KO[type] ?? type).join(' · ');
-  const no = data.DEX_DATA.dex[String(mon.sprite)];
+  const no = dexNoOf(mon.sprite, data.DEX_DATA.dex) ?? undefined;
   return (
     <li className="nw-row-item">
       <PokemonNumberRibbon dex={no} className="nw-row__dex" />
@@ -108,7 +108,7 @@ function Hero({ mon, onOpen }: { mon: GamedayMon; onOpen: OpenMon }) {
   const card = board.find((one) => one.kind === 'raid5' && (one.detailName === mon.name || one.name === mon.name)) ?? null;
   const counters = countersOf(src, 'raid', mon.types ?? [], 3);
   const types = (mon.types ?? []).map((type) => data.TYPE_KO[type] ?? type);
-  const no = data.DEX_DATA.dex[String(mon.sprite)];
+  const no = dexNoOf(mon.sprite, data.DEX_DATA.dex) ?? undefined;
   return (
     <section className="nw-boss-frame" aria-label={`${mon.name} 전설 레이드`}>
       <PokemonNumberRibbon dex={no} className="nw-boss__dex" />
@@ -132,7 +132,7 @@ function Hero({ mon, onOpen }: { mon: GamedayMon; onOpen: OpenMon }) {
           </div>
           <div className="nw-boss__actions">
             <button type="button" className="px-btn px-skin px-btn--primary" onClick={() => onOpen({ sprite: mon.sprite, name: mon.name, types: mon.types })}>보스 상세 보기</button>
-            <a className="px-btn px-skin" href="/pve/solo">솔플 계산기</a>
+            <a className="px-btn px-skin nw-boss__route-cta" href="/pve/solo">솔플 계산기</a>
           </div>
         </div>
         <div className="nw-boss__side">

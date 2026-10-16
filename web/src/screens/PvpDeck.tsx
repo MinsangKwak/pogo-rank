@@ -155,7 +155,7 @@ export default function PvpDeck({ onOpen }: { onOpen: OpenMon }) {
 
   /** 추천 덱 카드 한 장 — 전략 덱과 맞춤 덱이 같은 모양 */
   const deckCard = (mon: PvpRow, index: number, score: string, note: string, onSwap?: () => void) => (
-    <SlotCard key={`${mon.sprite}-${index}`} index={index} role={SLOT_ROLE[index] ?? ''} roleTone="purple"
+    <SlotCard key={`${mon.sprite}-${index}`} compact index={index} role={SLOT_ROLE[index] ?? ''} roleTone="purple"
       sprite={mon.sprite} name={word(mon.name)} types={mon.types.map(ko).join(' · ')} moves={[mon.fast, mon.charged].filter(Boolean).join(' · ')}
       metric="SCORE" value={score} note={note} onOpen={() => openMon(mon)} onSwap={onSwap} />
   );
@@ -193,16 +193,17 @@ export default function PvpDeck({ onOpen }: { onOpen: OpenMon }) {
         </section>
 
         {/* ② 상대 1~3마리 */}
-        <section className="px-panel px-skin px-drop pxt-foes" aria-labelledby="pvp-foe-title">
+        <section className="pxt-sec pxt-foes" aria-labelledby="pvp-foe-title">
           <SecHead id="pvp-foe-title" title="상대 포켓몬 1–3마리" note="상대를 추가할수록 추천이 구체적이에요." />
-          <CandList>
+          <CandList label="상대 포켓몬 세 칸">
             {[0, 1, 2].map((index) => {
               const foe = foes[index];
               return (
                 <CandRow key={index} sprite={foe?.sprite ?? null} name={foe ? word(foe.name) : `상대 ${index + 1}`} muted={!foe}
                   lines={[foe ? foe.types.map(ko).join(' · ') : '아직 비어 있어요']}
+                  onOpen={foe ? () => onOpen({ sprite: foe.sprite, name: foe.name, types: foe.types }) : undefined}
                   ops={<>
-                    <button type="button" className="px-btn px-btn--sm px-skin" onClick={() => setSwap({ kind: 'foe', index })}>{foe ? '상대 변경 ↗' : '상대 추가'}</button>
+                    <button type="button" className="px-btn px-btn--sm px-skin pxt-foe-pick" aria-label={`상대 ${index + 1} ${foe ? '변경' : '추가'}`} onClick={() => setSwap({ kind: 'foe', index })}>{foe ? '상대 변경 ↗' : '상대 추가'}</button>
                     {foe ? <button type="button" className="px-btn px-btn--sm px-btn--icon px-skin" aria-label={`${foe.name} 빼기`} onClick={() => removeFoe(index)}><PixelIcon name="close" /></button> : null}
                   </>} />
               );
