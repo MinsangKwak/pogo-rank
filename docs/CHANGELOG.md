@@ -29,6 +29,22 @@
 2026-10-15에 새 홈과 v5.10.2의 운영 배포를 마쳤습니다. 아래 v5.10.x 항목의 운영 보류 표기는 각 릴리스 작성 당시 상태입니다. [배포 결과](https://github.com/MinsangKwak/pogo-rank/actions/runs/38682428361)
 
 <details open>
+<summary><b>2026-10-15</b> — 1판 · <code>v5.10.3</code></summary>
+
+<details>
+<summary><b>v5.10.3</b> · 달력 — 와일드 위크</summary>
+
+**배경** — 매일 23:50 루틴(10/15). 10/14 공식 한국어 공지 '강철타입, 드래곤타입 포켓몬과 모험을 떠나는 "와일드 위크" 이벤트!'(11/9 10:00 ~ 11/13 20:00) — 다이맥스 레지드래고(별5 맥스배틀) · 다이맥스 멜탄(GO패스) 첫 등장.
+
+**변경** — `content/schedule.mjs` 11월에 '와일드 위크' 수동 일정(자동분 영문 원제 'Into the Wild' 를 덮음)과 별5 맥스배틀 D-MAX 줄 셋(11/11 레지스틸 · 11/12 레지드래고 · 11/13 라티아스 · 라티오스). `backend/config/max_released.txt` '예정' 블록에 다이맥스 멜탄(11/9) · 레지드래고(11/12)를 주석으로 — 출시일이 지나면 활성 줄로 올린다. 봇 수집 [#378](https://github.com/MinsangKwak/pogo-rank/pull/378) 병합 — 게임 업데이트 아카이브에 같은 공지(한 · 영 원문).
+
+검사 — frontend-v4 `version` · web `npm test`.
+
+</details>
+
+</details>
+
+<details>
 <summary><b>2026-10-14</b> — 1판 · <code>v5.10.2</code></summary>
 
 <details>

@@ -5,7 +5,7 @@
 
 [서비스](https://moncamp.kr/) · [개발 미리보기](https://dev.moncamp.kr/) · [개발 가이드](docs/DEVELOPMENT.md) · [변경 이력](docs/CHANGELOG.md)
 
-> 2026-10-15 확인 기준으로 dev·main·deploy의 앱 버전은 **v5.10.2**입니다. 새 홈과 해당 버전의 운영 반영을 마쳤습니다. 현재 앱은 `web/`의 Next.js이고, `frontend-v4/`는 데이터 추출과 Storybook에 계속 사용합니다.
+> 2026-10-15 확인 기준으로 dev·main·deploy의 앱 버전은 **v5.10.2**입니다(dev는 v5.10.3). 새 홈과 해당 버전의 운영 반영을 마쳤습니다. 현재 앱은 `web/`의 Next.js이고, `frontend-v4/`는 데이터 추출과 Storybook에 계속 사용합니다.
 
 ## 포트폴리오 — 세 장으로 읽기
 
@@ -138,6 +138,13 @@ PvP 순위는 PvPoke, 게임 수치는 PokeMiners, 한국어 명칭은 PokeAPI, 
 ## 최근 릴리스
 
 아래는 각 릴리스 작성 당시의 기록입니다. 당시 보류됐던 v5.10.x와 새 홈은 2026-10-15에 운영 반영했습니다. [Pages 배포 결과](https://github.com/MinsangKwak/pogo-rank/actions/runs/38682428361)
+
+<details>
+<summary><b>2026-10-15</b> — 릴리스 1개 · <code>v5.10.3</code></summary>
+
+v5.10.3에서는 11월 9~13일 '와일드 위크'의 공식 한국어 제목과 별5 맥스배틀 일정(레지스틸 · 레지드래고 첫 등장 · 라티아스 · 라티오스)을 달력에 반영했습니다. 10월 14일 공식 한국어 공지로 확인했고, 게임 업데이트 게시판에도 같은 공지를 연결했습니다.
+
+</details>
 
 <details>
 <summary><b>2026-10-14</b> — 릴리스 1개 · <code>v5.10.2</code></summary>

@@ -15,6 +15,9 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 export const RELEASE_NOTES_EN = {
+  '2026-10-15 · v5.10.3': [
+    "**The calendar now shows 'Into the Wild' (Nov 9–13) under its official Korean title** — a Steel- and Dragon-type event. Dynamax Regidrago debuts in five-star Max Battles on Nov 12, and Dynamax Meltan debuts through 'GO Pass: Into the Wild'. The daily five-star Max Battle bosses (Registeel on Nov 11, Regidrago on Nov 12, Latias and Latios on Nov 13) are listed as D-MAX rows by date. The notice is also collected on the Game Updates board",
+  ],
   '2026-10-14 · v5.10.2': [
     "**The calendar now shows 'Chandelure Super Mega Raid Day' on Oct 31 (2–5 p.m.)** — the date had been announced without a boss; it is now Mega Chandelure, making its debut with Mega Level up to Super Max. The notice is also collected on the Game Updates board",
   ],
