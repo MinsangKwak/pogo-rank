@@ -1,1 +1,154 @@
-/* pixel/ranks.css — v6 화면 배치. 조각(parts.css)은 모양, 여기는 자리만 둔다 */
+/* ─────────────────────────────────────────────────────────────────────────────
+   pixel/ranks.css — v6 화면 배치: 포켓몬 도감(07) · D-MAX(08) · 레이드 PvE(10) · 배틀 PvP(12)
+
+   조각(parts.css)은 모양, 여기는 자리만 둔다. 접두사 `html body #root` 는 옛 v3 · cinema 스킨을 이기는 장치다 —
+   같은 자리를 `.layout #controls` · `html body #root .screen-tabs` 처럼 잡고 있어 순서만으로는 못 이긴다.
+   순위 세 화면의 자리는 셸이 미리 세워 둔 #screen-tabs · (이번 주 보스) · #controls · #content 셋이라(App.tsx),
+   그 상자에 간격만 주고 안의 조각은 `rk-*` 클래스로 잡는다. 도감은 페이지(#page > .page-body > .rk-page)다.
+   ───────────────────────────────────────────────────────────────────────────── */
+
+/* ── 셸 자리 간격 — 순위 세 화면만 (덱 짜기 · 솔플 · 개체값은 제 파일이 잡는다) ──────────── */
+html body:is([data-route="dmax"], [data-route="pve"], [data-route="pvp"]) #root .layout > .screen-tabs { margin: 0 0 2.4rem; padding: 0; border: 0; background: transparent; box-shadow: none; }
+html body:is([data-route="dmax"], [data-route="pve"], [data-route="pvp"]) #root .layout > #controls { display: flex; flex-direction: column; gap: 1.6rem; margin: 0 0 3.2rem; padding: 0; border: 0; background: transparent; box-shadow: none; }
+html body:is([data-route="dmax"], [data-route="pve"], [data-route="pvp"]) #root .layout > #controls:empty, html body:is([data-route="dmax"], [data-route="pve"], [data-route="pvp"]) #root .layout > .screen-tabs:empty { display: none; }
+html body:is([data-route="dmax"], [data-route="pve"], [data-route="pvp"]) #root .layout > #content { display: flex; flex-direction: column; gap: 1.6rem; }
+html body #root .rk-page { display: flex; flex-direction: column; gap: 1.6rem; }
+
+/* ── 탭 줄 — 왼쪽 탭, 오른쪽 도구 단추 ────────────────────────────────────── */
+html body #root .rk-bar { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 1.2rem 2.4rem; }
+html body #root .rk-bar > .px-tabs { flex: 1 1 32rem; min-width: 0; }
+html body #root .rk-bar__tools { display: flex; flex-wrap: wrap; gap: 1.2rem; margin-left: auto; padding-bottom: var(--px-drop); }
+/* 탭 · 칩에 그림자 — 시안의 탭은 계단 그림자가 있다. 가로 스크롤 줄은 바닥 여백이 그림자 자리다 */
+html body #root :is(.rk-bar, .layout > #controls, .dx-filters) :is(.px-tab, .px-chip) { filter: drop-shadow(var(--px-drop) var(--px-drop) 0 var(--px-shade, var(--px-shadow))); }
+html body #root .px-tab { min-width: 12rem; }
+/* 타입 칩 앞의 타입색 점 — 색은 게임 타입색 토큰 그대로(--t-*) */
+html body #root .px-typedot { display: inline-block; width: 0.8rem; height: 0.8rem; margin-right: 0.4rem; background: currentColor; }
+
+/* ── 토글 줄 — 스위치들 + 카드/목록 전환 ─────────────────────────────────── */
+html body #root .rk-toggles { display: flex; flex-wrap: wrap; align-items: center; gap: 1.2rem 2.4rem; }
+html body #root .rk-toggles > .px-view { margin-left: auto; }
+html body #root .px-view { display: flex; gap: 0.8rem; }
+html body #root .px-view .px-btn[aria-pressed="true"] { --px-fill: var(--brand-primary); --px-line: var(--px-red-edge); --px-shine: var(--px-red-glint); color: var(--on-brand); }
+
+/* ── 이번 주 보스 판 (components/BossAcc.tsx) ───────────────────────────────── */
+html body #root .rk-boss { margin: 0 0 2.4rem; }
+html body #root .rk-boss__lead { color: var(--muted); font-weight: 500; }
+html body #root .rk-boss__date { color: var(--muted); font-weight: 400; }
+html body #root .rk-boss__acc { margin-top: 0.4rem; }
+html body #root .rk-boss__acc > summary { list-style: none; width: max-content; max-width: 100%; }
+html body #root .rk-boss__acc > summary::-webkit-details-marker { display: none; }
+html body #root .rk-boss__acc[open] > summary { --px-fill: var(--brand-subtle); }
+html body #root .rk-boss__body { display: flex; flex-direction: column; gap: 1.2rem; margin-top: 1.6rem; }
+html body #root .rk-recs { display: grid; grid-template-columns: repeat(auto-fill, minmax(24rem, 1fr)); gap: 1.2rem; margin: 0; padding: 0; list-style: none; }
+html body #root .rk-rec { display: flex; align-items: center; gap: 1.2rem; box-sizing: border-box; width: 100%; min-height: var(--tap); padding: 0.8rem 1.2rem; --px-fill: var(--panel-2); color: var(--fg); font: 500 1.4rem/1.5 var(--font-body); text-align: left; cursor: pointer; }
+@media (hover: hover) { html body #root .rk-rec:hover { --px-line: var(--brand-text); } }
+html body #root .rk-rec .px-ball { --ball: 5.6rem; }
+html body #root .rk-rec__main { display: flex; flex-direction: column; gap: 0.4rem; min-width: 0; }
+html body #root .rk-rec__name { display: flex; flex-wrap: wrap; align-items: center; gap: 0.4rem; }
+html body #root .rk-rec__sub { color: var(--muted); font: 400 1.2rem/1.5 var(--font-body); }
+
+/* ── 구역 제목 — 제목 + 한 마디 + (도감) 지우기 ─────────────────────────────── */
+html body #root .rk-head { margin-top: 0.8rem; }
+html body #root .rk-head__title { display: flex; flex-wrap: wrap; align-items: center; gap: 0.8rem; }
+html body #root .rk-tier__head { margin-top: 1.6rem; }
+html body #root .rk-tier__name { color: var(--fg); font: 700 2.2rem/1.2 var(--font-body); letter-spacing: -0.02em; }
+html body #root .rk-tier__head[data-tier="s"] .rk-tier__name { color: var(--brand-text); }
+html body #root .rk-tier__head[data-tier="a"] .rk-tier__name { color: var(--yellow); }
+html body #root .rk-tier__head[data-tier="b"] .rk-tier__name { color: var(--blue); }
+
+/* ── 카드 격자 · 목록 ───────────────────────────────────────────────────────── */
+html body #root .rk-grid { padding-bottom: var(--px-drop); }
+html body #root .rk-grid > li { display: flex; min-width: 0; margin: 0; padding: 0; }
+html body #root .rk-grid > li > .px-mon { flex: 1; }
+html body #root .rk-list { display: flex; flex-direction: column; gap: 0.8rem; margin: 0; padding: 0 0 var(--px-drop); list-style: none; }
+html body #root .rk-row { --px-fill: var(--panel); }
+@media (hover: hover) { html body #root .rk-row:hover { --px-line: var(--brand-text); } }
+html body #root .rk-row__btn { display: flex; align-items: center; gap: 1.2rem; box-sizing: border-box; width: 100%; min-height: 6.4rem; margin: 0; padding: 0.8rem 1.6rem; border: 0; background: none; color: var(--fg); font: inherit; text-align: left; cursor: pointer; }
+html body #root .rk-row__btn:focus-visible { outline: var(--px-stroke) solid var(--brand-focus); outline-offset: -0.4rem; }
+html body #root .rk-row__rank { flex: none; min-width: 4.4rem; justify-content: center; }
+html body #root .rk-row__rank.is-first { --px-fill: var(--brand-primary); --px-line: var(--px-red-edge); --px-badge-c: var(--on-brand); }
+html body #root .rk-row__no { flex: none; min-width: 5.2rem; }
+html body #root .rk-row__art { --ball: 4.8rem; }
+html body #root .rk-row__main { flex: 1; display: flex; flex-direction: column; gap: 0.4rem; min-width: 0; }
+html body #root .rk-row__name { display: flex; flex-wrap: wrap; align-items: center; gap: 0.4rem 0.8rem; color: var(--fg); font: 700 1.6rem/1.5 var(--font-body); word-break: keep-all; }
+html body #root .rk-row__name b { font-weight: 700; }
+html body #root .rk-row__types, html body #root .rk-row__lines { display: flex; flex-wrap: wrap; gap: 0.4rem 0.8rem; color: var(--muted); font: 400 1.2rem/1.5 var(--font-body); }
+html body #root .rk-row__lines > span + span::before { content: '·'; margin-right: 0.8rem; color: var(--faint); }
+html body #root .rk-row__stats { flex: none; display: flex; flex-direction: column; align-items: flex-end; gap: 0.2rem; min-width: 8rem; text-align: right; }
+html body #root .rk-row__label { color: var(--muted); font: 500 1.2rem/1.5 var(--font-body); }
+html body #root .rk-row__score { color: var(--mint); font: 700 2.2rem/1.2 var(--font-mono); font-variant-numeric: tabular-nums; }
+html body #root .rk-row__sub { color: var(--muted); font: 400 1.2rem/1.5 var(--font-body); }
+/* 미구현 줄 · 카드는 흐리게 남긴다 — 지우지 않는다 (v3.36.0 의 판단) */
+html body #root :is(.rk-row, .rk-grid > li, .rk-table tr).is-unreleased { opacity: 0.6; }
+/* 상세의 '더보기' 로 내려온 줄 — 잠깐 밝힌다 (Row.tsx useFocusRow) */
+html body #root :is(.rk-row, .rk-grid > li).is-focus, html body #root :is(.rk-row, .rk-grid > li).is-focus > .px-mon { --px-line: var(--brand-focus); }
+html body #root .rk-more { margin-top: 0.8rem; }
+
+/* 카드 머리의 배지들 — 번호 · 순위 · 폼 배지 · ☆ 가 한 줄에 선다. 좁으면 배지가 줄을 바꾼다 */
+html body #root .px-mon__head { flex-wrap: wrap; row-gap: 0.4rem; }
+html body #root .px-mon__meta .dex__use { color: var(--muted); }
+
+/* ── 레이드 표 — 데스크톱은 표, 699px 아래는 줄이 카드가 된다 ─────────────────── */
+html body #root .rk-tablewrap { --px-fill: var(--panel); padding: 0.4rem 0.8rem; overflow-x: auto; margin-bottom: var(--px-drop); }
+html body #root .rk-table tbody tr { cursor: pointer; }
+@media (hover: hover) { html body #root .rk-table tbody tr:hover td { background: var(--panel-2); } }
+html body #root .rk-table tbody tr:focus-visible { outline: var(--px-stroke) solid var(--brand-focus); outline-offset: -0.2rem; }
+html body #root .rk-table__mon { display: flex; align-items: center; gap: 1.2rem; min-width: 22rem; }
+html body #root .rk-table__mon .px-ball { --ball: 4.8rem; }
+html body #root .rk-table__moves { color: var(--muted); font-size: 1.2rem; max-width: 24rem; }
+html body #root .rk-table td.is-num { font: 500 1.4rem/1.5 var(--font-mono); font-variant-numeric: tabular-nums; }
+html body #root .rk-table td.rk-table__score { color: var(--mint); font-weight: 700; }
+@media (max-width: 699px) {
+  html body #root .rk-tablewrap { --px-fill: transparent; padding: 0; border: 0; overflow: visible; margin: 0; }
+  html body #root .rk-tablewrap::before { display: none; }
+  html body #root .rk-table, html body #root .rk-table tbody { display: block; }
+  html body #root .rk-table thead { display: none; }
+  html body #root .rk-table tbody { display: flex; flex-direction: column; gap: 0.8rem; padding-bottom: var(--px-drop); }
+  html body #root .rk-table tbody tr { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 0.8rem 1.2rem; box-sizing: border-box; padding: 1.2rem 1.6rem; border: var(--px-stroke) solid var(--px-edge); background: var(--panel); filter: drop-shadow(var(--px-drop) var(--px-drop) 0 var(--px-shadow)); }
+  html body #root .rk-table tbody td { display: block; padding: 0; border: 0; background: transparent; }
+  html body #root .rk-table tbody td:first-child { grid-row: 1; }
+  html body #root .rk-table__mon { grid-column: 2; grid-row: 1; min-width: 0; }
+  html body #root .rk-table tbody td:nth-child(n+3) { grid-column: 1 / -1; display: flex; justify-content: space-between; gap: 1.2rem; text-align: left; }
+  html body #root .rk-table tbody td:nth-child(n+3)::before { content: attr(data-label); color: var(--muted); font: 500 1.2rem/1.5 var(--font-body); }
+  html body #root .rk-table__moves { max-width: none; }
+}
+
+/* ── 안내 판 · 바닥 판 ───────────────────────────────────────────────────────── */
+html body #root .rk-info { margin-bottom: var(--px-drop); }
+html body #root .rk-notes { margin-top: 1.6rem; padding-bottom: var(--px-drop); }
+html body #root .rk-notes--pvp { display: grid; grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); gap: 1.6rem; }
+html body #root .rk-synergy__row { display: flex; flex-wrap: wrap; align-items: center; gap: 1.6rem 2.4rem; margin-top: 0.8rem; }
+html body #root .rk-synergy__balls { display: flex; gap: 1.2rem; margin: 0; padding: 0; list-style: none; }
+html body #root .rk-synergy__ball { --ball: 6.4rem; display: block; padding: 0; border: 0; background-color: transparent; cursor: pointer; }
+html body #root .rk-synergy__row > .px-note__actions { margin: 0 0 0 auto; }
+
+/* ── 도감 — 검색 줄 · 필터 묶음 ────────────────────────────────────────────── */
+html body #root .dx-search { display: flex; flex-wrap: wrap; align-items: center; gap: 1.2rem 1.6rem; padding-bottom: var(--px-drop); }
+html body #root .dx-search__box { flex: 1 1 32rem; margin: 0; }
+html body #root .dx-search__box .px-icon { color: var(--muted); }
+/* 옛 검색칸 규칙(.dex__search · input[type=search])이 칠과 테두리를 남긴다 — 판 안에서는 글자만 */
+html body #root .dx-search__box input { min-height: 0; padding: 0; border: 0; background: transparent; box-shadow: none; border-radius: 0; }
+html body #root .dx-filters { display: flex; flex-direction: column; gap: 1.2rem; }
+html body #root .dx-filters__hint { margin-top: -0.4rem; }
+html body #root .dex__found-clear { margin-left: auto; }
+
+/* ── 좁은 화면 ───────────────────────────────────────────────────────────────── */
+@media (max-width: 1099px) {
+  html body #root .rk-notes--pvp { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 699px) {
+  html body #root .rk-bar { gap: 1.2rem; }
+  html body #root .rk-bar > .px-tabs { flex-basis: 100%; }
+  html body #root .rk-bar__tools { margin-left: 0; }
+  html body #root .rk-bar__tools > .px-btn { flex: 1; }
+  html body #root .px-tab { min-width: 0; }
+  html body #root .rk-toggles { gap: 0.8rem 1.6rem; }
+  html body #root .rk-toggles > .px-view { margin-left: 0; width: 100%; }
+  html body #root .rk-toggles > .px-view > .px-btn { flex: 1; }
+  html body #root .rk-row__btn { flex-wrap: wrap; padding: 1.2rem; }
+  html body #root .rk-row__no { min-width: 0; }
+  html body #root .rk-row__stats { flex-basis: 100%; flex-direction: row; align-items: baseline; justify-content: flex-end; gap: 0.8rem; min-width: 0; }
+  html body #root .rk-recs { grid-template-columns: minmax(0, 1fr); }
+  html body #root .dx-search > .px-view { width: 100%; }
+  html body #root .dx-search > .px-view > .px-btn { flex: 1; }
+}

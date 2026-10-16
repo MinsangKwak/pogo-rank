@@ -319,3 +319,58 @@ export function ViewToggle({ view, onToggle, extraClass = 'js-head-action' }: {
     </button>
   );
 }
+
+// ── v6 픽셀 조각 (2026-10-16) — 탭 · 칩 · 스위치 · 카드/목록 전환 ────────────────────────
+// 모양은 pixel/parts.css 의 px-tab · px-chip · px-toggle · px-btn 이 가진다. 여기는 상태(aria-*)만 적는다.
+// 옛 Seg · ChipGroup 은 그대로 둔다 — 덱 짜기 · 솔플 · 개체값 순위가 아직 그쪽을 쓴다
+
+/** 화면 위 탭 줄 — 하나만 고른다. 좁은 화면에서는 가로로 흐른다(px-tabs--scroll) */
+export function PxTabs({ items, value, onPick, label }: { items: ChipDef[]; value: string; onPick: (id: string) => void; label?: string }) {
+  return (
+    <div className="px-tabs px-tabs--scroll" role="tablist" aria-label={label}>
+      {items.map((item) => (
+        <button key={item.id} type="button" role="tab" className="px-tab px-skin"
+          aria-selected={item.id === value} onClick={() => onPick(item.id)}>
+          {item.label}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+/** 칩 줄 — 타입 칩은 앞에 타입색 점이 선다. 여러 개를 켜는 자리(도감 타입)는 pressed 를 집합으로 받는다 */
+export function PxChips({ items, value, pressed, onPick, label }: {
+  items: ChipDef[]; value?: string; pressed?: readonly string[]; onPick: (id: string) => void; label?: string;
+}) {
+  const on = (id: string) => (pressed ? pressed.includes(id) : id === value);
+  return (
+    <div className="px-chips px-chips--scroll" role="group" aria-label={label}>
+      {items.map((item) => (
+        <button key={item.id} type="button" className="px-chip px-skin" aria-pressed={on(item.id)} onClick={() => onPick(item.id)}>
+          {item.type ? <i className="px-typedot" aria-hidden="true" style={{ color: `var(--t-${item.type})` }} /> : null}
+          {item.label}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+/** 켬/끔 스위치 — 옛 check-toggle 의 자리. 상태는 aria-checked 가 말한다 */
+export function PxSwitch({ text, checked, onChange, title }: { text: string; checked: boolean; onChange: (next: boolean) => void; title?: string }) {
+  return (
+    <button type="button" role="switch" className="px-toggle" aria-checked={checked} title={title} onClick={() => onChange(!checked)}>
+      <span className="px-toggle__track" aria-hidden="true" />
+      <span>{text}</span>
+    </button>
+  );
+}
+
+/** 카드 / 목록 전환 — 두 단추가 한 쌍이다. 누른 쪽이 지금 보기다 (옛 ViewToggle 은 "누르면 될 보기" 를 적었다) */
+export function PxViewSwitch({ view, onPick }: { view: 'grid' | 'list'; onPick: (view: 'grid' | 'list') => void }) {
+  return (
+    <div className="px-view" role="group" aria-label="보기 방식" data-view={view}>
+      <button type="button" className="px-btn px-btn--sm px-skin" aria-pressed={view === 'grid'} onClick={() => onPick('grid')}>▦ 카드</button>
+      <button type="button" className="px-btn px-btn--sm px-skin" aria-pressed={view === 'list'} onClick={() => onPick('list')}>☷ 목록</button>
+    </div>
+  );
+}

@@ -20,18 +20,23 @@
 // ─────────────────────────────────────────────────────────────────────────────
 import { go } from '../lib/nav';
 
-import { useMax, usePve, usePvp, useDex } from '../lib/data';
+import { useMax, usePve, usePvp, useDex, useUsage } from '../lib/data';
+import { BASE } from '../lib/base';
 import { useRankStore } from '../stores/rank';
 import { usePrefStore, readCols } from '../stores/pref';
-import { Chips, CheckToggle, FilterBox, ScreenTabs, ToolBtn, ViewToggle, type ChipDef } from '../components/Bits';
+import { PxChips, PxSwitch, PxTabs, PxViewSwitch, Sprite, type ChipDef } from '../components/Bits';
 import { Slot } from '../components/Slots';
 import BossAcc from '../components/BossAcc';
-import { Row, RowHead, RowList, RowMore, ROW_SHOW, TierHead, TIER_ORDER, useExpanded, useFocusRow } from '../components/Row';
+import { NameNode, RankList, RankMore, RankRow, RowHead, ROW_SHOW, TierHead, TIER_ORDER, useExpanded, useFocusRow } from '../components/Row';
+import MonCard from '../components/MonCard';
+import { PixelIcon } from '../components/PixelIcon';
+import { dexNoOf } from '../lib/mon';
+import { usageCountFor } from '../lib/usage';
 import { track } from '../lib/track';
 import { useAuthStore } from '../stores/auth';
 import { LEAGUES } from '../lib/leagues';
 import type { OpenMon } from '../lib/mon';
-import { Fragment, useCallback, useEffect } from 'react';
+import { Fragment, useCallback, useEffect, useState, type ReactNode } from 'react';
 import type { DmaxRow, PveRow, PvpRow, LeagueKey } from '../types/data';
 import { num, word, lines as keep } from '../lib/cell';
 import { maxVisible } from '../lib/maxVisible';
@@ -53,7 +58,7 @@ function typeChips(typeKo: Record<string, string>, allLabel = '전체'): ChipDef
 function useView(screen: string) {
   const saved = usePrefStore((s) => s.cols[screen]) ?? readCols(screen);
   const setCols = usePrefStore((s) => s.setCols);
-  return { view: saved, toggle: () => setCols(screen, saved === 'grid' ? 'list' : 'grid') };
+  return { view: saved, pick: (next: 'grid' | 'list') => setCols(screen, next) };
 }
 
 /**
@@ -79,6 +84,7 @@ export function dmaxCells(axis: 'all' | 'dealer' | 'tank', boss: string, row: Dm
     const body = `체력 ${num(row.hp)} × 방어 ${num(row.def)}`;
     return {
       score: num(row.ehp),
+      label: 'EHP',
       // 보스를 고르면 그 타입에 받는 배율이 한 칸 더 붙는다
       sub: boss === 'overall' ? `EHP · ${body}` : `EHP · 받는 배율 ×${num(row.mult)} · ${body}`,
       lines: keep(joinNote, soonNote),
@@ -89,11 +95,12 @@ export function dmaxCells(axis: 'all' | 'dealer' | 'tank', boss: string, row: Dm
   if (axis === 'all') {
     return {
       score: `${num(row.pct ?? Math.round(row.score))}%`,
+      label: '점수',
       sub: `공격 ${num(row.atk)} · 위력 ${num(row.power)}${row.stab ? ' · 자속' : ''} · 내구 ${num(row.bulk ?? 0)}`,
       lines: moves,
     };
   }
-  return { score: num(row.dmg ?? Math.round(row.score)), sub: `맥스 피해 · 내구 ${num(row.bulk)}`, lines: moves };
+  return { score: num(row.dmg ?? Math.round(row.score)), label: '맥스 피해', sub: `맥스 피해 · 내구 ${num(row.bulk)}`, lines: moves };
 }
 
 /**
@@ -105,18 +112,96 @@ export function dmaxCells(axis: 'all' | 'dealer' | 'tank', boss: string, row: Dm
 export function pveCells(mode: 'easy' | 'all', row: PveRow) {
   const moves = keep(row.fast, row.charged);
   if (mode === 'easy') {
-    return { score: `${num(row.ratio ?? Math.round(row.score))}점`, sub: `DPS ${num(row.dps)} · TDO ${num(row.tdo)}`, lines: moves };
+    return { score: `${num(row.ratio ?? Math.round(row.score))}점`, label: '점수', sub: `DPS ${num(row.dps)} · TDO ${num(row.tdo)}`, lines: moves };
   }
-  return { score: num(row.dps, 1), sub: `DPS · TDO ${num(row.tdo)}`, lines: moves };
+  return { score: num(row.dps, 1), label: 'DPS', sub: `DPS · TDO ${num(row.tdo)}`, lines: moves };
 }
 
 // 배틀 한 줄의 칸 — 속성 칩을 고른 동안만 전체 순위를 곁들인다.
 export function pvpCells(pvpType: string, row: PvpRow) {
   return {
     score: num(row.score, 1),
+    label: '점수',
     sub: pvpType === 'all' ? undefined : `전체 ${num(row.rank)}위`,
     lines: keep(row.fast, row.charged),
   };
+}
+
+// ── v6 공통 조각 ───────────────────────────────────────────────────────────────
+
+/** 카드 아래 초록 한 줄 — '기술 · 점수 95.0' 처럼 **라벨과 값**을 같이 적는다 (값만 적으면 무엇의 수치인지 모른다) */
+function metaOf(cells: { score: string; label?: string; lines: string[] }): string {
+  return [cells.lines[0], `${cells.label ?? '점수'} ${cells.score}`].filter(Boolean).join(' · ');
+}
+
+/** 줄 · 카드에 얹는 배지 — 미구현 · [지금 N위] · 활용 N곳 (옛 Row 의 row__badges 와 같은 규칙) */
+function RankBadges({ name, unrel, nowRank }: { name: string; unrel?: boolean; nowRank?: number }) {
+  // '활용 N곳' — 이 종이 상위 30위에 드는 순위표 수 (v3 usageBadge). 1곳뿐이면 안 붙인다 — 모든 줄에 붙으면 뜻이 없다
+  const { data } = useUsage();
+  const count = usageCountFor(data.USAGE_PLACES, name);
+  if (!unrel && nowRank == null && count < 2) return null;
+  return (
+    <>
+      {unrel ? <span className="px-badge px-skin px-badge--muted px-badge--ko">미구현</span> : null}
+      {/* 가정으로 매긴 번호 옆에 **오늘의 자리**를 같이 둔다 — 무엇이 바뀌었는지가 줄에서 바로 읽힌다 */}
+      {nowRank != null ? (
+        <span className="px-badge px-skin px-badge--yellow px-badge--ko" title={`미구현이 없으면 ${nowRank}위 — 이 표는 미구현이 나왔다고 가정한 순위예요`}>{`지금 ${nowRank}위`}</span>
+      ) : null}
+      {count >= 2 ? (
+        <span className={`px-badge px-skin px-badge--ko ${count >= 5 ? 'px-badge--mint' : 'px-badge--blue'}`}
+          title="이 포켓몬이 상위 30위에 드는 순위표 수 (PvE 19표 · PvP 4리그 · D-MAX 19표)">{`활용 ${count}곳`}</span>
+      ) : null}
+    </>
+  );
+}
+
+/** 순위 한 칸 — 보기에 따라 카드(MonCard) 또는 줄(RankRow). 두 모양이 같은 값을 받는다 */
+function RankItem({ view, row, rank, cells, nowRank, delta, unrel, dexTable, onOpen }: {
+  view: 'grid' | 'list';
+  row: { sprite: number; name: string; en?: string; types: readonly string[] };
+  rank: number;
+  cells: { score: string; label?: string; sub?: string; lines: string[] };
+  nowRank?: number; delta?: number; unrel?: boolean;
+  dexTable: Readonly<Record<string, number>>;
+  onOpen: () => void;
+}) {
+  const badges = <RankBadges name={row.name} unrel={unrel} nowRank={nowRank} />;
+  if (view === 'grid') {
+    const no = dexNoOf(row.sprite, dexTable);
+    return (
+      <li className={unrel ? 'is-unreleased' : undefined}>
+        <MonCard sprite={row.sprite} {...(no !== null ? { dex: no } : {})} name={row.name} en={row.en} types={row.types} rank={rank}
+          meta={metaOf(cells)} badges={badges} from="순위" onOpen={onOpen} />
+      </li>
+    );
+  }
+  return (
+    <RankRow sprite={row.sprite} name={row.name} en={row.en} types={row.types} rank={rank}
+      score={cells.score} label={cells.label} sub={cells.sub} lines={cells.lines} badges={badges}
+      unrel={unrel} delta={delta} onOpen={onOpen} />
+  );
+}
+
+/** 탭 줄 — 왼쪽 탭, 오른쪽 도구 단추 (피그마 08 'D-MAX 덱 짜기 →' · '계산 기준 ⓘ') */
+function TabBar({ tabs, tools }: { tabs: ReactNode; tools?: ReactNode }) {
+  return (
+    <div className="rk-bar">
+      {tabs}
+      {tools ? <div className="rk-bar__tools">{tools}</div> : null}
+    </div>
+  );
+}
+
+/** '계산 기준' 안내 — 단추를 누르면 본문 위에 판으로 펼친다 (옛 ⓘ 는 말풍선(title)뿐이라 휴대폰에서 읽을 길이 없었다) */
+function InfoNote({ open, text, onClose }: { open: boolean; text: string; onClose: () => void }) {
+  if (!open) return null;
+  return (
+    <section className="px-note px-skin px-drop rk-info" id="rk-info">
+      <p className="px-note__title">계산 기준</p>
+      <p className="px-note__body">{text}</p>
+      <div className="px-note__actions"><button type="button" className="px-btn px-btn--sm px-skin" onClick={onClose}>닫기</button></div>
+    </section>
+  );
 }
 
 export function Dmax({ onOpen }: { onOpen: OpenMon }) {
@@ -126,7 +211,8 @@ export function Dmax({ onOpen }: { onOpen: OpenMon }) {
   const axis = useRankStore((s) => s.maxAxis);
   const checked = useRankStore((s) => s.maxShowUnrel);
   const set = useRankStore((s) => s.set);
-  const { view, toggle } = useView('max');
+  const { view, pick } = useView('max');
+  const [info, setInfo] = useState(false);
   // **[미구현] 은 실험 기능이다** (v3 maxUnrelAllowed). 켜 둔 값이 저장소에 남아 있어도
   // 깃발이 없으면 안 보여 준다 — 체크만 감추면 옛 값이 그대로 살아 미구현 줄이 새어 나간다.
   // 운영을 돕는 admin 이 아니라 먼저 써 보는 beta 를 본다 (stores/auth.ts 머리말).
@@ -175,53 +261,53 @@ export function Dmax({ onOpen }: { onOpen: OpenMon }) {
   const axes = [{ id: 'all', label: '전체' }, { id: 'dealer', label: '딜러' },
     ...(hasTank ? [{ id: 'tank', label: '탱커' }] : [])];
 
+  const item = (row: DmaxRow, rank: number) => (
+    <RankItem key={`${row.sprite}-${rank}`} view={view} row={row} rank={rank}
+      cells={dmaxCells(axis, boss, row, dex.TYPE_KO)}
+      unrel={row.unrel} nowRank={nowRankOf.get(rank - 1)} delta={unrel ? 0 : row.d}
+      dexTable={dex.DEX_DATA.dex} onOpen={() => onOpen(row)} />
+  );
+
   return (
     <>
       <Slot name="tabs">
-        <ScreenTabs items={axes} value={axis} onPick={(id) => {
-          set('maxAxis', id as 'all' | 'dealer' | 'tank');
-          track('sub_max_' + id);
-        }} />
+        <TabBar
+          tabs={<PxTabs label="역할" items={axes} value={axis} onPick={(id) => { set('maxAxis', id as 'all' | 'dealer' | 'tank'); track('sub_max_' + id); }} />}
+          tools={(
+            <>
+              <button type="button" className="px-btn px-btn--primary px-skin" onClick={() => { go('/dmax/deck'); }}>D-MAX 덱 짜기 →</button>
+              <button type="button" className="px-btn px-skin" aria-expanded={info} aria-controls="rk-info" onClick={() => setInfo(!info)}>
+                계산 기준 <PixelIcon name="info" />
+              </button>
+            </>
+          )}
+        />
       </Slot>
       <Slot name="bossAcc">
         <BossAcc onOpen={onOpen} onGoBoss={(next) => { set('maxBoss', next); set('maxAxis', 'dealer'); }} />
       </Slot>
       <Slot name="controls">
         {/* 라벨이 축마다 다르다 — 전체는 **맥스무브** 속성, 딜러·탱커는 **보스** 속성이다 */}
-        <FilterBox>
-          <div className="submenu">
-            <span className="submenu__label">{axis === 'all' ? '맥스무브 속성' : '보스 속성'}</span>
-            <Chips items={typeChips(dex.TYPE_KO)} value={boss} onPick={(id) => set('maxBoss', id)} />
-          </div>
-          {/* [맥스 참가 가능 다른 유닛] 은 필터 상자 둘째 줄 — 머리 단추 자리에 두면 휴대폰에서 제목이 두 줄로 꺾인다 (2026-10-06) */}
+        <PxChips label={axis === 'all' ? '맥스무브 속성' : '보스 속성'} items={typeChips(dex.TYPE_KO)} value={boss} onPick={(id) => set('maxBoss', id)} />
+        <div className="rk-toggles">
+          {/* [맥스 참가 가능 다른 유닛] — 다이맥스는 못 하지만 맥스 배틀에 참가하는 종. 표에 그런 줄이 없는 칩에서는 안 그린다 */}
           {hasJoin ? (
-            <div className="submenu">
-              <span className="submenu__label">함께 보기</span>
-              <CheckToggle
-                text="맥스 참가 가능 다른 유닛"
-                title="다이맥스는 못 하지만 맥스 배틀에 참가하는 검왕 자시안 · 방패왕 자마젠타 · 무한다이노를 함께 보여요"
-                checked={showJoin}
-                onChange={(next) => set('maxShowJoin', next)}
-              />
-            </div>
+            <PxSwitch text="맥스 참가 가능 다른 유닛"
+              title="다이맥스는 못 하지만 맥스 배틀에 참가하는 검왕 자시안 · 방패왕 자마젠타 · 무한다이노를 함께 보여요"
+              checked={showJoin} onChange={(next) => set('maxShowJoin', next)} />
           ) : null}
-        </FilterBox>
-      </Slot>
-      <Slot name="headActions">
-        {/* 표에 미구현이 한 줄도 없는 칩에서는 아예 안 그린다 (v3 maxHasUnreleased) */}
-        {beta && hasUnrel ? (
-          <CheckToggle
-            text="미구현"
-            title="게임 데이터에 등록된 미출시 포켓몬을 포함해요. 빨간 막대로 구분하며, 출시를 가정한 순위가 표시돼요"
-            checked={checked}
-            onChange={(next) => set('maxShowUnrel', next)}
-          />
-        ) : null}
-        <ToolBtn label="🧩 덱 짜기" onClick={() => { go('/dmax/deck'); }} />
-        <ViewToggle view={view} onToggle={toggle} />
+          {/* 표에 미구현이 한 줄도 없는 칩에서는 아예 안 그린다 (v3 maxHasUnreleased) */}
+          {beta && hasUnrel ? (
+            <PxSwitch text="미구현 포함"
+              title="게임 데이터에 등록된 미출시 포켓몬을 포함해요. 출시를 가정한 순위가 표시돼요"
+              checked={checked} onChange={(next) => set('maxShowUnrel', next)} />
+          ) : null}
+          <PxViewSwitch view={view} onPick={pick} />
+        </div>
       </Slot>
 
-      <RowHead title={title} meta={`${rows.length}종`} info={DMAX_INFO} hypo={unrel} />
+      <InfoNote open={info} text={DMAX_INFO} onClose={() => setInfo(false)} />
+      <RowHead title={title} meta={`${rows.length}종`} hypo={unrel} />
       {/* 티어표는 **티어별로 묶어** 그린다 — v3 renderTierList.
           한 줄로 이어 붙이면 "몇 위인가" 만 남고 "어느 급인가" 가 사라진다 */}
       {axis === 'all'
@@ -229,43 +315,68 @@ export function Dmax({ onOpen }: { onOpen: OpenMon }) {
           const group = rows.filter((row) => row.tier === tier);
           if (!group.length) return null;   // 그 티어에 아무도 없으면 머리글도 만들지 않는다
           return (
-            // 묶는 <div> 를 두면 `.tier__head + .row-list` 형제 규칙이 끊긴다 — Fragment 로 납작하게 편다
             <Fragment key={tier}>
               <TierHead tier={tier} count={group.length} />
-              <RowList view={view}>
-                {group.map((row, index) => (
-                  <Row
-                    key={`${row.sprite}-${index}`}
-                    sprite={row.sprite} name={row.name} en={row.en} types={row.types}
-                    rank={String(rows.indexOf(row) + 1)}
-                    unrel={row.unrel}
-                    nowRank={nowRankOf.get(rows.indexOf(row))}
-                    delta={unrel ? 0 : row.d}
-                    onOpen={() => onOpen(row)}
-                    {...dmaxCells('all', boss, row, dex.TYPE_KO)}
-                  />
-                ))}
-              </RowList>
+              <RankList view={view}>{group.map((row) => item(row, rows.indexOf(row) + 1))}</RankList>
             </Fragment>
           );
         })
-        : (
-          <RowList view={view}>
-            {rows.map((row, index) => (
-              <Row
-                key={`${row.sprite}-${index}`}
-                sprite={row.sprite} name={row.name} en={row.en} types={row.types}
-                rank={String(index + 1)}
-                unrel={row.unrel}
-                nowRank={nowRankOf.get(index)}
-                delta={unrel ? 0 : row.d}
-                onOpen={() => onOpen(row)}
-                {...dmaxCells(axis, boss, row, dex.TYPE_KO)}
-              />
-            ))}
-          </RowList>
-        )}
+        : <RankList view={view}>{rows.map((row, index) => item(row, index + 1))}</RankList>}
+      {/* 바닥 안내 둘 — 딜러 점수와 탱커 점수는 같은 자로 잴 수 없다는 것을 표 아래에서 한 번 더 말한다 */}
+      <div className="px-grid px-grid--2 rk-notes">
+        <section className="px-note px-skin px-drop">
+          <p className="px-note__title">딜러 평가</p>
+          <p className="px-note__body">맥스 기술 피해량, 공격 능력치, 타입 보정을 기준으로 비교합니다.</p>
+        </section>
+        <section className="px-note px-skin px-drop">
+          <p className="px-note__title">탱커 평가</p>
+          <p className="px-note__body">내구성과 EHP를 기준으로 비교합니다. 딜러 점수와 직접 비교하지 않아요.</p>
+        </section>
+      </div>
     </>
+  );
+}
+
+/** 레이드 표 — 데스크톱은 열 여섯(순위 · 포켓몬 · 추천 기술 · DPS · TDO · 점수), 휴대폰은 CSS 가 줄을 카드로 편다 (data-label) */
+function PveTable({ rows, mode, dexTable, onOpen }: { rows: PveRow[]; mode: 'easy' | 'all'; dexTable: Readonly<Record<string, number>>; onOpen: OpenMon }) {
+  const { data: dex } = useDex();
+  const typeLine = (types: readonly string[]) => types.map((type) => dex.TYPE_KO[type] ?? type).join(' · ');
+  return (
+    <div className="rk-tablewrap px-skin px-drop">
+      <table className="px-table rk-table">
+        <thead>
+          <tr>
+            <th scope="col">순위</th><th scope="col">포켓몬</th><th scope="col">추천 기술</th>
+            <th scope="col" className="is-num">DPS</th><th scope="col" className="is-num">TDO</th>
+            {mode === 'easy' ? <th scope="col" className="is-num">점수</th> : null}
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((row, index) => {
+            const cells = pveCells(mode, row);
+            const no = dexNoOf(row.sprite, dexTable);
+            return (
+              <tr key={`${row.sprite}-${row.name}`} className={row.unrel ? 'is-unreleased' : undefined} tabIndex={0} role="button"
+                aria-label={`${row.name} 상세 보기`} onClick={() => onOpen(row)}
+                onKeyDown={(event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); onOpen(row); } }}>
+                <td data-label="순위"><span className={`px-badge px-skin rk-row__rank${index === 0 ? ' is-first' : ''}`}>{String(index + 1).padStart(2, '0')}</span></td>
+                <td data-label="포켓몬" className="rk-table__mon">
+                  <span className="px-ball px-ball--sm"><Sprite id={row.sprite} /></span>
+                  <span className="rk-row__main">
+                    <span className="rk-row__name"><NameNode name={row.name} en={row.en} labels={dex.FORM_LABELS} /><RankBadges name={row.name} unrel={row.unrel} /></span>
+                    <span className="rk-row__types">{no !== null ? `#${String(no).padStart(4, '0')} · ` : ''}{typeLine(row.types)}</span>
+                  </span>
+                </td>
+                <td data-label="추천 기술" className="rk-table__moves">{cells.lines.length ? cells.lines.join(' · ') : '—'}</td>
+                <td data-label="DPS" className="is-num">{num(row.dps, 1)}</td>
+                <td data-label="TDO" className="is-num">{num(row.tdo)}</td>
+                {mode === 'easy' ? <td data-label="점수" className="is-num rk-table__score">{cells.score}</td> : null}
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+    </div>
   );
 }
 
@@ -276,7 +387,7 @@ export function Pve({ onOpen }: { onOpen: OpenMon }) {
   const boss = useRankStore((s) => s.boss);
   const easyBoss = useRankStore((s) => s.easyBoss);
   const set = useRankStore((s) => s.set);
-  const { view, toggle } = useView('pve');
+  const { view, pick } = useView('pve');
 
   // **두 탭은 거르는 범위만 다르다 — 묶는 기준은 같다.**
   //   일반  그 타입 포켓몬 중 전설·환상·UB·메가·섀도우를 뺀 것
@@ -298,29 +409,37 @@ export function Pve({ onOpen }: { onOpen: OpenMon }) {
     ? `${rows.length}종 · 전설·환상·메가·섀도우 제외`
     : `${rows.length}종 · 전설·메가·섀도우 포함 · 자체 계산`;
 
+  // 카드 보기 한 칸 — 표 보기는 PveTable 이 그린다
+  const card = (row: PveRow, rank: number) => (
+    <RankItem key={`${row.sprite}-${row.name}`} view="grid" row={row} rank={rank} cells={pveCells(mode, row)}
+      unrel={row.unrel} delta={row.d} dexTable={dex.DEX_DATA.dex} onOpen={() => onOpen(row)} />
+  );
+  const list = (group: PveRow[], rankOf: (row: PveRow, index: number) => number) => (view === 'grid'
+    ? <RankList view="grid">{group.map((row, index) => card(row, rankOf(row, index)))}</RankList>
+    : <PveTable rows={group} mode={mode} dexTable={dex.DEX_DATA.dex} onOpen={onOpen} />);
+
   return (
     <>
       <Slot name="tabs">
-        <ScreenTabs
-          items={[{ id: 'easy', label: '일반' }, { id: 'all', label: '전체' }]}
-          value={mode}
-          onPick={(id) => { set('pveMode', id as 'easy' | 'all'); track('sub_pve_' + id); }}
+        <TabBar
+          tabs={<PxTabs label="범위" items={[{ id: 'easy', label: '일반' }, { id: 'all', label: '전체' }]} value={mode}
+            onPick={(id) => { set('pveMode', id as 'easy' | 'all'); track('sub_pve_' + id); }} />}
+          tools={<button type="button" className="px-btn px-btn--primary px-skin" onClick={() => { go('/pve/solo'); }}>솔플 계산기 →</button>}
         />
       </Slot>
       <Slot name="controls">
-        <FilterBox>
-          <Chips
-            items={typeChips(dex.TYPE_KO)}
-            value={picked}
-            onPick={(id) => set(mode === 'easy' ? 'easyBoss' : 'boss', id)}
-          />
-        </FilterBox>
-      </Slot>
-      <Slot name="headActions">
-        <ToolBtn label="🧮 솔플 계산기" onClick={() => { go('/pve/solo'); }} />
-        <ViewToggle view={view} onToggle={toggle} />
+        <PxChips label="타입" items={typeChips(dex.TYPE_KO)} value={picked} onPick={(id) => set(mode === 'easy' ? 'easyBoss' : 'boss', id)} />
+        <div className="rk-toggles"><PxViewSwitch view={view} onPick={pick} /></div>
       </Slot>
 
+      {/* 안내 판 — 지금 탭이 무엇을 넣고 뺐는지 (피그마 10) */}
+      <section className="px-note px-skin px-drop rk-info">
+        <p className="px-note__body">
+          {mode === 'easy'
+            ? '일반 순위 기준 — 전설·환상·메가·섀도우 폼을 제외합니다. 전체 탭에서는 해당 폼을 포함합니다.'
+            : '전체 순위 기준 — 전설·환상·메가·섀도우 폼을 포함합니다. 일반 탭에서는 해당 폼을 제외합니다.'}
+        </p>
+      </section>
       <RowHead title={title} meta={meta} />
       {/* 점수 칸의 뜻은 모드마다 다르다 — 그 갈래는 pveCells 안에 적어 뒀다 */}
       {mode === 'easy'
@@ -328,41 +447,16 @@ export function Pve({ onOpen }: { onOpen: OpenMon }) {
           const group = rows.filter((row) => row.tier === tier);
           if (!group.length) return null;
           return (
-            // 묶는 <div> 를 두면 `.tier__head + .row-list` 형제 규칙이 끊긴다 — Fragment 로 납작하게 편다
             <Fragment key={tier}>
               <TierHead tier={tier} count={group.length} />
-              <RowList view={view}>
-                {/* **번호는 그 티어 묶음 안의 순번이다** (v3 renderTierList 가 넘기는 index).
-                    D-MAX 티어표는 반대로 탭 전체 순위를 쓴다 — 등급이 절대 기준이라
-                    묶음 안 순번을 쓰면 B 티어 첫 카드가 '1' 로 찍혀 근거와 어긋난다(v3.30.1) */}
-                {group.map((row, index) => (
-                  <Row
-                    key={`${row.sprite}-${row.name}`}
-                    sprite={row.sprite} name={row.name} en={row.en} types={row.types}
-                    rank={String(index + 1)}
-                    unrel={row.unrel} delta={row.d}
-                    onOpen={() => onOpen(row)}
-                    {...pveCells('easy', row)}
-                  />
-                ))}
-              </RowList>
+              {/* **번호는 그 티어 묶음 안의 순번이다** (v3 renderTierList 가 넘기는 index).
+                  D-MAX 티어표는 반대로 탭 전체 순위를 쓴다 — 등급이 절대 기준이라
+                  묶음 안 순번을 쓰면 B 티어 첫 카드가 '1' 로 찍혀 근거와 어긋난다(v3.30.1) */}
+              {list(group, (_row, index) => index + 1)}
             </Fragment>
           );
         })
-        : (
-          <RowList view={view}>
-            {rows.map((row, index) => (
-              <Row
-                key={`${row.sprite}-${index}`}
-                sprite={row.sprite} name={row.name} en={row.en} types={row.types}
-                rank={String(index + 1)}
-                unrel={row.unrel} delta={row.d}
-                onOpen={() => onOpen(row)}
-                {...pveCells('all', row)}
-              />
-            ))}
-          </RowList>
-        )}
+        : list(rows, (_row, index) => index + 1)}
     </>
   );
 }
@@ -373,7 +467,7 @@ export function Pvp({ onOpen }: { onOpen: OpenMon }) {
   const league = useRankStore((s) => s.league);
   const pvpType = useRankStore((s) => s.pvpType);
   const set = useRankStore((s) => s.set);
-  const { view, toggle } = useView('pvp');
+  const { view, pick } = useView('pvp');
   const { isOpen, toggle: toggleMore } = useExpanded();
 
   const ranking = pvp.PVP_DATA[league] ?? [];
@@ -386,7 +480,6 @@ export function Pvp({ onOpen }: { onOpen: OpenMon }) {
   const rows = pvpType === 'all' ? ranking : ranking.filter((mon) => mon.types.includes(pvpType));
   const name = LEAGUES.find((one) => one.id === league)?.name ?? league;
   const cp = LEAGUES.find((one) => one.id === league)?.cp ?? '';
-  const title = pvpType === 'all' ? `${name}리그 전체 순위` : `${name}리그 · ${dex.TYPE_KO[pvpType] ?? pvpType} 타입`;
   // 리그나 속성을 바꾸면 키가 달라져 저절로 접힌다 (v3 list() 의 키 규칙과 같다)
   const listKey = `pvp-${league}-${pvpType}`;
   // 상세의 '더보기' 로 왔으면 그 줄로 — 접힌 꼬리(ROW_SHOW 밖)에 있으면 먼저 펼친다
@@ -398,42 +491,63 @@ export function Pvp({ onOpen }: { onOpen: OpenMon }) {
     if (focusAt >= ROW_SHOW && !open) toggleMore(listKey);
   }, [focusAt, open, listKey, toggleMore]);
   useFocusRow(focus, clearFocus, rows.length > 0 && (focusAt < ROW_SHOW || open));
+  const shown = open ? rows : rows.slice(0, ROW_SHOW);
+  const typeLabel = pvpType === 'all' ? '' : ` · ${dex.TYPE_KO[pvpType] ?? pvpType} 타입`;
+  const title = open ? `${name}리그 전체 순위${typeLabel}` : `${name}리그 TOP ${Math.min(ROW_SHOW, rows.length)}${typeLabel}`;
+  // 리그 탭 글자 — '리틀 · 500' 처럼 CP 한도를 같이 적는다. 마스터는 한도가 없다 (피그마 12)
+  const leagueTabs = LEAGUES.map((one) => ({ id: one.id, label: `${one.name} · ${one.id === 'master' ? '무제한' : Number(one.cp).toLocaleString('ko-KR')}` }));
+  // TEAM SYNERGY 판 — 이 리그 상위 세 마리의 그림
+  const top3 = ranking.slice(0, 3);
 
   return (
     <>
       <Slot name="tabs">
-        <ScreenTabs
-          items={LEAGUES.map((one) => ({ id: one.id, label: one.name }))}
-          value={league}
-          onPick={(id) => set('league', id as LeagueKey)}
-        />
+        <TabBar tabs={<PxTabs label="리그" items={leagueTabs} value={league} onPick={(id) => set('league', id as LeagueKey)} />} />
       </Slot>
       <Slot name="controls">
-        <FilterBox>
-          <Chips items={chipItems} value={pvpType} onPick={(id) => set('pvpType', id)} />
-        </FilterBox>
-      </Slot>
-      <Slot name="headActions">
-        <ToolBtn label="🧬 개체값 순위" onClick={() => { go('/pvp/ivrank'); }} />
-        <ToolBtn label="🃏 덱 짜기" onClick={() => { go('/pvp/deck'); }} />
-        <ViewToggle view={view} onToggle={toggle} />
+        <PxChips label="타입" items={chipItems} value={pvpType} onPick={(id) => set('pvpType', id)} />
+        <div className="rk-toggles"><PxViewSwitch view={view} onPick={pick} /></div>
       </Slot>
 
-      <RowHead title={title} meta={`CP ${cp} · 상위 ${ranking.length} 기준`} />
+      <RowHead title={title} meta={`종합 점수 · CP ${league === 'master' ? '무제한' : cp} · 상위 ${ranking.length} 기준`} />
       {/* v3 는 10줄만 펴고 나머지는 [더보기] 뒤에 둔다 — 40줄을 다 세우면 첫 화면이 스크롤 넉 장이 된다 */}
-      <RowList view={view}>
-        {(isOpen(listKey) ? rows : rows.slice(0, ROW_SHOW)).map((row, index) => (
-          <Row
-            key={`${row.sprite}-${row.rank}`}
-            sprite={row.sprite} name={row.name} en={row.en} types={row.types}
-            rank={String(index + 1)}
-            delta={row.d}
-            onOpen={() => onOpen(row)}
-            {...pvpCells(pvpType, row)}
-          />
+      <RankList view={view}>
+        {shown.map((row, index) => (
+          <RankItem key={`${row.sprite}-${row.rank}`} view={view} row={row} rank={index + 1} cells={pvpCells(pvpType, row)}
+            delta={row.d} dexTable={dex.DEX_DATA.dex} onOpen={() => onOpen(row)} />
         ))}
-        <RowMore total={rows.length} expanded={isOpen(listKey)} onToggle={() => toggleMore(listKey)} />
-      </RowList>
+      </RankList>
+      <RankMore total={rows.length} expanded={open} onToggle={() => toggleMore(listKey)} />
+
+      {/* 아래 두 판 — 순위표 다음 할 일로 이끈다: 덱 짜기 · 개체값 순위 (피그마 12) */}
+      <div className="rk-notes rk-notes--pvp">
+        <section className="px-note px-skin px-drop rk-synergy">
+          <p className="px-eyebrow">TEAM SYNERGY</p>
+          <p className="px-note__title">한 마리의 강함보다, 세 마리의 균형.</p>
+          <p className="px-note__body">{`${name}리그 상위 ${top3.length}마리를 바탕으로, 상대에 맞는 세 마리를 골라 보세요.`}</p>
+          <div className="rk-synergy__row">
+            <ul className="rk-synergy__balls" aria-label={`${name}리그 상위 ${top3.length}마리`}>
+              {top3.map((row) => (
+                <li key={row.sprite}>
+                  <button type="button" className="px-ball px-ball--sm rk-synergy__ball" aria-label={`${row.name} 상세 보기`} onClick={() => onOpen(row)}>
+                    <img src={`${BASE}sprites/${row.sprite}.png`} alt="" width="48" height="48" loading="lazy" decoding="async" />
+                  </button>
+                </li>
+              ))}
+            </ul>
+            <div className="px-note__actions">
+              <button type="button" className="px-btn px-btn--primary px-skin" onClick={() => { go('/pvp/deck'); }}>PvP 덱 짜기 →</button>
+            </div>
+          </div>
+        </section>
+        <section className="px-note px-skin px-drop">
+          <p className="px-note__title">내 개체값도 확인해 보세요</p>
+          <p className="px-note__body">같은 포켓몬도 개체값에 따라 리그 적합도가 달라집니다.</p>
+          <div className="px-note__actions">
+            <button type="button" className="px-btn px-skin" onClick={() => { go('/pvp/ivrank'); }}>PvP 개체값 순위 →</button>
+          </div>
+        </section>
+      </div>
     </>
   );
 }

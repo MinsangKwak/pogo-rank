@@ -189,7 +189,8 @@ export function useFocusRow(focus: string, clear: () => void, ready: boolean) {
   useEffect(() => {
     if (!focus || !ready) return;
     const frame = requestAnimationFrame(() => {
-      const node = document.querySelector<HTMLElement>(`li.row[aria-label="${CSS.escape(`${focus} 상세 보기`)}"]`);
+      // 옛 줄(li.row)과 새 줄(.rk-row 안의 단추) 둘 다 찾는다 — 덱 짜기는 아직 옛 줄이다
+      const node = document.querySelector<HTMLElement>(`:is(li.row, .rk-row .rk-row__btn, .px-mon .px-mon__body)[aria-label="${CSS.escape(`${focus} 상세 보기`)}"]`)?.closest<HTMLElement>('li') ?? null;
       clear();
       if (!node) return;
       node.scrollIntoView({ block: 'center' });
@@ -226,15 +227,12 @@ const TIER_DESC: Record<string, string> = {
 };
 
 export function TierHead({ tier, count }: { tier: string; count: number }) {
+  // v6 — 구역 제목 한 줄: 'S TIER' 픽셀 글자 + 한 마디 (피그마 08 'S TIER  강력한 딜러 · …')
   return (
-    <div className="tier__head">
-      <b className={`tier__badge tier__badge--${tier.toLowerCase()}`}>{tier}</b>
-      {/* **한 줄은 한 노드로 둔다.** `{tier} 티어` 라고 적으면 React 가 텍스트 노드를 둘로 쪼개고,
-          사전은 줄 단위로 찾으므로 ' 티어' 만 남아 못 옮긴다 (v3 는 한 문자열이었다) */}
-      <span className="tier__name">{`${tier} 티어`}</span>
-      <span className="meta">{`${count}종`}</span>
-      <span className="tier__desc">{TIER_DESC[tier] ?? ''}</span>
-    </div>
+    <h3 className="px-sec rk-tier__head" data-tier={tier.toLowerCase()}>
+      <span className="rk-tier__name">{`${tier} TIER`}</span>
+      <span className="px-sec__note">{`${count}종 · ${TIER_DESC[tier] ?? ''}`}</span>
+    </h3>
   );
 }
 
@@ -243,22 +241,86 @@ export function TierHead({ tier, count }: { tier: string; count: number }) {
  * **ⓘ 가 있을 때만 제목을 감싼다** — v3 는 감쌀 것이 없으면 `<h2>` 를 맨 앞에 그냥 둔다.
  * 늘 감쌌더니 ⓘ 없는 화면(PvE·PvP)의 머리 높이가 v3 보다 5px 컸다.
  */
-export function RowHead({ title, meta, info, hypo }: { title: string; meta: string; info?: string; hypo?: boolean }) {
-  // 이 표 전체가 가정이라는 것을 한 눈에 (v3 maxHypoBadge). 켜져 있을 때만 붙는다
+export function RowHead({ title, meta, hypo }: { title: string; meta: string; info?: string; hypo?: boolean }) {
+  // v6 — 제목 + 한 마디. ⓘ 안내는 탭 줄의 '계산 기준' 단추가 맡아 여기서는 받지만 그리지 않는다
   const badge = hypo
-    ? <span className="tag tag--hypo" title="미출시 포켓몬을 포함한 가상 순위예요. [미구현]을 끄면 출시된 포켓몬 기준으로 볼 수 있어요">가상 순위</span>
+    ? <span className="px-badge px-skin px-badge--orange px-badge--ko" title="미출시 포켓몬을 포함한 가상 순위예요. [미구현]을 끄면 출시된 포켓몬 기준으로 볼 수 있어요">가상 순위</span>
     : null;
   return (
-    <div className="row-head">
-      {info
-        ? (
-          <div className="row-head__title">
-            <h2>{title}{badge}</h2>
-            <span className="info-dot" tabIndex={0} role="button" aria-expanded={false} title={info}>ⓘ</span>
-          </div>
-        )
-        : <h2>{title}{badge}</h2>}
-      <span className="meta">{meta}</span>
+    <div className="px-sec rk-head">
+      <h2 className="px-heading rk-head__title">{title}{badge}</h2>
+      <span className="px-sec__note">{meta}</span>
     </div>
+  );
+}
+
+// ── v6 순위 목록 줄 (피그마 12 '슈퍼리그 TOP 10' · 도감 목록 보기) ──────────────────────────
+// 카드(components/MonCard.tsx)와 짝이다 — 같은 값을 가로 한 줄로 편다: 번호 · 작은 몬스터볼 · 이름(폼 배지) · 타입 · 기술 · 점수.
+// 옛 <Row> 는 덱 짜기 · 솔플 계산기가 아직 쓰므로 남겨 두고, 순위 세 화면과 도감만 이 줄로 옮긴다
+export interface RankRowProps {
+  sprite: number;
+  name: string;
+  en?: string;
+  types: readonly string[];
+  /** 순위 '01' — 도감처럼 순위가 없는 줄은 비운다 */
+  rank?: number;
+  /** 도감 번호 '#0006' */
+  no?: number;
+  /** 점수 칸의 값과 그 이름 (lib/cell 로 닫은 글자) */
+  score: string;
+  label?: string;
+  /** 점수 아래 한 마디 */
+  sub?: string;
+  /** 이름 아래 기술 · 안내 줄 — 비면 줄을 만들지 않는다 */
+  lines?: readonly string[];
+  /** 이름 옆 배지들 (미구현 · 지금 N위 · 활용 N곳) */
+  badges?: ReactNode;
+  unrel?: boolean;
+  delta?: number;
+  onOpen?: () => void;
+}
+
+export function RankRow({ sprite, name, en, types, rank, no, score, label, sub, lines, badges, unrel, delta, onOpen }: RankRowProps) {
+  const { data } = useDex();
+  const parts = (lines ?? []).filter(Boolean);
+  const typeLine = types.map((type) => data.TYPE_KO[type] ?? type).join(' · ');
+  return (
+    <li className={`rk-row px-skin${unrel ? ' is-unreleased' : ''}`} data-sprite={sprite}>
+      {/* 줄 전체가 단추다 — li 에 role 을 주면 안의 배지가 읽히지 않는다 */}
+      <button type="button" className="rk-row__btn" aria-label={`${name} 상세 보기`} onClick={onOpen}>
+        {rank !== undefined ? <span className={`px-badge px-skin rk-row__rank${rank === 1 ? ' is-first' : ''}`}>{String(rank).padStart(2, '0')}</span> : null}
+        {no !== undefined ? <span className="px-mon__no rk-row__no">{`#${String(no).padStart(4, '0')}`}</span> : null}
+        <span className="px-ball px-ball--sm rk-row__art"><Sprite id={sprite} /></span>
+        <span className="rk-row__main">
+          <span className="rk-row__name">
+            <NameNode name={name} en={en} labels={data.FORM_LABELS} />
+            <DeltaBadge delta={delta} />
+            {badges}
+          </span>
+          {typeLine ? <span className="rk-row__types">{typeLine}</span> : null}
+          {parts.length ? <span className="rk-row__lines">{parts.map((text, i) => <span key={i}>{text}</span>)}</span> : null}
+        </span>
+        <span className="rk-row__stats">
+          {label ? <span className="rk-row__label">{label}</span> : null}
+          <span className="rk-row__score px-mono">{score}</span>
+          {sub ? <span className="rk-row__sub">{sub}</span> : null}
+        </span>
+      </button>
+    </li>
+  );
+}
+
+/** 목록 상자 — 카드 보기는 px-grid(4열 → 2열), 목록 보기는 세로 한 줄씩 */
+export function RankList({ view = 'list', children }: { view?: 'grid' | 'list'; children: ReactNode }) {
+  return <ul className={view === 'grid' ? 'px-grid rk-grid' : 'rk-list'} data-view={view}>{children}</ul>;
+}
+
+/** 목록 꼬리의 [더 보기] — 판 밖에 선다 (옛 RowMore 는 ul 안이었다) */
+export function RankMore({ total, expanded, onToggle }: { total: number; expanded: boolean; onToggle: () => void }) {
+  if (total <= ROW_SHOW) return null;
+  return (
+    <button type="button" className="px-btn px-btn--block px-skin rk-more" onClick={onToggle}>
+      {expanded ? '접기' : `더 보기 · ${total - ROW_SHOW}종`}
+    </button>
   );
 }
