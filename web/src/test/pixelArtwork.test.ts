@@ -51,10 +51,11 @@ describe('픽셀 포켓몬 그림과 모바일 이동 회귀', () => {
     document.head.innerHTML = ''; document.body.innerHTML = '';
   });
 
-  it('하단 이동이 나오는 구간에서만 머리의 중복 이동을 숨긴다', () => {
+  it('하단 이동이 나오는 구간에서만 머리의 중복 이동(검색 · 메뉴 단추)을 숨긴다', () => {
     const mobile = /@media \(max-width: 1099px\) \{([\s\S]*?)\n\}/.exec(shell)![1]!;
     expect(mobile).toContain('.px-bottom { display: flex; }');
-    expect(mobile).toMatch(/\.app-bar__actions[^{}]*\{ display: none; \}/);
+    // 머리줄 자체는 남는다(브랜드 · 계정) — 하단 바와 겹치는 검색 · 메뉴 단추만 감춘다
+    expect(mobile).toMatch(/#search-toggle, html body #root \.app-bar #menu-toggle \{ display: none; \}/);
     expect(mobile).toMatch(/\.app-search \{ display: none; \}/);
     expect(shell).toContain('.app-bar__actions { display: flex;');
     const component = readFileSync(join(__dirname, '../components/Shell.tsx'), 'utf8');

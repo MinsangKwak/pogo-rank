@@ -69,7 +69,7 @@ describe('헤더 아래 레일 시작점', () => {
     expect(shell).toMatch(/html body::before \{[^}]*top: var\(--app-bar-height\)/);
   });
 
-  it('모바일에서 헤더를 감추면 0으로 줄고 데스크톱 복귀 시 다시 측정한다', () => {
+  it('높이 0 측정도 그대로 적고 데스크톱 복귀 시 다시 측정한다 — 모바일 머리줄은 브랜드·계정 진입으로 남는다', () => {
     mount();
     height = 0;
     window.dispatchEvent(new Event('resize'));
@@ -77,7 +77,8 @@ describe('헤더 아래 레일 시작점', () => {
     height = 90;
     resize();
     expect(document.body.style.getPropertyValue('--app-bar-height')).toBe('90px');
-    expect(shell).toContain('.app-bar { display: none; min-height: 0; padding: 0; border: 0; }');
+    // 2026-10-17 모바일에도 머리줄이 선다(브랜드 · 로그인 단추). 이동은 하단 바가 맡는다
+    expect(shell).toMatch(/@media \(max-width: 1099px\) \{[\s\S]*?\.app-bar \{ display: flex; min-height: 5\.6rem;/);
   });
 
   it('셸을 떠나면 관찰과 이전 높이를 정리한다', () => {

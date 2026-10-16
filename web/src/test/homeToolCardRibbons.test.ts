@@ -143,9 +143,13 @@ describe('D-MAX 세 칸을 한눈에 보는 모바일 구성', () => {
     } finally { style.remove(); }
   });
 
-  it('모바일 3열은 D-MAX에 한정하고 기존 후보 메타 줄바꿈을 유지한다', () => {
+  it('D-MAX 슬롯은 넓은 화면에서 자동 맞춤, 휴대폰에서는 한 장씩 가로 카드로 서고 후보 메타 줄바꿈은 유지한다', () => {
     const css = readFileSync(join(__dirname, '../styles/pixel/tools.css'), 'utf8');
-    expect(css).toMatch(/\.pxt-dmax \.pxt-slots \{ grid-template-columns: repeat\(3, minmax\(0, 1fr\)\)/);
+    // 2026-10-17 세 칸 고정을 걷었다 — 28rem 이 들어가는 만큼 나란히, 휴대폰은 한 줄에 한 장(몬스터볼 왼쪽 · 지표 오른쪽)
+    expect(css).toMatch(/\.pxt-dmax \.pxt-slots \{ grid-template-columns: repeat\(auto-fit, minmax\(min\(100%, 28rem\), 1fr\)\)/);
+    const phone = /@media \(max-width: 699px\) \{([\s\S]*?)\n\}/.exec(css)![1]!;
+    expect(phone).toContain('.pxt-dmax .pxt-slots { grid-template-columns: minmax(0, 1fr); gap: 1.2rem; }');
+    expect(phone).toMatch(/\.pxt-slot--compact \.pxt-slot__panel \{ display: grid; grid-template-columns: minmax\(0, 1fr\) minmax\(0, 1fr\); grid-template-areas: "head head" "body metric" "body details" "swap swap"/);
     expect(css).toMatch(/\.pxt-cand__panel \{ flex-wrap: wrap/);
     expect(css).toMatch(/\.pxt-cand__ops \{ flex-basis: 100%/);
     expect(css).toMatch(/\.pxt-slot__details > summary \{[^}]*min-height: var\(--tap\)/);

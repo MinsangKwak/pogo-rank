@@ -8,9 +8,12 @@ const shell = css('shell.css');
 const modal = css('modal.css');
 
 describe('모바일 머리와 바텀 시트 회귀', () => {
-  it('하단 바 구간에서는 빈 머리줄의 높이도 제거한다', () => {
+  it('하단 바 구간에서도 머리줄은 브랜드 · 계정 진입으로 남고 이동 단추는 하단 바가 맡는다', () => {
     const mobile = /@media \(max-width: 1099px\) \{([\s\S]*?)\n\}/.exec(shell)![1]!;
-    expect(mobile).toContain('.app-bar { display: none; min-height: 0; padding: 0; border: 0; }');
+    // 2026-10-17 머리줄을 지우던 규칙을 걷었다 — 작은 화면에도 로그인 · 마이페이지 단추가 머리에 선다
+    expect(mobile).toContain('.app-bar { display: flex; min-height: 5.6rem;');
+    expect(mobile).toContain('.app-bar .app-bar__account { display: inline-flex; }');
+    expect(mobile).toMatch(/#search-toggle, html body #root \.app-bar #menu-toggle \{ display: none; \}/);
     expect(mobile).toContain('html body::before { top: 0; left: 0; }');
     expect(shell).not.toContain('min-height: 8.4rem');
   });
