@@ -11,7 +11,7 @@
 /* ── 스킨 ───────────────────────────────────────────────────────────────── */
 html body #root .px-skin, html body .px-skin {
   position: relative; box-sizing: border-box;
-  background: var(--px-fill, var(--panel)); color: var(--fg);
+  background: var(--px-fill, var(--panel));
   border: var(--px-stroke) solid var(--px-line, var(--px-edge));
   clip-path: polygon(
     0 var(--px-cut), var(--px-cut) var(--px-cut), var(--px-cut) 0,
@@ -37,7 +37,7 @@ html body .px-skin--danger { --px-fill: var(--danger-surface); --px-line: var(--
 
 /* ── 판 · 카드 ───────────────────────────────────────────────────────────── */
 html body .px-panel { padding: 2.4rem; }
-html body .px-card { padding: 1.6rem; display: flex; flex-direction: column; gap: 0.8rem; }
+html body .px-card { min-width: 0; padding: 1.6rem; display: flex; flex-direction: column; gap: 0.8rem; }
 html body .px-card--tap { cursor: pointer; text-align: left; width: 100%; font: inherit; }
 @media (hover: hover) { html body .px-card--tap:hover { --px-line: var(--brand-text); } }
 html body .px-divider { height: 0.2rem; margin: 0; border: 0; background: var(--line); }
@@ -45,14 +45,14 @@ html body .px-divider { height: 0.2rem; margin: 0; border: 0; background: var(--
 /* ── 글자 ───────────────────────────────────────────────────────────────── */
 html body .px-eyebrow { margin: 0; color: var(--muted); font: 400 1.2rem/1.5 var(--font-pixel); letter-spacing: 0.08em; text-transform: uppercase; }
 html body .px-eyebrow--brand { color: var(--brand-text); }
-html body .px-title { margin: 0; color: var(--fg); font: 700 2.8rem/1.2 var(--font-body); letter-spacing: -0.02em; word-break: keep-all; }
-html body .px-display { margin: 0; color: var(--fg); font: 700 4.2rem/1.2 var(--font-body); letter-spacing: -0.03em; word-break: keep-all; }
-html body .px-heading { margin: 0; color: var(--fg); font: 700 2.2rem/1.5 var(--font-body); letter-spacing: -0.02em; word-break: keep-all; }
+html body .px-title { margin: 0; color: var(--fg); font: 700 2.8rem/1.2 var(--font-body); letter-spacing: -0.02em; word-break: keep-all; overflow-wrap: anywhere; }
+html body .px-display { margin: 0; color: var(--fg); font: 700 4.2rem/1.2 var(--font-body); letter-spacing: -0.03em; word-break: keep-all; overflow-wrap: anywhere; }
+html body .px-heading { margin: 0; color: var(--fg); font: 700 2.2rem/1.5 var(--font-body); letter-spacing: -0.02em; word-break: keep-all; overflow-wrap: anywhere; }
 html body .px-sub { margin: 0; color: var(--fg); font: 700 1.6rem/1.5 var(--font-body); }
-html body .px-body { margin: 0; color: var(--fg); font: 400 1.4rem/1.7 var(--font-body); }
+html body .px-body { margin: 0; overflow-wrap: anywhere; color: var(--fg); font: 400 1.4rem/1.7 var(--font-body); }
 html body .px-muted { color: var(--muted); }
 html body .px-faint { color: var(--faint); }
-html body .px-caption { margin: 0; color: var(--muted); font: 400 1.2rem/1.5 var(--font-body); }
+html body .px-caption { margin: 0; overflow-wrap: anywhere; color: var(--muted); font: 400 1.2rem/1.5 var(--font-body); }
 html body .px-mono { font-family: var(--font-mono); font-variant-numeric: tabular-nums; letter-spacing: 0; }
 html body .px-number { margin: 0; color: var(--fg); font: 700 2.8rem/1.2 var(--font-mono); font-variant-numeric: tabular-nums; }
 /* 구역 제목 줄 — 제목 + 한 마디 (피그마 '지금 많이 보는 포켓몬  최근 조회 흐름') */
@@ -157,7 +157,11 @@ html body .px-check input:focus-visible { outline: var(--px-stroke) solid var(--
 
 /* ── 몬스터볼 틀 + 원본 그림 ─────────────────────────────────────────────
    47×47 셀 볼(public/images/pixel/pokeball.svg) 위에 API 원본 그림을 67% 로 띄운다. 그림을 다시 그리지 않는다 */
-html body .px-ball { display: inline-block; position: relative; flex: none; width: var(--ball, 13rem); height: var(--ball, 13rem); background: url('/images/pixel/pokeball.svg') center / contain no-repeat; }
+html body .px-ball { display: inline-block; position: relative; flex: none; width: var(--ball, 13rem); height: var(--ball, 13rem); background: none; }
+/* 장식만 저채도로: 원본 포켓몬 이미지에는 필터를 적용하지 않는다. */
+html body #root .px-ball::before { content: ''; position: absolute; inset: 0; background: url('/images/pixel/pokeball.svg') center / contain no-repeat; filter: saturate(0.25); pointer-events: none; }
+/* 옛 스프라이트 받침의 검은 사각형을 볼 안에서만 제거한다. */
+html:not(#_):not(#__) body #root .px-ball .sprite:not(.is-loading):not(.empty) { background: transparent; }
 html body .px-ball > img, html body .px-ball > picture, html body .px-ball > .sprite { position: absolute; inset: 16.5%; width: 67%; height: 67%; object-fit: contain; image-rendering: auto; }
 html body .px-ball--sm { --ball: 7.2rem; }
 html body .px-ball--lg { --ball: 18.8rem; }
@@ -169,7 +173,7 @@ html body .px-mon__no { color: var(--muted); font: 400 1.2rem/1 var(--font-mono)
 html body .px-mon__fav { margin-left: auto; width: var(--tap); height: var(--tap); margin-top: -0.8rem; margin-bottom: -0.8rem; margin-right: -1.2rem; display: grid; place-items: center; color: var(--muted); background: none; border: 0; cursor: pointer; }
 html body .px-mon__fav[aria-pressed="true"] { color: var(--brand-text); }
 html body .px-mon__art { display: flex; justify-content: center; padding: 0.4rem 0; }
-html body .px-mon__name { margin: 0; color: var(--fg); font: 700 1.6rem/1.5 var(--font-body); word-break: keep-all; }
+html body .px-mon__name { margin: 0; color: var(--fg); font: 700 1.6rem/1.5 var(--font-body); word-break: keep-all; overflow-wrap: anywhere; }
 html body .px-mon__types { margin: 0; color: var(--muted); font: 400 1.2rem/1.5 var(--font-body); }
 html body .px-mon__meta { margin: 0; color: var(--mint); font: 400 1.2rem/1.5 var(--font-body); }
 html body .px-mon__rank { --px-badge-c: var(--brand-text); }
@@ -187,7 +191,7 @@ html body .px-metric__value { margin: 0; color: var(--px-metric-c, var(--fg)); f
 html body .px-metric__note { margin: 0; color: var(--muted); font: 400 1.2rem/1.5 var(--font-body); }
 html body .px-note { display: flex; flex-direction: column; gap: 0.8rem; padding: 2rem; }
 html body .px-note__title { margin: 0; color: var(--fg); font: 700 1.6rem/1.5 var(--font-body); }
-html body .px-note__body { margin: 0; color: var(--muted); font: 400 1.4rem/1.7 var(--font-body); }
+html body .px-note__body { margin: 0; overflow-wrap: anywhere; color: var(--muted); font: 400 1.4rem/1.7 var(--font-body); }
 html body .px-note__actions { display: flex; flex-wrap: wrap; gap: 0.8rem; margin-top: 0.4rem; }
 
 /* ── 세그먼트 막대 (피그마 'Pixel / Segmented stat') ───────────────────────── */
@@ -243,10 +247,10 @@ html body .px-icon { flex: none; display: inline-block; vertical-align: middle; 
 /* ── 팝업 판 (D01~D13 공통) ─────────────────────────────────────────────────
    <dialog> 하나. 데스크톱은 가운데 판(최대 86vh, 본문만 세로 스크롤, 바닥 동작 고정), 모바일은 화면 아래에 붙는 시트.
    판에는 drop-shadow 를 안 건다 — filter 가 걸린 요소 안의 fixed 자식이 깨진다 */
-html body #root .px-dialog { position: fixed; inset: 0; z-index: 100; width: 100%; max-width: none; height: 100dvh; max-height: none; box-sizing: border-box; margin: 0; padding: 2.4rem; border: 0; background: transparent; color: var(--fg); display: none; place-items: center; }
+html body #root .px-dialog { position: fixed; inset: 0; z-index: 100; width: 100%; max-width: none; height: 100dvh; max-height: none; box-sizing: border-box; margin: 0; padding: 2.4rem; border: 0; background: transparent; color: var(--fg); display: none; grid-template-columns: minmax(0, 1fr); place-items: center; }
 html body #root .px-dialog[open] { display: grid; }
 html body .px-dialog::backdrop { background: color-mix(in srgb, var(--night) 72%, transparent); backdrop-filter: blur(0.4rem); }
-html body .px-dialog__panel { display: flex; flex-direction: column; box-sizing: border-box; width: min(var(--dialog-w, 72rem), 100%); max-height: min(86vh, 80rem); --px-fill: var(--panel); }
+html body .px-dialog__panel { display: flex; flex-direction: column; box-sizing: border-box; min-width: 0; max-width: 100%; width: min(var(--dialog-w, 72rem), 100%); max-height: min(86vh, 80rem); --px-fill: var(--panel); }
 html body .px-dialog__head { flex: none; display: flex; align-items: flex-start; gap: 1.6rem; padding: 2.4rem 2.4rem 1.6rem; border-bottom: var(--px-stroke) solid var(--line); }
 html body .px-dialog__head > div { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 0.4rem; }
 html body .px-dialog__body { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; display: flex; flex-direction: column; gap: 1.6rem; padding: 2rem 2.4rem; }

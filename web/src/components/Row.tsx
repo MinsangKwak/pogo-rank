@@ -284,26 +284,34 @@ export function RankRow({ sprite, name, en, types, rank, no, score, label, sub, 
   const { data } = useDex();
   const parts = (lines ?? []).filter(Boolean);
   const typeLine = types.map((type) => data.TYPE_KO[type] ?? type).join(' · ');
+  const ranked = rank !== undefined;
+  // 점수 이름은 큰 수치 옆에 한 번만 읽는다 — 보조줄의 실제 내구·배율·체력 정보는 그대로 남긴다.
+  const detail = ranked && label && sub?.startsWith(`${label} · `) ? sub.slice(label.length + 3) : sub;
+  const metric = <>{label ? <span className="rk-row__label">{label}</span> : null}<span className="rk-row__score px-mono">{score}</span></>;
   return (
-    <li className={`rk-row px-skin${unrel ? ' is-unreleased' : ''}`} data-sprite={sprite}>
+    <li className={`rk-row${ranked ? ' rk-row--ranked' : ' px-skin'}${unrel ? ' is-unreleased' : ''}`} data-sprite={sprite}>
+      {/* 순위는 판의 바깥에 겹친다 — 픽셀 모서리에 잘리지 않고 본문의 가로 칸도 차지하지 않는다. */}
+      {ranked ? <span className={`px-badge px-skin rk-row__rank${rank === 1 ? ' is-first' : ''}`} aria-label={`${rank}위`}>{String(rank).padStart(2, '0')}</span> : null}
       {/* 줄 전체가 단추다 — li 에 role 을 주면 안의 배지가 읽히지 않는다 */}
-      <button type="button" className="rk-row__btn" aria-label={`${name} 상세 보기`} onClick={onOpen}>
-        {rank !== undefined ? <span className={`px-badge px-skin rk-row__rank${rank === 1 ? ' is-first' : ''}`}>{String(rank).padStart(2, '0')}</span> : null}
+      <button type="button" className={`rk-row__btn${ranked ? ' px-skin' : ''}`} aria-label={`${name} 상세 보기`} onClick={onOpen}>
         {no !== undefined ? <span className="px-mon__no rk-row__no">{`#${String(no).padStart(4, '0')}`}</span> : null}
         <span className="px-ball px-ball--sm rk-row__art"><Sprite id={sprite} /></span>
         <span className="rk-row__main">
           <span className="rk-row__name">
             <NameNode name={name} en={en} labels={data.FORM_LABELS} />
-            <DeltaBadge delta={delta} />
-            {badges}
+            {!ranked ? <><DeltaBadge delta={delta} />{badges}</> : null}
           </span>
-          {typeLine ? <span className="rk-row__types">{typeLine}</span> : null}
+          {ranked ? (
+            <span className="rk-row__meta">
+              {typeLine ? <span className="rk-row__types">{typeLine}</span> : null}
+              <span className="rk-row__badges"><DeltaBadge delta={delta} />{badges}</span>
+            </span>
+          ) : typeLine ? <span className="rk-row__types">{typeLine}</span> : null}
           {parts.length ? <span className="rk-row__lines">{parts.map((text, i) => <span key={i}>{text}</span>)}</span> : null}
         </span>
         <span className="rk-row__stats">
-          {label ? <span className="rk-row__label">{label}</span> : null}
-          <span className="rk-row__score px-mono">{score}</span>
-          {sub ? <span className="rk-row__sub">{sub}</span> : null}
+          {ranked ? <span className="rk-row__metric">{metric}</span> : metric}
+          {detail ? <span className="rk-row__sub">{detail}</span> : null}
         </span>
       </button>
     </li>
