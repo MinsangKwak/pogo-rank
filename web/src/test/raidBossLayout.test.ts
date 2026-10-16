@@ -153,5 +153,6 @@ describe('모바일 레이드 보스 정보와 리본', () => {
     expect(mobile).toMatch(/\.nw-boss__actions > \.px-btn \{[^}]*min-height: var\(--tap\)/);
     expect(css).toMatch(/\.nw-counter \{[^}]*min-height: var\(--tap\)/);
     expect(css).toMatch(/\.nw-counter__name \{[^}]*overflow-wrap: anywhere/);
+    expect(css).toMatch(/\.nw-boss :is\(\.px-metric, \.nw-counter\)::before \{ max-width: 100%; box-sizing: border-box/);
   });
 });
