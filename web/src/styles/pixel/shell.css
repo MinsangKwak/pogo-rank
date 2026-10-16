@@ -162,7 +162,8 @@ html body #root .drawer__panel .schedule .note { margin: 1.2rem 0 0; color: var(
   html body::before { left: 0; }
   html body #root .px-bottom { display: flex; }
   html body #root .layout, html body #root #page { padding-bottom: calc(var(--bottom-bar) + 4rem + env(safe-area-inset-bottom)); }
-  html body #root .app-bar #menu-toggle { display: inline-flex; }
+  /* 하단 검색·전체 메뉴에 같은 기능이 있다 — 모바일 머리에는 로고와 상세 뒤로가기만 남긴다. */
+  html body #root .app-bar .app-bar__actions, html body #root .app-bar .app-search { display: none; }
   html body #root .app-bar .lang-toggle, html body #root .app-bar .region-toggle, html body #root .app-bar #theme-toggle { display: none; }
 }
 @media (max-width: 699px) {
