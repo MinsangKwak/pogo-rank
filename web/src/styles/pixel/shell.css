@@ -159,16 +159,16 @@ html body #root .drawer__panel .schedule .note { margin: 1.2rem 0 0; color: var(
 
 /* ── 좁은 화면 ──────────────────────────────────────────────────────────── */
 @media (max-width: 1099px) {
-  html body::before { left: 0; }
+  html body::before { top: 0; left: 0; }
   html body #root .px-bottom { display: flex; }
   html body #root .layout, html body #root #page { padding-bottom: calc(var(--bottom-bar) + 4rem + env(safe-area-inset-bottom)); }
-  /* 하단 검색·전체 메뉴에 같은 기능이 있다 — 모바일 머리에는 로고와 상세 뒤로가기만 남긴다. */
+  /* 모바일 이동은 하단 바가 맡는다. 비어 있는 머리줄 높이도 함께 걷는다. */
+  html body #root .app-bar { display: none; min-height: 0; padding: 0; border: 0; }
   html body #root .app-bar .app-bar__actions, html body #root .app-bar .app-search { display: none; }
   html body #root .app-bar .lang-toggle, html body #root .app-bar .region-toggle, html body #root .app-bar #theme-toggle { display: none; }
 }
 @media (max-width: 699px) {
   html body { --inset: 2rem; }
-  html body #root .app-bar { min-height: 8.4rem; gap: 1.2rem; padding: 2rem; }
   html body #root .app-bar .app-search { display: none; }
   html body #root .app-bar .app-bar__actions { gap: 1.2rem; }
   html body #root .app-bar #search-toggle { display: inline-flex; }
