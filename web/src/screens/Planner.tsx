@@ -83,14 +83,15 @@ export default function Planner() {
       <div className="pxp-plan__top">
         <PxMetric label="즐겨찾기" value={count(favs.length)} note="같은 계정으로 로그인하면 이어서 볼 수 있어요." />
         <PxMetric label="다가오는 관련 일정" value={count(news.length)} note="관심 포켓몬과 연결된 소식" tone="mint" />
-        <PxNote className="pxp-plan__guide" title="작게 시작하는 육성 계획"
-          body="포켓몬 상세에서 ☆를 눌러 즐겨찾기에 추가하세요. 해당 포켓몬의 커뮤니티 데이·스포트라이트 아워·레이드 일정이 등록되면 아래에 표시돼요."
+        <PxNote className="pxp-plan__guide" eyebrow="YOUR COLLECTION" title="관심 포켓몬의 일정을 한곳에서"
+          body="도감이나 포켓몬 상세에서 ☆를 누르면 저장돼요. 관련 레이드와 이벤트 일정이 등록되면 이 페이지에서 바로 확인할 수 있어요."
           actions={toDex} />
       </div>
 
       {/* (1) 소식 */}
       <section className="pxp-sec" aria-labelledby="planner-news-title">
-        <PxSectionHead id="planner-news-title" title="내 포켓몬과 관련된 소식" note="놓치기 전에 확인하세요." />
+        <PxSectionHead id="planner-news-title" title="다가오는 일정" note={`${count(news.length)}건 · 즐겨찾기 포켓몬 기준`}
+          more={<PxButton size="sm" href="/schedule">전체 일정 <PixelIcon name="arrow" /></PxButton>} />
         {news.length
           ? <div className="px-grid px-grid--3 pxp-news-grid">{news.map((row, index) => <NewsCard key={index} row={row} nameOf={nameOf} />)}</div>
           : <PxNote body={favs.length
@@ -100,7 +101,8 @@ export default function Planner() {
 
       {/* (2) 담아 둔 포켓몬 */}
       <section className="pxp-sec" aria-labelledby="planner-favs-title">
-        <PxSectionHead id="planner-favs-title" title="즐겨찾는 포켓몬" note="별표를 눌러 해제할 수 있어요." />
+        <PxSectionHead id="planner-favs-title" title="즐겨찾는 포켓몬" note={`${count(favs.length)}마리 · 별표를 눌러 해제할 수 있어요.`}
+          more={<PxButton size="sm" href={routeHref('dex')}>포켓몬 추가 <PixelIcon name="arrow" /></PxButton>} />
         {favs.length
           ? (
             <div className="px-grid pxp-fav-grid">

@@ -9,7 +9,7 @@
 // 줄마다 이유 한 마디('거다이맥스 보스' · '커뮤니티 데이 · D-3')를 붙인다 — 처음 온 사람도 왜 이 목록인지 알고 누른다 (2026-10-13 통계 개편).
 // 이유가 없는 줄은 빈 채로 둔다 — 지어내지 않는다
 // ─────────────────────────────────────────────────────────────────────────────
-import { BASE } from '../lib/base';
+import { SPRITE_BASE } from '../lib/base';
 import { count } from '../lib/cell';
 import { track, trackSearchPick } from '../lib/track';
 import { useHotMons } from '../lib/hotMons';
@@ -37,7 +37,9 @@ export default function HotMons({ onOpen }: { onOpen: OpenMon }) {
             <button type="button" className="hot-mons__btn"
               onClick={() => { track('hot_mon_open', { sprite: row.dex, rank: index + 1 }); onOpen({ sprite: row.dex, name: row.name, types: row.types, via: 'dex' }); }}>
               <span className="hot-mons__rank" aria-hidden="true">{count(index + 1)}</span>
-              <img className="hot-mons__sprite" src={`${BASE}sprites/${row.dex}.png`} alt="" width="40" height="40" loading="lazy" decoding="async" />
+              <span className="px-ball hot-mons__art" aria-hidden="true">
+                <img className="hot-mons__sprite" src={`${SPRITE_BASE}${row.dex}.png`} alt="" width="96" height="96" loading="lazy" decoding="async" />
+              </span>
               <span className="hot-mons__text">
                 <span className="hot-mons__name">{row.name}</span>
                 {whyOf(row.dex) ? <span className="hot-mons__why">{whyOf(row.dex)}</span> : null}
@@ -50,7 +52,9 @@ export default function HotMons({ onOpen }: { onOpen: OpenMon }) {
             <button type="button" className="hot-mons__btn hot-mons__btn--fill"
               onClick={() => { trackSearchPick(boss.name, 'hot_fill'); onOpen({ sprite: boss.sprite, name: boss.detailName, types: boss.types, via: 'dex' }); }}>
               <span className="hot-mons__tag" aria-hidden="true">{boss.gmax ? 'G-MAX' : 'D-MAX'}</span>
-              <img className="hot-mons__sprite" src={`${BASE}sprites/${boss.sprite}.png`} alt="" width="40" height="40" loading="lazy" decoding="async" />
+              <span className="px-ball hot-mons__art" aria-hidden="true">
+                <img className="hot-mons__sprite" src={`${SPRITE_BASE}${boss.sprite}.png`} alt="" width="96" height="96" loading="lazy" decoding="async" />
+              </span>
               <span className="hot-mons__name">{boss.name}</span>
             </button>
           </li>

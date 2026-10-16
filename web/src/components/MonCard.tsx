@@ -6,7 +6,7 @@
 // 타입 이름은 도감 묶음의 TYPE_KO 로 적는다 — 묶음이 아직 안 왔으면 영문 키를 그대로 두지 않고 비운다(§1).
 // ─────────────────────────────────────────────────────────────────────────────
 import type { ReactNode } from 'react';
-import { BASE } from '../lib/base';
+import { SPRITE_BASE } from '../lib/base';
 import { useDexSoft } from '../lib/data';
 import { useFavs } from '../lib/useFavs';
 import { dexNoOf, type OpenMon } from '../lib/mon';
@@ -59,7 +59,7 @@ export default function MonCard({ sprite, dex, name, en, types = [], meta, rank,
       {/* 리본과 즐겨찾기는 잘리는 판 밖에 둔다. 본문과 ☆ 는 서로 독립된 단추다. */}
       <PokemonNumberRibbon rank={rank} dex={no} className={rank !== undefined ? 'px-mon__rank' : 'px-mon__dex'} />
       <button type="button" className="px-mon__body px-skin" onClick={() => onOpen?.({ sprite, name, en, types: [...types] })} aria-label={`${name} 상세 보기`}>
-        <span className="px-mon__art"><span className="px-ball"><img src={`${BASE}sprites/${sprite}.png`} alt="" width="96" height="96" loading="lazy" decoding="async" /></span></span>
+        <span className="px-mon__art"><span className="px-ball"><img src={`${SPRITE_BASE}${sprite}.png`} alt="" width="96" height="96" loading="lazy" decoding="async" /></span></span>
         <span className="px-mon__main">
           <span className="px-mon__name">{name}</span>
           {rank !== undefined && no !== undefined ? <span className="px-mon__no">{`#${num(no).padStart(3, '0')}`}</span> : null}

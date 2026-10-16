@@ -23,8 +23,16 @@ const onMenu = vi.fn();
 const onClose = vi.fn();
 const common = { now: 'home', onConsent: vi.fn(), onNote: vi.fn() };
 const css = readFileSync(join(__dirname, '../styles/pixel/shell.css'), 'utf8');
+const storage = new Map<string, string>();
+const localStore = {
+  getItem: (key: string) => storage.get(key) ?? null,
+  setItem: (key: string, value: string) => { storage.set(key, String(value)); },
+  removeItem: (key: string) => { storage.delete(key); },
+  clear: () => { storage.clear(); },
+};
 
 beforeEach(async () => {
+  vi.stubGlobal('localStorage', localStore);
   localStorage.clear();
   vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ json: async () => ({}) }));
   useAuthStore.setState({ enabled: true, user: null, status: 'anon', admin: false, adminRoot: false, role: null, beta: false, favs: [], recheckError: '' });
@@ -36,19 +44,21 @@ beforeEach(async () => {
 afterEach(() => { cleanup(); vi.unstubAllGlobals(); });
 
 describe('데스크톱 이동의 한 자리', () => {
-  it('상단은 검색·표시 설정만 두고 계정·설정은 왼쪽에 한 번 둔다', () => {
+  it('상단에 로그인 진입점을 유지하고 왼쪽에는 계정·서비스 메뉴를 둔다', () => {
     const { container } = render(createElement('div', null,
       createElement(AppBar, { onMenu }), createElement(AppNav, { ...common, onMenu })));
     const bar = container.querySelector('.app-bar')!;
-    expect(bar.querySelector('#bar-login, #bar-account, #bar-settings')).toBeNull();
+    expect(bar.querySelector('#bar-login')?.textContent).toContain('로그인');
     for (const id of ['app-search', 'lang-toggle', 'region-toggle', 'theme-toggle']) expect(bar.querySelector(`#${id}`)).not.toBeNull();
     expect(bar.querySelector('.region-toggle__code')?.textContent).toBe('KR');
     expect(bar.querySelector('#region-toggle')?.getAttribute('aria-label')).toContain('한국');
     const rail = container.querySelector('.app-nav')!;
     expect(rail.querySelectorAll('#menu-settings')).toHaveLength(1);
     expect(rail.querySelector('.px-nav__utilities #nav-mypage')?.textContent).toBe('로그인');
-    fireEvent.click(rail.querySelector('#nav-mypage')!);
+    fireEvent.click(bar.querySelector('#bar-login')!);
     expect(onMenu).toHaveBeenCalledOnce();
+    fireEvent.click(rail.querySelector('#nav-mypage')!);
+    expect(onMenu).toHaveBeenCalledTimes(2);
     fireEvent.click(rail.querySelector('#menu-settings')!);
     expect(go).toHaveBeenCalledWith('/settings');
     fireEvent.click(bar.querySelector('#app-search')!);
@@ -57,10 +67,18 @@ describe('데스크톱 이동의 한 자리', () => {
 
   it('로그인한 계정은 마이페이지로, 로그인 없는 빌드는 설정만 보인다', () => {
     useAuthStore.setState({ status: 'ok', user: { uid: 'test', email: '', displayName: '', photoURL: '' } });
+    const bar = render(createElement(AppBar, { onMenu })).container;
+    expect(bar.querySelector('#bar-account')?.textContent).toContain('마이페이지');
+    cleanup();
     const { container, unmount } = render(createElement(AppNav, { ...common, onMenu }));
     expect(container.querySelector('#nav-mypage')?.textContent).toBe('마이페이지');
     unmount();
     useAuthStore.setState({ enabled: false, user: null, status: 'anon' });
+    const offlineBar = render(createElement(AppBar, { onMenu })).container;
+    expect(offlineBar.querySelector('#bar-login')?.getAttribute('title')).toContain('로그인이 꺼져');
+    fireEvent.click(offlineBar.querySelector('#bar-login')!);
+    expect(onMenu).toHaveBeenCalled();
+    cleanup();
     const offline = render(createElement(AppNav, { ...common, onMenu })).container;
     expect(offline.querySelector('#nav-mypage')).toBeNull();
     expect(offline.querySelector('#menu-settings')).not.toBeNull();
@@ -111,7 +129,8 @@ describe('모바일 전체 메뉴의 기능 접근', () => {
     expect(openSearch).toHaveBeenCalledWith('bottom');
     fireEvent.click(items[3]!);
     expect(onMenu).toHaveBeenCalledOnce();
-    expect(css).toContain('.app-bar { display: none; min-height: 0; padding: 0; border: 0; }');
+    expect(css).toContain('.app-bar { display: flex; min-height: 5.6rem;');
+    expect(css).toContain('.app-bar .app-bar__account { display: inline-flex; }');
     expect(css).toContain('.px-bottom { display: flex; }');
   });
 });

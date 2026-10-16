@@ -52,6 +52,8 @@ html body #root .app-bar #menu-toggle { display: none; }
 html body #root .app-bar .lang-toggle, html body #root .app-bar .region-toggle { font: 500 1.4rem/1.2 var(--font-body); }
 html body #root .app-bar .region-toggle { flex: none; width: auto; min-width: var(--tap); padding: 0 1.2rem; flex-direction: row; gap: 0.8rem; }
 html body #root .app-bar .region-toggle__code { font: 500 1.4rem/1.2 var(--font-body); letter-spacing: 0; }
+html body #root .app-bar .app-bar__account { display: inline-flex; flex: none; align-items: center; justify-content: center; gap: 0.8rem; min-height: var(--tap); padding: 0 1.2rem; --px-fill: var(--brand-primary); --px-line: var(--px-red-edge); color: var(--on-brand); font: 600 1.4rem/1.2 var(--font-body); white-space: nowrap; }
+html body #root .app-bar .app-bar__account.is-signed-in { --px-fill: var(--panel-2); --px-line: var(--px-edge); color: var(--fg); }
 html body #root .app-bar .outline-icon { display: none; }
 /* 안쪽 화면의 뒤로가기 — 상세 팝업 위에서만 선다 */
 html body #root .app-bar__head > .icon-btn { display: inline-flex; }
@@ -180,10 +182,13 @@ html body #root .drawer__panel .schedule .note { margin: 1.2rem 0 0; color: var(
   html body::before { top: 0; left: 0; }
   html body #root .px-bottom { display: flex; }
   html body #root .layout, html body #root #page { padding-bottom: calc(var(--bottom-bar) + 4rem + env(safe-area-inset-bottom)); }
-  /* 모바일 이동은 하단 바가 맡는다. 비어 있는 머리줄 높이도 함께 걷는다. */
-  html body #root .app-bar { display: none; min-height: 0; padding: 0; border: 0; }
-  html body #root .app-bar .app-bar__actions, html body #root .app-bar .app-search { display: none; }
-  html body #root .app-bar .lang-toggle, html body #root .app-bar .region-toggle, html body #root .app-bar #theme-toggle { display: none; }
+  /* 작은 화면에도 브랜드와 계정 진입은 GNB에 남긴다. 화면 이동은 하단 바가 맡는다. */
+  html body #root .app-bar { display: flex; min-height: 5.6rem; gap: 1.2rem; padding: 0.8rem var(--inset); }
+  html body #root .app-bar .app-search { display: none; }
+  html body #root .app-bar .app-bar__actions { display: flex; gap: 0.8rem; }
+  html body #root .app-bar .lang-toggle, html body #root .app-bar .region-toggle, html body #root .app-bar #theme-toggle,
+  html body #root .app-bar #search-toggle, html body #root .app-bar #menu-toggle { display: none; }
+  html body #root .app-bar .app-bar__account { display: inline-flex; }
   /* 모바일 머리: 부모 화면은 윗줄, 영문 설명은 아랫줄. 두 언어가 서로 폭을 빼앗지 않는다. */
   html body #root .page-head { min-width: 0; grid-template-columns: minmax(0, 1fr); }
   html body #root .page-head .page-head__crumb { min-width: 0; flex-direction: column; align-items: flex-start; gap: 0.4rem; }
@@ -202,7 +207,7 @@ html body #root .drawer__panel .schedule .note { margin: 1.2rem 0 0; color: var(
   html body #root .app-bar .app-search { display: none; }
   html body #root .app-bar .app-bar__actions { gap: 1.2rem; }
   html body #root .app-bar #search-toggle { display: inline-flex; }
-  html body #root .app-bar .px-login, html body #root .app-bar .px-settings { display: none; }
+  html body #root .app-bar .px-settings { display: none; }
   html body #root .page-head { padding-top: 2.4rem; padding-bottom: 1.6rem; column-gap: 0.8rem; grid-template-columns: minmax(0, 1fr); }
   html body #root .page-head h2 { margin-top: 1.2rem; font-size: clamp(2.4rem, 6.5vw, 2.8rem); }
   html body #root .page-head .page-head__desc { font-size: 1.4rem; }
@@ -210,8 +215,8 @@ html body #root .drawer__panel .schedule .note { margin: 1.2rem 0 0; color: var(
   /* 좁은 화면에서도 글자를 보인다 — 옛 스킨은 아이콘만 남겼지만 v6 는 작은 단추로 줄을 바꾼다 */
   html body #root .page-head .page-head__actions :is(.tool-btn, .view-toggle) { width: auto; min-width: 0; height: auto; min-height: 3.6rem; padding: 0 1.2rem; font-size: 1.2rem; }
   html body #root .page-head .page-head__actions :is(.tool-btn__text, .view-toggle__text) { position: static; width: auto; height: auto; clip-path: none; }
-  /* 전체 메뉴도 모바일 팝업과 같은 하단 시트다. 옛 absolute/top:0/100% 높이를 함께 걷는다. */
-  html body #root .drawer__panel { top: auto; bottom: 0; width: 100vw; height: auto; max-height: 85vh; max-height: min(85vh, calc(100dvh - env(safe-area-inset-top))); border-left: 0; border-top: var(--px-stroke) solid var(--line); }
+  /* 전체 메뉴는 모바일에서 화면 높이를 채우는 전체 화면 패널로 연다. */
+  html body #root .drawer__panel { top: 0; bottom: auto; width: 100vw; height: 100vh; height: 100dvh; max-height: none; border-left: 0; border-top: 0; }
   html body #root .drawer__head { height: auto; flex: none; }
   /* 남은 탱커·관리자 팝업도 닫기 줄을 포함한 판 전체에 같은 상한을 건다. 본문만 줄고 스크롤된다. */
   html body #root dialog.modal:not(.modal--page) { position: fixed; inset: 0; height: 100vh; height: 100dvh; padding: 0; align-items: flex-end; }

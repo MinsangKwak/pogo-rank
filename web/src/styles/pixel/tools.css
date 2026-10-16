@@ -68,7 +68,8 @@ html body #root .pxt-slot__detail-text { display: flex; flex-direction: column; 
 html body #root .pxt-type-picker__toggle { display: flex; align-items: center; gap: 0.8rem; width: 100%; min-height: var(--tap); padding: 0; border: 0; background: none; color: var(--fg); font: inherit; text-align: left; cursor: pointer; }
 html body #root .pxt-type-picker__toggle > span:last-child { margin-left: auto; color: var(--brand-text); }
 html body #root .pxt-type-picker .px-chips { padding-top: 0.8rem; }
-html body #root .pxt-dmax .pxt-slots { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+html body #root .pxt-dmax .pxt-slots { grid-template-columns: repeat(auto-fit, minmax(min(100%, 28rem), 1fr)); gap: 1.6rem; }
+html body #root .pxt-dmax .pxt-slot--compact .pxt-slot__panel { min-width: 0; }
 html body #root .pxt-slot--compact .pxt-slot__metric { text-align: center; }
 html body #root .pxt-slot--compact .pxt-slot__body { flex: 1; }
 html body #root .pxt-slot--compact .pxt-slot__head { align-items: flex-start; }
@@ -79,7 +80,9 @@ html body #root .pxt-summary__roles li { display: flex; align-items: center; gap
 
 /* ── 솔플 계산기 ──────────────────────────────────────────────────────────── */
 html body #root .pxt-solo__flag { align-self: flex-start; }
-html body #root .pxt-conds { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1.6rem 2.4rem; }
+/* .pxt .px-panel is a column by default; conditions explicitly use a responsive grid. */
+html body #root .pxt .pxt-conds { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1.6rem 2.4rem; align-items: start; }
+html body #root .pxt-conds .pxt-field { min-width: 0; }
 /* 결과 판 — 지표 넷 */
 html body #root .pxt-result { gap: 1.2rem; }
 html body #root .pxt-result.is-ok { --px-line: var(--mint); }
@@ -100,6 +103,8 @@ html body #root .pxt-reason { max-width: 92rem; }
 html body #root .pxt-matrix__notes { display: flex; flex-direction: column; gap: 0.8rem; }
 html body #root .pxt-counters { display: flex; flex-direction: column; gap: 1.2rem; }
 html body #root .pxt-counter { gap: 1.2rem; }
+html body #root .pxt-dmax .pxt-cands { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 36rem), 1fr)); align-items: stretch; }
+html body #root .pxt-dmax .pxt-cand__panel { height: 100%; box-sizing: border-box; }
 
 /* 표 — 머리 칸은 왼쪽, 내 조합 줄은 강조 */
 html body #root .pxt-table th[scope="row"] { text-align: left; color: var(--fg); font: 700 1.4rem/1.5 var(--font-body); }
@@ -107,7 +112,7 @@ html body #root .pxt-tablewrap { padding: 0.4rem 0.8rem; overflow-x: auto; }
 html body #root .pxt-table tr.is-mine td { color: var(--brand-text); }
 
 /* ── 개체값 순위 ──────────────────────────────────────────────────────────── */
-html body #root .pxt-iv__split { display: grid; grid-template-columns: minmax(0, 40rem) minmax(0, 1fr); gap: 2.4rem; align-items: start; }
+html body #root .pxt-iv__split { display: grid; grid-template-columns: minmax(34rem, 0.8fr) minmax(0, 1.55fr); gap: 2.4rem; align-items: start; }
 html body #root .pxt-iv__form, html body #root .pxt-iv__out { display: flex; flex-direction: column; gap: 2.4rem; min-width: 0; }
 /* 개체값 세 줄 — 라벨 | − 값 + . 한 줄에 셋을 두면 좁은 왼쪽 열에서 값 칸이 사라진다 */
 html body #root .pxt-ivs__grid { display: flex; flex-direction: column; gap: 0.8rem; }
@@ -133,29 +138,33 @@ html body #root .pxt-swap .pxt-cand:has([aria-pressed="true"]) { --px-line: var(
 /* ── 좁은 화면 ───────────────────────────────────────────────────────────── */
 @media (max-width: 1099px) {
   html body #root .pxt-iv__split { grid-template-columns: minmax(0, 1fr); }
-  html body #root .pxt-conds { grid-template-columns: minmax(0, 1fr); }
+  html body #root .pxt .pxt-conds { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 @media (max-width: 699px) {
   html body #root .pxt { gap: 2rem; }
   html body #root .pxt-actions .px-btn { flex: 1 1 100%; }
   html body #root .pxt-target__search { flex-basis: 100%; }
+  html body #root .pxt .pxt-conds { grid-template-columns: minmax(0, 1fr); }
   html body #root .pxt-boss { --ball: 7.2rem; }
   html body #root .pxt-boss__panel { flex-wrap: wrap; gap: 1.2rem; }
   html body #root .pxt-boss__panel > .px-btn { margin-left: auto; }
   html body #root .pxt-iv__tiles { --cols: 1; }
-  /* D-MAX는 카드 세 장이 한 팀이다. 다른 도구의 슬롯 수·배치는 바꾸지 않는다. */
-  html body #root .pxt-dmax .pxt-slots { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.8rem; }
+  /* 세 슬롯을 휴대폰 폭에 맞춰 한 장씩 펼친다. 각 카드는 몬스터볼 왼쪽 · 지표와 동작 오른쪽으로 읽는다. */
+  html body #root .pxt-dmax .pxt-slots { grid-template-columns: minmax(0, 1fr); gap: 1.2rem; }
   html body #root .pxt-dmax .pxt-target { padding: 1.2rem; gap: 0.8rem; }
   html body #root .pxt-dmax .pxt-target__row { gap: 0.8rem; }
-  html body #root .pxt-slot--compact .pxt-slot__panel { padding: 3.2rem 0.8rem 0.8rem; gap: 0.4rem; }
-  html body #root .pxt-slot--compact .pxt-slot__head { flex-direction: column; align-items: center; gap: 0.4rem; }
-  html body #root .pxt-slot--compact .pxt-slot__head .px-badge { max-width: 100%; padding: 0.4rem; white-space: normal; text-align: center; }
-  html body #root .pxt-slot--compact .pxt-slot__body .px-ball { --ball: 6.4rem; margin-bottom: 0.4rem; }
-  html body #root .pxt-slot--compact .pxt-slot__body > .px-sub { font-size: 1.4rem; line-height: 1.5; word-break: keep-all; }
-  html body #root .pxt-slot--compact .pxt-slot__metric { padding-top: 0.8rem; }
+  html body #root .pxt-slot--compact .pxt-slot__panel { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); grid-template-areas: "head head" "body metric" "body details" "swap swap"; align-items: center; gap: 0.8rem 1.2rem; padding: 3.2rem 1.2rem 1.2rem; }
+  html body #root .pxt-slot--compact .pxt-slot__head { grid-area: head; flex-direction: row; align-items: center; }
+  html body #root .pxt-slot--compact .pxt-slot__head .px-badge { max-width: 50%; padding: 0.4rem 0.8rem; white-space: normal; text-align: center; }
+  html body #root .pxt-slot--compact .pxt-slot__body { grid-area: body; flex-direction: row; align-items: center; justify-content: flex-start; gap: 0.8rem; min-width: 0; text-align: left; }
+  html body #root .pxt-slot--compact .pxt-slot__body .px-ball { --ball: 6.4rem; margin: 0; }
+  html body #root .pxt-slot--compact .pxt-slot__body > .px-sub { min-width: 0; font-size: 1.4rem; line-height: 1.5; word-break: keep-all; text-align: left; }
+  html body #root .pxt-slot--compact .pxt-slot__metric { grid-area: metric; padding: 0; border: 0; text-align: left; }
   html body #root .pxt-slot--compact .pxt-slot__metric .px-number { font-size: 2.2rem; overflow-wrap: anywhere; }
-  html body #root .pxt-slot--compact .pxt-slot__swap { padding: 0 0.4rem; font-size: 1.2rem; white-space: normal; }
-  html body #root .pxt-slot--compact .pxt-slot__details > summary { flex-wrap: wrap; gap: 0; }
+  html body #root .pxt-slot--compact .pxt-slot__details { grid-area: details; }
+  html body #root .pxt-slot--compact .pxt-slot__details > summary { justify-content: flex-end; flex-wrap: wrap; gap: 0.4rem; }
+  html body #root .pxt-slot--compact .pxt-slot__swap { grid-area: swap; padding: 0 0.8rem; font-size: 1.2rem; white-space: normal; }
+  html body #root .pxt-dmax .pxt-cands { grid-template-columns: minmax(0, 1fr); }
   html body #root .pxt-pvp .pxt-slots, html body #root .pxt-foes > .pxt-cands { gap: 0.8rem; }
   html body #root .pxt-foes .pxt-cand__panel { padding: 3.2rem 0.8rem 0.8rem; gap: 0.8rem; }
   html body #root .pxt-foes .pxt-cand__panel > .px-ball { --ball: 6.4rem; }

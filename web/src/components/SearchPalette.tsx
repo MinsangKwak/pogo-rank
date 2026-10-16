@@ -19,7 +19,7 @@ import { trackSearchPick } from '../lib/track';
 import { readRecent, pushRecent, clearRecent, type RecentPick } from '../lib/recentSearch';
 import { useWeekBosses } from '../lib/weekBosses';
 import { useSearchStore, openSearch } from '../stores/search';
-import { BASE } from '../lib/base';
+import { SPRITE_BASE } from '../lib/base';
 import { PixelIcon } from './PixelIcon';
 import { PxDialog, PxDialogBody, PxDialogFoot, PxDialogHead } from './PxDialog';
 import { NoteBox } from './detail/Pieces';
@@ -60,7 +60,7 @@ export default function SearchPalette({ onOpen }: { onOpen: OpenMon }) {
 function Art({ id, size = 32 }: { id: number; size?: number }) {
   return (
     <span className="px-ball pxd-palette__art" style={{ ['--ball' as string]: `${size / 10}rem` }}>
-      <img src={`${BASE}sprites/${id}.png`} alt="" width={size} height={size} loading="lazy" decoding="async" />
+      <img src={`${SPRITE_BASE}${id}.png`} alt="" width={size} height={size} loading="lazy" decoding="async" />
     </span>
   );
 }

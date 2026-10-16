@@ -19,8 +19,11 @@ html body #root .pxp-btn--danger { --px-fill: var(--danger-surface); --px-line: 
 html body #root .pxp-metric--mint { --px-metric-c: var(--mint); }
 
 /* ── 15 내 포켓몬 ────────────────────────────────────────────────────────── */
-html body #root .pxp-plan__top { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1.6rem; }
+html body #root .pxp-plan__top { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1.6rem; align-items: stretch; }
 html body #root .pxp-plan__guide { grid-column: span 2; }
+html body #root .pxp-plan__guide .px-note__title { max-width: 42rem; }
+html body #root .pxp-plan__guide .px-note__body { max-width: 62rem; }
+html body #root .pxp-news-grid { grid-template-columns: repeat(auto-fit, minmax(min(100%, 30rem), 1fr)); align-items: stretch; }
 html body #root .pxp-news { gap: 1.2rem; }
 html body #root .pxp-news__head { display: flex; flex-wrap: wrap; gap: 0.8rem; }
 html body #root .pxp-news__body { display: flex; align-items: center; gap: 1.2rem; min-width: 0; }
@@ -29,6 +32,9 @@ html body #root .pxp-news__mons .sprite { width: 4.8rem; height: 4.8rem; margin-
 html body #root .pxp-news__mons .sprite:last-child { margin-right: 0; }
 html body #root .pxp-news__text { display: flex; flex-direction: column; gap: 0.4rem; min-width: 0; }
 html body #root .pxp-news__foot { display: flex; align-items: center; justify-content: space-between; gap: 1.2rem; margin-top: 0.4rem; }
+html body #root .pxp-plan .px-sec { align-items: center; }
+html body #root .pxp-plan .px-sec > .px-btn { margin-left: auto; flex: none; }
+html body #root .pxp-plan .pxp-fav-grid { grid-template-columns: repeat(auto-fit, minmax(min(100%, 24rem), 1fr)); align-items: stretch; }
 /* 공용 카드의 ★ — 이 화면은 전부 담긴 것이라 늘 빨강 */
 html body #root .pxp-fav-grid .px-mon__fav[aria-pressed="true"] { color: var(--brand-text); }
 
@@ -122,6 +128,7 @@ html body #root .pxp-lock .px-note__actions { margin-top: 0.8rem; }
 /* ── 모바일 (393px) — 1열 · 2열, 표는 카드, 입력 16px ─────────────────────── */
 @media (max-width: 1099px) {
   html body #root .pxp-plan__top { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  html body #root .pxp-plan__guide { grid-column: 1 / -1; }
   /* 공용 PxChips 는 한 줄 스크롤인데 검색식은 조건이 많아 줄을 바꾼다 */
 html body #root .pxp-finder .px-chips--scroll { flex-wrap: wrap; overflow: visible; padding-bottom: 0; }
 html body #root .pxp-groups { grid-template-columns: 1fr; }

@@ -58,16 +58,16 @@ function mountDrawer() {
 }
 
 describe('전체 메뉴와 남은 옛 팝업의 모바일 시트', () => {
-  it.each([320, 640, 699])('%ipx 전체 메뉴는 아래에 붙고 판 전체가 85vh 안에서 스크롤된다', (width) => {
+  it.each([320, 640, 699])('%ipx 전체 메뉴는 화면 높이를 채우고 패널 안에서 스크롤된다', (width) => {
     atWidth(width);
     const onClose = mountDrawer();
     const panel = document.querySelector<HTMLElement>('.drawer__panel')!;
     const style = getComputedStyle(panel);
     expect(style.position).toBe('absolute');
-    expect(style.top).toBe('auto');
-    expect(style.bottom).toBe('0px');
-    expect(style.height).toBe('auto');
-    expect(style.maxHeight).toBe(computedCap());
+    expect(style.top).toBe('0px');
+    expect(style.bottom).toBe('auto');
+    expect(style.height).toBe('100dvh');
+    expect(style.maxHeight).toBe('none');
     expect(style.overflowY).toBe('auto');
     expect(style.overscrollBehavior).toBe('contain');
     const head = getComputedStyle(panel.querySelector('.drawer__head')!);
@@ -120,6 +120,23 @@ describe('전체 메뉴와 남은 옛 팝업의 모바일 시트', () => {
     expect(panel.top).toBe('0px');
     expect(panel.height).toBe('100%');
     expect(panel.maxHeight).not.toBe(computedCap());
+  });
+
+  it('모바일에서 열린 전체 메뉴는 PC 너비로 전환될 때 자동으로 닫힌다', () => {
+    atWidth(699);
+    let change: (() => void) | undefined;
+    let desktop = false;
+    const query = {
+      get matches() { return desktop; },
+      media: '(min-width: 1100px)',
+      addEventListener: (_type: string, listener: () => void) => { change = listener; },
+      removeEventListener: vi.fn(),
+    } as unknown as MediaQueryList;
+    vi.stubGlobal('matchMedia', vi.fn(() => query));
+    const onClose = mountDrawer();
+    desktop = true;
+    change?.();
+    expect(onClose).toHaveBeenCalledOnce();
   });
 
   it('페이지형 상세와 닫힌 옛 dialog는 모바일 시트로 열지 않는다', () => {

@@ -16,7 +16,7 @@
 import { useMemo, useState, type ReactNode } from 'react';
 import { useDex, useGameday } from '../lib/data';
 import { PxChips, Sprite } from '../components/Bits';
-import { NwBadge, NwEmpty, NwFoot, NwNote, NwNoteBody, NwSecHead, type BadgeTone } from '../components/NewsBits';
+import { NwBadge, NwEmpty, NwFoot, NwMetric, NwNote, NwNoteBody, NwSecHead, type BadgeTone } from '../components/NewsBits';
 import { moveChangeDaysLeft } from '../lib/changes';
 import { num } from '../lib/cell';
 import type { MoveChange } from '../types/data';
@@ -52,13 +52,20 @@ function Related({ sprite, onOpen }: { sprite: number; onOpen: OpenMon }) {
 function Row({ move, related, onOpen }: { move: MoveChange; related: number[]; onOpen: OpenMon }) {
   const [openRel, setOpenRel] = useState(false);
   const group = GROUP[move.kind];
-  const amount = move.kind === 'energy' ? '에너지만 변경' : `위력 ${num(move.from)} → ${num(move.to)}`;
+  const amount = move.kind === 'energy' ? null : { from: num(move.from), to: num(move.to) };
   return (
     <li className={`nw-move is-${move.kind}`}>
       <div className="nw-move__line">
         <NwBadge text={group.badge} tone={group.tone} />
         <b className="px-sub nw-move__name">{move.ko}</b>
-        <span className="px-mono nw-move__amount">{amount}</span>
+        {amount ? (
+          <span className="nw-move__amount" aria-label={`위력 ${amount.from}에서 ${amount.to}로 변경`}>
+            <span className="nw-move__amount-label">위력</span>
+            <span className="px-mono nw-move__from">{amount.from}</span>
+            <span className="nw-move__arrow" aria-hidden="true">→</span>
+            <span className="px-mono nw-move__to">{amount.to}</span>
+          </span>
+        ) : <span className="nw-move__amount nw-move__amount--energy">에너지 조정</span>}
         {move.note ? <em className="px-caption nw-move__note">{move.note}</em> : null}
         {related.length ? (
           <button type="button" className="px-btn px-skin px-btn--sm nw-move__rel" aria-expanded={openRel} onClick={() => setOpenRel((on) => !on)}>
@@ -127,20 +134,39 @@ export default function Changes({ onOpen }: { onOpen: OpenMon }) {
   return (
     <div className="page__body nw-changes" id="page-changes" data-route="changes">
       {/* 시즌 · 적용일 머리 — 적용 전이면 빨강 판에 D-day, 적용 뒤면 가라앉은 판 */}
-      <div className={`nw-season px-skin px-drop px-panel${daysLeft > 0 ? ' px-skin--brand' : ' px-skin--sunk'}`}>
-        <p className="px-eyebrow nw-season__eyebrow">GO BATTLE LEAGUE</p>
-        <b className="px-title nw-season__name">{data.season}</b>
-        <span className="px-mono nw-season__date">{daysLeft > 0 ? `${data.date} 적용 · D-${daysLeft}` : `${data.date} 적용됨`}</span>
+      <section className={`nw-season px-skin px-drop px-panel${daysLeft > 0 ? ' px-skin--brand' : ' px-skin--sunk'}`} aria-label="시즌 변경 일정">
+        <div className="nw-season__copy">
+          <p className="px-eyebrow nw-season__eyebrow">GO BATTLE LEAGUE · SEASON UPDATE</p>
+          <h2 className="px-title nw-season__name">{data.season}</h2>
+          <p className="nw-season__summary">이번 시즌 기술 밸런스 변경을 종류별로 확인하세요.</p>
+        </div>
+        <div className="nw-season__datebox">
+          <span className="px-caption">적용일</span>
+          <strong className="px-mono nw-season__date">{data.date}</strong>
+          <NwBadge text={daysLeft > 0 ? `적용까지 D-${daysLeft}` : '적용 완료'} tone={daysLeft > 0 ? 'yellow' : 'mint'} />
+        </div>
+      </section>
+
+      <div className="nw-change-stats" aria-label="변경 종류별 건수">
+        {([
+          ['up', '상향', up.length],
+          ['down', '하향', down.length],
+          ['energy', '에너지 조정', energy.length],
+          ['new', '신규 기술', data.newMoves.length],
+        ] as const).map(([kind, label, value]) => (
+          <NwMetric key={kind} label={label} value={`${value}건`} sunk={filter !== kind} pressed={filter === kind}
+            className={`nw-change-stat nw-change-stat--${kind}`} onClick={() => setFilter(filter === kind ? 'all' : kind)} />
+        ))}
       </div>
 
-      <NwNote title="발표일과 적용일을 구분해 확인하세요">
+      <NwNote title="변경값 읽는 법" className="nw-change-note">
         <NwNoteBody>
-          아래 위력 수치는 <b>트레이너 배틀(PvP) 기준</b>이에요. 같은 기술이라도 레이드·체육관용 위력은 따로 관리되고, 이번 조정은 대부분 PvP에만 적용돼요.
+          위력은 <b>트레이너 배틀(PvP) 기준</b>입니다. 같은 기술도 레이드·체육관 위력은 별도로 관리됩니다.
         </NwNoteBody>
         <NwNoteBody>
           {daysLeft > 0
-            ? '적용 전이라 순위표에는 아직 반영돼 있지 않아요. 적용 다음 날 자동 갱신되면 순위가 움직인 포켓몬에 ▲▼ 표시가 붙어요. 레이드 티어표를 움직이는 것은 사이코부스트(체육관·레이드 70 → 130)와 새로 배우는 기술 쪽이에요.'
-            : '순위표는 이미 이 값으로 계산돼 있어요. 최근 움직인 포켓몬에는 ▲▼ 표시가 붙어요.'}
+            ? '적용 전 변경안입니다. 적용 후 순위가 달라진 포켓몬은 순위표에 ▲▼로 표시됩니다.'
+            : '변경 내용이 반영됐습니다. 순위표에서 최근 순위 변화도 함께 확인할 수 있습니다.'}
         </NwNoteBody>
       </NwNote>
 

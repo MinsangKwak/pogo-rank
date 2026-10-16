@@ -21,7 +21,7 @@
 import { go } from '../lib/nav';
 
 import { useMax, usePve, usePvp, useDex, useUsage } from '../lib/data';
-import { BASE } from '../lib/base';
+import { SPRITE_BASE } from '../lib/base';
 import { useRankStore } from '../stores/rank';
 import { usePrefStore, readCols } from '../stores/pref';
 import { PxChips, PxSwitch, PxTabs, PxViewSwitch, Sprite, type ChipDef } from '../components/Bits';
@@ -532,7 +532,7 @@ export function Pvp({ onOpen }: { onOpen: OpenMon }) {
               {top3.map((row) => (
                 <li key={row.sprite}>
                   <button type="button" className="px-ball px-ball--sm rk-synergy__ball" aria-label={`${row.name} 상세 보기`} onClick={() => onOpen(row)}>
-                    <img src={`${BASE}sprites/${row.sprite}.png`} alt="" width="48" height="48" loading="lazy" decoding="async" />
+                    <img src={`${SPRITE_BASE}${row.sprite}.png`} alt="" width="48" height="48" loading="lazy" decoding="async" />
                   </button>
                 </li>
               ))}

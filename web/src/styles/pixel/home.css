@@ -25,15 +25,20 @@ html body #root .home__check-more { color: var(--muted); text-decoration: none; 
 /* 구역 제목 줄 간격 */
 html body #root .home .px-sec { margin-bottom: 1.6rem; }
 
-/* 보스 목록은 가용 폭에 따라 여러 열, 팀 CTA는 내용 높이만 사용한다. */
-html body #root .home__week-row2 { display: grid; grid-template-columns: minmax(0, 1fr) clamp(28rem, 24vw, 36rem); gap: 2.4rem; align-items: start; }
-html body #root .home__week { display: flex; flex-direction: column; gap: 1.6rem; min-width: 0; }
-html body #root .home__week-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 24rem), 1fr)); gap: 1.6rem; margin: 0; padding: 0; list-style: none; }
-/* 보스는 큰 그림 + 이름, 추천은 아래의 작은 보조 줄로 구분한다. */
-html body #root .home__week-row { position: relative; min-width: 0; }
+/* PC 에서는 보스 비주얼과 배틀 팀 CTA 를 같은 높이로 나란히 둔다. */
+html body #root .home__week-row2 { display: grid; grid-template-columns: minmax(0, 1.9fr) minmax(28rem, 0.9fr); gap: 2.4rem; align-items: stretch; }
+html body #root .home__week { display: flex; flex-direction: column; gap: 1.6rem; min-width: 0; min-height: 34rem; }
+html body #root .home__week-summary { margin-left: auto; color: var(--muted); white-space: nowrap; }
+html body #root .home__week > .px-sec > .px-sec__more { margin-left: 0; white-space: nowrap; }
+html body #root .home__week-carousel { position: relative; display: flex; flex: 1; flex-direction: column; min-height: 0; }
+html body #root .home__week-swiper { flex: 1; width: 100%; min-height: 0; }
+html body #root .home__week-slide { width: clamp(22rem, calc((100% - 2.4rem) / 3), 34rem); height: auto; }
+/* 슬라이드는 폭에 따라 한 장에서 세 장까지 보이고, 포켓볼 이미지는 왼쪽에 둔다. */
+html body #root .home__week-row { position: relative; height: 100%; min-width: 0; }
 html body #root .home__week-panel { height: 100%; box-sizing: border-box; display: flex; flex-direction: column; align-items: stretch; gap: 1.2rem; min-width: 0; padding: 2.8rem 1.2rem 1.2rem; }
-html body #root .home__week-boss { display: flex; align-items: center; gap: 1.2rem; min-width: 0; min-height: var(--tap); padding: 0; border: 0; background: none; color: var(--fg); font: inherit; text-align: left; cursor: pointer; }
-html body #root .home__week-boss > .px-ball { --ball: 6.4rem; }
+html body #root .home__week-boss { display: grid; grid-template-columns: minmax(7rem, 0.75fr) minmax(0, 1.25fr); align-items: center; gap: 1.2rem; min-width: 0; min-height: 14rem; padding: 0; border: 0; background: none; color: var(--fg); font: inherit; text-align: left; cursor: pointer; }
+html body #root .home__week-art { display: grid; place-items: center; min-width: 0; min-height: 10rem; aspect-ratio: 1; border: var(--px-stroke) solid var(--line); background: var(--panel-2); }
+html body #root .home__week-art .px-ball { --ball: clamp(7.2rem, 8vw, 10rem); }
 html body #root .home__week-text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 0.4rem; }
 html body #root .home__week-text > b { display: block; word-break: keep-all; overflow-wrap: anywhere; }
 html body #root .home__week-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 0.4rem 0.8rem; }
@@ -41,22 +46,36 @@ html body #root .home__week-meta > .px-caption { white-space: nowrap; }
 html body #root .home__week-status { flex: none; padding: 0.4rem 0.8rem; }
 html body #root .home__week-when { display: flex; flex-wrap: wrap; gap: 0.4rem 0.8rem; }
 html body #root .home__week-when > span { white-space: nowrap; }
-html body #root .home__week-rec { margin-top: auto; display: grid; grid-template-columns: auto 3.2rem minmax(0, 1fr); align-items: center; gap: 0.8rem; min-width: 0; min-height: var(--tap); padding: 0.8rem; border: 0; border-top: var(--px-stroke) solid var(--line); background: var(--panel); color: var(--muted); font: inherit; text-align: left; cursor: pointer; }
+html body #root .home__week-rec { margin: auto 0 0; display: grid; grid-template-columns: auto 3.2rem minmax(0, 1fr); align-items: center; gap: 0.4rem; width: 100%; min-width: 0; min-height: var(--tap); padding: 0.4rem; border: var(--px-stroke) solid var(--line); background: var(--panel); color: var(--muted); font: inherit; text-align: left; cursor: pointer; }
 html body #root .home__week-rec-label { white-space: nowrap; }
 html body #root .home__week-rec-sprite { display: block; width: 3.2rem; height: 3.2rem; object-fit: contain; }
 html body #root .home__week-rec-name { min-width: 0; word-break: keep-all; overflow-wrap: anywhere; }
 html body #root .home__week-actions { display: flex; flex-wrap: wrap; gap: 1.2rem; margin-top: auto; }
-html body #root .home__team { display: flex; flex-direction: column; gap: 1.2rem; min-width: 0; align-self: start; }
-html body #root .home__team-balls { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1.6rem; width: 100%; max-width: 27.2rem; margin: 0.8rem 0 1.6rem; }
+html body #root .home__week-controls { display: flex; flex: none; align-items: center; gap: 0.8rem; }
+html body #root .home__team { display: flex; flex-direction: column; gap: 1.2rem; min-width: 0; height: 100%; box-sizing: border-box; }
+html body #root .home__team-balls { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1.6rem; width: 100%; max-width: 27.2rem; margin: 0.8rem 0 0.4rem; }
 html body #root .home__team-balls > .px-ball { width: 100%; height: auto; aspect-ratio: 1; min-width: 0; }
+/* 많이 본 포켓몬 그림도 다른 화면과 같은 몬스터볼 틀을 쓴다. 그림은 안쪽 67% 영역의 중심에 놓인다. */
+html body #root .hot-mons__art { --ball: 5.6rem; }
+html body #root .hot-mons__art > .hot-mons__sprite { inset: 16.5%; width: 67%; height: 67%; object-fit: contain; image-rendering: auto; }
+html body #root .home__team-links { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.8rem; margin-top: auto; padding-top: 1.2rem; border-top: var(--px-stroke) solid var(--line); }
+html body #root .home__team-links > a { display: flex; align-items: center; justify-content: space-between; gap: 0.8rem; min-width: 0; min-height: 5.6rem; padding: 0.8rem; border: var(--px-stroke) solid var(--line); background: var(--panel-2); color: var(--fg); text-decoration: none; }
+html body #root .home__team-links > a > span:first-child { display: flex; flex-direction: column; min-width: 0; gap: 0.4rem; }
+html body #root .home__team-links b { font-size: 1.4rem; }
+html body #root .home__team-links small { color: var(--muted); font-size: 1.2rem; line-height: 1.5; }
+html body #root .home__team-links > a > span:last-child { flex: none; color: var(--brand-text); font-size: 1.6rem; }
 
-/* 용도별 상위 셋 */
+/* 용도별 상위 셋 — 포켓몬 비주얼을 왼쪽, 순위 정보를 오른쪽에 둬 넓은 카드 폭을 살린다. */
 html body #root .home__rank { position: relative; display: flex; min-width: 0; }
-html body #root .home__rank-panel { width: 100%; gap: 1.2rem; padding: 3.2rem 2.4rem 2.4rem; }
+html body #root .home__rank-panel { display: grid; grid-template-columns: minmax(12rem, 0.9fr) minmax(0, 1.1fr); align-items: stretch; width: 100%; min-height: 24rem; gap: 1.6rem; padding: 2.4rem; }
 html body #root .home__rank-kind { color: var(--brand-text); font-weight: 700; }
+html body #root .home__rank-art { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.8rem; min-width: 0; overflow: hidden; border: var(--px-stroke) solid var(--line); background: var(--panel-2); }
+html body #root .home__rank-art .px-ball { --ball: clamp(12rem, 15vw, 17rem); }
+html body #root .home__rank-place { position: absolute; left: 0.8rem; bottom: 0.8rem; color: var(--muted); font-size: 1.2rem; }
+html body #root .home__rank-art-empty { min-height: 1px; }
+html body #root .home__rank-details { display: flex; flex-direction: column; align-items: flex-start; justify-content: center; gap: 1.2rem; min-width: 0; }
 html body #root .home__rank-copy { display: flex; flex-direction: column; gap: 0.4rem; min-width: 0; overflow-wrap: anywhere; }
-html body #root .home__rank-head { display: flex; align-items: center; gap: 1.6rem; --ball: 7.2rem; }
-html body #root .home__rank .px-btn { margin-top: auto; }
+html body #root .home__rank .px-btn { width: 100%; margin-top: auto; }
 
 /* 소식 한 장 */
 html body #root .home__news-card { gap: 0.8rem; padding: 2rem; }
@@ -65,10 +84,14 @@ html body #root .home__loading { min-height: 40rem; }
 
 @media (max-width: 1099px) {
   html body #root .home__adventure, html body #root .home__week-row2 { grid-template-columns: minmax(0, 1fr); }
+  html body #root .home__week { min-height: 32rem; }
+  html body #root .home__week-row { min-height: 24rem; }
+  html body #root .home__team { height: auto; min-height: 0; }
 }
 @media (max-width: 699px) {
   html body #root .home { gap: 2.4rem; padding-top: 2rem; }
   html body #root .home__hero { min-height: 30rem; gap: 1.2rem; }
+  html body #root .hot-mons__art { --ball: 4.8rem; }
   html body #root .home__title { font-size: 2.8rem; }
   html body #root .home__lead { font-size: 1.4rem; }
   html body #root .home__hero-actions .px-btn { width: 100%; }
@@ -76,4 +99,12 @@ html body #root .home__loading { min-height: 40rem; }
   html body #root .home__brief-row { flex-direction: column-reverse; align-items: center; text-align: center; }
   html body #root .home__brief-actions .px-btn { width: 100%; }
   html body #root .home__team-balls { align-self: center; }
+  html body #root .home__week-slide { width: min(82vw, 32rem); }
+  html body #root .home__week-boss { grid-template-columns: minmax(8rem, 0.8fr) minmax(0, 1.2fr); justify-items: stretch; gap: 1.2rem; text-align: left; }
+  html body #root .home__week-art { width: auto; min-height: 10rem; }
+  html body #root .home__week-art .px-ball { --ball: 8rem; }
+  html body #root .home__week-text { align-items: flex-start; }
+  html body #root .home__team-links { grid-template-columns: 1fr; }
+  html body #root .home__rank-panel { grid-template-columns: minmax(10rem, 0.75fr) minmax(0, 1.25fr); min-height: 20rem; gap: 1.2rem; padding: 1.6rem; }
+  html body #root .home__rank-art .px-ball { --ball: 10rem; }
 }

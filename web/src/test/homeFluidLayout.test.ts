@@ -18,17 +18,17 @@ describe('홈 유동형 배치', () => {
     expect(buttons).toContain('min-width: var(--tap)');
     expect(buttons).toContain('min-height: var(--tap)');
   });
-  it('팀 판은 여섯 보스의 높이를 따라 늘어나지 않는다', () => {
-    expect(rule('home__week-row2')).toContain('align-items: start');
-    expect(rule('home__team')).toContain('align-self: start');
-    expect(rule('home__week-row2')).toContain('clamp(28rem, 24vw, 36rem)');
+  it('PC 에서 이번 주 보스와 팀 만들기 패널은 같은 높이로 나란히 선다', () => {
+    expect(rule('home__week-row2')).toContain('align-items: stretch');
+    expect(rule('home__team')).toContain('height: 100%');
+    expect(rule('home__week-row2')).toContain('minmax(28rem, 0.9fr)');
   });
-  it('주간 보스는 가용 폭에 따라 열을 늘리고 좁으면 한 열로 줄인다', () => {
-    const list = rule('home__week-list');
-    expect(list).toContain('display: grid');
-    expect(list).toContain('repeat(auto-fit, minmax(min(100%, 24rem), 1fr))');
-    expect(rule('home__week-panel')).toContain('height: 100%');
-    expect(rule('home__week-rec')).toContain('margin-top: auto');
+  it('보스 슬라이드는 왼쪽 포켓몬 비주얼과 오른쪽 정보 구조를 유지한다', () => {
+    expect(rule('home__week-boss')).toContain('grid-template-columns: minmax(7rem, 0.75fr) minmax(0, 1.25fr)');
+    expect(rule('home__week-art')).toContain('place-items: center');
+    expect(rule('home__week-rec')).toContain('margin: auto 0 0');
+    expect(rule('home__week-slide')).toContain('calc((100% - 2.4rem) / 3)');
+    expect(rule('home__week-row')).not.toContain('width: 100%');
   });
   it('320px에서도 팀 그림 세 개가 동일한 정사각형으로 판 안에 들어간다', () => {
     expect(rule('home__team-balls')).toContain('repeat(3, minmax(0, 1fr))');

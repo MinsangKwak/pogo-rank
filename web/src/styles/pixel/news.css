@@ -75,36 +75,56 @@ html body #root .nw-source__body { display: flex; flex-direction: column; gap: 0
 html body #root .nw-source__meta { display: flex; flex-wrap: wrap; gap: 0.4rem 1.2rem; }
 @media (hover: hover) { html body #root .nw-source:hover { --px-line: var(--brand-text); } }
 
-/* ── 03 기술 변경 — 시즌 머리 · 그룹 판 · 줄 ─────────────────────────────── */
-html body #root .nw-season { display: flex; flex-direction: column; gap: 0.8rem; }
+/* ── 03 기술 변경 — 시즌 요약 · 변경 종류 · 빠르게 훑는 기술 카드 ───────── */
+html body #root .nw-season { display: grid; grid-template-columns: minmax(0, 1fr) minmax(20rem, 0.36fr); align-items: center; gap: 2.4rem; padding: 2.4rem; }
+html body #root .nw-season__copy { display: flex; flex-direction: column; align-items: flex-start; gap: 0.8rem; }
+html body #root .nw-season__eyebrow { margin: 0; }
+html body #root .nw-season__name { margin: 0; }
+html body #root .nw-season__summary { margin: 0; max-width: 64rem; color: var(--muted); font-size: 1.6rem; line-height: 1.7; }
 html body #root .nw-season.px-skin--brand :is(.nw-season__eyebrow, .nw-season__name, .nw-season__date) { color: var(--on-brand); }
-html body #root .nw-season__date { font-size: 1.4rem; }
+html body #root .nw-season__datebox { display: flex; flex-wrap: wrap; align-items: center; gap: 0.8rem 1.2rem; padding: 1.6rem; border: var(--px-stroke) solid color-mix(in srgb, var(--px-edge) 70%, transparent); background: color-mix(in srgb, var(--panel) 82%, transparent); }
+html body #root .nw-season__datebox > .px-caption { width: 100%; }
+html body #root .nw-season__date { font-size: 1.6rem; }
+html body #root .nw-season__datebox .px-badge { margin-left: auto; }
+html body #root .nw-change-stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1.2rem; }
+html body #root .nw-change-stat { min-width: 0; min-height: 8rem; align-items: flex-start; justify-content: center; padding: 1.2rem 1.6rem; text-align: left; }
+html body #root .nw-change-stat .px-metric__label { color: var(--muted); }
+html body #root .nw-change-stat .px-metric__value { font-size: 2.2rem; }
+html body #root .nw-change-stat--up[aria-pressed="true"] { --px-line: var(--mint); }
+html body #root .nw-change-stat--down[aria-pressed="true"] { --px-line: var(--orange); }
+html body #root .nw-change-stat--energy[aria-pressed="true"] { --px-line: var(--blue); }
+html body #root .nw-change-stat--new[aria-pressed="true"] { --px-line: var(--purple); }
+html body #root .nw-change-note { display: grid; grid-template-columns: minmax(16rem, 0.34fr) minmax(0, 1fr) minmax(0, 1fr); align-items: start; gap: 0.8rem 2.4rem; }
+html body #root .nw-change-note .px-note__title { grid-row: 1 / span 2; margin: 0; }
+html body #root .nw-change-note .px-note__body { margin: 0; max-width: 62ch; line-height: 1.7; }
 html body #root .nw-group { display: flex; flex-direction: column; gap: 1.6rem; }
 html body #root .nw-group__head { margin: 0; }
 html body #root .nw-group__mark { display: inline-grid; place-items: center; width: 2.8rem; height: 2.8rem; margin-right: 0.4rem; border: var(--px-stroke) solid var(--px-edge); background: var(--panel-2); color: var(--fg); font: 700 1.6rem/1 var(--font-mono); }
 html body #root .nw-group__mark--mint { color: var(--mint); border-color: var(--mint); }
 html body #root .nw-group__mark--orange { color: var(--orange); border-color: var(--orange); }
 html body #root .nw-group__mark--blue { color: var(--blue); border-color: var(--blue); }
-html body #root .nw-moves { display: flex; flex-direction: column; margin: 0; padding: 0; list-style: none; }
-html body #root .nw-move { display: flex; flex-direction: column; gap: 0.8rem; padding: 1.2rem 0; border-top: 0.2rem solid color-mix(in srgb, var(--line) 50%, transparent); }
-html body #root .nw-move:first-child { border-top: 0; padding-top: 0; }
-html body #root .nw-move:last-child { padding-bottom: 0; }
-html body #root .nw-move__line { display: flex; flex-wrap: wrap; align-items: center; gap: 0.8rem 1.2rem; width: 100%; margin: 0; padding: 0; border: 0; background: none; color: inherit; font: inherit; text-align: left; }
-html body #root .nw-move__tap { cursor: pointer; min-height: var(--tap); }
+html body #root .nw-moves { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 34rem), 1fr)); gap: 1.2rem; margin: 0; padding: 0; list-style: none; }
+html body #root .nw-move { display: flex; min-width: 0; flex-direction: column; justify-content: center; gap: 1.2rem; padding: 1.6rem; border: var(--px-stroke) solid var(--line); background: var(--panel-2); }
+html body #root .nw-move__line { display: grid; grid-template-columns: max-content minmax(8rem, 1fr) max-content; align-items: center; gap: 0.8rem 1.2rem; width: 100%; margin: 0; padding: 0; border: 0; background: none; color: inherit; font: inherit; text-align: left; }
+html body #root .nw-move__tap { cursor: pointer; min-height: 6.4rem; }
 @media (hover: hover) { html body #root .nw-move__tap:hover .nw-move__name { color: var(--brand-text); } }
-html body #root .nw-move__name { min-width: 12rem; }
-html body #root .nw-move__amount { color: var(--fg); font-size: 1.4rem; }
-html body #root .is-up .nw-move__amount { color: var(--mint); }
-html body #root .is-down .nw-move__amount { color: var(--orange); }
-html body #root .nw-move__note { font-style: normal; }
-html body #root .nw-move__rel { margin-left: auto; }
+html body #root .nw-move__name { min-width: 0; }
+html body #root .nw-move__amount { grid-column: 1 / -1; display: inline-flex; align-items: center; gap: 0.8rem; justify-self: start; min-height: 3.6rem; color: var(--fg); font-size: 1.4rem; }
+html body #root .nw-move__amount-label { color: var(--muted); font-size: 1.2rem; }
+html body #root .nw-move__from { padding: 0.4rem 0.8rem; color: var(--muted); background: var(--panel); text-decoration: line-through; text-decoration-color: color-mix(in srgb, var(--muted) 65%, transparent); }
+html body #root .nw-move__arrow { color: var(--muted); }
+html body #root .nw-move__to { padding: 0.4rem 0.8rem; border: var(--px-stroke) solid var(--line); background: var(--panel); font-size: 1.6rem; font-weight: 700; }
+html body #root .is-up .nw-move__to { color: var(--mint); border-color: color-mix(in srgb, var(--mint) 65%, var(--line)); }
+html body #root .is-down .nw-move__to { color: var(--orange); border-color: color-mix(in srgb, var(--orange) 65%, var(--line)); }
+html body #root .nw-move__amount--energy { padding: 0.4rem 0.8rem; border: var(--px-stroke) solid var(--line); background: var(--panel); color: var(--blue); }
+html body #root .nw-move__note { grid-column: 1 / -1; color: var(--muted); font-style: normal; line-height: 1.5; }
+html body #root .nw-move__rel { grid-column: 1 / -1; justify-self: start; margin: 0; }
 html body #root .nw-move__rels { padding-left: 0; }
 html body #root .nw-move__art { --ball: 4rem; }
 html body #root .nw-rel { gap: 0.8rem; }
 html body #root .nw-move__relmore { align-self: center; }
 /* 신규 기술은 줄이 짧아 넓은 화면에서 두 열로 */
-html body #root .nw-moves--new { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 2.4rem; }
-html body #root .nw-moves--new .nw-move:nth-child(2) { border-top: 0; padding-top: 0; }
+html body #root .nw-moves--new { grid-template-columns: repeat(auto-fit, minmax(min(100%, 34rem), 1fr)); }
 html body #root .nw-rel .sprite { width: 2.8rem; height: 2.8rem; }
 
 /* ── 04 이벤트 일정 — 월 이동 · 달력 · 선택일 · 전체 목록 ─────────────────── */
@@ -269,10 +289,16 @@ html body #root .nw-boss-grid[data-view="list"] { grid-template-columns: minmax(
   html body #root .nw-monthnav__title { min-width: 0; }
   html body #root #page-schedule .nw-monthnav { flex-direction: column; align-items: stretch; }
   html body #root .nw-monthnav__move { justify-content: space-between; }
-  html body #root .nw-move__name { min-width: 0; }
-  html body #root .nw-move__rel { margin-left: 0; }
-  html body #root .nw-moves--new { grid-template-columns: minmax(0, 1fr); }
-  html body #root .nw-moves--new .nw-move:nth-child(2) { border-top: 0.2rem solid color-mix(in srgb, var(--line) 50%, transparent); padding-top: 1.2rem; }
+  html body #root .nw-season { grid-template-columns: minmax(0, 1fr); gap: 1.6rem; padding: 1.6rem; }
+  html body #root .nw-season__datebox { padding: 1.2rem; }
+  html body #root .nw-change-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.8rem; }
+  html body #root .nw-change-stat { min-height: 7rem; padding: 1.2rem; }
+  html body #root .nw-change-note { grid-template-columns: minmax(0, 1fr); gap: 0.8rem; }
+  html body #root .nw-change-note .px-note__title { grid-row: auto; }
+  html body #root .nw-moves { grid-template-columns: minmax(0, 1fr); }
+  html body #root .nw-move { padding: 1.2rem; }
+  html body #root .nw-move__line { grid-template-columns: max-content minmax(0, 1fr); }
+  html body #root .nw-move__amount { grid-column: 1 / -1; }
   /* 달력 — 칸을 낮추고 막대 · 더보기는 접는다. 그날 일정은 아래 선택일 판이 말한다 */
   html body #root .nw-cal { padding: 0.8rem; }
   html body #root .nw-cal__week { grid-template-rows: auto; column-gap: 0; }

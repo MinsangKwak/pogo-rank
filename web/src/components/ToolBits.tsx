@@ -6,7 +6,7 @@
 // 값은 호출처가 lib/cell 로 닫아 글자로 넘긴다 — 여기서는 숫자를 만지지 않는다(§1).
 // ─────────────────────────────────────────────────────────────────────────────
 import type { CSSProperties, ReactNode } from 'react';
-import { BASE } from '../lib/base';
+import { SPRITE_BASE } from '../lib/base';
 import { PixelIcon } from './PixelIcon';
 import { useDexSoft } from '../lib/data';
 import { dexNoOf } from '../lib/mon';
@@ -22,7 +22,7 @@ function ToolNumberRibbon({ sprite }: { sprite: number }) {
 export function Ball({ sprite, size }: { sprite: number | null; size?: 'sm' | 'lg' }) {
   return (
     <span className={`px-ball${size ? ` px-ball--${size}` : ''}`}>
-      {sprite == null ? null : <img src={`${BASE}sprites/${sprite}.png`} alt="" width="96" height="96" loading="lazy" decoding="async" />}
+      {sprite == null ? null : <img src={`${SPRITE_BASE}${sprite}.png`} alt="" width="96" height="96" loading="lazy" decoding="async" />}
     </span>
   );
 }
@@ -121,7 +121,7 @@ export function SlotCard({ index, role, roleTone = 'orange', sprite, name, types
   sprite: number | null; name: string; types?: string; moves?: string;
   metric: string; value: string; note: string;
   onOpen?: () => void; onSwap?: () => void; emptyText?: string;
-  /** D-MAX 팀은 작은 화면에서도 셋을 한 줄에 비교한다. 설명은 직접 펼쳐 읽는다. */
+  /** D-MAX 팀은 넓은 화면에서 함께 비교하고, 좁은 화면에서는 슬롯을 읽기 쉽게 재배치한다. */
   compact?: boolean;
 }) {
   const body = (

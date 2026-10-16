@@ -1,14 +1,18 @@
 // ─────────────────────────────────────────────────────────────────────────────
 // screens/Home.tsx — 서비스 홈 (v6 피그마 '01 · 서비스 홈')
 //
-// 풍경 히어로 → 주간 브리핑(이번 주 보스를 한 장씩) + 이번 주 체크포인트(맥스 배틀 지금 · 다음 주)
-// → 지금 많이 보는 포켓몬(카드 넷) → 이번 주 보스 목록 + 나만의 배틀 팀 → 용도별 상위 포켓몬 셋 → 게임 업데이트 한 장.
+// 풍경 히어로 → 주간 브리핑 + 체크포인트 → 많이 보는 포켓몬
+// → 이번 주 보스(폭에 따라 1~3장 보이는 정보 Swiper)와 팀 만들기 → 용도별 상위(비주얼 왼쪽 + 순위 정보 오른쪽) → 게임 업데이트.
 // 데이터는 전부 기존 훅(lib/useBossBoard · lib/hotMons · lib/weekBosses · lib/data)에서 온다 — 문구를 지어내지 않는다.
-// 히어로는 데이터 없이 바로 서고(LCP), 그 아래만 기다린다. Swiper 는 걷었다 — 장 넘김은 단추 둘과 상태 하나면 된다.
+// 히어로는 데이터 없이 바로 서고(LCP), 그 아래만 기다린다. 보스 목록은 Swiper loop 로 순환하고 직접 넘길 수도 있다.
 // ─────────────────────────────────────────────────────────────────────────────
 import { Suspense, useEffect, useMemo, useState } from 'react';
+import { Swiper, SwiperSlide } from 'swiper/react';
+import { A11y, Autoplay, Keyboard } from 'swiper/modules';
+import type { Swiper as SwiperInstance } from 'swiper';
+import 'swiper/css';
 import { go } from '../lib/nav';
-import { BASE } from '../lib/base';
+import { SPRITE_BASE } from '../lib/base';
 import { ROUTE_EYEBROW, routeDesc, routeHref, type RouteDef } from '../routes';
 import { useLockReason, lockedAttrs } from '../lib/useLocked';
 import { useMax, useUpdates, usePve, usePvp, useDex, useDexSoft } from '../lib/data';
@@ -31,7 +35,7 @@ import { TankPopupEntry, NOV_TANK_LIVE } from '../components/TankPopup';
 /** 몬스터볼 틀 위 그림 — 카드 밖(브리핑 · 팀 CTA · 용도별)에서 쓰는 작은 조각 */
 function Ball({ sprite, size = 'md', onClick, label }: { sprite: number; size?: 'sm' | 'md' | 'lg'; onClick?: () => void; label?: string }) {
   const cls = `px-ball${size === 'sm' ? ' px-ball--sm' : size === 'lg' ? ' px-ball--lg' : ''}`;
-  const img = <img src={`${BASE}sprites/${sprite}.png`} alt="" width="96" height="96" loading="lazy" decoding="async" />;
+  const img = <img src={`${SPRITE_BASE}${sprite}.png`} alt="" width="96" height="96" loading="lazy" decoding="async" />;
   if (!onClick) return <span className={cls}>{img}</span>;
   return <button type="button" className={`${cls} home__ball-btn`} aria-label={label} onClick={onClick}>{img}</button>;
 }
@@ -179,23 +183,46 @@ function HotFour({ onOpen }: { onOpen: OpenMon }) {
   );
 }
 
-/** 이번 주 보스 목록 — 보스 한 줄에 종류 · 기간 · 추천 첫 마리. 누르면 보스 상세(상대할 때) */
+/** 이번 주 보스 — 폭에 따라 1~3장을 보여 주는 순환형 Swiper. 왼쪽 그림, 오른쪽 일정·추천 정보; 선택하면 보스 상세를 연다. */
 export function WeekList({ board, onOpen }: { board: BossCard[]; onOpen: OpenMon }) {
   const src = useCounterSource();
   const rows = board.slice(0, BOARD_MAX);
+  const [swiper, setSwiper] = useState<SwiperInstance | null>(null);
   return (
     <section className="home__week px-skin px-drop px-panel" aria-label="이번 주 보스">
-      <h2 className="px-sec"><span className="px-heading">이번 주 보스</span><a className="px-sec__more" href={routeHref('schedule')}>전체 일정 ↗</a></h2>
+      <h2 className="px-sec">
+        <span className="px-heading">이번 주 보스</span>
+        {rows.length ? <span className="home__week-summary px-caption">{rows.length}개 일정{rows.length > 1 ? ' · 자동 순환' : ''}</span> : null}
+        {rows.length > 1 ? (
+          <span className="home__week-controls" aria-label="보스 슬라이드 조작">
+            <button type="button" className="px-btn px-btn--sm px-skin" aria-label="이전 보스" onClick={() => swiper?.slidePrev()}>←</button>
+            <button type="button" className="px-btn px-btn--sm px-skin" aria-label="다음 보스" onClick={() => swiper?.slideNext()}>→</button>
+          </span>
+        ) : null}
+        <a className="px-sec__more" href={routeHref('schedule')}>전체 일정 ↗</a>
+      </h2>
       {rows.length ? (
-        <ul className="home__week-list">
+        <div className="home__week-carousel">
+          <Swiper
+            className="home__week-swiper"
+            modules={[A11y, Autoplay, Keyboard]}
+            onSwiper={setSwiper}
+            loop={rows.length > 1}
+            autoplay={rows.length > 1 ? { delay: 4800, disableOnInteraction: false, pauseOnMouseEnter: true } : false}
+            keyboard={{ enabled: true, onlyInViewport: true }}
+            speed={450}
+            slidesPerView="auto"
+            spaceBetween={12}
+            a11y={{ prevSlideMessage: '이전 보스', nextSlideMessage: '다음 보스' }}
+          >
           {rows.map((card) => {
             const counter = countersOf(src, card.battle, card.types, 1)?.rows[0];
             return (
-              <li key={card.id} className="home__week-row">
+              <SwiperSlide key={card.id} className="home__week-slide home__week-row">
                 <PokemonNumberRibbon dex={card.dex} />
                 <div className="home__week-panel px-skin px-skin--sunk">
                   <button type="button" className="home__week-boss" onClick={() => { track('week_boss_open', { boss: card.detailName, kind: card.kind }); onOpen({ sprite: card.sprite, name: card.detailName, types: card.types, boss: card.kind }); }}>
-                    <Ball sprite={card.sprite} size="sm" />
+                    <span className="home__week-art"><Ball sprite={card.sprite} size="lg" /></span>
                     <span className="home__week-text">
                       <b className="px-sub">{card.form ? `${card.form} ${card.name}` : card.name}</b>
                       <span className="home__week-meta">
@@ -211,20 +238,17 @@ export function WeekList({ board, onOpen }: { board: BossCard[]; onOpen: OpenMon
                     <button type="button" className="home__week-rec" title={`추천 · ${counter.name}`}
                       onClick={() => { track('week_boss_rec', { boss: card.detailName, mon: counter.name }); onOpen({ sprite: counter.sprite, name: counter.name, en: counter.en, types: counter.types }); }}>
                       <span className="home__week-rec-label px-caption">추천</span>
-                      <img className="home__week-rec-sprite" src={`${BASE}sprites/${counter.sprite}.png`} alt="" width="32" height="32" loading="lazy" decoding="async" />
+                      <img className="home__week-rec-sprite" src={`${SPRITE_BASE}${counter.sprite}.png`} alt="" width="32" height="32" loading="lazy" decoding="async" />
                       <span className="home__week-rec-name px-caption">{counter.name}</span>
                     </button>
                   ) : null}
                 </div>
-              </li>
+              </SwiperSlide>
             );
           })}
-        </ul>
+          </Swiper>
+        </div>
       ) : <p className="px-body px-muted">이번 주 보스 일정이 아직 없어요. 발표되면 여기에 추천 포켓몬과 함께 올라와요.</p>}
-      <div className="home__week-actions">
-        <a className="px-btn px-skin" href={routeHref('raids')}>레이드 보스</a>
-        <a className="px-btn px-skin" href={routeHref('schedule')}>이벤트 일정</a>
-      </div>
     </section>
   );
 }
@@ -294,6 +318,10 @@ function HomeData({ board, onOpen }: { board: BossCard[]; onOpen: OpenMon }) {
             {dmaxTop.map((row) => <Ball key={row.sprite} sprite={row.sprite} label={`${row.name} 상세 보기`} onClick={() => onOpen({ sprite: row.sprite, name: row.name, en: row.en, types: row.types })} />)}
           </div>
           <a className="px-btn px-btn--primary px-btn--block px-skin" href={routeHref('dmax-deck')} onClick={() => track('home_cta', { to: 'dmax-deck' })}>D-MAX 덱 짜기 →</a>
+          <div className="home__team-links" aria-label="일정과 레이드 바로가기">
+            <a href={routeHref('raids')}><span><b>레이드 보스</b><small>현재 보스와 추천 포켓몬</small></span><span aria-hidden="true">↗</span></a>
+            <a href={routeHref('schedule')}><span><b>이벤트 일정</b><small>날짜별 진행 일정을 확인</small></span><span aria-hidden="true">↗</span></a>
+          </div>
         </section>
       </div>
       {NOV_TANK_LIVE ? <div className="portal-prep-note"><TankPopupEntry onOpen={onOpen} compact /></div> : null}
@@ -305,21 +333,24 @@ function HomeData({ board, onOpen }: { board: BossCard[]; onOpen: OpenMon }) {
             <article key={one.id} className="home__rank" data-kind={one.id}>
               {one.row ? <PokemonNumberRibbon rank={one.rank} dex={dexNo(one.row.sprite, dex.DEX_DATA.dex) ?? undefined} /> : null}
               <div className="home__rank-panel px-skin px-drop px-card">
-                <p className="home__rank-kind px-caption">{one.title}</p>
-                <div className="home__rank-head">
-                  {one.row ? <Ball sprite={one.row.sprite} size="sm" label={`${one.row.name} 상세 보기`} onClick={() => onOpen({ sprite: one.row!.sprite, name: one.row!.name, en: one.row!.en, types: one.row!.types })} /> : null}
+                <div className="home__rank-art" aria-hidden={!one.row}>
+                  <span className="home__rank-kind px-caption">{one.title}</span>
+                  {one.row ? <Ball sprite={one.row.sprite} size="lg" label={`${one.row.name} 상세 보기`} onClick={() => onOpen({ sprite: one.row!.sprite, name: one.row!.name, en: one.row!.en, types: one.row!.types })} /> : <span className="home__rank-art-empty" />}
+                  {one.rank ? <span className="home__rank-place px-mono">TOP {String(one.rank).padStart(2, '0')}</span> : null}
+                </div>
+                <div className="home__rank-details">
                   <div className="home__rank-copy">
                     <h3 className="px-sub">{one.row?.name ?? one.title}</h3>
                     {one.row ? <p className="px-caption">{one.row.types.map(typeKo).filter(Boolean).join(' · ')}</p> : null}
                   </div>
+                  <p className="px-caption">
+                    {one.sub}
+                    {one.id === 'pve' && one.row && 'dps' in one.row ? ` · DPS ${num(one.row.dps, 1)}` : ''}
+                    {one.id === 'dmax' && one.row && 'charged' in one.row ? ` · ${typeKo(one.row.charged)} 맥스` : ''}
+                    {one.id === 'pvp' && one.row && 'score' in one.row ? ` · ${count(one.row.score)}점` : ''}
+                  </p>
+                  <a className="px-btn px-btn--block px-skin" href={one.href} onClick={() => track('home_cta', { to: one.id })}>순위 보기 →</a>
                 </div>
-                <p className="px-caption">
-                  {one.sub}
-                  {one.id === 'pve' && one.row && 'dps' in one.row ? ` · DPS ${num(one.row.dps, 1)}` : ''}
-                  {one.id === 'dmax' && one.row && 'charged' in one.row ? ` · ${typeKo(one.row.charged)} 맥스` : ''}
-                  {one.id === 'pvp' && one.row && 'score' in one.row ? ` · ${count(one.row.score)}점` : ''}
-                </p>
-                <a className="px-btn px-btn--block px-skin" href={one.href} onClick={() => track('home_cta', { to: one.id })}>순위 보기 →</a>
               </div>
             </article>
           ))}

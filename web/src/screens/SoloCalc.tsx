@@ -176,20 +176,20 @@ export default function SoloCalc({ onOpen }: { onOpen: OpenMon }) {
           </Field>
         </section>
 
-        {/* 02 · 조건 */}
-        <section className="px-panel px-skin px-drop pxt-conds" aria-label="배틀 조건">
-          <Field label="계산 방식"><PxChips label="계산 방식" items={[{ id: 'auto', label: '추천 덱' }, { id: 'mine', label: '내 덱 검증' }]} value={mode} onPick={(id) => setMode(id as 'auto' | 'mine')} /></Field>
-          <Field label="포켓몬 레벨"><PxChips label="포켓몬 레벨" items={[{ id: 'off', label: '레벨 40' }, { id: 'on', label: '풀강 50' }]} value={lv50 ? 'on' : 'off'} onPick={(id) => setLv50(id === 'on')} /></Field>
-          <Field label="공격 보너스"><PxChips label="공격 보너스" items={BUFFS.map((one) => ({ id: one.id, label: one.label }))} value={buff} onPick={setBuff} /></Field>
-        </section>
-
         {!boss ? (
           <Note title="도전할 보스를 먼저 골라주세요"
             actions={<button type="button" className="px-btn px-skin" onClick={() => document.getElementById('solo-boss-search')?.focus()}>보스 검색하기 ↑</button>}>
-            추천 포켓몬부터 제한 시간 내 공략 가능성까지 한곳에서 확인할 수 있어요.
+            보스를 고르면 티어와 전투 조건을 설정하고 추천 덱의 예상 공략 시간을 확인할 수 있어요.
           </Note>
         ) : (
           <>
+            {/* 보스 선택 후에만 계산에 쓰이는 조건을 보여 검색 → 설정 → 결과 순서를 분명히 한다. */}
+            <section className="px-panel px-skin px-drop pxt-conds" aria-label="배틀 조건">
+              <Field label="계산 방식"><PxChips label="계산 방식" items={[{ id: 'auto', label: '추천 덱' }, { id: 'mine', label: '내 덱 검증' }]} value={mode} onPick={(id) => setMode(id as 'auto' | 'mine')} /></Field>
+              <Field label="포켓몬 레벨"><PxChips label="포켓몬 레벨" items={[{ id: 'off', label: '레벨 40' }, { id: 'on', label: '풀강 50' }]} value={lv50 ? 'on' : 'off'} onPick={(id) => setLv50(id === 'on')} /></Field>
+              <Field label="공격 보너스"><PxChips label="공격 보너스" items={BUFFS.map((one) => ({ id: one.id, label: one.label }))} value={buff} onPick={setBuff} /></Field>
+            </section>
+
             {/* 03 · 덱 · 출전 순서 — 내 덱 검증은 여섯 칸을 직접 채우고, 추천 덱은 셈이 고른 순서를 순위 줄로 보여 준다 */}
             <section className="px-panel px-skin px-drop pxt-deck" aria-labelledby="solo-deck-title">
               <SecHead id="solo-deck-title" title={mode === 'mine' ? '내 덱 · 출전 순서' : '추천 덱 · 출전 순서'}

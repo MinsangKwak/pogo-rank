@@ -116,13 +116,14 @@ const THEME_FACE: Record<Theme, [PixelIconName, string]> = {
   dark: ['moon', '화면 테마: 어둡게 — 누르면 밝게'],
 };
 
-/** 머리줄 — 검색과 빠른 표시 설정. 계정·서비스 이동은 왼쪽 레일이 맡는다. */
+/** 머리줄 — 검색·표시 설정·계정 진입. */
 export function AppBar({ onMenu, onBack }: { onMenu: () => void; home?: boolean; onBack?: () => void }) {
   const barRef = useRef<HTMLElement>(null);
   const theme = usePrefStore((s) => s.theme);
   const toggleTheme = usePrefStore((s) => s.toggleTheme);
   const [icon, label] = THEME_FACE[theme];
   const newRelease = useNewRelease();
+  const { enabled, user, status } = useAuthStore();
   const now = useLang();
   const region = useRegion();
   // 헤더는 글꼴·창 폭에 따라 최소 높이보다 커질 수 있다. 레일은 실제 아래쪽에서 시작한다.
@@ -175,6 +176,11 @@ export function AppBar({ onMenu, onBack }: { onMenu: () => void; home?: boolean;
           onClick={() => { const next = region === 'eu' ? 'kr' : 'eu'; setRegion(next); track('region_switch', { region: next }); }}>
           <PixelIcon name="globe" />
           <span className="region-toggle__code">{region === 'eu' ? 'EU' : 'KR'}</span>
+        </button>
+        <button type="button" className={`px-btn px-skin px-login app-bar__account${user ? ' is-signed-in' : ''}${enabled ? '' : ' is-unavailable'}`}
+          id={user ? 'bar-account' : 'bar-login'} aria-haspopup="dialog" aria-controls="drawer-backdrop"
+          title={enabled ? undefined : '현재 개발 환경에서는 로그인이 꺼져 있습니다.'} onClick={onMenu}>
+          <PixelIcon name="user" />{user ? '마이페이지' : status === 'loading' ? '로그인 확인 중' : '로그인'}
         </button>
         <button className="px-btn px-btn--icon px-skin icon-btn" id="theme-toggle" aria-label={label} aria-live="polite" data-icon={icon} title={label}
           onClick={() => { toggleTheme(); track('theme_switch', { to: themeIsDark(theme) ? 'light' : 'dark' }); }}>
@@ -290,6 +296,19 @@ export function BottomBar({ now, onMenu }: { now: string; onMenu: () => void }) 
 
 /** 전체 메뉴 시트 (D06) — 마이페이지 카드 · 기존 메뉴 순서 그대로 · 정보 · 출처 */
 export function Drawer({ open, onClose, now, onConsent, onNote }: { open: boolean; onClose: () => void; now: string; onConsent: () => void; onNote: () => void }) {
+  // 모바일 전체 메뉴가 열린 채 데스크톱 폭으로 바뀌면 오버레이를 닫는다.
+  // 데스크톱에서 직접 연 마이페이지 패널은 그대로 두고, 모바일→PC 전환만 감지한다.
+  useEffect(() => {
+    if (typeof window.matchMedia !== 'function') return;
+    const desktop = window.matchMedia('(min-width: 1100px)');
+    let wasMobile = !desktop.matches;
+    const onBreakpoint = () => {
+      if (wasMobile && desktop.matches && open) onClose();
+      wasMobile = !desktop.matches;
+    };
+    desktop.addEventListener('change', onBreakpoint);
+    return () => desktop.removeEventListener('change', onBreakpoint);
+  }, [open, onClose]);
   useEffect(() => {
     if (!open) return;
     const onKey = (event: KeyboardEvent) => { if (event.key === 'Escape') onClose(); };
