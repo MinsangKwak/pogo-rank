@@ -188,7 +188,11 @@ export function Raids({ onOpen }: { onOpen: OpenMon }) {
           <span>보스를 선택하면 약점과 추천 포켓몬을 확인할 수 있어요.</span>
         </p>
       </div>
-      {legends.map((mon, index) => <Hero key={`${mon.sprite}-${index}`} mon={mon} onOpen={onOpen} />)}
+      {legends.length ? (
+        <div className="nw-boss-grid" data-view={view}>
+          {legends.map((mon, index) => <Hero key={`${mon.sprite}-${index}`} mon={mon} onOpen={onOpen} />)}
+        </div>
+      ) : null}
       {others.map(([tier, mons]) => (
         <Group key={tier} title={RAID_HEAD[tier]?.title ?? `${tier} 레이드`} {...(RAID_HEAD[tier]?.note ? { note: RAID_HEAD[tier]!.note } : {})}
           mons={mons} kind="raid" view={view} onOpen={onOpen} />

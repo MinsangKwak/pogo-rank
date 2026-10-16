@@ -216,14 +216,45 @@ html body #root .nw-eggsum .px-metric { align-items: flex-start; gap: 0.4rem; --
 html body #root .nw-eggsum .px-metric[aria-pressed="true"] { --px-line: var(--brand-text); }
 html body #root .nw-eggsum .px-metric__value { --px-metric-c: var(--brand-text); }
 
-/* ── 좁은 화면 — 칩 가로 스크롤 · 카드 1열 · 달력은 점만 · 히어로 한 줄 ─────── */
-@media (max-width: 1099px) {
-  html body #root .nw-boss { grid-template-columns: minmax(0, 1fr); }
-  html body #root .nw-boss__side { flex-direction: row; flex-wrap: wrap; align-items: flex-start; justify-content: center; }
-  html body #root .nw-boss__counters { flex: 1 1 24rem; }
+/* 보스 수와 실제 본문 폭에 맞춰 나눈다. 한 장만 남아도 빈 격자 칸은 만들지 않는다. */
+html body #root .nw-boss-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 48rem), 1fr)); gap: 2.4rem; min-width: 0; }
+html body #root .nw-boss-grid[data-view="list"] { grid-template-columns: minmax(0, 1fr); }
+@media (min-width: 700px) {
+  html body #root .nw-boss-frame { container-type: inline-size; }
+  html body #root .nw-boss { height: 100%; box-sizing: border-box; grid-template-columns: minmax(0, 1fr) 12rem; gap: 1.6rem; align-content: start; }
+  html body #root .nw-boss__main, html body #root .nw-boss__side { display: contents; }
+  html body #root .nw-boss__schedule { grid-column: 1 / -1; grid-row: 1; }
+  html body #root .nw-boss__identity { grid-column: 1; grid-row: 2; align-self: center; }
+  html body #root .nw-boss__name { font-size: 2.8rem; line-height: 1.2; overflow-wrap: anywhere; }
+  html body #root .nw-boss__name b { white-space: normal; }
+  html body #root .nw-boss__art { grid-column: 2; grid-row: 2; align-self: center; --ball: 12rem; }
+  html body #root .nw-boss__metrics { grid-column: 1 / -1; grid-row: 3; margin: 0; }
+  html body #root .nw-boss__metrics .px-metric { min-width: 0; }
+  html body #root .nw-boss__actions { grid-column: 1 / -1; grid-row: 4; margin: 0; }
+  html body #root .nw-boss__counters { grid-column: 1 / -1; grid-row: 5; min-width: 0; padding-top: 1.6rem; border-top: var(--px-stroke) solid var(--line); }
+  html body #root .nw-counters { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1.2rem; }
+  html body #root .nw-counter-item { display: flex; }
+  html body #root .nw-counter { flex-direction: column; height: 100%; padding: 2.4rem 0.8rem 1.2rem; gap: 0.8rem; text-align: center; }
+  html body #root .nw-counter .px-ball { margin: 0; }
+  html body #root .nw-counter__name .form-tag { white-space: normal; }
+  /* 목록이나 단일 보스처럼 판 자체가 넓을 때는 추천을 옆에 두어 긴 빈 행을 없앤다. */
+  @container (min-width: 84rem) {
+    html body #root .nw-boss { grid-template-columns: 16rem minmax(0, 1fr) minmax(28rem, 0.8fr); gap: 1.6rem 2.4rem; }
+    html body #root .nw-boss__schedule { grid-column: 2; }
+    html body #root .nw-boss__identity { grid-column: 2; }
+    html body #root .nw-boss__art { grid-column: 1; grid-row: 1 / 5; justify-self: center; --ball: 16rem; }
+    html body #root .nw-boss__metrics { grid-column: 2; }
+    html body #root .nw-boss__actions { grid-column: 2; }
+    html body #root .nw-boss__counters { grid-column: 3; grid-row: 1 / 5; align-self: center; padding: 0 0 0 2.4rem; border-top: 0; border-left: var(--px-stroke) solid var(--line); box-sizing: border-box; }
+    html body #root .nw-counters { grid-template-columns: minmax(0, 1fr); }
+    html body #root .nw-counter { flex-direction: row; padding: 1.6rem 1.2rem 0.8rem; text-align: left; }
+  }
 }
+
+/* ── 좁은 화면 — 기존 모바일 카드의 정보 순서와 크기를 유지한다 ─────── */
 @media (max-width: 699px) {
   html body #root :is(.nw-upd, .nw-changes, .nw-sched, .nw-raids, .nw-eggs) { gap: 1.6rem; }
+  html body #root .nw-boss-grid { grid-template-columns: minmax(0, 1fr); gap: 1.6rem; }
   html body #root .nw-cards, html body #root .nw-sources, html body #root .nw-ba { grid-template-columns: minmax(0, 1fr); }
   html body #root .nw-eggsum { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.2rem; }
   html body #root .nw-eggsum .px-metric { padding: 1.2rem; }
