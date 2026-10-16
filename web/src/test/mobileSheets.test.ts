@@ -18,6 +18,8 @@ describe('모바일 머리와 바텀 시트 회귀', () => {
     const base = /html body #root \.px-dialog \{([^}]+)\}/.exec(parts)![0];
     expect(base).toContain('position: fixed');
     expect(base).toContain('height: 100dvh');
+    expect(base).toContain('grid-template-columns: minmax(0, 1fr)');
+    expect(parts).toMatch(/\.px-dialog__panel \{[^}]*min-width: 0; max-width: 100%/);
     document.head.innerHTML = `<style>html body > #root > * { position: relative; z-index: 1; }${base}</style>`;
     document.body.innerHTML = '<div id="root"><dialog class="px-dialog" open></dialog></div>';
     expect(getComputedStyle(document.querySelector('dialog')!).position).toBe('fixed');

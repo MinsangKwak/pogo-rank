@@ -243,10 +243,10 @@ html body .px-icon { flex: none; display: inline-block; vertical-align: middle; 
 /* ── 팝업 판 (D01~D13 공통) ─────────────────────────────────────────────────
    <dialog> 하나. 데스크톱은 가운데 판(최대 86vh, 본문만 세로 스크롤, 바닥 동작 고정), 모바일은 화면 아래에 붙는 시트.
    판에는 drop-shadow 를 안 건다 — filter 가 걸린 요소 안의 fixed 자식이 깨진다 */
-html body #root .px-dialog { position: fixed; inset: 0; z-index: 100; width: 100%; max-width: none; height: 100dvh; max-height: none; box-sizing: border-box; margin: 0; padding: 2.4rem; border: 0; background: transparent; color: var(--fg); display: none; place-items: center; }
+html body #root .px-dialog { position: fixed; inset: 0; z-index: 100; width: 100%; max-width: none; height: 100dvh; max-height: none; box-sizing: border-box; margin: 0; padding: 2.4rem; border: 0; background: transparent; color: var(--fg); display: none; grid-template-columns: minmax(0, 1fr); place-items: center; }
 html body #root .px-dialog[open] { display: grid; }
 html body .px-dialog::backdrop { background: color-mix(in srgb, var(--night) 72%, transparent); backdrop-filter: blur(0.4rem); }
-html body .px-dialog__panel { display: flex; flex-direction: column; box-sizing: border-box; width: min(var(--dialog-w, 72rem), 100%); max-height: min(86vh, 80rem); --px-fill: var(--panel); }
+html body .px-dialog__panel { display: flex; flex-direction: column; box-sizing: border-box; min-width: 0; max-width: 100%; width: min(var(--dialog-w, 72rem), 100%); max-height: min(86vh, 80rem); --px-fill: var(--panel); }
 html body .px-dialog__head { flex: none; display: flex; align-items: flex-start; gap: 1.6rem; padding: 2.4rem 2.4rem 1.6rem; border-bottom: var(--px-stroke) solid var(--line); }
 html body .px-dialog__head > div { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 0.4rem; }
 html body .px-dialog__body { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; display: flex; flex-direction: column; gap: 1.6rem; padding: 2rem 2.4rem; }
