@@ -28,7 +28,6 @@ html body #root .px-typedot { display: inline-block; width: 0.8rem; height: 0.8r
 html body #root .rk-toggles { display: flex; flex-wrap: wrap; align-items: center; gap: 1.2rem 2.4rem; }
 html body #root .rk-toggles > .px-view { margin-left: auto; }
 html body #root .px-view { display: flex; gap: 0.8rem; }
-html body #root .px-view .px-btn[aria-pressed="true"] { --px-fill: var(--brand-primary); --px-line: var(--px-red-edge); --px-shine: var(--px-red-glint); color: var(--on-brand); }
 
 /* ── 이번 주 보스 판 (components/BossAcc.tsx) ───────────────────────────────── */
 html body #root .rk-boss { margin: 0 0 2.4rem; }

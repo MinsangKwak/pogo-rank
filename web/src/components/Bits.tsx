@@ -296,8 +296,9 @@ export function CheckToggle({ text, checked, onChange, title }: {
 export function ToolBtn({ label, on = false, onClick }: {
   label: string; on?: boolean; onClick: () => void;
 }) {
+  // v6 는 px-btn 이다 — 켠 도구는 aria-pressed 로 채움(브랜드)을 받고, js-head-action 은 검사 스크립트가 본다
   return (
-    <button type="button" className="tool-btn js-head-action" aria-pressed={on} onClick={onClick}>
+    <button type="button" className="px-btn px-btn--sm px-skin tool-btn js-head-action" aria-pressed={on} onClick={onClick}>
       <PxLabel label={label} textClass="tool-btn__text" />
     </button>
   );

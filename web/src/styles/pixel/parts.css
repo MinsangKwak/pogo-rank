@@ -74,6 +74,8 @@ html body .px-btn--ghost { --px-fill: var(--panel); }
 html body .px-btn--block { width: 100%; }
 html body .px-btn--icon { width: var(--tap); padding: 0; }
 html body .px-btn--sm { min-height: 3.6rem; padding: 0 1.2rem; font-size: 1.2rem; }
+/* 켠 상태(보기 전환 · 머리 도구)는 주 행동과 같은 빨강 판 — 어느 묶음에서든 같은 뜻 */
+html body .px-btn[aria-pressed="true"] { --px-fill: var(--brand-primary); --px-line: var(--px-red-edge); --px-shine: var(--px-red-glint); --px-shade: var(--px-red-shadow); color: var(--on-brand); }
 @media (hover: hover) {
   html body .px-btn:hover { --px-line: var(--brand-text); }
   html body .px-btn--primary:hover { --px-fill: var(--brand-hover); --px-line: var(--px-red-edge); }
