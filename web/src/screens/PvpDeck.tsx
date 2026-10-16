@@ -1,12 +1,14 @@
 // ─────────────────────────────────────────────────────────────────────────────
-// screens/PvpDeck.tsx — 🃏 PvP 덱 짜기 (v3 views/ifsolo.js renderPvpDeck)
+// screens/PvpDeck.tsx — 🃏 PvP 덱 짜기 (v3 views/ifsolo.js renderPvpDeck · v6 피그마 13)
 //
 // 두 덩이로 읽힌다.
 //   ① 진짜 추천 덱 3종 — 상대 입력 없이 리그 메타만으로. 컨셉이 서로 다르고 이유를 적는다
 //        정석 코어  점수 + 약점 상호 보완 그리디
 //        안티 메타  리그 상위 10마리 상대 평균 상성순
 //        타입 분산  방어 타입이 안 겹치게
-//   ② 커스텀 덱 짜기 — 자주 만나는 상대를 슬롯에 넣으면 그 셋을 두루 받아치는 덱과 카운터
+//      v6 는 셋을 접이식 대신 **전략 칩**으로 고른다 — 한 번에 한 덱만 보여 비교가 빠르다
+//   ② 커스텀 덱 짜기 — 자주 만나는 상대를 슬롯에 넣으면 그 셋을 두루 받아치는 덱과 카운터.
+//      상대 넣기 · 추천 덱 한 칸 바꾸기는 공용 교체 팝업(components/SwapDialog.tsx)이다
 //
 // 맞춤 덱은 **리그 점수 × 상대별 fit 의 기하평균**으로 고른다. 곱을 쓰는 이유 —
 // 한 상대에게 극단적으로 강해도 다른 상대에게 0에 가깝게 약하면 곱이 작아져 걸러진다
@@ -14,63 +16,31 @@
 // ─────────────────────────────────────────────────────────────────────────────
 import { go } from '../lib/nav';
 
-import { Fragment, useMemo, useRef, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useDex, useMax, usePve, usePvp } from '../lib/data';
 import { useRankStore } from '../stores/rank';
 import { Slot } from '../components/Slots';
-import { ScreenTabs, Sprite, ToolBtn } from '../components/Bits';
-import { Row } from '../components/Row';
+import { PxChips, PxTabs, ToolBtn } from '../components/Bits';
+import { RankRow, RankList } from '../components/Row';
+import { CandList, CandRow, DataTable, Grade, SecHead, SlotCard } from '../components/ToolBits';
+import SwapDialog from '../components/SwapDialog';
+import { PixelIcon } from '../components/PixelIcon';
 import { LEAGUES } from '../lib/leagues';
 import { LEAGUE_KO } from '../lib/ivrank';
-import { buildBossIndex, monSearch, type BossEntry } from '../lib/search';
-import { josa, makeDeckTools, type DeckMon } from '../lib/deck';
+import { buildBossIndex, type BossEntry } from '../lib/search';
+import { josa, makeDeckTools } from '../lib/deck';
+import { count, num, word } from '../lib/cell';
 import { track, trackSearchPick } from '../lib/track';
 import type { OpenMon } from '../lib/mon';
 import type { LeagueKey, PvpRow } from '../types/data';
 
-/** 슬롯 3칸을 다 채우면 나오는 분석 카드 — 추천 덱 vs 상대 덱의 차이를 한눈에 */
-function DeckAnalysis({ tools, deck, foes, typeKo, chart }: {
-  tools: ReturnType<typeof makeDeckTools>;
-  deck: { candidate: PvpRow }[];
-  foes: BossEntry[];
-  typeKo: Record<string, string>;
-  chart: Record<string, Record<string, number>>;
-}) {
-  const ko = (type: string) => typeKo[type] ?? type;
-  // 공격 타입 추천: 상대 몇 마리에게 효과가 굉장한지 빈도순 (1.6배 이상을 '약점' 으로 본다)
-  const hits: Record<string, number> = {};
-  for (const type of tools.typeKeys) {
-    for (const foe of foes) if (tools.against(type, foe.types) >= 1.6) hits[type] = (hits[type] ?? 0) + 1;
-  }
-  const bestAtk = Object.entries(hits).sort((left, right) => right[1] - left[1]).slice(0, 3);
-  // 받이 타입 추천: 상대 자속 공격을 2종 이상 반감하는 타입
-  const foeStab = [...new Set(foes.flatMap((foe) => foe.types))];
-  const guards = tools.typeKeys
-    .map((type) => [type, foeStab.filter((stab) => (chart[stab]?.[type] ?? 1) < 1).length] as const)
-    .filter(([, count]) => count >= 2)
-    .sort((left, right) => right[1] - left[1]).slice(0, 3);
-  // 구멍: 추천 덱 누구도 상성 우위가 없는 상대
-  const holes = foes.filter((foe) => !deck.some(({ candidate }) => tools.foeFit(candidate, foe) > 1));
+const SLOT_ROLE = ['선봉', '교체', '마무리'] as const;
 
-  return (
-    <div className="solo__card">
-      <p className="solo__verdict">🧠 상대 덱 분석 &amp; 구성 가이드</p>
-      <p className="solo__why">{`상대: ${foes.map((foe) => `${foe.name}(${foe.types.map(ko).join('·')})`).join(' / ')}`}</p>
-      {bestAtk.length ? (
-        <p className="solo__stats">{`공격 기술 추천: ${bestAtk.map(([type, count]) => `${ko(type)}(${count}마리 약점)`).join(' · ')} — 이 타입의 기술을 가진 포켓몬을 우선 추천해요.`}</p>
-      ) : null}
-      {guards.length ? (
-        <p className="solo__stats">{`방어에 유리한 타입: ${guards.map(([type, count]) => `${ko(type)}(자속 ${count}종 반감)`).join(' · ')}`}</p>
-      ) : null}
-      <p className="solo__stats">{`역할 분담: ${deck.map(({ candidate }) => {
-        const good = foes.filter((foe) => tools.foeFit(candidate, foe) > 1).map((foe) => foe.name);
-        return `${candidate.name} → ${good.length ? good.join('·') : '확실한 우위 없음'}`;
-      }).join(' / ')}`}</p>
-      {holes.length
-        ? <p className="solo__why">{`⚠️ ${holes.map((foe) => foe.name).join('·')}를 확실히 이기는 픽이 없어요 — 아래 카운터 목록에서 ${holes.map((foe) => `${tools.topAtkType(foe)} 기술`).join('·')} 픽으로 한 자리 바꿔보세요.`}</p>
-        : <p className="solo__why">✅ 상대 3마리 모두 상성 우위 픽이 있는 구성이에요.</p>}
-    </div>
-  );
+/** 상성 계수를 세 단계로 — 유리(>1) · 보통(=1) · 주의(<1). 표의 칸과 공통 약점 문장이 같은 기준을 쓴다 */
+function fitGrade(fit: number): { label: string; tone: 'mint' | 'orange' | 'muted' } {
+  if (fit > 1) return { label: '유리', tone: 'mint' };
+  if (fit < 1) return { label: '주의', tone: 'orange' };
+  return { label: '보통', tone: 'muted' };
 }
 
 export default function PvpDeck({ onOpen }: { onOpen: OpenMon }) {
@@ -81,13 +51,17 @@ export default function PvpDeck({ onOpen }: { onOpen: OpenMon }) {
   const league = useRankStore((s) => s.league);
   const set = useRankStore((s) => s.set);
   const [foes, setFoes] = useState<BossEntry[]>([]);
-  const [term, setTerm] = useState('');
-  // 첫 번째만 기본으로 펼치고, 접었다 편 상태를 기억한다 (v3 state.recAccOpen)
-  const [accOpen, setAccOpen] = useState<Record<number, boolean>>({});
-  const searchRef = useRef<HTMLInputElement>(null);
+  const [strategy, setStrategy] = useState(0);
+  // 맞춤 덱에서 손으로 바꾼 칸 — 상대가 바뀌면 추천이 바뀌므로 함께 비운다
+  const [override, setOverride] = useState<Record<number, PvpRow>>({});
+  // 카운터 TOP 3 를 펼친 상대
+  const [openFoe, setOpenFoe] = useState<string | null>(null);
+  // 교체 팝업 — 상대 칸(foe) 또는 추천 덱 칸(deck)
+  const [swap, setSwap] = useState<{ kind: 'foe' | 'deck'; index: number } | null>(null);
 
   const tools = useMemo(() => makeDeckTools(dex.DEX_DATA.chart, dex.TYPE_KO, dex.DEX_DATA.dex), [dex]);
   const pool = pvp.PVP_DATA[league] ?? [];
+  const ko = (type: string) => dex.TYPE_KO[type] ?? type;
 
   const recs = useMemo(() => {
     const top = tools.topBySpecies(pool, 20);   // 종 단위 중복을 뺀 리그 점수 상위 20
@@ -111,15 +85,18 @@ export default function PvpDeck({ onOpen }: { onOpen: OpenMon }) {
       },
     ];
   }, [tools, pool, league]);
+  const rec = recs[strategy] ?? recs[0]!;
 
   // 맞춤 덱 — 리그 점수 × 상대별 fit 의 기하평균. 같은 종은 파티에 1마리라 종 단위로 거른다
-  const deck = useMemo(() => {
+  const ranked = useMemo(() => {
     if (!foes.length) return [] as { candidate: PvpRow; fit: number }[];
-    const ranked = pool.map((candidate) => {
+    return pool.map((candidate) => {
       const fits = foes.map((foe) => tools.foeFit(candidate, foe));
       const fit = fits.reduce((product, value) => product * value, 1) ** (1 / fits.length);
       return { candidate, fit, total: candidate.score * fit };
     }).sort((left, right) => right.total - left.total);
+  }, [foes, pool, tools]);
+  const autoDeck = useMemo(() => {
     const seen = new Set<string>();
     const out: { candidate: PvpRow; fit: number }[] = [];
     for (const entry of ranked) {
@@ -129,148 +106,187 @@ export default function PvpDeck({ onOpen }: { onOpen: OpenMon }) {
       if (out.length === 3) break;
     }
     return out;
-  }, [foes, pool, tools]);
+  }, [ranked, tools]);
+  // 손으로 바꾼 칸을 얹는다 — fit 은 같은 셈으로 다시 낸다
+  const deck = autoDeck.map((entry, index) => {
+    const mine = override[index];
+    if (!mine) return entry;
+    const fits = foes.map((foe) => tools.foeFit(mine, foe));
+    return { candidate: mine, fit: fits.reduce((product, value) => product * value, 1) ** (1 / fits.length) };
+  });
 
-  const hits = useMemo(() => {
-    const query = term.trim();
-    if (!query) return [];
-    // 이미 슬롯에 넣은 포켓몬은 후보에서 제외
-    const pool2 = buildBossIndex(dex, max, pve, pvp).filter((entry) => !foes.some((foe) => foe.name === entry.name));
-    return monSearch(pool2, query, 6);
-  }, [term, foes, dex, max, pve, pvp]);
+  const putFoe = (index: number, foe: BossEntry) => {
+    trackSearchPick(foe.name, 'pvp_deck');
+    track('pvp_deck_foe', { mon: foe.name });
+    setOverride({});
+    setFoes((now) => {
+      const next = [...now];
+      if (index < next.length) next[index] = foe; else next.push(foe);
+      return next.slice(0, 3);
+    });
+  };
+  const removeFoe = (index: number) => { setOverride({}); setFoes((now) => now.filter((_, at) => at !== index)); };
 
-  // v3 row() 는 뷰가 넘기지 않아도 순위 변동 ▲▼ 를 스스로 붙인다 — 덱 줄도 예외가 아니다
-  const deckRow = (mon: DeckMon & { score: number; en: string; fast: string; charged: string; d?: number }, index: number, score: string, sub: string, why?: string) => (
-    <Row
-      key={`${mon.sprite}-${index}`}
-      sprite={mon.sprite} name={mon.name} en={mon.en} types={mon.types}
-      rank={String(index + 1)}
-      delta={mon.d}
-      onOpen={() => onOpen(mon)}
-      score={score} sub={sub}
-      lines={why ? [why] : [mon.fast, mon.charged]}
-      linesClass={why ? 'row__counter' : undefined}
-    />
+  // 분석 — 추천 덱 누구도 상성 우위가 없는 상대(구멍) · 공격 · 방어 타입 추천 (v3 DeckAnalysis 의 문장 그대로)
+  const holes = foes.filter((foe) => !deck.some(({ candidate }) => tools.foeFit(candidate, foe) > 1));
+  const hits: Record<string, number> = {};
+  for (const type of tools.typeKeys) for (const foe of foes) if (tools.against(type, foe.types) >= 1.6) hits[type] = (hits[type] ?? 0) + 1;
+  const bestAtk = Object.entries(hits).sort((left, right) => right[1] - left[1]).slice(0, 3);
+  const foeStab = [...new Set(foes.flatMap((foe) => foe.types))];
+  const guards = tools.typeKeys
+    .map((type) => [type, foeStab.filter((stab) => (dex.DEX_DATA.chart[stab]?.[type] ?? 1) < 1).length] as const)
+    .filter(([, n]) => n >= 2).sort((left, right) => right[1] - left[1]).slice(0, 3);
+
+  const countersOf = (foe: BossEntry) => {
+    // 상성 계수 × 리그 점수가 높은 순 — 상성만 좋고 실전 성능이 낮은 픽이 위로 오지 않게
+    const seen = new Set<string>();
+    const out: { candidate: PvpRow; fit: number }[] = [];
+    for (const entry of pool.map((candidate) => ({ candidate, fit: tools.foeFit(candidate, foe) }))
+      .sort((left, right) => right.fit * right.candidate.score - left.fit * left.candidate.score)) {
+      if (seen.has(tools.speciesKey(entry.candidate))) continue;
+      seen.add(tools.speciesKey(entry.candidate));
+      out.push(entry);
+      if (out.length === 3) break;
+    }
+    return out;
+  };
+
+  const openMon = (mon: PvpRow) => onOpen({ sprite: mon.sprite, name: mon.name, en: mon.en, types: mon.types });
+
+  /** 추천 덱 카드 한 장 — 전략 덱과 맞춤 덱이 같은 모양 */
+  const deckCard = (mon: PvpRow, index: number, score: string, note: string, onSwap?: () => void) => (
+    <SlotCard key={`${mon.sprite}-${index}`} index={index} role={SLOT_ROLE[index] ?? ''} roleTone="purple"
+      sprite={mon.sprite} name={word(mon.name)} types={mon.types.map(ko).join(' · ')} moves={[mon.fast, mon.charged].filter(Boolean).join(' · ')}
+      metric="SCORE" value={score} note={note} onOpen={() => openMon(mon)} onSwap={onSwap} />
   );
+
+  // 교체 팝업 후보 — 상대 칸은 보스 색인 전체(이미 든 상대는 뺀다), 덱 칸은 상대 기준 점수순(같은 종은 뺀다)
+  const swapCandidates = swap?.kind === 'foe'
+    ? buildBossIndex(dex, max, pve, pvp).filter((entry) => !foes.some((foe, at) => at !== swap.index && foe.name === entry.name))
+      .map((entry) => ({ sprite: entry.sprite, name: entry.name, types: entry.types }))
+    : swap ? ranked.filter(({ candidate }) => !deck.some((one, at) => at !== swap.index && tools.speciesKey(one.candidate) === tools.speciesKey(candidate)))
+      .map(({ candidate, fit }) => ({ sprite: candidate.sprite, name: candidate.name, en: candidate.en, types: candidate.types, note: `리그 점수 ${num(candidate.score, 1)} · 상성 ×${num(fit, 2)}` }))
+      : [];
 
   return (
     <>
-      <Slot name="tabs">
-        <div className="pvp-deck-leagues"><ScreenTabs items={LEAGUES.map((one) => ({ id: one.id, label: one.name }))} value={league}
-          onPick={(id) => set('league', id as LeagueKey)} /></div>
-      </Slot>
       <Slot name="headActions">
         <ToolBtn label="🃏 덱 짜기" on onClick={() => { track('tool_pvpdeck', { on: 0 }); go('/pvp'); }} />
         <ToolBtn label="🧬 개체값 순위" onClick={() => { track('tool_ivrank', { on: 1 }); go('/pvp/ivrank'); }} />
       </Slot>
 
-      <section className="pvp-deck-studio">
-      <div className="row-head"><h2>PvP 덱 짜기</h2><span className="meta">실험 기능</span></div>
+      <div className="pxt pxt-pvp" id="page-pvp-deck" data-route="pvp-deck">
+        {/* 리그 — 순위 화면과 같은 store 값. 리그가 바뀌면 손으로 바꾼 칸은 뜻을 잃는다 */}
+        <div className="pxt-leagues"><PxTabs label="리그" items={LEAGUES.map((one) => ({ id: one.id, label: one.name }))} value={league}
+          onPick={(id) => { set('league', id as LeagueKey); setOverride({}); }} /></div>
 
-      {recs.map((rec, index) => (
-        <details key={rec.title} className="schedule deck__acc"
-          open={accOpen[index] ?? index === 0}
-          onToggle={(event) => {
-            // **여는 순간 값을 꺼내 둔다.** setState 의 갱신 함수는 나중에 불리는데,
-            // 그때 event.currentTarget 은 이미 null 이라 그 안에서 읽으면 화면이 통째로 선다
-            const open = (event.currentTarget as HTMLDetailsElement).open;
-            setAccOpen((now) => ({ ...now, [index]: open }));
-          }}>
-          <summary><span className="pvp-deck-studio__number">0{index + 1}</span><span>{rec.title}</span><span className="schedule__today">{rec.tag}</span></summary>
-          <div className="schedule__body is-starless">
-            <ul className="row-list">
-              {rec.deck.map((mon, slot) => deckRow(mon, slot, mon.score.toFixed(1), '리그 점수'))}
-            </ul>
-            <p className="deck__reason">{`💬 ${rec.reason}`}</p>
+        {/* ① 전략 셋 — 칩으로 고르고 한 덱만 보여 준다 */}
+        <section className="pxt-sec" aria-labelledby="pvp-rec-title">
+          <SecHead id="pvp-rec-title" title="리그 추천 덱" note={`${LEAGUE_KO[league]}리그 메타 기준 · 실험 기능`} />
+          <PxChips label="전략" items={recs.map((one, index) => ({ id: String(index), label: one.title }))} value={String(strategy)}
+            onPick={(id) => { setStrategy(Number(id)); track('pvp_deck_strategy', { id: Number(id) }); }} />
+          <p className="px-caption">{rec.tag}</p>
+          <div className="px-grid px-grid--3 pxt-slots">
+            {rec.deck.map((mon, index) => deckCard(mon, index, num(mon.score, 1), '리그 점수'))}
           </div>
-        </details>
-      ))}
+          <p className="px-body px-muted pxt-reason">{`💬 ${rec.reason}`}</p>
+        </section>
 
-      <div className="row-head"><h2>PvP 커스텀 덱 짜기</h2><span className="meta">상대 기준 맞춤 추천</span></div>
+        {/* ② 상대 1~3마리 */}
+        <section className="px-panel px-skin px-drop pxt-foes" aria-labelledby="pvp-foe-title">
+          <SecHead id="pvp-foe-title" title="상대 포켓몬 1–3마리" note="상대를 추가할수록 추천이 구체적이에요." />
+          <CandList>
+            {[0, 1, 2].map((index) => {
+              const foe = foes[index];
+              return (
+                <CandRow key={index} sprite={foe?.sprite ?? null} name={foe ? word(foe.name) : `상대 ${index + 1}`} muted={!foe}
+                  lines={[foe ? foe.types.map(ko).join(' · ') : '아직 비어 있어요']}
+                  ops={<>
+                    <button type="button" className="px-btn px-btn--sm px-skin" onClick={() => setSwap({ kind: 'foe', index })}>{foe ? '상대 변경 ↗' : '상대 추가'}</button>
+                    {foe ? <button type="button" className="px-btn px-btn--sm px-btn--icon px-skin" aria-label={`${foe.name} 빼기`} onClick={() => removeFoe(index)}><PixelIcon name="close" /></button> : null}
+                  </>} />
+              );
+            })}
+          </CandList>
+        </section>
 
-      <div className="deck__slots">
-        {[0, 1, 2].map((index) => {
-          const foe = foes[index];
-          return foe ? (
-            <button key={index} className="deck__slot is-filled" title="누르면 제거"
-              onClick={() => setFoes((now) => now.filter((_, at) => at !== index))}>
-              <Sprite id={foe.sprite} />
-              <span className="slot__name">{foe.name}</span>
-              <span className="slot__close">✕</span>
-            </button>
-          ) : (
-            <button key={index} className="deck__slot" aria-label="상대 추가"
-              onClick={() => searchRef.current?.focus()}>
-              <span className="slot__plus" aria-hidden="true">+</span>{/* 한 문자열로 — 글자 셋으로 쪼개면 번역 키(상대 # 추가)가 안 맞는다 */}
-              <span className="slot__hint">{`상대 ${index + 1} 추가`}</span>
-            </button>
-          );
-        })}
+        {!foes.length ? (
+          <p className="px-body px-muted">상대 포켓몬을 1~3마리 넣어 보세요. 상대의 타입 상성을 고려한 덱을 추천해요.</p>
+        ) : deck.length ? (
+          <>
+            {/* ③ 맞춤 추천 덱 */}
+            <section className="pxt-sec" aria-labelledby="pvp-deck-title">
+              <SecHead id="pvp-deck-title" title="맞춤 추천 덱" note={`상대 ${count(foes.length)}마리 기준`} />
+              <div className="px-grid px-grid--3 pxt-slots">
+                {deck.map(({ candidate, fit }, index) => deckCard(candidate, index, num(candidate.score, 1), `리그 점수 · 상성 계수 ×${num(fit, 2)}`, () => setSwap({ kind: 'deck', index })))}
+              </div>
+            </section>
+
+            {/* ④ 상대별 대응력 — 내 팀 × 상대. 모바일은 줄 카드로(tools.css) */}
+            <section className="pxt-sec" aria-labelledby="pvp-matrix-title">
+              <SecHead id="pvp-matrix-title" title="상대별 대응력" note="자속 타입만 보는 근사치 · 유리 / 보통 / 주의" />
+              <DataTable rowHead="내 팀" columns={foes.map((foe) => ({ key: foe.name, label: foe.name }))}
+                rows={deck.map(({ candidate }) => ({
+                  key: String(candidate.sprite), head: candidate.name,
+                  cells: Object.fromEntries(foes.map((foe) => { const grade = fitGrade(tools.foeFit(candidate, foe)); return [foe.name, <Grade label={grade.label} tone={grade.tone} />]; })),
+                }))} />
+              <div className="pxt-matrix__notes">
+                <p className="px-body">{holes.length
+                  ? `⚠️ 주의할 공통 약점 — ${holes.map((foe) => foe.name).join('·')}를 확실히 이기는 픽이 없어요. 아래 카운터에서 ${holes.map((foe) => `${tools.topAtkType(foe)} 기술`).join('·')} 픽으로 한 자리 바꿔보세요.`
+                  : `✅ 상대 ${count(foes.length)}마리 모두 상성 우위 픽이 있는 구성이에요.`}</p>
+                {bestAtk.length ? <p className="px-caption">{`공격 기술 추천: ${bestAtk.map(([type, n]) => `${ko(type)}(${count(n)}마리 약점)`).join(' · ')} — 이 타입의 기술을 가진 포켓몬을 우선 추천해요.`}</p> : null}
+                {guards.length ? <p className="px-caption">{`방어에 유리한 타입: ${guards.map(([type, n]) => `${ko(type)}(자속 ${count(n)}종 반감)`).join(' · ')}`}</p> : null}
+              </div>
+            </section>
+
+            {/* ⑤ 상대별 카운터 TOP 3 — 펼치면 순위 줄 셋 */}
+            <section className="pxt-sec" aria-labelledby="pvp-counter-title">
+              <SecHead id="pvp-counter-title" title="상대별 추천 카운터" note="각 상대를 눌러 TOP 3를 확인하세요." />
+              <div className="pxt-counters">
+                {foes.map((foe) => {
+                  const open = openFoe === foe.name;
+                  return (
+                    <article key={foe.name} className="px-skin px-drop px-card pxt-counter">
+                      <CandList>
+                        <CandRow sprite={foe.sprite} name={word(foe.name)} lines={[`${foe.types.map(ko).join(' · ')} · ${tools.topAtkType(foe)} 기술이 가장 아파요`]}
+                          ops={<button type="button" className="px-btn px-btn--sm px-skin" aria-expanded={open} onClick={() => setOpenFoe(open ? null : foe.name)}>{open ? '접기' : 'TOP 3 ↗'}</button>} />
+                      </CandList>
+                      {open ? (
+                        <RankList>
+                          {countersOf(foe).map(({ candidate, fit }, index) => (
+                            <RankRow key={candidate.sprite} sprite={candidate.sprite} name={candidate.name} en={candidate.en} types={candidate.types}
+                              rank={index + 1} score={`×${num(fit, 2)}`} label="상성 계수" sub={`리그 점수 ${num(candidate.score, 1)}`}
+                              lines={[tools.counterWhy(candidate, foe)]} onOpen={() => openMon(candidate)} />
+                          ))}
+                        </RankList>
+                      ) : null}
+                    </article>
+                  );
+                })}
+              </div>
+            </section>
+          </>
+        ) : null}
       </div>
 
-      {/* 3칸 다 차면 검색창을 숨긴다 */}
-      {foes.length < 3 ? (
-        <>
-          <input ref={searchRef} className="boss__search" type="search" placeholder="상대 포켓몬 검색해서 슬롯 채우기"
-            value={term} onChange={(event) => setTerm(event.target.value)} />
-          <div className="boss__sugg">
-            {hits.map((hit) => (
-              <button key={hit.name} className="boss__rec" onClick={() => {
-                if (foes.length >= 3) return;
-                trackSearchPick(hit.name, 'pvp_deck');
-                track('pvp_deck_foe', { mon: hit.name });
-                setFoes((now) => [...now, hit]);
-                setTerm('');
-              }}>
-                <Sprite id={hit.sprite} />
-                <span>{hit.name}</span>
-              </button>
-            ))}
-          </div>
-        </>
+      {swap ? (
+        <SwapDialog
+          title={swap.kind === 'foe' ? '상대 포켓몬' : '포켓몬 교체'}
+          subtitle={swap.kind === 'foe' ? `상대 ${swap.index + 1} · 자주 만나는 포켓몬` : `슬롯 0${swap.index + 1} · ${SLOT_ROLE[swap.index] ?? ''} 후보 · 상대 ${count(foes.length)}마리 기준`}
+          current={swap.kind === 'foe' ? foes[swap.index]?.sprite ?? null : deck[swap.index]?.candidate.sprite ?? null}
+          candidates={swapCandidates}
+          onPick={(candidate) => {
+            if (swap.kind === 'foe') {
+              const found = buildBossIndex(dex, max, pve, pvp).find((entry) => entry.sprite === candidate.sprite && entry.name === candidate.name);
+              if (found) putFoe(swap.index, found);
+            } else {
+              const found = pool.find((row) => row.sprite === candidate.sprite && row.name === candidate.name);
+              if (found) setOverride((now) => ({ ...now, [swap.index]: found }));
+            }
+            setSwap(null);
+          }}
+          onClose={() => setSwap(null)} />
       ) : null}
-
-      {!foes.length ? (
-        <p className="empty">[+]를 눌러 상대 포켓몬을 1~3마리 선택해 보세요. 상대의 타입 상성을 고려한 덱을 추천해요.</p>
-      ) : deck.length ? (
-        <>
-          <div className="row-head"><h2>맞춤 추천 덱</h2><span className="meta">{`상대 ${foes.length}마리 기준`}</span></div>
-          <div className="is-starless">
-            <ul className="row-list">
-              {deck.map(({ candidate, fit }, index) => deckRow(candidate, index, candidate.score.toFixed(1), `상성 계수 ×${fit.toFixed(2)}`))}
-            </ul>
-          </div>
-        </>
-      ) : null}
-
-      {foes.length === 3 && deck.length
-        ? <DeckAnalysis tools={tools} deck={deck} foes={foes} typeKo={dex.TYPE_KO} chart={dex.DEX_DATA.chart} />
-        : null}
-
-      {foes.map((foe) => {
-        // 상성 계수 × 리그 점수가 높은 순 — 상성만 좋고 실전 성능이 낮은 픽이 위로 오지 않게
-        const seen = new Set<string>();
-        const counters: { candidate: PvpRow; fit: number }[] = [];
-        for (const entry of pool.map((candidate) => ({ candidate, fit: tools.foeFit(candidate, foe) }))
-          .sort((left, right) => right.fit * right.candidate.score - left.fit * left.candidate.score)) {
-          if (seen.has(tools.speciesKey(entry.candidate))) continue;
-          seen.add(tools.speciesKey(entry.candidate));
-          counters.push(entry);
-          if (counters.length === 3) break;
-        }
-        return (
-          <Fragment key={foe.name}>
-            <div className="row-head"><h2>{`${foe.name} 카운터`}</h2><span className="meta">상위 3</span></div>
-            <div className="is-starless">
-              <ul className="row-list">
-                {counters.map(({ candidate, fit }, index) =>
-                  deckRow(candidate, index, `×${fit.toFixed(2)}`, '상성 계수', tools.counterWhy(candidate, foe)))}
-              </ul>
-            </div>
-          </Fragment>
-        );
-      })}
-      </section>
     </>
   );
 }
