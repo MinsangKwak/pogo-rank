@@ -28,9 +28,9 @@ html body:has(.admin-shell)::before { height: 36rem; }
 }
 
 /* ── 2026-10-16 화면 A01~A08 — 조각(parts.css)은 모양, 여기는 자리. 접두사는 옛 admin-stats.css 를 이기는 장치 ──────────
-   화면 본문은 판을 세로로 쌓는다. 다시 받는 동안은 흐리게 — 빈 틀로 깜빡이지 않는다 */
+   화면 본문은 판을 세로로 쌓는다. 다시 받는 동안에도 글자 대비를 유지한다 — 상태는 기간 판과 aria-busy로 알린다 */
 html body #root .adm-page { display: flex; flex-direction: column; gap: 2.4rem; min-width: 0; }
-html body #root .adm-page.is-busy { opacity: 0.56; transition: opacity 0.2s; }
+html body #root .adm-page.is-busy { opacity: 1; }
 html body #root .adm-sec { display: flex; flex-direction: column; gap: 1.6rem; }
 html body #root .adm-panel { display: flex; flex-direction: column; gap: 1.6rem; min-width: 0; }
 html body #root .adm-panel__head { display: flex; flex-direction: column; gap: 0.4rem; }
@@ -69,7 +69,7 @@ html body #root .adm-list { display: flex; flex-direction: column; margin: 0; pa
 html body #root .adm-list__row { display: flex; align-items: center; gap: 1.2rem; min-height: 4rem; border-bottom: 0.2rem solid color-mix(in srgb, var(--line) 50%, transparent); }
 html body #root .adm-list__row:last-child { border-bottom: 0; }
 html body #root .adm-list__no { flex: none; width: 2.4rem; color: var(--brand-text); font-size: 1.2rem; }
-html body #root .adm-list__name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+html body #root .adm-list__name { flex: 1; min-width: 0; overflow-wrap: anywhere; }
 html body #root .adm-kv { display: flex; flex-direction: column; margin: 0; }
 html body #root .adm-kv__row { display: flex; align-items: center; justify-content: space-between; gap: 1.6rem; min-height: 4.8rem; margin: 0; border-bottom: 0.2rem solid color-mix(in srgb, var(--line) 50%, transparent); }
 html body #root .adm-kv__row:last-child { border-bottom: 0; }
@@ -80,7 +80,7 @@ html body #root .adm-pending__count { color: var(--brand-text); }
 
 /* 내 계정 · 프로필 판 — 아바타와 글 */
 html body #root .adm-me, html body #root .adm-profile { display: flex; align-items: flex-start; gap: 1.6rem; }
-html body #root .adm-me__body, html body #root .adm-profile__body { display: flex; flex-direction: column; gap: 0.4rem; min-width: 0; }
+html body #root .adm-me__body, html body #root .adm-profile__body { display: flex; flex-direction: column; gap: 0.4rem; min-width: 0; max-width: 100%; overflow-wrap: anywhere; }
 html body #root .adm-profile__body .px-badge { align-self: flex-start; margin-bottom: 0.4rem; }
 html body #root .adm-profile .adm-avatar { width: 6.4rem; height: 6.4rem; }
 html body #root .adm-avatar { flex: none; display: inline-grid; place-items: center; width: 4rem; height: 4rem; object-fit: cover; box-sizing: border-box; border: var(--px-stroke) solid var(--px-edge); background: var(--panel-2); color: var(--muted); }
@@ -99,7 +99,7 @@ html body #root .adm-users__table th, html body #root .adm-users__table td { pad
 html body #root .adm-users__act { text-align: right; white-space: nowrap; }
 html body #root .adm-who { display: flex; align-items: center; gap: 1.2rem; min-width: 0; }
 html body #root .adm-who__text { display: flex; flex-direction: column; gap: 0.2rem; min-width: 0; }
-html body #root .adm-who__text > * { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+html body #root .adm-who__text > * { min-width: 0; white-space: normal; overflow-wrap: anywhere; }
 html body #root .adm-on { color: var(--mint); }
 html body #root .adm-users__table .px-toggle { min-height: 3.6rem; }
 
@@ -128,7 +128,7 @@ html body .adm-confirm__error { color: var(--danger-action); }
 /* ── 상세 통계(A02) — 옛 admin-stats.css 규칙을 같은 접두사로 되덮는다. 지워도 되는 옛 규칙은 보고서에 ────────────── */
 /* 따라오는 줄의 자리 — 화면(useBarOffset)이 인라인으로 실측값을 덮어쓴다. 여기 값은 재기 전 기본 */
 html body #root .stat-page { --stat-bar-top: 8rem; --stat-bar-h: 20rem; gap: 2.4rem; padding-bottom: 0; }
-html body #root .stat-page.is-busy { opacity: 0.56; }
+html body #root .stat-page.is-busy, html body #root .stat-hours.is-busy table { opacity: 1; }
 html body #root .stat-page__wait { font-size: 1.4rem; }
 html body #root .stat-page__bar { position: sticky; top: calc(var(--stat-bar-top) + 0.8rem); z-index: 10; margin: 0; padding: 0; background: none; border: 0; }
 html body #root .stat-page__stamp { margin-top: 0.4rem; }
@@ -202,7 +202,7 @@ html body #root .stat-ready { gap: 1.6rem; }
   html body #root .adm-users__table tr { display: flex; flex-wrap: wrap; align-items: center; gap: 0.8rem 1.2rem; padding: 1.2rem 0; border-bottom: var(--px-stroke) solid var(--line); }
   html body #root .adm-users__table tr:last-child { border-bottom: 0; }
   html body #root .adm-users__table td { padding: 0; border: 0; }
-  html body #root .adm-users__table td[data-th="이용자"] { flex-basis: 100%; }
+  html body #root .adm-users__table td[data-th="이용자"] { flex-basis: 100%; min-width: 0; }
   html body #root .adm-users__table td[data-th]:not([data-th="이용자"])::before { content: attr(data-th) ' '; color: var(--muted); font-size: 1.2rem; }
   html body #root .adm-users__table td[data-th="실험 기능"] .px-toggle { display: inline-flex; min-height: var(--tap); }
   html body #root .adm-users__act { flex-basis: 100%; text-align: left; }
@@ -213,4 +213,10 @@ html body #root .stat-ready { gap: 1.6rem; }
   html body #root .adm-kv--tight dt { width: 6.4rem; }
   html body #root .stat-rank tbody th { grid-template-columns: 2.4rem 1fr; }
   html body #root .stat-rank__bar { grid-column: 2; }
+  html body #root .stat-rank tbody th .stat-rank__name { white-space: normal; overflow: visible; overflow-wrap: anywhere; }
+  /* 네 열 시간대 표는 판 안에서만 가로로 이동한다. 페이지 전체는 밀리지 않는다. */
+  html body #root .stat-hours .px-table { display: block; max-width: 100%; overflow-x: auto; }
+}
+@media (max-width: 399px) {
+  html body #root .adm-tiles { --cols: 1; }
 }

@@ -33,13 +33,15 @@ html body #root .pxt-cand__no { flex: none; width: 2.4rem; }
 html body #root .pxt-cand__text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 0.4rem; margin: 0; padding: 0; border: 0; background: none; color: inherit; font: inherit; text-align: left; }
 html body #root button.pxt-cand__open { cursor: pointer; }
 html body #root button.pxt-cand__open:focus-visible { outline: var(--px-stroke) solid var(--brand-focus); outline-offset: 0.4rem; }
-html body #root .pxt-cand__ops { display: flex; gap: 0.8rem; }
-html body #root .pxt-cand.is-empty { opacity: 0.7; }
+html body #root .pxt-cand__ops { display: flex; flex-wrap: wrap; gap: 0.8rem; min-width: 0; }
+/* 빈 슬롯도 안내 글자는 같은 대비로 읽힌다 — 비어 있음은 이름과 그림으로 구분한다. */
+html body #root .pxt-cand.is-empty { opacity: 1; }
+html body #root :is(.pxt-cand__text, .pxt-boss__text, .pxt-slot__body, .pxt-slot__metric) { overflow-wrap: anywhere; }
 html body #root .pxt-cand__text > .px-sub { display: flex; flex-wrap: wrap; align-items: center; gap: 0.8rem; }
 
 /* ── 슬롯 카드 (D-MAX 팀 · PvP 덱) ────────────────────────────────────────── */
 html body #root .pxt-slot { gap: 1.2rem; }
-html body #root .pxt-slot__head { display: flex; align-items: center; justify-content: space-between; gap: 0.8rem; min-height: 2.8rem; }
+html body #root .pxt-slot__head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.8rem; min-height: 2.8rem; }
 html body #root .pxt-slot__body { display: flex; flex-direction: column; align-items: center; gap: 0.4rem; width: 100%; margin: 0; padding: 0.4rem 0; border: 0; background: none; color: inherit; font: inherit; text-align: center; }
 html body #root button.pxt-slot__body { cursor: pointer; }
 html body #root button.pxt-slot__body:focus-visible { outline: var(--px-stroke) solid var(--brand-focus); outline-offset: 0.4rem; }
@@ -108,15 +110,26 @@ html body #root .pxt-swap .pxt-cand:has([aria-pressed="true"]) { --px-line: var(
   html body #root .pxt-target__search { flex-basis: 100%; }
   html body #root .pxt-boss { --ball: 7.2rem; gap: 1.2rem; }
   html body #root .pxt-iv__tiles { --cols: 1; }
-  html body #root .pxt-cand__text .px-caption.px-muted { display: none; }
+  /* 기술·조건도 선택 근거라 숨기지 않는다. 동작을 다음 줄로 보내 이름과 함께 읽게 한다. */
+  html body #root .pxt-cand { flex-wrap: wrap; }
+  html body #root .pxt-cand__ops { flex-basis: 100%; justify-content: flex-end; }
+  html body #root .pxt-cand__ops .px-btn { min-height: var(--tap); max-width: 100%; white-space: normal; overflow-wrap: anywhere; }
+  html body #root .pxt-cand__text .px-caption.px-muted { display: block; }
   /* 표 → 줄 카드. 머리줄은 숨기고 칸마다 data-label 을 앞세운다 */
   html body #root .pxt-table thead { display: none; }
   html body #root .pxt-table, html body #root .pxt-table tbody, html body #root .pxt-table tr { display: block; width: 100%; }
   html body #root .pxt-table tr { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.4rem 1.2rem; padding: 1.2rem 0; border-bottom: var(--px-stroke) solid var(--line); }
   html body #root .pxt-table tr:last-child { border-bottom: 0; }
-  html body #root .pxt-table th[scope="row"] { grid-column: 1 / -1; padding: 0 0 0.4rem; border: 0; }
-  html body #root .pxt-table td { display: flex; align-items: center; justify-content: space-between; gap: 0.8rem; padding: 0; border: 0; text-align: left; }
-  html body #root .pxt-table td::before { content: attr(data-label); color: var(--muted); font: 400 1.2rem/1.5 var(--font-body); }
+  html body #root .pxt-table th[scope="row"] { grid-column: 1 / -1; padding: 0 0 0.4rem; border: 0; white-space: normal; overflow-wrap: anywhere; }
+  html body #root .pxt-table td { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; min-width: 0; overflow-wrap: anywhere; gap: 0.8rem; padding: 0; border: 0; text-align: left; }
+  html body #root .pxt-table td::before { content: attr(data-label); min-width: 0; overflow-wrap: anywhere; color: var(--muted); font: 400 1.2rem/1.5 var(--font-body); }
   html body #root .pxt-table--iv tr { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   html body #root .pxt-table--iv td[data-label="IV"] { grid-column: 1 / -1; }
+}
+
+/* 320px 화면에서도 레이블과 − 값 + 를 서로 누르지 않게 별도 줄에 둔다. */
+@media (max-width: 399px) {
+  html body #root .pxt-ivbox { grid-template-columns: minmax(0, 1fr); gap: 0.8rem; }
+  html body #root .pxt-ivbox .px-stepper { grid-template-columns: var(--tap) minmax(0, 1fr) var(--tap); }
+  html body #root .pxt-table tr { grid-template-columns: minmax(0, 1fr); }
 }
