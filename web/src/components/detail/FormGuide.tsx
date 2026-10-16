@@ -122,7 +122,7 @@ export function DeepDock({ mon, dexNo, onDeep, onLeave, here = '', onHere }: {
     <>
       {/* '자세한 건 도감을 참고하세요!' 는 바닥 판(PxDialogFoot hint)이 적는다 — 여기는 단추 셋 */}
       <button type="button" className="px-btn px-btn--primary px-skin" onClick={() => onDeep?.(mon)}>
-        <PixelIcon name="dex" />도감에서 자세히 보기 <PixelIcon name="arrow" />
+        <PixelIcon name="dex" /><span className="pxd-dock__wide">도감에서 자세히 보기</span><span className="pxd-dock__compact">도감 상세</span><PixelIcon name="arrow" />
       </button>
       <button type="button" className="px-btn px-skin" onClick={() => {
           if (here === 'dmax' && onHere) { onHere(maxPick?.name ?? mon.name); return; }
