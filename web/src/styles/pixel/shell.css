@@ -6,9 +6,9 @@
    ───────────────────────────────────────────────────────────────────────────── */
 
 /* ── 바탕 — 판 색 + 위쪽 풍경 한 장. 글자 위에는 안개(px-scene 와 같은 비율)를 깐다 ────────── */
-html body { position: relative; min-height: 100vh; background: var(--bg); color: var(--fg); font-family: var(--font-body); }
+html body { --app-bar-height: 8rem; position: relative; min-height: 100vh; background: var(--bg); color: var(--fg); font-family: var(--font-body); }
 html body::before {
-  content: ''; position: absolute; z-index: 0; top: 8rem; right: 0; left: var(--rail-w); height: 112rem; pointer-events: none;
+  content: ''; position: absolute; z-index: 0; top: var(--app-bar-height); right: 0; left: var(--rail-w); height: 112rem; pointer-events: none;
   background:
     linear-gradient(180deg, color-mix(in srgb, var(--scene-ink) 88%, transparent) 0%, color-mix(in srgb, var(--scene-ink) 45%, transparent) 57%, color-mix(in srgb, var(--scene-ink) 72%, transparent) 86%, var(--bg) 100%),
     url('/images/pixel/scene-forest-camp.png') center top / cover no-repeat;
@@ -22,6 +22,8 @@ html body:not([data-home="true"])::before {
     url('/images/pixel/scene-field-lake.png');
 }
 html body > #root > *, html body #root .app-bar, html body #root .app-nav { position: relative; z-index: 1; }
+/* 건너뛰기 링크는 흐름 밖에 둔다. 위의 바탕 레이어 규칙이 숨은 링크의 줄 높이를 만들면 헤더가 밀린다. */
+html body #root .skip-link { position: fixed; z-index: 100; }
 /* 옛 장식(떠다니는 공)은 걷는다 */
 html body #root #px-bg { display: none; }
 
@@ -56,7 +58,7 @@ html body #root .app-bar__head > .icon-btn { display: inline-flex; }
 
 /* ── 왼쪽 메뉴 레일 ─────────────────────────────────────────────────────── */
 html body #root .app-nav {
-  display: none; position: fixed; z-index: 20; top: 8rem; bottom: 0; left: 0; box-sizing: border-box; width: var(--rail-w);
+  display: none; position: fixed; z-index: 20; top: var(--app-bar-height); bottom: 0; left: 0; box-sizing: border-box; width: var(--rail-w);
   padding: 1.6rem; overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin;
   background: var(--rail); border-right: var(--px-stroke) solid var(--line);
 }
