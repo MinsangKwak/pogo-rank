@@ -26,7 +26,7 @@
 
 ## 릴리스 기록
 
-2026-10-15에 새 홈과 v5.10.2 · v5.10.3의 운영 배포를 마쳤습니다. 아래 v5.10.x 항목의 운영 보류 표기는 각 릴리스 작성 당시 상태입니다. v6.0.0 은 dev 에서 확인을 마치고 운영 반영을 준비 중입니다. [v5.10.3 배포 결과](https://github.com/MinsangKwak/pogo-rank/actions/runs/38682428361)
+2026-10-15에 새 홈과 v5.10.2 · v5.10.3의 운영 배포를 마쳤습니다. 아래 v5.10.x 항목의 운영 보류 표기는 각 릴리스 작성 당시 상태입니다. 2026-10-17에 v6.0.0 도 운영에 반영했습니다. [v6.0.0 배포 결과](https://github.com/MinsangKwak/pogo-rank/actions/runs/38993134931)
 
 <details open>
 <summary><b>2026-10-17</b> — 1판 · <code>v6.0.0</code></summary>
@@ -47,6 +47,8 @@
 **문서** — `docs/design/README.md` · `docs/DEVELOPMENT.md` · `.claude/CLAUDE.md` 의 공통 모양 파일을 `styles/pixel/parts.css` 로 바꾼다. `docs/moncamp-architecture.html` 구성도([#385](https://github.com/MinsangKwak/pogo-rank/pull/385))와 INFRA 수동 배포 `preview=false` 정정([#382](https://github.com/MinsangKwak/pogo-rank/pull/382) ~ [#384](https://github.com/MinsangKwak/pogo-rank/pull/384))은 v5.10.3 과 함께 운영에 올라가 있다.
 
 검사 — frontend-v4 `version` 6 · web `npm test`. 로그인 · GNB 는 로컬 `next dev` + Playwright(API 응답 mock)로 PC · 모바일에서 로그인 전 · 승인 · 관리자 상태를 확인했다(10/17). 인증 코드(`stores/auth` · `serverApi` · 동의 흐름)는 이번 판에서 바뀌지 않았다.
+
+**운영 반영** — 10/17 운영자 승인. dev 트리를 단일 커밋으로 main [#412](https://github.com/MinsangKwak/pogo-rank/pull/412) → deploy [#413](https://github.com/MinsangKwak/pogo-rank/pull/413)(`snapshot/` 유지). [Pages 배포](https://github.com/MinsangKwak/pogo-rank/actions/runs/38993134931) 성공, moncamp.kr `/data/meta.json` 의 `APP_VERSION` v6.0.0 · 홈 · 도감 · D-MAX · PvE · PvP · 일정 · 패치노트 · 상세 · 관리자 경로 200 · `api.moncamp.kr/health` 200 · 운영과 dev 가 같은 CSS · JS 묶음(해시 동일).
 
 </details>
 
