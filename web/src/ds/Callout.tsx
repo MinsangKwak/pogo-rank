@@ -26,7 +26,16 @@ export function Callout({ tone = 'info', title, icon, children }: {
   );
 }
 
-/** 세울 줄이 하나도 없을 때. **왜 비었는지**를 적는다 — '없음' 한 마디는 고장과 구분이 안 된다 */
-export function Empty({ children }: { children: ReactNode }) {
-  return <p className="ds-empty">{children}</p>;
+/**
+ * 세울 줄이 하나도 없을 때. **왜 비었는지**를 적는다 — '없음' 한 마디는 고장과 구분이 안 된다.
+ * v6 D13 — 가라앉은 픽셀 판(px-note) 한 장. 제목은 기본 '결과가 없어요', 본문이 까닭이다. actions 로 '필터 초기화' 같은 단추를 둘 수 있다
+ */
+export function Empty({ title = '결과가 없어요', actions, children }: { title?: ReactNode; actions?: ReactNode; children: ReactNode }) {
+  return (
+    <div className="px-note px-skin px-skin--sunk ds-empty" role="status">
+      <p className="px-note__title">{title}</p>
+      <p className="px-note__body">{children}</p>
+      {actions ? <div className="px-note__actions">{actions}</div> : null}
+    </div>
+  );
 }

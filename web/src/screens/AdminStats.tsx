@@ -1,5 +1,5 @@
 // ─────────────────────────────────────────────────────────────────────────────
-// screens/AdminStats.tsx — 운영 통계 (루트만, 2026-09-24 · 2026-09-28 개편)
+// screens/AdminStats.tsx — 상세 통계 (루트만, 2026-09-24 · 2026-09-28 개편 · 2026-10-16 v6 픽셀 판 A02)
 //
 // **한 화면에 세 원본.** 원본마다 세는 법이 달라 숫자를 섞지 않는다 — 칸마다 어디서 왔는지 적는다.
 //   우리 DB   가입 · 로그인 · ★ · 검색(v4.7.0~) · 페이지뷰(2026-09-24~)   — Neon, 서버가 모아 센 값
@@ -20,83 +20,30 @@
 //     v4.6.3 이 순위를 내리며 남긴 조건("하루 3회 이상인 이름 셋")을 화면이 늘 재서, 다시 올릴 때를 놓치지 않는다
 //   - 순위 표는 여덟 줄에서 접는다 — 열다섯 줄 표 여섯 개가 한 화면에 서면 모바일이 5천 픽셀이었다
 //
+// **2026-10-16 v6 — 모양만 픽셀 판으로.** 구역 · 기능 · 계산은 그대로다. 기간 규칙은 lib/statRange.ts, 기간 판 · 숫자 칸 · 안내 판은
+// components/admin/ 아래에서 운영 대시보드(AdminHome)와 나눠 쓴다 — 두 화면의 기간 규칙이 달라지면 숫자가 어긋난다.
+// 화면 머리는 AdminHead(관리자 셸)가 아니라 여기서 세운다 — 일반 PageHead 는 관리자 셸에서 안 선다.
+//
 // 루트 판정은 화면(lib/useLocked 'root')과 서버(/v1/admin/stats) 둘 다 한다. 화면 쪽은 막힌 요청을 안 보내려는 것이다.
 // ─────────────────────────────────────────────────────────────────────────────
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { serverApi, ApiError, type AdminStats as Stats, type StatRanked, type StatRange } from '../lib/serverApi';
+import { serverApi, type AdminStats as Stats, type StatRanked, type StatRange } from '../lib/serverApi';
 import { useDexSoft } from '../lib/data';
 import { dexNoOf } from '../lib/mon';
 import { routeById } from '../routes';
+import { useAuthStore } from '../stores/auth';
 import { count, DASH } from '../lib/cell';
-import { Segmented, Callout } from '../ds';
-import { DayColumns, RankTable, Spark, weekTrend, trendLabel, type RankRow, type DayValue } from '../components/StatChart';
+import { periodName, sinceLabel } from '../lib/statRange';
+import { AdminHead } from '../components/AdminShell';
+import AdminDenied from '../components/admin/AdminDenied';
+import MetricTile from '../components/admin/MetricTile';
+import PeriodPicker, { statsError, useStatRange } from '../components/admin/PeriodPicker';
+import { AdminPanel, Note, type LoadFail } from '../components/admin/Panels';
+import { DayColumns, RankTable, type RankRow, type DayValue } from '../components/StatChart';
 import { StatHours } from '../components/StatHours';
 
-// 서비스를 연 날 (한국 날짜) — '9/14부터' 는 그날부터 오늘까지의 일수로 바꿔 부른다
-const OPENED = '2026-09-14';
-
-/** 지금의 한국 날짜 'YYYY-MM-DD' — 달력의 끝(max)이자 '오늘' */
-export function kstToday(now: number = Date.now()): string {
-  return new Date(now + 9 * 60 * 60 * 1000).toISOString().slice(0, 10);
-}
-
-/** 두 날짜 사이의 날 수 — 양끝을 넣는다. 꼴이 틀리면 NaN */
-function daysBetween(from: string, to: string): number {
-  return Math.round((Date.parse(`${to}T00:00:00Z`) - Date.parse(`${from}T00:00:00Z`)) / 86_400_000) + 1;
-}
-
-/** 한국 날짜로 OPENED 부터 오늘까지 — 오늘을 넣어 센다 */
-export function daysSinceOpened(now: number = Date.now()): number {
-  return daysBetween(OPENED, kstToday(now));
-}
-
-// 서버가 받는 기간 끝 (server/src/lib/stats.ts STATS_LIMITS) — 밖의 값은 스키마가 400 으로 돌려보내 화면이 통째로 선다
-const DAYS_MIN = 7;
-const DAYS_MAX = 400;
-
-/** '9/14부터' 로 부를 일수 — 연 지 7일 전이거나 400일이 넘으면 끝에 붙인다 (2027-10 부터는 최근 400일) */
-export function sinceDays(now: number = Date.now()): number {
-  return Math.min(DAYS_MAX, Math.max(DAYS_MIN, daysSinceOpened(now)));
-}
-
-/** '9/14부터' 의 이름 — 400일이 넘으면 앞이 잘리므로 '최근 400일' 로 바꿔 부른다. 잘린 기간을 전 기간이라 적지 않는다 */
-export function sinceLabel(now: number = Date.now()): string {
-  return daysSinceOpened(now) > DAYS_MAX ? `최근 ${DAYS_MAX}일` : '9/14부터';
-}
-
-// '9/14부터' 의 이름은 그릴 때 정한다 (periodItems) — 모듈에서 정하면 탭을 켜 둔 채 경계를 넘을 때 옛 이름이 남는다
-const PERIODS = [
-  { id: 'today', label: '오늘' },
-  { id: 'since', label: '9/14부터' },
-  { id: '7', label: '7일' },
-  { id: '14', label: '14일' },
-  { id: '21', label: '21일' },
-  { id: '30', label: '30일' },
-  { id: 'custom', label: '직접 고르기' },
-];
-
-/** 달력으로 고른 시작 · 끝이 서버가 받는 기간인지 — 틀리면 그 까닭. 서버(resolveRange)와 같은 규칙 */
-export function customIssue(draft: { from: string; to: string }, today: string = kstToday()): string {
-  const days = daysBetween(draft.from, draft.to);
-  if (!draft.from || !draft.to || !Number.isFinite(days)) return '시작과 끝 날짜를 골라 주세요';
-  if (draft.from > draft.to) return '시작이 끝보다 늦어요';
-  if (draft.to > today) return '끝은 오늘까지예요';
-  if (days > DAYS_MAX) return `기간은 ${DAYS_MAX}일까지예요`;
-  return '';
-}
-
-/** 고른 기간의 이름 — '오늘 10/2' · '9/14부터 17일' · '최근 7일' · '9/14 ~ 9/30 17일' */
-export function periodName(period: string, stats: { days: number; from?: string | undefined; to?: string | undefined }, since: string): string {
-  if (period === 'today' && stats.to) return `오늘 ${shortDay(stats.to)}`;
-  if (period === 'custom' && stats.from && stats.to) return `${shortDay(stats.from)} ~ ${shortDay(stats.to)} ${count(stats.days)}일`;
-  return period === 'since' && since === '9/14부터' ? `9/14부터 ${count(stats.days)}일` : `최근 ${count(stats.days)}일`;
-}
-
-// '2026-09-30' → '9/30'
-function shortDay(day: string): string {
-  const match = /^\d{4}-(\d{2})-(\d{2})$/.exec(day);
-  return match ? `${Number(match[1])}/${Number(match[2])}` : DASH;
-}
+// 기간 규칙은 lib/statRange.ts 한 벌 — 검사(statcells.test.ts)와 옛 호출이 이 화면에서 찾으므로 그대로 내보낸다
+export { kstToday, daysSinceOpened, sinceDays, sinceLabel, PERIODS, periodItems, customIssue, periodName, rangeLabel } from '../lib/statRange';
 
 // 구역 바로가기 — 고름 줄에 붙어 따라온다. 해시 링크는 같은 주소 안이라 라우터가 안 잡는다 (lib/nav.ts internalHref)
 const SECTIONS = [
@@ -137,35 +84,6 @@ function countryName(code: string): string {
   } catch { return code; }
 }
 
-/**
- * 숫자 칸. `rows` 를 주면 최근 14일 작은 선과 '최근 7일 · 앞 7일 대비' 한 줄이 선다.
- * 방문자처럼 날마다 따로 센 사람 수도 7일 합은 뜻이 있다 — "지난주보다 늘었나" 는 그 합의 방향이다
- */
-function Tile({ label, value, sub, rows }: { label: string; value: string; sub?: string; rows?: readonly DayValue[] }) {
-  // 일주일이 안 되는 기간(오늘 하루 등)은 '최근 7일' 이 기간보다 길어 거짓말이 된다 — 추세를 세우지 않는다
-  const trend = rows && rows.length >= 7 ? weekTrend(rows) : null;
-  const delta = trend ? trendLabel(trend) : null;
-  return (
-    <div className="stat-tile">
-      <span className="stat-tile__label">{label}</span>
-      <b className="stat-tile__value">{value}</b>
-      {sub ? <span className="stat-tile__sub">{sub}</span> : null}
-      {trend && delta ? (
-        <span className="stat-tile__trend">
-          <Spark rows={rows!} />
-          <span className="stat-tile__week">
-            {`최근 7일 ${count(trend.recent)}`}
-            {delta.tone !== 'none' ? <em className={`stat-tile__delta is-${delta.tone}`}>{delta.text}</em> : null}
-          </span>
-        </span>
-      ) : null}
-    </div>
-  );
-}
-
-/** 받은 숫자의 시각으로 이름을 정한다 — 버튼과 요약이 같은 때를 본다 */
-const periodItems = (label: string) => PERIODS.map((one) => (one.id === 'since' ? { ...one, label } : one));
-
 const ranked = (rows: readonly StatRanked[], label: (key: string) => string, flag?: (row: StatRanked) => boolean): RankRow[] =>
   rows.map((row) => ({ key: row.key, label: label(row.key), value: row.hits, sub: row.visitors, ...(flag?.(row) ? { flag: '문턱 ↑' } : {}) }));
 
@@ -197,37 +115,34 @@ function Readiness({ search, days }: { search: Stats['search']; days: number }) 
       ? { tone: 'caution' as const, title: '이 기간 전체로는 문턱을 넘지만, 오늘 하루 창은 아직이에요' }
       : { tone: 'info' as const, title: '아직 순위를 세울 검색량이 아니에요' };
   return (
-    <div className="stat-ready">
-      <div className="stat-ready__head">
-        <b>검색 순위 준비도</b>
-        <span>{`운영 순위 문턱 — 한 이름 ${count(HOT_MIN_HITS)}회 이상 · 찾은 사람 ${count(HOT_MIN_VISITORS)}명 이상 · 그런 이름 ${count(HOT_MIN_ROWS)}개 · 사람당 하루 ${count(HOT_PERSON_CAP)}회까지`}</span>
-      </div>
-      <div className="stat-tiles stat-tiles--tight">
-        <Tile label="이 기간에 문턱을 넘은 이름" value={ready.known ? `${count(ready.passing)} / ${count(HOT_MIN_ROWS)}` : DASH}
+    <AdminPanel className="stat-ready" title="검색 순위 준비도"
+      note={`운영 순위 문턱 — 한 이름 ${count(HOT_MIN_HITS)}회 이상 · 찾은 사람 ${count(HOT_MIN_VISITORS)}명 이상 · 그런 이름 ${count(HOT_MIN_ROWS)}개 · 사람당 하루 ${count(HOT_PERSON_CAP)}회까지`}>
+      <div className="px-grid px-grid--3 adm-tiles">
+        <MetricTile label="이 기간에 문턱을 넘은 이름" value={ready.known ? `${count(ready.passing)} / ${count(HOT_MIN_ROWS)}` : DASH}
           sub={ready.known ? "아래 표에서 '문턱 ↑' 딱지 · 순위와 같은 계산(사람당 한도 · 문턱)이에요" : '서버가 아직 이 줄을 안 줘요 — 서버 배포 뒤에 채워져요'} />
-        <Tile label="오늘 하루 창에서 넘은 이름" value={ready.known ? `${count(ready.passingToday)} / ${count(HOT_MIN_ROWS)}` : DASH}
+        <MetricTile label="오늘 하루 창에서 넘은 이름" value={ready.known ? `${count(ready.passingToday)} / ${count(HOT_MIN_ROWS)}` : DASH}
           sub={ready.known ? '/v1/hot?days=1 과 같은 계산 — 순위를 켜면 이 수가 곧 오늘 표예요' : '서버 배포 뒤에 채워져요'} />
-        <Tile label="하루 평균 고른 수" value={count(ready.perDay)}
+        <MetricTile label="하루 평균 고른 수" value={count(ready.perDay)}
           sub={`참고 — 하루 창이 서려면 어림잡아 ${count(ready.dailyNeed)}회는 넘어야 해요 (이름 ${count(HOT_MIN_ROWS)}개 × ${count(HOT_MIN_HITS)}회)`} />
       </div>
-      {ready.known ? <Callout tone={verdict.tone} title={verdict.title}>
+      {ready.known ? <Note tone={verdict.tone} title={verdict.title}>
         {/* 성공 문구는 둘 다 넘을 때만 — 하루 9회를 넘어도 한 이름에 몰리면 제목은 '아직' 인데 본문이 '올릴 수 있다' 고 엇갈린다 (Codex, PR #221) */}
         <p>{ready.dailyReady
           ? `오늘 하루 창에서 이름 ${count(ready.passingToday)}개가 문턱을 넘었어요 — 하루 창 순위를 올릴 수 있어요.`
           : !ready.ready
             ? `문턱을 넘은 이름이 ${count(HOT_MIN_ROWS)}개는 돼야 표가 서요. 이 기간 ${count(ready.passing)}개 · 오늘 ${count(ready.passingToday)}개, 하루 평균 ${count(ready.perDay)}회예요.`
             : `오늘 하루 창은 ${count(ready.passingToday)}개라 아직이에요. 이레 창을 먼저 열 수 있고, 하루 창은 며칠 연속 ${count(HOT_MIN_ROWS)}개를 넘길 때 켜요.`}</p>
-      </Callout> : (
-        <Callout tone="info" title="순위 계산 줄을 아직 못 받았어요">
+      </Note> : (
+        <Note tone="info" title="순위 계산 줄을 아직 못 받았어요">
           <p>{`서버가 deploy 브랜치에서 올라가면 채워져요. 그때까지는 하루 평균 고른 수만 봐요 — 하루 창 최소 조건은 ${count(ready.dailyNeed)}회예요.`}</p>
-        </Callout>
+        </Note>
       )}
-    </div>
+    </AdminPanel>
   );
 }
 
 /**
- * 따라오는 고름 줄이 상단 바 바로 아래에 붙게 — 바 높이는 폭마다 다르다 (실측 68 · 88 · 93px).
+ * 따라오는 고름 줄이 상단 바 바로 아래에 붙게 — 바 높이는 폭마다 다르다 (관리자 셸은 8rem 이지만 좁은 폭은 다르다).
  * rem 하나로 못 맞추니 바와 고름 줄을 재서 CSS 변수 둘로 준다: 줄이 붙는 자리(--stat-bar-top)와
  * 구역 바로가기가 제목을 세울 자리(--stat-bar-h). 바가 없으면 CSS 의 기본값이 선다.
  * `loaded` 를 받는 이유 — 받는 동안의 틀과 받은 뒤의 틀이 다른 요소라, 받은 뒤에 다시 재야 한다
@@ -253,54 +168,10 @@ function useBarOffset(loaded: boolean) {
   return ref;
 }
 
-export default function AdminStats() {
-  const [period, setPeriod] = useState('since');
-  // 달력의 시작 · 끝 — 기본은 연 날부터 오늘. '적용' 을 눌러야 range 가 된다 (날짜를 고르는 중에 받지 않는다)
-  const [draft, setDraft] = useState({ from: OPENED, to: kstToday() });
-  const [range, setRange] = useState<StatRange>({ days: sinceDays() });
-  const [stats, setStats] = useState<Stats | null>(null);
-  const page = useBarOffset(stats !== null);
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState('');
+/** 도감 번호 → 이름. 키는 도감 번호지만, 2026-10-04 전에는 폼 스프라이트(10000번대)가 그대로 쌓였다 — 그 기록도 원종 이름으로 보여 준다 */
+export function useMonName(): (id: number) => string {
   const dex = useDexSoft();
-
-  const load = useCallback(async (which: StatRange) => {
-    setBusy(true);
-    setError('');
-    try {
-      setStats(await serverApi.adminStats(which));
-    } catch (caught) {
-      setError(caught instanceof ApiError && caught.status === 403 ? '루트 관리자만 볼 수 있어요' : '통계를 받지 못했어요. 잠시 뒤 다시 눌러 주세요');
-    } finally {
-      setBusy(false);
-    }
-  }, []);
-
-  useEffect(() => { void load(range); }, [range, load]);
-
-  const issue = customIssue(draft);
-  // 고른 기간의 범위 — 오늘은 부르는 순간의 한국 날짜, '9/14부터' 는 그날까지의 날 수
-  const rangeOf = (id: string): StatRange => {
-    if (id === 'today') { const day = kstToday(); return { from: day, to: day }; }
-    return { days: id === 'since' ? sinceDays() : Number(id) };
-  };
-  const pick = (id: string) => {
-    setPeriod(id);
-    if (id === 'custom') { if (!issue) setRange({ ...draft }); return; }
-    setRange(rangeOf(id));
-  };
-  // '새로 받기' 도 범위를 다시 정한다 — 탭을 켜 둔 채 자정을 넘기면 '오늘' 이 어제 날짜로 다시 받았다 (2026-10-02 점검).
-  // 범위가 그대로면 상태가 안 바뀌어 효과가 안 도니 직접 받는다
-  const reload = () => {
-    if (period === 'custom') { void load(range); return; }
-    const next = rangeOf(period);
-    if (JSON.stringify(next) === JSON.stringify(range)) void load(range);
-    else setRange(next);
-  };
-  const today = kstToday();
-
-  // 키는 도감 번호지만, 2026-10-04 전에는 폼 스프라이트(10000번대)가 그대로 쌓였다 — 그 기록도 원종 이름으로 보여 준다
-  const monName = useCallback((id: number) => {
+  return useCallback((id: number) => {
     const table = dex?.DEX_DATA;
     const dexNo = table ? dexNoOf(id, table.dex) : null;
     const base = dexNo != null ? table?.names[String(dexNo)] : undefined;
@@ -308,18 +179,55 @@ export default function AdminStats() {
     const form = table?.forms[String(id)]?.name;
     return form && id !== dexNo ? `${form} ${base}` : base;
   }, [dex]);
+}
+
+export default function AdminStats() {
+  const ctl = useStatRange();
+  const [stats, setStats] = useState<Stats | null>(null);
+  const page = useBarOffset(stats !== null);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<LoadFail | null>(null);
+  const adminRoot = useAuthStore((s) => s.adminRoot);
+  const monName = useMonName();
+  const route = routeById('admin-stats')!;
+
+  const load = useCallback(async (which: StatRange) => {
+    setBusy(true);
+    setError(null);
+    try {
+      setStats(await serverApi.adminStats(which));
+    } catch (caught) {
+      setError(statsError(caught));
+    } finally {
+      setBusy(false);
+    }
+  }, []);
+
+  useEffect(() => { void load(ctl.range); }, [ctl.range, ctl.tick, load]);
+
   const routeName = (id: string) => {
     // 상세 팝업(mon-<번호>)은 서버가 'mon' 하나로 접어 준다 — 라우터 표의 mon 은 이름이 없다
     if (id === 'mon') return '상세 팝업';
-    const route = routeById(id);
-    return route ? (route.title ?? route.nav ?? id) : id;
+    const one = routeById(id);
+    return one ? (one.title ?? one.nav ?? id) : id;
   };
+
+  const head = (
+    <AdminHead route={route} title="숫자 뒤의 이용 흐름" desc="방문, 화면, 검색을 같은 기간으로 확인합니다. 집계 원본은 구분해서 표시합니다." />
+  );
 
   if (!stats) {
     return (
-      <div className="stat-page">
-        {error ? <Callout tone="warn" title={error} /> : <p className="stat-page__wait" aria-busy="true">통계를 받는 중이에요…</p>}
-      </div>
+      <>
+        {head}
+        <div className="stat-page adm-page">
+          {error?.kind === '403'
+            ? <AdminDenied kind={adminRoot ? '403' : 'root'} />
+            : error
+              ? <Note tone="warn" title={error.text} actions={<button type="button" className="px-btn px-skin px-btn--sm" onClick={ctl.reload}>다시 받기</button>} />
+              : <p className="px-body px-muted stat-page__wait" aria-busy="true">통계를 받는 중이에요…</p>}
+        </div>
+      </>
     );
   }
 
@@ -327,128 +235,129 @@ export default function AdminStats() {
   // 순위 계산으로 문턱을 넘은 이름 — 표의 딱지가 이것을 본다
   const hotKeys = new Set((search.hot ?? []).map((row) => row.key));
   const since = sinceLabel(Date.parse(stats.generatedAt));
-  const name = periodName(period, stats, since);
+  const name = periodName(ctl.period, stats, since);
   // 숫자 칸의 작은 선이 읽는 모양으로 — 칸마다 어느 수를 그리는지 여기서 보인다
   const daily = <T extends { day: string }>(rows: readonly T[], pick: (row: T) => number): DayValue[] =>
     rows.map((row) => ({ day: row.day, value: pick(row) }));
+  // GA4 칸의 값 — 꺼짐 · 실패는 0 이 아니라 '확인 불가'
+  const ga4Note = ga4.status === 'ok' ? null : ga4.status === 'off' ? 'GA4 꺼짐 · 확인 불가' : 'GA4 실패 · 확인 불가';
   return (
-    <div ref={page} className={`stat-page${busy ? ' is-busy' : ''}`}>
-      {/* 고름은 한 줄, 맨 위 — 아래 모든 칸에 같이 걸린다. 따라오는 줄이라 어느 구역에서든 바꾼다 */}
-      <div className="stat-page__bar">
-        <div className="stat-page__filters">
-          <Segmented className="stat-page__periods" label="기간" items={periodItems(since)} value={period} onPick={pick} />
-          <button type="button" className="tool-btn stat-page__reload" onClick={reload} disabled={busy}>{busy ? '받는 중…' : '새로 받기'}</button>
-          {period === 'custom' ? (
-            <form className="stat-page__dates" onSubmit={(event) => { event.preventDefault(); if (!issue) setRange({ ...draft }); }}>
-              <label>시작일 <input type="date" value={draft.from} max={today} onChange={(event) => setDraft({ ...draft, from: event.target.value })} /></label>
-              <label>종료일 <input type="date" value={draft.to} max={today} onChange={(event) => setDraft({ ...draft, to: event.target.value })} /></label>
-              <button type="submit" className="tool-btn" disabled={busy || !!issue}>기간 적용</button>
-              {issue ? <span className="stat-page__issue" role="alert">{issue}</span> : null}
-            </form>
-          ) : null}
+    <>
+      {head}
+      <div ref={page} className={`stat-page adm-page${busy ? ' is-busy' : ''}`} aria-busy={busy || undefined}>
+        {/* 고름은 한 줄, 맨 위 — 아래 모든 칸에 같이 걸린다. 따라오는 줄이라 어느 구역에서든 바꾼다 */}
+        <div className="stat-page__bar">
+          <PeriodPicker ctl={ctl} busy={busy} stats={stats} since={since}>
+            <p className="px-caption stat-page__stamp" data-i18n="off">{`${name} · ${stats.generatedAt.slice(0, 16).replace('T', ' ')} UTC 기준 · 운영 채널만`}</p>
+            <nav className="px-chips stat-jump" aria-label="구역 바로가기">
+              {SECTIONS.map((one) => <a key={one.id} className="px-chip px-skin" href={`#${one.id}`}>{one.label}</a>)}
+            </nav>
+          </PeriodPicker>
         </div>
-        <p className="stat-page__stamp">{`${name} · ${stats.generatedAt.slice(0, 16).replace('T', ' ')} UTC 기준 · 운영 채널만`}</p>
-        <nav className="stat-jump" aria-label="구역 바로가기">
-          {SECTIONS.map((one) => <a key={one.id} href={`#${one.id}`}>{one.label}</a>)}
-        </nav>
+        {error ? <Note tone="warn" title={error.text} /> : null}
+
+        <section className="stat-sec adm-sec" id="stat-glance">
+          <h3 className="px-sec px-heading">한눈에 <span className="px-sec__note">{name}</span></h3>
+          <div className="px-grid adm-tiles">
+            {/* 피그마 A02 의 네 칸이 앞에 선다 — GA4 둘 · DB 검색 둘. 나머지 넷은 그 뒤 */}
+            <MetricTile label="GA4 이용자" value={ga4.status === 'ok' ? count(ga4.users) : DASH}
+              // 비율을 안 적는다 — GA4 의 '처음 온 사람'(first_visit)과 '방문자'(활성 사용자)는 세는 법이 달라 100% 를 넘는다 (운영 101명에 104명)
+              sub={ga4.status === 'ok' ? `GA4 · 처음 온 사람 ${count(ga4.newUsers)}` : ga4Note!}
+              rows={ga4.status === 'ok' ? daily(ga4.perDay, (row) => row.users) : undefined} />
+            <MetricTile label="GA4 페이지뷰" value={ga4.status === 'ok' ? count(ga4.views) : DASH}
+              sub={ga4.status === 'ok' ? `GA4 · 방문 ${count(ga4.sessions)}회` : ga4Note!}
+              rows={ga4.status === 'ok' ? daily(ga4.perDay, (row) => row.views) : undefined} />
+            <MetricTile label="DB 검색 횟수" value={count(search.hits)} sub="DB · 검색에서 고른 수"
+              rows={daily(search.perDay, (row) => row.hits)} />
+            <MetricTile label="DB 검색 이용자" value={count(search.visitors)} sub="DB · 찾은 사람" />
+            <MetricTile label="가입한 사람" value={count(users.total)} sub={`DB · 승인 대기 ${count(users.pending)} · 실험 기능 ${count(users.beta)}`}
+              rows={daily(users.newPerDay, (row) => row.count)} />
+            <MetricTile label="7일 안에 로그인" value={count(users.active7d)} sub={`DB · 오늘 ${count(users.active1d)} · 30일 ${count(users.active30d)}`} />
+            <MetricTile label="살아 있는 로그인" value={count(stats.sessions.active)} sub="DB · 만료 · 로그아웃 안 된 기기" />
+            <MetricTile label="★ 담긴 수" value={count(favorites.total)} sub={`DB · 담은 사람 ${count(favorites.people)}`} />
+            <MetricTile label="페이지뷰 (moncamp)" value={count(views.hits)} sub={`DB · 방문자 ${count(views.visitors)} · 9월 24일부터`}
+              rows={daily(views.perDay, (row) => row.hits)} />
+          </div>
+          <p className="px-caption stat-page__note">{stats.days >= 7
+            ? '작은 선은 최근 14일, 화살표는 최근 7일을 그 앞 7일과 견준 값이에요. 7일 창에서는 앞 7일이 없어 화살표가 안 서요.'
+            : '하루 · 며칠만 고르면 추세(작은 선 · 화살표)는 세우지 않아요. 7일 이상을 고르면 보여요.'}</p>
+        </section>
+
+        <section className="stat-sec adm-sec" id="stat-visits">
+          <h3 className="px-sec px-heading">방문 <span className="px-sec__note">GA4</span></h3>
+          {ga4.status === 'ok' ? (
+            <>
+              {/* 받기는 됐는데 기간 전체가 0 — 권한은 있으나 사이트가 쓰지 않는 속성일 때다 (2026-09-24 Firebase 속성으로 겪었다) */}
+              {/* 셋 다 0 일 때만 '빈 속성' — 페이지뷰만 0 이면 기록은 있는 속성이다 */}
+              {ga4.users === 0 && ga4.views === 0 && ga4.sessions === 0 ? (
+                <Note tone="warn" title="GA4 속성에 이 기간 기록이 없어요">
+                  <p>권한은 있지만 비어 있는 속성이에요. 저장소 변수 GA4_PROPERTY_ID 가 사이트 측정 ID(G-…)를 가진 속성의 ID 인지 확인해 주세요.</p>
+                </Note>
+              ) : null}
+              <div className="px-grid px-grid--2 adm-grid">
+                <AdminPanel><DayColumns title="방문자" source="GA4 · 명" unit="명" summable={false} rows={ga4.perDay.map((row) => ({ day: row.day, value: row.users }))} /></AdminPanel>
+                <AdminPanel><DayColumns title="페이지뷰" source="GA4 · 회" unit="회" rows={ga4.perDay.map((row) => ({ day: row.day, value: row.views }))} /></AdminPanel>
+              </div>
+              <div className="px-grid px-grid--2 adm-grid">
+                <RankTable title="많이 본 주소" source="GA4" valueHead="페이지뷰" subHead="방문자" empty="아직 없어요"
+                  rows={ga4.pages.map((row) => ({ key: row.key, label: row.key, value: row.views, sub: row.users }))} />
+                <RankTable title="나라" source="GA4" valueHead="방문자" subHead="페이지뷰" empty="아직 없어요"
+                  rows={ga4.countries.map((row) => ({ key: row.key, label: countryName(row.key), value: row.users, sub: row.views }))} />
+              </div>
+            </>
+          ) : (
+            <Note tone={ga4.status === 'off' ? 'info' : 'warn'} title={ga4.status === 'off' ? 'GA4 칸이 꺼져 있어요' : 'GA4 숫자를 못 받았어요'}>
+              <p>{ga4.reason}</p>
+              <p>켜는 법 — ① GA4 관리 → 속성 액세스 관리에 서버 서비스 계정을 뷰어로 추가 ② moncamp api 프로젝트에서 Google Analytics Data API 사용 ③ 저장소 변수 GA4_PROPERTY_ID 에 속성 ID(숫자) — docs/OPERATIONS.md 운영 통계 절</p>
+            </Note>
+          )}
+        </section>
+
+        <section className="stat-sec adm-sec" id="stat-views">
+          <h3 className="px-sec px-heading">화면별 페이지뷰 <span className="px-sec__note">moncamp 수집</span></h3>
+          <AdminPanel>
+            <DayColumns title="페이지뷰" source="DB · 조회수" unit="회" rows={views.perDay.map((row) => ({ day: row.day, value: row.hits }))}
+              note="9월 24일부터 셉니다 · 화면 id 만 — 주소 · 검색어는 안 받아요. 9월 29일부터 상세 팝업은 도감 번호로 세요" />
+          </AdminPanel>
+          <div className="px-grid px-grid--3 adm-grid">
+            <RankTable title="많이 본 화면" source="DB" valueHead="페이지뷰" subHead="방문자" empty="아직 없어요"
+              rows={ranked(views.top, routeName)} />
+            {/* 홈의 '이번 주 많이 본 포켓몬' 과 같은 계산(/v1/mons/hot) — 옛 서버는 이 칸을 안 준다 */}
+            <RankTable title="많이 본 포켓몬" source="DB" valueHead="페이지뷰" subHead="방문자" empty={views.mons ? '아직 없어요' : '서버가 아직 안 줘요 — 옛 서버 필드 없음'}
+              rows={ranked(views.mons ?? [], (key) => monName(Number(key)))} />
+            <RankTable title="나라" source="DB" valueHead="페이지뷰" subHead="방문자" empty="아직 없어요"
+              rows={ranked(views.countries, countryName)} />
+          </div>
+          {/* 날짜 탭마다 24칸 — 홈 띠와 같은 수치를 "언제" 로 읽는다 */}
+          <StatHours days={views.perDay.map((row) => row.day)} monName={monName} stamp={stats.generatedAt} />
+        </section>
+
+        <section className="stat-sec adm-sec" id="stat-search">
+          <h3 className="px-sec px-heading">검색 <span className="px-sec__note">moncamp 수집</span></h3>
+          <Readiness search={search} days={stats.days} />
+          <AdminPanel>
+            <DayColumns title="검색에서 고른 수" source="DB · 회" unit="회" rows={search.perDay.map((row) => ({ day: row.day, value: row.hits }))} />
+          </AdminPanel>
+          <div className="px-grid px-grid--3 adm-grid">
+            <RankTable title="많이 찾은 포켓몬" source="DB" valueHead="고른 수" subHead="사람" empty="아직 없어요"
+              rows={ranked(search.top, (key) => key, (row) => hotKeys.has(row.key))} />
+            <RankTable title="검색창" source="DB" valueHead="고른 수" subHead="사람" empty="아직 없어요"
+              rows={ranked(search.surfaces, (key) => SURFACE_KO[key] ?? key)} />
+            <RankTable title="나라" source="DB" valueHead="고른 수" subHead="사람" empty="아직 없어요"
+              rows={ranked(search.countries, countryName)} />
+          </div>
+        </section>
+
+        <section className="stat-sec adm-sec" id="stat-users">
+          <h3 className="px-sec px-heading">가입 · ★ <span className="px-sec__note">집계 더 보기</span></h3>
+          <div className="px-grid px-grid--2 adm-grid">
+            <AdminPanel><DayColumns title="새로 가입" source="DB · 명" unit="명" rows={users.newPerDay.map((row) => ({ day: row.day, value: row.count }))} /></AdminPanel>
+            <RankTable title="많이 담긴 포켓몬 ★" source="DB" valueHead="담은 사람" empty="아직 없어요"
+              rows={favorites.top.map((row) => ({ key: String(row.dex), label: monName(row.dex), value: row.users }))} />
+          </div>
+          <p className="px-caption stat-page__note">{`역할 — 루트 ${count(users.root)} · 관리자 ${count(users.admin)} · 승인 ${count(users.approved)} · 대기 ${count(users.pending)}`}</p>
+        </section>
       </div>
-      {error ? <Callout tone="warn" title={error} /> : null}
-
-      <section className="stat-sec" id="stat-glance">
-        <h2 className="stat-sec__title">한눈에 <small>{name}</small></h2>
-        <div className="stat-tiles">
-          <Tile label="가입한 사람" value={count(users.total)} sub={`승인 대기 ${count(users.pending)} · 실험 기능 ${count(users.beta)}`}
-            rows={daily(users.newPerDay, (row) => row.count)} />
-          <Tile label="7일 안에 로그인" value={count(users.active7d)} sub={`오늘 ${count(users.active1d)} · 30일 ${count(users.active30d)}`} />
-          <Tile label="살아 있는 로그인" value={count(stats.sessions.active)} sub="만료 · 로그아웃 안 된 기기" />
-          <Tile label="★ 담긴 수" value={count(favorites.total)} sub={`담은 사람 ${count(favorites.people)}`} />
-          <Tile label="검색에서 고른 수" value={count(search.hits)} sub={`찾은 사람 ${count(search.visitors)}`}
-            rows={daily(search.perDay, (row) => row.hits)} />
-          <Tile label="페이지뷰 (moncamp)" value={count(views.hits)} sub={`방문자 ${count(views.visitors)} · 9월 24일부터`}
-            rows={daily(views.perDay, (row) => row.hits)} />
-          <Tile label="방문자 (GA4)" value={ga4.status === 'ok' ? count(ga4.users) : DASH}
-            // 비율을 안 적는다 — GA4 의 '처음 온 사람'(first_visit)과 '방문자'(활성 사용자)는 세는 법이 달라 100% 를 넘는다 (운영 101명에 104명)
-            sub={ga4.status === 'ok' ? `처음 온 사람 ${count(ga4.newUsers)}` : '아래 GA4 칸 참고'}
-            rows={ga4.status === 'ok' ? daily(ga4.perDay, (row) => row.users) : undefined} />
-          <Tile label="페이지뷰 (GA4)" value={ga4.status === 'ok' ? count(ga4.views) : DASH}
-            sub={ga4.status === 'ok' ? `방문 ${count(ga4.sessions)}회` : '아래 GA4 칸 참고'}
-            rows={ga4.status === 'ok' ? daily(ga4.perDay, (row) => row.views) : undefined} />
-        </div>
-        <p className="stat-page__note">{stats.days >= 7
-          ? '작은 선은 최근 14일, 화살표는 최근 7일을 그 앞 7일과 견준 값이에요. 7일 창에서는 앞 7일이 없어 화살표가 안 서요.'
-          : '하루 · 며칠만 고르면 추세(작은 선 · 화살표)는 세우지 않아요. 7일 이상을 고르면 보여요.'}</p>
-      </section>
-
-      <section className="stat-sec" id="stat-visits">
-        <h2 className="stat-sec__title">방문 <small>GA4</small></h2>
-        {ga4.status === 'ok' ? (
-          <>
-            {/* 받기는 됐는데 기간 전체가 0 — 권한은 있으나 사이트가 쓰지 않는 속성일 때다 (2026-09-24 Firebase 속성으로 겪었다) */}
-            {/* 셋 다 0 일 때만 '빈 속성' — 페이지뷰만 0 이면 기록은 있는 속성이다 */}
-            {ga4.users === 0 && ga4.views === 0 && ga4.sessions === 0 ? (
-              <Callout tone="warn" title="GA4 속성에 이 기간 기록이 없어요">
-                <p>권한은 있지만 비어 있는 속성이에요. 저장소 변수 GA4_PROPERTY_ID 가 사이트 측정 ID(G-…)를 가진 속성의 ID 인지 확인해 주세요.</p>
-              </Callout>
-            ) : null}
-            <div className="stat-grid">
-              <DayColumns title="방문자" unit="명" summable={false} rows={ga4.perDay.map((row) => ({ day: row.day, value: row.users }))} />
-              <DayColumns title="페이지뷰" unit="회" rows={ga4.perDay.map((row) => ({ day: row.day, value: row.views }))} />
-            </div>
-            <div className="stat-grid">
-              <RankTable title="많이 본 주소" valueHead="페이지뷰" subHead="방문자" empty="아직 없어요"
-                rows={ga4.pages.map((row) => ({ key: row.key, label: row.key, value: row.views, sub: row.users }))} />
-              <RankTable title="나라" valueHead="방문자" subHead="페이지뷰" empty="아직 없어요"
-                rows={ga4.countries.map((row) => ({ key: row.key, label: countryName(row.key), value: row.users, sub: row.views }))} />
-            </div>
-          </>
-        ) : (
-          <Callout tone={ga4.status === 'off' ? 'info' : 'warn'} title={ga4.status === 'off' ? 'GA4 칸이 꺼져 있어요' : 'GA4 숫자를 못 받았어요'}>
-            <p>{ga4.reason}</p>
-            <p>켜는 법 — ① GA4 관리 → 속성 액세스 관리에 서버 서비스 계정을 뷰어로 추가 ② moncamp api 프로젝트에서 Google Analytics Data API 사용 ③ 저장소 변수 GA4_PROPERTY_ID 에 속성 ID(숫자) — docs/OPERATIONS.md 운영 통계 절</p>
-          </Callout>
-        )}
-      </section>
-
-      <section className="stat-sec" id="stat-views">
-        <h2 className="stat-sec__title">화면별 페이지뷰 <small>moncamp 수집</small></h2>
-        <DayColumns title="페이지뷰" unit="회" rows={views.perDay.map((row) => ({ day: row.day, value: row.hits }))}
-          note="9월 24일부터 셉니다 · 화면 id 만 — 주소 · 검색어는 안 받아요. 9월 29일부터 상세 팝업은 도감 번호로 세요" />
-        <div className="stat-grid">
-          <RankTable title="많이 연 화면" valueHead="페이지뷰" subHead="방문자" empty="아직 없어요"
-            rows={ranked(views.top, routeName)} />
-          {/* 홈의 '이번 주 많이 본 포켓몬' 과 같은 계산(/v1/mons/hot) — 옛 서버는 이 칸을 안 준다 */}
-          <RankTable title="많이 본 포켓몬" valueHead="페이지뷰" subHead="방문자" empty={views.mons ? '아직 없어요' : '서버가 아직 안 줘요'}
-            rows={ranked(views.mons ?? [], (key) => monName(Number(key)))} />
-          <RankTable title="나라" valueHead="페이지뷰" subHead="방문자" empty="아직 없어요"
-            rows={ranked(views.countries, countryName)} />
-        </div>
-        {/* 날짜 탭마다 24칸 — 홈 띠와 같은 수치를 "언제" 로 읽는다 */}
-        <StatHours days={views.perDay.map((row) => row.day)} monName={monName} stamp={stats.generatedAt} />
-      </section>
-
-      <section className="stat-sec" id="stat-search">
-        <h2 className="stat-sec__title">검색 <small>moncamp 수집</small></h2>
-        <Readiness search={search} days={stats.days} />
-        <DayColumns title="검색에서 고른 수" unit="회" rows={search.perDay.map((row) => ({ day: row.day, value: row.hits }))} />
-        <div className="stat-grid">
-          <RankTable title="많이 고른 포켓몬" valueHead="고른 수" subHead="사람" empty="아직 없어요"
-            rows={ranked(search.top, (key) => key, (row) => hotKeys.has(row.key))} />
-          <RankTable title="검색창" valueHead="고른 수" subHead="사람" empty="아직 없어요"
-            rows={ranked(search.surfaces, (key) => SURFACE_KO[key] ?? key)} />
-          <RankTable title="나라" valueHead="고른 수" subHead="사람" empty="아직 없어요"
-            rows={ranked(search.countries, countryName)} />
-        </div>
-      </section>
-
-      <section className="stat-sec" id="stat-users">
-        <h2 className="stat-sec__title">가입 · ★</h2>
-        <div className="stat-grid">
-          <DayColumns title="새로 가입" unit="명" rows={users.newPerDay.map((row) => ({ day: row.day, value: row.count }))} />
-          <RankTable title="많이 담긴 포켓몬 ★" valueHead="담은 사람" empty="아직 없어요"
-            rows={favorites.top.map((row) => ({ key: String(row.dex), label: monName(row.dex), value: row.users }))} />
-        </div>
-        <p className="stat-page__note">{`역할 — 루트 ${count(users.root)} · 관리자 ${count(users.admin)} · 승인 ${count(users.approved)} · 대기 ${count(users.pending)}`}</p>
-      </section>
-    </div>
+    </>
   );
 }

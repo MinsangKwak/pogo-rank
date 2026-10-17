@@ -1,5 +1,5 @@
 // ─────────────────────────────────────────────────────────────────────────────
-// components/SearchPalette.tsx — 어느 화면에서든 뜨는 포켓몬 검색 (2026-09-28)
+// components/SearchPalette.tsx — 어느 화면에서든 뜨는 포켓몬 검색 (2026-09-28 · v6 D05 '포켓몬 빠른 검색')
 //
 // **왜 생겼나.** 상단 바의 '포켓몬을 검색하세요' 는 도감으로 가는 링크였다 — 검색이 아니라 이동이라
 // 목록에서 스크롤로 찾고 끝났고, 검색 수집(trackSearchPick)은 도감 검색칸에 이름을 친 사람만 잡았다.
@@ -10,9 +10,7 @@
 // 후보는 도감 이름표만 쓴다(useDexSoft) — 셸에 붙는 조각이라 순위표 넷을 기다리게 하지 않는다.
 // 고르면 어디서 골랐는지 surface 로 남긴다 (palette · palette_recent · palette_boss) — 통계에서 갈라 본다.
 //
-// <dialog> 로 열어 Esc · 배경 잠금을 브라우저에 맡긴다. **포켓몬 상세 팝업과 같은 판이다** (2026-09-30 주인 결정) —
-// 그림 띠 머리줄 · 같은 닫기 · 좁은 화면에서는 아래에서 올라오는 시트. 도구 팝업의 'MONCAMP' 띠 틀은 쓰지 않는다.
-// 검색칸 · 목록은 palette.css 가 더한다
+// 판은 **포켓몬 상세 팝업과 같은 판**(components/PxDialog.tsx)이다 (2026-09-30 주인 결정) — 머리 · 본문 · 바닥('도감에서 필터로 찾기')
 // ─────────────────────────────────────────────────────────────────────────────
 import { useEffect, useMemo, useRef, useState, type KeyboardEvent } from 'react';
 import { useDexSoft } from '../lib/data';
@@ -21,9 +19,12 @@ import { trackSearchPick } from '../lib/track';
 import { readRecent, pushRecent, clearRecent, type RecentPick } from '../lib/recentSearch';
 import { useWeekBosses } from '../lib/weekBosses';
 import { useSearchStore, openSearch } from '../stores/search';
-import { BASE } from '../lib/base';
-import { PxIcon } from './PxIcon';
-import type { OpenMon } from '../lib/mon';
+import { SPRITE_BASE } from '../lib/base';
+import { PixelIcon } from './PixelIcon';
+import { PxDialog, PxDialogBody, PxDialogFoot, PxDialogHead } from './PxDialog';
+import { NoteBox } from './detail/Pieces';
+import { PokemonNumberRibbon } from './MonCard';
+import { dexNoOf, type OpenMon } from '../lib/mon';
 
 interface Candidate { sprite: number; name: string; en: string; types: string[] }
 
@@ -55,8 +56,16 @@ export default function SearchPalette({ onOpen }: { onOpen: OpenMon }) {
   return <Palette onOpen={onOpen} onClose={hide} />;
 }
 
+/** 작은 몬스터볼 틀 위 그림 — 결과 줄 · 칩이 같은 틀을 쓴다 */
+function Art({ id, size = 32 }: { id: number; size?: number }) {
+  return (
+    <span className="px-ball pxd-palette__art" style={{ ['--ball' as string]: `${size / 10}rem` }}>
+      <img src={`${SPRITE_BASE}${id}.png`} alt="" width={size} height={size} loading="lazy" decoding="async" />
+    </span>
+  );
+}
+
 function Palette({ onOpen, onClose }: { onOpen: OpenMon; onClose: () => void }) {
-  const box = useRef<HTMLDialogElement>(null);
   const field = useRef<HTMLInputElement>(null);
   const [query, setQuery] = useState('');
   const [active, setActive] = useState(0);
@@ -65,8 +74,6 @@ function Palette({ onOpen, onClose }: { onOpen: OpenMon; onClose: () => void }) 
   const week = useWeekBosses();
 
   useEffect(() => {
-    const node = box.current;
-    if (node && !node.open && typeof node.showModal === 'function') node.showModal();
     field.current?.focus();
     setRecent(readRecent());
   }, []);
@@ -83,6 +90,8 @@ function Palette({ onOpen, onClose }: { onOpen: OpenMon; onClose: () => void }) 
   // 골라져, 이름을 치고 Enter 를 눌렀는데 셋째 줄이 열렸다 (2026-09-28 실측)
   const hits = useMemo(() => monSearch(candidates, query, 8), [candidates, query]);
   const cursor = Math.min(active, Math.max(0, hits.length - 1));
+  // 타입 이름은 도감 묶음의 TYPE_KO 로 — 아직 안 왔으면 영문 키를 그대로 내지 않고 비운다 (CLAUDE.md §1)
+  const typeLine = (types: readonly string[]) => types.map((type) => dex?.TYPE_KO[type as keyof typeof dex.TYPE_KO] ?? '').filter(Boolean).join(' · ');
 
   const pick = (mon: Candidate | RecentPick, surface: string) => {
     trackSearchPick(mon.name, surface);
@@ -98,79 +107,68 @@ function Palette({ onOpen, onClose }: { onOpen: OpenMon; onClose: () => void }) 
     else if (event.key === 'Enter' && hits[cursor]) { event.preventDefault(); pick(hits[cursor]!, 'palette'); }
   };
 
-  const sprite = (id: number) => <img className="palette__sprite" src={`${BASE}sprites/${id}.png`} alt="" width="32" height="32" loading="lazy" decoding="async" />;
+  // 칩 한 줄 — 최근 검색 · 이번 주 보스가 같은 칩이다
+  const chips = (label: string, rows: { key: string; sprite: number; label: string; onPick: () => void }[], more?: React.ReactNode) => (
+    <section className="pxd-palette__group" aria-label={label}>
+      <h3 className="px-sec"><span className="px-sub">{label}</span>{more}</h3>
+      <div className="px-chips">
+        {rows.map((row) => (
+          <button key={row.key} type="button" className="px-chip px-skin pxd-palette__chip" onClick={row.onPick}>
+            <Art id={row.sprite} size={24} />{row.label}
+          </button>
+        ))}
+      </div>
+    </section>
+  );
 
   return (
-    <dialog className="modal palette" ref={box} aria-label="포켓몬 검색"
-      onClick={(event) => { if (event.target === box.current) onClose(); }}
-      onCancel={(event) => { event.preventDefault(); onClose(); }}>
-      <div className="modal__wrap palette__wrap">
-        <button className="modal__close" aria-label="검색 닫기" onClick={onClose}>✕</button>
-        <div className="modal__box palette__box">
-          {/* 머리줄 — 상세 팝업의 이름표 줄(.detail__bar)과 같은 그림 띠 */}
-          <div className="palette__bar"><p className="palette__title">포켓몬 검색</p></div>
-          <div className="palette__body">
-          <label className="palette__field">
-            <span className="palette__ico" aria-hidden="true"><PxIcon emoji="🔍" /></span>
-            <input ref={field} type="search" className="palette__input" placeholder="포켓몬 이름이나 영문명" aria-label="포켓몬 검색"
-              autoComplete="off" autoCorrect="off" spellCheck={false} enterKeyHint="search"
-              role="combobox" aria-expanded={hits.length > 0} aria-controls="palette-list" aria-autocomplete="list"
-              aria-activedescendant={hits[cursor] ? `palette-opt-${hits[cursor]!.sprite}` : undefined}
-              value={query} onChange={(event) => { setQuery(event.target.value); setActive(0); }} onKeyDown={onKey} />
-          </label>
-          {query.trim() ? (
-            hits.length ? (
-              <ul className="palette__list" id="palette-list" role="listbox" aria-label="검색 결과">
-                {hits.map((mon, index) => (
-                  <li key={mon.sprite} id={`palette-opt-${mon.sprite}`} role="option" aria-selected={index === cursor}>
-                    <button type="button" className={`palette__hit${index === cursor ? ' is-on' : ''}`}
-                      onMouseMove={() => setActive(index)} onClick={() => pick(mon, 'palette')}>
-                      {sprite(mon.sprite)}
-                      <span className="palette__name">{mon.name}</span>
-                      {mon.en ? <span className="palette__en" data-i18n="off">{mon.en}</span> : null}
-                      <span className="palette__no" data-i18n="off">{`#${mon.sprite}`}</span>
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p className="palette__empty">맞는 포켓몬이 없어요. 다른 이름으로 찾아보세요</p>
-            )
+    <PxDialog onClose={onClose} label="포켓몬 검색" className="pxd-dialog pxd-dialog--palette" panelClassName="pxd-palette">
+      <PxDialogHead title="포켓몬 빠른 검색" caption="↑ ↓ 이동 · Enter 선택 · Esc 닫기" onClose={onClose} closeLabel="검색 닫기" />
+      <PxDialogBody>
+        <label className="px-input px-skin pxd-palette__field">
+          <PixelIcon name="search" />
+          <input ref={field} type="search" placeholder="포켓몬 이름이나 영문명" aria-label="포켓몬 검색"
+            autoComplete="off" autoCorrect="off" spellCheck={false} enterKeyHint="search"
+            role="combobox" aria-expanded={hits.length > 0} aria-controls="palette-list" aria-autocomplete="list"
+            aria-activedescendant={hits[cursor] ? `palette-opt-${hits[cursor]!.sprite}` : undefined}
+            value={query} onChange={(event) => { setQuery(event.target.value); setActive(0); }} onKeyDown={onKey} />
+        </label>
+        {query.trim() ? (
+          hits.length ? (
+            <ul className="pxd-palette__list" id="palette-list" role="listbox" aria-label="검색 결과">
+              {hits.map((mon, index) => (
+                <li key={mon.sprite} id={`palette-opt-${mon.sprite}`} className="pxd-palette__result" role="option" aria-selected={index === cursor}>
+                  <PokemonNumberRibbon dex={dexNoOf(mon.sprite, dex?.DEX_DATA.dex ?? {}) ?? undefined} />
+                  <button type="button" className={`px-card px-card--tap px-skin px-skin--sunk pxd-palette__hit${index === cursor ? ' is-on' : ''}`}
+                    onMouseMove={() => setActive(index)} onClick={() => pick(mon, 'palette')} aria-label={`${mon.name} 상세 보기`}>
+                    <Art id={mon.sprite} />
+                    <span className="pxd-palette__text">
+                      <span className="px-sub">{mon.name}{mon.en ? <span className="px-caption px-mono" data-i18n="off">{` ${mon.en}`}</span> : null}</span>
+                      {typeLine(mon.types) ? <span className="px-caption" data-i18n="off">{typeLine(mon.types)}</span> : null}
+                    </span>
+                    <span className="px-mono px-muted pxd-palette__enter" aria-hidden="true">↵</span>
+                  </button>
+                </li>
+              ))}
+            </ul>
           ) : (
-            <>
-              {recent.length ? (
-                <section className="palette__group" aria-label="최근 검색">
-                  <h3 className="palette__head">최근 검색
-                    <button type="button" className="palette__clear" onClick={() => { clearRecent(); setRecent([]); }}>지우기</button>
-                  </h3>
-                  <div className="palette__chips">
-                    {recent.map((mon) => (
-                      <button key={mon.name} type="button" className="palette__chip" onClick={() => pick(mon, 'palette_recent')}>
-                        {sprite(mon.sprite)}{mon.name}
-                      </button>
-                    ))}
-                  </div>
-                </section>
-              ) : null}
-              {week.bosses.length ? (
-                <section className="palette__group" aria-label={week.label}>
-                  <h3 className="palette__head">{week.label}</h3>
-                  <div className="palette__chips">
-                    {week.bosses.map((boss) => (
-                      <button key={boss.name} type="button" className="palette__chip" onClick={() => pick({ sprite: boss.sprite, name: boss.detailName, en: '', types: boss.types }, 'palette_boss')}>
-                        {sprite(boss.sprite)}{boss.name}
-                      </button>
-                    ))}
-                  </div>
-                </section>
-              ) : null}
-              <p className="palette__hint">이름을 치면 바로 찾아요 · ↑↓ 로 고르고 Enter</p>
-            </>
-          )}
-          <a className="palette__more" href="/dex" onClick={onClose}>도감에서 필터로 찾기<span aria-hidden="true"> ›</span></a>
-          </div>
-        </div>
-      </div>
-    </dialog>
+            <NoteBox title="결과 없음">검색어를 바꾸거나 도감 필터를 이용해 보세요.</NoteBox>
+          )
+        ) : (
+          <>
+            {recent.length ? chips('최근 검색', recent.map((mon) => ({ key: mon.name, sprite: mon.sprite, label: mon.name, onPick: () => pick(mon, 'palette_recent') })),
+              <button type="button" className="px-sec__more pxd-palette__clear" onClick={() => { clearRecent(); setRecent([]); }}>지우기</button>) : null}
+            {week.bosses.length ? chips(week.label, week.bosses.map((boss) => ({
+              key: boss.name, sprite: boss.sprite, label: boss.name,
+              onPick: () => pick({ sprite: boss.sprite, name: boss.detailName, en: '', types: boss.types }, 'palette_boss'),
+            }))) : null}
+            <p className="px-caption">이름을 치면 바로 찾아요 · ↑↓ 로 고르고 Enter</p>
+          </>
+        )}
+      </PxDialogBody>
+      <PxDialogFoot>
+        <a className="px-btn px-skin px-btn--block" href="/dex" onClick={onClose}>도감에서 필터로 찾기 <PixelIcon name="arrow" /></a>
+      </PxDialogFoot>
+    </PxDialog>
   );
 }

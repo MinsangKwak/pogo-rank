@@ -23,6 +23,10 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { authEmail, recheckAccess, useAuthStore } from '../stores/auth';
 import { serverApi, ApiError, type AdminUser, type Role } from '../lib/serverApi';
+import ConfirmDialog from './ConfirmDialog';
+
+// 확인 팝업에 올릴 일 — window.confirm 대신 (2026-10-16 v6 A08). 대상 · 효과를 따로 읽고 누른다
+interface Ask { title: string; target: string; effect: string; confirmLabel: string; danger?: boolean; run: () => Promise<void>; mine: boolean }
 
 /** 목록 한 줄. 버튼을 여러 개 받는다 — 승인된 사람 줄에는 셋이 붙는다 (v3 adminRowNode) */
 function AdminRow({ row, badge, children }: { row: AdminUser; badge?: string; children?: React.ReactNode }) {
@@ -56,6 +60,8 @@ export default function AdminPanel({ onClose }: { onClose: () => void }) {
   const box = useRef<HTMLDialogElement>(null);
   const [rows, setRows] = useState<AdminUser[] | null>(null);
   const [message, setMessage] = useState('');
+  const [ask, setAsk] = useState<Ask | null>(null);
+  const [busy, setBusy] = useState(false);
 
   // 조회를 기다리기 전에 팝업 틀부터 띄운다 — 누른 즉시 반응이 보이도록 (v3 와 같은 차례)
   useEffect(() => { const node = box.current; if (!node?.open) node?.showModal(); }, []);
@@ -91,16 +97,26 @@ export default function AdminPanel({ onClose }: { onClose: () => void }) {
     await load();   // 부분 수정 대신 다시 읽는다 — 화면과 저장된 것이 어긋날 자리를 아예 없앤다
   };
 
+  // 팝업의 [확인] — 저장 중에는 잠그고, 끝나면 닫고 다시 읽는다
+  const confirm = async () => {
+    if (!ask || busy) return;
+    setBusy(true);
+    await write(ask.run, '바꾸지 못했어요.', ask.mine);
+    setBusy(false);
+    setAsk(null);
+  };
+
   const setRole = (row: AdminUser, role: Role, question: string) => {
-    if (!window.confirm(question)) return;
-    void write(() => serverApi.setRole(row.id, { role }), '바꾸지 못했어요.', row.email === myMail);
+    const label = role === 'pending' ? '승인 해제' : role === 'admin' ? '관리자 지정' : row.role === 'admin' ? '관리자 해제' : '가입 승인';
+    setAsk({ title: label, target: row.email, effect: question, confirmLabel: label, danger: role === 'pending' || (role === 'approved' && row.role === 'admin'),
+      run: () => serverApi.setRole(row.id, { role }), mine: row.email === myMail });
   };
 
   const setBeta = (row: AdminUser, on: boolean) => {
-    if (!window.confirm(on
-      ? `${row.email} 님에게 실험 기능 이용 권한을 부여할까요?`
-      : `${row.email} 님의 실험 기능 이용 권한을 해제할까요?`)) return;
-    void write(() => serverApi.setRole(row.id, { beta: on }), '바꾸지 못했어요.', row.email === myMail);
+    setAsk({ title: on ? '실험 기능 권한 부여' : '실험 기능 권한 해제', target: row.email,
+      effect: on ? '실험 기능 이용 권한을 부여합니다. 관리자 권한과는 별개예요.' : '실험 기능 이용 권한을 해제합니다. 승인 상태는 그대로예요.',
+      confirmLabel: on ? '실험 기능 부여' : '실험 기능 해제', danger: !on,
+      run: () => serverApi.setRole(row.id, { beta: on }), mine: row.email === myMail });
   };
 
   const approvedRow = (one: AdminUser, isAdmin: boolean) => (
@@ -171,6 +187,7 @@ export default function AdminPanel({ onClose }: { onClose: () => void }) {
           </div>
         </div>
       </div>
+      {ask ? <ConfirmDialog {...ask} busy={busy} onConfirm={() => void confirm()} onCancel={() => { if (!busy) setAsk(null); }} /> : null}
     </dialog>
   );
 }

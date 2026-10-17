@@ -1,317 +1,374 @@
 // ─────────────────────────────────────────────────────────────────────────────
-// screens/Home.tsx — 서비스 홈
+// screens/Home.tsx — 서비스 홈 (v6 피그마 '01 · 서비스 홈')
 //
-// v3 components/home.js 의 구성을 그대로 따른다 (v3.55.0 에 게임 업데이트를 맨 아래로 내렸다):
-//   히어로 → 용도별 상위 포켓몬 → 갈래 카드 → 게임 업데이트
-// 타일의 이름·아이콘·설명은 **전부 라우터 표에서** 온다 (v2.66.0 의 규칙 — 글을 두 곳에 적지 않는다).
+// 풍경 히어로 → 주간 브리핑 + 체크포인트 → 많이 보는 포켓몬
+// → 이번 주 보스(폭에 따라 1~3장 보이는 정보 Swiper)와 팀 만들기 → 용도별 상위(비주얼 왼쪽 + 순위 정보 오른쪽) → 게임 업데이트.
+// 데이터는 전부 기존 훅(lib/useBossBoard · lib/hotMons · lib/weekBosses · lib/data)에서 온다 — 문구를 지어내지 않는다.
+// 히어로는 데이터 없이 바로 서고(LCP), 그 아래만 기다린다. 보스 목록은 Swiper loop 로 순환하고 직접 넘길 수도 있다.
 // ─────────────────────────────────────────────────────────────────────────────
+import { Suspense, useEffect, useMemo, useState } from 'react';
+import { Swiper, SwiperSlide } from 'swiper/react';
+import { A11y, Autoplay, Keyboard } from 'swiper/modules';
+import type { Swiper as SwiperInstance } from 'swiper';
+import 'swiper/css';
 import { go } from '../lib/nav';
-
-import { BASE } from '../lib/base';
-import { MAX_ART, maxArtFor } from '../lib/heroArt';
-import { HeroPoster, MaxPoster } from '../components/MaxPoster';
-
-import { Suspense, lazy, useMemo, type ReactNode } from 'react';
-import { ROUTE_GROUPS, ROUTE_NAV, routeDesc, routeHref, type RouteDef } from '../routes';
+import { SPRITE_BASE } from '../lib/base';
+import { ROUTE_EYEBROW, routeDesc, routeHref, type RouteDef } from '../routes';
 import { useLockReason, lockedAttrs } from '../lib/useLocked';
-import { useMax, useUpdates, useMeta, usePve, useDex, useDexSoft, useGamedaySoft, useMaxSoft, useScheduleSoft } from '../lib/data';
-import { maxSlides, weeksFromSchedule } from '../lib/maxSlides';
-import { Sprite } from '../components/Bits';
-import { PxIcon } from '../components/PxIcon';
-import { NameNode } from '../components/Row';
-import type { GameUpdate } from '../types/data';
+import { useMax, useUpdates, usePve, usePvp, useDex, useDexSoft } from '../lib/data';
+import { BOARD_KIND_KO, BOARD_MAX, cardDday, type BossCard } from '../lib/bossBoard';
+import { countersOf, useBossBoard, useCounterSource } from '../lib/useBossBoard';
+import { useMaxSlidesSoft } from '../lib/weekBosses';
+import { useHotMons } from '../lib/hotMons';
+import { reasonFor } from '../lib/bossBoard';
+import { useGamedaySoft } from '../lib/data';
+import { maxVisible } from '../lib/maxVisible';
+import { count, num } from '../lib/cell';
+import { dexNoOf as dexNo } from '../lib/mon';
 import { track } from '../lib/track';
 import { UPDATE_CATS } from '../lib/notes';
 import type { OpenMon } from '../lib/mon';
+import MonCard, { PokemonNumberRibbon } from '../components/MonCard';
+import { PixelIcon } from '../components/PixelIcon';
 import { TankPopupEntry, NOV_TANK_LIVE } from '../components/TankPopup';
-import HotMons from '../components/HotMons';
-import WeekBosses from '../components/WeekBosses';
-import { maxVisible } from '../lib/maxVisible';
 
-// 대표 일러스트 — 머리에서 미리 받는 그 그림 (app/page.tsx 의 preload 와 같은 파일)
-const HERO_ART_ENTRY = MAX_ART.find((art) => art.dex.includes(816))!;
+/** 몬스터볼 틀 위 그림 — 카드 밖(브리핑 · 팀 CTA · 용도별)에서 쓰는 작은 조각 */
+function Ball({ sprite, size = 'md', onClick, label }: { sprite: number; size?: 'sm' | 'md' | 'lg'; onClick?: () => void; label?: string }) {
+  const cls = `px-ball${size === 'sm' ? ' px-ball--sm' : size === 'lg' ? ' px-ball--lg' : ''}`;
+  const img = <img src={`${SPRITE_BASE}${sprite}.png`} alt="" width="96" height="96" loading="lazy" decoding="async" />;
+  if (!onClick) return <span className={cls}>{img}</span>;
+  return <button type="button" className={`${cls} home__ball-btn`} aria-label={label} onClick={onClick}>{img}</button>;
+}
 
-// 배너 슬라이드는 홈에서만 쓴다 — Swiper 30KB 를 모든 화면의 첫 묶음에 싣지 않는다 (components/MaxSlider.tsx)
-const MaxSlider = lazy(() => import('../components/MaxSlider'));
-
-// 갈래 표지는 같은 정보 위계로 읽히도록 번호와 이름만 사용한다.
-const SERVICE_KICKER: Record<string, string> = { today: '01 / EXPLORE', pick: '02 / BATTLE', mine: '03 / GROW' };
-
-// 주소는 라우터 표의 path 에서 온다 — 손으로 조립하면 v3.61.0 의 죽은 링크가 되풀이된다
-// 내보내는 이유는 검사 하나뿐이다 (Shell 의 NavItem 과 같은 사정)
+// 내보내는 이유는 검사 하나뿐이다(lockgate.test) — 잠긴 줄이 흐려지고 🔒 가 붙는지 본다
 export function Tile({ route }: { route: RouteDef }) {
-  // 메뉴 줄과 같은 표시 — 흐려지고 이름 뒤에 🔒 (planner.css .home__tile.is-locked)
   const reason = useLockReason(route.id);
   const lock = lockedAttrs(reason);
   return (
-    <a className={`home__tile${lock.className}`} {...(lock.inert ? {} : { href: `/${route.path}` })} data-route={route.id}
+    <a className={`px-btn px-skin home__tile${lock.className}`} {...(lock.inert ? {} : { href: `/${route.path}` })} data-route={route.id}
       title={reason ? lock.title : routeDesc(route.id)}
       {...(lock['aria-disabled'] ? { 'aria-disabled': lock['aria-disabled'] } : {})}
       {...(route.id === 'planner' ? { id: 'home-tile-planner' } : {})}>
-      <span className="home__icon" aria-hidden="true"><PxIcon emoji={route.icon ?? '↗'} /></span>
-      <strong>{route.nav}</strong>
-      <span className="home__arrow" aria-hidden="true">›</span>
+      <strong>{route.nav}</strong><span aria-hidden="true">→</span>
     </a>
   );
 }
 
-// v3 components/home.js homePickGroup 과 **같은 마크업**이다.
-// 처음에 pick__row 안에 그림과 이름을 바로 넣었더니 이름이 세로로 한 글자씩 쪼개졌다 —
-// CSS 가 .pick__row > .pick__body 를 flex 자식으로 잡고 있어 중간 칸이 꼭 있어야 한다.
-// 클래스명을 그대로 쓰면서 **구조까지** 같아야 디자인이 같다는 것을 여기서 배웠다.
-interface PickRow { sprite: number; name: string; en: string; meta: string }
-
-/**
- * 갈래 카드 옆에 서는 '발견' 카드 (v3 home.js pickDiscoverNode).
- * 순위 셋만 늘어놓으면 "그래서 어디로 가지" 가 안 남는다 — 이 카드가 그 자리에서 다음 화면을 가리킨다.
- */
-function Discover({ mascot, sprite, kicker, head, copy, extra, href }: {
-  mascot: string; sprite: number; kicker: string; head: ReactNode; copy: string; extra?: string; href: string;
-}) {
-  return (
-    <button className={`pick__discover${extra ? ` ${extra}` : ''}`} type="button"
-      onClick={() => { go(href); }}>
-      <span className={`home-card-mascot home-card-mascot--${mascot}`} aria-hidden="true">
-        <img className="home-card-mascot__body" src={`${BASE}sprites/${sprite}.png`}
-          alt="" width={96} height={96} />
-      </span>
-      <span className="pick__discover-kicker">{kicker}</span>
-      <strong>{head}</strong>
-      <span className="pick__discover-copy">{copy}</span>
-      <span className="pick__discover-action">전체 보기<span aria-hidden="true">↗</span></span>
-    </button>
-  );
+/** 브리핑 한 장의 글 — 종류에 따라 가는 곳이 다르다. 맥스는 D-MAX, 레이드는 레이드 보스 · 솔플 계산기 */
+function briefingOf(card: BossCard): { title: string; body: string; primary: [string, string]; secondary: [string, string] } {
+  const max = card.battle === 'max';
+  const kind = BOARD_KIND_KO[card.kind];
+  const name = card.form ? `${card.form} ${card.name}` : card.name;
+  return {
+    title: `${kind}, ${name}에 도전하세요.`,
+    body: max
+      ? `${card.when} · ${kind}. 보스 타입에 맞는 딜러와 탱커를 확인하고 나만의 맥스 팀을 준비해 보세요.`
+      : `${card.when} · ${kind}. 추천 카운터와 포획 CP를 확인하고 나만의 공략 팀을 준비해 보세요.`,
+    primary: max ? ['D-MAX 순위 보기 →', routeHref('dmax')] : ['레이드 보스 보기 →', routeHref('raids')],
+    secondary: max ? ['D-MAX 덱 짜기', routeHref('dmax-deck')] : ['솔플 가능할까?', routeHref('pve-solo')],
+  };
 }
 
-
-function PickCard({ kind, title, hint, rows, href, labels, onOpen }: {
-  kind: string; title: string; hint: string; rows: PickRow[]; href: string | null;
-  labels: readonly string[]; onOpen: OpenMon;
-}) {
-  const first = rows[0];
-  if (!first) return null;
+/** 주간 브리핑 — 이번 주 보스 판(lib/bossBoard)을 한 장씩. 저절로 넘기지 않는다(움직임 없이도 읽힌다) */
+function Briefing({ board, onOpen }: { board: BossCard[]; onOpen: OpenMon }) {
+  const cards = board.slice(0, 3);
+  const [index, setIndex] = useState(0);
+  useEffect(() => { if (index >= cards.length) setIndex(0); }, [cards.length, index]);
+  const card = cards[index];
+  if (!card) {
+    return (
+      <section className="home__brief px-skin px-drop px-panel" aria-label="주간 브리핑">
+        <span className="px-badge px-skin px-badge--mint">WEEKLY BRIEFING</span>
+        <h2 className="px-heading">이번 주 보스 일정을 준비하고 있어요.</h2>
+        <p className="px-body px-muted">일정이 발표되면 추천 카운터와 포획 CP를 여기서 바로 확인할 수 있어요.</p>
+        <div className="home__brief-actions">
+          <a className="px-btn px-btn--primary px-skin" href={routeHref('schedule')}>이벤트 일정 보기 →</a>
+          <a className="px-btn px-skin" href={routeHref('raids')}>레이드 보스</a>
+        </div>
+      </section>
+    );
+  }
+  const text = briefingOf(card);
+  const pager = cards.map((_, at) => (at === index ? '━━━━━' : '─────')).join('  ');
   return (
-    <section className={`pick__group pick__group--${kind}`} aria-label={title}>
-      <div className="pick__head">
-        <h4><span className="pick__crown" aria-hidden="true"><PxIcon emoji={kind === 'dmax' ? '⚡' : '⚔️'} /></span>{title}</h4>
-        <p className="pick__hint">{hint}</p>
-        {href ? <a className="pick__all" href={href}>전체 보기 <PxIcon emoji="↗" /></a> : null}
+    <section className="home__brief px-skin px-drop px-panel" aria-label="주간 브리핑" aria-roledescription="배너">
+      <span className="px-corner" aria-hidden="true" />
+      <span className="px-badge px-skin px-badge--mint">WEEKLY BRIEFING</span>
+      <div className="home__brief-row">
+        <div className="home__brief-copy">
+          <h2 className="px-heading">{text.title}</h2>
+          <p className="px-body px-muted">{text.body}</p>
+        </div>
+        <Ball sprite={card.sprite} size="lg" label={`${card.detailName} 상세 보기`}
+          onClick={() => { track('week_boss_open', { boss: card.detailName, kind: card.kind }); onOpen({ sprite: card.sprite, name: card.detailName, types: card.types, boss: card.kind }); }} />
       </div>
-      <div className="pick__grid">
-        <ol className="pick__list">
-          {rows.map((row, index) => (
-            <li key={`${row.sprite}-${index}`}>
-              <button className="pick__row" type="button" onClick={() => onOpen(row)}>
-                <span className="pick__rank">{index + 1}</span>
-                <Sprite id={row.sprite} />
-                <span className="pick__body">
-                  <span className="pick__name"><NameNode name={row.name} labels={labels} /></span>
-                  <span className="pick__meta">{row.meta}</span>
-                </span>
-              </button>
-            </li>
-          ))}
-        </ol>
+      <div className="home__brief-actions">
+        <a className="px-btn px-btn--primary px-skin" href={text.primary[1]} onClick={() => track('home_cta', { to: text.primary[1] })}>{text.primary[0]}</a>
+        <a className="px-btn px-skin" href={text.secondary[1]} onClick={() => track('home_cta', { to: text.secondary[1] })}>{text.secondary[0]}</a>
+      </div>
+      <div className="home__brief-pager px-mono" aria-label={`${cards.length}장 중 ${index + 1}번째`}>
+        <span aria-hidden="true">{`${String(index + 1).padStart(2, '0')} / ${String(cards.length).padStart(2, '0')}    ${pager}`}</span>
+        {cards.length > 1 ? (
+          <span className="home__brief-nav">
+            <button type="button" className="px-btn px-btn--sm px-skin" aria-label="이전 보스" onClick={() => setIndex((at) => (at + cards.length - 1) % cards.length)}>‹</button>
+            <button type="button" className="px-btn px-btn--sm px-skin" aria-label="다음 보스" onClick={() => setIndex((at) => (at + 1) % cards.length)}>›</button>
+          </span>
+        ) : null}
       </div>
     </section>
   );
 }
 
-/**
- * 날짜 줄 — 발표일과 적용일은 뜻이 달라 라벨을 붙여 따로 적는다.
- * 둘 다 없는 글(공식 릴리스 노트)은 확인일을 대신 보인다 — 목록에서도 '언제 것' 은 알아야 한다.
- */
-function UpdateDates({ row }: { row: GameUpdate }) {
-  const parts: [string, string][] = [];
-  const announced = row.announcedAt || row.date;
-  if (announced) parts.push(['발표', announced]);
-  if (row.effectiveAt) parts.push(['적용', row.effectiveAt]);
-  if (!parts.length && row.checkedAt) parts.push(['확인', row.checkedAt]);
+/** 이번 주 체크포인트 — 진행 중인 맥스 배틀과 다음 주 (lib/weekBosses 의 맥스 장) */
+function Checkpoint() {
+  const slides = useMaxSlidesSoft();
+  const now = slides.find((slide) => slide.live) ?? slides[0];
+  const next = slides.find((slide) => slide !== now && !slide.live);
+  const nameOf = (slide: typeof now) => slide?.bosses.map((boss) => boss.name).join(' · ') || '보스 발표 전';
   return (
-    <div className="upd__dates">
-      {parts.length
-        ? parts.map(([label, date]) => <span key={label} className="upd__date"><em>{label}</em><b>{date}</b></span>)
-        : <span className="upd__date"><em>날짜 미확인</em></span>}
-    </div>
+    <aside className="home__check px-skin px-drop px-panel" aria-label="이번 주 체크포인트">
+      <h2 className="px-heading">이번 주 체크포인트</h2>
+      <hr className="px-divider" />
+      {now ? (
+        <>
+          <span className="px-badge px-skin">{now.live ? 'NOW · 맥스 배틀' : `D-${now.days} · 맥스 배틀`}</span>
+          <h3 className="px-heading">{nameOf(now)}</h3>
+          <p className="px-caption">{`${now.when} · 한국 기준${now.hours ? ` · ${now.hours}` : ''}`}</p>
+          <p className="px-body px-muted">참가할 팀을 미리 준비하세요.</p>
+          <a className="px-btn px-btn--block px-skin" href={routeHref('dmax-deck')} onClick={() => track('home_cta', { to: 'dmax-deck' })}>D-MAX 덱 짜기 ↗</a>
+        </>
+      ) : (
+        <p className="px-body px-muted">맥스 배틀 일정을 기다리고 있어요. 발표되면 보스와 준비할 팀을 여기서 알려 드려요.</p>
+      )}
+      <hr className="px-divider" />
+      {next ? (
+        <>
+          <p className="px-sub home__check-next">{`다음 주 · ${nameOf(next)}`}</p>
+          <a className="px-caption home__check-more" href={routeHref('schedule')}>{`${next.when}   일정에서 더 보기 →`}</a>
+        </>
+      ) : (
+        <a className="px-caption home__check-more" href={routeHref('schedule')}>일정에서 더 보기 →</a>
+      )}
+    </aside>
   );
 }
 
-/** 홈 — 히어로는 데이터 없이 바로 서고, 그 아래(추천·안내·소식)만 기다린다.
-    전에는 화면 전체가 max·pve·updates 를 기다려 첫 내용(LCP)이 5초였다 — 히어로는 글자뿐인데도 (v4.4.2 측정) */
-export default function Home({ onOpen }: { onOpen: OpenMon }) {
-  // 장면의 이름 한 글자 때문에 히어로를 세우지 않는다 — 도착하면 채워진다
-  const dexSoft = useDexSoft();
+/** 지금 많이 보는 포켓몬 — 넷. 줄이 모자라면 맥스 보스 칩으로 채운다 (lib/hotMons) */
+function HotFour({ onOpen }: { onOpen: OpenMon }) {
+  const { rows, caption, fill } = useHotMons();
+  const { board, nowMs } = useBossBoard();
   const gameday = useGamedaySoft();
-  const maxSoft = useMaxSoft();
-  const scheduleSoft = useScheduleSoft();
-  const names = dexSoft?.DEX_DATA.names;
-  // 남은 맥스 일정 — 한 장씩 배너가 된다. 오늘은 화면을 여는 순간으로 한 번 정한다
-  const slides = useMemo(() => maxSlides({
-    events: gameday?.GAMEDAY.events,
-    names,
-    en: dexSoft?.DEX_DATA.en,
-    forms: dexSoft?.DEX_DATA.forms,
-    maxRows: maxSoft?.DMAX_DATA['overall'],
-    weeks: weeksFromSchedule(scheduleSoft?.SCHEDULE_MONTHS),
-  }, Date.now()), [gameday, dexSoft, maxSoft, scheduleSoft, names]);
-  // **캡션은 그림이 붙은 일정의 것이다.** 전에는 '다음 맥스 배틀' 을 따로 골라 적어서, 프리져 그림 아래
-  // '9.28 울머기' 가 섰다 (제보). 이제 그림은 일정에 붙고(MAX_ART), 그림이 붙은 일정이 없으면 대표 일러스트가 제 말만 한다
-  // 일정표까지 온 뒤에 굴린다 — 먼저 굴리면 이번 주 장이 도중에 앞에 끼어든다
-  const ready = slides.length > 0 && dexSoft !== undefined && maxSoft !== undefined && scheduleSoft !== undefined;
-  // 그림이 붙은 일정만 배너가 된다 — 도트로 세운 장은 일러스트 장과 딴 판이라 뺐다 (2026-09-25 주인 결정).
-  // 새 그림을 MAX_ART 에 더하면 그 일정이 저절로 배너에 선다
-  const shown = useMemo(() => slides.filter((slide) => maxArtFor(slide.bosses.map((boss) => boss.dex), slide.id)), [slides]);
-  const items = useMemo(() => {
-    const out = shown.map((slide, index) => ({
-      key: slide.id,
-      node: <MaxPoster slide={slide} art={maxArtFor(slide.bosses.map((boss) => boss.dex), slide.id)} names={names} first={index === 0} />,
-    }));
-    if (!out.length) {
-      out.unshift({ key: 'hero', node: <HeroPoster art={HERO_ART_ENTRY} names={names} note="대표 보스 배틀 일러스트" /> });
-    }
-    return out;
-  }, [shown, names]);
-  // 일정이 오기 전 — 대표 일러스트 한 장, 캡션 자리만 잡는다 (오면 같은 자리에 찬다)
-  const waiting = <HeroPoster art={HERO_ART_ENTRY} names={names} />;
+  const dexSoft = useDexSoft();
+  const whyOf = (dex: number) => reasonFor(board, gameday?.GAMEDAY.events, dex, nowMs);
+  const dexNoOf = (sprite: number) => (dexSoft ? dexNo(sprite, dexSoft.DEX_DATA.dex) ?? undefined : (sprite < 10000 ? sprite : undefined));
+  const shown = rows.slice(0, 4);
+  const filler = fill.slice(0, Math.max(0, 4 - shown.length));
+  if (!shown.length && !filler.length) return null;
   return (
-    <div className="home-dashboard home-dashboard--portal home-dashboard--cinema-portal">
-      {/* 배너 · 인기 포켓몬 · 주간 보스를 하나의 반응형 대시보드로 묶는다. */}
-      <div className="home__top-layout">
-        {/* 배너 — 남은 맥스 일정이 한 장씩 넘어간다. 모든 장이 대표 일러스트와 같은 구도다 (components/MaxPoster.tsx).
-            거다이맥스 폼 그림(max.json)까지 온 뒤에 굴린다 — 먼저 굴리면 보스 그림이 도중에 바뀐다 */}
-        <div className="max-battle-art">
-          {ready ? (
-            // 슬라이더를 받는 동안은 그 첫 장을 그대로 세운다 — 같은 판이라 자리가 안 흔들린다
-            <Suspense fallback={items[0]?.node}>
-              <MaxSlider items={items} slides={shown} />
-            </Suspense>
-          ) : waiting}
-        </div>
-        <HotMons onOpen={onOpen} />
-        <WeekBosses onOpen={onOpen} />
+    <section className="home__hot" aria-label="지금 많이 보는 포켓몬">
+      <h2 className="px-sec"><span className="px-heading">지금 많이 보는 포켓몬</span><span className="px-sec__note">{caption}</span></h2>
+      <div className="px-grid">
+        {shown.map((row, index) => (
+          <MonCard key={row.dex} sprite={row.dex} dex={row.dex} rank={index + 1} name={row.name} types={row.types} from="home_hot"
+            meta={whyOf(row.dex) || '육성 · 순위 · 진화 한 번에 보기'}
+            onOpen={(pick) => { track('hot_mon_open', { sprite: row.dex, rank: index + 1 }); onOpen({ ...pick, via: 'dex' }); }} />
+        ))}
+        {filler.map((boss) => (
+          <MonCard key={`fill-${boss.sprite}`} sprite={boss.sprite} dex={dexNoOf(boss.sprite)} name={boss.detailName} types={boss.types} from="home_hot"
+            meta={boss.gmax ? '거다이맥스 보스 · 이번 주' : '다이맥스 보스 · 이번 주'}
+            onOpen={(pick) => onOpen({ ...pick, via: 'dex' })} />
+        ))}
       </div>
-      {/* 기다리는 자리도 한 화면을 채운다 — 바닥글이 먼저 보였다가 밀리면 CLS 다 */}
-      <Suspense fallback={<div className="home__loading" aria-busy="true" />}>
+    </section>
+  );
+}
 
-        <HomeData onOpen={onOpen} />
+/** 이번 주 보스 — 폭에 따라 1~3장을 보여 주는 순환형 Swiper. 왼쪽 그림, 오른쪽 일정·추천 정보; 선택하면 보스 상세를 연다. */
+export function WeekList({ board, onOpen }: { board: BossCard[]; onOpen: OpenMon }) {
+  const src = useCounterSource();
+  const rows = board.slice(0, BOARD_MAX);
+  const [swiper, setSwiper] = useState<SwiperInstance | null>(null);
+  return (
+    <section className="home__week px-skin px-drop px-panel" aria-label="이번 주 보스">
+      <h2 className="px-sec">
+        <span className="px-heading">이번 주 보스</span>
+        {rows.length ? <span className="home__week-summary px-caption">{rows.length}개 일정{rows.length > 1 ? ' · 자동 순환' : ''}</span> : null}
+        {rows.length > 1 ? (
+          <span className="home__week-controls" aria-label="보스 슬라이드 조작">
+            <button type="button" className="px-btn px-btn--sm px-skin" aria-label="이전 보스" onClick={() => swiper?.slidePrev()}>←</button>
+            <button type="button" className="px-btn px-btn--sm px-skin" aria-label="다음 보스" onClick={() => swiper?.slideNext()}>→</button>
+          </span>
+        ) : null}
+        <a className="px-sec__more" href={routeHref('schedule')}>전체 일정 ↗</a>
+      </h2>
+      {rows.length ? (
+        <div className="home__week-carousel">
+          <Swiper
+            className="home__week-swiper"
+            modules={[A11y, Autoplay, Keyboard]}
+            onSwiper={setSwiper}
+            loop={rows.length > 1}
+            autoplay={rows.length > 1 ? { delay: 4800, disableOnInteraction: false, pauseOnMouseEnter: true } : false}
+            keyboard={{ enabled: true, onlyInViewport: true }}
+            speed={450}
+            slidesPerView="auto"
+            spaceBetween={12}
+            a11y={{ prevSlideMessage: '이전 보스', nextSlideMessage: '다음 보스' }}
+          >
+          {rows.map((card) => {
+            const counter = countersOf(src, card.battle, card.types, 1)?.rows[0];
+            return (
+              <SwiperSlide key={card.id} className="home__week-slide home__week-row">
+                <PokemonNumberRibbon dex={card.dex} />
+                <div className="home__week-panel px-skin px-skin--sunk">
+                  <button type="button" className="home__week-boss" onClick={() => { track('week_boss_open', { boss: card.detailName, kind: card.kind }); onOpen({ sprite: card.sprite, name: card.detailName, types: card.types, boss: card.kind }); }}>
+                    <span className="home__week-art"><Ball sprite={card.sprite} size="lg" /></span>
+                    <span className="home__week-text">
+                      <b className="px-sub">{card.form ? `${card.form} ${card.name}` : card.name}</b>
+                      <span className="home__week-meta">
+                        <span className="px-caption">{BOARD_KIND_KO[card.kind]}</span>
+                        <span className={`home__week-status px-badge px-skin px-badge--ko${card.live ? '' : ' px-badge--muted'}`}>{cardDday(card)}</span>
+                      </span>
+                      <span className="home__week-when px-caption">
+                        <span>{card.short}</span>{card.hours ? <span>{card.hours}</span> : null}
+                      </span>
+                    </span>
+                  </button>
+                  {counter ? (
+                    <button type="button" className="home__week-rec" title={`추천 · ${counter.name}`}
+                      onClick={() => { track('week_boss_rec', { boss: card.detailName, mon: counter.name }); onOpen({ sprite: counter.sprite, name: counter.name, en: counter.en, types: counter.types }); }}>
+                      <span className="home__week-rec-label px-caption">추천</span>
+                      <img className="home__week-rec-sprite" src={`${SPRITE_BASE}${counter.sprite}.png`} alt="" width="32" height="32" loading="lazy" decoding="async" />
+                      <span className="home__week-rec-name px-caption">{counter.name}</span>
+                    </button>
+                  ) : null}
+                </div>
+              </SwiperSlide>
+            );
+          })}
+          </Swiper>
+        </div>
+      ) : <p className="px-body px-muted">이번 주 보스 일정이 아직 없어요. 발표되면 여기에 추천 포켓몬과 함께 올라와요.</p>}
+    </section>
+  );
+}
+
+/** 홈 — 히어로는 데이터 없이 바로 서고, 그 아래(브리핑 · 카드 · 추천)만 기다린다 */
+export default function Home({ onOpen }: { onOpen: OpenMon }) {
+  const { board } = useBossBoard();
+  return (
+    <div className="home" id="home">
+      <section className="home__hero" aria-label="소개">
+        <p className="px-eyebrow" data-i18n="off">{ROUTE_EYEBROW.home}</p>
+        <h2 className="px-display home__title">모험은,<br />여기서 시작돼요.</h2>
+        <p className="px-body home__lead">숲을 지나, 새로운 배틀로.<br />오늘의 일정과 나만의 팀을 준비하세요.</p>
+        <div className="home__hero-actions">
+          <a className="px-btn px-btn--primary px-skin" href={routeHref('schedule')} onClick={() => track('home_cta', { to: 'schedule' })}>오늘의 모험 보기 →</a>
+          <a className="px-btn px-skin" href={routeHref('dex')} onClick={() => track('home_cta', { to: 'dex' })}>포켓몬 도감</a>
+        </div>
+      </section>
+
+      <div className="home__adventure">
+        <Briefing board={board} onOpen={onOpen} />
+        <Checkpoint />
+      </div>
+
+      <HotFour onOpen={onOpen} />
+
+      {/* 기다리는 자리도 한 화면을 채운다 — 바닥글이 먼저 보였다가 밀리면 CLS 다 */}
+      <Suspense fallback={<div className="home__loading px-skel" aria-busy="true" />}>
+        <HomeData board={board} onOpen={onOpen} />
       </Suspense>
     </div>
   );
 }
 
-/** 데이터가 있어야 그리는 아래쪽 — 추천 셋 · 서비스 안내 · 소식 */
-function HomeData({ onOpen }: { onOpen: OpenMon }) {
+/** 데이터가 있어야 그리는 아래쪽 — 보스 목록 · 팀 만들기 · 용도별 상위 · 소식 */
+function HomeData({ board, onOpen }: { board: BossCard[]; onOpen: OpenMon }) {
   const { data: max } = useMax();
   const { data: pve } = usePve();
+  const { data: pvp } = usePvp();
   const { data: dex } = useDex();
   const { data: updates } = useUpdates();
-  const { data: meta } = useMeta();
 
-  // 2026-09-17 **미구현(데이터만 등록된 개체)은 뺀다** — 홈은 '지금 셀 수 있는 셋' 을 보여 주는 자리다.
-  //   제보: 홈 1위에 아직 게임에 없는 '거다이맥스 검왕 자시안' 이 서 있었다.
-  //   v3 home.js 의 HOME_PICKS.dmax 가 같은 필터를 이미 걸고 있었는데 그걸 빠뜨렸다.
-  //   D-MAX 화면 쪽은 [미구현 포함] 체크가 따로 있어 거기서는 고를 수 있다 (v3 와 같은 규칙).
-  //   '맥스 참가'(다이맥스 없이 참가하는 종)도 뺀다 — 홈에는 체크가 없으니 기본(다이맥스 · 거다이맥스)만 (2026-10-06)
-  const dmax = maxVisible(max.DMAX_TIER['overall']).slice(0, 3)
-    // 티어표는 공격 × 맥스무브 위력 × 자속이라 내구가 안 들어간다 — 그래서 티어와 맥스무브 속성을 적는다
-    .map((row) => ({ sprite: row.sprite, name: row.name, en: row.en, meta: `${row.tier} 티어 · ${dex.TYPE_KO[row.charged] ?? ''} 맥스` }));
-  const raid = (pve.PVE_DATA['overall'] ?? []).slice(0, 3)
-    .map((row) => ({ sprite: row.sprite, name: row.name, en: row.en, meta: `DPS ${row.dps} · 버팀 ${row.tdo}` }));
-  // 골라 둔 글(featured)이 있으면 그것부터 — 없을 때만 최신순으로 떨어진다 (v3 homeUpdatesNode)
+  // 미구현 · 맥스 참가 종은 뺀다 — 홈은 '지금 셀 수 있는 셋' 을 보여 주는 자리다 (2026-09-17 제보)
+  const dmaxTop = useMemo(() => maxVisible(max.DMAX_TIER['overall']).slice(0, 3), [max]);
+  const pveTop = (pve.PVE_DATA['overall'] ?? []).slice(0, 3);
+  const pvpTop = (pvp.PVP_DATA['great'] ?? pvp.PVP_DATA[Object.keys(pvp.PVP_DATA)[0] as keyof typeof pvp.PVP_DATA] ?? []).slice(0, 3);
   const featured = updates.GAME_UPDATES.filter((row) => row.featured);
-  const top = (featured.length ? featured : updates.GAME_UPDATES).slice(0, 2);
+  const latest = (featured.length ? featured : updates.GAME_UPDATES)[0];
+  const typeKo = (key: string | undefined) => (key ? dex.TYPE_KO[key as keyof typeof dex.TYPE_KO] ?? '' : '');
+
+  const shortcuts = [
+    { id: 'dmax', title: 'D-MAX', sub: '맥스 기술 · 딜러와 탱커', row: dmaxTop[0], rank: dmaxTop.length ? 1 : undefined, href: routeHref('dmax') },
+    { id: 'pve', title: '레이드 · PvE', sub: 'DPS · TDO로 비교', row: pveTop[0], rank: pveTop.length ? 1 : undefined, href: routeHref('pve') },
+    { id: 'pvp', title: '배틀 · PvP', sub: '리그별 추천과 기술', row: pvpTop[0], rank: pvpTop[0]?.rank, href: routeHref('pvp') },
+  ];
 
   return (
     <>
-      {/* 11월 레이드 탱커 준비(예상) — 안내 띠 + 하루 한 번 열리는 팝업. 데이터가 있어야 그리므로 여기(Suspense 안)다 */}
-      {/* id 는 배너의 '아래로' 단추가 내려가는 자리다 — 새 이름이라 home- 를 붙였다 (§2) */}
-      <section className="home__picks" id="home-more">
-        <div className="home__section">
-          <h3>용도별 상위 포켓몬</h3>
-          <span>평가 조건에 따라 추천이 달라져요<span className="home__date">{` · 기준일 ${meta.DATA_FETCHED.slice(0, 10)}`}</span></span>
-        </div>
-        {/* 카드 둘이 한 격자 안에 선다 — 감싸는 .home__pick-grid 가 없으면 카드가 한 줄에 하나씩 늘어선다.
-            「다양한 활용처」는 v4.9.4 에 배너 옆으로 올라갔다 (위 .home__top-layout) */}
-        <div className="home__pick-grid">
-          <PickCard kind="dmax" title="다이맥스" hint="다이맥스 배틀에서 활약하는 포켓몬" rows={dmax}
-            href={routeHref('dmax')} labels={dex.FORM_LABELS} onOpen={onOpen} />
-          <PickCard kind="pve" title="레이드" hint="종합 점수 순 · 초당 피해량(DPS)과 총 피해량(TDO) 기준" rows={raid}
-            href={routeHref('pve')} labels={dex.FORM_LABELS} onOpen={onOpen} />
-        </div>
-        <span className="pick__foot">이름을 누르면 종족값·상성·배틀 활용 순위를 확인할 수 있어요</span>
-      </section>
-
-
-      {/* 바로가기 — 덱 짜기 한 장. 도감 바로가기는 아래 '무엇이 필요한가요?' 의 도감 칸과 같은 곳이라 뺐다 (2026-09-30).
-          덱 짜기는 D-MAX 아래 도구라 서비스 칸(부모 없는 화면만)에 없어 여기 남는다 */}
-      <div className="portal-shortcuts">
-        <a className="portal-shortcut" href={routeHref('dmax-deck')} onClick={() => track('home_cta', { to: 'dmax-deck' })}>
-          <span className="portal-shortcut__deck" aria-hidden="true">
-            <span><PxIcon emoji="◓" /></span>
-            <span><PxIcon emoji="◓" /></span>
-            <span><PxIcon emoji="◓" /></span>
-          </span>
-          <span className="portal-shortcut__body">
-            <small>CHOOSE YOUR TEAM</small>
-            <b>나만의 배틀 팀 만들기</b>
-            <span>맥스 배틀 보스에 맞춰 덱을 짜 보세요</span>
-          </span>
-          <span className="portal-shortcut__go" aria-hidden="true">↗</span>
-        </a>
+      <div className="home__week-row2" id="home-more">
+        <WeekList board={board} onOpen={onOpen} />
+        <section className="home__team px-skin px-drop px-panel" aria-label="나만의 배틀 팀 만들기">
+          <span className="px-corner" aria-hidden="true" />
+          <p className="px-eyebrow px-eyebrow--brand" data-i18n="off">READY, TRAINER?</p>
+          <h2 className="px-heading">나만의 배틀 팀 만들기</h2>
+          <p className="px-body px-muted">상대에 맞는 딜러와 탱커를 골라<br />세 마리의 균형을 완성하세요.</p>
+          <div className="home__team-balls">
+            {dmaxTop.map((row) => <Ball key={row.sprite} sprite={row.sprite} label={`${row.name} 상세 보기`} onClick={() => onOpen({ sprite: row.sprite, name: row.name, en: row.en, types: row.types })} />)}
+          </div>
+          <a className="px-btn px-btn--primary px-btn--block px-skin" href={routeHref('dmax-deck')} onClick={() => track('home_cta', { to: 'dmax-deck' })}>D-MAX 덱 짜기 →</a>
+          <div className="home__team-links" aria-label="일정과 레이드 바로가기">
+            <a href={routeHref('raids')}><span><b>레이드 보스</b><small>현재 보스와 추천 포켓몬</small></span><span aria-hidden="true">↗</span></a>
+            <a href={routeHref('schedule')}><span><b>이벤트 일정</b><small>날짜별 진행 일정을 확인</small></span><span aria-hidden="true">↗</span></a>
+          </div>
+        </section>
       </div>
-      {/* 11월 탱커 준비 띠 — 당분간 내렸다 (NOV_TANK_LIVE). 실루엣 퀴즈 배너가 위에 서면서 알림이 둘이 되었다 */}
       {NOV_TANK_LIVE ? <div className="portal-prep-note"><TankPopupEntry onOpen={onOpen} compact /></div> : null}
 
-      <section className="home__features" aria-label="서비스 기능">
-        <div className="home__section">
-          <h3>무엇이 필요한가요?</h3>
-          <span>필요한 기능을 선택해 바로 시작해 보세요</span>
-        </div>
-        <div className="home__service-grid">
-          {ROUTE_GROUPS.map(([id, label, desc, icon]) => (
-            <section key={id} className={`home__service-group home__service-group--${id}`}>
-              <div className="home__group-head">
-                <div className="home__service-label">
-                  <span className="home__service-symbol" aria-hidden="true"><PxIcon emoji={icon} /></span>
-                  <span className="home__service-kicker" aria-hidden="true">{SERVICE_KICKER[id]}</span>
+      <section className="home__ranks" aria-label="용도별 상위 포켓몬">
+        <h2 className="px-sec"><span className="px-heading">용도별 상위 포켓몬</span><span className="px-sec__note">어디에서 활약하는지 먼저 확인하세요.</span></h2>
+        <div className="px-grid px-grid--3">
+          {shortcuts.map((one) => (
+            <article key={one.id} className="home__rank" data-kind={one.id}>
+              {one.row ? <PokemonNumberRibbon rank={one.rank} dex={dexNo(one.row.sprite, dex.DEX_DATA.dex) ?? undefined} /> : null}
+              <div className="home__rank-panel px-skin px-drop px-card">
+                <div className="home__rank-art" aria-hidden={!one.row}>
+                  <span className="home__rank-kind px-caption">{one.title}</span>
+                  {one.row ? <Ball sprite={one.row.sprite} size="lg" label={`${one.row.name} 상세 보기`} onClick={() => onOpen({ sprite: one.row!.sprite, name: one.row!.name, en: one.row!.en, types: one.row!.types })} /> : <span className="home__rank-art-empty" />}
+                  {one.rank ? <span className="home__rank-place px-mono">TOP {String(one.rank).padStart(2, '0')}</span> : null}
                 </div>
-                <h4 className="home__group">{label}</h4>
-                <p className="home__group-desc">{desc}</p>
+                <div className="home__rank-details">
+                  <div className="home__rank-copy">
+                    <h3 className="px-sub">{one.row?.name ?? one.title}</h3>
+                    {one.row ? <p className="px-caption">{one.row.types.map(typeKo).filter(Boolean).join(' · ')}</p> : null}
+                  </div>
+                  <p className="px-caption">
+                    {one.sub}
+                    {one.id === 'pve' && one.row && 'dps' in one.row ? ` · DPS ${num(one.row.dps, 1)}` : ''}
+                    {one.id === 'dmax' && one.row && 'charged' in one.row ? ` · ${typeKo(one.row.charged)} 맥스` : ''}
+                    {one.id === 'pvp' && one.row && 'score' in one.row ? ` · ${count(one.row.score)}점` : ''}
+                  </p>
+                  <a className="px-btn px-btn--block px-skin" href={one.href} onClick={() => track('home_cta', { to: one.id })}>순위 보기 →</a>
+                </div>
               </div>
-              <div className="home__grid">
-                {ROUTE_NAV.filter((route) => route.group === id && !route.parent).map((route) => (
-                  <Tile key={route.id} route={route} />
-                ))}
-              </div>
-            </section>
+            </article>
           ))}
         </div>
       </section>
 
-      {/* v3.55.0 게임 업데이트는 맨 아래 — 매일 보는 것이 아니라 가끔 확인하는 것이라서 */}
-      <section className="home-updates">
-        <div className="home__section">
-          <h3>게임 업데이트</h3>
-          <span>공식 발표로 확인한 게임 변경 소식을 전해요</span>
-        </div>
-        {/* 제목만 있는 <li> 줄이 아니라 요약과 두 날짜를 든 카드다 — '무엇이 언제 바뀌나' 가 제목만으로는 안 읽힌다 */}
-        <div className="home-updates__list">
-          {top.map((row) => (
-            <button key={row.id} className="home-updates__item"
-              onClick={() => { go(`/game-updates/${row.id}`); }}>
-              <div className="upd__cats">
-                {(row.category ?? []).map((key) => <span key={key} className="upd__cat">{UPDATE_CATS[key] ?? key}</span>)}
-              </div>
-              <b>{row.title}</b>
-              <span className="home-updates__sum">{row.summary ?? ''}</span>
-              <UpdateDates row={row} />
-            </button>
-          ))}
-          <Discover mascot="gengar" sprite={94} kicker="게임 업데이트" extra="pick__discover--updates"
-            head="새로운 소식, 놓치지 마세요." copy="패치부터 이벤트까지 한눈에 확인해요"
-            href={routeHref('game-updates')} />
-        </div>
+      <section className="home__news" aria-label="게임 업데이트">
+        <h2 className="px-sec"><span className="px-heading">게임 업데이트</span><span className="px-sec__note">모험 전에 확인해 두세요.</span><a className="px-sec__more" href={routeHref('game-updates')}>전체 보기 ↗</a></h2>
+        {latest ? (
+          <button type="button" className="home__news-card px-skin px-drop px-card px-card--tap" onClick={() => { go(`/game-updates/${latest.id}`); }}>
+            <span className="home__news-cats">{(latest.category ?? []).map((key) => <span key={key} className="px-badge px-skin px-badge--ko px-badge--muted">{UPDATE_CATS[key] ?? key}</span>)}</span>
+            <b className="px-sub">{latest.title}</b>
+            {latest.summary ? <span className="px-body px-muted">{latest.summary}</span> : null}
+            <span className="px-caption">{[latest.announcedAt || latest.date ? `발표 ${latest.announcedAt || latest.date}` : '', latest.effectiveAt ? `적용 ${latest.effectiveAt}` : ''].filter(Boolean).join(' · ')}</span>
+          </button>
+        ) : <p className="px-body px-muted">새 소식이 올라오면 여기에 먼저 보여 드려요.</p>}
       </section>
+      <span className="home__arrow-hint" hidden><PixelIcon name="arrow" /></span>
     </>
   );
 }

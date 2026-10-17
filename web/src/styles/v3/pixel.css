@@ -39,8 +39,8 @@
    타입 색 띠(.row__types i)는 되돌리지 않는다 — 카드 위를 가로지르는 띠라 각져야 테두리와 맞는다 */
 html:not(#_):not(#__) .avatar,
 html:not(#_):not(#__) .dot-badge::after,
-html:not(#_):not(#__) .px-ball,
-html:not(#_):not(#__) .px-ball::after {
+html:not(#_):not(#__) #px-bg .px-ball,
+html:not(#_):not(#__) #px-bg .px-ball::after {
   border-radius: 50%;
 }
 
@@ -303,10 +303,11 @@ body {
    좁은 화면에 남는 바탕은 body 의 점 격자뿐이고, 그건 본문과 함께 흐르니 공짜다 */
 @media (max-width: 1099px) { #px-bg { display: none; } }
 
+/* 장식 규칙은 #px-bg 안에서만 쓴다 — v6 포켓몬 그림 틀(.px-ball)을 흐리게 만들지 않는다. */
 /* 큰 몬스터볼 둘. 원 하나로는 어느 서비스인지 알 수 없지만, 띠와 가운데 단추가 붙는 순간
    무엇을 다루는 곳인지가 그림 하나로 읽힌다. 그림 파일이 아니라
    요소 하나 + ::before(띠) + ::after(단추) 뿐이다 */
-.px-ball {
+#px-bg .px-ball {
   position: absolute;
   border-radius: 50%;
   opacity: .05;   /* 2026-09-16 design .08 → .05 (바탕은 약하게) */
@@ -317,7 +318,7 @@ body {
   background: linear-gradient(var(--brand) 0 50%, var(--surface) 50% 100%);
 }
 /* 가운데 띠 — 테두리 두께만큼 밖으로 빼야 공이 한 줄로 이어진다 */
-.px-ball::before {
+#px-bg .px-ball::before {
   content: '';
   position: absolute;
   left: calc(var(--ball-w) * -1);
@@ -328,7 +329,7 @@ body {
   background: var(--fg);
 }
 /* 가운데 단추 */
-.px-ball::after {
+#px-bg .px-ball::after {
   content: '';
   position: absolute;
   left: 50%;
@@ -341,8 +342,8 @@ body {
   border-radius: 50%;
   background: var(--surface);
 }
-.px-ball--1 { --ball-w: 1.2rem; width: 34rem; height: 34rem; right: -8rem; top: 6rem; }
-.px-ball--2 { --ball-w: 0.8rem; width: 22rem; height: 22rem; left: -9rem; bottom: -5rem; }
+#px-bg .px-ball--1 { --ball-w: 1.2rem; width: 34rem; height: 34rem; right: -8rem; top: 6rem; }
+#px-bg .px-ball--2 { --ball-w: 0.8rem; width: 22rem; height: 22rem; left: -9rem; bottom: -5rem; }
 /* 본문을 바탕 위로. position 은 **본문 두 덩이에만** 준다 — 상단 바(sticky)와 사이드바(fixed)는
    이미 자기 자리 잡는 방식이 있어서, 여기서 relative 로 덮으면 사이드바가 흘러내린다 */
 .layout, #page { position: relative; z-index: 1; }
@@ -350,8 +351,8 @@ body {
 @media (prefers-reduced-motion: no-preference) {
   /* steps() 로 칸칸이 떠다닌다 — 매끄럽게 흐르면 도트 결이 깨진다.
      20초에 여덟 칸이라 눈에 거슬리지 않고, 화면이 살아 있다는 느낌만 남는다 */
-  .px-ball--1 { animation: px-drift-a 20s steps(8) infinite alternate; }
-  .px-ball--2 { animation: px-drift-b 26s steps(8) infinite alternate; }
+  #px-bg .px-ball--1 { animation: px-drift-a 20s steps(8) infinite alternate; }
+  #px-bg .px-ball--2 { animation: px-drift-b 26s steps(8) infinite alternate; }
 }
 @keyframes px-drift-a { to { transform: translate(-4rem, 3rem); } }
 @keyframes px-drift-b { to { transform: translate(3rem, -4rem); } }

@@ -7,13 +7,12 @@
 // **'../sprites/' 로 적지 않는다.** 그건 이 앱이 /react/ 밑에 살던 때 한 겹 위를 가리키던 말이고,
 // 루트로 올라온 지금은 사이트 밖(/../sprites/)을 가리킨다. BASE 뒤에 바로 붙인다.
 // ─────────────────────────────────────────────────────────────────────────────
-import { BASE as ASSETS } from './base';
+import { BASE as ASSETS, SPRITE_BASE } from './base';
 
-const BASE = `${ASSETS}sprites/`;
 const ANIM = `${ASSETS}sprites-anim/`;
 
 export function spriteSrc(id: number, ids: ReadonlySet<number>): string | null {
-  return ids.has(Number(id)) ? `${BASE}${id}.png` : null;
+  return ids.has(Number(id)) ? `${SPRITE_BASE}${id}.png` : null;
 }
 
 export function spriteAnimSrc(id: number, ids: ReadonlySet<number>): string | null {
