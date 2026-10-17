@@ -26,9 +26,33 @@
 
 ## 릴리스 기록
 
-2026-10-15에 새 홈과 v5.10.2의 운영 배포를 마쳤습니다. 아래 v5.10.x 항목의 운영 보류 표기는 각 릴리스 작성 당시 상태입니다. [배포 결과](https://github.com/MinsangKwak/pogo-rank/actions/runs/38682428361)
+2026-10-15에 새 홈과 v5.10.2 · v5.10.3의 운영 배포를 마쳤습니다. 아래 v5.10.x 항목의 운영 보류 표기는 각 릴리스 작성 당시 상태입니다. v6.0.0 은 dev 에서 확인을 마치고 운영 반영을 준비 중입니다. [v5.10.3 배포 결과](https://github.com/MinsangKwak/pogo-rank/actions/runs/38682428361)
 
 <details open>
+<summary><b>2026-10-17</b> — 1판 · <code>v6.0.0</code></summary>
+
+<details>
+<summary><b>v6.0.0</b> · 픽셀 필드 시스템 — 전 화면 디자인 개편</summary>
+
+**배경** — 피그마 'MONCAMP · Trainer OS' 시안을 그대로 옮기는 전면 개편. 2026-10-16 하루에 dev 에 올린 v6 커밋 묶음(`c698a46` ~ `c35943e`)과 10/16 ~ 10/17 의 후속 수정을 한 판으로 묶는다. 구조 전환이라 MAJOR 를 올린다 — 화면 계층 · 셸 · 팝업 · 스타일 체계가 전부 바뀌고, 데이터 · 계산 · 저장 키 · GA 이벤트 · DOM id · 라우트는 그대로다.
+
+**변경**
+
+- **토큰 · 조각** — `web/src/styles/pixel/` 열한 파일(`fonts` · `tokens` · `parts` · `shell` · `home` · `ranks` · `tools` · `news` · `info` · `modal` · `admin`)을 `styles.ts` 맨 뒤에 싣는다. `tokens.css` 가 옛 이름(`--bg` · `--surface` · `--brand` …)을 새 값으로 다시 매기고, `parts.css` 가 픽셀 스킨(2px 테두리 · 계단 그림자 · 빛줄) 조각 한 벌을 둔다. 옛 `cinema/*` · `brand.css` 는 화면이 옮겨 가는 대로 걷어 내는 중이며 아직 함께 실린다. `PixelIcon` · `PxParts`(판 · 단추 · 배지 · 입력 · 지표 · 안내 · 구역 제목 · 세 갈래 칩 · 표) · `PxDialog` 네 조각 · `Toast`(`lib/toast`).
+- **셸** — 머리줄(로고 · 검색 · 로그인 · 설정 · 언어 · 지역 · 테마) · 메뉴 레일(1100px 이상) · 하단 바로가기(홈 · 검색 · 내 포켓몬 · 전체 메뉴) · 전체 메뉴 시트. 화면 머리는 영문 이름표(`ROUTE_EYEBROW`) · 제목 · 한 줄. ☰ 단추는 모든 폭에서 감추고 서랍(계정 카드 · 언어 · 지역)은 머리줄의 로그인 · 마이페이지 단추(`#bar-login` · `#bar-account`)와 레일의 마이페이지(`#nav-mypage`)에서 연다.
+- **화면** — 홈(히어로 · 주간 브리핑 · 이번 주 보스 · 많이 보는 포켓몬 · 공용 `MonCard`), 도감 · D-MAX · PvE · PvP(픽셀 탭 · 칩 · 카드 격자 · 표), 내 포켓몬 · 검색식 · 설정 · 패치 노트 · 약관 · 계정 삭제 팝업(`PxParts`), 도구 넷(`ToolBits` + 공용 `SwapDialog`), 소식 다섯(`NewsBits` — 레이드 보스는 추천 카운터 셋 · 포획 CP · 날씨 부스트 CP 한 판), 팝업(상세 · 빠른 검색 · 로그인 안내 · 동의 · 통계 설정 · 오류 판). 요약/자세히 규칙(§3-1)은 그대로.
+- **관리자 캠프** — 라우트 `admin` · `admin/users` · `admin/trainers`(`admin: true` · `routeHidden`)와 전용 `AdminShell`. 대시보드 · 상세 통계 · 가입 승인 · 권한 상세 · 트레이너 코드가 `components/admin` 조각을 쓰고 `window.confirm` 은 전부 `ConfirmDialog` 로. 승인 · 권한 · 코드 저장 로직과 서버 API 는 그대로(mock 렌더 검사 10건).
+- **후속 수정(10/16 ~ 10/17)** — 모바일 검색 시트 폭 · 순위 리본 · 라이트 모드 조작부 대비([#398](https://github.com/MinsangKwak/pogo-rank/pull/398) · [#400](https://github.com/MinsangKwak/pogo-rank/pull/400)), 몬스터볼 안 로딩 스프라이트 투명([#399](https://github.com/MinsangKwak/pogo-rank/pull/399)), 유동 배치와 모바일 이동 정리([#401](https://github.com/MinsangKwak/pogo-rank/pull/401)), 머리줄 겹침 · 320px 홈 넘침([#402](https://github.com/MinsangKwak/pogo-rank/pull/402)), 모바일 팝업 85vh 시트([#403](https://github.com/MinsangKwak/pogo-rank/pull/403)), PC 레이드 보스판 폭 · 빈 추천 열 · 작은 카드 장식 넘침([#404](https://github.com/MinsangKwak/pogo-rank/pull/404) · [#405](https://github.com/MinsangKwak/pogo-rank/pull/405) · [#406](https://github.com/MinsangKwak/pogo-rank/pull/406)), 플래너 · 도구 UX(`897a749` — 좁은 머리줄에 로그인 단추 유지 · D-MAX 슬롯 자동 맞춤), 그에 맞춘 회귀 검사([#408](https://github.com/MinsangKwak/pogo-rank/pull/408)), 좁은 머리줄 로고 글자 복구(옛 `brand.css` 가 999px 아래에서 지우던 것) · 바닥 바와 겹치던 머리줄 검색 단추 제거([#409](https://github.com/MinsangKwak/pogo-rank/pull/409)). 봇 수집 [#392](https://github.com/MinsangKwak/pogo-rank/pull/392).
+
+**문서** — `docs/design/README.md` · `docs/DEVELOPMENT.md` · `.claude/CLAUDE.md` 의 공통 모양 파일을 `styles/pixel/parts.css` 로 바꾼다. `docs/moncamp-architecture.html` 구성도([#385](https://github.com/MinsangKwak/pogo-rank/pull/385))와 INFRA 수동 배포 `preview=false` 정정([#382](https://github.com/MinsangKwak/pogo-rank/pull/382) ~ [#384](https://github.com/MinsangKwak/pogo-rank/pull/384))은 v5.10.3 과 함께 운영에 올라가 있다.
+
+검사 — frontend-v4 `version` 6 · web `npm test`. 로그인 · GNB 는 로컬 `next dev` + Playwright(API 응답 mock)로 PC · 모바일에서 로그인 전 · 승인 · 관리자 상태를 확인했다(10/17). 인증 코드(`stores/auth` · `serverApi` · 동의 흐름)는 이번 판에서 바뀌지 않았다.
+
+</details>
+
+</details>
+
+<details>
 <summary><b>2026-10-15</b> — 1판 · <code>v5.10.3</code></summary>
 
 <details>
