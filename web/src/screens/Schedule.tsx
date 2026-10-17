@@ -177,7 +177,8 @@ function Item({ item, cat, m, withSpan = true }: { item: ScheduleItem; cat: Sche
   return (
     <li className="nw-ev">
       <span className="nw-ev__cat">
-        <NwBadge text={cat?.name ?? item.cat} color={cat?.color}><i className="nw-cal__dot" style={{ background: cat?.color }} aria-hidden="true" /></NwBadge>
+        {/* 분류색은 앞의 점이 든다 — 글자까지 그 색으로 칠하면 노랑 · 연보라가 바탕에 묻힌다(라이트 1.2:1). 글자는 배지 기본색 */}
+        <NwBadge text={cat?.name ?? item.cat}><i className="nw-cal__dot" style={{ background: cat?.color }} aria-hidden="true" /></NwBadge>
       </span>
       <span className="nw-ev__body">
         <b className="px-body nw-ev__name">{item.label}</b>
