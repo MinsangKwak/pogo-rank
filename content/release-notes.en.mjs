@@ -15,6 +15,10 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 export const RELEASE_NOTES_EN = {
+  '2026-10-17 · v6.0.2': [
+    "**Ten upcoming Dynamax Pokémon now appear in the D-MAX tables with a 'Coming soon' badge** — Sneasel (and its evolution Weavile) for the Oct 19 Max Monday, Uxie · Mesprit · Azelf for the Oct 24 Max Battle Day, Meltan (and Melmetal) from the Nov 9 Into the Wild GO Pass, Regidrago in five-star Max Battles on Nov 12, and Dialga (Nov 14) · Palkia (Nov 15) at GO Wild Area: Global. Until each release date they show only as 'Coming soon' in the tier · attacker · tank tables and stay out of catch routes and the Deck Builder; on the day they become released automatically. Melmetal is not in the official notice — it is listed because Dynamax Meltan evolves into it",
+    "**The calendar shows Dynamax Dialga (Nov 14) and Palkia (Nov 15) debuts as separate D-MAX rows** — the home 'This week's bosses' cards now list them by date alongside Gigantamax Duraludon",
+  ],
   '2026-10-17 · v6.0.1': [
     "**Text that still showed in Korean in English mode is now translated** — about 300 labels and notes across the header, home, Pokédex, rankings, tools, news, settings and dialogs had no dictionary entry after the redesign. Event titles, Game Updates articles, the Terms and the Privacy Policy stay in Korean as before",
     "**Pokémon card art that was missing on wide screens is back** — the Poké Ball and artwork were not showing in card view on the home 'Trending Pokémon' row, the Pokédex and the rankings. Schedule category badges (Event · Mega · D-MAX …) that faded into the background in the light theme are fixed too, and the More · Boss details · footer links now have a larger tap area",

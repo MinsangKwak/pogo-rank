@@ -5,7 +5,7 @@
 
 [서비스](https://moncamp.kr/) · [개발 미리보기](https://dev.moncamp.kr/) · [개발 가이드](docs/DEVELOPMENT.md) · [변경 이력](docs/CHANGELOG.md)
 
-> 2026-10-17 확인 기준으로 dev·main·deploy의 앱 버전은 모두 **v6.0.1**(픽셀 필드 디자인 개편 + 영문 사전 · 카드 그림 수정)입니다. 같은 날 운영 반영을 마쳤습니다. [Pages 배포 결과](https://github.com/MinsangKwak/pogo-rank/actions/runs/38993134931) 현재 앱은 `web/`의 Next.js이고, `frontend-v4/`는 데이터 추출과 Storybook에 계속 사용합니다.
+> 2026-10-17 확인 기준으로 main·deploy의 앱 버전은 **v6.0.1**(픽셀 필드 디자인 개편 + 영문 사전 · 카드 그림 수정)이고, dev는 **v6.0.2**(다이맥스 출시 예정 열 종)입니다. v6.0.1까지 같은 날 운영 반영을 마쳤습니다. [Pages 배포 결과](https://github.com/MinsangKwak/pogo-rank/actions/runs/38993134931) 현재 앱은 `web/`의 Next.js이고, `frontend-v4/`는 데이터 추출과 Storybook에 계속 사용합니다.
 
 ## 포트폴리오 — 세 장으로 읽기
 
@@ -140,7 +140,9 @@ PvP 순위는 PvPoke, 게임 수치는 PokeMiners, 한국어 명칭은 PokeAPI, 
 아래는 각 릴리스 작성 당시의 기록입니다. 당시 보류됐던 v5.10.x와 새 홈은 2026-10-15에 운영 반영했습니다. [Pages 배포 결과](https://github.com/MinsangKwak/pogo-rank/actions/runs/38682428361)
 
 <details>
-<summary><b>2026-10-17</b> — 릴리스 2개 · <code>v6.0.0</code> · <code>v6.0.1</code></summary>
+<summary><b>2026-10-17</b> — 릴리스 3개 · <code>v6.0.0</code> · <code>v6.0.1</code> · <code>v6.0.2</code></summary>
+
+v6.0.2는 출시가 예고된 다이맥스 열 종(10/19 포푸니·포푸니라, 10/24 유크시·엠라이트·아그놈, 11/9 멜탄·멜메탈, 11/12 레지드래고, 11/14 디아루가, 11/15 펄기아)을 D-MAX 표에 '출시 예정' 표시로 먼저 올린 데이터 갱신입니다. 출시일까지는 포획 경로와 덱 짜기에서 빠지고, 날짜가 지나면 저절로 출시분이 됩니다. 달력 11월에 디아루가·펄기아 D-MAX 줄을 더했습니다.
 
 v6.0.1은 운영 반영 뒤 전수 점검과 제보로 잡은 수정입니다. 영문 모드에서 한국어로 남던 새 화면 문구 300여 개를 사전에 채우고, 넓은 화면 카드에서 사라진 볼 그림, 라이트 테마에서 묻히던 일정 분류 배지 글자, 14~20px였던 글자 링크의 손가락 자리를 고쳤습니다. 그림·배지·링크 수정은 핫픽스로 먼저 운영에 올렸습니다.
 
