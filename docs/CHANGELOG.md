@@ -29,7 +29,18 @@
 2026-10-15에 새 홈과 v5.10.2 · v5.10.3의 운영 배포를 마쳤습니다. 아래 v5.10.x 항목의 운영 보류 표기는 각 릴리스 작성 당시 상태입니다. 2026-10-17에 v6.0.0 도 운영에 반영했습니다. [v6.0.0 배포 결과](https://github.com/MinsangKwak/pogo-rank/actions/runs/38993134931)
 
 <details open>
-<summary><b>2026-10-17</b> — 1판 · <code>v6.0.0</code></summary>
+<summary><b>2026-10-17</b> — 2판 · <code>v6.0.0</code> · <code>v6.0.1</code></summary>
+
+<details>
+<summary><b>v6.0.1</b> · 영문 사전 보강 · 카드 그림 · 배지 글자색 · 링크 손가락 자리</summary>
+
+**배경** — v6.0.0 운영 반영 뒤 전수 점검(10/17)과 운영자 제보. ① 영문 모드에서 새 화면 문구가 한국어로 남았다(사전에 없는 키 550개 — 숫자 뼈대 기준) ② 넓은 화면(700px 이상)의 포켓몬 카드에서 볼과 그림이 통째로 사라졌다(`897a749` 가 `--ball: clamp(6.4rem, 100%, 8.8rem)` 로 두어 % 높이가 0 으로 풀림) ③ 일정 분류 배지가 타입색 글자라 라이트에서 1.2:1 ④ 더보기 · 보스 상세 확인 · 바닥글 링크의 누르는 높이 14~20px ⑤ 로그인 안내 팝업이 "bottom 화면은…" 으로 뜸.
+
+**변경** — `content/i18n.en.mjs` 에 316 항목 · 조합 규칙 13개(홈 · 도감 · 순위 · D-MAX 덱 · PvP 덱 · 개체값 · 솔플 · 소식 · 기술 변경 · 일정 · 알 · 검색식 · 설정 · 동의 · 로그인 안내 · 관리자 셸). 일정 제목 · 게임 업데이트 본문 · 약관 · 방침은 정책대로 한국어 유지. `styles/pixel/parts.css` 카드 볼을 `aspect-ratio` 정사각으로([#418](https://github.com/MinsangKwak/pogo-rank/pull/418)), 일정 배지는 점만 분류색 · 글자 링크 44px 가상 요소([#415](https://github.com/MinsangKwak/pogo-rank/pull/415)), 하단 바 '내 포켓몬' 의 로그인 안내가 화면 이름을 받도록(`Shell.tsx`). 핫픽스 둘은 판보다 먼저 운영에 올렸다(main [#416](https://github.com/MinsangKwak/pogo-rank/pull/416) · [#419](https://github.com/MinsangKwak/pogo-rank/pull/419) → deploy [#417](https://github.com/MinsangKwak/pogo-rank/pull/417) · [#420](https://github.com/MinsangKwak/pogo-rank/pull/420)).
+
+검사 — frontend-v4 `version` 6 · web `npm test` · `check_screens` 52 · `check_contrast` 44(알려진 한계 0) · 영문 모드 전수 순회(화면 26 × 폭 둘 + 팝업 · 도구). 회귀 검사 `tapTargets` · `cardBall`.
+
+</details>
 
 <details>
 <summary><b>v6.0.0</b> · 픽셀 필드 시스템 — 전 화면 디자인 개편</summary>
