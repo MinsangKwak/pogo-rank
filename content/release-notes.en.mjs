@@ -15,6 +15,10 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 export const RELEASE_NOTES_EN = {
+  '2026-10-17 · v6.0.1': [
+    "**Text that still showed in Korean in English mode is now translated** — about 300 labels and notes across the header, home, Pokédex, rankings, tools, news, settings and dialogs had no dictionary entry after the redesign. Event titles, Game Updates articles, the Terms and the Privacy Policy stay in Korean as before",
+    "**Pokémon card art that was missing on wide screens is back** — the Poké Ball and artwork were not showing in card view on the home 'Trending Pokémon' row, the Pokédex and the rankings. Schedule category badges (Event · Mega · D-MAX …) that faded into the background in the light theme are fixed too, and the More · Boss details · footer links now have a larger tap area",
+  ],
   '2026-10-17 · v6.0.0': [
     "**All of moncamp has been rebuilt in the 'pixel field' design** — pixel borders, stepped shadows and one matched palette for the dark and light themes. On wide screens you navigate with the header (logo · search · sign-in · settings · language · region · theme) and a left menu rail; on narrow screens with the header's sign-in button and a bottom bar of four tabs: Home · Search · My Pokémon · Menu. Sign-in, My Pokémon, saved settings and view modes are unchanged",
     "**Home is reorganised as hero · weekly briefing · this week's bosses · trending Pokémon** — the rolling banner becomes a two-button briefing, and every screen now shares one Pokémon card. The Pokédex uses generation and type chips over a card grid, D-MAX shows tier zones · this week's bosses · attacker/tank panels, the raid list is a rank · moves · DPS · TDO table, and PvP has league tabs · TOP 10 · team synergy panels",

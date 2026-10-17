@@ -5,7 +5,7 @@
 
 [서비스](https://moncamp.kr/) · [개발 미리보기](https://dev.moncamp.kr/) · [개발 가이드](docs/DEVELOPMENT.md) · [변경 이력](docs/CHANGELOG.md)
 
-> 2026-10-17 확인 기준으로 dev·main·deploy의 앱 버전은 모두 **v6.0.0**(픽셀 필드 디자인 개편)입니다. 같은 날 운영 반영을 마쳤습니다. [Pages 배포 결과](https://github.com/MinsangKwak/pogo-rank/actions/runs/38993134931) 현재 앱은 `web/`의 Next.js이고, `frontend-v4/`는 데이터 추출과 Storybook에 계속 사용합니다.
+> 2026-10-17 확인 기준으로 dev·main·deploy의 앱 버전은 모두 **v6.0.1**(픽셀 필드 디자인 개편 + 영문 사전 · 카드 그림 수정)입니다. 같은 날 운영 반영을 마쳤습니다. [Pages 배포 결과](https://github.com/MinsangKwak/pogo-rank/actions/runs/38993134931) 현재 앱은 `web/`의 Next.js이고, `frontend-v4/`는 데이터 추출과 Storybook에 계속 사용합니다.
 
 ## 포트폴리오 — 세 장으로 읽기
 
@@ -140,7 +140,9 @@ PvP 순위는 PvPoke, 게임 수치는 PokeMiners, 한국어 명칭은 PokeAPI, 
 아래는 각 릴리스 작성 당시의 기록입니다. 당시 보류됐던 v5.10.x와 새 홈은 2026-10-15에 운영 반영했습니다. [Pages 배포 결과](https://github.com/MinsangKwak/pogo-rank/actions/runs/38682428361)
 
 <details>
-<summary><b>2026-10-17</b> — 릴리스 1개 · <code>v6.0.0</code></summary>
+<summary><b>2026-10-17</b> — 릴리스 2개 · <code>v6.0.0</code> · <code>v6.0.1</code></summary>
+
+v6.0.1은 운영 반영 뒤 전수 점검과 제보로 잡은 수정입니다. 영문 모드에서 한국어로 남던 새 화면 문구 300여 개를 사전에 채우고, 넓은 화면 카드에서 사라진 볼 그림, 라이트 테마에서 묻히던 일정 분류 배지 글자, 14~20px였던 글자 링크의 손가락 자리를 고쳤습니다. 그림·배지·링크 수정은 핫픽스로 먼저 운영에 올렸습니다.
 
 v6.0.0은 피그마 'MONCAMP · Trainer OS' 시안을 옮긴 전면 디자인 개편입니다. `web/src/styles/pixel/`의 토큰·조각 한 벌 위에 셸(머리줄·메뉴 레일·하단 바로가기·전체 메뉴 시트), 홈, 도감·D-MAX·PvE·PvP, 도구 넷, 소식 다섯, 팝업, 관리자 캠프(전용 셸과 `admin` 라우트 셋)를 다시 짰습니다. 데이터·계산·저장 키·GA 이벤트·라우트는 그대로입니다. 10월 16~17일의 모바일·레이드·머리줄 후속 수정(#398~#409)을 포함하며, 로그인과 GNB는 PC·모바일에서 로그인 전·승인·관리자 상태를 확인했습니다. 같은 날 단일 커밋 동기화(#412 · #413)로 운영에 반영했고, moncamp.kr의 `APP_VERSION`이 `v6.0.0`인 것을 확인했습니다.
 

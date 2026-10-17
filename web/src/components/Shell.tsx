@@ -287,7 +287,7 @@ export function BottomBar({ now, onMenu }: { now: string; onMenu: () => void }) 
       {/* 내 포켓몬은 승인제다 — 로그인 전이면 안내 팝업(D07)으로, 열리면 화면으로 */}
       {item('내 포켓몬', 'box', null, {
         ...(now === 'planner' ? { 'aria-current': 'page' } : {}),
-        onClick: () => { if (planLock === 'login') { openInvite('bottom'); return; } go(routeHref('planner')); },
+        onClick: () => { if (planLock === 'login') { openInvite('내 포켓몬'); return; } go(routeHref('planner')); },
       })}
       {item('전체 메뉴', 'menu', null, { onClick: onMenu, 'aria-haspopup': 'dialog', 'aria-controls': 'drawer-backdrop' })}
     </nav>
