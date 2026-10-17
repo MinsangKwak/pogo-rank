@@ -38,8 +38,8 @@
 | `web/src/screens/` | 기능별 화면 |
 | `web/src/components/` | 공통 UI와 화면 연결 |
 | `web/src/lib/` | 데이터 조회, 계산 보조, 라우팅, API 연결 |
-| `web/src/styles/cinema/parts.css` | 재사용하는 카드·버튼·입력·탭 스타일 |
-| `web/src/styles/cinema/`의 화면별 파일 | 홈·일정·상세·모달 등의 배치 |
+| `web/src/styles/pixel/tokens.css` · `parts.css` | v6 픽셀 필드 토큰과 재사용하는 판·버튼·칩·탭·입력·표 스타일 |
+| `web/src/styles/pixel/`의 화면별 파일 | 홈·순위·도구·소식·정보·팝업·관리자 배치. 옛 `cinema/`는 걷어 내는 중 |
 | `frontend-v4/scripts/extract-data.mjs` | Python 산출물을 현재 웹 JSON으로 변환 |
 
 `frontend-v4/`의 Firebase 연동은 이전 앱용입니다. 현재 계정 기능은 `web/src/lib/serverApi.ts`에서 Fastify API를 사용합니다. 상세 문서 생성은 빌드 시 수행하며, 과거 계획의 ISR·BFF를 모두 구현한 것으로 설명하지 않습니다.

@@ -16,7 +16,9 @@
 // ─────────────────────────────────────────────────────────────────────────────
 import { Suspense, lazy, startTransition, useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
 import { DataBoundary } from './components/DataBoundary';
-import { AppBar, AppNav, Drawer, Footer, PageHead, ToTop } from './components/Shell';
+import { AppBar, AppNav, BottomBar, Drawer, Footer, PageHead, ToTop } from './components/Shell';
+import NoteDialog from './components/NoteDialog';
+import Toast from './components/Toast';
 import { SlotProvider } from './components/Slots';
 import { useRoute } from './lib/useRoute';
 import type { MonPick, OpenMon } from './lib/mon';
@@ -31,7 +33,7 @@ import { settleVeilAfterFonts } from './lib/veil';
 import SearchPalette from './components/SearchPalette';
 import { useSearchStore } from './stores/search';
 import type { RouteDef } from './routes';
-import { routeById } from './routes';
+import { routeById, routeHidden } from './routes';
 // **홈과 상세만 정적이다.** 둘은 각자 주소의 첫 화면이라, 쪼개면 열자마자 한 번 더
 // 받으러 가야 한다. 나머지는 어느 주소에서도 첫 화면이 아니므로 첫 번들에 있을 이유가 없다 —
 // 넣어 두면 홈만 보려는 사람이 도감·티어표·일정 코드까지 내려받고 해석한다
@@ -73,6 +75,11 @@ const DmaxDeck = lazy(() => import('./screens/DmaxDeck'));
 const SoloCalc = lazy(() => import('./screens/SoloCalc'));
 // 루트만 여는 화면 — 누구의 첫 묶음에도 안 실린다
 const AdminStats = lazy(() => import('./screens/AdminStats'));
+// v6 관리자 캠프 — 셸이 다르다 (components/AdminShell.tsx)
+const AdminHome = lazy(() => import('./screens/AdminHome'));
+const AdminUsers = lazy(() => import('./screens/AdminUsers'));
+const AdminTrainers = lazy(() => import('./screens/AdminTrainers'));
+import AdminShell from './components/AdminShell';
 
 /**
  * 화면이 섰다는 신호 — <Suspense> 안, 화면 뒤에 선다. 기다림은 안의 것을 한꺼번에 드러내므로
@@ -149,6 +156,9 @@ export function Screen({ route, rest, onOpen }: { route: RouteDef; rest: string;
     case 'terms': return <Terms />;
     case 'settings': return <Settings />;
     case 'admin-stats': return <AdminStats />;
+    case 'admin': return <AdminHome />;
+    case 'admin-users': return <AdminUsers rest={rest} />;
+    case 'admin-trainers': return <AdminTrainers />;
     // /mon/<id> 는 상세가 곧 본문이다 — v5 Phase 6 에 바뀐 자리.
     // 전에는 홈을 깔고 그 위에 팝업을 띄웠는데, 그러면 크롤러가 받는 HTML 의 본문이 홈이고
     // 상세는 닫힌 <dialog> 안이다(그 안은 display:none 이다). 공유 링크로 들어온 사람에게도
@@ -173,6 +183,8 @@ export default function App({ seo }: AppProps = {}) {
   const { route, rest } = useRoute();
   const [menuOpen, setMenuOpen] = useState(false);
   const [consentOpen, setConsentOpen] = useState(false);
+  // 기준 안내 팝업(D11) — 레일 · 시트의 '기준 안내' 줄이 연다
+  const [noteOpen, setNoteOpen] = useState(false);
   const invite = useInviteStore((s) => s.screen);
   const closeInvite = useInviteStore((s) => s.close);
   // [스프라이트, 영문명]. 영문명은 **연 쪽이 들고 있던 것**만 넘긴다 —
@@ -271,7 +283,7 @@ export default function App({ seo }: AppProps = {}) {
   };
   // 화면을 옮기면 열려 있던 팝업·서랍은 닫는다 — <dialog> 가 새 화면 위에 그대로 떠 있으면
   // 아무 데도 눌리지 않는다 (상세 팝업에서 같은 자리를 이미 한 번 겪었다)
-  useEffect(() => { setConsentOpen(false); setMenuOpen(false); closeInvite(); useSearchStore.getState().hide(); }, [route, rest, closeInvite]);
+  useEffect(() => { setConsentOpen(false); setMenuOpen(false); setNoteOpen(false); closeInvite(); useSearchStore.getState().hide(); }, [route, rest, closeInvite]);
   // 앞으로 옮겨 왔으면 맨 위에서 시작한다 — 앱이 한 번만 서므로 앞 화면의 스크롤이 그대로 남는다 (lib/nav.ts takeForward)
   useEffect(() => { if (takeForward()) window.scrollTo(0, 0); }, [route, rest]);
 
@@ -295,7 +307,7 @@ export default function App({ seo }: AppProps = {}) {
     body['mode'] = route.kind === 'plan' ? 'plan' : 'dex';
     if (route.id === 'home') body['home'] = 'true'; else delete body['home'];
     // 루트 화면은 세지 않는다 — 운영자 자신이 보는 것이라 이용 현황이 아니고, 있다는 것도 남기지 않는다
-    if ('root' in route && route.root) return;
+    if (routeHidden(route)) return;
     // 자식 화면은 부모를 앞에 붙인다 — '덱 짜기' 가 D-MAX · PvP 둘이라 제목 보고서에서 한 줄로 합쳐졌다 (주소는 원래 다르다)
     const own = route.title ?? route.nav ?? route.id;
     const parent = route.parent ? routeById(route.parent) : undefined;
@@ -318,7 +330,33 @@ export default function App({ seo }: AppProps = {}) {
   // (목록 위에서 바꾸면 ✕ 를 눌러도 목록으로 못 돌아온다 — openMon 머리말).
   // 그래서 route.id 만 보면 도감·티어표에서 연 상세는 그대로 로고가 남는다.
   const onDetail = detail !== null;
+  // 관리자 화면은 제 셸을 쓴다 — 머리줄 · 레일 · 하단 바 · 바닥글이 다르다. 잠금 판정(Screen)은 같다
+  const isAdmin = route.id === 'admin' || route.id.startsWith('admin-');
 
+  if (isAdmin) {
+    return (
+      <SlotProvider value={{ tabs: tabsEl, bossAcc: bossEl, controls: controlsEl, headActions: actionsEl }}>
+        <a className="skip-link" href="#page">본문으로 건너뛰기</a>
+        <LangBridge /><AuthBridge /><CollectBridge /><UpdateBridge />
+        <AdminShell now={route.id}>
+          <DataBoundary>
+            <Suspense fallback={seo ?? <Splash />}>
+              <Screen route={route} rest={rest} onOpen={openMon} />
+              <Settled key={`${route.id}/${rest}`} />
+              <DocTitle route={route} />
+            </Suspense>
+          </DataBoundary>
+        </AdminShell>
+        <DataBoundary>
+          <Suspense fallback={null}>
+            {detail === null ? null : <MonDetail key={detailSeq} pick={detail} onClose={closeMon} onDeep={openDeep} here={route.id} />}
+          </Suspense>
+        </DataBoundary>
+        {noteOpen ? <NoteDialog route={route.id} onClose={() => setNoteOpen(false)} /> : null}
+        <Toast />
+      </SlotProvider>
+    );
+  }
   return (
     <SlotProvider value={{ tabs: tabsEl, bossAcc: bossEl, controls: controlsEl, headActions: actionsEl }}>
       <a className="skip-link" href="#content">본문으로 건너뛰기</a>
@@ -336,7 +374,7 @@ export default function App({ seo }: AppProps = {}) {
           상세에서 뒤로가기는 **팝업을 닫는다** — 화면을 떠나면 뒤에 보던 목록까지 잃는다 */}
       <AppBar onMenu={() => setMenuOpen(true)} home={home && !onDetail}
         onBack={onDetail ? closeMon : undefined} />
-      <AppNav now={route.id} onConsent={() => setConsentOpen(true)} />
+      <AppNav now={route.id} onConsent={() => setConsentOpen(true)} onMenu={() => setMenuOpen(true)} onNote={() => setNoteOpen(true)} />
 
       {/* 홈에는 화면 머리가 없다 — 제목이 히어로 안에 있다 (v3 syncAppShell 과 같은 규칙) */}
       {home || hideHead ? null : <PageHead route={route} actionsRef={setActionsEl} />}
@@ -383,13 +421,18 @@ export default function App({ seo }: AppProps = {}) {
       <SearchPalette onOpen={openMon} />
 
       {consentOpen ? <ConsentDialog onClose={() => setConsentOpen(false)} /> : null}
+      {noteOpen ? <NoteDialog route={route.id} onClose={() => setNoteOpen(false)} /> : null}
+      {/* 토스트는 한 장 — 링크 복사 · 저장 같은 짧은 알림을 바닥에 띄운다 (lib/toast) */}
+      <Toast />
       {/* ★ 를 눌렀는데 로그인 전일 때 — 누른 곳과 그리는 곳이 멀어 stores/invite.ts 를 거친다 */}
       {invite !== null ? <LoginInvite screen={invite} onClose={closeInvite} /> : null}
 
       <ToTop />
       {/* 광고 자리 — 로그인 전인 사람에게만, 빌드 모드가 켜져 있을 때만 선다 (lib/ads.ts). 셸 순서 뒤의 고정 자리라 본문 흐름에 안 낀다 */}
       <AdSlots />
-      <Drawer open={menuOpen} onClose={() => setMenuOpen(false)} now={route.id} onConsent={() => setConsentOpen(true)} />
+      {/* 좁은 화면의 하단 바로가기 — 레일이 접힌 자리를 이 네 칸이 맡는다 (CSS 가 1100px 아래에서만 보인다) */}
+      <BottomBar now={route.id} onMenu={() => setMenuOpen(true)} />
+      <Drawer open={menuOpen} onClose={() => setMenuOpen(false)} now={route.id} onConsent={() => setConsentOpen(true)} onNote={() => setNoteOpen(true)} />
     </SlotProvider>
   );
 }

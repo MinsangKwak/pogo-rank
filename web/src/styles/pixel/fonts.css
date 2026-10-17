@@ -1,0 +1,14 @@
+/* ─────────────────────────────────────────────────────────────────────────────
+   pixel/fonts.css — v6 글꼴 세 벌을 싣는다
+   · Pretendard Variable  본문 (jsdelivr 동적 서브셋 CSS 는 app/layout.tsx 가 <link> 로 건다)
+   · Geist Mono           숫자 · 표 · 배지 (jsdelivr 패키지의 가변 woff2 한 장)
+   · Press Start 2P       로고 · 짧은 영문 라벨 (Google Fonts — layout.tsx 가 <link> 로 건다)
+   swap 으로 둔다 — 글꼴이 늦어도 글자는 먼저 선다. 덮개(lib/veil.ts)가 document.fonts.ready 를 기다린다
+   ───────────────────────────────────────────────────────────────────────────── */
+@font-face {
+  font-family: "Geist Mono";
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url("https://cdn.jsdelivr.net/npm/geist@1.3.1/dist/fonts/geist-mono/GeistMono-Variable.woff2") format("woff2");
+}

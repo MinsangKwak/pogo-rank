@@ -85,8 +85,9 @@ for (const size of [{ width: 390, height: 844 }, { width: 1280, height: 900 }]) 
       visited += 1;
       // 순위 화면만 탭·칩이 있다. 없으면 그냥 지나간다.
       if (['dmax', 'pve', 'pvp'].includes(path)) {
-        await clickThrough(page, where, '.seg.js-screen-tab button', '탭', bad);
-        await clickThrough(page, where, '.chips__item', '칩', bad);
+        // v6 픽셀 탭 · 칩 (px-tabs/px-chips) 이 먼저, 옛 v4 선택자는 남은 화면을 위해 뒤에 둔다
+        await clickThrough(page, where, '.px-tabs .px-tab, .seg.js-screen-tab button', '탭', bad);
+        await clickThrough(page, where, '.px-chips .px-chip, .chips__item', '칩', bad);
       }
     } catch (error) {
       bad.push(`${where} → [열리지 않음] ${error.message.split('\n')[0]}`);

@@ -4,7 +4,7 @@
 // **한 그래프에 한 숫자.** 방문자와 페이지뷰처럼 크기가 다른 둘을 한 축에 겹치지 않는다 — 두 그래프로 가른다.
 // 한 계열이라 범례 상자가 없다 — 제목이 무엇을 그렸는지 말한다.
 //
-// 기둥은 24px 을 안 넘고 끝만 4px 둥글다(바닥은 각). 기둥 사이는 판 색 2px 틈. 격자는 머리카락 선 하나.
+// 기둥은 24px 을 안 넘고 네 귀가 각지다 — v6 픽셀 판(반경 0)에 맞춰 2026-10-16 에 둥근 머리를 뗐다. 기둥 사이는 판 색 2px 틈. 격자는 머리카락 선 하나.
 // 값 글자는 기둥 색을 안 입는다 — 글자는 글자 토큰(--fg · --muted), 색은 기둥이 진다.
 // 올리거나(포인터) 화살표로 옮기면(키보드) 위 한 줄이 그날 값을 읽어 준다. 표로 보기가 늘 따라온다 —
 // 떠 있는 값만으로 숫자를 보게 하지 않는다.
@@ -90,18 +90,19 @@ function useWidth<T extends HTMLElement>(): [React.RefObject<T | null>, number] 
   return [ref, width];
 }
 
-// 끝 4px 둥글고 바닥은 각진 기둥 — 짧으면 높이만큼만 둥글린다
+// 각진 기둥 — 픽셀 판은 반경이 0 이다. 높이가 0 이면 안 그린다
 function columnPath(x: number, y: number, w: number, h: number): string {
   if (h <= 0) return '';
-  const r = Math.min(4, h, w / 2);
-  return `M${x},${y + h}V${y + r}Q${x},${y} ${x + r},${y}H${x + w - r}Q${x + w},${y} ${x + w},${y + r}V${y + h}Z`;
+  return `M${x},${y}H${x + w}V${y + h}H${x}Z`;
 }
 
 const HEIGHT = 160;
 const PAD = { top: 8, right: 4, bottom: 24, left: 40 };
 
-export function DayColumns({ title, unit, rows, note, summable = true }: {
+export function DayColumns({ title, source, unit, rows, note, summable = true }: {
   title: string;
+  /** 제목 옆 원본 표시 — 'DB · 조회수' · 'GA4'. 어디서 온 수인지 칸마다 적는다 */
+  source?: string;
   /** 읽어 주는 줄의 꼬리 — '명' · '회' */
   unit: string;
   rows: readonly DayValue[];
@@ -140,11 +141,12 @@ export function DayColumns({ title, unit, rows, note, summable = true }: {
   return (
     <figure className="stat-chart">
       <figcaption className="stat-chart__head">
-        <b>{title}</b>
-        {summable ? <span className="stat-chart__total">합계 {count(total)}{unit}</span> : null}
+        <b className="px-sub">{title}</b>
+        {source ? <span className="px-caption stat-chart__source">{source}</span> : null}
+        {summable ? <span className="px-caption stat-chart__total">합계 {count(total)}{unit}</span> : null}
       </figcaption>
       {/* 읽어 주는 줄 — 올린 날, 없으면 마지막 날 */}
-      <p className="stat-chart__readout" aria-live="polite">
+      <p className="px-caption stat-chart__readout" aria-live="polite">
         {current ? <><span>{dayLabel(current.day)}</span> <b>{count(current.value)}{unit}</b></> : DASH}
       </p>
       <div ref={box} className="stat-chart__plot" tabIndex={0} onKeyDown={onKey}
@@ -182,14 +184,14 @@ export function DayColumns({ title, unit, rows, note, summable = true }: {
           </svg>
         ) : null}
       </div>
-      {note ? <p className="stat-chart__note">{note}</p> : null}
+      {note ? <p className="px-caption stat-chart__note">{note}</p> : null}
       <details className="stat-chart__table">
-        <summary>표로 보기</summary>
-        <table>
+        <summary className="px-caption">표로 보기</summary>
+        <table className="px-table">
           <thead><tr><th scope="col">날짜</th><th scope="col">{title}</th></tr></thead>
           <tbody>
             {[...rows].reverse().map((row) => (
-              <tr key={row.day}><td>{dayLabel(row.day)}</td><td>{count(row.value)}</td></tr>
+              <tr key={row.day}><td>{dayLabel(row.day)}</td><td className="is-num">{count(row.value)}</td></tr>
             ))}
           </tbody>
         </table>
@@ -210,9 +212,11 @@ export interface RankRow {
 /** 처음에 보이는 줄 수 — 그 아래는 '더 보기' 뒤에 있다. 열다섯 줄 표 여섯 개가 한 화면에 서면 스크롤이 5천 픽셀이다 */
 export const RANK_FOLD = 8;
 
-/** 순위 표 — 이름 · 막대 · 횟수 · 사람. 막대는 1위를 끝으로 잰다. 여덟 줄 넘게는 접어 둔다 */
-export function RankTable({ title, rows, valueHead, subHead, empty, fold = RANK_FOLD }: {
+/** 순위 표 — 픽셀 판 하나에 이름 · 막대 · 횟수 · 사람. 막대는 1위를 끝으로 잰다. 여덟 줄 넘게는 접어 둔다 */
+export function RankTable({ title, source, rows, valueHead, subHead, empty, fold = RANK_FOLD }: {
   title: string;
+  /** 제목 옆 원본 표시 — 'DB' · 'GA4' */
+  source?: string;
   rows: readonly RankRow[];
   valueHead: string;
   subHead?: string;
@@ -224,41 +228,41 @@ export function RankTable({ title, rows, valueHead, subHead, empty, fold = RANK_
   const hidden = Math.max(0, rows.length - fold);
   const shown = open || !hidden ? rows : rows.slice(0, fold);
   return (
-    <section className="stat-rank">
-      <h3 className="stat-rank__title">{title}</h3>
+    <section className="px-panel px-skin px-drop stat-rank">
+      <h3 className="px-sec stat-rank__title"><span className="px-sub">{title}</span>{source ? <span className="px-sec__note">{source}</span> : null}</h3>
       {rows.length ? (
         <>
-          <table>
+          <table className="px-table">
             <thead>
               <tr>
                 <th scope="col">이름</th>
-                <th scope="col" className="stat-rank__num">{valueHead}</th>
-                {subHead ? <th scope="col" className="stat-rank__num">{subHead}</th> : null}
+                <th scope="col" className="is-num stat-rank__num">{valueHead}</th>
+                {subHead ? <th scope="col" className="is-num stat-rank__num">{subHead}</th> : null}
               </tr>
             </thead>
             <tbody>
               {shown.map((row, index) => (
                 <tr key={row.key}>
                   <th scope="row">
-                    <span className="stat-rank__rank" aria-hidden="true">{count(index + 1)}</span>
+                    <span className="px-mono stat-rank__rank" aria-hidden="true">{String(index + 1).padStart(2, '0')}</span>
                     <span className="stat-rank__name">{row.label}{row.flag ? <em className="stat-rank__flag">{row.flag}</em> : null}</span>
                     <span className="stat-rank__bar" aria-hidden="true">
                       <i style={{ width: `${Math.max(2, (row.value / top) * 100)}%` }} />
                     </span>
                   </th>
-                  <td className="stat-rank__num">{count(row.value)}</td>
-                  {subHead ? <td className="stat-rank__num">{count(row.sub)}</td> : null}
+                  <td className="is-num stat-rank__num">{count(row.value)}</td>
+                  {subHead ? <td className="is-num stat-rank__num">{count(row.sub)}</td> : null}
                 </tr>
               ))}
             </tbody>
           </table>
           {hidden ? (
-            <button type="button" className="stat-rank__more" aria-expanded={open} onClick={() => setOpen((now) => !now)}>
+            <button type="button" className="px-btn px-btn--sm px-skin stat-rank__more" aria-expanded={open} onClick={() => setOpen((now) => !now)}>
               {open ? '접기' : `${count(hidden)}줄 더 보기`}
             </button>
           ) : null}
         </>
-      ) : <p className="stat-rank__empty">{empty}</p>}
+      ) : <p className="px-caption stat-rank__empty">{empty}</p>}
     </section>
   );
 }

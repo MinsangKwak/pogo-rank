@@ -25,7 +25,16 @@ export default function Account({ onGo }: { onGo: () => void }) {
   // 셈이 남아 있고, 눌러 봐야 잠긴 화면이 나온다 (제보 — 승인은 그대로인데 실험만 해제한 경우)
   const planLock = useLockReason('planner');
 
-  if (!enabled) return null;
+  if (!enabled) {
+    return (
+      <>
+        <h2 className="drawer__sec" id="account-title">👤 마이페이지</h2>
+        <div className="account" id="account">
+          <p className="account__sub">현재 개발 환경에서는 로그인이 꺼져 있어요. 배포 환경에서 Google 로그인을 이용할 수 있습니다.</p>
+        </div>
+      </>
+    );
+  }
 
   const start = () => {
     // 승인제라는 사실을 누르기 전에 알린다 — 그래야 "로그인했는데 왜 안 되지" 를 겪지 않는다

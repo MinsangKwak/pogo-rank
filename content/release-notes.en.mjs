@@ -15,6 +15,12 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 export const RELEASE_NOTES_EN = {
+  '2026-10-17 · v6.0.0': [
+    "**All of moncamp has been rebuilt in the 'pixel field' design** — pixel borders, stepped shadows and one matched palette for the dark and light themes. On wide screens you navigate with the header (logo · search · sign-in · settings · language · region · theme) and a left menu rail; on narrow screens with the header's sign-in button and a bottom bar of four tabs: Home · Search · My Pokémon · Menu. Sign-in, My Pokémon, saved settings and view modes are unchanged",
+    "**Home is reorganised as hero · weekly briefing · this week's bosses · trending Pokémon** — the rolling banner becomes a two-button briefing, and every screen now shares one Pokémon card. The Pokédex uses generation and type chips over a card grid, D-MAX shows tier zones · this week's bosses · attacker/tank panels, the raid list is a rank · moves · DPS · TDO table, and PvP has league tabs · TOP 10 · team synergy panels",
+    "**Swapping a Pokémon in the D-MAX Deck Builder, Solo Raid Calculator, PvP Deck Builder and IV Rank now uses one shared dialog** — slot panels, metric tiles and steppers look the same across the four tools, and URL sync, saved decks and the calculation rules are unchanged. Game Updates, Move Changes, Schedule, Raids and Egg Hatches share the same pieces, and each raid boss shows its three counters, catch CP and weather-boosted CP in one panel",
+    "**The Pokémon detail, quick search, sign-in prompt, terms consent and analytics settings dialogs are redesigned** — on narrow screens they open as a bottom sheet (85% of the screen) that scrolls inside. Short notices such as 'link copied' now appear as a toast at the bottom. The admin screens (dashboard · detailed stats · approvals · trainer codes) moved to their own shell",
+  ],
   '2026-10-15 · v5.10.3': [
     "**The calendar now shows 'Into the Wild' (Nov 9–13) under its official Korean title** — a Steel- and Dragon-type event. Dynamax Regidrago debuts in five-star Max Battles on Nov 12, and Dynamax Meltan debuts through 'GO Pass: Into the Wild'. The daily five-star Max Battle bosses (Registeel on Nov 11, Regidrago on Nov 12, Latias and Latios on Nov 13) are listed as D-MAX rows by date. The notice is also collected on the Game Updates board",
   ],

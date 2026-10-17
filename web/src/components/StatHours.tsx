@@ -9,9 +9,9 @@
 // ─────────────────────────────────────────────────────────────────────────────
 import { useEffect, useState } from 'react';
 import { serverApi, type StatHours as Hours, type StatRanked } from '../lib/serverApi';
-import { Segmented } from '../ds';
 import { count, DASH } from '../lib/cell';
 import { dayLabel } from './StatChart';
+import { PxChips } from './Bits';
 
 /** 탭에 올리는 날 수의 끝 — 30일 기간이 한 줄에 다 서고, 400일 기간은 최근 한 달만 */
 export const HOUR_DAYS_MAX = 31;
@@ -80,27 +80,25 @@ export function StatHours({ days, monName, stamp }: { days: readonly string[]; m
   const total = hours.reduce((sum, one) => sum + one.hits, 0);
   const now = kstNow();
   return (
-    <section className={`stat-hours${busy ? ' is-busy' : ''}`}>
+    <section className={`px-panel px-skin px-drop stat-hours${busy ? ' is-busy' : ''}`} aria-busy={busy || undefined}>
       <div className="stat-hours__head">
-        <h3 className="stat-rank__title">시간대별 많이 본 포켓몬</h3>
-        <span className="stat-hours__sub">{day ? `${dayLabel(day)} · 팝업 ${count(total)}회 · 한국 시각` : ''}</span>
+        <h3 className="px-sub stat-rank__title">시간대별 많이 본 포켓몬</h3>
+        <span className="px-caption px-mono stat-hours__sub">{day ? `${dayLabel(day)} · 팝업 ${count(total)}회 · 한국 시각` : ''}</span>
       </div>
-      {tabs.length ? (
-        <Segmented className="stat-hours__days" label="날짜" value={day} onPick={setPicked}
-          items={tabs.map((one) => ({ id: one, label: tabLabel(one) }))} />
-      ) : null}
+      {/* 날짜 칩 — 서른한 개까지 한 줄에서 가로로 흐른다 (px-chips--scroll) */}
+      {tabs.length ? <PxChips items={tabs.map((one) => ({ id: one, label: tabLabel(one) }))} value={day} onPick={setPicked} label="날짜" /> : null}
       {error ? (
-        <p className="stat-rank__empty" role="alert">
+        <p className="px-caption stat-rank__empty" role="alert">
           {error}
-          <button type="button" className="stat-rank__more" onClick={() => setRetry((n) => n + 1)} disabled={busy}>다시 받기</button>
+          <button type="button" className="px-btn px-btn--sm px-skin stat-rank__more" onClick={() => setRetry((n) => n + 1)} disabled={busy}>다시 받기</button>
         </p>
       ) : null}
-      <table>
+      <table className="px-table">
         <thead>
           <tr>
             <th scope="col">시간대</th>
-            <th scope="col" className="stat-hours__num">페이지뷰</th>
-            <th scope="col" className="stat-hours__num">방문자</th>
+            <th scope="col" className="is-num stat-hours__num">페이지뷰</th>
+            <th scope="col" className="is-num stat-hours__num">방문자</th>
             <th scope="col">많이 본 포켓몬</th>
           </tr>
         </thead>
@@ -108,14 +106,14 @@ export function StatHours({ days, monName, stamp }: { days: readonly string[]; m
           {hours.map((one) => (
             <tr key={one.hour} className={day === now.day && one.hour === now.hour ? 'is-now' : undefined}>
               <th scope="row">{hourLabel(one.hour)}</th>
-              <td className="stat-hours__num">{count(one.hits)}</td>
-              <td className="stat-hours__num">{count(one.visitors)}</td>
+              <td className="is-num stat-hours__num">{count(one.hits)}</td>
+              <td className="is-num stat-hours__num">{count(one.visitors)}</td>
               <td className="stat-hours__mons">{monLine(one.mons, monName)}</td>
             </tr>
           ))}
         </tbody>
       </table>
-      <p className="stat-page__note">상세 팝업을 연 수예요 — 홈의 '지금 많이 보는 포켓몬' 과 같은 수치. 한 사람은 한 칸에 같은 포켓몬 5회까지 세요.</p>
+      <p className="px-caption stat-page__note">상세 팝업을 연 수예요 — 홈의 '지금 많이 보는 포켓몬' 과 같은 수치. 한 사람은 한 칸에 같은 포켓몬 5회까지 세요.</p>
     </section>
   );
 }

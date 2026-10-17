@@ -1,0 +1,257 @@
+/* ─────────────────────────────────────────────────────────────────────────────
+   pixel/modal.css — v6 팝업 · 상세 배치 (피그마 22 독립 페이지 · D01~D04 상세 · D05 검색 · D07 로그인 · D08 동의 · D09 통계 · D13 상태 · 토스트)
+   조각(parts.css)은 모양, 여기는 자리만 둔다. 접두사 `html body #root` 는 옛 v3 · cinema 스킨을 이기는 장치 하나다.
+   팝업 판 네 조각(px-dialog · __head · __body · __foot)은 parts.css 가 그린다 — 여기는 그 안의 열 · 판 · 줄 배치다
+   ───────────────────────────────────────────────────────────────────────────── */
+
+/* ── 팝업 폭 ──────────────────────────────────────────────────────────────
+   상세는 두 열(프로필 24 + 본문)이라 넓고, 검색 · 로그인 · 동의 · 통계는 한 열이다 */
+html body #root .pxd-dialog .px-dialog__panel { --dialog-w: 100rem; }
+html body #root .pxd-dialog--brief .px-dialog__panel, html body #root .pxd-dialog--palette .px-dialog__panel { --dialog-w: 64rem; }
+html body #root .pxd-dialog--narrow .px-dialog__panel { --dialog-w: 56rem; }
+/* 바닥의 안내 한 줄은 단추 위에 통째로 선다 (요약 팝업 '자세한 건 도감을 참고하세요!' · 동의 '모든 필수 항목을 …') */
+html body #root .px-dialog__foot > .px-dialog__hint { flex-basis: 100%; margin: 0; }
+
+/* ── 머리 — 작은 몬스터볼 그림 · #번호 이름 · 한 줄 설명 · ☆ · ✕ ───────────── */
+html body #root .pxd__head { align-items: center; }
+html body #root .pxd__head-art { --ball: 5.6rem; }
+html body #root .pxd__title { display: inline-flex; flex-wrap: wrap; align-items: baseline; gap: 0.8rem; }
+html body #root .pxd__title .detail__bar-dex { font-size: 1.4rem; font-weight: 400; }
+html body #root :is(.pxd__head, .pxd-page__bar) .detail__fav { width: auto; padding: 0 1.2rem; gap: 0.4rem; }
+html body #root :is(.pxd__head, .pxd-page__bar) .detail__fav-label { font-size: 1.2rem; }
+
+/* ── 본문 — 프로필 판(왼쪽 24rem) + 탭 · 판들(오른쪽) ────────────────────── */
+html body #root .pxd__cols { display: grid; grid-template-columns: 24rem minmax(0, 1fr); gap: 1.6rem; align-items: start; }
+html body #root .pxd-main { display: flex; flex-direction: column; gap: 1.6rem; min-width: 0; }
+html body #root .pxd-pane { display: flex; flex-direction: column; gap: 1.6rem; }
+html body #root .pxd-pane[hidden] { display: none; }
+html body #root .pxd-back { align-self: flex-start; }
+html body #root .pxd-brief__line { margin: 0; }
+
+/* 프로필 판 — 큰 몬스터볼 · 영문명 배지 · MAX CP · 종족값 */
+html body #root .pxd-profile-wrap { position: relative; min-width: 0; margin-top: 0.4rem; }
+html body #root .pxd-profile { display: flex; flex-direction: column; align-items: center; gap: 1.6rem; padding: 2.4rem 1.6rem; text-align: center; }
+html body #root .pxd-profile__art { --ball: 18.8rem; }
+html body #root .pxd-profile__text { display: flex; flex-direction: column; align-items: center; gap: 0.8rem; width: 100%; }
+html body #root .pxd-profile__cp { display: flex; flex-direction: column; gap: 0.4rem; width: 100%; padding-top: 1.6rem; border-top: var(--px-stroke) solid var(--line); }
+html body #root .pxd-profile__cp-value { color: var(--brand-text); }
+html body #root .pxd-favnews { gap: 0.8rem; }
+
+/* 판 안 제목 줄 — 제목 + 배지 · 작은 글이 한 줄에 */
+html body #root .pxd-sec__title { display: flex; flex-wrap: wrap; align-items: center; gap: 0.8rem; }
+html body #root .pxd-sec .px-grid { gap: 1.2rem; }
+html body #root .pxd-metrics { margin: 0; }
+html body #root .pxd-metric { padding: 1.6rem; }
+html body #root .pxd-metric .px-metric__value { font-size: 2.2rem; }
+
+/* 진화 계열 — 단계마다 몬스터볼 · 이름 · 단계 한 줄. 분기 진화는 한 단계 안에 여러 마리 */
+html body #root .pxd-evo { display: flex; flex-wrap: wrap; gap: 1.6rem 2.4rem; }
+html body #root .pxd-evo__stage { display: flex; flex-wrap: wrap; gap: 1.6rem; }
+html body #root .pxd-evo__stage--mega { flex-basis: 100%; padding-top: 1.6rem; border-top: var(--px-stroke) solid var(--line); }
+html body #root .pxd-evo__card { position: relative; display: flex; width: 10.4rem; min-width: 0; margin-top: 0.4rem; }
+html body #root .pxd-evo__card > .px-mon-ribbon { min-width: 4.4rem; min-height: 2.4rem; padding: 0 0.4rem; }
+html body #root .pxd-evo__mon { display: flex; flex-direction: column; align-items: flex-start; gap: 0.4rem; width: 100%; min-width: 0; min-height: var(--tap); padding: 2.4rem 0.8rem 0.8rem; --px-fill: var(--panel-2); color: var(--fg); font: 500 1.4rem/1.5 var(--font-body); text-align: left; cursor: pointer; }
+html body #root .pxd-evo__mon .px-ball { --ball: 7.2rem; }
+html body #root .pxd-evo__name { max-width: 100%; overflow-wrap: anywhere; }
+html body #root .pxd-evo__mon.is-now { --px-line: var(--brand-text); }
+html body #root .pxd-evo__mon.is-now .pxd-evo__name { color: var(--brand-text); }
+html body #root .pxd-evo__mon.is-unreleased { opacity: 1; }
+html body #root .pxd-evo__mon:focus-visible { outline: var(--px-stroke) solid var(--brand-focus); outline-offset: var(--px-stroke); }
+html body #root .pxd-evo .detail__foot { flex-basis: 100%; }
+
+/* 육성 추천 — 설명 문장 + 묶음(배지 · 제목 · 문장 · 단추) */
+html body #root .pxd-train__lead, html body #root .pxd-train__say { display: flex; flex-direction: column; gap: 0.4rem; }
+html body #root .pxd-train { display: flex; flex-direction: column; gap: 0.8rem; padding-top: 1.2rem; border-top: var(--px-stroke) solid var(--line); }
+html body #root .pxd-train__head { display: flex; flex-wrap: wrap; align-items: center; gap: 0.8rem; margin: 0; }
+
+/* 폼별 정보 — 한 줄에 배지 · 요약 · 더보기 */
+html body #root .pxd-forms { display: flex; flex-direction: column; gap: 0.4rem; }
+html body #root .pxd-form { display: flex; flex-wrap: wrap; align-items: center; gap: 0.8rem 1.2rem; width: 100%; min-height: var(--tap); padding: 0.8rem 0; border: 0; background: none; color: var(--fg); font: 500 1.4rem/1.5 var(--font-body); text-align: left; cursor: pointer; list-style: none; }
+html body #root .pxd-form::-webkit-details-marker { display: none; }
+html body #root .pxd-form__use { flex: 1; min-width: 12rem; }
+html body #root .pxd-form__go { display: inline-flex; align-items: center; gap: 0.4rem; margin-left: auto; color: var(--brand-text); font-size: 1.2rem; white-space: nowrap; }
+html body #root .pxd-form-acc { border-top: var(--px-stroke) solid color-mix(in srgb, var(--line) 50%, transparent); }
+html body #root .pxd-form-acc:first-child, html body #root .pxd-forms > button:first-child { border-top: 0; }
+html body #root .pxd-forms > button { border-top: var(--px-stroke) solid color-mix(in srgb, var(--line) 50%, transparent); }
+html body #root .pxd-form__body { display: flex; flex-direction: column; gap: 0.8rem; padding: 0.4rem 0 1.2rem; }
+html body #root .pxd-form:focus-visible { outline: var(--px-stroke) solid var(--brand-focus); outline-offset: var(--px-stroke); }
+
+/* '어디 · 몇 위' 줄 목록 (활용 순위 · PvP 리그 · 폼별 정보 · 개체값) */
+html body #root .pxd-ranks { display: flex; flex-direction: column; gap: 0.8rem; }
+html body #root .pxd-ranks__list { display: flex; flex-direction: column; gap: 0; margin: 0; padding: 0; list-style: none; }
+html body #root .pxd-rank { display: flex; flex-wrap: wrap; align-items: center; gap: 0.4rem 1.2rem; width: 100%; min-height: 4rem; padding: 0.4rem 0; border: 0; border-bottom: var(--px-stroke) solid color-mix(in srgb, var(--line) 50%, transparent); background: none; color: var(--fg); font: 400 1.4rem/1.5 var(--font-body); text-align: left; }
+html body #root .pxd-ranks__list > li:last-child > .pxd-rank, html body #root .pxd-ranks__list > li.pxd-rank:last-child { border-bottom: 0; }
+html body #root .pxd-rank--tap { cursor: pointer; }
+html body #root .pxd-rank--tap:focus-visible { outline: var(--px-stroke) solid var(--brand-focus); outline-offset: var(--px-stroke); }
+html body #root .pxd-rank__where { flex: 1; min-width: 0; display: inline-flex; flex-wrap: wrap; align-items: center; gap: 0.8rem; }
+html body #root .pxd-rank__no { color: var(--fg); font-weight: 500; }
+html body #root .pxd-rank__no.is-top { color: var(--brand-text); font-weight: 700; }
+html body #root .pxd-rank__note { flex-basis: 100%; }
+html body #root .pxd-stat-group { display: flex; flex-direction: column; gap: 0.4rem; }
+html body #root .pxd-stat-group > h4 { margin: 0; }
+
+/* 추천 후보 줄 (보스로 만났을 때 · 상대할 때) */
+html body #root .pxd-recs { display: flex; flex-direction: column; gap: 1.2rem; margin: 0; padding: 0; list-style: none; }
+html body #root .pxd-rec__wrap { position: relative; min-width: 0; margin-top: 0.4rem; }
+html body #root .pxd-rec { flex-direction: row; align-items: center; gap: 1.2rem; min-height: var(--tap); padding: 2.8rem 1.2rem 1.2rem; }
+html body #root .pxd-rec__art { --ball: 5.6rem; }
+html body #root .pxd-rec__name { display: flex; flex: 1; flex-wrap: wrap; align-items: center; gap: 0.4rem; min-width: 0; font: 500 1.4rem/1.5 var(--font-body); }
+html body #root .pxd-rec__name > b { max-width: 100%; overflow-wrap: anywhere; }
+html body #root .pxd-rec__go { margin-left: auto; color: var(--muted); }
+html body #root .pxd-vs__when { display: flex; flex-wrap: wrap; align-items: center; gap: 0.8rem; margin: 0; flex-basis: 100%; }
+
+/* 포획 CP — 레벨 · 범위 · 조건 */
+html body #root .pxd-catch { display: flex; flex-direction: column; gap: 0.4rem; }
+html body #root .pxd-catch__row { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.4rem 1.2rem; min-height: 3.6rem; }
+html body #root .pxd-catch__lv { min-width: 6.4rem; color: var(--muted); font-size: 1.4rem; }
+html body #root .pxd-catch__lv.is-boost { color: var(--yellow); }
+html body #root .pxd-catch__cp { font-size: 1.6rem; font-weight: 700; }
+html body #root .pxd-more > summary { cursor: pointer; list-style: none; }
+html body #root .pxd-more > summary::before { content: '▸ '; }
+html body #root .pxd-more[open] > summary::before { content: '▾ '; }
+html body #root .pxd-more__body { display: flex; flex-direction: column; gap: 0.4rem; padding-top: 0.8rem; }
+
+/* 기술 — 노말 · 스페셜 두 줄 */
+html body #root .pxd-moves { display: flex; flex-direction: column; gap: 0.8rem; margin: 0; }
+html body #root .pxd-moves__row { display: grid; grid-template-columns: 8rem minmax(0, 1fr); gap: 0.8rem; margin: 0; }
+html body #root .pxd-moves__row > dd { margin: 0; }
+html body #root .pxd-move.is-legacy { color: var(--yellow); }
+
+/* 기술 변경 */
+html body #root .pxd-changes { display: flex; flex-direction: column; gap: 0.8rem; margin: 0; padding: 0; list-style: none; }
+html body #root .pxd-changes__row { display: flex; gap: 1.2rem; font: 400 1.4rem/1.5 var(--font-body); }
+html body #root .pxd-changes__row.is-up .changes__mark { color: var(--mint); }
+html body #root .pxd-changes__row.is-down .changes__mark { color: var(--red); }
+
+/* 타입 상성 — 약점 · 내성 두 묶음, 칩은 타입색 점 + 이름 + 배율 */
+html body #root .pxd-match { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.6rem; }
+html body #root .pxd-match__col { display: flex; flex-direction: column; gap: 0.8rem; }
+html body #root .pxd-match__col > h4 { margin: 0; }
+html body #root .pxd-chips { gap: 0.8rem; }
+html body #root .pxd-type { gap: 0.8rem; }
+html body #root .pxd-type__dot { width: 1.2rem; height: 1.2rem; background: currentColor; }
+html body #root .pxd-type > small { font-size: 1.2rem; color: var(--muted); }
+html body #root .pxd-type.px-badge--fill > small { color: var(--on-brand); }
+
+/* 육각형 — 옛 v3 hex 규칙을 토큰으로 되덮는다 */
+html body #root .pxd-sec .hex { width: 100%; max-width: 48rem; margin: 0 auto; }
+html body #root .pxd-sec .hex__svg { display: block; width: 100%; height: auto; }
+html body #root .pxd-sec .hex__label { font: 400 1.2rem/1.2 var(--font-body); fill: var(--muted); }
+html body #root .pxd-sec .hex__val { font-weight: 700; fill: var(--fg); }
+
+/* 메가 비교 표 */
+html body #root .pxd-cmp .px-table th[scope="row"] { color: var(--muted); font-weight: 500; }
+html body #root .pxd-cmp .px-table td.is-high { color: var(--brand-text); font-weight: 700; }
+
+/* ── CP 계산기 ─────────────────────────────────────────────────────────── */
+html body #root .pxd-calc { display: flex; flex-direction: column; gap: 1.6rem; }
+html body #root .pxd-calc__metrics { gap: 1.2rem; }
+html body #root .pxd-calc .px-stepper { max-width: 28rem; }
+html body #root .pxd-calc .px-stepper__value { width: 100%; text-align: center; }
+html body #root .pxd-calc__row { display: grid; grid-template-columns: 6.4rem minmax(0, 1fr); align-items: center; gap: 1.2rem; }
+html body #root .pxd-calc__range { width: 100%; max-width: 28rem; margin: 0; accent-color: var(--brand-primary); }
+html body #root .pxd-calc .px-chips { gap: 0.8rem; }
+
+/* ── 페이지 (/mon/<번호>) — 머리는 셸, 본문은 맨 위 줄 · 프로필 판 · 탭 · 판들 ─ */
+html body #root .pxd--page { display: flex; flex-direction: column; gap: 2.4rem; padding-top: 0.8rem; }
+html body #root .pxd-page__bar { display: flex; flex-wrap: wrap; align-items: center; gap: 1.2rem; }
+html body #root .pxd-page__dock { display: flex; flex-wrap: wrap; gap: 1.2rem; margin-left: auto; }
+html body #root .pxd-page__title { display: flex; flex-wrap: wrap; align-items: baseline; gap: 1.2rem; margin: 0; }
+html body #root .pxd--page .pxd-profile { display: grid; grid-template-columns: 18.8rem minmax(0, 1fr) 36rem; align-items: center; gap: 2.4rem; padding: 2.4rem; text-align: left; }
+html body #root .pxd--page .pxd-profile__text { align-items: flex-start; }
+html body #root .pxd--page .pxd-profile__cp { border-top: 0; padding-top: 0.8rem; }
+html body #root .pxd-profile__tiles { --cols: 3; gap: 1.2rem; }
+html body #root .pxd-stat { padding: 1.2rem 1.6rem; }
+html body #root .pxd--page .pxd-main { gap: 2.4rem; }
+html body #root .pxd--page .pxd-pane { gap: 2.4rem; }
+/* 페이지의 판은 풍경 위에 선다 — 판 색을 꽉 채운다 (팝업 안의 판은 판 위 판이라 가라앉은 색) */
+html body #root .pxd--page .pxd-sec, html body #root .pxd--page .pxd-profile { --px-fill: var(--panel); }
+
+/* ── 검색 팔레트 (D05) ────────────────────────────────────────────────── */
+html body #root .pxd-palette__field { min-height: 5.6rem; font-size: 1.6rem; }
+html body #root .pxd-palette__field input { font-size: 1.6rem; }
+html body #root .pxd-palette__list { display: flex; flex-direction: column; gap: 1.2rem; margin: 0; padding: 0; list-style: none; }
+html body #root .pxd-palette__result { position: relative; min-width: 0; margin-top: 0.4rem; }
+html body #root .pxd-palette__hit { flex-direction: row; align-items: center; gap: 1.2rem; min-height: var(--tap); padding: 2.8rem 1.2rem 1.2rem; }
+html body #root .pxd-palette__hit.is-on { --px-line: var(--brand-text); }
+html body #root .pxd-palette__hit .px-ball { --ball: 4.8rem; }
+html body #root .pxd-palette__text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 0.4rem; }
+html body #root .pxd-palette__text > .px-sub { overflow-wrap: anywhere; }
+html body #root .pxd-palette__enter { margin-left: auto; }
+html body #root .pxd-palette__group { display: flex; flex-direction: column; gap: 1.2rem; }
+html body #root .pxd-palette__clear { padding: 0; border: 0; background: none; cursor: pointer; }
+html body #root .pxd-palette__chip { gap: 0.8rem; min-height: var(--tap); }
+html body #root .pxd-palette__chip .px-ball { --ball: 2.8rem; }
+
+/* ── 동의 (D08) · 통계 (D09) ─────────────────────────────────────────── */
+html body #root .pxd-checks { display: flex; flex-direction: column; gap: 0.4rem; }
+html body #root .pxd-checks__row { display: flex; flex-wrap: wrap; align-items: center; gap: 0.8rem 1.2rem; }
+html body #root .pxd-checks__row > .px-check { flex: 1; min-width: 20rem; }
+html body #root .pxd-setting { display: flex; flex-direction: column; gap: 0.8rem; }
+html body #root .pxd-setting__row { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.8rem 1.6rem; }
+
+/* ── 공통 상태 (D13) — 오류 판 · 토스트 ──────────────────────────────── */
+html body #root .pxd-error { max-width: 56rem; margin: 2.4rem auto; }
+html body #root .pxd-toast { font-weight: 500; }
+html body #root .pxd-toast--good, html body #root .px-toast--good .px-icon:first-child { color: var(--mint); }
+html body #root .px-toast--warn .px-icon:first-child { color: var(--danger-action); }
+html body #root .pxd-toast__text { flex: 1; min-width: 0; color: var(--fg); }
+html body #root .pxd-toast__close { display: grid; place-items: center; width: var(--tap); height: var(--tap); margin: -1.2rem -1.2rem -1.2rem 0; padding: 0; border: 0; background: none; color: var(--muted); cursor: pointer; }
+
+/* ── 모바일 — 한 열 · 전체 높이 시트 ───────────────────────────────────── */
+@media (max-width: 899px) {
+  html body #root .pxd__cols { grid-template-columns: minmax(0, 1fr); }
+  html body #root .pxd-profile { flex-direction: row; flex-wrap: wrap; justify-content: center; text-align: left; }
+  html body #root .pxd-profile__art { --ball: 13rem; }
+  html body #root .pxd-profile__text { flex: 1; min-width: 16rem; align-items: flex-start; }
+  html body #root .pxd--page .pxd-profile { grid-template-columns: 13rem minmax(0, 1fr); }
+  html body #root .pxd-profile__tiles { grid-column: 1 / -1; }
+}
+@media (max-width: 699px) {
+  html body #root .pxd__head-art { --ball: 4.4rem; }
+  html body #root .pxd__head .detail__fav-label { display: none; }
+  html body #root .pxd__head .detail__fav { width: var(--tap); padding: 0; }
+  html body #root .pxd-match { grid-template-columns: minmax(0, 1fr); }
+  html body #root .pxd-moves__row { grid-template-columns: minmax(0, 1fr); gap: 0.4rem; }
+  html body #root .pxd-calc__row { grid-template-columns: minmax(0, 1fr); gap: 0.4rem; }
+  html body #root .pxd--page .pxd-profile { grid-template-columns: minmax(0, 1fr); justify-items: center; text-align: center; }
+  html body #root .pxd--page .pxd-profile__text { align-items: center; }
+  html body #root .pxd-page__dock { margin-left: 0; width: 100%; }
+  html body #root .pxd-page__dock > .px-btn { flex: 1; }
+  html body #root .pxd-metric .px-metric__value { font-size: 2.2rem; }
+  html body #root .pxd-sec .px-grid--3 { --cols: 1; }
+}
+
+/* ── 옛 규칙 되덮기 — v3 layout.css 의 `footer { flex-direction: column }` · pixel/shell.css 의 `footer button { underline }` 이
+   팝업 바닥(<footer class="px-dialog__foot">)에도 닿는다. 화면 아래 푸터 규칙이라 지우지 않고 여기서 되돌린다 (parts.css 후보) */
+html body #root .px-dialog .px-dialog__foot { flex-direction: row; margin: 0; border: 0; border-top: var(--px-stroke) solid var(--line); background: transparent; box-shadow: none; color: var(--fg); font-size: 1.4rem; line-height: 1.2; padding: 1.6rem 2.4rem 2.4rem; }
+@media (max-width: 699px) { html body #root .px-dialog .px-dialog__foot { padding: 1.6rem 2rem calc(1.6rem + env(safe-area-inset-bottom)); } }
+html body #root .px-dialog .px-dialog__foot :is(a, button) { text-decoration: none; }
+html body #root .px-dialog .px-dialog__head { padding: 2.4rem 2.4rem 1.6rem; }
+@media (max-width: 699px) { html body #root .px-dialog .px-dialog__head { padding: max(2rem, env(safe-area-inset-top)) 2rem 1.6rem; } }
+/* 옛 v3 input[type=search] 테두리가 검색칸 안쪽 input 에 닿는다 — 판(px-input)이 테두리를 그리니 안쪽은 없앤다 */
+html body #root .pxd-palette__field input { border: 0; outline: 0; box-shadow: none; background: transparent; }
+
+html body #root .pxd-dock__compact { display: none; }
+html body #root .pxd-route-summary { display: none; }
+
+/* 모바일 상세 — 세 진화 단계는 한 줄, 다른 화면으로 가는 보조 단추는 접는다.
+   분기 진화는 단계 안에서 세로로 쌓아 순서를 유지한다. */
+@media (max-width: 699px) {
+  html body #root .pxd-evo { column-gap: 0.8rem; }
+  html body #root .pxd-evo__stage { flex: 1 1 0; min-width: 0; flex-direction: column; gap: 0.8rem; }
+  html body #root .pxd-evo__stage--mega { flex: 1 0 100%; flex-direction: row; }
+  html body #root .pxd-evo__card { width: 100%; }
+  html body #root .pxd-evo__mon { min-width: 0; width: 100%; align-items: center; padding: 2.4rem 0.4rem 0.8rem; text-align: center; font-size: 1.4rem; }
+  html body #root .pxd-evo__mon .px-ball { --ball: 6.4rem; width: min(6.4rem, 100%); height: auto; aspect-ratio: 1; }
+  html body #root .pxd-evo__stage--mega .pxd-evo__card { width: calc((100% - 1.6rem) / 3); }
+  html body #root .pxd-evo__note { font-size: 1.2rem; }
+  html body #root .px-dialog .pxd-route-cta { display: none; }
+  html body #root .pxd--page .pxd-route-cta { display: none; }
+  html body #root .pxd-route-summary { display: flex; flex-wrap: wrap; cursor: default; }
+  html body #root .pxd-forms > .pxd-route-summary { border-top: var(--px-stroke) solid color-mix(in srgb, var(--line) 50%, transparent); }
+  html body #root .pxd-dock__wide { display: none; }
+  html body #root .pxd-dock__compact { display: inline; }
+  html body #root .px-dialog .px-dialog__head { gap: 0.8rem; padding: 1.6rem 1.2rem 1.2rem; }
+  html body #root .pxd__head .px-heading { font-size: 1.6rem; }
+}

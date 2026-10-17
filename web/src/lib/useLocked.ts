@@ -45,6 +45,8 @@ export function useLockReason(routeId: string): LockReason {
   // 루트 화면은 로그인 전에도 '없는 화면' — '로그인하면 열려요' 라고 하면 있다는 것을 알려 주게 된다 (2026-09-24 주인 요청)
   // 화면은 막는 척일 뿐 — 실제 차단은 서버가 한다(/v1/admin/stats 루트 전용). 막힌 요청을 보내지 않으려고 여기서도 멈춘다
   if ('root' in route && route.root && (status !== 'ok' || role !== 'root')) return 'root';
+  // 관리자 화면도 같다 — 루트 · 위임 관리자가 아니면 '없는 화면' (v6 관리자 캠프)
+  if ('admin' in route && route.admin && (status !== 'ok' || (role !== 'root' && role !== 'admin'))) return 'root';
   if (route.locked && status !== 'ok') return 'login';
   if (route.beta && !beta) return 'beta';
   return '';
@@ -58,7 +60,9 @@ export function useRootShown(routeId: string): boolean {
   const status = useAuthStore((s) => s.status);
   const role = useAuthStore((s) => s.role);
   const route = routeById(routeId);
-  if (!route || !('root' in route) || !route.root) return true;
+  if (!route) return true;
+  if ('admin' in route && route.admin) return status === 'ok' && (role === 'root' || role === 'admin');
+  if (!('root' in route) || !route.root) return true;
   return status === 'ok' && role === 'root';
 }
 
