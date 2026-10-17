@@ -59,6 +59,12 @@ html body .px-number { margin: 0; color: var(--fg); font: 700 2.8rem/1.2 var(--f
 html body .px-sec { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.4rem 1.2rem; margin: 0; }
 html body .px-sec > .px-sec__note { color: var(--muted); font: 400 1.2rem/1.5 var(--font-body); }
 html body .px-sec > .px-sec__more { margin-left: auto; color: var(--brand-text); font: 500 1.2rem/1.5 var(--font-body); text-decoration: none; }
+/* 글자 한 줄짜리 링크(더보기 · 보스 상세 확인 · 홈 체크포인트 더보기 · 바닥글)의 손가락 자리 — 보이는 크기는 그대로 두고
+   누르는 자리만 세로 44px(--tap)로 넓힌다. 글줄 안에 있어 min-height 를 주면 줄이 벌어지므로 가상 요소로 겹쳐 둔다 */
+html body :is(.px-sec__more, .nw-ev__link, .home__check-more, footer .foot-links a, footer .foot-links button) { position: relative; }
+html body :is(.px-sec__more, .nw-ev__link, .home__check-more, footer .foot-links a, footer .foot-links button)::after {
+  content: ''; position: absolute; top: 50%; left: 0; right: 0; height: var(--tap); transform: translateY(-50%);
+}
 
 /* ── 단추 ───────────────────────────────────────────────────────────────── */
 /* 누르는 것은 44px 이상. 기본은 가라앉은 판(panel-2), 주 행동은 빨강 판. 눌림은 :active, 비활성은 흐리게 */
