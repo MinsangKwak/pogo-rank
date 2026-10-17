@@ -17,6 +17,7 @@
 import { Component, type ErrorInfo, type ReactNode } from 'react';
 import { QueryErrorResetBoundary } from '@tanstack/react-query';
 import { settleVeil } from '../lib/veil';
+import { PixelIcon } from './PixelIcon';
 
 interface Props { children: ReactNode; onReset: () => void }
 interface State { failed: boolean }
@@ -43,14 +44,14 @@ class Catcher extends Component<Props, State> {
   override render() {
     if (!this.state.failed) return this.props.children;
     return (
-      <div className="data-boundary" role="alert">
-        <p className="data-boundary__head">자료를 불러오지 못했어요</p>
-        <p className="data-boundary__body">
-          잠시 연결이 끊겼을 수 있어요. 다시 시도해 주세요.
-        </p>
-        <button className="home__btn home__btn--primary" type="button" onClick={this.retry}>
-          다시 불러오기
-        </button>
+      // v6 D13 오류 판 — 픽셀 안내 판(px-note) + 주 단추. 모양은 parts.css, 자리는 modal.css(.pxd-error)
+      <div className="px-note px-skin px-drop pxd-error data-boundary" role="alert">
+        <p className="px-eyebrow"><PixelIcon name="info" /> ERROR</p>
+        <p className="px-note__title data-boundary__head">잠시 정보를 불러오지 못했어요</p>
+        <p className="px-note__body data-boundary__body">기존 입력을 유지합니다. 잠시 연결이 끊겼을 수 있어요 — 다시 시도해 주세요.</p>
+        <div className="px-note__actions">
+          <button className="px-btn px-btn--primary px-skin" type="button" onClick={this.retry}>다시 불러오기</button>
+        </div>
       </div>
     );
   }

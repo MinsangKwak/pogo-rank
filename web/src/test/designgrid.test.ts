@@ -9,11 +9,13 @@ import { readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 
 const STYLES = join(__dirname, '..', 'styles');
-const CINEMA = join(STYLES, 'cinema');
-const files = readdirSync(CINEMA).filter((name) => name.endsWith('.css'));
+// 2026-10-16 v6 — 새 디자인(pixel/)도 같은 규칙을 탄다. 토큰 · 글꼴 파일은 값의 원본이라 hex 가 서는 자리다 — 검사에서 뺀다
+const DIRS = ['cinema', 'pixel'];
+const SKIP = new Set(['tokens.css', 'fonts.css']);
+const files = DIRS.flatMap((dir) => readdirSync(join(STYLES, dir)).filter((name) => name.endsWith('.css') && !SKIP.has(name)).map((name) => join(dir, name)));
 // 주석은 뺀다 — 설명 글에 적은 hex · px 은 규칙이 아니다
 const bare = (text: string) => text.replace(/\/\*[\s\S]*?\*\//g, '');
-const sources = files.map((name) => ({ name, css: bare(readFileSync(join(CINEMA, name), 'utf8')) }));
+const sources = files.map((name) => ({ name, css: bare(readFileSync(join(STYLES, name), 'utf8')) }));
 
 function allCss(dir: string): string {
   return readdirSync(dir, { withFileTypes: true }).map((one) =>
@@ -93,7 +95,8 @@ describe('새 디자인 — 규칙 안에 선다', () => {
   it('쓰는 토큰은 어딘가에 정의돼 있다 — 없는 이름은 색이 통째로 빠진다 (§1-c)', () => {
     const defined = new Set([...allCss(STYLES).matchAll(/(--[a-z0-9-]+)\s*:/g)].map((m) => m[1]!));
     // 화면이 style 로 넣는 값 — MaxSlider(--banner-progress) · Schedule(--category-color · 달력 막대 --event-color · --cat-color) · MaxPoster(--hero-focus)
-    for (const runtime of ['--banner-progress', '--category-color', '--event-color', '--cat-color', '--hero-focus']) defined.add(runtime);
+    // v6 조각이 style 로 받는 값 — 지표 색(--px-metric-c) · 세그먼트 막대(--pct · --px-stat-c)
+    for (const runtime of ['--banner-progress', '--category-color', '--event-color', '--cat-color', '--hero-focus', '--px-metric-c', '--pct', '--px-stat-c']) defined.add(runtime);
     for (const { name, css } of sources) {
       for (const used of css.matchAll(/var\((--[a-z0-9-]+)/g)) {
         expect(defined.has(used[1]!), `${name}: ${used[1]} 가 정의돼 있지 않습니다`).toBe(true);

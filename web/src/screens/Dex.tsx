@@ -6,19 +6,23 @@
 // 여기서는 셋 다 이 컴포넌트의 지역 상태다 — **화면 밖에서 아무도 안 보는 값**이라서다.
 // 다만 보기 방식(그리드/리스트)만은 기기에 남으므로 스토어로 뺀다 (`pogo_dex_cols`).
 // ─────────────────────────────────────────────────────────────────────────────
-import { useMemo, useState } from 'react';
+import { useMemo, useState, type ReactNode } from 'react';
 import { useDex, useUsage } from '../lib/data';
 import { usePrefStore, readCols } from '../stores/pref';
-import { TypeDot, Sprite, ViewToggle } from '../components/Bits';
-import { Slot } from '../components/Slots';
-import { TypePill } from '../ds';
+import { PxChips, PxViewSwitch, type ChipDef } from '../components/Bits';
+import { PixelIcon } from '../components/PixelIcon';
+import MonCard from '../components/MonCard';
+import { RankList, RankRow } from '../components/Row';
 import { track, trackSearchPick } from '../lib/track';
+import { num } from '../lib/cell';
 import type { OpenMon } from '../lib/mon';
 
 // v3 pages.js DEX_GENS — 도감번호 구간으로 세대를 정한다
 const DEX_GENS: [number, number][] = [
   [1, 151], [152, 251], [252, 386], [387, 493], [494, 649], [650, 721], [722, 809], [810, 905], [906, 1025],
 ];
+
+// 도감 전체 종 수 — 구역 제목의 '전체 1,025종' 은 이름표 수를 센 값이다 (지어내지 않는다)
 
 // 한 번에 100종씩 — 1025종을 한 번에 세우면 휴대폰에서 첫 화면이 3만 픽셀이 된다 (v3 와 같은 쪽수)
 const DEX_PAGE = 100;
@@ -28,28 +32,34 @@ function cpOf(atk: number, def: number, hp: number, cpm: number): number {
 }
 
 /**
- * 이 포켓몬이 어디서 쓰이는가 — [PvP 63] [PvE 31] 두 알약 (v3 dexUseNode, v3.24.0).
+ * 이 포켓몬이 어디서 쓰이는가 — PvP 63 · PvE 31 (v3 dexUseNode, v3.24.0).
  * 검색해서 들어온 사람의 첫 물음이 "이거 PvP 용이야 레이드 용이야" 인데
- * 줄에는 세대·CP 만 있었다. 높은 쪽이 진하다(.is-lead).
+ * 줄에는 세대·CP 만 있었다. 높은 쪽이 진하다(is-lead).
+ * v6 — 카드는 메타 한 줄의 글자로, 목록 줄은 배지로 받는다 (같은 값, 자리만 다르다)
  */
-function DexUse({ name }: { name: string }) {
+const USE_TITLE = 'PvP 는 리그 점수 상위 2개 평균, PvE 는 가장 잘 통하는 보스 3종 대비 비율 평균 (0~100, 가성비 화면과 같은 기준)';
+
+function useMeter(name: string): { pve: number; pvp: number; lead: '' | 'pvp' | 'pve' } | null {
   const { data } = useUsage();
   const meter = data.METER[name];
   if (!meter) return null;
   const [pve, pvp] = meter;
   if (!pve && !pvp) return null;
-  const lead = pvp === pve ? '' : pvp > pve ? 'pvp' : 'pve';
-  // 값은 <b> 가 아니라 <span> — CSS·회귀가 '.dex__row b' 를 "이름" 으로 읽는다
-  const pill = (key: string, label: string, value: number) => (
-    <span key={key} className={`dex__use-pill${lead === key ? ' is-lead' : ''}${value ? '' : ' is-none'}`}>
-      <em>{label}</em><span className="dex__use-val">{value ? String(value) : '-'}</span>
+  return { pve, pvp, lead: pvp === pve ? '' : pvp > pve ? 'pvp' : 'pve' };
+}
+
+function DexUse({ name, as }: { name: string; as: 'text' | 'badge' }) {
+  const meter = useMeter(name);
+  if (!meter) return null;
+  if (as === 'text') {
+    return <span className="dex__use" title={USE_TITLE}>{`PvP ${meter.pvp ? num(meter.pvp) : '—'} · PvE ${meter.pve ? num(meter.pve) : '—'}`}</span>;
+  }
+  const pill = (key: 'pvp' | 'pve', label: string, value: number) => (
+    <span key={key} className={`px-badge px-skin px-badge--ko ${meter.lead === key ? 'px-badge--mint' : 'px-badge--muted'}`}>
+      {`${label} ${value ? num(value) : '—'}`}
     </span>
   );
-  return (
-    <span className="dex__use" title="PvP 는 리그 점수 상위 2개 평균, PvE 는 가장 잘 통하는 보스 3종 대비 비율 평균 (0~100, 가성비 화면과 같은 기준)">
-      {pill('pvp', 'PvP', pvp)}{pill('pve', 'PvE', pve)}
-    </span>
-  );
+  return <span className="dex__use" title={USE_TITLE}>{pill('pvp', 'PvP', meter.pvp)}{pill('pve', 'PvE', meter.pve)}</span>;
 }
 
 /**
@@ -74,7 +84,7 @@ function MegaTag({ megas }: { megas?: { sprite: number; label: string; rel?: boo
   const title = unrel
     ? (primal ? '원시회귀 데이터는 있지만 아직 미구현' : '메가진화 데이터는 있지만 아직 미구현')
     : primal ? '원시회귀 가능' : '메가진화 가능';
-  return <span className={`tag dex__mega${primal ? ' dex__mega--primal' : ''}${unrel ? ' is-unreleased' : ''}`} title={title}>{text}</span>;
+  return <span className={`px-badge px-skin px-badge--ko ${primal ? 'px-badge--orange' : 'px-badge--purple'}${unrel ? ' is-unreleased' : ''}`} title={title}>{text}</span>;
 }
 
 export default function Dex({ onOpen }: { onOpen: OpenMon }) {
@@ -89,6 +99,7 @@ export default function Dex({ onOpen }: { onOpen: OpenMon }) {
 
   // v3 는 만렙(l50) 기준으로 'CP 100%' 를 적는다 — l40 을 쓰면 숫자가 통째로 어긋난다
   const cpm = data.DEX_DATA.cpm['l50'] ?? 0.84;
+  const total = Object.keys(data.DEX_DATA.names).length;
 
   /**
    * 도감 이름표에 있는 **모든 종**, 도감번호 순.
@@ -112,138 +123,123 @@ export default function Dex({ onOpen }: { onOpen: OpenMon }) {
       });
   }, [data, term, types, gen, mega]);
 
+  // 타입은 최대 둘 — 셋째를 누르면 가장 오래된 것이 빠진다 (v3 와 같다). '전체' 는 비운다
   const toggleType = (type: string) => {
+    if (type === 'all') { setTypes([]); return; }
     setTypes((prev) => (prev.includes(type) ? prev.filter((one) => one !== type) : [...prev, type].slice(-2)));
     track('dex_filter', { type });
   };
+  const filtered = !!(term || types.length || gen || mega);
+  const clear = () => { setTerm(''); setTypes([]); setGen(0); setMega(false); setShown(DEX_PAGE); };
+
+  // 세대 칩 — '전체' · 1~9세대 · '메가·원시'. 전체는 세대도 메가도 고르지 않은 상태다
+  const genChips: ChipDef[] = [{ id: 'all', label: '전체' },
+    ...DEX_GENS.map((_, index) => ({ id: String(index + 1), label: `${index + 1}세대` })),
+    { id: 'mega', label: '메가·원시' }];
+  const genOn = mega ? ['mega'] : gen ? [String(gen)] : ['all'];
+  const typeChips: ChipDef[] = [{ id: 'all', label: '전체' },
+    ...Object.keys(data.DEX_DATA.chart).map((type) => ({ id: type, label: data.TYPE_KO[type] ?? type, type }))];
+  const typeOn = types.length ? types : ['all'];
 
   return (
-    <div id="page-dex" className="page__body dex-page" data-route="dex">
-      {/* 보기 전환은 본문이 아니라 **화면 머리 오른쪽**에 선다 — 도감·레이드·순위표가 같은 자리다.
-          본문 꼬리에 뒀더니 목록을 다 내려야 보여, 있으나 마나 한 버튼이 됐다 */}
-      <Slot name="headActions">
-        <ViewToggle view={saved} onToggle={() => setCols('dex', saved === 'grid' ? 'list' : 'grid')}
-          extraClass="dex__layout" />
-      </Slot>
-      {/* 세대·메가 칩 줄. v3 는 이 줄을 .screen-tabs 로 부른다 — 검색창 위 제 줄에 선다 */}
-      <div className="screen-tabs dex__toolbar">
-        <div className="tchips">
-          {DEX_GENS.map((_, index) => (
-            <button key={index} className="uchip" aria-pressed={gen === index + 1}
-              onClick={() => { setGen(gen === index + 1 ? 0 : index + 1); setShown(DEX_PAGE); }}>
-              {`${index + 1}세대`}
-            </button>
-          ))}
-          <button className="uchip" aria-pressed={mega} title="메가진화 또는 원시회귀가 있는 종만 보기"
-            onClick={() => { setMega(!mega); setShown(DEX_PAGE); }}>⚡ 메가·원시</button>
-        </div>
+    <div id="page-dex" className="page__body dex-page rk-page" data-route="dex">
+      {/* 검색 + 카드/목록 전환이 한 줄 — 보기 전환은 옛 화면 머리 자리에서 검색 옆으로 왔다 (피그마 07) */}
+      <div className="dx-search">
+        <label className="px-input px-skin dx-search__box">
+          <PixelIcon name="search" />
+          <input
+            id="dex-search"
+            className="dex__search"
+            type="search"
+            placeholder="한국어 · English · 도감 번호로 검색"
+            aria-label="포켓몬 검색"
+            value={term}
+            onChange={(event) => { setTerm(event.target.value); setShown(DEX_PAGE); }}
+          />
+        </label>
+        <PxViewSwitch view={saved} onPick={(next) => setCols('dex', next)} />
       </div>
 
-      <input
-        id="dex-search"
-        className="boss__search dex__search"
-        type="search"
-        placeholder="이름 · 영문명 · 도감번호로 찾기"
-        value={term}
-        onChange={(event) => { setTerm(event.target.value); setShown(DEX_PAGE); }}
-      />
-
-      <details className="filter-box dex__type-box">
-        <summary>타입 선택{types.length ? ` (${types.length})` : ''}</summary>
-        <div className="chips dex__types-filter">
-          {Object.keys(data.DEX_DATA.chart).map((type) => (
-            <button
-              key={type}
-              type="button"
-              className="chips__item"
-              aria-pressed={types.includes(type)}
-              onClick={() => { toggleType(type); setShown(DEX_PAGE); }}
-            >
-              <span className="dot" style={{ ['--c' as string]: `var(--t-${type})` }} />
-              {data.TYPE_KO[type] ?? type}
-            </button>
-          ))}
-        </div>
-      </details>
-
-      <div className="dex__found" hidden={!term && !types.length && !gen && !mega}>
-        <b>{`${rows.length.toLocaleString()}종`}</b>
-        <button className="uchip dex__found-clear"
-          onClick={() => { setTerm(''); setTypes([]); setGen(0); setMega(false); setShown(DEX_PAGE); }}>지우기</button>
+      <div className="dx-filters">
+        <PxChips label="세대" items={genChips} pressed={genOn} onPick={(id) => {
+          if (id === 'all') { setGen(0); setMega(false); }
+          else if (id === 'mega') { setMega(!mega); }
+          else { setGen(gen === Number(id) ? 0 : Number(id)); }
+          setShown(DEX_PAGE);
+        }} />
+        <PxChips label="타입" items={typeChips} pressed={typeOn} onPick={(id) => { toggleType(id); setShown(DEX_PAGE); }} />
+        <p className="px-caption dx-filters__hint">타입은 최대 2개까지 선택할 수 있어요</p>
       </div>
 
-      <div className={`dex__list dex-catalog${saved === 'grid' ? ' is-grid' : ''}`}>
+      <div className="px-sec rk-head">
+        <h2 className="px-heading rk-head__title">도감 탐색</h2>
+        <span className="px-sec__note">
+          {`전체 ${total.toLocaleString('ko-KR')}종`}{filtered ? ` · 현재 필터 ${rows.length.toLocaleString('ko-KR')}종` : ''}
+        </span>
+        {filtered ? <button type="button" className="px-btn px-btn--sm px-skin dex__found-clear" onClick={clear}>지우기</button> : null}
+      </div>
+
+      <RankList view={saved}>
         {rows.slice(0, shown).map((row) => {
-            // 종족값이 아직 없는 종도 목록에는 선다 — 빈 칸으로 그릴 뿐 빼지 않는다 (v3 와 같다)
-            const form = row.form;
-            const gen = DEX_GENS.findIndex(([from, to]) => row.dex >= from && row.dex <= to);
-            const open = () => {
-              if (term.trim()) trackSearchPick(row.name, 'dex');
-              onOpen({ sprite: row.dex, name: row.name, types: form?.types ?? [] });
-            };
-            const stats = (
-              <span className="dex__stats">
-                {gen >= 0 ? <span className="dex__stat dex__stat--gen"><em>세대</em><b>{gen + 1}</b></span> : null}
-                {form ? (
-                  <span className="dex__stat dex__stat--cp">
-                    <em>CP 100%</em><b>{cpOf(form.atk, form.def, form.hp, cpm).toLocaleString()}</b>
-                  </span>
-                ) : null}
-              </span>
+          // 종족값이 아직 없는 종도 목록에는 선다 — 빈 칸으로 그릴 뿐 빼지 않는다 (v3 와 같다)
+          const form = row.form;
+          const genAt = DEX_GENS.findIndex(([from, to]) => row.dex >= from && row.dex <= to);
+          const open = () => {
+            if (term.trim()) trackSearchPick(row.name, 'dex');
+            onOpen({ sprite: row.dex, name: row.name, types: form?.types ?? [] });
+          };
+          const cp = form ? cpOf(form.atk, form.def, form.hp, cpm) : null;
+          const badges: ReactNode = (
+            <>
+              {row.unrel ? <span className="px-badge px-skin px-badge--muted px-badge--ko">미구현</span> : null}
+              <MegaTag megas={data.DEX_DATA.megas[String(row.dex)]} />
+            </>
+          );
+          if (saved === 'grid') {
+            // 메타 한 줄 — 최대 CP · 세대 · 활용(PvP · PvE). 없는 값은 안 적는다 (§1)
+            const meta = (
+              <>
+                {cp !== null ? `최대 CP ${cp.toLocaleString('ko-KR')}` : ''}
+                {genAt >= 0 ? `${cp !== null ? ' · ' : ''}${genAt + 1}세대` : ''}
+                <DexUseText name={row.name} />
+              </>
             );
-            // 줄 보기는 두 줄 카드다 — 번호 · 그림 · 딱지 · 이름 · 알약 · 점이 한 줄에 서서 읽히지 않았다 (2026-09-25 제보).
-            // 1줄 이름 + 딱지, 2줄 번호 + 타입 이름, 오른쪽에 PvP · PvE 를 위아래로 세운다
-            if (saved !== 'grid') {
-              return (
-                <button key={row.dex} className={`dex__row${row.unrel ? ' is-unreleased' : ''}`} data-sprite={row.dex} onClick={open}>
-                  <Sprite id={row.dex} />
-                  <span className="dex__main">
-                    <span className="dex__title">
-                      <span className="dex__name"><b>{row.name}</b></span>
-                      <MegaTag megas={data.DEX_DATA.megas[String(row.dex)]} />
-                      {row.unrel ? <span className="tag dex__unrel">미구현</span> : null}
-                    </span>
-                    <span className="dex__sub">
-                      <span className="dex__no">{`#${String(row.dex).padStart(4, '0')}`}</span>
-                      <TypePill types={form?.types ?? []} names={data.TYPE_KO} />
-                    </span>
-                  </span>
-                  {stats}
-                  <DexUse name={row.name} />
-                </button>
-              );
-            }
             return (
-              <button key={row.dex} className={`dex__row${row.unrel ? ' is-unreleased' : ''}`} data-sprite={row.dex} onClick={open}>
-                <span className="dex__no">{`#${String(row.dex).padStart(4, '0')}`}</span>
-                <span className="dex__portrait"><Sprite id={row.dex} /></span>
-                {row.unrel ? <span className="tag dex__unrel">미구현</span> : null}
-                {/* 메가 딱지는 그림 **바로 뒤**, 이름 앞에 선다 — 이름 안에 넣었더니 이름 줄이 밀렸다 */}
-                <MegaTag megas={data.DEX_DATA.megas[String(row.dex)]} />
-                <span className="dex__name"><b>{row.name}</b><DexUse name={row.name} /></span>
-                {stats}
-                <span className="dex__types">
-                  {(form?.types ?? []).map((type) => <TypeDot key={type} type={type} />)}
-                </span>
-              </button>
+              <li key={row.dex} className={row.unrel ? 'is-unreleased' : undefined}>
+                <MonCard sprite={row.dex} dex={row.dex} name={row.name} types={form?.types ?? []} meta={meta} badges={badges} from="도감" onOpen={open} />
+              </li>
             );
+          }
+          return (
+            <RankRow key={row.dex} sprite={row.dex} no={row.dex} name={row.name} types={form?.types ?? []}
+              score={cp !== null ? cp.toLocaleString('ko-KR') : '—'} label="최대 CP"
+              lines={genAt >= 0 ? [`${genAt + 1}세대`] : []}
+              badges={<>{badges}<DexUse name={row.name} as="badge" /></>}
+              unrel={row.unrel} onOpen={open} />
+          );
         })}
-      </div>
+      </RankList>
 
-      <p className="dex__hint" hidden={rows.length > 0}>검색 결과가 없어요. 이름 일부로 검색하거나 필터를 바꿔 보세요.</p>
+      <p className="px-body px-muted dex__hint" hidden={rows.length > 0}>검색 결과가 없어요. 이름 일부로 검색하거나 필터를 바꿔 보세요.</p>
       {rows.length > shown
         ? (
-          <button className="boss__more" onClick={() => setShown(shown + DEX_PAGE)}>
+          <button type="button" className="px-btn px-btn--block px-skin rk-more" onClick={() => setShown(shown + DEX_PAGE)}>
             {`더 보기 (${shown}/${rows.length})`}
           </button>
         )
         : null}
-      <p className="detail__foot">
+      <p className="px-caption detail__foot">
         미구현 = 포켓몬 GO에 아직 출시되지 않은 종 (PvPoke 출시 목록 기준, 데이터는 게임마스터 선등록분).
-        ⚡ 메가·원시 배지는 메가진화 또는 원시회귀가 가능한 종을 뜻해요. 포켓몬을 선택한 뒤 진화 탭에서 해당 폼의 능력치를 확인할 수 있어요.
-        섀도우·리전 폼은 🔍 검색을 통해 이 목록에서 함께 확인할 수 있어요.
+        메가·원시 배지는 메가진화 또는 원시회귀가 가능한 종을 뜻해요. 포켓몬을 선택한 뒤 진화 탭에서 해당 폼의 능력치를 확인할 수 있어요.
+        섀도우·리전 폼은 검색을 통해 이 목록에서 함께 확인할 수 있어요.
       </p>
-
     </div>
   );
+}
+
+/** 카드 메타 줄 끝의 ' · PvP 63 · PvE 31' — 값이 없으면 아무것도 안 붙인다 */
+function DexUseText({ name }: { name: string }) {
+  const meter = useMeter(name);
+  if (!meter) return null;
+  return <> · <DexUse name={name} as="text" /></>;
 }

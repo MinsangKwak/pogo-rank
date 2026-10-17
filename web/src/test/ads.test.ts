@@ -135,7 +135,8 @@ describe('자리 크기와 빌드 설정', () => {
 describe('광고 없는 화면 (2026-10-14 수익화 전 점검)', () => {
   it('약관 · 방침 · 설정과 로그인해야 열리는 화면 — 그 밖의 화면에는 선다', () => {
     const free = ROUTES.filter((route) => adFreeRoute(route)).map((route) => route.id).sort();
-    expect(free).toEqual(['admin-stats', 'planner', 'privacy', 'settings', 'terms']);
+    // v6 관리자 캠프(2026-10-16) — 관리자 화면 셋도 잠긴 화면이라 광고가 안 선다
+    expect(free).toEqual(['admin', 'admin-stats', 'admin-trainers', 'admin-users', 'planner', 'privacy', 'settings', 'terms']);
     for (const id of ['home', 'dex', 'dmax', 'pve', 'pvp', 'schedule', 'mon', 'release']) {
       expect(adFreeRoute(ROUTES.find((route) => route.id === id)!), id).toBe(false);
     }

@@ -8,3 +8,9 @@
 // 또 바뀌면 고칠 곳이 하나여야 한다 (CLAUDE.md §5 가 판 번호에 한 것과 같은 생각).
 // ─────────────────────────────────────────────────────────────────────────────
 export const BASE = '/';
+
+// 로컬 Next dev 에서는 배포 산출물(sprites/)을 복사하지 않으므로, 화면 미리보기에만
+// 공개 dev/prod 공유 스프라이트를 쓴다. 실제 배포 빌드는 같은 도메인의 자산을 계속 쓴다.
+export const SPRITE_BASE = process.env.NODE_ENV === 'development'
+  ? 'https://moncamp.kr/sprites/'
+  : `${BASE}sprites/`;
