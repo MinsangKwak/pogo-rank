@@ -26,6 +26,7 @@ export interface RouteDef {
   locked?: boolean;        // 로그인·승인이 있어야 열린다
   beta?: boolean;          // 실험 기능 — 승인 위에 beta 깃발이 하나 더 있어야 열린다
   root?: boolean;          // 루트 관리자만 (2026-09-24 운영 통계) — 메뉴 · 사이트맵에 안 오르고 검색에 안 잡힌다
+  admin?: boolean;         // 관리자(루트 · 위임) 전용 (2026-10-16 v6 관리자 캠프) — root 처럼 메뉴 · 사이트맵에 안 오른다
   legacy?: string[];
   actions?: boolean;       // 머리 오른쪽에 단추(보기 전환·도구)가 선다 — 좁은 화면은 그 줄 높이를 미리 비워 둔다 (CLS)
 }
@@ -57,7 +58,11 @@ export const ROUTES = [
   { id: 'terms', path: 'terms', kind: 'page', title: '이용약관', icon: '📜' },
   { id: 'settings', path: 'settings', kind: 'page', title: '설정', icon: '🛠' },
   // 루트만 — 설정의 관리 칸에서 단추 하나로 들어온다 (components/AdminPanel.tsx)
-  { id: 'admin-stats', path: 'admin/stats', kind: 'page', title: '운영 통계', icon: '📊', locked: true, root: true },
+  { id: 'admin-stats', path: 'admin/stats', kind: 'page', title: '상세 통계', icon: '📊', locked: true, root: true },
+  // v6 관리자 캠프 (2026-10-16) — 루트: 대시보드 · 가입 승인, 관리자 둘 다: 이용자 목록 · 트레이너 코드. 셸이 다르다 (components/AdminShell.tsx)
+  { id: 'admin', path: 'admin', kind: 'page', title: '운영 대시보드', icon: '📊', locked: true, root: true },
+  { id: 'admin-users', path: 'admin/users', kind: 'page', title: '가입 승인 · 유저', icon: '👥', locked: true, admin: true },
+  { id: 'admin-trainers', path: 'admin/trainers', kind: 'page', title: '트레이너 코드', icon: '🛠', locked: true, admin: true },
   { id: 'mon', path: 'mon', kind: 'detail' },
 ] as const satisfies readonly RouteDef[];
 
@@ -93,12 +98,46 @@ export const ROUTE_DESC: Partial<Record<RouteId, string>> = {
   settings: '화면 테마와 포켓몬 이미지의 움직임을 설정할 수 있어요.',
 };
 
+/** 화면 머리의 영문 이름표 (v6 피그마 'MAX BATTLE / RANKINGS'). 로고와 같은 픽셀 글꼴로 한 줄 — 번역하지 않는다 */
+export const ROUTE_EYEBROW: Partial<Record<RouteId, string>> = {
+  home: 'YOUR ADVENTURE STARTS HERE',
+  'game-updates': 'FIELD NOTES / GAME UPDATES',
+  changes: 'MOVE PATCH / CHANGELOG',
+  schedule: 'EVENT MAP',
+  raids: 'RAID RADAR / THIS WEEK',
+  eggs: 'INCUBATOR / HATCH GUIDE',
+  dex: 'POKÉDEX / DISCOVERY',
+  dmax: 'MAX BATTLE / RANKINGS',
+  'dmax-deck': 'TEAM LAB / MAX BATTLE',
+  pve: 'RAID / DAMAGE INTELLIGENCE',
+  'pve-solo': 'RAID SIMULATOR / EXPERIMENTAL',
+  pvp: 'GO BATTLE LEAGUE / META',
+  'pvp-deck': 'TEAM LAB / GO BATTLE LEAGUE',
+  ivrank: 'IV ANALYZER / LEAGUE FIT',
+  planner: 'MY COLLECTION / PLANNER',
+  finder: 'BOX TOOLS / QUERY BUILDER',
+  settings: 'PREFERENCES / ACCOUNT',
+  release: 'SERVICE LOG / RELEASES',
+  privacy: 'SERVICE INFORMATION / POLICY',
+  terms: 'SERVICE INFORMATION / POLICY',
+  'admin-stats': 'INSIGHTS / ROOT',
+  admin: 'CAMP OFFICE / ROOT',
+  'admin-users': 'ACCESS / ROOT',
+  'admin-trainers': 'TRAINER DESK / ADMIN',
+  mon: 'POKÉMON PROFILE',
+};
+
 const byId = new Map<string, RouteDef>(ROUTES.map((route) => [route.id, route]));
 
 /** 옛 경로 → 새 경로. 표를 손으로 두 번 적지 않도록 legacy 에서 뒤집어 만든다 (v3 와 같은 규칙) */
 export const ROUTE_LEGACY = new Map<string, string>();
 for (const route of ROUTES) {
   for (const old of (route as RouteDef).legacy ?? []) ROUTE_LEGACY.set(old, route.path);
+}
+
+/** 메뉴 · 사이트맵 · 정적 머리에 안 오르는 화면 — 루트 · 관리자 전용 (주소만 알아도 무엇이 있는지 드러나지 않게) */
+export function routeHidden(route: RouteDef): boolean {
+  return !!route.root || !!route.admin;
 }
 
 export function routeById(id: string): RouteDef | undefined {

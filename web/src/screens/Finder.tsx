@@ -1,5 +1,5 @@
 // ─────────────────────────────────────────────────────────────────────────────
-// screens/Finder.tsx — 🔎 검색식 만들기 (v3 components/finder.js 이식)
+// screens/Finder.tsx — 🔎 검색식 만들기 (v3 components/finder.js 이식 · v6 피그마 16 판)
 //
 // 포켓몬 GO 안의 검색창에 그대로 붙여 넣을 **검색식 한 줄**을 만들어 준다.
 // 박스가 수천 마리가 되면 "뭘 정리할지" 를 눈으로 고를 수 없다. 게임의 검색식이 그 일을 하는데
@@ -14,7 +14,10 @@
 // ─────────────────────────────────────────────────────────────────────────────
 import { useState } from 'react';
 import { useDex } from '../lib/data';
-import { PxLabel } from '../components/PxIcon';
+import { PixelIcon } from '../components/PixelIcon';
+import { PxChips } from '../components/Bits';
+import { PxButton, PxField, PxNote, PxPanel, PxSectionHead, PxTriChips } from '../components/PxParts';
+import { count as countOf } from '../lib/cell';
 import { track } from '../lib/track';
 
 // 고른 조건은 화면을 떠나도 남는다 — 검색식은 한 번 만들고 게임과 오가며 여러 번 쓴다.
@@ -56,11 +59,11 @@ const FINDER_GROUPS: { id: string; label: string; items: FinderItem[] }[] = [
 
 // 자주 쓰는 묶음 — 처음 여는 사람이 "이런 걸 할 수 있구나" 를 한눈에 보게 한다
 const FINDER_PRESETS = [
-  { id: 'box', label: '🧹 박스 정리', why: '교환할 수 있고, 즐겨찾기·그림자·전설이 아닌 것',
+  { id: 'box', label: '박스 정리', why: '교환할 수 있고, 즐겨찾기·그림자·전설이 아닌 것',
     on: ['tradable'], off: ['fav', 'shadow', 'legendary', 'mythical'] },
-  { id: 'raise', label: '🌱 육성 후보', why: '개체값이 높고 현재 진화 가능한 포켓몬',
+  { id: 'raise', label: '육성 후보', why: '개체값이 높고 현재 진화 가능한 포켓몬',
     on: ['iv4', 'evolve'], off: [] },
-  { id: 'trade', label: '🤝 교환용', why: '교환할 수 있고 아직 행운이 아닌 것',
+  { id: 'trade', label: '교환용', why: '교환할 수 있고 아직 행운이 아닌 것',
     on: ['tradable'], off: ['lucky', 'fav'] },
 ];
 
@@ -125,6 +128,23 @@ export default function Finder() {
     setPicked({ ...picked, flags });
   };
 
+  const applyPreset = (id: string) => {
+    const preset = FINDER_PRESETS.find((one) => one.id === id);
+    if (!preset) return;
+    const flags: Record<string, Sign> = {};
+    for (const one of preset.on) flags[one] = 'on';
+    for (const one of preset.off) flags[one] = 'off';
+    track('finder_preset', { id });
+    setPicked({ ...picked, flags });
+  };
+
+  const toggleType = (key: string) => {
+    const on = picked.types.includes(key);
+    track('finder_type', { type: key });
+    setPicked({ ...picked, types: on ? picked.types.filter((one) => one !== key) : [...picked.types, key] });
+  };
+
+  // 복사 뒤 안내는 토스트가 아니라 **단추 글자**가 바뀐다 — 손가락이 있는 자리에서 결과를 본다
   const copy = async () => {
     if (!query) return;
     try {
@@ -138,103 +158,68 @@ export default function Finder() {
     setTimeout(() => setCopied(''), 1600);
   };
 
+  // 숫자 칸 — 모바일은 16px 로 키워 확대를 막는다(info.css)
   const numberBox = (key: 'cpMin' | 'cpMax', label: string) => (
-    <input className="finder__num" type="number" min="0" inputMode="numeric" placeholder={label} aria-label={label}
-      value={picked[key]}
+    <PxField label={label} type="number" min="0" inputMode="numeric" placeholder="0" value={picked[key]}
       onChange={(event) => setPicked({ ...picked, [key]: event.target.value.replace(/\D/g, '') })} />
   );
 
   return (
-    <div className="page__body finder" id="page-finder" data-route="finder">
-      <p className="note">
-        조건을 한 번 누르면 <b>＋포함</b>, 다시 누르면 <b>－제외</b>, 또 누르면 해제돼요.
-      </p>
+    <div className="pxp pxp-finder" id="page-finder" data-route="finder">
+      {/* 자주 쓰는 묶음 — 처음 여는 사람이 "이런 걸 할 수 있구나" 를 한눈에 보게 한다. 눌린 상태는 없다(적용만 한다) */}
+      <PxChips label="자주 쓰는 검색 조건" items={FINDER_PRESETS.map((preset) => ({ id: preset.id, label: preset.label }))} onPick={applyPreset} />
 
       {/* 만들어진 식을 **맨 위에** — 조건을 고르는 내내 결과가 눈에 있어야 무엇이 달라지는지 보인다 */}
-      <div className="finder__result">
-        <div className="finder__result-label">READY TO SEARCH <span>포켓몬 GO 검색식</span></div>
-        <code className={`finder__out${query ? '' : ' is-empty'}`}>
+      <PxPanel className="pxp-result" aria-live="polite">
+        <div className="pxp-result__head">
+          <p className="px-eyebrow px-eyebrow--brand">READY TO SEARCH</p>
+          <p className="px-sub">{`조건 ${countOf(count)}개 선택`}</p>
+        </div>
+        <code className={`px-mono pxp-result__out${query ? '' : ' is-empty'}`}>
           {query || '(조건을 고르면 여기에 검색식이 만들어져요)'}
         </code>
-        <div className="finder__actions">
-          <button className="finder__copy uchip" disabled={!query} onClick={copy}>
-            {copied || <PxLabel label="📋 복사" />}
-          </button>
-          <button className="uchip finder__clear"
-            onClick={() => { track('finder_clear'); setPicked(EMPTY); }}>↺ 비우기</button>
+        <div className="pxp-result__actions">
+          <PxButton kind="primary" disabled={!query} onClick={copy}>{copied || <>검색식 복사 <span aria-hidden="true">⧉</span></>}</PxButton>
+          <PxButton onClick={() => { track('finder_clear'); setPicked(EMPTY); }}>모두 지우기</PxButton>
         </div>
-        <p className="finder__hint note">
-          {query ? `조건 ${count}개 · 게임 검색창에 그대로 붙여 넣으세요.` : '아래에서 조건을 누르면 검색식이 만들어져요.'}
-        </p>
-      </div>
+        <p className="px-caption">포켓몬 GO의 포켓몬 검색창에 붙여 넣으세요.</p>
+      </PxPanel>
 
-      <div className="row-head"><h2>자주 쓰는 검색 조건</h2></div>
-      <div className="finder__chips finder__presets">
-        {FINDER_PRESETS.map((preset) => (
-          <button key={preset.id} className="uchip finder__preset" title={preset.why}
-            onClick={() => {
-              const flags: Record<string, Sign> = {};
-              for (const id of preset.on) flags[id] = 'on';
-              for (const id of preset.off) flags[id] = 'off';
-              track('finder_preset', { id: preset.id });
-              setPicked({ ...picked, flags });
-            }}>
-            <PxLabel label={preset.label} />
-            <span className="finder__preset-description">{preset.why}</span>
-          </button>
+      {/* 조건 그룹 셋 — 칩은 포함 → 제외 → 해제 순으로 돈다 */}
+      <div className="pxp-groups">
+        {FINDER_GROUPS.map((group) => (
+          <PxPanel key={group.id} className="pxp-group" aria-labelledby={`finder-group-${group.id}`}>
+            <h3 className="px-sub" id={`finder-group-${group.id}`}>{group.label}</h3>
+            <PxTriChips label={group.label} items={group.items.map((item) => ({ id: item.id, label: item.why, title: item.why }))}
+              mode={(id) => picked.flags[id]} onCycle={cycle} />
+          </PxPanel>
         ))}
       </div>
 
-      {FINDER_GROUPS.map((group) => (
-        <section key={group.id} className="finder__section">
-          <div className="row-head"><h2>{group.label}</h2></div>
-          <div className="finder__chips">
-            {group.items.map((item) => {
-              const sign = picked.flags[item.id];
-              const mark = sign === 'on' ? '＋' : sign === 'off' ? '－' : '';
-              return (
-                <button key={item.id} className={`uchip finder__flag${sign ? ` is-${sign}` : ''}`}
-                  title={item.why} aria-pressed={!!sign} onClick={() => cycle(item.id)}>
-                  {mark}{item.why}
-                </button>
-              );
-            })}
+      <PxNote title="칩은 세 번 돌아요"
+        body={<>한 번 눌러 <b>＋포함</b>, 다시 눌러 <b>－제외</b>, 또 누르면 해제돼요. 같은 그룹의 조건은 모두 만족해야 하고(그리고), 타입은 여러 개를 고르면 그중 하나(또는)로 찾아요.</>} />
+
+      {/* 추가 조건 — 타입 · CP 범위 · 이름 */}
+      <section className="pxp-sec" aria-labelledby="finder-extra-title">
+        <PxSectionHead id="finder-extra-title" title="추가 조건" note="필요한 조건만 입력하세요." />
+        <PxPanel className="pxp-extra">
+          <div className="pxp-extra__row">
+            <p className="px-sub">타입</p>
+            <p className="px-caption">여러 개면 "또는"</p>
           </div>
-        </section>
-      ))}
-
-      <section className="finder__section">
-      <div className="row-head"><h2>타입</h2><span className="meta">여러 개면 “또는”</span></div>
-      <div className="finder__chips">
-        {Object.keys(data.TYPE_KO).map((key) => {
-          const on = picked.types.includes(key);
-          return (
-            <button key={key} className={`uchip finder__type${on ? ' is-on' : ''}`} aria-pressed={on}
-              onClick={() => {
-                track('finder_type', { type: key });
-                setPicked({ ...picked, types: on ? picked.types.filter((one) => one !== key) : [...picked.types, key] });
-              }}>
-              {data.TYPE_KO[key] ?? key}
-            </button>
-          );
-        })}
-      </div>
-
-      </section>
-      <section className="finder__section">
-      <div className="row-head"><h2>CP · 이름</h2></div>
-      <div className="finder__row">
-        {numberBox('cpMin', 'CP 최소')}
-        <span className="finder__dash">–</span>
-        {numberBox('cpMax', 'CP 최대')}
-        <input className="finder__name" type="text" placeholder="이름 (예: 파이리)" aria-label="포켓몬 이름" value={picked.name}
-          onChange={(event) => setPicked({ ...picked, name: event.target.value })} />
-      </div>
-
+          <PxChips label="타입" items={Object.keys(data.TYPE_KO).map((key) => ({ id: key, label: data.TYPE_KO[key] ?? key, type: key }))}
+            pressed={picked.types} onPick={toggleType} />
+          <div className="pxp-extra__fields">
+            {numberBox('cpMin', '최소 CP')}
+            {numberBox('cpMax', '최대 CP')}
+            <PxField className="pxp-field--wide" label="이름 또는 별명 (선택)" lead={<PixelIcon name="search" />} type="text" placeholder="예: 파이리"
+              value={picked.name} onChange={(event) => setPicked({ ...picked, name: event.target.value })} />
+          </div>
+        </PxPanel>
       </section>
 
       {/* v3 는 두 문장으로 나눠 붙인다 — 사전이 줄 단위로 찾으므로 붙이는 자리도 같아야 한다 */}
-      <p className="detail__foot">
+      <p className="px-caption pxp-foot">
         {'게임에서 검색할 수 없는 교환 상대 닉네임과 리모트 레이드 전용 조건은 제공하지 않아요. '}
         {'사탕 수 등 버전에 따라 지원 여부가 달라지는 조건도 제외했어요.'}
       </p>

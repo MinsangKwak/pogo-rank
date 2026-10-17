@@ -10,7 +10,7 @@
 // 홈은 데이터 Suspense 밖이라 기다리지 않는다. 숫자는 lib/cell.ts 로만 적는다 (여기는 숫자가 없다)
 // ─────────────────────────────────────────────────────────────────────────────
 'use strict';
-import { BASE } from '../lib/base';
+import { SPRITE_BASE } from '../lib/base';
 import { BOARD_KIND_KO, BOARD_MAX, cardDday, type BossCard } from '../lib/bossBoard';
 import { countersOf, useBossBoard, useCounterSource } from '../lib/useBossBoard';
 import { useDexSoft } from '../lib/data';
@@ -44,7 +44,7 @@ function Card({ card, src, labels, onOpen }: { card: BossCard; src: CounterSourc
           <span className={`week-bosses__dday${card.live ? ' is-live' : ''}`}>{cardDday(card)}</span>
           <span className="week-bosses__kind">{BOARD_KIND_KO[card.kind]}</span>
         </span>
-        <img className="week-bosses__sprite" src={`${BASE}sprites/${card.sprite}.png`} alt="" width="72" height="72" loading="lazy" decoding="async" />
+        <img className="week-bosses__sprite" src={`${SPRITE_BASE}${card.sprite}.png`} alt="" width="72" height="72" loading="lazy" decoding="async" />
         {card.form ? <span className="week-bosses__form">{card.form}</span> : null}
         <b className="week-bosses__name">{card.name}</b>
         <span className="week-bosses__when">{[card.short, card.hours].filter(Boolean).join(' · ')}</span>
@@ -57,7 +57,7 @@ function Card({ card, src, labels, onOpen }: { card: BossCard; src: CounterSourc
             return (
               <button key={row.sprite} type="button" className="week-bosses__rec" title={row.name}
                 onClick={() => { track('week_boss_rec', { boss: card.detailName, mon: row.name }); onOpen({ sprite: row.sprite, name: row.name, en: row.en, types: row.types }); }}>
-                <img className="week-bosses__rec-sprite" src={`${BASE}sprites/${row.sprite}.png`} alt="" width="32" height="32" loading="lazy" decoding="async" />
+                <img className="week-bosses__rec-sprite" src={`${SPRITE_BASE}${row.sprite}.png`} alt="" width="32" height="32" loading="lazy" decoding="async" />
                 {form ? <span className="week-bosses__rec-form">{form}</span> : null}
                 <span className="week-bosses__rec-name">{base}</span>
               </button>

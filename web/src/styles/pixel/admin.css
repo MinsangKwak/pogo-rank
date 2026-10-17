@@ -1,0 +1,222 @@
+/* pixel/admin.css — v6 관리자 캠프 배치 (피그마 '06~10 · ADMIN'). 조각(parts.css)은 모양, 여기는 자리만 둔다
+   머리줄 80 · 레일 224 · 본문(최대 1216, 안쪽 여백 40). 1100px 아래는 레일이 머리줄 단추로 열리는 서랍이 된다 */
+html body #root .admin-shell { position: relative; z-index: 1; min-height: 100vh; }
+html body #root .admin-shell__bar { position: sticky; top: 0; z-index: 30; display: flex; align-items: center; gap: 2.4rem; min-height: 8rem; padding: 1.6rem 2.4rem; background: color-mix(in srgb, var(--rail) 92%, transparent); border-bottom: var(--px-stroke) solid var(--line); backdrop-filter: blur(1.2rem); }
+html body #root .admin-shell__logo { display: flex; align-items: center; gap: 1.6rem; margin: 0; }
+html body #root .admin-shell__sub { color: var(--muted); font: 500 1.4rem/1.2 var(--font-body); }
+html body #root .admin-shell__menu { display: none; }
+html body #root .admin-shell__rail { position: fixed; z-index: 20; top: 8rem; bottom: 0; left: 0; box-sizing: border-box; width: var(--rail-w); display: flex; flex-direction: column; gap: 1.2rem; padding: 2.4rem 1.6rem; overflow-y: auto; background: var(--rail); border-right: var(--px-stroke) solid var(--line); }
+html body #root .admin-shell__rail .nav-menu { display: flex; flex-direction: column; gap: 0.4rem; }
+html body #root .admin-shell__rail .px-nav__item { min-height: 4rem; }
+html body #root .admin-shell__role { margin-top: -0.8rem; }
+html body #root .admin-shell__main { box-sizing: border-box; max-width: var(--content-w); margin-left: var(--rail-w); padding: 4rem var(--inset) 6.4rem; display: flex; flex-direction: column; gap: 2.4rem; }
+html body #root .admin__head { display: flex; flex-direction: column; gap: 1.2rem; }
+html body #root .admin__desc { max-width: 72rem; }
+html body #root .admin__head-actions { display: flex; flex-wrap: wrap; gap: 1.2rem; }
+/* 관리자 화면에는 바탕 풍경을 머리 띠에만 — 조용한 호수 */
+html body:has(.admin-shell)::before { height: 36rem; }
+@media (max-width: 1099px) {
+  html body #root .admin-shell__rail { display: none; }
+  html body #root .admin-shell[data-open] .admin-shell__rail { display: flex; width: min(32rem, 100vw); }
+  html body #root .admin-shell__menu { display: inline-flex; }
+  html body #root .admin-shell__main { margin-left: 0; }
+}
+@media (max-width: 699px) {
+  html body #root .admin-shell__bar { gap: 1.2rem; padding: 2rem; }
+  html body #root .admin-shell__sub { display: none; }
+  html body #root .admin-shell__main { padding: 2.4rem 2rem 6.4rem; }
+}
+
+/* ── 2026-10-16 화면 A01~A08 — 조각(parts.css)은 모양, 여기는 자리. 접두사는 옛 admin-stats.css 를 이기는 장치 ──────────
+   화면 본문은 판을 세로로 쌓는다. 다시 받는 동안에도 글자 대비를 유지한다 — 상태는 기간 판과 aria-busy로 알린다 */
+html body #root .adm-page { display: flex; flex-direction: column; gap: 2.4rem; min-width: 0; }
+html body #root .adm-page.is-busy { opacity: 1; }
+html body #root .adm-sec { display: flex; flex-direction: column; gap: 1.6rem; }
+html body #root .adm-panel { display: flex; flex-direction: column; gap: 1.6rem; min-width: 0; }
+html body #root .adm-panel__head { display: flex; flex-direction: column; gap: 0.4rem; }
+/* 두 판 나란히 — 넓은 쪽(그래프)과 좁은 쪽(할 일) 2:1, 같은 폭이면 1:1. 1100px 아래는 한 줄 */
+html body #root .adm-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 2.4rem; align-items: start; }
+html body #root .adm-grid--wide { grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); }
+html body #root .adm-tiles { gap: 2.4rem; }
+/* 지표 값 색 — 승인 대기가 있으면 주황 */
+html body #root .adm-metric--orange { --px-metric-c: var(--orange); }
+html body #root .adm-metric--mint { --px-metric-c: var(--mint); }
+html body #root .adm-metric--brand { --px-metric-c: var(--brand-text); }
+/* 위험 단추 — 가라앉은 빨강 판 (info.css 의 pxp-btn--danger 와 같은 색) */
+html body #root .adm-btn--danger, html body .adm-confirm .adm-btn--danger { --px-fill: var(--danger-surface); --px-line: var(--danger-action); color: var(--danger-action); }
+
+/* 기간 판 — 칩 줄 · 받은 기간 · 달력 둘 + 단추 둘 */
+html body #root .adm-period { gap: 1.2rem; display: flex; flex-direction: column; }
+/* 기간 칩 일곱은 다 보여야 한다 — 가로로 흐르면 '30일 · 직접 고르기' 가 화면 밖에 숨는다 (2026-10-02 와 같은 판단). 접어 세운다 */
+html body #root .adm-period .px-chips { flex-wrap: wrap; overflow: visible; margin-bottom: 0.4rem; }
+html body #root .adm-period__span { color: var(--fg); }
+html body #root .adm-period__dates { display: flex; flex-wrap: wrap; align-items: center; gap: 1.2rem; margin: 0.4rem 0 0; }
+html body #root .adm-period__date { flex: 1 1 20rem; max-width: 28rem; margin-bottom: var(--px-drop); }
+html body #root .adm-period__date input { font-variant-numeric: tabular-nums; }
+html body #root .adm-period__issue { color: var(--orange); }
+
+/* 안내 판 — 띠 색이 뜻 */
+html body #root .adm-note { gap: 0.8rem; }
+html body #root .adm-note--good { --px-line: var(--mint); }
+html body #root .adm-note--caution { --px-line: var(--orange); }
+html body #root .adm-note--warn { --px-line: var(--danger-action); }
+html body #root .adm-note__body { display: flex; flex-direction: column; gap: 0.8rem; }
+html body #root .adm-note__body > p { margin: 0; }
+html body #root .adm-denied { gap: 1.2rem; }
+
+/* 순위 줄 · 이름-값 줄 */
+html body #root .adm-list { display: flex; flex-direction: column; margin: 0; padding: 0; list-style: none; }
+html body #root .adm-list__row { display: flex; align-items: center; gap: 1.2rem; min-height: 4rem; border-bottom: 0.2rem solid color-mix(in srgb, var(--line) 50%, transparent); }
+html body #root .adm-list__row:last-child { border-bottom: 0; }
+html body #root .adm-list__no { flex: none; width: 2.4rem; color: var(--brand-text); font-size: 1.2rem; }
+html body #root .adm-list__name { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+html body #root .adm-kv { display: flex; flex-direction: column; margin: 0; }
+html body #root .adm-kv__row { display: flex; align-items: center; justify-content: space-between; gap: 1.6rem; min-height: 4.8rem; margin: 0; border-bottom: 0.2rem solid color-mix(in srgb, var(--line) 50%, transparent); }
+html body #root .adm-kv__row:last-child { border-bottom: 0; }
+html body #root .adm-kv__row dd { margin: 0; color: var(--fg); overflow-wrap: anywhere; text-align: right; }
+html body #root .adm-kv--tight .adm-kv__row { min-height: 3.2rem; border-bottom: 0; justify-content: flex-start; gap: 1.2rem; }
+html body #root .adm-kv--tight dt { flex: none; width: 7.2rem; }
+html body #root .adm-pending__count { color: var(--brand-text); }
+
+/* 내 계정 · 프로필 판 — 아바타와 글 */
+html body #root .adm-me, html body #root .adm-profile { display: flex; align-items: flex-start; gap: 1.6rem; }
+html body #root .adm-me__body, html body #root .adm-profile__body { display: flex; flex-direction: column; gap: 0.4rem; min-width: 0; max-width: 100%; overflow-wrap: anywhere; }
+html body #root .adm-profile__body .px-badge { align-self: flex-start; margin-bottom: 0.4rem; }
+html body #root .adm-profile .adm-avatar { width: 6.4rem; height: 6.4rem; }
+html body #root .adm-avatar { flex: none; display: inline-grid; place-items: center; width: 4rem; height: 4rem; object-fit: cover; box-sizing: border-box; border: var(--px-stroke) solid var(--px-edge); background: var(--panel-2); color: var(--muted); }
+html body #root .adm-back { align-self: flex-start; }
+
+/* 도구 줄 — 칩 + 검색 (트레이너: 검색 + 단추) */
+html body #root .adm-toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 1.2rem; }
+html body #root .adm-toolbar .px-chips { flex: 1 1 auto; }
+html body #root .adm-search { flex: 1 1 24rem; max-width: 36rem; margin-bottom: var(--px-drop); }
+html body #root .adm-search input { font-size: 1.6rem; }
+
+/* 이용자 표 — 데스크톱은 표. 작업 칸은 오른쪽 끝 */
+html body #root .adm-users { gap: 1.2rem; }
+html body #root .adm-users__table { table-layout: auto; }
+html body #root .adm-users__table th, html body #root .adm-users__table td { padding: 1.2rem 0.8rem; }
+html body #root .adm-users__act { text-align: right; white-space: nowrap; }
+html body #root .adm-who { display: flex; align-items: center; gap: 1.2rem; min-width: 0; }
+html body #root .adm-who__text { display: flex; flex-direction: column; gap: 0.2rem; min-width: 0; }
+html body #root .adm-who__text > * { min-width: 0; white-space: normal; overflow-wrap: anywhere; }
+html body #root .adm-on { color: var(--mint); }
+html body #root .adm-users__table .px-toggle { min-height: 3.6rem; }
+
+/* 트레이너 코드 줄 — 이름 · 코드 · 단추. 수정 중에는 코드 자리에 입력 */
+html body #root .adm-codes { display: flex; flex-direction: column; margin: 0; padding: 0; list-style: none; }
+html body #root .adm-codes__row { display: flex; flex-wrap: wrap; align-items: center; gap: 0.8rem 1.6rem; min-height: 5.6rem; padding: 0.8rem 0; border-bottom: 0.2rem solid color-mix(in srgb, var(--line) 50%, transparent); }
+html body #root .adm-codes__row:last-child { border-bottom: 0; }
+html body #root .adm-codes__name { flex: 1 1 16rem; min-width: 0; overflow-wrap: anywhere; }
+html body #root .adm-codes__code { flex: 0 1 auto; color: var(--fg); }
+html body #root .adm-codes__acts { display: flex; gap: 0.8rem; margin-left: auto; }
+html body #root .adm-codes__edit { display: flex; flex-wrap: wrap; align-items: center; gap: 0.8rem; flex: 1 1 auto; margin: 0; }
+html body #root .adm-codes__edit .px-input { flex: 1 1 18rem; max-width: 24rem; margin-bottom: var(--px-drop); }
+html body #root .adm-codes__error { flex-basis: 100%; color: var(--danger-action); }
+html body #root .adm-bulk .px-input--area { margin-bottom: var(--px-drop); }
+html body #root .adm-bulk textarea { font-family: var(--font-mono); font-size: 1.6rem; min-height: 14rem; }
+html body #root .adm-bulk__acts { display: flex; flex-wrap: wrap; gap: 1.2rem; }
+html body #root .adm-bulk__msg { color: var(--fg); }
+html body #root .adm-review__bad { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 0.4rem; }
+html body #root .adm-review__bad li { color: var(--orange); }
+
+/* 확인 팝업 — 좁은 판. 대상은 모노, 실패는 빨강 */
+html body .adm-confirm { --dialog-w: 48rem; }
+html body .adm-confirm__target { overflow-wrap: anywhere; }
+html body .adm-confirm__error { color: var(--danger-action); }
+
+/* ── 상세 통계(A02) — 옛 admin-stats.css 규칙을 같은 접두사로 되덮는다. 지워도 되는 옛 규칙은 보고서에 ────────────── */
+/* 따라오는 줄의 자리 — 화면(useBarOffset)이 인라인으로 실측값을 덮어쓴다. 여기 값은 재기 전 기본 */
+html body #root .stat-page { --stat-bar-top: 8rem; --stat-bar-h: 20rem; gap: 2.4rem; padding-bottom: 0; }
+html body #root .stat-page.is-busy, html body #root .stat-hours.is-busy table { opacity: 1; }
+html body #root .stat-page__wait { font-size: 1.4rem; }
+html body #root .stat-page__bar { position: sticky; top: calc(var(--stat-bar-top) + 0.8rem); z-index: 10; margin: 0; padding: 0; background: none; border: 0; }
+html body #root .stat-page__stamp { margin-top: 0.4rem; }
+html body #root .stat-jump { gap: 0.8rem; overflow: visible; }
+html body #root .stat-jump a { min-height: 3.6rem; padding: 0 1.2rem; border: var(--px-stroke) solid var(--px-line, var(--px-edge)); font-size: 1.2rem; line-height: 1.2; }
+html body #root .stat-sec { gap: 1.6rem; scroll-margin-top: calc(var(--stat-bar-top) + var(--stat-bar-h) + 2.4rem); }
+html body #root .stat-sec .px-sec { margin: 0; }
+html body #root .stat-page__note { margin: 0; }
+/* 숫자 칸의 추세 — 선만 빨강, 글자는 글자 토큰 */
+html body #root .stat-tile { gap: 0.8rem; }
+html body #root .stat-tile__trend { margin-top: 0; }
+html body #root .stat-spark polyline { stroke: var(--brand-primary); stroke-width: 2; stroke-linejoin: miter; stroke-linecap: square; }
+html body #root .stat-tile__week { font-size: 1.2rem; }
+html body #root .stat-tile__delta.is-up { color: var(--mint); }
+html body #root .stat-tile__delta.is-down { color: var(--red); }
+/* 날짜별 기둥 — 각진 빨강 기둥, 격자는 선 토큰 */
+html body #root .stat-chart { gap: 0.8rem; }
+html body #root .stat-chart__head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.4rem 1.2rem; }
+html body #root .stat-chart__total { margin-left: auto; }
+html body #root .stat-chart__readout { font-size: 1.2rem; }
+html body #root .stat-chart__readout b { font-size: 1.4rem; }
+html body #root .stat-chart__plot:focus-visible { outline: var(--px-stroke) solid var(--brand-focus); }
+html body #root .stat-chart__bar { fill: var(--brand-primary); }
+html body #root .stat-chart__bar.is-on { fill: var(--brand-text); }
+html body #root .stat-chart__grid { stroke: var(--line); }
+html body #root .stat-chart__cross { stroke: var(--muted); }
+html body #root .stat-chart__axis { fill: var(--muted); font-family: var(--font-mono); }
+html body #root .stat-chart__table summary { min-height: var(--tap); display: flex; align-items: center; cursor: pointer; }
+html body #root .stat-chart__table :is(th, td) { padding: 0.8rem 1.2rem; border-bottom: 0.2rem solid color-mix(in srgb, var(--line) 50%, transparent); font-size: 1.4rem; }
+/* 순위 표 — 픽셀 판 안. 번호 · 이름 · 막대 한 줄, 값은 모노 오른쪽 */
+html body #root .stat-rank { gap: 1.2rem; }
+html body #root .stat-rank__title { margin: 0; }
+html body #root .stat-rank table { font-size: 1.4rem; }
+html body #root .stat-rank :is(th, td) { padding: 0.8rem 0.8rem; border-bottom: 0.2rem solid color-mix(in srgb, var(--line) 50%, transparent); }
+html body #root .stat-rank thead th { color: var(--muted); font-size: 1.2rem; font-weight: 500; border-bottom: var(--px-stroke) solid var(--line); }
+html body #root .stat-rank tbody th { grid-template-columns: 2.4rem minmax(8rem, 50%) 1fr; }
+html body #root .stat-rank tr:last-child :is(th, td) { border-bottom: 0; }
+html body #root .stat-rank__rank { color: var(--brand-text); font-size: 1.2rem; text-align: left; }
+html body #root .stat-rank__bar { height: 0.8rem; background: repeating-linear-gradient(90deg, var(--line) 0 0.8rem, transparent 0.8rem 1.2rem); }
+html body #root .stat-rank__bar i { background: repeating-linear-gradient(90deg, var(--brand-primary) 0 0.8rem, transparent 0.8rem 1.2rem); }
+html body #root .stat-rank__num { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+html body #root .stat-rank__flag { color: var(--mint); border: var(--px-stroke) solid var(--mint); border-radius: 0; font-size: 1.2rem; }
+html body #root .stat-rank__more { align-self: flex-start; color: var(--fg); background: var(--px-fill, var(--panel-2)); font-size: 1.2rem; padding: 0 1.2rem; }
+html body #root .stat-rank__empty { margin: 0; }
+/* 시간대별 표 — 판 안. 지금 칸은 빨강 글자 */
+html body #root .stat-hours { gap: 1.2rem; }
+html body #root .stat-hours__head { gap: 0.4rem 1.2rem; }
+html body #root .stat-hours table { font-size: 1.4rem; }
+html body #root .stat-hours :is(th, td) { padding: 0.8rem 0.8rem; border-bottom: 0.2rem solid color-mix(in srgb, var(--line) 50%, transparent); }
+html body #root .stat-hours thead th { font-size: 1.2rem; font-weight: 500; border-bottom: var(--px-stroke) solid var(--line); }
+html body #root .stat-hours tr.is-now th { color: var(--brand-text); }
+html body #root .stat-hours__num { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+html body #root .stat-ready { gap: 1.6rem; }
+
+@media (max-width: 1099px) {
+  html body #root .adm-grid, html body #root .adm-grid--wide { grid-template-columns: minmax(0, 1fr); }
+  html body #root .stat-page__bar { position: static; }
+  html body #root .stat-sec { scroll-margin-top: 2.4rem; }
+}
+@media (max-width: 699px) {
+  html body #root .adm-page { gap: 1.6rem; }
+  html body #root .adm-tiles { gap: 1.2rem; }
+  html body #root .adm-grid { gap: 1.6rem; }
+  html body #root .adm-period__date { flex: 1 1 100%; max-width: none; }
+  html body #root .adm-period__dates .px-btn { flex: 1 1 auto; }
+  html body #root .adm-search { max-width: none; }
+  html body #root .adm-toolbar .px-chips { flex-basis: 100%; }
+  /* 표 → 카드. 머리줄은 숨기고 줄마다 칸 이름(data-th)을 앞에 세운다. 작업 단추는 바닥에 꽉 */
+  html body #root .adm-users__table, html body #root .adm-users__table tbody, html body #root .adm-users__table tr, html body #root .adm-users__table td { display: block; }
+  html body #root .adm-users__table thead { display: none; }
+  html body #root .adm-users__table tr { display: flex; flex-wrap: wrap; align-items: center; gap: 0.8rem 1.2rem; padding: 1.2rem 0; border-bottom: var(--px-stroke) solid var(--line); }
+  html body #root .adm-users__table tr:last-child { border-bottom: 0; }
+  html body #root .adm-users__table td { padding: 0; border: 0; }
+  html body #root .adm-users__table td[data-th="이용자"] { flex-basis: 100%; min-width: 0; }
+  html body #root .adm-users__table td[data-th]:not([data-th="이용자"])::before { content: attr(data-th) ' '; color: var(--muted); font-size: 1.2rem; }
+  html body #root .adm-users__table td[data-th="실험 기능"] .px-toggle { display: inline-flex; min-height: var(--tap); }
+  html body #root .adm-users__act { flex-basis: 100%; text-align: left; }
+  html body #root .adm-users__act > .px-btn { width: 100%; min-height: var(--tap); }
+  html body #root .adm-codes__acts { margin-left: 0; flex-basis: 100%; }
+  html body #root .adm-codes__acts .px-btn, html body #root .adm-bulk__acts .px-btn { flex: 1 1 auto; min-height: var(--tap); }
+  html body #root .adm-me, html body #root .adm-profile { flex-direction: column; }
+  html body #root .adm-kv--tight dt { width: 6.4rem; }
+  html body #root .stat-rank tbody th { grid-template-columns: 2.4rem 1fr; }
+  html body #root .stat-rank__bar { grid-column: 2; }
+  html body #root .stat-rank tbody th .stat-rank__name { white-space: normal; overflow: visible; overflow-wrap: anywhere; }
+  /* 네 열 시간대 표는 판 안에서만 가로로 이동한다. 페이지 전체는 밀리지 않는다. */
+  html body #root .stat-hours .px-table { display: block; max-width: 100%; overflow-x: auto; }
+}
+@media (max-width: 399px) {
+  html body #root .adm-tiles { --cols: 1; }
+}

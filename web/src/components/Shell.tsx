@@ -1,42 +1,45 @@
 // ─────────────────────────────────────────────────────────────────────────────
-// components/Shell.tsx — 머리줄 · 왼쪽 메뉴 · 화면 머리 · 바닥
+// components/Shell.tsx — v6 뼈대: 머리줄 · 왼쪽 메뉴 레일 · 화면 머리 · 바닥글 · 모바일 하단 바로가기 · 전체 메뉴 시트
 //
-// **클래스명과 DOM id 를 v3 와 똑같이 쓴다.** 그것이 디자인을 그대로 유지하는 방법이고,
-// 회귀 34 스위트가 붙잡고 있는 계약이다 (`.app-bar` · `#app-nav` · `#page-head` · `#menu-planner` …).
-// CSS 는 src/styles/v3/ 의 것을 한 줄도 안 고치고 그대로 쓴다 (src/styles.ts).
-//
-// 도트 아이콘도 v3 표를 그대로 쓴다 (components/PxIcon.tsx) — 이모지로 두면
-// 기기마다 다른 매끈한 그림이 도트 스프라이트 옆에 서서 결이 어긋난다.
+// 피그마 '01 · 서비스 홈' 의 틀을 따른다 — 머리줄(로고 · 검색 · 언어 · 지역 · 테마), 224px 레일(계정 · 설정,
+// 네 갈래 "지금 뭐 하지 / 뭘 데려갈까 / 뭘 키울까 / 정보", 하위 줄은 ↳), 1100px 아래는 레일 대신 하단 네 칸(홈 · 검색 · 내 포켓몬 · 전체 메뉴).
+// DOM id 는 그대로다 (`#app-nav` · `#page-head` · `#menu-toggle` · `#drawer-backdrop` · `#menu-planner` …) — 회귀 검사와 지표가 본다 (CLAUDE.md §4).
+// 메뉴 순서는 routes.ts 의 표 하나에서 온다 — 여기서 손으로 줄을 적지 않는다.
 // ─────────────────────────────────────────────────────────────────────────────
 import { go, goBack } from '../lib/nav';
 import { openSearch } from '../stores/search';
 
-import { useEffect, useState, useId } from 'react';
-import { ROUTE_GROUPS, ROUTE_NAV, routeById, routeDesc, type RouteDef } from '../routes';
+import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
+import { ROUTE_GROUPS, ROUTE_NAV, ROUTE_EYEBROW, routeById, routeDesc, routeHref, type RouteDef, type RouteId } from '../routes';
 import { usePrefStore, themeIsDark, THEME_WORD, type Theme } from '../stores/pref';
+import { useAuthStore } from '../stores/auth';
+import { useInviteStore } from '../stores/invite';
 import { releaseSeen } from '../lib/release';
 import { setLang, useLang } from '../lib/useLang';
 import { setRegion, useRegion } from '../lib/region';
 import { useMetaSoft } from '../lib/data';
 import { track } from '../lib/track';
-import { OutlineIcon as PxIcon } from './OutlineIcon';
 import { routeNote } from '../lib/notes';
 import { useLockReason, lockedAttrs } from '../lib/useLocked';
+import { PixelIcon, EMOJI_TO_PIXEL, type PixelIconName } from './PixelIcon';
 import Account from './Account';
-import BrandLogo from './BrandLogo';
-import BrandMark from './BrandMark';
 import Trainers from './Trainers';
 
-// 내보내는 이유는 검사 하나뿐이다 — 잠금 표시가 붙는 자리를 데이터 없이 그려 보려면 필요하다
-export function NavItem({ route, now }: { route: RouteDef; now: string }) {
-  // 잠긴 줄은 흐려지고 라벨 뒤에 🔒 가 붙는다 (planner.css .is-locked).
-  // 로그인 잠금은 눌린다 — 로그인 버튼이 있는 카드로 간다. 실험 기능 잠금은 주소가 없다 (useLocked 머리말)
+// 라우트 표의 이모지 → 픽셀 아이콘. 표에 없는 글자는 안내 아이콘으로 둔다 — 빈 칸보다 '아이콘 자리' 가 보이는 편이 낫다
+function iconOf(emoji: string | undefined): PixelIconName {
+  return (emoji && EMOJI_TO_PIXEL[emoji]) || 'info';
+}
+
+/** 메뉴 한 줄 — 레일과 시트가 같은 조각을 쓴다. 하위 줄(parent 가 있는 줄)은 ↳ 로 들여 쓴다 */
+export function NavItem({ route, now, onGo }: { route: RouteDef; now: string; onGo?: () => void }) {
+  // 잠긴 줄은 흐려지고 제목에 이유가 붙는다. 로그인 잠금은 눌린다 — 로그인 안내가 있는 카드로 간다 (useLocked 머리말)
   const reason = useLockReason(route.id);
   const lock = lockedAttrs(reason);
+  const child = !!route.parent;
   return (
     <a
       {...(lock.inert ? {} : { href: `/${route.path}` })}
-      className={`drawer__item${lock.className}`}
+      className={`px-nav__item${child ? ' px-nav__item--child' : ''}${lock.className}`}
       data-route={route.id}
       data-parent={route.parent}
       {...(route.id === 'changes' ? { id: 'menu-changes' } : {})}
@@ -44,212 +47,179 @@ export function NavItem({ route, now }: { route: RouteDef; now: string }) {
       {...(route.id === now ? { 'aria-current': 'page' as const } : {})}
       {...(lock['aria-disabled'] ? { 'aria-disabled': lock['aria-disabled'] } : {})}
       title={reason ? lock.title : routeDesc(route.id)}
+      onClick={onGo}
     >
-      <span className="drawer__ico" aria-hidden="true"><PxIcon emoji={route.icon ?? ''} /></span>
-      <span className="drawer__label">{route.nav}</span>
+      {child ? null : <PixelIcon name={iconOf(route.icon)} />}
+      <span className="px-nav__label">{route.nav}</span>
     </a>
   );
 }
 
-function NavBranch({ route, now }: { route: RouteDef; now: string }) {
-  const children = ROUTE_NAV.filter((item) => item.parent === route.id);
-  const [open, setOpen] = useState(children.some((item) => item.id === now));
-  const panelId = useId();
-  useEffect(() => {
-    if (ROUTE_NAV.some((item) => item.parent === route.id && item.id === now)) setOpen(true);
-  }, [now, route.id]);
-  if (!children.length) return <NavItem route={route} now={now} />;
-  return <div className="nav-branch">
-    <div className="nav-branch__head">
-      <NavItem route={route} now={now} />
-      <button type="button" className="nav-branch__toggle" aria-expanded={open} aria-controls={panelId}
-        aria-label={`${route.nav} 하위 메뉴 ${open ? '접기' : '펼치기'}`} onClick={() => setOpen(!open)}>
-        <span aria-hidden="true">{open ? '⌃' : '⌄'}</span>
-      </button>
-    </div>
-    <div id={panelId} hidden={!open} className="nav-branch__children">
-      {children.map((child) => <NavItem key={child.id} route={child} now={now} />)}
-    </div>
-  </div>;
+/** 갈래 하나 — 제목 줄 + 그 갈래의 줄들(자식은 부모 바로 뒤, ROUTE_NAV 의 순서) */
+function NavGroup({ id, label, now, onGo }: { id: string; label: string; now: string; onGo?: () => void }) {
+  return (
+    <>
+      <h3 className="px-nav__group nav-menu__sec">{label}</h3>
+      {ROUTE_NAV.filter((route) => route.group === id).map((route) => <NavItem key={route.id} route={route} now={now} onGo={onGo} />)}
+    </>
+  );
 }
 
-// [상태, 버튼 아이콘, 버튼이 말하는 것] — v3 components/theme.js THEME_FACE 그대로.
-// 아이콘은 **지금 상태**를 가리킨다. 세 상태를 도는 버튼이라 '다음에 무엇이 되는지' 를 한 글자로 못 적는다
-const THEME_FACE: Record<Theme, [string, string]> = {
-  system: ['🌗', '화면 테마: 기기 설정 따름'],
-  light: ['☀️', '화면 테마: 밝게 — 누르면 어둡게'],
-  dark: ['🌙', '화면 테마: 어둡게 — 누르면 밝게'],
+/** '정보' 갈래 — 라우트 표의 갈래가 아니라 셸의 줄이다 (기준 안내 · 패치 노트 · 제보 · 방침 · 약관 · 통계 설정) */
+function NavInfo({ now, onGo, onConsent, onNote }: { now: string; onGo?: () => void; onConsent: () => void; onNote: () => void }) {
+  const newRelease = useNewRelease();
+  const goTo = (href: string) => () => { onGo?.(); go(href); };
+  const current = (id: string) => (id === now ? { 'aria-current': 'page' as const } : {});
+  return (
+    <>
+      <h3 className="px-nav__group nav-menu__sec">정보</h3>
+      <button type="button" className="px-nav__item" id="menu-note" onClick={() => { onGo?.(); onNote(); }}>
+        <PixelIcon name="info" /><span className="px-nav__label">기준 안내 (지금 보는 화면)</span>
+      </button>
+      <button type="button" className={`px-nav__item${newRelease ? ' dot-badge' : ''}`} id="menu-release" onClick={goTo('/release')} {...current('release')}>
+        <PixelIcon name="file" /><span className="px-nav__label">패치 노트</span>
+      </button>
+      {/* ⚠️ 이 주소는 **사용자 버그 제보용 트래커**다 — 내부 WBS 주소로 바꾸지 말 것 (쓰는 사람이 다르다) */}
+      <a className="px-nav__item" href="https://www.notion.so/a0472984122d4f25b9b445b57465568f" target="_blank" rel="noopener" onClick={onGo}>
+        <PixelIcon name="info" /><span className="px-nav__label">QA · 버그 제보 ↗</span>
+      </a>
+      <button type="button" className="px-nav__item" onClick={goTo('/privacy')} {...current('privacy')}>
+        <PixelIcon name="shield" /><span className="px-nav__label">개인정보 처리방침</span>
+      </button>
+      <button type="button" className="px-nav__item" onClick={goTo('/terms')} {...current('terms')}>
+        <PixelIcon name="shield" /><span className="px-nav__label">이용 약관</span>
+      </button>
+      {/* 개인정보처리방침이 '메뉴 → 통계·저장소 설정' 이라고 적어 뒀다 — 이 줄이 없으면 방침이 거짓말이 된다 */}
+      <button type="button" className="px-nav__item" id="menu-consent" onClick={() => { onGo?.(); onConsent(); }}>
+        <PixelIcon name="gear" /><span className="px-nav__label">통계 · 저장소 설정</span>
+      </button>
+    </>
+  );
+}
+
+/** 계정과 가까운 설정 진입 — 레일과 전체 메뉴에서 각각 한 번만 둔다. */
+function SettingsItem({ now, onGo }: { now: string; onGo?: () => void }) {
+  const language = useLang();
+  return (
+    <button type="button" className="px-nav__item" id="menu-settings" data-i18n="off"
+      {...(now === 'settings' ? { 'aria-current': 'page' as const } : {})}
+      onClick={() => { onGo?.(); go('/settings'); }}>
+      <PixelIcon name="gear" /><span className="px-nav__label">{language === 'en' ? 'Settings' : '설정'}</span>
+    </button>
+  );
+}
+
+// [상태, 아이콘, 버튼이 말하는 것]. 아이콘은 **지금 상태**를 가리킨다
+const THEME_FACE: Record<Theme, [PixelIconName, string]> = {
+  system: ['moon', '화면 테마: 기기 설정 따름'],
+  light: ['sun', '화면 테마: 밝게 — 누르면 어둡게'],
+  dark: ['moon', '화면 테마: 어둡게 — 누르면 밝게'],
 };
 
-export function AppBar({ onMenu, home, onBack }: {
-  onMenu: () => void; home: boolean; onBack?: () => void;
-}) {
+/** 머리줄 — 검색·표시 설정·계정 진입. */
+export function AppBar({ onMenu, onBack }: { onMenu: () => void; home?: boolean; onBack?: () => void }) {
+  const barRef = useRef<HTMLElement>(null);
   const theme = usePrefStore((s) => s.theme);
   const toggleTheme = usePrefStore((s) => s.toggleTheme);
   const [icon, label] = THEME_FACE[theme];
   const newRelease = useNewRelease();
+  const { enabled, user, status } = useAuthStore();
   const now = useLang();
   const region = useRegion();
+  // 헤더는 글꼴·창 폭에 따라 최소 높이보다 커질 수 있다. 레일은 실제 아래쪽에서 시작한다.
+  useLayoutEffect(() => {
+    const bar = barRef.current;
+    if (!bar) return;
+    const syncHeight = () => document.body.style.setProperty('--app-bar-height', `${bar.getBoundingClientRect().height}px`);
+    syncHeight();
+    const observer = typeof ResizeObserver === 'undefined' ? undefined : new ResizeObserver(syncHeight);
+    observer?.observe(bar);
+    window.addEventListener('resize', syncHeight);
+    return () => {
+      observer?.disconnect();
+      window.removeEventListener('resize', syncHeight);
+      document.body.style.removeProperty('--app-bar-height');
+    };
+  }, []);
   return (
-    <header className="app-bar">
+    <header className="app-bar" ref={barRef}>
       <div className="app-bar__head">
-        {/* 2026-09-17 홈에는 뒤로가기가 없다 — v3 app-shell.js 의 `backButton.hidden = home`.
-            여기가 처음이라 돌아갈 앞 화면이 없고, 있는 버튼은 "누를 수 있다" 는 약속이다 (제보) */}
-        <button className="icon-btn" aria-label={onBack ? '상세 닫기' : '이전 화면'} hidden={home}
-          onClick={() => {
-            if (onBack) { onBack(); return; }
-            goBack();
-          }}>
-          <PxIcon emoji="←" />
+        {/* 홈에는 뒤로가기가 없다 — 돌아갈 앞 화면이 없고, 있는 버튼은 "누를 수 있다" 는 약속이다 */}
+        <button className="px-btn px-btn--icon px-skin icon-btn" aria-label="상세 닫기" hidden={!onBack}
+          onClick={() => { if (onBack) { onBack(); return; } goBack(); }}>
+          <PixelIcon name="back" />
         </button>
-        {/* 넓은 화면은 어느 화면에서든 로고가 홈 링크로 선다. 좁은 화면의 안쪽 화면에서는 CSS 가
-            표식만 남긴다(brand.css) — 뒤로가기·로고·검색·언어·메뉴가 한 줄에 다 못 들어가 겹쳤다(제보).
-            h1 은 늘 남긴다 — 없애면 화면에 제목이 없어지고 포커스가 돌아올 자리(#app-title)도 사라진다 */}
+        {/* h1 은 늘 남긴다 — 없애면 화면에 제목이 없어지고 포커스가 돌아올 자리(#app-title)도 사라진다 */}
         <h1 id="app-title" tabIndex={-1}>
-          <span className={`app-bar__identity${home ? '' : ' app-bar__identity--inner'}`}>
-            <BrandLogo />
-            <BrandMark />
-          </span>
-          {!home ? <span className="app-bar__name">moncamp</span> : null}
+          <button type="button" id="app-logo" className="app-bar__logo app-bar__logo--brand" aria-label="moncamp 홈" onClick={() => { go('/'); }}>
+            <span>MONCAMP</span>
+          </button>
         </h1>
       </div>
-      {/* 검색칸은 팔레트를 연다 (components/SearchPalette.tsx) — 전에는 도감으로 가는 링크라 검색이 아니라 이동이었다 (2026-09-28) */}
-      <button className="app-search" id="app-search" aria-label="포켓몬 검색"
-        onClick={() => { openSearch('bar'); }}>
-        <span className="app-search__ico" aria-hidden="true"><PxIcon emoji="🔍" /></span>
-        <span className="app-search__ph">포켓몬을 검색하세요</span>
+      {/* 검색칸은 팔레트를 연다 (components/SearchPalette.tsx) */}
+      <button className="app-search px-skin" id="app-search" aria-label="포켓몬 검색" onClick={() => { openSearch('bar'); }}>
+        <PixelIcon name="search" />
+        <span className="app-search__ph">포켓몬 이름, 번호로 빠르게 검색</span>
         <kbd className="app-search__key" aria-hidden="true">/</kbd>
       </button>
       <div className="app-bar__actions">
-        <button className="icon-btn" id="search-toggle" aria-label="포켓몬 검색"
-          onClick={() => { openSearch('bar'); }}><PxIcon emoji="🔍" /></button>
-        <button
-          className="icon-btn"
-          id="theme-toggle"
-          aria-label={label}
-          aria-live="polite"
-          data-icon={icon}
-          title={label}
-          onClick={() => { toggleTheme(); track('theme_switch', { to: themeIsDark(theme) ? 'light' : 'dark' }); }}
-        >
-          <PxIcon emoji={icon} />
-        </button>
-        {/* 버튼 글자는 "지금 누르면 갈 언어" 다 (한국어면 EN, 영어면 KR) — 상태가 아니라 행동 표시다.
-            이 글자는 사전을 타지 않는다(data-i18n="off") — 맡기면 뜻이 뒤집힌다 */}
-        <button className="icon-btn lang-toggle" id="lang-toggle" aria-live="polite" data-i18n="off"
+        <button className="px-btn px-btn--icon px-skin icon-btn" id="search-toggle" aria-label="포켓몬 검색" onClick={() => { openSearch('bar'); }}><PixelIcon name="search" /></button>
+        {/* 버튼 글자는 "지금 누르면 갈 언어" 다 — 행동 표시. 이 글자는 사전을 타지 않는다 */}
+        <button className="px-btn px-skin icon-btn lang-toggle" id="lang-toggle" aria-live="polite" data-i18n="off"
           aria-label={now === 'en' ? 'View in Korean (한국어로 보기)' : 'View in English (영어로 보기)'}
           onClick={() => { const next = now === 'en' ? 'ko' : 'en'; void setLang(next); track('lang_switch', { lang: next }); }}>
           {now === 'en' ? 'KR' : 'EN'}
         </button>
-        {/* 지역은 언어와 따로 돈다 (2026-10-01). 언어 단추와 달리 **지금 지역**을 적는다 —
-            둘 다 '갈 곳' 을 적으면 영어 화면에서 KR 이 두 개 서서 어느 쪽이 언어인지 모른다 */}
-        <button className="icon-btn region-toggle" id="region-toggle" aria-live="polite" data-i18n="off"
+        {/* 지역은 언어와 따로 돈다 — **지금 지역**을 적는다 */}
+        <button className="px-btn px-skin icon-btn region-toggle" id="region-toggle" aria-live="polite" data-i18n="off"
           aria-label={region === 'eu' ? '일정 기준 지역: 유럽 (누르면 한국 기준) · Schedule region: Europe' : '일정 기준 지역: 한국 (누르면 유럽 기준) · Schedule region: Korea'}
           onClick={() => { const next = region === 'eu' ? 'kr' : 'eu'; setRegion(next); track('region_switch', { region: next }); }}>
-          <PxIcon emoji="🌐" />
+          <PixelIcon name="globe" />
           <span className="region-toggle__code">{region === 'eu' ? 'EU' : 'KR'}</span>
         </button>
-        <button className={`icon-btn${newRelease ? ' dot-badge' : ''}`} id="menu-toggle" aria-label="메뉴" aria-haspopup="dialog"
-          aria-expanded={false} aria-controls="drawer-backdrop" onClick={onMenu}><PxIcon emoji="☰" /></button>
+        <button type="button" className={`px-btn px-skin px-login app-bar__account${user ? ' is-signed-in' : ''}${enabled ? '' : ' is-unavailable'}`}
+          id={user ? 'bar-account' : 'bar-login'} aria-haspopup="dialog" aria-controls="drawer-backdrop"
+          title={enabled ? undefined : '현재 개발 환경에서는 로그인이 꺼져 있습니다.'} onClick={onMenu}>
+          <PixelIcon name="user" />{user ? '마이페이지' : status === 'loading' ? '로그인 확인 중' : '로그인'}
+        </button>
+        <button className="px-btn px-btn--icon px-skin icon-btn" id="theme-toggle" aria-label={label} aria-live="polite" data-icon={icon} title={label}
+          onClick={() => { toggleTheme(); track('theme_switch', { to: themeIsDark(theme) ? 'light' : 'dark' }); }}>
+          <PixelIcon name={icon} />
+        </button>
+        <button className={`px-btn px-btn--icon px-skin icon-btn${newRelease ? ' dot-badge' : ''}`} id="menu-toggle" aria-label="전체 메뉴" aria-haspopup="dialog"
+          aria-expanded={false} aria-controls="drawer-backdrop" onClick={onMenu}><PixelIcon name="menu" /></button>
       </div>
     </header>
   );
 }
 
-export function AppNav({ now, onConsent }: { now: string; onConsent: () => void }) {
+/** 왼쪽 메뉴 레일 (1100px 이상). 계정과 설정을 먼저 찾고 그 아래에서 서비스로 이동한다. */
+export function AppNav({ now, onConsent, onMenu, onNote }: { now: string; onConsent: () => void; onMenu: () => void; onNote: () => void }) {
+  const { enabled, user, status } = useAuthStore();
   return (
     <aside className="app-nav" id="app-nav">
       <nav className="nav-menu" aria-label="서비스 이동">
-        <a href="/" className="drawer__item" {...(now === 'home' ? { 'aria-current': 'page' as const } : {})}>
-          <span className="drawer__ico" aria-hidden="true"><PxIcon emoji="🏠" /></span>
-          <span className="drawer__label">서비스 홈</span>
+        <div className="px-nav__utilities">
+          {enabled ? <button type="button" className="px-btn px-btn--block px-skin px-nav__mypage" id="nav-mypage" aria-haspopup="dialog" aria-controls="drawer-backdrop" onClick={onMenu}>
+            <PixelIcon name="user" />{user || status === 'loading' ? '마이페이지' : '로그인'}
+          </button> : null}
+          <SettingsItem now={now} />
+        </div>
+        <a href="/" className="px-nav__item" {...(now === 'home' ? { 'aria-current': 'page' as const } : {})}>
+          <PixelIcon name="home" /><span className="px-nav__label">서비스 홈</span>
         </a>
-        {ROUTE_GROUPS.map(([id, label]) => (
-          <div key={id} style={{ display: 'contents' }}>
-            <h3 className="nav-menu__sec">{label}</h3>
-            {ROUTE_NAV.filter((route) => route.group === id && !route.parent).map((route) => (
-              <NavBranch key={route.id} route={route} now={now} />
-            ))}
-          </div>
-        ))}
+        {ROUTE_GROUPS.map(([id, label]) => <NavGroup key={id} id={id} label={label} now={now} />)}
+        <NavInfo now={now} onConsent={onConsent} onNote={onNote} />
       </nav>
-      <div className="app-nav__extra">
-        <NavExtra onConsent={onConsent} />
-      </div>
     </aside>
   );
 }
 
 /**
- * 메뉴 아래쪽의 곁줄 — 자주 안 가지만 있어야 하는 것들 (v3 index.html #drawer-extra).
- * 이 줄이 통째로 없으면 넓은 화면에서 왼쪽 메뉴가 절반 높이로 끝나 화면이 비어 보인다.
- */
-function NavExtra({ onConsent }: { onConsent: () => void }) {
-  // 셸은 묶음을 기다리지 않는다 (lib/data.ts 의 useMetaSoft 주석)
-  const meta = useMetaSoft();
-  const newRelease = useNewRelease();
-  const goTo = (href: string) => () => { go(href); };
-  return (
-    <div id="drawer-extra">
-      <button className={`drawer__item${newRelease ? ' dot-badge' : ''}`} id="menu-release" onClick={goTo('/release')}>
-        <span className="drawer__ico" aria-hidden="true"><PxIcon emoji="🎉" /></span>
-        <span className="drawer__label">패치 노트</span>
-      </button>
-      {/* ⚠️ 이 주소는 **사용자 버그 제보용 트래커**다 — 내부 WBS 주소로 바꾸지 말 것 (쓰는 사람이 다르다) */}
-      <a className="drawer__item" href="https://www.notion.so/a0472984122d4f25b9b445b57465568f"
-        target="_blank" rel="noopener">
-        <span className="drawer__ico" aria-hidden="true"><PxIcon emoji="🛠" /></span>
-        <span className="drawer__label">QA · 버그 제보 (노션)</span>
-      </a>
-      <button className="drawer__item" onClick={goTo('/privacy')}>
-        <span className="drawer__ico" aria-hidden="true"><PxIcon emoji="🔒" /></span>
-        <span className="drawer__label">개인정보 처리방침</span>
-      </button>
-      <button className="drawer__item" onClick={goTo('/terms')}>
-        <span className="drawer__ico" aria-hidden="true"><PxIcon emoji="📜" /></span>
-        <span className="drawer__label">이용 약관</span>
-      </button>
-      <ThemeItem />
-      <button className="drawer__item" id="menu-settings" onClick={goTo('/settings')}>
-        <span className="drawer__ico" aria-hidden="true"><PxIcon emoji="🛠" /></span>
-        <span className="drawer__label">설정</span>
-      </button>
-      {/* 개인정보처리방침이 '메뉴 → 통계·저장소 설정' 이라고 적어 뒀다 — 이 줄이 없으면 방침이 거짓말이 된다 */}
-      <button className="drawer__item" id="menu-consent" onClick={onConsent}>
-        <span className="drawer__ico" aria-hidden="true"><PxIcon emoji="🍪" /></span>
-        <span className="drawer__label">통계 · 저장소 설정</span>
-      </button>
-      <p className="drawer__meta">
-        {/* 기준일은 묶음이 와야 안다. **비면 그 줄만 안 쓴다** — 출처 표기는 값과 무관하게 늘 선다.
-            `기준일 undefined` 가 나가면 CLAUDE.md §1 위반이다 */}
-        PvPoke · PokeMiners 데이터
-        {meta?.DATA_TIMESTAMP ? <><br />{`기준일 ${meta.DATA_TIMESTAMP} · 매일 00시 자동 갱신`}</> : null}
-      </p>
-    </div>
-  );
-}
-
-/** 좁은 화면에는 머리줄에 테마 버튼 자리가 없다 — 이 줄이 그 일을 한다 (v3 #menu-theme) */
-function ThemeItem() {
-  const theme = usePrefStore((s) => s.theme);
-  const toggleTheme = usePrefStore((s) => s.toggleTheme);
-  const [icon, label] = THEME_FACE[theme];
-  return (
-    <button className="drawer__item" id="menu-theme" onClick={toggleTheme} aria-label={label}>
-      <span className="drawer__ico" aria-hidden="true"><PxIcon emoji={icon} /></span>
-      <span className="drawer__label">화면 테마</span>
-      <span className="drawer__value" id="menu-theme-value">{THEME_WORD[theme]}</span>
-    </button>
-  );
-}
-
-/**
  * 새 패치노트가 있는가. 판 번호는 제 묶음(release.json)에 있어 셸이 그걸 기다릴 수는 없다 —
- * 매니페스트의 해시를 열쇠로 쓰지 않고, 화면이 열릴 때 기록한 값과 견준다.
- * 패치노트를 열면 markReleaseSeen 이 알려 주므로 그때 다시 센다.
+ * 화면이 열릴 때 기록한 값과 견준다. 패치노트를 열면 markReleaseSeen 이 알려 주므로 그때 다시 센다
  */
 function useNewRelease(): boolean {
-  // 기다리지 않고 읽는다 — 아직 안 왔으면 점을 안 켤 뿐이다 (lib/data.ts 의 useMetaSoft 주석)
   const meta = useMetaSoft();
   const [seen, setSeen] = useState(0);
   useEffect(() => {
@@ -257,56 +227,88 @@ function useNewRelease(): boolean {
     window.addEventListener('moncamp:release-seen', onSeen);
     return () => window.removeEventListener('moncamp:release-seen', onSeen);
   }, []);
-  void seen;   // 알림을 받으면 다시 세기만 하면 된다
+  void seen;
   return !!meta?.RELEASE_VER && !releaseSeen(meta.RELEASE_VER);
 }
 
-/** 화면 머리 — 브레드크럼 · 제목 · 한 줄 설명 · 오른쪽 동작.
-    오른쪽 칸은 비워 두고 자리만 넘긴다 — 화면이 포털로 채운다 (components/Slots.tsx) */
+/** 화면 머리 — 영문 이름표 · 제목 · 한 줄 설명 · 오른쪽 동작(포털 자리, components/Slots.tsx) */
 export function PageHead({ route, actionsRef }: { route: RouteDef; actionsRef: (node: HTMLDivElement | null) => void }) {
   const parent = route.parent ? routeById(route.parent) : undefined;
   const name = route.title ?? route.nav ?? route.id;
+  const eyebrow = ROUTE_EYEBROW[route.id as RouteId] ?? (parent ? `${parent.nav ?? parent.id} / ${name}` : name);
   return (
     <header className="page-head" id="page-head" data-route={route.id}>
       <nav className="page-head__crumb" aria-label="위치">
-        <a className="page-head__crumb-home" href="/">🏠</a>
+        <a className="page-head__crumb-home" href="/">홈</a>
         <span className="page-head__crumb-sep" aria-hidden="true">›</span>
-        <a className="page-head__crumb-up" href={parent ? `/${parent.path}` : '/'} hidden={!parent}>
-          {parent ? (parent.title ?? parent.nav) : ''}
-        </a>
+        <a className="page-head__crumb-up" href={parent ? `/${parent.path}` : '/'} hidden={!parent}>{parent ? (parent.title ?? parent.nav) : ''}</a>
         <span className="page-head__crumb-sep" aria-hidden="true" hidden={!parent}>›</span>
-        <span className="page-head__crumb-now">{name}</span>
+        <span className="page-head__crumb-now" data-i18n="off">{eyebrow}</span>
       </nav>
       <h2>{name}</h2>
       <p className="page-head__desc">{routeDesc(route.id)}</p>
-      {/* 단추는 화면이 데이터를 받은 뒤 포털로 들어온다. 좁은 화면에서는 이 줄이 제목 **위**라
-          나중에 끼어들면 제목이 56px 내려앉는다(D-MAX 에서 CLS 0.85). 단추가 서는 화면은 자리를 먼저 비워 둔다 */}
+      {/* 단추는 화면이 데이터를 받은 뒤 포털로 들어온다. 단추가 서는 화면은 자리를 먼저 비워 둔다 (CLS) */}
       <div className="page-head__actions" id="page-head-actions" ref={actionsRef} data-reserve={route.actions ? '' : undefined} />
     </header>
   );
 }
 
 export function Footer({ onConsent }: { onConsent: () => void }) {
-  // 위와 같다 — 바닥글이 묶음을 기다리면 화면 전체가 같이 기다린다 (Suspense 밖이다)
   const meta = useMetaSoft();
   return (
     <footer>
-      <p className="foot-lead">포켓몬 GO의 정보 탐색부터 배틀 준비까지 함께하는 서비스예요.</p>
+      <p className="foot-lead" data-i18n="off">MONCAMP / POGO-RANK · 데이터와 함께, 더 즐거운 모험.</p>
+      <p>순위와 수치는 비교를 돕는 참고 정보입니다. 실제 성과는 상대·기술·레벨·전투 조건에 따라 달라집니다.</p>
       <p id="ip-notice">moncamp는 비공식 팬 프로젝트입니다. Pokémon 및 관련 명칭·이미지의 권리는 The Pokémon Company · Nintendo · Creatures Inc. · GAME FREAK inc.에, Pokémon GO는 Scopely Explore, Inc.에 있으며 이 서비스는 권리자와 무관합니다.</p>
       <p>데이터는 PvPoke · PokeMiners · PokeAPI · LeekDuck의 공개 자료를 사용합니다. 코드는 열람용으로 공개하며 포크·재배포를 허용하지 않습니다. 데이터·이미지는 각 출처의 조건을 따릅니다 (저장소 LICENSE · NOTICE).</p>
       <p className="foot-links">
-        {/* 문의 이메일은 빌드가 넣은 값이다 — 저장소에 적어 두지 않는다 (v3 index.html __CONTACT__) */}
+        {/* 문의 이메일은 빌드가 넣은 값이다 — 저장소에 적어 두지 않는다 */}
         {meta?.CONTACT_EMAIL ? <>문의·건의: <a href={`mailto:${meta.CONTACT_EMAIL}`}>{meta.CONTACT_EMAIL}</a> · </> : null}
         <a href="/privacy">개인정보처리방침</a> · <a href="/terms">이용약관</a> ·{' '}
         <button type="button" id="foot-consent" onClick={onConsent}>통계·저장소 설정</button> ·{' '}
         <a href="https://github.com/MinsangKwak/pogo-rank" target="_blank" rel="noopener">GitHub</a>
+        {meta?.DATA_TIMESTAMP ? <> · {`기준일 ${meta.DATA_TIMESTAMP}`}</> : null}
       </p>
     </footer>
   );
 }
 
-/** ☰ 를 누르면 열리는 서랍 — 좁은 화면에서 왼쪽 메뉴 대신 쓴다 */
-export function Drawer({ open, onClose, now, onConsent }: { open: boolean; onClose: () => void; now: string; onConsent: () => void }) {
+/** 모바일 하단 바로가기 — 홈 · 검색 · 내 포켓몬 · 전체 메뉴 (피그마 'Mobile navigation shortcuts') */
+export function BottomBar({ now, onMenu }: { now: string; onMenu: () => void }) {
+  const planLock = useLockReason('planner');
+  const openInvite = useInviteStore((s) => s.open);
+  const item = (label: string, icon: PixelIconName, body: ReactNode, props: Record<string, unknown>) => (
+    <button type="button" className="px-bottom__item" {...props}>{body}<PixelIcon name={icon} />{label}</button>
+  );
+  return (
+    <nav className="px-bottom" aria-label="빠른 이동">
+      <a className="px-bottom__item" href="/" {...(now === 'home' ? { 'aria-current': 'page' as const } : {})}><PixelIcon name="home" />홈</a>
+      {item('검색', 'search', null, { onClick: () => openSearch('bottom') })}
+      {/* 내 포켓몬은 승인제다 — 로그인 전이면 안내 팝업(D07)으로, 열리면 화면으로 */}
+      {item('내 포켓몬', 'box', null, {
+        ...(now === 'planner' ? { 'aria-current': 'page' } : {}),
+        onClick: () => { if (planLock === 'login') { openInvite('bottom'); return; } go(routeHref('planner')); },
+      })}
+      {item('전체 메뉴', 'menu', null, { onClick: onMenu, 'aria-haspopup': 'dialog', 'aria-controls': 'drawer-backdrop' })}
+    </nav>
+  );
+}
+
+/** 전체 메뉴 시트 (D06) — 마이페이지 카드 · 기존 메뉴 순서 그대로 · 정보 · 출처 */
+export function Drawer({ open, onClose, now, onConsent, onNote }: { open: boolean; onClose: () => void; now: string; onConsent: () => void; onNote: () => void }) {
+  // 모바일 전체 메뉴가 열린 채 데스크톱 폭으로 바뀌면 오버레이를 닫는다.
+  // 데스크톱에서 직접 연 마이페이지 패널은 그대로 두고, 모바일→PC 전환만 감지한다.
+  useEffect(() => {
+    if (typeof window.matchMedia !== 'function') return;
+    const desktop = window.matchMedia('(min-width: 1100px)');
+    let wasMobile = !desktop.matches;
+    const onBreakpoint = () => {
+      if (wasMobile && desktop.matches && open) onClose();
+      wasMobile = !desktop.matches;
+    };
+    desktop.addEventListener('change', onBreakpoint);
+    return () => desktop.removeEventListener('change', onBreakpoint);
+  }, [open, onClose]);
   useEffect(() => {
     if (!open) return;
     const onKey = (event: KeyboardEvent) => { if (event.key === 'Escape') onClose(); };
@@ -316,48 +318,28 @@ export function Drawer({ open, onClose, now, onConsent }: { open: boolean; onClo
   if (!open) return null;
   return (
     <div className="drawer" id="drawer-backdrop" onClick={onClose}>
-      <aside className="drawer__panel" onClick={(event) => event.stopPropagation()}>
+      <aside className="drawer__panel" role="dialog" aria-modal="true" aria-label="전체 메뉴" onClick={(event) => event.stopPropagation()}>
         <div className="drawer__head">
-          <b>메뉴</b>
-          <button className="icon-btn" id="drawer-close" aria-label="닫기" onClick={onClose}><PxIcon emoji="✕" /></button>
+          <div><b>전체 메뉴</b><small>계정 · 화면 설정 · 서비스 이동</small></div>
+          <button className="px-btn px-btn--icon px-skin icon-btn" id="drawer-close" aria-label="닫기" onClick={onClose}><PixelIcon name="close" /></button>
         </div>
-        {/* 로그인 상태는 ☰ 메뉴 맨 위 한 곳에서만 보인다 (v3 v2.29.0 에 헤더 👤 를 없애며 정한 자리) */}
+        {/* 로그인 상태는 여기 한 곳에서만 보인다 */}
         <Account onGo={onClose} />
-        {/* 서랍은 세 덩이로 읽힌다 — 👤 마이페이지 · 서비스(갈 곳) · 정보(그 밖).
-            제목은 좁은 화면에만 단다: 넓은 화면의 왼쪽 메뉴는 갈 곳만 있는 자리라 또 적을 이유가 없다 */}
-        <h2 className="drawer__sec">서비스</h2>
+        <LocaleItems now={now} onGo={onClose} />
         <nav className="nav-menu" aria-label="서비스 이동">
-          <a href="/" className="drawer__item" onClick={onClose}>
-            <span className="drawer__ico" aria-hidden="true"><PxIcon emoji="🏠" /></span>
-            <span className="drawer__label">서비스 홈</span>
+          <a href="/" className="px-nav__item" onClick={onClose} {...(now === 'home' ? { 'aria-current': 'page' as const } : {})}>
+            <PixelIcon name="home" /><span className="px-nav__label">서비스 홈</span>
           </a>
-          {ROUTE_GROUPS.map(([id, label]) => (
-            <div key={id} style={{ display: 'contents' }}>
-              <h3 className="nav-menu__sec">{label}</h3>
-              {ROUTE_NAV.filter((route) => route.group === id && !route.parent).map((route) => (
-                <div key={route.id} style={{ display: 'contents' }} onClick={(event) => { if ((event.target as HTMLElement).closest('a')) onClose(); }}>
-                  <NavBranch route={route} now={now} />
-                </div>
-              ))}
-            </div>
-          ))}
+          {ROUTE_GROUPS.map(([id, label]) => <NavGroup key={id} id={id} label={label} now={now} onGo={onClose} />)}
+          <NavInfo now={now} onGo={onClose} onConsent={onConsent} onNote={onNote} />
         </nav>
-        {/* 정보 덩이는 **카드 한 장으로** 묶는다 — 아코디언과 바깥 링크가 따로 놀면 항목마다 테두리가
-            따로 생겨 '목록' 이 아니라 '버튼 무더기' 로 읽힌다 (v3 infoGroup). 버전 줄은 카드 밖이다 */}
-        <h2 className="drawer__sec">정보</h2>
         <div className="drawer__group">
-          {/* 기준 안내는 본문이 아니라 여기 산다 — 늘 보이면 목록보다 긴 글이 화면을 밀어낸다 (v3 #note-acc) */}
+          {/* 기준 안내는 시트에서도 읽힌다 — 팝업(D11)과 같은 글 (lib/notes.ts) */}
           <details className="schedule" id="note-acc">
-            <summary>
-              <span className="drawer__ico" aria-hidden="true"><PxIcon emoji="ℹ️" /></span>
-              <span className="drawer__label">기준 안내 (지금 보는 화면)</span>
-            </summary>
+            <summary><PixelIcon name="info" /><span className="drawer__label">기준 안내 (지금 보는 화면)</span></summary>
             <p className="note" id="note">{routeNote(now)}</p>
           </details>
           <Trainers />
-          {/* **좁은 화면에서는 여기가 유일한 메뉴다.** 이 줄들이 없으면 휴대폰에서
-              설정 · 약관 · 개인정보 · 패치노트 · 통계 설정으로 갈 길이 통째로 사라진다 */}
-          <NavExtra onConsent={onConsent} />
         </div>
         <Version />
       </aside>
@@ -365,12 +347,59 @@ export function Drawer({ open, onClose, now, onConsent }: { open: boolean; onClo
   );
 }
 
-/** 서랍 맨 아래 한 줄 (v3 versionMeta). 판 번호는 빌드가 실어 준 값만 쓴다 — 손으로 적지 않는다 */
+// 모바일에서 머리줄을 숨겨도 계정 바로 아래에서 표시 설정과 전체 설정을 찾을 수 있다.
+function LocaleItems({ now, onGo }: { now: string; onGo: () => void }) {
+  const language = useLang();
+  const region = useRegion();
+  return (
+    <div className="drawer__group drawer__locale" role="group" aria-label={language === 'en' ? 'Display settings' : '화면 설정'} data-i18n="off">
+      <button type="button" className="px-nav__item" id="menu-language" aria-live="polite"
+        aria-label={language === 'en' ? 'View in Korean (한국어로 보기)' : 'View in English (영어로 보기)'}
+        onClick={() => { const next = language === 'en' ? 'ko' : 'en'; void setLang(next); track('lang_switch', { lang: next }); }}>
+        <PixelIcon name="globe" />
+        <span className="px-nav__label">{language === 'en' ? 'Language' : '언어'}</span>
+        <span className="drawer__value">{language === 'en' ? 'English' : '한국어'}</span>
+      </button>
+      <button type="button" className="px-nav__item" id="menu-region" aria-live="polite"
+        aria-label={region === 'eu' ? '일정 기준 지역: 유럽 (누르면 한국 기준) · Schedule region: Europe' : '일정 기준 지역: 한국 (누르면 유럽 기준) · Schedule region: Korea'}
+        onClick={() => { const next = region === 'eu' ? 'kr' : 'eu'; setRegion(next); track('region_switch', { region: next }); }}>
+        <PixelIcon name="globe" />
+        <span className="px-nav__label">{language === 'en' ? 'Schedule region' : '일정 기준 지역'}</span>
+        <span className="drawer__value">{region === 'eu' ? (language === 'en' ? 'EU · Europe' : 'EU · 유럽') : (language === 'en' ? 'KR · Korea' : 'KR · 한국')}</span>
+      </button>
+      <ThemeItem />
+      <SettingsItem now={now} onGo={onGo} />
+    </div>
+  );
+}
+
+/** 좁은 화면에는 머리줄에 테마 버튼 자리가 없다 — 이 줄이 그 일을 한다 (v3 #menu-theme) */
+function ThemeItem() {
+  const language = useLang();
+  const theme = usePrefStore((s) => s.theme);
+  const toggleTheme = usePrefStore((s) => s.toggleTheme);
+  const [icon, label] = THEME_FACE[theme];
+  return (
+    <button type="button" className="px-nav__item" id="menu-theme" aria-live="polite"
+      onClick={() => { toggleTheme(); track('theme_switch', { to: themeIsDark(theme) ? 'light' : 'dark' }); }}
+      aria-label={language === 'en' ? `Theme: ${theme === 'system' ? 'System setting' : theme === 'dark' ? 'Dark (switch to Light)' : 'Light (switch to Dark)'}` : label}>
+      <PixelIcon name={icon} />
+      <span className="px-nav__label">{language === 'en' ? 'Theme' : '화면 테마'}</span>
+      <span className="drawer__value" id="menu-theme-value">{language === 'en' ? ({ system: 'System', light: 'Light', dark: 'Dark' } as const)[theme] : THEME_WORD[theme]}</span>
+    </button>
+  );
+}
+
+/** 시트 맨 아래 한 줄 — 판 번호 · 출처. 판 번호는 빌드가 실어 준 값만 쓴다 */
 function Version() {
   const meta = useMetaSoft();
-  // 판 번호가 오기 전에는 아무것도 안 쓴다 — `moncamp · undefined` 보다 빈 자리가 정직하다
-  if (!meta?.APP_VERSION) return null;
-  return <p className="drawer__meta">{`moncamp · ${meta.APP_VERSION}`}</p>;
+  return (
+    <p className="drawer__meta">
+      {meta?.APP_VERSION ? <><span data-i18n="off">{`MONCAMP · ${meta.APP_VERSION}`}</span><br /></> : null}
+      비공식 팬 프로젝트 · PvPoke · PokeMiners 데이터
+      {meta?.DATA_TIMESTAMP ? <><br />{`기준일 ${meta.DATA_TIMESTAMP} · 매일 00시 자동 갱신`}</> : null}
+    </p>
+  );
 }
 
 /** 맨 위로 — 좀 내려가면 나타난다 */
@@ -382,7 +411,7 @@ export function ToTop() {
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
   return (
-    <button id="totop" className="icon-btn totop" hidden={!show} aria-label="맨 위로"
-      onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}><PxIcon emoji="↑" /></button>
+    <button id="totop" className="px-btn px-btn--icon px-skin icon-btn totop" hidden={!show} aria-label="맨 위로"
+      onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}><PixelIcon name="up" /></button>
   );
 }

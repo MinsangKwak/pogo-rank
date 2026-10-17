@@ -128,6 +128,12 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         <script dangerouslySetInnerHTML={{ __html: ZOOM_SCRIPT }} />
         {ADS_SCRIPT ? <script dangerouslySetInnerHTML={{ __html: ADS_SCRIPT }} /> : null}
         {GA_SCRIPT ? <script dangerouslySetInnerHTML={{ __html: GA_SCRIPT }} /> : null}
+        {/* v6 글꼴 (2026-10-16). Pretendard 본문 · Press Start 2P 로고. Geist Mono 는 styles/pixel/fonts.css 의 @font-face 가 받는다.
+            셋 다 swap — 글꼴이 늦어도 글자는 먼저 선다. 두 CDN 에 미리 손을 잡아 둔다 */}
+        <link rel="preconnect" href="https://cdn.jsdelivr.net" crossOrigin="anonymous" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" />
       </head>
       <body>
         {/* **덮개 — 앱이 첫 화면을 세울 때까지 서버 본문(검색엔진용)을 가린다** (2026-09-28 제보).

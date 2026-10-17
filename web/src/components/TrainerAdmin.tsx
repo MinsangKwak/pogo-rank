@@ -10,9 +10,10 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useAuthStore } from '../stores/auth';
 import { serverApi, ApiError, type Trainer } from '../lib/serverApi';
+import ConfirmDialog from './ConfirmDialog';
 
 /** 보기용 4자리 묶음 (components/Trainers.tsx 와 같은 규칙) */
-function fmtCode(code: string): string {
+export function fmtCode(code: string): string {
   const digits = code.replace(/\D/g, '');
   return digits.length === 12 ? `${digits.slice(0, 4)} ${digits.slice(4, 8)} ${digits.slice(8)}` : code;
 }
@@ -23,7 +24,7 @@ function fmtCode(code: string): string {
  *        ("0000 0000 0000" · "0000-0000-0000" · "000000000000" 다 받는다)
  *   이름 그 덩어리 앞부분. 문서 id 로 쓰므로 경로 구분자 '/' 는 공백으로 바꾼다
  */
-function parseLine(line: string): { name: string; code: string } | null {
+export function parseLine(line: string): { name: string; code: string } | null {
   const digits = (/[\d\s-]{12,}/.exec(line)?.[0] ?? '').replace(/\D/g, '');
   const name = line.replace(/[\d\s-]{12,}.*$/, '').trim().replace(/\//g, ' ');
   return digits.length === 12 && name ? { name, code: digits } : null;
@@ -31,7 +32,7 @@ function parseLine(line: string): { name: string; code: string } | null {
 
 // 연결이 없으면 fetch 가 오래 매달린다 — 그냥 await 하면 '저장 중…' 에서 멈춘 것처럼 보인다
 const WRITE_LIMIT = 10000;
-function withLimit<T>(work: Promise<T>): Promise<T> {
+export function withLimit<T>(work: Promise<T>): Promise<T> {
   return Promise.race([work, new Promise<never>((_, reject) => {
     setTimeout(() => reject(new Error('응답 없음(네트워크 확인)')), WRITE_LIMIT);
   })]);
@@ -44,6 +45,8 @@ export default function TrainerAdmin({ onClose, onChanged }: { onClose: () => vo
   const [text, setText] = useState('');
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState('이름과 12자리 트레이너 코드를 한 줄에 하나씩 입력해 주세요. 같은 이름이 있으면 기존 코드를 변경해요.');
+  // 삭제 확인 — window.confirm 대신 ConfirmDialog (2026-10-16 v6 A08)
+  const [ask, setAsk] = useState<Trainer | null>(null);
 
   useEffect(() => { const node = box.current; if (!node?.open) node?.showModal(); }, []);
 
@@ -56,8 +59,8 @@ export default function TrainerAdmin({ onClose, onChanged }: { onClose: () => vo
   if (!admin) return null;
 
   const remove = async (one: Trainer) => {
-    if (!window.confirm(`${one.name} 코드를 삭제할까요?`)) return;
     await serverApi.removeTrainer(one.name).catch(() => { /* 실패하면 목록이 그대로 남는다 */ });
+    setAsk(null);
     await load();
     onChanged();
   };
@@ -113,7 +116,7 @@ export default function TrainerAdmin({ onClose, onChanged }: { onClose: () => vo
                         <b>{one.name}</b><span className="account__email">{fmtCode(one.code)}</span>
                       </div>
                       <div className="admin__acts">
-                        <button className="uchip admin__act is-danger" onClick={() => void remove(one)}>삭제</button>
+                        <button className="uchip admin__act is-danger" onClick={() => setAsk(one)}>삭제</button>
                       </div>
                     </div>
                   ))}
@@ -130,6 +133,10 @@ export default function TrainerAdmin({ onClose, onChanged }: { onClose: () => vo
           </div>
         </div>
       </div>
+      {ask ? (
+        <ConfirmDialog title="트레이너 코드 삭제" target={`${ask.name} · ${fmtCode(ask.code)}`} effect="이 코드를 목록에서 지웁니다." confirmLabel="삭제" danger
+          onConfirm={() => void remove(ask)} onCancel={() => setAsk(null)} />
+      ) : null}
     </dialog>
   );
 }
