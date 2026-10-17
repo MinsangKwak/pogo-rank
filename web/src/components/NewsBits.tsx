@@ -8,13 +8,13 @@ import type { CSSProperties, ReactNode } from 'react';
 
 export type BadgeTone = 'brand' | 'mint' | 'blue' | 'orange' | 'purple' | 'yellow' | 'muted' | 'fill';
 
-/** 배지 — 한국어 글자(px-badge--ko)가 기본. mono 면 영문 · 숫자용 모노 글꼴 그대로 */
-export function NwBadge({ text, tone = 'brand', mono = false, color, children }: {
-  text?: string; tone?: BadgeTone; mono?: boolean; color?: string; children?: ReactNode;
+/** 배지 — 한국어 글자(px-badge--ko)가 기본. mono 면 영문 · 숫자용 모노 글꼴 그대로.
+ *  글자색은 tone 으로만 고른다 — 임의 색(color)을 받던 길은 일정 분류색이 바탕에 묻혀 걷었다 (2026-10-17) */
+export function NwBadge({ text, tone = 'brand', mono = false, children }: {
+  text?: string; tone?: BadgeTone; mono?: boolean; children?: ReactNode;
 }) {
-  const style = color ? ({ ['--px-badge-c' as string]: color } as CSSProperties) : undefined;
   return (
-    <span className={`px-badge px-skin${mono ? '' : ' px-badge--ko'}${tone === 'brand' ? '' : ` px-badge--${tone}`}`} style={style}>
+    <span className={`px-badge px-skin${mono ? '' : ' px-badge--ko'}${tone === 'brand' ? '' : ` px-badge--${tone}`}`}>
       {children}{text}
     </span>
   );
