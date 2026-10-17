@@ -291,6 +291,7 @@ html body .px-mon__body:focus-visible { outline: var(--px-stroke) solid var(--br
 @media (min-width: 700px) {
   html body #root .px-mon__body { flex-direction: row; align-items: center; gap: 1.2rem; padding: 2rem 1.2rem 1.2rem; }
   html body #root .px-mon__body .px-mon__art { flex: 0 0 clamp(6.4rem, 30%, 8.8rem); width: auto; }
-  html body #root .px-mon__body .px-mon__art .px-ball { --ball: clamp(6.4rem, 100%, 8.8rem); }
+  /* 볼은 그림 칸의 너비를 따라 정사각으로 — 높이에 % 를 주면 부모 높이가 정해지지 않아 0 이 되고 그림이 통째로 사라졌다 (10/17 홈 · 도감 · 순위 카드) */
+  html body #root .px-mon__body .px-mon__art .px-ball { --ball: 100%; height: auto; aspect-ratio: 1 / 1; }
   html body #root .px-mon__body .px-mon__main { flex: 1; width: auto; }
 }
